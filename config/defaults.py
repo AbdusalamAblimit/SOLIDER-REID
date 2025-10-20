@@ -202,3 +202,21 @@ _C.TEST.EVAL = False
 # ---------------------------------------------------------------------------- #
 # Path to checkpoint and saved log of trained model
 _C.OUTPUT_DIR = ""
+
+
+
+
+# Pose-related switches
+from yacs.config import CfgNode as CN
+_C.MODEL.POSE = CN()
+_C.MODEL.POSE.ENABLE = False          # 先关，分步打开
+_C.MODEL.POSE.CFG = 'pose/config_vispredict.py'     # 你的 mmpose/vis config
+_C.MODEL.POSE.CKPT = 'pretrained/best_coco_AP_epoch_210.pth'  # 你的权重
+_C.MODEL.POSE.N_KPTS = 17
+_C.MODEL.POSE.USE_VIS = True          # 是否用 visibility 加权
+_C.MODEL.POSE.FUSE_STAGE = 2          # 0..3，推荐从 2 开始
+_C.MODEL.POSE.FUSION_MODE = 'mul'     # 'mul' | 'add' | 'concat' | 'gate'
+_C.MODEL.POSE.HM_NORM = 'sigmoid'     # 'none' | 'sigmoid' | 'softmax'
+_C.MODEL.POSE.DETACH = True           # pose 分支梯度是否截断
+_C.MODEL.POSE.SCALE = 1.0             # 融合强度系数
+_C.MODEL.POSE.SAVE_VIS = False        # 如需保存可视化，后续可加

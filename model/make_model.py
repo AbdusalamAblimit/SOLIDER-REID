@@ -447,3 +447,14 @@ def make_model(cfg, num_class, camera_num, view_num, semantic_weight):
         model = Backbone(num_class, cfg)
         print('===========building ResNet===========')
     return model
+
+
+
+# --- register pose-swin types (append at EOF) ---
+from importlib import import_module as _imp
+_pose = _imp('model.backbones.pose_swin_transformer')
+__factory_T_type.update({
+    'pose_swin_base_patch4_window7_224':  _pose.pose_swin_base_patch4_window7_224,
+    'pose_swin_small_patch4_window7_224': _pose.pose_swin_small_patch4_window7_224,
+    'pose_swin_tiny_patch4_window7_224':  _pose.pose_swin_tiny_patch4_window7_224,
+})
