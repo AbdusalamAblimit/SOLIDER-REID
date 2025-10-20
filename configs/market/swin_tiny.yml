@@ -9,6 +9,10 @@ MODEL:
   TRANSFORMER_TYPE: 'swin_tiny_patch4_window7_224'
   STRIDE_SIZE: [16, 16]
 
+  # 我新加的
+  PRETRAIN_CHOICE: 'self'
+  PRETRAIN_PATH: "pretrained/swin_tiny.pth"
+
 INPUT:
   SIZE_TRAIN: [384, 128]
   SIZE_TEST: [384, 128]
@@ -20,7 +24,7 @@ INPUT:
 
 DATASETS:
   NAMES: ('market1501')
-  ROOT_DIR: ('path/to/market1501/datasets')
+  ROOT_DIR: ('data')
 
 DATALOADER:
   SAMPLER: 'softmax_triplet'
