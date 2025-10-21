@@ -15,21 +15,20 @@ MODEL:
 
   POSE:
     ENABLE: true              # 第一步打开
+    SAVE_VIS: true
     CFG: pose/config_vispredict.py
     CKPT: pretrained/best_coco_AP_epoch_210.pth
-    SAVE_VIS: true
     N_KPTS: 17
     FUSE_STAGE: 2             # stage2 对齐较稳
     FUSION_MODE: mul          # 先用乘性门
     USE_VIS: true
     HM_NORM: sigmoid
     DETACH: true
-    SCALE: 0.3
-
+    SCALE: 1.0
 
 INPUT:
   SIZE_TRAIN: [384, 128]
-  SIZE_TEST:  [384, 128]
+  SIZE_TEST: [384, 128]
   PROB: 0.5 # random horizontal flip
   RE_PROB: 0.5 # random erasing
   PADDING: 10
@@ -37,7 +36,7 @@ INPUT:
   PIXEL_STD: [0.5, 0.5, 0.5]
 
 DATASETS:
-  NAMES: ('market1501')
+  NAMES: ('msmt17')
   ROOT_DIR: ('data')
 
 DATALOADER:
@@ -68,4 +67,4 @@ TEST:
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/market1501/swin_tiny_pose-mul-test-scale0.5'
+OUTPUT_DIR: './log/msmt17/swin_tiny'

@@ -17,6 +17,7 @@ from torch.nn import ModuleList
 from torch.nn import Sequential
 from torch.nn import Linear
 from torch import Tensor
+from IPython import embed
 # from mmcv.runner import load_checkpoint as _load_checkpoint
 from mmengine.runner import load_checkpoint as _load_checkpoint
 
@@ -1358,6 +1359,7 @@ class SwinTransformer(BaseModule):
                         nH2, L2).permute(1, 0).contiguous()
 
             res = self.load_state_dict(state_dict, False)
+            
             print('unloaded parameters:', res)
 
     def forward(self, x, semantic_weight=None):
