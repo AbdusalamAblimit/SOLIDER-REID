@@ -11,8 +11,9 @@ import numpy as np
 import os
 import argparse
 from config import cfg
+import time
 import torch.distributed as dist
-
+from torch.utils.tensorboard import SummaryWriter
 def set_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
@@ -81,6 +82,21 @@ if __name__ == '__main__':
                                       cfg.SOLVER.WARMUP_FACTOR,
                                       cfg.SOLVER.WARMUP_EPOCHS, cfg.SOLVER.WARMUP_METHOD)
 
+    tb_dir = os.path.join(cfg.OUTPUT_DIR, "tb")
+    os.makedirs(tb_dir, exist_ok=True)
+    tb_dir_abs = os.path.abspath(tb_dir)
+    logger.info(f"[TB] logdir = {tb_dir_abs}")
+
+    # 只有主进程创建writer；非主进程传 None，避免多进程同时写
+    is_main = (not cfg.MODEL.DIST_TRAIN) or dist.get_rank() == 0
+    writer = SummaryWriter(log_dir=tb_dir_abs) if is_main else None
+
+    # 写一条“引导”记录，确保立刻落盘有事件文件
+    if writer is not None:
+        writer.add_text("meta/start", time.strftime("%Y-%m-%d %H:%M:%S"), 0)
+        writer.add_scalar("meta/heartbeat", 0.0, 0)
+        writer.flush()
+
     do_train(
         cfg,
         model,
@@ -91,5 +107,9 @@ if __name__ == '__main__':
         optimizer_center,
         scheduler,
         loss_func,
-        num_query, args.local_rank
+        num_query,
+        args.local_rank,
+        tb_writer=writer,     # 传给训练过程
     )
+
+    writer.close()

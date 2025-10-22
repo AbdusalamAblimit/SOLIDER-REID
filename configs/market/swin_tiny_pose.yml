@@ -24,7 +24,7 @@ MODEL:
     USE_VIS: true
     HM_NORM: sigmoid
     DETACH: true
-    SCALE: 0.3
+    SCALE: 1.0
 
 
 INPUT:
@@ -68,4 +68,4 @@ TEST:
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/market1501/swin_tiny_pose-mul-test-scale0.5'
+OUTPUT_DIR: './log/market1501/swin_tiny_pose-mul-test-scale1.0'

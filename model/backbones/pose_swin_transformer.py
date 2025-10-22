@@ -70,7 +70,8 @@ class MMPoseTopDownPredictor(nn.Module):
         # MMPose 期望 0..255，再减均值/除方差
         self.register_buffer('pose_mean', torch.tensor([123.675,116.28,103.53]).view(1,3,1,1))
         self.register_buffer('pose_std',  torch.tensor([58.395,57.12,57.375]).view(1,3,1,1))
-
+        
+        
     @torch.no_grad()
     def forward(self, images: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         # 严格反归一化：读取 SOLIDER 的 mean/std
@@ -193,6 +194,9 @@ class PoseSwinCompose(nn.Module):
         self._hm_fullres: Optional[torch.Tensor] = None
         self._vis: Optional[torch.Tensor] = None
         self.pose_enabled = (self.pose_predictor is not None) and (float(self.pose_scale) != 0.0)
+        self._dbg = {}
+        self._dbg_captured = False
+
 
     # 只给 Swin 主干加载预训练（不会触碰 pose 分支）
     def init_weights(self, pretrained=None):
@@ -301,6 +305,82 @@ class PoseSwinCompose(nn.Module):
         self.last_hm = hm
         return hm
 
+
+    # ======TB=====  << paste inside class PoseSwinCompose >>
+
+    def reset_pose_debug_epoch(self):
+        """让本 epoch 的第一个 batch 可以重新抓取 TB 四件套。"""
+        self._tb_cache = {}
+        self._tb_captured = False
+
+    def tb_dump_pose(self, writer, step: int, tag_prefix: str = "pose"):
+        """
+        写入：
+        - 图像：feat_in / feat_fused / hm / hm_proj / feat_delta / gate01(仅 mul)
+        - 标量：delta_mean / delta_mean_x1e3 / delta_rel / hmp_mean / hmp_std / gate01_mean/std
+        """
+        if not hasattr(self, "_tb_cache") or not self._tb_cache:
+            return
+
+        pack = self._tb_cache
+        in_feat    = pack.get("in_feat")
+        fused_feat = pack.get("fused_feat")
+        hm         = pack.get("hm")
+        hmp        = pack.get("hm_proj")
+
+        if in_feat is None or fused_feat is None or hm is None:
+            return
+
+        import torch
+        import torch.nn.functional as F
+
+        def _reduce_1ch(t: torch.Tensor, how: str = "mean"):
+            t = t.float()
+            t = t.sum(dim=1, keepdim=True) if how == "sum" else t.mean(dim=1, keepdim=True)
+            t_min = t.amin(dim=(-2, -1), keepdim=True)
+            t_max = t.amax(dim=(-2, -1), keepdim=True)
+            return (t - t_min) / (t_max - t_min + 1e-6)
+
+        # 差异与门控
+        delta = (fused_feat - in_feat).abs()
+        gate01 = None
+        if self.fusion_mode == "mul":
+            if hmp is None:
+                try:
+                    w = self.hm_proj_out.weight.detach().cpu()
+                    hmp = F.conv2d(hm, w, bias=None, stride=1, padding=0)
+                except Exception:
+                    hmp = None
+            if hmp is not None:
+                gate01 = torch.sigmoid(hmp)
+
+        # 图像
+        writer.add_images(f"{tag_prefix}/feat_in",     _reduce_1ch(in_feat, "mean"),    step)
+        writer.add_images(f"{tag_prefix}/feat_fused",  _reduce_1ch(fused_feat, "mean"), step)
+        writer.add_images(f"{tag_prefix}/hm",          _reduce_1ch(hm, "sum"),          step)
+        if hmp is not None:
+            writer.add_images(f"{tag_prefix}/hm_proj", _reduce_1ch(hmp, "mean"),        step)
+        writer.add_images(f"{tag_prefix}/feat_delta",  _reduce_1ch(delta, "mean"),      step)
+        if gate01 is not None:
+            writer.add_images(f"{tag_prefix}/gate01",  _reduce_1ch(gate01, "mean"),     step)
+
+        # 标量（更灵敏）
+        delta_mean = float(delta.mean().item())
+        in_mean    = float(in_feat.abs().mean().item())
+        delta_rel  = float(delta_mean / (in_mean + 1e-12))   # 相对变化率
+        writer.add_scalar(f"delta_mean",        delta_mean,          step)
+        writer.add_scalar(f"delta_mean_x1e3",   delta_mean * 1e3,    step)
+        writer.add_scalar(f"delta_rel",         delta_rel,           step)
+
+        if hmp is not None:
+            writer.add_scalar(f"hmp_mean", float(hmp.mean().item()), step)
+            writer.add_scalar(f"hmp_std",  float(hmp.std().item()),  step)
+        if gate01 is not None:
+            writer.add_scalar(f"gate01_mean", float(gate01.mean().item()), step)
+            writer.add_scalar(f"gate01_std",  float(gate01.std().item()),  step)
+    # =======
+
+
     # --------- forward ---------
     def forward(self, x, semantic_weight=None):
         # 先从输入图像得到一次 pose 热图
@@ -328,18 +408,21 @@ class PoseSwinCompose(nn.Module):
                 out_4d = out.transpose(1, 2).contiguous().view(B, C, H, W)
                 hm = self._resized_pose((H, W), B_expected=B, device=out_4d.device)
 
-                if self.save_vis and not hasattr(self, '_pose_log_once'):
-                    print(f'[PoseSwin] ENABLED | fusion={self.fusion_mode} '
-                          f'stage={self.fuse_stage} use_vis={self.use_visibility} '
-                          f'norm={self.heatmap_norm} scale={self.pose_scale}')
-                    full_shape = None if self._hm_fullres is None else tuple(self._hm_fullres.shape)
-                    print(f'[PoseSwin] hm_fullres={full_shape}')
-                    self._pose_log_once = True
-                if self.save_vis:
-                    feat_before = out_4d.detach().abs().mean().item()
-                    hm_sum = hm.detach().abs().sum().item()
-                    print(f'[PoseSwin] fuse_stage={i} hm_sum={hm_sum:.3f} feat_before_mean={feat_before:.6f}')
+                
+                # ======TB===== 取消训练期间的打印，并改成缓存到 TB
+                # (1) 先保留“融合前特征”和“处理后热图”（仅用于写图，不影响梯度）
+                out_4d_before = out_4d
+                hmp_vis = None
+                try:
+                    hmp_vis = self.hm_proj_out(hm)  # 与通道对齐的“处理后热图”可视化版本
+                except Exception:
+                    hmp_vis = None
 
+                # (2) 缓存 scalar（不再 print）
+                feat_before_mean = float(out_4d_before.detach().abs().mean().item())
+                hm_sum          = float(hm.detach().abs().sum().item())
+                # =======
+                
                 out_4d = self._fuse_with(
                     out_4d, hm,
                     proj=self.hm_proj_out,
@@ -347,9 +430,24 @@ class PoseSwinCompose(nn.Module):
                     fuse_proj=getattr(self, 'fuse_proj_out', None)
                 )
 
-                if self.save_vis:
-                    feat_after = out_4d.detach().abs().mean().item()
-                    print(f'[PoseSwin] fuse_stage={i} feat_after_mean={feat_after:.6f}')
+                # ======TB===== 融合后再记一个 scalar，并把四件套与标量一起缓存（仅抓一次）
+                feat_after_mean = float(out_4d.detach().abs().mean().item())
+                if self.save_vis and not getattr(self, "_tb_captured", False):
+                    with torch.no_grad():
+                        sl = slice(0, min(out_4d.size(0), 4))  # 最多 4 张，避免太大
+                        self._tb_cache = {
+                            "in_feat":    out_4d_before[sl].detach().cpu(),
+                            "hm":         hm[sl].detach().cpu(),
+                            "hm_proj":    (hmp_vis[sl].detach().cpu() if hmp_vis is not None else None),
+                            "fused_feat": out_4d[sl].detach().cpu(),
+                            "scalars": {
+                                "feat_before_mean": feat_before_mean,
+                                "feat_after_mean":  feat_after_mean,
+                                "hm_sum":           hm_sum,
+                            },
+                        }
+                        self._tb_captured = True
+                # =======
 
                 out = out_4d.flatten(2).transpose(1, 2).contiguous()
 
@@ -390,6 +488,7 @@ class PoseSwinCompose(nn.Module):
         x = self.swin.avgpool(outs[-1])
         x = torch.flatten(x, 1)
         return x, outs
+    
 
 
 # -------------------- constructors (factory) --------------------

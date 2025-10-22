@@ -15,9 +15,9 @@ MODEL:
 
   POSE:
     ENABLE: true              # 第一步打开
-    SAVE_VIS: true
     CFG: pose/config_vispredict.py
     CKPT: pretrained/best_coco_AP_epoch_210.pth
+    SAVE_VIS: true
     N_KPTS: 17
     FUSE_STAGE: 2             # stage2 对齐较稳
     FUSION_MODE: mul          # 先用乘性门
@@ -25,6 +25,7 @@ MODEL:
     HM_NORM: sigmoid
     DETACH: true
     SCALE: 1.0
+
 
 INPUT:
   SIZE_TRAIN: [384, 128]
@@ -67,4 +68,4 @@ TEST:
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/msmt17/swin_tiny'
+OUTPUT_DIR: './log/msmt17/swin_tiny_pose_mul-scale1.0'
