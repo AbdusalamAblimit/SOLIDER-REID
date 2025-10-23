@@ -232,7 +232,8 @@ class PoseSwinCompose(nn.Module):
             self.local_stages[offset].load_state_dict(global_stage.state_dict())
         for idx in range(self.branch_stage, len(self.swin.stages)):
             norm_global = getattr(self.swin, f'norm{idx}', None)
-            norm_local = self.local_norms.get(str(idx))
+            norm_key = str(idx)
+            norm_local = self.local_norms[norm_key] if norm_key in self.local_norms else None
             if norm_global is not None and norm_local is not None:
                 norm_local.load_state_dict(norm_global.state_dict())
 
@@ -503,7 +504,8 @@ class PoseSwinCompose(nn.Module):
                 Hg, Wg = out_hw_g
                 outs_global.append(out_g_collect.transpose(1, 2).contiguous().view(B_g, C_g, Hg, Wg))
 
-                norm_l = self.local_norms.get(str(idx))
+                norm_key = str(idx)
+                norm_l = self.local_norms[norm_key] if norm_key in self.local_norms else None
                 out_l_collect = out_l if norm_l is None else norm_l(out_l)
                 B_l, N_l, C_l = out_l_collect.shape
                 Hl, Wl = out_hw_l
