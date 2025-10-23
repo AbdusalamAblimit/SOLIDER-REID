@@ -47,24 +47,33 @@ if __name__ == "__main__":
         model.load_param(cfg.TEST.WEIGHT)
 
     if cfg.DATASETS.NAMES == 'VehicleID':
+        all_rank_1 = {}
+        all_rank_5 = {}
         for trial in range(10):
             train_loader, train_loader_normal, val_loader, num_query, num_classes, camera_num, view_num = make_dataloader(cfg)
-            rank_1, rank5 = do_inference(cfg,
+            results = do_inference(cfg,
                  model,
                  val_loader,
                  num_query)
-            if trial == 0:
-                all_rank_1 = rank_1
-                all_rank_5 = rank5
-            else:
-                all_rank_1 = all_rank_1 + rank_1
-                all_rank_5 = all_rank_5 + rank5
-
-            logger.info("rank_1:{}, rank_5 {} : trial : {}".format(rank_1, rank5, trial))
-        logger.info("sum_rank_1:{:.1%}, sum_rank_5 {:.1%}".format(all_rank_1.sum()/10.0, all_rank_5.sum()/10.0))
+            if not isinstance(results, dict):
+                results = {'global': results}
+            for name, (rank_1, rank5) in results.items():
+                logger.info("rank_1({}):{:.1%}, rank_5({}) {:.1%} : trial : {}".format(name, rank_1, name, rank5, trial))
+                if trial == 0:
+                    all_rank_1[name] = rank_1
+                    all_rank_5[name] = rank5
+                else:
+                    all_rank_1[name] += rank_1
+                    all_rank_5[name] += rank5
+        for name in all_rank_1.keys():
+            logger.info("sum_rank_1({}):{:.1%}, sum_rank_5({}) {:.1%}".format(name, all_rank_1[name]/10.0, name, all_rank_5[name]/10.0))
     else:
-       do_inference(cfg,
+        results = do_inference(cfg,
                  model,
                  val_loader,
                  num_query)
+        if not isinstance(results, dict):
+            results = {'global': results}
+        for name, (rank_1, rank5) in results.items():
+            logger.info("rank_1({}):{:.1%}, rank_5({}) {:.1%}".format(name, rank_1, name, rank5))
 
