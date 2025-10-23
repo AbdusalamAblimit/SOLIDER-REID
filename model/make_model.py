@@ -188,49 +188,152 @@ class build_transformer(nn.Module):
             view_num = 0
 
         convert_weights = True if pretrain_choice == 'imagenet' else False
-        self.base = factory[cfg.MODEL.TRANSFORMER_TYPE](img_size=cfg.INPUT.SIZE_TRAIN, drop_path_rate=cfg.MODEL.DROP_PATH, drop_rate= cfg.MODEL.DROP_OUT,attn_drop_rate=cfg.MODEL.ATT_DROP_RATE, pretrained=model_path, convert_weights=convert_weights, semantic_weight=semantic_weight)
+        self.base = factory[cfg.MODEL.TRANSFORMER_TYPE](
+            img_size=cfg.INPUT.SIZE_TRAIN,
+            drop_path_rate=cfg.MODEL.DROP_PATH,
+            drop_rate=cfg.MODEL.DROP_OUT,
+            attn_drop_rate=cfg.MODEL.ATT_DROP_RATE,
+            pretrained=model_path,
+            convert_weights=convert_weights,
+            semantic_weight=semantic_weight,
+        )
         if model_path != '':
             self.base.init_weights(model_path)
         self.in_planes = self.base.num_features[-1]
 
         self.num_classes = num_classes
         self.ID_LOSS_TYPE = cfg.MODEL.ID_LOSS_TYPE
-        if self.ID_LOSS_TYPE == 'arcface':
-            print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE,cfg.SOLVER.COSINE_SCALE,cfg.SOLVER.COSINE_MARGIN))
-            self.classifier = Arcface(self.in_planes, self.num_classes,
-                                      s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
-        elif self.ID_LOSS_TYPE == 'cosface':
-            print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE,cfg.SOLVER.COSINE_SCALE,cfg.SOLVER.COSINE_MARGIN))
-            self.classifier = Cosface(self.in_planes, self.num_classes,
-                                      s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
-        elif self.ID_LOSS_TYPE == 'amsoftmax':
-            print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE,cfg.SOLVER.COSINE_SCALE,cfg.SOLVER.COSINE_MARGIN))
-            self.classifier = AMSoftmax(self.in_planes, self.num_classes,
-                                        s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
-        elif self.ID_LOSS_TYPE == 'circle':
-            print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
-            self.classifier = CircleLoss(self.in_planes, self.num_classes,
-                                        s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
-        else:
-            if self.reduce_feat_dim:
-                self.fcneck = nn.Linear(self.in_planes, self.feat_dim, bias=False)
-                self.fcneck.apply(weights_init_xavier)
-                self.in_planes = cfg.MODEL.FEAT_DIM
-            self.classifier = nn.Linear(self.in_planes, self.num_classes, bias=False)
-            self.classifier.apply(weights_init_classifier)
-
-        self.bottleneck = nn.BatchNorm1d(self.in_planes)
-        self.bottleneck.bias.requires_grad_(False)
-        self.bottleneck.apply(weights_init_kaiming)
-
         self.dropout = nn.Dropout(self.dropout_rate)
+        self.multi_branch = hasattr(self.base, 'branch_stage')
 
-        #if pretrain_choice == 'self':
-        #    self.load_param(model_path)
+        if self.multi_branch:
+            branch_dim = self.feat_dim if self.reduce_feat_dim else self.in_planes
+            if self.reduce_feat_dim:
+                self.fcneck_global = nn.Linear(self.in_planes, self.feat_dim, bias=False)
+                self.fcneck_global.apply(weights_init_xavier)
+                self.fcneck_local = nn.Linear(self.in_planes, self.feat_dim, bias=False)
+                self.fcneck_local.apply(weights_init_xavier)
+            self.global_bnneck = nn.BatchNorm1d(branch_dim)
+            self.global_bnneck.bias.requires_grad_(False)
+            self.global_bnneck.apply(weights_init_kaiming)
+            self.local_bnneck = nn.BatchNorm1d(branch_dim)
+            self.local_bnneck.bias.requires_grad_(False)
+            self.local_bnneck.apply(weights_init_kaiming)
+            self.concat_bnneck = nn.BatchNorm1d(branch_dim * 2)
+            self.concat_bnneck.bias.requires_grad_(False)
+            self.concat_bnneck.apply(weights_init_kaiming)
 
-    def forward(self, x, label=None, cam_label= None, view_label=None):
-        global_feat, featmaps = self.base(x)
-        if self.reduce_feat_dim:
+            if self.ID_LOSS_TYPE == 'arcface':
+                print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
+                self.classifier_global = Arcface(branch_dim, self.num_classes,
+                                                 s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+                self.classifier_local = Arcface(branch_dim, self.num_classes,
+                                                s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+            elif self.ID_LOSS_TYPE == 'cosface':
+                print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
+                self.classifier_global = Cosface(branch_dim, self.num_classes,
+                                                  s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+                self.classifier_local = Cosface(branch_dim, self.num_classes,
+                                                 s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+            elif self.ID_LOSS_TYPE == 'amsoftmax':
+                print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
+                self.classifier_global = AMSoftmax(branch_dim, self.num_classes,
+                                                   s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+                self.classifier_local = AMSoftmax(branch_dim, self.num_classes,
+                                                  s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+            elif self.ID_LOSS_TYPE == 'circle':
+                print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
+                self.classifier_global = CircleLoss(branch_dim, self.num_classes,
+                                                     s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+                self.classifier_local = CircleLoss(branch_dim, self.num_classes,
+                                                    s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+            else:
+                self.classifier_global = nn.Linear(branch_dim, self.num_classes, bias=False)
+                self.classifier_global.apply(weights_init_classifier)
+                self.classifier_local = nn.Linear(branch_dim, self.num_classes, bias=False)
+                self.classifier_local.apply(weights_init_classifier)
+        else:
+            if self.ID_LOSS_TYPE == 'arcface':
+                print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
+                self.classifier = Arcface(self.in_planes, self.num_classes,
+                                          s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+            elif self.ID_LOSS_TYPE == 'cosface':
+                print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
+                self.classifier = Cosface(self.in_planes, self.num_classes,
+                                          s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+            elif self.ID_LOSS_TYPE == 'amsoftmax':
+                print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
+                self.classifier = AMSoftmax(self.in_planes, self.num_classes,
+                                            s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+            elif self.ID_LOSS_TYPE == 'circle':
+                print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
+                self.classifier = CircleLoss(self.in_planes, self.num_classes,
+                                              s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+            else:
+                if self.reduce_feat_dim:
+                    self.fcneck = nn.Linear(self.in_planes, self.feat_dim, bias=False)
+                    self.fcneck.apply(weights_init_xavier)
+                    self.in_planes = cfg.MODEL.FEAT_DIM
+                self.classifier = nn.Linear(self.in_planes, self.num_classes, bias=False)
+                self.classifier.apply(weights_init_classifier)
+
+            self.bottleneck = nn.BatchNorm1d(self.in_planes)
+            self.bottleneck.bias.requires_grad_(False)
+            self.bottleneck.apply(weights_init_kaiming)
+
+    def forward(self, x, label=None, cam_label=None, view_label=None):
+        outputs = self.base(x)
+        featmaps = None
+        if isinstance(outputs, dict) and 'global_feat' in outputs:
+            global_feat_raw = outputs['global_feat']
+            local_feat_raw = outputs.get('local_feat')
+            featmaps = {
+                'global': outputs.get('global_maps'),
+                'local': outputs.get('local_maps'),
+            }
+        else:
+            global_feat_raw, featmaps = outputs
+            local_feat_raw = None
+
+        if self.multi_branch and local_feat_raw is not None:
+            if self.reduce_feat_dim:
+                global_feat = self.fcneck_global(global_feat_raw)
+                local_feat = self.fcneck_local(local_feat_raw)
+            else:
+                global_feat = global_feat_raw
+                local_feat = local_feat_raw
+
+            feat_global_bn = self.global_bnneck(global_feat)
+            feat_local_bn = self.local_bnneck(local_feat)
+            feat_global_cls = self.dropout(feat_global_bn)
+            feat_local_cls = self.dropout(feat_local_bn)
+
+            if self.training:
+                if self.ID_LOSS_TYPE in ('arcface', 'cosface', 'amsoftmax', 'circle'):
+                    cls_global = self.classifier_global(feat_global_cls, label)
+                    cls_local = self.classifier_local(feat_local_cls, label)
+                else:
+                    cls_global = self.classifier_global(feat_global_cls)
+                    cls_local = self.classifier_local(feat_local_cls)
+                return [cls_global, cls_local], [global_feat, local_feat], featmaps
+            else:
+                if self.neck_feat == 'after':
+                    global_eval = feat_global_bn
+                    local_eval = feat_local_bn
+                    concat_eval = self.concat_bnneck(torch.cat([feat_global_bn, feat_local_bn], dim=1))
+                else:
+                    global_eval = global_feat
+                    local_eval = local_feat
+                    concat_eval = torch.cat([global_feat, local_feat], dim=1)
+                feat_dict = {
+                    'global': global_eval,
+                    'local': local_eval,
+                    'concat': concat_eval,
+                }
+                return feat_dict, featmaps
+
+        global_feat = global_feat_raw
+        if self.reduce_feat_dim and hasattr(self, 'fcneck'):
             global_feat = self.fcneck(global_feat)
         feat = self.bottleneck(global_feat)
         feat_cls = self.dropout(feat)
@@ -240,24 +343,12 @@ class build_transformer(nn.Module):
                 cls_score = self.classifier(feat_cls, label)
             else:
                 cls_score = self.classifier(feat_cls)
-
-            return cls_score, global_feat, featmaps  # global feature for triplet loss
+            return cls_score, global_feat, featmaps
         else:
             if self.neck_feat == 'after':
-                # print("Test with feature after BN")
                 return feat, featmaps
             else:
-                # print("Test with feature before BN")
                 return global_feat, featmaps
-
-    def load_param(self, trained_path):
-        param_dict = torch.load(trained_path, map_location = 'cpu')
-        for i in param_dict:
-            try:
-                self.state_dict()[i.replace('module.', '')].copy_(param_dict[i])
-            except:
-                continue
-        print('Loading pretrained model from {}'.format(trained_path))
 
 
 class build_transformer_local(nn.Module):
