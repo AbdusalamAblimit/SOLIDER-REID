@@ -3,6 +3,7 @@ import numpy as np
 import os
 from utils.reranking import re_ranking
 
+from collections import OrderedDict, defaultdict
 
 def euclidean_distance(qf, gf):
     m = qf.shape[0]
@@ -93,42 +94,57 @@ class R1_mAP_eval():
         self.max_rank = max_rank
         self.feat_norm = feat_norm
         self.reranking = reranking
+        self.reset()
 
     def reset(self):
-        self.feats = []
+        self._feat_buffers = defaultdict(list)
         self.pids = []
         self.camids = []
 
     def update(self, output):  # called once for each batch
         feat, pid, camid = output
-        self.feats.append(feat.cpu())
+        if isinstance(feat, dict):
+            for key, value in feat.items():
+                self._feat_buffers[key].append(value.detach().cpu())
+        elif isinstance(feat, (list, tuple)):
+            for idx, value in enumerate(feat):
+                self._feat_buffers[f'branch{idx}'].append(value.detach().cpu())
+        else:
+            self._feat_buffers['global'].append(feat.detach().cpu())
         self.pids.extend(np.asarray(pid))
         self.camids.extend(np.asarray(camid))
 
     def compute(self):  # called after each epoch
-        feats = torch.cat(self.feats, dim=0)
-        if self.feat_norm:
-            print("The test feature is normalized")
-            feats = torch.nn.functional.normalize(feats, dim=1, p=2)  # along channel
-        # query
-        qf = feats[:self.num_query]
-        q_pids = np.asarray(self.pids[:self.num_query])
-        q_camids = np.asarray(self.camids[:self.num_query])
-        # gallery
-        gf = feats[self.num_query:]
-        g_pids = np.asarray(self.pids[self.num_query:])
+        if not self._feat_buffers:
+            raise RuntimeError('No features to evaluate.')
+        results = OrderedDict()
+        pids = np.asarray(self.pids)
+        camids = np.asarray(self.camids)
+        for key, feat_list in self._feat_buffers.items():
+            feats = torch.cat(feat_list, dim=0)
+            if self.feat_norm:
+                print(f"The test feature ({key}) is normalized")
+                feats = torch.nn.functional.normalize(feats, dim=1, p=2)
+            qf = feats[:self.num_query]
+            gf = feats[self.num_query:]
+            q_pids = pids[:self.num_query]
+            g_pids = pids[self.num_query:]
+            q_camids = camids[:self.num_query]
+            g_camids = camids[self.num_query:]
 
-        g_camids = np.asarray(self.camids[self.num_query:])
-        if self.reranking:
-            print('=> Enter reranking')
-            distmat = re_ranking(qf, gf, k1=20, k2=6, lambda_value=0.3)
+            if self.reranking:
+                print('=> Enter reranking')
+                distmat = re_ranking(qf, gf, k1=20, k2=6, lambda_value=0.3)
+            else:
+                print(f'=> Computing DistMat with euclidean_distance ({key})')
+                distmat = euclidean_distance(qf, gf)
+            cmc, mAP = eval_func(distmat, q_pids, g_pids, q_camids, g_camids)
+            results[key] = (cmc, mAP, distmat, self.pids, self.camids, qf, gf)
 
-        else:
-            print('=> Computing DistMat with euclidean_distance')
-            distmat = euclidean_distance(qf, gf)
-        cmc, mAP = eval_func(distmat, q_pids, g_pids, q_camids, g_camids)
+        if len(results) == 1:
+            return next(iter(results.values()))
+        return results
 
-        return cmc, mAP, distmat, self.pids, self.camids, qf, gf
 
 
 

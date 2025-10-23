@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from typing import Tuple, Optional
+import copy
 
 from .swin_transformer import SwinTransformer
 
@@ -110,10 +111,15 @@ class MMPoseTopDownPredictor(nn.Module):
 
 # -------------------- Pose+Swin by composition --------------------
 class PoseSwinCompose(nn.Module):
+    """Swin backbone with an auxiliary pose-guided local branch.
+
+    The network shares patch embedding and the first ``branch_stage`` Swin stages
+    between the global and local branches. The shared feature map is routed to the
+    global branch unchanged, while a pose heatmap is fused before feeding the
+    local branch. Stages after the branching point are deep-copied so that both
+    branches keep identical architectures and can leverage ImageNet pre-training.
     """
-    包含（contain）一个 SwinTransformer，并在指定 stage 融合 pose 热图。
-    接口保持与原来一致：forward(x) -> (global_feat, featmaps).
-    """
+
     def __init__(
         self,
         *,
@@ -121,25 +127,25 @@ class PoseSwinCompose(nn.Module):
         drop_rate=0.0,
         attn_drop_rate=0.0,
         drop_path_rate=0.0,
-        init_cfg=None,                   # 透传给 Swin
-        pretrained=None,                 # 供 init_weights 使用
-        convert_weights=False,           # 若为 True，可触发 Swin 的转换加载
-        semantic_weight=0.0,             # 透传给 Swin（若实现了该特性）
-        fusion_mode: str = 'mul',        # 'mul'|'add'|'concat'|'gate'
-        fuse_stage: int = 2,             # 0..3
+        init_cfg=None,
+        pretrained=None,
+        convert_weights=False,
+        semantic_weight=0.0,
+        fusion_mode: str = 'mul',
+        fuse_stage: int = 2,
         n_keypoints: int = 17,
         use_visibility: bool = True,
-        heatmap_norm: str = 'sigmoid',   # 'none'|'sigmoid'|'softmax'
+        heatmap_norm: str = 'sigmoid',
         pose_predictor: Optional[nn.Module] = None,
         pose_detach: bool = True,
         pose_scale: float = 1.0,
         save_vis: bool = False,
-        **kwargs
+        branch_stage: Optional[int] = None,
+        **kwargs,
     ):
         super().__init__()
-        assert 0 <= fuse_stage <= 3
+        assert fusion_mode in {'mul', 'add', 'concat', 'gate'}, f"Unknown fusion mode: {fusion_mode}"
 
-        # --- inner Swin ---
         self.swin = SwinTransformer(
             pretrain_img_size=pretrain_img_size,
             drop_rate=drop_rate,
@@ -147,14 +153,17 @@ class PoseSwinCompose(nn.Module):
             drop_path_rate=drop_path_rate,
             init_cfg=init_cfg,
             semantic_weight=semantic_weight,
-            **kwargs
+            **kwargs,
         )
         self._pretrained = pretrained
         self._convert_weights = convert_weights
 
-        # --- pose fuse configs ---
+        n_stage = len(self.swin.stages)
         self.fusion_mode = fusion_mode
-        self.fuse_stage  = fuse_stage
+        self.fuse_stage = max(0, min(fuse_stage, n_stage - 1))
+        if branch_stage is None:
+            branch_stage = self.fuse_stage
+        self.branch_stage = max(0, min(branch_stage, n_stage))
         self.n_keypoints = n_keypoints
         self.use_visibility = use_visibility
         self.heatmap_norm = heatmap_norm
@@ -163,46 +172,77 @@ class PoseSwinCompose(nn.Module):
         self.pose_scale = pose_scale
         self.save_vis = save_vis
 
-        # --- 通道配置：out 用 C_i，token x 用 C_{i+1}（最后一层则仍为 C_i） ---
-        C_out = self.swin.num_features[fuse_stage]
-        C_x   = self.swin.num_features[min(fuse_stage + 1, len(self.swin.num_features) - 1)]
+        num_features = self.swin.num_features
+        shared_idx = max(self.branch_stage - 1, 0)
+        token_idx = min(self.branch_stage, len(num_features) - 1)
 
-        # proj for out
-        self.hm_proj_out = nn.Conv2d(n_keypoints, C_out, kernel_size=1, bias=False)
-        # proj for x (after patch-merge, channel doubled)
-        self.hm_proj_x   = nn.Conv2d(n_keypoints, C_x,   kernel_size=1, bias=False)
+        self.hm_proj_tokens = nn.Conv2d(n_keypoints, num_features[token_idx], kernel_size=1, bias=False)
+        self.hm_proj_shared = None
+        if self.branch_stage > 0:
+            self.hm_proj_shared = nn.Conv2d(n_keypoints, num_features[shared_idx], kernel_size=1, bias=False)
 
-        # （可选）concat/gate 对应层（区分 out 和 x 两条支路）
         if fusion_mode == 'concat':
-            self.fuse_proj_out = nn.Conv2d(C_out + C_out, C_out, kernel_size=1, bias=False)
-            self.fuse_proj_x   = nn.Conv2d(C_x   + C_x,   C_x,   kernel_size=1, bias=False)
+            self.fuse_tokens_proj = nn.Conv2d(num_features[token_idx] * 2, num_features[token_idx], kernel_size=1, bias=False)
+            self.fuse_shared_proj = None
+            if self.hm_proj_shared is not None:
+                self.fuse_shared_proj = nn.Conv2d(num_features[shared_idx] * 2, num_features[shared_idx], kernel_size=1, bias=False)
         elif fusion_mode == 'gate':
-            self.fuse_gate_out = nn.Conv2d(C_out, C_out, kernel_size=1, bias=True)
-            self.fuse_gate_x   = nn.Conv2d(C_x,   C_x,   kernel_size=1, bias=True)
+            self.fuse_tokens_gate = nn.Conv2d(num_features[token_idx], num_features[token_idx], kernel_size=1, bias=True)
+            self.fuse_shared_gate = None
+            if self.hm_proj_shared is not None:
+                self.fuse_shared_gate = nn.Conv2d(num_features[shared_idx], num_features[shared_idx], kernel_size=1, bias=True)
+        else:
+            self.fuse_tokens_proj = None
+            self.fuse_shared_proj = None
+            self.fuse_tokens_gate = None
+            self.fuse_shared_gate = None
 
-        # 初始化：若想“零影响起步”，可以置零；想一开始就有微扰，可用小随机
-        # nn.init.zeros_(self.hm_proj_out.weight)
-        # nn.init.zeros_(self.hm_proj_x.weight)
-        nn.init.normal_(self.hm_proj_out.weight, std=1e-3)
-        nn.init.normal_(self.hm_proj_x.weight,   std=1e-3)
-        # 输出需要的属性（与原 Swin 保持一致，便于上层读取）
+        nn.init.normal_(self.hm_proj_tokens.weight, std=1e-3)
+        if self.hm_proj_shared is not None:
+            nn.init.normal_(self.hm_proj_shared.weight, std=1e-3)
+        if hasattr(self, 'fuse_tokens_proj') and self.fuse_tokens_proj is not None:
+            nn.init.normal_(self.fuse_tokens_proj.weight, std=1e-3)
+        if hasattr(self, 'fuse_shared_proj') and self.fuse_shared_proj is not None:
+            nn.init.normal_(self.fuse_shared_proj.weight, std=1e-3)
+
+        self.local_stages = nn.ModuleList()
+        for stage in self.swin.stages[self.branch_stage:]:
+            self.local_stages.append(copy.deepcopy(stage))
+
+        self.local_norms = nn.ModuleDict()
+        for idx in range(self.branch_stage, n_stage):
+            norm_layer = getattr(self.swin, f'norm{idx}', None)
+            if norm_layer is not None:
+                self.local_norms[str(idx)] = copy.deepcopy(norm_layer)
+
         self.num_features = self.swin.num_features
         self.avgpool = self.swin.avgpool
 
-        # 缓存
         self.register_buffer('last_hm', torch.zeros(1, n_keypoints, 8, 6), persistent=False)
         self._hm_fullres: Optional[torch.Tensor] = None
         self._vis: Optional[torch.Tensor] = None
         self.pose_enabled = (self.pose_predictor is not None) and (float(self.pose_scale) != 0.0)
-        self._dbg = {}
-        self._dbg_captured = False
+        self._tb_cache = {}
+        self._tb_captured = False
 
+    def _sync_local_branch(self):
+        if not self.local_stages:
+            return
+        for offset, global_stage in enumerate(self.swin.stages[self.branch_stage:]):
+            self.local_stages[offset].load_state_dict(global_stage.state_dict())
+        for idx in range(self.branch_stage, len(self.swin.stages)):
+            norm_global = getattr(self.swin, f'norm{idx}', None)
+            norm_key = str(idx)
+            norm_local = self.local_norms[norm_key] if norm_key in self.local_norms else None
+            if norm_global is not None and norm_local is not None:
+                norm_local.load_state_dict(norm_global.state_dict())
 
     # 只给 Swin 主干加载预训练（不会触碰 pose 分支）
     def init_weights(self, pretrained=None):
         path = pretrained if pretrained is not None else self._pretrained
         if not path:
             self.swin.init_weights(pretrained=None)
+            self._sync_local_branch()
             return
 
         def _pick_state_dict(obj):
@@ -240,8 +280,6 @@ class PoseSwinCompose(nn.Module):
             unexpected = [k for k in sd.keys() if k not in msd]
             self.swin.load_state_dict(loadable, strict=False)
             print(f"[PoseSwin][swin_ckpt] remap loaded={len(loadable)} miss={len(missing)} unexp={len(unexpected)} from {path}")
-
-            # 不要再调用 self.swin.init_weights(None) 以免把已加载参数重置
         except Exception as e:
             print(f"[PoseSwin][swin_ckpt] remap failed: {e}; fallback convert_weights={self._convert_weights}")
             if self._convert_weights:
@@ -249,39 +287,51 @@ class PoseSwinCompose(nn.Module):
             else:
                 self.swin.init_weights(pretrained=None)
 
-    # --------- helpers ---------
+        self._sync_local_branch()
+
     def _norm_heatmap(self, hm: torch.Tensor) -> torch.Tensor:
         if self.heatmap_norm == 'none':
             return hm
         if self.heatmap_norm == 'sigmoid':
+            if (not hm.is_cuda) and hm.dtype == torch.float16:
+                hm = hm.float()
             return hm.sigmoid()
         if self.heatmap_norm == 'softmax':
             B, K, h, w = hm.shape
             return F.softmax(hm.view(B, K, -1), dim=-1).view(B, K, h, w)
         return hm
 
-    def _fuse_with(self, feat: torch.Tensor, hm: torch.Tensor,
-                   proj: nn.Conv2d,
-                   fuse_gate: Optional[nn.Module] = None,
-                   fuse_proj: Optional[nn.Module] = None) -> torch.Tensor:
-        """与给定的投影/门控层配套融合（保证通道对齐）。"""
-        hmp = proj(hm)
+    def _fuse_with(
+        self,
+        feat: torch.Tensor,
+        hm: torch.Tensor,
+        *,
+        proj: Optional[nn.Module] = None,
+        fuse_gate: Optional[nn.Module] = None,
+        fuse_proj: Optional[nn.Module] = None,
+    ) -> torch.Tensor:
+        if proj is not None:
+            hmp = proj(hm)
+        else:
+            hmp = hm
         if self.fusion_mode == 'mul':
             gate01 = torch.sigmoid(hmp)
-            gate = 1.0 + self.pose_scale * (2.0 * gate01 - 1.0)  # scale=1 → [0,2]
+            gate = 1.0 + self.pose_scale * (2.0 * gate01 - 1.0)
             return feat * gate
-        elif self.fusion_mode == 'add':
+        if self.fusion_mode == 'add':
             return feat + hmp * self.pose_scale
-        elif self.fusion_mode == 'gate':
+        if self.fusion_mode == 'gate':
             assert fuse_gate is not None
-            gate = torch.sigmoid(fuse_gate(hmp))
+            gate_input = fuse_gate(hmp)
+            if (not gate_input.is_cuda) and gate_input.dtype == torch.float16:
+                gate_input = gate_input.float()
+            gate = torch.sigmoid(gate_input)
             return feat * (1.0 + gate * self.pose_scale)
-        elif self.fusion_mode == 'concat':
+        if self.fusion_mode == 'concat':
             assert fuse_proj is not None
             fused = fuse_proj(torch.cat([feat, hmp], dim=1))
             return feat + self.pose_scale * (fused - feat)
-        else:
-            return feat
+        return feat
 
     @torch.no_grad()
     def _maybe_get_pose_from_images(self, images: torch.Tensor):
@@ -305,192 +355,180 @@ class PoseSwinCompose(nn.Module):
         self.last_hm = hm
         return hm
 
-
-    # ======TB=====  << paste inside class PoseSwinCompose >>
-
     def reset_pose_debug_epoch(self):
         """让本 epoch 的第一个 batch 可以重新抓取 TB 四件套。"""
         self._tb_cache = {}
         self._tb_captured = False
 
     def tb_dump_pose(self, writer, step: int, tag_prefix: str = "pose"):
-        """
-        写入：
-        - 图像：feat_in / feat_fused / hm / hm_proj / feat_delta / gate01(仅 mul)
-        - 标量：delta_mean / delta_mean_x1e3 / delta_rel / hmp_mean / hmp_std / gate01_mean/std
-        """
-        if not hasattr(self, "_tb_cache") or not self._tb_cache:
+        if not self._tb_cache:
             return
-
         pack = self._tb_cache
-        in_feat    = pack.get("in_feat")
-        fused_feat = pack.get("fused_feat")
-        hm         = pack.get("hm")
-        hmp        = pack.get("hm_proj")
-
+        in_feat = pack.get('in_feat')
+        fused_feat = pack.get('fused_feat')
+        hm = pack.get('hm')
+        hmp = pack.get('hm_proj')
         if in_feat is None or fused_feat is None or hm is None:
             return
 
-        import torch
-        import torch.nn.functional as F
-
-        def _reduce_1ch(t: torch.Tensor, how: str = "mean"):
+        def _reduce_1ch(t: torch.Tensor, how: str = 'mean'):
             t = t.float()
-            t = t.sum(dim=1, keepdim=True) if how == "sum" else t.mean(dim=1, keepdim=True)
+            t = t.sum(dim=1, keepdim=True) if how == 'sum' else t.mean(dim=1, keepdim=True)
             t_min = t.amin(dim=(-2, -1), keepdim=True)
             t_max = t.amax(dim=(-2, -1), keepdim=True)
             return (t - t_min) / (t_max - t_min + 1e-6)
 
-        # 差异与门控
         delta = (fused_feat - in_feat).abs()
         gate01 = None
-        if self.fusion_mode == "mul":
-            if hmp is None:
-                try:
-                    w = self.hm_proj_out.weight.detach().cpu()
-                    hmp = F.conv2d(hm, w, bias=None, stride=1, padding=0)
-                except Exception:
-                    hmp = None
-            if hmp is not None:
-                gate01 = torch.sigmoid(hmp)
+        if self.fusion_mode == 'mul' and hmp is not None:
+            if (not hmp.is_cuda) and hmp.dtype == torch.float16:
+                hmp = hmp.float()
+            gate01 = torch.sigmoid(hmp)
 
-        # 图像
-        writer.add_images(f"{tag_prefix}/feat_in",     _reduce_1ch(in_feat, "mean"),    step)
-        writer.add_images(f"{tag_prefix}/feat_fused",  _reduce_1ch(fused_feat, "mean"), step)
-        writer.add_images(f"{tag_prefix}/hm",          _reduce_1ch(hm, "sum"),          step)
+        writer.add_images(f"{tag_prefix}/feat_in", _reduce_1ch(in_feat, 'mean'), step)
+        writer.add_images(f"{tag_prefix}/feat_fused", _reduce_1ch(fused_feat, 'mean'), step)
+        writer.add_images(f"{tag_prefix}/hm", _reduce_1ch(hm, 'sum'), step)
         if hmp is not None:
-            writer.add_images(f"{tag_prefix}/hm_proj", _reduce_1ch(hmp, "mean"),        step)
-        writer.add_images(f"{tag_prefix}/feat_delta",  _reduce_1ch(delta, "mean"),      step)
+            writer.add_images(f"{tag_prefix}/hm_proj", _reduce_1ch(hmp, 'mean'), step)
+        writer.add_images(f"{tag_prefix}/feat_delta", _reduce_1ch(delta, 'mean'), step)
         if gate01 is not None:
-            writer.add_images(f"{tag_prefix}/gate01",  _reduce_1ch(gate01, "mean"),     step)
+            writer.add_images(f"{tag_prefix}/gate01", _reduce_1ch(gate01, 'mean'), step)
 
-        # 标量（更灵敏）
-        delta_mean = float(delta.mean().item())
-        in_mean    = float(in_feat.abs().mean().item())
-        delta_rel  = float(delta_mean / (in_mean + 1e-12))   # 相对变化率
-        writer.add_scalar(f"delta_mean",        delta_mean,          step)
-        writer.add_scalar(f"delta_mean_x1e3",   delta_mean * 1e3,    step)
-        writer.add_scalar(f"delta_rel",         delta_rel,           step)
+        scalars = pack.get('scalars', {})
+        for name, value in scalars.items():
+            writer.add_scalar(name, float(value), step)
 
-        if hmp is not None:
-            writer.add_scalar(f"hmp_mean", float(hmp.mean().item()), step)
-            writer.add_scalar(f"hmp_std",  float(hmp.std().item()),  step)
-        if gate01 is not None:
-            writer.add_scalar(f"gate01_mean", float(gate01.mean().item()), step)
-            writer.add_scalar(f"gate01_std",  float(gate01.std().item()),  step)
-    # =======
-
-
-    # --------- forward ---------
     def forward(self, x, semantic_weight=None):
-        # 先从输入图像得到一次 pose 热图
         if self.pose_enabled:
             self._maybe_get_pose_from_images(x)
         else:
             self._hm_fullres, self._vis = None, None
 
-        # === patch embedding & pos ===
-        x, hw_shape = self.swin.patch_embed(x)
+        x_tokens, hw_shape = self.swin.patch_embed(x)
         if getattr(self.swin, 'use_abs_pos_embed', False):
-            x = x + self.swin.absolute_pos_embed
-        x = self.swin.drop_after_pos(x)
+            x_tokens = x_tokens + self.swin.absolute_pos_embed
+        x_tokens = self.swin.drop_after_pos(x_tokens)
 
-        outs = []
+        outs_global = []
+        outs_local = []
+        shared_out = None
+        shared_out_norm = None
+        shared_out_hw = None
+
         for i, stage in enumerate(self.swin.stages):
-            # stage 返回：给下一层的 tokens（x, hw_shape） 和 当前层输出图 (out, out_hw_shape)
-            x, hw_shape, out, out_hw_shape = stage(x, hw_shape)  # out: (B, N, C)
+            if i >= self.branch_stage:
+                break
+            x_tokens, hw_shape, out, out_hw_shape = stage(x_tokens, hw_shape)
 
-            # 在选定 stage 融合 pose
-            if i == self.fuse_stage and self.pose_enabled:
-                # ---- 1) 对本层输出 out 融合（用于多尺度分支/可视化） ----
-                H, W = out_hw_shape
-                B, N, C = out.shape
-                out_4d = out.transpose(1, 2).contiguous().view(B, C, H, W)
-                hm = self._resized_pose((H, W), B_expected=B, device=out_4d.device)
+            norm_layer = getattr(self.swin, f'norm{i}', None)
+            out_collect = out if norm_layer is None else norm_layer(out)
+            B, N, C = out_collect.shape
+            H, W = out_hw_shape
+            out_map = out_collect.transpose(1, 2).contiguous().view(B, C, H, W)
+            outs_global.append(out_map)
+            outs_local.append(out_map)
 
-                
-                # ======TB===== 取消训练期间的打印，并改成缓存到 TB
-                # (1) 先保留“融合前特征”和“处理后热图”（仅用于写图，不影响梯度）
-                out_4d_before = out_4d
-                hmp_vis = None
-                try:
-                    hmp_vis = self.hm_proj_out(hm)  # 与通道对齐的“处理后热图”可视化版本
-                except Exception:
-                    hmp_vis = None
+            shared_out = out
+            shared_out_norm = out_collect
+            shared_out_hw = out_hw_shape
 
-                # (2) 缓存 scalar（不再 print）
-                feat_before_mean = float(out_4d_before.detach().abs().mean().item())
-                hm_sum          = float(hm.detach().abs().sum().item())
-                # =======
-                
-                out_4d = self._fuse_with(
-                    out_4d, hm,
-                    proj=self.hm_proj_out,
-                    fuse_gate=getattr(self, 'fuse_gate_out', None),
-                    fuse_proj=getattr(self, 'fuse_proj_out', None)
-                )
-
-                # ======TB===== 融合后再记一个 scalar，并把四件套与标量一起缓存（仅抓一次）
-                feat_after_mean = float(out_4d.detach().abs().mean().item())
-                if self.save_vis and not getattr(self, "_tb_captured", False):
-                    with torch.no_grad():
-                        sl = slice(0, min(out_4d.size(0), 4))  # 最多 4 张，避免太大
-                        self._tb_cache = {
-                            "in_feat":    out_4d_before[sl].detach().cpu(),
-                            "hm":         hm[sl].detach().cpu(),
-                            "hm_proj":    (hmp_vis[sl].detach().cpu() if hmp_vis is not None else None),
-                            "fused_feat": out_4d[sl].detach().cpu(),
-                            "scalars": {
-                                "feat_before_mean": feat_before_mean,
-                                "feat_after_mean":  feat_after_mean,
-                                "hm_sum":           hm_sum,
-                            },
-                        }
-                        self._tb_captured = True
-                # =======
-
-                out = out_4d.flatten(2).transpose(1, 2).contiguous()
-
-                # ---- 2) 对将要流向下一 stage 的 tokens x 也做同样融合并回写 ----
-                Hx, Wx = hw_shape
-                B2, N2, C2 = x.shape
-                assert N2 == Hx * Wx, "Token 数与 hw_shape 不一致"
-                x_4d = x.transpose(1, 2).contiguous().view(B2, C2, Hx, Wx)
-                hm_x = self._resized_pose((Hx, Wx), B_expected=B2, device=x_4d.device)
-                x_4d = self._fuse_with(
-                    x_4d, hm_x,
-                    proj=self.hm_proj_x,
-                    fuse_gate=getattr(self, 'fuse_gate_x', None),
-                    fuse_proj=getattr(self, 'fuse_proj_x', None)
-                )
-                x = x_4d.flatten(2).transpose(1, 2).contiguous()
-
-            elif i == self.fuse_stage and self.save_vis and not hasattr(self, '_pose_skip_log'):
-                print('[PoseSwin] pose disabled → skip fusion')
-                self._pose_skip_log = True
-
-            # 语义缩放（若 Swin 支持 & 传入了 semantic_weight）
             if hasattr(self.swin, 'semantic_weight') and self.swin.semantic_weight >= 0 and (semantic_weight is not None):
                 sw = self.swin.semantic_embed_w[i](semantic_weight).unsqueeze(1)
                 sb = self.swin.semantic_embed_b[i](semantic_weight).unsqueeze(1)
-                x = x * self.swin.softplus(sw) + sb
+                x_tokens = x_tokens * self.swin.softplus(sw) + sb
 
-            # 收集需要的输出尺度
-            if i in self.swin.out_indices:
-                norm_layer = getattr(self.swin, f'norm{i}', None)
-                if norm_layer is not None:
-                    out = norm_layer(out)  # 这里的 out 仍是 (B,N,C)
-                B, N, C = out.shape
-                H, W = out_hw_shape
-                out = out.transpose(1, 2).contiguous().view(B, C, H, W)
-                outs.append(out)
+        x_global = x_tokens
+        hw_global = hw_shape
+        x_local = x_tokens
+        hw_local = hw_shape
 
-        x = self.swin.avgpool(outs[-1])
-        x = torch.flatten(x, 1)
-        return x, outs
-    
+        hm_shared = None
+        hm_proj_vis = None
+        if self.pose_enabled and shared_out is not None and self.hm_proj_shared is not None:
+            B_shared = shared_out.shape[0]
+            hm_shared = self._resized_pose(shared_out_hw, B_shared, shared_out.device)
+            shared_out_map = shared_out_norm.transpose(1, 2).contiguous().view(B_shared, shared_out_norm.shape[2], shared_out_hw[0], shared_out_hw[1])
+            fused_shared = self._fuse_with(
+                shared_out_map,
+                hm_shared,
+                proj=self.hm_proj_shared,
+                fuse_gate=getattr(self, 'fuse_shared_gate', None),
+                fuse_proj=getattr(self, 'fuse_shared_proj', None),
+            )
+            if outs_local:
+                outs_local[-1] = fused_shared
+            hm_proj_vis = self.hm_proj_shared(hm_shared)
+        else:
+            fused_shared = outs_local[-1] if outs_local else None
 
+        if self.pose_enabled:
+            B_tokens = x_local.shape[0]
+            hm_tokens = self._resized_pose(hw_local, B_tokens, x_local.device)
+            x_local_map = x_local.transpose(1, 2).contiguous().view(B_tokens, x_local.shape[2], hw_local[0], hw_local[1])
+            x_local_map = self._fuse_with(
+                x_local_map,
+                hm_tokens,
+                proj=self.hm_proj_tokens,
+                fuse_gate=getattr(self, 'fuse_tokens_gate', None),
+                fuse_proj=getattr(self, 'fuse_tokens_proj', None),
+            )
+            x_local = x_local_map.flatten(2).transpose(1, 2).contiguous()
+        else:
+            hm_tokens = None
 
+        if self.save_vis and not self._tb_captured and shared_out_norm is not None and fused_shared is not None and hm_shared is not None:
+            with torch.no_grad():
+                sl = slice(0, min(fused_shared.size(0), 4))
+                self._tb_cache = {
+                    'in_feat': shared_out_norm.transpose(1, 2).contiguous().view(shared_out_norm.size(0), shared_out_norm.size(2), shared_out_hw[0], shared_out_hw[1])[sl].detach().cpu(),
+                    'hm': hm_shared[sl].detach().cpu(),
+                    'hm_proj': hm_proj_vis[sl].detach().cpu() if hm_proj_vis is not None else None,
+                    'fused_feat': fused_shared[sl].detach().cpu(),
+                    'scalars': {
+                        'feat_before_mean': float(shared_out_norm.detach().abs().mean().item()),
+                        'feat_after_mean': float(fused_shared.detach().abs().mean().item()),
+                        'hm_sum': float(hm_shared.detach().abs().sum().item()),
+                    },
+                }
+                self._tb_captured = True
+
+        for offset, stage in enumerate(self.swin.stages[self.branch_stage:]):
+            idx = self.branch_stage + offset
+            stage_local = self.local_stages[offset]
+            x_global, hw_global, out_g, out_hw_g = stage(x_global, hw_global)
+            x_local, hw_local, out_l, out_hw_l = stage_local(x_local, hw_local)
+
+            if hasattr(self.swin, 'semantic_weight') and self.swin.semantic_weight >= 0 and (semantic_weight is not None):
+                sw = self.swin.semantic_embed_w[idx](semantic_weight).unsqueeze(1)
+                sb = self.swin.semantic_embed_b[idx](semantic_weight).unsqueeze(1)
+                x_global = x_global * self.swin.softplus(sw) + sb
+                x_local = x_local * self.swin.softplus(sw) + sb
+
+            if idx in self.swin.out_indices:
+                norm_g = getattr(self.swin, f'norm{idx}', None)
+                out_g_collect = out_g if norm_g is None else norm_g(out_g)
+                B_g, N_g, C_g = out_g_collect.shape
+                Hg, Wg = out_hw_g
+                outs_global.append(out_g_collect.transpose(1, 2).contiguous().view(B_g, C_g, Hg, Wg))
+
+                norm_key = str(idx)
+                norm_l = self.local_norms[norm_key] if norm_key in self.local_norms else None
+                out_l_collect = out_l if norm_l is None else norm_l(out_l)
+                B_l, N_l, C_l = out_l_collect.shape
+                Hl, Wl = out_hw_l
+                outs_local.append(out_l_collect.transpose(1, 2).contiguous().view(B_l, C_l, Hl, Wl))
+
+        global_feat = torch.flatten(self.swin.avgpool(outs_global[-1]), 1)
+        local_feat = torch.flatten(self.swin.avgpool(outs_local[-1]), 1)
+        concat_feat = torch.cat([global_feat, local_feat], dim=1)
+
+        return {
+            'global_feat': global_feat,
+            'local_feat': local_feat,
+            'concat_feat': concat_feat,
+            'global_maps': outs_global,
+            'local_maps': outs_local,
+        }
 # -------------------- constructors (factory) --------------------
 def pose_swin_base_patch4_window7_224(img_size=224, drop_rate=0.0, attn_drop_rate=0.0,
                                       drop_path_rate=0., pretrained=None, convert_weights=False,
@@ -519,6 +557,7 @@ def pose_swin_base_patch4_window7_224(img_size=224, drop_rate=0.0, attn_drop_rat
         semantic_weight=semantic_weight,
         fusion_mode=pose_cfg.get('FUSION_MODE', 'mul') if pose_cfg else 'mul',
         fuse_stage=pose_cfg.get('FUSE_STAGE', 2) if pose_cfg else 2,
+        branch_stage=pose_cfg.get('BRANCH_STAGE', pose_cfg.get('FUSE_STAGE', 2)) if pose_cfg else 2,
         n_keypoints=pose_cfg.get('N_KPTS', 17) if pose_cfg else 17,
         use_visibility=pose_cfg.get('USE_VIS', True) if pose_cfg else True,
         heatmap_norm=pose_cfg.get('HM_NORM', 'sigmoid') if pose_cfg else 'sigmoid',

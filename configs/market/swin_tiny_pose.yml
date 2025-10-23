@@ -20,6 +20,7 @@ MODEL:
     SAVE_VIS: true
     N_KPTS: 17
     FUSE_STAGE: 2             # stage2 对齐较稳
+    BRANCH_STAGE: 2           # stage2 之后拆分局部/全局
     FUSION_MODE: mul          # 先用乘性门
     USE_VIS: true
     HM_NORM: sigmoid
