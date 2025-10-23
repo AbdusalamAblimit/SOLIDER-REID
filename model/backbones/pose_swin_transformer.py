@@ -232,8 +232,7 @@ class PoseSwinCompose(nn.Module):
             self.local_stages[offset].load_state_dict(global_stage.state_dict())
         for idx in range(self.branch_stage, len(self.swin.stages)):
             norm_global = getattr(self.swin, f'norm{idx}', None)
-            norm_key = str(idx)
-            norm_local = self.local_norms[norm_key] if norm_key in self.local_norms else None
+            norm_local = self.local_norms.get(str(idx))
             if norm_global is not None and norm_local is not None:
                 norm_local.load_state_dict(norm_global.state_dict())
 
