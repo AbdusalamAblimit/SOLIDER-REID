@@ -293,6 +293,8 @@ class PoseSwinCompose(nn.Module):
         if self.heatmap_norm == 'none':
             return hm
         if self.heatmap_norm == 'sigmoid':
+            if (not hm.is_cuda) and hm.dtype == torch.float16:
+                hm = hm.float()
             return hm.sigmoid()
         if self.heatmap_norm == 'softmax':
             B, K, h, w = hm.shape
@@ -320,7 +322,10 @@ class PoseSwinCompose(nn.Module):
             return feat + hmp * self.pose_scale
         if self.fusion_mode == 'gate':
             assert fuse_gate is not None
-            gate = torch.sigmoid(fuse_gate(hmp))
+            gate_input = fuse_gate(hmp)
+            if (not gate_input.is_cuda) and gate_input.dtype == torch.float16:
+                gate_input = gate_input.float()
+            gate = torch.sigmoid(gate_input)
             return feat * (1.0 + gate * self.pose_scale)
         if self.fusion_mode == 'concat':
             assert fuse_proj is not None
@@ -376,6 +381,8 @@ class PoseSwinCompose(nn.Module):
         delta = (fused_feat - in_feat).abs()
         gate01 = None
         if self.fusion_mode == 'mul' and hmp is not None:
+            if (not hmp.is_cuda) and hmp.dtype == torch.float16:
+                hmp = hmp.float()
             gate01 = torch.sigmoid(hmp)
 
         writer.add_images(f"{tag_prefix}/feat_in", _reduce_1ch(in_feat, 'mean'), step)
