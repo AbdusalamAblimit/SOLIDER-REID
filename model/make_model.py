@@ -1,11 +1,14 @@
+import logging
 import torch
 import torch.nn as nn
+from typing import Any, Dict, List
 from .backbones.resnet import ResNet, Bottleneck
 import copy
 from .backbones.vit_pytorch import vit_base_patch16_224_TransReID, vit_small_patch16_224_TransReID
 from .backbones.swin_transformer import swin_base_patch4_window7_224, swin_small_patch4_window7_224, swin_tiny_patch4_window7_224
 from loss.metric_learning import Arcface, Cosface, AMSoftmax, CircleLoss
 from .backbones.resnet_ibn_a import resnet50_ibn_a,resnet101_ibn_a
+from yacs.config import CfgNode
 
 def shuffle_unit(features, shift, group, begin=1):
 
@@ -188,49 +191,159 @@ class build_transformer(nn.Module):
             view_num = 0
 
         convert_weights = True if pretrain_choice == 'imagenet' else False
-        self.base = factory[cfg.MODEL.TRANSFORMER_TYPE](img_size=cfg.INPUT.SIZE_TRAIN, drop_path_rate=cfg.MODEL.DROP_PATH, drop_rate= cfg.MODEL.DROP_OUT,attn_drop_rate=cfg.MODEL.ATT_DROP_RATE, pretrained=model_path, convert_weights=convert_weights, semantic_weight=semantic_weight)
+        self.base = factory[cfg.MODEL.TRANSFORMER_TYPE](
+            img_size=cfg.INPUT.SIZE_TRAIN,
+            drop_path_rate=cfg.MODEL.DROP_PATH,
+            drop_rate=cfg.MODEL.DROP_OUT,
+            attn_drop_rate=cfg.MODEL.ATT_DROP_RATE,
+            pretrained=model_path,
+            convert_weights=convert_weights,
+            semantic_weight=semantic_weight,
+        )
         if model_path != '':
             self.base.init_weights(model_path)
         self.in_planes = self.base.num_features[-1]
 
+        # 冻结调度器：读取配置后在训练阶段按 epoch 切换 requires_grad
+        self._freeze_logger = logging.getLogger("transreid.freeze")
+        freeze_cfg = getattr(cfg.MODEL, 'FREEZE', None)
+        # 开关为 False 时完全禁用调度逻辑，保持与旧版本一致
+        self._freeze_enabled = self._is_freeze_enabled(freeze_cfg)
+        self._freeze_rules = self._parse_freeze_rules(freeze_cfg) if self._freeze_enabled else []
+
         self.num_classes = num_classes
         self.ID_LOSS_TYPE = cfg.MODEL.ID_LOSS_TYPE
-        if self.ID_LOSS_TYPE == 'arcface':
-            print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE,cfg.SOLVER.COSINE_SCALE,cfg.SOLVER.COSINE_MARGIN))
-            self.classifier = Arcface(self.in_planes, self.num_classes,
-                                      s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
-        elif self.ID_LOSS_TYPE == 'cosface':
-            print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE,cfg.SOLVER.COSINE_SCALE,cfg.SOLVER.COSINE_MARGIN))
-            self.classifier = Cosface(self.in_planes, self.num_classes,
-                                      s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
-        elif self.ID_LOSS_TYPE == 'amsoftmax':
-            print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE,cfg.SOLVER.COSINE_SCALE,cfg.SOLVER.COSINE_MARGIN))
-            self.classifier = AMSoftmax(self.in_planes, self.num_classes,
-                                        s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
-        elif self.ID_LOSS_TYPE == 'circle':
-            print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
-            self.classifier = CircleLoss(self.in_planes, self.num_classes,
-                                        s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
-        else:
-            if self.reduce_feat_dim:
-                self.fcneck = nn.Linear(self.in_planes, self.feat_dim, bias=False)
-                self.fcneck.apply(weights_init_xavier)
-                self.in_planes = cfg.MODEL.FEAT_DIM
-            self.classifier = nn.Linear(self.in_planes, self.num_classes, bias=False)
-            self.classifier.apply(weights_init_classifier)
-
-        self.bottleneck = nn.BatchNorm1d(self.in_planes)
-        self.bottleneck.bias.requires_grad_(False)
-        self.bottleneck.apply(weights_init_kaiming)
-
         self.dropout = nn.Dropout(self.dropout_rate)
+        self.multi_branch = hasattr(self.base, 'branch_stage')
 
-        #if pretrain_choice == 'self':
-        #    self.load_param(model_path)
+        if self.multi_branch:
+            branch_dim = self.feat_dim if self.reduce_feat_dim else self.in_planes
+            if self.reduce_feat_dim:
+                self.fcneck_global = nn.Linear(self.in_planes, self.feat_dim, bias=False)
+                self.fcneck_global.apply(weights_init_xavier)
+                self.fcneck_local = nn.Linear(self.in_planes, self.feat_dim, bias=False)
+                self.fcneck_local.apply(weights_init_xavier)
+            self.global_bnneck = nn.BatchNorm1d(branch_dim)
+            self.global_bnneck.bias.requires_grad_(False)
+            self.global_bnneck.apply(weights_init_kaiming)
+            self.local_bnneck = nn.BatchNorm1d(branch_dim)
+            self.local_bnneck.bias.requires_grad_(False)
+            self.local_bnneck.apply(weights_init_kaiming)
+            self.concat_bnneck = nn.BatchNorm1d(branch_dim * 2)
+            self.concat_bnneck.bias.requires_grad_(False)
+            self.concat_bnneck.apply(weights_init_kaiming)
 
-    def forward(self, x, label=None, cam_label= None, view_label=None):
-        global_feat, featmaps = self.base(x)
-        if self.reduce_feat_dim:
+            if self.ID_LOSS_TYPE == 'arcface':
+                print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
+                self.classifier_global = Arcface(branch_dim, self.num_classes,
+                                                 s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+                self.classifier_local = Arcface(branch_dim, self.num_classes,
+                                                s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+            elif self.ID_LOSS_TYPE == 'cosface':
+                print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
+                self.classifier_global = Cosface(branch_dim, self.num_classes,
+                                                  s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+                self.classifier_local = Cosface(branch_dim, self.num_classes,
+                                                 s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+            elif self.ID_LOSS_TYPE == 'amsoftmax':
+                print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
+                self.classifier_global = AMSoftmax(branch_dim, self.num_classes,
+                                                   s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+                self.classifier_local = AMSoftmax(branch_dim, self.num_classes,
+                                                  s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+            elif self.ID_LOSS_TYPE == 'circle':
+                print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
+                self.classifier_global = CircleLoss(branch_dim, self.num_classes,
+                                                     s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+                self.classifier_local = CircleLoss(branch_dim, self.num_classes,
+                                                    s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+            else:
+                self.classifier_global = nn.Linear(branch_dim, self.num_classes, bias=False)
+                self.classifier_global.apply(weights_init_classifier)
+                self.classifier_local = nn.Linear(branch_dim, self.num_classes, bias=False)
+                self.classifier_local.apply(weights_init_classifier)
+        else:
+            if self.ID_LOSS_TYPE == 'arcface':
+                print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
+                self.classifier = Arcface(self.in_planes, self.num_classes,
+                                          s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+            elif self.ID_LOSS_TYPE == 'cosface':
+                print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
+                self.classifier = Cosface(self.in_planes, self.num_classes,
+                                          s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+            elif self.ID_LOSS_TYPE == 'amsoftmax':
+                print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
+                self.classifier = AMSoftmax(self.in_planes, self.num_classes,
+                                            s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+            elif self.ID_LOSS_TYPE == 'circle':
+                print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
+                self.classifier = CircleLoss(self.in_planes, self.num_classes,
+                                              s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+            else:
+                if self.reduce_feat_dim:
+                    self.fcneck = nn.Linear(self.in_planes, self.feat_dim, bias=False)
+                    self.fcneck.apply(weights_init_xavier)
+                    self.in_planes = cfg.MODEL.FEAT_DIM
+                self.classifier = nn.Linear(self.in_planes, self.num_classes, bias=False)
+                self.classifier.apply(weights_init_classifier)
+
+            self.bottleneck = nn.BatchNorm1d(self.in_planes)
+            self.bottleneck.bias.requires_grad_(False)
+            self.bottleneck.apply(weights_init_kaiming)
+
+    def forward(self, x, label=None, cam_label=None, view_label=None):
+        outputs = self.base(x)
+        featmaps = None
+        if isinstance(outputs, dict) and 'global_feat' in outputs:
+            global_feat_raw = outputs['global_feat']
+            local_feat_raw = outputs.get('local_feat')
+            featmaps = {
+                'global': outputs.get('global_maps'),
+                'local': outputs.get('local_maps'),
+            }
+        else:
+            global_feat_raw, featmaps = outputs
+            local_feat_raw = None
+
+        if self.multi_branch and local_feat_raw is not None:
+            if self.reduce_feat_dim:
+                global_feat = self.fcneck_global(global_feat_raw)
+                local_feat = self.fcneck_local(local_feat_raw)
+            else:
+                global_feat = global_feat_raw
+                local_feat = local_feat_raw
+
+            feat_global_bn = self.global_bnneck(global_feat)
+            feat_local_bn = self.local_bnneck(local_feat)
+            feat_global_cls = self.dropout(feat_global_bn)
+            feat_local_cls = self.dropout(feat_local_bn)
+
+            if self.training:
+                if self.ID_LOSS_TYPE in ('arcface', 'cosface', 'amsoftmax', 'circle'):
+                    cls_global = self.classifier_global(feat_global_cls, label)
+                    cls_local = self.classifier_local(feat_local_cls, label)
+                else:
+                    cls_global = self.classifier_global(feat_global_cls)
+                    cls_local = self.classifier_local(feat_local_cls)
+                return [cls_global, cls_local], [global_feat, local_feat], featmaps
+            else:
+                if self.neck_feat == 'after':
+                    global_eval = feat_global_bn
+                    local_eval = feat_local_bn
+                    concat_eval = self.concat_bnneck(torch.cat([feat_global_bn, feat_local_bn], dim=1))
+                else:
+                    global_eval = global_feat
+                    local_eval = local_feat
+                    concat_eval = torch.cat([global_feat, local_feat], dim=1)
+                feat_dict = {
+                    'global': global_eval,
+                    'local': local_eval,
+                    'concat': concat_eval,
+                }
+                return feat_dict, featmaps
+
+        global_feat = global_feat_raw
+        if self.reduce_feat_dim and hasattr(self, 'fcneck'):
             global_feat = self.fcneck(global_feat)
         feat = self.bottleneck(global_feat)
         feat_cls = self.dropout(feat)
@@ -240,24 +353,148 @@ class build_transformer(nn.Module):
                 cls_score = self.classifier(feat_cls, label)
             else:
                 cls_score = self.classifier(feat_cls)
-
-            return cls_score, global_feat, featmaps  # global feature for triplet loss
+            return cls_score, global_feat, featmaps
         else:
             if self.neck_feat == 'after':
-                # print("Test with feature after BN")
                 return feat, featmaps
             else:
-                # print("Test with feature before BN")
                 return global_feat, featmaps
 
-    def load_param(self, trained_path):
-        param_dict = torch.load(trained_path, map_location = 'cpu')
-        for i in param_dict:
-            try:
-                self.state_dict()[i.replace('module.', '')].copy_(param_dict[i])
-            except:
+    # -------------------- 参数冻结调度相关的辅助函数 --------------------
+    def _is_freeze_enabled(self, freeze_cfg: Any) -> bool:
+        """读取配置开关，判断是否真正启用冻结策略。"""
+        if freeze_cfg is None:
+            return False
+
+        if isinstance(freeze_cfg, CfgNode):
+            return bool(freeze_cfg.get('ENABLE', False))
+        if isinstance(freeze_cfg, dict):
+            return bool(freeze_cfg.get('ENABLE', False))
+        return False
+
+    def _parse_freeze_rules(self, freeze_cfg: Any) -> List[Dict[str, Any]]:
+        """将配置节点解析为可执行的冻结规则列表。"""
+        rules: List[Dict[str, Any]] = []
+        if freeze_cfg is None:
+            return rules
+
+        if not self._is_freeze_enabled(freeze_cfg):
+            return rules
+
+        if isinstance(freeze_cfg, CfgNode):
+            raw_rules = list(freeze_cfg.RULES)
+        elif isinstance(freeze_cfg, dict):
+            raw_rules = list(freeze_cfg.get('RULES', []))
+        else:
+            raw_rules = []
+
+        for idx, raw in enumerate(raw_rules):
+            if isinstance(raw, CfgNode):
+                data = {k.lower(): raw[k] for k in raw}
+            elif isinstance(raw, dict):
+                data = {k.lower(): v for k, v in raw.items()}
+            else:
+                self._freeze_logger.warning(f"[freeze] 跳过第 {idx} 条配置，类型不支持: {type(raw)}")
                 continue
-        print('Loading pretrained model from {}'.format(trained_path))
+
+            target = data.get('module') or data.get('target')
+            if not target:
+                self._freeze_logger.warning(f"[freeze] 第 {idx} 条缺少 MODULE 字段，已忽略")
+                continue
+
+            start = int(data.get('start_epoch', 1))
+            if 'end_epoch' in data:
+                end = int(data['end_epoch'])
+            elif 'freeze_epochs' in data:
+                duration = max(int(data['freeze_epochs']), 1)
+                end = start + duration - 1
+            else:
+                end = start
+            if end < start:
+                self._freeze_logger.warning(f"[freeze] 第 {idx} 条的时间范围非法，自动调整 end = start")
+                end = start
+
+            rule: Dict[str, Any] = {
+                'module_path': target,
+                'start': start,
+                'end': end,
+                'set_eval': bool(data.get('set_eval', True)),
+                'module': None,
+                'params': [],
+                'orig_requires_grad': [],
+                'frozen': None,
+                'warned_missing': False,
+            }
+
+            module = self._resolve_module(target)
+            if module is not None:
+                params = list(module.parameters())
+                rule['module'] = module
+                rule['params'] = params
+                rule['orig_requires_grad'] = [p.requires_grad for p in params]
+
+            rules.append(rule)
+
+        return rules
+
+    def _resolve_module(self, module_path: str) -> Any:
+        """按照点路径在当前模型下定位子模块。"""
+        current: Any = self
+        for name in module_path.split('.'):
+            if not hasattr(current, name):
+                return None
+            current = getattr(current, name)
+        return current
+
+    def _apply_freeze_state(self, rule: Dict[str, Any], freeze: bool) -> None:
+        """根据 freeze 标志切换参数梯度与训练模式。"""
+        module = rule.get('module')
+        if module is None:
+            return
+
+        params: List[nn.Parameter] = rule.get('params', [])  # type: ignore[var-annotated]
+        if freeze:
+            for param in params:
+                param.requires_grad = False
+            if rule.get('set_eval', True):
+                module.train(False)
+        else:
+            orig = rule.get('orig_requires_grad', [])
+            if orig and len(orig) == len(params):
+                for param, flag in zip(params, orig):
+                    param.requires_grad = flag
+            else:
+                for param in params:
+                    param.requires_grad = True
+            if rule.get('set_eval', True):
+                module.train(self.training)
+
+    def update_freeze_schedule(self, epoch: int) -> None:
+        """在每个 epoch 开始时调用，执行冻结/解冻逻辑。"""
+        if not self._freeze_enabled or not self._freeze_rules:
+            return
+
+        for rule in self._freeze_rules:
+            module = rule.get('module')
+            if module is None:
+                module = self._resolve_module(rule['module_path'])
+                if module is None:
+                    if not rule.get('warned_missing', False):
+                        self._freeze_logger.warning(f"[freeze] 未找到模组 {rule['module_path']}，请检查配置")
+                        rule['warned_missing'] = True
+                    continue
+                params = list(module.parameters())
+                rule['module'] = module
+                rule['params'] = params
+                rule['orig_requires_grad'] = [p.requires_grad for p in params]
+
+            freeze = rule['start'] <= epoch <= rule['end']
+            previous = rule.get('frozen')
+            rule['frozen'] = freeze
+            self._apply_freeze_state(rule, freeze)
+            if previous != freeze:
+                state = '冻结' if freeze else '解冻'
+                self._freeze_logger.info(f"[freeze] Epoch {epoch}: {rule['module_path']} -> {state}")
 
 
 class build_transformer_local(nn.Module):

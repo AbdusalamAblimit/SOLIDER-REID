@@ -6,7 +6,7 @@ import time
 import torch
 import torch.nn as nn
 from utils.meter import AverageMeter
-from utils.metrics import R1_mAP_eval
+from utils.metrics import R1_mAP_eval, EvalResultItem
 from torch.cuda import amp
 import torch.distributed as dist
 from torch.utils.tensorboard import SummaryWriter
@@ -57,6 +57,10 @@ def do_train(cfg,
         acc_meter.reset()
         evaluator.reset()
         model.train()
+        # 每个 epoch 开始后立即按照配置冻结/解冻对应模块
+        core_model = model.module if hasattr(model, "module") else model
+        if hasattr(core_model, "update_freeze_schedule"):
+            core_model.update_freeze_schedule(epoch)
         for n_iter, (img, vid, target_cam, target_view) in enumerate(train_loader):
             optimizer.zero_grad()
             optimizer_center.zero_grad()
@@ -139,6 +143,7 @@ def do_train(cfg,
                            os.path.join(cfg.OUTPUT_DIR, cfg.MODEL.NAME + '_{}.pth'.format(epoch)))
 
         if epoch % eval_period == 0:
+            results = None
             if cfg.MODEL.DIST_TRAIN:
                 if dist.get_rank() == 0:
                     model.eval()
@@ -149,11 +154,25 @@ def do_train(cfg,
                             target_view = target_view.to(device)
                             feat, _ = model(img, cam_label=camids, view_label=target_view)
                             evaluator.update((feat, vid, camid))
-                    cmc, mAP, _, _, _, _, _ = evaluator.compute()
-                    logger.info("Validation Results - Epoch: {}".format(epoch))
-                    logger.info("mAP: {:.1%}".format(mAP))
-                    for r in [1, 5, 10]:
-                        logger.info("CMC curve, Rank-{:<3}:{:.1%}".format(r, cmc[r - 1]))
+                    results = evaluator.compute()
+                    if isinstance(results, dict):
+                        for name, metrics in results.items():
+                            cmc = metrics.cmc
+                            mAP = metrics.mAP
+                            logger.info("Validation Results [{}] - Epoch: {}".format(name, epoch))
+                            logger.info("mAP: {:.1%}".format(mAP))
+                            for r in [1, 5, 10]:
+                                logger.info("CMC curve [{}], Rank-{:<3}:{:.1%}".format(name, r, cmc[r - 1]))
+                    else:
+                        metrics = results if isinstance(results, EvalResultItem) else None
+                        if metrics is None:
+                            raise TypeError("Unexpected evaluation result type: {}".format(type(results)))
+                        cmc = metrics.cmc
+                        mAP = metrics.mAP
+                        logger.info("Validation Results - Epoch: {}".format(epoch))
+                        logger.info("mAP: {:.1%}".format(mAP))
+                        for r in [1, 5, 10]:
+                            logger.info("CMC curve, Rank-{:<3}:{:.1%}".format(r, cmc[r - 1]))
                     torch.cuda.empty_cache()
             else:
                 model.eval()
@@ -164,17 +183,40 @@ def do_train(cfg,
                         target_view = target_view.to(device)
                         feat, _ = model(img, cam_label=camids, view_label=target_view)
                         evaluator.update((feat, vid, camid))
-                cmc, mAP, _, _, _, _, _ = evaluator.compute()
-                logger.info("Validation Results - Epoch: {}".format(epoch))
-                logger.info("mAP: {:.1%}".format(mAP))
-                for r in [1, 5, 10]:
-                    logger.info("CMC curve, Rank-{:<3}:{:.1%}".format(r, cmc[r - 1]))
+                results = evaluator.compute()
+                if isinstance(results, dict):
+                    for name, metrics in results.items():
+                        cmc = metrics.cmc
+                        mAP = metrics.mAP
+                        logger.info("Validation Results [{}] - Epoch: {}".format(name, epoch))
+                        logger.info("mAP: {:.1%}".format(mAP))
+                        for r in [1, 5, 10]:
+                            logger.info("CMC curve [{}], Rank-{:<3}:{:.1%}".format(name, r, cmc[r - 1]))
+                else:
+                    metrics = results if isinstance(results, EvalResultItem) else None
+                    if metrics is None:
+                        raise TypeError("Unexpected evaluation result type: {}".format(type(results)))
+                    cmc = metrics.cmc
+                    mAP = metrics.mAP
+                    logger.info("Validation Results - Epoch: {}".format(epoch))
+                    logger.info("mAP: {:.1%}".format(mAP))
+                    for r in [1, 5, 10]:
+                        logger.info("CMC curve, Rank-{:<3}:{:.1%}".format(r, cmc[r - 1]))
                 torch.cuda.empty_cache()
             # === TB: 评估标量（按 epoch） ===
-            if tb_writer is not None and ((not cfg.MODEL.DIST_TRAIN) or dist.get_rank() == 0):
-                tb_writer.add_scalar("eval/mAP",    float(mAP),     epoch)
-                tb_writer.add_scalar("eval/Rank-1", float(cmc[0]),  epoch)
+            if tb_writer is not None and ((not cfg.MODEL.DIST_TRAIN) or dist.get_rank() == 0) and results is not None:
+                if isinstance(results, dict):
+                    for name, metrics in results.items():
+                        tb_writer.add_scalar(f"eval/mAP_{name}", float(metrics.mAP), epoch)
+                        tb_writer.add_scalar(f"eval/Rank-1_{name}", float(metrics.cmc[0]), epoch)
+                else:
+                    metrics = results if isinstance(results, EvalResultItem) else None
+                    if metrics is None:
+                        raise TypeError("Unexpected evaluation result type: {}".format(type(results)))
+                    tb_writer.add_scalar("eval/mAP", float(metrics.mAP), epoch)
+                    tb_writer.add_scalar("eval/Rank-1", float(metrics.cmc[0]), epoch)
                 tb_writer.flush()
+            results = None
 
 def do_inference(cfg,
                  model,
@@ -206,11 +248,29 @@ def do_inference(cfg,
             evaluator.update((feat, pid, camid))
             img_path_list.extend(imgpath)
 
-    cmc, mAP, _, _, _, _, _ = evaluator.compute()
-    logger.info("Validation Results ")
-    logger.info("mAP: {:.1%}".format(mAP))
-    for r in [1, 5, 10]:
-        logger.info("CMC curve, Rank-{:<3}:{:.1%}".format(r, cmc[r - 1]))
-    return cmc[0], cmc[4]
+    results = evaluator.compute()
+    if isinstance(results, dict):
+        summary = {}
+        logger.info("Validation Results")
+        for name, metrics in results.items():
+            cmc = metrics.cmc
+            mAP = metrics.mAP
+            logger.info("  [{}] mAP: {:.1%}".format(name, mAP))
+            for r in [1, 5, 10]:
+                logger.info("  [{}] CMC curve, Rank-{:<3}:{:.1%}".format(name, r, cmc[r - 1]))
+            rank5_index = 4 if cmc.shape[0] > 4 else (cmc.shape[0] - 1)
+            summary[name] = (cmc[0], cmc[rank5_index])
+        return summary
+    else:
+        metrics = results if isinstance(results, EvalResultItem) else None
+        if metrics is None:
+            raise TypeError("Unexpected evaluation result type: {}".format(type(results)))
+        cmc = metrics.cmc
+        mAP = metrics.mAP
+        logger.info("Validation Results ")
+        logger.info("mAP: {:.1%}".format(mAP))
+        for r in [1, 5, 10]:
+            logger.info("CMC curve, Rank-{:<3}:{:.1%}".format(r, cmc[r - 1]))
+        return {'global': (cmc[0], cmc[4] if cmc.shape[0] > 4 else cmc[-1])}
 
 
