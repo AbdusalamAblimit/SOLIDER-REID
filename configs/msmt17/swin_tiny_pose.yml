@@ -28,6 +28,7 @@ MODEL:
     SCALE: 1.0
 
   FREEZE:
+    ENABLE: true
     # 冻结策略：训练初期锁定主干与姿态分支，避免梯度破坏预训练特征
     RULES:
       - MODULE: base.swin

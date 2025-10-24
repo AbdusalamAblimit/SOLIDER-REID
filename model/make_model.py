@@ -207,7 +207,9 @@ class build_transformer(nn.Module):
         # 冻结调度器：读取配置后在训练阶段按 epoch 切换 requires_grad
         self._freeze_logger = logging.getLogger("transreid.freeze")
         freeze_cfg = getattr(cfg.MODEL, 'FREEZE', None)
-        self._freeze_rules = self._parse_freeze_rules(freeze_cfg)
+        # 开关为 False 时完全禁用调度逻辑，保持与旧版本一致
+        self._freeze_enabled = self._is_freeze_enabled(freeze_cfg)
+        self._freeze_rules = self._parse_freeze_rules(freeze_cfg) if self._freeze_enabled else []
 
         self.num_classes = num_classes
         self.ID_LOSS_TYPE = cfg.MODEL.ID_LOSS_TYPE
@@ -359,10 +361,24 @@ class build_transformer(nn.Module):
                 return global_feat, featmaps
 
     # -------------------- 参数冻结调度相关的辅助函数 --------------------
+    def _is_freeze_enabled(self, freeze_cfg: Any) -> bool:
+        """读取配置开关，判断是否真正启用冻结策略。"""
+        if freeze_cfg is None:
+            return False
+
+        if isinstance(freeze_cfg, CfgNode):
+            return bool(freeze_cfg.get('ENABLE', False))
+        if isinstance(freeze_cfg, dict):
+            return bool(freeze_cfg.get('ENABLE', False))
+        return False
+
     def _parse_freeze_rules(self, freeze_cfg: Any) -> List[Dict[str, Any]]:
         """将配置节点解析为可执行的冻结规则列表。"""
         rules: List[Dict[str, Any]] = []
         if freeze_cfg is None:
+            return rules
+
+        if not self._is_freeze_enabled(freeze_cfg):
             return rules
 
         if isinstance(freeze_cfg, CfgNode):
@@ -455,7 +471,7 @@ class build_transformer(nn.Module):
 
     def update_freeze_schedule(self, epoch: int) -> None:
         """在每个 epoch 开始时调用，执行冻结/解冻逻辑。"""
-        if not self._freeze_rules:
+        if not self._freeze_enabled or not self._freeze_rules:
             return
 
         for rule in self._freeze_rules:

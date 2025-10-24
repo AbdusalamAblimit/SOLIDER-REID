@@ -28,6 +28,7 @@ MODEL:
     SCALE: 1.0
 
   FREEZE:
+    ENABLE: true
     # 冻结策略：先保护主干与姿态网的预训练权重，后续再解冻
     RULES:
       - MODULE: base.swin             # 前 5 个 epoch 冻结整个 Swin 主干
