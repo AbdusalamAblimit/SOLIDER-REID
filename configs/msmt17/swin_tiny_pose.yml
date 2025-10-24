@@ -20,11 +20,24 @@ MODEL:
     SAVE_VIS: true
     N_KPTS: 17
     FUSE_STAGE: 2             # stage2 对齐较稳
+    BRANCH_STAGE: 2           # stage2 之后拆分局部/全局
     FUSION_MODE: mul          # 先用乘性门
     USE_VIS: true
     HM_NORM: sigmoid
     DETACH: true
     SCALE: 1.0
+
+  FREEZE:
+    # 冻结策略：训练初期锁定主干与姿态分支，避免梯度破坏预训练特征
+    RULES:
+      - MODULE: base.swin
+        START_EPOCH: 1
+        END_EPOCH: 5
+        SET_EVAL: True
+      - MODULE: base.pose_predictor
+        START_EPOCH: 1
+        END_EPOCH: 10
+        SET_EVAL: True
 
 
 INPUT:

@@ -78,6 +78,11 @@ _C.MODEL.SIE_VIEW = False
 # Semantic Weight
 _C.MODEL.SEMANTIC_WEIGHT = 1.0
 
+# 冻结/解冻相关的调度配置，便于在训练早期保护预训练权重
+_C.MODEL.FREEZE = CN()
+# 形如 [{'MODULE': 'base.pose_predictor', 'START_EPOCH': 1, 'END_EPOCH': 10}] 的列表
+_C.MODEL.FREEZE.RULES = []
+
 # -----------------------------------------------------------------------------
 # INPUT
 # -----------------------------------------------------------------------------
@@ -214,7 +219,8 @@ _C.MODEL.POSE.CFG = 'pose/config_vispredict.py'     # 你的 mmpose/vis config
 _C.MODEL.POSE.CKPT = 'pretrained/best_coco_AP_epoch_210.pth'  # 你的权重
 _C.MODEL.POSE.N_KPTS = 17
 _C.MODEL.POSE.USE_VIS = True          # 是否用 visibility 加权
-_C.MODEL.POSE.FUSE_STAGE = 2          # 0..3，推荐从 2 开始
+_C.MODEL.POSE.FUSE_STAGE = 2          # 热图对齐所用的 stage
+_C.MODEL.POSE.BRANCH_STAGE = 2       # 开启局部分支的 stage（默认等于 FUSE_STAGE）
 _C.MODEL.POSE.FUSION_MODE = 'mul'     # 'mul' | 'add' | 'concat' | 'gate'
 _C.MODEL.POSE.HM_NORM = 'sigmoid'     # 'none' | 'sigmoid' | 'softmax'
 _C.MODEL.POSE.DETACH = True           # pose 分支梯度是否截断
