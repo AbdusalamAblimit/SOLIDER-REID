@@ -78,6 +78,11 @@ _C.MODEL.SIE_VIEW = False
 # Semantic Weight
 _C.MODEL.SEMANTIC_WEIGHT = 1.0
 
+# 冻结/解冻相关的调度配置，便于在训练早期保护预训练权重
+_C.MODEL.FREEZE = CN()
+# 形如 [{'MODULE': 'base.pose_predictor', 'START_EPOCH': 1, 'END_EPOCH': 10}] 的列表
+_C.MODEL.FREEZE.RULES = []
+
 # -----------------------------------------------------------------------------
 # INPUT
 # -----------------------------------------------------------------------------

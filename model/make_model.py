@@ -1,11 +1,14 @@
+import logging
 import torch
 import torch.nn as nn
+from typing import Any, Dict, List
 from .backbones.resnet import ResNet, Bottleneck
 import copy
 from .backbones.vit_pytorch import vit_base_patch16_224_TransReID, vit_small_patch16_224_TransReID
 from .backbones.swin_transformer import swin_base_patch4_window7_224, swin_small_patch4_window7_224, swin_tiny_patch4_window7_224
 from loss.metric_learning import Arcface, Cosface, AMSoftmax, CircleLoss
 from .backbones.resnet_ibn_a import resnet50_ibn_a,resnet101_ibn_a
+from yacs.config import CfgNode
 
 def shuffle_unit(features, shift, group, begin=1):
 
@@ -201,6 +204,11 @@ class build_transformer(nn.Module):
             self.base.init_weights(model_path)
         self.in_planes = self.base.num_features[-1]
 
+        # 冻结调度器：读取配置后在训练阶段按 epoch 切换 requires_grad
+        self._freeze_logger = logging.getLogger("transreid.freeze")
+        freeze_cfg = getattr(cfg.MODEL, 'FREEZE', None)
+        self._freeze_rules = self._parse_freeze_rules(freeze_cfg)
+
         self.num_classes = num_classes
         self.ID_LOSS_TYPE = cfg.MODEL.ID_LOSS_TYPE
         self.dropout = nn.Dropout(self.dropout_rate)
@@ -349,6 +357,128 @@ class build_transformer(nn.Module):
                 return feat, featmaps
             else:
                 return global_feat, featmaps
+
+    # -------------------- 参数冻结调度相关的辅助函数 --------------------
+    def _parse_freeze_rules(self, freeze_cfg: Any) -> List[Dict[str, Any]]:
+        """将配置节点解析为可执行的冻结规则列表。"""
+        rules: List[Dict[str, Any]] = []
+        if freeze_cfg is None:
+            return rules
+
+        if isinstance(freeze_cfg, CfgNode):
+            raw_rules = list(freeze_cfg.RULES)
+        elif isinstance(freeze_cfg, dict):
+            raw_rules = list(freeze_cfg.get('RULES', []))
+        else:
+            raw_rules = []
+
+        for idx, raw in enumerate(raw_rules):
+            if isinstance(raw, CfgNode):
+                data = {k.lower(): raw[k] for k in raw}
+            elif isinstance(raw, dict):
+                data = {k.lower(): v for k, v in raw.items()}
+            else:
+                self._freeze_logger.warning(f"[freeze] 跳过第 {idx} 条配置，类型不支持: {type(raw)}")
+                continue
+
+            target = data.get('module') or data.get('target')
+            if not target:
+                self._freeze_logger.warning(f"[freeze] 第 {idx} 条缺少 MODULE 字段，已忽略")
+                continue
+
+            start = int(data.get('start_epoch', 1))
+            if 'end_epoch' in data:
+                end = int(data['end_epoch'])
+            elif 'freeze_epochs' in data:
+                duration = max(int(data['freeze_epochs']), 1)
+                end = start + duration - 1
+            else:
+                end = start
+            if end < start:
+                self._freeze_logger.warning(f"[freeze] 第 {idx} 条的时间范围非法，自动调整 end = start")
+                end = start
+
+            rule: Dict[str, Any] = {
+                'module_path': target,
+                'start': start,
+                'end': end,
+                'set_eval': bool(data.get('set_eval', True)),
+                'module': None,
+                'params': [],
+                'orig_requires_grad': [],
+                'frozen': None,
+                'warned_missing': False,
+            }
+
+            module = self._resolve_module(target)
+            if module is not None:
+                params = list(module.parameters())
+                rule['module'] = module
+                rule['params'] = params
+                rule['orig_requires_grad'] = [p.requires_grad for p in params]
+
+            rules.append(rule)
+
+        return rules
+
+    def _resolve_module(self, module_path: str) -> Any:
+        """按照点路径在当前模型下定位子模块。"""
+        current: Any = self
+        for name in module_path.split('.'):
+            if not hasattr(current, name):
+                return None
+            current = getattr(current, name)
+        return current
+
+    def _apply_freeze_state(self, rule: Dict[str, Any], freeze: bool) -> None:
+        """根据 freeze 标志切换参数梯度与训练模式。"""
+        module = rule.get('module')
+        if module is None:
+            return
+
+        params: List[nn.Parameter] = rule.get('params', [])  # type: ignore[var-annotated]
+        if freeze:
+            for param in params:
+                param.requires_grad = False
+            if rule.get('set_eval', True):
+                module.train(False)
+        else:
+            orig = rule.get('orig_requires_grad', [])
+            if orig and len(orig) == len(params):
+                for param, flag in zip(params, orig):
+                    param.requires_grad = flag
+            else:
+                for param in params:
+                    param.requires_grad = True
+            if rule.get('set_eval', True):
+                module.train(self.training)
+
+    def update_freeze_schedule(self, epoch: int) -> None:
+        """在每个 epoch 开始时调用，执行冻结/解冻逻辑。"""
+        if not self._freeze_rules:
+            return
+
+        for rule in self._freeze_rules:
+            module = rule.get('module')
+            if module is None:
+                module = self._resolve_module(rule['module_path'])
+                if module is None:
+                    if not rule.get('warned_missing', False):
+                        self._freeze_logger.warning(f"[freeze] 未找到模组 {rule['module_path']}，请检查配置")
+                        rule['warned_missing'] = True
+                    continue
+                params = list(module.parameters())
+                rule['module'] = module
+                rule['params'] = params
+                rule['orig_requires_grad'] = [p.requires_grad for p in params]
+
+            freeze = rule['start'] <= epoch <= rule['end']
+            previous = rule.get('frozen')
+            rule['frozen'] = freeze
+            self._apply_freeze_state(rule, freeze)
+            if previous != freeze:
+                state = '冻结' if freeze else '解冻'
+                self._freeze_logger.info(f"[freeze] Epoch {epoch}: {rule['module_path']} -> {state}")
 
 
 class build_transformer_local(nn.Module):

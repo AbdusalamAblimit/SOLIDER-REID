@@ -71,10 +71,8 @@ class MMPoseTopDownPredictor(nn.Module):
         # MMPose 期望 0..255，再减均值/除方差
         self.register_buffer('pose_mean', torch.tensor([123.675,116.28,103.53]).view(1,3,1,1))
         self.register_buffer('pose_std',  torch.tensor([58.395,57.12,57.375]).view(1,3,1,1))
-        
-        
-    @torch.no_grad()
-    def forward(self, images: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+
+    def _forward_impl(self, images: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         # 严格反归一化：读取 SOLIDER 的 mean/std
         try:
             from config import cfg as _cfg
@@ -107,6 +105,14 @@ class MMPoseTopDownPredictor(nn.Module):
             visibility = heatmap.view(B, K, -1).amax(dim=-1)
             visibility = (visibility - visibility.min()) / (visibility.max() - visibility.min() + 1e-6)
         return heatmap, visibility
+
+    def forward(self, images: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        if self.training:
+            # 训练阶段允许梯度反传，配合解冻策略微调姿态网络
+            return self._forward_impl(images)
+        # 推理阶段保持无梯度，节省显存并复现原行为
+        with torch.no_grad():
+            return self._forward_impl(images)
 
 
 # -------------------- Pose+Swin by composition --------------------
@@ -333,15 +339,19 @@ class PoseSwinCompose(nn.Module):
             return feat + self.pose_scale * (fused - feat)
         return feat
 
-    @torch.no_grad()
     def _maybe_get_pose_from_images(self, images: torch.Tensor):
         if self.pose_predictor is None:
             self._hm_fullres, self._vis = None, None
             return
-        hm, vis = self.pose_predictor(images)
         if self.pose_detach:
+            # 仅在需要完全切断梯度时才关闭 Autograd
+            with torch.no_grad():
+                hm, vis = self.pose_predictor(images)
             hm = hm.detach()
             vis = vis.detach() if vis is not None else None
+        else:
+            # 允许姿态网络在解冻后接收梯度
+            hm, vis = self.pose_predictor(images)
         self._hm_fullres, self._vis = hm, vis
 
     def _resized_pose(self, target_hw, B_expected, device):
@@ -533,6 +543,11 @@ class PoseSwinCompose(nn.Module):
 def pose_swin_base_patch4_window7_224(img_size=224, drop_rate=0.0, attn_drop_rate=0.0,
                                       drop_path_rate=0., pretrained=None, convert_weights=False,
                                       semantic_weight=0.0, pose_cfg=None, **kwargs):
+    model_kwargs = dict(kwargs)
+    model_kwargs.setdefault('embed_dims', 128)
+    model_kwargs.setdefault('depths', (2, 2, 18, 2))
+    model_kwargs.setdefault('num_heads', (4, 8, 16, 32))
+    model_kwargs.setdefault('window_size', 7)
     if pose_cfg is None:
         try:
             from config import cfg as _cfg
@@ -565,11 +580,21 @@ def pose_swin_base_patch4_window7_224(img_size=224, drop_rate=0.0, attn_drop_rat
         pose_detach=pose_cfg.get('DETACH', True) if pose_cfg else True,
         pose_scale=pose_cfg.get('SCALE', 1.0) if pose_cfg else 1.0,
         save_vis=pose_cfg.get('SAVE_VIS', False) if pose_cfg else False,
-        **kwargs
+        **model_kwargs
     )
 
 def pose_swin_small_patch4_window7_224(*args, **kwargs):
-    return pose_swin_base_patch4_window7_224(*args, **kwargs)
+    small_kwargs = dict(kwargs)
+    small_kwargs.setdefault('embed_dims', 96)
+    small_kwargs.setdefault('depths', (2, 2, 18, 2))
+    small_kwargs.setdefault('num_heads', (3, 6, 12, 24))
+    small_kwargs.setdefault('window_size', 7)
+    return pose_swin_base_patch4_window7_224(*args, **small_kwargs)
 
 def pose_swin_tiny_patch4_window7_224(*args, **kwargs):
-    return pose_swin_base_patch4_window7_224(*args, **kwargs)
+    tiny_kwargs = dict(kwargs)
+    tiny_kwargs.setdefault('embed_dims', 96)
+    tiny_kwargs.setdefault('depths', (2, 2, 6, 2))
+    tiny_kwargs.setdefault('num_heads', (3, 6, 12, 24))
+    tiny_kwargs.setdefault('window_size', 7)
+    return pose_swin_base_patch4_window7_224(*args, **tiny_kwargs)

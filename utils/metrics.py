@@ -4,6 +4,21 @@ import os
 from utils.reranking import re_ranking
 
 from collections import OrderedDict, defaultdict
+from dataclasses import dataclass
+from typing import Optional
+
+
+@dataclass
+class EvalResultItem:
+    """封装单个分支的评估结果，默认只携带指标，避免保存大矩阵占内存。"""
+
+    cmc: np.ndarray
+    mAP: float
+    distmat: Optional[np.ndarray] = None
+    pids: Optional[np.ndarray] = None
+    camids: Optional[np.ndarray] = None
+    qf: Optional[torch.Tensor] = None
+    gf: Optional[torch.Tensor] = None
 
 def euclidean_distance(qf, gf):
     m = qf.shape[0]
@@ -114,7 +129,7 @@ class R1_mAP_eval():
         self.pids.extend(np.asarray(pid))
         self.camids.extend(np.asarray(camid))
 
-    def compute(self):  # called after each epoch
+    def compute(self, keep_details: bool = False, clear_buffers: bool = True):  # called after each epoch
         if not self._feat_buffers:
             raise RuntimeError('No features to evaluate.')
         results = OrderedDict()
@@ -139,7 +154,21 @@ class R1_mAP_eval():
                 print(f'=> Computing DistMat with euclidean_distance ({key})')
                 distmat = euclidean_distance(qf, gf)
             cmc, mAP = eval_func(distmat, q_pids, g_pids, q_camids, g_camids)
-            results[key] = (cmc, mAP, distmat, self.pids, self.camids, qf, gf)
+            extra_kwargs = {}
+            if keep_details:
+                # 需要导出距离矩阵等信息时才回传这些大对象，默认情况下避免占用大量内存
+                extra_kwargs = dict(
+                    distmat=distmat,
+                    pids=pids.copy(),
+                    camids=camids.copy(),
+                    qf=qf,
+                    gf=gf,
+                )
+            results[key] = EvalResultItem(cmc=cmc, mAP=mAP, **extra_kwargs)
+
+        if clear_buffers:
+            # 默认在计算完一次评估后立即释放缓存，避免这些特征在下一轮验证前继续占用显存/内存
+            self.reset()
 
         if len(results) == 1:
             return next(iter(results.values()))
