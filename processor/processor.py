@@ -85,7 +85,9 @@ def do_train(cfg,
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
 
-    evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM)
+    val_dataset_size = len(val_loader.dataset) if hasattr(val_loader, "dataset") else None
+    num_gallery = (val_dataset_size - num_query) if val_dataset_size is not None else None
+    evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM, num_gallery=num_gallery)
     enabled_eval_branches = _get_enabled_eval_branches(cfg)
     if enabled_eval_branches:
         logger.info("Evaluating branches: %s", ", ".join(enabled_eval_branches))
@@ -248,7 +250,10 @@ def do_inference(cfg,
     logger = logging.getLogger("transreid.test")
     logger.info("Enter inferencing")
 
-    evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM, reranking=cfg.TEST.RE_RANKING)
+    val_dataset_size = len(val_loader.dataset) if hasattr(val_loader, "dataset") else None
+    num_gallery = (val_dataset_size - num_query) if val_dataset_size is not None else None
+    evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM, reranking=cfg.TEST.RE_RANKING,
+                           num_gallery=num_gallery)
 
     evaluator.reset()
     enabled_eval_branches = _get_enabled_eval_branches(cfg)
