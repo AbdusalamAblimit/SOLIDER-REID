@@ -199,6 +199,8 @@ _C.TEST.WEIGHT = ""
 _C.TEST.NECK_FEAT = 'after'
 # Whether feature is nomalized before test, if yes, it is equivalent to cosine distance
 _C.TEST.FEAT_NORM = 'yes'
+# Feature branches to be used during evaluation. Empty tuple means keeping all available outputs.
+_C.TEST.ENABLED_FEATS = ('global', 'local', 'concat')
 
 # Name for saving the distmat after testing.
 _C.TEST.DIST_MAT = "dist_mat.npy"
