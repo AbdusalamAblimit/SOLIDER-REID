@@ -5,7 +5,7 @@ from utils.reranking import re_ranking
 
 from collections import OrderedDict, defaultdict
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Tuple
 
 
 @dataclass
@@ -244,7 +244,7 @@ class R1_mAP_eval():
         g_pids: np.ndarray,
         q_camids: np.ndarray,
         g_camids: np.ndarray,
-    ) -> tuple[np.ndarray, float]:
+    ) -> Tuple[np.ndarray, float]:
         if qf.numel() == 0 or gf.numel() == 0:
             empty = torch.empty((qf.shape[0], gf.shape[0]), dtype=qf.dtype).cpu().numpy()
             return eval_func(empty, q_pids, g_pids, q_camids, g_camids, max_rank=self.max_rank)
