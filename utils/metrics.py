@@ -41,63 +41,77 @@ def cosine_similarity(qf, gf):
     return dist_mat
 
 
+def _compute_single_query_metrics(
+    order: np.ndarray,
+    g_pids: np.ndarray,
+    g_camids: np.ndarray,
+    q_pid: int,
+    q_camid: int,
+    max_rank: int,
+    matches_row: Optional[np.ndarray] = None,
+):
+    """Return (cmc, AP) for one query or ``None`` when the id is absent."""
+
+    gallery_pids = g_pids[order]
+    gallery_camids = g_camids[order]
+    remove = (gallery_pids == q_pid) & (gallery_camids == q_camid)
+    keep = np.invert(remove)
+
+    if matches_row is None:
+        matches_row = (gallery_pids == q_pid).astype(np.int32)
+    orig_cmc = matches_row[keep]
+    if not np.any(orig_cmc):
+        return None
+
+    cmc = orig_cmc.cumsum()
+    cmc[cmc > 1] = 1
+    cmc = cmc[:max_rank]
+
+    num_rel = orig_cmc.sum()
+    tmp_cmc = orig_cmc.cumsum()
+    precision = tmp_cmc / np.arange(1, tmp_cmc.shape[0] + 1, dtype=np.float32)
+    ap = float((precision * orig_cmc).sum() / num_rel)
+
+    return cmc, ap
+
+
 def eval_func(distmat, q_pids, g_pids, q_camids, g_camids, max_rank=50):
     """Evaluation with market1501 metric
         Key: for each query identity, its gallery images from the same camera view are discarded.
         """
     num_q, num_g = distmat.shape
-    # distmat g
-    #    q    1 3 2 4
-    #         4 1 2 3
     if num_g < max_rank:
         max_rank = num_g
         print("Note: number of gallery samples is quite small, got {}".format(num_g))
+
     indices = np.argsort(distmat, axis=1)
-    #  0 2 1 3
-    #  1 2 3 0
     matches = (g_pids[indices] == q_pids[:, np.newaxis]).astype(np.int32)
-    # compute cmc curve for each query
+
     all_cmc = []
     all_AP = []
-    num_valid_q = 0.  # number of valid query
     for q_idx in range(num_q):
-        # get query pid and camid
-        q_pid = q_pids[q_idx]
-        q_camid = q_camids[q_idx]
-
-        # remove gallery samples that have the same pid and camid with query
-        order = indices[q_idx]  # select one row
-        remove = (g_pids[order] == q_pid) & (g_camids[order] == q_camid)
-        keep = np.invert(remove)
-
-        # compute cmc curve
-        # binary vector, positions with value 1 are correct matches
-        orig_cmc = matches[q_idx][keep]
-        if not np.any(orig_cmc):
-            # this condition is true when query identity does not appear in gallery
+        metrics = _compute_single_query_metrics(
+            order=indices[q_idx],
+            g_pids=g_pids,
+            g_camids=g_camids,
+            q_pid=q_pids[q_idx],
+            q_camid=q_camids[q_idx],
+            max_rank=max_rank,
+            matches_row=matches[q_idx],
+        )
+        if metrics is None:
             continue
 
-        cmc = orig_cmc.cumsum()
-        cmc[cmc > 1] = 1
+        cmc, ap = metrics
+        all_cmc.append(cmc)
+        all_AP.append(ap)
 
-        all_cmc.append(cmc[:max_rank])
-        num_valid_q += 1.
-
-        # compute average precision
-        # reference: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Average_precision
-        num_rel = orig_cmc.sum()
-        tmp_cmc = orig_cmc.cumsum()
-        y = np.arange(1, tmp_cmc.shape[0] + 1) * 1.0
-        tmp_cmc = tmp_cmc / y
-        tmp_cmc = np.asarray(tmp_cmc) * orig_cmc
-        AP = tmp_cmc.sum() / num_rel
-        all_AP.append(AP)
-
+    num_valid_q = len(all_cmc)
     assert num_valid_q > 0, "Error: all query identities do not appear in gallery"
 
     all_cmc = np.asarray(all_cmc).astype(np.float32)
     all_cmc = all_cmc.sum(0) / num_valid_q
-    mAP = np.mean(all_AP)
+    mAP = float(np.mean(all_AP))
 
     return all_cmc, mAP
 
@@ -171,13 +185,21 @@ class R1_mAP_eval():
             q_camids = camids[:self.num_query]
             g_camids = camids[self.num_query:]
 
+            distmat = None
             if self.reranking:
                 print('=> Enter reranking')
                 distmat = re_ranking(qf, gf, k1=20, k2=6, lambda_value=0.3)
+                cmc, mAP = eval_func(distmat, q_pids, g_pids, q_camids, g_camids)
+            elif keep_details:
+                print(f'=> Computing DistMat with euclidean_distance ({key}) [full matrix required]')
+                distmat = euclidean_distance(qf, gf)
+                cmc, mAP = eval_func(distmat, q_pids, g_pids, q_camids, g_camids)
             else:
-                print(f'=> Computing DistMat with euclidean_distance ({key})')
-                distmat = self._chunked_euclidean_distance(qf, gf)
-            cmc, mAP = eval_func(distmat, q_pids, g_pids, q_camids, g_camids)
+                print(f'=> Computing metrics with chunked euclidean_distance ({key})')
+                cmc, mAP = self._chunked_metrics(
+                    qf, gf, q_pids, g_pids, q_camids, g_camids
+                )
+
             extra_kwargs = {}
             if keep_details:
                 # 需要导出距离矩阵等信息时才回传这些大对象，默认情况下避免占用大量内存
@@ -214,32 +236,82 @@ class R1_mAP_eval():
             raise TypeError(f"Unexpected feature type for batch size inference: {type(sample)}")
         return sample.shape[0]
 
-    def _chunked_euclidean_distance(self, qf: torch.Tensor, gf: torch.Tensor) -> np.ndarray:
+    def _chunked_metrics(
+        self,
+        qf: torch.Tensor,
+        gf: torch.Tensor,
+        q_pids: np.ndarray,
+        g_pids: np.ndarray,
+        q_camids: np.ndarray,
+        g_camids: np.ndarray,
+    ) -> tuple[np.ndarray, float]:
         if qf.numel() == 0 or gf.numel() == 0:
-            return torch.empty((qf.shape[0], gf.shape[0]), dtype=qf.dtype).cpu().numpy()
+            empty = torch.empty((qf.shape[0], gf.shape[0]), dtype=qf.dtype).cpu().numpy()
+            return eval_func(empty, q_pids, g_pids, q_camids, g_camids, max_rank=self.max_rank)
 
-        q_chunk = min(self.dist_chunk_size, max(1, qf.shape[0]))
-        g_chunk = min(self.dist_chunk_size, max(1, gf.shape[0]))
-        q_starts = list(range(0, qf.shape[0], q_chunk))
-        g_starts = list(range(0, gf.shape[0], g_chunk))
-        total_q_chunks = len(q_starts)
+        num_q = qf.shape[0]
+        num_g = gf.shape[0]
+        max_rank = min(self.max_rank, num_g)
 
-        print(f"[Eval] Distance matrix will be computed in {total_q_chunks}x{len(g_starts)} chunks.")
-        distmat = torch.empty((qf.shape[0], gf.shape[0]), dtype=qf.dtype)
-        for qi, q_start in enumerate(q_starts):
-            q_end = min(q_start + q_chunk, qf.shape[0])
-            q_batch = qf[q_start:q_end]
-            q_norm = torch.pow(q_batch, 2).sum(dim=1, keepdim=True)
+        g_chunk = min(self.dist_chunk_size, max(1, num_g))
+        g_starts = list(range(0, num_g, g_chunk))
+        print(
+            f"[Eval] Distance computation will stream over {num_q} queries and {len(g_starts)} gallery chunks."
+        )
+
+        q_sq = torch.pow(qf, 2).sum(dim=1, keepdim=True)
+        g_sq = torch.pow(gf, 2).sum(dim=1)
+
+        all_cmc = []
+        all_AP = []
+        progress_step = min(self.dist_chunk_size, max(1, num_q))
+        total_chunks = (num_q + progress_step - 1) // progress_step
+        row_buffer = torch.empty((num_g,), dtype=qf.dtype)
+
+        for q_idx in range(num_q):
+            q_vec = qf[q_idx:q_idx + 1]
+            q_sq_val = q_sq[q_idx:q_idx + 1]
+
             for g_start in g_starts:
-                g_end = min(g_start + g_chunk, gf.shape[0])
+                g_end = min(g_start + g_chunk, num_g)
                 g_batch = gf[g_start:g_end]
-                g_norm = torch.pow(g_batch, 2).sum(dim=1).view(1, -1)
-                block = q_norm + g_norm
-                block.addmm_(q_batch, g_batch.t(), beta=1.0, alpha=-2.0)
-                distmat[q_start:q_end, g_start:g_end] = block
-            print(f"[Eval] Distance progress: {qi + 1}/{total_q_chunks} query chunks processed")
+                g_sq_slice = g_sq[g_start:g_end].view(1, -1)
 
-        return distmat.cpu().numpy()
+                block = q_sq_val + g_sq_slice
+                block.addmm_(q_vec, g_batch.t(), beta=1.0, alpha=-2.0)
+                row_buffer[g_start:g_end] = block.view(-1)
+
+            row_np = row_buffer.numpy()
+            order = np.argsort(row_np, kind="quicksort")
+
+            metrics = _compute_single_query_metrics(
+                order=order,
+                g_pids=g_pids,
+                g_camids=g_camids,
+                q_pid=q_pids[q_idx],
+                q_camid=q_camids[q_idx],
+                max_rank=max_rank,
+            )
+            if metrics is not None:
+                cmc, ap = metrics
+                all_cmc.append(cmc)
+                all_AP.append(ap)
+
+            if (q_idx + 1) % progress_step == 0 or (q_idx + 1) == num_q:
+                processed = q_idx + 1
+                current_chunk = (processed + progress_step - 1) // progress_step
+                print(
+                    f"[Eval] Distance progress: {current_chunk}/{total_chunks} query chunks processed"
+                )
+
+        num_valid_q = len(all_cmc)
+        if num_valid_q == 0:
+            raise AssertionError("Error: all query identities do not appear in gallery")
+
+        all_cmc = np.asarray(all_cmc).astype(np.float32)
+        all_cmc = all_cmc.sum(0) / num_valid_q
+        mAP = float(np.mean(all_AP))
+        return all_cmc, mAP
 
 
 
