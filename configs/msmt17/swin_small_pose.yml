@@ -6,12 +6,13 @@ MODEL:
   NAME: 'transformer'
   NO_MARGIN: True
   DEVICE_ID: ('0')
-  TRANSFORMER_TYPE: 'pose_swin_tiny_patch4_window7_224'
+  TRANSFORMER_TYPE: 'pose_swin_small_patch4_window7_224'
   STRIDE_SIZE: [16, 16]
+  SEMANTIC_WEIGHT: 1.0
 
   # 我新加的
   PRETRAIN_CHOICE: 'self'
-  PRETRAIN_PATH: "pretrained/swin_tiny.pth"
+  PRETRAIN_PATH: "pretrained/swin_small.pth"
 
   POSE:
     ENABLE: true              # 第一步打开
@@ -22,20 +23,20 @@ MODEL:
     FUSE_STAGE: 1             # stage2 对齐较稳
     BRANCH_STAGE: 1           # stage2 之后拆分局部/全局
     FUSION_MODE: mul          # 先用乘性门
-    USE_VIS: true
+    USE_VIS: false
     HM_NORM: sigmoid
     DETACH: true
-    SCALE: 1.0
+    SCALE: 0.3
 
   FREEZE:
     ENABLE: false
-    # 冻结策略：训练初期锁定主干与姿态分支，避免梯度破坏预训练特征
+    # 冻结策略：先保护主干与姿态网的预训练权重，后续再解冻
     RULES:
-      - MODULE: base.swin
-        START_EPOCH: 1
-        END_EPOCH: 5
-        SET_EVAL: True
-      - MODULE: base.pose_predictor
+      # - MODULE: base.swin             # 前 5 个 epoch 冻结整个 Swin 主干
+      #   START_EPOCH: 1
+      #   END_EPOCH: 5
+      #   SET_EVAL: True
+      - MODULE: base.pose_predictor   # 前 10 个 epoch 冻结姿态预测器
         START_EPOCH: 1
         END_EPOCH: 10
         SET_EVAL: True
@@ -43,7 +44,7 @@ MODEL:
 
 INPUT:
   SIZE_TRAIN: [384, 128]
-  SIZE_TEST: [384, 128]
+  SIZE_TEST:  [384, 128]
   PROB: 0.5 # random horizontal flip
   RE_PROB: 0.5 # random erasing
   PADDING: 10
@@ -61,13 +62,13 @@ DATALOADER:
 
 SOLVER:
   OPTIMIZER_NAME: 'SGD'
-  MAX_EPOCHS: 120
-  BASE_LR: 0.0008
+  MAX_EPOCHS: 180
+  BASE_LR: 0.0004
   WARMUP_EPOCHS: 20
   IMS_PER_BATCH: 64
   WARMUP_METHOD: 'cosine'
   LARGE_FC_LR: False
-  CHECKPOINT_PERIOD: 120
+  CHECKPOINT_PERIOD: 90
   LOG_PERIOD: 20
   EVAL_PERIOD: 10
   WEIGHT_DECAY:  1e-4
@@ -76,11 +77,10 @@ SOLVER:
 
 TEST:
   EVAL: True
-  IMS_PER_BATCH: 256
+  IMS_PER_BATCH: 128
   RE_RANKING: False
   WEIGHT: ''
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
-  # ENABLED_FEATS: ['concat']
 
-OUTPUT_DIR: './log/msmt17/swin_tiny_pose_mul-scale1.0-stage1'
+OUTPUT_DIR: './log/msmt17/swin_small_pose-mul-scale0.3-lr4-sw1-nousevis-ep180'
