@@ -117,7 +117,10 @@ class OccludedDukeMTMC(BaseImageDataset):
             pid, camid = map(int, match.groups())
             if pid == -1:
                 continue  # junk images are just ignored
-            assert 0 <= pid <= 1299  # occluded duke uses duke-style ids
+            if pid < 0:
+                raise RuntimeError(
+                    "Image '{}' has an invalid person id '{}'".format(img_path, pid)
+                )
             camid -= 1  # index starts from 0
             if relabel:
                 pid = pid2label[pid]
