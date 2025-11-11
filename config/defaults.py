@@ -230,3 +230,4 @@ _C.MODEL.POSE.HM_NORM = 'sigmoid'     # 'none' | 'sigmoid' | 'softmax'
 _C.MODEL.POSE.DETACH = True           # pose 分支梯度是否截断
 _C.MODEL.POSE.SCALE = 1.0             # 融合强度系数
 _C.MODEL.POSE.SAVE_VIS = False        # 如需保存可视化，后续可加
+_C.MODEL.POSE.LOCAL_LOSS_WEIGHT = 0.5

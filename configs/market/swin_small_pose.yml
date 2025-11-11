@@ -27,6 +27,7 @@ MODEL:
     HM_NORM: sigmoid
     DETACH: true
     SCALE: 0.3
+    LOCAL_LOSS_WEIGHT: 0.5
 
   FREEZE:
     ENABLE: false
