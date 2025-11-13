@@ -14,6 +14,15 @@ from torch.utils.tensorboard import SummaryWriter
 from typing import Optional, Sequence, Tuple
 
 
+def _format_eta(seconds: float) -> str:
+    """Format remaining seconds into a human-friendly HH:MM:SS string."""
+    seconds = max(0.0, float(seconds))
+    total_seconds = int(round(seconds))
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, secs = divmod(remainder, 60)
+    return f"{hours:d}:{minutes:02d}:{secs:02d}"
+
+
 def _get_enabled_eval_branches(cfg) -> Tuple[str, ...]:
     branches = getattr(cfg.TEST, "ENABLED_FEATS", ())
     if isinstance(branches, str):
@@ -85,6 +94,14 @@ def do_train(cfg,
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
 
+    iters_per_epoch = len(train_loader)
+    total_training_iters = iters_per_epoch * epochs
+    total_eval_events = len(range(eval_period, epochs + 1, eval_period)) if eval_period > 0 else 0
+    evals_completed = 0
+    eval_time_meter = AverageMeter()
+    total_eval_time_spent = 0.0
+    training_start_time = time.time()
+
     val_dataset_size = len(val_loader.dataset) if hasattr(val_loader, "dataset") else None
     num_gallery = (val_dataset_size - num_query) if val_dataset_size is not None else None
     evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM, num_gallery=num_gallery)
@@ -106,6 +123,7 @@ def do_train(cfg,
         acc_meter.reset()
         evaluator.reset()
         model.train()
+        total_iters = len(train_loader)
         # 每个 epoch 开始后立即按照配置冻结/解冻对应模块
         core_model = model.module if hasattr(model, "module") else model
         if hasattr(core_model, "update_freeze_schedule"):
@@ -161,13 +179,41 @@ def do_train(cfg,
                 if dist.get_rank() == 0:
                     if (n_iter + 1) % log_period == 0:
                         base_lr = scheduler._get_lr(epoch)[0] if cfg.SOLVER.WARMUP_METHOD == 'cosine' else scheduler.get_lr()[0]
-                        logger.info("Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Base Lr: {:.2e}"
-                                    .format(epoch, (n_iter + 1), len(train_loader), loss_meter.avg, acc_meter.avg, base_lr))
+                        iter_done = n_iter + 1
+                        eta_seconds = 0.0
+                        if iter_done and total_training_iters > 0 and iters_per_epoch > 0:
+                            global_iters_done = (epoch - 1) * iters_per_epoch + iter_done
+                            remaining_iters = max(total_training_iters - global_iters_done, 0)
+                            if global_iters_done > 0:
+                                training_elapsed = max(time.time() - training_start_time - total_eval_time_spent, 0.0)
+                                avg_iter_time = training_elapsed / global_iters_done
+                                eta_seconds = avg_iter_time * remaining_iters
+                                if eval_time_meter.count > 0:
+                                    remaining_eval_events = max(total_eval_events - evals_completed, 0)
+                                    if remaining_eval_events:
+                                        eta_seconds += eval_time_meter.avg * remaining_eval_events
+                        eta_string = _format_eta(eta_seconds)
+                        logger.info("Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Base Lr: {:.2e}, ETA: {}"
+                                    .format(epoch, (n_iter + 1), total_iters, loss_meter.avg, acc_meter.avg, base_lr, eta_string))
             else:
                 if (n_iter + 1) % log_period == 0:
                     base_lr = scheduler._get_lr(epoch)[0] if cfg.SOLVER.WARMUP_METHOD == 'cosine' else scheduler.get_lr()[0]
-                    logger.info("Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Base Lr: {:.2e}"
-                                .format(epoch, (n_iter + 1), len(train_loader), loss_meter.avg, acc_meter.avg, base_lr))
+                    iter_done = n_iter + 1
+                    eta_seconds = 0.0
+                    if iter_done and total_training_iters > 0 and iters_per_epoch > 0:
+                        global_iters_done = (epoch - 1) * iters_per_epoch + iter_done
+                        remaining_iters = max(total_training_iters - global_iters_done, 0)
+                        if global_iters_done > 0:
+                            training_elapsed = max(time.time() - training_start_time - total_eval_time_spent, 0.0)
+                            avg_iter_time = training_elapsed / global_iters_done
+                            eta_seconds = avg_iter_time * remaining_iters
+                            if eval_time_meter.count > 0:
+                                remaining_eval_events = max(total_eval_events - evals_completed, 0)
+                                if remaining_eval_events:
+                                    eta_seconds += eval_time_meter.avg * remaining_eval_events
+                    eta_string = _format_eta(eta_seconds)
+                    logger.info("Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Base Lr: {:.2e}, ETA: {}"
+                                .format(epoch, (n_iter + 1), total_iters, loss_meter.avg, acc_meter.avg, base_lr, eta_string))
         if tb_writer is not None:
             tb_writer.flush()
         end_time = time.time()
@@ -195,6 +241,7 @@ def do_train(cfg,
             eval_results = None
             if cfg.MODEL.DIST_TRAIN:
                 if dist.get_rank() == 0:
+                    eval_start_time = time.time()
                     model.eval()
                     for n_iter, (img, vid, camid, camids, target_view, _) in enumerate(val_loader):
                         with torch.no_grad():
@@ -214,7 +261,12 @@ def do_train(cfg,
                         for r in [1, 5, 10]:
                             logger.info("CMC curve [{}], Rank-{:<3}:{:.1%}".format(name, r, cmc[r - 1]))
                     torch.cuda.empty_cache()
+                    eval_duration = time.time() - eval_start_time
+                    eval_time_meter.update(eval_duration)
+                    total_eval_time_spent += eval_duration
+                    evals_completed += 1
             else:
+                eval_start_time = time.time()
                 model.eval()
                 for n_iter, (img, vid, camid, camids, target_view, _) in enumerate(val_loader):
                     with torch.no_grad():
@@ -234,6 +286,10 @@ def do_train(cfg,
                     for r in [1, 5, 10]:
                         logger.info("CMC curve [{}], Rank-{:<3}:{:.1%}".format(name, r, cmc[r - 1]))
                 torch.cuda.empty_cache()
+                eval_duration = time.time() - eval_start_time
+                eval_time_meter.update(eval_duration)
+                total_eval_time_spent += eval_duration
+                evals_completed += 1
             # === TB: 评估标量（按 epoch） ===
             if tb_writer is not None and ((not cfg.MODEL.DIST_TRAIN) or dist.get_rank() == 0) and eval_results is not None:
                 for name, metrics in eval_results.items():
