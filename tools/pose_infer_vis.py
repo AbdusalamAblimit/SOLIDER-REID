@@ -197,7 +197,7 @@ def main():
     output_dir = pathlib.Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    logger = setup_logger("pose_vis", output_dir)
+    logger = setup_logger("pose_vis", output_dir,if_train= False)
     logger.info(args)
     logger.info("Running with config:\n%s", cfg)
 
