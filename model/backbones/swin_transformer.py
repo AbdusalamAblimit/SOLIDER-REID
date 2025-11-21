@@ -714,6 +714,9 @@ class WindowMSA(BaseModule):
             attn = attn.view(-1, self.num_heads, N, N)
         attn = self.softmax(attn)
 
+        # cache attention for visualization (e.g., Grad-CAM over window attention)
+        self.last_attn = attn
+
         attn = self.attn_drop(attn)
 
         x = (attn @ v).transpose(1, 2).reshape(B, N, C)
