@@ -360,6 +360,22 @@ class build_transformer(nn.Module):
             else:
                 return global_feat, featmaps
 
+    def load_param(self, trained_path):
+        param_dict = torch.load(trained_path)
+        if 'state_dict' in param_dict:
+            param_dict = param_dict['state_dict']
+        for name, param in param_dict.items():
+            clean_name = name.replace('module.', '')
+            if 'classifier' in clean_name:
+                continue
+            if clean_name not in self.state_dict():
+                continue
+            try:
+                self.state_dict()[clean_name].copy_(param)
+            except Exception:
+                continue
+        print('Loading pretrained model from {}'.format(trained_path))
+
     # -------------------- 参数冻结调度相关的辅助函数 --------------------
     def _is_freeze_enabled(self, freeze_cfg: Any) -> bool:
         """读取配置开关，判断是否真正启用冻结策略。"""
