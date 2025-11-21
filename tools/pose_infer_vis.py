@@ -1,6 +1,7 @@
 import argparse
 import os
 import pathlib
+import sys
 from typing import Dict, List, Optional, Sequence, Tuple
 
 import cv2
@@ -10,6 +11,10 @@ import torch.nn.functional as F
 import torchvision.transforms as T
 from PIL import Image
 from tqdm import tqdm
+
+PROJECT_ROOT = pathlib.Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from config import cfg
 from model import make_model
