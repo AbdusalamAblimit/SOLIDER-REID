@@ -125,18 +125,17 @@ def _overlay_heatmap(image: Image.Image, heatmap: torch.Tensor) -> Image.Image:
     return Image.fromarray(blended)
 
 
-def _pick_target_module(backbone: torch.nn.Module, branch: str, target_stage: int):
-    if hasattr(backbone, "swin") and branch == "local" and getattr(backbone, "local_stages", None):
+def _pick_target_module(backbone: torch.nn.Module, branch: str):
+    """Pick the last stage of the requested branch for Grad-CAM hooks."""
+
+    if branch == "local" and hasattr(backbone, "local_stages") and backbone.local_stages:
         stage_list = backbone.local_stages
     elif hasattr(backbone, "swin"):
         stage_list = backbone.swin.stages
     else:
         stage_list = backbone.stages
 
-    if target_stage < 0:
-        target_stage = len(stage_list) + target_stage
-    target_stage = max(0, min(target_stage, len(stage_list) - 1))
-    stage = stage_list[target_stage]
+    stage = stage_list[-1]
     return stage.blocks[-1].attn
 
 
@@ -167,10 +166,16 @@ def _collect_pose_map(backbone: torch.nn.Module, input_hw: Tuple[int, int]) -> O
     return hm
 
 
-def _visualize_single(model: torch.nn.Module, image: Image.Image, tensor: torch.Tensor, branch: str,
-                      target_stage: int, cls_idx: Optional[int], device: torch.device) -> List[Image.Image]:
+def _visualize_single(
+    model: torch.nn.Module,
+    image: Image.Image,
+    tensor: torch.Tensor,
+    branch: str,
+    cls_idx: Optional[int],
+    device: torch.device,
+) -> List[Image.Image]:
     backbone = _fetch_backbone(model)
-    module = _pick_target_module(backbone, branch, target_stage)
+    module = _pick_target_module(backbone, branch)
     hook = WindowAttentionHook(module)
     tensor = tensor.unsqueeze(0).to(device)
     tensor.requires_grad_(True)
@@ -224,35 +229,34 @@ def build_model_from_cfg(cfg, num_classes: int, device: torch.device):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Grad-CAM visualization for Swin/Pose-Swin")
+    parser = argparse.ArgumentParser(description="Grad-CAM visualization for Pose Swin branches")
     parser.add_argument("image", help="path to an input image")
-    parser.add_argument("--baseline-config", required=True, help="config file for baseline model")
-    parser.add_argument("--pose-config", default=None, help="config file for pose model")
+    parser.add_argument("--config", required=True, help="config file for pose model")
     parser.add_argument("--num-classes", type=int, default=751, help="number of ID classes for classifier heads")
-    parser.add_argument("--target-stage", type=int, default=-1, help="stage index to attach Grad-CAM (default: last)")
-    parser.add_argument("--branch", choices=["global", "local", "concat"], default="global", help="feature branch")
+    parser.add_argument(
+        "--branches",
+        nargs="+",
+        choices=["global", "local"],
+        default=["global", "local"],
+        help="pose branches to visualize (default: both global and local)",
+    )
     parser.add_argument("--class-idx", type=int, default=None, help="target class for CAM; defaults to feature norm")
     parser.add_argument("--output", default="cam_vis.png", help="output filename")
-    parser.add_argument("--opts", nargs=argparse.REMAINDER, help="additional baseline config options")
-    parser.add_argument("--pose-opts", nargs=argparse.REMAINDER, help="additional pose config options")
+    parser.add_argument("--opts", nargs=argparse.REMAINDER, help="additional pose config options")
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    baseline_cfg = load_cfg(args.baseline_config, args.opts)
-    pose_cfg = load_cfg(args.pose_config, args.pose_opts) if args.pose_config else None
+    cfg = load_cfg(args.config, args.opts)
 
-    image, tensor = _load_image(args.image, tuple(baseline_cfg.INPUT.SIZE_TEST))
+    image, tensor = _load_image(args.image, tuple(cfg.INPUT.SIZE_TEST))
 
-    baseline_model = build_model_from_cfg(baseline_cfg, args.num_classes, device)
-    outputs = []
-    outputs.extend(_visualize_single(baseline_model, image, tensor, args.branch, args.target_stage, args.class_idx, device))
-
-    if pose_cfg is not None:
-        pose_model = build_model_from_cfg(pose_cfg, args.num_classes, device)
-        outputs.extend(_visualize_single(pose_model, image, tensor, args.branch, args.target_stage, args.class_idx, device))
+    model = build_model_from_cfg(cfg, args.num_classes, device)
+    outputs: List[Image.Image] = []
+    for branch in args.branches:
+        outputs.extend(_visualize_single(model, image, tensor, branch, args.class_idx, device))
 
     widths, heights = zip(*(img.size for img in outputs))
     total_w = sum(widths)
