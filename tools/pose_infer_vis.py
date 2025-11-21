@@ -72,7 +72,12 @@ def load_model(weight_path: str):
     os.environ["CUDA_VISIBLE_DEVICES"] = cfg.MODEL.DEVICE_ID
     device = torch.device(cfg.MODEL.DEVICE if torch.cuda.is_available() else "cpu")
     model = make_model(cfg, num_class=1, camera_num=1, view_num=1, semantic_weight=cfg.MODEL.SEMANTIC_WEIGHT)
-    model.load_param(weight_path)
+    if hasattr(model, "load_param"):
+        model.load_param(weight_path)
+    else:
+        state = torch.load(weight_path)
+        state = state.get("state_dict", state)
+        model.load_state_dict({k.replace("module.", ""): v for k, v in state.items()}, strict=False)
     model.to(device)
     model.eval()
     return model, device
