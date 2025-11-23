@@ -124,6 +124,20 @@ class WindowAttentionHook:
         return merged
 
 
+def _build_cam_from_fmap(fmap: torch.Tensor, grad: torch.Tensor, input_hw: Tuple[int, int]) -> CamResult:
+    assert fmap.dim() == 4 and grad.dim() == 4, "Feature maps must be BCHW"
+
+    weights = grad.mean(dim=(2, 3))  # (B, C)
+    cam = (fmap * weights[:, :, None, None]).sum(dim=1, keepdim=True)
+    cam = F.relu(cam)
+    cam = F.interpolate(cam, size=input_hw, mode="bilinear", align_corners=False)
+    cam = (cam - cam.amin(dim=(2, 3), keepdim=True)) / (
+        cam.amax(dim=(2, 3), keepdim=True) - cam.amin(dim=(2, 3), keepdim=True) + 1e-6
+    )
+
+    return CamResult(cam=cam, attention=None)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Grad-CAM visualization for Pose-Swin branches")
     parser.add_argument("image_dir", type=str, help="Directory containing input images")
@@ -283,14 +297,19 @@ def _visualize_single(
 ) -> List[Image.Image]:
     backbone = _fetch_backbone(model)
     module = _pick_target_module(backbone, branch, stage_index, block_index, hook_layer)
-    hook = WindowAttentionHook(module)
+    hook = WindowAttentionHook(module) if hook_layer == "attn" else None
     tensor = tensor.unsqueeze(0).to(device)
     tensor.requires_grad_(True)
     model.zero_grad(set_to_none=True)
 
     with torch.enable_grad():
         model_out = model(tensor)
+        featmaps = model_out[1] if isinstance(model_out, tuple) else None
         outputs = model_out[0] if isinstance(model_out, tuple) else model_out
+        fmap_target = None
+        if isinstance(featmaps, dict) and branch in featmaps and featmaps[branch]:
+            fmap_target = featmaps[branch][-1]
+            fmap_target.retain_grad()
         if isinstance(outputs, dict):
             if branch in outputs:
                 feat_vec = outputs[branch]
@@ -308,8 +327,16 @@ def _visualize_single(
         scalar = _select_scalar(feat_vec, classifier, cls_idx)
         scalar.backward()
 
-    cam_pack = hook.build_cam(image.size[::-1])
-    hook.close()
+    if fmap_target is not None and fmap_target.grad is not None:
+        cam_pack = _build_cam_from_fmap(fmap_target, fmap_target.grad, image.size[::-1])
+        if hook is not None and hook.attention is not None:
+            cam_pack.attention = hook._build_attention_map(image.size[::-1])
+        if hook is not None:
+            hook.close()
+    else:
+        fallback_hook = hook or WindowAttentionHook(module)
+        cam_pack = fallback_hook.build_cam(image.size[::-1])
+        fallback_hook.close()
     cam_img = _overlay_heatmap(image, cam_pack.cam[0, 0])
     results = [cam_img]
     if cam_pack.attention is not None:
