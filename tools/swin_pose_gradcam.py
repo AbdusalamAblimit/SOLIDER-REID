@@ -156,8 +156,13 @@ def _extract_pose_outputs(outputs) -> Tuple[Optional[torch.Tensor], Optional[tor
     local_feat: Optional[torch.Tensor] = None
 
     if isinstance(outputs, dict):
-        global_maps = list(outputs.get("global_maps") or [])
-        local_maps = list(outputs.get("local_maps") or [])
+        gm = outputs.get("global_maps")
+        lm = outputs.get("local_maps")
+
+        if gm is not None:
+            global_maps = list(gm) if isinstance(gm, (list, tuple)) else [gm]
+        if lm is not None:
+            local_maps = list(lm) if isinstance(lm, (list, tuple)) else [lm]
         global_feat = outputs.get("global_feat")
         local_feat = outputs.get("local_feat")
     elif isinstance(outputs, (list, tuple)):
@@ -165,17 +170,34 @@ def _extract_pose_outputs(outputs) -> Tuple[Optional[torch.Tensor], Optional[tor
         featmaps = outputs[1] if len(outputs) > 1 else None
 
         if isinstance(feat_dict, dict):
-            global_feat = feat_dict.get("global") or feat_dict.get("global_feat")
-            local_feat = feat_dict.get("local") or feat_dict.get("local_feat")
+            global_feat = feat_dict.get("global")
+            if global_feat is None:
+                global_feat = feat_dict.get("global_feat")
+
+            local_feat = feat_dict.get("local")
+            if local_feat is None:
+                local_feat = feat_dict.get("local_feat")
         elif isinstance(feat_dict, (list, tuple)) and len(feat_dict) >= 2:
             global_feat, local_feat = feat_dict[0], feat_dict[1]
 
         if isinstance(featmaps, dict):
-            global_maps = list(featmaps.get("global") or [])
-            local_maps = list(featmaps.get("local") or [])
+            gm = featmaps.get("global")
+            if gm is None:
+                gm = featmaps.get("global_maps")
+            lm = featmaps.get("local")
+            if lm is None:
+                lm = featmaps.get("local_maps")
+
+            if gm is not None:
+                global_maps = list(gm) if isinstance(gm, (list, tuple)) else [gm]
+            if lm is not None:
+                local_maps = list(lm) if isinstance(lm, (list, tuple)) else [lm]
         elif isinstance(featmaps, (list, tuple)) and len(featmaps) >= 2:
-            global_maps = list(featmaps[0] or [])
-            local_maps = list(featmaps[1] or [])
+            gm, lm = featmaps[0], featmaps[1]
+            if gm is not None:
+                global_maps = list(gm) if isinstance(gm, (list, tuple)) else [gm]
+            if lm is not None:
+                local_maps = list(lm) if isinstance(lm, (list, tuple)) else [lm]
 
     return global_feat, local_feat, global_maps, local_maps
 
