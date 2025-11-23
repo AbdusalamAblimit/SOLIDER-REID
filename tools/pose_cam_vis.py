@@ -240,7 +240,13 @@ def _visualize_single(
         model_out = model(tensor)
         outputs = model_out[0] if isinstance(model_out, tuple) else model_out
         if isinstance(outputs, dict):
-            feat_vec = outputs.get(branch) or outputs.get("global") or next(iter(outputs.values()))
+            if branch in outputs:
+                feat_vec = outputs[branch]
+            elif "global" in outputs:
+                feat_vec = outputs["global"]
+            else:
+                feat_vec = next(iter(outputs.values()))
+
             classifier = getattr(model, f"classifier_{branch}", None) or getattr(model, "classifier_global", None)
         else:
             feat_vec = outputs
