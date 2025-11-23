@@ -70,7 +70,8 @@ def get_transform() -> T.Compose:
 
 def load_model(weight_path: str):
     os.environ["CUDA_VISIBLE_DEVICES"] = cfg.MODEL.DEVICE_ID
-    device = torch.device(cfg.MODEL.DEVICE if torch.cuda.is_available() else "cpu")
+    # device = torch.device(cfg.MODEL.DEVICE if torch.cuda.is_available() else "cpu")
+    device  = 'cpu'
     model = make_model(cfg, num_class=1, camera_num=1, view_num=1, semantic_weight=cfg.MODEL.SEMANTIC_WEIGHT)
     if hasattr(model, "load_param"):
         model.load_param(weight_path)
@@ -147,30 +148,67 @@ def visualize_feature_maps(
         _save_map_image(overlay, out_dir / f"{stem}_{prefix}_stage{idx}_overlay.png")
 
 
-def visualize_tb_cache(
-    cache: Dict[str, torch.Tensor],
-    stem: str,
-    out_dir: pathlib.Path,
-    sample_idx: int,
-) -> None:
+def visualize_tb_cache(cache, stem, out_dir, sample_idx):
     if not cache:
         return
-    for name in ("in_feat", "fused_feat", "hm", "hm_proj"):
-        tensor = cache.get(name)
+
+    in_feat = cache.get("in_feat")
+    fused_feat = cache.get("fused_feat")
+    hm = cache.get("hm")
+    hm_proj = cache.get("hm_proj")
+
+    # 额外构造几张辅助图
+    extra = {}
+    if in_feat is not None and fused_feat is not None:
+        extra["feat_delta"] = (fused_feat - in_feat).abs()
+    if hm_proj is not None:
+        # 对应 mul 模式里的 gate01 = sigmoid(hmp)
+        extra["gate01"] = torch.sigmoid(hm_proj)
+
+    # 统一放到一个 dict 里
+    all_tensors = {
+        "in_feat": in_feat,
+        "fused_feat": fused_feat,
+        "feat_delta": extra.get("feat_delta"),
+        "hm": hm,
+        "hm_proj": hm_proj,
+        "gate01": extra.get("gate01"),
+    }
+
+    # 用来暂存已经画好的伪彩色图
+    rendered_maps = {}
+
+    for name, tensor in all_tensors.items():
         if tensor is None or sample_idx >= tensor.size(0):
             continue
-        reduce_type = "sum" if name == "hm" else "mean"
-        reduced = _normalize_tensor(tensor[sample_idx : sample_idx + 1], reduce=reduce_type)
+
+        t = tensor[sample_idx : sample_idx + 1].float()
+
+        if name in ("in_feat", "fused_feat", "feat_delta", "gate01"):
+            t = t.abs()
+            reduce_type = "sum"
+        elif name == "hm":
+            reduce_type = "sum"
+        else:  # hm_proj
+            reduce_type = "mean"
+
+        reduced = _normalize_tensor(t, reduce=reduce_type)
         img = reduced.squeeze(0).squeeze(0).cpu().numpy()
         cmap = cv2.COLORMAP_JET if name.startswith("hm") else cv2.COLORMAP_VIRIDIS
         mapped = cv2.applyColorMap(_to_uint8(img), cmap)
-        _save_map_image(mapped, out_dir / f"{stem}_tb_{name}.png")
-        if name == "hm_proj":
-            gate = torch.sigmoid(tensor[sample_idx : sample_idx + 1])
-            gate_img = _normalize_tensor(gate, reduce="mean").squeeze(0).squeeze(0).cpu().numpy()
-            gate_mapped = cv2.applyColorMap(_to_uint8(gate_img), cv2.COLORMAP_PLASMA)
-            _save_map_image(gate_mapped, out_dir / f"{stem}_tb_gate.png")
 
+        # 保存单张图
+        _save_map_image(mapped, out_dir / f"{stem}_tb_{name}.png")
+        rendered_maps[name] = mapped
+
+    # ===== 新增：in_feat / fused_feat 左右拼接对比图 =====
+    if "in_feat" in rendered_maps and "fused_feat" in rendered_maps:
+        # 按宽度方向拼接 -> [H, W_in + W_fused, 3]
+        concat = np.concatenate(
+            [rendered_maps["in_feat"], rendered_maps["fused_feat"]],
+            axis=1
+        )
+        _save_map_image(concat, out_dir / f"{stem}_tb_in_vs_fused.png")
 
 def prepare_batch(
     paths: List[pathlib.Path],
