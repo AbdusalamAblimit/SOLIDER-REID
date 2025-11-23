@@ -5,6 +5,7 @@ point it at an image directory, weight file and config, then export
 side-by-side Grad-CAM overlays for the global/local branches.
 """
 import argparse
+import math
 import pathlib
 import sys
 from dataclasses import dataclass
@@ -32,7 +33,7 @@ class CamResult:
 
 
 class WindowAttentionHook:
-    """Register hooks on a ``ShiftWindowMSA`` module for Grad-CAM."""
+    """Register hooks on a target module for Grad-CAM."""
 
     def __init__(self, module: torch.nn.Module):
         self.module = module
@@ -61,16 +62,35 @@ class WindowAttentionHook:
             self.grad = grad_outputs[0]
 
     def build_cam(self, input_hw: Tuple[int, int]) -> CamResult:
-        assert self.fmap is not None and self.grad is not None and self.hw is not None
+        assert self.fmap is not None and self.grad is not None
 
         grad = self.grad
         fmap = self.fmap
-        weights = grad.mean(dim=1)  # (B,C)
-        cam = (fmap * weights[:, None, :]).sum(dim=2)  # (B,N)
-        cam = F.relu(cam)
-        B, N = cam.shape
-        H, W = self.hw
-        cam = cam.view(B, 1, H, W)
+
+        hw = self.hw
+        if hw is None and fmap.dim() == 3:
+            tokens = fmap.shape[1]
+            h = int(math.sqrt(tokens))
+            hw = (h, max(tokens // max(h, 1), 1))
+        elif hw is None and fmap.dim() == 4:
+            hw = (fmap.shape[2], fmap.shape[3])
+
+        assert hw is not None, "Unable to infer spatial dimensions for CAM"
+
+        if fmap.dim() == 3:
+            weights = grad.mean(dim=1)  # (B,C)
+            cam = (fmap * weights[:, None, :]).sum(dim=2)  # (B,N)
+            cam = F.relu(cam)
+            B = cam.shape[0]
+            H, W = hw
+            cam = cam.view(B, 1, H, W)
+        elif fmap.dim() == 4:
+            weights = grad.mean(dim=(2, 3))  # (B,C)
+            cam = (fmap * weights[:, :, None, None]).sum(dim=1, keepdim=True)
+            cam = F.relu(cam)
+        else:
+            raise ValueError(f"Unsupported fmap dim: {fmap.dim()}")
+
         cam = F.interpolate(cam, size=input_hw, mode="bilinear", align_corners=False)
         cam = (cam - cam.amin(dim=(2, 3), keepdim=True)) / (
             cam.amax(dim=(2, 3), keepdim=True) - cam.amin(dim=(2, 3), keepdim=True) + 1e-6
@@ -104,17 +124,50 @@ class WindowAttentionHook:
         return merged
 
 
+def _build_cam_from_fmap(fmap: torch.Tensor, grad: torch.Tensor, input_hw: Tuple[int, int]) -> CamResult:
+    assert fmap.dim() == 4 and grad.dim() == 4, "Feature maps must be BCHW"
+
+    weights = grad.mean(dim=(2, 3))  # (B, C)
+    cam = (fmap * weights[:, :, None, None]).sum(dim=1, keepdim=True)
+    cam = F.relu(cam)
+    cam = F.interpolate(cam, size=input_hw, mode="bilinear", align_corners=False)
+    cam = (cam - cam.amin(dim=(2, 3), keepdim=True)) / (
+        cam.amax(dim=(2, 3), keepdim=True) - cam.amin(dim=(2, 3), keepdim=True) + 1e-6
+    )
+
+    return CamResult(cam=cam, attention=None)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Grad-CAM visualization for Pose-Swin branches")
     parser.add_argument("image_dir", type=str, help="Directory containing input images")
     parser.add_argument("weight", type=str, help="Path to the model weight (.pth)")
     parser.add_argument("--config_file", default="", type=str, help="Path to config file for the model")
     parser.add_argument("--output_dir", default="./pose_cam", type=str, help="Directory to save visualizations")
-    parser.add_argument("--branches", nargs="+", choices=["global", "local"], default=["global", "local"],
-                        help="Branches to visualize")
+    parser.add_argument(
+        "--branches",
+        nargs="+",
+        choices=["global", "local"],
+        default=["global", "local"],
+        help="Branches to visualize",
+    )
     parser.add_argument("--stage_index", type=int, default=-1, help="Stage index to hook (default: last)")
-    parser.add_argument("--block_index", type=int, default=-1, help="Block index within the stage to hook (default: last)")
-    parser.add_argument("--class_idx", type=int, default=None, help="Target class for CAM; defaults to feature norm")
+    parser.add_argument(
+        "--block_index", type=int, default=-1, help="Block index within the stage to hook (default: last)"
+    )
+    parser.add_argument(
+        "--hook_layer",
+        type=str,
+        default="block",
+        choices=["block", "attn", "norm2", "ffn"],
+        help="Module inside the block to hook; defaults to the block output for spatially faithful features.",
+    )
+    parser.add_argument(
+        "--class_idx",
+        type=int,
+        default=None,
+        help="Target class for CAM; defaults to classifier top-1 when available",
+    )
     parser.add_argument(
         "opts",
         help="Modify config options using the command-line",
@@ -193,16 +246,28 @@ def _get_stage_list(backbone: torch.nn.Module, branch: str):
     return backbone.stages
 
 
-def _pick_target_module(backbone: torch.nn.Module, branch: str, stage_index: int, block_index: int):
+def _pick_target_module(
+    backbone: torch.nn.Module, branch: str, stage_index: int, block_index: int, hook_layer: str
+):
     stages = _get_stage_list(backbone, branch)
     stage = stages[stage_index]
     block = stage.blocks[block_index]
-    return block.attn
+
+    if hook_layer == "attn":
+        return block.attn
+    if hook_layer == "norm2":
+        return block.norm2
+    if hook_layer == "ffn":
+        return block.ffn
+    return block
 
 
 def _select_scalar(output: torch.Tensor, classifier: Optional[torch.nn.Module], cls_idx: Optional[int]):
-    if classifier is not None and cls_idx is not None:
+    if classifier is not None:
         logits = classifier(output)
+        if cls_idx is None:
+            top1 = logits.argmax(dim=1)
+            return logits.gather(1, top1.unsqueeze(1)).sum()
         return logits[:, cls_idx].sum()
     return output.norm(p=2, dim=1).sum()
 
@@ -226,19 +291,25 @@ def _visualize_single(
     branch: str,
     stage_index: int,
     block_index: int,
+    hook_layer: str,
     cls_idx: Optional[int],
     device: torch.device,
 ) -> List[Image.Image]:
     backbone = _fetch_backbone(model)
-    module = _pick_target_module(backbone, branch, stage_index, block_index)
-    hook = WindowAttentionHook(module)
+    module = _pick_target_module(backbone, branch, stage_index, block_index, hook_layer)
+    hook = WindowAttentionHook(module) if hook_layer == "attn" else None
     tensor = tensor.unsqueeze(0).to(device)
     tensor.requires_grad_(True)
     model.zero_grad(set_to_none=True)
 
     with torch.enable_grad():
         model_out = model(tensor)
+        featmaps = model_out[1] if isinstance(model_out, tuple) else None
         outputs = model_out[0] if isinstance(model_out, tuple) else model_out
+        fmap_target = None
+        if isinstance(featmaps, dict) and branch in featmaps and featmaps[branch]:
+            fmap_target = featmaps[branch][-1]
+            fmap_target.retain_grad()
         if isinstance(outputs, dict):
             if branch in outputs:
                 feat_vec = outputs[branch]
@@ -247,15 +318,25 @@ def _visualize_single(
             else:
                 feat_vec = next(iter(outputs.values()))
 
-            classifier = getattr(model, f"classifier_{branch}", None) or getattr(model, "classifier_global", None)
+            classifier = getattr(model, f"classifier_{branch}", None)
+            if classifier is None:
+                classifier = getattr(model, "classifier_global", None)
         else:
             feat_vec = outputs
             classifier = getattr(model, "classifier", None)
         scalar = _select_scalar(feat_vec, classifier, cls_idx)
         scalar.backward()
 
-    cam_pack = hook.build_cam(image.size[::-1])
-    hook.close()
+    if fmap_target is not None and fmap_target.grad is not None:
+        cam_pack = _build_cam_from_fmap(fmap_target, fmap_target.grad, image.size[::-1])
+        if hook is not None and hook.attention is not None:
+            cam_pack.attention = hook._build_attention_map(image.size[::-1])
+        if hook is not None:
+            hook.close()
+    else:
+        fallback_hook = hook or WindowAttentionHook(module)
+        cam_pack = fallback_hook.build_cam(image.size[::-1])
+        fallback_hook.close()
     cam_img = _overlay_heatmap(image, cam_pack.cam[0, 0])
     results = [cam_img]
     if cam_pack.attention is not None:
@@ -276,6 +357,7 @@ def render_branches(
     branches: Sequence[str],
     stage_index: int,
     block_index: int,
+    hook_layer: str,
     cls_idx: Optional[int],
     device: torch.device,
     out_dir: pathlib.Path,
@@ -286,7 +368,9 @@ def render_branches(
     outputs: List[Image.Image] = [image]
     for branch in branches:
         outputs.extend(
-            _visualize_single(model, image, tensor, branch, stage_index, block_index, cls_idx, device)
+            _visualize_single(
+                model, image, tensor, branch, stage_index, block_index, hook_layer, cls_idx, device
+            )
         )
 
     widths, heights = zip(*(img.size for img in outputs))
@@ -322,6 +406,7 @@ def main():
             args.branches,
             args.stage_index,
             args.block_index,
+            args.hook_layer,
             args.class_idx,
             device,
             pathlib.Path(args.output_dir),
