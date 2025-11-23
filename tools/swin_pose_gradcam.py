@@ -142,6 +142,44 @@ def _retain_grads(tensors: Iterable[torch.Tensor]) -> None:
             t.retain_grad()
 
 
+def _extract_pose_outputs(outputs) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor], List[torch.Tensor], List[torch.Tensor]]:
+    """Normalize model outputs to a consistent (feat, maps) tuple.
+
+    Pose-Swin heads sometimes return a dict (when called directly) and other
+    times a tuple ``(feat_dict, featmaps)`` (when wrapped by the reid model).
+    This helper flattens both cases so the Grad-CAM pipeline can stay simple.
+    """
+
+    global_maps: List[torch.Tensor] = []
+    local_maps: List[torch.Tensor] = []
+    global_feat: Optional[torch.Tensor] = None
+    local_feat: Optional[torch.Tensor] = None
+
+    if isinstance(outputs, dict):
+        global_maps = list(outputs.get("global_maps") or [])
+        local_maps = list(outputs.get("local_maps") or [])
+        global_feat = outputs.get("global_feat")
+        local_feat = outputs.get("local_feat")
+    elif isinstance(outputs, (list, tuple)):
+        feat_dict = outputs[0] if len(outputs) > 0 else None
+        featmaps = outputs[1] if len(outputs) > 1 else None
+
+        if isinstance(feat_dict, dict):
+            global_feat = feat_dict.get("global") or feat_dict.get("global_feat")
+            local_feat = feat_dict.get("local") or feat_dict.get("local_feat")
+        elif isinstance(feat_dict, (list, tuple)) and len(feat_dict) >= 2:
+            global_feat, local_feat = feat_dict[0], feat_dict[1]
+
+        if isinstance(featmaps, dict):
+            global_maps = list(featmaps.get("global") or [])
+            local_maps = list(featmaps.get("local") or [])
+        elif isinstance(featmaps, (list, tuple)) and len(featmaps) >= 2:
+            global_maps = list(featmaps[0] or [])
+            local_maps = list(featmaps[1] or [])
+
+    return global_feat, local_feat, global_maps, local_maps
+
+
 def run_grad_cam(model, device: torch.device, image_path: pathlib.Path, transform: T.Compose, out_dir: pathlib.Path):
     image = Image.open(image_path).convert("RGB")
     image_tensor = transform(image).unsqueeze(0).to(device)
@@ -151,17 +189,22 @@ def run_grad_cam(model, device: torch.device, image_path: pathlib.Path, transfor
     model.zero_grad(set_to_none=True)
     with torch.set_grad_enabled(True):
         outputs = model(image_tensor)
-        global_maps: List[torch.Tensor] = outputs.get("global_maps", [])
-        local_maps: List[torch.Tensor] = outputs.get("local_maps", [])
-        global_feat: torch.Tensor = outputs["global_feat"]
-        local_feat: torch.Tensor = outputs["local_feat"]
+        global_feat, local_feat, global_maps, local_maps = _extract_pose_outputs(outputs)
 
         _retain_grads(global_maps)
         _retain_grads(local_maps)
 
         # Use the L2 norm of both heads as the optimization target to backpropagate.
-        score = global_feat.norm(p=2, dim=1).sum() + local_feat.norm(p=2, dim=1).sum()
-        score.backward()
+        score_terms = []
+        if global_feat is not None:
+            score_terms.append(global_feat.norm(p=2, dim=1).sum())
+        if local_feat is not None:
+            score_terms.append(local_feat.norm(p=2, dim=1).sum())
+
+        if not score_terms:
+            raise RuntimeError("Model outputs do not contain global/local features for Grad-CAM.")
+
+        torch.stack(score_terms).sum().backward()
 
     branches = [("global", global_maps), ("local", local_maps)]
     stem = image_path.stem
