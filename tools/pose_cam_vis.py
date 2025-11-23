@@ -264,11 +264,18 @@ def _pick_target_module(
 
 def _select_scalar(output: torch.Tensor, classifier: Optional[torch.nn.Module], cls_idx: Optional[int]):
     if classifier is not None:
-        logits = classifier(output)
-        if cls_idx is None:
-            top1 = logits.argmax(dim=1)
-            return logits.gather(1, top1.unsqueeze(1)).sum()
-        return logits[:, cls_idx].sum()
+        if cls_idx is not None:
+            logits = classifier(output)
+            return logits[:, cls_idx].sum()
+
+        try:
+            logits = classifier(output)
+        except TypeError:
+            return output.norm(p=2, dim=1).sum()
+
+        top1 = logits.argmax(dim=1)
+        return logits.gather(1, top1.unsqueeze(1)).sum()
+
     return output.norm(p=2, dim=1).sum()
 
 
