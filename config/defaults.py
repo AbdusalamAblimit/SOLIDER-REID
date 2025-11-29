@@ -62,6 +62,9 @@ _C.MODEL.TRANSFORMER_TYPE = 'None'
 _C.MODEL.STRIDE_SIZE = [16, 16]
 _C.MODEL.GEM_POOLING = False
 _C.MODEL.STEM_CONV = False
+# Enable gradient checkpointing for transformer backbones to trade compute
+# for lower memory usage. Default False keeps previous graph/runtime intact.
+_C.MODEL.WITH_CP = False
 
 # JPM Parameter
 _C.MODEL.JPM = False

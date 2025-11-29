@@ -199,6 +199,7 @@ class build_transformer(nn.Module):
             pretrained=model_path,
             convert_weights=convert_weights,
             semantic_weight=semantic_weight,
+            with_cp=cfg.MODEL.WITH_CP,
         )
         if model_path != '':
             self.base.init_weights(model_path)
@@ -534,7 +535,16 @@ class build_transformer_local(nn.Module):
         else:
             view_num = 0
 
-        self.base = factory[cfg.MODEL.TRANSFORMER_TYPE](img_size=cfg.INPUT.SIZE_TRAIN, sie_xishu=cfg.MODEL.SIE_COE, local_feature=cfg.MODEL.JPM, camera=camera_num, view=view_num, stride_size=cfg.MODEL.STRIDE_SIZE, drop_path_rate=cfg.MODEL.DROP_PATH)
+        self.base = factory[cfg.MODEL.TRANSFORMER_TYPE](
+            img_size=cfg.INPUT.SIZE_TRAIN,
+            sie_xishu=cfg.MODEL.SIE_COE,
+            local_feature=cfg.MODEL.JPM,
+            camera=camera_num,
+            view=view_num,
+            stride_size=cfg.MODEL.STRIDE_SIZE,
+            drop_path_rate=cfg.MODEL.DROP_PATH,
+            with_cp=cfg.MODEL.WITH_CP,
+        )
         self.in_planes = self.base.in_planes
         if pretrain_choice == 'imagenet':
             self.base.load_param(model_path,hw_ratio=cfg.MODEL.PRETRAIN_HW_RATIO)
