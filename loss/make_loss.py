@@ -53,6 +53,14 @@ def make_loss(cfg, num_classes):    # modified by gu
         global_weight, local_weight = _get_pose_branch_weights()
         return global_weight * global_loss + local_weight * local_loss
 
+    loss_strategy = getattr(cfg.MODEL.POSE, 'LOSS_STRATEGY', 'unified')
+    # SPTrans may override loss strategy
+    sptrans_cfg = getattr(cfg.MODEL, 'SPTRANS', None)
+    if sptrans_cfg is not None:
+        sptrans_strategy = getattr(sptrans_cfg, 'LOSS_STRATEGY', None)
+        if sptrans_strategy:
+            loss_strategy = sptrans_strategy
+
     if sampler in ['softmax', 'id']:
         def loss_func(score, feat, target,target_cam):
             return F.cross_entropy(score, target)
@@ -61,6 +69,48 @@ def make_loss(cfg, num_classes):    # modified by gu
     elif 'triplet' in sampler:
         def loss_func(score, feat, target, target_cam):
             if cfg.MODEL.METRIC_LOSS_TYPE == 'triplet':
+                # Part Expert strategy: global + local ID+Triplet, plus per-part ID loss
+                if loss_strategy == 'part_expert' and isinstance(score, list) and isinstance(feat, list):
+                    ce = xent if cfg.MODEL.IF_LABELSMOOTH == 'on' else F.cross_entropy
+                    n_parts = getattr(cfg.MODEL.SPTRANS, 'N_PARTS', 5)
+                    part_loss_w = getattr(cfg.MODEL.SPTRANS, 'PART_LOSS_WEIGHT', 0.2)
+                    # Global: ID + Triplet
+                    ID_G = ce(score[0], target)
+                    TRI_G = triplet(feat[0], target)[0]
+                    # Local (visibility-weighted avg): ID + Triplet
+                    ID_L = ce(score[1], target)
+                    TRI_L = triplet(feat[1], target)[0]
+                    # Per-part: ID loss (score[2:2+K])
+                    part_scores = score[2:2 + n_parts]
+                    if part_scores:
+                        PART_ID = sum(ce(s, target) for s in part_scores) / len(part_scores)
+                    else:
+                        PART_ID = torch.tensor(0.0, device=target.device)
+                    global_w, local_w = _get_pose_branch_weights()
+                    return cfg.MODEL.ID_LOSS_WEIGHT * (global_w * ID_G + local_w * ID_L + part_loss_w * PART_ID) + \
+                           cfg.MODEL.TRIPLET_LOSS_WEIGHT * (global_w * TRI_G + local_w * TRI_L)
+
+                # Split strategy: global=ID+Triplet, local=Triplet only
+                if loss_strategy == 'split' and isinstance(score, list) and isinstance(feat, list):
+                    ce = xent if cfg.MODEL.IF_LABELSMOOTH == 'on' else F.cross_entropy
+                    ID_LOSS = ce(score[0], target)
+                    TRI_LOSS_G = triplet(feat[0], target)[0]
+                    # L2 normalize local feat before triplet to prevent
+                    # distance explosion with high-dim part features (e.g. 3840-d)
+                    local_f = F.normalize(feat[1], p=2, dim=1) if len(feat) > 1 else feat[0]
+                    TRI_LOSS_L = triplet(local_f, target)[0]
+                    global_w, local_w = _get_pose_branch_weights()
+                    return cfg.MODEL.ID_LOSS_WEIGHT * ID_LOSS + \
+                           cfg.MODEL.TRIPLET_LOSS_WEIGHT * (global_w * TRI_LOSS_G + local_w * TRI_LOSS_L)
+
+                # GiLt strategy: global=ID only, local=Triplet only
+                if loss_strategy == 'gilt' and isinstance(score, list) and isinstance(feat, list):
+                    ce = xent if cfg.MODEL.IF_LABELSMOOTH == 'on' else F.cross_entropy
+                    ID_LOSS = ce(score[0], target)
+                    TRI_LOSS = triplet(feat[1], target)[0] if len(feat) > 1 else triplet(feat[0], target)[0]
+                    return cfg.MODEL.ID_LOSS_WEIGHT * ID_LOSS + \
+                               cfg.MODEL.TRIPLET_LOSS_WEIGHT * TRI_LOSS
+
                 if cfg.MODEL.IF_LABELSMOOTH == 'on':
                     if isinstance(score, list):
                         local_id_losses = [xent(scor, target) for scor in score[1:]]

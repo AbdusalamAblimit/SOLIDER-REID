@@ -147,10 +147,15 @@ class PoseSwinCompose(nn.Module):
         pose_scale: float = 1.0,
         save_vis: bool = False,
         branch_stage: Optional[int] = None,
+        vis_after_norm: bool = False,
+        shared_fusion: bool = True,
         **kwargs,
     ):
         super().__init__()
         assert fusion_mode in {'mul', 'add', 'concat', 'gate'}, f"Unknown fusion mode: {fusion_mode}"
+
+        self.vis_after_norm = vis_after_norm
+        self.shared_fusion = shared_fusion
 
         self.swin = SwinTransformer(
             pretrain_img_size=pretrain_img_size,
@@ -359,9 +364,16 @@ class PoseSwinCompose(nn.Module):
             h, w = target_hw
             return torch.zeros((B_expected, self.n_keypoints, h, w), device=device)
         hm = F.interpolate(self._hm_fullres, size=target_hw, mode='bilinear', align_corners=False)
-        if self.use_visibility and (self._vis is not None):
-            hm = hm * self._vis.unsqueeze(-1).unsqueeze(-1).clamp_min(0.0)
-        hm = self._norm_heatmap(hm)
+        if not self.vis_after_norm:
+            # 旧行为：先乘 vis 再 norm
+            if self.use_visibility and (self._vis is not None):
+                hm = hm * self._vis.unsqueeze(-1).unsqueeze(-1).clamp_min(0.0)
+            hm = self._norm_heatmap(hm)
+        else:
+            # 修复：先 norm 再乘 vis
+            hm = self._norm_heatmap(hm)
+            if self.use_visibility and (self._vis is not None):
+                hm = hm * self._vis.unsqueeze(-1).unsqueeze(-1).clamp_min(0.0)
         self.last_hm = hm
         return hm
 
@@ -414,6 +426,12 @@ class PoseSwinCompose(nn.Module):
         else:
             self._hm_fullres, self._vis = None, None
 
+        # auto-generate semantic_weight (same logic as SwinTransformer.forward)
+        if semantic_weight is None and hasattr(self.swin, 'semantic_weight') and self.swin.semantic_weight >= 0:
+            w = torch.ones(x.shape[0], 1) * self.swin.semantic_weight
+            w = torch.cat([w, 1 - w], dim=-1)
+            semantic_weight = w.to(x.device)
+
         x_tokens, hw_shape = self.swin.patch_embed(x)
         if getattr(self.swin, 'use_abs_pos_embed', False):
             x_tokens = x_tokens + self.swin.absolute_pos_embed
@@ -454,7 +472,7 @@ class PoseSwinCompose(nn.Module):
 
         hm_shared = None
         hm_proj_vis = None
-        if self.pose_enabled and shared_out is not None and self.hm_proj_shared is not None:
+        if self.pose_enabled and self.shared_fusion and shared_out is not None and self.hm_proj_shared is not None:
             B_shared = shared_out.shape[0]
             hm_shared = self._resized_pose(shared_out_hw, B_shared, shared_out.device)
             shared_out_map = shared_out_norm.transpose(1, 2).contiguous().view(B_shared, shared_out_norm.shape[2], shared_out_hw[0], shared_out_hw[1])
@@ -580,6 +598,8 @@ def pose_swin_base_patch4_window7_224(img_size=224, drop_rate=0.0, attn_drop_rat
         pose_detach=pose_cfg.get('DETACH', True) if pose_cfg else True,
         pose_scale=pose_cfg.get('SCALE', 1.0) if pose_cfg else 1.0,
         save_vis=pose_cfg.get('SAVE_VIS', False) if pose_cfg else False,
+        vis_after_norm=pose_cfg.get('VIS_AFTER_NORM', False) if pose_cfg else False,
+        shared_fusion=pose_cfg.get('SHARED_FUSION', True) if pose_cfg else True,
         **model_kwargs
     )
 

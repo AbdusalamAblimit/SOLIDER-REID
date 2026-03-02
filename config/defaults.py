@@ -234,3 +234,19 @@ _C.MODEL.POSE.DETACH = True           # pose 分支梯度是否截断
 _C.MODEL.POSE.SCALE = 1.0             # 融合强度系数
 _C.MODEL.POSE.SAVE_VIS = False        # 如需保存可视化，后续可加
 _C.MODEL.POSE.LOCAL_LOSS_WEIGHT = 0.5
+_C.MODEL.POSE.VIS_AFTER_NORM = False    # True=先normalize再乘vis (修复)
+_C.MODEL.POSE.SHARED_FUSION = True      # False=禁用hm_proj_shared
+_C.MODEL.POSE.LOSS_STRATEGY = 'unified' # 'gilt'=global仅ID, local仅Triplet
+
+# SPTrans config
+_C.MODEL.SPTRANS = CN()
+_C.MODEL.SPTRANS.ADAPTIVE_SEM = True      # Semantic-Pose Joint Conditioning
+_C.MODEL.SPTRANS.PART_ROUTING = True       # Part-Aware Routing
+_C.MODEL.SPTRANS.N_PARTS = 5              # number of body part groups
+_C.MODEL.SPTRANS.PART_TEMP = 0.1          # part mask softmax temperature
+_C.MODEL.SPTRANS.LOSS_STRATEGY = 'part_expert'  # 'unified' | 'split' | 'part_expert'
+_C.MODEL.SPTRANS.PART_EXPERT = True        # PartExpertHead (per-part FFN at output)
+_C.MODEL.SPTRANS.MID_ROUTING = True         # PoseRoutedMoE (mid-level routing)
+_C.MODEL.SPTRANS.MOE_BOTTLENECK = 64        # MoE shared bottleneck dim
+_C.MODEL.SPTRANS.EXPERT_BOTTLENECK = 128    # PartExpertHead FFN bottleneck
+_C.MODEL.SPTRANS.PART_LOSS_WEIGHT = 0.2     # per-part ID loss weight

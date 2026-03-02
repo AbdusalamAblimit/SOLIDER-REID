@@ -218,51 +218,69 @@ class build_transformer(nn.Module):
         self.multi_branch = hasattr(self.base, 'branch_stage')
 
         if self.multi_branch:
-            branch_dim = self.feat_dim if self.reduce_feat_dim else self.in_planes
+            # Support variable local_feat_dim (e.g. SPTrans part routing)
+            local_dim_raw = getattr(self.base, 'local_feat_dim', self.in_planes)
+            global_dim = self.feat_dim if self.reduce_feat_dim else self.in_planes
+            local_dim = self.feat_dim if self.reduce_feat_dim else local_dim_raw
             if self.reduce_feat_dim:
                 self.fcneck_global = nn.Linear(self.in_planes, self.feat_dim, bias=False)
                 self.fcneck_global.apply(weights_init_xavier)
-                self.fcneck_local = nn.Linear(self.in_planes, self.feat_dim, bias=False)
+                self.fcneck_local = nn.Linear(local_dim_raw, self.feat_dim, bias=False)
                 self.fcneck_local.apply(weights_init_xavier)
-            self.global_bnneck = nn.BatchNorm1d(branch_dim)
+            self.global_bnneck = nn.BatchNorm1d(global_dim)
             self.global_bnneck.bias.requires_grad_(False)
             self.global_bnneck.apply(weights_init_kaiming)
-            self.local_bnneck = nn.BatchNorm1d(branch_dim)
+            self.local_bnneck = nn.BatchNorm1d(local_dim)
             self.local_bnneck.bias.requires_grad_(False)
             self.local_bnneck.apply(weights_init_kaiming)
-            self.concat_bnneck = nn.BatchNorm1d(branch_dim * 2)
+            self.concat_bnneck = nn.BatchNorm1d(global_dim + local_dim)
             self.concat_bnneck.bias.requires_grad_(False)
             self.concat_bnneck.apply(weights_init_kaiming)
 
             if self.ID_LOSS_TYPE == 'arcface':
                 print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
-                self.classifier_global = Arcface(branch_dim, self.num_classes,
+                self.classifier_global = Arcface(global_dim, self.num_classes,
                                                  s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
-                self.classifier_local = Arcface(branch_dim, self.num_classes,
+                self.classifier_local = Arcface(local_dim, self.num_classes,
                                                 s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
             elif self.ID_LOSS_TYPE == 'cosface':
                 print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
-                self.classifier_global = Cosface(branch_dim, self.num_classes,
+                self.classifier_global = Cosface(global_dim, self.num_classes,
                                                   s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
-                self.classifier_local = Cosface(branch_dim, self.num_classes,
+                self.classifier_local = Cosface(local_dim, self.num_classes,
                                                  s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
             elif self.ID_LOSS_TYPE == 'amsoftmax':
                 print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
-                self.classifier_global = AMSoftmax(branch_dim, self.num_classes,
+                self.classifier_global = AMSoftmax(global_dim, self.num_classes,
                                                    s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
-                self.classifier_local = AMSoftmax(branch_dim, self.num_classes,
+                self.classifier_local = AMSoftmax(local_dim, self.num_classes,
                                                   s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
             elif self.ID_LOSS_TYPE == 'circle':
                 print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
-                self.classifier_global = CircleLoss(branch_dim, self.num_classes,
+                self.classifier_global = CircleLoss(global_dim, self.num_classes,
                                                      s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
-                self.classifier_local = CircleLoss(branch_dim, self.num_classes,
+                self.classifier_local = CircleLoss(local_dim, self.num_classes,
                                                     s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
             else:
-                self.classifier_global = nn.Linear(branch_dim, self.num_classes, bias=False)
+                self.classifier_global = nn.Linear(global_dim, self.num_classes, bias=False)
                 self.classifier_global.apply(weights_init_classifier)
-                self.classifier_local = nn.Linear(branch_dim, self.num_classes, bias=False)
+                self.classifier_local = nn.Linear(local_dim, self.num_classes, bias=False)
                 self.classifier_local.apply(weights_init_classifier)
+
+            # v2: Per-part classifiers for PartExpertHead
+            self.has_part_expert = getattr(self.base, 'has_part_expert', False)
+            if self.has_part_expert:
+                self.n_parts = getattr(self.base, 'n_parts', 5)
+                self.part_bnnecks = nn.ModuleList()
+                self.part_classifiers = nn.ModuleList()
+                for _ in range(self.n_parts):
+                    bn = nn.BatchNorm1d(global_dim)
+                    bn.bias.requires_grad_(False)
+                    bn.apply(weights_init_kaiming)
+                    self.part_bnnecks.append(bn)
+                    cls = nn.Linear(global_dim, self.num_classes, bias=False)
+                    cls.apply(weights_init_classifier)
+                    self.part_classifiers.append(cls)
         else:
             if self.ID_LOSS_TYPE == 'arcface':
                 print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE, cfg.SOLVER.COSINE_SCALE, cfg.SOLVER.COSINE_MARGIN))
@@ -326,7 +344,18 @@ class build_transformer(nn.Module):
                 else:
                     cls_global = self.classifier_global(feat_global_cls)
                     cls_local = self.classifier_local(feat_local_cls)
-                return [cls_global, cls_local], [global_feat, local_feat], featmaps
+
+                scores = [cls_global, cls_local]
+                # v2: per-part classifier scores
+                if getattr(self, 'has_part_expert', False):
+                    part_feats_raw = outputs.get('part_feats')  # [B, K, D]
+                    if part_feats_raw is not None:
+                        for k in range(self.n_parts):
+                            pk_bn = self.part_bnnecks[k](part_feats_raw[:, k])
+                            pk_cls = self.dropout(pk_bn)
+                            scores.append(self.part_classifiers[k](pk_cls))
+
+                return scores, [global_feat, local_feat], featmaps
             else:
                 if self.neck_feat == 'after':
                     global_eval = feat_global_bn
@@ -720,4 +749,12 @@ __factory_T_type.update({
     'pose_swin_base_patch4_window7_224':  _pose.pose_swin_base_patch4_window7_224,
     'pose_swin_small_patch4_window7_224': _pose.pose_swin_small_patch4_window7_224,
     'pose_swin_tiny_patch4_window7_224':  _pose.pose_swin_tiny_patch4_window7_224,
+})
+
+# --- register SPTrans types ---
+_sptrans = _imp('model.backbones.sptrans')
+__factory_T_type.update({
+    'sptrans_base_patch4_window7_224':  _sptrans.sptrans_base_patch4_window7_224,
+    'sptrans_small_patch4_window7_224': _sptrans.sptrans_small_patch4_window7_224,
+    'sptrans_tiny_patch4_window7_224':  _sptrans.sptrans_tiny_patch4_window7_224,
 })
