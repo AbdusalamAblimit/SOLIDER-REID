@@ -18,7 +18,7 @@ run() {
 run "PGT_base_duke" "$BASE_DUKE" \
     MODEL.PGTDROP.KEEP_RATIO 1.0 \
     MODEL.PGTDROP.VIS_POOL False \
-    MODEL.POSE.ENABLE false
+    MODEL.POSE.ENABLE False
 
 # PGT_s1_k70: Main experiment — drop 30% after stage 1
 run "PGT_s1_k70_duke" "$BASE_DUKE" \
@@ -47,7 +47,7 @@ echo "All PGTDrop Occ-Duke experiments completed!" | tee -a "$LOG_FILE"
 # run "PGT_base_market" "$BASE_MARKET" \
 #     MODEL.PGTDROP.KEEP_RATIO 1.0 \
 #     MODEL.PGTDROP.VIS_POOL False \
-#     MODEL.POSE.ENABLE false
+#     MODEL.POSE.ENABLE False
 #
 # run "PGT_s1_k70_market" "$BASE_MARKET" \
 #     MODEL.PGTDROP.DROP_STAGE 1 \
