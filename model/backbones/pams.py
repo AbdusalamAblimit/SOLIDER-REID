@@ -5,12 +5,15 @@ Pose predictor is only needed during training to supervise the part classifier.
 At inference, the learned classifier predicts part attention without pose.
 """
 
+import logging
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from typing import Dict, List, Optional, Tuple
 
 from .swin_transformer import SwinTransformer
+
+logger = logging.getLogger("transreid.pams")
 
 # Reuse MMPose predictor from existing code
 _HAS_MMPOSE = False
@@ -212,10 +215,10 @@ class PartAwareMultiScale(nn.Module):
         # Pose predictor (frozen, train only)
         self.pose_predictor = pose_predictor
 
-        print(f"[PAMS] Swin stages: {len(self.swin.stages)}, num_features={self.num_features}")
-        print(f"[PAMS] global_feat_dim={self.global_feat_dim}, part_feat_dim={self.part_feat_dim}")
-        print(f"[PAMS] MSF target_hw={self.msf_target_hw}, n_parts={n_parts}")
-        print(f"[PAMS] Pose predictor: {'enabled' if pose_predictor is not None else 'disabled'}")
+        logger.info(f"Swin stages: {len(self.swin.stages)}, num_features={self.num_features}")
+        logger.info(f"global_feat_dim={self.global_feat_dim}, part_feat_dim={self.part_feat_dim}")
+        logger.info(f"MSF target_hw={self.msf_target_hw}, n_parts={n_parts}")
+        logger.info(f"Pose predictor: {'enabled' if pose_predictor is not None else 'disabled'}")
 
     def init_weights(self, pretrained=None):
         """Load pretrained weights into Swin backbone."""
@@ -258,9 +261,9 @@ class PartAwareMultiScale(nn.Module):
             missing = [k for k in msd.keys() if k not in loadable]
             unexpected = [k for k in sd.keys() if k not in msd]
             self.swin.load_state_dict(loadable, strict=False)
-            print(f"[PAMS][swin_ckpt] loaded={len(loadable)} miss={len(missing)} unexp={len(unexpected)} from {path}")
+            logger.info(f"[swin_ckpt] loaded={len(loadable)} miss={len(missing)} unexp={len(unexpected)} from {path}")
         except Exception as e:
-            print(f"[PAMS][swin_ckpt] remap failed: {e}; fallback convert_weights={self._convert_weights}")
+            logger.warning(f"[swin_ckpt] remap failed: {e}; fallback convert_weights={self._convert_weights}")
             if self._convert_weights:
                 self.swin.init_weights(path)
             else:

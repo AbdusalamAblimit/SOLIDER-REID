@@ -50,6 +50,9 @@ def _filter_eval_features(feat, enabled_branches: Sequence[str], logger: logging
             "None of the requested evaluation features {} are available in model outputs (keys: {}).".format(
                 enabled_branches, list(feat.keys()))
         )
+    # Preserve metadata keys (e.g. part_vis) needed by evaluator
+    if 'parts' in selected and 'part_vis' in feat:
+        selected['part_vis'] = feat['part_vis']
     return selected
 
 
