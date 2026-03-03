@@ -79,9 +79,16 @@ def make_loss(cfg, num_classes):    # modified by gu
             pams_tri_w = getattr(pams_cfg, 'TRI_WEIGHT', 1.0) if pams_cfg else 1.0
             pams_bpa_w = getattr(pams_cfg, 'BPA_WEIGHT', 1.0) if pams_cfg else 1.0
             pams_push_w = getattr(pams_cfg, 'PUSH_WEIGHT', 0.1) if pams_cfg else 0.1
-            part_tri_loss_fn = PartAveragedTripletLoss(margin=cfg.SOLVER.MARGIN)
+            # Honor NO_MARGIN: use SoftMarginLoss (smooth, bounded) instead of
+            # MarginRankingLoss (hard cliff, unbounded) — matches global triplet.
+            pams_margin = None if cfg.MODEL.NO_MARGIN else cfg.SOLVER.MARGIN
+            part_tri_loss_fn = PartAveragedTripletLoss(margin=pams_margin, normalize=True)
             push_loss_fn = PushLoss()
             ce = xent if cfg.MODEL.IF_LABELSMOOTH == 'on' else F.cross_entropy
+
+            import logging
+            _pams_logger = logging.getLogger("transreid.pams_loss")
+            _pams_step = [0]
 
             def loss_func(score, feat, target, target_cam, extras=None):
                 # ID loss: global + foreground
@@ -96,6 +103,7 @@ def make_loss(cfg, num_classes):    # modified by gu
                 total = pams_id_w * id_loss + pams_tri_w * tri_loss
 
                 # BPA supervision (only when available, i.e. training with pose)
+                bpa_loss = torch.tensor(0.0, device=total.device)
                 if extras and 'bpa_logits' in extras:
                     bpa_loss = F.cross_entropy(extras['bpa_logits'].float(), extras['bpa_targets'])
                     total = total + pams_bpa_w * bpa_loss
@@ -103,6 +111,20 @@ def make_loss(cfg, num_classes):    # modified by gu
                 # Push diversity loss
                 push_loss = push_loss_fn(part_feats_bn)
                 total = total + pams_push_w * push_loss
+
+                # Diagnostic: log individual loss components every 20 steps
+                _pams_step[0] += 1
+                if _pams_step[0] % 20 == 1 or total.item() > 20.0:
+                    feat_norms = [f.norm().item() for f in feat[:2]]
+                    part_norms = [feat[i+2].norm().item() for i in range(min(3, len(feat)-2))]
+                    has_nan = any(torch.isnan(f).any().item() for f in feat)
+                    _pams_logger.info(
+                        f"[LOSS] id={id_loss.item():.2f} tri={tri_loss.item():.2f} "
+                        f"bpa={bpa_loss.item():.2f} push={push_loss.item():.2f} "
+                        f"total={total.item():.2f} | "
+                        f"gnorm={feat_norms[0]:.1f} fgnorm={feat_norms[1]:.1f} "
+                        f"pnorms={[f'{n:.1f}' for n in part_norms]} nan={has_nan}"
+                    )
 
                 return total
 

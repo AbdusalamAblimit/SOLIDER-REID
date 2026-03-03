@@ -22,12 +22,17 @@ class PartAveragedTripletLoss(nn.Module):
     """Per-part L2 distances masked by mutual visibility, averaged, then batch-hard mined.
 
     Args:
-        margin: Triplet margin. None = soft margin.
+        margin: Triplet margin. None = soft margin (SoftMarginLoss).
+        normalize: L2-normalize part features before distance computation.
+                   Crucial for stability: raw features have norm ~200+, producing
+                   distances on scale ~300 that cause explosive loss spikes during
+                   batch-hard mining. After normalization, distances are in [0, 2].
     """
 
-    def __init__(self, margin=0.3):
+    def __init__(self, margin=None, normalize=True):
         super().__init__()
         self.margin = margin
+        self.normalize = normalize
         if margin is not None:
             self.ranking_loss = nn.MarginRankingLoss(margin=margin)
         else:
@@ -43,6 +48,10 @@ class PartAveragedTripletLoss(nn.Module):
             loss: scalar
         """
         B, K, D = part_feats.shape
+
+        # L2 normalize: bounds distances to [0, 2], eliminates scale sensitivity
+        if self.normalize:
+            part_feats = F.normalize(part_feats, p=2, dim=2)
 
         # Per-part pairwise distance: [K, B, B]
         per_part_dist = []
