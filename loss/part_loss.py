@@ -48,6 +48,8 @@ class PartAveragedTripletLoss(nn.Module):
 
         # Mutual visibility mask: [K, B, B]
         # vis_k[i] * vis_k[j] > 0 means both i and j have part k visible
+        # part_vis is mask_sum / N (fraction of spatial locations), so threshold
+        # should be consistent with extract_part_features vis_threshold
         vis_binary = (part_vis > 0.1).float()  # [B, K]
         vis_mutual = []
         for k in range(K):
@@ -91,10 +93,17 @@ class PushLoss(nn.Module):
         """
         # Part centroids: [K, D]
         centroids = part_feats.mean(dim=0)  # [K, D]
-        centroids = F.normalize(centroids, p=2, dim=1)
+
+        # Skip parts with zero centroids (invisible parts were zeroed out)
+        norms = centroids.norm(p=2, dim=1)  # [K]
+        valid = norms > 1e-6
+        if valid.sum() < 2:
+            return centroids.sum() * 0.0  # no valid pairs, return zero with grad
+
+        centroids = F.normalize(centroids[valid], p=2, dim=1)
 
         # Pairwise cosine similarity
-        sim = torch.mm(centroids, centroids.t())  # [K, K]
+        sim = torch.mm(centroids, centroids.t())  # [K', K']
 
         K = centroids.shape[0]
         # Exclude diagonal (self-similarity)

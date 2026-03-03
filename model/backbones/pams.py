@@ -112,12 +112,15 @@ def build_bpa_target(heatmaps: torch.Tensor, visibility: torch.Tensor,
     return all_maps.argmax(dim=1)  # [B, H, W]
 
 
-def extract_part_features(spatial_feat: torch.Tensor, part_probs: torch.Tensor):
+def extract_part_features(spatial_feat: torch.Tensor, part_probs: torch.Tensor,
+                          vis_threshold: float = 0.1):
     """Extract foreground, per-part features and visibility from MSF spatial features.
 
     Args:
         spatial_feat: [B, C, H, W] (MSF output)
         part_probs:   [B, K+1, H, W] after softmax (channel 0 = background)
+        vis_threshold: minimum mask_sum (as fraction of spatial size) to consider
+                       a part visible; below this, feature is zeroed out.
 
     Returns:
         fg_feat:     [B, C]
@@ -125,13 +128,14 @@ def extract_part_features(spatial_feat: torch.Tensor, part_probs: torch.Tensor):
         part_vis:    [B, K]
     """
     B, C, H, W = spatial_feat.shape
+    N = H * W  # total spatial locations
 
     # Part masks (exclude background channel 0)
     part_masks = part_probs[:, 1:]  # [B, K, H, W]
 
     # Foreground: max over parts at each location
     fg_mask = part_masks.max(dim=1)[0]  # [B, H, W]
-    fg_sum = fg_mask.flatten(1).sum(1, keepdim=True).unsqueeze(1).clamp(min=1e-6)  # [B, 1, 1]
+    fg_sum = fg_mask.flatten(1).sum(1, keepdim=True).unsqueeze(1).clamp(min=1.0)  # [B, 1, 1]
     fg_feat = (spatial_feat * fg_mask.unsqueeze(1)).flatten(2).sum(2) / fg_sum.squeeze(2)  # [B, C]
 
     # Per-part weighted average pooling
@@ -139,11 +143,16 @@ def extract_part_features(spatial_feat: torch.Tensor, part_probs: torch.Tensor):
     spatial_exp = spatial_feat.unsqueeze(1)    # [B, 1, C, H, W]
     weighted = (part_masks_exp * spatial_exp).flatten(3)  # [B, K, C, H*W]
     part_sums = weighted.sum(3)  # [B, K, C]
-    mask_sums = part_masks.flatten(2).sum(2).unsqueeze(2).clamp(min=1e-6)  # [B, K, 1]
+    mask_sums_raw = part_masks.flatten(2).sum(2)  # [B, K]
+    mask_sums = mask_sums_raw.unsqueeze(2).clamp(min=1.0)  # [B, K, 1] — safe denominator
     part_feats = part_sums / mask_sums  # [B, K, C]
 
-    # Part visibility: max attention value per part across all spatial locations
-    part_vis = part_masks.flatten(2).max(dim=2)[0]  # [B, K]
+    # Part visibility: based on mask_sum fraction (more robust than max)
+    part_vis = mask_sums_raw / N  # [B, K] in [0, 1]
+
+    # Zero out features for invisible parts to prevent garbage entering BN/loss
+    invisible = (part_vis < vis_threshold).unsqueeze(2)  # [B, K, 1]
+    part_feats = part_feats.masked_fill(invisible, 0.0)
 
     return fg_feat, part_feats, part_vis
 

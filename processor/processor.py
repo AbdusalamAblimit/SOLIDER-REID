@@ -150,6 +150,10 @@ def do_train(cfg,
 
             scaler.scale(loss).backward()
 
+            # Gradient clipping to prevent explosions (e.g. from part feature instability)
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
+
             scaler.step(optimizer)
             scaler.update()
 
