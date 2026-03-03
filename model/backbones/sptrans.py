@@ -183,6 +183,8 @@ class SPTransCompose(nn.Module):
         mid_routing: bool = True,
         moe_bottleneck: int = 64,
         expert_bottleneck: int = 128,
+        # v2: single branch mode
+        single_branch: bool = False,
         **kwargs,
     ):
         super().__init__()
@@ -213,6 +215,7 @@ class SPTransCompose(nn.Module):
         self.part_expert_enabled = part_expert
         self.mid_routing = mid_routing
         self.has_part_expert = part_expert  # exposed for make_model.py
+        self.single_branch = single_branch
 
         self.num_features = self.swin.num_features
         self.avgpool = self.swin.avgpool
@@ -221,19 +224,19 @@ class SPTransCompose(nn.Module):
         part_names = list(COCO_PART_GROUPS.keys())[:n_parts]
         self.part_groups: List[List[int]] = [COCO_PART_GROUPS[n] for n in part_names]
 
-        # Deep-copy split stages for local branch
+        # Deep-copy split stages for local branch (skip if single branch)
         self.local_stages = nn.ModuleList()
-        for stage in self.swin.stages[self.branch_stage:]:
-            self.local_stages.append(copy.deepcopy(stage))
-
         self.local_norms = nn.ModuleDict()
-        for idx in range(self.branch_stage, n_stage):
-            norm_layer = getattr(self.swin, f'norm{idx}', None)
-            if norm_layer is not None:
-                self.local_norms[str(idx)] = copy.deepcopy(norm_layer)
+        if not self.single_branch:
+            for stage in self.swin.stages[self.branch_stage:]:
+                self.local_stages.append(copy.deepcopy(stage))
+            for idx in range(self.branch_stage, n_stage):
+                norm_layer = getattr(self.swin, f'norm{idx}', None)
+                if norm_layer is not None:
+                    self.local_norms[str(idx)] = copy.deepcopy(norm_layer)
 
         # Semantic-Pose Joint Conditioning: per-stage MLP adaptor
-        if self.adaptive_sem:
+        if self.adaptive_sem and not self.single_branch:
             self.sem_pose_adaptor = nn.ModuleList()
             for _ in range(n_stage):
                 mlp = nn.Sequential(
@@ -242,14 +245,11 @@ class SPTransCompose(nn.Module):
                     nn.Linear(16, 1),
                     nn.Sigmoid(),
                 )
-                # Initialize bias of last linear so that Sigmoid outputs ~0.5
                 nn.init.constant_(mlp[2].bias, 0.0)
                 self.sem_pose_adaptor.append(mlp)
 
         # v2: Mid-level PoseRoutedMoE — one per local stage
-        # After stage idx, x_local has dim num_features[idx+1] (downsampled)
-        # except for the last stage where dim stays num_features[idx].
-        if self.mid_routing:
+        if self.mid_routing and not self.single_branch:
             self.local_moe = nn.ModuleList()
             for offset in range(len(self.local_stages)):
                 idx = self.branch_stage + offset
@@ -259,15 +259,16 @@ class SPTransCompose(nn.Module):
                 )
 
         # v2: PartExpertHead — replaces flat concat
-        if self.part_expert_enabled:
+        if self.part_expert_enabled and not self.single_branch:
             self.part_expert_head = PartExpertHead(
                 dim=self.num_features[-1], n_parts=n_parts,
                 bottleneck=expert_bottleneck,
             )
 
         # Expose local_feat_dim for make_model.py
-        if self.part_expert_enabled:
-            # v2: local_feat_dim == global_feat_dim (768)
+        if self.single_branch:
+            self.local_feat_dim = 0  # no local branch
+        elif self.part_expert_enabled:
             self.local_feat_dim = self.num_features[-1]
         elif self.part_routing:
             self.local_feat_dim = n_parts * self.num_features[-1]
@@ -492,6 +493,33 @@ class SPTransCompose(nn.Module):
         return part_feats_flat, part_vis
 
     # ------------------------------------------------------------------
+    # Visibility-weighted pooling (single-branch mode)
+    # ------------------------------------------------------------------
+    def _vis_weighted_pool(self, feat_map):
+        """Pool using pose visibility as spatial weight.
+
+        Occluded regions get low weight so the feature focuses on visible parts.
+        Zero extra parameters.
+        """
+        B, C, H, W = feat_map.shape
+        hm = self._resized_heatmaps((H, W))  # [B, 17, H, W]
+        if hm is None:
+            return torch.flatten(self.avgpool(feat_map), 1)
+
+        vis_map = hm.sum(dim=1)  # [B, H, W]
+        # Normalize per sample to [0, 1]
+        vmin = vis_map.flatten(1).amin(1, keepdim=True).unsqueeze(-1)
+        vmax = vis_map.flatten(1).amax(1, keepdim=True).unsqueeze(-1)
+        vis_map = (vis_map - vmin) / (vmax - vmin + 1e-6)
+        # Floor so fully occluded images don't collapse to zero
+        vis_map = vis_map + 0.1
+        # Normalize to sum=1 for weighted average
+        vis_map = vis_map / vis_map.sum(dim=(-2, -1), keepdim=True)
+        # Weighted pool
+        feat = (feat_map * vis_map.unsqueeze(1)).sum(dim=(-2, -1))  # [B, C]
+        return feat
+
+    # ------------------------------------------------------------------
     # Forward
     # ------------------------------------------------------------------
     def forward(self, x, semantic_weight=None):
@@ -510,6 +538,36 @@ class SPTransCompose(nn.Module):
         x_tokens = self.swin.drop_after_pos(x_tokens)
 
         outs_global = []
+
+        # ============================================================
+        # Single-branch mode: one Swin + vis-weighted pooling
+        # ============================================================
+        if self.single_branch:
+            for i, stage in enumerate(self.swin.stages):
+                x_tokens, hw_shape, out, out_hw_shape = stage(x_tokens, hw_shape)
+                # Standard SOLIDER semantic conditioning
+                x_tokens = self._original_semantic(x_tokens, i, semantic_weight)
+                if i in self.swin.out_indices:
+                    norm_layer = getattr(self.swin, f'norm{i}', None)
+                    out_c = out if norm_layer is None else norm_layer(out)
+                    B, N, C = out_c.shape
+                    H, W = out_hw_shape
+                    outs_global.append(out_c.transpose(1, 2).contiguous().view(B, C, H, W))
+
+            global_feat = self._vis_weighted_pool(outs_global[-1])  # [B, D]
+            return {
+                'global_feat': global_feat,
+                'local_feat': None,
+                'concat_feat': None,
+                'part_feats': None,
+                'part_vis': None,
+                'global_maps': outs_global,
+                'local_maps': [],
+            }
+
+        # ============================================================
+        # Dual-branch mode (v1/v2)
+        # ============================================================
         outs_local = []
 
         # 4. Shared stages
@@ -587,7 +645,6 @@ class SPTransCompose(nn.Module):
             B_l, C_l, H_l, W_l = local_map.shape
             hm = self._resized_heatmaps((H_l, W_l))
             part_masks = _compute_part_masks(hm, self.part_groups, self.part_temp)
-            # Compute part visibility
             part_vis_list = []
             if visibility is not None and self.use_visibility:
                 for part_kpts in self.part_groups:
@@ -599,9 +656,8 @@ class SPTransCompose(nn.Module):
             local_feat, part_feats = self.part_expert_head(local_map, part_masks, part_vis)
         elif self.part_routing:
             local_feat, part_vis = self._part_pool(outs_local[-1], visibility)
-            # local_feat: [B, K*D]
         else:
-            local_feat = torch.flatten(self.avgpool(outs_local[-1]), 1)  # [B, D]
+            local_feat = torch.flatten(self.avgpool(outs_local[-1]), 1)
             part_vis = None
 
         concat_feat = torch.cat([global_feat, local_feat], dim=1)
@@ -610,7 +666,7 @@ class SPTransCompose(nn.Module):
             'global_feat': global_feat,
             'local_feat': local_feat,
             'concat_feat': concat_feat,
-            'part_feats': part_feats,     # [B, K, D] or None
+            'part_feats': part_feats,
             'part_vis': part_vis,
             'global_maps': outs_global,
             'local_maps': outs_local,
@@ -668,6 +724,7 @@ def _build_sptrans(img_size=224, drop_rate=0.0, attn_drop_rate=0.0,
         mid_routing=sptrans_cfg.get('MID_ROUTING', True) if sptrans_cfg else True,
         moe_bottleneck=sptrans_cfg.get('MOE_BOTTLENECK', 64) if sptrans_cfg else 64,
         expert_bottleneck=sptrans_cfg.get('EXPERT_BOTTLENECK', 128) if sptrans_cfg else 128,
+        single_branch=sptrans_cfg.get('SINGLE_BRANCH', False) if sptrans_cfg else False,
         **kwargs,
     )
 

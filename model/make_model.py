@@ -215,7 +215,7 @@ class build_transformer(nn.Module):
         self.num_classes = num_classes
         self.ID_LOSS_TYPE = cfg.MODEL.ID_LOSS_TYPE
         self.dropout = nn.Dropout(self.dropout_rate)
-        self.multi_branch = hasattr(self.base, 'branch_stage')
+        self.multi_branch = hasattr(self.base, 'branch_stage') and not getattr(self.base, 'single_branch', False)
 
         if self.multi_branch:
             # Support variable local_feat_dim (e.g. SPTrans part routing)

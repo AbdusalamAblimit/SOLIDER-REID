@@ -250,3 +250,4 @@ _C.MODEL.SPTRANS.MID_ROUTING = True         # PoseRoutedMoE (mid-level routing)
 _C.MODEL.SPTRANS.MOE_BOTTLENECK = 64        # MoE shared bottleneck dim
 _C.MODEL.SPTRANS.EXPERT_BOTTLENECK = 128    # PartExpertHead FFN bottleneck
 _C.MODEL.SPTRANS.PART_LOSS_WEIGHT = 0.2     # per-part ID loss weight
+_C.MODEL.SPTRANS.SINGLE_BRANCH = False      # single branch + vis-weighted pooling
