@@ -236,13 +236,17 @@ class build_transformer(nn.Module):
             self.fg_bnneck.apply(weights_init_kaiming)
             self.classifier_fg = nn.Linear(D_part, self.num_classes, bias=False)
             self.classifier_fg.apply(weights_init_classifier)
-            # Per-part BN (MSF features, for triplet)
+            # Per-part BN + classifier (MSF features, for triplet + ID)
             self.part_bnnecks = nn.ModuleList()
+            self.part_classifiers = nn.ModuleList()
             for _ in range(K):
                 bn = nn.BatchNorm1d(D_part)
                 bn.bias.requires_grad_(False)
                 bn.apply(weights_init_kaiming)
                 self.part_bnnecks.append(bn)
+                cls = nn.Linear(D_part, self.num_classes, bias=False)
+                cls.apply(weights_init_classifier)
+                self.part_classifiers.append(cls)
 
         elif self.multi_branch:
             # Support variable local_feat_dim (e.g. SPTrans part routing)
@@ -355,6 +359,7 @@ class build_transformer(nn.Module):
                 for k in range(K):
                     pk_bn = self.part_bnnecks[k](part_feats[:, k])
                     feat_list.append(pk_bn)
+                    scores.append(self.part_classifiers[k](pk_bn))
 
                 extras = {
                     'part_vis': outputs['part_vis'],

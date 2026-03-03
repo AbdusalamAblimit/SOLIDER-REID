@@ -273,5 +273,6 @@ _C.MODEL.PAMS.BPA_WEIGHT = 1.0             # BPA CE loss weight
 _C.MODEL.PAMS.PUSH_WEIGHT = 0.1            # Push diversity loss weight
 _C.MODEL.PAMS.ID_WEIGHT = 1.0              # ID loss weight (global + fg)
 _C.MODEL.PAMS.TRI_WEIGHT = 1.0             # Part-averaged triplet weight
+_C.MODEL.PAMS.PART_ID_WEIGHT = 0.5         # Per-part ID loss weight
 _C.MODEL.PAMS.VIS_THRESHOLD = 0.5          # Part visibility threshold
 _C.MODEL.PAMS.LOSS_STRATEGY = 'pams'       # Loss strategy name
