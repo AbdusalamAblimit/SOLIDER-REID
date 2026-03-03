@@ -331,7 +331,11 @@ class PartAwareMultiScale(nn.Module):
         part_probs = F.softmax(part_logits, dim=1)        # [B, K+1, H, W]
 
         # --- Part Feature Extraction (fg + parts from MSF, global from stage 3) ---
-        fg_feat, part_feats, part_vis = extract_part_features(spatial_feat, part_probs)
+        # DETACH part_probs: part classifier is trained ONLY by BPA loss.
+        # Without detach, triplet/push gradients conflict with BPA gradients
+        # on the part classifier, causing periodic loss explosions.
+        fg_feat, part_feats, part_vis = extract_part_features(
+            spatial_feat, part_probs.detach())
 
         result = {
             'global_feat': global_feat,       # [B, D_swin] from stage 3
