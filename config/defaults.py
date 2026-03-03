@@ -251,3 +251,14 @@ _C.MODEL.SPTRANS.MOE_BOTTLENECK = 64        # MoE shared bottleneck dim
 _C.MODEL.SPTRANS.EXPERT_BOTTLENECK = 128    # PartExpertHead FFN bottleneck
 _C.MODEL.SPTRANS.PART_LOSS_WEIGHT = 0.2     # per-part ID loss weight
 _C.MODEL.SPTRANS.SINGLE_BRANCH = False      # single branch + vis-weighted pooling
+
+# PGTDrop: Pose-Guided Token Dropping
+_C.MODEL.PGTDROP = CN()
+_C.MODEL.PGTDROP.ENABLE = False
+_C.MODEL.PGTDROP.DROP_STAGE = 1        # Apply masking after this stage (0-indexed)
+_C.MODEL.PGTDROP.KEEP_RATIO = 0.7      # Fraction of tokens to keep
+_C.MODEL.PGTDROP.RANDOM_DROP = 0.0     # Extra random drop rate during training
+_C.MODEL.PGTDROP.VIS_POOL = True       # Visibility-weighted pooling at output
+_C.MODEL.PGTDROP.REAPPLY = True        # Re-zero after subsequent stages
+_C.MODEL.PGTDROP.VIS_THRESHOLD = 0.5   # Hard threshold for keypoint visibility
+_C.MODEL.PGTDROP.VIS_HARD = True       # True=hard threshold, False=soft multiply

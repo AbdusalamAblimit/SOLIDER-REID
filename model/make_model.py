@@ -758,3 +758,11 @@ __factory_T_type.update({
     'sptrans_small_patch4_window7_224': _sptrans.sptrans_small_patch4_window7_224,
     'sptrans_tiny_patch4_window7_224':  _sptrans.sptrans_tiny_patch4_window7_224,
 })
+
+# --- register PGTDrop types ---
+_pgtdrop = _imp('model.backbones.pgtdrop')
+__factory_T_type.update({
+    'pgtdrop_base_patch4_window7_224':  _pgtdrop.pgtdrop_base_patch4_window7_224,
+    'pgtdrop_small_patch4_window7_224': _pgtdrop.pgtdrop_small_patch4_window7_224,
+    'pgtdrop_tiny_patch4_window7_224':  _pgtdrop.pgtdrop_tiny_patch4_window7_224,
+})
