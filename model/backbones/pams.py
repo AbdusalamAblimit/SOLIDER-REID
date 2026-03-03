@@ -110,26 +110,21 @@ def build_bpa_target(heatmaps: torch.Tensor, visibility: torch.Tensor,
 
 
 def extract_part_features(spatial_feat: torch.Tensor, part_probs: torch.Tensor):
-    """Extract global, foreground, per-part features and visibility from spatial features.
+    """Extract foreground, per-part features and visibility from MSF spatial features.
 
     Args:
-        spatial_feat: [B, C, H, W]
+        spatial_feat: [B, C, H, W] (MSF output)
         part_probs:   [B, K+1, H, W] after softmax (channel 0 = background)
 
     Returns:
-        global_feat: [B, C]
         fg_feat:     [B, C]
         part_feats:  [B, K, C]
         part_vis:    [B, K]
     """
     B, C, H, W = spatial_feat.shape
 
-    # Global: simple avg pool
-    global_feat = spatial_feat.flatten(2).mean(dim=2)  # [B, C]
-
     # Part masks (exclude background channel 0)
     part_masks = part_probs[:, 1:]  # [B, K, H, W]
-    K = part_masks.shape[1]
 
     # Foreground: max over parts at each location
     fg_mask = part_masks.max(dim=1)[0]  # [B, H, W]
@@ -137,7 +132,6 @@ def extract_part_features(spatial_feat: torch.Tensor, part_probs: torch.Tensor):
     fg_feat = (spatial_feat * fg_mask.unsqueeze(1)).flatten(2).sum(2) / fg_sum.squeeze(2)  # [B, C]
 
     # Per-part weighted average pooling
-    # Vectorized: [B, K, 1, H, W] * [B, 1, C, H, W] -> sum over HW
     part_masks_exp = part_masks.unsqueeze(2)  # [B, K, 1, H, W]
     spatial_exp = spatial_feat.unsqueeze(1)    # [B, 1, C, H, W]
     weighted = (part_masks_exp * spatial_exp).flatten(3)  # [B, K, C, H*W]
@@ -148,7 +142,7 @@ def extract_part_features(spatial_feat: torch.Tensor, part_probs: torch.Tensor):
     # Part visibility: max attention value per part across all spatial locations
     part_vis = part_masks.flatten(2).max(dim=2)[0]  # [B, K]
 
-    return global_feat, fg_feat, part_feats, part_vis
+    return fg_feat, part_feats, part_vis
 
 
 class PartAwareMultiScale(nn.Module):
@@ -200,14 +194,14 @@ class PartAwareMultiScale(nn.Module):
         self._pretrained = pretrained
         self._convert_weights = convert_weights
 
-        self._swin_num_features = self.swin.num_features  # e.g. [96, 192, 384, 768]
-        # Expose msf_out_dim as the effective output dim for make_model.py
-        # num_features[-1] is used by make_model to set in_planes for BN/classifiers
-        self.num_features = list(self._swin_num_features[:-1]) + [msf_out_dim]
+        self.num_features = self.swin.num_features  # e.g. [96, 192, 384, 768]
+        # Global feat dim = stage 3 output; part feat dim = MSF output
+        self.global_feat_dim = self.num_features[-1]  # 768 for tiny
+        self.part_feat_dim = msf_out_dim              # 768 default
 
         # Multi-Scale Fusion
         self.msf = MultiScaleFusion(
-            in_channels_list=self._swin_num_features,
+            in_channels_list=self.num_features,
             out_channels=msf_out_dim,
             target_hw=msf_target_hw,
         )
@@ -217,6 +211,11 @@ class PartAwareMultiScale(nn.Module):
 
         # Pose predictor (frozen, train only)
         self.pose_predictor = pose_predictor
+
+        print(f"[PAMS] Swin stages: {len(self.swin.stages)}, num_features={self.num_features}")
+        print(f"[PAMS] global_feat_dim={self.global_feat_dim}, part_feat_dim={self.part_feat_dim}")
+        print(f"[PAMS] MSF target_hw={self.msf_target_hw}, n_parts={n_parts}")
+        print(f"[PAMS] Pose predictor: {'enabled' if pose_predictor is not None else 'disabled'}")
 
     def init_weights(self, pretrained=None):
         """Load pretrained weights into Swin backbone."""
@@ -297,6 +296,7 @@ class PartAwareMultiScale(nn.Module):
         x_tokens = self.swin.drop_after_pos(x_tokens)
 
         stage_outputs = []  # list of (tokens [B, N, C], (H, W))
+        last_out_map = None  # stage 3 feature map for global feature
         for i, stage in enumerate(self.swin.stages):
             x_tokens, hw_shape, out, out_hw_shape = stage(x_tokens, hw_shape)
 
@@ -311,21 +311,27 @@ class PartAwareMultiScale(nn.Module):
                 norm_layer = getattr(self.swin, f'norm{i}', None)
                 out_normed = norm_layer(out) if norm_layer is not None else out
                 stage_outputs.append((out_normed, out_hw_shape))
+                # Keep last stage output for global feature (preserves pretrained quality)
+                B_out, N_out, C_out = out_normed.shape
+                last_out_map = out_normed.transpose(1, 2).view(B_out, C_out, *out_hw_shape)
 
-        # --- Multi-Scale Fusion ---
-        spatial_feat = self.msf(stage_outputs)  # [B, D, H, W]
+        # --- Global feature: directly from stage 3 avg pool (pretrained quality) ---
+        global_feat = torch.flatten(self.swin.avgpool(last_out_map), 1)  # [B, D_swin]
+
+        # --- Multi-Scale Fusion (for part classification only) ---
+        spatial_feat = self.msf(stage_outputs)  # [B, D_msf, H, W]
 
         # --- Part Classification ---
         part_logits = self.part_classifier(spatial_feat)  # [B, K+1, H, W]
         part_probs = F.softmax(part_logits, dim=1)        # [B, K+1, H, W]
 
-        # --- Feature Extraction ---
-        global_feat, fg_feat, part_feats, part_vis = extract_part_features(spatial_feat, part_probs)
+        # --- Part Feature Extraction (fg + parts from MSF, global from stage 3) ---
+        fg_feat, part_feats, part_vis = extract_part_features(spatial_feat, part_probs)
 
         result = {
-            'global_feat': global_feat,       # [B, D]
-            'foreground_feat': fg_feat,        # [B, D]
-            'part_feats': part_feats,          # [B, K, D]
+            'global_feat': global_feat,       # [B, D_swin] from stage 3
+            'foreground_feat': fg_feat,        # [B, D_msf] from MSF
+            'part_feats': part_feats,          # [B, K, D_msf]
             'part_vis': part_vis,              # [B, K]
         }
 

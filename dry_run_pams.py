@@ -97,10 +97,12 @@ assert len(scores) == 2, f"Expected 2 scores (global, fg), got {len(scores)}"
 assert scores[0].shape == (B, num_classes), f"Global score shape mismatch: {scores[0].shape}"
 assert scores[1].shape == (B, num_classes), f"FG score shape mismatch: {scores[1].shape}"
 assert len(feats) == 7, f"Expected 7 feats (global, fg, 5 parts), got {len(feats)}"
-assert feats[0].shape == (B, 768), f"Global feat shape mismatch: {feats[0].shape}"
-assert feats[1].shape == (B, 768), f"FG feat shape mismatch: {feats[1].shape}"
+D_global = model.pams_global_dim
+D_part = model.pams_part_dim
+assert feats[0].shape == (B, D_global), f"Global feat shape mismatch: {feats[0].shape}"
+assert feats[1].shape == (B, D_part), f"FG feat shape mismatch: {feats[1].shape}"
 for i in range(2, 7):
-    assert feats[i].shape == (B, 768), f"Part feat[{i}] shape mismatch: {feats[i].shape}"
+    assert feats[i].shape == (B, D_part), f"Part feat[{i}] shape mismatch: {feats[i].shape}"
 
 print("\n[OK] Training forward shapes verified!")
 
@@ -142,8 +144,8 @@ for k, v in feat_dict.items():
 assert 'global' in feat_dict, "Missing 'global' in eval output"
 assert 'parts' in feat_dict, "Missing 'parts' in eval output"
 assert 'part_vis' in feat_dict, "Missing 'part_vis' in eval output"
-assert feat_dict['global'].shape == (B, 768), f"Global eval shape mismatch: {feat_dict['global'].shape}"
-assert feat_dict['parts'].shape == (B, 5, 768), f"Parts eval shape mismatch: {feat_dict['parts'].shape}"
+assert feat_dict['global'].shape == (B, D_global), f"Global eval shape mismatch: {feat_dict['global'].shape}"
+assert feat_dict['parts'].shape == (B, 5, D_part), f"Parts eval shape mismatch: {feat_dict['parts'].shape}"
 assert feat_dict['part_vis'].shape == (B, 5), f"Part vis shape mismatch: {feat_dict['part_vis'].shape}"
 
 print("\n[OK] Eval forward shapes verified!")

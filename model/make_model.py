@@ -220,23 +220,26 @@ class build_transformer(nn.Module):
 
         if self.is_pams:
             K = self.base.n_body_parts  # 5
-            D = self.in_planes          # 768
-            # Global BN + classifier
-            self.global_bnneck = nn.BatchNorm1d(D)
+            D_global = self.base.global_feat_dim  # stage 3 dim (768)
+            D_part = self.base.part_feat_dim      # MSF out dim (768)
+            self.pams_global_dim = D_global
+            self.pams_part_dim = D_part
+            # Global BN + classifier (stage 3 features)
+            self.global_bnneck = nn.BatchNorm1d(D_global)
             self.global_bnneck.bias.requires_grad_(False)
             self.global_bnneck.apply(weights_init_kaiming)
-            self.classifier_global = nn.Linear(D, self.num_classes, bias=False)
+            self.classifier_global = nn.Linear(D_global, self.num_classes, bias=False)
             self.classifier_global.apply(weights_init_classifier)
-            # Foreground BN + classifier
-            self.fg_bnneck = nn.BatchNorm1d(D)
+            # Foreground BN + classifier (MSF features)
+            self.fg_bnneck = nn.BatchNorm1d(D_part)
             self.fg_bnneck.bias.requires_grad_(False)
             self.fg_bnneck.apply(weights_init_kaiming)
-            self.classifier_fg = nn.Linear(D, self.num_classes, bias=False)
+            self.classifier_fg = nn.Linear(D_part, self.num_classes, bias=False)
             self.classifier_fg.apply(weights_init_classifier)
-            # Per-part BN + classifiers (for triplet, no ID head needed but BN is useful)
+            # Per-part BN (MSF features, for triplet)
             self.part_bnnecks = nn.ModuleList()
             for _ in range(K):
-                bn = nn.BatchNorm1d(D)
+                bn = nn.BatchNorm1d(D_part)
                 bn.bias.requires_grad_(False)
                 bn.apply(weights_init_kaiming)
                 self.part_bnnecks.append(bn)
