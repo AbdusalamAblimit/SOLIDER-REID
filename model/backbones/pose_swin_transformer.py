@@ -1,3 +1,4 @@
+import logging
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -5,6 +6,8 @@ from typing import Tuple, Optional
 import copy
 
 from .swin_transformer import SwinTransformer
+
+logger = logging.getLogger("transreid.pose")
 
 # -------------------- MMPose predictor (robust) --------------------
 _HAS_MMPOSE = False
@@ -65,7 +68,7 @@ class MMPoseTopDownPredictor(nn.Module):
         missing = [k for k in msd.keys() if k not in loadable]
         unexpected = [k for k in ckpt.keys() if k not in msd]
         self.model.load_state_dict(loadable, strict=False)
-        print(f"[PoseSwin][pose_ckpt] loaded={len(loadable)} missing={len(missing)} unexpected={len(unexpected)}")
+        logger.info(f"[pose_ckpt] loaded={len(loadable)} missing={len(missing)} unexpected={len(unexpected)}")
         assert len(loadable) > 0, "Pose ckpt didn't match any weights."
 
         # MMPose 期望 0..255，再减均值/除方差
@@ -290,9 +293,9 @@ class PoseSwinCompose(nn.Module):
             missing = [k for k in msd.keys() if k not in loadable]
             unexpected = [k for k in sd.keys() if k not in msd]
             self.swin.load_state_dict(loadable, strict=False)
-            print(f"[PoseSwin][swin_ckpt] remap loaded={len(loadable)} miss={len(missing)} unexp={len(unexpected)} from {path}")
+            logger.info(f"[swin_ckpt] remap loaded={len(loadable)} miss={len(missing)} unexp={len(unexpected)} from {path}")
         except Exception as e:
-            print(f"[PoseSwin][swin_ckpt] remap failed: {e}; fallback convert_weights={self._convert_weights}")
+            logger.warning(f"[swin_ckpt] remap failed: {e}; fallback convert_weights={self._convert_weights}")
             if self._convert_weights:
                 self.swin.init_weights(path)
             else:
