@@ -97,7 +97,7 @@ def make_loss(cfg, num_classes):    # modified by gu
 
                 # BPA supervision (only when available, i.e. training with pose)
                 if extras and 'bpa_logits' in extras:
-                    bpa_loss = F.cross_entropy(extras['bpa_logits'], extras['bpa_targets'])
+                    bpa_loss = F.cross_entropy(extras['bpa_logits'].float(), extras['bpa_targets'])
                     total = total + pams_bpa_w * bpa_loss
 
                 # Push diversity loss

@@ -328,7 +328,10 @@ class PartAwareMultiScale(nn.Module):
 
         # --- Part Classification ---
         part_logits = self.part_classifier(spatial_feat)  # [B, K+1, H, W]
-        part_probs = F.softmax(part_logits, dim=1)        # [B, K+1, H, W]
+        # Force float32 for softmax: under AMP float16, exp() overflows when
+        # logits > ~11 (float16 max = 65504), producing inf/NaN that corrupt
+        # all downstream computation and cause periodic loss explosions.
+        part_probs = F.softmax(part_logits.float(), dim=1).to(spatial_feat.dtype)
 
         # --- Part Feature Extraction (fg + parts from MSF, global from stage 3) ---
         # DETACH part_probs: part classifier is trained ONLY by BPA loss.

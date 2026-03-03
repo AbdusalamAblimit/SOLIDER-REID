@@ -7,6 +7,10 @@ import torch.nn.functional as F
 
 def _euclidean_dist(x, y):
     """Pairwise euclidean distance. x: [m, d], y: [n, d] -> [m, n]."""
+    # Force float32: under AMP float16, the xx + yy - 2*xy subtraction
+    # loses precision, potentially producing negative values before sqrt.
+    x = x.float()
+    y = y.float()
     m, n = x.size(0), y.size(0)
     xx = torch.pow(x, 2).sum(1, keepdim=True).expand(m, n)
     yy = torch.pow(y, 2).sum(1, keepdim=True).expand(n, m).t()
@@ -91,8 +95,8 @@ class PushLoss(nn.Module):
         Returns:
             loss: scalar
         """
-        # Part centroids: [K, D]
-        centroids = part_feats.mean(dim=0)  # [K, D]
+        # Part centroids: [K, D] — force float32 for normalize precision
+        centroids = part_feats.float().mean(dim=0)  # [K, D]
 
         # Skip parts with zero centroids (invisible parts were zeroed out)
         norms = centroids.norm(p=2, dim=1)  # [K]
