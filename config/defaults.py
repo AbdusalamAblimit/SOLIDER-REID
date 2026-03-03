@@ -262,3 +262,16 @@ _C.MODEL.PGTDROP.VIS_POOL = True       # Visibility-weighted pooling at output
 _C.MODEL.PGTDROP.REAPPLY = True        # Re-zero after subsequent stages
 _C.MODEL.PGTDROP.VIS_THRESHOLD = 0.5   # Hard threshold for keypoint visibility
 _C.MODEL.PGTDROP.VIS_HARD = True       # True=hard threshold, False=soft multiply
+
+# PAMS: Part-Aware Multi-Scale ReID
+_C.MODEL.PAMS = CN()
+_C.MODEL.PAMS.ENABLE = False
+_C.MODEL.PAMS.N_PARTS = 5
+_C.MODEL.PAMS.MSF_TARGET_HW = [24, 8]     # MSF spatial resolution
+_C.MODEL.PAMS.MSF_OUT_DIM = 768            # MSF output channels
+_C.MODEL.PAMS.BPA_WEIGHT = 1.0             # BPA CE loss weight
+_C.MODEL.PAMS.PUSH_WEIGHT = 0.1            # Push diversity loss weight
+_C.MODEL.PAMS.ID_WEIGHT = 1.0              # ID loss weight (global + fg)
+_C.MODEL.PAMS.TRI_WEIGHT = 1.0             # Part-averaged triplet weight
+_C.MODEL.PAMS.VIS_THRESHOLD = 0.5          # Part visibility threshold
+_C.MODEL.PAMS.LOSS_STRATEGY = 'pams'       # Loss strategy name

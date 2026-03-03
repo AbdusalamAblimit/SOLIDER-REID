@@ -136,8 +136,14 @@ def do_train(cfg,
             target_cam = target_cam.to(device)
             target_view = target_view.to(device)
             with amp.autocast(enabled=True):
-                score, feat, _ = model(img, label=target, cam_label=target_cam, view_label=target_view )
-                loss = loss_fn(score, feat, target, target_cam)
+                model_out = model(img, label=target, cam_label=target_cam, view_label=target_view)
+                # PAMS returns (scores, feats, extras_dict); standard returns (score, feat, featmaps)
+                if isinstance(model_out, tuple) and len(model_out) == 3 and isinstance(model_out[2], dict):
+                    score, feat, extras = model_out
+                    loss = loss_fn(score, feat, target, target_cam, extras=extras)
+                else:
+                    score, feat, _ = model_out
+                    loss = loss_fn(score, feat, target, target_cam)
 
             scaler.scale(loss).backward()
 

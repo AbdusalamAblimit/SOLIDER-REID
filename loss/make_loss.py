@@ -4,10 +4,12 @@
 @contact: sherlockliao01@gmail.com
 """
 
+import torch
 import torch.nn.functional as F
 from .softmax_loss import CrossEntropyLabelSmooth, LabelSmoothingCrossEntropy
 from .triplet_loss import TripletLoss
 from .center_loss import CenterLoss
+from .part_loss import PartAveragedTripletLoss, PushLoss
 
 
 def make_loss(cfg, num_classes):    # modified by gu
@@ -60,6 +62,10 @@ def make_loss(cfg, num_classes):    # modified by gu
         sptrans_strategy = getattr(sptrans_cfg, 'LOSS_STRATEGY', None)
         if sptrans_strategy:
             loss_strategy = sptrans_strategy
+    # PAMS overrides loss strategy
+    pams_cfg = getattr(cfg.MODEL, 'PAMS', None)
+    if pams_cfg is not None and getattr(pams_cfg, 'ENABLE', False):
+        loss_strategy = getattr(pams_cfg, 'LOSS_STRATEGY', 'pams')
 
     if sampler in ['softmax', 'id']:
         def loss_func(score, feat, target,target_cam):
@@ -67,6 +73,41 @@ def make_loss(cfg, num_classes):    # modified by gu
 
     #  elif cfg.DATALOADER.SAMPLER in ['softmax_triplet', 'id_triplet', 'img_triplet']:
     elif 'triplet' in sampler:
+        # PAMS loss strategy
+        if loss_strategy == 'pams':
+            pams_id_w = getattr(pams_cfg, 'ID_WEIGHT', 1.0) if pams_cfg else 1.0
+            pams_tri_w = getattr(pams_cfg, 'TRI_WEIGHT', 1.0) if pams_cfg else 1.0
+            pams_bpa_w = getattr(pams_cfg, 'BPA_WEIGHT', 1.0) if pams_cfg else 1.0
+            pams_push_w = getattr(pams_cfg, 'PUSH_WEIGHT', 0.1) if pams_cfg else 0.1
+            part_tri_loss_fn = PartAveragedTripletLoss(margin=cfg.SOLVER.MARGIN)
+            push_loss_fn = PushLoss()
+            ce = xent if cfg.MODEL.IF_LABELSMOOTH == 'on' else F.cross_entropy
+
+            def loss_func(score, feat, target, target_cam, extras=None):
+                # ID loss: global + foreground
+                id_loss = ce(score[0], target) + ce(score[1], target)
+
+                # Part-averaged triplet loss
+                # feat[2:] are BN-normalized part features; stack them
+                part_feats_bn = torch.stack(feat[2:], dim=1)  # [B, K, D]
+                part_vis = extras['part_vis'] if extras else None
+                tri_loss = part_tri_loss_fn(part_feats_bn, target, part_vis)
+
+                total = pams_id_w * id_loss + pams_tri_w * tri_loss
+
+                # BPA supervision (only when available, i.e. training with pose)
+                if extras and 'bpa_logits' in extras:
+                    bpa_loss = F.cross_entropy(extras['bpa_logits'], extras['bpa_targets'])
+                    total = total + pams_bpa_w * bpa_loss
+
+                # Push diversity loss
+                push_loss = push_loss_fn(part_feats_bn)
+                total = total + pams_push_w * push_loss
+
+                return total
+
+            return loss_func, center_criterion
+
         def loss_func(score, feat, target, target_cam):
             if cfg.MODEL.METRIC_LOSS_TYPE == 'triplet':
                 # Part Expert strategy: global + local ID+Triplet, plus per-part ID loss

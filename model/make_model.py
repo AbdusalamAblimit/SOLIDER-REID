@@ -216,8 +216,32 @@ class build_transformer(nn.Module):
         self.ID_LOSS_TYPE = cfg.MODEL.ID_LOSS_TYPE
         self.dropout = nn.Dropout(self.dropout_rate)
         self.multi_branch = hasattr(self.base, 'branch_stage') and not getattr(self.base, 'single_branch', False)
+        self.is_pams = getattr(self.base, 'is_pams', False)
 
-        if self.multi_branch:
+        if self.is_pams:
+            K = self.base.n_body_parts  # 5
+            D = self.in_planes          # 768
+            # Global BN + classifier
+            self.global_bnneck = nn.BatchNorm1d(D)
+            self.global_bnneck.bias.requires_grad_(False)
+            self.global_bnneck.apply(weights_init_kaiming)
+            self.classifier_global = nn.Linear(D, self.num_classes, bias=False)
+            self.classifier_global.apply(weights_init_classifier)
+            # Foreground BN + classifier
+            self.fg_bnneck = nn.BatchNorm1d(D)
+            self.fg_bnneck.bias.requires_grad_(False)
+            self.fg_bnneck.apply(weights_init_kaiming)
+            self.classifier_fg = nn.Linear(D, self.num_classes, bias=False)
+            self.classifier_fg.apply(weights_init_classifier)
+            # Per-part BN + classifiers (for triplet, no ID head needed but BN is useful)
+            self.part_bnnecks = nn.ModuleList()
+            for _ in range(K):
+                bn = nn.BatchNorm1d(D)
+                bn.bias.requires_grad_(False)
+                bn.apply(weights_init_kaiming)
+                self.part_bnnecks.append(bn)
+
+        elif self.multi_branch:
             # Support variable local_feat_dim (e.g. SPTrans part routing)
             local_dim_raw = getattr(self.base, 'local_feat_dim', self.in_planes)
             global_dim = self.feat_dim if self.reduce_feat_dim else self.in_planes
@@ -311,6 +335,49 @@ class build_transformer(nn.Module):
             self.bottleneck.apply(weights_init_kaiming)
 
     def forward(self, x, label=None, cam_label=None, view_label=None):
+        # --- PAMS path ---
+        if self.is_pams:
+            outputs = self.base(x)
+            g_feat = outputs['global_feat']       # [B, D]
+            fg_feat = outputs['foreground_feat']   # [B, D]
+            part_feats = outputs['part_feats']     # [B, K, D]
+
+            if self.training:
+                g_bn = self.global_bnneck(g_feat)
+                fg_bn = self.fg_bnneck(fg_feat)
+                scores = [self.classifier_global(g_bn), self.classifier_fg(fg_bn)]
+
+                K = part_feats.shape[1]
+                feat_list = [g_feat, fg_feat]
+                for k in range(K):
+                    pk_bn = self.part_bnnecks[k](part_feats[:, k])
+                    feat_list.append(pk_bn)
+
+                extras = {
+                    'part_vis': outputs['part_vis'],
+                }
+                if 'bpa_logits' in outputs:
+                    extras['bpa_logits'] = outputs['bpa_logits']
+                    extras['bpa_targets'] = outputs['bpa_targets']
+
+                return scores, feat_list, extras
+            else:
+                # Eval: return dict with global + parts + visibility
+                g_bn = self.global_bnneck(g_feat)
+                K = part_feats.shape[1]
+                part_bn_list = []
+                for k in range(K):
+                    part_bn_list.append(self.part_bnnecks[k](part_feats[:, k]))
+                part_bn = torch.stack(part_bn_list, dim=1)  # [B, K, D]
+
+                feat_dict = {
+                    'global': g_bn,
+                    'parts': part_bn,
+                    'part_vis': outputs['part_vis'],
+                }
+                return feat_dict, None
+
+        # --- Standard path ---
         outputs = self.base(x)
         featmaps = None
         if isinstance(outputs, dict) and 'global_feat' in outputs:
@@ -765,4 +832,12 @@ __factory_T_type.update({
     'pgtdrop_base_patch4_window7_224':  _pgtdrop.pgtdrop_base_patch4_window7_224,
     'pgtdrop_small_patch4_window7_224': _pgtdrop.pgtdrop_small_patch4_window7_224,
     'pgtdrop_tiny_patch4_window7_224':  _pgtdrop.pgtdrop_tiny_patch4_window7_224,
+})
+
+# --- register PAMS types ---
+_pams = _imp('model.backbones.pams')
+__factory_T_type.update({
+    'pams_base_patch4_window7_224':  _pams.pams_base_patch4_window7_224,
+    'pams_small_patch4_window7_224': _pams.pams_small_patch4_window7_224,
+    'pams_tiny_patch4_window7_224':  _pams.pams_tiny_patch4_window7_224,
 })

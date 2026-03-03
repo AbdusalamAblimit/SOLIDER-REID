@@ -139,7 +139,8 @@ class R1_mAP_eval():
         feat, pid, camid = output
         if isinstance(feat, dict):
             for key, value in feat.items():
-                self._feat_buffers[key].append(value.detach().cpu())
+                if isinstance(value, torch.Tensor):
+                    self._feat_buffers[key].append(value.detach().cpu())
         elif isinstance(feat, (list, tuple)):
             for idx, value in enumerate(feat):
                 self._feat_buffers[f'branch{idx}'].append(value.detach().cpu())
@@ -173,8 +174,46 @@ class R1_mAP_eval():
         results = OrderedDict()
         pids = np.asarray(self.pids)
         camids = np.asarray(self.camids)
+
+        # Check if we have PAMS part features + visibility
+        has_parts = 'parts' in self._feat_buffers and 'part_vis' in self._feat_buffers
+        part_vis_all = None
+        if has_parts:
+            part_vis_all = torch.cat(self._feat_buffers['part_vis'], dim=0)  # [N, K]
+
         for key, feat_list in self._feat_buffers.items():
+            # Skip part_vis as it's metadata, not a feature branch to evaluate
+            if key == 'part_vis':
+                continue
+
             feats = torch.cat(feat_list, dim=0)
+
+            # Handle 3D part features [N, K, D] with visibility-aware distance
+            if key == 'parts' and feats.dim() == 3 and part_vis_all is not None:
+                if self.feat_norm:
+                    print(f"The test feature ({key}) is normalized")
+                    feats = torch.nn.functional.normalize(feats, dim=2, p=2)
+
+                qf = feats[:self.num_query]        # [nq, K, D]
+                gf = feats[self.num_query:]         # [ng, K, D]
+                q_vis = part_vis_all[:self.num_query]   # [nq, K]
+                g_vis = part_vis_all[self.num_query:]   # [ng, K]
+                q_pids = pids[:self.num_query]
+                g_pids = pids[self.num_query:]
+                q_camids = camids[:self.num_query]
+                g_camids = camids[self.num_query:]
+
+                print(f'=> Computing visibility-aware part distance ({key})')
+                distmat = self._compute_part_distance(qf, gf, q_vis, g_vis)
+                cmc, mAP = eval_func(distmat, q_pids, g_pids, q_camids, g_camids)
+                results[key] = EvalResultItem(cmc=cmc, mAP=mAP)
+                continue
+
+            # Skip 3D features without visibility (can't evaluate as standard branch)
+            if feats.dim() == 3:
+                print(f"[Eval] Skipping 3D feature branch '{key}' (no part_vis available)")
+                continue
+
             if self.feat_norm:
                 print(f"The test feature ({key}) is normalized")
                 feats = torch.nn.functional.normalize(feats, dim=1, p=2)
@@ -202,7 +241,6 @@ class R1_mAP_eval():
 
             extra_kwargs = {}
             if keep_details:
-                # 需要导出距离矩阵等信息时才回传这些大对象，默认情况下避免占用大量内存
                 extra_kwargs = dict(
                     distmat=distmat,
                     pids=pids.copy(),
@@ -213,12 +251,60 @@ class R1_mAP_eval():
             results[key] = EvalResultItem(cmc=cmc, mAP=mAP, **extra_kwargs)
 
         if clear_buffers:
-            # 默认在计算完一次评估后立即释放缓存，避免这些特征在下一轮验证前继续占用显存/内存
             self.reset()
 
         if len(results) == 1:
             return next(iter(results.values()))
         return results
+
+    @staticmethod
+    def _compute_part_distance(qf, gf, q_vis, g_vis):
+        """Visibility-aware part distance.
+
+        Args:
+            qf: [nq, K, D] query part features
+            gf: [ng, K, D] gallery part features
+            q_vis: [nq, K] query part visibility
+            g_vis: [ng, K] gallery part visibility
+
+        Returns:
+            distmat: [nq, ng] numpy array
+        """
+        nq, K, D = qf.shape
+        ng = gf.shape[0]
+
+        # Binary visibility (threshold at 0.1)
+        q_v = (q_vis > 0.1).float()  # [nq, K]
+        g_v = (g_vis > 0.1).float()  # [ng, K]
+
+        # Per-part L2 distance: [K, nq, ng]
+        part_dists = []
+        for k in range(K):
+            # [nq, D] vs [ng, D] -> [nq, ng]
+            q_k = qf[:, k]
+            g_k = gf[:, k]
+            dist_k = torch.pow(q_k, 2).sum(1, keepdim=True) + \
+                     torch.pow(g_k, 2).sum(1, keepdim=True).t() - \
+                     2 * torch.mm(q_k, g_k.t())
+            dist_k = dist_k.clamp(min=1e-12).sqrt()
+            part_dists.append(dist_k)
+        part_dists = torch.stack(part_dists, dim=0)  # [K, nq, ng]
+
+        # Mutual visibility: [K, nq, ng]
+        mutual_vis = torch.einsum('qk,gk->kqg', q_v, g_v)  # [K, nq, ng]
+
+        # Masked average
+        valid_count = mutual_vis.sum(dim=0).clamp(min=1e-6)  # [nq, ng]
+        dist_sum = (part_dists * mutual_vis).sum(dim=0)       # [nq, ng]
+        distmat = dist_sum / valid_count
+
+        # For pairs with no common visible parts, assign max distance
+        no_common = (mutual_vis.sum(dim=0) < 0.5)
+        if no_common.any():
+            max_dist = distmat[~no_common].max() + 1.0 if (~no_common).any() else 100.0
+            distmat[no_common] = max_dist
+
+        return distmat.cpu().numpy()
 
     @staticmethod
     def _infer_batch_size(feat) -> int:
