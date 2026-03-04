@@ -2,7 +2,7 @@
 # =============================================================================
 # VPReID 完整实验脚本
 # 数据集: Occluded-Duke
-# GPU: 单卡 (RTX 4070 Laptop 8GB / RTX 4090 24GB)
+# GPU: 单卡
 # =============================================================================
 
 set -e
@@ -155,33 +155,6 @@ run_exp006() {
 }
 
 # =============================================================================
-# 8GB 显存版本 (RTX 4070 Laptop / RTX 3070 等)
-# 区别: NUM_WORKERS=4, IF_LABELSMOOTH=off, WITH_CP=True
-# =============================================================================
-
-run_exp001_8g() {
-    run_experiment "exp001_baseline_8g" \
-        "configs/occluded_duke/swin_tiny_8g.yml"
-}
-
-run_exp002_8g() {
-    run_experiment "exp002_vpreid_v1_8g" \
-        "configs/occluded_duke/vpreid_tiny_8g.yml"
-}
-
-run_exp003_8g() {
-    run_experiment "exp003_no_part_id_8g" \
-        "configs/occluded_duke/vpreid_tiny_8g.yml" \
-        MODEL.VPREID.PART_ID_WEIGHT 0.0
-}
-
-run_exp004_8g() {
-    run_experiment "exp004_no_push_8g" \
-        "configs/occluded_duke/vpreid_tiny_8g.yml" \
-        MODEL.VPREID.PUSH_WEIGHT 0.0
-}
-
-# =============================================================================
 # 主入口
 # =============================================================================
 
@@ -199,13 +172,6 @@ usage() {
     echo "  baseline    运行 exp001 + exp002"
     echo "  ablation    运行 exp003 + exp004"
     echo "  all         运行全部实验"
-    echo ""
-    echo "8GB 显存版本 (WITH_CP=True, NUM_WORKERS=4):"
-    echo "  exp001_8g   Baseline (8GB 显存优化)"
-    echo "  exp002_8g   VPReID v1 (8GB 显存优化)"
-    echo "  exp003_8g   消融: 无 Part ID Loss (8GB)"
-    echo "  exp004_8g   消融: 无 Push Loss (8GB)"
-    echo "  baseline_8g 运行 exp001_8g + exp002_8g"
     echo ""
     echo "示例:"
     echo "  bash scripts/run_experiments.sh check"
@@ -260,27 +226,6 @@ case "${1:-}" in
         run_exp004
         run_exp005
         run_exp006
-        ;;
-    exp001_8g)
-        check_prerequisites
-        run_exp001_8g
-        ;;
-    exp002_8g)
-        check_prerequisites
-        run_exp002_8g
-        ;;
-    exp003_8g)
-        check_prerequisites
-        run_exp003_8g
-        ;;
-    exp004_8g)
-        check_prerequisites
-        run_exp004_8g
-        ;;
-    baseline_8g)
-        check_prerequisites
-        run_exp001_8g
-        run_exp002_8g
         ;;
     *)
         usage

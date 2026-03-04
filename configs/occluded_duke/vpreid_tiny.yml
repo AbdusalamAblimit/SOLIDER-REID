@@ -10,7 +10,7 @@ MODEL:
   TRANSFORMER_TYPE: 'vpreid_tiny_patch4_window7_224'
   STRIDE_SIZE: [16, 16]
   SEMANTIC_WEIGHT: 0.2
-  WITH_CP: True
+  WITH_CP: False
 
   VPREID:
     ENABLE: True
