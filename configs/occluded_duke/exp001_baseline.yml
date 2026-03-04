@@ -55,4 +55,4 @@ TEST:
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/occluded_duke/swin_tiny'
+OUTPUT_DIR: './experiments/exp001_baseline'

@@ -209,6 +209,10 @@ _C.TEST.ENABLED_FEATS = ('global', 'local', 'concat')
 _C.TEST.DIST_MAT = "dist_mat.npy"
 # Whether calculate the eval score option: 'True', 'False'
 _C.TEST.EVAL = False
+# NFC (Neighbor Feature Centralization) — test-time post-processing
+_C.TEST.NFC = False
+_C.TEST.NFC_K1 = 2
+_C.TEST.NFC_K2 = 2
 # ---------------------------------------------------------------------------- #
 # Misc options
 # ---------------------------------------------------------------------------- #

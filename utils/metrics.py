@@ -8,6 +8,36 @@ from dataclasses import dataclass
 from typing import Optional, Tuple
 
 
+def nfc(feat: torch.Tensor, k1: int = 2, k2: int = 2) -> torch.Tensor:
+    """Neighbor Feature Centralization (Pose2ID, CVPR 2025).
+    Accumulates mutual nearest-neighbor features for each sample, then L2-normalizes.
+    Works on CPU to avoid GPU memory issues with large gallery sets.
+    """
+    feat = torch.nn.functional.normalize(feat.clone().float(), dim=1, p=2)
+    n = feat.shape[0]
+    # Chunked distance computation to avoid OOM on large sets
+    chunk = 2048
+    topk_indices = []
+    for i in range(0, n, chunk):
+        q = feat[i:i+chunk]
+        dist_chunk = torch.cdist(q, feat, p=2)  # [chunk, n]
+        dist_chunk[torch.arange(q.shape[0]).unsqueeze(1),
+                   torch.arange(i, min(i+q.shape[0], n)).unsqueeze(0)] = float('inf')
+        _, topk = dist_chunk.topk(k1, largest=False, dim=1)
+        topk_indices.append(topk)
+    rank = torch.cat(topk_indices, dim=0)  # [n, k1]
+
+    # Find mutual nearest neighbors
+    feat_out = feat.clone()
+    for i in range(n):
+        for j in rank[i]:
+            j = j.item()
+            if i in rank[j][:k2].tolist():
+                feat_out[i] += feat[j]
+    feat_out = torch.nn.functional.normalize(feat_out, dim=1, p=2)
+    return feat_out
+
+
 @dataclass
 class EvalResultItem:
     """封装单个分支的评估结果，默认只携带指标，避免保存大矩阵占内存。"""
@@ -118,7 +148,7 @@ def eval_func(distmat, q_pids, g_pids, q_camids, g_camids, max_rank=50):
 
 class R1_mAP_eval():
     def __init__(self, num_query, max_rank=50, feat_norm=True, reranking=False, num_gallery: Optional[int] = None,
-                 dist_chunk_size: int = 1024):
+                 dist_chunk_size: int = 1024, use_nfc: bool = False, nfc_k1: int = 2, nfc_k2: int = 2):
         super(R1_mAP_eval, self).__init__()
         self.num_query = num_query
         self.max_rank = max_rank
@@ -126,6 +156,9 @@ class R1_mAP_eval():
         self.reranking = reranking
         self.num_gallery = num_gallery
         self.dist_chunk_size = max(1, int(dist_chunk_size))
+        self.use_nfc = use_nfc
+        self.nfc_k1 = nfc_k1
+        self.nfc_k2 = nfc_k2
         self.reset()
 
     def reset(self):
@@ -217,6 +250,12 @@ class R1_mAP_eval():
             if self.feat_norm:
                 print(f"The test feature ({key}) is normalized")
                 feats = torch.nn.functional.normalize(feats, dim=1, p=2)
+
+            # Apply NFC (Neighbor Feature Centralization) post-processing
+            if self.use_nfc:
+                print(f"=> Applying NFC (k1={self.nfc_k1}, k2={self.nfc_k2}) on {key}")
+                feats = nfc(feats, k1=self.nfc_k1, k2=self.nfc_k2)
+
             qf = feats[:self.num_query]
             gf = feats[self.num_query:]
             q_pids = pids[:self.num_query]

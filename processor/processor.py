@@ -107,7 +107,8 @@ def do_train(cfg,
 
     val_dataset_size = len(val_loader.dataset) if hasattr(val_loader, "dataset") else None
     num_gallery = (val_dataset_size - num_query) if val_dataset_size is not None else None
-    evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM, num_gallery=num_gallery)
+    evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM, num_gallery=num_gallery,
+                               use_nfc=cfg.TEST.NFC, nfc_k1=cfg.TEST.NFC_K1, nfc_k2=cfg.TEST.NFC_K2)
     enabled_eval_branches = _get_enabled_eval_branches(cfg)
     if enabled_eval_branches:
         logger.info("Evaluating branches: %s", ", ".join(enabled_eval_branches))
@@ -318,7 +319,8 @@ def do_inference(cfg,
     val_dataset_size = len(val_loader.dataset) if hasattr(val_loader, "dataset") else None
     num_gallery = (val_dataset_size - num_query) if val_dataset_size is not None else None
     evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM, reranking=cfg.TEST.RE_RANKING,
-                           num_gallery=num_gallery)
+                           num_gallery=num_gallery,
+                           use_nfc=cfg.TEST.NFC, nfc_k1=cfg.TEST.NFC_K1, nfc_k2=cfg.TEST.NFC_K2)
 
     evaluator.reset()
     enabled_eval_branches = _get_enabled_eval_branches(cfg)
