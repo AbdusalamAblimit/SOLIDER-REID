@@ -15,6 +15,7 @@ Usage:
 import logging
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from typing import Tuple
 
 logger = logging.getLogger("transreid.pose")
@@ -89,25 +90,57 @@ class MMPoseTopDownPredictor(nn.Module):
         logger.info(f"[pose_ckpt] loaded={len(loadable)} missing={len(missing)} unexpected={len(unexpected)}")
         assert len(loadable) > 0, "Pose ckpt didn't match any weights."
 
-        # MMPose expects 0..255, then subtract mean / divide std
+        # ViTPose trained input size: H=256, W=192 (from codec input_size=(192,256))
+        self.pose_input_h = 256
+        self.pose_input_w = 192
+
+        # MMPose ImageNet normalization (on 0..255 scale)
         self.register_buffer('pose_mean', torch.tensor([123.675, 116.28, 103.53]).view(1, 3, 1, 1))
         self.register_buffer('pose_std', torch.tensor([58.395, 57.12, 57.375]).view(1, 3, 1, 1))
 
-    def _forward_impl(self, images: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Run pose model on SOLIDER-normalized images."""
-        # De-normalize from SOLIDER format to 0..255
-        try:
-            from config import cfg as _cfg
-            mean = images.new_tensor(_cfg.INPUT.PIXEL_MEAN).view(1, 3, 1, 1)
-            std = images.new_tensor(_cfg.INPUT.PIXEL_STD).view(1, 3, 1, 1)
-        except Exception:
-            mean = images.new_tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
-            std = images.new_tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
+        # Cache SOLIDER normalization params
+        self._solider_mean = None
+        self._solider_std = None
 
-        img = images * std + mean       # 0..1
-        img = img * 255.0               # 0..255
+    def _get_solider_norm(self, device):
+        """Get SOLIDER normalization params (cached)."""
+        if self._solider_mean is None:
+            try:
+                from config import cfg as _cfg
+                m = _cfg.INPUT.PIXEL_MEAN
+                s = _cfg.INPUT.PIXEL_STD
+            except Exception:
+                m = [0.5, 0.5, 0.5]
+                s = [0.5, 0.5, 0.5]
+            self._solider_mean = torch.tensor(m, dtype=torch.float32).view(1, 3, 1, 1)
+            self._solider_std = torch.tensor(s, dtype=torch.float32).view(1, 3, 1, 1)
+        return self._solider_mean.to(device), self._solider_std.to(device)
+
+    def _forward_impl(self, images: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Run pose model on SOLIDER-normalized images.
+
+        Pipeline:
+            1. De-normalize from SOLIDER space → [0, 255]
+            2. Resize to ViTPose training size (256x192)
+            3. Apply ViTPose ImageNet normalization
+            4. Run ViTPose → heatmaps + visibility
+        """
+        solider_mean, solider_std = self._get_solider_norm(images.device)
+
+        # Step 1: SOLIDER de-normalize → [0, 1] → [0, 255]
+        img = images * solider_std + solider_mean  # [0, 1]
+        img = img.clamp(0, 1) * 255.0             # [0, 255]
+
+        # Step 2: Resize to ViTPose's trained input size
+        img = F.interpolate(
+            img, size=(self.pose_input_h, self.pose_input_w),
+            mode='bilinear', align_corners=False
+        )
+
+        # Step 3: ViTPose ImageNet normalization
         img = (img - self.pose_mean.to(img.device)) / self.pose_std.to(img.device)
 
+        # Step 4: Forward through ViTPose
         if hasattr(self.model, 'backbone') and hasattr(self.model, 'head'):
             feat = self.model.backbone(img)
             out = self.model.head(feat)
