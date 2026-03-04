@@ -1,3 +1,4 @@
+import logging
 import torch
 import torch.nn as nn
 from .backbones.resnet import ResNet, Bottleneck
@@ -188,14 +189,70 @@ class build_transformer(nn.Module):
             view_num = 0
 
         convert_weights = True if pretrain_choice == 'imagenet' else False
-        self.base = factory[cfg.MODEL.TRANSFORMER_TYPE](img_size=cfg.INPUT.SIZE_TRAIN, drop_path_rate=cfg.MODEL.DROP_PATH, drop_rate= cfg.MODEL.DROP_OUT,attn_drop_rate=cfg.MODEL.ATT_DROP_RATE, pretrained=model_path, convert_weights=convert_weights, semantic_weight=semantic_weight)
+
+        # Build extra kwargs for VPReID or with_cp support
+        extra_kwargs = {}
+        with_cp = getattr(cfg.MODEL, 'WITH_CP', False)
+        if with_cp:
+            extra_kwargs['with_cp'] = True
+
+        vpreid_cfg = getattr(cfg.MODEL, 'VPREID', None)
+        if vpreid_cfg is not None and getattr(vpreid_cfg, 'ENABLE', False):
+            extra_kwargs['pose_cfg'] = vpreid_cfg.POSE_CFG
+            extra_kwargs['pose_ckpt'] = vpreid_cfg.POSE_CKPT
+            extra_kwargs['n_parts'] = vpreid_cfg.N_PARTS
+            extra_kwargs['part_temp'] = vpreid_cfg.PART_TEMP
+            extra_kwargs['vis_threshold'] = vpreid_cfg.VIS_THRESHOLD
+
+        self.base = factory[cfg.MODEL.TRANSFORMER_TYPE](
+            img_size=cfg.INPUT.SIZE_TRAIN,
+            drop_path_rate=cfg.MODEL.DROP_PATH,
+            drop_rate=cfg.MODEL.DROP_OUT,
+            attn_drop_rate=cfg.MODEL.ATT_DROP_RATE,
+            pretrained=model_path,
+            convert_weights=convert_weights,
+            semantic_weight=semantic_weight,
+            **extra_kwargs,
+        )
         if model_path != '':
             self.base.init_weights(model_path)
         self.in_planes = self.base.num_features[-1]
 
+        # Detect VPReID backbone
+        self.is_vpreid = getattr(self.base, 'is_vpreid', False)
+
         self.num_classes = num_classes
         self.ID_LOSS_TYPE = cfg.MODEL.ID_LOSS_TYPE
-        if self.ID_LOSS_TYPE == 'arcface':
+
+        if self.is_vpreid:
+            K = self.base.n_body_parts
+            D = self.in_planes
+            # Global BN + classifier
+            self.global_bnneck = nn.BatchNorm1d(D)
+            self.global_bnneck.bias.requires_grad_(False)
+            self.global_bnneck.apply(weights_init_kaiming)
+            self.classifier_global = nn.Linear(D, self.num_classes, bias=False)
+            self.classifier_global.apply(weights_init_classifier)
+            # Foreground BN + classifier
+            self.fg_bnneck = nn.BatchNorm1d(D)
+            self.fg_bnneck.bias.requires_grad_(False)
+            self.fg_bnneck.apply(weights_init_kaiming)
+            self.classifier_fg = nn.Linear(D, self.num_classes, bias=False)
+            self.classifier_fg.apply(weights_init_classifier)
+            # Per-part BN + classifiers
+            self.part_bnnecks = nn.ModuleList()
+            self.part_classifiers = nn.ModuleList()
+            for _ in range(K):
+                bn = nn.BatchNorm1d(D)
+                bn.bias.requires_grad_(False)
+                bn.apply(weights_init_kaiming)
+                self.part_bnnecks.append(bn)
+                cls = nn.Linear(D, self.num_classes, bias=False)
+                cls.apply(weights_init_classifier)
+                self.part_classifiers.append(cls)
+            self.dropout = nn.Dropout(self.dropout_rate)
+
+        elif self.ID_LOSS_TYPE == 'arcface':
             print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE,cfg.SOLVER.COSINE_SCALE,cfg.SOLVER.COSINE_MARGIN))
             self.classifier = Arcface(self.in_planes, self.num_classes,
                                       s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
@@ -229,6 +286,43 @@ class build_transformer(nn.Module):
         #    self.load_param(model_path)
 
     def forward(self, x, label=None, cam_label= None, view_label=None):
+        # --- VPReID path ---
+        if self.is_vpreid:
+            outputs = self.base(x)
+            g_feat = outputs['global_feat']
+            fg_feat = outputs['foreground_feat']
+            part_feats = outputs['part_feats']
+
+            if self.training:
+                g_bn = self.global_bnneck(g_feat)
+                fg_bn = self.fg_bnneck(fg_feat)
+                scores = [self.classifier_global(g_bn), self.classifier_fg(fg_bn)]
+
+                K = part_feats.shape[1]
+                feat_list = [g_feat, fg_feat]
+                for k in range(K):
+                    pk_bn = self.part_bnnecks[k](part_feats[:, k])
+                    feat_list.append(pk_bn)
+                    scores.append(self.part_classifiers[k](pk_bn))
+
+                extras = {'part_vis': outputs['part_vis']}
+                return scores, feat_list, extras
+            else:
+                g_bn = self.global_bnneck(g_feat)
+                K = part_feats.shape[1]
+                part_bn_list = []
+                for k in range(K):
+                    part_bn_list.append(self.part_bnnecks[k](part_feats[:, k]))
+                part_bn = torch.stack(part_bn_list, dim=1)
+
+                feat_dict = {
+                    'global': g_bn,
+                    'parts': part_bn,
+                    'part_vis': outputs['part_vis'],
+                }
+                return feat_dict, None
+
+        # --- Standard path ---
         global_feat, featmaps = self.base(x)
         if self.reduce_feat_dim:
             global_feat = self.fcneck(global_feat)
@@ -244,10 +338,8 @@ class build_transformer(nn.Module):
             return cls_score, global_feat, featmaps  # global feature for triplet loss
         else:
             if self.neck_feat == 'after':
-                # print("Test with feature after BN")
                 return feat, featmaps
             else:
-                # print("Test with feature before BN")
                 return global_feat, featmaps
 
     def load_param(self, trained_path):
@@ -447,3 +539,16 @@ def make_model(cfg, num_class, camera_num, view_num, semantic_weight):
         model = Backbone(num_class, cfg)
         print('===========building ResNet===========')
     return model
+
+
+# --- register VPReID types ---
+from .backbones.vpreid import (
+    vpreid_tiny_patch4_window7_224,
+    vpreid_small_patch4_window7_224,
+    vpreid_base_patch4_window7_224,
+)
+__factory_T_type.update({
+    'vpreid_tiny_patch4_window7_224': vpreid_tiny_patch4_window7_224,
+    'vpreid_small_patch4_window7_224': vpreid_small_patch4_window7_224,
+    'vpreid_base_patch4_window7_224': vpreid_base_patch4_window7_224,
+})

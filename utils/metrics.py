@@ -98,10 +98,25 @@ class R1_mAP_eval():
         self.feats = []
         self.pids = []
         self.camids = []
+        # For VPReID dict features
+        self.has_parts = False
+        self.part_feats = []
+        self.part_vis_list = []
 
     def update(self, output):  # called once for each batch
         feat, pid, camid = output
-        self.feats.append(feat.cpu())
+
+        if isinstance(feat, dict):
+            # VPReID dict: {'global': [B, D], 'parts': [B, K, D], 'part_vis': [B, K]}
+            self.has_parts = True
+            self.feats.append(feat['global'].cpu())
+            if 'parts' in feat:
+                self.part_feats.append(feat['parts'].cpu())
+            if 'part_vis' in feat:
+                self.part_vis_list.append(feat['part_vis'].cpu())
+        else:
+            self.feats.append(feat.cpu())
+
         self.pids.extend(np.asarray(pid))
         self.camids.extend(np.asarray(camid))
 
@@ -110,25 +125,59 @@ class R1_mAP_eval():
         if self.feat_norm:
             print("The test feature is normalized")
             feats = torch.nn.functional.normalize(feats, dim=1, p=2)  # along channel
-        # query
-        qf = feats[:self.num_query]
+
         q_pids = np.asarray(self.pids[:self.num_query])
         q_camids = np.asarray(self.camids[:self.num_query])
-        # gallery
-        gf = feats[self.num_query:]
         g_pids = np.asarray(self.pids[self.num_query:])
-
         g_camids = np.asarray(self.camids[self.num_query:])
+
+        # Global distance
+        qf = feats[:self.num_query]
+        gf = feats[self.num_query:]
+
         if self.reranking:
             print('=> Enter reranking')
             distmat = re_ranking(qf, gf, k1=20, k2=6, lambda_value=0.3)
-
         else:
             print('=> Computing DistMat with euclidean_distance')
             distmat = euclidean_distance(qf, gf)
-        cmc, mAP = eval_func(distmat, q_pids, g_pids, q_camids, g_camids)
 
-        return cmc, mAP, distmat, self.pids, self.camids, qf, gf
+        cmc_global, mAP_global = eval_func(distmat, q_pids, g_pids, q_camids, g_camids)
+
+        # If we have part features, also compute visibility-weighted part distance
+        if self.has_parts and self.part_feats:
+            parts = torch.cat(self.part_feats, dim=0)  # [N, K, D]
+            vis = torch.cat(self.part_vis_list, dim=0) if self.part_vis_list else None  # [N, K]
+
+            if self.feat_norm:
+                B, K, D = parts.shape
+                parts = parts.view(B, K * D)
+                parts = torch.nn.functional.normalize(parts, dim=1, p=2)
+                parts = parts.view(B, K, D)
+
+            q_parts = parts[:self.num_query]
+            g_parts = parts[self.num_query:]
+            q_vis = vis[:self.num_query] if vis is not None else None
+            g_vis = vis[self.num_query:] if vis is not None else None
+
+            # Part distance: concat all part features (simple but effective)
+            qf_parts = q_parts.view(q_parts.shape[0], -1)
+            gf_parts = g_parts.view(g_parts.shape[0], -1)
+            distmat_parts = euclidean_distance(qf_parts, gf_parts)
+            cmc_parts, mAP_parts = eval_func(distmat_parts, q_pids, g_pids, q_camids, g_camids)
+
+            # Fused distance: weighted combination of global and part
+            distmat_fused = 0.5 * distmat + 0.5 * distmat_parts
+            cmc_fused, mAP_fused = eval_func(distmat_fused, q_pids, g_pids, q_camids, g_camids)
+
+            print(f'=> [global] mAP: {mAP_global:.1%}, R-1: {cmc_global[0]:.1%}')
+            print(f'=> [parts]  mAP: {mAP_parts:.1%}, R-1: {cmc_parts[0]:.1%}')
+            print(f'=> [fused]  mAP: {mAP_fused:.1%}, R-1: {cmc_fused[0]:.1%}')
+
+            # Return best result (fused)
+            return cmc_fused, mAP_fused, distmat_fused, self.pids, self.camids, qf, gf
+
+        return cmc_global, mAP_global, distmat, self.pids, self.camids, qf, gf
 
 
 

@@ -62,6 +62,8 @@ _C.MODEL.TRANSFORMER_TYPE = 'None'
 _C.MODEL.STRIDE_SIZE = [16, 16]
 _C.MODEL.GEM_POOLING = False
 _C.MODEL.STEM_CONV = False
+# Gradient checkpointing for transformer backbones (trade compute for memory)
+_C.MODEL.WITH_CP = False
 
 # JPM Parameter
 _C.MODEL.JPM = False
@@ -202,3 +204,18 @@ _C.TEST.EVAL = False
 # ---------------------------------------------------------------------------- #
 # Path to checkpoint and saved log of trained model
 _C.OUTPUT_DIR = ""
+
+# ---------------------------------------------------------------------------- #
+# VPReID: Visibility-aware Pose-guided ReID
+# ---------------------------------------------------------------------------- #
+_C.MODEL.VPREID = CN()
+_C.MODEL.VPREID.ENABLE = False
+_C.MODEL.VPREID.N_PARTS = 5
+_C.MODEL.VPREID.PART_TEMP = 0.1              # softmax temperature for part attention
+_C.MODEL.VPREID.VIS_THRESHOLD = 0.5          # part visibility threshold
+_C.MODEL.VPREID.POSE_CFG = 'pose/config_vispredict.py'
+_C.MODEL.VPREID.POSE_CKPT = 'pretrained/best_coco_AP_epoch_210.pth'
+_C.MODEL.VPREID.ID_WEIGHT = 1.0              # global + fg ID loss weight
+_C.MODEL.VPREID.TRI_WEIGHT = 1.0             # part-averaged triplet weight
+_C.MODEL.VPREID.PART_ID_WEIGHT = 0.5         # per-part ID loss weight
+_C.MODEL.VPREID.PUSH_WEIGHT = 0.1            # push diversity loss weight

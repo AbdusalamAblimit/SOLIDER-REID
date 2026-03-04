@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Pretrained weights & checkpoints
+pretrained/
+*.pth
+*.pt
+*.ckpt
+
+# Training logs
+/log
+/logs
+/runs
+
+# Data
+/data/*
+datasets_cache/
+
+# IDE & editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cloned reference repos
+ICCV19_Pose_Guided_Occluded_Person_ReID/
+PFD_Net/
+PGDS/
+Pose2ID/
+TransReID/
+CLIP-ReID/
+bpbreid/
+SOLIDER/
+ISP-reID/
+Instruct-ReID/
+Part-Aware-Transformer/
+keypoint_promptable_reidentification/
+
+# Claude Code
+.claude/
+
+# Temporary files
+*.tmp
+*.bak
+
+# Jupyter
+.ipynb_checkpoints/
