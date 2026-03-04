@@ -85,3 +85,39 @@ class ImageDataset(Dataset):
 
         return img, pid, camid, trackid, img_path
         #  return img, pid, camid, trackid,img_path.split('/')[-1]
+
+
+class PoseImageDataset(Dataset):
+    """ImageDataset that also loads pre-extracted keypoints and visibility."""
+
+    def __init__(self, dataset, transform=None, pose_data=None):
+        self.dataset = dataset
+        self.transform = transform
+        self.pose_data = pose_data or {}
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, index):
+        img_path, pid, camid, trackid = self.dataset[index]
+        img = read_image(img_path)
+        img_w, img_h = img.size  # PIL: (W, H)
+
+        if self.transform is not None:
+            img = self.transform(img)
+
+        img_name = osp.basename(img_path)
+        if img_name in self.pose_data:
+            entry = self.pose_data[img_name]
+            kpts = torch.tensor(entry['keypoints'], dtype=torch.float32)  # (17, 3)
+            vis = torch.tensor(entry['visibility'], dtype=torch.float32)  # (17,)
+            # Normalize keypoint coordinates to [0, 1] relative to image size
+            orig_h, orig_w = entry.get('img_hw', [img_h, img_w])
+            if orig_w > 0 and orig_h > 0:
+                kpts[:, 0] = kpts[:, 0] / orig_w  # x
+                kpts[:, 1] = kpts[:, 1] / orig_h  # y
+        else:
+            kpts = torch.zeros(17, 3, dtype=torch.float32)
+            vis = torch.zeros(17, dtype=torch.float32)
+
+        return img, pid, camid, trackid, img_path, kpts, vis
