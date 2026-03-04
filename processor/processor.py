@@ -41,6 +41,11 @@ def do_train(cfg,
 
     evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM)
     scaler = amp.GradScaler()
+
+    # ETA tracking
+    epoch_times = []
+    train_start_time = time.time()
+
     # train
     for epoch in range(1, epochs + 1):
         start_time = time.time()
@@ -98,15 +103,30 @@ def do_train(cfg,
 
         end_time = time.time()
         time_per_batch = (end_time - start_time) / (n_iter + 1)
+        epoch_time = end_time - start_time
+        epoch_times.append(epoch_time)
         if cfg.SOLVER.WARMUP_METHOD == 'cosine':
             scheduler.step(epoch)
         else:
             scheduler.step()
+
+        # ETA estimation
+        avg_epoch_time = sum(epoch_times) / len(epoch_times)
+        remaining_epochs = epochs - epoch
+        eta_seconds = avg_epoch_time * remaining_epochs
+        elapsed = end_time - train_start_time
+        eta_h = int(eta_seconds // 3600)
+        eta_m = int((eta_seconds % 3600) // 60)
+        elapsed_h = int(elapsed // 3600)
+        elapsed_m = int((elapsed % 3600) // 60)
+
         if cfg.MODEL.DIST_TRAIN:
             pass
         else:
-            logger.info("Epoch {} done. Time per epoch: {:.3f}[s] Speed: {:.1f}[samples/s]"
-                    .format(epoch, time_per_batch * (n_iter + 1), train_loader.batch_size / time_per_batch))
+            logger.info("Epoch {} done. Time: {:.0f}s, Speed: {:.1f}[samples/s], "
+                    "Elapsed: {}h{}m, ETA: {}h{}m ({} epochs left)"
+                    .format(epoch, epoch_time, train_loader.batch_size / time_per_batch,
+                            elapsed_h, elapsed_m, eta_h, eta_m, remaining_epochs))
 
         if epoch % checkpoint_period == 0:
             if cfg.MODEL.DIST_TRAIN:

@@ -1,5 +1,6 @@
 MODEL:
   PRETRAIN_HW_RATIO: 2
+  PRETRAIN_CHOICE: 'self'
   PRETRAIN_PATH: 'pretrained/swin_tiny.pth'
   METRIC_LOSS_TYPE: 'triplet'
   IF_LABELSMOOTH: 'off'
