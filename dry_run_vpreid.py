@@ -130,6 +130,8 @@ def test_full_model():
     cfg.INPUT.SIZE_TRAIN = [384, 128]
     cfg.MODEL.DROP_PATH = 0.1
     cfg.MODEL.JPM = False
+    cfg.DATALOADER.SAMPLER = 'softmax_triplet'
+    cfg.MODEL.METRIC_LOSS_TYPE = 'triplet'
     cfg.MODEL.NO_MARGIN = True
     cfg.MODEL.VPREID.ENABLE = True
     cfg.MODEL.VPREID.N_PARTS = 5
@@ -233,16 +235,20 @@ def test_evaluator():
     evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm='yes')
     evaluator.reset()
 
-    # Simulate batches
-    for i in range(3):
-        batch_size = 10
+    # Simulate batches: query (cam=0) and gallery (cam=1) share pids
+    all_pids = list(range(5)) * 6  # 5 identities, 6 samples each = 30
+    all_camids = [0] * num_query + [1] * num_gallery  # query cam=0, gallery cam=1
+    total = num_query + num_gallery
+    for start in range(0, total, 10):
+        end = min(start + 10, total)
+        batch_size = end - start
         feat_dict = {
             'global': torch.randn(batch_size, D),
             'parts': torch.randn(batch_size, K, D),
             'part_vis': torch.rand(batch_size, K),
         }
-        pids = list(range(i * batch_size, (i + 1) * batch_size))
-        camids = [0] * batch_size
+        pids = all_pids[start:end]
+        camids = all_camids[start:end]
         evaluator.update((feat_dict, pids, camids))
 
     cmc, mAP, distmat, _, _, _, _ = evaluator.compute()
