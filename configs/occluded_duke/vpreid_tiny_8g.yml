@@ -7,10 +7,22 @@ MODEL:
   NAME: 'transformer'
   NO_MARGIN: True
   DEVICE_ID: ('0')
-  TRANSFORMER_TYPE: 'swin_tiny_patch4_window7_224'
+  TRANSFORMER_TYPE: 'vpreid_tiny_patch4_window7_224'
   STRIDE_SIZE: [16, 16]
   SEMANTIC_WEIGHT: 0.2
   WITH_CP: True
+
+  VPREID:
+    ENABLE: True
+    N_PARTS: 5
+    PART_TEMP: 0.1
+    VIS_THRESHOLD: 0.5
+    POSE_CFG: 'pose/config_vispredict.py'
+    POSE_CKPT: 'pretrained/best_coco_AP_epoch_210.pth'
+    ID_WEIGHT: 1.0
+    TRI_WEIGHT: 1.0
+    PART_ID_WEIGHT: 0.5
+    PUSH_WEIGHT: 0.1
 
 INPUT:
   SIZE_TRAIN: [384, 128]
@@ -28,7 +40,7 @@ DATASETS:
 DATALOADER:
   SAMPLER: 'softmax_triplet'
   NUM_INSTANCE: 4
-  NUM_WORKERS: 8
+  NUM_WORKERS: 4
 
 SOLVER:
   OPTIMIZER_NAME: 'SGD'
@@ -47,10 +59,10 @@ SOLVER:
 
 TEST:
   EVAL: True
-  IMS_PER_BATCH: 256
+  IMS_PER_BATCH: 128
   RE_RANKING: False
   WEIGHT: ''
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/occluded_duke/swin_tiny'
+OUTPUT_DIR: './log/occluded_duke/vpreid_tiny_8g'

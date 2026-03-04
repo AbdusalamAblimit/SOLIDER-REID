@@ -1,6 +1,6 @@
 MODEL:
   PRETRAIN_HW_RATIO: 2
-  PRETRAIN_PATH: 'pretrained/swin_tiny_tea.pth'
+  PRETRAIN_PATH: 'pretrained/swin_tiny.pth'
   METRIC_LOSS_TYPE: 'triplet'
   IF_LABELSMOOTH: 'off'
   IF_WITH_CENTER: 'no'
@@ -35,7 +35,7 @@ INPUT:
 
 DATASETS:
   NAMES: ('occluded_duke')
-  ROOT_DIR: ('/root/data')
+  ROOT_DIR: ('data')
 
 DATALOADER:
   SAMPLER: 'softmax_triplet'
