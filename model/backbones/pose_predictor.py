@@ -106,7 +106,7 @@ class MMPoseTopDownPredictor(nn.Module):
 
         img = images * std + mean       # 0..1
         img = img * 255.0               # 0..255
-        img = (img - self.pose_mean) / self.pose_std
+        img = (img - self.pose_mean.to(img.device)) / self.pose_std.to(img.device)
 
         if hasattr(self.model, 'backbone') and hasattr(self.model, 'head'):
             feat = self.model.backbone(img)

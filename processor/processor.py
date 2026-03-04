@@ -89,17 +89,34 @@ def do_train(cfg,
             acc_meter.update(acc, 1)
 
             torch.cuda.synchronize()
-            if cfg.MODEL.DIST_TRAIN:
-                if dist.get_rank() == 0:
-                    if (n_iter + 1) % log_period == 0:
-                        base_lr = scheduler._get_lr(epoch)[0] if cfg.SOLVER.WARMUP_METHOD == 'cosine' else scheduler.get_lr()[0]
-                        logger.info("Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Base Lr: {:.2e}"
-                                    .format(epoch, (n_iter + 1), len(train_loader), loss_meter.avg, acc_meter.avg, base_lr))
-            else:
-                if (n_iter + 1) % log_period == 0:
+            if (n_iter + 1) % log_period == 0:
+                is_main = not cfg.MODEL.DIST_TRAIN or dist.get_rank() == 0
+                if is_main:
                     base_lr = scheduler._get_lr(epoch)[0] if cfg.SOLVER.WARMUP_METHOD == 'cosine' else scheduler.get_lr()[0]
-                    logger.info("Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Base Lr: {:.2e}"
-                                .format(epoch, (n_iter + 1), len(train_loader), loss_meter.avg, acc_meter.avg, base_lr))
+                    # Iter-level ETA
+                    iter_elapsed = time.time() - start_time
+                    iters_done = n_iter + 1
+                    iters_total = len(train_loader)
+                    iter_eta_s = iter_elapsed / iters_done * (iters_total - iters_done)
+                    # Remaining epochs ETA (use previous epoch avg if available)
+                    if epoch_times:
+                        epoch_eta_s = (sum(epoch_times) / len(epoch_times)) * (epochs - epoch)
+                    else:
+                        epoch_eta_s = (iter_elapsed / iters_done * iters_total) * (epochs - epoch + 1)
+                    total_eta_s = iter_eta_s + epoch_eta_s
+                    eta_h = int(total_eta_s // 3600)
+                    eta_m = int((total_eta_s % 3600) // 60)
+
+                    msg = "Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Lr: {:.2e}, ETA: {}h{:02d}m".format(
+                        epoch, iters_done, iters_total, loss_meter.avg, acc_meter.avg, base_lr, eta_h, eta_m)
+
+                    # Append VPReID loss breakdown if available
+                    if hasattr(loss_fn, 'last_components') and loss_fn.last_components:
+                        lc = loss_fn.last_components
+                        msg += " | id={:.2f} pid={:.2f} tri={:.2f} push={:.2f}".format(
+                            lc['id'], lc['pid'], lc['tri'], lc['push'])
+
+                    logger.info(msg)
 
         end_time = time.time()
         time_per_batch = (end_time - start_time) / (n_iter + 1)

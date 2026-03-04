@@ -78,16 +78,17 @@ def make_loss(cfg, num_classes):    # modified by gu
             push_loss = push_fn(part_feats_bn)
             total = total + vp_push_w * push_loss
 
-            # Diagnostic logging
-            _vp_step[0] += 1
-            if _vp_step[0] % 20 == 1 or total.item() > 20.0:
-                _vp_logger.info(
-                    f"[LOSS] id={id_loss.item():.2f} pid={part_id_loss.item():.2f} "
-                    f"tri={tri_loss.item():.2f} push={push_loss.item():.2f} "
-                    f"total={total.item():.2f}"
-                )
+            # Store loss components for external logging (processor.py)
+            loss_func.last_components = {
+                'id': id_loss.item(),
+                'pid': part_id_loss.item(),
+                'tri': tri_loss.item(),
+                'push': push_loss.item(),
+            }
 
             return total
+
+        loss_func.last_components = None
 
         return loss_func, center_criterion
 
