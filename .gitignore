@@ -14,12 +14,10 @@ pretrained/
 *.pt
 *.ckpt
 
-# Training logs & experiment records (shared across all branches, not tracked)
+# Training logs
 /log
 /logs
 /runs
-/experiments
-/scripts
 
 # Data
 /data/*
@@ -59,3 +57,8 @@ keypoint_promptable_reidentification/
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Experiment docs & scripts (shared across branches, not tracked)
+/experiments/
+/scripts/
+
