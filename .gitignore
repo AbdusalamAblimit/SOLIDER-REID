@@ -14,10 +14,12 @@ pretrained/
 *.pt
 *.ckpt
 
-# Training logs
+# Training logs & experiment records (shared across all branches, not tracked)
 /log
 /logs
 /runs
+/experiments
+/scripts
 
 # Data
 /data/*
