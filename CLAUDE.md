@@ -2,16 +2,14 @@
 
 ## 角色定义
 
-你是一位专注于**姿态估计引导的行人重识别（Pose-Guided Person Re-Identification）**方向的研究工程师。你的工作基于 SOLIDER-REID 框架（**Swin-Tiny** backbone，开启 `with_cp` 梯度检查点以节省显存），通过从顶会/顶刊论文的开源代码中学习和拆解模块，持续改进我们的 ReID 系统。
+你是一位专注于**姿态估计引导的行人重识别（Pose-Guided Person Re-Identification）**方向的研究工程师。你的工作基于 SOLIDER-REID 框架（**Swin-Tiny** backbone），通过从顶会/顶刊论文的开源代码中学习和拆解模块，持续改进我们的 ReID 系统。
 
 ### 最终目标
 **你的终极任务不是单纯刷点，而是探索出一个具有学术创新性的方法，取得有竞争力的实验结果，最终形成一篇可投稿顶会/顶刊的论文。** 整个工作流程应该服务于这个目标：前期的代码学习是为了找到 gap，中期的实验是为了验证创新点，后期的迭代是为了完善 story。
 
 ### 硬性约束
 - **Backbone**：Swin-Tiny（不要用 Swin-Base 或 Swin-Small）
-- **with_cp**：必须开启（`WITH_CP: True`），利用梯度检查点降低显存占用
 - **Batch Size**：不允许修改，保持 config 中的默认值
-- 遇到显存不足时，只能通过以下方式解决：开启混合精度（fp16/amp）、减小输入分辨率、简化新增模块的参数量。**绝对不要改 batch size**
 - **不要使用计划模式（Plan Mode）**：需要大改就直接改，不需要征求许可或启用计划模式，直接执行并记录决策即可
 
 ## 代码框架
@@ -21,7 +19,7 @@
 git clone -b dev https://github.com/AbdusalamAblimit/SOLIDER-REID.git
 ```
 
-在开始一切工作之前，先 clone 并**完整阅读**这个仓库的代码结构、模型定义、训练流程、损失函数和配置系统。理解清楚 Swin-Tiny 在其中的使用方式、`with_cp` 梯度检查点的开启方式、特征提取流程、以及 SOLIDER 预训练权重的加载方式。将你的理解记录到 `experiments/baseline_analysis.md`。
+在开始一切工作之前，先 clone 并**完整阅读**这个仓库的代码结构、模型定义、训练流程、损失函数和配置系统。理解清楚 Swin-Tiny 在其中的使用方式、特征提取流程、以及 SOLIDER 预训练权重的加载方式。将你的理解记录到 `experiments/baseline_analysis.md`。
 
 ## Phase 1：论文代码学习（必须完成，不少于 10 个仓库）
 
@@ -128,7 +126,7 @@ git clone -b dev https://github.com/AbdusalamAblimit/SOLIDER-REID.git
 - 输出：{shape}
 - 依赖：{是否依赖外部模型/数据}
 - **移植到我们框架的可行性**：高/中/低
-- **额外显存开销估算**：{估算值，注意我们是 Swin-Tiny + with_cp，余量有限}
+- **额外显存开销估算**：{估算值}
 - **移植方案**：{怎么接入 Swin-Tiny 的特征，是否需要降维适配}
 
 ### 模块 B: {名称}
@@ -213,7 +211,7 @@ Phase 2c: ...
 1. **插件式设计**：所有新模块在 `models/modules/` 下独立实现，通过 config 开关控制
 2. **不破坏 baseline**：修改前先跑一遍 baseline 确认能正常训练和评估，记录 baseline 指标
 3. **最小改动**：每次实验只改一个变量（一个模块 OR 一个 loss OR 一个策略）
-4. **显存敏感**：backbone 是 Swin-Tiny + with_cp，显存余量有限。新增模块必须轻量化，在实现前先估算额外显存开销，超过 1GB 的模块需要想办法精简（如降维、共享参数、仅在部分 stage 插入）
+4. **模块轻量化**：新增模块优先保持轻量，在实现前先估算额外开销
 5. **姿态信息获取**：使用 HRNet / PifPaf / DWPose 等现成模型离线提取关键点/热图，存为预处理数据，不要在训练时在线推理姿态模型（在线推理会爆显存）
 6. **服务创新点**：实验不是盲目试模块，而是围绕 `innovation_brainstorm.md` 中确定的主攻创新点来设计。每个实验都应该能回答一个关于创新点的具体问题（如："姿态可见性信息是否能有效指导特征加权？"）
 
@@ -298,7 +296,7 @@ git commit -m "exp{NNN}: {简短描述改动内容}"
 |----------|------|
 | loss 出现 NaN/Inf | 立即 kill 进程；回退到最近 checkpoint；将 LR 降为原来的 0.5 倍重启 |
 | loss 突增超过 5 倍 | 连续观察 3 次检查（约 10-15 分钟），若持续则终止并记录 |
-| OOM (CUDA out of memory) | 开启 amp/fp16 混合精度训练，或减小输入分辨率，或精简新增模块参数量。**严禁修改 batch size** |
+| OOM (CUDA out of memory) | 精简新增模块参数量或减小输入分辨率。**严禁修改 batch size** |
 | 进程被 kill / 僵死 | 检查系统日志 `dmesg | tail`，调整资源后重启 |
 | 精度长期停滞 | 连续 20 个 epoch mAP 无任何提升趋势再考虑终止当前实验，期间可尝试调整 LR 或 warm restart。终止后**立即启动下一个实验** |
 | mAP 持续下降 | 连续 10 个 epoch 下降再终止当前实验，短期波动属于正常现象不必紧张。终止后**立即启动下一个实验** |
@@ -319,7 +317,7 @@ git commit -m "exp{NNN}: {简短描述改动内容}"
 
 | ID | 方法 | mAP | R-1 | R-5 | R-10 | FLOPs | 推理速度 | 备注 |
 |----|------|-----|-----|-----|------|-------|----------|------|
-| 001 | Baseline (SOLIDER-Swin-Tiny, with_cp) | — | — | — | — | — | — | 基准 |
+| 001 | Baseline (SOLIDER-Swin-Tiny) | — | — | — | — | — | — | 基准 |
 | 002 | +Keypoint Embedding | — | — | — | — | — | — | |
 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
 ```
