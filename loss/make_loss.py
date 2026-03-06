@@ -31,15 +31,133 @@ def make_loss(cfg, num_classes):    # modified by gu
         xent = CrossEntropyLabelSmooth(num_classes=num_classes)
         print("label smooth on, numclasses:", num_classes)
 
-    # Check if VPReID loss strategy is needed
+    # Check special loss strategies
     vpreid_cfg = getattr(cfg.MODEL, 'VPREID', None)
     is_vpreid = vpreid_cfg is not None and getattr(vpreid_cfg, 'ENABLE', False)
 
+    pose_part_cfg = getattr(cfg.MODEL, 'POSE_PART', None)
+    is_pose_part = pose_part_cfg is not None and getattr(pose_part_cfg, 'ENABLE', False)
+
+    pcfc_cfg = getattr(cfg.MODEL, 'PCFC', None)
+    is_pcfc = pcfc_cfg is not None and getattr(pcfc_cfg, 'ENABLE', False)
+
     if sampler in ['softmax', 'id']:
-        def loss_func(score, feat, target,target_cam):
+        def loss_func(score, feat, target, target_cam):
             return F.cross_entropy(score, target)
 
-    #  elif cfg.DATALOADER.SAMPLER in ['softmax_triplet', 'id_triplet', 'img_triplet']:
+    elif 'triplet' in sampler and is_pcfc:
+        # PCFC loss: global ID + Triplet + optional part ID + optional part Triplet
+        pcfc_part_id_w = getattr(pcfc_cfg, 'PART_ID_WEIGHT', 1.0)
+        pcfc_part_tri_w = getattr(pcfc_cfg, 'PART_TRIPLET_WEIGHT', 0.0)
+        pcfc_vis_thr = getattr(pcfc_cfg, 'VIS_THRESHOLD', 0.3)
+        pcfc_use_part = getattr(pcfc_cfg, 'USE_PART_LOSS', True)
+        ce = xent if cfg.MODEL.IF_LABELSMOOTH == 'on' else F.cross_entropy
+
+        # Part triplet loss (GiLt-style)
+        part_tri_fn = None
+        if pcfc_part_tri_w > 0:
+            part_tri_fn = PartAveragedTripletLoss(margin=None, normalize=True)
+
+        def loss_func(score, feat, target, target_cam, extras=None):
+            ID_LOSS = ce(score, target)
+            TRI_LOSS = triplet(feat, target, normalize_feature=cfg.SOLVER.TRP_L2)[0]
+            total = cfg.MODEL.ID_LOSS_WEIGHT * ID_LOSS + cfg.MODEL.TRIPLET_LOSS_WEIGHT * TRI_LOSS
+
+            part_id_loss = torch.tensor(0.0, device=target.device)
+            part_tri_loss = torch.tensor(0.0, device=target.device)
+            n_valid = 0
+            if pcfc_use_part and extras and 'part_logits' in extras:
+                part_logits = extras['part_logits']
+                part_vis = extras['part_vis']
+                for k, logits_k in enumerate(part_logits):
+                    vis_k = part_vis[:, k]
+                    mask = vis_k > pcfc_vis_thr
+                    if mask.sum() > 0:
+                        part_id_loss = part_id_loss + ce(logits_k[mask], target[mask])
+                        n_valid += 1
+                if n_valid > 0:
+                    part_id_loss = part_id_loss / n_valid
+                    total = total + pcfc_part_id_w * part_id_loss
+
+            # Part triplet loss (GiLt-style)
+            if part_tri_fn is not None and extras and 'part_feats' in extras:
+                part_feats = extras['part_feats']  # [B, K, C]
+                part_vis = extras['part_vis']
+                part_tri_loss = part_tri_fn(part_feats, target, part_vis)
+                total = total + pcfc_part_tri_w * part_tri_loss
+
+            alpha_val = extras.get('attn_alpha', 0.0) if extras else 0.0
+            components = {
+                'id': ID_LOSS.item(),
+                'tri': TRI_LOSS.item(),
+                'pid': part_id_loss.item() if n_valid > 0 else 0.0,
+                'ptri': part_tri_loss.item(),
+                'n_vis': n_valid,
+                'alpha': alpha_val,
+            }
+            # Include PVFM beta values and KPE scale if present
+            if extras:
+                for k, v in extras.items():
+                    if k.startswith('beta_') or k == 'kpe_scale':
+                        components[k] = v
+            loss_func.last_components = components
+            return total
+
+        loss_func.last_components = None
+        return loss_func, center_criterion
+
+    elif 'triplet' in sampler and is_pose_part:
+        # PosePart loss: global ID + Triplet + visibility-weighted per-part ID
+        pp_part_id_w = getattr(pose_part_cfg, 'PART_ID_WEIGHT', 0.5)
+        pp_vis_thr = getattr(pose_part_cfg, 'VIS_THRESHOLD', 0.3)
+        ce = xent if cfg.MODEL.IF_LABELSMOOTH == 'on' else F.cross_entropy
+
+        def loss_func(score, feat, target, target_cam, extras=None):
+            # Global ID loss
+            ID_LOSS = ce(score, target)
+            # Global triplet loss
+            TRI_LOSS = triplet(feat, target, normalize_feature=cfg.SOLVER.TRP_L2)[0]
+
+            total = cfg.MODEL.ID_LOSS_WEIGHT * ID_LOSS + cfg.MODEL.TRIPLET_LOSS_WEIGHT * TRI_LOSS
+
+            # Visibility-weighted per-part ID loss
+            if extras and 'part_logits' in extras:
+                part_logits = extras['part_logits']  # list of [B, C]
+                part_vis = extras['part_vis']  # [B, K]
+
+                part_id_loss = torch.tensor(0.0, device=target.device)
+                n_valid = 0
+                for k, logits_k in enumerate(part_logits):
+                    vis_k = part_vis[:, k]  # [B]
+                    mask = vis_k > pp_vis_thr  # [B] bool
+
+                    if mask.sum() > 0:
+                        part_id_loss = part_id_loss + ce(logits_k[mask], target[mask])
+                        n_valid += 1
+
+                if n_valid > 0:
+                    part_id_loss = part_id_loss / n_valid
+                    total = total + pp_part_id_w * part_id_loss
+
+                loss_func.last_components = {
+                    'id': ID_LOSS.item(),
+                    'tri': TRI_LOSS.item(),
+                    'pid': part_id_loss.item() if n_valid > 0 else 0.0,
+                    'n_vis': n_valid,
+                }
+            else:
+                loss_func.last_components = {
+                    'id': ID_LOSS.item(),
+                    'tri': TRI_LOSS.item(),
+                    'pid': 0.0,
+                    'n_vis': 0,
+                }
+
+            return total
+
+        loss_func.last_components = None
+        return loss_func, center_criterion
+
     elif 'triplet' in sampler and is_vpreid:
         # VPReID loss: global ID + fg ID + per-part ID + part triplet + push
         vp_id_w = getattr(vpreid_cfg, 'ID_WEIGHT', 1.0)
@@ -137,5 +255,3 @@ def make_loss(cfg, num_classes):    # modified by gu
         print('expected sampler should be softmax, triplet, softmax_triplet or softmax_triplet_center'
               'but got {}'.format(cfg.DATALOADER.SAMPLER))
     return loss_func, center_criterion
-
-

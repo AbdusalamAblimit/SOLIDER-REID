@@ -440,3 +440,4 @@ paper_materials/
 10. **语言要求**：所有记录文件（md 文档、监控日志、决策记录、分析报告等）一律使用**中文**撰写。代码注释可以使用英文。
 11. **实验输出目录隔离**：每个实验必须使用独立的 `OUTPUT_DIR`，格式为 `./log/occluded_duke/{实验名}`（如 `./log/occluded_duke/exp000_baseline`）。在 yml config 或启动命令中显式指定，避免覆盖之前实验的 log、checkpoint 和评估结果。
 12. **后台训练 + 定时监控**：启动训练时使用后台运行（`run_in_background` 或 `nohup`），然后用不超过 5 分钟的 sleep 间隔定期检查日志、GPU 状态和是否有报错。每次检查后在 `experiments/exp{NNN}/monitor.md` 中记录观察和决策（继续/干预/终止）。绝不阻塞等待训练完成。
+13. **每次检查必须记录**：每次查看训练日志时，必须同步将观察到的信息（loss、accuracy、eval结果、异常情况等）追加写入对应的 `experiments/exp{NNN}/monitor.md`。不允许查看日志但不记录。

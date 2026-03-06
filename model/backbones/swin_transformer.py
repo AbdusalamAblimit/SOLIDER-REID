@@ -1362,7 +1362,8 @@ class SwinTransformer(BaseModule):
             res = self.load_state_dict(state_dict, False)
             print('unloaded parameters:', res)
 
-    def forward(self, x, semantic_weight=None):
+    def forward(self, x, semantic_weight=None, vis_modulation=None,
+                keypoints=None, visibility=None, kpe_module=None):
         if self.semantic_weight >= 0 and semantic_weight == None:
             w = torch.ones(x.shape[0],1) * self.semantic_weight
             w = torch.cat([w, 1-w], axis=-1)
@@ -1374,6 +1375,11 @@ class SwinTransformer(BaseModule):
             x = x + self.absolute_pos_embed
         x = self.drop_after_pos(x)
 
+        # Inject keypoint prompt embeddings (KPE) after position embedding
+        if kpe_module is not None and keypoints is not None:
+            part_tokens = kpe_module(keypoints, visibility)  # [B, H*W, D]
+            x = x + part_tokens
+
         outs = []
         for i, stage in enumerate(self.stages):
             x, hw_shape, out, out_hw_shape = stage(x, hw_shape)
@@ -1381,6 +1387,9 @@ class SwinTransformer(BaseModule):
                 sw = self.semantic_embed_w[i](semantic_weight).unsqueeze(1)
                 sb = self.semantic_embed_b[i](semantic_weight).unsqueeze(1)
                 x = x * self.softplus(sw) + sb
+            # Apply per-stage visibility modulation (PVFM) if provided
+            if vis_modulation is not None and keypoints is not None:
+                x = vis_modulation(x, i, hw_shape, keypoints, visibility)
             if i in self.out_indices:
                 norm_layer = getattr(self, f'norm{i}')
                 out = norm_layer(out)

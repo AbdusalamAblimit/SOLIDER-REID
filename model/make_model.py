@@ -282,10 +282,85 @@ class build_transformer(nn.Module):
 
         self.dropout = nn.Dropout(self.dropout_rate)
 
+        # --- PosePart: offline pose-guided part features ---
+        self.use_pose_part = False
+        pose_part_cfg = getattr(cfg.MODEL, 'POSE_PART', None)
+        if pose_part_cfg is not None and getattr(pose_part_cfg, 'ENABLE', False):
+            from .modules.pose_part import PosePartPooling, PosePartHead
+            self.use_pose_part = True
+            self.pose_part_pool = PosePartPooling(
+                n_parts=pose_part_cfg.N_PARTS,
+                sigma=pose_part_cfg.SIGMA,
+                img_size=cfg.INPUT.SIZE_TRAIN,
+            )
+            self.pose_part_head = PosePartHead(
+                in_channels=self.in_planes,
+                num_classes=num_classes,
+                n_parts=pose_part_cfg.N_PARTS,
+            )
+            print(f'===========PosePart enabled: {pose_part_cfg.N_PARTS} parts, sigma={pose_part_cfg.SIGMA}===========')
+
+        # --- PCFC: Pose-Conditioned Feature Calibration ---
+        self.use_pcfc = False
+        pcfc_cfg = getattr(cfg.MODEL, 'PCFC', None)
+        if pcfc_cfg is not None and getattr(pcfc_cfg, 'ENABLE', False):
+            from .modules.pose_calibration import PoseFeatureCalibration
+            from .modules.pose_part import PosePartHead
+            self.use_pcfc = True
+            self.pcfc = PoseFeatureCalibration(
+                img_size=cfg.INPUT.SIZE_TRAIN,
+                sigma=pcfc_cfg.SIGMA,
+                alpha_init=pcfc_cfg.ALPHA_INIT,
+                use_part_loss=pcfc_cfg.USE_PART_LOSS,
+                n_parts=pcfc_cfg.N_PARTS,
+                part_sigma=pcfc_cfg.PART_SIGMA,
+            )
+            self.pcfc_gap = nn.AdaptiveAvgPool2d(1)
+            if pcfc_cfg.USE_PART_LOSS:
+                self.pcfc_part_head = PosePartHead(
+                    in_channels=self.in_planes,
+                    num_classes=num_classes,
+                    n_parts=pcfc_cfg.N_PARTS,
+                )
+            print(f'===========PCFC enabled: sigma={pcfc_cfg.SIGMA}, alpha_init={pcfc_cfg.ALPHA_INIT}===========')
+
+        # --- PVFM: Pose-Guided Visibility Feature Modulation ---
+        self.use_pvfm = False
+        pvfm_cfg = getattr(cfg.MODEL, 'PVFM', None)
+        if pvfm_cfg is not None and getattr(pvfm_cfg, 'ENABLE', False):
+            from .modules.pose_vis_modulation import PoseVisFeatureModulation
+            self.use_pvfm = True
+            active_stages = tuple(pvfm_cfg.ACTIVE_STAGES) if hasattr(pvfm_cfg, 'ACTIVE_STAGES') else (2, 3)
+            self.pvfm = PoseVisFeatureModulation(
+                n_stages=4,
+                img_size=cfg.INPUT.SIZE_TRAIN,
+                sigma=pvfm_cfg.SIGMA,
+                beta_init=pvfm_cfg.BETA_INIT,
+                active_stages=active_stages,
+            )
+            print(f'===========PVFM enabled: stages={active_stages}, sigma={pvfm_cfg.SIGMA}, beta_init={pvfm_cfg.BETA_INIT}===========')
+
+        # --- KPE: Keypoint Prompt Embedding ---
+        self.use_kpe = False
+        kpe_cfg = getattr(cfg.MODEL, 'KPE', None)
+        if kpe_cfg is not None and getattr(kpe_cfg, 'ENABLE', False):
+            from .modules.keypoint_prompt import KeypointPromptEmbedding
+            self.use_kpe = True
+            # Initial embed dim is num_features[0] (96 for Swin-Tiny)
+            initial_embed_dim = self.base.num_features[0]
+            self.kpe = KeypointPromptEmbedding(
+                embed_dim=initial_embed_dim,
+                img_size=cfg.INPUT.SIZE_TRAIN,
+                patch_size=4,  # Swin-Tiny default
+                sigma=kpe_cfg.SIGMA,
+            )
+            print(f'===========KPE enabled: embed_dim={initial_embed_dim}, sigma={kpe_cfg.SIGMA}===========')
+
         #if pretrain_choice == 'self':
         #    self.load_param(model_path)
 
-    def forward(self, x, label=None, cam_label= None, view_label=None):
+    def forward(self, x, label=None, cam_label= None, view_label=None,
+                keypoints=None, visibility=None):
         # --- VPReID path ---
         if self.is_vpreid:
             outputs = self.base(x)
@@ -309,25 +384,93 @@ class build_transformer(nn.Module):
                 return scores, feat_list, extras
             else:
                 g_bn = self.global_bnneck(g_feat)
-                K = part_feats.shape[1]
-                part_bn_list = []
-                for k in range(K):
-                    part_bn_list.append(self.part_bnnecks[k](part_feats[:, k]))
-                part_bn = torch.stack(part_bn_list, dim=1)
-
-                feat_dict = {
-                    'global': g_bn,
-                    'parts': part_bn,
-                    'part_vis': outputs['part_vis'],
-                }
-                return feat_dict, None
+                # Return global feature compatible with standard eval path
+                if self.neck_feat == 'after':
+                    return g_bn, None
+                else:
+                    return g_feat, None
 
         # --- Standard path ---
-        global_feat, featmaps = self.base(x)
+        # Build extra kwargs for backbone
+        backbone_kwargs = {}
+        if self.use_pvfm and keypoints is not None:
+            backbone_kwargs.update(dict(
+                vis_modulation=self.pvfm,
+                keypoints=keypoints,
+                visibility=visibility,
+            ))
+        if self.use_kpe and keypoints is not None:
+            backbone_kwargs['kpe_module'] = self.kpe
+            backbone_kwargs['keypoints'] = keypoints
+            backbone_kwargs['visibility'] = visibility
+        global_feat, featmaps = self.base(x, **backbone_kwargs)
+
+        # --- PCFC: re-pool with visibility attention ---
+        if self.use_pcfc and keypoints is not None and featmaps is not None:
+            last_fm = featmaps[-1] if isinstance(featmaps, (list, tuple)) else featmaps
+            calibrated_fm, attn_map, part_feats, part_vis = self.pcfc(
+                last_fm, keypoints, visibility
+            )
+            # Re-pool the calibrated feature map → occlusion-aware global feature
+            global_feat = self.pcfc_gap(calibrated_fm).flatten(1)  # [B, C]
+
         if self.reduce_feat_dim:
             global_feat = self.fcneck(global_feat)
         feat = self.bottleneck(global_feat)
         feat_cls = self.dropout(feat)
+
+        # --- PCFC branch (training / eval) ---
+        if self.use_pcfc and keypoints is not None and featmaps is not None:
+            if self.training:
+                if self.ID_LOSS_TYPE in ('arcface', 'cosface', 'amsoftmax', 'circle'):
+                    cls_score = self.classifier(feat_cls, label)
+                else:
+                    cls_score = self.classifier(feat_cls)
+
+                extras = {'attn_alpha': self.pcfc.vis_attn.alpha.item()}
+                # Add KPE scale if active
+                if self.use_kpe:
+                    extras['kpe_scale'] = self.kpe.scale.item()
+                # Add PVFM beta values if active
+                if self.use_pvfm:
+                    for s, mod in self.pvfm.stage_mods.items():
+                        extras[f'beta_s{s}'] = mod.beta.item()
+                if part_feats is not None:
+                    part_logits, part_feats_bn = self.pcfc_part_head(part_feats, part_vis)
+                    extras['part_logits'] = part_logits
+                    extras['part_vis'] = part_vis
+                    extras['part_feats'] = part_feats_bn  # [B, K, C] for part triplet
+                return cls_score, global_feat, extras
+            else:
+                if self.neck_feat == 'after':
+                    return feat, None
+                else:
+                    return global_feat, None
+
+        # --- PosePart branch ---
+        if self.use_pose_part and keypoints is not None and featmaps is not None:
+            part_feats, part_vis = self.pose_part_pool(featmaps, keypoints, visibility)
+
+            if self.training:
+                if self.ID_LOSS_TYPE in ('arcface', 'cosface', 'amsoftmax', 'circle'):
+                    cls_score = self.classifier(feat_cls, label)
+                else:
+                    cls_score = self.classifier(feat_cls)
+
+                part_logits, part_feats_bn = self.pose_part_head(part_feats, part_vis)
+                extras = {
+                    'part_logits': part_logits,
+                    'part_vis': part_vis,
+                }
+                return cls_score, global_feat, extras
+            else:
+                # Test: concatenate global + visibility-weighted part features
+                if self.neck_feat == 'after':
+                    part_cat = self.pose_part_head(part_feats, part_vis)  # [B, K*C]
+                    return torch.cat([feat, part_cat], dim=1), None
+                else:
+                    part_cat = self.pose_part_head(part_feats, part_vis)
+                    return torch.cat([global_feat, part_cat], dim=1), None
 
         if self.training:
             if self.ID_LOSS_TYPE in ('arcface', 'cosface', 'amsoftmax', 'circle'):

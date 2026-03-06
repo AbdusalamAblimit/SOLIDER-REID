@@ -178,6 +178,8 @@ _C.SOLVER.EVAL_PERIOD = 10
 # contain 16 images per batch
 _C.SOLVER.IMS_PER_BATCH = 64
 _C.SOLVER.TRP_L2 = False
+# Freeze backbone for first N epochs (useful for VPReID to let heads warm up)
+_C.SOLVER.FREEZE_BACKBONE_EPOCHS = 0
 
 # ---------------------------------------------------------------------------- #
 # TEST
@@ -208,6 +210,38 @@ _C.OUTPUT_DIR = ""
 # ---------------------------------------------------------------------------- #
 # VPReID: Visibility-aware Pose-guided ReID
 # ---------------------------------------------------------------------------- #
+# ---------------------------------------------------------------------------- #
+# PosePart: Offline Pose-Guided Part Features
+# ---------------------------------------------------------------------------- #
+_C.MODEL.POSE_PART = CN()
+_C.MODEL.POSE_PART.ENABLE = False
+_C.MODEL.POSE_PART.N_PARTS = 5                    # number of body parts
+_C.MODEL.POSE_PART.SIGMA = 2.0                    # Gaussian attention sigma in feature map space
+_C.MODEL.POSE_PART.PART_ID_WEIGHT = 0.5           # per-part ID loss weight
+_C.MODEL.POSE_PART.VIS_THRESHOLD = 0.3            # min visibility to include part loss
+
+_C.MODEL.PCFC = CN()
+_C.MODEL.PCFC.ENABLE = False
+_C.MODEL.PCFC.SIGMA = 3.0                         # Gaussian sigma for visibility attention
+_C.MODEL.PCFC.ALPHA_INIT = 0.5                    # initial attention strength
+_C.MODEL.PCFC.USE_PART_LOSS = True                # also use part features for aux loss
+_C.MODEL.PCFC.N_PARTS = 5
+_C.MODEL.PCFC.PART_SIGMA = 2.0
+_C.MODEL.PCFC.PART_ID_WEIGHT = 1.0                # part ID loss weight (best from exp004a)
+_C.MODEL.PCFC.VIS_THRESHOLD = 0.3
+_C.MODEL.PCFC.PART_TRIPLET_WEIGHT = 0.0              # GiLt-style part triplet loss weight
+
+_C.MODEL.PVFM = CN()
+_C.MODEL.PVFM.ENABLE = False
+_C.MODEL.PVFM.SIGMA = 3.0                         # Gaussian sigma for visibility maps
+_C.MODEL.PVFM.BETA_INIT = 0.3                     # initial modulation strength per stage
+_C.MODEL.PVFM.ACTIVE_STAGES = (2, 3)              # which stages to apply modulation
+
+_C.MODEL.KPE = CN()
+_C.MODEL.KPE.ENABLE = False
+_C.MODEL.KPE.SIGMA = 3.0                          # Gaussian sigma in patch grid space
+_C.MODEL.KPE.INJECT_LAYER = 0                     # inject at this Swin stage (0 = before all stages)
+
 _C.MODEL.VPREID = CN()
 _C.MODEL.VPREID.ENABLE = False
 _C.MODEL.VPREID.N_PARTS = 5

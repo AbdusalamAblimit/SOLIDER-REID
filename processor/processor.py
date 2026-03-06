@@ -46,23 +46,60 @@ def do_train(cfg,
     epoch_times = []
     train_start_time = time.time()
 
+    # Check if pose_part is enabled
+    use_pose_part = getattr(cfg.MODEL, 'POSE_PART', None) and cfg.MODEL.POSE_PART.ENABLE
+
+    # Backbone freeze support for VPReID
+    freeze_epochs = getattr(cfg.SOLVER, 'FREEZE_BACKBONE_EPOCHS', 0)
+    is_vpreid = hasattr(model, 'is_vpreid') and model.is_vpreid
+    if freeze_epochs > 0 and is_vpreid:
+        logger.info(f'Freezing backbone for first {freeze_epochs} epochs')
+        for p in model.base.base.parameters():
+            p.requires_grad = False
+
     # train
     for epoch in range(1, epochs + 1):
+        # Unfreeze backbone after freeze_epochs
+        if freeze_epochs > 0 and epoch == freeze_epochs + 1 and is_vpreid:
+            logger.info(f'Unfreezing backbone at epoch {epoch}')
+            for p in model.base.base.parameters():
+                p.requires_grad = True
+
         start_time = time.time()
         loss_meter.reset()
         acc_meter.reset()
         evaluator.reset()
         model.train()
-        for n_iter, (img, vid, target_cam, target_view) in enumerate(train_loader):
+        for n_iter, batch in enumerate(train_loader):
             optimizer.zero_grad()
             optimizer_center.zero_grad()
+
+            # Unpack batch: standard (4 items) or pose-aware (6 items)
+            if len(batch) == 6:
+                img, vid, target_cam, target_view, kpts, vis = batch
+                kpts = kpts.to(device)
+                vis = vis.to(device)
+            else:
+                img, vid, target_cam, target_view = batch
+                kpts = None
+                vis = None
+
             img = img.to(device)
             target = vid.to(device)
             target_cam = target_cam.to(device)
             target_view = target_view.to(device)
+
             with amp.autocast(enabled=True):
-                model_out = model(img, label=target, cam_label=target_cam, view_label=target_view)
-                # VPReID returns (scores, feats, extras_dict); standard returns (score, feat, featmaps)
+                if kpts is not None:
+                    model_out = model(img, label=target, cam_label=target_cam,
+                                      view_label=target_view, keypoints=kpts, visibility=vis)
+                else:
+                    model_out = model(img, label=target, cam_label=target_cam, view_label=target_view)
+
+                # Detect output format:
+                # PosePart: (score, global_feat, extras_dict) where extras has 'part_logits'
+                # VPReID: (scores_list, feats_list, extras_dict) where extras has 'part_vis'
+                # Standard: (score, feat, featmaps)
                 if isinstance(model_out, tuple) and len(model_out) == 3 and isinstance(model_out[2], dict):
                     score, feat, extras = model_out
                     loss = loss_fn(score, feat, target, target_cam, extras=extras)
@@ -110,11 +147,27 @@ def do_train(cfg,
                     msg = "Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Lr: {:.2e}, ETA: {}h{:02d}m".format(
                         epoch, iters_done, iters_total, loss_meter.avg, acc_meter.avg, base_lr, eta_h, eta_m)
 
-                    # Append VPReID loss breakdown if available
+                    # Append loss breakdown if available
                     if hasattr(loss_fn, 'last_components') and loss_fn.last_components:
                         lc = loss_fn.last_components
-                        msg += " | id={:.2f} pid={:.2f} tri={:.2f} push={:.2f}".format(
-                            lc['id'], lc['pid'], lc['tri'], lc['push'])
+                        if 'push' in lc:
+                            # VPReID format
+                            msg += " | id={:.2f} pid={:.2f} tri={:.2f} push={:.2f}".format(
+                                lc['id'], lc['pid'], lc['tri'], lc['push'])
+                        elif 'pid' in lc:
+                            # PosePart / PCFC format
+                            msg += " | id={:.2f} tri={:.2f} pid={:.2f} nv={}".format(
+                                lc['id'], lc['tri'], lc['pid'], lc.get('n_vis', '?'))
+                            if 'ptri' in lc and lc['ptri'] > 0:
+                                msg += " ptri={:.2f}".format(lc['ptri'])
+                            if 'alpha' in lc:
+                                msg += " a={:.3f}".format(lc['alpha'])
+                            if 'kpe_scale' in lc:
+                                msg += " kpe={:.3f}".format(lc['kpe_scale'])
+                            # Log PVFM beta values
+                            betas = [f"{k}={v:.3f}" for k, v in lc.items() if k.startswith('beta_')]
+                            if betas:
+                                msg += " " + " ".join(betas)
 
                     logger.info(msg)
 
@@ -158,12 +211,25 @@ def do_train(cfg,
             if cfg.MODEL.DIST_TRAIN:
                 if dist.get_rank() == 0:
                     model.eval()
-                    for n_iter, (img, vid, camid, camids, target_view, _) in enumerate(val_loader):
+                    for n_iter, val_batch in enumerate(val_loader):
                         with torch.no_grad():
+                            # Unpack val batch: standard (6) or pose-aware (8)
+                            if len(val_batch) == 8:
+                                img, vid, camid, camids, target_view, _, kpts, vis = val_batch
+                                kpts = kpts.to(device)
+                                vis = vis.to(device)
+                            else:
+                                img, vid, camid, camids, target_view, _ = val_batch
+                                kpts = None
+                                vis = None
                             img = img.to(device)
                             camids = camids.to(device)
                             target_view = target_view.to(device)
-                            feat, _ = model(img, cam_label=camids, view_label=target_view)
+                            if kpts is not None:
+                                feat, _ = model(img, cam_label=camids, view_label=target_view,
+                                                keypoints=kpts, visibility=vis)
+                            else:
+                                feat, _ = model(img, cam_label=camids, view_label=target_view)
                             evaluator.update((feat, vid, camid))
                     cmc, mAP, _, _, _, _, _ = evaluator.compute()
                     logger.info("Validation Results - Epoch: {}".format(epoch))
@@ -173,12 +239,24 @@ def do_train(cfg,
                     torch.cuda.empty_cache()
             else:
                 model.eval()
-                for n_iter, (img, vid, camid, camids, target_view, _) in enumerate(val_loader):
+                for n_iter, val_batch in enumerate(val_loader):
                     with torch.no_grad():
+                        if len(val_batch) == 8:
+                            img, vid, camid, camids, target_view, _, kpts, vis = val_batch
+                            kpts = kpts.to(device)
+                            vis = vis.to(device)
+                        else:
+                            img, vid, camid, camids, target_view, _ = val_batch
+                            kpts = None
+                            vis = None
                         img = img.to(device)
                         camids = camids.to(device)
                         target_view = target_view.to(device)
-                        feat, _ = model(img, cam_label=camids, view_label=target_view)
+                        if kpts is not None:
+                            feat, _ = model(img, cam_label=camids, view_label=target_view,
+                                            keypoints=kpts, visibility=vis)
+                        else:
+                            feat, _ = model(img, cam_label=camids, view_label=target_view)
                         evaluator.update((feat, vid, camid))
                 cmc, mAP, _, _, _, _, _ = evaluator.compute()
                 logger.info("Validation Results - Epoch: {}".format(epoch))
@@ -208,12 +286,24 @@ def do_inference(cfg,
     model.eval()
     img_path_list = []
 
-    for n_iter, (img, pid, camid, camids, target_view, imgpath) in enumerate(val_loader):
+    for n_iter, val_batch in enumerate(val_loader):
         with torch.no_grad():
+            if len(val_batch) == 8:
+                img, pid, camid, camids, target_view, imgpath, kpts, vis = val_batch
+                kpts = kpts.to(device)
+                vis = vis.to(device)
+            else:
+                img, pid, camid, camids, target_view, imgpath = val_batch
+                kpts = None
+                vis = None
             img = img.to(device)
             camids = camids.to(device)
             target_view = target_view.to(device)
-            feat , _ = model(img, cam_label=camids, view_label=target_view)
+            if kpts is not None:
+                feat, _ = model(img, cam_label=camids, view_label=target_view,
+                                keypoints=kpts, visibility=vis)
+            else:
+                feat, _ = model(img, cam_label=camids, view_label=target_view)
             evaluator.update((feat, pid, camid))
             img_path_list.extend(imgpath)
 
@@ -223,5 +313,3 @@ def do_inference(cfg,
     for r in [1, 5, 10]:
         logger.info("CMC curve, Rank-{:<3}:{:.1%}".format(r, cmc[r - 1]))
     return cmc[0], cmc[4]
-
-

@@ -8,22 +8,21 @@ MODEL:
   NAME: 'transformer'
   NO_MARGIN: True
   DEVICE_ID: ('0')
-  TRANSFORMER_TYPE: 'vpreid_tiny_patch4_window7_224'
+  TRANSFORMER_TYPE: 'swin_tiny_patch4_window7_224'
   STRIDE_SIZE: [16, 16]
   SEMANTIC_WEIGHT: 0.2
   WITH_CP: False
 
-  VPREID:
+  PCFC:
     ENABLE: True
+    SIGMA: 3.0
+    ALPHA_INIT: 0.5
+    USE_PART_LOSS: True
     N_PARTS: 5
-    PART_TEMP: 0.1
-    VIS_THRESHOLD: 0.5
-    POSE_CFG: 'pose/config_vispredict.py'
-    POSE_CKPT: 'pretrained/best_coco_AP_epoch_210.pth'
-    ID_WEIGHT: 1.0
-    TRI_WEIGHT: 1.0
-    PART_ID_WEIGHT: 0.5
-    PUSH_WEIGHT: 0.1
+    PART_SIGMA: 2.0
+    PART_ID_WEIGHT: 1.0
+    VIS_THRESHOLD: 0.3
+    PART_TRIPLET_WEIGHT: 1.0
 
 INPUT:
   SIZE_TRAIN: [384, 128]
@@ -48,7 +47,6 @@ SOLVER:
   MAX_EPOCHS: 120
   BASE_LR: 0.0008
   WARMUP_EPOCHS: 20
-  FREEZE_BACKBONE_EPOCHS: 10
   IMS_PER_BATCH: 64
   WARMUP_METHOD: 'cosine'
   LARGE_FC_LR: False
@@ -67,4 +65,4 @@ TEST:
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/occluded_duke/vpreid_tiny'
+OUTPUT_DIR: './log/occluded_duke/exp012_gilt_pcfc'
