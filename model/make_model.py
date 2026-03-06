@@ -325,6 +325,7 @@ class build_transformer(nn.Module):
                 ms_part_stage=ms_part_stage,
                 ms_in_channels=ms_in_ch,
                 ms_out_channels=self.in_planes,
+                freeze_alpha=getattr(pcfc_cfg, 'FREEZE_ALPHA', False),
             )
             self.pcfc_gap = nn.AdaptiveAvgPool2d(1)
             if pcfc_cfg.USE_PART_LOSS:

@@ -39,12 +39,16 @@ class PoseVisibilityAttention(nn.Module):
         alpha_init: initial strength of the attention modulation
     """
 
-    def __init__(self, img_size=(384, 128), sigma=3.0, alpha_init=0.5):
+    def __init__(self, img_size=(384, 128), sigma=3.0, alpha_init=0.5, freeze_alpha=False):
         super().__init__()
         self.img_h, self.img_w = img_size
         self.sigma = sigma
-        # Learnable strength parameter
-        self.alpha = nn.Parameter(torch.tensor(alpha_init))
+        if freeze_alpha:
+            # Fixed alpha: not optimized, acts as a hyperparameter
+            self.register_buffer('alpha', torch.tensor(alpha_init))
+        else:
+            # Learnable strength parameter
+            self.alpha = nn.Parameter(torch.tensor(alpha_init))
 
     def forward(self, feat_map, keypoints, visibility):
         """
@@ -131,10 +135,12 @@ class PoseFeatureCalibration(nn.Module):
     def __init__(self, img_size=(384, 128), sigma=3.0, alpha_init=0.5,
                  use_part_loss=True, n_parts=5, part_sigma=2.0,
                  ost_prob=0.0, ost_min_parts=1, ost_max_parts=3,
-                 ms_part_stage=-1, ms_in_channels=384, ms_out_channels=768):
+                 ms_part_stage=-1, ms_in_channels=384, ms_out_channels=768,
+                 freeze_alpha=False):
         super().__init__()
         self.vis_attn = PoseVisibilityAttention(
-            img_size=img_size, sigma=sigma, alpha_init=alpha_init
+            img_size=img_size, sigma=sigma, alpha_init=alpha_init,
+            freeze_alpha=freeze_alpha,
         )
         self.use_part_loss = use_part_loss
         self.ost_prob = ost_prob
