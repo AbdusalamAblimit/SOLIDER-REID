@@ -46,9 +46,10 @@ def make_loss(cfg, num_classes):    # modified by gu
             return F.cross_entropy(score, target)
 
     elif 'triplet' in sampler and is_pcfc:
-        # PCFC loss: global ID + Triplet + optional part ID + optional part Triplet
+        # PCFC loss: global ID + Triplet + optional part ID + optional part Triplet + optional Push
         pcfc_part_id_w = getattr(pcfc_cfg, 'PART_ID_WEIGHT', 1.0)
         pcfc_part_tri_w = getattr(pcfc_cfg, 'PART_TRIPLET_WEIGHT', 0.0)
+        pcfc_push_w = getattr(pcfc_cfg, 'PUSH_WEIGHT', 0.0)
         pcfc_vis_thr = getattr(pcfc_cfg, 'VIS_THRESHOLD', 0.3)
         pcfc_use_part = getattr(pcfc_cfg, 'USE_PART_LOSS', True)
         ce = xent if cfg.MODEL.IF_LABELSMOOTH == 'on' else F.cross_entropy
@@ -58,6 +59,11 @@ def make_loss(cfg, num_classes):    # modified by gu
         if pcfc_part_tri_w > 0:
             part_tri_fn = PartAveragedTripletLoss(margin=None, normalize=True)
 
+        # Push loss (part diversity)
+        push_fn = None
+        if pcfc_push_w > 0:
+            push_fn = PushLoss()
+
         def loss_func(score, feat, target, target_cam, extras=None):
             ID_LOSS = ce(score, target)
             TRI_LOSS = triplet(feat, target, normalize_feature=cfg.SOLVER.TRP_L2)[0]
@@ -65,6 +71,7 @@ def make_loss(cfg, num_classes):    # modified by gu
 
             part_id_loss = torch.tensor(0.0, device=target.device)
             part_tri_loss = torch.tensor(0.0, device=target.device)
+            push_loss_val = torch.tensor(0.0, device=target.device)
             n_valid = 0
             if pcfc_use_part and extras and 'part_logits' in extras:
                 part_logits = extras['part_logits']
@@ -86,12 +93,18 @@ def make_loss(cfg, num_classes):    # modified by gu
                 part_tri_loss = part_tri_fn(part_feats, target, part_vis)
                 total = total + pcfc_part_tri_w * part_tri_loss
 
+            # Push loss (part diversity)
+            if push_fn is not None and extras and 'part_feats' in extras:
+                push_loss_val = push_fn(extras['part_feats'])
+                total = total + pcfc_push_w * push_loss_val
+
             alpha_val = extras.get('attn_alpha', 0.0) if extras else 0.0
             components = {
                 'id': ID_LOSS.item(),
                 'tri': TRI_LOSS.item(),
                 'pid': part_id_loss.item() if n_valid > 0 else 0.0,
                 'ptri': part_tri_loss.item(),
+                'push': push_loss_val.item(),
                 'n_vis': n_valid,
                 'alpha': alpha_val,
             }

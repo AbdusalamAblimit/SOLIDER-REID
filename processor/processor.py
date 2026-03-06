@@ -150,24 +150,29 @@ def do_train(cfg,
                     # Append loss breakdown if available
                     if hasattr(loss_fn, 'last_components') and loss_fn.last_components:
                         lc = loss_fn.last_components
-                        if 'push' in lc:
-                            # VPReID format
-                            msg += " | id={:.2f} pid={:.2f} tri={:.2f} push={:.2f}".format(
-                                lc['id'], lc['pid'], lc['tri'], lc['push'])
-                        elif 'pid' in lc:
-                            # PosePart / PCFC format
+                        if 'alpha' in lc:
+                            # PCFC format (may include push)
                             msg += " | id={:.2f} tri={:.2f} pid={:.2f} nv={}".format(
                                 lc['id'], lc['tri'], lc['pid'], lc.get('n_vis', '?'))
                             if 'ptri' in lc and lc['ptri'] > 0:
                                 msg += " ptri={:.2f}".format(lc['ptri'])
-                            if 'alpha' in lc:
-                                msg += " a={:.3f}".format(lc['alpha'])
+                            if 'push' in lc and lc['push'] > 0:
+                                msg += " push={:.3f}".format(lc['push'])
+                            msg += " a={:.3f}".format(lc['alpha'])
                             if 'kpe_scale' in lc:
                                 msg += " kpe={:.3f}".format(lc['kpe_scale'])
                             # Log PVFM beta values
                             betas = [f"{k}={v:.3f}" for k, v in lc.items() if k.startswith('beta_')]
                             if betas:
                                 msg += " " + " ".join(betas)
+                        elif 'push' in lc:
+                            # VPReID format
+                            msg += " | id={:.2f} pid={:.2f} tri={:.2f} push={:.2f}".format(
+                                lc['id'], lc['pid'], lc['tri'], lc['push'])
+                        elif 'pid' in lc:
+                            # PosePart format
+                            msg += " | id={:.2f} tri={:.2f} pid={:.2f} nv={}".format(
+                                lc['id'], lc['tri'], lc['pid'], lc.get('n_vis', '?'))
 
                     logger.info(msg)
 

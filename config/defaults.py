@@ -237,6 +237,7 @@ _C.MODEL.PCFC.MS_PART_STAGE = -1                      # Multi-scale: use this st
 _C.MODEL.PCFC.BPRE_PROB = 0.0                         # Body Part Random Erasing probability (image-level occlusion aug)
 _C.MODEL.PCFC.BPRE_MAX_PARTS = 1                      # Max body parts to erase per image
 _C.MODEL.PCFC.FREEZE_ALPHA = False                     # Freeze alpha (don't learn, use ALPHA_INIT as fixed value)
+_C.MODEL.PCFC.PUSH_WEIGHT = 0.0                          # Push loss weight for part diversity
 
 _C.MODEL.PVFM = CN()
 _C.MODEL.PVFM.ENABLE = False
