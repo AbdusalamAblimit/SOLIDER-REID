@@ -6,6 +6,8 @@ tracks random erasing regions and updates keypoint visibility accordingly.
 
 import os
 import os.path as osp
+import random
+import math
 import numpy as np
 import torch
 from torch.utils.data import Dataset
@@ -13,6 +15,15 @@ from PIL import Image, ImageFile
 from timm.data.random_erasing import RandomErasing
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+# COCO body part groups for BP-RE
+COCO_PART_GROUPS = [
+    [0, 1, 2, 3, 4],      # head (nose, eyes, ears)
+    [5, 6, 11, 12],        # torso (shoulders, hips)
+    [7, 8, 9, 10],         # arms (elbows, wrists)
+    [13, 14],              # thighs (knees)
+    [15, 16],              # calves (ankles)
+]
 
 
 def read_image(img_path):
@@ -76,6 +87,66 @@ class RandomErasingWithRegion(RandomErasing):
                     break
 
 
+def body_part_erase(img_tensor, kpts, vis, max_parts=1, margin=15):
+    """Erase body part regions in the image tensor based on keypoint locations.
+
+    This is TRUE occlusion augmentation: modifies the image pixels so the backbone
+    cannot see the erased body parts. Visibility is updated to reflect the erasure.
+
+    Args:
+        img_tensor: [C, H, W] image tensor (after transforms, normalized)
+        kpts: [17, 2] keypoint coordinates (x, y) in image space
+        vis: [17] visibility scores (modified in-place)
+        max_parts: max number of body parts to erase
+        margin: pixel margin around keypoint bounding box
+
+    Returns:
+        img_tensor: modified image tensor
+        vis: modified visibility array
+    """
+    C, img_h, img_w = img_tensor.shape
+
+    # Select random body parts to erase
+    n_erase = random.randint(1, max_parts)
+    part_indices = random.sample(range(len(COCO_PART_GROUPS)), n_erase)
+
+    for part_idx in part_indices:
+        kp_indices = COCO_PART_GROUPS[part_idx]
+
+        # Get visible keypoints for this part
+        part_kp_x = []
+        part_kp_y = []
+        for ki in kp_indices:
+            if vis[ki] > 0.3:  # only use detected keypoints
+                part_kp_x.append(int(kpts[ki, 0]))
+                part_kp_y.append(int(kpts[ki, 1]))
+
+        if len(part_kp_x) < 1:
+            continue  # skip if no visible keypoints for this part
+
+        # Compute bounding box with margin
+        x_min = max(0, min(part_kp_x) - margin)
+        x_max = min(img_w, max(part_kp_x) + margin)
+        y_min = max(0, min(part_kp_y) - margin)
+        y_max = min(img_h, max(part_kp_y) + margin)
+
+        if x_max <= x_min or y_max <= y_min:
+            continue
+
+        # Erase with random pixel values (same as RE's pixel mode)
+        h = y_max - y_min
+        w = x_max - x_min
+        img_tensor[:, y_min:y_max, x_min:x_max] = torch.empty(
+            C, h, w, dtype=img_tensor.dtype
+        ).normal_()
+
+        # Update visibility for all keypoints in this part
+        for ki in kp_indices:
+            vis[ki] = 0.0
+
+    return img_tensor, vis
+
+
 class PoseImageDataset(Dataset):
     """Image dataset with offline pose keypoints and RE-aware visibility.
 
@@ -85,9 +156,12 @@ class PoseImageDataset(Dataset):
         pose_data: dict with 'filenames', 'keypoints', 'visibility' arrays
         re_prob: random erasing probability (0 = no RE)
         img_size: (H, W) of the resized image
+        bpre_prob: body part random erasing probability (0 = disabled)
+        bpre_max_parts: max body parts to erase per image
     """
 
-    def __init__(self, dataset, transform, pose_data, re_prob=0.5, img_size=(384, 128)):
+    def __init__(self, dataset, transform, pose_data, re_prob=0.5,
+                 img_size=(384, 128), bpre_prob=0.0, bpre_max_parts=1):
         self.dataset = dataset
         self.transform = transform
         self.img_h, self.img_w = img_size
@@ -109,6 +183,10 @@ class PoseImageDataset(Dataset):
             )
         else:
             self.random_erasing = None
+
+        # Body Part Random Erasing
+        self.bpre_prob = bpre_prob
+        self.bpre_max_parts = bpre_max_parts
 
     def __len__(self):
         return len(self.dataset)
@@ -132,6 +210,14 @@ class PoseImageDataset(Dataset):
             # Fallback: no pose data available
             kpts = np.zeros((17, 2), dtype=np.int16)
             vis = np.zeros(17, dtype=np.float32)
+
+        # Apply body part random erasing (image-level occlusion augmentation)
+        if self.bpre_prob > 0 and random.random() < self.bpre_prob:
+            img, vis = body_part_erase(
+                img, kpts, vis,
+                max_parts=self.bpre_max_parts,
+                margin=15,
+            )
 
         # Apply random erasing and update visibility
         if self.random_erasing is not None:

@@ -234,6 +234,8 @@ _C.MODEL.PCFC.OST_PROB = 0.0                         # Occlusion Simulation Trai
 _C.MODEL.PCFC.OST_MIN_PARTS = 1                      # Min body parts to occlude
 _C.MODEL.PCFC.OST_MAX_PARTS = 3                      # Max body parts to occlude
 _C.MODEL.PCFC.MS_PART_STAGE = -1                      # Multi-scale: use this stage for parts (-1=same as global)
+_C.MODEL.PCFC.BPRE_PROB = 0.0                         # Body Part Random Erasing probability (image-level occlusion aug)
+_C.MODEL.PCFC.BPRE_MAX_PARTS = 1                      # Max body parts to erase per image
 
 _C.MODEL.PVFM = CN()
 _C.MODEL.PVFM.ENABLE = False

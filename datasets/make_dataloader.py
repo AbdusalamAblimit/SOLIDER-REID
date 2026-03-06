@@ -124,10 +124,14 @@ def make_dataloader(cfg):
         pose_data = _load_pose_data(cfg.DATASETS.ROOT_DIR, cfg.DATASETS.NAMES)
 
         if pose_data.get('train'):
+            bpre_prob = getattr(cfg.MODEL.PCFC, 'BPRE_PROB', 0.0) if hasattr(cfg.MODEL, 'PCFC') else 0.0
+            bpre_max = getattr(cfg.MODEL.PCFC, 'BPRE_MAX_PARTS', 1) if hasattr(cfg.MODEL, 'PCFC') else 1
             train_set = PoseImageDataset(
                 dataset.train, train_transforms_base, pose_data['train'],
                 re_prob=cfg.INPUT.RE_PROB,
                 img_size=cfg.INPUT.SIZE_TRAIN,
+                bpre_prob=bpre_prob,
+                bpre_max_parts=bpre_max,
             )
         else:
             train_set = ImageDataset(dataset.train, train_transforms)
