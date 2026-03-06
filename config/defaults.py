@@ -230,6 +230,10 @@ _C.MODEL.PCFC.PART_SIGMA = 2.0
 _C.MODEL.PCFC.PART_ID_WEIGHT = 1.0                # part ID loss weight (best from exp004a)
 _C.MODEL.PCFC.VIS_THRESHOLD = 0.3
 _C.MODEL.PCFC.PART_TRIPLET_WEIGHT = 0.0              # GiLt-style part triplet loss weight
+_C.MODEL.PCFC.OST_PROB = 0.0                         # Occlusion Simulation Training probability
+_C.MODEL.PCFC.OST_MIN_PARTS = 1                      # Min body parts to occlude
+_C.MODEL.PCFC.OST_MAX_PARTS = 3                      # Max body parts to occlude
+_C.MODEL.PCFC.MS_PART_STAGE = -1                      # Multi-scale: use this stage for parts (-1=same as global)
 
 _C.MODEL.PVFM = CN()
 _C.MODEL.PVFM.ENABLE = False

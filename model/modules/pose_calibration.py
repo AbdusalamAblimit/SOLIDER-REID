@@ -113,6 +113,8 @@ class PoseFeatureCalibration(nn.Module):
     Combines:
     1. PoseVisibilityAttention: re-weights feature map for occlusion-aware GAP
     2. Optional part features extraction (from PosePartPooling) for auxiliary loss
+    3. Optional Occlusion Simulation Training (OST): randomly mask body parts
+       during training to force occlusion-robust feature learning
 
     Args:
         img_size: (H, W) of input image
@@ -121,37 +123,94 @@ class PoseFeatureCalibration(nn.Module):
         use_part_loss: whether to also extract part features for auxiliary loss
         n_parts: number of body parts for part loss
         part_sigma: sigma for part feature Gaussian pooling
+        ost_prob: probability of applying occlusion simulation per sample
+        ost_min_parts: minimum number of parts to occlude
+        ost_max_parts: maximum number of parts to occlude
     """
 
     def __init__(self, img_size=(384, 128), sigma=3.0, alpha_init=0.5,
-                 use_part_loss=True, n_parts=5, part_sigma=2.0):
+                 use_part_loss=True, n_parts=5, part_sigma=2.0,
+                 ost_prob=0.0, ost_min_parts=1, ost_max_parts=3,
+                 ms_part_stage=-1, ms_in_channels=384, ms_out_channels=768):
         super().__init__()
         self.vis_attn = PoseVisibilityAttention(
             img_size=img_size, sigma=sigma, alpha_init=alpha_init
         )
         self.use_part_loss = use_part_loss
+        self.ost_prob = ost_prob
+        self.ost_min_parts = ost_min_parts
+        self.ost_max_parts = ost_max_parts
+        self.n_parts = n_parts
+        self.ms_part_stage = ms_part_stage
         if use_part_loss:
             from .pose_part import PosePartPooling
             self.part_pool = PosePartPooling(
                 n_parts=n_parts, sigma=part_sigma, img_size=img_size
             )
+            # Multi-scale: project lower-stage features to match global dim
+            if ms_part_stage >= 0 and ms_in_channels != ms_out_channels:
+                self.ms_proj = nn.Sequential(
+                    nn.Conv2d(ms_in_channels, ms_out_channels, kernel_size=1, bias=False),
+                    nn.BatchNorm2d(ms_out_channels),
+                )
 
-    def forward(self, feat_map, keypoints, visibility):
+    def _simulate_occlusion(self, visibility):
+        """Randomly zero out visibility for some body parts during training.
+
+        For each sample with prob=ost_prob, select 1-3 body parts and set
+        all their keypoints' visibility to 0. This forces the model to
+        learn discriminative features from partial observations.
         """
+        B = visibility.shape[0]
+        sim_vis = visibility.clone()
+
+        # Vectorized: generate random mask for which samples get OST
+        apply_mask = torch.rand(B, device=visibility.device) < self.ost_prob
+
+        for b in range(B):
+            if not apply_mask[b]:
+                continue
+            # Select random number of parts to occlude
+            n_occlude = torch.randint(
+                self.ost_min_parts, self.ost_max_parts + 1, (1,)
+            ).item()
+            # Select which parts to occlude
+            part_indices = torch.randperm(self.n_parts)[:n_occlude]
+            for part_idx in part_indices:
+                for kp_idx in COCO_PART_GROUPS[part_idx.item()]:
+                    sim_vis[b, kp_idx] = 0.0
+
+        return sim_vis
+
+    def forward(self, feat_map, keypoints, visibility, ms_feat_map=None):
+        """
+        Args:
+            feat_map: [B, C, H, W] Stage 3 feature map for global vis-weighted GAP
+            keypoints: [B, 17, 2] keypoint coords in image space
+            visibility: [B, 17] per-keypoint visibility scores
+            ms_feat_map: [B, C', H', W'] optional Stage 2 feature map for part features
+
         Returns:
             calibrated_feat_map: [B, C, H, W]
             attn_map: [B, 1, H, W]
             part_feats: [B, n_parts, C] (if use_part_loss) or None
             part_vis: [B, n_parts] (if use_part_loss) or None
         """
+        # Apply Occlusion Simulation Training during training
+        if self.training and self.ost_prob > 0:
+            visibility = self._simulate_occlusion(visibility)
+
         calibrated, attn_map = self.vis_attn(feat_map, keypoints, visibility)
 
         part_feats = None
         part_vis = None
         if self.use_part_loss:
-            # Extract part features from the ORIGINAL feature map (not calibrated)
-            # Reason: part features should capture specific body regions,
-            # while calibration is for the global pooling
-            part_feats, part_vis = self.part_pool(feat_map, keypoints, visibility)
+            # Choose feature map for part extraction
+            if ms_feat_map is not None and hasattr(self, 'ms_proj'):
+                # Multi-scale: use higher-res features, projected to global dim
+                part_fm = self.ms_proj(ms_feat_map)
+            else:
+                part_fm = feat_map
+            part_feats, part_vis = self.part_pool(part_fm, keypoints, visibility)
 
         return calibrated, attn_map, part_feats, part_vis

@@ -307,6 +307,11 @@ class build_transformer(nn.Module):
             from .modules.pose_calibration import PoseFeatureCalibration
             from .modules.pose_part import PosePartHead
             self.use_pcfc = True
+            ms_part_stage = getattr(pcfc_cfg, 'MS_PART_STAGE', -1)
+            # Swin-Tiny channel dims per stage: [96, 192, 384, 768]
+            ms_channels = {0: 96, 1: 192, 2: 384, 3: 768}
+            ms_in_ch = ms_channels.get(ms_part_stage, 384)
+            self.ms_part_stage = ms_part_stage
             self.pcfc = PoseFeatureCalibration(
                 img_size=cfg.INPUT.SIZE_TRAIN,
                 sigma=pcfc_cfg.SIGMA,
@@ -314,6 +319,12 @@ class build_transformer(nn.Module):
                 use_part_loss=pcfc_cfg.USE_PART_LOSS,
                 n_parts=pcfc_cfg.N_PARTS,
                 part_sigma=pcfc_cfg.PART_SIGMA,
+                ost_prob=getattr(pcfc_cfg, 'OST_PROB', 0.0),
+                ost_min_parts=getattr(pcfc_cfg, 'OST_MIN_PARTS', 1),
+                ost_max_parts=getattr(pcfc_cfg, 'OST_MAX_PARTS', 3),
+                ms_part_stage=ms_part_stage,
+                ms_in_channels=ms_in_ch,
+                ms_out_channels=self.in_planes,
             )
             self.pcfc_gap = nn.AdaptiveAvgPool2d(1)
             if pcfc_cfg.USE_PART_LOSS:
@@ -408,8 +419,13 @@ class build_transformer(nn.Module):
         # --- PCFC: re-pool with visibility attention ---
         if self.use_pcfc and keypoints is not None and featmaps is not None:
             last_fm = featmaps[-1] if isinstance(featmaps, (list, tuple)) else featmaps
+            # Multi-scale: pass lower-stage feature map for part extraction
+            ms_fm = None
+            if hasattr(self, 'ms_part_stage') and self.ms_part_stage >= 0:
+                if isinstance(featmaps, (list, tuple)) and len(featmaps) > self.ms_part_stage:
+                    ms_fm = featmaps[self.ms_part_stage]
             calibrated_fm, attn_map, part_feats, part_vis = self.pcfc(
-                last_fm, keypoints, visibility
+                last_fm, keypoints, visibility, ms_feat_map=ms_fm
             )
             # Re-pool the calibrated feature map → occlusion-aware global feature
             global_feat = self.pcfc_gap(calibrated_fm).flatten(1)  # [B, C]
