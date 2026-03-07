@@ -1,0 +1,24 @@
+# Experiment logs and outputs (tracked in separate git repos)
+log/
+experiments/
+scripts/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Data
+data/
+pretrained/
+
+# Misc
+*.npy
+*.npz
+solider-logs/
