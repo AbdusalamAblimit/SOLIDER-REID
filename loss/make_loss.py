@@ -64,6 +64,14 @@ def make_loss(cfg, num_classes):    # modified by gu
         if pcfc_push_w > 0:
             push_fn = PushLoss()
 
+        # PartBranch (ResNet-50) loss config
+        pb_cfg = getattr(cfg.MODEL, 'PART_BRANCH', None)
+        pb_enabled = pb_cfg is not None and getattr(pb_cfg, 'ENABLE', False)
+        pb_pid_w = getattr(pb_cfg, 'PART_ID_WEIGHT', 1.0) if pb_enabled else 0.0
+        pb_ptri_w = getattr(pb_cfg, 'PART_TRIPLET_WEIGHT', 1.0) if pb_enabled else 0.0
+        pb_vis_thr = getattr(pb_cfg, 'VIS_THRESHOLD', 0.3) if pb_enabled else 0.3
+        pb_tri_fn = PartAveragedTripletLoss(margin=None, normalize=True) if pb_enabled and pb_ptri_w > 0 else None
+
         def loss_func(score, feat, target, target_cam, extras=None):
             ID_LOSS = ce(score, target)
             TRI_LOSS = triplet(feat, target, normalize_feature=cfg.SOLVER.TRP_L2)[0]
@@ -98,6 +106,26 @@ def make_loss(cfg, num_classes):    # modified by gu
                 push_loss_val = push_fn(extras['part_feats'])
                 total = total + pcfc_push_w * push_loss_val
 
+            # PartBranch (ResNet-50) part losses — independent from PCFC part losses
+            pb_pid_loss = torch.tensor(0.0, device=target.device)
+            pb_ptri_loss = torch.tensor(0.0, device=target.device)
+            pb_n_valid = 0
+            if pb_enabled and extras and 'pb_part_logits' in extras:
+                pb_part_logits = extras['pb_part_logits']
+                pb_part_vis = extras['pb_part_vis']
+                for k, logits_k in enumerate(pb_part_logits):
+                    vis_k = pb_part_vis[:, k]
+                    mask = vis_k > pb_vis_thr
+                    if mask.sum() > 0:
+                        pb_pid_loss = pb_pid_loss + ce(logits_k[mask], target[mask])
+                        pb_n_valid += 1
+                if pb_n_valid > 0:
+                    pb_pid_loss = pb_pid_loss / pb_n_valid
+                    total = total + pb_pid_w * pb_pid_loss
+            if pb_tri_fn is not None and extras and 'pb_part_feats' in extras:
+                pb_ptri_loss = pb_tri_fn(extras['pb_part_feats'], target, extras['pb_part_vis'])
+                total = total + pb_ptri_w * pb_ptri_loss
+
             alpha_val = extras.get('attn_alpha', 0.0) if extras else 0.0
             components = {
                 'id': ID_LOSS.item(),
@@ -108,6 +136,9 @@ def make_loss(cfg, num_classes):    # modified by gu
                 'n_vis': n_valid,
                 'alpha': alpha_val,
             }
+            if pb_enabled:
+                components['pb_pid'] = pb_pid_loss.item() if pb_n_valid > 0 else 0.0
+                components['pb_ptri'] = pb_ptri_loss.item()
             # Include PVFM beta values, KPE scale, CPSA gate if present
             if extras:
                 for k, v in extras.items():

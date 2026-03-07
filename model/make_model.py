@@ -415,6 +415,21 @@ class build_transformer(nn.Module):
             )
             print(f'===========KPE enabled: embed_dim={initial_embed_dim}, sigma={kpe_cfg.SIGMA}===========')
 
+        # --- PartBranch: Independent ResNet-50 branch for part features ---
+        self.use_part_branch = False
+        pb_cfg = getattr(cfg.MODEL, 'PART_BRANCH', None)
+        if pb_cfg is not None and getattr(pb_cfg, 'ENABLE', False):
+            from .modules.part_branch import PartBranch
+            self.use_part_branch = True
+            self.part_branch = PartBranch(
+                num_classes=num_classes,
+                n_parts=pb_cfg.N_PARTS,
+                part_sigma=pb_cfg.PART_SIGMA,
+                img_size=cfg.INPUT.SIZE_TRAIN,
+                pretrained_path=pb_cfg.PRETRAIN_PATH,
+            )
+            self.pb_vis_threshold = pb_cfg.VIS_THRESHOLD
+
         #if pretrain_choice == 'self':
         #    self.load_param(model_path)
 
@@ -516,6 +531,14 @@ class build_transformer(nn.Module):
                 # Add CPSA gate value if active
                 if hasattr(self, 'use_cpsa') and self.use_cpsa:
                     extras['cpsa_gate'] = torch.sigmoid(self.cpsa.gate).item()
+                # PartBranch: independent ResNet-50 part features
+                if self.use_part_branch and keypoints is not None:
+                    pb_feats, pb_vis, pb_logits, pb_feats_bn = self.part_branch(
+                        x, keypoints, visibility
+                    )
+                    extras['pb_part_logits'] = pb_logits
+                    extras['pb_part_vis'] = pb_vis
+                    extras['pb_part_feats'] = pb_feats_bn
                 return cls_score, global_feat, extras
             else:
                 if self.neck_feat == 'after':

@@ -250,6 +250,15 @@ _C.MODEL.PCFC.CPSA_HEADS = 8                              # CPSA attention heads
 _C.MODEL.PCFC.CPSA_FFN_DIM = 768                          # CPSA FFN hidden dimension
 _C.MODEL.PCFC.CPSA_VIS_MASK = True                        # CPSA visibility-aware attention mask
 
+_C.MODEL.PART_BRANCH = CN()
+_C.MODEL.PART_BRANCH.ENABLE = False
+_C.MODEL.PART_BRANCH.PRETRAIN_PATH = ''                    # Path to pretrained ResNet-50 (e.g., LUPerson)
+_C.MODEL.PART_BRANCH.N_PARTS = 5
+_C.MODEL.PART_BRANCH.PART_SIGMA = 2.0
+_C.MODEL.PART_BRANCH.PART_ID_WEIGHT = 1.0                 # Part ID loss weight
+_C.MODEL.PART_BRANCH.PART_TRIPLET_WEIGHT = 1.0            # Part triplet loss weight
+_C.MODEL.PART_BRANCH.VIS_THRESHOLD = 0.3
+
 _C.MODEL.PVFM = CN()
 _C.MODEL.PVFM.ENABLE = False
 _C.MODEL.PVFM.SIGMA = 3.0                         # Gaussian sigma for visibility maps

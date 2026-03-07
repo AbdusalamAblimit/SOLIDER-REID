@@ -49,21 +49,25 @@ def do_train(cfg,
     # Check if pose_part is enabled
     use_pose_part = getattr(cfg.MODEL, 'POSE_PART', None) and cfg.MODEL.POSE_PART.ENABLE
 
-    # Backbone freeze support for VPReID
+    # Backbone freeze support (generalized for any model)
     freeze_epochs = getattr(cfg.SOLVER, 'FREEZE_BACKBONE_EPOCHS', 0)
     is_vpreid = hasattr(model, 'is_vpreid') and model.is_vpreid
-    if freeze_epochs > 0 and is_vpreid:
-        logger.info(f'Freezing backbone for first {freeze_epochs} epochs')
-        for p in model.base.base.parameters():
+    if freeze_epochs > 0:
+        backbone_params = model.base.base.parameters() if is_vpreid else model.base.parameters()
+        n_frozen = 0
+        for p in backbone_params:
             p.requires_grad = False
+            n_frozen += p.numel()
+        logger.info(f'Freezing backbone for first {freeze_epochs} epochs ({n_frozen/1e6:.1f}M params frozen)')
 
     # train
     for epoch in range(1, epochs + 1):
         # Unfreeze backbone after freeze_epochs
-        if freeze_epochs > 0 and epoch == freeze_epochs + 1 and is_vpreid:
-            logger.info(f'Unfreezing backbone at epoch {epoch}')
-            for p in model.base.base.parameters():
+        if freeze_epochs > 0 and epoch == freeze_epochs + 1:
+            backbone_params = model.base.base.parameters() if is_vpreid else model.base.parameters()
+            for p in backbone_params:
                 p.requires_grad = True
+            logger.info(f'Unfreezing backbone at epoch {epoch}')
 
         start_time = time.time()
         loss_meter.reset()
@@ -163,6 +167,11 @@ def do_train(cfg,
                                 msg += " kpe={:.3f}".format(lc['kpe_scale'])
                             if 'cpsa_gate' in lc:
                                 msg += " g={:.3f}".format(lc['cpsa_gate'])
+                            # PartBranch (ResNet-50) losses
+                            if 'pb_pid' in lc:
+                                msg += " | PB pid={:.2f}".format(lc['pb_pid'])
+                                if lc.get('pb_ptri', 0) > 0:
+                                    msg += " ptri={:.2f}".format(lc['pb_ptri'])
                             # Log PVFM beta values
                             betas = [f"{k}={v:.3f}" for k, v in lc.items() if k.startswith('beta_')]
                             if betas:
