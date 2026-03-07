@@ -92,6 +92,11 @@ def do_train(cfg,
 
         end_time = time.time()
         time_per_batch = (end_time - start_time) / (n_iter + 1)
+        epoch_time = time_per_batch * (n_iter + 1)
+        remaining_epochs = epochs - epoch
+        eta_seconds = remaining_epochs * epoch_time
+        eta_h = int(eta_seconds // 3600)
+        eta_m = int((eta_seconds % 3600) // 60)
         if cfg.SOLVER.WARMUP_METHOD == 'cosine':
             scheduler.step(epoch)
         else:
@@ -99,8 +104,8 @@ def do_train(cfg,
         if cfg.MODEL.DIST_TRAIN:
             pass
         else:
-            logger.info("Epoch {} done. Time per epoch: {:.3f}[s] Speed: {:.1f}[samples/s]"
-                    .format(epoch, time_per_batch * (n_iter + 1), train_loader.batch_size / time_per_batch))
+            logger.info("Epoch {} done. Time: {:.1f}[s] Speed: {:.1f}[samples/s] ETA: {}h{}m"
+                    .format(epoch, epoch_time, train_loader.batch_size / time_per_batch, eta_h, eta_m))
 
         if epoch % checkpoint_period == 0:
             if cfg.MODEL.DIST_TRAIN:
