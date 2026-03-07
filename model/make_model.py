@@ -302,6 +302,7 @@ class build_transformer(nn.Module):
 
         # --- PCFC: Pose-Conditioned Feature Calibration ---
         self.use_pcfc = False
+        self.use_decoder = False
         pcfc_cfg = getattr(cfg.MODEL, 'PCFC', None)
         if pcfc_cfg is not None and getattr(pcfc_cfg, 'ENABLE', False):
             from .modules.pose_calibration import PoseFeatureCalibration
@@ -312,21 +313,53 @@ class build_transformer(nn.Module):
             ms_channels = {0: 96, 1: 192, 2: 384, 3: 768}
             ms_in_ch = ms_channels.get(ms_part_stage, 384)
             self.ms_part_stage = ms_part_stage
-            self.pcfc = PoseFeatureCalibration(
-                img_size=cfg.INPUT.SIZE_TRAIN,
-                sigma=pcfc_cfg.SIGMA,
-                alpha_init=pcfc_cfg.ALPHA_INIT,
-                use_part_loss=pcfc_cfg.USE_PART_LOSS,
-                n_parts=pcfc_cfg.N_PARTS,
-                part_sigma=pcfc_cfg.PART_SIGMA,
-                ost_prob=getattr(pcfc_cfg, 'OST_PROB', 0.0),
-                ost_min_parts=getattr(pcfc_cfg, 'OST_MIN_PARTS', 1),
-                ost_max_parts=getattr(pcfc_cfg, 'OST_MAX_PARTS', 3),
-                ms_part_stage=ms_part_stage,
-                ms_in_channels=ms_in_ch,
-                ms_out_channels=self.in_planes,
-                freeze_alpha=getattr(pcfc_cfg, 'FREEZE_ALPHA', False),
-            )
+
+            # Check if using Part Transformer Decoder instead of Gaussian pooling
+            use_decoder = getattr(pcfc_cfg, 'USE_DECODER', False)
+            if use_decoder:
+                from .modules.part_decoder import PosePartDecoder
+                self.use_decoder = True
+                self.pcfc = PoseFeatureCalibration(
+                    img_size=cfg.INPUT.SIZE_TRAIN,
+                    sigma=pcfc_cfg.SIGMA,
+                    alpha_init=pcfc_cfg.ALPHA_INIT,
+                    use_part_loss=False,  # Decoder replaces Gaussian part pooling
+                    n_parts=pcfc_cfg.N_PARTS,
+                    part_sigma=pcfc_cfg.PART_SIGMA,
+                    freeze_alpha=getattr(pcfc_cfg, 'FREEZE_ALPHA', False),
+                )
+                self.part_decoder = PosePartDecoder(
+                    d_model=self.in_planes,
+                    n_parts=pcfc_cfg.N_PARTS,
+                    n_layers=getattr(pcfc_cfg, 'DECODER_LAYERS', 2),
+                    nhead=getattr(pcfc_cfg, 'DECODER_HEADS', 8),
+                    dim_feedforward=getattr(pcfc_cfg, 'DECODER_FFN_DIM', 2048),
+                    dropout=getattr(pcfc_cfg, 'DECODER_DROPOUT', 0.1),
+                    sigma=pcfc_cfg.PART_SIGMA,
+                    img_size=cfg.INPUT.SIZE_TRAIN,
+                    use_pose_bias=getattr(pcfc_cfg, 'DECODER_POSE_BIAS', True),
+                    grad_scale=getattr(pcfc_cfg, 'DECODER_GRAD_SCALE', 1.0),
+                )
+                print(f'===========PPTD enabled: {pcfc_cfg.N_PARTS} parts, '
+                      f'{getattr(pcfc_cfg, "DECODER_LAYERS", 2)} layers, '
+                      f'{getattr(pcfc_cfg, "DECODER_HEADS", 8)} heads===========')
+            else:
+                self.pcfc = PoseFeatureCalibration(
+                    img_size=cfg.INPUT.SIZE_TRAIN,
+                    sigma=pcfc_cfg.SIGMA,
+                    alpha_init=pcfc_cfg.ALPHA_INIT,
+                    use_part_loss=pcfc_cfg.USE_PART_LOSS,
+                    n_parts=pcfc_cfg.N_PARTS,
+                    part_sigma=pcfc_cfg.PART_SIGMA,
+                    ost_prob=getattr(pcfc_cfg, 'OST_PROB', 0.0),
+                    ost_min_parts=getattr(pcfc_cfg, 'OST_MIN_PARTS', 1),
+                    ost_max_parts=getattr(pcfc_cfg, 'OST_MAX_PARTS', 3),
+                    ms_part_stage=ms_part_stage,
+                    ms_in_channels=ms_in_ch,
+                    ms_out_channels=self.in_planes,
+                    freeze_alpha=getattr(pcfc_cfg, 'FREEZE_ALPHA', False),
+                )
+
             self.pcfc_gap = nn.AdaptiveAvgPool2d(1)
             if pcfc_cfg.USE_PART_LOSS:
                 self.pcfc_part_head = PosePartHead(
@@ -420,14 +453,19 @@ class build_transformer(nn.Module):
         # --- PCFC: re-pool with visibility attention ---
         if self.use_pcfc and keypoints is not None and featmaps is not None:
             last_fm = featmaps[-1] if isinstance(featmaps, (list, tuple)) else featmaps
-            # Multi-scale: pass lower-stage feature map for part extraction
-            ms_fm = None
-            if hasattr(self, 'ms_part_stage') and self.ms_part_stage >= 0:
-                if isinstance(featmaps, (list, tuple)) and len(featmaps) > self.ms_part_stage:
-                    ms_fm = featmaps[self.ms_part_stage]
-            calibrated_fm, attn_map, part_feats, part_vis = self.pcfc(
-                last_fm, keypoints, visibility, ms_feat_map=ms_fm
-            )
+            if self.use_decoder:
+                # PPTD path: PCFC for global vis-weighted GAP, decoder for part features
+                calibrated_fm, attn_map = self.pcfc.vis_attn(last_fm, keypoints, visibility)
+                part_feats, part_vis = self.part_decoder(last_fm, keypoints, visibility)
+            else:
+                # Standard PCFC path: Gaussian pooling for parts
+                ms_fm = None
+                if hasattr(self, 'ms_part_stage') and self.ms_part_stage >= 0:
+                    if isinstance(featmaps, (list, tuple)) and len(featmaps) > self.ms_part_stage:
+                        ms_fm = featmaps[self.ms_part_stage]
+                calibrated_fm, attn_map, part_feats, part_vis = self.pcfc(
+                    last_fm, keypoints, visibility, ms_feat_map=ms_fm
+                )
             # Re-pool the calibrated feature map → occlusion-aware global feature
             global_feat = self.pcfc_gap(calibrated_fm).flatten(1)  # [B, C]
 

@@ -238,6 +238,13 @@ _C.MODEL.PCFC.BPRE_PROB = 0.0                         # Body Part Random Erasing
 _C.MODEL.PCFC.BPRE_MAX_PARTS = 1                      # Max body parts to erase per image
 _C.MODEL.PCFC.FREEZE_ALPHA = False                     # Freeze alpha (don't learn, use ALPHA_INIT as fixed value)
 _C.MODEL.PCFC.PUSH_WEIGHT = 0.0                          # Push loss weight for part diversity
+_C.MODEL.PCFC.USE_DECODER = False                        # Use Part Transformer Decoder instead of Gaussian pooling
+_C.MODEL.PCFC.DECODER_LAYERS = 2                         # Number of decoder layers
+_C.MODEL.PCFC.DECODER_HEADS = 8                          # Number of attention heads
+_C.MODEL.PCFC.DECODER_FFN_DIM = 2048                     # FFN hidden dimension
+_C.MODEL.PCFC.DECODER_DROPOUT = 0.1                      # Decoder dropout rate
+_C.MODEL.PCFC.DECODER_POSE_BIAS = True                   # Use pose-guided attention bias in decoder
+_C.MODEL.PCFC.DECODER_GRAD_SCALE = 1.0                   # Gradient scaling for decoder parameters
 
 _C.MODEL.PVFM = CN()
 _C.MODEL.PVFM.ENABLE = False
