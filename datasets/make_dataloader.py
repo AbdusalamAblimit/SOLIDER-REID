@@ -75,8 +75,21 @@ def make_dataloader(cfg):
             RandomErasing(probability=cfg.INPUT.RE_PROB, mode='pixel', max_count=1, device='cpu'),
         ])
 
+    # For pose mode: pixel-only transforms (geometric handled in dataset)
+    pose_train_pixel_transforms = T.Compose([
+            T.ToTensor(),
+            T.Normalize(mean=cfg.INPUT.PIXEL_MEAN, std=cfg.INPUT.PIXEL_STD),
+            RandomErasing(probability=cfg.INPUT.RE_PROB, mode='pixel', max_count=1, device='cpu'),
+        ])
+
     val_transforms = T.Compose([
         T.Resize(cfg.INPUT.SIZE_TEST),
+        T.ToTensor(),
+        T.Normalize(mean=cfg.INPUT.PIXEL_MEAN, std=cfg.INPUT.PIXEL_STD)
+    ])
+
+    # For pose val: pixel-only (resize handled in dataset)
+    pose_val_pixel_transforms = T.Compose([
         T.ToTensor(),
         T.Normalize(mean=cfg.INPUT.PIXEL_MEAN, std=cfg.INPUT.PIXEL_STD)
     ])
@@ -129,10 +142,20 @@ def make_dataloader(cfg):
         collate_val = val_collate_fn
 
     if use_pose:
-        train_set = DatasetClass(dataset.train, train_transforms, train_pose,
-                                 heatmap_dir=train_heatmap_dir)
-        train_set_normal = DatasetClass(dataset.train, val_transforms, train_pose,
-                                        heatmap_dir=train_heatmap_dir)
+        train_set = DatasetClass(
+            dataset.train, pose_train_pixel_transforms, train_pose,
+            heatmap_dir=train_heatmap_dir,
+            is_train=True,
+            flip_prob=cfg.INPUT.PROB,
+            pad=cfg.INPUT.PADDING,
+            crop_size=cfg.INPUT.SIZE_TRAIN,
+        )
+        train_set_normal = DatasetClass(
+            dataset.train, pose_val_pixel_transforms, train_pose,
+            heatmap_dir=train_heatmap_dir,
+            is_train=False,
+            crop_size=cfg.INPUT.SIZE_TRAIN,
+        )
     else:
         train_set = DatasetClass(dataset.train, train_transforms)
         train_set_normal = DatasetClass(dataset.train, val_transforms)
@@ -177,8 +200,12 @@ def make_dataloader(cfg):
         print('unsupported sampler! expected softmax or triplet but got {}'.format(cfg.SAMPLER))
 
     if use_pose:
-        val_set = DatasetClass(dataset.query + dataset.gallery, val_transforms, val_pose,
-                               heatmap_dir=[query_heatmap_dir, gallery_heatmap_dir])
+        val_set = DatasetClass(
+            dataset.query + dataset.gallery, pose_val_pixel_transforms, val_pose,
+            heatmap_dir=[query_heatmap_dir, gallery_heatmap_dir],
+            is_train=False,
+            crop_size=cfg.INPUT.SIZE_TEST,
+        )
     else:
         val_set = DatasetClass(dataset.query + dataset.gallery, val_transforms)
 
