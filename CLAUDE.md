@@ -441,6 +441,18 @@ paper_materials/
 
 ## 全局规则
 
+### ★ 文档记录铁律（最高优先级，必须严格遵守）
+
+以下规则是**硬性要求**，违反即为严重失误：
+
+a. **每次 sleep 结束后**: 必须立即更新 `experiments/exp{NNN}/monitor.md`，记录观察到的训练指标
+b. **每个实验结束后**: 必须更新 `experiments/results.md`，添加该实验的最终结果行
+c. **每次想到新方法/方向时**: 必须更新 `experiments/innovation_brainstorm.md`
+d. **每次做出重要决策时**: 必须写入 `experiments/decisions.md`
+e. **文档之间数据必须一致**: 同一个实验结果在不同文档中的数字必须完全相同
+
+这四份文档是实验工作的核心产出，其重要性等同于代码和实验本身。
+
 0. **文档先行，永不停止**：你的工作循环必须**永远持续运行**，除非我明确告诉你停下来。但是，**每个实验完成后，必须先完成以下全部文档，才能启动下一个实验**：
    - [ ] `experiments/exp{NNN}/monitor.md` — 包含最终结果的监控日志
    - [ ] `experiments/results.md` — 更新实验总表
