@@ -440,6 +440,10 @@ def make_model(cfg, num_class, camera_num, view_num, semantic_weight):
         if cfg.MODEL.JPM:
             model = build_transformer_local(num_class, camera_num, view_num, cfg, __factory_T_type, rearrange=cfg.MODEL.RE_ARRANGE)
             print('===========building transformer with JPM module ===========')
+        elif cfg.MODEL.POSE_ENABLED:
+            from .pose_model import PoseReIDModel
+            model = PoseReIDModel(num_class, camera_num, view_num, cfg, __factory_T_type, semantic_weight)
+            print('===========building pose-guided transformer===========')
         else:
             model = build_transformer(num_class, camera_num, view_num, cfg, __factory_T_type, semantic_weight)
             print('===========building transformer===========')

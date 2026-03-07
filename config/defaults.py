@@ -81,6 +81,14 @@ _C.MODEL.SEMANTIC_WEIGHT = 1.0
 # Checkpoint (gradient checkpointing to save memory)
 _C.MODEL.WITH_CP = False
 
+# Pose-guided part pooling
+_C.MODEL.POSE_ENABLED = False
+_C.MODEL.POSE_DATA_DIR = ''         # directory containing pose_rtmpose_*.npz
+_C.MODEL.POSE_SIGMA = 2.0           # Gaussian heatmap sigma
+_C.MODEL.POSE_THRESHOLD = 0.3       # minimum keypoint score
+_C.MODEL.POSE_PART_WEIGHT = 1.0     # weight for part losses
+_C.MODEL.POSE_PART_TRI_WEIGHT = 1.0 # weight for part triplet loss
+
 # -----------------------------------------------------------------------------
 # INPUT
 # -----------------------------------------------------------------------------

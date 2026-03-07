@@ -26,9 +26,12 @@ def do_train(cfg,
 
     device = "cuda"
     epochs = cfg.SOLVER.MAX_EPOCHS
+    use_pose = cfg.MODEL.POSE_ENABLED
 
     logger = logging.getLogger("transreid.train")
     logger.info('start training')
+    if use_pose:
+        logger.info('Pose-guided training ENABLED')
     _LOCAL_PROCESS_GROUP = None
     if device:
         model.to(local_rank)
@@ -48,15 +51,33 @@ def do_train(cfg,
         acc_meter.reset()
         evaluator.reset()
         model.train()
-        for n_iter, (img, vid, target_cam, target_view) in enumerate(train_loader):
+
+        for n_iter, batch_data in enumerate(train_loader):
             optimizer.zero_grad()
             optimizer_center.zero_grad()
+
+            if use_pose:
+                img, vid, target_cam, target_view, keypoints, kp_scores = batch_data
+                keypoints = keypoints.to(device)
+                kp_scores = kp_scores.to(device)
+            else:
+                img, vid, target_cam, target_view = batch_data
+                keypoints = None
+                kp_scores = None
+
             img = img.to(device)
             target = vid.to(device)
             target_cam = target_cam.to(device)
             target_view = target_view.to(device)
+
             with amp.autocast(enabled=True):
-                score, feat, _ = model(img, label=target, cam_label=target_cam, view_label=target_view )
+                if use_pose:
+                    score, feat, _ = model(img, label=target, cam_label=target_cam,
+                                           view_label=target_view,
+                                           keypoints=keypoints, kp_scores=kp_scores)
+                else:
+                    score, feat, _ = model(img, label=target, cam_label=target_cam,
+                                           view_label=target_view)
                 loss = loss_fn(score, feat, target, target_cam)
 
             scaler.scale(loss).backward()
@@ -120,12 +141,24 @@ def do_train(cfg,
             if cfg.MODEL.DIST_TRAIN:
                 if dist.get_rank() == 0:
                     model.eval()
-                    for n_iter, (img, vid, camid, camids, target_view, _) in enumerate(val_loader):
+                    for n_iter, batch_data in enumerate(val_loader):
                         with torch.no_grad():
+                            if use_pose:
+                                img, vid, camid, camids, target_view, _, keypoints, kp_scores = batch_data
+                                keypoints = keypoints.to(device)
+                                kp_scores = kp_scores.to(device)
+                            else:
+                                img, vid, camid, camids, target_view, _ = batch_data
+                                keypoints = None
+                                kp_scores = None
                             img = img.to(device)
                             camids = camids.to(device)
                             target_view = target_view.to(device)
-                            feat, _ = model(img, cam_label=camids, view_label=target_view)
+                            if use_pose:
+                                feat, _ = model(img, cam_label=camids, view_label=target_view,
+                                                keypoints=keypoints, kp_scores=kp_scores)
+                            else:
+                                feat, _ = model(img, cam_label=camids, view_label=target_view)
                             evaluator.update((feat, vid, camid))
                     cmc, mAP, _, _, _, _, _ = evaluator.compute()
                     logger.info("Validation Results - Epoch: {}".format(epoch))
@@ -135,12 +168,24 @@ def do_train(cfg,
                     torch.cuda.empty_cache()
             else:
                 model.eval()
-                for n_iter, (img, vid, camid, camids, target_view, _) in enumerate(val_loader):
+                for n_iter, batch_data in enumerate(val_loader):
                     with torch.no_grad():
+                        if use_pose:
+                            img, vid, camid, camids, target_view, _, keypoints, kp_scores = batch_data
+                            keypoints = keypoints.to(device)
+                            kp_scores = kp_scores.to(device)
+                        else:
+                            img, vid, camid, camids, target_view, _ = batch_data
+                            keypoints = None
+                            kp_scores = None
                         img = img.to(device)
                         camids = camids.to(device)
                         target_view = target_view.to(device)
-                        feat, _ = model(img, cam_label=camids, view_label=target_view)
+                        if use_pose:
+                            feat, _ = model(img, cam_label=camids, view_label=target_view,
+                                            keypoints=keypoints, kp_scores=kp_scores)
+                        else:
+                            feat, _ = model(img, cam_label=camids, view_label=target_view)
                         evaluator.update((feat, vid, camid))
                 cmc, mAP, _, _, _, _, _ = evaluator.compute()
                 logger.info("Validation Results - Epoch: {}".format(epoch))
@@ -156,6 +201,7 @@ def do_inference(cfg,
     device = "cuda"
     logger = logging.getLogger("transreid.test")
     logger.info("Enter inferencing")
+    use_pose = cfg.MODEL.POSE_ENABLED
 
     evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM, reranking=cfg.TEST.RE_RANKING)
 
@@ -170,12 +216,24 @@ def do_inference(cfg,
     model.eval()
     img_path_list = []
 
-    for n_iter, (img, pid, camid, camids, target_view, imgpath) in enumerate(val_loader):
+    for n_iter, batch_data in enumerate(val_loader):
         with torch.no_grad():
+            if use_pose:
+                img, pid, camid, camids, target_view, imgpath, keypoints, kp_scores = batch_data
+                keypoints = keypoints.to(device)
+                kp_scores = kp_scores.to(device)
+            else:
+                img, pid, camid, camids, target_view, imgpath = batch_data
+                keypoints = None
+                kp_scores = None
             img = img.to(device)
             camids = camids.to(device)
             target_view = target_view.to(device)
-            feat , _ = model(img, cam_label=camids, view_label=target_view)
+            if use_pose:
+                feat, _ = model(img, cam_label=camids, view_label=target_view,
+                                keypoints=keypoints, kp_scores=kp_scores)
+            else:
+                feat, _ = model(img, cam_label=camids, view_label=target_view)
             evaluator.update((feat, pid, camid))
             img_path_list.extend(imgpath)
 
@@ -185,5 +243,3 @@ def do_inference(cfg,
     for r in [1, 5, 10]:
         logger.info("CMC curve, Rank-{:<3}:{:.1%}".format(r, cmc[r - 1]))
     return cmc[0], cmc[4]
-
-
