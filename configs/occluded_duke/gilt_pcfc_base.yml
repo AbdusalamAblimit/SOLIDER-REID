@@ -1,14 +1,14 @@
 MODEL:
   PRETRAIN_HW_RATIO: 2
   PRETRAIN_CHOICE: 'self'
-  PRETRAIN_PATH: 'pretrained/swin_small.pth'
+  PRETRAIN_PATH: 'pretrained/swin_base.pth'
   METRIC_LOSS_TYPE: 'triplet'
   IF_LABELSMOOTH: 'off'
   IF_WITH_CENTER: 'no'
   NAME: 'transformer'
   NO_MARGIN: True
   DEVICE_ID: ('0')
-  TRANSFORMER_TYPE: 'swin_small_patch4_window7_224'
+  TRANSFORMER_TYPE: 'swin_base_patch4_window7_224'
   STRIDE_SIZE: [16, 16]
   SEMANTIC_WEIGHT: 0.2
   WITH_CP: False
@@ -65,4 +65,4 @@ TEST:
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/occluded_duke/gilt_pcfc_small'
+OUTPUT_DIR: './log/occluded_duke/gilt_pcfc_base'
