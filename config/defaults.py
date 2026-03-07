@@ -78,6 +78,9 @@ _C.MODEL.SIE_VIEW = False
 # Semantic Weight
 _C.MODEL.SEMANTIC_WEIGHT = 1.0
 
+# Checkpoint (gradient checkpointing to save memory)
+_C.MODEL.WITH_CP = False
+
 # -----------------------------------------------------------------------------
 # INPUT
 # -----------------------------------------------------------------------------

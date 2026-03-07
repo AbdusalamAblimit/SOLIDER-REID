@@ -17,7 +17,10 @@ from torch.nn import ModuleList
 from torch.nn import Sequential
 from torch.nn import Linear
 from torch import Tensor
-from mmcv.runner import load_checkpoint as _load_checkpoint
+try:
+    from mmcv.runner import load_checkpoint as _load_checkpoint
+except ImportError:
+    from mmengine.runner import load_checkpoint as _load_checkpoint
 
 from itertools import repeat
 import collections.abc
