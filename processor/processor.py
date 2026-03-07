@@ -57,13 +57,15 @@ def do_train(cfg,
             optimizer_center.zero_grad()
 
             if use_pose:
-                img, vid, target_cam, target_view, keypoints, kp_scores = batch_data
+                img, vid, target_cam, target_view, keypoints, kp_scores, heatmaps = batch_data
                 keypoints = keypoints.to(device)
                 kp_scores = kp_scores.to(device)
+                heatmaps = heatmaps.to(device)
             else:
                 img, vid, target_cam, target_view = batch_data
                 keypoints = None
                 kp_scores = None
+                heatmaps = None
 
             img = img.to(device)
             target = vid.to(device)
@@ -74,7 +76,8 @@ def do_train(cfg,
                 if use_pose:
                     score, feat, _ = model(img, label=target, cam_label=target_cam,
                                            view_label=target_view,
-                                           keypoints=keypoints, kp_scores=kp_scores)
+                                           keypoints=keypoints, kp_scores=kp_scores,
+                                           heatmaps=heatmaps)
                 else:
                     score, feat, _ = model(img, label=target, cam_label=target_cam,
                                            view_label=target_view)
@@ -144,19 +147,22 @@ def do_train(cfg,
                     for n_iter, batch_data in enumerate(val_loader):
                         with torch.no_grad():
                             if use_pose:
-                                img, vid, camid, camids, target_view, _, keypoints, kp_scores = batch_data
+                                img, vid, camid, camids, target_view, _, keypoints, kp_scores, heatmaps = batch_data
                                 keypoints = keypoints.to(device)
                                 kp_scores = kp_scores.to(device)
+                                heatmaps = heatmaps.to(device)
                             else:
                                 img, vid, camid, camids, target_view, _ = batch_data
                                 keypoints = None
                                 kp_scores = None
+                                heatmaps = None
                             img = img.to(device)
                             camids = camids.to(device)
                             target_view = target_view.to(device)
                             if use_pose:
                                 feat, _ = model(img, cam_label=camids, view_label=target_view,
-                                                keypoints=keypoints, kp_scores=kp_scores)
+                                                keypoints=keypoints, kp_scores=kp_scores,
+                                                heatmaps=heatmaps)
                             else:
                                 feat, _ = model(img, cam_label=camids, view_label=target_view)
                             evaluator.update((feat, vid, camid))
@@ -171,19 +177,22 @@ def do_train(cfg,
                 for n_iter, batch_data in enumerate(val_loader):
                     with torch.no_grad():
                         if use_pose:
-                            img, vid, camid, camids, target_view, _, keypoints, kp_scores = batch_data
+                            img, vid, camid, camids, target_view, _, keypoints, kp_scores, heatmaps = batch_data
                             keypoints = keypoints.to(device)
                             kp_scores = kp_scores.to(device)
+                            heatmaps = heatmaps.to(device)
                         else:
                             img, vid, camid, camids, target_view, _ = batch_data
                             keypoints = None
                             kp_scores = None
+                            heatmaps = None
                         img = img.to(device)
                         camids = camids.to(device)
                         target_view = target_view.to(device)
                         if use_pose:
                             feat, _ = model(img, cam_label=camids, view_label=target_view,
-                                            keypoints=keypoints, kp_scores=kp_scores)
+                                            keypoints=keypoints, kp_scores=kp_scores,
+                                            heatmaps=heatmaps)
                         else:
                             feat, _ = model(img, cam_label=camids, view_label=target_view)
                         evaluator.update((feat, vid, camid))
@@ -219,19 +228,22 @@ def do_inference(cfg,
     for n_iter, batch_data in enumerate(val_loader):
         with torch.no_grad():
             if use_pose:
-                img, pid, camid, camids, target_view, imgpath, keypoints, kp_scores = batch_data
+                img, pid, camid, camids, target_view, imgpath, keypoints, kp_scores, heatmaps = batch_data
                 keypoints = keypoints.to(device)
                 kp_scores = kp_scores.to(device)
+                heatmaps = heatmaps.to(device)
             else:
                 img, pid, camid, camids, target_view, imgpath = batch_data
                 keypoints = None
                 kp_scores = None
+                heatmaps = None
             img = img.to(device)
             camids = camids.to(device)
             target_view = target_view.to(device)
             if use_pose:
                 feat, _ = model(img, cam_label=camids, view_label=target_view,
-                                keypoints=keypoints, kp_scores=kp_scores)
+                                keypoints=keypoints, kp_scores=kp_scores,
+                                heatmaps=heatmaps)
             else:
                 feat, _ = model(img, cam_label=camids, view_label=target_view)
             evaluator.update((feat, pid, camid))

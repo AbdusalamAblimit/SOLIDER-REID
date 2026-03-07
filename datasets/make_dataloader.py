@@ -1,3 +1,4 @@
+import os
 import torch
 import torchvision.transforms as T
 from torch.utils.data import DataLoader
@@ -38,20 +39,22 @@ def val_collate_fn(batch):
 
 def pose_train_collate_fn(batch):
     """Collate function for pose-aware training."""
-    imgs, pids, camids, viewids, _, keypoints, kp_scores = zip(*batch)
+    imgs, pids, camids, viewids, _, keypoints, kp_scores, heatmaps = zip(*batch)
     pids = torch.tensor(pids, dtype=torch.int64)
     viewids = torch.tensor(viewids, dtype=torch.int64)
     camids = torch.tensor(camids, dtype=torch.int64)
     return (torch.stack(imgs, dim=0), pids, camids, viewids,
-            torch.stack(keypoints, dim=0), torch.stack(kp_scores, dim=0))
+            torch.stack(keypoints, dim=0), torch.stack(kp_scores, dim=0),
+            torch.stack(heatmaps, dim=0))
 
 def pose_val_collate_fn(batch):
     """Collate function for pose-aware validation."""
-    imgs, pids, camids, viewids, img_paths, keypoints, kp_scores = zip(*batch)
+    imgs, pids, camids, viewids, img_paths, keypoints, kp_scores, heatmaps = zip(*batch)
     viewids = torch.tensor(viewids, dtype=torch.int64)
     camids_batch = torch.tensor(camids, dtype=torch.int64)
     return (torch.stack(imgs, dim=0), pids, camids, camids_batch, viewids, img_paths,
-            torch.stack(keypoints, dim=0), torch.stack(kp_scores, dim=0))
+            torch.stack(keypoints, dim=0), torch.stack(kp_scores, dim=0),
+            torch.stack(heatmaps, dim=0))
 
 def make_dataloader(cfg):
     train_transforms = T.Compose([
@@ -94,6 +97,12 @@ def make_dataloader(cfg):
             }
         else:
             val_pose = None
+        # Heatmap directories
+        heatmap_base = os.path.join(pose_dir, 'heatmaps')
+        train_heatmap_dir = os.path.join(heatmap_base, 'train')
+        # For val, we need separate dirs per split - handled in dataset
+        query_heatmap_dir = os.path.join(heatmap_base, 'query')
+        gallery_heatmap_dir = os.path.join(heatmap_base, 'gallery')
         DatasetClass = PoseImageDataset
         collate_train = pose_train_collate_fn
         collate_val = pose_val_collate_fn
@@ -105,8 +114,10 @@ def make_dataloader(cfg):
         collate_val = val_collate_fn
 
     if use_pose:
-        train_set = DatasetClass(dataset.train, train_transforms, train_pose)
-        train_set_normal = DatasetClass(dataset.train, val_transforms, train_pose)
+        train_set = DatasetClass(dataset.train, train_transforms, train_pose,
+                                 heatmap_dir=train_heatmap_dir)
+        train_set_normal = DatasetClass(dataset.train, val_transforms, train_pose,
+                                        heatmap_dir=train_heatmap_dir)
     else:
         train_set = DatasetClass(dataset.train, train_transforms)
         train_set_normal = DatasetClass(dataset.train, val_transforms)
@@ -151,7 +162,8 @@ def make_dataloader(cfg):
         print('unsupported sampler! expected softmax or triplet but got {}'.format(cfg.SAMPLER))
 
     if use_pose:
-        val_set = DatasetClass(dataset.query + dataset.gallery, val_transforms, val_pose)
+        val_set = DatasetClass(dataset.query + dataset.gallery, val_transforms, val_pose,
+                               heatmap_dir=[query_heatmap_dir, gallery_heatmap_dir])
     else:
         val_set = DatasetClass(dataset.query + dataset.gallery, val_transforms)
 

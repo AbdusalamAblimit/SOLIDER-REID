@@ -30,7 +30,7 @@ class PoseReIDModel(build_transformer):
         self.pose_part_weight = cfg.MODEL.POSE_PART_WEIGHT
 
     def forward(self, x, label=None, cam_label=None, view_label=None,
-                keypoints=None, kp_scores=None):
+                keypoints=None, kp_scores=None, heatmaps=None):
         # Backbone forward
         global_feat, featmaps = self.base(x)
 
