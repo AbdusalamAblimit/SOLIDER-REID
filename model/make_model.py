@@ -367,6 +367,20 @@ class build_transformer(nn.Module):
                     num_classes=num_classes,
                     n_parts=pcfc_cfg.N_PARTS,
                 )
+
+            # --- CPSA: Cross-Part Self-Attention ---
+            self.use_cpsa = getattr(pcfc_cfg, 'USE_CPSA', False)
+            if self.use_cpsa:
+                from .modules.cross_part_attn import CrossPartSelfAttention
+                self.cpsa = CrossPartSelfAttention(
+                    d_model=self.in_planes,
+                    nhead=getattr(pcfc_cfg, 'CPSA_HEADS', 8),
+                    dim_feedforward=getattr(pcfc_cfg, 'CPSA_FFN_DIM', 768),
+                    use_vis_mask=getattr(pcfc_cfg, 'CPSA_VIS_MASK', True),
+                )
+                cpsa_params = sum(p.numel() for p in self.cpsa.parameters())
+                print(f'===========CPSA enabled: {cpsa_params/1e6:.2f}M params===========')
+
             print(f'===========PCFC enabled: sigma={pcfc_cfg.SIGMA}, alpha_init={pcfc_cfg.ALPHA_INIT}===========')
 
         # --- PVFM: Pose-Guided Visibility Feature Modulation ---
@@ -466,6 +480,10 @@ class build_transformer(nn.Module):
                 calibrated_fm, attn_map, part_feats, part_vis = self.pcfc(
                     last_fm, keypoints, visibility, ms_feat_map=ms_fm
                 )
+            # Apply CPSA if enabled (refine part features via cross-part self-attention)
+            if hasattr(self, 'use_cpsa') and self.use_cpsa and part_feats is not None:
+                part_feats = self.cpsa(part_feats, part_vis)
+
             # Re-pool the calibrated feature map → occlusion-aware global feature
             global_feat = self.pcfc_gap(calibrated_fm).flatten(1)  # [B, C]
 
@@ -495,6 +513,9 @@ class build_transformer(nn.Module):
                     extras['part_logits'] = part_logits
                     extras['part_vis'] = part_vis
                     extras['part_feats'] = part_feats_bn  # [B, K, C] for part triplet
+                # Add CPSA gate value if active
+                if hasattr(self, 'use_cpsa') and self.use_cpsa:
+                    extras['cpsa_gate'] = torch.sigmoid(self.cpsa.gate).item()
                 return cls_score, global_feat, extras
             else:
                 if self.neck_feat == 'after':

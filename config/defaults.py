@@ -245,6 +245,10 @@ _C.MODEL.PCFC.DECODER_FFN_DIM = 2048                     # FFN hidden dimension
 _C.MODEL.PCFC.DECODER_DROPOUT = 0.1                      # Decoder dropout rate
 _C.MODEL.PCFC.DECODER_POSE_BIAS = True                   # Use pose-guided attention bias in decoder
 _C.MODEL.PCFC.DECODER_GRAD_SCALE = 1.0                   # Gradient scaling for decoder parameters
+_C.MODEL.PCFC.USE_CPSA = False                            # Cross-Part Self-Attention after Gaussian pooling
+_C.MODEL.PCFC.CPSA_HEADS = 8                              # CPSA attention heads
+_C.MODEL.PCFC.CPSA_FFN_DIM = 768                          # CPSA FFN hidden dimension
+_C.MODEL.PCFC.CPSA_VIS_MASK = True                        # CPSA visibility-aware attention mask
 
 _C.MODEL.PVFM = CN()
 _C.MODEL.PVFM.ENABLE = False

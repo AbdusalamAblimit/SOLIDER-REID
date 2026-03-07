@@ -161,6 +161,8 @@ def do_train(cfg,
                             msg += " a={:.3f}".format(lc['alpha'])
                             if 'kpe_scale' in lc:
                                 msg += " kpe={:.3f}".format(lc['kpe_scale'])
+                            if 'cpsa_gate' in lc:
+                                msg += " g={:.3f}".format(lc['cpsa_gate'])
                             # Log PVFM beta values
                             betas = [f"{k}={v:.3f}" for k, v in lc.items() if k.startswith('beta_')]
                             if betas:

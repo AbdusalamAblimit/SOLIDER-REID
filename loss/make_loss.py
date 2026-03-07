@@ -108,10 +108,10 @@ def make_loss(cfg, num_classes):    # modified by gu
                 'n_vis': n_valid,
                 'alpha': alpha_val,
             }
-            # Include PVFM beta values and KPE scale if present
+            # Include PVFM beta values, KPE scale, CPSA gate if present
             if extras:
                 for k, v in extras.items():
-                    if k.startswith('beta_') or k == 'kpe_scale':
+                    if k.startswith('beta_') or k in ('kpe_scale', 'cpsa_gate'):
                         components[k] = v
             loss_func.last_components = components
             return total
