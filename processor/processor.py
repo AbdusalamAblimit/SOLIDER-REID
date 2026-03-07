@@ -10,6 +10,13 @@ from utils.metrics import R1_mAP_eval
 from torch.cuda import amp
 import torch.distributed as dist
 
+
+def _pose_to_device(pose_dict, device):
+    """Move all tensors in pose_dict to device."""
+    return {k: v.to(device) if isinstance(v, torch.Tensor) else v
+            for k, v in pose_dict.items()}
+
+
 def do_train(cfg,
              model,
              center_criterion,
@@ -57,15 +64,11 @@ def do_train(cfg,
             optimizer_center.zero_grad()
 
             if use_pose:
-                img, vid, target_cam, target_view, keypoints, kp_scores, heatmaps = batch_data
-                keypoints = keypoints.to(device)
-                kp_scores = kp_scores.to(device)
-                heatmaps = heatmaps.to(device)
+                img, vid, target_cam, target_view, pose_dict = batch_data
+                pose_dict = _pose_to_device(pose_dict, device)
             else:
                 img, vid, target_cam, target_view = batch_data
-                keypoints = None
-                kp_scores = None
-                heatmaps = None
+                pose_dict = None
 
             img = img.to(device)
             target = vid.to(device)
@@ -76,8 +79,7 @@ def do_train(cfg,
                 if use_pose:
                     score, feat, _ = model(img, label=target, cam_label=target_cam,
                                            view_label=target_view,
-                                           keypoints=keypoints, kp_scores=kp_scores,
-                                           heatmaps=heatmaps)
+                                           pose_dict=pose_dict)
                 else:
                     score, feat, _ = model(img, label=target, cam_label=target_cam,
                                            view_label=target_view)
@@ -128,7 +130,7 @@ def do_train(cfg,
         if cfg.MODEL.DIST_TRAIN:
             pass
         else:
-            logger.info("Epoch {} done. Time: {:.1f}[s] Speed: {:.1f}[samples/s] ETA: {}h{}m"
+            logger.info("Epoch {} done. Time per epoch: {:.3f}[s] Speed: {:.1f}[samples/s] ETA: {}h{}m"
                     .format(epoch, epoch_time, train_loader.batch_size / time_per_batch, eta_h, eta_m))
 
         if epoch % checkpoint_period == 0:
@@ -147,22 +149,17 @@ def do_train(cfg,
                     for n_iter, batch_data in enumerate(val_loader):
                         with torch.no_grad():
                             if use_pose:
-                                img, vid, camid, camids, target_view, _, keypoints, kp_scores, heatmaps = batch_data
-                                keypoints = keypoints.to(device)
-                                kp_scores = kp_scores.to(device)
-                                heatmaps = heatmaps.to(device)
+                                img, vid, camid, camids, target_view, _, pose_dict = batch_data
+                                pose_dict = _pose_to_device(pose_dict, device)
                             else:
                                 img, vid, camid, camids, target_view, _ = batch_data
-                                keypoints = None
-                                kp_scores = None
-                                heatmaps = None
+                                pose_dict = None
                             img = img.to(device)
                             camids = camids.to(device)
                             target_view = target_view.to(device)
                             if use_pose:
                                 feat, _ = model(img, cam_label=camids, view_label=target_view,
-                                                keypoints=keypoints, kp_scores=kp_scores,
-                                                heatmaps=heatmaps)
+                                                pose_dict=pose_dict)
                             else:
                                 feat, _ = model(img, cam_label=camids, view_label=target_view)
                             evaluator.update((feat, vid, camid))
@@ -177,22 +174,17 @@ def do_train(cfg,
                 for n_iter, batch_data in enumerate(val_loader):
                     with torch.no_grad():
                         if use_pose:
-                            img, vid, camid, camids, target_view, _, keypoints, kp_scores, heatmaps = batch_data
-                            keypoints = keypoints.to(device)
-                            kp_scores = kp_scores.to(device)
-                            heatmaps = heatmaps.to(device)
+                            img, vid, camid, camids, target_view, _, pose_dict = batch_data
+                            pose_dict = _pose_to_device(pose_dict, device)
                         else:
                             img, vid, camid, camids, target_view, _ = batch_data
-                            keypoints = None
-                            kp_scores = None
-                            heatmaps = None
+                            pose_dict = None
                         img = img.to(device)
                         camids = camids.to(device)
                         target_view = target_view.to(device)
                         if use_pose:
                             feat, _ = model(img, cam_label=camids, view_label=target_view,
-                                            keypoints=keypoints, kp_scores=kp_scores,
-                                            heatmaps=heatmaps)
+                                            pose_dict=pose_dict)
                         else:
                             feat, _ = model(img, cam_label=camids, view_label=target_view)
                         evaluator.update((feat, vid, camid))
@@ -228,22 +220,17 @@ def do_inference(cfg,
     for n_iter, batch_data in enumerate(val_loader):
         with torch.no_grad():
             if use_pose:
-                img, pid, camid, camids, target_view, imgpath, keypoints, kp_scores, heatmaps = batch_data
-                keypoints = keypoints.to(device)
-                kp_scores = kp_scores.to(device)
-                heatmaps = heatmaps.to(device)
+                img, pid, camid, camids, target_view, imgpath, pose_dict = batch_data
+                pose_dict = _pose_to_device(pose_dict, device)
             else:
                 img, pid, camid, camids, target_view, imgpath = batch_data
-                keypoints = None
-                kp_scores = None
-                heatmaps = None
+                pose_dict = None
             img = img.to(device)
             camids = camids.to(device)
             target_view = target_view.to(device)
             if use_pose:
                 feat, _ = model(img, cam_label=camids, view_label=target_view,
-                                keypoints=keypoints, kp_scores=kp_scores,
-                                heatmaps=heatmaps)
+                                pose_dict=pose_dict)
             else:
                 feat, _ = model(img, cam_label=camids, view_label=target_view)
             evaluator.update((feat, pid, camid))

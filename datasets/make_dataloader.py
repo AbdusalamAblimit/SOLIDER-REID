@@ -37,24 +37,32 @@ def val_collate_fn(batch):
     return torch.stack(imgs, dim=0), pids, camids, camids_batch, viewids, img_paths
 
 
+def _collate_pose_dicts(pose_dicts):
+    """Stack a list of pose_dict into batched tensors."""
+    batched = {}
+    for key in pose_dicts[0]:
+        if key == 'num_persons':
+            batched[key] = torch.tensor([d[key] for d in pose_dicts], dtype=torch.int64)
+        else:
+            batched[key] = torch.stack([d[key] for d in pose_dicts], dim=0)
+    return batched
+
 def pose_train_collate_fn(batch):
     """Collate function for pose-aware training."""
-    imgs, pids, camids, viewids, _, keypoints, kp_scores, heatmaps = zip(*batch)
+    imgs, pids, camids, viewids, _, pose_dicts = zip(*batch)
     pids = torch.tensor(pids, dtype=torch.int64)
     viewids = torch.tensor(viewids, dtype=torch.int64)
     camids = torch.tensor(camids, dtype=torch.int64)
     return (torch.stack(imgs, dim=0), pids, camids, viewids,
-            torch.stack(keypoints, dim=0), torch.stack(kp_scores, dim=0),
-            torch.stack(heatmaps, dim=0))
+            _collate_pose_dicts(pose_dicts))
 
 def pose_val_collate_fn(batch):
     """Collate function for pose-aware validation."""
-    imgs, pids, camids, viewids, img_paths, keypoints, kp_scores, heatmaps = zip(*batch)
+    imgs, pids, camids, viewids, img_paths, pose_dicts = zip(*batch)
     viewids = torch.tensor(viewids, dtype=torch.int64)
     camids_batch = torch.tensor(camids, dtype=torch.int64)
     return (torch.stack(imgs, dim=0), pids, camids, camids_batch, viewids, img_paths,
-            torch.stack(keypoints, dim=0), torch.stack(kp_scores, dim=0),
-            torch.stack(heatmaps, dim=0))
+            _collate_pose_dicts(pose_dicts))
 
 def make_dataloader(cfg):
     train_transforms = T.Compose([
@@ -89,12 +97,19 @@ def make_dataloader(cfg):
         query_pose = load_pose_data(pose_dir, 'query')
         # Merge query + gallery pose data for validation
         if query_pose is not None and gallery_pose is not None:
-            import numpy as np
-            val_pose = {
-                'filenames': np.concatenate([query_pose['filenames'], gallery_pose['filenames']]),
-                'keypoints': np.concatenate([query_pose['keypoints'], gallery_pose['keypoints']]),
-                'scores': np.concatenate([query_pose['scores'], gallery_pose['scores']]),
-            }
+            if isinstance(query_pose, list) and isinstance(gallery_pose, list):
+                # New PKL format: just concatenate lists
+                val_pose = query_pose + gallery_pose
+            elif isinstance(query_pose, dict) and isinstance(gallery_pose, dict):
+                # Legacy NPZ format
+                import numpy as np
+                val_pose = {
+                    'filenames': np.concatenate([query_pose['filenames'], gallery_pose['filenames']]),
+                    'keypoints': np.concatenate([query_pose['keypoints'], gallery_pose['keypoints']]),
+                    'scores': np.concatenate([query_pose['scores'], gallery_pose['scores']]),
+                }
+            else:
+                val_pose = None
         else:
             val_pose = None
         # Heatmap directories

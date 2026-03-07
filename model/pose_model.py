@@ -30,7 +30,24 @@ class PoseReIDModel(build_transformer):
         self.pose_part_weight = cfg.MODEL.POSE_PART_WEIGHT
 
     def forward(self, x, label=None, cam_label=None, view_label=None,
-                keypoints=None, kp_scores=None, heatmaps=None):
+                pose_dict=None):
+        """
+        Args:
+            x: (B, 3, H, W) input images
+            label: (B,) person IDs
+            cam_label: (B,) camera IDs
+            view_label: (B,) view IDs
+            pose_dict: dict with pose data (from PoseImageDataset collate):
+                - 'primary_keypoints': (B, 17, 2)
+                - 'primary_scores': (B, 17)
+                - 'primary_heatmap': (B, 17, H, W)
+                - 'all_keypoints': (B, MAX_PERSONS, 17, 2)
+                - 'all_scores': (B, MAX_PERSONS, 17)
+                - 'all_heatmaps': (B, MAX_PERSONS, 17, H, W)
+                - 'all_bboxes': (B, MAX_PERSONS, 4)
+                - 'person_mask': (B, MAX_PERSONS)
+                - 'num_persons': (B,)
+        """
         # Backbone forward
         global_feat, featmaps = self.base(x)
 
@@ -47,14 +64,14 @@ class PoseReIDModel(build_transformer):
             else:
                 cls_score = self.classifier(feat_cls)
 
-            # Pose part pooling (only when keypoints are provided)
-            if keypoints is not None and kp_scores is not None:
-                # Use last stage feature map: featmaps[-1] is (B, C, H, W)
+            # Pose part pooling (uses primary person data)
+            if pose_dict is not None:
+                keypoints = pose_dict['primary_keypoints']
+                kp_scores = pose_dict['primary_scores']
                 last_featmap = featmaps[-1]
                 part_cls_scores, part_feats, part_valid = self.pose_part(
                     last_featmap, keypoints, kp_scores)
 
-                # Return: [global_cls, part1_cls, ...], [global_feat, part1_feat, ...], part_valid
                 all_cls = [cls_score] + part_cls_scores
                 all_feats = [global_feat] + part_feats
                 return all_cls, all_feats, part_valid
@@ -66,14 +83,14 @@ class PoseReIDModel(build_transformer):
             else:
                 test_feat = global_feat
 
-            # At test time, also extract part features if keypoints available
-            if keypoints is not None and kp_scores is not None:
+            # At test time, also extract part features
+            if pose_dict is not None:
+                keypoints = pose_dict['primary_keypoints']
+                kp_scores = pose_dict['primary_scores']
                 last_featmap = featmaps[-1]
                 _, part_feats, part_valid = self.pose_part(
                     last_featmap, keypoints, kp_scores)
 
-                # Concatenate global + valid part features
-                # Scale down part features to balance with global
                 scale = 1.0 / len(part_feats)
                 test_feat = torch.cat(
                     [test_feat] + [f * scale for f in part_feats], dim=1)
