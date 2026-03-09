@@ -78,6 +78,17 @@ def extract_features(model, img, camids, target_view, pose_dict, mode='concat'):
             # Part features without 1/N scaling
             return torch.cat(part_feats, dim=1)
 
+        if mode == 'norm_concat':
+            # L2-normalize each sub-feature before concat
+            g_norm = F.normalize(test_feat_global, p=2, dim=1)
+            p_norms = [F.normalize(f, p=2, dim=1) for f in part_feats]
+            return torch.cat([g_norm] + p_norms, dim=1)
+
+        if mode == 'norm_part_only':
+            # L2-normalize each part feature before concat (no global)
+            p_norms = [F.normalize(f, p=2, dim=1) for f in part_feats]
+            return torch.cat(p_norms, dim=1)
+
         if mode == 'equal_concat':
             # Global + parts without scaling
             return torch.cat(
@@ -145,9 +156,10 @@ if __name__ == "__main__":
         model.load_param(cfg.TEST.WEIGHT)
 
     print("=" * 60)
-    for mode in ['global', 'part', 'part_noscale', 'equal_concat', 'concat']:
+    for mode in ['global', 'part', 'part_noscale', 'norm_part_only',
+                 'norm_concat', 'equal_concat', 'concat']:
         mAP, cmc = do_inference_mode(cfg, model, val_loader, num_query,
                                      mode=mode)
-        print(f"[{mode:>7s}]  mAP={mAP:.1%}  R1={cmc[0]:.1%}  "
+        print(f"[{mode:>14s}]  mAP={mAP:.1%}  R1={cmc[0]:.1%}  "
               f"R5={cmc[4]:.1%}  R10={cmc[9]:.1%}")
     print("=" * 60)

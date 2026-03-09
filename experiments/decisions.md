@@ -140,3 +140,30 @@
 
 **风险**: Stage 2 特征可能不够 semantic（还没经过 stage 3 的进一步抽象）
 
+**执行结果**: exp005 明确负面。ep40 mAP 仅 37.0%（baseline 56.6%）。id_part 到 ep49 才降到 4.70（exp001 同期 ~2.0）。**确认：Stage 2 特征语义不足以支撑 part-level identity 分类。** 更高空间分辨率无法补偿语义信息的缺失。
+
+### [2026-03-09 19:10] 决策 #7
+
+**上下文**: exp005 证明浅层（stage 2）特征不够 semantic。exp001-005 总结：
+- Part pooling 方向的上限在 +0.9% mAP（part-only mode）
+- Fusion 方式（concat_scaled vs equal_concat）对最终结果影响约 0.4%
+- PFM 是冗余的；stage 2 太浅
+- id_part 收敛始终慢于 id_global
+
+**核心问题**：如何突破 +0.9% 的瓶颈？
+
+**选项**:
+  A. 改进 test-time 融合（L2-norm concat）— 可能挤出 0.2-0.5%，但不需要训练
+  B. 转向 backbone attention 注入 — pose 信息参与特征形成过程
+  C. 多尺度 part pooling — stage 2 spatial + stage 3 semantic 的融合
+  D. Part feature diversity loss — 惩罚 part 间的冗余
+  E. Pose-guided token selection — 剔除无关 token 提高效率
+
+**选择**: 先做 A（test-time L2-norm fusion，零成本验证），然后转 B（backbone attention）
+
+**理由**:
+1. A 不需要训练，5 分钟可验证，如果能把 +0.9% 提升到 +1.2%，对论文有价值
+2. B 是全新方向，改变特征形成过程本身，可能突破当前 part pooling 的上限
+3. C-E 仍在 part pooling 框架内优化，上限有限
+4. B 的创新性更好（"pose-conditioned attention" vs "better pooling"），更适合论文
+
