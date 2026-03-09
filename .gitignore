@@ -1,6 +1,8 @@
-# Experiment logs and outputs (tracked in separate git repos)
+# Experiment logs and outputs
 log/
-experiments/
+# Track experiment documentation but not large outputs
+experiments/**/figures/
+experiments/**/checkpoints/
 scripts/
 
 # Python
