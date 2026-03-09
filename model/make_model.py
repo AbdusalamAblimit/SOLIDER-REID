@@ -441,7 +441,11 @@ def make_model(cfg, num_class, camera_num, view_num, semantic_weight):
             model = build_transformer_local(num_class, camera_num, view_num, cfg, __factory_T_type, rearrange=cfg.MODEL.RE_ARRANGE)
             print('===========building transformer with JPM module ===========')
         elif cfg.MODEL.POSE_ENABLED:
-            if getattr(cfg.MODEL, 'POSE_BACKBONE_PSG', False):
+            if getattr(cfg.MODEL, 'POSE_PSG_PART', False):
+                from .pose_psg_part_model import PosePSGPartModel
+                model = PosePSGPartModel(num_class, camera_num, view_num, cfg, __factory_T_type, semantic_weight)
+                print('===========building PSG + Part Pooling transformer===========')
+            elif getattr(cfg.MODEL, 'POSE_BACKBONE_PSG', False):
                 from .pose_backbone_model import PoseBackboneModel
                 model = PoseBackboneModel(num_class, camera_num, view_num, cfg, __factory_T_type, semantic_weight)
                 print('===========building pose-backbone (PSG) transformer===========')
