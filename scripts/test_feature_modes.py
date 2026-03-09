@@ -36,6 +36,17 @@ def extract_features(model, img, camids, target_view, pose_dict, mode='concat'):
     with torch.no_grad():
         # Run backbone
         global_feat, featmaps = model.base(img)
+        last_featmap = featmaps[-1]
+
+        # Apply PFM if model has it
+        pfm_enabled = getattr(model, 'pfm_enabled', False)
+        if pfm_enabled and pose_dict is not None:
+            scene_heatmaps, scene_scores = PoseReIDModel._prepare_pose(pose_dict)
+            last_featmap = model.pfm(last_featmap, scene_heatmaps)
+            global_feat = last_featmap.mean(dim=(2, 3))  # Re-GAP from modulated
+        else:
+            scene_heatmaps, scene_scores = None, None
+
         if model.reduce_feat_dim:
             global_feat = model.fcneck(global_feat)
         feat = model.bottleneck(global_feat)
@@ -48,9 +59,9 @@ def extract_features(model, img, camids, target_view, pose_dict, mode='concat'):
         if mode == 'global':
             return test_feat_global
 
-        # Part features
-        scene_heatmaps, scene_scores = PoseReIDModel._prepare_pose(pose_dict)
-        last_featmap = featmaps[-1]
+        # Part features — prepare pose if not already done
+        if scene_heatmaps is None:
+            scene_heatmaps, scene_scores = PoseReIDModel._prepare_pose(pose_dict)
         _, part_feats, part_valid = model.pose_part(
             last_featmap, scene_heatmaps, scene_scores)
 

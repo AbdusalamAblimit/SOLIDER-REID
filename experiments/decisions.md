@@ -109,3 +109,34 @@
 
 **方案 B 作为备选**：如果 GiLt + part pooling 组合无法超过 +1.5% mAP，则转向全新的 backbone attention 方向。
 
+**执行结果**: exp004 PFM 是中性结果。mAP 与 exp001 part-only 相同（57.5%），R1 反而下降 0.8%。PFM 加速收敛但不改善最终表征。**结论：不要在同一处重复使用 pose 信息（PFM+part pooling 是冗余的）。**
+
+### [2026-03-09 17:52] 决策 #6
+
+**上下文**: exp001-004 已探索了当前 part pooling 架构的多个变体：
+- exp001/002: 不同热图归一化（sigmoid vs spatial_softmax）→ 无差异
+- exp003: 改变 loss 权重 → 负面
+- exp004: 加 PFM feature modulation → 中性
+
+当前最佳：mAP 57.5% (part-only), R1 67.1% (+0.9%/+0.6% vs baseline)
+
+**核心瓶颈**: id_part ≈ 2.0 无法进一步降低，part 特征质量受限于 12×4 分辨率。
+
+**选项**:
+  A. 使用 stage 2 特征 (24×8, 384ch) 做 part pooling — 4× spatial resolution
+  B. Part diversity loss — 惩罚 part 特征间的相似度
+  C. 转向 backbone attention 注入 — 修改 Swin 中间层
+  D. Part-specific data augmentation — 基于 pose 的部位级数据增强
+  E. Adaptive global-part fusion — 学习动态融合权重
+
+**选择**: A — 使用 stage 2 高分辨率特征做 part pooling
+
+**理由**:
+1. 当前 12×4 分辨率对 5 个 part 来说太粗（每个 part 只能覆盖 2-3 个 spatial position）
+2. Stage 2 (24×8 = 192 positions) 提供 4× 空间分辨率，pose heatmap attention 可以更精确
+3. 384 channels 虽然比 768 少，但仍然有丰富的语义信息
+4. 实验简单：只需改一下 part pooling 使用的特征图来源
+5. 如果分辨率是瓶颈，这个实验会看到 id_part 明显改善
+
+**风险**: Stage 2 特征可能不够 semantic（还没经过 stage 3 的进一步抽象）
+
