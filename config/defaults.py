@@ -90,6 +90,7 @@ _C.MODEL.POSE_PART_TRI_WEIGHT = 1.0 # weight for part triplet loss
 _C.MODEL.POSE_HEATMAP_SIZE = [96, 32]  # (H, W) heatmap size from dataloader
 _C.MODEL.POSE_HEATMAP_NORM = 'spatial_softmax'  # 'sigmoid' or 'spatial_softmax'
 _C.MODEL.POSE_TEMPERATURE = 1.0        # temperature for spatial softmax
+_C.MODEL.POSE_TEST_FEAT = 'concat_scaled'  # 'concat_scaled', 'part_only', 'equal_concat'
 
 # -----------------------------------------------------------------------------
 # INPUT

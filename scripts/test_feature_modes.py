@@ -59,7 +59,16 @@ def extract_features(model, img, camids, target_view, pose_dict, mode='concat'):
             scale = 1.0 / len(part_feats)
             return torch.cat([f * scale for f in part_feats], dim=1)
 
-        # concat mode (original)
+        if mode == 'part_noscale':
+            # Part features without 1/N scaling
+            return torch.cat(part_feats, dim=1)
+
+        if mode == 'equal_concat':
+            # Global + parts without scaling
+            return torch.cat(
+                [test_feat_global] + part_feats, dim=1)
+
+        # concat mode (original, with 1/N scaling on parts)
         scale = 1.0 / len(part_feats)
         return torch.cat(
             [test_feat_global] + [f * scale for f in part_feats], dim=1)
@@ -121,7 +130,7 @@ if __name__ == "__main__":
         model.load_param(cfg.TEST.WEIGHT)
 
     print("=" * 60)
-    for mode in ['global', 'part', 'concat']:
+    for mode in ['global', 'part', 'part_noscale', 'equal_concat', 'concat']:
         mAP, cmc = do_inference_mode(cfg, model, val_loader, num_query,
                                      mode=mode)
         print(f"[{mode:>7s}]  mAP={mAP:.1%}  R1={cmc[0]:.1%}  "

@@ -37,6 +37,7 @@ class PoseReIDModel(build_transformer):
             temperature=cfg.MODEL.POSE_TEMPERATURE,
         )
         self.pose_part_weight = cfg.MODEL.POSE_PART_WEIGHT
+        self.pose_test_feat = cfg.MODEL.POSE_TEST_FEAT
 
     def forward(self, x, label=None, cam_label=None, view_label=None,
                 pose_dict=None):
@@ -81,9 +82,15 @@ class PoseReIDModel(build_transformer):
                 _, part_feats, part_valid = self.pose_part(
                     last_featmap, scene_heatmaps, scene_scores)
 
-                scale = 1.0 / len(part_feats)
-                test_feat = torch.cat(
-                    [test_feat] + [f * scale for f in part_feats], dim=1)
+                if self.pose_test_feat == 'part_only':
+                    test_feat = torch.cat(part_feats, dim=1)
+                elif self.pose_test_feat == 'equal_concat':
+                    test_feat = torch.cat(
+                        [test_feat] + part_feats, dim=1)
+                else:  # concat_scaled (default)
+                    scale = 1.0 / len(part_feats)
+                    test_feat = torch.cat(
+                        [test_feat] + [f * scale for f in part_feats], dim=1)
 
             return test_feat, featmaps
 

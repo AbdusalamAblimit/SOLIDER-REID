@@ -43,10 +43,14 @@ def make_loss(cfg, num_classes):    # modified by gu
                 loss_details = {}
 
                 if isinstance(score, list):
+                    # Configurable global/part loss ratio via POSE_PART_WEIGHT
+                    pw = getattr(cfg.MODEL, 'POSE_PART_WEIGHT', 1.0)
+                    w_p = pw / (1.0 + pw)  # default: 0.5
+                    w_g = 1.0 / (1.0 + pw)  # default: 0.5
                     global_id = ce_fn(score[0], target)
                     part_ids = [ce_fn(s, target) for s in score[1:]]
                     part_id_avg = sum(part_ids) / len(part_ids)
-                    ID_LOSS = 0.5 * global_id + 0.5 * part_id_avg
+                    ID_LOSS = w_g * global_id + w_p * part_id_avg
                     loss_details['id_global'] = global_id.item()
                     loss_details['id_part'] = part_id_avg.item()
                 else:
@@ -54,10 +58,13 @@ def make_loss(cfg, num_classes):    # modified by gu
                     loss_details['id_global'] = ID_LOSS.item()
 
                 if isinstance(feat, list):
+                    pt = getattr(cfg.MODEL, 'POSE_PART_TRI_WEIGHT', 1.0)
+                    wt_p = pt / (1.0 + pt)
+                    wt_g = 1.0 / (1.0 + pt)
                     global_tri = triplet(feat[0], target)[0]
                     part_tris = [triplet(f, target)[0] for f in feat[1:]]
                     part_tri_avg = sum(part_tris) / len(part_tris)
-                    TRI_LOSS = 0.5 * global_tri + 0.5 * part_tri_avg
+                    TRI_LOSS = wt_g * global_tri + wt_p * part_tri_avg
                     loss_details['tri_global'] = global_tri.item()
                     loss_details['tri_part'] = part_tri_avg.item()
                 else:
