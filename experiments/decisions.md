@@ -167,3 +167,29 @@
 3. C-E 仍在 part pooling 框架内优化，上限有限
 4. B 的创新性更好（"pose-conditioned attention" vs "better pooling"），更适合论文
 
+**执行结果**:
+- exp006 (A): L2-norm concat 57.4% vs concat 57.2%，小改进但仍不如 part-only (57.5%)。融合方向上限已到。
+- **exp007 (B): PSG backbone injection → mAP 58.3%, R1 67.9%。Phase 2 最佳结果！+1.7% mAP, +1.4% R1。超过 Phase 1 最佳 (58.0%/68.0%)。**
+
+### [2026-03-09 21:25] 决策 #8
+
+**上下文**: exp007 PSG 取得突破性结果 (58.3%/67.9%)。关键发现：
+1. Backbone-level pose injection (+1.7%) 远优于 post-hoc part pooling (+0.9%)
+2. 纯 global feature，无需 part branch，架构极简
+3. 额外参数仅 102K（两个 PSG 模块），几乎不增加计算量
+4. 已超过 Phase 1 最佳
+
+**下一步方向**:
+  A. PSG + Part Pooling 组合 — 让 backbone 和 part branch 同时利用 pose
+  B. PSG 消融实验 — 证明 PSG 每个组件的必要性
+  C. PSG 在不同 stage 注入 — Stage 2 vs Stage 3 vs 全部 stages
+  D. PSG 超参数分析 — hidden_dim, 是否 sigmoid, etc.
+
+**选择**: A — PSG + Part Pooling 组合
+
+**理由**:
+1. PSG global feat (58.3%) 和 part-only feat (57.5%) 都有各自的优势
+2. PSG 改善了 backbone 特征质量 → part features 也应该受益
+3. 组合后可能进一步提升（PSG backbone + enhanced part features）
+4. 如果组合有效，这就是完整的方法（backbone injection + part pooling = 全方位 pose 利用）
+
