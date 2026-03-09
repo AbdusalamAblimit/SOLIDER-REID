@@ -193,3 +193,32 @@
 3. 组合后可能进一步提升（PSG backbone + enhanced part features）
 4. 如果组合有效，这就是完整的方法（backbone injection + part pooling = 全方位 pose 利用）
 
+**执行结果**: exp008 mAP 57.7%, R1 66.0%。**组合不叠加**，低于 PSG-only (58.3%/67.9%)。Part pooling 的 part_only 测试模式丢弃了 PSG 增强的 global feature，而 part features 本身无法匹配 PSG-global 的质量。**结论：backbone-level injection 是更有效的 pose 利用方式，post-hoc pooling 在 PSG 基础上没有增量价值。**
+
+### [2026-03-09 23:35] 决策 #9
+
+**上下文**: exp007 (PSG) 和 exp008 (PSG+Part) 的对比揭示了重要规律：
+1. PSG backbone injection: mAP 58.3% (+1.7%) — 全局特征，无 part branch
+2. PSG + Part Pooling: mAP 57.7% (+1.1%) — part_only 测试，丢弃 global
+3. Part Pooling alone: mAP 57.5% (+0.9%) — exp001
+
+**核心洞察**:
+- PSG 的增益主要来自改善全局特征质量，而 part pooling 依赖的是局部特征
+- 两种方法的增益来源有重叠：都利用 pose heatmap 做 spatial attention
+- 在 part_only 测试模式下，PSG 增强的 global 特征被浪费了
+
+**选项**:
+  A. PSG + concat 融合 — 保留 PSG global + part features，不丢弃全局特征
+  B. 多 stage PSG — 在 Stage 2 也注入 PSG，更早引入 pose 先验
+  C. PSG 改进 — 更强的 gate 机制（如 channel attention, multi-head gate）
+  D. Backbone freeze warmup — 冻结 backbone 前 5 epochs，防止随机初始化模块破坏预训练
+
+**选择**: 先做 B（多 stage PSG），这是架构级改进，有更大创新潜力
+
+**理由**:
+1. 当前 PSG 只在 Stage 3（2 个 block）注入，信息利用有限
+2. 多 stage 注入可以让 pose 信息更早参与特征形成（Stage 2 的 24×8 分辨率对 pose heatmap 更有利）
+3. exp005 证明 Stage 2 特征不足以直接做 identity classification，但这不代表 Stage 2 不适合做 spatial attention（PSG 不做分类，只做 spatial gating）
+4. 多 stage PSG 是论文中可以画出更好架构图的设计
+5. 如果多 stage 有效，这构成了一个"层次化姿态注入"的创新点
+
