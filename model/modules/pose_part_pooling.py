@@ -1,18 +1,20 @@
 """Pose-guided part pooling module for ReID.
 
-Uses ViTPose-Huge keypoints to generate Gaussian heatmaps,
-then performs soft spatial pooling to extract part features.
+Uses real ViTPose-Huge heatmaps (merged across all persons) to perform
+soft spatial pooling of backbone features into body-part representations.
 """
 import torch
 import torch.nn as nn
-from .pose_utils import generate_part_heatmaps, NUM_PARTS, PART_NAMES
+import torch.nn.functional as F
+from .pose_utils import heatmaps_to_parts, NUM_PARTS, PART_NAMES
 
 
 class PosePartPooling(nn.Module):
-    """Pose-guided soft part pooling.
+    """Pose-guided soft part pooling using real model heatmaps.
 
-    Given backbone feature map and pose keypoints, generates per-part
-    heatmaps and uses them as spatial attention for soft pooling.
+    Given backbone feature map and scene-level heatmaps (17 keypoints),
+    groups heatmaps into body parts and uses them as spatial attention
+    for soft pooling.
 
     Each part gets:
     - Soft attention pooling from feature map
@@ -20,11 +22,10 @@ class PosePartPooling(nn.Module):
     - Part feature for triplet loss
     """
 
-    def __init__(self, in_channels, num_classes, sigma=2.0, threshold=0.3):
+    def __init__(self, in_channels, num_classes, threshold=0.3):
         super().__init__()
         self.in_channels = in_channels
         self.num_parts = NUM_PARTS
-        self.sigma = sigma
         self.threshold = threshold
 
         # Per-part BN + classifier
@@ -52,38 +53,51 @@ class PosePartPooling(nn.Module):
         if isinstance(m, nn.Linear):
             nn.init.normal_(m.weight, std=0.001)
 
-    def forward(self, feat_map, keypoints, scores):
+    def forward(self, feat_map, scene_heatmaps, scene_scores=None):
         """
         Args:
-            feat_map: (B, C, H, W) backbone feature map
-            keypoints: (B, 17, 2) normalized keypoints [0, 1]
-            scores: (B, 17) keypoint confidence scores
+            feat_map: (B, C, fH, fW) backbone feature map
+            scene_heatmaps: (B, 17, hH, hW) scene-level heatmaps
+                (merged across all persons)
+            scene_scores: (B, 17) optional merged keypoint scores
 
         Returns:
-            part_cls_scores: list of (B, num_classes) per-part classification scores
+            part_cls_scores: list of (B, num_classes) per-part cls scores
             part_feats: list of (B, C) per-part features (before BN)
             part_valid: (B, NUM_PARTS) validity mask
         """
-        B, C, H, W = feat_map.shape
+        B, C, fH, fW = feat_map.shape
 
-        # Generate part heatmaps: (B, NUM_PARTS, H, W)
-        part_heatmaps, part_valid = generate_part_heatmaps(
-            keypoints, scores, H, W, self.sigma, self.threshold)
+        # Raw heatmaps are logits with ~40% negative values; clamp to non-negative
+        scene_heatmaps = scene_heatmaps.clamp(min=0)
+
+        # Resize heatmaps to feature map spatial dims
+        if scene_heatmaps.shape[2:] != (fH, fW):
+            scene_heatmaps = F.interpolate(
+                scene_heatmaps, size=(fH, fW),
+                mode='bilinear', align_corners=False)
+
+        # Group 17 keypoints into 5 body parts
+        part_heatmaps, part_valid = heatmaps_to_parts(
+            scene_heatmaps, scene_scores, self.threshold)
+        # part_heatmaps: (B, NUM_PARTS, fH, fW)
+        # part_valid: (B, NUM_PARTS)
 
         part_cls_scores = []
         part_feats = []
 
+        gap_feat = feat_map.mean(dim=(2, 3))  # (B, C) fallback
+
         for i in range(self.num_parts):
             # Soft attention pooling
-            attn = part_heatmaps[:, i:i+1]  # (B, 1, H, W)
+            attn = part_heatmaps[:, i:i+1]  # (B, 1, fH, fW)
             attn_sum = attn.sum(dim=(2, 3), keepdim=True).clamp(min=1e-6)
             attn_norm = attn / attn_sum  # normalized attention
 
             # Weighted pooling
             part_feat = (feat_map * attn_norm).sum(dim=(2, 3))  # (B, C)
 
-            # For invalid parts (no visible keypoints), fall back to GAP
-            gap_feat = feat_map.mean(dim=(2, 3))  # (B, C)
+            # For invalid parts, fall back to GAP
             valid_mask = part_valid[:, i:i+1]  # (B, 1)
             part_feat = part_feat * valid_mask + gap_feat * (1 - valid_mask)
 

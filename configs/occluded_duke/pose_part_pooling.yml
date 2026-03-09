@@ -15,10 +15,10 @@ MODEL:
   # Pose part pooling
   POSE_ENABLED: True
   POSE_DATA_DIR: 'data/occluded_duke'
-  POSE_SIGMA: 2.0
   POSE_THRESHOLD: 0.3
   POSE_PART_WEIGHT: 1.0
   POSE_PART_TRI_WEIGHT: 1.0
+  POSE_HEATMAP_SIZE: [96, 32]
 
 INPUT:
   SIZE_TRAIN: [384, 128]

@@ -1,4 +1,7 @@
-"""Pose utility functions for generating heatmaps from keypoints."""
+"""Pose utility functions for heatmap processing.
+
+Provides body part grouping and multi-person heatmap merging.
+"""
 import torch
 import torch.nn.functional as F
 
@@ -15,68 +18,60 @@ PART_NAMES = list(PART_GROUPS.keys())
 NUM_PARTS = len(PART_NAMES)
 
 
-def generate_gaussian_heatmap(keypoints, scores, H, W, sigma=2.0, threshold=0.3):
-    """Generate Gaussian heatmaps from keypoint coordinates.
+def merge_person_heatmaps(heatmaps, person_mask):
+    """Merge multi-person heatmaps into a single scene-level heatmap.
+
+    Takes per-person heatmaps and combines them via element-wise max,
+    producing one 17-channel heatmap that covers all detected persons.
 
     Args:
-        keypoints: (B, 17, 2) normalized coordinates in [0, 1]
-        scores: (B, 17) confidence scores
-        H, W: spatial dimensions of output heatmap
-        sigma: Gaussian std in pixel space
-        threshold: minimum score to include a keypoint
+        heatmaps: (B, MAX_PERSONS, 17, H, W) per-person heatmaps
+        person_mask: (B, MAX_PERSONS) binary mask for valid persons
 
     Returns:
-        heatmaps: (B, 17, H, W) Gaussian heatmaps
+        scene_heatmap: (B, 17, H, W) merged scene-level heatmap
     """
-    B, K, _ = keypoints.shape
-    device = keypoints.device
-
-    # Create coordinate grids
-    yy = torch.arange(H, device=device, dtype=torch.float32).view(1, 1, H, 1)
-    xx = torch.arange(W, device=device, dtype=torch.float32).view(1, 1, 1, W)
-
-    # Convert normalized coords to pixel coords
-    cx = keypoints[:, :, 0:1].unsqueeze(-1) * W  # (B, K, 1, 1)
-    cy = keypoints[:, :, 1:2].unsqueeze(-1) * H  # (B, K, 1, 1)
-
-    # Gaussian: exp(-((x-cx)^2 + (y-cy)^2) / (2*sigma^2))
-    heatmaps = torch.exp(-((xx - cx) ** 2 + (yy - cy) ** 2) / (2 * sigma ** 2))
-
-    # Zero out low-confidence keypoints
-    mask = (scores > threshold).float().unsqueeze(-1).unsqueeze(-1)  # (B, K, 1, 1)
-    heatmaps = heatmaps * mask
-
-    return heatmaps
+    # Mask out invalid persons before merging
+    mask = person_mask[:, :, None, None, None]  # (B, MAX, 1, 1, 1)
+    masked = heatmaps * mask
+    # Max over persons dimension
+    scene_heatmap = masked.max(dim=1)[0]  # (B, 17, H, W)
+    return scene_heatmap
 
 
-def generate_part_heatmaps(keypoints, scores, H, W, sigma=2.0, threshold=0.3):
-    """Generate body part heatmaps by grouping keypoints.
+def heatmaps_to_parts(heatmaps_17, scores_17=None, threshold=0.0):
+    """Group 17 keypoint heatmaps into 5 body part heatmaps.
 
     Args:
-        keypoints: (B, 17, 2) normalized coordinates
-        scores: (B, 17) confidence scores
-        H, W: spatial dimensions
-        sigma: Gaussian std
-        threshold: minimum score threshold
+        heatmaps_17: (B, 17, H, W) keypoint-level heatmaps
+        scores_17: (B, 17) optional keypoint scores; if provided,
+                   parts with all scores below threshold are marked invalid
+        threshold: minimum score for a keypoint to be considered valid
 
     Returns:
-        part_heatmaps: (B, NUM_PARTS, H, W) part attention maps
-        part_valid: (B, NUM_PARTS) binary mask for valid parts
+        part_heatmaps: (B, NUM_PARTS, H, W) body part heatmaps
+        part_valid: (B, NUM_PARTS) binary validity mask
     """
-    # Generate all 17 keypoint heatmaps
-    all_heatmaps = generate_gaussian_heatmap(keypoints, scores, H, W, sigma, threshold)
+    B = heatmaps_17.shape[0]
+    device = heatmaps_17.device
 
-    B = keypoints.shape[0]
-    device = keypoints.device
-    part_heatmaps = torch.zeros(B, NUM_PARTS, H, W, device=device)
-    part_valid = torch.zeros(B, NUM_PARTS, device=device)
+    parts = []
+    valid = []
 
-    for i, (name, indices) in enumerate(PART_GROUPS.items()):
-        # Max over keypoints in this group
-        group_heatmaps = all_heatmaps[:, indices]  # (B, len(indices), H, W)
-        part_heatmaps[:, i] = group_heatmaps.max(dim=1)[0]  # (B, H, W)
-        # Part is valid if any keypoint in the group has high score
-        group_scores = scores[:, indices]  # (B, len(indices))
-        part_valid[:, i] = (group_scores > threshold).any(dim=1).float()
+    for name, indices in PART_GROUPS.items():
+        # Max over keypoints in this body part
+        group = heatmaps_17[:, indices]  # (B, len(indices), H, W)
+        part_hm = group.max(dim=1)[0]  # (B, H, W)
+        parts.append(part_hm)
 
+        if scores_17 is not None:
+            group_scores = scores_17[:, indices]  # (B, len(indices))
+            v = (group_scores > threshold).any(dim=1).float()  # (B,)
+        else:
+            # Valid if heatmap has any non-zero response
+            v = (part_hm.sum(dim=(1, 2)) > 0).float()  # (B,)
+        valid.append(v)
+
+    part_heatmaps = torch.stack(parts, dim=1)  # (B, NUM_PARTS, H, W)
+    part_valid = torch.stack(valid, dim=1)  # (B, NUM_PARTS)
     return part_heatmaps, part_valid

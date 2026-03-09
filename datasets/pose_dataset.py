@@ -1,9 +1,18 @@
-"""Pose-aware image dataset that loads per-person keypoints and heatmaps.
+"""Pose-aware image dataset with joint geometric augmentation.
 
-Handles geometric augmentations (flip, crop) jointly for images and pose data.
+Loads per-person pose data (.npz) and applies geometric augmentations
+(resize, flip, pad+crop, random erasing) jointly to images, heatmaps,
+and keypoints so they stay aligned.
+
+Coordinate convention:
+  - Keypoints are always in PIXEL coordinates of the current image state.
+  - Heatmaps are kept at image resolution during augmentation, then
+    optionally downsampled at the end for memory efficiency.
 """
+
 import os
-import pickle
+import json
+import math
 import random
 import numpy as np
 import torch
@@ -12,259 +21,385 @@ from torch.utils.data import Dataset
 from PIL import Image
 from .bases import read_image
 
-# COCO left-right keypoint swap pairs
-FLIP_PAIRS = [(1, 2), (3, 4), (5, 6), (7, 8), (9, 10), (11, 12), (13, 14), (15, 16)]
+# COCO 17-keypoint left-right swap pairs (0-indexed)
+FLIP_PAIRS = [
+    (1, 2), (3, 4),       # eyes, ears
+    (5, 6), (7, 8),       # shoulders, elbows
+    (9, 10), (11, 12),    # wrists, hips
+    (13, 14), (15, 16),   # knees, ankles
+]
+
+MAX_PERSONS = 6
 
 
 class PoseImageDataset(Dataset):
-    """ImageDataset with multi-person pose data loading.
+    """Dataset that loads images with per-person pose data and applies
+    joint geometric augmentation.
 
-    Handles geometric augmentations (flip, pad+crop) jointly for images and heatmaps.
-    Returns (img, pid, camid, trackid, img_path, pose_data_dict).
+    Returns: (img_tensor, pid, camid, trackid, img_path, pose_dict)
     """
 
-    MAX_PERSONS = 6
-
-    def __init__(self, dataset, transform=None, pose_data=None,
-                 heatmap_dir=None, target_size=None,
-                 is_train=False, flip_prob=0.0, pad=0, crop_size=None):
+    def __init__(self, dataset, pose_dir,
+                 img_size=(384, 128),
+                 is_train=False,
+                 flip_prob=0.5,
+                 pad=10,
+                 re_prob=0.5,
+                 pixel_mean=(0.5, 0.5, 0.5),
+                 pixel_std=(0.5, 0.5, 0.5),
+                 heatmap_size=None,
+                 max_persons=MAX_PERSONS):
         """
         Args:
             dataset: list of (img_path, pid, camid, trackid)
-            transform: pixel-level transforms (ToTensor, Normalize, RandomErasing)
-            pose_data: list of per-image dicts (PKL) or legacy dict (NPZ)
-            heatmap_dir: directory or list of dirs containing .npy heatmap files
-            target_size: (H, W) to resize heatmaps
-            is_train: whether this is training (enables augmentation)
-            flip_prob: probability of horizontal flip
-            pad: padding pixels before random crop
-            crop_size: (H, W) for random crop after padding
+            pose_dir: directory containing index.json and .npz files for
+                      this split (e.g. data/occluded_duke/pose_data/train/)
+            img_size: (H, W) target image size after augmentation
+            is_train: if True, enable augmentation
+            flip_prob: horizontal flip probability
+            pad: padding pixels for pad+crop augmentation
+            re_prob: random erasing probability
+            pixel_mean/pixel_std: image normalization params
+            heatmap_size: (H, W) final heatmap size; None = same as img_size
+            max_persons: max persons to return per image
         """
         self.dataset = dataset
-        self.transform = transform
-        self.target_size = target_size
-        # Determine final heatmap size
-        if target_size is not None:
-            self.hm_h, self.hm_w = target_size
-        elif crop_size is not None:
-            self.hm_h, self.hm_w = crop_size
-        else:
-            self.hm_h, self.hm_w = 64, 48
+        self.img_size = img_size
         self.is_train = is_train
-        self.flip_prob = flip_prob
-        self.pad = pad
-        self.crop_size = crop_size
+        self.flip_prob = flip_prob if is_train else 0.0
+        self.pad = pad if is_train else 0
+        self.re_prob = re_prob if is_train else 0.0
+        self.pixel_mean = torch.tensor(pixel_mean, dtype=torch.float32).view(3, 1, 1)
+        self.pixel_std = torch.tensor(pixel_std, dtype=torch.float32).view(3, 1, 1)
+        self.heatmap_size = heatmap_size or img_size
+        self.max_persons = min(max_persons, MAX_PERSONS)
 
-        # Normalize heatmap dirs to list
-        if heatmap_dir is None:
-            self.heatmap_dirs = []
-        elif isinstance(heatmap_dir, (list, tuple)):
-            self.heatmap_dirs = list(heatmap_dir)
+        # Load index
+        index_path = os.path.join(pose_dir, 'index.json')
+        self.pose_dir = pose_dir
+        if os.path.exists(index_path):
+            with open(index_path, 'r') as f:
+                self.index = json.load(f)
+            print(f"  Loaded pose index: {index_path} ({len(self.index)} entries)")
         else:
-            self.heatmap_dirs = [heatmap_dir]
-
-        # Build filename -> pose data lookup
-        self.pose_lookup = {}
-        if pose_data is not None:
-            if isinstance(pose_data, dict) and 'filenames' in pose_data:
-                # Legacy NPZ format — bbox omitted to use full-image default
-                for idx, fname in enumerate(pose_data['filenames']):
-                    self.pose_lookup[fname] = [{
-                        'keypoints': pose_data['keypoints'][idx],
-                        'kp_scores': pose_data['scores'][idx],
-                        'heatmap_file': fname.replace('.jpg', '_p0.npy'),
-                    }]
-            elif isinstance(pose_data, list):
-                for entry in pose_data:
-                    self.pose_lookup[entry['filename']] = entry['persons']
-            elif isinstance(pose_data, dict):
-                self.pose_lookup = pose_data
+            self.index = {}
+            print(f"  WARNING: pose index not found at {index_path}")
 
     def __len__(self):
         return len(self.dataset)
 
-    def __getitem__(self, index):
-        img_path, pid, camid, trackid = self.dataset[index]
-        img = read_image(img_path)  # PIL Image
-        orig_w, orig_h = img.size  # original image dimensions
+    def __getitem__(self, idx):
+        img_path, pid, camid, trackid = self.dataset[idx]
+        img = read_image(img_path)  # PIL RGB
+        orig_w, orig_h = img.size
 
         fname = os.path.basename(img_path)
-        persons = self.pose_lookup.get(fname, [])
 
-        # Load all heatmaps and map to full-image coordinate space
-        person_heatmaps = []
-        for p in persons[:self.MAX_PERSONS]:
-            hm = self._load_heatmap_raw(p.get('heatmap_file'))
-            bbox = p.get('bbox', np.array([0, 0, orig_w, orig_h], dtype=np.float32))
-            # Place bbox-local heatmap into full-image coordinates
-            hm_fullimg = self._place_heatmap_in_fullimg(hm, bbox, orig_h, orig_w)
-            person_heatmaps.append(hm_fullimg)
+        # ---- Load all persons' pose data ----
+        persons = self._load_persons(fname, orig_h, orig_w)
+        # persons: list of dict {heatmap: (17,H,W) tensor, kp: (17,2) ndarray,
+        #                        scores: (17,) ndarray}
+        n_persons = len(persons)
 
-        # --- Geometric augmentations (applied jointly to image + heatmaps) ---
-        # 1. Resize to target size (always)
-        if self.crop_size:
-            img = img.resize((self.crop_size[1], self.crop_size[0]), Image.BICUBIC)
-        # Heatmaps resize handled later
+        # ---- Joint Augmentation ----
+        target_h, target_w = self.img_size
 
-        # 2. Random horizontal flip
+        # 1) Resize image and pose data to target size
+        img, persons = self._joint_resize(img, persons, orig_h, orig_w,
+                                          target_h, target_w)
+
+        # 2) Random horizontal flip
         flipped = False
         if self.is_train and random.random() < self.flip_prob:
-            img = img.transpose(Image.FLIP_LEFT_RIGHT)
             flipped = True
+            img, persons = self._joint_flip(img, persons, target_w)
 
-        # 3. Padding + random crop
-        crop_offset_x, crop_offset_y = 0, 0
-        if self.is_train and self.pad > 0 and self.crop_size:
-            # Pad image
-            w, h = img.size
-            padded = Image.new(img.mode, (w + 2 * self.pad, h + 2 * self.pad), (0, 0, 0))
-            padded.paste(img, (self.pad, self.pad))
-            # Random crop
-            pw, ph = padded.size
-            crop_offset_x = random.randint(0, pw - self.crop_size[1])
-            crop_offset_y = random.randint(0, ph - self.crop_size[0])
-            img = padded.crop((crop_offset_x, crop_offset_y,
-                               crop_offset_x + self.crop_size[1],
-                               crop_offset_y + self.crop_size[0]))
+        # 3) Pad + random crop
+        crop_x, crop_y = 0, 0
+        if self.is_train and self.pad > 0:
+            img, persons, crop_x, crop_y = self._joint_pad_crop(
+                img, persons, target_h, target_w, self.pad)
 
-        # --- Pixel-level transforms (ToTensor, Normalize, RandomErasing) ---
-        if self.transform is not None:
-            img = self.transform(img)
+        # 4) Convert image to tensor + normalize
+        img_tensor = self._image_to_tensor(img)
 
-        # --- Apply same geometric transforms to pose data ---
-        n_persons = min(len(persons), self.MAX_PERSONS)
-        all_kp = torch.zeros(self.MAX_PERSONS, 17, 2)
-        all_scores = torch.zeros(self.MAX_PERSONS, 17)
-        all_hm = torch.zeros(self.MAX_PERSONS, 17, self.hm_h, self.hm_w)
-        all_bboxes = torch.zeros(self.MAX_PERSONS, 4)
-        person_mask = torch.zeros(self.MAX_PERSONS)
+        # 5) Random erasing (image only; zero keypoint scores in erased region)
+        erase_box = None
+        if self.is_train and random.random() < self.re_prob:
+            img_tensor, erase_box = self._random_erase(img_tensor)
 
-        for i in range(n_persons):
-            p = persons[i]
-            kp = np.array(p['keypoints'], dtype=np.float32).copy()
-            scores = np.array(p['kp_scores'], dtype=np.float32).copy()
-            hm = person_heatmaps[i]  # (17, 64, 48) raw
+        if erase_box is not None:
+            ex1, ey1, ex2, ey2 = erase_box
+            for p in persons:
+                kp = p['kp']
+                in_box = ((kp[:, 0] >= ex1) & (kp[:, 0] < ex2) &
+                          (kp[:, 1] >= ey1) & (kp[:, 1] < ey2))
+                p['scores'][in_box] = 0.0
 
-            # Resize heatmap to crop_size first (same as image)
-            if self.crop_size is not None:
+        # ---- Assemble output tensors ----
+        hm_h, hm_w = self.heatmap_size
+        out_heatmaps = torch.zeros(self.max_persons, 17, hm_h, hm_w)
+        out_keypoints = torch.zeros(self.max_persons, 17, 2)
+        out_scores = torch.zeros(self.max_persons, 17)
+        out_mask = torch.zeros(self.max_persons)
+
+        for i in range(min(n_persons, self.max_persons)):
+            hm = persons[i]['heatmap']
+            if (hm_h, hm_w) != (target_h, target_w):
                 hm = F.interpolate(
-                    hm.unsqueeze(0), size=(self.crop_size[0], self.crop_size[1]),
-                    mode='bilinear', align_corners=False
-                ).squeeze(0)  # (17, crop_H, crop_W)
+                    hm.unsqueeze(0), size=(hm_h, hm_w),
+                    mode='bilinear', align_corners=False).squeeze(0)
+            out_heatmaps[i] = hm
+            out_keypoints[i] = torch.from_numpy(persons[i]['kp'].copy())
+            out_scores[i] = torch.from_numpy(persons[i]['scores'].copy())
+            out_mask[i] = 1.0
 
-            # Apply flip to keypoints and heatmap
-            if flipped:
-                kp[:, 0] = 1.0 - kp[:, 0]
-                for l, r in FLIP_PAIRS:
-                    kp[[l, r]] = kp[[r, l]]
-                    scores[[l, r]] = scores[[r, l]]
-                hm = hm.flip(-1)
-                for l, r in FLIP_PAIRS:
-                    hm[[l, r]] = hm[[r, l]]
-
-            # Final resize to target size for model (e.g. 12x4)
-            if self.target_size is not None:
-                hm = F.interpolate(
-                    hm.unsqueeze(0), size=self.target_size,
-                    mode='bilinear', align_corners=False
-                ).squeeze(0)
-
-            all_kp[i] = torch.from_numpy(kp)
-            all_scores[i] = torch.from_numpy(scores)
-            all_hm[i] = hm
-            bbox = p.get('bbox', np.array([0, 0, 1, 1], dtype=np.float32))
-            all_bboxes[i] = torch.from_numpy(np.array(bbox, dtype=np.float32))
-            person_mask[i] = 1.0
-
-        # Primary person = index 0
         pose_dict = {
-            'primary_keypoints': all_kp[0],
-            'primary_scores': all_scores[0],
-            'primary_heatmap': all_hm[0],
-            'num_persons': n_persons,
-            'all_keypoints': all_kp,
-            'all_scores': all_scores,
-            'all_heatmaps': all_hm,
-            'all_bboxes': all_bboxes,
-            'person_mask': person_mask,
+            'heatmaps': out_heatmaps,
+            'keypoints': out_keypoints,
+            'scores': out_scores,
+            'person_mask': out_mask,
+            'num_persons': min(n_persons, self.max_persons),
         }
 
-        return img, pid, camid, trackid, img_path, pose_dict
+        return img_tensor, pid, camid, trackid, img_path, pose_dict
 
-    def _load_heatmap_raw(self, hm_filename):
-        """Load raw heatmap .npy file without resizing."""
-        if hm_filename is None:
-            return torch.zeros(17, 64, 48)
+    # ------------------------------------------------------------------
+    #  Loading
+    # ------------------------------------------------------------------
 
-        for hdir in self.heatmap_dirs:
-            npy_path = os.path.join(hdir, hm_filename)
-            if os.path.exists(npy_path):
-                heatmap = np.load(npy_path)
-                return torch.from_numpy(heatmap).float()
+    def _load_persons(self, filename, img_h, img_w):
+        """Load per-person npz files and project heatmaps to full-image space.
 
-        return torch.zeros(17, 64, 48)
+        Returns list of dicts with keys: heatmap (17,img_h,img_w), kp (17,2),
+        scores (17,).
+        """
+        entry = self.index.get(filename)
+        if entry is None:
+            return []
+
+        persons = []
+        for npz_name in entry['persons'][:self.max_persons]:
+            # Support both relative (normal) and absolute (merged val) paths
+            if os.path.isabs(npz_name):
+                npz_path = npz_name
+            else:
+                npz_path = os.path.join(self.pose_dir, npz_name)
+            if not os.path.exists(npz_path):
+                continue
+            data = np.load(npz_path)
+
+            hm_raw = torch.from_numpy(
+                data['heatmap'].astype(np.float32))   # (17, 64, 48)
+            kp = data['keypoints'].astype(np.float32)  # (17, 2) image pixels
+            scores = data['scores'].astype(np.float32)  # (17,)
+            crop_bounds = data['crop_bounds'].astype(np.float32)  # (4,)
+
+            # Project bbox-local heatmap onto full-image canvas
+            hm_full = self._place_heatmap(hm_raw, crop_bounds, img_h, img_w)
+
+            persons.append({
+                'heatmap': hm_full,
+                'kp': kp.copy(),
+                'scores': scores.copy(),
+            })
+
+        return persons
 
     @staticmethod
-    def _place_heatmap_in_fullimg(heatmap, bbox, img_h, img_w):
-        """Place bbox-local heatmap back into full-image coordinate space.
+    def _place_heatmap(heatmap, crop_bounds, img_h, img_w):
+        """Resize heatmap to crop_bounds region and place on full-image canvas.
 
         Args:
-            heatmap: (17, hm_h, hm_w) in bbox-local coordinates
-            bbox: (4,) [x1, y1, x2, y2] in pixel coordinates
+            heatmap: (17, hm_h, hm_w) in crop-local space
+            crop_bounds: [x1, y1, x2, y2] actual crop region in image pixels
+                         (may extend beyond image bounds)
             img_h, img_w: full image dimensions
 
         Returns:
-            (17, img_h, img_w) heatmap in full-image coordinates
+            (17, img_h, img_w) heatmap in full-image space
         """
-        x1, y1, x2, y2 = bbox
-        bw = max(int(x2 - x1), 1)
-        bh = max(int(y2 - y1), 1)
-        ix1 = max(0, int(x1))
-        iy1 = max(0, int(y1))
-        ix2 = min(img_w, int(x2))
-        iy2 = min(img_h, int(y2))
-        actual_w = ix2 - ix1
-        actual_h = iy2 - iy1
+        cx1, cy1, cx2, cy2 = crop_bounds
+        crop_w = cx2 - cx1
+        crop_h = cy2 - cy1
 
-        if actual_w <= 0 or actual_h <= 0:
+        # Resize heatmap to crop dimensions
+        crop_w_int = max(int(round(crop_w)), 1)
+        crop_h_int = max(int(round(crop_h)), 1)
+        hm_resized = F.interpolate(
+            heatmap.unsqueeze(0), size=(crop_h_int, crop_w_int),
+            mode='bilinear', align_corners=False).squeeze(0)
+
+        # Compute overlap between crop region and image
+        # Source region in resized heatmap
+        src_x1 = max(0, int(round(-cx1)))
+        src_y1 = max(0, int(round(-cy1)))
+        # Destination region in image
+        dst_x1 = max(0, int(round(cx1)))
+        dst_y1 = max(0, int(round(cy1)))
+        dst_x2 = min(img_w, int(round(cx2)))
+        dst_y2 = min(img_h, int(round(cy2)))
+
+        if dst_x2 <= dst_x1 or dst_y2 <= dst_y1:
             return torch.zeros(17, img_h, img_w)
 
-        # Resize heatmap to bbox size
-        hm_resized = F.interpolate(
-            heatmap.unsqueeze(0), size=(bh, bw),
-            mode='bilinear', align_corners=False
-        ).squeeze(0)  # (17, bh, bw)
+        # Clamp copy size to actual available data on both sides
+        copy_w = min(dst_x2 - dst_x1, crop_w_int - src_x1)
+        copy_h = min(dst_y2 - dst_y1, crop_h_int - src_y1)
+        if copy_w <= 0 or copy_h <= 0:
+            return torch.zeros(17, img_h, img_w)
 
-        # Paste into full-image canvas
         canvas = torch.zeros(17, img_h, img_w)
-        # Handle edge clipping
-        src_y1 = iy1 - int(y1) if y1 < 0 else 0
-        src_x1 = ix1 - int(x1) if x1 < 0 else 0
-        canvas[:, iy1:iy2, ix1:ix2] = hm_resized[:, src_y1:src_y1+actual_h,
-                                                       src_x1:src_x1+actual_w]
+        canvas[:, dst_y1:dst_y1 + copy_h, dst_x1:dst_x1 + copy_w] = \
+            hm_resized[:, src_y1:src_y1 + copy_h, src_x1:src_x1 + copy_w]
         return canvas
 
+    # ------------------------------------------------------------------
+    #  Joint augmentations
+    # ------------------------------------------------------------------
 
-def load_pose_data(pose_dir, split):
-    """Load pose data from PKL or fallback to NPZ."""
-    pkl_path = os.path.join(pose_dir, f'pose_data_{split}.pkl')
-    if os.path.exists(pkl_path):
-        with open(pkl_path, 'rb') as f:
-            data = pickle.load(f)
-        print(f"Loaded pose data (PKL): {pkl_path} ({len(data)} images)")
-        return data
+    @staticmethod
+    def _joint_resize(img, persons, orig_h, orig_w, target_h, target_w):
+        """Resize image and all pose data to (target_h, target_w)."""
+        img = img.resize((target_w, target_h), Image.BICUBIC)
 
-    npz_path = os.path.join(pose_dir, f'pose_data_{split}.npz')
-    if not os.path.exists(npz_path):
-        npz_path = os.path.join(pose_dir, f'pose_rtmpose_{split}.npz')
-    if os.path.exists(npz_path):
-        data = np.load(npz_path)
-        print(f"Loaded pose data (NPZ): {npz_path}")
-        return {
-            'filenames': data['filenames'],
-            'keypoints': data['keypoints'],
-            'scores': data['scores'],
-        }
+        sx = target_w / orig_w
+        sy = target_h / orig_h
 
-    print(f"Warning: No pose data found for split '{split}' in {pose_dir}")
-    return None
+        for p in persons:
+            p['heatmap'] = F.interpolate(
+                p['heatmap'].unsqueeze(0), size=(target_h, target_w),
+                mode='bilinear', align_corners=False).squeeze(0)
+            p['kp'][:, 0] *= sx
+            p['kp'][:, 1] *= sy
+
+        return img, persons
+
+    @staticmethod
+    def _joint_flip(img, persons, width):
+        """Horizontal flip image + heatmaps + keypoints."""
+        img = img.transpose(Image.FLIP_LEFT_RIGHT)
+
+        for p in persons:
+            # Flip heatmap spatially
+            p['heatmap'] = p['heatmap'].flip(-1)
+            # Swap left-right channels
+            for l, r in FLIP_PAIRS:
+                p['heatmap'][[l, r]] = p['heatmap'][[r, l]]
+
+            # Mirror x coordinates
+            p['kp'][:, 0] = width - 1 - p['kp'][:, 0]
+            # Swap left-right keypoints
+            for l, r in FLIP_PAIRS:
+                p['kp'][[l, r]] = p['kp'][[r, l]]
+                p['scores'][[l, r]] = p['scores'][[r, l]]
+
+        return img, persons
+
+    @staticmethod
+    def _joint_pad_crop(img, persons, target_h, target_w, pad):
+        """Pad image+heatmaps with zeros, then random crop back to target size.
+
+        Returns: (cropped_img, persons, crop_x, crop_y)
+        """
+        # Pad image
+        padded = Image.new(img.mode,
+                           (target_w + 2 * pad, target_h + 2 * pad),
+                           (0, 0, 0))
+        padded.paste(img, (pad, pad))
+
+        # Random crop offsets
+        crop_x = random.randint(0, 2 * pad)
+        crop_y = random.randint(0, 2 * pad)
+        img_cropped = padded.crop((crop_x, crop_y,
+                                   crop_x + target_w, crop_y + target_h))
+
+        for p in persons:
+            # Pad heatmap
+            p['heatmap'] = F.pad(p['heatmap'],
+                                 (pad, pad, pad, pad), value=0)
+            # Crop heatmap with same offsets
+            p['heatmap'] = p['heatmap'][:,
+                                        crop_y:crop_y + target_h,
+                                        crop_x:crop_x + target_w]
+
+            # Offset keypoints: pad shifts, then crop shifts back
+            p['kp'][:, 0] += pad - crop_x
+            p['kp'][:, 1] += pad - crop_y
+
+            # Mark out-of-bounds keypoints
+            oob = ((p['kp'][:, 0] < 0) | (p['kp'][:, 0] >= target_w) |
+                   (p['kp'][:, 1] < 0) | (p['kp'][:, 1] >= target_h))
+            p['scores'][oob] = 0.0
+            p['kp'][:, 0] = np.clip(p['kp'][:, 0], 0, target_w - 1)
+            p['kp'][:, 1] = np.clip(p['kp'][:, 1], 0, target_h - 1)
+
+        return img_cropped, persons, crop_x, crop_y
+
+    def _image_to_tensor(self, img):
+        """PIL Image -> normalized float tensor (3, H, W)."""
+        arr = np.array(img, dtype=np.float32) / 255.0   # (H, W, 3)
+        tensor = torch.from_numpy(arr.transpose(2, 0, 1))  # (3, H, W)
+        return (tensor - self.pixel_mean) / self.pixel_std
+
+    @staticmethod
+    def _random_erase(img_tensor, sl=0.02, sh=0.4, r1=0.3):
+        """Random erasing on image tensor. Returns (tensor, erase_box_or_None).
+
+        erase_box is (x1, y1, x2, y2) in pixel coords if erasing happened.
+        """
+        _, h, w = img_tensor.shape
+        area = h * w
+
+        for _ in range(100):
+            target_area = random.uniform(sl, sh) * area
+            aspect = random.uniform(r1, 1.0 / r1)
+
+            eh = int(round(math.sqrt(target_area * aspect)))
+            ew = int(round(math.sqrt(target_area / aspect)))
+
+            if ew < w and eh < h:
+                ey = random.randint(0, h - eh)
+                ex = random.randint(0, w - ew)
+                img_tensor[:, ey:ey + eh, ex:ex + ew] = torch.empty(
+                    3, eh, ew).normal_()
+                return img_tensor, (ex, ey, ex + ew, ey + eh)
+
+        return img_tensor, None
+
+
+# ------------------------------------------------------------------
+#  Collate functions
+# ------------------------------------------------------------------
+
+def _collate_pose_dicts(pose_dicts):
+    """Stack a list of pose_dict into batched tensors."""
+    batched = {}
+    for key in pose_dicts[0]:
+        if key == 'num_persons':
+            batched[key] = torch.tensor(
+                [d[key] for d in pose_dicts], dtype=torch.int64)
+        else:
+            batched[key] = torch.stack(
+                [d[key] for d in pose_dicts], dim=0)
+    return batched
+
+
+def pose_train_collate_fn(batch):
+    imgs, pids, camids, viewids, _, pose_dicts = zip(*batch)
+    return (torch.stack(imgs, dim=0),
+            torch.tensor(pids, dtype=torch.int64),
+            torch.tensor(camids, dtype=torch.int64),
+            torch.tensor(viewids, dtype=torch.int64),
+            _collate_pose_dicts(pose_dicts))
+
+
+def pose_val_collate_fn(batch):
+    imgs, pids, camids, viewids, img_paths, pose_dicts = zip(*batch)
+    return (torch.stack(imgs, dim=0),
+            pids,
+            camids,
+            torch.tensor(camids, dtype=torch.int64),
+            torch.tensor(viewids, dtype=torch.int64),
+            img_paths,
+            _collate_pose_dicts(pose_dicts))
