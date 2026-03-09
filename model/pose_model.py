@@ -32,8 +32,12 @@ class PoseReIDModel(build_transformer):
     def __init__(self, num_classes, camera_num, view_num, cfg, factory, semantic_weight):
         super().__init__(num_classes, camera_num, view_num, cfg, factory, semantic_weight)
 
+        # Determine which backbone stage to use for part pooling
+        self.pose_part_stage = cfg.MODEL.POSE_PART_STAGE  # -1=last, -2=second-to-last
+        part_channels = self.base.num_features[self.pose_part_stage]
+
         self.pose_part = PosePartPooling(
-            in_channels=self.in_planes,
+            in_channels=part_channels,
             num_classes=num_classes,
             threshold=cfg.MODEL.POSE_THRESHOLD,
             heatmap_norm=cfg.MODEL.POSE_HEATMAP_NORM,
@@ -57,12 +61,13 @@ class PoseReIDModel(build_transformer):
         global_feat, featmaps = self.base(x)
 
         if self.training:
-            # Get feature map for part pooling and PFM
+            # Get feature maps for part pooling and PFM
             if pose_dict is not None:
                 scene_heatmaps, scene_scores = self._prepare_pose(pose_dict)
                 last_featmap = featmaps[-1]  # (B, 768, 12, 4) for Swin-Tiny
+                part_featmap = featmaps[self.pose_part_stage]  # may differ from last
 
-                # Apply PFM if enabled (modulate feat map before pooling)
+                # Apply PFM if enabled (modulate last feat map before global pooling)
                 if self.pfm_enabled:
                     last_featmap = self.pfm(last_featmap, scene_heatmaps)
                     # Re-compute global feat from modulated feature map
@@ -80,10 +85,10 @@ class PoseReIDModel(build_transformer):
             else:
                 cls_score = self.classifier(feat_cls)
 
-            # Pose part pooling
+            # Pose part pooling (uses part_featmap which may be from a different stage)
             if pose_dict is not None:
                 part_cls_scores, part_feats, part_valid = self.pose_part(
-                    last_featmap, scene_heatmaps, scene_scores)
+                    part_featmap, scene_heatmaps, scene_scores)
 
                 all_cls = [cls_score] + part_cls_scores
                 all_feats = [global_feat] + part_feats
@@ -94,6 +99,7 @@ class PoseReIDModel(build_transformer):
             if pose_dict is not None:
                 scene_heatmaps, scene_scores = self._prepare_pose(pose_dict)
                 last_featmap = featmaps[-1]
+                part_featmap = featmaps[self.pose_part_stage]
 
                 # Apply PFM if enabled
                 if self.pfm_enabled:
@@ -114,7 +120,7 @@ class PoseReIDModel(build_transformer):
             # At test time, also extract part features
             if pose_dict is not None:
                 _, part_feats, part_valid = self.pose_part(
-                    last_featmap, scene_heatmaps, scene_scores)
+                    part_featmap, scene_heatmaps, scene_scores)
 
                 if self.pose_test_feat == 'part_only':
                     test_feat = torch.cat(part_feats, dim=1)

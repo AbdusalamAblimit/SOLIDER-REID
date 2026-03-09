@@ -38,6 +38,10 @@ def extract_features(model, img, camids, target_view, pose_dict, mode='concat'):
         global_feat, featmaps = model.base(img)
         last_featmap = featmaps[-1]
 
+        # Determine which feature map to use for part pooling
+        pose_part_stage = getattr(model, 'pose_part_stage', -1)
+        part_featmap = featmaps[pose_part_stage]
+
         # Apply PFM if model has it
         pfm_enabled = getattr(model, 'pfm_enabled', False)
         if pfm_enabled and pose_dict is not None:
@@ -63,7 +67,7 @@ def extract_features(model, img, camids, target_view, pose_dict, mode='concat'):
         if scene_heatmaps is None:
             scene_heatmaps, scene_scores = PoseReIDModel._prepare_pose(pose_dict)
         _, part_feats, part_valid = model.pose_part(
-            last_featmap, scene_heatmaps, scene_scores)
+            part_featmap, scene_heatmaps, scene_scores)
 
         if mode == 'part':
             # Concatenate all part features (no global)
