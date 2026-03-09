@@ -37,40 +37,40 @@ def make_loss(cfg, num_classes):    # modified by gu
     elif 'triplet' in sampler:
         def loss_func(score, feat, target, target_cam):
             if cfg.MODEL.METRIC_LOSS_TYPE == 'triplet':
-                if cfg.MODEL.IF_LABELSMOOTH == 'on':
-                    if isinstance(score, list):
-                        ID_LOSS = [xent(scor, target) for scor in score[1:]]
-                        ID_LOSS = sum(ID_LOSS) / len(ID_LOSS)
-                        ID_LOSS = 0.5 * ID_LOSS + 0.5 * xent(score[0], target)
-                    else:
-                        ID_LOSS = xent(score, target)
+                ce_fn = xent if cfg.MODEL.IF_LABELSMOOTH == 'on' else F.cross_entropy
+                trp_norm = cfg.SOLVER.TRP_L2 if hasattr(cfg.SOLVER, 'TRP_L2') else False
 
-                    if isinstance(feat, list):
-                            TRI_LOSS = [triplet(feats, target)[0] for feats in feat[1:]]
-                            TRI_LOSS = sum(TRI_LOSS) / len(TRI_LOSS)
-                            TRI_LOSS = 0.5 * TRI_LOSS + 0.5 * triplet(feat[0], target)[0]
-                    else:
-                            TRI_LOSS = triplet(feat, target, normalize_feature=cfg.SOLVER.TRP_L2)[0]
+                loss_details = {}
 
-                    return cfg.MODEL.ID_LOSS_WEIGHT * ID_LOSS + \
-                               cfg.MODEL.TRIPLET_LOSS_WEIGHT * TRI_LOSS
+                if isinstance(score, list):
+                    global_id = ce_fn(score[0], target)
+                    part_ids = [ce_fn(s, target) for s in score[1:]]
+                    part_id_avg = sum(part_ids) / len(part_ids)
+                    ID_LOSS = 0.5 * global_id + 0.5 * part_id_avg
+                    loss_details['id_global'] = global_id.item()
+                    loss_details['id_part'] = part_id_avg.item()
                 else:
-                    if isinstance(score, list):
-                        ID_LOSS = [F.cross_entropy(scor, target) for scor in score[1:]]
-                        ID_LOSS = sum(ID_LOSS) / len(ID_LOSS)
-                        ID_LOSS = 0.5 * ID_LOSS + 0.5 * F.cross_entropy(score[0], target)
-                    else:
-                        ID_LOSS = F.cross_entropy(score, target)
+                    ID_LOSS = ce_fn(score, target)
+                    loss_details['id_global'] = ID_LOSS.item()
 
-                    if isinstance(feat, list):
-                            TRI_LOSS = [triplet(feats, target)[0] for feats in feat[1:]]
-                            TRI_LOSS = sum(TRI_LOSS) / len(TRI_LOSS)
-                            TRI_LOSS = 0.5 * TRI_LOSS + 0.5 * triplet(feat[0], target)[0]
-                    else:
-                            TRI_LOSS = triplet(feat, target, normalize_feature=cfg.SOLVER.TRP_L2)[0]
+                if isinstance(feat, list):
+                    global_tri = triplet(feat[0], target)[0]
+                    part_tris = [triplet(f, target)[0] for f in feat[1:]]
+                    part_tri_avg = sum(part_tris) / len(part_tris)
+                    TRI_LOSS = 0.5 * global_tri + 0.5 * part_tri_avg
+                    loss_details['tri_global'] = global_tri.item()
+                    loss_details['tri_part'] = part_tri_avg.item()
+                else:
+                    TRI_LOSS = triplet(feat, target, normalize_feature=trp_norm)[0]
+                    loss_details['tri_global'] = TRI_LOSS.item()
 
-                    return cfg.MODEL.ID_LOSS_WEIGHT * ID_LOSS + \
-                               cfg.MODEL.TRIPLET_LOSS_WEIGHT * TRI_LOSS
+                total = cfg.MODEL.ID_LOSS_WEIGHT * ID_LOSS + \
+                        cfg.MODEL.TRIPLET_LOSS_WEIGHT * TRI_LOSS
+                loss_details['total'] = total.item()
+
+                # Store details on the loss tensor for the processor to read
+                total._loss_details = loss_details
+                return total
             else:
                 print('expected METRIC_LOSS_TYPE should be triplet'
                       'but got {}'.format(cfg.MODEL.METRIC_LOSS_TYPE))

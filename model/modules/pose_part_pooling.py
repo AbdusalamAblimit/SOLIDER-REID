@@ -68,8 +68,9 @@ class PosePartPooling(nn.Module):
         """
         B, C, fH, fW = feat_map.shape
 
-        # Raw heatmaps are logits with ~40% negative values; clamp to non-negative
-        scene_heatmaps = scene_heatmaps.clamp(min=0)
+        # Raw heatmaps are logits (range ~[-5, +20]); apply sigmoid to normalize
+        # to [0, 1] for stable attention weights under AMP float16
+        scene_heatmaps = torch.sigmoid(scene_heatmaps)
 
         # Resize heatmaps to feature map spatial dims
         if scene_heatmaps.shape[2:] != (fH, fW):

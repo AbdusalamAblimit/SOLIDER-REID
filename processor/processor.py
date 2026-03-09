@@ -48,6 +48,8 @@ def do_train(cfg,
 
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
+    # Per-component loss meters for detailed logging
+    detail_meters = {}
 
     evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM)
     scaler = amp.GradScaler()
@@ -56,6 +58,8 @@ def do_train(cfg,
         start_time = time.time()
         loss_meter.reset()
         acc_meter.reset()
+        for m in detail_meters.values():
+            m.reset()
         evaluator.reset()
         model.train()
 
@@ -103,18 +107,33 @@ def do_train(cfg,
             loss_meter.update(loss.item(), img.shape[0])
             acc_meter.update(acc, 1)
 
+            # Track per-component losses if available
+            if hasattr(loss, '_loss_details'):
+                for k, v in loss._loss_details.items():
+                    if k not in detail_meters:
+                        detail_meters[k] = AverageMeter()
+                    detail_meters[k].update(v, img.shape[0])
+
             torch.cuda.synchronize()
             if cfg.MODEL.DIST_TRAIN:
                 if dist.get_rank() == 0:
                     if (n_iter + 1) % log_period == 0:
                         base_lr = scheduler._get_lr(epoch)[0] if cfg.SOLVER.WARMUP_METHOD == 'cosine' else scheduler.get_lr()[0]
-                        logger.info("Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Base Lr: {:.2e}"
-                                    .format(epoch, (n_iter + 1), len(train_loader), loss_meter.avg, acc_meter.avg, base_lr))
+                        detail_str = ' '.join(f'{k}: {m.avg:.3f}' for k, m in detail_meters.items() if k != 'total')
+                        log_msg = "Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Base Lr: {:.2e}".format(
+                            epoch, (n_iter + 1), len(train_loader), loss_meter.avg, acc_meter.avg, base_lr)
+                        if detail_str:
+                            log_msg += f" | {detail_str}"
+                        logger.info(log_msg)
             else:
                 if (n_iter + 1) % log_period == 0:
                     base_lr = scheduler._get_lr(epoch)[0] if cfg.SOLVER.WARMUP_METHOD == 'cosine' else scheduler.get_lr()[0]
-                    logger.info("Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Base Lr: {:.2e}"
-                                .format(epoch, (n_iter + 1), len(train_loader), loss_meter.avg, acc_meter.avg, base_lr))
+                    detail_str = ' '.join(f'{k}: {m.avg:.3f}' for k, m in detail_meters.items() if k != 'total')
+                    log_msg = "Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Base Lr: {:.2e}".format(
+                        epoch, (n_iter + 1), len(train_loader), loss_meter.avg, acc_meter.avg, base_lr)
+                    if detail_str:
+                        log_msg += f" | {detail_str}"
+                    logger.info(log_msg)
 
         end_time = time.time()
         time_per_batch = (end_time - start_time) / (n_iter + 1)
