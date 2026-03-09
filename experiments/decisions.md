@@ -78,3 +78,34 @@
 5. B 和 C 是更大的改动，作为备选
 
 **具体方案**: exp003 — 移除 1/N scaling，等权拼接 global + parts；或测试只用 part-only 作为最终特征
+
+**执行结果**: exp003 在 ep60 终止，mAP 50.2%（-6.4% vs baseline）。降低 global loss weight 严重伤害 backbone 特征质量。Part 分类器虽学得更快（id_part 2.08 vs exp001 ~3.3），但池化的 backbone 特征变差了。**结论：global 和 part 是共生关系，不能通过削弱 global 来强化 part。**
+
+### [2026-03-09 15:32] 决策 #5
+
+**上下文**: exp001-003 完成。核心发现：
+1. Part pooling 有效（+0.9% mAP with part-only feature）
+2. 归一化方式（sigmoid vs spatial_softmax）无差异
+3. 融合方式：part-only > concat（1/N scaling 有害）
+4. 降低 global weight 反而伤害 part（因为 backbone 质量下降）
+5. id_part 收敛极慢是核心瓶颈（id_part≈2.0 vs id_global≈0.2）
+
+**关键问题**: 如何在不削弱 backbone 的前提下增强 part 学习？
+
+**选项**:
+  A. 独立 Part BN+分类器 + 更高 LR（加速 part 收敛，不改 global loss weight）
+  B. 转向 Direction B：Pose heatmap 作为 attention bias 注入 Swin backbone 中间层（全新方向）
+  C. Part feature 使用更高分辨率特征图（stage2: 24×8 而非 stage3: 12×4）
+  D. 在 Part head 加入额外的 self-attention 层增强 part 特征表达
+  E. 改进 Part 学习信号：per-part triplet loss (GiLt) + part-specific augmentation
+
+**选择**: E — Per-part triplet loss (GiLt)
+**理由**:
+1. Phase 1 中 GiLt 已证明有效（+0.5% on top of PCFC），这次在 pure heatmap 框架下重试
+2. 当前 part triplet 是"所有 part 特征拼起来做一个 triplet"，每个 part 没有独立的 hard positive/negative mining
+3. Per-part triplet 让每个 part 独立学习判别性特征，直接解决 id_part 收敛慢的问题
+4. 最小改动：只改 loss 计算方式，不改 backbone 或 part pooling 模块
+5. 如果 GiLt 有效，可以作为消融实验的重要证据（"per-part triplet vs global triplet"）
+
+**方案 B 作为备选**：如果 GiLt + part pooling 组合无法超过 +1.5% mAP，则转向全新的 backbone attention 方向。
+

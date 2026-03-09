@@ -1,12 +1,13 @@
 """Pose-guided ReID model.
 
 Extends build_transformer with pose-guided part pooling using
-real ViTPose-Huge heatmaps.
+real ViTPose-Huge heatmaps, and optional Pose Feature Modulation (PFM).
 """
 import torch
 import torch.nn as nn
 from .make_model import build_transformer
 from .modules.pose_part_pooling import PosePartPooling
+from .modules.pose_feature_modulation import PoseFeatureModulation
 from .modules.pose_utils import merge_person_heatmaps
 
 
@@ -14,9 +15,11 @@ class PoseReIDModel(build_transformer):
     """ReID model with pose-guided part features.
 
     Architecture:
-    - Swin backbone -> global feature (GAP -> BN -> classifier)
+    - Swin backbone -> feature map
+    - (optional) PFM: pose-conditioned feature modulation
+    - Global feature (GAP -> BN -> classifier)
     - Pose part pooling -> per-part features (soft attention -> BN -> classifier)
-    - Test: concatenate global + part features
+    - Test: configurable feature mode
 
     pose_dict format (from PoseImageDataset collate):
         heatmaps:     (B, MAX_PERSONS, 17, hH, hW)  real model heatmaps
@@ -39,18 +42,38 @@ class PoseReIDModel(build_transformer):
         self.pose_part_weight = cfg.MODEL.POSE_PART_WEIGHT
         self.pose_test_feat = cfg.MODEL.POSE_TEST_FEAT
 
+        # Optional Pose Feature Modulation
+        self.pfm_enabled = getattr(cfg.MODEL, 'POSE_PFM_ENABLED', False)
+        if self.pfm_enabled:
+            self.pfm = PoseFeatureModulation(
+                pose_channels=17,
+                feat_channels=self.in_planes,
+                hidden_dim=getattr(cfg.MODEL, 'POSE_PFM_HIDDEN', 64),
+            )
+
     def forward(self, x, label=None, cam_label=None, view_label=None,
                 pose_dict=None):
         # Backbone forward: global_feat (B, C), featmaps list
         global_feat, featmaps = self.base(x)
 
-        if self.reduce_feat_dim:
-            global_feat = self.fcneck(global_feat)
-
-        feat = self.bottleneck(global_feat)
-        feat_cls = self.dropout(feat)
-
         if self.training:
+            # Get feature map for part pooling and PFM
+            if pose_dict is not None:
+                scene_heatmaps, scene_scores = self._prepare_pose(pose_dict)
+                last_featmap = featmaps[-1]  # (B, 768, 12, 4) for Swin-Tiny
+
+                # Apply PFM if enabled (modulate feat map before pooling)
+                if self.pfm_enabled:
+                    last_featmap = self.pfm(last_featmap, scene_heatmaps)
+                    # Re-compute global feat from modulated feature map
+                    global_feat = last_featmap.mean(dim=(2, 3))  # GAP
+
+            if self.reduce_feat_dim:
+                global_feat = self.fcneck(global_feat)
+
+            feat = self.bottleneck(global_feat)
+            feat_cls = self.dropout(feat)
+
             # Global classification
             if self.ID_LOSS_TYPE in ('arcface', 'cosface', 'amsoftmax', 'circle'):
                 cls_score = self.classifier(feat_cls, label)
@@ -59,8 +82,6 @@ class PoseReIDModel(build_transformer):
 
             # Pose part pooling
             if pose_dict is not None:
-                scene_heatmaps, scene_scores = self._prepare_pose(pose_dict)
-                last_featmap = featmaps[-1]  # (B, 768, 12, 4) for Swin-Tiny
                 part_cls_scores, part_feats, part_valid = self.pose_part(
                     last_featmap, scene_heatmaps, scene_scores)
 
@@ -70,6 +91,21 @@ class PoseReIDModel(build_transformer):
             else:
                 return cls_score, global_feat, featmaps
         else:
+            if pose_dict is not None:
+                scene_heatmaps, scene_scores = self._prepare_pose(pose_dict)
+                last_featmap = featmaps[-1]
+
+                # Apply PFM if enabled
+                if self.pfm_enabled:
+                    last_featmap = self.pfm(last_featmap, scene_heatmaps)
+                    # Re-compute global feat from modulated feature map
+                    global_feat = last_featmap.mean(dim=(2, 3))
+
+            if self.reduce_feat_dim:
+                global_feat = self.fcneck(global_feat)
+
+            feat = self.bottleneck(global_feat)
+
             if self.neck_feat == 'after':
                 test_feat = feat
             else:
@@ -77,8 +113,6 @@ class PoseReIDModel(build_transformer):
 
             # At test time, also extract part features
             if pose_dict is not None:
-                scene_heatmaps, scene_scores = self._prepare_pose(pose_dict)
-                last_featmap = featmaps[-1]
                 _, part_feats, part_valid = self.pose_part(
                     last_featmap, scene_heatmaps, scene_scores)
 

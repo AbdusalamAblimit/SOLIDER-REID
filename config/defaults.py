@@ -91,6 +91,9 @@ _C.MODEL.POSE_HEATMAP_SIZE = [96, 32]  # (H, W) heatmap size from dataloader
 _C.MODEL.POSE_HEATMAP_NORM = 'spatial_softmax'  # 'sigmoid' or 'spatial_softmax'
 _C.MODEL.POSE_TEMPERATURE = 1.0        # temperature for spatial softmax
 _C.MODEL.POSE_TEST_FEAT = 'concat_scaled'  # 'concat_scaled', 'part_only', 'equal_concat'
+# Pose Feature Modulation (PFM)
+_C.MODEL.POSE_PFM_ENABLED = False
+_C.MODEL.POSE_PFM_HIDDEN = 64              # hidden dim in PFM encoder
 
 # -----------------------------------------------------------------------------
 # INPUT
