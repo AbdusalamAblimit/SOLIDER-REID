@@ -22,11 +22,14 @@ class PosePartPooling(nn.Module):
     - Part feature for triplet loss
     """
 
-    def __init__(self, in_channels, num_classes, threshold=0.3):
+    def __init__(self, in_channels, num_classes, threshold=0.3,
+                 heatmap_norm='spatial_softmax', temperature=1.0):
         super().__init__()
         self.in_channels = in_channels
         self.num_parts = NUM_PARTS
         self.threshold = threshold
+        self.heatmap_norm = heatmap_norm
+        self.temperature = temperature
 
         # Per-part BN + classifier
         self.part_bns = nn.ModuleList()
@@ -68,9 +71,10 @@ class PosePartPooling(nn.Module):
         """
         B, C, fH, fW = feat_map.shape
 
-        # Raw heatmaps are logits (range ~[-5, +20]); apply sigmoid to normalize
-        # to [0, 1] for stable attention weights under AMP float16
-        scene_heatmaps = torch.sigmoid(scene_heatmaps)
+        # Normalize raw heatmap logits (range ~[-5, +20])
+        if self.heatmap_norm == 'sigmoid':
+            scene_heatmaps = torch.sigmoid(scene_heatmaps)
+        # For spatial_softmax, we keep raw logits and apply softmax per-part later
 
         # Resize heatmaps to feature map spatial dims
         if scene_heatmaps.shape[2:] != (fH, fW):
@@ -90,10 +94,17 @@ class PosePartPooling(nn.Module):
         gap_feat = feat_map.mean(dim=(2, 3))  # (B, C) fallback
 
         for i in range(self.num_parts):
-            # Soft attention pooling
-            attn = part_heatmaps[:, i:i+1]  # (B, 1, fH, fW)
-            attn_sum = attn.sum(dim=(2, 3), keepdim=True).clamp(min=1e-6)
-            attn_norm = attn / attn_sum  # normalized attention
+            attn = part_heatmaps[:, i]  # (B, fH, fW)
+
+            if self.heatmap_norm == 'spatial_softmax':
+                # Spatial softmax: sharp attention over fH*fW positions
+                attn_flat = attn.view(B, -1) / self.temperature  # (B, fH*fW)
+                attn_norm = F.softmax(attn_flat, dim=1).view(B, 1, fH, fW)
+            else:
+                # Sigmoid: normalize by sum
+                attn = attn.unsqueeze(1)  # (B, 1, fH, fW)
+                attn_sum = attn.sum(dim=(2, 3), keepdim=True).clamp(min=1e-6)
+                attn_norm = attn / attn_sum
 
             # Weighted pooling
             part_feat = (feat_map * attn_norm).sum(dim=(2, 3))  # (B, C)

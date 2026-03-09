@@ -33,6 +33,8 @@ class PoseReIDModel(build_transformer):
             in_channels=self.in_planes,
             num_classes=num_classes,
             threshold=cfg.MODEL.POSE_THRESHOLD,
+            heatmap_norm=cfg.MODEL.POSE_HEATMAP_NORM,
+            temperature=cfg.MODEL.POSE_TEMPERATURE,
         )
         self.pose_part_weight = cfg.MODEL.POSE_PART_WEIGHT
 
