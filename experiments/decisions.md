@@ -51,3 +51,30 @@
 2. Spatial softmax 是最小改动，只改一行代码就能验证 "热图对比度不够" 的假设
 3. 如果 id_part 收敛问题解决，part pooling 可能有更大提升空间
 4. 如果 A 验证后仍不够，则 B 是完全不同的方向，有更大的创新性
+
+**执行结果**: exp002 结果 mAP 57.2% vs exp001 57.1%，几乎无差异。id_part 训练中期收敛更快但最终效果相同。**结论：归一化方式不是瓶颈，转向方案 B。**
+
+### [2026-03-09 14:13] 决策 #4
+
+**上下文**: exp001 和 exp002 结果对比完成。两种归一化方式（sigmoid vs spatial_softmax）效果几乎一致。特征模式消融发现 part-only > concat > global，说明 part 特征有效但融合方式有问题。
+
+**关键发现**:
+1. 两种 normalization 最终 part-only mAP 都是 57.5%（+0.9% vs baseline）
+2. Concat 融合反而比 part-only 差（1/N scaling 稀释信号）
+3. id_part 收敛慢不是 normalization 的问题，而是 12×4 分辨率下 part 区分度本身有限
+
+**选项**:
+  A. 改进 part pooling 的融合方式（如 learnable weights, attention-based fusion）
+  B. 转向 pose heatmap attention bias 注入 Swin backbone 中间层
+  C. 提高 part 特征图分辨率（使用 stage2 特征 24×8）
+
+**选择**: A — 改进特征融合方式。Part 特征已被证明有效（+0.9% mAP），但融合方式拖累了整体效果。这是最直接的改进方向。
+
+**理由**:
+1. Part-only 已经超 baseline 0.9%，说明 part 学到了有用信息
+2. 当前 concat 的 1/N scaling 太朴素，直接稀释了 part 信号
+3. 改进融合方式是低风险高回报：不需要改 backbone，只需修改测试时的特征组合
+4. 如果简单的融合改进有效，可以作为消融实验的重要证据
+5. B 和 C 是更大的改动，作为备选
+
+**具体方案**: exp003 — 移除 1/N scaling，等权拼接 global + parts；或测试只用 part-only 作为最终特征

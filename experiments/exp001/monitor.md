@@ -359,3 +359,20 @@
 - 探索 pose heatmap 作为 attention bias 直接注入 Swin 的方式（不通过 part pooling）
 - 测试不同的 part 分组策略和权重配置
 
+---
+### [12:31] 补充测试 — 特征模式消融
+
+使用 ep120 权重，分别用 global-only、part-only、concat 三种特征做评估：
+
+| 特征模式 | mAP | R1 | R5 | R10 |
+|----------|-----|----|----|-----|
+| global only | 57.1% | 66.7% | 78.5% | 83.0% |
+| part only (5 parts scaled) | **57.5%** | **67.1%** | **79.1%** | **83.5%** |
+| concat (global + parts) | 57.2% | 66.6% | 78.5% | 83.0% |
+
+**关键发现**:
+1. **Part 特征单独使用反而最好**（mAP 57.5%, R1 67.1%），比 global 高 +0.4%/+0.4%
+2. Concat 效果 ≈ global，说明 `1/N` scaling 把 part 信号稀释了
+3. 之前报告的 "最终结果 mAP 57.1%, R1 66.7%" 实际上是 concat 模式的结果，part-only 还能再高 0.4%
+4. 这证明 part 分类器确实学到了有用信息，但 concat 融合方式需要改进（如 learnable weights 或等权拼接）
+
