@@ -29,17 +29,39 @@ class PoseBackboneModel(build_transformer):
     def __init__(self, num_classes, camera_num, view_num, cfg, factory, semantic_weight):
         super().__init__(num_classes, camera_num, view_num, cfg, factory, semantic_weight)
 
-        # Create PSG modules for stage 3 blocks
-        stage3 = self.base.stages[-1]
-        num_blocks = len(stage3.blocks)
-        self.psg_modules = nn.ModuleList([
-            PoseSpatialGate(
-                pose_channels=17,
-                feat_channels=self.in_planes,  # 768 for Swin-Tiny
-                hidden_dim=getattr(cfg.MODEL, 'POSE_PFM_HIDDEN', 64),
-            )
-            for _ in range(num_blocks)
-        ])
+        # Determine which stages get PSG
+        psg_stages = list(getattr(cfg.MODEL, 'POSE_PSG_STAGES', [-1]))
+        num_backbone_stages = len(self.base.stages)
+        # Resolve negative indices
+        self.psg_stage_indices = set()
+        for s in psg_stages:
+            idx = s if s >= 0 else num_backbone_stages + s
+            self.psg_stage_indices.add(idx)
+
+        hidden_dim = getattr(cfg.MODEL, 'POSE_PFM_HIDDEN', 64)
+
+        # Create PSG modules for each configured stage
+        # Use ModuleDict keyed by "stage{i}_block{j}"
+        self.psg_modules_dict = nn.ModuleDict()
+        for stage_idx in sorted(self.psg_stage_indices):
+            stage = self.base.stages[stage_idx]
+            feat_ch = self.base.num_features[stage_idx]
+            for block_idx in range(len(stage.blocks)):
+                key = f's{stage_idx}_b{block_idx}'
+                self.psg_modules_dict[key] = PoseSpatialGate(
+                    pose_channels=17,
+                    feat_channels=feat_ch,
+                    hidden_dim=hidden_dim,
+                )
+
+        # Backward compatibility: also keep psg_modules list for Stage 3
+        # (used by PosePSGPartModel which accesses self.psg_modules)
+        last_stage_idx = num_backbone_stages - 1
+        if last_stage_idx in self.psg_stage_indices:
+            self.psg_modules = nn.ModuleList([
+                self.psg_modules_dict[f's{last_stage_idx}_b{j}']
+                for j in range(len(self.base.stages[last_stage_idx].blocks))
+            ])
 
         # Store backbone's semantic weight for manual forward
         self._semantic_weight_val = semantic_weight
@@ -69,13 +91,13 @@ class PoseBackboneModel(build_transformer):
         num_stages = len(self.base.stages)
 
         for i, stage in enumerate(self.base.stages):
-            if i < num_stages - 1:
-                # Stages 0 to N-2: run normally
-                x, hw_shape, out, out_hw_shape = stage(x, hw_shape)
-            else:
-                # Last stage (Stage 3): manually run blocks with PSG
+            if i in self.psg_stage_indices:
+                # Stage with PSG: manually run blocks with gate injection
                 x, hw_shape, out, out_hw_shape = self._run_stage_with_psg(
-                    stage, x, hw_shape, scene_heatmaps)
+                    stage, x, hw_shape, scene_heatmaps, stage_idx=i)
+            else:
+                # Normal stage: run without modification
+                x, hw_shape, out, out_hw_shape = stage(x, hw_shape)
 
             # Apply semantic weight (from SOLIDER pretraining)
             if sem_weight is not None:
@@ -97,14 +119,15 @@ class PoseBackboneModel(build_transformer):
 
         return global_feat, outs
 
-    def _run_stage_with_psg(self, stage, x, hw_shape, scene_heatmaps):
+    def _run_stage_with_psg(self, stage, x, hw_shape, scene_heatmaps, stage_idx=None):
         """Run a stage's blocks with PSG insertion after each block."""
         for block_idx, block in enumerate(stage.blocks):
             x = block(x, hw_shape)
 
             # Apply PSG after each block
             if scene_heatmaps is not None:
-                x = self.psg_modules[block_idx](x, hw_shape, scene_heatmaps)
+                key = f's{stage_idx}_b{block_idx}'
+                x = self.psg_modules_dict[key](x, hw_shape, scene_heatmaps)
 
         # Handle downsample (Stage 3 has no downsample in Swin)
         if stage.downsample:
