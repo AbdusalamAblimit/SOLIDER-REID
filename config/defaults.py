@@ -96,6 +96,9 @@ _C.MODEL.POSE_PART_STAGE = -1              # which backbone stage for part pooli
 _C.MODEL.POSE_PFM_ENABLED = False
 _C.MODEL.POSE_PFM_HIDDEN = 64              # hidden dim in PFM encoder
 
+# Pose Backbone Injection (PSG)
+_C.MODEL.POSE_BACKBONE_PSG = False          # use PoseBackboneModel instead of PoseReIDModel
+
 # -----------------------------------------------------------------------------
 # INPUT
 # -----------------------------------------------------------------------------
