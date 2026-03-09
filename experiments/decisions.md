@@ -35,3 +35,19 @@
 - 冻结的 pose 模型提取特征 → 通过 cross-attention 注入 Swin 中间层
 - Pose heatmap 作为 spatial attention bias 直接修改 window attention
 - Pose 骨骼结构约束 part features 之间的关系
+
+### [2026-03-09 11:55] 决策 #3
+
+**上下文**: exp001 (Pose Part Pooling with sigmoid) 完成。结果：mAP 57.1% (+0.5%), R1 66.7% (+0.2%)。有效但提升有限。关键发现：id_part 收敛极慢（最终仍在 2.0 vs id_global 0.2），说明 sigmoid 热图在 12×4 分辨率的 soft attention pooling 不够 discriminative。
+
+**选项**:
+  A. 改进 part pooling：使用 spatial softmax 代替 sigmoid，增强热图峰值对比度
+  B. 放弃 part pooling，转向 pose heatmap 作为 attention bias 注入 Swin backbone
+  C. 使用更高分辨率的中间层特征（stage2: 24×8 而非 stage3: 12×4）
+
+**选择**: 先试 A（spatial softmax 改进），如果 id_part 收敛改善但最终结果仍有限，再转 B
+**理由**:
+1. exp001 证明 part pooling 方向有效（+0.5% mAP），但 id_part 是瓶颈
+2. Spatial softmax 是最小改动，只改一行代码就能验证 "热图对比度不够" 的假设
+3. 如果 id_part 收敛问题解决，part pooling 可能有更大提升空间
+4. 如果 A 验证后仍不够，则 B 是完全不同的方向，有更大的创新性

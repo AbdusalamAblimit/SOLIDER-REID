@@ -7,6 +7,7 @@
 | ID | 方法 | mAP | R-1 | R-5 | R-10 | vs Baseline | 备注 |
 |----|------|-----|-----|-----|------|-------------|------|
 | 000 | Baseline (SOLIDER-Swin-Tiny, SW=0.2) | 56.6% | 66.5% | 79.4% | 83.4% | — | 120 epoch, 完美复现 |
+| 001 | + Pose Part Pooling (sigmoid, 5 parts) | 57.1% | 66.7% | 78.4% | 83.0% | mAP+0.5%, R1+0.2% | Part 分类器收敛慢(id_part≈2.0 vs id_global≈0.2) |
 
 ### +NFC 结果（如适用）
 
