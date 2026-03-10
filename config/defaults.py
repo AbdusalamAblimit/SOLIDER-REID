@@ -104,6 +104,8 @@ _C.MODEL.POSE_ATTN_BIAS = False             # use Pose Attention Bias (PAB) inst
 _C.MODEL.POSE_PSG_PAB_COMBO = False         # use both PSG + PAB simultaneously
 _C.MODEL.POSE_PSG_SPATIAL = False           # use 3x3 depthwise conv in PSG gate
 _C.MODEL.POSE_GUIDED_ERASING = False        # use pose-guided erasing instead of random erasing
+_C.MODEL.POSE_CHANNEL_GATE = False          # use Pose-Conditioned Channel Gate (PCG) after GAP
+_C.MODEL.POSE_PCG_HIDDEN = 64              # hidden dim in PCG MLP
 
 # -----------------------------------------------------------------------------
 # INPUT

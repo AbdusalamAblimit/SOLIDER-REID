@@ -448,5 +448,23 @@ PSG Stage 3 (mAP 58.3%) 是确认的性能上限。所有尝试过的改进方�
   D. 测试端优化: 基于 PSG 的 NFC/Re-ranking
   E. 跨步思考: 不再改 PSG，而是替换整个 Part Pooling 方案
 
-**选择**: 待定，需要更深入思考
+**选择**: 先尝试 Pose-Conditioned Channel Gate (PCG)——在 GAP 后做通道级 pose gating，与 PSG 的空间级正交
+
+**执行结果**: exp017 完成。PCG 与 exp007 基本持平（mAP 58.0% vs 58.3%，-0.3%）。证实了通道级正交操作不干扰 PSG（不像之前的 combo 实验那样降性能），但 GAP 后的 pose 信息太弱无法提供额外收益。
+
+### [2026-03-10 17:25] 决策 #18
+
+**上下文**: exp017 PCG 中性结果。17 个实验的总结：
+- PSG 58.3% 仍是最佳，所有扩展都无法超越
+- **新发现**: 正交维度操作不干扰 PSG（PCG 仅 -0.3%），但空间级操作干扰 PSG（PAB combo -0.7%, Part pooling -0.6%）
+- 这说明 PSG 的空间 gating 格局已定，但通道维度仍有空间
+
+**关键洞察**: PCG 失败是因为 GAP 压缩了空间信息。如果在 GAP **之前** 做通道调制（保留空间信息），可能有效。
+
+**选项**:
+  A. SE-style Pose Channel Attention (在 GAP 前) — 用 pose 热图生成通道权重，应用到 feature map 上（空间信息还在）
+  B. PCG-only (无 PSG) — 验证 PCG 单独效果，排除 PSG 已经做了足够 conditioning 的可能
+  C. 完全新方向：跳出 PSG 框架
+
+**选择**: 待定
 

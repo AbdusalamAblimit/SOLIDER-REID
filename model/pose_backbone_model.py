@@ -12,6 +12,7 @@ import torch.nn.functional as F
 from .make_model import build_transformer
 from .modules.pose_spatial_gate import PoseSpatialGate
 from .modules.pose_attention_bias import PoseAttentionBias
+from .modules.pose_channel_gate import PoseChannelGate
 from .modules.pose_utils import merge_person_heatmaps
 
 
@@ -103,6 +104,17 @@ class PoseBackboneModel(build_transformer):
                     self.psg_modules_dict[f's{last_stage_idx}_b{j}']
                     for j in range(len(self.base.stages[last_stage_idx].blocks))
                 ])
+
+        # Pose-Conditioned Channel Gate (PCG) — after GAP, before BN
+        self.use_channel_gate = getattr(cfg.MODEL, 'POSE_CHANNEL_GATE', False)
+        if self.use_channel_gate:
+            pcg_hidden = getattr(cfg.MODEL, 'POSE_PCG_HIDDEN', 64)
+            feat_dim = self.in_planes  # 768 for Swin-Tiny
+            self.channel_gate = PoseChannelGate(
+                feat_dim=feat_dim,
+                pose_channels=17,
+                hidden_dim=pcg_hidden,
+            )
 
         # Store backbone's semantic weight for manual forward
         self._semantic_weight_val = semantic_weight
@@ -198,6 +210,10 @@ class PoseBackboneModel(build_transformer):
 
         # Run backbone with PSG injection
         global_feat, featmaps = self._run_backbone_with_psg(x, scene_heatmaps)
+
+        # Apply Pose-Conditioned Channel Gate (PCG) after GAP, before BN
+        if self.use_channel_gate and scene_heatmaps is not None:
+            global_feat = self.channel_gate(global_feat, scene_heatmaps)
 
         if self.reduce_feat_dim:
             global_feat = self.fcneck(global_feat)
