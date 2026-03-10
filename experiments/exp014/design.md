@@ -1,39 +1,39 @@
-# 实验 exp014: PSG + GiLt (Per-Part Triplet Loss)
+# 实验 exp014: PSG + Auxiliary Part Supervision (训练时 part loss, 测试时 global)
 
 ## 动机
 - PSG backbone injection 是当前最佳方法 (+1.7% mAP)
 - 但训练信号仍是标准 ID+triplet loss，没有部件级监督
-- Phase 1 中 GiLt 在 PCFC 基础上额外 +0.5% mAP，说明 per-part triplet 能提供正交增益
-- 所有之前在 PSG 上叠加更多 backbone 模块的尝试（PAB、multi-stage、part pooling）都失败了，因为模块间会互相干扰
-- **Loss 级的改进是正交方向，不会改变 backbone 的 forward pass，只提供额外梯度信号**
+- exp008 (PSG+Part) 用 part_only 测试时 mAP 57.7%，低于 PSG-only 58.3%
+- **核心问题**: exp008 失败是因为 part features 不够好，还是因为 part_only 测试丢弃了 PSG global feature？
+- 如果只在训练时用 part supervision 提供辅助梯度，测试时保留 PSG global feature，能否两者兼得？
 
 ## 创新点 / 核心想法
-- **假设**: 在 PSG 增强的特征图上做 pose-guided part pooling + per-part triplet loss，让 backbone 不仅整体判别，还学习部件级判别性
-- 与 exp008 (PSG+Part Pooling) 的区别：exp008 使用 part features 做 **测试**（part-only test），而 exp014 只用 part triplet 做 **训练**，测试仍用 PSG global feature
-- 关键区别：GiLt 只在训练时给梯度，不改变测试时的特征提取流程
+- **假设**: 训练时的 part-level supervision（ID + triplet）能给 backbone 提供更细粒度的梯度，提升 PSG global feature 的质量
+- 与 exp008 的唯一区别：`POSE_TEST_FEAT` 从 `part_only` 改为 `global`
+- 本质是：exp008 相同训练，只改测试特征。验证"auxiliary part supervision 是否提升 global feature"
 
 ## 技术方案
-- 基于 exp007 PSG backbone model
-- 在 Stage 3 输出的 PSG-enhanced feature 上加 pose part pooling（复用 exp001 的 PosePartHead）
-- 训练时：全局 ID loss + 全局 triplet + per-part triplet (GiLt)
-- 测试时：只用 PSG global feature（不用 part features）
-- 新增参数：Part pooling head（~2.6M，但测试时不用）
+- 使用 `PosePSGPartModel`（与 exp008 完全相同的模型）
+- 训练时：id_global + id_part + tri_global + tri_part（4 个 loss 分量）
+- 测试时：只用 PSG global feature（POSE_TEST_FEAT='global'）
+- 新增参数：Part pooling head（~2.6M，测试时不参与推理）
 
-### 修改文件
-1. `model/pose_backbone_model.py` — 加入 part head（训练用）
-2. `processor/processor.py` — 加入 per-part triplet loss 计算
-3. `configs/occluded_duke/pose_psg_gilt.yml` — 新配置
+### 已知局限
+1. **part_valid mask 未进入 loss**: 无效 part 用 GAP fallback 回填后仍参与 loss，等效于重复 global supervision
+2. **Scene-level merged heatmap**: part pooling 用的是多人合并热图，不是单人热图（与 PSG 一致）
+3. **Part 定义**: head, upper_torso, arms, lower_torso, legs（见 `model/modules/pose_utils.py` PART_GROUPS）
 
 ### 关键超参数
-- part_triplet_weight: 1.0（与全局 triplet 同权）
-- part_count: 5 (head, torso, upper_legs, lower_legs, feet)
-- PSG hidden_dim: 64（与 exp007 相同）
-- 测试特征: global only（不用 part）
+- POSE_PART_WEIGHT: 1.0（id_part 与 id_global 等权）
+- POSE_PART_TRI_WEIGHT: 1.0（tri_part 与 tri_global 等权）
+- 其余与 exp007/exp008 完全一致
 
 ## 预期结果
-- 如果假设成立：mAP 58.5-59.0%（在 PSG 58.3% 基础上 +0.2-0.7%）
-- 如果失败：最可能原因是 per-part triplet 的梯度与 PSG gate 的梯度冲突
+- 如果 exp014 > exp007: part supervision 确实给 PSG global feature 带来正向梯度增益
+- 如果 exp014 ≈ exp007: part supervision 梯度被 global supervision 淹没，无额外价值
+- 如果 exp014 < exp007: part supervision 梯度与 PSG gate 梯度冲突
 
 ## 对照组
 - Baseline 对照: exp007 (PSG-only, mAP 58.3%)
-- 消融变量: 仅增加 GiLt loss，其他不变
+- 额外对照: exp008 (PSG+Part, part_only test, mAP 57.7%)
+- 消融变量: POSE_TEST_FEAT 从 'part_only' (exp008) 改为 'global' (exp014)

@@ -378,3 +378,35 @@ PSG Stage 3 (mAP 58.3%) 是确认的性能上限。所有尝试过的改进方�
 5. 实现简单：在 PSG 增强的特征图上做 pose-guided part pooling，然后每个 part 独立 triplet loss
 6. 论文价值：训练信号层面的 pose 利用，与 backbone 层面的 PSG 互补
 
+**执行结果**: 用户指出 exp014 与 exp008 训练完全相同，直接加载 exp008 checkpoint 做 global test 即可。结果：mAP 57.6%, R1 65.8%。**比 PSG-only 低 0.7% mAP, 2.1% R1。Part supervision 确实损害了 PSG global feature。** "loss 级正交改进"的假设不成立——part supervision 的梯度回传到 backbone 时会干扰 PSG gate 的学习。
+
+### [2026-03-10 10:40] 决策 #15
+
+**上下文**: 14 个实验完成。完整总结：
+- **有效**: PSG Stage 3 only (+1.7% mAP) — 唯一突破
+- **弱正**: PAB (+0.8%), Part Pooling (+0.9%)
+- **所有组合尝试都失败**: PSG+Part, PSG+PAB, PSG+Part(global test)
+- **训练策略**: Multi-stage 无效, Freeze 灾难, 200ep 无效
+
+**关键规律**: 任何修改 PSG 训练时梯度流的改动都会降低 PSG 效果。PSG 的 58.3% 是"全局 ID+triplet + pose spatial gating"的最优解。
+
+**战略性反思**: 继续在 PSG 基础上小修小补已经穷尽了选项。需要跳出"在 backbone 里加东西"的思路。
+
+**选项**:
+  A. PSG 机制改进 — 3×3 depthwise conv, channel attention (仍在 backbone 内部)
+  B. Test-time 改进 — NFC/re-ranking (不是训练端创新)
+  C. PSG + Pose-Guided Data Augmentation — 训练数据层面的 pose 利用
+  D. 全新方向: Pose-Guided Feature Disentangling — 用 PSG feature 做 pose/appearance 解耦
+  E. 全新方向: Pose-Conditioned Contrastive Learning — pose 相似的样本对应更严格的判别要求
+
+**选择**: C — PSG + Pose-Guided Data Augmentation (Pose-Aware Random Erasing)
+
+**理由**:
+1. **真正正交**: 数据增强在 forward pass 之前发生，不改变 backbone 梯度流
+2. 当前 Random Erasing 随机擦除图像区域，但不考虑姿态信息
+3. Pose-Aware RE: 根据 pose heatmap 偏向擦除"可见"部位，保留"已遮挡"部位，模拟更现实的遮挡模式
+4. 或者反过来：保护"关键"部位（如头部、上身），只擦除非关键区域
+5. 这个方向对 Occluded-Duke 特别有意义——训练时学习应对各种遮挡模式
+6. 实现简单，只需修改 data augmentation pipeline
+7. 对论文有价值："pose-guided occlusion augmentation" 是一个清晰的贡献
+
