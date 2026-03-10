@@ -280,3 +280,37 @@
 6. 如果 120→200 epochs 带来 0.5-1% 的额外提升，说明 PSG 确实需要更长训练
 7. 对论文也有价值：可以报告"our method continues to improve with longer training"
 
+**执行结果**: exp011 最终 mAP 58.3%, R1 67.6%。与 exp007 (120ep) 完全相同的 mAP，75% 更多训练时间无收益。**结论：PSG 的性能上限由架构决定（~58.3% mAP），120ep 已足够。需要架构创新来突破。**
+
+### [2026-03-10 05:48] 决策 #12
+
+**上下文**: Phase 2 实验全面总结（11 个实验）：
+- **有效**: PSG Stage 3 (+1.7%), Part Pooling (+0.9%)
+- **无效/中性**: Multi-stage PSG (=), PFM (=), Stage 2 Parts (❌), Part-Dominant (❌)
+- **有害**: Freeze Warmup (❌❌)
+- **无收益**: 200ep extended training (=)
+
+PSG Stage 3 (mAP 58.3%) 是确认的性能上限。所有尝试过的改进方向都无法突破这个上限。需要全新的方法。
+
+**核心反思**: 当前 PSG 是一个简单的 spatial gate (17→64→768 的 1×1 conv)。它做的是"根据 pose heatmap 在空间维度上调制特征"。这个方法的局限性：
+1. 1×1 conv 没有空间感受野 — 每个位置独立处理，不考虑邻域关系
+2. 纯 channel-wise output — gate 对每个 channel 产生相同的 spatial weight
+3. 不影响 self-attention — PSG 在 SwinBlock 之后作用，不改变 attention 计算
+4. 单向信息流 — pose → feature，没有 feature → pose 的反馈
+
+**选项**:
+  A. Pose-Conditioned Self-Attention (PCA) — 将 pose 信息注入 Swin 的 self-attention 中（如 attention bias, KV 修改）
+  B. PSG 3x3 conv — 在 PSG 中加 3×3 conv（depthwise），让 gate 有空间感受野
+  C. Channel Attention PSG — 在 spatial gate 基础上加 channel attention (SE-style)
+  D. PSG + Global-Part Concat Test — 测试时 concat PSG-global + part features（非 part_only）
+  E. Label Smoothing / Stronger Augmentation — 训练技巧改进
+
+**选择**: A — Pose-Conditioned Self-Attention (PCA)
+
+**理由**:
+1. **最高创新潜力**: 修改 self-attention 是比 post-block gate 更深层的干预，直接改变信息交互模式
+2. **论文故事**: "从 post-hoc pooling → post-block gating → attention-level injection" 构成清晰的技术递进
+3. 实现方式：将 pose heatmap 编码为 attention bias，加到 Swin 的 window attention 分数上
+4. 这改变了 token 之间的 attention 权重，比只改变 token 值（PSG 的做法）更根本
+5. 如果 PCA > PSG，这是一个强有力的消融证据
+
