@@ -21,6 +21,7 @@ Each .npz contains:
 import os
 import json
 import argparse
+import subprocess
 import numpy as np
 import torch
 from PIL import Image
@@ -32,6 +33,71 @@ from mmpose.structures.bbox import bbox_xyxy2cs
 from mmengine.registry import DefaultScope
 
 PERSON_LABEL = 0  # COCO person class
+
+# Download URLs for pretrained models
+PRETRAINED_URLS = {
+    'rtmdet_s_8xb32-300e_coco_20220905_161602-387a891e.pth':
+        'https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet_s_8xb32-300e_coco/rtmdet_s_8xb32-300e_coco_20220905_161602-387a891e.pth',
+    'td-hm_ViTPose-huge_8xb64-210e_coco-256x192-e32adcd4_20230314.pth':
+        'https://download.openmmlab.com/mmpose/v1/body_2d_keypoint/topdown_heatmap/coco/td-hm_ViTPose-huge_8xb64-210e_coco-256x192-e32adcd4_20230314.pth',
+}
+
+
+def ensure_pretrained(args):
+    """Download pretrained model files if they don't exist."""
+    os.makedirs(os.path.dirname(args.det_config) or 'pretrained', exist_ok=True)
+
+    files_to_check = [
+        (args.det_config, 'RTMDet-s config'),
+        (args.det_checkpoint, 'RTMDet-s checkpoint'),
+        (args.pose_config, 'ViTPose-Huge config'),
+        (args.pose_checkpoint, 'ViTPose-Huge checkpoint'),
+    ]
+
+    for fpath, desc in files_to_check:
+        if os.path.exists(fpath):
+            continue
+
+        fname = os.path.basename(fpath)
+
+        # Try download URL for checkpoint files
+        if fname in PRETRAINED_URLS:
+            url = PRETRAINED_URLS[fname]
+            print(f"Downloading {desc}: {fname} ...")
+            subprocess.run(
+                ['wget', '-q', '--show-progress', '-O', fpath, url],
+                check=True)
+            print(f"  Saved to {fpath}")
+
+        # For config .py files, use mim to dump config
+        elif fname.endswith('.py'):
+            # Try to find from mim
+            if 'rtmdet' in fname:
+                pkg, model = 'mmdet', 'rtmdet_s_8xb32-300e_coco'
+            elif 'ViTPose' in fname:
+                pkg, model = 'mmpose', 'td-hm_ViTPose-huge_8xb64-210e_coco-256x192'
+            else:
+                raise FileNotFoundError(
+                    f"Missing {desc}: {fpath}. Please provide it manually.")
+            print(f"Downloading {desc} via mim: {model} ...")
+            dest_dir = os.path.dirname(fpath) or '.'
+            subprocess.run(
+                ['mim', 'download', pkg, '--config', model, '--dest', dest_dir],
+                check=True)
+            # mim may download both config and checkpoint; rename if needed
+            if not os.path.exists(fpath):
+                # Try to find downloaded config
+                for f in os.listdir(dest_dir):
+                    if f.endswith('.py') and model.split('_')[0] in f:
+                        os.rename(os.path.join(dest_dir, f), fpath)
+                        break
+            if not os.path.exists(fpath):
+                raise FileNotFoundError(
+                    f"Failed to download {desc}. Please download manually to {fpath}")
+            print(f"  Saved to {fpath}")
+        else:
+            raise FileNotFoundError(
+                f"Missing {desc}: {fpath}. Please download manually.")
 
 
 def parse_args():
@@ -146,6 +212,9 @@ def compute_crop_bounds(bbox, padding=1.25, input_size=(192, 256)):
 
 def main():
     args = parse_args()
+
+    # Auto-download pretrained models if missing
+    ensure_pretrained(args)
 
     print("Loading RTMDet-s for person detection...")
     det_model = init_detector(args.det_config, args.det_checkpoint,
