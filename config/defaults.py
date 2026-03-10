@@ -103,6 +103,7 @@ _C.MODEL.POSE_PSG_STAGES = [-1]             # which stages to inject PSG (e.g. [
 _C.MODEL.POSE_ATTN_BIAS = False             # use Pose Attention Bias (PAB) instead of PSG
 _C.MODEL.POSE_PSG_PAB_COMBO = False         # use both PSG + PAB simultaneously
 _C.MODEL.POSE_PSG_SPATIAL = False           # use 3x3 depthwise conv in PSG gate
+_C.MODEL.POSE_GUIDED_ERASING = False        # use pose-guided erasing instead of random erasing
 
 # -----------------------------------------------------------------------------
 # INPUT

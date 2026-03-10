@@ -79,6 +79,7 @@ def make_dataloader(cfg):
             pixel_mean=cfg.INPUT.PIXEL_MEAN,
             pixel_std=cfg.INPUT.PIXEL_STD,
             heatmap_size=hm_size,
+            pose_guided_erasing=getattr(cfg.MODEL, 'POSE_GUIDED_ERASING', False),
         )
 
         train_set = PoseImageDataset(

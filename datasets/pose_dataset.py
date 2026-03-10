@@ -29,6 +29,15 @@ FLIP_PAIRS = [
     (13, 14), (15, 16),   # knees, ankles
 ]
 
+# Body part groups for Pose-Guided Erasing (COCO 17 keypoints)
+PGE_BODY_PARTS = [
+    [0, 1, 2, 3, 4],       # head (nose, eyes, ears)
+    [5, 7, 9],              # left arm (left shoulder, elbow, wrist)
+    [6, 8, 10],             # right arm (right shoulder, elbow, wrist)
+    [5, 6, 11, 12],         # torso (shoulders + hips)
+    [13, 14, 15, 16],       # legs (knees, ankles)
+]
+
 MAX_PERSONS = 6
 
 
@@ -48,7 +57,8 @@ class PoseImageDataset(Dataset):
                  pixel_mean=(0.5, 0.5, 0.5),
                  pixel_std=(0.5, 0.5, 0.5),
                  heatmap_size=None,
-                 max_persons=MAX_PERSONS):
+                 max_persons=MAX_PERSONS,
+                 pose_guided_erasing=False):
         """
         Args:
             dataset: list of (img_path, pid, camid, trackid)
@@ -62,6 +72,7 @@ class PoseImageDataset(Dataset):
             pixel_mean/pixel_std: image normalization params
             heatmap_size: (H, W) final heatmap size; None = same as img_size
             max_persons: max persons to return per image
+            pose_guided_erasing: if True, use pose-guided erasing instead of RE
         """
         self.dataset = dataset
         self.img_size = img_size
@@ -73,6 +84,7 @@ class PoseImageDataset(Dataset):
         self.pixel_std = torch.tensor(pixel_std, dtype=torch.float32).view(3, 1, 1)
         self.heatmap_size = heatmap_size or img_size
         self.max_persons = min(max_persons, MAX_PERSONS)
+        self.pose_guided_erasing = pose_guided_erasing and is_train
 
         # Load index
         index_path = os.path.join(pose_dir, 'index.json')
@@ -123,10 +135,15 @@ class PoseImageDataset(Dataset):
         # 4) Convert image to tensor + normalize
         img_tensor = self._image_to_tensor(img)
 
-        # 5) Random erasing (image only; zero keypoint scores in erased region)
+        # 5) Erasing: Pose-Guided Erasing (PGE) or Random Erasing (RE)
         erase_box = None
+        erased_channels = None
         if self.is_train and random.random() < self.re_prob:
-            img_tensor, erase_box = self._random_erase(img_tensor)
+            if self.pose_guided_erasing and persons:
+                img_tensor, erase_box, erased_channels = \
+                    self._pose_guided_erase(img_tensor, persons)
+            else:
+                img_tensor, erase_box = self._random_erase(img_tensor)
 
         if erase_box is not None:
             ex1, ey1, ex2, ey2 = erase_box
@@ -135,6 +152,13 @@ class PoseImageDataset(Dataset):
                 in_box = ((kp[:, 0] >= ex1) & (kp[:, 0] < ex2) &
                           (kp[:, 1] >= ey1) & (kp[:, 1] < ey2))
                 p['scores'][in_box] = 0.0
+
+        # For PGE, zero heatmap channels only within the erased spatial region
+        if erased_channels is not None and erase_box is not None:
+            ex1, ey1, ex2, ey2 = erase_box
+            for p in persons:
+                for ch in erased_channels:
+                    p['heatmap'][ch, ey1:ey2, ex1:ex2] = 0.0
 
         # ---- Assemble output tensors ----
         hm_h, hm_w = self.heatmap_size
@@ -366,6 +390,52 @@ class PoseImageDataset(Dataset):
                 return img_tensor, (ex, ey, ex + ew, ey + eh)
 
         return img_tensor, None
+
+    def _pose_guided_erase(self, img_tensor, persons):
+        """Pose-guided erasing: erase a body part region based on pose.
+
+        Selects a random body part group, computes the bounding box from
+        keypoints of person 0, and erases that region with random noise.
+
+        Returns:
+            (img_tensor, erase_box_or_None, erased_channels_or_None)
+        """
+        _, h, w = img_tensor.shape
+        p0 = persons[0]
+        kp = p0['kp']       # (17, 2) in pixel coords
+        scores = p0['scores']  # (17,)
+
+        # Randomly select a body part group
+        group = random.choice(PGE_BODY_PARTS)
+
+        # Get valid keypoints for this group (score > 0.3)
+        group_indices = np.array(group)
+        valid = scores[group_indices] > 0.3
+        if valid.sum() < 2:
+            # Not enough keypoints detected, fall back to random erase
+            result, box = self._random_erase(img_tensor)
+            return result, box, None
+
+        valid_kps = kp[group_indices][valid]  # (n_valid, 2)
+
+        # Compute bounding box with margin
+        margin_x = int(w * 0.15)  # ~19px for 128w
+        margin_y = int(h * 0.08)  # ~31px for 384h
+        x1 = max(0, int(valid_kps[:, 0].min()) - margin_x)
+        y1 = max(0, int(valid_kps[:, 1].min()) - margin_y)
+        x2 = min(w, int(valid_kps[:, 0].max()) + margin_x)
+        y2 = min(h, int(valid_kps[:, 1].max()) + margin_y)
+
+        box_h = y2 - y1
+        box_w = x2 - x1
+        if box_h < 5 or box_w < 5:
+            result, box = self._random_erase(img_tensor)
+            return result, box, None
+
+        # Fill erased region with random noise
+        img_tensor[:, y1:y2, x1:x2] = torch.empty(3, box_h, box_w).normal_()
+
+        return img_tensor, (x1, y1, x2, y2), group
 
 
 # ------------------------------------------------------------------
