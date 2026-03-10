@@ -347,3 +347,34 @@ PSG Stage 3 (mAP 58.3%) 是确认的性能上限。所有尝试过的改进方�
 4. 如果组合有效，这构成了"多层次姿态注入"的创新点（attention + feature + pooling 三个层面）
 5. 如果组合无效（像 exp008 一样），也提供了重要消融证据
 
+**执行结果**: exp013 最终 mAP 57.6%, R1 67.2%。**组合未能超越 PSG-only (-0.7% mAP, -0.7% R1)**。与 exp008 类似的规律：两种 pose 注入方式在同一层（Stage 3）互相干扰。PAB 修改了 attention 分布导致 PSG 基于的特征分布发生变化，PSG 的 gate 不再最优。**结论：单一高质量 pose 注入点（PSG）比多个中等质量注入点更好。**
+
+### [2026-03-10 10:15] 决策 #14
+
+**上下文**: 13 个实验完成。Phase 2 的 backbone injection 方向已充分探索：
+- PSG Stage 3 only: +1.7% mAP (exp007) ← BEST
+- Multi-stage PSG: 无额外收益 (exp009)
+- PAB: +0.8% mAP (exp012)
+- PSG + PAB combo: +1.0% mAP (exp013，不如 PSG alone)
+- PSG + Part Pooling: +1.1% mAP (exp008，不如 PSG alone)
+- Extended training: 无收益 (exp011)
+
+**核心认知**: PSG 的 58.3% 性能上限是由**pose heatmap 本身的信息量**和**Stage 3 的 2 个 block**共同决定的。在 backbone 内部叠加更多 pose 模块只会互相干扰。
+
+**选项**:
+  A. 转向训练策略创新 — 新的 loss function（如 pose-guided contrastive loss）
+  B. 转向推理端改进 — pose-guided re-ranking 或 NFC
+  C. PSG 内部机制改进 — 3×3 depthwise conv, channel attention
+  D. 全新方向 — 如 Pose-Guided Token Pruning, Pose-aware MixUp
+  E. PSG + 不同 loss 组合 — 如 per-part triplet loss (GiLt) 在 PSG backbone 上
+
+**选择**: E — PSG + per-part triplet loss (GiLt)
+
+**理由**:
+1. PSG 只改善了特征质量，但训练信号仍然是标准的 ID+triplet loss
+2. Per-part triplet loss 可以给 backbone 提供更细粒度的梯度信号，可能进一步提升 PSG 增强的特征
+3. Phase 1 中 GiLt 在 PCFC 基础上额外 +0.5%，PSG 基础上可能也有类似增益
+4. 这是正交方向的改进（module 级 vs loss 级），不会像 PAB 那样干扰 PSG
+5. 实现简单：在 PSG 增强的特征图上做 pose-guided part pooling，然后每个 part 独立 triplet loss
+6. 论文价值：训练信号层面的 pose 利用，与 backbone 层面的 PSG 互补
+

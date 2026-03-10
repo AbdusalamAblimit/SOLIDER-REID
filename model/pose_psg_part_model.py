@@ -75,7 +75,7 @@ class PosePSGPartModel(PoseBackboneModel):
             else:
                 test_feat = global_feat
 
-            if pose_dict is not None:
+            if pose_dict is not None and self.pose_test_feat != 'global':
                 _, part_feats, part_valid = self.pose_part(
                     last_featmap, scene_heatmaps, scene_scores)
 
