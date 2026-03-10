@@ -466,5 +466,6 @@ PSG Stage 3 (mAP 58.3%) 是确认的性能上限。所有尝试过的改进方�
   B. PCG-only (无 PSG) — 验证 PCG 单独效果，排除 PSG 已经做了足够 conditioning 的可能
   C. 完全新方向：跳出 PSG 框架
 
-**选择**: 待定
+**选择**: B — PCG-only 消融实验
 
+**执行结果**: exp018 完成。**PCG-only mAP 57.8%, R1 67.7%（+1.2%/+1.2% vs baseline）。** 出乎意料，PCG 有独立效果！推翻了"PCG 无效"的初步判断。但仍低于 PSG (58.3%/-0.5%)，且 PSG+PCG (exp017) 不叠加。结论：PCG 和 PSG 各自有效但捕获相似的 pose 信号，组合不互补。
