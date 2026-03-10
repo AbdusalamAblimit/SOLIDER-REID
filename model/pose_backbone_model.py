@@ -44,6 +44,7 @@ class PoseBackboneModel(build_transformer):
             self.psg_stage_indices.add(idx)
 
         hidden_dim = getattr(cfg.MODEL, 'POSE_PFM_HIDDEN', 64)
+        spatial_conv = getattr(cfg.MODEL, 'POSE_PSG_SPATIAL', False)
 
         if self.use_combo:
             # Combo mode: both PAB and PSG
@@ -64,6 +65,7 @@ class PoseBackboneModel(build_transformer):
                         pose_channels=17,
                         feat_channels=feat_ch,
                         hidden_dim=hidden_dim,
+                        spatial_conv=spatial_conv,
                     )
         elif self.use_attn_bias:
             # PAB-only mode: create PoseAttentionBias modules per stage
@@ -90,6 +92,7 @@ class PoseBackboneModel(build_transformer):
                         pose_channels=17,
                         feat_channels=feat_ch,
                         hidden_dim=hidden_dim,
+                        spatial_conv=spatial_conv,
                     )
 
             # Backward compatibility: also keep psg_modules list for Stage 3

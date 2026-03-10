@@ -399,14 +399,12 @@ PSG Stage 3 (mAP 58.3%) 是确认的性能上限。所有尝试过的改进方�
   D. 全新方向: Pose-Guided Feature Disentangling — 用 PSG feature 做 pose/appearance 解耦
   E. 全新方向: Pose-Conditioned Contrastive Learning — pose 相似的样本对应更严格的判别要求
 
-**选择**: C — PSG + Pose-Guided Data Augmentation (Pose-Aware Random Erasing)
+**选择**: A — PSG 内部机制改进（3×3 depthwise conv），而非 C
 
-**理由**:
-1. **真正正交**: 数据增强在 forward pass 之前发生，不改变 backbone 梯度流
-2. 当前 Random Erasing 随机擦除图像区域，但不考虑姿态信息
-3. Pose-Aware RE: 根据 pose heatmap 偏向擦除"可见"部位，保留"已遮挡"部位，模拟更现实的遮挡模式
-4. 或者反过来：保护"关键"部位（如头部、上身），只擦除非关键区域
-5. 这个方向对 Occluded-Duke 特别有意义——训练时学习应对各种遮挡模式
-6. 实现简单，只需修改 data augmentation pipeline
-7. 对论文有价值："pose-guided occlusion augmentation" 是一个清晰的贡献
+**修正**: 重新考虑后选择 A。理由：
+1. 这是对 PSG gate 本身的改进，不增加新模块或新 loss，不会像 exp008-014 那样干扰梯度流
+2. 当前 1×1 conv 每个位置独立计算 gate，没有空间连贯性
+3. 3×3 depthwise conv 只增加 576 参数，让 gate 考虑邻域
+4. 人体部件是连续区域，相邻位置应有相似 gate 值
+5. 如果无效，再转向 C (Pose-Aware Data Augmentation)
 

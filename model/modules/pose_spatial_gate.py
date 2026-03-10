@@ -21,18 +21,31 @@ class PoseSpatialGate(nn.Module):
         pose_channels: Number of heatmap channels (17 for COCO keypoints)
         feat_channels: Number of feature channels to gate
         hidden_dim: Hidden dimension in the gate network
+        spatial_conv: If True, add 3x3 depthwise conv for spatial awareness
     """
 
-    def __init__(self, pose_channels=17, feat_channels=768, hidden_dim=64):
+    def __init__(self, pose_channels=17, feat_channels=768, hidden_dim=64,
+                 spatial_conv=False):
         super().__init__()
         self.feat_channels = feat_channels
 
         # Pose encoder: (17, H, W) -> (C, H, W) gate values
-        self.encoder = nn.Sequential(
+        layers = [
             nn.Conv2d(pose_channels, hidden_dim, kernel_size=1, bias=True),
             nn.ReLU(inplace=True),
+        ]
+        if spatial_conv:
+            # 3x3 depthwise conv for spatial awareness (+576 params)
+            layers.extend([
+                nn.Conv2d(hidden_dim, hidden_dim, kernel_size=3, padding=1,
+                          groups=hidden_dim, bias=True),
+                nn.ReLU(inplace=True),
+            ])
+        layers.append(
             nn.Conv2d(hidden_dim, feat_channels, kernel_size=1, bias=True),
         )
+        self.encoder = nn.Sequential(*layers)
+
         # Zero-init final layer so initial gate = 0, output = x * (1+0) = x
         nn.init.zeros_(self.encoder[-1].weight)
         nn.init.zeros_(self.encoder[-1].bias)
