@@ -683,12 +683,14 @@ class WindowMSA(BaseModule):
     def init_weights(self):
         trunc_normal_(self.relative_position_bias_table, std=0.02)
 
-    def forward(self, x, mask=None):
+    def forward(self, x, mask=None, extra_attn_bias=None):
         """
         Args:
             x (tensor): input features with shape of (num_windows*B, N, C)
             mask (tensor | None, Optional): mask with shape of (num_windows,
                 Wh*Ww, Wh*Ww), value should be between (-inf, 0].
+            extra_attn_bias (tensor | None, Optional): additional attention bias
+                with shape (num_windows*B, num_heads, N, N). Added before softmax.
         """
         B, N, C = x.shape
         qkv = self.qkv(x).reshape(B, N, 3, self.num_heads,
@@ -707,6 +709,10 @@ class WindowMSA(BaseModule):
         relative_position_bias = relative_position_bias.permute(
             2, 0, 1).contiguous()  # nH, Wh*Ww, Wh*Ww
         attn = attn + relative_position_bias.unsqueeze(0)
+
+        # Add pose-conditioned attention bias (if provided)
+        if extra_attn_bias is not None:
+            attn = attn + extra_attn_bias
 
         if mask is not None:
             nW = mask.shape[0]
@@ -780,7 +786,7 @@ class ShiftWindowMSA(BaseModule):
 
         self.drop = build_dropout(dropout_layer)
 
-    def forward(self, query, hw_shape):
+    def forward(self, query, hw_shape, pose_bias_map=None):
         B, L, C = query.shape
         H, W = hw_shape
         assert L == H * W, 'input feature has wrong size'
@@ -791,6 +797,29 @@ class ShiftWindowMSA(BaseModule):
         pad_b = (self.window_size - H % self.window_size) % self.window_size
         query = F.pad(query, (0, 0, 0, pad_r, 0, pad_b))
         H_pad, W_pad = query.shape[1], query.shape[2]
+
+        # Handle pose bias map: pad, shift, partition, compute pairwise bias
+        extra_attn_bias = None
+        if pose_bias_map is not None:
+            # pose_bias_map: (B, num_heads, H, W) -> pad to match feature map
+            pbm = F.pad(pose_bias_map, (0, pad_r, 0, pad_b))
+            if self.shift_size > 0:
+                pbm = torch.roll(pbm,
+                                 shifts=(-self.shift_size, -self.shift_size),
+                                 dims=(2, 3))
+            # Partition into windows: (B, nH, H_pad, W_pad) -> reshape
+            num_heads = pbm.shape[1]
+            # (B, nH, H_pad/ws, ws, W_pad/ws, ws)
+            ws = self.window_size
+            pbm = pbm.view(B, num_heads, H_pad // ws, ws, W_pad // ws, ws)
+            # (B, H_pad/ws, W_pad/ws, nH, ws, ws)
+            pbm = pbm.permute(0, 2, 4, 1, 3, 5).contiguous()
+            # (B*nW, nH, ws*ws)
+            nW = (H_pad // ws) * (W_pad // ws)
+            pbm = pbm.view(B * nW, num_heads, ws * ws)
+            # Additive decomposition: bias(i,j) = val[i] + val[j]
+            extra_attn_bias = pbm.unsqueeze(-1) + pbm.unsqueeze(-2)
+            # Shape: (B*nW, num_heads, ws*ws, ws*ws)
 
         # cyclic shift
         if self.shift_size > 0:
@@ -831,7 +860,8 @@ class ShiftWindowMSA(BaseModule):
         query_windows = query_windows.view(-1, self.window_size**2, C)
 
         # W-MSA/SW-MSA (nW*B, window_size*window_size, C)
-        attn_windows = self.w_msa(query_windows, mask=attn_mask)
+        attn_windows = self.w_msa(query_windows, mask=attn_mask,
+                                  extra_attn_bias=extra_attn_bias)
 
         # merge windows
         attn_windows = attn_windows.view(-1, self.window_size,
@@ -958,12 +988,12 @@ class SwinBlock(BaseModule):
             add_identity=True,
             init_cfg=None)
 
-    def forward(self, x, hw_shape):
+    def forward(self, x, hw_shape, pose_bias_map=None):
 
         def _inner_forward(x):
             identity = x
             x = self.norm1(x)
-            x = self.attn(x, hw_shape)
+            x = self.attn(x, hw_shape, pose_bias_map=pose_bias_map)
 
             x = x + identity
 

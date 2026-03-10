@@ -11,6 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from .make_model import build_transformer
 from .modules.pose_spatial_gate import PoseSpatialGate
+from .modules.pose_attention_bias import PoseAttentionBias
 from .modules.pose_utils import merge_person_heatmaps
 
 
@@ -29,7 +30,10 @@ class PoseBackboneModel(build_transformer):
     def __init__(self, num_classes, camera_num, view_num, cfg, factory, semantic_weight):
         super().__init__(num_classes, camera_num, view_num, cfg, factory, semantic_weight)
 
-        # Determine which stages get PSG
+        # Check injection mode: PSG (post-block gate) or PAB (attention bias)
+        self.use_attn_bias = getattr(cfg.MODEL, 'POSE_ATTN_BIAS', False)
+
+        # Determine which stages get pose injection
         psg_stages = list(getattr(cfg.MODEL, 'POSE_PSG_STAGES', [-1]))
         num_backbone_stages = len(self.base.stages)
         # Resolve negative indices
@@ -40,28 +44,41 @@ class PoseBackboneModel(build_transformer):
 
         hidden_dim = getattr(cfg.MODEL, 'POSE_PFM_HIDDEN', 64)
 
-        # Create PSG modules for each configured stage
-        # Use ModuleDict keyed by "stage{i}_block{j}"
-        self.psg_modules_dict = nn.ModuleDict()
-        for stage_idx in sorted(self.psg_stage_indices):
-            stage = self.base.stages[stage_idx]
-            feat_ch = self.base.num_features[stage_idx]
-            for block_idx in range(len(stage.blocks)):
-                key = f's{stage_idx}_b{block_idx}'
-                self.psg_modules_dict[key] = PoseSpatialGate(
-                    pose_channels=17,
-                    feat_channels=feat_ch,
-                    hidden_dim=hidden_dim,
-                )
+        if self.use_attn_bias:
+            # PAB mode: create PoseAttentionBias modules per stage
+            self.pab_modules_dict = nn.ModuleDict()
+            for stage_idx in sorted(self.psg_stage_indices):
+                stage = self.base.stages[stage_idx]
+                num_heads = stage.blocks[0].attn.w_msa.num_heads
+                for block_idx in range(len(stage.blocks)):
+                    key = f's{stage_idx}_b{block_idx}'
+                    self.pab_modules_dict[key] = PoseAttentionBias(
+                        pose_channels=17,
+                        num_heads=num_heads,
+                        hidden_dim=hidden_dim,
+                    )
+        else:
+            # PSG mode: create PoseSpatialGate modules per stage
+            self.psg_modules_dict = nn.ModuleDict()
+            for stage_idx in sorted(self.psg_stage_indices):
+                stage = self.base.stages[stage_idx]
+                feat_ch = self.base.num_features[stage_idx]
+                for block_idx in range(len(stage.blocks)):
+                    key = f's{stage_idx}_b{block_idx}'
+                    self.psg_modules_dict[key] = PoseSpatialGate(
+                        pose_channels=17,
+                        feat_channels=feat_ch,
+                        hidden_dim=hidden_dim,
+                    )
 
-        # Backward compatibility: also keep psg_modules list for Stage 3
-        # (used by PosePSGPartModel which accesses self.psg_modules)
-        last_stage_idx = num_backbone_stages - 1
-        if last_stage_idx in self.psg_stage_indices:
-            self.psg_modules = nn.ModuleList([
-                self.psg_modules_dict[f's{last_stage_idx}_b{j}']
-                for j in range(len(self.base.stages[last_stage_idx].blocks))
-            ])
+            # Backward compatibility: also keep psg_modules list for Stage 3
+            # (used by PosePSGPartModel which accesses self.psg_modules)
+            last_stage_idx = num_backbone_stages - 1
+            if last_stage_idx in self.psg_stage_indices:
+                self.psg_modules = nn.ModuleList([
+                    self.psg_modules_dict[f's{last_stage_idx}_b{j}']
+                    for j in range(len(self.base.stages[last_stage_idx].blocks))
+                ])
 
         # Store backbone's semantic weight for manual forward
         self._semantic_weight_val = semantic_weight
@@ -120,14 +137,20 @@ class PoseBackboneModel(build_transformer):
         return global_feat, outs
 
     def _run_stage_with_psg(self, stage, x, hw_shape, scene_heatmaps, stage_idx=None):
-        """Run a stage's blocks with PSG insertion after each block."""
+        """Run a stage's blocks with pose injection (PSG or PAB)."""
         for block_idx, block in enumerate(stage.blocks):
-            x = block(x, hw_shape)
+            key = f's{stage_idx}_b{block_idx}'
 
-            # Apply PSG after each block
-            if scene_heatmaps is not None:
-                key = f's{stage_idx}_b{block_idx}'
-                x = self.psg_modules_dict[key](x, hw_shape, scene_heatmaps)
+            if self.use_attn_bias and scene_heatmaps is not None:
+                # PAB mode: compute pose attention bias and pass to block
+                pose_bias_map = self.pab_modules_dict[key](
+                    scene_heatmaps, hw_shape)
+                x = block(x, hw_shape, pose_bias_map=pose_bias_map)
+            else:
+                x = block(x, hw_shape)
+                # PSG mode: apply gate after block
+                if not self.use_attn_bias and scene_heatmaps is not None:
+                    x = self.psg_modules_dict[key](x, hw_shape, scene_heatmaps)
 
         # Handle downsample (Stage 3 has no downsample in Swin)
         if stage.downsample:

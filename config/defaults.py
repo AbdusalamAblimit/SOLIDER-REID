@@ -100,6 +100,7 @@ _C.MODEL.POSE_PFM_HIDDEN = 64              # hidden dim in PFM encoder
 _C.MODEL.POSE_BACKBONE_PSG = False          # use PoseBackboneModel instead of PoseReIDModel
 _C.MODEL.POSE_PSG_PART = False              # PSG + Part Pooling combination
 _C.MODEL.POSE_PSG_STAGES = [-1]             # which stages to inject PSG (e.g. [-1] = last only, [2,3] = stage 2+3)
+_C.MODEL.POSE_ATTN_BIAS = False             # use Pose Attention Bias (PAB) instead of PSG
 
 # -----------------------------------------------------------------------------
 # INPUT
