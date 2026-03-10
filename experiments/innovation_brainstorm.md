@@ -75,3 +75,58 @@
 - Pose head 的梯度帮助 backbone 学习更好的空间结构
 - 与前轮 VPReID (exp002) 的区别: 前轮用独立的 ViTPose backbone，本次共享底层特征
 - 风险: 多任务平衡（前轮 exp002 就是因此失败）
+
+---
+
+## Phase 2 实验反馈总结 (exp001-exp015)
+
+### 已证实的核心发现
+
+**1. Backbone Injection > Post-hoc Pooling**
+- PSG (特征形成阶段注入 pose) +1.7% mAP，仅 102K params
+- Part Pooling (特征形成后用 pose 选择) +0.9% mAP，~2.6M params
+- PFM (后置调制) 中性效果
+- **结论**: 让 backbone 在特征提取过程中知道人体结构，比事后选择更有效
+
+**2. PSG 对干扰极度敏感**
+- PSG + PAB Combo: ❌ (-0.7% vs PSG-only)
+- PSG + Part Pooling: ❌ (-0.6% vs PSG-only)
+- PSG + Part Supervision (global test): ❌ (-0.7% mAP, -2.1% R1)
+- PSG + Spatial Conv (3×3 DWConv): 🟡 持平 (mAP 58.3% = exp007, R1 -0.8%)
+- **结论**: 任何改变 PSG 梯度流的额外模块/损失都会降低效果。PSG 58.3% 是该框架的理论上限。
+
+**3. PSG 内部结构已达最优**
+- 1×1 conv gate 足够，3×3 depthwise conv 冗余
+- Multi-stage (S2+S3) 无额外收益
+- 200 epochs 无额外收益
+- **结论**: PSG 的瓶颈不在感受野、不在训练长度、不在注入位置
+
+### 战略反思
+
+**当前困境**: PSG 58.3% 是 +1.7% mAP 的稳定改进，但对论文来说幅度不够。且无法通过组合/扩展进一步提升。
+
+**需要的突破方向**: 必须从 PSG 之外找到 orthogonal 的提升。两条路：
+1. **训练策略改进** — 不改模型架构，改训练方式（数据增强、损失函数设计）
+2. **全新模型设计** — 跳出 PSG 的 feature gating 范式，探索其他利用 pose 的方式
+
+### 新增候选方向
+
+#### 方向 H: Pose-Guided Erasing (PGE)
+- **核心想法**: 用 pose 热图引导数据增强，替代 Random Erasing。训练时随机选择 1-2 个身体部件组（头部、上身、下身），基于热图 mask 对应区域，迫使模型从部分身体学习身份
+- **与 Random Erasing 的区别**: RE 随机放置矩形框，PGE 基于语义部件区域做结构化擦除
+- **优势**: (1) 训练时 zero 额外计算 (2) 完全正交于 PSG (3) 模拟真实遮挡
+- **论文 story**: "Random Erasing 不能模拟真实遮挡（人的遮挡是整个部件被挡住），PGE 通过 pose 引导的结构化擦除训练模型应对真实遮挡"
+- **风险**: 如果 RE 已经足够模拟遮挡，PGE 可能无额外收益
+- **论文位置**: 消融表格（PGE vs RE）、主实验表（PSG + PGE 的联合效果）
+
+#### 方向 I: Pose-Conditioned Normalization (PCN)
+- **核心想法**: 用 pose 热图调制 LayerNorm/BatchNorm 的 scale 和 bias 参数，类似 SPADE (image generation)
+- **实现**: 对每个空间位置，根据 pose 热图生成 γ(pose) 和 β(pose)，替代标准 LN 的可学习参数
+- **与 PSG 的区别**: PSG 是 feature gating（乘法），PCN 是 normalization modulation（影响分布）
+- **风险**: 可能与 PSG 类似——都是空间调制，可能不叠加
+
+#### 方向 J: 关键点引导的对比学习 (Keypoint-Conditioned Contrastive Learning)
+- **核心想法**: 修改 triplet loss，使其考虑 pose 相似度。Pose 相似的正样本对应更高 margin
+- **动机**: 两张同一人但 pose 完全不同的图片（一张正面站立、一张侧面行走）比两张 pose 相似的图片更难匹配
+- **实现**: margin = base_margin * (1 + λ * pose_dissimilarity)
+- **风险**: 前轮 GiLt 已用 part triplet，这个方向可能与之冲突

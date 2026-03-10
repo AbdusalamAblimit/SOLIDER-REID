@@ -408,3 +408,25 @@ PSG Stage 3 (mAP 58.3%) 是确认的性能上限。所有尝试过的改进方�
 4. 人体部件是连续区域，相邻位置应有相似 gate 值
 5. 如果无效，再转向 C (Pose-Aware Data Augmentation)
 
+**执行结果**: exp015 训练完成。mAP 58.3% 与 exp007 完全持平, R1 67.1% 低 0.8%。3×3 depthwise conv 是冗余的，1×1 gate 已是最优。训练过程中波动极大（差距从 -2.2% 到 +2.3%），但最终收敛到相同水平。PSG 的瓶颈不在感受野。
+
+### [2026-03-10 12:49] 决策 #16
+
+**上下文**: exp015（PSG 空间卷积改进）完成，与原始 PSG 持平。至此：
+- PSG 内部结构改进（depthwise conv）：无效
+- PSG 外部组合（PAB, Part Pooling, Part Supervision）：全部有害
+- PSG 训练策略（freeze, 200ep, multi-stage）：无效
+
+**已穷尽的方向**: 在"PSG + 全局 ID/Triplet Loss"框架内的所有优化都已探索完毕。PSG 58.3% mAP 是该框架的理论上限。
+
+**需要根本性的方向转变**: 不再在 PSG 上修修补补，需要全新的利用 pose heatmap 的方式。
+
+**选项**:
+  A. Pose-Guided Feature Disentangling — 用 pose 热图将特征解耦为 part-specific 子空间
+  B. Pose-Conditioned Contrastive Learning — 基于 pose 相似度的对比学习
+  C. Pose-Guided Data Augmentation — 基于 pose 的数据增强
+  D. Adaptive PSG — 根据遮挡程度动态调节 PSG 强度
+  E. Deformable PSG — 可变形卷积替代固定网格，对齐到关键点位置
+
+**选择**: 待 CLAUDE.md 复习后确定，需要重新审视创新方向
+
