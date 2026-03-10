@@ -428,5 +428,25 @@ PSG Stage 3 (mAP 58.3%) 是确认的性能上限。所有尝试过的改进方�
   D. Adaptive PSG — 根据遮挡程度动态调节 PSG 强度
   E. Deformable PSG — 可变形卷积替代固定网格，对齐到关键点位置
 
-**选择**: 待 CLAUDE.md 复习后确定，需要重新审视创新方向
+**选择**: A → H (Pose-Guided Erasing)
+
+**执行结果**: exp016 完成。PGE 严重有害（mAP 54.8% vs exp007 58.3%，-3.5%）。身体部件级擦除过强+削弱 PSG 输入。数据增强层面的 pose 利用方向失败。
+
+### [2026-03-10 15:10] 决策 #17
+
+**上下文**: exp016 PGE 失败后，16 个实验的完整总结：
+- PSG 58.3% 是唯一有效方法
+- 所有扩展/组合/增强/增强均失败
+- 数据增强方向（PGE）也失败
+
+**关键反思**: 已经把 PSG 本身和所有"加法"都试遍了。需要完全不同的思路。
+
+**选项**:
+  A. Pose-Conditioned Normalization (PCN) — 用 pose 调制 LayerNorm 参数
+  B. 全新模型: Deformable PSG — 可变形卷积对齐关键点
+  C. 全新方向: Pose Structure Token — 在 Swin 输入层添加 pose 编码
+  D. 测试端优化: 基于 PSG 的 NFC/Re-ranking
+  E. 跨步思考: 不再改 PSG，而是替换整个 Part Pooling 方案
+
+**选择**: 待定，需要更深入思考
 
