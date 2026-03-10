@@ -53,8 +53,38 @@ def do_train(cfg,
 
     evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM)
     scaler = amp.GradScaler()
+
+    # Backbone freeze warmup
+    freeze_epochs = cfg.SOLVER.FREEZE_BACKBONE_EPOCHS
+    backbone_frozen = False
+
+    def _freeze_backbone(model):
+        """Freeze backbone parameters, keep PSG/classifier/BN trainable."""
+        m = model.module if hasattr(model, 'module') else model
+        for name, param in m.base.named_parameters():
+            param.requires_grad = False
+        frozen = sum(1 for p in m.base.parameters() if not p.requires_grad)
+        total = sum(1 for p in m.base.parameters())
+        logger.info(f'Backbone FROZEN: {frozen}/{total} params frozen')
+
+    def _unfreeze_backbone(model):
+        """Unfreeze all backbone parameters."""
+        m = model.module if hasattr(model, 'module') else model
+        for param in m.base.parameters():
+            param.requires_grad = True
+        logger.info('Backbone UNFROZEN: all params trainable')
+
+    if freeze_epochs > 0:
+        _freeze_backbone(model)
+        backbone_frozen = True
+        logger.info(f'Backbone freeze warmup: {freeze_epochs} epochs')
+
     # train
     for epoch in range(1, epochs + 1):
+        # Unfreeze backbone after warmup
+        if backbone_frozen and epoch > freeze_epochs:
+            _unfreeze_backbone(model)
+            backbone_frozen = False
         start_time = time.time()
         loss_meter.reset()
         acc_meter.reset()

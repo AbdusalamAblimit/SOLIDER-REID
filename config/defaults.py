@@ -199,6 +199,7 @@ _C.SOLVER.EVAL_PERIOD = 10
 # contain 16 images per batch
 _C.SOLVER.IMS_PER_BATCH = 64
 _C.SOLVER.TRP_L2 = False
+_C.SOLVER.FREEZE_BACKBONE_EPOCHS = 0  # freeze backbone for first N epochs (0 = no freeze)
 
 # ---------------------------------------------------------------------------- #
 # TEST

@@ -222,3 +222,31 @@
 4. 多 stage PSG 是论文中可以画出更好架构图的设计
 5. 如果多 stage 有效，这构成了一个"层次化姿态注入"的创新点
 
+**执行结果**: exp009 mAP 58.3%, R1 67.2%, R5 81.2%, R10 85.2%。Multi-stage PSG (Stage 2+3) 与 single-stage (Stage 3 only) mAP 持平，R1 略低（-0.7%），R5/R10 略优（+0.4%/+0.3%），但增加了 156K 额外参数。**结论：Stage 2 PSG 无显著收益，pose spatial gating 在 Stage 3 已足够。后续聚焦于改进 PSG 机制本身，而非扩展注入范围。**
+
+### [2026-03-10 01:45] 决策 #10
+
+**上下文**: Phase 2 九个实验的系统总结：
+1. Post-hoc part pooling 上限: +0.9% mAP (exp001)
+2. PSG backbone injection 最佳: +1.7% mAP (exp007)
+3. PSG + Part Pooling 组合: 不叠加 (exp008)
+4. Multi-stage PSG: 无额外收益 (exp009)
+
+**核心发现**: PSG Stage 3 (2 blocks, 102K params) 是当前最优配置。进一步改进需要改变 PSG 的内部机制或训练策略。
+
+**选项**:
+  A. PSG Channel Attention — 在 spatial gate 基础上加 channel-wise attention (SE-style)
+  B. Backbone Freeze Warmup — 冻结 backbone 前 N epochs，让 PSG 先学稳定的 gate 模式
+  C. PSG + Global-Part Concat — concat PSG-global + part features (不是 part_only 测试)
+  D. PSG 超参数搜索 — hidden_dim, sigmoid vs tanh, gate 初始化方式
+  E. Pose-Conditioned Attention (PCA) — 替代简单的 channel gate，用 pose 调制 self-attention QKV
+
+**选择**: B — Backbone Freeze Warmup
+
+**理由**:
+1. 用户曾建议冻结 backbone 前 5 epochs，这个想法值得验证
+2. 当前 PSG 零初始化，但训练初期 backbone 的梯度（来自 ID loss 和 triplet loss）会同时更新 backbone 和 PSG，可能让 PSG 来不及学到好的 gate pattern 就被 backbone 适应掉了
+3. 冻结 backbone warmup 让 PSG 先在"固定"的特征空间上学习 pose-to-gate mapping，之后解冻 backbone 时 PSG 已有良好初始化
+4. 实现简单：只需修改训练循环，前 N epochs 冻结 backbone 参数
+5. 如果有效，这个训练策略也是论文素材（"stage-wise training for pose injection"）
+
