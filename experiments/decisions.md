@@ -314,3 +314,36 @@ PSG Stage 3 (mAP 58.3%) 是确认的性能上限。所有尝试过的改进方�
 4. 这改变了 token 之间的 attention 权重，比只改变 token 值（PSG 的做法）更根本
 5. 如果 PCA > PSG，这是一个强有力的消融证据
 
+**执行结果**: exp012 最终 mAP 57.4%, R1 67.3%。PAB 有效但弱于 PSG（-0.9% mAP, -0.6% R1）。尽管只有 5.4K 参数，attention bias 的调制效果不如 feature gate。**结论：在 Swin 的 window attention 中，additive bias decomposition (bias(i,j) = val[i] + val[j]) 的表达能力有限，softmax 压缩了 bias 的效果。Feature-level gating (PSG) 仍是更有效的 pose 注入方式。**
+
+### [2026-03-10 08:05] 决策 #13
+
+**上下文**: 12 个实验已完成。PSG 仍是最佳方法 (mAP 58.3%)。已验证：
+- Post-hoc part pooling: +0.9% (exp001)
+- Backbone feature gating (PSG): +1.7% (exp007) ← BEST
+- Attention-level bias (PAB): +0.8% (exp012)
+- Multi-stage PSG: 无额外收益 (exp009)
+- PSG+Part 组合: 不叠加 (exp008)
+- 200ep: 无额外收益 (exp011)
+- Freeze warmup: 灾难性 (exp010)
+
+**关键排序**: Feature gating (PSG) > Post-hoc pooling > Attention bias (PAB)
+
+**核心问题**: 如何突破 58.3% 的性能上限？
+
+**选项**:
+  A. PSG + PAB 组合 — 同时做 feature gating 和 attention bias，双重 pose 注入
+  B. PSG + 3×3 Depthwise Conv — 给 PSG 加空间感受野
+  C. Cross-Attention Pose Injection — 用 pose token 和 feature token 做 cross-attention
+  D. Stronger PSG Gate — 增大 hidden_dim 或加深 gate 网络
+  E. Dual-Stream PSG — 分离 body-part gate 和 structure gate
+
+**选择**: A — PSG + PAB 组合
+
+**理由**:
+1. PSG 和 PAB 作用在不同层面：PSG 调制 feature values, PAB 调制 attention patterns
+2. 两者理论上互补：PAB 让 attention 关注正确的位置，PSG 增强这些位置的特征
+3. 两者加起来只有 ~108K 参数，计算开销极低
+4. 如果组合有效，这构成了"多层次姿态注入"的创新点（attention + feature + pooling 三个层面）
+5. 如果组合无效（像 exp008 一样），也提供了重要消融证据
+
