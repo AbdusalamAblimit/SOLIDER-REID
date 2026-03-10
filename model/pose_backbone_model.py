@@ -13,6 +13,7 @@ from .make_model import build_transformer
 from .modules.pose_spatial_gate import PoseSpatialGate
 from .modules.pose_attention_bias import PoseAttentionBias
 from .modules.pose_channel_gate import PoseChannelGate
+from .modules.pose_cross_attention import PoseCrossAttention
 from .modules.pose_utils import merge_person_heatmaps
 
 
@@ -31,9 +32,10 @@ class PoseBackboneModel(build_transformer):
     def __init__(self, num_classes, camera_num, view_num, cfg, factory, semantic_weight):
         super().__init__(num_classes, camera_num, view_num, cfg, factory, semantic_weight)
 
-        # Check injection mode: PSG (post-block gate), PAB (attention bias), or combo
+        # Check injection mode: PSG (post-block gate), PAB (attention bias), PXA (cross-attention), or combo
         self.use_attn_bias = getattr(cfg.MODEL, 'POSE_ATTN_BIAS', False)
         self.use_combo = getattr(cfg.MODEL, 'POSE_PSG_PAB_COMBO', False)
+        self.use_cross_attn = getattr(cfg.MODEL, 'POSE_CROSS_ATTN', False)
 
         # Determine which stages get pose injection
         psg_stages = list(getattr(cfg.MODEL, 'POSE_PSG_STAGES', [-1]))
@@ -67,6 +69,19 @@ class PoseBackboneModel(build_transformer):
                         feat_channels=feat_ch,
                         hidden_dim=hidden_dim,
                         spatial_conv=spatial_conv,
+                    )
+        elif self.use_cross_attn:
+            # PXA mode: cross-attention between features and pose tokens
+            self.pxa_modules_dict = nn.ModuleDict()
+            for stage_idx in sorted(self.psg_stage_indices):
+                stage = self.base.stages[stage_idx]
+                feat_ch = self.base.num_features[stage_idx]
+                for block_idx in range(len(stage.blocks)):
+                    key = f's{stage_idx}_b{block_idx}'
+                    self.pxa_modules_dict[key] = PoseCrossAttention(
+                        pose_channels=17,
+                        feat_channels=feat_ch,
+                        hidden_dim=hidden_dim,
                     )
         elif self.use_attn_bias:
             # PAB-only mode: create PoseAttentionBias modules per stage
@@ -173,7 +188,7 @@ class PoseBackboneModel(build_transformer):
         return global_feat, outs
 
     def _run_stage_with_psg(self, stage, x, hw_shape, scene_heatmaps, stage_idx=None):
-        """Run a stage's blocks with pose injection (PSG, PAB, or combo)."""
+        """Run a stage's blocks with pose injection (PSG, PAB, PXA, or combo)."""
         for block_idx, block in enumerate(stage.blocks):
             key = f's{stage_idx}_b{block_idx}'
 
@@ -183,6 +198,10 @@ class PoseBackboneModel(build_transformer):
                     scene_heatmaps, hw_shape)
                 x = block(x, hw_shape, pose_bias_map=pose_bias_map)
                 x = self.psg_modules_dict[key](x, hw_shape, scene_heatmaps)
+            elif self.use_cross_attn and scene_heatmaps is not None:
+                # PXA mode: run block then apply cross-attention
+                x = block(x, hw_shape)
+                x = self.pxa_modules_dict[key](x, hw_shape, scene_heatmaps)
             elif self.use_attn_bias and scene_heatmaps is not None:
                 # PAB-only mode: compute pose attention bias and pass to block
                 pose_bias_map = self.pab_modules_dict[key](
