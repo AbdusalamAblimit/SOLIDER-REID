@@ -101,6 +101,7 @@ _C.MODEL.POSE_BACKBONE_PSG = False          # use PoseBackboneModel instead of P
 _C.MODEL.POSE_PSG_PART = False              # PSG + Part Pooling combination
 _C.MODEL.POSE_PSG_STAGES = [-1]             # which stages to inject PSG (e.g. [-1] = last only, [2,3] = stage 2+3)
 _C.MODEL.POSE_ATTN_BIAS = False             # use Pose Attention Bias (PAB) instead of PSG
+_C.MODEL.POSE_PSG_PAB_COMBO = False         # use both PSG + PAB simultaneously
 
 # -----------------------------------------------------------------------------
 # INPUT

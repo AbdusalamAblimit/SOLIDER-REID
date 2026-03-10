@@ -30,8 +30,9 @@ class PoseBackboneModel(build_transformer):
     def __init__(self, num_classes, camera_num, view_num, cfg, factory, semantic_weight):
         super().__init__(num_classes, camera_num, view_num, cfg, factory, semantic_weight)
 
-        # Check injection mode: PSG (post-block gate) or PAB (attention bias)
+        # Check injection mode: PSG (post-block gate), PAB (attention bias), or combo
         self.use_attn_bias = getattr(cfg.MODEL, 'POSE_ATTN_BIAS', False)
+        self.use_combo = getattr(cfg.MODEL, 'POSE_PSG_PAB_COMBO', False)
 
         # Determine which stages get pose injection
         psg_stages = list(getattr(cfg.MODEL, 'POSE_PSG_STAGES', [-1]))
@@ -44,8 +45,28 @@ class PoseBackboneModel(build_transformer):
 
         hidden_dim = getattr(cfg.MODEL, 'POSE_PFM_HIDDEN', 64)
 
-        if self.use_attn_bias:
-            # PAB mode: create PoseAttentionBias modules per stage
+        if self.use_combo:
+            # Combo mode: both PAB and PSG
+            self.pab_modules_dict = nn.ModuleDict()
+            self.psg_modules_dict = nn.ModuleDict()
+            for stage_idx in sorted(self.psg_stage_indices):
+                stage = self.base.stages[stage_idx]
+                num_heads = stage.blocks[0].attn.w_msa.num_heads
+                feat_ch = self.base.num_features[stage_idx]
+                for block_idx in range(len(stage.blocks)):
+                    key = f's{stage_idx}_b{block_idx}'
+                    self.pab_modules_dict[key] = PoseAttentionBias(
+                        pose_channels=17,
+                        num_heads=num_heads,
+                        hidden_dim=32,  # PAB hidden dim
+                    )
+                    self.psg_modules_dict[key] = PoseSpatialGate(
+                        pose_channels=17,
+                        feat_channels=feat_ch,
+                        hidden_dim=hidden_dim,
+                    )
+        elif self.use_attn_bias:
+            # PAB-only mode: create PoseAttentionBias modules per stage
             self.pab_modules_dict = nn.ModuleDict()
             for stage_idx in sorted(self.psg_stage_indices):
                 stage = self.base.stages[stage_idx]
@@ -58,7 +79,7 @@ class PoseBackboneModel(build_transformer):
                         hidden_dim=hidden_dim,
                     )
         else:
-            # PSG mode: create PoseSpatialGate modules per stage
+            # PSG-only mode: create PoseSpatialGate modules per stage
             self.psg_modules_dict = nn.ModuleDict()
             for stage_idx in sorted(self.psg_stage_indices):
                 stage = self.base.stages[stage_idx]
@@ -137,18 +158,24 @@ class PoseBackboneModel(build_transformer):
         return global_feat, outs
 
     def _run_stage_with_psg(self, stage, x, hw_shape, scene_heatmaps, stage_idx=None):
-        """Run a stage's blocks with pose injection (PSG or PAB)."""
+        """Run a stage's blocks with pose injection (PSG, PAB, or combo)."""
         for block_idx, block in enumerate(stage.blocks):
             key = f's{stage_idx}_b{block_idx}'
 
-            if self.use_attn_bias and scene_heatmaps is not None:
-                # PAB mode: compute pose attention bias and pass to block
+            if self.use_combo and scene_heatmaps is not None:
+                # Combo mode: PAB inside attention + PSG after block
+                pose_bias_map = self.pab_modules_dict[key](
+                    scene_heatmaps, hw_shape)
+                x = block(x, hw_shape, pose_bias_map=pose_bias_map)
+                x = self.psg_modules_dict[key](x, hw_shape, scene_heatmaps)
+            elif self.use_attn_bias and scene_heatmaps is not None:
+                # PAB-only mode: compute pose attention bias and pass to block
                 pose_bias_map = self.pab_modules_dict[key](
                     scene_heatmaps, hw_shape)
                 x = block(x, hw_shape, pose_bias_map=pose_bias_map)
             else:
                 x = block(x, hw_shape)
-                # PSG mode: apply gate after block
+                # PSG-only mode: apply gate after block
                 if not self.use_attn_bias and scene_heatmaps is not None:
                     x = self.psg_modules_dict[key](x, hw_shape, scene_heatmaps)
 
