@@ -111,13 +111,25 @@ def do_train(cfg,
 
             with amp.autocast(enabled=True):
                 if use_pose:
-                    score, feat, _ = model(img, label=target, cam_label=target_cam,
-                                           view_label=target_view,
-                                           pose_dict=pose_dict)
+                    model_out = model(img, label=target, cam_label=target_cam,
+                                      view_label=target_view,
+                                      pose_dict=pose_dict)
+                    # Handle optional recon_loss (4th return value from PRA)
+                    if len(model_out) == 4:
+                        score, feat, _, recon_loss = model_out
+                    else:
+                        score, feat, _ = model_out
+                        recon_loss = None
                 else:
                     score, feat, _ = model(img, label=target, cam_label=target_cam,
                                            view_label=target_view)
+                    recon_loss = None
                 loss = loss_fn(score, feat, target, target_cam)
+                if recon_loss is not None:
+                    details = getattr(loss, '_loss_details', {})
+                    loss = loss + recon_loss
+                    details['recon'] = recon_loss.item()
+                    loss._loss_details = details
 
             scaler.scale(loss).backward()
 

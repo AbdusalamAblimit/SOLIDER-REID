@@ -14,6 +14,7 @@ from .modules.pose_spatial_gate import PoseSpatialGate
 from .modules.pose_attention_bias import PoseAttentionBias
 from .modules.pose_channel_gate import PoseChannelGate
 from .modules.pose_cross_attention import PoseCrossAttention
+from .modules.pose_reconstruction_head import PoseReconstructionHead
 from .modules.pose_utils import merge_person_heatmaps
 
 
@@ -131,6 +132,18 @@ class PoseBackboneModel(build_transformer):
                 hidden_dim=pcg_hidden,
             )
 
+        # Pose Reconstruction Head (PRA) — auxiliary task
+        self.use_recon_head = getattr(cfg.MODEL, 'POSE_RECON_HEAD', False)
+        if self.use_recon_head:
+            recon_weight = getattr(cfg.MODEL, 'POSE_RECON_WEIGHT', 0.1)
+            feat_dim = self.in_planes  # 768 for Swin-Tiny
+            self.recon_head = PoseReconstructionHead(
+                feat_channels=feat_dim,
+                pose_channels=17,
+                hidden_channels=128,
+                loss_weight=recon_weight,
+            )
+
         # Store backbone's semantic weight for manual forward
         self._semantic_weight_val = semantic_weight
 
@@ -234,6 +247,11 @@ class PoseBackboneModel(build_transformer):
         if self.use_channel_gate and scene_heatmaps is not None:
             global_feat = self.channel_gate(global_feat, scene_heatmaps)
 
+        # Compute pose reconstruction loss (training only)
+        recon_loss = None
+        if self.training and self.use_recon_head and scene_heatmaps is not None:
+            recon_loss = self.recon_head(featmaps[-1], scene_heatmaps)
+
         if self.reduce_feat_dim:
             global_feat = self.fcneck(global_feat)
 
@@ -247,7 +265,7 @@ class PoseBackboneModel(build_transformer):
             else:
                 cls_score = self.classifier(feat_cls)
 
-            return cls_score, global_feat, featmaps
+            return cls_score, global_feat, featmaps, recon_loss
         else:
             if self.neck_feat == 'after':
                 return feat, featmaps
