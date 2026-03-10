@@ -250,3 +250,33 @@
 4. 实现简单：只需修改训练循环，前 N epochs 冻结 backbone 参数
 5. 如果有效，这个训练策略也是论文素材（"stage-wise training for pose injection"）
 
+**执行结果**: exp010 彻底失败。ep30 mAP 仅 12.5%（exp007 ep30 ~49%），提前终止。冻结 backbone 导致：(1) 解冻后特征空间剧变使 PSG/classifier 失效 (2) PSG 学到错误的 gate pattern 产生负面干扰 (3) 训练指标看似正常但测试表现灾难性。**教训：PSG 必须和 backbone 端到端同时训练。**
+
+### [2026-03-10 02:20] 决策 #11
+
+**上下文**:
+- exp007 PSG Stage 3: mAP 58.3% (+1.7%) — 当前最佳
+- exp008 PSG+Part: 不叠加
+- exp009 Multi-stage PSG: 无额外收益
+- exp010 Freeze warmup: 灾难性失败
+- **PSG 的基本配置（Stage 3, zero-init, 102K params）已被证明是最优的**
+- 需要从不同角度改进
+
+**选项**:
+  A. PSG + Channel Attention (SE-style) — 增加 channel-wise gating 维度
+  B. Pose-Conditioned Self-Attention — 让 pose 调制 Swin 的 self-attention (QKV)
+  C. PSG + Global-Part Concat — 保留 PSG-global + part features 的拼接测试
+  D. 更强的 gate 网络 — 增加 3x3 conv, 多层, 或加 spatial conv
+  E. 训练策略改进 — 更长训练(160/200 epochs)、不同 LR schedule、不同 optimizer
+
+**选择**: E — 更长训练 (200 epochs)
+
+**理由**:
+1. 所有 PSG 实验都在 ep100-120 还在上升，曲线没有完全收敛
+2. exp007 的 mAP 轨迹：ep80 56%, ep100 58.2%, ep110 58.2%, ep120 58.3% — 后段仍有微弱上升
+3. exp009 也是后发优势型：ep50 才超过 exp007 同期
+4. 200 epochs 可以测试 PSG 是否有更大的后段潜力
+5. 这是零风险实验：同样的模型，只是训练更久
+6. 如果 120→200 epochs 带来 0.5-1% 的额外提升，说明 PSG 确实需要更长训练
+7. 对论文也有价值：可以报告"our method continues to improve with longer training"
+
