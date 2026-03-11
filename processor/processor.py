@@ -85,6 +85,14 @@ def do_train(cfg,
         if backbone_frozen and epoch > freeze_epochs:
             _unfreeze_backbone(model)
             backbone_frozen = False
+        # Set current epoch for delayed stop_grad
+        _model = model.module if hasattr(model, 'module') else model
+        if hasattr(_model, 'current_epoch'):
+            _model.current_epoch = epoch
+            if hasattr(_model, 'stop_grad_epochs') and _model.stop_grad_epochs > 0:
+                if epoch == _model.stop_grad_epochs + 1:
+                    logger.info(f'[PDS] Epoch {epoch}: Part gradient RELEASED to shared stages')
+
         start_time = time.time()
         loss_meter.reset()
         acc_meter.reset()

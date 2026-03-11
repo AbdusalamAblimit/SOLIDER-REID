@@ -67,12 +67,17 @@ class PoseDualStreamModel(build_transformer):
         self._last_stage_idx = last_stage_idx
         self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
         self.part_stop_grad = getattr(cfg.MODEL, 'POSE_PART_STOP_GRAD', False)
+        self.stop_grad_epochs = getattr(cfg.MODEL, 'POSE_STOP_GRAD_EPOCHS', 0)
         self.use_global_psg = getattr(cfg.MODEL, 'POSE_GLOBAL_PSG', True)
+        self.current_epoch = 0  # set by processor each epoch
 
         psg_str = 'PSG' if self.use_global_psg else 'no PSG (ablation)'
         print(f'[PDS] Global branch: Stage 3 ({len(stage3.blocks)} blocks) + {psg_str}')
         print(f'[PDS] Part branch: Independent Stage 3 copy + 5-part pooling')
-        print(f'[PDS] Part stop_grad: {self.part_stop_grad}')
+        if self.stop_grad_epochs > 0:
+            print(f'[PDS] Part stop_grad: delayed (block first {self.stop_grad_epochs} epochs, then release)')
+        else:
+            print(f'[PDS] Part stop_grad: {self.part_stop_grad}')
         print(f'[PDS] Test feature: {self.pose_test_feat}')
 
     def _run_shared_stages(self, x, scene_heatmaps):
@@ -196,7 +201,13 @@ class PoseDualStreamModel(build_transformer):
 
         # Fork: both branches start from same shared tokens
         # Part branch input: detach if stop_grad enabled
-        if self.part_stop_grad:
+        # Delayed stop_grad: block for first N epochs, then release
+        if self.stop_grad_epochs > 0:
+            should_detach = self.training and (self.current_epoch <= self.stop_grad_epochs)
+        else:
+            should_detach = self.part_stop_grad
+
+        if should_detach:
             part_input = shared_x.detach()
         else:
             part_input = shared_x.clone()
