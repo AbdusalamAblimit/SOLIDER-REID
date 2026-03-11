@@ -319,6 +319,15 @@ git commit -m "exp{NNN}: {简短描述改动内容}"
 **决策**: {继续 / 需要干预 / 原因}
 ```
 
+### ⚠️ DataLoader Worker 进程识别
+
+**重要**：PyTorch DataLoader 会 fork 出 `NUM_WORKERS` 个子进程（默认 8 个），这些进程在 `ps aux | grep train.py` 中也会显示为 `python train.py --config_file ...`。**千万不要将这些 worker 进程误认为是重复的训练进程并 kill 掉**——kill worker 会导致主训练进程 crash（`RuntimeError: DataLoader worker exited unexpectedly`）。
+
+识别方法：
+- 主训练进程：CPU 占用高（90%+），启动时间最早
+- Worker 进程：CPU 占用较高但晚于主进程启动，数量等于 `NUM_WORKERS`
+- 如需终止训练，只 kill 主进程 PID，worker 会自动退出
+
 ### 异常自动干预
 
 | 触发条件 | 操作 |
