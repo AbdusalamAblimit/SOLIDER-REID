@@ -517,3 +517,34 @@ C. 接受 PSG 58.3% 作为最终方法，开始写论文
 2. 与 PXA (cross-attention) 不同，CAPSG 保持了 PSG 的逐元素乘法范式，只是让乘法因子变成 content-dependent
 3. 额外参数很少 (~50K/gate = ~100K total)
 4. 零初始化保证初始行为等同 PSG，只有学到有用的 content-feature 交互才会偏离
+
+**执行结果**: exp021 完成。**CAPSG mAP 57.2%, R1 66.0%（-1.1% vs PSG）。** Content-adaptive gate 不如静态 pose-only gate。CAPSG 前期慢启动（ep20 落后 -4.2%），虽多次追近但从未在后段超越 PSG。关键洞察：PSG 的静态 pose-only gating 不是局限而是优势——ReID 需要的是一致的空间先验，不是动态调制。
+
+---
+
+### [2026-03-11 02:30] 决策 #21
+
+**上下文**: 21 个实验完成，PSG (exp007) 仍是唯一超过 baseline 1.5%+ 的方法。已尝试的所有突破方向均失败。
+
+**21 个实验的完整教训总结**:
+- **有效**: PSG (+1.7%), Part Pooling (+0.9%), PCG-only (+1.2%), PXA (+0.7%), PRA (+1.2%)
+- **最佳**: PSG 58.3% — 简单空间门控
+- **组合全部失败**: PSG+Part, PSG+PAB, PSG+PCG, PSG+PRA — 要么中性要么有害
+- **改进 PSG 也失败**: Multi-stage PSG, PSG Spatial, CAPSG — 匹配或弱于 PSG
+- **复杂机制全部不如简单门控**: PXA < PSG, CAPSG < PSG
+
+**核心洞察**: 对于 Swin-Tiny backbone + pose heatmap 的组合，简单的逐元素空间门控（PSG）已经是最优解。所有增加复杂度的尝试都是负面的。
+
+**下一步方向选择**:
+A. 接受 PSG 作为最终方法，转向完善论文（跨数据集实验、可视化、效率分析）
+B. 尝试完全不同的正则化方向（DropPath增大、Label Smoothing 等超参数）
+C. 探索 PSG 在更长训练、不同 LR 下的潜力
+D. 在不同数据集（Market-1501）上验证 PSG 泛化性
+
+**选择**: D — Market-1501 上验证 PSG 泛化性
+
+**理由**:
+1. Occluded-Duke 上的 21 个实验已穷尽 pose injection 方向，继续在同一数据集上微调收益极低
+2. 跨数据集验证是论文的核心需求（审稿人必问"在其他数据集上效果如何"）
+3. Market-1501 是非遮挡数据集，可以验证 PSG 是否对非遮挡场景也有帮助（如果有，说明 PSG 是通用方法；如果没有，说明 PSG 专门针对遮挡）
+4. 这个实验直接服务论文写作，每个数据集的结果都是论文中一行数据
