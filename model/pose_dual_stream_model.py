@@ -66,9 +66,11 @@ class PoseDualStreamModel(build_transformer):
         self._semantic_weight_val = semantic_weight
         self._last_stage_idx = last_stage_idx
         self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
+        self.part_stop_grad = getattr(cfg.MODEL, 'POSE_PART_STOP_GRAD', False)
 
         print(f'[PDS] Global branch: Stage 3 ({len(stage3.blocks)} blocks) + PSG')
         print(f'[PDS] Part branch: Independent Stage 3 copy + 5-part pooling')
+        print(f'[PDS] Part stop_grad: {self.part_stop_grad}')
         print(f'[PDS] Test feature: {self.pose_test_feat}')
 
     def _run_shared_stages(self, x, scene_heatmaps):
@@ -191,6 +193,12 @@ class PoseDualStreamModel(build_transformer):
             x, scene_heatmaps)
 
         # Fork: both branches start from same shared tokens
+        # Part branch input: detach if stop_grad enabled
+        if self.part_stop_grad:
+            part_input = shared_x.detach()
+        else:
+            part_input = shared_x.clone()
+
         # Global branch
         global_feat, global_featmap = self._run_global_branch(
             shared_x.clone(), hw_shape, sem_weight, scene_heatmaps)
@@ -210,7 +218,7 @@ class PoseDualStreamModel(build_transformer):
             # Part branch
             if pose_dict is not None:
                 part_cls_scores, part_feats, part_valid = self._run_part_branch(
-                    shared_x.clone(), hw_shape, sem_weight, scene_heatmaps, scene_scores)
+                    part_input, hw_shape, sem_weight, scene_heatmaps, scene_scores)
 
                 all_cls = [cls_score] + part_cls_scores
                 all_feats = [global_feat] + part_feats
@@ -230,7 +238,7 @@ class PoseDualStreamModel(build_transformer):
 
             if pose_dict is not None and self.pose_test_feat != 'global':
                 _, part_feats, _ = self._run_part_branch(
-                    shared_x.clone(), hw_shape, sem_weight, scene_heatmaps, scene_scores)
+                    part_input, hw_shape, sem_weight, scene_heatmaps, scene_scores)
 
                 if self.pose_test_feat == 'part_only':
                     test_feat = torch.cat(part_feats, dim=1)

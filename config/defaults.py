@@ -111,6 +111,7 @@ _C.MODEL.POSE_PSG_CONTENT_ADAPTIVE = False # use Content-Adaptive PSG (CAPSG) ga
 _C.MODEL.POSE_RECON_HEAD = False            # use Pose Reconstruction Head (PRA) auxiliary task
 _C.MODEL.POSE_RECON_WEIGHT = 0.1            # weight for PRA MSE loss
 _C.MODEL.POSE_DUAL_STREAM = False           # use Pose Dual Stream (PDS) model
+_C.MODEL.POSE_PART_STOP_GRAD = False       # stop gradient from Part branch to shared stages
 
 # -----------------------------------------------------------------------------
 # INPUT
