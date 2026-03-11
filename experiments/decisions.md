@@ -589,4 +589,25 @@ A. exp023: Part 分支 stop_gradient — 完全阻断 Part→Stage0-2 梯度，�
 B. exp023: Part 分支延迟启动 — 先让 Global 收敛再引入 Part，减少早期干扰
 C. exp023: 换方向 — 放弃 dual-stream，回到单分支 + 更好的 test-time fusion
 
-**选择**: 待分析后决定（先更新文档和 brainstorm）
+**选择**: A — stop_gradient
+
+**执行结果**: 🎉 **突破性成功！** exp023 global-only mAP 59.5% (+1.2% vs PSG-only 58.3%, +2.9% vs baseline)。
+stop_gradient 不仅消除了 Part 干扰，还通过改善共享特征质量间接提升了两个分支。
+Part-only 也从 55.2% 提升到 56.7%，证明更好的共享特征反哺 Part 分支。
+
+### [2026-03-11 11:55] 决策 #23
+
+**上下文**: exp023 PDS+StopGrad 取得全实验最佳结果 (mAP 59.5%)。需要决定下一步方向。
+
+**关键发现**:
+1. PDS+StopGrad global-only (59.5%) > PSG-only (58.3%) > PDS global (57.9%)
+2. concat_scaled (59.1%) 接近 global-only，说明 Part 有正贡献
+3. Part 分支独立效果 (56.7%) 超过 baseline (56.6%)
+4. 但 Part ID loss 仍高 (2.06)，Part 特征尚有提升空间
+
+**选项**:
+A. 对 exp023 结果做完整消融：单独评估 PSG 贡献、Part 贡献、stop_grad 贡献
+B. 优化 test-time fusion：尝试更好的 global+part 融合策略
+C. 在 Market-1501 上验证 PDS+StopGrad 的泛化性
+
+**选择**: 先完成文档，然后按 A → C 的顺序执行

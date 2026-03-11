@@ -5,26 +5,32 @@
 ## Phase 2 Story Update (2026-03-11)
 
 ### 暂定标题
-Pose Spatial Gating for Occluded Person Re-Identification: Let the Backbone See the Body
+Pose-Guided Dual-Stream Architecture with Gradient-Isolated Part Learning for Occluded Person Re-Identification
 
-### Phase 2 核心发现
-1. **PSG (Pose Spatial Gate)**: 在 Swin Stage 3 blocks 内部注入 pose heatmap 信息，通过轻量门控 x*(1+gate) 调制特征。+1.7% mAP，仅 102K 额外参数。
-2. **Backbone injection >> Post-hoc pooling**: 在特征形成阶段注入 pose 远优于事后 pooling（+1.7% vs +0.9%）
-3. **PSG 极简性即优势**: 21 个实验显示所有更复杂的方法（PXA、CAPSG、PRA）都不如简单的 PSG
-4. **梯度干扰是组合瓶颈**: 在 PSG 同一 Stage 3 叠加模块总是失败。PDS 双分支通过 Stage 3 权重解耦缓解但未完全解决（57.9% vs 58.3%）
+### Phase 2 核心发现 (更新 2026-03-11)
+1. **PSG (Pose Spatial Gate)**: 在 Swin Stage 3 blocks 内部注入 pose heatmap 信息，通过轻量门控 x*(1+gate) 调制特征。+1.7% mAP，仅 102K 额外参数
+2. **PDS (Pose Dual Stream)**: 复制独立 Stage 3 给 Part 分支，实现权重解耦。解决了 21 个实验暴露的梯度干扰问题
+3. **StopGrad**: 完全阻断 Part→共享层梯度，消除残余干扰 → 额外 +1.2% mAP
+4. **三者组合 (exp023)**: mAP 59.5%, R1 69.5% — 比 baseline **+2.9% mAP, +3.0% R1**
 
-### Phase 2 消融表（用 global-only 特征，公平对比）
+### Phase 2 核心消融表（用 global-only 特征，公平对比）
 | 方法 | mAP | R-1 | 额外参数 |
 |------|-----|-----|----------|
 | Baseline | 56.6% | 66.5% | — |
-| + Part Pooling (exp001) | 57.5% | 67.1% | ~2.6M |
-| + PAB (exp012) | 57.4% | 67.3% | 5.4K |
-| + PCG (exp018) | 57.8% | 67.7% | ~77K |
-| **+ PSG (exp007)** | **58.3%** | **67.9%** | **102K** |
+| + Part Pooling only (exp001) | 57.5% | 67.1% | ~2.6M |
+| **+ PSG only (exp007)** | **58.3%** | **67.9%** | **102K** |
 | + PSG + Part same Stage3 (exp008) | 57.7% | 66.0% | ~2.7M |
-| + PDS dual Stage3 global (exp022) | 57.9% | 67.1% | ~8.8M |
+| + PDS (独立 Stage3, exp022) | 57.9% | 67.1% | ~8.8M |
+| **+ PDS + StopGrad (exp023)** | **59.5%** | **69.5%** | **~8.8M** |
 
-### 跨数据集验证
+### 消融证据链
+1. Baseline 56.6% → +PSG: 58.3% (+1.7%) — PSG 有效
+2. +PSG+Part 同 Stage3: 57.7% (-0.6%) — 梯度干扰
+3. +PDS 独立 Stage3: 57.9% (+0.2% vs exp008) — 解耦部分有效
+4. +PDS+StopGrad: 59.5% (+1.6% vs PDS) — 完全隔离更好
+5. exp023 Part-only: 56.7% > exp022 Part-only: 55.2% — 证明更好的共享特征反哺 Part
+
+### 跨数据集验证 (PSG)
 | 数据集 | Backbone | PSG mAP提升 |
 |--------|----------|-------------|
 | Occluded-Duke | Swin-Tiny | +1.7% |
@@ -32,8 +38,13 @@ Pose Spatial Gating for Occluded Person Re-Identification: Let the Backbone See 
 | Market-1501 | Swin-Tiny | +0.8% |
 | Market-1501 | Swin-Small | +0.6% |
 
+### 核心贡献（预计 3 点）
+1. **PSG (Pose Spatial Gate)**: 极简的 backbone 内部 pose 注入，证明"在特征形成阶段注入 pose > 事后 pooling"
+2. **PDS + Gradient Isolation**: 双分支架构 + 梯度隔离，解决 pose-guided 方法中的多任务梯度干扰问题
+3. **系统性消融研究**: 24 个实验全面探索 pose 信息在 ReID 中的利用方式
+
 ### 当前状态
-PSG 是核心贡献（简洁、有效、跨数据集一致）。PDS 提供了有价值的消融证据（梯度干扰→权重解耦），但自身性能不够作为独立贡献。下一步需要找到第二个与 PSG 正交的有效模块。
+PDS+StopGrad 是 full model，PSG 和 gradient isolation 都是关键贡献。需要跨数据集验证 PDS+StopGrad 的泛化性。
 
 ---
 

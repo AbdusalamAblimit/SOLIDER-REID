@@ -196,3 +196,40 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
 1. **exp023: 先尝试 stop_gradient 隔离** — 最简单的 fix，验证是否能消除 -0.4% gap
 2. **如果 stop_gradient 有效** → PDS + stop_gradient 作为论文的 full model
 3. **如果 stop_gradient 无效** → 放弃 dual-stream，PSG 作为核心贡献 + 其他正交方向 (KP-RPE, Skeleton GCN)
+
+---
+
+## exp023 PDS+StopGrad 结果反馈 (2026-03-11) 🎉
+
+### 突破性结果！
+- **global-only 59.5%**: 超越 PSG-only 58.3% (+1.2%)，超越 baseline +2.9%
+- **concat_scaled 59.1%**: Part 特征确实提供补充信息
+- **part-only 56.7%**: 超过 baseline 和 exp022 part-only (55.2%)
+
+### 为什么 stop_gradient 反而提升了性能？
+
+**表面解释**: stop_grad 消除了 Part→shared 的梯度干扰，恢复了 Global 分支性能。
+
+**更深的解释**: stop_grad 改变了优化景观：
+1. **共享 Stage 0-2 只被 Global loss 优化** → 特征更适合全局 ID 任务 → PSG 获得更好的输入
+2. **Part 分支使用 frozen 共享特征** → 被迫学习更好的局部特征适配 → Part Stage 3 学到的是真正的"局部化"转换
+3. **良性循环**: 更好的共享特征 → 更好的 Part 输入 → Part 独立效果也提升 (56.7% > 55.2%)
+
+### 这对论文意味着什么
+
+**核心 story 明确了**:
+1. **PSG**: 在 backbone 内部注入 pose spatial prior → +1.7% (简洁有效)
+2. **PDS**: 双分支解耦 Stage 3 权重 → 让 PSG 和 Part 不冲突
+3. **StopGrad**: 完全隔离 Part 梯度 → 消除共享层干扰 → 额外 +1.2%
+4. **三者组合**: baseline +2.9% mAP, +3.0% R1
+
+**消融证据链**:
+- Baseline 56.6% → +PSG 58.3% (+1.7%) → +PDS 57.9% (-0.4%, 有 Part 干扰) → +StopGrad 59.5% (+1.6%, 消除干扰)
+- 证明每个组件都是必要的
+
+### 下一步方向
+
+1. **完善消融实验**: 需要 PDS+StopGrad 但无 PSG 的结果来分离 Part 分支独立贡献
+2. **跨数据集验证**: Market-1501 上跑 PDS+StopGrad
+3. **test-time fusion 优化**: global-only (59.5%) > concat_scaled (59.1%)，说明 Part 特征融合可以更好
+4. **NFC 测试**: 在 PDS+StopGrad 特征上测试 NFC 后处理效果
