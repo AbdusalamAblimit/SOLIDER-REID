@@ -484,3 +484,36 @@ PSG Stage 3 (mAP 58.3%) 是确认的性能上限。所有尝试过的改进方�
 **核心结论**: 三种 pose 注入机制的排序确认：PSG(空间门控) > PXA(跨注意力) > PCG(通道门控, GAP后)。简单的空间逐元素操作始终优于复杂机制。
 
 **下一步**: 启动 exp020 (PSG + Pose Reconstruction Auxiliary)，测试**正交方向**——不修改 PSG 前向传播，仅通过辅助重建任务提供额外梯度信号。这是突破 58.3% 上限的希望所在。
+
+---
+
+### [2026-03-11 00:14] 决策 #20
+
+**上下文**: exp020 PRA 完成。mAP 57.8%, R1 67.3%。中性结果，不如 PSG (58.3%)。至此，20 个实验全部无法超越 PSG (exp007)。
+
+**总结过去尝试突破 PSG 的失败**:
+- exp008 PSG+Part Pooling: 57.7% ❌ 组合干扰
+- exp009 Multi-stage PSG: 58.3% 🟡 匹配但不超越
+- exp012 PAB: 57.4% ❌ 弱于 PSG
+- exp013 PSG+PAB: 57.6% ❌ 互相干扰
+- exp015 PSG Spatial 3×3: 58.3% 🟡 匹配但不超越
+- exp017 PSG+PCG: 58.0% ❌ 不叠加
+- exp019 PXA: 57.3% ❌ 过拟合
+- exp020 PSG+PRA: 57.8% ❌ 梯度干扰
+
+**核心问题**: 所有**添加额外模块/任务**到 PSG 的尝试都失败。PSG 似乎已经是"局部最优"——它简单有效，但不接受增强。
+
+**新思路**: 不添加模块到 PSG，而是**改进 PSG 本身**。核心问题：PSG 的门控是**静态的**——给定相同的 heatmap，不同图像得到相同的 gate。如果让 gate 同时依赖 pose 和当前特征内容（Content-Adaptive PSG / CAPSG），可能打破这个限制。
+
+**选项**:
+A. Content-Adaptive PSG (CAPSG): gate = f(pose, features) 而非 gate = f(pose)
+B. PSG + 超参调优 (weight decay, dropout, label smoothing)
+C. 接受 PSG 58.3% 作为最终方法，开始写论文
+
+**选择**: A — CAPSG
+
+**理由**:
+1. CAPSG 是对 PSG 机制本身的改进，而非外挂模块，避免了"组合干扰"问题
+2. 与 PXA (cross-attention) 不同，CAPSG 保持了 PSG 的逐元素乘法范式，只是让乘法因子变成 content-dependent
+3. 额外参数很少 (~50K/gate = ~100K total)
+4. 零初始化保证初始行为等同 PSG，只有学到有用的 content-feature 交互才会偏离
