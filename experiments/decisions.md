@@ -654,3 +654,26 @@ B. 直接启动 exp025，exp024 可以后续补跑
 2. exp022 (PDS) — 消融：证明无隔离时 Part 梯度干扰 Global
 3. exp025 (Delayed StopGrad) — 消融：证明即使预热后释放也不如永久隔离
 4. exp024 (No PSG) — 消融：证明 PSG 在 Global 分支中的贡献
+
+---
+
+### [2026-03-11 18:10] 决策 #26
+
+**上下文**: PDS 系列实验 (exp022-025) 完成后，需要决定下一步方向。用户建议三个选项：(a) 更长梯度隔离 (b) 更早分支分离 (c) 全新创新点。启动了 Opus 研究子代理分析创新方向。
+
+**选项**:
+  A. 更早分支分离（share Stage 0-1, split Stage 2+3）— 消融实验，~10M 额外参数
+  B. 更长梯度隔离（60 epochs）— 低价值，exp025 已证明延迟释放不如永久隔离
+  C. Stochastic Pose Dropout (SPD) — 全新方向，在 PSG 基础上做正则化
+  D. Pose-Contrastive Representation Alignment (PCRA) — 全新方向，pose-aware triplet 距离
+  E. Pose-Guided Variance Regularization (PVR) — 全新方向，特征空间分布正则化
+
+**选择**: C (SPD)
+**理由**:
+1. 最简单实现（~5 行代码），最低风险（最差情况 = PSG baseline 58.3%）
+2. 不在 forward path 添加新模块 → 完全避免梯度干扰问题
+3. 基于确认有效的 PSG 架构（58.3%），不依赖尚未验证的 PDS
+4. SPD 结果可指导后续方向选择：若有效 → 说明 backbone 过度依赖 pose → 继续 PVR；若无效 → pose 始终有用 → 尝试 PCRA
+5. 论文 story 清晰："PSG 教 backbone 在哪里关注，SPD 防止过度依赖"
+
+**执行结果**: 已启动训练 (PID 712968)，Epoch 10 评估与 exp007 持平
