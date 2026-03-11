@@ -112,6 +112,7 @@ _C.MODEL.POSE_RECON_HEAD = False            # use Pose Reconstruction Head (PRA)
 _C.MODEL.POSE_RECON_WEIGHT = 0.1            # weight for PRA MSE loss
 _C.MODEL.POSE_DUAL_STREAM = False           # use Pose Dual Stream (PDS) model
 _C.MODEL.POSE_PART_STOP_GRAD = False       # stop gradient from Part branch to shared stages
+_C.MODEL.POSE_GLOBAL_PSG = True            # use PSG in Global branch (set False for ablation)
 
 # -----------------------------------------------------------------------------
 # INPUT

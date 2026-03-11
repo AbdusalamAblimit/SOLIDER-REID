@@ -67,8 +67,10 @@ class PoseDualStreamModel(build_transformer):
         self._last_stage_idx = last_stage_idx
         self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
         self.part_stop_grad = getattr(cfg.MODEL, 'POSE_PART_STOP_GRAD', False)
+        self.use_global_psg = getattr(cfg.MODEL, 'POSE_GLOBAL_PSG', True)
 
-        print(f'[PDS] Global branch: Stage 3 ({len(stage3.blocks)} blocks) + PSG')
+        psg_str = 'PSG' if self.use_global_psg else 'no PSG (ablation)'
+        print(f'[PDS] Global branch: Stage 3 ({len(stage3.blocks)} blocks) + {psg_str}')
         print(f'[PDS] Part branch: Independent Stage 3 copy + 5-part pooling')
         print(f'[PDS] Part stop_grad: {self.part_stop_grad}')
         print(f'[PDS] Test feature: {self.pose_test_feat}')
@@ -124,10 +126,10 @@ class PoseDualStreamModel(build_transformer):
         stage3 = self.base.stages[self._last_stage_idx]
         last = self._last_stage_idx
 
-        # Run Stage 3 blocks with PSG
+        # Run Stage 3 blocks with PSG (if enabled)
         for block_idx, block in enumerate(stage3.blocks):
             x = block(x, hw_shape)
-            if scene_heatmaps is not None:
+            if self.use_global_psg and scene_heatmaps is not None:
                 x = self.psg_modules[block_idx](x, hw_shape, scene_heatmaps)
 
         # Stage 3 has no downsample
