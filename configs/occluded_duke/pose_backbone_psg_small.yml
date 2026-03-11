@@ -12,6 +12,12 @@ MODEL:
   STRIDE_SIZE: [16, 16]
   SEMANTIC_WEIGHT: 0.2
   WITH_CP: False
+  # Pose backbone injection (PSG)
+  POSE_ENABLED: True
+  POSE_DATA_DIR: 'data/occluded_duke'
+  POSE_HEATMAP_SIZE: [96, 32]
+  POSE_BACKBONE_PSG: True
+  POSE_PFM_HIDDEN: 64
 
 INPUT:
   SIZE_TRAIN: [384, 128]
@@ -23,7 +29,7 @@ INPUT:
   PIXEL_STD: [0.5, 0.5, 0.5]
 
 DATASETS:
-  NAMES: ('market1501')
+  NAMES: ('occluded_duke')
   ROOT_DIR: ('data')
 
 DATALOADER:
@@ -54,4 +60,4 @@ TEST:
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/market1501/swin_small_baseline'
+OUTPUT_DIR: './log/occluded_duke/swin_small_psg'

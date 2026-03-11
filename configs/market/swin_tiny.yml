@@ -39,10 +39,10 @@ SOLVER:
   IMS_PER_BATCH: 64
   WARMUP_METHOD: 'cosine'
   LARGE_FC_LR: False
-  CHECKPOINT_PERIOD: 10
+  CHECKPOINT_PERIOD: 120
   LOG_PERIOD: 20
   EVAL_PERIOD: 10
-  WEIGHT_DECAY:  1e-4
+  WEIGHT_DECAY: 1e-4
   WEIGHT_DECAY_BIAS: 1e-4
   BIAS_LR_FACTOR: 2
 
@@ -54,4 +54,4 @@ TEST:
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/market1501/exp022_baseline'
+OUTPUT_DIR: './log/market1501/swin_tiny_baseline'

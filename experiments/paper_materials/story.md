@@ -1,6 +1,8 @@
 # 论文故事线（持续更新）
 
-## 暂定标题
+> **⚠️ 注意**: 以下内容来自 Phase 1 (exp/003_offline_pose 分支，基于 PCFC/visibility/GiLt)。Phase 2 (exp/pose_heatmap 分支，基于 PSG backbone injection) 的 story 尚未更新。Phase 2 最佳结果：PSG mAP 58.3%, R1 67.9% (+1.7%/+1.4% vs baseline)。
+
+## 暂定标题（Phase 1，待更新）
 Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Person Re-Identification
 
 ## Motivation（为什么做这个）

@@ -1,5 +1,7 @@
 MODEL:
   PRETRAIN_HW_RATIO: 2
+  PRETRAIN_CHOICE: 'self'
+  PRETRAIN_PATH: 'pretrained/swin_base.pth'
   METRIC_LOSS_TYPE: 'triplet'
   IF_LABELSMOOTH: 'off'
   IF_WITH_CENTER: 'no'
@@ -8,19 +10,21 @@ MODEL:
   DEVICE_ID: ('0')
   TRANSFORMER_TYPE: 'swin_base_patch4_window7_224'
   STRIDE_SIZE: [16, 16]
+  SEMANTIC_WEIGHT: 0.2
+  WITH_CP: True
 
 INPUT:
   SIZE_TRAIN: [384, 128]
   SIZE_TEST: [384, 128]
-  PROB: 0.5 # random horizontal flip
-  RE_PROB: 0.5 # random erasing
+  PROB: 0.5
+  RE_PROB: 0.5
   PADDING: 10
   PIXEL_MEAN: [0.5, 0.5, 0.5]
   PIXEL_STD: [0.5, 0.5, 0.5]
 
 DATASETS:
   NAMES: ('msmt17')
-  ROOT_DIR: ('path/to/msmt17/datasets')
+  ROOT_DIR: ('data')
 
 DATALOADER:
   SAMPLER: 'softmax_triplet'
@@ -30,7 +34,7 @@ DATALOADER:
 SOLVER:
   OPTIMIZER_NAME: 'SGD'
   MAX_EPOCHS: 120
-  BASE_LR: 0.0008
+  BASE_LR: 0.0004
   WARMUP_EPOCHS: 20
   IMS_PER_BATCH: 64
   WARMUP_METHOD: 'cosine'
@@ -38,7 +42,7 @@ SOLVER:
   CHECKPOINT_PERIOD: 120
   LOG_PERIOD: 20
   EVAL_PERIOD: 10
-  WEIGHT_DECAY:  1e-4
+  WEIGHT_DECAY: 1e-4
   WEIGHT_DECAY_BIAS: 1e-4
   BIAS_LR_FACTOR: 2
 
@@ -50,4 +54,4 @@ TEST:
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/msmt17/swin_base'
+OUTPUT_DIR: './log/msmt17/swin_base_baseline'

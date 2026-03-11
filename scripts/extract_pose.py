@@ -123,27 +123,86 @@ def parse_args():
     return parser.parse_args()
 
 
-SPLIT_DIRS = {
-    'train': 'bounding_box_train',
-    'query': 'query',
-    'gallery': 'bounding_box_test',
+# Dataset-specific split configurations
+DATASET_CONFIGS = {
+    'occluded_duke': {
+        'split_dirs': {
+            'train': 'bounding_box_train',
+            'query': 'query',
+            'gallery': 'bounding_box_test',
+        },
+        'split_lists': {
+            'train': 'train.list',
+            'query': 'query.list',
+            'gallery': 'gallery.list',
+        },
+    },
+    'market1501': {
+        'split_dirs': {
+            'train': 'bounding_box_train',
+            'query': 'query',
+            'gallery': 'bounding_box_test',
+        },
+        'split_lists': {},  # no list files, scan directory
+    },
+    'msmt17': {
+        'split_dirs': {
+            'train': 'train',
+            'query': 'test',
+            'gallery': 'test',
+        },
+        'split_lists': {
+            'train': ['list_train.txt', 'list_val.txt'],  # multiple list files
+            'query': ['list_query.txt'],
+            'gallery': ['list_gallery.txt'],
+        },
+        'list_has_pid': True,  # list format: "subdir/filename.jpg pid"
+    },
 }
-SPLIT_LISTS = {
-    'train': 'train.list',
-    'query': 'query.list',
-    'gallery': 'gallery.list',
-}
 
 
-def get_image_list(data_root, split):
-    """Get image list from .list file or by scanning directory."""
-    img_dir = os.path.join(data_root, SPLIT_DIRS[split])
-    list_path = os.path.join(data_root, SPLIT_LISTS[split])
-
-    if os.path.exists(list_path):
-        with open(list_path, 'r') as f:
-            filenames = [line.strip() for line in f if line.strip()]
+def detect_dataset(data_root):
+    """Auto-detect dataset type from data_root path."""
+    root_lower = data_root.lower()
+    if 'msmt' in root_lower:
+        return 'msmt17'
+    elif 'market' in root_lower:
+        return 'market1501'
     else:
+        return 'occluded_duke'
+
+
+def get_image_list(data_root, split, dataset_type=None):
+    """Get image list from .list file or by scanning directory."""
+    if dataset_type is None:
+        dataset_type = detect_dataset(data_root)
+
+    cfg = DATASET_CONFIGS.get(dataset_type, DATASET_CONFIGS['occluded_duke'])
+    img_dir = os.path.join(data_root, cfg['split_dirs'][split])
+    list_files = cfg.get('split_lists', {}).get(split, [])
+    has_pid = cfg.get('list_has_pid', False)
+
+    # Normalize to list
+    if isinstance(list_files, str):
+        list_files = [list_files]
+
+    filenames = []
+    for lf in list_files:
+        list_path = os.path.join(data_root, lf)
+        if os.path.exists(list_path):
+            with open(list_path, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    if has_pid:
+                        # Format: "subdir/filename.jpg pid"
+                        rel_path = line.split()[0]
+                    else:
+                        rel_path = line
+                    filenames.append(rel_path)
+
+    if not filenames:
         # Fallback: scan directory for image files
         exts = {'.jpg', '.jpeg', '.png', '.bmp'}
         filenames = sorted(
@@ -152,7 +211,9 @@ def get_image_list(data_root, split):
         )
         print(f"  No .list file found, scanned {img_dir}: {len(filenames)} images")
 
-    return [(os.path.join(img_dir, fn), fn) for fn in filenames]
+    # Return (full_path, basename) pairs
+    # Use basename as key in index.json (unique across splits)
+    return [(os.path.join(img_dir, fn), os.path.basename(fn)) for fn in filenames]
 
 
 def detect_persons(det_model, img_path, score_thr=0.3, max_persons=6):

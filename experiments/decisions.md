@@ -541,10 +541,34 @@ B. 尝试完全不同的正则化方向（DropPath增大、Label Smoothing 等�
 C. 探索 PSG 在更长训练、不同 LR 下的潜力
 D. 在不同数据集（Market-1501）上验证 PSG 泛化性
 
-**选择**: D — Market-1501 上验证 PSG 泛化性
+**选择**: D — Market-1501 上验证 PSG 泛化性（已由用户在 4090 完成）
+
+**执行结果**: 用户已在 4090 上完成所有跨数据集实验。PSG 在所有配置上均有效（Occluded-Duke Swin-Small +2.0%, Market-1501 Swin-Tiny +0.8%, Market-1501 Swin-Small +0.6%）。
+
+---
+
+### [2026-03-11 06:30] 决策 #22
+
+**上下文**: 用户指示不要继续做跨数据集实验（已在 4090 完成），要求探索新的训练侧创新。用户确认：
+1. 可以添加大模块（ResNet、GCN、Decoder 等），Swin-Tiny 仅是效率约束
+2. 可以完全放弃 PSG 框架
+3. 可以加新分支、双流架构等
+
+经 Web 搜索调研，识别出以下高潜力方向：
+- PDS (双分支架构): 共享 Stage 1-2，独立 Stage 3 for Global/Part
+- KP-RPE (关键点相对位置编码): CVPR24 人脸识别，与 PSG 正交
+- Skeleton GCN: 沿骨架传播特征做遮挡补全
+
+**选项**:
+A. exp022: PDS 双分支 — 解决梯度干扰核心瓶颈，~6M 额外 params
+B. exp022: KP-RPE — 最轻量，~10K params，快速验证
+C. exp022: Skeleton GCN — 后置模块，~3M params
+
+**选择**: A — PDS 双分支
 
 **理由**:
-1. Occluded-Duke 上的 21 个实验已穷尽 pose injection 方向，继续在同一数据集上微调收益极低
-2. 跨数据集验证是论文的核心需求（审稿人必问"在其他数据集上效果如何"）
-3. Market-1501 是非遮挡数据集，可以验证 PSG 是否对非遮挡场景也有帮助（如果有，说明 PSG 是通用方法；如果没有，说明 PSG 专门针对遮挡）
-4. 这个实验直接服务论文写作，每个数据集的结果都是论文中一行数据
+1. 21 个实验证明梯度干扰是 PSG 组合失败的根本原因。PDS 从架构层面解决这个问题。
+2. 用户明确说"可以加大模块、新分支"，PDS 正是这个方向
+3. PDS 的 Part 分支为后续集成 GCN、Feature Completion 等模块提供了载体
+4. 如果 PDS 有效，结合 PSG 在 Global 分支 + 结构化 Part 分支，论文故事非常完整
+5. KP-RPE 虽轻量但受 Swin window attention 限制风险较大，可作为后续补充

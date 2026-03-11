@@ -7,78 +7,9 @@
 - NFC test-time 方法有效但不算训练端创新
 - **关键结论**: 不要用 visibility 向量，用原始 pose 热图
 
-## 本轮方向: 纯 Pose Heatmap
-
-### 核心优势
-1. 热图是连续值（0~1），比二值 visibility 更 rich
-2. 热图自然编码遮挡信息（遮挡区域响应低）
-3. 热图保留空间结构（17个关键点的2D位置）
-4. mmpose 提供多种鲁棒模型（RTMPose、HRNet-W48、ViTPose-Large）
-
-### 候选创新方向
-
-#### 方向 A: Pose Heatmap Attention Injection
-- 核心想法: 将 pose heatmap 下采样到与 Swin feature map 相同大小，作为 spatial attention bias 注入 self-attention
-- 技术路线: heatmap → Conv downsample → attention bias (加到 QK^T 上)
-- 与前轮的区别: 前轮用 visibility 做 token scaling，这次用热图做 attention routing
-- 注入位置: 可以在每个 Swin stage 都注入（不同分辨率）
-- 预期: backbone 在每一层都知道人体结构 → 更好的遮挡感知
-
-#### 方向 B: Pose-Guided Part Pooling (改进版)
-- 核心想法: 用热图代替固定 Gaussian，做 soft part pooling
-- 与前轮 PCFC 的区别: PCFC 用 Gaussian(keypoint, sigma) 作为 attention map，这次用 pose model 直接预测的热图
-- 热图本身就是"该关键点存在的概率分布"，比 Gaussian 更准确
-- 特别是对非正面/非标准姿势的人，热图比 Gaussian 更贴合实际
-
-#### 方向 C: Pose Structure Graph Network
-- 核心想法: 将 17 个关键点构建为图结构（骨骼连接），用 GCN 学习结构化 part representations
-- 从 Swin feature map 在每个关键点位置提取特征 → GCN propagation → 结构化 part features
-- 创新点: 利用人体骨骼连接关系做特征传播（可见部位 → 遮挡部位）
-
-#### 方向 D: Multi-Resolution Pose Injection
-- 核心想法: 在 Swin 的不同 stage 注入不同分辨率的热图
-- Stage 1 (48x16, 96ch): 高分辨率热图，细粒度空间引导
-- Stage 2 (24x8, 192ch): 中分辨率热图，部位级引导
-- Stage 3 (12x4, 384ch): 低分辨率热图，全局结构引导
-- 每个 stage 的注入方式可以不同（add/concat/cross-attention）
-
-#### 方向 E: Pose-Conditioned Feature Masking
-- 核心想法: 训练时根据热图概率 mask 部分 spatial tokens，迫使模型从可见 tokens 推断遮挡区域
-- 类似 MAE (Masked Autoencoder) 但用 pose 引导 mask 策略
-- 与前轮 PGFC 的区别: PGFC 用 visibility 做 hard replacement，这次用热图做 soft probabilistic masking
-
-## 推荐主攻方向
-**方向 A (Pose Heatmap Attention Injection)** — 最直接、最有创新性
-- 直接修改 Swin attention 机制，是架构级创新
-- 每个 stage 都注入 pose 信息，是"深层 pose conditioning"
-- 论文 story 清晰: "将人体结构先验注入 Transformer 注意力机制"
-
-**备选**: 方向 D (Multi-Resolution) 如果 A 效果好，可以扩展为 multi-resolution 版本
-
-## 重要约束
-- **训练侧创新为核心**: NFC/RR 等 test-time 方法不算公平对比（所有 SOTA 都可以用），训练侧才是论文贡献
-- **Pose 模型可以参与训练**: 不限于离线热图，可以将冻结的 pose 模型作为在线特征提取器
-- **可以大胆修改中间层**: 与 Phase 1 不同，本轮使用更可靠的热图（非 visibility），中间层修改值得重新探索
-
-## 新增方向
-
-#### 方向 F: Pose Feature Cross-Attention (在线)
-- 核心想法: 使用冻结的 RTMPose 模型提取 pose feature maps，通过 cross-attention 将 pose 信息注入 Swin backbone
-- 具体: Swin feature map (Q) × Pose feature map (K,V) → pose-aware features
-- 优势: RTMPose 的中间特征比 17 个关键点热图更丰富（包含人体结构上下文）
-- 关键: pose 模型冻结不训练，只提供 spatial structure prior
-- 论文 story: "将 pose 估计网络的结构化知识蒸馏到 ReID backbone 中"
-
-#### 方向 G: Dual-Task Pose-ReID (联合训练)
-- 核心想法: 在 Swin backbone 上同时做 ReID + pose estimation，共享底层特征
-- Swin stage 1-2 共享 → stage 3 分为 ReID head 和 pose head
-- Pose head 的梯度帮助 backbone 学习更好的空间结构
-- 与前轮 VPReID (exp002) 的区别: 前轮用独立的 ViTPose backbone，本次共享底层特征
-- 风险: 多任务平衡（前轮 exp002 就是因此失败）
-
 ---
 
-## Phase 2 实验反馈总结 (exp001-exp018)
+## Phase 2 实验总结 (exp001-exp021, 21 个实验)
 
 ### 已证实的核心发现
 
@@ -92,78 +23,142 @@
 - PSG + PAB Combo: ❌ (-0.7% vs PSG-only)
 - PSG + Part Pooling: ❌ (-0.6% vs PSG-only)
 - PSG + Part Supervision (global test): ❌ (-0.7% mAP, -2.1% R1)
-- PSG + Spatial Conv (3×3 DWConv): 🟡 持平 (mAP 58.3% = exp007, R1 -0.8%)
-- PSG + PCG (通道级 gate): 🟡 持平 (mAP 58.0%, -0.3% vs PSG-only) — 正交维度不干扰 (exp017)
-- **结论**: 空间级操作（PAB, Part Pooling）会干扰 PSG，但通道级操作（PCG）不干扰。然而 PCG 也不提供额外增益。PSG 58.3% 是该框架的理论上限。
+- PSG + PCG (通道级 gate): 🟡 持平 (mAP 58.0%, -0.3% vs PSG-only)
+- **核心瓶颈**: 在同一个 Stage 3 上叠加任何模块都会梯度干扰
 
-**3. PSG 内部结构已达最优**
-- 1×1 conv gate 足够，3×3 depthwise conv 冗余
-- Multi-stage (S2+S3) 无额外收益
-- 200 epochs 无额外收益
-- **结论**: PSG 的瓶颈不在感受野、不在训练长度、不在注入位置
+**3. 复杂度越高，效果越差**
+- 有效方法排序: PSG(58.3%) > PCG-only(57.8%) > PRA(57.8%) > Part Pooling(57.5%) > PAB(57.4%) > PXA(57.3%) > CAPSG(57.2%)
+- PXA/CAPSG 最复杂，效果最差
+- **PSG 的极简性就是它的优势**
 
-**4. 数据增强层面的 pose 利用无效**
-- PGE (Pose-Guided Erasing): ❌ mAP 54.8% (-3.5% vs exp007). 身体部件级擦除过强且削弱 PSG 输入 (exp016)
-- **结论**: 数据增强层面的 pose 利用不如模型层面有效。PSG + Random Erasing 仍为最优组合。
+**4. PSG 跨数据集/backbone 均有效（4090 验证）**
 
-**5. 通道级 Pose Conditioning (PCG) 有独立效果**
-- PCG-only (无 PSG): mAP 57.8%, +1.2% vs baseline (exp018)
-- PSG-only: mAP 58.3%, +1.7% vs baseline (exp007)
-- PSG + PCG: mAP 58.0%, 不叠加 (exp017)
-- **结论**: PCG 和 PSG 各自有效但捕获相似的 pose 信号，组合不互补。
+| 数据集 | Backbone | PSG mAP 提升 |
+|--------|----------|-------------|
+| Occluded-Duke | Swin-Tiny | +1.7% |
+| Occluded-Duke | Swin-Small (lr4) | +2.0% |
+| Market-1501 | Swin-Tiny | +0.8% |
+| Market-1501 | Swin-Small (lr4) | +0.6% |
 
-### 战略反思
+### 关键教训
+- **梯度干扰是核心瓶颈**: 21 个实验中所有在 PSG 基础上"加东西"的尝试都失败了，原因是同一个 Stage 3 内的模块共享梯度流
+- **要突破 PSG，必须用独立的处理路径**，避免梯度干扰
+- **可以添加大模块**: 用户确认不限于轻量模块，可以加 ResNet 分支、Decoder、GCN 等
 
-**当前困境**: PSG 58.3% 是 +1.7% mAP 的稳定改进，但对论文来说幅度不够。且无法通过组合/扩展/数据增强进一步提升。18 个实验已穷尽以下方向：
-- backbone 内部结构改进（多 stage, spatial conv, attention bias, channel gate）
-- backbone 外部组合（part pooling, part supervision）
-- 训练策略（freeze warmup, 200ep）
-- 数据增强（pose-guided erasing）
+---
 
-**需要的突破方向**: 必须从根本不同的角度利用 pose 信息。候选：
-1. **全新模型架构** — 跳出 feature gating 范式
-2. **Pose-guided 距离度量** — 改变测试时的匹配方式
-3. **联合训练** — 将 pose 估计作为辅助任务
+## Phase 3: 新方向候选 (2025.03.11 Web 搜索 + 文献调研)
 
-### exp019-021 新增发现
+### ★ 方向 K: 双分支架构 — Pose-Guided Dual-Stream (PDS)
+**优先级: ⭐⭐⭐⭐⭐**
 
-**6. Cross-Attention 和 Content-Adaptive 机制都不如简单门控**
-- PXA (Cross-Attention): mAP 57.3%, 过拟合严重 (train acc 99.5%), -1.0% vs PSG (exp019)
-- PRA (Auxiliary Reconstruction): mAP 57.8%, 后期梯度干扰, -0.5% vs PSG (exp020)
-- CAPSG (Content-Adaptive Gate): mAP 57.2%, 慢启动+过度参数化, -1.1% vs PSG (exp021)
-- **结论**: PSG 的 simplicity IS its advantage。静态 pose-only gate 足够了，因为 ReID 需要一致的空间加权，不是动态输入依赖的调制。
+```
+Input → Swin Stage 1-2 (共享)
+              ↓
+    ┌─────────┴─────────┐
+    ↓                   ↓
+  Stage 3-A           Stage 3-B (独立权重)
+  + PSG               + Pose Part Processing
+    ↓                   ↓
+   GAP              Part Pooling (基于 heatmap)
+    ↓                   ↓
+ Global Feat        Part Feats
+    ↓                   ↓
+ ID + Triplet      Part ID + Part Triplet
+    ↓                   ↓
+    └── concat (test) ──┘
+```
 
-**7. 21 个实验的终极洞察：Pose Spatial Gating 的极简性原则**
-- 有效方法排序: PSG(58.3%) > PCG-only(57.8%) > PRA(57.8%) > Part Pooling(57.5%) > PXA(57.3%) > PAB(57.4%) > CAPSG(57.2%)
-- 复杂度越高，效果越差（PXA/CAPSG 最复杂，效果最差）
-- 这个发现本身就是论文贡献："We empirically demonstrate that simple spatial gating is the optimal way to inject pose information into a ReID backbone, and increasing model complexity consistently hurts performance."
+- **核心想法**: 解决 exp008/014 暴露的梯度干扰问题。复制独立的 Stage 3 给 Part 分支。
+- **为什么与前轮不同**: exp008 在同一 Stage 3 上做 PSG+Part，梯度干扰。PDS 用独立 Stage 3，各自优化。
+- **代价**: ~6M 额外 params（Stage 3 ≈ 2 SwinBlocks × 768ch）
+- **优势**: Part 分支可以集成更多 pose 操作（GCN、cross-attention），而不影响 Global 分支
+- **参考**: PGFL-KD (ACM MM 2021) 三分支架构, FCFormer (TPAMI 2024) 双流设计
+- **论文定位**: 主贡献之一 — "dual-stream pose-guided architecture with gradient-isolated part learning"
 
-### 论文方向重新定位
+### ★ 方向 L: 关键点相对位置编码 (KP-RPE)
+**优先级: ⭐⭐⭐⭐**
 
-**当前最佳策略**: 接受 PSG 作为最终方法，通过跨数据集实验 + 丰富的消融实验讲清论文故事。
-- **主贡献**: PSG — 一种极简的 pose 空间门控机制
-- **消融证据**: 21 个实验系统地证明了简单 > 复杂
-- **跨数据集**: Occluded-Duke + Market-1501（进行中）
-- **论文 narrative**: "Less is More: Simple Pose Spatial Gating for Person Re-Identification"
+- **来源**: CVPR 2024 人脸识别 (Kim et al., "KeyPoint Relative Position Encoding for Face Recognition")
+- **核心想法**: 将 Swin 的 attention bias 从像素相对位置改为关键点相对位置
+  - 标准 RPE: bias(i,j) = table[xi-xj, yi-yj]
+  - KP-RPE: bias(i,j) = MLP(dist(i,kp1),...,dist(j,kp1),...)
+- **与 PSG 完全正交**: PSG 调制 feature 幅度（乘法），KP-RPE 调制 attention 路由（加法 bias）
+- **与 exp012 PAB 的区别**: PAB 是单像素 spatial map，KP-RPE 编码 token 对之间的**结构关系**
+- **参数量**: ~5-10K，几乎零开销
+- **风险**: Swin 用 window attention (7×7 window)，12×4 feature map 上 window 划分可能限制效果
+- **论文定位**: 与 PSG 叠加使用 — "spatial gating + structural attention routing"
 
-### 新增候选方向
+### ★ 方向 M: 骨架图卷积特征传播 (Skeleton GCN)
+**优先级: ⭐⭐⭐⭐**
 
-#### 方向 H: Pose-Guided Erasing (PGE)
-- **核心想法**: 用 pose 热图引导数据增强，替代 Random Erasing。训练时随机选择 1-2 个身体部件组（头部、上身、下身），基于热图 mask 对应区域，迫使模型从部分身体学习身份
-- **与 Random Erasing 的区别**: RE 随机放置矩形框，PGE 基于语义部件区域做结构化擦除
-- **优势**: (1) 训练时 zero 额外计算 (2) 完全正交于 PSG (3) 模拟真实遮挡
-- **论文 story**: "Random Erasing 不能模拟真实遮挡（人的遮挡是整个部件被挡住），PGE 通过 pose 引导的结构化擦除训练模型应对真实遮挡"
-- **风险**: 如果 RE 已经足够模拟遮挡，PGE 可能无额外收益
-- **论文位置**: 消融表格（PGE vs RE）、主实验表（PSG + PGE 的联合效果）
+```
+PSG-enhanced Stage 3 features (12×4, 768ch)
+              ↓
+Bilinear sample at 17 keypoint locations → (17, 768)
+              ↓
+Skeleton GCN (2-3 layers, COCO 19 bone edges)
+              ↓
+可见部位特征 沿骨骼边传播到遮挡部位
+              ↓
+Part Feat Pool → concat with Global
+```
 
-#### 方向 I: Pose-Conditioned Normalization (PCN)
-- **核心想法**: 用 pose 热图调制 LayerNorm/BatchNorm 的 scale 和 bias 参数，类似 SPADE (image generation)
-- **实现**: 对每个空间位置，根据 pose 热图生成 γ(pose) 和 β(pose)，替代标准 LN 的可学习参数
-- **与 PSG 的区别**: PSG 是 feature gating（乘法），PCN 是 normalization modulation（影响分布）
-- **风险**: 可能与 PSG 类似——都是空间调制，可能不叠加
+- **核心价值**: 遮挡补全 — 当下半身被遮挡时，GCN 沿"髋→膝→踝"传播上半身特征
+- **参考**: Tran-GCN (IET 2025), skeleton action recognition 领域成熟技术
+- **参数量**: ~3-4M (17 nodes × 768 features × 2-3 GCN layers)
+- **与 PDS (方向 K) 的结合**: 可以作为 Part 分支的核心模块
+- **风险**: 前 21 个实验显示 post-backbone 方法收益有限，但 GCN 提供了全新的结构推理能力
+- **论文定位**: "skeleton-topology-aware feature propagation for occlusion recovery"
 
-#### 方向 J: 关键点引导的对比学习 (Keypoint-Conditioned Contrastive Learning)
-- **核心想法**: 修改 triplet loss，使其考虑 pose 相似度。Pose 相似的正样本对应更高 margin
-- **动机**: 两张同一人但 pose 完全不同的图片（一张正面站立、一张侧面行走）比两张 pose 相似的图片更难匹配
-- **实现**: margin = base_margin * (1 + λ * pose_dissimilarity)
-- **风险**: 前轮 GiLt 已用 part triplet，这个方向可能与之冲突
+### 方向 N: ControlNet-Style 加法注入
+**优先级: ⭐⭐⭐**
+
+- **来源**: ControlNet (ICCV 2023), LLaMA-Adapter
+- **核心想法**: 复制 Stage 3 为 "pose encoder branch"，处理 pose heatmaps，通过 zero-conv 加法注入主干
+- **与 PSG 的区别**: PSG 是乘法 x*(1+gate)，ControlNet 是加法 x + zero_conv(pose_feat)
+- **可以和 PDS 整合**: 就是 PDS 的 Part 分支不做独立 pooling，而是加法 inject 回 Global 分支
+- **参数量**: ~6M（完整 Stage 3 clone）或 ~100K（轻量 conv encoder）
+
+### 方向 O: Pose Attention Supervision (PAS)
+**优先级: ⭐⭐⭐**
+
+- **来源**: PAFormer (arXiv 2024)
+- **核心想法**: 不把 pose 热图作为输入，而是作为 attention 的**监督信号**。训练时让 attention map 匹配 pose heatmap 分布，推理时不需要 pose。
+- **优势**: 零推理开销，改变 backbone 的内在表征
+- **风险**: Swin window attention 使监督复杂化
+
+### 方向 P: Pose-Guided Token Pruning
+**优先级: ⭐⭐⭐**
+
+- **来源**: PrATo (2025), HeatViT, Zero-TPrune (CVPR 2024)
+- **核心想法**: 用 pose 热图计算 token 重要性，剪掉背景/遮挡物 token，只保留人体区域
+- **效果**: 不仅加速推理，还从根本上消除遮挡物对特征的污染
+- **与 PSG 的区别**: PSG 给所有 token 不同权重，token pruning 直接删除无关 token
+- **挑战**: Swin window attention 对 token 数量有要求
+
+### 方向 Q: 特征补全 (Feature Completion)
+**优先级: ⭐⭐⭐**
+
+- **来源**: FCFormer (TPAMI 2024)
+- **核心想法**: 用 pose 热图识别遮挡区域（热图响应低），用 learnable tokens + decoder 重建遮挡区域特征
+- **与 Skeleton GCN 的区别**: GCN 沿骨架边传播，Feature Completion 用 decoder 直接预测
+- **可以结合 PDS**: 作为 Part 分支的特征补全模块
+
+---
+
+## 推荐实验路线
+
+### Round 1: 大架构实验
+1. **exp022: PDS (双分支)** — 最有潜力，解决核心梯度干扰问题
+2. **exp023: KP-RPE** — 最轻量，与 PSG 正交，快速验证
+
+### Round 2: 基于 Round 1 结果深化
+- 如果 PDS 有效 → 在 Part 分支内集成 Skeleton GCN (方向 M)
+- 如果 KP-RPE 有效 → PSG + KP-RPE 组合
+- 如果都有效 → PDS + KP-RPE 组合
+
+### Round 3: 论文补充实验
+- 消融实验（PDS 各组件贡献）
+- 效率分析（参数量、FLOPs、推理速度）
+- 可视化（attention map、t-SNE、检索结果）
