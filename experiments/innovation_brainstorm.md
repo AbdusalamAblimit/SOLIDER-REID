@@ -162,3 +162,37 @@ Part Feat Pool → concat with Global
 - 消融实验（PDS 各组件贡献）
 - 效率分析（参数量、FLOPs、推理速度）
 - 可视化（attention map、t-SNE、检索结果）
+
+---
+
+## exp022 PDS 结果反馈 (2026-03-11)
+
+### PDS 实验结论
+- **global-only 57.9%**: 接近但未超过 PSG-only 58.3% (-0.4%)
+- **concat_scaled 57.5%**: Part 有微弱贡献
+- **equal_concat 56.1%**: 5:1 维度比稀释 Global，不可用
+- **part-only 55.2%**: Part 分支独立效果差
+
+### 关键洞察
+1. **Stage 3 权重解耦确实有效**: PDS global (57.9%) > exp008 PSG+Part same Stage3 (57.7%)，证明独立 Stage 3 保护了 PSG
+2. **但共享 Stage 0-2 仍有轻微干扰**: 57.9% vs 58.3% 的 -0.4% gap 来自 Part 分支经共享层的反向传播
+3. **Part 分支学习太慢**: 120 epoch 后 Part ID loss 仍高达 2.02（Global 为 0.17）。5 个独立分类器需要更多训练容量
+4. **fusion 策略需要优化**: Part 维度是 Global 的 5 倍，等权 concat 本质上是给 Part 5 倍的投票权
+
+### 方向修正
+
+PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这一核心假设。但也暴露了新问题：
+
+**问题 1: Part 分支需要更好的训练策略**
+- 可以尝试：stop_gradient 阻断 Part→共享层梯度，或 Part 分支延迟启动
+- 但考虑到复杂度增加和收益不确定，这个方向的性价比可能不高
+
+**问题 2: 当前方法组合天花板**
+- PSG-only 58.3% 已经是非常好的单模块结果
+- 所有组合实验都未能在此基础上叠加增益
+- 也许应该接受 PSG 作为核心贡献，转向其他维度（如 test-time fusion、NFC 定制化）
+
+**修正后的优先级**:
+1. **exp023: 先尝试 stop_gradient 隔离** — 最简单的 fix，验证是否能消除 -0.4% gap
+2. **如果 stop_gradient 有效** → PDS + stop_gradient 作为论文的 full model
+3. **如果 stop_gradient 无效** → 放弃 dual-stream，PSG 作为核心贡献 + 其他正交方向 (KP-RPE, Skeleton GCN)

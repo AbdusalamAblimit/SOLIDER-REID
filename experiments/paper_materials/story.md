@@ -1,6 +1,43 @@
 # 论文故事线（持续更新）
 
-> **⚠️ 注意**: 以下内容来自 Phase 1 (exp/003_offline_pose 分支，基于 PCFC/visibility/GiLt)。Phase 2 (exp/pose_heatmap 分支，基于 PSG backbone injection) 的 story 尚未更新。Phase 2 最佳结果：PSG mAP 58.3%, R1 67.9% (+1.7%/+1.4% vs baseline)。
+> **⚠️ Phase 1 内容保留在下方（PCFC/GiLt）。Phase 2 更新如下。**
+
+## Phase 2 Story Update (2026-03-11)
+
+### 暂定标题
+Pose Spatial Gating for Occluded Person Re-Identification: Let the Backbone See the Body
+
+### Phase 2 核心发现
+1. **PSG (Pose Spatial Gate)**: 在 Swin Stage 3 blocks 内部注入 pose heatmap 信息，通过轻量门控 x*(1+gate) 调制特征。+1.7% mAP，仅 102K 额外参数。
+2. **Backbone injection >> Post-hoc pooling**: 在特征形成阶段注入 pose 远优于事后 pooling（+1.7% vs +0.9%）
+3. **PSG 极简性即优势**: 21 个实验显示所有更复杂的方法（PXA、CAPSG、PRA）都不如简单的 PSG
+4. **梯度干扰是组合瓶颈**: 在 PSG 同一 Stage 3 叠加模块总是失败。PDS 双分支通过 Stage 3 权重解耦缓解但未完全解决（57.9% vs 58.3%）
+
+### Phase 2 消融表（用 global-only 特征，公平对比）
+| 方法 | mAP | R-1 | 额外参数 |
+|------|-----|-----|----------|
+| Baseline | 56.6% | 66.5% | — |
+| + Part Pooling (exp001) | 57.5% | 67.1% | ~2.6M |
+| + PAB (exp012) | 57.4% | 67.3% | 5.4K |
+| + PCG (exp018) | 57.8% | 67.7% | ~77K |
+| **+ PSG (exp007)** | **58.3%** | **67.9%** | **102K** |
+| + PSG + Part same Stage3 (exp008) | 57.7% | 66.0% | ~2.7M |
+| + PDS dual Stage3 global (exp022) | 57.9% | 67.1% | ~8.8M |
+
+### 跨数据集验证
+| 数据集 | Backbone | PSG mAP提升 |
+|--------|----------|-------------|
+| Occluded-Duke | Swin-Tiny | +1.7% |
+| Occluded-Duke | Swin-Small | +2.0% |
+| Market-1501 | Swin-Tiny | +0.8% |
+| Market-1501 | Swin-Small | +0.6% |
+
+### 当前状态
+PSG 是核心贡献（简洁、有效、跨数据集一致）。PDS 提供了有价值的消融证据（梯度干扰→权重解耦），但自身性能不够作为独立贡献。下一步需要找到第二个与 PSG 正交的有效模块。
+
+---
+
+> **以下为 Phase 1 原始 Story（保留参考）**
 
 ## 暂定标题（Phase 1，待更新）
 Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Person Re-Identification

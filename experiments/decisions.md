@@ -572,3 +572,21 @@ C. exp022: Skeleton GCN — 后置模块，~3M params
 3. PDS 的 Part 分支为后续集成 GCN、Feature Completion 等模块提供了载体
 4. 如果 PDS 有效，结合 PSG 在 Global 分支 + 结构化 Part 分支，论文故事非常完整
 5. KP-RPE 虽轻量但受 Swin window attention 限制风险较大，可作为后续补充
+
+**执行结果**: PDS 训练完成。global-only mAP 57.9% (vs PSG-only 58.3%)，Stage 3 解耦有效但共享 Stage 0-2 仍有轻微干扰。Part 分支独立效果一般 (55.2%)。PDS 未超过 PSG-only。
+
+### [2026-03-11 09:30] 决策 #22
+
+**上下文**: exp022 PDS 结果分析 — global-only 57.9% (接近但未超过 PSG-only 58.3%)。Part 分支 ID loss (2.02) 远未收敛到 Global (0.17) 水平，Part 特征质量不足。
+
+**核心问题**: PDS 证明了 Stage 3 权重解耦可以保护 Global 分支（57.9% vs exp008 57.7%），但 Part 分支不够强以贡献额外增量。关键原因：
+1. Part 分支共享 Stage 0-2 仍向 Global 方向传梯度（微小干扰 -0.4%）
+2. Part ID loss 2.02 远未收敛，5 个 part 分类器学习难度远大于 1 个 global 分类器
+3. equal_concat 的 5:1 维度比严重稀释 Global
+
+**选项**:
+A. exp023: Part 分支 stop_gradient — 完全阻断 Part→Stage0-2 梯度，保护 Global 分支
+B. exp023: Part 分支延迟启动 — 先让 Global 收敛再引入 Part，减少早期干扰
+C. exp023: 换方向 — 放弃 dual-stream，回到单分支 + 更好的 test-time fusion
+
+**选择**: 待分析后决定（先更新文档和 brainstorm）
