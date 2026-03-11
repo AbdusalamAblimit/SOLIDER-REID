@@ -114,6 +114,8 @@ _C.MODEL.POSE_DUAL_STREAM = False           # use Pose Dual Stream (PDS) model
 _C.MODEL.POSE_PART_STOP_GRAD = False       # stop gradient from Part branch to shared stages
 _C.MODEL.POSE_STOP_GRAD_EPOCHS = 0        # delayed stop_grad: block Part gradients for first N epochs, then release (0=use POSE_PART_STOP_GRAD as static flag)
 _C.MODEL.POSE_GLOBAL_PSG = True            # use PSG in Global branch (set False for ablation)
+_C.MODEL.POSE_SPLIT_STAGE = -1            # PDS split point: -1=last stage only (default), 2=split at stage 2+3, etc.
+_C.MODEL.POSE_DROPOUT_P = 0.0            # Stochastic Pose Dropout: probability of zeroing heatmaps during training (0=disabled)
 
 # -----------------------------------------------------------------------------
 # INPUT

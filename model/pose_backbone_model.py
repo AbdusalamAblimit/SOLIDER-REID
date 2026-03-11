@@ -153,6 +153,11 @@ class PoseBackboneModel(build_transformer):
                 loss_weight=recon_weight,
             )
 
+        # Stochastic Pose Dropout (SPD)
+        self.pose_dropout_p = getattr(cfg.MODEL, 'POSE_DROPOUT_P', 0.0)
+        if self.pose_dropout_p > 0:
+            print(f'[PSG] Stochastic Pose Dropout enabled: p={self.pose_dropout_p}')
+
         # Store backbone's semantic weight for manual forward
         self._semantic_weight_val = semantic_weight
 
@@ -248,6 +253,12 @@ class PoseBackboneModel(build_transformer):
         scene_heatmaps = None
         if pose_dict is not None:
             scene_heatmaps, _ = self._prepare_pose(pose_dict)
+
+        # Stochastic Pose Dropout: zero out heatmaps per-sample during training
+        if self.training and scene_heatmaps is not None and self.pose_dropout_p > 0:
+            keep_mask = (torch.rand(scene_heatmaps.shape[0], 1, 1, 1,
+                                    device=scene_heatmaps.device) >= self.pose_dropout_p)
+            scene_heatmaps = scene_heatmaps * keep_mask.float()
 
         # Run backbone with PSG injection
         global_feat, featmaps = self._run_backbone_with_psg(x, scene_heatmaps)
