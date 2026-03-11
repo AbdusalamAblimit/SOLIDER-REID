@@ -227,9 +227,39 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
 - Baseline 56.6% → +PSG 58.3% (+1.7%) → +PDS 57.9% (-0.4%, 有 Part 干扰) → +StopGrad 59.5% (+1.6%, 消除干扰)
 - 证明每个组件都是必要的
 
-### 下一步方向
+### Phase 2.5 新实验 (exp022-026)
 
-1. **完善消融实验**: 需要 PDS+StopGrad 但无 PSG 的结果来分离 Part 分支独立贡献
-2. **跨数据集验证**: Market-1501 上跑 PDS+StopGrad
-3. **test-time fusion 优化**: global-only (59.5%) > concat_scaled (59.1%)，说明 Part 特征融合可以更好
-4. **NFC 测试**: 在 PDS+StopGrad 特征上测试 NFC 后处理效果
+**exp022-025 PDS 系列**: PDS+StopGrad 达到 59.5%，但 exp024 (无 PSG 版) 达到 59.2%（仅 -0.3%），暗示提升可能来自训练随机性。多 seed 实验待验证。
+
+**exp026 SPD (Stochastic Pose Dropout)**:
+- mAP 57.9% vs PSG 58.3% (-0.4%)
+- **关键发现**: Pose 信号在 Occluded-Duke 上一致有用，30% dropout 率只是移除了有用信息
+- **推论**: PSG 不存在过度依赖问题 → 正则化方向价值有限 → 应该探索"让 loss 函数也感知 pose"的方向
+
+### 下一步方向（更新于 2026-03-11）
+
+1. ~~完善消融实验~~: exp024 已完成 (PDS+StopGrad 无 PSG = 59.2%)
+2. **多 seed 验证**: 脚本已准备 (scripts/run_multiseed_4090.sh)，等待 4090 运行
+3. ~~PCRA (Pose-Contrastive Representation Alignment)~~: exp027 验证 mAP 57.8% (-0.5% vs PSG)。17 维 pose signature 不够精确区分姿态差异，引入训练不稳定性。
+4. **PVR (Pose-Guided Variance Regularization)**: 辅助 loss 鼓励同部位内特征一致、跨部位特征分散
+5. ~~SPD 调参 (p=0.1/0.5)~~: SPD 方向整体不如预期，优先级降低
+6. **跨数据集验证**: Market-1501 上跑 PSG (需准备 pose 数据)
+
+### Phase 2.6 新实验 (exp026-027)
+
+**exp027 PCRA**: mAP 57.8%, R1 66.8% (-0.5%/-1.1% vs PSG)
+- **关键发现**: loss 函数维度的 pose 信号利用也不奏效
+- 17 维 pose signature 的余弦相似度不够区分"相同姿态"和"不同姿态"
+- 训练过程呈现锯齿形 mAP 波动（奇数十 epoch 高、偶数十 epoch 低）
+- **推论**: 在 PSG 基础上的所有单点改进（forward/loss/regularization）均已失败。应转向 PDS+StopGrad 的改进或全新范式
+
+### 阶段性总结（27 个实验后）
+
+**已穷尽的方向**:
+1. PSG + forward path 添加: exp008-021 全部失败
+2. PSG + 正则化: exp026 SPD 中性
+3. PSG + loss 调制: exp027 PCRA 中性
+
+**仍然有效的方向**:
+1. **PDS+StopGrad**: 唯一超越 PSG 的方法 (+2.9% mAP)，但 PSG 在其中贡献很小
+2. **多 seed/跨数据集验证**: 确认方法稳定性

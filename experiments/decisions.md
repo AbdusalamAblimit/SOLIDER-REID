@@ -707,3 +707,17 @@ B. 直接启动 exp025，exp024 可以后续补跑
 ### [2026-03-11 22:35] 决策 #28
 
 **上下文**: exp027 PCRA 结果中性偏负 (-0.5% mAP)。至此，所有在 PSG 基础上的单点改进（forward path 添加、aux loss、距离度量调制、dropout 正则化）均未能超越 PSG。唯一成功的方向是 PDS+StopGrad (exp023, +2.9% mAP)，但 exp024 证明其中 PSG 的贡献很小（仅 0.3%）。需要决定下一步方向。
+
+**选项**:
+  A. 改进 PDS+StopGrad（改善 Part 分支收敛，如 Part LR boost、Part warmup、feature distillation）
+  B. 全新范式（PGFS 硬 token 选择等）
+
+**红蓝队辩论**: 代理超时未完成，基于主 agent 分析做决策。
+
+**选择**: A — 改进 PDS+StopGrad，具体为 Part LR Boost (3x)
+**理由**:
+1. PDS+StopGrad 是唯一成功超越 PSG 的方向，直接在其上改进是最高 ROI 的选择
+2. Part 分支收敛不充分是已知问题（ID loss 2.0 vs Global 0.2），Part LR boost 直接解决此瓶颈
+3. Part-only 56.7% → concat_scaled 59.1% < global-only 59.5%，说明 Part 是弱项
+4. 实现极简（~5 行代码改 optimizer），风险低
+5. 全新范式（20 个 PSG 改进全失败的历史）成功概率不高
