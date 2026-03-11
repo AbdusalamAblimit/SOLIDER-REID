@@ -107,6 +107,7 @@ _C.MODEL.POSE_CROSS_ATTN = False           # use Pose Cross-Attention (PXA) inst
 _C.MODEL.POSE_GUIDED_ERASING = False        # use pose-guided erasing instead of random erasing
 _C.MODEL.POSE_CHANNEL_GATE = False          # use Pose-Conditioned Channel Gate (PCG) after GAP
 _C.MODEL.POSE_PCG_HIDDEN = 64              # hidden dim in PCG MLP
+_C.MODEL.POSE_PSG_CONTENT_ADAPTIVE = False # use Content-Adaptive PSG (CAPSG) gate
 _C.MODEL.POSE_RECON_HEAD = False            # use Pose Reconstruction Head (PRA) auxiliary task
 _C.MODEL.POSE_RECON_WEIGHT = 0.1            # weight for PRA MSE loss
 

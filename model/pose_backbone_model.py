@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from .make_model import build_transformer
-from .modules.pose_spatial_gate import PoseSpatialGate
+from .modules.pose_spatial_gate import PoseSpatialGate, ContentAdaptivePSG
 from .modules.pose_attention_bias import PoseAttentionBias
 from .modules.pose_channel_gate import PoseChannelGate
 from .modules.pose_cross_attention import PoseCrossAttention
@@ -37,6 +37,7 @@ class PoseBackboneModel(build_transformer):
         self.use_attn_bias = getattr(cfg.MODEL, 'POSE_ATTN_BIAS', False)
         self.use_combo = getattr(cfg.MODEL, 'POSE_PSG_PAB_COMBO', False)
         self.use_cross_attn = getattr(cfg.MODEL, 'POSE_CROSS_ATTN', False)
+        self.use_content_adaptive = getattr(cfg.MODEL, 'POSE_PSG_CONTENT_ADAPTIVE', False)
 
         # Determine which stages get pose injection
         psg_stages = list(getattr(cfg.MODEL, 'POSE_PSG_STAGES', [-1]))
@@ -98,19 +99,27 @@ class PoseBackboneModel(build_transformer):
                         hidden_dim=hidden_dim,
                     )
         else:
-            # PSG-only mode: create PoseSpatialGate modules per stage
+            # PSG-only mode (or CAPSG): create gate modules per stage
             self.psg_modules_dict = nn.ModuleDict()
+            GateClass = ContentAdaptivePSG if self.use_content_adaptive else PoseSpatialGate
             for stage_idx in sorted(self.psg_stage_indices):
                 stage = self.base.stages[stage_idx]
                 feat_ch = self.base.num_features[stage_idx]
                 for block_idx in range(len(stage.blocks)):
                     key = f's{stage_idx}_b{block_idx}'
-                    self.psg_modules_dict[key] = PoseSpatialGate(
-                        pose_channels=17,
-                        feat_channels=feat_ch,
-                        hidden_dim=hidden_dim,
-                        spatial_conv=spatial_conv,
-                    )
+                    if self.use_content_adaptive:
+                        self.psg_modules_dict[key] = GateClass(
+                            pose_channels=17,
+                            feat_channels=feat_ch,
+                            hidden_dim=hidden_dim,
+                        )
+                    else:
+                        self.psg_modules_dict[key] = GateClass(
+                            pose_channels=17,
+                            feat_channels=feat_ch,
+                            hidden_dim=hidden_dim,
+                            spatial_conv=spatial_conv,
+                        )
 
             # Backward compatibility: also keep psg_modules list for Stage 3
             # (used by PosePSGPartModel which accesses self.psg_modules)
