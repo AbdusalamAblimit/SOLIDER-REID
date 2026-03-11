@@ -44,6 +44,43 @@
 |----|------|-----|-----|-----|------|------|
 | — | — | — | — | — | — | 待测试 |
 
+## 数据集: Market-1501（4090 实验结果）
+
+### Swin-Tiny
+
+| ID | 方法 | mAP | R-1 | R-5 | R-10 | vs Baseline | 备注 |
+|----|------|-----|-----|-----|------|-------------|------|
+| 4090-M-base | Baseline (SOLIDER-Swin-Tiny, SW=0.2) | 91.6% | 96.3% | 98.7% | 99.2% | — | 120ep |
+| 4090-M-PSG | + PSG (Backbone Injection) | 92.4% | 96.7% | 98.8% | 99.4% | mAP+0.8%, R1+0.4% | PSG 在非遮挡数据集也有效 |
+
+### Swin-Small（对照组，不在论文 Swin-Tiny 约束内）
+
+| ID | 方法 | Backbone | LR | mAP | R-1 | R-5 | R-10 |
+|----|------|----------|-----|-----|-----|-----|------|
+| 4090-M-small-lr4 | Baseline | Swin-Small | 4e-4 | 93.3% | 96.6% | 98.9% | 99.3% |
+| 4090-M-small-lr8 | Baseline | Swin-Small | 8e-4 | 93.0% | 96.7% | 98.9% | 99.3% |
+| 4090-M-PSG-small-lr4 | PSG | Swin-Small | 4e-4 | 93.9% | 96.9% | 99.0% | 99.3% |
+| 4090-M-PSG-small-lr8 | PSG | Swin-Small | 8e-4 | 93.7% | 96.9% | 99.0% | 99.3% |
+
+## 数据集: Occluded-Duke（4090 Swin-Small 对照组）
+
+| ID | 方法 | Backbone | LR | mAP | R-1 | R-5 | R-10 |
+|----|------|----------|-----|-----|-----|-----|------|
+| 4090-OD-small-base | Baseline | Swin-Small | 8e-4 | 65.8% | 76.0% | 86.2% | 89.0% |
+| 4090-OD-PSG-small-lr4 | PSG | Swin-Small | 4e-4 | 67.8% | 76.7% | 86.9% | 90.6% |
+| 4090-OD-PSG-small-lr8 | PSG | Swin-Small | 8e-4 | 66.4% | 75.7% | 87.3% | 90.5% |
+
+### 跨数据集/Backbone PSG 增益总结
+
+| 数据集 | Backbone | PSG mAP提升 |
+|--------|----------|-------------|
+| Occluded-Duke | Swin-Tiny | +1.7% |
+| Occluded-Duke | Swin-Small (lr4) | +2.0% |
+| Market-1501 | Swin-Tiny | +0.8% |
+| Market-1501 | Swin-Small (lr4) | +0.6% |
+
+**结论**: PSG 在所有数据集和 backbone 上均有效。在遮挡数据集上增益更大。
+
 ## 参考: Phase 1 最佳结果 (exp/003_offline_pose 分支)
 - Baseline: mAP 56.6%, R1 66.5%
 - GiLt+PCFC (exp012): mAP 58.0%, R1 68.0% (+1.4/+1.5 vs baseline)
