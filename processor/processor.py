@@ -5,6 +5,7 @@ import numpy as np
 import time
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from utils.meter import AverageMeter
 from utils.metrics import R1_mAP_eval
 from torch.cuda import amp
@@ -34,11 +35,14 @@ def do_train(cfg,
     device = "cuda"
     epochs = cfg.SOLVER.MAX_EPOCHS
     use_pose = cfg.MODEL.POSE_ENABLED
+    pcra_alpha = getattr(cfg.MODEL, 'POSE_PCRA_ALPHA', 0.0)
 
     logger = logging.getLogger("transreid.train")
     logger.info('start training')
     if use_pose:
         logger.info('Pose-guided training ENABLED')
+    if pcra_alpha > 0:
+        logger.info(f'[PCRA] Pose-Contrastive Representation Alignment: alpha={pcra_alpha}')
     _LOCAL_PROCESS_GROUP = None
     if device:
         model.to(local_rank)
@@ -132,7 +136,19 @@ def do_train(cfg,
                     score, feat, _ = model(img, label=target, cam_label=target_cam,
                                            view_label=target_view)
                     recon_loss = None
-                loss = loss_fn(score, feat, target, target_cam)
+                # PCRA: compute pose similarity matrix for triplet loss
+                pose_sim = None
+                if use_pose and pose_dict is not None and pcra_alpha > 0:
+                    heatmaps = pose_dict['heatmaps']  # (B, max_persons, 17, H, W)
+                    # Merge persons: max across person dim → (B, 17, H, W)
+                    scene_hm = heatmaps.max(dim=1)[0]
+                    # GAP → (B, 17) pose signature
+                    pose_sig = scene_hm.mean(dim=(-2, -1))  # (B, 17)
+                    # Cosine similarity matrix (B, B)
+                    pose_sig_norm = F.normalize(pose_sig, p=2, dim=1)
+                    pose_sim = torch.mm(pose_sig_norm, pose_sig_norm.t())  # (B, B)
+
+                loss = loss_fn(score, feat, target, target_cam, pose_sim=pose_sim)
                 if recon_loss is not None:
                     details = getattr(loss, '_loss_details', {})
                     loss = loss + recon_loss

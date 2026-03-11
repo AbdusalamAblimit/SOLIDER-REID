@@ -116,6 +116,7 @@ _C.MODEL.POSE_STOP_GRAD_EPOCHS = 0        # delayed stop_grad: block Part gradie
 _C.MODEL.POSE_GLOBAL_PSG = True            # use PSG in Global branch (set False for ablation)
 _C.MODEL.POSE_SPLIT_STAGE = -1            # PDS split point: -1=last stage only (default), 2=split at stage 2+3, etc.
 _C.MODEL.POSE_DROPOUT_P = 0.0            # Stochastic Pose Dropout: probability of zeroing heatmaps during training (0=disabled)
+_C.MODEL.POSE_PCRA_ALPHA = 0.0           # Pose-Contrastive Representation Alignment: pose similarity weight for triplet distance (0=disabled)
 
 # -----------------------------------------------------------------------------
 # INPUT

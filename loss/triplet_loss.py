@@ -110,22 +110,25 @@ class TripletLoss(object):
     modified based on original triplet loss using hard example mining
     """
 
-    def __init__(self, margin=None, hard_factor=0.0):
+    def __init__(self, margin=None, hard_factor=0.0, pose_alpha=0.0):
         self.margin = margin
         self.hard_factor = hard_factor
+        self.pose_alpha = pose_alpha
         if margin is not None:
             self.ranking_loss = nn.MarginRankingLoss(margin=margin)
         else:
             self.ranking_loss = nn.SoftMarginLoss()
 
-    def __call__(self, global_feat, labels, normalize_feature=False):
+    def __call__(self, global_feat, labels, normalize_feature=False, pose_sim=None):
         if normalize_feature:
             global_feat = normalize(global_feat, axis=-1)
         dist_mat = euclidean_dist(global_feat, global_feat)
-        dist_ap, dist_an = hard_example_mining(dist_mat, labels)
 
-        #  dist_ap *= (1.0 + self.hard_factor)
-        #  dist_an *= (1.0 - self.hard_factor)
+        # PCRA: modulate distances by pose similarity
+        if pose_sim is not None and self.pose_alpha > 0:
+            dist_mat = dist_mat * (1 - self.pose_alpha * pose_sim)
+
+        dist_ap, dist_an = hard_example_mining(dist_mat, labels)
 
         y = dist_an.new().resize_as_(dist_an).fill_(1)
         if self.margin is not None:
