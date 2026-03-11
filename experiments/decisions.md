@@ -676,4 +676,34 @@ B. 直接启动 exp025，exp024 可以后续补跑
 4. SPD 结果可指导后续方向选择：若有效 → 说明 backbone 过度依赖 pose → 继续 PVR；若无效 → pose 始终有用 → 尝试 PCRA
 5. 论文 story 清晰："PSG 教 backbone 在哪里关注，SPD 防止过度依赖"
 
-**执行结果**: 已启动训练 (PID 712968)，Epoch 10 评估与 exp007 持平
+**执行结果**: mAP 57.9% (-0.4% vs PSG)。SPD 略微负面，证明 pose 信号在 Occluded-Duke 上一致有用
+
+---
+
+### [2026-03-11 20:20] 决策 #27
+
+**上下文**: exp026 (SPD) 完成，结果轻微负面 (-0.4%)。需要选择下一个实验方向。
+
+**选项**:
+  A. PCRA (Pose-Contrastive Representation Alignment) — 修改 triplet 距离度量
+  B. PVR (Pose-Guided Variance Regularization) — 辅助 loss 约束特征分布
+  C. 不同 SPD dropout rate (p=0.1/0.5)
+
+**红蓝队辩论**:
+- 🔴 红队（方案 A: PCRA）核心论点: PCRA 是唯一操作在未被探索维度（loss 距离度量）上的方案。26 个实验证明所有 forward path 改动都干扰 PSG，但 PCRA 不修改 forward path 也不添加 aux loss——它只改变 hard mining 中的距离计算。这是论文方法的"第三层"贡献（特征层 PSG + 架构层 PDS + 度量层 PCRA）。实现仅~20 行代码，0 新参数。风险极低：最差退化为 PSG baseline。Occluded-Duke 中 pose 相似的 negative 才是真正的 hard case（两个只露上半身的不同人），标准 triplet loss 对此毫无感知。PVR 的弱点在于 exp020 (PRA) 已证明辅助 loss 方向中性/负面(-0.5%)，且需要 part feature 提取（与 exp008 的失败模式重叠）。SPD 调参无论文价值。信心: 8/10
+- 🔵 蓝队（方案 B: PVR）核心论点: PVR 零 forward path 改动，在 26 个实验证明"所有 forward 改动都干扰 PSG"的历史下最安全。与 PSG 理论互补（PSG 约束幅度分布，PVR 约束语义结构）。复用现有 heatmaps_to_parts() 基础设施。exp020 (PRA) 失败是因为重建任务梯度方向与 ID loss 不一致，PVR 的结构正则化方向与 ID loss 一致（同部位同 ID → 应相似）。PCRA 的弱点在于修改了核心度量学习过程（exp003 修改 loss 权重导致 -6.4%），且引入 O(B²) 批内 pose 比较和新的超参数设计空间。信心: 7/10
+- 综合判断: 选择 A (PCRA)。红队论点更有力——PCRA 确实操作在全新维度（距离度量）而非 aux loss，与 PRA (exp020) 的失败模式不同。PCRA 的实现更简洁（~20 行 vs ~50 行），超参数更少（1 个 vs 2 个）。两方都正确指出了对方的弱点，但 PCRA 的核心优势——"不修改 loss 项数量，只修改距离函数"——使其与所有历史失败模式都不同。
+
+**选择**: A (PCRA)
+**理由**:
+1. 26 个实验穷尽了 forward path 方向，PCRA 操作在全新维度
+2. 不添加 aux loss，不修改 forward path，风险最低
+3. 论文 story 价值最高（三层 pose 利用的完整体系）
+4. 红队信心 8/10 > 蓝队 7/10
+**执行结果**: ❌ PCRA (alpha=0.2) 得到 mAP 57.8%, R1 66.8%，低于 PSG -0.5%/-1.1%。pose similarity 调制在 triplet 距离中引入了训练不稳定性（锯齿形 mAP 波动）。17 维 pose signature 不够精确区分姿态差异。
+
+---
+
+### [2026-03-11 22:35] 决策 #28
+
+**上下文**: exp027 PCRA 结果中性偏负 (-0.5% mAP)。至此，所有在 PSG 基础上的单点改进（forward path 添加、aux loss、距离度量调制、dropout 正则化）均未能超越 PSG。唯一成功的方向是 PDS+StopGrad (exp023, +2.9% mAP)，但 exp024 证明其中 PSG 的贡献很小（仅 0.3%）。需要决定下一步方向。
