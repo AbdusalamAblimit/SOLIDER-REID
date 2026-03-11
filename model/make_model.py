@@ -441,7 +441,11 @@ def make_model(cfg, num_class, camera_num, view_num, semantic_weight):
             model = build_transformer_local(num_class, camera_num, view_num, cfg, __factory_T_type, rearrange=cfg.MODEL.RE_ARRANGE)
             print('===========building transformer with JPM module ===========')
         elif cfg.MODEL.POSE_ENABLED:
-            if getattr(cfg.MODEL, 'POSE_PSG_PART', False):
+            if getattr(cfg.MODEL, 'POSE_DUAL_STREAM', False):
+                from .pose_dual_stream_model import PoseDualStreamModel
+                model = PoseDualStreamModel(num_class, camera_num, view_num, cfg, __factory_T_type, semantic_weight)
+                print('===========building Pose Dual Stream (PDS) transformer===========')
+            elif getattr(cfg.MODEL, 'POSE_PSG_PART', False):
                 from .pose_psg_part_model import PosePSGPartModel
                 model = PosePSGPartModel(num_class, camera_num, view_num, cfg, __factory_T_type, semantic_weight)
                 print('===========building PSG + Part Pooling transformer===========')
