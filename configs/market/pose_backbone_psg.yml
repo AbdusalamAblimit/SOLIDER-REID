@@ -45,7 +45,7 @@ SOLVER:
   IMS_PER_BATCH: 64
   WARMUP_METHOD: 'cosine'
   LARGE_FC_LR: False
-  CHECKPOINT_PERIOD: 120
+  CHECKPOINT_PERIOD: 10
   LOG_PERIOD: 20
   EVAL_PERIOD: 10
   WEIGHT_DECAY: 1e-4
@@ -60,4 +60,4 @@ TEST:
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/market1501/exp007_backbone_psg'
+OUTPUT_DIR: './log/market1501/exp023_psg'

@@ -78,7 +78,7 @@
 
 ---
 
-## Phase 2 实验反馈总结 (exp001-exp015)
+## Phase 2 实验反馈总结 (exp001-exp018)
 
 ### 已证实的核心发现
 
@@ -88,12 +88,13 @@
 - PFM (后置调制) 中性效果
 - **结论**: 让 backbone 在特征提取过程中知道人体结构，比事后选择更有效
 
-**2. PSG 对干扰极度敏感**
+**2. PSG 对空间级干扰敏感，但通道级正交不干扰**
 - PSG + PAB Combo: ❌ (-0.7% vs PSG-only)
 - PSG + Part Pooling: ❌ (-0.6% vs PSG-only)
 - PSG + Part Supervision (global test): ❌ (-0.7% mAP, -2.1% R1)
 - PSG + Spatial Conv (3×3 DWConv): 🟡 持平 (mAP 58.3% = exp007, R1 -0.8%)
-- **结论**: 任何改变 PSG 梯度流的额外模块/损失都会降低效果。PSG 58.3% 是该框架的理论上限。
+- PSG + PCG (通道级 gate): 🟡 持平 (mAP 58.0%, -0.3% vs PSG-only) — 正交维度不干扰 (exp017)
+- **结论**: 空间级操作（PAB, Part Pooling）会干扰 PSG，但通道级操作（PCG）不干扰。然而 PCG 也不提供额外增益。PSG 58.3% 是该框架的理论上限。
 
 **3. PSG 内部结构已达最优**
 - 1×1 conv gate 足够，3×3 depthwise conv 冗余
@@ -101,13 +102,49 @@
 - 200 epochs 无额外收益
 - **结论**: PSG 的瓶颈不在感受野、不在训练长度、不在注入位置
 
+**4. 数据增强层面的 pose 利用无效**
+- PGE (Pose-Guided Erasing): ❌ mAP 54.8% (-3.5% vs exp007). 身体部件级擦除过强且削弱 PSG 输入 (exp016)
+- **结论**: 数据增强层面的 pose 利用不如模型层面有效。PSG + Random Erasing 仍为最优组合。
+
+**5. 通道级 Pose Conditioning (PCG) 有独立效果**
+- PCG-only (无 PSG): mAP 57.8%, +1.2% vs baseline (exp018)
+- PSG-only: mAP 58.3%, +1.7% vs baseline (exp007)
+- PSG + PCG: mAP 58.0%, 不叠加 (exp017)
+- **结论**: PCG 和 PSG 各自有效但捕获相似的 pose 信号，组合不互补。
+
 ### 战略反思
 
-**当前困境**: PSG 58.3% 是 +1.7% mAP 的稳定改进，但对论文来说幅度不够。且无法通过组合/扩展进一步提升。
+**当前困境**: PSG 58.3% 是 +1.7% mAP 的稳定改进，但对论文来说幅度不够。且无法通过组合/扩展/数据增强进一步提升。18 个实验已穷尽以下方向：
+- backbone 内部结构改进（多 stage, spatial conv, attention bias, channel gate）
+- backbone 外部组合（part pooling, part supervision）
+- 训练策略（freeze warmup, 200ep）
+- 数据增强（pose-guided erasing）
 
-**需要的突破方向**: 必须从 PSG 之外找到 orthogonal 的提升。两条路：
-1. **训练策略改进** — 不改模型架构，改训练方式（数据增强、损失函数设计）
-2. **全新模型设计** — 跳出 PSG 的 feature gating 范式，探索其他利用 pose 的方式
+**需要的突破方向**: 必须从根本不同的角度利用 pose 信息。候选：
+1. **全新模型架构** — 跳出 feature gating 范式
+2. **Pose-guided 距离度量** — 改变测试时的匹配方式
+3. **联合训练** — 将 pose 估计作为辅助任务
+
+### exp019-021 新增发现
+
+**6. Cross-Attention 和 Content-Adaptive 机制都不如简单门控**
+- PXA (Cross-Attention): mAP 57.3%, 过拟合严重 (train acc 99.5%), -1.0% vs PSG (exp019)
+- PRA (Auxiliary Reconstruction): mAP 57.8%, 后期梯度干扰, -0.5% vs PSG (exp020)
+- CAPSG (Content-Adaptive Gate): mAP 57.2%, 慢启动+过度参数化, -1.1% vs PSG (exp021)
+- **结论**: PSG 的 simplicity IS its advantage。静态 pose-only gate 足够了，因为 ReID 需要一致的空间加权，不是动态输入依赖的调制。
+
+**7. 21 个实验的终极洞察：Pose Spatial Gating 的极简性原则**
+- 有效方法排序: PSG(58.3%) > PCG-only(57.8%) > PRA(57.8%) > Part Pooling(57.5%) > PXA(57.3%) > PAB(57.4%) > CAPSG(57.2%)
+- 复杂度越高，效果越差（PXA/CAPSG 最复杂，效果最差）
+- 这个发现本身就是论文贡献："We empirically demonstrate that simple spatial gating is the optimal way to inject pose information into a ReID backbone, and increasing model complexity consistently hurts performance."
+
+### 论文方向重新定位
+
+**当前最佳策略**: 接受 PSG 作为最终方法，通过跨数据集实验 + 丰富的消融实验讲清论文故事。
+- **主贡献**: PSG — 一种极简的 pose 空间门控机制
+- **消融证据**: 21 个实验系统地证明了简单 > 复杂
+- **跨数据集**: Occluded-Duke + Market-1501（进行中）
+- **论文 narrative**: "Less is More: Simple Pose Spatial Gating for Person Re-Identification"
 
 ### 新增候选方向
 
