@@ -118,6 +118,7 @@ _C.MODEL.POSE_SPLIT_STAGE = -1            # PDS split point: -1=last stage only 
 _C.MODEL.POSE_DROPOUT_P = 0.0            # Stochastic Pose Dropout: probability of zeroing heatmaps during training (0=disabled)
 _C.MODEL.POSE_PCRA_ALPHA = 0.0           # Pose-Contrastive Representation Alignment: pose similarity weight for triplet distance (0=disabled)
 _C.MODEL.POSE_PART_LR_FACTOR = 1.0      # LR multiplier for Part branch params in PDS (1.0=same as global)
+_C.MODEL.POSE_WEIGHTED_POOL = False     # Replace GAP with pose-weighted pooling
 
 # -----------------------------------------------------------------------------
 # INPUT

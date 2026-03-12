@@ -158,6 +158,11 @@ class PoseBackboneModel(build_transformer):
         if self.pose_dropout_p > 0:
             print(f'[PSG] Stochastic Pose Dropout enabled: p={self.pose_dropout_p}')
 
+        # Pose-Weighted Pooling (PWP) — replace GAP with heatmap-weighted pooling
+        self.use_weighted_pool = getattr(cfg.MODEL, 'POSE_WEIGHTED_POOL', False)
+        if self.use_weighted_pool:
+            print('[PWP] Pose-Weighted Pooling enabled (replaces GAP)')
+
         # Store backbone's semantic weight for manual forward
         self._semantic_weight_val = semantic_weight
 
@@ -208,9 +213,20 @@ class PoseBackboneModel(build_transformer):
                                                                    2).contiguous()
                 outs.append(out)
 
-        # Global average pool
-        global_feat = self.base.avgpool(outs[-1])
-        global_feat = torch.flatten(global_feat, 1)
+        # Pooling
+        featmap = outs[-1]  # (B, C, fH, fW)
+        if self.use_weighted_pool and scene_heatmaps is not None:
+            # Pose-Weighted Pooling: weight tokens by body presence
+            fH, fW = featmap.shape[2], featmap.shape[3]
+            hm = F.interpolate(scene_heatmaps, size=(fH, fW),
+                               mode='bilinear', align_corners=False)
+            body_mask = torch.sigmoid(hm).max(dim=1, keepdim=True)[0]  # (B, 1, fH, fW)
+            body_mask = body_mask.clamp(min=1e-6)
+            global_feat = (featmap * body_mask).sum(dim=(2, 3)) / body_mask.sum(dim=(2, 3))
+        else:
+            # Standard GAP
+            global_feat = self.base.avgpool(featmap)
+            global_feat = torch.flatten(global_feat, 1)
 
         return global_feat, outs
 
