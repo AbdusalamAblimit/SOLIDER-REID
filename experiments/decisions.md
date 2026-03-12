@@ -819,3 +819,38 @@ B. 直接启动 exp025，exp024 可以后续补跑
 - **假设完全确认**: PDS+StopGrad 的增益 100% 来自 loss weighting 正则化效果
 - **重大发现**: 仅 +102K params (PSG) + 0.5x loss = 6.3M params (PDS) + StopGrad 的相同效果
 - 这个发现从根本上改变了对 PDS 架构的理解
+
+---
+
+### [2026-03-12 08:30] 决策 #33
+
+**上下文**: exp007a 确认 loss weighting 是 PDS 增益的主因。exp030 (PDS+GCN) 达到 60.5%（GCN 额外 +1.0%）。需要决定下一步：验证 GCN 能否在无 PDS 的架构中工作？还是先做 loss scale 网格搜索？
+
+**选项**:
+  A. Loss Scale Grid Search (exp007b-d): 测试 0.3/0.7/0.1 三个 scale 值
+  B. PSG + 0.5x Loss + Skeleton GCN 无 PDS (exp030a): 验证 GCN 能否不需要独立 Stage 3
+
+**红蓝队辩论**:
+- 🔴 红队（方案 A）核心论点: 0.5x 是唯一数据点，需要理解曲线形状。干净的消融表 {0.1,0.3,0.5,0.7,1.0} 是论文核心证据。近零风险。但 3 个实验 ~15h GPU 时间。信心: 8/10
+- 🔵 蓝队（方案 B）核心论点: 架构简化问题的信息价值远高于超参调优。如果成功，整个方法简化为 PSG+loss+GCN (~0.6M params vs PDS 6M+)，论文 story 极其简洁。仅 1 个实验 ~5h。即使失败也有价值（说明 PDS 必要）。信心: 8/10
+- 综合判断: 选择 B。架构问题的优先级高于超参优化。grid search 可以后续作为论文 appendix 补充。
+
+**选择**: B — exp030a (PSG + 0.5x loss + GCN, 无 PDS)
+**理由**: 信息价值/GPU 时间比远高于 grid search。如果成功，论文 story 变为"3 个正交轻量组件"，极具吸引力。
+
+### [2026-03-12 10:55] 决策 #34
+
+**上下文**: exp030a 训练完成。结果：PSG+GCN (无 PDS) equal_concat 达到 mAP 61.1%, R1 73.7%，为全实验最佳。完全验证 GCN 不需要独立 Stage 3。
+
+**实验结论**:
+- exp030a 在所有 4 种测试模式上都 ≥ exp030 (PDS+SG+GCN)
+- equal_concat (61.1%) > concat_scaled (60.5%) → exp030 中 concat_scaled 更好可能是偶然
+- GCN-only (58.2%) 远超 PDS part-only (56.7%)，说明共享 Stage 3 的特征对 GCN 更好
+- 参数从 6.3M → ~500K，减少 92%
+
+**下一步选项**:
+  A. 消融实验：分离 loss scaling 和 GCN 的独立贡献（exp030b: PSG+GCN+1.0x loss，即不使用 0.5x scaling）
+  B. 论文完善：在 4090 上用 Swin-Small 复现最佳结果
+  C. 更多 test-time 增强测试（NFC + re-ranking）
+
+**选择**: 先 A 再 C。exp030b 消融是论文必需的证据（证明 GCN 的增益独立于 loss scaling），且只需跑一个实验。C 可以在训练期间并行用 test.py 跑。

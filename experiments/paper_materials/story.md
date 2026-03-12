@@ -55,24 +55,28 @@ Pose-Guided Dual-Stream Architecture with Gradient-Isolated Part Learning for Oc
 
 → PDS 架构不必要，0.5x loss scaling 是真正的改进来源。
 
-### Skeleton GCN 仍有效
+### Skeleton GCN 验证完成 (exp030a)
 
-| 方法 | mAP | R1 | 说明 |
-|------|------|------|------|
-| PSG + 0.5x loss (exp007a) | 59.5% | 69.8% | global-only |
-| PDS+SG+GCN concat_scaled (exp030) | 60.5% | 70.5% | + GCN 骨架特征 |
+**exp030a 证明 GCN 不需要 PDS 的独立 Stage 3！**
 
-→ GCN 在 loss scaling 基础上提供额外 +1.0% mAP 的互补信息。
+| 方法 | mAP | R1 | 额外 Params | 说明 |
+|------|------|------|-------------|------|
+| PSG + 0.5x loss (exp007a) | 59.5% | 69.8% | +102K | global-only |
+| PDS+SG+GCN concat_scaled (exp030) | 60.5% | 70.5% | +6.3M | 需要独立 Stage 3 |
+| PDS+SG+GCN equal_concat (exp030) | 60.0% | 70.9% | +6.3M | |
+| **PSG+GCN equal_concat (exp030a)** | **61.1%** | **73.7%** | **+~500K** | **无需 PDS！新最佳！** |
+| PSG+GCN concat_scaled (exp030a) | 60.5% | 73.7% | +~500K | 匹配 PDS 方案 mAP |
+| PSG+GCN global-only (exp030a) | 59.8% | 69.5% | +~500K | ≈ exp007a |
+| PSG+GCN gcn_only (exp030a) | 58.2% | 72.9% | +~500K | GCN-only 也很强 |
+
+→ PSG + GCN 仅需 ~500K params（vs PDS 的 6.3M，减少 92%），达到甚至超过 PDS 方案。
 
 ### 更新后的核心贡献（预计 3 点）
 1. **PSG (Pose Spatial Gate)**: 极简 backbone 内部 pose 注入 (+1.7% mAP)
 2. **Loss Scaling 正则化**: 降低 global loss 梯度幅度作为隐式正则化 (+1.2% mAP)，揭示了 dual-stream 架构增益的真实来源
-3. **Skeleton GCN**: 骨架拓扑结构特征作为互补检索信号 (+1.0% mAP)
+3. **Skeleton GCN**: 骨架拓扑结构特征作为互补检索信号 (+1.6% mAP equal_concat)，无需独立 Stage 3
 
-总计: baseline 56.6% → 60.5% (**+3.9% mAP, +4.0% R1**)
-
-### 当前状态
-需要验证: PSG + 0.5x loss + GCN (无 PDS) 能否达到 60.5%。如果可以，整个方法仅需 ~500K params vs PDS 的 6.3M。
+总计: baseline 56.6% → 61.1% (**+4.5% mAP, +7.2% R1**)
 
 ---
 

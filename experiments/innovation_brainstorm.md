@@ -378,3 +378,25 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
 - Loss scaling: 全局 loss 正则化 (+1.2%)
 - Skeleton GCN: 骨架拓扑特征传播 (额外 +1.0% mAP vs global-only)
 - 总计: baseline 56.6% → PSG+LS+GCN 60.5% (+3.9% mAP, +4.0% R1)
+
+### Phase 2.11: exp030a 结果 — GCN 不需要 PDS！
+
+**exp030a (PSG + Skeleton GCN, 无 PDS)**:
+
+| 模式 | exp030a (PSG+GCN, ~500K) | exp030 (PDS+SG+GCN, ~6.3M) | Δ |
+|------|--------------------------|-------------------------------|---|
+| global | 59.8% / 69.5% | 59.5% / 69.5% | +0.3% / 0.0% |
+| concat_scaled | 60.5% / 73.7% | 60.5% / 70.5% | 0.0% / +3.2% |
+| **equal_concat** | **61.1% / 73.7%** | 60.0% / 70.9% | **+1.1% / +2.8%** |
+| gcn_only | 58.2% / 72.9% | 56.7% / 67.3% | +1.5% / +5.6% |
+
+**核心发现**: 独立 Stage 3 完全不必要！共享 Stage 3 的 PSG 特征对 GCN 更好（因为 PSG 已做了 pose-aware modulation），且参数减少 92%。
+
+**R1 大幅提升的可能原因**: exp030a 的 GCN 特征质量更高（来自 PSG 增强的特征），导致 concat 后的组合特征在 Rank-1 检索上大幅优于 PDS 方案。
+
+**最终方法 (3 个正交轻量组件)**:
+1. PSG: +102K params, +1.7% mAP
+2. Loss Scaling (0.5x): +0 params, +1.2% mAP (通过 GCN 列表损失隐式实现)
+3. Skeleton GCN: +~400K params, +1.3% mAP (equal_concat 61.1% vs global 59.8%)
+
+**总计: baseline 56.6% → 61.1% (+4.5% mAP, +7.2% R1)，仅 ~500K 额外参数**
