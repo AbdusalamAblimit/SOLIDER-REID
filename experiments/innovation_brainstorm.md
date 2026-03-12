@@ -263,3 +263,53 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
 **仍然有效的方向**:
 1. **PDS+StopGrad**: 唯一超越 PSG 的方法 (+2.9% mAP)，但 PSG 在其中贡献很小
 2. **多 seed/跨数据集验证**: 确认方法稳定性
+
+### Phase 2.7 新实验 (exp028)
+
+**exp028 PDS+StopGrad + Part LR 3x**: mAP 59.3%, R1 68.9% (equal_concat)
+- **关键发现**: Part 收敛显著改善但测试性能未提升
+  - Part ID loss: 0.4 (exp028) vs 2.0 (exp023) — 5x 改善
+  - Part tri loss: 完全对齐甚至低于 Global tri
+  - 但 equal_concat mAP 59.3% vs exp023 global-only 59.5% — 本质持平
+- **重要结论**: **Part 分支收敛不是 PDS 性能瓶颈**
+  - Part 特征即使在高 loss 状态下也已提供了其最大有用信息
+  - 进一步收敛只增加了训练集拟合，没有提高泛化
+  - 说明 Part 和 Global 从共享 Stage 0-2 提取的信息本质上高度冗余
+
+### 阶段性总结更新（28 个实验后）
+
+**已穷尽的方向**:
+1. PSG + forward path 添加: exp008-021 全部失败
+2. PSG + 正则化: exp026 SPD 中性
+3. PSG + loss 调制: exp027 PCRA 中性
+4. PDS Part 收敛改善: exp028 Part LR 中性
+
+**未触及的创新空间**:
+1. **Token-level pose 操作**: Transformer 中 token 是最自然的信息单元，但目前所有方法都在 feature map level 操作。用 pose 热图做 token 选择/路由/加权是完全未探索的方向
+2. **Pose-guided attention routing**: 不是用 pose 做 gate（已验证无法叠加），而是在 self-attention 中用 pose 信息引导 token 之间的注意力分配
+3. **Occlusion-aware feature extraction**: 直接用 pose 热图判断 token 是否对应可见区域，跳过遮挡 token 的贡献
+
+### 候选创新点 C: Pose-Guided Token Selection (PGTS)
+
+**核心想法**: 用 pose 热图的空间响应强度作为 token 重要性分数。高响应区域（可见身体部位）的 token 获得更高权重，低响应区域（遮挡/背景）的 token 被抑制或裁剪。
+
+**与 PSG 的区别**:
+- PSG: 在 feature map 上做乘法调制（soft gate），所有 token 都保留
+- PGTS: 在 pooling 阶段做 token 选择（hard/soft selection），显式排除噪声 token
+
+**与 Part Pooling 的区别**:
+- Part Pooling: 按部位分组后各自 pooling，产生多个 part feature
+- PGTS: 不分组，只根据"是否为人体"加权 pooling，产生一个更纯净的 global feature
+
+**实现方案**:
+1. 将 pose 热图 (17, H, W) 在 channel 维度 max，得到 body mask (1, H, W)
+2. 将 body mask resize 到 Stage 3 feature map 大小 (12, 4)
+3. 用 body mask 作为 token 权重进行 weighted average pooling
+4. 可选: 将低于阈值的 token 直接 mask 掉（hard selection）
+
+**预期**: 在遮挡场景中，PGTS 直接排除遮挡/背景 token 的干扰，比 PSG 的 soft gate 更直接有效
+
+**风险**:
+- 热图的 max pooling 可能丢失细粒度信息
+- threshold 选择可能需要调参
+- 非遮挡图片中 PGTS 退化为标准 GAP（可能中性）

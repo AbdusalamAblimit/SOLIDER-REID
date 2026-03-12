@@ -721,3 +721,31 @@ B. 直接启动 exp025，exp024 可以后续补跑
 3. Part-only 56.7% → concat_scaled 59.1% < global-only 59.5%，说明 Part 是弱项
 4. 实现极简（~5 行代码改 optimizer），风险低
 5. 全新范式（20 个 PSG 改进全失败的历史）成功概率不高
+**执行结果**: 🟡 中性。exp028 得到 mAP 59.3%, R1 68.9%（equal_concat 测试）。Part ID loss 从 exp023 的 ~2.0 显著降至 0.4，Part tri loss 与 Global 完全对齐。但测试性能仅 59.3%（vs exp023 global-only 59.5%）。**关键发现：Part 收敛不是 PDS 性能瓶颈。** 即使 Part 完全收敛，concat 特征也未能超越 global-only，可能是 Part 特征过拟合或与 Global 冗余。
+
+---
+
+### [2026-03-12 01:06] 决策 #29
+
+**上下文**: exp028 表明 Part LR boost 不是 PDS 的改进方向。至此尝试的所有 PDS 改进均未超越 exp023：
+- exp025 Delayed StopGrad: mAP 58.9% (-0.6%)
+- exp028 Part LR 3x: mAP 59.3% (-0.2%)
+- exp023 的 global-only 59.5% 仍然是最佳
+
+关键洞察：
+1. PDS 中 Part 分支的信息与 Global 高度冗余（都从共享 Stage 0-2 提取）
+2. stop_grad 的主要价值不是让 Part 学好，而是保护 Global 不被 Part 梯度污染
+3. 融合方式（concat）无法利用 Part 的独特信息
+
+**选项**:
+  A. 继续改进 PDS 融合方式（如 attention-weighted fusion、confidence-based weighting）
+  B. 回归 PSG 路线但走全新范式（如 Pose-Guided Feature Selection — 基于热图做 token pruning/routing）
+  C. 探索 PSG + PDS 的更深层结合（如 Part 分支用不同的 pose modulation）
+
+**选择**: B — 基于 pose 热图的 token 选择/路由（Pose-Guided Token Selection, PGTS）
+**理由**:
+1. PSG 和 PDS 都是在 backbone 输出后处理，但 token-level 操作是 Transformer 的原生语言
+2. Pose 热图天然可以判断哪些 token 对应可见的身体部位（高响应 = 可见，低响应 = 遮挡/背景）
+3. 遮挡 ReID 的核心问题是噪声 token 稀释有效特征，热图引导的 token 选择直接解决此问题
+4. 这个方向有更强的论文 story：从"全局调制"到"局部选择"的范式升级
+5. 实现简单：用 pose 热图的空间最大值作为 token 重要性分数，加权 GAP 或 TopK 选择
