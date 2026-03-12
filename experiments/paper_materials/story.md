@@ -43,40 +43,55 @@ Pose-Guided Dual-Stream Architecture with Gradient-Isolated Part Learning for Oc
 2. **PDS + Gradient Isolation**: 双分支架构 + 梯度隔离，解决 pose-guided 方法中的多任务梯度干扰问题
 3. **系统性消融研究**: 24 个实验全面探索 pose 信息在 ReID 中的利用方式
 
-### ⚠️ 重大发现 (2026-03-12): Loss Weighting 消融
+### ⚠️ 重大发现 (2026-03-12): Loss Weighting + 训练方差
 
-**exp007a 证明 PDS+StopGrad 的增益完全来自 loss weighting 正则化！**
+**exp007a 证明 PDS+StopGrad 的增益完全来自 loss weighting 正则化。**
+**exp030b 进一步揭示训练方差问题 — single-seed 对比中 2%+ 波动不可信。**
 
-| 方法 | mAP | R1 | 额外 Params |
-|------|------|------|-------------|
-| PSG (1.0x loss, exp007) | 58.3% | 67.9% | +102K |
-| PDS+StopGrad (exp023) | 59.5% | 69.5% | +6.3M |
-| **PSG + 0.5x loss (exp007a)** | **59.5%** | **69.8%** | **+102K** |
+| 方法 | Loss Scale | Global mAP | R1 | 额外 Params |
+|------|-----------|-----------|------|-------------|
+| PSG (exp007) | 1.0x | 58.3% | 67.9% | +102K |
+| PSG + 0.5x (exp007a) | 0.5x | 59.5% | 69.8% | +102K |
+| PSG+GCN w_p=1.0 (exp030a) | ~0.5x | 59.8% | 69.5% | +~500K |
+| PSG+GCN w_p=0.01 (exp030b) | ~1.0x | **60.6%** | 71.0% | +~500K |
 
-→ PDS 架构不必要，0.5x loss scaling 是真正的改进来源。
+→ exp030b 的 global mAP (60.6%) 远超 exp007 (58.3%)，且 GCN 几乎未训练。
+→ 四实验无一致规律，2.3% 范围的波动主要来自训练方差。
+→ **多种子实验 (exp031) 在 4090 上运行中，是论文结论可信度的基石。**
 
 ### Skeleton GCN 验证完成 (exp030a)
 
-**exp030a 证明 GCN 不需要 PDS 的独立 Stage 3！**
+**exp030a: GCN 不需要 PDS 的独立 Stage 3，参数减少 92%。**
 
-| 方法 | mAP | R1 | 额外 Params | 说明 |
-|------|------|------|-------------|------|
-| PSG + 0.5x loss (exp007a) | 59.5% | 69.8% | +102K | global-only |
-| PDS+SG+GCN concat_scaled (exp030) | 60.5% | 70.5% | +6.3M | 需要独立 Stage 3 |
-| PDS+SG+GCN equal_concat (exp030) | 60.0% | 70.9% | +6.3M | |
-| **PSG+GCN equal_concat (exp030a)** | **61.1%** | **73.7%** | **+~500K** | **无需 PDS！新最佳！** |
-| PSG+GCN concat_scaled (exp030a) | 60.5% | 73.7% | +~500K | 匹配 PDS 方案 mAP |
-| PSG+GCN global-only (exp030a) | 59.8% | 69.5% | +~500K | ≈ exp007a |
-| PSG+GCN gcn_only (exp030a) | 58.2% | 72.9% | +~500K | GCN-only 也很强 |
+| 方法 | mAP | R1 | 额外 Params |
+|------|------|------|-------------|
+| PSG + 0.5x loss (exp007a) | 59.5% | 69.8% | +102K |
+| PDS+SG+GCN concat_scaled (exp030) | 60.5% | 70.5% | +6.3M |
+| **PSG+GCN equal_concat (exp030a)** | **61.1%** | **73.7%** | **+~500K** |
+| PSG+GCN global-only (exp030a) | 59.8% | 69.5% | +~500K |
+| PSG+GCN gcn_only (exp030a) | 58.2% | 72.9% | +~500K |
 
-→ PSG + GCN 仅需 ~500K params（vs PDS 的 6.3M，减少 92%），达到甚至超过 PDS 方案。
+**exp030b 消融 — GCN 贡献量化**:
+| 方法 | equal_concat | global | Δ (GCN 贡献) |
+|------|-------------|--------|--------------|
+| exp030a (GCN 充分训练) | 61.1% | 59.8% | +1.3% |
+| exp030b (GCN 几乎未训练) | 60.5% | 60.6% | -0.1% |
+
+→ 训练良好的 GCN 贡献 ~1.3% mAP (equal_concat vs global)
+→ 未训练的 GCN 无贡献 (噪声)
 
 ### 更新后的核心贡献（预计 3 点）
-1. **PSG (Pose Spatial Gate)**: 极简 backbone 内部 pose 注入 (+1.7% mAP)
-2. **Loss Scaling 正则化**: 降低 global loss 梯度幅度作为隐式正则化 (+1.2% mAP)，揭示了 dual-stream 架构增益的真实来源
-3. **Skeleton GCN**: 骨架拓扑结构特征作为互补检索信号 (+1.6% mAP equal_concat)，无需独立 Stage 3
+1. **PSG (Pose Spatial Gate)**: 极简 backbone 内部 pose 注入 (+1.7% mAP, 102K params)
+2. **Loss Scaling 正则化发现**: 降低 global loss 幅度作为隐式正则化，揭示 dual-stream 架构增益真实来源 (需多种子确认)
+3. **Skeleton GCN**: 骨架拓扑结构特征作为互补检索信号 (+1.3% mAP equal_concat)，仅 ~400K params
 
-总计: baseline 56.6% → 61.1% (**+4.5% mAP, +7.2% R1**)
+**⚠️ 注意**: 以上增益均为 single-seed 数据。多种子验证 (exp031) 结果将确定最终论文数字。
+
+### 进行中的实验
+- **exp031**: 多种子验证 (3 configs × 3 seeds, 4090 运行中)
+- **exp007b/c**: Loss scale 敏感性分析 (0.25x/0.75x, 3090 运行中)
+
+总计 (single-seed best): baseline 56.6% → 61.1% (**+4.5% mAP, +7.2% R1**)
 
 ---
 

@@ -400,3 +400,36 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
 3. Skeleton GCN: +~400K params, +1.3% mAP (equal_concat 61.1% vs global 59.8%)
 
 **总计: baseline 56.6% → 61.1% (+4.5% mAP, +7.2% R1)，仅 ~500K 额外参数**
+
+### Phase 2.12: exp030b 训练方差发现
+
+**exp030b (PSG+GCN, w_p=0.01, ≈1.0x loss)**:
+- GCN 几乎未训练 (ID_part loss 5.1 vs 0.17)
+- 但 global mAP = 60.6%，远超 exp007 (58.3%)
+
+**四实验 global mAP 对比**:
+| 实验 | 模型类 | Loss Scale | Global mAP |
+|------|--------|-----------|-----------|
+| exp007 | PSG only | 1.0x | 58.3% |
+| exp007a | PSG only | 0.5x | 59.5% |
+| exp030a | PSG+GCN | ~0.5x | 59.8% |
+| exp030b | PSG+GCN | ~1.0x | **60.6%** |
+
+**关键洞察**: 没有一致规律！exp030b 应该最低（1.0x loss, GCN 无贡献）却最高。这 2.3% (58.3%→60.6%) 的波动很可能主要来自训练方差。
+
+**对创新 story 的影响**:
+1. **PSG 增益 (+1.7%) 的确认需要多种子数据**
+2. **Loss scaling 增益 (+1.2%) 可能被高估** — exp030b 用 1.0x loss 也达到 60.6%
+3. **GCN concat 增益 (+1.3%) 在 exp030b 中消失** (equal_concat 60.5% ≈ global 60.6%)
+4. **多种子实验 (exp031) 是论文可信度的基石**
+
+**修正后的保守估计**:
+- PSG: +1.0~2.0% (需 multi-seed 确认)
+- Loss Scaling: +0~1.5% (可能被方差覆盖)
+- GCN: +0.5~1.5% (exp030a 中有效, exp030b 中因 GCN 未训练而无效)
+
+### Phase 2.13: Loss Scale 敏感性分析 (exp007b/c)
+
+exp007b (0.25x), exp007c (0.75x) 正在 3090 上运行。与 exp007 (1.0x) 和 exp007a (0.5x) 构成完整网格。
+
+**论文用途**: 敏感性分析图 (Figure X: Effect of global loss scale)
