@@ -304,6 +304,20 @@ R1 提升显著，说明 GCN 的骨架拓扑特征确实提供了互补信息，
 3. **Part 分支训练收敛更快**: id_part (0.085) 远低于 id_global (0.180)，GCN 768-d 聚焦特征比分散的 GAP 更容易学习
 4. **超越 exp023 global-only**: 这意味着 GCN Part 分支的 concat 提供了真正的增益，不像 exp023 的 Part Pooling 拖累 global
 
+### E120 四种特征向量测试结果 (test.py)
+
+| 特征模式 | mAP | R1 | R5 | R10 | 说明 |
+|----------|------|------|------|------|------|
+| **global** | 59.5% | 69.5% | 82.0% | 86.5% | 与 exp023-g (59.5%/69.5%) 完全一致！GCN 辅助训练无损 Global |
+| **concat_scaled** | **60.5%** | **70.5%** | **83.4%** | **87.2%** | **全实验最佳！** scaled 下采样 GCN 特征最优 |
+| **equal_concat** | 59.9% | 70.9% | 82.7% | 87.4% | 训练时默认模式 |
+| **part_only** | 57.4% | 69.5% | 81.2% | 86.2% | GCN 单独 +0.8% mAP, +3.0% R1 vs baseline |
+
+### 关键发现（四种特征测试后更新）
+1. **global-only 59.5% 与 exp023-g 完全一致**: 说明 GCN Part 分支完全没有损害 Global 分支训练（StopGrad 有效隔离）
+2. **concat_scaled (60.5%) > equal_concat (59.9%)**: scaled 缩小 GCN 特征权重更好
+3. **part-only R1 69.5%** 超过 baseline R1 (66.5%) +3.0%: GCN 骨架特征有很强的独立检索能力
+4. **GCN vs Part Pooling**: exp030-p (57.4%) >> exp023-p (56.7%)，GCN 特征质量更高
+
 ### 重要注意事项
-- 结果中 mAP 60.0% 是 **equal_concat** (global feat + skeleton feat)，需要后续单独测试 global-only 来公平对比 exp023
 - PDS 架构中 global loss 隐式乘 0.5 (list-loss 效应)，这可能是部分增益来源，exp007a 将验证此假设
