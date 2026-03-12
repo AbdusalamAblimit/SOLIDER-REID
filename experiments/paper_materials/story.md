@@ -43,8 +43,36 @@ Pose-Guided Dual-Stream Architecture with Gradient-Isolated Part Learning for Oc
 2. **PDS + Gradient Isolation**: 双分支架构 + 梯度隔离，解决 pose-guided 方法中的多任务梯度干扰问题
 3. **系统性消融研究**: 24 个实验全面探索 pose 信息在 ReID 中的利用方式
 
+### ⚠️ 重大发现 (2026-03-12): Loss Weighting 消融
+
+**exp007a 证明 PDS+StopGrad 的增益完全来自 loss weighting 正则化！**
+
+| 方法 | mAP | R1 | 额外 Params |
+|------|------|------|-------------|
+| PSG (1.0x loss, exp007) | 58.3% | 67.9% | +102K |
+| PDS+StopGrad (exp023) | 59.5% | 69.5% | +6.3M |
+| **PSG + 0.5x loss (exp007a)** | **59.5%** | **69.8%** | **+102K** |
+
+→ PDS 架构不必要，0.5x loss scaling 是真正的改进来源。
+
+### Skeleton GCN 仍有效
+
+| 方法 | mAP | R1 | 说明 |
+|------|------|------|------|
+| PSG + 0.5x loss (exp007a) | 59.5% | 69.8% | global-only |
+| PDS+SG+GCN concat_scaled (exp030) | 60.5% | 70.5% | + GCN 骨架特征 |
+
+→ GCN 在 loss scaling 基础上提供额外 +1.0% mAP 的互补信息。
+
+### 更新后的核心贡献（预计 3 点）
+1. **PSG (Pose Spatial Gate)**: 极简 backbone 内部 pose 注入 (+1.7% mAP)
+2. **Loss Scaling 正则化**: 降低 global loss 梯度幅度作为隐式正则化 (+1.2% mAP)，揭示了 dual-stream 架构增益的真实来源
+3. **Skeleton GCN**: 骨架拓扑结构特征作为互补检索信号 (+1.0% mAP)
+
+总计: baseline 56.6% → 60.5% (**+3.9% mAP, +4.0% R1**)
+
 ### 当前状态
-PDS+StopGrad 是 full model，PSG 和 gradient isolation 都是关键贡献。需要跨数据集验证 PDS+StopGrad 的泛化性。
+需要验证: PSG + 0.5x loss + GCN (无 PDS) 能否达到 60.5%。如果可以，整个方法仅需 ~500K params vs PDS 的 6.3M。
 
 ---
 
