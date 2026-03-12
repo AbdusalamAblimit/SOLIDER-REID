@@ -749,3 +749,5 @@ B. 直接启动 exp025，exp024 可以后续补跑
 3. 遮挡 ReID 的核心问题是噪声 token 稀释有效特征，热图引导的 token 选择直接解决此问题
 4. 这个方向有更强的论文 story：从"全局调制"到"局部选择"的范式升级
 5. 实现简单：用 pose 热图的空间最大值作为 token 重要性分数，加权 GAP 或 TopK 选择
+
+**执行结果**: exp029 (PWP) 完成。mAP 57.9%, R1 67.5% — 低于 exp007 (58.3%) -0.4%。**PWP 是 PGTS 的 soft 版本，结果中性偏负。** Post-backbone 的加权 pooling 在 PSG 已完成空间选择的情况下是冗余操作。关键启示：如果要做 token-level 操作，必须在 Stage 3 **内部** 做（如 hard token pruning），而不是在 pooling 阶段。

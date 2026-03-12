@@ -313,3 +313,26 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
 - 热图的 max pooling 可能丢失细粒度信息
 - threshold 选择可能需要调参
 - 非遮挡图片中 PGTS 退化为标准 GAP（可能中性）
+
+### Phase 2.8 新实验 (exp029)
+
+**exp029 PSG + Pose-Weighted Pooling (PWP)**: mAP 57.9%, R1 67.5% (-0.4%/-0.4% vs PSG)
+- **关键发现**: PWP 本质上就是 PGTS 的 soft 版本（用 body mask 加权 pooling），结果中性偏负
+- **重要启示**: Post-backbone 的 weighted pooling 在 PSG 已做空间调制后是冗余操作
+- PSG 在 Stage 3 内部已完成空间选择 → pooling 阶段再加权只是重复工作
+- **对 PGTS 方向的修正**: 如果 soft weighted pooling 无效，hard token pruning（直接删除 token）也很难在 pooling 阶段奏效。要做 token-level 操作，必须在 **Stage 3 内部**，让 token selection 影响 self-attention 计算
+
+### 阶段性总结更新（29 个实验后）
+
+**已穷尽的方向**:
+1. PSG + forward path 添加: exp008-021 全部失败
+2. PSG + 正则化: exp026 SPD 中性
+3. PSG + loss 调制: exp027 PCRA 中性
+4. PDS Part 收敛改善: exp028 Part LR 中性
+5. **PSG + post-hoc pooling 改进: exp029 PWP 中性** ← NEW
+
+**关键反思 — 29 个实验的根本教训**:
+- PSG 在 Stage 3 内做的空间门控已经是 pose heatmap 利用的最优方式之一
+- 所有"在 PSG 之上/之后加东西"的尝试都失败了（21 个 PSG 改进实验 + 1 个 PWP）
+- PDS+StopGrad 是唯一成功的方向，核心不是 pose 利用，而是**梯度隔离**的训练策略
+- **下一步需要全新的框架思路**，而不是继续在 PSG/PDS 上微调
