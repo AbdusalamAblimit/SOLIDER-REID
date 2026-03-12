@@ -336,3 +336,27 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
 - 所有"在 PSG 之上/之后加东西"的尝试都失败了（21 个 PSG 改进实验 + 1 个 PWP）
 - PDS+StopGrad 是唯一成功的方向，核心不是 pose 利用，而是**梯度隔离**的训练策略
 - **下一步需要全新的框架思路**，而不是继续在 PSG/PDS 上微调
+
+### Phase 2.9 新实验 (exp030)
+
+**exp030 PDS+StopGrad + Skeleton GCN**: mAP **60.0%**, R1 **71.0%** (equal_concat, E110 peak)
+- **全实验最佳！** 超越 baseline +3.4% mAP / +4.5% R1
+- vs exp023-g (59.5%): +0.5% mAP, +1.5% R1
+- vs exp023-eq (57.5%): +2.5% mAP, +4.8% R1
+
+**关键发现**:
+1. **GCN 骨架特征远优于 Part Pooling 特征**: exp023 equal_concat 57.5% → exp030 equal_concat 60.0% (+2.5%)
+2. **R1 提升尤为显著 (+4.5%)**: 骨架拓扑特征在 top-1 检索上有很强互补性
+3. **Part 分支训练收敛快**: id_part (0.085) << id_global (0.180)，GCN 768-d 向量比 5 个 Part 分类器更高效
+4. **第一个让 equal_concat 超越 global-only 的方案**: 之前所有 Part 方案的 concat 都 <= global-only
+
+**新问题 — Loss Weighting 混淆因素**:
+- Codex 分析发现 PDS 的 list-loss 路径隐式将 global loss 乘 0.5
+- exp007a (PSG + 0.5x global loss) 将验证 loss weighting 是否是 PDS 增益的主因
+- 如果 exp007a ≈ 59%，则 PDS/StopGrad 的架构贡献需要重新评估
+- exp030 的 60.0% 仍然有效，因为 GCN concat 特征提供了 Part Pooling 无法提供的互补信息
+
+**更新后的 story**:
+- PSG: backbone 内 pose 注入 (+1.7%)
+- Loss scaling: 全局 loss 正则化 (待 exp007a 验证)
+- Skeleton GCN: 骨架拓扑特征传播 (额外 +0.5% mAP, +1.5% R1 vs global-only)

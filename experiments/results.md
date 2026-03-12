@@ -54,6 +54,8 @@
 | 027 | PSG + PCRA (alpha=0.2, loss 距离调制) | 57.8% | 66.8% | 81.0% | 85.3% | mAP+1.2%, R1+0.3% | 🟡 -0.5% mAP vs exp007. Pose similarity 调制 triplet 距离中性偏负 |
 | 028 | PDS+StopGrad + Part LR 3x (equal_concat) | 59.3% | 68.9% | 81.4% | 85.4% | mAP+2.7%, R1+2.4% | 🟡 vs exp023-eq(57.5%)+2.8%, 但 vs exp023-g(59.5%)-0.2%. Part 收敛改善(ID 0.4 vs 2.0)未转化为测试增益 |
 | 029 | PSG + Pose-Weighted Pooling (PWP) | 57.9% | 67.5% | 81.1% | 85.3% | mAP+1.3%, R1+1.0% | 🟡 vs exp007(58.3%)-0.4%. PWP 替换 GAP 为 pose-weighted pooling, 效果中性. PSG 已做了空间选择, post-hoc weighting 冗余 |
+| **030-eq** | **PDS+StopGrad + Skeleton GCN (equal_concat)** | **60.0%** | **71.0%** | **83.3%** | **87.3%** | **mAP+3.4%, R1+4.5%** | **✅ 全实验最佳！GCN 骨架特征远优于 Part Pooling，E110 peak** |
+| 030-e120 | ↳ E120 最终 | 59.9% | 70.9% | 82.7% | 87.4% | mAP+3.3%, R1+4.4% | E120 微降 vs E110, cosine 尾部正常 |
 
 ### +NFC 结果（如适用）
 
