@@ -137,6 +137,26 @@ DATASET_CONFIGS = {
             'gallery': 'gallery.list',
         },
     },
+    'occluded_posetrack': {
+        'split_dirs': {
+            'train': 'bounding_box_train',
+            'query': 'query',
+            'gallery': 'bounding_box_test',
+        },
+        'split_lists': {
+            'train': 'train.list',
+            'query': 'query.list',
+            'gallery': 'gallery.list',
+        },
+    },
+    'occluded_reid': {
+        'split_dirs': {
+            'query': 'query',
+            'gallery': 'gallery',
+        },
+        'split_lists': {},
+        'recursive_scan': True,
+    },
     'market1501': {
         'split_dirs': {
             'train': 'bounding_box_train',
@@ -166,8 +186,12 @@ def detect_dataset(data_root):
     root_lower = data_root.lower()
     if 'msmt' in root_lower:
         return 'msmt17'
+    elif 'occluded_reid' in root_lower or 'occluded-reid' in root_lower:
+        return 'occluded_reid'
     elif 'market' in root_lower:
         return 'market1501'
+    elif 'posetrack' in root_lower:
+        return 'occluded_posetrack'
     else:
         return 'occluded_duke'
 
@@ -178,9 +202,14 @@ def get_image_list(data_root, split, dataset_type=None):
         dataset_type = detect_dataset(data_root)
 
     cfg = DATASET_CONFIGS.get(dataset_type, DATASET_CONFIGS['occluded_duke'])
+    if split not in cfg['split_dirs']:
+        raise ValueError(
+            f"Split '{split}' is not available for dataset '{dataset_type}'. "
+            f"Available splits: {sorted(cfg['split_dirs'])}")
     img_dir = os.path.join(data_root, cfg['split_dirs'][split])
     list_files = cfg.get('split_lists', {}).get(split, [])
     has_pid = cfg.get('list_has_pid', False)
+    recursive_scan = cfg.get('recursive_scan', False)
 
     # Normalize to list
     if isinstance(list_files, str):
@@ -204,11 +233,25 @@ def get_image_list(data_root, split, dataset_type=None):
 
     if not filenames:
         # Fallback: scan directory for image files
-        exts = {'.jpg', '.jpeg', '.png', '.bmp'}
-        filenames = sorted(
-            fn for fn in os.listdir(img_dir)
-            if os.path.splitext(fn)[1].lower() in exts and not fn.startswith('.')
-        )
+        exts = {'.jpg', '.jpeg', '.png', '.bmp', '.tif', '.tiff'}
+        if recursive_scan:
+            filenames = []
+            for root, _, files in os.walk(img_dir):
+                for fn in files:
+                    if os.path.splitext(fn)[1].lower() not in exts:
+                        continue
+                    if fn.startswith('.'):
+                        continue
+                    full_path = os.path.join(root, fn)
+                    rel_path = os.path.relpath(full_path, img_dir)
+                    filenames.append(rel_path)
+            filenames = sorted(filenames)
+        else:
+            filenames = sorted(
+                fn for fn in os.listdir(img_dir)
+                if os.path.splitext(fn)[1].lower() in exts
+                and not fn.startswith('.')
+            )
         print(f"  No .list file found, scanned {img_dir}: {len(filenames)} images")
 
     # Return (full_path, basename) pairs
@@ -273,6 +316,9 @@ def compute_crop_bounds(bbox, padding=1.25, input_size=(192, 256)):
 
 def main():
     args = parse_args()
+    dataset_type = detect_dataset(args.data_root)
+    available_splits = DATASET_CONFIGS.get(
+        dataset_type, DATASET_CONFIGS['occluded_duke'])['split_dirs']
 
     # Auto-download pretrained models if missing
     ensure_pretrained(args)
@@ -292,11 +338,16 @@ def main():
         lambda m, inp, out: heatmap_store.append(out.detach().cpu()))
 
     for split in args.splits:
+        if split not in available_splits:
+            print(f"\n=== Skipping split: {split} "
+                  f"(available for {dataset_type}: {sorted(available_splits)}) ===")
+            continue
         print(f"\n=== Processing split: {split} ===")
         split_dir = os.path.join(args.output_dir, split)
         os.makedirs(split_dir, exist_ok=True)
 
-        image_list = get_image_list(args.data_root, split)
+        image_list = get_image_list(args.data_root, split,
+                                    dataset_type=dataset_type)
         index = {}
 
         for img_path, filename in tqdm(image_list, desc=split):

@@ -13,12 +13,14 @@ from .sampler_ddp import RandomIdentitySampler_DDP
 import torch.distributed as dist
 from .mm import MM
 from .occluded_duke import OccludedDukeMTMC
+from .occluded_posetrack import OccludedPoseTrack
 
 __factory = {
     'market1501': Market1501,
     'msmt17': MSMT17,
     'mm': MM,
     'occluded_duke': OccludedDukeMTMC,
+    'occluded_posetrack': OccludedPoseTrack,
 }
 
 
