@@ -87,9 +87,29 @@ Pose-Guided Dual-Stream Architecture with Gradient-Isolated Part Learning for Oc
 
 **⚠️ 注意**: 以上增益均为 single-seed 数据。多种子验证 (exp031) 结果将确定最终论文数字。
 
+### Loss Scale 敏感性分析完成 (exp007b/c)
+
+| Loss Scale | mAP | R1 |
+|-----------|-----|-----|
+| 0.25x | 58.3% | 67.6% |
+| 0.5x | 59.5% | 69.8% |
+| 0.75x | 58.6% | 67.6% |
+| 1.0x | 58.3% | 67.9% |
+
+**结论**: Loss scale 在 0.25-1.0 范围内对最终性能影响可忽略（58.3-58.6%，Δ=0.3%）。0.5x 的 59.5% 很可能是训练方差而非 loss scaling 效果。
+
+**对论文 story 的影响**:
+- ~~Loss scaling 作为核心贡献~~ → Loss scaling 效果不显著
+- PSG (+1.7-2.0% over baseline) 是稳定的核心贡献
+- GCN 互补特征 (+1.3% equal_concat vs global) 需多种子确认
+
 ### 进行中的实验
 - **exp031**: 多种子验证 (3 configs × 3 seeds, 4090 运行中)
-- **exp007b/c**: Loss scale 敏感性分析 (0.25x/0.75x, 3090 运行中)
+
+### 更新后的核心贡献（修正版）
+1. **PSG (Pose Spatial Gate)**: backbone 内部 pose 注入，+1.7-2.0% mAP（稳定可复现）
+2. **Skeleton GCN**: 骨架拓扑特征作为互补检索信号（需多种子确认 +1.3% 的可靠性）
+3. **系统性消融**: 揭示 loss scaling/dual-stream 架构的增益实为训练方差（重要负面发现）
 
 总计 (single-seed best): baseline 56.6% → 61.1% (**+4.5% mAP, +7.2% R1**)
 
