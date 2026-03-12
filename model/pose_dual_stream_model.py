@@ -22,6 +22,7 @@ from .make_model import build_transformer, weights_init_kaiming, weights_init_cl
 from .modules.pose_spatial_gate import PoseSpatialGate
 from .modules.pose_part_pooling import PosePartPooling
 from .modules.pose_utils import merge_person_heatmaps
+from .modules.skeleton_gcn import SkeletonGCNHead
 
 
 class PoseDualStreamModel(build_transformer):
@@ -53,14 +54,27 @@ class PoseDualStreamModel(build_transformer):
         # Independent norm layer for part branch
         self.part_norm3 = copy.deepcopy(getattr(self.base, f'norm{last_stage_idx}'))
 
-        # Part pooling module
-        self.part_pooling = PosePartPooling(
-            in_channels=feat_ch,
-            num_classes=num_classes,
-            threshold=cfg.MODEL.POSE_THRESHOLD,
-            heatmap_norm=cfg.MODEL.POSE_HEATMAP_NORM,
-            temperature=cfg.MODEL.POSE_TEMPERATURE,
-        )
+        # Part head: Skeleton GCN or Part Pooling
+        self.use_skeleton_gcn = getattr(cfg.MODEL, 'POSE_SKELETON_GCN', False)
+        if self.use_skeleton_gcn:
+            gcn_layers = getattr(cfg.MODEL, 'POSE_GCN_LAYERS', 2)
+            gcn_hidden = getattr(cfg.MODEL, 'POSE_GCN_HIDDEN', 256)
+            input_size = (cfg.INPUT.SIZE_TRAIN[0], cfg.INPUT.SIZE_TRAIN[1])
+            self.skeleton_head = SkeletonGCNHead(
+                feat_dim=feat_ch,
+                hidden_dim=gcn_hidden,
+                num_layers=gcn_layers,
+                num_classes=num_classes,
+                input_size=input_size,
+            )
+        else:
+            self.part_pooling = PosePartPooling(
+                in_channels=feat_ch,
+                num_classes=num_classes,
+                threshold=cfg.MODEL.POSE_THRESHOLD,
+                heatmap_norm=cfg.MODEL.POSE_HEATMAP_NORM,
+                temperature=cfg.MODEL.POSE_TEMPERATURE,
+            )
 
         # Store config
         self._semantic_weight_val = semantic_weight
@@ -73,7 +87,10 @@ class PoseDualStreamModel(build_transformer):
 
         psg_str = 'PSG' if self.use_global_psg else 'no PSG (ablation)'
         print(f'[PDS] Global branch: Stage 3 ({len(stage3.blocks)} blocks) + {psg_str}')
-        print(f'[PDS] Part branch: Independent Stage 3 copy + 5-part pooling')
+        if self.use_skeleton_gcn:
+            print(f'[PDS] Part branch: Independent Stage 3 copy + Skeleton GCN ({gcn_layers} layers, hidden={gcn_hidden})')
+        else:
+            print(f'[PDS] Part branch: Independent Stage 3 copy + 5-part pooling')
         if self.stop_grad_epochs > 0:
             print(f'[PDS] Part stop_grad: delayed (block first {self.stop_grad_epochs} epochs, then release)')
         else:
@@ -159,8 +176,9 @@ class PoseDualStreamModel(build_transformer):
 
         return global_feat, featmap
 
-    def _run_part_branch(self, x, hw_shape, sem_weight, scene_heatmaps, scene_scores):
-        """Part branch: Independent Stage 3 -> Part Pooling -> part feats."""
+    def _run_part_branch(self, x, hw_shape, sem_weight, scene_heatmaps, scene_scores,
+                         pose_dict=None, return_cls=True, label=None):
+        """Part branch: Independent Stage 3 -> Part Pooling or Skeleton GCN -> part feats."""
         last = self._last_stage_idx
 
         # Run independent Stage 3 blocks (no PSG)
@@ -181,11 +199,14 @@ class PoseDualStreamModel(build_transformer):
         featmap = out.view(-1, *out_hw_shape,
                            self.base.num_features[last]).permute(0, 3, 1, 2).contiguous()
 
-        # Part pooling
-        part_cls_scores, part_feats, part_valid = self.part_pooling(
-            featmap, scene_heatmaps, scene_scores)
-
-        return part_cls_scores, part_feats, part_valid
+        if self.use_skeleton_gcn:
+            # Skeleton GCN: sample keypoints from feature map -> GCN -> weighted avg
+            return self.skeleton_head(featmap, pose_dict, return_cls=return_cls, label=label)
+        else:
+            # Part pooling
+            part_cls_scores, part_feats, part_valid = self.part_pooling(
+                featmap, scene_heatmaps, scene_scores)
+            return part_cls_scores, part_feats, part_valid
 
     def forward(self, x, label=None, cam_label=None, view_label=None,
                 pose_dict=None):
@@ -231,7 +252,8 @@ class PoseDualStreamModel(build_transformer):
             # Part branch
             if pose_dict is not None:
                 part_cls_scores, part_feats, part_valid = self._run_part_branch(
-                    part_input, hw_shape, sem_weight, scene_heatmaps, scene_scores)
+                    part_input, hw_shape, sem_weight, scene_heatmaps, scene_scores,
+                    pose_dict=pose_dict, return_cls=True, label=label)
 
                 all_cls = [cls_score] + part_cls_scores
                 all_feats = [global_feat] + part_feats
@@ -251,7 +273,8 @@ class PoseDualStreamModel(build_transformer):
 
             if pose_dict is not None and self.pose_test_feat != 'global':
                 _, part_feats, _ = self._run_part_branch(
-                    part_input, hw_shape, sem_weight, scene_heatmaps, scene_scores)
+                    part_input, hw_shape, sem_weight, scene_heatmaps, scene_scores,
+                    pose_dict=pose_dict, return_cls=False)
 
                 if self.pose_test_feat == 'part_only':
                     test_feat = torch.cat(part_feats, dim=1)
