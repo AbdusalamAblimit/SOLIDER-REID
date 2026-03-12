@@ -796,4 +796,26 @@ B. 直接启动 exp025，exp024 可以后续补跑
 4. **动作识别验证**: ST-GCN、MS-G3D 等大量工作证明骨架 GCN 能有效编码人体结构信息
 5. **论文新颖性**: ReID 领域尚未有将骨架 GCN 用于遮挡 ReID 的工作
 
-**执行结果**: exp030 已启动训练（2026-03-12 03:48），模型正常初始化，loss 正常下降
+**执行结果**: exp030 最终 mAP 60.5% (concat_scaled), R1 70.5%。全实验最佳。Skeleton GCN 确实提供了与 Global 不同的互补信息。
+
+---
+
+### [2026-03-12 06:15] 决策 #32
+
+**上下文**: 用户分享了 codex 对 PDS+StopGrad 的分析——发现 loss 聚合中 global loss 被隐式乘以 0.5。multi-seed 实验确认 PDS+StopGrad 相对 PSG 有稳定的 +1.4% 增益。需要验证这个增益是来自架构还是 loss weighting。
+
+**选项**:
+  A. 在 exp007 (PSG-only) 上显式乘 0.5x global loss，验证 loss weighting 假设
+  B. 继续探索新架构方向，把 loss weighting 验证留给后续
+
+**选择**: A — exp007a (PSG + 0.5x global loss)
+**理由**:
+1. 这是一个关键的消融实验——如果 loss weighting 是主因，则 PDS+StopGrad 的论文价值需要重新评估
+2. 实现成本极低（仅改 1 个 config 参数）
+3. 结果明确：如果 exp007a ≈ 59%，假设成立；如果 < 58%，假设不成立
+
+**执行结果**:
+- exp007a 最终 mAP **59.5%**, R1 **69.8%** — 与 exp023 (PDS+StopGrad) 的 59.5%/69.5% **完全一致**！
+- **假设完全确认**: PDS+StopGrad 的增益 100% 来自 loss weighting 正则化效果
+- **重大发现**: 仅 +102K params (PSG) + 0.5x loss = 6.3M params (PDS) + StopGrad 的相同效果
+- 这个发现从根本上改变了对 PDS 架构的理解

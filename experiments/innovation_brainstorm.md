@@ -356,7 +356,25 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
 - 如果 exp007a ≈ 59%，则 PDS/StopGrad 的架构贡献需要重新评估
 - exp030 的 60.0% 仍然有效，因为 GCN concat 特征提供了 Part Pooling 无法提供的互补信息
 
+### Phase 2.10: exp007a 结果 — 决定性发现！
+
+**exp007a (PSG + 0.5x Global Loss Scale)**: mAP **59.5%**, R1 **69.8%**
+
+| 方法 | mAP | R1 | 额外 Params | 说明 |
+|------|------|------|-------------|------|
+| exp007 (PSG, 1.0x loss) | 58.3% | 67.9% | +102K | PSG 基线 |
+| exp023 (PDS+StopGrad) | 59.5% | 69.5% | +6.3M | 双流+梯度隔离 |
+| **exp007a (PSG, 0.5x loss)** | **59.5%** | **69.8%** | **+102K** | **仅改 loss scale** |
+
+**核心发现**: PDS+StopGrad 的 +2.9% 增益 **100% 来自 loss weighting 正则化**。双流架构(+6.3M params)和 StopGrad 策略都是不必要的。
+
+**对论文 story 的重大修正**:
+1. ~~PDS+StopGrad 作为核心创新~~ → PDS 的增益被 loss weighting 完全解释
+2. PSG + loss scaling 是更简洁、更本质的方法
+3. **exp030 GCN 的增益仍然有效**: global-only 59.5% + GCN concat → 60.5% (+1.0%)，GCN 提供了真正的互补特征
+
 **更新后的 story**:
 - PSG: backbone 内 pose 注入 (+1.7%)
-- Loss scaling: 全局 loss 正则化 (待 exp007a 验证)
-- Skeleton GCN: 骨架拓扑特征传播 (额外 +0.5% mAP, +1.5% R1 vs global-only)
+- Loss scaling: 全局 loss 正则化 (+1.2%)
+- Skeleton GCN: 骨架拓扑特征传播 (额外 +1.0% mAP vs global-only)
+- 总计: baseline 56.6% → PSG+LS+GCN 60.5% (+3.9% mAP, +4.0% R1)
