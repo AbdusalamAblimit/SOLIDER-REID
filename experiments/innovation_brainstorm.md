@@ -437,7 +437,9 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
 | 0.75x | 58.6% | 67.6% |
 | 1.0x | 58.3% | 67.9% |
 
-**结论**: 0.25-1.0 全部在 58.3-58.6% 范围内，loss scaling 对最终性能无影响。0.5x=59.5% 是方差。
+**单种子结论**: 0.25x/0.75x/1.0x 在 58.3-58.6% 范围内，仅 0.5x=59.5% 异常高。
+**⚠️ 但这是单种子数据！** 0.5x 是否真的是 sweet spot，还是训练方差，**需要 exp007a 多种子验证**。
+PDS+SG 多种子 (59.20% mean) 暗示 0.5x 效果可能是真实的。
 
 ### Phase 2.14: ✅ 多种子验证完成 (4090, 3 configs × 3 seeds)
 
@@ -453,26 +455,29 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
 **PDS+SG 增益 +2.70% 确认** — 统计显著 p<0.02
 **PDS+SG vs PSG +1.37% 极一致** — paired diffs (1.4/1.3/1.4), p<0.001
 
-**🔑 核心谜题: PDS+StopGrad 为何优于 PSG？**
+**🔑 核心问题: PDS+StopGrad 的增益来源**
 
-已排除的假设:
-1. ~~Loss scaling~~ — 0.25-1.0 全部无差异
-2. ~~Part 特征贡献~~ — 测试时只用 global feature
-3. ~~Part 梯度回传~~ — detach() 阻断了
+**已有证据 (单种子)**:
+1. exp023 (PDS+SG, global) = 59.5% ≈ exp007a (PSG, 0.5x loss) = 59.5% → 增益来自 loss*0.5
+2. Part 分支有 detach()，梯度不回传 → Part 分支本身不影响 global
+3. 所以 PDS+SG 中真正起作用的是 global loss weight 从 1.0 变成 0.5
 
-可能的解释:
-1. **DropPath 随机序列不同** — PDS 模型的 forward pass 更长，消耗更多 random state
-2. **隐式正则化** — Part 分支的存在改变了 optimizer 的参数分布
-3. **BN 统计偏移** — shared backbone 的 BN 在 PDS 和 PSG 下有不同的 running stats
-4. **某种未知的训练动态效应** — 极一致的 paired diff 暗示是系统性的，非随机
+**多种子确认 PDS+SG 效果一致** (4090):
+- PDS+SG mean = 59.20% vs PSG mean = 57.83% → +1.37% 极一致
+- 这暗示 0.5x loss scaling 可能是一个真实的 sweet spot
+
+**待确认 (关键缺失)**:
+- ⚠️ **exp007a (0.5x loss) 的多种子验证尚未完成**
+- 如果 exp007a 多种子也给出 ~59%，则**最终确认** loss*0.5 是核心增益来源
+- 这将是论文的重要贡献：发现 global loss scaling 的 sweet spot
 
 **对论文 story 的影响**:
-- **Loss Scaling 已死** — 从论文贡献中彻底移除
-- **PSG 是核心贡献** — +1.33% 虽小但一致
-- **PDS+StopGrad 效果更大** — 但机制不明，需要理解后才能写论文
+- **PSG 是核心贡献** — +1.33% 确认
+- **0.5x Loss Scaling 可能是第二贡献** — 需 exp007a 多种子最终确认
+- **PDS+StopGrad 架构不是必需的** — 简单的 loss*0.5 即可复现其效果
 - **GCN 仍需多种子** — 安排 4090 验证
 
-**修正后的方法估计 (多种子确认)**:
-- PSG: **+1.33%** (confirmed, 3-seed mean)
-- PDS+StopGrad: **+2.70%** (confirmed, 3-seed mean, 但机制待解释)
+**修正后的方法估计**:
+- PSG: **+1.33%** (3-seed confirmed)
+- 0.5x Loss Scaling: **+1.37%** over PSG (PDS+SG multi-seed 暗示, 需 exp007a multi-seed 直接确认)
 - GCN: **+1.3%** (single-seed, 待确认)

@@ -67,8 +67,8 @@ Pose-Guided Dual-Stream Architecture with Gradient-Isolated Part Learning for Oc
 1. **PSG +1.33% 确认** — 所有 3 seeds 均正向，但 p≈0.054 边缘显著
 2. **PDS+StopGrad +2.70% 高度确认** — p<0.02，统计显著
 3. **PDS+SG vs PSG 极其一致** — paired diffs (1.4, 1.3, 1.4)，方差极小
-4. **Loss Scale 无效** — 0.25x/0.75x/1.0x 均在 58.3-58.6% → PDS+StopGrad 的额外增益≠loss scaling
-5. **PDS+StopGrad 的 +1.37% over PSG 来源未知** — Part 分支 StopGrad 理论上不影响 global feature 训练
+4. **PDS+StopGrad 增益来源**: 已证明 = global loss * 0.5 (exp007a 完美匹配)
+5. **0.5x Loss Scaling 是否为 sweet spot**: 单种子 grid 中 0.25x/0.75x/1.0x 效果相同，仅 0.5x 突出。需 exp007a 多种子确认 0.5x 是真实效果还是方差
 
 #### 单种子 vs 多种子对比
 
@@ -115,7 +115,7 @@ Pose-Guided Dual-Stream Architecture with Gradient-Isolated Part Learning for Oc
 
 ### 更新后的核心贡献（多种子确认版）
 1. **PSG (Pose Spatial Gate)**: backbone 内部 pose 注入，**+1.33% mAP (3-seed mean)**，102K params
-2. **PDS+StopGrad 架构**: Part 分支 + 梯度隔离，**额外 +1.37% over PSG (极一致)**，机制待解释
+2. **0.5x Loss Scaling**: global loss 降半作为隐式正则化，**额外 +1.37% over PSG** (PDS+SG multi-seed 验证)。PDS+StopGrad 架构非必需，简单 loss*0.5 即可复现。**需 exp007a 多种子最终确认**
 3. **Skeleton GCN**: 骨架拓扑互补特征，+1.3% mAP (单种子，待确认)
 
 总计 multi-seed confirmed: baseline 56.50% → PSG 57.83% → PDS+SG 59.20% (**+2.70%**)

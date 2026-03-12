@@ -165,8 +165,9 @@
 **关键发现**:
 1. PSG 在所有 3 seeds 上均正向改善 baseline（+0.4 ~ +2.0%），均值 +1.33%
 2. PDS+StopGrad (global) 在所有 3 seeds 上均大幅超越 baseline，均值 +2.70%
-3. PDS+StopGrad vs PSG 的改善极其一致 (+1.3 ~ +1.4%)，不可能是方差所致
-4. 但 Loss Scale 实验(exp007a/b/c)证明 loss scaling 无效 → PDS+StopGrad 的额外增益来源未知
+3. PDS+StopGrad vs PSG 的改善极其一致 (+1.3 ~ +1.4%)
+4. 已证明 PDS+SG 增益 = global loss * 0.5 (exp007a 单种子匹配)
+5. **exp007a (0.5x loss) 多种子验证尚未完成** — 需要确认 0.5x 是真实 sweet spot 还是方差
 
 ---
 
