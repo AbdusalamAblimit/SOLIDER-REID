@@ -888,3 +888,34 @@ B. 直接启动 exp025，exp024 可以后续补跑
 3. exp030a (PSG + GCN, equal_concat) — GCN + loss scaling 组合
 
 **执行**: 编写多种子脚本，后台跑。期间可设计下一个实验方向。
+
+### [2026-03-12 18:45] 决策 #36
+
+**上下文**: 用户在 4090 上已完成多种子验证（exp000 × 3, exp007 × 3, exp023 × 3），结果存放在 `4090_log/multiseed/`。用户选择了 exp023 (PDS+StopGrad) 而非原计划的 exp030a (GCN) 和 exp007a (0.5x loss)。
+
+**多种子核心结论**:
+
+| 方法 | Mean mAP | Std | vs Baseline | p-value |
+|------|---------|-----|-------------|---------|
+| Baseline | 56.50% | 0.53% | — | — |
+| PSG | 57.83% | 0.50% | +1.33% | ~0.054 |
+| PDS+StopGrad (global) | 59.20% | 0.50% | +2.70% | ~0.014 ✅ |
+
+**关键发现**:
+1. PSG +1.33% 所有 seeds 正向，但边缘显著
+2. PDS+StopGrad (global) +2.70% 统计显著
+3. PDS+SG vs PSG = +1.37%，极一致 (1.4/1.3/1.4)
+4. Loss Scale 实验(0.25/0.75/1.0 均 58.3-58.6%) 证明 loss scaling 无效
+5. 因此 PDS+StopGrad 的额外 +1.37% 不是 loss scaling 效果，机制待解释
+
+**对论文的影响**:
+- PSG 确认为有效贡献 (+1.33% mean)
+- PDS+StopGrad 提供更大增益 (+2.70%) 且统计显著
+- 但 PDS+StopGrad 增加 ~8.8M 参数（完整 Stage 3 复制），效率比 PSG 差很多
+- GCN 仍需多种子确认
+- 需要理解 PDS+StopGrad 为何在 loss scaling 无效的情况下仍优于 PSG
+
+**选择**: 继续实验探索，重点方向：
+1. 理解 PDS+StopGrad 的真实机制（不是 loss scaling，那是什么？）
+2. GCN 多种子验证（安排 4090）
+3. 基于确认的结论设计更强的方法
