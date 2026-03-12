@@ -57,7 +57,8 @@ def make_loss(cfg, num_classes):    # modified by gu
                     loss_details['id_global'] = global_id.item()
                     loss_details['id_part'] = part_id_avg.item()
                 else:
-                    ID_LOSS = ce_fn(score, target)
+                    global_loss_scale = getattr(cfg.MODEL, 'GLOBAL_LOSS_SCALE', 1.0)
+                    ID_LOSS = global_loss_scale * ce_fn(score, target)
                     loss_details['id_global'] = ID_LOSS.item()
 
                 if isinstance(feat, list):
@@ -72,7 +73,8 @@ def make_loss(cfg, num_classes):    # modified by gu
                     loss_details['tri_global'] = global_tri.item()
                     loss_details['tri_part'] = part_tri_avg.item()
                 else:
-                    TRI_LOSS = triplet(feat, target, normalize_feature=trp_norm, pose_sim=pose_sim)[0]
+                    global_loss_scale = getattr(cfg.MODEL, 'GLOBAL_LOSS_SCALE', 1.0)
+                    TRI_LOSS = global_loss_scale * triplet(feat, target, normalize_feature=trp_norm, pose_sim=pose_sim)[0]
                     loss_details['tri_global'] = TRI_LOSS.item()
 
                 total = cfg.MODEL.ID_LOSS_WEIGHT * ID_LOSS + \
