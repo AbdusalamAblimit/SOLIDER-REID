@@ -16,6 +16,7 @@ from .modules.pose_channel_gate import PoseChannelGate
 from .modules.pose_cross_attention import PoseCrossAttention
 from .modules.pose_reconstruction_head import PoseReconstructionHead
 from .modules.pose_utils import merge_person_heatmaps
+from .modules.skeleton_gcn import SkeletonGCNHead
 
 
 class PoseBackboneModel(build_transformer):
@@ -163,6 +164,22 @@ class PoseBackboneModel(build_transformer):
         if self.use_weighted_pool:
             print('[PWP] Pose-Weighted Pooling enabled (replaces GAP)')
 
+        # Skeleton GCN head (optional, for PSG+GCN without PDS)
+        self.use_skeleton_gcn = getattr(cfg.MODEL, 'POSE_SKELETON_GCN', False)
+        if self.use_skeleton_gcn:
+            gcn_layers = getattr(cfg.MODEL, 'POSE_GCN_LAYERS', 2)
+            gcn_hidden = getattr(cfg.MODEL, 'POSE_GCN_HIDDEN', 256)
+            self.skeleton_head = SkeletonGCNHead(
+                feat_dim=self.in_planes,
+                hidden_dim=gcn_hidden,
+                num_layers=gcn_layers,
+                num_classes=num_classes,
+                input_size=tuple(cfg.INPUT.SIZE_TRAIN),
+            )
+            self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'concat_scaled')
+            print(f'[PSG+GCN] Skeleton GCN head enabled: {gcn_layers} layers, '
+                  f'hidden={gcn_hidden}, test_feat={self.pose_test_feat}')
+
         # Store backbone's semantic weight for manual forward
         self._semantic_weight_val = semantic_weight
 
@@ -301,12 +318,39 @@ class PoseBackboneModel(build_transformer):
             else:
                 cls_score = self.classifier(feat_cls)
 
+            # Skeleton GCN branch (detached to prevent gradient interference)
+            if self.use_skeleton_gcn and pose_dict is not None:
+                feat_map_detached = featmaps[-1].detach()
+                gcn_cls_scores, gcn_feats, _ = self.skeleton_head(
+                    feat_map_detached, pose_dict, return_cls=True, label=label)
+                # Return lists → triggers list-loss path (implicit 0.5x global)
+                return [cls_score] + gcn_cls_scores, [global_feat] + gcn_feats, featmaps, recon_loss
+
             return cls_score, global_feat, featmaps, recon_loss
         else:
             if self.neck_feat == 'after':
-                return feat, featmaps
+                test_feat = feat
             else:
-                return global_feat, featmaps
+                test_feat = global_feat
+
+            # Skeleton GCN: assemble test features based on pose_test_feat mode
+            if self.use_skeleton_gcn and pose_dict is not None and \
+                    getattr(self, 'pose_test_feat', 'global') != 'global':
+                _, gcn_feats, _ = self.skeleton_head(
+                    featmaps[-1], pose_dict, return_cls=False)
+
+                if self.pose_test_feat == 'gcn_only':
+                    test_feat = torch.cat(gcn_feats, dim=1)
+                elif self.pose_test_feat == 'equal_concat':
+                    g_norm = F.normalize(test_feat, p=2, dim=1)
+                    p_norm = [F.normalize(f, p=2, dim=1) for f in gcn_feats]
+                    test_feat = torch.cat([g_norm] + p_norm, dim=1)
+                else:  # concat_scaled (default)
+                    scale = 1.0 / len(gcn_feats)
+                    test_feat = torch.cat(
+                        [test_feat] + [f * scale for f in gcn_feats], dim=1)
+
+            return test_feat, featmaps
 
     @staticmethod
     def _prepare_pose(pose_dict):
