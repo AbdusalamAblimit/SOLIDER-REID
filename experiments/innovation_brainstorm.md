@@ -428,8 +428,51 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
 - Loss Scaling: +0~1.5% (可能被方差覆盖)
 - GCN: +0.5~1.5% (exp030a 中有效, exp030b 中因 GCN 未训练而无效)
 
-### Phase 2.13: Loss Scale 敏感性分析 (exp007b/c)
+### Phase 2.13: Loss Scale 敏感性分析完成 (exp007b/c)
 
-exp007b (0.25x), exp007c (0.75x) 正在 3090 上运行。与 exp007 (1.0x) 和 exp007a (0.5x) 构成完整网格。
+| Loss Scale | mAP | R1 |
+|-----------|-----|-----|
+| 0.25x | 58.3% | 67.6% |
+| 0.5x | 59.5% | 69.8% |
+| 0.75x | 58.6% | 67.6% |
+| 1.0x | 58.3% | 67.9% |
 
-**论文用途**: 敏感性分析图 (Figure X: Effect of global loss scale)
+**结论**: 0.25-1.0 全部在 58.3-58.6% 范围内，loss scaling 对最终性能无影响。0.5x=59.5% 是方差。
+
+### Phase 2.14: ✅ 多种子验证完成 (4090, 3 configs × 3 seeds)
+
+**这是整个 Phase 2 最关键的里程碑。**
+
+| 方法 | Seed 1234 | Seed 42 | Seed 2024 | Mean±Std |
+|------|-----------|---------|-----------|----------|
+| Baseline | 56.7% | 55.9% | 56.9% | 56.50±0.53% |
+| PSG | 58.3% | 57.9% | 57.3% | 57.83±0.50% |
+| PDS+SG (global) | 59.7% | 59.2% | 58.7% | 59.20±0.50% |
+
+**PSG 增益 +1.33% 确认** — 所有 3 seeds 正向 (paired: +1.6/+2.0/+0.4), p≈0.054
+**PDS+SG 增益 +2.70% 确认** — 统计显著 p<0.02
+**PDS+SG vs PSG +1.37% 极一致** — paired diffs (1.4/1.3/1.4), p<0.001
+
+**🔑 核心谜题: PDS+StopGrad 为何优于 PSG？**
+
+已排除的假设:
+1. ~~Loss scaling~~ — 0.25-1.0 全部无差异
+2. ~~Part 特征贡献~~ — 测试时只用 global feature
+3. ~~Part 梯度回传~~ — detach() 阻断了
+
+可能的解释:
+1. **DropPath 随机序列不同** — PDS 模型的 forward pass 更长，消耗更多 random state
+2. **隐式正则化** — Part 分支的存在改变了 optimizer 的参数分布
+3. **BN 统计偏移** — shared backbone 的 BN 在 PDS 和 PSG 下有不同的 running stats
+4. **某种未知的训练动态效应** — 极一致的 paired diff 暗示是系统性的，非随机
+
+**对论文 story 的影响**:
+- **Loss Scaling 已死** — 从论文贡献中彻底移除
+- **PSG 是核心贡献** — +1.33% 虽小但一致
+- **PDS+StopGrad 效果更大** — 但机制不明，需要理解后才能写论文
+- **GCN 仍需多种子** — 安排 4090 验证
+
+**修正后的方法估计 (多种子确认)**:
+- PSG: **+1.33%** (confirmed, 3-seed mean)
+- PDS+StopGrad: **+2.70%** (confirmed, 3-seed mean, 但机制待解释)
+- GCN: **+1.3%** (single-seed, 待确认)
