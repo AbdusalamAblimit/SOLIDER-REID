@@ -854,3 +854,37 @@ B. 直接启动 exp025，exp024 可以后续补跑
   C. 更多 test-time 增强测试（NFC + re-ranking）
 
 **选择**: 先 A 再 C。exp030b 消融是论文必需的证据（证明 GCN 的增益独立于 loss scaling），且只需跑一个实验。C 可以在训练期间并行用 test.py 跑。
+
+### [2026-03-12 13:30] 决策 #35
+
+**上下文**: exp030b 完成。核心发现：w_p=0.01 时 GCN 几乎未训练（ID_part loss 5.1 vs exp030a 的 0.17），但 global mAP = 60.6%，远超预期的 58.3%（exp007），甚至超过 exp030a global (59.8%)。
+
+**关键数据对比**:
+| 实验 | 模型差异 | Global mAP |
+|------|---------|-----------|
+| exp007 | PSG only | 58.3% |
+| exp007a | PSG + 0.5x loss | 59.5% |
+| exp030a | PSG + GCN (w_p=1.0, 隐式 0.5x) | 59.8% |
+| exp030b | PSG + GCN (w_p=0.01, ≈1.0x) | 60.6% |
+
+这四个实验的 global mAP 从 58.3% 到 60.6%，差异达 2.3%，但没有一致的规律（exp030b 应该最低却最高）。
+
+**分析**:
+1. **训练方差假说**：不同模型类初始化消耗不同随机状态 → DropPath mask、数据增强序列不同 → 2% 范围内的 mAP 差异不可信
+2. **Loss scaling 效果可能被高估**：exp007a 的 +1.2% 可能部分/全部来自方差
+3. **GCN 特征贡献可量化**：exp030b equal_concat (60.5%) ≈ global (60.6%)，证明未训练的 GCN 特征确实无价值
+4. **exp030a GCN 贡献**：exp030a equal_concat (61.1%) > global (59.8%) = +1.3%，但这 1.3% 可能也受方差影响
+
+**选项**:
+  A. 立即设计多种子实验 (3-5 seeds)，在 3090 上跑 baseline/PSG/PSG+GCN 各 3 次
+  B. 继续新方向实验（如新的 GCN 改进、更好的 part 特征融合）
+  C. Loss scale grid search 作为论文消融分析
+
+**选择**: A — 多种子实验。这是最关键的待办，没有多种子数据就无法区分真实增益和方差。但考虑到 3090 每个实验 120 epoch 需约 2 小时，跑 15 个实验 (5 configs × 3 seeds) 需要 30 小时，这在时间上太长。折中方案：选 3 个最关键配置 × 3 seeds = 9 个实验 (≈18 小时)，先确认核心结论。
+
+**关键配置**:
+1. exp007 (PSG only, 1.0x loss) — 基线
+2. exp007a (PSG + 0.5x loss) — loss scaling 效果
+3. exp030a (PSG + GCN, equal_concat) — GCN + loss scaling 组合
+
+**执行**: 编写多种子脚本，后台跑。期间可设计下一个实验方向。
