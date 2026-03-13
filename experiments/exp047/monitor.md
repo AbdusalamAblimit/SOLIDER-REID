@@ -338,3 +338,44 @@
 ### 原因
 1. 中段曲线持续上升，没有看到提前终止的证据。
 2. 从 `Epoch 30+` 开始切换到约 `5` 分钟轮询，下一关键点看 `Epoch 40` 验证。
+
+---
+## [终止] 实验失败分析
+
+**状态**: ❌ 终止（Epoch 60 时进程中断，无 checkpoint）
+
+### 根本失败原因
+
+**CSGT 的核心假设不成立**：common-support overlap 无法区分正负 pair。
+
+| 统计量 | Epoch 10 | Epoch 20 | Epoch 30 | Epoch 50+ |
+|--------|----------|----------|----------|-----------|
+| pos_overlap | 0.650 | 0.650 | 0.647 | 0.640 |
+| neg_overlap | 0.661 | 0.651 | 0.649 | 0.655 |
+| **gap** | **0.011** | **0.001** | **0.002** | **0.015** |
+
+正负 pair 的 overlap 差异始终 < 0.02，机制本质上无法区分"哪些 pair 更可比"。
+
+### 为什么 overlap 不区分正负 pair
+
+1. **keypoint visibility 是 image-level 属性**，不是 identity-level 属性
+2. 一个 anchor 与正样本的关键点重叠，和与负样本的关键点重叠，取决于两张图各自的遮挡模式
+3. 遮挡模式由相机角度和场景布局决定，与身份无关
+4. 因此 overlap ≈ f(image_a, image_b)，不携带 identity 信息
+
+### 另一个失败信号
+
+- `csgt_pos_fallback ≈ 0.7-0.8`：70-80% 的正样本 pair 因 overlap 不足而回退到标准 mining
+- 这意味着 CSGT 在大部分时间里就是标准 triplet
+
+### 最终判断
+
+**CSGT 作为训练端创新失败。** 不需要等最终 120 epoch 结果。
+
+### 对 common-support 路线的影响
+
+1. **retrieval-time CVK 仍然成立**：因为 CVK 做的不是 overlap 筛选，而是 pair-specific keypoint distance 替代
+2. **但把 CVK 信号迁移到训练端的 simple approach 失败了**
+3. 如果要继续推进训练端 common-support，需要完全不同的机制：
+   - 不是用 overlap 做 mining filter
+   - 而是改变 loss 本身的计算方式（如只在共同可见区域上计算距离）

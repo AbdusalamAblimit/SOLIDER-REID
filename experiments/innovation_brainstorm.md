@@ -297,8 +297,21 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
    - 对照 `exp036`
    - 再看是否削弱 `cvk_hybrid` 的必要性
 
-### 当前结论
-- 如果要把 CVK 这条线推进到训练端，**CSGT 是比 AFF / extra attention / extra loss 更值得先试的起点**。
+### exp047 结论：CSGT 失败
+
+**实验结果**: Epoch 60 中断（无 checkpoint），但已有充分失败证据。
+
+**根本失败原因**: `csgt_pos_overlap ≈ csgt_neg_overlap ≈ 0.65`，差异始终 < 0.02。keypoint visibility 是 image-level 属性（由相机角度和遮挡模式决定），不携带 identity 信息，因此 overlap 无法区分正负 pair。`pos_fallback ≈ 0.7-0.8` 说明 70-80% 的正样本退化为标准 mining。
+
+**核心教训**: 把 retrieval-time 的 common-support 信号迁到训练端，不能简单用 overlap 做 mining filter。retrieval-time CVK 有效是因为它改变了距离计算方式（只在共同可见关键点上计算距离），而不是因为它筛选了更好的 pair。
+
+**对后续方向的影响**:
+1. **overlap-based mining filter 这个方向彻底否决**
+2. 如果要做训练端 common-support，必须改变 loss 本身的距离计算（如只在共同可见区域上计算 triplet 距离）
+3. 但这会进一步接近 KPR/BPBreID 已做的 pairwise visible matching，创新空间更窄
+
+### 当前结论（更新）
+- CSGT 失败。简单的 overlap mining filter 不可行。
 3. PSG + loss 调制: exp027 PCRA 中性
 
 **仍然有效的方向**:
