@@ -607,3 +607,28 @@ PDS+SG 多种子 (59.20% mean) 暗示 0.5x 效果可能是真实的。
 1. 权重敏感性：`global : cvk`
 2. 多 checkpoint / 多 seed 复核
 3. 失败样例分析：它究竟修正了哪些遮挡 pair
+
+### Phase 2.18: 2026-03-13 `exp041` 后的机制判断
+
+#### 新增证据
+- `2:1` = `61.6 / 72.6`
+- `1:1` = `61.9 / 73.2`
+- `1:2` = `61.6 / 73.6`
+
+#### 能新增确认的不是“更高点”，而是机制形状
+1. **`1:1` 是当前小范围内的 mAP 最优点**
+   两侧偏移都会掉到 `61.6%`，因此正向收益不是随便混一点就有。
+
+2. **这条线更像 balanced correction，而不是 single-side domination**
+   - 偏 global：mAP / R1 一起掉
+   - 偏 CVK：mAP 掉，但 R1 更接近 baseline
+
+3. **因此 story 可以进一步收紧**
+   不是“CVK 越强越好”，也不是“少量 CVK 即可”；
+   而是：
+   **global identity space + balanced common-support correction**
+
+#### 研究策略更新
+1. 不再继续做细粒度 test-time 参数扫点
+2. 优先寻找更多 checkpoint 复核这条形状是否成立
+3. 若多 checkpoint 仍成立，再考虑做 pair-case 可视化 / 错误类型分析

@@ -139,6 +139,21 @@ Pose Spatial Gate and Skeleton Complement for Occluded Person Re-Identification
 - `global : cvk` 权重敏感性
 - 多 checkpoint / 多 seed 复核
 
+### 2026-03-13 exp041 权重敏感性更新
+- `2:1` = `61.6 / 72.6`
+- `1:1` = `61.9 / 73.2`
+- `1:2` = `61.6 / 73.6`
+
+这一步把 story 又往前推了一点：
+1. `1:1` 不是随手设的偶然比例，因为两侧偏移都会把 mAP 从 `61.9` 拉回 `61.6`。
+2. 这说明共同可见关键点 reasoning 的作用方式不是“global 为主，CVK 轻微修正”或“CVK 主导，global 陪衬”，而是 **两种证据的平衡补充**。
+3. 偏向 CVK 会把收益更多转向 R1，偏向 global 则两项都掉，这也符合“CVK 在困难 pair 上做判别校正”的直觉。
+
+因此当前更稳的叙事可以写成：
+- global feature 提供主体身份空间
+- CVK reasoning 提供 pair-specific common-support correction
+- 两者需要保持平衡，而不是由一侧完全主导
+
 ### 跨数据集 / Backbone 验证 (4090)
 
 | 数据集 | Backbone | Baseline mAP | PSG mAP | Δ |
