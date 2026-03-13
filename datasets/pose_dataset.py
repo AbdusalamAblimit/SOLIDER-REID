@@ -110,7 +110,9 @@ class PoseImageDataset(Dataset):
         # ---- Load all persons' pose data ----
         persons = self._load_persons(fname, orig_h, orig_w)
         # persons: list of dict {heatmap: (17,H,W) tensor, kp: (17,2) ndarray,
-        #                        scores: (17,) ndarray}
+        #                        scores: (17,) ndarray,
+        #                        visibility: (17,) ndarray,
+        #                        visibility_binary: (17,) ndarray}
         n_persons = len(persons)
 
         # ---- Joint Augmentation ----
@@ -165,6 +167,8 @@ class PoseImageDataset(Dataset):
         out_heatmaps = torch.zeros(self.max_persons, 17, hm_h, hm_w)
         out_keypoints = torch.zeros(self.max_persons, 17, 2)
         out_scores = torch.zeros(self.max_persons, 17)
+        out_visibility = torch.zeros(self.max_persons, 17)
+        out_visibility_binary = torch.zeros(self.max_persons, 17)
         out_mask = torch.zeros(self.max_persons)
 
         for i in range(min(n_persons, self.max_persons)):
@@ -176,12 +180,18 @@ class PoseImageDataset(Dataset):
             out_heatmaps[i] = hm
             out_keypoints[i] = torch.from_numpy(persons[i]['kp'].copy())
             out_scores[i] = torch.from_numpy(persons[i]['scores'].copy())
+            out_visibility[i] = torch.from_numpy(
+                persons[i]['visibility'].copy())
+            out_visibility_binary[i] = torch.from_numpy(
+                persons[i]['visibility_binary'].copy())
             out_mask[i] = 1.0
 
         pose_dict = {
             'heatmaps': out_heatmaps,
             'keypoints': out_keypoints,
             'scores': out_scores,
+            'visibility': out_visibility,
+            'visibility_binary': out_visibility_binary,
             'person_mask': out_mask,
             'num_persons': min(n_persons, self.max_persons),
         }
@@ -196,7 +206,7 @@ class PoseImageDataset(Dataset):
         """Load per-person npz files and project heatmaps to full-image space.
 
         Returns list of dicts with keys: heatmap (17,img_h,img_w), kp (17,2),
-        scores (17,).
+        scores (17,), visibility (17,), visibility_binary (17,).
         """
         entry = self.index.get(filename)
         if entry is None:
@@ -211,13 +221,23 @@ class PoseImageDataset(Dataset):
                 npz_path = os.path.join(self.pose_dir, npz_name)
             if not os.path.exists(npz_path):
                 continue
-            data = np.load(npz_path)
-
-            hm_raw = torch.from_numpy(
-                data['heatmap'].astype(np.float32))   # (17, 64, 48)
-            kp = data['keypoints'].astype(np.float32)  # (17, 2) image pixels
-            scores = data['scores'].astype(np.float32)  # (17,)
-            crop_bounds = data['crop_bounds'].astype(np.float32)  # (4,)
+            with np.load(npz_path) as data:
+                hm_raw = torch.from_numpy(
+                    data['heatmap'].astype(np.float32))   # (17, 64, 48)
+                kp = data['keypoints'].astype(np.float32)  # (17, 2) image pixels
+                scores = data['scores'].astype(np.float32)  # (17,)
+                crop_bounds = data['crop_bounds'].astype(np.float32)  # (4,)
+                if 'visibility' in data.files:
+                    visibility = data['visibility'].astype(np.float32)
+                else:
+                    # Backward compatibility for legacy pose_data without
+                    # explicit visibility extraction.
+                    visibility = np.clip(scores, 0.0, 1.0).astype(np.float32)
+                if 'visibility_binary' in data.files:
+                    visibility_binary = data['visibility_binary'].astype(
+                        np.float32)
+                else:
+                    visibility_binary = (visibility >= 0.5).astype(np.float32)
 
             # Project bbox-local heatmap onto full-image canvas
             hm_full = self._place_heatmap(hm_raw, crop_bounds, img_h, img_w)
@@ -226,6 +246,8 @@ class PoseImageDataset(Dataset):
                 'heatmap': hm_full,
                 'kp': kp.copy(),
                 'scores': scores.copy(),
+                'visibility': visibility.copy(),
+                'visibility_binary': visibility_binary.copy(),
             })
 
         return persons
