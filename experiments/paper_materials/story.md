@@ -216,6 +216,18 @@ Pose Spatial Gate and Skeleton Complement for Occluded Person Re-Identification
 - CVK reasoning 在检索阶段利用共同可见支撑修正整体排序
 - 其最稳定的外显收益是 **mAP 改善**，而不是某种固定的 R1 trade-off 形状
 
+### 2026-03-13 exp046 第三个 checkpoint 资产补齐
+- `exp046` 最终结果 = `60.1 / 72.9`
+
+这一步本身不是新方法结果，但它对 story 有两个直接作用：
+1. 本地已经补齐第三个 `exp030a` 可复用 checkpoint，后续不再受“缺 seed2024 权重”阻塞。
+2. 它说明当前最该推进的已经不是继续做资产恢复，而是把 common-support 机制真正推进到训练端验证。
+
+因此从 story 角度，`exp046` 的意义应写成：
+- **证据资产补齐**
+- 不是新的主贡献实验
+- 但为 `exp047` 或第三 checkpoint 复核提供了后续支撑
+
 ### 2026-03-13 下一跳候选：CSGT（训练端化 common-support）
 基于当前两类事实：
 1. `cvk_hybrid` 的正 mAP 信号已在两个 checkpoint 上复核

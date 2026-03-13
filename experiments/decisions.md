@@ -1377,3 +1377,32 @@ B. 直接启动 exp025，exp024 可以后续补跑
 1. 这符合 `AGENTS.md` 的方向切换要求：先写清楚为什么切，再明确相对 `exp030a` 的单变量改动。
 2. `CSGT` 触及的是 **partial observation 下 pair comparability mismatch**，问题定义比“再学一个融合权重”更强。
 3. 代码侧已有 `kp_weights` 与 GCN branch 输出，落地成本可控，值得先做最小原型。
+
+### [2026-03-13 17:30] 决策 #52
+
+**上下文**: `exp046` 已完成 `exp030a seed2024` checkpoint 重建，需要决定下一步是否继续停留在资产恢复。
+
+**已知事实**:
+1. `exp046` 最终 `Epoch 120` 结果为：
+   - `60.1% mAP / 72.9% R1 / 84.0% R5 / 87.6% R10`
+2. 这意味着本地现在已经补齐：
+   - 原始 `seed1234` checkpoint
+   - 重建 `seed42` checkpoint
+   - 重建 `seed2024` checkpoint
+3. `cvk_hybrid` 的正 mAP 证据已经在前两个 checkpoint 上成立：
+   - `exp040`: `+0.8% mAP`
+   - `exp045`: `+0.9% mAP`
+
+**判断**:
+1. `exp046` 的角色应定义为 **资产恢复实验**，而不是新的方法证据。
+2. 第三个 checkpoint 资产既然已经补齐，就不应再把“缺 checkpoint”当作拖延训练端方向的理由。
+3. 当前最高优先级应从资产恢复切换到 `exp047 CSGT` 的实际训练验证。
+
+**选择**:
+- 立即结束 `exp046` 文档收尾
+- 启动 `exp047` 训练
+
+**理由**:
+1. `exp046` 已经完成它唯一的任务：把第三个 checkpoint 补回本地。
+2. 后续如果 `exp047` 或 `cvk_hybrid` 需要第三 checkpoint 复核，当前资产已经足够支撑。
+3. 继续停留在 checkpoint 恢复不会新增论文机制证据，而 `CSGT` 才是当前真正待验证的训练端创新候选。
