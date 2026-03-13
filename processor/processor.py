@@ -38,6 +38,7 @@ def do_train(cfg,
     pcra_alpha = getattr(cfg.MODEL, 'POSE_PCRA_ALPHA', 0.0)
     kp_triplet_enabled = getattr(cfg.MODEL, 'POSE_KP_TRIPLET', False)
     kp_triplet_weight = getattr(cfg.MODEL, 'POSE_KP_TRIPLET_WEIGHT', 1.0)
+    csgt_enabled = getattr(cfg.MODEL, 'POSE_CSGT', False)
 
     logger = logging.getLogger("transreid.train")
     logger.info('start training')
@@ -154,13 +155,14 @@ def do_train(cfg,
                     pose_sim = torch.mm(pose_sig_norm, pose_sig_norm.t())  # (B, B)
 
                 # Prepare per-keypoint triplet data
-                kp_triplet_data = None
-                if kp_triplet_enabled and kp_data is not None:
-                    kp_data['weight'] = kp_triplet_weight
-                    kp_triplet_data = kp_data
+                kp_aux_data = None
+                if kp_data is not None and (kp_triplet_enabled or csgt_enabled):
+                    kp_aux_data = dict(kp_data)
+                    if kp_triplet_enabled:
+                        kp_aux_data['weight'] = kp_triplet_weight
 
                 loss = loss_fn(score, feat, target, target_cam, pose_sim=pose_sim,
-                               kp_data=kp_triplet_data)
+                               kp_data=kp_aux_data)
                 if recon_loss is not None:
                     details = getattr(loss, '_loss_details', {})
                     loss = loss + recon_loss

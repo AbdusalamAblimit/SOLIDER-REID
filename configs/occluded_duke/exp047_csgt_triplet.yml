@@ -20,6 +20,7 @@ MODEL:
   POSE_SKELETON_GCN: True
   POSE_GCN_LAYERS: 2
   POSE_GCN_HIDDEN: 256
+  # 训练期沿用 exp030a 默认监控口径；最终结论需额外跑 equal_concat / global
   POSE_TEST_FEAT: 'concat_scaled'
   POSE_CSGT: True
   POSE_CSGT_WEIGHT: 1.0

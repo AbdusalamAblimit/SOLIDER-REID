@@ -4,6 +4,7 @@
 @contact: sherlockliao01@gmail.com
 """
 
+import torch
 import torch.nn.functional as F
 from .softmax_loss import CrossEntropyLabelSmooth, LabelSmoothingCrossEntropy
 from .triplet_loss import TripletLoss, euclidean_dist, normalize
@@ -155,19 +156,18 @@ def make_loss(cfg, num_classes):    # modified by gu
                     ID_LOSS = global_loss_scale * ce_fn(score, target)
                     loss_details['id_global'] = ID_LOSS.item()
 
+                csgt_loss = None
+                csgt_weight = getattr(cfg.MODEL, 'POSE_CSGT_WEIGHT', 1.0)
                 if isinstance(feat, list):
                     pt = getattr(cfg.MODEL, 'POSE_PART_TRI_WEIGHT', 1.0)
                     wt_p = pt / (1.0 + pt)
                     wt_g = 1.0 / (1.0 + pt)
                     # PCRA: pass pose_sim only to global triplet
                     global_tri_base = triplet(feat[0], target, pose_sim=pose_sim)[0]
-                    global_tri = global_tri_base
                     if getattr(cfg.MODEL, 'POSE_CSGT', False) and kp_data is not None:
-                        csgt_weight = getattr(cfg.MODEL, 'POSE_CSGT_WEIGHT', 1.0)
                         csgt_loss, csgt_stats = _compute_csgt_loss(
                             feat[0], target, kp_data['kp_weights'],
                             normalize_feature=trp_norm, pose_sim=pose_sim)
-                        global_tri = global_tri + csgt_weight * csgt_loss
                         loss_details['tri_csgt'] = csgt_loss.item()
                         loss_details['csgt_pos_overlap'] = csgt_stats['pos_overlap']
                         loss_details['csgt_neg_overlap'] = csgt_stats['neg_overlap']
@@ -175,7 +175,7 @@ def make_loss(cfg, num_classes):    # modified by gu
                         loss_details['csgt_neg_fallback'] = csgt_stats['neg_fallback']
                     part_tris = [triplet(f, target)[0] for f in feat[1:]]
                     part_tri_avg = sum(part_tris) / len(part_tris)
-                    TRI_LOSS = wt_g * global_tri + wt_p * part_tri_avg
+                    TRI_LOSS = wt_g * global_tri_base + wt_p * part_tri_avg
                     loss_details['tri_global'] = global_tri_base.item()
                     loss_details['tri_part'] = part_tri_avg.item()
                 else:
@@ -185,9 +185,11 @@ def make_loss(cfg, num_classes):    # modified by gu
 
                 total = cfg.MODEL.ID_LOSS_WEIGHT * ID_LOSS + \
                         cfg.MODEL.TRIPLET_LOSS_WEIGHT * TRI_LOSS
+                if csgt_loss is not None:
+                    total = total + csgt_weight * csgt_loss
 
                 # Per-keypoint triplet loss (confidence-weighted)
-                if kp_data is not None:
+                if kp_data is not None and 'weight' in kp_data:
                     kp_feats = kp_data['kp_feats']      # (B, 17, C)
                     kp_weights = kp_data['kp_weights']  # (B, 17)
                     kp_tri_w = kp_data['weight']
