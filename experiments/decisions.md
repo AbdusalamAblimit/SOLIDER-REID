@@ -1274,3 +1274,28 @@ B. 直接启动 exp025，exp024 可以后续补跑
 3. 更值得投入的是：
    - 多 checkpoint / 多 seed 复核
    - 失败样例 / pair 类型分析
+
+### [2026-03-13 11:49] 决策 #48
+
+**上下文**: `exp042` 已完成 `equal_concat` vs `cvk_hybrid` 的 query-level 差分分析。
+
+**关键结果**:
+- `positive_delta_ap = 1129`
+- `negative_delta_ap = 822`
+- `zero_delta_ap = 259`
+- `top1_fixed = 47`
+- `top1_degraded = 58`
+
+**判断**:
+1. `cvk_hybrid` 的 mAP 增益不是靠少数样例偶然暴涨，而是来自 **更多 query 的整体 AP 改善**。
+2. `top1_fixed < top1_degraded` 解释了为什么它会稳定表现成：
+   - `mAP` 上升
+   - `R1` 小幅下降
+3. 这意味着当前最准确的机制描述应改成：
+   **common-visible keypoint reasoning 主要作用于 deeper-rank correction，而不是 top-1 boosting。**
+
+**选择**: 继续沿这条 story 推进，但下一步优先做可视化与更多资产复核，而不是再开新调参实验。
+
+**下一步**:
+1. 从 `query_deltas.csv` 中抽取最典型的改进 / 退化样例做可视化
+2. 并行继续查找是否存在遗失的多 seed checkpoint 资产

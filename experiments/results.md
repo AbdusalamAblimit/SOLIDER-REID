@@ -86,6 +86,19 @@
 
 > 注：`exp036 / exp037` 的编号沿用了原 visibility 路线的占位命名，但实验内容已经转入 `PSG+GCN` branch 的后续探索；解读时不要把编号本身当作路线语义。
 
+### exp042 分析摘要
+
+- `exp042` 不引入新 checkpoint，只对 `040a equal_concat` 与 `040b cvk_hybrid` 做 query-level 差分分析。
+- 关键统计：
+  - `positive_delta_ap = 1129`
+  - `negative_delta_ap = 822`
+  - `zero_delta_ap = 259`
+  - `top1_fixed = 47`
+  - `top1_degraded = 58`
+- 解释：
+  - mAP 增益来自更广泛的 AP 改善，而不是单纯 top-1 修复
+  - 这也是为什么 `cvk_hybrid` 会呈现 `mAP +0.8 / R1 -0.5` 的稳定形状
+
 ### +NFC 结果（如适用）
 
 | ID | 方法 | mAP | R-1 | R-5 | R-10 | 备注 |

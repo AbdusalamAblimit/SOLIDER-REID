@@ -632,3 +632,36 @@ PDS+SG 多种子 (59.20% mean) 暗示 0.5x 效果可能是真实的。
 1. 不再继续做细粒度 test-time 参数扫点
 2. 优先寻找更多 checkpoint 复核这条形状是否成立
 3. 若多 checkpoint 仍成立，再考虑做 pair-case 可视化 / 错误类型分析
+
+### Phase 2.19: 2026-03-13 `exp042` 后的证据层更新
+
+#### 新增关键统计
+- `positive_delta_ap = 1129`
+- `negative_delta_ap = 822`
+- `zero_delta_ap = 259`
+- `top1_fixed = 47`
+- `top1_degraded = 58`
+
+#### 这一步真正补上了什么
+1. **回答了“为什么 mAP 会涨而 R1 会跌”**
+   因为它改善了更多 query 的整体 AP，但没有把这些改善都转成 top-1 修复。
+
+2. **说明 gain 不是 few-case cherry-pick**
+   如果只是少数 query 偶然翻转，不会出现 `1129 > 822` 这样的整体分布。
+
+3. **把机制表述进一步收紧**
+   当前最准确的表达不是：
+   - “CVK 提升检索”
+   而是：
+   - **CVK 主要做 deeper-rank common-support correction**
+
+#### 对创新判断的意义
+现在这条线已经不只是：
+- 有问题定义
+- 有机制
+- 有 aggregate 指标
+
+而是开始具备：
+- **对有效性的可解释证据**
+
+这比继续刷一个小模块或再调一个 loss，更接近能支撑论文主叙事的证据链。

@@ -154,6 +154,28 @@ Pose Spatial Gate and Skeleton Complement for Occluded Person Re-Identification
 - CVK reasoning 提供 pair-specific common-support correction
 - 两者需要保持平衡，而不是由一侧完全主导
 
+### 2026-03-13 exp042 pair-case 分析更新
+`exp042` 给 story 补上了“为什么有效”的证据层：
+
+- `positive_delta_ap = 1129`
+- `negative_delta_ap = 822`
+- `top1_fixed = 47`
+- `top1_degraded = 58`
+
+这几组数字合起来说明：
+1. `cvk_hybrid` 的收益不是只靠少数 query 暴涨，而是来自 **更多 query 的 AP 小幅转正**。
+2. 但它修复的 top-1 数量少于新引入的 top-1 退化，因此整体呈现：
+   - `mAP +0.8`
+   - `R1 -0.5`
+3. 这与前面的假设非常一致：
+   **CVK 不是 top-1 booster，而是 deeper-rank common-support correction。**
+
+因此论文表述应继续避免写成：
+- “显著提升 top-1”
+
+更适合写成：
+- “在不完全观测下，通过共同可见关键点支撑修正整体排序”
+
 ### 跨数据集 / Backbone 验证 (4090)
 
 | 数据集 | Backbone | Baseline mAP | PSG mAP | Δ |
