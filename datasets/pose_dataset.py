@@ -207,13 +207,22 @@ class PoseImageDataset(Dataset):
 
         Returns list of dicts with keys: heatmap (17,img_h,img_w), kp (17,2),
         scores (17,), visibility (17,), visibility_binary (17,).
+        Target person is always placed at index 0.
         """
         entry = self.index.get(filename)
         if entry is None:
             return []
 
+        # Reorder persons so target is first
+        person_files = list(entry['persons'][:self.max_persons])
+        target_idx = entry.get('target_person_idx', 0)
+        if 0 < target_idx < len(person_files):
+            # Move target to front, keep others in original order
+            target_file = person_files.pop(target_idx)
+            person_files.insert(0, target_file)
+
         persons = []
-        for npz_name in entry['persons'][:self.max_persons]:
+        for npz_name in person_files:
             # Support both relative (normal) and absolute (merged val) paths
             if os.path.isabs(npz_name):
                 npz_path = npz_name
