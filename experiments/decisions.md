@@ -1079,3 +1079,25 @@ B. 直接启动 exp025，exp024 可以后续补跑
 5. 不再基于 `exp023 / exp030 / exp032` 单独开 visibility 主线；这些实验只保留为历史对照
 
 **选择**: 先执行 `exp033 -> exp034 -> exp035`。只有这三步打通，才继续 `exp036 / exp037`。
+
+### [2026-03-13 06:25] 决策 #40
+
+**上下文**: exp035 visibility 消融实验的前两个子实验已完成。
+
+**实验结果**:
+- exp035a (score, baseline): mAP 61.1%, R1 73.8% — 与 exp030a seed=1234 一致
+- exp035b (score*visibility): mAP 60.4%, R1 71.6% — 比 score-only 差 0.7% mAP / 2.2% R1
+
+**选项**:
+  A. 继续跑 035c (visibility_only) 和 035d (binary_visibility) 完成完整消融
+  B. 跳过剩余变体，转入新方向
+
+**选择**: B — 跳过剩余变体
+
+**理由**:
+- score_visibility 是预期最强的 visibility 模式（兼顾 score 和 visibility 信号），但结果为负
+- visibility_only 和 binary_visibility 更激进（完全不用 score），预期不会更好
+- 花 4h 再跑两个预期为负的实验，不如转入更有价值的方向
+- exp035 已充分回答核心问题：visibility 在 keypoint pooling 加权中无独立价值
+
+**关键教训**: ViTPose visibility 在 keypoint-level 加权中不如 detection scores 有效。这与前轮实验（Phase 1）对 visibility 向量的负面结论一致。Visibility 信号可能在 **scene-level**（如热图注意力）有价值，但在 **keypoint-level** 的离散加权中无用。
