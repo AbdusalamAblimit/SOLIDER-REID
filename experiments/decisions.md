@@ -1406,3 +1406,41 @@ B. 直接启动 exp025，exp024 可以后续补跑
 1. `exp046` 已经完成它唯一的任务：把第三个 checkpoint 补回本地。
 2. 后续如果 `exp047` 或 `cvk_hybrid` 需要第三 checkpoint 复核，当前资产已经足够支撑。
 3. 继续停留在 checkpoint 恢复不会新增论文机制证据，而 `CSGT` 才是当前真正待验证的训练端创新候选。
+
+### [2026-03-13 21:00] 决策 #53
+
+**上下文**: `exp047 CSGT` 失败（pos/neg overlap 几乎相同，机制无法区分正负 pair）。需要决定下一步方向。
+
+**选项**:
+  A. **SGMKC (Skeleton-Guided Masked Keypoint Completion)**: 在 GCN 训练时加入 masked keypoint prediction 辅助任务。训练时随机 mask 30% 关键点特征，GCN 通过骨架图传播恢复，辅助 MSE 重建 loss。
+  B. **放弃训练端创新，转入 1-2 天文献精读和新问题定义**: 47 个实验已充分说明当前框架训练端改进空间极小，应寻找全新方向。
+
+**红蓝队辩论**:
+- 🔴 红队（方案 A）核心论点: SGMKC 实现成本极低（~15 行代码，无新参数），属于不同类别的改进（训练方法论 vs 架构/loss 添加），skeleton graph + masked prediction 组合是真正新颖的（FCFormer 用 transformer decoder，MAE 用 random patches，没有人在 skeleton graph 上做过 masked completion for ReID）。47 个失败实验都是架构添加或 loss 变体，SGMKC 是 self-supervised 训练策略——不同搜索空间。即使失败，负面结论也有论文价值。信心: 6/10
+- 🔵 蓝队（方案 B）核心论点: 47 个实验中 21/21 训练端改进全部失败，贝叶斯后验 P(失败) ≈ 95.7%。CLAUDE.md 明确说"不要做 GCN 小变体"。SkeletonMAE (2023) 已在动作识别上做过 skeleton graph masked autoencoding，novelty 受限。即使涨 1%，"在 GCN 上加 MAE 辅助任务"的 story 不够支撑 B 会。应该花时间精读 2024-2025 新工作（uncertainty-aware ReID、diffusion-based augmentation 等），找到 paradigm shift 级别的创新。信心: 8/10
+
+**综合判断**: 选择折中方案——**快速实现 SGMKC 并启动训练（~2h GPU），同时在训练期间做文献精读**。理由：
+1. GPU 当前空闲，不用是浪费
+2. SGMKC 实现确实极快，机会成本极低
+3. 文献精读不需要 GPU，可以完全并行
+4. 如果 SGMKC 失败，文献精读已经准备好了下一步方向
+5. 但我认同蓝队的核心判断：SGMKC 更可能是 supporting experiment 而非 main contribution
+
+**关键约束**: SGMKC 只跑一次，不做变体。成功则记录，失败则止损并全面转入新方向。
+
+**执行结果**: SGMKC 完整训练 120 epoch，最终 mAP 58.9%（vs exp030a 60.5%，-1.6%）。蓝队判断正确——GCN branch 上的训练端改进已穷尽。
+
+### [2026-03-13 22:45] 决策 #54
+
+**上下文**: exp047（CSGT）和 exp048（SGMKC）连续失败。已 48 个实验，其中 GCN/KPP branch 训练端改进全部为负或中性。根据 CLAUDE.md 止损规则，必须转入文献/代码学习和新方向探索。
+
+**选项**:
+  A. **直接实现 PAMC（Pose-Aware Masking Consistency）**: 之前在 innovation_brainstorm.md 已设计的方向。SimSiam 风格自监督 + body-aware masking。
+  B. **先做更深入的文献调研，再设计实验**: 研究近期（2024-2025）occluded ReID、masked image modeling for ReID、uncertainty-aware ReID 等方向的新进展，确保 PAMC 不与已有工作重叠，并寻找可能更好的方向。
+
+**选择**: B — 先做文献调研
+**理由**:
+1. 48 个实验后仍未找到 paradigm shift 级创新，说明需要从外部获取新灵感
+2. PAMC 虽然满足创新门槛，但尚未确认是否与 2024-2025 年新工作重叠
+3. CLAUDE.md 明确说"连续负结果后应优先切到读论文、下载并阅读代码、写 gap analysis"
+4. GPU 空闲时间可用于文献调研（不浪费 GPU），调研完成后再高效利用 GPU

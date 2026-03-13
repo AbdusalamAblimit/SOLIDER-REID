@@ -795,3 +795,51 @@ ProFD 的 PartFeatureDecoder 用文本 prompt 做 Query、spatial tokens 做 K/V
 3. **证据层面能讲清楚**？是 — 对照 Random Rectangle Mask 版本；消融热图引导 vs 随机 mask
 
 **结论**：PAMC 满足创新门槛（问题 + 机制 + 证据），且实现成本较低，值得作为下一个主线候选。
+
+---
+
+## Phase 2.21: 2026-03-13 exp048 SGMKC 失败后的方向修正
+
+### exp048 结论
+
+**实验**: SGMKC（Skeleton-Guided Masked Keypoint Completion）— 在 GCN 前随机 mask 30% keypoints，GCN 输出计算 MSE reconstruction loss。
+**最终结果**: mAP 58.9%, R1 72.1%（vs exp030a: 60.5%, 73.7%），稳定负 -1.6% mAP。
+
+**失败原因分析**:
+1. **双任务梯度冲突**: SGMKC loss 在总 loss 中占比 30-50%（早期更高），分散了 GCN 的 ID 分类梯度
+2. **GCN 容量瓶颈**: 2 层 GCN 无法同时完成 ID 分类和特征重建——重建需要保留低级特征信息，ID 分类需要丢弃低级信息
+3. **重建目标与 ID 目标根本矛盾**: MSE 要求输出接近原始特征（保持不变），ID loss 要求输出更具区分性（改变特征）
+4. **Loss 量级问题**: 即使 weight=1.0，SGMKC loss 的绝对值（~1.7）仍接近甚至大于 triplet loss（~0.1-1.0），主导了优化方向
+
+### 连续失败总结（exp047 + exp048）
+
+两个连续的训练端 GCN 改进实验均失败：
+- **exp047 CSGT**: 尝试用 keypoint visibility overlap 做 triplet mining → 失败（overlap 无法区分正负 pair）
+- **exp048 SGMKC**: 尝试用自监督重建任务增强 GCN → 失败（梯度冲突 + 容量不足）
+
+**共性教训**: 在 exp030a 的 GCN branch 上做额外训练端改进，都遇到了"小型 GCN 容量不足以承载第二个任务"的瓶颈。GCN 的最优角色就是其当前角色——纯 ID 分类的关键点特征传播器。
+
+### 已穷尽的方向（更新）
+
+1. PSG + forward path 添加: exp008-021 全部失败
+2. PSG + 正则化: exp026 SPD 中性
+3. PSG + loss 调制: exp027 PCRA 中性
+4. PDS Part 收敛改善: exp028 Part LR 中性
+5. PSG + post-hoc pooling 改进: exp029 PWP 中性
+6. **GCN branch 训练端自监督: exp048 SGMKC 负面** ← NEW
+7. **Overlap-based mining: exp047 CSGT 失败** ← NEW
+
+### 当前方向决策
+
+根据 CLAUDE.md 止损规则："如果某条路线已经连续出现多个负结果...应记录负结论后立即转入文献与代码学习、gap analysis、新问题定义或新机制设计"。
+
+**需要做的**:
+1. 深入学习尚未研究的论文/代码仓库，寻找真正新的 gap
+2. 重新审视 PAMC（Pose-Aware Masking Consistency）方向的可行性
+3. 或者发现全新的方向
+
+**PAMC 仍是当前最有希望的候选**，因为：
+- 它不依赖 GCN branch 改进（避开已证伪的方向）
+- 它在 backbone 层面操作（PSG 成功的关键洞察）
+- 它有清晰的创新门槛：问题（pose-aware occlusion simulation）+ 机制（body-aware masking + consistency）+ 证据（vs random masking 消融）
+- 但实现前需要更深入的文献调研（SimSiam 在 ReID 中的已有工作、遮挡增强的 SOTA）
