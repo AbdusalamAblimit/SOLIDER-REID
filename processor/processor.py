@@ -10,6 +10,7 @@ from utils.meter import AverageMeter
 from utils.metrics import R1_mAP_eval
 from torch.cuda import amp
 import torch.distributed as dist
+from model.modules.pamc import pamc_consistency_loss
 
 
 def _pose_to_device(pose_dict, device):
@@ -39,11 +40,16 @@ def do_train(cfg,
     kp_triplet_enabled = getattr(cfg.MODEL, 'POSE_KP_TRIPLET', False)
     kp_triplet_weight = getattr(cfg.MODEL, 'POSE_KP_TRIPLET_WEIGHT', 1.0)
     csgt_enabled = getattr(cfg.MODEL, 'POSE_CSGT', False)
+    pamc_enabled = getattr(cfg.MODEL, 'POSE_PAMC', False)
+    pamc_weight = getattr(cfg.MODEL, 'POSE_PAMC_WEIGHT', 0.5)
+    pamc_warmup = getattr(cfg.MODEL, 'POSE_PAMC_WARMUP', 10)
 
     logger = logging.getLogger("transreid.train")
     logger.info('start training')
     if use_pose:
         logger.info('Pose-guided training ENABLED')
+    if pamc_enabled:
+        logger.info(f'[PAMC] Pose-Aware Masking Consistency: weight={pamc_weight}, warmup={pamc_warmup}')
     if pcra_alpha > 0:
         logger.info(f'[PCRA] Pose-Contrastive Representation Alignment: alpha={pcra_alpha}')
     _LOCAL_PROCESS_GROUP = None
@@ -184,6 +190,37 @@ def do_train(cfg,
                         details = getattr(loss, '_loss_details', {})
                         loss = loss + sgmkc_weight * sgmkc_loss
                         details['sgmkc'] = sgmkc_loss.item()
+                        loss._loss_details = details
+
+                # PAMC: Pose-Aware Masking Consistency
+                if pamc_enabled and use_pose and epoch > pamc_warmup:
+                    _m = model.module if hasattr(model, 'module') else model
+                    if hasattr(_m, 'pamc_masker') and hasattr(_m, 'pamc_projector'):
+                        # Get scene heatmaps for masking
+                        pamc_scene_hm, _ = _m._prepare_pose(pose_dict)
+                        # Create masked image (no grad needed for masking)
+                        img_masked, _ = _m.pamc_masker(img, pamc_scene_hm)
+                        # Switch to eval mode for deterministic target features
+                        # (disables DropPath/StochasticDepth, BN uses running stats)
+                        _m.eval()
+                        with torch.no_grad():
+                            masked_global_feat, _ = _m._run_backbone_with_psg(
+                                img_masked, pamc_scene_hm)
+                            if _m.reduce_feat_dim:
+                                masked_global_feat = _m.fcneck(masked_global_feat)
+                        _m.train()  # restore training mode
+                        # Get original global feat (pre-BN, has grad from ID loss)
+                        if isinstance(feat, list):
+                            orig_global_feat = feat[0]  # global branch only
+                        else:
+                            orig_global_feat = feat
+                        # Asymmetric consistency: projector(orig) predicts masked target
+                        pamc_loss = pamc_consistency_loss(
+                            orig_global_feat, masked_global_feat,
+                            _m.pamc_projector)
+                        details = getattr(loss, '_loss_details', {})
+                        loss = loss + pamc_weight * pamc_loss
+                        details['pamc'] = pamc_loss.item()
                         loss._loss_details = details
 
             scaler.scale(loss).backward()

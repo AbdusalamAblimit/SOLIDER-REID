@@ -197,6 +197,20 @@ class PoseBackboneModel(build_transformer):
                       f'hidden={gcn_hidden}, test_feat={self.pose_test_feat}, '
                       f'kp_weight={kp_weight_mode}')
 
+        # PAMC (Pose-Aware Masking Consistency) projector
+        self.use_pamc = getattr(cfg.MODEL, 'POSE_PAMC', False)
+        if self.use_pamc:
+            from .modules.pamc import PAMCProjector, PoseBodyMasker
+            proj_dim = getattr(cfg.MODEL, 'POSE_PAMC_PROJ_DIM', 2048)
+            self.pamc_projector = PAMCProjector(
+                feat_dim=self.in_planes, proj_dim=proj_dim)
+            self.pamc_masker = PoseBodyMasker()
+            pamc_warmup = getattr(cfg.MODEL, 'POSE_PAMC_WARMUP', 10)
+            pamc_weight = getattr(cfg.MODEL, 'POSE_PAMC_WEIGHT', 0.5)
+            print(f'[PAMC] Pose-Aware Masking Consistency enabled: '
+                  f'proj_dim={proj_dim}, weight={pamc_weight}, '
+                  f'warmup={pamc_warmup}')
+
         # Store backbone's semantic weight for manual forward
         self._semantic_weight_val = semantic_weight
 

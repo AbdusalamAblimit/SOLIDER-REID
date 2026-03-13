@@ -135,6 +135,11 @@ _C.MODEL.POSE_CSGT_MINE_MODE = 'both'    # 'both', 'pos', or 'neg'
 _C.MODEL.POSE_SGMKC = False              # Skeleton-Guided Masked Keypoint Completion
 _C.MODEL.POSE_SGMKC_RATIO = 0.3          # Fraction of keypoints to mask during training
 _C.MODEL.POSE_SGMKC_WEIGHT = 1.0         # Reconstruction loss weight
+# PAMC (Pose-Aware Masking Consistency) — self-supervised consistency via pose-guided body masking
+_C.MODEL.POSE_PAMC = False               # Enable PAMC training
+_C.MODEL.POSE_PAMC_WEIGHT = 0.5          # Consistency loss weight
+_C.MODEL.POSE_PAMC_WARMUP = 10           # Warmup epochs before enabling PAMC
+_C.MODEL.POSE_PAMC_PROJ_DIM = 2048       # Projector MLP hidden dimension
 
 # -----------------------------------------------------------------------------
 # INPUT
