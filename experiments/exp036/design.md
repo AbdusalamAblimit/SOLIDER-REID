@@ -1,5 +1,10 @@
 # 实验 exp036: Part-level Triplet Loss for GCN Branch
 
+## 编号说明
+- 按最初的 visibility 路线命名，`exp036` 原本预留给 visibility 后续阶段。
+- 当前这个 `exp036` 实际上已经偏离原 visibility 路线，转而用于 `exp035` 之后的 GCN branch 内部探索。
+- 后续在文档或论文中引用时，应把它表述为“`exp035` 之后的 branch 内部探索实验”，不能写成 visibility 路线的自然延续。
+
 ## 动机
 - 当前 GCN 分支只有一个聚合后的 triplet loss，没有关键点级别的度量学习信号
 - Phase 1 的 GiLt 实验（exp012）在更弱的 part feature 上实现了 +0.5% mAP

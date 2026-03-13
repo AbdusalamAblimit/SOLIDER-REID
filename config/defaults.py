@@ -90,7 +90,7 @@ _C.MODEL.POSE_PART_TRI_WEIGHT = 1.0 # weight for part triplet loss
 _C.MODEL.POSE_HEATMAP_SIZE = [96, 32]  # (H, W) heatmap size from dataloader
 _C.MODEL.POSE_HEATMAP_NORM = 'spatial_softmax'  # 'sigmoid' or 'spatial_softmax'
 _C.MODEL.POSE_TEMPERATURE = 1.0        # temperature for spatial softmax
-_C.MODEL.POSE_TEST_FEAT = 'concat_scaled'  # 'concat_scaled', 'part_only', 'equal_concat'
+_C.MODEL.POSE_TEST_FEAT = 'concat_scaled'  # 'concat_scaled', 'part_only', 'equal_concat', 'cvk_only', 'cvk_hybrid'
 _C.MODEL.POSE_PART_STAGE = -1              # which backbone stage for part pooling (-1=last, -2=second-to-last)
 # Pose Feature Modulation (PFM)
 _C.MODEL.POSE_PFM_ENABLED = False
@@ -238,6 +238,8 @@ _C.TEST = CN()
 _C.TEST.IMS_PER_BATCH = 128
 # If test with re-ranking, options: 'True','False'
 _C.TEST.RE_RANKING = False
+_C.TEST.CVK_GLOBAL_WEIGHT = 1.0
+_C.TEST.CVK_KP_WEIGHT = 1.0
 # Path to trained model
 _C.TEST.WEIGHT = ""
 # Which feature of BNNeck to be used for test, before or after BNNneck, options: 'before' or 'after'

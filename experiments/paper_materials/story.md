@@ -83,6 +83,27 @@ Pose Spatial Gate and Skeleton Complement for Occluded Person Re-Identification
 3. **“GCN 是否有效仍完全未知”** 也不成立。
    更准确的说法是：GCN 的收益主要发生在 fusion，而不是 global；其增益规模需要和 KPP 基线一起解释。
 
+### 2026-03-13 文献/代码复盘后的 story 修正
+1. **现阶段不应把主线继续写成“再优化 branch 内部权重”**
+   `exp035b / exp036 / exp037` 这一轮都在 branch 内部调权重或调 loss，且收益弱；同时 KPR/BPBreID/QPM/FRT 也表明，这类工作很难构成新的主叙事。
+
+2. **更合理的新叙事是：branch 的结构信息应该服务于检索时的共同可见推理**
+   我们已有证据是：
+   - `exp030a-global` 不涨
+   - `exp030a-eq` 稳定涨
+   这说明 branch 真正提供的是“可补充的局部支撑”，而不是更强的单向量 global embedding。
+
+3. **因此下一阶段的候选主线应转向 retrieval-time common-support reasoning**
+   候选表达可以是：
+   - PSG 提升 backbone 全局表征
+   - Skeleton branch 提供语义对齐的局部关键点表征
+   - 检索阶段基于 query-gallery 共同可见关键点进行距离推理
+
+4. **这一段 story 目前还是候选，不是已验证结论**
+   需要后续实验先回答：
+   - 共同可见关键点距离是否真的优于 `equal_concat`
+   - 它是否能解释 branch 的 fusion 增益来源
+
 ### 跨数据集 / Backbone 验证 (4090)
 
 | 数据集 | Backbone | Baseline mAP | PSG mAP | Δ |

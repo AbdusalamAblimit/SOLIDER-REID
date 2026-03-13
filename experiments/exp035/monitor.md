@@ -117,6 +117,16 @@
 | 035d: binary vis | — | — | 待跑 | 待跑 |
 
 ### 决策
-鉴于 score_visibility（预期最强的 visibility 模式）已表现为负，visibility_only 和 binary_visibility 预计不会更好。
-**跳过 035c 和 035d，不再继续 visibility 方向的 keypoint pooling 实验。**
-visibility 在 keypoint 级加权池化中无独立价值，scores 已经足够。
+鉴于 score_visibility（预期最强的 visibility 模式）已表现为负，且当前优先级需要先转向更高价值的问题定义，**本轮暂缓 035c 和 035d**。
+
+### 结论边界（必须保守表述）
+当前 `exp035` 只能支持以下判断：
+1. `score*visibility` 这一路在当前 `PSG+GCN + keypoint pooling` 框架下没有带来收益。
+2. `exp035a` 说明 bundled 代码改动在 `score` 模式下没有引入 regression。
+
+当前 `exp035` **还不能** 支持以下更强结论：
+1. “visibility 在当前仓库里已经被彻底证伪”
+2. “visibility 相对 score 完全没有独立价值”
+3. “035c / 035d 一定也会失败，因此不需要任何后续验证”
+
+更准确的阶段性表述应为：**目前尚未看到 visibility 在 keypoint pooling 加权中的正向证据；但这只是对 `score*visibility` 这一具体实现路径的单 seed 负结果，不应直接上升为整条 visibility 路线的最终结论。**

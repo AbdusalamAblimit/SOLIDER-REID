@@ -57,7 +57,7 @@ def do_train(cfg,
     # Per-component loss meters for detailed logging
     detail_meters = {}
 
-    evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM)
+    evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM, cfg=cfg)
     scaler = amp.GradScaler()
 
     # Backbone freeze warmup
@@ -301,7 +301,8 @@ def do_inference(cfg,
     logger.info("Enter inferencing")
     use_pose = cfg.MODEL.POSE_ENABLED
 
-    evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM, reranking=cfg.TEST.RE_RANKING)
+    evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM,
+                            reranking=cfg.TEST.RE_RANKING, cfg=cfg)
 
     evaluator.reset()
 

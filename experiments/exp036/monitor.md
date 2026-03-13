@@ -1,5 +1,9 @@
 # exp036: Per-Keypoint Triplet Loss for GCN Branch — 监控日志
 
+## 编号说明
+- `exp036` 的编号沿用了原 visibility 路线的占位编号，但本实验内容已经不属于 visibility 主线。
+- 这里记录的是 `exp035` 之后的 GCN branch 内部探索：`per-keypoint triplet loss`。
+
 ## 实验概述
 - **目的**: 对 GCN 分支 17 个关键点特征施加独立 triplet loss
 - **Base**: exp035a (PSG + GCN, score weight, equal_concat) = 61.1% mAP / 73.8% R1

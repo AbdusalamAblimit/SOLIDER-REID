@@ -1,5 +1,10 @@
 # 实验 exp037: Learnable Keypoint Attention (LKA)
 
+## 编号说明
+- 按最初的 visibility 路线命名，`exp037` 原本预留给 visibility-aware graph 方向。
+- 当前这个 `exp037` 实际实验内容已经偏离原 visibility 路线，转而用于 `exp035/exp036` 之后的 GCN branch 内部探索。
+- 后续引用时应明确这是“关键点聚合权重的可学习化探索”，而不是 visibility 路线的阶段性结论。
+
 ## 动机
 - exp036 证明 GCN 关键点特征已足够判别（额外 triplet loss 反而 -0.5%）
 - 但当前的聚合权重是固定的 ViTPose 检测置信度（score）

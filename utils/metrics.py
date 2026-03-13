@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import os
+import torch.nn.functional as F
 from utils.reranking import re_ranking
 
 
@@ -87,25 +88,42 @@ def eval_func(distmat, q_pids, g_pids, q_camids, g_camids, max_rank=50):
 
 
 class R1_mAP_eval():
-    def __init__(self, num_query, max_rank=50, feat_norm=True, reranking=False):
+    def __init__(self, num_query, max_rank=50, feat_norm=True, reranking=False, cfg=None):
         super(R1_mAP_eval, self).__init__()
         self.num_query = num_query
         self.max_rank = max_rank
         self.feat_norm = feat_norm
         self.reranking = reranking
+        self.cfg = cfg
 
     def reset(self):
         self.feats = []
+        self.structured_feats = None
         self.pids = []
         self.camids = []
 
     def update(self, output):  # called once for each batch
         feat, pid, camid = output
-        self.feats.append(feat.cpu())
+        if isinstance(feat, dict):
+            if self.structured_feats is None:
+                self.structured_feats = {
+                    'mode': feat['mode'],
+                    'global_feat': [],
+                    'kp_feats': [],
+                    'kp_weights': [],
+                }
+            self.structured_feats['global_feat'].append(feat['global_feat'].cpu())
+            self.structured_feats['kp_feats'].append(feat['kp_feats'].cpu())
+            self.structured_feats['kp_weights'].append(feat['kp_weights'].cpu())
+        else:
+            self.feats.append(feat.cpu())
         self.pids.extend(np.asarray(pid))
         self.camids.extend(np.asarray(camid))
 
     def compute(self):  # called after each epoch
+        if self.structured_feats is not None:
+            return self._compute_structured()
+
         feats = torch.cat(self.feats, dim=0)
         if self.feat_norm:
             print("The test feature is normalized")
@@ -130,5 +148,70 @@ class R1_mAP_eval():
 
         return cmc, mAP, distmat, self.pids, self.camids, qf, gf
 
+    def _compute_structured(self):
+        global_feats = torch.cat(self.structured_feats['global_feat'], dim=0)
+        kp_feats = torch.cat(self.structured_feats['kp_feats'], dim=0)
+        kp_weights = torch.cat(self.structured_feats['kp_weights'], dim=0)
+        mode = self.structured_feats['mode']
+
+        if self.feat_norm:
+            print("The test feature is normalized")
+            global_feats = F.normalize(global_feats, dim=1, p=2)
+            kp_feats = F.normalize(kp_feats, dim=2, p=2)
+
+        q_global = global_feats[:self.num_query]
+        g_global = global_feats[self.num_query:]
+        q_kp = kp_feats[:self.num_query]
+        g_kp = kp_feats[self.num_query:]
+        q_w = kp_weights[:self.num_query]
+        g_w = kp_weights[self.num_query:]
+        q_pids = np.asarray(self.pids[:self.num_query])
+        q_camids = np.asarray(self.camids[:self.num_query])
+        g_pids = np.asarray(self.pids[self.num_query:])
+        g_camids = np.asarray(self.camids[self.num_query:])
+
+        print('=> Computing DistMat with common-visible keypoint reasoning')
+        global_dist = self._euclidean_distance_tensor(q_global, g_global)
+        kp_dist = self._common_visible_kp_distance(q_kp, g_kp, q_w, g_w, global_dist, mode)
+
+        if mode == 'cvk_only':
+            distmat = kp_dist.cpu().numpy()
+        else:
+            gw = float(getattr(self.cfg.TEST, 'CVK_GLOBAL_WEIGHT', 1.0)) if self.cfg is not None else 1.0
+            kw = float(getattr(self.cfg.TEST, 'CVK_KP_WEIGHT', 1.0)) if self.cfg is not None else 1.0
+            distmat = ((gw * global_dist + kw * kp_dist) / max(gw + kw, 1e-12)).cpu().numpy()
+
+        cmc, mAP = eval_func(distmat, q_pids, g_pids, q_camids, g_camids)
+        return cmc, mAP, distmat, self.pids, self.camids, q_global, g_global
+
+    @staticmethod
+    def _euclidean_distance_tensor(qf, gf):
+        m = qf.shape[0]
+        n = gf.shape[0]
+        dist_mat = torch.pow(qf, 2).sum(dim=1, keepdim=True).expand(m, n) + \
+                   torch.pow(gf, 2).sum(dim=1, keepdim=True).expand(n, m).t()
+        dist_mat.addmm_(qf, gf.t(), beta=1, alpha=-2)
+        return dist_mat.clamp_min_(0.0)
+
+    def _common_visible_kp_distance(self, q_kp, g_kp, q_w, g_w, global_dist, mode):
+        q_kp_t = q_kp.transpose(1, 0)  # (K, Q, C)
+        g_kp_t = g_kp.transpose(1, 0)  # (K, G, C)
+        dot = torch.matmul(q_kp_t, g_kp_t.transpose(2, 1))
+        q_sq = q_kp_t.pow(2).sum(dim=-1)
+        g_sq = g_kp_t.pow(2).sum(dim=-1)
+        kp_dist = (q_sq.unsqueeze(2) - 2 * dot + g_sq.unsqueeze(1)).clamp_min_(0.0).sqrt_()
+
+        weights = torch.sqrt(
+            q_w.transpose(1, 0).unsqueeze(2) * g_w.transpose(1, 0).unsqueeze(1)
+        )
+        weight_sum = weights.sum(dim=0)
+        masked = (kp_dist * weights).sum(dim=0) / weight_sum.clamp(min=1e-12)
+
+        if mode == 'cvk_only':
+            fallback = kp_dist.max().detach() + 1.0
+            masked = torch.where(weight_sum > 0, masked, torch.full_like(masked, fallback))
+        else:
+            masked = torch.where(weight_sum > 0, masked, global_dist)
+        return masked
 
 

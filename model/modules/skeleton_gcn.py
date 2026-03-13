@@ -276,18 +276,16 @@ class SkeletonGCNHead(nn.Module):
         skeleton_feat = (kp_feats_enhanced * weights).sum(dim=1) / \
                         weights.sum(dim=1).clamp(min=1e-6)  # (B, C)
 
-        # Per-keypoint data for part-level triplet loss
-        kp_data = None
-        if self.training and self.kp_triplet:
-            kp_data = {
-                'kp_feats': kp_feats_enhanced,  # (B, 17, C)
-                'kp_weights': kp_weights,        # (B, 17)
-            }
+        aux_data = {
+            'kp_feats': kp_feats_enhanced,  # (B, 17, C)
+            'kp_weights': kp_weights,       # (B, 17)
+        }
 
         if return_cls:
             # BN + Classifier
             feat_bn = self.bn(skeleton_feat)
+            aux_data['feat_bn'] = feat_bn
             cls_score = self.classifier(feat_bn)
-            return [cls_score], [skeleton_feat], kp_data
+            return [cls_score], [skeleton_feat], aux_data
         else:
-            return None, [skeleton_feat], kp_data
+            return None, [skeleton_feat], aux_data

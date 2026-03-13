@@ -350,7 +350,7 @@ class PoseBackboneModel(build_transformer):
             # Skeleton GCN: assemble test features based on pose_test_feat mode
             if self.use_skeleton_gcn and pose_dict is not None and \
                     getattr(self, 'pose_test_feat', 'global') != 'global':
-                _, gcn_feats, _ = self.skeleton_head(
+                _, gcn_feats, aux_data = self.skeleton_head(
                     featmaps[-1], pose_dict, return_cls=False)
 
                 if self.pose_test_feat == 'gcn_only':
@@ -359,6 +359,13 @@ class PoseBackboneModel(build_transformer):
                     g_norm = F.normalize(test_feat, p=2, dim=1)
                     p_norm = [F.normalize(f, p=2, dim=1) for f in gcn_feats]
                     test_feat = torch.cat([g_norm] + p_norm, dim=1)
+                elif self.pose_test_feat in ('cvk_only', 'cvk_hybrid'):
+                    test_feat = {
+                        'mode': self.pose_test_feat,
+                        'global_feat': test_feat,
+                        'kp_feats': aux_data['kp_feats'],
+                        'kp_weights': aux_data['kp_weights'],
+                    }
                 else:  # concat_scaled (default)
                     scale = 1.0 / len(gcn_feats)
                     test_feat = torch.cat(

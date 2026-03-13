@@ -522,3 +522,57 @@ PDS+SG 多种子 (59.20% mean) 暗示 0.5x 效果可能是真实的。
    `exp030a` multi-seed 说明训练好的 graph branch 还能继续提高 fusion。
    所以更合理的 framing 是：
    **KPP 提供 branch 主体信息量，GCN 负责 relation refinement。**
+
+### Phase 2.16: 2026-03-13 文献/代码复盘后的方向修正
+
+#### 这轮复盘看了什么
+- KPR (ECCV 2024) 论文 + 官方代码
+- BPBreID (WACV 2023) 论文 + 官方代码
+- FRT (TIP) 摘要 + 官方仓库状态
+- QPM 摘要
+
+#### 共同结论
+1. **真正强的 occluded ReID 工作，核心不是“再加一个小模块”**
+   - KPR: target ambiguity / promptable target selection
+   - BPBreID: partial observation 下 global embedding 的理论局限
+   - FRT: retrieval-time feature recovery
+   - QPM: quality-aware common non-occluded reasoning
+
+2. **visibility / quality 的主要落点在 pairwise distance，而不是 train-time pooling 小改动**
+   - BPBreID / KPR 都把 visibility 用在 query-gallery 距离计算
+   - 我们最近的 `exp035b / exp036 / exp037` 则主要在 branch 内部调权重、调 loss，问题定义偏弱
+
+3. **当前代码线的真实 gap 已经更清楚了**
+   - `exp030a` 证明 branch 的价值主要发生在 fusion
+   - 但当前测试仍用 `equal_concat`
+   - 也就是说：**结构化 keypoint branch 被训练出来了，但在检索时被过早压缩**
+
+#### 因此不再推荐的主线
+- AFF / learnable fusion gate
+- 继续做 branch 内部 learnable weight
+- 继续做额外局部 triplet / auxiliary loss
+
+这些方向的问题不够新，且已有文献早已覆盖“quality-aware / adaptive weighting”叙事。
+
+#### 新的主线候选
+**共同可见关键点检索（Common-Visible Keypoint Retrieval）**
+
+核心想法：
+- 保留 `GCN` 增强后的关键点级表征到测试阶段
+- 只在 query-gallery 共同可靠的关键点上计算局部距离
+- 再与 global feature 做距离级融合，而不是特征级拼接
+
+#### 为什么这个方向更像主线
+1. **问题层面**: 直接针对 partial observation 下“谁和谁的哪一部分可比”
+2. **机制层面**: 从 feature concat 切到 pair-specific keypoint reasoning
+3. **证据层面**: 可以设计清晰对照
+   - global
+   - equal_concat
+   - keypoint-only pairwise distance
+   - global + common-visible keypoint distance
+
+#### 当前优先级更新
+1. 先收紧 `exp035 / exp036 / exp037` 文档表述
+2. 让 `exp037` 自然结束
+3. 下一实验优先做 **共同可见关键点检索诊断**
+4. `AFF` 降为备选，不再当主线默认项

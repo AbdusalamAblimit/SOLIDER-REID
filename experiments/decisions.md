@@ -1098,9 +1098,9 @@ B. 直接启动 exp025，exp024 可以后续补跑
 - score_visibility 是预期最强的 visibility 模式（兼顾 score 和 visibility 信号），但结果为负
 - visibility_only 和 binary_visibility 更激进（完全不用 score），预期不会更好
 - 花 4h 再跑两个预期为负的实验，不如转入更有价值的方向
-- exp035 已充分回答核心问题：visibility 在 keypoint pooling 加权中无独立价值
+- 但当前证据只覆盖 `score*visibility` 这一条实现路径，不能把单个负结果直接上升成整条 visibility 路线的最终结论
 
-**关键教训**: ViTPose visibility 在 keypoint-level 加权中不如 detection scores 有效。这与前轮实验（Phase 1）对 visibility 向量的负面结论一致。Visibility 信号可能在 **scene-level**（如热图注意力）有价值，但在 **keypoint-level** 的离散加权中无用。
+**关键教训（收紧版）**: 目前只能说 `score*visibility` 在当前 keypoint-level 加权池化中未带来正向证据。Visibility 是否能在其它位置（如 retrieval-time reasoning、pairwise masking、target-aware setting）发挥作用，仍需后续更精确的问题定义来判断。
 
 ### [2026-03-13 06:30] 决策 #41
 
@@ -1137,3 +1137,39 @@ B. 直接启动 exp025，exp024 可以后续补跑
 
 **选择**: A → B 顺序执行。先 exp037 (LKA)，再 exp038 (AFF)
 **理由**: LKA 实现更快，完成关键点加权调查线（score→visibility→learnable），无论结果如何都为 AFF 提供信息
+
+### [2026-03-13 10:55] 决策 #43
+
+**上下文**: `exp035b / exp036 / exp037` 连续三步都指向同一个信号：继续在 GCN branch 内部做权重/损失微调，越来越像局部调参。根据 `AGENTS.md`，此时必须先进入论文/代码学习模式，再决定下一步。
+
+本轮完成的学习：
+- KPR（ECCV 2024）论文 + 官方代码
+- BPBreID（WACV 2023）论文 + 官方代码
+- FRT（TIP）摘要 + 官方仓库状态
+- QPM 摘要
+
+**核心发现**:
+1. 近年的强路线把问题定义在 **target ambiguity / common visible support / retrieval-time reasoning**，而不是“再学一个融合权重”。
+2. BPBreID / KPR 的 visibility 主要落在 **query-gallery pairwise distance**，不是只改 pooling。
+3. 我们当前代码线的真实缺口是：
+   - `exp030a` 已证明 branch 的价值主要体现在 fusion
+   - 但测试时仍用 `equal_concat`
+   - 即：结构化 keypoint branch 被训练出来后，在检索阶段被过早压成单向量
+4. QPM / 类似质量感知工作已经覆盖了“adaptive weighting / quality-aware fusion”叙事，`AFF` 难以作为主线创新。
+
+**选择**: 暂不把 `exp038 = AFF` 作为默认主线；下一步优先改为 **共同可见关键点检索诊断**。
+
+**理由**:
+1. 这个方向的问题定义更强：它直接针对 partial observation 下“哪些局部证据可比较”。
+2. 它和 `exp030a` 的既有证据链更一致：branch 的价值既然发生在 fusion，就应继续追问“fusion 的信息到底来自哪些共同可见关键点”。
+3. 机制上也更接近文献 gap：我们可以利用已有的 keypoint/skeleton branch，而不去复刻 parsing-based part methods。
+4. 证据路径清晰，可先做低风险诊断：
+   - `global`
+   - `equal_concat`
+   - keypoint-only pairwise distance
+   - global + common-visible keypoint distance
+
+**执行约束**:
+1. 由于用户新增规则“不要主动停下来”，`exp037` 继续自然跑完，不主动中止。
+2. GPU 只有 1 张卡；因此在 `exp037` 结束前，优先完成文档校正、文献沉淀和下一实验实现准备。
+3. 若后续仍保留 `AFF`，它只作为备选/消融，不再作为默认主线。
