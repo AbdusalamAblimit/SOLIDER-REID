@@ -62,3 +62,46 @@
 ### 原因
 1. 之前的“空跑 baseline”风险已排除。
 2. 代码与 `design.md` 的损失定义现已一致。
+
+---
+## [19:03] 检查点 #1
+
+**状态**: ▶️ 已启动
+
+### 训练进度
+- 已进入：`Epoch 1`
+- 最新位置：`Iter 40/227`
+
+### 当前局部训练状态
+- `Epoch 1 Iter 20/227`：
+  - `Loss`: `35.772`
+  - `Acc`: `0.000`
+  - `id_global`: `6.555`
+  - `id_part`: `6.683`
+  - `tri_global`: `14.249`
+  - `tri_part`: `16.638`
+  - `tri_csgt`: `13.710`
+- `Epoch 1 Iter 40/227`：
+  - `Loss`: `30.971`
+  - `Acc`: `0.000`
+  - `id_global`: `6.556`
+  - `id_part`: `6.681`
+  - `tri_global`: `11.848`
+  - `tri_part`: `14.060`
+  - `tri_csgt`: `11.399`
+  - `csgt_pos_overlap`: `0.666`
+  - `csgt_neg_overlap`: `0.708`
+  - `csgt_pos_fallback`: `0.800`
+  - `csgt_neg_fallback`: `0.100`
+
+### 观察
+1. 训练已正常启动，数据、模型、优化器和 pose 路径均完成加载。
+2. `tri_csgt` 已在首轮日志中出现，说明这次不是“配置开了但实际没生效”的空跑 baseline。
+3. `csgt_pos/neg_overlap` 与 fallback 统计也已打印，后续可以直接据此判断 common-support mining 是否真的在工作。
+
+### 当前判断
+- **继续**
+
+### 原因
+1. 首轮损失下降正常，暂未见 `NaN / OOM / 爆 loss`。
+2. 关键新增训练项已经实际接线生效，具备继续观察价值。
