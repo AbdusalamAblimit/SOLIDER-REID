@@ -38,7 +38,7 @@ def make_loss(cfg, num_classes):    # modified by gu
 
     #  elif cfg.DATALOADER.SAMPLER in ['softmax_triplet', 'id_triplet', 'img_triplet']:
     elif 'triplet' in sampler:
-        def loss_func(score, feat, target, target_cam, pose_sim=None):
+        def loss_func(score, feat, target, target_cam, pose_sim=None, kp_data=None):
             if cfg.MODEL.METRIC_LOSS_TYPE == 'triplet':
                 ce_fn = xent if cfg.MODEL.IF_LABELSMOOTH == 'on' else F.cross_entropy
                 trp_norm = cfg.SOLVER.TRP_L2 if hasattr(cfg.SOLVER, 'TRP_L2') else False
@@ -79,6 +79,25 @@ def make_loss(cfg, num_classes):    # modified by gu
 
                 total = cfg.MODEL.ID_LOSS_WEIGHT * ID_LOSS + \
                         cfg.MODEL.TRIPLET_LOSS_WEIGHT * TRI_LOSS
+
+                # Per-keypoint triplet loss (confidence-weighted)
+                if kp_data is not None:
+                    kp_feats = kp_data['kp_feats']      # (B, 17, C)
+                    kp_weights = kp_data['kp_weights']  # (B, 17)
+                    kp_tri_w = kp_data['weight']
+                    num_kp = kp_feats.size(1)
+                    kp_tri_losses = []
+                    for k in range(num_kp):
+                        kp_feat_k = kp_feats[:, k, :]  # (B, C)
+                        kp_tri_k = triplet(kp_feat_k, target)[0]
+                        kp_tri_losses.append(kp_tri_k)
+                    # Confidence-weighted average across keypoints
+                    avg_conf = kp_weights.mean(dim=0)  # (17,)
+                    avg_conf = avg_conf / avg_conf.sum().clamp(min=1e-6)
+                    kp_tri_loss = sum(l * w for l, w in zip(kp_tri_losses, avg_conf))
+                    total = total + kp_tri_w * kp_tri_loss
+                    loss_details['tri_kp'] = kp_tri_loss.item()
+
                 loss_details['total'] = total.item()
 
                 # Store details on the loss tensor for the processor to read

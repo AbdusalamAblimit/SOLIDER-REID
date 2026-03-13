@@ -122,13 +122,14 @@ class SkeletonGCNHead(nn.Module):
 
     def __init__(self, feat_dim, hidden_dim, num_layers, num_classes,
                  input_size=(384, 128), use_gcn=True,
-                 kp_weight_mode='score'):
+                 kp_weight_mode='score', kp_triplet=False):
         super().__init__()
         self.feat_dim = feat_dim
         self.input_h, self.input_w = input_size
         self.num_joints = 17
         self.use_gcn = use_gcn
         self.kp_weight_mode = kp_weight_mode
+        self.kp_triplet = kp_triplet
 
         # Optional graph propagation over sampled keypoint features.
         if self.use_gcn:
@@ -255,10 +256,18 @@ class SkeletonGCNHead(nn.Module):
         skeleton_feat = (kp_feats_enhanced * weights).sum(dim=1) / \
                         weights.sum(dim=1).clamp(min=1e-6)  # (B, C)
 
+        # Per-keypoint data for part-level triplet loss
+        kp_data = None
+        if self.training and self.kp_triplet:
+            kp_data = {
+                'kp_feats': kp_feats_enhanced,  # (B, 17, C)
+                'kp_weights': kp_weights,        # (B, 17)
+            }
+
         if return_cls:
             # BN + Classifier
             feat_bn = self.bn(skeleton_feat)
             cls_score = self.classifier(feat_bn)
-            return [cls_score], [skeleton_feat], None
+            return [cls_score], [skeleton_feat], kp_data
         else:
-            return None, [skeleton_feat], None
+            return None, [skeleton_feat], kp_data

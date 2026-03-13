@@ -171,6 +171,7 @@ class PoseBackboneModel(build_transformer):
             gcn_hidden = getattr(cfg.MODEL, 'POSE_GCN_HIDDEN', 256)
             keypoint_pool_only = getattr(cfg.MODEL, 'POSE_KEYPOINT_POOL_ONLY', False)
             kp_weight_mode = getattr(cfg.MODEL, 'POSE_KP_WEIGHT_MODE', 'score')
+            kp_triplet = getattr(cfg.MODEL, 'POSE_KP_TRIPLET', False)
             self.skeleton_head = SkeletonGCNHead(
                 feat_dim=self.in_planes,
                 hidden_dim=gcn_hidden,
@@ -179,6 +180,7 @@ class PoseBackboneModel(build_transformer):
                 input_size=tuple(cfg.INPUT.SIZE_TRAIN),
                 use_gcn=not keypoint_pool_only,
                 kp_weight_mode=kp_weight_mode,
+                kp_triplet=kp_triplet,
             )
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'concat_scaled')
             if keypoint_pool_only:
@@ -330,10 +332,11 @@ class PoseBackboneModel(build_transformer):
             # Skeleton GCN branch (detached to prevent gradient interference)
             if self.use_skeleton_gcn and pose_dict is not None:
                 feat_map_detached = featmaps[-1].detach()
-                gcn_cls_scores, gcn_feats, _ = self.skeleton_head(
+                gcn_cls_scores, gcn_feats, kp_data = self.skeleton_head(
                     feat_map_detached, pose_dict, return_cls=True, label=label)
                 # Return lists → triggers list-loss path (implicit 0.5x global)
-                return [cls_score] + gcn_cls_scores, [global_feat] + gcn_feats, featmaps, recon_loss
+                # 5th return: kp_data for per-keypoint triplet loss (None if disabled)
+                return [cls_score] + gcn_cls_scores, [global_feat] + gcn_feats, featmaps, recon_loss, kp_data
 
             return cls_score, global_feat, featmaps, recon_loss
         else:
