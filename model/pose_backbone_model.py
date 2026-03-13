@@ -169,16 +169,22 @@ class PoseBackboneModel(build_transformer):
         if self.use_skeleton_gcn:
             gcn_layers = getattr(cfg.MODEL, 'POSE_GCN_LAYERS', 2)
             gcn_hidden = getattr(cfg.MODEL, 'POSE_GCN_HIDDEN', 256)
+            keypoint_pool_only = getattr(cfg.MODEL, 'POSE_KEYPOINT_POOL_ONLY', False)
             self.skeleton_head = SkeletonGCNHead(
                 feat_dim=self.in_planes,
                 hidden_dim=gcn_hidden,
                 num_layers=gcn_layers,
                 num_classes=num_classes,
                 input_size=tuple(cfg.INPUT.SIZE_TRAIN),
+                use_gcn=not keypoint_pool_only,
             )
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'concat_scaled')
-            print(f'[PSG+GCN] Skeleton GCN head enabled: {gcn_layers} layers, '
-                  f'hidden={gcn_hidden}, test_feat={self.pose_test_feat}')
+            if keypoint_pool_only:
+                print(f'[PSG+KPP] Keypoint pooling head enabled: no graph propagation, '
+                      f'test_feat={self.pose_test_feat}')
+            else:
+                print(f'[PSG+GCN] Skeleton GCN head enabled: {gcn_layers} layers, '
+                      f'hidden={gcn_hidden}, test_feat={self.pose_test_feat}')
 
         # Store backbone's semantic weight for manual forward
         self._semantic_weight_val = semantic_weight

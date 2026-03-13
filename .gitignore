@@ -24,3 +24,5 @@ pretrained/
 *.npy
 *.npz
 solider-logs/
+
+/viz_*

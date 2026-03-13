@@ -59,6 +59,7 @@ class PoseDualStreamModel(build_transformer):
         if self.use_skeleton_gcn:
             gcn_layers = getattr(cfg.MODEL, 'POSE_GCN_LAYERS', 2)
             gcn_hidden = getattr(cfg.MODEL, 'POSE_GCN_HIDDEN', 256)
+            keypoint_pool_only = getattr(cfg.MODEL, 'POSE_KEYPOINT_POOL_ONLY', False)
             input_size = (cfg.INPUT.SIZE_TRAIN[0], cfg.INPUT.SIZE_TRAIN[1])
             self.skeleton_head = SkeletonGCNHead(
                 feat_dim=feat_ch,
@@ -66,6 +67,7 @@ class PoseDualStreamModel(build_transformer):
                 num_layers=gcn_layers,
                 num_classes=num_classes,
                 input_size=input_size,
+                use_gcn=not keypoint_pool_only,
             )
         else:
             self.part_pooling = PosePartPooling(
@@ -88,7 +90,10 @@ class PoseDualStreamModel(build_transformer):
         psg_str = 'PSG' if self.use_global_psg else 'no PSG (ablation)'
         print(f'[PDS] Global branch: Stage 3 ({len(stage3.blocks)} blocks) + {psg_str}')
         if self.use_skeleton_gcn:
-            print(f'[PDS] Part branch: Independent Stage 3 copy + Skeleton GCN ({gcn_layers} layers, hidden={gcn_hidden})')
+            if keypoint_pool_only:
+                print('[PDS] Part branch: Independent Stage 3 copy + keypoint pooling only (no graph propagation)')
+            else:
+                print(f'[PDS] Part branch: Independent Stage 3 copy + Skeleton GCN ({gcn_layers} layers, hidden={gcn_hidden})')
         else:
             print(f'[PDS] Part branch: Independent Stage 3 copy + 5-part pooling')
         if self.stop_grad_epochs > 0:

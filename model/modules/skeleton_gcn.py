@@ -107,9 +107,10 @@ class SkeletonGCN(nn.Module):
 
 
 class SkeletonGCNHead(nn.Module):
-    """Complete head: bilinear sample → GCN → confidence-weighted average.
+    """Complete head: bilinear sample → optional GCN → confidence-weighted average.
 
-    Replaces Part Pooling in the PDS Part branch.
+    Replaces Part Pooling in the PDS Part branch. When ``use_gcn=False``,
+    this becomes a pure keypoint-pooling head.
 
     Args:
         feat_dim: backbone feature dimension (768)
@@ -120,19 +121,23 @@ class SkeletonGCNHead(nn.Module):
     """
 
     def __init__(self, feat_dim, hidden_dim, num_layers, num_classes,
-                 input_size=(384, 128)):
+                 input_size=(384, 128), use_gcn=True):
         super().__init__()
         self.feat_dim = feat_dim
         self.input_h, self.input_w = input_size
         self.num_joints = 17
+        self.use_gcn = use_gcn
 
-        # GCN
-        self.gcn = SkeletonGCN(
-            feat_dim=feat_dim,
-            hidden_dim=hidden_dim,
-            num_layers=num_layers,
-            num_joints=17,
-        )
+        # Optional graph propagation over sampled keypoint features.
+        if self.use_gcn:
+            self.gcn = SkeletonGCN(
+                feat_dim=feat_dim,
+                hidden_dim=hidden_dim,
+                num_layers=num_layers,
+                num_joints=17,
+            )
+        else:
+            self.gcn = None
 
         # BN + Classifier for skeleton feature
         self.bn = nn.BatchNorm1d(feat_dim)
@@ -215,8 +220,11 @@ class SkeletonGCNHead(nn.Module):
             feat_map, keypoints, scores, person_mask)
         # kp_feats: (B, 17, C), kp_scores: (B, 17)
 
-        # 2. Skeleton GCN
-        kp_feats_enhanced = self.gcn(kp_feats)  # (B, 17, C)
+        # 2. Optional skeleton GCN
+        if self.use_gcn:
+            kp_feats_enhanced = self.gcn(kp_feats)  # (B, 17, C)
+        else:
+            kp_feats_enhanced = kp_feats
 
         # 3. Confidence-weighted average
         weights = kp_scores.clamp(min=1e-6).unsqueeze(-1)  # (B, 17, 1)

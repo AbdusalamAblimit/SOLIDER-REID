@@ -121,6 +121,7 @@ _C.MODEL.POSE_PART_LR_FACTOR = 1.0      # LR multiplier for Part branch params i
 _C.MODEL.POSE_WEIGHTED_POOL = False     # Replace GAP with pose-weighted pooling
 _C.MODEL.GLOBAL_LOSS_SCALE = 1.0       # Scale factor for global loss (0.5 simulates PDS list-loss effect)
 _C.MODEL.POSE_SKELETON_GCN = False     # Use Skeleton GCN in Part branch (replaces Part Pooling)
+_C.MODEL.POSE_KEYPOINT_POOL_ONLY = False  # Use keypoint sampling + confidence pooling only (no graph propagation)
 _C.MODEL.POSE_GCN_LAYERS = 2          # Number of GCN layers
 _C.MODEL.POSE_GCN_HIDDEN = 256        # GCN hidden dimension
 
