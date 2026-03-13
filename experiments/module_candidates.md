@@ -78,3 +78,95 @@
   2. CSGT（训练端 common-support mining）
   3. pair-specific fusion
   4. 若前几者都失败，再回头考虑 AFF 作为纯工程补充
+
+---
+
+## 2026-03-13 新增候选（来自 ProFD / DPEFormer / SSSC-TransReID）
+
+### 候选 5：Random Rectangle Mask 数据增强
+**状态**: `推荐验证（低成本）`
+
+**来源**: SSSC-TransReID (arXiv 2410.15613)
+
+**核心机制**:
+- 在标准 RandomErasing 基础上替换为多矩形遮挡策略
+- 每次生成多个不重叠的矩形遮挡块，总面积达到目标比例（默认 50%）
+- 更逼真地模拟真实遮挡（多个独立遮挡物 vs 单个大遮挡物）
+
+**与 Swin-Tiny 兼容性**: 高（纯数据增强）
+**额外显存**: 0（CPU 端增强）
+**预期增益**: +0.3~0.6% mAP（SSSC 报告 vs Hide-and-Seek +0.6% R1）
+**实现难度**: 低（约 30 行代码）
+**优先级**: ⭐⭐⭐
+
+**注意事项**: SSSC 中这个增强配合 SimSiam 自监督一起用。单独使用的增益可能低于 0.6%。
+
+---
+
+### 候选 6：Pose-Aware Masking Consistency (PAMC)
+**状态**: `推荐作为主线候选`
+
+**来源**: SSSC-TransReID 框架 + 热图引导思路的原创结合
+
+**核心机制**:
+1. 用 ViTPose 热图识别低置信度关键点区域（热图响应 < threshold）
+2. 用这些区域生成 pose-guided 遮挡 mask
+3. 双分支 SimSiam 风格对比：原图 vs 进一步遮挡版本 → stop-gradient consistency loss
+4. 训练模型学习"即使关键点被进一步遮挡，也应保持身份一致特征"
+
+**与 Swin-Tiny 兼容性**: 高（在特征层面 SimSiam，不需要修改 backbone）
+**额外显存**: ~2GB（双前向传播 + Projector MLP）
+**预期增益**: +0.5~1.5% mAP（基于 SSSC 框架效果类比）
+**实现难度**: 中（需要修改数据增强 + 训练引擎 + 新增 Projector）
+**优先级**: ⭐⭐⭐⭐
+
+**创新差异点**:
+- vs SSSC：随机矩形 → 热图引导 body-aware masking（pose 语义更明确）
+- vs PSG：PSG 是 feature-level modulation，PAMC 是 training objective level 的遮挡一致性
+
+---
+
+### 候选 7：Dissimilar Loss（部位多样性正则化）
+**状态**: `低成本备选，可作为辅助损失`
+
+**来源**: ProFD (ACM MM 2024)
+
+**核心机制**:
+- 计算 batch 内所有 part embedding 对之间的 cosine 相似度矩阵
+- 用 softmax 加权（高相似度对权重更大），然后最大化平均相似度（等价于最大化多样性）
+- 防止 GCN/KPP branch 的多个 keypoint 特征 collapse 到相同方向
+
+**与 Swin-Tiny 兼容性**: 高（只需 part embeddings 作为输入）
+**额外显存**: ~50MB
+**预期增益**: +0.1~0.3% mAP（作为辅助正则化）
+**实现难度**: 低（约 20 行代码，ProFD 代码可直接复用）
+**优先级**: ⭐⭐
+
+---
+
+### 候选 8：PartFeatureDecoder（Cross-Attention Part 解码器）
+**状态**: `候补（等待 PAMC 验证后考虑）`
+
+**来源**: ProFD (ACM MM 2024)
+
+**核心机制**:
+- 把文本 prompt 替换为 pose-heatmap-guided learnable queries（K 个关键点 query）
+- 以热图加权的 spatial tokens 作为 K/V，通过双向 cross-attention 解码出每个关键点的 part 特征
+- SemiAttentionDecoder 的双向设计（query→memory + memory→query）比单向 cross-attention 更有表达力
+
+**与 Swin-Tiny 兼容性**: 高（输入 Swin Stage 4 的 spatial tokens）
+**额外显存**: ~200-400MB（2层 cross-attention decoder）
+**预期增益**: 不确定（理论上比 GCN bilinear sampling 更灵活）
+**实现难度**: 高（需要大幅修改模型结构）
+**优先级**: ⭐⭐
+
+---
+
+## 推荐优先级总结（更新）
+
+| 优先级 | 候选 | 理由 |
+|--------|------|------|
+| 1 | PAMC（候选 6） | 问题新+机制新+实现可行+与 PSG 正交 |
+| 2 | Random Rectangle Mask（候选 5） | 成本极低，可附加验证 |
+| 3 | Dissimilar Loss（候选 7） | 辅助正则化，低成本 |
+| 4 | PartFeatureDecoder（候选 8） | 高成本高风险，等待更多证据 |

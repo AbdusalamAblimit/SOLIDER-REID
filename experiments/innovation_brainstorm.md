@@ -719,3 +719,79 @@ PDS+SG 多种子 (59.20% mean) 暗示 0.5x 效果可能是真实的。
 - **对有效性的可解释证据**
 
 这比继续刷一个小模块或再调一个 loss，更接近能支撑论文主叙事的证据链。
+
+---
+
+## Phase 2.20: 2026-03-13 新文献补充（ProFD / DPEFormer / SSSC-TransReID）
+
+### 文献学习来源
+
+本轮研究了 3 个近期仓库/论文（详见 paper_notes 16-18）：
+1. **ProFD** (ACM MM 2024, 代码已开源)：CLIP ViT + 体部位 text prompt + PartFeatureDecoder + SemiAttentionDecoder
+2. **DPEFormer** (arXiv 2402.10435, 代码未开源)：ViT + DPSM 动态 token 选择 + FBM 特征混合 + ROA 真实遮挡增强
+3. **SSSC-TransReID** (arXiv 2410.15613, 代码未找到)：双分支 Transformer + 随机矩形遮挡增强 + SimSiam 风格自监督
+
+### 三篇论文对当前研究的关键观察
+
+#### 1. DPSM（DPEFormer）与我们 PGTS 方向的对比
+
+DPSM 用 CLS token 相似度动态选择"干净" token，本质上是无监督版的 token 重要性打分。
+我们有 ViTPose 热图，直接提供空间重要性 — 但 exp029（PWP）已证明 post-backbone 的 token 加权是冗余操作（PSG 已在 Stage 3 内部做了空间调制）。
+**因此 DPSM 思路对我们而言价值有限**。即使我们用热图代替 CLS 相似度做 token 选择，exp029 的负结论已经说明 post-backbone pooling 阶段做任何 pose-weighted 操作都不如 PSG 内部调制有效。
+
+#### 2. PartFeatureDecoder（ProFD）与当前方向的关系
+
+ProFD 的 PartFeatureDecoder 用文本 prompt 做 Query、spatial tokens 做 K/V，通过 cross-attention 解码出 part 特征。
+这与 exp030a 的 GCN branch 思路截然不同：GCN 是沿骨架传播 keypoint 特征，PartFeatureDecoder 是让部位 query 从 spatial tokens 中聚合信息。
+**潜在创新**：可以把 PartFeatureDecoder 的 text prompt 替换为 **pose-heatmap-guided learnable queries**（K 个由热图初始化的 query vectors），让 cross-attention 从 Swin 特征中聚焦到每个关键点对应的 spatial tokens 上。这比 GCN 的 bilinear sampling 更灵活，也比 ProFD 的 text prompt 更 spatially precise。
+
+但这需要独立的 cross-attention decoder，参数量 ~200-400K，且引入新的 collapse 问题（需要 Dissimilar Loss）。
+
+**结论**：这个方向与 exp047 失败路线在本质上不同（exp047 是 training-end CSGT，而这是 feature extraction decoder），但当前 exp030a 的 GCN 方案已足够，不优先推进 PartFeatureDecoder 路线。
+
+#### 3. SSSC-TransReID 的两个可借鉴技巧
+
+**3a. Random Rectangle Mask 数据增强**
+- 比 random erasing 更模拟真实遮挡（多个不重叠矩形 vs 单个矩形）
+- SSSC 报告 +0.6% Rank-1 vs Hide-and-Seek
+- 移植成本极低：只需在 dataloader 中加一个增强函数
+- **可以与 exp030a 基线结合，作为一个正交的性能提升点**
+- 不需要任何模型修改，不依赖 pose 数据
+
+**3b. 自监督对比分支（SimSiam 风格）**
+- 用强增强图像做 stop-gradient 对比，鼓励遮挡不变特征
+- 计算代价：双前向传播，在 Swin-Tiny + 3090 上可行（约增加 30-40% 训练时间）
+- 但其核心信号（遮挡一致性）与我们的 PSG 目标高度重叠
+- **创新空间**：如果将随机矩形遮挡替换为**热图引导的 body-aware masking**（只遮挡低置信度关键点区域），则自监督对比信号更有 pose 语义，与 SSSC 形成明确差异化
+
+### 新候选方向：Pose-Aware Masking Consistency (PAMC)
+
+**核心想法**：结合 SSSC 的自监督对比框架 + 热图引导的遮挡模拟
+
+1. 用 ViTPose 热图识别每张训练图的"低置信度关键点区域"（热图响应 < threshold）
+2. 用这些区域的 union mask 作为遮挡 mask，贴在原图上生成"进一步遮挡的版本"
+3. 双分支对比：原图特征 vs 进一步遮挡图特征应当一致（stop-gradient SimSiam）
+4. 直觉：这让模型学会"即使关键点被遮挡，也应该从可见区域重建出一致的特征"
+
+**与 SSSC 的差异**：
+- SSSC 用随机矩形（不知道遮挡了什么）
+- PAMC 用热图引导的 body-aware masking（知道遮挡了哪个身体部位）
+- 这是一个真正的"姿态引导遮挡一致性"信号，而非 generic 遮挡鲁棒性
+
+**与 exp047（CSGT）失败的区别**：
+- exp047 失败原因：overlap 无法区分正负 pair（keypoint visibility 是 image-level 属性）
+- PAMC 不做 pair mining，而是单图层面的增强 + 单图层面的一致性监督
+- 不会遇到 CSGT 的"无法区分正负 pair"问题
+
+**初步可行性评估**：
+- 需要对现有 pose_data 的 scores 做 threshold 筛选（已有数据）
+- 实现较简单：数据增强 + 双前向传播 + SimSiam loss
+- 参数增加：Projector MLP ~1M，可接受
+- 显存：双前向传播在 Swin-Tiny batch=64 上约 18-20GB，3090 可行
+
+**创新门槛检查**：
+1. **问题层面有新意**？是 — 不是随机遮挡，而是"把已遮挡图的遮挡模式进一步强化，测试模型能否保持身份一致性"
+2. **机制层面有新意**？是 — 热图引导的 body-aware masking + stop-gradient consistency，而非随机遮挡增强
+3. **证据层面能讲清楚**？是 — 对照 Random Rectangle Mask 版本；消融热图引导 vs 随机 mask
+
+**结论**：PAMC 满足创新门槛（问题 + 机制 + 证据），且实现成本较低，值得作为下一个主线候选。
