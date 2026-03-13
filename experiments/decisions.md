@@ -1317,3 +1317,33 @@ B. 直接启动 exp025，exp024 可以后续补跑
 2. 这比继续刷新的小调参更接近可投稿 story 所需的证据链闭环。
 
 **选择**: 下一步继续追资产层面的多 seed / 多 checkpoint 复核；在此之前，不再开新的 test-time 参数实验。
+
+### [2026-03-13 15:15] 决策 #50
+
+**上下文**: `exp045` 已在 `exp044` 重建出的 `seed42` checkpoint 上完成第二个 checkpoint 复核。
+
+**实验结果**:
+- `045a equal_concat` = `60.2% mAP / 72.7% R1`
+- `045b cvk_hybrid` = `61.1% mAP / 73.2% R1`
+- 差距 = `+0.9% mAP / +0.5% R1`
+
+**附加观察**:
+1. `045a` 的 mAP 与既有 seed42 记录 `60.2%` 完全一致，说明 `exp044` 的重建 checkpoint 可用于后续复核。
+2. `045b` 的 mAP 增幅与 `exp040` 的 `+0.8%` 非常接近，因此当前最稳定的信号已经从“单 checkpoint 正例”推进到“至少两个 checkpoint 上都能转正的 mAP 信号”。
+3. 但这次 R1 没有像 `exp040` 那样回落，反而变成 `+0.5%`，说明先前的 “R1 小降” 不能再写成固定规律。
+
+**判断**:
+1. 当前最稳妥、且已经被多 checkpoint 支撑的结论是：
+   **`cvk_hybrid` 能稳定改善 mAP。**
+2. `exp042` 对 `040a/040b` 的 deeper-rank correction 解释仍然成立，但应明确它首先是在那个 checkpoint 上得到的机制证据，而不是所有 checkpoint 都必须伴随 R1 下降。
+3. 因此论文叙事应聚焦：
+   - mAP 的跨 checkpoint 正复核
+   - common-support reasoning 对整体排序的修正作用
+   而不是把 “R1 小降” 当作这条线的必要代价。
+
+**选择**: 继续推进资产恢复，优先补第三个 seed，而不是回到 test-time 权重细调。
+
+**下一步**:
+1. 重建 `exp030a seed2024` checkpoint
+2. 在第三个 checkpoint 上补 `equal_concat / cvk_hybrid`
+3. 再决定是否可以整理成更正式的多 checkpoint 汇总表

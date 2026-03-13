@@ -83,6 +83,8 @@
 | 040b | exp030a checkpoint + CVK retrieval (`cvk_hybrid`) | 61.9% | 73.2% | 85.2% | 88.6% | mAP+5.3%, R1+6.7% | ✅ vs 040a: +0.8% mAP, -0.5% R1。与 039b 高度一致，说明正信号可复核 |
 | 041a | exp030a checkpoint + CVK retrieval (`2:1`) | 61.6% | 72.6% | 84.2% | 88.1% | mAP+5.0%, R1+6.1% | 权重敏感性；vs 040b(`1:1`): -0.3% mAP, -0.6% R1。偏向 global 会削弱收益 |
 | 041b | exp030a checkpoint + CVK retrieval (`1:2`) | 61.6% | 73.6% | 85.1% | 88.6% | mAP+5.0%, R1+7.1% | 权重敏感性；vs 040b(`1:1`): -0.3% mAP, +0.4% R1。偏向 CVK 更像用 mAP 换 R1 |
+| 045a | rebuilt seed42 checkpoint recheck (`equal_concat`) | 60.2% | 72.7% | 84.4% | 87.6% | mAP+3.6%, R1+6.2% | `exp044` 重建 checkpoint 的直接对照；mAP 与既有 seed42 记录一致 |
+| 045b | rebuilt seed42 checkpoint + CVK retrieval (`cvk_hybrid`) | 61.1% | 73.2% | 84.2% | 88.1% | mAP+4.5%, R1+6.7% | ✅ vs 045a: +0.9% mAP, +0.5% R1。CVK 正 mAP 信号已在第二个 checkpoint 上复核 |
 
 > 注：`exp036 / exp037` 的编号沿用了原 visibility 路线的占位命名，但实验内容已经转入 `PSG+GCN` branch 的后续探索；解读时不要把编号本身当作路线语义。
 
@@ -97,7 +99,8 @@
   - `top1_degraded = 58`
 - 解释：
   - mAP 增益来自更广泛的 AP 改善，而不是单纯 top-1 修复
-  - 这也是为什么 `cvk_hybrid` 会呈现 `mAP +0.8 / R1 -0.5` 的稳定形状
+  - 在 `040a/040b` 这个 checkpoint 上，它呈现为 `mAP +0.8 / R1 -0.5`
+  - 但 `exp045` 说明这种 R1 回落并不是固定规律，稳定项应写成“mAP 转正”
 
 ### exp043 论文素材
 
@@ -105,6 +108,17 @@
   - `experiments/paper_materials/figures/qualitative/cvk_top_improved.png`
   - `experiments/paper_materials/figures/qualitative/cvk_top_degraded.png`
 - 两张图都保留了改进与退化样例，可直接支撑 story 中的 trade-off 叙述。
+
+### exp045 第二 checkpoint 复核摘要
+
+- `045a equal_concat` = `60.2% / 72.7%`
+- `045b cvk_hybrid` = `61.1% / 73.2%`
+- 相对差异：
+  - mAP `+0.9%`
+  - R1 `+0.5%`
+- 解释：
+  - `cvk_hybrid` 的正 mAP 信号已从单 checkpoint 扩展到第二个 checkpoint
+  - R1 的变化方向目前不能写死，较稳妥的结论应聚焦于 mAP 复核成立
 
 ### +NFC 结果（如适用）
 

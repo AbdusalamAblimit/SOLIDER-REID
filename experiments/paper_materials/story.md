@@ -170,6 +170,10 @@ Pose Spatial Gate and Skeleton Complement for Occluded Person Re-Identification
 3. 这与前面的假设非常一致：
    **CVK 不是 top-1 booster，而是 deeper-rank common-support correction。**
 
+这里需要补一个边界：
+- 上述 `R1 -0.5` 的形状来自 `040a/040b` 这个 checkpoint 对照
+- 它是当前最完整的机制证据，但不应被写成所有 checkpoint 都必须出现的固定代价
+
 因此论文表述应继续避免写成：
 - “显著提升 top-1”
 
@@ -188,6 +192,29 @@ Pose Spatial Gate and Skeleton Complement for Occluded Person Re-Identification
    - 为什么 R1 小幅下降
 3. 这样 qualitative 部分就能和当前 story 保持一致：
    **CVK 是 pair-specific ranking correction，而不是无代价增强。**
+
+### 2026-03-13 exp045 第二 checkpoint 复核更新
+- `045a` = `60.2 / 72.7`
+- `045b` = `61.1 / 73.2`
+
+相对 `045a`，`045b` 给出：
+- mAP `+0.9%`
+- R1 `+0.5%`
+
+这一步对 story 的推进非常关键：
+1. `cvk_hybrid` 的正 mAP 信号已经不只停留在主 checkpoint，而是又在重建的 `seed42` checkpoint 上复核成功。
+2. 它的增幅量级与 `exp040` 非常接近：
+   - `exp040`: `+0.8% mAP`
+   - `exp045`: `+0.9% mAP`
+3. 但这次 R1 没有回落，说明更准确的总表述应该改成：
+   - **稳定项**: mAP 跨 checkpoint 转正
+   - **可变项**: R1 的具体变化方向会随 checkpoint 而变
+
+因此当前更稳的论文叙事应写成：
+- PSG 提供 backbone-level pose prior
+- skeleton branch 提供结构化局部证据
+- CVK reasoning 在检索阶段利用共同可见支撑修正整体排序
+- 其最稳定的外显收益是 **mAP 改善**，而不是某种固定的 R1 trade-off 形状
 
 ### 跨数据集 / Backbone 验证 (4090)
 
