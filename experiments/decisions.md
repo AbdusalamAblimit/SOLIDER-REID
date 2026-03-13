@@ -1224,3 +1224,30 @@ B. 直接启动 exp025，exp024 可以后续补跑
    - 权重敏感性 (`global : cvk`)
    - 多 seed / 多 checkpoint 验证
 3. 在那之前，不把 `exp039` 的单 checkpoint 结果上升为最终论文结论
+
+### [2026-03-13 11:31] 决策 #46
+
+**上下文**: `exp040` 已在 `exp030a` 原始 checkpoint 上完成直接复核。
+
+**实验结果**:
+- `040a equal_concat` = `61.1% mAP / 73.7% R1`
+- `040b cvk_hybrid` = `61.9% mAP / 73.2% R1`
+- 差距 = `+0.8% mAP / -0.5% R1`
+
+**附加观察**:
+- `040b` 与 `039b`（`exp035a` checkpoint）几乎一致：
+  - mAP 相同 `61.9%`
+  - R1 相同 `73.2%`
+- 因此 `cvk_hybrid` 的正信号不是 bundled checkpoint 偶然现象。
+
+**判断**:
+1. retrieval-time 的共同可见关键点 reasoning 已具备 **可复核的单 checkpoint 正向证据**。
+2. 当前收益模式也更稳定了：两次都表现为 **mAP 提升、R1 小幅回落**。
+3. 这进一步说明它更像整体排序修正项，而不是单纯替代 `equal_concat` 的 top-1 强化器。
+
+**选择**: 继续推进该主线，下一步先做权重敏感性，而不是立刻上升到论文最终结论。
+
+**下一步**:
+1. 固定 `exp030a` checkpoint
+2. 调整 `TEST.CVK_GLOBAL_WEIGHT / TEST.CVK_KP_WEIGHT`
+3. 判断 `1:1` 是否接近最优，或是否存在更稳的工作区间

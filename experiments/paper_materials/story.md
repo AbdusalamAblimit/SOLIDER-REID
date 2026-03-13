@@ -119,6 +119,26 @@ Pose Spatial Gate and Skeleton Complement for Occluded Person Re-Identification
 - Skeleton branch 提供结构化局部证据
 - 检索阶段通过共同可见关键点支撑提升整体排序质量
 
+### 2026-03-13 exp040 原始基线复核更新
+- `040a exp030a-eq recheck` = `61.1 / 73.7`
+- `040b exp030a-cvk_hybrid` = `61.9 / 73.2`
+
+相对 `040a`，`040b` 给出：
+- mAP `+0.8%`
+- R1 `-0.5%`
+
+这一步的重要性在于：
+1. 它把 `exp039` 的结果从“bundled checkpoint 上的单次信号”推进成了“原始主基线 checkpoint 上可复核的信号”。
+2. 两次结果几乎一致，说明新的 story 不是偶然波动：
+   - `exp039b` = `61.9 / 73.2`
+   - `exp040b` = `61.9 / 73.2`
+3. 因而当前更有把握的表述是：
+   **Skeleton branch 的价值不只是在 embedding-level concat，更可能在 retrieval-time 提供 pair-specific common-support correction。**
+
+但这条 story 仍需补两层证据：
+- `global : cvk` 权重敏感性
+- 多 checkpoint / 多 seed 复核
+
 ### 跨数据集 / Backbone 验证 (4090)
 
 | 数据集 | Backbone | Baseline mAP | PSG mAP | Δ |

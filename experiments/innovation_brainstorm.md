@@ -576,3 +576,34 @@ PDS+SG 多种子 (59.20% mean) 暗示 0.5x 效果可能是真实的。
 2. 让 `exp037` 自然结束
 3. 下一实验优先做 **共同可见关键点检索诊断**
 4. `AFF` 降为备选，不再当主线默认项
+
+### Phase 2.17: 2026-03-13 `exp040` 复核后的创新判断更新
+
+#### 新增证据
+- `040a` (`exp030a` checkpoint, `equal_concat`) = `61.1 / 73.7`
+- `040b` (`exp030a` checkpoint, `cvk_hybrid`) = `61.9 / 73.2`
+- 相对差值 = `+0.8% mAP / -0.5% R1`
+
+#### 与 `exp039` 合并看后的判断
+1. **这已经不是单次偶然波动**
+   - `exp039b`（`exp035a` checkpoint）= `61.9 / 73.2`
+   - `exp040b`（`exp030a` checkpoint）= `61.9 / 73.2`
+   两次在不同来源 checkpoint 上给出几乎一致的输出。
+
+2. **这条线已经开始满足“问题 + 机制 + 初步证据”三件事中的前两件半**
+   - 问题层面：partial observation 下的共同可见支撑
+   - 机制层面：pair-specific keypoint reasoning，而不是再堆 train-time module
+   - 证据层面：已有重复单 checkpoint 正信号，但还缺更强统计支撑
+
+3. **它比 AFF / LKA 更接近可投稿主线**
+   因为 AFF / LKA 本质上仍是 branch 内部或 feature-level weighting，而 `cvk_hybrid` 已经把问题重新落在 retrieval-time reasoning 上。
+
+#### 还不能夸大的地方
+1. 现在只能说“可复核正信号成立”，还不能说“最终主方法已经确认”。
+2. 收益主要体现在 mAP，不是 R1；因此后续必须解释它改善的是哪类 pair 的排序。
+3. 这仍是 test-time reasoning，不能伪装成训练端创新。
+
+#### 下一步最值得做的不是新模块，而是证据加固
+1. 权重敏感性：`global : cvk`
+2. 多 checkpoint / 多 seed 复核
+3. 失败样例分析：它究竟修正了哪些遮挡 pair
