@@ -35,6 +35,25 @@
 - 如果写法过于接近“质量加权距离”，容易落回已有工作叙事
 - 需要先由候选 1 证明 keypoint-level common-support 确实有效
 
+## 候选 2.5：CSGT（Common-Support-Guided Triplet）
+**状态**: `推荐进入下一实验`
+
+### 问题定义
+- 当前 retrieval-time 证据已经说明：遮挡 ReID 的关键不只是“有没有局部特征”，而是 **batch 内不同 pair 的共同可见支撑并不相同**。
+- 但现有 global triplet 仍把所有正负 pair 当成同一可比性假设下的样本来挖 hardest case。
+
+### 机制草案
+- 用 skeleton branch 的 `kp_weights` 构造 batch 内 pairwise common-support overlap
+- 在 global branch 上增加一条 support-aware triplet：
+  - 优先在 overlap 足够高的 pair 上做 hard mining
+  - 找不到时回退到标准 mining
+- 默认行为不变，完全由 config 开关控制
+
+### 为什么值得做
+- 它不是再加一个 branch 模块，而是把 **pair-specific common support** 迁进训练目标
+- 相比单纯 test-time `cvk_hybrid`，它更接近训练端创新
+- 相比 `exp036` 的逐关键点 triplet，它利用的是 pair 可比性，而不是把每个关键点独立监督一遍
+
 ## 候选 3：AFF（Adaptive Feature Fusion）
 **状态**: `降级为备选，不作为主线`
 
@@ -53,8 +72,9 @@
 4. 文献上这类做法也更像局部调参，而不是问题级创新
 
 ## 当前结论
-- **主线应从“再调 branch 内部模块”切到“检索时如何利用共同可见关键点支撑”。**
+- **主线应从“再调 branch 内部模块”切到“如何利用共同可见关键点支撑”。**
 - 后续若继续开实验，优先顺序应为：
   1. 共同可见关键点检索诊断
-  2. pair-specific fusion
-  3. 若前两者都失败，再回头考虑 AFF 作为纯工程补充
+  2. CSGT（训练端 common-support mining）
+  3. pair-specific fusion
+  4. 若前几者都失败，再回头考虑 AFF 作为纯工程补充

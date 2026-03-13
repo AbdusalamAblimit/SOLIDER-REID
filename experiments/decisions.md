@@ -1347,3 +1347,33 @@ B. 直接启动 exp025，exp024 可以后续补跑
 1. 重建 `exp030a seed2024` checkpoint
 2. 在第三个 checkpoint 上补 `equal_concat / cvk_hybrid`
 3. 再决定是否可以整理成更正式的多 checkpoint 汇总表
+
+### [2026-03-13 15:30] 决策 #51
+
+**上下文**: 在 `exp046` 继续重建 `seed2024` 的同时，基于 `exp039-045` 现有证据和新一轮文献/代码学习，评估是否应提前启动训练端方向。
+
+**已知事实**:
+1. `cvk_hybrid` 已在两个 checkpoint 上复核出正 mAP：
+   - `exp040`: `+0.8% mAP`
+   - `exp045`: `+0.9% mAP`
+2. 当前 test-time 权重敏感性已经基本收敛，继续细调性价比很低。
+3. KPR / BPBreID / QPM / FRT 等工作都说明：
+   - common-visible / pair-specific matching 不是新概念
+   - 但主流落点仍多在 retrieval-time matching，而不是把这份 pairwise signal 迁入训练期 mining
+
+**判断**:
+1. 现在已经有足够证据支持我们 **不等第三个 seed 完整结束，就先启动训练端候选设计**。
+2. 但这不等于可以把当前 `cvk_hybrid` 直接包装成训练端创新；中间还缺一个清晰机制。
+3. 当前最值得优先尝试的训练端候选不是 AFF 或新的局部权重模块，而是：
+   **CSGT（Common-Support-Guided Triplet）**
+   - 用 `kp_weights` 构造 batch 内 pairwise common-support overlap
+   - 在 global triplet 上增加 support-aware hard mining 约束
+
+**选择**:
+- 保持 `exp046` 继续跑
+- 并行准备 `exp047 CSGT`
+
+**理由**:
+1. 这符合 `AGENTS.md` 的方向切换要求：先写清楚为什么切，再明确相对 `exp030a` 的单变量改动。
+2. `CSGT` 触及的是 **partial observation 下 pair comparability mismatch**，问题定义比“再学一个融合权重”更强。
+3. 代码侧已有 `kp_weights` 与 GCN branch 输出，落地成本可控，值得先做最小原型。

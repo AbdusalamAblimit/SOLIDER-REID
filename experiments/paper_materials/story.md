@@ -216,6 +216,22 @@ Pose Spatial Gate and Skeleton Complement for Occluded Person Re-Identification
 - CVK reasoning 在检索阶段利用共同可见支撑修正整体排序
 - 其最稳定的外显收益是 **mAP 改善**，而不是某种固定的 R1 trade-off 形状
 
+### 2026-03-13 下一跳候选：CSGT（训练端化 common-support）
+基于当前两类事实：
+1. `cvk_hybrid` 的正 mAP 信号已在两个 checkpoint 上复核
+2. KPR / BPBreID / QPM / FRT 都说明 common-visible reasoning 的主价值在 pair-specific comparability
+
+当前最合理的训练端候选，不是再做一个融合模块，而是：
+- 用 skeleton branch 的 `kp_weights` 构造 batch 内 common-support overlap
+- 在 global triplet 上加一条 support-aware hard mining 约束
+
+这一步现在只能写成 **候选机制**，还不是结果。
+但如果它成立，story 就能从：
+- “检索时补一个 CVK correction”
+
+推进成：
+- “训练期先学会 pair comparability，检索期再用 CVK 做剩余修正”
+
 ### 跨数据集 / Backbone 验证 (4090)
 
 | 数据集 | Backbone | Baseline mAP | PSG mAP | Δ |

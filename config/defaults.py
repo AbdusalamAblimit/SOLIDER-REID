@@ -128,6 +128,10 @@ _C.MODEL.POSE_KP_WEIGHT_MODE = 'score'  # Keypoint pooling weight: 'score', 'vis
 _C.MODEL.POSE_KP_TRIPLET = False         # Per-keypoint triplet loss for GCN branch
 _C.MODEL.POSE_KP_TRIPLET_WEIGHT = 1.0    # Weight for per-keypoint triplet loss
 _C.MODEL.POSE_KP_LEARNABLE_ATTN = False  # Learnable Keypoint Attention for GCN pooling
+_C.MODEL.POSE_CSGT = False               # Common-Support-Guided Triplet mining on global branch
+_C.MODEL.POSE_CSGT_WEIGHT = 1.0          # Extra loss weight for CSGT
+_C.MODEL.POSE_CSGT_MIN_OVERLAP = 0.3     # Minimum common-support overlap for support-aware mining
+_C.MODEL.POSE_CSGT_MINE_MODE = 'both'    # 'both', 'pos', or 'neg'
 
 # -----------------------------------------------------------------------------
 # INPUT

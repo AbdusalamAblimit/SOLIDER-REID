@@ -6,7 +6,7 @@
 
 import torch.nn.functional as F
 from .softmax_loss import CrossEntropyLabelSmooth, LabelSmoothingCrossEntropy
-from .triplet_loss import TripletLoss
+from .triplet_loss import TripletLoss, euclidean_dist, normalize
 from .center_loss import CenterLoss
 
 
@@ -31,6 +31,100 @@ def make_loss(cfg, num_classes):    # modified by gu
     if cfg.MODEL.IF_LABELSMOOTH == 'on':
         xent = CrossEntropyLabelSmooth(num_classes=num_classes)
         print("label smooth on, numclasses:", num_classes)
+
+    def _compute_common_support_matrix(kp_weights):
+        weights = kp_weights.detach().clamp(min=0)
+        min_sum = torch.minimum(
+            weights.unsqueeze(1), weights.unsqueeze(0)).sum(dim=-1)
+        max_sum = torch.maximum(
+            weights.unsqueeze(1), weights.unsqueeze(0)).sum(dim=-1)
+        return min_sum / max_sum.clamp(min=1e-6)
+
+    def _support_aware_hard_mining(dist_mat, labels, overlap_mat,
+                                   min_overlap=0.3, mode='both'):
+        assert dist_mat.size(0) == dist_mat.size(1)
+        num_samples = dist_mat.size(0)
+
+        label_mat = labels.expand(num_samples, num_samples)
+        is_pos = label_mat.eq(label_mat.t())
+        is_neg = label_mat.ne(label_mat.t())
+        eye = torch.eye(num_samples, dtype=torch.bool, device=labels.device)
+        is_pos = is_pos & ~eye
+
+        dist_ap = []
+        dist_an = []
+        pos_overlaps = []
+        neg_overlaps = []
+        pos_fallback = 0
+        neg_fallback = 0
+
+        for idx in range(num_samples):
+            pos_mask = is_pos[idx]
+            neg_mask = is_neg[idx]
+
+            if mode in ('pos', 'both'):
+                pos_valid = pos_mask & (overlap_mat[idx] >= min_overlap)
+                if not pos_valid.any():
+                    pos_valid = pos_mask
+                    pos_fallback += 1
+            else:
+                pos_valid = pos_mask
+
+            if mode in ('neg', 'both'):
+                neg_valid = neg_mask & (overlap_mat[idx] >= min_overlap)
+                if not neg_valid.any():
+                    neg_valid = neg_mask
+                    neg_fallback += 1
+            else:
+                neg_valid = neg_mask
+
+            pos_inds = torch.where(pos_valid)[0]
+            neg_inds = torch.where(neg_valid)[0]
+
+            if pos_inds.numel() == 0:
+                pos_inds = torch.where(pos_mask)[0]
+            if neg_inds.numel() == 0:
+                neg_inds = torch.where(neg_mask)[0]
+
+            pos_dists = dist_mat[idx, pos_inds]
+            neg_dists = dist_mat[idx, neg_inds]
+
+            pos_idx = pos_inds[torch.argmax(pos_dists)]
+            neg_idx = neg_inds[torch.argmin(neg_dists)]
+
+            dist_ap.append(dist_mat[idx, pos_idx])
+            dist_an.append(dist_mat[idx, neg_idx])
+            pos_overlaps.append(overlap_mat[idx, pos_idx])
+            neg_overlaps.append(overlap_mat[idx, neg_idx])
+
+        stats = {
+            'pos_overlap': torch.stack(pos_overlaps).mean().item(),
+            'neg_overlap': torch.stack(neg_overlaps).mean().item(),
+            'pos_fallback': float(pos_fallback),
+            'neg_fallback': float(neg_fallback),
+        }
+        return torch.stack(dist_ap), torch.stack(dist_an), stats
+
+    def _compute_csgt_loss(global_feat, labels, kp_weights,
+                           normalize_feature=False, pose_sim=None):
+        feat_input = normalize(global_feat, axis=-1) if normalize_feature else global_feat
+        dist_mat = euclidean_dist(feat_input, feat_input)
+
+        if pose_sim is not None and triplet.pose_alpha > 0:
+            dist_mat = dist_mat * (1 - triplet.pose_alpha * pose_sim)
+
+        overlap_mat = _compute_common_support_matrix(kp_weights)
+        mine_mode = getattr(cfg.MODEL, 'POSE_CSGT_MINE_MODE', 'both')
+        min_overlap = getattr(cfg.MODEL, 'POSE_CSGT_MIN_OVERLAP', 0.3)
+        dist_ap, dist_an, stats = _support_aware_hard_mining(
+            dist_mat, labels, overlap_mat, min_overlap=min_overlap, mode=mine_mode)
+
+        y = dist_an.new_ones(dist_an.size())
+        if triplet.margin is not None:
+            loss = triplet.ranking_loss(dist_an, dist_ap, y)
+        else:
+            loss = triplet.ranking_loss(dist_an - dist_ap, y)
+        return loss, stats
 
     if sampler in ['softmax', 'id']:
         def loss_func(score, feat, target, target_cam, pose_sim=None):
@@ -66,11 +160,23 @@ def make_loss(cfg, num_classes):    # modified by gu
                     wt_p = pt / (1.0 + pt)
                     wt_g = 1.0 / (1.0 + pt)
                     # PCRA: pass pose_sim only to global triplet
-                    global_tri = triplet(feat[0], target, pose_sim=pose_sim)[0]
+                    global_tri_base = triplet(feat[0], target, pose_sim=pose_sim)[0]
+                    global_tri = global_tri_base
+                    if getattr(cfg.MODEL, 'POSE_CSGT', False) and kp_data is not None:
+                        csgt_weight = getattr(cfg.MODEL, 'POSE_CSGT_WEIGHT', 1.0)
+                        csgt_loss, csgt_stats = _compute_csgt_loss(
+                            feat[0], target, kp_data['kp_weights'],
+                            normalize_feature=trp_norm, pose_sim=pose_sim)
+                        global_tri = global_tri + csgt_weight * csgt_loss
+                        loss_details['tri_csgt'] = csgt_loss.item()
+                        loss_details['csgt_pos_overlap'] = csgt_stats['pos_overlap']
+                        loss_details['csgt_neg_overlap'] = csgt_stats['neg_overlap']
+                        loss_details['csgt_pos_fallback'] = csgt_stats['pos_fallback']
+                        loss_details['csgt_neg_fallback'] = csgt_stats['neg_fallback']
                     part_tris = [triplet(f, target)[0] for f in feat[1:]]
                     part_tri_avg = sum(part_tris) / len(part_tris)
                     TRI_LOSS = wt_g * global_tri + wt_p * part_tri_avg
-                    loss_details['tri_global'] = global_tri.item()
+                    loss_details['tri_global'] = global_tri_base.item()
                     loss_details['tri_part'] = part_tri_avg.item()
                 else:
                     global_loss_scale = getattr(cfg.MODEL, 'GLOBAL_LOSS_SCALE', 1.0)
@@ -111,5 +217,3 @@ def make_loss(cfg, num_classes):    # modified by gu
         print('expected sampler should be softmax, triplet, softmax_triplet or softmax_triplet_center'
               'but got {}'.format(cfg.DATALOADER.SAMPLER))
     return loss_func, center_criterion
-
-

@@ -258,6 +258,47 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
 **已穷尽的方向**:
 1. PSG + forward path 添加: exp008-021 全部失败
 2. PSG + 正则化: exp026 SPD 中性
+
+---
+
+## 2026-03-13 训练端方向收敛：从 retrieval-time CVK 转向 CSGT
+
+### 新上下文
+- `exp040` 与 `exp045` 已在两个 checkpoint 上复核出：
+  - `cvk_hybrid` 均能稳定提升 mAP
+- 这说明 common-support 不是噪声，而是真实的 pairwise 证据
+- 但当前主收益仍停留在 test-time，论文主线不够完整
+
+### 为什么不是继续调 test-time 权重
+1. `exp041` 已说明 `1:1` 基本是当前 mAP sweet spot
+2. 再细扫权重会迅速退化成 test-time trick 调参
+3. 文献也说明：
+   - KPR / BPBreID / QPM 都已把 pair-specific visible matching 讲得很清楚
+   - 如果我们只停在 retrieval-time 距离定义，很难把训练端创新讲强
+
+### 当前最有价值的训练端候选
+**CSGT: Common-Support-Guided Triplet**
+
+#### 核心问题
+- 遮挡 ReID 下，不同正负 pair 的共同可见支撑并不相同
+- 但标准 triplet 仍默认所有 pair 的可比性相同
+
+#### 核心机制
+1. 用 `kp_weights` 构造 batch 内 pairwise common-support overlap
+2. 在 global branch 上增加一条 support-aware triplet
+3. 优先在 overlap 足够高的 pair 上做 mining
+4. 若找不到可用 pair，则回退到标准 mining，避免训练崩掉
+
+#### 为什么它比“再加一个模块”更像主线
+1. 问题层面更清楚：partial observation 下 pair comparability mismatch
+2. 机制层面不同：不是 feature fusion，而是 pair mining
+3. 证据层面可讲：
+   - 对照 `exp030a`
+   - 对照 `exp036`
+   - 再看是否削弱 `cvk_hybrid` 的必要性
+
+### 当前结论
+- 如果要把 CVK 这条线推进到训练端，**CSGT 是比 AFF / extra attention / extra loss 更值得先试的起点**。
 3. PSG + loss 调制: exp027 PCRA 中性
 
 **仍然有效的方向**:
