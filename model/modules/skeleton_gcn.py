@@ -121,12 +121,14 @@ class SkeletonGCNHead(nn.Module):
     """
 
     def __init__(self, feat_dim, hidden_dim, num_layers, num_classes,
-                 input_size=(384, 128), use_gcn=True):
+                 input_size=(384, 128), use_gcn=True,
+                 kp_weight_mode='score'):
         super().__init__()
         self.feat_dim = feat_dim
         self.input_h, self.input_w = input_size
         self.num_joints = 17
         self.use_gcn = use_gcn
+        self.kp_weight_mode = kp_weight_mode
 
         # Optional graph propagation over sampled keypoint features.
         if self.use_gcn:
@@ -195,6 +197,27 @@ class SkeletonGCNHead(nn.Module):
 
         return kp_feats, kp_scores
 
+    def _compute_kp_weights(self, pose_dict):
+        """Compute keypoint weights based on kp_weight_mode.
+
+        Returns:
+            weights: (B, 17) per-keypoint weights for pooling
+        """
+        scores = pose_dict['scores'][:, 0, :]  # (B, 17) person 0
+
+        if self.kp_weight_mode == 'score':
+            return scores
+        elif self.kp_weight_mode == 'visibility':
+            return pose_dict['visibility'][:, 0, :]  # (B, 17)
+        elif self.kp_weight_mode == 'score_visibility':
+            vis = pose_dict['visibility'][:, 0, :]  # (B, 17)
+            return scores * vis
+        elif self.kp_weight_mode == 'binary_visibility':
+            return pose_dict['visibility_binary'][:, 0, :]  # (B, 17)
+        else:
+            raise ValueError(
+                f"Unknown kp_weight_mode: {self.kp_weight_mode}")
+
     def forward(self, feat_map, pose_dict, return_cls=True, label=None):
         """
         Args:
@@ -226,8 +249,9 @@ class SkeletonGCNHead(nn.Module):
         else:
             kp_feats_enhanced = kp_feats
 
-        # 3. Confidence-weighted average
-        weights = kp_scores.clamp(min=1e-6).unsqueeze(-1)  # (B, 17, 1)
+        # 3. Confidence-weighted average (weight mode selectable)
+        kp_weights = self._compute_kp_weights(pose_dict)  # (B, 17)
+        weights = kp_weights.clamp(min=1e-6).unsqueeze(-1)  # (B, 17, 1)
         skeleton_feat = (kp_feats_enhanced * weights).sum(dim=1) / \
                         weights.sum(dim=1).clamp(min=1e-6)  # (B, C)
 

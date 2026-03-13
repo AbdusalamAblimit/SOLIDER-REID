@@ -124,6 +124,7 @@ _C.MODEL.POSE_SKELETON_GCN = False     # Use Skeleton GCN in Part branch (replac
 _C.MODEL.POSE_KEYPOINT_POOL_ONLY = False  # Use keypoint sampling + confidence pooling only (no graph propagation)
 _C.MODEL.POSE_GCN_LAYERS = 2          # Number of GCN layers
 _C.MODEL.POSE_GCN_HIDDEN = 256        # GCN hidden dimension
+_C.MODEL.POSE_KP_WEIGHT_MODE = 'score'  # Keypoint pooling weight: 'score', 'visibility', 'score_visibility', 'binary_visibility'
 
 # -----------------------------------------------------------------------------
 # INPUT
