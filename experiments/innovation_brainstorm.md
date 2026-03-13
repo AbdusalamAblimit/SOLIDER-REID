@@ -428,6 +428,8 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
 - Loss Scaling: +0~1.5% (可能被方差覆盖)
 - GCN: +0.5~1.5% (exp030a 中有效, exp030b 中因 GCN 未训练而无效)
 
+> 注：以下 Phase 2.13 / 2.14 保留的是当时的中间判断；最终校正以 **Phase 2.15** 为准。
+
 ### Phase 2.13: Loss Scale 敏感性分析完成 (exp007b/c)
 
 | Loss Scale | mAP | R1 |
@@ -481,3 +483,42 @@ PDS+SG 多种子 (59.20% mean) 暗示 0.5x 效果可能是真实的。
 - PSG: **+1.33%** (3-seed confirmed)
 - 0.5x Loss Scaling: **+1.37%** over PSG (PDS+SG multi-seed 暗示, 需 exp007a multi-seed 直接确认)
 - GCN: **+1.3%** (single-seed, 待确认)
+
+### Phase 2.15: ✅ 终版修正（exp007a / exp030a 多种子补齐）
+
+后续 4090 又补齐了：
+
+- `exp007a` 3 seeds
+- `exp030a` 4 个测试模式的 3 seeds
+
+#### 新增核心结果
+
+| 方法 | 模式 | Mean±Std (mAP) | Mean±Std (R1) |
+|------|------|----------------|---------------|
+| exp007a | global | **59.37±0.32%** | **69.43±0.12%** |
+| exp023 | global | **59.20±0.50%** | **68.63±0.47%** |
+| exp030a | global | **59.33±0.40%** | **68.87±1.00%** |
+| exp030a | concat_scaled | **60.20±0.44%** | **73.13±0.29%** |
+| exp030a | equal_concat | **60.73±0.47%** | **72.57±0.58%** |
+
+#### 现在可以最终定下来的判断
+
+1. **`0.5x global loss` 不是方差**
+   `exp007a vs exp007` 的 paired diffs = `(1.3, 1.6, 1.7)`，`p=0.0061`。
+
+2. **PDS+StopGrad 的 global-only 收益基本被 exp007a 复现**
+   `exp007a = 59.37%` vs `exp023-g = 59.20%`，差异不显著。
+   所以 PDS+StopGrad 更像一个“揭示了 loss-weighting 机制”的中间 scaffold，而不是最终主创新。
+
+3. **GCN/KPP branch 的增益现在也不再只是单 seed 现象**
+   `exp030a-eq = 60.73%`，对 `exp030a-global = 59.33%` 的 paired diffs 为 `(1.3, 1.1, 1.8)`，`p=0.0214`。
+
+4. **`equal_concat` 明显优于 `concat_scaled`**
+   三个 seed 全部成立，均值差 `+0.53%`，`p=0.0039`。
+   因此后续所有主表都应以 `equal_concat` 为主，不再以 `concat_scaled` 为主模式。
+
+5. **更准确的 branch 解释**
+   `exp032` 说明 keypoint pooling 本身就很强；
+   `exp030a` multi-seed 说明训练好的 graph branch 还能继续提高 fusion。
+   所以更合理的 framing 是：
+   **KPP 提供 branch 主体信息量，GCN 负责 relation refinement。**

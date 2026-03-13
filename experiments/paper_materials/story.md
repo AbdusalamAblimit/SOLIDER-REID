@@ -2,107 +2,88 @@
 
 > **⚠️ Phase 1 内容保留在下方（PCFC/GiLt）。Phase 2 更新如下。**
 
-## Phase 2 Story Update (2026-03-11)
+## Phase 2 Story Update (2026-03-13)
 
 ### 暂定标题
-Pose-Guided Dual-Stream Architecture with Gradient-Isolated Part Learning for Occluded Person Re-Identification
+Pose Spatial Gate and Skeleton Complement for Occluded Person Re-Identification
 
-### Phase 2 核心发现 (更新 2026-03-11)
-1. **PSG (Pose Spatial Gate)**: 在 Swin Stage 3 blocks 内部注入 pose heatmap 信息，通过轻量门控 x*(1+gate) 调制特征。+1.7% mAP，仅 102K 额外参数
-2. **PDS (Pose Dual Stream)**: 复制独立 Stage 3 给 Part 分支，实现权重解耦。解决了 21 个实验暴露的梯度干扰问题
-3. **StopGrad**: 完全阻断 Part→共享层梯度，消除残余干扰 → 额外 +1.2% mAP
-4. **三者组合 (exp023)**: mAP 59.5%, R1 69.5% — 比 baseline **+2.9% mAP, +3.0% R1**
+### 当前最可靠的核心发现
+1. **PSG (Pose Spatial Gate)**
+   在 Swin Stage 3 blocks 内部注入 pose heatmap，通过轻量门控 `x * (1 + gate)` 调制特征。
+   4090 三 seed 均值：`56.50% -> 57.83%`，仅 `+102K` 参数。
 
-### Phase 2 核心消融表（用 global-only 特征，公平对比）
-| 方法 | mAP | R-1 | 额外参数 |
-|------|-----|-----|----------|
-| Baseline | 56.6% | 66.5% | — |
-| + Part Pooling only (exp001) | 57.5% | 67.1% | ~2.6M |
-| **+ PSG only (exp007)** | **58.3%** | **67.9%** | **102K** |
-| + PSG + Part same Stage3 (exp008) | 57.7% | 66.0% | ~2.7M |
-| + PDS (独立 Stage3, exp022) | 57.9% | 67.1% | ~8.8M |
-| **+ PDS + StopGrad (exp023)** | **59.5%** | **69.5%** | **~8.8M** |
+2. **`0.5x global loss` 是真实有效的训练 recipe**
+   `exp007a` 三 seed 均值 `59.37%`，相对 PSG 稳定 `+1.53% mAP`。
+   这不是单 seed 偶然值，而是 paired diffs `(1.3, 1.6, 1.7)` 的稳定改善。
 
-### 消融证据链
-1. Baseline 56.6% → +PSG: 58.3% (+1.7%) — PSG 有效
-2. +PSG+Part 同 Stage3: 57.7% (-0.6%) — 梯度干扰
-3. +PDS 独立 Stage3: 57.9% (+0.2% vs exp008) — 解耦部分有效
-4. +PDS+StopGrad: 59.5% (+1.6% vs PDS) — 完全隔离更好
-5. exp023 Part-only: 56.7% > exp022 Part-only: 55.2% — 证明更好的共享特征反哺 Part
+3. **PDS+StopGrad 不再是主故事，更多是“揭示机制”的中间实验**
+   `exp023-g = 59.20%` 与 `exp007a = 59.37%` 无显著差异。
+   因此 PDS+StopGrad 在 global-only 指标上的增益，基本可由它隐式带来的 `0.5x global loss` 解释。
 
-### 跨数据集验证 (PSG)
-| 数据集 | Backbone | PSG mAP提升 |
-|--------|----------|-------------|
-| Occluded-Duke | Swin-Tiny | +1.7% |
-| Occluded-Duke | Swin-Small | +2.0% |
-| Market-1501 | Swin-Tiny | +0.8% |
-| Market-1501 | Swin-Small | +0.6% |
+4. **PSG + KPP/GCN branch 的贡献应写成 fusion 增益**
+   `exp030a-global = 59.33%` 与 `exp007a = 59.37%` 几乎相同；
+   但 `exp030a-equal_concat = 60.73%`，对自身 global 稳定 `+1.40% mAP`。
+   说明 branch 的价值主要体现在检索时提供互补信息，而不是抬高 global 主干。
 
-### 核心贡献（预计 3 点）
-1. **PSG (Pose Spatial Gate)**: 极简的 backbone 内部 pose 注入，证明"在特征形成阶段注入 pose > 事后 pooling"
-2. **PDS + Gradient Isolation**: 双分支架构 + 梯度隔离，解决 pose-guided 方法中的多任务梯度干扰问题
-3. **系统性消融研究**: 24 个实验全面探索 pose 信息在 ReID 中的利用方式
+5. **KPP 是 branch 的强基线，GCN 是 refinement**
+   `exp032` 说明 keypoint pooling 本身已经很强；
+   `exp030a` multi-seed 又说明训练好的 branch 确实还能继续提高 fusion。
+   因此更准确的 framing 是：**sparse keypoint pooling 提供主体信息，GCN 负责关系建模与 branch refinement。**
 
-### ✅ 多种子验证完成 (2026-03-12, 4090)
+### 当前主结果表（Occluded-Duke, Swin-Tiny, 4090）
 
-**三组实验 × 3 seeds 的多种子验证已完成，提供了可靠的统计结论。**
+| 方法 | 测试模式 | Mean±Std (mAP) | Mean±Std (R1) | 备注 |
+|------|----------|----------------|---------------|------|
+| Baseline | global | 56.50±0.53% | 66.33±0.67% | 3-seed |
+| PSG | global | 57.83±0.50% | 67.13±0.84% | 3-seed |
+| PSG + 0.5x loss | global | 59.37±0.32% | 69.43±0.12% | 3-seed |
+| PDS+StopGrad | global | 59.20±0.50% | 68.63±0.47% | 3-seed |
+| PSG + GCN | global | 59.33±0.40% | 68.87±1.00% | 3-seed |
+| PSG + GCN | concat_scaled | 60.20±0.44% | 73.13±0.29% | 3-seed |
+| **PSG + GCN** | **equal_concat** | **60.73±0.47%** | **72.57±0.58%** | **当前最强且已确认的无后处理模式** |
 
-#### 核心结果 (mAP, Occluded-Duke, Swin-Tiny)
+### 关键统计结论
 
-| 方法 | Seed 1234 | Seed 42 | Seed 2024 | **Mean±Std** |
-|------|-----------|---------|-----------|-------------|
-| Baseline | 56.7% | 55.9% | 56.9% | **56.50±0.53%** |
-| PSG | 58.3% | 57.9% | 57.3% | **57.83±0.50%** |
-| PDS+StopGrad (global) | 59.7% | 59.2% | 58.7% | **59.20±0.50%** |
+| 对比 | Mean Δ | Paired Diffs | p-value | 解读 |
+|------|--------|--------------|---------|------|
+| PSG vs Baseline | +1.33% | (1.6, 2.0, 0.4) | 0.1091 | 3 个 seed 全正，样本数仍小 |
+| exp007a vs PSG | +1.53% | (1.3, 1.6, 1.7) | 0.0061 | ✅ `0.5x loss` 是稳定增益 |
+| exp007a vs exp023-g | +0.17% | (-0.1, 0.3, 0.3) | 0.3377 | 两者无显著差异 |
+| exp030a-eq vs exp030a-global | +1.40% | (1.3, 1.1, 1.8) | 0.0214 | ✅ fusion 增益成立 |
+| exp030a-eq vs exp030a-cs | +0.53% | (0.6, 0.5, 0.5) | 0.0039 | ✅ `equal_concat` 优于 `concat_scaled` |
 
-#### 统计检验 (paired t-test)
+### 修正后的证据链
+1. Baseline `56.50%` → PSG `57.83%`
+   说明 backbone 内部 pose gate 稳定有效。
 
-| 对比 | Mean Δ | Paired Diffs | t-stat | p-value |
-|------|--------|-------------|--------|---------|
-| **PSG vs Baseline** | **+1.33%** | (+1.6, +2.0, +0.4) | 2.78 | ~0.054 |
-| **PDS+SG vs Baseline** | **+2.70%** | (+3.0, +3.3, +1.8) | 5.92 | ~0.014 ✅ |
-| **PDS+SG vs PSG** | **+1.37%** | (+1.4, +1.3, +1.4) | 39.5 | <0.001 ✅✅ |
+2. PSG `57.83%` → PSG + `0.5x loss` `59.37%`
+   说明更弱的 global 梯度是一个真实有效的训练配方。
 
-#### 关键发现
-1. **PSG +1.33% 确认** — 所有 3 seeds 均正向，但 p≈0.054 边缘显著
-2. **PDS+StopGrad +2.70% 高度确认** — p<0.02，统计显著
-3. **PDS+SG vs PSG 极其一致** — paired diffs (1.4, 1.3, 1.4)，方差极小
-4. **PDS+StopGrad 增益来源**: 已证明 = global loss * 0.5 (exp007a 完美匹配)
-5. **0.5x Loss Scaling 是否为 sweet spot**: 单种子 grid 中 0.25x/0.75x/1.0x 效果相同，仅 0.5x 突出。需 exp007a 多种子确认 0.5x 是真实效果还是方差
+3. PSG + `0.5x loss` `59.37%` ≈ PDS+StopGrad `59.20%`
+   说明 PDS global 增益的主因不是双流结构本身。
 
-#### 单种子 vs 多种子对比
+4. PSG + GCN(global) `59.33%` ≈ PSG + `0.5x loss` `59.37%`
+   说明 branch 训练并不抬高 global 主干。
 
-| 实验 | 3090 单种子 | 4090 多种子均值 | 差异 |
-|------|-----------|--------------|------|
-| Baseline | 56.6% | 56.50% | -0.1% |
-| PSG | 58.3% | 57.83% | -0.47% |
-| PDS+StopGrad (global) | 59.5% | 59.20% | -0.30% |
+5. PSG + GCN(equal_concat) `60.73%` > PSG + GCN(global) `59.33%`
+   说明训练好的 branch 在测试时提供了稳定互补信息。
 
-→ 3090 和 4090 结果高度一致，3090 轻微偏高 (~0.3%)
+### 当前可 claim 的贡献
+1. **PSG**: 极简的 backbone 内 pose 注入，稳定提升 Occluded-Duke，并在 Market / Swin-Small 上可复现。
+2. **`0.5x global loss` 机制发现**: PDS+StopGrad 的 global-only 收益可以被更简单的训练 recipe 复现。
+3. **Skeleton branch as complement**: 基于 sparse keypoint pooling 的 skeleton branch 在 `equal_concat` 下带来稳定 fusion 增益；GCN 负责 refinement，而不是单独承担全部提升。
 
-### Loss Scale 敏感性分析 (exp007b/c, 3090 单种子)
+### 当前不应再主张的结论
+1. **PDS + Gradient Isolation** 不应继续作为主创新点。
+   它更像一个帮助暴露 loss-weighting 机制的中间 scaffold。
 
-| Loss Scale | mAP | R1 |
-|-----------|-----|-----|
-| 0.25x | 58.3% | 67.6% |
-| 0.5x | 59.5% | 69.8% |
-| 0.75x | 58.6% | 67.6% |
-| 1.0x | 58.3% | 67.9% |
+2. **“0.5x loss 只是训练方差”** 已被推翻。
+   `exp007a` multi-seed 已直接否定这一说法。
 
-→ 0.25-1.0 范围内 mAP 无差异 (58.3-58.6%), 0.5x 的 59.5% 是训练方差
+3. **“GCN 是否有效仍完全未知”** 也不成立。
+   更准确的说法是：GCN 的收益主要发生在 fusion，而不是 global；其增益规模需要和 KPP 基线一起解释。
 
-### Skeleton GCN (exp030a, 单种子, 待多种子确认)
-
-| 方法 | mAP | R1 | 额外 Params |
-|------|------|------|-------------|
-| PSG+GCN global-only | 59.8% | 69.5% | +~500K |
-| **PSG+GCN equal_concat** | **61.1%** | **73.7%** | **+~500K** |
-| PSG+GCN gcn_only | 58.2% | 72.9% | +~500K |
-
-→ GCN 贡献 ~1.3% mAP (equal_concat vs global), 但 R1 增益巨大 (+4.2%)
-→ ⚠️ 仍为单种子，需多种子确认
-
-### 跨数据集/Backbone 验证 (4090)
+### 跨数据集 / Backbone 验证 (4090)
 
 | 数据集 | Backbone | Baseline mAP | PSG mAP | Δ |
 |--------|----------|-------------|---------|-----|
@@ -111,15 +92,7 @@ Pose-Guided Dual-Stream Architecture with Gradient-Isolated Part Learning for Oc
 | Market | Swin-T | 91.6% | 92.4% | **+0.8%** |
 | Market | Swin-S (lr4) | 93.3% | 93.9% | **+0.6%** |
 
-→ PSG 在所有组合上均有效，遮挡数据集增益更大
-
-### 更新后的核心贡献（多种子确认版）
-1. **PSG (Pose Spatial Gate)**: backbone 内部 pose 注入，**+1.33% mAP (3-seed mean)**，102K params
-2. **0.5x Loss Scaling**: global loss 降半作为隐式正则化，**额外 +1.37% over PSG** (PDS+SG multi-seed 验证)。PDS+StopGrad 架构非必需，简单 loss*0.5 即可复现。**需 exp007a 多种子最终确认**
-3. **Skeleton GCN**: 骨架拓扑互补特征，+1.3% mAP (单种子，待确认)
-
-总计 multi-seed confirmed: baseline 56.50% → PSG 57.83% → PDS+SG 59.20% (**+2.70%**)
-总计 single-seed best (含 GCN): baseline 56.6% → 61.1% (**+4.5% mAP, +7.2% R1**)
+→ PSG 在所有组合上均有效，且在遮挡数据集上的增益更大。
 
 ---
 

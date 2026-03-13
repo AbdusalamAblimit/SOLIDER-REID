@@ -891,6 +891,8 @@ B. 直接启动 exp025，exp024 可以后续补跑
 
 ### [2026-03-12 18:45] 决策 #36
 
+> 注：本决策中的“loss scaling 无效”等判断已被后续的 **决策 #37** 更正；保留这里只是为了记录当时的判断路径。
+
 **上下文**: 用户在 4090 上已完成多种子验证（exp000 × 3, exp007 × 3, exp023 × 3），结果存放在 `4090_log/multiseed/`。用户选择了 exp023 (PDS+StopGrad) 而非原计划的 exp030a (GCN) 和 exp007a (0.5x loss)。
 
 **多种子核心结论**:
@@ -919,3 +921,161 @@ B. 直接启动 exp025，exp024 可以后续补跑
 1. 理解 PDS+StopGrad 的真实机制（不是 loss scaling，那是什么？）
 2. GCN 多种子验证（安排 4090）
 3. 基于确认的结论设计更强的方法
+
+### [2026-03-13 01:10] 决策 #37
+
+**上下文**: 4090 上又补齐了 `exp007a` 的 3 个 seed，以及 `exp030a` 四种测试模式的 3 个 seed。现在可以正式修正 #36 中关于 loss scaling 和 GCN 的错误推断。
+
+**新增多种子结果**:
+
+| 方法 | 模式 | Mean mAP | Std | Mean R1 |
+|------|------|----------|-----|---------|
+| exp007a | global | **59.37%** | 0.32% | **69.43%** |
+| exp023 | global | **59.20%** | 0.50% | **68.63%** |
+| exp030a | global | **59.33%** | 0.40% | **68.87%** |
+| exp030a | concat_scaled | **60.20%** | 0.44% | **73.13%** |
+| exp030a | equal_concat | **60.73%** | 0.47% | **72.57%** |
+
+**修正后的关键结论**:
+1. **#36 中“loss scaling 无效”的判断是错的**
+   `exp007a vs exp007` 的 paired diffs = `(1.3, 1.6, 1.7)`，two-sided paired t-test `p=0.0061`。
+   这不是方差，而是稳定增益。
+
+2. **PDS+StopGrad 的 global-only 收益基本被 exp007a 复现**
+   `exp007a = 59.37%`，`exp023-g = 59.20%`，差异 `+0.17%`，`p=0.3377`。
+   所以 PDS+StopGrad 更像一个揭示机制的中间实验，而不是必须保留的主方法。
+
+3. **GCN/KPP branch 的贡献主要发生在 fusion，不发生在 global**
+   `exp030a-global = 59.33%` 与 `exp007a = 59.37%` 几乎相同。
+   但 `exp030a-eq = 60.73%` 对自身 global 的 paired diffs 为 `(1.3, 1.1, 1.8)`，`p=0.0214`。
+
+4. **`equal_concat` 应替代 `concat_scaled` 成为主模式**
+   `exp030a-eq vs exp030a-cs` 的 paired diffs = `(0.6, 0.5, 0.5)`，`p=0.0039`。
+   之前围绕 `concat_scaled` 的主叙事需要全部下调。
+
+5. **exp030b 与 exp032 的最终定位**
+   - `exp030b`: 证明 `w_p=0.01` 时 branch 基本没学好。
+   - `exp032`: 证明 keypoint pooling 本身就是强 branch baseline。
+   - 两者共同支持的正确 story 是：**KPP 贡献 branch 主体信息，GCN 负责 refinement。**
+
+**对论文的影响**:
+- PSG 仍是主创新点之一（稳定正向、参数极轻）
+- `0.5x global loss` 可以作为一个重要机制发现 / training recipe
+- PDS+StopGrad 不再适合作为主创新
+- 如果保留 skeleton branch，应写成 **KPP + GCN refinement + equal_concat fusion**
+
+**选择**: 全面重写实验总结文档与论文 story，统一改为：
+1. PSG
+2. `0.5x global loss`
+3. skeleton branch 的 fusion 增益（以 `equal_concat` 为主）
+
+### [2026-03-13 01:40] 决策 #38
+
+**上下文**: 下一阶段准备把 `visibility` 引入当前的 skeleton branch / keypoint pooling 路线。但当前多人图中仍存在一个更基础的问题：`pose_data` 和 branch 侧并没有稳定地区分“crop 中的目标人”和“旁边靠得很近的其他人”。如果先做 visibility，再去解决 target assignment，visibility 语义会被污染，后续所有结论都不可靠。
+
+**当前问题定义**:
+1. `visibility` 是 **target-specific** 语义，不是 scene-level 语义
+2. 只要 target person 还会和邻近人物混淆，`visibility`、`KPP`、`GCN` 都会学脏
+3. 因此必须先解决 **target assignment**，再做 visibility 融合
+
+**决策**: visibility 路线按 5 个阶段推进，严格顺序执行，不跳步。
+
+#### Stage A — 先解决主要人物识别（必须先做）
+
+**exp033: target assignment**
+- 目标：为每张多人图稳定找出 target person
+- 方法：给每个检测到的人计算 `targetness`
+- 第一版启发式允许简单：
+  - bbox 中心距离 crop 中心
+  - bbox 面积
+  - bbox 落在 crop 内的占比
+  - 平均 keypoint score
+- 产出：
+  - `target_person_idx`
+  - `target_score`
+  - `target_margin`
+- 验证：
+  - 随机抽样 `100~200` 张多人图可视化
+  - 明确标出 target person
+  - 人工检查摘要写入实验文档
+
+**停止条件**:
+- 如果 target assignment 明显不稳定，就继续修 exp033
+- 在 exp033 没过之前，不进入 visibility 训练
+
+#### Stage B — 让数据流和模型路径 target-aware
+
+**exp034: target-aware dataloader / branch**
+- dataset 中保证 target person 被明确索引，最好固定为 `person 0`
+- `KPP / GCN` 分支只消费 target person
+- 保持向后兼容，不能破坏旧实验读取
+
+**验证目标**:
+- 先不引入 visibility
+- 单独跑一个 “只修正 target assignment” 的对照实验
+- 判断仅靠 target-aware branch 是否已经改善稳定性
+
+#### Stage C — 先用现成 visibility 做最小闭环
+
+**exp035: visibility 最小消融**
+- 暂时**不重训 ViTPose**
+- 直接使用已经提取好的 `visibility / visibility_binary`
+- 只先改：
+  - keypoint pooling
+  - branch readout
+  - fusion
+- 不先改 GCN 消息传播
+
+**最小对比组**:
+1. `score only`
+2. `visibility only`
+3. `score * visibility`
+4. `binary visibility`
+
+**判断标准**:
+- 必须回答：`visibility` 相对现有 `score/confidence` 是否有独立价值
+- 如果连最小闭环都没有稳定收益，就不要急着做更复杂的 visibility-aware GCN
+
+#### Stage D — 只有最小闭环有效，才做动态组装
+
+**exp036: visibility-guided composition**
+- 把 visibility 用于 keypoint / part 向量如何组成 branch feature
+- 重点写法应是：
+  - visible evidence 的动态组装
+  - unreliable evidence 的降权
+- 不要只做“0/1 mask 一乘了之”的弱版实现
+
+#### Stage E — 最后才做 visibility-aware graph
+
+**exp037: visibility-aware GCN refinement**
+- 只有在 exp035 / exp036 已经证明 visibility 确实带来额外价值时才继续
+- 此时 visibility 才进入：
+  - 节点更新
+  - 边权
+  - 消息传播
+
+**原因**:
+- 否则会把两个变量混在一起：
+  - 是 visibility 有用？
+  - 还是 graph 本身有用？
+
+**当前不做的事情**:
+1. 不先重训 ViTPose
+2. 不先做 visibility-aware GCN
+3. 不在 target assignment 未解决前讨论 visibility 创新性
+
+**文档要求**:
+- 每推进一步，都要同步更新：
+  - `design.md`
+  - `monitor.md`
+  - `results.md`
+- 如果新结果推翻旧判断，必须直接修正文档措辞，不能只在聊天里说明
+
+**实验基线约束**:
+1. visibility 系列实验**全部以 `exp030a` 为代码与实验基线**
+2. 主汇报模式固定为 **`equal_concat`**
+3. 机制对照模式固定为 **`global`**
+4. 必要时才额外查看 **`gcn_only`**
+5. 不再基于 `exp023 / exp030 / exp032` 单独开 visibility 主线；这些实验只保留为历史对照
+
+**选择**: 先执行 `exp033 -> exp034 -> exp035`。只有这三步打通，才继续 `exp036 / exp037`。
