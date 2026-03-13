@@ -154,6 +154,8 @@ class PoseImageDataset(Dataset):
                 in_box = ((kp[:, 0] >= ex1) & (kp[:, 0] < ex2) &
                           (kp[:, 1] >= ey1) & (kp[:, 1] < ey2))
                 p['scores'][in_box] = 0.0
+                p['visibility'][in_box] = 0.0
+                p['visibility_binary'][in_box] = 0.0
 
         # For PGE, zero heatmap channels only within the erased spatial region
         if erased_channels is not None and erase_box is not None:
@@ -348,6 +350,8 @@ class PoseImageDataset(Dataset):
             for l, r in FLIP_PAIRS:
                 p['kp'][[l, r]] = p['kp'][[r, l]]
                 p['scores'][[l, r]] = p['scores'][[r, l]]
+                p['visibility'][[l, r]] = p['visibility'][[r, l]]
+                p['visibility_binary'][[l, r]] = p['visibility_binary'][[r, l]]
 
         return img, persons
 
@@ -386,6 +390,8 @@ class PoseImageDataset(Dataset):
             oob = ((p['kp'][:, 0] < 0) | (p['kp'][:, 0] >= target_w) |
                    (p['kp'][:, 1] < 0) | (p['kp'][:, 1] >= target_h))
             p['scores'][oob] = 0.0
+            p['visibility'][oob] = 0.0
+            p['visibility_binary'][oob] = 0.0
             p['kp'][:, 0] = np.clip(p['kp'][:, 0], 0, target_w - 1)
             p['kp'][:, 1] = np.clip(p['kp'][:, 1], 0, target_h - 1)
 
