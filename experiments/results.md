@@ -99,6 +99,13 @@
   - mAP 增益来自更广泛的 AP 改善，而不是单纯 top-1 修复
   - 这也是为什么 `cvk_hybrid` 会呈现 `mAP +0.8 / R1 -0.5` 的稳定形状
 
+### exp043 论文素材
+
+- 已基于 `exp042 query_deltas.csv` 生成 qualitative case study：
+  - `experiments/paper_materials/figures/qualitative/cvk_top_improved.png`
+  - `experiments/paper_materials/figures/qualitative/cvk_top_degraded.png`
+- 两张图都保留了改进与退化样例，可直接支撑 story 中的 trade-off 叙述。
+
 ### +NFC 结果（如适用）
 
 | ID | 方法 | mAP | R-1 | R-5 | R-10 | 备注 |

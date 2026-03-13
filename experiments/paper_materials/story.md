@@ -176,6 +176,19 @@ Pose Spatial Gate and Skeleton Complement for Occluded Person Re-Identification
 更适合写成：
 - “在不完全观测下，通过共同可见关键点支撑修正整体排序”
 
+### 2026-03-13 exp043 qualitative 素材更新
+已经生成并同步两张候选图：
+- `experiments/paper_materials/figures/qualitative/cvk_top_improved.png`
+- `experiments/paper_materials/figures/qualitative/cvk_top_degraded.png`
+
+这两张图的价值在于：
+1. 它们不是只挑“最好看”的成功样例，而是同时保留改进与退化。
+2. 可以直接和 `exp042` 的统计结论配套使用：
+   - 为什么 mAP 上升
+   - 为什么 R1 小幅下降
+3. 这样 qualitative 部分就能和当前 story 保持一致：
+   **CVK 是 pair-specific ranking correction，而不是无代价增强。**
+
 ### 跨数据集 / Backbone 验证 (4090)
 
 | 数据集 | Backbone | Baseline mAP | PSG mAP | Δ |

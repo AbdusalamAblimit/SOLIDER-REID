@@ -1299,3 +1299,21 @@ B. 直接启动 exp025，exp024 可以后续补跑
 **下一步**:
 1. 从 `query_deltas.csv` 中抽取最典型的改进 / 退化样例做可视化
 2. 并行继续查找是否存在遗失的多 seed checkpoint 资产
+
+### [2026-03-13 11:53] 决策 #49
+
+**上下文**: `exp043` 已完成 qualitative case study 生成。
+
+**结果**:
+- `top_improved.png`
+- `top_degraded.png`
+- 并已同步到 `paper_materials/figures/qualitative/`
+
+**判断**:
+1. 现在这条 CVK 主线已经同时具备：
+   - aggregate metric
+   - query-level 差分统计
+   - qualitative 样例图
+2. 这比继续刷新的小调参更接近可投稿 story 所需的证据链闭环。
+
+**选择**: 下一步继续追资产层面的多 seed / 多 checkpoint 复核；在此之前，不再开新的 test-time 参数实验。
