@@ -104,6 +104,21 @@ Pose Spatial Gate and Skeleton Complement for Occluded Person Re-Identification
    - 共同可见关键点距离是否真的优于 `equal_concat`
    - 它是否能解释 branch 的 fusion 增益来源
 
+### 2026-03-13 exp039 诊断更新
+- `cvk_only` = `59.3 / 72.9`
+- `cvk_hybrid` = `61.9 / 73.2`
+- `exp035a equal_concat` = `61.1 / 73.8`
+
+当前可得出的更细判断是：
+1. 共同可见关键点支撑 **确实存在**，否则 `cvk_only` 不会有接近 baseline 的 R1。
+2. 但它 **不适合单独替代** 当前主距离，因为 `cvk_only` mAP 明显下降。
+3. 把它作为 global 的 pair-specific 补充后，mAP 出现 `+0.8%` 正信号。
+
+这使得新的候选 story 变得更具体：
+- PSG 负责 backbone 级 pose prior
+- Skeleton branch 提供结构化局部证据
+- 检索阶段通过共同可见关键点支撑提升整体排序质量
+
 ### 跨数据集 / Backbone 验证 (4090)
 
 | 数据集 | Backbone | Baseline mAP | PSG mAP | Δ |
