@@ -127,6 +127,7 @@ _C.MODEL.POSE_GCN_HIDDEN = 256        # GCN hidden dimension
 _C.MODEL.POSE_KP_WEIGHT_MODE = 'score'  # Keypoint pooling weight: 'score', 'visibility', 'score_visibility', 'binary_visibility'
 _C.MODEL.POSE_KP_TRIPLET = False         # Per-keypoint triplet loss for GCN branch
 _C.MODEL.POSE_KP_TRIPLET_WEIGHT = 1.0    # Weight for per-keypoint triplet loss
+_C.MODEL.POSE_KP_LEARNABLE_ATTN = False  # Learnable Keypoint Attention for GCN pooling
 
 # -----------------------------------------------------------------------------
 # INPUT

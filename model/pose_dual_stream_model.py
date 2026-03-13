@@ -63,6 +63,7 @@ class PoseDualStreamModel(build_transformer):
             input_size = (cfg.INPUT.SIZE_TRAIN[0], cfg.INPUT.SIZE_TRAIN[1])
             kp_weight_mode = getattr(cfg.MODEL, 'POSE_KP_WEIGHT_MODE', 'score')
             kp_triplet = getattr(cfg.MODEL, 'POSE_KP_TRIPLET', False)
+            kp_learnable_attn = getattr(cfg.MODEL, 'POSE_KP_LEARNABLE_ATTN', False)
             self.skeleton_head = SkeletonGCNHead(
                 feat_dim=feat_ch,
                 hidden_dim=gcn_hidden,
@@ -72,6 +73,7 @@ class PoseDualStreamModel(build_transformer):
                 use_gcn=not keypoint_pool_only,
                 kp_weight_mode=kp_weight_mode,
                 kp_triplet=kp_triplet,
+                kp_learnable_attn=kp_learnable_attn,
             )
         else:
             self.part_pooling = PosePartPooling(

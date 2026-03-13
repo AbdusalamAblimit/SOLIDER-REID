@@ -122,7 +122,8 @@ class SkeletonGCNHead(nn.Module):
 
     def __init__(self, feat_dim, hidden_dim, num_layers, num_classes,
                  input_size=(384, 128), use_gcn=True,
-                 kp_weight_mode='score', kp_triplet=False):
+                 kp_weight_mode='score', kp_triplet=False,
+                 kp_learnable_attn=False):
         super().__init__()
         self.feat_dim = feat_dim
         self.input_h, self.input_w = input_size
@@ -130,6 +131,7 @@ class SkeletonGCNHead(nn.Module):
         self.use_gcn = use_gcn
         self.kp_weight_mode = kp_weight_mode
         self.kp_triplet = kp_triplet
+        self.kp_learnable_attn = kp_learnable_attn
 
         # Optional graph propagation over sampled keypoint features.
         if self.use_gcn:
@@ -141,6 +143,18 @@ class SkeletonGCNHead(nn.Module):
             )
         else:
             self.gcn = None
+
+        # Learnable Keypoint Attention (LKA)
+        if self.kp_learnable_attn:
+            self.kp_attention = nn.Sequential(
+                nn.Linear(17, 32),
+                nn.ReLU(),
+                nn.Linear(32, 17),
+                nn.Sigmoid()
+            )
+            # Zero-init last layer → outputs ~0.5 initially (identity start)
+            nn.init.zeros_(self.kp_attention[2].weight)
+            nn.init.zeros_(self.kp_attention[2].bias)
 
         # BN + Classifier for skeleton feature
         self.bn = nn.BatchNorm1d(feat_dim)
@@ -252,6 +266,12 @@ class SkeletonGCNHead(nn.Module):
 
         # 3. Confidence-weighted average (weight mode selectable)
         kp_weights = self._compute_kp_weights(pose_dict)  # (B, 17)
+
+        # Learnable Keypoint Attention: modulate weights with learned attention
+        if self.kp_learnable_attn:
+            attn = self.kp_attention(kp_weights)  # (B, 17) → sigmoid → (B, 17)
+            kp_weights = kp_weights * attn  # element-wise: confidence × attention
+
         weights = kp_weights.clamp(min=1e-6).unsqueeze(-1)  # (B, 17, 1)
         skeleton_feat = (kp_feats_enhanced * weights).sum(dim=1) / \
                         weights.sum(dim=1).clamp(min=1e-6)  # (B, C)
