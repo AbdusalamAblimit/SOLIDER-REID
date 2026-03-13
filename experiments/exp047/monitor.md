@@ -147,3 +147,49 @@
 ### 原因
 1. 目前没有任何中断信号，训练稳定。
 2. 新机制的关键内部统计已经开始提供可解释性信息，值得继续观察到 `Epoch 10` 首次评测。
+
+---
+## [19:08] 检查点 #3
+
+**状态**: ▶️ 运行中
+
+### 训练进度
+- 已完成：`Epoch 5/120`
+- 当前位于：`Epoch 6 Iter 120/227`
+- 最新 ETA：约 `1h50m`
+
+### 当前局部训练状态
+- `Epoch 4` 末：
+  - `Loss`: `8.538`
+  - `Acc`: `0.167`
+- `Epoch 5` 末：
+  - `Loss`: `8.063`
+  - `Acc`: `0.214`
+  - `id_global`: `6.404`
+  - `id_part`: `5.227`
+  - `tri_global`: `0.792`
+  - `tri_part`: `2.280`
+  - `tri_csgt`: `0.711`
+  - `csgt_pos_overlap`: `0.651`
+  - `csgt_neg_overlap`: `0.666`
+  - `csgt_pos_fallback`: `0.800`
+  - `csgt_neg_fallback`: `0.090`
+- `Epoch 6 Iter 120/227`：
+  - `Loss`: `7.884`
+  - `Acc`: `0.155`
+  - `tri_csgt`: `0.647`
+  - `tri_global`: `0.712`
+  - `tri_part`: `2.196`
+
+### 观察
+1. `Epoch 4 -> 5` 仍在继续下降，但降幅已从起步阶段的快速下落切到更正常的 warmup 收敛节奏。
+2. `tri_csgt` 已从首轮的双位数下降到 `0.6-0.7` 区间，并且与 `tri_global` 同量级，说明它没有压过原始 global triplet。
+3. `tri_part` 仍明显高于 `tri_global / tri_csgt`，目前 branch 学习仍是前段主要难点，这和 `exp030a` 早期日志形态一致。
+4. `csgt_pos_overlap / neg_overlap` 继续稳定在 `0.65-0.67`，没有出现“阈值过高导致几乎无可用 pair”的迹象。
+
+### 当前判断
+- **继续**
+
+### 原因
+1. 前 5 个 epoch 的 warmup 已平稳通过，没有异常信号。
+2. 从现在开始切换到 `Epoch 6-30` 的约 3 分钟轮询，等待 `Epoch 10` 首次评测。
