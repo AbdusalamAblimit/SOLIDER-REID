@@ -132,6 +132,9 @@ _C.MODEL.POSE_CSGT = False               # Common-Support-Guided Triplet mining 
 _C.MODEL.POSE_CSGT_WEIGHT = 1.0          # Extra loss weight for CSGT
 _C.MODEL.POSE_CSGT_MIN_OVERLAP = 0.3     # Minimum common-support overlap for support-aware mining
 _C.MODEL.POSE_CSGT_MINE_MODE = 'both'    # 'both', 'pos', or 'neg'
+_C.MODEL.POSE_SGMKC = False              # Skeleton-Guided Masked Keypoint Completion
+_C.MODEL.POSE_SGMKC_RATIO = 0.3          # Fraction of keypoints to mask during training
+_C.MODEL.POSE_SGMKC_WEIGHT = 1.0         # Reconstruction loss weight
 
 # -----------------------------------------------------------------------------
 # INPUT

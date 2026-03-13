@@ -173,6 +173,8 @@ class PoseBackboneModel(build_transformer):
             kp_weight_mode = getattr(cfg.MODEL, 'POSE_KP_WEIGHT_MODE', 'score')
             kp_triplet = getattr(cfg.MODEL, 'POSE_KP_TRIPLET', False)
             kp_learnable_attn = getattr(cfg.MODEL, 'POSE_KP_LEARNABLE_ATTN', False)
+            sgmkc = getattr(cfg.MODEL, 'POSE_SGMKC', False)
+            sgmkc_ratio = getattr(cfg.MODEL, 'POSE_SGMKC_RATIO', 0.3)
             self.skeleton_head = SkeletonGCNHead(
                 feat_dim=self.in_planes,
                 hidden_dim=gcn_hidden,
@@ -183,6 +185,8 @@ class PoseBackboneModel(build_transformer):
                 kp_weight_mode=kp_weight_mode,
                 kp_triplet=kp_triplet,
                 kp_learnable_attn=kp_learnable_attn,
+                sgmkc=sgmkc,
+                sgmkc_ratio=sgmkc_ratio,
             )
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'concat_scaled')
             if keypoint_pool_only:

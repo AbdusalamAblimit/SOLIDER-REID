@@ -169,6 +169,23 @@ def do_train(cfg,
                     details['recon'] = recon_loss.item()
                     loss._loss_details = details
 
+                # SGMKC: reconstruction loss for masked keypoint completion
+                if kp_data is not None and 'sgmkc_mask' in kp_data:
+                    sgmkc_mask = kp_data['sgmkc_mask']        # (B, 17) True=kept
+                    sgmkc_orig = kp_data['sgmkc_original']    # (B, 17, C)
+                    sgmkc_pred = kp_data['kp_feats']          # (B, 17, C)
+                    # Compute MSE only at masked (zeroed-out) positions
+                    masked_positions = ~sgmkc_mask             # True = was masked
+                    if masked_positions.any():
+                        pred_masked = sgmkc_pred[masked_positions]   # (N_masked, C)
+                        orig_masked = sgmkc_orig[masked_positions]   # (N_masked, C)
+                        sgmkc_loss = F.mse_loss(pred_masked, orig_masked)
+                        sgmkc_weight = getattr(cfg.MODEL, 'POSE_SGMKC_WEIGHT', 1.0)
+                        details = getattr(loss, '_loss_details', {})
+                        loss = loss + sgmkc_weight * sgmkc_loss
+                        details['sgmkc'] = sgmkc_loss.item()
+                        loss._loss_details = details
+
             scaler.scale(loss).backward()
 
             scaler.step(optimizer)

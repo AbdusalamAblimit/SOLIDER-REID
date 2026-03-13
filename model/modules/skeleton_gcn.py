@@ -123,7 +123,8 @@ class SkeletonGCNHead(nn.Module):
     def __init__(self, feat_dim, hidden_dim, num_layers, num_classes,
                  input_size=(384, 128), use_gcn=True,
                  kp_weight_mode='score', kp_triplet=False,
-                 kp_learnable_attn=False):
+                 kp_learnable_attn=False,
+                 sgmkc=False, sgmkc_ratio=0.3):
         super().__init__()
         self.feat_dim = feat_dim
         self.input_h, self.input_w = input_size
@@ -132,6 +133,8 @@ class SkeletonGCNHead(nn.Module):
         self.kp_weight_mode = kp_weight_mode
         self.kp_triplet = kp_triplet
         self.kp_learnable_attn = kp_learnable_attn
+        self.sgmkc = sgmkc
+        self.sgmkc_ratio = sgmkc_ratio
 
         # Optional graph propagation over sampled keypoint features.
         if self.use_gcn:
@@ -258,13 +261,25 @@ class SkeletonGCNHead(nn.Module):
             feat_map, keypoints, scores, person_mask)
         # kp_feats: (B, 17, C), kp_scores: (B, 17)
 
-        # 2. Optional skeleton GCN
+        # 2. Optional SGMKC masking (training only)
+        sgmkc_mask = None
+        kp_feats_original = None
+        if self.training and self.sgmkc and self.sgmkc_ratio > 0:
+            B_sz, N_kp, C_dim = kp_feats.shape
+            # Save original features for reconstruction target
+            kp_feats_original = kp_feats.detach().clone()
+            # Generate random mask: True = keep, False = mask out
+            sgmkc_mask = torch.rand(B_sz, N_kp, device=kp_feats.device) > self.sgmkc_ratio
+            # Zero out masked keypoint features
+            kp_feats = kp_feats * sgmkc_mask.unsqueeze(-1).float()
+
+        # 3. Optional skeleton GCN (propagate along skeleton edges)
         if self.use_gcn:
             kp_feats_enhanced = self.gcn(kp_feats)  # (B, 17, C)
         else:
             kp_feats_enhanced = kp_feats
 
-        # 3. Confidence-weighted average (weight mode selectable)
+        # 4. Confidence-weighted average (weight mode selectable)
         kp_weights = self._compute_kp_weights(pose_dict)  # (B, 17)
 
         # Learnable Keypoint Attention: modulate weights with learned attention
@@ -280,6 +295,10 @@ class SkeletonGCNHead(nn.Module):
             'kp_feats': kp_feats_enhanced,  # (B, 17, C)
             'kp_weights': kp_weights,       # (B, 17)
         }
+        # SGMKC: pass mask and original features for reconstruction loss
+        if sgmkc_mask is not None:
+            aux_data['sgmkc_mask'] = sgmkc_mask              # (B, 17) True=kept
+            aux_data['sgmkc_original'] = kp_feats_original   # (B, 17, C)
 
         if return_cls:
             # BN + Classifier
