@@ -123,11 +123,21 @@
   - `cvk_hybrid` 的正 mAP 信号已从单 checkpoint 扩展到第二个 checkpoint
   - R1 的变化方向目前不能写死，较稳妥的结论应聚焦于 mAP 复核成立
 
-### +NFC 结果（如适用）
+### +NFC 结果 (Neighbor Feature Centralization, Pose2ID CVPR 2025)
 
-| ID | 方法 | mAP | R-1 | R-5 | R-10 | 备注 |
-|----|------|-----|-----|-----|------|------|
-| — | — | — | — | — | — | 待测试 |
+> NFC 是通用 test-time 方法，不是我们的训练端创新。所有结果基于 exp030a seed1234 checkpoint。
+
+| ID | 方法 | k1=k2 | mAP | R-1 | R-5 | R-10 | vs 无后处理 |
+|----|------|-------|-----|-----|-----|------|-------------|
+| 049-g-k2 | PSG+GCN global + NFC | 2 | 62.8% | 74.9% | 83.9% | 87.5% | mAP+3.0%, R1+5.4% |
+| 049-g-k5 | PSG+GCN global + NFC | 5 | 65.5% | 73.0% | 82.0% | 85.4% | mAP+5.7%, R1+3.5% |
+| 049-eq-k2 | PSG+GCN equal_concat + NFC | 2 | 63.4% | 74.6% | 84.2% | 87.1% | mAP+2.3%, R1+0.9% |
+| 049-eq-k3 | PSG+GCN equal_concat + NFC | 3 | 64.8% | 75.6% | 84.1% | 87.4% | mAP+3.7%, R1+1.9% |
+| 049-eq-k4 | PSG+GCN equal_concat + NFC | 4 | 66.3% | 76.9% | 84.2% | 87.5% | mAP+5.2%, R1+3.2% |
+| **049-eq-k5** | **PSG+GCN equal_concat + NFC** | **5** | **67.3%** | **77.6%** | **84.8%** | **87.8%** | **mAP+6.2%, R1+3.9%** |
+| 049-eq-k6 | PSG+GCN equal_concat + NFC | 6 | 68.3% | 77.2% | 84.9% | 88.0% | mAP+7.2%, R1+3.5% |
+| 049-eq-k8 | PSG+GCN equal_concat + NFC | 8 | 69.6% | 76.0% | 84.1% | 87.7% | mAP+8.5%, R1+2.3% |
+| 049-eq-k10 | PSG+GCN equal_concat + NFC | 10 | 70.9% | 74.9% | 84.1% | 87.6% | mAP+9.8%, R1+1.2% |
 
 ### +Re-ranking 结果
 

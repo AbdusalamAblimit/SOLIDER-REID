@@ -247,6 +247,10 @@ _C.TEST.IMS_PER_BATCH = 128
 _C.TEST.RE_RANKING = False
 _C.TEST.CVK_GLOBAL_WEIGHT = 1.0
 _C.TEST.CVK_KP_WEIGHT = 1.0
+# NFC (Neighbor Feature Centralization) test-time augmentation
+_C.TEST.NFC = False
+_C.TEST.NFC_K1 = 2
+_C.TEST.NFC_K2 = 2
 # Path to trained model
 _C.TEST.WEIGHT = ""
 # Which feature of BNNeck to be used for test, before or after BNNneck, options: 'before' or 'after'

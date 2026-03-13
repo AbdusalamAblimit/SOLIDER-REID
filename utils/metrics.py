@@ -5,6 +5,52 @@ import torch.nn.functional as F
 from utils.reranking import re_ranking
 
 
+def nfc(feat, k1=2, k2=2):
+    """Neighbor Feature Centralization (from Pose2ID, CVPR 2025).
+
+    For each feature, find mutual top-k nearest neighbors and add their
+    features.  This is a test-time feature augmentation that does not
+    require any training.
+
+    Args:
+        feat: (N, C) tensor of features
+        k1: number of top-k neighbors to consider
+        k2: mutual verification depth
+    Returns:
+        (N, C) augmented features
+    """
+    feat = feat.clone()
+    # Compute pairwise squared euclidean distance
+    m = feat.shape[0]
+    dist = torch.pow(feat, 2).sum(dim=1, keepdim=True).expand(m, m) + \
+           torch.pow(feat, 2).sum(dim=1, keepdim=True).expand(m, m).t()
+    dist.addmm_(feat, feat.t(), beta=1, alpha=-2)
+
+    # Set self-distance to large value
+    eye = torch.eye(m, device=dist.device)
+    dist[eye == 1] = 1e6
+
+    # Find top-k nearest neighbors
+    _, rank = dist.topk(max(k1, k2), largest=False)
+
+    # Build mutual top-k lists
+    mutual_topk_list = []
+    for i in range(m):
+        mutual_list = []
+        for j in rank[i, :k1]:
+            if i in rank[j.item(), :k2]:
+                mutual_list.append(j.item())
+        mutual_topk_list.append(mutual_list)
+
+    # Add mutual neighbor features
+    feat_copy = feat.clone()
+    for i in range(m):
+        if mutual_topk_list[i]:
+            feat[i] += feat_copy[mutual_topk_list[i]].sum(dim=0)
+
+    return feat
+
+
 def euclidean_distance(qf, gf):
     m = qf.shape[0]
     n = gf.shape[0]
@@ -95,6 +141,14 @@ class R1_mAP_eval():
         self.feat_norm = feat_norm
         self.reranking = reranking
         self.cfg = cfg
+        # NFC (Neighbor Feature Centralization) config
+        self.nfc_enabled = False
+        self.nfc_k1 = 2
+        self.nfc_k2 = 2
+        if cfg is not None:
+            self.nfc_enabled = getattr(cfg.TEST, 'NFC', False)
+            self.nfc_k1 = getattr(cfg.TEST, 'NFC_K1', 2)
+            self.nfc_k2 = getattr(cfg.TEST, 'NFC_K2', 2)
 
     def reset(self):
         self.feats = []
@@ -128,6 +182,14 @@ class R1_mAP_eval():
         if self.feat_norm:
             print("The test feature is normalized")
             feats = torch.nn.functional.normalize(feats, dim=1, p=2)  # along channel
+
+        # Apply NFC if enabled (before splitting query/gallery)
+        if self.nfc_enabled:
+            print(f'=> Applying NFC (k1={self.nfc_k1}, k2={self.nfc_k2})')
+            feats = nfc(feats.cuda(), k1=self.nfc_k1, k2=self.nfc_k2).cpu()
+            # Re-normalize after NFC augmentation
+            feats = torch.nn.functional.normalize(feats, dim=1, p=2)
+
         # query
         qf = feats[:self.num_query]
         q_pids = np.asarray(self.pids[:self.num_query])
