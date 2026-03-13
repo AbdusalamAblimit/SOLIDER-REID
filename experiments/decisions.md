@@ -1101,3 +1101,39 @@ B. 直接启动 exp025，exp024 可以后续补跑
 - exp035 已充分回答核心问题：visibility 在 keypoint pooling 加权中无独立价值
 
 **关键教训**: ViTPose visibility 在 keypoint-level 加权中不如 detection scores 有效。这与前轮实验（Phase 1）对 visibility 向量的负面结论一致。Visibility 信号可能在 **scene-level**（如热图注意力）有价值，但在 **keypoint-level** 的离散加权中无用。
+
+### [2026-03-13 06:30] 决策 #41
+
+**上下文**: exp035 完成后，需要选择下一个实验方向。
+
+**选项**:
+  A. Learnable Keypoint Attention — 用可学习的 MLP 替换固定置信度加权
+  B. Part-level Triplet Loss — 对 GCN 分支的 17 个关键点特征独立施加 triplet loss
+
+**红蓝队辩论**:
+- 🔴 红队（方案 A）核心论点: exp035 证明固定权重无效，可学习注意力是自然下一步。新颖性高、可视化价值大、实现简单。攻击 B: 缺少新颖性，梯度干扰风险。信心: 8/10
+- 🔵 蓝队（方案 B）核心论点: Phase 1 已验证 GiLt +0.5%，零风险，验证 GCN 关键点级判别性是论文核心证据。攻击 A: 小数据集过拟合风险，alpha suppression 前车之鉴。信心: 8/10
+- 综合判断: 先 B 后 A。"先确保特征质量，再优化融合方式"是更稳健的策略。
+
+**选择**: B — Part-level Triplet Loss (exp036)
+**理由**: 已有正面信号(+0.5%)，零架构风险，实现快，为 A 提供更好的基础
+**执行结果**: ❌ exp036 最终 mAP 60.6%，vs exp035a 61.1%，-0.5%。Per-keypoint triplet loss 未能提升。GCN 消息传递已使特征充分判别。
+
+### [2026-03-13 08:50] 决策 #42
+
+**上下文**: exp036 (per-keypoint triplet) 失败。Phase 1 GiLt 的 +0.5% 来自更弱的 part features（PCFC pooling）。GCN 增强后的 keypoint features 已经足够判别，额外 triplet 约束反而干扰（-0.5%）。
+
+需要选择下一个实验方向。当前 GCN 分支的核心瓶颈不在"特征质量"，而在"融合方式"——equal_concat 是一个固定的、非自适应的融合策略。
+
+**选项**:
+  A. Learnable Keypoint Attention (LKA) — 用可学习 MLP 替换固定置信度加权，允许模型自动发现哪些关键点对检索最重要
+  B. Adaptive Feature Fusion — 用可学习门控替换固定的 equal_concat 融合，让模型自适应地混合 global 和 GCN 特征
+  C. Multi-Scale Keypoint Features — 从多个 backbone stage 采样关键点特征，丰富 GCN 输入的语义层次
+
+**红蓝队辩论**:
+- 🔴 红队（方案 A - LKA）核心论点: 最低风险最低成本（~600 params, ~20 行），exp035b 证明权重方案敏感（score→score*vis -0.7%），confidence ≠ 判别重要性。可解释性高（训练后可可视化哪些关键点最重要）。攻击 B: CAPSG 前车之鉴（内容自适应门控失败 -1.1%），fusion 已接近最优。攻击 C: exp005 灾难。信心: 7/10
+- 🔵 蓝队（方案 B - AFF）核心论点: exp036 证明 GCN 特征已饱和，继续优化 GCN 内部（LKA/C）是优化已饱和子系统。equal_concat vs concat_scaled p=0.0039 证明融合权重极敏感。AFF 完成 PSG→GCN→AFF 的"感知→补全→融合"完整链条，论文故事最佳。攻击 A: alpha suppression 前车之鉴，LKA 在已饱和系统上增量有限。信心: 8/10
+- 综合判断: 两个方案都低风险、高价值。LKA 更快（2h vs 4h），AFF 更直接攻击瓶颈。选择先 A 后 B 的策略：如果 LKA 证明聚合权重已最优，则确认瓶颈在 fusion → 做 AFF；如果 LKA 有效，可与 AFF 叠加。
+
+**选择**: A → B 顺序执行。先 exp037 (LKA)，再 exp038 (AFF)
+**理由**: LKA 实现更快，完成关键点加权调查线（score→visibility→learnable），无论结果如何都为 AFF 提供信息
