@@ -143,8 +143,10 @@ class PoseImageDataset(Dataset):
         # 3.5) Realistic Occlusion Augmentation (ROA): paste VOC objects
         if self.occluders and random.random() < self.roa_prob:
             from .occlusion_augmentation import occlude_with_objects
-            img = occlude_with_objects(img, self.occluders, n=1,
-                                       min_overlap=0.2, max_overlap=0.5)
+            img_np = np.array(img)  # PIL → numpy (H, W, 3)
+            img_np = occlude_with_objects(img_np, self.occluders, n=1,
+                                          min_overlap=0.2, max_overlap=0.5)
+            img = Image.fromarray(img_np)  # numpy → PIL
 
         # 4) Convert image to tensor + normalize
         img_tensor = self._image_to_tensor(img)
