@@ -1092,4 +1092,37 @@ PSG + 0.5x loss + Skeleton GCN（exp030a）仍然是最强方法，无一竞争�
 - 架构级修改（XCAD 替换 GCN）：失败
 - 总计 8 种不同类型的训练端改进尝试，0 个成功
 
-**下一步必须是完全不同的思路**，不能再在 PSG+GCN 框架上做任何修改。需要重新审视问题定义，或者接受 PSG+GCN+CVK 作为我们的方法框架，转向论文的其他维度（如更深入的分析、可视化、跨数据集验证）。
+**下一步必须是完全不同的思路**，不能再在 PSG+GCN 框架上做任何修改。
+
+---
+
+## Phase 2.27: exp054-059 PGAM/KDL/ROA 系列结果 (2026-03-14)
+
+### 新发现
+
+1. **PGAM（注意力 masking）**: 微弱正向（+0.4% mAP / +1.1% R1），零参数，阈值/Stage 不敏感，但在 3-seed 方差边缘
+2. **KDL（Dissimilar Loss）**: 中性，第 6 个失败的 auxiliary loss
+3. **ROA（真实遮挡增强）**: **+1.07% mAP**，超出方差！61.8% 历史最高 mAP。但 ROA 已在多篇论文中使用（FCFormer/DPEFormer/ProFD），不能作为独立创新点
+4. **ROA+PGAM 组合**: 与 ROA-only 完全相同，说明 PGAM 与 ROA 不正交（都解决遮挡鲁棒性）
+
+### 当前格局
+
+**有效的工程手段**（可用于提升基线但不构成创新）:
+- PSG: +1.33% mAP（已 3-seed 确认）
+- 0.5x global loss: +1.53% mAP（已确认）
+- GCN branch: +1.40% mAP（已确认）
+- ROA: +1.07% mAP（需多 seed）
+- CVK: +0.8% mAP（test-time）
+
+**不够格作为创新的方向**:
+- ROA: 已有先例（FCFormer OIA, DPEFormer ROA, synthetic-occlusion）
+- PGAM: 效果在方差边缘，且与 ROA 冗余
+- 所有 auxiliary loss: 6 次全部失败
+
+### 需要的创新方向
+
+用户明确指出：ROA 不能作为创新点，除非融入新东西或改进增强方式。需要思考：
+
+1. **Pose-Guided ROA**: 用 pose heatmap 指导遮挡物的放置位置——只在身体可见区域粘贴（模拟真实遮挡模式）。与现有 ROA 的区别：现有方法随机放置，我们根据 pose 智能放置
+2. **Adaptive ROA**: 根据图像已有的遮挡程度动态调整 ROA 的概率和覆盖面积——已经高度遮挡的图像少加、干净图像多加
+3. **完全不同的方向**: 放弃在数据增强上做文章，转向特征提取/匹配机制的创新
