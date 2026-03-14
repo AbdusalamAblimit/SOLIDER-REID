@@ -112,6 +112,59 @@ def occlude_with_objects(im, occluders, n=1, min_overlap=0.2, max_overlap=0.6):
     return result
 
 
+def pose_aware_occlude(im, occluders, keypoints, scores,
+                       n=1, min_overlap=0.2, max_overlap=0.5,
+                       score_threshold=0.3, jitter_std=30.0):
+    """Paste occluders at pose-guided locations (body regions).
+
+    Instead of random placement, centers occluders near visible keypoints
+    to simulate realistic body-part occlusion.
+
+    Args:
+        im: numpy array (H, W, 3)
+        occluders: list of RGBA patches
+        keypoints: (17, 2) array of keypoint x,y coordinates (person 0)
+        scores: (17,) array of keypoint confidence scores
+        n: max number of occluders
+        min_overlap/max_overlap: fraction of image area covered
+        score_threshold: minimum keypoint confidence to consider
+        jitter_std: standard deviation of Gaussian offset from keypoint center
+    """
+    result = im.copy()
+    im_area = im.shape[1] * im.shape[0]
+    count = np.random.randint(1, n + 1)
+
+    # Find valid keypoints (visible body parts)
+    valid_mask = scores > score_threshold
+    valid_kps = keypoints[valid_mask]  # (K, 2) where K = number of valid kps
+
+    if len(valid_kps) == 0:
+        # Fallback to random placement if no valid keypoints
+        return occlude_with_objects(im, occluders, n, min_overlap, max_overlap)
+
+    for _ in range(count):
+        occluder = random.choice(occluders)
+        occluder_area = occluder.shape[1] * occluder.shape[0]
+        if occluder_area < 1:
+            continue
+        overlap = random.uniform(min_overlap, max_overlap)
+        scale_factor = math.sqrt(overlap * im_area / occluder_area)
+        occluder = _resize_by_factor(occluder, scale_factor)
+
+        # Sample center from a random visible keypoint + Gaussian jitter
+        kp_idx = random.randint(0, len(valid_kps) - 1)
+        center = valid_kps[kp_idx].copy()
+        center[0] += np.random.normal(0, jitter_std)  # x jitter
+        center[1] += np.random.normal(0, jitter_std)  # y jitter
+        # Clip to image bounds
+        center[0] = np.clip(center[0], 0, im.shape[1])
+        center[1] = np.clip(center[1], 0, im.shape[0])
+
+        _paste_over(im_src=occluder, im_dst=result, center=center)
+
+    return result
+
+
 def _paste_over(im_src, im_dst, center):
     """Paste RGBA image onto RGB image with alpha blending."""
     width_height_src = np.asarray([im_src.shape[1], im_src.shape[0]])

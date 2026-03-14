@@ -99,6 +99,9 @@ def make_dataloader(cfg):
             dataset.train,
             pose_dir=os.path.join(pose_base, 'train'),
             is_train=True, **pose_kwargs)
+        # Set pose-aware ROA flag
+        if getattr(cfg.MODEL, 'POSE_ROA_POSE_AWARE', False):
+            train_set.pose_aware_roa = True
 
         train_set_normal = PoseImageDataset(
             dataset.train,

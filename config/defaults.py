@@ -111,6 +111,7 @@ _C.MODEL.POSE_GUIDED_ERASING = False        # use pose-guided erasing instead of
 _C.MODEL.POSE_ROA = False                   # Realistic Occlusion Augmentation (paste VOC objects)
 _C.MODEL.POSE_ROA_PATH = 'data/VOCdevkit/VOC2012'  # path to VOC2012 root
 _C.MODEL.POSE_ROA_PROB = 0.5               # probability of applying ROA per image
+_C.MODEL.POSE_ROA_POSE_AWARE = False       # use pose-aware placement instead of random
 _C.MODEL.POSE_CHANNEL_GATE = False          # use Pose-Conditioned Channel Gate (PCG) after GAP
 _C.MODEL.POSE_PCG_HIDDEN = 64              # hidden dim in PCG MLP
 _C.MODEL.POSE_PSG_CONTENT_ADAPTIVE = False # use Content-Adaptive PSG (CAPSG) gate

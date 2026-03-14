@@ -91,6 +91,7 @@ class PoseImageDataset(Dataset):
         self.pose_guided_erasing = pose_guided_erasing and is_train
         self.occluders = occluders if is_train else None
         self.roa_prob = roa_prob if is_train else 0.0
+        self.pose_aware_roa = False  # set by make_dataloader if configured
 
         # Load index
         index_path = os.path.join(pose_dir, 'index.json')
@@ -142,10 +143,18 @@ class PoseImageDataset(Dataset):
 
         # 3.5) Realistic Occlusion Augmentation (ROA): paste VOC objects
         if self.occluders and random.random() < self.roa_prob:
-            from .occlusion_augmentation import occlude_with_objects
             img_np = np.array(img)  # PIL → numpy (H, W, 3)
-            img_np = occlude_with_objects(img_np, self.occluders, n=1,
-                                          min_overlap=0.2, max_overlap=0.5)
+            if self.pose_aware_roa and persons:
+                from .occlusion_augmentation import pose_aware_occlude
+                p0 = persons[0]
+                img_np = pose_aware_occlude(
+                    img_np, self.occluders,
+                    keypoints=p0['kp'], scores=p0['scores'],
+                    n=1, min_overlap=0.2, max_overlap=0.5)
+            else:
+                from .occlusion_augmentation import occlude_with_objects
+                img_np = occlude_with_objects(img_np, self.occluders, n=1,
+                                              min_overlap=0.2, max_overlap=0.5)
             img = Image.fromarray(img_np)  # numpy → PIL
 
         # 4) Convert image to tensor + normalize
