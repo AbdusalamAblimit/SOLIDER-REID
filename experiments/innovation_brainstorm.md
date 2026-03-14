@@ -843,3 +843,64 @@ ProFD 的 PartFeatureDecoder 用文本 prompt 做 Query、spatial tokens 做 K/V
 - 它在 backbone 层面操作（PSG 成功的关键洞察）
 - 它有清晰的创新门槛：问题（pose-aware occlusion simulation）+ 机制（body-aware masking + consistency）+ 证据（vs random masking 消融）
 - 但实现前需要更深入的文献调研（SimSiam 在 ReID 中的已有工作、遮挡增强的 SOTA）
+
+---
+
+## Phase 2.22: 2026-03-14 exp050 PAMC 结果 — 中性/无效
+
+### exp050 最终结果
+- mAP: 60.7%, R1: 72.2%（vs exp030a 3-seed mean: 60.73% / 72.57%）
+- **完全中性**：mAP 差 0.03%，R1 差 0.37%，均在训练方差范围内
+
+### 失败原因分析
+
+1. **PSG 已提供充分的遮挡鲁棒性**：PSG 在 Stage 3 内部做 pose-aware spatial gating，模型已经"知道"人体结构。额外的 consistency loss 没有提供新的训练信号。
+
+2. **Consistency loss 的双重效应相互抵消**：
+   - 正面：特征对遮挡更不变，提高 mAP（检索覆盖面广）
+   - 负面：特征对细粒度差异的区分度降低，降低 R1（top-1 精度）
+   - 最终两个效应大致抵消
+
+3. **Masking 不够激进**：PAMC cosine similarity 从 epoch 11 的 0.90 到 epoch 120 的 0.82，说明 masked 图和原图的特征已经很接近，consistency 目标太"容易"。单个身体部位的遮挡不足以创造有挑战性的训练信号。
+
+4. **负总损失的潜在问题**：后期 PAMC 负贡献主导总损失变为负值，可能导致优化器行为不理想。
+
+### 已穷尽的方向（更新至 50 个实验）
+
+1. PSG + forward path 添加: exp008-021 全部失败
+2. PSG + 正则化: exp026 SPD 中性
+3. PSG + loss 调制: exp027 PCRA 中性
+4. PDS Part 收敛改善: exp028 Part LR 中性
+5. PSG + post-hoc pooling 改进: exp029 PWP 中性
+6. GCN branch 训练端自监督: exp048 SGMKC 负面
+7. Overlap-based mining: exp047 CSGT 失败
+8. **Consistency loss (self-supervised): exp050 PAMC 中性** ← NEW
+
+### 重大战略判断
+
+**"在 PSG+GCN 基础上添加训练端辅助 loss"这个方向已被连续 3 次实验否定**：
+- exp047 (CSGT): ❌ overlap mining 失败
+- exp048 (SGMKC): ❌ 自监督重建 梯度冲突
+- exp050 (PAMC): 🟡 self-supervised consistency 中性
+
+**核心教训**：PSG+GCN 的训练已经高度优化。任何辅助 loss 都无法在不干扰主 ID+triplet 目标的情况下提供额外增益。训练端改进这条路线应当彻底关闭。
+
+### 下一步方向
+
+需要从根本上跳出"在 exp030a 上加东西"的思路。以下方向值得探索：
+
+1. **全新的特征提取机制**（而非辅助 loss）：
+   - Pose-guided token pruning（直接删除噪声 token，而非 gate/mask）
+   - Cross-attention decoder for part features（类似 ProFD 但用 pose query 代替 text prompt）
+
+2. **Test-time 策略的训练端配套**：
+   - 已知 CVK 在 test-time 有效 → 设计训练端方案让 keypoint 特征更适合 pairwise distance
+   - 不是加 loss，而是改变特征的使用方式
+
+3. **完全不同的问题定义**：
+   - 从 "单图特征提取" 转向 "图对关系推理"
+   - 从 "遮挡鲁棒特征" 转向 "不确定性感知匹配"
+
+4. **深入文献学习**：
+   - 优先研究最近的遮挡 ReID 方法（2024-2025），寻找尚未尝试的思路
+   - 重点关注不是 "加模块" 而是 "改范式" 的工作
