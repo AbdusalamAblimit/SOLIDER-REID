@@ -18,6 +18,7 @@ from .modules.pose_reconstruction_head import PoseReconstructionHead
 from .modules.pose_utils import merge_person_heatmaps
 from .modules.skeleton_gcn import SkeletonGCNHead
 from .modules.keypoint_rpe import KeypointRPE, compute_token_kp_distances
+from .modules.pose_xcad import PoseCrossAttnHead
 
 
 class PoseBackboneModel(build_transformer):
@@ -187,9 +188,29 @@ class PoseBackboneModel(build_transformer):
         if self.use_weighted_pool:
             print('[PWP] Pose-Weighted Pooling enabled (replaces GAP)')
 
-        # Skeleton GCN head (optional, for PSG+GCN without PDS)
+        # Skeleton GCN head or Cross-Attention Decoder (mutually exclusive)
         self.use_skeleton_gcn = getattr(cfg.MODEL, 'POSE_SKELETON_GCN', False)
-        if self.use_skeleton_gcn:
+        self.use_xcad = getattr(cfg.MODEL, 'POSE_XCAD', False)
+        if self.use_xcad:
+            # Cross-Attention Decoder replaces GCN
+            xcad_dim = getattr(cfg.MODEL, 'POSE_XCAD_DIM', 256)
+            xcad_heads = getattr(cfg.MODEL, 'POSE_XCAD_HEADS', 8)
+            self.skeleton_head = PoseCrossAttnHead(
+                feat_dim=self.in_planes,
+                attn_dim=xcad_dim,
+                num_heads=xcad_heads,
+                num_classes=num_classes,
+                input_size=tuple(cfg.INPUT.SIZE_TRAIN),
+            )
+            self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
+            total_params = sum(p.numel() for p in self.skeleton_head.cross_attn.parameters())
+            print(f'[PSG+XCAD] Cross-Attention Decoder enabled: '
+                  f'dim={xcad_dim}, heads={xcad_heads}, '
+                  f'cross_attn_params={total_params}, '
+                  f'test_feat={self.pose_test_feat}')
+            # Set use_skeleton_gcn=True so existing forward() code path handles it
+            self.use_skeleton_gcn = True
+        elif self.use_skeleton_gcn:
             gcn_layers = getattr(cfg.MODEL, 'POSE_GCN_LAYERS', 2)
             gcn_hidden = getattr(cfg.MODEL, 'POSE_GCN_HIDDEN', 256)
             keypoint_pool_only = getattr(cfg.MODEL, 'POSE_KEYPOINT_POOL_ONLY', False)

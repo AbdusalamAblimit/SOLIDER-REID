@@ -1511,3 +1511,58 @@ B. 直接启动 exp025，exp024 可以后续补跑
 3. PAB 的失败有明确的技术原因（additive decomposition），KP-RPE 直接修复该问题
 4. 即使失败，诊断信息清晰（确认 attention bias 在 PSG 存在时是否冗余）
 5. PPE 作为后续方向保留——如果 KP-RPE 中性，再投入 PPE 的开发时间
+
+### [2026-03-14 08:15] 决策 #59
+
+**上下文**: exp052 KP-RPE 完成，最终结果：61.0% mAP / 72.7% R1（equal_concat），对比 exp030a 3-seed mean 60.73% / 72.57%，差距 +0.27% / +0.13%，在方差范围内。Global 模式下 KP-RPE 反而微负（-0.3% mAP / -1.1% R1）。训练过程中 mAP 10/12 checkpoint 为正（均值 +0.76%）但最终收敛至基线水平。
+
+这标志着：
+- 注意力偏置方向（PAB unary + KP-RPE pairwise）正式关闭
+- 训练端辅助 loss 方向（5次失败）已关闭
+- Visibility 方向已关闭
+- 在 PSG+GCN 框架上的增量修改空间已耗尽
+
+**选项**:
+  A. 继续扩展 KP-RPE（更大容量、更多层、与 PSG 更紧密集成）
+  B. 彻底放弃增量修改，转向全新架构方向
+
+**红蓝队辩论**:
+- 🔴 红队（方案 A）核心论点: KP-RPE 中期信号强（+1.6% mAP），2736 参数可能太小导致收敛后被 overwhelm，扩展到更大容量/更多层可能释放潜力。实现成本低（半天），诊断价值高。风险：继续做变体可能又是中性。信心: 3/10
+- 🔵 蓝队（方案 B）核心论点: 7 次增量修改全部中性/失败（5 loss + 2 attention bias），信号极其清楚——当前框架已饱和。继续做变体是沉没成本谬误。新方向有更高的创新潜力和论文价值。可能的新方向：pose-guided contrastive learning、cross-attention decoder、MoE routing。信心: 8/10
+- 综合判断: 蓝队论点压倒性优势。数据清楚地表明增量修改空间已耗尽。
+
+**选择**: B — 放弃增量修改，转向全新方向
+**理由**:
+1. 7 次增量修改全部在方差内或负面，继续做变体的期望值极低
+2. 训练中期"正信号消失于收敛"是注意力偏置的系统性问题，不是容量问题
+3. 需要全新的问题定义或机制类别才能突破当前上限
+4. 具体方向将通过文献学习和 gap analysis 确定
+
+**执行结果**: 待填
+
+### [2026-03-14 08:20] 决策 #60
+
+**上下文**: 需要选择全新方向。分析已有实验模式：
+- 有效：PSG（乘性门控）、GCN（结构特征 fusion）、CVK（test-time pairwise matching）
+- 无效：所有加性/辅助修改
+- 核心规律：直接改变特征的加工方式有效，添加额外信号无效
+
+从论文笔记中发现的未探索方向：
+1. DPEFormer 的 pose-guided token selection（从 feature map 中动态选择人体 token）
+2. SSSC-TransReID 的 pose-aware contrastive learning（遮挡增强 + 一致性训练）
+3. Cross-attention decoder（keypoints 作为 queries 对 feature map 做 cross-attention）
+4. Pose-Aware Mixture of Experts（根据 occlusion 模式路由到不同 expert heads）
+
+**选项**:
+  A. **Pose-Guided Token Selection + Cross-Attention (PGTCA)**: 用 PSG 热图做 token 重要性评分，选出可靠 token，再用 keypoint-guided cross-attention 提取 part 特征。本质上替换当前 GCN branch 为更强大的 cross-attention 解码器。
+  B. **Pose-Conditioned Occlusion Augmentation (PCOA)**: 用关键点位置生成语义化遮挡增强，结合 consistency loss 训练。是数据增强层面的创新，不改变模型架构。
+
+**选择**: A — PGTCA
+**理由**:
+1. 这是一种架构级改变（替换 GCN branch 为 cross-attention decoder），与我们的发现一致（直接改变特征加工方式更有效）
+2. Cross-attention decoder 用 keypoint 作为 queries 是在 pose-guided ReID 中未被清晰实现的机制
+3. 可以利用已有的 PSG 基础设施，在其上构建解码器
+4. 论文 story：PSG (backbone 注入) + Cross-Attention Decoder (结构化解码) 形成完整的 encode-decode 范式
+5. 数据增强方向（方案 B）不改变模型，创新深度不够支撑论文主贡献
+
+**执行结果**: 待填

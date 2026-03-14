@@ -143,6 +143,10 @@ _C.MODEL.POSE_PAMC_PROJ_DIM = 2048       # Projector MLP hidden dimension
 _C.MODEL.POSE_PAML = False               # Enable PAML (Pose-Aware Metric Learning) for part triplet
 _C.MODEL.POSE_KP_RPE = False             # Enable KP-RPE (Keypoint Relative Position Encoding) in Swin attention
 _C.MODEL.POSE_KP_RPE_HIDDEN = 32        # Hidden dim for KP-RPE MLP
+# XCAD (Cross-Attention Decoder) — replaces GCN with cross-attention for keypoint features
+_C.MODEL.POSE_XCAD = False               # Use cross-attention decoder instead of GCN
+_C.MODEL.POSE_XCAD_DIM = 256             # Internal attention dimension
+_C.MODEL.POSE_XCAD_HEADS = 8             # Number of attention heads
 
 # -----------------------------------------------------------------------------
 # INPUT
