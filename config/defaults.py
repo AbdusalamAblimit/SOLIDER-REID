@@ -103,6 +103,7 @@ _C.MODEL.POSE_PSG_STAGES = [-1]             # which stages to inject PSG (e.g. [
 _C.MODEL.POSE_ATTN_BIAS = False             # use Pose Attention Bias (PAB) instead of PSG
 _C.MODEL.POSE_ATTN_MASK = False             # use Pose-Guided Attention Masking (PGAM) with PSG
 _C.MODEL.POSE_ATTN_MASK_THRESHOLD = 0.3     # heatmap threshold for PGAM body/non-body
+_C.MODEL.POSE_ATTN_MASK_STAGES = [-1]       # which stages to apply PGAM (default: last stage only)
 _C.MODEL.POSE_PSG_PAB_COMBO = False         # use both PSG + PAB simultaneously
 _C.MODEL.POSE_PSG_SPATIAL = False           # use 3x3 depthwise conv in PSG gate
 _C.MODEL.POSE_CROSS_ATTN = False           # use Pose Cross-Attention (PXA) instead of PSG

@@ -137,9 +137,15 @@ class PoseBackboneModel(build_transformer):
                 ])
 
             # PGAM (Pose-Guided Attention Masking): works alongside PSG
+            # PGAM has its own stage config (can differ from PSG stages)
             if self.use_attn_mask:
+                pgam_stages = list(getattr(cfg.MODEL, 'POSE_ATTN_MASK_STAGES', [-1]))
+                self.pgam_stage_indices = set()
+                for s in pgam_stages:
+                    idx = s if s >= 0 else num_backbone_stages + s
+                    self.pgam_stage_indices.add(idx)
                 self.pgam_modules_dict = nn.ModuleDict()
-                for stage_idx in sorted(self.psg_stage_indices):
+                for stage_idx in sorted(self.pgam_stage_indices):
                     stage = self.base.stages[stage_idx]
                     num_heads = stage.blocks[0].attn.w_msa.num_heads
                     for block_idx in range(len(stage.blocks)):
@@ -298,9 +304,10 @@ class PoseBackboneModel(build_transformer):
         outs = []
         num_stages = len(self.base.stages)
 
+        pgam_indices = getattr(self, 'pgam_stage_indices', set())
         for i, stage in enumerate(self.base.stages):
-            if i in self.psg_stage_indices:
-                # Stage with PSG: manually run blocks with gate injection
+            if i in self.psg_stage_indices or i in pgam_indices:
+                # Stage with PSG and/or PGAM: manually run blocks with injection
                 x, hw_shape, out, out_hw_shape = self._run_stage_with_psg(
                     stage, x, hw_shape, scene_heatmaps, stage_idx=i,
                     pose_dict=pose_dict)
