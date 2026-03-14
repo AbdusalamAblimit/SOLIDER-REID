@@ -1461,3 +1461,24 @@ B. 直接启动 exp025，exp024 可以后续补跑
 3. 继续在这条路线上"换一种 loss 再试"的预期收益极低，应把时间投入到更有可能产生突破的方向
 
 **下一步**: 进入文献学习，寻找不是"加辅助 loss"而是"改变特征提取或匹配范式"的新方向
+
+### [2026-03-14 05:00] 决策 #56
+
+**上下文**: 文献/代码深入调研完成。研究了 PADE (ICASSP 2024), ProFD (ACM MM 2024), PersonViT, Pose2ID (CVPR 2025), P3E, CION (NeurIPS 2024), SEAS (CVPR 2024), Camera Bias (ICLR 2025 Spotlight) 等近期工作。核心发现：领域正从"更好的特征提取"转向"更智能的匹配/检索"。
+
+**选项**:
+  A. **Pose-Aware Metric Learning (PAML)** — 修改 GCN 分支 part triplet loss 的距离计算方式，从聚合 skeleton feature 距离改为逐关键点 confidence 加权 pairwise 距离。对齐训练和 CVK 测试目标。不添加新模块/新参数/新辅助 loss。
+  B. **Probabilistic Keypoint Embedding (PKE)** — 修改 GCN 输出为概率分布（均值+方差），用 reparameterization trick 训练，KL 散度正则化。
+
+**红蓝队辩论**:
+- 🔴 红队（方案 A: PAML）核心论点: 50 个实验证明任何新增机制都失败。PAML 不添加任何东西，只修改已有距离函数。CVK 已证明逐关键点距离有效（+0.8-0.9% mAP），对齐训练目标是自然延伸。0 新参数，30 行代码，1 次实验验证。与 exp036（per-keypoint triplet）本质不同——PAML 用单一 triplet 但距离通过逐关键点聚合。攻击 B: KL 是另一个辅助 loss，3 连败教训；概率嵌入训练不稳定（方差 collapse、权重敏感）；与 CVK 不兼容。信心: 8/10
+- 🔵 蓝队（方案 B: PKE）核心论点: PKE 是表征级创新而非 loss trick。论文 story 更强（概率建模 vs 距离对齐）。可视化价值高（方差热图）。与 CVK 可协同（方差替代 confidence）。攻击 A: 创新性不足（KPR 已有类似 matching），train-test alignment 不一定成立。信心: 6/10
+- 综合判断: 红队论点更有力（8 vs 6），核心优势是"不添加任何新东西，只对齐已有逻辑"，与 50 个失败的"添加新机制"实验本质不同。
+
+**选择**: A — PAML
+**理由**:
+1. CVK 正信号直接支持逐关键点距离的有效性
+2. 不添加新模块/参数/loss，避免重蹈 3 连败覆辙
+3. 如果成功，自然延伸为"训练端-测试端距离对齐"的完整 story
+4. 如果失败，也是有价值的消融（证明距离方式不是瓶颈）
+5. PKE 作为后续候选保留

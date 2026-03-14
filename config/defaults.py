@@ -140,6 +140,7 @@ _C.MODEL.POSE_PAMC = False               # Enable PAMC training
 _C.MODEL.POSE_PAMC_WEIGHT = 0.5          # Consistency loss weight
 _C.MODEL.POSE_PAMC_WARMUP = 10           # Warmup epochs before enabling PAMC
 _C.MODEL.POSE_PAMC_PROJ_DIM = 2048       # Projector MLP hidden dimension
+_C.MODEL.POSE_PAML = False               # Enable PAML (Pose-Aware Metric Learning) for part triplet
 
 # -----------------------------------------------------------------------------
 # INPUT

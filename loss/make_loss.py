@@ -7,8 +7,56 @@
 import torch
 import torch.nn.functional as F
 from .softmax_loss import CrossEntropyLabelSmooth, LabelSmoothingCrossEntropy
-from .triplet_loss import TripletLoss, euclidean_dist, normalize
+from .triplet_loss import TripletLoss, euclidean_dist, normalize, hard_example_mining
 from .center_loss import CenterLoss
+
+
+def _compute_paml_triplet(kp_feats, kp_weights, labels, margin_loss,
+                          margin=None):
+    """Pose-Aware Metric Learning: triplet loss with per-keypoint pairwise
+    distance aggregated by confidence-weighted average.
+
+    Instead of computing distance on the aggregated skeleton feature,
+    compute per-keypoint L2 distances and aggregate using min(confidence_i,
+    confidence_j) weights — matching CVK test-time distance logic.
+
+    Args:
+        kp_feats: (B, K, C) per-keypoint features from GCN
+        kp_weights: (B, K) confidence scores
+        labels: (B,) identity labels
+        margin_loss: MarginRankingLoss or SoftMarginLoss instance
+        margin: margin value (None for soft margin)
+
+    Returns:
+        loss: scalar triplet loss
+    """
+    B, K, C = kp_feats.shape
+
+    # Per-keypoint pairwise L2 distance: list of K (B, B) matrices
+    kp_dists = []
+    for k in range(K):
+        kp_k = kp_feats[:, k, :]  # (B, C)
+        dist_k = euclidean_dist(kp_k, kp_k)  # (B, B)
+        kp_dists.append(dist_k)
+    kp_dist_stack = torch.stack(kp_dists, dim=-1)  # (B, B, K)
+
+    # Confidence-weighted aggregation: weight = min(score_i, score_j)
+    w = kp_weights.clamp(min=1e-6)  # (B, K)
+    min_w = torch.minimum(w.unsqueeze(1), w.unsqueeze(0))  # (B, B, K)
+
+    # Weighted average distance
+    dist_mat = (kp_dist_stack * min_w).sum(dim=-1) / \
+               min_w.sum(dim=-1).clamp(min=1e-6)  # (B, B)
+
+    # Standard hard example mining + ranking loss
+    dist_ap, dist_an = hard_example_mining(dist_mat, labels)
+    y = dist_an.new_ones(dist_an.size())
+    if margin is not None:
+        loss = margin_loss(dist_an, dist_ap, y)
+    else:
+        loss = margin_loss(dist_an - dist_ap, y)
+
+    return loss
 
 
 def make_loss(cfg, num_classes):    # modified by gu
@@ -173,8 +221,16 @@ def make_loss(cfg, num_classes):    # modified by gu
                         loss_details['csgt_neg_overlap'] = csgt_stats['neg_overlap']
                         loss_details['csgt_pos_fallback'] = csgt_stats['pos_fallback']
                         loss_details['csgt_neg_fallback'] = csgt_stats['neg_fallback']
-                    part_tris = [triplet(f, target)[0] for f in feat[1:]]
-                    part_tri_avg = sum(part_tris) / len(part_tris)
+                    # PAML: use per-keypoint pairwise distance for part triplet
+                    paml_enabled = getattr(cfg.MODEL, 'POSE_PAML', False)
+                    if paml_enabled and kp_data is not None:
+                        part_tri_avg = _compute_paml_triplet(
+                            kp_data['kp_feats'], kp_data['kp_weights'],
+                            target, triplet.ranking_loss,
+                            margin=triplet.margin)
+                    else:
+                        part_tris = [triplet(f, target)[0] for f in feat[1:]]
+                        part_tri_avg = sum(part_tris) / len(part_tris)
                     TRI_LOSS = wt_g * global_tri_base + wt_p * part_tri_avg
                     loss_details['tri_global'] = global_tri_base.item()
                     loss_details['tri_part'] = part_tri_avg.item()

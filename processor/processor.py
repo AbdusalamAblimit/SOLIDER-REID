@@ -161,8 +161,9 @@ def do_train(cfg,
                     pose_sim = torch.mm(pose_sig_norm, pose_sig_norm.t())  # (B, B)
 
                 # Prepare per-keypoint triplet data
+                paml_enabled = getattr(cfg.MODEL, 'POSE_PAML', False)
                 kp_aux_data = None
-                if kp_data is not None and (kp_triplet_enabled or csgt_enabled):
+                if kp_data is not None and (kp_triplet_enabled or csgt_enabled or paml_enabled):
                     kp_aux_data = dict(kp_data)
                     if kp_triplet_enabled:
                         kp_aux_data['weight'] = kp_triplet_weight
