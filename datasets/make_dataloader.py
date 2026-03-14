@@ -73,6 +73,15 @@ def make_dataloader(cfg):
         if hasattr(cfg.MODEL, 'POSE_HEATMAP_SIZE'):
             hm_size = tuple(cfg.MODEL.POSE_HEATMAP_SIZE)
 
+        # Load ROA occluders if enabled
+        occluders = None
+        if getattr(cfg.MODEL, 'POSE_ROA', False):
+            from .occlusion_augmentation import load_occluders
+            roa_path = getattr(cfg.MODEL, 'POSE_ROA_PATH', 'data/VOCdevkit/VOC2012')
+            print(f'Loading ROA occluders from {roa_path}...')
+            occluders = load_occluders(roa_path)
+            print(f'Loaded {len(occluders)} occluder patches')
+
         pose_kwargs = dict(
             img_size=tuple(cfg.INPUT.SIZE_TRAIN),
             flip_prob=cfg.INPUT.PROB,
@@ -82,6 +91,8 @@ def make_dataloader(cfg):
             pixel_std=cfg.INPUT.PIXEL_STD,
             heatmap_size=hm_size,
             pose_guided_erasing=getattr(cfg.MODEL, 'POSE_GUIDED_ERASING', False),
+            occluders=occluders,
+            roa_prob=getattr(cfg.MODEL, 'POSE_ROA_PROB', 0.5),
         )
 
         train_set = PoseImageDataset(

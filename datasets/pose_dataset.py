@@ -58,7 +58,9 @@ class PoseImageDataset(Dataset):
                  pixel_std=(0.5, 0.5, 0.5),
                  heatmap_size=None,
                  max_persons=MAX_PERSONS,
-                 pose_guided_erasing=False):
+                 pose_guided_erasing=False,
+                 occluders=None,
+                 roa_prob=0.5):
         """
         Args:
             dataset: list of (img_path, pid, camid, trackid)
@@ -73,6 +75,8 @@ class PoseImageDataset(Dataset):
             heatmap_size: (H, W) final heatmap size; None = same as img_size
             max_persons: max persons to return per image
             pose_guided_erasing: if True, use pose-guided erasing instead of RE
+            occluders: list of RGBA patches for Realistic Occlusion Augmentation
+            roa_prob: probability of applying ROA per image
         """
         self.dataset = dataset
         self.img_size = img_size
@@ -85,6 +89,8 @@ class PoseImageDataset(Dataset):
         self.heatmap_size = heatmap_size or img_size
         self.max_persons = min(max_persons, MAX_PERSONS)
         self.pose_guided_erasing = pose_guided_erasing and is_train
+        self.occluders = occluders if is_train else None
+        self.roa_prob = roa_prob if is_train else 0.0
 
         # Load index
         index_path = os.path.join(pose_dir, 'index.json')
@@ -133,6 +139,12 @@ class PoseImageDataset(Dataset):
         if self.is_train and self.pad > 0:
             img, persons, crop_x, crop_y = self._joint_pad_crop(
                 img, persons, target_h, target_w, self.pad)
+
+        # 3.5) Realistic Occlusion Augmentation (ROA): paste VOC objects
+        if self.occluders and random.random() < self.roa_prob:
+            from .occlusion_augmentation import occlude_with_objects
+            img = occlude_with_objects(img, self.occluders, n=1,
+                                       min_overlap=0.2, max_overlap=0.5)
 
         # 4) Convert image to tensor + normalize
         img_tensor = self._image_to_tensor(img)
