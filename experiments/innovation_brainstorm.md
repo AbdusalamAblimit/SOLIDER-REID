@@ -904,3 +904,47 @@ ProFD 的 PartFeatureDecoder 用文本 prompt 做 Query、spatial tokens 做 K/V
 4. **深入文献学习**：
    - 优先研究最近的遮挡 ReID 方法（2024-2025），寻找尚未尝试的思路
    - 重点关注不是 "加模块" 而是 "改范式" 的工作
+
+---
+
+## Phase 2.23: 2026-03-14 深度文献调研后的方向更新
+
+### 本轮研究的论文/代码
+
+1. **PADE** (ICASSP 2024): 三视图并行增强训练 + 双增强策略
+2. **ProFD** (ACM MM 2024): CLIP ViT + 文本 prompt 引导 part 解耦 + SemiAttention decoder
+3. **PersonViT**: 大规模自监督 ViT 预训练
+4. **Pose2ID** (CVPR 2025): 训练无关 NFC + 身份引导行人生成
+5. **CION** (NeurIPS 2024): 跨视频身份相关预训练，提供 Swin-T 预训练权重
+6. **SEAS** (CVPR 2024): 3D 体形作为监督信号（而非输入模块）
+7. **Camera Bias Debiasing** (ICLR 2025 Spotlight): 特征维度级别的相机偏差分析
+8. **P3E**: 概率性部位嵌入（高斯分布建模不确定性）
+9. **OGFR**: 强化学习引导的 token 选择
+
+### 核心发现
+
+#### 1. 领域范式转移
+近年的强工作正在从"更好的特征提取"转向"更智能的匹配/检索"：
+- Pose2ID: test-time 特征中心化
+- P3E: 分布式匹配（Wasserstein/KL 距离）
+- Camera Bias: 维度级特征分析
+- CVK（我们自己的）: 逐关键点 pairwise 匹配
+
+这意味着：**进一步改进特征提取的边际收益递减，改进距离度量/匹配策略的空间更大**。
+
+#### 2. 训练端辅助 loss 确认为死胡同
+3 个失败（CSGT/SGMKC/PAMC）+ 文献中的趋势共同说明：在已高度优化的特征上叠加辅助训练信号，预期收益极低。
+
+#### 3. 新的有价值方向
+- **Train-test metric alignment**（PAML 方向）：改变已有 loss 的距离计算方式，而非添加新 loss
+- **概率嵌入**（PKE 方向）：如果 PAML 有效，可扩展为概率性关键点嵌入
+- **CION 预训练权重**：drop-in 实验，验证 backbone 质量是否是瓶颈
+- **Camera dimension bias**：分析性方向，理解特征维度的信息分布
+
+### exp051 PAML 的定位
+
+PAML 是"不添加新机制，只对齐训练-测试距离度量"的最小化实验：
+- 将 GCN branch 的 part triplet 距离从聚合特征距离改为逐关键点 pairwise 距离
+- 对齐了训练目标与 CVK 测试时逻辑
+- 如果有效：证明"距离度量对齐"比"添加模块"更重要
+- 如果中性/失败：证明距离计算方式不是瓶颈，需要更根本的范式转变
