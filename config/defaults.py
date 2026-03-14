@@ -141,6 +141,8 @@ _C.MODEL.POSE_PAMC_WEIGHT = 0.5          # Consistency loss weight
 _C.MODEL.POSE_PAMC_WARMUP = 10           # Warmup epochs before enabling PAMC
 _C.MODEL.POSE_PAMC_PROJ_DIM = 2048       # Projector MLP hidden dimension
 _C.MODEL.POSE_PAML = False               # Enable PAML (Pose-Aware Metric Learning) for part triplet
+_C.MODEL.POSE_KP_RPE = False             # Enable KP-RPE (Keypoint Relative Position Encoding) in Swin attention
+_C.MODEL.POSE_KP_RPE_HIDDEN = 32        # Hidden dim for KP-RPE MLP
 
 # -----------------------------------------------------------------------------
 # INPUT

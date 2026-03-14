@@ -17,6 +17,7 @@ from .modules.pose_cross_attention import PoseCrossAttention
 from .modules.pose_reconstruction_head import PoseReconstructionHead
 from .modules.pose_utils import merge_person_heatmaps
 from .modules.skeleton_gcn import SkeletonGCNHead
+from .modules.keypoint_rpe import KeypointRPE, compute_token_kp_distances
 
 
 class PoseBackboneModel(build_transformer):
@@ -131,6 +132,28 @@ class PoseBackboneModel(build_transformer):
                     for j in range(len(self.base.stages[last_stage_idx].blocks))
                 ])
 
+        # Keypoint Relative Position Encoding (KP-RPE)
+        self.use_kp_rpe = getattr(cfg.MODEL, 'POSE_KP_RPE', False)
+        if self.use_kp_rpe:
+            kp_rpe_hidden = getattr(cfg.MODEL, 'POSE_KP_RPE_HIDDEN', 32)
+            self.kp_rpe_modules = nn.ModuleDict()
+            for stage_idx in sorted(self.psg_stage_indices):
+                stage = self.base.stages[stage_idx]
+                num_heads = stage.blocks[0].attn.w_msa.num_heads
+                for block_idx in range(len(stage.blocks)):
+                    key = f's{stage_idx}_b{block_idx}'
+                    self.kp_rpe_modules[key] = KeypointRPE(
+                        num_keypoints=17,
+                        num_heads=num_heads,
+                        hidden_dim=kp_rpe_hidden,
+                    )
+            total_params = sum(p.numel() for p in self.kp_rpe_modules.parameters())
+            print(f'[KP-RPE] Keypoint Relative Position Encoding enabled: '
+                  f'hidden={kp_rpe_hidden}, total_params={total_params}')
+            # Store input image size for coordinate mapping
+            self._input_h = cfg.INPUT.SIZE_TRAIN[0]
+            self._input_w = cfg.INPUT.SIZE_TRAIN[1]
+
         # Pose-Conditioned Channel Gate (PCG) — after GAP, before BN
         self.use_channel_gate = getattr(cfg.MODEL, 'POSE_CHANNEL_GATE', False)
         if self.use_channel_gate:
@@ -214,7 +237,7 @@ class PoseBackboneModel(build_transformer):
         # Store backbone's semantic weight for manual forward
         self._semantic_weight_val = semantic_weight
 
-    def _run_backbone_with_psg(self, x, scene_heatmaps):
+    def _run_backbone_with_psg(self, x, scene_heatmaps, pose_dict=None):
         """Run backbone forward with PSG injection in Stage 3.
 
         Manually iterates backbone stages, inserting PSG after each
@@ -242,7 +265,8 @@ class PoseBackboneModel(build_transformer):
             if i in self.psg_stage_indices:
                 # Stage with PSG: manually run blocks with gate injection
                 x, hw_shape, out, out_hw_shape = self._run_stage_with_psg(
-                    stage, x, hw_shape, scene_heatmaps, stage_idx=i)
+                    stage, x, hw_shape, scene_heatmaps, stage_idx=i,
+                    pose_dict=pose_dict)
             else:
                 # Normal stage: run without modification
                 x, hw_shape, out, out_hw_shape = stage(x, hw_shape)
@@ -278,10 +302,80 @@ class PoseBackboneModel(build_transformer):
 
         return global_feat, outs
 
-    def _run_stage_with_psg(self, stage, x, hw_shape, scene_heatmaps, stage_idx=None):
-        """Run a stage's blocks with pose injection (PSG, PAB, PXA, or combo)."""
+    def _compute_kprpe_bias(self, kp_rpe_module, hw_shape, keypoints, scores,
+                            shift_size, window_size):
+        """Compute KP-RPE attention bias for a single block.
+
+        Args:
+            kp_rpe_module: KeypointRPE module for this block
+            hw_shape: (H, W) feature map spatial dimensions
+            keypoints: (B, 17, 2) person 0's pixel coordinates
+            scores: (B, 17) confidence scores
+            shift_size: shift amount for this block (0 or window_size//2)
+            window_size: window size (7)
+
+        Returns:
+            extra_attn_bias: (B*nW, num_heads, ws*ws, ws*ws)
+        """
+        H, W = hw_shape
+        B = keypoints.shape[0]
+        ws = window_size
+
+        # Compute total stride from input to this feature map
+        # For Swin-Tiny: patch_size=4, then 3 downsamples of 2x each = 4*2*2*2=32
+        stride = self._input_h // H  # should be 32 for 384->12
+
+        # Compute per-token distances to keypoints: (B, H*W, 17)
+        token_dists = compute_token_kp_distances(
+            hw_shape, keypoints, scores, stride=stride)
+
+        # Reshape to spatial: (B, H, W, 17)
+        token_dists = token_dists.view(B, H, W, 17)
+
+        # Pad to multiples of window size
+        pad_r = (ws - W % ws) % ws
+        pad_b = (ws - H % ws) % ws
+        if pad_r > 0 or pad_b > 0:
+            # Pad with zeros (padded regions have zero distance = no effect)
+            token_dists = F.pad(token_dists, (0, 0, 0, pad_r, 0, pad_b))
+        H_pad, W_pad = token_dists.shape[1], token_dists.shape[2]
+
+        # Cyclic shift (for shifted window blocks)
+        if shift_size > 0:
+            token_dists = torch.roll(
+                token_dists,
+                shifts=(-shift_size, -shift_size),
+                dims=(1, 2))
+
+        # Window partition: (B, H_pad, W_pad, 17)
+        #   -> (B, H_pad/ws, ws, W_pad/ws, ws, 17)
+        #   -> (B, H_pad/ws, W_pad/ws, ws, ws, 17)
+        #   -> (B*nW, ws*ws, 17)
+        token_dists = token_dists.view(B, H_pad // ws, ws, W_pad // ws, ws, 17)
+        token_dists = token_dists.permute(0, 1, 3, 2, 4, 5).contiguous()
+        nW = (H_pad // ws) * (W_pad // ws)
+        token_dists = token_dists.view(B * nW, ws * ws, 17)
+
+        # Compute pairwise bias via KeypointRPE
+        # Returns: (B*nW, num_heads, ws*ws, ws*ws)
+        return kp_rpe_module(token_dists)
+
+    def _run_stage_with_psg(self, stage, x, hw_shape, scene_heatmaps,
+                            stage_idx=None, pose_dict=None):
+        """Run a stage's blocks with pose injection (PSG, PAB, PXA, KP-RPE, or combo)."""
         for block_idx, block in enumerate(stage.blocks):
             key = f's{stage_idx}_b{block_idx}'
+
+            # Compute KP-RPE bias if enabled
+            kp_rpe_bias = None
+            if self.use_kp_rpe and pose_dict is not None and key in self.kp_rpe_modules:
+                keypoints = pose_dict['keypoints'][:, 0, :, :]  # (B, 17, 2)
+                kp_scores = pose_dict['scores'][:, 0, :]  # (B, 17)
+                shift_size = block.attn.shift_size
+                window_size = block.attn.window_size
+                kp_rpe_bias = self._compute_kprpe_bias(
+                    self.kp_rpe_modules[key], hw_shape,
+                    keypoints, kp_scores, shift_size, window_size)
 
             if self.use_combo and scene_heatmaps is not None:
                 # Combo mode: PAB inside attention + PSG after block
@@ -298,6 +392,13 @@ class PoseBackboneModel(build_transformer):
                 pose_bias_map = self.pab_modules_dict[key](
                     scene_heatmaps, hw_shape)
                 x = block(x, hw_shape, pose_bias_map=pose_bias_map)
+            elif kp_rpe_bias is not None:
+                # KP-RPE mode: pass pre-computed bias directly to block
+                # Need to pass via extra_attn_bias (bypass pose_bias_map path)
+                x = block(x, hw_shape, extra_attn_bias=kp_rpe_bias)
+                # PSG still applies after block
+                if scene_heatmaps is not None and key in getattr(self, 'psg_modules_dict', {}):
+                    x = self.psg_modules_dict[key](x, hw_shape, scene_heatmaps)
             else:
                 x = block(x, hw_shape)
                 # PSG-only mode: apply gate after block
@@ -325,7 +426,9 @@ class PoseBackboneModel(build_transformer):
             scene_heatmaps = scene_heatmaps * keep_mask.float()
 
         # Run backbone with PSG injection
-        global_feat, featmaps = self._run_backbone_with_psg(x, scene_heatmaps)
+        global_feat, featmaps = self._run_backbone_with_psg(
+            x, scene_heatmaps,
+            pose_dict=pose_dict if self.use_kp_rpe else None)
 
         # Apply Pose-Conditioned Channel Gate (PCG) after GAP, before BN
         if self.use_channel_gate and scene_heatmaps is not None:

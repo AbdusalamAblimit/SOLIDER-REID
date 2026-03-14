@@ -1490,3 +1490,24 @@ B. 直接启动 exp025，exp024 可以后续补跑
 **决策**: **训练端辅助 loss 方向彻底关闭**。下一步需要进入深度文献学习 + 新机制探索。
 
 **执行结果**: exp051 PAML 中性，方向关闭。连续失败列表：exp047 CSGT、exp048 SGMKC、exp050 PAMC、exp051 PAML、exp036 Per-KP Triplet。
+
+### [2026-03-14 05:45] 决策 #58
+
+**上下文**: exp051 PAML 中性后，训练端辅助 loss 方向彻底关闭（5 次连续失败）。需要选择全新方向。
+
+**选项**:
+  A. **KP-RPE (Keypoint Relative Position Encoding)** — 在 Swin Stage 3 WindowMSA 中注入关键点相对距离编码，修改 backbone attention pattern
+  B. **PPE (Probabilistic Pose-Aware Embeddings)** — 将 GCN 输出改为高斯分布，概率匹配
+
+**红蓝队辩论**:
+- 🔴 红队（方案 A: KP-RPE）核心论点: 基础设施已就绪（extra_attn_bias），~2.8K 参数，零初始化安全退化。PAB 失败是因为 additive decomposition 不够表达（bias=val[i]+val[j] 丢失 pairwise 信息），KP-RPE 用 r_ij=d_i-d_j 计算真正的 pairwise 结构关系。论文 story 清晰："将 RPE 从空间推广到身体结构空间"。不引入新 loss，避开 5 连败雷区。攻击 B: 实现复杂度高（方差监督+概率距离+pipeline 兼容性），多个未验证假设，审稿风险高。信心: 7/10
+- 🔵 蓝队（方案 B: PPE）核心论点: 重新定义遮挡问题（从 visibility mask 到 uncertainty quantification），pose confidence → feature uncertainty 的因果链是全新机制。论文理论深度更强（概率嵌入+信息几何）。与 PSG 正交互补（PSG 管特征提取，PPE 管匹配）。P3E/DUL 已验证概率嵌入在 ReID 中可训练。攻击 A: PAB 已在同范式失败（attention bias 变体），CLAUDE.md 警告"attention trick"，2.8K 参数太小难以撑论文主贡献，12x4 分辨率太粗糙。信心: 7/10
+- 综合判断: KP-RPE 是 backbone 机制改变（非 branch 内 trick），实现简单（~1 天），失败成本低（零初始化），诊断价值高。PPE 作为 backup 保留。
+
+**选择**: A — KP-RPE
+**理由**:
+1. KP-RPE 是 backbone 级改动（与 PSG 同类），不在 CLAUDE.md 警告的"branch 内 trick"范围内
+2. 实现快、风险低，可快速验证后再决定是否转向 PPE
+3. PAB 的失败有明确的技术原因（additive decomposition），KP-RPE 直接修复该问题
+4. 即使失败，诊断信息清晰（确认 attention bias 在 PSG 存在时是否冗余）
+5. PPE 作为后续方向保留——如果 KP-RPE 中性，再投入 PPE 的开发时间

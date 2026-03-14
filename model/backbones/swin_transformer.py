@@ -786,7 +786,7 @@ class ShiftWindowMSA(BaseModule):
 
         self.drop = build_dropout(dropout_layer)
 
-    def forward(self, query, hw_shape, pose_bias_map=None):
+    def forward(self, query, hw_shape, pose_bias_map=None, extra_attn_bias=None):
         B, L, C = query.shape
         H, W = hw_shape
         assert L == H * W, 'input feature has wrong size'
@@ -799,7 +799,7 @@ class ShiftWindowMSA(BaseModule):
         H_pad, W_pad = query.shape[1], query.shape[2]
 
         # Handle pose bias map: pad, shift, partition, compute pairwise bias
-        extra_attn_bias = None
+        # (extra_attn_bias may already be set by caller, e.g., KP-RPE)
         if pose_bias_map is not None:
             # pose_bias_map: (B, num_heads, H, W) -> pad to match feature map
             pbm = F.pad(pose_bias_map, (0, pad_r, 0, pad_b))
@@ -988,12 +988,13 @@ class SwinBlock(BaseModule):
             add_identity=True,
             init_cfg=None)
 
-    def forward(self, x, hw_shape, pose_bias_map=None):
+    def forward(self, x, hw_shape, pose_bias_map=None, extra_attn_bias=None):
 
         def _inner_forward(x):
             identity = x
             x = self.norm1(x)
-            x = self.attn(x, hw_shape, pose_bias_map=pose_bias_map)
+            x = self.attn(x, hw_shape, pose_bias_map=pose_bias_map,
+                          extra_attn_bias=extra_attn_bias)
 
             x = x + identity
 
