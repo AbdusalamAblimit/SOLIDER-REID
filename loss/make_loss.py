@@ -262,6 +262,19 @@ def make_loss(cfg, num_classes):    # modified by gu
                     total = total + kp_tri_w * kp_tri_loss
                     loss_details['tri_kp'] = kp_tri_loss.item()
 
+                # Keypoint Dissimilar Loss (KDL) — prevent GCN feature collapse
+                if getattr(cfg.MODEL, 'POSE_KP_DISSIMILAR', False) and kp_data is not None and 'kp_feats' in kp_data:
+                    kdl_w = getattr(cfg.MODEL, 'POSE_KP_DISSIMILAR_WEIGHT', 0.1)
+                    kp_f = kp_data['kp_feats']  # (B, 17, C)
+                    kp_f_norm = F.normalize(kp_f, dim=-1)
+                    # Pairwise cosine similarity matrix (B, 17, 17)
+                    cos_sim = torch.bmm(kp_f_norm, kp_f_norm.transpose(1, 2))
+                    # Mean of upper triangle (excluding diagonal) = average cross-kp similarity
+                    mask = torch.triu(torch.ones(17, 17, device=cos_sim.device), diagonal=1).bool()
+                    kdl_loss = cos_sim[:, mask].mean()  # minimize cross-kp similarity
+                    total = total + kdl_w * kdl_loss
+                    loss_details['kdl'] = kdl_loss.item()
+
                 loss_details['total'] = total.item()
 
                 # Store details on the loss tensor for the processor to read
