@@ -19,6 +19,7 @@ from .modules.pose_utils import merge_person_heatmaps
 from .modules.skeleton_gcn import SkeletonGCNHead
 from .modules.keypoint_rpe import KeypointRPE, compute_token_kp_distances
 from .modules.pose_xcad import PoseCrossAttnHead
+from .modules.pose_attn_mask import PoseAttnMask
 
 
 class PoseBackboneModel(build_transformer):
@@ -41,6 +42,8 @@ class PoseBackboneModel(build_transformer):
         self.use_combo = getattr(cfg.MODEL, 'POSE_PSG_PAB_COMBO', False)
         self.use_cross_attn = getattr(cfg.MODEL, 'POSE_CROSS_ATTN', False)
         self.use_content_adaptive = getattr(cfg.MODEL, 'POSE_PSG_CONTENT_ADAPTIVE', False)
+        self.use_attn_mask = getattr(cfg.MODEL, 'POSE_ATTN_MASK', False)
+        self.attn_mask_threshold = getattr(cfg.MODEL, 'POSE_ATTN_MASK_THRESHOLD', 0.3)
 
         # Determine which stages get pose injection
         psg_stages = list(getattr(cfg.MODEL, 'POSE_PSG_STAGES', [-1]))
@@ -132,6 +135,19 @@ class PoseBackboneModel(build_transformer):
                     self.psg_modules_dict[f's{last_stage_idx}_b{j}']
                     for j in range(len(self.base.stages[last_stage_idx].blocks))
                 ])
+
+            # PGAM (Pose-Guided Attention Masking): works alongside PSG
+            if self.use_attn_mask:
+                self.pgam_modules_dict = nn.ModuleDict()
+                for stage_idx in sorted(self.psg_stage_indices):
+                    stage = self.base.stages[stage_idx]
+                    num_heads = stage.blocks[0].attn.w_msa.num_heads
+                    for block_idx in range(len(stage.blocks)):
+                        key = f's{stage_idx}_b{block_idx}'
+                        self.pgam_modules_dict[key] = PoseAttnMask(
+                            num_heads=num_heads,
+                            threshold=self.attn_mask_threshold,
+                        )
 
         # Keypoint Relative Position Encoding (KP-RPE)
         self.use_kp_rpe = getattr(cfg.MODEL, 'POSE_KP_RPE', False)
@@ -421,9 +437,15 @@ class PoseBackboneModel(build_transformer):
                 if scene_heatmaps is not None and key in getattr(self, 'psg_modules_dict', {}):
                     x = self.psg_modules_dict[key](x, hw_shape, scene_heatmaps)
             else:
-                x = block(x, hw_shape)
-                # PSG-only mode: apply gate after block
-                if not self.use_attn_bias and scene_heatmaps is not None:
+                # PSG-only mode (optionally with PGAM attention masking)
+                if self.use_attn_mask and scene_heatmaps is not None and key in getattr(self, 'pgam_modules_dict', {}):
+                    # PGAM: generate pose-based attention mask and pass to block
+                    pose_bias_map = self.pgam_modules_dict[key](scene_heatmaps, hw_shape)
+                    x = block(x, hw_shape, pose_bias_map=pose_bias_map)
+                else:
+                    x = block(x, hw_shape)
+                # PSG: apply gate after block
+                if not self.use_attn_bias and scene_heatmaps is not None and key in getattr(self, 'psg_modules_dict', {}):
                     x = self.psg_modules_dict[key](x, hw_shape, scene_heatmaps)
 
         # Handle downsample (Stage 3 has no downsample in Swin)
