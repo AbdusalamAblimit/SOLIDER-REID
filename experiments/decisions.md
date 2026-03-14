@@ -1482,3 +1482,11 @@ B. 直接启动 exp025，exp024 可以后续补跑
 3. 如果成功，自然延伸为"训练端-测试端距离对齐"的完整 story
 4. 如果失败，也是有价值的消融（证明距离方式不是瓶颈）
 5. PKE 作为后续候选保留
+
+### [2026-03-14 05:31] 决策 #57
+
+**上下文**: exp051 PAML 完成，结果中性。equal_concat: mAP 60.7% / R1 72.7%（≈3-seed mean），CVK hybrid: mAP 62.0% / R1 73.6%（vs exp030a CVK 61.9%/73.2%）。训练-测试 metric alignment 假设未验证。这是训练端辅助 loss/距离修改方向连续第 5 次未能超越 exp030a 基线。
+
+**决策**: **训练端辅助 loss 方向彻底关闭**。下一步需要进入深度文献学习 + 新机制探索。
+
+**执行结果**: exp051 PAML 中性，方向关闭。连续失败列表：exp047 CSGT、exp048 SGMKC、exp050 PAMC、exp051 PAML、exp036 Per-KP Triplet。

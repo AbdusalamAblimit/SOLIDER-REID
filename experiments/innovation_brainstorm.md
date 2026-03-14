@@ -948,3 +948,45 @@ PAML 是"不添加新机制，只对齐训练-测试距离度量"的最小化实
 - 对齐了训练目标与 CVK 测试时逻辑
 - 如果有效：证明"距离度量对齐"比"添加模块"更重要
 - 如果中性/失败：证明距离计算方式不是瓶颈，需要更根本的范式转变
+
+---
+
+## Phase 2.24: 2026-03-14 exp051 PAML 结果 — 训练端辅助 loss 方向彻底关闭
+
+### exp051 结果
+
+| 模式 | exp030a | exp051 PAML | Δ |
+|------|---------|-------------|---|
+| equal_concat | 60.73% / 72.57% (3-seed) | 60.7% / 72.7% | ≈0 |
+| cvk_hybrid | 61.9% / 73.2% | 62.0% / 73.6% | +0.1% / +0.4% |
+
+**结论：完全中性。训练-测试 metric alignment 假设未得到验证。**
+
+### 训练端辅助 loss 连续失败汇总（5 次）
+
+| 实验 | 方法 | 类型 | 结果 |
+|------|------|------|------|
+| exp047 | CSGT (Common-Support-Guided Triplet) | 新 loss | ❌ 中止，pos/neg 无法区分 |
+| exp048 | SGMKC (Skeleton-Guided Masked Keypoint Completion) | 自监督辅助 loss | ❌ 负面 (-1.6% mAP) |
+| exp050 | PAMC (Pose-Aware Masking Consistency) | 一致性辅助 loss | 🟡 中性 |
+| exp051 | PAML (Pose-Aware Metric Learning) | 替换已有 loss 距离 | 🟡 中性 |
+| (exp036) | Per-Keypoint Triplet | 新 loss | ❌ 负面 (-0.5% mAP) |
+
+### 结论与方向转移
+
+**训练端 loss 修改方向已彻底关闭。** 不论是：
+- 添加新 loss（CSGT, SGMKC, Per-KP Triplet）
+- 添加一致性 loss（PAMC）
+- 替换已有 loss 的距离计算（PAML）
+
+都未能超越 exp030a 基线。这说明：
+
+1. 当前 GCN branch 的 ID loss + Triplet loss 已经足够——增量训练信号无法带来额外增益
+2. 问题不在 loss 函数本身，而在更深层的架构或数据表示
+3. 需要转向全新的机制方向
+
+### 下一步方向候选
+
+1. **KP-RPE (Keypoint Relative Position Encoding)**: 在 Swin attention 中注入关键点相对位置信息，直接影响 backbone 的注意力分配。已确认基础设施存在（pose_bias_map）。
+2. **深度文献学习**: 寻找完全不同的问题定义或机制
+3. **概率嵌入方向**: 不确定性感知的关键点特征表示
