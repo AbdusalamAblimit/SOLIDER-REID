@@ -163,7 +163,8 @@ def do_train(cfg,
                 # Prepare per-keypoint triplet data
                 paml_enabled = getattr(cfg.MODEL, 'POSE_PAML', False)
                 kp_aux_data = None
-                if kp_data is not None and (kp_triplet_enabled or csgt_enabled or paml_enabled):
+                kdl_enabled = getattr(cfg.MODEL, 'POSE_KP_DISSIMILAR', False)
+                if kp_data is not None and (kp_triplet_enabled or csgt_enabled or paml_enabled or kdl_enabled):
                     kp_aux_data = dict(kp_data)
                     if kp_triplet_enabled:
                         kp_aux_data['weight'] = kp_triplet_weight
