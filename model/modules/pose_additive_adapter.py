@@ -24,9 +24,11 @@ class PoseAdditiveAdapter(nn.Module):
         bottleneck_dim: Bottleneck dimension for efficiency
     """
 
-    def __init__(self, pose_channels=17, feat_channels=768, bottleneck_dim=32):
+    def __init__(self, pose_channels=17, feat_channels=768, bottleneck_dim=32,
+                 routed=False):
         super().__init__()
         self.feat_channels = feat_channels
+        self.routed = routed
 
         # Pose encoder with bottleneck: 17 → bottleneck → feat_channels
         self.encoder = nn.Sequential(
@@ -66,5 +68,13 @@ class PoseAdditiveAdapter(nn.Module):
 
         # Reshape to match token layout
         adapter_out = adapter_out.permute(0, 2, 3, 1).reshape(B, H * W, C)
+
+        # Reliability routing: only add adapter to low-confidence (occluded) regions
+        if self.routed:
+            # body_confidence = max of sigmoid heatmap channels → high for visible parts
+            body_conf = hm.max(dim=1, keepdim=True)[0]  # (B, 1, H, W)
+            # occlusion_mask: 1 for occluded, 0 for visible
+            occlusion_mask = (1.0 - body_conf).permute(0, 2, 3, 1).reshape(B, H * W, 1)
+            adapter_out = adapter_out * occlusion_mask
 
         return x + adapter_out

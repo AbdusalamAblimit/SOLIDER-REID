@@ -166,10 +166,12 @@ class PoseBackboneModel(build_transformer):
                     feat_ch = self.base.num_features[stage_idx]
                     for block_idx in range(len(stage.blocks)):
                         key = f's{stage_idx}_b{block_idx}'
+                        paa_routed = getattr(cfg.MODEL, 'POSE_PAA_ROUTED', False)
                         self.paa_modules_dict[key] = PoseAdditiveAdapter(
                             pose_channels=17,
                             feat_channels=feat_ch,
                             bottleneck_dim=32,
+                            routed=paa_routed,
                         )
 
         # Keypoint Relative Position Encoding (KP-RPE)
