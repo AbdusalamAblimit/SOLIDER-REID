@@ -275,6 +275,15 @@ def make_loss(cfg, num_classes):    # modified by gu
                     total = total + kdl_w * kdl_loss
                     loss_details['kdl'] = kdl_loss.item()
 
+                # PKE: add sigma regularization to prevent sigma collapse to zero
+                if getattr(cfg.MODEL, 'POSE_PKE', False) and kp_data is not None and 'sigma' in kp_data:
+                    sigma = kp_data['sigma']  # (B, C)
+                    # Regularize: penalize too-small sigma (prevent collapse to deterministic)
+                    # log(sigma).mean() → negative when sigma < 1
+                    pke_reg = -sigma.log().clamp(min=-5).mean() * 0.01
+                    total = total + pke_reg
+                    loss_details['pke'] = sigma.mean().item()
+
                 # Keypoint Uncertainty Regularization — prevent collapse to all-uncertain
                 if getattr(cfg.MODEL, 'POSE_KP_UNCERTAINTY', False) and kp_data is not None and 'kp_uncertainty' in kp_data:
                     unc_reg_w = getattr(cfg.MODEL, 'POSE_KP_UNCERTAINTY_REG', 0.1)

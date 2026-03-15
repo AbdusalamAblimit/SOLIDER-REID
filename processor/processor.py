@@ -165,7 +165,8 @@ def do_train(cfg,
                 kp_aux_data = None
                 kdl_enabled = getattr(cfg.MODEL, 'POSE_KP_DISSIMILAR', False)
                 lku_enabled = getattr(cfg.MODEL, 'POSE_KP_UNCERTAINTY', False)
-                if kp_data is not None and (kp_triplet_enabled or csgt_enabled or paml_enabled or kdl_enabled or lku_enabled):
+                pke_enabled = getattr(cfg.MODEL, 'POSE_PKE', False)
+                if kp_data is not None and (kp_triplet_enabled or csgt_enabled or paml_enabled or kdl_enabled or lku_enabled or pke_enabled):
                     kp_aux_data = dict(kp_data)
                     if kp_triplet_enabled:
                         kp_aux_data['weight'] = kp_triplet_weight

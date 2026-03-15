@@ -270,6 +270,7 @@ class PoseBackboneModel(build_transformer):
             sgmkc_ratio = getattr(cfg.MODEL, 'POSE_SGMKC_RATIO', 0.3)
             kp_uncertainty = getattr(cfg.MODEL, 'POSE_KP_UNCERTAINTY', False)
             kp_uncertainty_reg = getattr(cfg.MODEL, 'POSE_KP_UNCERTAINTY_REG', 0.1)
+            pke = getattr(cfg.MODEL, 'POSE_PKE', False)
             self.skeleton_head = SkeletonGCNHead(
                 feat_dim=self.in_planes,
                 hidden_dim=gcn_hidden,
@@ -284,6 +285,7 @@ class PoseBackboneModel(build_transformer):
                 sgmkc_ratio=sgmkc_ratio,
                 kp_uncertainty=kp_uncertainty,
                 kp_uncertainty_reg=kp_uncertainty_reg,
+                pke=pke,
             )
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'concat_scaled')
             if keypoint_pool_only:

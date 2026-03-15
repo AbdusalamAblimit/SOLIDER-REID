@@ -125,7 +125,8 @@ class SkeletonGCNHead(nn.Module):
                  kp_weight_mode='score', kp_triplet=False,
                  kp_learnable_attn=False,
                  sgmkc=False, sgmkc_ratio=0.3,
-                 kp_uncertainty=False, kp_uncertainty_reg=0.1):
+                 kp_uncertainty=False, kp_uncertainty_reg=0.1,
+                 pke=False):
         super().__init__()
         self.feat_dim = feat_dim
         self.input_h, self.input_w = input_size
@@ -138,6 +139,7 @@ class SkeletonGCNHead(nn.Module):
         self.sgmkc_ratio = sgmkc_ratio
         self.kp_uncertainty = kp_uncertainty
         self.kp_uncertainty_reg = kp_uncertainty_reg
+        self.pke = pke
 
         # Optional graph propagation over sampled keypoint features.
         if self.use_gcn:
@@ -171,7 +173,14 @@ class SkeletonGCNHead(nn.Module):
                 nn.Sigmoid()  # output in [0, 1], higher = more uncertain
             )
 
-        # BN + Classifier for skeleton feature
+        # Probabilistic Keypoint Embeddings: per-keypoint log_sigma prediction
+        if self.pke:
+            self.sigma_head = nn.Linear(feat_dim, feat_dim)
+            # Init: small sigma (log_sigma = -2 → sigma ≈ 0.14)
+            nn.init.zeros_(self.sigma_head.weight)
+            nn.init.constant_(self.sigma_head.bias, -2.0)
+
+        # BN + Classifier for skeleton feature (uses mu only)
         self.bn = nn.BatchNorm1d(feat_dim)
         self.bn.bias.requires_grad_(False)
         self.classifier = nn.Linear(feat_dim, num_classes, bias=False)
@@ -311,10 +320,21 @@ class SkeletonGCNHead(nn.Module):
         skeleton_feat = (kp_feats_enhanced * weights).sum(dim=1) / \
                         weights.sum(dim=1).clamp(min=1e-6)  # (B, C)
 
+        # PKE: compute per-keypoint log_sigma and pooled sigma
+        skeleton_sigma = None
+        if self.pke:
+            log_sigma = self.sigma_head(kp_feats_enhanced)  # (B, 17, C)
+            sigma = torch.exp(log_sigma.clamp(max=5.0))  # (B, 17, C), clamp for stability
+            # Inverse-variance weighted pooling for sigma
+            skeleton_sigma = (sigma * weights).sum(dim=1) / \
+                            weights.sum(dim=1).clamp(min=1e-6)  # (B, C)
+
         aux_data = {
             'kp_feats': kp_feats_enhanced,  # (B, 17, C)
             'kp_weights': kp_weights,       # (B, 17)
         }
+        if skeleton_sigma is not None:
+            aux_data['sigma'] = skeleton_sigma  # (B, C)
         if kp_unc is not None:
             aux_data['kp_uncertainty'] = kp_unc  # (B, 17)
         # SGMKC: pass mask and original features for reconstruction loss
@@ -322,11 +342,18 @@ class SkeletonGCNHead(nn.Module):
             aux_data['sgmkc_mask'] = sgmkc_mask              # (B, 17) True=kept
             aux_data['sgmkc_original'] = kp_feats_original   # (B, 17, C)
 
+        # PKE: for test, concatenate mu and log_sigma as the branch feature
+        if self.pke and skeleton_sigma is not None and not self.training:
+            # Test: output concat(mu, log_sigma) so evaluator can compute MLS
+            skeleton_feat_out = torch.cat([skeleton_feat, skeleton_sigma.log().clamp(min=-5, max=5)], dim=1)
+        else:
+            skeleton_feat_out = skeleton_feat
+
         if return_cls:
-            # BN + Classifier
+            # BN + Classifier (uses mu only, not sigma)
             feat_bn = self.bn(skeleton_feat)
             aux_data['feat_bn'] = feat_bn
             cls_score = self.classifier(feat_bn)
             return [cls_score], [skeleton_feat], aux_data
         else:
-            return None, [skeleton_feat], aux_data
+            return None, [skeleton_feat_out], aux_data
