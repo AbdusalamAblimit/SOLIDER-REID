@@ -1126,3 +1126,43 @@ PSG + 0.5x loss + Skeleton GCN（exp030a）仍然是最强方法，无一竞争�
 1. **Pose-Guided ROA**: 用 pose heatmap 指导遮挡物的放置位置——只在身体可见区域粘贴（模拟真实遮挡模式）。与现有 ROA 的区别：现有方法随机放置，我们根据 pose 智能放置
 2. **Adaptive ROA**: 根据图像已有的遮挡程度动态调整 ROA 的概率和覆盖面积——已经高度遮挡的图像少加、干净图像多加
 3. **完全不同的方向**: 放弃在数据增强上做文章，转向特征提取/匹配机制的创新
+
+---
+
+## Phase 2.28: 62 个实验后的终极总结 (2026-03-15)
+
+### 已穷尽的方向清单（10 类，全部中性/负面）
+
+| 类别 | 实验 | 结果 | 教训 |
+|------|------|------|------|
+| Auxiliary Loss | 7 个 (CSGT/SGMKC/PAMC/PAML/Per-KP Tri/KDL/LKU) | 全部中性或负面 | PSG+GCN 的训练已充分，增量训练信号无效 |
+| Attention Bias | 2 个 (PAB/KP-RPE) | 方差内 | Swin 12×4 特征图上 attention 修改影响太小 |
+| Attention Masking | 3 个 (PGAM 3变体) | 微弱正向但方差内 | 与 ROA 冗余 |
+| 架构替换 | 1 个 (XCAD) | 负面 | GCN skeleton topology 不可替代 |
+| Dropout/正则化 | 3 个 (SPD/GKD/PWP) | 中性 | 现有正则化已足够 |
+| 数据增强 | 2 个 (ROA/PA-ROA) | ROA +1.07%，但不新颖 | 数据增强有效但不构成创新 |
+| Loss Weighting | 已在 Phase 2 验证 | 0.5x 有效 | 已确认 |
+| Backbone 注入 | PSG 已验证 | +1.33% | 唯一成功的训练端创新 |
+| GCN Branch | 已验证 | +1.40% fusion | 架构级成功 |
+| Learned Uncertainty | 1 个 (LKU) | R1 -1.37% | 额外 head 干扰 keypoint weighting |
+
+### 核心教训
+
+**1. PSG+GCN 框架已达到优化天花板**
+62 个实验中，只有 PSG（backbone injection）、GCN（independent branch）、0.5x loss 和 ROA 是有效的。所有在此基础上的增量修改（loss/attention/weighting/dropout/uncertainty）都失败了。
+
+**2. 有效创新的共性**
+成功的方向都满足一个条件：**在全新的层面引入信息，而不是在已有层面做微调**。
+- PSG：在 backbone feature 形成阶段引入 pose（之前没有）
+- GCN：引入了 skeleton topology 这个新信息源
+- 0.5x loss：改变了优化景观
+- ROA：改变了训练数据分布
+
+**3. 下一步创新必须跳出当前框架**
+不能再在 PSG/GCN 上做任何修改。需要的是一个全新的信息维度或全新的问题定义。
+
+### 当前可行的下一步
+
+1. **深度文献调研**（正在进行）：寻找 2025 年最新的 ReID 范式
+2. **全新问题定义**：如 target ambiguity（多人）、domain adaptation、test-time reasoning
+3. **全新信息源**：如 3D body shape（SEAS）、text descriptions（CLIP-ReID）、video temporal cues
