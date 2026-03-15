@@ -167,10 +167,11 @@ class PoseBackboneModel(build_transformer):
                     for block_idx in range(len(stage.blocks)):
                         key = f's{stage_idx}_b{block_idx}'
                         paa_routed = getattr(cfg.MODEL, 'POSE_PAA_ROUTED', False)
+                        paa_bottleneck = getattr(cfg.MODEL, 'POSE_PAA_BOTTLENECK', 32)
                         self.paa_modules_dict[key] = PoseAdditiveAdapter(
                             pose_channels=17,
                             feat_channels=feat_ch,
-                            bottleneck_dim=32,
+                            bottleneck_dim=paa_bottleneck,
                             routed=paa_routed,
                         )
 
