@@ -1194,3 +1194,34 @@ PSG + 0.5x loss + Skeleton GCN（exp030a）仍然是最强方法，无一竞争�
 
 ### 总计 vs baseline: ~60.73% → 61.8% (ROA) 或 61.0% (PKE)
 加 NFC test-time: 64.0%
+
+---
+
+## Phase 2.30: PAA 突破与后续方向 (2026-03-15)
+
+### 🎉 PAA (Pose Additive Adapter) — 66 个实验中最重要的发现
+
+**exp066**: PSG + GCN + PAA = mAP 61.6% / **R1 74.2%** (+1.63% R1 vs 3-seed!)
+**exp067**: PSG + GCN + PAA + ROA = **mAP 62.0%** / R1 73.7% (+1.27% mAP vs 3-seed!)
+
+**PAA 的核心创新**：在 PSG 乘性门控之后，用加法 adapter 注入 pose-derived content
+- PSG: `x = x * (1 + gate)` — 调制幅值（哪里重要/哪里抑制）
+- PAA: `x = x + adapter(heatmap)` — 添加 pose 语义内容
+- 两者互补形成 **dual-channel pose injection**
+- 仅 51.8K 额外参数，零推理开销
+
+### 用户建议的后续方向（按优先级）
+
+1. **Suppress-and-Complete**：PSG 抑制非目标人区域，PAA 只补全目标人的缺失区域
+   - 需要区分 target person 和 non-target person 的 heatmap
+   - 与 KPR 的 target ambiguity 问题对标
+   - 最强创新潜力——从 "pose injection" 升级为 "target-aware dual-path mechanism"
+
+2. **Reliability-routed PAA** (exp068 正在测试)：只对低置信区域加 adapter
+   - exp068 训练中，目前与 PAA 接近
+
+3. **Part-Structured PAA**：按身体部位结构化 adapter
+   - generic conv → part prototypes / graph prototypes
+   - PAA 变成"按身体结构补语义"
+
+4. **Pose-ControlNet/LoRA**：把 PAA 从 block 后 conv 升级到 Q/K/V 或 FFN 内部的低秩条件分支
