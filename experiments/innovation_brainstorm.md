@@ -1166,3 +1166,31 @@ PSG + 0.5x loss + Skeleton GCN（exp030a）仍然是最强方法，无一竞争�
 1. **深度文献调研**（正在进行）：寻找 2025 年最新的 ReID 范式
 2. **全新问题定义**：如 target ambiguity（多人）、domain adaptation、test-time reasoning
 3. **全新信息源**：如 3D body shape（SEAS）、text descriptions（CLIP-ReID）、video temporal cues
+
+---
+
+## Phase 2.29: exp063-065 PTD/PKE 系列 (2026-03-15)
+
+### exp063 PTD (Pose-Token Distillation): ❌❌ 严重负面 (-4.03% mAP)
+- Learned part tokens 无法替代 GCN 的 bilinear sampling + skeleton topology
+- Heatmap KL distillation 教了一些定位但精度远不如关键点坐标
+- **教训**: GCN 的空间定位精度和骨架拓扑先验是不可替代的
+
+### exp064 PKE (Probabilistic Keypoint Embeddings): 🟡 微弱正向 (+0.27% mAP)
+- Precision-weighted feature (mu/sigma) 在 test-time 改变了特征空间
+- Sigma 从 0.135 增长到 0.577（有意义的 uncertainty learning）
+- 不损害 R1（vs LKU -1.37%），但改进在方差内
+- **这是目前唯一成功改变 GCN 特征表示方式而不造成负面影响的实验**
+
+### exp065 PKE+ROA: 进行中，预计 ≈ ROA alone（不正交）
+
+### 当前最佳方法栈
+1. PSG (backbone injection) — +1.33% mAP ✅
+2. 0.5x global loss — +1.53% mAP ✅
+3. GCN (skeleton branch fusion) — +1.40% mAP ✅
+4. ROA (realistic occlusion augmentation) — +1.07% mAP ✅ (不够新颖)
+5. PKE (precision-weighted features) — +0.27% mAP 🟡 (需多 seed 确认)
+6. PGAM (attention masking) — +0.37% mAP 🟡 (与 ROA 冗余)
+
+### 总计 vs baseline: ~60.73% → 61.8% (ROA) 或 61.0% (PKE)
+加 NFC test-time: 64.0%
