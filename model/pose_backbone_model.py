@@ -20,6 +20,7 @@ from .modules.skeleton_gcn import SkeletonGCNHead
 from .modules.keypoint_rpe import KeypointRPE, compute_token_kp_distances
 from .modules.pose_xcad import PoseCrossAttnHead
 from .modules.pose_attn_mask import PoseAttnMask
+from .modules.pose_token_decoder import PoseTokenDecoder
 
 
 class PoseBackboneModel(build_transformer):
@@ -210,10 +211,36 @@ class PoseBackboneModel(build_transformer):
         if self.use_weighted_pool:
             print('[PWP] Pose-Weighted Pooling enabled (replaces GAP)')
 
-        # Skeleton GCN head or Cross-Attention Decoder (mutually exclusive)
+        # Skeleton GCN head or Cross-Attention Decoder or Pose-Token Decoder (mutually exclusive)
         self.use_skeleton_gcn = getattr(cfg.MODEL, 'POSE_SKELETON_GCN', False)
         self.use_xcad = getattr(cfg.MODEL, 'POSE_XCAD', False)
-        if self.use_xcad:
+        self.use_ptd = getattr(cfg.MODEL, 'POSE_TOKEN_DECODER', False)
+
+        if self.use_ptd:
+            # Pose-Token Distillation Decoder
+            ptd_parts = getattr(cfg.MODEL, 'POSE_TOKEN_NUM_PARTS', 5)
+            ptd_dim = getattr(cfg.MODEL, 'POSE_TOKEN_DIM', 256)
+            ptd_heads = getattr(cfg.MODEL, 'POSE_TOKEN_HEADS', 8)
+            ptd_layers = getattr(cfg.MODEL, 'POSE_TOKEN_LAYERS', 2)
+            ptd_hm_weight = getattr(cfg.MODEL, 'POSE_TOKEN_HM_WEIGHT', 1.0)
+            self.ptd_decoder = PoseTokenDecoder(
+                feat_dim=self.in_planes,
+                num_parts=ptd_parts,
+                attn_dim=ptd_dim,
+                num_heads=ptd_heads,
+                num_layers=ptd_layers,
+                num_classes=num_classes,
+                heatmap_loss_weight=ptd_hm_weight,
+            )
+            self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
+            total_params = sum(p.numel() for p in self.ptd_decoder.parameters())
+            print(f'[PSG+PTD] Pose-Token Decoder enabled: '
+                  f'parts={ptd_parts}, dim={ptd_dim}, heads={ptd_heads}, '
+                  f'layers={ptd_layers}, hm_weight={ptd_hm_weight}, '
+                  f'total_params={total_params}, test_feat={self.pose_test_feat}')
+            # Set use_skeleton_gcn=True so existing forward() code path handles part of it
+            self.use_skeleton_gcn = True
+        elif self.use_xcad:
             # Cross-Attention Decoder replaces GCN
             xcad_dim = getattr(cfg.MODEL, 'POSE_XCAD_DIM', 256)
             xcad_heads = getattr(cfg.MODEL, 'POSE_XCAD_HEADS', 8)
@@ -506,8 +533,20 @@ class PoseBackboneModel(build_transformer):
             else:
                 cls_score = self.classifier(feat_cls)
 
-            # Skeleton GCN branch (detached to prevent gradient interference)
-            if self.use_skeleton_gcn and pose_dict is not None:
+            # Part branch: GCN, XCAD, or PTD (detached to prevent gradient interference)
+            if self.use_ptd:
+                # PTD: use heatmaps for supervision, not as input
+                feat_map_detached = featmaps[-1].detach()
+                ptd_cls, ptd_feats, ptd_data = self.ptd_decoder(
+                    feat_map_detached, scene_heatmaps=scene_heatmaps, return_cls=True)
+                # Add heatmap distillation loss to recon_loss
+                if 'ptd_heatmap_loss' in ptd_data:
+                    if recon_loss is None:
+                        recon_loss = ptd_data['ptd_heatmap_loss']
+                    else:
+                        recon_loss = recon_loss + ptd_data['ptd_heatmap_loss']
+                return [cls_score] + ptd_cls, [global_feat] + ptd_feats, featmaps, recon_loss, ptd_data
+            elif self.use_skeleton_gcn and pose_dict is not None:
                 feat_map_detached = featmaps[-1].detach()
                 gcn_cls_scores, gcn_feats, kp_data = self.skeleton_head(
                     feat_map_detached, pose_dict, return_cls=True, label=label)
@@ -522,12 +561,20 @@ class PoseBackboneModel(build_transformer):
             else:
                 test_feat = global_feat
 
-            # Skeleton GCN: assemble test features based on pose_test_feat mode
-            if self.use_skeleton_gcn and pose_dict is not None and \
+            # Part branch test features: PTD (no pose needed) or GCN (needs pose)
+            gcn_feats = None
+            aux_data = {}
+            if self.use_ptd and getattr(self, 'pose_test_feat', 'global') != 'global':
+                # PTD: NO pose_dict needed at inference!
+                _, gcn_feats, aux_data = self.ptd_decoder(
+                    featmaps[-1], scene_heatmaps=None, return_cls=False)
+            elif self.use_skeleton_gcn and not self.use_ptd and pose_dict is not None and \
                     getattr(self, 'pose_test_feat', 'global') != 'global':
                 _, gcn_feats, aux_data = self.skeleton_head(
                     featmaps[-1], pose_dict, return_cls=False)
 
+            # Assemble test features from global + part branch (PTD or GCN)
+            if gcn_feats is not None:
                 if self.pose_test_feat == 'gcn_only':
                     test_feat = torch.cat(gcn_feats, dim=1)
                 elif self.pose_test_feat == 'equal_concat':
@@ -538,8 +585,8 @@ class PoseBackboneModel(build_transformer):
                     test_feat = {
                         'mode': self.pose_test_feat,
                         'global_feat': test_feat,
-                        'kp_feats': aux_data['kp_feats'],
-                        'kp_weights': aux_data['kp_weights'],
+                        'kp_feats': aux_data.get('kp_feats', gcn_feats[0]),
+                        'kp_weights': aux_data.get('kp_weights', torch.ones(1)),
                     }
                 else:  # concat_scaled (default)
                     scale = 1.0 / len(gcn_feats)
