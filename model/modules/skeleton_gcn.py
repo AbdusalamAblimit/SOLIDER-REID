@@ -324,7 +324,7 @@ class SkeletonGCNHead(nn.Module):
         skeleton_sigma = None
         if self.pke:
             log_sigma = self.sigma_head(kp_feats_enhanced)  # (B, 17, C)
-            sigma = torch.exp(log_sigma.clamp(max=5.0))  # (B, 17, C), clamp for stability
+            sigma = torch.exp(log_sigma.clamp(min=-5.0, max=5.0))  # (B, 17, C), clamp for stability
             # Inverse-variance weighted pooling for sigma
             skeleton_sigma = (sigma * weights).sum(dim=1) / \
                             weights.sum(dim=1).clamp(min=1e-6)  # (B, C)
@@ -342,10 +342,10 @@ class SkeletonGCNHead(nn.Module):
             aux_data['sgmkc_mask'] = sgmkc_mask              # (B, 17) True=kept
             aux_data['sgmkc_original'] = kp_feats_original   # (B, 17, C)
 
-        # PKE: for test, concatenate mu and log_sigma as the branch feature
+        # PKE: for test, use sigma-weighted mu (precision-weighted feature)
         if self.pke and skeleton_sigma is not None and not self.training:
-            # Test: output concat(mu, log_sigma) so evaluator can compute MLS
-            skeleton_feat_out = torch.cat([skeleton_feat, skeleton_sigma.log().clamp(min=-5, max=5)], dim=1)
+            # Precision weighting: mu / sigma → high-sigma dims contribute less to distance
+            skeleton_feat_out = skeleton_feat / skeleton_sigma.clamp(min=0.01)
         else:
             skeleton_feat_out = skeleton_feat
 
