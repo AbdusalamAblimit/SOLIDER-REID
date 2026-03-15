@@ -201,7 +201,7 @@ def do_train(cfg,
                     _m = model.module if hasattr(model, 'module') else model
                     if hasattr(_m, 'pamc_masker') and hasattr(_m, 'pamc_projector'):
                         # Get scene heatmaps for masking
-                        pamc_scene_hm, _ = _m._prepare_pose(pose_dict)
+                        pamc_scene_hm, _, _ = _m._prepare_pose(pose_dict)
                         # Create masked image (no grad needed for masking)
                         img_masked, _ = _m.pamc_masker(img, pamc_scene_hm)
                         # Switch to eval mode for deterministic target features

@@ -159,6 +159,7 @@ class PoseBackboneModel(build_transformer):
 
             # PAA (Pose Additive Adapter): additive injection alongside PSG
             self.use_paa = getattr(cfg.MODEL, 'POSE_ADDITIVE_ADAPTER', False)
+            self.paa_target_only = getattr(cfg.MODEL, 'POSE_PAA_TARGET_ONLY', False)
             if self.use_paa:
                 self.paa_modules_dict = nn.ModuleDict()
                 for stage_idx in sorted(self.psg_stage_indices):
@@ -174,6 +175,8 @@ class PoseBackboneModel(build_transformer):
                             bottleneck_dim=paa_bottleneck,
                             routed=paa_routed,
                         )
+                if self.paa_target_only:
+                    print('[S&C] Suppress-and-Complete: PSG=scene, PAA=target(person-0)')
 
         # Keypoint Relative Position Encoding (KP-RPE)
         self.use_kp_rpe = getattr(cfg.MODEL, 'POSE_KP_RPE', False)
@@ -332,11 +335,16 @@ class PoseBackboneModel(build_transformer):
         # Store backbone's semantic weight for manual forward
         self._semantic_weight_val = semantic_weight
 
-    def _run_backbone_with_psg(self, x, scene_heatmaps, pose_dict=None):
+    def _run_backbone_with_psg(self, x, scene_heatmaps, pose_dict=None,
+                               paa_heatmaps=None):
         """Run backbone forward with PSG injection in Stage 3.
 
         Manually iterates backbone stages, inserting PSG after each
         Stage 3 block.
+
+        Args:
+            paa_heatmaps: If not None, use these (target-person) heatmaps for PAA
+                         instead of scene_heatmaps (Suppress-and-Complete mode).
         """
         # Patch embedding
         x, hw_shape = self.base.patch_embed(x)
@@ -362,7 +370,7 @@ class PoseBackboneModel(build_transformer):
                 # Stage with PSG and/or PGAM: manually run blocks with injection
                 x, hw_shape, out, out_hw_shape = self._run_stage_with_psg(
                     stage, x, hw_shape, scene_heatmaps, stage_idx=i,
-                    pose_dict=pose_dict)
+                    pose_dict=pose_dict, paa_heatmaps=paa_heatmaps)
             else:
                 # Normal stage: run without modification
                 x, hw_shape, out, out_hw_shape = stage(x, hw_shape)
@@ -457,7 +465,7 @@ class PoseBackboneModel(build_transformer):
         return kp_rpe_module(token_dists)
 
     def _run_stage_with_psg(self, stage, x, hw_shape, scene_heatmaps,
-                            stage_idx=None, pose_dict=None):
+                            stage_idx=None, pose_dict=None, paa_heatmaps=None):
         """Run a stage's blocks with pose injection (PSG, PAB, PXA, KP-RPE, or combo)."""
         for block_idx, block in enumerate(stage.blocks):
             key = f's{stage_idx}_b{block_idx}'
@@ -507,8 +515,10 @@ class PoseBackboneModel(build_transformer):
                 if not self.use_attn_bias and scene_heatmaps is not None and key in getattr(self, 'psg_modules_dict', {}):
                     x = self.psg_modules_dict[key](x, hw_shape, scene_heatmaps)
                 # PAA: apply additive adapter after PSG
+                # S&C mode: use target-person heatmaps for PAA if available
                 if getattr(self, 'use_paa', False) and scene_heatmaps is not None and key in getattr(self, 'paa_modules_dict', {}):
-                    x = self.paa_modules_dict[key](x, hw_shape, scene_heatmaps)
+                    paa_input = paa_heatmaps if paa_heatmaps is not None else scene_heatmaps
+                    x = self.paa_modules_dict[key](x, hw_shape, paa_input)
 
         # Handle downsample (Stage 3 has no downsample in Swin)
         if stage.downsample:
@@ -521,8 +531,9 @@ class PoseBackboneModel(build_transformer):
                 pose_dict=None):
         # Prepare pose
         scene_heatmaps = None
+        target_heatmaps = None
         if pose_dict is not None:
-            scene_heatmaps, _ = self._prepare_pose(pose_dict)
+            scene_heatmaps, _, target_heatmaps = self._prepare_pose(pose_dict)
 
         # Stochastic Pose Dropout: zero out heatmaps per-sample during training
         if self.training and scene_heatmaps is not None and self.pose_dropout_p > 0:
@@ -531,9 +542,12 @@ class PoseBackboneModel(build_transformer):
             scene_heatmaps = scene_heatmaps * keep_mask.float()
 
         # Run backbone with PSG injection
+        # For S&C: pass target_heatmaps to PAA (separate from scene for PSG)
+        paa_heatmaps = target_heatmaps if getattr(self, 'paa_target_only', False) else None
         global_feat, featmaps = self._run_backbone_with_psg(
             x, scene_heatmaps,
-            pose_dict=pose_dict if self.use_kp_rpe else None)
+            pose_dict=pose_dict if self.use_kp_rpe else None,
+            paa_heatmaps=paa_heatmaps)
 
         # Apply Pose-Conditioned Channel Gate (PCG) after GAP, before BN
         if self.use_channel_gate and scene_heatmaps is not None:
@@ -621,7 +635,13 @@ class PoseBackboneModel(build_transformer):
 
     @staticmethod
     def _prepare_pose(pose_dict):
-        """Merge multi-person heatmaps into scene-level tensors."""
+        """Merge multi-person heatmaps into scene-level tensors.
+
+        Returns:
+            scene_heatmaps: (B, 17, H, W) merged scene-level heatmap
+            scene_scores: (B, 17) merged confidence scores
+            target_heatmaps: (B, 17, H, W) person-0 heatmap (for S&C PAA)
+        """
         heatmaps = pose_dict['heatmaps']
         scores = pose_dict['scores']
         person_mask = pose_dict['person_mask']
@@ -632,4 +652,8 @@ class PoseBackboneModel(build_transformer):
         masked_scores = scores * score_mask
         scene_scores = masked_scores.max(dim=1)[0]
 
-        return scene_heatmaps, scene_scores
+        # Target-person (person-0) heatmap for S&C PAA
+        # person_mask[:, 0] ensures zero output when no person detected
+        target_heatmaps = heatmaps[:, 0] * person_mask[:, 0].view(-1, 1, 1, 1)
+
+        return scene_heatmaps, scene_scores, target_heatmaps

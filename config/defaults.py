@@ -142,6 +142,7 @@ _C.MODEL.POSE_PKE = False               # Probabilistic Keypoint Embeddings (Gau
 _C.MODEL.POSE_ADDITIVE_ADAPTER = False  # Pose Additive Adapter (PAA) alongside PSG
 _C.MODEL.POSE_PAA_ROUTED = False        # Reliability-routed PAA: only add to low-confidence regions
 _C.MODEL.POSE_PAA_BOTTLENECK = 32      # PAA bottleneck dimension
+_C.MODEL.POSE_PAA_TARGET_ONLY = False  # S&C: PAA uses target-person (person-0) heatmap instead of scene
 _C.MODEL.POSE_TOKEN_DECODER = False      # Pose-Token Distillation (PTD): learned part tokens
 _C.MODEL.POSE_TOKEN_NUM_PARTS = 5       # Number of part tokens
 _C.MODEL.POSE_TOKEN_DIM = 256           # Cross-attention dimension

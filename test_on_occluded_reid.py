@@ -196,7 +196,7 @@ def _extract_plain_pose_part_features(model, img, pose_dict, mode):
     global_feat, featmaps = model.base(img)
     part_featmap = featmaps[model.pose_part_stage]
 
-    scene_heatmaps, scene_scores = model._prepare_pose(pose_dict)
+    scene_heatmaps, scene_scores, _ = model._prepare_pose(pose_dict)
     if getattr(model, 'pfm_enabled', False):
         modulated = model.pfm(featmaps[-1], scene_heatmaps)
         global_feat = modulated.mean(dim=(2, 3))

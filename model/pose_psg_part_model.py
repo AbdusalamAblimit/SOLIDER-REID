@@ -36,7 +36,7 @@ class PosePSGPartModel(PoseBackboneModel):
         scene_heatmaps = None
         scene_scores = None
         if pose_dict is not None:
-            scene_heatmaps, scene_scores = self._prepare_pose(pose_dict)
+            scene_heatmaps, scene_scores, _ = self._prepare_pose(pose_dict)
 
         # Run backbone with PSG injection
         global_feat, featmaps = self._run_backbone_with_psg(x, scene_heatmaps)
