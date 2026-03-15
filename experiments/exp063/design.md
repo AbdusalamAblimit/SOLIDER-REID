@@ -27,9 +27,9 @@
   - 与 global feature concat 做匹配
 
 ## 关键超参数
-- K = 5 (body part groups)
+- K = 5 (body part groups: head, torso, left arm, right arm, legs)
 - Cross-attention dim: 256
-- Heatmap loss weight: 1.0
+- Heatmap loss weight: 10.0 (scaled up because MSE on normalized attention maps is very small)
 - Decoder layers: 2
 
 ## 预期结果

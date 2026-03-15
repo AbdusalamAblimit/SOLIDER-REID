@@ -49,8 +49,8 @@ class PoseTokenDecoder(nn.Module):
         self.part_tokens = nn.Parameter(
             torch.randn(num_parts, attn_dim) * 0.02)
 
-        # Feature projection for K/V
-        self.kv_proj = nn.Linear(feat_dim, attn_dim * 2)
+        # Feature projection to attn_dim (shared input for decoder layers' K/V)
+        self.feat_proj = nn.Linear(feat_dim, attn_dim)
 
         # Decoder layers
         self.decoder_layers = nn.ModuleList([
@@ -122,9 +122,8 @@ class PoseTokenDecoder(nn.Module):
         # Flatten spatial dims: (B, fH*fW, C)
         feat_flat = feat_map.flatten(2).permute(0, 2, 1)
 
-        # Project to K/V
-        kv = self.kv_proj(feat_flat)  # (B, fH*fW, 2*attn_dim)
-        K_proj, V_proj = kv.chunk(2, dim=-1)  # each (B, fH*fW, attn_dim)
+        # Project features to attn_dim
+        kv_input = self.feat_proj(feat_flat)  # (B, fH*fW, attn_dim)
 
         # Expand part tokens: (B, K, attn_dim)
         Q = self.part_tokens.unsqueeze(0).expand(B, -1, -1)
@@ -132,7 +131,7 @@ class PoseTokenDecoder(nn.Module):
         # Run decoder layers, collect attention weights
         all_attn_weights = []
         for layer in self.decoder_layers:
-            Q, attn_weights = layer(Q, K_proj, V_proj)
+            Q, attn_weights = layer(Q, kv_input)
             all_attn_weights.append(attn_weights)  # (B, K, fH*fW)
 
         # Project back to feat_dim
@@ -142,12 +141,16 @@ class PoseTokenDecoder(nn.Module):
         pooled_feat = part_feats.mean(dim=1)  # (B, feat_dim)
 
         # Compute heatmap distillation loss (training only)
+        # Use KL divergence for distribution alignment (more appropriate than MSE)
         heatmap_loss = None
         if self.training and scene_heatmaps is not None:
             targets = self._get_heatmap_target(scene_heatmaps, fH, fW)
             # Use last layer's attention weights
             attn = all_attn_weights[-1]  # (B, K, fH*fW)
-            heatmap_loss = F.mse_loss(attn, targets) * self.heatmap_loss_weight
+            # KL divergence: target * log(target / pred)
+            # Use F.kl_div with log_input=True: expects log(pred)
+            log_attn = (attn + 1e-8).log()
+            heatmap_loss = F.kl_div(log_attn, targets, reduction='batchmean') * self.heatmap_loss_weight
 
         aux_data = {
             'kp_feats': part_feats,  # (B, K, C) for compatibility
@@ -165,7 +168,7 @@ class PoseTokenDecoder(nn.Module):
 
 
 class DecoderLayer(nn.Module):
-    """Single cross-attention decoder layer."""
+    """Single cross-attention decoder layer with proper per-layer Q/K/V projections."""
 
     def __init__(self, attn_dim, num_heads):
         super().__init__()
@@ -173,7 +176,14 @@ class DecoderLayer(nn.Module):
         self.head_dim = attn_dim // num_heads
         self.scale = self.head_dim ** -0.5
 
+        # Per-layer Q/K/V linear projections (standard multi-head attention)
+        self.q_proj = nn.Linear(attn_dim, attn_dim)
+        self.k_proj = nn.Linear(attn_dim, attn_dim)
+        self.v_proj = nn.Linear(attn_dim, attn_dim)
+        self.out_proj_attn = nn.Linear(attn_dim, attn_dim)
+
         self.norm1 = nn.LayerNorm(attn_dim)
+        self.norm_kv = nn.LayerNorm(attn_dim)
         self.norm2 = nn.LayerNorm(attn_dim)
         self.ffn = nn.Sequential(
             nn.Linear(attn_dim, attn_dim * 4),
@@ -181,27 +191,27 @@ class DecoderLayer(nn.Module):
             nn.Linear(attn_dim * 4, attn_dim),
         )
 
-    def forward(self, Q, K, V):
+    def forward(self, Q, kv_input):
         """
         Args:
             Q: (B, K, D) part token queries
-            K: (B, N, D) feature map keys
-            V: (B, N, D) feature map values
+            kv_input: (B, N, D) feature map for K/V
 
         Returns:
             Q: updated queries (B, K, D)
             attn_weights: (B, K, N) attention weights
         """
         B, K_tokens, D = Q.shape
-        N = K.shape[1]
+        N = kv_input.shape[1]
 
         # Layer norm
         Q_norm = self.norm1(Q)
+        kv_norm = self.norm_kv(kv_input)
 
-        # Multi-head cross-attention
-        q = Q_norm.view(B, K_tokens, self.num_heads, self.head_dim).transpose(1, 2)
-        k = K.view(B, N, self.num_heads, self.head_dim).transpose(1, 2)
-        v = V.view(B, N, self.num_heads, self.head_dim).transpose(1, 2)
+        # Per-layer Q/K/V projections
+        q = self.q_proj(Q_norm).view(B, K_tokens, self.num_heads, self.head_dim).transpose(1, 2)
+        k = self.k_proj(kv_norm).view(B, N, self.num_heads, self.head_dim).transpose(1, 2)
+        v = self.v_proj(kv_norm).view(B, N, self.num_heads, self.head_dim).transpose(1, 2)
 
         attn = torch.matmul(q, k.transpose(-2, -1)) * self.scale
         attn = F.softmax(attn, dim=-1)
@@ -211,6 +221,7 @@ class DecoderLayer(nn.Module):
 
         out = torch.matmul(attn, v)
         out = out.transpose(1, 2).contiguous().view(B, K_tokens, D)
+        out = self.out_proj_attn(out)
 
         # Residual + FFN
         Q = Q + out
