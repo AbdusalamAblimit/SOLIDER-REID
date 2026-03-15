@@ -139,6 +139,7 @@ _C.MODEL.POSE_KP_DISSIMILAR_WEIGHT = 0.1 # Weight for KDL
 _C.MODEL.POSE_KP_UNCERTAINTY = False     # Learned Keypoint Uncertainty head
 _C.MODEL.POSE_KP_UNCERTAINTY_REG = 0.1  # Regularization weight to prevent uncertainty collapse
 _C.MODEL.POSE_PKE = False               # Probabilistic Keypoint Embeddings (Gaussian mu+sigma)
+_C.MODEL.POSE_ADDITIVE_ADAPTER = False  # Pose Additive Adapter (PAA) alongside PSG
 _C.MODEL.POSE_TOKEN_DECODER = False      # Pose-Token Distillation (PTD): learned part tokens
 _C.MODEL.POSE_TOKEN_NUM_PARTS = 5       # Number of part tokens
 _C.MODEL.POSE_TOKEN_DIM = 256           # Cross-attention dimension

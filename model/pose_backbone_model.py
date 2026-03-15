@@ -21,6 +21,7 @@ from .modules.keypoint_rpe import KeypointRPE, compute_token_kp_distances
 from .modules.pose_xcad import PoseCrossAttnHead
 from .modules.pose_attn_mask import PoseAttnMask
 from .modules.pose_token_decoder import PoseTokenDecoder
+from .modules.pose_additive_adapter import PoseAdditiveAdapter
 
 
 class PoseBackboneModel(build_transformer):
@@ -154,6 +155,21 @@ class PoseBackboneModel(build_transformer):
                         self.pgam_modules_dict[key] = PoseAttnMask(
                             num_heads=num_heads,
                             threshold=self.attn_mask_threshold,
+                        )
+
+            # PAA (Pose Additive Adapter): additive injection alongside PSG
+            self.use_paa = getattr(cfg.MODEL, 'POSE_ADDITIVE_ADAPTER', False)
+            if self.use_paa:
+                self.paa_modules_dict = nn.ModuleDict()
+                for stage_idx in sorted(self.psg_stage_indices):
+                    stage = self.base.stages[stage_idx]
+                    feat_ch = self.base.num_features[stage_idx]
+                    for block_idx in range(len(stage.blocks)):
+                        key = f's{stage_idx}_b{block_idx}'
+                        self.paa_modules_dict[key] = PoseAdditiveAdapter(
+                            pose_channels=17,
+                            feat_channels=feat_ch,
+                            bottleneck_dim=32,
                         )
 
         # Keypoint Relative Position Encoding (KP-RPE)
@@ -487,6 +503,9 @@ class PoseBackboneModel(build_transformer):
                 # PSG: apply gate after block
                 if not self.use_attn_bias and scene_heatmaps is not None and key in getattr(self, 'psg_modules_dict', {}):
                     x = self.psg_modules_dict[key](x, hw_shape, scene_heatmaps)
+                # PAA: apply additive adapter after PSG
+                if getattr(self, 'use_paa', False) and scene_heatmaps is not None and key in getattr(self, 'paa_modules_dict', {}):
+                    x = self.paa_modules_dict[key](x, hw_shape, scene_heatmaps)
 
         # Handle downsample (Stage 3 has no downsample in Swin)
         if stage.downsample:
