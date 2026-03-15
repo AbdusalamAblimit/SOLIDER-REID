@@ -275,6 +275,15 @@ def make_loss(cfg, num_classes):    # modified by gu
                     total = total + kdl_w * kdl_loss
                     loss_details['kdl'] = kdl_loss.item()
 
+                # Keypoint Uncertainty Regularization — prevent collapse to all-uncertain
+                if getattr(cfg.MODEL, 'POSE_KP_UNCERTAINTY', False) and kp_data is not None and 'kp_uncertainty' in kp_data:
+                    unc_reg_w = getattr(cfg.MODEL, 'POSE_KP_UNCERTAINTY_REG', 0.1)
+                    kp_unc = kp_data['kp_uncertainty']  # (B, 17) in [0, 1]
+                    # Penalize high mean uncertainty to prevent collapse
+                    unc_reg = kp_unc.mean()
+                    total = total + unc_reg_w * unc_reg
+                    loss_details['unc'] = kp_unc.mean().item()
+
                 loss_details['total'] = total.item()
 
                 # Store details on the loss tensor for the processor to read

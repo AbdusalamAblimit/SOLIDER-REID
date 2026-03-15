@@ -124,7 +124,8 @@ class SkeletonGCNHead(nn.Module):
                  input_size=(384, 128), use_gcn=True,
                  kp_weight_mode='score', kp_triplet=False,
                  kp_learnable_attn=False,
-                 sgmkc=False, sgmkc_ratio=0.3):
+                 sgmkc=False, sgmkc_ratio=0.3,
+                 kp_uncertainty=False, kp_uncertainty_reg=0.1):
         super().__init__()
         self.feat_dim = feat_dim
         self.input_h, self.input_w = input_size
@@ -135,6 +136,8 @@ class SkeletonGCNHead(nn.Module):
         self.kp_learnable_attn = kp_learnable_attn
         self.sgmkc = sgmkc
         self.sgmkc_ratio = sgmkc_ratio
+        self.kp_uncertainty = kp_uncertainty
+        self.kp_uncertainty_reg = kp_uncertainty_reg
 
         # Optional graph propagation over sampled keypoint features.
         if self.use_gcn:
@@ -158,6 +161,15 @@ class SkeletonGCNHead(nn.Module):
             # Zero-init last layer → outputs ~0.5 initially (identity start)
             nn.init.zeros_(self.kp_attention[2].weight)
             nn.init.zeros_(self.kp_attention[2].bias)
+
+        # Learned Keypoint Uncertainty head
+        if self.kp_uncertainty:
+            self.uncertainty_head = nn.Sequential(
+                nn.Linear(feat_dim, 128),
+                nn.ReLU(inplace=True),
+                nn.Linear(128, 1),
+                nn.Sigmoid()  # output in [0, 1], higher = more uncertain
+            )
 
         # BN + Classifier for skeleton feature
         self.bn = nn.BatchNorm1d(feat_dim)
@@ -287,6 +299,14 @@ class SkeletonGCNHead(nn.Module):
             attn = self.kp_attention(kp_weights)  # (B, 17) → sigmoid → (B, 17)
             kp_weights = kp_weights * attn  # element-wise: confidence × attention
 
+        # 4.5 Learned Keypoint Uncertainty: modulate weights with learned uncertainty
+        kp_unc = None
+        if self.kp_uncertainty:
+            kp_unc = self.uncertainty_head(kp_feats_enhanced).squeeze(-1)  # (B, 17)
+            # reliability = 1 - uncertainty
+            reliability = (1.0 - kp_unc).clamp(min=0.01)
+            kp_weights = kp_weights * reliability
+
         weights = kp_weights.clamp(min=1e-6).unsqueeze(-1)  # (B, 17, 1)
         skeleton_feat = (kp_feats_enhanced * weights).sum(dim=1) / \
                         weights.sum(dim=1).clamp(min=1e-6)  # (B, C)
@@ -295,6 +315,8 @@ class SkeletonGCNHead(nn.Module):
             'kp_feats': kp_feats_enhanced,  # (B, 17, C)
             'kp_weights': kp_weights,       # (B, 17)
         }
+        if kp_unc is not None:
+            aux_data['kp_uncertainty'] = kp_unc  # (B, 17)
         # SGMKC: pass mask and original features for reconstruction loss
         if sgmkc_mask is not None:
             aux_data['sgmkc_mask'] = sgmkc_mask              # (B, 17) True=kept
