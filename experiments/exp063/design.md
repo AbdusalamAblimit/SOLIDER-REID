@@ -29,7 +29,7 @@
 ## 关键超参数
 - K = 5 (body part groups: head, torso, left arm, right arm, legs)
 - Cross-attention dim: 256
-- Heatmap loss weight: 10.0 (scaled up because MSE on normalized attention maps is very small)
+- Heatmap loss weight: 10.0 (KL divergence between attention distribution and heatmap distribution)
 - Decoder layers: 2
 
 ## 预期结果
