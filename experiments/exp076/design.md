@@ -90,6 +90,15 @@ class TDDAdapter(nn.Module):
   - 0.5x global loss: 不变
   - batch size / lr / epochs: 不变
 
+## 数据统计
+- 训练集: 26.4% 多人图 (4127/15618)，73.6% 单人图
+- Query 集: 49.3% 多人图 (1090/2210)
+- Gallery 集: 25.7% 多人图
+- **影响**: 训练中 ~74% 样本的 diff_heatmaps 退化为 target_heatmaps（无 distractor）
+  - TDDA 在这些样本上等效于第二个 PAA
+  - 真正的 differential conditioning 只在 ~26% 训练样本上生效
+  - 但 query 侧有 ~49% 多人图，测试时收益空间更大
+
 ## 风险与止损
 - 如果 ep60 eval 明显低于 exp066 同期 → 分析 TDDA 的梯度和输出幅值
 - 如果最终 mAP ≤ exp066 → 记录负结论，转入 retrieval-time common-support recovery (Plan B)
