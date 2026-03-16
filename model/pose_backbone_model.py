@@ -22,6 +22,7 @@ from .modules.pose_xcad import PoseCrossAttnHead
 from .modules.pose_attn_mask import PoseAttnMask
 from .modules.pose_token_decoder import PoseTokenDecoder
 from .modules.pose_additive_adapter import PoseAdditiveAdapter
+from .modules.pose_cond_lora import PoseCondLoRA
 
 
 class PoseBackboneModel(build_transformer):
@@ -177,6 +178,25 @@ class PoseBackboneModel(build_transformer):
                         )
                 if self.paa_target_only:
                     print('[S&C] Suppress-and-Complete: PSG=scene, PAA=target(person-0)')
+
+            # PCL (Pose-Conditioned LoRA): feature-dependent alternative to PAA
+            self.use_pcl = getattr(cfg.MODEL, 'POSE_COND_LORA', False)
+            if self.use_pcl:
+                pcl_rank = getattr(cfg.MODEL, 'POSE_COND_LORA_RANK', 16)
+                self.pcl_modules_dict = nn.ModuleDict()
+                for stage_idx in sorted(self.psg_stage_indices):
+                    stage = self.base.stages[stage_idx]
+                    feat_ch = self.base.num_features[stage_idx]
+                    for block_idx in range(len(stage.blocks)):
+                        key = f's{stage_idx}_b{block_idx}'
+                        self.pcl_modules_dict[key] = PoseCondLoRA(
+                            pose_channels=17,
+                            feat_channels=feat_ch,
+                            rank=pcl_rank,
+                        )
+                total_params = sum(p.numel() for p in self.pcl_modules_dict.parameters())
+                print(f'[PCL] Pose-Conditioned LoRA enabled: rank={pcl_rank}, '
+                      f'total_params={total_params}')
 
         # Keypoint Relative Position Encoding (KP-RPE)
         self.use_kp_rpe = getattr(cfg.MODEL, 'POSE_KP_RPE', False)
@@ -519,6 +539,10 @@ class PoseBackboneModel(build_transformer):
                 if getattr(self, 'use_paa', False) and scene_heatmaps is not None and key in getattr(self, 'paa_modules_dict', {}):
                     paa_input = paa_heatmaps if paa_heatmaps is not None else scene_heatmaps
                     x = self.paa_modules_dict[key](x, hw_shape, paa_input)
+                # PCL: pose-conditioned LoRA (feature-dependent, replaces PAA)
+                if getattr(self, 'use_pcl', False) and scene_heatmaps is not None and key in getattr(self, 'pcl_modules_dict', {}):
+                    pcl_input = paa_heatmaps if paa_heatmaps is not None else scene_heatmaps
+                    x = self.pcl_modules_dict[key](x, hw_shape, pcl_input)
 
         # Handle downsample (Stage 3 has no downsample in Swin)
         if stage.downsample:
