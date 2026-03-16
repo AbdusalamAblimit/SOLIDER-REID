@@ -144,6 +144,7 @@ _C.MODEL.POSE_PAA_ROUTED = False        # Reliability-routed PAA: only add to lo
 _C.MODEL.POSE_PAA_BOTTLENECK = 32      # PAA bottleneck dimension
 _C.MODEL.POSE_PAA_TARGET_ONLY = False  # S&C: PAA uses target-person (person-0) heatmap instead of scene
 _C.MODEL.POSE_PAA_SCENE_TARGET = False # ST-PAA: concat [scene, target] as 34ch input to PAA
+_C.MODEL.POSE_PAA_ADAPTIVE_GATE = False # APG: adaptive gate suppresses PAA in single-person images
 _C.MODEL.POSE_COND_LORA = False        # Pose-Conditioned LoRA (replaces PAA)
 _C.MODEL.POSE_COND_LORA_RANK = 16     # Low-rank dimension for PCL
 _C.MODEL.POSE_PAA_PART_STRUCTURED = False  # Part-Structured PAA (body-part-aware encoder)

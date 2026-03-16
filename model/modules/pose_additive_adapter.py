@@ -38,10 +38,11 @@ class PoseAdditiveAdapter(nn.Module):
     """
 
     def __init__(self, pose_channels=17, feat_channels=768, bottleneck_dim=32,
-                 routed=False):
+                 routed=False, adaptive_gate=False):
         super().__init__()
         self.feat_channels = feat_channels
         self.routed = routed
+        self.adaptive_gate = adaptive_gate
 
         # Pose encoder with bottleneck: 17 → bottleneck → feat_channels
         self.encoder = nn.Sequential(
@@ -53,6 +54,13 @@ class PoseAdditiveAdapter(nn.Module):
         # Zero-init: adapter starts at zero, so output = x + 0 = x
         nn.init.zeros_(self.encoder[-1].weight)
         nn.init.zeros_(self.encoder[-1].bias)
+
+        # Adaptive gate: learns to suppress PAA in single-person (low-occlusion) images
+        if adaptive_gate:
+            self.gate_mlp = nn.Linear(pose_channels, 1)
+            # Init to zero → sigmoid(0) = 0.5 → starts at half strength
+            nn.init.zeros_(self.gate_mlp.weight)
+            nn.init.zeros_(self.gate_mlp.bias)
 
     def forward(self, x, hw_shape, scene_heatmaps):
         """
@@ -89,6 +97,13 @@ class PoseAdditiveAdapter(nn.Module):
             # occlusion_mask: 1 for occluded, 0 for visible
             occlusion_mask = (1.0 - body_conf).permute(0, 2, 3, 1).reshape(B, H * W, 1)
             adapter_out = adapter_out * occlusion_mask
+
+        # Adaptive gate: scalar gate per sample based on heatmap statistics
+        if self.adaptive_gate:
+            # GAP of sigmoid heatmap → (B, 17) → MLP → sigmoid → (B, 1)
+            hm_pool = hm.mean(dim=(2, 3))  # (B, 17)
+            gate = torch.sigmoid(self.gate_mlp(hm_pool))  # (B, 1)
+            adapter_out = adapter_out * gate.unsqueeze(1)  # (B, 1, 1) broadcast
 
         return x + adapter_out
 

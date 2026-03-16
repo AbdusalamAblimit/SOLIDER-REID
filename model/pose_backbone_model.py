@@ -180,11 +180,13 @@ class PoseBackboneModel(build_transformer):
                         else:
                             paa_routed = getattr(cfg.MODEL, 'POSE_PAA_ROUTED', False)
                             paa_bottleneck = getattr(cfg.MODEL, 'POSE_PAA_BOTTLENECK', 32)
+                            paa_adaptive_gate = getattr(cfg.MODEL, 'POSE_PAA_ADAPTIVE_GATE', False)
                             self.paa_modules_dict[key] = PoseAdditiveAdapter(
                                 pose_channels=paa_in_channels,
                                 feat_channels=feat_ch,
                                 bottleneck_dim=paa_bottleneck,
                                 routed=paa_routed,
+                                adaptive_gate=paa_adaptive_gate,
                             )
                 total_paa_params = sum(p.numel() for p in self.paa_modules_dict.parameters())
                 if paa_part_structured:
