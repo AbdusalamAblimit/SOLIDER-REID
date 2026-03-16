@@ -1334,7 +1334,7 @@ class SwinTransformer(BaseModule):
                     constant_init(m.bias, 0)
                     constant_init(m.weight, 1.0)
         else:
-            ckpt = torch.load(pretrained,map_location='cpu')
+            ckpt = torch.load(pretrained,map_location='cpu', weights_only=False)
             if 'teacher' in ckpt:
                 ckpt = ckpt['teacher']
 
