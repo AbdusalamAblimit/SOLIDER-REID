@@ -93,6 +93,61 @@ class PoseAdditiveAdapter(nn.Module):
         return x + adapter_out
 
 
+class TargetDistractorDiffAdapter(nn.Module):
+    """Target-Distractor Differential Adapter (TDDA).
+
+    Takes H_diff = H_target - H_distractor as input and injects
+    differential pose information. Uses tanh instead of sigmoid
+    to preserve positive/negative semantics of the difference signal.
+
+    Args:
+        pose_channels: Number of heatmap channels (17)
+        feat_channels: Number of feature channels (768)
+        bottleneck_dim: Bottleneck dimension for efficiency
+    """
+
+    def __init__(self, pose_channels=17, feat_channels=768, bottleneck_dim=32):
+        super().__init__()
+        self.feat_channels = feat_channels
+
+        self.encoder = nn.Sequential(
+            nn.Conv2d(pose_channels, bottleneck_dim, kernel_size=1, bias=True),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(bottleneck_dim, feat_channels, kernel_size=1, bias=True),
+        )
+
+        # Zero-init: adapter starts at zero
+        nn.init.zeros_(self.encoder[-1].weight)
+        nn.init.zeros_(self.encoder[-1].bias)
+
+    def forward(self, x, hw_shape, diff_heatmaps):
+        """
+        Args:
+            x: (B, H*W, C) feature tokens
+            hw_shape: (H, W) spatial shape
+            diff_heatmaps: (B, 17, hH, hW) H_target - H_distractor
+
+        Returns:
+            x + adapter: (B, H*W, C) features with differential pose injection
+        """
+        B, N, C = x.shape
+        H, W = hw_shape
+
+        if diff_heatmaps.shape[2:] != (H, W):
+            hm = F.interpolate(diff_heatmaps, size=(H, W),
+                               mode='bilinear', align_corners=False)
+        else:
+            hm = diff_heatmaps
+
+        # Use tanh to preserve sign (positive = target, negative = distractor)
+        hm = torch.tanh(hm)
+
+        adapter_out = self.encoder(hm)
+        adapter_out = adapter_out.permute(0, 2, 3, 1).reshape(B, H * W, C)
+
+        return x + adapter_out
+
+
 class PosePartStructuredAdapter(nn.Module):
     """Part-structured pose additive adapter.
 

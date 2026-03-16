@@ -21,7 +21,7 @@ from .modules.keypoint_rpe import KeypointRPE, compute_token_kp_distances
 from .modules.pose_xcad import PoseCrossAttnHead
 from .modules.pose_attn_mask import PoseAttnMask
 from .modules.pose_token_decoder import PoseTokenDecoder
-from .modules.pose_additive_adapter import PoseAdditiveAdapter, PosePartStructuredAdapter
+from .modules.pose_additive_adapter import PoseAdditiveAdapter, PosePartStructuredAdapter, TargetDistractorDiffAdapter
 from .modules.pose_cond_lora import PoseCondLoRA
 
 
@@ -190,8 +190,26 @@ class PoseBackboneModel(build_transformer):
                 if self.paa_target_only:
                     print('[S&C] Suppress-and-Complete: PSG=scene, PAA=target(person-0)')
 
+            # TDPC (Target-Distractor Pose Conditioning): differential adapter after PAA
+            self.use_tdpc = getattr(cfg.MODEL, 'POSE_TDPC', False)
+            if self.use_tdpc and self.use_paa:
+                self.tdpc_modules_dict = nn.ModuleDict()
+                paa_bottleneck = getattr(cfg.MODEL, 'POSE_PAA_BOTTLENECK', 32)
+                for stage_idx in sorted(self.psg_stage_indices):
+                    stage = self.base.stages[stage_idx]
+                    feat_ch = self.base.num_features[stage_idx]
+                    for block_idx in range(len(stage.blocks)):
+                        key = f's{stage_idx}_b{block_idx}'
+                        self.tdpc_modules_dict[key] = TargetDistractorDiffAdapter(
+                            pose_channels=17,
+                            feat_channels=feat_ch,
+                            bottleneck_dim=paa_bottleneck,
+                        )
+                total_tdpc_params = sum(p.numel() for p in self.tdpc_modules_dict.parameters())
+                print(f'[TDPC] Target-Distractor Pose Conditioning enabled: '
+                      f'total_params={total_tdpc_params}')
+
             # PCL (Pose-Conditioned LoRA): feature-dependent alternative to PAA
-            self.use_pcl = getattr(cfg.MODEL, 'POSE_COND_LORA', False)
             if self.use_pcl:
                 pcl_rank = getattr(cfg.MODEL, 'POSE_COND_LORA_RANK', 16)
                 self.pcl_modules_dict = nn.ModuleDict()
@@ -367,7 +385,7 @@ class PoseBackboneModel(build_transformer):
         self._semantic_weight_val = semantic_weight
 
     def _run_backbone_with_psg(self, x, scene_heatmaps, pose_dict=None,
-                               paa_heatmaps=None):
+                               paa_heatmaps=None, diff_heatmaps=None):
         """Run backbone forward with PSG injection in Stage 3.
 
         Manually iterates backbone stages, inserting PSG after each
@@ -376,6 +394,8 @@ class PoseBackboneModel(build_transformer):
         Args:
             paa_heatmaps: If not None, use these (target-person) heatmaps for PAA
                          instead of scene_heatmaps (Suppress-and-Complete mode).
+            diff_heatmaps: If not None, target-distractor differential heatmaps
+                          for TDPC adapter.
         """
         # Patch embedding
         x, hw_shape = self.base.patch_embed(x)
@@ -401,7 +421,8 @@ class PoseBackboneModel(build_transformer):
                 # Stage with PSG and/or PGAM: manually run blocks with injection
                 x, hw_shape, out, out_hw_shape = self._run_stage_with_psg(
                     stage, x, hw_shape, scene_heatmaps, stage_idx=i,
-                    pose_dict=pose_dict, paa_heatmaps=paa_heatmaps)
+                    pose_dict=pose_dict, paa_heatmaps=paa_heatmaps,
+                    diff_heatmaps=diff_heatmaps)
             else:
                 # Normal stage: run without modification
                 x, hw_shape, out, out_hw_shape = stage(x, hw_shape)
@@ -496,7 +517,8 @@ class PoseBackboneModel(build_transformer):
         return kp_rpe_module(token_dists)
 
     def _run_stage_with_psg(self, stage, x, hw_shape, scene_heatmaps,
-                            stage_idx=None, pose_dict=None, paa_heatmaps=None):
+                            stage_idx=None, pose_dict=None, paa_heatmaps=None,
+                            diff_heatmaps=None):
         """Run a stage's blocks with pose injection (PSG, PAB, PXA, KP-RPE, or combo)."""
         for block_idx, block in enumerate(stage.blocks):
             key = f's{stage_idx}_b{block_idx}'
@@ -550,6 +572,9 @@ class PoseBackboneModel(build_transformer):
                 if getattr(self, 'use_paa', False) and scene_heatmaps is not None and key in getattr(self, 'paa_modules_dict', {}):
                     paa_input = paa_heatmaps if paa_heatmaps is not None else scene_heatmaps
                     x = self.paa_modules_dict[key](x, hw_shape, paa_input)
+                # TDPC: target-distractor differential adapter after PAA
+                if getattr(self, 'use_tdpc', False) and diff_heatmaps is not None and key in getattr(self, 'tdpc_modules_dict', {}):
+                    x = self.tdpc_modules_dict[key](x, hw_shape, diff_heatmaps)
                 # PCL: pose-conditioned LoRA (feature-dependent, replaces PAA)
                 if getattr(self, 'use_pcl', False) and scene_heatmaps is not None and key in getattr(self, 'pcl_modules_dict', {}):
                     pcl_input = paa_heatmaps if paa_heatmaps is not None else scene_heatmaps
@@ -567,8 +592,9 @@ class PoseBackboneModel(build_transformer):
         # Prepare pose
         scene_heatmaps = None
         target_heatmaps = None
+        diff_heatmaps = None
         if pose_dict is not None:
-            scene_heatmaps, _, target_heatmaps = self._prepare_pose(pose_dict)
+            scene_heatmaps, _, target_heatmaps, diff_heatmaps = self._prepare_pose(pose_dict)
 
         # Stochastic Pose Dropout: zero out heatmaps per-sample during training
         if self.training and scene_heatmaps is not None and self.pose_dropout_p > 0:
@@ -579,10 +605,13 @@ class PoseBackboneModel(build_transformer):
         # Run backbone with PSG injection
         # For S&C: pass target_heatmaps to PAA (separate from scene for PSG)
         paa_heatmaps = target_heatmaps if getattr(self, 'paa_target_only', False) else None
+        # TDPC: pass diff_heatmaps for differential adapter
+        tdpc_diff = diff_heatmaps if getattr(self, 'use_tdpc', False) else None
         global_feat, featmaps = self._run_backbone_with_psg(
             x, scene_heatmaps,
             pose_dict=pose_dict if self.use_kp_rpe else None,
-            paa_heatmaps=paa_heatmaps)
+            paa_heatmaps=paa_heatmaps,
+            diff_heatmaps=tdpc_diff)
 
         # Apply Pose-Conditioned Channel Gate (PCG) after GAP, before BN
         if self.use_channel_gate and scene_heatmaps is not None:
@@ -676,6 +705,7 @@ class PoseBackboneModel(build_transformer):
             scene_heatmaps: (B, 17, H, W) merged scene-level heatmap
             scene_scores: (B, 17) merged confidence scores
             target_heatmaps: (B, 17, H, W) person-0 heatmap (for S&C PAA)
+            diff_heatmaps: (B, 17, H, W) H_target - H_distractor (for TDPC)
         """
         heatmaps = pose_dict['heatmaps']
         scores = pose_dict['scores']
@@ -691,4 +721,12 @@ class PoseBackboneModel(build_transformer):
         # person_mask[:, 0] ensures zero output when no person detected
         target_heatmaps = heatmaps[:, 0] * person_mask[:, 0].view(-1, 1, 1, 1)
 
-        return scene_heatmaps, scene_scores, target_heatmaps
+        # Distractor heatmaps: max-merge over non-target persons (indices 1+)
+        # For single-person images: all distractor masks = 0 → distractor_hm = 0
+        distractor_mask = person_mask[:, 1:].unsqueeze(-1).unsqueeze(-1)  # (B, P-1, 1, 1)
+        distractor_hm = (heatmaps[:, 1:] * distractor_mask).max(dim=1)[0]  # (B, 17, H, W)
+
+        # Differential signal: positive = target-specific, negative = distractor-specific
+        diff_heatmaps = target_heatmaps - distractor_hm
+
+        return scene_heatmaps, scene_scores, target_heatmaps, diff_heatmaps
