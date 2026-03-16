@@ -1225,3 +1225,45 @@ PSG + 0.5x loss + Skeleton GCN（exp030a）仍然是最强方法，无一竞争�
    - PAA 变成"按身体结构补语义"
 
 4. **Pose-ControlNet/LoRA**：把 PAA 从 block 后 conv 升级到 Q/K/V 或 FFN 内部的低秩条件分支
+
+---
+
+## Phase 2.31: PAA 消融系列完成 (exp069-074) — 原始设计最优
+
+### PAA 变体消融总结
+
+| 变体 | 实验 | vs PAA | 结论 |
+|------|------|--------|------|
+| PAA b128 (增大容量) | exp069 | -0.3% mAP, +0.4% R1 | 容量不是瓶颈 |
+| S&C target-only (分离热图源) | exp070 | -0.2% mAP, -0.8% R1 | PAA 需要 scene 上下文 |
+| PCL LoRA (特征依赖) | exp071 | -0.9% mAP, -2.2% R1 | Feature-independent 更好 |
+| PS-PAA (身体部位分组) | exp072 | -0.5% mAP, -0.4% R1 | Generic mixing 更好 |
+| Multi-stage (Stage 2+3) | exp073 | -0.5% mAP, 0.0% R1 | Stage 3 already 足够 |
+| +PGAM (attention mask) | exp074 | ≈0 (no-op) | PGAM 实际无效 |
+
+### PAA 设计选择的消融证据
+
+**所有 6 个变体都不如原始 PAA (exp066: 61.6%/74.2%)**。PAA 的最优设计是：
+1. **Generic Conv2d encoder** (17→32→768) — 不需要 body-part 分组
+2. **Scene-level heatmap** — 多人上下文比 target-specific 更好
+3. **Feature-independent** — 不需要依赖当前特征
+4. **Stage 3 only** — 更多 stage 不提供额外增益
+5. **Uniform injection** (无 routing) — 全空间均匀注入效果最好
+
+### 跨硬件验证
+- Remote 5060 Ti (PyTorch 2.9): PAA = 61.2%/74.3% — 与本地 3090 一致 (Δ<0.4%)
+
+### 下一步需要的方向
+
+PAA 消融系列已完成。原始 PAA 是最优设计，不需要进一步调优。
+
+**当前需要的不是更多 PAA 变体，而是**：
+1. PAA 的多 seed 验证（exp075 正在进行）
+2. 全新的创新方向——**不是在 PAA 上改，而是在 PAA 之外找新的贡献点**
+3. 回到文献学习，寻找 gap
+
+**当前最强方法栈**:
+- PSG (乘性门控) + PAA (加性适配器) + GCN (骨架分支) + 0.5x loss
+- 无后处理: 61.6% mAP / 74.2% R1
+- +ROA: 62.0% mAP / 73.7% R1 (不是创新)
+- +NFC: 64.0% mAP (test-time, 不是创新)
