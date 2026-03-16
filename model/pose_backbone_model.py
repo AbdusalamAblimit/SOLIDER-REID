@@ -723,7 +723,8 @@ class PoseBackboneModel(build_transformer):
 
         # Distractor heatmaps: max-merge over non-target persons (indices 1+)
         # For single-person images: all distractor masks = 0 → distractor_hm = 0
-        distractor_mask = person_mask[:, 1:].unsqueeze(-1).unsqueeze(-1)  # (B, P-1, 1, 1)
+        # heatmaps[:, 1:] is (B, P-1, 17, H, W), need mask (B, P-1, 1, 1, 1)
+        distractor_mask = person_mask[:, 1:].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)  # (B, P-1, 1, 1, 1)
         distractor_hm = (heatmaps[:, 1:] * distractor_mask).max(dim=1)[0]  # (B, 17, H, W)
 
         # Differential signal: positive = target-specific, negative = distractor-specific
