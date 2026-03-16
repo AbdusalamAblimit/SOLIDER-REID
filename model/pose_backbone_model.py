@@ -23,6 +23,7 @@ from .modules.pose_attn_mask import PoseAttnMask
 from .modules.pose_token_decoder import PoseTokenDecoder
 from .modules.pose_additive_adapter import PoseAdditiveAdapter, PosePartStructuredAdapter, TargetDistractorDiffAdapter
 from .modules.pose_query_decoder import PoseQueryDecoder
+from .modules.pose_feature_inpainter import PoseFeatureInpainter
 from .modules.pose_cond_lora import PoseCondLoRA
 
 
@@ -291,6 +292,18 @@ class PoseBackboneModel(build_transformer):
         if self.use_weighted_pool:
             print('[PWP] Pose-Weighted Pooling enabled (replaces GAP)')
 
+        # Pose-Guided Feature Inpainting (PGFI) — recover occluded features
+        self.use_pgfi = getattr(cfg.MODEL, 'POSE_FEATURE_INPAINTER', False)
+        if self.use_pgfi:
+            self.pgfi = PoseFeatureInpainter(
+                feat_channels=self.in_planes,
+                pose_channels=17,
+                hidden_dim=256,
+            )
+            total_params = sum(p.numel() for p in self.pgfi.parameters())
+            print(f'[PGFI] Pose-Guided Feature Inpainting enabled: '
+                  f'total_params={total_params}')
+
         # Skeleton GCN head or Cross-Attention Decoder or Pose-Token Decoder or PQTD (mutually exclusive)
         self.use_skeleton_gcn = getattr(cfg.MODEL, 'POSE_SKELETON_GCN', False)
         self.use_xcad = getattr(cfg.MODEL, 'POSE_XCAD', False)
@@ -475,6 +488,11 @@ class PoseBackboneModel(build_transformer):
 
         # Pooling
         featmap = outs[-1]  # (B, C, fH, fW)
+
+        # PGFI: Pose-Guided Feature Inpainting (recover occluded features)
+        if getattr(self, 'use_pgfi', False) and scene_heatmaps is not None:
+            featmap = self.pgfi(featmap, scene_heatmaps)
+
         if self.use_weighted_pool and scene_heatmaps is not None:
             # Pose-Weighted Pooling: weight tokens by body presence
             fH, fW = featmap.shape[2], featmap.shape[3]
