@@ -210,6 +210,7 @@ class PoseBackboneModel(build_transformer):
                       f'total_params={total_tdpc_params}')
 
             # PCL (Pose-Conditioned LoRA): feature-dependent alternative to PAA
+            self.use_pcl = getattr(cfg.MODEL, 'POSE_COND_LORA', False)
             if self.use_pcl:
                 pcl_rank = getattr(cfg.MODEL, 'POSE_COND_LORA_RANK', 16)
                 self.pcl_modules_dict = nn.ModuleDict()
