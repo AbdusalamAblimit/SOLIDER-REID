@@ -145,6 +145,7 @@ _C.MODEL.POSE_PAA_BOTTLENECK = 32      # PAA bottleneck dimension
 _C.MODEL.POSE_PAA_TARGET_ONLY = False  # S&C: PAA uses target-person (person-0) heatmap instead of scene
 _C.MODEL.POSE_COND_LORA = False        # Pose-Conditioned LoRA (replaces PAA)
 _C.MODEL.POSE_COND_LORA_RANK = 16     # Low-rank dimension for PCL
+_C.MODEL.POSE_PAA_PART_STRUCTURED = False  # Part-Structured PAA (body-part-aware encoder)
 _C.MODEL.POSE_TOKEN_DECODER = False      # Pose-Token Distillation (PTD): learned part tokens
 _C.MODEL.POSE_TOKEN_NUM_PARTS = 5       # Number of part tokens
 _C.MODEL.POSE_TOKEN_DIM = 256           # Cross-attention dimension

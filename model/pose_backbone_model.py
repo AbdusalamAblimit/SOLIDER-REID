@@ -21,7 +21,7 @@ from .modules.keypoint_rpe import KeypointRPE, compute_token_kp_distances
 from .modules.pose_xcad import PoseCrossAttnHead
 from .modules.pose_attn_mask import PoseAttnMask
 from .modules.pose_token_decoder import PoseTokenDecoder
-from .modules.pose_additive_adapter import PoseAdditiveAdapter
+from .modules.pose_additive_adapter import PoseAdditiveAdapter, PosePartStructuredAdapter
 from .modules.pose_cond_lora import PoseCondLoRA
 
 
@@ -161,6 +161,7 @@ class PoseBackboneModel(build_transformer):
             # PAA (Pose Additive Adapter): additive injection alongside PSG
             self.use_paa = getattr(cfg.MODEL, 'POSE_ADDITIVE_ADAPTER', False)
             self.paa_target_only = getattr(cfg.MODEL, 'POSE_PAA_TARGET_ONLY', False)
+            paa_part_structured = getattr(cfg.MODEL, 'POSE_PAA_PART_STRUCTURED', False)
             if self.use_paa:
                 self.paa_modules_dict = nn.ModuleDict()
                 for stage_idx in sorted(self.psg_stage_indices):
@@ -168,14 +169,24 @@ class PoseBackboneModel(build_transformer):
                     feat_ch = self.base.num_features[stage_idx]
                     for block_idx in range(len(stage.blocks)):
                         key = f's{stage_idx}_b{block_idx}'
-                        paa_routed = getattr(cfg.MODEL, 'POSE_PAA_ROUTED', False)
-                        paa_bottleneck = getattr(cfg.MODEL, 'POSE_PAA_BOTTLENECK', 32)
-                        self.paa_modules_dict[key] = PoseAdditiveAdapter(
-                            pose_channels=17,
-                            feat_channels=feat_ch,
-                            bottleneck_dim=paa_bottleneck,
-                            routed=paa_routed,
-                        )
+                        if paa_part_structured:
+                            self.paa_modules_dict[key] = PosePartStructuredAdapter(
+                                feat_channels=feat_ch,
+                                hidden_per_part=8,
+                            )
+                        else:
+                            paa_routed = getattr(cfg.MODEL, 'POSE_PAA_ROUTED', False)
+                            paa_bottleneck = getattr(cfg.MODEL, 'POSE_PAA_BOTTLENECK', 32)
+                            self.paa_modules_dict[key] = PoseAdditiveAdapter(
+                                pose_channels=17,
+                                feat_channels=feat_ch,
+                                bottleneck_dim=paa_bottleneck,
+                                routed=paa_routed,
+                            )
+                total_paa_params = sum(p.numel() for p in self.paa_modules_dict.parameters())
+                if paa_part_structured:
+                    print(f'[PS-PAA] Part-Structured PAA enabled: '
+                          f'hidden_per_part=8, total_params={total_paa_params}')
                 if self.paa_target_only:
                     print('[S&C] Suppress-and-Complete: PSG=scene, PAA=target(person-0)')
 
