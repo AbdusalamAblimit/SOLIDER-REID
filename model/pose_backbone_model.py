@@ -22,6 +22,7 @@ from .modules.pose_xcad import PoseCrossAttnHead
 from .modules.pose_attn_mask import PoseAttnMask
 from .modules.pose_token_decoder import PoseTokenDecoder
 from .modules.pose_additive_adapter import PoseAdditiveAdapter, PosePartStructuredAdapter, TargetDistractorDiffAdapter
+from .modules.pose_query_decoder import PoseQueryDecoder
 from .modules.pose_cond_lora import PoseCondLoRA
 
 
@@ -290,12 +291,35 @@ class PoseBackboneModel(build_transformer):
         if self.use_weighted_pool:
             print('[PWP] Pose-Weighted Pooling enabled (replaces GAP)')
 
-        # Skeleton GCN head or Cross-Attention Decoder or Pose-Token Decoder (mutually exclusive)
+        # Skeleton GCN head or Cross-Attention Decoder or Pose-Token Decoder or PQTD (mutually exclusive)
         self.use_skeleton_gcn = getattr(cfg.MODEL, 'POSE_SKELETON_GCN', False)
         self.use_xcad = getattr(cfg.MODEL, 'POSE_XCAD', False)
         self.use_ptd = getattr(cfg.MODEL, 'POSE_TOKEN_DECODER', False)
+        self.use_pqtd = getattr(cfg.MODEL, 'POSE_QUERY_DECODER', False)
 
-        if self.use_ptd:
+        if self.use_pqtd:
+            # Pose-Query Transformer Decoder (replaces GCN)
+            pqtd_layers = getattr(cfg.MODEL, 'POSE_QUERY_DECODER_LAYERS', 3)
+            pqtd_dim = getattr(cfg.MODEL, 'POSE_QUERY_DECODER_DIM', 256)
+            pqtd_heads = getattr(cfg.MODEL, 'POSE_QUERY_DECODER_HEADS', 8)
+            pqtd_parts = getattr(cfg.MODEL, 'POSE_QUERY_DECODER_PARTS', 5)
+            self.skeleton_head = PoseQueryDecoder(
+                feat_dim=self.in_planes,
+                d_model=pqtd_dim,
+                nhead=pqtd_heads,
+                num_layers=pqtd_layers,
+                num_parts=pqtd_parts,
+                num_classes=num_classes,
+            )
+            self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
+            total_params = sum(p.numel() for p in self.skeleton_head.parameters())
+            print(f'[PSG+PQTD] Pose-Query Transformer Decoder enabled: '
+                  f'layers={pqtd_layers}, dim={pqtd_dim}, heads={pqtd_heads}, '
+                  f'parts={pqtd_parts}, total_params={total_params}, '
+                  f'test_feat={self.pose_test_feat}')
+            # Set use_skeleton_gcn=True so existing forward() code path handles it
+            self.use_skeleton_gcn = True
+        elif self.use_ptd:
             # Pose-Token Distillation Decoder
             ptd_parts = getattr(cfg.MODEL, 'POSE_TOKEN_NUM_PARTS', 5)
             ptd_dim = getattr(cfg.MODEL, 'POSE_TOKEN_DIM', 256)
