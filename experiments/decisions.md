@@ -1616,3 +1616,26 @@ B. 直接启动 exp025，exp024 可以后续补跑
 1. `exp075` 完成前，不启动新的长期主线训练，避免和多 seed 验证抢资源。
 2. `TDPC` 第一轮只跑单 seed，不做变体扩散。
 3. 若 `TDPC` 在 2-3 天内无明显正信号，则 fallback 到 retrieval-time `common-support recovery`，不继续做 `TDPC` 小修小补。
+
+### [2026-03-16 22:00] 决策 #62
+
+**上下文**: exp076-078 TDPC 方向全面失败。exp079 发现 ROA≈PAA+ROA。exp081 PQTD decoder 不够收敛。需要决定下一步。
+
+**已确认的事实**:
+1. PAA 是 multi-person specialist (+1.69% multi / -1.61% R1 single)
+2. ROA(无PAA) = 62.0% ≈ PAA+ROA = 62.0%
+3. 所有 target-aware PAA 变体失败
+4. Transformer Decoder 在 120ep 不可行
+
+**选择**: 启动 exp083 PGFI (Pose-Guided Feature Inpainting) — 在 feature map 空间恢复遮挡区域特征。
+
+**理由**:
+1. "recover" 是与 "suppress/inject/select" 完全不同的范式
+2. FCFormer 在这个方向上有 SOTA 结果
+3. 但我们的 PGFI 用 Conv inpainter (不是 Transformer decoder)，适合 15K 数据量
+4. 如果有效：可以讲 "PSG suppress + PGFI recover" 的互补 story
+5. 如果无效：说明 12×4 分辨率上 inpainting 太粗糙
+
+**后续计划**:
+- 如果 PGFI 中性或负面：转向整体方法叙事（"pose-guided multi-granularity representation"）
+- 不再追求单一新模块的大突破

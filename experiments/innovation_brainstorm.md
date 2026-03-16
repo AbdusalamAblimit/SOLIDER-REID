@@ -1321,3 +1321,57 @@ PAA 消融系列已完成。原始 PAA 是最优设计，不需要进一步调�
    - multi-person subset 评测
    - target/distractor case study
 4. 若首轮无正信号，立即止损，回退到 retrieval-time `common-support recovery`
+
+---
+
+## 2026-03-16 实验更新：exp075-083
+
+### 重大发现 1: PAA 是 multi-person occlusion specialist
+
+exp066 subset analysis 显示：
+- 多人图 (n>=2): PAA vs baseline **+1.69% mAP / +2.02% R1**
+- 单人图 (n=1): PAA vs baseline **+0.47% mAP / -1.61% R1**
+- PAA 在单人图上损害 R1！
+
+**结论**: PAA 不是通用 feature enhancer，而是专门针对多人遮挡场景的改进。
+
+### 重大发现 2: ROA 和 PAA 的 mAP 增益完全重叠
+
+| 方法 | mAP (均值) | R1 (均值) |
+|------|-----------|----------|
+| exp030a 3-seed mean | 60.73% | 72.57% |
+| exp066 PAA | 61.6% | 74.2% |
+| exp079 ROA (无 PAA) | ~61.9% | ~73.2% |
+| exp067 PAA+ROA | ~61.9% | ~73.9% |
+
+**ROA alone ≈ PAA+ROA**！PAA 的 mAP 贡献被 ROA 完全覆盖。PAA 的独特贡献仅在 R1 上约 +0.7%。
+
+### 已证伪的方向（exp076-078）
+
+三个 target-aware PAA 变体全部失败：
+1. **exp076 TDPC** (differential adapter): -0.3% mAP / -1.5% R1
+2. **exp077 ST-PAA** (34ch scene+target concat): -0.6% mAP / -0.6% R1
+3. **exp078 APG** (adaptive gate): -1.1% mAP / -1.7% R1
+
+**结论**: PAA 的 generic scene heatmap 已是最优输入。所有 target-aware 修改都不如原始设计。原因可能是：74% 训练数据是单人图，target-aware 机制在这些图上只增加噪声。
+
+### 已证伪的方向（exp081 PQTD）
+
+3-layer Transformer Decoder 替代 GCN: -4.7% mAP / -7.0% R1
+
+**结论**: Transformer decoder 在 15K 训练图 + 120ep 下严重不够收敛。GCN (400K params) 在当前数据规模上远优于 Decoder (2.5M params)。
+
+### 当前进行中：exp083 PGFI
+
+Pose-Guided Feature Inpainting — 在 feature map 空间恢复遮挡区域特征。
+这是一个不同于"suppress/inject/select"的新范式："recover"。
+两台服务器同时跑中。
+
+### 修正后的论文 story 优先级
+
+1. **PSG**: 已确认，稳定 +1.33%
+2. **0.5x global loss**: 已确认，稳定 +1.53%
+3. **GCN fusion**: 已确认，稳定 +1.40%
+4. **ROA**: 已确认，+1.27%（独立有效，与 PAA 重叠）
+5. **PAA**: 已确认，+0.87% mAP 但主要贡献在 R1；是 multi-person specialist
+6. **创新点仍在探索中**: PGFI 或后续方向

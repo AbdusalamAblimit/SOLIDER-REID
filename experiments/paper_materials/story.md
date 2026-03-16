@@ -31,20 +31,49 @@ Pose Spatial Gate and Skeleton Complement for Occluded Person Re-Identification
    因此更准确的 framing 是：**sparse keypoint pooling 提供主体信息，GCN 负责关系建模与 branch refinement。**
 
 ### 2026-03-16 周度评估：当前 story 仍不够支撑 B 类主线
-1. `exp066 PAA` 与 `exp067 PAA+ROA` 说明当前方法栈还能继续涨点，但主问题仍然偏向“更好的 pose injection”，还没有升级到更强的问题定义。
-2. 文献复盘后更明确的边界是：
-   - `ROA` 只能算有效 recipe，不能算主创新；
-   - `PAA` 虽然有效，但单独写成主贡献仍偏模块级；
-   - 仅靠 `PSG + GCN + PAA` 还不足以形成 KPR / ProFD / FCFormer 那种问题-机制-证据闭环。
-3. 因此下一阶段若要冲 B 类，应优先把问题切到：
-   - `target ambiguity / non-target pedestrian occlusion`
-   而不是继续在 `PAA` 周围做更多小变体。
-4. 当前最值得推进的新主线应写成候选：
-   **scene-level suppress + target-distractor pose conditioning**
-   也就是：
-   - `PSG` 继续负责 scene-level suppress
-   - 新分支显式区分 target pose 与 distractor pose
-   - 只在高歧义样本上增强 target-specific conditioning
+（原评估保留，以下新增 exp076-083 实验反馈。）
+
+### 2026-03-16 晚间重大更新
+
+#### 发现 1: PAA 是 multi-person specialist（不是通用 enhancer）
+exp066 subset analysis:
+- 多人图 (n>=2, 49% of query): PAA **+1.69% mAP / +2.02% R1**
+- 单人图 (n=1, 51% of query): PAA **+0.47% mAP / -1.61% R1**
+
+**论文意义**: PAA 的 story 应写成 “pose adapter specifically addresses multi-person occlusion”，而非 “general feature enhancement”。
+
+#### 发现 2: ROA ≈ PAA+ROA（PAA 的 mAP 被 ROA 完全覆盖）
+| 方法 | mAP (跨硬件均值) | R1 (跨硬件均值) |
+|------|-----------------|----------------|
+| exp030a 3-seed | 60.73% | 72.57% |
+| PAA only (exp066) | 61.6% | 74.2% |
+| ROA only (exp079) | ~61.9% | ~73.2% |
+| PAA+ROA (exp067) | ~61.9% | ~73.9% |
+
+ROA 的 mAP 增益 (+1.27%) 完全包含了 PAA 的增益 (+0.87%)。PAA 独特贡献仅 R1 ~+0.7%。
+
+**论文意义**:
+- ROA 是当前最有效的单一改进（数据增强级）
+- PAA 不应作为 mAP 主贡献来 claim
+- 但 PAA + ROA 的 R1 (73.9%) > ROA alone (73.2%)，说明 PAA 在 R1 上有独特贡献
+
+#### 发现 3: TDPC 方向全面证伪
+exp076 TDPC (-0.3%), exp077 ST-PAA (-0.6%), exp078 APG (-1.1%) — target-aware PAA 全失败。
+**原因**: 74% 训练数据是单人图，target-aware 机制在这些图上只增加噪声。
+
+#### 发现 4: Transformer Decoder 在当前数据量不可行
+exp081 PQTD (-4.7%) — 3-layer decoder 120ep 严重不够收敛。
+
+#### 当前进行中
+exp083 PGFI (Pose-Guided Feature Inpainting) — 在 feature map 空间恢复遮挡区域特征。
+这是 “recover” 范式，不同于 “suppress”(PSG) / “inject”(PAA) / “select”(pruning)。
+
+#### 修正后的 story 候选方向
+1. **PSG + 0.5x loss + GCN**: 基础三件套，已确认
+2. **ROA**: 最有效的单一改进，但本质是数据增强
+3. **PAA**: multi-person specialist，R1 贡献
+4. **PGFI 或后续创新**: 需要找到真正能支撑论文主贡献的机制
+5. **问题层面**: 如果 PGFI 也失败，应考虑把 story 转向 “pose-guided multi-granularity representation”（PSG+GCN+equal_concat 的整体范式叙事），而非继续追求单一新模块
 
 ### 当前主结果表（Occluded-Duke, Swin-Tiny, 4090）
 
