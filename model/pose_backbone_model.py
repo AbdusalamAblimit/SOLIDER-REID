@@ -161,9 +161,12 @@ class PoseBackboneModel(build_transformer):
             # PAA (Pose Additive Adapter): additive injection alongside PSG
             self.use_paa = getattr(cfg.MODEL, 'POSE_ADDITIVE_ADAPTER', False)
             self.paa_target_only = getattr(cfg.MODEL, 'POSE_PAA_TARGET_ONLY', False)
+            self.paa_scene_target = getattr(cfg.MODEL, 'POSE_PAA_SCENE_TARGET', False)
             paa_part_structured = getattr(cfg.MODEL, 'POSE_PAA_PART_STRUCTURED', False)
             if self.use_paa:
                 self.paa_modules_dict = nn.ModuleDict()
+                # ST-PAA: 34 channels ([scene, target]); default: 17 channels
+                paa_in_channels = 34 if self.paa_scene_target else 17
                 for stage_idx in sorted(self.psg_stage_indices):
                     stage = self.base.stages[stage_idx]
                     feat_ch = self.base.num_features[stage_idx]
@@ -178,7 +181,7 @@ class PoseBackboneModel(build_transformer):
                             paa_routed = getattr(cfg.MODEL, 'POSE_PAA_ROUTED', False)
                             paa_bottleneck = getattr(cfg.MODEL, 'POSE_PAA_BOTTLENECK', 32)
                             self.paa_modules_dict[key] = PoseAdditiveAdapter(
-                                pose_channels=17,
+                                pose_channels=paa_in_channels,
                                 feat_channels=feat_ch,
                                 bottleneck_dim=paa_bottleneck,
                                 routed=paa_routed,
@@ -189,6 +192,8 @@ class PoseBackboneModel(build_transformer):
                           f'hidden_per_part=8, total_params={total_paa_params}')
                 if self.paa_target_only:
                     print('[S&C] Suppress-and-Complete: PSG=scene, PAA=target(person-0)')
+                if self.paa_scene_target:
+                    print(f'[ST-PAA] Scene+Target PAA: 34ch input, total_params={total_paa_params}')
 
             # TDPC (Target-Distractor Pose Conditioning): differential adapter after PAA
             self.use_tdpc = getattr(cfg.MODEL, 'POSE_TDPC', False)
@@ -605,7 +610,13 @@ class PoseBackboneModel(build_transformer):
 
         # Run backbone with PSG injection
         # For S&C: pass target_heatmaps to PAA (separate from scene for PSG)
-        paa_heatmaps = target_heatmaps if getattr(self, 'paa_target_only', False) else None
+        # For ST-PAA: pass cat(scene, target) to PAA (34 channels)
+        if getattr(self, 'paa_scene_target', False) and scene_heatmaps is not None and target_heatmaps is not None:
+            paa_heatmaps = torch.cat([scene_heatmaps, target_heatmaps], dim=1)
+        elif getattr(self, 'paa_target_only', False):
+            paa_heatmaps = target_heatmaps
+        else:
+            paa_heatmaps = None
         # TDPC: pass diff_heatmaps for differential adapter
         tdpc_diff = diff_heatmaps if getattr(self, 'use_tdpc', False) else None
         global_feat, featmaps = self._run_backbone_with_psg(

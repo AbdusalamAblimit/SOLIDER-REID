@@ -143,6 +143,7 @@ _C.MODEL.POSE_ADDITIVE_ADAPTER = False  # Pose Additive Adapter (PAA) alongside 
 _C.MODEL.POSE_PAA_ROUTED = False        # Reliability-routed PAA: only add to low-confidence regions
 _C.MODEL.POSE_PAA_BOTTLENECK = 32      # PAA bottleneck dimension
 _C.MODEL.POSE_PAA_TARGET_ONLY = False  # S&C: PAA uses target-person (person-0) heatmap instead of scene
+_C.MODEL.POSE_PAA_SCENE_TARGET = False # ST-PAA: concat [scene, target] as 34ch input to PAA
 _C.MODEL.POSE_COND_LORA = False        # Pose-Conditioned LoRA (replaces PAA)
 _C.MODEL.POSE_COND_LORA_RANK = 16     # Low-rank dimension for PCL
 _C.MODEL.POSE_PAA_PART_STRUCTURED = False  # Part-Structured PAA (body-part-aware encoder)
