@@ -30,6 +30,22 @@ Pose Spatial Gate and Skeleton Complement for Occluded Person Re-Identification
    `exp030a` multi-seed 又说明训练好的 branch 确实还能继续提高 fusion。
    因此更准确的 framing 是：**sparse keypoint pooling 提供主体信息，GCN 负责关系建模与 branch refinement。**
 
+### 2026-03-16 周度评估：当前 story 仍不够支撑 B 类主线
+1. `exp066 PAA` 与 `exp067 PAA+ROA` 说明当前方法栈还能继续涨点，但主问题仍然偏向“更好的 pose injection”，还没有升级到更强的问题定义。
+2. 文献复盘后更明确的边界是：
+   - `ROA` 只能算有效 recipe，不能算主创新；
+   - `PAA` 虽然有效，但单独写成主贡献仍偏模块级；
+   - 仅靠 `PSG + GCN + PAA` 还不足以形成 KPR / ProFD / FCFormer 那种问题-机制-证据闭环。
+3. 因此下一阶段若要冲 B 类，应优先把问题切到：
+   - `target ambiguity / non-target pedestrian occlusion`
+   而不是继续在 `PAA` 周围做更多小变体。
+4. 当前最值得推进的新主线应写成候选：
+   **scene-level suppress + target-distractor pose conditioning**
+   也就是：
+   - `PSG` 继续负责 scene-level suppress
+   - 新分支显式区分 target pose 与 distractor pose
+   - 只在高歧义样本上增强 target-specific conditioning
+
 ### 当前主结果表（Occluded-Duke, Swin-Tiny, 4090）
 
 | 方法 | 测试模式 | Mean±Std (mAP) | Mean±Std (R1) | 备注 |

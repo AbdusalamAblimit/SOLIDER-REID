@@ -1566,3 +1566,53 @@ B. 直接启动 exp025，exp024 可以后续补跑
 5. 数据增强方向（方案 B）不改变模型，创新深度不够支撑论文主贡献
 
 **执行结果**: 待填
+
+### [2026-03-16 10:20] 决策 #61
+
+**上下文**: `exp066-074` 已完成 `PAA` 系列探索，`exp075` 正在补多 seed。联网复盘了 KPR、ProFD、Pose2ID、DPEFormer、SSSC、FCFormer、TTPM 等 2024-2025 工作，并重新评估当前成果是否足以支撑 B 类会议/期刊主线。
+
+**已知事实**:
+1. 当前最强训练端结果是：
+   - `exp066 PAA` = `61.6% mAP / 74.2% R1`
+   - `exp067 PAA+ROA` = `62.0% mAP / 73.7% R1`
+2. `ROA` 已在 DPEFormer / FCFormer 这一类工作中出现，不能再作为主创新。
+3. `PAA` 虽然有效，但本质仍是 pose-conditioned additive adapter；若没有更强的问题定义，容易被审稿人视为“再加一个 adapter”。
+4. KPR / TTPM 已把问题推进到：
+   - `target ambiguity`
+   - `non-target pedestrian occlusion`
+   而我们当前主线还没有显式处理 target 与 distractor 的冲突。
+5. `exp070` 的负结果只否定了 naive `target-only PAA`，不能上升为“target-aware 路线无价值”。
+
+**判断**:
+1. **当前成果还不够支撑 B 类主线**。
+   它更像是一个很强的研究基线 + 一个有效新模块 (`PAA`)，但问题定义、机制新意、证据闭环仍不够强。
+2. 下一步不应继续刷新的 `PAA` 小变体，也不应回到新的 branch 内 learnable weighting / extra loss。
+3. 当前最合理的新方向应切到：
+   **Target-Distractor Pose Conditioning (TDPC)**。
+
+**选择**: 在 `exp075` 完成后，默认把下一周主线切换为 `TDPC`。
+
+**相对基线**:
+- 以 `exp066` 作为训练端主对照（不带 ROA，避免把已有增强混进主创新）
+- 单变量改动：
+  - 保留 `PSG + GCN + PAA + 0.5x loss`
+  - 只新增 `target / distractor` pose conditioning 机制
+
+**TDPC 机制草案**:
+1. `PSG` 继续使用 `scene_heatmap`
+2. `PAA` 路径额外拿到：
+   - `target_heatmap`
+   - `distractor_heatmap = max(non-target persons)`
+3. 计算 ambiguity score
+4. 只在高歧义样本上增加 target-distractor differential conditioning
+
+**理由**:
+1. 它把问题从“更好的 pose injection”升级到“如何在多人遮挡里区分 target 与 distractor”。
+2. 它能直接复用 `exp033 / exp034` 已有的 target-aware 基础设施。
+3. 它没有被 `exp070` 直接证伪，因为 `exp070` 试的是 hard switch，不是 `scene + target-distractor` 的联合机制。
+4. 一周内可实现、可训练、可分析，并且可以自然补上 subset / case study 证据。
+
+**执行约束**:
+1. `exp075` 完成前，不启动新的长期主线训练，避免和多 seed 验证抢资源。
+2. `TDPC` 第一轮只跑单 seed，不做变体扩散。
+3. 若 `TDPC` 在 2-3 天内无明显正信号，则 fallback 到 retrieval-time `common-support recovery`，不继续做 `TDPC` 小修小补。

@@ -1267,3 +1267,57 @@ PAA 消融系列已完成。原始 PAA 是最优设计，不需要进一步调�
 - 无后处理: 61.6% mAP / 74.2% R1
 - +ROA: 62.0% mAP / 73.7% R1 (不是创新)
 - +NFC: 64.0% mAP (test-time, 不是创新)
+
+---
+
+## Phase 2.32: 2026-03-16 周度方向校正
+
+### 当前最重要的判断
+1. **PAA 是重要发现，但还不够成为 B 类主线**
+   - 它证明“加性 pose adapter”有效
+   - 但如果没有更强的问题定义，仍容易被归类为模块级改进
+
+2. **ROA 只能保留为 recipe，不能继续往主创新上抬**
+   - DPEFormer / FCFormer 已经有真实遮挡增强的明确先例
+
+3. **下一步不能再做 generic PAA 变体**
+   - `exp069-074` 已经系统说明：
+     - 更大容量没用
+     - target-only hard switch 不行
+     - feature-dependent LoRA 不行
+     - part-structured 分组不行
+     - multi-stage 不行
+
+### 重新对齐后的问题定义
+- 不是“怎样把 pose 再注入一次”
+- 而是：
+  **scene-level pose prior 会不会把 target 与 distractor 混在一起，从而在多人遮挡图里损伤目标表征？**
+
+### 新的推荐主线：TDPC（Target-Distractor Pose Conditioning）
+
+#### 为什么它比 exp070 更合理
+- `exp070` 用的是 `scene -> target-only` 的硬切换
+- TDPC 要做的是：
+  - `PSG` 仍保留 `scene` 路径
+  - 新增 `target / distractor` differential conditioning
+  - 只在高歧义样本上增强 target-specific 注入
+
+#### 这条线满足的创新门槛
+1. **问题层面有新意**
+   - 对齐 KPR 的 `target ambiguity`
+   - 对齐 TTPM 的 `non-target pedestrian occlusion`
+2. **机制层面有新意**
+   - 不是再叠一个 generic adapter
+   - 而是显式区分 target pose 和 distractor pose
+3. **证据层面能讲清楚**
+   - 全量指标
+   - 多人 subset
+   - ambiguous cases 可视化
+
+### 一周内的现实执行建议
+1. 先补完 `exp075` 的 PAA 多 seed，确认当前 strongest baseline
+2. 然后只开一个 `TDPC` 单 seed 主实验
+3. 同时准备：
+   - multi-person subset 评测
+   - target/distractor case study
+4. 若首轮无正信号，立即止损，回退到 retrieval-time `common-support recovery`

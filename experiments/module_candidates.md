@@ -170,3 +170,52 @@
 | 2 | Random Rectangle Mask（候选 5） | 成本极低，可附加验证 |
 | 3 | Dissimilar Loss（候选 7） | 辅助正则化，低成本 |
 | 4 | PartFeatureDecoder（候选 8） | 高成本高风险，等待更多证据 |
+
+---
+
+## 2026-03-16 更新：PAA/ROA 之后的主候选重排
+
+### 候选 9：TDPC（Target-Distractor Pose Conditioning）
+**状态**: `推荐作为下一周主线`
+
+### 问题定义
+- 当前 `PSG/PAA` 默认使用 scene-level max-merge 热图。
+- 这对抑制背景有效，但在多人图里会把 **target person** 与 **distractor person** 的姿态线索混在一起。
+- `exp070` 的负结果只说明“直接切到 target-only”会丢失 scene context，**不等于 target ambiguity 不重要**。
+
+### 机制草案
+1. 保留 `PSG` 使用 `scene_heatmap`
+2. 在 `PAA` 路径额外构造：
+   - `target_heatmap`
+   - `distractor_heatmap = max(non-target persons)`
+3. 用 ambiguity score 控制额外注入强度：
+   - 单人/低歧义图像时近似退回 `exp066`
+   - 多人/高歧义图像时启用 `target-distractor` differential conditioning
+
+可行写法：
+- `x = x + Adapter(scene) + a * DeltaAdapter(target, distractor)`
+- 或 `x = x + Adapter([target, distractor])`
+
+### 为什么当前它比 CVK / 新 decoder 更值得先做
+1. **问题层面更强**：
+   - 对齐 KPR 的 `target ambiguity`
+   - 对齐 TTPM 的 `non-target pedestrian occlusion`
+2. **实现成本可控**：
+   - `exp033 / exp034` 已把 target-aware 基础设施准备好了
+3. **没有被已有负结果直接证伪**：
+   - `exp070` 否定的是 naive `target-only`
+   - 不是 `scene + target-distractor conditioning`
+4. **更容易在一周内形成像样证据**：
+   - overall metric
+   - multi-person subset metric
+   - ambiguous cases 可视化
+
+### 风险
+1. Occluded-Duke 中真正高歧义样本比例可能不够高，整体增益未必大
+2. ambiguity score 若定义过粗，会退化成又一个 heuristic gate
+3. 若结果只在 subset 上好、全量不涨，需要提前接受“问题更强但 benchmark 总分不大涨”的可能性
+
+### 当前建议优先级
+1. `TDPC`
+2. 若 `TDPC` 单 seed 2-3 天内无正信号，再回退到 retrieval-time `common-support recovery`
+3. 不再继续开新的 PAA 小变体
