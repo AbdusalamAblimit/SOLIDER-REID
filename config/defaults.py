@@ -151,6 +151,7 @@ _C.MODEL.POSE_PAA_PART_STRUCTURED = False  # Part-Structured PAA (body-part-awar
 _C.MODEL.POSE_TDPC = False              # Target-Distractor Pose Conditioning: adds differential adapter
 _C.MODEL.POSE_PARALLEL_AUG = False       # PA-PAT: Parallel Augmentation Training (3 views)
 _C.MODEL.POSE_TTSFR = False              # TTSFR: Training-Time Skeleton Feature Recovery
+_C.MODEL.POSE_TOKEN_MERGE = False        # PGTM: Pose-Guided Token Merging in Stage 3
 _C.MODEL.POSE_LSRM = False              # LSRM: Learned Skeleton Recovery Module
 _C.MODEL.POSE_LSRM_WEIGHT = 0.5         # LSRM recovery loss weight
 _C.MODEL.POSE_MATCHING_NETWORK = False   # PAMN: Pose-Aware Matching Network

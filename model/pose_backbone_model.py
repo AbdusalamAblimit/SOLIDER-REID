@@ -24,6 +24,7 @@ from .modules.pose_token_decoder import PoseTokenDecoder
 from .modules.pose_additive_adapter import PoseAdditiveAdapter, PosePartStructuredAdapter, TargetDistractorDiffAdapter
 from .modules.pose_query_decoder import PoseQueryDecoder
 from .modules.pose_feature_inpainter import PoseFeatureInpainter
+from .modules.pose_token_merge import PoseTokenMerge
 from .modules.pose_cond_lora import PoseCondLoRA
 
 
@@ -408,6 +409,20 @@ class PoseBackboneModel(build_transformer):
             if getattr(cfg.MODEL, 'POSE_TTSFR', False):
                 self.skeleton_head.ttsfr = True
                 print('[TTSFR] Training-Time Skeleton Feature Recovery enabled')
+            # PGTM: Pose-Guided Token Merging in Stage 3
+            self.use_pgtm = getattr(cfg.MODEL, 'POSE_TOKEN_MERGE', False)
+            if self.use_pgtm:
+                self.pgtm_modules_dict = nn.ModuleDict()
+                for stage_idx in sorted(self.psg_stage_indices):
+                    stage = self.base.stages[stage_idx]
+                    feat_ch = self.base.num_features[stage_idx]
+                    for block_idx in range(len(stage.blocks)):
+                        key = f's{stage_idx}_b{block_idx}'
+                        self.pgtm_modules_dict[key] = PoseTokenMerge(
+                            feat_dim=feat_ch)
+                total_pgtm = sum(p.numel() for p in self.pgtm_modules_dict.parameters())
+                print(f'[PGTM] Pose-Guided Token Merging enabled: {total_pgtm} params')
+
             # LSRM: Learned Skeleton Recovery Module (part of model for proper save/load)
             self.use_lsrm = getattr(cfg.MODEL, 'POSE_LSRM', False)
             if self.use_lsrm:
@@ -633,6 +648,9 @@ class PoseBackboneModel(build_transformer):
                 if getattr(self, 'use_paa', False) and scene_heatmaps is not None and key in getattr(self, 'paa_modules_dict', {}):
                     paa_input = paa_heatmaps if paa_heatmaps is not None else scene_heatmaps
                     x = self.paa_modules_dict[key](x, hw_shape, paa_input)
+                # PGTM: Pose-Guided Token Merging after PAA
+                if getattr(self, 'use_pgtm', False) and scene_heatmaps is not None and key in getattr(self, 'pgtm_modules_dict', {}):
+                    x = self.pgtm_modules_dict[key](x, hw_shape, scene_heatmaps)
                 # TDPC: target-distractor differential adapter after PAA
                 if getattr(self, 'use_tdpc', False) and diff_heatmaps is not None and key in getattr(self, 'tdpc_modules_dict', {}):
                     x = self.tdpc_modules_dict[key](x, hw_shape, diff_heatmaps)
