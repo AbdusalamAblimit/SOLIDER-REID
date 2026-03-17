@@ -227,6 +227,44 @@ def do_train(cfg,
                         details['pamc'] = pamc_loss.item()
                         loss._loss_details = details
 
+                # CIPGFR: Cross-Instance Pose-Guided Feature Recovery
+                cipgfr_enabled = getattr(cfg.MODEL, 'POSE_CIPGFR', False)
+                cipgfr_warmup = getattr(cfg.MODEL, 'POSE_CIPGFR_WARMUP', 20)
+                if cipgfr_enabled and kp_data is not None and epoch > cipgfr_warmup:
+                    kp_feats_all = kp_data.get('kp_feats')    # (B, 17, C)
+                    kp_weights_all = kp_data.get('kp_weights')  # (B, 17)
+                    if kp_feats_all is not None and kp_weights_all is not None:
+                        cipgfr_weight = getattr(cfg.MODEL, 'POSE_CIPGFR_WEIGHT', 0.5)
+                        cipgfr_thr = getattr(cfg.MODEL, 'POSE_CIPGFR_THRESHOLD', 0.3)
+                        B_kp = kp_feats_all.shape[0]
+                        cipgfr_loss = torch.tensor(0.0, device=kp_feats_all.device)
+                        n_pairs = 0
+                        # For each sample, find same-ID partner in batch
+                        for i in range(B_kp):
+                            # Find indices with same label
+                            same_id = (target == target[i]).nonzero(as_tuple=True)[0]
+                            same_id = same_id[same_id != i]  # exclude self
+                            if len(same_id) == 0:
+                                continue
+                            j = same_id[torch.randint(len(same_id), (1,)).item()]
+                            # i's occluded but j's visible keypoints
+                            occ_i = kp_weights_all[i] < cipgfr_thr  # (17,) bool
+                            vis_j = kp_weights_all[j] > cipgfr_thr  # (17,) bool
+                            recovery_mask = occ_i & vis_j
+                            if recovery_mask.sum() == 0:
+                                continue
+                            # Recovery: i's occluded feat → j's visible feat (detached)
+                            cipgfr_loss = cipgfr_loss + F.mse_loss(
+                                kp_feats_all[i][recovery_mask],
+                                kp_feats_all[j][recovery_mask].detach())
+                            n_pairs += 1
+                        if n_pairs > 0:
+                            cipgfr_loss = cipgfr_loss / n_pairs
+                            details = getattr(loss, '_loss_details', {})
+                            loss = loss + cipgfr_weight * cipgfr_loss
+                            details['cipgfr'] = cipgfr_loss.item()
+                            loss._loss_details = details
+
             scaler.scale(loss).backward()
 
             scaler.step(optimizer)
