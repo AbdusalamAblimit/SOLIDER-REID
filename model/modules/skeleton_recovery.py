@@ -32,13 +32,13 @@ class SkeletonRecoveryModule(nn.Module):
         self.num_keypoints = num_keypoints
         self.hidden_dim = hidden_dim
 
-        # Project to attention space
+        # Cross-attention: queries (occluded) attend to keys/values (visible)
+        # MHA handles Q/K/V projection internally
+        self.attn = nn.MultiheadAttention(
+            hidden_dim, num_heads, batch_first=True,
+            kdim=feat_dim, vdim=feat_dim)
+        # Only project queries from feat_dim to hidden_dim
         self.q_proj = nn.Linear(feat_dim, hidden_dim)
-        self.k_proj = nn.Linear(feat_dim, hidden_dim)
-        self.v_proj = nn.Linear(feat_dim, hidden_dim)
-
-        # Multi-head attention
-        self.attn = nn.MultiheadAttention(hidden_dim, num_heads, batch_first=True)
 
         # Project back to feature space
         self.out_proj = nn.Sequential(
@@ -52,9 +52,8 @@ class SkeletonRecoveryModule(nn.Module):
         self._init_weights()
 
     def _init_weights(self):
-        for m in [self.q_proj, self.k_proj, self.v_proj]:
-            nn.init.xavier_uniform_(m.weight)
-            nn.init.zeros_(m.bias)
+        nn.init.xavier_uniform_(self.q_proj.weight)
+        nn.init.zeros_(self.q_proj.bias)
         nn.init.xavier_uniform_(self.out_proj[0].weight)
         nn.init.zeros_(self.out_proj[0].bias)
 
@@ -91,11 +90,12 @@ class SkeletonRecoveryModule(nn.Module):
         N_occ = occ_feats.shape[0]
 
         # Cross-attention: occluded attend to visible
+        # Q projected by q_proj; K,V projected by MHA's internal weights (kdim=feat_dim)
         Q = self.q_proj(occ_feats).unsqueeze(0)  # (1, N_occ, hidden)
-        K = self.k_proj(vis_feats).unsqueeze(0)   # (1, N_vis, hidden)
-        V = self.v_proj(vis_feats).unsqueeze(0)   # (1, N_vis, hidden)
+        K_raw = vis_feats.unsqueeze(0)             # (1, N_vis, feat_dim)
+        V_raw = vis_feats.unsqueeze(0)             # (1, N_vis, feat_dim)
 
-        attn_out, _ = self.attn(Q, K, V)  # (1, N_occ, hidden)
+        attn_out, _ = self.attn(Q, K_raw, V_raw)  # (1, N_occ, hidden)
         attn_out = attn_out.squeeze(0)     # (N_occ, hidden)
 
         # Project back and apply residual gate

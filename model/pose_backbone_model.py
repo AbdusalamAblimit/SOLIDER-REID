@@ -408,6 +408,13 @@ class PoseBackboneModel(build_transformer):
             if getattr(cfg.MODEL, 'POSE_TTSFR', False):
                 self.skeleton_head.ttsfr = True
                 print('[TTSFR] Training-Time Skeleton Feature Recovery enabled')
+            # LSRM: Learned Skeleton Recovery Module (part of model for proper save/load)
+            self.use_lsrm = getattr(cfg.MODEL, 'POSE_LSRM', False)
+            if self.use_lsrm:
+                from .modules.skeleton_recovery import SkeletonRecoveryModule
+                self.lsrm = SkeletonRecoveryModule(feat_dim=self.in_planes)
+                lsrm_params = sum(p.numel() for p in self.lsrm.parameters())
+                print(f'[LSRM] Learned Skeleton Recovery Module enabled: {lsrm_params} params')
             if keypoint_pool_only:
                 print(f'[PSG+KPP] Keypoint pooling head enabled: no graph propagation, '
                       f'test_feat={self.pose_test_feat}, kp_weight={kp_weight_mode}')
