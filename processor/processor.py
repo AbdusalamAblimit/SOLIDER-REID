@@ -44,6 +44,19 @@ def do_train(cfg,
     pamc_weight = getattr(cfg.MODEL, 'POSE_PAMC_WEIGHT', 0.5)
     pamc_warmup = getattr(cfg.MODEL, 'POSE_PAMC_WARMUP', 10)
 
+    # LSRM: Learned Skeleton Recovery Module
+    lsrm_enabled = getattr(cfg.MODEL, 'POSE_LSRM', False)
+    lsrm_module = None
+    if lsrm_enabled:
+        from model.modules.skeleton_recovery import SkeletonRecoveryModule
+        lsrm_weight = getattr(cfg.MODEL, 'POSE_LSRM_WEIGHT', 0.5)
+        lsrm_module = SkeletonRecoveryModule(feat_dim=768).to(device)
+        # Add params to optimizer
+        optimizer.add_param_group({
+            'params': list(lsrm_module.parameters()),
+            'lr': cfg.SOLVER.BASE_LR,
+        })
+
     # PAMN: Pose-Aware Matching Network
     pamn_enabled = getattr(cfg.MODEL, 'POSE_MATCHING_NETWORK', False)
     pamn_module = None
@@ -331,6 +344,18 @@ def do_train(cfg,
                             loss = loss + cipgfr_weight * cipgfr_loss
                             details['cipgfr'] = cipgfr_loss.item()
                             loss._loss_details = details
+
+                # LSRM: Learned Skeleton Recovery Module loss
+                if lsrm_enabled and lsrm_module is not None and kp_data is not None:
+                    kp_feats_lsrm = kp_data.get('kp_feats')
+                    kp_weights_lsrm = kp_data.get('kp_weights')
+                    if kp_feats_lsrm is not None and kp_weights_lsrm is not None:
+                        lsrm_loss = lsrm_module.compute_training_loss(
+                            kp_feats_lsrm.detach(), kp_weights_lsrm.detach(), target)
+                        details = getattr(loss, '_loss_details', {})
+                        loss = loss + lsrm_weight * lsrm_loss
+                        details['lsrm'] = lsrm_loss.item()
+                        loss._loss_details = details
 
                 # PAMN: Pose-Aware Matching Network loss
                 if pamn_enabled and pamn_module is not None and kp_data is not None:
