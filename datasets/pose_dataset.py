@@ -92,6 +92,7 @@ class PoseImageDataset(Dataset):
         self.occluders = occluders if is_train else None
         self.roa_prob = roa_prob if is_train else 0.0
         self.pose_aware_roa = False  # set by make_dataloader if configured
+        self.parallel_aug = False   # set by make_dataloader if PARALLEL_AUG enabled
 
         # Load index
         index_path = os.path.join(pose_dir, 'index.json')
@@ -141,51 +142,70 @@ class PoseImageDataset(Dataset):
             img, persons, crop_x, crop_y = self._joint_pad_crop(
                 img, persons, target_h, target_w, self.pad)
 
-        # 3.5) Realistic Occlusion Augmentation (ROA): paste VOC objects
-        if self.occluders and random.random() < self.roa_prob:
-            img_np = np.array(img)  # PIL → numpy (H, W, 3)
-            if self.pose_aware_roa and persons:
-                from .occlusion_augmentation import pose_aware_occlude
-                p0 = persons[0]
-                img_np = pose_aware_occlude(
-                    img_np, self.occluders,
-                    keypoints=p0['kp'], scores=p0['scores'],
-                    n=1, min_overlap=0.2, max_overlap=0.5)
-            else:
+        # ---- Parallel Augmentation (3 views) or Standard (1 view) ----
+        if self.parallel_aug and self.is_train:
+            # Parallel mode: create 3 image variants from shared base
+            # view_full: standard RE
+            # view_roa: ROA occlusion
+            # view_heavy: forced RE (100% probability)
+
+            # View 1: Full (standard pipeline with normal RE)
+            img_full_tensor = self._image_to_tensor(img)
+            if random.random() < self.re_prob:
+                img_full_tensor, erase_box = self._random_erase(img_full_tensor)
+                if erase_box is not None:
+                    self._update_persons_for_erase(persons, erase_box)
+
+            # View 2: ROA (paste occlusion objects)
+            img_roa = img.copy()
+            if self.occluders:
+                img_roa_np = np.array(img_roa)
                 from .occlusion_augmentation import occlude_with_objects
-                img_np = occlude_with_objects(img_np, self.occluders, n=1,
-                                              min_overlap=0.2, max_overlap=0.5)
-            img = Image.fromarray(img_np)  # numpy → PIL
+                img_roa_np = occlude_with_objects(img_roa_np, self.occluders, n=1,
+                                                  min_overlap=0.2, max_overlap=0.5)
+                img_roa = Image.fromarray(img_roa_np)
+            img_roa_tensor = self._image_to_tensor(img_roa)
 
-        # 4) Convert image to tensor + normalize
-        img_tensor = self._image_to_tensor(img)
+            # View 3: Heavy (forced random erasing, 100% probability)
+            img_heavy_tensor = self._image_to_tensor(img)
+            img_heavy_tensor, _ = self._random_erase(img_heavy_tensor)
 
-        # 5) Erasing: Pose-Guided Erasing (PGE) or Random Erasing (RE)
-        erase_box = None
-        erased_channels = None
-        if self.is_train and random.random() < self.re_prob:
-            if self.pose_guided_erasing and persons:
-                img_tensor, erase_box, erased_channels = \
-                    self._pose_guided_erase(img_tensor, persons)
-            else:
-                img_tensor, erase_box = self._random_erase(img_tensor)
+            img_tensor = (img_full_tensor, img_roa_tensor, img_heavy_tensor)
+        else:
+            # Standard single-view pipeline
+            # 3.5) Realistic Occlusion Augmentation (ROA): paste VOC objects
+            if self.occluders and random.random() < self.roa_prob:
+                img_np = np.array(img)  # PIL → numpy (H, W, 3)
+                if self.pose_aware_roa and persons:
+                    from .occlusion_augmentation import pose_aware_occlude
+                    p0 = persons[0]
+                    img_np = pose_aware_occlude(
+                        img_np, self.occluders,
+                        keypoints=p0['kp'], scores=p0['scores'],
+                        n=1, min_overlap=0.2, max_overlap=0.5)
+                else:
+                    from .occlusion_augmentation import occlude_with_objects
+                    img_np = occlude_with_objects(img_np, self.occluders, n=1,
+                                                  min_overlap=0.2, max_overlap=0.5)
+                img = Image.fromarray(img_np)  # numpy → PIL
 
-        if erase_box is not None:
-            ex1, ey1, ex2, ey2 = erase_box
-            for p in persons:
-                kp = p['kp']
-                in_box = ((kp[:, 0] >= ex1) & (kp[:, 0] < ex2) &
-                          (kp[:, 1] >= ey1) & (kp[:, 1] < ey2))
-                p['scores'][in_box] = 0.0
-                p['visibility'][in_box] = 0.0
-                p['visibility_binary'][in_box] = 0.0
+            # 4) Convert image to tensor + normalize
+            img_tensor = self._image_to_tensor(img)
 
-        # For PGE, zero heatmap channels only within the erased spatial region
-        if erased_channels is not None and erase_box is not None:
-            ex1, ey1, ex2, ey2 = erase_box
-            for p in persons:
-                for ch in erased_channels:
-                    p['heatmap'][ch, ey1:ey2, ex1:ex2] = 0.0
+            # 5) Erasing: Pose-Guided Erasing (PGE) or Random Erasing (RE)
+            erase_box = None
+            erased_channels = None
+            if self.is_train and random.random() < self.re_prob:
+                if self.pose_guided_erasing and persons:
+                    img_tensor, erase_box, erased_channels = \
+                        self._pose_guided_erase(img_tensor, persons)
+                else:
+                    img_tensor, erase_box = self._random_erase(img_tensor)
+
+            if erase_box is not None:
+                self._update_persons_for_erase(persons, erase_box, erased_channels)
+
+            img_tensor = (img_tensor,)  # wrap in tuple for uniform interface
 
         # ---- Assemble output tensors ----
         hm_h, hm_w = self.heatmap_size
@@ -427,6 +447,25 @@ class PoseImageDataset(Dataset):
         return (tensor - self.pixel_mean) / self.pixel_std
 
     @staticmethod
+    def _update_persons_for_erase(persons, erase_box, erased_channels=None):
+        """Update person keypoint scores/visibility for erased regions."""
+        if erase_box is None:
+            return
+        ex1, ey1, ex2, ey2 = erase_box
+        for p in persons:
+            kp = p['kp']
+            in_box = ((kp[:, 0] >= ex1) & (kp[:, 0] < ex2) &
+                      (kp[:, 1] >= ey1) & (kp[:, 1] < ey2))
+            p['scores'][in_box] = 0.0
+            p['visibility'][in_box] = 0.0
+            p['visibility_binary'][in_box] = 0.0
+        # For PGE, zero heatmap channels only within the erased spatial region
+        if erased_channels is not None:
+            for p in persons:
+                for ch in erased_channels:
+                    p['heatmap'][ch, ey1:ey2, ex1:ex2] = 0.0
+
+    @staticmethod
     def _random_erase(img_tensor, sl=0.02, sh=0.4, r1=0.3):
         """Random erasing on image tensor. Returns (tensor, erase_box_or_None).
 
@@ -516,8 +555,18 @@ def _collate_pose_dicts(pose_dicts):
 
 
 def pose_train_collate_fn(batch):
-    imgs, pids, camids, viewids, _, pose_dicts = zip(*batch)
-    return (torch.stack(imgs, dim=0),
+    img_tuples, pids, camids, viewids, _, pose_dicts = zip(*batch)
+    # img_tuples: list of tuples, each is (tensor,) or (full, roa, heavy)
+    n_views = len(img_tuples[0])
+    if n_views == 1:
+        # Standard single-view: unwrap tuple
+        imgs = torch.stack([t[0] for t in img_tuples], dim=0)
+    else:
+        # Parallel augmentation: stack each view separately
+        # Return list of (B, C, H, W) tensors
+        imgs = [torch.stack([t[v] for t in img_tuples], dim=0)
+                for v in range(n_views)]
+    return (imgs,
             torch.tensor(pids, dtype=torch.int64),
             torch.tensor(camids, dtype=torch.int64),
             torch.tensor(viewids, dtype=torch.int64),
@@ -525,8 +574,10 @@ def pose_train_collate_fn(batch):
 
 
 def pose_val_collate_fn(batch):
-    imgs, pids, camids, viewids, img_paths, pose_dicts = zip(*batch)
-    return (torch.stack(imgs, dim=0),
+    img_tuples, pids, camids, viewids, img_paths, pose_dicts = zip(*batch)
+    # Val always single-view
+    imgs = torch.stack([t[0] if isinstance(t, tuple) else t for t in img_tuples], dim=0)
+    return (imgs,
             pids,
             camids,
             torch.tensor(camids, dtype=torch.int64),

@@ -102,6 +102,9 @@ def make_dataloader(cfg):
         # Set pose-aware ROA flag
         if getattr(cfg.MODEL, 'POSE_ROA_POSE_AWARE', False):
             train_set.pose_aware_roa = True
+        # Set parallel augmentation flag (3-view training)
+        if getattr(cfg.MODEL, 'POSE_PARALLEL_AUG', False):
+            train_set.parallel_aug = True
 
         train_set_normal = PoseImageDataset(
             dataset.train,

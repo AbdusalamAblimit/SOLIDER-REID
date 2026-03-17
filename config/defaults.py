@@ -149,6 +149,7 @@ _C.MODEL.POSE_COND_LORA = False        # Pose-Conditioned LoRA (replaces PAA)
 _C.MODEL.POSE_COND_LORA_RANK = 16     # Low-rank dimension for PCL
 _C.MODEL.POSE_PAA_PART_STRUCTURED = False  # Part-Structured PAA (body-part-aware encoder)
 _C.MODEL.POSE_TDPC = False              # Target-Distractor Pose Conditioning: adds differential adapter
+_C.MODEL.POSE_PARALLEL_AUG = False       # PA-PAT: Parallel Augmentation Training (3 views)
 _C.MODEL.POSE_FEATURE_INPAINTER = False  # PGFI: Pose-Guided Feature Inpainting on feature map
 _C.MODEL.POSE_CIPGFR = False             # CIPGFR: Cross-Instance Pose-Guided Feature Recovery
 _C.MODEL.POSE_CIPGFR_WEIGHT = 0.5       # CIPGFR loss weight

@@ -125,13 +125,39 @@ def do_train(cfg,
                 img, vid, target_cam, target_view = batch_data
                 pose_dict = None
 
-            img = img.to(device)
+            # Handle parallel augmentation: img may be list of 3 tensors
+            parallel_aug = isinstance(img, list)
+            if parallel_aug:
+                img_views = [v.to(device) for v in img]
+            else:
+                img = img.to(device)
             target = vid.to(device)
             target_cam = target_cam.to(device)
             target_view = target_view.to(device)
 
             with amp.autocast(enabled=True):
-                if use_pose:
+                if parallel_aug and use_pose:
+                    # 3-view parallel augmentation: forward each view, average loss
+                    all_scores, all_feats, all_recon, all_kpdata = [], [], [], []
+                    for v_img in img_views:
+                        m_out = model(v_img, label=target, cam_label=target_cam,
+                                      view_label=target_view, pose_dict=pose_dict)
+                        kd = None
+                        if len(m_out) == 5:
+                            s, f, _, rl, kd = m_out
+                        elif len(m_out) == 4:
+                            s, f, _, rl = m_out
+                        else:
+                            s, f = m_out[:2]; rl = None
+                        all_scores.append(s)
+                        all_feats.append(f)
+                        all_recon.append(rl)
+                        all_kpdata.append(kd)
+                    # Use first view's outputs as primary (for logging)
+                    score, feat = all_scores[0], all_feats[0]
+                    recon_loss = all_recon[0]
+                    kp_data = all_kpdata[0]
+                elif use_pose:
                     model_out = model(img, label=target, cam_label=target_cam,
                                       view_label=target_view,
                                       pose_dict=pose_dict)
@@ -178,6 +204,16 @@ def do_train(cfg,
                     loss = loss + recon_loss
                     details['recon'] = recon_loss.item()
                     loss._loss_details = details
+
+                # Parallel augmentation: add losses from view 2 and 3
+                if parallel_aug and use_pose:
+                    for vi in range(1, len(all_scores)):
+                        v_loss = loss_fn(all_scores[vi], all_feats[vi], target,
+                                         target_cam, pose_sim=pose_sim)
+                        if all_recon[vi] is not None:
+                            v_loss = v_loss + all_recon[vi]
+                        loss = loss + v_loss
+                    loss = loss / len(all_scores)  # average over views
 
                 # SGMKC: reconstruction loss for masked keypoint completion
                 if kp_data is not None and 'sgmkc_mask' in kp_data:
