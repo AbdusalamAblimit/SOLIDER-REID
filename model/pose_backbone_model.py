@@ -404,6 +404,10 @@ class PoseBackboneModel(build_transformer):
                 pke=pke,
             )
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'concat_scaled')
+            # TTSFR: enable training-time skeleton feature recovery
+            if getattr(cfg.MODEL, 'POSE_TTSFR', False):
+                self.skeleton_head.ttsfr = True
+                print('[TTSFR] Training-Time Skeleton Feature Recovery enabled')
             if keypoint_pool_only:
                 print(f'[PSG+KPP] Keypoint pooling head enabled: no graph propagation, '
                       f'test_feat={self.pose_test_feat}, kp_weight={kp_weight_mode}')

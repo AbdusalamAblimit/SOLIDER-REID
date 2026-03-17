@@ -150,6 +150,7 @@ _C.MODEL.POSE_COND_LORA_RANK = 16     # Low-rank dimension for PCL
 _C.MODEL.POSE_PAA_PART_STRUCTURED = False  # Part-Structured PAA (body-part-aware encoder)
 _C.MODEL.POSE_TDPC = False              # Target-Distractor Pose Conditioning: adds differential adapter
 _C.MODEL.POSE_PARALLEL_AUG = False       # PA-PAT: Parallel Augmentation Training (3 views)
+_C.MODEL.POSE_TTSFR = False              # TTSFR: Training-Time Skeleton Feature Recovery
 _C.MODEL.POSE_MATCHING_NETWORK = False   # PAMN: Pose-Aware Matching Network
 _C.MODEL.POSE_MATCHING_NETWORK_WEIGHT = 0.5  # PAMN loss weight
 _C.MODEL.POSE_MOMENTUM_MEMORY = False    # Momentum Memory Contrastive Learning

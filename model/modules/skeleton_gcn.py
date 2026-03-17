@@ -137,6 +137,8 @@ class SkeletonGCNHead(nn.Module):
         self.kp_learnable_attn = kp_learnable_attn
         self.sgmkc = sgmkc
         self.sgmkc_ratio = sgmkc_ratio
+        self.ttsfr = False  # Set by model init if POSE_TTSFR enabled
+        self.ttsfr_threshold = 0.3
         self.kp_uncertainty = kp_uncertainty
         self.kp_uncertainty_reg = kp_uncertainty_reg
         self.pke = pke
@@ -236,6 +238,50 @@ class SkeletonGCNHead(nn.Module):
 
         return kp_feats, kp_scores
 
+    def _ttsfr_recover(self, kp_feats, kp_scores, labels):
+        """Training-Time Skeleton Feature Recovery.
+
+        For each sample, find same-ID samples in batch and use their
+        visible keypoint features to fill in occluded keypoints.
+
+        Args:
+            kp_feats: (B, 17, C) keypoint features
+            kp_scores: (B, 17) confidence scores
+            labels: (B,) identity labels
+
+        Returns:
+            recovered_feats: (B, 17, C) with occluded kp replaced
+        """
+        B = kp_feats.shape[0]
+        thr = self.ttsfr_threshold
+        recovered = kp_feats.clone()
+
+        for i in range(B):
+            # Find same-ID samples (exclude self)
+            same_id = (labels == labels[i]).nonzero(as_tuple=True)[0]
+            same_id = same_id[same_id != i]
+            if len(same_id) == 0:
+                continue
+
+            for kp in range(17):
+                if kp_scores[i, kp] >= thr:
+                    continue  # Visible, no recovery needed
+
+                # Find candidates where this kp is visible
+                cand_vis = kp_scores[same_id, kp]
+                visible = cand_vis >= thr
+                if not visible.any():
+                    continue
+
+                # Average visible candidates' features (detached to avoid cross-sample grad)
+                vis_indices = same_id[visible]
+                vis_feats = kp_feats[vis_indices, kp].detach()
+                vis_weights = kp_scores[vis_indices, kp]
+                w = vis_weights / vis_weights.sum()
+                recovered[i, kp] = (vis_feats * w.unsqueeze(1)).sum(dim=0)
+
+        return recovered
+
     def _compute_kp_weights(self, pose_dict):
         """Compute keypoint weights based on kp_weight_mode.
 
@@ -281,6 +327,11 @@ class SkeletonGCNHead(nn.Module):
         kp_feats, kp_scores = self._sample_keypoint_features(
             feat_map, keypoints, scores, person_mask)
         # kp_feats: (B, 17, C), kp_scores: (B, 17)
+
+        # 1.5. TTSFR: Training-Time Skeleton Feature Recovery
+        # Use same-ID samples in batch to fill occluded keypoints
+        if self.training and self.ttsfr and label is not None:
+            kp_feats = self._ttsfr_recover(kp_feats, kp_scores, label)
 
         # 2. Optional SGMKC masking (training only)
         sgmkc_mask = None
