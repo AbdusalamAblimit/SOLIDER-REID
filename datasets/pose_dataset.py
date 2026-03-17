@@ -152,9 +152,9 @@ class PoseImageDataset(Dataset):
             # View 1: Full (standard pipeline with normal RE)
             img_full_tensor = self._image_to_tensor(img)
             if random.random() < self.re_prob:
-                img_full_tensor, erase_box = self._random_erase(img_full_tensor)
-                if erase_box is not None:
-                    self._update_persons_for_erase(persons, erase_box)
+                img_full_tensor, _ = self._random_erase(img_full_tensor)
+                # Note: do NOT update persons for erase in parallel mode
+                # because pose_dict is shared across all 3 views
 
             # View 2: ROA (paste occlusion objects)
             img_roa = img.copy()

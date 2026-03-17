@@ -17,9 +17,9 @@
 ## 技术方案
 
 ### 三路数据
-1. **view_full**: 标准增强（当前 pipeline）
-2. **view_roa**: ROA 遮挡增强（已有）
-3. **view_pge**: Pose-Guided Body Part Erasing（擦除随机身体部位）
+1. **view_full**: 标准增强 + 随机 RE (p=0.5)
+2. **view_roa**: ROA 遮挡增强（100% 贴 VOC 遮挡物）
+3. **view_heavy**: 强制 Random Erasing (100% 概率)
 
 ### 训练流程
 ```

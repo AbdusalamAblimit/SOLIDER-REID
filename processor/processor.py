@@ -129,15 +129,17 @@ def do_train(cfg,
             parallel_aug = isinstance(img, list)
             if parallel_aug:
                 img_views = [v.to(device) for v in img]
+                batch_size = img_views[0].shape[0]
             else:
                 img = img.to(device)
+                batch_size = img.shape[0]
             target = vid.to(device)
             target_cam = target_cam.to(device)
             target_view = target_view.to(device)
 
             with amp.autocast(enabled=True):
                 if parallel_aug and use_pose:
-                    # 3-view parallel augmentation: forward each view, average loss
+                    # 3-view parallel augmentation: forward all, average loss
                     all_scores, all_feats, all_recon, all_kpdata = [], [], [], []
                     for v_img in img_views:
                         m_out = model(v_img, label=target, cam_label=target_cam,
@@ -207,6 +209,7 @@ def do_train(cfg,
 
                 # Parallel augmentation: add losses from view 2 and 3
                 if parallel_aug and use_pose:
+                    saved_details = getattr(loss, '_loss_details', {})
                     for vi in range(1, len(all_scores)):
                         v_loss = loss_fn(all_scores[vi], all_feats[vi], target,
                                          target_cam, pose_sim=pose_sim)
@@ -214,6 +217,7 @@ def do_train(cfg,
                             v_loss = v_loss + all_recon[vi]
                         loss = loss + v_loss
                     loss = loss / len(all_scores)  # average over views
+                    loss._loss_details = saved_details  # re-attach logging
 
                 # SGMKC: reconstruction loss for masked keypoint completion
                 if kp_data is not None and 'sgmkc_mask' in kp_data:
@@ -316,7 +320,7 @@ def do_train(cfg,
             else:
                 acc = (score.max(1)[1] == target).float().mean()
 
-            loss_meter.update(loss.item(), img.shape[0])
+            loss_meter.update(loss.item(), batch_size)
             acc_meter.update(acc, 1)
 
             # Track per-component losses if available
@@ -324,7 +328,7 @@ def do_train(cfg,
                 for k, v in loss._loss_details.items():
                     if k not in detail_meters:
                         detail_meters[k] = AverageMeter()
-                    detail_meters[k].update(v, img.shape[0])
+                    detail_meters[k].update(v, batch_size)
 
             torch.cuda.synchronize()
             if cfg.MODEL.DIST_TRAIN:
