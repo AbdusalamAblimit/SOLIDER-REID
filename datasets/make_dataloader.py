@@ -14,6 +14,7 @@ import torch.distributed as dist
 from .mm import MM
 from .occluded_duke import OccludedDukeMTMC
 from .occluded_posetrack import OccludedPoseTrack
+from .occluded_reid import OccludedREID
 
 __factory = {
     'market1501': Market1501,
@@ -21,6 +22,7 @@ __factory = {
     'mm': MM,
     'occluded_duke': OccludedDukeMTMC,
     'occluded_posetrack': OccludedPoseTrack,
+    'occluded_reid': OccludedREID,
 }
 
 

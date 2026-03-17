@@ -138,6 +138,13 @@
 | 085b-eq | PSG+GCN+ROA p=0.7 无PAA (5060) | 62.2% | 73.4% | 84.5% | 88.0% | mAP+5.6%, R1+6.9% | 🟡 vs p=0.5 无PAA: +0.2%. p=0.7 增益主要来自与 PAA 协同 |
 | **086-eq** | **PSG+GCN+PAA+ROA+PA-PAT (3路)** | **62.7%** | **74.6%** | **85.3%** | **88.7%** | **mAP+6.1%, R1+8.1%** | **🟢🟢🟢 Peak 62.8%@Ep100。留作拼 SOTA recipe** |
 | 087-eq | PSG+GCN+PAA+MM (momentum) | 61.5% | 73.0% | 84.5% | 88.2% | mAP+4.9%, R1+6.5% | 🟡 中性 vs PAA(-0.1%/-1.2%)。Memory contrastive 无额外收益 |
+| **090-sgcfr** | **SGCFR test-time (top_k=5, α=0.7)** | **64.2%** | **75.7%** | — | — | **mAP+7.6%, R1+9.2%** | **🟢🟢🟢🟢 Skeleton-Guided Cross-Image Feature Recovery! +2.6% vs PAA** |
+
+### Occluded-ReID 跨数据集测试 (模型训练于 Occluded-Duke)
+
+| ID | 方法 | mAP | R-1 | R-5 | R-10 | 备注 |
+|----|------|-----|-----|-----|------|------|
+| 066-occ_reid | PSG+GCN+PAA (equal_concat) | 72.2% | 77.8% | 88.1% | 93.3% | 跨数据集泛化 |
 | 079-local | PSG+GCN+ROA 无PAA (本地验证) | 61.8% | 72.8% | 85.2% | 88.3% | — | ✅ 跨硬件一致 (vs 远程 62.0%/73.6%, Δ<0.2%) |
 | 082-remote | PSG+GCN+PAA+ROA (远程验证) | 61.8% | 74.1% | 84.8% | 88.5% | — | ✅ 跨硬件一致 (vs 本地 62.0%/73.7%, Δ<0.2%) |
 | 056-eq | PSG+GCN + PGAM S2+S3 (eq_concat) | 61.1% | 73.7% | 85.2% | 88.6% | mAP+4.5%, R1+7.2% | 🟡 vs exp054: ≈持平。多 Stage 无额外增益 |
