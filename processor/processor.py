@@ -44,10 +44,25 @@ def do_train(cfg,
     pamc_weight = getattr(cfg.MODEL, 'POSE_PAMC_WEIGHT', 0.5)
     pamc_warmup = getattr(cfg.MODEL, 'POSE_PAMC_WARMUP', 10)
 
+    # Momentum Memory Contrastive Learning
+    mm_enabled = getattr(cfg.MODEL, 'POSE_MOMENTUM_MEMORY', False)
+    mm_memory = None
+    if mm_enabled:
+        from model.modules.momentum_memory import MomentumMemory
+        mm_weight = getattr(cfg.MODEL, 'POSE_MOMENTUM_MEMORY_WEIGHT', 0.5)
+        mm_temp = getattr(cfg.MODEL, 'POSE_MOMENTUM_MEMORY_TEMP', 0.05)
+        mm_mom = getattr(cfg.MODEL, 'POSE_MOMENTUM_MEMORY_MOM', 0.1)
+        num_train_classes = len(set([d[1] for d in train_loader.dataset.dataset]))
+        mm_memory = MomentumMemory(
+            feat_dim=768, num_classes=num_train_classes,
+            momentum=mm_mom, temp=mm_temp).to(device)
+
     logger = logging.getLogger("transreid.train")
     logger.info('start training')
     if use_pose:
         logger.info('Pose-guided training ENABLED')
+    if mm_enabled:
+        logger.info(f'Momentum Memory enabled: weight={mm_weight}, temp={mm_temp}, mom={mm_mom}')
     if pamc_enabled:
         logger.info(f'[PAMC] Pose-Aware Masking Consistency: weight={pamc_weight}, warmup={pamc_warmup}')
     if pcra_alpha > 0:
@@ -304,6 +319,18 @@ def do_train(cfg,
                             loss = loss + cipgfr_weight * cipgfr_loss
                             details['cipgfr'] = cipgfr_loss.item()
                             loss._loss_details = details
+
+                # Momentum Memory Contrastive Loss
+                if mm_enabled and mm_memory is not None:
+                    if isinstance(feat, list):
+                        mm_feat = feat[0]  # use global feature
+                    else:
+                        mm_feat = feat
+                    mm_loss = mm_memory(mm_feat, target)
+                    details = getattr(loss, '_loss_details', {})
+                    loss = loss + mm_weight * mm_loss
+                    details['mm'] = mm_loss.item()
+                    loss._loss_details = details
 
             scaler.scale(loss).backward()
 
