@@ -44,6 +44,18 @@ def do_train(cfg,
     pamc_weight = getattr(cfg.MODEL, 'POSE_PAMC_WEIGHT', 0.5)
     pamc_warmup = getattr(cfg.MODEL, 'POSE_PAMC_WARMUP', 10)
 
+    # PAMN: Pose-Aware Matching Network
+    pamn_enabled = getattr(cfg.MODEL, 'POSE_MATCHING_NETWORK', False)
+    pamn_module = None
+    if pamn_enabled:
+        from model.modules.pose_matching_network import PoseMatchingNetwork
+        pamn_weight = getattr(cfg.MODEL, 'POSE_MATCHING_NETWORK_WEIGHT', 0.5)
+        pamn_module = PoseMatchingNetwork(num_keypoints=17, feat_dim=768).to(device)
+        # Add PAMN params to optimizer
+        pamn_params = [{'params': pamn_module.parameters(), 'lr': cfg.SOLVER.BASE_LR}]
+        for pg in pamn_params:
+            optimizer.add_param_group(pg)
+
     # Momentum Memory Contrastive Learning
     mm_enabled = getattr(cfg.MODEL, 'POSE_MOMENTUM_MEMORY', False)
     mm_memory = None
@@ -319,6 +331,18 @@ def do_train(cfg,
                             loss = loss + cipgfr_weight * cipgfr_loss
                             details['cipgfr'] = cipgfr_loss.item()
                             loss._loss_details = details
+
+                # PAMN: Pose-Aware Matching Network loss
+                if pamn_enabled and pamn_module is not None and kp_data is not None:
+                    kp_feats_pamn = kp_data.get('kp_feats')
+                    kp_weights_pamn = kp_data.get('kp_weights')
+                    if kp_feats_pamn is not None and kp_weights_pamn is not None:
+                        pamn_loss = pamn_module.compute_training_loss(
+                            kp_feats_pamn.detach(), kp_weights_pamn.detach(), target)
+                        details = getattr(loss, '_loss_details', {})
+                        loss = loss + pamn_weight * pamn_loss
+                        details['pamn'] = pamn_loss.item()
+                        loss._loss_details = details
 
                 # Momentum Memory Contrastive Loss
                 if mm_enabled and mm_memory is not None:
