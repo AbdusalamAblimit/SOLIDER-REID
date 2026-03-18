@@ -261,3 +261,42 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+def sgcfr_iterative(query_kp_feats, query_kp_weights,
+                     gallery_kp_feats, gallery_kp_weights,
+                     distmat_global, top_k=5, vis_threshold=0.3, n_rounds=2):
+    """Multi-round SGCFR: recover → re-rank → recover again."""
+    current_q_kp = query_kp_feats.clone()
+    current_q_w = query_kp_weights.clone()
+
+    for r in range(n_rounds):
+        # Rank by current distance
+        if r == 0:
+            ranking = np.argsort(distmat_global, axis=1)
+        else:
+            # Re-compute distance with recovered features
+            dist_kp = compute_kp_distance(current_q_kp, gallery_kp_feats,
+                                           current_q_w, gallery_kp_weights).numpy()
+            N_q = distmat_global.shape[0]
+            N_g = distmat_global.shape[1]
+            qf_norm = F.normalize(current_q_kp.mean(dim=1), dim=1)  # approx global from kp
+            # Use hybrid distance
+            dist_hybrid = 0.3 * distmat_global + 0.7 * dist_kp
+            ranking = np.argsort(dist_hybrid, axis=1)
+
+        # Recover
+        current_q_kp, current_q_w = sgcfr_recover(
+            current_q_kp, current_q_w,
+            gallery_kp_feats, gallery_kp_weights,
+            ranking, top_k=top_k, vis_threshold=vis_threshold)
+
+    return current_q_kp, current_q_w
+
+
+if __name__ == '__main__' and '--iterative' in sys.argv:
+    # Quick iterative test
+    import sys
+    sys.argv.remove('--iterative')
+    # Run normal main first to get features, then test iterative
+    print("\n=== Iterative SGCFR ===")
