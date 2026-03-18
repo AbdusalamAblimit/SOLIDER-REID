@@ -476,6 +476,21 @@ class PoseBackboneModel(build_transformer):
                   f'proj_dim={proj_dim}, weight={pamc_weight}, '
                   f'warmup={pamc_warmup}')
 
+        # PKP: Pose Keypoint Prompting at patch embedding level
+        self.use_pkp = getattr(cfg.MODEL, 'POSE_PKP', False)
+        if self.use_pkp:
+            embed_dim = self.base.num_features[0]  # 96 for Swin-Tiny
+            patch_size = 4  # Swin-Tiny patch size
+            self.pose_prompt_embed = nn.Conv2d(
+                17, embed_dim, kernel_size=patch_size, stride=patch_size)
+            # Zero-init: starts as identity (pose_tokens = 0)
+            nn.init.zeros_(self.pose_prompt_embed.weight)
+            nn.init.zeros_(self.pose_prompt_embed.bias)
+            pkp_params = sum(p.numel() for p in self.pose_prompt_embed.parameters())
+            print(f'[PKP] Pose Keypoint Prompting enabled: '
+                  f'Conv2d(17→{embed_dim}, {patch_size}×{patch_size}), '
+                  f'{pkp_params} params')
+
         # Store backbone's semantic weight for manual forward
         self._semantic_weight_val = semantic_weight
 
@@ -497,6 +512,25 @@ class PoseBackboneModel(build_transformer):
         if self.base.use_abs_pos_embed:
             x = x + self.base.absolute_pos_embed
         x = self.base.drop_after_pos(x)
+
+        # PKP: inject pose prompt tokens after patch embedding
+        if getattr(self, 'use_pkp', False) and scene_heatmaps is not None:
+            # scene_heatmaps: (B, 17, hH, hW) → resize to input resolution
+            # then patch embed via conv2d → (B, embed_dim, pH, pW) → flatten
+            B = x.shape[0]
+            # Resize heatmaps to match original image spatial dims
+            # The image was (B, 3, H, W) and patch embed has stride=4
+            # So tokens are (H/4, W/4) = hw_shape
+            H_tokens, W_tokens = hw_shape
+            hm_input = F.interpolate(scene_heatmaps,
+                                     size=(H_tokens * 4, W_tokens * 4),
+                                     mode='bilinear', align_corners=False)
+            # Conv2d patch embed on heatmaps: (B, 17, H, W) → (B, embed_dim, H/4, W/4)
+            pose_tokens = self.pose_prompt_embed(hm_input)  # (B, 96, H/4, W/4)
+            # Flatten to token sequence: (B, H/4*W/4, 96)
+            pose_tokens = pose_tokens.flatten(2).transpose(1, 2)  # (B, L, 96)
+            # Additive fusion (zero-init → starts as identity)
+            x = x + pose_tokens
 
         # Build semantic weight tensor
         sw_val = self._semantic_weight_val
