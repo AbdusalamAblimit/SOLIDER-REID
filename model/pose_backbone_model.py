@@ -391,6 +391,9 @@ class PoseBackboneModel(build_transformer):
             kp_uncertainty_reg = getattr(cfg.MODEL, 'POSE_KP_UNCERTAINTY_REG', 0.1)
             pke = getattr(cfg.MODEL, 'POSE_PKE', False)
             dpf = getattr(cfg.MODEL, 'POSE_DPF', False)
+            sgmt = getattr(cfg.MODEL, 'POSE_SGMT', False)
+            sgmt_ratio = getattr(cfg.MODEL, 'POSE_SGMT_RATIO', 0.3)
+            sgmt_threshold = getattr(cfg.MODEL, 'POSE_SGMT_THRESHOLD', 0.3)
             mrkf = getattr(cfg.MODEL, 'POSE_MRKF', False)
             mrkf_s2_dim = self.base.num_features[2] if mrkf else 384
             self.skeleton_head = SkeletonGCNHead(
@@ -409,9 +412,15 @@ class PoseBackboneModel(build_transformer):
                 kp_uncertainty_reg=kp_uncertainty_reg,
                 pke=pke,
                 dpf=dpf,
+                sgmt=sgmt,
+                sgmt_ratio=sgmt_ratio,
+                sgmt_threshold=sgmt_threshold,
                 mrkf=mrkf,
                 mrkf_s2_dim=mrkf_s2_dim,
             )
+            if sgmt:
+                print(f'[SGMT] Skeleton-Guided Masked Training enabled: '
+                      f'mask_ratio={sgmt_ratio}, test_threshold={sgmt_threshold}')
             if dpf:
                 print('[DPF] Distributional Part Features enabled: '
                       'heatmap spatial pooling + precision-weighted matching')

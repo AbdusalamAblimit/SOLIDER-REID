@@ -128,7 +128,8 @@ class SkeletonGCNHead(nn.Module):
                  kp_uncertainty=False, kp_uncertainty_reg=0.1,
                  pke=False,
                  dpf=False,
-                 mrkf=False, mrkf_s2_dim=384):
+                 mrkf=False, mrkf_s2_dim=384,
+                 sgmt=False, sgmt_ratio=0.3, sgmt_threshold=0.3):
         super().__init__()
         self.feat_dim = feat_dim
         self.input_h, self.input_w = input_size
@@ -146,6 +147,12 @@ class SkeletonGCNHead(nn.Module):
         self.pke = pke
         # DPF: Distributional Part Features — heatmap-weighted spatial pooling
         self.dpf = dpf
+        # SGMT: Skeleton-Guided Masked Training
+        self.sgmt = sgmt
+        self.sgmt_ratio = sgmt_ratio
+        self.sgmt_threshold = sgmt_threshold
+        if self.sgmt:
+            self.mask_token = nn.Parameter(torch.randn(1, 1, feat_dim) * 0.02)
         # MRKF: Multi-Resolution Keypoint Features
         self.mrkf = mrkf
         if self.mrkf:
@@ -423,6 +430,28 @@ class SkeletonGCNHead(nn.Module):
         # Use same-ID samples in batch to fill occluded keypoints
         if self.training and self.ttsfr and label is not None:
             kp_feats = self._ttsfr_recover(kp_feats, kp_scores, label)
+
+        # 1.6. SGMT: Skeleton-Guided Masked Training
+        # Training: random mask → GCN recovers via message passing → ID loss
+        # Testing: mask low-confidence kp → GCN recovers → then SGCFR
+        if self.sgmt:
+            if self.training:
+                B_sz, N_kp, _ = kp_feats.shape
+                num_mask = max(1, int(N_kp * self.sgmt_ratio))
+                mask = torch.zeros(B_sz, N_kp, dtype=torch.bool,
+                                   device=kp_feats.device)
+                for b in range(B_sz):
+                    idx = torch.randperm(N_kp, device=kp_feats.device)[:num_mask]
+                    mask[b, idx] = True
+                mt = self.mask_token.expand(B_sz, N_kp, -1)
+                kp_feats = torch.where(mask.unsqueeze(-1), mt, kp_feats)
+            else:
+                # Test: mask keypoints with low confidence
+                low_conf = kp_scores < self.sgmt_threshold
+                if low_conf.any():
+                    B_sz = kp_feats.shape[0]
+                    mt = self.mask_token.expand(B_sz, self.num_joints, -1)
+                    kp_feats = torch.where(low_conf.unsqueeze(-1), mt, kp_feats)
 
         # 2. Optional SGMKC masking (training only)
         sgmkc_mask = None
