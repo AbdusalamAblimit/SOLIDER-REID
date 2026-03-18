@@ -27,6 +27,7 @@ from .modules.pose_feature_inpainter import PoseFeatureInpainter
 from .modules.pose_token_merge import PoseTokenMerge
 from .modules.pose_translation import PoseTranslationModule
 from .modules.pose_cond_lora import PoseCondLoRA
+from .modules.pose_film import PoseFiLMGenerator, PoseFiLMLayer
 
 
 class PoseBackboneModel(build_transformer):
@@ -476,6 +477,28 @@ class PoseBackboneModel(build_transformer):
                   f'proj_dim={proj_dim}, weight={pamc_weight}, '
                   f'warmup={pamc_warmup}')
 
+        # Pose-FiLM: Feature-wise Linear Modulation conditioned on pose
+        self.use_film = getattr(cfg.MODEL, 'POSE_FILM', False)
+        if self.use_film:
+            self.film_generators = nn.ModuleDict()
+            self.film_layer = PoseFiLMLayer()
+            total_film_params = 0
+            for stage_idx in range(len(self.base.stages)):
+                stage = self.base.stages[stage_idx]
+                feat_ch = self.base.num_features[stage_idx]
+                for block_idx in range(len(stage.blocks)):
+                    key = f's{stage_idx}_b{block_idx}'
+                    self.film_generators[key] = PoseFiLMGenerator(
+                        pose_channels=17,
+                        feat_channels=feat_ch,
+                        hidden_dim=32,
+                    )
+                    total_film_params += sum(
+                        p.numel() for p in self.film_generators[key].parameters())
+            print(f'[Pose-FiLM] Full-stage pose conditioning enabled: '
+                  f'{len(self.film_generators)} FiLM layers, '
+                  f'{total_film_params} total params')
+
         # PKP: Pose Keypoint Prompting at patch embedding level
         self.use_pkp = getattr(cfg.MODEL, 'POSE_PKP', False)
         if self.use_pkp:
@@ -546,6 +569,7 @@ class PoseBackboneModel(build_transformer):
         self._mrkf_stage2_cache = None  # will be set if MRKF enabled
 
         pgam_indices = getattr(self, 'pgam_stage_indices', set())
+        use_film = getattr(self, 'use_film', False)
         for i, stage in enumerate(self.base.stages):
             if i in self.psg_stage_indices or i in pgam_indices:
                 # Stage with PSG and/or PGAM: manually run blocks with injection
@@ -553,6 +577,10 @@ class PoseBackboneModel(build_transformer):
                     stage, x, hw_shape, scene_heatmaps, stage_idx=i,
                     pose_dict=pose_dict, paa_heatmaps=paa_heatmaps,
                     diff_heatmaps=diff_heatmaps)
+            elif use_film and scene_heatmaps is not None:
+                # FiLM stage: manually run blocks with per-block FiLM modulation
+                x, hw_shape, out, out_hw_shape = self._run_stage_with_film(
+                    stage, x, hw_shape, scene_heatmaps, stage_idx=i)
             else:
                 # Normal stage: run without modification
                 x, hw_shape, out, out_hw_shape = stage(x, hw_shape)
@@ -659,6 +687,24 @@ class PoseBackboneModel(build_transformer):
         # Returns: (B*nW, num_heads, ws*ws, ws*ws)
         return kp_rpe_module(token_dists)
 
+    def _run_stage_with_film(self, stage, x, hw_shape, scene_heatmaps,
+                              stage_idx=None):
+        """Run a stage's blocks with FiLM modulation only (no PSG)."""
+        for block_idx, block in enumerate(stage.blocks):
+            x = block(x, hw_shape)
+            # Apply FiLM after each block
+            key = f's{stage_idx}_b{block_idx}'
+            if key in self.film_generators:
+                gamma, beta = self.film_generators[key](
+                    scene_heatmaps)
+                x = self.film_layer(x, hw_shape, gamma, beta)
+
+        if stage.downsample:
+            x_down, down_hw_shape = stage.downsample(x, hw_shape)
+            return x_down, down_hw_shape, x, hw_shape
+        else:
+            return x, hw_shape, x, hw_shape
+
     def _run_stage_with_psg(self, stage, x, hw_shape, scene_heatmaps,
                             stage_idx=None, pose_dict=None, paa_heatmaps=None,
                             diff_heatmaps=None):
@@ -725,6 +771,12 @@ class PoseBackboneModel(build_transformer):
                 if getattr(self, 'use_pcl', False) and scene_heatmaps is not None and key in getattr(self, 'pcl_modules_dict', {}):
                     pcl_input = paa_heatmaps if paa_heatmaps is not None else scene_heatmaps
                     x = self.pcl_modules_dict[key](x, hw_shape, pcl_input)
+
+            # FiLM: apply per-channel affine modulation (works alongside PSG/PAA)
+            if getattr(self, 'use_film', False) and scene_heatmaps is not None and key in getattr(self, 'film_generators', {}):
+                gamma, beta = self.film_generators[key](
+                    scene_heatmaps)
+                x = self.film_layer(x, hw_shape, gamma, beta)
 
         # Handle downsample (Stage 3 has no downsample in Swin)
         if stage.downsample:
