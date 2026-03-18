@@ -126,7 +126,8 @@ class SkeletonGCNHead(nn.Module):
                  kp_learnable_attn=False,
                  sgmkc=False, sgmkc_ratio=0.3,
                  kp_uncertainty=False, kp_uncertainty_reg=0.1,
-                 pke=False):
+                 pke=False,
+                 dpf=False):
         super().__init__()
         self.feat_dim = feat_dim
         self.input_h, self.input_w = input_size
@@ -142,6 +143,8 @@ class SkeletonGCNHead(nn.Module):
         self.kp_uncertainty = kp_uncertainty
         self.kp_uncertainty_reg = kp_uncertainty_reg
         self.pke = pke
+        # DPF: Distributional Part Features — heatmap-weighted spatial pooling
+        self.dpf = dpf
 
         # Optional graph propagation over sampled keypoint features.
         if self.use_gcn:
@@ -238,6 +241,60 @@ class SkeletonGCNHead(nn.Module):
 
         return kp_feats, kp_scores
 
+    def _heatmap_pool_features(self, feat_map, heatmaps, scores, person_mask):
+        """Heatmap-weighted spatial pooling for Distributional Part Features.
+
+        Instead of sampling at keypoint centers, pools features over each
+        body part's spatial region using the heatmap as a probability
+        distribution. Computes both mean (identity signal) and variance
+        (reliability indicator).
+
+        Args:
+            feat_map: (B, C, fH, fW) backbone feature map
+            heatmaps: (B, max_persons, 17, hH, hW) pose heatmaps
+            scores: (B, max_persons, 17) confidence scores
+            person_mask: (B, max_persons) boolean
+
+        Returns:
+            kp_means: (B, 17, C) mean features per keypoint
+            kp_vars: (B, 17, C) feature variance per keypoint
+            kp_scores: (B, 17) confidence scores
+        """
+        B, C, fH, fW = feat_map.shape
+
+        # Use person-0 heatmaps
+        hm = heatmaps[:, 0]  # (B, 17, hH, hW)
+        kp_scores = scores[:, 0, :]  # (B, 17)
+
+        # Zero out if person-0 doesn't exist
+        p0_mask = person_mask[:, 0].float()  # (B,)
+        hm = hm * p0_mask.view(-1, 1, 1, 1)
+
+        # Resize to feature map resolution
+        hm = F.interpolate(hm, size=(fH, fW),
+                           mode='bilinear', align_corners=False)
+
+        # ReLU: raw ViTPose output can have small negatives
+        hm = F.relu(hm)
+
+        # Normalize each channel → spatial probability distribution
+        hm_sum = hm.sum(dim=(2, 3), keepdim=True).clamp(min=1e-6)
+        attn = hm / hm_sum  # (B, 17, fH, fW), each sums to 1
+
+        # Mean: μ_k = Σ_{h,w} attn_k(h,w) · feat(h,w)
+        # feat_map: (B, C, fH, fW) → (B, 1, C, fH*fW)
+        # attn:     (B, 17, fH, fW) → (B, 17, 1, fH*fW)
+        feat_flat = feat_map.view(B, C, -1).unsqueeze(1)   # (B, 1, C, fH*fW)
+        attn_flat = attn.view(B, 17, -1).unsqueeze(2)      # (B, 17, 1, fH*fW)
+
+        kp_means = (feat_flat * attn_flat).sum(dim=3)  # (B, 17, C)
+
+        # Variance: σ²_k = Σ_{h,w} attn_k(h,w) · (feat(h,w) - μ_k)²
+        residuals = feat_flat - kp_means.unsqueeze(3)  # (B, 17, C, fH*fW)
+        kp_vars = (attn_flat * residuals.pow(2)).sum(dim=3)  # (B, 17, C)
+
+        return kp_means, kp_vars, kp_scores
+
     def _ttsfr_recover(self, kp_feats, kp_scores, labels):
         """Training-Time Skeleton Feature Recovery.
 
@@ -323,10 +380,18 @@ class SkeletonGCNHead(nn.Module):
         scores = pose_dict['scores']
         person_mask = pose_dict['person_mask']
 
-        # 1. Sample features at keypoint locations
-        kp_feats, kp_scores = self._sample_keypoint_features(
-            feat_map, keypoints, scores, person_mask)
+        # 1. Extract keypoint features — DPF or point sampling
+        kp_vars = None  # DPF variance (None when using point sampling)
+        if self.dpf and 'heatmaps' in pose_dict:
+            # DPF: heatmap-weighted spatial pooling → distributional features
+            kp_feats, kp_vars, kp_scores = self._heatmap_pool_features(
+                feat_map, pose_dict['heatmaps'], scores, person_mask)
+        else:
+            # Standard: bilinear sampling at keypoint locations
+            kp_feats, kp_scores = self._sample_keypoint_features(
+                feat_map, keypoints, scores, person_mask)
         # kp_feats: (B, 17, C), kp_scores: (B, 17)
+        # kp_vars: (B, 17, C) or None
 
         # 1.5. TTSFR: Training-Time Skeleton Feature Recovery
         # Use same-ID samples in batch to fill occluded keypoints
@@ -351,8 +416,18 @@ class SkeletonGCNHead(nn.Module):
         else:
             kp_feats_enhanced = kp_feats
 
-        # 4. Confidence-weighted average (weight mode selectable)
-        kp_weights = self._compute_kp_weights(pose_dict)  # (B, 17)
+        # 4. Keypoint weighting for pooling
+        # DPF precision weighting: use inverse variance as weights
+        if self.dpf and kp_vars is not None:
+            # Scalar precision per keypoint = 1 / mean_variance
+            mean_var = kp_vars.mean(dim=2)  # (B, 17)
+            kp_weights = 1.0 / (mean_var + 1e-3)  # (B, 17) — precision
+            # Clip to prevent single keypoint domination
+            kp_weights = kp_weights.clamp(max=1e3)
+            # Also incorporate confidence scores (zero-confidence → zero weight)
+            kp_weights = kp_weights * kp_scores.clamp(min=0)
+        else:
+            kp_weights = self._compute_kp_weights(pose_dict)  # (B, 17)
 
         # Learnable Keypoint Attention: modulate weights with learned attention
         if self.kp_learnable_attn:
@@ -384,6 +459,9 @@ class SkeletonGCNHead(nn.Module):
             'kp_feats': kp_feats_enhanced,  # (B, 17, C)
             'kp_weights': kp_weights,       # (B, 17)
         }
+        # DPF: export per-keypoint variance for probabilistic matching at test time
+        if kp_vars is not None:
+            aux_data['kp_vars'] = kp_vars  # (B, 17, C)
         if skeleton_sigma is not None:
             aux_data['sigma'] = skeleton_sigma  # (B, C)
         if kp_unc is not None:

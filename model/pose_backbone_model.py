@@ -389,6 +389,7 @@ class PoseBackboneModel(build_transformer):
             kp_uncertainty = getattr(cfg.MODEL, 'POSE_KP_UNCERTAINTY', False)
             kp_uncertainty_reg = getattr(cfg.MODEL, 'POSE_KP_UNCERTAINTY_REG', 0.1)
             pke = getattr(cfg.MODEL, 'POSE_PKE', False)
+            dpf = getattr(cfg.MODEL, 'POSE_DPF', False)
             self.skeleton_head = SkeletonGCNHead(
                 feat_dim=self.in_planes,
                 hidden_dim=gcn_hidden,
@@ -404,7 +405,11 @@ class PoseBackboneModel(build_transformer):
                 kp_uncertainty=kp_uncertainty,
                 kp_uncertainty_reg=kp_uncertainty_reg,
                 pke=pke,
+                dpf=dpf,
             )
+            if dpf:
+                print('[DPF] Distributional Part Features enabled: '
+                      'heatmap spatial pooling + precision-weighted matching')
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'concat_scaled')
             # TTSFR: enable training-time skeleton feature recovery
             if getattr(cfg.MODEL, 'POSE_TTSFR', False):
