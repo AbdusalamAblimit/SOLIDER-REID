@@ -390,6 +390,8 @@ class PoseBackboneModel(build_transformer):
             kp_uncertainty_reg = getattr(cfg.MODEL, 'POSE_KP_UNCERTAINTY_REG', 0.1)
             pke = getattr(cfg.MODEL, 'POSE_PKE', False)
             dpf = getattr(cfg.MODEL, 'POSE_DPF', False)
+            mrkf = getattr(cfg.MODEL, 'POSE_MRKF', False)
+            mrkf_s2_dim = self.base.num_features[2] if mrkf else 384
             self.skeleton_head = SkeletonGCNHead(
                 feat_dim=self.in_planes,
                 hidden_dim=gcn_hidden,
@@ -406,10 +408,20 @@ class PoseBackboneModel(build_transformer):
                 kp_uncertainty_reg=kp_uncertainty_reg,
                 pke=pke,
                 dpf=dpf,
+                mrkf=mrkf,
+                mrkf_s2_dim=mrkf_s2_dim,
             )
             if dpf:
                 print('[DPF] Distributional Part Features enabled: '
                       'heatmap spatial pooling + precision-weighted matching')
+            # MRKF: Multi-Resolution Keypoint Features
+            self.use_mrkf = getattr(cfg.MODEL, 'POSE_MRKF', False)
+            if self.use_mrkf:
+                # Stage 2 has num_features[2] channels (384 for Swin-Tiny)
+                s2_dim = self.base.num_features[2]  # 384
+                self.mrkf_norm = nn.LayerNorm(s2_dim, elementwise_affine=False)
+                print(f'[MRKF] Multi-Resolution Keypoint Features enabled: '
+                      f'Stage2({s2_dim}d) + Stage3({self.in_planes}d)')
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'concat_scaled')
             # TTSFR: enable training-time skeleton feature recovery
             if getattr(cfg.MODEL, 'POSE_TTSFR', False):
@@ -497,6 +509,7 @@ class PoseBackboneModel(build_transformer):
 
         outs = []
         num_stages = len(self.base.stages)
+        self._mrkf_stage2_cache = None  # will be set if MRKF enabled
 
         pgam_indices = getattr(self, 'pgam_stage_indices', set())
         for i, stage in enumerate(self.base.stages):
@@ -515,6 +528,14 @@ class PoseBackboneModel(build_transformer):
                 sw = self.base.semantic_embed_w[i](sem_weight).unsqueeze(1)
                 sb = self.base.semantic_embed_b[i](sem_weight).unsqueeze(1)
                 x = x * self.base.softplus(sw) + sb
+
+            # MRKF: capture Stage 2 output for multi-resolution keypoint features
+            if i == 2 and getattr(self, 'use_mrkf', False):
+                s2 = self.mrkf_norm(out)
+                s2 = s2.view(-1, *out_hw_shape,
+                             self.base.num_features[i]).permute(0, 3, 1,
+                                                                 2).contiguous()
+                self._mrkf_stage2_cache = s2  # (B, 384, 24, 8)
 
             if i in self.base.out_indices:
                 norm_layer = getattr(self.base, f'norm{i}')
@@ -747,8 +768,13 @@ class PoseBackboneModel(build_transformer):
                 return [cls_score] + ptd_cls, [global_feat] + ptd_feats, featmaps, recon_loss, ptd_data
             elif self.use_skeleton_gcn and pose_dict is not None:
                 feat_map_detached = featmaps[-1].detach()
+                # MRKF: also pass detached Stage 2 features
+                s2_detached = None
+                if getattr(self, 'use_mrkf', False) and self._mrkf_stage2_cache is not None:
+                    s2_detached = self._mrkf_stage2_cache.detach()
                 gcn_cls_scores, gcn_feats, kp_data = self.skeleton_head(
-                    feat_map_detached, pose_dict, return_cls=True, label=label)
+                    feat_map_detached, pose_dict, return_cls=True, label=label,
+                    stage2_feat=s2_detached)
                 # Return lists → triggers list-loss path (implicit 0.5x global)
                 # 5th return: kp_data for per-keypoint triplet loss (None if disabled)
                 return [cls_score] + gcn_cls_scores, [global_feat] + gcn_feats, featmaps, recon_loss, kp_data
@@ -769,8 +795,13 @@ class PoseBackboneModel(build_transformer):
                     featmaps[-1], scene_heatmaps=None, return_cls=False)
             elif self.use_skeleton_gcn and not self.use_ptd and pose_dict is not None and \
                     getattr(self, 'pose_test_feat', 'global') != 'global':
+                # MRKF: pass Stage 2 features at test time too
+                s2_test = None
+                if getattr(self, 'use_mrkf', False) and self._mrkf_stage2_cache is not None:
+                    s2_test = self._mrkf_stage2_cache
                 _, gcn_feats, aux_data = self.skeleton_head(
-                    featmaps[-1], pose_dict, return_cls=False)
+                    featmaps[-1], pose_dict, return_cls=False,
+                    stage2_feat=s2_test)
 
             # Assemble test features from global + part branch (PTD or GCN)
             if gcn_feats is not None:

@@ -140,6 +140,7 @@ _C.MODEL.POSE_KP_UNCERTAINTY = False     # Learned Keypoint Uncertainty head
 _C.MODEL.POSE_KP_UNCERTAINTY_REG = 0.1  # Regularization weight to prevent uncertainty collapse
 _C.MODEL.POSE_PKE = False               # Probabilistic Keypoint Embeddings (Gaussian mu+sigma)
 _C.MODEL.POSE_DPF = False               # Distributional Part Features: heatmap spatial pooling + precision matching
+_C.MODEL.POSE_MRKF = False              # Multi-Resolution Keypoint Features: sample from Stage 2+3
 _C.MODEL.POSE_ADDITIVE_ADAPTER = False  # Pose Additive Adapter (PAA) alongside PSG
 _C.MODEL.POSE_PAA_ROUTED = False        # Reliability-routed PAA: only add to low-confidence regions
 _C.MODEL.POSE_PAA_BOTTLENECK = 32      # PAA bottleneck dimension

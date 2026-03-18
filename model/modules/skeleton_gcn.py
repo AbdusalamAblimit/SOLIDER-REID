@@ -127,7 +127,8 @@ class SkeletonGCNHead(nn.Module):
                  sgmkc=False, sgmkc_ratio=0.3,
                  kp_uncertainty=False, kp_uncertainty_reg=0.1,
                  pke=False,
-                 dpf=False):
+                 dpf=False,
+                 mrkf=False, mrkf_s2_dim=384):
         super().__init__()
         self.feat_dim = feat_dim
         self.input_h, self.input_w = input_size
@@ -145,6 +146,17 @@ class SkeletonGCNHead(nn.Module):
         self.pke = pke
         # DPF: Distributional Part Features — heatmap-weighted spatial pooling
         self.dpf = dpf
+        # MRKF: Multi-Resolution Keypoint Features
+        self.mrkf = mrkf
+        if self.mrkf:
+            # Project Stage 2 + Stage 3 features to a common dim, then fuse
+            fuse_dim = 256
+            self.mrkf_s2_proj = nn.Linear(mrkf_s2_dim, fuse_dim)
+            self.mrkf_s3_proj = nn.Linear(feat_dim, fuse_dim)
+            self.mrkf_fusion = nn.Linear(fuse_dim * 2, feat_dim)
+            # Initialize fusion to approximate identity (output ≈ Stage 3 features)
+            nn.init.zeros_(self.mrkf_fusion.weight)
+            nn.init.zeros_(self.mrkf_fusion.bias)
 
         # Optional graph propagation over sampled keypoint features.
         if self.use_gcn:
@@ -360,13 +372,15 @@ class SkeletonGCNHead(nn.Module):
             raise ValueError(
                 f"Unknown kp_weight_mode: {self.kp_weight_mode}")
 
-    def forward(self, feat_map, pose_dict, return_cls=True, label=None):
+    def forward(self, feat_map, pose_dict, return_cls=True, label=None,
+                stage2_feat=None):
         """
         Args:
             feat_map: (B, C, fH, fW) Part Stage 3 feature map
             pose_dict: dict with keypoints, scores, person_mask
             return_cls: whether to return classification scores
             label: identity labels (unused, kept for interface compat)
+            stage2_feat: (B, C2, fH2, fW2) Stage 2 feature map for MRKF (optional)
 
         Returns:
             If training:
@@ -392,6 +406,18 @@ class SkeletonGCNHead(nn.Module):
                 feat_map, keypoints, scores, person_mask)
         # kp_feats: (B, 17, C), kp_scores: (B, 17)
         # kp_vars: (B, 17, C) or None
+
+        # 1.1. MRKF: fuse with Stage 2 keypoint features for higher spatial resolution
+        if self.mrkf and stage2_feat is not None:
+            # Sample keypoint features from Stage 2 (higher resolution, lower dim)
+            kp_s2, _ = self._sample_keypoint_features(
+                stage2_feat, keypoints, scores, person_mask)  # (B, 17, C2)
+            # Project both to common dimension and fuse
+            s2_proj = self.mrkf_s2_proj(kp_s2)       # (B, 17, 256)
+            s3_proj = self.mrkf_s3_proj(kp_feats)     # (B, 17, 256)
+            fused = torch.cat([s2_proj, s3_proj], dim=-1)  # (B, 17, 512)
+            # Residual: kp_feats + fusion(concat) — starts as identity via zero-init
+            kp_feats = kp_feats + self.mrkf_fusion(fused)   # (B, 17, C)
 
         # 1.5. TTSFR: Training-Time Skeleton Feature Recovery
         # Use same-ID samples in batch to fill occluded keypoints
