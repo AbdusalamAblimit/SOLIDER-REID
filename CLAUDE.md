@@ -705,3 +705,26 @@ f. **数据来源必须是 log 文件**: 记录实验数据时，必须从 log �
     4. **严禁在审查未通过的情况下启动训练**，即使自认为已修复所有问题
     5. 每轮审查的结论（通过/不通过 + 问题列表）记录在 `experiments/exp{NNN}/review.md` 中
     6. 审查报告必须包含：对每个审查维度的逐项结论、发现的所有问题（按严重程度分级：Critical/High/Medium/Low）、最终结论
+
+## 远程服务器信息（恒源云 5060 Ti）
+
+```bash
+# 连接方式
+sshpass -p 'aZKBF3qdSS59Wf4uveVQgEwWAtHAwbeg' ssh -p 29162 -o StrictHostKeyChecking=no root@i-2.gpushare.com
+
+# 启动训练（必须先 cd 到项目目录）
+sshpass -p 'aZKBF3qdSS59Wf4uveVQgEwWAtHAwbeg' ssh -p 29162 -o StrictHostKeyChecking=no root@i-2.gpushare.com \
+  "echo '#!/bin/bash
+cd /root/work/SOLIDER-REID
+PYTHONUNBUFFERED=1 python3 train.py --config_file {CONFIG} OUTPUT_DIR {OUTPUT}' > /tmp/run.sh && \
+chmod +x /tmp/run.sh && nohup /tmp/run.sh > /tmp/train_remote.log 2>&1 &"
+
+# 同步代码
+git push origin exp/pose_heatmap  # 本地先 push
+sshpass -p '...' ssh ... 'git -C /root/work/SOLIDER-REID pull origin exp/pose_heatmap'
+```
+
+- GPU: NVIDIA 5060 Ti
+- 项目路径: `/root/work/SOLIDER-REID`
+- 数据路径: `data/occluded_duke`（已就位）
+- 注意: SSH 进去默认在 `/root`，必须 `cd` 到项目目录才能运行 `train.py`
