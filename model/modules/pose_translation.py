@@ -55,20 +55,23 @@ class PoseTranslationModule(nn.Module):
         nn.init.zeros_(self.translator[-1].bias)
 
     @staticmethod
-    def make_pose_descriptor(keypoints, scores):
+    def make_pose_descriptor(keypoints, scores, normalize=False, img_h=384, img_w=128):
         """Create pose descriptor from keypoint coordinates and scores.
 
         Args:
-            keypoints: (B, 17, 2) normalized keypoint coordinates
+            keypoints: (B, 17, 2) keypoint coordinates (pixel space)
             scores: (B, 17) confidence scores
+            normalize: if True, normalize coordinates to [0, 1]
 
         Returns:
             pose_desc: (B, 51) = flattened coordinates + scores
         """
         B = keypoints.shape[0]
-        # Normalize coordinates to [0, 1] range (already in pixel coords, divide by image size)
-        # For simplicity, just flatten and concatenate with scores
-        kp_flat = keypoints.reshape(B, -1)  # (B, 34)
+        kp = keypoints.clone()
+        if normalize:
+            kp[:, :, 0] = kp[:, :, 0] / img_w  # x → [0, 1]
+            kp[:, :, 1] = kp[:, :, 1] / img_h  # y → [0, 1]
+        kp_flat = kp.reshape(B, -1)  # (B, 34)
         return torch.cat([kp_flat, scores], dim=-1)  # (B, 51)
 
     def forward(self, src_feat, src_pose_desc, tgt_pose_desc):
@@ -88,7 +91,7 @@ class PoseTranslationModule(nn.Module):
         delta = self.translator(translator_input)
         return src_feat + delta
 
-    def compute_training_loss(self, global_feats, keypoints, scores, labels):
+    def compute_training_loss(self, global_feats, keypoints, scores, labels, normalize_coords=False):
         """Compute pose translation loss using same-ID pairs.
 
         Args:
@@ -104,7 +107,8 @@ class PoseTranslationModule(nn.Module):
         device = global_feats.device
 
         feats = global_feats.detach()
-        pose_descs = self.make_pose_descriptor(keypoints.detach(), scores.detach())
+        pose_descs = self.make_pose_descriptor(keypoints.detach(), scores.detach(),
+                                                normalize=normalize_coords)
 
         losses = []
         for i in range(B):

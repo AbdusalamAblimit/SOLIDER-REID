@@ -53,6 +53,7 @@ def do_train(cfg,
     ptm_enabled = getattr(cfg.MODEL, 'POSE_TRANSLATION', False)
     ptm_weight = getattr(cfg.MODEL, 'POSE_TRANSLATION_WEIGHT', 0.5) if ptm_enabled else 0
     ptm_warmup = 20
+    ptm_norm = getattr(cfg.MODEL, 'POSE_TRANSLATION_NORM', False)
 
     # PAMN: Pose-Aware Matching Network
     pamn_enabled = getattr(cfg.MODEL, 'POSE_MATCHING_NETWORK', False)
@@ -354,7 +355,8 @@ def do_train(cfg,
                         else:
                             global_feat_ptm = feat
                         ptm_loss = _m.ptm.compute_training_loss(
-                            global_feat_ptm, ptm_kp, ptm_scores, target)
+                            global_feat_ptm, ptm_kp, ptm_scores, target,
+                            normalize_coords=ptm_norm)
                         details = getattr(loss, '_loss_details', {})
                         loss = loss + ptm_weight * ptm_loss
                         details['ptm'] = ptm_loss.item()

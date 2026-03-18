@@ -153,6 +153,7 @@ _C.MODEL.POSE_PARALLEL_AUG = False       # PA-PAT: Parallel Augmentation Trainin
 _C.MODEL.POSE_TTSFR = False              # TTSFR: Training-Time Skeleton Feature Recovery
 _C.MODEL.POSE_TRANSLATION = False        # PCQA: Pose-Conditional Query Adaptation
 _C.MODEL.POSE_TRANSLATION_WEIGHT = 0.5  # PTM loss weight
+_C.MODEL.POSE_TRANSLATION_NORM = False  # Normalize keypoint coordinates to [0,1]
 _C.MODEL.POSE_TOKEN_MERGE = False        # PGTM: Pose-Guided Token Merging in Stage 3
 _C.MODEL.POSE_LSRM = False              # LSRM: Learned Skeleton Recovery Module
 _C.MODEL.POSE_LSRM_WEIGHT = 0.5         # LSRM recovery loss weight
