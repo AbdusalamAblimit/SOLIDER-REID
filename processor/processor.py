@@ -343,21 +343,22 @@ def do_train(cfg,
                             loss._loss_details = details
 
                 # PCQA: Pose Translation Module loss
-                if ptm_enabled and kp_data is not None and epoch > ptm_warmup:
+                if ptm_enabled and use_pose and pose_dict is not None and epoch > ptm_warmup:
                     _m = model.module if hasattr(model, 'module') else model
                     if hasattr(_m, 'ptm'):
-                        kp_weights_ptm = kp_data.get('kp_weights')
+                        # Use actual keypoint coordinates + scores as pose descriptor
+                        ptm_kp = pose_dict['keypoints'][:, 0, :, :]  # (B, 17, 2) person 0
+                        ptm_scores = pose_dict['scores'][:, 0, :]    # (B, 17) person 0
                         if isinstance(feat, list):
                             global_feat_ptm = feat[0]
                         else:
                             global_feat_ptm = feat
-                        if kp_weights_ptm is not None:
-                            ptm_loss = _m.ptm.compute_training_loss(
-                                global_feat_ptm, kp_weights_ptm, target)
-                            details = getattr(loss, '_loss_details', {})
-                            loss = loss + ptm_weight * ptm_loss
-                            details['ptm'] = ptm_loss.item()
-                            loss._loss_details = details
+                        ptm_loss = _m.ptm.compute_training_loss(
+                            global_feat_ptm, ptm_kp, ptm_scores, target)
+                        details = getattr(loss, '_loss_details', {})
+                        loss = loss + ptm_weight * ptm_loss
+                        details['ptm'] = ptm_loss.item()
+                        loss._loss_details = details
 
                 # LSRM: Learned Skeleton Recovery Module loss
                 if lsrm_enabled and kp_data is not None and epoch > lsrm_warmup:
