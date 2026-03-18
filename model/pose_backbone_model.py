@@ -25,6 +25,7 @@ from .modules.pose_additive_adapter import PoseAdditiveAdapter, PosePartStructur
 from .modules.pose_query_decoder import PoseQueryDecoder
 from .modules.pose_feature_inpainter import PoseFeatureInpainter
 from .modules.pose_token_merge import PoseTokenMerge
+from .modules.pose_translation import PoseTranslationModule
 from .modules.pose_cond_lora import PoseCondLoRA
 
 
@@ -430,6 +431,12 @@ class PoseBackboneModel(build_transformer):
                 self.lsrm = SkeletonRecoveryModule(feat_dim=self.in_planes)
                 lsrm_params = sum(p.numel() for p in self.lsrm.parameters())
                 print(f'[LSRM] Learned Skeleton Recovery Module enabled: {lsrm_params} params')
+            # PCQA: Pose Translation Module (inside model for proper save/load/schedule)
+            self.use_ptm = getattr(cfg.MODEL, 'POSE_TRANSLATION', False)
+            if self.use_ptm:
+                self.ptm = PoseTranslationModule(feat_dim=self.in_planes)
+                ptm_params = sum(p.numel() for p in self.ptm.parameters())
+                print(f'[PCQA] Pose Translation Module enabled: {ptm_params} params')
             if keypoint_pool_only:
                 print(f'[PSG+KPP] Keypoint pooling head enabled: no graph propagation, '
                       f'test_feat={self.pose_test_feat}, kp_weight={kp_weight_mode}')

@@ -49,6 +49,11 @@ def do_train(cfg,
     lsrm_weight = getattr(cfg.MODEL, 'POSE_LSRM_WEIGHT', 0.5) if lsrm_enabled else 0
     lsrm_warmup = 20  # Don't train LSRM before GCN features are meaningful
 
+    # PCQA: Pose Translation Module (inside model)
+    ptm_enabled = getattr(cfg.MODEL, 'POSE_TRANSLATION', False)
+    ptm_weight = getattr(cfg.MODEL, 'POSE_TRANSLATION_WEIGHT', 0.5) if ptm_enabled else 0
+    ptm_warmup = 20
+
     # PAMN: Pose-Aware Matching Network
     pamn_enabled = getattr(cfg.MODEL, 'POSE_MATCHING_NETWORK', False)
     pamn_module = None
@@ -335,6 +340,23 @@ def do_train(cfg,
                             details = getattr(loss, '_loss_details', {})
                             loss = loss + cipgfr_weight * cipgfr_loss
                             details['cipgfr'] = cipgfr_loss.item()
+                            loss._loss_details = details
+
+                # PCQA: Pose Translation Module loss
+                if ptm_enabled and kp_data is not None and epoch > ptm_warmup:
+                    _m = model.module if hasattr(model, 'module') else model
+                    if hasattr(_m, 'ptm'):
+                        kp_weights_ptm = kp_data.get('kp_weights')
+                        if isinstance(feat, list):
+                            global_feat_ptm = feat[0]
+                        else:
+                            global_feat_ptm = feat
+                        if kp_weights_ptm is not None:
+                            ptm_loss = _m.ptm.compute_training_loss(
+                                global_feat_ptm, kp_weights_ptm, target)
+                            details = getattr(loss, '_loss_details', {})
+                            loss = loss + ptm_weight * ptm_loss
+                            details['ptm'] = ptm_loss.item()
                             loss._loss_details = details
 
                 # LSRM: Learned Skeleton Recovery Module loss
