@@ -20,3 +20,15 @@
 - 当前判断: 待启动
 - 原因:
   - 这是当前最直接、最贴近核心机制的下一步
+
+### [2026-03-19 18:40] 启动确认
+- 运行位置: 本地 3090
+- 输出目录: `log/occluded_duke/exp114_sckd_up07_freeze20`
+- 关键确认:
+  1. 配置已生效：`update_thr=0.7, stop_epoch=20`
+  2. 日志已打印：
+     - `[SCKD] enabled: weight=0.5, warmup=20, low_thr=0.3, update_thr=0.7, mom=0.9, stop_epoch=20`
+  3. GPU 已空闲后重新占用，本轮为新的独立训练
+- 当前判断: 继续
+- 原因:
+  - 当前最关键的是看 `ep10/20/30` 是否与 `exp112` 接近，以及 `epoch 21+` 后冻结 teacher 是否改变验证走势
