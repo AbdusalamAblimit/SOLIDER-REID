@@ -21,3 +21,19 @@
 - 当前判断: 待启动
 - 原因:
   - 这是对 `exp110` 最自然的单变量 teacher purity 验证
+
+### [2026-03-20 00:17] 启动确认（远程 5060 Ti）
+- 运行位置: 恒源云 5060 Ti
+- 远程仓库: `exp/pose_heatmap` 已同步到 `f0c6196`
+- 启动方式: 后台 `nohup`
+- 输出目录: `log/occluded_duke/exp112_sckd_up07`
+- nohup 日志: `log/occluded_duke/exp112_sckd_up07/remote_nohup.log`
+- 关键确认:
+  1. `[SCKD] enabled: weight=0.5, warmup=20, low_thr=0.3, update_thr=0.7, mom=0.9`
+  2. `Epoch[1] Iter[20/227] Loss: 22.180`
+  3. GPU 已占用约 `6.7GB`
+- 当前判断: 继续
+- 原因:
+  - 配置生效
+  - 训练正常启动
+  - 可与本地 `exp111` 并行构成 teacher reliability 的双轴验证
