@@ -21,3 +21,19 @@
 - 当前判断: 待启动
 - 原因:
   - 这是与 `exp114` 最互补、最省时间的并行单变量
+
+### [2026-03-20 03:01] 启动确认（远程 5060 Ti）
+- 运行位置: 恒源云 5060 Ti
+- 远程仓库: 已同步到 `94fd7d1`
+- 启动方式: 后台 `nohup`
+- 输出目录: `log/occluded_duke/exp115_sckd_up07_freeze30`
+- nohup 日志: `log/occluded_duke/exp115_sckd_up07_freeze30/remote_nohup.log`
+- 关键确认:
+  1. 配置已生效：`update_thr=0.7, stop_epoch=30`
+  2. 日志已打印：
+     - `[SCKD] enabled: weight=0.5, warmup=20, low_thr=0.3, update_thr=0.7, mom=0.9, stop_epoch=30`
+  3. GPU 已占用约 `6.7GB`
+  4. `Epoch[1] Iter[60/227] Loss: 19.126`
+- 当前判断: 继续
+- 原因:
+  - 现在形成了本地 `freeze20` + 远程 `freeze30` 的并行对照
