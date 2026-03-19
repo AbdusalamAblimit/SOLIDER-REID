@@ -1830,3 +1830,36 @@ B. 直接启动 exp025，exp024 可以后续补跑
 2. 若冻结 teacher 后表现变好，就能把当前主创新从“prototype distillation”进一步推进到：
    **reliable support-complete learning**
 3. 若冻结 teacher 后仍不涨，则说明问题不在 non-stationary teacher，而在 distillation target hardness / weighting 设计。
+
+### [2026-03-20 06:00] 决策 #48
+
+**上下文**: SCKD 系列 7 个变体（exp110-116）全部完成或接近完成，给出了一个极其清晰的结论：
+
+| 变体 | 核心改动 | 最终 mAP | 最终 R1 |
+|------|----------|----------|---------|
+| exp110 | 基础 SCKD (online, thr=0.5) | 61.2% | 73.7% |
+| exp111 | MIN_COUNT=4 | 61.1% | 73.8% |
+| exp112 | UPDATE_THR=0.7 | 59.7%* | 71.6%* |
+| exp113 | 诊断实验 | — | — |
+| exp114 | freeze epoch 20 | 61.3% | 73.6% |
+| exp115 | freeze epoch 30 | 61.3% | 73.6% |
+| exp116 | SCFR (直接替换) | ~61.2* | ~73.5* |
+
+(*exp112 在 ep84 提前停表；exp116 仍在运行，预测值)
+
+**核心发现**:
+1. **所有变体收敛到 61.2-61.3 mAP**，无论调整 count、purity、freeze 时机、还是替换策略
+2. teacher non-stationarity 不是主要瓶颈（freeze 不帮忙）
+3. 直接替换 ≈ 间接蒸馏（SCFR ≈ SCKD）
+4. **SCKD 框架的天花板已确认：~+0.1 mAP / +0.7 R1 vs exp030a-eq**
+
+**选择**: 在 exp116 完成后，记录 SCKD 系列的最终负结论，转入新方向。
+
+**理由**:
+1. 7 个变体已经穷尽了 prototype bank 方向的合理设计空间
+2. 继续在该框架下做微调变体违反 CLAUDE.md 的止损规则
+3. oracle headroom (+8.5%) 说明问题真实存在，但 EMA prototype bank 不是正确的解决方案
+4. 下一步应转向：
+   - 文献/代码学习（寻找不同的 feature completion / cross-view learning 机制）
+   - 或者接受 PSG+GCN+PAA+ROA 作为当前最强训练端配置，把 SCKD 作为"支撑性负结论"写入论文
+   - SGCFR (+2.6% test-time) 仍然是最强的独特创新
