@@ -402,6 +402,23 @@ def do_train(cfg,
                     details['mm'] = mm_loss.item()
                     loss._loss_details = details
 
+                # SGRE: Skeleton-Guided Re-Encoding loss
+                sgre_enabled = getattr(cfg.MODEL, 'POSE_SGRE', False)
+                sgre_warmup = getattr(cfg.MODEL, 'POSE_SGRE_WARMUP', 20)
+                if sgre_enabled and kp_data is not None and epoch > sgre_warmup:
+                    _m = model.module if hasattr(model, 'module') else model
+                    if hasattr(_m, 'sgre'):
+                        kp_feats_sgre = kp_data.get('kp_feats')
+                        kp_w_sgre = kp_data.get('kp_weights')
+                        if kp_feats_sgre is not None:
+                            sgre_weight = getattr(cfg.MODEL, 'POSE_SGRE_WEIGHT', 0.5)
+                            sgre_loss = _m.sgre.compute_training_loss(
+                                kp_feats_sgre.detach(), kp_w_sgre.detach(), target)
+                            details = getattr(loss, '_loss_details', {})
+                            loss = loss + sgre_weight * sgre_loss
+                            details['sgre'] = sgre_loss.item()
+                            loss._loss_details = details
+
                 # PACD: Pose-Anchored Contrastive Distillation
                 # Mask random body-part regions in feature map, enforce
                 # masked features ≈ full features (self-distillation)

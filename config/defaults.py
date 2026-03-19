@@ -151,6 +151,10 @@ _C.MODEL.POSE_PACD = False              # Enable PACD training
 _C.MODEL.POSE_PACD_WEIGHT = 0.3         # PACD loss weight
 _C.MODEL.POSE_PACD_MASK_RATIO = 0.4     # Fraction of body parts to mask
 _C.MODEL.POSE_PACD_WARMUP = 10          # Warmup epochs before enabling PACD
+# SGRE: Skeleton-Guided Re-Encoding (pair-conditioned matching)
+_C.MODEL.POSE_SGRE = False              # Enable SGRE training
+_C.MODEL.POSE_SGRE_WEIGHT = 0.5         # SGRE triplet loss weight
+_C.MODEL.POSE_SGRE_WARMUP = 20          # Warmup before SGRE loss
 _C.MODEL.POSE_ADDITIVE_ADAPTER = False  # Pose Additive Adapter (PAA) alongside PSG
 _C.MODEL.POSE_PAA_ROUTED = False        # Reliability-routed PAA: only add to low-confidence regions
 _C.MODEL.POSE_PAA_BOTTLENECK = 32      # PAA bottleneck dimension

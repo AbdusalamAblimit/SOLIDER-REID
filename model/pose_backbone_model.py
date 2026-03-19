@@ -28,6 +28,7 @@ from .modules.pose_token_merge import PoseTokenMerge
 from .modules.pose_translation import PoseTranslationModule
 from .modules.pose_cond_lora import PoseCondLoRA
 from .modules.pose_film import PoseFiLMGenerator, PoseFiLMLayer
+from .modules.skeleton_reencoder import SkeletonReEncoder
 
 
 class PoseBackboneModel(build_transformer):
@@ -464,6 +465,12 @@ class PoseBackboneModel(build_transformer):
                 self.ptm = PoseTranslationModule(feat_dim=self.in_planes)
                 ptm_params = sum(p.numel() for p in self.ptm.parameters())
                 print(f'[PCQA] Pose Translation Module enabled: {ptm_params} params')
+            # SGRE: Skeleton-Guided Re-Encoding (pair-conditioned matching)
+            self.use_sgre = getattr(cfg.MODEL, 'POSE_SGRE', False)
+            if self.use_sgre:
+                self.sgre = SkeletonReEncoder(feat_dim=self.in_planes)
+                sgre_params = sum(p.numel() for p in self.sgre.parameters())
+                print(f'[SGRE] Skeleton-Guided Re-Encoding enabled: {sgre_params} params')
             if keypoint_pool_only:
                 print(f'[PSG+KPP] Keypoint pooling head enabled: no graph propagation, '
                       f'test_feat={self.pose_test_feat}, kp_weight={kp_weight_mode}')
