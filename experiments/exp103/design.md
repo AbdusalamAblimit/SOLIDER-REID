@@ -1,4 +1,7 @@
-# exp103: PGCE (Pose-Guided Cross-Image Erasing)
+# exp103: ROA+SGMT 组合 (实际执行) / PGCE (原计划未实现)
+
+**注意**: 原计划是 PGCE (跨图人体遮挡)，但实际执行的是 ROA+SGMT 组合实验。
+该组合实验在 Ep1 被用户要求停止（不做组合实验），PGCE 从未实现。
 
 ## 动机
 - ROA (+1.27%) 是唯一有效的训练端数据增强创新
