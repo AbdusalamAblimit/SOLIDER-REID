@@ -432,38 +432,16 @@ def do_train(cfg,
                     B_fm, C_fm, fH, fW = stage3_fm.shape
                     _m = model.module if hasattr(model, 'module') else model
 
-                    # FIX: Use keypoint COORDINATES to mask specific feature map
-                    # positions, not heatmap spatial masking (which masks ~76% due
-                    # to heatmap spread at 12×4 resolution)
-                    kp_coords = pose_dict['keypoints'][:, 0, :, :]  # (B, 17, 2)
-                    input_h, input_w = cfg.INPUT.SIZE_TRAIN
-                    # Map pixel coords → feature map coords
-                    kp_fy = (kp_coords[:, :, 1] / input_h * fH).long().clamp(0, fH - 1)
-                    kp_fx = (kp_coords[:, :, 0] / input_w * fW).long().clamp(0, fW - 1)
-
-                    # For each sample, randomly select keypoints to mask
-                    # Expand to 3×3 neighborhood for meaningful spatial coverage
-                    num_mask = max(1, int(17 * pacd_ratio))
+                    # Row-based masking: mask contiguous rows to simulate
+                    # real occlusion (upper/lower body). Much stronger than
+                    # 3×3 keypoint masking (~8%) or heatmap masking (76% bug).
+                    # Target: ~50% of rows masked → strong but not destructive.
+                    num_rows_mask = max(1, int(fH * pacd_ratio))  # 0.4*12=4 rows
                     body_mask = torch.zeros(B_fm, 1, fH, fW, device=stage3_fm.device)
-                    # Vectorized: collect all (b, fy, fx) indices then scatter
-                    all_b, all_fy, all_fx = [], [], []
                     for b in range(B_fm):
-                        kp_idx = torch.randperm(17, device=stage3_fm.device)[:num_mask]
-                        for ki in kp_idx:
-                            cy, cx = kp_fy[b, ki], kp_fx[b, ki]
-                            # 3×3 neighborhood around keypoint position
-                            for dy in range(-1, 2):
-                                for dx in range(-1, 2):
-                                    ny = (cy + dy).clamp(0, fH - 1)
-                                    nx = (cx + dx).clamp(0, fW - 1)
-                                    all_b.append(b)
-                                    all_fy.append(ny)
-                                    all_fx.append(nx)
-                    if all_b:
-                        all_b = torch.tensor(all_b, device=stage3_fm.device)
-                        all_fy = torch.stack(all_fy)
-                        all_fx = torch.stack(all_fx)
-                        body_mask[all_b, 0, all_fy, all_fx] = 1.0
+                        # Randomly choose starting row for contiguous block
+                        start = torch.randint(0, fH - num_rows_mask + 1, (1,)).item()
+                        body_mask[b, 0, start:start + num_rows_mask, :] = 1.0
 
                     # Mask: zero out selected keypoint positions
                     fm_masked = stage3_fm * (1.0 - body_mask)
