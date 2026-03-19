@@ -1500,3 +1500,31 @@ Pose-Guided Feature Inpainting — 在 feature map 空间恢复遮挡区域特�
 - 更高的 bank update visibility threshold
 - 基于 support 置信度的 soft reliability weighting
 - 让 prototype “更干净”，而不是只是“更晚生效”
+
+
+## 2026-03-19: exp112/113 后对核心创新的再次收紧
+
+### 新增关键信号
+- `exp112` 说明更干净的 support 写入有用，但当前只形成弱正向：
+  - `ep80 = 59.7 / 71.6`
+- `exp113` 则更关键，它说明：
+  - coverage 没明显扩大
+  - proto confidence 没坏
+  - 但 `proto_count` 一路增长时，`sckd_cos` 会持续下降
+
+### 这意味着什么
+1. 当前最值得讲的主创新，已经不只是 “support-complete distillation”。
+2. 更精确的核心问题应该是：
+   **如何在 pose-aligned support-complete learning 中控制 teacher hardening / non-stationary target。**
+3. 这比继续扫 `MIN_COUNT / UPDATE_THR` 更接近论文级机制，因为它在回答：
+   - 为什么最小原型只弱正向
+   - 为什么 purity 改进不够
+   - 为什么 raw `sckd` 不降
+
+### 因而下一步更像论文主方法的方向
+- Freeze-after-warmup teacher
+- Lagged / stale support bank
+- Reliability-aware soft teacher weighting
+
+其中最先该验证的是：
+**freeze-after-warmup**，因为它最直接、最干净，最能说明问题是不是出在 teacher non-stationarity。

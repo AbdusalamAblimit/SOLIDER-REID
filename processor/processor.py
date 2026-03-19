@@ -90,6 +90,7 @@ def do_train(cfg,
         sckd_update_thr = getattr(cfg.MODEL, 'POSE_SCKD_UPDATE_THR', 0.5)
         sckd_mom = getattr(cfg.MODEL, 'POSE_SCKD_MOM', 0.9)
         sckd_min_count = getattr(cfg.MODEL, 'POSE_SCKD_MIN_COUNT', 1)
+        sckd_update_stop_epoch = getattr(cfg.MODEL, 'POSE_SCKD_UPDATE_STOP_EPOCH', -1)
         num_train_classes = len(set([d[1] for d in train_loader.dataset.dataset]))
         sckd_bank = SupportCompleteBank(
             num_classes=num_train_classes,
@@ -109,7 +110,8 @@ def do_train(cfg,
         logger.info(f'Momentum Memory enabled: weight={mm_weight}, temp={mm_temp}, mom={mm_mom}')
     if sckd_enabled:
         logger.info(f'[SCKD] enabled: weight={sckd_weight}, warmup={sckd_warmup}, '
-                    f'low_thr={sckd_low_thr}, update_thr={sckd_update_thr}, mom={sckd_mom}')
+                    f'low_thr={sckd_low_thr}, update_thr={sckd_update_thr}, '
+                    f'mom={sckd_mom}, stop_epoch={sckd_update_stop_epoch}')
     if pamc_enabled:
         logger.info(f'[PAMC] Pose-Aware Masking Consistency: weight={pamc_weight}, warmup={pamc_warmup}')
     if pcra_alpha > 0:
@@ -585,7 +587,8 @@ def do_train(cfg,
                 kp_feats_sckd = kp_data.get('kp_feats')
                 kp_w_sckd = kp_data.get('kp_weights')
                 if kp_feats_sckd is not None and kp_w_sckd is not None:
-                    sckd_bank.update(kp_feats_sckd, kp_w_sckd, target)
+                    if sckd_update_stop_epoch < 0 or epoch <= sckd_update_stop_epoch:
+                        sckd_bank.update(kp_feats_sckd, kp_w_sckd, target)
 
             if 'center' in cfg.MODEL.METRIC_LOSS_TYPE:
                 for param in center_criterion.parameters():

@@ -491,3 +491,23 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
      训练端确实可以把 same-ID support 转成正向监督
   4. 所以下一步真正需要攻克的，不是“是否做 distillation”，而是：
      **如何让 support teacher 更可靠、更接近真正的 multi-view support-complete representation**
+
+
+## 2026-03-19: exp112/113 让 story 从“teacher reliability”推进到“teacher non-stationarity”
+
+- `exp112` 说明提高写入纯度是有帮助的，但帮助还不够大：
+  - 中期曾明显领先
+  - 到 `ep80` 更接近弱正向 / 近乎等价
+- `exp113` 则把更深一层的问题显式暴露出来：
+  1. 蒸馏覆盖率没有明显扩大
+  2. teacher 置信度没有崩
+  3. 但随着 prototype count 持续增长，student 对 teacher 的平均余弦持续下降
+
+- 这给 story 一个很重要的新收束：
+  **当前最值得讲的，不只是 reliable support，更是 stable / non-hardening support teacher。**
+
+- 换句话说，主创新现在更可能写成：
+  1. pose 定义 keypoint-level support units
+  2. same-ID bank 提供 support-complete teacher
+  3. 但 naive online bank 会不断变硬，形成 non-stationary distillation target
+  4. 因而需要一个更可靠、更稳定的 support-complete learning 机制

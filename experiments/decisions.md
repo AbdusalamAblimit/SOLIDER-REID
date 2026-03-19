@@ -1799,3 +1799,34 @@ B. 直接启动 exp025，exp024 可以后续补跑
 1. `1 -> 4` 已经是足够强的单变量测试；若还继续试 `2/3/5`，高概率只会落入局部调参。
 2. 当前并行的远程 `exp112`（`UPDATE_THR=0.7`）在 `ep50` 已给出更强的正信号，因此更值得优先跟进。
 3. 这与当前论文主线也更一致：关键不只是“有多少 support”，而是“teacher support 是否足够干净可信”。
+
+
+### [2026-03-19 19:05] 决策 #68
+
+**上下文**: `exp112` 与 `exp113` 已完成当前阶段使命并被提前停表。
+- `exp112`：`UPDATE_THR=0.7`
+- `exp113`：在 `exp112` 设置上增加 `SCKD` 诊断统计
+
+**已确认结果**:
+1. `exp112` 到 `ep80` 的最佳观测为 `59.7% / 71.6%`
+2. 相比 `exp110 ep80 = 59.8% / 71.4%`，其表现更接近 **弱正向/近乎等价**
+3. `exp113` 显示：
+   - `sckd_pairs / active_ratio / elig_ratio / proto_conf` 基本稳定
+   - `proto_count` 持续快速上升
+   - `sckd_cos` 从 `~0.83` 下降到 `~0.79`
+   - raw `sckd` 从 `~0.17` 升到 `~0.21`
+
+**判断**:
+1. 当前 `support-complete` 主线没有被否定；相反，它的瓶颈已比之前更清楚。
+2. `count gating` 不是关键，`purity gating` 有价值但还不够强。
+3. 当前更核心的问题是：
+   **online prototype bank 在 student 蒸馏阶段继续增长，导致 teacher 持续变硬，形成 non-stationary target。**
+4. 因此下一步最值得验证的，不再是继续扫 `MIN_COUNT / UPDATE_THR`，而是直接控制 teacher 是否继续变化。
+
+**选择**: 启动 `exp114`，测试 **freeze-after-warmup teacher bank**。
+
+**理由**:
+1. 这是对 `exp113` 诊断结论最直接、最干净的单变量响应。
+2. 若冻结 teacher 后表现变好，就能把当前主创新从“prototype distillation”进一步推进到：
+   **reliable support-complete learning**
+3. 若冻结 teacher 后仍不涨，则说明问题不在 non-stationary teacher，而在 distillation target hardness / weighting 设计。
