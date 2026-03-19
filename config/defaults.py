@@ -193,6 +193,7 @@ _C.MODEL.POSE_SCKD_MOM = 0.9                # EMA momentum for prototype updates
 _C.MODEL.POSE_SCKD_MIN_COUNT = 1            # Minimum prototype count required for distillation
 _C.MODEL.POSE_SCKD_UPDATE_STOP_EPOCH = -1   # Stop bank updates after this epoch (-1 = never stop)
 _C.MODEL.POSE_SCFR = False                  # Support-Complete Feature Replacement (uses bank to replace, not distill)
+_C.MODEL.POSE_VCGA = False                  # Visibility-Conditioned Graph Attention in GCN
 _C.MODEL.POSE_FEATURE_INPAINTER = False  # PGFI: Pose-Guided Feature Inpainting on feature map
 _C.MODEL.POSE_CIPGFR = False             # CIPGFR: Cross-Instance Pose-Guided Feature Recovery
 _C.MODEL.POSE_CIPGFR_WEIGHT = 0.5       # CIPGFR loss weight

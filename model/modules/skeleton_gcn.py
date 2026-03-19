@@ -85,18 +85,31 @@ class SkeletonGCN(nn.Module):
         nn.init.zeros_(self.layers[-1].weight)
         nn.init.zeros_(self.layers[-1].bias)
 
-    def forward(self, x):
+    def forward(self, x, kp_weights=None):
         """
         Args:
             x: (B, num_joints, feat_dim) keypoint features
+            kp_weights: (B, num_joints) optional visibility scores for VCGA
 
         Returns:
             (B, num_joints, feat_dim) enhanced keypoint features
         """
+        # VCGA: visibility-conditioned graph attention
+        if kp_weights is not None:
+            # Scale each column j of adjacency by vis(j):
+            # neighbor j's contribution to node i is proportional to vis(j)
+            vis = kp_weights.unsqueeze(1)  # (B, 1, 17)
+            adj = self.adj_norm.unsqueeze(0) * vis  # (B, 17, 17)
+            # Row-normalize to maintain aggregation stability
+            row_sum = adj.sum(dim=2, keepdim=True).clamp(min=1e-6)
+            adj = adj / row_sum
+        else:
+            adj = self.adj_norm  # (17, 17) broadcast-compatible
+
         h = x
         for i, (layer, norm) in enumerate(zip(self.layers, self.norms)):
             # Graph convolution: aggregate from neighbors
-            h = torch.matmul(self.adj_norm, h)  # (B, 17, dim)
+            h = torch.matmul(adj, h)  # (B, 17, dim)
             h = layer(h)  # (B, 17, out_dim)
             h = norm(h)
             if i < len(self.layers) - 1:
@@ -129,12 +142,14 @@ class SkeletonGCNHead(nn.Module):
                  pke=False,
                  dpf=False,
                  mrkf=False, mrkf_s2_dim=384,
-                 sgmt=False, sgmt_ratio=0.3, sgmt_threshold=0.3):
+                 sgmt=False, sgmt_ratio=0.3, sgmt_threshold=0.3,
+                 vcga=False):
         super().__init__()
         self.feat_dim = feat_dim
         self.input_h, self.input_w = input_size
         self.num_joints = 17
         self.use_gcn = use_gcn
+        self.vcga = vcga
         self.kp_weight_mode = kp_weight_mode
         self.kp_triplet = kp_triplet
         self.kp_learnable_attn = kp_learnable_attn
@@ -474,7 +489,9 @@ class SkeletonGCNHead(nn.Module):
 
         # 3. Optional skeleton GCN (propagate along skeleton edges)
         if self.use_gcn:
-            kp_feats_enhanced = self.gcn(kp_feats)  # (B, 17, C)
+            # VCGA: pass visibility scores to condition graph attention
+            gcn_kp_w = kp_scores if getattr(self, 'vcga', False) else None
+            kp_feats_enhanced = self.gcn(kp_feats, kp_weights=gcn_kp_w)
         else:
             kp_feats_enhanced = kp_feats
 

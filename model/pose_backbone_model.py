@@ -418,7 +418,10 @@ class PoseBackboneModel(build_transformer):
                 sgmt_threshold=sgmt_threshold,
                 mrkf=mrkf,
                 mrkf_s2_dim=mrkf_s2_dim,
+                vcga=getattr(cfg.MODEL, 'POSE_VCGA', False),
             )
+            if getattr(cfg.MODEL, 'POSE_VCGA', False):
+                print('[VCGA] Visibility-Conditioned Graph Attention enabled')
             if sgmt:
                 print(f'[SGMT] Skeleton-Guided Masked Training enabled: '
                       f'mask_ratio={sgmt_ratio}, test_threshold={sgmt_threshold}')
