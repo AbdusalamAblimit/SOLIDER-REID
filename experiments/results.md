@@ -413,3 +413,25 @@
   1. `support-complete distillation` 训练版最小原型已经**成功转正**，但当前仍只是单 seed、弱增益证据。
   2. 当前瓶颈更像是 prototype teacher 的可靠性不够，而不是这条主线本身错误。
   3. 因此下一步应优先做 **reliable-support bank** 一类的单变量改进，而不是直接堆更重模块。
+
+
+## 2026-03-19: exp111 Reliable-Support SCKD（MIN_COUNT=4）
+
+### exp111: Count-Gated Support-Complete Keypoint Distillation
+
+> 基于 `exp110_sckd` 的单变量 teacher reliability 改进。该实验仅把 `POSE_SCKD_MIN_COUNT` 从 `1` 提高到 `4`，用于测试“prototype 是否必须由多个支持样本共同支撑后再参与蒸馏”。
+
+| 方法 | mAP | R1 | R5 | R10 | 相对 exp110 |
+|------|-----|----|----|-----|-------------|
+| `exp110_sckd` | 61.2% | 73.7% | 84.7% | 88.2% | — |
+| **`exp111_sckd_min4`** | **61.1%** | **73.8%** | **85.2%** | **88.6%** | **-0.1 / +0.1** |
+
+- 关键收敛点：
+  - `ep40 = 56.0 / 68.1`
+  - `ep70 = 59.0 / 71.5`
+  - `ep90 = 60.8 / 73.8`
+  - `ep120 = 61.1 / 73.8`
+- 当前结论：
+  1. `MIN_COUNT=4` 没有把 `exp110` 的弱正向显著放大，整体更接近“等价替代”而不是进一步突破。
+  2. `support-complete` 主线仍然成立，因为相对 `exp030a-eq seed1234` 依旧保持 `R1` 正增益。
+  3. 但当前更关键的 teacher reliability 维度，大概率不是 support 数量门槛，而是 support 纯度 / 写入质量。

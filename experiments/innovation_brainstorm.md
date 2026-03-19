@@ -1480,3 +1480,23 @@ Pose-Guided Feature Inpainting — 在 feature map 空间恢复遮挡区域特�
   1. 问题不是简单 occlusion comparison，而是 single-image support incomplete
   2. 方法不是通用补全 decoder，而是 identity-level support-complete distillation
   3. 第一性瓶颈是 teacher reliability，而不是 feature fusion trick
+
+
+## 2026-03-19: exp111 后对 teacher reliability 的进一步收紧
+
+### 新增负中性证据
+- `exp111` 把 `POSE_SCKD_MIN_COUNT` 从 `1` 提到 `4`：
+  - `exp110 = 61.2 / 73.7`
+  - `exp111 = 61.1 / 73.8`
+- 结果几乎等价，说明“要求多个 support 样本共同支撑 teacher”这件事本身，并没有把当前增益显著放大。
+
+### 这个结果真正告诉我们的事
+1. 当前 `support-complete` 主线并没有被否定，因为结果仍保持正向区间。
+2. 但 teacher reliability 的关键点大概率不是 `count gating`。
+3. 更值得继续赌的是：
+   **teacher purity / write quality / support cleanliness**
+
+### 因而下一步应优先关注
+- 更高的 bank update visibility threshold
+- 基于 support 置信度的 soft reliability weighting
+- 让 prototype “更干净”，而不是只是“更晚生效”
