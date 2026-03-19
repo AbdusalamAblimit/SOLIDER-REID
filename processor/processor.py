@@ -429,41 +429,46 @@ def do_train(cfg,
                     pacd_ratio = getattr(cfg.MODEL, 'POSE_PACD_MASK_RATIO', 0.4)
                     stage3_fm = feat_maps[-1] if isinstance(feat_maps, list) else feat_maps
                     B_fm, C_fm, fH, fW = stage3_fm.shape
+                    _m = model.module if hasattr(model, 'module') else model
 
-                    # Get scene heatmaps → resize to feature map resolution
-                    hm = pose_dict['heatmaps'].max(dim=1)[0]  # (B, 17, hH, hW)
-                    hm_resized = F.interpolate(hm, size=(fH, fW),
-                                                mode='bilinear', align_corners=False)
-                    hm_resized = torch.relu(hm_resized)  # (B, 17, fH, fW)
+                    # FIX: Use keypoint COORDINATES to mask specific feature map
+                    # positions, not heatmap spatial masking (which masks ~76% due
+                    # to heatmap spread at 12×4 resolution)
+                    kp_coords = pose_dict['keypoints'][:, 0, :, :]  # (B, 17, 2)
+                    input_h, input_w = cfg.INPUT.SIZE_TRAIN
+                    # Map pixel coords → feature map coords
+                    kp_fy = (kp_coords[:, :, 1] / input_h * fH).long().clamp(0, fH - 1)
+                    kp_fx = (kp_coords[:, :, 0] / input_w * fW).long().clamp(0, fW - 1)
 
-                    # For each sample, randomly select body parts to mask
+                    # For each sample, randomly select keypoints to mask
                     num_mask = max(1, int(17 * pacd_ratio))
                     body_mask = torch.zeros(B_fm, 1, fH, fW, device=stage3_fm.device)
                     for b in range(B_fm):
                         kp_idx = torch.randperm(17, device=stage3_fm.device)[:num_mask]
-                        # Accumulate heatmaps of selected keypoints → spatial mask
-                        selected_hm = hm_resized[b, kp_idx].sum(dim=0)  # (fH, fW)
-                        # Sigmoid → soft mask, then threshold at 0.5
-                        body_mask[b, 0] = (torch.sigmoid(selected_hm) > 0.5).float()
+                        for ki in kp_idx:
+                            fy, fx = kp_fy[b, ki].item(), kp_fx[b, ki].item()
+                            body_mask[b, 0, fy, fx] = 1.0
 
-                    # Mask the feature map: zero out body-part regions
-                    fm_masked = stage3_fm * (1.0 - body_mask)  # keep non-body regions
+                    # Mask: zero out selected keypoint positions
+                    fm_masked = stage3_fm * (1.0 - body_mask)
 
-                    # Pool masked features
-                    _m = model.module if hasattr(model, 'module') else model
-                    feat_partial = _m.base.avgpool(fm_masked)
-                    feat_partial = torch.flatten(feat_partial, 1)
+                    # Pool with renormalization: average over UNMASKED positions only
+                    keep_mask = (1.0 - body_mask)  # (B, 1, fH, fW)
+                    n_keep = keep_mask.sum(dim=(2, 3), keepdim=True).clamp(min=1)
+                    feat_partial = (fm_masked).sum(dim=(2, 3)) / n_keep.squeeze(3).squeeze(2)
+                    # feat_partial: (B, C)
                     if _m.reduce_feat_dim:
                         feat_partial = _m.fcneck(feat_partial)
 
-                    # Teacher: full features (detached — don't change the main features)
+                    # Teacher: full features (detached, L2-normalized for stable comparison)
                     if isinstance(feat, list):
-                        feat_full = feat[0].detach()
+                        feat_full = F.normalize(feat[0].detach(), dim=1)
                     else:
-                        feat_full = feat.detach()
+                        feat_full = F.normalize(feat.detach(), dim=1)
+                    feat_partial_norm = F.normalize(feat_partial, dim=1)
 
-                    # PACD loss: partial features should approximate full features
-                    pacd_loss = F.mse_loss(feat_partial, feat_full)
+                    # PACD loss: cosine distance (not MSE — invariant to magnitude)
+                    pacd_loss = (1.0 - (feat_partial_norm * feat_full).sum(dim=1)).mean()
 
                     details = getattr(loss, '_loss_details', {})
                     loss = loss + pacd_weight * pacd_loss
