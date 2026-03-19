@@ -465,6 +465,13 @@ class SkeletonGCNHead(nn.Module):
             # Zero out masked keypoint features
             kp_feats = kp_feats * sgmkc_mask.unsqueeze(-1).float()
 
+        # 2.5. SCFR: Support-Complete Feature Replacement
+        scfr_stats = None
+        if self.training and hasattr(self, '_scfr_bank') and self._scfr_bank is not None \
+                and getattr(self, '_scfr_active', False) and label is not None:
+            kp_feats, _, scfr_stats = self._scfr_bank.replace(
+                kp_feats, kp_scores, label)
+
         # 3. Optional skeleton GCN (propagate along skeleton edges)
         if self.use_gcn:
             kp_feats_enhanced = self.gcn(kp_feats)  # (B, 17, C)
@@ -525,6 +532,9 @@ class SkeletonGCNHead(nn.Module):
         if sgmkc_mask is not None:
             aux_data['sgmkc_mask'] = sgmkc_mask              # (B, 17) True=kept
             aux_data['sgmkc_original'] = kp_feats_original   # (B, 17, C)
+        # SCFR: export replacement statistics
+        if scfr_stats is not None:
+            aux_data['scfr_stats'] = scfr_stats
 
         # PKE: for test, use sigma-weighted mu (precision-weighted feature)
         if self.pke and skeleton_sigma is not None and not self.training:

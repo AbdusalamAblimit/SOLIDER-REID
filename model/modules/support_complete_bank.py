@@ -101,3 +101,63 @@ class SupportCompleteBank(nn.Module):
                 updated += int(ema_ids.numel())
 
         return updated
+
+    def replace(self, kp_feats, kp_weights, labels):
+        """Replace low-visibility keypoint features with prototype features.
+
+        Unlike compute_loss (which adds a gradient signal), this directly
+        substitutes the features. The skeleton_head input is already detached
+        from the backbone (feat_map_detached), so no backbone gradients are
+        affected. Bank lookups use torch.no_grad internally.
+
+        Note on bank update path: the bank is updated from post-GCN features
+        with update_thr >= 0.7, so only high-visibility keypoints (score >= 0.7)
+        are written. SCFR replaces keypoints with score <= 0.3. The GCN
+        propagation from replaced neighbors to visible keypoints is an
+        intentional smoothing effect, not contamination.
+
+        Args:
+            kp_feats: (B, 17, C) keypoint features
+            kp_weights: (B, 17) confidence / visibility weights
+            labels: (B,) identity labels
+
+        Returns:
+            replaced_feats: (B, 17, C) with low-vis kps replaced
+            replace_mask: (B, 17) bool, True where replacement happened
+            stats: dict with replacement statistics
+        """
+        with torch.no_grad():
+            labels = labels.long()
+            low_mask = kp_weights <= self.low_thr
+            proto_count = self.count_bank[labels]
+            proto_conf = self.confidence_bank[labels]
+            support_mask = (proto_count >= self.min_count) & (proto_conf > 0)
+            replace_mask = low_mask & support_mask
+
+        replaced = kp_feats.clone()
+        n_replaced = int(replace_mask.sum().item())
+
+        if n_replaced > 0:
+            with torch.no_grad():
+                proto = self.prototype_bank[labels]  # (B, 17, C)
+                # Scale prototype to match the norm of visible keypoint features
+                orig_norm = kp_feats.norm(dim=2, keepdim=True).clamp(min=1e-6)
+                vis_mask = ~low_mask  # (B, 17)
+                vis_count = vis_mask.float().sum(dim=1).clamp(min=1)  # (B,)
+                vis_norm = (orig_norm.squeeze(-1) * vis_mask.float()).sum(dim=1) / vis_count
+                # Guard: skip replacement for fully-occluded samples (vis_norm=0)
+                valid_samples = vis_norm > 0  # (B,)
+                final_mask = replace_mask & valid_samples.unsqueeze(1)
+                if final_mask.any():
+                    scaled_proto = F.normalize(proto, dim=2) * vis_norm.unsqueeze(1).unsqueeze(2)
+                    replaced[final_mask] = scaled_proto[final_mask]
+                    n_replaced = int(final_mask.sum().item())
+                else:
+                    n_replaced = 0
+
+        stats = {
+            'n_replaced': n_replaced,
+            'replace_ratio': float(replace_mask.float().mean().item()),
+            'low_ratio': float(low_mask.float().mean().item()),
+        }
+        return replaced, replace_mask, stats

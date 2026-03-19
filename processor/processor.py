@@ -108,10 +108,13 @@ def do_train(cfg,
         logger.info('Pose-guided training ENABLED')
     if mm_enabled:
         logger.info(f'Momentum Memory enabled: weight={mm_weight}, temp={mm_temp}, mom={mm_mom}')
+    scfr_enabled = getattr(cfg.MODEL, 'POSE_SCFR', False)
     if sckd_enabled:
         logger.info(f'[SCKD] enabled: weight={sckd_weight}, warmup={sckd_warmup}, '
                     f'low_thr={sckd_low_thr}, update_thr={sckd_update_thr}, '
                     f'mom={sckd_mom}, stop_epoch={sckd_update_stop_epoch}')
+    if scfr_enabled:
+        logger.info(f'[SCFR] Feature replacement mode enabled (loss disabled, bank replaces features)')
     if pamc_enabled:
         logger.info(f'[PAMC] Pose-Aware Masking Consistency: weight={pamc_weight}, warmup={pamc_warmup}')
     if pcra_alpha > 0:
@@ -177,6 +180,13 @@ def do_train(cfg,
             m.reset()
         evaluator.reset()
         model.train()
+
+        # SCFR: set/unset bank reference on skeleton_head each epoch
+        if scfr_enabled and sckd_bank is not None:
+            _m = model.module if hasattr(model, 'module') else model
+            if hasattr(_m, 'skeleton_head'):
+                _m.skeleton_head._scfr_bank = sckd_bank
+                _m.skeleton_head._scfr_active = (epoch > sckd_warmup)
 
         for n_iter, batch_data in enumerate(train_loader):
             optimizer.zero_grad()
@@ -430,20 +440,29 @@ def do_train(cfg,
                     loss._loss_details = details
 
                 if sckd_enabled and sckd_bank is not None and kp_data is not None and epoch > sckd_warmup:
-                    kp_feats_sckd = kp_data.get('kp_feats')
-                    kp_w_sckd = kp_data.get('kp_weights')
-                    if kp_feats_sckd is not None and kp_w_sckd is not None:
-                        sckd_loss, sckd_pairs, sckd_stats = sckd_bank.compute_loss(
-                            kp_feats_sckd, kp_w_sckd, target)
-                        if sckd_pairs > 0:
-                            details = getattr(loss, '_loss_details', {})
-                            loss = loss + sckd_weight * sckd_loss
-                            details['sckd'] = sckd_loss.item()
-                            details['sckd_pairs'] = float(sckd_pairs)
-                            details['sckd_lowr'] = sckd_stats['low_ratio']
-                            details['sckd_actr'] = sckd_stats['active_ratio']
-                            details['sckd_eligr'] = sckd_stats['elig_ratio']
-                            details['sckd_conf'] = sckd_stats['proto_conf']
+                    # SCFR mode: log replacement stats instead of computing loss
+                    if scfr_enabled and kp_data.get('scfr_stats') is not None:
+                        scfr_st = kp_data['scfr_stats']
+                        details = getattr(loss, '_loss_details', {})
+                        details['scfr_n'] = float(scfr_st['n_replaced'])
+                        details['scfr_r'] = scfr_st['replace_ratio']
+                        loss._loss_details = details
+                    elif not scfr_enabled:
+                        # Original SCKD distillation loss
+                        kp_feats_sckd = kp_data.get('kp_feats')
+                        kp_w_sckd = kp_data.get('kp_weights')
+                        if kp_feats_sckd is not None and kp_w_sckd is not None:
+                            sckd_loss, sckd_pairs, sckd_stats = sckd_bank.compute_loss(
+                                kp_feats_sckd, kp_w_sckd, target)
+                            if sckd_pairs > 0:
+                                details = getattr(loss, '_loss_details', {})
+                                loss = loss + sckd_weight * sckd_loss
+                                details['sckd'] = sckd_loss.item()
+                                details['sckd_pairs'] = float(sckd_pairs)
+                                details['sckd_lowr'] = sckd_stats['low_ratio']
+                                details['sckd_actr'] = sckd_stats['active_ratio']
+                                details['sckd_eligr'] = sckd_stats['elig_ratio']
+                                details['sckd_conf'] = sckd_stats['proto_conf']
                             details['sckd_count'] = sckd_stats['proto_count']
                             details['sckd_cos'] = sckd_stats['cosine']
                             loss._loss_details = details
