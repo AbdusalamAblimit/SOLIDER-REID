@@ -420,9 +420,73 @@ def do_train(cfg,
                             details['sgre'] = sgre_loss.item()
                             loss._loss_details = details
 
-                # PACD: Pose-Anchored Contrastive Distillation
-                # Mask random body-part regions in feature map, enforce
-                # masked features ≈ full features (self-distillation)
+                # PISD: Pose-Informed Self-Distillation at IMAGE level
+                # Mask body parts on the actual image, re-run backbone,
+                # enforce partial features ≈ full features
+                pisd_enabled = getattr(cfg.MODEL, 'POSE_PISD', False)
+                pisd_warmup = getattr(cfg.MODEL, 'POSE_PISD_WARMUP', 10)
+                if pisd_enabled and use_pose and epoch > pisd_warmup and not parallel_aug:
+                    pisd_weight = getattr(cfg.MODEL, 'POSE_PISD_WEIGHT', 0.3)
+                    pisd_ratio = getattr(cfg.MODEL, 'POSE_PISD_MASK_RATIO', 0.4)
+                    _m = model.module if hasattr(model, 'module') else model
+
+                    # Create masked image using pose heatmaps at INPUT resolution
+                    hm = pose_dict['heatmaps'].max(dim=1)[0]  # (B, 17, hH, hW)
+                    hm_full = F.interpolate(hm, size=img.shape[2:],
+                                             mode='bilinear', align_corners=False)
+                    hm_full = torch.relu(hm_full)  # (B, 17, H, W)
+
+                    # Select random keypoints to mask
+                    B_img = img.shape[0]
+                    num_mask = max(1, int(17 * pisd_ratio))
+                    img_mask = torch.zeros(B_img, 1, img.shape[2], img.shape[3],
+                                           device=img.device)
+                    for b in range(B_img):
+                        kp_idx = torch.randperm(17, device=img.device)[:num_mask]
+                        selected = hm_full[b, kp_idx].sum(dim=0)  # (H, W)
+                        # Use actual heatmap intensity as soft mask threshold
+                        # Mask where body part response is strong
+                        threshold = selected.quantile(0.7)  # top 30% of response
+                        img_mask[b, 0] = (selected > threshold).float()
+
+                    # Create masked image (fill with mean pixel value)
+                    mean_pixel = img.mean(dim=(2, 3), keepdim=True)
+                    img_masked = img * (1.0 - img_mask) + mean_pixel * img_mask
+
+                    # Teacher: full features (already computed, detached)
+                    if isinstance(feat, list):
+                        feat_full = F.normalize(feat[0].detach(), dim=1)
+                    else:
+                        feat_full = F.normalize(feat.detach(), dim=1)
+
+                    # Student: forward with masked image
+                    # FIX: freeze BN running stats (don't change model.training
+                    # which would switch the return format to eval mode)
+                    bn_states = {}
+                    for name, mod in _m.named_modules():
+                        if isinstance(mod, (nn.BatchNorm1d, nn.BatchNorm2d)):
+                            bn_states[name] = mod.training
+                            mod.eval()
+                    pisd_out = model(img_masked, label=target, cam_label=target_cam,
+                                      view_label=target_view, pose_dict=pose_dict)
+                    for name, mod in _m.named_modules():
+                        if name in bn_states:
+                            mod.train(bn_states[name])
+                    # Extract global feature from student output
+                    pisd_feat_raw = pisd_out[1]
+                    if isinstance(pisd_feat_raw, list):
+                        pisd_feat_raw = pisd_feat_raw[0]
+                    pisd_feat_norm = F.normalize(pisd_feat_raw, dim=1)
+
+                    # PISD loss: cosine distance
+                    pisd_loss = (1.0 - (pisd_feat_norm * feat_full).sum(dim=1)).mean()
+
+                    details = getattr(loss, '_loss_details', {})
+                    loss = loss + pisd_weight * pisd_loss
+                    details['pisd'] = pisd_loss.item()
+                    loss._loss_details = details
+
+                # PACD: Pose-Anchored Contrastive Distillation (feature map level)
                 pacd_enabled = getattr(cfg.MODEL, 'POSE_PACD', False)
                 pacd_warmup = getattr(cfg.MODEL, 'POSE_PACD_WARMUP', 10)
                 if pacd_enabled and use_pose and feat_maps is not None and epoch > pacd_warmup:
