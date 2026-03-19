@@ -31,15 +31,38 @@ class SupportCompleteBank(nn.Module):
         proto_conf = self.confidence_bank[labels].detach()
         proto_count = self.count_bank[labels]
 
-        mask = (kp_weights <= self.low_thr) & (proto_count >= self.min_count) & (proto_conf > 0)
+        low_mask = kp_weights <= self.low_thr
+        support_mask = (proto_count >= self.min_count) & (proto_conf > 0)
+        mask = low_mask & support_mask
+        low_ratio = float(low_mask.float().mean().item())
+        active_ratio = float(mask.float().mean().item())
+        low_total = int(low_mask.sum().item())
+        elig_ratio = float(mask.sum().item() / max(low_total, 1))
+
         if not mask.any():
-            return kp_feats.new_zeros(()), 0
+            stats = {
+                'low_ratio': low_ratio,
+                'active_ratio': active_ratio,
+                'elig_ratio': elig_ratio,
+                'proto_conf': 0.0,
+                'proto_count': 0.0,
+                'cosine': 0.0,
+            }
+            return kp_feats.new_zeros(()), 0, stats
 
         cosine = (kp_feats * proto).sum(dim=2).clamp(min=-1.0, max=1.0)
         point_loss = 1.0 - cosine
         weights = proto_conf * mask.float()
         loss = (point_loss * weights).sum() / weights.sum().clamp(min=1e-12)
-        return loss, int(mask.sum().item())
+        stats = {
+            'low_ratio': low_ratio,
+            'active_ratio': active_ratio,
+            'elig_ratio': elig_ratio,
+            'proto_conf': float(proto_conf[mask].mean().item()),
+            'proto_count': float(proto_count[mask].float().mean().item()),
+            'cosine': float(cosine[mask].mean().item()),
+        }
+        return loss, int(mask.sum().item()), stats
 
     @torch.no_grad()
     def update(self, kp_feats, kp_weights, labels):

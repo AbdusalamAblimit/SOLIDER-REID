@@ -431,11 +431,19 @@ def do_train(cfg,
                     kp_feats_sckd = kp_data.get('kp_feats')
                     kp_w_sckd = kp_data.get('kp_weights')
                     if kp_feats_sckd is not None and kp_w_sckd is not None:
-                        sckd_loss, sckd_pairs = sckd_bank.compute_loss(kp_feats_sckd, kp_w_sckd, target)
+                        sckd_loss, sckd_pairs, sckd_stats = sckd_bank.compute_loss(
+                            kp_feats_sckd, kp_w_sckd, target)
                         if sckd_pairs > 0:
                             details = getattr(loss, '_loss_details', {})
                             loss = loss + sckd_weight * sckd_loss
                             details['sckd'] = sckd_loss.item()
+                            details['sckd_pairs'] = float(sckd_pairs)
+                            details['sckd_lowr'] = sckd_stats['low_ratio']
+                            details['sckd_actr'] = sckd_stats['active_ratio']
+                            details['sckd_eligr'] = sckd_stats['elig_ratio']
+                            details['sckd_conf'] = sckd_stats['proto_conf']
+                            details['sckd_count'] = sckd_stats['proto_count']
+                            details['sckd_cos'] = sckd_stats['cosine']
                             loss._loss_details = details
 
                 # SGRE: Skeleton-Guided Re-Encoding loss
