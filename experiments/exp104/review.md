@@ -1,20 +1,33 @@
-# exp104 PACD 审查记录
+# exp104 PACD 审查报告
 
-## 审查轮次 1 (初版)
-- BUG: feat_maps 在 parallel_aug 路径未捕获 → 已修复
+## 审查范围
+- `experiments/exp104/design.md`
+- `experiments/exp104/monitor.md`
+- `configs/occluded_duke/pose_psg_gcn_paa_pacd.yml`
+- `processor/processor.py`
+- `log/occluded_duke/exp104_pacd/train_log.txt`
 
-## 审查轮次 2 (外部 Claude 发现 mask bug)
-- CRITICAL: sigmoid(hm)>0.5 几乎处处为真 → mask 76% 而非 40%
-- CRITICAL: GAP 未重归一化 → student 特征幅值系统性偏小
-- CRITICAL: MSE 随特征范数增大而增大 → loss 不可收敛
-- 已修复: 改用关键点坐标 + 归一化池化 + cosine distance
+## 历史修复记录
 
-## 审查轮次 3 (完整审查修复后代码)
-修复的问题:
-| ID | 严重度 | 描述 | 修复 |
-|----|--------|------|------|
-| 1 | MEDIUM | 单点 mask 只覆盖 8-12% (太弱) | ✅ 扩展到 3×3 邻域 (~30-40%) |
-| 2 | MEDIUM | Python loop .item() 慢 | ✅ 改为收集索引后批量 scatter |
-| 3 | LOW | parallel_aug 路径 feat_maps 丢失 | ✅ 捕获 fm_v |
+- 早期实现里曾有 `parallel_aug` 路径 `feat_maps` 未捕获的问题
+- 第二轮审查已确认旧版 PACD 存在 heatmap mask、未重归一化、raw MSE 三个关键缺陷
+- 当前工作区里的 `processor/processor.py` 已经被继续改成“关键点坐标 + 3x3 邻域 + 归一化池化 + cosine”
 
-待二次审查确认。
+## 发现的问题
+
+| # | 严重程度 | 文件 | 描述 | 状态 |
+|---|---------|------|------|------|
+| 1 | HIGH | design/log vs 当前代码 | `exp104` 现有日志显然不是当前工作区代码跑出来的：当前代码的 PACD 是 cosine distance，数值应在 `[0, 2]` 左右；但日志里 `pacd` 长期在 `50+`，只能对应早期的 MSE 版本。也就是说，仓库当前代码与 `exp104` 结果已经失配 | 未修复 |
+| 2 | CRITICAL | train_log.txt | 已有运行中 `tri_global` 长期卡在约 `0.693`、`pacd` 持续升到 `50+`，说明旧版 PACD 显著破坏了 global metric branch。现有日志不能作为“PACD 有效”的证据 | 未修复 |
+| 3 | MEDIUM | design.md vs 当前代码 | design 里写的是“pose-guided spatial mask + MSE distillation”；当前工作区则变成了“关键点邻域 mask + cosine distillation”。即便后续重新训练，它测试的也已经不是原始设计假设 | 未修复 |
+
+## 审查通过项
+
+- `POSE_PACD` 的配置开关和 warmup 入口是清楚的
+- 当前工作区版本至少修掉了旧版中最明显的数值病灶
+
+## 结论
+
+❌ **不通过**
+
+`exp104` 现有实验结果无效，且代码与日志已经脱节。后续若要让 Claude 重做，应把当前 PACD 代码单独冻结成新实验编号，再重新跑。
