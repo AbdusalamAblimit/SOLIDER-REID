@@ -359,3 +359,30 @@
   1. 即使把 confuser reasoning 下沉到 `per-keypoint / common-support` 粒度，当前 retrieval-time penalty 仍然整体负面。
   2. duplicate-aware pruning 只能略微减轻退化，不能把该方向救回到高于基线。
   3. 因此 `ambiguity` 这条线若继续推进，必须从 test-time rerank 转向训练端建模，或直接切换到新的问题定义。
+
+
+## 2026-03-19: exp109 Oracle Support Bank（上界诊断）
+
+### exp109: GT same-ID per-keypoint support bank
+
+> 基于 `exp030a cvk_hybrid` 的 oracle 诊断，不计入正式结果；仅用于判断“training-time support-complete distillation”是否存在足够大的理论 headroom。
+
+| 变体 | mAP | R1 | 相对 base |
+|------|-----|----|-----------|
+| base_cvk_hybrid | 61.88% | 73.26% | — |
+| oracle_feat_only_cvk | 66.15% | 77.87% | +4.27 / +4.62 |
+| **oracle_feat_weight_cvk** | **70.40%** | **81.36%** | **+8.53 / +8.10** |
+
+- oracle 恢复统计：
+  - `3385` 个样本发生了恢复
+  - 共恢复 `10194` 个 keypoints
+  - 平均每个恢复 keypoint 有 `82.33` 个 same-ID 支持样本
+- 关键子集：
+  - `clean multi`: `65.06 / 76.26` → `68.04 / 79.71` → `71.33 / 82.73`
+  - `duplicate-suspect multi`: `62.31 / 76.96` → `65.21 / 78.73` → `68.34 / 81.27`
+  - `target_vis<=8` (26 queries): `29.42 / 26.92` → `78.26 / 84.62` → `91.71 / 100.00`
+  - `target_vis<=5` (7 queries): `16.85 / 14.29` → `78.43 / 85.71` → `86.28 / 100.00`
+- 结论：
+  1. `support-complete` 方向存在非常明显的 headroom，尤其集中在低可见 query。
+  2. 即使不改权重、只恢复 keypoint feature，本身也已经带来 `+4.27 / +4.62` 的 oracle 增益。
+  3. 因此下一步最值得推进的，不是新的 penalty/rerank，而是训练版的 **support-complete prototype distillation**。

@@ -11,6 +11,7 @@ from utils.metrics import R1_mAP_eval
 from torch.cuda import amp
 import torch.distributed as dist
 from model.modules.pamc import pamc_consistency_loss
+from model.modules.support_complete_bank import SupportCompleteBank
 
 
 def _pose_to_device(pose_dict, device):
@@ -80,12 +81,35 @@ def do_train(cfg,
             feat_dim=768, num_classes=num_train_classes,
             momentum=mm_mom, temp=mm_temp).to(device)
 
+    sckd_enabled = getattr(cfg.MODEL, 'POSE_SCKD', False)
+    sckd_bank = None
+    if sckd_enabled:
+        sckd_weight = getattr(cfg.MODEL, 'POSE_SCKD_WEIGHT', 0.5)
+        sckd_warmup = getattr(cfg.MODEL, 'POSE_SCKD_WARMUP', 20)
+        sckd_low_thr = getattr(cfg.MODEL, 'POSE_SCKD_LOW_THR', 0.3)
+        sckd_update_thr = getattr(cfg.MODEL, 'POSE_SCKD_UPDATE_THR', 0.5)
+        sckd_mom = getattr(cfg.MODEL, 'POSE_SCKD_MOM', 0.9)
+        sckd_min_count = getattr(cfg.MODEL, 'POSE_SCKD_MIN_COUNT', 1)
+        num_train_classes = len(set([d[1] for d in train_loader.dataset.dataset]))
+        sckd_bank = SupportCompleteBank(
+            num_classes=num_train_classes,
+            feat_dim=768,
+            num_keypoints=17,
+            low_thr=sckd_low_thr,
+            update_thr=sckd_update_thr,
+            momentum=sckd_mom,
+            min_count=sckd_min_count,
+        ).to(device)
+
     logger = logging.getLogger("transreid.train")
     logger.info('start training')
     if use_pose:
         logger.info('Pose-guided training ENABLED')
     if mm_enabled:
         logger.info(f'Momentum Memory enabled: weight={mm_weight}, temp={mm_temp}, mom={mm_mom}')
+    if sckd_enabled:
+        logger.info(f'[SCKD] enabled: weight={sckd_weight}, warmup={sckd_warmup}, '
+                    f'low_thr={sckd_low_thr}, update_thr={sckd_update_thr}, mom={sckd_mom}')
     if pamc_enabled:
         logger.info(f'[PAMC] Pose-Aware Masking Consistency: weight={pamc_weight}, warmup={pamc_warmup}')
     if pcra_alpha > 0:
@@ -403,6 +427,17 @@ def do_train(cfg,
                     details['mm'] = mm_loss.item()
                     loss._loss_details = details
 
+                if sckd_enabled and sckd_bank is not None and kp_data is not None and epoch > sckd_warmup:
+                    kp_feats_sckd = kp_data.get('kp_feats')
+                    kp_w_sckd = kp_data.get('kp_weights')
+                    if kp_feats_sckd is not None and kp_w_sckd is not None:
+                        sckd_loss, sckd_pairs = sckd_bank.compute_loss(kp_feats_sckd, kp_w_sckd, target)
+                        if sckd_pairs > 0:
+                            details = getattr(loss, '_loss_details', {})
+                            loss = loss + sckd_weight * sckd_loss
+                            details['sckd'] = sckd_loss.item()
+                            loss._loss_details = details
+
                 # SGRE: Skeleton-Guided Re-Encoding loss
                 sgre_enabled = getattr(cfg.MODEL, 'POSE_SGRE', False)
                 sgre_warmup = getattr(cfg.MODEL, 'POSE_SGRE_WARMUP', 20)
@@ -537,6 +572,12 @@ def do_train(cfg,
 
             scaler.step(optimizer)
             scaler.update()
+
+            if sckd_enabled and sckd_bank is not None and kp_data is not None:
+                kp_feats_sckd = kp_data.get('kp_feats')
+                kp_w_sckd = kp_data.get('kp_weights')
+                if kp_feats_sckd is not None and kp_w_sckd is not None:
+                    sckd_bank.update(kp_feats_sckd, kp_w_sckd, target)
 
             if 'center' in cfg.MODEL.METRIC_LOSS_TYPE:
                 for param in center_criterion.parameters():

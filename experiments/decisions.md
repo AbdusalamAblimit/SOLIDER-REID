@@ -1711,3 +1711,37 @@ B. 直接启动 exp025，exp024 可以后续补跑
 **后续方向**:
 1. 若还要继续 `ambiguity` 问题定义，必须进入训练端机制，而不是 test-time rerank。
 2. 在进入新实验前，先补一轮文献与代码学习，确认近两年关于 occluded ReID / multi-person ambiguity / retrieval-time reasoning 的真实 gap。
+
+
+### [2026-03-19 16:12] 决策 #65
+
+**上下文**: `exp109` 完成了 `Oracle Support Bank` 上界诊断。该实验使用 `exp030a cvk_hybrid` 的 target keypoint features，在 query+gallery 上用 GT same-ID 样本构造 leave-one-out 的 per-keypoint prototype。
+
+**已确认结果**:
+1. `base_cvk_hybrid = 61.88% / 73.26%`
+2. `oracle_feat_only_cvk = 66.15% / 77.87%`
+3. `oracle_feat_weight_cvk = 70.40% / 81.36%`
+4. 极低可见 query 的 headroom 极大：
+   - `target_vis<=8`: `29.42 / 26.92` → `78.26 / 84.62`
+   - `target_vis<=5`: `16.85 / 14.29` → `78.43 / 85.71`
+
+**判断**:
+1. 这不是可汇报结果，因为它使用了评测集 GT same-ID oracle。
+2. 但它足以证明：
+   **当前性能缺口里有一大块确实来自“support 不完整”，而不是 confuser suppression 失败。**
+3. 因而 `support-complete distillation` 已从“想法”升级为“有强 headroom 支撑的训练主线候选”。
+
+**选择**: 启动训练版最小原型，优先做 `per-keypoint prototype distillation`。
+
+**理由**:
+1. `oracle_feat_only` 已经大幅转正，说明关键不只是 weight 修正，而是 feature completion 本身。
+2. 这条线能自然解释：
+   - 为什么 `SGCFR` 有效
+   - 为什么 `DACHM/DACCM` 无效
+   - 为什么 batch-local recovery 方法此前难以成功
+3. 相比继续做 retrieval-time trick，这条线更有机会形成训练端方法贡献。
+
+**执行约束**:
+1. 第一版必须保持最小改动，只新增 prototype bank distillation，不叠加 decoder / pairwise rerank / 新 backbone 模块。
+2. 仍以 `exp030a` 为主基线。
+3. 若第一版单 seed 明显负面，不允许连续做多版小修小补，需先复盘 prototype 更新与蒸馏目标是否合理。

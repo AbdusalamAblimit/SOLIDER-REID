@@ -1423,3 +1423,33 @@ Pose-Guided Feature Inpainting — 在 feature map 空间恢复遮挡区域特�
 1. 不是 test-time rerank trick，而是训练端或表征端机制
 2. 能解释为什么 `cvk_hybrid` 有效而 `DACHM/DACCM` 无效
 3. 能把“多人遮挡中的有效信息”表述成可学习的结构，而不是基于 hand-crafted penalty 的后处理
+
+
+## 2026-03-19: exp109 Oracle Support Bank 后的新主线收敛
+
+### 新增强阳性证据
+- `exp109` 用 GT same-ID per-keypoint prototype 做 leave-one-out oracle recovery：
+  - `base_cvk_hybrid = 61.88 / 73.26`
+  - `oracle_feat_only_cvk = 66.15 / 77.87`
+  - `oracle_feat_weight_cvk = 70.40 / 81.36`
+- 这说明：
+  - “support-complete latent representation” 的 headroom 非常大
+  - 关键问题不只是比较公式，而是**单图支持本身不完整**
+
+### 这个结果真正改变了什么
+1. `SGCFR` 的成功不再只像一个 test-time trick，它更像是在暴露一个真实的训练缺口：
+   **模型没有学会从单图中逼近完整 identity support。**
+2. 先前 batch-local recovery 失败，不应再解释为“recover 路线整体错误”，更可能是：
+   - support 来源太弱
+   - 蒸馏目标太局部
+   - 没有稳定的 identity-level prototype
+3. 因而下一条主线不应再围绕 confuser penalty，而应围绕：
+   **same-ID support bank → single-image support-complete distillation**
+
+### 当前最值得赌的具体机制
+- `Support-Complete Prototype Distillation`
+- 最小版应包含：
+  1. per-identity, per-keypoint prototype bank
+  2. 仅对低可见 keypoint 做 distillation
+  3. 不新增 test-time rerank
+  4. 先验证单 seed 是否能在 `equal_concat` 或 `cvk_hybrid` 上转正

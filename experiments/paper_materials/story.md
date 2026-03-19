@@ -457,3 +457,21 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
   3. 因此下一条可投稿主线不应继续写成 retrieval-time rerank，而应转向：
      - 训练端结构学习，或
      - 一个比 `ambiguity penalty` 更本质的问题定义
+
+
+## 2026-03-19: exp109 Oracle Support Bank 把 story 从“比较”推向“补全”
+
+- `exp109` 给出了一条非常关键的新证据：
+  如果我们给每张图一个 GT same-ID 的 per-keypoint support bank，`cvk_hybrid` 会从 `61.88 / 73.26` 直接跃升到 `66.15 / 77.87`；
+  若连权重一起恢复，则到 `70.40 / 81.36`。
+- 这不是可报告结果，但它强烈说明：
+  **主要缺口不是缺一个更聪明的比较公式，而是缺一个更完整的 latent support representation。**
+- 尤其在极低可见 query 上，上界提升极大：
+  - `target_vis<=8`: `29.42 / 26.92` → `78.26 / 84.62`
+  - `target_vis<=5`: `16.85 / 14.29` → `78.43 / 85.71`
+- 因而更有潜力的论文主叙事开始成形：
+  1. PSG/PAA 负责 suppress noisy context / inject pose prior
+  2. GCN/CVK 暴露出 common-support reasoning 的真实性
+  3. 但真正的缺口在于：单图只包含 partial support
+  4. 下一条主创新应是：
+     **用 same-ID multi-view support 作为 teacher，把 single-image representation 蒸馏成更接近 support-complete 的关键点表征**

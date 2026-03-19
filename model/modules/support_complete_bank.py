@@ -1,0 +1,80 @@
+"""Support-complete keypoint prototype bank for training-time distillation."""
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class SupportCompleteBank(nn.Module):
+    """EMA memory bank of per-identity, per-keypoint prototypes.
+
+    The bank is updated only from high-visibility keypoints and used as a
+    teacher for low-visibility keypoints of the same identity.
+    """
+
+    def __init__(self, num_classes, feat_dim=768, num_keypoints=17,
+                 low_thr=0.3, update_thr=0.5, momentum=0.9, min_count=1):
+        super().__init__()
+        self.low_thr = low_thr
+        self.update_thr = update_thr
+        self.momentum = momentum
+        self.min_count = min_count
+
+        self.register_buffer('prototype_bank', torch.zeros(num_classes, num_keypoints, feat_dim))
+        self.register_buffer('confidence_bank', torch.zeros(num_classes, num_keypoints))
+        self.register_buffer('count_bank', torch.zeros(num_classes, num_keypoints, dtype=torch.long))
+
+    def compute_loss(self, kp_feats, kp_weights, labels):
+        """Cosine distillation from the support-complete prototype teacher."""
+        kp_feats = F.normalize(kp_feats, dim=2)
+        proto = self.prototype_bank[labels].detach()
+        proto_conf = self.confidence_bank[labels].detach()
+        proto_count = self.count_bank[labels]
+
+        mask = (kp_weights <= self.low_thr) & (proto_count >= self.min_count) & (proto_conf > 0)
+        if not mask.any():
+            return kp_feats.new_zeros(()), 0
+
+        cosine = (kp_feats * proto).sum(dim=2).clamp(min=-1.0, max=1.0)
+        point_loss = 1.0 - cosine
+        weights = proto_conf * mask.float()
+        loss = (point_loss * weights).sum() / weights.sum().clamp(min=1e-12)
+        return loss, int(mask.sum().item())
+
+    @torch.no_grad()
+    def update(self, kp_feats, kp_weights, labels):
+        """EMA update using only high-visibility keypoints."""
+        kp_feats = F.normalize(kp_feats.detach(), dim=2)
+        kp_weights = kp_weights.detach()
+        labels = labels.detach().long()
+
+        updated = 0
+        for b_idx in range(kp_feats.shape[0]):
+            cls = int(labels[b_idx].item())
+            vis_mask = kp_weights[b_idx] >= self.update_thr
+            if not vis_mask.any():
+                continue
+            kp_ids = vis_mask.nonzero(as_tuple=True)[0]
+            new_feat = kp_feats[b_idx, kp_ids]
+            new_conf = kp_weights[b_idx, kp_ids]
+
+            old_count = self.count_bank[cls, kp_ids]
+            first_mask = old_count == 0
+            if first_mask.any():
+                first_ids = kp_ids[first_mask]
+                self.prototype_bank[cls, first_ids] = new_feat[first_mask]
+                self.confidence_bank[cls, first_ids] = new_conf[first_mask]
+                self.count_bank[cls, first_ids] += 1
+                updated += int(first_ids.numel())
+
+            if (~first_mask).any():
+                ema_ids = kp_ids[~first_mask]
+                old_proto = self.prototype_bank[cls, ema_ids]
+                old_conf = self.confidence_bank[cls, ema_ids]
+                mixed = self.momentum * old_proto + (1.0 - self.momentum) * new_feat[~first_mask]
+                self.prototype_bank[cls, ema_ids] = F.normalize(mixed, dim=1)
+                self.confidence_bank[cls, ema_ids] = self.momentum * old_conf + (1.0 - self.momentum) * new_conf[~first_mask]
+                self.count_bank[cls, ema_ids] += 1
+                updated += int(ema_ids.numel())
+
+        return updated
