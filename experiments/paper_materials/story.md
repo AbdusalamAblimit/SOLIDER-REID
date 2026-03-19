@@ -475,3 +475,19 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
   3. 但真正的缺口在于：单图只包含 partial support
   4. 下一条主创新应是：
      **用 same-ID multi-view support 作为 teacher，把 single-image representation 蒸馏成更接近 support-complete 的关键点表征**
+
+
+## 2026-03-19: exp110 SCKD 让 story 从“上界存在”走到“训练可行”
+
+- `exp110` 给出的不是大幅涨点，而是一条更重要的可行性证据：
+  在不改 backbone、不加 decoder、不做 test-time trick 的前提下，
+  仅用一个轻量 `per-identity / per-keypoint prototype bank`，就能把 `exp030a-eq` 从 `61.1 / 72.9` 推到 `61.2 / 73.7`（单 seed）。
+- 这个结果的价值不在于绝对幅度，而在于它完成了一个关键跨越：
+  **support-complete 不再只是 oracle 上界，而是已经能作为真实训练信号转正。**
+- 因而 story 可以更自然地写成：
+  1. retrieval-time penalty 线失败，说明问题不在“再设计一个更聪明的比较公式”
+  2. oracle support bank 证明缺口来自 incomplete support
+  3. SCKD 最小原型进一步证明：
+     训练端确实可以把 same-ID support 转成正向监督
+  4. 所以下一步真正需要攻克的，不是“是否做 distillation”，而是：
+     **如何让 support teacher 更可靠、更接近真正的 multi-view support-complete representation**

@@ -1745,3 +1745,34 @@ B. 直接启动 exp025，exp024 可以后续补跑
 1. 第一版必须保持最小改动，只新增 prototype bank distillation，不叠加 decoder / pairwise rerank / 新 backbone 模块。
 2. 仍以 `exp030a` 为主基线。
 3. 若第一版单 seed 明显负面，不允许连续做多版小修小补，需先复盘 prototype 更新与蒸馏目标是否合理。
+
+
+### [2026-03-19 18:20] 决策 #66
+
+**上下文**: `exp110 SCKD` 已完成第一版训练端最小原型。该实验在 `exp030a-eq` 基础上新增 `per-identity / per-keypoint prototype bank`，对 low-visibility keypoint 做蒸馏，除此之外不引入 decoder、rerank 或 backbone 改动。
+
+**已确认结果**:
+1. `exp110 ep120 = 61.2% / 73.7%`
+2. 匹配单 seed 对照 `exp030a-eq seed1234 = 61.1% / 72.9%`
+3. 因而当前单 seed 相对提升为 `+0.1 mAP / +0.8 R1`
+4. `sckd` 分项在 `epoch > 20` 后稳定在约 `0.19~0.21`
+
+**判断**:
+1. 第一版最小原型已经通过了最关键的门槛：
+   **这条训练端主线不是负面的，而且能在不破坏 `0.5` global/part 平衡的前提下转成弱正向。**
+2. 但当前增益不大，且仍是单 seed；还不能把它写成“已确认主方法”。
+3. 从实现细节看，当前更可能的瓶颈是 teacher 可靠性，而不是蒸馏是否应该存在：
+   - `MIN_COUNT=1` 允许只凭单个 high-visibility 样本就构造 teacher
+   - 这和“support-complete”要表达的 multi-view support 概念并不完全一致
+
+**选择**: 继续 `support-complete` 主线，但下一步只做 teacher reliability 的单变量改动。
+
+**理由**:
+1. `exp110` 已经给出正信号，没有理由因为增益小就回到 retrieval-time 小修小补。
+2. 用户特别提醒过 `0.5x global loss` 很关键；当前实验已经保留了这一点，因此不应随意动 global/part 主损失平衡。
+3. 下一步最合理的改动是提高 bank teacher 的可信度，而不是调大蒸馏权重。
+
+**后续方向**:
+1. 启动 `exp111`，仅改 `POSE_SCKD_MIN_COUNT`，要求 prototype 至少由多个支持样本支撑后再参与蒸馏。
+2. 若 `exp111` 转强，说明当前 gap 主要来自 noisy teacher。
+3. 若 `exp111` 反而变差，再回头看覆盖率与蒸馏触发范围，而不是直接堆新模块。

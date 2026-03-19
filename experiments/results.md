@@ -386,3 +386,30 @@
   1. `support-complete` 方向存在非常明显的 headroom，尤其集中在低可见 query。
   2. 即使不改权重、只恢复 keypoint feature，本身也已经带来 `+4.27 / +4.62` 的 oracle 增益。
   3. 因此下一步最值得推进的，不是新的 penalty/rerank，而是训练版的 **support-complete prototype distillation**。
+
+
+## 2026-03-19: exp110 SCKD（训练端最小原型，单 seed）
+
+### exp110: Support-Complete Keypoint Distillation
+
+> 基于 `exp030a equal_concat` 的训练端最小原型。该实验只新增 `per-identity / per-keypoint prototype bank`，并对低可见 keypoint 施加蒸馏；当前结果为单 seed 探索证据，不视为最终结论。
+
+| 方法 | mAP | R1 | R5 | R10 | 相对对照 |
+|------|-----|----|----|-----|----------|
+| `exp030a-eq` `seed1234` | 61.1% | 72.9% | 85.2% | 87.8% | — |
+| **`exp110_sckd`** | **61.2%** | **73.7%** | **84.7%** | **88.2%** | **+0.1 / +0.8** |
+
+- 关键收敛点：
+  - `ep40 = 56.2 / 68.4`
+  - `ep60 = 58.3 / 70.5`
+  - `ep80 = 59.8 / 71.4`
+  - `ep90 = 60.9 / 73.1`
+  - `ep120 = 61.2 / 73.7`
+- 训练观察：
+  1. `warmup=20` 阶段与 `exp030a` 基本重合，说明 bank 后台更新没有破坏主训练。
+  2. `sckd` 自 `epoch > 20` 后稳定在约 `0.19~0.21`，没有发散。
+  3. `mAP` 在 `ep40-120` 基本持续高于基线，`R1` 则从中段轻微落后逐步转成最终领先。
+- 当前结论：
+  1. `support-complete distillation` 训练版最小原型已经**成功转正**，但当前仍只是单 seed、弱增益证据。
+  2. 当前瓶颈更像是 prototype teacher 的可靠性不够，而不是这条主线本身错误。
+  3. 因此下一步应优先做 **reliable-support bank** 一类的单变量改进，而不是直接堆更重模块。

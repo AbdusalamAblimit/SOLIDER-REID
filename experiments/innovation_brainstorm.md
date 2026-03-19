@@ -1453,3 +1453,30 @@ Pose-Guided Feature Inpainting — 在 feature map 空间恢复遮挡区域特�
   2. 仅对低可见 keypoint 做 distillation
   3. 不新增 test-time rerank
   4. 先验证单 seed 是否能在 `equal_concat` 或 `cvk_hybrid` 上转正
+
+
+## 2026-03-19: exp110 SCKD 后的主线收紧
+
+### 新增强阳性证据
+- `exp110` 作为训练端最小原型，已经在单 seed 上转正：
+  - 对照 `exp030a-eq seed1234 = 61.1 / 72.9`
+  - `exp110_sckd = 61.2 / 73.7`
+- 虽然幅度不大，但这和 `exp109` 的 oracle headroom 连起来后，意义很明确：
+  - `support-complete` 不是只存在于上界分析里的幻觉
+  - 它已经能以非常轻量的训练机制落到真实增益
+
+### 这个结果真正告诉我们的事
+1. 当前最值得继续赌的，不再是“有没有必要做 support-complete”，而是：
+   **怎样让 prototype teacher 更可靠、更接近真正的 multi-view support。**
+2. 第一版增益小，最自然的解释不是“方向错了”，而是：
+   - bank teacher 还太 noisy
+   - `MIN_COUNT=1` 过于宽松
+   - low-visibility 蒸馏目标里混入了不够可信的 prototype
+3. 因此下一步不应直接堆 decoder / completion block，而应先做：
+   **reliable-support bank / teacher reliability gating**
+
+### 对主创新表述的进一步约束
+- 主创新可以开始往下面的叙事收拢：
+  1. 问题不是简单 occlusion comparison，而是 single-image support incomplete
+  2. 方法不是通用补全 decoder，而是 identity-level support-complete distillation
+  3. 第一性瓶颈是 teacher reliability，而不是 feature fusion trick
