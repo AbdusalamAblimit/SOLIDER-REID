@@ -1639,3 +1639,75 @@ B. 直接启动 exp025，exp024 可以后续补跑
 **后续计划**:
 - 如果 PGFI 中性或负面：转向整体方法叙事（"pose-guided multi-granularity representation"）
 - 不再追求单一新模块的大突破
+
+
+### [2026-03-19 12:45] 决策 #63
+
+**上下文**: `exp107 DACHM` 完成了第一轮 retrieval-time 原型验证。该实验用 `exp030a equal_concat` 做主基线，显式构建多 person hypotheses，并比较：
+- `raw_counterfactual_signed`
+- `dachm_signed`
+- `raw_counterfactual_penalty`
+- `dachm_penalty`
+
+**已确认结果**:
+1. `base_equal_concat = 61.14% / 73.71%`
+2. 四个 DACHM 变体全部低于基线；最佳 `dachm_penalty` 仍为 `60.72% / 73.17%`
+3. 子集上同样没有局部正信号：
+   - `clean multi`: `63.99 / 77.27` → `63.24 / 75.83`
+   - `duplicate-suspect multi`: `61.36 / 76.71` → `60.64 / 76.46`
+4. duplicate-aware pruning 没有把 coarse pooled hypothesis rerank 救回来。
+
+**判断**:
+1. `target/distractor ambiguity` 这个问题定义本身还没有被证伪。
+2. 但当前这条具体机制：
+   **pooled person embedding + counterfactual margin rerank**
+   已可视为负面。
+3. 这与 `cvk_hybrid / SGCFR` 的正结果一起说明：
+   真正有效的 pair-specific reasoning 很可能必须发生在 `per-keypoint / common-support` 粒度，而不是 pooled person feature 粒度。
+
+**选择**: 停止 `exp107` 的当前实现，不继续在该公式上做小调参。
+
+**理由**:
+1. signed 与 penalty-only 都负面，只是 penalty-only 负得更少，说明不是单纯的评分函数符号问题。
+2. 去重版和不去重版一起负面，说明不是 detector duplicate artifact 单独导致失败。
+3. 若继续在这个 pooled hypothesis 空间上调 `alpha/topk/threshold`，高概率只是局部调参，不足以形成论文主贡献。
+
+**后续方向**:
+- 若继续沿 `ambiguity` 主线推进，下一步应优先尝试：
+  **duplicate-aware / confuser-aware 的 per-keypoint common-support reasoning**
+- 不再继续 `exp107` 当前公式的参数扫点。
+
+
+### [2026-03-19 14:55] 决策 #64
+
+**上下文**: `exp108 DACCM` 完成了第二轮 retrieval-time 原型验证。该实验把 `exp107` 的思路从 pooled person embedding 下沉到 `per-keypoint / common-support` 粒度，并以 `exp030a cvk_hybrid` 为主基线，比较：
+- `raw_daccm_penalty`
+- `daccm_penalty`
+
+**已确认结果**:
+1. `base_cvk_hybrid = 61.88% / 73.26%`
+2. `raw_daccm_penalty = 61.35% / 72.85%`
+3. `daccm_penalty = 61.39% / 72.94%`
+4. 关键子集同样负面：
+   - `multi`: `64.07 / 76.51` → `63.16 / 75.87`
+   - `clean multi`: `65.06 / 76.26` → `64.12 / 75.40`
+   - `duplicate-suspect multi`: `62.31 / 76.96` → `61.47 / 76.71`
+
+**判断**:
+1. `exp107` 和 `exp108` 组成了一个更强的负证据链：
+   - coarse pooled hypothesis rerank 负面
+   - per-keypoint common-support penalty 仍负面
+2. 这说明问题不只是粒度太粗，而是：
+   **当前 retrieval-time 反事实 penalty 机制本身不构成稳定可用的排名信号。**
+3. 因而不能再把 `ambiguity/confuser rerank` 当作主创新方向继续做 test-time 小修小补。
+
+**选择**: 停止 retrieval-time ambiguity 线，不再继续 `exp107/108` 公式调参。
+
+**理由**:
+1. 两轮原型都给出整体和子集层面的负结果，已经超过“单次试错”。
+2. dedup 版始终只带来很小的退化缓解，说明 duplicate artifact 不是该方向失败的主因。
+3. 继续扫 `alpha/topk/threshold` 很难形成论文级结论，只会落入局部调参。
+
+**后续方向**:
+1. 若还要继续 `ambiguity` 问题定义，必须进入训练端机制，而不是 test-time rerank。
+2. 在进入新实验前，先补一轮文献与代码学习，确认近两年关于 occluded ReID / multi-person ambiguity / retrieval-time reasoning 的真实 gap。

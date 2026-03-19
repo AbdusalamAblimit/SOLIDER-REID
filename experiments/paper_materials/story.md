@@ -431,3 +431,29 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
 - [x] SOTA 对比表 — 完成, `tables/main_results.md` (20+ 方法)
 - [ ] 不同遮挡程度下的性能分析
 - [ ] Attention map 可视化 (vis-weighted GAP 的 attention 热图)
+
+
+## 2026-03-19: exp107 DACHM 的负结果给出的 story 约束
+
+- `exp107` 否定了一个很诱人的简化故事：
+  “把每张图拆成多个 person embedding，再做 duplicate-aware 的反事实 rerank，就能解决 ambiguity。”
+- 实际结果不是中性，而是稳定负面；说明：
+  - ambiguity 不是简单的 person-level candidate selection 问题
+  - coarse pooled person embedding 丢失了真正有用的遮挡/可见性结构
+- 这反过来强化了一个更清晰的论文约束：
+  **如果我们要讲 ambiguity / confuser 这条主线，机制必须发生在 per-keypoint / common-support 粒度，而不是 person-level pooled feature 粒度。**
+
+
+## 2026-03-19: exp108 DACCM 的负结果进一步收紧了 story
+
+- `exp108` 继续否定了另一个更强的简化故事：
+  “只要把 confuser reasoning 下沉到 per-keypoint / common-support，再做 duplicate-aware penalty，就能在 retrieval-time 把 ambiguity 解开。”
+- 实际结果仍然整体负面：
+  - `base_cvk_hybrid = 61.88 / 73.26`
+  - `daccm_penalty = 61.39 / 72.94`
+- 这给 story 一个更明确的边界：
+  1. `cvk_hybrid` 的正增益不是因为“显式打压 confuser”这个公式
+  2. 有效信息更像是 target-target common-support 的正向匹配，而不是额外的反事实 penalty
+  3. 因此下一条可投稿主线不应继续写成 retrieval-time rerank，而应转向：
+     - 训练端结构学习，或
+     - 一个比 `ambiguity penalty` 更本质的问题定义

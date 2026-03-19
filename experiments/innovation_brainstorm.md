@@ -1375,3 +1375,51 @@ Pose-Guided Feature Inpainting — 在 feature map 空间恢复遮挡区域特�
 4. **ROA**: 已确认，+1.27%（独立有效，与 PAA 重叠）
 5. **PAA**: 已确认，+0.87% mAP 但主要贡献在 R1；是 multi-person specialist
 6. **创新点仍在探索中**: PGFI 或后续方向
+
+
+## 2026-03-19: exp107 DACHM 负结果后的方向收敛
+
+### 已排除的实现形式
+- **Duplicate-Aware Counterfactual Hypothesis Matching（coarse pooled 版）** 已被 `exp107` 否定：
+  - `base_equal_concat = 61.14 / 73.71`
+  - `dachm_penalty = 60.72 / 73.17`
+- 该负结果在 `clean multi` 和 `duplicate-suspect multi` 上都成立，不是简单的 detector artifact 问题。
+
+### 这个负结果真正告诉我们的事
+1. `target/distractor ambiguity` 不能再用“每人一个 pooled embedding”来粗暴建模。
+2. 现有正信号都来自更细粒度的 pair-specific 机制：
+   - `cvk_hybrid`
+   - `SGCFR`
+3. 因此如果还要继续 ambiguity 方向，真正值得做的是：
+   **在 per-keypoint / common-visible support 层面做 duplicate-aware confuser reasoning**。
+
+### 当前更可信的新主线约束
+- 不再做新的 pooled person rerank trick
+- 不再把 raw `num_persons` 当作 ambiguity proxy
+- 新机制必须同时满足：
+  1. 去重后再推理
+  2. pair-specific
+  3. per-keypoint / common-support 粒度
+
+
+## 2026-03-19: exp108 DACCM 后的进一步收敛
+
+### 新增负证据
+- `exp108 DACCM` 已经把 `ambiguity/confuser` 线推进到更合理的粒度：
+  - 主基线 `base_cvk_hybrid = 61.88 / 73.26`
+  - `raw_daccm_penalty = 61.35 / 72.85`
+  - `daccm_penalty = 61.39 / 72.94`
+- 这意味着：
+  - 不是只有 `pooled person embedding` 太粗的问题
+  - 就连 `per-keypoint / common-support` 层面的 test-time confuser penalty 也不稳定
+
+### 现在可以更强地排除什么
+1. 不能再把“设计一个更好的 retrieval-time confuser penalty”当作主创新。
+2. 不能再期待通过 `topk / alpha / dedup threshold` 的小调参把这条线救回来。
+3. `duplicate-aware` 本身可以作为分析维度，但不足以独立构成方法主干。
+
+### 对新主线的约束进一步收紧
+下一条主线最好满足下面至少两条：
+1. 不是 test-time rerank trick，而是训练端或表征端机制
+2. 能解释为什么 `cvk_hybrid` 有效而 `DACHM/DACCM` 无效
+3. 能把“多人遮挡中的有效信息”表述成可学习的结构，而不是基于 hand-crafted penalty 的后处理

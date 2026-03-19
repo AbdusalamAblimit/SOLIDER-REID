@@ -312,3 +312,50 @@
 - Baseline: mAP 56.6%, R1 66.5%
 - GiLt+PCFC (exp012): mAP 58.0%, R1 68.0% (+1.4/+1.5 vs baseline)
 - Full pipeline (NFC+Part): mAP 64.7%, R1 69.4%
+
+
+## 2026-03-19: exp107 DACHM（retrieval-time 诊断）
+
+### exp107: Duplicate-Aware Counterfactual Hypothesis Matching
+
+> 基于 `exp030a equal_concat` 的 test-time 原型诊断，不计入训练端创新，只用于验证“duplicate-aware 多候选反事实匹配”是否存在独立 headroom。
+
+| 变体 | mAP | R1 | 相对 base |
+|------|-----|----|-----------|
+| base_equal_concat | 61.14% | 73.71% | — |
+| raw_counterfactual_signed | 60.32% | 72.76% | -0.82 / -0.95 |
+| dachm_signed | 60.27% | 72.81% | -0.87 / -0.90 |
+| raw_counterfactual_penalty | 60.70% | 73.17% | -0.44 / -0.54 |
+| **dachm_penalty** | **60.72%** | **73.17%** | **-0.42 / -0.54** |
+
+- 关键子集：
+  - `clean multi`: `63.99 / 77.27` → `63.24 / 75.83`
+  - `duplicate-suspect multi`: `61.36 / 76.71` → `60.64 / 76.46`
+  - `n=2`: `64.64 / 79.05` → `63.99 / 77.82`
+- 结论：
+  1. coarse pooled hypothesis 上的反事实重排整体负面。
+  2. duplicate-aware pruning 没有救回该方向。
+  3. “target/distractor ambiguity”如果继续做，推理粒度必须回到 `per-keypoint / common-support`，不能停留在 pooled person embedding。
+
+
+## 2026-03-19: exp108 DACCM（retrieval-time 诊断）
+
+### exp108: Duplicate-Aware Counterfactual Common-Support Matching
+
+> 基于 `exp030a cvk_hybrid` 的 test-time 原型诊断，不计入训练端创新，只用于验证“per-keypoint / common-support 粒度的 duplicate-aware confuser penalty”是否存在独立 headroom。
+
+| 变体 | mAP | R1 | 相对 base |
+|------|-----|----|-----------|
+| base_cvk_hybrid | 61.88% | 73.26% | — |
+| raw_daccm_penalty | 61.35% | 72.85% | -0.53 / -0.41 |
+| **daccm_penalty** | **61.39%** | **72.94%** | **-0.49 / -0.32** |
+
+- 关键子集：
+  - `multi`: `64.07 / 76.51` → `63.16 / 75.87`
+  - `clean multi`: `65.06 / 76.26` → `64.12 / 75.40`
+  - `duplicate-suspect multi`: `62.31 / 76.96` → `61.47 / 76.71`
+  - `n=2`: `65.76 / 78.35` → `64.99 / 77.82`
+- 结论：
+  1. 即使把 confuser reasoning 下沉到 `per-keypoint / common-support` 粒度，当前 retrieval-time penalty 仍然整体负面。
+  2. duplicate-aware pruning 只能略微减轻退化，不能把该方向救回到高于基线。
+  3. 因此 `ambiguity` 这条线若继续推进，必须从 test-time rerank 转向训练端建模，或直接切换到新的问题定义。
