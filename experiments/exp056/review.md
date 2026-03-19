@@ -12,7 +12,8 @@
 
 | # | 严重程度 | 文件 | 描述 | 状态 |
 |---|---------|------|------|------|
-| 1 | LOW | design.md | 文档里保留了“可能需要改 `POSE_PSG_STAGES`”的中间表述；实际实现已经正确拆成独立的 `POSE_ATTN_MASK_STAGES` | 建议后续修文档 |
+| 1 | HIGH | pose_attn_mask.py / config | 虽然 `POSE_ATTN_MASK_STAGES: [2, 3]` 配置正确，但真实 heatmap 进入 PGAM 后在 `24x8` 和 `12x4` 上 body mask 覆盖率都为 **100%**。Stage 2+3 扩层不会改变实际注意力计算 | 未修复 |
+| 2 | LOW | design.md | 文档里保留了“可能需要改 `POSE_PSG_STAGES`”的中间表述；实际实现已经正确拆成独立的 `POSE_ATTN_MASK_STAGES` | 建议后续修文档 |
 
 ## 审查通过项
 
@@ -24,6 +25,6 @@
 
 ## 结论
 
-✅ **通过**
+❌ **不通过**
 
-实现是正确的，实验真正测到的是“PGAM 从 Stage 3 扩到 Stage 2+3”，而不是误把 PSG 一起扩层。唯一问题是设计文档还留有未清理的草稿痕迹。
+代码接线虽然正确，但 PGAM 在两个 stage 上都没有形成有效 mask，所以 `exp056` 没有真正测试“多 Stage PGAM”这个想法。
