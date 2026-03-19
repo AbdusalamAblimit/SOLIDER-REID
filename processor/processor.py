@@ -185,17 +185,18 @@ def do_train(cfg,
                                       view_label=target_view, pose_dict=pose_dict)
                         kd = None
                         if len(m_out) == 5:
-                            s, f, _, rl, kd = m_out
+                            s, f, fm_v, rl, kd = m_out
                         elif len(m_out) == 4:
-                            s, f, _, rl = m_out
+                            s, f, fm_v, rl = m_out
                         else:
-                            s, f = m_out[:2]; rl = None
+                            s, f, fm_v = m_out[:3]; rl = None
                         all_scores.append(s)
                         all_feats.append(f)
                         all_recon.append(rl)
                         all_kpdata.append(kd)
                     # Use first view's outputs as primary (for logging)
                     score, feat = all_scores[0], all_feats[0]
+                    feat_maps = fm_v  # last view's feature maps for PACD
                     recon_loss = all_recon[0]
                     kp_data = all_kpdata[0]
                 elif use_pose:
@@ -441,13 +442,28 @@ def do_train(cfg,
                     kp_fx = (kp_coords[:, :, 0] / input_w * fW).long().clamp(0, fW - 1)
 
                     # For each sample, randomly select keypoints to mask
+                    # Expand to 3×3 neighborhood for meaningful spatial coverage
                     num_mask = max(1, int(17 * pacd_ratio))
                     body_mask = torch.zeros(B_fm, 1, fH, fW, device=stage3_fm.device)
+                    # Vectorized: collect all (b, fy, fx) indices then scatter
+                    all_b, all_fy, all_fx = [], [], []
                     for b in range(B_fm):
                         kp_idx = torch.randperm(17, device=stage3_fm.device)[:num_mask]
                         for ki in kp_idx:
-                            fy, fx = kp_fy[b, ki].item(), kp_fx[b, ki].item()
-                            body_mask[b, 0, fy, fx] = 1.0
+                            cy, cx = kp_fy[b, ki], kp_fx[b, ki]
+                            # 3×3 neighborhood around keypoint position
+                            for dy in range(-1, 2):
+                                for dx in range(-1, 2):
+                                    ny = (cy + dy).clamp(0, fH - 1)
+                                    nx = (cx + dx).clamp(0, fW - 1)
+                                    all_b.append(b)
+                                    all_fy.append(ny)
+                                    all_fx.append(nx)
+                    if all_b:
+                        all_b = torch.tensor(all_b, device=stage3_fm.device)
+                        all_fy = torch.stack(all_fy)
+                        all_fx = torch.stack(all_fx)
+                        body_mask[all_b, 0, all_fy, all_fx] = 1.0
 
                     # Mask: zero out selected keypoint positions
                     fm_masked = stage3_fm * (1.0 - body_mask)
