@@ -146,6 +146,11 @@ _C.MODEL.POSE_FILM = False              # Pose-FiLM: full-stage Feature-wise Lin
 _C.MODEL.POSE_SGMT = False              # SGMT: Skeleton-Guided Masked Training
 _C.MODEL.POSE_SGMT_RATIO = 0.3          # Fraction of keypoints to mask
 _C.MODEL.POSE_SGMT_THRESHOLD = 0.3      # Test-time confidence threshold
+# PACD: Pose-Anchored Contrastive Distillation
+_C.MODEL.POSE_PACD = False              # Enable PACD training
+_C.MODEL.POSE_PACD_WEIGHT = 0.3         # PACD loss weight
+_C.MODEL.POSE_PACD_MASK_RATIO = 0.4     # Fraction of body parts to mask
+_C.MODEL.POSE_PACD_WARMUP = 10          # Warmup epochs before enabling PACD
 _C.MODEL.POSE_ADDITIVE_ADAPTER = False  # Pose Additive Adapter (PAA) alongside PSG
 _C.MODEL.POSE_PAA_ROUTED = False        # Reliability-routed PAA: only add to low-confidence regions
 _C.MODEL.POSE_PAA_BOTTLENECK = 32      # PAA bottleneck dimension

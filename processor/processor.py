@@ -176,6 +176,7 @@ def do_train(cfg,
             target_view = target_view.to(device)
 
             with amp.autocast(enabled=True):
+                feat_maps = None  # captured for PACD
                 if parallel_aug and use_pose:
                     # 3-view parallel augmentation: forward all, average loss
                     all_scores, all_feats, all_recon, all_kpdata = [], [], [], []
@@ -203,12 +204,13 @@ def do_train(cfg,
                                       pose_dict=pose_dict)
                     # Handle optional return values
                     kp_data = None
+                    feat_maps = None
                     if len(model_out) == 5:
-                        score, feat, _, recon_loss, kp_data = model_out
+                        score, feat, feat_maps, recon_loss, kp_data = model_out
                     elif len(model_out) == 4:
-                        score, feat, _, recon_loss = model_out
+                        score, feat, feat_maps, recon_loss = model_out
                     else:
-                        score, feat, _ = model_out
+                        score, feat, feat_maps = model_out
                         recon_loss = None
                 else:
                     score, feat, _ = model(img, label=target, cam_label=target_cam,
@@ -398,6 +400,57 @@ def do_train(cfg,
                     details = getattr(loss, '_loss_details', {})
                     loss = loss + mm_weight * mm_loss
                     details['mm'] = mm_loss.item()
+                    loss._loss_details = details
+
+                # PACD: Pose-Anchored Contrastive Distillation
+                # Mask random body-part regions in feature map, enforce
+                # masked features ≈ full features (self-distillation)
+                pacd_enabled = getattr(cfg.MODEL, 'POSE_PACD', False)
+                pacd_warmup = getattr(cfg.MODEL, 'POSE_PACD_WARMUP', 10)
+                if pacd_enabled and use_pose and feat_maps is not None and epoch > pacd_warmup:
+                    pacd_weight = getattr(cfg.MODEL, 'POSE_PACD_WEIGHT', 0.3)
+                    pacd_ratio = getattr(cfg.MODEL, 'POSE_PACD_MASK_RATIO', 0.4)
+                    stage3_fm = feat_maps[-1] if isinstance(feat_maps, list) else feat_maps
+                    B_fm, C_fm, fH, fW = stage3_fm.shape
+
+                    # Get scene heatmaps → resize to feature map resolution
+                    hm = pose_dict['heatmaps'].max(dim=1)[0]  # (B, 17, hH, hW)
+                    hm_resized = F.interpolate(hm, size=(fH, fW),
+                                                mode='bilinear', align_corners=False)
+                    hm_resized = torch.relu(hm_resized)  # (B, 17, fH, fW)
+
+                    # For each sample, randomly select body parts to mask
+                    num_mask = max(1, int(17 * pacd_ratio))
+                    body_mask = torch.zeros(B_fm, 1, fH, fW, device=stage3_fm.device)
+                    for b in range(B_fm):
+                        kp_idx = torch.randperm(17, device=stage3_fm.device)[:num_mask]
+                        # Accumulate heatmaps of selected keypoints → spatial mask
+                        selected_hm = hm_resized[b, kp_idx].sum(dim=0)  # (fH, fW)
+                        # Sigmoid → soft mask, then threshold at 0.5
+                        body_mask[b, 0] = (torch.sigmoid(selected_hm) > 0.5).float()
+
+                    # Mask the feature map: zero out body-part regions
+                    fm_masked = stage3_fm * (1.0 - body_mask)  # keep non-body regions
+
+                    # Pool masked features
+                    _m = model.module if hasattr(model, 'module') else model
+                    feat_partial = _m.base.avgpool(fm_masked)
+                    feat_partial = torch.flatten(feat_partial, 1)
+                    if _m.reduce_feat_dim:
+                        feat_partial = _m.fcneck(feat_partial)
+
+                    # Teacher: full features (detached — don't change the main features)
+                    if isinstance(feat, list):
+                        feat_full = feat[0].detach()
+                    else:
+                        feat_full = feat.detach()
+
+                    # PACD loss: partial features should approximate full features
+                    pacd_loss = F.mse_loss(feat_partial, feat_full)
+
+                    details = getattr(loss, '_loss_details', {})
+                    loss = loss + pacd_weight * pacd_loss
+                    details['pacd'] = pacd_loss.item()
                     loss._loss_details = details
 
             scaler.scale(loss).backward()
