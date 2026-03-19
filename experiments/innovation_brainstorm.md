@@ -1528,3 +1528,47 @@ Pose-Guided Feature Inpainting — 在 feature map 空间恢复遮挡区域特�
 
 其中最先该验证的是：
 **freeze-after-warmup**，因为它最直接、最干净，最能说明问题是不是出在 teacher non-stationarity。
+
+---
+
+## 2026-03-20: SCKD 系列完全结案（exp110-116, 7 个变体）
+
+### 最终结论
+
+| 变体 | 核心改动 | mAP | R1 |
+|------|----------|-----|-----|
+| exp110 | 基础 SCKD (online, thr=0.5) | 61.2% | 73.7% |
+| exp111 | MIN_COUNT=4 | 61.1% | 73.8% |
+| exp112 | UPDATE_THR=0.7 | 59.7%* | 71.6%* |
+| exp114 | freeze epoch 20 | 61.3% | 73.6% |
+| exp115 | freeze epoch 30 | 61.3% | 73.6% |
+| exp116 | SCFR 直接替换 | 61.1% | 74.1% |
+
+(*exp112 在 ep84 提前停表)
+
+**所有变体收敛到 61.1-61.3% mAP**。无论调整：
+- count 门槛（exp111）→ 无效
+- purity 门槛（exp112）→ 弱正向但不够
+- teacher freeze 时机（exp114/115）→ 中性
+- 替换 vs 蒸馏（exp116）→ 中性
+
+**EMA prototype bank 方向已穷尽。** 其增益上限约 +0.1% mAP / +0.7% R1，不足以支撑论文主创新。
+
+### 为什么 EMA prototype 不工作
+
+oracle experiment (exp109) 给出 +8.5% mAP 的 headroom，但 SCKD 只能捕获 1%。核心原因：
+
+1. **EMA prototype 是 lossy compression**：把多个观测平均成一个方向向量，丢失了 instance-specific 的判别细节
+2. **15K 训练集太小**：每个 identity 只有约 15-20 张图，EMA 平均后的 prototype 缺乏足够的统计支撑
+3. **keypoint-level distillation 信号太弱**：只对 ~14.5% 的 keypoints 施加蒸馏，这些 keypoints 本来就是遮挡位置，对最终 pooled feature 的影响有限
+
+### 下一步方向
+
+SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的不再是"如何让 prototype bank 更好"，而是：
+
+1. **文献/代码学习**：寻找 2024-2025 年的新机制，特别是：
+   - 跨实例特征增强（不依赖 memory bank）
+   - 结构化对比学习（利用 skeleton topology）
+   - 自监督预训练任务（针对遮挡场景）
+2. **接受当前配置**：PSG+GCN+PAA+ROA 作为训练端最强配置（~62.7% 单 seed），SGCFR 作为测试端独特创新（+2.6%）
+3. **gap analysis**：重新审视 oracle headroom 的分布，找到真正可操作的改进点
