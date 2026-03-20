@@ -608,3 +608,47 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
 - 这一步对论文叙事反而是好事：
   因为它把方法从“谁更难就多蒸馏一点”这种普通加权，
   收紧成了“只蒸馏那些被 support completion 真正改变过的关系”。
+
+## 2026-03-20: exp121/123 把 story 进一步分成“supporting mechanism”与“主突破口”
+
+- `exp121` 的最终结果是：
+  - `ep120 = 60.6 / 74.0`
+  - 相对 `exp119 ep120 = 60.4 / 73.4` 为 `+0.2 / +0.6`
+
+- 这说明：
+  1. `stable teacher` 不是伪命题
+  2. support-complete relational teacher 的确受 teacher stability 影响
+  3. 但这个量级更像 supporting mechanism，而不是足以单独支撑整篇论文的方法核心
+
+- 与此同时，`exp123` 到 `ep60` 的形态变得更关键：
+  - `exp123 ep60 = 57.8 / 70.9`
+  - `exp119 ep60 = 57.7 / 70.5`
+  - `exp120 ep60 = 57.5 / 69.7`
+
+- 这给 story 一个新的正信号：
+  1. pair-level `teacher-change focusing` 方向本身是成立的
+  2. 也就是说，`exp122` 否定的只是 sample-level routing 太粗，不是否定 selective relational distillation
+
+- 但 `exp123` 也同时暴露出主突破口还没被打透：
+  1. `pair_delta` 长期只有 `0.002~0.003`
+  2. `pair_focus` 长期只有 `1.06~1.08`
+  3. 正向收益直到 `ep50/60` 才开始兑现
+
+- 所以当前 story 最合理的下一步不是再讲：
+  “teacher 还要更稳定”
+
+- 而是更精确地讲：
+  **pair-level teacher-change focusing 是对的，但当前第一版 focus 强度太弱。**
+
+- 这让主方法进一步收紧成：
+  1. pose/keypoint branch 定义 common-support relations
+  2. support-complete bank 只负责增强 relational teacher
+  3. stable teacher 是 supporting mechanism
+  4. 真正的主突破口在于：
+     **如何更强、更精确地把 teacher-change pairs 蒸进 global embedding**
+
+### 当前最自然的下一跳
+
+- 不换题，不回到 sample-level，不回到 generic GCN 模块
+- 直接测试：
+  **更强的 pair-delta focusing**

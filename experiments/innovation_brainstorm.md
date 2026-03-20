@@ -1744,3 +1744,34 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
 2. `exp109` 的 headroom 本质上是 pairwise comparability 被修正
 3. `exp119` 的有效性也本来就是 relational，而不是 sample classification
 4. 所以下一步应把 selective supervision 从 **sample 级** 收紧到 **pair 级**
+
+### exp121/123 之后的进一步收束
+
+- `exp121` 最终到 `ep120 = 60.6 / 74.0`，说明 `stable teacher` 确实能把 `SCRD` 从中性偏负拉回弱正向
+- 但它的量级仍明显不够主方法，因此更合理的定位是：
+  **teacher stability = supporting mechanism**
+
+- `exp123` 到 `ep60 = 57.8 / 70.9` 首次同时超过 `exp119/120` 同阶段，说明：
+  1. pair-level `teacher-change focusing` 方向本身成立
+  2. 当前更像是“兑现偏慢”，而不是“机制不对”
+
+- 同时它把下一步收得更具体：
+  - `csrd_pd` 长期只有 `0.002~0.003`
+  - `csrd_pf` 长期只有 `1.06~1.08`
+  - 这意味着当前第一版 pair focus **放大力度过弱**
+
+### 当前最值得赌的下一跳
+
+**Stronger Pair-Delta SCRD**
+
+核心想法：
+1. 保持 `exp123` 的 pair-level delta focusing 完全不变
+2. 不改 teacher、不改 bank、不改主 loss
+3. 只提高 `POSE_CSRD_PAIR_WEIGHT_ALPHA`
+4. 验证当前 delayed weak-positive 是否只是因为放大不够
+
+为什么它比再扫 freeze / sample weighting 更合理：
+1. `exp121` 已说明 freeze 只是 supporting，不值得再扩成一条线
+2. `exp122` 已否定 sample-level routing
+3. `exp123` 已提供“pair focus 方向对”的最重要证据
+4. 因而现在最有信息量的，不是换问题，而是测试 **pair focus strength 是否就是当前瓶颈**

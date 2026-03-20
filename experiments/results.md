@@ -608,6 +608,24 @@
   4. 当前更合理的解释是：support-complete supervision 被大量本来就不缺 support 的 clean 样本稀释了
   5. 因而下一步不该继续盲目增强 teacher，而应测试 **只对 support-incomplete anchor 强化 relational distillation**
 
+## 2026-03-20: exp121 SCRD Freeze-30（远程最终）
+
+### exp121: stable teacher 对 SCRD 有持续但有限的正向帮助
+
+> 基于 `exp120` 的单变量训练端实验。`exp121` 仅把 support-complete teacher bank 的更新停止在 `epoch 30`，用于验证“teacher 稳定化”是否能改善 `SCRD`。该实验跑满 `ep120`，结论来自训练监控口径。
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| `exp119` | 60.4% | 73.4% | 85.0% | 88.6% | `ep120` 训练监控 |
+| `exp120` | 59.9% | 73.2% | 84.7% | 88.2% | `ep90` 训练监控 |
+| **`exp121`** | **60.6%** | **74.0%** | **84.9%** | **88.6%** | **`ep120` 训练监控** |
+
+- 结论：
+  1. `stable teacher` 不是伪命题，`freeze30` 最终相对 `exp119` 形成了 `+0.2 / +0.6` 的稳定弱正向
+  2. 它也明显强于提前停表的 `exp120 online teacher`，说明 `support-complete relational teacher` 确实受 teacher 稳定性影响
+  3. 但这个量级仍不足以单独支撑论文主创新，更合理的定位是 **supporting mechanism**
+  4. 因而下一步不应继续围绕 freeze 时机扫点，而应把重点放回 **如何更有效地把 teacher-change pairs 蒸进 global embedding**
+
 ## 2026-03-20: exp122 SGW-SCRD（早停）
 
 ### exp122: sample-level selective weighting 没有把 support-complete teacher 的收益兑现出来
