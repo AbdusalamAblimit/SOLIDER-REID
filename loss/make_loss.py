@@ -94,7 +94,7 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
         dist_t = _aggregate_teacher_dist(teacher_kp_feats)
 
     pair_delta = None
-    if pair_weight_mode in ('delta', 'delta_top') and teacher_kp_feats is not None:
+    if pair_weight_mode in ('delta', 'delta_top', 'delta_top_exact') and teacher_kp_feats is not None:
         pair_delta = (dist_t - dist_base).abs().detach()
 
     def _focus_from_delta(delta_vec):
@@ -102,13 +102,17 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
             return None, None, None
         scale = delta_vec.max().clamp(min=1e-6)
         focus = 1.0 + pair_weight_alpha * (delta_vec / scale)
-        if pair_weight_mode == 'delta_top':
+        if pair_weight_mode in ('delta_top', 'delta_top_exact'):
             keep_num = max(1, int(math.ceil(delta_vec.numel() * pair_top_ratio)))
-            top_vals, _ = torch.topk(delta_vec, k=keep_num, largest=True, sorted=True)
-            keep_mask = delta_vec >= top_vals[-1]
+            top_vals, top_idx = torch.topk(delta_vec, k=keep_num, largest=True, sorted=False)
             sparse_focus = torch.full_like(focus, 1e-6)
-            sparse_focus[keep_mask] = focus[keep_mask]
-            return sparse_focus, sparse_focus[keep_mask].mean(), keep_mask.float().mean()
+            if pair_weight_mode == 'delta_top':
+                keep_mask = delta_vec >= top_vals.min()
+                sparse_focus[keep_mask] = focus[keep_mask]
+                return sparse_focus, sparse_focus[keep_mask].mean(), keep_mask.float().mean()
+            sparse_focus.scatter_(0, top_idx, focus[top_idx])
+            keep_ratio = delta_vec.new_tensor(keep_num / max(1, delta_vec.numel()))
+            return sparse_focus, focus[top_idx].mean(), keep_ratio
         return focus, focus.mean(), focus.new_ones(())
 
     def _distill_subset(student_dist, teacher_dist, focus=None):
@@ -221,7 +225,7 @@ def make_loss(cfg, num_classes):    # modified by gu
         print("label smooth on, numclasses:", num_classes)
 
     csrd_pair_weight_mode = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_WEIGHT_MODE', 'none')
-    if csrd_pair_weight_mode not in ('none', 'delta', 'delta_top'):
+    if csrd_pair_weight_mode not in ('none', 'delta', 'delta_top', 'delta_top_exact'):
         raise ValueError(f"Unsupported POSE_CSRD_PAIR_WEIGHT_MODE: {csrd_pair_weight_mode}")
     csrd_pair_weight_alpha = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_WEIGHT_ALPHA', 1.0)
     csrd_pair_top_ratio = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_TOP_RATIO', 0.25)

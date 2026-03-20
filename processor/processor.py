@@ -109,7 +109,7 @@ def do_train(cfg,
     csrd_pair_weight_mode = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_WEIGHT_MODE', 'none')
     if csrd_anchor_weight_mode not in ('none', 'replace_ratio', 'low_ratio'):
         raise ValueError(f"Unsupported POSE_CSRD_ANCHOR_WEIGHT_MODE: {csrd_anchor_weight_mode}")
-    if csrd_pair_weight_mode not in ('none', 'delta', 'delta_top'):
+    if csrd_pair_weight_mode not in ('none', 'delta', 'delta_top', 'delta_top_exact'):
         raise ValueError(f"Unsupported POSE_CSRD_PAIR_WEIGHT_MODE: {csrd_pair_weight_mode}")
     if csrd_anchor_weight_mode != 'none' and not csrd_support_teacher:
         raise ValueError('POSE_CSRD_ANCHOR_WEIGHT_MODE requires POSE_CSRD_SUPPORT_TEACHER=True')
@@ -149,7 +149,7 @@ def do_train(cfg,
                     f'min_count={csrd_st_min_count}, stop_epoch={csrd_st_update_stop_epoch}')
     if csrd_enabled and csrd_pair_weight_mode != 'none':
         csrd_pair_weight_alpha = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_WEIGHT_ALPHA', 1.0)
-        if csrd_pair_weight_mode == 'delta_top':
+        if csrd_pair_weight_mode in ('delta_top', 'delta_top_exact'):
             csrd_pair_top_ratio = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_TOP_RATIO', 0.25)
             logger.info(f'[CSRD-PW] mode={csrd_pair_weight_mode}, '
                         f'alpha={csrd_pair_weight_alpha}, top_ratio={csrd_pair_top_ratio}')

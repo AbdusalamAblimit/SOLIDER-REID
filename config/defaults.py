@@ -226,7 +226,7 @@ _C.MODEL.POSE_CSRD_ST_MOM = 0.9                # EMA momentum for CSRD teacher b
 _C.MODEL.POSE_CSRD_ST_MIN_COUNT = 1            # Minimum support count for teacher completion
 _C.MODEL.POSE_CSRD_ST_UPDATE_STOP_EPOCH = -1   # Stop CSRD teacher-bank updates after this epoch (-1=never)
 _C.MODEL.POSE_CSRD_ANCHOR_WEIGHT_MODE = 'none' # 'none', 'replace_ratio', or 'low_ratio'
-_C.MODEL.POSE_CSRD_PAIR_WEIGHT_MODE = 'none'   # 'none', 'delta', or 'delta_top'
+_C.MODEL.POSE_CSRD_PAIR_WEIGHT_MODE = 'none'   # 'none', 'delta', 'delta_top', or 'delta_top_exact'
 _C.MODEL.POSE_CSRD_PAIR_WEIGHT_ALPHA = 1.0     # Strength of pair-delta focusing
 _C.MODEL.POSE_CSRD_PAIR_TOP_RATIO = 0.25       # Kept pair ratio for sparse delta-top focusing
 _C.MODEL.POSE_SGMKC = False              # Skeleton-Guided Masked Keypoint Completion
