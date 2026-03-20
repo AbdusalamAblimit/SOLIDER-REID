@@ -30,3 +30,20 @@
 - 当前判断: 待启动
 - 原因:
   - `exp126` 是相对 `exp125` 的最小下一跳：只把阈值式 `delta_top` 改成 exact top-k mask
+
+### [2026-03-20 13:58] 远程排队启动确认
+
+- 远程状态:
+  1. 5060 Ti 当前仍被 `exp124` 占用
+  2. `exp124` 最新已跑到 `ep90 = 59.8 / 72.6`
+  3. 该实验已进入后期有效区间，不适合为了抢卡而提前终止
+- 处理:
+  1. 已将 `exp126` 代码推送到 `origin/exp/pose_heatmap`
+  2. 已在远程写入 `/tmp/run_exp126_after_exp124.sh`
+  3. 该脚本会在检测到 `exp124` 主训练进程结束后自动：
+     - `git pull origin exp/pose_heatmap`
+     - 创建 `log/occluded_duke/exp126_pair_top_exact_scrd`
+     - 后台启动 `train.py --config_file configs/occluded_duke/pose_psg_gcn_pair_top_exact_scrd.yml`
+- 当前判断: 已排队，等待自动启动
+- 原因:
+  - 这样可以保留 `exp124` 的 late-gain 证据，同时不耽误 `exp126` 接续推进
