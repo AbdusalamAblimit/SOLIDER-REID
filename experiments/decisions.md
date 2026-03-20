@@ -2071,3 +2071,43 @@ B. 直接启动 exp025，exp024 可以后续补跑
 1. `exp124` 必须以 `exp123` 为唯一直接对照。
 2. 唯一改动是把 `POSE_CSRD_PAIR_WEIGHT_ALPHA` 从 `1.0` 提高到一个更强但仍保守的值。
 3. 不同时引入 `freeze30`、改 `tau`、改 bank 写入阈值，避免再次混入多个变量。
+
+
+### [2026-03-20 12:05] 决策 #76
+
+**上下文**:
+- `exp123` 已完成正式评估：
+  - `equal_concat = 61.1 / 73.4`
+  - `global = 60.2 / 70.3`
+  - `cvk_hybrid = 61.9 / 73.2`
+- 对照 `exp119`：
+  - `61.1 / 73.2`
+  - `60.4 / 70.3`
+  - `62.0 / 73.2`
+- 同时远程 `exp124 alpha=4.0` 到 `ep40` 的关键信号是：
+  - `ep20 = 47.7 / 62.0`
+  - `ep30 = 53.2 / 66.4`
+  - `ep40 = 55.6 / 68.6`
+  - `csrd_pf = 1.24~1.29`
+
+**判断**:
+1. pair-level `teacher-change focusing` 主线没有被否定，但 `alpha=1.0` 的第一版正式结果只做到与 `exp119` 近乎等价。
+2. 远程 `exp124` 又说明：单纯把 `alpha` 放大确实能显著增强 `pair_focus`，但到 `ep40` 仍然只是近乎持平，尚未形成明确更强的中期优势。
+3. 因而当前更合理的瓶颈不再是“有没有 pair focus”或“alpha 够不够大”，而是：
+   **teacher-change pairs 本来就稀疏，若仍对所有 pair 做连续平滑加权，真正有信息量的 changed pairs 仍会被大量近零变化 pair 稀释。**
+
+**选择**: 保持远程 `exp124` 继续跑，同时在本地启动 `exp125`，验证 **Sparse Pair-Delta SCRD**。
+
+**理由**:
+1. 这一步仍然严格锚定 `exp109 -> exp119` 主线，不回到 sample-level，也不回到 generic 模块叠加。
+2. 相对 `exp123`，`exp125` 只改 pair 路由机制：从连续加权改为稀疏 top-delta 选择。
+3. 它直接回应当前最具体的证据：
+   - `exp123` 说明“平滑 pair focus 太弱”
+   - `exp124` 到 `ep40` 说明“单纯增大 alpha 也未必足够”
+4. 若 `exp125` 转正，主创新会从“加一个权重”升级成更清楚的机制：
+   **只把被 support completion 真正改变过的 comparability relations 蒸进 global embedding。**
+
+**执行约束**:
+1. `exp125` 必须以 `exp123` 为唯一直接本地对照。
+2. 唯一改动是 `CSRD` 的 pair 路由：`delta -> delta_top`，并固定一个保守的 top ratio。
+3. 不同时改 `alpha`、不改 teacher bank、不断开 `support-complete` teacher，避免再次混入多个变量。

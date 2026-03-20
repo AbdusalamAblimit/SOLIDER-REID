@@ -652,3 +652,35 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
 - 不换题，不回到 sample-level，不回到 generic GCN 模块
 - 直接测试：
   **更强的 pair-delta focusing**
+
+## 2026-03-20: exp123 正式评估把 story 再收紧到“稀疏 pair routing”
+
+- `exp123` 的正式结果是：
+  - `equal_concat = 61.1 / 73.4`
+  - `global = 60.2 / 70.3`
+  - `cvk_hybrid = 61.9 / 73.2`
+
+- 相对 `exp119`：
+  - `equal_concat` 只保留了 `R1 +0.2`
+  - `global` 变成 `mAP -0.2 / R1 +0.0`
+  - `cvk_hybrid` 也只是近乎等价
+
+- 这把 story 进一步收紧成：
+  1. pair-level `teacher-change focusing` 方向本身没错
+  2. 但第一版 `alpha=1.0` 的连续 delta weighting 还太弱，没能把训练监控里的 delayed gain 稳定转成正式 eval gain
+
+- 同时，远程 `exp124` 到 `ep40` 又给了一个很关键的补充：
+  1. `alpha=4.0` 能把 `pair_focus` 明显放大到 `1.24~1.29`
+  2. 但中期指标仍然只是在 `exp123/119` 附近轻微摆动
+
+- 所以当前 story 最合理的新收束不再是：
+  “继续把 pair focus 调得更大”
+
+- 而是更精确地写成：
+  1. teacher-change pairs 是稀疏的
+  2. 如果对所有 pair 做连续平滑 weighting，真正有信息量的 changed pairs 仍会被大量近零变化 pair 淹没
+  3. 因而主方法下一步应升级为：
+     **sparse pair routing for support-complete relational distillation**
+
+- 换句话说，当前主创新点已经越来越不像“再做一个 loss 权重”，而更像：
+  **只把被 support completion 真正改变过的 comparability relations 蒸进 global embedding。**

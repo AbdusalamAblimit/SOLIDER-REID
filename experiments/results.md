@@ -643,3 +643,29 @@
   2. 但它相对 `exp119` 仍是 `-0.5 / -0.5`，相对 `exp120` 也没有形成清晰优势
   3. 这说明 “谁有更多被补全 keypoint” 不是足够精确的 supervision 路由信号
   4. 因而当前应放弃 sample-level weighting，转向更结构化的 **pair-level teacher-change focusing**
+
+## 2026-03-20: exp123 Pair-Delta Focused SCRD（正式评估）
+
+### exp123: pair-level teacher-change focusing 方向成立，但 `alpha=1.0` 只做到与 exp119 近乎等价
+
+> 基于 `exp120` 的单变量训练端实验。`exp123` 保持 support-complete relational teacher 完全不变，只新增 pair-level `delta` focusing，让 `CSRD` 更聚焦于那些被 support-complete teacher 实际改变过的 pair。该实验已完成正式 eval。
+
+| 方法 | mAP | R1 | R5 | R10 | 相对直接对照 |
+|------|-----|----|----|-----|-------------|
+| `exp030a-eq seed1234` | 61.1% | 72.9% | 85.2% | 87.8% | — |
+| `exp119-eq` | 61.1% | 73.2% | 85.4% | 88.6% | — |
+| **`exp123-eq`** | **61.1%** | **73.4%** | **84.8%** | **88.5%** | **vs `exp119-eq`: +0.0 / +0.2** |
+| `exp030a-g seed1234` | 59.8% | 69.9% | — | — | — |
+| `exp119-g` | 60.4% | 70.3% | 82.8% | 87.4% | — |
+| **`exp123-g`** | **60.2%** | **70.3%** | **82.5%** | **86.7%** | **vs `exp119-g`: -0.2 / +0.0** |
+| `exp040b cvk_hybrid` | 61.9% | 73.2% | 85.2% | 88.6% | — |
+| `exp119-cvk` | 62.0% | 73.2% | 85.5% | 88.8% | — |
+| **`exp123-cvk`** | **61.9%** | **73.2%** | **85.2%** | **88.8%** | **vs `exp119-cvk`: -0.1 / +0.0** |
+
+- 结论：
+  1. `exp123` 并没有把 `exp119` 推成更强的正式结果，三种测试口径整体都只是近乎等价
+  2. 但它也没有否定 pair-level `teacher-change focusing` 本身，因为训练监控终点仍略高于 `exp119`，`equal_concat` 也保留了 `R1 +0.2`
+  3. 当前更合理的解释不是“pair focus 不成立”，而是：
+     - teacher-change pairs 的确重要
+     - 但 `alpha=1.0` 的连续 delta 加权仍然过于平滑、过于稀释
+  4. 因而下一步应继续保留 pair-level 主线，但把重点从“有没有 pair focus”推进到 **如何更强、更稀疏地聚焦真正被 teacher 改变的关系**

@@ -1775,3 +1775,39 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
 2. `exp122` 已否定 sample-level routing
 3. `exp123` 已提供“pair focus 方向对”的最重要证据
 4. 因而现在最有信息量的，不是换问题，而是测试 **pair focus strength 是否就是当前瓶颈**
+
+### exp123 正式评估后的新收束
+
+- `exp123` 的正式结果是：
+  - `equal_concat = 61.1 / 73.4`
+  - `global = 60.2 / 70.3`
+  - `cvk_hybrid = 61.9 / 73.2`
+- 对照 `exp119`：
+  - `61.1 / 73.2`
+  - `60.4 / 70.3`
+  - `62.0 / 73.2`
+
+这说明：
+1. pair-level `teacher-change focusing` 没有被否定，但 `alpha=1.0` 版本并没有把 `CSRD` 稳定推到更强正式结果
+2. 训练监控的 delayed gain 没有清晰地转成最终 eval gain，说明当前第一版 focus 仍偏弱、偏散
+3. 与此同时，远程 `exp124` 到 `ep40` 已经说明：
+   - `alpha=4.0` 确实能把 `csrd_pf` 从 `1.06~1.08` 放大到 `1.24~1.29`
+   - 但中期指标仍只是近乎持平
+4. 因而当前最值得赌的新下一跳，不是继续平滑放大，而是：
+   **Sparse / Top-Delta Pair Routing**
+
+### 当前最值得赌的下一跳
+
+**Sparse Pair-Delta SCRD**
+
+核心想法：
+1. 保持 `exp123/124` 的 support-complete relational teacher 完全不变
+2. 不再对所有 pair 做连续平滑加权
+3. 而是只保留每个 anchor 下被 teacher 真正显著改变的那部分 pair 进入 `CSRD`
+4. 把“pair focus”从**弱连续加权**升级成**稀疏 pair 选择**
+
+为什么这比继续扫 `alpha` 更合理：
+1. `exp123` 已说明“有 pair focus”不够
+2. `exp124` 到 `ep40` 已说明“更大 alpha”也未必足够
+3. 当前更像是 teacher-change pairs 本来就稀疏，连续加权仍然被大量近零变化 pair 稀释
+4. 所以下一步应测试 **更结构化的 sparse pair routing**，而不是继续做平滑强度微调

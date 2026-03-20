@@ -61,7 +61,8 @@ def _compute_paml_triplet(kp_feats, kp_weights, labels, margin_loss,
 
 def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
                        teacher_kp_feats=None, anchor_weights=None,
-                       pair_weight_mode='none', pair_weight_alpha=1.0):
+                       pair_weight_mode='none', pair_weight_alpha=1.0,
+                       pair_top_ratio=0.25):
     """Distill batch-wise CVK-style pair relations into the global embedding.
 
     Teacher:
@@ -92,14 +93,22 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
         dist_t = _aggregate_teacher_dist(teacher_kp_feats)
 
     pair_delta = None
-    if pair_weight_mode == 'delta' and teacher_kp_feats is not None:
+    if pair_weight_mode in ('delta', 'delta_top') and teacher_kp_feats is not None:
         pair_delta = (dist_t - dist_base).abs().detach()
 
     def _focus_from_delta(delta_vec):
         if delta_vec is None:
-            return None
+            return None, None, None
         scale = delta_vec.max().clamp(min=1e-6)
-        return 1.0 + pair_weight_alpha * (delta_vec / scale)
+        focus = 1.0 + pair_weight_alpha * (delta_vec / scale)
+        if pair_weight_mode == 'delta_top':
+            keep_num = max(1, int(math.ceil(delta_vec.numel() * pair_top_ratio)))
+            top_vals, _ = torch.topk(delta_vec, k=keep_num, largest=True, sorted=True)
+            keep_mask = delta_vec >= top_vals[-1]
+            sparse_focus = torch.full_like(focus, 1e-6)
+            sparse_focus[keep_mask] = focus[keep_mask]
+            return sparse_focus, sparse_focus[keep_mask].mean(), keep_mask.float().mean()
+        return focus, focus.mean(), focus.new_ones(())
 
     def _distill_subset(student_dist, teacher_dist, focus=None):
         s_logits = (-student_dist) / tau
@@ -125,6 +134,7 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
     loss_weights = []
     pair_delta_means = []
     pair_focus_means = []
+    pair_select_ratio_means = []
     for idx in range(B):
         if anchor_weights is None:
             anchor_w = dist_s.new_ones(())
@@ -136,9 +146,12 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
             pos_focus = None
             if pair_delta is not None:
                 pos_delta = pair_delta[idx, pos_mask[idx]]
-                pos_focus = _focus_from_delta(pos_delta)
+                pos_focus, pos_focus_mean, pos_select_ratio = _focus_from_delta(pos_delta)
                 pair_delta_means.append(pos_delta.mean())
-                pair_focus_means.append(pos_focus.mean())
+                if pos_focus_mean is not None:
+                    pair_focus_means.append(pos_focus_mean)
+                if pos_select_ratio is not None:
+                    pair_select_ratio_means.append(pos_select_ratio)
             losses.append(_distill_subset(
                 dist_s[idx, pos_mask[idx]],
                 dist_t[idx, pos_mask[idx]],
@@ -148,9 +161,12 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
             neg_focus = None
             if pair_delta is not None:
                 neg_delta = pair_delta[idx, neg_mask[idx]]
-                neg_focus = _focus_from_delta(neg_delta)
+                neg_focus, neg_focus_mean, neg_select_ratio = _focus_from_delta(neg_delta)
                 pair_delta_means.append(neg_delta.mean())
-                pair_focus_means.append(neg_focus.mean())
+                if neg_focus_mean is not None:
+                    pair_focus_means.append(neg_focus_mean)
+                if neg_select_ratio is not None:
+                    pair_select_ratio_means.append(neg_select_ratio)
             losses.append(_distill_subset(
                 dist_s[idx, neg_mask[idx]],
                 dist_t[idx, neg_mask[idx]],
@@ -176,6 +192,7 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
         'mean_anchor_weight': float(anchor_weights.mean().item()) if anchor_weights is not None else 1.0,
         'pair_delta': float(torch.stack(pair_delta_means).mean().item()) if pair_delta_means else 0.0,
         'pair_focus': float(torch.stack(pair_focus_means).mean().item()) if pair_focus_means else 1.0,
+        'pair_select_ratio': float(torch.stack(pair_select_ratio_means).mean().item()) if pair_select_ratio_means else 1.0,
     }
     return loss, stats
 
@@ -203,9 +220,10 @@ def make_loss(cfg, num_classes):    # modified by gu
         print("label smooth on, numclasses:", num_classes)
 
     csrd_pair_weight_mode = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_WEIGHT_MODE', 'none')
-    if csrd_pair_weight_mode not in ('none', 'delta'):
+    if csrd_pair_weight_mode not in ('none', 'delta', 'delta_top'):
         raise ValueError(f"Unsupported POSE_CSRD_PAIR_WEIGHT_MODE: {csrd_pair_weight_mode}")
     csrd_pair_weight_alpha = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_WEIGHT_ALPHA', 1.0)
+    csrd_pair_top_ratio = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_TOP_RATIO', 0.25)
 
     def _compute_common_support_matrix(kp_weights):
         weights = kp_weights.detach().clamp(min=0)
@@ -360,7 +378,8 @@ def make_loss(cfg, num_classes):    # modified by gu
                                 teacher_kp_feats=kp_data.get('csrd_teacher_feats'),
                                 anchor_weights=kp_data.get('csrd_anchor_weights'),
                                 pair_weight_mode=csrd_pair_weight_mode,
-                                pair_weight_alpha=csrd_pair_weight_alpha)
+                                pair_weight_alpha=csrd_pair_weight_alpha,
+                                pair_top_ratio=csrd_pair_top_ratio)
                             loss_details['csrd'] = csrd_loss.item()
                             loss_details['csrd_tgap'] = csrd_stats['teacher_gap']
                             loss_details['csrd_sgap'] = csrd_stats['student_gap']
@@ -370,6 +389,7 @@ def make_loss(cfg, num_classes):    # modified by gu
                             if csrd_pair_weight_mode != 'none':
                                 loss_details['csrd_pd'] = csrd_stats['pair_delta']
                                 loss_details['csrd_pf'] = csrd_stats['pair_focus']
+                                loss_details['csrd_psr'] = csrd_stats['pair_select_ratio']
                     # PAML: use per-keypoint pairwise distance for part triplet
                     paml_enabled = getattr(cfg.MODEL, 'POSE_PAML', False)
                     if paml_enabled and kp_data is not None:
