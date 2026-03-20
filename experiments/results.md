@@ -549,3 +549,20 @@
 
   4. **天花板：~61.1-61.3 mAP / 73.5-74.1 R1**
   5. **结论：EMA prototype bank 方向已穷尽，不再值得作为主线**
+
+
+## 2026-03-20: exp117 VCGA（Visibility-Conditioned Graph Attention）
+
+### exp117: GCN 消息传递改进
+
+> 基于 `exp030a-eq` 的单变量对照。测试 visibility-conditioned graph attention（用 keypoint 可见度调制 GCN 邻接矩阵）是否改善消息传递效果。
+
+| 方法 | mAP | R1 | R5 | R10 | 相对 exp030a-eq |
+|------|-----|----|----|-----|-----------------|
+| `exp030a-eq seed1234` | 61.1% | 72.9% | 85.2% | 87.8% | — |
+| **`exp117_vcga`** | **61.1%** | **73.5%** | **84.8%** | **88.2%** | **0.0 / +0.6** |
+
+- 结论：
+  1. **VCGA 完全中性**（mAP 精确相同，R1 +0.6% 在噪声范围）
+  2. Visibility-conditioned graph attention 不改善 GCN
+  3. 标准 symmetric normalization 已足够
