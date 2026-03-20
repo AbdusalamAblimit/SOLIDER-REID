@@ -176,6 +176,7 @@ class SupportCompleteBank(nn.Module):
         support = self.get_support(kp_feats, kp_weights, labels)
         replaced = kp_feats.clone()
         replace_mask = support['mask']
+        query_mask = support['low_mask'] & (support['proto_count'] >= self.min_count) & (support['proto_conf'] > 0)
         n_replaced = int(replace_mask.sum().item())
 
         if n_replaced > 0:
@@ -183,7 +184,9 @@ class SupportCompleteBank(nn.Module):
 
         stats = {
             'n_replaced': n_replaced,
-            'replace_ratio': support['stats']['support_ratio'],
+            # Keep historical SCFR log semantics: ratio before valid-sample guard.
+            'replace_ratio': float(query_mask.float().mean().item()),
+            'applied_ratio': support['stats']['support_ratio'],
             'low_ratio': support['stats']['low_ratio'],
             'proto_conf': support['stats']['proto_conf'],
             'proto_count': support['stats']['proto_count'],

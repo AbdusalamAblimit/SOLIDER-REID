@@ -518,7 +518,7 @@ class SkeletonGCNHead(nn.Module):
                 ], dim=2)
                 raw_gate = self.scrc_gate(gate_input).squeeze(-1)
                 gate = raw_gate * support_mask.float()
-                delta = support_proto.detach() - kp_feats
+                delta = support_proto - kp_feats
                 kp_feats = kp_feats + gate.unsqueeze(-1) * delta
                 active_gate = gate[support_mask]
                 active_delta = delta[support_mask]

@@ -61,3 +61,22 @@
 - 原因:
   1. 启动稳定，GPU 占用与 DataLoader worker 均正常
   2. 下一次有信息量的点是 `ep10` warmup 验证
+
+### [2026-03-20 16:20] Claude 代码审查结论
+- 审查文件: `experiments/exp127/claude_review.md`
+- 审查结论:
+  1. **无阻塞性问题**
+  2. 唯一中等优先级问题是：
+     - `SCFR replace_ratio` 的语义在重构后从“guard 前”变成了“guard 后”，会影响与历史日志的直读对比
+  3. 其余仅为低优先级问题：
+     - 一个多余的 `detach`
+     - `SCRC` warmup 阶段与 `SCFR` 一样只更新 bank、不引入额外 support 信号
+     - gate 对全 `(B,17)` 位置做前向，有少量冗余计算
+- 已处理:
+  1. 已将 `SCFR replace_ratio` 改回历史语义
+  2. 额外保留 `applied_ratio` 以记录真正执行替换后的比例
+  3. 去掉了多余的 `detach`
+- 当前判断: 继续，不重启
+- 原因:
+  1. 审查未发现会导致训练崩溃或逻辑失真的问题
+  2. 已修正的问题仅影响未来代码口径，不值得为此打断正在正常运行的 `exp127`
