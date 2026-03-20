@@ -566,3 +566,25 @@
   1. **VCGA 完全中性**（mAP 精确相同，R1 +0.6% 在噪声范围）
   2. Visibility-conditioned graph attention 不改善 GCN
   3. 标准 symmetric normalization 已足够
+
+
+## 2026-03-20: exp119 CSRD（Common-Support Relational Distillation）
+
+### exp119: 把 common-support pairwise 几何蒸馏进 global embedding
+
+> 基于 `exp030a` 的单变量训练端实验。`CSRD` 不再把 support 压成 `per-ID prototype`，而是直接用 skeleton/keypoint branch 计算出的 `CVK-style` pairwise 几何作为 detached relational teacher，蒸馏 global embedding 的 batch-wise 距离结构。
+
+| 方法 | mAP | R1 | R5 | R10 | 相对直接对照 |
+|------|-----|----|----|-----|-------------|
+| `exp030a-eq seed1234` | 61.1% | 72.9% | 85.2% | 87.8% | — |
+| **`exp119-eq`** | **61.1%** | **73.2%** | **85.4%** | **88.6%** | **+0.0 / +0.3** |
+| `exp030a-g seed1234` | 59.8% | 69.9% | — | — | — |
+| **`exp119-g`** | **60.4%** | **70.3%** | **82.8%** | **87.4%** | **+0.6 / +0.4** |
+| `exp040b cvk_hybrid` | 61.9% | 73.2% | 85.2% | 88.6% | — |
+| **`exp119-cvk`** | **62.0%** | **73.2%** | **85.5%** | **88.8%** | **+0.1 / +0.0** |
+
+- 结论：
+  1. **`CSRD` 首次把训练端 pairwise teacher 做成了明确弱正向**，且最明显的收益出现在 `global`
+  2. 这说明当前更接近真实问题的，不是 overlap mining，也不是 prototype pointwise 蒸馏，而是 **common-support relational teacher**
+  3. 但 `equal_concat` 仍只是近乎持平，表明当前 teacher 还不够强，单图 `kp_feats` 本身依旧受 `support incomplete` 限制
+  4. 因此下一步不应回到 generic 模块叠加，而应把 `exp109` 的 support-complete headroom 引回 `CSRD`，验证 **support-complete relational teacher**

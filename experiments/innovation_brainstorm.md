@@ -1651,3 +1651,31 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
 2. 机制层面：pose/keypoint branch 作为 **common-support relational teacher**
 3. 训练目标：把 global embedding 蒸馏成更符合 common-support 几何的空间
 4. 证据层面：可直接和 `exp047 / exp051 / exp109-116` 构成一条非常清晰的对照链
+
+### exp119 结果后的进一步收束
+
+- `exp119-eq = 61.1 / 73.2`：相对 `exp030a-eq seed1234 = 61.1 / 72.9`，表现为 `+0.0 / +0.3`
+- `exp119-g = 60.4 / 70.3`：相对 `exp030a-g seed1234 = 59.8 / 69.9`，表现为 `+0.6 / +0.4`
+- `exp119-cvk = 62.0 / 73.2`：相对 `exp040b = 61.9 / 73.2`，表现为 `+0.1 / +0.0`
+
+这说明：
+1. `CSRD` 已经不是“纯概念验证”，而是**明确弱正向**
+2. 增益主要落在 `global`，符合“把 pairwise comparability 蒸回 backbone”的预期
+3. 但 `equal_concat` 仍没有被明显拉起，暴露出第一版 teacher 的真正瓶颈：
+   **teacher 自身还是单图 `kp_feats`，并不 support-complete**
+
+### 当前最值得赌的下一跳
+
+**Support-Complete Relational Teacher**
+
+核心想法：
+1. 保留 `exp119` 的 relational distillation 形式
+2. 不再把 bank 当作 pointwise 蒸馏目标
+3. 而是先用 `exp109` 方向的 support bank 补全 low-vis keypoint teacher，再用补全后的 teacher 去做 `CSRD`
+
+为什么这比回到 `SCKD` 更合理：
+1. `exp109` 已证明 support-complete teacher 有巨大 headroom
+2. `exp110-116` 只否定了“prototype 直接拉 student”这件事
+3. `exp119` 则证明了 relational teacher 形式是对的
+4. 因此更合理的合体不是 `prototype pointwise distillation`，而是：
+   **support-complete teacher + relational distillation**

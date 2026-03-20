@@ -1923,3 +1923,35 @@ B. 直接启动 exp025，exp024 可以后续补跑
 1. 第一版保持最小改动，只新增 `CSRD` 一个 loss。
 2. 仍以 `exp030a` 为唯一训练基线。
 3. 若 `ep20/30` 即明显落后，不连续扫多个权重版本，先回到机制层面复盘。
+
+
+### [2026-03-20 14:20] 决策 #72
+
+**上下文**: `exp119 CSRD` 已完成训练与正式评估：
+- `exp119-eq = 61.1% / 73.2%`
+- `exp119-g = 60.4% / 70.3%`
+- `exp119-cvk = 62.0% / 73.2%`
+
+直接对照为：
+- `exp030a-eq seed1234 = 61.1% / 72.9%`
+- `exp030a-g seed1234 = 59.8% / 69.9%`
+- `exp040b cvk_hybrid = 61.9% / 73.2%`
+
+**判断**:
+1. `CSRD` 已经证明：**训练端 pairwise relational teacher 不是伪命题**。
+2. 当前最清楚的增益落在 `global`（`+0.6 / +0.4`），说明它确实把 common-support 几何迁进了 backbone/global 空间。
+3. `equal_concat` 仍接近持平，说明第一版 teacher 还不够强；瓶颈更像 teacher 的 `support incompleteness`，而不是 relational distillation 这件事本身无效。
+4. 因而 `exp109` 的高价值结论仍应保留：真正缺的不是再换一个 loss 形式，而是 **更 support-complete 的 teacher**。
+
+**选择**: 不扫 `CSRD` 权重/温度，直接进入下一步：
+**把 `exp109` 的 support-complete bank 降级为 teacher enhancer，而不是 pointwise distillation target，构造 support-complete relational teacher。**
+
+**理由**:
+1. 这条线同时保留了 `exp109` 的核心 headroom 和 `exp119` 已验证的 pairwise 机制。
+2. 它避免回到 `exp110-116` 已经穷尽的 prototype-pointwise 蒸馏。
+3. 相比扫 `tau / weight`，它更像问题层面的推进，而不是调参。
+
+**执行约束**:
+1. 下一实验相对 `exp119` 只改 teacher 构造，不改 backbone、batch size、主 loss 配比。
+2. bank 只用于增强 `CSRD teacher`，不直接给 student 施加 pointwise cosine loss。
+3. 默认沿用已经验证更可靠的 `update_thr=0.7`，避免把旧的 bank 噪声重新带回来。

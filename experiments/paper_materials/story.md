@@ -531,3 +531,26 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
   - 为什么 `exp047` 的 overlap mining 不够
   - 为什么 `exp051` 的 part-triplet 对齐不够
   - 为什么 `exp109-116` 的 prototype 压缩达不到 oracle headroom
+
+### exp119 正式评估后的 story 收紧
+
+- `exp119` 的正式结果是：
+  - `equal_concat = 61.1 / 73.2`（对 `exp030a-eq seed1234` 为 `+0.0 / +0.3`）
+  - `global = 60.4 / 70.3`（对 `exp030a-g seed1234` 为 `+0.6 / +0.4`）
+  - `cvk_hybrid = 62.0 / 73.2`（对 `exp040b` 为 `+0.1 / +0.0`）
+
+- 这给 story 一个新的正信号：
+  1. `pairwise relational teacher` 这件事本身是成立的
+  2. 且它最先改善的是 `global`，这非常符合“把遮挡下的比较规则蒸进 backbone”的机制预期
+
+- 同时也把瓶颈写得更清楚：
+  1. 第一版 `CSRD` 的 teacher 仍来自**单图** `kp_feats`
+  2. 所以它虽然能传递 `pair comparability`，但 teacher 自身还受 `support incomplete` 限制
+  3. 换句话说，`exp109` 和 `exp119` 并不冲突，而是正好可以接起来：
+     **需要一个 support-complete relational teacher，而不是 prototype pointwise teacher**
+
+- 因而当前最合理的主叙事升级为：
+  1. 单图遮挡导致 `support incomplete`
+  2. 这进一步表现为 `pair comparability mismatch`
+  3. skeleton/keypoint branch 可以提供 relational teacher
+  4. 但 teacher 还必须被 support-complete 化，才能把 `exp109` 的 headroom 真正转成训练端收益
