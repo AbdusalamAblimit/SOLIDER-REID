@@ -1572,3 +1572,47 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
    - 自监督预训练任务（针对遮挡场景）
 2. **接受当前配置**：PSG+GCN+PAA+ROA 作为训练端最强配置（~62.7% 单 seed），SGCFR 作为测试端独特创新（+2.6%）
 3. **gap analysis**：重新审视 oracle headroom 的分布，找到真正可操作的改进点
+
+---
+
+## 2026-03-20: 文献搜索新发现（2024-2025 最新方向）
+
+### 最有潜力的新方向（按优先级排序）
+
+#### 方向 R: Late Interaction / MaxSim 匹配（ColBERT 风格）
+**优先级: ⭐⭐⭐⭐⭐**
+- 来源: ColBERT (SIGIR 2020), Video-ColBERT (CVPR 2025)
+- 核心: 每个 body part 产生一个独立 embedding，匹配时用 MaxSim（每个 query part 找 gallery 中最佳匹配的 part，取 max cosine similarity 后求和）
+- 为什么新颖: **从未在 person ReID 中使用过**。现有方法要么 concat 所有 part 为一个向量，要么做 pair-wise visible matching。MaxSim 天然处理遮挡（缺失 part 贡献低）且不需要显式的 visibility 估计
+- 与我们框架的关系: 我们的 GCN branch 已经产出 17 个 per-keypoint embedding。当前用 weighted pooling 聚合为一个向量。改为 MaxSim 匹配可能释放 per-keypoint 信息的全部价值
+- 风险: 检索效率降低（需要 17×N 次相似度计算），但可以用 inverted index 优化
+
+#### 方向 S: 遮挡驱动对比学习（Occlusion-Driven Contrastive）
+**优先级: ⭐⭐⭐⭐**
+- 来源: POFR (Neurocomputing 2025), SSSC-TransReID (Multimedia Systems 2025)
+- 核心: 生成真实遮挡并创建精确遮挡 mask，然后对同一身份的遮挡和完整视图做对比学习
+- 与 SCKD 的区别: SCKD 是对 prototype 蒸馏；对比学习是直接拉近同 ID 的遮挡/完整特征
+- 可行性: 我们已有 ROA 基础设施（生成遮挡），只需添加一个对比 loss 分支
+- 风险: 可能与标准 triplet loss 冗余
+
+#### 方向 T: 实例感知对比（target assignment）
+**优先级: ⭐⭐⭐⭐**
+- 来源: InstanceHMR (CVPR 2024)
+- 核心: 对比 loss 把 target person 的 keypoint 特征拉向 target center，推开 non-target person 的特征
+- 直接解决我们的 "多人图中 target assignment" 问题
+- 与我们框架高度匹配: 我们的 pose data 有 person 0-N 的检测，但目前只用 person 0
+
+#### 方向 U: OGFR 风格的特征净化
+**优先级: ⭐⭐⭐**
+- 来源: OGFR (arXiv 2025) — 76.6% R1, 64.7% mAP on Occluded-Duke (SOTA!)
+- 核心: 用 RL agent 动态识别并替换低质量 patch tokens
+- 与 PSG 的区别: PSG 是 soft gating，OGFR 是 hard replacement with learned tokens
+- 风险: 复杂度高，需要 RL training
+
+### 当前最推荐的下一步
+
+**方向 R（MaxSim Late Interaction）** 最值得优先尝试：
+1. 不需要重新训练（可在现有 checkpoint 上测试）
+2. 机制层面真正新颖（ReID 领域首次）
+3. 与我们现有的 per-keypoint GCN branch 完美对接
+4. 如果有效，可以设计训练端的 MaxSim triplet loss 作为后续创新
