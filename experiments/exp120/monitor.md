@@ -91,3 +91,31 @@
 - 当前判断: 继续
 - 原因:
   - 只有通过 `ep10 / ep20` 的 warmup 稳定性检查，这轮 `exp120` 才值得继续等 `epoch 21+` 的 teacher-enhanced `CSRD`
+
+### [2026-03-20 15:02] 检查点 #3 — Epoch 10/20/30 与 `CSRD-ST` 激活后形态
+
+- 结果:
+  - `ep10 = 39.8% / 52.9% / 68.8% / 74.3%`
+  - `ep20 = 47.6% / 61.5% / 75.6% / 80.5%`
+  - `ep30 = 53.2% / 66.5% / 80.9% / 85.1%`
+- 对照:
+  - `exp119 ep10 = 39.8 / 52.9`
+  - `exp119 ep20 = 47.6 / 61.5`
+  - `exp119 ep30 = 53.4 / 66.7`
+- `CSRD-ST` 统计（ep27-34）:
+  - `csrd = 0.012~0.014`
+  - `csrd_tgap = 0.424 -> 0.471`
+  - `csrd_sgap = 0.358 -> 0.424`
+  - `csrd_vr = 0.998~1.000`
+  - `csrd_sr = 0.142~0.149`
+  - `csrd_sn = 154~161`
+  - `csrd_lowr = 0.142~0.149`
+- 当前观察:
+  1. warmup 阶段与 `exp119` **完全重合**，说明 support-complete teacher 接线没有破坏基线轨迹
+  2. `epoch 21+` 后 `csrd_sr / csrd_sn` 稳定，说明 teacher enhancement 真实在工作，而不是空开关
+  3. teacher replacement 覆盖率约 `14-15%`，几乎和 low-vis 比例一致，说明当前低可见 keypoint 基本都拿到了 support-complete teacher
+  4. `teacher_gap` 比 `exp119` 同期更强，但 `student_gap` 追近速度没有同步变快
+  5. 到 `ep30` 为止指标反而比 `exp119` 小幅落后 `-0.2 / -0.2`
+- 当前判断: 继续，但转为谨慎观察
+- 原因:
+  - 当前结果说明 “teacher completeness 已经成功增强”，但它还没有转成更好的验证表现；下一关键点是 `ep40`
