@@ -72,3 +72,22 @@
 - 当前判断: 继续
 - 原因:
   - 下一关键点仍是 `ep10 / ep20`，以及 `epoch 21+` 后是否出现有效的 teacher replacement 统计
+
+### [2026-03-20 14:50] 检查点 #2 — Epoch 1-2
+
+- 当前进度:
+  - `Epoch 1 done`
+  - `Epoch 2 Iter 80/227`
+- 当前局部训练状态:
+  - `Epoch 1 done`: `Time per epoch = 59.931s`, `ETA = 1h58m`
+  - `Epoch[2] Iter[20/227] Loss: 13.185, Acc: 0.005`
+  - `Epoch[2] Iter[40/227] Loss: 12.715, Acc: 0.004`
+  - `Epoch[2] Iter[60/227] Loss: 12.364, Acc: 0.003`
+  - `Epoch[2] Iter[80/227] Loss: 12.062, Acc: 0.003`
+- 当前观察:
+  1. `Epoch 1 -> 2` 总 loss 持续正常下降，没有因为 teacher bank 接线引入异常抖动
+  2. 速度约 `60s / epoch`，相比 `exp119` warmup 略慢，但仍在可接受范围
+  3. 当前仍是 warmup 前段，核心目标仍是确认它不破坏基线轨迹
+- 当前判断: 继续
+- 原因:
+  - 只有通过 `ep10 / ep20` 的 warmup 稳定性检查，这轮 `exp120` 才值得继续等 `epoch 21+` 的 teacher-enhanced `CSRD`
