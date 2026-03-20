@@ -145,3 +145,17 @@
 - 当前判断: 基本判负，继续价值下降
 - 原因:
   - `ep40` 已经足够说明这条 sample-level weighting 线不是当前主突破口；除非后续出现明显反转，否则应准备止损并转向下一种更结构化的选择性 distillation 机制
+
+### [2026-03-20 17:15] 停表结论 — 终止于 `ep43`
+
+- 停表原因:
+  1. `ep40 = 55.4 / 68.2` 已经明显落后于 `exp119 ep40 = 55.9 / 68.7`
+  2. 随后 `epoch 41-43` 的训练统计没有出现任何“即将反转”的信号：
+     - `csrd_ar` 仍稳定在 `0.56` 左右
+     - `csrd_aw` 仍稳定在 `0.145` 左右
+     - `csrd_tgap / csrd_sgap` 继续同步上升
+  3. 这说明问题不是实现错误，而是 **sample-level `replace_ratio` 过粗，削弱了有效监督总量**
+- 最终判断:
+  1. `exp122` 基本否定了“按样本补全比例做 anchor 级 selective weighting”这条线
+  2. `support-complete relational teacher` 主线本身仍成立；被否定的只是 **sample-level supervision routing**
+  3. 下一步应从 sample 级加权转向更精确的 **pair-level teacher-change focusing**

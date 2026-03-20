@@ -1998,3 +1998,39 @@ B. 直接启动 exp025，exp024 可以后续补跑
 1. `exp122` 必须以 `exp120` 为唯一直接对照。
 2. 唯一改动是：`CSRD` 按 sample-level `replace_ratio` 做 anchor weighting。
 3. 不同时改 `tau / weight / bank freeze`，避免再次混入多个变量。
+
+
+### [2026-03-20 17:15] 决策 #74
+
+**上下文**: `exp122 SGW-SCRD` 已在 `ep43` 提前终止。关键事实是：
+- `ep40 = 55.4 / 68.2`
+- 对照：
+  - `exp119 ep40 = 55.9 / 68.7`
+  - `exp120 ep40 = 55.5 / 67.8`
+- 机制统计：
+  - `csrd_ar ≈ 0.56`
+  - `csrd_aw ≈ 0.145`
+  - `csrd_tgap ≈ 0.49`
+  - `csrd_sgap ≈ 0.44`
+
+**判断**:
+1. `exp122` 不是实现失败；sample-level selective weighting 确实被正确接入并稳定工作。
+2. 但它没有把 `support-complete teacher` 的增强转成更好的指标，反而更像削弱了有效监督总量。
+3. 这说明当前问题不该再写成“监督该打给哪些样本”，而应进一步收紧成：
+   **监督该聚焦哪些 pair/relations。**
+4. `support-complete` 主线本身仍然成立；被否定的只是 sample-level `replace_ratio` 作为路由信号太粗。
+
+**选择**: 启动 `exp123`，验证 **Pair-Delta Focused SCRD**。
+
+**理由**:
+1. 相对 `exp120`，这仍是单变量：teacher bank、teacher 替换、主 loss、batch size 全不变，只改 `CSRD` 对 pair 关系的聚焦方式。
+2. 它直接回应 `exp122` 的失败：真正该被强调的不是“这个样本补了多少 keypoint”，而是 **support-complete teacher 实际改变了哪些 pair 几何**。
+3. 若这一步转正，story 会比 sample-level weighting 更扎实：
+   - 单图遮挡带来 support incomplete
+   - support-complete teacher 改变一部分 pairwise comparability
+   - distillation 应聚焦这些 **teacher-change pairs**，而不是对整个样本等权放大/缩小
+
+**执行约束**:
+1. `exp123` 必须以 `exp120` 为唯一直接对照。
+2. 唯一改动是：`CSRD` 由 sample-level anchor weighting 改为 pair-level delta focusing。
+3. 不同时引入 freeze、改 tau、改 bank 写入阈值，避免再次混入多个变量。

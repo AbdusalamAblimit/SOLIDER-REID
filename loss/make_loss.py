@@ -60,7 +60,8 @@ def _compute_paml_triplet(kp_feats, kp_weights, labels, margin_loss,
 
 
 def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
-                       teacher_kp_feats=None, anchor_weights=None):
+                       teacher_kp_feats=None, anchor_weights=None,
+                       pair_weight_mode='none', pair_weight_alpha=1.0):
     """Distill batch-wise CVK-style pair relations into the global embedding.
 
     Teacher:
@@ -72,18 +73,44 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
     feat_s = normalize(global_feat, axis=-1)
     dist_s = euclidean_dist(feat_s, feat_s)
 
-    if teacher_kp_feats is None:
-        teacher_kp_feats = kp_feats
-    kp_f = F.normalize(teacher_kp_feats.detach(), dim=-1)
-    per_kp_dist = [euclidean_dist(kp_f[:, k, :], kp_f[:, k, :])
-                   for k in range(kp_f.size(1))]
-    dist_k = torch.stack(per_kp_dist, dim=-1)  # (B, B, K)
-
     w = kp_weights.detach().clamp(min=0.0)
     pair_w = torch.sqrt(w.unsqueeze(1) * w.unsqueeze(0))  # (B, B, K)
     weight_sum = pair_w.sum(dim=-1)
-    dist_t = (dist_k * pair_w).sum(dim=-1) / weight_sum.clamp(min=1e-6)
-    dist_t = torch.where(weight_sum > 0, dist_t, dist_s.detach())
+
+    def _aggregate_teacher_dist(src_feats):
+        kp_f = F.normalize(src_feats.detach(), dim=-1)
+        per_kp_dist = [euclidean_dist(kp_f[:, k, :], kp_f[:, k, :])
+                       for k in range(kp_f.size(1))]
+        dist_k = torch.stack(per_kp_dist, dim=-1)  # (B, B, K)
+        dist = (dist_k * pair_w).sum(dim=-1) / weight_sum.clamp(min=1e-6)
+        return torch.where(weight_sum > 0, dist, dist_s.detach())
+
+    dist_base = _aggregate_teacher_dist(kp_feats)
+    if teacher_kp_feats is None:
+        dist_t = dist_base
+    else:
+        dist_t = _aggregate_teacher_dist(teacher_kp_feats)
+
+    pair_delta = None
+    if pair_weight_mode == 'delta' and teacher_kp_feats is not None:
+        pair_delta = (dist_t - dist_base).abs().detach()
+
+    def _focus_from_delta(delta_vec):
+        if delta_vec is None:
+            return None
+        scale = delta_vec.max().clamp(min=1e-6)
+        return 1.0 + pair_weight_alpha * (delta_vec / scale)
+
+    def _distill_subset(student_dist, teacher_dist, focus=None):
+        s_logits = (-student_dist) / tau
+        t_logits = (-teacher_dist.detach()) / tau
+        if focus is not None:
+            log_focus = focus.clamp(min=1e-6).log()
+            s_logits = s_logits + log_focus
+            t_logits = t_logits + log_focus
+        s_logp = F.log_softmax(s_logits, dim=0)
+        t_prob = F.softmax(t_logits, dim=0)
+        return F.kl_div(s_logp, t_prob, reduction='batchmean')
 
     B = dist_s.size(0)
     eye = torch.eye(B, dtype=torch.bool, device=labels.device)
@@ -96,6 +123,8 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
 
     losses = []
     loss_weights = []
+    pair_delta_means = []
+    pair_focus_means = []
     for idx in range(B):
         if anchor_weights is None:
             anchor_w = dist_s.new_ones(())
@@ -104,14 +133,28 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
             if anchor_w.item() <= 0:
                 continue
         if pos_mask[idx].any():
-            s_logp = F.log_softmax((-dist_s[idx, pos_mask[idx]]) / tau, dim=0)
-            t_prob = F.softmax((-dist_t[idx, pos_mask[idx]].detach()) / tau, dim=0)
-            losses.append(F.kl_div(s_logp, t_prob, reduction='batchmean'))
+            pos_focus = None
+            if pair_delta is not None:
+                pos_delta = pair_delta[idx, pos_mask[idx]]
+                pos_focus = _focus_from_delta(pos_delta)
+                pair_delta_means.append(pos_delta.mean())
+                pair_focus_means.append(pos_focus.mean())
+            losses.append(_distill_subset(
+                dist_s[idx, pos_mask[idx]],
+                dist_t[idx, pos_mask[idx]],
+                focus=pos_focus))
             loss_weights.append(anchor_w)
         if neg_mask[idx].any():
-            s_logp = F.log_softmax((-dist_s[idx, neg_mask[idx]]) / tau, dim=0)
-            t_prob = F.softmax((-dist_t[idx, neg_mask[idx]].detach()) / tau, dim=0)
-            losses.append(F.kl_div(s_logp, t_prob, reduction='batchmean'))
+            neg_focus = None
+            if pair_delta is not None:
+                neg_delta = pair_delta[idx, neg_mask[idx]]
+                neg_focus = _focus_from_delta(neg_delta)
+                pair_delta_means.append(neg_delta.mean())
+                pair_focus_means.append(neg_focus.mean())
+            losses.append(_distill_subset(
+                dist_s[idx, neg_mask[idx]],
+                dist_t[idx, neg_mask[idx]],
+                focus=neg_focus))
             loss_weights.append(anchor_w)
 
     if losses:
@@ -131,6 +174,8 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
         'valid_ratio': float((weight_sum > 0).float().mean().item()),
         'active_anchor_ratio': float((anchor_weights > 0).float().mean().item()) if anchor_weights is not None else 1.0,
         'mean_anchor_weight': float(anchor_weights.mean().item()) if anchor_weights is not None else 1.0,
+        'pair_delta': float(torch.stack(pair_delta_means).mean().item()) if pair_delta_means else 0.0,
+        'pair_focus': float(torch.stack(pair_focus_means).mean().item()) if pair_focus_means else 1.0,
     }
     return loss, stats
 
@@ -156,6 +201,11 @@ def make_loss(cfg, num_classes):    # modified by gu
     if cfg.MODEL.IF_LABELSMOOTH == 'on':
         xent = CrossEntropyLabelSmooth(num_classes=num_classes)
         print("label smooth on, numclasses:", num_classes)
+
+    csrd_pair_weight_mode = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_WEIGHT_MODE', 'none')
+    if csrd_pair_weight_mode not in ('none', 'delta'):
+        raise ValueError(f"Unsupported POSE_CSRD_PAIR_WEIGHT_MODE: {csrd_pair_weight_mode}")
+    csrd_pair_weight_alpha = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_WEIGHT_ALPHA', 1.0)
 
     def _compute_common_support_matrix(kp_weights):
         weights = kp_weights.detach().clamp(min=0)
@@ -308,13 +358,18 @@ def make_loss(cfg, num_classes):    # modified by gu
                                 feat[0], kp_data['kp_feats'], kp_data['kp_weights'],
                                 target, tau=csrd_tau,
                                 teacher_kp_feats=kp_data.get('csrd_teacher_feats'),
-                                anchor_weights=kp_data.get('csrd_anchor_weights'))
+                                anchor_weights=kp_data.get('csrd_anchor_weights'),
+                                pair_weight_mode=csrd_pair_weight_mode,
+                                pair_weight_alpha=csrd_pair_weight_alpha)
                             loss_details['csrd'] = csrd_loss.item()
                             loss_details['csrd_tgap'] = csrd_stats['teacher_gap']
                             loss_details['csrd_sgap'] = csrd_stats['student_gap']
                             loss_details['csrd_vr'] = csrd_stats['valid_ratio']
                             loss_details['csrd_ar'] = csrd_stats['active_anchor_ratio']
                             loss_details['csrd_aw'] = csrd_stats['mean_anchor_weight']
+                            if csrd_pair_weight_mode != 'none':
+                                loss_details['csrd_pd'] = csrd_stats['pair_delta']
+                                loss_details['csrd_pf'] = csrd_stats['pair_focus']
                     # PAML: use per-keypoint pairwise distance for part triplet
                     paml_enabled = getattr(cfg.MODEL, 'POSE_PAML', False)
                     if paml_enabled and kp_data is not None:

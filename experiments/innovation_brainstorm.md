@@ -1709,3 +1709,38 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
 1. `exp109` 的 headroom 本来就主要集中在低可见样本
 2. `exp120` 已说明“teacher 更强”不是充分条件
 3. 所以下一步更像是 **selective supervision**，而不是继续做更硬的 teacher
+
+### exp122 后的新收束：问题不是 “该打给哪些样本”，而是 “该打给哪些 pair”
+
+- `exp122` 到 `ep40 = 55.4 / 68.2`
+- 对照：
+  - `exp119 ep40 = 55.9 / 68.7`
+  - `exp120 ep40 = 55.5 / 67.8`
+- 同时机制统计显示：
+  - `csrd_ar ≈ 0.56`
+  - `csrd_aw ≈ 0.145`
+
+这说明：
+1. sample-level `replace_ratio` selective weighting **已经正确工作**
+2. 但它没有转成收益，反而更像把原本有用的监督整体削弱了
+3. 因而 `exp120` 暴露出的真正问题不是 “监督应该打给哪些样本”
+4. 而是：
+   **support-complete teacher 实际只改变了一部分 pairwise 关系，distillation 应聚焦这些 pair-change relations**
+
+### 当前最值得赌的下一跳
+
+**Pair-Delta Focused SCRD**
+
+核心想法：
+1. 保持 `exp120` 的 support-complete teacher 完全不变
+2. 不再用 sample-level `replace_ratio` 去统一缩放整条 anchor loss
+3. 而是直接比较：
+   - 原始单图 teacher 几何
+   - support-complete teacher 几何
+4. 对那些 **被 support completion 真正改变过的 pair** 赋予更高 distillation focus
+
+为什么它比 `exp122` 更合理：
+1. `exp122` 已否定 sample-level routing 太粗
+2. `exp109` 的 headroom 本质上是 pairwise comparability 被修正
+3. `exp119` 的有效性也本来就是 relational，而不是 sample classification
+4. 所以下一步应把 selective supervision 从 **sample 级** 收紧到 **pair 级**

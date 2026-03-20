@@ -582,3 +582,29 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
 
 - 这让当前最合理的下一跳不再是“更强 teacher”，而是：
   **按 sample-level support gap 分配 distillation 强度。**
+
+## 2026-03-20: exp122 继续把 story 从 sample-level 收紧到 pair-level
+
+- `exp122` 很重要，因为它否定得很具体：
+  不是 `support-complete teacher` 不对，
+  而是 **sample-level `replace_ratio` 太粗**。
+
+- 到 `ep40`：
+  - `exp122 = 55.4 / 68.2`
+  - `exp119 = 55.9 / 68.7`
+  - `exp120 = 55.5 / 67.8`
+
+- 同时它的机制统计又是成立的：
+  1. selective supervision 的确发生了
+  2. 参与 `CSRD` 的 anchor 比例明显下降到 `~0.56`
+  3. 说明这不是接线错误，而是路由粒度不对
+
+- 因而 story 现在要再收紧一层：
+  1. `support incomplete` 的影响不是均匀落在整张图/整个人样本上
+  2. 它真正改变的是 **某些 pair 的 comparability**
+  3. 所以 `support-complete relational distillation` 不能只做 sample-level selective
+  4. 必须进一步变成 **pair-level teacher-change focusing**
+
+- 这一步对论文叙事反而是好事：
+  因为它把方法从“谁更难就多蒸馏一点”这种普通加权，
+  收紧成了“只蒸馏那些被 support completion 真正改变过的关系”。

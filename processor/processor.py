@@ -106,10 +106,15 @@ def do_train(cfg,
     csrd_support_teacher = getattr(cfg.MODEL, 'POSE_CSRD_SUPPORT_TEACHER', False)
     csrd_teacher_bank = None
     csrd_anchor_weight_mode = getattr(cfg.MODEL, 'POSE_CSRD_ANCHOR_WEIGHT_MODE', 'none')
+    csrd_pair_weight_mode = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_WEIGHT_MODE', 'none')
     if csrd_anchor_weight_mode not in ('none', 'replace_ratio', 'low_ratio'):
         raise ValueError(f"Unsupported POSE_CSRD_ANCHOR_WEIGHT_MODE: {csrd_anchor_weight_mode}")
+    if csrd_pair_weight_mode not in ('none', 'delta'):
+        raise ValueError(f"Unsupported POSE_CSRD_PAIR_WEIGHT_MODE: {csrd_pair_weight_mode}")
     if csrd_anchor_weight_mode != 'none' and not csrd_support_teacher:
         raise ValueError('POSE_CSRD_ANCHOR_WEIGHT_MODE requires POSE_CSRD_SUPPORT_TEACHER=True')
+    if csrd_pair_weight_mode != 'none' and not csrd_support_teacher:
+        raise ValueError('POSE_CSRD_PAIR_WEIGHT_MODE requires POSE_CSRD_SUPPORT_TEACHER=True')
     if csrd_enabled and csrd_support_teacher:
         csrd_st_low_thr = getattr(cfg.MODEL, 'POSE_CSRD_ST_LOW_THR', 0.3)
         csrd_st_update_thr = getattr(cfg.MODEL, 'POSE_CSRD_ST_UPDATE_THR', 0.7)
@@ -142,6 +147,10 @@ def do_train(cfg,
         logger.info(f'[CSRD-ST] enabled: low_thr={csrd_st_low_thr}, '
                     f'update_thr={csrd_st_update_thr}, mom={csrd_st_mom}, '
                     f'min_count={csrd_st_min_count}, stop_epoch={csrd_st_update_stop_epoch}')
+    if csrd_enabled and csrd_pair_weight_mode != 'none':
+        csrd_pair_weight_alpha = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_WEIGHT_ALPHA', 1.0)
+        logger.info(f'[CSRD-PW] mode={csrd_pair_weight_mode}, '
+                    f'alpha={csrd_pair_weight_alpha}')
     if scfr_enabled:
         logger.info(f'[SCFR] Feature replacement mode enabled (loss disabled, bank replaces features)')
     if pamc_enabled:

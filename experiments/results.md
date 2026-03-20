@@ -607,3 +607,21 @@
   3. 但直到 `ep90`，指标仍略弱于 `exp119`，说明 **teacher 更强 ≠ 监督一定更有效**
   4. 当前更合理的解释是：support-complete supervision 被大量本来就不缺 support 的 clean 样本稀释了
   5. 因而下一步不该继续盲目增强 teacher，而应测试 **只对 support-incomplete anchor 强化 relational distillation**
+
+## 2026-03-20: exp122 SGW-SCRD（早停）
+
+### exp122: sample-level selective weighting 没有把 support-complete teacher 的收益兑现出来
+
+> 基于 `exp120` 的单变量训练端实验。`exp122` 保持 support-complete teacher 完全不变，只把 `CSRD` 的 anchor 权重改为 sample-level `replace_ratio`。该实验在 `ep43` 提前停表，结论以 `ep40` 首个关键验证点为准。
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| `exp119` | 55.9% | 68.7% | — | — | `ep40` 训练监控 |
+| `exp120` | 55.5% | 67.8% | — | — | `ep40` 训练监控 |
+| **`exp122`** | **55.4%** | **68.2%** | **81.0%** | **85.2%** | **`ep40` 训练监控** |
+
+- 结论：
+  1. `exp122` 的新机制确实按设计生效：`csrd_ar≈0.56`、`csrd_aw≈0.145`，说明只有约一半 anchor 真正参与了 selective `CSRD`
+  2. 但它相对 `exp119` 仍是 `-0.5 / -0.5`，相对 `exp120` 也没有形成清晰优势
+  3. 这说明 “谁有更多被补全 keypoint” 不是足够精确的 supervision 路由信号
+  4. 因而当前应放弃 sample-level weighting，转向更结构化的 **pair-level teacher-change focusing**
