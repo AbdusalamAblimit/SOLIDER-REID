@@ -684,3 +684,27 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
 
 - 换句话说，当前主创新点已经越来越不像“再做一个 loss 权重”，而更像：
   **只把被 support completion 真正改变过的 comparability relations 蒸进 global embedding。**
+
+## 2026-03-20: 本地主线补上一条更直接的 feature-level兑现
+
+- 到 `exp126` 为止，story 的一半已经比较清楚：
+  1. `support-complete relational teacher` 有价值
+  2. `pair routing` 决定这种价值能否被 global embedding 吃进去
+
+- 但另一半还没有被真正打透：
+  1. `exp109` 的 oracle 是直接改 feature 的
+  2. `SCKD/CSRD` 都偏间接
+  3. `SCFR` 虽然直接，但过于硬替换，结果只和 `SCKD` 近乎等价
+
+- 所以当前本地主线补上的不是“再一个 routing 变体”，而是：
+  **SCRC: Support-Conditioned Residual Completion**
+
+- 它在 story 里的角色是：
+  1. 继续坚持 `single-image support incomplete` 这个问题定义
+  2. 但把训练机制从 “prototype 蒸馏 / hard replace” 升级成
+     **support prior 参与 feature formation 的可学习残差补全**
+
+- 如果 `SCRC` 有效，论文核心就会开始从
+  “更会蒸哪些 pair”
+  扩展到
+  “如何让 support-complete prior 真正进入遮挡部位的表征形成”

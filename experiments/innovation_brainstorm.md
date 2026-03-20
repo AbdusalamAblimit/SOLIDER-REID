@@ -261,6 +261,41 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
 
 ---
 
+## 2026-03-20: `exp109` 主线的下一阶段机制收束
+
+### 当前新的判断
+
+经过 `exp110-126`，当前最重要的收束不是“support-complete 有没有价值”，而是：
+
+1. `exp109` 的 oracle 上界仍然极强，问题定义成立
+2. `SCKD` 说明 loss-only 的间接蒸馏太弱
+3. `SCFR` 说明 hard replace 太硬，直接 feature replacement 并没有自动优于蒸馏
+4. `CSRD` / pair routing 说明 relational teacher 有价值，但仍然偏间接
+
+因此，`exp109` 这条线最自然的下一跳不是再扫权重，而是：
+
+**让 support-complete prototype 以“可学习残差 prior”的形式进入 keypoint branch。**
+
+### 新候选方向: SCRC（Support-Conditioned Residual Completion）
+
+- 核心想法:
+  - 对 low-vis keypoint，不做 hard replace
+  - 也不只加 distillation loss
+  - 而是学习：
+    `kp_completed = kp + gate(kp, proto, score, proto_conf) * (proto - kp)`
+
+- 它相对已有路线的定位:
+  1. 比 `SCKD` 更直接
+  2. 比 `SCFR` 更柔和
+  3. 比 `CSRD` 更靠近 feature formation，而不是只作用于 embedding geometry
+
+- 若成功，它对论文 story 的价值:
+  1. 问题层面仍锚定 `single-image support incomplete`
+  2. 机制层面从 “memory bank / routing trick” 升级成了真正的 **support-conditioned completion**
+  3. 更接近一个可支撑主方法的训练机制，而不是附属 loss
+
+---
+
 ## 2026-03-13 训练端方向收敛：从 retrieval-time CVK 转向 CSGT
 
 ### 新上下文

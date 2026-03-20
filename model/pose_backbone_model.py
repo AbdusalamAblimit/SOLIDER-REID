@@ -395,6 +395,8 @@ class PoseBackboneModel(build_transformer):
             sgmt = getattr(cfg.MODEL, 'POSE_SGMT', False)
             sgmt_ratio = getattr(cfg.MODEL, 'POSE_SGMT_RATIO', 0.3)
             sgmt_threshold = getattr(cfg.MODEL, 'POSE_SGMT_THRESHOLD', 0.3)
+            scrc = getattr(cfg.MODEL, 'POSE_SCRC', False)
+            scrc_hidden = getattr(cfg.MODEL, 'POSE_SCRC_HIDDEN', 128)
             mrkf = getattr(cfg.MODEL, 'POSE_MRKF', False)
             mrkf_s2_dim = self.base.num_features[2] if mrkf else 384
             self.skeleton_head = SkeletonGCNHead(
@@ -416,6 +418,8 @@ class PoseBackboneModel(build_transformer):
                 sgmt=sgmt,
                 sgmt_ratio=sgmt_ratio,
                 sgmt_threshold=sgmt_threshold,
+                scrc=scrc,
+                scrc_hidden=scrc_hidden,
                 mrkf=mrkf,
                 mrkf_s2_dim=mrkf_s2_dim,
                 vcga=getattr(cfg.MODEL, 'POSE_VCGA', False),
@@ -428,6 +432,9 @@ class PoseBackboneModel(build_transformer):
             if dpf:
                 print('[DPF] Distributional Part Features enabled: '
                       'heatmap spatial pooling + precision-weighted matching')
+            if scrc:
+                print(f'[SCRC] Support-Conditioned Residual Completion enabled: '
+                      f'hidden={scrc_hidden}')
             # MRKF: Multi-Resolution Keypoint Features
             self.use_mrkf = getattr(cfg.MODEL, 'POSE_MRKF', False)
             if self.use_mrkf:

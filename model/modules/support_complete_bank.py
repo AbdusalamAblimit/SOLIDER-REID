@@ -102,6 +102,53 @@ class SupportCompleteBank(nn.Module):
 
         return updated
 
+    def get_support(self, kp_feats, kp_weights, labels):
+        """Query support-complete prototype features for low-visibility keypoints.
+
+        Returns scaled prototypes plus a valid mask. Scaling follows SCFR:
+        prototype norms are matched to the sample's visible-keypoint norm so
+        the injected support lives in a similar feature range.
+        """
+        with torch.no_grad():
+            labels = labels.long()
+            low_mask = kp_weights <= self.low_thr
+            proto_count = self.count_bank[labels]
+            proto_conf = self.confidence_bank[labels]
+            support_mask = (proto_count >= self.min_count) & (proto_conf > 0)
+            query_mask = low_mask & support_mask
+
+            proto = self.prototype_bank[labels]  # (B, 17, C)
+            orig_norm = kp_feats.norm(dim=2, keepdim=True).clamp(min=1e-6)
+            vis_mask = ~low_mask
+            vis_count = vis_mask.float().sum(dim=1).clamp(min=1)
+            vis_norm = (orig_norm.squeeze(-1) * vis_mask.float()).sum(dim=1) / vis_count
+            valid_samples = vis_norm > 0
+            final_mask = query_mask & valid_samples.unsqueeze(1)
+            scaled_proto = F.normalize(proto, dim=2) * vis_norm.unsqueeze(1).unsqueeze(2)
+
+            if final_mask.any():
+                mean_conf = float(proto_conf[final_mask].mean().item())
+                mean_count = float(proto_count[final_mask].float().mean().item())
+            else:
+                mean_conf = 0.0
+                mean_count = 0.0
+
+        stats = {
+            'n_support': int(final_mask.sum().item()),
+            'support_ratio': float(final_mask.float().mean().item()),
+            'low_ratio': float(low_mask.float().mean().item()),
+            'proto_conf': mean_conf,
+            'proto_count': mean_count,
+        }
+        return {
+            'proto': scaled_proto.detach(),
+            'mask': final_mask,
+            'low_mask': low_mask,
+            'proto_conf': proto_conf.detach(),
+            'proto_count': proto_count.detach(),
+            'stats': stats,
+        }
+
     def replace(self, kp_feats, kp_weights, labels):
         """Replace low-visibility keypoint features with prototype features.
 
@@ -126,38 +173,19 @@ class SupportCompleteBank(nn.Module):
             replace_mask: (B, 17) bool, True where replacement happened
             stats: dict with replacement statistics
         """
-        with torch.no_grad():
-            labels = labels.long()
-            low_mask = kp_weights <= self.low_thr
-            proto_count = self.count_bank[labels]
-            proto_conf = self.confidence_bank[labels]
-            support_mask = (proto_count >= self.min_count) & (proto_conf > 0)
-            replace_mask = low_mask & support_mask
-
+        support = self.get_support(kp_feats, kp_weights, labels)
         replaced = kp_feats.clone()
+        replace_mask = support['mask']
         n_replaced = int(replace_mask.sum().item())
 
         if n_replaced > 0:
-            with torch.no_grad():
-                proto = self.prototype_bank[labels]  # (B, 17, C)
-                # Scale prototype to match the norm of visible keypoint features
-                orig_norm = kp_feats.norm(dim=2, keepdim=True).clamp(min=1e-6)
-                vis_mask = ~low_mask  # (B, 17)
-                vis_count = vis_mask.float().sum(dim=1).clamp(min=1)  # (B,)
-                vis_norm = (orig_norm.squeeze(-1) * vis_mask.float()).sum(dim=1) / vis_count
-                # Guard: skip replacement for fully-occluded samples (vis_norm=0)
-                valid_samples = vis_norm > 0  # (B,)
-                final_mask = replace_mask & valid_samples.unsqueeze(1)
-                if final_mask.any():
-                    scaled_proto = F.normalize(proto, dim=2) * vis_norm.unsqueeze(1).unsqueeze(2)
-                    replaced[final_mask] = scaled_proto[final_mask]
-                    n_replaced = int(final_mask.sum().item())
-                else:
-                    n_replaced = 0
+            replaced[replace_mask] = support['proto'][replace_mask]
 
         stats = {
             'n_replaced': n_replaced,
-            'replace_ratio': float(replace_mask.float().mean().item()),
-            'low_ratio': float(low_mask.float().mean().item()),
+            'replace_ratio': support['stats']['support_ratio'],
+            'low_ratio': support['stats']['low_ratio'],
+            'proto_conf': support['stats']['proto_conf'],
+            'proto_count': support['stats']['proto_count'],
         }
         return replaced, replace_mask, stats

@@ -2184,3 +2184,38 @@ B. 直接启动 exp025，exp024 可以后续补跑
 3. 文档中要明确区分：
    - `exp125`: 有效的结构化 pair focus
    - `exp126`: 真稀疏 pair selection 的因果验证
+
+
+### [2026-03-20 16:18] 决策 #79
+
+**上下文**:
+- 远程 `exp126` 已在跑，它负责回答：
+  - “真稀疏 pair routing” 是否优于 `exp125` 的伪稀疏版本
+- 但本地 3090 此时空闲
+- 同时当前 `exp109` 主线已经暴露出另一个未被打透的缺口：
+  - `SCKD` 太间接
+  - `SCFR` 太硬
+  - 二者都没有把 oracle support-complete 上界真正兑现出来
+
+**判断**:
+1. 现在继续在本地扫 `alpha / top_ratio / freeze epoch` 属于低价值调参，不符合当前阶段目标。
+2. 但这不意味着要离开 `exp109`；相反，最合理的下一步仍然是沿 `support incomplete -> support-complete learning` 这条主线，直接测试更强的 feature-level 兑现机制。
+3. `SCFR≈SCKD` 只能说明 “hard replace 不优于 loss-only”，不能说明 “feature-level support completion 整体无效”。
+
+**选择**:
+1. 本地启动 `exp127: SCRC (Support-Conditioned Residual Completion)`。
+2. 该实验保持 `bank`、`warmup`、`threshold` 与 `exp116` 同量级，只改 low-vis keypoint 如何利用 support-complete prototype：
+   - 从 `hard replace`
+   - 改为 `learnable residual fusion`
+
+**理由**:
+1. 这是沿 `exp109` 主线的下一阶段机制，而不是换题。
+2. 它直接回应了 `SCFR` 的两个已知问题：
+   - 分布错位
+   - 原始 instance-specific 线索被硬覆盖
+3. 相对 `SCKD/SCFR`，`SCRC` 既更直接，又不那么硬，属于比纯 loss / 纯 routing 更接近方法核心的一跳。
+
+**执行约束**:
+1. `exp127` 只测试 `residual completion` 本身，不同时叠加 `CSRD` 或新的 pair routing。
+2. 主对照优先用 `exp116 SCFR`，其次才是 `exp110 SCKD` 与 `exp030a-eq seed1234`。
+3. 若 `exp127` 仍只得到 `SCFR≈SCKD` 的结果，再考虑结束这条 feature-level bank 兑现线。

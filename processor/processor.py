@@ -83,6 +83,12 @@ def do_train(cfg,
             momentum=mm_mom, temp=mm_temp).to(device)
 
     sckd_enabled = getattr(cfg.MODEL, 'POSE_SCKD', False)
+    scfr_enabled = getattr(cfg.MODEL, 'POSE_SCFR', False)
+    scrc_enabled = getattr(cfg.MODEL, 'POSE_SCRC', False)
+    if (scfr_enabled or scrc_enabled) and not sckd_enabled:
+        raise ValueError('POSE_SCFR/POSE_SCRC require POSE_SCKD=True to create the support bank')
+    if scfr_enabled and scrc_enabled:
+        raise ValueError('POSE_SCFR and POSE_SCRC cannot be enabled together')
     sckd_bank = None
     if sckd_enabled:
         sckd_weight = getattr(cfg.MODEL, 'POSE_SCKD_WEIGHT', 0.5)
@@ -138,7 +144,6 @@ def do_train(cfg,
         logger.info('Pose-guided training ENABLED')
     if mm_enabled:
         logger.info(f'Momentum Memory enabled: weight={mm_weight}, temp={mm_temp}, mom={mm_mom}')
-    scfr_enabled = getattr(cfg.MODEL, 'POSE_SCFR', False)
     if sckd_enabled:
         logger.info(f'[SCKD] enabled: weight={sckd_weight}, warmup={sckd_warmup}, '
                     f'low_thr={sckd_low_thr}, update_thr={sckd_update_thr}, '
@@ -158,6 +163,10 @@ def do_train(cfg,
                         f'alpha={csrd_pair_weight_alpha}')
     if scfr_enabled:
         logger.info(f'[SCFR] Feature replacement mode enabled (loss disabled, bank replaces features)')
+    if scrc_enabled:
+        scrc_hidden = getattr(cfg.MODEL, 'POSE_SCRC_HIDDEN', 128)
+        logger.info(f'[SCRC] Residual completion mode enabled: hidden={scrc_hidden} '
+                    f'(loss disabled, bank fuses support prior into low-vis keypoints)')
     if pamc_enabled:
         logger.info(f'[PAMC] Pose-Aware Masking Consistency: weight={pamc_weight}, warmup={pamc_warmup}')
     if pcra_alpha > 0:
@@ -225,11 +234,13 @@ def do_train(cfg,
         model.train()
 
         # SCFR: set/unset bank reference on skeleton_head each epoch
-        if scfr_enabled and sckd_bank is not None:
+        if (scfr_enabled or scrc_enabled) and sckd_bank is not None:
             _m = model.module if hasattr(model, 'module') else model
             if hasattr(_m, 'skeleton_head'):
-                _m.skeleton_head._scfr_bank = sckd_bank
-                _m.skeleton_head._scfr_active = (epoch > sckd_warmup)
+                _m.skeleton_head._scfr_bank = sckd_bank if scfr_enabled else None
+                _m.skeleton_head._scfr_active = (epoch > sckd_warmup) if scfr_enabled else False
+                _m.skeleton_head._scrc_bank = sckd_bank if scrc_enabled else None
+                _m.skeleton_head._scrc_active = (epoch > sckd_warmup) if scrc_enabled else False
 
         for n_iter, batch_data in enumerate(train_loader):
             optimizer.zero_grad()
@@ -518,8 +529,21 @@ def do_train(cfg,
                         details = getattr(loss, '_loss_details', {})
                         details['scfr_n'] = float(scfr_st['n_replaced'])
                         details['scfr_r'] = scfr_st['replace_ratio']
+                        details['scfr_conf'] = scfr_st['proto_conf']
+                        details['scfr_count'] = scfr_st['proto_count']
                         loss._loss_details = details
-                    elif not scfr_enabled:
+                    elif scrc_enabled and kp_data.get('scrc_stats') is not None:
+                        scrc_st = kp_data['scrc_stats']
+                        details = getattr(loss, '_loss_details', {})
+                        details['scrc_n'] = float(scrc_st['n_fused'])
+                        details['scrc_r'] = scrc_st['fuse_ratio']
+                        details['scrc_g'] = scrc_st['gate_mean']
+                        details['scrc_gm'] = scrc_st['gate_max']
+                        details['scrc_dn'] = scrc_st['delta_norm']
+                        details['scrc_conf'] = scrc_st['proto_conf']
+                        details['scrc_count'] = scrc_st['proto_count']
+                        loss._loss_details = details
+                    elif not scfr_enabled and not scrc_enabled:
                         # Original SCKD distillation loss
                         kp_feats_sckd = kp_data.get('kp_feats')
                         kp_w_sckd = kp_data.get('kp_weights')

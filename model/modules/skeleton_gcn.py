@@ -143,6 +143,7 @@ class SkeletonGCNHead(nn.Module):
                  dpf=False,
                  mrkf=False, mrkf_s2_dim=384,
                  sgmt=False, sgmt_ratio=0.3, sgmt_threshold=0.3,
+                 scrc=False, scrc_hidden=128,
                  vcga=False):
         super().__init__()
         self.feat_dim = feat_dim
@@ -160,6 +161,7 @@ class SkeletonGCNHead(nn.Module):
         self.kp_uncertainty = kp_uncertainty
         self.kp_uncertainty_reg = kp_uncertainty_reg
         self.pke = pke
+        self.scrc = scrc
         # DPF: Distributional Part Features — heatmap-weighted spatial pooling
         self.dpf = dpf
         # SGMT: Skeleton-Guided Masked Training
@@ -179,6 +181,18 @@ class SkeletonGCNHead(nn.Module):
             # Initialize fusion to approximate identity (output ≈ Stage 3 features)
             nn.init.zeros_(self.mrkf_fusion.weight)
             nn.init.zeros_(self.mrkf_fusion.bias)
+
+        if self.scrc:
+            gate_in_dim = feat_dim * 2 + 2
+            self.scrc_gate = nn.Sequential(
+                nn.Linear(gate_in_dim, scrc_hidden),
+                nn.ReLU(inplace=True),
+                nn.Linear(scrc_hidden, 1),
+                nn.Sigmoid(),
+            )
+            # Identity-leaning start: support prior is injected conservatively.
+            nn.init.zeros_(self.scrc_gate[2].weight)
+            nn.init.constant_(self.scrc_gate[2].bias, -2.0)
 
         # Optional graph propagation over sampled keypoint features.
         if self.use_gcn:
@@ -487,6 +501,49 @@ class SkeletonGCNHead(nn.Module):
             kp_feats, _, scfr_stats = self._scfr_bank.replace(
                 kp_feats, kp_scores, label)
 
+        # 2.6. SCRC: Support-Conditioned Residual Completion
+        scrc_stats = None
+        if self.training and self.scrc and hasattr(self, '_scrc_bank') and self._scrc_bank is not None \
+                and getattr(self, '_scrc_active', False) and label is not None:
+            support = self._scrc_bank.get_support(kp_feats, kp_scores, label)
+            support_mask = support['mask']
+            if support_mask.any():
+                support_proto = support['proto']
+                support_conf = support['proto_conf'].unsqueeze(-1)
+                gate_input = torch.cat([
+                    kp_feats,
+                    support_proto,
+                    kp_scores.unsqueeze(-1),
+                    support_conf,
+                ], dim=2)
+                raw_gate = self.scrc_gate(gate_input).squeeze(-1)
+                gate = raw_gate * support_mask.float()
+                delta = support_proto.detach() - kp_feats
+                kp_feats = kp_feats + gate.unsqueeze(-1) * delta
+                active_gate = gate[support_mask]
+                active_delta = delta[support_mask]
+                scrc_stats = {
+                    'n_fused': int(support_mask.sum().item()),
+                    'fuse_ratio': support['stats']['support_ratio'],
+                    'low_ratio': support['stats']['low_ratio'],
+                    'gate_mean': float(active_gate.mean().item()),
+                    'gate_max': float(active_gate.max().item()),
+                    'delta_norm': float(active_delta.norm(dim=1).mean().item()),
+                    'proto_conf': support['stats']['proto_conf'],
+                    'proto_count': support['stats']['proto_count'],
+                }
+            else:
+                scrc_stats = {
+                    'n_fused': 0,
+                    'fuse_ratio': 0.0,
+                    'low_ratio': support['stats']['low_ratio'],
+                    'gate_mean': 0.0,
+                    'gate_max': 0.0,
+                    'delta_norm': 0.0,
+                    'proto_conf': 0.0,
+                    'proto_count': 0.0,
+                }
+
         # 3. Optional skeleton GCN (propagate along skeleton edges)
         if self.use_gcn:
             # VCGA: pass visibility scores to condition graph attention
@@ -552,6 +609,8 @@ class SkeletonGCNHead(nn.Module):
         # SCFR: export replacement statistics
         if scfr_stats is not None:
             aux_data['scfr_stats'] = scfr_stats
+        if scrc_stats is not None:
+            aux_data['scrc_stats'] = scrc_stats
 
         # PKE: for test, use sigma-weighted mu (precision-weighted feature)
         if self.pke and skeleton_sigma is not None and not self.training:
