@@ -511,3 +511,23 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
   2. same-ID bank 提供 support-complete teacher
   3. 但 naive online bank 会不断变硬，形成 non-stationary distillation target
   4. 因而需要一个更可靠、更稳定的 support-complete learning 机制
+
+
+## 2026-03-20: 复核后把 story 收回到 pairwise teacher，而不是模块组合
+
+- `exp117/118` 已确认为偏题旁路线，不能进入主 story。
+- 重新看目前最可信的事实链，真正没有被做完整的不是 generic local matching，而是：
+  **如何把 `cvk_hybrid` 已验证过的 pairwise common-support 几何，迁到训练端并写进 global embedding。**
+
+- 这使得当前的候选主叙事进一步变成：
+  1. 单图遮挡带来的不是简单噪声，而是 **pair comparability mismatch**
+  2. skeleton/keypoint branch 已经学到一份更贴近遮挡比较规则的 pairwise 几何（`cvk_hybrid` 证明）
+  3. prototype bank 失败，说明问题不该被压成 `per-ID average support`
+  4. 因而更合理的主方法应当是：
+     **把 common-support pairwise 几何作为 privileged relational teacher，蒸馏到 global embedding**
+
+- 这条线若成立，会比单纯的 `SCKD` 更适合作为论文主创新，因为它同时解释：
+  - 为什么 `cvk_hybrid` 有效
+  - 为什么 `exp047` 的 overlap mining 不够
+  - 为什么 `exp051` 的 part-triplet 对齐不够
+  - 为什么 `exp109-116` 的 prototype 压缩达不到 oracle headroom

@@ -1892,3 +1892,34 @@ B. 直接启动 exp025，exp024 可以后续补跑
 **后续要求**:
 1. 后续实验重新以 `exp030a` 及其直接问题链为锚点。
 2. 若要切到新方向，必须先说明它相对 `support incomplete` 主线的关系，而不是直接跳到模块叠加。
+
+
+### [2026-03-20 11:40] 决策 #71
+
+**上下文**: 在停止 `exp118` 后，需要为下一实验系列重新选择主线。复核表明：
+- `exp047 CSGT` 失败的是 overlap mining，而不是 `pair comparability` 问题本身
+- `exp051 PAML` 中性，是因为它只改了 part triplet 的距离定义，没有把 pairwise teacher 几何迁到 global embedding
+- `exp109-116` 则说明 `support-complete` 若被压成 `per-ID prototype`，会丢失太多 pair-specific 细节
+
+**判断**:
+1. 不能因为“generic auxiliary loss 大多失败”就把所有训练端 pairwise 机制一并否掉。
+2. 当前最值得继续赌的，不是 feature prototype，也不是 generic local matching，而是：
+   **用已经被 `cvk_hybrid` 验证过的 common-support pairwise 几何，直接蒸馏 global embedding 的关系结构。**
+3. 这条线同时承接了两条已确认事实：
+   - `cvk_hybrid` 的正信号是真实的
+   - prototype bank 的问题在于压缩过强，而不是 pairwise teacher 本身无用
+
+**选择**: 启动 `exp119`，验证 `CSRD (Common-Support Relational Distillation)`。
+
+**理由**:
+1. `CSRD` 不是再做 overlap filter，也不是再做 prototype averaging。
+2. 它把 skeleton branch 作为 **batch-wise pairwise teacher**，比 `exp047/051` 更直接地作用于 `global` 几何。
+3. 若它转正，论文主线可自然收束为：
+   - partial observation 下存在 pair comparability mismatch
+   - pose/keypoint branch 可作为 privileged pairwise teacher
+   - global embedding 需要被蒸馏成更符合 common-support geometry 的空间
+
+**执行约束**:
+1. 第一版保持最小改动，只新增 `CSRD` 一个 loss。
+2. 仍以 `exp030a` 为唯一训练基线。
+3. 若 `ep20/30` 即明显落后，不连续扫多个权重版本，先回到机制层面复盘。

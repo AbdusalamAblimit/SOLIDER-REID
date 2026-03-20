@@ -41,6 +41,7 @@ def do_train(cfg,
     kp_triplet_enabled = getattr(cfg.MODEL, 'POSE_KP_TRIPLET', False)
     kp_triplet_weight = getattr(cfg.MODEL, 'POSE_KP_TRIPLET_WEIGHT', 1.0)
     csgt_enabled = getattr(cfg.MODEL, 'POSE_CSGT', False)
+    csrd_enabled = getattr(cfg.MODEL, 'POSE_CSRD', False)
     pamc_enabled = getattr(cfg.MODEL, 'POSE_PAMC', False)
     pamc_weight = getattr(cfg.MODEL, 'POSE_PAMC_WEIGHT', 0.5)
     pamc_warmup = getattr(cfg.MODEL, 'POSE_PAMC_WARMUP', 10)
@@ -271,8 +272,9 @@ def do_train(cfg,
                 kdl_enabled = getattr(cfg.MODEL, 'POSE_KP_DISSIMILAR', False)
                 lku_enabled = getattr(cfg.MODEL, 'POSE_KP_UNCERTAINTY', False)
                 pke_enabled = getattr(cfg.MODEL, 'POSE_PKE', False)
-                if kp_data is not None and (kp_triplet_enabled or csgt_enabled or paml_enabled or kdl_enabled or lku_enabled or pke_enabled):
+                if kp_data is not None and (kp_triplet_enabled or csgt_enabled or csrd_enabled or paml_enabled or kdl_enabled or lku_enabled or pke_enabled):
                     kp_aux_data = dict(kp_data)
+                    kp_aux_data['epoch'] = epoch
                     if kp_triplet_enabled:
                         kp_aux_data['weight'] = kp_triplet_weight
 

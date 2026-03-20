@@ -59,6 +59,63 @@ def _compute_paml_triplet(kp_feats, kp_weights, labels, margin_loss,
     return loss
 
 
+def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10):
+    """Distill batch-wise CVK-style pair relations into the global embedding.
+
+    Teacher:
+        per-keypoint same-index distances aggregated with CVK-style confidence
+        weights, detached from the graph branch.
+    Student:
+        pairwise distances in the normalized global embedding space.
+    """
+    feat_s = normalize(global_feat, axis=-1)
+    dist_s = euclidean_dist(feat_s, feat_s)
+
+    kp_f = F.normalize(kp_feats, dim=-1)
+    per_kp_dist = [euclidean_dist(kp_f[:, k, :], kp_f[:, k, :])
+                   for k in range(kp_f.size(1))]
+    dist_k = torch.stack(per_kp_dist, dim=-1)  # (B, B, K)
+
+    w = kp_weights.detach().clamp(min=0.0)
+    pair_w = torch.sqrt(w.unsqueeze(1) * w.unsqueeze(0))  # (B, B, K)
+    weight_sum = pair_w.sum(dim=-1)
+    dist_t = (dist_k * pair_w).sum(dim=-1) / weight_sum.clamp(min=1e-6)
+    dist_t = torch.where(weight_sum > 0, dist_t, dist_s.detach())
+
+    B = dist_s.size(0)
+    eye = torch.eye(B, dtype=torch.bool, device=labels.device)
+    same_label = labels.unsqueeze(0).eq(labels.unsqueeze(1))
+    pos_mask = same_label & ~eye
+    neg_mask = ~same_label
+
+    losses = []
+    for idx in range(B):
+        if pos_mask[idx].any():
+            s_logp = F.log_softmax((-dist_s[idx, pos_mask[idx]]) / tau, dim=0)
+            t_prob = F.softmax((-dist_t[idx, pos_mask[idx]].detach()) / tau, dim=0)
+            losses.append(F.kl_div(s_logp, t_prob, reduction='batchmean'))
+        if neg_mask[idx].any():
+            s_logp = F.log_softmax((-dist_s[idx, neg_mask[idx]]) / tau, dim=0)
+            t_prob = F.softmax((-dist_t[idx, neg_mask[idx]].detach()) / tau, dim=0)
+            losses.append(F.kl_div(s_logp, t_prob, reduction='batchmean'))
+
+    if losses:
+        loss = torch.stack(losses).mean()
+    else:
+        loss = dist_s.new_zeros(())
+
+    pos_teacher = dist_t[pos_mask].mean().item() if pos_mask.any() else 0.0
+    neg_teacher = dist_t[neg_mask].mean().item() if neg_mask.any() else 0.0
+    pos_student = dist_s[pos_mask].mean().item() if pos_mask.any() else 0.0
+    neg_student = dist_s[neg_mask].mean().item() if neg_mask.any() else 0.0
+    stats = {
+        'teacher_gap': float(neg_teacher - pos_teacher),
+        'student_gap': float(neg_student - pos_student),
+        'valid_ratio': float((weight_sum > 0).float().mean().item()),
+    }
+    return loss, stats
+
+
 def make_loss(cfg, num_classes):    # modified by gu
     sampler = cfg.DATALOADER.SAMPLER
     feat_dim = 2048
@@ -205,7 +262,9 @@ def make_loss(cfg, num_classes):    # modified by gu
                     loss_details['id_global'] = ID_LOSS.item()
 
                 csgt_loss = None
+                csrd_loss = None
                 csgt_weight = getattr(cfg.MODEL, 'POSE_CSGT_WEIGHT', 1.0)
+                csrd_weight = getattr(cfg.MODEL, 'POSE_CSRD_WEIGHT', 0.5)
                 if isinstance(feat, list):
                     pt = getattr(cfg.MODEL, 'POSE_PART_TRI_WEIGHT', 1.0)
                     wt_p = pt / (1.0 + pt)
@@ -221,6 +280,18 @@ def make_loss(cfg, num_classes):    # modified by gu
                         loss_details['csgt_neg_overlap'] = csgt_stats['neg_overlap']
                         loss_details['csgt_pos_fallback'] = csgt_stats['pos_fallback']
                         loss_details['csgt_neg_fallback'] = csgt_stats['neg_fallback']
+                    if getattr(cfg.MODEL, 'POSE_CSRD', False) and kp_data is not None:
+                        csrd_warmup = getattr(cfg.MODEL, 'POSE_CSRD_WARMUP', 20)
+                        epoch_now = int(kp_data.get('epoch', 0))
+                        if epoch_now > csrd_warmup:
+                            csrd_tau = getattr(cfg.MODEL, 'POSE_CSRD_TAU', 0.10)
+                            csrd_loss, csrd_stats = _compute_csrd_loss(
+                                feat[0], kp_data['kp_feats'], kp_data['kp_weights'],
+                                target, tau=csrd_tau)
+                            loss_details['csrd'] = csrd_loss.item()
+                            loss_details['csrd_tgap'] = csrd_stats['teacher_gap']
+                            loss_details['csrd_sgap'] = csrd_stats['student_gap']
+                            loss_details['csrd_vr'] = csrd_stats['valid_ratio']
                     # PAML: use per-keypoint pairwise distance for part triplet
                     paml_enabled = getattr(cfg.MODEL, 'POSE_PAML', False)
                     if paml_enabled and kp_data is not None:
@@ -243,6 +314,8 @@ def make_loss(cfg, num_classes):    # modified by gu
                         cfg.MODEL.TRIPLET_LOSS_WEIGHT * TRI_LOSS
                 if csgt_loss is not None:
                     total = total + csgt_weight * csgt_loss
+                if csrd_loss is not None:
+                    total = total + csrd_weight * csrd_loss
 
                 # Per-keypoint triplet loss (confidence-weighted)
                 if kp_data is not None and 'weight' in kp_data:

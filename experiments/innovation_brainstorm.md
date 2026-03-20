@@ -1616,3 +1616,38 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
 2. 机制层面真正新颖（ReID 领域首次）
 3. 与我们现有的 per-keypoint GCN branch 完美对接
 4. 如果有效，可以设计训练端的 MaxSim triplet loss 作为后续创新
+
+
+## 2026-03-20: 从 prototype 压缩转向 pairwise teacher 几何
+
+### 复核后的新收束
+
+- `exp117/118` 已确认为偏题旁路线，不再作为主线参考。
+- 重新看当前最扎实的证据链：
+  1. `cvk_hybrid` 说明 common-support 的 pairwise 几何是真实的
+  2. `exp047` 只否定了 overlap mining，不是否定 pair comparability
+  3. `exp051` 只否定了“把距离改在 part triplet 上”这一种弱实现
+  4. `exp109-116` 说明 `support-complete` 若被压成 `per-ID prototype`，会损失 pair-specific 细节
+
+### 当前更值得赌的新机制
+
+**CSRD: Common-Support Relational Distillation**
+
+核心想法：
+- 不再把 support 压成 prototype
+- 也不只在 test-time 用 `cvk_hybrid`
+- 而是在训练期，把 skeleton branch 计算出的 `CVK-style` pairwise 距离当作 **privileged relational teacher**
+- 直接约束 global embedding 的 batch-wise 几何关系
+
+### 为什么这条线比 `exp047 / exp051` 更值得继续
+
+1. `exp047` 只看 overlap，teacher 太弱；`CSRD` 直接看 feature distance，teacher 更接近真正有效的检索信号。
+2. `exp051` 只改了 part triplet，自身没有把 pairwise 几何迁到 global；`CSRD` 的目标正是 global branch。
+3. `SCKD/SCFR` 的问题是 prototype 压缩丢失细节；`CSRD` 则显式保留 pair-specific 关系。
+
+### 如果成功，论文主叙事会怎么变
+
+1. 问题层面：partial observation 下存在 **pair comparability mismatch**
+2. 机制层面：pose/keypoint branch 作为 **common-support relational teacher**
+3. 训练目标：把 global embedding 蒸馏成更符合 common-support 几何的空间
+4. 证据层面：可直接和 `exp047 / exp051 / exp109-116` 构成一条非常清晰的对照链
