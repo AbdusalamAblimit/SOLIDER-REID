@@ -73,3 +73,19 @@
 - 当前判断: 继续
 - 原因:
   - 下一关键点仍是 `ep10 / ep20`，以及 `epoch 21+` 后 `csrd_ar / csrd_aw` 是否表明监督真的聚焦到了 support-gap anchor
+
+### [2026-03-20 16:24] 检查点 #2 — Epoch 1-2
+
+- 当前进度:
+  - `Epoch 1 done`
+  - `Epoch 2 Iter 20/227`
+- 当前局部训练状态:
+  - `Epoch 1 done`: `Time per epoch = 59.861s`, `ETA = 1h58m`
+  - `Epoch[2] Iter[20/227] Loss: 13.185, Acc: 0.005`
+- 当前观察:
+  1. `Epoch 1 -> 2` 总 loss 正常下降，warmup 轨迹与 `exp119/120` 保持一致
+  2. 单 epoch 速度约 `60s`，和 `exp120` 同量级，没有因 anchor weighting 带来额外开销
+  3. 当前仍未出现 `csrd` 分项，符合设计预期
+- 当前判断: 继续
+- 原因:
+  - 早期稳定性已确认；接下来只需要等 `ep10 / ep20` 首次验证，再看 `epoch 21+` 的新统计项是否合理
