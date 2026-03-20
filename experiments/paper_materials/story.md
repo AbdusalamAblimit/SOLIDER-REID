@@ -744,3 +744,31 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
   2. 而是只学习 `support completion` 真正引入的那部分 **pairwise correction**
   3. 如果这一步成立，论文主创新就会从“结构化 pair focus”继续升级成：
      **support-complete relation correction learning**
+
+## 2026-03-20 夜间更新：`Residual-Correction` 没有成为主突破口
+
+- `exp130 residual_kl` 最终是：
+  - `ep110 = 60.1 / 73.4`
+  - `ep120 = 60.1 / 73.1`
+
+- 直接对照 `exp125`：
+  - `ep110 = 60.4 / 73.8`
+  - `ep120 = 60.5 / 73.5`
+
+- 这一步很重要，因为它把 story 再收紧了一次：
+  1. `residual target` 不是没接上，它的 `csrd` 信号全程稳定
+  2. 但它到收敛都没有压过 `exp125`
+  3. 所以当前不能再把 “teacher target 太完整、稀释了新增 correction” 当作主矛盾
+
+- 因而主 story 现在更像是：
+  1. `support-complete relational teacher` 有价值
+  2. `pair routing` 也有价值
+  3. 但真正的上限，可能卡在 **单个 batch 内 changed pairs 覆盖太少**
+
+- 这意味着下一步最自然的方法升级，不是继续改 target，而是：
+  **Cross-Batch Changed-Pair SCRD**
+
+- 如果这一步成立，论文主创新会从
+  “结构化 pair focus”
+  再升级成：
+  **在更大的 relation support 上学习 support-complete comparability correction**

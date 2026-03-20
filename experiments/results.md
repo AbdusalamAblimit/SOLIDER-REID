@@ -669,3 +669,24 @@
      - teacher-change pairs 的确重要
      - 但 `alpha=1.0` 的连续 delta 加权仍然过于平滑、过于稀释
   4. 因而下一步应继续保留 pair-level 主线，但把重点从“有没有 pair focus”推进到 **如何更强、更稀疏地聚焦真正被 teacher 改变的关系**
+
+## 2026-03-20: exp130 Residual-KL SCRD（收敛结案）
+
+### exp130: `residual_kl` 没有把 `exp125` 推得更强，`target dilution` 不是当前主瓶颈
+
+> 基于 `exp125` 的单变量训练端实验。`exp130` 保持 online support teacher、`delta_top` pair routing、KL distillation 与 `tau=0.10` 全部不变，只把 `CSRD` target 从完整 teacher distribution 改为 `residual_kl`。该实验已跑满 `ep120`，结论来自训练监控口径。
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| `exp125` | 60.4% | 73.8% | 84.8% | 88.6% | `ep110` 训练监控 |
+| `exp125` | 60.5% | 73.5% | 84.9% | 88.5% | `ep120` 训练监控 |
+| **`exp130`** | **60.1%** | **73.4%** | **84.5%** | **88.3%** | **`ep110` 训练监控** |
+| **`exp130`** | **60.1%** | **73.1%** | **84.6%** | **88.3%** | **`ep120` 训练监控** |
+
+- 结论：
+  1. `residual_kl` 没有失效，后期 `csrd` 始终稳定在 `0.011~0.013`，说明它不是“信号过弱导致看起来无效”
+  2. 但它到 `ep110/120` 都稳定落后于 `exp125`，说明完整 teacher target 仍然更有效
+  3. 因而当前可以把结论收紧为：
+     - `target dilution` 不是当前主瓶颈
+     - 下一步不该继续围绕 `target form` 扩线
+  4. 这条实验的价值主要是负向因果证据：**pair routing / pair coverage 比 target 改写更重要**

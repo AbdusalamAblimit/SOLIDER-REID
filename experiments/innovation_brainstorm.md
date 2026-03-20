@@ -1876,3 +1876,38 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
 2. `exp126` 正在远程回答“真稀疏本身是否更优”
 3. 本地最该补的因果问题已经变成：
    **当前瓶颈究竟是 routing 不够稀疏，还是 target 没把新增 correction 单独抽出来**
+
+### 2026-03-20 夜间更新：`residual_kl` 没有推翻 `exp125`
+
+- `exp130` 最终到：
+  - `ep110 = 60.1 / 73.4`
+  - `ep120 = 60.1 / 73.1`
+- 对照 `exp125`：
+  - `ep110 = 60.4 / 73.8`
+  - `ep120 = 60.5 / 73.5`
+
+这说明：
+1. `residual_kl` 不是“没接上”，因为它的 `csrd` 后期始终稳定在 `0.011~0.013`
+2. 但它也没有把 `exp125` 推得更强
+3. 所以当前可以把假设进一步收紧为：
+   - **target dilution 不是主瓶颈**
+   - 真正更值得继续赌的是 **changed-pair coverage**
+
+### 当前最值得赌的下一跳
+
+**Cross-Batch Changed-Pair SCRD**
+
+核心想法：
+1. 保留 `exp125` 当前最强的 online support teacher 与 `delta_top` routing
+2. 不再改 teacher target，不再改 pair weight 公式
+3. 只扩大每个 anchor 可见的 candidate relations：
+   - 从 batch 内 pairs
+   - 扩大到 batch + cross-batch queue
+4. 让 sparse changed-pair supervision 不再受单个 batch 覆盖率限制
+
+为什么它比继续改 target 更合理：
+1. `exp125` 已说明 pair routing 有效
+2. `exp130` 已说明 target 改写不是主突破口
+3. 如果 changed pairs 本来就稀疏，那么 batch-only teacher-change matching 仍可能遗漏大量有信息量的 relations
+4. 因而更强的下一跳不该是“再换一个 target”，而应是：
+   **让 student 在更大的 relation support 上学习 support-complete comparability correction**

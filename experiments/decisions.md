@@ -2263,3 +2263,45 @@ B. 直接启动 exp025，exp024 可以后续补跑
    - `exp125`: 有效的结构化 pair focus
    - `exp126`: 真稀疏 pair selection 的因果验证
    - `exp129`: target dilution 是否是当前主瓶颈的因果验证
+
+
+### [2026-03-20 21:20] 决策 #81
+
+**上下文**:
+- 本地 `exp130 residual_kl` 已跑满:
+  - `ep110 = 60.1 / 73.4`
+  - `ep120 = 60.1 / 73.1`
+- 直接对照 `exp125`:
+  - `ep110 = 60.4 / 73.8`
+  - `ep120 = 60.5 / 73.5`
+- 同时 `exp130` 的后期 `csrd` 统计始终稳定:
+  - `csrd = 0.011~0.013`
+  - `csrd_pf = 1.12~1.14`
+  - `csrd_psr = 0.90~0.91`
+
+**判断**:
+1. `residual_kl` 不是实现失败，也不是因为训练信号太弱；它在后期一直稳定工作。
+2. 但它到收敛都没有压过 `exp125`，因此当前不能再把“target dilution”当作主瓶颈。
+3. 这意味着当前最值得继续推进的，不是 `target form`，而是：
+   **changed pairs 的覆盖与选择机制本身。**
+4. 因而 `exp130` 的价值主要是负向因果证据：
+   - 完整 teacher target > residual target
+   - 主线应回到 `pair coverage / pair selection`
+
+**选择**:
+1. 正式结束 `exp130` 这条 `residual target` 支线，不再追加 `target_mode` 变体。
+2. 保留 `exp125` 作为当前本地最强的在线 `SCRD` 版本。
+3. 本地下一轮不再改 target，而改 **relation coverage**：
+   - 从 batch 内 sparse pair routing
+   - 推进到 cross-batch changed-pair coverage
+
+**理由**:
+1. `exp125` 已证明结构化 pair focus 有效。
+2. `exp126` 正在远程回答“真稀疏 routing 本身是否更优”。
+3. 在此基础上，本地最合理的下一问已经不是 “teacher 应该长什么样”，而是：
+   **单个 batch 里的 changed pairs 是否太少，导致 `SCRD` 的有效监督覆盖不够。**
+
+**执行约束**:
+1. 新实验必须继续以 `exp125` 为唯一直接本地对照。
+2. 新实验只允许新增一种 relation-coverage 机制，不同时改 `target_mode / pair_weight_mode / teacher bank`。
+3. 按用户最新规则，启动前必须先完成 Claude 审查并生成 `claude_review.md`。
