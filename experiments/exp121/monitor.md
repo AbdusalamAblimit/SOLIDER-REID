@@ -23,3 +23,34 @@
 - 当前判断: 待启动
 - 原因:
   - 需要形成“本地 online support-complete teacher + 远程 freeze30 support-complete teacher”的并行对照
+
+### [2026-03-20 15:27] 首次启动失败并立即修正
+
+- 异常:
+  1. 第一次远程启动时，把 `nohup` 输出重定向到了尚未创建的目录
+  2. 实际报错：
+     - `log/occluded_duke/exp121_scrd_freeze30/remote_nohup.log: No such file or directory`
+- 处理:
+  1. 不保留该次结果
+  2. 在启动脚本中补 `mkdir -p log/occluded_duke/exp121_scrd_freeze30`
+  3. 重新后台启动
+- 当前判断: 继续
+- 原因:
+  - 这是启动脚本问题，不是实验机制问题；修正后可继续按单变量方案执行
+
+### [2026-03-20 15:30] 启动确认（远程 5060 Ti）
+
+- 运行位置: 恒源云 5060 Ti
+- 远程仓库: 已同步到 `c4ea76b`
+- 启动方式: 后台 `nohup`
+- 输出目录: `log/occluded_duke/exp121_scrd_freeze30`
+- nohup 日志: `log/occluded_duke/exp121_scrd_freeze30/remote_nohup.log`
+- 关键确认:
+  1. 配置已生效：`POSE_CSRD_SUPPORT_TEACHER=True`
+  2. freeze 变量已生效：`stop_epoch=30`
+  3. 日志已打印：
+     - `[CSRD-ST] enabled: low_thr=0.3, update_thr=0.7, mom=0.9, min_count=1, stop_epoch=30`
+  4. GPU 已占用约 `6.7GB`，利用率约 `86%`
+- 当前判断: 继续
+- 原因:
+  - 现在已经形成了本地 `exp120 online teacher` + 远程 `exp121 freeze30 teacher` 的并行对照
