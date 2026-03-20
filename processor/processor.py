@@ -105,6 +105,11 @@ def do_train(cfg,
 
     csrd_support_teacher = getattr(cfg.MODEL, 'POSE_CSRD_SUPPORT_TEACHER', False)
     csrd_teacher_bank = None
+    csrd_anchor_weight_mode = getattr(cfg.MODEL, 'POSE_CSRD_ANCHOR_WEIGHT_MODE', 'none')
+    if csrd_anchor_weight_mode not in ('none', 'replace_ratio', 'low_ratio'):
+        raise ValueError(f"Unsupported POSE_CSRD_ANCHOR_WEIGHT_MODE: {csrd_anchor_weight_mode}")
+    if csrd_anchor_weight_mode != 'none' and not csrd_support_teacher:
+        raise ValueError('POSE_CSRD_ANCHOR_WEIGHT_MODE requires POSE_CSRD_SUPPORT_TEACHER=True')
     if csrd_enabled and csrd_support_teacher:
         csrd_st_low_thr = getattr(cfg.MODEL, 'POSE_CSRD_ST_LOW_THR', 0.3)
         csrd_st_update_thr = getattr(cfg.MODEL, 'POSE_CSRD_ST_UPDATE_THR', 0.7)
@@ -304,9 +309,19 @@ def do_train(cfg,
                         kp_feats_csrd = kp_data.get('kp_feats')
                         kp_w_csrd = kp_data.get('kp_weights')
                         if kp_feats_csrd is not None and kp_w_csrd is not None:
-                            teacher_feats, _, teacher_stats = csrd_teacher_bank.replace(
+                            teacher_feats, replace_mask, teacher_stats = csrd_teacher_bank.replace(
                                 kp_feats_csrd, kp_w_csrd, target)
                             kp_aux_data['csrd_teacher_feats'] = teacher_feats.detach()
+                            if csrd_anchor_weight_mode == 'replace_ratio':
+                                anchor_weights = replace_mask.float().mean(dim=1)
+                            elif csrd_anchor_weight_mode == 'low_ratio':
+                                anchor_weights = (kp_w_csrd <= csrd_teacher_bank.low_thr).float().mean(dim=1)
+                            else:
+                                anchor_weights = None
+                            if anchor_weights is not None:
+                                kp_aux_data['csrd_anchor_weights'] = anchor_weights.detach()
+                                teacher_stats['anchor_weight_mean'] = float(anchor_weights.mean().item())
+                                teacher_stats['anchor_active_ratio'] = float((anchor_weights > 0).float().mean().item())
                             kp_aux_data['csrd_teacher_stats'] = teacher_stats
 
                 loss = loss_fn(score, feat, target, target_cam, pose_sim=pose_sim,
@@ -317,6 +332,9 @@ def do_train(cfg,
                     details['csrd_sr'] = teacher_stats['replace_ratio']
                     details['csrd_sn'] = float(teacher_stats['n_replaced'])
                     details['csrd_lowr'] = teacher_stats['low_ratio']
+                    if 'anchor_weight_mean' in teacher_stats:
+                        details['csrd_aw'] = teacher_stats['anchor_weight_mean']
+                        details['csrd_ar'] = teacher_stats['anchor_active_ratio']
                     loss._loss_details = details
                 if recon_loss is not None:
                     details = getattr(loss, '_loss_details', {})

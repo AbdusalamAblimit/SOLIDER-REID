@@ -1955,3 +1955,46 @@ B. 直接启动 exp025，exp024 可以后续补跑
 1. 下一实验相对 `exp119` 只改 teacher 构造，不改 backbone、batch size、主 loss 配比。
 2. bank 只用于增强 `CSRD teacher`，不直接给 student 施加 pointwise cosine loss。
 3. 默认沿用已经验证更可靠的 `update_thr=0.7`，避免把旧的 bank 噪声重新带回来。
+
+
+### [2026-03-20 16:20] 决策 #73
+
+**上下文**: `exp120 SCRD` 已在 `ep90` 人工停表。关键事实是：
+- 指标轨迹：
+  - `ep40 = 55.5 / 67.8`
+  - `ep50 = 56.2 / 69.3`
+  - `ep60 = 57.5 / 69.7`
+  - `ep70 = 58.0 / 71.2`
+  - `ep80 = 59.2 / 71.7`
+  - `ep90 = 59.9 / 73.2`
+- 对照 `exp119`：
+  - `ep50 = 56.8 / 69.3`
+  - `ep90 = 60.1 / 73.7`
+- 机制统计：
+  - `csrd_sr ≈ 0.145`
+  - `csrd_sn ≈ 157~159`
+  - `csrd_tgap ≈ 0.55`
+  - `csrd_sgap ≈ 0.53`
+
+**判断**:
+1. `support-complete teacher` 并没有“没生效”，相反，它已经稳定地增强了 teacher 几何。
+2. 但这种增强没有自动转成更好的检索指标，说明当前瓶颈已经不再是 “teacher 够不够完整” 本身。
+3. 结合 `exp109` 的 oracle 结论，更合理的新解释是：
+   **support-complete 监督的价值集中在 support-incomplete 样本；如果对所有 anchor 等权蒸馏，clean 样本会稀释掉这份增益。**
+4. 因此，`exp120` 否定的不是 `exp109 -> exp119` 这条主线，而只是：
+   **“只增强 teacher 内容、但不改变 supervision 分配” 还不够。**
+
+**选择**: 启动 `exp122`，验证 **Support-Gap Weighted SCRD**。
+
+**理由**:
+1. 相对 `exp120`，这是最干净的下一跳：teacher、bank、主 loss 全不变，只改 `CSRD` 的 anchor 加权方式。
+2. 它直接把 `exp109` 的低可见 headroom 转译成训练机制，而不是再做 generic loss 调参。
+3. 若这一步转正，论文主叙事可以自然升级为：
+   - 单图遮挡带来 support incomplete
+   - pose branch 提供 support-complete relational teacher
+   - 但 distillation 必须 **selective**，聚焦真正存在 support gap 的 anchor
+
+**执行约束**:
+1. `exp122` 必须以 `exp120` 为唯一直接对照。
+2. 唯一改动是：`CSRD` 按 sample-level `replace_ratio` 做 anchor weighting。
+3. 不同时改 `tau / weight / bank freeze`，避免再次混入多个变量。

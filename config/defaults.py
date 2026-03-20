@@ -225,6 +225,7 @@ _C.MODEL.POSE_CSRD_ST_UPDATE_THR = 0.7         # High-visibility threshold for t
 _C.MODEL.POSE_CSRD_ST_MOM = 0.9                # EMA momentum for CSRD teacher bank
 _C.MODEL.POSE_CSRD_ST_MIN_COUNT = 1            # Minimum support count for teacher completion
 _C.MODEL.POSE_CSRD_ST_UPDATE_STOP_EPOCH = -1   # Stop CSRD teacher-bank updates after this epoch (-1=never)
+_C.MODEL.POSE_CSRD_ANCHOR_WEIGHT_MODE = 'none' # 'none', 'replace_ratio', or 'low_ratio'
 _C.MODEL.POSE_SGMKC = False              # Skeleton-Guided Masked Keypoint Completion
 _C.MODEL.POSE_SGMKC_RATIO = 0.3          # Fraction of keypoints to mask during training
 _C.MODEL.POSE_SGMKC_WEIGHT = 1.0         # Reconstruction loss weight

@@ -1679,3 +1679,33 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
 3. `exp119` 则证明了 relational teacher 形式是对的
 4. 因此更合理的合体不是 `prototype pointwise distillation`，而是：
    **support-complete teacher + relational distillation**
+
+### exp120 后的新收束：问题不再是 “teacher 强不强”，而是 “监督打给谁”
+
+- `exp120` 到 `ep90 = 59.9 / 73.2`，仍略弱于 `exp119 ep90 = 60.1 / 73.7`
+- 但这次不能简单说 `support-complete teacher` 失败，因为机制统计很清楚：
+  - `csrd_sr ≈ 0.145`
+  - `csrd_sn ≈ 157~159`
+  - `teacher_gap` 明显更强
+
+这说明：
+1. `teacher completion` 已经真实发生
+2. 但 `teacher 更完整` 并没有自动转成更好的监督
+3. 因而当前更合理的解释不是“teacher 还不够完整”，而是：
+   **support-complete 监督的收益主要属于 support-incomplete 样本，被 clean 样本等权平均后稀释掉了**
+
+### 当前最值得赌的下一跳
+
+**SGW-SCRD: Support-Gap Weighted SCRD**
+
+核心想法：
+1. 保持 `exp120` 的 support-complete relational teacher 完全不变
+2. 不再对所有 anchor 等权施加 `CSRD`
+3. 让每个样本的 distillation 强度正比于：
+   - 它有多少 keypoint 真正被 support-complete teacher 补全
+   - 即 sample-level `replace_ratio`
+
+为什么这条线比继续增强 teacher 更合理：
+1. `exp109` 的 headroom 本来就主要集中在低可见样本
+2. `exp120` 已说明“teacher 更强”不是充分条件
+3. 所以下一步更像是 **selective supervision**，而不是继续做更硬的 teacher

@@ -554,3 +554,31 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
   2. 这进一步表现为 `pair comparability mismatch`
   3. skeleton/keypoint branch 可以提供 relational teacher
   4. 但 teacher 还必须被 support-complete 化，才能把 `exp109` 的 headroom 真正转成训练端收益
+
+## 2026-03-20: exp120 把 story 再收紧到 selective supervision
+
+- `exp120` 做了一件很重要但容易误判的事：
+  它没有把指标推高，却把当前瓶颈说得更清楚了。
+
+- 到 `ep90`：
+  - `exp120 = 59.9 / 73.2`
+  - `exp119 = 60.1 / 73.7`
+
+- 但与此同时，`exp120` 的机制统计清楚表明：
+  1. support-complete teacher 真实在工作
+  2. low-vis keypoint 的替换覆盖是稳定的
+  3. teacher 几何也确实更强
+
+- 所以这轮实验并不是在说：
+  “support-complete relational teacher 不对”
+
+- 它真正推动 story 变成：
+  1. `support-complete teacher` 是必要的，但**不是充分的**
+  2. oracle headroom 主要属于低可见 / support-incomplete 样本
+  3. 如果对所有样本等权施加 relational distillation，clean 样本会稀释掉真正有价值的监督
+
+- 因而 story 的下一层应写成：
+  **pose-guided support-complete relational distillation 必须是 selective 的。**
+
+- 这让当前最合理的下一跳不再是“更强 teacher”，而是：
+  **按 sample-level support gap 分配 distillation 强度。**

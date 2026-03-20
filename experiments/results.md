@@ -588,3 +588,22 @@
   2. 这说明当前更接近真实问题的，不是 overlap mining，也不是 prototype pointwise 蒸馏，而是 **common-support relational teacher**
   3. 但 `equal_concat` 仍只是近乎持平，表明当前 teacher 还不够强，单图 `kp_feats` 本身依旧受 `support incomplete` 限制
   4. 因此下一步不应回到 generic 模块叠加，而应把 `exp109` 的 support-complete headroom 引回 `CSRD`，验证 **support-complete relational teacher**
+
+
+## 2026-03-20: exp120 SCRD（Support-Complete Relational Distillation）
+
+### exp120: support-complete teacher enhancement 已生效，但没有自动转成更好指标
+
+> 基于 `exp119` 的单变量训练端实验。`exp120` 保留 `CSRD` 的 relational distillation 形式，只把 support-complete bank 用来补全 low-vis teacher keypoint，再用补全后的 teacher 去蒸馏 global 几何。该实验在 `ep90` 人工停表，结论来自训练监控口径，不是正式 eval 口径。
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| `exp119` | 60.1% | 73.7% | 85.1% | 88.3% | `ep90` 训练监控 |
+| **`exp120`** | **59.9%** | **73.2%** | **84.7%** | **88.2%** | **`ep90` 训练监控** |
+
+- 结论：
+  1. `support-complete teacher` 的增强并没有失败，日志中 `csrd_sr≈0.145`、`csrd_sn≈157~159` 持续稳定，说明 low-vis keypoint 基本都拿到了补全 teacher
+  2. `teacher_gap` 也明显强于 `exp119`，说明 teacher 的几何确实更“完整”、更可分
+  3. 但直到 `ep90`，指标仍略弱于 `exp119`，说明 **teacher 更强 ≠ 监督一定更有效**
+  4. 当前更合理的解释是：support-complete supervision 被大量本来就不缺 support 的 clean 样本稀释了
+  5. 因而下一步不该继续盲目增强 teacher，而应测试 **只对 support-incomplete anchor 强化 relational distillation**

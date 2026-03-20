@@ -60,7 +60,7 @@ def _compute_paml_triplet(kp_feats, kp_weights, labels, margin_loss,
 
 
 def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
-                       teacher_kp_feats=None):
+                       teacher_kp_feats=None, anchor_weights=None):
     """Distill batch-wise CVK-style pair relations into the global embedding.
 
     Teacher:
@@ -91,19 +91,33 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
     pos_mask = same_label & ~eye
     neg_mask = ~same_label
 
+    if anchor_weights is not None:
+        anchor_weights = anchor_weights.detach().to(dist_s.dtype).clamp(min=0.0)
+
     losses = []
+    loss_weights = []
     for idx in range(B):
+        if anchor_weights is None:
+            anchor_w = dist_s.new_ones(())
+        else:
+            anchor_w = anchor_weights[idx]
+            if anchor_w.item() <= 0:
+                continue
         if pos_mask[idx].any():
             s_logp = F.log_softmax((-dist_s[idx, pos_mask[idx]]) / tau, dim=0)
             t_prob = F.softmax((-dist_t[idx, pos_mask[idx]].detach()) / tau, dim=0)
             losses.append(F.kl_div(s_logp, t_prob, reduction='batchmean'))
+            loss_weights.append(anchor_w)
         if neg_mask[idx].any():
             s_logp = F.log_softmax((-dist_s[idx, neg_mask[idx]]) / tau, dim=0)
             t_prob = F.softmax((-dist_t[idx, neg_mask[idx]].detach()) / tau, dim=0)
             losses.append(F.kl_div(s_logp, t_prob, reduction='batchmean'))
+            loss_weights.append(anchor_w)
 
     if losses:
-        loss = torch.stack(losses).mean()
+        loss_stack = torch.stack(losses)
+        weight_stack = torch.stack(loss_weights)
+        loss = (loss_stack * weight_stack).sum() / weight_stack.sum().clamp(min=1e-12)
     else:
         loss = dist_s.new_zeros(())
 
@@ -115,6 +129,8 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
         'teacher_gap': float(neg_teacher - pos_teacher),
         'student_gap': float(neg_student - pos_student),
         'valid_ratio': float((weight_sum > 0).float().mean().item()),
+        'active_anchor_ratio': float((anchor_weights > 0).float().mean().item()) if anchor_weights is not None else 1.0,
+        'mean_anchor_weight': float(anchor_weights.mean().item()) if anchor_weights is not None else 1.0,
     }
     return loss, stats
 
@@ -291,11 +307,14 @@ def make_loss(cfg, num_classes):    # modified by gu
                             csrd_loss, csrd_stats = _compute_csrd_loss(
                                 feat[0], kp_data['kp_feats'], kp_data['kp_weights'],
                                 target, tau=csrd_tau,
-                                teacher_kp_feats=kp_data.get('csrd_teacher_feats'))
+                                teacher_kp_feats=kp_data.get('csrd_teacher_feats'),
+                                anchor_weights=kp_data.get('csrd_anchor_weights'))
                             loss_details['csrd'] = csrd_loss.item()
                             loss_details['csrd_tgap'] = csrd_stats['teacher_gap']
                             loss_details['csrd_sgap'] = csrd_stats['student_gap']
                             loss_details['csrd_vr'] = csrd_stats['valid_ratio']
+                            loss_details['csrd_ar'] = csrd_stats['active_anchor_ratio']
+                            loss_details['csrd_aw'] = csrd_stats['mean_anchor_weight']
                     # PAML: use per-keypoint pairwise distance for part triplet
                     paml_enabled = getattr(cfg.MODEL, 'POSE_PAML', False)
                     if paml_enabled and kp_data is not None:
