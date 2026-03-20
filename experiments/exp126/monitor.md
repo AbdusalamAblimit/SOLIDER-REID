@@ -47,3 +47,40 @@
 - 当前判断: 已排队，等待自动启动
 - 原因:
   - 这样可以保留 `exp124` 的 late-gain 证据，同时不耽误 `exp126` 接续推进
+
+### [2026-03-20 22:53] 自动启动确认（远程 5060 Ti）
+
+- 运行位置: 恒源云 5060 Ti
+- 启动方式: `exp124` 结束后由排队脚本自动启动
+- 输出目录: `log/occluded_duke/exp126_pair_top_exact_scrd`
+- nohup 日志: `log/occluded_duke/exp126_pair_top_exact_scrd/remote_nohup.log`
+- 关键确认:
+  1. 远程当前主进程已切换为：
+     - `python -u train.py --config_file configs/occluded_duke/pose_psg_gcn_pair_top_exact_scrd.yml`
+  2. `delta_top_exact` 已成功接线
+  3. 远程 GPU 已重新占用约 `6.7GB`
+- 当前判断: 继续
+- 原因:
+  - 现在已经进入 `exp125 -> exp126` 的干净因果验证阶段
+
+### [2026-03-20 23:28] 检查点 #1 — Epoch 20
+
+- 结果:
+  - `ep20 = 47.7% / 62.0% / 75.6% / 80.4%`
+- 对照:
+  - `exp124 ep20 = 47.7 / 62.0`
+  - `exp125 ep20 = 47.0 / 60.7`
+- `CSRD` 统计（epoch 21+）:
+  - `csrd_pd = 0.001~0.002`
+  - `csrd_pf = 1.16~1.18`
+  - `csrd_psr = 0.292`
+  - `csrd_sr = 0.144~0.148`
+- 当前观察:
+  1. `ep20` 仍处于 warmup 刚结束点，因此和 `exp124` 基本重合，只能说明启动健康
+  2. 但机制上已经出现了最关键的新证据：
+     - `csrd_psr` 直接降到 `0.292`
+     - 说明 `delta_top_exact` 确实实现了我们想要的“真稀疏 pair 选择”
+  3. 与 `exp125` 的 `0.90+` 相比，这不是小修小补，而是机制层面的根本变化
+- 当前判断: 继续盯 `ep30/40`
+- 原因:
+  - 现在真正的问题不再是“有没有稀疏”，而是“真稀疏 routing 会提升还是伤害 late-stage 收益”
