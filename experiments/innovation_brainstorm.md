@@ -1846,3 +1846,33 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
 2. `exp124` 到 `ep40` 已说明“更大 alpha”也未必足够
 3. 当前更像是 teacher-change pairs 本来就稀疏，连续加权仍然被大量近零变化 pair 稀释
 4. 所以下一步应测试 **更结构化的 sparse pair routing**，而不是继续做平滑强度微调
+
+### 2026-03-20 晚间再收紧：问题可能不在 routing，而在 target dilution
+
+- `exp127 SCRC` 到 `ep100 = 60.5 / 73.1`，并未优于 `SCFR/SCKD`
+- 同时其 gate 几乎塌到 `1.0`，说明 per-ID prototype 的 direct feature completion 这条兑现线暂时可以收住
+- 用户也已明确否定继续试 `freeze`；结合 `exp121` 的既有结果，更合理的定位是：
+  **stable teacher 只是 supporting mechanism，不再值得单独扩线**
+
+这会把当前主问题再收紧一步：
+1. `support-complete teacher` 的新增信息是真实存在的
+2. `pair routing` 也是真实有效的
+3. 但 `exp120/123/125` 仍然主要是在让 student 拟合 **完整 teacher 几何**
+4. 于是 support-complete 带来的那部分新增 correction，极可能被 base teacher 的主体结构稀释掉
+
+### 当前最值得赌的下一跳
+
+**Residual-Correction SCRD**
+
+核心想法：
+1. 保留 `exp125` 当前最强的在线 relational 主线
+2. 不改 teacher，不改 `delta_top`，不改 backbone
+3. 只把 distillation target 从完整 `dist_sc` 改成：
+   - `dist_sc - dist_base`
+4. 让 global embedding 学习的不是“再复刻一遍 skeleton teacher”，而是只学 **support completion 真正带来的关系修正**
+
+为什么它比继续扫 sparse 强度更合理：
+1. `exp125` 已说明 routing 方向不是负的
+2. `exp126` 正在远程回答“真稀疏本身是否更优”
+3. 本地最该补的因果问题已经变成：
+   **当前瓶颈究竟是 routing 不够稀疏，还是 target 没把新增 correction 单独抽出来**

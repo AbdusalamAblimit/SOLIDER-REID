@@ -63,7 +63,7 @@ def _compute_paml_triplet(kp_feats, kp_weights, labels, margin_loss,
 def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
                        teacher_kp_feats=None, anchor_weights=None,
                        pair_weight_mode='none', pair_weight_alpha=1.0,
-                       pair_top_ratio=0.25):
+                       pair_top_ratio=0.25, target_mode='full'):
     """Distill batch-wise CVK-style pair relations into the global embedding.
 
     Teacher:
@@ -115,7 +115,18 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
             return sparse_focus, focus[top_idx].mean(), keep_ratio
         return focus, focus.mean(), focus.new_ones(())
 
-    def _distill_subset(student_dist, teacher_dist, focus=None):
+    def _distill_subset(student_dist, teacher_dist, base_dist, focus=None):
+        if target_mode == 'residual':
+            base_det = base_dist.detach()
+            teacher_res = teacher_dist.detach() - base_det
+            student_res = student_dist - base_det
+            scale = teacher_res.abs().max().clamp(min=1e-6)
+            point_loss = F.smooth_l1_loss(
+                student_res / scale, teacher_res / scale, reduction='none')
+            if focus is not None:
+                focus_w = focus.detach().clamp(min=0.0)
+                return (point_loss * focus_w).sum() / focus_w.sum().clamp(min=1e-6)
+            return point_loss.mean()
         s_logits = (-student_dist) / tau
         t_logits = (-teacher_dist.detach()) / tau
         if focus is not None:
@@ -160,6 +171,7 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
             losses.append(_distill_subset(
                 dist_s[idx, pos_mask[idx]],
                 dist_t[idx, pos_mask[idx]],
+                dist_base[idx, pos_mask[idx]],
                 focus=pos_focus))
             loss_weights.append(anchor_w)
         if neg_mask[idx].any():
@@ -175,6 +187,7 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
             losses.append(_distill_subset(
                 dist_s[idx, neg_mask[idx]],
                 dist_t[idx, neg_mask[idx]],
+                dist_base[idx, neg_mask[idx]],
                 focus=neg_focus))
             loss_weights.append(anchor_w)
 
@@ -189,6 +202,9 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
     neg_teacher = dist_t[neg_mask].mean().item() if neg_mask.any() else 0.0
     pos_student = dist_s[pos_mask].mean().item() if pos_mask.any() else 0.0
     neg_student = dist_s[neg_mask].mean().item() if neg_mask.any() else 0.0
+    pair_mask = ~eye
+    teacher_residual = (dist_t - dist_base).abs()
+    student_residual = (dist_s.detach() - dist_base).abs()
     stats = {
         'teacher_gap': float(neg_teacher - pos_teacher),
         'student_gap': float(neg_student - pos_student),
@@ -198,6 +214,8 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
         'pair_delta': float(torch.stack(pair_delta_means).mean().item()) if pair_delta_means else 0.0,
         'pair_focus': float(torch.stack(pair_focus_means).mean().item()) if pair_focus_means else 1.0,
         'pair_select_ratio': float(torch.stack(pair_select_ratio_means).mean().item()) if pair_select_ratio_means else 1.0,
+        'teacher_residual': float(teacher_residual[pair_mask].mean().item()),
+        'student_residual': float(student_residual[pair_mask].mean().item()),
     }
     return loss, stats
 
@@ -227,6 +245,9 @@ def make_loss(cfg, num_classes):    # modified by gu
     csrd_pair_weight_mode = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_WEIGHT_MODE', 'none')
     if csrd_pair_weight_mode not in ('none', 'delta', 'delta_top', 'delta_top_exact'):
         raise ValueError(f"Unsupported POSE_CSRD_PAIR_WEIGHT_MODE: {csrd_pair_weight_mode}")
+    csrd_target_mode = getattr(cfg.MODEL, 'POSE_CSRD_TARGET_MODE', 'full')
+    if csrd_target_mode not in ('full', 'residual'):
+        raise ValueError(f"Unsupported POSE_CSRD_TARGET_MODE: {csrd_target_mode}")
     csrd_pair_weight_alpha = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_WEIGHT_ALPHA', 1.0)
     csrd_pair_top_ratio = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_TOP_RATIO', 0.25)
 
@@ -384,13 +405,16 @@ def make_loss(cfg, num_classes):    # modified by gu
                                 anchor_weights=kp_data.get('csrd_anchor_weights'),
                                 pair_weight_mode=csrd_pair_weight_mode,
                                 pair_weight_alpha=csrd_pair_weight_alpha,
-                                pair_top_ratio=csrd_pair_top_ratio)
+                                pair_top_ratio=csrd_pair_top_ratio,
+                                target_mode=csrd_target_mode)
                             loss_details['csrd'] = csrd_loss.item()
                             loss_details['csrd_tgap'] = csrd_stats['teacher_gap']
                             loss_details['csrd_sgap'] = csrd_stats['student_gap']
                             loss_details['csrd_vr'] = csrd_stats['valid_ratio']
                             loss_details['csrd_ar'] = csrd_stats['active_anchor_ratio']
                             loss_details['csrd_aw'] = csrd_stats['mean_anchor_weight']
+                            loss_details['csrd_tr'] = csrd_stats['teacher_residual']
+                            loss_details['csrd_gr'] = csrd_stats['student_residual']
                             if csrd_pair_weight_mode != 'none':
                                 loss_details['csrd_pd'] = csrd_stats['pair_delta']
                                 loss_details['csrd_pf'] = csrd_stats['pair_focus']

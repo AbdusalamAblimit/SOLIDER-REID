@@ -2219,3 +2219,47 @@ B. 直接启动 exp025，exp024 可以后续补跑
 1. `exp127` 只测试 `residual completion` 本身，不同时叠加 `CSRD` 或新的 pair routing。
 2. 主对照优先用 `exp116 SCFR`，其次才是 `exp110 SCKD` 与 `exp030a-eq seed1234`。
 3. 若 `exp127` 仍只得到 `SCFR≈SCKD` 的结果，再考虑结束这条 feature-level bank 兑现线。
+
+
+### [2026-03-20 18:35] 决策 #80
+
+**上下文**:
+- `exp127 SCRC` 到 `ep100 = 60.5 / 73.1`
+- 对照:
+  - `exp116 ep100 = 60.7 / 73.4`
+  - `exp110 ep100 = 60.8 / 73.4`
+  - `exp114 ep100 = 60.9 / 73.4`
+- 同时 `SCRC` 日志显示:
+  - `scrc_g ≈ 0.999`
+  - `scrc_gm = 1.000`
+- 本地 `exp128 freeze30` 已按用户要求手动终止，不再继续 `freeze` 线
+
+**判断**:
+1. `SCRC` 没有把 feature-level support completion 推成更强结果，反而 late-stage 基本塌成了“近似 hard replace”。
+2. 因而 `exp109` 被否定的不是 `support incomplete` 问题定义，而是：
+   - per-ID prototype 的 direct feature completion 兑现方式
+3. `freeze20/30` 的既有证据已经足够说明它只是弱 supporting mechanism，不值得继续占用本地算力。
+4. 当前最有价值的缺口不再是 “teacher 还该不该更稳定”，而是：
+   **support-complete teacher 的新增 correction 仍被完整 teacher target 稀释。**
+
+**选择**:
+1. 关闭 `SCRC` 这条本地主线，不再追加 direct completion 变体。
+2. 关闭本地 `freeze` 线，不再继续 `exp128` 类实验。
+3. 本地启动 `exp129: Residual-Correction SCRD`。
+
+**理由**:
+1. `exp120/123/125` 的共同现象说明：
+   - support-complete teacher 的增量信息是真实存在的
+   - 但当前 full-teacher distillation 没把这部分新增修正单独抽出来学
+2. `exp129` 相对 `exp125` 仍然是单变量：
+   - 保留在线 teacher
+   - 保留 `delta_top` pair routing
+   - 只把 distillation target 从 `full teacher` 改成 `residual correction`
+3. 这一步比继续扫 `alpha/top_ratio/freeze` 更接近方法机制，也更贴合 `exp109` 的问题定义。
+
+**执行约束**:
+1. `exp129` 只改 `POSE_CSRD_TARGET_MODE`，不同时改 sparse 规则、teacher 更新或 backbone。
+2. 文档中要明确区分：
+   - `exp125`: 有效的结构化 pair focus
+   - `exp126`: 真稀疏 pair selection 的因果验证
+   - `exp129`: target dilution 是否是当前主瓶颈的因果验证

@@ -708,3 +708,39 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
   “更会蒸哪些 pair”
   扩展到
   “如何让 support-complete prior 真正进入遮挡部位的表征形成”
+
+## 2026-03-20: `SCRC` 与 `freeze` 都没有成为本地主突破口
+
+- `exp127` 到 `ep100 = 60.5 / 73.1`，没有超过 `SCFR/SCKD` 系列
+- 更重要的是，它的 `gate` 几乎塌到 `1.0`，说明当前 learned residual completion 在 late-stage 实际退化成了近似 hard replace
+- 这一步很重要，因为它把 story 重新收紧成：
+  1. `single-image support incomplete` 的问题定义仍然成立
+  2. 但 per-ID prototype 的 direct feature completion 兑现方式当前不成立
+
+- 与此同时，`freeze20/30` 的既有结果又已经足够说明：
+  - `stable teacher` 只是 supporting mechanism
+  - 不值得继续扩成新的本地主线
+
+## 2026-03-20: 当前 story 进一步收紧到 “新增 correction 如何被学到”
+
+- 到这里，主线里已经同时有三类证据：
+  1. `exp119` 证明 relational distillation 有效
+  2. `exp120/121` 证明 support-complete teacher 会改变 teacher 几何，但仅靠 teacher 变强不够
+  3. `exp123/125` 证明 pair-level routing 有效，但收益仍偏弱、偏慢
+
+- 这三件事拼起来，当前更像是在说：
+  **真正难学的不是完整 teacher 几何，而是 support completion 相对 base teacher 带来的那部分新增 relation correction。**
+
+- 所以本地主线的下一步不再是：
+  - `freeze`
+  - direct completion
+  - 或继续扫 `alpha/top_ratio`
+
+- 而是：
+  **Residual-Correction SCRD**
+
+- 它在 story 里的意义是：
+  1. 不再让 student 去复刻整份 support-complete teacher
+  2. 而是只学习 `support completion` 真正引入的那部分 **pairwise correction**
+  3. 如果这一步成立，论文主创新就会从“结构化 pair focus”继续升级成：
+     **support-complete relation correction learning**
