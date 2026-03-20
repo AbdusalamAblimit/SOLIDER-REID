@@ -28,3 +28,35 @@
 - 当前判断: 待启动
 - 原因:
   - `exp124` 是相对 `exp123` 的最小下一跳：只改 pair focus 的放大强度
+
+### [2026-03-20 10:40] 首次远程启动失败并立即修正
+
+- 异常:
+  1. 第一次远程启动沿用了旧的解释器路径 `/root/miniconda3/envs/solider-reid/bin/python`
+  2. 远程实际报错：
+     - `nohup: failed to run command '/root/miniconda3/envs/solider-reid/bin/python': No such file or directory`
+- 处理:
+  1. 立即确认远程可用解释器路径
+  2. 验证 `/usr/local/bin/python` 已正确安装 `torch / torchvision / yacs / cv2`
+  3. 用 `python -u train.py ...` 重新后台启动
+- 当前判断: 继续
+- 原因:
+  - 这是远程环境路径差异，不是实验机制问题；修正后即可继续按单变量方案执行
+
+### [2026-03-20 10:40] 启动确认（远程 5060 Ti）
+
+- 运行位置: 恒源云 5060 Ti
+- 启动方式: 后台 `nohup`
+- 输出目录: `log/occluded_duke/exp124_pair_delta_scrd_a4`
+- nohup 日志: `log/occluded_duke/exp124_pair_delta_scrd_a4/remote_nohup.log`
+- 关键确认:
+  1. 远程仓库已同步到 `7fbcdd0`
+  2. 配置已生效：`POSE_CSRD_PAIR_WEIGHT_MODE = delta`
+  3. 放大系数已生效：
+     - `[CSRD-PW] mode=delta, alpha=4.0`
+  4. support-complete teacher 仍正常启用：
+     - `[CSRD-ST] enabled: low_thr=0.3, update_thr=0.7, mom=0.9, min_count=1, stop_epoch=-1`
+  5. GPU 已占用约 `6692 MiB`，利用率约 `69%`
+- 当前判断: 继续
+- 原因:
+  - 现在已经形成了“本地 `exp123 alpha=1.0` + 远程 `exp124 alpha=4.0`”的干净并行对照
