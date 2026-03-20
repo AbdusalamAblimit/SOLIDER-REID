@@ -4,6 +4,7 @@
 @contact: sherlockliao01@gmail.com
 """
 
+import math
 import torch
 import torch.nn.functional as F
 from .softmax_loss import CrossEntropyLabelSmooth, LabelSmoothingCrossEntropy

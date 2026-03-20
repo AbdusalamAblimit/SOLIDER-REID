@@ -78,4 +78,4 @@ TEST:
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/occluded_duke/exp125_pair_top_scrd'
+OUTPUT_DIR: './log/occluded_duke/exp125_pair_top_scrd_v2'
