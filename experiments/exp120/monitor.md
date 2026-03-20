@@ -5,7 +5,7 @@
 - 类型: 训练端单变量改进
 - 主配置: `exp119`
 - 核心变量: `POSE_CSRD_SUPPORT_TEACHER = True`
-- 输出目录: `log/occluded_duke/exp120_scrd`
+- 输出目录: `log/occluded_duke/exp120_scrd_clean`
 
 ## 启动前检查
 
@@ -27,3 +27,48 @@
 - 当前判断: 待启动
 - 原因:
   - `exp120` 是当前最干净地把 `exp109` 和 `exp119` 接起来的单变量实验
+
+### [2026-03-20 14:42] 启动即止损
+
+- 异常:
+  1. 首次启动时，新 config 没有完整继承 `exp119`，出现了默认值回退
+  2. 具体表现为：`IF_LABELSMOOTH=on`、`NO_MARGIN=False`、`PRETRAIN_HW_RATIO=1`、`SEMANTIC_WEIGHT=1.0`
+- 处理:
+  1. 立即终止该进程，不记录任何训练结果
+  2. 修正 config，确保重新锚定到 `exp119`
+  3. 切换到新的干净输出目录 `log/occluded_duke/exp120_scrd_clean`
+- 当前判断: 继续
+- 原因:
+  - 这是单变量原则下必须当场修正的问题；及时止损后，实验主线未受污染
+
+### [2026-03-20 14:47] 重新启动确认
+
+- 运行位置: 本地 3090
+- 配置: `configs/occluded_duke/pose_psg_gcn_scrd.yml`
+- 输出目录: `log/occluded_duke/exp120_scrd_clean`
+- 关键确认:
+  1. 已重新锚定到 `exp119` 设定：`IF_LABELSMOOTH=off`、`NO_MARGIN=True`、`PRETRAIN_HW_RATIO=2`、`SEMANTIC_WEIGHT=0.2`
+  2. 新增变量生效：`POSE_CSRD_SUPPORT_TEACHER=True`
+  3. teacher bank 配置生效：`low_thr=0.3, update_thr=0.7, mom=0.9, min_count=1`
+- 当前判断: 继续
+- 原因:
+  - 当前已经恢复到真正的单变量设置，可以开始观察 warmup 是否保持与 `exp119` 一致
+
+### [2026-03-20 14:48] 检查点 #1 — Epoch 1 Iter 60
+
+- 当前局部训练状态:
+  - `Epoch[1] Iter[20/227] Loss: 22.167, Acc: 0.001`
+  - `Epoch[1] Iter[40/227] Loss: 19.986, Acc: 0.001`
+  - `Epoch[1] Iter[60/227] Loss: 18.873, Acc: 0.001`
+  - 分项:
+    - `id_global: 6.555`
+    - `id_part: 6.667`
+    - `tri_global: 11.438`
+    - `tri_part: 13.087`
+- 当前观察:
+  1. warmup 前段与 `exp119` 完全同型，没有新增不稳定
+  2. 当前还不会出现 `csrd` 或 `csrd_sr` 等分项，符合 `warmup=20` 设计
+  3. support-complete teacher enhancement 至少没有破坏最早期收敛
+- 当前判断: 继续
+- 原因:
+  - 下一关键点仍是 `ep10 / ep20`，以及 `epoch 21+` 后是否出现有效的 teacher replacement 统计
