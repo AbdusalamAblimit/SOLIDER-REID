@@ -63,7 +63,8 @@ def _compute_paml_triplet(kp_feats, kp_weights, labels, margin_loss,
 def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
                        teacher_kp_feats=None, anchor_weights=None,
                        pair_weight_mode='none', pair_weight_alpha=1.0,
-                       pair_top_ratio=0.25, target_mode='full'):
+                       pair_top_ratio=0.25, target_mode='full',
+                       queue_data=None):
     """Distill batch-wise CVK-style pair relations into the global embedding.
 
     Teacher:
@@ -96,6 +97,46 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
     pair_delta = None
     if pair_weight_mode in ('delta', 'delta_top', 'delta_top_exact') and teacher_kp_feats is not None:
         pair_delta = (dist_t - dist_base).abs().detach()
+
+    queue_size = 0
+    queue_ratio_means = []
+    dist_s_q = None
+    dist_base_q = None
+    dist_t_q = None
+    pos_mask_q = None
+    neg_mask_q = None
+    pair_delta_q = None
+    if queue_data is not None and queue_data.get('labels') is not None:
+        queue_labels = queue_data['labels']
+        if queue_labels.numel() > 0:
+            queue_size = int(queue_labels.numel())
+            feat_q = normalize(queue_data['student_feat'], axis=-1)
+            dist_s_q = euclidean_dist(feat_s, feat_q)
+
+            w_q = queue_data['kp_weights'].detach().clamp(min=0.0)
+            pair_w_q = torch.sqrt(w.unsqueeze(1) * w_q.unsqueeze(0))  # (B, Q, K)
+            weight_sum_q = pair_w_q.sum(dim=-1)
+
+            def _aggregate_teacher_cross(src_feats, ref_feats):
+                kp_f_src = F.normalize(src_feats.detach(), dim=-1)
+                kp_f_ref = F.normalize(ref_feats.detach(), dim=-1)
+                per_kp_dist = [euclidean_dist(kp_f_src[:, k, :], kp_f_ref[:, k, :])
+                               for k in range(kp_f_src.size(1))]
+                dist_k = torch.stack(per_kp_dist, dim=-1)  # (B, Q, K)
+                dist = (dist_k * pair_w_q).sum(dim=-1) / weight_sum_q.clamp(min=1e-6)
+                return torch.where(weight_sum_q > 0, dist, dist_s_q.detach())
+
+            dist_base_q = _aggregate_teacher_cross(kp_feats, queue_data['kp_feats'])
+            if teacher_kp_feats is not None and queue_data.get('teacher_kp_feats') is not None:
+                dist_t_q = _aggregate_teacher_cross(
+                    teacher_kp_feats, queue_data['teacher_kp_feats'])
+                if pair_weight_mode in ('delta', 'delta_top', 'delta_top_exact'):
+                    pair_delta_q = (dist_t_q - dist_base_q).abs().detach()
+            else:
+                dist_t_q = dist_base_q
+
+            pos_mask_q = labels.unsqueeze(1).eq(queue_labels.unsqueeze(0))
+            neg_mask_q = ~pos_mask_q
 
     def _focus_from_delta(delta_vec):
         if delta_vec is None:
@@ -169,10 +210,31 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
             anchor_w = anchor_weights[idx]
             if anchor_w.item() <= 0:
                 continue
+        pos_parts_s = []
+        pos_parts_t = []
+        pos_parts_b = []
+        pos_parts_d = []
+        pos_queue_count = 0
+        pos_total_count = 0
         if pos_mask[idx].any():
-            pos_focus = None
+            pos_parts_s.append(dist_s[idx, pos_mask[idx]])
+            pos_parts_t.append(dist_t[idx, pos_mask[idx]])
+            pos_parts_b.append(dist_base[idx, pos_mask[idx]])
+            pos_total_count += int(pos_mask[idx].sum().item())
             if pair_delta is not None:
-                pos_delta = pair_delta[idx, pos_mask[idx]]
+                pos_parts_d.append(pair_delta[idx, pos_mask[idx]])
+        if pos_mask_q is not None and pos_mask_q[idx].any():
+            pos_parts_s.append(dist_s_q[idx, pos_mask_q[idx]])
+            pos_parts_t.append(dist_t_q[idx, pos_mask_q[idx]])
+            pos_parts_b.append(dist_base_q[idx, pos_mask_q[idx]])
+            pos_queue_count += int(pos_mask_q[idx].sum().item())
+            pos_total_count += int(pos_mask_q[idx].sum().item())
+            if pair_delta_q is not None:
+                pos_parts_d.append(pair_delta_q[idx, pos_mask_q[idx]])
+        if pos_parts_s:
+            pos_focus = None
+            if pos_parts_d:
+                pos_delta = torch.cat(pos_parts_d, dim=0)
                 pos_focus, pos_focus_mean, pos_select_ratio = _focus_from_delta(pos_delta)
                 pair_delta_means.append(pos_delta.mean())
                 if pos_focus_mean is not None:
@@ -180,15 +242,40 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
                 if pos_select_ratio is not None:
                     pair_select_ratio_means.append(pos_select_ratio)
             losses.append(_distill_subset(
-                dist_s[idx, pos_mask[idx]],
-                dist_t[idx, pos_mask[idx]],
-                dist_base[idx, pos_mask[idx]],
+                torch.cat(pos_parts_s, dim=0),
+                torch.cat(pos_parts_t, dim=0),
+                torch.cat(pos_parts_b, dim=0),
                 focus=pos_focus))
             loss_weights.append(anchor_w)
+            if pos_total_count > 0:
+                queue_ratio_means.append(
+                    dist_s.new_tensor(pos_queue_count / pos_total_count))
+
+        neg_parts_s = []
+        neg_parts_t = []
+        neg_parts_b = []
+        neg_parts_d = []
+        neg_queue_count = 0
+        neg_total_count = 0
         if neg_mask[idx].any():
-            neg_focus = None
+            neg_parts_s.append(dist_s[idx, neg_mask[idx]])
+            neg_parts_t.append(dist_t[idx, neg_mask[idx]])
+            neg_parts_b.append(dist_base[idx, neg_mask[idx]])
+            neg_total_count += int(neg_mask[idx].sum().item())
             if pair_delta is not None:
-                neg_delta = pair_delta[idx, neg_mask[idx]]
+                neg_parts_d.append(pair_delta[idx, neg_mask[idx]])
+        if neg_mask_q is not None and neg_mask_q[idx].any():
+            neg_parts_s.append(dist_s_q[idx, neg_mask_q[idx]])
+            neg_parts_t.append(dist_t_q[idx, neg_mask_q[idx]])
+            neg_parts_b.append(dist_base_q[idx, neg_mask_q[idx]])
+            neg_queue_count += int(neg_mask_q[idx].sum().item())
+            neg_total_count += int(neg_mask_q[idx].sum().item())
+            if pair_delta_q is not None:
+                neg_parts_d.append(pair_delta_q[idx, neg_mask_q[idx]])
+        if neg_parts_s:
+            neg_focus = None
+            if neg_parts_d:
+                neg_delta = torch.cat(neg_parts_d, dim=0)
                 neg_focus, neg_focus_mean, neg_select_ratio = _focus_from_delta(neg_delta)
                 pair_delta_means.append(neg_delta.mean())
                 if neg_focus_mean is not None:
@@ -196,11 +283,14 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
                 if neg_select_ratio is not None:
                     pair_select_ratio_means.append(neg_select_ratio)
             losses.append(_distill_subset(
-                dist_s[idx, neg_mask[idx]],
-                dist_t[idx, neg_mask[idx]],
-                dist_base[idx, neg_mask[idx]],
+                torch.cat(neg_parts_s, dim=0),
+                torch.cat(neg_parts_t, dim=0),
+                torch.cat(neg_parts_b, dim=0),
                 focus=neg_focus))
             loss_weights.append(anchor_w)
+            if neg_total_count > 0:
+                queue_ratio_means.append(
+                    dist_s.new_tensor(neg_queue_count / neg_total_count))
 
     if losses:
         loss_stack = torch.stack(losses)
@@ -225,6 +315,8 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
         'pair_delta': float(torch.stack(pair_delta_means).mean().item()) if pair_delta_means else 0.0,
         'pair_focus': float(torch.stack(pair_focus_means).mean().item()) if pair_focus_means else 1.0,
         'pair_select_ratio': float(torch.stack(pair_select_ratio_means).mean().item()) if pair_select_ratio_means else 1.0,
+        'queue_size': float(queue_size),
+        'queue_ratio': float(torch.stack(queue_ratio_means).mean().item()) if queue_ratio_means else 0.0,
         'teacher_residual': float(teacher_residual[pair_mask].mean().item()),
         'student_residual': float(student_residual[pair_mask].mean().item()),
     }
@@ -417,7 +509,8 @@ def make_loss(cfg, num_classes):    # modified by gu
                                 pair_weight_mode=csrd_pair_weight_mode,
                                 pair_weight_alpha=csrd_pair_weight_alpha,
                                 pair_top_ratio=csrd_pair_top_ratio,
-                                target_mode=csrd_target_mode)
+                                target_mode=csrd_target_mode,
+                                queue_data=kp_data.get('csrd_queue'))
                             loss_details['csrd'] = csrd_loss.item()
                             loss_details['csrd_tgap'] = csrd_stats['teacher_gap']
                             loss_details['csrd_sgap'] = csrd_stats['student_gap']
@@ -430,6 +523,9 @@ def make_loss(cfg, num_classes):    # modified by gu
                                 loss_details['csrd_pd'] = csrd_stats['pair_delta']
                                 loss_details['csrd_pf'] = csrd_stats['pair_focus']
                                 loss_details['csrd_psr'] = csrd_stats['pair_select_ratio']
+                            if csrd_stats['queue_size'] > 0:
+                                loss_details['csrd_qn'] = csrd_stats['queue_size']
+                                loss_details['csrd_qr'] = csrd_stats['queue_ratio']
                     # PAML: use per-keypoint pairwise distance for part triplet
                     paml_enabled = getattr(cfg.MODEL, 'POSE_PAML', False)
                     if paml_enabled and kp_data is not None:

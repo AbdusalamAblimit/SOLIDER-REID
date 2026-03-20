@@ -114,6 +114,7 @@ def do_train(cfg,
     csrd_target_mode = getattr(cfg.MODEL, 'POSE_CSRD_TARGET_MODE', 'full')
     csrd_anchor_weight_mode = getattr(cfg.MODEL, 'POSE_CSRD_ANCHOR_WEIGHT_MODE', 'none')
     csrd_pair_weight_mode = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_WEIGHT_MODE', 'none')
+    csrd_queue_size = getattr(cfg.MODEL, 'POSE_CSRD_QUEUE_SIZE', 0)
     if csrd_target_mode not in ('full', 'residual', 'residual_kl'):
         raise ValueError(f"Unsupported POSE_CSRD_TARGET_MODE: {csrd_target_mode}")
     if csrd_anchor_weight_mode not in ('none', 'replace_ratio', 'low_ratio'):
@@ -170,6 +171,8 @@ def do_train(cfg,
         else:
             logger.info(f'[CSRD-PW] mode={csrd_pair_weight_mode}, '
                         f'alpha={csrd_pair_weight_alpha}')
+    if csrd_enabled and csrd_queue_size > 0:
+        logger.info(f'[CSRD-QUEUE] size={csrd_queue_size}')
     if scfr_enabled:
         logger.info(f'[SCFR] Feature replacement mode enabled (loss disabled, bank replaces features)')
     if scrc_enabled:
@@ -180,6 +183,41 @@ def do_train(cfg,
         logger.info(f'[PAMC] Pose-Aware Masking Consistency: weight={pamc_weight}, warmup={pamc_warmup}')
     if pcra_alpha > 0:
         logger.info(f'[PCRA] Pose-Contrastive Representation Alignment: alpha={pcra_alpha}')
+
+    csrd_queue = None
+    if csrd_enabled and csrd_queue_size > 0:
+        csrd_queue = {
+            'student_feat': None,
+            'kp_feats': None,
+            'kp_weights': None,
+            'teacher_kp_feats': None,
+            'labels': None,
+        }
+
+    def _get_csrd_queue_payload():
+        if csrd_queue is None or csrd_queue['labels'] is None:
+            return None
+        if csrd_queue['labels'].numel() == 0:
+            return None
+        return {k: v.detach() for k, v in csrd_queue.items()}
+
+    def _enqueue_csrd_queue(student_feat, kp_feats, kp_weights, teacher_kp_feats, labels):
+        if csrd_queue is None:
+            return
+        new_items = {
+            'student_feat': student_feat.detach(),
+            'kp_feats': kp_feats.detach(),
+            'kp_weights': kp_weights.detach(),
+            'teacher_kp_feats': teacher_kp_feats.detach(),
+            'labels': labels.detach(),
+        }
+        for key, value in new_items.items():
+            if csrd_queue[key] is None:
+                csrd_queue[key] = value
+            else:
+                csrd_queue[key] = torch.cat([csrd_queue[key], value], dim=0)
+                if csrd_queue[key].size(0) > csrd_queue_size:
+                    csrd_queue[key] = csrd_queue[key][-csrd_queue_size:]
     _LOCAL_PROCESS_GROUP = None
     if device:
         model.to(local_rank)
@@ -357,6 +395,10 @@ def do_train(cfg,
                                 teacher_stats['anchor_weight_mean'] = float(anchor_weights.mean().item())
                                 teacher_stats['anchor_active_ratio'] = float((anchor_weights > 0).float().mean().item())
                             kp_aux_data['csrd_teacher_stats'] = teacher_stats
+                            if csrd_queue_size > 0:
+                                queue_payload = _get_csrd_queue_payload()
+                                if queue_payload is not None:
+                                    kp_aux_data['csrd_queue'] = queue_payload
 
                 loss = loss_fn(score, feat, target, target_cam, pose_sim=pose_sim,
                                kp_data=kp_aux_data)
@@ -720,6 +762,15 @@ def do_train(cfg,
                 if kp_feats_csrd is not None and kp_w_csrd is not None:
                     if csrd_st_update_stop_epoch < 0 or epoch <= csrd_st_update_stop_epoch:
                         csrd_teacher_bank.update(kp_feats_csrd, kp_w_csrd, target)
+                    if csrd_queue_size > 0 and epoch > getattr(cfg.MODEL, 'POSE_CSRD_WARMUP', 20):
+                        queue_teacher_feats = None
+                        if kp_aux_data is not None:
+                            queue_teacher_feats = kp_aux_data.get('csrd_teacher_feats')
+                        if queue_teacher_feats is not None:
+                            queue_student_feat = feat[0] if isinstance(feat, list) else feat
+                            _enqueue_csrd_queue(
+                                queue_student_feat, kp_feats_csrd, kp_w_csrd,
+                                queue_teacher_feats, target)
 
             if 'center' in cfg.MODEL.METRIC_LOSS_TYPE:
                 for param in center_criterion.parameters():

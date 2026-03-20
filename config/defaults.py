@@ -232,6 +232,7 @@ _C.MODEL.POSE_CSRD_ANCHOR_WEIGHT_MODE = 'none' # 'none', 'replace_ratio', or 'lo
 _C.MODEL.POSE_CSRD_PAIR_WEIGHT_MODE = 'none'   # 'none', 'delta', 'delta_top', or 'delta_top_exact'
 _C.MODEL.POSE_CSRD_PAIR_WEIGHT_ALPHA = 1.0     # Strength of pair-delta focusing
 _C.MODEL.POSE_CSRD_PAIR_TOP_RATIO = 0.25       # Kept pair ratio for sparse delta-top focusing
+_C.MODEL.POSE_CSRD_QUEUE_SIZE = 0              # Cross-batch relation queue size (0=disabled)
 _C.MODEL.POSE_SGMKC = False              # Skeleton-Guided Masked Keypoint Completion
 _C.MODEL.POSE_SGMKC_RATIO = 0.3          # Fraction of keypoints to mask during training
 _C.MODEL.POSE_SGMKC_WEIGHT = 1.0         # Reconstruction loss weight
