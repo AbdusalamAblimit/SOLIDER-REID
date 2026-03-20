@@ -127,6 +127,17 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
                 focus_w = focus.detach().clamp(min=0.0)
                 return (point_loss * focus_w).sum() / focus_w.sum().clamp(min=1e-6)
             return point_loss.mean()
+        if target_mode == 'residual_kl':
+            base_det = base_dist.detach()
+            s_logits = (-(student_dist - base_det)) / tau
+            t_logits = (-(teacher_dist.detach() - base_det)) / tau
+            if focus is not None:
+                log_focus = focus.clamp(min=1e-6).log()
+                s_logits = s_logits + log_focus
+                t_logits = t_logits + log_focus
+            s_logp = F.log_softmax(s_logits, dim=0)
+            t_prob = F.softmax(t_logits, dim=0)
+            return F.kl_div(s_logp, t_prob, reduction='batchmean')
         s_logits = (-student_dist) / tau
         t_logits = (-teacher_dist.detach()) / tau
         if focus is not None:
@@ -246,7 +257,7 @@ def make_loss(cfg, num_classes):    # modified by gu
     if csrd_pair_weight_mode not in ('none', 'delta', 'delta_top', 'delta_top_exact'):
         raise ValueError(f"Unsupported POSE_CSRD_PAIR_WEIGHT_MODE: {csrd_pair_weight_mode}")
     csrd_target_mode = getattr(cfg.MODEL, 'POSE_CSRD_TARGET_MODE', 'full')
-    if csrd_target_mode not in ('full', 'residual'):
+    if csrd_target_mode not in ('full', 'residual', 'residual_kl'):
         raise ValueError(f"Unsupported POSE_CSRD_TARGET_MODE: {csrd_target_mode}")
     csrd_pair_weight_alpha = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_WEIGHT_ALPHA', 1.0)
     csrd_pair_top_ratio = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_TOP_RATIO', 0.25)

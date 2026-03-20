@@ -114,7 +114,7 @@ def do_train(cfg,
     csrd_target_mode = getattr(cfg.MODEL, 'POSE_CSRD_TARGET_MODE', 'full')
     csrd_anchor_weight_mode = getattr(cfg.MODEL, 'POSE_CSRD_ANCHOR_WEIGHT_MODE', 'none')
     csrd_pair_weight_mode = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_WEIGHT_MODE', 'none')
-    if csrd_target_mode not in ('full', 'residual'):
+    if csrd_target_mode not in ('full', 'residual', 'residual_kl'):
         raise ValueError(f"Unsupported POSE_CSRD_TARGET_MODE: {csrd_target_mode}")
     if csrd_anchor_weight_mode not in ('none', 'replace_ratio', 'low_ratio'):
         raise ValueError(f"Unsupported POSE_CSRD_ANCHOR_WEIGHT_MODE: {csrd_anchor_weight_mode}")
@@ -126,6 +126,8 @@ def do_train(cfg,
         raise ValueError('POSE_CSRD_PAIR_WEIGHT_MODE requires POSE_CSRD_SUPPORT_TEACHER=True')
     if csrd_target_mode == 'residual' and not csrd_support_teacher:
         raise ValueError('POSE_CSRD_TARGET_MODE=residual requires POSE_CSRD_SUPPORT_TEACHER=True')
+    if csrd_target_mode == 'residual_kl' and not csrd_support_teacher:
+        raise ValueError('POSE_CSRD_TARGET_MODE=residual_kl requires POSE_CSRD_SUPPORT_TEACHER=True')
     if csrd_enabled and csrd_support_teacher:
         csrd_st_low_thr = getattr(cfg.MODEL, 'POSE_CSRD_ST_LOW_THR', 0.3)
         csrd_st_update_thr = getattr(cfg.MODEL, 'POSE_CSRD_ST_UPDATE_THR', 0.7)

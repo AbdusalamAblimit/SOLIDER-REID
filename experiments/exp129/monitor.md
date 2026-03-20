@@ -51,3 +51,16 @@
 - 当前判断: 继续
 - 原因:
   - 真正有信息量的节点仍是 `ep10 / ep20`，以及 `epoch 21+` 后 `csrd / csrd_tr / csrd_gr / csrd_psr`
+
+### [2026-03-20 18:36] Claude 审查后手动停表
+- 审查文件: `experiments/exp129/claude_review.md`
+- 关键结论:
+  1. 当前 `residual` 写法虽然能安全运行，但不能被解释成 “target dilution” 的有效检验
+  2. 原因是它同时改变了 target、loss family（KL -> Smooth L1）和 normalization
+  3. 更关键的是，`dist_base` 在当前 Smooth L1 residual 写法里对 `dist_s` 的梯度方向会抵消
+- 当前状态:
+  1. 停表时训练仍处于 warmup 区间，`CSRD` 尚未激活
+  2. 最新有效验证点是 `ep10 = 39.8 / 52.9`
+- 当前判断: 终止
+- 原因:
+  - 继续跑下去不会回答我们真正关心的问题；本地立即切换到更干净的 `exp130 residual_kl` 版本
