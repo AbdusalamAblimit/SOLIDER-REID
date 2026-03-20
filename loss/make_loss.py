@@ -59,7 +59,8 @@ def _compute_paml_triplet(kp_feats, kp_weights, labels, margin_loss,
     return loss
 
 
-def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10):
+def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
+                       teacher_kp_feats=None):
     """Distill batch-wise CVK-style pair relations into the global embedding.
 
     Teacher:
@@ -71,7 +72,9 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10):
     feat_s = normalize(global_feat, axis=-1)
     dist_s = euclidean_dist(feat_s, feat_s)
 
-    kp_f = F.normalize(kp_feats, dim=-1)
+    if teacher_kp_feats is None:
+        teacher_kp_feats = kp_feats
+    kp_f = F.normalize(teacher_kp_feats.detach(), dim=-1)
     per_kp_dist = [euclidean_dist(kp_f[:, k, :], kp_f[:, k, :])
                    for k in range(kp_f.size(1))]
     dist_k = torch.stack(per_kp_dist, dim=-1)  # (B, B, K)
@@ -287,7 +290,8 @@ def make_loss(cfg, num_classes):    # modified by gu
                             csrd_tau = getattr(cfg.MODEL, 'POSE_CSRD_TAU', 0.10)
                             csrd_loss, csrd_stats = _compute_csrd_loss(
                                 feat[0], kp_data['kp_feats'], kp_data['kp_weights'],
-                                target, tau=csrd_tau)
+                                target, tau=csrd_tau,
+                                teacher_kp_feats=kp_data.get('csrd_teacher_feats'))
                             loss_details['csrd'] = csrd_loss.item()
                             loss_details['csrd_tgap'] = csrd_stats['teacher_gap']
                             loss_details['csrd_sgap'] = csrd_stats['student_gap']

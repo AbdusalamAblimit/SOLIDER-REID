@@ -103,6 +103,25 @@ def do_train(cfg,
             min_count=sckd_min_count,
         ).to(device)
 
+    csrd_support_teacher = getattr(cfg.MODEL, 'POSE_CSRD_SUPPORT_TEACHER', False)
+    csrd_teacher_bank = None
+    if csrd_enabled and csrd_support_teacher:
+        csrd_st_low_thr = getattr(cfg.MODEL, 'POSE_CSRD_ST_LOW_THR', 0.3)
+        csrd_st_update_thr = getattr(cfg.MODEL, 'POSE_CSRD_ST_UPDATE_THR', 0.7)
+        csrd_st_mom = getattr(cfg.MODEL, 'POSE_CSRD_ST_MOM', 0.9)
+        csrd_st_min_count = getattr(cfg.MODEL, 'POSE_CSRD_ST_MIN_COUNT', 1)
+        csrd_st_update_stop_epoch = getattr(cfg.MODEL, 'POSE_CSRD_ST_UPDATE_STOP_EPOCH', -1)
+        num_train_classes = len(set([d[1] for d in train_loader.dataset.dataset]))
+        csrd_teacher_bank = SupportCompleteBank(
+            num_classes=num_train_classes,
+            feat_dim=768,
+            num_keypoints=17,
+            low_thr=csrd_st_low_thr,
+            update_thr=csrd_st_update_thr,
+            momentum=csrd_st_mom,
+            min_count=csrd_st_min_count,
+        ).to(device)
+
     logger = logging.getLogger("transreid.train")
     logger.info('start training')
     if use_pose:
@@ -114,6 +133,10 @@ def do_train(cfg,
         logger.info(f'[SCKD] enabled: weight={sckd_weight}, warmup={sckd_warmup}, '
                     f'low_thr={sckd_low_thr}, update_thr={sckd_update_thr}, '
                     f'mom={sckd_mom}, stop_epoch={sckd_update_stop_epoch}')
+    if csrd_enabled and csrd_support_teacher:
+        logger.info(f'[CSRD-ST] enabled: low_thr={csrd_st_low_thr}, '
+                    f'update_thr={csrd_st_update_thr}, mom={csrd_st_mom}, '
+                    f'min_count={csrd_st_min_count}, stop_epoch={csrd_st_update_stop_epoch}')
     if scfr_enabled:
         logger.info(f'[SCFR] Feature replacement mode enabled (loss disabled, bank replaces features)')
     if pamc_enabled:
@@ -277,9 +300,24 @@ def do_train(cfg,
                     kp_aux_data['epoch'] = epoch
                     if kp_triplet_enabled:
                         kp_aux_data['weight'] = kp_triplet_weight
+                    if csrd_enabled and csrd_support_teacher and csrd_teacher_bank is not None and epoch > getattr(cfg.MODEL, 'POSE_CSRD_WARMUP', 20):
+                        kp_feats_csrd = kp_data.get('kp_feats')
+                        kp_w_csrd = kp_data.get('kp_weights')
+                        if kp_feats_csrd is not None and kp_w_csrd is not None:
+                            teacher_feats, _, teacher_stats = csrd_teacher_bank.replace(
+                                kp_feats_csrd, kp_w_csrd, target)
+                            kp_aux_data['csrd_teacher_feats'] = teacher_feats.detach()
+                            kp_aux_data['csrd_teacher_stats'] = teacher_stats
 
                 loss = loss_fn(score, feat, target, target_cam, pose_sim=pose_sim,
                                kp_data=kp_aux_data)
+                if kp_aux_data is not None and 'csrd_teacher_stats' in kp_aux_data:
+                    teacher_stats = kp_aux_data['csrd_teacher_stats']
+                    details = getattr(loss, '_loss_details', {})
+                    details['csrd_sr'] = teacher_stats['replace_ratio']
+                    details['csrd_sn'] = float(teacher_stats['n_replaced'])
+                    details['csrd_lowr'] = teacher_stats['low_ratio']
+                    loss._loss_details = details
                 if recon_loss is not None:
                     details = getattr(loss, '_loss_details', {})
                     loss = loss + recon_loss
@@ -610,6 +648,13 @@ def do_train(cfg,
                 if kp_feats_sckd is not None and kp_w_sckd is not None:
                     if sckd_update_stop_epoch < 0 or epoch <= sckd_update_stop_epoch:
                         sckd_bank.update(kp_feats_sckd, kp_w_sckd, target)
+
+            if csrd_enabled and csrd_support_teacher and csrd_teacher_bank is not None and kp_data is not None:
+                kp_feats_csrd = kp_data.get('kp_feats')
+                kp_w_csrd = kp_data.get('kp_weights')
+                if kp_feats_csrd is not None and kp_w_csrd is not None:
+                    if csrd_st_update_stop_epoch < 0 or epoch <= csrd_st_update_stop_epoch:
+                        csrd_teacher_bank.update(kp_feats_csrd, kp_w_csrd, target)
 
             if 'center' in cfg.MODEL.METRIC_LOSS_TYPE:
                 for param in center_criterion.parameters():
