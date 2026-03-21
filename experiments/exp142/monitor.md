@@ -114,3 +114,51 @@
 - 当前判断：
   1. 现在更适合发起第二轮定向 Claude 审查
   2. 二审通过前，仍不启动训练
+
+## 2026-03-21 19:02 第二轮 Claude 审查通过，允许启动训练
+
+- 二审输出：
+  - `experiments/exp142/claude_review_v2.md`
+- 核心结论：
+  1. 第一轮指出的三项问题均已修复
+  2. 当前日志已经足够支撑：
+     - 低置信 joints 作用比例
+     - 跳过 / 强覆盖判断
+     - delta 塌缩判断
+     - pre/post support target 距离变化
+  3. 无新的 shape / device / dtype / AMP / train-test 对称阻塞项
+- 当前判断：
+  1. `exp142` 已满足启动条件
+  2. 下一步直接进入正式训练与早期监控
+
+## 2026-03-21 19:45 正式训练已启动，warmup 前段健康
+
+- 启动方式：
+  1. 前台探针命令成功进入真实训练循环
+  2. 因其已稳定进入 iteration，直接保留为本次正式 run
+- 输出目录：
+  - `log/occluded_duke/exp142_skc`
+- 日志文件：
+  - `log/occluded_duke/exp142_skc/train_log.txt`
+- 当前已确认日志：
+  1. `[SKC] enabled: weight=0.5, warmup=20, hidden=256, heads=4, low_thr=0.3, update_thr=0.7, mom=0.9, min_count=1, stop_epoch=-1`
+  2. `Epoch[1] Iter[20/227]`
+     - `Loss: 22.401`
+     - `skc_lmr: 0.146`
+     - `skc_arr / skc_ail: 0.000 / 0.000`
+     - `skc_spr: 0.027`
+     - `skc_pc / skc_pcnt: 0.699 / 2.523`
+  3. `Epoch[1] Iter[100/227]`
+     - `Loss: 17.688`
+     - `skc_lmr: 0.143`
+     - `skc_arr / skc_ail: 0.000 / 0.000`
+     - `skc_spr: 0.083`
+     - `skc_pc / skc_pcnt: 0.844 / 4.634`
+- 当前判断：
+  1. 启动健康，没有 NaN / OOM / shape 错误
+  2. warmup 期间 `skc_arr=0` 是预期行为，因为 `epoch <= 20` 时 `_skc_active=False`
+  3. `skc_spr / skc_pc / skc_pcnt` 正在上升，说明 support bank 已在正常积累
+  4. 下一关键观察点：
+     - `Epoch 1` 结束
+     - `ep10`
+     - `epoch 21+` 后 `skc_arr / skc_ail / skc_pre / skc_post`
