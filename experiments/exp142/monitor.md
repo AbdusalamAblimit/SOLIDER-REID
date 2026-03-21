@@ -68,3 +68,18 @@
 - 当前判断：
   1. 接线层面已经具备送全面 Claude 审查的条件
   2. 下一步不是启动训练，而是先做广范围审查
+
+## 2026-03-21 19:02 全面 Claude 审查已启动
+
+- 状态：审查中，未启动训练
+- 审查方式：
+  - 使用 PTY 长会话运行 `claude -p --effort max`
+  - 避免后台脱壳造成“看起来启动、实际上没跑”的假状态
+- 审查输入：
+  - `experiments/exp142/claude_review_request.txt`
+- 审查输出目标：
+  - `experiments/exp142/claude_review.md`
+  - `experiments/exp142/claude_review.err`
+- 当前判断：
+  1. `exp142` 代码与日志自检已完成
+  2. 按用户规则，必须等待 Claude 审查结论后才能启动训练
