@@ -82,3 +82,20 @@
 - 当前判断: 继续，进入 warmup 观察期
 - 原因:
   - 这轮终于开始第一次真实测试“pair correction 是否需要 confidence calibration”
+
+### [2026-03-22 00:42] `exp140` 已进入真实迭代，warmup 前段启动健康
+- 当前进度:
+  - 已完成 `Epoch 1`
+  - 当前进入 `Epoch 2`
+- 关键训练日志:
+  - `Epoch[1] Iter[20/227] Loss: 22.003`
+  - `Epoch[1] Iter[200/227] Loss: 15.641`
+  - `Epoch 1 done. Time per epoch: 60.275[s]`
+  - `Epoch[2] Iter[60/227] Loss: 12.264`
+- 形态观察:
+  1. warmup 前段 loss 正常下降，没有 NaN / Inf
+  2. 训练速度约 `223 samples/s`，与近期本地主线相符
+  3. 当前仍处于 `LPCS warmup=20` 内，尚未进入 `residual_conf` 真正激活区
+- 当前判断: 继续
+- 原因:
+  - 现在只能下“启动健康”的结论；真正有信息量的仍是 `ep10/20` 与 `epoch 21+` 后新增的 `lpcs_cf / lpcs_ctm / lpcs_cl`
