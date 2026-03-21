@@ -2835,3 +2835,35 @@ B. 直接启动 exp025，exp024 可以后续补跑
 2. 它仍然紧扣 retrieval 本质，而不是退回 backbone 模块堆叠
 3. 如果成立，它能把 story 从“query 语境”进一步推进到：
    - **candidate competition 语境**
+
+## [2026-03-21 19:02] 决策：不启动 `exp141`，本地转向更大的 feature completion 主线 `exp142`
+
+**上下文**:
+- `exp141` 的二次 Claude 审查已经通过
+- 但 `exp141` 本质上仍属于 `LPCS` 家族内部的 context 变体
+- 用户已明确要求：
+  - 不要继续围绕同一个小点浪费时间
+  - 本地应转向真正不同、真正可能带来收益的大改动
+- `exp109` 的 oracle 结论始终没有被推翻：
+  - 真正 headroom 来自 `single-image support incomplete`
+
+**判断**:
+1. `LPCS` 家族已经给出足够多证据：
+   - pair correction 不是完全无效
+   - 但它当前更像 supporting 机制，而不是确定的论文主方法
+2. 如果本地继续开 `exp141`，即使成功，也大概率仍是：
+   - `LPCS` 家族内部的小幅体感优化
+3. 当前更合理的本地大转向应回到 `exp109` 根问题本身：
+   - 不在距离层修正
+   - 而在特征层直接补全 keypoint-level support
+
+**选择**:
+1. 暂不启动 `exp141`
+2. 本地主线切到 `exp142 SKC (Support-Conditioned Keypoint Completion)`
+3. 按用户要求，先写正式设计，再改代码
+4. 设计阶段只做文档，不启动训练
+
+**理由**:
+1. 这是比 `query_ctx / comp_ctx / confidence` 都更大的方法级改动
+2. 它直接回应 `exp109` 的核心发现，而不是继续在 scoring 层修修补补
+3. 如果成立，它比 `LPCS` 家族更有机会支撑 B 类论文主创新

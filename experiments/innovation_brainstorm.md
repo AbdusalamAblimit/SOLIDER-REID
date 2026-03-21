@@ -2225,3 +2225,41 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
 区别在于：
 - `exp139` 强调 **如何解释 common support**
 - `exp140` 强调 **如何应用 correction**
+
+### 2026-03-21 本地大转向：从 pair correction 切回 feature-space support completion
+
+`exp141` 虽然二审通过，但它本质上仍是 `LPCS` 家族里的 context 变体。用户明确要求不要继续围绕同一个小点试小改动，因此本地主线需要真正跳出：
+
+- `query context`
+- `competition context`
+- `confidence gate`
+- `rank weighting`
+
+这些 retrieval-side scorer 变体。
+
+当前新的大方向是：
+
+- **SKC（Support-Conditioned Keypoint Completion）**
+
+它的核心问题定义不是：
+
+- “这个 pair 该怎么修正距离”
+
+而是：
+
+- **这张图的哪些 pose-aligned 证据本来就缺失，能不能在特征层被条件补全出来？**
+
+这条线仍然强依赖 pose，但方式完全不同：
+
+1. pose 不再只是用来构造 `common support distance`
+2. pose 现在要定义：
+   - 哪些关键点低置信
+   - 哪些高置信关键点可作为自证据
+   - 哪些 support prototype 可作为跨图补全证据
+   - 哪些 skeleton 邻接关系约束 completion
+
+如果这条线成立，它比 `LPCS` 系列更像真正的方法级创新，因为它回答的是：
+
+- `exp109` 暴露出的单图 support incomplete，能否在编码阶段被修复
+
+而不是继续在检索距离上打补丁。

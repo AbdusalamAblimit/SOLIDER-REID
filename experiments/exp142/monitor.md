@@ -162,3 +162,43 @@
      - `Epoch 1` 结束
      - `ep10`
      - `epoch 21+` 后 `skc_arr / skc_ail / skc_pre / skc_post`
+
+## 2026-03-21 19:50 warmup 前段继续健康，support bank 累积明显加速
+
+- 当前进度:
+  - 已完成 `Epoch 1-5`
+  - 当前处于 `Epoch 6`
+- 关键训练日志:
+  1. `Epoch 2 done`
+     - `Time per epoch: 59.962[s]`
+     - `Speed: 226.3[samples/s]`
+  2. `Epoch[3] Iter[200/227]`
+     - `Loss: 8.944`
+     - `Acc: 0.064`
+     - `skc_lmr: 0.147`
+     - `skc_arr / skc_ail: 0.000 / 0.000`
+     - `skc_spr: 0.147`
+     - `skc_pc / skc_pcnt: 0.882 / 40.100`
+  3. `Epoch[5] Iter[200/227]`
+     - `Loss: 7.723`
+     - `Acc: 0.216`
+     - `skc_lmr: 0.146`
+     - `skc_arr / skc_ail: 0.000 / 0.000`
+     - `skc_spr: 0.146`
+     - `skc_pc / skc_pcnt: 0.882 / 74.782`
+  4. `Epoch[6] Iter[60/227]`
+     - `Loss: 7.562`
+     - `Acc: 0.139`
+     - `skc_lmr: 0.146`
+     - `skc_arr / skc_ail: 0.000 / 0.000`
+     - `skc_spr: 0.145`
+     - `skc_pc / skc_pcnt: 0.881 / 71.918`
+- 当前判断: 继续
+- 原因:
+  1. warmup 形状正常，`Loss` 持续下降，没有 NaN / OOM / shape 异常
+  2. `skc_arr / skc_ail / skc_gm / skc_gs / skc_dn / skc_ds` 继续为 `0`，这与 `epoch <= 20` 的设计完全一致
+  3. `skc_spr` 已从 `0.027` 抬到约 `0.145`，`skc_pcnt` 已从 `2.523` 抬到 `70+`，说明 support bank 已在稳定积累而不是空转
+  4. 下一关键点仍是：
+     - `ep10`
+     - `ep20`
+     - `epoch 21+` 后首次出现的 `skc_arr / skc_ail / skc_cl / skc_pre / skc_post`

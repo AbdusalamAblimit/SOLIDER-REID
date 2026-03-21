@@ -3,8 +3,8 @@
 ## 实验信息
 - 方法: `Competition-Context LPCS`
 - 类型: `exp135` 的 context 单变量升级
-- 计划运行位置: 本地
-- 当前状态: 等待全面 Claude 审查
+- 计划运行位置: 远程
+- 当前状态: 远程训练中
 - 直接对照:
   - `exp135 Corrected LPCS`
   - `exp139 Query-Context LPCS`
@@ -76,3 +76,61 @@
 - 当前判断: 等待二次全面审查，不启动训练
 - 原因:
   - 用户要求由用户确认审查结束后再继续
+
+### [2026-03-22 03:51] 二次审查通过后改为远程正式启动
+- 启动原因:
+  1. 本地主线已切到 `exp142 SKC`，需要把真正不同机制的第二创新点放到远程并行验证
+  2. `exp141` 与 `exp142` 分别代表：
+     - `exp141`: retrieval-side competition context
+     - `exp142`: feature-space support-supervised completion
+  3. `exp141` 二次全面审查已明确放行：
+     - `experiments/exp141/claude_review_v2.md`
+- 同步动作:
+  1. 远程旧代码缺少 `pose_psg_gcn_lpcs_comp_ctx.yml`
+  2. 已从本地精确同步以下文件到远程 `/root/work/SOLIDER-REID`：
+     - `config/defaults.py`
+     - `model/pose_backbone_model.py`
+     - `model/modules/pair_adaptive_fusion.py`
+     - `model/modules/skeleton_gcn.py`
+     - `processor/processor.py`
+     - `utils/metrics.py`
+     - `configs/occluded_duke/pose_psg_gcn_lpcs_comp_ctx.yml`
+     - `experiments/exp141/*`
+- 启动命令:
+  - `python3 train.py --config_file configs/occluded_duke/pose_psg_gcn_lpcs_comp_ctx.yml OUTPUT_DIR ./log/occluded_duke/exp141_lpcs_comp_ctx`
+- 远程输出:
+  - `log/occluded_duke/exp141_lpcs_comp_ctx/remote_nohup.log`
+- 启动确认:
+  1. 远程主训练进程已存在：
+     - `python3 train.py --config_file configs/occluded_duke/pose_psg_gcn_lpcs_comp_ctx.yml OUTPUT_DIR ./log/occluded_duke/exp141_lpcs_comp_ctx`
+  2. 远程 GPU 已被占用：
+     - `5060 Ti` 显存约 `6684 MiB`
+  3. 远程配置日志已确认：
+     - `POSE_LPCS_CONTEXT_MODE: comp_ctx`
+     - `POSE_TEST_FEAT: cvk_residual`
+- 当前判断: 继续
+- 原因:
+  - `exp141` 现在已经作为和 `exp142` 明确不同的第二主线被干净放到远程验证
+
+### [2026-03-22 03:52] warmup 前段运行健康，已进入稳定 iteration
+- 当前进度:
+  - 已完成 `Epoch 1` 过半
+  - 当前达到 `Epoch[1] Iter[140/227]`
+- 关键训练日志:
+  1. `Epoch[1] Iter[20/227]`
+     - `Loss: 22.716`
+     - `Acc: 0.002`
+  2. `Epoch[1] Iter[100/227]`
+     - `Loss: 18.041`
+     - `Acc: 0.002`
+  3. `Epoch[1] Iter[140/227]`
+     - `Loss: 16.955`
+     - `Acc: 0.002`
+- 当前判断: 继续
+- 原因:
+  1. warmup 形状正常，`Loss` 稳定下降，没有启动异常
+  2. `LPCS` 仍处于 `warmup=20` 阶段，现在只能判断“启动健康”，还不能对 `comp_ctx` 本身下结论
+  3. 下一关键观察点：
+     - `Epoch 1` 结束
+     - `ep10`
+     - `epoch 21+` 后首次出现的 `lpcs_ctxm / lpcs_fg / lpcs_bg / lpcs_dm / lpcs_ds`

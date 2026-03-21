@@ -1094,3 +1094,53 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
 
 如果后续 `exp139` 继续稳定转正，它会比 `exp140` 更先具备“主方法”的资格；  
 而 `exp140` 更像是在验证：当前剩余的 `R1` 缺口，究竟是解释问题，还是应用问题。
+
+## 2026-03-21 本地主线切换：不再围绕 `LPCS` 家族继续小改动
+
+到 `exp141` 这个节点，虽然 `competition-context` 的二次审查已经通过，但我们需要主动承认一件事：
+
+- 它仍然属于 `LPCS` 家族的小变体
+- 即使做成，也大概率只是把“pair correction”讲得更复杂
+- 这不足以回应用户提出的核心要求：
+  - 做一个真正大的、真正可能成为主创新的改动
+
+因此，本地主线现在明确切回 `exp109` 提出的根问题：
+
+**Occluded ReID 的关键缺口不是 pair scorer 还不够聪明，  
+而是单张图里 pose-aligned support 本身不完整。**
+
+这会把 story 从：
+
+- pose-defined common support
+- pair-specific correction
+
+推进到：
+
+- **pose-defined support incompleteness**
+- **support-conditioned keypoint completion**
+
+这条新 story 的价值在于：
+
+1. 它仍然和 pose 强相关
+   - pose 定义关键点语义与结构
+2. 它比 retrieval-side correction 更“靠前”
+   - 不是改分数
+   - 而是改表征
+3. 它更直接对应 `exp109 oracle` 的发现
+   - 上界来自 support completion
+   - 因此下一步就应直接尝试 completion，而不是继续在 scorer 侧挤牙膏
+
+所以当前论文主叙事开始出现新的分工：
+
+1. 远程主线：
+   - `exp139 Query-Context LPCS`
+   - 继续回答：如果坚持 retrieval-side correction，最有希望的版本是什么
+2. 本地主线：
+   - `exp142 SKC`
+   - 直接回答：能否把 `support incomplete` 在特征层修掉
+
+如果 `exp142` 成立，它会比 `LPCS` 家族更有资格成为论文的主方法；  
+如果 `exp142` 不成立，我们也能更有底气地说：
+
+- `exp109` 的 headroom 不是简单 feature completion 就能兑现
+- 那么 retrieval-time structured reasoning 才更像最终主线
