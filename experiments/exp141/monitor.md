@@ -47,3 +47,32 @@
 - 当前判断: 可以送审，但暂不启动训练
 - 原因:
   - 现在已经满足“全面审查前的最小自检”要求，下一步只等 Claude 审查结论
+
+### [2026-03-22 02:55] 首轮 Claude 审查未通过，已确认是 config 模板错误
+- 审查文件:
+  - `experiments/exp141/claude_review.md`
+- blocking 结论:
+  1. 当前 `pose_psg_gcn_lpcs_comp_ctx.yml` 不是从 `exp135` config 严格继承
+  2. 至少存在多处关键字段差异，会破坏单变量原则
+  3. 其中包含 `MODEL.NAME` 等高风险项，不能放行
+- 当前处理:
+  1. 按审查建议，将 `exp141` config 改成严格复制 `exp135`
+  2. 仅保留两处差异：
+     - `POSE_LPCS_CONTEXT_MODE: 'comp_ctx'`
+     - `OUTPUT_DIR`
+- 当前判断: 修复完成，准备二次全面审查
+- 原因:
+  - 审查否掉的不是 `comp_ctx` 机制本身，而是实验隔离性不干净
+
+### [2026-03-22 02:57] 二次自检通过，已满足重新送审条件
+- 自检结果:
+  1. 当前 config 相对 `exp135` 的 diff 只剩两处：
+     - `POSE_LPCS_CONTEXT_MODE: 'comp_ctx'`
+     - `OUTPUT_DIR`
+  2. 这意味着 `exp141` 现在已满足单变量前提
+- 审查文件:
+  - 请求: `experiments/exp141/claude_review_request_v2.txt`
+  - 输出: `experiments/exp141/claude_review_v2.md`
+- 当前判断: 等待二次全面审查，不启动训练
+- 原因:
+  - 用户要求由用户确认审查结束后再继续

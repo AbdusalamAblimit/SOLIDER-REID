@@ -1,0 +1,46 @@
+请对 `/root/work/SOLIDER-REID` 中准备启动的 `exp141` 再做一次**全面代码审查**，目标是判断修复后的 `Competition-Context LPCS` 是否允许启动训练。
+
+这次重点不是重新审原始思路，而是确认：
+
+1. `exp141` config 现在是否已相对 `exp135` 成为**真正单变量**
+2. `comp_ctx` 的 train / test 路径是否仍然对称
+3. 机制上它是否真的不同于 `exp139 query_ctx`
+
+请重点阅读并审查这些文件：
+
+1. `/root/work/SOLIDER-REID/experiments/exp141/design.md`
+2. `/root/work/SOLIDER-REID/experiments/exp141/monitor.md`
+3. `/root/work/SOLIDER-REID/configs/occluded_duke/pose_psg_gcn_lpcs_comp_ctx.yml`
+4. `/root/work/SOLIDER-REID/configs/occluded_duke/pose_psg_gcn_lpcs_fix.yml`
+5. `/root/work/SOLIDER-REID/model/modules/pair_adaptive_fusion.py`
+6. `/root/work/SOLIDER-REID/model/pose_backbone_model.py`
+7. `/root/work/SOLIDER-REID/processor/processor.py`
+8. `/root/work/SOLIDER-REID/utils/metrics.py`
+9. `/root/work/SOLIDER-REID/experiments/exp139/design.md`
+
+本轮重点核查：
+
+1. 当前 config 相对 `exp135` 是否真的只差：
+   - `POSE_LPCS_CONTEXT_MODE: 'comp_ctx'`
+   - `OUTPUT_DIR`
+2. `build_query_competition_descriptors()` 是否在 train/test 两侧使用同一语义
+3. 新增的 competition features 是否无标签、无 oracle/label 泄漏
+4. 默认行为是否被破坏
+5. 是否还存在任何足以阻止训练启动的 blocking 问题
+
+请输出到：
+
+- `/root/work/SOLIDER-REID/experiments/exp141/claude_review_v2.md`
+
+输出格式要求：
+
+1. 首行必须明确写：
+   - `结论：允许启动`
+   或
+   - `结论：不允许启动`
+2. 然后列出：
+   - blocking 问题
+   - 非阻塞提醒
+   - 你对“当前 exp141 是否已经是相对 exp135 的单变量 clean run”的判断
+
+请不要做训练，不要修改代码，只做审查。
