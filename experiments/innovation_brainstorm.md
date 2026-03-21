@@ -2184,8 +2184,8 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
 2. **并行候选：Confidence-Calibrated Pair Correction**
    - 代表实验：`exp140`
    - 当前状态：
-     - 首轮 run 在 `epoch 21+` 因 AMP 下 `sigmoid + BCELoss` 实现不安全而失效
-     - 当前已修复为 logits 版 confidence head，准备 clean rerun
+     - clean rerun 已证明确实接上
+     - 但当前版本的 gate 很快塌成接近常数 1，已判当前实现形态不成立
    - 它在回答：
      - pair correction 不仅要会修，还要知道这次修正该不该被信任
 

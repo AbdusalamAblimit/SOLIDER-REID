@@ -2769,3 +2769,34 @@ B. 直接启动 exp025，exp024 可以后续补跑
 3. 当前最重要的是看：
    - `query context` 是否能在后期稳住优势
    - `confidence calibration` 是否会把早期高 gate 形态兑现成真实收益
+
+## [2026-03-22 02:38] 决策：`exp140` 当前版本止损，远程 `exp139` 继续跑完
+
+**上下文**:
+- `exp139 Query-Context LPCS` 最新已到：
+  - `ep80 = 60.8 / 71.6`
+  - `ep90 = 60.6 / 72.1`
+  - `ep100 = 60.8 / 71.9`
+- `exp140 Confidence-Calibrated LPCS` clean rerun 最新已到：
+  - `ep30 = 52.8 / 63.1`
+  - `ep40 = 56.4 / 67.6`
+  - `ep50 = 57.4 / 68.5`
+
+**判断**:
+1. `exp139` 到 `ep100` 为止仍是当前唯一可持续推进的主候选
+2. `exp140` 当前版本虽然真实接上了，但 `confidence gate` 已明显退化：
+   - `lpcs_cf -> 0.99`
+   - `lpcs_ctm ≈ 0.10`
+   - `lpcs_dm ≈ lpcs_rdm`
+3. 因此 `exp140` 已不再是在做“confidence calibration”，而越来越像：
+   - `residual scorer + 几乎恒开 gate + 额外 auxiliary loss`
+
+**选择**:
+1. 手动终止本地 `exp140`
+2. 远程 `exp139` 继续跑到收敛
+3. 本地下一步不再沿当前 `confidence target` 形式修小补小
+
+**理由**:
+1. `exp140` 的问题已经不是“还没收敛”，而是机制本体退化
+2. `exp139` 目前虽未显著超过 `exp135`，但它仍是当前最接近论文主机制的 active line
+3. 现在更合理的是把本地算力从已退化的 `exp140` 释放出来，转给下一条真正不同的创新点

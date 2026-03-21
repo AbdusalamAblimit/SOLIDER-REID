@@ -1054,8 +1054,8 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
      - **同一份 common-support signal，必须放在 query 的整体语境中解释**
 
 2. `exp140 Confidence-Calibrated LPCS`
-   - 首轮 run 在 `epoch 21+` 暴露出实现问题，当前不能拿它下结论
-   - 问题已定位为 AMP 下 `confidence BCE` 写法不安全，准备 clean rerun
+   - clean rerun 已完成关键验证
+   - 当前版本的问题不是没接上，而是 gate 很快塌成接近常数 1
    - 它不是替代 `exp139`，而是在问另一个同样合理的问题：
      - correction 是否需要显式的 confidence gate
 
