@@ -33,3 +33,24 @@
 - 当前判断: 允许启动
 - 原因:
   - 已满足远程 clean rerun 条件，可作为 `exp135` 的直接并行对照
+
+### [2026-03-21 09:03] 远程 exp136 正式启动
+- 远程机器:
+  - 恒源云 `5060 Ti`
+- 同步动作:
+  1. 本地已 push 到 `origin/exp/pose_heatmap`
+  2. 远程已 `git pull origin exp/pose_heatmap`
+- 启动命令:
+  - `python3 train.py --config_file configs/occluded_duke/pose_psg_gcn_lpcs_delta_top_fix.yml OUTPUT_DIR ./log/occluded_duke/exp136_lpcs_delta_top_fix`
+- 远程输出:
+  - `log/occluded_duke/exp136_lpcs_delta_top_fix/remote_nohup.log`
+- 启动确认:
+  1. 日志已确认：
+     - `[LPCS] enabled: ... pair_mode=delta_top, top_ratio=0.25 ...`
+  2. 已真实进入 iteration：
+     - `Epoch[1] Iter[20/227]`
+     - `Epoch[1] Iter[40/227]`
+  3. 这意味着 corrected sparse `LPCS` 已经正式进入训练，不再是 intended config 或失效 run
+- 当前判断: 继续
+- 原因:
+  - 下一次真正有信息量的节点是 `ep10 / ep20` 和 `epoch 21+` 后的 `lpcs_psr / lpcs_pf`

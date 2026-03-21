@@ -33,3 +33,21 @@
 - 当前判断: 允许启动
 - 原因:
   - 这轮终于有资格第一次真正测试 `LPCS`
+
+### [2026-03-21 09:03] 本地 exp135 正式启动
+- 启动方式:
+  - `/root/miniconda3/envs/solider-reid/bin/python -u train.py --config_file configs/occluded_duke/pose_psg_gcn_lpcs_fix.yml`
+- 输出目录:
+  - `log/occluded_duke/exp135_lpcs_fix`
+- 启动确认:
+  1. 日志已确认：
+     - `[LPCS] enabled: ... pair_mode=all, top_ratio=1.0 ...`
+  2. 已真实进入 iteration：
+     - `Epoch[1] Iter[20/227]`
+     - `Epoch[1] Iter[40/227]`
+     - `Epoch[1] Iter[60/227]`
+     - `Epoch[1] Iter[80/227]`
+  3. warmup 前段形状与 intended `exp133` 一致，说明修共享接线 bug 没有破坏 baseline 主训练
+- 当前判断: 继续
+- 原因:
+  - 当前最关键的观察点已经明确：`epoch 21+` 后必须首次出现 `lpcs_*`
