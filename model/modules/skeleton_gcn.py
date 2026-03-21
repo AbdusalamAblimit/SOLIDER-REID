@@ -226,22 +226,29 @@ class SupportSupervisedKeypointCompletion(nn.Module):
             active_gate = gate[low_mask]
             active_delta = delta[low_mask]
             applied_mask = (gate > 0.05) & low_mask
+            delta_norms = active_delta.norm(dim=1)
+            low_count = int(low_mask.sum().item())
+            applied_count = int(applied_mask.sum().item())
             stats = {
-                'n_low': int(low_mask.sum().item()),
+                'n_low': low_count,
                 'low_ratio': float(low_mask.float().mean().item()),
                 'applied_ratio': float(applied_mask.float().mean().item()),
+                'applied_in_low': float(applied_count / max(low_count, 1)),
                 'gate_mean': float(active_gate.mean().item()),
                 'gate_std': float(active_gate.std(unbiased=False).item()),
-                'delta_norm': float(active_delta.norm(dim=1).mean().item()),
+                'delta_norm': float(delta_norms.mean().item()),
+                'delta_std': float(delta_norms.std(unbiased=False).item()),
             }
         else:
             stats = {
                 'n_low': 0,
                 'low_ratio': 0.0,
                 'applied_ratio': 0.0,
+                'applied_in_low': 0.0,
                 'gate_mean': 0.0,
                 'gate_std': 0.0,
                 'delta_norm': 0.0,
+                'delta_std': 0.0,
             }
 
         return completed, stats
@@ -655,9 +662,11 @@ class SkeletonGCNHead(nn.Module):
                     'n_low': int(low_mask.sum().item()),
                     'low_ratio': float(low_mask.float().mean().item()),
                     'applied_ratio': 0.0,
+                    'applied_in_low': 0.0,
                     'gate_mean': 0.0,
                     'gate_std': 0.0,
                     'delta_norm': 0.0,
+                    'delta_std': 0.0,
                 }
             skc_completed_feats = kp_feats
 

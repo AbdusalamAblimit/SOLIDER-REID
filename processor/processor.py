@@ -1070,24 +1070,27 @@ def do_train(cfg,
                     if skc_st is not None:
                         details['skc_lmr'] = skc_st['low_ratio']
                         details['skc_arr'] = skc_st['applied_ratio']
+                        details['skc_ail'] = skc_st['applied_in_low']
                         details['skc_gm'] = skc_st['gate_mean']
                         details['skc_gs'] = skc_st['gate_std']
                         details['skc_dn'] = skc_st['delta_norm']
-                    if epoch > skc_warmup:
-                        skc_raw = kp_data.get('skc_raw_feats')
-                        skc_comp = kp_data.get('skc_completed_feats')
-                        skc_scores = kp_data.get('skc_scores')
-                        if skc_raw is not None and skc_comp is not None and skc_scores is not None:
-                            support = skc_bank.get_support(skc_raw, skc_scores, target)
-                            details['skc_spr'] = support['stats']['support_ratio']
-                            details['skc_pc'] = support['stats']['proto_conf']
-                            details['skc_pcnt'] = support['stats']['proto_count']
+                        details['skc_ds'] = skc_st['delta_std']
+                    skc_raw = kp_data.get('skc_raw_feats')
+                    skc_comp = kp_data.get('skc_completed_feats')
+                    skc_scores = kp_data.get('skc_scores')
+                    if skc_raw is not None and skc_comp is not None and skc_scores is not None:
+                        support = skc_bank.get_support(skc_raw, skc_scores, target)
+                        details['skc_spr'] = support['stats']['support_ratio']
+                        details['skc_pc'] = support['stats']['proto_conf']
+                        details['skc_pcnt'] = support['stats']['proto_count']
+                        if epoch > skc_warmup:
                             mask = support['mask']
                             if mask.any():
                                 proto = F.normalize(support['proto'].detach(), dim=2)
-                                raw_norm = F.normalize(skc_raw, dim=2)
+                                with torch.no_grad():
+                                    raw_norm = F.normalize(skc_raw.detach(), dim=2)
+                                    pre_dist = 1.0 - (raw_norm * proto).sum(dim=2).clamp(min=-1.0, max=1.0)
                                 comp_norm = F.normalize(skc_comp, dim=2)
-                                pre_dist = 1.0 - (raw_norm * proto).sum(dim=2).clamp(min=-1.0, max=1.0)
                                 post_dist = 1.0 - (comp_norm * proto).sum(dim=2).clamp(min=-1.0, max=1.0)
                                 weights = support['proto_conf'] * mask.float()
                                 skc_loss = (post_dist * weights).sum() / weights.sum().clamp(min=1e-12)

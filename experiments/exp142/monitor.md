@@ -83,3 +83,34 @@
 - 当前判断：
   1. `exp142` 代码与日志自检已完成
   2. 按用户规则，必须等待 Claude 审查结论后才能启动训练
+
+## 2026-03-21 19:02 第一轮 Claude 审查完成，已按意见修复后准备二审
+
+- 第一轮结论：
+  1. 方法方向和代码主体均被放行
+  2. 但指出了 1 个中优先级与 2 个低优先级问题
+- 第一轮指出的问题：
+  1. `applied_ratio` 分母是全部关键点，容易误判
+  2. `pre_dist` 纯日志统计却建立了不必要计算图
+  3. 缺少 `delta_std`，不利于检测 delta 塌缩
+- 已完成修复：
+  1. `skc_stats` 新增 `applied_in_low`
+  2. `skc_stats` 新增 `delta_std`
+  3. `processor.py` 新增对应日志：
+     - `skc_ail`
+     - `skc_ds`
+  4. `raw_norm / pre_dist` 已移入 `torch.no_grad()`
+  5. support bank 进度日志改成 warmup 前也可观察
+- 修复后自检：
+  1. `py_compile` 重新通过
+  2. 最小前向已确认 `skc_stats` 键变为：
+     - `low_ratio`
+     - `applied_ratio`
+     - `applied_in_low`
+     - `gate_mean`
+     - `gate_std`
+     - `delta_norm`
+     - `delta_std`
+- 当前判断：
+  1. 现在更适合发起第二轮定向 Claude 审查
+  2. 二审通过前，仍不启动训练
