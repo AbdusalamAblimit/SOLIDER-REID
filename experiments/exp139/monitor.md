@@ -4,7 +4,7 @@
 - 方法: `Query-Context LPCS`
 - 类型: `exp135` 的 query-context 单变量升级
 - 计划运行位置: 远程
-- 当前状态: 已完成设计与代码接线，等待 Claude 全面审查
+- 当前状态: 二次全面审查中
 - 直接对照:
   - `exp135 Corrected LPCS`
   - `exp138 Rank-Decayed LPCS`
@@ -81,3 +81,16 @@
 - 当前判断: 待二审
 - 原因:
   - 只有二审明确放行后，才允许把这条线发到远程服务器
+
+### [2026-03-21 14:33] Claude 二次全面审查已启动
+- 审查文件:
+  - `experiments/exp139/claude_review_v2.md`
+- 审查请求:
+  - `experiments/exp139/claude_review_request_v2.txt`
+- 重点核查:
+  1. 当前 query context 是否已完全去 label 依赖
+  2. `processor.py` 与 `utils/metrics.py` 是否共用同一 11 维 descriptor 语义
+  3. train/test `cvk_residual` 路径是否已经闭环
+- 当前判断: 二审进行中，远程继续等待
+- 原因:
+  - 用户要求全面审查完成后再放行远程训练
