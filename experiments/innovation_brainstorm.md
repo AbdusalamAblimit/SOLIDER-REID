@@ -2189,6 +2189,35 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
    - 它在回答：
      - pair correction 不仅要会修，还要知道这次修正该不该被信任
 
+### 2026-03-22 本地新候选：Competition-Context Pair Correction
+
+在 `query-context` 与 `confidence-calibration` 之后，当前最新的本地候选不再问：
+
+1. query 整体难不难
+2. correction 该不该被信任
+
+而是问一个真正不同的问题：
+
+**当前这个 candidate，在本 query 的所有候选竞争里到底处于什么位置？**
+
+因此 `exp141` 的核心创新点候选是：
+
+- **Competition-Context LPCS**
+
+它给每个 pair 新增的不是 query 级常数摘要，而是 pair-specific 的竞争特征：
+
+1. `base_rank`
+2. `kp_rank`
+3. `support_rank`
+4. `gain_rank`
+5. `gain_zscore`
+
+如果这条线成立，它会支撑一种比 `query_ctx` 更 retrieval-native 的 story：
+
+- pose 定义 common support
+- pair correction 不仅看 query 全局语境
+- 还要看当前 pair 在整个候选竞争中的相对位置
+
 这两条线的共同点是：
 - 都还紧扣 `exp109` 的核心发现：单图 support 不完整
 - 都没有退回去做 generic backbone/module 堆叠

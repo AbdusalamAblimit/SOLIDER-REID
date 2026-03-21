@@ -1059,6 +1059,32 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
    - 它不是替代 `exp139`，而是在问另一个同样合理的问题：
      - correction 是否需要显式的 confidence gate
 
+## 2026-03-22 本地新的不同创新点：从 query 语境转向 candidate competition 语境
+
+在 `exp140` 止损后，本地新线不再沿 confidence 小修补，而是切到另一类 story：
+
+**pair correction 可能不只是缺 query-level context，  
+还可能缺“当前这个候选相对其他候选到底排在哪”的 competition context。**
+
+这就是 `exp141 Competition-Context LPCS` 的位置。
+
+它和 `exp139` 的区别必须讲清楚：
+
+1. `exp139`
+   - 给 pair 一个 query 级摘要语境
+   - 回答“这个 query 整体难不难”
+2. `exp141`
+   - 给 pair 一个 candidate competition 语境
+   - 回答“这个 pair 在所有候选中是不是少数真正值得被强修正的对象”
+
+如果 `exp141` 成立，story 会进一步从：
+
+- query-aware correction
+
+推进成：
+
+- **competition-aware correction**
+
 所以当下最合理的论文主叙事排序是：
 
 1. 第一主候选：

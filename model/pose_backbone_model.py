@@ -513,7 +513,7 @@ class PoseBackboneModel(build_transformer):
             lpcs_delta_scale = getattr(cfg.MODEL, 'POSE_LPCS_DELTA_SCALE', 0.5)
             lpcs_head_mode = getattr(cfg.MODEL, 'POSE_LPCS_HEAD_MODE', 'residual')
             lpcs_context_mode = getattr(cfg.MODEL, 'POSE_LPCS_CONTEXT_MODE', 'none')
-            if lpcs_context_mode == 'query_ctx':
+            if lpcs_context_mode in ('query_ctx', 'comp_ctx'):
                 lpcs_input_dim = 11
             else:
                 lpcs_input_dim = 6

@@ -74,6 +74,51 @@ def build_query_context_descriptors(base_dist, support_ratio, pair_change=None, 
     return row_ctx.unsqueeze(1).expand(-1, base_dist.shape[1], -1)
 
 
+def _normalized_rank(values, valid_mask, descending=False):
+    if valid_mask is None:
+        valid_mask = torch.ones_like(values, dtype=torch.bool)
+
+    if descending:
+        fill = torch.full_like(values, float('-inf'))
+    else:
+        fill = torch.full_like(values, float('inf'))
+    work = torch.where(valid_mask, values, fill)
+    order = torch.argsort(work, dim=1, descending=descending)
+    base_rank = torch.arange(values.shape[1], device=values.device, dtype=values.dtype)
+    base_rank = base_rank.unsqueeze(0).expand_as(values)
+    rank = torch.zeros_like(values)
+    rank.scatter_(1, order, base_rank)
+    valid_count = valid_mask.float().sum(dim=1, keepdim=True).clamp(min=1.0)
+    rank = rank / (valid_count - 1.0).clamp(min=1.0)
+    neutral = torch.full_like(rank, 0.5)
+    return torch.where(valid_mask, rank, neutral)
+
+
+def build_query_competition_descriptors(base_dist, kp_dist, support_ratio, valid_mask=None):
+    """Build pair-specific competition context from a query's candidate set."""
+    if valid_mask is None:
+        valid_mask = torch.ones_like(base_dist, dtype=torch.bool)
+
+    gain = base_dist - kp_dist
+    valid_float = valid_mask.float()
+    valid_count = valid_float.sum(dim=1, keepdim=True).clamp(min=1.0)
+
+    gain_mean = (gain * valid_float).sum(dim=1, keepdim=True) / valid_count
+    gain_centered = (gain - gain_mean) * valid_float
+    gain_std = torch.sqrt(gain_centered.pow(2).sum(dim=1, keepdim=True) / valid_count).clamp_min_(1e-12)
+    gain_z = torch.where(valid_mask, gain_centered / gain_std, torch.zeros_like(gain))
+
+    base_rank = _normalized_rank(base_dist, valid_mask, descending=False)
+    kp_rank = _normalized_rank(kp_dist, valid_mask, descending=False)
+    support_rank = _normalized_rank(support_ratio, valid_mask, descending=True)
+    gain_rank = _normalized_rank(gain, valid_mask, descending=True)
+
+    return torch.stack(
+        [base_rank, kp_rank, support_rank, gain_rank, gain_z],
+        dim=-1,
+    )
+
+
 class PairAdaptiveFusionHead(nn.Module):
     """Predict how much each pair should trust common-support distance."""
 

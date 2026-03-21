@@ -1,0 +1,51 @@
+请对 `/root/work/SOLIDER-REID` 中准备启动的 `exp141` 做一次**全面代码审查**，目标是判断它是否允许启动训练。
+
+本次实验名为：
+
+- `exp141 Competition-Context LPCS`
+
+请重点阅读并审查这些文件：
+
+1. `/root/work/SOLIDER-REID/experiments/exp141/design.md`
+2. `/root/work/SOLIDER-REID/experiments/exp141/monitor.md`
+3. `/root/work/SOLIDER-REID/configs/occluded_duke/pose_psg_gcn_lpcs_comp_ctx.yml`
+4. `/root/work/SOLIDER-REID/config/defaults.py`
+5. `/root/work/SOLIDER-REID/model/modules/pair_adaptive_fusion.py`
+6. `/root/work/SOLIDER-REID/model/pose_backbone_model.py`
+7. `/root/work/SOLIDER-REID/processor/processor.py`
+8. `/root/work/SOLIDER-REID/utils/metrics.py`
+9. `/root/work/SOLIDER-REID/experiments/exp135/design.md`
+10. `/root/work/SOLIDER-REID/experiments/exp139/design.md`
+
+审查目标：
+
+1. 判断 `exp141` 相对 `exp135` 是否是**单变量实验**
+2. 判断它是否真的不同于 `exp139 query_ctx`
+3. 判断 `comp_ctx` 的训练 / 测试路径是否对称
+4. 判断 `competition context` 是否无标签、不会引入隐藏的 oracle / label 泄漏
+5. 判断默认行为是否被破坏
+6. 判断是否存在足以阻止训练启动的实现问题
+
+请特别检查：
+
+1. `POSE_LPCS_CONTEXT_MODE='comp_ctx'` 是否只影响 `LPCS` context 分支，不影响默认行为
+2. `build_query_competition_descriptors()` 是否在 train/test 两侧使用同一语义
+3. 训练中排除对角线、测试中对全部 gallery 计算 competition ranks，是否合理且一致
+4. 新增的 rank / gain features 是否会因为 invalid positions 或排序实现而出现错误广播
+
+请输出到：
+
+- `/root/work/SOLIDER-REID/experiments/exp141/claude_review.md`
+
+输出格式要求：
+
+1. 首行必须明确写：
+   - `结论：允许启动`
+   或
+   - `结论：不允许启动`
+2. 然后列出：
+   - blocking 问题
+   - 非阻塞提醒
+   - 你对“这是否真的是相对 exp135 的单变量、且是否真不同于 exp139”的判断
+
+请不要做训练，不要修改代码，只做审查。

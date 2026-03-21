@@ -2800,3 +2800,38 @@ B. 直接启动 exp025，exp024 可以后续补跑
 1. `exp140` 的问题已经不是“还没收敛”，而是机制本体退化
 2. `exp139` 目前虽未显著超过 `exp135`，但它仍是当前最接近论文主机制的 active line
 3. 现在更合理的是把本地算力从已退化的 `exp140` 释放出来，转给下一条真正不同的创新点
+
+## [2026-03-22 02:49] 决策：本地转向 `exp141 Competition-Context LPCS`
+
+**上下文**:
+- `exp139` 证明 query-level context 有价值，但到 `ep100` 为止仍只是稳住主候选
+- `exp140` 当前版本已止损，原因是 confidence gate 退化为接近常数 1
+- 本地主卡已释放，必须进入真正不同的创新点
+
+**判断**:
+1. 本地下一条线不应再沿：
+   - confidence target
+   - rank weighting
+   - query mean/std 摘要
+2. 当前更合理的不同创新点是：
+   - **candidate competition-aware pair correction**
+3. 它与 `exp139` 的区别是：
+   - `exp139` 问“这个 query 整体是什么语境”
+   - `exp141` 问“这个 pair 在当前 query 的候选竞争里处于什么位置”
+
+**选择**:
+1. 新本地候选定为 `exp141 Competition-Context LPCS`
+2. 相对 `exp135` 保持单变量：
+   - 只把 `POSE_LPCS_CONTEXT_MODE` 改成 `comp_ctx`
+3. 先完成：
+   - 代码接线
+   - 设计文档
+   - 本地自检
+   - 全面 Claude 审查
+4. 在用户告知审查完成前，不启动训练
+
+**理由**:
+1. 这是当前与 `query_ctx / confidence-gate` 都不同的真正新点
+2. 它仍然紧扣 retrieval 本质，而不是退回 backbone 模块堆叠
+3. 如果成立，它能把 story 从“query 语境”进一步推进到：
+   - **candidate competition 语境**

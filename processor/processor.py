@@ -15,6 +15,7 @@ from model.modules.pamc import pamc_consistency_loss
 from model.modules.support_complete_bank import SupportCompleteBank
 from model.modules.pair_adaptive_fusion import (
     build_pair_descriptors,
+    build_query_competition_descriptors,
     build_query_context_descriptors,
     common_support_distance,
     euclidean_distance_tensor,
@@ -208,8 +209,8 @@ def do_train(cfg,
             raise ValueError('POSE_LPCS_RANK_TAU must be > 0 when POSE_LPCS_RANK_MODE=rank_decay')
         if lpcs_head_mode not in ('residual', 'residual_conf'):
             raise ValueError("POSE_LPCS_HEAD_MODE must be one of {'residual', 'residual_conf'}")
-        if lpcs_context_mode not in ('none', 'query_ctx'):
-            raise ValueError("POSE_LPCS_CONTEXT_MODE must be one of {'none', 'query_ctx'}")
+        if lpcs_context_mode not in ('none', 'query_ctx', 'comp_ctx'):
+            raise ValueError("POSE_LPCS_CONTEXT_MODE must be one of {'none', 'query_ctx', 'comp_ctx'}")
         num_train_classes = len(set([d[1] for d in train_loader.dataset.dataset]))
         lpcs_teacher_bank = SupportCompleteBank(
             num_classes=num_train_classes,
@@ -415,6 +416,15 @@ def do_train(cfg,
             )
             desc = torch.cat([desc, row_ctx], dim=-1)
             context_mean = float(row_ctx.abs().mean().item())
+        elif lpcs_context_mode == 'comp_ctx':
+            comp_ctx = build_query_competition_descriptors(
+                base_dist.detach(),
+                kp_dist.detach(),
+                support_ratio.detach(),
+                valid_mask=~eye,
+            )
+            desc = torch.cat([desc, comp_ctx], dim=-1)
+            context_mean = float(comp_ctx.abs().mean().item())
         if lpcs_head_mode == 'residual_conf':
             raw_delta, conf_logits = lpcs_head(desc.view(-1, desc.shape[-1]))
             raw_delta = raw_delta.view(batch_size, batch_size)
