@@ -2263,3 +2263,48 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
 - `exp109` 暴露出的单图 support incomplete，能否在编码阶段被修复
 
 而不是继续在检索距离上打补丁。
+
+---
+
+## 2026-03-22: feature-level completion 方向彻底证伪，转入注意力 inductive bias
+
+### exp142 SKC 最终结论
+
+exp142 (Support-Supervised Keypoint Completion) 最终 mAP 60.3%（equal_concat），相对 exp030a -0.8% mAP / -1.9% R1。
+
+这是 feature-level completion 方向的第 5+ 次尝试，全部失败：
+- exp048 SGMKC: -1.6%
+- exp084 CIPGFR: -0.2%
+- exp091 TTSFR: -0.2%
+- exp092 LSRM: -0.7%
+- exp142 SKC: -0.8%
+
+**根本原因分析**:
+1. 15K 数据集无法学习复杂的 completion 函数
+2. support bank / EMA prototype 的质量本身受限于数据量
+3. completion module 的 gate 无法学会"该修改多少"——要么太保守（不起作用），要么太激进（破坏特征）
+
+### 新方向: SASA (Skeleton-Aware Self-Attention)
+
+从"修改特征值"转向"修改注意力路由"。核心区别:
+- PSG/PAA/SKC: 修改 **what** (特征本身)
+- SASA: 修改 **how** (token 之间的注意力分配)
+
+SASA 使用骨架测地距离作为 Swin window attention 的固定偏置，零参数。
+
+如果 SASA 也中性，说明 15K 数据集上注意力偏置也不够有效。下一步应考虑:
+1. **PGCO** (课程式遮挡增强): 修改数据分布而非模型
+2. **SCFA** (对称特征对齐): 利用人体双侧对称性
+3. 或接受训练端已到天花板，转向 SGCFR 优化
+
+### 已确认无效的完整方向列表 (截至 exp142)
+1. PSG + forward path 添加 (21 实验)
+2. PSG + 正则化/dropout
+3. PSG + loss 调制 (PCRA, CSGT, GKD, DPF, etc.)
+4. PDS Part 收敛改善
+5. Post-hoc pooling 改进
+6. Feature-level completion (SGMKC, CIPGFR, TTSFR, LSRM, SKC)
+7. Token merging (PGTM)
+8. Transformer decoder (PQTD)
+9. Attention supervision (PCQA)
+10. OT matching (exp099)
