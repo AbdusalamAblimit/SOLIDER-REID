@@ -134,3 +134,29 @@
      - `Epoch 1` 结束
      - `ep10`
      - `epoch 21+` 后首次出现的 `lpcs_ctxm / lpcs_fg / lpcs_bg / lpcs_dm / lpcs_ds`
+
+### [2026-03-22 04:05] 远程 warmup 持续健康，已推进到 `Epoch 9`
+- 当前进度:
+  - 已完成 `Epoch 1-9`
+  - 尚未到首个验证点 `ep10`
+- 关键训练日志:
+  1. `Epoch 2 done`
+     - `Time per epoch: 91.547[s]`
+     - `Speed: 148.2[samples/s]`
+  2. `Epoch 5 done`
+     - `Time per epoch: 91.194[s]`
+     - `Speed: 148.8[samples/s]`
+  3. `Epoch 9` 末端：
+     - `Epoch[9] Iter[200/227] Loss: 6.288`
+     - `Acc: 0.231`
+  4. 训练曲线整体：
+     - `Epoch 3 Iter[20] Loss: 9.757`
+     - `Epoch 6 Iter[200] Loss: 7.319`
+     - `Epoch 9 Iter[200] Loss: 6.288`
+- 当前判断: 继续
+- 原因:
+  1. warmup 形状与 `query_ctx` 线相近，没有发现数值异常
+  2. 目前仍无法对 `comp_ctx` 的机制价值下判断，因为 `LPCS warmup=20`
+  3. 下一关键点是：
+     - `ep10`
+     - `epoch 21+` 后是否首次出现并稳定抬起 `lpcs_ctxm`

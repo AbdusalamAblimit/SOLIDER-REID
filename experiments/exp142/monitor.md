@@ -202,3 +202,34 @@
      - `ep10`
      - `ep20`
      - `epoch 21+` 后首次出现的 `skc_arr / skc_ail / skc_cl / skc_pre / skc_post`
+
+## 2026-03-21 20:05 `ep10` 已出，warmup 末端与基线同量级，但 SKC 监督尚未真正激活
+
+- 当前进度:
+  - 已完成 `ep10` 验证
+  - 当前处于 `Epoch 20`
+- 关键验证结果:
+  - `ep10 = 38.3 / 51.0`
+- 对照观察:
+  1. 这与历史 warmup 早期基线同量级，没有出现“新模块一上来就拖坏训练”的信号
+  2. `Epoch 10` 训练末端：
+     - `Loss: 6.130`
+     - `skc_lmr: 0.144`
+     - `skc_arr / skc_ail: 0.000 / 0.000`
+     - `skc_spr: 0.144`
+     - `skc_pc / skc_pcnt: 0.882 / 157.287`
+  3. `Epoch 19` 末端：
+     - `Loss: 3.388`
+     - `Acc: 0.517`
+     - `skc_spr: 0.145`
+     - `skc_pc / skc_pcnt: 0.882 / 311.168`
+  4. `Epoch 20` 前段：
+     - `Loss: 3.367 -> 3.403`
+     - `skc_arr / skc_ail / skc_gm / skc_gs / skc_dn / skc_ds` 仍全为 `0`
+- 当前判断: 继续，真正关键点尚未到来
+- 原因:
+  1. 现在仍处于 `warmup=20` 的边界内，`_skc_active` 规则是 `epoch > 20`，因此 `Epoch 21` 才是第一次真正测试 SKC completion 的时刻
+  2. `skc_spr / skc_pc / skc_pcnt` 已经说明 support bank 准备充分，不存在“激活时 bank 还是空的”问题
+  3. 下一次最关键的观察点不是 `ep20` 本身，而是：
+     - `Epoch 21` 开始后 `skc_arr / skc_ail` 是否从 `0` 跳起
+     - `skc_cl / skc_pre / skc_post` 是否首次出现并呈现 `post < pre`
