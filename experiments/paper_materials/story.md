@@ -875,3 +875,43 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
      - 修 bug
      - clean rerun
      - 重新收集能证明 `LPCS` 真激活的机制统计与正式结果
+
+## 2026-03-21 晚间更新：`LPCS` 终于被真正测到，但当前瓶颈更像 ranking 而不是 routing
+
+- `exp135 corrected LPCS` 已跑满：
+  - `ep120 = 61.1 / 72.3`
+- `exp136 corrected sparse LPCS` 到 `ep70` 为止：
+  - `58.9 / 70.1`
+
+这批新证据把 story 又往前推进了一步：
+
+1. 现在我们终于可以说：
+   **learned pair correction 这个大方向是真的，不再只是设计猜想。**
+   原因是 `exp135` 里 `LPCS` loss 已真实进入训练，而且：
+   - `lpcs_fg` 长期显著高于 `lpcs_bg`
+   - 排序确实被系统性改写
+
+2. 但 corrected full-pair `LPCS` 的收益形态不是“全面变强”，而是：
+   - `mAP` 更强
+   - `R1` 偏弱
+   这说明当前 head 更像在做 deeper-rank correction，而不是更直接地修 top-1 错误。
+
+3. `exp136` 又给出一个很关键的负边界：
+   - 真稀疏 routing 已经被首次干净验证
+   - `lpcs_psr = 0.254`
+   - `lpcs_pf ≈ 3.0`
+   但它到 `ep70` 仍没有压过 full-pair `LPCS`
+
+因此，当前 story 最合理的收束不再是：
+- “只要把 pair 挑得更稀疏就会更强”
+
+而更像是：
+- **pose 定义共同可见证据**
+- **模型学习对 pair 做 correction**
+- **真正的下一步瓶颈在于，如何让 correction 目标更 ranking-aligned**
+
+也就是说，论文主线现在更接近：
+**Pose-guided Learned Pair Correction for Common-Support ReID**
+
+而下一步最关键的机制升级应该是：
+**让 `LPCS` 直接为 hardest / top-ranked 错误负责，而不是平均地对所有 selected pairs 做回归式排序约束。**

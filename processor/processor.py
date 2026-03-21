@@ -184,6 +184,8 @@ def do_train(cfg,
         lpcs_delta_scale = getattr(cfg.MODEL, 'POSE_LPCS_DELTA_SCALE', 0.5)
         lpcs_pair_mode = getattr(cfg.MODEL, 'POSE_LPCS_PAIR_MODE', 'all')
         lpcs_pair_top_ratio = float(getattr(cfg.MODEL, 'POSE_LPCS_PAIR_TOP_RATIO', 1.0))
+        lpcs_rank_mode = getattr(cfg.MODEL, 'POSE_LPCS_RANK_MODE', 'all')
+        lpcs_rank_top_ratio = float(getattr(cfg.MODEL, 'POSE_LPCS_RANK_TOP_RATIO', 1.0))
         lpcs_cvk_global_weight = float(getattr(cfg.TEST, 'CVK_GLOBAL_WEIGHT', 1.0))
         lpcs_cvk_kp_weight = float(getattr(cfg.TEST, 'CVK_KP_WEIGHT', 1.0))
         lpcs_st_low_thr = getattr(cfg.MODEL, 'POSE_LPCS_ST_LOW_THR', 0.3)
@@ -193,6 +195,10 @@ def do_train(cfg,
         lpcs_st_update_stop_epoch = getattr(cfg.MODEL, 'POSE_LPCS_ST_UPDATE_STOP_EPOCH', -1)
         if lpcs_pair_mode == 'delta_top' and not (0.0 < lpcs_pair_top_ratio <= 1.0):
             raise ValueError('POSE_LPCS_PAIR_TOP_RATIO must be in (0, 1] when POSE_LPCS_PAIR_MODE=delta_top')
+        if lpcs_rank_mode not in ('all', 'hard_top'):
+            raise ValueError("POSE_LPCS_RANK_MODE must be one of {'all', 'hard_top'}")
+        if lpcs_rank_mode == 'hard_top' and not (0.0 < lpcs_rank_top_ratio <= 1.0):
+            raise ValueError('POSE_LPCS_RANK_TOP_RATIO must be in (0, 1] when POSE_LPCS_RANK_MODE=hard_top')
         num_train_classes = len(set([d[1] for d in train_loader.dataset.dataset]))
         lpcs_teacher_bank = SupportCompleteBank(
             num_classes=num_train_classes,
@@ -240,12 +246,15 @@ def do_train(cfg,
         logger.info(f'[LPCS] enabled: weight={lpcs_weight}, warmup={lpcs_warmup}, '
                     f'hidden={lpcs_hidden}, delta_scale={lpcs_delta_scale}, '
                     f'pair_mode={lpcs_pair_mode}, top_ratio={lpcs_pair_top_ratio}, '
+                    f'rank_mode={lpcs_rank_mode}, rank_top_ratio={lpcs_rank_top_ratio}, '
                     f'cvk_gw={lpcs_cvk_global_weight}, cvk_kw={lpcs_cvk_kp_weight}, '
                     f'low_thr={lpcs_st_low_thr}, update_thr={lpcs_st_update_thr}, '
                     f'mom={lpcs_st_mom}, min_count={lpcs_st_min_count}, '
                     f'stop_epoch={lpcs_st_update_stop_epoch}')
         if lpcs_pair_mode == 'delta_top' and lpcs_pair_top_ratio >= 1.0:
             logger.warning('[LPCS] pair_mode=delta_top but top_ratio>=1.0; routing degenerates to selecting all pairs')
+        if lpcs_rank_mode == 'hard_top' and lpcs_rank_top_ratio >= 1.0:
+            logger.warning('[LPCS] rank_mode=hard_top but rank_top_ratio>=1.0; hard aggregation degenerates to selecting all pairs')
     if scfr_enabled:
         logger.info(f'[SCFR] Feature replacement mode enabled (loss disabled, bank replaces features)')
     if scrc_enabled:
@@ -341,11 +350,11 @@ def do_train(cfg,
         return loss, stats
 
     def _compute_lpcs_loss(lpcs_head, global_feat, kp_feats, kp_weights, teacher_kp_feats, labels):
-        def _select_top(values, ratio):
+        def _select_top(values, ratio, largest=True):
             if values.numel() <= 1 or ratio >= 1.0:
                 return torch.ones_like(values, dtype=torch.bool)
             keep = max(1, int(math.ceil(values.numel() * ratio)))
-            top_idx = torch.topk(values, k=keep, largest=True, sorted=False).indices
+            top_idx = torch.topk(values, k=keep, largest=largest, sorted=False).indices
             mask = torch.zeros_like(values, dtype=torch.bool)
             mask[top_idx] = True
             return mask
@@ -386,6 +395,7 @@ def do_train(cfg,
         total_pair_count = 0.0
         selected_pair_weight_sum = 0.0
         total_pair_weight_sum = 0.0
+        rank_selected_pair_count = 0.0
         for idx in range(batch_size):
             pos = final_dist[idx][pos_mask[idx]]
             neg = final_dist[idx][neg_mask[idx]]
@@ -408,9 +418,27 @@ def do_train(cfg,
             if pos.numel() == 0 or neg.numel() == 0:
                 continue
 
-            selected_pair_count += float(pos_w.numel() + neg_w.numel())
+            routed_pos_w = pos_w
+            routed_neg_w = neg_w
+
+            if lpcs_rank_mode == 'hard_top':
+                pos_rank_sel = _select_top(pos, lpcs_rank_top_ratio, largest=True)
+                neg_rank_sel = _select_top(neg, lpcs_rank_top_ratio, largest=False)
+            else:
+                pos_rank_sel = torch.ones_like(pos, dtype=torch.bool)
+                neg_rank_sel = torch.ones_like(neg, dtype=torch.bool)
+
+            pos = pos[pos_rank_sel]
+            neg = neg[neg_rank_sel]
+            pos_w = pos_w[pos_rank_sel]
+            neg_w = neg_w[neg_rank_sel]
+            if pos.numel() == 0 or neg.numel() == 0:
+                continue
+
+            selected_pair_count += float(routed_pos_w.numel() + routed_neg_w.numel())
             total_pair_count += float(pos_w_full.numel() + neg_w_full.numel())
-            selected_pair_weight_sum += float(pos_w.sum().item() + neg_w.sum().item())
+            rank_selected_pair_count += float(pos_w.numel() + neg_w.numel())
+            selected_pair_weight_sum += float(routed_pos_w.sum().item() + routed_neg_w.sum().item())
             total_pair_weight_sum += float(pos_w_full.sum().item() + neg_w_full.sum().item())
             rank_term = F.softplus(pos.unsqueeze(1) - neg.unsqueeze(0))
             rank_weight = torch.sqrt(pos_w.unsqueeze(1) * neg_w.unsqueeze(0))
@@ -432,6 +460,7 @@ def do_train(cfg,
             pair_focus = (selected_pair_weight_sum / selected_pair_count) / (
                 total_pair_weight_sum / max(total_pair_count, 1e-6)
             )
+        rank_selected_ratio = rank_selected_pair_count / max(selected_pair_count, 1e-6)
         stats = {
             'delta_mean': float(delta[mask].mean().item()),
             'delta_std': float(delta[mask].std(unbiased=False).item()),
@@ -442,6 +471,7 @@ def do_train(cfg,
             'final_gap': final_gap,
             'pair_selected_ratio': float(pair_selected_ratio),
             'pair_focus': float(pair_focus),
+            'rank_selected_ratio': float(rank_selected_ratio),
         }
         return loss, stats
     _LOCAL_PROCESS_GROUP = None
@@ -702,6 +732,7 @@ def do_train(cfg,
                     details['lpcs_fg'] = lpcs_stats['final_gap']
                     details['lpcs_psr'] = lpcs_stats['pair_selected_ratio']
                     details['lpcs_pf'] = lpcs_stats['pair_focus']
+                    details['lpcs_rsr'] = lpcs_stats['rank_selected_ratio']
                     loss._loss_details = details
                 if recon_loss is not None:
                     details = getattr(loss, '_loss_details', {})
