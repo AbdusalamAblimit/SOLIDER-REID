@@ -2867,3 +2867,29 @@ B. 直接启动 exp025，exp024 可以后续补跑
 1. 这是比 `query_ctx / comp_ctx / confidence` 都更大的方法级改动
 2. 它直接回应 `exp109` 的核心发现，而不是继续在 scoring 层修修补补
 3. 如果成立，它比 `LPCS` 家族更有机会支撑 B 类论文主创新
+
+---
+
+### [2026-03-22 05:58] 决策 #N+1
+
+**上下文**: exp142 SKC 训练完成。最终结果 mAP 60.3% / R1 71.8%（equal_concat），相对 exp030a -0.8% mAP / -1.9% R1。feature-level support-supervised completion 方向确认失败。
+
+**核心发现**:
+1. SKC completion 模块虽然活跃（gate≈0.26, delta_norm≈1.5），但 skc_pre≈skc_post 说明修改方向不是向 support prototype 靠近
+2. gate 无限制增长（0.12→0.26）导致后期过度修改特征
+3. 这与 SGMKC, SCRC, SCKD 的结论一致：feature-level completion 在 15K 数据集上不可行
+
+**选项**:
+  A. SKC gate clamp ablation（限制 gate 增长上界）
+  B. SASA（Skeleton-Aware Self-Attention，零参数注意力偏置）
+  C. PGCO（Pose-Guided Curriculum Occlusion，课程式遮挡增强）
+
+**选择**: B — SASA
+**理由**:
+1. feature-level completion 方向已被彻底证伪（5+ 次尝试），不值得继续做 ablation
+2. SASA 代表全新方向：通过骨架拓扑修改注意力路由（而非特征值）
+3. 零参数（纯归纳偏置），符合"只有强归纳偏置才能在 15K 数据上生效"的核心教训
+4. KP-RPE 虽然中性，但 SASA 使用拓扑距离（图论）而非欧氏距离（几何），是本质不同的信息
+5. 已实现、已审查通过，可立即启动
+
+**执行结果**: exp143 SASA 已在本地启动，训练正常进行。
