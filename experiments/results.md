@@ -737,3 +737,23 @@
      - 但 **只学一个标量 `alpha`、只在两种标量距离之间做凸组合、并用 teacher distance 回归监督** 这套实现过于弱
   5. 因而下一步应从 `alpha-fusion` 升级到：
      **更强的 learned pair scorer / ranking-aligned pair correction**
+
+## 2026-03-21: exp133 / exp134 LPCS（失效 run）
+
+### exp133 / exp134: 由于共享接线 bug，当前结果全部作废，不能用于支持或反驳 LPCS
+
+> `exp133`（LPCS）与 `exp134`（Changed-Pair Sparse LPCS）在运行过程中都暴露了同一个实现问题：训练日志在 `epoch 21+` 后始终没有任何 `lpcs_*` 统计。进一步排查代码确认，`processor.py` 中 `kp_aux_data` 的构建条件漏掉了 `ltcs_enabled / lpcs_enabled`，导致 `lpcs_teacher_feats` 永远不会生成，`LPCS` loss 实际从未被加入训练。两轮实验因此均判定为 **失效 run**。
+
+| 方法 | 已观测数值 | 当前解释 |
+|------|------------|----------|
+| `exp133 LPCS` | `ep40 = 56.5 / 67.8`；`ep50 = 58.3 / 69.6` | 仅能反映 baseline 主训练形状，**不能**解释为 LPCS 有效 |
+| `exp134 Sparse LPCS` | `ep10 = 35.7 / 49.9`；`ep20 = 46.4 / 58.1` | 仅能反映 baseline 主训练形状，**不能**解释为 sparse LPCS 有效 |
+
+- 结论：
+  1. `exp133/134` 当前所有数值都 **不能** 进入 LPCS 的方法判断
+  2. 这不是方法负结果，而是共享接线 bug
+  3. bug 已定位并修复：
+     - `kp_aux_data` 构建条件已补上 `ltcs_enabled / lpcs_enabled`
+  4. 因而下一步必须以新实验编号重跑：
+     - 本地重跑 corrected `LPCS`
+     - 远程重跑 corrected `Changed-Pair Sparse LPCS`

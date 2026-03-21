@@ -857,3 +857,21 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
   **support-complete guided pair-adaptive correction**
   进一步收紧并升级成：
   **support-complete guided pair-specific correction scoring**
+
+## 2026-03-21 上午补记：`exp133/134` 目前不能进入 story 证据链
+
+- `exp133 LPCS` 与 `exp134 Sparse LPCS` 当前都被判定为失效 run。
+
+- 原因不是方法负结果，而是共享接线 bug：
+  1. `kp_aux_data` 构建条件漏掉了 `ltcs_enabled / lpcs_enabled`
+  2. 导致 `lpcs_teacher_feats` 永远不会生成
+  3. `LPCS` loss 实际从未被加入训练
+  4. 日志里也因此完全没有 `lpcs_*` 统计
+
+- 所以 story 上必须明确：
+  1. 当前我们还**没有真正测到** `LPCS`
+  2. 不能把 `exp133/134` 的数值当成 learned pair correction 的证据
+  3. 正确的下一步不是改写 story，而是：
+     - 修 bug
+     - clean rerun
+     - 重新收集能证明 `LPCS` 真激活的机制统计与正式结果

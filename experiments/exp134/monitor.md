@@ -131,3 +131,22 @@
 - 当前判断: 继续
 - 原因:
   - 启动健康，后续最关键的节点仍是 `ep10 / ep20` 和 `epoch 21+` 后的 sparse-routing 统计
+
+### [2026-03-21 08:55] 远程中止并判定为失效 run
+- 处理动作:
+  1. 手动停止远程 `exp134` 训练进程
+  2. 保留当前 `remote_nohup.log` 作为排错证据
+- 失效原因:
+  1. `exp134` 与本地 `exp133` 共用同一段 `LPCS` 接线逻辑
+  2. 排查发现 `processor.py` 中 `kp_aux_data` 构建条件漏掉了 `ltcs_enabled / lpcs_enabled`
+  3. 这会导致：
+     - `lpcs_teacher_feats` 永远不会生成
+     - `LPCS` loss 永远不会被加入
+     - `lpcs_psr / lpcs_pf` 也不会出现
+  4. 因此 `exp134` 当前并没有真实验证 sparse changed-pair routing
+- 当前结论边界:
+  1. `exp134 ep10 = 35.7 / 49.9`、`ep20 = 46.4 / 58.1` 只能视为 baseline 形状
+  2. **不能** 把这些结果当作 sparse `LPCS` 的方法结论
+- 当前判断: 结案，按无效 run 处理
+- 原因:
+  - 当前终止是为了止损算力；修复共享接线 bug 后必须以新实验编号重跑
