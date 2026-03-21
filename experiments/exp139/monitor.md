@@ -4,7 +4,7 @@
 - 方法: `Query-Context LPCS`
 - 类型: `exp135` 的 query-context 单变量升级
 - 计划运行位置: 远程
-- 当前状态: 已通过二审，待远程启动
+- 当前状态: 远程训练中
 - 直接对照:
   - `exp135 Corrected LPCS`
   - `exp138 Rank-Decayed LPCS`
@@ -110,3 +110,25 @@
 - 当前判断: 放行，准备远程启动
 - 原因:
   - 这条线现在终于可以作为真正的第二创新点被远程干净验证
+
+### [2026-03-21 14:36] 远程 `exp139` 正式启动
+- 远程机器:
+  - 恒源云 `5060 Ti`
+- 同步动作:
+  1. 本地已 push 到 `origin/exp/pose_heatmap`
+  2. 远程已 `git pull origin exp/pose_heatmap`
+- 启动命令:
+  - `python3 train.py --config_file configs/occluded_duke/pose_psg_gcn_lpcs_query_ctx.yml OUTPUT_DIR ./log/occluded_duke/exp139_lpcs_query_ctx`
+- 远程输出:
+  - `log/occluded_duke/exp139_lpcs_query_ctx/remote_nohup.log`
+- 启动确认:
+  1. 配置日志已确认：
+     - `POSE_LPCS_CONTEXT_MODE: query_ctx`
+     - `POSE_TEST_FEAT: cvk_residual`
+  2. 远程训练主进程已存在：
+     - `python3 train.py --config_file configs/occluded_duke/pose_psg_gcn_lpcs_query_ctx.yml ...`
+  3. 远程 GPU 已被占用：
+     - `5060 Ti` 显存约 `6692 MiB`
+- 当前判断: 继续
+- 原因:
+  - 这轮是当前唯一真正测试“无标签 query-level context 是否改善 pair correction”的 clean run
