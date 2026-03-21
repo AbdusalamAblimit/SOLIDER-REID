@@ -2167,3 +2167,32 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
 1. pose 定义 common support
 2. support-complete teacher 提供 correction 方向
 3. confidence calibration 决定 correction 是否该真正落到检索距离上
+
+### 2026-03-22 当前最强创新候选已收紧到两条互补线
+
+到 `exp139 ep50` 这一步，当前创新探索已经开始明显分层：
+
+1. **主候选：Query-Context Pair Correction**
+   - 代表实验：`exp139`
+   - 当前信号：
+     - `ep50 = 58.7 / 70.4`
+     - 同时高于 `exp135/138`
+     - `lpcs_ctxm ≈ 0.47`
+   - 它在回答：
+     - 同一份 common support，是否需要放在 query-level 语境里解释
+
+2. **并行候选：Confidence-Calibrated Pair Correction**
+   - 代表实验：`exp140`
+   - 当前状态：
+     - 审查通过
+     - 已正式启动
+   - 它在回答：
+     - pair correction 不仅要会修，还要知道这次修正该不该被信任
+
+这两条线的共同点是：
+- 都还紧扣 `exp109` 的核心发现：单图 support 不完整
+- 都没有退回去做 generic backbone/module 堆叠
+
+区别在于：
+- `exp139` 强调 **如何解释 common support**
+- `exp140` 强调 **如何应用 correction**

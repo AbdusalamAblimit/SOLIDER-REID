@@ -1040,3 +1040,30 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
 
 - `exp139` 强调 **context-aware interpretation**
 - `exp140` 强调 **confidence-aware application**
+
+## 2026-03-22 到 `exp139 ep50` 的最新 story 位置
+
+当前 story 已经不再平均分散在多条线之间，而是出现了比较清楚的主次关系：
+
+1. `exp139 Query-Context LPCS`
+   - 已给出：
+     - `ep40 = 57.0 / 68.8`
+     - `ep50 = 58.7 / 70.4`
+   - 相对 `exp135/138` 同期都更强
+   - 这意味着 story 里的这句话开始有证据支撑：
+     - **同一份 common-support signal，必须放在 query 的整体语境中解释**
+
+2. `exp140 Confidence-Calibrated LPCS`
+   - 现在刚启动
+   - 它不是替代 `exp139`，而是在问另一个同样合理的问题：
+     - correction 是否需要显式的 confidence gate
+
+所以当下最合理的论文主叙事排序是：
+
+1. 第一主候选：
+   - pose-defined common support + query-context pair correction
+2. 第二并行候选：
+   - pose-defined common support + confidence-calibrated correction
+
+如果后续 `exp139` 继续稳定转正，它会比 `exp140` 更先具备“主方法”的资格；  
+而 `exp140` 更像是在验证：当前剩余的 `R1` 缺口，究竟是解释问题，还是应用问题。

@@ -54,3 +54,31 @@
 - 当前判断: 继续等待审查结果
 - 原因:
   - 现在这条审查链路已经稳定，后续只需等待用户告知“review 已结束”
+
+### [2026-03-22 00:39] Claude 审查通过，`exp140` 已正式启动
+- 审查文件:
+  - `experiments/exp140/claude_review.md`
+- 审查结论:
+  - **允许启动**
+- 审查关键结论:
+  1. 相对 `exp135` 是真正单变量
+  2. `residual_conf` 在 train/test 两侧都完整生效
+  3. `conf_target` 不引入 label/oracle 泄漏
+- 启动说明:
+  1. 前两次后台启动均失败，但属于壳层问题，不是代码问题：
+     - 一次是未先创建 `OUTPUT_DIR`
+     - 一次是后台 shell 走错 Python 环境
+  2. 最终已改用绝对解释器路径在 PTY 会话中正式启动：
+     - `/root/miniconda3/envs/solider-reid/bin/python train.py --config_file configs/occluded_duke/pose_psg_gcn_lpcs_conf.yml ...`
+  3. 当前训练会话已进入真实启动阶段：
+     - 会话 ID: `68362`
+     - 输出目录: `log/occluded_duke/exp140_lpcs_conf`
+- 启动确认:
+  1. 配置日志已确认 `POSE_LPCS_HEAD_MODE: residual_conf`
+  2. 模型日志已确认：
+     - `[LPCS] Learned Pair Correction Scorer enabled: head_mode=residual_conf ...`
+  3. 训练日志已确认：
+     - `[LPCS] enabled: ... head_mode=residual_conf, conf_weight=0.25 ...`
+- 当前判断: 继续，进入 warmup 观察期
+- 原因:
+  - 这轮终于开始第一次真实测试“pair correction 是否需要 confidence calibration”
