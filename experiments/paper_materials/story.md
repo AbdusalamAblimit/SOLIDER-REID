@@ -772,3 +772,57 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
   “结构化 pair focus”
   再升级成：
   **在更大的 relation support 上学习 support-complete comparability correction**
+
+## 2026-03-21 凌晨更新：`Cross-Batch Changed-Pair` 没把 story 推过下一道坎
+
+- `exp131` 最终是：
+  - `ep110 = 60.4 / 73.7`
+  - `ep120 = 60.5 / 73.7`
+
+- 直接对照 `exp125`：
+  - `ep110 = 60.4 / 73.8`
+  - `ep120 = 60.5 / 73.5`
+
+- 更关键的是，它的 queue 不是没工作：
+  - `csrd_qn = 256`
+  - `csrd_qr ≈ 0.43`
+
+- 这一步的重要性不在于点数大小，而在于它把 story 再次收紧：
+  1. `target form` 不是主矛盾
+  2. `relation coverage` 也不是主矛盾
+  3. 也就是说，当前不是“没看见足够多的 changed pairs”
+  4. 而更像是：
+     **现有 student 形式不适合承载 pair-specific support-complete correction**
+
+- 到这里，旧 story 里那条
+  “继续把更多 relation 蒸进 global embedding”
+  已经开始失去解释力
+
+- 新 story 更合理的改写应是：
+  1. global embedding 负责主体身份空间
+  2. pose/keypoint branch 定义 common-support evidence
+  3. support-complete teacher 负责告诉模型“哪些 pair 真的需要 correction”
+  4. 但最终 correction 不一定应该继续被压成单个 embedding
+
+## 2026-03-21: story 的下一跳应转成真正的 learned pair correction
+
+- 这里还要明确一个边界：
+  - 仓库里曾有 `exp089 PAMN` 设计稿
+  - 但它从未真正接入 checkpoint 保存与测试检索流程
+  - 所以“learned pair module”并没有被做过，更谈不上被证伪
+
+- 这让当前最自然的方法升级变成：
+  **LTCS / Learn-to-Trust Common Support**
+
+- 它在 story 里的角色是：
+  1. 不再继续逼单个 embedding 去吸收 correction
+  2. 而是显式学习一个 pair-adaptive fusion rule
+  3. 让模型在检索时决定：
+     - 什么时候更该相信 global distance
+     - 什么时候更该相信 common-support distance
+  4. 这个 decision rule 由 `support-complete teacher` 监督，而不是人工固定成 `1:1`
+
+- 如果这一步成立，论文主创新将从
+  “support-complete relational distillation”
+  进一步升级成：
+  **support-complete guided pair-adaptive correction**

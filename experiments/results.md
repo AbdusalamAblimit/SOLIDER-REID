@@ -690,3 +690,25 @@
      - `target dilution` 不是当前主瓶颈
      - 下一步不该继续围绕 `target form` 扩线
   4. 这条实验的价值主要是负向因果证据：**pair routing / pair coverage 比 target 改写更重要**
+
+## 2026-03-21: exp131 Cross-Batch Pair SCRD（收敛结案）
+
+### exp131: queue coverage 真实生效，但没有把 `exp125` 推成更强主线
+
+> 基于 `exp125` 的单变量训练端实验。`exp131` 保持 online support teacher、`delta_top` pair routing 与 full teacher target 全部不变，只新增 `cross-batch relation queue`，把每个 anchor 可见的 candidate relations 从 batch 内扩展到 `batch + queue`。该实验已跑满 `ep120`，结论来自训练监控口径。
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| `exp125` | 60.4% | 73.8% | 84.8% | 88.6% | `ep110` 训练监控 |
+| `exp125` | 60.5% | 73.5% | 84.9% | 88.5% | `ep120` 训练监控 |
+| **`exp131`** | **60.4%** | **73.7%** | **84.9%** | **87.8%** | **`ep110` 训练监控** |
+| **`exp131`** | **60.5%** | **73.7%** | **84.8%** | **88.0%** | **`ep120` 训练监控** |
+
+- 结论：
+  1. queue 不是摆设；后期日志里 `csrd_qn = 256`、`csrd_qr ≈ 0.43`，说明约四成候选 relations 确实来自 cross-batch queue
+  2. 但最终相对 `exp125` 只形成了 `mAP +0.0 / R1 +0.2` 的近乎等价结果，不足以支持“batch 内 changed-pair coverage 不足”是主瓶颈
+  3. 当前更合理的解释是：
+     - `changed pairs` 的存在不是问题
+     - 问题在于 **当前学生如何消费这些 pair-specific support-complete corrections**
+  4. 因而下一步不应继续扩线 queue，而应转向：
+     **真正接入检索的 learned pair module / pair-adaptive correction**

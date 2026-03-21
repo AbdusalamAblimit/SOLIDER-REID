@@ -29,6 +29,7 @@ from .modules.pose_translation import PoseTranslationModule
 from .modules.pose_cond_lora import PoseCondLoRA
 from .modules.pose_film import PoseFiLMGenerator, PoseFiLMLayer
 from .modules.skeleton_reencoder import SkeletonReEncoder
+from .modules.pair_adaptive_fusion import PairAdaptiveFusionHead
 
 
 class PoseBackboneModel(build_transformer):
@@ -489,6 +490,16 @@ class PoseBackboneModel(build_transformer):
                       f'hidden={gcn_hidden}, test_feat={self.pose_test_feat}, '
                       f'kp_weight={kp_weight_mode}')
 
+        self.use_ltcs = getattr(cfg.MODEL, 'POSE_LTCS', False)
+        if self.use_ltcs:
+            if not self.use_skeleton_gcn:
+                raise ValueError('POSE_LTCS requires POSE_SKELETON_GCN=True')
+            ltcs_hidden = getattr(cfg.MODEL, 'POSE_LTCS_HIDDEN', 32)
+            self.ltcs_head = PairAdaptiveFusionHead(hidden_dim=ltcs_hidden)
+            ltcs_params = sum(p.numel() for p in self.ltcs_head.parameters())
+            print(f'[LTCS] Learn-to-Trust Common Support enabled: '
+                  f'hidden={ltcs_hidden}, params={ltcs_params}')
+
         # PAMC (Pose-Aware Masking Consistency) projector
         self.use_pamc = getattr(cfg.MODEL, 'POSE_PAMC', False)
         if self.use_pamc:
@@ -923,7 +934,7 @@ class PoseBackboneModel(build_transformer):
                     g_norm = F.normalize(test_feat, p=2, dim=1)
                     p_norm = [F.normalize(f, p=2, dim=1) for f in gcn_feats]
                     test_feat = torch.cat([g_norm] + p_norm, dim=1)
-                elif self.pose_test_feat in ('cvk_only', 'cvk_hybrid'):
+                elif self.pose_test_feat in ('cvk_only', 'cvk_hybrid', 'cvk_adaptive'):
                     test_feat = {
                         'mode': self.pose_test_feat,
                         'global_feat': test_feat,

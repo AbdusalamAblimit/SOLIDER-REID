@@ -3,6 +3,11 @@ import numpy as np
 import os
 import torch.nn.functional as F
 from utils.reranking import re_ranking
+from model.modules.pair_adaptive_fusion import (
+    build_pair_descriptors,
+    common_support_distance,
+    euclidean_distance_tensor,
+)
 
 
 def nfc(feat, k1=2, k2=2):
@@ -141,6 +146,7 @@ class R1_mAP_eval():
         self.feat_norm = feat_norm
         self.reranking = reranking
         self.cfg = cfg
+        self.pair_fusion_head = None
         # NFC (Neighbor Feature Centralization) config
         self.nfc_enabled = False
         self.nfc_k1 = 2
@@ -234,10 +240,39 @@ class R1_mAP_eval():
 
         print('=> Computing DistMat with common-visible keypoint reasoning')
         global_dist = self._euclidean_distance_tensor(q_global, g_global)
-        kp_dist = self._common_visible_kp_distance(q_kp, g_kp, q_w, g_w, global_dist, mode)
+        kp_dist, support_ratio = self._common_visible_kp_distance(
+            q_kp, g_kp, q_w, g_w, global_dist, mode, return_ratio=True)
 
         if mode == 'cvk_only':
             distmat = kp_dist.cpu().numpy()
+        elif mode == 'cvk_adaptive':
+            if self.pair_fusion_head is None:
+                raise ValueError('POSE_TEST_FEAT=cvk_adaptive requires evaluator.pair_fusion_head')
+            head = self.pair_fusion_head
+            head_was_training = head.training
+            head.eval()
+            head_device = next(head.parameters()).device
+            g_vis_mean = g_w.mean(dim=1).unsqueeze(0)
+            chunk_size = 256
+            mixed_chunks = []
+            with torch.no_grad():
+                for start in range(0, q_w.shape[0], chunk_size):
+                    end = min(q_w.shape[0], start + chunk_size)
+                    q_vis_mean = q_w[start:end].mean(dim=1, keepdim=True).expand(-1, g_w.shape[0])
+                    desc = build_pair_descriptors(
+                        global_dist[start:end],
+                        kp_dist[start:end],
+                        support_ratio[start:end],
+                        q_vis_mean,
+                        g_vis_mean.expand(end - start, -1),
+                    )
+                    alpha = head(desc.to(head_device).view(-1, desc.shape[-1]))
+                    alpha = alpha.view(end - start, desc.shape[1]).to(global_dist.device)
+                    mixed = (1.0 - alpha) * global_dist[start:end] + alpha * kp_dist[start:end]
+                    mixed_chunks.append(mixed.cpu())
+            if head_was_training:
+                head.train()
+            distmat = torch.cat(mixed_chunks, dim=0).numpy()
         else:
             gw = float(getattr(self.cfg.TEST, 'CVK_GLOBAL_WEIGHT', 1.0)) if self.cfg is not None else 1.0
             kw = float(getattr(self.cfg.TEST, 'CVK_KP_WEIGHT', 1.0)) if self.cfg is not None else 1.0
@@ -248,32 +283,16 @@ class R1_mAP_eval():
 
     @staticmethod
     def _euclidean_distance_tensor(qf, gf):
-        m = qf.shape[0]
-        n = gf.shape[0]
-        dist_mat = torch.pow(qf, 2).sum(dim=1, keepdim=True).expand(m, n) + \
-                   torch.pow(gf, 2).sum(dim=1, keepdim=True).expand(n, m).t()
-        dist_mat.addmm_(qf, gf.t(), beta=1, alpha=-2)
-        return dist_mat.clamp_min_(0.0)
+        return euclidean_distance_tensor(qf, gf)
 
-    def _common_visible_kp_distance(self, q_kp, g_kp, q_w, g_w, global_dist, mode):
-        q_kp_t = q_kp.transpose(1, 0)  # (K, Q, C)
-        g_kp_t = g_kp.transpose(1, 0)  # (K, G, C)
-        dot = torch.matmul(q_kp_t, g_kp_t.transpose(2, 1))
-        q_sq = q_kp_t.pow(2).sum(dim=-1)
-        g_sq = g_kp_t.pow(2).sum(dim=-1)
-        kp_dist = (q_sq.unsqueeze(2) - 2 * dot + g_sq.unsqueeze(1)).clamp_min_(0.0).sqrt_()
-
-        weights = torch.sqrt(
-            q_w.transpose(1, 0).unsqueeze(2) * g_w.transpose(1, 0).unsqueeze(1)
-        )
-        weight_sum = weights.sum(dim=0)
-        masked = (kp_dist * weights).sum(dim=0) / weight_sum.clamp(min=1e-12)
-
+    def _common_visible_kp_distance(self, q_kp, g_kp, q_w, g_w, global_dist, mode, return_ratio=False):
         if mode == 'cvk_only':
-            fallback = kp_dist.max().detach() + 1.0
-            masked = torch.where(weight_sum > 0, masked, torch.full_like(masked, fallback))
+            fallback = global_dist.max().detach() + 1.0
+            masked, support_ratio = common_support_distance(
+                q_kp, g_kp, q_w, g_w, fallback=torch.full_like(global_dist, fallback), return_ratio=True)
         else:
-            masked = torch.where(weight_sum > 0, masked, global_dist)
+            masked, support_ratio = common_support_distance(
+                q_kp, g_kp, q_w, g_w, fallback=global_dist, return_ratio=True)
+        if return_ratio:
+            return masked, support_ratio
         return masked
-
-

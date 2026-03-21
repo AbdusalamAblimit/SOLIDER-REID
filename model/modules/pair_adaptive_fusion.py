@@ -1,0 +1,73 @@
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+def euclidean_distance_tensor(qf, gf):
+    m = qf.shape[0]
+    n = gf.shape[0]
+    dist_mat = torch.pow(qf, 2).sum(dim=1, keepdim=True).expand(m, n) + \
+               torch.pow(gf, 2).sum(dim=1, keepdim=True).expand(n, m).t()
+    dist_mat.addmm_(qf, gf.t(), beta=1, alpha=-2)
+    return dist_mat.clamp_min_(0.0)
+
+
+def common_support_distance(q_kp, g_kp, q_w, g_w, fallback=None, return_ratio=False):
+    q_kp_t = q_kp.transpose(1, 0)  # (K, Q, C)
+    g_kp_t = g_kp.transpose(1, 0)  # (K, G, C)
+    dot = torch.matmul(q_kp_t, g_kp_t.transpose(2, 1))
+    q_sq = q_kp_t.pow(2).sum(dim=-1)
+    g_sq = g_kp_t.pow(2).sum(dim=-1)
+    kp_dist = (q_sq.unsqueeze(2) - 2 * dot + g_sq.unsqueeze(1)).clamp_min_(0.0).sqrt_()
+
+    weights = torch.sqrt(
+        q_w.transpose(1, 0).unsqueeze(2) * g_w.transpose(1, 0).unsqueeze(1)
+    )
+    weight_sum = weights.sum(dim=0)
+    masked = (kp_dist * weights).sum(dim=0) / weight_sum.clamp(min=1e-12)
+
+    if fallback is not None:
+        masked = torch.where(weight_sum > 0, masked, fallback)
+    support_ratio = weight_sum / max(1, q_kp.shape[1])
+    if return_ratio:
+        return masked, support_ratio
+    return masked
+
+
+def build_pair_descriptors(global_dist, kp_dist, support_ratio, q_vis_mean, g_vis_mean):
+    return torch.stack([
+        global_dist,
+        kp_dist,
+        (global_dist - kp_dist).abs(),
+        support_ratio,
+        q_vis_mean,
+        g_vis_mean,
+    ], dim=-1)
+
+
+class PairAdaptiveFusionHead(nn.Module):
+    """Predict how much each pair should trust common-support distance."""
+
+    def __init__(self, input_dim=6, hidden_dim=32):
+        super().__init__()
+        self.mlp = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden_dim, 1),
+        )
+        self._init_weights()
+
+    def _init_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    nn.init.zeros_(m.bias)
+        nn.init.zeros_(self.mlp[-1].weight)
+        nn.init.zeros_(self.mlp[-1].bias)
+
+    def forward(self, desc):
+        alpha = torch.sigmoid(self.mlp(desc))
+        return alpha.squeeze(-1)

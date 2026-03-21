@@ -1911,3 +1911,51 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
 3. 如果 changed pairs 本来就稀疏，那么 batch-only teacher-change matching 仍可能遗漏大量有信息量的 relations
 4. 因而更强的下一跳不该是“再换一个 target”，而应是：
    **让 student 在更大的 relation support 上学习 support-complete comparability correction**
+
+### 2026-03-21 凌晨更新：`queue coverage` 也不是主瓶颈
+
+- `exp131` 最终到：
+  - `ep110 = 60.4 / 73.7`
+  - `ep120 = 60.5 / 73.7`
+- 直接对照 `exp125`：
+  - `ep110 = 60.4 / 73.8`
+  - `ep120 = 60.5 / 73.5`
+- 更关键的是，queue 机制不是没接上：
+  - `csrd_qn = 256`
+  - `csrd_qr = 0.427~0.441`
+
+这说明：
+1. cross-batch queue 真实参与了约四成 candidate relations
+2. 但它并没有把 `exp125` 推成更强 mAP
+3. 所以当前可以把假设进一步收紧为：
+   - **relation coverage 不是主瓶颈**
+   - 真正卡住的更像是 **pair-specific correction 的表示形式**
+
+这里还要补一个边界：
+1. 仓库里虽然有 `exp089 PAMN` 设计稿
+2. 但它从未真正接入 checkpoint 与测试检索流程
+3. 因而“learned pair module”这条线 **还没有被真正做过，更没有被证伪**
+
+### 当前最值得赌的下一跳
+
+**LTCS / Learn-to-Trust Common Support**
+
+核心想法：
+1. 不再强迫单个 global embedding 吃下 support-complete correction
+2. 而是训练一个真正进入检索流程的 pair-adaptive fusion head
+3. 让它根据当前 pair 的 `global / CVK / overlap / visibility` 描述，自适应预测：
+   - 该在多大程度上相信 global distance
+   - 该在多大程度上相信 common-support distance
+4. 训练监督不再是 pair label 直接打分，而是：
+   - 用 `support-complete teacher` 提供更理想的 pairwise target
+   - 学习一个 **learned correction rule**
+
+为什么它比继续扩 `CSRD` 更合理：
+1. `exp125` 已说明 pair correction 值得学
+2. `exp130/131` 又说明：
+   - 不是 target form
+   - 也不是 coverage
+3. 这就把主矛盾收紧成：
+   **当前 correction 不适合继续被压进单向量 embedding**
+4. 因而下一步应从“embedding distillation”转到：
+   **proper learned matching / adaptive fusion**

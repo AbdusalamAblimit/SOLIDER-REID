@@ -2305,3 +2305,56 @@ B. 直接启动 exp025，exp024 可以后续补跑
 1. 新实验必须继续以 `exp125` 为唯一直接本地对照。
 2. 新实验只允许新增一种 relation-coverage 机制，不同时改 `target_mode / pair_weight_mode / teacher bank`。
 3. 按用户最新规则，启动前必须先完成 Claude 审查并生成 `claude_review.md`。
+
+
+### [2026-03-21 02:25] 决策 #82
+
+**上下文**:
+- 本地 `exp131 cross-batch queue` 已跑满:
+  - `ep110 = 60.4 / 73.7`
+  - `ep120 = 60.5 / 73.7`
+- 直接对照 `exp125`:
+  - `ep110 = 60.4 / 73.8`
+  - `ep120 = 60.5 / 73.5`
+- 同时 `exp131` 的 queue 统计始终真实工作:
+  - `csrd_qn = 256`
+  - `csrd_qr = 0.427~0.441`
+- 另一个重要背景是：
+  - `exp089 PAMN` 只有 design/review 草案，从未真正接入 checkpoint 与测试检索流程，因此**不能**算作“learned pair module 已被证伪”
+
+**判断**:
+1. `cross-batch changed-pair coverage` 不是当前主瓶颈；queue 明显参与了监督，但没有带来实质性的 mAP 提升。
+2. 至此，`target form` 与 `relation coverage` 两个方向都已经被较干净地排除了主矛盾地位。
+3. 当前更合理的主假设应收紧为：
+   **pair-specific support-complete correction 不能被当前单向量 student 充分吸收。**
+4. 这意味着下一步不该再继续做：
+   - `queue size`
+   - `target_mode`
+   - `freeze / alpha / top_ratio`
+   这些局部改动，而应切到一个真正进入检索路径的 learned pair module。
+
+**选择**:
+1. 正式结束 `exp131` 这条 `relation coverage` 支线，不再追加 queue 类变体。
+2. 本地启动新方向 `exp132`：
+   - **LTCS / 自适应共同支撑融合**
+   - 用一个真正挂在模型里的 pair-adaptive fusion head
+   - 学习每个 pair 该在多大程度上信任 `global distance` 与 `CVK distance`
+3. 该 head 必须：
+   - 被保存进 checkpoint
+   - 被测试期 evaluator 真正调用
+   - 不能再犯 `exp089` 那种“训练了但不进入检索”的错误
+
+**理由**:
+1. `exp125` 已说明 pair-level correction 是真实有价值的，但把它蒸进 embedding 的上限已经开始显现。
+2. `exp131` 说明即使给 student 更多 changed pairs，它也没有自动学得更好，问题更像在 **correction 的表示形式**，而不是 **监督覆盖**。
+3. `exp040/045` 的固定 `cvk_hybrid` 已经证明 pair-specific common-support correction 在检索时能转成稳定正信号。
+4. 因而当前最值得赌的新机制不是“再蒸一次”，而是：
+   **学习一个真正的 pair-adaptive correction rule，并把它直接接入检索。**
+
+**执行约束**:
+1. `exp132` 必须先完成 Claude 审查，再允许启动。
+2. `exp132` 必须把 learned pair module 接到模型和 evaluator，两端都要打通。
+3. `exp132` 的直接对照应同时保留：
+   - `exp030a-eq seed1234`
+   - 固定 `cvk_hybrid`
+   - `exp125`（作为“蒸进 embedding”的当前最强对照）

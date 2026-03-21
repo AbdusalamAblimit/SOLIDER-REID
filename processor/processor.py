@@ -12,6 +12,11 @@ from torch.cuda import amp
 import torch.distributed as dist
 from model.modules.pamc import pamc_consistency_loss
 from model.modules.support_complete_bank import SupportCompleteBank
+from model.modules.pair_adaptive_fusion import (
+    build_pair_descriptors,
+    common_support_distance,
+    euclidean_distance_tensor,
+)
 
 
 def _pose_to_device(pose_dict, device):
@@ -146,6 +151,28 @@ def do_train(cfg,
             min_count=csrd_st_min_count,
         ).to(device)
 
+    ltcs_enabled = getattr(cfg.MODEL, 'POSE_LTCS', False)
+    ltcs_teacher_bank = None
+    if ltcs_enabled:
+        ltcs_weight = getattr(cfg.MODEL, 'POSE_LTCS_WEIGHT', 0.5)
+        ltcs_warmup = getattr(cfg.MODEL, 'POSE_LTCS_WARMUP', 20)
+        ltcs_hidden = getattr(cfg.MODEL, 'POSE_LTCS_HIDDEN', 32)
+        ltcs_st_low_thr = getattr(cfg.MODEL, 'POSE_LTCS_ST_LOW_THR', 0.3)
+        ltcs_st_update_thr = getattr(cfg.MODEL, 'POSE_LTCS_ST_UPDATE_THR', 0.7)
+        ltcs_st_mom = getattr(cfg.MODEL, 'POSE_LTCS_ST_MOM', 0.9)
+        ltcs_st_min_count = getattr(cfg.MODEL, 'POSE_LTCS_ST_MIN_COUNT', 1)
+        ltcs_st_update_stop_epoch = getattr(cfg.MODEL, 'POSE_LTCS_ST_UPDATE_STOP_EPOCH', -1)
+        num_train_classes = len(set([d[1] for d in train_loader.dataset.dataset]))
+        ltcs_teacher_bank = SupportCompleteBank(
+            num_classes=num_train_classes,
+            feat_dim=768,
+            num_keypoints=17,
+            low_thr=ltcs_st_low_thr,
+            update_thr=ltcs_st_update_thr,
+            momentum=ltcs_st_mom,
+            min_count=ltcs_st_min_count,
+        ).to(device)
+
     logger = logging.getLogger("transreid.train")
     logger.info('start training')
     if use_pose:
@@ -173,6 +200,11 @@ def do_train(cfg,
                         f'alpha={csrd_pair_weight_alpha}')
     if csrd_enabled and csrd_queue_size > 0:
         logger.info(f'[CSRD-QUEUE] size={csrd_queue_size}')
+    if ltcs_enabled:
+        logger.info(f'[LTCS] enabled: weight={ltcs_weight}, warmup={ltcs_warmup}, '
+                    f'hidden={ltcs_hidden}, low_thr={ltcs_st_low_thr}, '
+                    f'update_thr={ltcs_st_update_thr}, mom={ltcs_st_mom}, '
+                    f'min_count={ltcs_st_min_count}, stop_epoch={ltcs_st_update_stop_epoch}')
     if scfr_enabled:
         logger.info(f'[SCFR] Feature replacement mode enabled (loss disabled, bank replaces features)')
     if scrc_enabled:
@@ -218,6 +250,54 @@ def do_train(cfg,
                 csrd_queue[key] = torch.cat([csrd_queue[key], value], dim=0)
                 if csrd_queue[key].size(0) > csrd_queue_size:
                     csrd_queue[key] = csrd_queue[key][-csrd_queue_size:]
+
+    def _compute_ltcs_loss(ltcs_head, global_feat, kp_feats, kp_weights, teacher_kp_feats, labels):
+        feat_g = F.normalize(global_feat.detach(), dim=-1)
+        kp_base = F.normalize(kp_feats.detach(), dim=-1)
+        kp_teacher = F.normalize(teacher_kp_feats.detach(), dim=-1)
+        weights = kp_weights.detach().clamp(min=0.0)
+
+        global_dist = euclidean_distance_tensor(feat_g, feat_g)
+        base_dist, support_ratio = common_support_distance(
+            kp_base, kp_base, weights, weights, fallback=global_dist, return_ratio=True)
+        teacher_dist, _ = common_support_distance(
+            kp_teacher, kp_teacher, weights, weights, fallback=global_dist, return_ratio=True)
+
+        batch_size = global_feat.size(0)
+        eye = torch.eye(batch_size, dtype=torch.bool, device=global_feat.device)
+        q_vis_mean = weights.mean(dim=1, keepdim=True).expand(-1, batch_size)
+        g_vis_mean = q_vis_mean.t()
+        desc = build_pair_descriptors(
+            global_dist, base_dist, support_ratio, q_vis_mean, g_vis_mean)
+        alpha = ltcs_head(desc.view(-1, desc.shape[-1])).view(batch_size, batch_size)
+        mixed_dist = (1.0 - alpha) * global_dist + alpha * base_dist
+
+        informative = (global_dist - base_dist).abs().detach()
+        informative = informative / informative.mean().clamp(min=1e-6)
+        mask = ~eye
+        loss_map = F.smooth_l1_loss(mixed_dist, teacher_dist.detach(), reduction='none')
+        loss = (loss_map[mask] * informative[mask]).sum() / informative[mask].sum().clamp(min=1e-6)
+
+        same_label = labels.unsqueeze(0).eq(labels.unsqueeze(1))
+        pos_mask = same_label & ~eye
+        neg_mask = ~same_label
+        if pos_mask.any() and neg_mask.any():
+            teacher_gap = float(teacher_dist[neg_mask].mean().item() - teacher_dist[pos_mask].mean().item())
+            mixed_gap = float(mixed_dist[neg_mask].mean().item() - mixed_dist[pos_mask].mean().item())
+        else:
+            teacher_gap = 0.0
+            mixed_gap = 0.0
+
+        stats = {
+            'alpha_mean': float(alpha[mask].mean().item()),
+            'alpha_std': float(alpha[mask].std(unbiased=False).item()),
+            'support_mean': float(support_ratio[mask].mean().item()),
+            'before_error': float((global_dist.detach() - teacher_dist.detach()).abs()[mask].mean().item()),
+            'after_error': float((mixed_dist.detach() - teacher_dist.detach()).abs()[mask].mean().item()),
+            'teacher_gap': teacher_gap,
+            'mixed_gap': mixed_gap,
+        }
+        return loss, stats
     _LOCAL_PROCESS_GROUP = None
     if device:
         model.to(local_rank)
@@ -399,6 +479,14 @@ def do_train(cfg,
                                 queue_payload = _get_csrd_queue_payload()
                                 if queue_payload is not None:
                                     kp_aux_data['csrd_queue'] = queue_payload
+                    if ltcs_enabled and ltcs_teacher_bank is not None and epoch > ltcs_warmup:
+                        kp_feats_ltcs = kp_data.get('kp_feats')
+                        kp_w_ltcs = kp_data.get('kp_weights')
+                        if kp_feats_ltcs is not None and kp_w_ltcs is not None:
+                            teacher_feats_ltcs, _, teacher_stats_ltcs = ltcs_teacher_bank.replace(
+                                kp_feats_ltcs, kp_w_ltcs, target)
+                            kp_aux_data['ltcs_teacher_feats'] = teacher_feats_ltcs.detach()
+                            kp_aux_data['ltcs_teacher_stats'] = teacher_stats_ltcs
 
                 loss = loss_fn(score, feat, target, target_cam, pose_sim=pose_sim,
                                kp_data=kp_aux_data)
@@ -411,6 +499,28 @@ def do_train(cfg,
                     if 'anchor_weight_mean' in teacher_stats:
                         details['csrd_aw'] = teacher_stats['anchor_weight_mean']
                         details['csrd_ar'] = teacher_stats['anchor_active_ratio']
+                    loss._loss_details = details
+                if ltcs_enabled and kp_aux_data is not None and 'ltcs_teacher_feats' in kp_aux_data:
+                    _m = model.module if hasattr(model, 'module') else model
+                    global_feat_ltcs = feat[0] if isinstance(feat, list) else feat
+                    ltcs_loss, ltcs_stats = _compute_ltcs_loss(
+                        _m.ltcs_head,
+                        global_feat_ltcs,
+                        kp_data.get('kp_feats'),
+                        kp_data.get('kp_weights'),
+                        kp_aux_data['ltcs_teacher_feats'],
+                        target,
+                    )
+                    details = getattr(loss, '_loss_details', {})
+                    loss = loss + ltcs_weight * ltcs_loss
+                    details['ltcs'] = ltcs_loss.item()
+                    details['ltcs_a'] = ltcs_stats['alpha_mean']
+                    details['ltcs_as'] = ltcs_stats['alpha_std']
+                    details['ltcs_sm'] = ltcs_stats['support_mean']
+                    details['ltcs_be'] = ltcs_stats['before_error']
+                    details['ltcs_ae'] = ltcs_stats['after_error']
+                    details['ltcs_tg'] = ltcs_stats['teacher_gap']
+                    details['ltcs_mg'] = ltcs_stats['mixed_gap']
                     loss._loss_details = details
                 if recon_loss is not None:
                     details = getattr(loss, '_loss_details', {})
@@ -772,6 +882,13 @@ def do_train(cfg,
                                 queue_student_feat, kp_feats_csrd, kp_w_csrd,
                                 queue_teacher_feats, target)
 
+            if ltcs_enabled and ltcs_teacher_bank is not None and kp_data is not None:
+                kp_feats_ltcs = kp_data.get('kp_feats')
+                kp_w_ltcs = kp_data.get('kp_weights')
+                if kp_feats_ltcs is not None and kp_w_ltcs is not None:
+                    if ltcs_st_update_stop_epoch < 0 or epoch <= ltcs_st_update_stop_epoch:
+                        ltcs_teacher_bank.update(kp_feats_ltcs, kp_w_ltcs, target)
+
             if 'center' in cfg.MODEL.METRIC_LOSS_TYPE:
                 for param in center_criterion.parameters():
                     param.grad.data *= (1. / cfg.SOLVER.CENTER_LOSS_WEIGHT)
@@ -843,6 +960,8 @@ def do_train(cfg,
             if cfg.MODEL.DIST_TRAIN:
                 if dist.get_rank() == 0:
                     model.eval()
+                    _eval_model = model.module if hasattr(model, 'module') else model
+                    evaluator.pair_fusion_head = getattr(_eval_model, 'ltcs_head', None)
                     for n_iter, batch_data in enumerate(val_loader):
                         with torch.no_grad():
                             if use_pose:
@@ -868,6 +987,8 @@ def do_train(cfg,
                     torch.cuda.empty_cache()
             else:
                 model.eval()
+                _eval_model = model.module if hasattr(model, 'module') else model
+                evaluator.pair_fusion_head = getattr(_eval_model, 'ltcs_head', None)
                 for n_iter, batch_data in enumerate(val_loader):
                     with torch.no_grad():
                         if use_pose:
@@ -911,6 +1032,8 @@ def do_inference(cfg,
             print('Using {} GPUs for inference'.format(torch.cuda.device_count()))
             model = nn.DataParallel(model)
         model.to(device)
+    _eval_model = model.module if hasattr(model, 'module') else model
+    evaluator.pair_fusion_head = getattr(_eval_model, 'ltcs_head', None)
 
     model.eval()
     img_path_list = []

@@ -87,3 +87,33 @@
 - 当前判断: 继续
 - 原因:
   - 真正关键的监控点是 `ep10 / ep20`，以及 `epoch 21+` 后 `csrd_qn / csrd_qr` 是否表明 cross-batch relations 真正参与了 distillation
+
+### [2026-03-21 02:23] 检查点 #2 — Epoch 110 / 120（最终）
+- 结果:
+  - `ep110 = 60.4% / 73.7% / 84.9% / 87.8%`
+  - `ep120 = 60.5% / 73.7% / 84.8% / 88.0%`
+- 对照:
+  - `exp125 ep110 = 60.4 / 73.8`
+  - `exp125 ep120 = 60.5 / 73.5`
+  - `exp130 ep120 = 60.1 / 73.1`
+- `CSRD` 统计（epoch 110-120）:
+  - `csrd = 0.008`
+  - `csrd_pf = 1.11~1.13`
+  - `csrd_psr = 0.90~0.91`
+  - `csrd_sr = 0.14~0.15`
+  - `csrd_sn = 152~169`
+  - `csrd_qn = 256`
+  - `csrd_qr = 0.427~0.441`
+- 当前观察:
+  1. queue 不是“接上了但没参与”的假阳性；后期始终有约 `43%` 的候选 relations 来自 cross-batch queue，coverage 扩展是真实发生的
+  2. 但最终结果相对 `exp125` 只体现为：
+     - `mAP +0.0`
+     - `R1 +0.2`
+     这不足以支撑“batch 内 changed-pair coverage 不足”是当前主瓶颈
+  3. 同时 `pair_focus / pair_select_ratio` 几乎没有比 `exp125` 更强，说明把更多 candidate pairs 喂给当前 student，并没有自动转成更有用的 pair correction
+  4. 因而当前更合理的解释是：
+     - changed pairs 并不稀缺到需要 queue 才能看见
+     - 真正卡住的更像是 **pair-specific support-complete correction 不能被当前单向量学生充分吸收**
+- 当前判断: 结束该线
+- 原因:
+  - `exp131` 已足够回答 coverage 问题；继续扫 queue 大小或 stale 策略只会回到低价值局部调参
