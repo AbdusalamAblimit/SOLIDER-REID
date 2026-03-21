@@ -135,3 +135,34 @@
 - 原因:
   - learned pair-adaptive fusion 已出现与固定融合不同的稳定排序形态，值得继续看到后期是否把 `mAP` 优势坐实或把 `R1` 拉回
   - 但在没有 `ltcs_*` 统计前，不足以把它直接上升为主创新已成立；若 `ep80` 仍是 `mAP` 明显更高、`R1` 持续偏低，下一步优先改 **ranking-aligned supervision / pair scorer**，而不是继续做 teacher bank 变体
+
+### [2026-03-21 07:20] 训练收敛 + 正式评估结案
+- 训练监控终点:
+  - `ep70 = 60.2 / 71.7`
+  - `ep80 = 61.5 / 72.6`
+  - `ep90 = 61.7 / 72.8`
+  - `ep100 = 61.7 / 72.9`
+  - `ep110 = 62.1 / 73.0`
+  - `ep120 = 62.1 / 72.8`
+- 正式评估:
+  1. `exp132a cvk_adaptive = 62.1 / 72.8 / 84.8 / 88.1`
+  2. `exp132b cvk_hybrid  = 62.1 / 72.8 / 84.8 / 88.1`
+- 当前观察:
+  1. `LTCS` 训练本身不是坏方向，训练期验证曲线后期持续抬升，最终达到 `62.1 / 72.8`
+  2. 但真正关键的因果对照已经给出清晰结论：
+     - 同一 checkpoint 下
+     - learned `cvk_adaptive`
+     - 与固定 `cvk_hybrid`
+     - **正式结果完全一致**
+  3. 因而当前不能把 `LTCS` 解释成“learned pair-adaptive fusion 已成立”
+  4. 更合理的结论是：
+     - 问题不在“检索期 learned pair module”这个大方向本身
+     - 而在当前实现过于弱：
+       - 只学单个 `alpha`
+       - 只在 `global` 与 `CVK` 两个标量距离之间做凸组合
+       - 用 teacher distance 回归，但监督不够 ranking-aligned
+  5. 此外，当前日志始终没落出 `ltcs_*` 统计，这使得这轮实验虽有结果、却缺少充分机制解释
+- 当前判断: 结束 `exp132` 这一版
+- 原因:
+  - 第一版 `LTCS` 已较干净地表明：**标量 alpha-fusion 过弱，无法把 pair-adaptive correction 转成超越固定 `cvk_hybrid` 的正式收益**
+  - 下一步应升级为更强的 learned pair scorer / ranking-aligned pair correction，而不是继续调当前 `alpha` 头

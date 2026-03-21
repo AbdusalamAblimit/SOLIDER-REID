@@ -826,3 +826,34 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
   “support-complete relational distillation”
   进一步升级成：
   **support-complete guided pair-adaptive correction**
+
+## 2026-03-21 早间更新：`LTCS alpha-fusion` 没把 story 推过下一道坎
+
+- `exp132` 的正式结果是：
+  - `cvk_adaptive = 62.1 / 72.8`
+  - `cvk_hybrid  = 62.1 / 72.8`
+
+- 这一步的重要性不在于点数高低，而在于它把 story 再收紧了一次：
+  1. learned pair module 这个大方向没有死
+  2. 但第一版 “学一个 `alpha` 决定信 global 还是信 CVK” 并没有真正改变最终排序
+  3. 也就是说，当前不是“检索期 head 没必要”
+  4. 而是：
+     **当前 head 太弱，只能学到接近固定 `1:1` 融合的行为**
+
+- 这让 story 的下一跳不该再写成：
+  - `pair-adaptive fusion`
+
+- 而应该升级成：
+  **pair-specific correction scoring**
+
+- 更具体地说，新的 story 更合理的版本是：
+  1. global embedding 提供主体身份空间
+  2. keypoint/common-support 分支提供 pair-specific 可比较证据
+  3. support-complete prior 告诉模型“哪些 pair 的比较关系应被修正”
+  4. 但这种修正不该只被压成一个混合权重，而应被表示成：
+     **一个真正的 pair correction score / residual score**
+
+- 如果下一步成立，论文主创新就会从：
+  **support-complete guided pair-adaptive correction**
+  进一步收紧并升级成：
+  **support-complete guided pair-specific correction scoring**

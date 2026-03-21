@@ -2358,3 +2358,56 @@ B. 直接启动 exp025，exp024 可以后续补跑
    - `exp030a-eq seed1234`
    - 固定 `cvk_hybrid`
    - `exp125`（作为“蒸进 embedding”的当前最强对照）
+
+
+### [2026-03-21 07:20] 决策 #83
+
+**上下文**:
+- `exp132 LTCS` 已跑满并完成同 checkpoint 正式评估:
+  - `exp132a cvk_adaptive = 62.1 / 72.8 / 84.8 / 88.1`
+  - `exp132b cvk_hybrid  = 62.1 / 72.8 / 84.8 / 88.1`
+- 同时训练监控终点也是：
+  - `ep120 = 62.1 / 72.8`
+- 当前日志里没有落出 `ltcs_*` 统计，因此这轮实验只能靠正式结果做主要判定
+
+**判断**:
+1. `exp132` 已较干净地否定了“第一版 learned alpha-fusion 就足以超过固定 `cvk_hybrid`”这一命题。
+2. 这不等于 learned pair module 大方向被证伪；真正被证伪的是更具体的实现：
+   - 单个 `alpha`
+   - 在 `global distance` 与 `CVK distance` 之间做凸组合
+   - 用 teacher distance 做回归监督
+3. 当前最合理的解释是：
+   - pair-adaptive correction 的表示能力不够
+   - 且当前监督不够 ranking-aligned
+4. 因而主矛盾已从“要不要进入检索期 learned pair module”进一步收紧为：
+   **需要更强的 pair scorer，而不是更聪明的标量融合权重。**
+
+**选择**:
+1. 正式结束 `exp132` 这一版 `LTCS alpha-fusion` 主线，不再追加：
+   - hidden dim
+   - warmup
+   - teacher bank 小调参
+   - `alpha` 初始化/范围
+2. 保留 `exp132` 作为一个重要负证据：
+   - retrieval-time learned pair module 值得做
+   - 但 scalar fusion 不够
+3. 下一步切向新的主线：
+   - **ranking-aligned learned pair scorer / pair residual correction**
+
+**理由**:
+1. 如果 learned head 连同一 checkpoint 下的固定 `cvk_hybrid` 都无法超过，继续扫 `alpha` 头局部参数没有意义。
+2. `exp125` 与 `exp132` 合起来说明：
+   - pair-specific correction 真实存在
+   - 但它既不适合继续只蒸进 embedding
+   - 也不适合只压成一个融合权重
+3. 因而更有价值的升级，不是继续做 distance mixing，而是直接学习：
+   **这个 pair 应该被额外加/减多少 correction score**
+
+**执行约束**:
+1. 新实验必须继续通过 Claude 审查后才能启动。
+2. 新实验相对 `exp132` 只能改一个核心变量：
+   - 从 `alpha-fusion` 改为更强的 `pair scorer / residual score`
+3. 新实验必须保留同 checkpoint 正式对照：
+   - learned scorer
+   - 固定 `cvk_hybrid`
+   不能再只看训练监控曲线下结论。

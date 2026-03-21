@@ -712,3 +712,28 @@
      - 问题在于 **当前学生如何消费这些 pair-specific support-complete corrections**
   4. 因而下一步不应继续扩线 queue，而应转向：
      **真正接入检索的 learned pair module / pair-adaptive correction**
+
+## 2026-03-21: exp132 LTCS（正式评估）
+
+### exp132: learned `alpha`-fusion 没有超过固定 `cvk_hybrid`，第一版 LTCS 作为方法机制判负
+
+> 基于 `exp131` 之后的新方向实验。`exp132` 不再把 support-complete correction 蒸进 embedding，而是在检索期引入真正挂进 checkpoint 与 evaluator 的 `pair-adaptive fusion head`，学习每个 pair 该在多大程度上相信 `global distance` 与 `CVK distance`。该实验已跑满 `ep120`，并完成同一 checkpoint 下的正式对照评估。
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| `exp132` | 62.1% | 72.8% | 84.8% | 88.1% | `ep120` 训练监控 |
+| **`exp132a cvk_adaptive`** | **62.1%** | **72.8%** | **84.8%** | **88.1%** | **正式 eval** |
+| **`exp132b cvk_hybrid`** | **62.1%** | **72.8%** | **84.8%** | **88.1%** | **同 checkpoint 正式 eval** |
+
+- 结论：
+  1. `LTCS` 训练本身不是负方向；训练监控后期持续抬升到 `62.1 / 72.8`
+  2. 但真正关键的同 checkpoint 正式对照已经给出清晰结论：
+     - learned `cvk_adaptive`
+     - 与固定 `cvk_hybrid`
+     - **结果完全一致**
+  3. 因而当前不能声称 “learned pair-adaptive fusion rule” 已经成立；第一版 `LTCS` 作为方法机制判负
+  4. 这轮实验的负证据更精确地说明：
+     - 检索期 learned pair module 这个大方向还没死
+     - 但 **只学一个标量 `alpha`、只在两种标量距离之间做凸组合、并用 teacher distance 回归监督** 这套实现过于弱
+  5. 因而下一步应从 `alpha-fusion` 升级到：
+     **更强的 learned pair scorer / ranking-aligned pair correction**

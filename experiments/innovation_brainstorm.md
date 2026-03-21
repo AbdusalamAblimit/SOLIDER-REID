@@ -1959,3 +1959,47 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
    **当前 correction 不适合继续被压进单向量 embedding**
 4. 因而下一步应从“embedding distillation”转到：
    **proper learned matching / adaptive fusion**
+
+### 2026-03-21 早间更新：`LTCS alpha-fusion` 作为第一版实现判负
+
+- `exp132` 已完成同 checkpoint 正式对照：
+  - `cvk_adaptive = 62.1 / 72.8`
+  - `cvk_hybrid  = 62.1 / 72.8`
+
+这说明：
+1. 检索期 learned pair module 这个大方向还没有被否定
+2. 但第一版实现已经被较干净地否定：
+   - 单个 `alpha`
+   - 只在两种标量距离之间做凸组合
+   - 用 teacher distance 做回归监督
+3. 当前最合理的解释不是“learned pair module 没用”，而是：
+   - **表示能力太弱**
+   - **监督不够 ranking-aligned**
+
+### 当前最值得赌的下一跳
+
+**Ranking-Aligned Pair Scorer / Pair Residual Correction**
+
+核心想法：
+1. 不再让 head 只预测 `alpha in [0,1]`
+2. 而是直接预测一个 pair-specific residual score / correction score
+3. 输入不再只限于两种总距离，而应包含更细粒度的 pair descriptors：
+   - `d_global`
+   - `d_cvk`
+   - `|d_global-d_cvk|`
+   - overlap / visibility
+   - 必要时再加入更细的 keypoint-wise common-support statistics
+4. 监督也不再只是“逼近 teacher distance”，而要更明确地对齐排序目标：
+   - pair label
+   - pairwise margin
+   - 或 teacher-induced relative order
+
+为什么这比继续调 `LTCS` 更合理：
+1. `exp132` 已说明 scalar fusion 不足以改变最终排序
+2. `exp125` 又说明 pair-specific correction 确实真实存在
+3. 因而下一步最自然的升级不是：
+   - 更大的 `alpha` 头
+   - 更多 bank trick
+   - 更复杂的凸组合
+4. 而是：
+   **从“学信谁”升级成“学该修正多少”**
