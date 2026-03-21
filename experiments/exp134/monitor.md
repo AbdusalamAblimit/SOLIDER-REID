@@ -77,3 +77,39 @@
 - 当前判断: 等待二次审查
 - 原因:
   - 第一轮发现的是实际阻塞项，必须二次审查确认修复生效后才能启动
+
+### [2026-03-21 08:26] 第二轮 Claude 审查通过
+- 审查文件:
+  - `experiments/exp134/claude_review_v2.md`
+- 审查结论:
+  - **允许启动**
+- 审查确认:
+  1. `import math` 缺失问题已修复
+  2. 训练端 `base_dist` 与测试端 `CVK` 权重已统一
+  3. `delta_top + top_ratio >= 1.0` 的 warning 与非法 ratio 校验已补齐
+  4. `lpcs_psr / lpcs_pf` 足以验证 sparse routing 是否真实生效
+- 当前判断: 允许启动
+- 原因:
+  - 两轮审查链已经闭环，当前代码已满足远程启动条件
+
+### [2026-03-21 08:28] 远程 exp134 正式启动
+- 远程机器:
+  - 恒源云 `5060 Ti`
+- 同步动作:
+  1. 本地已 push 到 `origin/exp/pose_heatmap`
+  2. 远程已 `git pull origin exp/pose_heatmap`
+  3. 远程分支保持 `exp/pose_heatmap`
+- 启动命令:
+  - `python3 train.py --config_file configs/occluded_duke/pose_psg_gcn_lpcs_delta_top.yml OUTPUT_DIR ./log/occluded_duke/exp134_lpcs_delta_top`
+- 远程输出:
+  - `log/occluded_duke/exp134_lpcs_delta_top/remote_nohup.log`
+- 启动确认:
+  1. GPU 已占用约 `2518 MiB / 16311 MiB`
+  2. 主训练进程已出现：
+     - `python3 train.py --config_file configs/occluded_duke/pose_psg_gcn_lpcs_delta_top.yml`
+  3. 日志已确认配置生效：
+     - `[LPCS] enabled: ... pair_mode=delta_top, top_ratio=0.25, cvk_gw=1.0, cvk_kw=1.0 ...`
+  4. 当前仍处在启动前段，尚未到 iteration 日志
+- 当前判断: 继续
+- 原因:
+  - 远程新实验已成功接棒并进入训练初始化；下一次有信息量的点是 iteration 输出和 `ep10 / ep20`
