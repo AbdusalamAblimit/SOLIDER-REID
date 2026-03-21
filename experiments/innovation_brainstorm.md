@@ -2060,4 +2060,29 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
 - `learned pair correction`
 - `ranking-aligned pair supervision`
 
+### 2026-03-21 深夜更新：`exp137` 给出新的负边界，hard selection 不是答案
+
+- `exp137 Hard-Rank LPCS` 到停表点是：
+  - `ep80 = 60.1 / 70.4`
+- 对照：
+  - `exp135 ep80 = 60.8 / 71.9`
+  - `exp125 ep80 = 59.4 / 72.0`
+- 但机制一直是对的：
+  - `lpcs_rsr = 0.254`
+  - `lpcs_psr / lpcs_pf = 1.000 / 1.000`
+
+这条线把判断又收紧了一步：
+
+1. 不是“ranking-aligned”这个方向错了
+   - 而是当前 **hard-top 25%** 这种离散 hard selection 太激进
+
+2. 这意味着：
+   - full-pair `LPCS` 可能保留了有价值的上下文
+   - 直接砍掉 75% pairs 会伤害 top-rank 稳定性
+
+3. 因而下一步更值得做的，不是更硬，而是更平滑：
+   - rank-decayed weighting
+   - top-sensitive continuous weighting
+   - 或直接学习 top-rank residual scorer
+
 这比“学一个更好的 sparse router”更像 B 类主方法。

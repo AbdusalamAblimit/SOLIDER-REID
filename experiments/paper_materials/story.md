@@ -915,3 +915,23 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
 
 而下一步最关键的机制升级应该是：
 **让 `LPCS` 直接为 hardest / top-ranked 错误负责，而不是平均地对所有 selected pairs 做回归式排序约束。**
+
+## 2026-03-21 深夜补充：`exp137` 说明“更 ranking-aligned”不能简单做成 hard selection
+
+- `exp137 Hard-Rank LPCS` 到 `ep80` 为止：
+  - `60.1 / 70.4`
+- 相对：
+  - `exp135 ep80 = 60.8 / 71.9`
+  - `exp125 ep80 = 59.4 / 72.0`
+
+这条负结果很重要，因为它不是实现没接上，而是：
+- `lpcs_rsr = 0.254`
+- `lpcs_psr / lpcs_pf = 1.000 / 1.000`
+
+所以 story 现在要进一步收紧：
+
+1. `LPCS` 的确需要更贴近最终排序目标
+2. 但**不能**简单粗暴地只保留 hardest 25% pairs
+3. 更合理的下一步应该是：
+   - 保留 full-pair 的上下文稳定性
+   - 同时对 top-ranked mistakes 做更平滑、更连续的强调

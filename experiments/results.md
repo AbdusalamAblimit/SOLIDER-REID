@@ -793,3 +793,21 @@
   3. 这意味着 supervision dilution 也许存在，但当前还不能把它当作 `LPCS` 的主瓶颈
   4. 因而下一步更合理的方向应从“继续改 routing”转向：
      - 更 ranking 对齐的 `LPCS` 损失聚合方式
+
+### exp137: `Hard-Rank LPCS` 机制接线正确，但 `hard-top` 聚合过于激进
+
+> `exp137` 相对 `exp135` 只改 `LPCS` 的 ranking 聚合：从全 routed pairs 改为 hardest positive / negative top-25% 子集。该实验按预设停表规则终止于 `ep80`。
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| `exp137` | 60.1% | 70.4% | 82.1% | 86.2% | `ep80` 训练监控 |
+
+- 结论：
+  1. `exp137` 的机制是有效接线，而不是失效 run：
+     - `lpcs_rsr = 0.254`
+     - `lpcs_psr / lpcs_pf = 1.000 / 1.000`
+  2. 但到 `ep80` 为止，它稳定落后于 `exp135 ep80 = 60.8 / 71.9`
+  3. 这说明当前问题不是“只要更关注 hardest ranked pairs 就会更强”，相反：
+     - **hard selection 过强会伤害 top-rank 表现**
+  4. 因而当前更合理的下一步不是继续加大 hard-top，而是：
+     - 更平滑的 top-sensitive / rank-decayed pair correction

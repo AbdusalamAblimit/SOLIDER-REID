@@ -4,7 +4,7 @@
 - 方法: `Hard-Rank LPCS`
 - 类型: `exp135` 的 ranking-aligned 单变量升级
 - 运行位置: 本地
-- 当前状态: 训练中
+- 当前状态: 已终止（达到停表标准）
 - 直接对照:
   - `exp135 Corrected LPCS`
   - `exp136 Corrected Sparse LPCS`（远程进行中，仅作间接参考）
@@ -152,3 +152,29 @@
   - 当前可以确定：hard-rank 不是失效实现，机制完全按设计工作
   - 但到 `ep60` 为止，它没有把 `R1` 拉起来，反而比 full-pair `LPCS` 更弱
   - 鉴于 `pair correction` 类方法此前存在中后期追赶现象，当前仍给它一个 `ep80` 窗口；若到 `ep80` 仍保持 `R1` 明显落后，就应终止这条 hard-rank 支线
+
+### [2026-03-21 13:48] `exp137` 到 `ep80`：达到停表标准，终止 hard-rank 支线
+- 日志来源:
+  - `log/occluded_duke/exp137_lpcs_hard_rank/train_log.txt`
+- 新验证点:
+  - `ep70 = 58.3 / 69.1`
+  - `ep80 = 60.1 / 70.4`
+- 对照观察:
+  1. 相对 `exp135`：
+     - `ep70 = -0.7 mAP / -1.8 R1`
+     - `ep80 = -0.7 mAP / -1.5 R1`
+  2. 相对 `exp125 ep80 = 59.4 / 72.0`，当前是 `mAP +0.7 / R1 -1.6`
+  3. 相对 `exp030a` 同期形态，当前仍呈现“`mAP` 接近、`R1` 明显更弱”
+- 关键机制信号:
+  1. `lpcs_rsr` 持续稳定在 `0.254`
+  2. `lpcs_psr / lpcs_pf` 持续稳定在 `1.000 / 1.000`
+  3. `lpcs_dm / lpcs_ds` 到 `ep80` 约为 `0.420 / 0.208`
+  4. `lpcs_fg` 长期显著高于 `lpcs_bg`，到 `ep80` 约为 `1.53 > 0.62`
+- 执行动作:
+  1. 已手动终止本地主训练进程
+  2. DataLoader workers 已自行退出，无残留训练占卡
+- 当前判断: `exp137` 结案，判为机制负边界
+- 原因:
+  - 这轮已经充分证明：`hard-rank` 不是没接上，而是太激进
+  - “只保留 hardest 25% ranked pairs” 没有把 `R1` 拉起来，反而稳定削弱了 top-rank 表现
+  - 当前更合理的下一步不应再走 hard selection，而应考虑更平滑的 top-sensitive / rank-decayed correction
