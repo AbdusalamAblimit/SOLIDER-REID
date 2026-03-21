@@ -160,3 +160,32 @@
 - 当前判断: 等待全面审查结束，不启动 clean rerun
 - 原因:
   - 用户要求由用户确认审查结束后再继续启动实验
+
+### [2026-03-22 01:31] `exp140` 二审通过，clean rerun 已重新启动
+- 审查文件:
+  - `experiments/exp140/claude_review_v2.md`
+- 审查结论:
+  - **允许启动**
+- 启动说明:
+  1. 按原计划先尝试后台 `nohup` 启动到：
+     - `log/occluded_duke/exp140_lpcs_conf_rerun1`
+     但该壳层启动没有留下有效主进程，且 `nohup.log` 为空
+  2. 随后改用前台探针确认修复版是否真的可跑
+  3. 探针已稳定进入真实训练，因此直接将其提升为本次官方 clean rerun：
+     - `OUTPUT_DIR=./log/occluded_duke/exp140_lpcs_conf_rerun1_probe`
+     - 会话 ID: `92668`
+- 启动确认:
+  1. 配置日志已确认：
+     - `POSE_LPCS_HEAD_MODE: residual_conf`
+     - `POSE_TEST_FEAT: cvk_residual`
+  2. 模型日志已确认：
+     - `[LPCS] Learned Pair Correction Scorer enabled: head_mode=residual_conf ...`
+  3. 训练日志已确认：
+     - `[LPCS] enabled: ... head_mode=residual_conf, conf_weight=0.25 ...`
+  4. 已进入真实迭代：
+     - `Epoch[1] Iter[20/227] Loss: 22.003`
+     - `Epoch[1] Iter[40/227] Loss: 20.455`
+- 当前判断: 继续，重新进入 warmup 观察期
+- 原因:
+  - 二审已明确放行
+  - 修复后的 logits 版本已经证明可以正常进入训练，不再存在 `epoch 21+` 前的启动阻塞
