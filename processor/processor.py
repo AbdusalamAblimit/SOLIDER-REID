@@ -183,6 +183,8 @@ def do_train(cfg,
         lpcs_warmup = getattr(cfg.MODEL, 'POSE_LPCS_WARMUP', 20)
         lpcs_hidden = getattr(cfg.MODEL, 'POSE_LPCS_HIDDEN', 32)
         lpcs_delta_scale = getattr(cfg.MODEL, 'POSE_LPCS_DELTA_SCALE', 0.5)
+        lpcs_head_mode = getattr(cfg.MODEL, 'POSE_LPCS_HEAD_MODE', 'residual')
+        lpcs_conf_weight = float(getattr(cfg.MODEL, 'POSE_LPCS_CONF_WEIGHT', 0.25))
         lpcs_pair_mode = getattr(cfg.MODEL, 'POSE_LPCS_PAIR_MODE', 'all')
         lpcs_pair_top_ratio = float(getattr(cfg.MODEL, 'POSE_LPCS_PAIR_TOP_RATIO', 1.0))
         lpcs_rank_mode = getattr(cfg.MODEL, 'POSE_LPCS_RANK_MODE', 'all')
@@ -204,6 +206,8 @@ def do_train(cfg,
             raise ValueError('POSE_LPCS_RANK_TOP_RATIO must be in (0, 1] when POSE_LPCS_RANK_MODE=hard_top')
         if lpcs_rank_mode == 'rank_decay' and lpcs_rank_tau <= 0.0:
             raise ValueError('POSE_LPCS_RANK_TAU must be > 0 when POSE_LPCS_RANK_MODE=rank_decay')
+        if lpcs_head_mode not in ('residual', 'residual_conf'):
+            raise ValueError("POSE_LPCS_HEAD_MODE must be one of {'residual', 'residual_conf'}")
         if lpcs_context_mode not in ('none', 'query_ctx'):
             raise ValueError("POSE_LPCS_CONTEXT_MODE must be one of {'none', 'query_ctx'}")
         num_train_classes = len(set([d[1] for d in train_loader.dataset.dataset]))
@@ -251,6 +255,7 @@ def do_train(cfg,
                     f'min_count={ltcs_st_min_count}, stop_epoch={ltcs_st_update_stop_epoch}')
     if lpcs_enabled:
         logger.info(f'[LPCS] enabled: weight={lpcs_weight}, warmup={lpcs_warmup}, '
+                    f'head_mode={lpcs_head_mode}, conf_weight={lpcs_conf_weight}, '
                     f'hidden={lpcs_hidden}, delta_scale={lpcs_delta_scale}, '
                     f'pair_mode={lpcs_pair_mode}, top_ratio={lpcs_pair_top_ratio}, '
                     f'rank_mode={lpcs_rank_mode}, rank_top_ratio={lpcs_rank_top_ratio}, '
@@ -410,13 +415,22 @@ def do_train(cfg,
             )
             desc = torch.cat([desc, row_ctx], dim=-1)
             context_mean = float(row_ctx.abs().mean().item())
-        delta = lpcs_head(desc.view(-1, desc.shape[-1])).view(batch_size, batch_size)
+        if lpcs_head_mode == 'residual_conf':
+            raw_delta, conf = lpcs_head(desc.view(-1, desc.shape[-1]))
+            raw_delta = raw_delta.view(batch_size, batch_size)
+            conf = conf.view(batch_size, batch_size)
+            delta = conf * raw_delta
+        else:
+            raw_delta = lpcs_head(desc.view(-1, desc.shape[-1])).view(batch_size, batch_size)
+            conf = None
+            delta = raw_delta
         final_dist = base_dist + delta
 
         same_label = labels.unsqueeze(0).eq(labels.unsqueeze(1))
         pos_mask = same_label & ~eye
         neg_mask = ~same_label
         pair_weight = pair_change / pair_change[~eye].mean().clamp(min=1e-6)
+        conf_target = 1.0 - torch.exp(-pair_change / pair_change[~eye].mean().clamp(min=1e-6))
 
         total_loss = torch.tensor(0.0, device=global_feat.device)
         total_weight = torch.tensor(0.0, device=global_feat.device)
@@ -489,6 +503,12 @@ def do_train(cfg,
             total_loss = total_loss + (rank_term * rank_weight).sum()
             total_weight = total_weight + rank_weight.sum()
         loss = total_loss / total_weight.clamp(min=1e-6)
+        conf_loss = None
+        if conf is not None:
+            mask = ~eye
+            conf_loss = F.binary_cross_entropy(conf[mask], conf_target[mask], reduction='none')
+            conf_loss = (conf_loss * pair_weight[mask]).sum() / pair_weight[mask].sum().clamp(min=1e-6)
+            loss = loss + lpcs_conf_weight * conf_loss
 
         if pos_mask.any() and neg_mask.any():
             base_gap = float(base_dist[neg_mask].mean().item() - base_dist[pos_mask].mean().item())
@@ -508,6 +528,7 @@ def do_train(cfg,
         rank_weight_mean = rank_factor_sum / max(rank_factor_count, 1e-6)
         stats = {
             'delta_mean': float(delta[mask].mean().item()),
+            'raw_delta_mean': float(raw_delta[mask].mean().item()),
             'delta_std': float(delta[mask].std(unbiased=False).item()),
             'support_mean': float(support_ratio[mask].mean().item()),
             'change_mean': float(pair_change[mask].mean().item()),
@@ -520,6 +541,10 @@ def do_train(cfg,
             'rank_weight_mean': float(rank_weight_mean),
             'context_mean': float(context_mean),
         }
+        if conf is not None:
+            stats['conf_mean'] = float(conf[mask].mean().item())
+            stats['conf_target_mean'] = float(conf_target[mask].mean().item())
+            stats['conf_loss'] = float(conf_loss.item())
         return loss, stats
     _LOCAL_PROCESS_GROUP = None
     if device:
@@ -771,6 +796,7 @@ def do_train(cfg,
                     loss = loss + lpcs_weight * lpcs_loss
                     details['lpcs'] = lpcs_loss.item()
                     details['lpcs_dm'] = lpcs_stats['delta_mean']
+                    details['lpcs_rdm'] = lpcs_stats['raw_delta_mean']
                     details['lpcs_ds'] = lpcs_stats['delta_std']
                     details['lpcs_sm'] = lpcs_stats['support_mean']
                     details['lpcs_cm'] = lpcs_stats['change_mean']
@@ -782,6 +808,10 @@ def do_train(cfg,
                     details['lpcs_rsr'] = lpcs_stats['rank_selected_ratio']
                     details['lpcs_rwm'] = lpcs_stats['rank_weight_mean']
                     details['lpcs_ctxm'] = lpcs_stats['context_mean']
+                    if 'conf_mean' in lpcs_stats:
+                        details['lpcs_cf'] = lpcs_stats['conf_mean']
+                        details['lpcs_ctm'] = lpcs_stats['conf_target_mean']
+                        details['lpcs_cl'] = lpcs_stats['conf_loss']
                     loss._loss_details = details
                 if recon_loss is not None:
                     details = getattr(loss, '_loss_details', {})

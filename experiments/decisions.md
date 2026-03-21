@@ -2599,3 +2599,82 @@ B. 直接启动 exp025，exp024 可以后续补跑
 1. `exp138` 仍在 `LPCS` 主线内，并且当前最接近“平滑 top-sensitive”这一合理升级
 2. `exp139` 的当前失败不是点子无效，而是设计没有闭环到测试路径
 3. 若把 `exp139` 改成无标签 context，它仍然代表与 `exp138` 不同的第二创新点，适合远程并行
+
+## [2026-03-22 00:14] 决策：终止 `exp138`，将 `exp139` 升为当前唯一主候选
+
+**上下文**:
+- `exp138 Rank-Decayed LPCS` 已跑到停表窗口，最新有效验证为：
+  - `ep80 = 60.7 / 71.7`
+- 对照：
+  - `exp135 ep80 = 60.8 / 71.9`
+- 同时这条线的机制统计已经非常稳定：
+  - `lpcs_rwm = 0.177`
+  - `lpcs_dm / lpcs_ds ≈ 0.43 / 0.21`
+  - `lpcs_fg > lpcs_bg`
+- 远程 `exp139 Query-Context LPCS` 则已给出：
+  - `ep20 = 47.6 / 60.0`
+  - `ep40 = 57.0 / 68.8`
+- 对照：
+  - `exp135 ep40 = 56.7 / 68.3`
+  - `exp138 ep40 = 56.8 / 68.6`
+
+**判断**:
+1. `exp138` 可以被明确收口为：
+   - 机制有效
+   - 相比 `hard-rank` 更稳
+   - 但不足以把 `LPCS` 主线推成更强版本
+2. `exp139` 则首次同时满足：
+   - train/test 对称、无标签 context 已真实接入
+   - `lpcs_ctxm` 显著大于 `0`
+   - 指标在中期已稳定超过 `exp135/138`
+3. 因而当前最值得押注的不是“更平滑的 rank 强调”，而是：
+   - **query-level context-aware pair correction**
+
+**选择**:
+1. 立刻终止本地 `exp138`
+2. 保留远程 `exp139` 持续跑到下一个关键验证点
+3. 本地后续新实验若继续沿 `LPCS` 主线推进，应优先围绕：
+   - `query_ctx` 的更强版本
+   - 而不是继续做 `rank_decay` / `hard-rank` / `sparse-routing` 小变体
+
+**理由**:
+1. `exp138` 已经提供了足够的负边界：平滑 top-sensitive 只能算 supporting 机制
+2. `exp139` 是当前唯一同时拥有机制证据与中期正信号的升级线
+3. 这条线更贴近论文级叙事：
+   - pose 定义 common support
+   - query context 决定 pair correction 应如何解释该 support
+
+## [2026-03-22 00:23] 决策：本地转向 `exp140`，验证“correction confidence calibration”而不是继续 rank 变体
+
+**上下文**:
+- `exp138` 已停表，结论为 supporting 线
+- `exp139` 正在远程继续跑，并已成为当前唯一主候选
+- 本地主卡已释放，不能空等远程结果
+
+**判断**:
+1. 本地下一条线不应再继续：
+   - `rank_decay`
+   - `hard-rank`
+   - `sparse routing`
+2. 当前更值得测试的不同创新点是：
+   - **pair correction 是否需要显式的 confidence calibration**
+3. 这条线和 `exp139 query-context` 不是一个问题：
+   - `exp139` 问的是 scorer 是否缺少 query 语境
+   - `exp140` 问的是 scorer 会不会过修正，因为它不知道该不该信自己
+
+**选择**:
+1. 新本地候选定为 `exp140 Confidence-Calibrated LPCS`
+2. 先完成：
+   - 代码接线
+   - 设计文档
+   - 本地自检
+   - 全面 Claude 审查
+3. 在用户告知审查完成前，不启动训练
+
+**理由**:
+1. 这是当前最合理、且与 `exp139` 机制不同的并行探索点
+2. 它直接对应 `exp135` 一直存在的现象：
+   - `mAP` 能涨
+   - `R1` 不够稳
+3. 如果成立，它能把 story 从“pair correction 会修”推进到：
+   - **pair correction 知道什么时候该修、什么时候该收手**

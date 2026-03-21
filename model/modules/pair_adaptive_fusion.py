@@ -129,3 +129,37 @@ class PairResidualScorer(nn.Module):
     def forward(self, desc):
         delta = torch.tanh(self.mlp(desc)) * self.delta_scale
         return delta.squeeze(-1)
+
+
+class PairResidualConfidenceScorer(nn.Module):
+    """Predict both residual correction and a confidence gate for applying it."""
+
+    def __init__(self, input_dim=6, hidden_dim=32, delta_scale=0.5):
+        super().__init__()
+        self.delta_scale = delta_scale
+        self.backbone = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU(inplace=True),
+        )
+        self.delta_head = nn.Linear(hidden_dim, 1)
+        self.conf_head = nn.Linear(hidden_dim, 1)
+        self._init_weights()
+
+    def _init_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    nn.init.zeros_(m.bias)
+        nn.init.zeros_(self.delta_head.weight)
+        nn.init.zeros_(self.delta_head.bias)
+        nn.init.zeros_(self.conf_head.weight)
+        nn.init.zeros_(self.conf_head.bias)
+
+    def forward(self, desc):
+        feat = self.backbone(desc)
+        delta = torch.tanh(self.delta_head(feat)) * self.delta_scale
+        conf = torch.sigmoid(self.conf_head(feat))
+        return delta.squeeze(-1), conf.squeeze(-1)

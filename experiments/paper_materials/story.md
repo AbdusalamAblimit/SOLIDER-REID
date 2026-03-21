@@ -978,3 +978,65 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
 
 这条修正后的上下文线仍然和 pose 主线一致，因为它不是在替换 common support，而是在问：
 **给定 pose 定义出的 common support 之后，pair correction 是否还需要 query 级语境。**
+
+## 2026-03-22 当前 story 收紧：主候选从“平滑 rank 强调”转向“query-context pair correction”
+
+到现在为止，这两条升级线已经开始分出层级：
+
+1. `exp138 Rank-Decayed LPCS`
+   - 它说明：
+     - `hard-rank` 的问题确实在于过于离散、过于激进
+     - 更平滑的 rank-decay 能恢复稳定性
+   - 但它到停表窗口仍只达到：
+     - `ep80 = 60.7 / 71.7`
+     - 与 `exp135 ep80 = 60.8 / 71.9` 基本持平
+   - 因而更适合被讲成：
+     - supporting evidence
+     - 用来证明“纯 ranking emphasis 不是主突破口”
+
+2. `exp139 Query-Context LPCS`
+   - 它现在已经开始表现出更像主方法的特征：
+     - `ep20 = 47.6 / 60.0`
+     - `ep40 = 57.0 / 68.8`
+     - 同时超过 `exp135` 与 `exp138`
+   - 更关键的是：
+     - `lpcs_ctxm ≈ 0.46`
+     - `lpcs_fg > lpcs_bg`
+     - 说明 query-level context 不是挂件，而是真的在参与 pair correction
+
+所以 story 现在可以进一步收成一句话：
+
+**pose 定义哪些身体证据是共同可比的；query context 决定这些共同证据在当前检索 pair 中应该被如何解释。**
+
+这比“再设计一个更好的 rank weighting”更像论文级主贡献，因为它把问题从：
+- 如何挑 pair
+
+推进成了：
+- 如何理解同一个 common-support signal 在不同 query 语境下的意义
+
+## 2026-03-22 本地并行 story 候选：correction 不仅要“会修”，还要“知道何时该收手”
+
+在 `exp139` 继续验证 query-context 的同时，本地新的 `exp140` 代表另一条不同的 story 候选：
+
+1. `exp135` 的长期形态一直是：
+   - `mAP` 能涨
+   - `R1` 不够稳
+2. 这不一定意味着 scorer 缺 context
+3. 也可能意味着：
+   - scorer 会产生 correction
+   - 但不会判断该不该信这次 correction
+
+因此 `exp140` 的故事候选是：
+
+**pair correction 需要 confidence calibration。**
+
+如果它成立，story 可以进一步分层：
+
+- pose 定义 common support
+- support-complete teacher 提供 correction 信号
+- confidence gate 决定 correction 以多大强度写回最终检索距离
+
+这条线与 `exp139` 的区别很清楚：
+
+- `exp139` 强调 **context-aware interpretation**
+- `exp140` 强调 **confidence-aware application**

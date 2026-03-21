@@ -282,6 +282,7 @@ class R1_mAP_eval():
             head_was_training = head.training
             head.eval()
             head_device = next(head.parameters()).device
+            lpcs_head_mode = getattr(self.cfg.MODEL, 'POSE_LPCS_HEAD_MODE', 'residual') if self.cfg is not None else 'residual'
             gw = float(getattr(self.cfg.TEST, 'CVK_GLOBAL_WEIGHT', 1.0)) if self.cfg is not None else 1.0
             kw = float(getattr(self.cfg.TEST, 'CVK_KP_WEIGHT', 1.0)) if self.cfg is not None else 1.0
             base_dist = (gw * global_dist + kw * kp_dist) / max(gw + kw, 1e-12)
@@ -306,8 +307,14 @@ class R1_mAP_eval():
                             pair_change=(kp_dist[start:end] - base_dist[start:end]).abs(),
                         )
                         desc = torch.cat([desc, row_ctx], dim=-1)
-                    delta = head(desc.to(head_device).view(-1, desc.shape[-1]))
-                    delta = delta.view(end - start, desc.shape[1]).to(base_dist.device)
+                    if lpcs_head_mode == 'residual_conf':
+                        raw_delta, conf = head(desc.to(head_device).view(-1, desc.shape[-1]))
+                        raw_delta = raw_delta.view(end - start, desc.shape[1]).to(base_dist.device)
+                        conf = conf.view(end - start, desc.shape[1]).to(base_dist.device)
+                        delta = conf * raw_delta
+                    else:
+                        delta = head(desc.to(head_device).view(-1, desc.shape[-1]))
+                        delta = delta.view(end - start, desc.shape[1]).to(base_dist.device)
                     corrected = base_dist[start:end] + delta
                     corrected_chunks.append(corrected.cpu())
             if head_was_training:

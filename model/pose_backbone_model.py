@@ -29,7 +29,11 @@ from .modules.pose_translation import PoseTranslationModule
 from .modules.pose_cond_lora import PoseCondLoRA
 from .modules.pose_film import PoseFiLMGenerator, PoseFiLMLayer
 from .modules.skeleton_reencoder import SkeletonReEncoder
-from .modules.pair_adaptive_fusion import PairAdaptiveFusionHead, PairResidualScorer
+from .modules.pair_adaptive_fusion import (
+    PairAdaptiveFusionHead,
+    PairResidualConfidenceScorer,
+    PairResidualScorer,
+)
 
 
 class PoseBackboneModel(build_transformer):
@@ -507,19 +511,27 @@ class PoseBackboneModel(build_transformer):
                 raise ValueError('POSE_LPCS requires POSE_SKELETON_GCN=True')
             lpcs_hidden = getattr(cfg.MODEL, 'POSE_LPCS_HIDDEN', 32)
             lpcs_delta_scale = getattr(cfg.MODEL, 'POSE_LPCS_DELTA_SCALE', 0.5)
+            lpcs_head_mode = getattr(cfg.MODEL, 'POSE_LPCS_HEAD_MODE', 'residual')
             lpcs_context_mode = getattr(cfg.MODEL, 'POSE_LPCS_CONTEXT_MODE', 'none')
             if lpcs_context_mode == 'query_ctx':
                 lpcs_input_dim = 11
             else:
                 lpcs_input_dim = 6
-            self.lpcs_head = PairResidualScorer(
-                input_dim=lpcs_input_dim,
-                hidden_dim=lpcs_hidden,
-                delta_scale=lpcs_delta_scale,
-            )
+            if lpcs_head_mode == 'residual_conf':
+                self.lpcs_head = PairResidualConfidenceScorer(
+                    input_dim=lpcs_input_dim,
+                    hidden_dim=lpcs_hidden,
+                    delta_scale=lpcs_delta_scale,
+                )
+            else:
+                self.lpcs_head = PairResidualScorer(
+                    input_dim=lpcs_input_dim,
+                    hidden_dim=lpcs_hidden,
+                    delta_scale=lpcs_delta_scale,
+                )
             lpcs_params = sum(p.numel() for p in self.lpcs_head.parameters())
             print(f'[LPCS] Learned Pair Correction Scorer enabled: '
-                  f'hidden={lpcs_hidden}, delta_scale={lpcs_delta_scale}, '
+                  f'head_mode={lpcs_head_mode}, hidden={lpcs_hidden}, delta_scale={lpcs_delta_scale}, '
                   f'context_mode={lpcs_context_mode}, params={lpcs_params}')
 
         # PAMC (Pose-Aware Masking Consistency) projector

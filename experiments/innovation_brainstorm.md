@@ -2122,3 +2122,48 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
    - 无标签
    - train/test 一致
    - 可直接在 evaluator 中构造的 query context
+
+### 2026-03-22 当前收敛：`rank-decay` 退为 supporting，`query-context correction` 升为主候选
+
+- `exp138 Rank-Decayed LPCS` 到停表窗口的结论已经够清楚：
+  - `ep80 = 60.7 / 71.7`
+  - 对照 `exp135 ep80 = 60.8 / 71.9`
+  - 它证明了“平滑 top-sensitive”比 `hard-rank` 合理，但最终只形成 supporting 级别的改进
+
+- `exp139 Query-Context LPCS` 则在当前阶段首次同时给出：
+  - `ep20 = 47.6 / 60.0`
+  - `ep40 = 57.0 / 68.8`
+  - `lpcs_ctxm ≈ 0.46`
+  - `lpcs_fg > lpcs_bg`
+
+这让主创新候选开始进一步收紧成：
+
+1. 不是“更聪明地选择哪些 pairs”
+2. 而是“给 pair correction 一个更完整的 query-level语境”
+3. 从而让同样的 common support 在不同 query 上被不同地解释
+
+如果这条线继续转正，它会比 `rank_decay` 更像论文级机制，因为它在回答一个更有新意的问题：
+- **共同可见的身体证据并不是孤立解释的，它依赖 query 当前的整体难度与上下文。**
+
+### 2026-03-22 本地新增候选：`exp140` 测试 correction confidence 是否才是 `R1` 瓶颈
+
+在远程继续跑 `exp139 query-context` 的同时，本地不再沿 `rank` 线修小补小，而是新开一个不同问题解释：
+
+1. 当前 `LPCS` 也许不是不会修正
+2. 而是不会判断：
+   - 哪些修正应该强信
+   - 哪些修正应该被抑制
+
+因此 `exp140` 的核心创新点候选是：
+
+- **Confidence-Calibrated Pair Correction**
+
+它的机制不是再给更多 context，而是让同一个 scorer 同时学：
+- `raw_delta`
+- `conf`
+
+如果这条线成立，它会支撑另一种论文式表达：
+
+1. pose 定义 common support
+2. support-complete teacher 提供 correction 方向
+3. confidence calibration 决定 correction 是否该真正落到检索距离上
