@@ -80,3 +80,21 @@
 - 当前判断: 允许正式运行
 - 原因:
   - Claude 审查已放行，且前台最小自检已证明 `LPCS` 不只是“能构建”，而是能真正进入训练循环
+
+### [2026-03-21 08:09] 正式后台训练启动
+- 处理动作:
+  1. 终止仅用于启动自检的前台 run，避免后续监控与正式实验混淆
+  2. 保留部分日志到：
+     - `log/occluded_duke/exp133_lpcs_pre_restart1/train_log.txt`
+  3. 使用 `setsid + bash -lc` 方式重启为正式后台训练
+- 当前正式进程:
+  - 主进程 PID: `751830`
+  - 输出目录: `log/occluded_duke/exp133_lpcs`
+  - 后台日志: `log/occluded_duke/exp133_lpcs/nohup.log`
+- 启动确认:
+  1. `nohup.log` 已正常落盘
+  2. `train_log.txt` 已重新生成
+  3. 训练进程及 DataLoader worker 均已出现，说明后台运行稳定
+- 当前判断: 继续
+- 原因:
+  - `exp133` 已经进入正式训练阶段；下一步按早期监控节奏检查 warmup 是否与 `exp132` 同量级稳定
