@@ -507,10 +507,20 @@ class PoseBackboneModel(build_transformer):
                 raise ValueError('POSE_LPCS requires POSE_SKELETON_GCN=True')
             lpcs_hidden = getattr(cfg.MODEL, 'POSE_LPCS_HIDDEN', 32)
             lpcs_delta_scale = getattr(cfg.MODEL, 'POSE_LPCS_DELTA_SCALE', 0.5)
-            self.lpcs_head = PairResidualScorer(hidden_dim=lpcs_hidden, delta_scale=lpcs_delta_scale)
+            lpcs_context_mode = getattr(cfg.MODEL, 'POSE_LPCS_CONTEXT_MODE', 'none')
+            if lpcs_context_mode == 'query_ctx':
+                lpcs_input_dim = 11
+            else:
+                lpcs_input_dim = 6
+            self.lpcs_head = PairResidualScorer(
+                input_dim=lpcs_input_dim,
+                hidden_dim=lpcs_hidden,
+                delta_scale=lpcs_delta_scale,
+            )
             lpcs_params = sum(p.numel() for p in self.lpcs_head.parameters())
             print(f'[LPCS] Learned Pair Correction Scorer enabled: '
-                  f'hidden={lpcs_hidden}, delta_scale={lpcs_delta_scale}, params={lpcs_params}')
+                  f'hidden={lpcs_hidden}, delta_scale={lpcs_delta_scale}, '
+                  f'context_mode={lpcs_context_mode}, params={lpcs_params}')
 
         # PAMC (Pose-Aware Masking Consistency) projector
         self.use_pamc = getattr(cfg.MODEL, 'POSE_PAMC', False)

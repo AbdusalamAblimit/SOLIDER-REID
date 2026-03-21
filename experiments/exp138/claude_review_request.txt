@@ -1,0 +1,43 @@
+你是这个仓库的严格代码审查员。请对 `exp138 Rank-Decayed LPCS` 做一次**全面审查**，不要做快速扫一眼式 review。
+
+必须完整阅读并审查这些文件：
+- `/root/work/SOLIDER-REID/experiments/exp138/design.md`
+- `/root/work/SOLIDER-REID/experiments/exp138/monitor.md`
+- `/root/work/SOLIDER-REID/configs/occluded_duke/pose_psg_gcn_lpcs_rank_decay.yml`
+- `/root/work/SOLIDER-REID/config/defaults.py`
+- `/root/work/SOLIDER-REID/processor/processor.py`
+- `/root/work/SOLIDER-REID/model/pose_backbone_model.py`
+- `/root/work/SOLIDER-REID/model/modules/pair_adaptive_fusion.py`
+- `/root/work/SOLIDER-REID/experiments/exp135/design.md`
+- `/root/work/SOLIDER-REID/experiments/exp137/design.md`
+- `/root/work/SOLIDER-REID/experiments/decisions.md`
+
+审查目标：
+1. 相对 `exp135` 是否满足单变量原则
+2. `rank_decay` 是否真的是“保留 full-pair、只改 rank weighting”，而不是偷偷引入第二个变量
+3. 默认行为是否保持不变
+4. `rank_decay` 的实现有没有 shape / masking / sorting / dtype / device bug
+5. `lpcs_rwm` 是否足以证明该机制真的激活
+6. 是否存在阻塞性 bug、逻辑错误、指标解释风险或日志不足
+
+输出格式必须是中文，并严格用下面结构：
+
+# Claude 审查结论
+
+## 结论
+- 允许启动 / 不允许启动
+
+## Blocking
+- 没有则写“无”
+
+## Major
+- 没有则写“无”
+
+## Medium
+- 没有则写“无”
+
+## Low
+- 没有则写“无”
+
+## 建议
+- 给出是否可以启动实验，以及启动前是否必须修复某些问题

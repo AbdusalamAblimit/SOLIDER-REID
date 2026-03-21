@@ -2085,4 +2085,21 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
    - top-sensitive continuous weighting
    - 或直接学习 top-rank residual scorer
 
+### 2026-03-21 转向后的双线候选：`exp138` vs `exp139`
+
+基于 `exp136/137` 的双重负边界，当前最值得并行验证的不是同一机制的两个系数，而是两个不同的问题解释：
+
+1. `exp138 Rank-Decayed LPCS`
+   - 假设：`hard-top` 失败不是因为 top-rank 不重要，而是因为选择太离散、太激进
+   - 方案：保留 full-pair，上 hardest pairs 用连续 rank-decay 增权
+
+2. `exp139 Query-Context LPCS`
+   - 假设：`exp135` 的 `R1` 弱，不是因为权重不对，而是因为 scorer 只看 pair 本身，缺少 query-level context
+   - 方案：给每个 pair descriptor 追加 query 的正负均值距离、margin、support 完整度与 teacher change 统计
+
+如果这两条里有一条明显转正，论文主创新会更靠近：
+- `pose-defined common support`
+- `learned pair correction`
+- `top-rank sensitive / context-aware pair correction`
+
 这比“学一个更好的 sparse router”更像 B 类主方法。

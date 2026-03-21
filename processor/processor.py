@@ -186,6 +186,8 @@ def do_train(cfg,
         lpcs_pair_top_ratio = float(getattr(cfg.MODEL, 'POSE_LPCS_PAIR_TOP_RATIO', 1.0))
         lpcs_rank_mode = getattr(cfg.MODEL, 'POSE_LPCS_RANK_MODE', 'all')
         lpcs_rank_top_ratio = float(getattr(cfg.MODEL, 'POSE_LPCS_RANK_TOP_RATIO', 1.0))
+        lpcs_rank_tau = float(getattr(cfg.MODEL, 'POSE_LPCS_RANK_TAU', 8.0))
+        lpcs_context_mode = getattr(cfg.MODEL, 'POSE_LPCS_CONTEXT_MODE', 'none')
         lpcs_cvk_global_weight = float(getattr(cfg.TEST, 'CVK_GLOBAL_WEIGHT', 1.0))
         lpcs_cvk_kp_weight = float(getattr(cfg.TEST, 'CVK_KP_WEIGHT', 1.0))
         lpcs_st_low_thr = getattr(cfg.MODEL, 'POSE_LPCS_ST_LOW_THR', 0.3)
@@ -195,10 +197,14 @@ def do_train(cfg,
         lpcs_st_update_stop_epoch = getattr(cfg.MODEL, 'POSE_LPCS_ST_UPDATE_STOP_EPOCH', -1)
         if lpcs_pair_mode == 'delta_top' and not (0.0 < lpcs_pair_top_ratio <= 1.0):
             raise ValueError('POSE_LPCS_PAIR_TOP_RATIO must be in (0, 1] when POSE_LPCS_PAIR_MODE=delta_top')
-        if lpcs_rank_mode not in ('all', 'hard_top'):
-            raise ValueError("POSE_LPCS_RANK_MODE must be one of {'all', 'hard_top'}")
+        if lpcs_rank_mode not in ('all', 'hard_top', 'rank_decay'):
+            raise ValueError("POSE_LPCS_RANK_MODE must be one of {'all', 'hard_top', 'rank_decay'}")
         if lpcs_rank_mode == 'hard_top' and not (0.0 < lpcs_rank_top_ratio <= 1.0):
             raise ValueError('POSE_LPCS_RANK_TOP_RATIO must be in (0, 1] when POSE_LPCS_RANK_MODE=hard_top')
+        if lpcs_rank_mode == 'rank_decay' and lpcs_rank_tau <= 0.0:
+            raise ValueError('POSE_LPCS_RANK_TAU must be > 0 when POSE_LPCS_RANK_MODE=rank_decay')
+        if lpcs_context_mode not in ('none', 'query_ctx'):
+            raise ValueError("POSE_LPCS_CONTEXT_MODE must be one of {'none', 'query_ctx'}")
         num_train_classes = len(set([d[1] for d in train_loader.dataset.dataset]))
         lpcs_teacher_bank = SupportCompleteBank(
             num_classes=num_train_classes,
@@ -247,6 +253,7 @@ def do_train(cfg,
                     f'hidden={lpcs_hidden}, delta_scale={lpcs_delta_scale}, '
                     f'pair_mode={lpcs_pair_mode}, top_ratio={lpcs_pair_top_ratio}, '
                     f'rank_mode={lpcs_rank_mode}, rank_top_ratio={lpcs_rank_top_ratio}, '
+                    f'rank_tau={lpcs_rank_tau}, context_mode={lpcs_context_mode}, '
                     f'cvk_gw={lpcs_cvk_global_weight}, cvk_kw={lpcs_cvk_kp_weight}, '
                     f'low_thr={lpcs_st_low_thr}, update_thr={lpcs_st_update_thr}, '
                     f'mom={lpcs_st_mom}, min_count={lpcs_st_min_count}, '
@@ -255,6 +262,8 @@ def do_train(cfg,
             logger.warning('[LPCS] pair_mode=delta_top but top_ratio>=1.0; routing degenerates to selecting all pairs')
         if lpcs_rank_mode == 'hard_top' and lpcs_rank_top_ratio >= 1.0:
             logger.warning('[LPCS] rank_mode=hard_top but rank_top_ratio>=1.0; hard aggregation degenerates to selecting all pairs')
+        if lpcs_rank_mode == 'rank_decay' and lpcs_rank_tau >= 1e6:
+            logger.warning('[LPCS] rank_mode=rank_decay but rank_tau is extremely large; weighting may degenerate to near-uniform')
     if scfr_enabled:
         logger.info(f'[SCFR] Feature replacement mode enabled (loss disabled, bank replaces features)')
     if scrc_enabled:
@@ -359,6 +368,14 @@ def do_train(cfg,
             mask[top_idx] = True
             return mask
 
+        def _rank_decay_factors(values, largest=True):
+            if values.numel() <= 1:
+                return torch.ones_like(values)
+            order = torch.argsort(values, descending=largest)
+            ranks = torch.empty_like(order, dtype=values.dtype)
+            ranks[order] = torch.arange(values.numel(), device=values.device, dtype=values.dtype)
+            return torch.exp(-ranks / lpcs_rank_tau)
+
         feat_g = F.normalize(global_feat.detach(), dim=-1)
         kp_base = F.normalize(kp_feats.detach(), dim=-1)
         kp_teacher = F.normalize(teacher_kp_feats.detach(), dim=-1)
@@ -373,6 +390,7 @@ def do_train(cfg,
         weight_sum = max(lpcs_cvk_global_weight + lpcs_cvk_kp_weight, 1e-6)
         base_dist = (lpcs_cvk_global_weight * global_dist + lpcs_cvk_kp_weight * kp_dist) / weight_sum
         teacher_dist = (lpcs_cvk_global_weight * global_dist + lpcs_cvk_kp_weight * teacher_kp_dist) / weight_sum
+        pair_change = (teacher_dist.detach() - base_dist.detach()).abs()
 
         batch_size = global_feat.size(0)
         eye = torch.eye(batch_size, dtype=torch.bool, device=global_feat.device)
@@ -380,13 +398,32 @@ def do_train(cfg,
         g_vis_mean = q_vis_mean.t()
         desc = build_pair_descriptors(
             global_dist, kp_dist, support_ratio, q_vis_mean, g_vis_mean)
+        context_mean = 0.0
+        if lpcs_context_mode == 'query_ctx':
+            valid_pair = (~eye).float()
+            pos_mask_float = same_label = labels.unsqueeze(0).eq(labels.unsqueeze(1))
+            pos_mask_float = (same_label & ~eye).float()
+            neg_mask_float = (~same_label).float()
+            valid_count = valid_pair.sum(dim=1).clamp(min=1.0)
+            pos_count = pos_mask_float.sum(dim=1).clamp(min=1.0)
+            neg_count = neg_mask_float.sum(dim=1).clamp(min=1.0)
+            row_pos_mean = (base_dist.detach() * pos_mask_float).sum(dim=1) / pos_count
+            row_neg_mean = (base_dist.detach() * neg_mask_float).sum(dim=1) / neg_count
+            row_margin = row_neg_mean - row_pos_mean
+            row_support_mean = (support_ratio.detach() * valid_pair).sum(dim=1) / valid_count
+            row_change_mean = (pair_change * valid_pair).sum(dim=1) / valid_count
+            row_ctx = torch.stack(
+                [row_pos_mean, row_neg_mean, row_margin, row_support_mean, row_change_mean],
+                dim=-1
+            ).unsqueeze(1).expand(-1, batch_size, -1)
+            desc = torch.cat([desc, row_ctx], dim=-1)
+            context_mean = float(row_ctx.abs().mean().item())
         delta = lpcs_head(desc.view(-1, desc.shape[-1])).view(batch_size, batch_size)
         final_dist = base_dist + delta
 
         same_label = labels.unsqueeze(0).eq(labels.unsqueeze(1))
         pos_mask = same_label & ~eye
         neg_mask = ~same_label
-        pair_change = (teacher_dist.detach() - base_dist.detach()).abs()
         pair_weight = pair_change / pair_change[~eye].mean().clamp(min=1e-6)
 
         total_loss = torch.tensor(0.0, device=global_feat.device)
@@ -396,6 +433,8 @@ def do_train(cfg,
         selected_pair_weight_sum = 0.0
         total_pair_weight_sum = 0.0
         rank_selected_pair_count = 0.0
+        rank_factor_sum = 0.0
+        rank_factor_count = 0.0
         for idx in range(batch_size):
             pos = final_dist[idx][pos_mask[idx]]
             neg = final_dist[idx][neg_mask[idx]]
@@ -424,14 +463,25 @@ def do_train(cfg,
             if lpcs_rank_mode == 'hard_top':
                 pos_rank_sel = _select_top(pos, lpcs_rank_top_ratio, largest=True)
                 neg_rank_sel = _select_top(neg, lpcs_rank_top_ratio, largest=False)
+                pos_rank_factor = torch.ones_like(pos)
+                neg_rank_factor = torch.ones_like(neg)
+            elif lpcs_rank_mode == 'rank_decay':
+                pos_rank_sel = torch.ones_like(pos, dtype=torch.bool)
+                neg_rank_sel = torch.ones_like(neg, dtype=torch.bool)
+                pos_rank_factor = _rank_decay_factors(pos, largest=True)
+                neg_rank_factor = _rank_decay_factors(neg, largest=False)
             else:
                 pos_rank_sel = torch.ones_like(pos, dtype=torch.bool)
                 neg_rank_sel = torch.ones_like(neg, dtype=torch.bool)
+                pos_rank_factor = torch.ones_like(pos)
+                neg_rank_factor = torch.ones_like(neg)
 
             pos = pos[pos_rank_sel]
             neg = neg[neg_rank_sel]
-            pos_w = pos_w[pos_rank_sel]
-            neg_w = neg_w[neg_rank_sel]
+            pos_w = pos_w[pos_rank_sel] * pos_rank_factor[pos_rank_sel]
+            neg_w = neg_w[neg_rank_sel] * neg_rank_factor[neg_rank_sel]
+            pos_rank_factor = pos_rank_factor[pos_rank_sel]
+            neg_rank_factor = neg_rank_factor[neg_rank_sel]
             if pos.numel() == 0 or neg.numel() == 0:
                 continue
 
@@ -440,6 +490,8 @@ def do_train(cfg,
             rank_selected_pair_count += float(pos_w.numel() + neg_w.numel())
             selected_pair_weight_sum += float(routed_pos_w.sum().item() + routed_neg_w.sum().item())
             total_pair_weight_sum += float(pos_w_full.sum().item() + neg_w_full.sum().item())
+            rank_factor_sum += float(pos_rank_factor.sum().item() + neg_rank_factor.sum().item())
+            rank_factor_count += float(pos_rank_factor.numel() + neg_rank_factor.numel())
             rank_term = F.softplus(pos.unsqueeze(1) - neg.unsqueeze(0))
             rank_weight = torch.sqrt(pos_w.unsqueeze(1) * neg_w.unsqueeze(0))
             total_loss = total_loss + (rank_term * rank_weight).sum()
@@ -461,6 +513,7 @@ def do_train(cfg,
                 total_pair_weight_sum / max(total_pair_count, 1e-6)
             )
         rank_selected_ratio = rank_selected_pair_count / max(selected_pair_count, 1e-6)
+        rank_weight_mean = rank_factor_sum / max(rank_factor_count, 1e-6)
         stats = {
             'delta_mean': float(delta[mask].mean().item()),
             'delta_std': float(delta[mask].std(unbiased=False).item()),
@@ -472,6 +525,8 @@ def do_train(cfg,
             'pair_selected_ratio': float(pair_selected_ratio),
             'pair_focus': float(pair_focus),
             'rank_selected_ratio': float(rank_selected_ratio),
+            'rank_weight_mean': float(rank_weight_mean),
+            'context_mean': float(context_mean),
         }
         return loss, stats
     _LOCAL_PROCESS_GROUP = None
@@ -733,6 +788,8 @@ def do_train(cfg,
                     details['lpcs_psr'] = lpcs_stats['pair_selected_ratio']
                     details['lpcs_pf'] = lpcs_stats['pair_focus']
                     details['lpcs_rsr'] = lpcs_stats['rank_selected_ratio']
+                    details['lpcs_rwm'] = lpcs_stats['rank_weight_mean']
+                    details['lpcs_ctxm'] = lpcs_stats['context_mean']
                     loss._loss_details = details
                 if recon_loss is not None:
                     details = getattr(loss, '_loss_details', {})

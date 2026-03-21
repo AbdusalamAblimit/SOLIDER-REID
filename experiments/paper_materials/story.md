@@ -935,3 +935,27 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
 3. 更合理的下一步应该是：
    - 保留 full-pair 的上下文稳定性
    - 同时对 top-ranked mistakes 做更平滑、更连续的强调
+
+## 2026-03-21 转向后的两个候选升级
+
+基于 `exp136` 和 `exp137`，story 现在自然分成两条待筛选的升级线：
+
+1. **平滑 top-sensitive 线**
+   - 代表实验：`exp138 Rank-Decayed LPCS`
+   - 核心想法：
+     - 不删除大部分 pairs
+     - 只用连续 rank-decay 去更重视 top-ranked mistakes
+
+2. **上下文感知 correction 线**
+   - 代表实验：`exp139 Query-Context LPCS`
+   - 核心想法：
+     - 不是 pair weighting 不够，而是 current scorer 太短视
+     - 让每个 pair correction 同时感知 query 的整体难度、margin 与 support 完整度
+
+这两条线都保持同一个大 story 不变：
+- pose 负责定义 common support
+- learned pair correction 负责改写检索距离
+
+它们的区别在于：
+- `exp138` 改的是 **如何强调 top-ranked mistakes**
+- `exp139` 改的是 **scorer 是否具备足够上下文**
