@@ -2572,3 +2572,30 @@ B. 直接启动 exp025，exp024 可以后续补跑
 2. 只改一个核心变量：
    - `LPCS` 的 ranking 聚合方式
 3. 启动前仍必须先通过 Claude 审查
+
+## [2026-03-21 14:24] 决策：放行 `exp138`，驳回当前版 `exp139` 并重构为无标签 context
+
+**上下文**:
+- `exp138` 的 Claude 全面审查已完成，结论为“允许启动”
+- `exp139` 的 Claude 全面审查已完成，结论为“不允许启动”
+- `exp139` 当前暴露的不是小实现问题，而是两个 blocking:
+  1. test-time descriptor 维度与 `PairResidualScorer` 输入维度不匹配
+  2. query context 依赖 `label` 构造，训练与测试不一致
+
+**判断**:
+1. `exp138` 可以直接作为本地主线启动
+2. 当前版 `exp139` 不能进入远程训练，否则即使勉强补零也无法解释结果
+3. `exp139` 若要保留“query 上下文 correction”这条创新点，必须改成：
+   - train/test 都可构造
+   - 完全不依赖 label
+   - evaluator 与训练共用同一 descriptor 语义
+
+**选择**:
+1. 本地立刻启动 `exp138 Rank-Decayed LPCS`
+2. 远程暂不启动当前版 `exp139`
+3. 将 `exp139` 重构为无标签 query-context 版本后，重新做一轮完整 Claude 审查
+
+**理由**:
+1. `exp138` 仍在 `LPCS` 主线内，并且当前最接近“平滑 top-sensitive”这一合理升级
+2. `exp139` 的当前失败不是点子无效，而是设计没有闭环到测试路径
+3. 若把 `exp139` 改成无标签 context，它仍然代表与 `exp138` 不同的第二创新点，适合远程并行

@@ -45,6 +45,35 @@ def build_pair_descriptors(global_dist, kp_dist, support_ratio, q_vis_mean, g_vi
     ], dim=-1)
 
 
+def build_query_context_descriptors(base_dist, support_ratio, pair_change=None, valid_mask=None):
+    """Build label-free query-level context usable in both train and test."""
+    if valid_mask is None:
+        valid_mask = torch.ones_like(base_dist, dtype=torch.bool)
+
+    valid_float = valid_mask.float()
+    valid_count = valid_float.sum(dim=1).clamp(min=1.0)
+
+    row_mean = (base_dist * valid_float).sum(dim=1) / valid_count
+    centered = (base_dist - row_mean.unsqueeze(1)) * valid_float
+    row_std = torch.sqrt(centered.pow(2).sum(dim=1) / valid_count).clamp_min_(1e-12)
+
+    inf_fill = torch.full_like(base_dist, float('inf'))
+    row_min = torch.where(valid_mask, base_dist, inf_fill).min(dim=1).values
+    row_min = torch.where(torch.isfinite(row_min), row_min, row_mean)
+
+    row_support_mean = (support_ratio * valid_float).sum(dim=1) / valid_count
+    if pair_change is None:
+        row_change_mean = torch.zeros_like(row_mean)
+    else:
+        row_change_mean = (pair_change * valid_float).sum(dim=1) / valid_count
+
+    row_ctx = torch.stack(
+        [row_mean, row_std, row_min, row_support_mean, row_change_mean],
+        dim=-1,
+    )
+    return row_ctx.unsqueeze(1).expand(-1, base_dist.shape[1], -1)
+
+
 class PairAdaptiveFusionHead(nn.Module):
     """Predict how much each pair should trust common-support distance."""
 

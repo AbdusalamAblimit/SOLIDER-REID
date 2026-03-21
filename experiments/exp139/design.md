@@ -10,17 +10,19 @@
 也就是说，当前的 `PairResidualScorer` 只看 pair 本身，可能过于短视，缺少：
 
 - 这个 query 整体有多难
-- 这个 query 的正负间隔有多大
+- 这个 query 当前的距离分布有多尖锐
 - 这个 query 当前的 support 完整度如何
+- 这个 query 的 global / common-support 分歧有多大
 
 ## 核心假设
 
-如果给 `LPCS` 增加 query-level context，让每个 pair correction 同时感知：
+如果给 `LPCS` 增加 **无标签且 train/test 一致** 的 query-level context，让每个 pair correction 同时感知：
 
-1. 当前 query 的正负均值距离
-2. 当前 query 的 margin
-3. 当前 query 的平均 common support
-4. 当前 query 的平均 support-complete teacher change
+1. 当前 query 的平均基础距离
+2. 当前 query 的距离分布标准差
+3. 当前 query 的最小基础距离
+4. 当前 query 的平均 common support
+5. 当前 query 的平均 global / common-support 分歧
 
 那么：
 
@@ -45,12 +47,13 @@
    - `q_vis_mean`
    - `g_vis_mean`
 3. 再为每个 query 追加 5 维 query-level context：
-   - `row_pos_mean`
-   - `row_neg_mean`
-   - `row_margin`
+   - `row_mean`
+   - `row_std`
+   - `row_min`
    - `row_support_mean`
-   - `row_change_mean`
+   - `row_gap_mean`
 4. 最终由 11 维 descriptor 驱动同一个 `PairResidualScorer`
+5. 这些 context 特征在训练和测试中使用完全同一套构造逻辑，不依赖 label，也不依赖 oracle teacher
 
 新增日志：
 
@@ -76,6 +79,6 @@
 1. 如果和 `exp135` 完全等价：
    - 说明 query-level context 不足以改变 correction 质量
 2. 如果明显变差：
-   - 说明这些上下文统计太粗，给 scorer 引入了噪声
+   - 说明这些无标签统计太粗，给 scorer 引入了噪声
 3. 如果 `lpcs_ctxm ≈ 0`：
    - 说明 context 特征没有正确接入

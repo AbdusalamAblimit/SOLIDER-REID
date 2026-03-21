@@ -40,3 +40,29 @@
 - 当前判断: 审查进行中，暂不启动训练
 - 原因:
   - 用户明确要求先完成全面审查，再由用户告知审查结束
+
+### [2026-03-21 14:24] Claude 全面审查通过，允许启动
+- 审查结论:
+  - `experiments/exp138/claude_review.md` 明确给出“允许启动”
+- 非阻塞提醒:
+  1. `tau=8` 在当前 batch 结构下对 `neg` 侧衰减更强，对 `pos` 侧几乎近似均匀
+  2. `lpcs_rwm` 更偏向反映 `neg` 侧 rank-decay，不足以单独解释 `pos/neg` 对称性
+- 当前判断: 放行，本地启动
+- 原因:
+  - 没有 blocking 问题，且该实验仍满足相对 `exp135` 的单变量原则
+
+### [2026-03-21 14:20] 正式启动 `exp138`
+- 运行方式:
+  - 使用本地 `solider-reid` conda 环境启动
+  - 当前训练会话: `session_id=46003`
+- 启动确认:
+  - `[LPCS]` 日志已打印 `rank_mode=rank_decay`
+  - `context_mode=none`
+  - `POSE_TEST_FEAT=cvk_residual`
+- warmup 早期形状:
+  - `Epoch[1] Iter[100/227] Loss: 17.489`
+  - `Epoch 1 done. Time per epoch: 60.060[s]`
+  - `Epoch 2 done. Time per epoch: 58.534[s]`
+- 当前判断: 继续
+- 原因:
+  - 训练健康启动，当前还未进入 `LPCS` warmup 结束后的有效判别区

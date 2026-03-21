@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from utils.reranking import re_ranking
 from model.modules.pair_adaptive_fusion import (
     build_pair_descriptors,
+    build_query_context_descriptors,
     common_support_distance,
     euclidean_distance_tensor,
 )
@@ -298,6 +299,13 @@ class R1_mAP_eval():
                         q_vis_mean,
                         g_vis_mean.expand(end - start, -1),
                     )
+                    if getattr(self.cfg.MODEL, 'POSE_LPCS_CONTEXT_MODE', 'none') == 'query_ctx':
+                        row_ctx = build_query_context_descriptors(
+                            base_dist[start:end],
+                            support_ratio[start:end],
+                            pair_change=(kp_dist[start:end] - base_dist[start:end]).abs(),
+                        )
+                        desc = torch.cat([desc, row_ctx], dim=-1)
                     delta = head(desc.to(head_device).view(-1, desc.shape[-1]))
                     delta = delta.view(end - start, desc.shape[1]).to(base_dist.device)
                     corrected = base_dist[start:end] + delta

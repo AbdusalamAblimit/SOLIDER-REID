@@ -15,6 +15,7 @@ from model.modules.pamc import pamc_consistency_loss
 from model.modules.support_complete_bank import SupportCompleteBank
 from model.modules.pair_adaptive_fusion import (
     build_pair_descriptors,
+    build_query_context_descriptors,
     common_support_distance,
     euclidean_distance_tensor,
 )
@@ -400,22 +401,13 @@ def do_train(cfg,
             global_dist, kp_dist, support_ratio, q_vis_mean, g_vis_mean)
         context_mean = 0.0
         if lpcs_context_mode == 'query_ctx':
-            valid_pair = (~eye).float()
-            pos_mask_float = same_label = labels.unsqueeze(0).eq(labels.unsqueeze(1))
-            pos_mask_float = (same_label & ~eye).float()
-            neg_mask_float = (~same_label).float()
-            valid_count = valid_pair.sum(dim=1).clamp(min=1.0)
-            pos_count = pos_mask_float.sum(dim=1).clamp(min=1.0)
-            neg_count = neg_mask_float.sum(dim=1).clamp(min=1.0)
-            row_pos_mean = (base_dist.detach() * pos_mask_float).sum(dim=1) / pos_count
-            row_neg_mean = (base_dist.detach() * neg_mask_float).sum(dim=1) / neg_count
-            row_margin = row_neg_mean - row_pos_mean
-            row_support_mean = (support_ratio.detach() * valid_pair).sum(dim=1) / valid_count
-            row_change_mean = (pair_change * valid_pair).sum(dim=1) / valid_count
-            row_ctx = torch.stack(
-                [row_pos_mean, row_neg_mean, row_margin, row_support_mean, row_change_mean],
-                dim=-1
-            ).unsqueeze(1).expand(-1, batch_size, -1)
+            pair_gap = (kp_dist.detach() - base_dist.detach()).abs()
+            row_ctx = build_query_context_descriptors(
+                base_dist.detach(),
+                support_ratio.detach(),
+                pair_change=pair_gap,
+                valid_mask=~eye,
+            )
             desc = torch.cat([desc, row_ctx], dim=-1)
             context_mean = float(row_ctx.abs().mean().item())
         delta = lpcs_head(desc.view(-1, desc.shape[-1])).view(batch_size, batch_size)

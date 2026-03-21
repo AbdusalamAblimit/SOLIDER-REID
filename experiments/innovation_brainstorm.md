@@ -2103,3 +2103,22 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
 - `top-rank sensitive / context-aware pair correction`
 
 这比“学一个更好的 sparse router”更像 B 类主方法。
+
+### 2026-03-21 审查后修正：`exp138` 可直接验证，`exp139` 必须先改成无标签 context
+
+- `exp138 Rank-Decayed LPCS` 已通过 Claude 全面审查，可以直接启动。
+- `exp139 Query-Context LPCS` 当前版本被 Claude 明确驳回，原因不是“想法没新意”，而是：
+  1. test-time descriptor 仍是 6 维，而训练版 scorer 已改成 11 维
+  2. 当前 query context 用到了 `row_pos_mean / row_neg_mean / row_margin` 等 label-dependent 统计，测试时天然不可得
+
+这说明一个很关键的创新边界：
+
+1. **query-level context 这条问题线仍然值得保留**
+   - 因为它仍在回答一个和 `exp138` 不同的问题：
+     - 当前 scorer 是否太短视，缺少 query 级语境
+2. **但上下文设计必须是 retrieval-time 可获得的**
+   - 否则就会退化成“训练时 oracle context，测试时无 context”的不可信对照
+3. 因而这条线下一步的正确形态，不是当前版 `exp139`，而是：
+   - 无标签
+   - train/test 一致
+   - 可直接在 evaluator 中构造的 query context

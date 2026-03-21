@@ -959,3 +959,22 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
 它们的区别在于：
 - `exp138` 改的是 **如何强调 top-ranked mistakes**
 - `exp139` 改的是 **scorer 是否具备足够上下文**
+
+## 2026-03-21 审查后补充：上下文线要保留，但必须改成 test-time 可用的 context
+
+`exp138` 的全面审查已经放行，说明“平滑 top-sensitive correction”这条线在实现上是闭环的，可以直接验证。
+
+但 `exp139` 的审查结论很重要：当前版 query-context 不能直接进入 story，因为它的 context 依赖 label，测试阶段天然不可得，而且 evaluator 仍在构造 6 维 descriptor。也就是说，**它不是结果不好，而是实验定义本身还没闭环。**
+
+这反而让 story 更清楚了：
+
+1. 我们想保留的不是“oracle query context”
+2. 我们真正要验证的是：
+   - 检索时，是否能用 **test-time 可得的 query-level statistics** 改善 pair correction
+3. 因而上下文线的下一步必须改成：
+   - 无标签
+   - train/test 对称
+   - evaluator 可直接构造
+
+这条修正后的上下文线仍然和 pose 主线一致，因为它不是在替换 common support，而是在问：
+**给定 pose 定义出的 common support 之后，pair correction 是否还需要 query 级语境。**
