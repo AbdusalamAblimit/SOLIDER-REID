@@ -99,3 +99,64 @@
 - 当前判断: 继续
 - 原因:
   - 现在只能下“启动健康”的结论；真正有信息量的仍是 `ep10/20` 与 `epoch 21+` 后新增的 `lpcs_cf / lpcs_ctm / lpcs_cl`
+
+### [2026-03-22 01:03] `exp140` 到 `ep20`：warmup 形态健康，但机制阶段尚未真正开始
+- 新验证点:
+  - `ep10 = 37.1 / 50.7`
+  - `ep20 = 46.8 / 59.0`
+- 对照:
+  - `exp135 ep10/20 = 36.7 / 50.5, 46.7 / 58.7`
+  - `exp139 ep20 = 47.6 / 60.0`
+- 形态观察:
+  1. `ep10/20` 相对 `exp135` 基本同形，说明 warmup 没有拖坏主训练
+  2. 当前仍未进入 `residual_conf` 真正发挥作用的区间
+- 当前判断: 继续，等待 `epoch 21+`
+- 原因:
+  - `confidence calibration` 的价值只能在后 warmup 阶段通过 `lpcs_cf / lpcs_ctm / lpcs_cl` 来判断
+
+### [2026-03-22 01:22] `exp140` 首轮 run 判为实现失效，不解读为机制负结果
+- 失效节点:
+  - `Epoch 20` 验证后
+- 已知有效结果:
+  - `ep10 = 37.1 / 50.7`
+  - `ep20 = 46.8 / 59.0`
+- 失效原因:
+  1. `epoch 21+` 一进入 `confidence loss` 计算即崩溃
+  2. 根因不是方法逻辑，而是实现使用了：
+     - `sigmoid(conf_head)`
+     - `F.binary_cross_entropy(...)`
+     在 AMP/autocast 下不安全
+  3. 运行时报错已确认：
+     - `binary_cross_entropy and torch.nn.BCELoss are unsafe to autocast`
+- 当前处理:
+  1. 立即停止把这轮 run 当作有效实验结果
+  2. 将 `PairResidualConfidenceScorer` 改成输出 `conf_logits`
+  3. 训练端改用 `binary_cross_entropy_with_logits`
+  4. 测试端继续使用 `sigmoid(conf_logits) * raw_delta`
+- 当前判断: 本轮无效，准备 clean rerun
+- 原因:
+  - 这次失败是后 warmup 才暴露的实现问题，不能被解释成 `confidence-calibrated correction` 本身无效
+
+### [2026-03-22 01:25] `exp140` 修复已完成，并已重新发起全面 Claude 审查
+- 修复内容:
+  1. `PairResidualConfidenceScorer` 改为输出 `conf_logits`
+  2. 训练端 `confidence loss` 改用 `binary_cross_entropy_with_logits`
+  3. 测试端保持：
+     - `delta = sigmoid(conf_logits) * raw_delta`
+- 本地自检:
+  1. `py_compile` 已通过：
+     - `model/modules/pair_adaptive_fusion.py`
+     - `processor/processor.py`
+     - `utils/metrics.py`
+  2. 最小样例检查通过：
+     - `delta_shape = (5,)`
+     - `conf_logits_shape = (5,)`
+     - `sigmoid(conf_logits).mean() = 0.5`
+- 审查文件:
+  - 请求: `experiments/exp140/claude_review_request_v2.txt`
+  - 输出: `experiments/exp140/claude_review_v2.md`
+- 审查会话:
+  - PTY session: `97863`
+- 当前判断: 等待全面审查结束，不启动 clean rerun
+- 原因:
+  - 用户要求由用户确认审查结束后再继续启动实验

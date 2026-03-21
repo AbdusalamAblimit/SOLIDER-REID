@@ -308,9 +308,10 @@ class R1_mAP_eval():
                         )
                         desc = torch.cat([desc, row_ctx], dim=-1)
                     if lpcs_head_mode == 'residual_conf':
-                        raw_delta, conf = head(desc.to(head_device).view(-1, desc.shape[-1]))
+                        raw_delta, conf_logits = head(desc.to(head_device).view(-1, desc.shape[-1]))
                         raw_delta = raw_delta.view(end - start, desc.shape[1]).to(base_dist.device)
-                        conf = conf.view(end - start, desc.shape[1]).to(base_dist.device)
+                        conf_logits = conf_logits.view(end - start, desc.shape[1]).to(base_dist.device)
+                        conf = torch.sigmoid(conf_logits)
                         delta = conf * raw_delta
                     else:
                         delta = head(desc.to(head_device).view(-1, desc.shape[-1]))

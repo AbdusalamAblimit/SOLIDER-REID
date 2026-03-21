@@ -416,12 +416,14 @@ def do_train(cfg,
             desc = torch.cat([desc, row_ctx], dim=-1)
             context_mean = float(row_ctx.abs().mean().item())
         if lpcs_head_mode == 'residual_conf':
-            raw_delta, conf = lpcs_head(desc.view(-1, desc.shape[-1]))
+            raw_delta, conf_logits = lpcs_head(desc.view(-1, desc.shape[-1]))
             raw_delta = raw_delta.view(batch_size, batch_size)
-            conf = conf.view(batch_size, batch_size)
+            conf_logits = conf_logits.view(batch_size, batch_size)
+            conf = torch.sigmoid(conf_logits)
             delta = conf * raw_delta
         else:
             raw_delta = lpcs_head(desc.view(-1, desc.shape[-1])).view(batch_size, batch_size)
+            conf_logits = None
             conf = None
             delta = raw_delta
         final_dist = base_dist + delta
@@ -506,7 +508,11 @@ def do_train(cfg,
         conf_loss = None
         if conf is not None:
             mask = ~eye
-            conf_loss = F.binary_cross_entropy(conf[mask], conf_target[mask], reduction='none')
+            conf_loss = F.binary_cross_entropy_with_logits(
+                conf_logits[mask],
+                conf_target[mask],
+                reduction='none',
+            )
             conf_loss = (conf_loss * pair_weight[mask]).sum() / pair_weight[mask].sum().clamp(min=1e-6)
             loss = loss + lpcs_conf_weight * conf_loss
 

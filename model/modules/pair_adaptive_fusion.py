@@ -132,7 +132,7 @@ class PairResidualScorer(nn.Module):
 
 
 class PairResidualConfidenceScorer(nn.Module):
-    """Predict both residual correction and a confidence gate for applying it."""
+    """Predict residual correction and a confidence logit for applying it."""
 
     def __init__(self, input_dim=6, hidden_dim=32, delta_scale=0.5):
         super().__init__()
@@ -161,5 +161,5 @@ class PairResidualConfidenceScorer(nn.Module):
     def forward(self, desc):
         feat = self.backbone(desc)
         delta = torch.tanh(self.delta_head(feat)) * self.delta_scale
-        conf = torch.sigmoid(self.conf_head(feat))
-        return delta.squeeze(-1), conf.squeeze(-1)
+        conf_logits = self.conf_head(feat)
+        return delta.squeeze(-1), conf_logits.squeeze(-1)
