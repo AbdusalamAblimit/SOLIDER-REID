@@ -74,3 +74,27 @@
 - 当前判断: 允许启动
 - 原因:
   - 当前已满足用户设定的“先审查，后启动”规则，可进入正式后台训练
+
+### [2026-03-21 21:59] 本地 exp137 已正式启动并确认进入训练
+- 启动方式:
+  - `/root/miniconda3/envs/solider-reid/bin/python -u train.py --config_file configs/occluded_duke/pose_psg_gcn_lpcs_hard_rank.yml`
+- 输出目录:
+  - `log/occluded_duke/exp137_lpcs_hard_rank`
+- 启动确认:
+  1. `train_log.txt` 已确认：
+     - `start training`
+     - `[LPCS] enabled: ... pair_mode=all, top_ratio=1.0, rank_mode=hard_top, rank_top_ratio=0.25 ...`
+  2. 已真实进入 iteration：
+     - `Epoch[1] Iter[20/227]`
+     - `Epoch[1] Iter[40/227]`
+     - `Epoch[1] Iter[60/227]`
+     - `Epoch[1] Iter[80/227]`
+     - `Epoch[1] Iter[100/227]`
+  3. GPU 已占用约 `8.0GB`，说明训练不是假启动
+- 早期观察:
+  1. warmup 前段 loss 形状正常：
+     - `22.370 -> 17.489`
+  2. 目前还未进入 `LPCS` 激活区，因此日志中还看不到 `lpcs_*`
+- 当前判断: 继续
+- 原因:
+  - 当前最关键的节点是 `ep10 / ep20` 和 `epoch 21+` 后 `lpcs_rsr` 是否接近设计预期
