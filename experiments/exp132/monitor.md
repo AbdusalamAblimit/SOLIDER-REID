@@ -56,3 +56,54 @@
 - 当前判断: 暂不启动训练
 - 原因:
   - 不越过用户设定的“先审查、后启动”规则
+
+### [2026-03-21 04:18] Claude 审查结论
+- 审查文件:
+  - `experiments/exp132/claude_review.md`
+- 审查结论:
+  1. **允许启动**
+  2. 无 HIGH 阻塞项
+  3. 唯一需要明确接受的点是：
+     - 当前 `LTCS` loss 只更新 `ltcs_head`
+     - 不会反向塑造 backbone / GCN
+     - 这与当前设计目标一致：先验证 learned pair-adaptive fusion rule 本身
+- 三项关键核查:
+  1. `ltcs_head` 已属于模型参数，`state_dict()` 会保存
+  2. `cvk_adaptive` 测试路径已真正调用 `pair_fusion_head`
+  3. 当前实现按 query chunk 评估，未发现明显设备错配或内存风险
+- 当前判断: 允许启动
+- 原因:
+  - 审查已经明确放行；下一步进入最小启动自检与正式训练
+
+### [2026-03-21 04:19] 启动前最小自检通过
+- 启动方式:
+  - `/root/miniconda3/envs/solider-reid/bin/python -u train.py --config_file configs/occluded_duke/pose_psg_gcn_ltcs.yml`
+- 关键确认:
+  1. 输出目录正确：`log/occluded_duke/exp132_ltcs`
+  2. `POSE_TEST_FEAT=cvk_adaptive` 已生效
+  3. `LTCS` 模块已注册进模型：
+     - `[LTCS] Learn-to-Trust Common Support enabled: hidden=32, params=1313`
+  4. 训练期日志已确认：
+     - `[LTCS] enabled: weight=0.5, warmup=20, hidden=32, low_thr=0.3, update_thr=0.7, mom=0.9, min_count=1, stop_epoch=-1`
+  5. 数据集、优化器、模型构建全部正常，没有接线错误或启动期报错
+- 当前判断: 允许正式运行
+- 原因:
+  - 该自检已经覆盖了最关键的配置/接线风险；下一步转为后台正式训练即可
+
+### [2026-03-21 04:21] 正式后台训练启动
+- 处理动作:
+  1. 终止仅用于启动自检的前台 run，避免后续监控与正式实验混淆
+  2. 保留部分日志到：
+     - `log/occluded_duke/exp132_ltcs_pre_restart1/train_log.txt`
+  3. 使用 `setsid + bash -lc` 方式重启为正式后台训练
+- 当前正式进程:
+  - 主进程 PID: `496117`
+  - 输出目录: `log/occluded_duke/exp132_ltcs`
+  - 后台日志: `log/occluded_duke/exp132_ltcs/nohup.log`
+- 启动确认:
+  1. `nohup.log` 已正常落盘
+  2. `train_log.txt` 已重新生成
+  3. 训练进程及 DataLoader worker 均已出现，说明后台运行稳定
+- 当前判断: 继续
+- 原因:
+  - Claude 审查已放行，正式 run 已按独立后台流程启动成功；下一步进入常规监控
