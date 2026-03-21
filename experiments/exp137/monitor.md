@@ -3,8 +3,8 @@
 ## 实验信息
 - 方法: `Hard-Rank LPCS`
 - 类型: `exp135` 的 ranking-aligned 单变量升级
-- 运行位置: 待启动（本地）
-- 当前状态: 已完成设计建档，待代码接线自检与 Claude 审查
+- 运行位置: 本地
+- 当前状态: 训练中
 - 直接对照:
   - `exp135 Corrected LPCS`
   - `exp136 Corrected Sparse LPCS`（远程进行中，仅作间接参考）
@@ -98,3 +98,30 @@
 - 当前判断: 继续
 - 原因:
   - 当前最关键的节点是 `ep10 / ep20` 和 `epoch 21+` 后 `lpcs_rsr` 是否接近设计预期
+
+### [2026-03-21 22:25] `exp137` 已进入 `LPCS` 激活区，hard-rank 机制按设计生效
+- 日志来源:
+  - `log/occluded_duke/exp137_lpcs_hard_rank/train_log.txt`
+- 新验证点:
+  - `ep10 = 36.7 / 50.5`
+  - `ep20 = 46.7 / 58.7`
+- 对照观察:
+  1. 相对 `exp135 ep20 = 46.7 / 58.7`，当前完全重合
+  2. 这与设计一致，因为 `exp137` 的唯一改动在 `epoch 21+` 的 `hard-rank LPCS` 聚合，不会影响 warmup 阶段
+- 关键机制信号:
+  1. `epoch 21+` 后首次稳定出现：
+     - `lpcs_rsr = 0.254`
+     - `lpcs_psr = 1.000`
+     - `lpcs_pf = 1.000`
+  2. 这说明当前真正改变的是 `ranking aggregation`，不是 pair routing
+  3. `lpcs` 稳定在约 `0.58 ~ 0.64`
+  4. `lpcs_dm / lpcs_ds` 已开始从 `0.000` 缓慢抬升到约 `0.004 / 0.001`
+  5. `lpcs_fg` 已开始略高于 `lpcs_bg`，当前约为 `0.352 > 0.349`
+- 额外观察:
+  1. `epoch 21+` 后每轮耗时从约 `58s` 增到约 `72s`
+  2. 这符合 hard-top rank selection 引入额外 pair 处理开销的预期，但尚未构成风险
+- 当前判断: 继续，当前优先级高
+- 原因:
+  - 这轮第一次真正把“ranking 对齐而非 routing”单独测起来，而且机制信号与设计完全一致
+  - 现在还没有 `ep30`，不能提前判优劣
+  - 下一次真正有信息量的节点是 `ep30 / ep40`
