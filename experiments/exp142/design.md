@@ -1,4 +1,4 @@
-# 实验 exp142: SKC（Support-Conditioned Keypoint Completion）
+# 实验 exp142: SKC（Support-Supervised Keypoint Completion）
 
 ## 动机
 
@@ -42,16 +42,21 @@
 
 1. **当前样本的 keypoint token**
    - `kp_feat_j`
-2. **support-complete token**
+2. **pose reliability / structure token**
+   - 当前关键点 score
+   - low/high mask
+   - skeleton 邻接关系
+
+训练时额外使用：
+
+3. **support-complete supervision target**
    - 来自现有 `support_complete_bank`
    - 包括：
      - `support_proto_j`
      - `proto_conf_j`
      - `proto_count_j`
-3. **pose reliability / structure token**
-   - 当前关键点 score
-   - low/high mask
-   - skeleton 邻接关系
+   - 作用是监督 completion 是否真的把 low-confidence token 拉向更完整的同 ID support
+   - 不是测试时必须依赖的输入
 
 ### 3. Completion 核心机制
 
@@ -61,18 +66,15 @@
    - 只对 `score < low_thr` 的关键点执行 completion
 2. **高置信关键点作为 self evidence**
    - 当前图中高置信关节点提供样本内结构上下文
-3. **support prototype 作为 cross-image evidence**
-   - 同 ID 的 support-complete prototype 提供跨图补全证据
-4. **结构化交互**
+3. **结构化交互**
    - 低置信关节点同时与：
      - 当前图高置信关节点
-     - 对应 support prototype
      - skeleton 邻接节点
    做交互，输出 completed token
 
 一句话概括：
 
-**不是把 prototype 直接抄给当前 keypoint，而是让低置信关键点在“自图高置信证据 + support-complete prototype + 身体结构”三者之间做条件补全。**
+**不是把 prototype 直接抄给当前 keypoint，而是让低置信关键点在“自图高置信证据 + 身体结构”之间做 completion；训练时再用 support-complete prototype 监督它是否真的补全到了正确方向。**
 
 ### 4. 输出形式
 
@@ -112,6 +114,21 @@
 - 做 **support-conditioned, structure-aware completion**
 
 这条线的目标不是“把距离修得更聪明”，而是**直接修复单图表征本身的不完整**。
+
+### 7. train/test 一致性原则
+
+为了避免之前 `support teacher` 类方法常见的 train/test 不对称问题，这一版必须满足：
+
+1. **completion 模块本体在 train 和 test 都可运行**
+   - 输入只依赖当前图的：
+     - `kp_feats`
+     - `kp_scores`
+     - skeleton structure
+2. **support bank 只在训练中作为 supervision target**
+   - 不作为测试必需输入
+3. 因此如果最终有效，可以主张：
+   - 模型在训练时学会了“如何从局部自证据补全低置信 joints”
+   - 而不是“测试时靠外部 bank 直接补答案”
 
 ## 对照组
 

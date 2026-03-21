@@ -93,10 +93,13 @@ def do_train(cfg,
     sckd_enabled = getattr(cfg.MODEL, 'POSE_SCKD', False)
     scfr_enabled = getattr(cfg.MODEL, 'POSE_SCFR', False)
     scrc_enabled = getattr(cfg.MODEL, 'POSE_SCRC', False)
+    skc_enabled = getattr(cfg.MODEL, 'POSE_SKC', False)
     if (scfr_enabled or scrc_enabled) and not sckd_enabled:
         raise ValueError('POSE_SCFR/POSE_SCRC require POSE_SCKD=True to create the support bank')
     if scfr_enabled and scrc_enabled:
         raise ValueError('POSE_SCFR and POSE_SCRC cannot be enabled together')
+    if skc_enabled and (sckd_enabled or scfr_enabled or scrc_enabled):
+        raise ValueError('POSE_SKC must run independently from POSE_SCKD/POSE_SCFR/POSE_SCRC')
     sckd_bank = None
     if sckd_enabled:
         sckd_weight = getattr(cfg.MODEL, 'POSE_SCKD_WEIGHT', 0.5)
@@ -115,6 +118,25 @@ def do_train(cfg,
             update_thr=sckd_update_thr,
             momentum=sckd_mom,
             min_count=sckd_min_count,
+        ).to(device)
+    skc_bank = None
+    if skc_enabled:
+        skc_weight = getattr(cfg.MODEL, 'POSE_SKC_WEIGHT', 0.5)
+        skc_warmup = getattr(cfg.MODEL, 'POSE_SKC_WARMUP', 20)
+        skc_low_thr = getattr(cfg.MODEL, 'POSE_SKC_LOW_THR', 0.3)
+        skc_update_thr = getattr(cfg.MODEL, 'POSE_SKC_UPDATE_THR', 0.7)
+        skc_mom = getattr(cfg.MODEL, 'POSE_SKC_MOM', 0.9)
+        skc_min_count = getattr(cfg.MODEL, 'POSE_SKC_MIN_COUNT', 1)
+        skc_update_stop_epoch = getattr(cfg.MODEL, 'POSE_SKC_UPDATE_STOP_EPOCH', -1)
+        num_train_classes = len(set([d[1] for d in train_loader.dataset.dataset]))
+        skc_bank = SupportCompleteBank(
+            num_classes=num_train_classes,
+            feat_dim=768,
+            num_keypoints=17,
+            low_thr=skc_low_thr,
+            update_thr=skc_update_thr,
+            momentum=skc_mom,
+            min_count=skc_min_count,
         ).to(device)
 
     csrd_support_teacher = getattr(cfg.MODEL, 'POSE_CSRD_SUPPORT_TEACHER', False)
@@ -232,6 +254,13 @@ def do_train(cfg,
         logger.info(f'[SCKD] enabled: weight={sckd_weight}, warmup={sckd_warmup}, '
                     f'low_thr={sckd_low_thr}, update_thr={sckd_update_thr}, '
                     f'mom={sckd_mom}, stop_epoch={sckd_update_stop_epoch}')
+    if skc_enabled:
+        skc_hidden = getattr(cfg.MODEL, 'POSE_SKC_HIDDEN', 256)
+        skc_heads = getattr(cfg.MODEL, 'POSE_SKC_HEADS', 4)
+        logger.info(f'[SKC] enabled: weight={skc_weight}, warmup={skc_warmup}, '
+                    f'hidden={skc_hidden}, heads={skc_heads}, low_thr={skc_low_thr}, '
+                    f'update_thr={skc_update_thr}, mom={skc_mom}, '
+                    f'min_count={skc_min_count}, stop_epoch={skc_update_stop_epoch}')
     if csrd_enabled and csrd_support_teacher:
         logger.info(f'[CSRD-ST] enabled: low_thr={csrd_st_low_thr}, '
                     f'update_thr={csrd_st_update_thr}, mom={csrd_st_mom}, '
@@ -632,6 +661,10 @@ def do_train(cfg,
                 _m.skeleton_head._scfr_active = (epoch > sckd_warmup) if scfr_enabled else False
                 _m.skeleton_head._scrc_bank = sckd_bank if scrc_enabled else None
                 _m.skeleton_head._scrc_active = (epoch > sckd_warmup) if scrc_enabled else False
+        if skc_enabled:
+            _m = model.module if hasattr(model, 'module') else model
+            if hasattr(_m, 'skeleton_head'):
+                _m.skeleton_head._skc_active = (epoch > skc_warmup)
 
         for n_iter, batch_data in enumerate(train_loader):
             optimizer.zero_grad()
@@ -1031,6 +1064,43 @@ def do_train(cfg,
                             details['sckd_cos'] = sckd_stats['cosine']
                             loss._loss_details = details
 
+                if skc_enabled and skc_bank is not None and kp_data is not None:
+                    details = getattr(loss, '_loss_details', {})
+                    skc_st = kp_data.get('skc_stats')
+                    if skc_st is not None:
+                        details['skc_lmr'] = skc_st['low_ratio']
+                        details['skc_arr'] = skc_st['applied_ratio']
+                        details['skc_gm'] = skc_st['gate_mean']
+                        details['skc_gs'] = skc_st['gate_std']
+                        details['skc_dn'] = skc_st['delta_norm']
+                    if epoch > skc_warmup:
+                        skc_raw = kp_data.get('skc_raw_feats')
+                        skc_comp = kp_data.get('skc_completed_feats')
+                        skc_scores = kp_data.get('skc_scores')
+                        if skc_raw is not None and skc_comp is not None and skc_scores is not None:
+                            support = skc_bank.get_support(skc_raw, skc_scores, target)
+                            details['skc_spr'] = support['stats']['support_ratio']
+                            details['skc_pc'] = support['stats']['proto_conf']
+                            details['skc_pcnt'] = support['stats']['proto_count']
+                            mask = support['mask']
+                            if mask.any():
+                                proto = F.normalize(support['proto'].detach(), dim=2)
+                                raw_norm = F.normalize(skc_raw, dim=2)
+                                comp_norm = F.normalize(skc_comp, dim=2)
+                                pre_dist = 1.0 - (raw_norm * proto).sum(dim=2).clamp(min=-1.0, max=1.0)
+                                post_dist = 1.0 - (comp_norm * proto).sum(dim=2).clamp(min=-1.0, max=1.0)
+                                weights = support['proto_conf'] * mask.float()
+                                skc_loss = (post_dist * weights).sum() / weights.sum().clamp(min=1e-12)
+                                loss = loss + skc_weight * skc_loss
+                                details['skc_cl'] = skc_loss.item()
+                                details['skc_pre'] = float(pre_dist[mask].mean().item())
+                                details['skc_post'] = float(post_dist[mask].mean().item())
+                            else:
+                                details['skc_cl'] = 0.0
+                                details['skc_pre'] = 0.0
+                                details['skc_post'] = 0.0
+                    loss._loss_details = details
+
                 # SGRE: Skeleton-Guided Re-Encoding loss
                 sgre_enabled = getattr(cfg.MODEL, 'POSE_SGRE', False)
                 sgre_warmup = getattr(cfg.MODEL, 'POSE_SGRE_WARMUP', 20)
@@ -1172,6 +1242,13 @@ def do_train(cfg,
                 if kp_feats_sckd is not None and kp_w_sckd is not None:
                     if sckd_update_stop_epoch < 0 or epoch <= sckd_update_stop_epoch:
                         sckd_bank.update(kp_feats_sckd, kp_w_sckd, target)
+
+            if skc_enabled and skc_bank is not None and kp_data is not None:
+                kp_feats_skc = kp_data.get('skc_completed_feats')
+                kp_w_skc = kp_data.get('skc_scores')
+                if kp_feats_skc is not None and kp_w_skc is not None:
+                    if skc_update_stop_epoch < 0 or epoch <= skc_update_stop_epoch:
+                        skc_bank.update(kp_feats_skc, kp_w_skc, target)
 
             if csrd_enabled and csrd_support_teacher and csrd_teacher_bank is not None and kp_data is not None:
                 kp_feats_csrd = kp_data.get('kp_feats')

@@ -30,3 +30,41 @@
 - `skc_post`
 
 如果启动后这些日志缺失，则本次 run 视为不可解释 run，需要优先补日志再继续。
+
+## 2026-03-21 19:02 代码接线后自检
+
+- 状态：已完成第一版代码接线，仍未启动训练
+- 本轮变更：
+  1. 新增 `POSE_SKC` 默认配置与独立 config
+  2. 在 `SkeletonGCNHead` 中接入 `Support-Supervised Keypoint Completion`
+  3. 在 `processor.py` 中接入：
+     - SKC support bank
+     - consistency loss
+     - 行为日志与 support-target 日志
+- 设计修正：
+  1. 将最初的 “Support-Conditioned” 收紧为 “Support-Supervised”
+  2. 原因是要保证 train/test 一致：
+     - 模块本体只依赖当前图
+     - support bank 只在训练中作为监督目标
+- 自检结果：
+  1. `py_compile` 已通过：
+     - `model/modules/skeleton_gcn.py`
+     - `model/pose_backbone_model.py`
+     - `processor/processor.py`
+  2. 用 `pose_psg_gcn_skc.yml` 直接构造模型已通过
+     - 控制台已打印 `[SKC] Support-Supervised Keypoint Completion enabled`
+  3. 最小前向检查已通过：
+     - `aux_data` 中已出现
+       - `skc_raw_feats`
+       - `skc_completed_feats`
+       - `skc_scores`
+       - `skc_stats`
+     - `skc_stats` 已能返回：
+       - `low_ratio`
+       - `applied_ratio`
+       - `gate_mean`
+       - `gate_std`
+       - `delta_norm`
+- 当前判断：
+  1. 接线层面已经具备送全面 Claude 审查的条件
+  2. 下一步不是启动训练，而是先做广范围审查

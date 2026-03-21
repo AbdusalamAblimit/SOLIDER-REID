@@ -119,6 +119,134 @@ class SkeletonGCN(nn.Module):
         return x + h
 
 
+class SupportSupervisedKeypointCompletion(nn.Module):
+    """Complete low-confidence keypoint tokens from self-structure evidence.
+
+    Train/test consistency:
+    - Inputs depend only on the current image (tokens + scores + skeleton graph)
+    - Same-ID support bank is used only as a supervision target in the trainer
+    """
+
+    def __init__(self, feat_dim=768, hidden_dim=256, num_heads=4,
+                 num_joints=17, low_thr=0.3, use_extra_edges=True):
+        super().__init__()
+        self.num_joints = num_joints
+        self.low_thr = low_thr
+
+        edges = COCO_SKELETON_EDGES[:]
+        if use_extra_edges:
+            edges.extend(EXTRA_EDGES)
+        adj = torch.zeros(num_joints, num_joints)
+        for i, j in edges:
+            adj[i, j] = 1.0
+            adj[j, i] = 1.0
+        adj += torch.eye(num_joints)
+        degree = adj.sum(dim=1)
+        d_inv_sqrt = degree.pow(-0.5)
+        d_inv_sqrt[d_inv_sqrt == float('inf')] = 0
+        adj_norm = d_inv_sqrt.unsqueeze(1) * adj * d_inv_sqrt.unsqueeze(0)
+        self.register_buffer('adj_norm', adj_norm)
+
+        self.token_proj = nn.Linear(feat_dim, hidden_dim)
+        self.meta_proj = nn.Sequential(
+            nn.Linear(2, hidden_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden_dim, hidden_dim),
+        )
+        self.joint_embed = nn.Parameter(torch.zeros(1, num_joints, hidden_dim))
+
+        self.attn_norm = nn.LayerNorm(hidden_dim)
+        self.self_attn = nn.MultiheadAttention(hidden_dim, num_heads, batch_first=True)
+
+        self.struct_norm = nn.LayerNorm(hidden_dim)
+        self.struct_proj = nn.Linear(hidden_dim, hidden_dim)
+
+        self.ffn_norm = nn.LayerNorm(hidden_dim)
+        self.ffn = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim * 2),
+            nn.GELU(),
+            nn.Linear(hidden_dim * 2, hidden_dim),
+        )
+
+        self.out_norm = nn.LayerNorm(hidden_dim)
+        self.delta_head = nn.Linear(hidden_dim, feat_dim)
+        self.gate_head = nn.Sequential(
+            nn.Linear(hidden_dim + 2, hidden_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden_dim, 1),
+            nn.Sigmoid(),
+        )
+
+        self._init_weights()
+
+    def _init_weights(self):
+        nn.init.normal_(self.joint_embed, std=0.02)
+        for module in self.modules():
+            if isinstance(module, nn.Linear):
+                nn.init.xavier_uniform_(module.weight)
+                if module.bias is not None:
+                    nn.init.zeros_(module.bias)
+        # Identity-leaning start: zero delta, conservative gate.
+        nn.init.zeros_(self.delta_head.weight)
+        nn.init.zeros_(self.delta_head.bias)
+        nn.init.zeros_(self.gate_head[2].weight)
+        nn.init.constant_(self.gate_head[2].bias, -2.0)
+
+    def forward(self, kp_feats, kp_scores):
+        low_mask = kp_scores <= self.low_thr
+        meta = torch.stack([kp_scores, low_mask.float()], dim=-1)
+
+        tokens = self.token_proj(kp_feats) + self.meta_proj(meta) + self.joint_embed
+
+        attn_tokens = self.attn_norm(tokens)
+        vis_scale = kp_scores.clamp(0.0, 1.0).unsqueeze(-1)
+        attn_value = attn_tokens * (0.5 + 0.5 * vis_scale)
+        attn_out, _ = self.self_attn(attn_tokens, attn_tokens, attn_value)
+        tokens = tokens + attn_out
+
+        struct_tokens = self.struct_norm(tokens)
+        struct_num = torch.matmul(self.adj_norm.unsqueeze(0), struct_tokens * vis_scale)
+        struct_den = torch.matmul(self.adj_norm.unsqueeze(0), vis_scale).clamp(min=1e-6)
+        struct_ctx = struct_num / struct_den
+        tokens = tokens + self.struct_proj(struct_ctx)
+
+        tokens = tokens + self.ffn(self.ffn_norm(tokens))
+        hidden = self.out_norm(tokens)
+        delta = self.delta_head(hidden)
+
+        gate_in = torch.cat([
+            hidden,
+            kp_scores.unsqueeze(-1),
+            low_mask.float().unsqueeze(-1),
+        ], dim=-1)
+        gate = self.gate_head(gate_in).squeeze(-1) * low_mask.float()
+        completed = kp_feats + gate.unsqueeze(-1) * delta
+
+        if low_mask.any():
+            active_gate = gate[low_mask]
+            active_delta = delta[low_mask]
+            applied_mask = (gate > 0.05) & low_mask
+            stats = {
+                'n_low': int(low_mask.sum().item()),
+                'low_ratio': float(low_mask.float().mean().item()),
+                'applied_ratio': float(applied_mask.float().mean().item()),
+                'gate_mean': float(active_gate.mean().item()),
+                'gate_std': float(active_gate.std(unbiased=False).item()),
+                'delta_norm': float(active_delta.norm(dim=1).mean().item()),
+            }
+        else:
+            stats = {
+                'n_low': 0,
+                'low_ratio': 0.0,
+                'applied_ratio': 0.0,
+                'gate_mean': 0.0,
+                'gate_std': 0.0,
+                'delta_norm': 0.0,
+            }
+
+        return completed, stats
+
+
 class SkeletonGCNHead(nn.Module):
     """Complete head: bilinear sample → optional GCN → confidence-weighted average.
 
@@ -144,6 +272,7 @@ class SkeletonGCNHead(nn.Module):
                  mrkf=False, mrkf_s2_dim=384,
                  sgmt=False, sgmt_ratio=0.3, sgmt_threshold=0.3,
                  scrc=False, scrc_hidden=128,
+                 skc=False, skc_hidden=256, skc_heads=4, skc_low_thr=0.3,
                  vcga=False):
         super().__init__()
         self.feat_dim = feat_dim
@@ -168,6 +297,7 @@ class SkeletonGCNHead(nn.Module):
         self.sgmt = sgmt
         self.sgmt_ratio = sgmt_ratio
         self.sgmt_threshold = sgmt_threshold
+        self.skc = skc
         if self.sgmt:
             self.mask_token = nn.Parameter(torch.randn(1, 1, feat_dim) * 0.02)
         # MRKF: Multi-Resolution Keypoint Features
@@ -193,6 +323,16 @@ class SkeletonGCNHead(nn.Module):
             # Identity-leaning start: support prior is injected conservatively.
             nn.init.zeros_(self.scrc_gate[2].weight)
             nn.init.constant_(self.scrc_gate[2].bias, -2.0)
+
+        if self.skc:
+            self.skc_block = SupportSupervisedKeypointCompletion(
+                feat_dim=feat_dim,
+                hidden_dim=skc_hidden,
+                num_heads=skc_heads,
+                num_joints=17,
+                low_thr=skc_low_thr,
+            )
+            self._skc_active = True
 
         # Optional graph propagation over sampled keypoint features.
         if self.use_gcn:
@@ -501,6 +641,26 @@ class SkeletonGCNHead(nn.Module):
             kp_feats, _, scfr_stats = self._scfr_bank.replace(
                 kp_feats, kp_scores, label)
 
+        # 2.55. SKC: Support-Supervised Keypoint Completion
+        skc_stats = None
+        skc_raw_feats = None
+        skc_completed_feats = None
+        if self.skc:
+            skc_raw_feats = kp_feats
+            if getattr(self, '_skc_active', True):
+                kp_feats, skc_stats = self.skc_block(kp_feats, kp_scores)
+            else:
+                low_mask = kp_scores <= self.skc_block.low_thr
+                skc_stats = {
+                    'n_low': int(low_mask.sum().item()),
+                    'low_ratio': float(low_mask.float().mean().item()),
+                    'applied_ratio': 0.0,
+                    'gate_mean': 0.0,
+                    'gate_std': 0.0,
+                    'delta_norm': 0.0,
+                }
+            skc_completed_feats = kp_feats
+
         # 2.6. SCRC: Support-Conditioned Residual Completion
         scrc_stats = None
         if self.training and self.scrc and hasattr(self, '_scrc_bank') and self._scrc_bank is not None \
@@ -609,6 +769,12 @@ class SkeletonGCNHead(nn.Module):
         # SCFR: export replacement statistics
         if scfr_stats is not None:
             aux_data['scfr_stats'] = scfr_stats
+        if self.skc:
+            aux_data['skc_raw_feats'] = skc_raw_feats
+            aux_data['skc_completed_feats'] = skc_completed_feats
+            aux_data['skc_scores'] = kp_scores
+        if skc_stats is not None:
+            aux_data['skc_stats'] = skc_stats
         if scrc_stats is not None:
             aux_data['scrc_stats'] = scrc_stats
 

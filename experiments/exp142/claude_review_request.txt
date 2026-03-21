@@ -1,4 +1,4 @@
-请对 `exp142 SKC (Support-Conditioned Keypoint Completion)` 做**全面审查**，不要只检查 diff。
+请对 `exp142 SKC (Support-Supervised Keypoint Completion)` 做**全面审查**，不要只检查 diff。
 
 审查目标不是快速放行，而是尽可能提前发现：
 
@@ -29,8 +29,8 @@
 ## 三、训练/测试一致性
 
 1. train / test 是否使用同一套 completion 逻辑
-2. 是否出现 train 时依赖 same-ID support、test 时却没有对应机制的问题
-3. 若 train/test 不对称，请明确指出这是否会削弱方法成立性
+2. 当前版本中 support bank 只作为训练监督 target，而不是测试输入，这样的设计是否合理
+3. 是否仍然存在隐蔽的 train-only support leakage
 
 ## 四、止损能力
 
@@ -40,6 +40,25 @@
 2. 是不是在整体跳过
 3. 是不是在整体强覆盖
 4. low-confidence tokens 是否真的被拉向更完整的 support target
+
+目前代码上已经有的自检证据：
+
+1. `py_compile` 已通过
+2. 模型可用 `pose_psg_gcn_skc.yml` 成功构造
+3. 最小前向里 `aux_data` 已出现：
+   - `skc_raw_feats`
+   - `skc_completed_feats`
+   - `skc_scores`
+   - `skc_stats`
+
+请不要重复只做 smoke test，而是重点审：
+
+1. 这个想法是否真的比 `LPCS` 家族更大
+2. 这版实现是否会退化成“花哨的恒等映射”
+3. 当前日志是否足够提前发现：
+   - 恒定跳过
+   - 恒定强覆盖
+   - completion 无法拉近到 support target
 
 如果你认为：
 
