@@ -2743,3 +2743,29 @@ B. 直接启动 exp025，exp024 可以后续补跑
    - `query context`
    - `confidence calibration`
 3. 现在最重要的是避免把无效 run 错写成负结果
+
+## [2026-03-22 02:00] 决策：继续双线推进，但当前优先级仍是 `exp139`
+
+**上下文**:
+- `exp139 Query-Context LPCS` 最新已到：
+  - `ep80 = 60.8 / 71.6`
+- `exp140 Confidence-Calibrated LPCS` clean rerun 最新已到：
+  - `ep20 = 46.8 / 59.5`
+  - `epoch 21+` 后 `lpcs_cf / lpcs_ctm / lpcs_cl` 已首次真实出现
+
+**判断**:
+1. `exp139` 到 `ep80` 为止，已经基本追平当前最强 supporting 线 `exp135`
+2. `exp140` clean rerun 已从“启动健康”进入“机制真实生效”阶段
+3. 但当前 `exp140` 的 `conf_mean` 明显高于 `conf_target_mean`，说明这版 confidence gate 仍偏激进，暂时不能提前下正结论
+
+**选择**:
+1. 远程继续主盯 `exp139`，至少看到 `ep90/100`
+2. 本地继续盯 `exp140`，当前关键节点是 `ep30`
+3. 现在不再新开第三条线
+
+**理由**:
+1. `exp139` 仍是当前最有机会收敛成论文主机制的方向
+2. `exp140` 刚刚第一次拿到有效机制证据，现在停掉太早
+3. 当前最重要的是看：
+   - `query context` 是否能在后期稳住优势
+   - `confidence calibration` 是否会把早期高 gate 形态兑现成真实收益

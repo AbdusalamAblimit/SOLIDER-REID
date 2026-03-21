@@ -189,3 +189,25 @@
 - 原因:
   - 二审已明确放行
   - 修复后的 logits 版本已经证明可以正常进入训练，不再存在 `epoch 21+` 前的启动阻塞
+
+### [2026-03-22 02:00] `exp140` clean rerun 已越过 warmup，confidence calibration 首次真实生效
+- 新验证点:
+  - `ep10 = 37.1 / 50.7`
+  - `ep20 = 46.8 / 59.5`
+- 对照:
+  - `exp135 ep10/20 = 36.7 / 50.5, 46.7 / 58.7`
+  - `exp139 ep20 = 47.6 / 60.0`
+- 后 warmup 机制信号:
+  1. `lpcs_cf` 从约 `0.588` 持续升到 `0.730`
+  2. `lpcs_ctm` 维持在约 `0.098 ~ 0.103`
+  3. `lpcs_cl` 从约 `0.530` 降到 `0.328`
+  4. `lpcs_dm / lpcs_rdm` 从约 `0.009 / 0.016` 升到 `0.053 / 0.072`
+  5. `lpcs_ctxm = 0.000`，符合本实验 `context_mode=none` 的设计
+- 形态观察:
+  1. 这次 `confidence calibration` 已经确认真实接入，不再是失效 run
+  2. `ep20` 相对 `exp135` 是弱正向
+  3. 但当前 `conf_mean` 明显高于 `conf_target_mean`，说明这版 gate 暂时偏激进而非保守
+- 当前判断: 继续，优先看 `ep30`
+- 原因:
+  - 现在终于第一次拿到了有效的 `confidence calibration` 机制证据
+  - 但还需要 `ep30` 来判断这种高 `conf` 形态究竟会兑现成收益，还是只是把 correction 放大得过早
