@@ -233,3 +233,45 @@
   3. 下一次最关键的观察点不是 `ep20` 本身，而是：
      - `Epoch 21` 开始后 `skc_arr / skc_ail` 是否从 `0` 跳起
      - `skc_cl / skc_pre / skc_post` 是否首次出现并呈现 `post < pre`
+
+## 2026-03-21 20:29 `SKC` 已真正激活，但当前更像“稳定小残差修正”而非强 completion
+
+- 当前进度:
+  - 已完成 `ep20` 与 `ep40` 验证
+  - 当前处于 `Epoch 41`
+- 关键验证结果:
+  - `ep20 = 47.9 / 60.2`
+  - `ep40 = 56.2 / 68.6`
+- 关键机制观察:
+  1. `Epoch 21` 起 `SKC` 确实首次激活：
+     - `skc_arr: 0.154`
+     - `skc_ail: 1.000`
+     - `skc_cl: 0.136`
+     - `skc_pre / skc_post: 0.135 / 0.135`
+  2. 到 `Epoch 22` 中段：
+     - `skc_dn: 0.096`
+     - `skc_ds: 0.013`
+     - `skc_gm / skc_gs: 0.120 / 0.000`
+  3. 到 `Epoch 39-41`：
+     - `skc_arr ≈ 0.140 ~ 0.151`
+     - `skc_ail = 1.000`
+     - `skc_gm ≈ 0.140 ~ 0.144`
+     - `skc_gs ≈ 0.002 ~ 0.003`
+     - `skc_dn ≈ 0.67 ~ 0.72`
+     - `skc_ds ≈ 0.126 ~ 0.134`
+     - `skc_cl ≈ 0.193 ~ 0.199`
+     - `skc_pre / skc_post` 仍几乎重合，只在第三位小数有轻微下降
+- 当前判断: 继续，但要警惕“弱而均匀的 gate”导致 completion 不够锋利
+- 原因:
+  1. 正面信号是：
+     - `SKC` 不是死路由，激活后所有 low-confidence joints 都真的被改写
+     - `delta_norm / delta_std` 持续增大，说明 completion 不是常数零扰动
+     - `ep20/40` 至少没有拖垮基线
+  2. 目前最值得警惕的点是：
+     - `skc_ail=1.0` 说明低置信 joints 几乎全被一刀切处理
+     - `skc_gm` 长期只有 `0.12~0.14`，`skc_gs` 又接近 `0`
+     - 这更像“近似常数的弱 gate”，而不是按样本/关键点自适应 completion
+     - `skc_pre` 到 `skc_post` 的改善仍很弱，说明当前 completion 对 support target 的逼近幅度有限
+  3. 现阶段结论应收紧为：
+     - `SKC` 已被真正验证到
+     - 但第一版还更像“稳定小残差修正”，离强正向 breakthrough 还有距离
