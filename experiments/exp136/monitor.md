@@ -166,3 +166,24 @@
   - 这轮已经把“真稀疏 LPCS”测得非常干净，机制价值成立
   - 但到 `ep90` 为止，它没有显示出足以压过 full-pair `LPCS` 或当前最强 `exp125` 的趋势
   - 当前更值得优先回答的问题已经转到 `exp137`：R1 的瓶颈是不是 ranking aggregation
+
+### [2026-03-21 21:18] `exp136` 正式收敛：真稀疏 routing 成立，但最终只得到近似等价结果
+- 日志来源:
+  - 远程 `log/occluded_duke/exp136_lpcs_delta_top_fix/remote_nohup.log`
+- 最终验证点:
+  - `ep110 = 61.0 / 72.0`
+  - `ep120 = 60.9 / 72.1`
+- 对照观察:
+  1. 相对 `exp135 ep120 = 61.1 / 72.3`，当前是 `mAP -0.2 / R1 -0.2`
+  2. 相对 `exp030a-eq seed1234 = 61.1 / 72.9`，当前是 `mAP -0.2 / R1 -0.8`
+  3. 相对 `exp125 ep120 = 60.5 / 73.5`，当前是 `mAP +0.4 / R1 -1.4`
+- 收敛期机制信号:
+  1. `lpcs_psr` 始终稳定在 `0.254`
+  2. `lpcs_pf` 始终稳定在约 `2.98 ~ 3.03`
+  3. `lpcs_dm / lpcs_ds` 收敛期稳定在约 `0.425 / 0.217`
+  4. `lpcs_fg` 长期显著高于 `lpcs_bg`，收敛期约为 `1.60 > 0.65`
+- 当前判断: `exp136` 结案，保留为 supporting 线
+- 原因:
+  - 这轮已经把“真稀疏 pair routing”测得足够干净，机制证据完整
+  - 但最终结果只达到与 full-pair `LPCS` 近似等价，不能支撑“sparse routing 是当前主突破口”
+  - 当前更合理的主问题已收紧为：如何让 learned pair correction 更直接服务 top-rank 错误

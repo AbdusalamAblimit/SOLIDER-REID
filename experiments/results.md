@@ -776,20 +776,20 @@
      - learned pair correction 确实在工作
      - 但当前 loss 聚合方式还没有把收益转成更强的 `R1`
 
-### exp136: corrected sparse `LPCS` 机制首次被真正测到，但到 `ep70` 仍未兑现为更强结果
+### exp136: corrected sparse `LPCS` 机制被完整坐实，但最终只达到近似等价结果
 
-> `exp136` 是在修复共享接线 bug 后，对 intended `exp134` 的 clean rerun。它相对 `exp135` 只改 pair 路由：`pair_mode=delta_top, top_ratio=0.25`。当前实验仍在远程运行，以下结论截至 `ep70`。
+> `exp136` 是在修复共享接线 bug 后，对 intended `exp134` 的 clean rerun。它相对 `exp135` 只改 pair 路由：`pair_mode=delta_top, top_ratio=0.25`。该实验已跑满 `ep120`，以下结论来自训练监控口径。
 
 | 方法 | mAP | R1 | R5 | R10 | 口径 |
 |------|-----|----|----|-----|------|
-| `exp136` | 58.9% | 70.1% | 82.7% | 86.7% | `ep70` 训练监控 |
+| `exp136` | 60.9% | 72.1% | 83.7% | 86.7% | `ep120` 训练监控 |
 
 - 结论：
   1. `exp136` 的最大价值已经成立：这次 sparse routing 终于是真稀疏，而不是“名义稀疏、实际全开”
      - `lpcs_psr = 0.254`
      - `lpcs_pf ≈ 3.0`
-  2. 但到 `ep70` 为止，真稀疏机制还没有兑现成更强指标：
-     - 相对 `exp135 ep70 = 59.0 / 70.9`，当前是 `-0.1 / -0.8`
+  2. 但最终结果只达到与 full-pair `LPCS` 近似等价：
+     - 相对 `exp135 ep120 = 61.1 / 72.3`，当前是 `-0.2 / -0.2`
   3. 这意味着 supervision dilution 也许存在，但当前还不能把它当作 `LPCS` 的主瓶颈
   4. 因而下一步更合理的方向应从“继续改 routing”转向：
      - 更 ranking 对齐的 `LPCS` 损失聚合方式

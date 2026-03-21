@@ -2023,12 +2023,12 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
   2. 用新编号重跑 corrected `LPCS`
   3. 再继续判断 sparse routing 是否真能把 `LPCS` 推成论文主线
 
-### 2026-03-21 晚间更新：`LPCS` 已经真正成立，但 sparse routing 不是当前主突破口
+### 2026-03-21 晚间更新：`LPCS` 已经真正成立，但 sparse routing 最终只是 supporting 机制
 
 - `exp135 corrected LPCS` 已收敛到：
   - `ep120 = 61.1 / 72.3`
-- `exp136 corrected sparse LPCS` 到 `ep70` 为止是：
-  - `58.9 / 70.1`
+- `exp136 corrected sparse LPCS` 已收敛到：
+  - `ep120 = 60.9 / 72.1`
 - 更关键的是机制层面：
   - `exp135`: `lpcs_psr / lpcs_pf = 1.000 / 1.000`
   - `exp136`: `lpcs_psr = 0.254`、`lpcs_pf ≈ 3.0`
@@ -2041,7 +2041,7 @@ SCKD 系列的结案意味着必须转向全新方向。当前最值得探索的
 
 2. 但 sparse routing 不是当前最像论文主突破的部分
    - `exp136` 已经第一次把真稀疏 routing 跑成设计语义
-   - 可是更干净的机制并没有自动带来更强 `R1`
+   - 可是更干净的机制到收敛也没有超过 full-pair `LPCS`
 
 3. 这意味着：
    - supervision dilution 可能是次要问题

@@ -880,8 +880,8 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
 
 - `exp135 corrected LPCS` 已跑满：
   - `ep120 = 61.1 / 72.3`
-- `exp136 corrected sparse LPCS` 到 `ep70` 为止：
-  - `58.9 / 70.1`
+- `exp136 corrected sparse LPCS` 已跑满：
+  - `ep120 = 60.9 / 72.1`
 
 这批新证据把 story 又往前推进了一步：
 
@@ -900,7 +900,7 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
    - 真稀疏 routing 已经被首次干净验证
    - `lpcs_psr = 0.254`
    - `lpcs_pf ≈ 3.0`
-   但它到 `ep70` 仍没有压过 full-pair `LPCS`
+   但它到收敛也没有压过 full-pair `LPCS`
 
 因此，当前 story 最合理的收束不再是：
 - “只要把 pair 挑得更稀疏就会更强”

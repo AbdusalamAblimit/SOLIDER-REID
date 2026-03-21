@@ -2470,9 +2470,9 @@ B. 直接启动 exp025，exp024 可以后续补跑
 - 本地 `exp135 corrected LPCS` 已跑满:
   - `ep110 = 61.2 / 72.3`
   - `ep120 = 61.1 / 72.3`
-- 远程 `exp136 corrected sparse LPCS` 已跑到:
-  - `ep60 = 58.6 / 69.7`
-  - `ep70 = 58.9 / 70.1`
+- 远程 `exp136 corrected sparse LPCS` 已跑满:
+  - `ep110 = 61.0 / 72.0`
+  - `ep120 = 60.9 / 72.1`
 - 同时机制统计已经足够清楚:
   - `exp135`: `lpcs_psr / lpcs_pf = 1.000 / 1.000`
   - `exp136`: `lpcs_psr = 0.254`、`lpcs_pf ≈ 3.0`
@@ -2483,20 +2483,20 @@ B. 直接启动 exp025，exp024 可以后续补跑
    - `mAP` 更强
    - `R1` 偏弱
    更像排序修正型收益，而不是最优主突破
-3. `exp136` 已经把“真稀疏 routing”机制坐实，但到 `ep70` 仍没有把更干净的机制兑现成更强指标
+3. `exp136` 已经把“真稀疏 routing”机制完整坐实，但到收敛也只得到与 full-pair `LPCS` 近似等价的结果
 4. 因而当前最值得收紧的判断不是“routing 是否有效”，而是：
    **当前 `LPCS` 的主瓶颈更像 ranking objective 本身，而不是 pair coverage / sparse routing 语义**
 
 **选择**:
-1. 保留远程 `exp136` 继续自然运行，不提前杀
-2. 不再让本地空等 `exp136`
+1. `exp136` 到此结案，保留为 supporting 证据
+2. 不再围绕 sparse routing 本身继续开变体
 3. 立刻在本地切到下一轮：
    - **更 ranking 对齐的 `LPCS` 聚合方式**
    - 例如从全 pair 平均转为 harder / top-k hard 组合
 
 **理由**:
 1. `exp135` 已证明 full-pair `LPCS` 能工作，但它没有把 `R1` 也一起拉起来
-2. `exp136` 又证明“改 routing 语义”本身不是万能答案；真稀疏不自动变强
+2. `exp136` 又证明“改 routing 语义”本身不是万能答案；真稀疏最终也不自动变强
 3. 这两条证据合起来最自然地指向：
    - 监督该怎么聚合
    - 比监督该选哪些 pair 更像当前瓶颈
