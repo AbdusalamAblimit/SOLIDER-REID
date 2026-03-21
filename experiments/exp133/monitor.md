@@ -22,3 +22,61 @@
 - 当前判断: 待实现
 - 原因:
   - 先完成设计收束，再按用户规则做 Claude 审查，审查通过后才允许启动
+
+### [2026-03-21 07:34] 代码实现完成，等待 Claude 审查
+- 已完成:
+  1. 在 `model/modules/pair_adaptive_fusion.py` 新增 `PairResidualScorer`
+  2. `PoseBackboneModel` 已注册 `lpcs_head`
+  3. `processor.py` 已接入：
+     - `LPCS` support-complete teacher bank
+     - teacher-weighted pairwise ranking loss
+     - 验证/测试期 `pair_residual_head`
+  4. `utils/metrics.py` 已接入 `POSE_TEST_FEAT='cvk_residual'`
+  5. 配置已建：
+     - `configs/occluded_duke/pose_psg_gcn_lpcs.yml`
+- 当前这版的机制定义:
+  1. 保持 `exp132` 的 pair descriptor 不变
+  2. 不再预测 `alpha`
+  3. 而是预测 bounded `delta`
+  4. 最终距离:
+     - `d_final = d_cvk_hybrid + delta`
+  5. 监督改为：
+     - support-complete teacher 加权的 pairwise ranking loss
+- 已通过的自检:
+  1. `py_compile` 通过
+  2. 最小 evaluator 样例已确认 `cvk_residual` 路径可正常跑通
+- 当前判断: 等待 Claude 审查
+- 原因:
+  - 按用户明确规则，所有新实验必须先完成 Claude 审查并确认无阻塞项后才能启动
+
+### [2026-03-21 08:06] Claude 审查结论
+- 审查文件:
+  - `experiments/exp133/claude_review.md`
+- 审查结论:
+  1. **允许启动**
+  2. 无 HIGH 阻塞项
+  3. 两个 MEDIUM 问题均不阻止当前实验启动：
+     - 训练端 `base_dist` 与测试端 `CVK_GLOBAL_WEIGHT / CVK_KP_WEIGHT` 的耦合暂时是硬编码 `1:1`
+     - warmup 期间 `LPCS` head 仅受极小 weight decay 影响
+- 当前接受的边界:
+  1. 当前实验配置下 `CVK_GLOBAL_WEIGHT = CVK_KP_WEIGHT = 1.0`，所以 train-test base distance 一致
+  2. 本轮不再修改代码以避免越过已完成的 Claude 审查；后续若这条线成立，再统一到配置驱动
+- 当前判断: 允许启动
+- 原因:
+  - Claude 已确认单变量性、checkpoint 接线、train loss 接线、test/evaluator 接线和 ranking loss 方向均成立
+
+### [2026-03-21 08:07] 启动前最小自检通过
+- 启动方式:
+  - `/root/miniconda3/envs/solider-reid/bin/python -u train.py --config_file configs/occluded_duke/pose_psg_gcn_lpcs.yml`
+- 关键确认:
+  1. 输出目录正确：`log/occluded_duke/exp133_lpcs`
+  2. `POSE_TEST_FEAT=cvk_residual` 已生效
+  3. `LPCS` 模块已注册进模型：
+     - `[LPCS] Learned Pair Correction Scorer enabled: hidden=32, delta_scale=0.5, params=1313`
+  4. 训练期日志已确认：
+     - `[LPCS] enabled: weight=0.5, warmup=20, hidden=32, delta_scale=0.5, low_thr=0.3, update_thr=0.7, mom=0.9, min_count=1, stop_epoch=-1`
+  5. 训练已真实进入 iteration：
+     - `Epoch[1] Iter[60/227]` 正常输出，无 NaN / shape / device 报错
+- 当前判断: 允许正式运行
+- 原因:
+  - Claude 审查已放行，且前台最小自检已证明 `LPCS` 不只是“能构建”，而是能真正进入训练循环

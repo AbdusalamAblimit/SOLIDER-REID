@@ -71,3 +71,32 @@ class PairAdaptiveFusionHead(nn.Module):
     def forward(self, desc):
         alpha = torch.sigmoid(self.mlp(desc))
         return alpha.squeeze(-1)
+
+
+class PairResidualScorer(nn.Module):
+    """Predict a bounded pair-specific residual correction for the base distance."""
+
+    def __init__(self, input_dim=6, hidden_dim=32, delta_scale=0.5):
+        super().__init__()
+        self.delta_scale = delta_scale
+        self.mlp = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden_dim, 1),
+        )
+        self._init_weights()
+
+    def _init_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    nn.init.zeros_(m.bias)
+        nn.init.zeros_(self.mlp[-1].weight)
+        nn.init.zeros_(self.mlp[-1].bias)
+
+    def forward(self, desc):
+        delta = torch.tanh(self.mlp(desc)) * self.delta_scale
+        return delta.squeeze(-1)

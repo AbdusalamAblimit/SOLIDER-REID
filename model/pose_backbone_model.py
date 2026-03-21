@@ -29,7 +29,7 @@ from .modules.pose_translation import PoseTranslationModule
 from .modules.pose_cond_lora import PoseCondLoRA
 from .modules.pose_film import PoseFiLMGenerator, PoseFiLMLayer
 from .modules.skeleton_reencoder import SkeletonReEncoder
-from .modules.pair_adaptive_fusion import PairAdaptiveFusionHead
+from .modules.pair_adaptive_fusion import PairAdaptiveFusionHead, PairResidualScorer
 
 
 class PoseBackboneModel(build_transformer):
@@ -491,6 +491,9 @@ class PoseBackboneModel(build_transformer):
                       f'kp_weight={kp_weight_mode}')
 
         self.use_ltcs = getattr(cfg.MODEL, 'POSE_LTCS', False)
+        self.use_lpcs = getattr(cfg.MODEL, 'POSE_LPCS', False)
+        if self.use_ltcs and self.use_lpcs:
+            raise ValueError('POSE_LTCS and POSE_LPCS cannot be enabled together')
         if self.use_ltcs:
             if not self.use_skeleton_gcn:
                 raise ValueError('POSE_LTCS requires POSE_SKELETON_GCN=True')
@@ -499,6 +502,15 @@ class PoseBackboneModel(build_transformer):
             ltcs_params = sum(p.numel() for p in self.ltcs_head.parameters())
             print(f'[LTCS] Learn-to-Trust Common Support enabled: '
                   f'hidden={ltcs_hidden}, params={ltcs_params}')
+        if self.use_lpcs:
+            if not self.use_skeleton_gcn:
+                raise ValueError('POSE_LPCS requires POSE_SKELETON_GCN=True')
+            lpcs_hidden = getattr(cfg.MODEL, 'POSE_LPCS_HIDDEN', 32)
+            lpcs_delta_scale = getattr(cfg.MODEL, 'POSE_LPCS_DELTA_SCALE', 0.5)
+            self.lpcs_head = PairResidualScorer(hidden_dim=lpcs_hidden, delta_scale=lpcs_delta_scale)
+            lpcs_params = sum(p.numel() for p in self.lpcs_head.parameters())
+            print(f'[LPCS] Learned Pair Correction Scorer enabled: '
+                  f'hidden={lpcs_hidden}, delta_scale={lpcs_delta_scale}, params={lpcs_params}')
 
         # PAMC (Pose-Aware Masking Consistency) projector
         self.use_pamc = getattr(cfg.MODEL, 'POSE_PAMC', False)
@@ -934,7 +946,7 @@ class PoseBackboneModel(build_transformer):
                     g_norm = F.normalize(test_feat, p=2, dim=1)
                     p_norm = [F.normalize(f, p=2, dim=1) for f in gcn_feats]
                     test_feat = torch.cat([g_norm] + p_norm, dim=1)
-                elif self.pose_test_feat in ('cvk_only', 'cvk_hybrid', 'cvk_adaptive'):
+                elif self.pose_test_feat in ('cvk_only', 'cvk_hybrid', 'cvk_adaptive', 'cvk_residual'):
                     test_feat = {
                         'mode': self.pose_test_feat,
                         'global_feat': test_feat,

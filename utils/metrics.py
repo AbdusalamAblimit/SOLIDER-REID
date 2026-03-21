@@ -147,6 +147,7 @@ class R1_mAP_eval():
         self.reranking = reranking
         self.cfg = cfg
         self.pair_fusion_head = None
+        self.pair_residual_head = None
         # NFC (Neighbor Feature Centralization) config
         self.nfc_enabled = False
         self.nfc_k1 = 2
@@ -273,6 +274,37 @@ class R1_mAP_eval():
             if head_was_training:
                 head.train()
             distmat = torch.cat(mixed_chunks, dim=0).numpy()
+        elif mode == 'cvk_residual':
+            if self.pair_residual_head is None:
+                raise ValueError('POSE_TEST_FEAT=cvk_residual requires evaluator.pair_residual_head')
+            head = self.pair_residual_head
+            head_was_training = head.training
+            head.eval()
+            head_device = next(head.parameters()).device
+            gw = float(getattr(self.cfg.TEST, 'CVK_GLOBAL_WEIGHT', 1.0)) if self.cfg is not None else 1.0
+            kw = float(getattr(self.cfg.TEST, 'CVK_KP_WEIGHT', 1.0)) if self.cfg is not None else 1.0
+            base_dist = (gw * global_dist + kw * kp_dist) / max(gw + kw, 1e-12)
+            g_vis_mean = g_w.mean(dim=1).unsqueeze(0)
+            chunk_size = 256
+            corrected_chunks = []
+            with torch.no_grad():
+                for start in range(0, q_w.shape[0], chunk_size):
+                    end = min(q_w.shape[0], start + chunk_size)
+                    q_vis_mean = q_w[start:end].mean(dim=1, keepdim=True).expand(-1, g_w.shape[0])
+                    desc = build_pair_descriptors(
+                        global_dist[start:end],
+                        kp_dist[start:end],
+                        support_ratio[start:end],
+                        q_vis_mean,
+                        g_vis_mean.expand(end - start, -1),
+                    )
+                    delta = head(desc.to(head_device).view(-1, desc.shape[-1]))
+                    delta = delta.view(end - start, desc.shape[1]).to(base_dist.device)
+                    corrected = base_dist[start:end] + delta
+                    corrected_chunks.append(corrected.cpu())
+            if head_was_training:
+                head.train()
+            distmat = torch.cat(corrected_chunks, dim=0).numpy()
         else:
             gw = float(getattr(self.cfg.TEST, 'CVK_GLOBAL_WEIGHT', 1.0)) if self.cfg is not None else 1.0
             kw = float(getattr(self.cfg.TEST, 'CVK_KP_WEIGHT', 1.0)) if self.cfg is not None else 1.0

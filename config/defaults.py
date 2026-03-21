@@ -90,7 +90,7 @@ _C.MODEL.POSE_PART_TRI_WEIGHT = 1.0 # weight for part triplet loss
 _C.MODEL.POSE_HEATMAP_SIZE = [96, 32]  # (H, W) heatmap size from dataloader
 _C.MODEL.POSE_HEATMAP_NORM = 'spatial_softmax'  # 'sigmoid' or 'spatial_softmax'
 _C.MODEL.POSE_TEMPERATURE = 1.0        # temperature for spatial softmax
-_C.MODEL.POSE_TEST_FEAT = 'concat_scaled'  # 'concat_scaled', 'part_only', 'equal_concat', 'cvk_only', 'cvk_hybrid', 'cvk_adaptive'
+_C.MODEL.POSE_TEST_FEAT = 'concat_scaled'  # 'concat_scaled', 'part_only', 'equal_concat', 'cvk_only', 'cvk_hybrid', 'cvk_adaptive', 'cvk_residual'
 _C.MODEL.POSE_PART_STAGE = -1              # which backbone stage for part pooling (-1=last, -2=second-to-last)
 # Pose Feature Modulation (PFM)
 _C.MODEL.POSE_PFM_ENABLED = False
@@ -242,6 +242,16 @@ _C.MODEL.POSE_LTCS_ST_UPDATE_THR = 0.7         # High-visibility threshold for L
 _C.MODEL.POSE_LTCS_ST_MOM = 0.9                # EMA momentum for LTCS teacher bank
 _C.MODEL.POSE_LTCS_ST_MIN_COUNT = 1            # Minimum support count for LTCS teacher completion
 _C.MODEL.POSE_LTCS_ST_UPDATE_STOP_EPOCH = -1   # Stop LTCS teacher-bank updates after this epoch (-1=never)
+_C.MODEL.POSE_LPCS = False                     # Learned Pair Correction Scorer
+_C.MODEL.POSE_LPCS_WEIGHT = 0.5                # Extra loss weight for LPCS head
+_C.MODEL.POSE_LPCS_WARMUP = 20                 # Warmup before enabling LPCS supervision
+_C.MODEL.POSE_LPCS_HIDDEN = 32                 # Hidden dim of LPCS scorer head
+_C.MODEL.POSE_LPCS_DELTA_SCALE = 0.5           # Bound for pair residual correction
+_C.MODEL.POSE_LPCS_ST_LOW_THR = 0.3            # Low-visibility threshold for LPCS teacher completion
+_C.MODEL.POSE_LPCS_ST_UPDATE_THR = 0.7         # High-visibility threshold for LPCS teacher-bank updates
+_C.MODEL.POSE_LPCS_ST_MOM = 0.9                # EMA momentum for LPCS teacher bank
+_C.MODEL.POSE_LPCS_ST_MIN_COUNT = 1            # Minimum support count for LPCS teacher completion
+_C.MODEL.POSE_LPCS_ST_UPDATE_STOP_EPOCH = -1   # Stop LPCS teacher-bank updates after this epoch (-1=never)
 _C.MODEL.POSE_SGMKC = False              # Skeleton-Guided Masked Keypoint Completion
 _C.MODEL.POSE_SGMKC_RATIO = 0.3          # Fraction of keypoints to mask during training
 _C.MODEL.POSE_SGMKC_WEIGHT = 1.0         # Reconstruction loss weight
