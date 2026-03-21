@@ -197,3 +197,49 @@
   3. 因此现阶段还不能说：
      - `competition context` 已经强于 `query context`
      - 只能说它已经被干净接上，而且值得继续看后续验证点
+
+### [2026-03-22 04:50] `ep30` 出现 post-warmup dip，与历史 LPCS 一致
+
+- 当前进度:
+  - 已完成 `ep30` 验证
+  - 当前处于 `Epoch 32+`
+- 关键验证结果:
+  - `ep30 = 41.5 / 54.7`（相比 `ep20 = 47.6 / 60.0`，下降 6.1%/5.3%）
+- 当前判断: 继续，post-warmup dip 是已知现象
+- 原因:
+  1. `LPCS warmup=20`，`epoch 21+` 才真正引入 `lpcs loss`，叠加到已有训练信号上
+  2. 此时 `LR` 正处于 cosine 下降前的较高区段，加上新 loss 的初始冲击，出现临时性能下降
+  3. 历史上 `exp135 query_ctx` 也经历过类似 dip 后恢复
+  4. `Epoch 23` 日志显示 `lpcs_ctxm ≈ 0.546`、`lpcs_fg/bg ≈ 0.42/0.31`，说明 `comp_ctx` 仍在正常接入
+  5. 下一关键判断点：
+     - `ep40`：若回到 50%+ mAP，说明 dip 已恢复
+     - `ep50`：若仍低于 50%，需要考虑止损
+  6. LPCS 系列对照（ep30 dip 参考）:
+     - `exp135 corrected LPCS ep30`：待查
+     - `exp139 query_ctx ep30`：待查
+
+### [2026-03-22 05:14] `ep40` 出现，恢复缓慢，远落后于正常训练曲线
+
+- 当前进度:
+  - 已完成 `ep40` 验证
+  - 当前处于 `Epoch 43+`
+- 关键验证结果:
+  - `ep40 = 43.9 / 59.8`（使用 `cvk_residual` 模式）
+- 训练曲线:
+  - `ep10 = 36.5 / 50.0`
+  - `ep20 = 47.6 / 60.0`（warmup 结束前的峰值）
+  - `ep30 = 41.5 / 54.7`（post-warmup dip）
+  - `ep40 = 43.9 / 59.8`（恢复中，但仍远低于 ep20 的 mAP）
+- LPCS 机制观察（E34-35）:
+  - `lpcs_dm ≈ 0.276`（correction direction 增长强劲）
+  - `lpcs_fg ≈ 1.02`（foreground score 已突破 1.0）
+  - `lpcs_bg ≈ 0.47`（background score 适中）
+  - `lpcs_fg - lpcs_bg ≈ 0.55`（fg-bg 间隔大幅拉开）
+  - `lpcs_ctxm ≈ 0.555`（competition context 稳定非零）
+- 当前判断: 继续但不乐观
+- 原因:
+  1. E40 = 43.9% 远低于 exp030a E40 = 55.6%（-11.7%）
+  2. 但 exp141 使用 `cvk_residual` eval mode，与 exp030a 的 `concat_scaled` 不同
+  3. LPCS 训练 loss 可能干扰了主学习，导致基础模型质量下降
+  4. 需要观察 E50-60 是否能恢复到 55%+ 水平
+  5. 如果 E60 仍低于 50%，应考虑止损

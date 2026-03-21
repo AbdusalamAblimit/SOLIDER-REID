@@ -268,6 +268,15 @@ class PoseBackboneModel(build_transformer):
             self._input_h = cfg.INPUT.SIZE_TRAIN[0]
             self._input_w = cfg.INPUT.SIZE_TRAIN[1]
 
+        # Skeleton-Aware Self-Attention (SASA) — zero-parameter attention bias
+        self.use_sasa = getattr(cfg.MODEL, 'POSE_SASA', False)
+        if self.use_sasa:
+            from model.modules.skeleton_attention import SkeletonAttentionBias
+            sasa_alpha = getattr(cfg.MODEL, 'POSE_SASA_ALPHA', 0.1)
+            self.sasa_module = SkeletonAttentionBias(alpha=sasa_alpha)
+            print(f'[SASA] Skeleton-Aware Self-Attention enabled: '
+                  f'alpha={sasa_alpha}, params=0 (pure inductive bias)')
+
         # Pose-Conditioned Channel Gate (PCG) — after GAP, before BN
         self.use_channel_gate = getattr(cfg.MODEL, 'POSE_CHANNEL_GATE', False)
         if self.use_channel_gate:
@@ -769,6 +778,53 @@ class PoseBackboneModel(build_transformer):
         # Returns: (B*nW, num_heads, ws*ws, ws*ws)
         return kp_rpe_module(token_dists)
 
+    def _compute_sasa_bias(self, hw_shape, scene_heatmaps, shift_size,
+                           window_size, num_heads):
+        """Compute SASA (Skeleton-Aware Self-Attention) bias for a single block.
+
+        Follows the same pad-shift-partition pipeline as _compute_kprpe_bias.
+
+        Args:
+            hw_shape: (H, W) feature map spatial dimensions
+            scene_heatmaps: (B, 17, H_hm, W_hm) scene-level heatmaps
+            shift_size: shift amount for this block (0 or window_size//2)
+            window_size: window size (7)
+            num_heads: number of attention heads
+
+        Returns:
+            extra_attn_bias: (B*nW, num_heads, ws*ws, ws*ws)
+        """
+        from model.modules.skeleton_attention import compute_token_kp_assignments
+        H, W = hw_shape
+        B = scene_heatmaps.shape[0]
+        ws = window_size
+
+        # 1. Assign each token to its dominant keypoint: (B, H, W)
+        token_assign = compute_token_kp_assignments(scene_heatmaps, hw_shape)
+
+        # 2. Pad to multiples of window size
+        pad_r = (ws - W % ws) % ws
+        pad_b = (ws - H % ws) % ws
+        if pad_r > 0 or pad_b > 0:
+            token_assign = F.pad(token_assign, (0, pad_r, 0, pad_b), value=0)
+        H_pad, W_pad = token_assign.shape[1], token_assign.shape[2]
+
+        # 3. Cyclic shift (for shifted window blocks)
+        if shift_size > 0:
+            token_assign = torch.roll(
+                token_assign,
+                shifts=(-shift_size, -shift_size),
+                dims=(1, 2))
+
+        # 4. Window partition: (B, H_pad, W_pad) -> (B*nW, ws*ws)
+        token_assign = token_assign.view(B, H_pad // ws, ws, W_pad // ws, ws)
+        token_assign = token_assign.permute(0, 1, 3, 2, 4).contiguous()
+        nW = (H_pad // ws) * (W_pad // ws)
+        token_assign = token_assign.view(B * nW, ws * ws)
+
+        # 5. Compute pairwise bias via geodesic lookup
+        return self.sasa_module.compute_bias(token_assign, num_heads)
+
     def _run_stage_with_film(self, stage, x, hw_shape, scene_heatmaps,
                               stage_idx=None):
         """Run a stage's blocks with FiLM modulation only (no PSG)."""
@@ -794,7 +850,7 @@ class PoseBackboneModel(build_transformer):
         for block_idx, block in enumerate(stage.blocks):
             key = f's{stage_idx}_b{block_idx}'
 
-            # Compute KP-RPE bias if enabled
+            # Compute attention bias if enabled (KP-RPE or SASA)
             kp_rpe_bias = None
             if self.use_kp_rpe and pose_dict is not None and key in self.kp_rpe_modules:
                 keypoints = pose_dict['keypoints'][:, 0, :, :]  # (B, 17, 2)
@@ -804,6 +860,12 @@ class PoseBackboneModel(build_transformer):
                 kp_rpe_bias = self._compute_kprpe_bias(
                     self.kp_rpe_modules[key], hw_shape,
                     keypoints, kp_scores, shift_size, window_size)
+            elif self.use_sasa and scene_heatmaps is not None:
+                shift_size = block.attn.shift_size
+                window_size = block.attn.window_size
+                num_heads = block.attn.w_msa.num_heads
+                kp_rpe_bias = self._compute_sasa_bias(
+                    hw_shape, scene_heatmaps, shift_size, window_size, num_heads)
 
             if self.use_combo and scene_heatmaps is not None:
                 # Combo mode: PAB inside attention + PSG after block

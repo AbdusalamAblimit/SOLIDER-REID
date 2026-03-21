@@ -205,6 +205,8 @@ _C.MODEL.POSE_SKC_UPDATE_THR = 0.7          # High-confidence threshold for SKC 
 _C.MODEL.POSE_SKC_MOM = 0.9                 # EMA momentum for SKC support bank
 _C.MODEL.POSE_SKC_MIN_COUNT = 1             # Minimum support count for SKC supervision
 _C.MODEL.POSE_SKC_UPDATE_STOP_EPOCH = -1    # Stop SKC bank updates after this epoch (-1=never)
+_C.MODEL.POSE_SASA = False                  # Skeleton-Aware Self-Attention (zero-parameter attention bias)
+_C.MODEL.POSE_SASA_ALPHA = 0.1              # SASA bias strength (higher = stronger topology prior)
 _C.MODEL.POSE_VCGA = False                  # Visibility-Conditioned Graph Attention in GCN
 _C.MODEL.POSE_FEATURE_INPAINTER = False  # PGFI: Pose-Guided Feature Inpainting on feature map
 _C.MODEL.POSE_CIPGFR = False             # CIPGFR: Cross-Instance Pose-Guided Feature Recovery
