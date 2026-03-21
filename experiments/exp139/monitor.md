@@ -132,3 +132,20 @@
 - 当前判断: 继续
 - 原因:
   - 这轮是当前唯一真正测试“无标签 query-level context 是否改善 pair correction”的 clean run
+
+### [2026-03-21 14:48] 远程 warmup 前段运行健康，但尚未进入有效判别区
+- 当前进度:
+  - 已完成 `Epoch 1-8`
+  - 当前处于 `Epoch 9`
+- 关键训练日志:
+  - `Epoch 1 done. Time per epoch: 92.830[s]`
+  - `Epoch 5 done. Time per epoch: 91.689[s]`
+  - `Epoch 8 done. Time per epoch: 93.728[s]`
+- 形态观察:
+  1. `context_mode=query_ctx` 已稳定打印，无接线缺失
+  2. 早期 loss 下降形状与 `exp135` 同向，没有异常爆炸
+  3. 远程单 epoch 约 `92~94s`，明显慢于本地 `exp138` 的约 `58~60s`
+- 当前判断: 继续
+- 原因:
+  - 当前还未到 `ep10`，更未越过 `LPCS warmup=20`
+  - 现在只能下“启动健康”的结论，真正关键的是 `ep10/20` 与 `epoch 21+` 后 `lpcs_ctxm` 是否显著大于 `0`
