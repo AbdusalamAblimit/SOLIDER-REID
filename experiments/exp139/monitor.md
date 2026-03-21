@@ -4,7 +4,7 @@
 - 方法: `Query-Context LPCS`
 - 类型: `exp135` 的 query-context 单变量升级
 - 计划运行位置: 远程
-- 当前状态: 二次全面审查中
+- 当前状态: 已通过二审，待远程启动
 - 直接对照:
   - `exp135 Corrected LPCS`
   - `exp138 Rank-Decayed LPCS`
@@ -94,3 +94,19 @@
 - 当前判断: 二审进行中，远程继续等待
 - 原因:
   - 用户要求全面审查完成后再放行远程训练
+
+### [2026-03-21 14:34] Claude 二次全面审查通过，允许启动
+- 审查文件:
+  - `experiments/exp139/claude_review_v2.md`
+- 审查结论:
+  - **允许启动**
+- 审查确认:
+  1. 原始两个 blocking 已全部修复
+  2. 当前 `query_ctx` 已改成无标签、train/test 对称的 11 维 descriptor
+  3. `processor.py` 与 `utils/metrics.py` 已共用同一套 context 语义
+- 非阻塞提醒:
+  1. 训练里另有一个用于 pair weighting 的 `pair_change=|teacher_dist-base_dist|`，与 context 用的 `row_gap_mean` 语义不同，后续解释时要避免混淆
+  2. 训练排除对角线、测试不过滤对角线是合理设计，但目前只在代码逻辑里体现，没额外注释
+- 当前判断: 放行，准备远程启动
+- 原因:
+  - 这条线现在终于可以作为真正的第二创新点被远程干净验证
