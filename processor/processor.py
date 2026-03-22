@@ -804,9 +804,11 @@ def do_train(cfg,
                 kdl_enabled = getattr(cfg.MODEL, 'POSE_KP_DISSIMILAR', False)
                 lku_enabled = getattr(cfg.MODEL, 'POSE_KP_UNCERTAINTY', False)
                 pke_enabled = getattr(cfg.MODEL, 'POSE_PKE', False)
+                maxsim_tri_enabled = getattr(cfg.MODEL, 'POSE_MAXSIM_TRIPLET', False)
                 if kp_data is not None and (
                     kp_triplet_enabled or csgt_enabled or csrd_enabled or ltcs_enabled or lpcs_enabled
                     or paml_enabled or kdl_enabled or lku_enabled or pke_enabled
+                    or maxsim_tri_enabled
                 ):
                     kp_aux_data = dict(kp_data)
                     kp_aux_data['epoch'] = epoch
