@@ -132,6 +132,8 @@ _C.MODEL.POSE_KP_TRIPLET_WEIGHT = 1.0
 # MaxSim triplet: set-to-set metric learning
 _C.MODEL.POSE_MAXSIM_TRIPLET = False
 _C.MODEL.POSE_MAXSIM_TRIPLET_TEMP = 0.05
+_C.MODEL.POSE_MAXSIM_TRIPLET_ADDITIVE = False  # If True, add to pooled triplet instead of replacing
+_C.MODEL.POSE_MAXSIM_TRIPLET_WEIGHT = 0.25     # Weight when additive
 
 # Parallel augmentation (3-view training)
 _C.MODEL.POSE_PARALLEL_AUG = False

@@ -147,18 +147,27 @@ def make_loss(cfg, num_classes):    # modified by gu
                     wt_g = 1.0 / (1.0 + pt)
                     global_tri_base = triplet(feat[0], target)[0]
 
-                    # MaxSim triplet: set-to-set metric learning (replaces pooled part triplet)
+                    # MaxSim triplet: set-to-set metric learning
                     maxsim_tri_enabled = getattr(cfg.MODEL, 'POSE_MAXSIM_TRIPLET', False)
                     maxsim_tri_tau = float(getattr(cfg.MODEL, 'POSE_MAXSIM_TRIPLET_TEMP', 0.05))
+                    maxsim_tri_additive = getattr(cfg.MODEL, 'POSE_MAXSIM_TRIPLET_ADDITIVE', False)
+                    maxsim_tri_weight = float(getattr(cfg.MODEL, 'POSE_MAXSIM_TRIPLET_WEIGHT', 0.25))
                     if maxsim_tri_enabled and kp_data is not None:
-                        part_tri_avg, maxsim_stats = _compute_maxsim_triplet(
+                        maxsim_loss, maxsim_stats = _compute_maxsim_triplet(
                             kp_data['kp_feats'], kp_data['kp_weights'],
                             target, margin=triplet.margin, tau=maxsim_tri_tau)
-                        loss_details['tri_maxsim'] = part_tri_avg.item()
+                        loss_details['tri_maxsim'] = maxsim_loss.item()
                         loss_details['maxsim_d_ap'] = maxsim_stats['d_ap']
                         loss_details['maxsim_d_an'] = maxsim_stats['d_an']
                         loss_details['maxsim_margin'] = maxsim_stats['margin_gap']
                         loss_details['maxsim_ent'] = maxsim_stats['attn_ent']
+                        if maxsim_tri_additive:
+                            # Additive: keep pooled triplet + add MaxSim as auxiliary
+                            part_tris = [triplet(f, target)[0] for f in feat[1:]]
+                            part_tri_avg = sum(part_tris) / len(part_tris) + maxsim_tri_weight * maxsim_loss
+                        else:
+                            # Replace: MaxSim triplet replaces pooled part triplet
+                            part_tri_avg = maxsim_loss
                     else:
                         part_tris = [triplet(f, target)[0] for f in feat[1:]]
                         part_tri_avg = sum(part_tris) / len(part_tris)
