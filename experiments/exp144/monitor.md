@@ -25,3 +25,19 @@
 - 判断: alpha=1.0 与 alpha=0.1 结果几乎相同，说明 SASA 偏置强度不是问题
 - 骨架测地距离信息在 Swin attention 中确实是冗余的
 - 继续跑到完成以获取最终确认
+
+### [2026-03-22 00:51] E30/E40 tracking exp143 closely
+
+- E30: 53.7% (vs exp143: 52.8%, exp030a: 52.2%)
+- E40: 56.4% (vs exp143: 55.4%, exp030a: 55.6%)
+- alpha=1.0 shows slightly higher early values than alpha=0.1
+- But exp143 also had early positive signals that vanished by E120
+- Expect same pattern here — continue monitoring
+
+### [2026-03-22 01:01] E50 = 56.5% — 低于 alpha=0.1 的 E50
+
+- E50: 56.5% / 68.9%（vs exp143 alpha=0.1 E50: 57.6%/69.8%, vs exp030a: 55.7%/68.8%）
+- **alpha=1.0 在 E50 反而不如 alpha=0.1**（56.5% vs 57.6%）
+- 但仍高于 exp030a（+0.8%）
+- 结论趋势明确：SASA alpha 值不影响最终结果，中间差异是正常训练噪声
+- 继续跑到 E120 获取最终确认
