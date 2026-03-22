@@ -130,3 +130,27 @@
     1. `PCVT` 已被真实测试到，不是失效 run
     2. 目前 union 表示确实优于单 partial view
     3. 下一关键点是 `ep10/20`，看主任务会不会被 1/3 dilution 拖住
+
+### [2026-03-22 10:50] Epoch 1-5 持续健康，PCVT 不是只会优化额外一致性
+- 当前进度:
+  - `Epoch 5 Iter 120/227`
+- 关键轨迹:
+  - `Epoch1 Iter20`: `Loss=21.733`, `pcvt_lc=0.320`, `pcvt_cos_fu=0.680`, `pcvt_gap=0.049`
+  - `Epoch2 Iter120`: `Loss=10.729`, `pcvt_lc=0.105`, `pcvt_cos_fu=0.895`, `pcvt_gap=0.032`
+  - `Epoch3 Iter200`: `Loss=8.358`, `pcvt_lc=0.049`, `pcvt_cos_fu=0.951`, `pcvt_gap=0.017`
+  - `Epoch4 Iter200`: `Loss=7.523`, `pcvt_lc=0.030`, `pcvt_cos_fu=0.970`, `pcvt_gap=0.011`
+  - `Epoch5 Iter120`: `Loss=7.068`, `pcvt_lc=0.025`, `pcvt_cos_fu=0.975`, `pcvt_gap=0.010`
+- 稳定不变的结构指标:
+  - `pcvt_cov_a/b ≈ 0.496~0.504`
+  - `pcvt_cov_u = 1.000`
+  - `pcvt_ovr = 0.000`
+  - `pcvt_fb = 0.000`
+- 当前观察:
+  1. union-consistency 在持续变强，但 `pcvt_gap` 正在快速收窄
+  2. 这说明 `f_a / f_b / f_union` 都在一起向 `f_full` 靠近，而不是只有 union 单独变好
+  3. 主损失也在同步下降，所以现在还看不出“三视图主任务 dilution”已经把优化拖坏
+- 当前判断:
+  - 继续
+  - 原因:
+    1. 目前没有出现 OOM、互补失效、或 `pcvt_gap<=0`
+    2. 下一真正有信息量的点仍是 `ep10`
