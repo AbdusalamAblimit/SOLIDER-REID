@@ -129,6 +129,11 @@ _C.MODEL.POSE_KP_WEIGHT_MODE = 'score'
 _C.MODEL.POSE_KP_TRIPLET = False
 _C.MODEL.POSE_KP_TRIPLET_WEIGHT = 1.0
 
+# Evidential Deep Learning (Dirichlet classification head)
+_C.MODEL.POSE_EVIDENTIAL = False           # Replace GCN branch CE with Evidential loss
+_C.MODEL.POSE_EVIDENTIAL_KL_REG = 0.1     # KL regularization max weight
+_C.MODEL.POSE_EVIDENTIAL_ANNEAL = 0.6     # Fraction of training to reach full KL weight
+
 # MaxSim triplet: set-to-set metric learning
 _C.MODEL.POSE_MAXSIM_TRIPLET = False
 _C.MODEL.POSE_MAXSIM_TRIPLET_TEMP = 0.05

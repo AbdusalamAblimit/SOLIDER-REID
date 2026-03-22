@@ -131,8 +131,35 @@ def make_loss(cfg, num_classes):    # modified by gu
                     w_p = pw / (1.0 + pw)
                     w_g = 1.0 / (1.0 + pw)
                     global_id = ce_fn(score[0], target)
-                    part_ids = [ce_fn(s, target) for s in score[1:]]
-                    part_id_avg = sum(part_ids) / len(part_ids)
+
+                    # Evidential DL: replace GCN branch CE with Dirichlet-based loss
+                    evid_enabled = getattr(cfg.MODEL, 'POSE_EVIDENTIAL', False)
+                    if evid_enabled and kp_data is not None:
+                        from loss.evidential_loss import evidential_loss
+                        evid_kl = float(getattr(cfg.MODEL, 'POSE_EVIDENTIAL_KL_REG', 0.1))
+                        evid_anneal = float(getattr(cfg.MODEL, 'POSE_EVIDENTIAL_ANNEAL', 0.6))
+                        evid_epoch = int(kp_data.get('epoch', 0))
+                        total_ep = cfg.SOLVER.MAX_EPOCHS
+                        num_cls = score[0].size(1)
+                        # Apply evidential loss to each part's logits
+                        part_evid_losses = []
+                        all_evid_stats = None
+                        for s in score[1:]:
+                            el, es = evidential_loss(
+                                s, target, num_cls, evid_epoch, total_ep,
+                                kl_reg=evid_kl, anneal_ratio=evid_anneal)
+                            part_evid_losses.append(el)
+                            if all_evid_stats is None:
+                                all_evid_stats = es
+                        part_id_avg = sum(part_evid_losses) / len(part_evid_losses)
+                        loss_details['evid_br'] = all_evid_stats['bayes_risk']
+                        loss_details['evid_kl'] = all_evid_stats['kl']
+                        loss_details['evid_unc'] = all_evid_stats['uncertainty']
+                        loss_details['evid_ev'] = all_evid_stats['evidence']
+                        loss_details['evid_ann'] = all_evid_stats['anneal']
+                    else:
+                        part_ids = [ce_fn(s, target) for s in score[1:]]
+                        part_id_avg = sum(part_ids) / len(part_ids)
                     ID_LOSS = w_g * global_id + w_p * part_id_avg
                     loss_details['id_global'] = global_id.item()
                     loss_details['id_part'] = part_id_avg.item()
