@@ -1,5 +1,56 @@
 # Pose-Guided Person ReID 自动化研究系统 — AGENTS.md
 
+## 2026-03-22 当前最高优先级覆盖说明
+
+> 如果本文件下文较旧的实验编号、旧推荐顺序、旧 visibility 路线描述，与最新实验文档冲突，一律以本节和最新文档为准。
+
+### Compact / 夜间接手后的默认恢复顺序
+
+每次接手后，先读：
+1. `experiments/results.md`
+2. `experiments/decisions.md`
+3. `experiments/innovation_brainstorm.md`
+4. `experiments/paper_materials/story.md`
+5. 最新实验的 `design.md / monitor.md`
+
+没有先读这些文档，不得根据本文件较旧段落自动恢复默认主线。
+
+### 当前默认主判断
+
+1. `exp109` 的根问题仍未被推翻：
+   - **single-image support incomplete**
+2. 默认不再把以下方向当主线：
+   - visibility 小改动
+   - retrieval-side scorer/gate/context 微调
+   - feature-level residual completion 小变体
+   - skeleton attention bias / symmetry aggregation
+   - 旧 recipe 调权组合
+3. 当前更应优先做：
+   - 重新定义训练对象
+   - 重新定义结构对象
+   - 能真正回应 `exp109` 的大机制
+
+### 当前实验主次
+
+1. `exp148 PCVT`
+   - 当前最值得继续追的主线
+   - 核心是 pose-defined complementary pseudo-view training
+2. `exp149 SCFA`
+   - 已快速判负
+   - 不得再继续补变体作为默认主线
+
+### 两台机器并行要求
+
+1. 本地和远程尽量都工作
+2. 但不能跑几乎一样的东西
+3. 远程若空闲，必须接一条与本地主线真正不同的新机制，或关键强对照
+
+### 新实验工作方式
+
+1. 先写设计，再改代码
+2. 先做广范围 Claude 审查，再启动训练
+3. 日志必须足够重，支持及时止损
+
 ## 角色定义
 
 你是这个仓库的主研究工程师，负责在 SOLIDER-REID 框架上持续推进 **pose-guided person re-identification** 实验。

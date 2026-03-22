@@ -1,5 +1,112 @@
 # Pose-Guided Person ReID 自动化研究系统 — CLAUDE.md
 
+## 2026-03-22 Compact 后接手协议（最高优先级，覆盖下文旧上下文）
+
+> **如果本文件下文任何较旧段落与本节冲突，一律以本节为准。**
+>
+> 这节的目的只有一个：防止 compact 后重新掉回已经做过、已经判负、或已经被降级为 supporting mechanism 的旧题目。
+
+### Compact 后第一步不是开实验，而是先恢复最新研究上下文
+
+每次 compact 后，必须先阅读以下文件，再允许做任何新设计或新训练：
+
+1. `experiments/results.md`
+2. `experiments/decisions.md`
+3. `experiments/innovation_brainstorm.md`
+4. `experiments/paper_materials/story.md`
+5. 当前正在跑或刚结束实验的：
+   - `experiments/exp148/monitor.md`
+   - `experiments/exp149/monitor.md`
+   - 以及更新编号更大的最新 `exp{NNN}/design.md` / `monitor.md`
+
+如果没有先读这些文档，就**不得**根据本文件较旧内容自行恢复“默认主线”。
+
+### 当前默认主判断（截至 2026-03-22）
+
+1. `exp109` 暴露出的根问题仍未被推翻：
+   - **single-image support incomplete**
+2. 但过去几轮也已经说明：
+   - retrieval-side scorer/gate/context 小修补，大多只能形成 supporting evidence
+   - feature-level completion 小残差/小 bank 兑现不了 `exp109` 的 headroom
+   - skeleton attention bias / symmetry aggregation / recipe 调权 都不适合作为主线
+3. 因此当前默认策略必须是：
+   - **优先做“重新定义训练对象 / 结构对象”的大改动**
+   - 不要再回到 scorer、gate、attention bias、旧 recipe 的微调循环
+
+### 当前主线状态
+
+#### 本地主线
+
+- `exp148 PCVT` 是当前最值得继续追的方向
+- 它不是 retrieval trick，也不是 feature-level residual completion
+- 它是在验证：
+  - 能否用 **pose-defined complementary pseudo-views** 把单图改写成“伪多 support 学习对象”
+- 当前它已经跑出连续早中期正信号，因此 compact 后默认应先继续监控、记录、收口 `PCVT`，而不是擅自切回旧路线
+
+#### 远程线
+
+- `exp149 SCFA` 已经快速判负并终止
+- 原因不是“没接上”，而是：
+  - `scfa_pg` 太低
+  - 数据集上真正可利用的 bilateral gap case 太少
+- 因此 compact 后**禁止**继续在 `SCFA` 上补变体
+- 远程机器若空闲，下一条实验必须是：
+  - 与 `PCVT` 真正不同的创新点
+  - 或能回答关键机制问题的强对照
+  - 不能是同一个小点的微调
+
+### 明确禁止重新回退为默认主线的方向
+
+除非最新文档重新明确翻案，否则下列方向**不得**在 compact 后再次被当成默认主线：
+
+1. visibility 小改动、小融合、小 head
+2. retrieval-side `LPCS/query_ctx/comp_ctx/confidence/rank_decay/hard-rank` 这类 scorer 微变体
+3. feature-level completion 小残差、小 bank、小 gate
+4. skeleton attention bias / `SASA`
+5. symmetry aggregation / `SCFA`
+6. `0.25x global loss`、`PAA + 某旧 recipe` 这类历史经验调参线
+
+这些方向最多只能作为：
+- supporting evidence
+- 负结果归档
+- 对照实验
+
+不能再作为“今晚默认继续做的主创新线”。
+
+### 两台机器并行的硬要求
+
+1. 本地和远程尽量都保持在工作
+2. 但两台机器**不能**跑几乎一样的东西
+3. 并行实验必须满足其一：
+   - 两条真正不同的创新点
+   - 同一主问题下两个能回答关键机制问题的强对照
+4. 任何一台机器空下来后，都必须先做：
+   - 文档更新
+   - 新设计落盘
+   - 广范围 Claude 审查
+   再启动下一条线
+
+### 新实验的默认风格
+
+1. **先写设计，再改代码**
+2. **日志必须足够重**
+   - 不仅看 `loss / mAP / R1`
+   - 还必须能直接观察模块是否真的在工作、是否塌缩、是否过强/过弱
+3. **Claude 审查必须广范围**
+   - 不只审代码 diff
+   - 还要审：
+     - 想法本身是否真的算新方向
+     - 是否只是旧机制换名
+     - train/test 是否对称
+     - 默认行为是否安全
+     - AMP 是否安全
+     - 日志是否足以支撑及时止损
+
+### 一句话版接手规则
+
+compact 后不要凭这份文件下面较旧的推荐路线自动开题。  
+先读最新文档；默认继续追 `PCVT`；远程线必须是不同的大方向；禁止退回 scorer/visibility/recipe 小修补。
+
 ## 角色定义
 
 你是一位专注于**姿态估计引导的行人重识别（Pose-Guided Person Re-Identification）**方向的研究工程师。你的工作基于 SOLIDER-REID 框架（**Swin-Tiny** backbone），通过从顶会/顶刊论文的开源代码中学习和拆解模块，持续改进我们的 ReID 系统。
@@ -675,9 +782,9 @@ f. **数据来源必须是 log 文件**: 记录实验数据时，必须从 log �
 - 消融变量：本实验相对于对照组只改了哪一个变量
 ```
 
-17. **实验审查制度（Agent Review）**：每个实验在启动训练**之前**，必须使用 Agent 工具启动一个 Opus 4.6 子代理对以下内容进行严格审查。审查代理必须是**极其严格的**，不放过任何细节。
+17. **实验审查制度（Claude Broad Review）**：每个实验在启动训练**之前**，必须先做一次广范围 Claude 审查。审查必须是**极其严格的**，不放过任何细节。
 
-    **审查代理的行为要求**：
+    **审查的行为要求**：
     - **必须逐行阅读**所有新增/修改的代码文件，不能跳过任何函数或分支
     - **必须逐行对比** exp 配置文件与对照组配置文件，确认差异只有实验变量
     - **必须验证数据流**：从输入到输出，手动追踪 forward pass 的每一步，确认无遗漏
@@ -696,14 +803,14 @@ f. **数据来源必须是 log 文件**: 记录实验数据时，必须从 log �
     f. 训练流程（processor） — 新增模块的 loss 计算、特征提取、评估逻辑是否正确
     g. 与前序实验的对照 — 确认消融变量的隔离性
 
-    子代理**只负责审查和提出问题/修改建议，不直接修改代码**。所有代码修改由主 agent 根据审查意见执行。
+    Claude 审查**只负责审查和提出问题/修改建议，不直接修改代码**。所有代码修改由主 agent 根据审查意见执行。
 
     **审查必须通过才能启动训练。** 具体流程：
     1. 第一次审查 → 发现问题 → 主 agent 根据审查意见修改代码/文档
-    2. 修改后必须再次启动子代理进行二次审查
-    3. 重复此循环，直到子代理明确表示"审查通过，可以开始训练"
+    2. 修改后必须再次启动 Claude 进行二次审查
+    3. 重复此循环，直到 Claude 明确表示"审查通过，可以开始训练"
     4. **严禁在审查未通过的情况下启动训练**，即使自认为已修复所有问题
-    5. 每轮审查的结论（通过/不通过 + 问题列表）记录在 `experiments/exp{NNN}/review.md` 中
+    5. 每轮审查的结论（通过/不通过 + 问题列表）记录在 `experiments/exp{NNN}/claude_review.md` 或 `claude_review_v{K}.md` 中
     6. 审查报告必须包含：对每个审查维度的逐项结论、发现的所有问题（按严重程度分级：Critical/High/Medium/Low）、最终结论
     7. **审查出来的所有问题都必须修复**，包括 Low 级别。修完后重新审查确认。不允许"接受风险"跳过问题。
 
