@@ -124,6 +124,19 @@ class PoseBackboneModel(build_transformer):
                       f'hidden={gcn_hidden}, test_feat={self.pose_test_feat}, '
                       f'kp_weight={kp_weight_mode}')
 
+        # SPLADE: Learned Sparse Projection on GCN pooled feature
+        self.use_splade = getattr(cfg.MODEL, 'POSE_SPLADE', False)
+        if self.use_splade and self.use_skeleton_gcn:
+            from .modules.sparse_head import SparseProjectionHead
+            splade_dim = getattr(cfg.MODEL, 'POSE_SPLADE_DIM', 2048)
+            self.sparse_head = SparseProjectionHead(
+                input_dim=self.in_planes, sparse_dim=splade_dim)
+            # Sparse classifier for training the sparse representation
+            self.sparse_classifier = nn.Linear(splade_dim, num_classes, bias=False)
+            splade_params = sum(p.numel() for p in self.sparse_head.parameters())
+            splade_params += sum(p.numel() for p in self.sparse_classifier.parameters())
+            print(f'[SPLADE] Sparse projection enabled: dim={splade_dim}, params={splade_params}')
+
         # LTCS / LPCS heads (pair-adaptive fusion / correction scorer)
         self.use_ltcs = getattr(cfg.MODEL, 'POSE_LTCS', False)
         self.use_lpcs = getattr(cfg.MODEL, 'POSE_LPCS', False)
@@ -279,6 +292,18 @@ class PoseBackboneModel(build_transformer):
                 feat_map_detached = featmaps[-1].detach()
                 gcn_cls_scores, gcn_feats, kp_data = self.skeleton_head(
                     feat_map_detached, pose_dict, return_cls=True, label=label)
+
+                # SPLADE: sparse projection on GCN pooled feature
+                if getattr(self, 'use_splade', False) and len(gcn_feats) > 0:
+                    sparse_feat, sparsity = self.sparse_head(gcn_feats[0])
+                    sparse_cls = self.sparse_classifier(sparse_feat)
+                    gcn_cls_scores.append(sparse_cls)
+                    gcn_feats.append(sparse_feat)
+                    if kp_data is None:
+                        kp_data = {}
+                    kp_data['splade_sparsity'] = sparsity
+                    kp_data['splade_reg'] = sparse_feat.mean()  # for regularization
+
                 # Return lists -> triggers list-loss path (implicit 0.5x global)
                 return [cls_score] + gcn_cls_scores, [global_feat] + gcn_feats, featmaps, None, kp_data
 
@@ -296,6 +321,10 @@ class PoseBackboneModel(build_transformer):
                     getattr(self, 'pose_test_feat', 'global') != 'global':
                 _, gcn_feats, aux_data = self.skeleton_head(
                     featmaps[-1], pose_dict, return_cls=False)
+                # SPLADE: add sparse feature to gcn_feats for test-time
+                if getattr(self, 'use_splade', False) and gcn_feats is not None and len(gcn_feats) > 0:
+                    sparse_feat, _ = self.sparse_head(gcn_feats[0])
+                    gcn_feats.append(sparse_feat)
 
             # Assemble test features from global + part branch
             if gcn_feats is not None:

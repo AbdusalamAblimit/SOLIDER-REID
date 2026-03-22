@@ -568,6 +568,17 @@ def do_train(cfg,
                     loss = loss / len(all_scores)
                     loss._loss_details = saved_details
 
+                # SPLADE: sparsity regularization
+                splade_enabled = getattr(cfg.MODEL, 'POSE_SPLADE', False)
+                if splade_enabled and kp_data is not None and 'splade_reg' in kp_data:
+                    splade_reg_w = float(getattr(cfg.MODEL, 'POSE_SPLADE_REG', 0.01))
+                    splade_reg_loss = kp_data['splade_reg']
+                    details = getattr(loss, '_loss_details', {})
+                    loss = loss + splade_reg_w * splade_reg_loss
+                    details['splade_reg'] = splade_reg_loss.item()
+                    details['splade_sp'] = kp_data.get('splade_sparsity', 0)
+                    loss._loss_details = details
+
             scaler.scale(loss).backward()
 
             scaler.step(optimizer)

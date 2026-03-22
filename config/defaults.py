@@ -129,6 +129,11 @@ _C.MODEL.POSE_KP_WEIGHT_MODE = 'score'
 _C.MODEL.POSE_KP_TRIPLET = False
 _C.MODEL.POSE_KP_TRIPLET_WEIGHT = 1.0
 
+# SPLADE: Learned Sparse Representation
+_C.MODEL.POSE_SPLADE = False
+_C.MODEL.POSE_SPLADE_DIM = 2048
+_C.MODEL.POSE_SPLADE_REG = 0.01           # Sparsity regularization weight
+
 # Evidential Deep Learning (Dirichlet classification head)
 _C.MODEL.POSE_EVIDENTIAL = False           # Replace GCN branch CE with Evidential loss
 _C.MODEL.POSE_EVIDENTIAL_KL_REG = 0.1     # KL regularization max weight
