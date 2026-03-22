@@ -75,9 +75,9 @@ def make_dataloader(cfg):
         if hasattr(cfg.MODEL, 'POSE_HEATMAP_SIZE'):
             hm_size = tuple(cfg.MODEL.POSE_HEATMAP_SIZE)
 
-        # Load ROA occluders if enabled
+        # Load ROA occluders if ROA or PLBOA enabled
         occluders = None
-        if getattr(cfg.MODEL, 'POSE_ROA', False):
+        if getattr(cfg.MODEL, 'POSE_ROA', False) or getattr(cfg.MODEL, 'POSE_LOWER_BODY_OCC', False):
             from .occlusion_augmentation import load_occluders
             roa_path = getattr(cfg.MODEL, 'POSE_ROA_PATH', 'data/VOCdevkit/VOC2012')
             print(f'Loading ROA occluders from {roa_path}...')

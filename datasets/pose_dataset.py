@@ -687,57 +687,90 @@ class PoseImageDataset(Dataset):
         return view_a, view_b, meta
 
     def _apply_lower_body_occlusion(self, img, persons):
-        """Pose-guided lower-body occlusion augmentation.
+        """Pose-guided lower-body occlusion augmentation with real objects.
 
-        Uses hip keypoints to determine where to occlude the lower body.
-        Mimics the test-set distribution where 24.4% of queries have >50%
-        lower-body occlusion (vs only 1.8% in training).
+        Uses hip keypoints to determine where to paste VOC occluders,
+        targeting the lower body region to close the train-test gap.
+        (Query set: 24.4% lower-body occluded vs train: 1.8%)
         """
         import numpy as np
         p0 = persons[0]
-        kp = p0['kp']       # (17, 2) in image pixel coords
-        scores = p0['scores']  # (17,)
+        kp = p0['kp']
+        scores = p0['scores']
 
-        # Lower body keypoints: L_hip(11), R_hip(12), L_knee(13), R_knee(14)
         hip_indices = [11, 12]
         hip_valid = scores[hip_indices] > 0.3
         if not hip_valid.any():
-            return img  # can't determine lower body position
+            return img
 
-        # Get hip y-coordinate (average of valid hips)
         hip_ys = kp[hip_indices][hip_valid][:, 1]
         hip_y = int(hip_ys.mean())
 
-        w, h = img.size  # PIL image size
-        if hip_y >= h - 5:
-            return img  # hip at bottom, nothing to occlude
+        w, h = img.size
+        if hip_y >= h - 10:
+            return img
 
-        # Occlude from a random point between hip and bottom
+        # Determine occlusion start point
         base_ratio = self.lower_body_occ_ratio
         occ_ratio = random.uniform(max(0.1, base_ratio - 0.2), min(1.0, base_ratio + 0.2))
         occ_start = int(hip_y + (h - hip_y) * (1.0 - occ_ratio))
         occ_start = max(0, min(occ_start, h - 1))
 
-        # Random width: 60-100% of image width
-        occ_w_ratio = random.uniform(0.6, 1.0)
-        occ_w = int(w * occ_w_ratio)
-        occ_x = random.randint(0, max(0, w - occ_w))
+        occ_region_h = h - occ_start
+        if occ_region_h < 10:
+            return img
 
-        # Fill with random gray value (simulates generic occluder)
         img_np = np.array(img)
-        gray_val = random.randint(60, 180)
-        img_np[occ_start:h, occ_x:occ_x+occ_w] = gray_val
+
+        # Paste a real VOC occluder if available, otherwise use solid fill
+        if self.occluders:
+            occluder = random.choice(self.occluders)
+            occ_h, occ_w_orig = occluder.shape[:2]
+
+            # Scale occluder to cover the lower body region
+            target_w = int(w * random.uniform(0.6, 1.0))
+            target_h = occ_region_h
+            if occ_h > 0 and occ_w_orig > 0:
+                import cv2
+                occ_resized = cv2.resize(occluder, (target_w, target_h))
+                occ_x = random.randint(0, max(0, w - target_w))
+
+                # Alpha blend
+                occ_rgb = occ_resized[:, :, :3]
+                occ_alpha = occ_resized[:, :, 3:4].astype(np.float32) / 255.0
+
+                y1 = occ_start
+                y2 = min(y1 + target_h, h)
+                x1 = occ_x
+                x2 = min(x1 + target_w, w)
+                actual_h = y2 - y1
+                actual_w = x2 - x1
+
+                if actual_h > 0 and actual_w > 0:
+                    region = img_np[y1:y2, x1:x2].astype(np.float32)
+                    patch = occ_rgb[:actual_h, :actual_w].astype(np.float32)
+                    alpha = occ_alpha[:actual_h, :actual_w]
+                    img_np[y1:y2, x1:x2] = (alpha * patch + (1.0 - alpha) * region).astype(np.uint8)
+        else:
+            # Fallback: gray fill
+            occ_x = 0
+            target_w = w
+            gray_val = random.randint(60, 180)
+            img_np[occ_start:h, :] = gray_val
+
         img = Image.fromarray(img_np)
 
-        # Update person scores, visibility, and heatmaps for occluded keypoints
+        # Update person metadata for occluded keypoints
+        occ_x_end = occ_x + target_w if self.occluders else w
         for p in persons:
             kp_p = p['kp']
-            in_occ = (kp_p[:, 1] >= occ_start) & (kp_p[:, 0] >= occ_x) & (kp_p[:, 0] < occ_x + occ_w)
+            in_occ = ((kp_p[:, 1] >= occ_start) &
+                      (kp_p[:, 0] >= occ_x) &
+                      (kp_p[:, 0] < occ_x_end))
             p['scores'][in_occ] = 0.0
             p['visibility'][in_occ] = 0.0
             p['visibility_binary'][in_occ] = 0.0
-            # Zero heatmap in occluded spatial region
-            p['heatmap'][:, occ_start:h, occ_x:occ_x + occ_w] = 0.0
+            p['heatmap'][:, occ_start:h, occ_x:occ_x_end] = 0.0
 
         return img
 
