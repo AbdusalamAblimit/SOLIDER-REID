@@ -17,3 +17,11 @@
   3. 零代码改动（仅 config 差异），可立即启动
 - 配置: `configs/occluded_duke/pose_psg_gcn_sasa_alpha1.yml`
 - 输出: `log/occluded_duke/exp144_sasa_a1/`
+
+### [2026-03-22 00:20] E10 = 39.1%, E20 = 46.7%（与 alpha=0.1 几乎相同）
+
+- E10: 39.1% / 52.0%（vs exp143 E10: 37.4%/50.2%, vs exp030a: 38.2%/51.3%）
+- E20: 46.7% / 59.7%（vs exp143 E20: 46.8%/58.9%, vs exp030a: 46.8%/60.9%）
+- 判断: alpha=1.0 与 alpha=0.1 结果几乎相同，说明 SASA 偏置强度不是问题
+- 骨架测地距离信息在 Swin attention 中确实是冗余的
+- 继续跑到完成以获取最终确认
