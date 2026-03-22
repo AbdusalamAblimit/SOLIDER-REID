@@ -105,6 +105,7 @@ class PoseImageDataset(Dataset):
         self.lower_body_occ = False      # PLBOA
         self.lower_body_occ_prob = 0.5
         self.lower_body_occ_ratio = 0.5
+        self.lower_body_occ_mode = 'lower'  # 'lower' or 'gradient'
         self.pcvt = False
         self.pcvt_resp_thr = 0.10
         self.pcvt_active_thr = 0.30
@@ -687,34 +688,54 @@ class PoseImageDataset(Dataset):
         return view_a, view_b, meta
 
     def _apply_lower_body_occlusion(self, img, persons):
-        """Pose-guided lower-body occlusion augmentation with real objects.
+        """Pose-guided occlusion augmentation with real objects.
 
-        Uses hip keypoints to determine where to paste VOC occluders,
-        targeting the lower body region to close the train-test gap.
-        (Query set: 24.4% lower-body occluded vs train: 1.8%)
+        Modes:
+        - 'lower': Only occlude below hip (targeting 24.4% query lower-body occ)
+        - 'gradient': Bottom-heavy gradient — lower body high prob, upper low prob
         """
         import numpy as np
         p0 = persons[0]
         kp = p0['kp']
         scores = p0['scores']
 
-        hip_indices = [11, 12]
-        hip_valid = scores[hip_indices] > 0.3
-        if not hip_valid.any():
-            return img
-
-        hip_ys = kp[hip_indices][hip_valid][:, 1]
-        hip_y = int(hip_ys.mean())
-
         w, h = img.size
-        if hip_y >= h - 10:
-            return img
 
-        # Determine occlusion start point
-        base_ratio = self.lower_body_occ_ratio
-        occ_ratio = random.uniform(max(0.1, base_ratio - 0.2), min(1.0, base_ratio + 0.2))
-        occ_start = int(hip_y + (h - hip_y) * (1.0 - occ_ratio))
-        occ_start = max(0, min(occ_start, h - 1))
+        if self.lower_body_occ_mode == 'gradient':
+            # Gradient mode: occlusion start sampled with bottom-heavy distribution
+            # Find head and foot y-coordinates
+            head_indices = [0, 1, 2, 3, 4]  # nose, eyes, ears
+            foot_indices = [15, 16]  # ankles
+            head_valid = scores[head_indices] > 0.3
+            foot_valid = scores[foot_indices] > 0.3
+
+            head_y = int(kp[head_indices][head_valid][:, 1].min()) if head_valid.any() else 0
+            foot_y = int(kp[foot_indices][foot_valid][:, 1].max()) if foot_valid.any() else h
+
+            body_h = max(foot_y - head_y, 20)
+            # Sample occ_start with quadratic bias toward bottom
+            # u ~ Uniform(0,1), then occ_start = head_y + body_h * u^2
+            # This gives P(start > midpoint) = 1 - sqrt(0.5) ≈ 0.29 (bottom-heavy)
+            u = random.random()
+            occ_start = int(head_y + body_h * (u ** 2))
+            occ_start = max(0, min(occ_start, h - 5))
+        else:
+            # Lower mode: only occlude below hip
+            hip_indices = [11, 12]
+            hip_valid = scores[hip_indices] > 0.3
+            if not hip_valid.any():
+                return img
+
+            hip_ys = kp[hip_indices][hip_valid][:, 1]
+            hip_y = int(hip_ys.mean())
+
+            if hip_y >= h - 10:
+                return img
+
+            base_ratio = self.lower_body_occ_ratio
+            occ_ratio = random.uniform(max(0.1, base_ratio - 0.2), min(1.0, base_ratio + 0.2))
+            occ_start = int(hip_y + (h - hip_y) * (1.0 - occ_ratio))
+            occ_start = max(0, min(occ_start, h - 1))
 
         occ_region_h = h - occ_start
         if occ_region_h < 10:

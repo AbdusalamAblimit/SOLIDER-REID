@@ -111,6 +111,7 @@ _C.MODEL.POSE_ROA_POSE_AWARE = False
 _C.MODEL.POSE_LOWER_BODY_OCC = False
 _C.MODEL.POSE_LOWER_BODY_OCC_PROB = 0.5     # probability of applying
 _C.MODEL.POSE_LOWER_BODY_OCC_RATIO = 0.5    # fraction of lower body to occlude (0.3-0.7)
+_C.MODEL.POSE_LOWER_BODY_OCC_MODE = 'lower'  # 'lower' = hip下, 'gradient' = 从下到上概率递减
 
 # PAA (Pose Additive Adapter)
 _C.MODEL.POSE_ADDITIVE_ADAPTER = False
