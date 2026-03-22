@@ -110,6 +110,7 @@ def make_dataloader(cfg):
             train_set.pcvt_active_thr = float(getattr(cfg.MODEL, 'POSE_PCVT_ACT_THR', 0.30))
             train_set.pcvt_min_parts = int(getattr(cfg.MODEL, 'POSE_PCVT_MIN_PARTS', 2))
             train_set.pcvt_fill_value = float(getattr(cfg.MODEL, 'POSE_PCVT_FILL', 0.0))
+            train_set.pcvt_random = bool(getattr(cfg.MODEL, 'POSE_PCVT_RANDOM', False))
         # Set parallel augmentation flag (3-view training)
         if getattr(cfg.MODEL, 'POSE_PARALLEL_AUG', False) or getattr(cfg.MODEL, 'POSE_PCVT', False):
             train_set.parallel_aug = True

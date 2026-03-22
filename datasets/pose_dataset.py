@@ -107,6 +107,7 @@ class PoseImageDataset(Dataset):
         self.pcvt_active_thr = 0.30
         self.pcvt_min_parts = 2
         self.pcvt_fill_value = 0.0
+        self.pcvt_random = False  # Random block masking control
 
         # Load index
         index_path = os.path.join(pose_dir, 'index.json')
@@ -484,6 +485,11 @@ class PoseImageDataset(Dataset):
             meta: dict of scalar tensors for logging
         """
         _, H, W = base_tensor.shape
+
+        # Random block masking control (exp150)
+        if self.pcvt_random:
+            return self._make_random_block_views(base_tensor, H, W)
+
         if not persons:
             view_a, _ = self._random_erase(base_tensor.clone())
             view_b, _ = self._random_erase(base_tensor.clone())
@@ -620,6 +626,56 @@ class PoseImageDataset(Dataset):
             'pcvt_gca': torch.tensor(float(len(bucket_a)), dtype=torch.float32),
             'pcvt_gcb': torch.tensor(float(len(bucket_b)), dtype=torch.float32),
             'pcvt_fb': torch.tensor(fallback, dtype=torch.float32),
+        }
+        return view_a, view_b, meta
+
+    def _make_random_block_views(self, base_tensor, H, W):
+        """Random block masking control for PCVT (exp150).
+
+        Divides image into 8x4 grid (32 blocks), randomly assigns half to A, half to B.
+        Guarantees ~50/50 coverage and perfect complementarity (A ∩ B = ∅).
+        """
+        block_h = H // 8  # 32 pixels per block vertically
+        block_w = W // 4  # 32 pixels per block horizontally
+        n_blocks = 8 * 4  # 32 blocks total
+
+        # Random permutation, first half → A, second half → B
+        perm = torch.randperm(n_blocks)
+        set_a = set(perm[:n_blocks // 2].tolist())
+
+        drop_a = torch.zeros(H, W, dtype=torch.bool)
+        drop_b = torch.zeros(H, W, dtype=torch.bool)
+
+        for idx in range(n_blocks):
+            row = idx // 4
+            col = idx % 4
+            y1 = row * block_h
+            y2 = min(y1 + block_h, H)
+            x1 = col * block_w
+            x2 = min(x1 + block_w, W)
+            if idx in set_a:
+                drop_a[y1:y2, x1:x2] = True
+            else:
+                drop_b[y1:y2, x1:x2] = True
+
+        view_a = base_tensor.clone()
+        view_b = base_tensor.clone()
+        view_a[:, drop_a] = self.pcvt_fill_value
+        view_b[:, drop_b] = self.pcvt_fill_value
+
+        mga = float(drop_a.float().mean().item())
+        mgb = float(drop_b.float().mean().item())
+
+        meta = {
+            'pcvt_cov_a': torch.tensor(0.5, dtype=torch.float32),
+            'pcvt_cov_b': torch.tensor(0.5, dtype=torch.float32),
+            'pcvt_cov_u': torch.tensor(1.0, dtype=torch.float32),
+            'pcvt_ovr': torch.tensor(0.0, dtype=torch.float32),
+            'pcvt_mga': torch.tensor(mga, dtype=torch.float32),
+            'pcvt_mgb': torch.tensor(mgb, dtype=torch.float32),
+            'pcvt_gca': torch.tensor(float(n_blocks // 2), dtype=torch.float32),
+            'pcvt_gcb': torch.tensor(float(n_blocks - n_blocks // 2), dtype=torch.float32),
+            'pcvt_fb': torch.tensor(0.0, dtype=torch.float32),
         }
         return view_a, view_b, meta
 

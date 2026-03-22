@@ -614,6 +614,16 @@ class PoseBackboneModel(build_transformer):
                   f'Conv2d(17→{embed_dim}, {patch_size}×{patch_size}), '
                   f'{pkp_params} params')
 
+        # PVAT: Pose-Visibility Adversarial Training
+        self.use_pvat = getattr(cfg.MODEL, 'POSE_PVAT', False)
+        if self.use_pvat:
+            from .modules.pvat import VisibilityPredictor
+            self.pvat_head = VisibilityPredictor(
+                feat_dim=self.in_planes, num_keypoints=17)
+            pvat_params = sum(p.numel() for p in self.pvat_head.parameters())
+            print(f'[PVAT] Pose-Visibility Adversarial Training enabled: '
+                  f'{pvat_params} params')
+
         # Store backbone's semantic weight for manual forward
         self._semantic_weight_val = semantic_weight
 
@@ -1050,7 +1060,7 @@ class PoseBackboneModel(build_transformer):
                     g_norm = F.normalize(test_feat, p=2, dim=1)
                     p_norm = [F.normalize(f, p=2, dim=1) for f in gcn_feats]
                     test_feat = torch.cat([g_norm] + p_norm, dim=1)
-                elif self.pose_test_feat in ('cvk_only', 'cvk_hybrid', 'cvk_adaptive', 'cvk_residual'):
+                elif self.pose_test_feat in ('cvk_only', 'cvk_hybrid', 'cvk_adaptive', 'cvk_residual', 'maxsim', 'maxsim_hybrid'):
                     test_feat = {
                         'mode': self.pose_test_feat,
                         'global_feat': test_feat,

@@ -95,6 +95,11 @@ def do_train(cfg,
     pamc_enabled = getattr(cfg.MODEL, 'POSE_PAMC', False)
     pamc_weight = getattr(cfg.MODEL, 'POSE_PAMC_WEIGHT', 0.5)
     pamc_warmup = getattr(cfg.MODEL, 'POSE_PAMC_WARMUP', 10)
+    pvat_enabled = getattr(cfg.MODEL, 'POSE_PVAT', False)
+    pvat_weight = float(getattr(cfg.MODEL, 'POSE_PVAT_WEIGHT', 0.1))
+    pvat_warmup = int(getattr(cfg.MODEL, 'POSE_PVAT_WARMUP', 20))
+    pvat_alpha_max = float(getattr(cfg.MODEL, 'POSE_PVAT_ALPHA_MAX', 1.0))
+    pvat_vis_thr = float(getattr(cfg.MODEL, 'POSE_PVAT_VIS_THR', 0.5))
 
     # LSRM: Learned Skeleton Recovery Module (lives inside model, proper optimizer/scheduler)
     lsrm_enabled = getattr(cfg.MODEL, 'POSE_LSRM', False)
@@ -295,6 +300,9 @@ def do_train(cfg,
                     f'resp_thr={getattr(cfg.MODEL, "POSE_PCVT_RESP_THR", 0.10)}, '
                     f'act_thr={getattr(cfg.MODEL, "POSE_PCVT_ACT_THR", 0.30)}, '
                     f'min_parts={getattr(cfg.MODEL, "POSE_PCVT_MIN_PARTS", 2)}')
+    if pvat_enabled:
+        logger.info(f'[PVAT] enabled: weight={pvat_weight}, warmup={pvat_warmup}, '
+                    f'alpha_max={pvat_alpha_max}, vis_thr={pvat_vis_thr}')
     if mm_enabled:
         logger.info(f'Momentum Memory enabled: weight={mm_weight}, temp={mm_temp}, mom={mm_mom}')
     if sckd_enabled:
@@ -1050,6 +1058,51 @@ def do_train(cfg,
                         details = getattr(loss, '_loss_details', {})
                         loss = loss + ptm_weight * ptm_loss
                         details['ptm'] = ptm_loss.item()
+                        loss._loss_details = details
+
+                # PVAT: Pose-Visibility Adversarial Training
+                if pvat_enabled and use_pose and pose_dict is not None:
+                    _m = model.module if hasattr(model, 'module') else model
+                    if hasattr(_m, 'pvat_head'):
+                        # Compute gradient reversal alpha with warmup
+                        if epoch <= pvat_warmup:
+                            pvat_alpha = 0.0
+                        else:
+                            progress = (epoch - pvat_warmup) / max(1, epochs - pvat_warmup)
+                            pvat_alpha = pvat_alpha_max * min(1.0, progress)
+
+                        # Get global feature (pre-BN, with gradients)
+                        if isinstance(feat, list):
+                            gfeat_pvat = feat[0]
+                        else:
+                            gfeat_pvat = feat
+
+                        # Predict visibility
+                        vis_logits = _m.pvat_head(gfeat_pvat, alpha=pvat_alpha)
+
+                        # Visibility ground truth from pose scores
+                        vis_scores = pose_dict['scores'][:, 0, :]  # (B, 17) person 0
+                        vis_gt = (vis_scores > pvat_vis_thr).float()
+
+                        # BCE loss
+                        # Note: during warmup (alpha=0), GradientReversal kills all
+                        # gradients to backbone (-0*grad=0), so only the predictor
+                        # learns. This is correct: predictor converges first.
+                        pvat_loss = F.binary_cross_entropy_with_logits(
+                            vis_logits, vis_gt.to(vis_logits.device))
+
+                        # Predictor accuracy
+                        with torch.no_grad():
+                            vis_pred = (vis_logits > 0).float()
+                            pvat_acc = (vis_pred == vis_gt.to(vis_pred.device)).float().mean().item()
+                            pvat_vis_ratio = vis_gt.mean().item()
+
+                        details = getattr(loss, '_loss_details', {})
+                        loss = loss + pvat_weight * pvat_loss
+                        details['pvat_loss'] = pvat_loss.item()
+                        details['pvat_acc'] = pvat_acc
+                        details['pvat_alpha'] = pvat_alpha
+                        details['pvat_vis_ratio'] = pvat_vis_ratio
                         loss._loss_details = details
 
                 # LSRM: Learned Skeleton Recovery Module loss

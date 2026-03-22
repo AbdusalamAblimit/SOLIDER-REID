@@ -243,6 +243,20 @@ class R1_mAP_eval():
 
         print('=> Computing DistMat with common-visible keypoint reasoning')
         global_dist = self._euclidean_distance_tensor(q_global, g_global)
+
+        # MaxSim modes: ColBERT-style late interaction
+        if mode in ('maxsim', 'maxsim_hybrid'):
+            print(f'=> MaxSim mode: {mode}')
+            maxsim_dist = self._maxsim_distance(q_kp, g_kp, q_w, g_w)
+            if mode == 'maxsim':
+                distmat = maxsim_dist.cpu().numpy()
+            else:  # maxsim_hybrid
+                gw = float(getattr(self.cfg.TEST, 'CVK_GLOBAL_WEIGHT', 1.0)) if self.cfg is not None else 1.0
+                kw = float(getattr(self.cfg.TEST, 'CVK_KP_WEIGHT', 1.0)) if self.cfg is not None else 1.0
+                distmat = ((gw * global_dist + kw * maxsim_dist) / max(gw + kw, 1e-12)).cpu().numpy()
+            cmc, mAP = eval_func(distmat, q_pids, g_pids, q_camids, g_camids)
+            return cmc, mAP, distmat, self.pids, self.camids, q_global, g_global
+
         kp_dist, support_ratio = self._common_visible_kp_distance(
             q_kp, g_kp, q_w, g_w, global_dist, mode, return_ratio=True)
 
@@ -341,6 +355,64 @@ class R1_mAP_eval():
     @staticmethod
     def _euclidean_distance_tensor(qf, gf):
         return euclidean_distance_tensor(qf, gf)
+
+    @staticmethod
+    def _maxsim_distance(q_kp, g_kp, q_w, g_w, vis_thr=0.3):
+        """ColBERT-style MaxSim distance for keypoint sets.
+
+        For each query keypoint, find the most similar gallery keypoint,
+        weighted by query keypoint confidence. Naturally handles occlusion:
+        low-quality keypoints produce low max-similarity and contribute less.
+
+        Args:
+            q_kp: (Q, 17, D) query keypoint features (already L2-normed)
+            g_kp: (G, 17, D) gallery keypoint features (already L2-normed)
+            q_w: (Q, 17) query keypoint weights
+            g_w: (G, 17) gallery keypoint weights
+            vis_thr: minimum weight to consider a keypoint "active"
+        Returns:
+            dist: (Q, G) distance matrix (lower = more similar)
+        """
+        Q, K, D = q_kp.shape
+        G = g_kp.shape[0]
+        device = q_kp.device
+
+        # Process in chunks to avoid OOM
+        chunk_size = 128
+        dist_chunks = []
+        for qi in range(0, Q, chunk_size):
+            qe = min(qi + chunk_size, Q)
+            q_batch = q_kp[qi:qe]  # (B, 17, D)
+            w_batch = q_w[qi:qe]   # (B, 17)
+
+            chunk_dists = []
+            for gi in range(0, G, chunk_size):
+                ge = min(gi + chunk_size, G)
+                g_batch = g_kp[gi:ge]  # (C, 17, D)
+
+                # Cosine similarity: (B, 17_q, C, 17_g)
+                # Efficient: (B, 17, D) @ (C, 17, D).T → (B, 17, C, 17)
+                sim = torch.einsum('bkd,cjd->bkcj', q_batch, g_batch)
+
+                # For each query keypoint, max over gallery keypoints
+                # (B, 17_q, C)
+                maxsim_per_qkp = sim.max(dim=3)[0]
+
+                # Weight by query keypoint confidence
+                # Mask out low-confidence query keypoints
+                w_mask = (w_batch > vis_thr).float()  # (B, 17)
+                w_eff = w_batch * w_mask  # (B, 17)
+                w_sum = w_eff.sum(dim=1, keepdim=True).clamp(min=1.0)  # (B, 1)
+
+                # Weighted average MaxSim: (B, C)
+                weighted_maxsim = (maxsim_per_qkp * w_eff.unsqueeze(2)).sum(dim=1) / w_sum
+
+                # Convert similarity to distance
+                chunk_dists.append(1.0 - weighted_maxsim)
+
+            dist_chunks.append(torch.cat(chunk_dists, dim=1))
+
+        return torch.cat(dist_chunks, dim=0)
 
     def _common_visible_kp_distance(self, q_kp, g_kp, q_w, g_w, global_dist, mode, return_ratio=False):
         if mode == 'cvk_only':

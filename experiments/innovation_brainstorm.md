@@ -261,6 +261,28 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
 
 ---
 
+## 2026-03-22: 关键数据约束发现 — 训练集 visibility 几乎无遮挡
+
+### 训练集 person-0 visibility 统计
+- 均值 visible ratio: **95.8% ± 9.3%**
+- 中位数: **100%**
+- 95.6% 的训练图 visibility > 80%
+- 仅 1.4% 的训练图 visibility < 60%
+- 每个关键点的可见率都在 88-99% 之间
+
+### 对已有实验的解释力
+1. **exp148 PCVT 早期加速但后期无效**: complementary masking 在前期提供多样性，但 backbone 最终收敛到的表示已经隐式假设"几乎全可见"
+2. **exp151 PVAT pvat_acc 不下降**: visibility GT 几乎全 1，predictor 只需猜 "全可见" 就有 83% accuracy
+3. **所有 visibility-based 训练方法失败**: 训练集缺乏 visibility 多样性，任何依赖训练时 visibility 变化的机制都没有足够信号
+
+### 对后续方向的约束
+1. **不要再在训练侧做 visibility-dependent 机制**: 训练数据几乎全可见，学不到有意义的 visibility-conditioned 行为
+2. **真正的 occlusion gap 在 test-time**: gallery/query 有严重遮挡，但训练集没有
+3. **数据增强（ROA 等）是缩小 train-test visibility gap 的唯一训练侧途径**
+4. **更有前途的方向**: 改善 test-time matching（SGCFR、CVK 等），或设计不依赖 visibility 的训练目标
+
+---
+
 ## 2026-03-20: `exp109` 主线的下一阶段机制收束
 
 ### 当前新的判断

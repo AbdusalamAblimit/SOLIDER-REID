@@ -1102,6 +1102,26 @@ B. 直接启动 exp025，exp024 可以后续补跑
 
 **关键教训（收紧版）**: 目前只能说 `score*visibility` 在当前 keypoint-level 加权池化中未带来正向证据。Visibility 是否能在其它位置（如 retrieval-time reasoning、pairwise masking、target-aware setting）发挥作用，仍需后续更精确的问题定义来判断。
 
+### [2026-03-23 02:30] 决策 #N: exp148/149/151 结论与训练集 visibility 关键发现
+
+**上下文**: exp148 PCVT、exp149 SCFA、exp151 PVAT 三条线同时或先后推进，试图从不同角度解决 "single-image support incomplete"。
+
+**关键数据发现**: Occluded-Duke 训练集 person-0 的可见关键点比例均值 **95.8%**，中位数 **100%**。95.6% 的训练图可见率 > 80%。训练数据几乎没有遮挡。
+
+**实验结论**:
+1. **exp148 PCVT**: 早期加速（ep30 +2.4 mAP），后期被基线追平并反超（ep100 -0.9 mAP）。3-view 训练的 1/3 主损失稀释 + 训练数据缺乏 visibility 多样性。
+2. **exp149 SCFA**: ep30 即止损（-1.5 mAP / -4.7 R1）。bilateral gap case 太少。
+3. **exp151 PVAT**: 中性。pvat_acc 从未下降（0.83 constant），gradient reversal 无法影响 backbone，因为训练数据几乎全可见。
+
+**选择**: 彻底放弃所有训练时 visibility-dependent 的创新方向。
+
+**理由**:
+1. 训练集 95.8% 可见 → 任何依赖训练时 visibility 变化的机制都缺乏信号
+2. 真正的 occlusion gap 在 test-time（gallery/query 有严重遮挡）
+3. 连续 3 条不同范式（data augmentation / structural / adversarial）全部失败，排除了实验噪声
+
+**后续约束**: 不再在训练侧做任何 visibility-conditioned 机制。如果要改善遮挡鲁棒性，只有两条路：(a) 数据增强缩小 train-test visibility gap (b) 改善 test-time matching。
+
 ### [2026-03-13 06:30] 决策 #41
 
 **上下文**: exp035 完成后，需要选择下一个实验方向。
