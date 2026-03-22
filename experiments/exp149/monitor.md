@@ -114,3 +114,24 @@
   1. 若到 `ep30` 还没有明显超出 `exp030a-eq` 历史最低单 seed 区间（`mAP 60.2`）的迹象，则立即止损
   2. 若 `scfa_an` 持续接近 `0`，说明 asymmetry token 基本无效，也应提前止损
   3. 若 `scfa_pg` 很低，说明 bilateral redundancy 前提在这个 benchmark 上不成立
+
+### [2026-03-22 06:58] 远程同步后正式启动
+- 远程机器:
+  - `root@i-2.gpushare.com:29162`
+- 启动说明:
+  1. 第一次远程启动早于代码同步，因缺少 `pose_psg_gcn_scfa.yml` 秒挂
+  2. 已用 `tar | ssh` 同步最新代码与文档
+  3. 第二次启动成功
+- 远程日志确认:
+  - `[SCFA] Symmetry-Conditioned Feature Aggregation enabled: low_thr=0.3, high_thr=0.5`
+  - `[PSG+GCN] Skeleton GCN head enabled`
+  - `start training`
+- 输出目录:
+  - `/root/work/SOLIDER-REID/log/occluded_duke/exp149_scfa`
+- 远程显存:
+  - 启动后约 `5988 MiB`
+- 当前判断:
+  - 继续
+  - 原因:
+    1. 这次已不是空设计，也不是未同步假启动
+    2. 下一关键点就是 `ep10`
