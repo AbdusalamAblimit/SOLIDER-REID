@@ -2893,3 +2893,41 @@ B. 直接启动 exp025，exp024 可以后续补跑
 5. 已实现、已审查通过，可立即启动
 
 **执行结果**: exp143 SASA 已在本地启动，训练正常进行。
+
+---
+
+### [2026-03-22 09:35] 决策：停止沿 `exp141-147` 的小修补漂移，重新回到 `exp109` 的大问题定义
+
+**上下文**: 夜间 `exp141-147` 收尾后，已经有足够证据说明：
+- `competition-context LPCS` 失败
+- `SKC` 再次确认 feature-level completion 失败
+- `SASA` 系列中性
+- `0.25x global loss / PAA recipe` 这类老路线不该继续占机器
+
+**核心发现**:
+1. `single-image support incomplete` 这个问题定义没有被推翻
+2. 被反复否掉的是：
+   - cross-image prototype completion 的兑现方式
+   - retrieval scorer 的局部修补
+   - attention bias 这类轻量归纳偏置
+3. 如果继续沿这些线扫点，得到的大概率只是 recipe，不是主创新
+
+**选项**:
+  A. 继续在已有 retrieval scorer / completion / bias 路线上小修小补  
+  B. 回到 `exp109` 的问题定义，重新设计两个真正不同的大方向  
+
+**选择**: B
+
+**理由**:
+1. 现阶段更缺的是新的训练对象 / 新的结构对象，而不是新的小模块
+2. 两个仍然开放、且足够大的 gap 是：
+   - 单图能否被改写成“伪多 support 学习”对象
+   - 单图内部的双侧同源冗余是否被浪费
+3. 这两条线都比继续改 scorer/gate 更有可能支撑 B 类论文主 story
+
+**执行结果**:
+- 新增方向复盘文档 `paper_21_20260322_direction_reset.md`
+- 新增两条新主线设计：
+  - `exp148 PCVT`
+  - `exp149 SCFA`
+- 当前进入“先设计、后实现、再广范围 Claude 审查”的新阶段

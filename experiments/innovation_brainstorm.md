@@ -2308,3 +2308,58 @@ SASA 使用骨架测地距离作为 Swin window attention 的固定偏置，零�
 8. Transformer decoder (PQTD)
 9. Attention supervision (PCQA)
 10. OT matching (exp099)
+
+## 2026-03-22 上午方向重置：从“小修 scorer / completion”转向两条更大的新机制
+
+昨晚的收口结果把几件事讲得更清楚了：
+
+1. retrieval-side pair correction 不是完全无效，但 `query_ctx / comp_ctx / confidence gate` 都还没有长成主方法
+2. feature-level completion 也不是“没接上”，而是反复接上后依然不成立
+3. skeleton attention bias 这类纯 inductive bias 在 Swin-Tiny 上基本中性
+
+因此接下来不能再继续：
+- scorer 小修补
+- gate 小调参
+- attention bias 小改造
+
+而应转向两条更大的候选：
+
+### 候选 A: PCVT（Pose-Complementary View Training）
+
+核心问题：
+- 单图 support incomplete 能否通过 **pose-defined complementary pseudo-views** 改写成“伪多 support 学习”？
+
+核心机制：
+- 不是随机遮挡
+- 而是基于姿态热图，把可见 body groups 分成互补两组
+- 构造 `full / view_a / view_b`
+- 让 `view_a` 与 `view_b` 的联合表示逼近 `full`
+
+为什么比 PAMC/ROA/PADE 更大：
+- PAMC 只是 body-aware masking consistency
+- ROA/PADE 只是增强 recipe
+- PCVT 直接改写训练对象，把单图变成“互补 support 组合体”
+
+### 候选 B: SCFA（Symmetry-Conditioned Feature Aggregation）
+
+核心问题：
+- 当前 keypoint branch 是否浪费了 **单图内部的双侧同源冗余**？
+
+核心机制：
+- 左右同源关节不再完全独立
+- 用同源聚合 token 表示“体部证据”
+- 用非对称残差 token 保留左右差异
+
+为什么比 direct completion 更合理：
+- 不依赖 same-ID teacher
+- 不依赖 memory bank
+- 只利用单图内部更稳定的结构先验
+
+### 当前判断
+
+这两条线都比继续做：
+- retrieval scorer 小修补
+- feature completion 小变体
+- attention bias 小变体
+
+更像真正有机会支撑主故事的新机制。
