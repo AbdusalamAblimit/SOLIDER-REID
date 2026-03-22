@@ -323,6 +323,92 @@ def _compute_csrd_loss(global_feat, kp_feats, kp_weights, labels, tau=0.10,
     return loss, stats
 
 
+def _compute_maxsim_triplet(kp_feats, kp_weights, labels, margin=0.3, tau=0.05):
+    """Set-to-Set Metric Learning via Soft-MaxSim Triplet.
+
+    Replaces pooled-vector triplet with ColBERT-style late interaction triplet.
+    Each query keypoint soft-aligns to the best gallery keypoint via temperature softmax.
+
+    Args:
+        kp_feats: (B, K, D) keypoint features from GCN branch
+        kp_weights: (B, K) keypoint confidence scores
+        labels: (B,) identity labels
+        margin: triplet margin
+        tau: softmax temperature (lower = sharper, closer to hard max)
+    Returns:
+        loss: scalar triplet loss
+        stats: dict with diagnostic metrics
+    """
+    B, K, D = kp_feats.shape
+
+    # L2 normalize each keypoint feature
+    kp_norm = F.normalize(kp_feats, p=2, dim=2)  # (B, K, D)
+
+    # Pairwise cosine similarity: (B, B, K, K)
+    # cos_all[i, j, k, l] = cos(sample_i_kp_k, sample_j_kp_l)
+    cos_all = torch.einsum('ikh,jlh->ijkl', kp_norm, kp_norm)
+
+    # Soft attention: for each (i,j) pair, each query kp k attends over gallery kps l
+    attn = F.softmax(cos_all / tau, dim=3)  # (B, B, K, K)
+
+    # Attention-weighted similarity per query keypoint: (B, B, K)
+    per_kp_sim = (attn * cos_all).sum(dim=3)
+
+    # Confidence-weighted aggregation: (B, B)
+    w = kp_weights.clamp(min=0.0)  # (B, K)
+    w_sum = w.sum(dim=1, keepdim=True).clamp(min=1e-8)  # (B, 1)
+    sim_matrix = torch.einsum('ijk,ik->ij', per_kp_sim, w) / w_sum  # (B, B)
+
+    # Distance = 1 - similarity: (B, B)
+    dist_matrix = 1.0 - sim_matrix
+
+    # Hard mining: batch hard
+    label_eq = labels.unsqueeze(0) == labels.unsqueeze(1)  # (B, B)
+
+    # Hardest positive: max distance among same-ID (exclude self)
+    pos_mask = label_eq.clone()
+    pos_mask.fill_diagonal_(False)
+    dist_ap = dist_matrix.clone()
+    dist_ap[~pos_mask] = -1e9
+    hardest_pos_dist, _ = dist_ap.max(dim=1)  # (B,)
+
+    # Hardest negative: min distance among different-ID
+    neg_mask = ~label_eq
+    dist_an = dist_matrix.clone()
+    dist_an[~neg_mask] = 1e9
+    hardest_neg_dist, _ = dist_an.min(dim=1)  # (B,)
+
+    # Triplet loss (handle soft margin when margin=None)
+    if margin is not None:
+        trip_loss = F.relu(hardest_pos_dist - hardest_neg_dist + margin)
+    else:
+        trip_loss = F.softplus(hardest_pos_dist - hardest_neg_dist)
+
+    # Only count anchors with at least one positive
+    valid = pos_mask.any(dim=1)
+    if valid.sum() == 0:
+        loss = (kp_feats * 0.0).sum()  # connected zero loss (H1 fix)
+        stats = {'d_ap': 0, 'd_an': 0, 'margin_gap': 0}
+        return loss, stats
+
+    loss = trip_loss[valid].mean()
+
+    with torch.no_grad():
+        d_ap_mean = hardest_pos_dist[valid].mean().item()
+        d_an_mean = hardest_neg_dist[valid].mean().item()
+        # Attention entropy: how peaked is the soft alignment?
+        # Low entropy = hard max behavior, High entropy = uniform averaging
+        attn_entropy = -(attn * (attn + 1e-8).log()).sum(dim=3).mean().item()
+
+    stats = {
+        'd_ap': d_ap_mean,
+        'd_an': d_an_mean,
+        'margin_gap': d_an_mean - d_ap_mean,
+        'attn_ent': attn_entropy,
+    }
+    return loss, stats
+
+
 def make_loss(cfg, num_classes):    # modified by gu
     sampler = cfg.DATALOADER.SAMPLER
     feat_dim = 2048
@@ -526,9 +612,21 @@ def make_loss(cfg, num_classes):    # modified by gu
                             if csrd_stats['queue_size'] > 0:
                                 loss_details['csrd_qn'] = csrd_stats['queue_size']
                                 loss_details['csrd_qr'] = csrd_stats['queue_ratio']
+                    # MaxSim triplet: set-to-set metric learning (replaces pooled part triplet)
+                    maxsim_tri_enabled = getattr(cfg.MODEL, 'POSE_MAXSIM_TRIPLET', False)
+                    maxsim_tri_tau = float(getattr(cfg.MODEL, 'POSE_MAXSIM_TRIPLET_TEMP', 0.05))
                     # PAML: use per-keypoint pairwise distance for part triplet
                     paml_enabled = getattr(cfg.MODEL, 'POSE_PAML', False)
-                    if paml_enabled and kp_data is not None:
+                    if maxsim_tri_enabled and kp_data is not None:
+                        part_tri_avg, maxsim_stats = _compute_maxsim_triplet(
+                            kp_data['kp_feats'], kp_data['kp_weights'],
+                            target, margin=triplet.margin, tau=maxsim_tri_tau)
+                        loss_details['tri_maxsim'] = part_tri_avg.item()
+                        loss_details['maxsim_d_ap'] = maxsim_stats['d_ap']
+                        loss_details['maxsim_d_an'] = maxsim_stats['d_an']
+                        loss_details['maxsim_margin'] = maxsim_stats['margin_gap']
+                        loss_details['maxsim_ent'] = maxsim_stats['attn_ent']
+                    elif paml_enabled and kp_data is not None:
                         part_tri_avg = _compute_paml_triplet(
                             kp_data['kp_feats'], kp_data['kp_weights'],
                             target, triplet.ranking_loss,
