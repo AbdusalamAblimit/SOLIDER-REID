@@ -104,6 +104,10 @@ def make_dataloader(cfg):
         # Set pose-aware ROA flag
         if getattr(cfg.MODEL, 'POSE_ROA_POSE_AWARE', False):
             train_set.pose_aware_roa = True
+        if getattr(cfg.MODEL, 'POSE_LOWER_BODY_OCC', False):
+            train_set.lower_body_occ = True
+            train_set.lower_body_occ_prob = float(getattr(cfg.MODEL, 'POSE_LOWER_BODY_OCC_PROB', 0.5))
+            train_set.lower_body_occ_ratio = float(getattr(cfg.MODEL, 'POSE_LOWER_BODY_OCC_RATIO', 0.5))
         if getattr(cfg.MODEL, 'POSE_PCVT', False):
             train_set.pcvt = True
             train_set.pcvt_resp_thr = float(getattr(cfg.MODEL, 'POSE_PCVT_RESP_THR', 0.10))

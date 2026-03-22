@@ -107,6 +107,10 @@ _C.MODEL.POSE_ROA = False                   # paste VOC objects
 _C.MODEL.POSE_ROA_PATH = 'data/VOCdevkit/VOC2012'
 _C.MODEL.POSE_ROA_PROB = 0.5
 _C.MODEL.POSE_ROA_POSE_AWARE = False
+# PLBOA: Pose-guided Lower-Body Occlusion Augmentation
+_C.MODEL.POSE_LOWER_BODY_OCC = False
+_C.MODEL.POSE_LOWER_BODY_OCC_PROB = 0.5     # probability of applying
+_C.MODEL.POSE_LOWER_BODY_OCC_RATIO = 0.5    # fraction of lower body to occlude (0.3-0.7)
 
 # PAA (Pose Additive Adapter)
 _C.MODEL.POSE_ADDITIVE_ADAPTER = False
