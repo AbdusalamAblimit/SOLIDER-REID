@@ -23,6 +23,8 @@ MODEL:
   POSE_TEST_FEAT: 'equal_concat'
   # Pose Additive Adapter (exp066)
   POSE_ADDITIVE_ADAPTER: True
+  POSE_SASA: True
+  POSE_SASA_ALPHA: 0.1
 
 INPUT:
   SIZE_TRAIN: [384, 128]
@@ -65,6 +67,4 @@ TEST:
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: ./log/occluded_duke/exp145_paa_sasa
-  POSE_SASA: True
-  POSE_SASA_ALPHA: 0.1
+OUTPUT_DIR: './log/occluded_duke/exp145_paa_sasa'
