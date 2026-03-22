@@ -568,13 +568,17 @@ def do_train(cfg,
                     loss = loss / len(all_scores)
                     loss._loss_details = saved_details
 
-                # SPLADE: sparsity regularization
+                # SPLADE: auxiliary sparse CE + sparsity regularization
                 splade_enabled = getattr(cfg.MODEL, 'POSE_SPLADE', False)
-                if splade_enabled and kp_data is not None and 'splade_reg' in kp_data:
+                if splade_enabled and kp_data is not None and 'splade_cls' in kp_data:
                     splade_reg_w = float(getattr(cfg.MODEL, 'POSE_SPLADE_REG', 0.01))
+                    # Sparse CE loss (0.5 weight, same as part branch)
+                    splade_ce = F.cross_entropy(kp_data['splade_cls'], target)
+                    # Sparsity regularization (FLOPS-style: penalize total activation)
                     splade_reg_loss = kp_data['splade_reg']
                     details = getattr(loss, '_loss_details', {})
-                    loss = loss + splade_reg_w * splade_reg_loss
+                    loss = loss + 0.5 * splade_ce + splade_reg_w * splade_reg_loss
+                    details['splade_ce'] = splade_ce.item()
                     details['splade_reg'] = splade_reg_loss.item()
                     details['splade_sp'] = kp_data.get('splade_sparsity', 0)
                     loss._loss_details = details

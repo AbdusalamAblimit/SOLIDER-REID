@@ -293,16 +293,15 @@ class PoseBackboneModel(build_transformer):
                 gcn_cls_scores, gcn_feats, kp_data = self.skeleton_head(
                     feat_map_detached, pose_dict, return_cls=True, label=label)
 
-                # SPLADE: sparse projection on GCN pooled feature
+                # SPLADE: auxiliary sparse classification (does NOT modify gcn lists)
                 if getattr(self, 'use_splade', False) and len(gcn_feats) > 0:
                     sparse_feat, sparsity = self.sparse_head(gcn_feats[0])
                     sparse_cls = self.sparse_classifier(sparse_feat)
-                    gcn_cls_scores.append(sparse_cls)
-                    gcn_feats.append(sparse_feat)
                     if kp_data is None:
                         kp_data = {}
+                    kp_data['splade_cls'] = sparse_cls      # separate CE loss in processor
                     kp_data['splade_sparsity'] = sparsity
-                    kp_data['splade_reg'] = sparse_feat.mean()  # for regularization
+                    kp_data['splade_reg'] = sparse_feat.mean()  # sparsity regularization
 
                 # Return lists -> triggers list-loss path (implicit 0.5x global)
                 return [cls_score] + gcn_cls_scores, [global_feat] + gcn_feats, featmaps, None, kp_data
@@ -321,10 +320,7 @@ class PoseBackboneModel(build_transformer):
                     getattr(self, 'pose_test_feat', 'global') != 'global':
                 _, gcn_feats, aux_data = self.skeleton_head(
                     featmaps[-1], pose_dict, return_cls=False)
-                # SPLADE: add sparse feature to gcn_feats for test-time
-                if getattr(self, 'use_splade', False) and gcn_feats is not None and len(gcn_feats) > 0:
-                    sparse_feat, _ = self.sparse_head(gcn_feats[0])
-                    gcn_feats.append(sparse_feat)
+                # SPLADE: training-only auxiliary, no test-time feature change
 
             # Assemble test features from global + part branch
             if gcn_feats is not None:
