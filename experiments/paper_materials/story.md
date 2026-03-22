@@ -1144,3 +1144,38 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
 
 - `exp109` 的 headroom 不是简单 feature completion 就能兑现
 - 那么 retrieval-time structured reasoning 才更像最终主线
+
+## 2026-03-22 下午：story 再次收缩，`PCVT` 成为新的主要观察对象
+
+今天这轮两条大改动方向已经开始分化：
+
+1. `exp148 PCVT`
+   - 不是 retrieval scorer
+   - 不是 feature completion 小残差
+   - 而是直接把单图改写成：
+     - `full`
+     - `complementary view a`
+     - `complementary view b`
+   - 去学习“互补 support 的联合表示如何逼近完整表示”
+
+2. `exp149 SCFA`
+   - 尝试利用单图内部双侧冗余
+   - 但当前 benchmark 上真正有用的 bilateral gap case 太少
+   - 已在快速止损窗口内判负
+
+这带来的 story 收缩是：
+
+- 我们不再把“单图内部左右对称冗余”视为主要缺口
+- 而开始更认真地看待另一种解释：
+  - **单图的问题不是局部 token 之间还不够会交互**
+  - **而是训练对象本身没有把“互补可见证据”显式组织起来**
+
+如果 `PCVT` 后续继续成立，story 会从：
+- support incomplete
+- support completion / pair correction
+
+进一步推进成：
+- **pose-defined complementary pseudo-view learning**
+- **把单图改写成伪多 support 训练对象**
+
+这条叙事比继续做 scorer 小修补更大，也更有可能回应“为什么 `exp109` 的 oracle headroom 到现在一直兑现不出来”。
