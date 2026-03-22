@@ -104,8 +104,14 @@ def make_dataloader(cfg):
         # Set pose-aware ROA flag
         if getattr(cfg.MODEL, 'POSE_ROA_POSE_AWARE', False):
             train_set.pose_aware_roa = True
+        if getattr(cfg.MODEL, 'POSE_PCVT', False):
+            train_set.pcvt = True
+            train_set.pcvt_resp_thr = float(getattr(cfg.MODEL, 'POSE_PCVT_RESP_THR', 0.10))
+            train_set.pcvt_active_thr = float(getattr(cfg.MODEL, 'POSE_PCVT_ACT_THR', 0.30))
+            train_set.pcvt_min_parts = int(getattr(cfg.MODEL, 'POSE_PCVT_MIN_PARTS', 2))
+            train_set.pcvt_fill_value = float(getattr(cfg.MODEL, 'POSE_PCVT_FILL', 0.0))
         # Set parallel augmentation flag (3-view training)
-        if getattr(cfg.MODEL, 'POSE_PARALLEL_AUG', False):
+        if getattr(cfg.MODEL, 'POSE_PARALLEL_AUG', False) or getattr(cfg.MODEL, 'POSE_PCVT', False):
             train_set.parallel_aug = True
 
         train_set_normal = PoseImageDataset(

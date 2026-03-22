@@ -1,0 +1,89 @@
+请对 `/root/work/SOLIDER-REID` 中的 `exp148 PCVT` 做一次**广范围、严格、偏保守**的审查。
+
+你不是只审代码 diff，而是要一起审：
+
+1. 想法本身是否真的算“新方向”
+2. 它是否只是 PAMC / ROA / PADE / FCFormer / SSSC 的旧思路换名
+3. 代码实现是否与设计一致
+4. train/test 是否对称
+5. 默认行为是否被破坏
+6. 行为日志是否足够支撑及时止损
+7. 是否存在 AMP / shape / collate / parallel-view 路径 bug
+8. 是否存在“实验看起来大，其实只是旧 recipe”的风险
+
+请你阅读并审查以下材料：
+
+## 设计与上下文
+- `/root/work/SOLIDER-REID/experiments/exp148/design.md`
+- `/root/work/SOLIDER-REID/experiments/exp148/monitor.md`
+- `/root/work/SOLIDER-REID/experiments/paper_notes/paper_21_20260322_direction_reset.md`
+- `/root/work/SOLIDER-REID/experiments/decisions.md`
+- `/root/work/SOLIDER-REID/experiments/innovation_brainstorm.md`
+
+## 关键代码
+- `/root/work/SOLIDER-REID/config/defaults.py`
+- `/root/work/SOLIDER-REID/datasets/make_dataloader.py`
+- `/root/work/SOLIDER-REID/datasets/pose_dataset.py`
+- `/root/work/SOLIDER-REID/processor/processor.py`
+- `/root/work/SOLIDER-REID/configs/occluded_duke/pose_psg_gcn_pcvt.yml`
+
+## 直接对照基线
+- `/root/work/SOLIDER-REID/configs/occluded_duke/pose_psg_gcn.yml`
+- `/root/work/SOLIDER-REID/experiments/exp109/design.md`
+- `/root/work/SOLIDER-REID/experiments/exp109/monitor.md`
+
+## 你必须重点检查的点
+
+### A. 想法合理性
+- `PCVT` 是否真的在回答 `single-image support incomplete`
+- 它和 `PAMC` 的根本区别是否足够大
+- 它和 PADE / FCFormer / SSSC 里的增强或 consistency 是否实质不同
+- 如果论文要写主贡献，这条线有没有成为主贡献的潜力
+
+### B. 单变量与对称性
+- 相对 `exp030a`，这次是否只新增了一个核心变量
+- 是否无意中同时改了别的训练 recipe
+- test-time 路径是否仍然和 baseline 对称，不引入额外测试分支
+
+### C. 代码正确性
+- `PCVT` 三视图是否真的构造出来了
+- `view_a/view_b` 是否真是互补，而不是表面上三视图、实际上随机遮挡
+- `pcvt_cov_u / pcvt_ovr` 的定义是否合理
+- `processor` 里 `pcvt_lc` 是否真的接入总 loss
+- `parallel_aug` 与现有路径是否冲突
+- 是否有 shape / dtype / detach / list-feature 展平错误
+
+### D. 行为日志
+- 现在的 `pcvt_*` 日志是否足够判断：
+  - view 是否互补
+  - union 表示是否真的优于单视图
+  - fallback 是否过高
+- 如果不够，请明确指出还缺什么
+
+## 当前已知自检结果（供你交叉验证）
+- 数据级 probe 修正后：
+  - `pcvt_cov_a ≈ 0.499`
+  - `pcvt_cov_b ≈ 0.501`
+  - `pcvt_cov_u = 1.000`
+  - `pcvt_ovr = 0.000`
+  - `pcvt_fb = 0.000`
+- 模型级 probe：
+  - `main_loss = 12.296`
+  - `pcvt_lc = 0.317`
+  - `pcvt_gap = 0.047`
+
+## 输出要求
+
+请把审查结果写成：
+- `阻塞问题`
+- `高风险问题`
+- `中低风险问题`
+- `总体结论`
+
+如果你认为：
+- 不能启动训练，就明确写“不得启动”
+- 可以启动但有风险，就明确写“可启动，但需在 monitor.md 记录哪些风险”
+- 可以启动，就明确写“可启动”
+
+审查输出请直接写入：
+`/root/work/SOLIDER-REID/experiments/exp148/claude_review.md`

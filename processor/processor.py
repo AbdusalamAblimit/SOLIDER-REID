@@ -28,6 +28,46 @@ def _pose_to_device(pose_dict, device):
             for k, v in pose_dict.items()}
 
 
+def _flatten_eval_like_feat(feat):
+    """Build a test-like feature for auxiliary losses/logging.
+
+    For list features, mimic equal-concat using normalized branch features.
+    """
+    if isinstance(feat, (list, tuple)):
+        parts = [F.normalize(f, dim=1) for f in feat]
+        return torch.cat(parts, dim=1)
+    return F.normalize(feat, dim=1)
+
+
+def _compute_pcvt_loss(full_feat, view_a_feat, view_b_feat, pose_dict):
+    full = _flatten_eval_like_feat(full_feat)
+    feat_a = _flatten_eval_like_feat(view_a_feat)
+    feat_b = _flatten_eval_like_feat(view_b_feat)
+    union = F.normalize(0.5 * (feat_a + feat_b), dim=1)
+
+    cos_fa = F.cosine_similarity(full, feat_a, dim=1)
+    cos_fb = F.cosine_similarity(full, feat_b, dim=1)
+    cos_fu = F.cosine_similarity(full.detach(), union, dim=1)
+    loss = 1.0 - cos_fu.mean()
+
+    stats = {
+        'cov_a': float(pose_dict['pcvt_cov_a'].float().mean().item()),
+        'cov_b': float(pose_dict['pcvt_cov_b'].float().mean().item()),
+        'cov_u': float(pose_dict['pcvt_cov_u'].float().mean().item()),
+        'ovr': float(pose_dict['pcvt_ovr'].float().mean().item()),
+        'mga': float(pose_dict['pcvt_mga'].float().mean().item()),
+        'mgb': float(pose_dict['pcvt_mgb'].float().mean().item()),
+        'gca': float(pose_dict['pcvt_gca'].float().mean().item()),
+        'gcb': float(pose_dict['pcvt_gcb'].float().mean().item()),
+        'fb': float(pose_dict['pcvt_fb'].float().mean().item()),
+        'cos_fa': float(cos_fa.mean().item()),
+        'cos_fb': float(cos_fb.mean().item()),
+        'cos_fu': float(cos_fu.mean().item()),
+        'gap': float((cos_fu - 0.5 * (cos_fa + cos_fb)).mean().item()),
+    }
+    return loss, stats
+
+
 def do_train(cfg,
              model,
              center_criterion,
@@ -46,6 +86,8 @@ def do_train(cfg,
     epochs = cfg.SOLVER.MAX_EPOCHS
     use_pose = cfg.MODEL.POSE_ENABLED
     pcra_alpha = getattr(cfg.MODEL, 'POSE_PCRA_ALPHA', 0.0)
+    pcvt_enabled = getattr(cfg.MODEL, 'POSE_PCVT', False)
+    pcvt_weight = float(getattr(cfg.MODEL, 'POSE_PCVT_WEIGHT', 0.25))
     kp_triplet_enabled = getattr(cfg.MODEL, 'POSE_KP_TRIPLET', False)
     kp_triplet_weight = getattr(cfg.MODEL, 'POSE_KP_TRIPLET_WEIGHT', 1.0)
     csgt_enabled = getattr(cfg.MODEL, 'POSE_CSGT', False)
@@ -248,6 +290,11 @@ def do_train(cfg,
     logger.info('start training')
     if use_pose:
         logger.info('Pose-guided training ENABLED')
+    if pcvt_enabled:
+        logger.info(f'[PCVT] enabled: weight={pcvt_weight}, '
+                    f'resp_thr={getattr(cfg.MODEL, "POSE_PCVT_RESP_THR", 0.10)}, '
+                    f'act_thr={getattr(cfg.MODEL, "POSE_PCVT_ACT_THR", 0.30)}, '
+                    f'min_parts={getattr(cfg.MODEL, "POSE_PCVT_MIN_PARTS", 2)}')
     if mm_enabled:
         logger.info(f'Momentum Memory enabled: weight={mm_weight}, temp={mm_temp}, mom={mm_mom}')
     if sckd_enabled:
@@ -878,6 +925,26 @@ def do_train(cfg,
                             v_loss = v_loss + all_recon[vi]
                         loss = loss + v_loss
                     loss = loss / len(all_scores)  # average over views
+                    if pcvt_enabled and len(all_feats) >= 3 and all(
+                        k in pose_dict for k in ('pcvt_cov_a', 'pcvt_cov_b', 'pcvt_cov_u')
+                    ):
+                        pcvt_loss, pcvt_stats = _compute_pcvt_loss(
+                            all_feats[0], all_feats[1], all_feats[2], pose_dict)
+                        loss = loss + pcvt_weight * pcvt_loss
+                        saved_details['pcvt_lc'] = pcvt_loss.item()
+                        saved_details['pcvt_cov_a'] = pcvt_stats['cov_a']
+                        saved_details['pcvt_cov_b'] = pcvt_stats['cov_b']
+                        saved_details['pcvt_cov_u'] = pcvt_stats['cov_u']
+                        saved_details['pcvt_ovr'] = pcvt_stats['ovr']
+                        saved_details['pcvt_mga'] = pcvt_stats['mga']
+                        saved_details['pcvt_mgb'] = pcvt_stats['mgb']
+                        saved_details['pcvt_gca'] = pcvt_stats['gca']
+                        saved_details['pcvt_gcb'] = pcvt_stats['gcb']
+                        saved_details['pcvt_fb'] = pcvt_stats['fb']
+                        saved_details['pcvt_cos_fa'] = pcvt_stats['cos_fa']
+                        saved_details['pcvt_cos_fb'] = pcvt_stats['cos_fb']
+                        saved_details['pcvt_cos_fu'] = pcvt_stats['cos_fu']
+                        saved_details['pcvt_gap'] = pcvt_stats['gap']
                     loss._loss_details = saved_details  # re-attach logging
 
                 # SGMKC: reconstruction loss for masked keypoint completion

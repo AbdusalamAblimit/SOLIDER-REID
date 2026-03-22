@@ -38,6 +38,15 @@ PGE_BODY_PARTS = [
     [13, 14, 15, 16],       # legs (knees, ankles)
 ]
 
+PCVT_BODY_PARTS = {
+    'head': [0, 1, 2, 3, 4],
+    'left_arm': [5, 7, 9],
+    'right_arm': [6, 8, 10],
+    'torso': [5, 6, 11, 12],
+    'left_leg': [11, 13, 15],
+    'right_leg': [12, 14, 16],
+}
+
 MAX_PERSONS = 6
 
 
@@ -93,6 +102,11 @@ class PoseImageDataset(Dataset):
         self.roa_prob = roa_prob if is_train else 0.0
         self.pose_aware_roa = False  # set by make_dataloader if configured
         self.parallel_aug = False   # set by make_dataloader if PARALLEL_AUG enabled
+        self.pcvt = False
+        self.pcvt_resp_thr = 0.10
+        self.pcvt_active_thr = 0.30
+        self.pcvt_min_parts = 2
+        self.pcvt_fill_value = 0.0
 
         # Load index
         index_path = os.path.join(pose_dir, 'index.json')
@@ -142,8 +156,22 @@ class PoseImageDataset(Dataset):
             img, persons, crop_x, crop_y = self._joint_pad_crop(
                 img, persons, target_h, target_w, self.pad)
 
+        pcvt_meta = None
+
         # ---- Parallel Augmentation (3 views) or Standard (1 view) ----
-        if self.parallel_aug and self.is_train:
+        if self.pcvt and self.is_train:
+            base_tensor = self._image_to_tensor(img)
+
+            # Keep the baseline full-view regularization on the anchor branch.
+            img_full_tensor = base_tensor.clone()
+            if random.random() < self.re_prob:
+                img_full_tensor, _ = self._random_erase(img_full_tensor)
+
+            img_a_tensor, img_b_tensor, pcvt_meta = self._make_pcvt_views(
+                base_tensor, persons)
+            img_tensor = (img_full_tensor, img_a_tensor, img_b_tensor)
+
+        elif self.parallel_aug and self.is_train:
             # Parallel mode: create 3 image variants from shared base
             # view_full: standard RE
             # view_roa: ROA occlusion
@@ -240,6 +268,8 @@ class PoseImageDataset(Dataset):
             'person_mask': out_mask,
             'num_persons': min(n_persons, self.max_persons),
         }
+        if pcvt_meta is not None:
+            pose_dict.update(pcvt_meta)
 
         return img_tensor, pid, camid, trackid, img_path, pose_dict
 
@@ -445,6 +475,153 @@ class PoseImageDataset(Dataset):
         arr = np.array(img, dtype=np.float32) / 255.0   # (H, W, 3)
         tensor = torch.from_numpy(arr.transpose(2, 0, 1))  # (3, H, W)
         return (tensor - self.pixel_mean) / self.pixel_std
+
+    def _make_pcvt_views(self, base_tensor, persons):
+        """Create two pose-defined complementary masked views.
+
+        Returns:
+            view_a, view_b: (3, H, W) normalized tensors
+            meta: dict of scalar tensors for logging
+        """
+        _, H, W = base_tensor.shape
+        if not persons:
+            view_a, _ = self._random_erase(base_tensor.clone())
+            view_b, _ = self._random_erase(base_tensor.clone())
+            meta = {
+                'pcvt_cov_a': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_cov_b': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_cov_u': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_ovr': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_mga': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_mgb': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_gca': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_gcb': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_fb': torch.tensor(1.0, dtype=torch.float32),
+            }
+            return view_a, view_b, meta
+
+        hm = persons[0]['heatmap']  # (17, H, W)
+        visible_parts = []
+        for part_name, kp_indices in PCVT_BODY_PARTS.items():
+            part_hm = hm[kp_indices]
+            response = part_hm.max(dim=0)[0]
+            peak = float(response.max().item())
+            if peak < self.pcvt_resp_thr:
+                continue
+            active = response > (peak * self.pcvt_active_thr)
+            if not active.any():
+                continue
+            masked_response = torch.where(active, response, torch.zeros_like(response))
+            visible_parts.append((part_name, masked_response))
+
+        fallback = 0.0
+        if len(visible_parts) < self.pcvt_min_parts:
+            fallback = 1.0
+            view_a, box_a = self._random_erase(base_tensor.clone())
+            view_b, box_b = self._random_erase(base_tensor.clone())
+            area_a = 0.0
+            area_b = 0.0
+            if box_a is not None:
+                x1, y1, x2, y2 = box_a
+                area_a = max(0, x2 - x1) * max(0, y2 - y1) / float(H * W)
+            if box_b is not None:
+                x1, y1, x2, y2 = box_b
+                area_b = max(0, x2 - x1) * max(0, y2 - y1) / float(H * W)
+            meta = {
+                'pcvt_cov_a': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_cov_b': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_cov_u': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_ovr': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_mga': torch.tensor(area_a, dtype=torch.float32),
+                'pcvt_mgb': torch.tensor(area_b, dtype=torch.float32),
+                'pcvt_gca': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_gcb': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_fb': torch.tensor(fallback, dtype=torch.float32),
+            }
+            return view_a, view_b, meta
+
+        # Greedy balance by visible support area.
+        part_stack = torch.stack([resp for _, resp in visible_parts], dim=0)
+        visible_union = part_stack.max(dim=0)[0] > 0
+        owner = part_stack.argmax(dim=0)
+
+        part_areas = []
+        for idx, (name, _) in enumerate(visible_parts):
+            owned_mask = visible_union & (owner == idx)
+            area = float(owned_mask.float().sum().item())
+            if area <= 0:
+                continue
+            part_areas.append((name, owned_mask, area))
+        if len(part_areas) < self.pcvt_min_parts:
+            fallback = 1.0
+            view_a, box_a = self._random_erase(base_tensor.clone())
+            view_b, box_b = self._random_erase(base_tensor.clone())
+            area_a = 0.0
+            area_b = 0.0
+            if box_a is not None:
+                x1, y1, x2, y2 = box_a
+                area_a = max(0, x2 - x1) * max(0, y2 - y1) / float(H * W)
+            if box_b is not None:
+                x1, y1, x2, y2 = box_b
+                area_b = max(0, x2 - x1) * max(0, y2 - y1) / float(H * W)
+            meta = {
+                'pcvt_cov_a': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_cov_b': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_cov_u': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_ovr': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_mga': torch.tensor(area_a, dtype=torch.float32),
+                'pcvt_mgb': torch.tensor(area_b, dtype=torch.float32),
+                'pcvt_gca': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_gcb': torch.tensor(0.0, dtype=torch.float32),
+                'pcvt_fb': torch.tensor(fallback, dtype=torch.float32),
+            }
+            return view_a, view_b, meta
+        part_areas.sort(key=lambda x: x[2], reverse=True)
+        bucket_a, bucket_b = [], []
+        area_a = 0.0
+        area_b = 0.0
+        for name, mask, area in part_areas:
+            if area_a <= area_b:
+                bucket_a.append(mask)
+                area_a += area
+            else:
+                bucket_b.append(mask)
+                area_b += area
+
+        drop_a = torch.zeros(H, W, dtype=torch.bool)
+        drop_b = torch.zeros(H, W, dtype=torch.bool)
+        for mask in bucket_a:
+            drop_a |= mask
+        for mask in bucket_b:
+            drop_b |= mask
+
+        view_a = base_tensor.clone()
+        view_b = base_tensor.clone()
+        view_a[:, drop_a] = self.pcvt_fill_value
+        view_b[:, drop_b] = self.pcvt_fill_value
+
+        visible_area = visible_union.float().sum().clamp(min=1.0)
+        keep_a = visible_union & (~drop_a)
+        keep_b = visible_union & (~drop_b)
+        cov_a = float(keep_a.float().sum().item() / visible_area.item())
+        cov_b = float(keep_b.float().sum().item() / visible_area.item())
+        cov_u = float((keep_a | keep_b).float().sum().item() / visible_area.item())
+        overlap = float((drop_a & drop_b & visible_union).float().sum().item() / visible_area.item())
+        mga = float(drop_a.float().mean().item())
+        mgb = float(drop_b.float().mean().item())
+
+        meta = {
+            'pcvt_cov_a': torch.tensor(cov_a, dtype=torch.float32),
+            'pcvt_cov_b': torch.tensor(cov_b, dtype=torch.float32),
+            'pcvt_cov_u': torch.tensor(cov_u, dtype=torch.float32),
+            'pcvt_ovr': torch.tensor(overlap, dtype=torch.float32),
+            'pcvt_mga': torch.tensor(mga, dtype=torch.float32),
+            'pcvt_mgb': torch.tensor(mgb, dtype=torch.float32),
+            'pcvt_gca': torch.tensor(float(len(bucket_a)), dtype=torch.float32),
+            'pcvt_gcb': torch.tensor(float(len(bucket_b)), dtype=torch.float32),
+            'pcvt_fb': torch.tensor(fallback, dtype=torch.float32),
+        }
+        return view_a, view_b, meta
 
     @staticmethod
     def _update_persons_for_erase(persons, erase_box, erased_channels=None):
