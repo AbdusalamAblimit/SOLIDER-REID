@@ -10,25 +10,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from .make_model import build_transformer
-from .modules.pose_spatial_gate import PoseSpatialGate, ContentAdaptivePSG
-from .modules.pose_attention_bias import PoseAttentionBias
-from .modules.pose_channel_gate import PoseChannelGate
-from .modules.pose_cross_attention import PoseCrossAttention
-from .modules.pose_reconstruction_head import PoseReconstructionHead
+from .modules.pose_spatial_gate import PoseSpatialGate
 from .modules.pose_utils import merge_person_heatmaps
 from .modules.skeleton_gcn import SkeletonGCNHead
-from .modules.keypoint_rpe import KeypointRPE, compute_token_kp_distances
-from .modules.pose_xcad import PoseCrossAttnHead
-from .modules.pose_attn_mask import PoseAttnMask
-from .modules.pose_token_decoder import PoseTokenDecoder
-from .modules.pose_additive_adapter import PoseAdditiveAdapter, PosePartStructuredAdapter, TargetDistractorDiffAdapter
-from .modules.pose_query_decoder import PoseQueryDecoder
-from .modules.pose_feature_inpainter import PoseFeatureInpainter
-from .modules.pose_token_merge import PoseTokenMerge
-from .modules.pose_translation import PoseTranslationModule
-from .modules.pose_cond_lora import PoseCondLoRA
-from .modules.pose_film import PoseFiLMGenerator, PoseFiLMLayer
-from .modules.skeleton_reencoder import SkeletonReEncoder
+from .modules.pose_additive_adapter import PoseAdditiveAdapter
 from .modules.pair_adaptive_fusion import (
     PairAdaptiveFusionHead,
     PairResidualConfidenceScorer,
@@ -43,21 +28,13 @@ class PoseBackboneModel(build_transformer):
     - Swin backbone Stages 0-2: unchanged
     - Stage 3: PSG applied after each SwinBlock
     - Global feature (GAP -> BN -> classifier)
-    - No separate part branch
+    - Optional: Skeleton GCN part branch, PAA adapter, LTCS/LPCS heads
 
     Test feature = global feature (pose-aware).
     """
 
     def __init__(self, num_classes, camera_num, view_num, cfg, factory, semantic_weight):
         super().__init__(num_classes, camera_num, view_num, cfg, factory, semantic_weight)
-
-        # Check injection mode: PSG (post-block gate), PAB (attention bias), PXA (cross-attention), or combo
-        self.use_attn_bias = getattr(cfg.MODEL, 'POSE_ATTN_BIAS', False)
-        self.use_combo = getattr(cfg.MODEL, 'POSE_PSG_PAB_COMBO', False)
-        self.use_cross_attn = getattr(cfg.MODEL, 'POSE_CROSS_ATTN', False)
-        self.use_content_adaptive = getattr(cfg.MODEL, 'POSE_PSG_CONTENT_ADAPTIVE', False)
-        self.use_attn_mask = getattr(cfg.MODEL, 'POSE_ATTN_MASK', False)
-        self.attn_mask_threshold = getattr(cfg.MODEL, 'POSE_ATTN_MASK_THRESHOLD', 0.3)
 
         # Determine which stages get pose injection
         psg_stages = list(getattr(cfg.MODEL, 'POSE_PSG_STAGES', [-1]))
@@ -71,355 +48,63 @@ class PoseBackboneModel(build_transformer):
         hidden_dim = getattr(cfg.MODEL, 'POSE_PFM_HIDDEN', 64)
         spatial_conv = getattr(cfg.MODEL, 'POSE_PSG_SPATIAL', False)
 
-        if self.use_combo:
-            # Combo mode: both PAB and PSG
-            self.pab_modules_dict = nn.ModuleDict()
-            self.psg_modules_dict = nn.ModuleDict()
+        # PSG-only mode: create gate modules per stage
+        self.psg_modules_dict = nn.ModuleDict()
+        for stage_idx in sorted(self.psg_stage_indices):
+            stage = self.base.stages[stage_idx]
+            feat_ch = self.base.num_features[stage_idx]
+            for block_idx in range(len(stage.blocks)):
+                key = f's{stage_idx}_b{block_idx}'
+                self.psg_modules_dict[key] = PoseSpatialGate(
+                    pose_channels=17,
+                    feat_channels=feat_ch,
+                    hidden_dim=hidden_dim,
+                    spatial_conv=spatial_conv,
+                )
+
+        # Backward compatibility: also keep psg_modules list for Stage 3
+        last_stage_idx = num_backbone_stages - 1
+        if last_stage_idx in self.psg_stage_indices:
+            self.psg_modules = nn.ModuleList([
+                self.psg_modules_dict[f's{last_stage_idx}_b{j}']
+                for j in range(len(self.base.stages[last_stage_idx].blocks))
+            ])
+
+        # PAA (Pose Additive Adapter): additive injection alongside PSG
+        self.use_paa = getattr(cfg.MODEL, 'POSE_ADDITIVE_ADAPTER', False)
+        if self.use_paa:
+            self.paa_modules_dict = nn.ModuleDict()
             for stage_idx in sorted(self.psg_stage_indices):
                 stage = self.base.stages[stage_idx]
-                num_heads = stage.blocks[0].attn.w_msa.num_heads
                 feat_ch = self.base.num_features[stage_idx]
                 for block_idx in range(len(stage.blocks)):
                     key = f's{stage_idx}_b{block_idx}'
-                    self.pab_modules_dict[key] = PoseAttentionBias(
-                        pose_channels=17,
-                        num_heads=num_heads,
-                        hidden_dim=32,  # PAB hidden dim
-                    )
-                    self.psg_modules_dict[key] = PoseSpatialGate(
+                    paa_routed = getattr(cfg.MODEL, 'POSE_PAA_ROUTED', False)
+                    paa_bottleneck = getattr(cfg.MODEL, 'POSE_PAA_BOTTLENECK', 32)
+                    paa_adaptive_gate = getattr(cfg.MODEL, 'POSE_PAA_ADAPTIVE_GATE', False)
+                    self.paa_modules_dict[key] = PoseAdditiveAdapter(
                         pose_channels=17,
                         feat_channels=feat_ch,
-                        hidden_dim=hidden_dim,
-                        spatial_conv=spatial_conv,
+                        bottleneck_dim=paa_bottleneck,
+                        routed=paa_routed,
+                        adaptive_gate=paa_adaptive_gate,
                     )
-        elif self.use_cross_attn:
-            # PXA mode: cross-attention between features and pose tokens
-            self.pxa_modules_dict = nn.ModuleDict()
-            for stage_idx in sorted(self.psg_stage_indices):
-                stage = self.base.stages[stage_idx]
-                feat_ch = self.base.num_features[stage_idx]
-                for block_idx in range(len(stage.blocks)):
-                    key = f's{stage_idx}_b{block_idx}'
-                    self.pxa_modules_dict[key] = PoseCrossAttention(
-                        pose_channels=17,
-                        feat_channels=feat_ch,
-                        hidden_dim=hidden_dim,
-                    )
-        elif self.use_attn_bias:
-            # PAB-only mode: create PoseAttentionBias modules per stage
-            self.pab_modules_dict = nn.ModuleDict()
-            for stage_idx in sorted(self.psg_stage_indices):
-                stage = self.base.stages[stage_idx]
-                num_heads = stage.blocks[0].attn.w_msa.num_heads
-                for block_idx in range(len(stage.blocks)):
-                    key = f's{stage_idx}_b{block_idx}'
-                    self.pab_modules_dict[key] = PoseAttentionBias(
-                        pose_channels=17,
-                        num_heads=num_heads,
-                        hidden_dim=hidden_dim,
-                    )
-        else:
-            # PSG-only mode (or CAPSG): create gate modules per stage
-            self.psg_modules_dict = nn.ModuleDict()
-            GateClass = ContentAdaptivePSG if self.use_content_adaptive else PoseSpatialGate
-            for stage_idx in sorted(self.psg_stage_indices):
-                stage = self.base.stages[stage_idx]
-                feat_ch = self.base.num_features[stage_idx]
-                for block_idx in range(len(stage.blocks)):
-                    key = f's{stage_idx}_b{block_idx}'
-                    if self.use_content_adaptive:
-                        self.psg_modules_dict[key] = GateClass(
-                            pose_channels=17,
-                            feat_channels=feat_ch,
-                            hidden_dim=hidden_dim,
-                        )
-                    else:
-                        self.psg_modules_dict[key] = GateClass(
-                            pose_channels=17,
-                            feat_channels=feat_ch,
-                            hidden_dim=hidden_dim,
-                            spatial_conv=spatial_conv,
-                        )
-
-            # Backward compatibility: also keep psg_modules list for Stage 3
-            # (used by PosePSGPartModel which accesses self.psg_modules)
-            last_stage_idx = num_backbone_stages - 1
-            if last_stage_idx in self.psg_stage_indices:
-                self.psg_modules = nn.ModuleList([
-                    self.psg_modules_dict[f's{last_stage_idx}_b{j}']
-                    for j in range(len(self.base.stages[last_stage_idx].blocks))
-                ])
-
-            # PGAM (Pose-Guided Attention Masking): works alongside PSG
-            # PGAM has its own stage config (can differ from PSG stages)
-            if self.use_attn_mask:
-                pgam_stages = list(getattr(cfg.MODEL, 'POSE_ATTN_MASK_STAGES', [-1]))
-                self.pgam_stage_indices = set()
-                for s in pgam_stages:
-                    idx = s if s >= 0 else num_backbone_stages + s
-                    self.pgam_stage_indices.add(idx)
-                self.pgam_modules_dict = nn.ModuleDict()
-                for stage_idx in sorted(self.pgam_stage_indices):
-                    stage = self.base.stages[stage_idx]
-                    num_heads = stage.blocks[0].attn.w_msa.num_heads
-                    for block_idx in range(len(stage.blocks)):
-                        key = f's{stage_idx}_b{block_idx}'
-                        self.pgam_modules_dict[key] = PoseAttnMask(
-                            num_heads=num_heads,
-                            threshold=self.attn_mask_threshold,
-                        )
-
-            # PAA (Pose Additive Adapter): additive injection alongside PSG
-            self.use_paa = getattr(cfg.MODEL, 'POSE_ADDITIVE_ADAPTER', False)
-            self.paa_target_only = getattr(cfg.MODEL, 'POSE_PAA_TARGET_ONLY', False)
-            self.paa_scene_target = getattr(cfg.MODEL, 'POSE_PAA_SCENE_TARGET', False)
-            paa_part_structured = getattr(cfg.MODEL, 'POSE_PAA_PART_STRUCTURED', False)
-            if self.use_paa:
-                self.paa_modules_dict = nn.ModuleDict()
-                # ST-PAA: 34 channels ([scene, target]); default: 17 channels
-                paa_in_channels = 34 if self.paa_scene_target else 17
-                for stage_idx in sorted(self.psg_stage_indices):
-                    stage = self.base.stages[stage_idx]
-                    feat_ch = self.base.num_features[stage_idx]
-                    for block_idx in range(len(stage.blocks)):
-                        key = f's{stage_idx}_b{block_idx}'
-                        if paa_part_structured:
-                            self.paa_modules_dict[key] = PosePartStructuredAdapter(
-                                feat_channels=feat_ch,
-                                hidden_per_part=8,
-                            )
-                        else:
-                            paa_routed = getattr(cfg.MODEL, 'POSE_PAA_ROUTED', False)
-                            paa_bottleneck = getattr(cfg.MODEL, 'POSE_PAA_BOTTLENECK', 32)
-                            paa_adaptive_gate = getattr(cfg.MODEL, 'POSE_PAA_ADAPTIVE_GATE', False)
-                            self.paa_modules_dict[key] = PoseAdditiveAdapter(
-                                pose_channels=paa_in_channels,
-                                feat_channels=feat_ch,
-                                bottleneck_dim=paa_bottleneck,
-                                routed=paa_routed,
-                                adaptive_gate=paa_adaptive_gate,
-                            )
-                total_paa_params = sum(p.numel() for p in self.paa_modules_dict.parameters())
-                if paa_part_structured:
-                    print(f'[PS-PAA] Part-Structured PAA enabled: '
-                          f'hidden_per_part=8, total_params={total_paa_params}')
-                if self.paa_target_only:
-                    print('[S&C] Suppress-and-Complete: PSG=scene, PAA=target(person-0)')
-                if self.paa_scene_target:
-                    print(f'[ST-PAA] Scene+Target PAA: 34ch input, total_params={total_paa_params}')
-
-            # TDPC (Target-Distractor Pose Conditioning): differential adapter after PAA
-            self.use_tdpc = getattr(cfg.MODEL, 'POSE_TDPC', False)
-            if self.use_tdpc and self.use_paa:
-                self.tdpc_modules_dict = nn.ModuleDict()
-                paa_bottleneck = getattr(cfg.MODEL, 'POSE_PAA_BOTTLENECK', 32)
-                for stage_idx in sorted(self.psg_stage_indices):
-                    stage = self.base.stages[stage_idx]
-                    feat_ch = self.base.num_features[stage_idx]
-                    for block_idx in range(len(stage.blocks)):
-                        key = f's{stage_idx}_b{block_idx}'
-                        self.tdpc_modules_dict[key] = TargetDistractorDiffAdapter(
-                            pose_channels=17,
-                            feat_channels=feat_ch,
-                            bottleneck_dim=paa_bottleneck,
-                        )
-                total_tdpc_params = sum(p.numel() for p in self.tdpc_modules_dict.parameters())
-                print(f'[TDPC] Target-Distractor Pose Conditioning enabled: '
-                      f'total_params={total_tdpc_params}')
-
-            # PCL (Pose-Conditioned LoRA): feature-dependent alternative to PAA
-            self.use_pcl = getattr(cfg.MODEL, 'POSE_COND_LORA', False)
-            if self.use_pcl:
-                pcl_rank = getattr(cfg.MODEL, 'POSE_COND_LORA_RANK', 16)
-                self.pcl_modules_dict = nn.ModuleDict()
-                for stage_idx in sorted(self.psg_stage_indices):
-                    stage = self.base.stages[stage_idx]
-                    feat_ch = self.base.num_features[stage_idx]
-                    for block_idx in range(len(stage.blocks)):
-                        key = f's{stage_idx}_b{block_idx}'
-                        self.pcl_modules_dict[key] = PoseCondLoRA(
-                            pose_channels=17,
-                            feat_channels=feat_ch,
-                            rank=pcl_rank,
-                        )
-                total_params = sum(p.numel() for p in self.pcl_modules_dict.parameters())
-                print(f'[PCL] Pose-Conditioned LoRA enabled: rank={pcl_rank}, '
-                      f'total_params={total_params}')
-
-        # Keypoint Relative Position Encoding (KP-RPE)
-        self.use_kp_rpe = getattr(cfg.MODEL, 'POSE_KP_RPE', False)
-        if self.use_kp_rpe:
-            kp_rpe_hidden = getattr(cfg.MODEL, 'POSE_KP_RPE_HIDDEN', 32)
-            self.kp_rpe_modules = nn.ModuleDict()
-            for stage_idx in sorted(self.psg_stage_indices):
-                stage = self.base.stages[stage_idx]
-                num_heads = stage.blocks[0].attn.w_msa.num_heads
-                for block_idx in range(len(stage.blocks)):
-                    key = f's{stage_idx}_b{block_idx}'
-                    self.kp_rpe_modules[key] = KeypointRPE(
-                        num_keypoints=17,
-                        num_heads=num_heads,
-                        hidden_dim=kp_rpe_hidden,
-                    )
-            total_params = sum(p.numel() for p in self.kp_rpe_modules.parameters())
-            print(f'[KP-RPE] Keypoint Relative Position Encoding enabled: '
-                  f'hidden={kp_rpe_hidden}, total_params={total_params}')
-            # Store input image size for coordinate mapping
-            self._input_h = cfg.INPUT.SIZE_TRAIN[0]
-            self._input_w = cfg.INPUT.SIZE_TRAIN[1]
-
-        # Skeleton-Aware Self-Attention (SASA) — zero-parameter attention bias
-        self.use_sasa = getattr(cfg.MODEL, 'POSE_SASA', False)
-        if self.use_sasa:
-            from model.modules.skeleton_attention import SkeletonAttentionBias
-            sasa_alpha = getattr(cfg.MODEL, 'POSE_SASA_ALPHA', 0.1)
-            self.sasa_module = SkeletonAttentionBias(alpha=sasa_alpha)
-            print(f'[SASA] Skeleton-Aware Self-Attention enabled: '
-                  f'alpha={sasa_alpha}, params=0 (pure inductive bias)')
-
-        # Pose-Conditioned Channel Gate (PCG) — after GAP, before BN
-        self.use_channel_gate = getattr(cfg.MODEL, 'POSE_CHANNEL_GATE', False)
-        if self.use_channel_gate:
-            pcg_hidden = getattr(cfg.MODEL, 'POSE_PCG_HIDDEN', 64)
-            feat_dim = self.in_planes  # 768 for Swin-Tiny
-            self.channel_gate = PoseChannelGate(
-                feat_dim=feat_dim,
-                pose_channels=17,
-                hidden_dim=pcg_hidden,
-            )
-
-        # Pose Reconstruction Head (PRA) — auxiliary task
-        self.use_recon_head = getattr(cfg.MODEL, 'POSE_RECON_HEAD', False)
-        if self.use_recon_head:
-            recon_weight = getattr(cfg.MODEL, 'POSE_RECON_WEIGHT', 0.1)
-            feat_dim = self.in_planes  # 768 for Swin-Tiny
-            self.recon_head = PoseReconstructionHead(
-                feat_channels=feat_dim,
-                pose_channels=17,
-                hidden_channels=128,
-                loss_weight=recon_weight,
-            )
+            total_paa_params = sum(p.numel() for p in self.paa_modules_dict.parameters())
+            print(f'[PAA] Pose Additive Adapter enabled: total_params={total_paa_params}')
 
         # Stochastic Pose Dropout (SPD)
         self.pose_dropout_p = getattr(cfg.MODEL, 'POSE_DROPOUT_P', 0.0)
         if self.pose_dropout_p > 0:
             print(f'[PSG] Stochastic Pose Dropout enabled: p={self.pose_dropout_p}')
 
-        # Pose-Weighted Pooling (PWP) — replace GAP with heatmap-weighted pooling
-        self.use_weighted_pool = getattr(cfg.MODEL, 'POSE_WEIGHTED_POOL', False)
-        if self.use_weighted_pool:
-            print('[PWP] Pose-Weighted Pooling enabled (replaces GAP)')
-
-        # Pose-Guided Feature Inpainting (PGFI) — recover occluded features
-        self.use_pgfi = getattr(cfg.MODEL, 'POSE_FEATURE_INPAINTER', False)
-        if self.use_pgfi:
-            self.pgfi = PoseFeatureInpainter(
-                feat_channels=self.in_planes,
-                pose_channels=17,
-                hidden_dim=256,
-            )
-            total_params = sum(p.numel() for p in self.pgfi.parameters())
-            print(f'[PGFI] Pose-Guided Feature Inpainting enabled: '
-                  f'total_params={total_params}')
-
-        # Skeleton GCN head or Cross-Attention Decoder or Pose-Token Decoder or PQTD (mutually exclusive)
+        # Skeleton GCN head
         self.use_skeleton_gcn = getattr(cfg.MODEL, 'POSE_SKELETON_GCN', False)
-        self.use_xcad = getattr(cfg.MODEL, 'POSE_XCAD', False)
-        self.use_ptd = getattr(cfg.MODEL, 'POSE_TOKEN_DECODER', False)
-        self.use_pqtd = getattr(cfg.MODEL, 'POSE_QUERY_DECODER', False)
-
-        if self.use_pqtd:
-            # Pose-Query Transformer Decoder (replaces GCN)
-            pqtd_layers = getattr(cfg.MODEL, 'POSE_QUERY_DECODER_LAYERS', 3)
-            pqtd_dim = getattr(cfg.MODEL, 'POSE_QUERY_DECODER_DIM', 256)
-            pqtd_heads = getattr(cfg.MODEL, 'POSE_QUERY_DECODER_HEADS', 8)
-            pqtd_parts = getattr(cfg.MODEL, 'POSE_QUERY_DECODER_PARTS', 5)
-            self.skeleton_head = PoseQueryDecoder(
-                feat_dim=self.in_planes,
-                d_model=pqtd_dim,
-                nhead=pqtd_heads,
-                num_layers=pqtd_layers,
-                num_parts=pqtd_parts,
-                num_classes=num_classes,
-            )
-            self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
-            total_params = sum(p.numel() for p in self.skeleton_head.parameters())
-            print(f'[PSG+PQTD] Pose-Query Transformer Decoder enabled: '
-                  f'layers={pqtd_layers}, dim={pqtd_dim}, heads={pqtd_heads}, '
-                  f'parts={pqtd_parts}, total_params={total_params}, '
-                  f'test_feat={self.pose_test_feat}')
-            # Set use_skeleton_gcn=True so existing forward() code path handles it
-            self.use_skeleton_gcn = True
-        elif self.use_ptd:
-            # Pose-Token Distillation Decoder
-            ptd_parts = getattr(cfg.MODEL, 'POSE_TOKEN_NUM_PARTS', 5)
-            ptd_dim = getattr(cfg.MODEL, 'POSE_TOKEN_DIM', 256)
-            ptd_heads = getattr(cfg.MODEL, 'POSE_TOKEN_HEADS', 8)
-            ptd_layers = getattr(cfg.MODEL, 'POSE_TOKEN_LAYERS', 2)
-            ptd_hm_weight = getattr(cfg.MODEL, 'POSE_TOKEN_HM_WEIGHT', 1.0)
-            self.ptd_decoder = PoseTokenDecoder(
-                feat_dim=self.in_planes,
-                num_parts=ptd_parts,
-                attn_dim=ptd_dim,
-                num_heads=ptd_heads,
-                num_layers=ptd_layers,
-                num_classes=num_classes,
-                heatmap_loss_weight=ptd_hm_weight,
-            )
-            self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
-            total_params = sum(p.numel() for p in self.ptd_decoder.parameters())
-            print(f'[PSG+PTD] Pose-Token Decoder enabled: '
-                  f'parts={ptd_parts}, dim={ptd_dim}, heads={ptd_heads}, '
-                  f'layers={ptd_layers}, hm_weight={ptd_hm_weight}, '
-                  f'total_params={total_params}, test_feat={self.pose_test_feat}')
-            # Set use_skeleton_gcn=True so existing forward() code path handles part of it
-            self.use_skeleton_gcn = True
-        elif self.use_xcad:
-            # Cross-Attention Decoder replaces GCN
-            xcad_dim = getattr(cfg.MODEL, 'POSE_XCAD_DIM', 256)
-            xcad_heads = getattr(cfg.MODEL, 'POSE_XCAD_HEADS', 8)
-            self.skeleton_head = PoseCrossAttnHead(
-                feat_dim=self.in_planes,
-                attn_dim=xcad_dim,
-                num_heads=xcad_heads,
-                num_classes=num_classes,
-                input_size=tuple(cfg.INPUT.SIZE_TRAIN),
-            )
-            self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
-            total_params = sum(p.numel() for p in self.skeleton_head.cross_attn.parameters())
-            print(f'[PSG+XCAD] Cross-Attention Decoder enabled: '
-                  f'dim={xcad_dim}, heads={xcad_heads}, '
-                  f'cross_attn_params={total_params}, '
-                  f'test_feat={self.pose_test_feat}')
-            # Set use_skeleton_gcn=True so existing forward() code path handles it
-            self.use_skeleton_gcn = True
-        elif self.use_skeleton_gcn:
+        if self.use_skeleton_gcn:
             gcn_layers = getattr(cfg.MODEL, 'POSE_GCN_LAYERS', 2)
             gcn_hidden = getattr(cfg.MODEL, 'POSE_GCN_HIDDEN', 256)
             keypoint_pool_only = getattr(cfg.MODEL, 'POSE_KEYPOINT_POOL_ONLY', False)
             kp_weight_mode = getattr(cfg.MODEL, 'POSE_KP_WEIGHT_MODE', 'score')
             kp_triplet = getattr(cfg.MODEL, 'POSE_KP_TRIPLET', False)
-            kp_learnable_attn = getattr(cfg.MODEL, 'POSE_KP_LEARNABLE_ATTN', False)
-            sgmkc = getattr(cfg.MODEL, 'POSE_SGMKC', False)
-            sgmkc_ratio = getattr(cfg.MODEL, 'POSE_SGMKC_RATIO', 0.3)
-            kp_uncertainty = getattr(cfg.MODEL, 'POSE_KP_UNCERTAINTY', False)
-            kp_uncertainty_reg = getattr(cfg.MODEL, 'POSE_KP_UNCERTAINTY_REG', 0.1)
-            pke = getattr(cfg.MODEL, 'POSE_PKE', False)
-            dpf = getattr(cfg.MODEL, 'POSE_DPF', False)
-            sgmt = getattr(cfg.MODEL, 'POSE_SGMT', False)
-            sgmt_ratio = getattr(cfg.MODEL, 'POSE_SGMT_RATIO', 0.3)
-            sgmt_threshold = getattr(cfg.MODEL, 'POSE_SGMT_THRESHOLD', 0.3)
-            scrc = getattr(cfg.MODEL, 'POSE_SCRC', False)
-            scrc_hidden = getattr(cfg.MODEL, 'POSE_SCRC_HIDDEN', 128)
-            skc = getattr(cfg.MODEL, 'POSE_SKC', False)
-            skc_hidden = getattr(cfg.MODEL, 'POSE_SKC_HIDDEN', 256)
-            skc_heads = getattr(cfg.MODEL, 'POSE_SKC_HEADS', 4)
-            skc_low_thr = getattr(cfg.MODEL, 'POSE_SKC_LOW_THR', 0.3)
-            scfa = getattr(cfg.MODEL, 'POSE_SCFA', False)
-            scfa_low_thr = getattr(cfg.MODEL, 'POSE_SCFA_LOW_THR', 0.3)
-            scfa_high_thr = getattr(cfg.MODEL, 'POSE_SCFA_HIGH_THR', 0.5)
-            mrkf = getattr(cfg.MODEL, 'POSE_MRKF', False)
-            mrkf_s2_dim = self.base.num_features[2] if mrkf else 384
             self.skeleton_head = SkeletonGCNHead(
                 feat_dim=self.in_planes,
                 hidden_dim=gcn_hidden,
@@ -429,92 +114,8 @@ class PoseBackboneModel(build_transformer):
                 use_gcn=not keypoint_pool_only,
                 kp_weight_mode=kp_weight_mode,
                 kp_triplet=kp_triplet,
-                kp_learnable_attn=kp_learnable_attn,
-                sgmkc=sgmkc,
-                sgmkc_ratio=sgmkc_ratio,
-                kp_uncertainty=kp_uncertainty,
-                kp_uncertainty_reg=kp_uncertainty_reg,
-                pke=pke,
-                dpf=dpf,
-                sgmt=sgmt,
-                sgmt_ratio=sgmt_ratio,
-                sgmt_threshold=sgmt_threshold,
-                scrc=scrc,
-                scrc_hidden=scrc_hidden,
-                skc=skc,
-                skc_hidden=skc_hidden,
-                skc_heads=skc_heads,
-                skc_low_thr=skc_low_thr,
-                scfa=scfa,
-                scfa_low_thr=scfa_low_thr,
-                scfa_high_thr=scfa_high_thr,
-                mrkf=mrkf,
-                mrkf_s2_dim=mrkf_s2_dim,
-                vcga=getattr(cfg.MODEL, 'POSE_VCGA', False),
             )
-            if getattr(cfg.MODEL, 'POSE_VCGA', False):
-                print('[VCGA] Visibility-Conditioned Graph Attention enabled')
-            if sgmt:
-                print(f'[SGMT] Skeleton-Guided Masked Training enabled: '
-                      f'mask_ratio={sgmt_ratio}, test_threshold={sgmt_threshold}')
-            if dpf:
-                print('[DPF] Distributional Part Features enabled: '
-                      'heatmap spatial pooling + precision-weighted matching')
-            if scrc:
-                print(f'[SCRC] Support-Conditioned Residual Completion enabled: '
-                      f'hidden={scrc_hidden}')
-            if skc:
-                print(f'[SKC] Support-Supervised Keypoint Completion enabled: '
-                      f'hidden={skc_hidden}, heads={skc_heads}, low_thr={skc_low_thr}')
-            if scfa:
-                print(f'[SCFA] Symmetry-Conditioned Feature Aggregation enabled: '
-                      f'low_thr={scfa_low_thr}, high_thr={scfa_high_thr}')
-            # MRKF: Multi-Resolution Keypoint Features
-            self.use_mrkf = getattr(cfg.MODEL, 'POSE_MRKF', False)
-            if self.use_mrkf:
-                # Stage 2 has num_features[2] channels (384 for Swin-Tiny)
-                s2_dim = self.base.num_features[2]  # 384
-                self.mrkf_norm = nn.LayerNorm(s2_dim, elementwise_affine=False)
-                print(f'[MRKF] Multi-Resolution Keypoint Features enabled: '
-                      f'Stage2({s2_dim}d) + Stage3({self.in_planes}d)')
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'concat_scaled')
-            # TTSFR: enable training-time skeleton feature recovery
-            if getattr(cfg.MODEL, 'POSE_TTSFR', False):
-                self.skeleton_head.ttsfr = True
-                print('[TTSFR] Training-Time Skeleton Feature Recovery enabled')
-            # PGTM: Pose-Guided Token Merging in Stage 3
-            self.use_pgtm = getattr(cfg.MODEL, 'POSE_TOKEN_MERGE', False)
-            if self.use_pgtm:
-                self.pgtm_modules_dict = nn.ModuleDict()
-                for stage_idx in sorted(self.psg_stage_indices):
-                    stage = self.base.stages[stage_idx]
-                    feat_ch = self.base.num_features[stage_idx]
-                    for block_idx in range(len(stage.blocks)):
-                        key = f's{stage_idx}_b{block_idx}'
-                        self.pgtm_modules_dict[key] = PoseTokenMerge(
-                            feat_dim=feat_ch)
-                total_pgtm = sum(p.numel() for p in self.pgtm_modules_dict.parameters())
-                print(f'[PGTM] Pose-Guided Token Merging enabled: {total_pgtm} params')
-
-            # LSRM: Learned Skeleton Recovery Module (part of model for proper save/load)
-            self.use_lsrm = getattr(cfg.MODEL, 'POSE_LSRM', False)
-            if self.use_lsrm:
-                from .modules.skeleton_recovery import SkeletonRecoveryModule
-                self.lsrm = SkeletonRecoveryModule(feat_dim=self.in_planes)
-                lsrm_params = sum(p.numel() for p in self.lsrm.parameters())
-                print(f'[LSRM] Learned Skeleton Recovery Module enabled: {lsrm_params} params')
-            # PCQA: Pose Translation Module (inside model for proper save/load/schedule)
-            self.use_ptm = getattr(cfg.MODEL, 'POSE_TRANSLATION', False)
-            if self.use_ptm:
-                self.ptm = PoseTranslationModule(feat_dim=self.in_planes)
-                ptm_params = sum(p.numel() for p in self.ptm.parameters())
-                print(f'[PCQA] Pose Translation Module enabled: {ptm_params} params')
-            # SGRE: Skeleton-Guided Re-Encoding (pair-conditioned matching)
-            self.use_sgre = getattr(cfg.MODEL, 'POSE_SGRE', False)
-            if self.use_sgre:
-                self.sgre = SkeletonReEncoder(feat_dim=self.in_planes)
-                sgre_params = sum(p.numel() for p in self.sgre.parameters())
-                print(f'[SGRE] Skeleton-Guided Re-Encoding enabled: {sgre_params} params')
             if keypoint_pool_only:
                 print(f'[PSG+KPP] Keypoint pooling head enabled: no graph propagation, '
                       f'test_feat={self.pose_test_feat}, kp_weight={kp_weight_mode}')
@@ -523,6 +124,7 @@ class PoseBackboneModel(build_transformer):
                       f'hidden={gcn_hidden}, test_feat={self.pose_test_feat}, '
                       f'kp_weight={kp_weight_mode}')
 
+        # LTCS / LPCS heads (pair-adaptive fusion / correction scorer)
         self.use_ltcs = getattr(cfg.MODEL, 'POSE_LTCS', False)
         self.use_lpcs = getattr(cfg.MODEL, 'POSE_LPCS', False)
         if self.use_ltcs and self.use_lpcs:
@@ -563,107 +165,20 @@ class PoseBackboneModel(build_transformer):
                   f'head_mode={lpcs_head_mode}, hidden={lpcs_hidden}, delta_scale={lpcs_delta_scale}, '
                   f'context_mode={lpcs_context_mode}, params={lpcs_params}')
 
-        # PAMC (Pose-Aware Masking Consistency) projector
-        self.use_pamc = getattr(cfg.MODEL, 'POSE_PAMC', False)
-        if self.use_pamc:
-            from .modules.pamc import PAMCProjector, PoseBodyMasker
-            proj_dim = getattr(cfg.MODEL, 'POSE_PAMC_PROJ_DIM', 2048)
-            self.pamc_projector = PAMCProjector(
-                feat_dim=self.in_planes, proj_dim=proj_dim)
-            self.pamc_masker = PoseBodyMasker()
-            pamc_warmup = getattr(cfg.MODEL, 'POSE_PAMC_WARMUP', 10)
-            pamc_weight = getattr(cfg.MODEL, 'POSE_PAMC_WEIGHT', 0.5)
-            print(f'[PAMC] Pose-Aware Masking Consistency enabled: '
-                  f'proj_dim={proj_dim}, weight={pamc_weight}, '
-                  f'warmup={pamc_warmup}')
-
-        # Pose-FiLM: Feature-wise Linear Modulation conditioned on pose
-        self.use_film = getattr(cfg.MODEL, 'POSE_FILM', False)
-        if self.use_film:
-            self.film_generators = nn.ModuleDict()
-            self.film_layer = PoseFiLMLayer()
-            total_film_params = 0
-            for stage_idx in range(len(self.base.stages)):
-                stage = self.base.stages[stage_idx]
-                feat_ch = self.base.num_features[stage_idx]
-                for block_idx in range(len(stage.blocks)):
-                    key = f's{stage_idx}_b{block_idx}'
-                    self.film_generators[key] = PoseFiLMGenerator(
-                        pose_channels=17,
-                        feat_channels=feat_ch,
-                        hidden_dim=32,
-                    )
-                    total_film_params += sum(
-                        p.numel() for p in self.film_generators[key].parameters())
-            print(f'[Pose-FiLM] Full-stage pose conditioning enabled: '
-                  f'{len(self.film_generators)} FiLM layers, '
-                  f'{total_film_params} total params')
-
-        # PKP: Pose Keypoint Prompting at patch embedding level
-        self.use_pkp = getattr(cfg.MODEL, 'POSE_PKP', False)
-        if self.use_pkp:
-            embed_dim = self.base.num_features[0]  # 96 for Swin-Tiny
-            patch_size = 4  # Swin-Tiny patch size
-            self.pose_prompt_embed = nn.Conv2d(
-                17, embed_dim, kernel_size=patch_size, stride=patch_size)
-            # Zero-init: starts as identity (pose_tokens = 0)
-            nn.init.zeros_(self.pose_prompt_embed.weight)
-            nn.init.zeros_(self.pose_prompt_embed.bias)
-            pkp_params = sum(p.numel() for p in self.pose_prompt_embed.parameters())
-            print(f'[PKP] Pose Keypoint Prompting enabled: '
-                  f'Conv2d(17→{embed_dim}, {patch_size}×{patch_size}), '
-                  f'{pkp_params} params')
-
-        # PVAT: Pose-Visibility Adversarial Training
-        self.use_pvat = getattr(cfg.MODEL, 'POSE_PVAT', False)
-        if self.use_pvat:
-            from .modules.pvat import VisibilityPredictor
-            self.pvat_head = VisibilityPredictor(
-                feat_dim=self.in_planes, num_keypoints=17)
-            pvat_params = sum(p.numel() for p in self.pvat_head.parameters())
-            print(f'[PVAT] Pose-Visibility Adversarial Training enabled: '
-                  f'{pvat_params} params')
-
         # Store backbone's semantic weight for manual forward
         self._semantic_weight_val = semantic_weight
 
-    def _run_backbone_with_psg(self, x, scene_heatmaps, pose_dict=None,
-                               paa_heatmaps=None, diff_heatmaps=None):
-        """Run backbone forward with PSG injection in Stage 3.
+    def _run_backbone_with_psg(self, x, scene_heatmaps, pose_dict=None):
+        """Run backbone forward with PSG injection in configured stages.
 
-        Manually iterates backbone stages, inserting PSG after each
-        Stage 3 block.
-
-        Args:
-            paa_heatmaps: If not None, use these (target-person) heatmaps for PAA
-                         instead of scene_heatmaps (Suppress-and-Complete mode).
-            diff_heatmaps: If not None, target-distractor differential heatmaps
-                          for TDPC adapter.
+        Manually iterates backbone stages, inserting PSG after each block
+        in the configured stages.
         """
         # Patch embedding
         x, hw_shape = self.base.patch_embed(x)
         if self.base.use_abs_pos_embed:
             x = x + self.base.absolute_pos_embed
         x = self.base.drop_after_pos(x)
-
-        # PKP: inject pose prompt tokens after patch embedding
-        if getattr(self, 'use_pkp', False) and scene_heatmaps is not None:
-            # scene_heatmaps: (B, 17, hH, hW) → resize to input resolution
-            # then patch embed via conv2d → (B, embed_dim, pH, pW) → flatten
-            B = x.shape[0]
-            # Resize heatmaps to match original image spatial dims
-            # The image was (B, 3, H, W) and patch embed has stride=4
-            # So tokens are (H/4, W/4) = hw_shape
-            H_tokens, W_tokens = hw_shape
-            hm_input = F.interpolate(scene_heatmaps,
-                                     size=(H_tokens * 4, W_tokens * 4),
-                                     mode='bilinear', align_corners=False)
-            # Conv2d patch embed on heatmaps: (B, 17, H, W) → (B, embed_dim, H/4, W/4)
-            pose_tokens = self.pose_prompt_embed(hm_input)  # (B, 96, H/4, W/4)
-            # Flatten to token sequence: (B, H/4*W/4, 96)
-            pose_tokens = pose_tokens.flatten(2).transpose(1, 2)  # (B, L, 96)
-            # Additive fusion (zero-init → starts as identity)
-            x = x + pose_tokens
 
         # Build semantic weight tensor
         sw_val = self._semantic_weight_val
@@ -675,21 +190,10 @@ class PoseBackboneModel(build_transformer):
             sem_weight = None
 
         outs = []
-        num_stages = len(self.base.stages)
-        self._mrkf_stage2_cache = None  # will be set if MRKF enabled
-
-        pgam_indices = getattr(self, 'pgam_stage_indices', set())
-        use_film = getattr(self, 'use_film', False)
         for i, stage in enumerate(self.base.stages):
-            if i in self.psg_stage_indices or i in pgam_indices:
-                # Stage with PSG and/or PGAM: manually run blocks with injection
+            if i in self.psg_stage_indices:
+                # Stage with PSG: manually run blocks with injection
                 x, hw_shape, out, out_hw_shape = self._run_stage_with_psg(
-                    stage, x, hw_shape, scene_heatmaps, stage_idx=i,
-                    pose_dict=pose_dict, paa_heatmaps=paa_heatmaps,
-                    diff_heatmaps=diff_heatmaps)
-            elif use_film and scene_heatmaps is not None:
-                # FiLM stage: manually run blocks with per-block FiLM modulation
-                x, hw_shape, out, out_hw_shape = self._run_stage_with_film(
                     stage, x, hw_shape, scene_heatmaps, stage_idx=i)
             else:
                 # Normal stage: run without modification
@@ -700,14 +204,6 @@ class PoseBackboneModel(build_transformer):
                 sw = self.base.semantic_embed_w[i](sem_weight).unsqueeze(1)
                 sb = self.base.semantic_embed_b[i](sem_weight).unsqueeze(1)
                 x = x * self.base.softplus(sw) + sb
-
-            # MRKF: capture Stage 2 output for multi-resolution keypoint features
-            if i == 2 and getattr(self, 'use_mrkf', False):
-                s2 = self.mrkf_norm(out)
-                s2 = s2.view(-1, *out_hw_shape,
-                             self.base.num_features[i]).permute(0, 3, 1,
-                                                                 2).contiguous()
-                self._mrkf_stage2_cache = s2  # (B, 384, 24, 8)
 
             if i in self.base.out_indices:
                 norm_layer = getattr(self.base, f'norm{i}')
@@ -720,226 +216,28 @@ class PoseBackboneModel(build_transformer):
         # Pooling
         featmap = outs[-1]  # (B, C, fH, fW)
 
-        # PGFI: Pose-Guided Feature Inpainting (recover occluded features)
-        if getattr(self, 'use_pgfi', False) and scene_heatmaps is not None:
-            featmap = self.pgfi(featmap, scene_heatmaps)
-
-        if self.use_weighted_pool and scene_heatmaps is not None:
-            # Pose-Weighted Pooling: weight tokens by body presence
-            fH, fW = featmap.shape[2], featmap.shape[3]
-            hm = F.interpolate(scene_heatmaps, size=(fH, fW),
-                               mode='bilinear', align_corners=False)
-            body_mask = torch.sigmoid(hm).max(dim=1, keepdim=True)[0]  # (B, 1, fH, fW)
-            body_mask = body_mask.clamp(min=1e-6)
-            global_feat = (featmap * body_mask).sum(dim=(2, 3)) / body_mask.sum(dim=(2, 3))
-        else:
-            # Standard GAP
-            global_feat = self.base.avgpool(featmap)
-            global_feat = torch.flatten(global_feat, 1)
+        # Standard GAP
+        global_feat = self.base.avgpool(featmap)
+        global_feat = torch.flatten(global_feat, 1)
 
         return global_feat, outs
 
-    def _compute_kprpe_bias(self, kp_rpe_module, hw_shape, keypoints, scores,
-                            shift_size, window_size):
-        """Compute KP-RPE attention bias for a single block.
-
-        Args:
-            kp_rpe_module: KeypointRPE module for this block
-            hw_shape: (H, W) feature map spatial dimensions
-            keypoints: (B, 17, 2) person 0's pixel coordinates
-            scores: (B, 17) confidence scores
-            shift_size: shift amount for this block (0 or window_size//2)
-            window_size: window size (7)
-
-        Returns:
-            extra_attn_bias: (B*nW, num_heads, ws*ws, ws*ws)
-        """
-        H, W = hw_shape
-        B = keypoints.shape[0]
-        ws = window_size
-
-        # Compute total stride from input to this feature map
-        # For Swin-Tiny: patch_size=4, then 3 downsamples of 2x each = 4*2*2*2=32
-        stride = self._input_h // H  # should be 32 for 384->12
-
-        # Compute per-token distances to keypoints: (B, H*W, 17)
-        token_dists = compute_token_kp_distances(
-            hw_shape, keypoints, scores, stride=stride)
-
-        # Reshape to spatial: (B, H, W, 17)
-        token_dists = token_dists.view(B, H, W, 17)
-
-        # Pad to multiples of window size
-        pad_r = (ws - W % ws) % ws
-        pad_b = (ws - H % ws) % ws
-        if pad_r > 0 or pad_b > 0:
-            # Pad with zeros (padded regions have zero distance = no effect)
-            token_dists = F.pad(token_dists, (0, 0, 0, pad_r, 0, pad_b))
-        H_pad, W_pad = token_dists.shape[1], token_dists.shape[2]
-
-        # Cyclic shift (for shifted window blocks)
-        if shift_size > 0:
-            token_dists = torch.roll(
-                token_dists,
-                shifts=(-shift_size, -shift_size),
-                dims=(1, 2))
-
-        # Window partition: (B, H_pad, W_pad, 17)
-        #   -> (B, H_pad/ws, ws, W_pad/ws, ws, 17)
-        #   -> (B, H_pad/ws, W_pad/ws, ws, ws, 17)
-        #   -> (B*nW, ws*ws, 17)
-        token_dists = token_dists.view(B, H_pad // ws, ws, W_pad // ws, ws, 17)
-        token_dists = token_dists.permute(0, 1, 3, 2, 4, 5).contiguous()
-        nW = (H_pad // ws) * (W_pad // ws)
-        token_dists = token_dists.view(B * nW, ws * ws, 17)
-
-        # Compute pairwise bias via KeypointRPE
-        # Returns: (B*nW, num_heads, ws*ws, ws*ws)
-        return kp_rpe_module(token_dists)
-
-    def _compute_sasa_bias(self, hw_shape, scene_heatmaps, shift_size,
-                           window_size, num_heads):
-        """Compute SASA (Skeleton-Aware Self-Attention) bias for a single block.
-
-        Follows the same pad-shift-partition pipeline as _compute_kprpe_bias.
-
-        Args:
-            hw_shape: (H, W) feature map spatial dimensions
-            scene_heatmaps: (B, 17, H_hm, W_hm) scene-level heatmaps
-            shift_size: shift amount for this block (0 or window_size//2)
-            window_size: window size (7)
-            num_heads: number of attention heads
-
-        Returns:
-            extra_attn_bias: (B*nW, num_heads, ws*ws, ws*ws)
-        """
-        from model.modules.skeleton_attention import compute_token_kp_assignments
-        H, W = hw_shape
-        B = scene_heatmaps.shape[0]
-        ws = window_size
-
-        # 1. Assign each token to its dominant keypoint: (B, H, W)
-        token_assign = compute_token_kp_assignments(scene_heatmaps, hw_shape)
-
-        # 2. Pad to multiples of window size
-        pad_r = (ws - W % ws) % ws
-        pad_b = (ws - H % ws) % ws
-        if pad_r > 0 or pad_b > 0:
-            token_assign = F.pad(token_assign, (0, pad_r, 0, pad_b), value=0)
-        H_pad, W_pad = token_assign.shape[1], token_assign.shape[2]
-
-        # 3. Cyclic shift (for shifted window blocks)
-        if shift_size > 0:
-            token_assign = torch.roll(
-                token_assign,
-                shifts=(-shift_size, -shift_size),
-                dims=(1, 2))
-
-        # 4. Window partition: (B, H_pad, W_pad) -> (B*nW, ws*ws)
-        token_assign = token_assign.view(B, H_pad // ws, ws, W_pad // ws, ws)
-        token_assign = token_assign.permute(0, 1, 3, 2, 4).contiguous()
-        nW = (H_pad // ws) * (W_pad // ws)
-        token_assign = token_assign.view(B * nW, ws * ws)
-
-        # 5. Compute pairwise bias via geodesic lookup
-        return self.sasa_module.compute_bias(token_assign, num_heads)
-
-    def _run_stage_with_film(self, stage, x, hw_shape, scene_heatmaps,
-                              stage_idx=None):
-        """Run a stage's blocks with FiLM modulation only (no PSG)."""
-        for block_idx, block in enumerate(stage.blocks):
-            x = block(x, hw_shape)
-            # Apply FiLM after each block
-            key = f's{stage_idx}_b{block_idx}'
-            if key in self.film_generators:
-                gamma, beta = self.film_generators[key](
-                    scene_heatmaps)
-                x = self.film_layer(x, hw_shape, gamma, beta)
-
-        if stage.downsample:
-            x_down, down_hw_shape = stage.downsample(x, hw_shape)
-            return x_down, down_hw_shape, x, hw_shape
-        else:
-            return x, hw_shape, x, hw_shape
-
     def _run_stage_with_psg(self, stage, x, hw_shape, scene_heatmaps,
-                            stage_idx=None, pose_dict=None, paa_heatmaps=None,
-                            diff_heatmaps=None):
-        """Run a stage's blocks with pose injection (PSG, PAB, PXA, KP-RPE, or combo)."""
+                            stage_idx=None):
+        """Run a stage's blocks with PSG and optional PAA injection."""
         for block_idx, block in enumerate(stage.blocks):
             key = f's{stage_idx}_b{block_idx}'
 
-            # Compute attention bias if enabled (KP-RPE or SASA)
-            kp_rpe_bias = None
-            if self.use_kp_rpe and pose_dict is not None and key in self.kp_rpe_modules:
-                keypoints = pose_dict['keypoints'][:, 0, :, :]  # (B, 17, 2)
-                kp_scores = pose_dict['scores'][:, 0, :]  # (B, 17)
-                shift_size = block.attn.shift_size
-                window_size = block.attn.window_size
-                kp_rpe_bias = self._compute_kprpe_bias(
-                    self.kp_rpe_modules[key], hw_shape,
-                    keypoints, kp_scores, shift_size, window_size)
-            elif self.use_sasa and scene_heatmaps is not None:
-                shift_size = block.attn.shift_size
-                window_size = block.attn.window_size
-                num_heads = block.attn.w_msa.num_heads
-                kp_rpe_bias = self._compute_sasa_bias(
-                    hw_shape, scene_heatmaps, shift_size, window_size, num_heads)
+            # Run the Swin block
+            x = block(x, hw_shape)
 
-            if self.use_combo and scene_heatmaps is not None:
-                # Combo mode: PAB inside attention + PSG after block
-                pose_bias_map = self.pab_modules_dict[key](
-                    scene_heatmaps, hw_shape)
-                x = block(x, hw_shape, pose_bias_map=pose_bias_map)
+            # PSG: apply gate after block
+            if scene_heatmaps is not None and key in self.psg_modules_dict:
                 x = self.psg_modules_dict[key](x, hw_shape, scene_heatmaps)
-            elif self.use_cross_attn and scene_heatmaps is not None:
-                # PXA mode: run block then apply cross-attention
-                x = block(x, hw_shape)
-                x = self.pxa_modules_dict[key](x, hw_shape, scene_heatmaps)
-            elif self.use_attn_bias and scene_heatmaps is not None:
-                # PAB-only mode: compute pose attention bias and pass to block
-                pose_bias_map = self.pab_modules_dict[key](
-                    scene_heatmaps, hw_shape)
-                x = block(x, hw_shape, pose_bias_map=pose_bias_map)
-            elif kp_rpe_bias is not None:
-                # KP-RPE mode: pass pre-computed bias directly to block
-                # Need to pass via extra_attn_bias (bypass pose_bias_map path)
-                x = block(x, hw_shape, extra_attn_bias=kp_rpe_bias)
-                # PSG still applies after block
-                if scene_heatmaps is not None and key in getattr(self, 'psg_modules_dict', {}):
-                    x = self.psg_modules_dict[key](x, hw_shape, scene_heatmaps)
-            else:
-                # PSG-only mode (optionally with PGAM attention masking)
-                if self.use_attn_mask and scene_heatmaps is not None and key in getattr(self, 'pgam_modules_dict', {}):
-                    # PGAM: generate pose-based attention mask and pass to block
-                    pose_bias_map = self.pgam_modules_dict[key](scene_heatmaps, hw_shape)
-                    x = block(x, hw_shape, pose_bias_map=pose_bias_map)
-                else:
-                    x = block(x, hw_shape)
-                # PSG: apply gate after block
-                if not self.use_attn_bias and scene_heatmaps is not None and key in getattr(self, 'psg_modules_dict', {}):
-                    x = self.psg_modules_dict[key](x, hw_shape, scene_heatmaps)
-                # PAA: apply additive adapter after PSG
-                # S&C mode: use target-person heatmaps for PAA if available
-                if getattr(self, 'use_paa', False) and scene_heatmaps is not None and key in getattr(self, 'paa_modules_dict', {}):
-                    paa_input = paa_heatmaps if paa_heatmaps is not None else scene_heatmaps
-                    x = self.paa_modules_dict[key](x, hw_shape, paa_input)
-                # PGTM: Pose-Guided Token Merging after PAA
-                if getattr(self, 'use_pgtm', False) and scene_heatmaps is not None and key in getattr(self, 'pgtm_modules_dict', {}):
-                    x = self.pgtm_modules_dict[key](x, hw_shape, scene_heatmaps)
-                # TDPC: target-distractor differential adapter after PAA
-                if getattr(self, 'use_tdpc', False) and diff_heatmaps is not None and key in getattr(self, 'tdpc_modules_dict', {}):
-                    x = self.tdpc_modules_dict[key](x, hw_shape, diff_heatmaps)
-                # PCL: pose-conditioned LoRA (feature-dependent, replaces PAA)
-                if getattr(self, 'use_pcl', False) and scene_heatmaps is not None and key in getattr(self, 'pcl_modules_dict', {}):
-                    pcl_input = paa_heatmaps if paa_heatmaps is not None else scene_heatmaps
-                    x = self.pcl_modules_dict[key](x, hw_shape, pcl_input)
 
-            # FiLM: apply per-channel affine modulation (works alongside PSG/PAA)
-            if getattr(self, 'use_film', False) and scene_heatmaps is not None and key in getattr(self, 'film_generators', {}):
-                gamma, beta = self.film_generators[key](
-                    scene_heatmaps)
-                x = self.film_layer(x, hw_shape, gamma, beta)
+            # PAA: apply additive adapter after PSG
+            if getattr(self, 'use_paa', False) and scene_heatmaps is not None and key in getattr(self, 'paa_modules_dict', {}):
+                x = self.paa_modules_dict[key](x, hw_shape, scene_heatmaps)
 
         # Handle downsample (Stage 3 has no downsample in Swin)
         if stage.downsample:
@@ -952,10 +250,8 @@ class PoseBackboneModel(build_transformer):
                 pose_dict=None):
         # Prepare pose
         scene_heatmaps = None
-        target_heatmaps = None
-        diff_heatmaps = None
         if pose_dict is not None:
-            scene_heatmaps, _, target_heatmaps, diff_heatmaps = self._prepare_pose(pose_dict)
+            scene_heatmaps, _, _, _ = self._prepare_pose(pose_dict)
 
         # Stochastic Pose Dropout: zero out heatmaps per-sample during training
         if self.training and scene_heatmaps is not None and self.pose_dropout_p > 0:
@@ -964,30 +260,7 @@ class PoseBackboneModel(build_transformer):
             scene_heatmaps = scene_heatmaps * keep_mask.float()
 
         # Run backbone with PSG injection
-        # For S&C: pass target_heatmaps to PAA (separate from scene for PSG)
-        # For ST-PAA: pass cat(scene, target) to PAA (34 channels)
-        if getattr(self, 'paa_scene_target', False) and scene_heatmaps is not None and target_heatmaps is not None:
-            paa_heatmaps = torch.cat([scene_heatmaps, target_heatmaps], dim=1)
-        elif getattr(self, 'paa_target_only', False):
-            paa_heatmaps = target_heatmaps
-        else:
-            paa_heatmaps = None
-        # TDPC: pass diff_heatmaps for differential adapter
-        tdpc_diff = diff_heatmaps if getattr(self, 'use_tdpc', False) else None
-        global_feat, featmaps = self._run_backbone_with_psg(
-            x, scene_heatmaps,
-            pose_dict=pose_dict if self.use_kp_rpe else None,
-            paa_heatmaps=paa_heatmaps,
-            diff_heatmaps=tdpc_diff)
-
-        # Apply Pose-Conditioned Channel Gate (PCG) after GAP, before BN
-        if self.use_channel_gate and scene_heatmaps is not None:
-            global_feat = self.channel_gate(global_feat, scene_heatmaps)
-
-        # Compute pose reconstruction loss (training only)
-        recon_loss = None
-        if self.training and self.use_recon_head and scene_heatmaps is not None:
-            recon_loss = self.recon_head(featmaps[-1], scene_heatmaps)
+        global_feat, featmaps = self._run_backbone_with_psg(x, scene_heatmaps)
 
         if self.reduce_feat_dim:
             global_feat = self.fcneck(global_feat)
@@ -996,63 +269,35 @@ class PoseBackboneModel(build_transformer):
 
         if self.training:
             feat_cls = self.dropout(feat)
-
             if self.ID_LOSS_TYPE in ('arcface', 'cosface', 'amsoftmax', 'circle'):
                 cls_score = self.classifier(feat_cls, label)
             else:
                 cls_score = self.classifier(feat_cls)
 
-            # Part branch: GCN, XCAD, or PTD (detached to prevent gradient interference)
-            if self.use_ptd:
-                # PTD: use heatmaps for supervision, not as input
+            # Part branch: GCN (detached to prevent gradient interference)
+            if self.use_skeleton_gcn and pose_dict is not None:
                 feat_map_detached = featmaps[-1].detach()
-                ptd_cls, ptd_feats, ptd_data = self.ptd_decoder(
-                    feat_map_detached, scene_heatmaps=scene_heatmaps, return_cls=True)
-                # Add heatmap distillation loss to recon_loss
-                if 'ptd_heatmap_loss' in ptd_data:
-                    if recon_loss is None:
-                        recon_loss = ptd_data['ptd_heatmap_loss']
-                    else:
-                        recon_loss = recon_loss + ptd_data['ptd_heatmap_loss']
-                return [cls_score] + ptd_cls, [global_feat] + ptd_feats, featmaps, recon_loss, ptd_data
-            elif self.use_skeleton_gcn and pose_dict is not None:
-                feat_map_detached = featmaps[-1].detach()
-                # MRKF: also pass detached Stage 2 features
-                s2_detached = None
-                if getattr(self, 'use_mrkf', False) and self._mrkf_stage2_cache is not None:
-                    s2_detached = self._mrkf_stage2_cache.detach()
                 gcn_cls_scores, gcn_feats, kp_data = self.skeleton_head(
-                    feat_map_detached, pose_dict, return_cls=True, label=label,
-                    stage2_feat=s2_detached)
-                # Return lists → triggers list-loss path (implicit 0.5x global)
-                # 5th return: kp_data for per-keypoint triplet loss (None if disabled)
-                return [cls_score] + gcn_cls_scores, [global_feat] + gcn_feats, featmaps, recon_loss, kp_data
+                    feat_map_detached, pose_dict, return_cls=True, label=label)
+                # Return lists -> triggers list-loss path (implicit 0.5x global)
+                return [cls_score] + gcn_cls_scores, [global_feat] + gcn_feats, featmaps, None, kp_data
 
-            return cls_score, global_feat, featmaps, recon_loss
+            return cls_score, global_feat, featmaps, None
         else:
             if self.neck_feat == 'after':
                 test_feat = feat
             else:
                 test_feat = global_feat
 
-            # Part branch test features: PTD (no pose needed) or GCN (needs pose)
+            # Part branch test features
             gcn_feats = None
             aux_data = {}
-            if self.use_ptd and getattr(self, 'pose_test_feat', 'global') != 'global':
-                # PTD: NO pose_dict needed at inference!
-                _, gcn_feats, aux_data = self.ptd_decoder(
-                    featmaps[-1], scene_heatmaps=None, return_cls=False)
-            elif self.use_skeleton_gcn and not self.use_ptd and pose_dict is not None and \
+            if self.use_skeleton_gcn and pose_dict is not None and \
                     getattr(self, 'pose_test_feat', 'global') != 'global':
-                # MRKF: pass Stage 2 features at test time too
-                s2_test = None
-                if getattr(self, 'use_mrkf', False) and self._mrkf_stage2_cache is not None:
-                    s2_test = self._mrkf_stage2_cache
                 _, gcn_feats, aux_data = self.skeleton_head(
-                    featmaps[-1], pose_dict, return_cls=False,
-                    stage2_feat=s2_test)
+                    featmaps[-1], pose_dict, return_cls=False)
 
-            # Assemble test features from global + part branch (PTD or GCN)
+            # Assemble test features from global + part branch
             if gcn_feats is not None:
                 if self.pose_test_feat == 'gcn_only':
                     test_feat = torch.cat(gcn_feats, dim=1)
@@ -1081,8 +326,8 @@ class PoseBackboneModel(build_transformer):
         Returns:
             scene_heatmaps: (B, 17, H, W) merged scene-level heatmap
             scene_scores: (B, 17) merged confidence scores
-            target_heatmaps: (B, 17, H, W) person-0 heatmap (for S&C PAA)
-            diff_heatmaps: (B, 17, H, W) H_target - H_distractor (for TDPC)
+            target_heatmaps: (B, 17, H, W) person-0 heatmap
+            diff_heatmaps: (B, 17, H, W) H_target - H_distractor
         """
         heatmaps = pose_dict['heatmaps']
         scores = pose_dict['scores']
@@ -1094,17 +339,14 @@ class PoseBackboneModel(build_transformer):
         masked_scores = scores * score_mask
         scene_scores = masked_scores.max(dim=1)[0]
 
-        # Target-person (person-0) heatmap for S&C PAA
-        # person_mask[:, 0] ensures zero output when no person detected
+        # Target-person (person-0) heatmap
         target_heatmaps = heatmaps[:, 0] * person_mask[:, 0].view(-1, 1, 1, 1)
 
         # Distractor heatmaps: max-merge over non-target persons (indices 1+)
-        # For single-person images: all distractor masks = 0 → distractor_hm = 0
-        # heatmaps[:, 1:] is (B, P-1, 17, H, W), need mask (B, P-1, 1, 1, 1)
-        distractor_mask = person_mask[:, 1:].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)  # (B, P-1, 1, 1, 1)
-        distractor_hm = (heatmaps[:, 1:] * distractor_mask).max(dim=1)[0]  # (B, 17, H, W)
+        distractor_mask = person_mask[:, 1:].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
+        distractor_hm = (heatmaps[:, 1:] * distractor_mask).max(dim=1)[0]
 
-        # Differential signal: positive = target-specific, negative = distractor-specific
+        # Differential signal
         diff_heatmaps = target_heatmaps - distractor_hm
 
         return scene_heatmaps, scene_scores, target_heatmaps, diff_heatmaps

@@ -11,7 +11,6 @@ from utils.meter import AverageMeter
 from utils.metrics import R1_mAP_eval
 from torch.cuda import amp
 import torch.distributed as dist
-from model.modules.pamc import pamc_consistency_loss
 from model.modules.support_complete_bank import SupportCompleteBank
 from model.modules.pair_adaptive_fusion import (
     build_pair_descriptors,
@@ -39,35 +38,6 @@ def _flatten_eval_like_feat(feat):
     return F.normalize(feat, dim=1)
 
 
-def _compute_pcvt_loss(full_feat, view_a_feat, view_b_feat, pose_dict):
-    full = _flatten_eval_like_feat(full_feat)
-    feat_a = _flatten_eval_like_feat(view_a_feat)
-    feat_b = _flatten_eval_like_feat(view_b_feat)
-    union = F.normalize(0.5 * (feat_a + feat_b), dim=1)
-
-    cos_fa = F.cosine_similarity(full, feat_a, dim=1)
-    cos_fb = F.cosine_similarity(full, feat_b, dim=1)
-    cos_fu = F.cosine_similarity(full.detach(), union, dim=1)
-    loss = 1.0 - cos_fu.mean()
-
-    stats = {
-        'cov_a': float(pose_dict['pcvt_cov_a'].float().mean().item()),
-        'cov_b': float(pose_dict['pcvt_cov_b'].float().mean().item()),
-        'cov_u': float(pose_dict['pcvt_cov_u'].float().mean().item()),
-        'ovr': float(pose_dict['pcvt_ovr'].float().mean().item()),
-        'mga': float(pose_dict['pcvt_mga'].float().mean().item()),
-        'mgb': float(pose_dict['pcvt_mgb'].float().mean().item()),
-        'gca': float(pose_dict['pcvt_gca'].float().mean().item()),
-        'gcb': float(pose_dict['pcvt_gcb'].float().mean().item()),
-        'fb': float(pose_dict['pcvt_fb'].float().mean().item()),
-        'cos_fa': float(cos_fa.mean().item()),
-        'cos_fb': float(cos_fb.mean().item()),
-        'cos_fu': float(cos_fu.mean().item()),
-        'gap': float((cos_fu - 0.5 * (cos_fa + cos_fb)).mean().item()),
-    }
-    return loss, stats
-
-
 def do_train(cfg,
              model,
              center_criterion,
@@ -85,153 +55,17 @@ def do_train(cfg,
     device = "cuda"
     epochs = cfg.SOLVER.MAX_EPOCHS
     use_pose = cfg.MODEL.POSE_ENABLED
-    pcra_alpha = getattr(cfg.MODEL, 'POSE_PCRA_ALPHA', 0.0)
-    pcvt_enabled = getattr(cfg.MODEL, 'POSE_PCVT', False)
-    pcvt_weight = float(getattr(cfg.MODEL, 'POSE_PCVT_WEIGHT', 0.25))
-    kp_triplet_enabled = getattr(cfg.MODEL, 'POSE_KP_TRIPLET', False)
-    kp_triplet_weight = getattr(cfg.MODEL, 'POSE_KP_TRIPLET_WEIGHT', 1.0)
-    csgt_enabled = getattr(cfg.MODEL, 'POSE_CSGT', False)
-    csrd_enabled = getattr(cfg.MODEL, 'POSE_CSRD', False)
-    pamc_enabled = getattr(cfg.MODEL, 'POSE_PAMC', False)
-    pamc_weight = getattr(cfg.MODEL, 'POSE_PAMC_WEIGHT', 0.5)
-    pamc_warmup = getattr(cfg.MODEL, 'POSE_PAMC_WARMUP', 10)
-    pvat_enabled = getattr(cfg.MODEL, 'POSE_PVAT', False)
-    pvat_weight = float(getattr(cfg.MODEL, 'POSE_PVAT_WEIGHT', 0.1))
-    pvat_warmup = int(getattr(cfg.MODEL, 'POSE_PVAT_WARMUP', 20))
-    pvat_alpha_max = float(getattr(cfg.MODEL, 'POSE_PVAT_ALPHA_MAX', 1.0))
-    pvat_vis_thr = float(getattr(cfg.MODEL, 'POSE_PVAT_VIS_THR', 0.5))
 
-    # LSRM: Learned Skeleton Recovery Module (lives inside model, proper optimizer/scheduler)
-    lsrm_enabled = getattr(cfg.MODEL, 'POSE_LSRM', False)
-    lsrm_weight = getattr(cfg.MODEL, 'POSE_LSRM_WEIGHT', 0.5) if lsrm_enabled else 0
-    lsrm_warmup = 20  # Don't train LSRM before GCN features are meaningful
-
-    # PCQA: Pose Translation Module (inside model)
-    ptm_enabled = getattr(cfg.MODEL, 'POSE_TRANSLATION', False)
-    ptm_weight = getattr(cfg.MODEL, 'POSE_TRANSLATION_WEIGHT', 0.5) if ptm_enabled else 0
-    ptm_warmup = 20
-    ptm_norm = getattr(cfg.MODEL, 'POSE_TRANSLATION_NORM', False)
-
-    # PAMN: Pose-Aware Matching Network
-    pamn_enabled = getattr(cfg.MODEL, 'POSE_MATCHING_NETWORK', False)
-    pamn_module = None
-    if pamn_enabled:
-        from model.modules.pose_matching_network import PoseMatchingNetwork
-        pamn_weight = getattr(cfg.MODEL, 'POSE_MATCHING_NETWORK_WEIGHT', 0.5)
-        pamn_module = PoseMatchingNetwork(num_keypoints=17, feat_dim=768).to(device)
-        # Add PAMN params to optimizer
-        pamn_params = [{'params': pamn_module.parameters(), 'lr': cfg.SOLVER.BASE_LR}]
-        for pg in pamn_params:
-            optimizer.add_param_group(pg)
-
-    # Momentum Memory Contrastive Learning
-    mm_enabled = getattr(cfg.MODEL, 'POSE_MOMENTUM_MEMORY', False)
-    mm_memory = None
-    if mm_enabled:
-        from model.modules.momentum_memory import MomentumMemory
-        mm_weight = getattr(cfg.MODEL, 'POSE_MOMENTUM_MEMORY_WEIGHT', 0.5)
-        mm_temp = getattr(cfg.MODEL, 'POSE_MOMENTUM_MEMORY_TEMP', 0.05)
-        mm_mom = getattr(cfg.MODEL, 'POSE_MOMENTUM_MEMORY_MOM', 0.1)
-        num_train_classes = len(set([d[1] for d in train_loader.dataset.dataset]))
-        mm_memory = MomentumMemory(
-            feat_dim=768, num_classes=num_train_classes,
-            momentum=mm_mom, temp=mm_temp).to(device)
-
-    sckd_enabled = getattr(cfg.MODEL, 'POSE_SCKD', False)
-    scfr_enabled = getattr(cfg.MODEL, 'POSE_SCFR', False)
-    scrc_enabled = getattr(cfg.MODEL, 'POSE_SCRC', False)
-    skc_enabled = getattr(cfg.MODEL, 'POSE_SKC', False)
-    if (scfr_enabled or scrc_enabled) and not sckd_enabled:
-        raise ValueError('POSE_SCFR/POSE_SCRC require POSE_SCKD=True to create the support bank')
-    if scfr_enabled and scrc_enabled:
-        raise ValueError('POSE_SCFR and POSE_SCRC cannot be enabled together')
-    if skc_enabled and (sckd_enabled or scfr_enabled or scrc_enabled):
-        raise ValueError('POSE_SKC must run independently from POSE_SCKD/POSE_SCFR/POSE_SCRC')
-    sckd_bank = None
-    if sckd_enabled:
-        sckd_weight = getattr(cfg.MODEL, 'POSE_SCKD_WEIGHT', 0.5)
-        sckd_warmup = getattr(cfg.MODEL, 'POSE_SCKD_WARMUP', 20)
-        sckd_low_thr = getattr(cfg.MODEL, 'POSE_SCKD_LOW_THR', 0.3)
-        sckd_update_thr = getattr(cfg.MODEL, 'POSE_SCKD_UPDATE_THR', 0.5)
-        sckd_mom = getattr(cfg.MODEL, 'POSE_SCKD_MOM', 0.9)
-        sckd_min_count = getattr(cfg.MODEL, 'POSE_SCKD_MIN_COUNT', 1)
-        sckd_update_stop_epoch = getattr(cfg.MODEL, 'POSE_SCKD_UPDATE_STOP_EPOCH', -1)
-        num_train_classes = len(set([d[1] for d in train_loader.dataset.dataset]))
-        sckd_bank = SupportCompleteBank(
-            num_classes=num_train_classes,
-            feat_dim=768,
-            num_keypoints=17,
-            low_thr=sckd_low_thr,
-            update_thr=sckd_update_thr,
-            momentum=sckd_mom,
-            min_count=sckd_min_count,
-        ).to(device)
-    skc_bank = None
-    if skc_enabled:
-        skc_weight = getattr(cfg.MODEL, 'POSE_SKC_WEIGHT', 0.5)
-        skc_warmup = getattr(cfg.MODEL, 'POSE_SKC_WARMUP', 20)
-        skc_low_thr = getattr(cfg.MODEL, 'POSE_SKC_LOW_THR', 0.3)
-        skc_update_thr = getattr(cfg.MODEL, 'POSE_SKC_UPDATE_THR', 0.7)
-        skc_mom = getattr(cfg.MODEL, 'POSE_SKC_MOM', 0.9)
-        skc_min_count = getattr(cfg.MODEL, 'POSE_SKC_MIN_COUNT', 1)
-        skc_update_stop_epoch = getattr(cfg.MODEL, 'POSE_SKC_UPDATE_STOP_EPOCH', -1)
-        num_train_classes = len(set([d[1] for d in train_loader.dataset.dataset]))
-        skc_bank = SupportCompleteBank(
-            num_classes=num_train_classes,
-            feat_dim=768,
-            num_keypoints=17,
-            low_thr=skc_low_thr,
-            update_thr=skc_update_thr,
-            momentum=skc_mom,
-            min_count=skc_min_count,
-        ).to(device)
-
-    csrd_support_teacher = getattr(cfg.MODEL, 'POSE_CSRD_SUPPORT_TEACHER', False)
-    csrd_teacher_bank = None
-    csrd_target_mode = getattr(cfg.MODEL, 'POSE_CSRD_TARGET_MODE', 'full')
-    csrd_anchor_weight_mode = getattr(cfg.MODEL, 'POSE_CSRD_ANCHOR_WEIGHT_MODE', 'none')
-    csrd_pair_weight_mode = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_WEIGHT_MODE', 'none')
-    csrd_queue_size = getattr(cfg.MODEL, 'POSE_CSRD_QUEUE_SIZE', 0)
-    if csrd_target_mode not in ('full', 'residual', 'residual_kl'):
-        raise ValueError(f"Unsupported POSE_CSRD_TARGET_MODE: {csrd_target_mode}")
-    if csrd_anchor_weight_mode not in ('none', 'replace_ratio', 'low_ratio'):
-        raise ValueError(f"Unsupported POSE_CSRD_ANCHOR_WEIGHT_MODE: {csrd_anchor_weight_mode}")
-    if csrd_pair_weight_mode not in ('none', 'delta', 'delta_top', 'delta_top_exact'):
-        raise ValueError(f"Unsupported POSE_CSRD_PAIR_WEIGHT_MODE: {csrd_pair_weight_mode}")
-    if csrd_anchor_weight_mode != 'none' and not csrd_support_teacher:
-        raise ValueError('POSE_CSRD_ANCHOR_WEIGHT_MODE requires POSE_CSRD_SUPPORT_TEACHER=True')
-    if csrd_pair_weight_mode != 'none' and not csrd_support_teacher:
-        raise ValueError('POSE_CSRD_PAIR_WEIGHT_MODE requires POSE_CSRD_SUPPORT_TEACHER=True')
-    if csrd_target_mode == 'residual' and not csrd_support_teacher:
-        raise ValueError('POSE_CSRD_TARGET_MODE=residual requires POSE_CSRD_SUPPORT_TEACHER=True')
-    if csrd_target_mode == 'residual_kl' and not csrd_support_teacher:
-        raise ValueError('POSE_CSRD_TARGET_MODE=residual_kl requires POSE_CSRD_SUPPORT_TEACHER=True')
-    if csrd_enabled and csrd_support_teacher:
-        csrd_st_low_thr = getattr(cfg.MODEL, 'POSE_CSRD_ST_LOW_THR', 0.3)
-        csrd_st_update_thr = getattr(cfg.MODEL, 'POSE_CSRD_ST_UPDATE_THR', 0.7)
-        csrd_st_mom = getattr(cfg.MODEL, 'POSE_CSRD_ST_MOM', 0.9)
-        csrd_st_min_count = getattr(cfg.MODEL, 'POSE_CSRD_ST_MIN_COUNT', 1)
-        csrd_st_update_stop_epoch = getattr(cfg.MODEL, 'POSE_CSRD_ST_UPDATE_STOP_EPOCH', -1)
-        num_train_classes = len(set([d[1] for d in train_loader.dataset.dataset]))
-        csrd_teacher_bank = SupportCompleteBank(
-            num_classes=num_train_classes,
-            feat_dim=768,
-            num_keypoints=17,
-            low_thr=csrd_st_low_thr,
-            update_thr=csrd_st_update_thr,
-            momentum=csrd_st_mom,
-            min_count=csrd_st_min_count,
-        ).to(device)
-
+    # LTCS / LPCS support banks
     ltcs_enabled = getattr(cfg.MODEL, 'POSE_LTCS', False)
     lpcs_enabled = getattr(cfg.MODEL, 'POSE_LPCS', False)
     if ltcs_enabled and lpcs_enabled:
         raise ValueError('POSE_LTCS and POSE_LPCS cannot be enabled together')
+
     ltcs_teacher_bank = None
     if ltcs_enabled:
         ltcs_weight = getattr(cfg.MODEL, 'POSE_LTCS_WEIGHT', 0.5)
         ltcs_warmup = getattr(cfg.MODEL, 'POSE_LTCS_WARMUP', 20)
-        ltcs_hidden = getattr(cfg.MODEL, 'POSE_LTCS_HIDDEN', 32)
         ltcs_st_low_thr = getattr(cfg.MODEL, 'POSE_LTCS_ST_LOW_THR', 0.3)
         ltcs_st_update_thr = getattr(cfg.MODEL, 'POSE_LTCS_ST_UPDATE_THR', 0.7)
         ltcs_st_mom = getattr(cfg.MODEL, 'POSE_LTCS_ST_MOM', 0.9)
@@ -239,14 +73,11 @@ def do_train(cfg,
         ltcs_st_update_stop_epoch = getattr(cfg.MODEL, 'POSE_LTCS_ST_UPDATE_STOP_EPOCH', -1)
         num_train_classes = len(set([d[1] for d in train_loader.dataset.dataset]))
         ltcs_teacher_bank = SupportCompleteBank(
-            num_classes=num_train_classes,
-            feat_dim=768,
-            num_keypoints=17,
-            low_thr=ltcs_st_low_thr,
-            update_thr=ltcs_st_update_thr,
-            momentum=ltcs_st_mom,
-            min_count=ltcs_st_min_count,
+            num_classes=num_train_classes, feat_dim=768, num_keypoints=17,
+            low_thr=ltcs_st_low_thr, update_thr=ltcs_st_update_thr,
+            momentum=ltcs_st_mom, min_count=ltcs_st_min_count,
         ).to(device)
+
     lpcs_teacher_bank = None
     if lpcs_enabled:
         lpcs_weight = getattr(cfg.MODEL, 'POSE_LPCS_WEIGHT', 0.5)
@@ -268,138 +99,22 @@ def do_train(cfg,
         lpcs_st_mom = getattr(cfg.MODEL, 'POSE_LPCS_ST_MOM', 0.9)
         lpcs_st_min_count = getattr(cfg.MODEL, 'POSE_LPCS_ST_MIN_COUNT', 1)
         lpcs_st_update_stop_epoch = getattr(cfg.MODEL, 'POSE_LPCS_ST_UPDATE_STOP_EPOCH', -1)
-        if lpcs_pair_mode == 'delta_top' and not (0.0 < lpcs_pair_top_ratio <= 1.0):
-            raise ValueError('POSE_LPCS_PAIR_TOP_RATIO must be in (0, 1] when POSE_LPCS_PAIR_MODE=delta_top')
-        if lpcs_rank_mode not in ('all', 'hard_top', 'rank_decay'):
-            raise ValueError("POSE_LPCS_RANK_MODE must be one of {'all', 'hard_top', 'rank_decay'}")
-        if lpcs_rank_mode == 'hard_top' and not (0.0 < lpcs_rank_top_ratio <= 1.0):
-            raise ValueError('POSE_LPCS_RANK_TOP_RATIO must be in (0, 1] when POSE_LPCS_RANK_MODE=hard_top')
-        if lpcs_rank_mode == 'rank_decay' and lpcs_rank_tau <= 0.0:
-            raise ValueError('POSE_LPCS_RANK_TAU must be > 0 when POSE_LPCS_RANK_MODE=rank_decay')
-        if lpcs_head_mode not in ('residual', 'residual_conf'):
-            raise ValueError("POSE_LPCS_HEAD_MODE must be one of {'residual', 'residual_conf'}")
-        if lpcs_context_mode not in ('none', 'query_ctx', 'comp_ctx'):
-            raise ValueError("POSE_LPCS_CONTEXT_MODE must be one of {'none', 'query_ctx', 'comp_ctx'}")
         num_train_classes = len(set([d[1] for d in train_loader.dataset.dataset]))
         lpcs_teacher_bank = SupportCompleteBank(
-            num_classes=num_train_classes,
-            feat_dim=768,
-            num_keypoints=17,
-            low_thr=lpcs_st_low_thr,
-            update_thr=lpcs_st_update_thr,
-            momentum=lpcs_st_mom,
-            min_count=lpcs_st_min_count,
+            num_classes=num_train_classes, feat_dim=768, num_keypoints=17,
+            low_thr=lpcs_st_low_thr, update_thr=lpcs_st_update_thr,
+            momentum=lpcs_st_mom, min_count=lpcs_st_min_count,
         ).to(device)
 
     logger = logging.getLogger("transreid.train")
     logger.info('start training')
     if use_pose:
         logger.info('Pose-guided training ENABLED')
-    if pcvt_enabled:
-        logger.info(f'[PCVT] enabled: weight={pcvt_weight}, '
-                    f'resp_thr={getattr(cfg.MODEL, "POSE_PCVT_RESP_THR", 0.10)}, '
-                    f'act_thr={getattr(cfg.MODEL, "POSE_PCVT_ACT_THR", 0.30)}, '
-                    f'min_parts={getattr(cfg.MODEL, "POSE_PCVT_MIN_PARTS", 2)}')
-    if pvat_enabled:
-        logger.info(f'[PVAT] enabled: weight={pvat_weight}, warmup={pvat_warmup}, '
-                    f'alpha_max={pvat_alpha_max}, vis_thr={pvat_vis_thr}')
-    if mm_enabled:
-        logger.info(f'Momentum Memory enabled: weight={mm_weight}, temp={mm_temp}, mom={mm_mom}')
-    if sckd_enabled:
-        logger.info(f'[SCKD] enabled: weight={sckd_weight}, warmup={sckd_warmup}, '
-                    f'low_thr={sckd_low_thr}, update_thr={sckd_update_thr}, '
-                    f'mom={sckd_mom}, stop_epoch={sckd_update_stop_epoch}')
-    if skc_enabled:
-        skc_hidden = getattr(cfg.MODEL, 'POSE_SKC_HIDDEN', 256)
-        skc_heads = getattr(cfg.MODEL, 'POSE_SKC_HEADS', 4)
-        logger.info(f'[SKC] enabled: weight={skc_weight}, warmup={skc_warmup}, '
-                    f'hidden={skc_hidden}, heads={skc_heads}, low_thr={skc_low_thr}, '
-                    f'update_thr={skc_update_thr}, mom={skc_mom}, '
-                    f'min_count={skc_min_count}, stop_epoch={skc_update_stop_epoch}')
-    if csrd_enabled and csrd_support_teacher:
-        logger.info(f'[CSRD-ST] enabled: low_thr={csrd_st_low_thr}, '
-                    f'update_thr={csrd_st_update_thr}, mom={csrd_st_mom}, '
-                    f'min_count={csrd_st_min_count}, stop_epoch={csrd_st_update_stop_epoch}')
-    if csrd_enabled:
-        logger.info(f'[CSRD-TARGET] mode={csrd_target_mode}')
-    if csrd_enabled and csrd_pair_weight_mode != 'none':
-        csrd_pair_weight_alpha = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_WEIGHT_ALPHA', 1.0)
-        if csrd_pair_weight_mode in ('delta_top', 'delta_top_exact'):
-            csrd_pair_top_ratio = getattr(cfg.MODEL, 'POSE_CSRD_PAIR_TOP_RATIO', 0.25)
-            logger.info(f'[CSRD-PW] mode={csrd_pair_weight_mode}, '
-                        f'alpha={csrd_pair_weight_alpha}, top_ratio={csrd_pair_top_ratio}')
-        else:
-            logger.info(f'[CSRD-PW] mode={csrd_pair_weight_mode}, '
-                        f'alpha={csrd_pair_weight_alpha}')
-    if csrd_enabled and csrd_queue_size > 0:
-        logger.info(f'[CSRD-QUEUE] size={csrd_queue_size}')
     if ltcs_enabled:
-        logger.info(f'[LTCS] enabled: weight={ltcs_weight}, warmup={ltcs_warmup}, '
-                    f'hidden={ltcs_hidden}, low_thr={ltcs_st_low_thr}, '
-                    f'update_thr={ltcs_st_update_thr}, mom={ltcs_st_mom}, '
-                    f'min_count={ltcs_st_min_count}, stop_epoch={ltcs_st_update_stop_epoch}')
+        logger.info(f'[LTCS] enabled: weight={ltcs_weight}, warmup={ltcs_warmup}')
     if lpcs_enabled:
         logger.info(f'[LPCS] enabled: weight={lpcs_weight}, warmup={lpcs_warmup}, '
-                    f'head_mode={lpcs_head_mode}, conf_weight={lpcs_conf_weight}, '
-                    f'hidden={lpcs_hidden}, delta_scale={lpcs_delta_scale}, '
-                    f'pair_mode={lpcs_pair_mode}, top_ratio={lpcs_pair_top_ratio}, '
-                    f'rank_mode={lpcs_rank_mode}, rank_top_ratio={lpcs_rank_top_ratio}, '
-                    f'rank_tau={lpcs_rank_tau}, context_mode={lpcs_context_mode}, '
-                    f'cvk_gw={lpcs_cvk_global_weight}, cvk_kw={lpcs_cvk_kp_weight}, '
-                    f'low_thr={lpcs_st_low_thr}, update_thr={lpcs_st_update_thr}, '
-                    f'mom={lpcs_st_mom}, min_count={lpcs_st_min_count}, '
-                    f'stop_epoch={lpcs_st_update_stop_epoch}')
-        if lpcs_pair_mode == 'delta_top' and lpcs_pair_top_ratio >= 1.0:
-            logger.warning('[LPCS] pair_mode=delta_top but top_ratio>=1.0; routing degenerates to selecting all pairs')
-        if lpcs_rank_mode == 'hard_top' and lpcs_rank_top_ratio >= 1.0:
-            logger.warning('[LPCS] rank_mode=hard_top but rank_top_ratio>=1.0; hard aggregation degenerates to selecting all pairs')
-        if lpcs_rank_mode == 'rank_decay' and lpcs_rank_tau >= 1e6:
-            logger.warning('[LPCS] rank_mode=rank_decay but rank_tau is extremely large; weighting may degenerate to near-uniform')
-    if scfr_enabled:
-        logger.info(f'[SCFR] Feature replacement mode enabled (loss disabled, bank replaces features)')
-    if scrc_enabled:
-        scrc_hidden = getattr(cfg.MODEL, 'POSE_SCRC_HIDDEN', 128)
-        logger.info(f'[SCRC] Residual completion mode enabled: hidden={scrc_hidden} '
-                    f'(loss disabled, bank fuses support prior into low-vis keypoints)')
-    if pamc_enabled:
-        logger.info(f'[PAMC] Pose-Aware Masking Consistency: weight={pamc_weight}, warmup={pamc_warmup}')
-    if pcra_alpha > 0:
-        logger.info(f'[PCRA] Pose-Contrastive Representation Alignment: alpha={pcra_alpha}')
-
-    csrd_queue = None
-    if csrd_enabled and csrd_queue_size > 0:
-        csrd_queue = {
-            'student_feat': None,
-            'kp_feats': None,
-            'kp_weights': None,
-            'teacher_kp_feats': None,
-            'labels': None,
-        }
-
-    def _get_csrd_queue_payload():
-        if csrd_queue is None or csrd_queue['labels'] is None:
-            return None
-        if csrd_queue['labels'].numel() == 0:
-            return None
-        return {k: v.detach() for k, v in csrd_queue.items()}
-
-    def _enqueue_csrd_queue(student_feat, kp_feats, kp_weights, teacher_kp_feats, labels):
-        if csrd_queue is None:
-            return
-        new_items = {
-            'student_feat': student_feat.detach(),
-            'kp_feats': kp_feats.detach(),
-            'kp_weights': kp_weights.detach(),
-            'teacher_kp_feats': teacher_kp_feats.detach(),
-            'labels': labels.detach(),
-        }
-        for key, value in new_items.items():
-            if csrd_queue[key] is None:
-                csrd_queue[key] = value
-            else:
-                csrd_queue[key] = torch.cat([csrd_queue[key], value], dim=0)
-                if csrd_queue[key].size(0) > csrd_queue_size:
-                    csrd_queue[key] = csrd_queue[key][-csrd_queue_size:]
+                    f'head_mode={lpcs_head_mode}, context_mode={lpcs_context_mode}')
 
     def _compute_ltcs_loss(ltcs_head, global_feat, kp_feats, kp_weights, teacher_kp_feats, labels):
         feat_g = F.normalize(global_feat.detach(), dim=-1)
@@ -493,22 +208,17 @@ def do_train(cfg,
         if lpcs_context_mode == 'query_ctx':
             pair_gap = (kp_dist.detach() - base_dist.detach()).abs()
             row_ctx = build_query_context_descriptors(
-                base_dist.detach(),
-                support_ratio.detach(),
-                pair_change=pair_gap,
-                valid_mask=~eye,
-            )
+                base_dist.detach(), support_ratio.detach(),
+                pair_change=pair_gap, valid_mask=~eye)
             desc = torch.cat([desc, row_ctx], dim=-1)
             context_mean = float(row_ctx.abs().mean().item())
         elif lpcs_context_mode == 'comp_ctx':
             comp_ctx = build_query_competition_descriptors(
-                base_dist.detach(),
-                kp_dist.detach(),
-                support_ratio.detach(),
-                valid_mask=~eye,
-            )
+                base_dist.detach(), kp_dist.detach(),
+                support_ratio.detach(), valid_mask=~eye)
             desc = torch.cat([desc, comp_ctx], dim=-1)
             context_mean = float(comp_ctx.abs().mean().item())
+
         if lpcs_head_mode == 'residual_conf':
             raw_delta, conf_logits = lpcs_head(desc.view(-1, desc.shape[-1]))
             raw_delta = raw_delta.view(batch_size, batch_size)
@@ -603,10 +313,7 @@ def do_train(cfg,
         if conf is not None:
             mask = ~eye
             conf_loss = F.binary_cross_entropy_with_logits(
-                conf_logits[mask],
-                conf_target[mask],
-                reduction='none',
-            )
+                conf_logits[mask], conf_target[mask], reduction='none')
             conf_loss = (conf_loss * pair_weight[mask]).sum() / pair_weight[mask].sum().clamp(min=1e-6)
             loss = loss + lpcs_conf_weight * conf_loss
 
@@ -622,8 +329,7 @@ def do_train(cfg,
         pair_focus = 1.0
         if selected_pair_count > 0.0 and total_pair_weight_sum > 0.0:
             pair_focus = (selected_pair_weight_sum / selected_pair_count) / (
-                total_pair_weight_sum / max(total_pair_count, 1e-6)
-            )
+                total_pair_weight_sum / max(total_pair_count, 1e-6))
         rank_selected_ratio = rank_selected_pair_count / max(selected_pair_count, 1e-6)
         rank_weight_mean = rank_factor_sum / max(rank_factor_count, 1e-6)
         stats = {
@@ -646,6 +352,7 @@ def do_train(cfg,
             stats['conf_target_mean'] = float(conf_target[mask].mean().item())
             stats['conf_loss'] = float(conf_loss.item())
         return loss, stats
+
     _LOCAL_PROCESS_GROUP = None
     if device:
         model.to(local_rank)
@@ -655,7 +362,6 @@ def do_train(cfg,
 
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
-    # Per-component loss meters for detailed logging
     detail_meters = {}
 
     evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM, cfg=cfg)
@@ -666,7 +372,6 @@ def do_train(cfg,
     backbone_frozen = False
 
     def _freeze_backbone(model):
-        """Freeze backbone parameters, keep PSG/classifier/BN trainable."""
         m = model.module if hasattr(model, 'module') else model
         for name, param in m.base.named_parameters():
             param.requires_grad = False
@@ -675,7 +380,6 @@ def do_train(cfg,
         logger.info(f'Backbone FROZEN: {frozen}/{total} params frozen')
 
     def _unfreeze_backbone(model):
-        """Unfreeze all backbone parameters."""
         m = model.module if hasattr(model, 'module') else model
         for param in m.base.parameters():
             param.requires_grad = True
@@ -688,17 +392,9 @@ def do_train(cfg,
 
     # train
     for epoch in range(1, epochs + 1):
-        # Unfreeze backbone after warmup
         if backbone_frozen and epoch > freeze_epochs:
             _unfreeze_backbone(model)
             backbone_frozen = False
-        # Set current epoch for delayed stop_grad
-        _model = model.module if hasattr(model, 'module') else model
-        if hasattr(_model, 'current_epoch'):
-            _model.current_epoch = epoch
-            if hasattr(_model, 'stop_grad_epochs') and _model.stop_grad_epochs > 0:
-                if epoch == _model.stop_grad_epochs + 1:
-                    logger.info(f'[PDS] Epoch {epoch}: Part gradient RELEASED to shared stages')
 
         start_time = time.time()
         loss_meter.reset()
@@ -707,19 +403,6 @@ def do_train(cfg,
             m.reset()
         evaluator.reset()
         model.train()
-
-        # SCFR: set/unset bank reference on skeleton_head each epoch
-        if (scfr_enabled or scrc_enabled) and sckd_bank is not None:
-            _m = model.module if hasattr(model, 'module') else model
-            if hasattr(_m, 'skeleton_head'):
-                _m.skeleton_head._scfr_bank = sckd_bank if scfr_enabled else None
-                _m.skeleton_head._scfr_active = (epoch > sckd_warmup) if scfr_enabled else False
-                _m.skeleton_head._scrc_bank = sckd_bank if scrc_enabled else None
-                _m.skeleton_head._scrc_active = (epoch > sckd_warmup) if scrc_enabled else False
-        if skc_enabled:
-            _m = model.module if hasattr(model, 'module') else model
-            if hasattr(_m, 'skeleton_head'):
-                _m.skeleton_head._skc_active = (epoch > skc_warmup)
 
         for n_iter, batch_data in enumerate(train_loader):
             optimizer.zero_grad()
@@ -745,7 +428,6 @@ def do_train(cfg,
             target_view = target_view.to(device)
 
             with amp.autocast(enabled=True):
-                feat_maps = None  # captured for PACD
                 if parallel_aug and use_pose:
                     # 3-view parallel augmentation: forward all, average loss
                     all_scores, all_feats, all_recon, all_kpdata = [], [], [], []
@@ -763,18 +445,13 @@ def do_train(cfg,
                         all_feats.append(f)
                         all_recon.append(rl)
                         all_kpdata.append(kd)
-                    # Use first view's outputs as primary (for logging)
                     score, feat = all_scores[0], all_feats[0]
-                    feat_maps = fm_v  # last view's feature maps for PACD
                     recon_loss = all_recon[0]
                     kp_data = all_kpdata[0]
                 elif use_pose:
                     model_out = model(img, label=target, cam_label=target_cam,
-                                      view_label=target_view,
-                                      pose_dict=pose_dict)
-                    # Handle optional return values
+                                      view_label=target_view, pose_dict=pose_dict)
                     kp_data = None
-                    feat_maps = None
                     if len(model_out) == 5:
                         score, feat, feat_maps, recon_loss, kp_data = model_out
                     elif len(model_out) == 4:
@@ -786,96 +463,51 @@ def do_train(cfg,
                     score, feat, _ = model(img, label=target, cam_label=target_cam,
                                            view_label=target_view)
                     recon_loss = None
-                # PCRA: compute pose similarity matrix for triplet loss
-                pose_sim = None
-                if use_pose and pose_dict is not None and pcra_alpha > 0:
-                    heatmaps = pose_dict['heatmaps']  # (B, max_persons, 17, H, W)
-                    # Merge persons: max across person dim → (B, 17, H, W)
-                    scene_hm = heatmaps.max(dim=1)[0]
-                    # GAP → (B, 17) pose signature
-                    pose_sig = scene_hm.mean(dim=(-2, -1))  # (B, 17)
-                    # Cosine similarity matrix (B, B)
-                    pose_sig_norm = F.normalize(pose_sig, p=2, dim=1)
-                    pose_sim = torch.mm(pose_sig_norm, pose_sig_norm.t())  # (B, B)
+                    kp_data = None
 
-                # Prepare per-keypoint triplet data
-                paml_enabled = getattr(cfg.MODEL, 'POSE_PAML', False)
-                kp_aux_data = None
-                kdl_enabled = getattr(cfg.MODEL, 'POSE_KP_DISSIMILAR', False)
-                lku_enabled = getattr(cfg.MODEL, 'POSE_KP_UNCERTAINTY', False)
-                pke_enabled = getattr(cfg.MODEL, 'POSE_PKE', False)
+                # Prepare kp_aux_data for loss function
                 maxsim_tri_enabled = getattr(cfg.MODEL, 'POSE_MAXSIM_TRIPLET', False)
-                if kp_data is not None and (
-                    kp_triplet_enabled or csgt_enabled or csrd_enabled or ltcs_enabled or lpcs_enabled
-                    or paml_enabled or kdl_enabled or lku_enabled or pke_enabled
-                    or maxsim_tri_enabled
-                ):
+                kp_aux_data = None
+                if kp_data is not None and maxsim_tri_enabled:
                     kp_aux_data = dict(kp_data)
                     kp_aux_data['epoch'] = epoch
-                    if kp_triplet_enabled:
-                        kp_aux_data['weight'] = kp_triplet_weight
-                    if csrd_enabled and csrd_support_teacher and csrd_teacher_bank is not None and epoch > getattr(cfg.MODEL, 'POSE_CSRD_WARMUP', 20):
-                        kp_feats_csrd = kp_data.get('kp_feats')
-                        kp_w_csrd = kp_data.get('kp_weights')
-                        if kp_feats_csrd is not None and kp_w_csrd is not None:
-                            teacher_feats, replace_mask, teacher_stats = csrd_teacher_bank.replace(
-                                kp_feats_csrd, kp_w_csrd, target)
-                            kp_aux_data['csrd_teacher_feats'] = teacher_feats.detach()
-                            if csrd_anchor_weight_mode == 'replace_ratio':
-                                anchor_weights = replace_mask.float().mean(dim=1)
-                            elif csrd_anchor_weight_mode == 'low_ratio':
-                                anchor_weights = (kp_w_csrd <= csrd_teacher_bank.low_thr).float().mean(dim=1)
-                            else:
-                                anchor_weights = None
-                            if anchor_weights is not None:
-                                kp_aux_data['csrd_anchor_weights'] = anchor_weights.detach()
-                                teacher_stats['anchor_weight_mean'] = float(anchor_weights.mean().item())
-                                teacher_stats['anchor_active_ratio'] = float((anchor_weights > 0).float().mean().item())
-                            kp_aux_data['csrd_teacher_stats'] = teacher_stats
-                            if csrd_queue_size > 0:
-                                queue_payload = _get_csrd_queue_payload()
-                                if queue_payload is not None:
-                                    kp_aux_data['csrd_queue'] = queue_payload
-                    if ltcs_enabled and ltcs_teacher_bank is not None and epoch > ltcs_warmup:
-                        kp_feats_ltcs = kp_data.get('kp_feats')
-                        kp_w_ltcs = kp_data.get('kp_weights')
-                        if kp_feats_ltcs is not None and kp_w_ltcs is not None:
-                            teacher_feats_ltcs, _, teacher_stats_ltcs = ltcs_teacher_bank.replace(
-                                kp_feats_ltcs, kp_w_ltcs, target)
-                            kp_aux_data['ltcs_teacher_feats'] = teacher_feats_ltcs.detach()
-                            kp_aux_data['ltcs_teacher_stats'] = teacher_stats_ltcs
-                    if lpcs_enabled and lpcs_teacher_bank is not None and epoch > lpcs_warmup:
-                        kp_feats_lpcs = kp_data.get('kp_feats')
-                        kp_w_lpcs = kp_data.get('kp_weights')
-                        if kp_feats_lpcs is not None and kp_w_lpcs is not None:
-                            teacher_feats_lpcs, _, teacher_stats_lpcs = lpcs_teacher_bank.replace(
-                                kp_feats_lpcs, kp_w_lpcs, target)
-                            kp_aux_data['lpcs_teacher_feats'] = teacher_feats_lpcs.detach()
-                            kp_aux_data['lpcs_teacher_stats'] = teacher_stats_lpcs
 
-                loss = loss_fn(score, feat, target, target_cam, pose_sim=pose_sim,
-                               kp_data=kp_aux_data)
-                if kp_aux_data is not None and 'csrd_teacher_stats' in kp_aux_data:
-                    teacher_stats = kp_aux_data['csrd_teacher_stats']
-                    details = getattr(loss, '_loss_details', {})
-                    details['csrd_sr'] = teacher_stats['replace_ratio']
-                    details['csrd_sn'] = float(teacher_stats['n_replaced'])
-                    details['csrd_lowr'] = teacher_stats['low_ratio']
-                    if 'anchor_weight_mean' in teacher_stats:
-                        details['csrd_aw'] = teacher_stats['anchor_weight_mean']
-                        details['csrd_ar'] = teacher_stats['anchor_active_ratio']
-                    loss._loss_details = details
+                # LTCS teacher bank replacement
+                if ltcs_enabled and ltcs_teacher_bank is not None and kp_data is not None and epoch > ltcs_warmup:
+                    if kp_aux_data is None:
+                        kp_aux_data = dict(kp_data)
+                        kp_aux_data['epoch'] = epoch
+                    kp_feats_ltcs = kp_data.get('kp_feats')
+                    kp_w_ltcs = kp_data.get('kp_weights')
+                    if kp_feats_ltcs is not None and kp_w_ltcs is not None:
+                        teacher_feats_ltcs, _, teacher_stats_ltcs = ltcs_teacher_bank.replace(
+                            kp_feats_ltcs, kp_w_ltcs, target)
+                        kp_aux_data['ltcs_teacher_feats'] = teacher_feats_ltcs.detach()
+                        kp_aux_data['ltcs_teacher_stats'] = teacher_stats_ltcs
+
+                # LPCS teacher bank replacement
+                if lpcs_enabled and lpcs_teacher_bank is not None and kp_data is not None and epoch > lpcs_warmup:
+                    if kp_aux_data is None:
+                        kp_aux_data = dict(kp_data)
+                        kp_aux_data['epoch'] = epoch
+                    kp_feats_lpcs = kp_data.get('kp_feats')
+                    kp_w_lpcs = kp_data.get('kp_weights')
+                    if kp_feats_lpcs is not None and kp_w_lpcs is not None:
+                        teacher_feats_lpcs, _, teacher_stats_lpcs = lpcs_teacher_bank.replace(
+                            kp_feats_lpcs, kp_w_lpcs, target)
+                        kp_aux_data['lpcs_teacher_feats'] = teacher_feats_lpcs.detach()
+                        kp_aux_data['lpcs_teacher_stats'] = teacher_stats_lpcs
+
+                loss = loss_fn(score, feat, target, target_cam, kp_data=kp_aux_data)
+
+                # LTCS loss
                 if ltcs_enabled and kp_aux_data is not None and 'ltcs_teacher_feats' in kp_aux_data:
                     _m = model.module if hasattr(model, 'module') else model
                     global_feat_ltcs = feat[0] if isinstance(feat, list) else feat
                     ltcs_loss, ltcs_stats = _compute_ltcs_loss(
-                        _m.ltcs_head,
-                        global_feat_ltcs,
-                        kp_data.get('kp_feats'),
-                        kp_data.get('kp_weights'),
-                        kp_aux_data['ltcs_teacher_feats'],
-                        target,
-                    )
+                        _m.ltcs_head, global_feat_ltcs,
+                        kp_data.get('kp_feats'), kp_data.get('kp_weights'),
+                        kp_aux_data['ltcs_teacher_feats'], target)
                     details = getattr(loss, '_loss_details', {})
                     loss = loss + ltcs_weight * ltcs_loss
                     details['ltcs'] = ltcs_loss.item()
@@ -887,17 +519,15 @@ def do_train(cfg,
                     details['ltcs_tg'] = ltcs_stats['teacher_gap']
                     details['ltcs_mg'] = ltcs_stats['mixed_gap']
                     loss._loss_details = details
+
+                # LPCS loss
                 if lpcs_enabled and kp_aux_data is not None and 'lpcs_teacher_feats' in kp_aux_data:
                     _m = model.module if hasattr(model, 'module') else model
                     global_feat_lpcs = feat[0] if isinstance(feat, list) else feat
                     lpcs_loss, lpcs_stats = _compute_lpcs_loss(
-                        _m.lpcs_head,
-                        global_feat_lpcs,
-                        kp_data.get('kp_feats'),
-                        kp_data.get('kp_weights'),
-                        kp_aux_data['lpcs_teacher_feats'],
-                        target,
-                    )
+                        _m.lpcs_head, global_feat_lpcs,
+                        kp_data.get('kp_feats'), kp_data.get('kp_weights'),
+                        kp_aux_data['lpcs_teacher_feats'], target)
                     details = getattr(loss, '_loss_details', {})
                     loss = loss + lpcs_weight * lpcs_loss
                     details['lpcs'] = lpcs_loss.item()
@@ -919,6 +549,7 @@ def do_train(cfg,
                         details['lpcs_ctm'] = lpcs_stats['conf_target_mean']
                         details['lpcs_cl'] = lpcs_stats['conf_loss']
                     loss._loss_details = details
+
                 if recon_loss is not None:
                     details = getattr(loss, '_loss_details', {})
                     loss = loss + recon_loss
@@ -929,482 +560,19 @@ def do_train(cfg,
                 if parallel_aug and use_pose:
                     saved_details = getattr(loss, '_loss_details', {})
                     for vi in range(1, len(all_scores)):
-                        v_loss = loss_fn(all_scores[vi], all_feats[vi], target,
-                                         target_cam, pose_sim=pose_sim)
+                        v_loss = loss_fn(all_scores[vi], all_feats[vi], target, target_cam)
                         if all_recon[vi] is not None:
                             v_loss = v_loss + all_recon[vi]
                         loss = loss + v_loss
-                    loss = loss / len(all_scores)  # average over views
-                    if pcvt_enabled and len(all_feats) >= 3 and all(
-                        k in pose_dict for k in ('pcvt_cov_a', 'pcvt_cov_b', 'pcvt_cov_u')
-                    ):
-                        pcvt_loss, pcvt_stats = _compute_pcvt_loss(
-                            all_feats[0], all_feats[1], all_feats[2], pose_dict)
-                        loss = loss + pcvt_weight * pcvt_loss
-                        saved_details['pcvt_lc'] = pcvt_loss.item()
-                        saved_details['pcvt_cov_a'] = pcvt_stats['cov_a']
-                        saved_details['pcvt_cov_b'] = pcvt_stats['cov_b']
-                        saved_details['pcvt_cov_u'] = pcvt_stats['cov_u']
-                        saved_details['pcvt_ovr'] = pcvt_stats['ovr']
-                        saved_details['pcvt_mga'] = pcvt_stats['mga']
-                        saved_details['pcvt_mgb'] = pcvt_stats['mgb']
-                        saved_details['pcvt_gca'] = pcvt_stats['gca']
-                        saved_details['pcvt_gcb'] = pcvt_stats['gcb']
-                        saved_details['pcvt_fb'] = pcvt_stats['fb']
-                        saved_details['pcvt_cos_fa'] = pcvt_stats['cos_fa']
-                        saved_details['pcvt_cos_fb'] = pcvt_stats['cos_fb']
-                        saved_details['pcvt_cos_fu'] = pcvt_stats['cos_fu']
-                        saved_details['pcvt_gap'] = pcvt_stats['gap']
-                    loss._loss_details = saved_details  # re-attach logging
-
-                # SGMKC: reconstruction loss for masked keypoint completion
-                if kp_data is not None and 'sgmkc_mask' in kp_data:
-                    sgmkc_mask = kp_data['sgmkc_mask']        # (B, 17) True=kept
-                    sgmkc_orig = kp_data['sgmkc_original']    # (B, 17, C)
-                    sgmkc_pred = kp_data['kp_feats']          # (B, 17, C)
-                    # Compute MSE only at masked (zeroed-out) positions
-                    masked_positions = ~sgmkc_mask             # True = was masked
-                    if masked_positions.any():
-                        pred_masked = sgmkc_pred[masked_positions]   # (N_masked, C)
-                        orig_masked = sgmkc_orig[masked_positions]   # (N_masked, C)
-                        sgmkc_loss = F.mse_loss(pred_masked, orig_masked)
-                        sgmkc_weight = getattr(cfg.MODEL, 'POSE_SGMKC_WEIGHT', 1.0)
-                        details = getattr(loss, '_loss_details', {})
-                        loss = loss + sgmkc_weight * sgmkc_loss
-                        details['sgmkc'] = sgmkc_loss.item()
-                        loss._loss_details = details
-
-                # PAMC: Pose-Aware Masking Consistency
-                if pamc_enabled and use_pose and epoch > pamc_warmup:
-                    _m = model.module if hasattr(model, 'module') else model
-                    if hasattr(_m, 'pamc_masker') and hasattr(_m, 'pamc_projector'):
-                        # Get scene heatmaps for masking
-                        pamc_scene_hm, _, _, _ = _m._prepare_pose(pose_dict)
-                        # Create masked image (no grad needed for masking)
-                        img_masked, _ = _m.pamc_masker(img, pamc_scene_hm)
-                        # Switch to eval mode for deterministic target features
-                        # (disables DropPath/StochasticDepth, BN uses running stats)
-                        _m.eval()
-                        with torch.no_grad():
-                            masked_global_feat, _ = _m._run_backbone_with_psg(
-                                img_masked, pamc_scene_hm)
-                            if _m.reduce_feat_dim:
-                                masked_global_feat = _m.fcneck(masked_global_feat)
-                        _m.train()  # restore training mode
-                        # Get original global feat (pre-BN, has grad from ID loss)
-                        if isinstance(feat, list):
-                            orig_global_feat = feat[0]  # global branch only
-                        else:
-                            orig_global_feat = feat
-                        # Asymmetric consistency: projector(orig) predicts masked target
-                        pamc_loss = pamc_consistency_loss(
-                            orig_global_feat, masked_global_feat,
-                            _m.pamc_projector)
-                        details = getattr(loss, '_loss_details', {})
-                        loss = loss + pamc_weight * pamc_loss
-                        details['pamc'] = pamc_loss.item()
-                        loss._loss_details = details
-
-                # CIPGFR: Cross-Instance Pose-Guided Feature Recovery
-                cipgfr_enabled = getattr(cfg.MODEL, 'POSE_CIPGFR', False)
-                cipgfr_warmup = getattr(cfg.MODEL, 'POSE_CIPGFR_WARMUP', 20)
-                if cipgfr_enabled and kp_data is not None and epoch > cipgfr_warmup:
-                    kp_feats_all = kp_data.get('kp_feats')    # (B, 17, C)
-                    kp_weights_all = kp_data.get('kp_weights')  # (B, 17)
-                    if kp_feats_all is not None and kp_weights_all is not None:
-                        cipgfr_weight = getattr(cfg.MODEL, 'POSE_CIPGFR_WEIGHT', 0.5)
-                        cipgfr_thr = getattr(cfg.MODEL, 'POSE_CIPGFR_THRESHOLD', 0.3)
-                        B_kp = kp_feats_all.shape[0]
-                        cipgfr_loss = torch.tensor(0.0, device=kp_feats_all.device)
-                        n_pairs = 0
-                        # For each sample, find same-ID partner in batch
-                        for i in range(B_kp):
-                            # Find indices with same label
-                            same_id = (target == target[i]).nonzero(as_tuple=True)[0]
-                            same_id = same_id[same_id != i]  # exclude self
-                            if len(same_id) == 0:
-                                continue
-                            j = same_id[torch.randint(len(same_id), (1,)).item()]
-                            # i's occluded but j's visible keypoints
-                            occ_i = kp_weights_all[i] < cipgfr_thr  # (17,) bool
-                            vis_j = kp_weights_all[j] > cipgfr_thr  # (17,) bool
-                            recovery_mask = occ_i & vis_j
-                            if recovery_mask.sum() == 0:
-                                continue
-                            # Recovery: i's occluded feat → j's visible feat (detached)
-                            cipgfr_loss = cipgfr_loss + F.mse_loss(
-                                kp_feats_all[i][recovery_mask],
-                                kp_feats_all[j][recovery_mask].detach())
-                            n_pairs += 1
-                        if n_pairs > 0:
-                            cipgfr_loss = cipgfr_loss / n_pairs
-                            details = getattr(loss, '_loss_details', {})
-                            loss = loss + cipgfr_weight * cipgfr_loss
-                            details['cipgfr'] = cipgfr_loss.item()
-                            loss._loss_details = details
-
-                # PCQA: Pose Translation Module loss
-                if ptm_enabled and use_pose and pose_dict is not None and epoch > ptm_warmup:
-                    _m = model.module if hasattr(model, 'module') else model
-                    if hasattr(_m, 'ptm'):
-                        # Use actual keypoint coordinates + scores as pose descriptor
-                        ptm_kp = pose_dict['keypoints'][:, 0, :, :]  # (B, 17, 2) person 0
-                        ptm_scores = pose_dict['scores'][:, 0, :]    # (B, 17) person 0
-                        if isinstance(feat, list):
-                            global_feat_ptm = feat[0]
-                        else:
-                            global_feat_ptm = feat
-                        ptm_loss = _m.ptm.compute_training_loss(
-                            global_feat_ptm, ptm_kp, ptm_scores, target,
-                            normalize_coords=ptm_norm)
-                        details = getattr(loss, '_loss_details', {})
-                        loss = loss + ptm_weight * ptm_loss
-                        details['ptm'] = ptm_loss.item()
-                        loss._loss_details = details
-
-                # PVAT: Pose-Visibility Adversarial Training
-                if pvat_enabled and use_pose and pose_dict is not None:
-                    _m = model.module if hasattr(model, 'module') else model
-                    if hasattr(_m, 'pvat_head'):
-                        # Compute gradient reversal alpha with warmup
-                        if epoch <= pvat_warmup:
-                            pvat_alpha = 0.0
-                        else:
-                            progress = (epoch - pvat_warmup) / max(1, epochs - pvat_warmup)
-                            pvat_alpha = pvat_alpha_max * min(1.0, progress)
-
-                        # Get global feature (pre-BN, with gradients)
-                        if isinstance(feat, list):
-                            gfeat_pvat = feat[0]
-                        else:
-                            gfeat_pvat = feat
-
-                        # Predict visibility
-                        vis_logits = _m.pvat_head(gfeat_pvat, alpha=pvat_alpha)
-
-                        # Visibility ground truth from pose scores
-                        vis_scores = pose_dict['scores'][:, 0, :]  # (B, 17) person 0
-                        vis_gt = (vis_scores > pvat_vis_thr).float()
-
-                        # BCE loss
-                        # Note: during warmup (alpha=0), GradientReversal kills all
-                        # gradients to backbone (-0*grad=0), so only the predictor
-                        # learns. This is correct: predictor converges first.
-                        pvat_loss = F.binary_cross_entropy_with_logits(
-                            vis_logits, vis_gt.to(vis_logits.device))
-
-                        # Predictor accuracy
-                        with torch.no_grad():
-                            vis_pred = (vis_logits > 0).float()
-                            pvat_acc = (vis_pred == vis_gt.to(vis_pred.device)).float().mean().item()
-                            pvat_vis_ratio = vis_gt.mean().item()
-
-                        details = getattr(loss, '_loss_details', {})
-                        loss = loss + pvat_weight * pvat_loss
-                        details['pvat_loss'] = pvat_loss.item()
-                        details['pvat_acc'] = pvat_acc
-                        details['pvat_alpha'] = pvat_alpha
-                        details['pvat_vis_ratio'] = pvat_vis_ratio
-                        loss._loss_details = details
-
-                # LSRM: Learned Skeleton Recovery Module loss
-                if lsrm_enabled and kp_data is not None and epoch > lsrm_warmup:
-                    _m = model.module if hasattr(model, 'module') else model
-                    if hasattr(_m, 'lsrm'):
-                        kp_feats_lsrm = kp_data.get('kp_feats')
-                        kp_weights_lsrm = kp_data.get('kp_weights')
-                        if kp_feats_lsrm is not None and kp_weights_lsrm is not None:
-                            lsrm_loss = _m.lsrm.compute_training_loss(
-                                kp_feats_lsrm, kp_weights_lsrm, target)
-                            details = getattr(loss, '_loss_details', {})
-                            loss = loss + lsrm_weight * lsrm_loss
-                            details['lsrm'] = lsrm_loss.item()
-                            loss._loss_details = details
-
-                # PAMN: Pose-Aware Matching Network loss
-                if pamn_enabled and pamn_module is not None and kp_data is not None:
-                    kp_feats_pamn = kp_data.get('kp_feats')
-                    kp_weights_pamn = kp_data.get('kp_weights')
-                    if kp_feats_pamn is not None and kp_weights_pamn is not None:
-                        pamn_loss = pamn_module.compute_training_loss(
-                            kp_feats_pamn.detach(), kp_weights_pamn.detach(), target)
-                        details = getattr(loss, '_loss_details', {})
-                        loss = loss + pamn_weight * pamn_loss
-                        details['pamn'] = pamn_loss.item()
-                        loss._loss_details = details
-
-                # Momentum Memory Contrastive Loss
-                if mm_enabled and mm_memory is not None:
-                    if isinstance(feat, list):
-                        mm_feat = feat[0]  # use global feature
-                    else:
-                        mm_feat = feat
-                    mm_loss = mm_memory(mm_feat, target)
-                    details = getattr(loss, '_loss_details', {})
-                    loss = loss + mm_weight * mm_loss
-                    details['mm'] = mm_loss.item()
-                    loss._loss_details = details
-
-                if sckd_enabled and sckd_bank is not None and kp_data is not None and epoch > sckd_warmup:
-                    # SCFR mode: log replacement stats instead of computing loss
-                    if scfr_enabled and kp_data.get('scfr_stats') is not None:
-                        scfr_st = kp_data['scfr_stats']
-                        details = getattr(loss, '_loss_details', {})
-                        details['scfr_n'] = float(scfr_st['n_replaced'])
-                        details['scfr_r'] = scfr_st['replace_ratio']
-                        details['scfr_conf'] = scfr_st['proto_conf']
-                        details['scfr_count'] = scfr_st['proto_count']
-                        loss._loss_details = details
-                    elif scrc_enabled and kp_data.get('scrc_stats') is not None:
-                        scrc_st = kp_data['scrc_stats']
-                        details = getattr(loss, '_loss_details', {})
-                        details['scrc_n'] = float(scrc_st['n_fused'])
-                        details['scrc_r'] = scrc_st['fuse_ratio']
-                        details['scrc_g'] = scrc_st['gate_mean']
-                        details['scrc_gm'] = scrc_st['gate_max']
-                        details['scrc_dn'] = scrc_st['delta_norm']
-                        details['scrc_conf'] = scrc_st['proto_conf']
-                        details['scrc_count'] = scrc_st['proto_count']
-                        loss._loss_details = details
-                    elif not scfr_enabled and not scrc_enabled:
-                        # Original SCKD distillation loss
-                        kp_feats_sckd = kp_data.get('kp_feats')
-                        kp_w_sckd = kp_data.get('kp_weights')
-                        if kp_feats_sckd is not None and kp_w_sckd is not None:
-                            sckd_loss, sckd_pairs, sckd_stats = sckd_bank.compute_loss(
-                                kp_feats_sckd, kp_w_sckd, target)
-                            if sckd_pairs > 0:
-                                details = getattr(loss, '_loss_details', {})
-                                loss = loss + sckd_weight * sckd_loss
-                                details['sckd'] = sckd_loss.item()
-                                details['sckd_pairs'] = float(sckd_pairs)
-                                details['sckd_lowr'] = sckd_stats['low_ratio']
-                                details['sckd_actr'] = sckd_stats['active_ratio']
-                                details['sckd_eligr'] = sckd_stats['elig_ratio']
-                                details['sckd_conf'] = sckd_stats['proto_conf']
-                            details['sckd_count'] = sckd_stats['proto_count']
-                            details['sckd_cos'] = sckd_stats['cosine']
-                            loss._loss_details = details
-
-                if skc_enabled and skc_bank is not None and kp_data is not None:
-                    details = getattr(loss, '_loss_details', {})
-                    skc_st = kp_data.get('skc_stats')
-                    if skc_st is not None:
-                        details['skc_lmr'] = skc_st['low_ratio']
-                        details['skc_arr'] = skc_st['applied_ratio']
-                        details['skc_ail'] = skc_st['applied_in_low']
-                        details['skc_gm'] = skc_st['gate_mean']
-                        details['skc_gs'] = skc_st['gate_std']
-                        details['skc_dn'] = skc_st['delta_norm']
-                        details['skc_ds'] = skc_st['delta_std']
-                    skc_raw = kp_data.get('skc_raw_feats')
-                    skc_comp = kp_data.get('skc_completed_feats')
-                    skc_scores = kp_data.get('skc_scores')
-                    if skc_raw is not None and skc_comp is not None and skc_scores is not None:
-                        support = skc_bank.get_support(skc_raw, skc_scores, target)
-                        details['skc_spr'] = support['stats']['support_ratio']
-                        details['skc_pc'] = support['stats']['proto_conf']
-                        details['skc_pcnt'] = support['stats']['proto_count']
-                        if epoch > skc_warmup:
-                            mask = support['mask']
-                            if mask.any():
-                                proto = F.normalize(support['proto'].detach(), dim=2)
-                                with torch.no_grad():
-                                    raw_norm = F.normalize(skc_raw.detach(), dim=2)
-                                    pre_dist = 1.0 - (raw_norm * proto).sum(dim=2).clamp(min=-1.0, max=1.0)
-                                comp_norm = F.normalize(skc_comp, dim=2)
-                                post_dist = 1.0 - (comp_norm * proto).sum(dim=2).clamp(min=-1.0, max=1.0)
-                                weights = support['proto_conf'] * mask.float()
-                                skc_loss = (post_dist * weights).sum() / weights.sum().clamp(min=1e-12)
-                                loss = loss + skc_weight * skc_loss
-                                details['skc_cl'] = skc_loss.item()
-                                details['skc_pre'] = float(pre_dist[mask].mean().item())
-                                details['skc_post'] = float(post_dist[mask].mean().item())
-                            else:
-                                details['skc_cl'] = 0.0
-                                details['skc_pre'] = 0.0
-                                details['skc_post'] = 0.0
-                    loss._loss_details = details
-
-                if kp_data is not None and kp_data.get('scfa_stats') is not None:
-                    details = getattr(loss, '_loss_details', {})
-                    scfa_st = kp_data['scfa_stats']
-                    details['scfa_cov'] = scfa_st['cov']
-                    details['scfa_hm'] = scfa_st['hm']
-                    details['scfa_hs'] = scfa_st['hs']
-                    details['scfa_am'] = scfa_st['am']
-                    details['scfa_as'] = scfa_st['as']
-                    details['scfa_hn'] = scfa_st['hn']
-                    details['scfa_an'] = scfa_st['an']
-                    details['scfa_pg'] = scfa_st['pg']
-                    details['scfa_eq'] = scfa_st['eq']
-                    loss._loss_details = details
-
-                # SGRE: Skeleton-Guided Re-Encoding loss
-                sgre_enabled = getattr(cfg.MODEL, 'POSE_SGRE', False)
-                sgre_warmup = getattr(cfg.MODEL, 'POSE_SGRE_WARMUP', 20)
-                if sgre_enabled and kp_data is not None and epoch > sgre_warmup:
-                    _m = model.module if hasattr(model, 'module') else model
-                    if hasattr(_m, 'sgre'):
-                        kp_feats_sgre = kp_data.get('kp_feats')
-                        kp_w_sgre = kp_data.get('kp_weights')
-                        if kp_feats_sgre is not None:
-                            sgre_weight = getattr(cfg.MODEL, 'POSE_SGRE_WEIGHT', 0.5)
-                            sgre_loss = _m.sgre.compute_training_loss(
-                                kp_feats_sgre.detach(), kp_w_sgre.detach(), target)
-                            details = getattr(loss, '_loss_details', {})
-                            loss = loss + sgre_weight * sgre_loss
-                            details['sgre'] = sgre_loss.item()
-                            loss._loss_details = details
-
-                # PISD: Pose-Informed Self-Distillation at IMAGE level
-                # Mask body parts on the actual image, re-run backbone,
-                # enforce partial features ≈ full features
-                pisd_enabled = getattr(cfg.MODEL, 'POSE_PISD', False)
-                pisd_warmup = getattr(cfg.MODEL, 'POSE_PISD_WARMUP', 10)
-                if pisd_enabled and use_pose and epoch > pisd_warmup and not parallel_aug:
-                    pisd_weight = getattr(cfg.MODEL, 'POSE_PISD_WEIGHT', 0.3)
-                    pisd_ratio = getattr(cfg.MODEL, 'POSE_PISD_MASK_RATIO', 0.4)
-                    _m = model.module if hasattr(model, 'module') else model
-
-                    # Create masked image using pose heatmaps at INPUT resolution
-                    hm = pose_dict['heatmaps'].max(dim=1)[0]  # (B, 17, hH, hW)
-                    hm_full = F.interpolate(hm, size=img.shape[2:],
-                                             mode='bilinear', align_corners=False)
-                    hm_full = torch.relu(hm_full)  # (B, 17, H, W)
-
-                    # Select random keypoints to mask
-                    B_img = img.shape[0]
-                    num_mask = max(1, int(17 * pisd_ratio))
-                    img_mask = torch.zeros(B_img, 1, img.shape[2], img.shape[3],
-                                           device=img.device)
-                    for b in range(B_img):
-                        kp_idx = torch.randperm(17, device=img.device)[:num_mask]
-                        selected = hm_full[b, kp_idx].sum(dim=0)  # (H, W)
-                        # Use actual heatmap intensity as soft mask threshold
-                        # Mask where body part response is strong
-                        threshold = selected.quantile(0.7)  # top 30% of response
-                        img_mask[b, 0] = (selected > threshold).float()
-
-                    # Create masked image (fill with mean pixel value)
-                    mean_pixel = img.mean(dim=(2, 3), keepdim=True)
-                    img_masked = img * (1.0 - img_mask) + mean_pixel * img_mask
-
-                    # Teacher: full features (already computed, detached)
-                    if isinstance(feat, list):
-                        feat_full = F.normalize(feat[0].detach(), dim=1)
-                    else:
-                        feat_full = F.normalize(feat.detach(), dim=1)
-
-                    # Student: forward with masked image
-                    # FIX: freeze BN running stats (don't change model.training
-                    # which would switch the return format to eval mode)
-                    bn_states = {}
-                    for name, mod in _m.named_modules():
-                        if isinstance(mod, (nn.BatchNorm1d, nn.BatchNorm2d)):
-                            bn_states[name] = mod.training
-                            mod.eval()
-                    pisd_out = model(img_masked, label=target, cam_label=target_cam,
-                                      view_label=target_view, pose_dict=pose_dict)
-                    for name, mod in _m.named_modules():
-                        if name in bn_states:
-                            mod.train(bn_states[name])
-                    # Extract global feature from student output
-                    pisd_feat_raw = pisd_out[1]
-                    if isinstance(pisd_feat_raw, list):
-                        pisd_feat_raw = pisd_feat_raw[0]
-                    pisd_feat_norm = F.normalize(pisd_feat_raw, dim=1)
-
-                    # PISD loss: cosine distance
-                    pisd_loss = (1.0 - (pisd_feat_norm * feat_full).sum(dim=1)).mean()
-
-                    details = getattr(loss, '_loss_details', {})
-                    loss = loss + pisd_weight * pisd_loss
-                    details['pisd'] = pisd_loss.item()
-                    loss._loss_details = details
-
-                # PACD: Pose-Anchored Contrastive Distillation (feature map level)
-                pacd_enabled = getattr(cfg.MODEL, 'POSE_PACD', False)
-                pacd_warmup = getattr(cfg.MODEL, 'POSE_PACD_WARMUP', 10)
-                if pacd_enabled and use_pose and feat_maps is not None and epoch > pacd_warmup:
-                    pacd_weight = getattr(cfg.MODEL, 'POSE_PACD_WEIGHT', 0.3)
-                    pacd_ratio = getattr(cfg.MODEL, 'POSE_PACD_MASK_RATIO', 0.4)
-                    stage3_fm = feat_maps[-1] if isinstance(feat_maps, list) else feat_maps
-                    B_fm, C_fm, fH, fW = stage3_fm.shape
-                    _m = model.module if hasattr(model, 'module') else model
-
-                    # Row-based masking: mask contiguous rows to simulate
-                    # real occlusion (upper/lower body). Much stronger than
-                    # 3×3 keypoint masking (~8%) or heatmap masking (76% bug).
-                    # Target: ~50% of rows masked → strong but not destructive.
-                    num_rows_mask = max(1, int(fH * pacd_ratio))  # 0.4*12=4 rows
-                    body_mask = torch.zeros(B_fm, 1, fH, fW, device=stage3_fm.device)
-                    for b in range(B_fm):
-                        # Randomly choose starting row for contiguous block
-                        start = torch.randint(0, fH - num_rows_mask + 1, (1,)).item()
-                        body_mask[b, 0, start:start + num_rows_mask, :] = 1.0
-
-                    # Mask: zero out selected keypoint positions
-                    fm_masked = stage3_fm * (1.0 - body_mask)
-
-                    # Pool with renormalization: average over UNMASKED positions only
-                    keep_mask = (1.0 - body_mask)  # (B, 1, fH, fW)
-                    n_keep = keep_mask.sum(dim=(2, 3), keepdim=True).clamp(min=1)
-                    feat_partial = (fm_masked).sum(dim=(2, 3)) / n_keep.squeeze(3).squeeze(2)
-                    # feat_partial: (B, C)
-                    if _m.reduce_feat_dim:
-                        feat_partial = _m.fcneck(feat_partial)
-
-                    # Teacher: full features (detached, L2-normalized for stable comparison)
-                    if isinstance(feat, list):
-                        feat_full = F.normalize(feat[0].detach(), dim=1)
-                    else:
-                        feat_full = F.normalize(feat.detach(), dim=1)
-                    feat_partial_norm = F.normalize(feat_partial, dim=1)
-
-                    # PACD loss: cosine distance (not MSE — invariant to magnitude)
-                    pacd_loss = (1.0 - (feat_partial_norm * feat_full).sum(dim=1)).mean()
-
-                    details = getattr(loss, '_loss_details', {})
-                    loss = loss + pacd_weight * pacd_loss
-                    details['pacd'] = pacd_loss.item()
-                    loss._loss_details = details
+                    loss = loss / len(all_scores)
+                    loss._loss_details = saved_details
 
             scaler.scale(loss).backward()
 
             scaler.step(optimizer)
             scaler.update()
 
-            if sckd_enabled and sckd_bank is not None and kp_data is not None:
-                kp_feats_sckd = kp_data.get('kp_feats')
-                kp_w_sckd = kp_data.get('kp_weights')
-                if kp_feats_sckd is not None and kp_w_sckd is not None:
-                    if sckd_update_stop_epoch < 0 or epoch <= sckd_update_stop_epoch:
-                        sckd_bank.update(kp_feats_sckd, kp_w_sckd, target)
-
-            if skc_enabled and skc_bank is not None and kp_data is not None:
-                kp_feats_skc = kp_data.get('skc_completed_feats')
-                kp_w_skc = kp_data.get('skc_scores')
-                if kp_feats_skc is not None and kp_w_skc is not None:
-                    if skc_update_stop_epoch < 0 or epoch <= skc_update_stop_epoch:
-                        skc_bank.update(kp_feats_skc, kp_w_skc, target)
-
-            if csrd_enabled and csrd_support_teacher and csrd_teacher_bank is not None and kp_data is not None:
-                kp_feats_csrd = kp_data.get('kp_feats')
-                kp_w_csrd = kp_data.get('kp_weights')
-                if kp_feats_csrd is not None and kp_w_csrd is not None:
-                    if csrd_st_update_stop_epoch < 0 or epoch <= csrd_st_update_stop_epoch:
-                        csrd_teacher_bank.update(kp_feats_csrd, kp_w_csrd, target)
-                    if csrd_queue_size > 0 and epoch > getattr(cfg.MODEL, 'POSE_CSRD_WARMUP', 20):
-                        queue_teacher_feats = None
-                        if kp_aux_data is not None:
-                            queue_teacher_feats = kp_aux_data.get('csrd_teacher_feats')
-                        if queue_teacher_feats is not None:
-                            queue_student_feat = feat[0] if isinstance(feat, list) else feat
-                            _enqueue_csrd_queue(
-                                queue_student_feat, kp_feats_csrd, kp_w_csrd,
-                                queue_teacher_feats, target)
-
+            # Bank updates (after optimizer step)
             if ltcs_enabled and ltcs_teacher_bank is not None and kp_data is not None:
                 kp_feats_ltcs = kp_data.get('kp_feats')
                 kp_w_ltcs = kp_data.get('kp_weights')
@@ -1432,7 +600,6 @@ def do_train(cfg,
             loss_meter.update(loss.item(), batch_size)
             acc_meter.update(acc, 1)
 
-            # Track per-component losses if available
             if hasattr(loss, '_loss_details'):
                 for k, v in loss._loss_details.items():
                     if k not in detail_meters:
