@@ -1102,6 +1102,37 @@ B. 直接启动 exp025，exp024 可以后续补跑
 
 **关键教训（收紧版）**: 目前只能说 `score*visibility` 在当前 keypoint-level 加权池化中未带来正向证据。Visibility 是否能在其它位置（如 retrieval-time reasoning、pairwise masking、target-aware setting）发挥作用，仍需后续更精确的问题定义来判断。
 
+### [2026-03-23 03:30] 决策: MaxSim (ColBERT Late Interaction) 方向确立
+
+**上下文**: exp148 PCVT 和 exp151 PVAT 全部失败。训练集 95.8% 可见率使得所有 visibility-dependent 训练方法无效。
+
+**关键数据发现**:
+1. 训练集 95.8% keypoint 可见 → 训练时 visibility 几乎没有变化信号
+2. 但 MaxSim test-time 在所有 checkpoint 上稳定 +1.0~1.5% mAP
+3. 文献搜索确认：**没有任何 ReID 论文用过 MaxSim training**
+
+**选择**: 从 test-time trick 升级为 training paradigm：
+1. **MaxSim test-time**: 已验证（exp030a: +1.1%, PAA: +1.0%, PAA+ROA: +1.5%）
+2. **MaxSim training**: 用 Soft-MaxSim 距离替换 GCN branch 的 pooled triplet loss
+
+**论文范式定义**: Occluded ReID = partial-set-to-partial-set matching, 不是 vector-to-vector matching
+
+**执行**:
+- exp152 (soft MaxSim, tau=0.05) → 远程
+- exp152b (hard MaxSim, tau=0.005) → 本地
+- 两者形成 soft vs hard 的强消融
+
+### [2026-03-23 03:50] 决策: 代码大规模减肥
+
+**上下文**: 151 个实验积累了 5370+ 行死代码。31 个模块文件、processor 1598 行。
+
+**执行**:
+- 删除 23 个 model/modules/ 文件
+- pose_backbone_model: 1110 → 352 行
+- processor: 1598 → 765 行
+- make_loss: 713 → 186 行
+- **验证**: exp066 复现测试 loss/acc 与原始完全精确一致（每个 iteration 数字相同）
+
 ### [2026-03-23 02:30] 决策 #N: exp148/149/151 结论与训练集 visibility 关键发现
 
 **上下文**: exp148 PCVT、exp149 SCFA、exp151 PVAT 三条线同时或先后推进，试图从不同角度解决 "single-image support incomplete"。

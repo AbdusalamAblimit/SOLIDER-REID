@@ -261,6 +261,41 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
 
 ---
 
+## 2026-03-23: MaxSim — Set-to-Set Metric Learning 范式确立
+
+### 核心范式转变
+```
+旧: image → single vector → pairwise cosine → triplet loss
+新: image → body-part token set → MaxSim (set matching) → triplet loss
+```
+
+### 已验证的 test-time 增益（跨 checkpoint 稳定）
+| Checkpoint | equal_concat | maxsim_hybrid 1:2 | Δ mAP | Δ R1 |
+|-----------|-------------|-------------------|-------|------|
+| exp030a | 61.1 / 73.7 | 62.2 / 74.5 | +1.1 | +0.8 |
+| PAA (exp066) | 61.6 / 74.2 | 62.6 / 75.2 | +1.0 | +1.0 |
+| PAA+ROA (exp067) | 62.0 / 73.7 | 63.5 / 75.4 | +1.5 | +1.7 |
+| PAA+ROA seed42 | 62.1 / 73.6 | 63.3 / 75.2 | +1.2 | +1.6 |
+
+### 文献空白确认
+- **MoS (AAAI 2021)**: Jaccard set matching, 不是 MaxSim
+- **BPBreID/KPR (WACV23/ECCV24)**: per-part average distance, 不是 max-based
+- **ColPali (2024)**: MaxSim training for document retrieval, 不是 ReID
+- **结论: MaxSim training in person ReID = 文献空白**
+
+### 当前进行中
+- exp152 (soft MaxSim, tau=0.05) → 远程
+- exp152b (hard MaxSim, tau=0.005) → 本地
+- 核心假设: MaxSim training + MaxSim test > MaxSim test-only
+
+### 论文 story 候选
+1. **Problem**: Occluded ReID 是 partial-set matching，不是 vector matching
+2. **Insight**: Train-test metric mismatch 是结构性缺陷
+3. **Method**: ColBERT-style Soft-MaxSim for both training and retrieval
+4. **Evidence**: test-time 已验证; training alignment 待 exp152
+
+---
+
 ## 2026-03-22: 关键数据约束发现 — 训练集 visibility 几乎无遮挡
 
 ### 训练集 person-0 visibility 统计

@@ -1,10 +1,31 @@
 # 论文故事线（持续更新）
 
-> **⚠️ Phase 1 内容保留在下方（PCFC/GiLt）。Phase 2 更新如下。**
+> **⚠️ Phase 1-2 内容保留在下方。Phase 3 更新如下。**
+
+## Phase 3 Story Update (2026-03-23)
+
+### 暂定标题
+Set-to-Set Matching for Occluded Person Re-Identification via Pose-Guided Late Interaction
+
+### 核心范式论点
+Occluded person ReID 不应该是 "extract one vector, compare vectors"，而是 "extract a set of body-part tokens, match sets"。这直接类比 NLP 从 sentence embeddings (BERT) 到 token-level late interaction (ColBERT) 的范式迁移。
+
+### 贡献（候选）
+1. **问题重构**: 将 occluded ReID 形式化为 partial-set-to-partial-set matching
+2. **MaxSim matching**: 首次将 ColBERT-style late interaction 引入 person ReID
+3. **Set-level metric learning**: 用 Soft-MaxSim 距离替换 pooled triplet，实现 train-test metric symmetry
+4. **PSG + GCN pipeline**: 提供高质量 body-part token set 的提取方法
+
+### 实验证据链（待补）
+- MaxSim test-time: +1.0~1.5% mAP across all checkpoints ✅
+- MaxSim training: exp152 进行中
+- Ablation: soft vs hard MaxSim (exp152 vs exp152b) 进行中
+
+---
 
 ## Phase 2 Story Update (2026-03-13)
 
-### 暂定标题
+### 暂定标题（旧）
 Pose Spatial Gate and Skeleton Complement for Occluded Person Re-Identification
 
 ### 当前最可靠的核心发现
