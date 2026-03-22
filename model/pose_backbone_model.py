@@ -415,6 +415,9 @@ class PoseBackboneModel(build_transformer):
             skc_hidden = getattr(cfg.MODEL, 'POSE_SKC_HIDDEN', 256)
             skc_heads = getattr(cfg.MODEL, 'POSE_SKC_HEADS', 4)
             skc_low_thr = getattr(cfg.MODEL, 'POSE_SKC_LOW_THR', 0.3)
+            scfa = getattr(cfg.MODEL, 'POSE_SCFA', False)
+            scfa_low_thr = getattr(cfg.MODEL, 'POSE_SCFA_LOW_THR', 0.3)
+            scfa_high_thr = getattr(cfg.MODEL, 'POSE_SCFA_HIGH_THR', 0.5)
             mrkf = getattr(cfg.MODEL, 'POSE_MRKF', False)
             mrkf_s2_dim = self.base.num_features[2] if mrkf else 384
             self.skeleton_head = SkeletonGCNHead(
@@ -442,6 +445,9 @@ class PoseBackboneModel(build_transformer):
                 skc_hidden=skc_hidden,
                 skc_heads=skc_heads,
                 skc_low_thr=skc_low_thr,
+                scfa=scfa,
+                scfa_low_thr=scfa_low_thr,
+                scfa_high_thr=scfa_high_thr,
                 mrkf=mrkf,
                 mrkf_s2_dim=mrkf_s2_dim,
                 vcga=getattr(cfg.MODEL, 'POSE_VCGA', False),
@@ -460,6 +466,9 @@ class PoseBackboneModel(build_transformer):
             if skc:
                 print(f'[SKC] Support-Supervised Keypoint Completion enabled: '
                       f'hidden={skc_hidden}, heads={skc_heads}, low_thr={skc_low_thr}')
+            if scfa:
+                print(f'[SCFA] Symmetry-Conditioned Feature Aggregation enabled: '
+                      f'low_thr={scfa_low_thr}, high_thr={scfa_high_thr}')
             # MRKF: Multi-Resolution Keypoint Features
             self.use_mrkf = getattr(cfg.MODEL, 'POSE_MRKF', False)
             if self.use_mrkf:

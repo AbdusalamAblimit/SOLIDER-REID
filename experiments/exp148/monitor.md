@@ -4,7 +4,7 @@
 - 方法: PCVT（Pose-Complementary View Training）
 - 类型: 训练范式大改动
 - 主基线: `exp030a-eq`
-- 当前状态: 仅完成设计，尚未实现/审查/启动
+- 当前状态: 已通过审查并正式启动训练
 
 ## 启动前检查清单
 - [ ] 数据管线支持生成 `full / view_a / view_b`
@@ -97,3 +97,36 @@
 1. 若首个 epoch OOM，立即停，先考虑降低 partial-view 反向强度，而不是继续硬跑
 2. 若 `pcvt_cov_u` 明显偏离 `1.0` 或 `pcvt_ovr` 明显高于 `0`，说明互补视图构造失效，立即停
 3. 若 `pcvt_gap` 长期 `<= 0`，说明 union 表示没有优于单视图，这条线的核心假设会被直接动摇
+
+### [2026-03-22 10:40] 官方训练启动，本地主卡占用正常
+- 启动方式:
+  - PTY 持续训练会话
+- 输出目录:
+  - `log/occluded_duke/exp148_pcvt`
+- 启动确认:
+  - 日志明确打印 `[PCVT] enabled: weight=0.25, resp_thr=0.1, act_thr=0.3, min_parts=2`
+- 显存观察:
+  - RTX 3090 占用约 `18.8GB`
+- 当前判断:
+  - 继续
+  - 原因:
+    1. 三视图前向已真实接上
+    2. 显存虽高但未 OOM，仍在可承受区间
+
+### [2026-03-22 10:44] 首个 epoch 早期形态健康，PCVT 机制已真实生效
+- 训练日志摘录:
+  - `Epoch[1] Iter[20/227] Loss: 21.733 | pcvt_lc: 0.320 | pcvt_cov_u: 1.000 | pcvt_ovr: 0.000 | pcvt_cos_fu: 0.680 | pcvt_gap: 0.049`
+  - `Epoch[1] Iter[200/227] Loss: 14.700 | pcvt_lc: 0.205 | pcvt_cov_u: 1.000 | pcvt_ovr: 0.000 | pcvt_cos_fu: 0.795 | pcvt_gap: 0.047`
+  - `Epoch[2] Iter[120/227] Loss: 10.729 | pcvt_lc: 0.105 | pcvt_cov_u: 1.000 | pcvt_ovr: 0.000 | pcvt_cos_fu: 0.895 | pcvt_gap: 0.032`
+- 关键观察:
+  1. `pcvt_cov_a/b` 始终稳定在 `0.496~0.504`
+  2. `pcvt_cov_u=1.000`、`pcvt_ovr=0.000` 持续成立，说明互补视图构造没有漂
+  3. `pcvt_lc` 从 `0.320 -> 0.105` 明显下降
+  4. `pcvt_cos_fu` 从 `0.680 -> 0.895` 快速上升
+  5. `pcvt_gap` 仍为正，但从 `0.049` 收到 `0.032`
+- 当前判断:
+  - 继续
+  - 原因:
+    1. `PCVT` 已被真实测试到，不是失效 run
+    2. 目前 union 表示确实优于单 partial view
+    3. 下一关键点是 `ep10/20`，看主任务会不会被 1/3 dilution 拖住

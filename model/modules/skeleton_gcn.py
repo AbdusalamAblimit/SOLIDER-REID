@@ -29,6 +29,17 @@ EXTRA_EDGES = [
     (0, 5), (0, 6),     # nose - shoulders (head-body connection)
 ]
 
+SCFA_SYMMETRY_PAIRS = [
+    (1, 2),    # eyes
+    (3, 4),    # ears
+    (5, 6),    # shoulders
+    (7, 8),    # elbows
+    (9, 10),   # wrists
+    (11, 12),  # hips
+    (13, 14),  # knees
+    (15, 16),  # ankles
+]
+
 
 class SkeletonGCN(nn.Module):
     """Graph Convolutional Network over COCO skeleton.
@@ -280,6 +291,7 @@ class SkeletonGCNHead(nn.Module):
                  sgmt=False, sgmt_ratio=0.3, sgmt_threshold=0.3,
                  scrc=False, scrc_hidden=128,
                  skc=False, skc_hidden=256, skc_heads=4, skc_low_thr=0.3,
+                 scfa=False, scfa_low_thr=0.3, scfa_high_thr=0.5,
                  vcga=False):
         super().__init__()
         self.feat_dim = feat_dim
@@ -298,6 +310,9 @@ class SkeletonGCNHead(nn.Module):
         self.kp_uncertainty_reg = kp_uncertainty_reg
         self.pke = pke
         self.scrc = scrc
+        self.scfa = scfa
+        self.scfa_low_thr = scfa_low_thr
+        self.scfa_high_thr = scfa_high_thr
         # DPF: Distributional Part Features — heatmap-weighted spatial pooling
         self.dpf = dpf
         # SGMT: Skeleton-Guided Masked Training
@@ -555,6 +570,83 @@ class SkeletonGCNHead(nn.Module):
             raise ValueError(
                 f"Unknown kp_weight_mode: {self.kp_weight_mode}")
 
+    def _apply_scfa(self, kp_feats, kp_weights, kp_scores):
+        """Aggregate bilateral homologous evidence before skeleton pooling."""
+        batch_size = kp_feats.shape[0]
+        token_feats = [kp_feats[:, 0]]
+        token_weights = [kp_weights[:, 0]]
+
+        h_weights = []
+        a_weights = []
+        h_norms = []
+        a_norms = []
+        pair_active = []
+        pair_gap = []
+        pair_equal = []
+
+        eps = 1e-6
+        for left_idx, right_idx in SCFA_SYMMETRY_PAIRS:
+            feat_l = kp_feats[:, left_idx]
+            feat_r = kp_feats[:, right_idx]
+            weight_l = kp_weights[:, left_idx]
+            weight_r = kp_weights[:, right_idx]
+            score_l = kp_scores[:, left_idx]
+            score_r = kp_scores[:, right_idx]
+
+            h_weight = torch.maximum(weight_l, weight_r)
+            a_weight = torch.minimum(weight_l, weight_r)
+
+            mix = weight_l.unsqueeze(1) * feat_l + weight_r.unsqueeze(1) * feat_r
+            mix_norm = mix.norm(dim=1, keepdim=True).clamp(min=eps)
+            h_feat = mix / mix_norm
+
+            a_feat = (feat_l - feat_r) * a_weight.unsqueeze(1)
+
+            token_feats.append(h_feat)
+            token_weights.append(h_weight)
+            token_feats.append(a_feat)
+            token_weights.append(a_weight)
+
+            h_weights.append(h_weight)
+            a_weights.append(a_weight)
+            h_norms.append(h_feat.norm(dim=1))
+            a_norms.append(a_feat.norm(dim=1))
+
+            high_l = score_l >= self.scfa_high_thr
+            high_r = score_r >= self.scfa_high_thr
+            low_l = score_l <= self.scfa_low_thr
+            low_r = score_r <= self.scfa_low_thr
+            pair_active.append((h_weight > eps).float())
+            pair_gap.append(((low_l & high_r) | (high_l & low_r)).float())
+            pair_equal.append((high_l & high_r).float())
+
+        token_feats = torch.stack(token_feats, dim=1)
+        token_weights = torch.stack(token_weights, dim=1)
+
+        h_weights_t = torch.stack(h_weights, dim=1)
+        a_weights_t = torch.stack(a_weights, dim=1)
+        h_norms_t = torch.stack(h_norms, dim=1)
+        a_norms_t = torch.stack(a_norms, dim=1)
+        pair_active_t = torch.stack(pair_active, dim=1)
+        pair_gap_t = torch.stack(pair_gap, dim=1)
+        pair_equal_t = torch.stack(pair_equal, dim=1)
+
+        stats = {
+            'cov': float(pair_active_t.mean().item()),
+            'hm': float(h_weights_t.mean().item()),
+            'hs': float(h_weights_t.std(unbiased=False).item()),
+            'am': float(a_weights_t.mean().item()),
+            'as': float(a_weights_t.std(unbiased=False).item()),
+            'hn': float(h_norms_t.mean().item()),
+            'an': float(a_norms_t.mean().item()),
+            'pg': float(pair_gap_t.mean().item()),
+            'eq': float(pair_equal_t.mean().item()),
+            'tokens': int(token_feats.shape[1]),
+            'pairs': int(len(SCFA_SYMMETRY_PAIRS)),
+            'batch': int(batch_size),
+        }
+        return token_feats, token_weights, stats
+
     def forward(self, feat_map, pose_dict, return_cls=True, label=None,
                 stage2_feat=None):
         """
@@ -747,9 +839,17 @@ class SkeletonGCNHead(nn.Module):
             reliability = (1.0 - kp_unc).clamp(min=0.01)
             kp_weights = kp_weights * reliability
 
-        weights = kp_weights.clamp(min=1e-6).unsqueeze(-1)  # (B, 17, 1)
-        skeleton_feat = (kp_feats_enhanced * weights).sum(dim=1) / \
-                        weights.sum(dim=1).clamp(min=1e-6)  # (B, C)
+        scfa_stats = None
+        if self.scfa:
+            pooled_feats, pooled_weights, scfa_stats = self._apply_scfa(
+                kp_feats_enhanced, kp_weights, kp_scores)
+            weights = pooled_weights.clamp(min=1e-6).unsqueeze(-1)
+            skeleton_feat = (pooled_feats * weights).sum(dim=1) / \
+                            weights.sum(dim=1).clamp(min=1e-6)
+        else:
+            weights = kp_weights.clamp(min=1e-6).unsqueeze(-1)  # (B, 17, 1)
+            skeleton_feat = (kp_feats_enhanced * weights).sum(dim=1) / \
+                            weights.sum(dim=1).clamp(min=1e-6)  # (B, C)
 
         # PKE: compute per-keypoint log_sigma and pooled sigma
         skeleton_sigma = None
@@ -786,6 +886,8 @@ class SkeletonGCNHead(nn.Module):
             aux_data['skc_stats'] = skc_stats
         if scrc_stats is not None:
             aux_data['scrc_stats'] = scrc_stats
+        if scfa_stats is not None:
+            aux_data['scfa_stats'] = scfa_stats
 
         # PKE: for test, use sigma-weighted mu (precision-weighted feature)
         if self.pke and skeleton_sigma is not None and not self.training:

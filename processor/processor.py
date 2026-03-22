@@ -1171,6 +1171,20 @@ def do_train(cfg,
                                 details['skc_post'] = 0.0
                     loss._loss_details = details
 
+                if kp_data is not None and kp_data.get('scfa_stats') is not None:
+                    details = getattr(loss, '_loss_details', {})
+                    scfa_st = kp_data['scfa_stats']
+                    details['scfa_cov'] = scfa_st['cov']
+                    details['scfa_hm'] = scfa_st['hm']
+                    details['scfa_hs'] = scfa_st['hs']
+                    details['scfa_am'] = scfa_st['am']
+                    details['scfa_as'] = scfa_st['as']
+                    details['scfa_hn'] = scfa_st['hn']
+                    details['scfa_an'] = scfa_st['an']
+                    details['scfa_pg'] = scfa_st['pg']
+                    details['scfa_eq'] = scfa_st['eq']
+                    loss._loss_details = details
+
                 # SGRE: Skeleton-Guided Re-Encoding loss
                 sgre_enabled = getattr(cfg.MODEL, 'POSE_SGRE', False)
                 sgre_warmup = getattr(cfg.MODEL, 'POSE_SGRE_WARMUP', 20)
