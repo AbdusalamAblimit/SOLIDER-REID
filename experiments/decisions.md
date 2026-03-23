@@ -1153,6 +1153,27 @@ B. 直接启动 exp025，exp024 可以后续补跑
 
 **后续约束**: 不再在训练侧做任何 visibility-conditioned 机制。如果要改善遮挡鲁棒性，只有两条路：(a) 数据增强缩小 train-test visibility gap (b) 改善 test-time matching。
 
+### [2026-03-23 全天] 主要成果
+
+**有效发现**：
+1. **PLBOA** (Pose-guided Lower-Body Occlusion): +1.6 mAP (2-seed mean +1.57)。数据端创新。
+2. **MaxSim** (ColBERT Late Interaction): +1.0~1.5 test-time。NLP 迁移。
+3. **STD-PR** (Structural Token Decomposition): 单独 -2.4，但 +PLBOA 后 63.4 (+2.3 vs baseline)。
+4. **训练集 95.8% 可见**：解释了所有 visibility-dependent 方法的失败。
+
+**无效方向（今天确认）**：
+- MaxSim training (replace: -3.3, additive: neutral)
+- Evidential DL (neutral)
+- SPLADE (neutral)
+- PCVT (neutral)
+- PVAT (neutral)
+- 200 epochs (不是创新，浪费时间)
+
+**待解决**：
+- 还没有一个足够 "eye-catching" 的单一主贡献
+- PLBOA 和 MaxSim 是 trick 级别，STD-PR 离 paradigm shift 还有距离
+- 需要继续思考真正的范式级创新
+
 ### [2026-03-13 06:30] 决策 #41
 
 **上下文**: exp035 完成后，需要选择下一个实验方向。
