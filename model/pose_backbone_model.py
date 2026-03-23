@@ -325,8 +325,13 @@ class PoseBackboneModel(build_transformer):
                 feat_map_detached = featmaps[-1].detach()
                 B_fm, C_fm, H_fm, W_fm = feat_map_detached.shape
                 spatial_tokens = feat_map_detached.flatten(2).transpose(1, 2)  # (B, H*W, C)
+                # Pass keypoints for anchor-sampled query initialization
+                kp_p0 = pose_dict['keypoints'][:, 0] if pose_dict is not None else None
+                sc_p0 = pose_dict['scores'][:, 0] if pose_dict is not None else None
                 structural_tokens, str_stats = self.structural_router(
-                    spatial_tokens, (H_fm, W_fm), scene_heatmaps)
+                    spatial_tokens, (H_fm, W_fm), scene_heatmaps,
+                    keypoints=kp_p0, scores=sc_p0,
+                    input_size=tuple(x.shape[2:]))
                 # Part feature: average of structural tokens
                 str_feat = structural_tokens.mean(dim=1)  # (B, C)
                 # Part classifier
@@ -383,8 +388,12 @@ class PoseBackboneModel(build_transformer):
                     getattr(self, 'pose_test_feat', 'global') != 'global':
                 B_fm, C_fm, H_fm, W_fm = featmaps[-1].shape
                 spatial_tokens = featmaps[-1].flatten(2).transpose(1, 2)
+                kp_p0 = pose_dict['keypoints'][:, 0] if pose_dict is not None else None
+                sc_p0 = pose_dict['scores'][:, 0] if pose_dict is not None else None
                 structural_tokens, _ = self.structural_router(
-                    spatial_tokens, (H_fm, W_fm), scene_heatmaps)
+                    spatial_tokens, (H_fm, W_fm), scene_heatmaps,
+                    keypoints=kp_p0, scores=sc_p0,
+                    input_size=tuple(x.shape[2:]))
                 str_feat = structural_tokens.mean(dim=1)
                 if self.pose_test_feat in ('maxsim', 'maxsim_hybrid',
                                           'cvk_hybrid', 'cvk_only'):

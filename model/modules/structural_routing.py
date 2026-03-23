@@ -77,12 +77,16 @@ class StructuralRoutingLayer(nn.Module):
         self.part_bn = nn.BatchNorm1d(feat_dim)
         self.part_bn.bias.requires_grad_(False)
 
-    def forward(self, spatial_tokens, hw_shape, scene_heatmaps=None):
+    def forward(self, spatial_tokens, hw_shape, scene_heatmaps=None,
+                keypoints=None, scores=None, input_size=None):
         """
         Args:
             spatial_tokens: (B, N, C) spatial feature tokens from backbone
             hw_shape: (H, W) spatial grid dimensions
             scene_heatmaps: (B, 17, hm_H, hm_W) or None
+            keypoints: (B, 17, 2) pixel coords of person-0 (optional, for anchor init)
+            scores: (B, 17) keypoint confidence (optional)
+            input_size: (img_H, img_W) for coordinate normalization
 
         Returns:
             structural_tokens: (B, K, C) body-part tokens
@@ -92,8 +96,22 @@ class StructuralRoutingLayer(nn.Module):
         H, W = hw_shape
         K = self.num_parts
 
-        # Initialize queries
-        queries = self.part_queries.unsqueeze(0).expand(B, -1, -1)  # (B, K, C)
+        # Initialize queries: anchor-sampled from keypoint locations if available
+        if keypoints is not None and input_size is not None:
+            # Bilinear sample at body-part centroids from spatial feature map
+            feat_map = spatial_tokens.view(B, H, W, C).permute(0, 3, 1, 2)  # (B, C, H, W)
+            # Compute K body-part centroids from 17 keypoints
+            anchors = self._compute_part_centroids(keypoints, scores, input_size, K)  # (B, K, 2) in [0,1]
+            # Normalize to [-1, 1] for grid_sample (anchors are in [0,1])
+            grid = anchors.unsqueeze(2)  # (B, K, 1, 2)
+            grid = grid * 2 - 1  # [0,1] -> [-1,1]
+            sampled = F.grid_sample(feat_map, grid, mode='bilinear',
+                                   align_corners=True)  # (B, C, K, 1)
+            queries = sampled.squeeze(3).permute(0, 2, 1)  # (B, K, C)
+            # Add learnable part embedding for diversity
+            queries = queries + self.part_queries.unsqueeze(0)
+        else:
+            queries = self.part_queries.unsqueeze(0).expand(B, -1, -1)  # (B, K, C)
 
         # Compute pose-guided attention bias
         attn_bias = None
@@ -133,6 +151,63 @@ class StructuralRoutingLayer(nn.Module):
         }
 
         return structural_tokens, stats
+
+    @staticmethod
+    def _compute_part_centroids(keypoints, scores, input_size, num_parts):
+        """Compute body-part centroids from 17 keypoints.
+
+        Maps 17 COCO keypoints to K body-part centroids via averaging
+        within each group, weighted by confidence scores.
+
+        Args:
+            keypoints: (B, 17, 2) pixel coordinates
+            scores: (B, 17) confidence scores
+            input_size: (img_H, img_W)
+            num_parts: K (6 or 17)
+        Returns:
+            centroids: (B, K, 2) in feature map coordinates (x, y)
+        """
+        B = keypoints.shape[0]
+        device = keypoints.device
+        img_H, img_W = input_size
+
+        if num_parts == 17:
+            # Each keypoint IS a part centroid
+            cx = keypoints[:, :, 0] / img_W  # normalize to [0, 1]
+            cy = keypoints[:, :, 1] / img_H
+        else:
+            # 6-group mapping
+            groups = [
+                [0, 1, 2, 3, 4],      # head
+                [5, 6, 11, 12],        # torso
+                [5, 7, 9],             # left_arm
+                [6, 8, 10],            # right_arm
+                [11, 13, 15],          # left_leg
+                [12, 14, 16],          # right_leg
+            ]
+            cx_list, cy_list = [], []
+            for g in groups[:num_parts]:
+                g_scores = scores[:, g].clamp(min=1e-6)  # (B, len(g))
+                g_w = g_scores / g_scores.sum(dim=1, keepdim=True)
+                gx = (keypoints[:, g, 0] * g_w).sum(dim=1) / img_W  # (B,)
+                gy = (keypoints[:, g, 1] * g_w).sum(dim=1) / img_H
+                cx_list.append(gx)
+                cy_list.append(gy)
+            cx = torch.stack(cx_list, dim=1)  # (B, K)
+            cy = torch.stack(cy_list, dim=1)
+
+        # Convert to feature map coordinates
+        # Feature map is H_fm x W_fm, centroids are in [0,1]
+        # grid_sample expects (x, y) in feature map pixel coords
+        centroids = torch.stack([
+            cx * (keypoints.new_tensor(1.0)),   # will be scaled to W-1 in forward
+            cy * (keypoints.new_tensor(1.0)),
+        ], dim=2)  # (B, K, 2) in [0, 1] normalized
+
+        # Scale to feature map dimensions (done in forward before grid_sample)
+        # Here we return in [0, W-1] and [0, H-1] range
+        # Actually, let's return in feature-map pixel coords directly
+        return centroids  # (B, K, 2) in [0, 1], will be scaled in forward
 
     def get_part_features(self, structural_tokens):
         """Pool structural tokens into a single part feature vector.
