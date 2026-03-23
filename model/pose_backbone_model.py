@@ -332,8 +332,21 @@ class PoseBackboneModel(build_transformer):
                     spatial_tokens, (H_fm, W_fm), scene_heatmaps,
                     keypoints=kp_p0, scores=sc_p0,
                     input_size=tuple(x.shape[2:]))
-                # Part feature: average of structural tokens
-                str_feat = structural_tokens.mean(dim=1)  # (B, C)
+                # Part feature: confidence-weighted pooling from heatmap response
+                K_str = structural_tokens.shape[1]
+                if K_str == 6:
+                    # 6-part groups: compute per-part heatmap visibility
+                    _pg = [[0,1,2,3,4],[5,6,11,12],[5,7,9],[6,8,10],[11,13,15],[12,14,16]]
+                    hm_r = F.interpolate(scene_heatmaps, size=(H_fm, W_fm),
+                                        mode='bilinear', align_corners=False)
+                    pw = []
+                    for g in _pg:
+                        pw.append(hm_r[:, g].mean(dim=(1,2,3)))  # (B,)
+                    part_w = torch.stack(pw, dim=1)  # (B, 6)
+                    part_w = part_w / part_w.sum(dim=1, keepdim=True).clamp(min=1e-8)
+                    str_feat = (structural_tokens * part_w.unsqueeze(2)).sum(dim=1)
+                else:
+                    str_feat = structural_tokens.mean(dim=1)  # fallback
                 # Part classifier
                 str_feat_bn = self.structural_router.part_bn(str_feat)
                 str_cls = self.str_classifier(str_feat_bn)
@@ -394,7 +407,18 @@ class PoseBackboneModel(build_transformer):
                     spatial_tokens, (H_fm, W_fm), scene_heatmaps,
                     keypoints=kp_p0, scores=sc_p0,
                     input_size=tuple(x.shape[2:]))
-                str_feat = structural_tokens.mean(dim=1)
+                # Confidence-weighted pooling (same as training)
+                K_str = structural_tokens.shape[1]
+                if K_str == 6:
+                    _pg = [[0,1,2,3,4],[5,6,11,12],[5,7,9],[6,8,10],[11,13,15],[12,14,16]]
+                    hm_r = F.interpolate(scene_heatmaps, size=(H_fm, W_fm),
+                                        mode='bilinear', align_corners=False)
+                    pw = [hm_r[:, g].mean(dim=(1,2,3)) for g in _pg]
+                    part_w = torch.stack(pw, dim=1)
+                    part_w = part_w / part_w.sum(dim=1, keepdim=True).clamp(min=1e-8)
+                    str_feat = (structural_tokens * part_w.unsqueeze(2)).sum(dim=1)
+                else:
+                    str_feat = structural_tokens.mean(dim=1)
                 if self.pose_test_feat in ('maxsim', 'maxsim_hybrid',
                                           'cvk_hybrid', 'cvk_only'):
                     # Return structural tokens as kp_feats for set matching
