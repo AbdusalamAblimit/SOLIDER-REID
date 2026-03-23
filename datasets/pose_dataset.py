@@ -701,7 +701,31 @@ class PoseImageDataset(Dataset):
 
         w, h = img.size
 
-        if self.lower_body_occ_mode == 'gradient':
+        if self.lower_body_occ_mode == 'body_random':
+            # Body-random mode: paste occluder at random position WITHIN body bbox
+            valid_kp = kp[scores > 0.3]
+            if len(valid_kp) < 3:
+                return img
+            body_y1 = max(0, int(valid_kp[:, 1].min()) - 5)
+            body_y2 = min(h, int(valid_kp[:, 1].max()) + 5)
+            body_x1 = max(0, int(valid_kp[:, 0].min()) - 5)
+            body_x2 = min(w, int(valid_kp[:, 0].max()) + 5)
+            body_h = body_y2 - body_y1
+            body_w = body_x2 - body_x1
+            if body_h < 20 or body_w < 10:
+                return img
+            # Random occlusion region within body bbox (30-60% of body area)
+            occ_h = int(body_h * random.uniform(0.3, 0.6))
+            occ_w = int(body_w * random.uniform(0.5, 1.0))
+            occ_start = random.randint(body_y1, max(body_y1, body_y2 - occ_h))
+            occ_x = random.randint(body_x1, max(body_x1, body_x2 - occ_w))
+            # Use occ_start and following code to paste occluder
+            occ_region_h = occ_h
+            # Override h to be occ_start + occ_h for the paste region
+            h_orig = h
+            h = occ_start + occ_h
+
+        elif self.lower_body_occ_mode == 'gradient':
             # Gradient mode: occlusion start sampled with bottom-heavy distribution
             # Find head and foot y-coordinates
             head_indices = [0, 1, 2, 3, 4]  # nose, eyes, ears
