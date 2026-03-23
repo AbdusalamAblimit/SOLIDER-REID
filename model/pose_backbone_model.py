@@ -124,6 +124,16 @@ class PoseBackboneModel(build_transformer):
                       f'hidden={gcn_hidden}, test_feat={self.pose_test_feat}, '
                       f'kp_weight={kp_weight_mode}')
 
+        # PNIS: Pose-Normalized Identity Space
+        self.use_pose_normalize = getattr(cfg.MODEL, 'POSE_NORMALIZE', False)
+        if self.use_pose_normalize:
+            from .modules.pose_normalizer import PoseNormalizer
+            pn_hidden = getattr(cfg.MODEL, 'POSE_NORMALIZE_HIDDEN', 256)
+            self.pose_normalizer = PoseNormalizer(
+                feat_dim=self.in_planes, hidden_dim=pn_hidden)
+            pn_params = sum(p.numel() for p in self.pose_normalizer.parameters())
+            print(f'[PNIS] Pose-Normalized Identity Space enabled: {pn_params} params')
+
         # STD-PR: Structural Token Decomposition (replaces GCN, mutually exclusive)
         self.use_structural_routing = getattr(cfg.MODEL, 'POSE_STRUCTURAL_ROUTING', False)
         if self.use_structural_routing and self.use_skeleton_gcn:
@@ -330,6 +340,22 @@ class PoseBackboneModel(build_transformer):
                 gcn_cls_scores, gcn_feats, kp_data = self.skeleton_head(
                     feat_map_detached, pose_dict, return_cls=True, label=label)
 
+                # PNIS: normalize GCN feature by subtracting pose offset
+                if getattr(self, 'use_pose_normalize', False) and len(gcn_feats) > 0:
+                    kp_coords = pose_dict['keypoints'][:, 0, :, :]  # (B, 17, 2) person 0
+                    kp_scores = pose_dict['scores'][:, 0, :]        # (B, 17) person 0
+                    # Normalize coordinates to [0,1]
+                    img_h, img_w = x.shape[2], x.shape[3]
+                    kp_coords_norm = kp_coords.clone()
+                    kp_coords_norm[:, :, 0] = kp_coords_norm[:, :, 0] / max(img_w, 1)
+                    kp_coords_norm[:, :, 1] = kp_coords_norm[:, :, 1] / max(img_h, 1)
+                    identity_feat, pn_stats = self.pose_normalizer(
+                        gcn_feats[0], kp_coords_norm, kp_scores)
+                    gcn_feats[0] = identity_feat
+                    if kp_data is None:
+                        kp_data = {}
+                    kp_data['pn_stats'] = pn_stats
+
                 # SPLADE: auxiliary sparse classification (does NOT modify gcn lists)
                 if getattr(self, 'use_splade', False) and len(gcn_feats) > 0:
                     sparse_feat, sparsity = self.sparse_head(gcn_feats[0])
@@ -377,6 +403,16 @@ class PoseBackboneModel(build_transformer):
                     getattr(self, 'pose_test_feat', 'global') != 'global':
                 _, gcn_feats, aux_data = self.skeleton_head(
                     featmaps[-1], pose_dict, return_cls=False)
+                # PNIS: normalize test features too
+                if getattr(self, 'use_pose_normalize', False) and gcn_feats is not None and len(gcn_feats) > 0:
+                    kp_coords = pose_dict['keypoints'][:, 0, :, :]
+                    kp_scores = pose_dict['scores'][:, 0, :]
+                    img_h, img_w = x.shape[2], x.shape[3]
+                    kp_coords_norm = kp_coords.clone()
+                    kp_coords_norm[:, :, 0] /= max(img_w, 1)
+                    kp_coords_norm[:, :, 1] /= max(img_h, 1)
+                    identity_feat, _ = self.pose_normalizer(gcn_feats[0], kp_coords_norm, kp_scores)
+                    gcn_feats[0] = identity_feat
                 # SPLADE: training-only auxiliary, no test-time feature change
 
             # Assemble test features from global + part branch

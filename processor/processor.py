@@ -501,6 +501,15 @@ def do_train(cfg,
 
                 loss = loss_fn(score, feat, target, target_cam, kp_data=kp_aux_data)
 
+                # PNIS: log pose normalizer stats
+                if kp_data is not None and 'pn_stats' in kp_data:
+                    details = getattr(loss, '_loss_details', {})
+                    pn = kp_data['pn_stats']
+                    details['pn_alpha'] = pn['alpha']
+                    details['pn_off'] = pn['offset_norm']
+                    details['pn_ratio'] = pn['ratio']
+                    loss._loss_details = details
+
                 # LTCS loss
                 if ltcs_enabled and kp_aux_data is not None and 'ltcs_teacher_feats' in kp_aux_data:
                     _m = model.module if hasattr(model, 'module') else model

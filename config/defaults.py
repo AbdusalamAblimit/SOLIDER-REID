@@ -144,6 +144,10 @@ _C.MODEL.POSE_EVIDENTIAL = False           # Replace GCN branch CE with Evidenti
 _C.MODEL.POSE_EVIDENTIAL_KL_REG = 0.1     # KL regularization max weight
 _C.MODEL.POSE_EVIDENTIAL_ANNEAL = 0.6     # Fraction of training to reach full KL weight
 
+# PNIS: Pose-Normalized Identity Space
+_C.MODEL.POSE_NORMALIZE = False           # Factor out pose from identity feature
+_C.MODEL.POSE_NORMALIZE_HIDDEN = 256
+
 # STD-PR: Structural Token Decomposition with Pose-guided Routing
 _C.MODEL.POSE_STRUCTURAL_ROUTING = False
 _C.MODEL.POSE_STR_NUM_PARTS = 6
