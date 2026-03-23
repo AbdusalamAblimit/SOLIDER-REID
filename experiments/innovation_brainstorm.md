@@ -296,6 +296,32 @@ PDS 实验证明了 **"梯度干扰是可以通过架构解耦缓解的"** 这�
 
 ---
 
+## 2026-03-24: STD-PR + PLBOA Synergy — 候选主创新
+
+### 核心发现
+STD-PR 单独 -2.4% mAP（弱于 GCN），但 STD-PR+PLBOA = 63.4%（超过 GCN+PLBOA = 62.7%，+0.7%）。
+
+| 配置 | 无 PLBOA | 有 PLBOA | PLBOA 增益 |
+|------|---------|---------|-----------|
+| GCN (keypoint sampling) | 61.1% | 62.7% | +1.6 |
+| STD-PR (cross-attention) | 58.7% | 63.4% | **+4.7** |
+
+**STD-PR 从 PLBOA 获得的增益是 GCN 的 3 倍（+4.7 vs +1.6）！**
+
+### 解释
+- GCN 用 bilinear sampling 在固定位置采样 keypoint features → 对输入分布变化不敏感
+- STD-PR 用 cross-attention 动态聚合信息 → 天然适应 PLBOA 带来的 lower-body 遮挡多样性
+- Cross-attention 的 attention weights 自动重分配到可见区域，而 bilinear sampling 仍然在原位置采样（即使该位置被遮挡了）
+
+### 论文 Story 候选
+1. **Problem**: Occluded ReID 的 train-test distribution gap（95.8% vs 83.8% visible）
+2. **Insight**: Static keypoint sampling (GCN) 无法充分利用 occlusion augmentation 带来的多样性
+3. **Method**: Structural Token Decomposition (STD-PR) — 用 pose-guided cross-attention 替代 keypoint sampling
+4. **Key Finding**: STD-PR+PLBOA synergy (+4.7%) 远超 GCN+PLBOA (+1.6%)
+5. **Supporting**: MaxSim test-time matching (+1.5%), SGCFR (+2.5%)
+
+---
+
 ## 2026-03-22: 关键数据约束发现 — 训练集 visibility 几乎无遮挡
 
 ### 训练集 person-0 visibility 统计
