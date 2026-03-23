@@ -360,7 +360,18 @@ class PoseBackboneModel(build_transformer):
                 structural_tokens, _ = self.structural_router(
                     spatial_tokens, (H_fm, W_fm), scene_heatmaps)
                 str_feat = structural_tokens.mean(dim=1)
-                gcn_feats = [str_feat]  # wrap in list for equal_concat compatibility
+                if self.pose_test_feat in ('maxsim', 'maxsim_hybrid'):
+                    # Return structural tokens as kp_feats for MaxSim matching
+                    K = structural_tokens.shape[1]
+                    test_feat = {
+                        'mode': self.pose_test_feat,
+                        'global_feat': test_feat,
+                        'kp_feats': structural_tokens,  # (B, K, C)
+                        'kp_weights': torch.ones(structural_tokens.shape[0], K,
+                                                 device=structural_tokens.device),
+                    }
+                    return test_feat, featmaps
+                gcn_feats = [str_feat]  # for equal_concat
             elif self.use_skeleton_gcn and pose_dict is not None and \
                     getattr(self, 'pose_test_feat', 'global') != 'global':
                 _, gcn_feats, aux_data = self.skeleton_head(
