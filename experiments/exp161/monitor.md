@@ -39,3 +39,16 @@
 - dim=768 + pose heatmap bias 确实大幅加速 cross-attention 收敛
 - 但 R1 仍然落后 6.3 个点
 - 如果 ep60-80 能追到 -0.5 以内 → STD-PR 有望超越 GCN
+
+### [2026-03-23 19:00] STD-PR 全系列消融完成
+
+| 变体 | 最终 mAP | vs baseline | vs GCN |
+|------|---------|-------------|--------|
+| 6 parts (exp161) | 58.7% | -2.4 | -2.4 |
+| 17 parts (exp161c) | 58.2% | -2.9 | -2.9 |
+| **6 parts + PLBOA (exp161b)** | **63.4%** | **+2.3** | **+2.3** |
+| 6 parts + PLBOA + PAA (exp161d) | 进行中 | — | — |
+| 6 parts + PLBOA seed42 | 进行中 | — | — |
+
+**核心发现**: STD-PR 单独弱于 GCN (-2.4)，但加 PLBOA 后**强于** GCN+PLBOA (+0.7 mAP)。
+这意味着 STD-PR 的 cross-attention 比 GCN 的 bilinear sampling 更善于利用"数据增强带来的遮挡多样性"。
