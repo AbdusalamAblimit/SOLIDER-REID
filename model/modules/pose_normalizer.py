@@ -26,8 +26,9 @@ class PoseNormalizer(nn.Module):
         # Learnable scale: starts near 0 (gentle ramp-up)
         # sigmoid(-3) = 0.047, so initial subtraction is ~5% of offset
         self.alpha = nn.Parameter(torch.tensor([-3.0]))
-        # Zero-init last layer for identity start
-        nn.init.zeros_(self.pose_encoder[-1].weight)
+        # Small random init on last layer (not zero — zero-init causes zero gradient)
+        # Alpha starts at 0.047 which keeps subtraction gentle
+        nn.init.normal_(self.pose_encoder[-1].weight, std=0.01)
         nn.init.zeros_(self.pose_encoder[-1].bias)
 
     def forward(self, raw_feat, keypoints, scores):
