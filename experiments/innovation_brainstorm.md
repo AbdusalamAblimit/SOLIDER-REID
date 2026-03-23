@@ -2484,3 +2484,28 @@ SASA 使用骨架测地距离作为 Swin window attention 的固定偏置，零�
    - `SCFA` 这类依赖单图双侧冗余前提的新结构
 3. **仍需警惕的风险**:
    - 即便 `PCVT` 成立，也必须证明它不是“更复杂的数据增广/一致性 recipe”
+
+## 2026-03-24: 文献调研确认 — 我们的独特位置
+
+### SOTA 参考 (Occluded-Duke)
+- OGFR (2025.7): 76.6/64.7 (ViT, teacher-student distillation)
+- KPR+SOLIDER (ECCV24): ~82/73 (Swin-L, keypoint prompt at test time)
+- PAB-ReID (2024): 72.6/63.5 (ViT, human parsing)
+
+### 我们的位置 (Swin-Tiny)
+- STD-PR+PLBOA: 63.4/73.4 eq, 63.6/73.6 maxsim
+- PLBOA+GCN+MaxSim: 64.1/75.0
+- PLBOA+GCN+SGCFR: 65.2/75.3
+
+### 确认的独特组合
+没有论文同时做过：
+1. Pose-aware backbone injection (PSG)
+2. Structural body-part tokens via cross-attention (STD-PR)
+3. Pose-guided lower-body occlusion augmentation (PLBOA)
+4. ColBERT-style late interaction for matching (MaxSim)
+
+### 论文可行定位
+- STD-PR 的 PLBOA synergy (+4.7 vs +1.6) 是核心发现
+- MaxSim 是 test-time 的独立贡献
+- PLBOA 是 data-side 的独立贡献
+- 三者组合形成完整的 pose-guided pipeline
