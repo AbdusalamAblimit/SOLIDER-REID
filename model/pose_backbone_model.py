@@ -124,8 +124,10 @@ class PoseBackboneModel(build_transformer):
                       f'hidden={gcn_hidden}, test_feat={self.pose_test_feat}, '
                       f'kp_weight={kp_weight_mode}')
 
-        # STD-PR: Structural Token Decomposition (replaces GCN)
+        # STD-PR: Structural Token Decomposition (replaces GCN, mutually exclusive)
         self.use_structural_routing = getattr(cfg.MODEL, 'POSE_STRUCTURAL_ROUTING', False)
+        if self.use_structural_routing and self.use_skeleton_gcn:
+            raise ValueError('POSE_STRUCTURAL_ROUTING and POSE_SKELETON_GCN cannot both be True')
         if self.use_structural_routing:
             from .modules.structural_routing import StructuralRoutingLayer
             str_num_parts = getattr(cfg.MODEL, 'POSE_STR_NUM_PARTS', 6)
