@@ -26,3 +26,16 @@
 - tri_part = 0.50（远低于 GCN ~2.3，structural tokens 特征更紧凑）
 - 模式与 exp063 PTD / exp081 PQTD 一致（decoder 早期慢）
 - **关键**：ep30-50 能否追回到 baseline
+
+### [2026-03-23 14:57] ep20/30 — 追赶中，远超历史 decoder
+
+| Epoch | STD-PR | exp030a | Δ mAP | exp063 PTD 同期 |
+|-------|--------|---------|-------|----------------|
+| 10 | 35.2 | 38.2 | -3.0 | ~25% |
+| 20 | 44.3 | 46.8 | -2.5 | ~33% |
+| 30 | 50.2 | 52.2 | -2.0 | ~37% |
+
+- 与 exp063 PTD 相比：STD-PR ep30=50.2% vs PTD ep30≈37%（+13%！）
+- dim=768 + pose heatmap bias 确实大幅加速 cross-attention 收敛
+- 但 R1 仍然落后 6.3 个点
+- 如果 ep60-80 能追到 -0.5 以内 → STD-PR 有望超越 GCN
