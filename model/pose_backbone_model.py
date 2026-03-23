@@ -360,8 +360,9 @@ class PoseBackboneModel(build_transformer):
                 structural_tokens, _ = self.structural_router(
                     spatial_tokens, (H_fm, W_fm), scene_heatmaps)
                 str_feat = structural_tokens.mean(dim=1)
-                if self.pose_test_feat in ('maxsim', 'maxsim_hybrid'):
-                    # Return structural tokens as kp_feats for MaxSim matching
+                if self.pose_test_feat in ('maxsim', 'maxsim_hybrid',
+                                          'cvk_hybrid', 'cvk_only'):
+                    # Return structural tokens as kp_feats for set matching
                     K = structural_tokens.shape[1]
                     test_feat = {
                         'mode': self.pose_test_feat,
