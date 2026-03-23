@@ -16,3 +16,13 @@
 - exp081 PQTD: 3 层 decoder, dim=256, 120ep 不够 → mAP 56.9%
 - **exp161 STD-PR**: 2 层 cross-attn, **dim=768**(不降维), **pose heatmap additive bias**
 - 如果 dim=768 + pose bias 能让 cross-attn 收敛更快 → 有可能在 120ep 内有效
+
+## 监控
+
+### [2026-03-23 14:36] ep10 — 低于 baseline，符合 decoder 模式
+- mAP 35.2% / R1 44.5%
+- vs exp030a ep10: -3.0 / -6.8
+- id_part = 4.22（从 6.73 下降，比 GCN 同期 ~5.5 更低 → 学得更快）
+- tri_part = 0.50（远低于 GCN ~2.3，structural tokens 特征更紧凑）
+- 模式与 exp063 PTD / exp081 PQTD 一致（decoder 早期慢）
+- **关键**：ep30-50 能否追回到 baseline
