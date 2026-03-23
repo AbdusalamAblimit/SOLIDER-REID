@@ -144,6 +144,12 @@ _C.MODEL.POSE_EVIDENTIAL = False           # Replace GCN branch CE with Evidenti
 _C.MODEL.POSE_EVIDENTIAL_KL_REG = 0.1     # KL regularization max weight
 _C.MODEL.POSE_EVIDENTIAL_ANNEAL = 0.6     # Fraction of training to reach full KL weight
 
+# STD-PR: Structural Token Decomposition with Pose-guided Routing
+_C.MODEL.POSE_STRUCTURAL_ROUTING = False
+_C.MODEL.POSE_STR_NUM_PARTS = 6
+_C.MODEL.POSE_STR_NUM_HEADS = 8
+_C.MODEL.POSE_STR_NUM_LAYERS = 2
+
 # MaxSim triplet: set-to-set metric learning
 _C.MODEL.POSE_MAXSIM_TRIPLET = False
 _C.MODEL.POSE_MAXSIM_TRIPLET_TEMP = 0.05

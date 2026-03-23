@@ -124,6 +124,27 @@ class PoseBackboneModel(build_transformer):
                       f'hidden={gcn_hidden}, test_feat={self.pose_test_feat}, '
                       f'kp_weight={kp_weight_mode}')
 
+        # STD-PR: Structural Token Decomposition (replaces GCN)
+        self.use_structural_routing = getattr(cfg.MODEL, 'POSE_STRUCTURAL_ROUTING', False)
+        if self.use_structural_routing:
+            from .modules.structural_routing import StructuralRoutingLayer
+            str_num_parts = getattr(cfg.MODEL, 'POSE_STR_NUM_PARTS', 6)
+            str_num_heads = getattr(cfg.MODEL, 'POSE_STR_NUM_HEADS', 8)
+            str_num_layers = getattr(cfg.MODEL, 'POSE_STR_NUM_LAYERS', 2)
+            self.structural_router = StructuralRoutingLayer(
+                feat_dim=self.in_planes,
+                num_parts=str_num_parts,
+                num_heads=str_num_heads,
+                num_layers=str_num_layers,
+            )
+            # Part classifier for structural tokens
+            self.str_classifier = nn.Linear(self.in_planes, num_classes, bias=False)
+            self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
+            str_params = sum(p.numel() for p in self.structural_router.parameters())
+            print(f'[STD-PR] Structural Token Decomposition enabled: '
+                  f'{str_num_parts} parts, {str_num_layers} layers, '
+                  f'{str_params} params, test_feat={self.pose_test_feat}')
+
         # SPLADE: Learned Sparse Projection on GCN pooled feature
         self.use_splade = getattr(cfg.MODEL, 'POSE_SPLADE', False)
         if self.use_splade and self.use_skeleton_gcn:
@@ -287,8 +308,22 @@ class PoseBackboneModel(build_transformer):
             else:
                 cls_score = self.classifier(feat_cls)
 
-            # Part branch: GCN (detached to prevent gradient interference)
-            if self.use_skeleton_gcn and pose_dict is not None:
+            # Part branch: STD-PR (structural tokens) or GCN
+            if getattr(self, 'use_structural_routing', False) and scene_heatmaps is not None:
+                feat_map_detached = featmaps[-1].detach()
+                B_fm, C_fm, H_fm, W_fm = feat_map_detached.shape
+                spatial_tokens = feat_map_detached.flatten(2).transpose(1, 2)  # (B, H*W, C)
+                structural_tokens, str_stats = self.structural_router(
+                    spatial_tokens, (H_fm, W_fm), scene_heatmaps)
+                # Part feature: average of structural tokens
+                str_feat = structural_tokens.mean(dim=1)  # (B, C)
+                # Part classifier
+                str_feat_bn = self.structural_router.part_bn(str_feat)
+                str_cls = self.str_classifier(str_feat_bn)
+                kp_data = {'str_stats': str_stats}
+                return [cls_score, str_cls], [global_feat, str_feat], featmaps, None, kp_data
+
+            elif self.use_skeleton_gcn and pose_dict is not None:
                 feat_map_detached = featmaps[-1].detach()
                 gcn_cls_scores, gcn_feats, kp_data = self.skeleton_head(
                     feat_map_detached, pose_dict, return_cls=True, label=label)
@@ -316,7 +351,15 @@ class PoseBackboneModel(build_transformer):
             # Part branch test features
             gcn_feats = None
             aux_data = {}
-            if self.use_skeleton_gcn and pose_dict is not None and \
+            if getattr(self, 'use_structural_routing', False) and scene_heatmaps is not None and \
+                    getattr(self, 'pose_test_feat', 'global') != 'global':
+                B_fm, C_fm, H_fm, W_fm = featmaps[-1].shape
+                spatial_tokens = featmaps[-1].flatten(2).transpose(1, 2)
+                structural_tokens, _ = self.structural_router(
+                    spatial_tokens, (H_fm, W_fm), scene_heatmaps)
+                str_feat = structural_tokens.mean(dim=1)
+                gcn_feats = [str_feat]  # wrap in list for equal_concat compatibility
+            elif self.use_skeleton_gcn and pose_dict is not None and \
                     getattr(self, 'pose_test_feat', 'global') != 'global':
                 _, gcn_feats, aux_data = self.skeleton_head(
                     featmaps[-1], pose_dict, return_cls=False)
