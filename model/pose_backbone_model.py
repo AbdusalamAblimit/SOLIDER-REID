@@ -151,6 +151,7 @@ class PoseBackboneModel(build_transformer):
             )
             # Part classifier for structural tokens
             self.str_classifier = nn.Linear(self.in_planes, num_classes, bias=False)
+            self.str_per_token = getattr(cfg.MODEL, 'POSE_STR_PER_TOKEN', False)
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
             str_params = sum(p.numel() for p in self.structural_router.parameters())
             print(f'[STD-PR] Structural Token Decomposition enabled: '
@@ -347,11 +348,25 @@ class PoseBackboneModel(build_transformer):
                     str_feat = (structural_tokens * part_w.unsqueeze(2)).sum(dim=1)
                 else:
                     str_feat = structural_tokens.mean(dim=1)  # fallback
-                # Part classifier
-                str_feat_bn = self.structural_router.part_bn(str_feat)
-                str_cls = self.str_classifier(str_feat_bn)
-                kp_data = {'str_stats': str_stats}
-                return [cls_score, str_cls], [global_feat, str_feat], featmaps, None, kp_data
+                # Per-token or pooled classification
+                str_per_token = getattr(cfg.MODEL, 'POSE_STR_PER_TOKEN', False) if hasattr(self, '_cfg') else False
+                if getattr(self, 'str_per_token', False):
+                    # Per-token: each token gets its own CE + triplet
+                    str_cls_list = []
+                    str_feat_list = []
+                    for k in range(structural_tokens.shape[1]):
+                        tok_k = structural_tokens[:, k]  # (B, C)
+                        tok_bn = self.structural_router.part_bn(tok_k)
+                        str_cls_list.append(self.str_classifier(tok_bn))
+                        str_feat_list.append(tok_k)
+                    kp_data = {'str_stats': str_stats}
+                    return [cls_score] + str_cls_list, [global_feat] + str_feat_list, featmaps, None, kp_data
+                else:
+                    # Pooled: all tokens averaged
+                    str_feat_bn = self.structural_router.part_bn(str_feat)
+                    str_cls = self.str_classifier(str_feat_bn)
+                    kp_data = {'str_stats': str_stats}
+                    return [cls_score, str_cls], [global_feat, str_feat], featmaps, None, kp_data
 
             elif self.use_skeleton_gcn and pose_dict is not None:
                 feat_map_detached = featmaps[-1].detach()
@@ -419,7 +434,10 @@ class PoseBackboneModel(build_transformer):
                     str_feat = (structural_tokens * part_w.unsqueeze(2)).sum(dim=1)
                 else:
                     str_feat = structural_tokens.mean(dim=1)
-                if self.pose_test_feat in ('maxsim', 'maxsim_hybrid',
+                if getattr(self, 'str_per_token', False):
+                    # Per-token test: each token is a separate feature
+                    gcn_feats = [structural_tokens[:, k] for k in range(structural_tokens.shape[1])]
+                elif self.pose_test_feat in ('maxsim', 'maxsim_hybrid',
                                           'cvk_hybrid', 'cvk_only'):
                     # Return structural tokens as kp_feats for set matching
                     K = structural_tokens.shape[1]
