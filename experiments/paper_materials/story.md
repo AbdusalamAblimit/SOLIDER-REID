@@ -5,7 +5,30 @@
 ## Phase 3 Story Update (2026-03-23)
 
 ### 暂定标题
-Set-to-Set Matching for Occluded Person Re-Identification via Pose-Guided Late Interaction
+Pose-Guided Structural Token Decomposition for Occluded Person Re-Identification
+
+### 核心贡献（更新 2026-03-24）
+
+1. **STD-PR (Structural Token Decomposition with Pose-guided Routing)**
+   - 用 pose-biased cross-attention 将 spatial tokens 转为 structural body-part tokens
+   - 替代 GCN keypoint sampling：cross-attention 比 bilinear sampling 更善于利用 data augmentation
+   - 3-seed mean: 62.6%±0.87 mAP (+1.87 vs baseline)
+
+2. **PLBOA (Pose-guided Lower-Body Occlusion Augmentation)**
+   - 基于 train-test occlusion gap 分析（1.8% vs 24.4% lower-body occluded）
+   - 用真实 VOC 物体贴到 hip 以下区域
+   - 2-seed mean: 62.3% mAP with GCN (+1.57 vs baseline)
+
+3. **STD-PR+PLBOA Synergy**
+   - STD-PR alone: -2.4 vs GCN
+   - STD-PR+PLBOA: **+0.7 vs GCN+PLBOA**
+   - PLBOA 增益：GCN +1.6 vs STD-PR **+4.7** (3x 差距！)
+   - 核心发现：cross-attention 比 keypoint sampling 更善于利用 augmentation
+
+4. **MaxSim (ColBERT Late Interaction, 辅助)**
+   - 零训练成本 test-time method
+   - +1.0~1.5% mAP across checkpoints
+   - 首次将 NLP late interaction 引入 person ReID
 
 ### 核心范式论点
 Occluded person ReID 不应该是 "extract one vector, compare vectors"，而是 "extract a set of body-part tokens, match sets"。这直接类比 NLP 从 sentence embeddings (BERT) 到 token-level late interaction (ColBERT) 的范式迁移。
