@@ -60,6 +60,13 @@ if echo "$COMMAND" | grep -qE 'train\.py'; then
       echo "{\"decision\":\"block\",\"reason\":\"Review in ${LATEST_REVIEW} has NOT passed. Fix all issues, then re-run Claude Broad Review until it passes. The review file must contain 审查通过 to indicate approval.\"}"
       exit 2
     fi
+
+    # 检查 3: 审查文件必须足够详细（>=30行），防止自己写假审查跳过子代理
+    REVIEW_LINES=$(wc -l < "$LATEST_REVIEW")
+    if [ "$REVIEW_LINES" -lt 30 ]; then
+      echo "{\"decision\":\"block\",\"reason\":\"Review in ${LATEST_REVIEW} is only ${REVIEW_LINES} lines. A proper Opus 4.6 sub-agent review should be >=30 lines with detailed analysis. You are writing a fake review instead of launching the Agent tool.\"}"
+      exit 2
+    fi
   fi
 fi
 
