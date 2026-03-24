@@ -106,6 +106,8 @@ class PoseImageDataset(Dataset):
         self.lower_body_occ_prob = 0.5
         self.lower_body_occ_ratio = 0.5
         self.lower_body_occ_mode = 'lower'  # 'lower' or 'gradient'
+        self.upper_body_occ = False     # PGMPOA: additionally occlude upper body parts
+        self.upper_body_occ_prob = 0.3  # probability of upper-body occlusion (on top of PLBOA)
         self.pcvt = False
         self.pcvt_resp_thr = 0.10
         self.pcvt_active_thr = 0.30
@@ -225,6 +227,10 @@ class PoseImageDataset(Dataset):
             # 3.6) PLBOA: Pose-guided Lower-Body Occlusion Augmentation
             if self.lower_body_occ and persons and random.random() < self.lower_body_occ_prob:
                 img = self._apply_lower_body_occlusion(img, persons)
+
+            # 3.7) PGMPOA: additionally occlude a random upper-body part
+            if self.upper_body_occ and persons and random.random() < self.upper_body_occ_prob:
+                img = self._apply_upper_body_part_occlusion(img, persons)
 
             # 4) Convert image to tensor + normalize
             img_tensor = self._image_to_tensor(img)
@@ -816,6 +822,104 @@ class PoseImageDataset(Dataset):
             p['visibility'][in_occ] = 0.0
             p['visibility_binary'][in_occ] = 0.0
             p['heatmap'][:, occ_start:h, occ_x:occ_x_end] = 0.0
+
+        return img
+
+    # Upper-body part groups for PGMPOA: (name, keypoint_indices, padding_ratio)
+    _UPPER_BODY_PARTS = [
+        ('head', [0, 1, 2, 3, 4], 0.3),         # nose, eyes, ears
+        ('left_arm', [5, 7, 9], 0.2),            # left shoulder, elbow, wrist
+        ('right_arm', [6, 8, 10], 0.2),          # right shoulder, elbow, wrist
+    ]
+
+    def _apply_upper_body_part_occlusion(self, img, persons):
+        """PGMPOA: Occlude a random upper-body part with a real occluder.
+
+        Randomly selects one of {head, left_arm, right_arm}, computes its
+        bounding box from keypoints, and pastes an occluder patch over it.
+        This complements PLBOA (lower-body) to create diverse occlusion patterns.
+        """
+        import numpy as np
+
+        p0 = persons[0]
+        kp = p0['kp']
+        scores = p0['scores']
+        w, h = img.size
+
+        # Randomly select an upper-body part
+        part_name, kp_indices, pad_ratio = random.choice(self._UPPER_BODY_PARTS)
+
+        # Check that at least 2 keypoints of this part are visible
+        part_scores = scores[kp_indices]
+        visible = part_scores > 0.3
+        if visible.sum() < 2:
+            return img
+
+        # Compute bounding box from visible keypoints
+        part_kp = kp[kp_indices][visible]
+        x_min = max(0, int(part_kp[:, 0].min()))
+        x_max = min(w, int(part_kp[:, 0].max()))
+        y_min = max(0, int(part_kp[:, 1].min()))
+        y_max = min(h, int(part_kp[:, 1].max()))
+
+        bbox_w = x_max - x_min
+        bbox_h = y_max - y_min
+
+        if bbox_w < 5 or bbox_h < 5:
+            return img
+
+        # Pad the bbox to cover surrounding area (parts extend beyond keypoints)
+        pad_x = int(bbox_w * pad_ratio)
+        pad_y = int(bbox_h * pad_ratio)
+        x1 = max(0, x_min - pad_x)
+        y1 = max(0, y_min - pad_y)
+        x2 = min(w, x_max + pad_x)
+        y2 = min(h, y_max + pad_y)
+
+        occ_w = x2 - x1
+        occ_h = y2 - y1
+        if occ_w < 5 or occ_h < 5:
+            return img
+
+        img_np = np.array(img)
+
+        # Paste occluder
+        if self.occluders:
+            import cv2
+            occluder = random.choice(self.occluders)
+            occ_orig_h, occ_orig_w = occluder.shape[:2]
+            if occ_orig_h > 0 and occ_orig_w > 0:
+                occ_resized = cv2.resize(occluder, (occ_w, occ_h))
+                occ_rgb = occ_resized[:, :, :3]
+                occ_alpha = occ_resized[:, :, 3:4].astype(np.float32) / 255.0
+
+                region = img_np[y1:y2, x1:x2].astype(np.float32)
+                patch = occ_rgb[:occ_h, :occ_w].astype(np.float32)
+                alpha = occ_alpha[:occ_h, :occ_w]
+                img_np[y1:y2, x1:x2] = (alpha * patch + (1.0 - alpha) * region).astype(np.uint8)
+        else:
+            # Fallback: gray fill
+            gray_val = random.randint(60, 180)
+            img_np[y1:y2, x1:x2] = gray_val
+
+        img = Image.fromarray(img_np)
+
+        # Update person metadata for occluded keypoints
+        for p in persons:
+            kp_p = p['kp']
+            in_occ = ((kp_p[:, 1] >= y1) & (kp_p[:, 1] < y2) &
+                      (kp_p[:, 0] >= x1) & (kp_p[:, 0] < x2))
+            p['scores'][in_occ] = 0.0
+            p['visibility'][in_occ] = 0.0
+            p['visibility_binary'][in_occ] = 0.0
+            # Zero out heatmap in the occluded region
+            # Heatmap may have different resolution than image
+            hm_h, hm_w = p['heatmap'].shape[1], p['heatmap'].shape[2]
+            hm_y1 = int(y1 * hm_h / h)
+            hm_y2 = int(y2 * hm_h / h)
+            hm_x1 = int(x1 * hm_w / w)
+            hm_x2 = int(x2 * hm_w / w)
+            p['heatmap'][:, hm_y1:hm_y2, hm_x1:hm_x2] = 0.0
 
         return img
 

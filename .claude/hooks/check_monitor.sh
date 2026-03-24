@@ -19,7 +19,7 @@ if echo "$COMMAND" | grep -qE '^sleep '; then
   SLEEP_SEC=$(echo "$COMMAND" | grep -oP 'sleep\s+\K\d+')
 
   # 只对 >= 180 秒的 sleep 生效
-  if [ -n "$SLEEP_SEC" ] && [ "$SLEEP_SEC" -ge 180 ]; then
+  if [ -n "$SLEEP_SEC" ] && [ "$SLEEP_SEC" -ge 179 ]; then
     MARKER="/tmp/.claude_last_sleep"
 
     if [ -f "$MARKER" ]; then
@@ -38,8 +38,9 @@ if echo "$COMMAND" | grep -qE '^sleep '; then
       done
 
       if [ "$MONITOR_UPDATED" = false ]; then
-        echo "BLOCKED: You have NOT updated any monitor.md since your last sleep."
-        echo "Check training logs and write observations to experiments/exp{NNN}/monitor.md first."
+        cat <<'ENDJSON'
+{"decision":"block","reason":"You have NOT updated any monitor.md since your last sleep. Check training logs and write observations to experiments/exp{NNN}/monitor.md first."}
+ENDJSON
         exit 2
       fi
     fi

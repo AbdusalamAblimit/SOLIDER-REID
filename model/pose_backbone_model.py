@@ -155,11 +155,13 @@ class PoseBackboneModel(build_transformer):
             # Part classifier for structural tokens
             self.str_classifier = nn.Linear(self.in_planes, num_classes, bias=False)
             self.str_per_token = getattr(cfg.MODEL, 'POSE_STR_PER_TOKEN', False)
+            self.str_part_drop = float(getattr(cfg.MODEL, 'POSE_STR_PART_DROP', 0.0))
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
             str_params = sum(p.numel() for p in self.structural_router.parameters())
+            pltd_str = f', part_drop={self.str_part_drop}' if self.str_part_drop > 0 else ''
             print(f'[STD-PR] Structural Token Decomposition enabled: '
                   f'{str_num_parts} parts, {str_num_layers} layers, '
-                  f'{str_params} params, test_feat={self.pose_test_feat}')
+                  f'{str_params} params, test_feat={self.pose_test_feat}{pltd_str}')
 
         # SPLADE: Learned Sparse Projection on GCN pooled feature
         self.use_splade = getattr(cfg.MODEL, 'POSE_SPLADE', False)
@@ -342,6 +344,25 @@ class PoseBackboneModel(build_transformer):
                 else:
                     structural_tokens, str_stats = router_out
                     raw_tokens = structural_tokens
+                # PLTD: Part-Level Token Dropout — randomly zero out tokens during training
+                part_drop_p = getattr(self, 'str_part_drop', 0.0)
+                if self.training and part_drop_p > 0:
+                    B_tok, K_tok, C_tok = structural_tokens.shape
+                    # Each token independently dropped with probability p
+                    # Ensure at least 2 tokens survive per sample
+                    drop_mask = torch.rand(B_tok, K_tok, 1, device=structural_tokens.device) >= part_drop_p
+                    # Guarantee minimum 2 tokens survive
+                    alive = drop_mask.squeeze(-1).sum(dim=1)  # (B,)
+                    for b_idx in range(B_tok):
+                        if alive[b_idx] < 2:
+                            # Randomly revive tokens until we have 2
+                            dead = (~drop_mask[b_idx].squeeze(-1)).nonzero(as_tuple=True)[0]
+                            revive = dead[torch.randperm(len(dead))[:2 - int(alive[b_idx].item())]]
+                            drop_mask[b_idx, revive] = True
+                    structural_tokens = structural_tokens * drop_mask.float()
+                    raw_tokens = raw_tokens * drop_mask.float()
+                    n_dropped = (1 - drop_mask.float()).sum() / (B_tok * K_tok)
+                    str_stats['pltd_drop'] = n_dropped.item()
                 # Part feature: confidence-weighted pooling from heatmap response
                 K_str = structural_tokens.shape[1]
                 if K_str == 6:

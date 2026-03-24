@@ -2509,3 +2509,33 @@ SASA 使用骨架测地距离作为 Swin window attention 的固定偏置，零�
 - MaxSim 是 test-time 的独立贡献
 - PLBOA 是 data-side 的独立贡献
 - 三者组合形成完整的 pose-guided pipeline
+
+---
+
+## 2026-03-24: 关键发现 — per-token 是训练技巧，test 用 pooled 更好
+
+### 实验证据
+- exp166 per-token training + pooled test: **63.1/73.9** ← 实际运行结果
+- exp166 per-token training + per-token concat test: **61.8/72.5** ← 修复后 test.py 评估
+- 差异: **-1.3 mAP / -1.4 R1**
+
+### 解释
+1. Per-token CE 强制每个 token 独立判别 → training diversity（更好的特征学习）
+2. 但 test 时 6 个 L2-normalized tokens concat (5376-d) 稀释了信号
+3. Confidence-weighted pooling (1536-d) 保留了最重要的信息
+4. 类比: Dropout 在训练时 mask neurons，但 test 时用全部 neurons
+
+### 对后续方向的影响
+1. Per-token 的价值在于 TRAINING 正则化，不在于 test 特征结构
+2. Test 特征应该是 compact pooled 形式，不是 long concat
+3. DPTL (exp167) 仍然合理：self-attention refined tokens → better pooled feature
+4. 17-token (exp168) 的 test 也应该用 pooled，不用 per-token concat
+
+### exp166 完整结果表
+
+| 配置 | mAP | R1 | R5 | R10 | 备注 |
+|------|-----|----|----|-----|------|
+| exp166 (per-token+PLBOA) ep120 | 63.1% | 73.9% | 86.1% | 89.5% | pooled test (best) |
+| exp166 (per-token+PLBOA) ep100 | 62.9% | 74.5% | 86.2% | 89.3% | peak R1 |
+| exp166 bugfix (concat test) ep120 | 61.8% | 72.5% | 85.0% | 89.1% | per-token concat test |
+| exp166r (per-token, 无PLBOA) ep120 | 60.3% | 72.8% | 83.6% | 87.0% | PLBOA 贡献: +2.8/+1.1 |

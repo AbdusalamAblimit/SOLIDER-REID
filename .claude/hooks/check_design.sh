@@ -32,8 +32,7 @@ if echo "$COMMAND" | grep -qE 'train\.py'; then
 
     # 检查 1: design.md 必须存在
     if [ -z "$EXP_DIR" ] || [ ! -f "${EXP_DIR}design.md" ]; then
-      echo "BLOCKED: experiments/${EXP_ID}*/design.md does not exist."
-      echo "You must create the experiment design document before starting training."
+      echo "{\"decision\":\"block\",\"reason\":\"experiments/${EXP_ID}*/design.md does not exist. You must create the experiment design document before starting training.\"}"
       exit 2
     fi
 
@@ -48,9 +47,7 @@ if echo "$COMMAND" | grep -qE 'train\.py'; then
     done
 
     if [ -z "$LATEST_REVIEW" ]; then
-      echo "BLOCKED: No claude_review.md found in ${EXP_DIR}."
-      echo "You must run Claude Broad Review before starting training."
-      echo "Review cycle: review -> fix issues -> re-review -> until pass."
+      echo "{\"decision\":\"block\",\"reason\":\"No claude_review.md found in ${EXP_DIR}. You must run Claude Broad Review before starting training.\"}"
       exit 2
     fi
 
@@ -60,9 +57,7 @@ if echo "$COMMAND" | grep -qE 'train\.py'; then
     fi
 
     if [ "$REVIEW_PASSED" = false ]; then
-      echo "BLOCKED: Review in ${LATEST_REVIEW} has NOT passed."
-      echo "Fix all issues, then re-run Claude Broad Review until it passes."
-      echo "The review file must contain '审查通过' to indicate approval."
+      echo "{\"decision\":\"block\",\"reason\":\"Review in ${LATEST_REVIEW} has NOT passed. Fix all issues, then re-run Claude Broad Review until it passes. The review file must contain 审查通过 to indicate approval.\"}"
       exit 2
     fi
   fi

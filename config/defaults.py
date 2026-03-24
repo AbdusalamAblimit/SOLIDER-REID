@@ -112,6 +112,8 @@ _C.MODEL.POSE_LOWER_BODY_OCC = False
 _C.MODEL.POSE_LOWER_BODY_OCC_PROB = 0.5     # probability of applying
 _C.MODEL.POSE_LOWER_BODY_OCC_RATIO = 0.5    # fraction of lower body to occlude (0.3-0.7)
 _C.MODEL.POSE_LOWER_BODY_OCC_MODE = 'lower'  # 'lower' = hip下, 'gradient' = 从下到上概率递减
+_C.MODEL.POSE_UPPER_BODY_OCC = False          # PGMPOA: additionally occlude random upper-body parts
+_C.MODEL.POSE_UPPER_BODY_OCC_PROB = 0.3       # probability (applied AFTER lower-body occ)
 
 # PAA (Pose Additive Adapter)
 _C.MODEL.POSE_ADDITIVE_ADAPTER = False
@@ -155,6 +157,7 @@ _C.MODEL.POSE_STR_NUM_HEADS = 8
 _C.MODEL.POSE_STR_NUM_LAYERS = 2
 _C.MODEL.POSE_STR_PER_TOKEN = False       # Per-token classification (forces token diversity)
 _C.MODEL.POSE_STR_SELF_ATTN = False       # DPTL: self-attention among part tokens (dual-path)
+_C.MODEL.POSE_STR_PART_DROP = 0.0         # PLTD: part-level token dropout probability (0=disabled)
 
 # MaxSim triplet: set-to-set metric learning
 _C.MODEL.POSE_MAXSIM_TRIPLET = False

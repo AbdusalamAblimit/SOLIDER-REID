@@ -109,6 +109,9 @@ def make_dataloader(cfg):
             train_set.lower_body_occ_prob = float(getattr(cfg.MODEL, 'POSE_LOWER_BODY_OCC_PROB', 0.5))
             train_set.lower_body_occ_ratio = float(getattr(cfg.MODEL, 'POSE_LOWER_BODY_OCC_RATIO', 0.5))
             train_set.lower_body_occ_mode = str(getattr(cfg.MODEL, 'POSE_LOWER_BODY_OCC_MODE', 'lower'))
+        if getattr(cfg.MODEL, 'POSE_UPPER_BODY_OCC', False):
+            train_set.upper_body_occ = True
+            train_set.upper_body_occ_prob = float(getattr(cfg.MODEL, 'POSE_UPPER_BODY_OCC_PROB', 0.3))
         if getattr(cfg.MODEL, 'POSE_PCVT', False):
             train_set.pcvt = True
             train_set.pcvt_resp_thr = float(getattr(cfg.MODEL, 'POSE_PCVT_RESP_THR', 0.10))
