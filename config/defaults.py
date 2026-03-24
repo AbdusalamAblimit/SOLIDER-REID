@@ -158,6 +158,8 @@ _C.MODEL.POSE_STR_NUM_PARTS = 6
 _C.MODEL.POSE_STR_NUM_HEADS = 8
 _C.MODEL.POSE_STR_NUM_LAYERS = 2
 _C.MODEL.POSE_STR_PER_TOKEN = False       # Per-token classification (forces token diversity)
+_C.MODEL.POSE_STR_SUPCON = False          # Replace per-token CE with SupCon loss
+_C.MODEL.POSE_STR_SUPCON_TEMP = 0.07     # SupCon temperature
 _C.MODEL.POSE_STR_SELF_ATTN = False       # DPTL: self-attention among part tokens (dual-path)
 _C.MODEL.POSE_STR_PART_DROP = 0.0         # PLTD: part-level token dropout probability (0=disabled)
 
