@@ -196,7 +196,9 @@ def make_loss(cfg, num_classes):    # modified by gu
                             # Replace: MaxSim triplet replaces pooled part triplet
                             part_tri_avg = maxsim_loss
                     else:
-                        part_tris = [triplet(f, target)[0] for f in feat[1:]]
+                        # Normalize per-token features before triplet if many parts (per-token mode)
+                        use_norm = len(feat) > 3  # >3 parts = per-token mode
+                        part_tris = [triplet(f, target, normalize_feature=use_norm)[0] for f in feat[1:]]
                         part_tri_avg = sum(part_tris) / len(part_tris)
                     TRI_LOSS = wt_g * global_tri_base + wt_p * part_tri_avg
                     loss_details['tri_global'] = global_tri_base.item()
