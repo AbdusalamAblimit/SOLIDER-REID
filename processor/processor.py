@@ -501,6 +501,13 @@ def do_train(cfg,
 
                 loss = loss_fn(score, feat, target, target_cam, kp_data=kp_aux_data)
 
+                # STD-PR: log structural routing stats (token norms, self-attn diagnostics)
+                if kp_data is not None and 'str_stats' in kp_data:
+                    details = getattr(loss, '_loss_details', {})
+                    for k, v in kp_data['str_stats'].items():
+                        details[f'str_{k}'] = v
+                    loss._loss_details = details
+
                 # PNIS: log pose normalizer stats
                 if kp_data is not None and 'pn_stats' in kp_data:
                     details = getattr(loss, '_loss_details', {})

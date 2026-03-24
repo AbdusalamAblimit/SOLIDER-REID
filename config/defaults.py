@@ -154,6 +154,7 @@ _C.MODEL.POSE_STR_NUM_PARTS = 6
 _C.MODEL.POSE_STR_NUM_HEADS = 8
 _C.MODEL.POSE_STR_NUM_LAYERS = 2
 _C.MODEL.POSE_STR_PER_TOKEN = False       # Per-token classification (forces token diversity)
+_C.MODEL.POSE_STR_SELF_ATTN = False       # DPTL: self-attention among part tokens (dual-path)
 
 # MaxSim triplet: set-to-set metric learning
 _C.MODEL.POSE_MAXSIM_TRIPLET = False

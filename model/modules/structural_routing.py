@@ -31,13 +31,18 @@ class StructuralRoutingLayer(nn.Module):
 
     Uses pose-guided cross-attention: K learnable part queries attend
     to spatial feature tokens, with attention biased by pose heatmaps.
+
+    Optional DPTL (Dual-Path Token Learning): adds self-attention among
+    part tokens for inter-part interaction. CE loss uses raw tokens
+    (diversity), triplet/test uses refined tokens (coherence).
     """
 
     def __init__(self, feat_dim, num_parts=6, num_heads=8, num_layers=2,
-                 dropout=0.1):
+                 dropout=0.1, self_attn=False):
         super().__init__()
         self.num_parts = num_parts
         self.feat_dim = feat_dim
+        self.use_self_attn = self_attn
 
         # Learnable part query embeddings
         self.part_queries = nn.Parameter(torch.randn(num_parts, feat_dim) * 0.02)
@@ -72,6 +77,25 @@ class StructuralRoutingLayer(nn.Module):
                 nn.Dropout(dropout),
             ))
             self.cross_ffn_norms.append(nn.LayerNorm(feat_dim))
+
+        # DPTL: self-attention among part tokens for inter-part interaction
+        if self_attn:
+            self.self_attn = nn.MultiheadAttention(
+                feat_dim, num_heads, dropout=dropout, batch_first=True)
+            self.self_attn_norm = nn.LayerNorm(feat_dim)
+            self.self_attn_ffn = nn.Sequential(
+                nn.Linear(feat_dim, feat_dim * 2),
+                nn.GELU(),
+                nn.Dropout(dropout),
+                nn.Linear(feat_dim * 2, feat_dim),
+                nn.Dropout(dropout),
+            )
+            self.self_attn_ffn_norm = nn.LayerNorm(feat_dim)
+            # Zero-init output projections so self-attn starts as identity
+            nn.init.zeros_(self.self_attn.out_proj.weight)
+            nn.init.zeros_(self.self_attn.out_proj.bias)
+            nn.init.zeros_(self.self_attn_ffn[3].weight)
+            nn.init.zeros_(self.self_attn_ffn[3].bias)
 
         # Part classifier (for training)
         self.part_bn = nn.BatchNorm1d(feat_dim)
@@ -139,18 +163,36 @@ class StructuralRoutingLayer(nn.Module):
             # FFN
             queries = queries + ffn(ffn_norm(queries))
 
-        structural_tokens = queries  # (B, K, C)
+        raw_tokens = queries  # (B, K, C) — independent tokens for CE (diversity)
+
+        # DPTL: self-attention for inter-part interaction
+        if self.use_self_attn:
+            q_sa = self.self_attn_norm(raw_tokens)
+            sa_out = self.self_attn(q_sa, q_sa, q_sa)[0]
+            refined = raw_tokens + sa_out
+            refined = refined + self.self_attn_ffn(self.self_attn_ffn_norm(refined))
+        else:
+            refined = raw_tokens
 
         # Compute stats
         with torch.no_grad():
-            token_norms = structural_tokens.norm(dim=-1).mean().item()
+            token_norms = refined.norm(dim=-1).mean().item()
+            stats = {
+                'token_norm': token_norms,
+                'num_parts': K,
+            }
+            if self.use_self_attn:
+                raw_norms = raw_tokens.norm(dim=-1).mean().item()
+                # Cosine similarity between raw and refined (how much did self-attn change them)
+                cos_sim = F.cosine_similarity(
+                    raw_tokens.reshape(-1, self.feat_dim),
+                    refined.reshape(-1, self.feat_dim), dim=1).mean().item()
+                stats['raw_norm'] = raw_norms
+                stats['sa_cos'] = cos_sim
 
-        stats = {
-            'token_norm': token_norms,
-            'num_parts': K,
-        }
-
-        return structural_tokens, stats
+        if self.use_self_attn:
+            return refined, stats, raw_tokens  # refined for triplet/test, raw for CE
+        return refined, stats
 
     @staticmethod
     def _compute_part_centroids(keypoints, scores, input_size, num_parts):

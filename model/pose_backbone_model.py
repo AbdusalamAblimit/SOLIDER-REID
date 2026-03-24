@@ -143,12 +143,15 @@ class PoseBackboneModel(build_transformer):
             str_num_parts = getattr(cfg.MODEL, 'POSE_STR_NUM_PARTS', 6)
             str_num_heads = getattr(cfg.MODEL, 'POSE_STR_NUM_HEADS', 8)
             str_num_layers = getattr(cfg.MODEL, 'POSE_STR_NUM_LAYERS', 2)
+            str_self_attn = getattr(cfg.MODEL, 'POSE_STR_SELF_ATTN', False)
             self.structural_router = StructuralRoutingLayer(
                 feat_dim=self.in_planes,
                 num_parts=str_num_parts,
                 num_heads=str_num_heads,
                 num_layers=str_num_layers,
+                self_attn=str_self_attn,
             )
+            self.str_self_attn = str_self_attn
             # Part classifier for structural tokens
             self.str_classifier = nn.Linear(self.in_planes, num_classes, bias=False)
             self.str_per_token = getattr(cfg.MODEL, 'POSE_STR_PER_TOKEN', False)
@@ -329,10 +332,16 @@ class PoseBackboneModel(build_transformer):
                 # Pass keypoints for anchor-sampled query initialization
                 kp_p0 = pose_dict['keypoints'][:, 0] if pose_dict is not None else None
                 sc_p0 = pose_dict['scores'][:, 0] if pose_dict is not None else None
-                structural_tokens, str_stats = self.structural_router(
+                router_out = self.structural_router(
                     spatial_tokens, (H_fm, W_fm), scene_heatmaps,
                     keypoints=kp_p0, scores=sc_p0,
                     input_size=tuple(x.shape[2:]))
+                # Unpack: with self-attn returns (refined, stats, raw), without returns (tokens, stats)
+                if getattr(self, 'str_self_attn', False):
+                    structural_tokens, str_stats, raw_tokens = router_out
+                else:
+                    structural_tokens, str_stats = router_out
+                    raw_tokens = structural_tokens
                 # Part feature: confidence-weighted pooling from heatmap response
                 K_str = structural_tokens.shape[1]
                 if K_str == 6:
@@ -349,16 +358,19 @@ class PoseBackboneModel(build_transformer):
                 else:
                     str_feat = structural_tokens.mean(dim=1)  # fallback
                 # Per-token or pooled classification
-                str_per_token = getattr(cfg.MODEL, 'POSE_STR_PER_TOKEN', False) if hasattr(self, '_cfg') else False
                 if getattr(self, 'str_per_token', False):
-                    # Per-token: each token gets its own CE + triplet
+                    # DPTL dual-path: CE on raw tokens (diversity), triplet on refined tokens (coherence)
                     str_cls_list = []
                     str_feat_list = []
-                    for k in range(structural_tokens.shape[1]):
-                        tok_k = structural_tokens[:, k]  # (B, C)
+                    # CE path uses raw tokens (independent, diverse)
+                    ce_tokens = raw_tokens
+                    # Triplet/test path uses refined tokens (contextualized)
+                    tri_tokens = structural_tokens
+                    for k in range(ce_tokens.shape[1]):
+                        tok_k = ce_tokens[:, k]  # (B, C)
                         tok_bn = self.structural_router.part_bn(tok_k)
                         str_cls_list.append(self.str_classifier(tok_bn))
-                        str_feat_list.append(tok_k)
+                        str_feat_list.append(tri_tokens[:, k])  # refined for triplet
                     kp_data = {'str_stats': str_stats}
                     return [cls_score] + str_cls_list, [global_feat] + str_feat_list, featmaps, None, kp_data
                 else:
@@ -418,10 +430,12 @@ class PoseBackboneModel(build_transformer):
                 spatial_tokens = featmaps[-1].flatten(2).transpose(1, 2)
                 kp_p0 = pose_dict['keypoints'][:, 0] if pose_dict is not None else None
                 sc_p0 = pose_dict['scores'][:, 0] if pose_dict is not None else None
-                structural_tokens, _ = self.structural_router(
+                router_out = self.structural_router(
                     spatial_tokens, (H_fm, W_fm), scene_heatmaps,
                     keypoints=kp_p0, scores=sc_p0,
                     input_size=tuple(x.shape[2:]))
+                # Use refined tokens (first return) for test features
+                structural_tokens = router_out[0]
                 # Confidence-weighted pooling (same as training)
                 K_str = structural_tokens.shape[1]
                 if K_str == 6:
@@ -434,10 +448,7 @@ class PoseBackboneModel(build_transformer):
                     str_feat = (structural_tokens * part_w.unsqueeze(2)).sum(dim=1)
                 else:
                     str_feat = structural_tokens.mean(dim=1)
-                if getattr(self, 'str_per_token', False):
-                    # Per-token test: each token is a separate feature
-                    gcn_feats = [structural_tokens[:, k] for k in range(structural_tokens.shape[1])]
-                elif self.pose_test_feat in ('maxsim', 'maxsim_hybrid',
+                if self.pose_test_feat in ('maxsim', 'maxsim_hybrid',
                                           'cvk_hybrid', 'cvk_only'):
                     # Return structural tokens as kp_feats for set matching
                     K = structural_tokens.shape[1]
@@ -449,7 +460,9 @@ class PoseBackboneModel(build_transformer):
                                                  device=structural_tokens.device),
                     }
                     return test_feat, featmaps
-                gcn_feats = [str_feat]  # for equal_concat
+                # Per-token training uses pooled test feature (better than per-token concat)
+                # Confidence-weighted pool captures the right signal; per-token concat dilutes it
+                gcn_feats = [str_feat]  # equal_concat: global + pooled_part
             elif self.use_skeleton_gcn and pose_dict is not None and \
                     getattr(self, 'pose_test_feat', 'global') != 'global':
                 _, gcn_feats, aux_data = self.skeleton_head(
