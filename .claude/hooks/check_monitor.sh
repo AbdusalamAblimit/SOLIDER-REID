@@ -4,14 +4,20 @@
 
 INPUT=$(cat)
 
-COMMAND=$(python3 -c "
-import json
+# Debug: log every invocation with extracted command
+echo "$(date '+%H:%M:%S') hook called" >> /tmp/claude_hook_debug.log
+
+COMMAND=$(echo "$INPUT" | python3 -c "
+import json, sys
 try:
-    data = json.loads('''$INPUT''')
+    data = json.load(sys.stdin)
     print(data.get('tool_input', {}).get('command', ''))
 except:
     pass
 " 2>/dev/null)
+
+# Debug: log extracted command
+echo "  cmd='$(echo "$COMMAND" | head -c 80)'" >> /tmp/claude_hook_debug.log
 
 # 只检查 sleep 命令
 if echo "$COMMAND" | grep -qE '^sleep '; then

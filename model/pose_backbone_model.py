@@ -96,15 +96,16 @@ class PoseBackboneModel(build_transformer):
         self.use_pose_patch_embed = getattr(cfg.MODEL, 'POSE_PATCH_EMBED', False)
         if self.use_pose_patch_embed:
             embed_dim = self.base.patch_embed.embed_dims  # 96 for Swin-Tiny
-            # Conv2d(17, 96, 1, 1) on (B, 17, 96, 32) → (B, 96, 96, 32)
-            # Heatmaps at POSE_HEATMAP_SIZE already match post-PatchEmbed spatial dims
-            self.pose_patch_embed = nn.Conv2d(17, embed_dim, kernel_size=1, bias=True)
+            pape_ks = int(getattr(cfg.MODEL, 'POSE_PATCH_EMBED_KS', 1))
+            pape_pad = pape_ks // 2  # same-padding for odd kernels
+            self.pose_patch_embed = nn.Conv2d(
+                17, embed_dim, kernel_size=pape_ks, padding=pape_pad, bias=True)
             # Zero-init so model starts from pretrained behavior
             nn.init.zeros_(self.pose_patch_embed.weight)
             nn.init.zeros_(self.pose_patch_embed.bias)
             pape_params = sum(p.numel() for p in self.pose_patch_embed.parameters())
             print(f'[PAPE] Pose-Augmented Patch Embedding enabled: '
-                  f'Conv2d(17→{embed_dim}, 1x1), {pape_params} params')
+                  f'Conv2d(17→{embed_dim}, {pape_ks}x{pape_ks}), {pape_params} params')
 
         # Stochastic Pose Dropout (SPD)
         self.pose_dropout_p = getattr(cfg.MODEL, 'POSE_DROPOUT_P', 0.0)

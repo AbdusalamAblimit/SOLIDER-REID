@@ -5,11 +5,11 @@
 
 INPUT=$(cat)
 
-# 用 python 解析 JSON
-COMMAND=$(python3 -c "
+# 用 python 解析 JSON (stdin 方式，避免引号问题)
+COMMAND=$(echo "$INPUT" | python3 -c "
 import json, sys
 try:
-    data = json.loads('''$INPUT''')
+    data = json.load(sys.stdin)
     print(data.get('tool_input', {}).get('command', ''))
 except:
     pass

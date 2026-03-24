@@ -115,6 +115,7 @@ _C.MODEL.POSE_LOWER_BODY_OCC_MODE = 'lower'  # 'lower' = hipä¸‹, 'gradient' = ä»
 _C.MODEL.POSE_UPPER_BODY_OCC = False          # PGMPOA: additionally occlude random upper-body parts
 _C.MODEL.POSE_UPPER_BODY_OCC_PROB = 0.3       # probability (applied AFTER lower-body occ)
 _C.MODEL.POSE_PATCH_EMBED = False             # PAPE: parallel pose patch embedding at input
+_C.MODEL.POSE_PATCH_EMBED_KS = 1             # PAPE kernel size (1=1x1, 3=3x3)
 
 # PAA (Pose Additive Adapter)
 _C.MODEL.POSE_ADDITIVE_ADAPTER = False
