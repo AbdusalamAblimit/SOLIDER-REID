@@ -114,6 +114,7 @@ _C.MODEL.POSE_LOWER_BODY_OCC_RATIO = 0.5    # fraction of lower body to occlude 
 _C.MODEL.POSE_LOWER_BODY_OCC_MODE = 'lower'  # 'lower' = hip下, 'gradient' = 从下到上概率递减
 _C.MODEL.POSE_UPPER_BODY_OCC = False          # PGMPOA: additionally occlude random upper-body parts
 _C.MODEL.POSE_UPPER_BODY_OCC_PROB = 0.3       # probability (applied AFTER lower-body occ)
+_C.MODEL.POSE_PATCH_EMBED = False             # PAPE: parallel pose patch embedding at input
 
 # PAA (Pose Additive Adapter)
 _C.MODEL.POSE_ADDITIVE_ADAPTER = False

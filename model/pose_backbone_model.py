@@ -92,6 +92,20 @@ class PoseBackboneModel(build_transformer):
             total_paa_params = sum(p.numel() for p in self.paa_modules_dict.parameters())
             print(f'[PAA] Pose Additive Adapter enabled: total_params={total_paa_params}')
 
+        # PAPE: Pose-Augmented Patch Embedding — inject pose at input level
+        self.use_pose_patch_embed = getattr(cfg.MODEL, 'POSE_PATCH_EMBED', False)
+        if self.use_pose_patch_embed:
+            embed_dim = self.base.patch_embed.embed_dims  # 96 for Swin-Tiny
+            # Conv2d(17, 96, 1, 1) on (B, 17, 96, 32) → (B, 96, 96, 32)
+            # Heatmaps at POSE_HEATMAP_SIZE already match post-PatchEmbed spatial dims
+            self.pose_patch_embed = nn.Conv2d(17, embed_dim, kernel_size=1, bias=True)
+            # Zero-init so model starts from pretrained behavior
+            nn.init.zeros_(self.pose_patch_embed.weight)
+            nn.init.zeros_(self.pose_patch_embed.bias)
+            pape_params = sum(p.numel() for p in self.pose_patch_embed.parameters())
+            print(f'[PAPE] Pose-Augmented Patch Embedding enabled: '
+                  f'Conv2d(17→{embed_dim}, 1x1), {pape_params} params')
+
         # Stochastic Pose Dropout (SPD)
         self.pose_dropout_p = getattr(cfg.MODEL, 'POSE_DROPOUT_P', 0.0)
         if self.pose_dropout_p > 0:
@@ -228,6 +242,17 @@ class PoseBackboneModel(build_transformer):
         """
         # Patch embedding
         x, hw_shape = self.base.patch_embed(x)
+
+        # PAPE: add pose patch embedding (early pose injection)
+        if getattr(self, 'use_pose_patch_embed', False) and scene_heatmaps is not None:
+            H_hw, W_hw = hw_shape
+            # Resize heatmaps to match post-PatchEmbed spatial dims
+            hm = F.interpolate(scene_heatmaps, size=(H_hw, W_hw),
+                               mode='bilinear', align_corners=False)
+            pose_tokens = self.pose_patch_embed(hm)  # (B, C, H, W)
+            pose_tokens = pose_tokens.flatten(2).transpose(1, 2)  # (B, N, C)
+            x = x + pose_tokens
+
         if self.base.use_abs_pos_embed:
             x = x + self.base.absolute_pos_embed
         x = self.base.drop_after_pos(x)
