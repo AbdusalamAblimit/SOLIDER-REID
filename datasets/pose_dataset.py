@@ -164,6 +164,12 @@ class PoseImageDataset(Dataset):
                 img, persons, target_h, target_w, self.pad)
 
         pcvt_meta = None
+        self._oa_sd_mode = getattr(self, '_oa_sd_mode', False)
+
+        # OA-SD: save clean image BEFORE PLBOA for teacher view
+        img_clean_for_oa_sd = None
+        if self._oa_sd_mode and self.is_train:
+            img_clean_for_oa_sd = img.copy()
 
         # PLBOA/PGMPOA: apply BEFORE branching so all views (parallel/pcvt/standard) share it
         if self.is_train:
@@ -249,7 +255,15 @@ class PoseImageDataset(Dataset):
             if erase_box is not None:
                 self._update_persons_for_erase(persons, erase_box, erased_channels)
 
-            img_tensor = (img_tensor,)  # wrap in tuple for uniform interface
+            # OA-SD: create teacher view from clean (pre-PLBOA) image
+            if img_clean_for_oa_sd is not None:
+                img_clean_tensor = self._image_to_tensor(img_clean_for_oa_sd)
+                # Teacher view gets mild RE (same as student)
+                if random.random() < self.re_prob:
+                    img_clean_tensor, _ = self._random_erase(img_clean_tensor)
+                img_tensor = (img_tensor, img_clean_tensor)  # (student_occluded, teacher_clean)
+            else:
+                img_tensor = (img_tensor,)  # wrap in tuple for uniform interface
 
         # ---- Assemble output tensors ----
         hm_h, hm_w = self.heatmap_size

@@ -390,6 +390,21 @@ def do_train(cfg,
         backbone_frozen = True
         logger.info(f'Backbone freeze warmup: {freeze_epochs} epochs')
 
+    # OA-SD: create EMA teacher model
+    oa_sd_enabled = getattr(cfg.MODEL, 'POSE_OA_SD', False)
+    ema_teacher = None
+    ema_decay = 0.999
+    if oa_sd_enabled:
+        import copy
+        base_model = model.module if hasattr(model, 'module') else model
+        ema_teacher = copy.deepcopy(base_model)
+        ema_teacher.eval()
+        for p in ema_teacher.parameters():
+            p.requires_grad = False
+        logger.info(f'[OA-SD] EMA teacher created (decay={ema_decay})')
+        if not getattr(cfg.MODEL, 'POSE_LOWER_BODY_OCC', False):
+            logger.warning('[OA-SD] WARNING: PLBOA is disabled. Teacher and student see near-identical images.')
+
     # train
     for epoch in range(1, epochs + 1):
         if backbone_frozen and epoch > freeze_epochs:
@@ -415,11 +430,18 @@ def do_train(cfg,
                 img, vid, target_cam, target_view = batch_data
                 pose_dict = None
 
-            # Handle parallel augmentation: img may be list of 3 tensors
-            parallel_aug = isinstance(img, list)
+            # Handle multi-view modes: img may be list of tensors
+            # parallel_aug: 3 views, OA-SD: 2 views (student + teacher), standard: 1 view
+            parallel_aug = isinstance(img, list) and len(img) >= 3
+            oa_sd_mode = isinstance(img, list) and len(img) == 2
             if parallel_aug:
                 img_views = [v.to(device) for v in img]
                 batch_size = img_views[0].shape[0]
+            elif oa_sd_mode:
+                img_student = img[0].to(device)  # occluded (post-PLBOA)
+                img_teacher = img[1].to(device)  # clean (pre-PLBOA)
+                img = img_student
+                batch_size = img.shape[0]
             else:
                 img = img.to(device)
                 batch_size = img.shape[0]
@@ -584,6 +606,44 @@ def do_train(cfg,
                     loss = loss / len(all_scores)
                     loss._loss_details = saved_details
 
+                # OA-SD: Occlusion-Asymmetric Self-Distillation with EMA teacher
+                if oa_sd_enabled and oa_sd_mode and use_pose and ema_teacher is not None:
+                    oa_sd_weight = float(getattr(cfg.MODEL, 'POSE_OA_SD_WEIGHT', 1.0))
+                    # EMA Teacher forward: clean image (no PLBOA), eval mode, no grad
+                    with torch.no_grad():
+                        teacher_out = ema_teacher(img_teacher, label=target,
+                                                 cam_label=target_cam,
+                                                 view_label=target_view,
+                                                 pose_dict=pose_dict)
+                        if len(teacher_out) == 5:
+                            _, teacher_feat, _, _, _ = teacher_out
+                        elif len(teacher_out) == 4:
+                            _, teacher_feat, _, _ = teacher_out
+                        else:
+                            _, teacher_feat, _ = teacher_out[:3]
+                    # Distillation: student pooled features → teacher pooled features
+                    # For per-token: feat = [global, tok1, ..., tok6]
+                    # Distill each token and global
+                    if isinstance(feat, list) and isinstance(teacher_feat, list):
+                        distill_losses = []
+                        for sf, tf in zip(feat, teacher_feat):
+                            sf_norm = F.normalize(sf, p=2, dim=1)
+                            tf_norm = F.normalize(tf.detach(), p=2, dim=1)
+                            d_loss = (1.0 - (sf_norm * tf_norm).sum(dim=1)).mean()
+                            distill_losses.append(d_loss)
+                        oa_sd_loss = sum(distill_losses) / len(distill_losses)
+                    else:
+                        # Fallback: single feature distillation
+                        sf = feat[0] if isinstance(feat, list) else feat
+                        tf = teacher_feat[0] if isinstance(teacher_feat, list) else teacher_feat
+                        sf_norm = F.normalize(sf, p=2, dim=1)
+                        tf_norm = F.normalize(tf.detach(), p=2, dim=1)
+                        oa_sd_loss = (1.0 - (sf_norm * tf_norm).sum(dim=1)).mean()
+                    details = getattr(loss, '_loss_details', {})
+                    loss = loss + oa_sd_weight * oa_sd_loss
+                    details['oa_sd'] = oa_sd_loss.item()
+                    loss._loss_details = details
+
                 # SPLADE: auxiliary sparse CE + sparsity regularization
                 splade_enabled = getattr(cfg.MODEL, 'POSE_SPLADE', False)
                 if splade_enabled and kp_data is not None and 'splade_cls' in kp_data:
@@ -603,6 +663,13 @@ def do_train(cfg,
 
             scaler.step(optimizer)
             scaler.update()
+
+            # OA-SD: update EMA teacher after optimizer step
+            if ema_teacher is not None:
+                base_model = model.module if hasattr(model, 'module') else model
+                with torch.no_grad():
+                    for t_param, s_param in zip(ema_teacher.parameters(), base_model.parameters()):
+                        t_param.data.mul_(ema_decay).add_(s_param.data, alpha=1.0 - ema_decay)
 
             # Bank updates (after optimizer step)
             if ltcs_enabled and ltcs_teacher_bank is not None and kp_data is not None:

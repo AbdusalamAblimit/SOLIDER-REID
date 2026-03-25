@@ -122,6 +122,9 @@ def make_dataloader(cfg):
         # Set parallel augmentation flag (3-view training)
         if getattr(cfg.MODEL, 'POSE_PARALLEL_AUG', False) or getattr(cfg.MODEL, 'POSE_PCVT', False):
             train_set.parallel_aug = True
+        # OA-SD: 2-view (clean teacher + occluded student)
+        if getattr(cfg.MODEL, 'POSE_OA_SD', False):
+            train_set._oa_sd_mode = True
 
         train_set_normal = PoseImageDataset(
             dataset.train,
