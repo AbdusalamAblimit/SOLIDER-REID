@@ -2573,3 +2573,25 @@ SASA 使用骨架测地距离作为 Swin window attention 的固定偏置，零�
 | +SupCon (replace CE) | **64.1%** | **75.5%** | **贡献 4: per-token SupCon (核心)** |
 | SupCon only (no PLBOA) | 59.8% | 70.4% | 证明 SupCon 依赖 PLBOA |
 | SupCon on base (no arch enhance) | 64.2% | 74.9% | 证明 SupCon > 所有架构增强 |
+
+### 详细文献调研结果（3 个 Opus Agent 并行搜索）
+
+#### 完全没有先例的方向
+1. **Per-token SupCon for ReID** — 搜索了 MCLNet, SSSC-TransReID, PCL-Former, ABC-Learning, CION, TokenMatcher, BPBreID, PAB-ReID, SORN, SDCL, POFR — 全部用 global/prototype contrastive 或 CE+triplet
+2. **SupCon × PLBOA synergy** — 没有论文报告过 contrastive loss 和 occlusion augmentation 的超线性交互
+3. **PLBOA 解剖定位** — 现有 ROA (PADE, POFR) 全部用随机矩形，没有 pose-guided hip 定位
+
+#### 最接近的竞争者
+- **PAFormer (2024)**: pose tokens + cross-attention，但用 MSE 监督 attention maps（不是 SupCon），且无 PLBOA
+- **BPBreID/GiLt (WACV 2023)**: per-part training，但用 parsing masks（不是 pose heatmaps），用 CE+triplet（不是 SupCon）
+- **KPR (ECCV 2024)**: keypoint prompts，但 test-time only，不是 training 方法
+
+#### 推荐论文 Story
+**"Training Objective Matters More Than Architecture for Occluded Person ReID"**
+
+核心 contrarian claim: SupCon 在 base 架构上 (+3.9/+2.1) 超过所有架构增强的总和 (+2.8/+1.1)。
+
+三个论文贡献：
+1. Per-token SupCon on structural body-part tokens — 首次在 ReID 中
+2. SupCon × PLBOA 超线性 synergy — 新发现
+3. STD-PR 的 augmentation adaptivity — cross-attention 比 keypoint sampling 更善于利用 PLBOA (3× gain)
