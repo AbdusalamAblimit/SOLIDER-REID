@@ -2539,3 +2539,37 @@ SASA 使用骨架测地距离作为 Swin window attention 的固定偏置，零�
 | exp166 (per-token+PLBOA) ep100 | 62.9% | 74.5% | 86.2% | 89.3% | peak R1 |
 | exp166 bugfix (concat test) ep120 | 61.8% | 72.5% | 85.0% | 89.1% | per-token concat test |
 | exp166r (per-token, 无PLBOA) ep120 | 60.3% | 72.8% | 83.6% | 87.0% | PLBOA 贡献: +2.8/+1.1 |
+
+---
+
+## 2026-03-25: 创新性调研结论 — Per-Token SupCon + PLBOA Synergy
+
+### 文献调研确认的独创性
+
+| 组件 | 先例程度 | 我们的差异化 |
+|------|---------|------------|
+| PSG (backbone pose gate) | 低 — 无直接先例 | Swin block 内乘法 gate |
+| STD-PR (cross-attn tokens) | 中 — PAFormer 类似 | pose bias init vs MSE supervision |
+| **Per-token SupCon** | **无先例** | **首次在 ReID 中对 body-part token 用 SupCon** |
+| **PLBOA (解剖定位增强)** | **低** | **基于 train-test gap 分析定位下半身** |
+| **SupCon × PLBOA synergy** | **无先例** | **loss-augmentation 超线性交互** |
+
+### 核心创新点（论文主 contribution）
+
+**Part-Level Supervised Contrastive Learning with Occlusion-Augmentation Synergy**
+
+1. 首次在 occluded ReID 中对 structural body-part tokens 应用 supervised contrastive loss
+2. 发现 SupCon × PLBOA 超线性 synergy（SupCon 单独无效，必须与 PLBOA 配合）
+3. 机制解释：PLBOA 创造部分 token 缺失的训练条件，恰好是 per-token contrastive 最擅长的 regime
+4. Cross-attention (STD-PR) 比 keypoint sampling (GCN) 更善于利用 augmentation (+4.7 vs +1.6)
+
+### 消融证据链
+
+| 配置 | mAP | R1 | 论文作用 |
+|------|------|------|---------|
+| Baseline (CE) | 56.6% | 66.5% | 出发点 |
+| +PSG | 58.3% | 67.9% | 贡献 1: backbone injection |
+| +STD-PR+per-token+PLBOA (CE) | 63.1% | 73.9% | 贡献 2+3: structural tokens + augmentation |
+| +SupCon (replace CE) | **64.1%** | **75.5%** | **贡献 4: per-token SupCon (核心)** |
+| SupCon only (no PLBOA) | 59.8% | 70.4% | 证明 SupCon 依赖 PLBOA |
+| SupCon on base (no arch enhance) | 64.2% | 74.9% | 证明 SupCon > 所有架构增强 |

@@ -157,7 +157,7 @@ def make_loss(cfg, num_classes):    # modified by gu
                         loss_details['evid_unc'] = all_evid_stats['uncertainty']
                         loss_details['evid_ev'] = all_evid_stats['evidence']
                         loss_details['evid_ann'] = all_evid_stats['anneal']
-                    elif getattr(cfg.MODEL, 'POSE_STR_SUPCON', False) and isinstance(feat, list) and len(feat) > 3:
+                    elif getattr(cfg.MODEL, 'POSE_STR_SUPCON', False) and isinstance(feat, list) and len(feat) > 1:
                         # SupCon for per-token features
                         from loss.supcon_loss import SupConLoss
                         supcon_temp = float(getattr(cfg.MODEL, 'POSE_STR_SUPCON_TEMP', 0.07))
