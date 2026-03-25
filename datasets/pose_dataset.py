@@ -165,6 +165,13 @@ class PoseImageDataset(Dataset):
 
         pcvt_meta = None
 
+        # PLBOA/PGMPOA: apply BEFORE branching so all views (parallel/pcvt/standard) share it
+        if self.is_train:
+            if self.lower_body_occ and persons and random.random() < self.lower_body_occ_prob:
+                img = self._apply_lower_body_occlusion(img, persons)
+            if self.upper_body_occ and persons and random.random() < self.upper_body_occ_prob:
+                img = self._apply_upper_body_part_occlusion(img, persons)
+
         # ---- Parallel Augmentation (3 views) or Standard (1 view) ----
         if self.pcvt and self.is_train:
             base_tensor = self._image_to_tensor(img)
@@ -224,13 +231,7 @@ class PoseImageDataset(Dataset):
                                                   min_overlap=0.2, max_overlap=0.5)
                 img = Image.fromarray(img_np)  # numpy → PIL
 
-            # 3.6) PLBOA: Pose-guided Lower-Body Occlusion Augmentation
-            if self.lower_body_occ and persons and random.random() < self.lower_body_occ_prob:
-                img = self._apply_lower_body_occlusion(img, persons)
-
-            # 3.7) PGMPOA: additionally occlude a random upper-body part
-            if self.upper_body_occ and persons and random.random() < self.upper_body_occ_prob:
-                img = self._apply_upper_body_part_occlusion(img, persons)
+            # (PLBOA/PGMPOA already applied above, before branching)
 
             # 4) Convert image to tensor + normalize
             img_tensor = self._image_to_tensor(img)
