@@ -22,6 +22,13 @@ exp183 填充最后一个空格。
 - vs exp181: 仅移除 PAPE + multi-stage PSG
 
 ### 无代码变更
-纯 CLI 覆盖实验。
+纯 CLI 覆盖实验。SupCon loss (supcon_loss.py) 和 make_loss.py 集成已在 exp174-179 充分验证。
+
+### 数值安全
+T=0.05: max sim/T = 20.0, exp(20) ≈ 4.85e8, fp32 safe。sim_max subtraction 确保 max exponent = 0。
+
+### Loss 结构
+global CE (score[0]) + SupCon (feat[1:]) + per-token triplet (feat[1:], normalized)。
+PLBOA=False 时 make_dataloader 跳过 occluder 加载和 PLBOA 配置。
 
 零 issue。
