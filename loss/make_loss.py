@@ -158,7 +158,7 @@ def make_loss(cfg, num_classes):    # modified by gu
                         loss_details['evid_ev'] = all_evid_stats['evidence']
                         loss_details['evid_ann'] = all_evid_stats['anneal']
                     elif getattr(cfg.MODEL, 'POSE_STR_SUPCON', False) and isinstance(feat, list) and len(feat) > 3:
-                        # SupCon: replace per-token CE with supervised contrastive
+                        # SupCon for per-token features
                         from loss.supcon_loss import SupConLoss
                         supcon_temp = float(getattr(cfg.MODEL, 'POSE_STR_SUPCON_TEMP', 0.07))
                         supcon_fn = SupConLoss(temperature=supcon_temp)
@@ -167,8 +167,18 @@ def make_loss(cfg, num_classes):    # modified by gu
                             f_norm = F.normalize(f, p=2, dim=1)
                             sc_loss = supcon_fn(f_norm, target)
                             part_supcon_losses.append(sc_loss)
-                        part_id_avg = sum(part_supcon_losses) / len(part_supcon_losses)
-                        loss_details['supcon'] = part_id_avg.item()
+                        supcon_avg = sum(part_supcon_losses) / len(part_supcon_losses)
+                        loss_details['supcon'] = supcon_avg.item()
+                        # Additive mode: CE + lambda * SupCon
+                        if getattr(cfg.MODEL, 'POSE_STR_SUPCON_ADDITIVE', False):
+                            part_ids = [ce_fn(s, target) for s in score[1:]]
+                            part_ce_avg = sum(part_ids) / len(part_ids)
+                            supcon_w = float(getattr(cfg.MODEL, 'POSE_STR_SUPCON_WEIGHT', 0.5))
+                            part_id_avg = part_ce_avg + supcon_w * supcon_avg
+                            loss_details['id_part_ce'] = part_ce_avg.item()
+                        else:
+                            # Replace mode: SupCon replaces CE
+                            part_id_avg = supcon_avg
                     else:
                         part_ids = [ce_fn(s, target) for s in score[1:]]
                         part_id_avg = sum(part_ids) / len(part_ids)
