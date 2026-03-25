@@ -610,12 +610,15 @@ def do_train(cfg,
                 # OA-SD: Occlusion-Asymmetric Self-Distillation with EMA teacher
                 if oa_sd_enabled and oa_sd_mode and use_pose and ema_teacher is not None:
                     oa_sd_weight = float(getattr(cfg.MODEL, 'POSE_OA_SD_WEIGHT', 1.0))
-                    # EMA Teacher forward: clean image (no PLBOA), eval mode, no grad
+                    # EMA Teacher forward: clean image (no PLBOA), no grad
+                    # Must set training=True temporarily so forward returns (score, feat, ...) not (test_feat, featmaps)
                     with torch.no_grad():
+                        ema_teacher.train()
                         teacher_out = ema_teacher(img_teacher, label=target,
                                                  cam_label=target_cam,
                                                  view_label=target_view,
                                                  pose_dict=pose_dict)
+                        ema_teacher.eval()
                         if len(teacher_out) == 5:
                             _, teacher_feat, _, _, _ = teacher_out
                         elif len(teacher_out) == 4:
