@@ -419,6 +419,8 @@ class PoseBackboneModel(build_transformer):
                         str_cls_list.append(self.str_classifier(tok_bn))
                         str_feat_list.append(tri_tokens[:, k])  # refined for triplet
                     kp_data = {'str_stats': str_stats}
+                    if K_str == 6:
+                        kp_data['part_visibility'] = part_w  # (B, 6) per-part visibility weights
                     return [cls_score] + str_cls_list, [global_feat] + str_feat_list, featmaps, None, kp_data
                 else:
                     # Pooled: all tokens averaged

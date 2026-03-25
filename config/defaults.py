@@ -162,6 +162,7 @@ _C.MODEL.POSE_STR_SUPCON = False          # Replace per-token CE with SupCon los
 _C.MODEL.POSE_STR_SUPCON_TEMP = 0.07     # SupCon temperature
 _C.MODEL.POSE_STR_SUPCON_ADDITIVE = False # SupCon additive to CE (not replacing)
 _C.MODEL.POSE_STR_SUPCON_WEIGHT = 0.5    # Weight when additive
+_C.MODEL.POSE_STR_SUPCON_VIS_WEIGHT = False  # Visibility-weighted per-token SupCon
 _C.MODEL.POSE_STR_SELF_ATTN = False       # DPTL: self-attention among part tokens (dual-path)
 _C.MODEL.POSE_STR_PART_DROP = 0.0         # PLTD: part-level token dropout probability (0=disabled)
 

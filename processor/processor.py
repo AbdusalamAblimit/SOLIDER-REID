@@ -490,8 +490,9 @@ def do_train(cfg,
                 # Prepare kp_aux_data for loss function
                 maxsim_tri_enabled = getattr(cfg.MODEL, 'POSE_MAXSIM_TRIPLET', False)
                 evid_enabled = getattr(cfg.MODEL, 'POSE_EVIDENTIAL', False)
+                supcon_vis_enabled = getattr(cfg.MODEL, 'POSE_STR_SUPCON_VIS_WEIGHT', False)
                 kp_aux_data = None
-                if kp_data is not None and (maxsim_tri_enabled or evid_enabled):
+                if kp_data is not None and (maxsim_tri_enabled or evid_enabled or supcon_vis_enabled):
                     kp_aux_data = dict(kp_data)
                     kp_aux_data['epoch'] = epoch
 

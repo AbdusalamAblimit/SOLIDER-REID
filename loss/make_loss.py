@@ -158,7 +158,7 @@ def make_loss(cfg, num_classes):    # modified by gu
                         loss_details['evid_ev'] = all_evid_stats['evidence']
                         loss_details['evid_ann'] = all_evid_stats['anneal']
                     elif getattr(cfg.MODEL, 'POSE_STR_SUPCON', False) and isinstance(feat, list) and len(feat) > 1:
-                        # SupCon for per-token features
+                        # SupCon for per-token features (with optional visibility weighting)
                         from loss.supcon_loss import SupConLoss
                         supcon_temp = float(getattr(cfg.MODEL, 'POSE_STR_SUPCON_TEMP', 0.07))
                         supcon_fn = SupConLoss(temperature=supcon_temp)
@@ -167,7 +167,17 @@ def make_loss(cfg, num_classes):    # modified by gu
                             f_norm = F.normalize(f, p=2, dim=1)
                             sc_loss = supcon_fn(f_norm, target)
                             part_supcon_losses.append(sc_loss)
-                        supcon_avg = sum(part_supcon_losses) / len(part_supcon_losses)
+                        # Visibility-weighted averaging (if available from kp_data)
+                        vis_weighted = getattr(cfg.MODEL, 'POSE_STR_SUPCON_VIS_WEIGHT', False)
+                        if vis_weighted and kp_data is not None and 'part_visibility' in kp_data:
+                            # part_visibility: (B, K) per-part visibility from heatmap response
+                            pv = kp_data['part_visibility']  # (B, K)
+                            pv_mean = pv.mean(dim=0)  # (K,) average visibility per part
+                            pv_weights = pv_mean / pv_mean.sum().clamp(min=1e-8)  # normalize
+                            supcon_avg = sum(w * l for w, l in zip(pv_weights, part_supcon_losses))
+                            loss_details['supcon_vis_w'] = pv_weights.detach().cpu().tolist()
+                        else:
+                            supcon_avg = sum(part_supcon_losses) / len(part_supcon_losses)
                         loss_details['supcon'] = supcon_avg.item()
                         # Additive mode: CE + lambda * SupCon
                         if getattr(cfg.MODEL, 'POSE_STR_SUPCON_ADDITIVE', False):
