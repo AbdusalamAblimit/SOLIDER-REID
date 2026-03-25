@@ -175,7 +175,7 @@ def make_loss(cfg, num_classes):    # modified by gu
                             pv_mean = pv.mean(dim=0)  # (K,) average visibility per part
                             pv_weights = pv_mean / pv_mean.sum().clamp(min=1e-8)  # normalize
                             supcon_avg = sum(w * l for w, l in zip(pv_weights, part_supcon_losses))
-                            loss_details['supcon_vis_w'] = pv_weights.detach().cpu().tolist()
+                            loss_details['vis_w_std'] = pv_weights.std().item()  # scalar: how uneven weights are
                         else:
                             supcon_avg = sum(part_supcon_losses) / len(part_supcon_losses)
                         loss_details['supcon'] = supcon_avg.item()
