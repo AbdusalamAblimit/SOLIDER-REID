@@ -25,4 +25,8 @@ vs exp174: SupCon 相同，但无 multi-stage PSG
 ### e. Eval 路径
 Test features 不变（equal_concat: global + confidence-weighted pooled）
 
+### f. 数值稳定性
+SupCon T=0.07: max sim/T = 1.0/0.07 ≈ 14.3, exp(14.3) ≈ 1.6e6, fp32 安全。
+sim_max 减法后最大指数为 0。epsilon 1e-8 保护 log(0)。
+
 零 issue。
