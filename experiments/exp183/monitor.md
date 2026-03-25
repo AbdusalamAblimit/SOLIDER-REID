@@ -52,4 +52,17 @@ ep90 SupCon R1 反而低于 CE (-1.4)！SupCon 无 PLBOA 不改善 R1。
 | 100 | 59.8/71.3 | 60.0/72.3 | -0.2/-1.0 |
 | 110 | 60.1/71.9 | 60.3/72.6 | -0.2/-0.7 |
 
-**确认：SupCon 无 PLBOA 不如 CE。SupCon 的增益 = PLBOA × SupCon interaction。** 等 ep120。
+## 最终结果
+
+| Epoch | mAP | R1 |
+|-------|------|------|
+| 80 | 59.6% | 71.3% |
+| 90 | 60.1% | 71.7% |
+| 100 | 59.8% | 71.3% |
+| 110 | 60.1% | 71.9% |
+| **120** | **60.0%** | **71.9%** |
+
+vs exp166r (CE, no PLBOA, base): 60.3/72.8 → **-0.3/-0.9**
+
+**确认：SupCon 无 PLBOA 在 base 架构上不如 CE。**
+SupCon 的增益 = SupCon × PLBOA interaction，不是 SupCon 单独。
