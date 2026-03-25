@@ -24,3 +24,19 @@
 **观察**: OA-SD 正常工作。oa_sd loss 从 0.40 上升到 0.48（EMA teacher 尚未充分更新，student 快速学习导致差距增大）。
 **Bug 修复**: teacher forward 时需 train() mode（否则返回 test-path 的 2 值）。已修复。
 **决策**: 继续
+
+### [20:43] 检查点 #2
+
+**状态**: 正常
+**进度**: Epoch 6/120
+
+| 指标 | 当前值 | 趋势 |
+|------|--------|------|
+| SupCon | 3.83 | ↓ 正常下降 |
+| oa_sd | **0.205** | ↓ 快速下降（从 0.475→0.205）|
+| Tri Global | 1.03 | ↓ |
+| LR | 2.46e-04 | warmup |
+
+**观察**: oa_sd loss 快速下降（0.475→0.205 = -57%），说明 EMA teacher 和 student 正在快速收敛。好信号。
+Remote exp189 完成: 63.3/73.7 (vis-weighted SupCon = 负向 -0.8/-1.8 vs uniform)。
+**决策**: 继续
