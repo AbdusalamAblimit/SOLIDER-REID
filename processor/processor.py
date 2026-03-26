@@ -431,11 +431,18 @@ def do_train(cfg,
                 pose_dict = None
 
             # Handle multi-view modes: img may be list of tensors
-            # parallel_aug: 3 views, OA-SD: 2 views (student + teacher), standard: 1 view
+            # parallel_aug: 3 views, OA-SD: 2 views (student + teacher)
+            # parallel_aug + OA-SD: 4 views (3 student + 1 teacher), standard: 1 view
             parallel_aug = isinstance(img, list) and len(img) >= 3
             oa_sd_mode = isinstance(img, list) and len(img) == 2
+            # Combined mode: parallel_aug with OA-SD teacher view appended as 4th element
+            parallel_oa_sd = parallel_aug and oa_sd_enabled and len(img) == 4
             if parallel_aug:
-                img_views = [v.to(device) for v in img]
+                if parallel_oa_sd:
+                    img_views = [v.to(device) for v in img[:3]]  # 3 student views
+                    img_teacher = img[3].to(device)               # teacher (clean pre-PLBOA)
+                else:
+                    img_views = [v.to(device) for v in img]
                 batch_size = img_views[0].shape[0]
             elif oa_sd_mode:
                 img_student = img[0].to(device)  # occluded (post-PLBOA)
@@ -608,7 +615,7 @@ def do_train(cfg,
                     loss._loss_details = saved_details
 
                 # OA-SD: Occlusion-Asymmetric Self-Distillation with EMA teacher
-                if oa_sd_enabled and oa_sd_mode and use_pose and ema_teacher is not None:
+                if oa_sd_enabled and (oa_sd_mode or parallel_oa_sd) and use_pose and ema_teacher is not None:
                     oa_sd_weight = float(getattr(cfg.MODEL, 'POSE_OA_SD_WEIGHT', 1.0))
                     # EMA Teacher forward: clean image (no PLBOA), no grad
                     # Must set training=True temporarily so forward returns (score, feat, ...) not (test_feat, featmaps)

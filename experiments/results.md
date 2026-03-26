@@ -205,6 +205,19 @@
 | 161d-eq | STD-PR+PLBOA+PAA (eq_concat) | 62.6% | 72.3% | 84.9% | 88.5% | 🟡 PAA 不帮 STD-PR (-0.8 vs 161b) |
 | 161e-eq | STD-PR+PLBOA+ROA (eq_concat) | 63.2% | 72.9% | 85.5% | 88.8% | 🟡 ROA 不帮 STD-PR (-0.2 vs 161b) |
 
+### Phase 4: SupCon + OA-SD + Parallel Aug (exp166-193)
+
+| ID | 方法 | mAP | R-1 | R-5 | R-10 | 备注 |
+|----|------|-----|-----|-----|------|------|
+| 166 | STD-PR+PLBOA+PAPE+MS-PSG+CE (full arch) | 63.1% | 73.9% | 86.1% | 89.2% | CE baseline with full architecture |
+| 166r | ↳ base arch (no PAPE/MS-PSG) | 60.3% | 72.8% | — | — | CE base for OA-SD comparison |
+| 176 | +SupCon T=0.05 (1-view) | 64.1% | 75.5% | 85.9% | 89.2% | ✅ SupCon +1.0/+1.6 vs CE |
+| **187** | **+SupCon T=0.05 + 3-view Parallel Aug** | **64.9%** | **76.6%** | **87.2%** | **90.0%** | **🟢🟢 Overall best! +1.8/+2.7 vs exp166** |
+| **190** | **3-view Parallel Aug + CE (no SupCon)** | **64.2%** | **75.6%** | **86.2%** | **89.1%** | **✅ 3-view+CE ≈ 1-view+SupCon! +1.1/+1.7 vs exp166** |
+| **191** | **OA-SD + CE (1-view, decay=0.999)** | **63.2%** | **75.4%** | **86.3%** | **89.1%** | **✅ OA-SD 独立有效! +2.9/+2.6 vs CE base** |
+| 192 | OA-SD + CE (1-view, decay=0.99) | ~63% | ~75% | — | — | 🟡 与 exp191 等价，decay 不敏感 (进行中) |
+| 193 | OA-SD + 3-view + CE | — | — | — | — | 进行中 |
+
 ### Occluded-ReID 跨数据集测试 (模型训练于 Occluded-Duke)
 
 | ID | 方法 | mAP | R-1 | R-5 | R-10 | 备注 |

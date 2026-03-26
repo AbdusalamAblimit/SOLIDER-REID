@@ -218,7 +218,12 @@ class PoseImageDataset(Dataset):
             img_heavy_tensor = self._image_to_tensor(img)
             img_heavy_tensor, _ = self._random_erase(img_heavy_tensor)
 
-            img_tensor = (img_full_tensor, img_roa_tensor, img_heavy_tensor)
+            # OA-SD + parallel_aug: append teacher (clean pre-PLBOA) as 4th view
+            if img_clean_for_oa_sd is not None:
+                img_clean_tensor = self._image_to_tensor(img_clean_for_oa_sd)
+                img_tensor = (img_full_tensor, img_roa_tensor, img_heavy_tensor, img_clean_tensor)
+            else:
+                img_tensor = (img_full_tensor, img_roa_tensor, img_heavy_tensor)
         else:
             # Standard single-view pipeline
             # 3.5) Realistic Occlusion Augmentation (ROA): paste VOC objects
