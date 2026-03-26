@@ -18,4 +18,17 @@
 | Speed | ~100 samples/s (3-view) |
 
 **观察**: 3-view + CE 正常启动。ETA ~4.5h。
-**决策**: 继续
+### [23:55] 检查点 #2
+
+**状态**: 正常
+**进度**: Epoch 10/120
+
+| 实验 | ep10 mAP | ep10 R1 |
+|------|----------|---------|
+| exp190 (3-view+CE) | **38.9%** | **51.8%** |
+| exp187 (3-view+SupCon) | 38.3% | 52.0% |
+| exp176 (1-view+SupCon) | 34.6% | 48.0% |
+| exp166 (1-view+CE) baseline | ~36% | ~48% |
+
+**观察**: 3-view+CE ≈ 3-view+SupCon at ep10。3-view 的加速效果与 loss type 无关。
+**决策**: 继续到 ep80 看最终是否 CE vs SupCon 有分化
