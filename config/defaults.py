@@ -176,6 +176,7 @@ _C.MODEL.POSE_MAXSIM_TRIPLET_WEIGHT = 0.25     # Weight when additive
 _C.MODEL.POSE_PARALLEL_AUG = False
 _C.MODEL.POSE_OA_SD = False               # Occlusion-Asymmetric Self-Distillation
 _C.MODEL.POSE_OA_SD_WEIGHT = 1.0          # Distillation loss weight
+_C.MODEL.POSE_OA_SD_EMA_DECAY = 0.999    # EMA teacher decay rate
 
 # LTCS: Learn-to-Trust Common Support (pair-adaptive fusion)
 _C.MODEL.POSE_LTCS = False

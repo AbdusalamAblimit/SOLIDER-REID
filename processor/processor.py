@@ -393,7 +393,7 @@ def do_train(cfg,
     # OA-SD: create EMA teacher model
     oa_sd_enabled = getattr(cfg.MODEL, 'POSE_OA_SD', False)
     ema_teacher = None
-    ema_decay = 0.999
+    ema_decay = float(getattr(cfg.MODEL, 'POSE_OA_SD_EMA_DECAY', 0.999))
     if oa_sd_enabled:
         import copy
         base_model = model.module if hasattr(model, 'module') else model
