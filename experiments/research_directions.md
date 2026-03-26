@@ -111,3 +111,30 @@
 2. 在远程实现并测试 OA-SD (方向 A)
 3. 如果 OA-SD 有正向信号 → 继续迭代
 4. 如果 OA-SD 中性 → 尝试 SCL (方向 B) 或 CTA (方向 C)
+
+---
+
+## 2026-03-26 凌晨：OA-SD 确认为范式级创新
+
+### 关键实验结果
+
+| 实验 | 方法 | mAP | R1 | 创新贡献 |
+|------|------|------|------|---------|
+| exp166 | CE baseline (full) | 63.1% | 73.9% | — |
+| exp176 | +SupCon T=0.05 | 64.1% | 75.5% | SupCon |
+| **exp187** | **+3-view parallel** | **64.9%** | **76.6%** | **3-view aug** |
+| **exp191** | **+OA-SD (base,CE)** | **63.2%** | **75.4%** | **OA-SD paradigm** |
+
+### OA-SD 的关键发现
+
+1. **OA-SD + CE = 正向** (+2.9/+2.6 vs CE base)
+2. **OA-SD + SupCon = 负向** (-0.7/-0.4 vs SupCon only)
+3. OA-SD 的 distillation loss 与 SupCon 的 contrastive loss 有梯度冲突
+4. OA-SD 与 CE 互补：distillation 提供遮挡不变性，CE 提供分类能力
+
+### 下一步计划
+
+1. [待做] OA-SD + CE + 3-view Parallel Aug（组合两个正向方向）
+2. [待做] OA-SD + CE + PLBOA + 无 PAPE/multi-stage（最简 OA-SD 配置）
+3. [用户做] 3-seed 验证 + Swin-Small/Base 刷 SOTA
+4. [用户做] Market-1501 数据集结果
