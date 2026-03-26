@@ -31,4 +31,4 @@
 | exp166 (1-view+CE) baseline | ~36% | ~48% |
 
 **观察**: 3-view+CE ≈ 3-view+SupCon at ep10。3-view 的加速效果与 loss type 无关。
-**决策**: 继续到 ep80 看最终是否 CE vs SupCon 有分化
+**决策**: 等 ep20-30
