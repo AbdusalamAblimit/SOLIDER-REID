@@ -632,10 +632,19 @@ def do_train(cfg,
                             _, teacher_feat, _, _ = teacher_out
                         else:
                             _, teacher_feat, _ = teacher_out[:3]
-                    # Distillation: student pooled features → teacher pooled features
+                    # Distillation: student features → teacher features
                     # For per-token: feat = [global, tok1, ..., tok6]
-                    # Distill each token and global
-                    if isinstance(feat, list) and isinstance(teacher_feat, list):
+                    oa_sd_global_only = getattr(cfg.MODEL, 'POSE_OA_SD_GLOBAL_ONLY', False)
+                    if oa_sd_global_only:
+                        # Global-only distillation: only distill the global (pooled) feature
+                        # This avoids gradient conflict with SupCon on per-token features
+                        sf = feat[0] if isinstance(feat, list) else feat
+                        tf = teacher_feat[0] if isinstance(teacher_feat, list) else teacher_feat
+                        sf_norm = F.normalize(sf, p=2, dim=1)
+                        tf_norm = F.normalize(tf.detach(), p=2, dim=1)
+                        oa_sd_loss = (1.0 - (sf_norm * tf_norm).sum(dim=1)).mean()
+                    elif isinstance(feat, list) and isinstance(teacher_feat, list):
+                        # All-token distillation: distill global + each structural token
                         distill_losses = []
                         for sf, tf in zip(feat, teacher_feat):
                             sf_norm = F.normalize(sf, p=2, dim=1)

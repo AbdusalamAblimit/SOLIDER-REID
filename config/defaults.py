@@ -177,6 +177,7 @@ _C.MODEL.POSE_PARALLEL_AUG = False
 _C.MODEL.POSE_OA_SD = False               # Occlusion-Asymmetric Self-Distillation
 _C.MODEL.POSE_OA_SD_WEIGHT = 1.0          # Distillation loss weight
 _C.MODEL.POSE_OA_SD_EMA_DECAY = 0.999    # EMA teacher decay rate
+_C.MODEL.POSE_OA_SD_GLOBAL_ONLY = False   # Only distill global feature (not per-token)
 
 # LTCS: Learn-to-Trust Common Support (pair-adaptive fusion)
 _C.MODEL.POSE_LTCS = False
