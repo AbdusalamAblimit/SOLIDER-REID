@@ -26,4 +26,7 @@ base 架构 + CE + PLBOA + OA-SD
 POSE_OA_SD_EMA_DECAY=0.999 默认不变。
 
 ### 无其他改动
-纯 config 消融。
+纯 config 消融。零代码逻辑变更。
+
+### 显存
+与 exp191 完全相同（EMA teacher + 2x forward）。远程 16GB 够。
