@@ -1,6 +1,7 @@
 import math
 import logging
 import os
+import random
 import cv2
 import numpy as np
 import time
@@ -530,6 +531,68 @@ def do_train(cfg,
                         kp_aux_data['lpcs_teacher_stats'] = teacher_stats_lpcs
 
                 loss = loss_fn(score, feat, target, target_cam, kp_data=kp_aux_data)
+
+                # Structural Token Mixup (STM): swap body-part tokens between same-ID samples
+                # Creates diverse token combinations to improve occlusion robustness
+                stm_enabled = getattr(cfg.MODEL, 'POSE_STM', False)
+                if stm_enabled and isinstance(feat, list) and len(feat) > 1:
+                    stm_num_swap = int(getattr(cfg.MODEL, 'POSE_STM_NUM_SWAP', 2))
+                    stm_prob = float(getattr(cfg.MODEL, 'POSE_STM_PROB', 0.5))
+                    stm_weight = float(getattr(cfg.MODEL, 'POSE_STM_WEIGHT', 0.5))
+                    num_parts = len(feat) - 1  # exclude global feat[0]
+                    B = feat[0].shape[0]
+                    num_instance = cfg.DATALOADER.NUM_INSTANCE
+                    num_ids = B // num_instance
+
+                    if random.random() < stm_prob and num_ids > 0:
+                        # Fixed-count generation: each ID produces exactly num_instance mixed samples
+                        # This ensures triplet loss's equal-positive-count requirement
+                        mixed_scores_all = []
+                        mixed_feats_all = []
+                        mixed_labels = []
+
+                        for id_idx in range(num_ids):
+                            start = id_idx * num_instance
+                            id_indices = list(range(start, start + num_instance))
+
+                            for i in range(num_instance):
+                                # Each sample gets a random partner from same ID
+                                partners = [j for j in range(num_instance) if j != i]
+                                j = random.choice(partners)
+                                idx_i = id_indices[i]
+                                idx_j = id_indices[j]
+
+                                # Select random parts to swap (1-indexed, skip global at 0)
+                                swap_parts = random.sample(range(1, num_parts + 1), min(stm_num_swap, num_parts))
+
+                                # Create mixed score and feat
+                                mixed_score_i = []
+                                mixed_feat_i = []
+                                for k in range(len(feat)):
+                                    if k in swap_parts:
+                                        mixed_score_i.append(score[k][idx_j:idx_j+1])
+                                        mixed_feat_i.append(feat[k][idx_j:idx_j+1])
+                                    else:
+                                        mixed_score_i.append(score[k][idx_i:idx_i+1])
+                                        mixed_feat_i.append(feat[k][idx_i:idx_i+1])
+
+                                mixed_scores_all.append(mixed_score_i)
+                                mixed_feats_all.append(mixed_feat_i)
+                                mixed_labels.append(target[idx_i])
+
+                        # Stack mixed samples: same shape as original batch (B samples, num_instance per ID)
+                        stm_score = [torch.cat([ms[k] for ms in mixed_scores_all], dim=0) for k in range(len(score))]
+                        stm_feat = [torch.cat([mf[k] for mf in mixed_feats_all], dim=0) for k in range(len(feat))]
+                        stm_target = torch.stack(mixed_labels)
+                        stm_cam = target_cam[:len(stm_target)]
+
+                        # Compute loss on mixed batch (no kp_data — mixed tokens lack kp correspondence)
+                        stm_loss = loss_fn(stm_score, stm_feat, stm_target, stm_cam)
+                        details = getattr(loss, '_loss_details', {})
+                        loss = loss + stm_weight * stm_loss
+                        details['stm'] = stm_loss.item()
+                        details['stm_n'] = len(mixed_labels)
+                        loss._loss_details = details
 
                 # STD-PR: log structural routing stats (token norms, self-attn diagnostics)
                 if kp_data is not None and 'str_stats' in kp_data:

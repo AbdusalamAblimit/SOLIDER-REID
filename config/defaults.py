@@ -179,6 +179,12 @@ _C.MODEL.POSE_OA_SD_WEIGHT = 1.0          # Distillation loss weight
 _C.MODEL.POSE_OA_SD_EMA_DECAY = 0.999    # EMA teacher decay rate
 _C.MODEL.POSE_OA_SD_GLOBAL_ONLY = False   # Only distill global feature (not per-token)
 
+# Structural Token Mixup (STM)
+_C.MODEL.POSE_STM = False                 # Enable token-level mixup within same ID
+_C.MODEL.POSE_STM_NUM_SWAP = 2            # Number of body parts to swap per mixup
+_C.MODEL.POSE_STM_PROB = 0.5              # Probability of applying mixup per sample
+_C.MODEL.POSE_STM_WEIGHT = 0.5            # Weight of mixup loss (added to main loss)
+
 # LTCS: Learn-to-Trust Common Support (pair-adaptive fusion)
 _C.MODEL.POSE_LTCS = False
 _C.MODEL.POSE_LTCS_WEIGHT = 0.5
