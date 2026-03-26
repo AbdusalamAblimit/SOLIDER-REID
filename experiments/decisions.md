@@ -3066,3 +3066,27 @@ B. 直接启动 exp025，exp024 可以后续补跑
 4. 这个实验的论文价值极高：证明"global distillation + per-token contrastive" 职责分离可行
 
 **执行结果**: (后续补填)
+
+### [2026-03-26 19:40] 决策 #92
+
+**上下文**: exp196 (3-view + SupCon + OA-SD global-only) 在 ep70 持续落后 exp187 (3-view + SupCon) -1.8/-0.9。OA-SD global-only 的 distillation 信号 (oa_sd=0.01) 过弱。
+
+**发现**:
+- OA-SD + CE 有效 (+2.9/+2.6)
+- OA-SD + SupCon (all-token) 有梯度冲突 (exp188 负向)
+- OA-SD + SupCon (global-only) 无梯度冲突但信号太弱 (exp195/196)
+- 结论: **OA-SD 和 SupCon 本质上互斥**——选一个用
+
+**选项**:
+  A. 最终配置用 SupCon (exp187: 64.9/76.6) — 测试时最强
+  B. 最终配置用 OA-SD+CE (exp193: 64.4/76.5) — R1 几乎一样
+  C. 论文中两条路线都展示，作为 ablation
+
+**选择**: C
+
+**理由**:
+1. 两条路线都是有效创新，mAP/R1 各有优劣
+2. SupCon 路线: mAP 更高 (+0.5)
+3. OA-SD 路线: R1 几乎一样，且 OA-SD 概念更新颖 (self-distillation 范式)
+4. 论文可以展示："两条互补但互斥的训练范式"
+5. 用户做 3-seed 验证后决定主结果用哪个
