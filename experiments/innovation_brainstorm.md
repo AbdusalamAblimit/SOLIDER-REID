@@ -2595,3 +2595,53 @@ SASA 使用骨架测地距离作为 Swin window attention 的固定偏置，零�
 1. Per-token SupCon on structural body-part tokens — 首次在 ReID 中
 2. SupCon × PLBOA 超线性 synergy — 新发现
 3. STD-PR 的 augmentation adaptivity — cross-attention 比 keypoint sampling 更善于利用 PLBOA (3× gain)
+
+---
+
+## 2026-03-26: OA-SD 系列实验总结 + Global-Only 新发现
+
+### OA-SD 核心特性（exp191-194 消融）
+
+1. **OA-SD + CE = 强正向**: +2.9/+2.6 vs CE base (exp191)
+2. **OA-SD + SupCon (all-token) = 负向**: -0.7/-0.4 (exp188) — 梯度冲突
+3. **EMA decay 不敏感**: 0.99 vs 0.999 最终差异 <1% (exp192)
+4. **Loss weight 不敏感**: 1.0 vs 2.0 最终差异 <1% (exp194)
+5. **OA-SD + 3-view 是 additive**: exp193 = 64.4/76.5 vs exp190 = 64.2/75.6 (+0.2/+0.9)
+6. **OA-SD late-stage boost**: ep40 前拖累 → ep40 crossover → ep60+ 大幅正向
+
+### 关键新发现：OA-SD Global-Only 解决 SupCon 梯度冲突
+
+**问题**: OA-SD all-token distillation 与 SupCon 在 per-token features 上产生梯度冲突
+**机制**: 
+- SupCon 鼓励同 ID tokens 拉近、异 ID 推远
+- OA-SD distillation 鼓励 student tokens 逼近 teacher tokens（不管 ID）
+- 两者在 token 级别方向矛盾
+
+**解决方案**: OA-SD GLOBAL_ONLY — 只在 global (GAP后) feature 上做 distillation
+- Global feature: CE + triplet + OA-SD distill（三者协同）
+- Per-token features: CE + triplet + SupCon（三者协同，无 OA-SD 干扰）
+
+**验证** (exp195): SupCon + OA-SD global-only ep70=60.2/73.4
+- 没有出现 exp188 的负向效应
+- R1 稳定领先 CE+OA-SD（SupCon 的 R1 优势保持）
+
+**论文定位**: 
+- 这是一个新的 **"职责分离" (role separation)** 机制
+- 全局遮挡不变性 (OA-SD) 和局部判别力 (SupCon) 在不同特征级别独立优化
+- 消融链: exp188 (冲突) → exp195 (分离) 是清晰的证据
+
+### 当前最强结果总表
+
+| 排名 | 实验 | 方法 | mAP | R1 |
+|------|------|------|------|------|
+| 1 | exp187 | 3-view + SupCon | 64.9% | 76.6% |
+| 2 | exp193 | 3-view + OA-SD + CE | 64.4% | 76.5% |
+| 3 | exp190 | 3-view + CE | 64.2% | 75.6% |
+| 4 | exp176 | SupCon (1-view) | 64.1% | 75.5% |
+| 5 | exp194 | OA-SD + CE (w=2.0) | 63.4% | 74.8% |
+| 6 | exp191 | OA-SD + CE | 63.2% | 75.4% |
+| 7 | exp166 | CE baseline (full) | 63.1% | 73.9% |
+
+### 待验证: exp196 终极配置
+
+3-view + SupCon + OA-SD global-only — 预计 65.0-65.5/77.0-77.5

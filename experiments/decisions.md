@@ -3040,3 +3040,29 @@ B. 直接启动 exp025，exp024 可以后续补跑
 - 已确认远程 GPU 完整释放
 - 本地主线继续保留 `exp148 PCVT`
 - 远程进入“等待下一条真正不同的新机制”状态
+
+### [2026-03-26 15:40] 决策 #91
+
+**上下文**: exp190-195 系列实验完成，揭示了 OA-SD 和 3-view parallel aug 的组合关系，以及 OA-SD global-only 解决 SupCon 梯度冲突的新机制。
+
+**关键实验结论**:
+- exp190 (3-view+CE): 64.2/75.6 — 3-view 是最强单一技术
+- exp191 (OA-SD+CE): 63.2/75.4 — OA-SD 独立有效
+- exp192 (decay=0.99): 62.6/74.9 — decay 不敏感
+- exp193 (3-view+OA-SD+CE): 64.4/76.5 — additive! R1 追平 SupCon
+- exp194 (weight=2.0): 63.4/74.8 — weight 不敏感
+- exp195 (SupCon+OA-SD global-only): ep70=60.2/73.4 — 梯度冲突解决!
+
+**选项**:
+  A. exp196: 3-view + SupCon + OA-SD global-only（终极组合，验证所有创新 additive）
+  B. 探索全新方向（如 SCL, Part Token Codebook 等）
+
+**选择**: A
+
+**理由**:
+1. OA-SD global-only 是一个新机制（满足创新门槛 #2 和 #3），不是简单组合
+2. 如果 exp196 > exp187 (64.9/76.6)，则创论文主表新高
+3. exp195 已验证 SupCon+OA-SD global-only 兼容，exp193 已验证 3-view+OA-SD additive
+4. 这个实验的论文价值极高：证明"global distillation + per-token contrastive" 职责分离可行
+
+**执行结果**: (后续补填)
