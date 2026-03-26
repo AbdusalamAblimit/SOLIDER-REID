@@ -215,7 +215,7 @@
 | **187** | **+SupCon T=0.05 + 3-view Parallel Aug** | **64.9%** | **76.6%** | **87.2%** | **90.0%** | **🟢🟢 Overall best! +1.8/+2.7 vs exp166** |
 | **190** | **3-view Parallel Aug + CE (no SupCon)** | **64.2%** | **75.6%** | **86.2%** | **89.1%** | **✅ 3-view+CE ≈ 1-view+SupCon! +1.1/+1.7 vs exp166** |
 | **191** | **OA-SD + CE (1-view, decay=0.999)** | **63.2%** | **75.4%** | **86.3%** | **89.1%** | **✅ OA-SD 独立有效! +2.9/+2.6 vs CE base** |
-| 192 | OA-SD + CE (1-view, decay=0.99) | ~63% | ~75% | — | — | 🟡 与 exp191 等价，decay 不敏感 (进行中) |
+| 192 | OA-SD + CE (1-view, decay=0.99) | 62.6% | 74.9% | 86.0% | 89.1% | 🟡 vs exp191: -0.6/-0.5。decay 不敏感 |
 | 193 | OA-SD + 3-view + CE | — | — | — | — | 进行中 |
 
 ### Occluded-ReID 跨数据集测试 (模型训练于 Occluded-Duke)
