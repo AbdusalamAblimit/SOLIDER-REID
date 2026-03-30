@@ -224,6 +224,7 @@
 | 198 | OA-SD + CE + STM (base, remote) | 63.2% | 75.2% | — | — | 🟡 = exp191 (无 STM)。STM 只加速不改善天花板 |
 | 199 | 3-view + SupCon + OA-RD | 63.4% | 74.5% | 85.2% | 88.1% | ❌ vs exp187: -1.5/-2.1。OA-RD+SupCon 不兼容 |
 | 200 | CE + OA-RD (base, remote) | 62.9% | 73.9% | 85.2% | 88.5% | ❌ vs exp191 OA-SD: -0.3/-1.5。OA-RD 不如 OA-SD |
+| 201 | 3-view + SupCon + Global SupCon | 63.7% | 73.8% | 85.1% | 88.7% | ❌ vs exp187: -1.2/-2.8。Global SupCon 压缩特征空间 |
 
 ### Occluded-ReID 跨数据集测试 (模型训练于 Occluded-Duke)
 
