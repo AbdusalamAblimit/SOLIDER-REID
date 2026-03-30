@@ -220,6 +220,8 @@
 | 194 | OA-SD + CE (weight=2.0) | 63.4% | 74.8% | 86.1% | 89.1% | 🟡 vs exp191 (w=1.0): +0.2/-0.6。weight 不敏感 |
 | 195 | SupCon + OA-SD global-only (base) | 61.3% | 74.9% | — | — | 🟡 OA-SD+SupCon 无冲突但增益有限 |
 | 196 | 3-view + SupCon + OA-SD global-only | 62.4% | 75.2% | 85.2% | 87.8% | ❌ vs exp187: -2.5/-1.4。OA-SD+SupCon 互斥 |
+| 197 | 3-view + SupCon + STM | 64.1% | 76.0% | 86.7% | 89.0% | ❌ vs exp187: -0.8/-0.6。STM 不改善 SupCon 路线 |
+| 198 | OA-SD + CE + STM (base, remote) | 63.2% | 75.2% | — | — | 🟡 = exp191 (无 STM)。STM 只加速不改善天花板 |
 
 ### Occluded-ReID 跨数据集测试 (模型训练于 Occluded-Duke)
 
