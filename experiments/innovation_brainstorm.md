@@ -2685,3 +2685,39 @@ Occlusion-Asymmetric Relational Distillation
 - Student: occluded image → global feat → pairwise similarity matrix  
 - Loss: KL(teacher_sim_softmax || student_sim_softmax)
 - 与 SupCon 不冲突（操作对象不同）
+
+---
+
+## 2026-03-30: EMA Distillation 与 SupCon 互斥性确认
+
+### 完整实验链
+
+| 实验 | 方法 | 路线 | vs 最佳 | 结论 |
+|------|------|------|---------|------|
+| exp188 | OA-SD all-token + SupCon | SupCon | -0.7/-0.4 | ❌ 梯度冲突 |
+| exp195 | OA-SD global-only + SupCon | SupCon | ~-2.8 mAP | ❌ 信号太弱 |
+| exp196 | OA-SD global-only + SupCon + 3v | SupCon | -2.5/-1.4 | ❌ 同上 |
+| exp199 | OA-RD relational + SupCon + 3v | SupCon | ~-1.5/-3.4 | ❌ 关系级也冲突 |
+| exp191 | OA-SD all-token + CE | CE | +2.9/+2.6 | ✅ CE 兼容 |
+| exp193 | OA-SD all-token + CE + 3v | CE | +0.2/+0.9 | ✅ CE 兼容 |
+| exp200 | OA-RD relational + CE | CE | ~-1.0/-3.4 | ❌ OA-RD 不如 OA-SD |
+
+### 核心结论
+
+1. **EMA self-distillation 与 SupCon 本质互斥** — 无论 distill 什么（feature/relation），都不行
+2. **OA-SD (feature distillation) 在 CE 路线有效**，但 OA-RD (relational) 在 CE 路线不如 OA-SD
+3. **最佳配置已确立**：
+   - SupCon 路线: exp187 = 64.9/76.6 (不加任何 distillation)
+   - OA-SD 路线: exp193 = 64.4/76.5 (不加 SupCon)
+4. **OA-RD 是负结果** — relational distillation 的 KL divergence 信号太弱且不稳定
+
+### 下一步方向（非 distillation）
+
+从 5 个研究 agent 的建议中剩余可行方向：
+1. **BMKCA** — batch-mate cross-attention part completion
+2. **Multi-Granularity Contrastive** — 多粒度 SupCon (不同 temperature)
+3. **Deformable Part Tokens** — 动态 part query
+4. **Mixture of Visibility Experts (MoVE)** — 按 visibility routing 到不同 expert
+
+但 ceiling analysis 指出 Swin-Tiny 的天花板约 65-66% mAP，我们已在 64.9%。
+剩余空间 ~1%，需要权衡是否值得大改。
