@@ -222,7 +222,7 @@
 | 196 | 3-view + SupCon + OA-SD global-only | 62.4% | 75.2% | 85.2% | 87.8% | ❌ vs exp187: -2.5/-1.4。OA-SD+SupCon 互斥 |
 | 197 | 3-view + SupCon + STM | 64.1% | 76.0% | 86.7% | 89.0% | ❌ vs exp187: -0.8/-0.6。STM 不改善 SupCon 路线 |
 | 198 | OA-SD + CE + STM (base, remote) | 63.2% | 75.2% | — | — | 🟡 = exp191 (无 STM)。STM 只加速不改善天花板 |
-| 199 | 3-view + SupCon + OA-RD | — | — | — | — | 进行中 (ep100=63.4/74.8, -1.5/-1.8 vs exp187) |
+| 199 | 3-view + SupCon + OA-RD | 63.4% | 74.5% | 85.2% | 88.1% | ❌ vs exp187: -1.5/-2.1。OA-RD+SupCon 不兼容 |
 | 200 | CE + OA-RD (base, remote) | 62.9% | 73.9% | 85.2% | 88.5% | ❌ vs exp191 OA-SD: -0.3/-1.5。OA-RD 不如 OA-SD |
 
 ### Occluded-ReID 跨数据集测试 (模型训练于 Occluded-Duke)
