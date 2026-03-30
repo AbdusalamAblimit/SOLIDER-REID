@@ -188,6 +188,11 @@ class R1_mAP_eval():
             return self._compute_structured()
 
         feats = torch.cat(self.feats, dim=0)
+        # Power normalization: sign(x) * |x|^alpha — suppresses burstiness in structural tokens
+        power_alpha = float(getattr(self.cfg.TEST, 'POWER_NORM', 0.0)) if self.cfg else 0.0
+        if power_alpha > 0:
+            print(f"Applying power normalization (alpha={power_alpha})")
+            feats = torch.sign(feats) * torch.abs(feats).pow(power_alpha)
         if self.feat_norm:
             print("The test feature is normalized")
             feats = torch.nn.functional.normalize(feats, dim=1, p=2)  # along channel
