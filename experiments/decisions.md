@@ -3131,3 +3131,30 @@ B. 直接启动 exp025，exp024 可以后续补跑
 4. 最有前途的候选：Batch-Mate Keypoint Cross-Attention (BMKCA) 或 Multi-Granularity Contrastive
 
 **执行结果**: (后续补填)
+
+### [2026-03-30 15:10] 决策 #95
+
+**上下文**: exp197-201 连续 5 个负结果。所有在 exp187 (64.9/76.6) 基础上的改进尝试都失败。
+
+**失败实验链**:
+- exp197 (STM + SupCon): -0.8/-0.6 — token mixup 只加速不改善
+- exp198 (STM + OA-SD): ±0 — 同上
+- exp199 (OA-RD + SupCon): -1.5/-2.1 — relational distillation 也与 SupCon 冲突
+- exp200 (OA-RD + CE): -0.3/-1.5 — OA-RD 不如 OA-SD
+- exp201 (global SupCon): ~-1.5/-3.6 — global SupCon 压缩特征空间
+
+**模式**: 所有额外 loss/constraint 在早期加速训练，但后期限制模型的 fine discrimination 能力。
+**结论**: exp187 的配置已接近 Swin-Tiny 的 performance ceiling (~65% mAP)。
+
+**选项**:
+  A. 继续在 Swin-Tiny 上尝试新方向
+  B. 接受 64.9/76.6 为 Swin-Tiny 最佳，转向论文撰写和用户做 Swin-Small/Base scaling
+  C. 尝试一个完全不同维度的改进（如 test-time 优化、数据增强改进）
+
+**选择**: A (再尝试 1-2 个方向，如果仍负则转 B)
+
+**理由**:
+1. CLAUDE.md 禁止"论文收尾模式"
+2. 但也不能无限尝试——已有 5 个连续负结果
+3. 最后再试一个真正不同的方向：不加 loss、不加 distillation、不加 module
+4. 候选：改变 SupCon 的 temperature (T=0.03 在 1-view 曾有好结果)，或 PLBOA prob 调优

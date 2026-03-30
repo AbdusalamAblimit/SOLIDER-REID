@@ -90,5 +90,11 @@
 **观察**: ep50-60 变负！mAP -0.5~-1.3，R1 -3.3~-3.8。
 Global SupCon 在早期有强加速但后期拖累 R1。
 类似 OA-RD/OA-SD 的 pattern。但这次没有 EMA teacher！
-可能原因：global SupCon 的梯度过强压缩了 global feature space，损害了 R1 的 fine discrimination。
-**决策**: 继续到完成记录负结果
+### [15:07] 检查点 #14
+
+### [15:08] 检查点 #15 — ep70
+
+**ep70**: 62.3/72.1 (vs exp187 ep70: 63.8/75.7, **-1.5/-3.6**)
+R1 gap 扩大。Global SupCon 确认为负结果。
+预计 final ~63.0/73.0，落后 exp187 ~2/3.5。
+**决策**: 等完成
