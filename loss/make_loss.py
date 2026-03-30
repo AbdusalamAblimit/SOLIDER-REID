@@ -162,6 +162,12 @@ def make_loss(cfg, num_classes):    # modified by gu
                         from loss.supcon_loss import SupConLoss
                         supcon_temp = float(getattr(cfg.MODEL, 'POSE_STR_SUPCON_TEMP', 0.07))
                         supcon_fn = SupConLoss(temperature=supcon_temp)
+                        # Optional: also apply SupCon on global feature
+                        supcon_global_enabled = getattr(cfg.MODEL, 'POSE_STR_SUPCON_GLOBAL', False)
+                        if supcon_global_enabled:
+                            g_norm = F.normalize(feat[0], p=2, dim=1)
+                            supcon_global_loss = supcon_fn(g_norm, target)
+                            loss_details['supcon_g'] = supcon_global_loss.item()
                         part_supcon_losses = []
                         for f in feat[1:]:
                             f_norm = F.normalize(f, p=2, dim=1)
@@ -192,6 +198,10 @@ def make_loss(cfg, num_classes):    # modified by gu
                     else:
                         part_ids = [ce_fn(s, target) for s in score[1:]]
                         part_id_avg = sum(part_ids) / len(part_ids)
+                    # Add global SupCon if enabled
+                    if getattr(cfg.MODEL, 'POSE_STR_SUPCON', False) and getattr(cfg.MODEL, 'POSE_STR_SUPCON_GLOBAL', False):
+                        supcon_g_w = float(getattr(cfg.MODEL, 'POSE_STR_SUPCON_WEIGHT', 0.5))
+                        global_id = global_id + supcon_g_w * supcon_global_loss
                     ID_LOSS = w_g * global_id + w_p * part_id_avg
                     loss_details['id_global'] = global_id.item()
                     loss_details['id_part'] = part_id_avg.item()
