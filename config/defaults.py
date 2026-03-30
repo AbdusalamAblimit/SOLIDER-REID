@@ -179,6 +179,11 @@ _C.MODEL.POSE_OA_SD_WEIGHT = 1.0          # Distillation loss weight
 _C.MODEL.POSE_OA_SD_EMA_DECAY = 0.999    # EMA teacher decay rate
 _C.MODEL.POSE_OA_SD_GLOBAL_ONLY = False   # Only distill global feature (not per-token)
 
+# OA-RD: Occlusion-Asymmetric Relational Distillation
+_C.MODEL.POSE_OA_RD = False                # Enable relational distillation (distill pairwise similarity structure)
+_C.MODEL.POSE_OA_RD_TEMP = 0.1            # Temperature for softmax on similarity matrix
+_C.MODEL.POSE_OA_RD_WEIGHT = 1.0          # Weight of relational distillation loss
+
 # Structural Token Mixup (STM)
 _C.MODEL.POSE_STM = False                 # Enable token-level mixup within same ID
 _C.MODEL.POSE_STM_NUM_SWAP = 2            # Number of body parts to swap per mixup

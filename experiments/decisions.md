@@ -3090,3 +3090,20 @@ B. 直接启动 exp025，exp024 可以后续补跑
 3. OA-SD 路线: R1 几乎一样，且 OA-SD 概念更新颖 (self-distillation 范式)
 4. 论文可以展示："两条互补但互斥的训练范式"
 5. 用户做 3-seed 验证后决定主结果用哪个
+
+### [2026-03-27 03:30] 决策 #93
+
+**上下文**: 5 个研究 agent 并行调研后，发现 Relational Knowledge Distillation (RKD, CVPR 2019) 可能解决 OA-SD vs SupCon 互斥问题。OA-SD 在 token 级别 match 个体特征 → 与 SupCon 冲突。RKD match pairwise similarity structure → 不碰个体特征 → 理论上与 SupCon 兼容。
+
+**选项**:
+  A. OA-RD (Relational Distillation): Teacher 和 student 的 batch-level pairwise similarity 一致
+  B. BMKCA (Batch-Mate Keypoint Cross-Attention): 跨图 cross-attention 补全
+  C. Multi-Granularity Contrastive: 多粒度层次化 SupCon
+
+**选择**: A (OA-RD)
+
+**理由**:
+1. 直接解决已知问题 (OA-SD vs SupCon 冲突)
+2. 满足创新门槛: 问题层面(关系级 vs 特征级) + 机制层面(RKD in occluded ReID) + 证据链(OA-SD→OA-RD)
+3. 实现简洁 (~100 行): 计算 pairwise similarity matrix + KL divergence
+4. 如果成功: SupCon + OA-RD + 3-view 可能是真正的终极配置

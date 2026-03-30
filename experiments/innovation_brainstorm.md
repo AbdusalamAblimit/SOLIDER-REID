@@ -2645,3 +2645,43 @@ SASA 使用骨架测地距离作为 Swin window attention 的固定偏置，零�
 ### 待验证: exp196 终极配置
 
 3-view + SupCon + OA-SD global-only — 预计 65.0-65.5/77.0-77.5
+
+---
+
+## 2026-03-27: 多 Agent 并行调研 — 新方向候选
+
+### 调研范围（5 个 Explore Agent 并行）
+1. Token Pruning for ViT/ReID
+2. Contrastive Distillation (RKD/CRD)
+3. Cross-Attention Innovation
+4. Part-Aware Losses
+5. Performance Ceiling Analysis
+
+### 关键发现
+
+**1. Relational Knowledge Distillation (RKD) — 最有前途 ⭐⭐⭐⭐⭐**
+- RKD (CVPR 2019): distill pairwise distance/angle structure
+- CRD (ICLR 2020): distillation AS contrastive learning (InfoNCE-based)
+- **直接解决 OA-SD vs SupCon 冲突**: 不 match 个体特征(会冲突) → match 关系结构(不冲突)
+- 实现: ~100 行 (pairwise cosine sim + KL divergence)
+
+**2. Performance Ceiling Analysis**
+- 我们 (Swin-Tiny): 64.9/76.6 — 与 OGFR (64.7/76.6) 持平!
+- Gap vs FRT (66.2/78.2): mAP -1.3, R1 -1.6
+- **mAP 是瓶颈**，R1 已接近 SOTA
+
+**3. Batch-Mate Keypoint Cross-Attention (BMKCA)**
+- 同 batch 同 ID 图像间 cross-attention 补全被遮挡部位
+- ~300 行实现
+- 需要仔细处理 batch 内 ID 分组
+
+**4. 已证伪的方向更新**
+- STM (Token Mixup): 只加速不改善天花板 (exp197/198)
+- OA-SD + SupCon: 互斥，即使 global-only 也无法叠加 (exp195/196)
+
+### 选定方向: OA-RD (exp199)
+Occlusion-Asymmetric Relational Distillation
+- Teacher: clean image → global feat → pairwise similarity matrix
+- Student: occluded image → global feat → pairwise similarity matrix  
+- Loss: KL(teacher_sim_softmax || student_sim_softmax)
+- 与 SupCon 不冲突（操作对象不同）

@@ -391,20 +391,24 @@ def do_train(cfg,
         backbone_frozen = True
         logger.info(f'Backbone freeze warmup: {freeze_epochs} epochs')
 
-    # OA-SD: create EMA teacher model
+    # OA-SD / OA-RD: create EMA teacher model (shared infrastructure)
     oa_sd_enabled = getattr(cfg.MODEL, 'POSE_OA_SD', False)
+    oa_rd_enabled = getattr(cfg.MODEL, 'POSE_OA_RD', False)
     ema_teacher = None
     ema_decay = float(getattr(cfg.MODEL, 'POSE_OA_SD_EMA_DECAY', 0.999))
-    if oa_sd_enabled:
+    if oa_sd_enabled or oa_rd_enabled:
         import copy
         base_model = model.module if hasattr(model, 'module') else model
         ema_teacher = copy.deepcopy(base_model)
         ema_teacher.eval()
         for p in ema_teacher.parameters():
             p.requires_grad = False
-        logger.info(f'[OA-SD] EMA teacher created (decay={ema_decay})')
+        mode_str = []
+        if oa_sd_enabled: mode_str.append('OA-SD')
+        if oa_rd_enabled: mode_str.append('OA-RD')
+        logger.info(f'[{"+".join(mode_str)}] EMA teacher created (decay={ema_decay})')
         if not getattr(cfg.MODEL, 'POSE_LOWER_BODY_OCC', False):
-            logger.warning('[OA-SD] WARNING: PLBOA is disabled. Teacher and student see near-identical images.')
+            logger.warning('[OA-SD/RD] WARNING: PLBOA is disabled. Teacher and student see near-identical images.')
 
     # train
     for epoch in range(1, epochs + 1):
@@ -436,8 +440,8 @@ def do_train(cfg,
             # parallel_aug + OA-SD: 4 views (3 student + 1 teacher), standard: 1 view
             parallel_aug = isinstance(img, list) and len(img) >= 3
             oa_sd_mode = isinstance(img, list) and len(img) == 2
-            # Combined mode: parallel_aug with OA-SD teacher view appended as 4th element
-            parallel_oa_sd = parallel_aug and oa_sd_enabled and len(img) == 4
+            # Combined mode: parallel_aug with OA-SD/OA-RD teacher view appended as 4th element
+            parallel_oa_sd = parallel_aug and (oa_sd_enabled or oa_rd_enabled) and len(img) == 4
             if parallel_aug:
                 if parallel_oa_sd:
                     img_views = [v.to(device) for v in img[:3]]  # 3 student views
@@ -725,6 +729,50 @@ def do_train(cfg,
                     details = getattr(loss, '_loss_details', {})
                     loss = loss + oa_sd_weight * oa_sd_loss
                     details['oa_sd'] = oa_sd_loss.item()
+                    loss._loss_details = details
+
+                # OA-RD: Occlusion-Asymmetric Relational Distillation
+                # Distills pairwise similarity STRUCTURE (not individual features) from teacher to student
+                if oa_rd_enabled and (oa_sd_mode or parallel_oa_sd) and use_pose and ema_teacher is not None:
+                    oa_rd_weight = float(getattr(cfg.MODEL, 'POSE_OA_RD_WEIGHT', 1.0))
+                    oa_rd_temp = float(getattr(cfg.MODEL, 'POSE_OA_RD_TEMP', 0.1))
+
+                    # Get teacher features if not already computed by OA-SD
+                    if not oa_sd_enabled:
+                        # Need to run teacher forward (OA-SD already did this if enabled)
+                        with torch.no_grad():
+                            ema_teacher.train()
+                            teacher_out = ema_teacher(img_teacher, label=target,
+                                                     cam_label=target_cam,
+                                                     view_label=target_view,
+                                                     pose_dict=pose_dict)
+                            ema_teacher.eval()
+                            if len(teacher_out) == 5:
+                                _, teacher_feat, _, _, _ = teacher_out
+                            elif len(teacher_out) == 4:
+                                _, teacher_feat, _, _ = teacher_out
+                            else:
+                                _, teacher_feat, _ = teacher_out[:3]
+
+                    # Extract global features for relational distillation
+                    s_global = feat[0] if isinstance(feat, list) else feat
+                    t_global = teacher_feat[0] if isinstance(teacher_feat, list) else teacher_feat
+
+                    # Compute pairwise cosine similarity matrices
+                    s_norm = F.normalize(s_global, p=2, dim=1)  # (B, D)
+                    t_norm = F.normalize(t_global.detach(), p=2, dim=1)  # (B, D)
+
+                    sim_s = s_norm @ s_norm.t() / oa_rd_temp  # (B, B) student similarity
+                    sim_t = t_norm @ t_norm.t() / oa_rd_temp  # (B, B) teacher similarity
+
+                    # KL divergence: match row-normalized distributions
+                    log_p_s = F.log_softmax(sim_s, dim=1)
+                    p_t = F.softmax(sim_t, dim=1)
+                    oa_rd_loss = F.kl_div(log_p_s, p_t, reduction='batchmean')
+
+                    details = getattr(loss, '_loss_details', {})
+                    loss = loss + oa_rd_weight * oa_rd_loss
+                    details['oa_rd'] = oa_rd_loss.item()
                     loss._loss_details = details
 
                 # SPLADE: auxiliary sparse CE + sparsity regularization
