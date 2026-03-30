@@ -3107,3 +3107,27 @@ B. 直接启动 exp025，exp024 可以后续补跑
 2. 满足创新门槛: 问题层面(关系级 vs 特征级) + 机制层面(RKD in occluded ReID) + 证据链(OA-SD→OA-RD)
 3. 实现简洁 (~100 行): 计算 pairwise similarity matrix + KL divergence
 4. 如果成功: SupCon + OA-RD + 3-view 可能是真正的终极配置
+
+### [2026-03-30 09:15] 决策 #94
+
+**上下文**: exp199 (OA-RD+SupCon) ep60=-1.5/-3.4 vs exp187，exp200 (OA-RD+CE) ep60=-1.1/-3.4 vs exp191。OA-RD (relational distillation) 也是负结果。
+
+**核心发现**: 任何形式的 EMA self-distillation (OA-SD/OA-RD) 都与 SupCon 不兼容。
+- OA-SD (feature-level): exp188/196 失败
+- OA-RD (relation-level): exp199 失败
+- 原因可能是 EMA teacher 本身引入的学习干扰，不是 distillation 的形式问题
+
+**选项**:
+  A. 继续尝试其他 distillation 变体（如 CRD contrastive distillation）
+  B. 放弃 distillation+SupCon 组合，接受两条互斥路线
+  C. 转向完全不同的方向（从 5 个研究 agent 的其他建议中选）
+
+**选择**: C
+
+**理由**:
+1. distillation+SupCon 已尝试 4 种方式 (all-token, global-only, relational, RD) 全部失败
+2. 继续尝试 = 浪费 GPU 时间
+3. 应探索研究 agent 提出的其他有前途的方向
+4. 最有前途的候选：Batch-Mate Keypoint Cross-Attention (BMKCA) 或 Multi-Granularity Contrastive
+
+**执行结果**: (后续补填)

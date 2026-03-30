@@ -201,7 +201,9 @@ OA-RD 在 SupCon+3-view 下与 OA-SD global-only (exp196) 的失败 pattern 类�
 **初步结论**: OA-RD (relational distillation) 虽然比 OA-SD (feature distillation)
 在 mAP 上表现略好，但 R1 更差。总体上仍然与 SupCon 有某种干扰。
 
-可能原因：KL divergence on similarity matrix 的梯度仍然通过 global feature
-影响 backbone，间接干扰 per-token SupCon 的学习。
+### [09:22] 检查点 #31
 
-**决策**: 让实验跑完记录完整结果，但方向可能是负结果
+**进度**: Epoch 64/120, ETA ~2h30m
+oa_rd=0.053。实验继续到完成。不再密集监控。
+**结论方向**: 负结果（OA-RD 与 SupCon 不兼容，同 OA-SD）。
+**决策**: 等完成后更新 final
