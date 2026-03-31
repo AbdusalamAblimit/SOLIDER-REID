@@ -151,8 +151,8 @@ class PoseBackboneModel(build_transformer):
 
         # STD-PR: Structural Token Decomposition (replaces GCN, mutually exclusive)
         self.use_structural_routing = getattr(cfg.MODEL, 'POSE_STRUCTURAL_ROUTING', False)
-        if self.use_structural_routing and self.use_skeleton_gcn:
-            raise ValueError('POSE_STRUCTURAL_ROUTING and POSE_SKELETON_GCN cannot both be True')
+        # Dual Part Branch: both can now be enabled simultaneously
+        # STD-PR provides per-token SupCon, GCN provides architecture via skeleton graph
         if self.use_structural_routing:
             from .modules.structural_routing import StructuralRoutingLayer
             str_num_parts = getattr(cfg.MODEL, 'POSE_STR_NUM_PARTS', 6)
@@ -352,8 +352,9 @@ class PoseBackboneModel(build_transformer):
             else:
                 cls_score = self.classifier(feat_cls)
 
-            # Part branch: STD-PR (structural tokens) or GCN
-            if getattr(self, 'use_structural_routing', False) and scene_heatmaps is not None:
+            # Part branch: STD-PR (structural tokens) only — when GCN is NOT also enabled
+            if getattr(self, 'use_structural_routing', False) and scene_heatmaps is not None \
+                    and not self.use_skeleton_gcn:
                 feat_map_detached = featmaps[-1].detach()
                 B_fm, C_fm, H_fm, W_fm = feat_map_detached.shape
                 spatial_tokens = feat_map_detached.flatten(2).transpose(1, 2)  # (B, H*W, C)
@@ -431,6 +432,36 @@ class PoseBackboneModel(build_transformer):
 
             elif self.use_skeleton_gcn and pose_dict is not None:
                 feat_map_detached = featmaps[-1].detach()
+
+                # Dual Part Branch: also run STD-PR for per-token SupCon if both are enabled
+                dual_branch_active = False
+                if getattr(self, 'use_structural_routing', False) and scene_heatmaps is not None \
+                        and getattr(self, 'str_per_token', False):
+                    B_fm, C_fm, H_fm, W_fm = feat_map_detached.shape
+                    spatial_tokens = feat_map_detached.flatten(2).transpose(1, 2)
+                    kp_p0 = pose_dict['keypoints'][:, 0] if pose_dict is not None else None
+                    sc_p0 = pose_dict['scores'][:, 0] if pose_dict is not None else None
+                    router_out = self.structural_router(
+                        spatial_tokens, (H_fm, W_fm), scene_heatmaps,
+                        keypoints=kp_p0, scores=sc_p0,
+                        input_size=tuple(x.shape[2:]))
+                    if getattr(self, 'str_self_attn', False):
+                        structural_tokens, str_stats, raw_tokens = router_out
+                    else:
+                        structural_tokens, str_stats = router_out
+                        raw_tokens = structural_tokens
+                    # Per-token classification for SupCon
+                    ce_tokens = raw_tokens
+                    tri_tokens = structural_tokens
+                    str_cls_list = []
+                    str_feat_list = []
+                    for k in range(ce_tokens.shape[1]):
+                        tok_k = ce_tokens[:, k]
+                        tok_bn = self.structural_router.part_bn(tok_k)
+                        str_cls_list.append(self.str_classifier(tok_bn))
+                        str_feat_list.append(tri_tokens[:, k])
+                    dual_branch_active = True
+
                 gcn_cls_scores, gcn_feats, kp_data = self.skeleton_head(
                     feat_map_detached, pose_dict, return_cls=True, label=label)
 
@@ -460,6 +491,28 @@ class PoseBackboneModel(build_transformer):
                     kp_data['splade_sparsity'] = sparsity
                     kp_data['splade_reg'] = sparse_feat.mean()  # sparsity regularization
 
+                # Dual Part Branch: combine GCN + STD-PR per-token outputs
+                if dual_branch_active:
+                    # Return: [global, str_tok1..6, gcn] for both scores and feats
+                    # SupCon operates on str_tok1..6, GCN provides architecture via gcn
+                    if kp_data is None:
+                        kp_data = {}
+                    kp_data['str_stats'] = str_stats
+                    kp_data['num_str_tokens'] = len(str_feat_list)  # SupCon uses feat[1:1+num_str_tokens]
+                    # part_visibility for STD-PR tokens
+                    K_str = len(str_feat_list)
+                    if K_str == 6:
+                        _pg = [[0,1,2,3,4],[5,6,11,12],[5,7,9],[6,8,10],[11,13,15],[12,14,16]]
+                        hm_r = F.interpolate(scene_heatmaps, size=(featmaps[-1].shape[2], featmaps[-1].shape[3]),
+                                            mode='bilinear', align_corners=False)
+                        pw = [hm_r[:, g].mean(dim=(1,2,3)) for g in _pg]
+                        part_w = torch.stack(pw, dim=1)
+                        part_w = part_w / part_w.sum(dim=1, keepdim=True).clamp(min=1e-8)
+                        kp_data['part_visibility'] = part_w
+                    return ([cls_score] + str_cls_list + gcn_cls_scores,
+                            [global_feat] + str_feat_list + gcn_feats,
+                            featmaps, None, kp_data)
+
                 # Return lists -> triggers list-loss path (implicit 0.5x global)
                 return [cls_score] + gcn_cls_scores, [global_feat] + gcn_feats, featmaps, None, kp_data
 
@@ -474,7 +527,7 @@ class PoseBackboneModel(build_transformer):
             gcn_feats = None
             aux_data = {}
             if getattr(self, 'use_structural_routing', False) and scene_heatmaps is not None and \
-                    getattr(self, 'pose_test_feat', 'global') != 'global':
+                    getattr(self, 'pose_test_feat', 'global') != 'global' and not self.use_skeleton_gcn:
                 B_fm, C_fm, H_fm, W_fm = featmaps[-1].shape
                 spatial_tokens = featmaps[-1].flatten(2).transpose(1, 2)
                 kp_p0 = pose_dict['keypoints'][:, 0] if pose_dict is not None else None
@@ -516,6 +569,21 @@ class PoseBackboneModel(build_transformer):
                     getattr(self, 'pose_test_feat', 'global') != 'global':
                 _, gcn_feats, aux_data = self.skeleton_head(
                     featmaps[-1], pose_dict, return_cls=False)
+                # Dual Part Branch test: also add STD-PR per-token features
+                if getattr(self, 'use_structural_routing', False) and scene_heatmaps is not None \
+                        and getattr(self, 'str_per_token', False):
+                    B_fm, C_fm, H_fm, W_fm = featmaps[-1].shape
+                    spatial_tokens = featmaps[-1].flatten(2).transpose(1, 2)
+                    kp_p0 = pose_dict['keypoints'][:, 0] if pose_dict is not None else None
+                    sc_p0 = pose_dict['scores'][:, 0] if pose_dict is not None else None
+                    router_out = self.structural_router(
+                        spatial_tokens, (H_fm, W_fm), scene_heatmaps,
+                        keypoints=kp_p0, scores=sc_p0,
+                        input_size=tuple(x.shape[2:]))
+                    structural_tokens = router_out[0]
+                    # Add each structural token to gcn_feats for equal_concat
+                    for k in range(structural_tokens.shape[1]):
+                        gcn_feats.append(structural_tokens[:, k])
                 # PNIS: normalize test features too
                 if getattr(self, 'use_pose_normalize', False) and gcn_feats is not None and len(gcn_feats) > 0:
                     kp_coords = pose_dict['keypoints'][:, 0, :, :]

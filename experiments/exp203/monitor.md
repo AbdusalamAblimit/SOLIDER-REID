@@ -65,4 +65,18 @@ SupCon 需要多个 token 才能发挥。GCN 只有 1 个 pooled skeleton featur
 **STD-PR 在 Small+SupCon 上明显优于 GCN+PAA！**
 但 4090 PAA (GCN, CE only) = 70.8 vs exp202b (STD-PR, SupCon) = 69.3。
 这说明 GCN+PAA 的 CE 路线天花板更高，但 SupCon 加不上去。
-**决策**: 继续观察 GCN+PAA+SupCon 是否能在后期追上
+### [05:30] 检查点 #9
+
+exp205 (Dual Part Branch: GCN+PAA + STD-PR per-token) 代码已写完，审查中。
+### [06:12] 检查点 #10 — ep20
+
+**本地 3-view GCN+PAA+SupCon ep20**: 57.0/68.7
+
+| Config | ep10 | ep20 |
+|--------|------|------|
+| exp202b (STD-PR) | 56.2/68.9 | 60.6/72.4 |
+| **exp203 (GCN)** | **46.9/59.5** | **57.0/68.7** |
+
+GCN+SupCon 仍落后 STD-PR+SupCon (-3.6/-3.7 at ep20)。
+exp205 (dual branch) 正在审查中。
+**决策**: 继续 exp203 同时等 exp205

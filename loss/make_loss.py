@@ -168,8 +168,12 @@ def make_loss(cfg, num_classes):    # modified by gu
                             g_norm = F.normalize(feat[0], p=2, dim=1)
                             supcon_global_loss = supcon_fn(g_norm, target)
                             loss_details['supcon_g'] = supcon_global_loss.item()
+                        # Determine which features to apply SupCon on
+                        # In dual branch mode, feat = [global, str_1..K, gcn] — SupCon only on str tokens
+                        num_str = kp_data.get('num_str_tokens', len(feat) - 1) if kp_data else len(feat) - 1
+                        supcon_feats = feat[1:1+num_str]  # only STD-PR tokens, exclude GCN
                         part_supcon_losses = []
-                        for f in feat[1:]:
+                        for f in supcon_feats:
                             f_norm = F.normalize(f, p=2, dim=1)
                             sc_loss = supcon_fn(f_norm, target)
                             part_supcon_losses.append(sc_loss)
