@@ -225,6 +225,8 @@
 | 199 | 3-view + SupCon + OA-RD | 63.4% | 74.5% | 85.2% | 88.1% | ❌ vs exp187: -1.5/-2.1。OA-RD+SupCon 不兼容 |
 | 200 | CE + OA-RD (base, remote) | 62.9% | 73.9% | 85.2% | 88.5% | ❌ vs exp191 OA-SD: -0.3/-1.5。OA-RD 不如 OA-SD |
 | 201 | 3-view + SupCon + Global SupCon | 63.7% | 73.8% | 85.1% | 88.7% | ❌ vs exp187: -1.2/-2.8。Global SupCon 压缩特征空间 |
+| 202 | **Swin-Small** + SupCon (1-view, remote) | 67.9% | 79.5% | 87.9% | 90.2% | **🟢🟢🟢 超过 FRT SOTA! +3.0/+2.9 vs Tiny** |
+| **202b** | **Swin-Small + SupCon + 3-view + CP** | **69.3%** | **80.2%** | **88.9%** | **91.4%** | **🟢🟢🟢🟢🟢 NEW BEST! +3.1/+2.0 vs FRT, +4.4/+3.6 vs Tiny** |
 
 ### Occluded-ReID 跨数据集测试 (模型训练于 Occluded-Duke)
 
