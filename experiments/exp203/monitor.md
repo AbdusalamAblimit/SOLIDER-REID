@@ -23,5 +23,9 @@
 | GPU | **6.8GB/24GB** (GCN 很轻量！) |
 
 **观察**: GCN+PAA+SupCon+3-view 成功启动。GPU 仅 6.8GB！
-比 STD-PR (8.4GB with CP) 还少。GCN 架构更高效。
+### [04:47] 检查点 #2
+
+**进度**: Epoch 2/120
+supcon=3.512, tri_part=7.448 (GCN 的 part triplet 下降快)。
+审查通过，注意 SupCon 在 GCN 上只有 1 个 pooled skeleton feat (vs STD-PR 的 6 个 per-token)。
 **决策**: 继续
