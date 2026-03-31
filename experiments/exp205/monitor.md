@@ -34,5 +34,11 @@ ep2/120. supcon=4.141, tri_part=0.792. 训练正常。
 ep3/120. tri_global=2.3 (↓↓ 快速下降), tri_part=0.734。
 ### [06:42] 检查点 #5
 
-ep4/120, ETA 9h. Speed 48.3. ep10 eval ~28min。
-**决策**: 继续，后台长跑
+### [06:48] GPU 崩溃 ⚠️
+
+exp205 在 ep4 附近 CUDA 错误崩溃。`CUBLAS_STATUS_EXECUTION_FAILED`。
+nvidia-smi 返回 "Unknown Error" — 与之前 exp193 相同的 GPU 硬件/驱动问题。
+**需要重启容器/机器恢复 GPU。**
+
+无 checkpoint（ep20 才保存第一个）。重启后需从头跑。
+**决策**: 等用户重启
