@@ -686,22 +686,18 @@ def do_train(cfg,
                     oa_sd_weight = float(getattr(cfg.MODEL, 'POSE_OA_SD_WEIGHT', 1.0))
                     # EMA Teacher forward: clean image (no PLBOA), eval mode, no grad
                     # Use eval() to avoid Dropout/DropPath noise and BN running stats updates
+                    # Force pose_test_feat='global' so teacher returns raw global feat (not concat)
                     with torch.no_grad():
                         ema_teacher.eval()
+                        saved_test_feat = getattr(ema_teacher, 'pose_test_feat', 'global')
+                        ema_teacher.pose_test_feat = 'global'
                         teacher_test_out = ema_teacher(img_teacher,
                                                       cam_label=target_cam,
                                                       view_label=target_view,
                                                       pose_dict=pose_dict)
-                        # eval mode returns (test_feat, featmaps)
-                        teacher_test_feat = teacher_test_out[0]
-                        # For distillation, we need a feature to match against student
-                        # If test_feat is a dict (structured eval), extract global_feat
-                        if isinstance(teacher_test_feat, dict):
-                            teacher_feat = [teacher_test_feat['global_feat']]
-                        elif isinstance(teacher_test_feat, torch.Tensor):
-                            teacher_feat = [teacher_test_feat]
-                        else:
-                            teacher_feat = teacher_test_feat
+                        ema_teacher.pose_test_feat = saved_test_feat
+                        # eval mode with pose_test_feat='global' returns (global_feat, featmaps)
+                        teacher_feat = [teacher_test_out[0]]
                     # Distillation: student features → teacher features
                     # For per-token: feat = [global, tok1, ..., tok6]
                     oa_sd_global_only = getattr(cfg.MODEL, 'POSE_OA_SD_GLOBAL_ONLY', False)
@@ -742,20 +738,16 @@ def do_train(cfg,
 
                     # Get teacher features if not already computed by OA-SD
                     if not oa_sd_enabled:
-                        # Need to run teacher forward (OA-SD already did this if enabled)
                         with torch.no_grad():
                             ema_teacher.eval()
+                            saved_test_feat = getattr(ema_teacher, 'pose_test_feat', 'global')
+                            ema_teacher.pose_test_feat = 'global'
                             teacher_test_out = ema_teacher(img_teacher,
                                                           cam_label=target_cam,
                                                           view_label=target_view,
                                                           pose_dict=pose_dict)
-                            teacher_test_feat = teacher_test_out[0]
-                            if isinstance(teacher_test_feat, dict):
-                                teacher_feat = [teacher_test_feat['global_feat']]
-                            elif isinstance(teacher_test_feat, torch.Tensor):
-                                teacher_feat = [teacher_test_feat]
-                            else:
-                                teacher_feat = teacher_test_feat
+                            ema_teacher.pose_test_feat = saved_test_feat
+                            teacher_feat = [teacher_test_out[0]]
 
                     # Extract global features for relational distillation
                     s_global = feat[0] if isinstance(feat, list) else feat
