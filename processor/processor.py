@@ -24,8 +24,16 @@ from model.modules.pair_adaptive_fusion import (
 
 def _pose_to_device(pose_dict, device):
     """Move all tensors in pose_dict to device."""
-    return {k: v.to(device) if isinstance(v, torch.Tensor) else v
-            for k, v in pose_dict.items()}
+    result = {}
+    for k, v in pose_dict.items():
+        if isinstance(v, torch.Tensor):
+            result[k] = v.to(device)
+        elif isinstance(v, dict):
+            # Nested pose dict (e.g. teacher_pose)
+            result[k] = _pose_to_device(v, device)
+        else:
+            result[k] = v
+    return result
 
 
 def _flatten_eval_like_feat(feat):
@@ -700,10 +708,12 @@ def do_train(cfg,
                             if hasattr(m, 'drop_prob') and not hasattr(m, '_saved_drop_prob'):
                                 m._saved_drop_prob = m.drop_prob
                                 m.drop_prob = 0.0
+                        # Use clean (pre-PLBOA) pose for teacher if available
+                        teacher_pose = pose_dict.get('teacher_pose', pose_dict)
                         teacher_out = ema_teacher(img_teacher, label=target,
                                                  cam_label=target_cam,
                                                  view_label=target_view,
-                                                 pose_dict=pose_dict)
+                                                 pose_dict=teacher_pose)
                         # Restore DropPath
                         for m in ema_teacher.modules():
                             if hasattr(m, '_saved_drop_prob'):

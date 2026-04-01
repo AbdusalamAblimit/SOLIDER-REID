@@ -166,10 +166,13 @@ class PoseImageDataset(Dataset):
         pcvt_meta = None
         self._oa_sd_mode = getattr(self, '_oa_sd_mode', False)
 
-        # OA-SD: save clean image BEFORE PLBOA for teacher view
+        # OA-SD: save clean image AND clean persons BEFORE PLBOA for teacher view
         img_clean_for_oa_sd = None
+        persons_clean_for_oa_sd = None
         if self._oa_sd_mode and self.is_train:
             img_clean_for_oa_sd = img.copy()
+            import copy
+            persons_clean_for_oa_sd = copy.deepcopy(persons)
 
         # PLBOA/PGMPOA: apply BEFORE branching so all views (parallel/pcvt/standard) share it
         if self.is_train:
@@ -305,6 +308,33 @@ class PoseImageDataset(Dataset):
         }
         if pcvt_meta is not None:
             pose_dict.update(pcvt_meta)
+
+        # OA-SD: assemble clean (pre-PLBOA) pose_dict for teacher
+        if persons_clean_for_oa_sd is not None:
+            t_hm = torch.zeros(self.max_persons, 17, hm_h, hm_w)
+            t_kp = torch.zeros(self.max_persons, 17, 2)
+            t_sc = torch.zeros(self.max_persons, 17)
+            t_vis = torch.zeros(self.max_persons, 17)
+            t_vb = torch.zeros(self.max_persons, 17)
+            t_mask = torch.zeros(self.max_persons)
+            for i in range(min(len(persons_clean_for_oa_sd), self.max_persons)):
+                hm = persons_clean_for_oa_sd[i]['heatmap']
+                if (hm_h, hm_w) != (target_h, target_w):
+                    hm = F.interpolate(
+                        hm.unsqueeze(0), size=(hm_h, hm_w),
+                        mode='bilinear', align_corners=False).squeeze(0)
+                t_hm[i] = hm
+                t_kp[i] = torch.from_numpy(persons_clean_for_oa_sd[i]['kp'].copy())
+                t_sc[i] = torch.from_numpy(persons_clean_for_oa_sd[i]['scores'].copy())
+                t_vis[i] = torch.from_numpy(persons_clean_for_oa_sd[i]['visibility'].copy())
+                t_vb[i] = torch.from_numpy(persons_clean_for_oa_sd[i]['visibility_binary'].copy())
+                t_mask[i] = 1.0
+            pose_dict['teacher_pose'] = {
+                'heatmaps': t_hm, 'keypoints': t_kp, 'scores': t_sc,
+                'visibility': t_vis, 'visibility_binary': t_vb,
+                'person_mask': t_mask,
+                'num_persons': min(len(persons_clean_for_oa_sd), self.max_persons),
+            }
 
         return img_tensor, pid, camid, trackid, img_path, pose_dict
 
@@ -1045,6 +1075,11 @@ def _collate_pose_dicts(pose_dicts):
         if key == 'num_persons':
             batched[key] = torch.tensor(
                 [d[key] for d in pose_dicts], dtype=torch.int64)
+        elif isinstance(pose_dicts[0][key], dict):
+            # Nested dict (e.g. teacher_pose): collate recursively
+            nested = [d[key] for d in pose_dicts if key in d]
+            if nested:
+                batched[key] = _collate_pose_dicts(nested)
         else:
             batched[key] = torch.stack(
                 [d[key] for d in pose_dicts], dim=0)
