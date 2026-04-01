@@ -684,20 +684,38 @@ def do_train(cfg,
                 # OA-SD: Occlusion-Asymmetric Self-Distillation with EMA teacher
                 if oa_sd_enabled and (oa_sd_mode or parallel_oa_sd) and use_pose and ema_teacher is not None:
                     oa_sd_weight = float(getattr(cfg.MODEL, 'POSE_OA_SD_WEIGHT', 1.0))
-                    # EMA Teacher forward: clean image (no PLBOA), eval mode, no grad
-                    # Use eval() to avoid Dropout/DropPath noise and BN running stats updates
-                    # Force pose_test_feat='global' so teacher returns raw global feat (not concat)
+                    # EMA Teacher forward: clean image (no PLBOA), no grad
+                    # Use train() mode so forward returns (score, feat, ...) — same output structure as student
+                    # But set BN/Dropout/DropPath to eval to avoid noise and running stats corruption
                     with torch.no_grad():
+                        ema_teacher.train()
+                        for m in ema_teacher.modules():
+                            # BN: use running stats, don't update them
+                            if isinstance(m, (torch.nn.BatchNorm1d, torch.nn.BatchNorm2d)):
+                                m.eval()
+                            # Dropout: no random dropping
+                            if isinstance(m, (torch.nn.Dropout, torch.nn.Dropout2d)):
+                                m.eval()
+                            # DropPath: set drop_prob=0 temporarily
+                            if hasattr(m, 'drop_prob') and not hasattr(m, '_saved_drop_prob'):
+                                m._saved_drop_prob = m.drop_prob
+                                m.drop_prob = 0.0
+                        teacher_out = ema_teacher(img_teacher, label=target,
+                                                 cam_label=target_cam,
+                                                 view_label=target_view,
+                                                 pose_dict=pose_dict)
+                        # Restore DropPath
+                        for m in ema_teacher.modules():
+                            if hasattr(m, '_saved_drop_prob'):
+                                m.drop_prob = m._saved_drop_prob
+                                del m._saved_drop_prob
                         ema_teacher.eval()
-                        saved_test_feat = getattr(ema_teacher, 'pose_test_feat', 'global')
-                        ema_teacher.pose_test_feat = 'global'
-                        teacher_test_out = ema_teacher(img_teacher,
-                                                      cam_label=target_cam,
-                                                      view_label=target_view,
-                                                      pose_dict=pose_dict)
-                        ema_teacher.pose_test_feat = saved_test_feat
-                        # eval mode with pose_test_feat='global' returns (global_feat, featmaps)
-                        teacher_feat = [teacher_test_out[0]]
+                        if len(teacher_out) == 5:
+                            _, teacher_feat, _, _, _ = teacher_out
+                        elif len(teacher_out) == 4:
+                            _, teacher_feat, _, _ = teacher_out
+                        else:
+                            _, teacher_feat, _ = teacher_out[:3]
                     # Distillation: student features → teacher features
                     # For per-token: feat = [global, tok1, ..., tok6]
                     oa_sd_global_only = getattr(cfg.MODEL, 'POSE_OA_SD_GLOBAL_ONLY', False)
@@ -739,15 +757,30 @@ def do_train(cfg,
                     # Get teacher features if not already computed by OA-SD
                     if not oa_sd_enabled:
                         with torch.no_grad():
+                            ema_teacher.train()
+                            for m in ema_teacher.modules():
+                                if isinstance(m, (torch.nn.BatchNorm1d, torch.nn.BatchNorm2d)):
+                                    m.eval()
+                                if isinstance(m, (torch.nn.Dropout, torch.nn.Dropout2d)):
+                                    m.eval()
+                                if hasattr(m, 'drop_prob') and not hasattr(m, '_saved_drop_prob'):
+                                    m._saved_drop_prob = m.drop_prob
+                                    m.drop_prob = 0.0
+                            teacher_out = ema_teacher(img_teacher, label=target,
+                                                     cam_label=target_cam,
+                                                     view_label=target_view,
+                                                     pose_dict=pose_dict)
+                            for m in ema_teacher.modules():
+                                if hasattr(m, '_saved_drop_prob'):
+                                    m.drop_prob = m._saved_drop_prob
+                                    del m._saved_drop_prob
                             ema_teacher.eval()
-                            saved_test_feat = getattr(ema_teacher, 'pose_test_feat', 'global')
-                            ema_teacher.pose_test_feat = 'global'
-                            teacher_test_out = ema_teacher(img_teacher,
-                                                          cam_label=target_cam,
-                                                          view_label=target_view,
-                                                          pose_dict=pose_dict)
-                            ema_teacher.pose_test_feat = saved_test_feat
-                            teacher_feat = [teacher_test_out[0]]
+                            if len(teacher_out) == 5:
+                                _, teacher_feat, _, _, _ = teacher_out
+                            elif len(teacher_out) == 4:
+                                _, teacher_feat, _, _ = teacher_out
+                            else:
+                                _, teacher_feat, _ = teacher_out[:3]
 
                     # Extract global features for relational distillation
                     s_global = feat[0] if isinstance(feat, list) else feat
