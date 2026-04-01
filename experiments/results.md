@@ -227,8 +227,10 @@
 | 201 | 3-view + SupCon + Global SupCon | 63.7% | 73.8% | 85.1% | 88.7% | ❌ vs exp187: -1.2/-2.8。Global SupCon 压缩特征空间 |
 | 202 | **Swin-Small** + SupCon (1-view, remote) | 67.9% | 79.5% | 87.9% | 90.2% | **🟢🟢🟢 超过 FRT SOTA! +3.0/+2.9 vs Tiny** |
 | **202b** | **Swin-Small + SupCon + 3-view + CP** | **69.3%** | **80.2%** | **88.9%** | **91.4%** | **🟢🟢🟢🟢🟢 NEW BEST! +3.1/+2.0 vs FRT, +4.4/+3.6 vs Tiny** |
-| 203r | Small GCN+PAA+SupCon (1-view, remote) | — | — | — | — | 进行中 (ep100=66.6/78.3, SupCon 在 GCN 上弱于 STD-PR) |
-| 205 | **Small Dual Branch (GCN+PAA+STD-PR SupCon)** | — | — | — | — | **GPU 崩溃后重启中，终极配置** |
+| 203r | Small GCN+PAA+SupCon (1-view) | 66.7% | 78.5% | 86.8% | 89.6% | SupCon 在 GCN 上弱于 STD-PR |
+| 205 | Small Dual Branch (GCN+PAA+STD-PR SupCon) 3v | 67.1% | 77.0% | 86.9% | 89.5% | ❌ Dual Branch -2.2 vs STD-PR |
+| 205r | Small Dual Branch 1-view | 66.5% | 76.3% | 86.1% | 89.1% | ❌ Dual Branch -1.4 vs STD-PR |
+| **206** | **Small GCN+PAA+CE+OA-SD (2-run mean)** | **70.4%** | **82.1%** | — | — | **🟢🟢🟢🟢 R1 超 4090 PAA! 2-run: 70.5/82.3 + 70.3/81.8** |
 
 ### Occluded-ReID 跨数据集测试 (模型训练于 Occluded-Duke)
 
