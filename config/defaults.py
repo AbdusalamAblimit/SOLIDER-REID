@@ -185,6 +185,12 @@ _C.MODEL.POSE_OA_RD = False                # Enable relational distillation (dis
 _C.MODEL.POSE_OA_RD_TEMP = 0.1            # Temperature for softmax on similarity matrix
 _C.MODEL.POSE_OA_RD_WEIGHT = 1.0          # Weight of relational distillation loss
 
+# PKC: Per-Keypoint Contrastive loss on GCN keypoint features
+_C.MODEL.POSE_PKC = False                 # Enable per-keypoint SupCon
+_C.MODEL.POSE_PKC_WEIGHT = 0.5            # PKC loss weight
+_C.MODEL.POSE_PKC_TEMP = 0.07             # SupCon temperature
+_C.MODEL.POSE_PKC_VIS_THR = 0.3           # Visibility threshold for including keypoint
+
 # Structural Token Mixup (STM)
 _C.MODEL.POSE_STM = False                 # Enable token-level mixup within same ID
 _C.MODEL.POSE_STM_NUM_SWAP = 2            # Number of body parts to swap per mixup

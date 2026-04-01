@@ -684,21 +684,24 @@ def do_train(cfg,
                 # OA-SD: Occlusion-Asymmetric Self-Distillation with EMA teacher
                 if oa_sd_enabled and (oa_sd_mode or parallel_oa_sd) and use_pose and ema_teacher is not None:
                     oa_sd_weight = float(getattr(cfg.MODEL, 'POSE_OA_SD_WEIGHT', 1.0))
-                    # EMA Teacher forward: clean image (no PLBOA), no grad
-                    # Must set training=True temporarily so forward returns (score, feat, ...) not (test_feat, featmaps)
+                    # EMA Teacher forward: clean image (no PLBOA), eval mode, no grad
+                    # Use eval() to avoid Dropout/DropPath noise and BN running stats updates
                     with torch.no_grad():
-                        ema_teacher.train()
-                        teacher_out = ema_teacher(img_teacher, label=target,
-                                                 cam_label=target_cam,
-                                                 view_label=target_view,
-                                                 pose_dict=pose_dict)
                         ema_teacher.eval()
-                        if len(teacher_out) == 5:
-                            _, teacher_feat, _, _, _ = teacher_out
-                        elif len(teacher_out) == 4:
-                            _, teacher_feat, _, _ = teacher_out
+                        teacher_test_out = ema_teacher(img_teacher,
+                                                      cam_label=target_cam,
+                                                      view_label=target_view,
+                                                      pose_dict=pose_dict)
+                        # eval mode returns (test_feat, featmaps)
+                        teacher_test_feat = teacher_test_out[0]
+                        # For distillation, we need a feature to match against student
+                        # If test_feat is a dict (structured eval), extract global_feat
+                        if isinstance(teacher_test_feat, dict):
+                            teacher_feat = [teacher_test_feat['global_feat']]
+                        elif isinstance(teacher_test_feat, torch.Tensor):
+                            teacher_feat = [teacher_test_feat]
                         else:
-                            _, teacher_feat, _ = teacher_out[:3]
+                            teacher_feat = teacher_test_feat
                     # Distillation: student features → teacher features
                     # For per-token: feat = [global, tok1, ..., tok6]
                     oa_sd_global_only = getattr(cfg.MODEL, 'POSE_OA_SD_GLOBAL_ONLY', False)
@@ -741,18 +744,18 @@ def do_train(cfg,
                     if not oa_sd_enabled:
                         # Need to run teacher forward (OA-SD already did this if enabled)
                         with torch.no_grad():
-                            ema_teacher.train()
-                            teacher_out = ema_teacher(img_teacher, label=target,
-                                                     cam_label=target_cam,
-                                                     view_label=target_view,
-                                                     pose_dict=pose_dict)
                             ema_teacher.eval()
-                            if len(teacher_out) == 5:
-                                _, teacher_feat, _, _, _ = teacher_out
-                            elif len(teacher_out) == 4:
-                                _, teacher_feat, _, _ = teacher_out
+                            teacher_test_out = ema_teacher(img_teacher,
+                                                          cam_label=target_cam,
+                                                          view_label=target_view,
+                                                          pose_dict=pose_dict)
+                            teacher_test_feat = teacher_test_out[0]
+                            if isinstance(teacher_test_feat, dict):
+                                teacher_feat = [teacher_test_feat['global_feat']]
+                            elif isinstance(teacher_test_feat, torch.Tensor):
+                                teacher_feat = [teacher_test_feat]
                             else:
-                                _, teacher_feat, _ = teacher_out[:3]
+                                teacher_feat = teacher_test_feat
 
                     # Extract global features for relational distillation
                     s_global = feat[0] if isinstance(feat, list) else feat
@@ -790,17 +793,61 @@ def do_train(cfg,
                     details['splade_sp'] = kp_data.get('splade_sparsity', 0)
                     loss._loss_details = details
 
+                # PKC: Per-Keypoint Contrastive loss on GCN keypoint features
+                pkc_enabled = getattr(cfg.MODEL, 'POSE_PKC', False)
+                if pkc_enabled and kp_data is not None and 'kp_feats' in kp_data:
+                    pkc_weight = float(getattr(cfg.MODEL, 'POSE_PKC_WEIGHT', 0.5))
+                    pkc_temp = float(getattr(cfg.MODEL, 'POSE_PKC_TEMP', 0.07))
+                    pkc_vis_thr = float(getattr(cfg.MODEL, 'POSE_PKC_VIS_THR', 0.3))
+
+                    kp_f = kp_data['kp_feats']     # (B, 17, C)
+                    kp_w = kp_data['kp_weights']    # (B, 17)
+                    B_kp, K_kp, C_kp = kp_f.shape
+
+                    # Lazy-init SupCon for PKC
+                    if not hasattr(do_train, '_pkc_supcon'):
+                        from loss.supcon_loss import SupConLoss
+                        do_train._pkc_supcon = SupConLoss(temperature=pkc_temp)
+
+                    pkc_losses = []
+                    for k_idx in range(K_kp):
+                        # Visibility mask for this keypoint
+                        vis_mask = kp_w[:, k_idx] > pkc_vis_thr  # (B,)
+                        n_vis = vis_mask.sum().item()
+                        if n_vis < 4:  # need at least 4 samples for SupCon
+                            continue
+                        feat_k = kp_f[vis_mask, k_idx, :]  # (n_vis, C)
+                        label_k = target[vis_mask]
+                        # Need at least 2 different IDs
+                        if label_k.unique().shape[0] < 2:
+                            continue
+                        pkc_loss_k = do_train._pkc_supcon(feat_k, label_k)
+                        pkc_losses.append(pkc_loss_k)
+
+                    if pkc_losses:
+                        pkc_loss = sum(pkc_losses) / len(pkc_losses)
+                        details = getattr(loss, '_loss_details', {})
+                        loss = loss + pkc_weight * pkc_loss
+                        details['pkc'] = pkc_loss.item()
+                        details['pkc_nk'] = len(pkc_losses)
+                        loss._loss_details = details
+
             scaler.scale(loss).backward()
 
             scaler.step(optimizer)
             scaler.update()
 
-            # OA-SD: update EMA teacher after optimizer step
+            # OA-SD: update EMA teacher after optimizer step (params + buffers)
             if ema_teacher is not None:
                 base_model = model.module if hasattr(model, 'module') else model
                 with torch.no_grad():
                     for t_param, s_param in zip(ema_teacher.parameters(), base_model.parameters()):
                         t_param.data.mul_(ema_decay).add_(s_param.data, alpha=1.0 - ema_decay)
+                    # Also EMA-update BN running stats (buffers)
+                    for (t_name, t_buf), (s_name, s_buf) in zip(
+                            ema_teacher.named_buffers(), base_model.named_buffers()):
+                        if t_buf.dtype == torch.float32 and t_buf.shape == s_buf.shape:
+                            t_buf.data.mul_(ema_decay).add_(s_buf.data, alpha=1.0 - ema_decay)
 
             # Bank updates (after optimizer step)
             if ltcs_enabled and ltcs_teacher_bank is not None and kp_data is not None:
@@ -884,6 +931,7 @@ def do_train(cfg,
                            os.path.join(cfg.OUTPUT_DIR, cfg.MODEL.NAME + '_{}.pth'.format(epoch)))
 
         if epoch % eval_period == 0:
+            torch.cuda.empty_cache()  # Free training-reserved memory before eval
             if cfg.MODEL.DIST_TRAIN:
                 if dist.get_rank() == 0:
                     model.eval()
