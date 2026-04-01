@@ -3158,3 +3158,27 @@ B. 直接启动 exp025，exp024 可以后续补跑
 2. 但也不能无限尝试——已有 5 个连续负结果
 3. 最后再试一个真正不同的方向：不加 loss、不加 distillation、不加 module
 4. 候选：改变 SupCon 的 temperature (T=0.03 在 1-view 曾有好结果)，或 PLBOA prob 调优
+
+### [2026-04-01 06:00] 决策 #96
+
+**上下文**: 3个研究 agent 发现：
+1. GLOBAL_LOSS_SCALE=1.0 在所有 Small/Base 实验中 → 0.5x 从未测试 (+1.53% on Tiny)
+2. KPR test-time prompting 不是 reranking，可以用 (+1.8%)
+3. Swin-Base 是到 76% 的关键 lever
+
+**路径到 76/85 (目标)**:
+
+| Step | 方法 | 预期 mAP |
+|------|------|---------|
+| 当前 | Small GCN+PAA+CE+OA-SD | 70.5% |
+| +1 | **0.5x global loss** (未测试!) | 72% |
+| +2 | **Swin-Base** (exp207 进行中) | 74-75% |
+| +3 | **Base + 0.5x** | 75-76% |
+| +4 | **KPR-style test-time prompting** | 76%+ |
+
+**选择**: 按优先级执行
+1. exp207 Base 跑完后确认 Base 增益
+2. 立即在下一个实验中加 0.5x global loss
+3. 如果 Base + 0.5x ≈ 75%，实现 KPR prompting 冲 76%
+
+**执行结果**: (后续补填)
