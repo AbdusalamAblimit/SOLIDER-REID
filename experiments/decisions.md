@@ -3283,4 +3283,27 @@ B. 直接启动 exp025，exp024 可以后续补跑
 **接下来的方向必须是:**
 1. **改变 Part 架构** — 不是 loss tuning，而是改 GCN 本身或替换为更强的 part 机制
 2. **或者找到不依赖 detach/non-detach 的全新训练范式**
-3. **Small/Base scaling** 通过 MaxSim 已达 72.3%，用户在 4090 上跑
+3. **Small/Base scaling** 通过 MaxSim 已达 72.4%，用户在 4090 上跑
+
+### [2026-04-02 17:12] 决策 — PADPQ + GSPB + 全面 Tiny 探索总结
+
+**新增实验结果:**
+
+| Method | equal_concat mAP/R1 | maxsim mAP/R1 |
+|--------|------|------|
+| OA-SD-only | 63.2/75.4 | 64.2/77.1 |
+| GSPB+OA-SD (scale=0.05) | 62.9/74.3 | **64.6/76.0** |
+| PADPQ K=4+OA-SD | **63.7/74.5** | 63.9/74.8 |
+| PADPQ K=8+OA-SD | 进行中 | 进行中 |
+
+**关键发现:**
+1. GSPB: 早期加速 +5.8% at ep10, 最终 maxsim +0.4 (best Tiny mAP)
+2. PADPQ: mAP +0.5 但 R1 -0.9, MaxSim 仅 +0.2 (deformable 破坏了 cross-image consistency)
+3. GSPB 只在 Tiny 有效，Small 上灾难 (ep10=2.3%)
+
+**Tiny 上的硬天花板: ~64.6% maxsim, ~63.7% equal_concat**
+
+**接下来的方向:**
+- 研究 agent 提出的 KAMP (多尺度 keypoint 融合) 还未尝试
+- 或者接受 Tiny ceiling, 聚焦整理论文材料
+- 用户在 4090 上跑 Small: 72.4% (maxsim) 是 Small 最佳
