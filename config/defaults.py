@@ -185,6 +185,11 @@ _C.MODEL.POSE_OA_RD = False                # Enable relational distillation (dis
 _C.MODEL.POSE_OA_RD_TEMP = 0.1            # Temperature for softmax on similarity matrix
 _C.MODEL.POSE_OA_RD_WEIGHT = 1.0          # Weight of relational distillation loss
 
+# OERL: Occlusion-Equivariant Representation Learning
+_C.MODEL.POSE_OERL = False                # Enable OERL Part Occlusion Invariance
+_C.MODEL.POSE_OERL_WEIGHT = 1.0           # POI loss weight
+_C.MODEL.POSE_OERL_OCC_RATIO = 0.5        # Fraction of keypoints to occlude (0.3-0.7)
+
 # BA-PKC: Backbone-Aware Per-Keypoint Contrastive — gradients flow to backbone (not detached)
 _C.MODEL.POSE_BA_PKC = False              # Enable BA-PKC
 _C.MODEL.POSE_BA_PKC_WEIGHT = 0.1         # BA-PKC loss weight
