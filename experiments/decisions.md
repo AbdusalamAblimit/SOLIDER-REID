@@ -3181,4 +3181,106 @@ B. 直接启动 exp025，exp024 可以后续补跑
 2. 立即在下一个实验中加 0.5x global loss
 3. 如果 Base + 0.5x ≈ 75%，实现 KPR prompting 冲 76%
 
-**执行结果**: (后续补填)
+**执行结果**: 
+- exp208 (0.5x global loss) = NO-OP（GCN list-loss 已隐含 0.5x），取消
+- exp209 (STD-PR+CE+OA-SD) ep30=56.0/69.3，落后 5%，终止
+- MaxSim hybrid 发现: +1.8% mAP 无需重训！
+- OA-SD teacher Critical bug 修复并部署
+
+### [2026-04-01 10:30] 决策 #X — MaxSim + PKC + Fixed OA-SD 路线
+
+**上下文**: MaxSim hybrid 在 exp206 checkpoint 上无需重训给 +1.8% mAP (70.3→72.1)。OA-SD teacher bug 已修复。PKC (Per-Keypoint Contrastive) 开始测试。
+
+**新路径**:
+
+| Step | 方法 | 预期 mAP |
+|------|------|---------|
+| 已确认 | Small GCN+PAA+CE+OA-SD + maxsim_hybrid | **72.1%** |
+| exp210 | + PKC (进行中) | 73-74% |
+| exp207 | Swin-Base 3-view (进行中) | 74-76% |
+| 最终 | Base + PKC + maxsim_hybrid | **76%+** |
+
+**选择**: 双线并行，Base + PKC 为主攻方向
+
+### [2026-04-02 02:10] 决策 — Per-Keypoint Loss 路线全面失败
+
+**上下文**: 尝试了 5 种 per-keypoint loss 方案，全部失败或无效：
+
+| 实验 | 方法 | 结果 |
+|------|------|------|
+| exp210 | PKC weight=0.5 (detached GCN) | 灾难 (3.6%) |
+| exp210b | PKC weight=0.05 (detached GCN) | 无效 (= baseline) |
+| exp211 | MST weight=0.5 (detached GCN) | 无效 (= baseline, 所有 loss 完全一致) |
+| exp213 | PKC+MST 组合 (detached) | 灾难 (40.6%) |
+| exp215 | BA-PKC weight=0.1 (NON-detached backbone) | 灾难 (0.5%) |
+
+**根本原因**: 
+- 有 detach: 梯度只更新 GCN 200K params, 对 50M backbone 无影响 → 无效
+- 无 detach: SupCon 梯度直接打到 backbone, 与 CE 冲突 → 灾难
+
+**重要结论**: 
+1. **per-keypoint loss 路线已证伪** — 架构约束使其不可能有效
+2. MaxSim hybrid (+1.7-1.8%) 是纯 test-time 方法，不受此限制
+3. **当前最佳: 72.4/83.1 (exp210b + maxsim)**
+4. 需要完全不同的训练端创新来突破
+
+**新方向候选**:
+1. 更长训练 (200/240 epochs)
+2. 更强数据增强 (多种 occlusion 组合)  
+3. 改变 GCN 架构让 Part 分支更强
+4. 回到 STD-PR+SupCon 路线（已知 67.9+maxsim ≈ 69.7，不如 GCN+OA-SD）
+5. **多分辨率/多尺度特征融合** (未试过)
+
+### [2026-04-02 05:48] 决策 — OERL / per-keypoint loss 全面失败总结
+
+**测试过的所有 per-keypoint 训练方案:**
+
+| 实验 | 方法 | detach? | 结果 |
+|------|------|---------|------|
+| exp210 | PKC w=0.5 on detached GCN | Yes | 灾难 3.6% |
+| exp210b | PKC w=0.05 on detached GCN | Yes | 无效 (=baseline) |
+| exp211 | MST w=0.5 on detached GCN | Yes | 无效 (所有 loss 完全一致) |
+| exp213 | PKC+MST combo | Yes | 灾难 40.6% |
+| exp215 | BA-PKC w=0.1 non-detached | No | 灾难 0.5% |
+| exp212 | LR=0.0008 | — | 灾难 0.8% |
+| exp217 | OERL w=1.0 non-detached cosine | No | -2.2% vs OA-SD |
+
+**核心教训:**
+1. detached 路径: 梯度不到 backbone → 无效
+2. non-detached SupCon: 与 CE 冲突 → 灾难
+3. non-detached cosine alignment: 与 OA-SD 竞争 → 负面
+4. **per-keypoint training loss 路线已全面证伪**
+
+**剩余可行路径:**
+- MaxSim hybrid test-time matching (+1.7-1.8%，已确认)
+- 完全新的架构创新 (not loss tuning)
+- 回到 IDEA 1 (PACI: per-identity part prototype bank) 或 IDEA 3 (CIPCM: cross-instance correspondence)
+
+### [2026-04-02 09:45] 决策 — PACI 证伪 + MaxSim Ceiling 发现
+
+**PACI (exp218/219) 结果:**
+- PACI + OA-SD (exp218): 61.9% (vs OA-SD-only 64.4 = **-2.5%**)
+- PACI-only (exp219): ep30=51.9 (vs baseline ep30=52.2 = **-0.3%**)
+- **PACI 证伪。Consistency loss on detached GCN = 无效。**
+
+**MaxSim Ceiling 关键发现 (Tiny):**
+
+| 方法 | equal_concat | maxsim_hybrid |
+|------|------|------|
+| OA-SD-only | **64.4** | 64.2 |
+| OERL+OA-SD | 62.2 | 64.3 |
+| PACI+OA-SD | 61.9 | 64.1 |
+
+**所有方法 + MaxSim 收敛到 ~64.2%！这是 GCN+PAA on Tiny 的硬天花板。**
+**MaxSim 在 OA-SD 模型上无效 (-0.2)！** OA-SD 的 global feature 已达上限。
+
+**根本问题诊断:**
+1. detached GCN 是架构瓶颈 → 任何 per-keypoint loss 只更新 200K GCN params → 无效
+2. non-detached losses 与 CE/OA-SD 冲突 → 灾难
+3. MaxSim 是 test-time trick，在弱模型上弥补 global 不足，但在强模型上无用
+4. **Tiny 的 GCN+PAA+OA-SD 已达极限 ~64.4%**
+
+**接下来的方向必须是:**
+1. **改变 Part 架构** — 不是 loss tuning，而是改 GCN 本身或替换为更强的 part 机制
+2. **或者找到不依赖 detach/non-detach 的全新训练范式**
+3. **Small/Base scaling** 通过 MaxSim 已达 72.3%，用户在 4090 上跑

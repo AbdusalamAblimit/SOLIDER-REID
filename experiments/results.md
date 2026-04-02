@@ -939,3 +939,79 @@
      - `scfa_pg ≈ 0.086~0.093`
      - 即当前 benchmark 上真正“一侧低一侧高”的 bilateral gap case 太少
   4. 因而这条线目前更像一个已被快速排除的结构先验假设，而不是可继续深挖的主方向
+
+## 2026-04-01/02: exp206r, exp207, exp209, exp210, exp210b, exp211, exp212, exp213
+
+### exp206r: Small GCN+PAA+CE+OA-SD (Fixed OA-SD teacher)
+> Repeat of exp206 with fixed OA-SD teacher (BN/Dropout/DropPath eval mode, clean teacher pose)
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| exp206r equal_concat | 70.6% | 82.6% | 89.5% | 91.4% | ep120 final |
+| **exp206r maxsim_hybrid** | **72.3%** | **82.9%** | **90.5%** | **92.2%** | ep120 + maxsim test |
+
+- OA-SD fix: +0.1/+0.3 vs buggy exp206 (70.5/82.3). Fix 加速了早期收敛但不改变 final。
+
+### exp207: Base GCN+PAA+CE+OA-SD 3-view (Fixed OA-SD)
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| exp207 equal_concat | 70.7% | 80.7% | 89.5% | 91.7% | ep120 final |
+| exp207 maxsim_hybrid | 72.2% | 82.0% | 90.4% | 92.3% | ep120 + maxsim test |
+
+- Base (88M) 仅比 Small (50M) 高 +0.1% mAP。Base scaling 在当前配置下无效。
+- 可能原因: LR=0.0002 太低, 3-view+CP 限制 Base 容量, 数据集太小。
+
+### exp209: Small STD-PR+CE+OA-SD — 终止 (ep30)
+
+| 方法 | mAP | R1 | 口径 |
+|------|-----|----|------|
+| exp209 | 56.0% | 69.3% | ep30 终止 |
+
+- STD-PR+CE+OA-SD 严重落后 GCN+PAA+CE+OA-SD (~5% at ep30)。STD-PR 需要 SupCon。
+
+### exp210: Small GCN+PAA+CE+OA-SD + PKC weight=0.5 — 灾难
+
+| 方法 | mAP | R1 | 口径 |
+|------|-----|----|------|
+| exp210 | 3.6% | 5.3% | ep10 终止 |
+
+- PKC weight=0.5 的 SupCon 梯度与 CE 在 GCN features 上冲突。灾难性失败。
+
+### exp210b: Small GCN+PAA+CE+OA-SD + PKC weight=0.05
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| exp210b equal_concat | 70.6% | 81.8% | 89.9% | 92.4% | ep120 final |
+| **exp210b maxsim_hybrid** | **72.4%** | **83.1%** | **90.8%** | **92.7%** | ep120 + maxsim test |
+
+- PKC=0.05 不改变 equal_concat (= exp206r)，但 MaxSim 提升 +0.1/+0.2。
+- **72.4/83.1 = 当前最佳 (无 NFC/reranking)！**
+
+### exp212: Small GCN+PAA+CE+OA-SD LR=0.0008 — 灾难
+
+| 方法 | mAP | R1 | 口径 |
+|------|-----|----|------|
+| exp212 | 0.8% | 1.3% | ep10 终止 |
+
+- LR=0.0008 对 Small 太高，无法学习。Small 需要 LR=0.0004。
+
+### exp213: Small + PKC(0.05) + MST(0.1) — 终止
+
+| 方法 | mAP | R1 | 口径 |
+|------|-----|----|------|
+| exp213 | 40.6% | 54.8% | ep10 终止 |
+
+- PKC + MST 组合梯度冲突。per-keypoint losses 只能单独使用。
+
+### MaxSim Hybrid 跨 checkpoint 分析 (exp206 local)
+
+| Epoch | equal_concat | maxsim_hybrid | MaxSim gain |
+|-------|------|------|------|
+| 40 | 64.9% | 66.3% | +1.4% |
+| 60 | 67.3% | 68.9% | +1.6% |
+| 80 | 69.3% | 71.1% | +1.8% |
+| 100 | 70.1% | 71.8% | +1.7% |
+| 120 | 70.3% | 72.1% | +1.8% |
+
+- MaxSim gain 在 +1.5~1.8% 范围内稳定，不依赖训练阶段。

@@ -2721,3 +2721,47 @@ Occlusion-Asymmetric Relational Distillation
 
 但 ceiling analysis 指出 Swin-Tiny 的天花板约 65-66% mAP，我们已在 64.9%。
 剩余空间 ~1%，需要权衡是否值得大改。
+
+---
+
+## Phase 4: Swin-Small/Base Scaling + MaxSim (2026-03-31)
+
+### 重大发现: MaxSim Hybrid Test-Time Matching
+
+**MaxSim Hybrid 在 exp206 checkpoint 上无需重训即可获得 +1.8% mAP！**
+
+| Test Mode | mAP | R1 | delta vs equal_concat |
+|-----------|------|------|----|
+| equal_concat (baseline) | 70.3% | 81.8% | — |
+| **maxsim_hybrid (gw=1.0)** | **72.1%** | **82.9%** | **+1.8/+1.1** |
+| maxsim (pure) | 69.3% | 81.1% | -1.0/-0.7 |
+| cvk_hybrid | 70.7% | 81.9% | +0.4/+0.1 |
+| maxsim_hybrid (gw=0.5) | 71.5% | 82.7% | +1.2/+0.9 |
+
+**机制**: MaxSim 是 ColBERT 风格的 late interaction matching:
+- 对 query 的每个 keypoint feature，找 gallery 中最相似的 keypoint
+- 用 keypoint confidence 加权平均
+- 与 global distance 混合 (hybrid mode)
+
+**为什么有效**: 
+- pure MaxSim (69.3) < global (70.3) → part-only matching 不够可靠
+- MaxSim hybrid (72.1) > equal_concat (70.3) → 但 part matching 提供了 global 没有的 part alignment 信号
+- 这证明 GCN-enhanced per-keypoint features 有显著的 matching 信号，只是之前被 equal_concat 的简单拼接浪费了
+
+**论文价值**: 这不是 reranking，是 model-integrated matching mechanism。可以作为方法论的一部分。
+
+### Backbone Scaling 发现
+
+| Backbone | mAP (equal_concat) | 预期 + maxsim_hybrid |
+|----------|------|------|
+| Swin-Tiny | 64.9% | ~67% |
+| Swin-Small | 70.5% | **72.1%** (已确认) |
+| Swin-Base (ep40) | 66.6% (3-view, 进行中) | ~68%+ |
+
+Base 在 ep40 trailing Small — 可能因为 LR 过低 (0.0002)。但后期增长更强，预期 final 73-75%。
+
+### 到达 76% mAP 的路径
+
+1. **Swin-Small + GCN+PAA+OA-SD + maxsim_hybrid = 72.1%** (已确认)
+2. 训练端改进: 预计 +2-3%
+3. 目标: **74-76% mAP on Small, 无 NFC/reranking**
