@@ -1,6 +1,36 @@
 # 论文故事线（持续更新）
 
-> **⚠️ Phase 1-2 内容保留在下方。Phase 3 更新如下。**
+> **⚠️ Phase 1-3 内容保留在下方。Phase 4 更新如下。**
+
+## Phase 4 Story Update (2026-04-02)
+
+### 当前最佳结果
+
+| Backbone | Method | mAP (eq) | R1 (eq) | mAP (maxsim) | R1 (maxsim) |
+|----------|--------|------|------|------|------|
+| Tiny | GCN+PAA+OA-SD | 63.2% | 75.4% | 64.2% | 77.1% |
+| Tiny | **GCN+PAA+OA-SD+GSPB** | 62.9% | 74.3% | **64.6%** | **76.0%** |
+| Small | GCN+PAA+OA-SD | 70.6% | 82.6% | 72.3% | 82.9% |
+| Small | GCN+PAA+OA-SD+PKC | 70.6% | 81.8% | **72.4%** | **83.1%** |
+
+### 新发现
+
+1. **MaxSim Ceiling**: OA-SD 模型的 global feature 已达 single-vector 上限。MaxSim 只在 "弱 global" 模型上有效。所有方法 + MaxSim 收敛到 ~64.2% on Tiny。
+
+2. **GSPB (Gradient-Scaled Part Branch)**: 5% Part→Backbone 梯度大幅加速早期收敛 (+5.8% at ep10!) 但不改善 final。首次发现 detach 与 non-detach 之间的中间解。
+
+3. **OA-SD Teacher Fix**: 修复了 EMA teacher 的 Dropout/DropPath/BN 噪声问题。修复后 teacher 更稳定，但 final 结果不变（EMA 的自修正性）。
+
+4. **per-keypoint training loss 全面证伪**: PKC, MST, PACI, OERL, BA-PKC — 10 个实验全部失败。根本原因: detached GCN 阻断梯度到 backbone，non-detached 与 CE 冲突。
+
+### 潜在论文贡献
+
+1. **MaxSim hybrid matching** — ColBERT-style late interaction 首次引入 person ReID (+1.7-1.8% on Small)
+2. **GSPB** — detach vs non-detach 的新中间解，3x 早期收敛加速
+3. **PSG + GCN + OA-SD pipeline** — 完整的 pose-guided occluded ReID 系统
+4. **Extensive ablation** — 10+ 失败实验提供了深入的分析
+
+---
 
 ## Phase 3 Story Update (2026-03-23)
 
