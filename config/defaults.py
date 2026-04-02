@@ -185,6 +185,10 @@ _C.MODEL.POSE_OA_RD = False                # Enable relational distillation (dis
 _C.MODEL.POSE_OA_RD_TEMP = 0.1            # Temperature for softmax on similarity matrix
 _C.MODEL.POSE_OA_RD_WEIGHT = 1.0          # Weight of relational distillation loss
 
+# KAMP: Keypoint-Anchored Multi-Scale Part features
+_C.MODEL.POSE_MULTI_SCALE_KP = False      # Enable multi-scale keypoint sampling
+_C.MODEL.POSE_MULTI_SCALE_STAGES = [2, 3] # Which stages to use (0-indexed, 3=last)
+
 # PADPQ: Pose-Anchored Deformable Part Queries — learned offsets around keypoints
 _C.MODEL.POSE_DEFORMABLE_SAMPLE = False    # Enable deformable keypoint sampling
 _C.MODEL.POSE_DEFORMABLE_K = 4            # Number of offset sampling points per keypoint

@@ -293,7 +293,8 @@ class SkeletonGCNHead(nn.Module):
                  skc=False, skc_hidden=256, skc_heads=4, skc_low_thr=0.3,
                  scfa=False, scfa_low_thr=0.3, scfa_high_thr=0.5,
                  vcga=False,
-                 deformable_sample=False, deformable_k=4):
+                 deformable_sample=False, deformable_k=4,
+                 multi_scale_kp=False, multi_scale_s2_dim=384):
         super().__init__()
         self.feat_dim = feat_dim
         self.input_h, self.input_w = input_size
@@ -334,6 +335,21 @@ class SkeletonGCNHead(nn.Module):
             # Initialize fusion to approximate identity (output ≈ Stage 3 features)
             nn.init.zeros_(self.mrkf_fusion.weight)
             nn.init.zeros_(self.mrkf_fusion.bias)
+
+        # KAMP: Keypoint-Anchored Multi-Scale — learned per-keypoint scale attention
+        self.multi_scale_kp = multi_scale_kp
+        if self.multi_scale_kp:
+            self.kamp_s2_proj = nn.Linear(multi_scale_s2_dim, feat_dim)
+            # Per-keypoint scale attention: which stage is more useful?
+            self.kamp_scale_attn = nn.Sequential(
+                nn.Linear(feat_dim + 1, 64),  # feat + kp_score
+                nn.ReLU(inplace=True),
+                nn.Linear(64, 2),  # 2 stages (S2, S3)
+            )
+            # Zero-init → equal weighting initially
+            nn.init.zeros_(self.kamp_scale_attn[-1].weight)
+            nn.init.zeros_(self.kamp_scale_attn[-1].bias)
+            print(f'[KAMP] Multi-scale keypoint fusion enabled: S2({multi_scale_s2_dim})+S3({feat_dim})')
 
         if self.scrc:
             gate_in_dim = feat_dim * 2 + 2
@@ -744,6 +760,20 @@ class SkeletonGCNHead(nn.Module):
             fused = torch.cat([s2_proj, s3_proj], dim=-1)  # (B, 17, 512)
             # Residual: kp_feats + fusion(concat) — starts as identity via zero-init
             kp_feats = kp_feats + self.mrkf_fusion(fused)   # (B, 17, C)
+
+        # 1.2. KAMP: Multi-scale keypoint fusion with learned per-keypoint scale attention
+        if self.multi_scale_kp and stage2_feat is not None:
+            kp_s2, _ = self._sample_keypoint_features(
+                stage2_feat, keypoints, scores, person_mask)  # (B, 17, C2)
+            kp_s2_proj = self.kamp_s2_proj(kp_s2)  # (B, 17, C)
+
+            # Per-keypoint scale attention
+            attn_input = torch.cat([kp_feats, kp_scores.unsqueeze(-1)], dim=-1)  # (B, 17, C+1)
+            scale_logits = self.kamp_scale_attn(attn_input)  # (B, 17, 2)
+            scale_w = F.softmax(scale_logits, dim=-1)  # (B, 17, 2)
+
+            # Weighted fusion: S2 * w0 + S3 * w1
+            kp_feats = scale_w[:, :, 0:1] * kp_s2_proj + scale_w[:, :, 1:2] * kp_feats
 
         # 1.5. TTSFR: Training-Time Skeleton Feature Recovery
         # Use same-ID samples in batch to fill occluded keypoints

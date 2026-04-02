@@ -141,6 +141,8 @@ class PoseBackboneModel(build_transformer):
                 kp_triplet=kp_triplet,
                 deformable_sample=getattr(cfg.MODEL, 'POSE_DEFORMABLE_SAMPLE', False),
                 deformable_k=int(getattr(cfg.MODEL, 'POSE_DEFORMABLE_K', 4)),
+                multi_scale_kp=getattr(cfg.MODEL, 'POSE_MULTI_SCALE_KP', False),
+                multi_scale_s2_dim=self.base.num_features[-2] if len(self.base.num_features) >= 2 else self.in_planes,
             )
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'concat_scaled')
             if keypoint_pool_only:
@@ -480,8 +482,11 @@ class PoseBackboneModel(build_transformer):
                         str_feat_list.append(tri_tokens[:, k])
                     dual_branch_active = True
 
+                # Pass Stage 2 features for KAMP/MRKF multi-scale fusion
+                _s2_feat = featmaps[-2].detach() if len(featmaps) >= 2 else None
                 gcn_cls_scores, gcn_feats, kp_data = self.skeleton_head(
-                    feat_map_detached, pose_dict, return_cls=True, label=label)
+                    feat_map_detached, pose_dict, return_cls=True, label=label,
+                    stage2_feat=_s2_feat)
 
                 # PNIS: normalize GCN feature by subtracting pose offset
                 if getattr(self, 'use_pose_normalize', False) and len(gcn_feats) > 0:
@@ -601,8 +606,10 @@ class PoseBackboneModel(build_transformer):
                 gcn_feats = [str_feat]  # equal_concat: global + pooled_part
             elif self.use_skeleton_gcn and pose_dict is not None and \
                     getattr(self, 'pose_test_feat', 'global') != 'global':
+                _s2_test = featmaps[-2] if len(featmaps) >= 2 else None
                 _, gcn_feats, aux_data = self.skeleton_head(
-                    featmaps[-1], pose_dict, return_cls=False)
+                    featmaps[-1], pose_dict, return_cls=False,
+                    stage2_feat=_s2_test)
                 # Dual Part Branch test: also add STD-PR per-token features
                 if getattr(self, 'use_structural_routing', False) and scene_heatmaps is not None \
                         and getattr(self, 'str_per_token', False):
