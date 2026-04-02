@@ -185,6 +185,10 @@ _C.MODEL.POSE_OA_RD = False                # Enable relational distillation (dis
 _C.MODEL.POSE_OA_RD_TEMP = 0.1            # Temperature for softmax on similarity matrix
 _C.MODEL.POSE_OA_RD_WEIGHT = 1.0          # Weight of relational distillation loss
 
+# PADPQ: Pose-Anchored Deformable Part Queries — learned offsets around keypoints
+_C.MODEL.POSE_DEFORMABLE_SAMPLE = False    # Enable deformable keypoint sampling
+_C.MODEL.POSE_DEFORMABLE_K = 4            # Number of offset sampling points per keypoint
+
 # GSPB: Gradient-Scaled Part Branch — partial gradient flow from Part to backbone
 _C.MODEL.POSE_PART_GRAD_SCALE = 0.0       # 0.0 = detach (default), 1.0 = non-detach, 0.05 = scaled
 

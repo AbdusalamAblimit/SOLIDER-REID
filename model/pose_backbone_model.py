@@ -139,6 +139,8 @@ class PoseBackboneModel(build_transformer):
                 use_gcn=not keypoint_pool_only,
                 kp_weight_mode=kp_weight_mode,
                 kp_triplet=kp_triplet,
+                deformable_sample=getattr(cfg.MODEL, 'POSE_DEFORMABLE_SAMPLE', False),
+                deformable_k=int(getattr(cfg.MODEL, 'POSE_DEFORMABLE_K', 4)),
             )
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'concat_scaled')
             if keypoint_pool_only:

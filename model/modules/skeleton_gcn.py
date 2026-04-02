@@ -292,7 +292,8 @@ class SkeletonGCNHead(nn.Module):
                  scrc=False, scrc_hidden=128,
                  skc=False, skc_hidden=256, skc_heads=4, skc_low_thr=0.3,
                  scfa=False, scfa_low_thr=0.3, scfa_high_thr=0.5,
-                 vcga=False):
+                 vcga=False,
+                 deformable_sample=False, deformable_k=4):
         super().__init__()
         self.feat_dim = feat_dim
         self.input_h, self.input_w = input_size
@@ -356,6 +357,25 @@ class SkeletonGCNHead(nn.Module):
             )
             self._skc_active = True
 
+        # PADPQ: Pose-Anchored Deformable Part Queries
+        self.deformable_sample = deformable_sample
+        if self.deformable_sample:
+            self._deform_k = deformable_k
+            self.deform_offset_head = nn.Sequential(
+                nn.Linear(feat_dim + 2, 128),
+                nn.ReLU(inplace=True),
+                nn.Linear(128, deformable_k * 2),
+            )
+            self.deform_attn_head = nn.Sequential(
+                nn.Linear(feat_dim + 2, 128),
+                nn.ReLU(inplace=True),
+                nn.Linear(128, deformable_k),
+            )
+            # Zero-init offsets → starts as identity (sampling at keypoint)
+            nn.init.zeros_(self.deform_offset_head[-1].weight)
+            nn.init.zeros_(self.deform_offset_head[-1].bias)
+            print(f'[PADPQ] Deformable sampling enabled: K={deformable_k} points per keypoint')
+
         # Optional graph propagation over sampled keypoint features.
         if self.use_gcn:
             self.gcn = SkeletonGCN(
@@ -413,6 +433,10 @@ class SkeletonGCNHead(nn.Module):
                                   person_mask):
         """Bilinear sample features at keypoint locations.
 
+        If deformable_sample is enabled, learns K offsets per keypoint
+        and samples from a neighborhood, then aggregates with learned
+        attention weights (PADPQ: Pose-Anchored Deformable Part Queries).
+
         Args:
             feat_map: (B, C, fH, fW) feature map
             keypoints: (B, max_persons, 17, 2) pixel coordinates
@@ -429,25 +453,52 @@ class SkeletonGCNHead(nn.Module):
         kp_coords = keypoints[:, 0, :, :]  # (B, 17, 2) pixel coords
         kp_scores = scores[:, 0, :]  # (B, 17)
 
-        # Map pixel coordinates to feature map coordinates
-        # Normalize to [-1, 1] for grid_sample
-        grid_x = kp_coords[:, :, 0] / self.input_w * 2 - 1  # (B, 17)
-        grid_y = kp_coords[:, :, 1] / self.input_h * 2 - 1  # (B, 17)
+        # Normalize coordinates to [-1, 1]
+        grid_x = (kp_coords[:, :, 0] / self.input_w * 2 - 1).clamp(-1, 1)
+        grid_y = (kp_coords[:, :, 1] / self.input_h * 2 - 1).clamp(-1, 1)
+        grid_base = torch.stack([grid_x, grid_y], dim=-1)  # (B, 17, 2)
 
-        # Clamp to valid range
-        grid_x = grid_x.clamp(-1, 1)
-        grid_y = grid_y.clamp(-1, 1)
+        if getattr(self, 'deformable_sample', False):
+            # PADPQ: deformable sampling with learned offsets
+            # 1. Sample initial features at keypoint locations
+            grid_init = grid_base.unsqueeze(2)  # (B, 17, 1, 2)
+            init_sampled = F.grid_sample(
+                feat_map, grid_init, mode='bilinear',
+                padding_mode='border', align_corners=True
+            ).squeeze(-1).permute(0, 2, 1)  # (B, 17, C)
 
-        # Build grid for grid_sample: (B, 17, 1, 2)
-        grid = torch.stack([grid_x, grid_y], dim=-1).unsqueeze(2)
+            # 2. Predict K offsets from initial features + position
+            kp_pos_norm = grid_base  # (B, 17, 2) already normalized
+            context = torch.cat([init_sampled, kp_pos_norm], dim=-1)  # (B, 17, C+2)
+            offsets = self.deform_offset_head(context)  # (B, 17, K*2)
+            K = self._deform_k
+            offsets = offsets.view(B, 17, K, 2)  # (B, 17, K, 2)
 
-        # Sample: (B, C, 17, 1)
-        sampled = F.grid_sample(
-            feat_map, grid, mode='bilinear',
-            padding_mode='border', align_corners=True
-        )
-        # Reshape to (B, 17, C)
-        kp_feats = sampled.squeeze(-1).permute(0, 2, 1)
+            # 3. Compute sample points: base + offsets (in normalized coords)
+            sample_pts = grid_base.unsqueeze(2) + offsets  # (B, 17, K, 2)
+            sample_pts = sample_pts.clamp(-1, 1)
+
+            # 4. Sample at all K points
+            # Reshape for grid_sample: (B, 17*K, 1, 2)
+            pts_flat = sample_pts.view(B, 17 * K, 1, 2)
+            sampled_flat = F.grid_sample(
+                feat_map, pts_flat, mode='bilinear',
+                padding_mode='border', align_corners=True
+            ).squeeze(-1).permute(0, 2, 1)  # (B, 17*K, C)
+            sampled_k = sampled_flat.view(B, 17, K, C)  # (B, 17, K, C)
+
+            # 5. Attention-weighted aggregation
+            attn_logits = self.deform_attn_head(context)  # (B, 17, K)
+            attn_w = F.softmax(attn_logits, dim=-1)  # (B, 17, K)
+            kp_feats = (sampled_k * attn_w.unsqueeze(-1)).sum(dim=2)  # (B, 17, C)
+        else:
+            # Standard fixed-point sampling
+            grid = grid_base.unsqueeze(2)  # (B, 17, 1, 2)
+            sampled = F.grid_sample(
+                feat_map, grid, mode='bilinear',
+                padding_mode='border', align_corners=True
+            )
+            kp_feats = sampled.squeeze(-1).permute(0, 2, 1)  # (B, 17, C)
 
         return kp_feats, kp_scores
 
