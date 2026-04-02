@@ -896,9 +896,12 @@ def do_train(cfg,
                     for i in range(0, B_kp, chunk):
                         ie = min(i + chunk, B_kp)
                         q = kp_fn[i:ie]  # (c, 17, C)
-                        s = torch.einsum('bkd,cjd->bkcj', q, kp_fn)  # (c, B, 17, 17)
-                        ms = s.max(dim=3)[0]  # (c, B, 17)
-                        # Weighted average
+                        # sim: (c, 17_q, B_g, 17_g) — cosine similarity between all kp pairs
+                        s = torch.einsum('qkd,gjd->qkgj', q, kp_fn)  # (c, 17, B, 17)
+                        # For each query kp, find best matching gallery kp
+                        ms = s.max(dim=3)[0]  # (c, 17, B) — max over gallery kps
+                        ms = ms.permute(0, 2, 1)  # (c, B, 17) — per query-gallery pair
+                        # Weighted average over query keypoints
                         w_q = w_eff[i:ie]  # (c, 17)
                         w_s = w_q.sum(dim=1, keepdim=True).clamp(min=1.0)  # (c, 1)
                         sim = (ms * w_q.unsqueeze(1)).sum(dim=2) / w_s  # (c, B)
