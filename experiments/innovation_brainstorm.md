@@ -2762,6 +2762,65 @@ Base 在 ep40 trailing Small — 可能因为 LR 过低 (0.0002)。但后期增�
 
 ### 到达 76% mAP 的路径
 
-1. **Swin-Small + GCN+PAA+OA-SD + maxsim_hybrid = 72.1%** (已确认)
-2. 训练端改进: 预计 +2-3%
+1. **Swin-Small + GCN+PAA+OA-SD + maxsim_hybrid = 72.4%** (exp210b with PKC=0.05)
+2. 训练端改进: 目前所有尝试均未超过 OA-SD-only ceiling
 3. 目标: **74-76% mAP on Small, 无 NFC/reranking**
+
+---
+
+## Phase 5: Per-Keypoint Training Loss 全面探索 (2026-04-02)
+
+### 核心发现: detached GCN 是架构瓶颈
+
+**所有 per-keypoint training innovations 失败:**
+
+| 实验 | 方法 | detach? | vs OA-SD-only |
+|------|------|---------|------|
+| exp210 | PKC w=0.5 | detached | 灾难 3.6% |
+| exp210b | PKC w=0.05 | detached | 无效 (=baseline) |
+| exp211 | MST w=0.5 | detached | 完全无效 (所有 loss 一致) |
+| exp213 | PKC+MST 组合 | detached | 灾难 40.6% |
+| exp215 | BA-PKC non-detach | non-det | 灾难 0.5% |
+| exp217 | OERL non-detach cosine | non-det | -2.2% |
+| exp218 | PACI prototype bank | detached | -2.5% |
+| exp219 | PACI without OA-SD | detached | -0.3% |
+| exp220 | GSPB gradient scale 5% | 5% scale | -0.3% |
+
+**根本原因:**
+1. detached: 梯度不到 backbone (50M) → 只更新 GCN (200K) → 无效
+2. non-detached: 与 CE 冲突 → 灾难
+3. gradient scaling: 加速早期 (+5.8% ep10!) 但 final 持平
+
+### MaxSim Ceiling 发现
+
+**Tiny 上所有方法 + MaxSim 收敛到 ~64.2%:**
+
+| 方法 | equal_concat | maxsim_hybrid |
+|------|------|------|
+| OA-SD-only | 63.2 | 64.2 |
+| OERL+OA-SD | 62.2 | 64.3 |
+| PACI+OA-SD | 61.9 | 64.1 |
+
+**MaxSim 在 OA-SD 模型上无效！** OA-SD 的 global feature 已达 single-vector 上限。
+MaxSim 只在弱 global 模型上弥补不足。
+
+### GSPB (Gradient-Scaled Part Branch) — 有价值的发现
+
+exp220 (scale=0.05) 完整对照:
+
+| Epoch | GSPB mAP | OA-SD mAP | delta |
+|-------|------|------|------|
+| 10 | 40.1 | 34.3 | **+5.8** |
+| 20 | 49.1 | 46.0 | **+3.1** |
+| 30 | 54.5 | 50.6 | **+3.9** |
+| 60 | 59.8 | 60.6 | -0.8 |
+| 120 | 62.9 | 63.2 | -0.3 |
+
+**3x 早期收敛加速！** 但 final 持平。训练效率提升有实用价值。
+
+### 结论与方向
+
+**GCN+PAA+OA-SD 在 Tiny 上已达极限 ~63%。** 需要:
+1. 完全不同的 Part 架构（不在禁止列表内的方向）
+2. 重新定义训练范式（不是 loss 增改）
+3. 利用 Small/Base scaling 的已有成果 (72.4% maxsim on Small)
