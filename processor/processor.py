@@ -867,6 +867,41 @@ def do_train(cfg,
                         details['pkc_nk'] = len(pkc_losses)
                         loss._loss_details = details
 
+                # BA-PKC: Backbone-Aware Per-Keypoint Contrastive
+                # Uses NON-detached keypoint features → gradients flow to backbone!
+                ba_pkc_enabled = getattr(cfg.MODEL, 'POSE_BA_PKC', False)
+                if ba_pkc_enabled and kp_data is not None and 'ba_kp_feats' in kp_data:
+                    ba_pkc_weight = float(getattr(cfg.MODEL, 'POSE_BA_PKC_WEIGHT', 0.1))
+                    ba_vis_thr = float(getattr(cfg.MODEL, 'POSE_PKC_VIS_THR', 0.3))
+
+                    ba_kp_f = kp_data['ba_kp_feats']  # (B, 17, C) — NOT detached!
+                    ba_kp_w = kp_data['kp_weights']    # (B, 17) — visibility weights
+                    B_ba, K_ba, C_ba = ba_kp_f.shape
+
+                    if not hasattr(do_train, '_ba_pkc_supcon'):
+                        from loss.supcon_loss import SupConLoss
+                        do_train._ba_pkc_supcon = SupConLoss(temperature=0.07)
+
+                    ba_losses = []
+                    for k_idx in range(K_ba):
+                        vis_mask = ba_kp_w[:, k_idx] > ba_vis_thr
+                        if vis_mask.sum().item() < 4:
+                            continue
+                        feat_k = ba_kp_f[vis_mask, k_idx, :]
+                        label_k = target[vis_mask]
+                        if label_k.unique().shape[0] < 2:
+                            continue
+                        ba_loss_k = do_train._ba_pkc_supcon(feat_k, label_k)
+                        ba_losses.append(ba_loss_k)
+
+                    if ba_losses:
+                        ba_pkc_loss = sum(ba_losses) / len(ba_losses)
+                        details = getattr(loss, '_loss_details', {})
+                        loss = loss + ba_pkc_weight * ba_pkc_loss
+                        details['ba_pkc'] = ba_pkc_loss.item()
+                        details['ba_nk'] = len(ba_losses)
+                        loss._loss_details = details
+
                 # MST: MaxSim Triplet loss — directly optimize per-keypoint features for MaxSim
                 mst_enabled = getattr(cfg.MODEL, 'POSE_MST', False)
                 if mst_enabled and kp_data is not None and 'kp_feats' in kp_data:

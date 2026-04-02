@@ -112,6 +112,11 @@ class PoseBackboneModel(build_transformer):
         if self.pose_dropout_p > 0:
             print(f'[PSG] Stochastic Pose Dropout enabled: p={self.pose_dropout_p}')
 
+        # BA-PKC: Backbone-Aware Per-Keypoint Contrastive
+        self.ba_pkc = getattr(cfg.MODEL, 'POSE_BA_PKC', False)
+        if self.ba_pkc:
+            print('[BA-PKC] Backbone-aware per-keypoint contrastive enabled')
+
         # Skeleton GCN head
         self.use_skeleton_gcn = getattr(cfg.MODEL, 'POSE_SKELETON_GCN', False)
         if self.use_skeleton_gcn:
@@ -512,6 +517,22 @@ class PoseBackboneModel(build_transformer):
                     return ([cls_score] + str_cls_list + gcn_cls_scores,
                             [global_feat] + str_feat_list + gcn_feats,
                             featmaps, None, kp_data)
+
+                # BA-PKC: sample keypoint features from NON-detached feature map
+                # Gradients flow to backbone, unlike GCN which uses detached features
+                if getattr(self, 'ba_pkc', False):
+                    raw_fm = featmaps[-1]  # (B, C, fH, fW) — NOT detached!
+                    kp_coords = pose_dict['keypoints'][:, 0, :, :]  # (B, 17, 2)
+                    input_h, input_w = x.shape[2], x.shape[3]
+                    grid_x = (kp_coords[:, :, 0] / input_w * 2 - 1).clamp(-1, 1)
+                    grid_y = (kp_coords[:, :, 1] / input_h * 2 - 1).clamp(-1, 1)
+                    grid = torch.stack([grid_x, grid_y], dim=-1).unsqueeze(2)  # (B, 17, 1, 2)
+                    sampled = F.grid_sample(raw_fm, grid, mode='bilinear',
+                                            padding_mode='border', align_corners=True)
+                    ba_kp_feats = sampled.squeeze(-1).permute(0, 2, 1)  # (B, 17, C)
+                    if kp_data is None:
+                        kp_data = {}
+                    kp_data['ba_kp_feats'] = ba_kp_feats
 
                 # Return lists -> triggers list-loss path (implicit 0.5x global)
                 return [cls_score] + gcn_cls_scores, [global_feat] + gcn_feats, featmaps, None, kp_data

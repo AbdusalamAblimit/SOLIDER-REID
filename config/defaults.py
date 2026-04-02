@@ -185,6 +185,10 @@ _C.MODEL.POSE_OA_RD = False                # Enable relational distillation (dis
 _C.MODEL.POSE_OA_RD_TEMP = 0.1            # Temperature for softmax on similarity matrix
 _C.MODEL.POSE_OA_RD_WEIGHT = 1.0          # Weight of relational distillation loss
 
+# BA-PKC: Backbone-Aware Per-Keypoint Contrastive — gradients flow to backbone (not detached)
+_C.MODEL.POSE_BA_PKC = False              # Enable BA-PKC
+_C.MODEL.POSE_BA_PKC_WEIGHT = 0.1         # BA-PKC loss weight
+
 # MST: MaxSim Triplet loss — directly optimizes per-keypoint features for MaxSim distance
 _C.MODEL.POSE_MST = False                 # Enable MaxSim Triplet
 _C.MODEL.POSE_MST_WEIGHT = 0.5            # MST loss weight
