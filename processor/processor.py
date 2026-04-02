@@ -869,60 +869,70 @@ def do_train(cfg,
 
                 # OERL: Occlusion-Equivariant Representation Learning — Part Occlusion Invariance
                 oerl_enabled = getattr(cfg.MODEL, 'POSE_OERL', False)
-                if oerl_enabled and (oa_sd_mode or parallel_oa_sd) and use_pose and img_teacher is not None:
+                if oerl_enabled and use_pose and feat_maps is not None and kp_data is not None:
                     oerl_weight = float(getattr(cfg.MODEL, 'POSE_OERL_WEIGHT', 1.0))
-                    # Forward clean image through SAME model (WITH gradients!)
-                    # This is different from OA-SD which uses EMA teacher with no_grad
-                    clean_out = model(img_teacher, label=target,
-                                     cam_label=target_cam,
-                                     view_label=target_view,
-                                     pose_dict=pose_dict.get('teacher_pose', pose_dict))
-                    clean_kp_data = None
-                    if len(clean_out) == 5:
-                        _, clean_feat, _, _, clean_kp_data = clean_out
-                    elif len(clean_out) == 4:
-                        _, clean_feat, _, _ = clean_out
-                    else:
-                        _, clean_feat, _ = clean_out[:3]
+                    oerl_occ_ratio = float(getattr(cfg.MODEL, 'POSE_OERL_OCC_RATIO', 0.5))
 
-                    # Part Occlusion Invariance: visible parts should match between clean and occluded
-                    # Sample keypoint features from NON-detached feature maps for backbone gradient flow
-                    if feat_maps is not None and len(clean_out) >= 3 and kp_data is not None:
-                        occ_fm = feat_maps[-1]  # (B, C, fH, fW) — from occluded forward, NON-detached
-                        clean_fm = clean_out[2][-1] if isinstance(clean_out[2], list) else clean_out[2]  # clean feature map
-                        kp_coords = pose_dict['keypoints'][:, 0, :, :]  # (B, 17, 2)
-                        kp_w = kp_data['kp_weights']  # (B, 17)
-                        input_h, input_w = img.shape[2], img.shape[3]
+                    # Feature-map-level Part Occlusion Invariance
+                    # 1. Sample keypoint features from the original (non-detached) feature map
+                    # 2. Create a randomly occluded version by masking feature map with pose heatmaps
+                    # 3. Re-sample from occluded feature map
+                    # 4. Align non-occluded keypoints
 
-                        # Bilinear sample from both feature maps at keypoint locations
-                        grid_x = (kp_coords[:, :, 0] / input_w * 2 - 1).clamp(-1, 1)
-                        grid_y = (kp_coords[:, :, 1] / input_h * 2 - 1).clamp(-1, 1)
-                        grid = torch.stack([grid_x, grid_y], dim=-1).unsqueeze(2)  # (B, 17, 1, 2)
+                    fm = feat_maps[-1]  # (B, C, fH, fW) — NON-detached backbone output
+                    B_oerl, C_oerl, fH, fW = fm.shape
+                    kp_coords = pose_dict['keypoints'][:, 0, :, :]  # (B, 17, 2)
+                    kp_scores = pose_dict['scores'][:, 0, :]  # (B, 17)
+                    heatmaps = pose_dict['heatmaps'][:, 0, :, :, :]  # (B, 17, hH, hW) person 0
+                    input_h, input_w = img.shape[2], img.shape[3]
 
-                        occ_kp = F.grid_sample(occ_fm, grid, mode='bilinear',
-                                               padding_mode='border', align_corners=True
-                                               ).squeeze(-1).permute(0, 2, 1)  # (B, 17, C)
-                        clean_kp = F.grid_sample(clean_fm, grid, mode='bilinear',
-                                                 padding_mode='border', align_corners=True
-                                                 ).squeeze(-1).permute(0, 2, 1)  # (B, 17, C)
+                    # Sample clean keypoint features
+                    grid_x = (kp_coords[:, :, 0] / input_w * 2 - 1).clamp(-1, 1)
+                    grid_y = (kp_coords[:, :, 1] / input_h * 2 - 1).clamp(-1, 1)
+                    grid = torch.stack([grid_x, grid_y], dim=-1).unsqueeze(2)  # (B, 17, 1, 2)
+                    clean_kp = F.grid_sample(fm, grid, mode='bilinear',
+                                             padding_mode='border', align_corners=True
+                                             ).squeeze(-1).permute(0, 2, 1)  # (B, 17, C)
 
-                        # Which keypoints are visible in BOTH views?
-                        # Clean is always visible; occluded view has some zeroed
-                        visible = kp_w > 0.3  # (B, 17) — visible in occluded view
+                    # Random per-sample occlusion: select keypoints to "occlude"
+                    num_occ = max(3, int(17 * oerl_occ_ratio))
+                    occ_mask = torch.zeros(B_oerl, 17, dtype=torch.bool, device=fm.device)
+                    for b in range(B_oerl):
+                        occ_idx = torch.randperm(17, device=fm.device)[:num_occ]
+                        occ_mask[b, occ_idx] = True
 
-                        if visible.any():
-                            # L2 normalize for cosine distance
-                            occ_norm = F.normalize(occ_kp, p=2, dim=2)
-                            clean_norm = F.normalize(clean_kp, p=2, dim=2)
-                            # Per-part cosine distance for visible parts
-                            cos_sim = (occ_norm * clean_norm).sum(dim=2)  # (B, 17)
-                            poi_loss = (1.0 - cos_sim[visible]).mean()
+                    # Create spatial occlusion mask from selected keypoints' heatmaps
+                    hm_resized = F.interpolate(heatmaps, size=(fH, fW),
+                                               mode='bilinear', align_corners=False)
+                    hm_resized = F.relu(hm_resized)  # (B, 17, fH, fW)
+                    # Aggregate heatmaps of occluded keypoints into a single occlusion map
+                    occ_hm = (hm_resized * occ_mask.float().unsqueeze(2).unsqueeze(3)).max(dim=1)[0]  # (B, fH, fW)
+                    # Normalize to [0, 1] and invert: 1 = keep, 0 = occlude
+                    occ_max = occ_hm.amax(dim=(1, 2), keepdim=True).clamp(min=1e-6)
+                    spatial_mask = 1.0 - (occ_hm / occ_max).clamp(0, 1)  # (B, fH, fW)
 
-                            details = getattr(loss, '_loss_details', {})
-                            loss = loss + oerl_weight * poi_loss
-                            details['oerl'] = poi_loss.item()
-                            details['oerl_nv'] = visible.float().sum().item() / visible.shape[0]
-                            loss._loss_details = details
+                    # Apply spatial mask to feature map (soft occlusion)
+                    fm_occluded = fm * spatial_mask.unsqueeze(1)  # (B, C, fH, fW)
+
+                    # Sample keypoint features from occluded feature map
+                    occ_kp = F.grid_sample(fm_occluded, grid, mode='bilinear',
+                                           padding_mode='border', align_corners=True
+                                           ).squeeze(-1).permute(0, 2, 1)  # (B, 17, C)
+
+                    # Visible = NOT occluded AND has valid keypoint score
+                    visible = (~occ_mask) & (kp_scores > 0.3)  # (B, 17)
+
+                    if visible.any():
+                        occ_norm = F.normalize(occ_kp, p=2, dim=2)
+                        clean_norm = F.normalize(clean_kp, p=2, dim=2)
+                        cos_sim = (occ_norm * clean_norm).sum(dim=2)  # (B, 17)
+                        poi_loss = (1.0 - cos_sim[visible]).mean()
+
+                        details = getattr(loss, '_loss_details', {})
+                        loss = loss + oerl_weight * poi_loss
+                        details['oerl'] = poi_loss.item()
+                        details['oerl_nv'] = visible.float().sum().item() / visible.shape[0]
+                        loss._loss_details = details
 
                 # BA-PKC: Backbone-Aware Per-Keypoint Contrastive
                 # Uses NON-detached keypoint features → gradients flow to backbone!
