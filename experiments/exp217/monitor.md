@@ -1,7 +1,7 @@
 # exp217 Tiny + GCN+PAA+CE+OA-SD + OERL (Part Occlusion Invariance) 监控
 
 配置: Tiny GCN+PAA+CE+OA-SD + OERL (feature-map-level soft occlusion + per-part invariance)
-对照: exp191 (Tiny + OA-SD): 64.4/76.5, exp187 (Tiny + SupCon 3v): 64.9/76.6
+对照: exp191 (Tiny + OA-SD 1-view): 63.2/75.4, exp193 (Tiny + OA-SD + 3-view + CE): 64.4/76.5, exp187 (Tiny + SupCon 3v): 64.9/76.6
 
 **创新点**: 
 - Feature-map-level pose-guided occlusion (不需要第二次 forward)
@@ -45,7 +45,7 @@ exp217b ep10 done, eval running.
 ### [11:05] 检查点 #5
 
 exp217b (w=0.5) ep10: 37.2/50.9 — 低于 exp217 (w=1.0) 38.9/52.3。
-两者都低于 baseline OA-SD (~40 at ep10)。
+两者都没有显示出明显优于既有 OA-SD 里程碑的趋势。
 
 **OERL loss ~0.003 — 基本是 no-op。**
 Swin 的 self-attention 让 feature map 高度 spatially mixed，
@@ -147,7 +147,7 @@ ep69. ep70 eval ~2min. ETA 1h15m.
 
 **exp217 ep70: 60.5%**
 Growth: +1.2 (ep60), +1.0 (ep70) — 放缓。
-预计 final ~63-64% (vs exp191 OA-SD-only: 64.4)。
+预计 final ~62-63%，大概率仍低于 `exp191 = 63.2/75.4`。
 OERL 可能略低于 OA-SD-only — 因为 OERL loss=0.002 基本无效。
 **决策**: 继续到 final 确认
 
@@ -185,7 +185,7 @@ ep89. ep90 eval ~2min. ETA 46min.
 ### [05:01] 检查点 #26 — ep90
 
 **ep90: 61.2%** (+0.5 from ep80)
-预计 final ~62-63% (vs exp191 OA-SD: 64.4 = **-1.5 to -2.5%**)
+预计 final ~62-63% (vs `exp191 = 63.2/75.4`，大致仍落后约 1 个点的 mAP)
 OERL v2 是负结果 — non-detached invariance loss 干扰了 OA-SD。
 **决策**: 继续到 final
 
@@ -203,7 +203,7 @@ ep99. ep100 eval ~2min. ETA 31min.
 ### [05:17] 检查点 #29 — ep100
 
 **ep100: 62.0%** (+0.8 from ep90)
-预计 final ~63% (vs OA-SD-only 64.4 = **-1.4%**)
+预计 final ~62-63% (vs `exp191 = 63.2/75.4`，大致仍落后约 1.0 mAP)
 **OERL 是负结果。** 但比 baseline 60.7 好 (+1.3)——说明 OERL 有效果但不如 OA-SD。
 ETA 28min.
 **决策**: 等 final
@@ -236,9 +236,9 @@ ep116. final ~5min.
 |------|------|------|
 | exp030a baseline | 60.7% | 72.6% |
 | **exp217 (OERL+OA-SD)** | **62.2%** | **75.2%** |
-| exp191 (OA-SD only) | 64.4% | 76.5% |
+| exp191 (OA-SD only) | 63.2% | 75.4% |
 
-**结论**: OERL+OA-SD (62.2) < OA-SD-only (64.4) by **-2.2%**。
+**结论**: OERL+OA-SD (`62.2/75.2`) < OA-SD-only (`63.2/75.4`)，即 `mAP -1.0 / R1 -0.2`。
 OERL 的 non-detached invariance loss 干扰了 OA-SD 的训练。
 OERL 本身比 baseline 好 (+1.5)，但与 OA-SD 不兼容。
 

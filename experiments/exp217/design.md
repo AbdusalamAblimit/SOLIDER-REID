@@ -67,11 +67,11 @@ poi_loss = cosine_distance(clean_kp_feats[visible], occ_kp_feats[visible]).mean(
 需要两次 forward (clean + occluded) → ~2x 显存。Tiny on 3090 (6GB * 2 = 12GB) 可行。
 
 ## 预期结果
-- 假设成立: mAP +2-3% on Tiny (64.9 → 67-68%)
+- 假设成立: 相对 `exp191 = 63.2/75.4` 提升约 `+2-3%` mAP（约 `65-66%`），并接近或超过 `exp187 = 64.9/76.6`
 - 如果 POI 有效 → 加 equivariance predictor (Phase 2)
 
 ## 对照组
 - exp030a Tiny baseline: 60.7%
-- exp191 Tiny + OA-SD: 64.4%
+- exp191 Tiny + OA-SD: 63.2/75.4
 - exp187 Tiny + SupCon 3-view: 64.9%
 - exp217 Tiny + OERL: 目标 67%+

@@ -129,7 +129,7 @@ ep50 开始. eval ~2min.
 **PADPQ 从 ep40 dip 恢复！** (+1.3 at ep50)
 GSPB at ep50 仅 +0.5 (fading)。PADPQ 保持更好。
 PADPQ 也超过了 GSPB (60.3 vs 59.5)！
-**决策**: 继续！PADPQ 可能是最终突破！
+**决策**: 继续，但是否能形成最终突破仍取决于 final 和 MaxSim。
 
 ### [15:33] 检查点 #15
 
@@ -225,8 +225,7 @@ K=4 ep89. ep90 eval ~2min. ETA 44min.
 | **90** | **63.1** | **62.4** | **+0.7** |
 
 **63.1% at ep90 已接近 OA-SD final (63.2)!**
-如果趋势持续: PADPQ final 可能 **64.0%+ — 超越 OA-SD!**
-**这是第一个有可能在 final 超过 OA-SD 的创新！**
+如果趋势持续，PADPQ final 可能在 `equal_concat mAP` 上超过 OA-SD；但是否能形成综合超越，仍取决于 R1 和后续 `MaxSim`。
 **决策**: 继续！
 
 ### [16:30] 检查点 #26
@@ -250,7 +249,7 @@ K=4 ep99 done. ep100 eval imminent. ETA 29min.
 | 90 | 63.1 | 62.4 | +0.7 |
 | **100** | **63.3** | **63.0** | **+0.3** |
 
-**PADPQ 是第一个在 Tiny 上超越 OA-SD-only final 的创新！**
+**到 ep100 为止，PADPQ 首次在 `equal_concat mAP` 上超过 OA-SD final；但当时还不能把它写成综合超越。**
 ETA 29min to final。如果继续增长 → **63.5-64.0%!**
 **决策**: 继续！每个 epoch 都很关键！
 
@@ -269,7 +268,7 @@ ep109. ep110 eval ~2min. final ~15min.
 | 110 | **63.5** | **63.1** | **+0.4** |
 
 **63.5% 超越 OA-SD final (63.2) by +0.3!**
-**预计 final ~63.6-63.8% — 打破 Tiny ceiling!**
+**预计 final ~63.6-63.8%；这只意味着 `equal_concat mAP` 继续上行，不等于打破 Tiny 的整体 ceiling。**
 但 **R1 持续落后 OA-SD ~1.1%**，mAP 微涨不足以弥补 R1 下降。
 总体看 PADPQ ≈ OA-SD，不是真正的突破。
 **决策**: 等 FINAL + MaxSim 测试
@@ -313,3 +312,16 @@ MaxSim gain 只有 +0.2 (极小)。
 
 **最终结论**: PADPQ 改善了 mAP (+0.5 eq) 但损害了 R1 (-0.9 eq) 和 MaxSim (-0.3)。
 deformable sampling 不是正确方向——它牺牲了 cross-image keypoint consistency。
+
+### 补记：远程 K=8 继续跑到 ep90
+
+远程 `exp223b (K=8)` 的 `train_log` 后续补查结果：
+- ep50: `59.5/70.4`
+- ep60: `61.1/71.8`
+- ep70: `62.1/73.3`
+- ep80: `62.5/73.9`
+- ep90: `62.8/73.4`
+
+因此，K=8 在 ep30-40 的早期领先并没有保持到后期。至少截至 ep90：
+- 没有证据表明 `K=8` 优于 `K=4 final = 63.7/74.5`
+- 也没有证据表明 `K=8` 能形成对 `OA-SD final = 63.2/75.4` 的稳定综合超越

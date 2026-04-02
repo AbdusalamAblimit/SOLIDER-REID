@@ -12,7 +12,7 @@ c. 与前序实验的对照
 
 ### 假设合理性: OK
 
-exp218 显示 PACI + OA-SD (~62%) < OA-SD-only (64.4%)。去掉 OA-SD 测试 PACI 独立效果是合理的消融。
+exp218 显示 PACI + OA-SD (`61.9/74.2`) < OA-SD-only (`63.2/75.4`)。去掉 OA-SD 测试 PACI 独立效果是合理的消融。
 
 ### 单变量原则: OK
 

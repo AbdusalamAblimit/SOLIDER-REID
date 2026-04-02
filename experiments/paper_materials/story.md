@@ -15,7 +15,11 @@
 
 ### 新发现
 
-1. **MaxSim Ceiling**: OA-SD 模型的 global feature 已达 single-vector 上限。MaxSim 只在 "弱 global" 模型上有效。所有方法 + MaxSim 收敛到 ~64.2% on Tiny。
+1. **MaxSim Behavior on Tiny**: `MaxSim` 的收益更依赖 per-keypoint consistency，而不是简单取决于 global 强弱。当前记录里：
+   - OA-SD: `63.2 -> 64.2`
+   - GSPB: `62.9 -> 64.6`
+   - PADPQ: `63.7 -> 63.9`
+   这说明 `PADPQ` 的 deformable sampling 会损害 cross-image keypoint consistency，而 `GSPB` 反而更利于 `MaxSim`。
 
 2. **GSPB (Gradient-Scaled Part Branch)**: 5% Part→Backbone 梯度大幅加速早期收敛 (+5.8% at ep10!) 但不改善 final。首次发现 detach 与 non-detach 之间的中间解。
 

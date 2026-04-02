@@ -84,10 +84,10 @@ for k in range(17):
 
 ## 预期结果
 - Phase 1 (bank only): 可能无直接效果（bank 只是记忆）
-- Phase 2 (+consistency loss): mAP +1-2% on Tiny (64.4 → 65-66)
+- Phase 2 (+consistency loss): 相对 `exp191 = 63.2/75.4` 再涨 `+1-2%` mAP（约 `64-65%`）
 - Phase 3 (+test-time completion): 额外 +1-2%
 
 ## 对照组
 - exp030a baseline: 60.7%
-- exp191 OA-SD: 64.4%
+- exp191 OA-SD: 63.2/75.4
 - exp187 SupCon 3v: 64.9%

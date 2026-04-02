@@ -2781,28 +2781,33 @@ Base 在 ep40 trailing Small — 可能因为 LR 过低 (0.0002)。但后期增�
 | exp211 | MST w=0.5 | detached | 完全无效 (所有 loss 一致) |
 | exp213 | PKC+MST 组合 | detached | 灾难 40.6% |
 | exp215 | BA-PKC non-detach | non-det | 灾难 0.5% |
-| exp217 | OERL non-detach cosine | non-det | -2.2% |
-| exp218 | PACI prototype bank | detached | -2.5% |
-| exp219 | PACI without OA-SD | detached | -0.3% |
-| exp220 | GSPB gradient scale 5% | 5% scale | -0.3% |
+| exp217 | OERL non-detach cosine | non-det | `62.2/75.2`，相对 `exp191 63.2/75.4` 为 `-1.0/-0.2` |
+| exp218 | PACI prototype bank | detached | `61.9/74.2`，相对 `exp191 63.2/75.4` 为 `-1.3/-1.2` |
+| exp219 | PACI without OA-SD | detached | 远程日志当前只确认到 `ep30=51.9/64.9`，早期即落后 baseline `52.2/65.2` |
+| exp220 | GSPB gradient scale 5% | 5% scale | `62.9/74.3`，相对 `exp191 63.2/75.4` 为 `-0.3/-1.1` |
 
 **根本原因:**
 1. detached: 梯度不到 backbone (50M) → 只更新 GCN (200K) → 无效
 2. non-detached: 与 CE 冲突 → 灾难
 3. gradient scaling: 加速早期 (+5.8% ep10!) 但 final 持平
 
-### MaxSim Ceiling 发现
+### MaxSim 行为修正
 
-**Tiny 上所有方法 + MaxSim 收敛到 ~64.2%:**
+早期只看 `OA-SD / OERL / PACI` 三条 Tiny 线时，`maxsim_hybrid` 确实都落在 `64.1~64.3`；
+但这个“~64.2 ceiling”后来被新日志推翻了。
 
 | 方法 | equal_concat | maxsim_hybrid |
 |------|------|------|
 | OA-SD-only | 63.2 | 64.2 |
 | OERL+OA-SD | 62.2 | 64.3 |
 | PACI+OA-SD | 61.9 | 64.1 |
+| GSPB+OA-SD | 62.9 | 64.6 |
+| PADPQ+OA-SD | 63.7 | 63.9 |
 
-**MaxSim 在 OA-SD 模型上无效！** OA-SD 的 global feature 已达 single-vector 上限。
-MaxSim 只在弱 global 模型上弥补不足。
+更准确的结论是：
+1. `MaxSim` 对 OA-SD 本身仍然有效（`63.2 -> 64.2`）
+2. `GSPB` 改善了 per-keypoint consistency，因此 `MaxSim` gain 更大（`+1.7`）
+3. `PADPQ` 的 deformable sampling 破坏 cross-image keypoint consistency，因此 `MaxSim` gain 很小（`+0.2`）
 
 ### GSPB (Gradient-Scaled Part Branch) — 有价值的发现
 

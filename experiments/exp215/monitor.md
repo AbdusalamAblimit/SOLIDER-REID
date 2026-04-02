@@ -48,7 +48,7 @@ exp215b (weight=0.05) ep5: id_global=6.543 — 也很慢。
 BA-PKC weight=0.1 的 SupCon 梯度直接打到 backbone，完全摧毁 CE 收敛。
 这证实了 detach() 的必要性——Part 梯度（无论是 CE 还是 SupCon）都不能回传到 backbone。
 
-**exp215 已终止。exp215b (weight=0.05) 可能稍好但也不太可能有效。**
+**exp215 已终止。远程 exp215b (weight=0.05) 的原始日志也显示它在 epoch 2 就出现 `tri_part=inf`，并没有“稍好”，而是同样失稳。**
 
 ### 重要结论
 

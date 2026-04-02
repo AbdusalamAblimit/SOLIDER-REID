@@ -31,6 +31,8 @@ ep9. ep10 eval ~3min.
 GSPB scale=0.05 对 Small 太强！
 Tiny 成功是因为 GCN 参数量相对小。Small 的 GCN 更大 → Part gradient 更强。
 **需要更小的 scale (0.01 或 0.005)。**
+补查远程原始日志后可确认：`exp222b (scale=0.1)` 在 epoch 1 就多次出现 `tri_part=inf`，且未跑到第一次 eval。
+因此 `exp222b` 只能算“早期即失稳”的辅助证据，不是完整对照。
 exp222 和 222b 均已终止。
 
 ### 重启: exp222c scale=0.01
@@ -67,7 +69,13 @@ exp222c ep8. Acc=0.052 (exp206r ep8 ~0.17 — 低但不灾难)。ep10 eval ~5min
 **GSPB 只在 Tiny 上有效！Small 对 Part gradient 极度敏感。**
 Small 的 GCN Part branch 梯度规模更大，即使 1% 也足以干扰 CE。
 
-**exp222c 和 222d 均终止。GSPB on Small 证伪。**
+补查远程原始日志后可确认：`exp222d (scale=0.005)` 只跑到约 `ep7`，未形成首次 eval。
+因此当前真正有评估数值支撑的 Small 线只有：
+- `scale=0.05 -> ep10 2.3/3.9`
+- `scale=0.01 -> ep10 15.1/23.8`
+
+`scale=0.1` 的证据是“epoch1 即失稳”，`scale=0.005` 的证据是“早期训练仍明显异常且在首个 eval 前止损”。
+**exp222c 和 222d 均终止。现有证据已足够支持 “GSPB on Small 不可作为当前主线” 的判断，但要避免把 0.005 写成已有完整负结果。**
 
 ## 最终结论
 

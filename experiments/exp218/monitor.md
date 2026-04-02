@@ -1,7 +1,7 @@
 # exp218 Tiny + GCN+PAA+CE+OA-SD + PACI (Part Prototype Bank) 监控
 
 配置: Tiny GCN+PAA+CE+OA-SD + PACI (per-ID per-part prototype bank + consistency loss)
-对照: exp191 (Tiny + OA-SD): 64.4/76.5, exp187 (Tiny + SupCon 3v): 64.9/76.6
+对照: exp191 (Tiny + OA-SD 1-view): 63.2/75.4, exp193 (Tiny + OA-SD + 3-view + CE): 64.4/76.5, exp187 (Tiny + SupCon 3v): 64.9/76.6
 
 **创新点**: Per-identity per-part momentum prototype bank
 - 训练时记忆每个 ID 的 body part appearance
@@ -70,8 +70,8 @@ exp218b (w=1.0) ep10: 39.2 (= exp218 w=0.5).
 
 **优势在扩大！** (+1.0 → +1.6)
 PACI 的 prototype bank 积累了更多 identity-specific 信息 → 更强的信号！
-这是第一个在 Tiny 上显示出持续增长优势的创新！
-**决策**: 继续！非常有前途！
+截至 ep20，这是第一条在 Tiny 上连续 `ep10 -> ep20` 仍保持正增量的训练端线索，但后续仍需防止把 early lead 误判成最终突破。
+**决策**: 继续，重点观察它是否能在 ep40 以后保持。
 
 ### [06:45] 检查点 #8
 
@@ -98,9 +98,9 @@ ep28. paci=0.131, pos-neg=0.170. ep30 eval ~3min.
 **优势持续扩大!! +1.0 → +1.6 → +2.1!**
 PACI prototype bank 越积累越有效——这正是 PACI 设计的核心价值。
 如果趋势持续: final 可能达到 **63-65% (+3-4% vs baseline)!**
-甚至可能超过 exp191 OA-SD-only (64.4)!
+甚至可能在 `equal_concat mAP` 上逼近 `exp191`，但是否综合超越仍取决于后续 R1 和 test-time 表现。
 
-**这是目前最有前途的创新方向！**
+**截至 ep30，这是当时最强的早期正信号之一；但还不能把它写成已确认的突破方向。**
 **决策**: 继续！密切监控！
 
 ### [07:02] 检查点 #11
@@ -159,7 +159,7 @@ ep48. paci=0.079, pos-neg=0.229. ep50 eval ~3min.
 
 优势回升到 +1.0。震荡但平均正。
 vs OERL ep50: 58.3 → PACI 略好。
-预计 final ~62-63% (vs baseline 60.7, vs OA-SD 64.4)。
+预计 final ~62-63% (vs baseline 60.7, vs `exp191 = 63.2/75.4`)。
 **决策**: 继续
 
 ### [07:40] 检查点 #18
@@ -305,9 +305,9 @@ ep119. FINAL ~2min!
 | exp030a baseline | 60.7% | 72.6% |
 | **exp218 PACI+OA-SD** | **61.9%** | **74.2%** |
 | exp217 OERL+OA-SD | 62.2% | 75.2% |
-| exp191 OA-SD only | 64.4% | 76.5% |
+| exp191 OA-SD only | 63.2% | 75.4% |
 
-**PACI+OA-SD: +1.2% vs baseline, -2.5% vs OA-SD-only.**
+**PACI+OA-SD: +1.2% vs baseline, 但相对 OA-SD-only 为 `mAP -1.3 / R1 -1.2`。**
 PACI 与 OERL 在最终结果上几乎一致 (61.9 vs 62.2)。
 两者都低于 OA-SD-only，confirm 额外 loss 干扰 OA-SD。
 
@@ -316,14 +316,15 @@ PACI 与 OERL 在最终结果上几乎一致 (61.9 vs 62.2)。
 
 ### MaxSim Hybrid 对比 (Tiny) 🔥🔥🔥
 
-**关键发现: 所有方法 + MaxSim 都收敛到 ~64.1-64.3%！**
+**就当时已完成的 OA-SD / OERL / PACI 三条 Tiny 线而言，MaxSim 都落在 64.1-64.3。**
 
 | 方法 | equal_concat | maxsim_hybrid |
 |------|------|------|
-| OA-SD-only (exp191) | **64.4** | 64.2 |
+| OA-SD-only (exp191) | **63.2** | 64.2 |
 | OERL+OA-SD (exp217) | 62.2 | 64.3 |
 | PACI+OA-SD (exp218) | 61.9 | 64.1 |
 
-**MaxSim 在 OA-SD 模型上无效 (-0.2%)！OA-SD 的 global feature 已经最优。**
-**OERL/PACI 的模型 global 较弱 → MaxSim 弥补 → 最终趋同。**
-**~64.2% 是 GCN+PAA on Tiny 的 MaxSim ceiling。**
+**这里更准确的结论是：**
+- `MaxSim` 对 OA-SD 本身仍是正向的（`63.2 -> 64.2`）
+- OERL / PACI 没有把 Tiny 线的 `MaxSim` 上限继续抬高
+- 这个“~64.2”判断只覆盖当时已完成的三条线；后续 `exp220` 已把 Tiny `maxsim_hybrid` 推到 `64.6`

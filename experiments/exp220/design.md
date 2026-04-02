@@ -34,13 +34,13 @@ feat_map_scaled = featmaps[-1].detach() + scale * (featmaps[-1] - featmaps[-1].d
 
 ## 核心假设
 0.05x 的 Part→Backbone 梯度让 backbone 缓慢学习 part-level discriminability，
-不破坏 Global CE 收敛，但打破 64.4% 的天花板。
+不破坏 Global CE 收敛，并有机会超过 `exp191 = 63.2/75.4`，或至少在 `MaxSim` 上表现出更强的 per-keypoint signal。
 
 ## 技术方案
 - `model/pose_backbone_model.py`: 替换 `detach()` 为 gradient scaling
 - `config/defaults.py`: POSE_PART_GRAD_SCALE
 
 ## 对照组
-- exp191 OA-SD (scale=0.0): 64.4%
+- exp191 OA-SD (scale=0.0): 63.2/75.4
 - exp215 BA-PKC (scale=1.0): 灾难 0.5%
 - exp220 GSPB (scale=0.05): 目标 65%+

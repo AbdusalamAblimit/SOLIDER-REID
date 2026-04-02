@@ -1,7 +1,7 @@
 # exp220 Tiny + GCN+PAA+CE+OA-SD + GSPB (scale=0.05) 监控
 
 配置: Tiny GCN+PAA+CE+OA-SD + Part→Backbone gradient scale=0.05
-对照: exp191 (scale=0.0/detach): 64.4%, exp215 (scale=1.0/non-detach): 灾难
+对照: exp191 (scale=0.0/detach): 63.2/75.4, exp215 (scale=1.0/non-detach): 灾难
 
 **创新点**: Gradient-scaled part branch — Part CE/triplet 梯度以 5% 强度传回 backbone
 这是 detach (0%) 和 non-detach (100%) 之间的中间解
@@ -70,7 +70,7 @@ ep20 mid. eval ~2min.
 **优势在扩大！** +1.9 → +2.3
 **GSPB 领先所有方法** (PACI 48.4, OERL 47.7)!
 5% Part 梯度正在教 backbone 学习 part-level discriminability!
-**决策**: 继续！这是突破方向！
+**决策**: 继续，但不能把 early lead 直接当成最终突破。
 
 ### [10:34] 检查点 #7
 
@@ -94,7 +94,7 @@ ep30 iter 180. eval ~1min.
 
 **优势稳定在 +2.3%！** 没有缩小！
 GSPB 领先 PACI (+0.2) 和 OERL (+0.7)。
-如果持续: final ~63% + OA-SD ~66.5% → 可能 **打破 64.4% ceiling!**
+如果持续，`equal_concat` 口径下有机会逼近 `exp191 = 63.2/75.4`；但这里不应再把 `64.4` 当作 OA-SD 的单图基线 ceiling。
 **决策**: 继续！
 
 ### [10:48] 检查点 #10
@@ -143,7 +143,7 @@ ep50 mid. eval ~1min.
 | 50 | **59.5/71.3** | **~57.5/~70** | **+2.0/+1.3** |
 
 mAP 优势回升到 +2.0, R1 也正了 (+1.3)!
-**GSPB 是迄今最好的 Tiny 创新！**
+**截至 ep50，GSPB 是当时 Tiny 线上最强的早期正信号；是否成立为最终创新仍取决于收敛结果和 MaxSim。**
 **决策**: 继续！
 
 ### [11:20] 检查点 #14
@@ -339,3 +339,19 @@ equal_concat 看不出 (-0.3)，但 MaxSim 能看出 (+0.4)。
 
 **这证明 GSPB 有真正的价值——它改善了 per-keypoint feature quality，
 只是需要 MaxSim matching 才能体现。**
+
+### 补记：远程 scale=0.02 后续日志
+
+远程 `exp220b (scale=0.02)` 的 `train_log` 后续已补查到：
+- ep30: `54.8/67.1`
+- ep40: `56.5/69.4`
+- ep50: `59.3/71.4`
+- ep60: `59.7/71.4`
+- ep70: `60.9/73.5`
+- ep80: `62.0/73.7`
+- ep90: `62.3/74.8`
+
+这说明早期 `ep10/20` 的落后并不自动意味着 `scale=0.02` 最终更差。
+截至当前可见日志，更稳妥的结论应是：
+- `scale=0.05` 的**早期加速**更强
+- 但 `0.05 vs 0.02` 的最终优劣，不能仅凭前 20 epoch 就下结论；至少在 `equal_concat` 同期指标上，`scale=0.02` 后期已基本追上

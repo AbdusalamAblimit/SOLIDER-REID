@@ -940,7 +940,7 @@
      - 即当前 benchmark 上真正“一侧低一侧高”的 bilateral gap case 太少
   4. 因而这条线目前更像一个已被快速排除的结构先验假设，而不是可继续深挖的主方向
 
-## 2026-04-01/02: exp206r, exp207, exp209, exp210, exp210b, exp211, exp212, exp213
+## 2026-04-01/02: exp206r, exp207, exp209, exp210, exp210b, exp212, exp213
 
 ### exp206r: Small GCN+PAA+CE+OA-SD (Fixed OA-SD teacher)
 > Repeat of exp206 with fixed OA-SD teacher (BN/Dropout/DropPath eval mode, clean teacher pose)
@@ -1015,3 +1015,20 @@
 | 120 | 70.3% | 72.1% | +1.8% |
 
 - MaxSim gain 在 +1.5~1.8% 范围内稳定，不依赖训练阶段。
+
+## 2026-04-02: exp215, exp217, exp218, exp220, exp222, exp223
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| exp215 BA-PKC w=0.1 | 0.5% | 0.8% | 3.1% | 4.5% | ep10 终止 |
+| exp217 OERL + OA-SD | 62.2% | 75.2% | 86.0% | 89.0% | ep120 final |
+| exp218 PACI + OA-SD | 61.9% | 74.2% | 85.6% | 88.9% | ep120 final |
+| exp220 GSPB + OA-SD | 62.9% | 74.3% | 86.2% | 89.5% | ep120 final |
+| exp222 GSPB on Small (scale=0.05) | 2.3% | 3.9% | 9.9% | 14.3% | ep10 终止 |
+| exp223 PADPQ K=4 + OA-SD | 63.7% | 74.5% | 86.2% | 89.5% | ep120 final |
+
+- exp215 证实了 non-detached BA-PKC 会直接破坏 backbone 收敛。
+- exp217 / exp218 / exp220 都低于 `exp191 = 63.2 / 75.4`，因此不能写成训练端正向超越。
+- exp223 在 `equal_concat` 上给出 `mAP +0.5`，但 `R1 -0.9`；当前更适合作为 trade-off 证据，而不是“全面超越”。
+- exp219 的远程 `train_log` 已补回，但目前只确认到 `ep30 = 51.9 / 64.9`，尚无 final，因此暂不纳入正式结果表。
+- 注：`exp220/223` 的 `maxsim_hybrid` 数字目前只在各自 `monitor.md` 中留有测试记录，本地未发现独立 `test_log`，因此本总表仅登记训练日志可直接复核的 `equal_concat` 结果。

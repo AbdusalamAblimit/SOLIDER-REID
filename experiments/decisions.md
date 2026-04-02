@@ -3243,7 +3243,7 @@ B. 直接启动 exp025，exp024 可以后续补跑
 | exp213 | PKC+MST combo | Yes | 灾难 40.6% |
 | exp215 | BA-PKC w=0.1 non-detached | No | 灾难 0.5% |
 | exp212 | LR=0.0008 | — | 灾难 0.8% |
-| exp217 | OERL w=1.0 non-detached cosine | No | -2.2% vs OA-SD |
+| exp217 | OERL w=1.0 non-detached cosine | No | `62.2/75.2`，相对 `exp191 63.2/75.4` 为 `-1.0/-0.2` |
 
 **核心教训:**
 1. detached 路径: 梯度不到 backbone → 无效
@@ -3259,26 +3259,30 @@ B. 直接启动 exp025，exp024 可以后续补跑
 ### [2026-04-02 09:45] 决策 — PACI 证伪 + MaxSim Ceiling 发现
 
 **PACI (exp218/219) 结果:**
-- PACI + OA-SD (exp218): 61.9% (vs OA-SD-only 64.4 = **-2.5%**)
-- PACI-only (exp219): ep30=51.9 (vs baseline ep30=52.2 = **-0.3%**)
+- PACI + OA-SD (exp218): `61.9 / 74.2` (vs `exp191 63.2 / 75.4` = **-1.3 / -1.2**)
+- PACI-only (exp219): 已从远程补回 `train_log`，当前可直接复核到 `ep10=37.7/50.5`、`ep20=47.5/60.4`、`ep30=51.9/64.9`；但尚无 final，因此它仍只能作为 early stop-loss 证据，不能写成正式最终结果
 - **PACI 证伪。Consistency loss on detached GCN = 无效。**
 
-**MaxSim Ceiling 关键发现 (Tiny):**
+**当时已完成三条 Tiny 线的 MaxSim 对照：**
 
 | 方法 | equal_concat | maxsim_hybrid |
 |------|------|------|
-| OA-SD-only | **64.4** | 64.2 |
+| OA-SD-only | **63.2** | 64.2 |
 | OERL+OA-SD | 62.2 | 64.3 |
 | PACI+OA-SD | 61.9 | 64.1 |
 
-**所有方法 + MaxSim 收敛到 ~64.2%！这是 GCN+PAA on Tiny 的硬天花板。**
-**MaxSim 在 OA-SD 模型上无效 (-0.2)！** OA-SD 的 global feature 已达上限。
+这一步更准确的结论不是 “OA-SD 已达 64.4 ceiling”，而是：
+1. 在 `OA-SD / OERL / PACI` 这三条已完成 Tiny 线内部，`maxsim_hybrid` 都落在 `64.1~64.3`
+2. `MaxSim` 对 `OA-SD` 本身仍是正向的（`63.2 -> 64.2`），只是 `OERL/PACI` 并没有把这个 test-time 上限继续抬高
+3. 因而当时更合理的判断应是：
+   - `extra loss` 没有改善 Tiny 上的 `MaxSim` 上限
+   - 但 “Tiny 的硬天花板就是 64.2” 这个表述还不能下
 
 **根本问题诊断:**
 1. detached GCN 是架构瓶颈 → 任何 per-keypoint loss 只更新 200K GCN params → 无效
 2. non-detached losses 与 CE/OA-SD 冲突 → 灾难
-3. MaxSim 是 test-time trick，在弱模型上弥补 global 不足，但在强模型上无用
-4. **Tiny 的 GCN+PAA+OA-SD 已达极限 ~64.4%**
+3. MaxSim 是 test-time matching 修正；它是否继续涨，强依赖 per-keypoint consistency，而不只是 global 强弱
+4. 后续 `exp220` 已把 Tiny `maxsim_hybrid` 推到 `64.6`，因此这里原先的 `~64.4` / `~64.2` ceiling 表述应视为阶段性误判
 
 **接下来的方向必须是:**
 1. **改变 Part 架构** — 不是 loss tuning，而是改 GCN 本身或替换为更强的 part 机制
@@ -3297,7 +3301,7 @@ B. 直接启动 exp025，exp024 可以后续补跑
 | PADPQ K=8+OA-SD | 进行中 | 进行中 |
 
 **关键发现:**
-1. GSPB: 早期加速 +5.8% at ep10, 最终 maxsim +0.4 (best Tiny mAP)
+1. GSPB: 早期加速 +5.8% at ep10，按当前测试记录 `maxsim_hybrid` 相对 OA-SD 为 `+0.4`，是目前 Tiny 线上最高的 `maxsim` mAP
 2. PADPQ: mAP +0.5 但 R1 -0.9, MaxSim 仅 +0.2 (deformable 破坏了 cross-image consistency)
 3. GSPB 只在 Tiny 有效，Small 上灾难 (ep10=2.3%)
 
