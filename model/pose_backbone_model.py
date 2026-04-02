@@ -112,6 +112,11 @@ class PoseBackboneModel(build_transformer):
         if self.pose_dropout_p > 0:
             print(f'[PSG] Stochastic Pose Dropout enabled: p={self.pose_dropout_p}')
 
+        # GSPB: Gradient-Scaled Part Branch
+        self._part_grad_scale = float(getattr(cfg.MODEL, 'POSE_PART_GRAD_SCALE', 0.0))
+        if self._part_grad_scale > 0:
+            print(f'[GSPB] Part branch gradient scale: {self._part_grad_scale}')
+
         # BA-PKC: Backbone-Aware Per-Keypoint Contrastive
         self.ba_pkc = getattr(cfg.MODEL, 'POSE_BA_PKC', False)
         if self.ba_pkc:
@@ -436,7 +441,13 @@ class PoseBackboneModel(build_transformer):
                     return [cls_score, str_cls], [global_feat, str_feat], featmaps, None, kp_data
 
             elif self.use_skeleton_gcn and pose_dict is not None:
-                feat_map_detached = featmaps[-1].detach()
+                # GSPB: Gradient-scaled part branch
+                # scale=0 → detach (default), scale=1 → non-detach
+                _gs = getattr(self, '_part_grad_scale', 0.0)
+                if _gs > 0:
+                    feat_map_detached = featmaps[-1].detach() + _gs * (featmaps[-1] - featmaps[-1].detach())
+                else:
+                    feat_map_detached = featmaps[-1].detach()
 
                 # Dual Part Branch: also run STD-PR for per-token SupCon if both are enabled
                 dual_branch_active = False

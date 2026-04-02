@@ -185,6 +185,9 @@ _C.MODEL.POSE_OA_RD = False                # Enable relational distillation (dis
 _C.MODEL.POSE_OA_RD_TEMP = 0.1            # Temperature for softmax on similarity matrix
 _C.MODEL.POSE_OA_RD_WEIGHT = 1.0          # Weight of relational distillation loss
 
+# GSPB: Gradient-Scaled Part Branch — partial gradient flow from Part to backbone
+_C.MODEL.POSE_PART_GRAD_SCALE = 0.0       # 0.0 = detach (default), 1.0 = non-detach, 0.05 = scaled
+
 # PACI: Pose-Anchored Compositional Identity — per-ID per-part prototype bank
 _C.MODEL.POSE_PACI = False                # Enable PACI
 _C.MODEL.POSE_PACI_WEIGHT = 0.5           # Consistency loss weight
