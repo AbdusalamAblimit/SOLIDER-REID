@@ -76,3 +76,8 @@ Small 的 GCN Part branch 梯度规模更大，即使 1% 也足以干扰 CE。
 - Small: 任何 scale > 0 → 灾难
 
 **Small 的 GCN+PAA+OA-SD+MaxSim 72.4% 仍是最佳。**
+
+### [14:00] 状态
+
+两台 GPU 空闲。研究 agent 正在搜索新架构方向。
+等待结果后立即启动下一实验。
