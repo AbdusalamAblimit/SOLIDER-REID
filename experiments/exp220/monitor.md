@@ -321,3 +321,21 @@ ep120 iter 120. eval ~1min!
 - 早期收敛加速有实用意义（训练效率）
 - Gradient scaling 是 detach vs non-detach 的新中间解
 - 但不能作为 mAP 提升的主创新点
+
+### MaxSim Hybrid 测试 🔥🔥🔥
+
+**exp220 GSPB + maxsim_hybrid: 64.6/76.0!!**
+
+| Method | equal_concat | maxsim_hybrid | MaxSim gain |
+|--------|------|------|------|
+| OA-SD-only | 63.2 | 64.2 | +1.0 |
+| **GSPB+OA-SD** | **62.9** | **64.6** | **+1.7** |
+
+**64.6% = Tiny 新最佳！ GSPB + MaxSim 超过 OA-SD + MaxSim by +0.4%!**
+
+GSPB 的 5% Part gradient 确实改善了 per-keypoint features！
+equal_concat 看不出 (-0.3)，但 MaxSim 能看出 (+0.4)。
+**MaxSim gain: GSPB +1.7 vs OA-SD +1.0 → GSPB 产生了更好的 per-keypoint features!**
+
+**这证明 GSPB 有真正的价值——它改善了 per-keypoint feature quality，
+只是需要 MaxSim matching 才能体现。**
