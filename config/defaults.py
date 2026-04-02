@@ -185,6 +185,12 @@ _C.MODEL.POSE_OA_RD = False                # Enable relational distillation (dis
 _C.MODEL.POSE_OA_RD_TEMP = 0.1            # Temperature for softmax on similarity matrix
 _C.MODEL.POSE_OA_RD_WEIGHT = 1.0          # Weight of relational distillation loss
 
+# MST: MaxSim Triplet loss — directly optimizes per-keypoint features for MaxSim distance
+_C.MODEL.POSE_MST = False                 # Enable MaxSim Triplet
+_C.MODEL.POSE_MST_WEIGHT = 0.5            # MST loss weight
+_C.MODEL.POSE_MST_MARGIN = 0.3            # Triplet margin
+_C.MODEL.POSE_MST_VIS_THR = 0.3           # Visibility threshold
+
 # PKC: Per-Keypoint Contrastive loss on GCN keypoint features
 _C.MODEL.POSE_PKC = False                 # Enable per-keypoint SupCon
 _C.MODEL.POSE_PKC_WEIGHT = 0.5            # PKC loss weight

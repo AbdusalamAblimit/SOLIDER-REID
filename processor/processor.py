@@ -867,6 +867,70 @@ def do_train(cfg,
                         details['pkc_nk'] = len(pkc_losses)
                         loss._loss_details = details
 
+                # MST: MaxSim Triplet loss — directly optimize per-keypoint features for MaxSim
+                mst_enabled = getattr(cfg.MODEL, 'POSE_MST', False)
+                if mst_enabled and kp_data is not None and 'kp_feats' in kp_data:
+                    mst_weight = float(getattr(cfg.MODEL, 'POSE_MST_WEIGHT', 0.5))
+                    mst_margin = float(getattr(cfg.MODEL, 'POSE_MST_MARGIN', 0.3))
+                    mst_vis_thr = float(getattr(cfg.MODEL, 'POSE_MST_VIS_THR', 0.3))
+
+                    kp_f = kp_data['kp_feats']     # (B, 17, C)
+                    kp_w = kp_data['kp_weights']    # (B, 17)
+                    B_kp, K_kp, C_kp = kp_f.shape
+
+                    # L2 normalize keypoint features
+                    kp_fn = F.normalize(kp_f, p=2, dim=2)  # (B, 17, C)
+
+                    # Compute pairwise MaxSim distance matrix: (B, B)
+                    # For each pair (i,j): sim = mean_k max_l cos(kp_i_k, kp_j_l), weighted by visibility
+                    # Efficient: sim_all = einsum('bkd,cjd->bkcj', kp_fn, kp_fn)  # (B, B, 17, 17)
+                    # maxsim_per_k = sim_all.max(dim=3)[0]  # (B, B, 17) — best match for each query kp
+                    # Weight by visibility and average
+                    w_mask = (kp_w > mst_vis_thr).float()  # (B, 17)
+                    w_eff = kp_w * w_mask  # (B, 17)
+                    w_sum = w_eff.sum(dim=1, keepdim=True).clamp(min=1.0)  # (B, 1)
+
+                    # Chunk to avoid OOM on large B
+                    chunk = min(B_kp, 32)
+                    sim_chunks = []
+                    for i in range(0, B_kp, chunk):
+                        ie = min(i + chunk, B_kp)
+                        q = kp_fn[i:ie]  # (c, 17, C)
+                        s = torch.einsum('bkd,cjd->bkcj', q, kp_fn)  # (c, B, 17, 17)
+                        ms = s.max(dim=3)[0]  # (c, B, 17)
+                        # Weighted average
+                        w_q = w_eff[i:ie]  # (c, 17)
+                        w_s = w_q.sum(dim=1, keepdim=True).clamp(min=1.0)  # (c, 1)
+                        sim = (ms * w_q.unsqueeze(1)).sum(dim=2) / w_s  # (c, B)
+                        sim_chunks.append(sim)
+                    maxsim_mat = torch.cat(sim_chunks, dim=0)  # (B, B)
+                    dist_mat = 1.0 - maxsim_mat  # (B, B)
+
+                    # Hard triplet mining
+                    label_eq = (target.unsqueeze(0) == target.unsqueeze(1))
+                    self_mask = ~torch.eye(B_kp, dtype=torch.bool, device=dist_mat.device)
+                    pos_mask = label_eq & self_mask
+                    neg_mask = ~label_eq
+
+                    # Hardest positive: max distance among same-ID
+                    pos_dist = dist_mat.clone()
+                    pos_dist[~pos_mask] = -1.0
+                    hardest_pos, _ = pos_dist.max(dim=1)  # (B,)
+
+                    # Hardest negative: min distance among diff-ID
+                    neg_dist = dist_mat.clone()
+                    neg_dist[~neg_mask] = 1e6
+                    hardest_neg, _ = neg_dist.min(dim=1)  # (B,)
+
+                    # Only samples with valid positives
+                    has_pos = pos_mask.any(dim=1)
+                    if has_pos.any():
+                        mst_loss = F.relu(hardest_pos[has_pos] - hardest_neg[has_pos] + mst_margin).mean()
+                        details = getattr(loss, '_loss_details', {})
+                        loss = loss + mst_weight * mst_loss
+                        details['mst'] = mst_loss.item()
+                        loss._loss_details = details
+
             scaler.scale(loss).backward()
 
             scaler.step(optimizer)
