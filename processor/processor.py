@@ -418,6 +418,20 @@ def do_train(cfg,
         if not getattr(cfg.MODEL, 'POSE_LOWER_BODY_OCC', False):
             logger.warning('[OA-SD/RD] WARNING: PLBOA is disabled. Teacher and student see near-identical images.')
 
+    # PACI: Part Prototype Bank
+    paci_enabled = getattr(cfg.MODEL, 'POSE_PACI', False)
+    paci_bank = None
+    if paci_enabled:
+        from model.modules.part_prototype_bank import PartPrototypeBank
+        base_m = model.module if hasattr(model, 'module') else model
+        feat_dim = base_m.in_planes  # backbone feature dim
+        paci_bank = PartPrototypeBank(
+            num_classes=num_classes, num_parts=17, feat_dim=feat_dim,
+            momentum=float(getattr(cfg.MODEL, 'POSE_PACI_MOMENTUM', 0.9)),
+            vis_threshold=0.3,
+        ).to('cuda')
+        logger.info(f'[PACI] Part Prototype Bank created: {num_classes} IDs x 17 parts x {feat_dim}D')
+
     # train
     for epoch in range(1, epochs + 1):
         if backbone_frozen and epoch > freeze_epochs:
@@ -1036,10 +1050,62 @@ def do_train(cfg,
                         details['mst'] = mst_loss.item()
                         loss._loss_details = details
 
+                # PACI: Part-Prototype Consistency Loss
+                paci_warmup = int(getattr(cfg.MODEL, 'POSE_PACI_WARMUP', 5))
+                if paci_enabled and paci_bank is not None and kp_data is not None \
+                        and 'kp_feats' in kp_data and epoch > paci_warmup:
+                    paci_weight = float(getattr(cfg.MODEL, 'POSE_PACI_WEIGHT', 0.5))
+                    paci_margin = float(getattr(cfg.MODEL, 'POSE_PACI_MARGIN', 0.3))
+
+                    kp_f = kp_data['kp_feats']     # (B, 17, C) detached GCN features
+                    kp_w = kp_data['kp_weights']    # (B, 17)
+
+                    # Get prototypes for current batch's identities
+                    protos, proto_valid = paci_bank.get_prototypes(target)  # (B, 17, C), (B, 17)
+
+                    # Get negative prototypes (random different IDs)
+                    neg_protos = paci_bank.get_negative_prototypes(target, num_neg=4)
+
+                    # Visible AND prototype initialized
+                    can_use = (kp_w > 0.3) & proto_valid  # (B, 17)
+
+                    if can_use.any() and neg_protos is not None:
+                        kp_norm = F.normalize(kp_f, p=2, dim=2)
+                        pos_norm = F.normalize(protos.detach(), p=2, dim=2)
+
+                        # Positive: cosine similarity to own prototype
+                        pos_sim = (kp_norm * pos_norm).sum(dim=2)  # (B, 17)
+
+                        # Negative: cosine similarity to random other ID's prototype
+                        # Use hardest negative (max similarity among neg IDs)
+                        neg_norm = F.normalize(neg_protos.detach(), p=2, dim=3)  # (B, 4, 17, C)
+                        neg_sim = torch.einsum('bkc,bnkc->bnk', kp_norm, neg_norm)  # (B, 4, 17)
+                        hard_neg_sim = neg_sim.max(dim=1)[0]  # (B, 17)
+
+                        # Triplet loss on visible+valid parts
+                        paci_loss_per = F.relu(paci_margin - pos_sim + hard_neg_sim)  # (B, 17)
+                        paci_loss = paci_loss_per[can_use].mean()
+
+                        if paci_loss.item() > 0:
+                            details = getattr(loss, '_loss_details', {})
+                            loss = loss + paci_weight * paci_loss
+                            details['paci'] = paci_loss.item()
+                            details['paci_pos'] = pos_sim[can_use].mean().item()
+                            details['paci_neg'] = hard_neg_sim[can_use].mean().item()
+                            loss._loss_details = details
+
             scaler.scale(loss).backward()
 
             scaler.step(optimizer)
             scaler.update()
+
+            # PACI: update prototype bank (after optimizer step, with detached features)
+            if paci_enabled and paci_bank is not None and kp_data is not None \
+                    and 'kp_feats' in kp_data:
+                paci_bank.update(
+                    kp_data['kp_feats'].detach(),
+                    kp_data['kp_weights'].detach(),
+                    target)
 
             # OA-SD: update EMA teacher after optimizer step (params + buffers)
             if ema_teacher is not None:

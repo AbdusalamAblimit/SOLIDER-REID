@@ -185,6 +185,13 @@ _C.MODEL.POSE_OA_RD = False                # Enable relational distillation (dis
 _C.MODEL.POSE_OA_RD_TEMP = 0.1            # Temperature for softmax on similarity matrix
 _C.MODEL.POSE_OA_RD_WEIGHT = 1.0          # Weight of relational distillation loss
 
+# PACI: Pose-Anchored Compositional Identity — per-ID per-part prototype bank
+_C.MODEL.POSE_PACI = False                # Enable PACI
+_C.MODEL.POSE_PACI_WEIGHT = 0.5           # Consistency loss weight
+_C.MODEL.POSE_PACI_MOMENTUM = 0.9         # EMA momentum for prototype update
+_C.MODEL.POSE_PACI_MARGIN = 0.3           # Triplet margin for consistency loss
+_C.MODEL.POSE_PACI_WARMUP = 5             # Epochs before consistency loss kicks in
+
 # OERL: Occlusion-Equivariant Representation Learning
 _C.MODEL.POSE_OERL = False                # Enable OERL Part Occlusion Invariance
 _C.MODEL.POSE_OERL_WEIGHT = 1.0           # POI loss weight
