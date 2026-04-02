@@ -431,7 +431,7 @@ def do_train(cfg,
             momentum=float(getattr(cfg.MODEL, 'POSE_PACI_MOMENTUM', 0.9)),
             vis_threshold=0.3,
         ).to('cuda')
-        logger.info(f'[PACI] Part Prototype Bank created: {num_classes} IDs x 17 parts x {feat_dim}D')
+        logger.info(f'[PACI] Part Prototype Bank created: {paci_num_classes} IDs x 17 parts x {feat_dim}D')
 
     # train
     for epoch in range(1, epochs + 1):
