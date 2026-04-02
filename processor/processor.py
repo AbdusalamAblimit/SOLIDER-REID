@@ -425,8 +425,9 @@ def do_train(cfg,
         from model.modules.part_prototype_bank import PartPrototypeBank
         base_m = model.module if hasattr(model, 'module') else model
         feat_dim = base_m.in_planes  # backbone feature dim
+        paci_num_classes = base_m.classifier.weight.shape[0]  # from classifier output dim
         paci_bank = PartPrototypeBank(
-            num_classes=num_classes, num_parts=17, feat_dim=feat_dim,
+            num_classes=paci_num_classes, num_parts=17, feat_dim=feat_dim,
             momentum=float(getattr(cfg.MODEL, 'POSE_PACI_MOMENTUM', 0.9)),
             vis_threshold=0.3,
         ).to('cuda')
@@ -1086,13 +1087,12 @@ def do_train(cfg,
                         paci_loss_per = F.relu(paci_margin - pos_sim + hard_neg_sim)  # (B, 17)
                         paci_loss = paci_loss_per[can_use].mean()
 
-                        if paci_loss.item() > 0:
-                            details = getattr(loss, '_loss_details', {})
-                            loss = loss + paci_weight * paci_loss
-                            details['paci'] = paci_loss.item()
-                            details['paci_pos'] = pos_sim[can_use].mean().item()
-                            details['paci_neg'] = hard_neg_sim[can_use].mean().item()
-                            loss._loss_details = details
+                        details = getattr(loss, '_loss_details', {})
+                        loss = loss + paci_weight * paci_loss
+                        details['paci'] = paci_loss.item()
+                        details['paci_pos'] = pos_sim[can_use].mean().item()
+                        details['paci_neg'] = hard_neg_sim[can_use].mean().item()
+                        loss._loss_details = details
 
             scaler.scale(loss).backward()
 
