@@ -340,6 +340,9 @@ class SkeletonGCNHead(nn.Module):
         self.multi_scale_kp = multi_scale_kp
         if self.multi_scale_kp:
             self.kamp_s2_proj = nn.Linear(multi_scale_s2_dim, feat_dim)
+            # Zero-init projection: Stage 2 contribution starts at zero
+            nn.init.zeros_(self.kamp_s2_proj.weight)
+            nn.init.zeros_(self.kamp_s2_proj.bias)
             # Per-keypoint scale attention: which stage is more useful?
             self.kamp_scale_attn = nn.Sequential(
                 nn.Linear(feat_dim + 1, 64),  # feat + kp_score
