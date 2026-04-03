@@ -356,3 +356,28 @@ ep110. eval imminent. ETA ~22min。
 Gap 仍 -2.8 mAP。预计 final ~60.5/73.5 (-2.7/-1.9)。
 ETA ~22min。
 **决策**: 继续到 final
+
+### [01:27] 检查点 #53
+
+### [01:34] 检查点 #54 — FINAL ep120
+
+**ep120 FINAL: 60.4/73.2** (vs exp191 63.2/75.4 = **-2.8/-2.2**)
+
+## 结论
+
+Per-body-part independent training (KPR-inspired) on Tiny: **-2.8/-2.2**
+
+| Epoch | delta mAP | delta R1 |
+|-------|------|------|
+| 10 | -0.3 | +2.4 |
+| 30 | -1.2 | -1.9 |
+| 60 | -4.5 | -4.5 |
+| 90 | -3.2 | -2.5 |
+| **120** | **-2.8** | **-2.2** |
+
+**失败原因**: 7 个独立 part classifiers 在 detached backbone features 上收敛太慢。
+id_part 在 ep120 仍为 2.5 (baseline 的 pooled 版 <0.5)。
+detached features 缺乏足够的 per-body-part 判别力来支持独立训练。
+
+**注意**: 此实验使用了 ROA+PLBOA 同时开启 (与 exp191 ROA=False 不一致)。
+但即使配置不同，-2.8% 的差距已足以证明 per-part 方向在当前架构下无效。
