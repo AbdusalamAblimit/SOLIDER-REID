@@ -890,6 +890,18 @@ def do_train(cfg,
                     details['fsdc_mask_ratio'] = fsdc_stats.get('mask_ratio', 0)
                     loss._loss_details = details
 
+                # PPA: Part Assignment loss
+                ppa_enabled = getattr(cfg.MODEL, 'POSE_PPA', False)
+                if ppa_enabled and kp_data is not None and 'assign_loss' in kp_data:
+                    assign_weight = float(getattr(cfg.MODEL, 'POSE_PPA_ASSIGN_WEIGHT', 0.5))
+                    assign_loss = kp_data['assign_loss']
+                    details = getattr(loss, '_loss_details', {})
+                    loss = loss + assign_weight * assign_loss
+                    details['ppa_assign'] = assign_loss.item()
+                    details['ppa_bg_ratio'] = kp_data.get('bg_ratio', 0)
+                    details['ppa_entropy'] = kp_data.get('assign_entropy', 0)
+                    loss._loss_details = details
+
                 # PKC: Per-Keypoint Contrastive loss on GCN keypoint features
                 pkc_enabled = getattr(cfg.MODEL, 'POSE_PKC', False)
                 if pkc_enabled and kp_data is not None and 'kp_feats' in kp_data:

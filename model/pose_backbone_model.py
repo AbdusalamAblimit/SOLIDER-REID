@@ -127,6 +127,18 @@ class PoseBackboneModel(build_transformer):
         if self.bt_pkd:
             print('[BT-PKD] Backbone-through per-keypoint distillation enabled')
 
+        # PPA: Pose-Prompted Part-Assignment Head (replaces GCN)
+        self.use_ppa = getattr(cfg.MODEL, 'POSE_PPA', False)
+        if self.use_ppa:
+            from .modules.part_assignment_head import PartAssignmentHead
+            self.part_assignment_head = PartAssignmentHead(
+                feat_dim=self.in_planes,
+                num_classes=num_classes,
+                num_parts=int(getattr(cfg.MODEL, 'POSE_PPA_NUM_PARTS', 5)),
+                assign_weight=float(getattr(cfg.MODEL, 'POSE_PPA_ASSIGN_WEIGHT', 0.5)),
+            )
+            self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
+
         # FSDC: Feature-Space Diffusion Completion
         self.use_fsdc = getattr(cfg.MODEL, 'POSE_FSDC', False)
         if self.use_fsdc:
@@ -465,6 +477,13 @@ class PoseBackboneModel(build_transformer):
                     kp_data = {'str_stats': str_stats}
                     return [cls_score, str_cls], [global_feat, str_feat], featmaps, None, kp_data
 
+            elif getattr(self, 'use_ppa', False) and scene_heatmaps is not None:
+                # PPA: Pose-Prompted Part-Assignment Head (end-to-end, NOT detached)
+                ppa_cls_scores, ppa_feats, ppa_data = self.part_assignment_head(
+                    featmaps[-1], scene_heatmaps, return_cls=True)
+                kp_data = ppa_data
+                return [cls_score] + ppa_cls_scores, [global_feat] + ppa_feats, featmaps, None, kp_data
+
             elif self.use_skeleton_gcn and pose_dict is not None:
                 # GSPB: Gradient-scaled part branch
                 # scale=0 → detach (default), scale=1 → non-detach
@@ -605,7 +624,15 @@ class PoseBackboneModel(build_transformer):
             # Part branch test features
             gcn_feats = None
             aux_data = {}
-            if getattr(self, 'use_structural_routing', False) and scene_heatmaps is not None and \
+
+            # PPA test path
+            if getattr(self, 'use_ppa', False) and scene_heatmaps is not None and \
+                    getattr(self, 'pose_test_feat', 'global') != 'global':
+                _, ppa_feats, aux_data = self.part_assignment_head(
+                    featmaps[-1], scene_heatmaps, return_cls=False)
+                gcn_feats = ppa_feats  # [pooled, part1..partK]
+
+            elif getattr(self, 'use_structural_routing', False) and scene_heatmaps is not None and \
                     getattr(self, 'pose_test_feat', 'global') != 'global' and not self.use_skeleton_gcn:
                 B_fm, C_fm, H_fm, W_fm = featmaps[-1].shape
                 spatial_tokens = featmaps[-1].flatten(2).transpose(1, 2)

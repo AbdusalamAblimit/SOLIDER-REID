@@ -2905,3 +2905,40 @@ exp220 (scale=0.05) 完整对照:
    - 这可以直接测试，无需训练
 
 3. **Accept that 72.4% is near our ceiling**: Swin-Small + our pipeline may not reach 76% without ViT backbone
+
+---
+
+## 2026-04-04: PPA — Pose-Prompted Part-Assignment Head (范式级创新候选)
+
+### 核心洞察
+
+236 个实验后的根本发现：**所有在 detached features 上操作的方法都无法改善 final 结果。**
+- BT-PKD: detached 上 cosine distillation → 无效
+- FSDC: detached 上 feature completion → 无效
+- Per-part: detached 上独立训练 → 无效
+- Per-keypoint losses: detached 上任何 loss → 无效
+
+**唯一有效的方向是改变 backbone 本身**: PSG (+1.7%), OA-SD (+2-3%), PLBOA (+1.5%)
+
+### PPA 方案
+
+**从 "detached GCN sampling" 到 "learnable part assignment, end-to-end"**
+
+1. 在 Stage 3 输出后，添加 `(768 → K+1)` 线性层
+2. 对每个 spatial token 预测 part assignment probabilities (softmax)
+3. 用 pose heatmaps (resized to 12x4) 作为 GT 监督
+4. Per-part weighted pool → K part embeddings
+5. 所有梯度端到端流过 backbone
+
+### 为什么不会像 GSPB/BT-PKD 那样干扰
+
+- GSPB: 17 个独立 per-keypoint losses → 高方差梯度冲突
+- BT-PKD: cosine distillation → 温和但仍是额外梯度
+- **PPA: 单个 softmax cross-entropy → clean segmentation gradient，与 CE ID loss 同类型**
+
+KPR 证明这个 exact mechanism 在 SOLIDER+Swin 上有效 (75.1%)。
+
+### 与现有 pipeline 的关系
+
+PPA 替换 GCN Part branch，但保留 PSG + OA-SD + PLBOA。
+这是我们缺少的最后一块拼图。
