@@ -122,6 +122,11 @@ class PoseBackboneModel(build_transformer):
         if self.ba_pkc:
             print('[BA-PKC] Backbone-aware per-keypoint contrastive enabled')
 
+        # BT-PKD: Backbone-Through Per-Keypoint Distillation
+        self.bt_pkd = getattr(cfg.MODEL, 'POSE_BT_PKD', False)
+        if self.bt_pkd:
+            print('[BT-PKD] Backbone-through per-keypoint distillation enabled')
+
         # Skeleton GCN head
         self.use_skeleton_gcn = getattr(cfg.MODEL, 'POSE_SKELETON_GCN', False)
         if self.use_skeleton_gcn:
@@ -538,7 +543,7 @@ class PoseBackboneModel(build_transformer):
 
                 # BA-PKC: sample keypoint features from NON-detached feature map
                 # Gradients flow to backbone, unlike GCN which uses detached features
-                if getattr(self, 'ba_pkc', False):
+                if getattr(self, 'ba_pkc', False) or getattr(self, 'bt_pkd', False):
                     raw_fm = featmaps[-1]  # (B, C, fH, fW) — NOT detached!
                     kp_coords = pose_dict['keypoints'][:, 0, :, :]  # (B, 17, 2)
                     input_h, input_w = x.shape[2], x.shape[3]
@@ -550,7 +555,10 @@ class PoseBackboneModel(build_transformer):
                     ba_kp_feats = sampled.squeeze(-1).permute(0, 2, 1)  # (B, 17, C)
                     if kp_data is None:
                         kp_data = {}
-                    kp_data['ba_kp_feats'] = ba_kp_feats
+                    if getattr(self, 'ba_pkc', False):
+                        kp_data['ba_kp_feats'] = ba_kp_feats
+                    if getattr(self, 'bt_pkd', False):
+                        kp_data['bt_kp_feats'] = ba_kp_feats  # non-detached for distillation
 
                 # Return lists -> triggers list-loss path (implicit 0.5x global)
                 return [cls_score] + gcn_cls_scores, [global_feat] + gcn_feats, featmaps, None, kp_data

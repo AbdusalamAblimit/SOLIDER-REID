@@ -212,6 +212,13 @@ _C.MODEL.POSE_OERL_OCC_RATIO = 0.5        # Fraction of keypoints to occlude (0.
 _C.MODEL.POSE_BA_PKC = False              # Enable BA-PKC
 _C.MODEL.POSE_BA_PKC_WEIGHT = 0.1         # BA-PKC loss weight
 
+# BT-PKD: Backbone-Through Per-Keypoint Distillation
+# Distill per-keypoint features from EMA teacher (clean image) to student (occluded image)
+# Uses NON-detached backbone features: smooth L2 gradient flows to backbone
+# Key difference from BA-PKC: L2 distillation (smooth) vs SupCon (sharp, catastrophic)
+_C.MODEL.POSE_BT_PKD = False              # Enable BT-PKD (requires OA-SD)
+_C.MODEL.POSE_BT_PKD_WEIGHT = 0.01       # Loss weight (keep low: gradients flow to backbone)
+
 # MST: MaxSim Triplet loss — directly optimizes per-keypoint features for MaxSim distance
 _C.MODEL.POSE_MST = False                 # Enable MaxSim Triplet
 _C.MODEL.POSE_MST_WEIGHT = 0.5            # MST loss weight

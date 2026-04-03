@@ -735,8 +735,9 @@ def do_train(cfg,
                                 m.drop_prob = m._saved_drop_prob
                                 del m._saved_drop_prob
                         ema_teacher.eval()
+                        teacher_kp_data = None
                         if len(teacher_out) == 5:
-                            _, teacher_feat, _, _, _ = teacher_out
+                            _, teacher_feat, _, _, teacher_kp_data = teacher_out
                         elif len(teacher_out) == 4:
                             _, teacher_feat, _, _ = teacher_out
                         else:
@@ -772,6 +773,32 @@ def do_train(cfg,
                     loss = loss + oa_sd_weight * oa_sd_loss
                     details['oa_sd'] = oa_sd_loss.item()
                     loss._loss_details = details
+
+                    # BT-PKD: Backbone-Through Per-Keypoint Distillation
+                    # Distill per-keypoint features from teacher (clean) to student (occluded)
+                    # Student features are NON-detached → gradients flow to backbone
+                    bt_pkd_enabled = getattr(cfg.MODEL, 'POSE_BT_PKD', False)
+                    if bt_pkd_enabled and kp_data is not None and teacher_kp_data is not None:
+                        bt_kp_feats = kp_data.get('bt_kp_feats')        # (B, 17, C) non-detached
+                        t_kp_feats = teacher_kp_data.get('kp_feats')    # (B, 17, C) teacher's GCN output
+                        t_kp_weights = teacher_kp_data.get('kp_weights')  # (B, 17) teacher confidence
+                        if bt_kp_feats is not None and t_kp_feats is not None:
+                            bt_pkd_weight = float(getattr(cfg.MODEL, 'POSE_BT_PKD_WEIGHT', 0.01))
+                            # L2 normalize both for cosine distillation
+                            s_norm = F.normalize(bt_kp_feats, p=2, dim=2)    # (B, 17, C)
+                            t_norm = F.normalize(t_kp_feats.detach(), p=2, dim=2)  # (B, 17, C)
+                            # Per-keypoint cosine distance
+                            per_kp_dist = 1.0 - (s_norm * t_norm).sum(dim=2)  # (B, 17)
+                            # Weight by teacher keypoint confidence
+                            if t_kp_weights is not None:
+                                w = t_kp_weights.detach().clamp(min=0.0)  # (B, 17)
+                                bt_pkd_loss = (per_kp_dist * w).sum(dim=1) / w.sum(dim=1).clamp(min=1e-6)
+                            else:
+                                bt_pkd_loss = per_kp_dist.mean(dim=1)
+                            bt_pkd_loss = bt_pkd_loss.mean()
+                            loss = loss + bt_pkd_weight * bt_pkd_loss
+                            details['bt_pkd'] = bt_pkd_loss.item()
+                            loss._loss_details = details
 
                 # OA-RD: Occlusion-Asymmetric Relational Distillation
                 # Distills pairwise similarity STRUCTURE (not individual features) from teacher to student
