@@ -878,6 +878,18 @@ def do_train(cfg,
                     details['splade_sp'] = kp_data.get('splade_sparsity', 0)
                     loss._loss_details = details
 
+                # FSDC: Feature-Space Diffusion Completion reconstruction loss
+                fsdc_enabled = getattr(cfg.MODEL, 'POSE_FSDC', False)
+                if fsdc_enabled and kp_data is not None and 'fsdc_loss' in kp_data:
+                    fsdc_weight = float(getattr(cfg.MODEL, 'POSE_FSDC_WEIGHT', 0.5))
+                    fsdc_loss = kp_data['fsdc_loss']
+                    details = getattr(loss, '_loss_details', {})
+                    loss = loss + fsdc_weight * fsdc_loss
+                    details['fsdc_recon'] = fsdc_loss.item()
+                    fsdc_stats = kp_data.get('fsdc_stats', {})
+                    details['fsdc_mask_ratio'] = fsdc_stats.get('mask_ratio', 0)
+                    loss._loss_details = details
+
                 # PKC: Per-Keypoint Contrastive loss on GCN keypoint features
                 pkc_enabled = getattr(cfg.MODEL, 'POSE_PKC', False)
                 if pkc_enabled and kp_data is not None and 'kp_feats' in kp_data:

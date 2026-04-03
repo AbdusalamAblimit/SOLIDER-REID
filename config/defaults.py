@@ -196,6 +196,14 @@ _C.MODEL.POSE_DEFORMABLE_K = 4            # Number of offset sampling points per
 # Per-body-part independent training (KPR-inspired)
 _C.MODEL.POSE_GCN_PER_PART = False        # Split 17 keypoints into 6 body parts, each with own classifier
 
+# FSDC: Feature-Space Diffusion Completion — denoise occluded spatial tokens
+_C.MODEL.POSE_FSDC = False                # Enable feature denoiser
+_C.MODEL.POSE_FSDC_LAYERS = 2             # Denoiser transformer layers
+_C.MODEL.POSE_FSDC_HEADS = 8              # Attention heads
+_C.MODEL.POSE_FSDC_MASK_RATIO = 0.3       # Training mask ratio
+_C.MODEL.POSE_FSDC_NOISE_STD = 0.1        # Gaussian noise std for masked tokens
+_C.MODEL.POSE_FSDC_WEIGHT = 0.5           # Reconstruction loss weight
+
 # GSPB: Gradient-Scaled Part Branch — partial gradient flow from Part to backbone
 _C.MODEL.POSE_PART_GRAD_SCALE = 0.0       # 0.0 = detach (default), 1.0 = non-detach, 0.05 = scaled
 

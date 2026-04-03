@@ -127,6 +127,21 @@ class PoseBackboneModel(build_transformer):
         if self.bt_pkd:
             print('[BT-PKD] Backbone-through per-keypoint distillation enabled')
 
+        # FSDC: Feature-Space Diffusion Completion
+        self.use_fsdc = getattr(cfg.MODEL, 'POSE_FSDC', False)
+        if self.use_fsdc:
+            from .modules.feature_denoiser import FeatureDenoiser
+            fH = cfg.INPUT.SIZE_TRAIN[0] // 32  # 384//32 = 12
+            fW = cfg.INPUT.SIZE_TRAIN[1] // 32  # 128//32 = 4
+            self.feature_denoiser = FeatureDenoiser(
+                feat_dim=self.in_planes,
+                num_tokens=fH * fW,
+                num_layers=int(getattr(cfg.MODEL, 'POSE_FSDC_LAYERS', 2)),
+                num_heads=int(getattr(cfg.MODEL, 'POSE_FSDC_HEADS', 8)),
+                mask_ratio=float(getattr(cfg.MODEL, 'POSE_FSDC_MASK_RATIO', 0.3)),
+                noise_std=float(getattr(cfg.MODEL, 'POSE_FSDC_NOISE_STD', 0.1)),
+            )
+
         # Skeleton GCN head
         self.use_skeleton_gcn = getattr(cfg.MODEL, 'POSE_SKELETON_GCN', False)
         if self.use_skeleton_gcn:
@@ -488,11 +503,27 @@ class PoseBackboneModel(build_transformer):
                         str_feat_list.append(tri_tokens[:, k])
                     dual_branch_active = True
 
+                # FSDC: Feature-Space Diffusion Completion
+                fsdc_loss = None
+                if getattr(self, 'use_fsdc', False):
+                    B_d, C_d, H_d, W_d = feat_map_detached.shape
+                    spatial_tokens = feat_map_detached.flatten(2).transpose(1, 2)  # (B, N, C)
+                    completed_tokens, fsdc_loss, fsdc_stats = self.feature_denoiser(
+                        spatial_tokens, scene_heatmaps, fH=H_d, fW=W_d)
+                    # Reshape back to feature map
+                    feat_map_detached = completed_tokens.transpose(1, 2).reshape(B_d, C_d, H_d, W_d)
+
                 # Pass Stage 2 features for KAMP/MRKF multi-scale fusion
                 _s2_feat = featmaps[-2].detach() if len(featmaps) >= 2 else None
                 gcn_cls_scores, gcn_feats, kp_data = self.skeleton_head(
                     feat_map_detached, pose_dict, return_cls=True, label=label,
                     stage2_feat=_s2_feat)
+                # Store FSDC loss in kp_data for processor
+                if fsdc_loss is not None:
+                    if kp_data is None:
+                        kp_data = {}
+                    kp_data['fsdc_loss'] = fsdc_loss
+                    kp_data['fsdc_stats'] = fsdc_stats
 
                 # PNIS: normalize GCN feature by subtracting pose offset
                 if getattr(self, 'use_pose_normalize', False) and len(gcn_feats) > 0:
