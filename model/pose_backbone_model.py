@@ -646,9 +646,17 @@ class PoseBackboneModel(build_transformer):
                 gcn_feats = [str_feat]  # equal_concat: global + pooled_part
             elif self.use_skeleton_gcn and pose_dict is not None and \
                     getattr(self, 'pose_test_feat', 'global') != 'global':
+                # FSDC: complete occluded tokens at test time
+                feat_for_gcn = featmaps[-1]
+                if getattr(self, 'use_fsdc', False) and scene_heatmaps is not None:
+                    B_d, C_d, H_d, W_d = feat_for_gcn.shape
+                    spatial_tokens = feat_for_gcn.flatten(2).transpose(1, 2)
+                    completed, _, _ = self.feature_denoiser(
+                        spatial_tokens, scene_heatmaps, fH=H_d, fW=W_d)
+                    feat_for_gcn = completed.transpose(1, 2).reshape(B_d, C_d, H_d, W_d)
                 _s2_test = featmaps[-2] if len(featmaps) >= 2 else None
                 _, gcn_feats, aux_data = self.skeleton_head(
-                    featmaps[-1], pose_dict, return_cls=False,
+                    feat_for_gcn, pose_dict, return_cls=False,
                     stage2_feat=_s2_test)
                 # Dual Part Branch test: also add STD-PR per-token features
                 if getattr(self, 'use_structural_routing', False) and scene_heatmaps is not None \

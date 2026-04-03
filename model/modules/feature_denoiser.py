@@ -141,6 +141,12 @@ class FeatureDenoiser(nn.Module):
             # Generate body-part mask
             if heatmaps is not None:
                 mask = self._generate_body_part_mask(heatmaps, fH, fW)
+                # Fallback: if all tokens are visible (mask all True), use random mask
+                for b in range(B):
+                    if mask[b].all():
+                        num_masked = max(1, int(N * self.mask_ratio))
+                        indices = torch.randperm(N, device=device)[:num_masked]
+                        mask[b, indices] = False
             else:
                 mask = self._generate_random_mask(B, device)
 
@@ -166,7 +172,8 @@ class FeatureDenoiser(nn.Module):
             decoded = self.norm(decoded)
 
             # Residual output projection (zero-init → identity start)
-            output = spatial_tokens + self.output_proj(decoded)
+            # Use masked_tokens as base so denoiser learns: corrupted → original
+            output = masked_tokens + self.output_proj(decoded)
 
             # Reconstruction loss only on masked positions
             masked_positions = ~mask  # True where masked
@@ -214,7 +221,7 @@ class FeatureDenoiser(nn.Module):
                 input_tokens = masked_tokens + self.pos_embed + self.mask_embed(mask_indicator)
                 decoded = self.decoder(input_tokens, input_tokens)
                 decoded = self.norm(decoded)
-                output = spatial_tokens + self.output_proj(decoded)
+                output = masked_tokens + self.output_proj(decoded)
             else:
                 output = spatial_tokens
 
