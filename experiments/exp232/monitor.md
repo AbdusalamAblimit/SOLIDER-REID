@@ -55,3 +55,20 @@ ETA ~3h15m。
 
 ep23. bt_pkd=0.052. ep30 eval ~14min。
 **决策**: 继续
+
+### [10:29] 检查点 #10
+
+ep28. bt_pkd=0.055. ep30 eval ~4min。
+**决策**: 等 ep30 eval
+
+### [10:32] 检查点 #11
+
+ep29. ep30 eval ~2min。
+**决策**: 等 ep30 eval
+
+### [10:36] 检查点 #12 — ep30
+
+**ep30: 61.3/72.8** (vs exp230 constant 62.6/74.2 = -1.3/-1.4)
+低于 constant 版。与 Tiny (exp231) 的模式类似 — decay 在早期稍低。
+ETA ~2h55m。
+**决策**: 继续
