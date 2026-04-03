@@ -390,3 +390,49 @@ PARALLEL_AUG 主要影响 R1。mAP 几乎持平。
 
 ep102. ep110 eval ~16min。
 **决策**: 继续
+
+### [09:04] 检查点 #56
+
+ep107. ep110 eval ~6min。ETA ~25min。
+**决策**: 等 ep110 eval
+
+### [09:09] 检查点 #57
+
+ep109. ep110 eval ~2min。
+**决策**: 等 ep110 eval
+
+### [09:14] 检查点 #58 — ep110
+
+**ep110: 70.8/81.9** (无 PARALLEL_AUG)
+
+| Epoch | exp230 mAP/R1 |
+|-------|------|
+| 80 | 70.3/81.1 |
+| 90 | 70.3/81.5 |
+| 100 | 70.5/81.2 |
+| **110** | **70.8/81.9** |
+
+还在上升。预计 final ~71.0/82.0。
+ETA ~19min。
+**决策**: 继续到 final
+
+### [09:21] 检查点 #59 — OOM CRASH after ep110
+
+**OOM at ep120 eval** — CUDA out of memory。
+Training speed 从 118 s/ep 降到 140 s/ep (ep107+) — memory 持续积累。
+BT-PKD 的非 detached graph 在 Small 上内存不够。
+
+**最终可用结果: ep110 = 70.8/81.9** (无 PARALLEL_AUG)
+
+## 结论
+
+exp230 (Small BT-PKD, w=0.01, constant, no PARALLEL_AUG):
+- ep10: 49.1/62.4
+- ep110: **70.8/81.9** (最后可用结果)
+- 预计 final ≈ 71.0/82.0
+
+vs exp206r (Small OA-SD, PARALLEL_AUG): 70.6/82.6
+差异: **+0.2/-0.7** (mAP 基本持平, R1 -0.7 主要因缺 PARALLEL_AUG)
+
+**BT-PKD 在 Small 上基本中性** — 没有明显正面也没灾难。
+但 **BT-PKD + PARALLEL_AUG 的内存问题需要解决** 才能正确比较。
