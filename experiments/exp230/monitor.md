@@ -39,3 +39,43 @@ bt_pkd 梯度导致的轻微训练延迟 — 这与 GSPB 的模式一致。
 BT-PKD w=0.01: 48.4% — **cosine distillation 梯度确实比 CE/SupCon 更温和。**
 
 **决策**: 继续！观察 ep20-30 是否追上 baseline
+
+### [04:12] 检查点 #5
+
+ep12. Acc=0.191, bt_pkd=0.058 (持续下降，student-teacher 在对齐)。
+正常训练节奏。ep20 eval ~16min。
+**决策**: 继续
+
+### [04:20] 检查点 #6
+
+ep16. Acc=0.220, bt_pkd=0.055. ep20 eval ~8min。
+**决策**: 等 ep20 eval
+
+### [04:23] 检查点 #7
+
+ep18. bt_pkd=0.056 (stabilized). ep20 eval ~4min.
+**决策**: 等 ep20 eval
+
+### [04:29] 检查点 #8 — ep20
+
+**ep20: 57.3/68.6** (vs exp206r 56.6/68.1 = **+0.7/+0.5**)
+
+| Epoch | exp230 mAP/R1 | exp206r mAP/R1 | delta |
+|-------|------|------|------|
+| 10 | 48.4/60.9 | 50.4/63.9 | -2.0/-3.0 |
+| **20** | **57.3/68.6** | **56.6/68.1** | **+0.7/+0.5** |
+
+**从 ep10 的 -2.0 到 ep20 的 +0.7 — 完全追上并超过！**
+**mAP 和 R1 同时正向！**（PADPQ 只有 mAP 正向，R1 始终负向）
+BT-PKD 的 cosine distillation 梯度在 Small 上有效！
+**决策**: 继续！密切监控趋势是否持续
+
+### [04:30] 检查点 #9 — GPU CRASH
+
+**CUBLAS_STATUS_EXECUTION_FAILED** during/after ep20 eval.
+Crash in triplet distance computation (euclidean_dist matmul).
+可能原因: BT-PKD 的非 detached computation graph 占用额外内存 + eval → OOM → CUBLAS crash.
+GPU 进入 error state, nvidia-smi 报 "Unknown Error"。需要系统重启。
+
+ep20 checkpoint 已保存。ep20 结果已记录 (57.3/68.6 = **+0.7/+0.5 vs baseline**)。
+**需要**: 重启后从 ep20 checkpoint 恢复，减小 TEST.IMS_PER_BATCH 到 128。
