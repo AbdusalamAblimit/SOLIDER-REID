@@ -784,6 +784,14 @@ def do_train(cfg,
                         t_kp_weights = teacher_kp_data.get('kp_weights')  # (B, 17) teacher confidence
                         if bt_kp_feats is not None and t_kp_feats is not None:
                             bt_pkd_weight = float(getattr(cfg.MODEL, 'POSE_BT_PKD_WEIGHT', 0.01))
+                            # Cosine decay: reduce weight to 0 by decay_epoch
+                            bt_pkd_decay_ep = int(getattr(cfg.MODEL, 'POSE_BT_PKD_DECAY_EPOCH', 0))
+                            if bt_pkd_decay_ep > 0 and epoch > 0:
+                                import math
+                                if epoch >= bt_pkd_decay_ep:
+                                    bt_pkd_weight = 0.0
+                                else:
+                                    bt_pkd_weight *= 0.5 * (1 + math.cos(math.pi * epoch / bt_pkd_decay_ep))
                             # L2 normalize both for cosine distillation
                             s_norm = F.normalize(bt_kp_feats, p=2, dim=2)    # (B, 17, C)
                             t_norm = F.normalize(t_kp_feats.detach(), p=2, dim=2)  # (B, 17, C)

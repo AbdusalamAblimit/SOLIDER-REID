@@ -218,6 +218,7 @@ _C.MODEL.POSE_BA_PKC_WEIGHT = 0.1         # BA-PKC loss weight
 # Key difference from BA-PKC: L2 distillation (smooth) vs SupCon (sharp, catastrophic)
 _C.MODEL.POSE_BT_PKD = False              # Enable BT-PKD (requires OA-SD)
 _C.MODEL.POSE_BT_PKD_WEIGHT = 0.01       # Loss weight (keep low: gradients flow to backbone)
+_C.MODEL.POSE_BT_PKD_DECAY_EPOCH = 0     # Cosine decay BT-PKD weight to 0 by this epoch (0=no decay)
 
 # MST: MaxSim Triplet loss — directly optimizes per-keypoint features for MaxSim distance
 _C.MODEL.POSE_MST = False                 # Enable MaxSim Triplet
