@@ -78,4 +78,53 @@ Crash in triplet distance computation (euclidean_dist matmul).
 GPU 进入 error state, nvidia-smi 报 "Unknown Error"。需要系统重启。
 
 ep20 checkpoint 已保存。ep20 结果已记录 (57.3/68.6 = **+0.7/+0.5 vs baseline**)。
-**需要**: 重启后从 ep20 checkpoint 恢复，减小 TEST.IMS_PER_BATCH 到 128。
+
+### [04:57] 检查点 #10 — 重启
+
+用户重启系统后 GPU 恢复。从头重新训练 (train.py 不支持 auto-resume)。
+**新增 TEST.IMS_PER_BATCH 128** 防止 eval OOM。
+第一轮 ep20=+0.7/+0.5 已确认 BT-PKD 有效，本次为完整 120ep 运行。
+**决策**: 继续
+
+### [05:08] 检查点 #11 — 第二次重跑 (无 PARALLEL_AUG)
+
+第一次重跑无 PARALLEL_AUG: ep10=31.8/46.2 (正常，但不可与有 PARALLEL_AUG 的 baseline 比)。
+第二次尝试加 PARALLEL_AUG: OOM! BT-PKD 的非 detached graph + 3-view 超过 24GB。
+**最终方案**: 无 PARALLEL_AUG 运行到 final。比较需要找非 PARALLEL_AUG baseline。
+
+### [05:19] 检查点 #12 — 第三次启动
+
+ep1. 无 PARALLEL_AUG + TEST.IMS_PER_BATCH 128。正常启动。
+ETA ~3h30m。
+**决策**: 继续
+
+### [05:27] 检查点 #13
+
+ep4. bt_pkd=0.325 (比 OA-SD 版高因为没有 PARALLEL_AUG 的多 view 信号)。
+正常训练。ep10 eval ~12min。
+**决策**: 继续
+
+### [05:30] 检查点 #14
+
+ep6. Acc=0.126, bt_pkd=0.189。ep10 eval ~8min。
+**决策**: 等 ep10 eval
+
+### [05:32] 检查点 #15
+
+ep7. Acc=0.198, bt_pkd=0.133. ep10 eval ~5min。
+**决策**: 等 ep10 eval
+
+### [05:35] 检查点 #16
+
+ep9. Acc=0.158, bt_pkd=0.089. ep10 eval ~2min。
+**决策**: 等 ep10 eval
+
+### [05:40] 检查点 #17 — ep10
+
+**ep10: 49.1/62.4** (无 PARALLEL_AUG)
+
+对比第一轮 (有 PARALLEL_AUG): 48.4/60.9 — 基本一致。
+eval 成功完成，TEST.IMS_PER_BATCH=128 解决了 OOM。
+**注意**: 本次无 PARALLEL_AUG，需要找无 PARALLEL_AUG 的 baseline 对比。
+ETA ~3h35m。
+**决策**: 继续
