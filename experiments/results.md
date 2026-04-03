@@ -1032,3 +1032,40 @@
 - exp223 在 `equal_concat` 上给出 `mAP +0.5`，但 `R1 -0.9`；当前更适合作为 trade-off 证据，而不是“全面超越”。
 - exp219 的远程 `train_log` 已补回，但目前只确认到 `ep30 = 51.9 / 64.9`，尚无 final，因此暂不纳入正式结果表。
 - 注：`exp220/223` 的 `maxsim_hybrid` 数字目前只在各自 `monitor.md` 中留有测试记录，本地未发现独立 `test_log`，因此本总表仅登记训练日志可直接复核的 `equal_concat` 结果。
+
+## 2026-04-02/03: exp222c, exp224, exp225, exp226, exp227, exp228
+
+### Tiny 实验
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| exp222c GSPB Small scale=0.01 | 15.1% | 23.8% | 38.4% | 45.4% | ep10 终止 |
+| exp224 KAMP (random-init proj) + OA-SD | 60.7% | 73.0% | 85.1% | 88.3% | ep120 final |
+| exp225 GSPB(0.05) + PADPQ K=4 + OA-SD | 64.2% | 74.9% | 86.8% | 89.6% | ep120 final |
+| exp226 KAMP (zero-init proj) + OA-SD | 61.6% | 74.3% | 85.1% | 88.0% | ep120 final |
+
+- exp222c: GSPB scale=0.01 在 Small 上仍然灾难 (scale=0.05 → 2.3%, scale=0.01 → 15.1%)
+- exp224: KAMP (多尺度 keypoint 融合) random-init projection 造成 -2.5% mAP 噪声
+- exp225: **GSPB+PADPQ K=4 = 64.2/74.9 — Tiny 最佳 equal_concat！** (+1.0/-0.5 vs OA-SD)
+- exp226: KAMP zero-init projection 减少噪声但仍 -1.6% mAP。KAMP 方向失败。
+
+### exp227: Small GSPB(0.005) + PADPQ K=4 + OA-SD
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| exp227 equal_concat | 71.6% | 80.8% | 89.8% | 91.8% | ep120 final |
+| exp227 maxsim_hybrid | 71.8% | 80.6% | 89.9% | 91.9% | ep120 + maxsim test |
+
+- 对照 exp206r: **mAP +1.0, R1 -1.8** (equal_concat)
+- MaxSim gain 仅 +0.2 (vs 通常 +1.7) — PADPQ 破坏 cross-image keypoint consistency
+- maxsim 71.8 < 当前最佳 72.4 (exp210b)。**GSPB+PADPQ 在 Small maxsim 上无优势。**
+- **mAP 正向是确认的，但 R1 代价和 MaxSim 兼容性问题限制了实用价值。**
+
+### exp228: Tiny GSPB(0.05) + PADPQ K=8 + OA-SD
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| exp228 equal_concat | 64.1% | 74.3% | 86.4% | 89.5% | ep120 final |
+
+- 对照 exp225 K=4: **-0.1/-0.6**。K=8 ≈ K=4，无额外收益。
+- PADPQ K=4 已足够，K=8 不值得增加复杂度。
