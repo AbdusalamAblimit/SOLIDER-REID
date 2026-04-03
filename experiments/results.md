@@ -1069,3 +1069,16 @@
 
 - 对照 exp225 K=4: **-0.1/-0.6**。K=8 ≈ K=4，无额外收益。
 - PADPQ K=4 已足够，K=8 不值得增加复杂度。
+
+### exp229: Tiny BT-PKD (w=0.01, constant) + OA-SD
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| exp229 equal_concat | 62.2% | 75.0% | 86.1% | 89.0% | ep120 final |
+
+- 对照 exp191 (OA-SD): **-1.0/-0.4**
+- **创新**: 非 detached cosine distillation 从 EMA teacher 到 backbone per-keypoint features
+- **首次在 Small 上实现 non-detached 梯度存活** (BA-PKC: 0.5%, GSPB≥0.01: 灾难)
+- **早期加速 +3.5% at ep30**, 但后期干扰导致 final -1.0%
+- BT-PKD 证明 cosine distillation 梯度比 CE/SupCon 更温和
+- **exp231 (BT-PKD cosine decay) 进行中** — 尝试保留早期加速、避免后期干扰
