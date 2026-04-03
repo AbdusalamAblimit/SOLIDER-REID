@@ -2829,3 +2829,44 @@ exp220 (scale=0.05) 完整对照:
 1. 完全不同的 Part 架构（不在禁止列表内的方向）
 2. 重新定义训练范式（不是 loss 增改）
 3. 利用 Small/Base scaling 的已有成果 (72.4% maxsim on Small)
+
+---
+
+## 2026-04-03: BT-PKD 系列 — Non-Detached Gradient 全面证伪
+
+### 实验
+- exp229: BT-PKD constant (Tiny) → -1.0/-0.4
+- exp230: BT-PKD constant (Small, no PAUG) → ~0/-0.7 (ep110)
+- exp231: BT-PKD cosine decay (Tiny) → -1.5/-1.1
+- exp232: BT-PKD cosine decay (Small) → terminated ep37
+
+### 核心发现
+1. **Cosine distillation 是唯一在 Small 上存活的 non-detached 梯度**
+   - BA-PKC (SupCon): 0.5% → 灾难
+   - GSPB ≥0.01 (CE/triplet): 2.3-15.1% → 灾难
+   - BT-PKD (cosine dist): 48.4% at ep10 → 存活
+   
+2. **所有 non-detached 方法都展现相同模式**:
+   - ep10-30: +3~5% 早期加速
+   - ep60-90: -1~-2% 后期干扰
+   - Final: ~-1% vs baseline
+   
+3. **Cosine decay 不解决问题**: 干扰在 active 阶段已造成
+
+### 根本限制
+**任何额外的 backbone 梯度 — 无论类型 (CE/SupCon/cosine distillation)、
+无论 schedule (constant/decay) — 都会在后期干扰 backbone 的 CE+triplet 收敛。**
+
+这不是"找到正确的梯度类型"的问题，而是"backbone 在后期需要完全由主 loss 驱动"的根本性约束。
+
+### 对后续方向的影响
+1. **Non-detached gradient 方向完全关闭** — 不再尝试任何变体
+2. **Detached Part branch 是正确的** — Part 必须在 detached 特征上工作
+3. **创新必须在 detached 范围内寻找** — 或者完全跳出 Part branch 框架
+4. **BT-PKD 的实用价值**: 如果只需要 60 epoch 训练，BT-PKD 可以用作训练加速器
+
+### 下一步方向思考
+1. **不再试图让 Part 梯度到达 backbone** — 这条路已彻底证伪
+2. **改善 Global branch** 而不是 Part branch — PSG 已证明有效，还有什么可以在 Global 上做？
+3. **改善 test-time matching** — MaxSim 有 +1.7%, 还能更好吗？
+4. **跨领域迁移新机制** — 需要读新论文寻找灵感
