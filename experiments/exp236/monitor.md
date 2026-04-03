@@ -42,3 +42,8 @@ ep10 iter80. fsdc_recon=3.14. eval ~2min。
 
 ETA ~4h20m。
 **决策**: 继续！密切监控 — 这是最有前途的结果
+
+### [02:05] 检查点 #6
+
+ep12. fsdc_recon=2.58. ep20 eval ~16min。
+**决策**: 等 ep20 eval
