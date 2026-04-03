@@ -128,3 +128,32 @@ eval 成功完成，TEST.IMS_PER_BATCH=128 解决了 OOM。
 **注意**: 本次无 PARALLEL_AUG，需要找无 PARALLEL_AUG 的 baseline 对比。
 ETA ~3h35m。
 **决策**: 继续
+
+### [05:48] 检查点 #18
+
+ep14. bt_pkd=0.058. ep20 eval ~12min。
+**决策**: 继续
+
+### [05:50] 检查点 #19
+
+ep16. bt_pkd=0.057. 正常收敛。ep20 eval ~8min。
+**决策**: 继续
+
+### [05:53] 检查点 #20
+
+ep17. bt_pkd=0.056. ep20 eval ~6min。
+**决策**: 等 ep20 eval
+
+### [05:56] 检查点 #21
+
+ep19. ep20 eval ~2min。
+**决策**: 等 ep20 eval
+
+### [06:01] 检查点 #22 — ep20
+
+**ep20: 56.3/67.4** (无 PARALLEL_AUG)
+
+对比第一轮 (有 PARALLEL_AUG): ep20=57.3/68.6。差异 -1.0/-1.2，符合 PARALLEL_AUG 的预期影响。
+**eval 通过！TEST.IMS_PER_BATCH=128 解决了 OOM。**
+ETA ~3h15m。
+**决策**: 继续
