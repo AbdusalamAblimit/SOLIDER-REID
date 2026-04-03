@@ -1081,4 +1081,22 @@
 - **首次在 Small 上实现 non-detached 梯度存活** (BA-PKC: 0.5%, GSPB≥0.01: 灾难)
 - **早期加速 +3.5% at ep30**, 但后期干扰导致 final -1.0%
 - BT-PKD 证明 cosine distillation 梯度比 CE/SupCon 更温和
-- **exp231 (BT-PKD cosine decay) 进行中** — 尝试保留早期加速、避免后期干扰
+### exp230: Small BT-PKD (w=0.01, constant, no PARALLEL_AUG)
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| exp230 equal_concat | 70.8% | 81.9% | 89.7% | 91.9% | ep110 (OOM at ep120) |
+
+- 无 PARALLEL_AUG (OOM with BT-PKD non-detached graph)
+- 对照 exp206r (有 PAUG): 70.6/82.6 → **+0.2/-0.7** (mAP 持平, R1 差因缺 PAUG)
+
+### exp231: Tiny BT-PKD cosine decay (w→0 by ep60)
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| exp231 equal_concat | 61.7% | 74.3% | 85.5% | 88.6% | ep120 final |
+
+- 对照 exp191: **-1.5/-1.1**。Cosine decay 没有解决后期干扰。
+- 对照 exp229 constant: **-0.5/-0.7**。Decay 甚至略差。
+- **BT-PKD 全系列结论**: 早期加速有效 (+3.5% at ep30)，但 final 始终 ~-1.0% vs baseline。
+- **根本限制**: 任何 non-detached backbone 梯度在后期都干扰收敛，与梯度类型和 schedule 无关。

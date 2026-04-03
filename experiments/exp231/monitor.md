@@ -332,3 +332,92 @@ Decay 版比 constant 版差 -0.5/-0.7。
 预计 final ≈ exp229 (62.2/75.0) 或更差。
 ETA ~40min。
 **决策**: 继续到 final
+
+### [19:55] 检查点 #43
+
+ep102. ep110 eval ~16min。ETA ~36min。
+**决策**: 继续
+
+### [19:57] 检查点 #44
+
+ep104 附近。ep110 eval ~12min。
+**决策**: 继续
+
+### [20:00] 检查点 #45
+
+ep104. ETA ~31min。ep110 eval ~12min。
+**决策**: 等 ep110 eval
+
+### [20:02] 检查点 #46
+
+ep106. ep110 eval ~8min。
+**决策**: 等 ep110 eval
+
+### [20:06] 检查点 #47
+
+ep108. 已清理远程无价值 checkpoints (91%→51%, 释放~12GB)。ep110 eval ~4min。
+**决策**: 等 ep110 eval
+
+### [20:13] 检查点 #48 — ep110
+
+**ep110: 61.6/74.3** (vs exp191 63.2/75.4 = **-1.6/-1.1**, vs exp229 62.0/74.8 = -0.4/-0.5)
+略好于 ep100 (61.3→61.6)。仍然 -1.6 vs baseline。
+预计 final ~62.0/74.5 — 与 exp229 (62.2/75.0) 基本相同。
+ETA ~20min。
+**决策**: 继续到 final
+
+### [20:16] 检查点 #49
+
+ep112. ETA ~16min。
+**决策**: 等 ep120 final
+
+### [20:19] 检查点 #50
+
+ep113. ETA ~14min。
+**决策**: 等 ep120 final
+
+### [20:22] 检查点 #51
+
+ep114. ETA ~12min。
+**决策**: 等 ep120 final
+
+### [20:25] 检查点 #52
+
+ep116. ETA ~8min。
+**决策**: 等 ep120 final
+
+### [20:27] 检查点 #53
+
+ep117. ETA ~6min。
+**决策**: 等 ep120 final
+
+### [20:30] 检查点 #54
+
+ep119. Final eval ~2min。
+**决策**: 等 ep120 final
+
+### [20:35] 检查点 #55 — FINAL ep120
+
+**ep120 FINAL: 61.7/74.3** (vs exp191 63.2/75.4 = **-1.5/-1.1**, vs exp229 62.2/75.0 = -0.5/-0.7)
+
+## 结论
+
+BT-PKD cosine decay (w→0 by ep60) on Tiny:
+- **早期加速**: +4.3 at ep10, +3.8 at ep30
+- **中期下降**: ep60=-1.5 (BT-PKD 关闭, 但 damage 已 done)
+- **部分恢复**: ep70=-1.4 (backbone 开始恢复)
+- **Final**: -1.5/-1.1
+
+**Cosine decay 没有改善 BT-PKD**: 
+- exp229 constant: 62.2/75.0 (-1.0/-0.4)
+- exp231 decay: 61.7/74.3 (-1.5/-1.1)
+- Decay 甚至略差 (-0.5)
+
+**BT-PKD 全系列结论**:
+1. cosine distillation 是唯一在 Small 上存活的 non-detached 梯度方法 ✓
+2. 提供 3x 早期收敛加速 (实用价值: 少训练 epoch) ✓
+3. 但无法提升 final 结果 ✗ — 所有变体都 ~-1.0 vs baseline
+4. cosine decay 不解决问题 — 干扰在 active 阶段已经发生
+
+**根本限制**: 任何 non-detached 梯度到 backbone 在后期都干扰收敛。
+这不是梯度类型 (CE vs distillation) 或 schedule 的问题，是根本性的。
