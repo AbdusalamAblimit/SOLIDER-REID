@@ -94,3 +94,50 @@ per-part 的 7 个 classifiers 学习更慢 (id_part 5.0 vs baseline ~3.5 at ep2
 **关键**: 如果 mAP 在 ep40-60 追上, 而 R1 优势持续, 那就是正向结果。
 ETA ~3h30m。
 **决策**: 继续！R1 持续正向是好信号
+
+### [21:45] 检查点 #15
+
+ep21. id_part=4.993 (开始接近 5.0 以下). ep30 eval ~18min。
+**决策**: 等 ep30 eval
+
+### [21:48] 检查点 #16
+
+ep22. ETA ~3h25m. ep30 eval ~16min。
+**决策**: 等 ep30 eval
+
+### [21:50] 检查点 #17
+
+ep24. id_global=2.914 (快速下降), id_part=4.953 (仍然慢). ep30 eval ~12min。
+Part classifiers 学习速度是 global 的约 1/3。
+**决策**: 等 ep30 eval
+
+### [21:53] 检查点 #18
+
+ep25. id_global=2.529, id_part=4.752. ep30 eval ~10min。
+**决策**: 等 ep30 eval
+
+### [21:56] 检查点 #19
+
+ep26. id_global=2.158, id_part=4.516. ep30 eval ~8min。
+**决策**: 等 ep30 eval
+
+### [22:01] 检查点 #20
+
+ep29. id_global=2.077, id_part=4.645. ep30 eval ~2min。
+**决策**: 等 ep30 eval
+
+### [22:06] 检查点 #21 — ep30
+
+**ep30: 49.4/62.9** (vs exp191 50.6/64.8 = **-1.2/-1.9**)
+
+| Epoch | exp233 mAP/R1 | exp191 mAP/R1 | delta |
+|-------|------|------|------|
+| 10 | 34.0/49.2 | 34.3/46.8 | -0.3/+2.4 |
+| 20 | 44.7/58.8 | 46.0/58.0 | -1.3/+0.8 |
+| **30** | **49.4/62.9** | **50.6/64.8** | **-1.2/-1.9** |
+
+R1 优势逆转！从 ep10 +2.4 到 ep30 -1.9。
+per-part classifiers 仍在学习中 (id_part=4.2 vs baseline 已收敛)。
+可能需要更多 epoch 让 7 classifiers 追上。
+ETA ~3h11m。
+**决策**: 继续，观察 ep50+ 是否追上
