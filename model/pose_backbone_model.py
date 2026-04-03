@@ -148,6 +148,7 @@ class PoseBackboneModel(build_transformer):
                 deformable_k=int(getattr(cfg.MODEL, 'POSE_DEFORMABLE_K', 4)),
                 multi_scale_kp=getattr(cfg.MODEL, 'POSE_MULTI_SCALE_KP', False),
                 multi_scale_s2_dim=self.base.num_features[-2] if len(self.base.num_features) >= 2 else self.in_planes,
+                per_part=getattr(cfg.MODEL, 'POSE_GCN_PER_PART', False),
             )
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'concat_scaled')
             if keypoint_pool_only:

@@ -193,6 +193,9 @@ _C.MODEL.POSE_MULTI_SCALE_STAGES = [2, 3] # Which stages to use (0-indexed, 3=la
 _C.MODEL.POSE_DEFORMABLE_SAMPLE = False    # Enable deformable keypoint sampling
 _C.MODEL.POSE_DEFORMABLE_K = 4            # Number of offset sampling points per keypoint
 
+# Per-body-part independent training (KPR-inspired)
+_C.MODEL.POSE_GCN_PER_PART = False        # Split 17 keypoints into 6 body parts, each with own classifier
+
 # GSPB: Gradient-Scaled Part Branch — partial gradient flow from Part to backbone
 _C.MODEL.POSE_PART_GRAD_SCALE = 0.0       # 0.0 = detach (default), 1.0 = non-detach, 0.05 = scaled
 

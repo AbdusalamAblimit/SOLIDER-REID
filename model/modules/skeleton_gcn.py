@@ -40,6 +40,16 @@ SCFA_SYMMETRY_PAIRS = [
     (15, 16),  # ankles
 ]
 
+# 6-body-part grouping of COCO 17 keypoints (KPR-inspired)
+BODY_PART_GROUPS = [
+    [0, 1, 2, 3, 4],    # head: nose, eyes, ears
+    [5, 6, 11, 12],     # torso: shoulders, hips
+    [5, 7, 9],          # left_arm: l_shoulder, l_elbow, l_wrist
+    [6, 8, 10],         # right_arm: r_shoulder, r_elbow, r_wrist
+    [11, 13, 15],       # left_leg: l_hip, l_knee, l_ankle
+    [12, 14, 16],       # right_leg: r_hip, r_knee, r_ankle
+]
+
 
 class SkeletonGCN(nn.Module):
     """Graph Convolutional Network over COCO skeleton.
@@ -294,9 +304,11 @@ class SkeletonGCNHead(nn.Module):
                  scfa=False, scfa_low_thr=0.3, scfa_high_thr=0.5,
                  vcga=False,
                  deformable_sample=False, deformable_k=4,
-                 multi_scale_kp=False, multi_scale_s2_dim=384):
+                 multi_scale_kp=False, multi_scale_s2_dim=384,
+                 per_part=False):
         super().__init__()
         self.feat_dim = feat_dim
+        self.per_part = per_part
         self.input_h, self.input_w = input_size
         self.num_joints = 17
         self.use_gcn = use_gcn
@@ -439,8 +451,21 @@ class SkeletonGCNHead(nn.Module):
         self.bn.bias.requires_grad_(False)
         self.classifier = nn.Linear(feat_dim, num_classes, bias=False)
 
+        # Per-body-part BN + classifiers (KPR-inspired)
+        if self.per_part:
+            num_parts = len(BODY_PART_GROUPS)
+            self.part_bns = nn.ModuleList([nn.BatchNorm1d(feat_dim) for _ in range(num_parts)])
+            for bn in self.part_bns:
+                bn.bias.requires_grad_(False)
+            self.part_classifiers = nn.ModuleList([
+                nn.Linear(feat_dim, num_classes, bias=False) for _ in range(num_parts)])
+            print(f'[GCN] Per-body-part training enabled: {num_parts} parts')
+
         # Initialize BN
         self.bn.apply(self._init_bn)
+        if self.per_part:
+            for bn in self.part_bns:
+                bn.apply(self._init_bn)
 
     @staticmethod
     def _init_bn(m):
@@ -985,6 +1010,34 @@ class SkeletonGCNHead(nn.Module):
             feat_bn = self.bn(skeleton_feat)
             aux_data['feat_bn'] = feat_bn
             cls_score = self.classifier(feat_bn)
-            return [cls_score], [skeleton_feat], aux_data
+
+            if self.per_part:
+                # Per-body-part pooling + independent classifiers
+                part_cls_scores = []
+                part_feats = []
+                for i, group_indices in enumerate(BODY_PART_GROUPS):
+                    # Pool keypoints in this body part group
+                    group_feats = kp_feats_enhanced[:, group_indices, :]  # (B, G, C)
+                    group_weights = kp_weights[:, group_indices].clamp(min=1e-6).unsqueeze(-1)  # (B, G, 1)
+                    part_feat = (group_feats * group_weights).sum(dim=1) / \
+                                group_weights.sum(dim=1).clamp(min=1e-6)  # (B, C)
+                    part_feat_bn = self.part_bns[i](part_feat)
+                    part_cls = self.part_classifiers[i](part_feat_bn)
+                    part_cls_scores.append(part_cls)
+                    part_feats.append(part_feat)
+                return [cls_score] + part_cls_scores, [skeleton_feat] + part_feats, aux_data
+            else:
+                return [cls_score], [skeleton_feat], aux_data
         else:
-            return None, [skeleton_feat_out], aux_data
+            if self.per_part:
+                # Test time: return per-part features for part-to-part matching
+                part_feats = []
+                for group_indices in BODY_PART_GROUPS:
+                    group_feats = kp_feats_enhanced[:, group_indices, :]
+                    group_weights = kp_weights[:, group_indices].clamp(min=1e-6).unsqueeze(-1)
+                    part_feat = (group_feats * group_weights).sum(dim=1) / \
+                                group_weights.sum(dim=1).clamp(min=1e-6)
+                    part_feats.append(part_feat)
+                return None, [skeleton_feat_out] + part_feats, aux_data
+            else:
+                return None, [skeleton_feat_out], aux_data

@@ -2870,3 +2870,38 @@ exp220 (scale=0.05) 完整对照:
 2. **改善 Global branch** 而不是 Part branch — PSG 已证明有效，还有什么可以在 Global 上做？
 3. **改善 test-time matching** — MaxSim 有 +1.7%, 还能更好吗？
 4. **跨领域迁移新机制** — 需要读新论文寻找灵感
+
+---
+
+## 2026-04-03: Paper Search Update — KPR (ECCV 2024) = 75.1% SOTA
+
+### KPR vs Our System
+
+| Aspect | KPR (ECCV 2024) | Our System |
+|--------|------|------|
+| Backbone | ViT + SOLIDER pre-training | Swin + SOLIDER pre-training |
+| Pose injection | Additive prompt tokens | PSG multiplicative gating |
+| Part features | Per-body-part independent | GCN pooled into one |
+| Part training | Per-part ID + triplet (GiLt) | Pooled Part ID + triplet |
+| Test matching | Part-to-part visibility-weighted | MaxSim hybrid |
+| Occluded-Duke mAP | **75.1%** | **72.4%** (Small maxsim) |
+| Gap | — | **-2.7%** |
+
+### 最大差异分析
+
+1. **ViT vs Swin**: KPR 用 ViT backbone (token-based), 更适合 per-part token 操作
+2. **Per-part independent training**: KPR 每个 body part 有独立 classifier + triplet → 更好的 part 判别力
+3. **Visibility-aware matching**: KPR 用 sqrt(v_q * v_g) 作为 pair-specific 权重
+
+### 我们能做什么
+
+1. **Per-part GCN loss**: 不是把 17 keypoints pool 成 1 feature，而是分成 6 body parts，每个独立训练
+   - 这与 STD-PR per-token 类似，但在 GCN features 上
+   - 需要 6 个独立 classifier + 6 个 triplet loss
+   - 操作在 detached features 上，无 backbone 干扰
+
+2. **更好的 test-time matching**: 用 visibility-weighted part-to-part distance 而不是 MaxSim
+   - sqrt(v_q * v_g) weighting (KPR 的做法)
+   - 这可以直接测试，无需训练
+
+3. **Accept that 72.4% is near our ceiling**: Swin-Small + our pipeline may not reach 76% without ViT backbone
