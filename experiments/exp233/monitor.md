@@ -12,3 +12,38 @@
 id_part 是 7 个 part classifiers (pooled + 6 body parts) 的平均 CE loss。
 ETA ~4h14m。
 **决策**: 等 ep10 eval
+
+### [21:03] 检查点 #2
+
+ep3. id_part=6.544 (下降中). ep10 eval ~14min。
+**决策**: 等 ep10 eval
+
+### [21:06] 检查点 #3
+
+ep4. id_part=6.384 (稳定下降). ep10 eval ~12min。
+**决策**: 等 ep10 eval
+
+### [21:09] 检查点 #4
+
+ep5. Acc=0.160, id_part=6.210. ep10 eval ~10min。
+**决策**: 等 ep10 eval
+
+### [21:11] 检查点 #5
+
+ep7. id_part=6.122. ep10 eval ~6min。
+**决策**: 等 ep10 eval
+
+### [21:14] 检查点 #6
+
+ep8. id_part=6.034. ep10 eval ~4min。
+**决策**: 等 ep10 eval
+
+### [21:21] 检查点 #7 — ep10
+
+**ep10: 34.0/49.2** (vs exp191 34.3/46.8 = **-0.3/+2.4**)
+
+mAP 基本持平 (-0.3), **R1 +2.4!** Per-part 训练在早期就显示 R1 优势。
+7 个独立 classifier 学习较慢 (id_part 5.82 vs baseline ~5.0), 但特征多样性更高。
+远高于 25% 早停线。
+ETA ~3h50m。
+**决策**: 继续！R1 +2.4 是积极信号
