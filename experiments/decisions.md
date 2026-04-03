@@ -3311,3 +3311,28 @@ B. 直接启动 exp025，exp024 可以后续补跑
 - 研究 agent 提出的 KAMP (多尺度 keypoint 融合) 还未尝试
 - 或者接受 Tiny ceiling, 聚焦整理论文材料
 - 用户在 4090 上跑 Small: 72.4% (maxsim) 是 Small 最佳
+
+### [2026-04-03 20:40] 决策 — BT-PKD 系列证伪，Non-Detached Gradient 方向关闭
+
+**上下文**: exp229-232 全面测试了 BT-PKD (Backbone-Through Per-Keypoint Distillation):
+- constant weight (Tiny/Small): ~-1.0 mAP at final
+- cosine decay (Tiny/Small): ~-1.5 mAP at final
+- 所有变体展示相同模式: 早期加速 +3-5%, 后期干扰 -1~-2%
+
+**选择**: 关闭所有 non-detached gradient 方向
+
+**理由**:
+1. BT-PKD 是最温和的 non-detached 梯度 (cosine distillation from EMA teacher)
+2. 即使最温和的梯度也无法避免后期干扰
+3. Cosine decay schedule 也不解决 (干扰在 active 阶段已发生)
+4. 这是一个根本性限制，不是梯度类型或 schedule 的问题
+
+**已证伪的 non-detached 变体汇总**:
+- BA-PKC (SupCon): catastrophic (0.5%) 
+- GSPB scale≥0.01 on Small: catastrophic (2.3-15.1%)
+- GSPB scale=0.05 on Tiny: -0.3 at final
+- GSPB scale=0.005 on Small: ~0 (with PADPQ: +1.0 mAP, -1.8 R1)
+- BT-PKD constant: -1.0/-0.4
+- BT-PKD decay: -1.5/-1.1
+
+**接下来**: 需要完全不同的方向。等论文搜索结果后决定。
