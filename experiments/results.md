@@ -1150,3 +1150,12 @@
 
 - 对照 exp191: **+0.6/-1.8**
 - GiLt mAP 正向但 R1 严重负面。Part CE 对 R1 必要。
+
+### exp240: PPA on Small (w=0.5, no PARALLEL_AUG)
+
+| 方法 | mAP | R1 | 口径 |
+|------|-----|----|------|
+| exp240 | 70.7% | 81.1% | ep120 final |
+
+- 对照 exp230 (no PAUG, ep110): -0.1/-0.8
+- PPA 在 Small 上基本中性，不如 Tiny PPA (+0.5/-0.4)
