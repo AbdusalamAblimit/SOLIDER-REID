@@ -202,6 +202,13 @@ _C.MODEL.POSE_PPA_NUM_PARTS = 5           # Number of body parts (5)
 _C.MODEL.POSE_PPA_ASSIGN_WEIGHT = 0.5     # Assignment loss weight
 _C.MODEL.POSE_PPA_GILT = False            # GiLt mode: Part triplet only, no Part CE
 
+# LGPA: Language-Grounded Part Assignment — CLIP text prototypes + cross-attention + pose masks
+_C.MODEL.POSE_LGPA = False                # Enable LGPA (replaces PPA / GCN Part branch)
+_C.MODEL.POSE_LGPA_CLIP_DIM = 512        # CLIP text feature dimension (ViT-B-32 = 512)
+_C.MODEL.POSE_LGPA_NUM_HEADS = 8         # Cross-attention heads
+_C.MODEL.POSE_LGPA_POSE_TEMP = 1.0       # Pose mask temperature
+_C.MODEL.POSE_LGPA_ASSIGN_WEIGHT = 0.5   # Assignment supervision loss weight
+
 # FSDC: Feature-Space Diffusion Completion — denoise occluded spatial tokens
 _C.MODEL.POSE_FSDC = False                # Enable feature denoiser
 _C.MODEL.POSE_FSDC_LAYERS = 2             # Denoiser transformer layers

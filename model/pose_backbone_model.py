@@ -127,6 +127,21 @@ class PoseBackboneModel(build_transformer):
         if self.bt_pkd:
             print('[BT-PKD] Backbone-through per-keypoint distillation enabled')
 
+        # LGPA: Language-Grounded Part Assignment (CLIP + cross-attention + pose)
+        self.use_lgpa = getattr(cfg.MODEL, 'POSE_LGPA', False)
+        if self.use_lgpa and getattr(cfg.MODEL, 'POSE_PPA', False):
+            raise ValueError('POSE_LGPA and POSE_PPA cannot both be enabled')
+        if self.use_lgpa:
+            from .modules.clip_part_head import CLIPPartHead
+            self.clip_part_head = CLIPPartHead(
+                feat_dim=self.in_planes,
+                num_classes=num_classes,
+                clip_dim=int(getattr(cfg.MODEL, 'POSE_LGPA_CLIP_DIM', 512)),
+                num_heads=int(getattr(cfg.MODEL, 'POSE_LGPA_NUM_HEADS', 8)),
+                pose_mask_temp=float(getattr(cfg.MODEL, 'POSE_LGPA_POSE_TEMP', 1.0)),
+            )
+            self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
+
         # PPA: Pose-Prompted Part-Assignment Head (replaces GCN)
         self.use_ppa = getattr(cfg.MODEL, 'POSE_PPA', False)
         if self.use_ppa:
@@ -477,6 +492,28 @@ class PoseBackboneModel(build_transformer):
                     kp_data = {'str_stats': str_stats}
                     return [cls_score, str_cls], [global_feat, str_feat], featmaps, None, kp_data
 
+            elif getattr(self, 'use_lgpa', False) and scene_heatmaps is not None:
+                # LGPA: CLIP cross-attention part assignment (end-to-end, NOT detached)
+                lgpa_cls_scores, lgpa_feats, lgpa_data = self.clip_part_head(
+                    featmaps[-1], scene_heatmaps, return_cls=True)
+                kp_data = lgpa_data
+
+                # LGPA + GCN dual branch: also run GCN on detached features
+                if self.use_skeleton_gcn and pose_dict is not None:
+                    feat_map_detached = featmaps[-1].detach()
+                    _s2_feat = featmaps[-2].detach() if len(featmaps) >= 2 else None
+                    gcn_cls_scores, gcn_feats, gcn_data = self.skeleton_head(
+                        feat_map_detached, pose_dict, return_cls=True, label=label,
+                        stage2_feat=_s2_feat)
+                    if gcn_data and 'kp_feats' in gcn_data:
+                        kp_data['gcn_kp_feats'] = gcn_data['kp_feats']
+                        kp_data['gcn_kp_weights'] = gcn_data['kp_weights']
+                    return ([cls_score] + lgpa_cls_scores + gcn_cls_scores,
+                            [global_feat] + lgpa_feats + gcn_feats,
+                            featmaps, None, kp_data)
+
+                return [cls_score] + lgpa_cls_scores, [global_feat] + lgpa_feats, featmaps, None, kp_data
+
             elif getattr(self, 'use_ppa', False) and scene_heatmaps is not None:
                 # PPA: Pose-Prompted Part-Assignment Head (end-to-end, NOT detached)
                 ppa_cls_scores, ppa_feats, ppa_data = self.part_assignment_head(
@@ -641,8 +678,23 @@ class PoseBackboneModel(build_transformer):
             gcn_feats = None
             aux_data = {}
 
+            # LGPA test path
+            if getattr(self, 'use_lgpa', False) and scene_heatmaps is not None and \
+                    getattr(self, 'pose_test_feat', 'global') != 'global':
+                _, lgpa_feats, aux_data = self.clip_part_head(
+                    featmaps[-1], scene_heatmaps, return_cls=False)
+                gcn_feats = lgpa_feats  # [pooled, part1..partK]
+                # LGPA + GCN dual: also get GCN features
+                if self.use_skeleton_gcn and pose_dict is not None:
+                    _, gcn_only_feats, gcn_aux = self.skeleton_head(
+                        featmaps[-1], pose_dict, return_cls=False)
+                    gcn_feats = lgpa_feats + gcn_only_feats
+                    if gcn_aux and 'kp_feats' in gcn_aux:
+                        aux_data['gcn_kp_feats'] = gcn_aux['kp_feats']
+                        aux_data['gcn_kp_weights'] = gcn_aux['kp_weights']
+
             # PPA test path
-            if getattr(self, 'use_ppa', False) and scene_heatmaps is not None and \
+            elif getattr(self, 'use_ppa', False) and scene_heatmaps is not None and \
                     getattr(self, 'pose_test_feat', 'global') != 'global':
                 _, ppa_feats, aux_data = self.part_assignment_head(
                     featmaps[-1], scene_heatmaps, return_cls=False)

@@ -902,6 +902,16 @@ def do_train(cfg,
                     details['ppa_entropy'] = kp_data.get('assign_entropy', 0)
                     loss._loss_details = details
 
+                # LGPA: CLIP Part Assignment loss (same assign_loss key as PPA)
+                lgpa_enabled = getattr(cfg.MODEL, 'POSE_LGPA', False)
+                if lgpa_enabled and not ppa_enabled and kp_data is not None and 'assign_loss' in kp_data:
+                    lgpa_assign_w = float(getattr(cfg.MODEL, 'POSE_LGPA_ASSIGN_WEIGHT', 0.5))
+                    lgpa_assign_loss = kp_data['assign_loss']
+                    details = getattr(loss, '_loss_details', {})
+                    loss = loss + lgpa_assign_w * lgpa_assign_loss
+                    details['lgpa_assign'] = lgpa_assign_loss.item()
+                    loss._loss_details = details
+
                 # PKC: Per-Keypoint Contrastive loss on GCN keypoint features
                 pkc_enabled = getattr(cfg.MODEL, 'POSE_PKC', False)
                 if pkc_enabled and kp_data is not None and 'kp_feats' in kp_data:
