@@ -215,6 +215,21 @@ ETA ~50min。
 
 ### [06:10] 检查点 #27
 
-ep108. ep110 eval ~4min。ETA ~24min。
-两个创新搜索 agent 在后台运行中。
-**决策**: 等 ep110 + final
+### [06:18] 检查点 #28 — ep110
+
+**ep110: 61.7/73.3** (vs exp191 63.2/75.4 = **-1.5/-2.1**)
+ep100→110: -1.9→-1.5 mAP (轻微恢复)。
+ETA ~22min to final。
+**决策**: 等 ep120 final
+
+### [06:30] 检查点 #29
+
+### [06:44] 检查点 #30 — FINAL ep120
+
+**ep120 FINAL: 61.7/73.2** (vs exp191 63.2/75.4 = **-1.5/-2.2**)
+
+## 结论
+
+FSDC (正确配置 ROA=False, PLBOA=0.7) on Tiny: **-1.5/-2.2**
+FSDC denoiser 学到了特征空间结构 (recon 15→2), 但补全特征对 matching 无用。
+**FSDC 方向证伪 — detached feature completion 无法改善 final ReID。**
