@@ -93,5 +93,14 @@ vs exp237 PPA-only ep60: 61.1/72.2 = **+0.3/+0.5**
 
 **PPA+GCN ep60 优于 PPA-only ep60！** GCN 改善了 R1 (-1.2 vs -1.7)。
 **这是 PPA-only 开始下降的 epoch — PPA+GCN 在此维持正向 mAP!**
-ETA ~1h30m。
+
+### [13:12] 检查点 #14
+
+### [13:17] 检查点 #15 — ep70
+
+**ep70: 62.2/73.9** (vs exp191 61.4/74.6 = **+0.8/-0.7**)
+vs exp237 PPA-only ep70: 61.8/73.5 = +0.4/+0.4
+
+**PPA+GCN 持续优于 PPA-only！** 这是 PPA-only 开始回落的区间, 但 PPA+GCN 维持 +0.8。
+ETA ~1h15m。
 **决策**: 继续！
