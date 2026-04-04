@@ -10,9 +10,9 @@
 - 我们的 PPA: pose heatmap 做 assignment supervision (但无语义锚定)
 
 **LGPA 的独特之处**: 
-1. CLIP frozen text encoder 生成语义 part prototypes ("head", "torso", "arms", "legs")
+1. CLIP frozen text encoder 生成语义 part prototypes (6 个: 5 body parts + background)
 2. 这些 prototypes 用 cross-attention 与 backbone spatial tokens 对齐
-3. Pose heatmaps 提供空间约束 (哪些位置属于哪个 part)
+3. Pose heatmaps 作为 additive bias 注入 attention score (QK^T/sqrt(d) + pose_bias)
 4. 三者融合: 语义(CLIP) + 几何(pose) + 视觉(backbone) = 更强的 part 表征
 
 **没有人做过 pose-conditioned CLIP part assignment for ReID。**
@@ -23,56 +23,71 @@
 
 ```
 1. CLIP Text Encoder (frozen):
-   texts = ["head of a person", "torso of a person", "arms of a person", 
-            "legs of a person", "background"]
-   text_protos = CLIP.encode_text(texts)  # (5, 512) → project to (5, 768)
+   texts = ["head and face of a person", "torso and chest of a person", 
+            "arms and hands of a person", "upper legs and thighs of a person",
+            "lower legs and feet of a person", "background scene"]
+   text_protos = CLIP.encode_text(texts)  # (6, 512) → project to (6, 768)
 
-2. Cross-Attention Part Assignment:
-   Q = text_protos (5, 768)  — semantic queries
+2. Pose-Conditioned Cross-Attention:
+   Q = text_protos (6, 768)  — semantic queries
    K = spatial_tokens (48, 768)  — backbone features
    V = spatial_tokens (48, 768)
    
-   # Pose-conditioned attention mask:
-   # For each part query, mask tokens that don't correspond to that body part
-   pose_mask = _compute_pose_mask(heatmaps)  # (5, 48) binary
+   # Pose bias (additive, injected BEFORE softmax):
+   pose_bias = compute_pose_bias(scene_heatmaps)  # (6, 48)
    
-   # Cross-attention with pose mask:
-   attn = softmax(Q K^T / sqrt(d) + pose_mask_bias)
-   part_feats = attn @ V  # (5, 768) — semantic-grounded part features
+   # Attention with pose bias:
+   attn = softmax(Q K^T / sqrt(d) + pose_bias)
+   part_feats = attn @ V  # (6, 768) — pose-conditioned semantic part features
 
 3. End-to-end training:
-   - Part ID loss on each of 5 part features
+   - Part ID loss on each of 5 body part features (exclude background)
+   - Pooled part ID loss (visibility-weighted average)
    - Part triplet loss
-   - Assignment supervision from pose heatmaps
-   - All gradients flow to backbone
+   - Assignment supervision: KL(pose_GT || pose_conditioned_attn_weights)
+   - All gradients flow to backbone (non-detached)
 
 4. Test time:
    - Same cross-attention (CLIP features are fixed)
-   - Per-part features for matching (MaxSim or equal_concat)
+   - Per-part features for matching (equal_concat: global + pooled + 5 parts)
 ```
+
+### COCO keypoint → part mapping (5 parts)
+
+| Part | Text prompt | COCO keypoints |
+|------|-------------|----------------|
+| Head | "head and face of a person" | 0,1,2,3,4 (nose, eyes, ears) |
+| Torso | "torso and chest of a person" | 5,6,11,12 (shoulders, hips) |
+| Arms | "arms and hands of a person" | 5,6,7,8,9,10 (shoulders, elbows, wrists) |
+| Upper legs | "upper legs and thighs of a person" | 11,12,13,14 (hips, knees) |
+| Lower legs | "lower legs and feet of a person" | 15,16 (ankles) |
+| Background | "background scene" | 1 - max(body_parts) |
 
 ### 关键设计
 
 1. **CLIP frozen**: 不训练 CLIP，只用它的文本特征作为语义锚
 2. **Text-to-Visual projection**: Linear(512→768) 将 CLIP 特征对齐到 backbone 空间
-3. **Pose mask**: 限制 cross-attention — "head" query 只看 head 区域 tokens
-4. **端到端**: cross-attention 的梯度流到 backbone
+3. **Pose bias**: 在 attention score 中直接注入 (QK^T/sqrt(d) + pose_bias)
+4. **端到端**: cross-attention Q/K/V 投影的梯度流到 backbone
+5. **scene_heatmaps**: 与 PPA 基线保持一致 (单变量对照)
+6. **CLIP hard-fail**: 如果 open_clip 不可用则直接报错 (不静默退化)
 
-### 与 PPA 的关键区别
+### 与 PPA 的关键区别 (单变量)
 
 - PPA: 每个 token 用线性层分配到 part → 无语义锚定
-- LGPA: CLIP 文本原型作为 part queries → 语义化的 part 表征
-- LGPA 的 part features 有 CLIP 的语义先验，更 robust
+- LGPA: CLIP 文本原型作为 part queries + pose bias in attention → 语义化的 part 表征
+- 两者都用 scene_heatmaps, 5 body parts, 同样的 loss 结构
 
 ## 实现文件
 
-1. `model/modules/clip_part_head.py` — 新文件
-2. `model/pose_backbone_model.py` — 集成
+1. `model/modules/clip_part_head.py` — 新文件 (手动 cross-attention + pose bias)
+2. `model/pose_backbone_model.py` — 集成 (LGPA init + train/test forward)
 3. `config/defaults.py` — 配置
-4. `processor/processor.py` — loss
+4. `processor/processor.py` — LGPA assign_loss
 
 ## 对照组
 - exp241 (PPA+GCN): 63.7/75.3 (+0.5/-0.1)
+- exp237 (PPA only): 63.7/75.0 (+0.5/-0.4)
 - exp191 (GCN only): 63.2/75.4
 
 ## 预期结果

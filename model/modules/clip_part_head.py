@@ -13,23 +13,25 @@ import torch.nn.functional as F
 
 
 # Body part text descriptions for CLIP encoding (5 parts + background)
+# Text semantics must match the COCO keypoint groups exactly.
 PART_TEXTS = [
-    "head of a person",
-    "torso of a person",
-    "upper arms of a person",
-    "lower arms and hands of a person",
-    "legs of a person",
+    "head and face of a person",
+    "torso and chest of a person",
+    "arms and hands of a person",
+    "upper legs and thighs of a person",
+    "lower legs and feet of a person",
     "background scene",
 ]
 NUM_PARTS = len(PART_TEXTS) - 1  # 5 body parts + 1 background
 
 # COCO keypoint to part mapping (5 parts)
+# Each group's keypoints must semantically match the corresponding PART_TEXT.
 PART_KPS = [
-    [0, 1, 2, 3, 4],      # head (nose, eyes, ears)
-    [5, 6, 11, 12],        # torso (shoulders, hips)
-    [5, 7, 9],             # upper arms (L/R shoulder, elbow, wrist-ish)
-    [6, 8, 10],            # lower arms/hands (R shoulder, elbow, wrist)
-    [11, 13, 14, 15, 16],  # legs (hips, knees, ankles)
+    [0, 1, 2, 3, 4],       # head: nose, eyes, ears
+    [5, 6, 11, 12],         # torso: shoulders, hips
+    [5, 6, 7, 8, 9, 10],    # arms: both shoulders, elbows, wrists
+    [11, 12, 13, 14],       # upper legs: hips, knees
+    [15, 16],               # lower legs: ankles
 ]
 
 
