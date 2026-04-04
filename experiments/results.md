@@ -1172,3 +1172,25 @@
 - ep80: +1.2/+0.9 (241 实验中最强 ep80, mAP AND R1 都正向!)
 
 **exp241 MaxSim test**: 64.1/74.8 (MaxSim gain +0.4/-0.5 vs equal_concat)
+
+### exp242: PPA + GCN on Small ❌❌
+
+| 方法 | mAP | R1 | R10 | 口径 |
+|------|-----|----|----|------|
+| exp242 | 60.9% | 73.4% | 88.9% | ep120 final |
+
+- 对照 exp206r (Small GCN): **-9.7/-9.2** — 灾难性失败!
+- PPA 的 non-detached 梯度在 Small 上严重损害 backbone
+- **结论: PPA 方法不可泛化到更大 backbone**
+
+### exp243: LGPA (CLIP + Cross-Attention + Pose) on Tiny 🟡
+
+| 方法 | mAP | R1 | 口径 |
+|------|-----|----|------|
+| exp243 ep80 | 60.9% | 72.5% | ep80 (GPU crash at ep88, 训练未完成) |
+
+- 对照 exp191 (GCN ep80): 62.0/74.4 = **-1.1/-1.9**
+- 对照 PPA+GCN (ep80): 63.2/75.3 = -2.3/-2.8
+- **早期最强** (ep30 +4.1 mAP vs baseline), CLIP 语义锚定加速收敛
+- **后期干扰严重**: cross-attention non-detached 梯度干扰 > PPA 的线性 assignment
+- **结论**: CLIP 语义有效加速 part learning, 但不解决 detach barrier

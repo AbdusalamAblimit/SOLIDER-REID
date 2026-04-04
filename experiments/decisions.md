@@ -3336,3 +3336,42 @@ B. 直接启动 exp025，exp024 可以后续补跑
 - BT-PKD decay: -1.5/-1.1
 
 **接下来**: 需要完全不同的方向。等论文搜索结果后决定。
+
+### [2026-04-04 15:40] 决策: exp242 PPA+GCN Small 灾难性失败
+
+**上下文**: PPA+GCN 在 Tiny 上 +0.5/-0.1, 需要在 Small 上验证泛化性。
+**结果**: 60.9/73.4 vs baseline 70.6/82.6 = **-9.7/-9.2**
+
+**关键发现**:
+1. PPA 的 non-detached 梯度在 Small backbone 上造成灾难性干扰
+2. 对比: PPA on Small (exp240) 也是中性 (70.7/81.1 vs 70.6/82.6 = +0.1/-1.5)
+3. Non-detached part gradients 与 backbone 强度负相关: Tiny OK, Small catastrophic
+4. 这进一步验证了 detach barrier 的根本性——不仅 detached features 不行, non-detached gradients 也不行 (在大模型上)
+
+**选择**: 放弃 PPA 作为主线方向。转向 LGPA (CLIP-based part assignment)
+
+**理由**: LGPA 使用 CLIP frozen text prototypes 作为语义锚, cross-attention 机制与 PPA 不同, 可能在梯度控制上更好。
+
+### [2026-04-04 15:40] 决策: 启动 exp243 LGPA
+
+**上下文**: 寻找范式级创新, 结合 VLM + pose 做 part assignment。
+**选择**: LGPA = CLIP text embeddings + cross-attention + pose masks
+**理由**:
+1. 首次将 VLM 语义知识 + 几何 pose 信息结合用于 occluded ReID
+2. CLIP 提供语义锚定 (PPA 缺乏), pose 提供空间约束
+3. Cross-attention 比 softmax assignment 更灵活
+4. 如果成功, 创新性足以支撑论文核心贡献
+
+### [2026-04-04 21:10] exp243 LGPA 结果分析 (GPU crash at ep88)
+
+**结果**: ep80 60.9/72.5, delta -1.1/-1.9 vs baseline。
+
+**关键发现**:
+1. CLIP 语义锚定有效: ep20-40 +3.5~+4.1 mAP, 超过所有 PPA 变体
+2. Cross-attention 梯度干扰 > PPA: 后期 delta (-1.1 at ep80) 比 PPA+GCN (+1.2 at ep80) 差 2.3
+3. **Detach barrier 是根本性问题**: 无论用什么机制 (linear assignment, cross-attention, SupCon, L2 distillation), non-detached part branch 都在后期干扰 backbone
+
+**洞察**: CLIP 的价值在语义初始化而非梯度训练。未来方向:
+- LGPA with detached features (仅用 CLIP 做更好的 part pooling, 不传梯度)
+- CLIP-guided GSPB (用 CLIP 语义控制 gradient scale)
+- 完全放弃 non-detached part branch, 另寻创新方向
