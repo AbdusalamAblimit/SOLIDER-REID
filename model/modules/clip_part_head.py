@@ -98,7 +98,17 @@ class CLIPPartHead(nn.Module):
               f'pose_temp={pose_mask_temp}')
 
     def _init_clip_features(self):
-        """Pre-compute frozen CLIP text features. Hard-fail if CLIP unavailable."""
+        """Load frozen CLIP text features. Try cached file first, then live CLIP."""
+        import os
+        cache_path = 'pretrained/clip_part_text_features.pt'
+        if os.path.exists(cache_path):
+            text_features = torch.load(cache_path, map_location='cpu')
+            assert text_features.shape == (self.num_labels, self.clip_dim), \
+                f'Cached features shape {text_features.shape} != expected ({self.num_labels}, {self.clip_dim})'
+            self.register_buffer('clip_text_features', text_features.float())
+            print(f'[LGPA] CLIP text features loaded from cache: {text_features.shape}')
+            return
+
         import open_clip
         clip_model, _, _ = open_clip.create_model_and_transforms(
             'ViT-B-32', pretrained='openai')
@@ -107,9 +117,11 @@ class CLIPPartHead(nn.Module):
         with torch.no_grad():
             text_features = clip_model.encode_text(texts)
             text_features = F.normalize(text_features, p=2, dim=-1)
-        # Register as buffer (not trainable, moves with model)
         self.register_buffer('clip_text_features', text_features.float())
-        print(f'[LGPA] CLIP text features loaded: {text_features.shape}')
+        # Cache for future use
+        os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+        torch.save(text_features.float(), cache_path)
+        print(f'[LGPA] CLIP text features loaded and cached: {text_features.shape}')
 
     def _compute_pose_bias(self, heatmaps, fH, fW):
         """Generate per-part attention bias from pose heatmaps.
