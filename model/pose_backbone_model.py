@@ -140,7 +140,10 @@ class PoseBackboneModel(build_transformer):
                 num_heads=int(getattr(cfg.MODEL, 'POSE_LGPA_NUM_HEADS', 8)),
                 pose_mask_temp=float(getattr(cfg.MODEL, 'POSE_LGPA_POSE_TEMP', 1.0)),
             )
+            self._lgpa_detach = getattr(cfg.MODEL, 'POSE_LGPA_DETACH', False)
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
+            if self._lgpa_detach:
+                print('[LGPA] Running on DETACHED features (no gradient to backbone)')
 
         # PPA: Pose-Prompted Part-Assignment Head (replaces GCN)
         self.use_ppa = getattr(cfg.MODEL, 'POSE_PPA', False)
@@ -494,10 +497,10 @@ class PoseBackboneModel(build_transformer):
                     return [cls_score, str_cls], [global_feat, str_feat], featmaps, None, kp_data
 
             elif getattr(self, 'use_lgpa', False) and scene_heatmaps is not None:
-                # LGPA: CLIP cross-attention part assignment (end-to-end, NOT detached)
-                # Uses scene_heatmaps (same as PPA baseline for single-variable comparison)
+                # LGPA: CLIP cross-attention part assignment
+                lgpa_input = featmaps[-1].detach() if getattr(self, '_lgpa_detach', False) else featmaps[-1]
                 lgpa_cls_scores, lgpa_feats, lgpa_data = self.clip_part_head(
-                    featmaps[-1], scene_heatmaps, return_cls=True)
+                    lgpa_input, scene_heatmaps, return_cls=True)
                 kp_data = lgpa_data
 
                 # LGPA + GCN dual branch: also run GCN on detached features
