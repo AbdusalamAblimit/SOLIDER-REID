@@ -482,6 +482,22 @@ class PoseBackboneModel(build_transformer):
                 ppa_cls_scores, ppa_feats, ppa_data = self.part_assignment_head(
                     featmaps[-1], scene_heatmaps, return_cls=True)
                 kp_data = ppa_data
+
+                # PPA + GCN dual branch: also run GCN on detached features
+                if self.use_skeleton_gcn and pose_dict is not None:
+                    feat_map_detached = featmaps[-1].detach()
+                    _s2_feat = featmaps[-2].detach() if len(featmaps) >= 2 else None
+                    gcn_cls_scores, gcn_feats, gcn_data = self.skeleton_head(
+                        feat_map_detached, pose_dict, return_cls=True, label=label,
+                        stage2_feat=_s2_feat)
+                    # Merge: PPA kp_data takes priority, add GCN kp_feats for MaxSim
+                    if gcn_data and 'kp_feats' in gcn_data:
+                        kp_data['gcn_kp_feats'] = gcn_data['kp_feats']
+                        kp_data['gcn_kp_weights'] = gcn_data['kp_weights']
+                    return ([cls_score] + ppa_cls_scores + gcn_cls_scores,
+                            [global_feat] + ppa_feats + gcn_feats,
+                            featmaps, None, kp_data)
+
                 return [cls_score] + ppa_cls_scores, [global_feat] + ppa_feats, featmaps, None, kp_data
 
             elif self.use_skeleton_gcn and pose_dict is not None:
@@ -631,6 +647,14 @@ class PoseBackboneModel(build_transformer):
                 _, ppa_feats, aux_data = self.part_assignment_head(
                     featmaps[-1], scene_heatmaps, return_cls=False)
                 gcn_feats = ppa_feats  # [pooled, part1..partK]
+                # PPA + GCN dual: also get GCN features
+                if self.use_skeleton_gcn and pose_dict is not None:
+                    _, gcn_only_feats, gcn_aux = self.skeleton_head(
+                        featmaps[-1], pose_dict, return_cls=False)
+                    gcn_feats = ppa_feats + gcn_only_feats
+                    if gcn_aux and 'kp_feats' in gcn_aux:
+                        aux_data['gcn_kp_feats'] = gcn_aux['kp_feats']
+                        aux_data['gcn_kp_weights'] = gcn_aux['kp_weights']
 
             elif getattr(self, 'use_structural_routing', False) and scene_heatmaps is not None and \
                     getattr(self, 'pose_test_feat', 'global') != 'global' and not self.use_skeleton_gcn:
