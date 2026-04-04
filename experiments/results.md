@@ -1170,3 +1170,5 @@
 - 对照 exp237 PPA-only: +0.0/+0.3 — GCN 改善 R1
 - **PPA 端到端 backbone 训练 + GCN detached keypoint features = 协同提升**
 - ep80: +1.2/+0.9 (241 实验中最强 ep80, mAP AND R1 都正向!)
+
+**exp241 MaxSim test**: 64.1/74.8 (MaxSim gain +0.4/-0.5 vs equal_concat)
