@@ -1,36 +1,50 @@
 """LGPA: Language-Grounded Part Assignment Head.
 
 Uses frozen CLIP text embeddings as semantic body-part prototypes,
-cross-attends backbone spatial tokens to these prototypes,
-and uses pose heatmaps as spatial attention masks.
+cross-attends backbone spatial tokens to these prototypes with
+pose heatmaps injected as additive attention bias.
 
 First to combine VLM semantic knowledge + geometric pose for ReID.
 """
+import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 
-# Body part text descriptions for CLIP encoding
+# Body part text descriptions for CLIP encoding (5 parts + background)
 PART_TEXTS = [
     "head of a person",
     "torso of a person",
-    "arms of a person",
+    "upper arms of a person",
+    "lower arms and hands of a person",
     "legs of a person",
     "background scene",
 ]
-NUM_PARTS = len(PART_TEXTS) - 1  # 4 body parts + 1 background
+NUM_PARTS = len(PART_TEXTS) - 1  # 5 body parts + 1 background
+
+# COCO keypoint to part mapping (5 parts)
+PART_KPS = [
+    [0, 1, 2, 3, 4],      # head (nose, eyes, ears)
+    [5, 6, 11, 12],        # torso (shoulders, hips)
+    [5, 7, 9],             # upper arms (L/R shoulder, elbow, wrist-ish)
+    [6, 8, 10],            # lower arms/hands (R shoulder, elbow, wrist)
+    [11, 13, 14, 15, 16],  # legs (hips, knees, ankles)
+]
 
 
 class CLIPPartHead(nn.Module):
     """Language-Grounded Part Assignment via CLIP cross-attention.
+
+    Pose heatmaps are injected as additive bias in the cross-attention
+    score matrix: attn = softmax(QK^T / sqrt(d) + pose_bias).
 
     Args:
         feat_dim: backbone feature dimension (768)
         num_classes: number of identity classes
         clip_dim: CLIP text feature dimension (512 for ViT-B-32)
         num_heads: cross-attention heads
-        pose_mask_temp: temperature for pose mask softness
+        pose_mask_temp: temperature scaling for pose bias
     """
 
     def __init__(self, feat_dim=768, num_classes=702, clip_dim=512,
@@ -40,16 +54,19 @@ class CLIPPartHead(nn.Module):
         self.clip_dim = clip_dim
         self.num_parts = NUM_PARTS
         self.num_labels = NUM_PARTS + 1  # +1 for background
+        self.num_heads = num_heads
         self.pose_mask_temp = pose_mask_temp
+        self.head_dim = feat_dim // num_heads
 
         # Project CLIP text features to backbone dimension
         self.text_proj = nn.Linear(clip_dim, feat_dim)
 
-        # Cross-attention: text queries attend to spatial tokens
-        self.cross_attn = nn.MultiheadAttention(
-            embed_dim=feat_dim, num_heads=num_heads,
-            dropout=0.1, batch_first=True
-        )
+        # Manual cross-attention projections (so we can inject pose bias)
+        self.q_proj = nn.Linear(feat_dim, feat_dim)
+        self.k_proj = nn.Linear(feat_dim, feat_dim)
+        self.v_proj = nn.Linear(feat_dim, feat_dim)
+        self.out_proj = nn.Linear(feat_dim, feat_dim)
+        self.attn_drop = nn.Dropout(0.1)
         self.attn_norm = nn.LayerNorm(feat_dim)
 
         # Per-part BN + classifiers
@@ -75,76 +92,112 @@ class CLIPPartHead(nn.Module):
         self._init_clip_features()
 
         print(f'[LGPA] CLIP Part Head: {NUM_PARTS} parts, '
-              f'clip_dim={clip_dim}, num_heads={num_heads}')
+              f'clip_dim={clip_dim}, num_heads={num_heads}, '
+              f'pose_temp={pose_mask_temp}')
 
     def _init_clip_features(self):
-        """Pre-compute frozen CLIP text features."""
-        try:
-            import open_clip
-            clip_model, _, _ = open_clip.create_model_and_transforms(
-                'ViT-B-32', pretrained='openai')
-            tokenizer = open_clip.get_tokenizer('ViT-B-32')
-            texts = tokenizer(PART_TEXTS)
-            with torch.no_grad():
-                text_features = clip_model.encode_text(texts)
-                text_features = F.normalize(text_features, p=2, dim=-1)
-            # Register as buffer (not trainable, moves with model)
-            self.register_buffer('clip_text_features', text_features.float())
-            print(f'[LGPA] CLIP text features loaded: {text_features.shape}')
-        except Exception as e:
-            print(f'[LGPA] WARNING: CLIP init failed: {e}. Using random init.')
-            self.register_buffer('clip_text_features',
-                                 torch.randn(self.num_labels, self.clip_dim))
+        """Pre-compute frozen CLIP text features. Hard-fail if CLIP unavailable."""
+        import open_clip
+        clip_model, _, _ = open_clip.create_model_and_transforms(
+            'ViT-B-32', pretrained='openai')
+        tokenizer = open_clip.get_tokenizer('ViT-B-32')
+        texts = tokenizer(PART_TEXTS)
+        with torch.no_grad():
+            text_features = clip_model.encode_text(texts)
+            text_features = F.normalize(text_features, p=2, dim=-1)
+        # Register as buffer (not trainable, moves with model)
+        self.register_buffer('clip_text_features', text_features.float())
+        print(f'[LGPA] CLIP text features loaded: {text_features.shape}')
 
-    def _compute_pose_mask(self, heatmaps, fH, fW):
-        """Generate per-part attention mask from pose heatmaps.
+    def _compute_pose_bias(self, heatmaps, fH, fW):
+        """Generate per-part attention bias from pose heatmaps.
 
-        For each body part, identifies which spatial tokens belong to it.
+        Returns additive bias for cross-attention: shape (B, num_labels, N).
+        This is added to QK^T/sqrt(d) BEFORE softmax.
 
         Args:
-            heatmaps: (B, 17, H, W)
+            heatmaps: (B, 17, H, W) — TARGET person heatmaps
             fH, fW: feature map spatial size
 
         Returns:
-            mask_bias: (B, num_labels, fH*fW) attention bias
-                       High value = this token belongs to this part
+            pose_bias: (B, num_labels, fH*fW)
         """
         B = heatmaps.shape[0]
         device = heatmaps.device
-        N = fH * fW
 
         # Resize heatmaps to feature map size
         hm = F.interpolate(heatmaps.float(), size=(fH, fW),
                            mode='bilinear', align_corners=False)
 
-        # COCO keypoint to part mapping
-        part_kps = [
-            [0, 1, 2, 3, 4],      # head
-            [5, 6, 11, 12],        # torso
-            [5, 7, 8, 9, 10],      # arms (include shoulders)
-            [11, 13, 14, 15, 16],  # legs (include hips)
-        ]
-
         # Compute per-part activation
         part_activations = torch.zeros(B, self.num_labels, fH, fW, device=device)
-        for k, kp_indices in enumerate(part_kps):
+        for k, kp_indices in enumerate(PART_KPS):
             part_activations[:, k] = hm[:, kp_indices].max(dim=1)[0]
 
-        # Background: low activation everywhere
+        # Background: inverse of body
         body_max = part_activations[:, :NUM_PARTS].max(dim=1)[0]
         part_activations[:, NUM_PARTS] = (1.0 - body_max).clamp(min=0.0)
 
-        # Convert to attention bias: higher = more likely this part
-        mask_bias = part_activations.flatten(2)  # (B, num_labels, N)
-        mask_bias = mask_bias * self.pose_mask_temp
+        # Flatten and scale by temperature
+        pose_bias = part_activations.flatten(2)  # (B, num_labels, N)
+        pose_bias = pose_bias * self.pose_mask_temp
 
-        return mask_bias
+        return pose_bias
 
-    def forward(self, feat_map, scene_heatmaps, return_cls=True):
+    def _cross_attention_with_pose(self, queries, keys, values, pose_bias):
+        """Manual cross-attention with pose bias injection.
+
+        attn_scores = QK^T / sqrt(d) + pose_bias
+        attn_weights = softmax(attn_scores)
+        output = attn_weights @ V
+
+        Args:
+            queries: (B, L, C) — text prototypes (L = num_labels)
+            keys: (B, N, C) — spatial tokens
+            values: (B, N, C) — spatial tokens
+            pose_bias: (B, L, N) or None — additive attention bias
+
+        Returns:
+            output: (B, L, C)
+            attn_weights: (B, L, N) — averaged across heads
+        """
+        B, L, C = queries.shape
+        N = keys.shape[1]
+        H = self.num_heads
+        d = self.head_dim
+
+        # Project Q, K, V
+        Q = self.q_proj(queries).reshape(B, L, H, d).transpose(1, 2)  # (B, H, L, d)
+        K = self.k_proj(keys).reshape(B, N, H, d).transpose(1, 2)     # (B, H, N, d)
+        V = self.v_proj(values).reshape(B, N, H, d).transpose(1, 2)   # (B, H, N, d)
+
+        # Attention scores: QK^T / sqrt(d)
+        scale = 1.0 / math.sqrt(d)
+        attn_scores = torch.matmul(Q, K.transpose(-2, -1)) * scale  # (B, H, L, N)
+
+        # Inject pose bias: broadcast across heads
+        if pose_bias is not None:
+            attn_scores = attn_scores + pose_bias.unsqueeze(1)  # (B, H, L, N)
+
+        # Softmax + dropout
+        attn_weights_full = F.softmax(attn_scores, dim=-1)  # (B, H, L, N)
+        attn_weights_drop = self.attn_drop(attn_weights_full)
+
+        # Weighted sum of values
+        output = torch.matmul(attn_weights_drop, V)  # (B, H, L, d)
+        output = output.transpose(1, 2).reshape(B, L, C)  # (B, L, C)
+        output = self.out_proj(output)
+
+        # Average attention weights across heads for logging/supervision
+        attn_weights_avg = attn_weights_full.mean(dim=1)  # (B, L, N)
+
+        return output, attn_weights_avg
+
+    def forward(self, feat_map, target_heatmaps, return_cls=True):
         """
         Args:
             feat_map: (B, C, fH, fW) backbone features (NOT detached)
-            scene_heatmaps: (B, 17, H, W) pose heatmaps
+            target_heatmaps: (B, 17, H, W) TARGET person heatmaps
             return_cls: return classification scores
 
         Returns:
@@ -160,51 +213,30 @@ class CLIPPartHead(nn.Module):
         text_protos = self.text_proj(self.clip_text_features)  # (num_labels, C)
         text_protos = text_protos.unsqueeze(0).expand(B, -1, -1)  # (B, num_labels, C)
 
-        # Compute pose-conditioned attention mask
-        if scene_heatmaps is not None:
-            pose_bias = self._compute_pose_mask(scene_heatmaps, fH, fW)
-            # Convert to attention mask format for MultiheadAttention
-            # attn_mask: (B*num_heads, num_labels, N) — additive bias
-            # MultiheadAttention expects (L, S) or (B*num_heads, L, S)
-            # We'll add it manually after computing raw attention
+        # Compute pose bias for attention
+        if target_heatmaps is not None:
+            pose_bias = self._compute_pose_bias(target_heatmaps, fH, fW)
         else:
             pose_bias = None
 
-        # Cross-attention: text queries → spatial keys/values
-        # Q = text_protos (B, num_labels, C)
-        # K = V = tokens (B, N, C)
-        part_feats_raw, attn_weights = self.cross_attn(
-            text_protos, tokens, tokens,
-            need_weights=True, average_attn_weights=True
-        )
+        # Pose-conditioned cross-attention: text queries → spatial keys/values
+        # attn = softmax(QK^T / sqrt(d) + pose_bias)
+        part_feats_raw, attn_weights = self._cross_attention_with_pose(
+            text_protos, tokens, tokens, pose_bias)
         # part_feats_raw: (B, num_labels, C)
-        # attn_weights: (B, num_labels, N)
-
-        # Apply pose bias to re-weight attention (soft masking)
-        if pose_bias is not None:
-            pose_weights = F.softmax(pose_bias, dim=-1)  # (B, num_labels, N)
-            pose_modulated = torch.bmm(pose_weights, tokens)  # (B, num_labels, C)
-
-            # Blend cross-attn output with pose-modulated output
-            part_feats_raw = 0.5 * part_feats_raw + 0.5 * pose_modulated
+        # attn_weights: (B, num_labels, N) — pose-conditioned
 
         part_feats_raw = self.attn_norm(part_feats_raw)
 
         # Extract body part features (exclude background)
-        part_feats = [part_feats_raw[:, k] for k in range(NUM_PARTS)]  # list of (B, C)
+        part_feats = [part_feats_raw[:, k] for k in range(NUM_PARTS)]
 
         # Pose-derived visibility: use heatmap response per body part
-        if scene_heatmaps is not None:
-            hm_vis = F.interpolate(scene_heatmaps.float(), size=(fH, fW),
+        if target_heatmaps is not None:
+            hm_vis = F.interpolate(target_heatmaps.float(), size=(fH, fW),
                                    mode='bilinear', align_corners=False)
-            part_kps_vis = [
-                [0, 1, 2, 3, 4],      # head
-                [5, 6, 11, 12],        # torso
-                [5, 7, 8, 9, 10],      # arms
-                [11, 13, 14, 15, 16],  # legs
-            ]
             vis_scores = []
-            for kps in part_kps_vis:
+            for kps in PART_KPS:
                 vis_scores.append(hm_vis[:, kps].max(dim=1)[0].mean(dim=(1, 2)))
             visibility = torch.stack(vis_scores, dim=1)  # (B, K)
             visibility = visibility / visibility.sum(dim=-1, keepdim=True).clamp(min=1e-6)
@@ -216,10 +248,10 @@ class CLIPPartHead(nn.Module):
 
         # Assignment supervision loss (pose-based GT)
         assign_loss = torch.tensor(0.0, device=feat_map.device)
-        if self.training and scene_heatmaps is not None and attn_weights is not None:
-            gt_labels = self._compute_gt_assignment(scene_heatmaps, fH, fW, attn_weights)
+        if self.training and target_heatmaps is not None and attn_weights is not None:
+            gt_labels = self._compute_gt_assignment(target_heatmaps, fH, fW)
             if gt_labels is not None:
-                # Soft CE between attention weights and GT
+                # KL(GT || predicted) — attn_weights are already pose-conditioned
                 assign_loss = F.kl_div(
                     (attn_weights + 1e-8).log(),
                     gt_labels,
@@ -248,7 +280,7 @@ class CLIPPartHead(nn.Module):
         else:
             return (None, [pooled_feat] + part_feats, aux_data)
 
-    def _compute_gt_assignment(self, heatmaps, fH, fW, attn_weights):
+    def _compute_gt_assignment(self, heatmaps, fH, fW):
         """Compute GT soft assignment from pose heatmaps."""
         B = heatmaps.shape[0]
         device = heatmaps.device
@@ -256,15 +288,8 @@ class CLIPPartHead(nn.Module):
         hm = F.interpolate(heatmaps.float(), size=(fH, fW),
                            mode='bilinear', align_corners=False)
 
-        part_kps = [
-            [0, 1, 2, 3, 4],
-            [5, 6, 11, 12],
-            [5, 7, 8, 9, 10],
-            [11, 13, 14, 15, 16],
-        ]
-
         gt = torch.zeros(B, self.num_labels, fH * fW, device=device)
-        for k, kp_indices in enumerate(part_kps):
+        for k, kp_indices in enumerate(PART_KPS):
             gt[:, k] = hm[:, kp_indices].max(dim=1)[0].flatten(1)
 
         # Background
