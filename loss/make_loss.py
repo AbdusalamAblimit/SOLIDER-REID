@@ -199,6 +199,10 @@ def make_loss(cfg, num_classes):    # modified by gu
                         else:
                             # Replace mode: SupCon replaces CE
                             part_id_avg = supcon_avg
+                    elif getattr(cfg.MODEL, 'POSE_PPA_GILT', False):
+                        # GiLt mode: Part branch uses triplet-only, no Part CE
+                        # This prevents part CE from competing with global CE
+                        part_id_avg = torch.tensor(0.0, device=score[0].device)
                     else:
                         part_ids = [ce_fn(s, target) for s in score[1:]]
                         part_id_avg = sum(part_ids) / len(part_ids)

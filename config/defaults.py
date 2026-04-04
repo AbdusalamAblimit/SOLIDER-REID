@@ -200,6 +200,7 @@ _C.MODEL.POSE_GCN_PER_PART = False        # Split 17 keypoints into 6 body parts
 _C.MODEL.POSE_PPA = False                 # Enable PPA (replaces GCN Part branch)
 _C.MODEL.POSE_PPA_NUM_PARTS = 5           # Number of body parts (5)
 _C.MODEL.POSE_PPA_ASSIGN_WEIGHT = 0.5     # Assignment loss weight
+_C.MODEL.POSE_PPA_GILT = False            # GiLt mode: Part triplet only, no Part CE
 
 # FSDC: Feature-Space Diffusion Completion — denoise occluded spatial tokens
 _C.MODEL.POSE_FSDC = False                # Enable feature denoiser
