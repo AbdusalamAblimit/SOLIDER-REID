@@ -1132,3 +1132,21 @@
 - **第一个 final mAP 正向的 Part branch 创新！**
 - End-to-end learnable part assignment (KPR-inspired)
 - 持续上升 ep10→120，无后期崩塌
+
+### exp238: PPA assign_weight=0.1
+
+| 方法 | mAP | R1 | 口径 |
+|------|-----|----|------|
+| exp238 | 62.1% | 74.0% | ep120 final |
+
+- 对照 exp191: **-1.1/-1.4**
+- w=0.1 不如 w=0.5 — assignment supervision 太弱
+
+### exp239: PPA + GiLt (Part triplet only)
+
+| 方法 | mAP | R1 | 口径 |
+|------|-----|----|------|
+| exp239 | 63.8% | 73.6% | ep120 final |
+
+- 对照 exp191: **+0.6/-1.8**
+- GiLt mAP 正向但 R1 严重负面。Part CE 对 R1 必要。
