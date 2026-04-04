@@ -1159,3 +1159,14 @@
 
 - 对照 exp230 (no PAUG, ep110): -0.1/-0.8
 - PPA 在 Small 上基本中性，不如 Tiny PPA (+0.5/-0.4)
+
+### exp241: PPA + GCN 双分支 on Tiny ⭐
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| exp241 equal_concat | **63.7%** | **75.3%** | **86.2%** | **88.9%** | ep120 final |
+
+- 对照 exp191: **+0.5/-0.1** — 最佳综合结果!
+- 对照 exp237 PPA-only: +0.0/+0.3 — GCN 改善 R1
+- **PPA 端到端 backbone 训练 + GCN detached keypoint features = 协同提升**
+- ep80: +1.2/+0.9 (241 实验中最强 ep80, mAP AND R1 都正向!)
