@@ -1100,3 +1100,35 @@
 - 对照 exp229 constant: **-0.5/-0.7**。Decay 甚至略差。
 - **BT-PKD 全系列结论**: 早期加速有效 (+3.5% at ep30)，但 final 始终 ~-1.0% vs baseline。
 - **根本限制**: 任何 non-detached backbone 梯度在后期都干扰收敛，与梯度类型和 schedule 无关。
+
+## 2026-04-04: exp235, exp236, exp237
+
+### exp235: FSDC (wrong ROA+PLBOA config)
+
+| 方法 | mAP | R1 | 口径 |
+|------|-----|----|------|
+| exp235 | 61.7% | 74.5% | ep120 final |
+
+- 对照 exp191: **-1.5/-0.9**
+- FSDC feature completion 在错误增强配置下
+
+### exp236: FSDC (正确 ROA=False, PLBOA=0.7)
+
+| 方法 | mAP | R1 | 口径 |
+|------|-----|----|------|
+| exp236 | 61.7% | 73.2% | ep120 final |
+
+- 对照 exp191: **-1.5/-2.2**
+- FSDC 正确配置仍然负面。**Feature completion 方向证伪。**
+
+### exp237: PPA (Pose-Prompted Part-Assignment Head) ⭐
+
+| 方法 | mAP | R1 | 口径 |
+|------|-----|----|------|
+| exp237 equal_concat | **63.7%** | **75.0%** | ep120 final |
+| exp237 maxsim_hybrid | 64.1% | 75.1% | ep120 + maxsim |
+
+- 对照 exp191: equal_concat **+0.5/-0.4**, maxsim -0.1/-2.0
+- **第一个 final mAP 正向的 Part branch 创新！**
+- End-to-end learnable part assignment (KPR-inspired)
+- 持续上升 ep10→120，无后期崩塌
