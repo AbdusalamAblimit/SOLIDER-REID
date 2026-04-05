@@ -3375,3 +3375,23 @@ B. 直接启动 exp025，exp024 可以后续补跑
 - LGPA with detached features (仅用 CLIP 做更好的 part pooling, 不传梯度)
 - CLIP-guided GSPB (用 CLIP 语义控制 gradient scale)
 - 完全放弃 non-detached part branch, 另寻创新方向
+
+### [2026-04-05 04:10] exp244 LGPA-Detach — 突破性结果! ⭐⭐⭐
+
+**结果**: 65.3/75.7 (+2.1/+0.3 vs exp191 GCN+OA-SD)
+
+**这是首个在 120 epoch final 仍保持正向 delta 的 Part branch 方法。**
+
+**关键发现**:
+1. LGPA-D 全程 mAP delta 均为正 (ep10~ep120), 前所未有
+2. detach 完全消除了 non-detach 的后期干扰 (exp243 -1.1 → exp244 +2.1)
+3. CLIP 语义做 part assignment 比 GCN skeleton graph 更有效 (+2.1 mAP)
+4. LGPA-D 无 OA-SD (63.6) ≈ GCN + OA-SD (63.2): CLIP 价值 ≈ OA-SD
+
+**论文价值**: 
+- 核心贡献: "Language-Grounded Part Assignment" — 首次用 VLM 语义做 occluded ReID part 表征
+- 消融故事清晰: non-detach (exp243) vs detach (exp244) 证明 detach 必要性
+- CLIP 语义 vs GCN skeleton: 语义优于结构
+- 与 OA-SD 正交: 可叠加
+
+**下一步**: 在 Small 上验证泛化性

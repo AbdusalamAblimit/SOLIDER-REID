@@ -1194,3 +1194,17 @@
 - **早期最强** (ep30 +4.1 mAP vs baseline), CLIP 语义锚定加速收敛
 - **后期干扰严重**: cross-attention non-detached 梯度干扰 > PPA 的线性 assignment
 - **结论**: CLIP 语义有效加速 part learning, 但不解决 detach barrier
+
+### exp244: LGPA-Detach (CLIP + Detached Features) ⭐⭐⭐
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| exp244-R (detach, 无OASD) | 63.6% | 74.7% | 85.3% | 88.6% | ep120 remote final |
+| **exp244-L (detach+OASD)** | **65.3%** | **75.7%** | **86.8%** | **89.7%** | **ep120 local final** |
+
+- 对照 exp191 (GCN+OASD): **+2.1/+0.3** — **首个在 final 仍正向的 Part branch!**
+- 对照 exp243 (LGPA non-detach, ep80): +4.4/+3.2 — detach 完全解决后期干扰
+- 对照 exp244-R (无OASD): +1.7/+1.0 — OA-SD 与 LGPA-D 正交叠加
+- **无 OA-SD 的 LGPA-D (63.6) ≈ GCN + OA-SD (63.2)**: CLIP 语义 ≈ OA-SD
+- **所有 epoch mAP delta 均为正 (从未为负!)** — 前所未有
+- **论文核心贡献候选: CLIP 语义 Part Assignment + Detached Features**
