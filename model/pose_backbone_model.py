@@ -127,6 +127,20 @@ class PoseBackboneModel(build_transformer):
         if self.bt_pkd:
             print('[BT-PKD] Backbone-through per-keypoint distillation enabled')
 
+        # VCSR: Visibility-Conditional Semantic Routing (dynamic part gating)
+        self.use_vcsr = getattr(cfg.MODEL, 'POSE_VCSR', False)
+        if self.use_vcsr:
+            from .modules.vcsr_head import VCSRHead
+            self.vcsr_head = VCSRHead(
+                feat_dim=self.in_planes,
+                num_classes=num_classes,
+                clip_dim=int(getattr(cfg.MODEL, 'POSE_LGPA_CLIP_DIM', 512)),
+                num_heads=int(getattr(cfg.MODEL, 'POSE_LGPA_NUM_HEADS', 8)),
+                pose_mask_temp=float(getattr(cfg.MODEL, 'POSE_LGPA_POSE_TEMP', 1.0)),
+                vis_threshold=float(getattr(cfg.MODEL, 'POSE_VCSR_VIS_THR', 0.3)),
+            )
+            self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
+
         # LGPA: Language-Grounded Part Assignment (CLIP + cross-attention + pose)
         self.use_lgpa = getattr(cfg.MODEL, 'POSE_LGPA', False)
         if self.use_lgpa and getattr(cfg.MODEL, 'POSE_PPA', False):
@@ -418,8 +432,16 @@ class PoseBackboneModel(build_transformer):
             else:
                 cls_score = self.classifier(feat_cls)
 
+            # VCSR: Visibility-Conditional Semantic Routing (detached)
+            if getattr(self, 'use_vcsr', False) and scene_heatmaps is not None:
+                vcsr_input = featmaps[-1].detach()
+                vcsr_cls_scores, vcsr_feats, vcsr_data = self.vcsr_head(
+                    vcsr_input, scene_heatmaps, return_cls=True)
+                kp_data = vcsr_data
+                return [cls_score] + vcsr_cls_scores, [global_feat] + vcsr_feats, featmaps, None, kp_data
+
             # Part branch: STD-PR (structural tokens) only — when GCN is NOT also enabled
-            if getattr(self, 'use_structural_routing', False) and scene_heatmaps is not None \
+            elif getattr(self, 'use_structural_routing', False) and scene_heatmaps is not None \
                     and not self.use_skeleton_gcn:
                 feat_map_detached = featmaps[-1].detach()
                 B_fm, C_fm, H_fm, W_fm = feat_map_detached.shape
@@ -683,8 +705,15 @@ class PoseBackboneModel(build_transformer):
             gcn_feats = None
             aux_data = {}
 
+            # VCSR test path
+            if getattr(self, 'use_vcsr', False) and scene_heatmaps is not None and \
+                    getattr(self, 'pose_test_feat', 'global') != 'global':
+                _, vcsr_feats, aux_data = self.vcsr_head(
+                    featmaps[-1], scene_heatmaps, return_cls=False)
+                gcn_feats = vcsr_feats
+
             # LGPA test path — uses scene_heatmaps (same as PPA for fair comparison)
-            if getattr(self, 'use_lgpa', False) and scene_heatmaps is not None and \
+            elif getattr(self, 'use_lgpa', False) and scene_heatmaps is not None and \
                     getattr(self, 'pose_test_feat', 'global') != 'global':
                 _, lgpa_feats, aux_data = self.clip_part_head(
                     featmaps[-1], scene_heatmaps, return_cls=False)

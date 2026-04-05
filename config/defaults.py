@@ -210,6 +210,11 @@ _C.MODEL.POSE_LGPA_POSE_TEMP = 1.0       # Pose mask temperature
 _C.MODEL.POSE_LGPA_ASSIGN_WEIGHT = 0.5   # Assignment supervision loss weight
 _C.MODEL.POSE_LGPA_DETACH = False         # Detach features before LGPA (no gradient to backbone)
 
+# VCSR: Visibility-Conditional Semantic Routing — dynamic part gating + set matching
+_C.MODEL.POSE_VCSR = False                # Enable VCSR (replaces LGPA / GCN)
+_C.MODEL.POSE_VCSR_VIS_THR = 0.3          # Visibility threshold for part activation
+_C.MODEL.POSE_VCSR_ASSIGN_WEIGHT = 0.5    # Assignment loss weight
+
 # FSDC: Feature-Space Diffusion Completion — denoise occluded spatial tokens
 _C.MODEL.POSE_FSDC = False                # Enable feature denoiser
 _C.MODEL.POSE_FSDC_LAYERS = 2             # Denoiser transformer layers

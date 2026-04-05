@@ -912,6 +912,17 @@ def do_train(cfg,
                     details['lgpa_assign'] = lgpa_assign_loss.item()
                     loss._loss_details = details
 
+                # VCSR: Visibility-Conditional assignment loss + diagnostics
+                vcsr_enabled = getattr(cfg.MODEL, 'POSE_VCSR', False)
+                if vcsr_enabled and kp_data is not None and 'assign_loss' in kp_data:
+                    vcsr_assign_w = float(getattr(cfg.MODEL, 'POSE_VCSR_ASSIGN_WEIGHT', 0.5))
+                    vcsr_assign_loss = kp_data['assign_loss']
+                    details = getattr(loss, '_loss_details', {})
+                    loss = loss + vcsr_assign_w * vcsr_assign_loss
+                    details['vcsr_assign'] = vcsr_assign_loss.item()
+                    details['vcsr_n_active'] = kp_data.get('n_active', 0)
+                    loss._loss_details = details
+
                 # PKC: Per-Keypoint Contrastive loss on GCN keypoint features
                 pkc_enabled = getattr(cfg.MODEL, 'POSE_PKC', False)
                 if pkc_enabled and kp_data is not None and 'kp_feats' in kp_data:
