@@ -833,3 +833,35 @@ Repro ep2:   Loss=13.802, oa_sd=0.415
 1. exp244 Tiny LGPA-D (65.3/75.7) — PT1.13 可精确复现
 2. exp245g Small LGPA-D (70.2/80.1) — PT2+mmcv-full 环境
 3. Small vs Tiny: +5.0/+4.4 — backbone 升级有效
+
+### [02:12] Repro ep4
+
+ETA 43min. ep10 eval ~30min, ep20 final ~43min.
+
+### [02:23] Repro ep7
+
+ETA 35min. ep10 eval ~16min.
+
+### [02:30] Repro ep10 eval — 完全一致!
+
+Original ep10: mAP=42.1%, R1=55.3%, R5=71.0%
+Repro ep10:   mAP=42.1%, R1=55.3%, R5=71.0%
+**100% 精确复现!** exp244 (65.3/75.7) 结果完全可靠。
+等 ep20 eval 再确认一次。
+
+### [02:41] Repro ep13
+
+ETA 19min.
+
+### [02:52] Repro ep17
+
+ETA 8min.
+
+### [02:58] Repro ep20 — 完全一致!
+
+Original ep20: mAP=51.0%, R1=63.9%, R5=78.1%
+Repro ep20:   mAP=51.0%, R1=63.9%, R5=78.1%
+
+**所有 checkpoint 完全匹配: ep1, ep2, ep10, ep20。exp244 结果 100% 可靠。**
+
+复现验证完成。GPU 空闲。
