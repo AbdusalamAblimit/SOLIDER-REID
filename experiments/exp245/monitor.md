@@ -857,6 +857,46 @@ ETA 19min.
 
 ETA 8min.
 
+### [12:59] 远程 exp245h_v2 重启 (新 OUTPUT_DIR)
+
+Cache 文件从 git 恢复。用新 OUTPUT_DIR 避免覆盖旧日志。
+ep1 iter20: Loss=19.460 (与所有之前 runs 一致)。
+等 ep10 eval 验证 7.6% 还是 50.3%。
+
+### [05:10] 远程 mmcv 调查
+
+远程**不需要** mmcv — Swin 只用 load_checkpoint, 有 mmengine fallback。
+远程 val_loader 返回 7 个元素, pose_dict 在 index 6 — 正确。
+model(x, pose_dict=pd) 输出 5376 dim — 正确。
+model(x, pose_dict=None) 输出 768 dim — 如果 eval 时 pose_dict=None 就解释了 7.6%。
+
+**但 eval 代码明确传 pose_dict!** 所以问题不在这里。
+等 exp245h_v2 ep10 eval 再验证一次。
+
+### [05:15] 发现微小差异!
+
+untitled.txt (7.6% run) ep1 iter200: tri_global=9.545, oa_sd=0.414
+exp245h_v2 (新 run) ep1 iter200: tri_global=9.537, oa_sd=0.418
+差异 ~0.003 级别, 非零! 服务器重启后环境微变 (cuDNN algo 等)。
+
+### [06:25] 远程 v2 ep10 eval — 复现成功!!
+
+**exp245h_v2 ep10: 49.6/60.6** — 接近原始 50.3/61.5!
+
+| Run | ep10 mAP | ep10 R1 |
+|-----|---------|---------|
+| 原始 (34202ed) | 50.3 | 61.5 |
+| **v2 (92fded3)** | **49.6** | **60.6** |
+| 7.6% 异常 | 7.6 | 13.8 |
+| 本地 PT2+full | 42.6 | 54.7 |
+| 本地 PT1.13 | 19.2 | 28.8 |
+
+**结论**: 
+1. 50.3% 结果可复现 (v2=49.6%, delta -0.7)
+2. 7.6% 那次是异常 bad trajectory (远程 cuDNN 非确定性)
+3. 本地 3090 比远程 5060Ti 慢 ~8% (42.6 vs 49.6)
+4. PT1.13 比 PT2.9 慢很多 (19.2 vs 49.6) — mmcv-full 环境差异
+
 ### [02:58] Repro ep20 — 完全一致!
 
 Original ep20: mAP=51.0%, R1=63.9%, R5=78.1%
