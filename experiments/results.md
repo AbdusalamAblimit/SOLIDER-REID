@@ -1221,3 +1221,7 @@
 - 对照 exp244 (Tiny LGPA-D+OA-SD): **+4.9/+4.4** — Small backbone 有效
 - LGPA-D 用更简单架构 (无 GCN, 无 PAA) 达到接近 exp206r 的 mAP
 - 环境: PyTorch 2.5 + mmcv-full (从源码编译), WITH_CP=True
+
+**exp245g MaxSim test**: 71.9/82.2/91.0/92.8 (MaxSim hybrid on Small LGPA-D+OA-SD ep120)
+- vs equal_concat (70.2/80.1): **+1.7/+2.1**
+- vs exp206r (70.6/82.6): **mAP +1.3, R1 -0.4** — mAP 超越 Small baseline!
