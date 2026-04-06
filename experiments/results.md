@@ -1208,3 +1208,16 @@
 - **无 OA-SD 的 LGPA-D (63.6) ≈ GCN + OA-SD (63.2)**: CLIP 语义 ≈ OA-SD
 - **所有 epoch mAP delta 均为正 (从未为负!)** — 前所未有
 - **论文核心贡献候选: CLIP 语义 Part Assignment + Detached Features**
+
+**exp244 MaxSim test**: 66.0/76.4/87.2/90.5 (MaxSim hybrid on LGPA-D+OA-SD ep120)
+
+### exp245g: LGPA-Detach on Swin-Small ⭐⭐
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| **exp245g (Small LGPA-D+OA-SD)** | **70.2%** | **80.1%** | **89.8%** | **91.2%** | **ep120 local PT2+mmcv-full** |
+
+- 对照 exp206r (Small GCN+PAA+OA-SD): -0.4/-2.5 — mAP 接近, R1 差距
+- 对照 exp244 (Tiny LGPA-D+OA-SD): **+4.9/+4.4** — Small backbone 有效
+- LGPA-D 用更简单架构 (无 GCN, 无 PAA) 达到接近 exp206r 的 mAP
+- 环境: PyTorch 2.5 + mmcv-full (从源码编译), WITH_CP=True
