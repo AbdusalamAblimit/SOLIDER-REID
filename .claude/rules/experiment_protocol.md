@@ -6,6 +6,26 @@
 exp{NNN}_{描述}  例: exp001_baseline, exp153_new_method
 ```
 
+### 同一实验的变体命名
+
+同一个实验的不同变体（超参调整、消融、重跑、环境变更等）**必须**用字母后缀区分，不得分配新实验号：
+
+```
+exp245a  — 第一个变体
+exp245b  — 第二个变体
+exp245g  — 第七个变体（按字母顺序递增）
+```
+
+**判断标准**：如果两个实验的核心方法相同，只是配置/种子/环境/超参不同，就属于同一实验的变体。
+
+**文档要求**：
+- 所有变体共享同一个 `experiments/exp{NNN}/` 目录
+- monitor.md 中按变体分节记录
+- results.md 中用 `exp{NNN}{x}` 标识各变体
+
+**反例（已发生的问题）**：exp245 系列曾产生 245/245b/245c/.../245h_v2 等大量子实验名，
+但 log 目录和文档分散，造成混乱。今后严格遵守此规范。
+
 每个实验使用独立 `OUTPUT_DIR`: `./log/occluded_duke/{实验名}`
 
 ## 实验设计文档（design.md）
@@ -71,14 +91,46 @@ f. 与前序实验的对照 — 消融变量隔离性
 - **检查交互**：是否影响已有实验可复现性
 - 发现可疑之处必须标记，宁可误报不可漏报
 
-### 流程
+### 流程（双审查制：Claude + Codex）
+
+**第一轮：Claude Broad Review（Opus 子代理）**
 
 1. 审查 → 发现问题 → 主 agent 修改代码
 2. 重新审查 → 直到明确通过
 3. **二次审查的范围与一次审查完全相同**，不是只审查修复的问题。每轮审查都是完整的全范围审查。
 4. 结论记录在 `experiments/exp{NNN}/claude_review.md`（或 `claude_review_v{K}.md`）
 5. 审查分级：Critical / High / Medium / Low，所有级别都必须修复
-6. **严禁未通过审查就启动训练**（有 hook 硬性阻断：审查文件必须包含"审查通过"才能运行 train.py）
+
+**第二轮：Codex Review（GPT 代码审查）**
+
+6. Claude 审查通过后，运行 `/codex:review` 对 git diff 做独立代码审查
+7. Codex 输出结构化审查结果（verdict + findings with severity）
+8. 将 Codex 审查结果保存到 `experiments/exp{NNN}/codex_review.md`
+9. 如果 verdict 不是 `approve`：修复所有 findings → 重新运行 `/codex:review` → 循环直到 approve
+10. **两层审查都通过才能训练**（hook 同时检查 claude_review 和 codex_review）
+
+### Codex 审查结果保存格式
+
+```markdown
+# Codex Review — exp{NNN}
+
+**Verdict**: approve / needs-attention
+**Date**: {YYYY-MM-DD HH:MM}
+**Review round**: {第几轮}
+
+## Findings
+{从 /codex:review 输出直接复制}
+
+## 结论
+{verdict: approve 时写} codex 审查通过
+```
+
+### 硬性阻断条件（hook 检查全部）
+
+- `design.md` 存在
+- `claude_review.md` 包含"审查通过"且 ≥30 行
+- `codex_review.md` 包含 "verdict.*approve" 或 "codex 审查通过"
+- **严禁未通过双审查就启动训练**
 
 ## 新实验默认风格
 

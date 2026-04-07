@@ -1225,3 +1225,58 @@
 **exp245g MaxSim test**: 71.9/82.2/91.0/92.8 (MaxSim hybrid on Small LGPA-D+OA-SD ep120)
 - vs equal_concat (70.2/80.1): **+1.7/+2.1**
 - vs exp206r (70.6/82.6): **mAP +1.3, R1 -0.4** — mAP 超越 Small baseline!
+
+### exp245h_v2: Small LGPA-D + OA-SD 远程复现 ⭐⭐⭐
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| **exp245h_v2 equal_concat** | **71.6%** | **81.6%** | **89.2%** | **91.2%** | **ep120 远程 5060Ti final** |
+
+- 对照 exp245g (本地 3090): **+1.4/+1.5** — 远程环境收敛更好
+- 对照 exp206r (Small baseline): **mAP +1.0, R1 -1.0**
+- ep90 peak: 71.7/82.2
+
+**exp245h_v2 MaxSim test**: 73.0/82.7/90.5/92.7 (MaxSim hybrid on ep120)
+- vs equal_concat: **+1.4/+1.1**
+- vs exp206r (70.6/82.6): **mAP +2.4, R1 +0.1** — **Small 全面超越!**
+- vs exp245g MaxSim (71.9/82.2): **+1.1/+0.5** — **Small 新最强!**
+
+### exp246: LGPA-D + GCN 双分支 (Tiny) 🟡
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| exp246 (ep83 crash) | 64.1% | 75.2% | — | — | ep80 (GPU 竞争 crash) |
+| **exp246b equal_concat** | **65.5%** | **77.2%** | **86.9%** | **90.1%** | **ep120 final** |
+
+- 对照 exp244 (LGPA-D only): **+0.2/+1.5** — GCN 主要贡献在 R1
+- 对照 exp191 (GCN only): **+2.3/+1.8** — LGPA-D 贡献巨大
+- LGPA-D 语义 part features + GCN 骨架 keypoint features 正交互补
+- ep10~ep70 全部与 exp246 精确匹配 (复现验证通过)
+
+**exp246b MaxSim test**: 66.3/77.7/87.6/90.6 (MaxSim hybrid on LGPA-D+GCN ep120)
+- vs equal_concat: **+0.8/+0.5**
+- vs exp244 MaxSim (66.0/76.4): **+0.3/+1.3** — **Tiny 新最强!**
+
+### exp247: VCSR — Visibility-Conditional Semantic Routing (Tiny, 无OA-SD)
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| **exp247 VCSR** | **63.6%** | **73.5%** | **84.2%** | **88.3%** | **ep120 远程 final** |
+
+- 对照 exp244-R (LGPA-D 无OA-SD): **0.0/-1.2** — VCSR ≈ LGPA-D, visibility gating 无效
+- 训练集 95.8% visible → 训练端 visibility routing 几乎无效
+- vcsr_n_active 始终为 0 (vis_threshold=0.3 过高)
+- 用户判定 novelty 5/10，不作为主创新。作为消融证据保留。
+
+### exp248: PCFD — Pose-Conditioned Feature Differencing (Test-time) ❌
+
+| 方法 | mAP | R1 | delta |
+|------|-----|----|-------|
+| exp244 cosine baseline | 65.3% | 75.7% | — |
+| PCFD alpha=0.1 | 52.1% | 70.5% | -13.2/-5.2 |
+| PCFD alpha=0.3 | 46.8% | 68.1% | -18.5/-7.6 |
+| MaxSim (无学习) | 66.0% | 76.4% | +0.7/+0.7 |
+
+- MLP difference classifier 严重过拟合训练集 pairs, 不泛化
+- Learned pair-level matching 证伪 (训练端 exp152/153 + test-time PCFD 均失败)
+- 简单 MaxSim 反而有效。此方向不再继续。
