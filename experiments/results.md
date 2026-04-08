@@ -1345,3 +1345,15 @@
 - MaxSim R1 83.7 > POT R1 83.1 — MaxSim R1 更强
 - 两者互补: POT 更好排序 (mAP), MaxSim 更好找 top-1 (R1)
 - MaxSim+POT 组合反而降低 — 信号冲突
+
+### exp251: Tiny Multi-Stage PSG (Stage2+3) + PAA + LGPA-D+GCN
+
+| 方法 | mAP | R1 | R5 | R10 |
+|------|-----|----|----|-----|
+| **exp251 FINAL** | **65.2%** | **76.2%** | 86.6% | 89.6% |
+| exp246b (Stage3 PSG+GCN) | 65.5% | 77.2% | — | — |
+| exp000 baseline | 56.6% | 66.5% | — | — |
+
+- MSPSG+PAA vs baseline: **+8.6/+9.7** — 论文价值确认
+- MSPSG+PAA vs single-stage: -0.3/-1.0 (seed variance 内)
+- 结论: multi-stage PSG 作为 novel design 有效，但不额外超越 single-stage
