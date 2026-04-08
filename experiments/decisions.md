@@ -3395,3 +3395,51 @@ B. 直接启动 exp025，exp024 可以后续补跑
 - 与 OA-SD 正交: 可叠加
 
 **下一步**: 在 Small 上验证泛化性
+
+### [2026-04-05 10:15] 用户判定 VCSR 不够新 + 深度调研结果
+
+**用户反馈**: VCSR = 5/10 novelty (不是 7/10)。VPM/PVPM/QPM/BPBreID/KPR/PAFormer/ProFD/MoS 都覆盖了 VCSR 的组件。训练集 95.8% visible → 训练端 visibility gating 无效。
+
+**深度调研结果** (Claude + Codex 双路调研):
+推荐方向: **Pose-Conditioned Feature Differencing (PCFD)**
+- Novelty 7.5/10, Feasibility 8/10, Combined 7.5
+- 核心: "不问两人有多像, 问在共同可见部位上有什么不同"
+- 训练差异分类器, 用 per-part feature 差异做 same/diff-ID 判断
+- 与 LGPA-D 完美配合: LGPA-D 提供 per-part features, PCFD 做 pair-level 精细比较
+- 工作在 retrieval-time, 不依赖训练集 visibility (解决 95.8% 问题)
+
+**选择**: 暂时搁置 VCSR 作为消融实验, 主线转向 PCFD
+
+**理由**: 
+1. PCFD 重新定义问题 (相似度排序 → 差异分类)
+2. PCFD 是 retrieval-time 创新, 不受训练集 visibility 限制
+3. PCFD 与现有 LGPA-D pipeline 正交叠加
+
+### [2026-04-08 00:50] 决策 — CCF-B 创新方向评估
+
+**上下文**: LGPA-D novelty 4.5/10, 需要更深层创新达到 CCF-B 级别。
+已完成 VCSR (exp247, 失败) 和 PCFD (exp248, 失败) 两个创新尝试。
+
+**深度分析** (3 轮 Opus 子代理评估):
+
+| 方向 | Novelty | 可行性 | 结论 |
+|------|---------|--------|------|
+| POT (Partial OT) | 5/10 | 高 | 5×5 太小, 可能无法超 MaxSim |
+| CPRE (Cross-Part Relations) | 7/10 | 中 | 关系编码 pose 而非 identity, HOReID 已有 |
+| AQGP (非对称 Q-G) | 8/10 | 中-高 | 退化为 vis-weighted pooling |
+| Pose-Conditioned Masking | 6/10 | 低 | 类似 PLBOA feature-level |
+
+**根本发现**: 250 实验反复证明：
+1. 只有 backbone 修改有效 (PSG, OA-SD)
+2. 训练集 95.8% visible → 训练端创新空间极有限
+3. 当前系统 (73.0% MaxSim) 距 SOTA (75.1%) 仅差 2.1% (Swin vs ViT 差异)
+
+**选择**: 
+A. 短期: 完成 exp249, 快速测试 POT (test-time, 无训练需求)
+B. 论文策略: 以 LGPA-D (CLIP 语义 part assignment) 为核心贡献, 配合完整 pipeline 消融
+C. 如需更强创新: 需要跳出 Swin + detach 框架 (换 ViT 或全新问题定义)
+
+**理由**: 
+1. POT 低成本快速验证, 作为 secondary contribution
+2. LGPA-D 虽然 single novelty 4.5/10, 但与 PSG+OA-SD+MaxSim 组成完整 framework novelty 更高
+3. exp249 (LGPA-D+GCN on Small) 有潜力达到 73-74% → 与 SOTA 竞争力足够

@@ -1280,3 +1280,68 @@
 - MLP difference classifier 严重过拟合训练集 pairs, 不泛化
 - Learned pair-level matching 证伪 (训练端 exp152/153 + test-time PCFD 均失败)
 - 简单 MaxSim 反而有效。此方向不再继续。
+
+### exp249: Small LGPA-D + GCN 双分支 + OA-SD (进行中)
+
+| 方法 | mAP | R1 | R5 | R10 | 口径 |
+|------|-----|----|----|-----|------|
+| exp249 ep10 | 51.1% | 61.7% | 77.9% | 83.8% | 远程 5060Ti, ep10 |
+| exp249 ep20 | 60.9% | 73.2% | 85.5% | 88.6% | 远程 5060Ti, ep20 |
+| exp249 ep30 | 63.6% | 74.2% | 86.0% | 89.2% | 远程 5060Ti, ep30 |
+| exp249 ep40 | **68.0%** | **78.7%** | 88.8% | 90.7% | 远程 5060Ti, ep40 |
+| exp249 ep50 | 69.4% | 79.4% | — | 90.9% | 远程 5060Ti, ep50 |
+| exp249 ep60 | 70.2% | 80.7% | — | 91.1% | 远程 5060Ti, ep60 |
+| exp249 ep70 | 70.9% | 81.6% | — | 91.4% | 远程 5060Ti, ep70 |
+| exp249 ep80 | 71.5% | 81.4% | 89.4% | 91.5% | 远程 5060Ti, ep80 |
+| exp249 ep90 | 71.4% | 81.4% | 89.4% | 91.5% | 远程 5060Ti, ep90 |
+| exp249 ep100 | 71.7% | 82.3% | 89.6% | 91.8% | 远程 5060Ti, ep100 |
+| exp249 ep110 | 71.9% | 81.7% | 89.7% | 91.7% | 远程 5060Ti, ep110 |
+| **exp249 FINAL** | **71.9%** | **81.8%** | **89.5%** | **91.6%** | **远程 5060Ti, ep120 FINAL** ⭐⭐ |
+
+- **FINAL: mAP 71.9 (+0.3 vs exp245h_v2), R1 81.8 (+0.2 vs exp245h_v2)**
+- GCN dual branch 在 Small 上确认有效
+- 对照 exp206r (Small GCN+PAA+OA-SD): 70.6/82.6 → **mAP +1.3, R1 -0.8**
+- **下一步: MaxSim test on final checkpoint**
+
+**exp249 MaxSim test (ep120 final)**:
+
+| 方法 | mAP | R1 | R5 | R10 |
+|------|-----|----|----|-----|
+| exp249 equal_concat | 71.9% | 81.8% | 89.5% | 91.6% |
+| **exp249 MaxSim** | **73.3%** | **83.2%** | **90.9%** | **93.0%** |
+
+- MaxSim gain: +1.4/+1.4
+- **vs exp245h_v2 MaxSim (73.0/82.7): +0.3/+0.5 — 全面超越!**
+- **exp249 是项目新最佳: 73.3/83.2 (Small LGPA-D+GCN+OA-SD MaxSim)**
+
+### exp250: POT (Partial Optimal Transport) Test-time 评估 🟡
+
+在 exp246b (Tiny LGPA-D+GCN ep120) checkpoint 上测试:
+
+| 方法 | mAP | R1 | Δ vs Global |
+|------|-----|----|-------------|
+| Global cosine | 65.2% | 76.2% | — |
+| Vis-weighted part | 65.7% | 77.5% | +0.5/+1.3 |
+| POT m=0.6 | **66.4%** | **78.7%** | +1.2/+2.5 |
+| POT m=0.8 | 66.1% | 77.7% | +1.0/+1.5 |
+| POT m=1.0 | 66.0% | 77.6% | +0.8/+1.4 |
+| **MaxSim hybrid** | **66.6%** | 78.3% | **+1.4/+2.1** |
+
+- POT m=0.6 最佳: mAP 略逊 MaxSim (-0.2), **R1 超越 MaxSim (+0.4)**
+- 5-part POT ≈ MaxSim，差异不够论文主线
+- POT 可作为消融实验/理论分析保留
+
+**exp245h_v2 (Small LGPA-D, best checkpoint) POT 结果:**
+
+| 方法 | mAP | R1 | Δ vs Global |
+|------|-----|----|-------------|
+| Global cosine | 71.8% | 81.1% | — |
+| Vis-weighted part | 71.9% | 82.2% | +0.1/+1.1 |
+| **POT m=0.6** | **73.0%** | 83.1% | **+1.2/+2.0** |
+| **MaxSim hybrid** | 72.8% | **83.7%** | +1.0/+2.6 |
+| MaxSim+POT 0.3 | 72.5% | 83.3% | -0.3 vs MaxSim |
+
+- **POT mAP 73.0 > MaxSim mAP 72.8** — Small 上 POT mAP 超越 MaxSim!
+- MaxSim R1 83.7 > POT R1 83.1 — MaxSim R1 更强
+- 两者互补: POT 更好排序 (mAP), MaxSim 更好找 top-1 (R1)
+- MaxSim+POT 组合反而降低 — 信号冲突

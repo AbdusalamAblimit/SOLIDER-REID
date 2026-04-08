@@ -2942,3 +2942,39 @@ KPR 证明这个 exact mechanism 在 SOLIDER+Swin 上有效 (75.1%)。
 
 PPA 替换 GCN Part branch，但保留 PSG + OA-SD + PLBOA。
 这是我们缺少的最后一块拼图。
+
+---
+
+## 2026-04-08: CCF-B 创新方向深度分析
+
+### 250 实验的根本发现
+
+1. **只有 backbone 修改有效**: PSG (+1.7%), OA-SD (+2-3%), LGPA-D (+2.1%)
+2. **Detached 分支无法超越 backbone 质量上限**: 任何在 detached features 上操作的方法都无法改善 final
+3. **Non-detached 梯度干扰**: 无论梯度类型/schedule, 额外 backbone 梯度都干扰后期收敛
+4. **训练集 95.8% 可见**: 所有依赖训练端 visibility 信息的方法失败
+
+### 候选方向评估 (深度 agent 分析)
+
+| 方向 | Novelty | 风险 | 评估 |
+|------|---------|------|------|
+| POT (Partial OT) | 5/10 | 5×5 太小, 可能 ≈ MaxSim | 值得快速测试, 不作主线 |
+| CPRE (Cross-Part Relations) | 7/10 | 关系编码 pose 而非 identity, HOReID 等已有 | 可能 ≤ MaxSim |
+| AQGP (非对称 Query-Gallery) | 8/10 | 退化为 visibility-weighted pooling | 概念好但实现退化 |
+| Pose-Conditioned Masking | 6/10 | 类似 PLBOA 但在 feature 层 | 低风险, 可能有 marginal 增益 |
+
+### 核心瓶颈诊断
+
+**"The real gap is training data diversity, not model architecture."** — 深度 agent 分析
+
+当前系统 (73.0% mAP Small MaxSim) 距离 SOTA (KPR 75.1% ViT) 仅差 2.1%。
+考虑到 Swin vs ViT 的 backbone 差异, 73% 可能接近 Swin+SOLIDER 的天花板。
+
+### 当前最佳策略
+
+1. **短期**: 完成 exp249 (Small LGPA-D+GCN) → 可能 73-74% mAP
+2. **快速测试**: POT test-time eval → 判断是否作为 secondary contribution
+3. **论文策略**: LGPA-D (CLIP 语义 part assignment) 作为核心贡献, 配合完整 pipeline + 详细消融
+4. **如需更强创新**: 需要跳出当前 Swin-Tiny/Small + detach 框架
+   - 换 ViT backbone (用户 4090 已在跑)
+   - 或找到全新的问题定义

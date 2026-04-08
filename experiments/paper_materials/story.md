@@ -1,10 +1,76 @@
 # 论文故事线（持续更新）
 
-> **⚠️ Phase 1-3 内容保留在下方。Phase 4 更新如下。**
+> **⚠️ Phase 1-4 内容保留在下方。Phase 5 更新如下。**
+
+## Phase 5 Story Update (2026-04-08) — LGPA-D 时代
+
+### 暂定标题
+Language-Grounded Part Assembly for Occluded Person Re-Identification
+
+### 当前最佳结果
+
+| Backbone | Method | mAP (eq) | R1 (eq) | mAP (MaxSim) | R1 (MaxSim) |
+|----------|--------|------|------|------|------|
+| Tiny | LGPA-D+OA-SD | 65.3% | 75.7% | 66.0% | 76.4% |
+| **Tiny** | **LGPA-D+GCN+OA-SD** | **65.5%** | **77.2%** | **66.3%** | **77.7%** |
+| Small | LGPA-D+OA-SD (local) | 70.2% | 80.1% | 71.9% | 82.2% |
+| **Small** | **LGPA-D+OA-SD (remote)** | **71.6%** | **81.6%** | **73.0%** | **82.7%** |
+| Small | GCN+PAA+OA-SD (old baseline) | 70.6% | 82.6% | 72.3% | 82.9% |
+| *Small* | *LGPA-D+GCN+OA-SD (exp249, 进行中)* | *TBD* | *TBD* | *TBD* | *TBD* |
+
+### 核心贡献
+
+1. **LGPA-D (Language-Grounded Part Assignment, Detached)**
+   - 首次将 VLM (CLIP) 语义知识用于 occluded ReID 的 part assignment
+   - 5 个语义 body parts: head, torso, arms, upper_legs, lower_legs
+   - CLIP frozen text prototypes + cross-attention + pose heatmap bias
+   - Detached from backbone → 不干扰训练, 全程 delta 为正
+   - vs GCN skeleton features: +2.1% mAP (语义 > 结构)
+   - vs PPA (non-detached): +4.4% (detach 消除后期干扰)
+
+2. **PSG (Pose Spatial Gate)**
+   - Backbone 内部 pose 注入 (Stage 3 block 间)
+   - 轻量 102K params, +1.7% mAP
+   - 改变特征形成方式, 不只是 post-hoc pooling
+
+3. **Dual-Branch Architecture (LGPA-D + GCN)**
+   - 语义 part features (LGPA-D) + 骨架 keypoint features (GCN) 正交互补
+   - Tiny: +0.2 mAP / +1.5 R1 vs LGPA-D only
+   - 两个 branch 都在 detached features 上操作
+
+4. **MaxSim Hybrid Matching**
+   - ColBERT-style late interaction 首次引入 person ReID
+   - +1.0~1.5% mAP across all checkpoints
+   - 理论框架: partial-set-to-partial-set matching
+
+### 关键消融发现
+
+1. **Detach barrier 是根本性约束**: 
+   - Non-detached (exp243): ep80 -1.1 mAP → 后期干扰
+   - Detached (exp244): ep120 +2.1 mAP → 全程正向
+   - 250 实验验证: backbone 必须完全由主 loss 驱动
+
+2. **CLIP 语义 > GCN 结构**:
+   - LGPA-D 无 OA-SD (63.6) ≈ GCN + OA-SD (63.2)
+   - CLIP 的 part assignment 能力 ≈ OA-SD 的训练增强
+
+3. **训练集 95.8% visible**: 
+   - 所有 visibility-dependent 训练方法失败 (VCSR, routing)
+   - PLBOA (pixel-level occlusion augmentation) 是唯一有效补充
+
+### 论文叙事
+
+> Occluded person ReID 的核心挑战不是"如何处理遮挡"而是"如何定义和匹配不完整的身份证据"。
+> 我们提出 LGPA (Language-Grounded Part Assembly): 利用 CLIP 的语义理解能力，
+> 将 backbone 空间特征分解为语义 body parts，在 detached 特征上安全操作。
+> 配合 PSG (backbone 内 pose 注入) 和 MaxSim (part-level late interaction matching)，
+> 形成完整的 "语义引导提取 → 部分集合匹配" 框架。
+
+---
 
 ## Phase 4 Story Update (2026-04-02)
 
-### 当前最佳结果
+### 当前最佳结果 (Phase 4 时期)
 
 | Backbone | Method | mAP (eq) | R1 (eq) | mAP (maxsim) | R1 (maxsim) |
 |----------|--------|------|------|------|------|
@@ -13,26 +79,15 @@
 | Small | GCN+PAA+OA-SD | 70.6% | 82.6% | 72.3% | 82.9% |
 | Small | GCN+PAA+OA-SD+PKC | 70.6% | 81.8% | **72.4%** | **83.1%** |
 
-### 新发现
+### Phase 4 发现
 
-1. **MaxSim Behavior on Tiny**: `MaxSim` 的收益更依赖 per-keypoint consistency，而不是简单取决于 global 强弱。当前记录里：
-   - OA-SD: `63.2 -> 64.2`
-   - GSPB: `62.9 -> 64.6`
-   - PADPQ: `63.7 -> 63.9`
-   这说明 `PADPQ` 的 deformable sampling 会损害 cross-image keypoint consistency，而 `GSPB` 反而更利于 `MaxSim`。
+1. **MaxSim Behavior on Tiny**: `MaxSim` 的收益更依赖 per-keypoint consistency，而不是简单取决于 global 强弱。
 
 2. **GSPB (Gradient-Scaled Part Branch)**: 5% Part→Backbone 梯度大幅加速早期收敛 (+5.8% at ep10!) 但不改善 final。首次发现 detach 与 non-detach 之间的中间解。
 
 3. **OA-SD Teacher Fix**: 修复了 EMA teacher 的 Dropout/DropPath/BN 噪声问题。修复后 teacher 更稳定，但 final 结果不变（EMA 的自修正性）。
 
 4. **per-keypoint training loss 全面证伪**: PKC, MST, PACI, OERL, BA-PKC — 10 个实验全部失败。根本原因: detached GCN 阻断梯度到 backbone，non-detached 与 CE 冲突。
-
-### 潜在论文贡献
-
-1. **MaxSim hybrid matching** — ColBERT-style late interaction 首次引入 person ReID (+1.7-1.8% on Small)
-2. **GSPB** — detach vs non-detach 的新中间解，3x 早期收敛加速
-3. **PSG + GCN + OA-SD pipeline** — 完整的 pose-guided occluded ReID 系统
-4. **Extensive ablation** — 10+ 失败实验提供了深入的分析
 
 ---
 
