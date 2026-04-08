@@ -3415,6 +3415,34 @@ B. 直接启动 exp025，exp024 可以后续补跑
 2. PCFD 是 retrieval-time 创新, 不受训练集 visibility 限制
 3. PCFD 与现有 LGPA-D pipeline 正交叠加
 
+### [2026-04-08 16:45] 决策 — exp249 完成后下一步
+
+**上下文**: exp249 (Small LGPA-D+GCN) 完成: 71.9/81.8 equal_concat, 73.3/83.2 MaxSim。
+POT test-time: m=0.6 在 mAP 上超 MaxSim +0.3 (两个 Small checkpoint 都确认)。
+两台 GPU 都空闲。
+
+**选择**:
+A. 本地 Tiny: 启动消融实验 (论文需要 Tiny 数据)
+B. 远程 Small: 新创新实验
+
+**本地选择: 不再启动新训练实验。** 原因:
+1. Tiny 消融数据 (exp244, exp246b) 已经足够完整
+2. 用户在 4090 上做多 seed 验证，不需要 Claude 做
+3. CLAUDE.md 说 "不为刷 0.1% 做无意义调参"
+4. **本地 GPU 给用户同学使用**
+
+**远程选择: 也暂不启动。** 原因:
+1. 所有 "安全" 创新方向已试完或被证伪
+2. 需要先与用户确认论文策略再决定下一步
+3. 当前结果 (73.3/83.2) 已可投稿
+
+**当前论文素材已具备**:
+- LGPA-D: +2.1 mAP (Tiny), +0.3 mAP (Small) vs GCN baseline
+- GCN dual branch: +0.3/+0.2 (Small) — R1 中期增益更大
+- MaxSim: +1.4/+1.4 test-time
+- POT: mAP 73.3 > MaxSim 73.0 — 理论补充
+- 完整消融: detach vs non-detach, CLIP vs GCN, 250 experiments
+
 ### [2026-04-08 00:50] 决策 — CCF-B 创新方向评估
 
 **上下文**: LGPA-D novelty 4.5/10, 需要更深层创新达到 CCF-B 级别。

@@ -735,3 +735,27 @@ exp245h_v2 final (ep120) = 71.6/81.6。exp249 ep100 已超越!
 **vs exp245h_v2 MaxSim: +0.3/+0.5** — 全面超越!
 
 **exp249 是项目新最佳**: 73.3% mAP, 83.2% R1 (MaxSim hybrid)
+
+### [16:31] exp249 完成。启动 POT eval on exp249。
+
+### [16:39] POT eval 部分结果 (exp249 LGPA-D+GCN checkpoint)
+
+| Method | mAP | R1 |
+|--------|-----|----|
+| Global cosine | 72.1 | 81.3 |
+| Vis-weighted | 72.2 | 82.5 |
+| MaxSim (eval_pot) | 73.0 | 83.9 |
+| POT m=auto | 72.7 | 82.3 |
+| POT m=0.6 | 进行中... | |
+
+**完整结果**:
+
+| Method | mAP | R1 |
+|--------|-----|----|
+| Global cosine | 72.1 | 81.3 |
+| Vis-weighted | 72.2 | 82.5 |
+| **POT m=0.6** | **73.3** | 83.7 |
+| POT m=0.8 | 73.1 | 82.9 |
+| **MaxSim** | 73.0 | **83.9** |
+
+**POT m=0.6 mAP 73.3 > MaxSim 73.0 (+0.3)!** 再次确认 POT mAP 优势。
