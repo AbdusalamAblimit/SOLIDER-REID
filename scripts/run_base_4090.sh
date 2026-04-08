@@ -100,9 +100,57 @@ $PYTHON test.py --config_file $CONFIG_MKT \
     OUTPUT_DIR ${OUT_MKT_LR2}_maxsim
 echo "[4/4] Done: $(date)"
 
+# ============================================
+# 5. Occluded-Duke Multi-Stage PSG + PAA, LR=4e-4
+# ============================================
+echo ""
+echo "[5/6] Occluded-Duke Base Multi-Stage PSG + PAA LR=4e-4"
+echo "Start: $(date)"
+OUT_OCC_MSPSG="./log/occluded_duke/base_lgpa_gcn_mspsg_paa_lr4"
+$PYTHON train.py --config_file $CONFIG_OCC \
+    SOLVER.BASE_LR 0.0004 \
+    MODEL.POSE_PSG_STAGES '[-2,-1]' \
+    MODEL.POSE_ADDITIVE_ADAPTER True \
+    MODEL.POSE_PAA_BOTTLENECK 32 \
+    OUTPUT_DIR $OUT_OCC_MSPSG
+
+echo "[5/6] Training done. Running MaxSim test..."
+$PYTHON test.py --config_file $CONFIG_OCC \
+    MODEL.POSE_PSG_STAGES '[-2,-1]' \
+    MODEL.POSE_ADDITIVE_ADAPTER True \
+    MODEL.POSE_PAA_BOTTLENECK 32 \
+    MODEL.POSE_TEST_FEAT maxsim_hybrid \
+    TEST.WEIGHT ${OUT_OCC_MSPSG}/transformer_120.pth \
+    OUTPUT_DIR ${OUT_OCC_MSPSG}_maxsim
+echo "[5/6] Done: $(date)"
+
+# ============================================
+# 6. Market Multi-Stage PSG + PAA, LR=4e-4
+# ============================================
+echo ""
+echo "[6/6] Market-1501 Base Multi-Stage PSG + PAA LR=4e-4"
+echo "Start: $(date)"
+OUT_MKT_MSPSG="./log/market1501/base_lgpa_gcn_mspsg_paa_lr4"
+$PYTHON train.py --config_file $CONFIG_MKT \
+    SOLVER.BASE_LR 0.0004 \
+    MODEL.POSE_PSG_STAGES '[-2,-1]' \
+    MODEL.POSE_ADDITIVE_ADAPTER True \
+    MODEL.POSE_PAA_BOTTLENECK 32 \
+    OUTPUT_DIR $OUT_MKT_MSPSG
+
+echo "[6/6] Training done. Running MaxSim test..."
+$PYTHON test.py --config_file $CONFIG_MKT \
+    MODEL.POSE_PSG_STAGES '[-2,-1]' \
+    MODEL.POSE_ADDITIVE_ADAPTER True \
+    MODEL.POSE_PAA_BOTTLENECK 32 \
+    MODEL.POSE_TEST_FEAT maxsim_hybrid \
+    TEST.WEIGHT ${OUT_MKT_MSPSG}/transformer_120.pth \
+    OUTPUT_DIR ${OUT_MKT_MSPSG}_maxsim
+echo "[6/6] Done: $(date)"
+
 echo ""
 echo "=============================================="
-echo "ALL 4 EXPERIMENTS COMPLETE!"
+echo "ALL 6 EXPERIMENTS COMPLETE!"
 echo "=============================================="
 echo ""
 echo "Results summary — check train_log.txt in each directory:"
@@ -110,5 +158,7 @@ echo "  $OUT_OCC_LR4/train_log.txt"
 echo "  $OUT_OCC_LR2/train_log.txt"
 echo "  $OUT_MKT_LR4/train_log.txt"
 echo "  $OUT_MKT_LR2/train_log.txt"
+echo "  $OUT_OCC_MSPSG/train_log.txt"
+echo "  $OUT_MKT_MSPSG/train_log.txt"
 echo ""
 echo "MaxSim results in *_maxsim/ directories"
