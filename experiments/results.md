@@ -1370,3 +1370,26 @@
 - 3-stage PSG ≈ 2-stage+PAA ≈ 1-stage (final 差异 <0.4 mAP)
 - PAA 无贡献 (exp253 vs exp251 = -0.1/0.0)
 - **所有 PSG 变体 vs baseline: +8.5~8.9 mAP** — multi-stage 可作为论文 presented method
+
+### 4090 Swin-Base LGPA-D+GCN+OA-SD+PLBOA 结果
+
+**Occluded-Duke (Base):**
+
+| Config | mAP | R1 | MaxSim mAP | MaxSim R1 |
+|--------|-----|----|------------|-----------|
+| **Base LR=4e-4** | **72.9%** | **82.1%** | **73.8%** | **83.5%** |
+| Base LR=2e-4 | 70.0% | 80.3% | 71.4% | 80.4% |
+
+- **MaxSim 73.8 > KPR w/o prompt 73.3!** 我们不用 prompt 就超越了 KPR 无 prompt
+- LR=4e-4 >> LR=2e-4, Base 需要较高 LR
+
+**Market-1501 (Base):**
+
+| Config | mAP | R1 |
+|--------|-----|----|
+| Base LGPA+GCN LR=4e-4 (with PLBOA) | 93.8% | 96.8% |
+| Base LGPA+GCN LR=2e-4 (with PLBOA) | 93.1% | 96.8% |
+| Small PSG-only LR=4e-4 (no PLBOA) | 93.9% | 96.9% |
+
+- Base+PLBOA 93.8 < Small 无 PLBOA 93.9 — **PLBOA 在无遮挡数据集上有害**
+- 需要跑 Base 无 PLBOA 版本验证
