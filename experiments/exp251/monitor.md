@@ -204,3 +204,14 @@ exp253 (3-stage PSG, no PAA) 已 review 通过，等 exp251 结束即启动。
 **结论**: MSPSG+PAA ≈ single-stage PSG+GCN (-0.3 mAP, seed variance 内)。
 **论文价值**: +8.6 vs no-pose baseline, multi-stage 作为 novel design 完全成立。
 **下一步**: 启动 exp253 (3-stage PSG, no PAA) 做消融。
+
+### [04:12] MaxSim test 结果
+
+**MaxSim hybrid**: mAP=65.9%, R1=76.8%, R5=87.0%, R10=90.2%
+
+| 方法 | mAP | R1 | MaxSim mAP | MaxSim R1 |
+|------|-----|----|------------|-----------|
+| exp251 (MSPSG+PAA) | 65.2 | 76.2 | **65.9** | **76.8** |
+| exp246b (Stage3 PSG) | 65.5 | 77.2 | 66.3 | 77.7 |
+
+MaxSim gain: +0.7/+0.6. 但仍低于 exp246b MaxSim (-0.4/-0.9)。

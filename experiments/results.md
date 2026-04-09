@@ -1357,3 +1357,16 @@
 - MSPSG+PAA vs baseline: **+8.6/+9.7** — 论文价值确认
 - MSPSG+PAA vs single-stage: -0.3/-1.0 (seed variance 内)
 - 结论: multi-stage PSG 作为 novel design 有效，但不额外超越 single-stage
+
+### exp253: Tiny 3-Stage PSG (Stage1+2+3, 无 PAA) + LGPA-D+GCN
+
+| 方法 | mAP | R1 | R5 | R10 |
+|------|-----|----|----|-----|
+| **exp253 FINAL** | **65.1%** | **76.2%** | 87.0% | 89.5% |
+| exp251 (2-stage+PAA) | 65.2% | 76.2% | 86.6% | 89.6% |
+| exp246b (1-stage) | 65.5% | 77.2% | — | — |
+| exp000 baseline | 56.6% | 66.5% | — | — |
+
+- 3-stage PSG ≈ 2-stage+PAA ≈ 1-stage (final 差异 <0.4 mAP)
+- PAA 无贡献 (exp253 vs exp251 = -0.1/0.0)
+- **所有 PSG 变体 vs baseline: +8.5~8.9 mAP** — multi-stage 可作为论文 presented method
