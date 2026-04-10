@@ -1393,3 +1393,13 @@
 
 - Base+PLBOA 93.8 < Small 无 PLBOA 93.9 — **PLBOA 在无遮挡数据集上有害**
 - 需要跑 Base 无 PLBOA 版本验证
+
+### exp255: Small GCN512 + 2-stage PSG + LGPA-D + OA-SD — NEW SMALL BEST
+
+| 方法 | mAP | R1 | R5 | R10 | vs exp249 |
+|------|-----|----|----|-----|-----------|
+| **exp255 FINAL** | **73.2%** | **83.3%** | 90.4% | 92.3% | **+1.3/+1.5** |
+| exp255 MaxSim ep100 | 73.3% | 83.4% | — | — | +0.2/+0.3 (同epoch) |
+
+- GCN512 + 2-stage PSG: equal_concat +1.3 mAP, 但 MaxSim 口径仅 +0.2
+- exp255b (GCN512 + 1-stage): ≈ baseline — 2-stage PSG 是 GCN512 发挥的关键!

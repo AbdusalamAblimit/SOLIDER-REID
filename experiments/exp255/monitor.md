@@ -229,4 +229,31 @@ exp255 ep110 eval ~5 min.
 | exp249 (GCN256+1stage) | 71.9 | 81.8 | baseline |
 
 **GCN512 + 2-stage PSG 在 Small 上确认有效: +1.3 mAP, +1.5 R1!**
-**下一步: MaxSim test + Pose Prompt 实验**
+**下一步: MaxSim test + Pose Prompt 实验
+
+### [18:01] MaxSim FINAL = 73.5/83.8! exp256 启动!
+
+**MaxSim FINAL**: mAP=73.5%, R1=83.8%, R10=93.0%
+**vs exp249 MaxSim**: 73.3/83.2 → **+0.2/+0.6**
+**exp256 (Pose Prompt + GCN512 + 2stage) 远程启动.** 7930 MiB.
+
+### [18:12] 检查点 #46 (cron) — exp256 ep2, exp255b ep98
+
+exp256 (Pose Prompt) ep2, healthy. OA-SD 0.527 (teacher starting).
+exp255b ep90=71.4/81.6, ep98 training. ep100 eval ~10 min.
+
+### [18:42/10:42] 检查点 #47 (cron) — exp256 ep5, exp255b ep100=71.6/82.1
+
+exp256 (Pose Prompt) ep5, ETA 15h44m. Healthy.
+**exp255b ep100**: 71.6/82.1 (vs exp249 71.7/82.3 = -0.1/-0.2). GCN512+1stage ≈ baseline.
+
+### [19:25/11:42] 检查点 #49 — exp256 ep10=53.8/64.6, exp255b ep110=71.6/81.9
+
+**exp256 ep10**: 53.8/64.6 (vs exp255 54.7/65.7 = -0.9/-1.1, vs exp249 51.1/61.7 = +2.7/+2.9)
+Pose Prompt 略低于 exp255 (无 prompt)，但仍远超 GCN256 baseline。
+**exp255b ep110**: 71.6/81.9.
+
+### [12:12] 🎉 exp255b FINAL: 71.5/81.9
+
+**vs exp249**: 71.9/81.8 = -0.4/+0.1 (baseline). GCN512+1stage ≈ GCN256+1stage。
+**确认: 2-stage PSG 是 GCN512 发挥的必要条件 (exp255 73.2 vs exp255b 71.5 = +1.7!)**
