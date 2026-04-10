@@ -1403,3 +1403,14 @@
 
 - GCN512 + 2-stage PSG: equal_concat +1.3 mAP, 但 MaxSim 口径仅 +0.2
 - exp255b (GCN512 + 1-stage): ≈ baseline — 2-stage PSG 是 GCN512 发挥的关键!
+
+### exp256: Pose Prompt (KPR-style) — 负面/中性
+
+| 变体 | mAP | R1 | MaxSim | vs baseline |
+|------|-----|----|--------|-------------|
+| exp256 (GCN512+2stage+Prompt, 进行中) | ep90: 72.4 | 82.3 | — | -0.5 vs exp255 |
+| **exp256b (GCN256+1stage+Prompt) FINAL** | **68.8** | **79.3** | **70.3/81.0** | **-3.1 vs exp249** |
+
+- Pose Prompt 在强配置 (GCN512) 中性偏负 (-0.1~0.5)
+- Pose Prompt 在弱配置 (GCN256) 严重负面 (-3.1)
+- KPR-style prompt 不适合 Swin + PSG 架构
