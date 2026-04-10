@@ -116,6 +116,10 @@ _C.MODEL.POSE_UPPER_BODY_OCC = False          # PGMPOA: additionally occlude ran
 _C.MODEL.POSE_UPPER_BODY_OCC_PROB = 0.3       # probability (applied AFTER lower-body occ)
 _C.MODEL.POSE_PATCH_EMBED = False             # PAPE: parallel pose patch embedding at input
 _C.MODEL.POSE_PATCH_EMBED_KS = 1             # PAPE kernel size (1=1x1, 3=3x3)
+# Pose Prompt Injection (KPR-style: argmax part ID → learnable embedding → additive)
+_C.MODEL.POSE_PROMPT = False
+_C.MODEL.POSE_PROMPT_NUM_PARTS = 18          # 17 keypoints + 1 background
+_C.MODEL.POSE_PROMPT_DROP = 0.0              # probability of using empty prompt (train only)
 
 # PAA (Pose Additive Adapter)
 _C.MODEL.POSE_ADDITIVE_ADAPTER = False

@@ -107,6 +107,24 @@ class PoseBackboneModel(build_transformer):
             print(f'[PAPE] Pose-Augmented Patch Embedding enabled: '
                   f'Conv2d(17→{embed_dim}, {pape_ks}x{pape_ks}), {pape_params} params')
 
+        # Pose Prompt Injection (KPR-style: argmax → learnable part embedding → additive)
+        self.use_pose_prompt = getattr(cfg.MODEL, 'POSE_PROMPT', False)
+        if self.use_pose_prompt:
+            embed_dim = self.base.patch_embed.embed_dims
+            num_parts = int(getattr(cfg.MODEL, 'POSE_PROMPT_NUM_PARTS', 18))
+            self.pose_prompt_num_parts = num_parts
+            self.pose_prompt_drop = float(getattr(cfg.MODEL, 'POSE_PROMPT_DROP', 0.0))
+            # Learnable part embedding table: [background, kp0, kp1, ..., kp16]
+            self.pose_prompt_embed = nn.Embedding(num_parts, embed_dim)
+            # KPR uses trunc_normal_(std=0.02), not zero-init
+            nn.init.trunc_normal_(self.pose_prompt_embed.weight, std=0.02)
+            # Learnable scale: sigmoid(-2)=0.12 → gentle start for pretrained backbone
+            self.pose_prompt_scale = nn.Parameter(torch.tensor(-2.0))
+            pp_params = num_parts * embed_dim + 1
+            print(f'[PosePrompt] KPR-style injection: Embedding({num_parts}, {embed_dim}), '
+                  f'{pp_params} params, drop={self.pose_prompt_drop}, '
+                  f'init=trunc_normal(0.02), scale=sigmoid(-2.0)=0.12')
+
         # Stochastic Pose Dropout (SPD)
         self.pose_dropout_p = getattr(cfg.MODEL, 'POSE_DROPOUT_P', 0.0)
         if self.pose_dropout_p > 0:
@@ -331,7 +349,33 @@ class PoseBackboneModel(build_transformer):
                                mode='bilinear', align_corners=False)
             pose_tokens = self.pose_patch_embed(hm)  # (B, C, H, W)
             pose_tokens = pose_tokens.flatten(2).transpose(1, 2)  # (B, N, C)
-            x = x + pose_tokens
+            x = x + pose_tokens.to(x.dtype)  # AMP safety
+
+        # Pose Prompt: KPR-style argmax part ID → learnable embedding → additive
+        if getattr(self, 'use_pose_prompt', False) and scene_heatmaps is not None:
+            H_hw, W_hw = hw_shape
+            # Resize 17-channel heatmaps to patch resolution
+            hm = F.interpolate(scene_heatmaps, size=(H_hw, W_hw),
+                               mode='bilinear', align_corners=False)  # (B, 17, H, W)
+            # Heatmaps are already [0,1] (ViTPose MSE-trained output, not logits)
+            # Only clamp float16 rounding artifacts (tiny negatives)
+            hm = hm.clamp(min=0)
+            # Background channel: 1 - max keypoint confidence
+            bg = 1.0 - hm.max(dim=1, keepdim=True)[0]  # (B, 1, H, W)
+            hm_with_bg = torch.cat([bg, hm], dim=1)  # (B, 18, H, W)
+            # Argmax → part ID per patch (detach: no gradient through heatmaps)
+            part_ids = hm_with_bg.detach().argmax(dim=1)  # (B, H, W) values in [0, 17]
+            part_ids = part_ids.reshape(part_ids.shape[0], -1)  # (B, N)
+            # Stochastic prompt drop during training (use empty prompt = all background)
+            if self.training and self.pose_prompt_drop > 0:
+                drop_mask = torch.rand(part_ids.shape[0], 1, device=part_ids.device) < self.pose_prompt_drop
+                part_ids = torch.where(drop_mask.expand_as(part_ids),
+                                       torch.zeros_like(part_ids), part_ids)  # 0 = background
+            # Lookup learnable embeddings, scale, and add to patch tokens
+            prompt_embeds = self.pose_prompt_embed(part_ids)  # (B, N, C)
+            prompt_embeds = prompt_embeds.to(x.dtype)  # AMP safety: match float16/32
+            scale = torch.sigmoid(self.pose_prompt_scale)  # learnable injection strength
+            x = x + scale * prompt_embeds
 
         if self.base.use_abs_pos_embed:
             x = x + self.base.absolute_pos_embed
