@@ -131,3 +131,35 @@ PAA 反而有害 (exp254 > exp251)。
 
 **MaxSim**: mAP=66.2%, R1=78.1% (**R1 78.1 是所有 Tiny 最高!**)
 exp255 (Small GCN 512 + 2-stage PSG) 已在远程启动。
+
+### [17:27/01:38] 检查点 #36 — exp254b ep30 = 64.8/75.4! exp255 ep3.
+
+**exp254b (Small 2-stage PSG) ep30**: mAP=64.8%, R1=75.4%
+**vs exp249 ep30**: 63.6/74.2 = **+1.2/+1.2!** 2-stage PSG 在 Small 上 ep30 也大幅正向!
+**exp255** (Small GCN 512): ep3, 刚启动。
+
+### [18:20/02:37] 检查点 #38 — exp254b ep40 = 68.0/78.3. exp255 ep10 eval imminent.
+
+**exp254b ep40**: 68.0/78.3 (vs exp249 68.0/78.7 = 0.0/-0.4). Baseline level.
+
+### [19:14/03:37] 检查点 #40 — exp254b ep50 = 69.5/79.8, exp255 ep18
+
+**exp254b ep50**: 69.5/79.8 (vs exp249 69.4/79.4 = +0.1/+0.4). Baseline.
+
+### [20:07/04:08] 检查点 #41 — exp254b ep60 = 70.5/80.5, exp255 ep20 = 62.2/74.3
+
+**exp254b ep60**: 70.5/80.5 (vs exp249 70.2/80.7 = +0.3/-0.2). Baseline.
+**exp255 ep20**: 62.2/74.3 (**+1.3/+1.1 vs baseline!**) GCN 512 仍领先!
+
+### [21:01/05:08] 检查点 #43 — exp254b ep70 = 70.9/81.3, exp255 ep29
+
+**exp254b ep70**: 70.9/81.3 (vs exp249 70.9/81.6 = 0.0/-0.3). Baseline.
+
+### [06:08/22:08] 检查点 #45 — exp254b ep80 = 71.4/80.7. exp255 ep36.
+
+exp254b 趋同 baseline.
+
+### [01:31] 🎉 exp254b (Small 2-stage PSG) FINAL!
+
+**FINAL**: mAP=71.7%, R1=81.0% (vs exp249 71.9/81.8 = -0.2/-0.8). Baseline.
+2-stage PSG 在 Small 上无额外收益 (与 Tiny 一致)。
