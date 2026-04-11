@@ -1413,4 +1413,5 @@
 
 - Pose Prompt 在强配置 (GCN512) 中性偏负 (-0.1~0.5)
 - Pose Prompt 在弱配置 (GCN256) 严重负面 (-3.1)
-- KPR-style prompt 不适合 Swin + PSG 架构
+- **exp256 FINAL: 72.7/82.4** (vs exp255 73.2/83.3 = -0.5/-0.9)
+- KPR-style discrete prompt confirmed negative on Swin+PSG
