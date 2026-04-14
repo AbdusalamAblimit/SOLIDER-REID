@@ -1468,4 +1468,13 @@
 
 **⭐⭐⭐⭐⭐ 75/85 目标达成! MaxSim+flip = 75.2/85.6 on Swin-Small!**
 - Flip-test TTA 额外贡献: +1.1/+1.0 (MaxSim 74.1→75.2, MaxSim R1 84.6→85.6)
-- Base backbone (4090) 预计再加 +2-3%，有望达到 77+/87+。
+
+### exp260: Base GCN512 + 2-stage PSG (LR=4e-4) — 未超 Small
+
+| 方法 | mAP | R1 | R5 | R10 | vs exp255 (Small) |
+|------|-----|----|----|-----|-------------------|
+| **exp260 FINAL** | **72.6%** | **81.6%** | — | 92.5% | **-0.6/-1.7** |
+
+- Base LR=4e-4 underfitting: mAP 和 R1 均低于 Small LR=8e-4
+- exp260 MaxSim+flip: 74.7/84.6 (仍低于 Small 75.2/85.6)
+- 需要 exp260b Base LR=8e-4 重跑
