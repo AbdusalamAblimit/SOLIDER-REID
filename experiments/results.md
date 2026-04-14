@@ -1415,3 +1415,50 @@
 - Pose Prompt 在弱配置 (GCN256) 严重负面 (-3.1)
 - **exp256 FINAL: 72.7/82.4** (vs exp255 73.2/83.3 = -0.5/-0.9)
 - KPR-style discrete prompt confirmed negative on Swin+PSG
+
+### exp257: ArcFace + Label Smoothing — 负面
+
+| 变体 | mAP | R1 | vs exp255 | 备注 |
+|------|-----|----|-----------|------|
+| exp257 (ArcFace m=0.35+LS, 远程) | 59.1% | 76.5% | -14.1/-6.8 | ep55 终止, ArcFace 严重不收敛 |
+| exp257b (Label Smooth only, 本地) | 71.5% | 81.7% | -1.7/-1.6 | ep86 终止, LS 稳定负面 |
+
+- ArcFace m=0.35: ep10 R1 +3.4 (R1 69.1)，但 mAP 严重落后 (-14 at ep50)。SOLIDER pretrained Swin 不适合 angular margin。
+- Label Smoothing: 全程稳定 -1.0~-1.7 mAP。LS 削弱 GCN512 的 discriminative 训练。
+
+### exp258: ArcFace m=0.2 / GCN 3-layer — 负面/中性
+
+| 变体 | mAP | R1 | vs exp255 | 备注 |
+|------|-----|----|-----------|------|
+| exp258 (ArcFace m=0.2, 本地) | 67.7% | 81.2% | **-5.5/-2.1** | ArcFace 证伪 |
+| exp258b (GCN 3-layer, 远程) | 73.1% | 82.7% | -0.1/-0.6 | GCN 3-layer ≈ 2-layer |
+
+- ArcFace m=0.2: 比 m=0.35 好但仍 -5.5 mAP。ArcFace 在 Swin+SOLIDER pretrained 上完全证伪。
+- GCN 3-layer: 中性，额外 layer 不增益。GCN 2-layer hidden=512 已是最优。
+
+### exp259: WD / OA-SD / DropPath 调参 — 全中性/负面
+
+| 变体 | mAP | R1 | vs exp255 | 备注 |
+|------|-----|----|-----------|------|
+| exp259 (WD=2e-4, 本地) | 72.2% | 82.1% | **-1.0/-1.2** | WD 过强负面 |
+| exp259b (OA-SD w=2.0, 远程) | 73.2% | 83.4% | 0.0/+0.1 | OA-SD=2.0 ≈ baseline |
+| exp259b MaxSim | 73.6% | 83.7% | +0.1/-0.1 | MaxSim 也持平 |
+| exp259c (dp=0.2, 本地, 进行中) | ep90: 72.6% | 82.7% | -0.6/-0.6 | dp=0.2 ≈ baseline |
+
+- **exp255 的 recipe (softmax CE, WD=1e-4, OA-SD=1.0, dp=0.1) 已是 SOLIDER Swin 上的最优 recipe。**
+- 所有 recipe 调参 (exp257-259) 均无法超越 baseline，recipe 空间已耗尽。
+
+### exp255 Test-Time Evaluations
+
+| 方法 | mAP | R1 | vs equal_concat | 备注 |
+|------|-----|----|-----------------|------|
+| exp255 equal_concat (baseline) | 73.2% | 83.3% | — | ep120 final |
+| exp255 global cosine | 72.7% | 82.3% | -0.5/-1.0 | global-only 模式 |
+| exp255 VisWeighted Part | 73.5% | 83.6% | +0.3/+0.3 | 可见部位加权 |
+| **exp255 MaxSim Hybrid** | **74.1%** | **84.6%** | **+0.9/+1.3** | **ep120 final, gw=1.0** |
+| **exp255 SGCFR α=0.5** | **74.0%** | **84.3%** | **+0.8/+1.0** | **top_k=5, vis_thr=0.3** |
+| exp255 SGCFR α=0.4 | 73.9% | 83.8% | +0.7/+0.5 | |
+| exp255 CVK hybrid α=0.7 | 72.2% | 82.6% | -1.0/-0.7 | CVK 无 recovery 反而负面 |
+
+**Small 当前最佳: MaxSim 74.1/84.6。距离 75/85 目标仅差 0.9/0.4!**
+Base backbone (4090) 预计再加 +2-3%，有望达到 76+/86+。

@@ -117,3 +117,54 @@ exp259c ep40: 69.4/80.0 (vs exp255 70.2/81.2 = -0.8/-1.2). dp=0.2 追赶中。
 Mid-training R1 优势 (+1.2 at ep80) 没有保持到 final。
 
 **MaxSim: 73.6/83.7** (vs exp255 73.5/83.8 = +0.1/-0.1). 持平。OA-SD=2.0 中性。
+
+### [22:19/06:36] 检查点 #30 — exp259c ep70=71.6/81.5, exp255-seed42 ep4
+
+exp259c ep70: 71.6/81.5 (vs exp255 71.9/81.8 = -0.3/-0.3). dp=0.2 接近 baseline.
+exp255 seed42 ep4, healthy.
+
+### [23:12/07:29] 检查点 #32 — exp259c ep80=72.6/82.8, exp255-seed42 ep10=54.8/66.4
+
+**exp259c ep80**: 72.6/82.8 (vs exp255 72.7/82.5 = -0.1/+0.3). dp=0.2 ≈ baseline!
+**exp255 seed42 ep10**: 54.8/66.4 (vs seed1234 54.7/65.7). Seed consistent.
+
+### [00:05/08:06] 检查点 #33 — exp259c ep90=72.6/82.7, exp255-seed42 ep15
+
+exp259c ep90: 72.6/82.7 (vs exp255 72.9/83.1 = -0.3/-0.4). dp=0.2 ≈ baseline.
+Final ~3h. exp255 seed42 ep15.
+
+### [00:39/08:39] 检查点 #34 — exp259c ep97, exp255-seed42 ep19
+
+exp259c ep97, training. ETA ~2h. 下次 eval at ep100.
+exp255 seed42 ep19, ETA ~13h. 第一次 eval at ep20.
+
+### [01:00/09:00] 检查点 #35 — exp259c ep100=72.9/82.7, exp255-seed42 ep20=61.8/73.8
+
+**exp259c ep100**: 72.9/82.7 (vs exp255 73.0/83.0 = -0.1/-0.3). dp=0.2 ≈ baseline. Final ~2h.
+**exp255 seed42 ep20**: 61.8/73.8 (vs seed1234 62.2/74.3 = -0.4/-0.5). Healthy, within variance.
+
+### ⭐ exp255 SGCFR Test-Time Evaluation
+
+在 exp255 ep120 final checkpoint 上运行 SGCFR (test-time feature recovery):
+
+| 方法 | mAP | R1 | vs equal_concat |
+|------|-----|----|-----------------|
+| equal_concat baseline | 73.2% | 83.3% | — |
+| CVK hybrid α=0.7 | 72.2% | 82.6% | -1.0/-0.7 |
+| **SGCFR α=0.5** | **74.0%** | **84.3%** | **+0.8/+1.0** |
+| SGCFR α=0.4 | 73.9% | 83.8% | +0.7/+0.5 |
+
+**SGCFR 在 Small 上有效! +0.8 mAP, +1.0 R1。距离 75/85 目标仅差 1.0/0.7。**
+
+### ⭐⭐ exp255 MaxSim Test-Time Evaluation (ep120 final)
+
+| 方法 | mAP | R1 | vs equal_concat |
+|------|-----|----|-----------------|
+| equal_concat baseline | 73.2% | 83.3% | — |
+| global cosine | 72.7% | 82.3% | -0.5/-1.0 |
+| VisWeighted Part | 73.5% | 83.6% | +0.3/+0.3 |
+| **MaxSim Hybrid** | **74.1%** | **84.6%** | **+0.9/+1.3** |
+| SGCFR α=0.5 | 74.0% | 84.3% | +0.8/+1.0 |
+
+**MaxSim 74.1/84.6 = Small 新最佳! 距离 75/85 仅差 0.9/0.4!**
+MaxSim > SGCFR (+0.1/+0.3)。两者对比：MaxSim 用 ColBERT-style max pooling，SGCFR 用 cross-image feature recovery。

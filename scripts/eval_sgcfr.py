@@ -184,10 +184,12 @@ def main():
     parser.add_argument('--vis_threshold', type=float, default=0.3)
     parser.add_argument('--alpha', type=float, default=0.5,
                         help='Weight for recovered kp distance vs global distance')
-    args = parser.parse_args()
+    args, remaining = parser.parse_known_args()
 
     cfg.defrost()
     cfg.merge_from_file(args.config)
+    if remaining:
+        cfg.merge_from_list(remaining)
     cfg.TEST.WEIGHT = args.weight
     cfg.freeze()
 
