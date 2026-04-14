@@ -25,7 +25,8 @@ MODEL:
   POSE_LGPA_DETACH: True
   POSE_SKELETON_GCN: True
   POSE_GCN_LAYERS: 2
-  POSE_GCN_HIDDEN: 256
+  POSE_GCN_HIDDEN: 512
+  POSE_PSG_STAGES: [-2, -1]
   POSE_TEST_FEAT: 'equal_concat'
   GLOBAL_LOSS_SCALE: 0.5
   POSE_LOWER_BODY_OCC: True
@@ -76,4 +77,4 @@ TEST:
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/occluded_duke/exp249_base_lgpa_gcn_lr4'
+OUTPUT_DIR: './log/occluded_duke/exp260_base_gcn512_2stage'
