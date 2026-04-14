@@ -1403,6 +1403,7 @@
 
 - GCN512 + 2-stage PSG: equal_concat +1.3 mAP, 但 MaxSim 口径仅 +0.2
 - exp255b (GCN512 + 1-stage): ≈ baseline — 2-stage PSG 是 GCN512 发挥的关键!
+- **exp255 seed42 FINAL: 73.1/83.1** (vs seed1234 73.2/83.3 = -0.1/-0.2). 2-seed mean: **73.15/83.2**
 
 ### exp256: Pose Prompt (KPR-style) — 负面/中性
 
