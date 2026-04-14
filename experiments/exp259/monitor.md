@@ -168,3 +168,13 @@ exp255 seed42 ep19, ETA ~13h. 第一次 eval at ep20.
 
 **MaxSim 74.1/84.6 = Small 新最佳! 距离 75/85 仅差 0.9/0.4!**
 MaxSim > SGCFR (+0.1/+0.3)。两者对比：MaxSim 用 ColBERT-style max pooling，SGCFR 用 cross-image feature recovery。
+
+### ⭐⭐⭐⭐⭐ exp255 MaxSim + Flip-Test TTA = 75.2/85.6!!! 目标达成!!!
+
+| 方法 | mAP | R1 | vs equal_concat |
+|------|-----|----|-----------------|
+| Global cosine+flip | 73.6% | 83.4% | +0.4/+0.1 |
+| **MaxSim+flip** | **75.2%** | **85.6%** | **+2.0/+2.3** |
+
+**Flip-test 在 MaxSim 上贡献巨大: +1.1/+1.0 (74.1→75.2, 84.6→85.6)**
+**75% mAP 和 85% R1 目标同时达成！！！在 Swin-Small 上已达成用户设定的 April 15 目标!**

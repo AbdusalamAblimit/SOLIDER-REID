@@ -1460,5 +1460,9 @@
 | exp255 SGCFR α=0.4 | 73.9% | 83.8% | +0.7/+0.5 | |
 | exp255 CVK hybrid α=0.7 | 72.2% | 82.6% | -1.0/-0.7 | CVK 无 recovery 反而负面 |
 
-**Small 当前最佳: MaxSim 74.1/84.6。距离 75/85 目标仅差 0.9/0.4!**
-Base backbone (4090) 预计再加 +2-3%，有望达到 76+/86+。
+| exp255 Global cosine+flip | 73.6% | 83.4% | +0.4/+0.1 | flip-test TTA |
+| **exp255 MaxSim+flip** | **75.2%** | **85.6%** | **+2.0/+2.3** | **⭐⭐⭐ 目标达成! flip-test+MaxSim** |
+
+**⭐⭐⭐⭐⭐ 75/85 目标达成! MaxSim+flip = 75.2/85.6 on Swin-Small!**
+- Flip-test TTA 额外贡献: +1.1/+1.0 (MaxSim 74.1→75.2, MaxSim R1 84.6→85.6)
+- Base backbone (4090) 预计再加 +2-3%，有望达到 77+/87+。
