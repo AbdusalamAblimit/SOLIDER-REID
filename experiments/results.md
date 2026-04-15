@@ -1491,3 +1491,14 @@
 - Base 超越 Small +0.7 mAP!
 - **exp260b MaxSim+flip FINAL: 75.4/84.8** (vs Small 75.2/85.6 = +0.2/-0.8)
 - Base mAP 更强但 R1 略弱。MaxSim+flip 提升幅度 Base < Small (+1.5 vs +2.0 mAP)
+
+### exp260b Market: Base GCN512 + 2-stage PSG (LR=8e-4, 无PLBOA)
+
+| 方法 | mAP | R1 | R5 | R10 | 备注 |
+|------|-----|----|----|-----|------|
+| **exp260b Market FINAL** | **94.4%** | **97.1%** | — | 99.4% | Base backbone |
+| Tiny baseline | 91.6% | 96.3% | — | — | |
+| Tiny+PSG | 92.4% | 96.7% | — | — | |
+| Small+PSG (无PLBOA) | 93.9% | 96.9% | — | — | |
+| exp260b Market MaxSim+flip | 94.7% | 97.2% | — | — | |
+| **exp260b Market→Occluded-ReID** | **86.0%** | **88.5%** | **95.3%** | **97.9%** | **跨数据集** |

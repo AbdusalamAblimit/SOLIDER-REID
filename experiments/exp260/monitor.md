@@ -692,6 +692,52 @@ seed2024 R1 持续偏低 (82.0 vs seed1234 83.3)。预计 final ~72.7/82.0。
 **Market ep70**: 94.0/97.0 (= ep60). Plateau. Final 预计 ~94.0-94.2.
 **seed2024**: ep114, final ~30min.
 
+### Market ep80 MaxSim+FlipTest: 94.6/97.2
+
+(MaxSim+flip 在 Market 上提升小: +0.4/+0.1, 非遮挡数据集 part matching 收益有限)
+
+### [17:12/01:12] 检查点 #72 — Market ep87, 远程空闲
+
+Market ep87. ep80=94.2/97.1. ep90 eval ~15min.
+远程 GPU 空闲 (seed2024 已完成).
+
+### [17:42/01:42] 检查点 #73 — Market ep90=94.3/97.2
+
+Market ep90: 94.3/97.2 (ep80 94.2→ep90 94.3). Plateau 中, final ~94.3-94.5. ~2.5h.
+
+### [18:12] 检查点 #74 — Market ep97, ep100 ~15min
+
+### [18:42] 检查点 #75 — Market ep100=94.4/97.1, ETA 1h53m
+
+| ep | Market Base mAP/R1 |
+|----|--------------------|
+| 60 | 94.0/97.0 |
+| 70 | 94.0/97.0 |
+| 80 | 94.2/97.1 |
+| 90 | 94.3/97.2 |
+| **100** | **94.4/97.1** |
+
+### [19:12] 检查点 #76 — Market ep106, ETA 1h23m
+
+### [19:42] 检查点 #77 — Market ep110=94.4/97.2, ETA ~50min
+
+Market plateau at 94.4. Final ~94.4-94.5.
+
+### [20:12] 检查点 #78 — Market ep116, FINAL ~20min!
+
+### [20:40] ⭐ Market Base FINAL: 94.4/97.1! MaxSim+flip: 94.7/97.2!
+
+| 方法 | mAP | R1 |
+|------|-----|----|
+| equal_concat | 94.4% | 97.1% |
+| MaxSim+flip | **94.7%** | **97.2%** |
+| Tiny baseline | 91.6% | 96.3% |
+| Small+PSG | 93.9% | 96.9% |
+
+**Base vs Tiny baseline: +2.8/+0.8 (equal_concat), +3.1/+0.9 (MaxSim+flip)**
+
+下一步: Market 权重 → Occluded-ReID 跨数据集测试。
+
 ### [16:12/00:12] 检查点 #71 — Market ep78, seed2024 ep118 FINAL ~10min!
 
 Market ep78, ep80 eval ~10min. seed2024 ep118, **FINAL ~10min!**
