@@ -1477,4 +1477,15 @@
 
 - Base LR=4e-4 underfitting: mAP 和 R1 均低于 Small LR=8e-4
 - exp260 MaxSim+flip: 74.7/84.6 (仍低于 Small 75.2/85.6)
-- 需要 exp260b Base LR=8e-4 重跑
+
+### exp260b: Base GCN512 + 2-stage PSG (LR=8e-4) — 超越 Small!
+
+| 方法 | mAP | R1 | R5 | R10 | vs exp255 (Small) |
+|------|-----|----|----|-----|-------------------|
+| **exp260b FINAL** | **73.9%** | **83.2%** | — | — | **+0.7/-0.1** |
+| exp260b MaxSim+flip ep100 | 75.4% | 84.9% | — | — | +0.2/-0.7 (非final) |
+
+- LR=8e-4 确认是 Base 的正确 LR (vs LR=4e-4 的 72.6/81.6)
+- Base 超越 Small +0.7 mAP!
+- **exp260b MaxSim+flip FINAL: 75.4/84.8** (vs Small 75.2/85.6 = +0.2/-0.8)
+- Base mAP 更强但 R1 略弱。MaxSim+flip 提升幅度 Base < Small (+1.5 vs +2.0 mAP)
