@@ -2,6 +2,127 @@
 
 > **⚠️ Phase 1-4 内容保留在下方。Phase 5 更新如下。**
 
+## PRCV Reset (2026-04-15) — PSG 主线 + GCN 结构补充
+
+### 当前一句话故事
+
+现有 pose-guided occluded ReID 大多在特征形成之后再使用 pose 信息；我们提出 `PSG`，将 pose 先验前移到 backbone 表征学习阶段，并在最终系统中引入 `GCN` 结构分支做显式 skeleton relational reasoning，形成 semantic-structural complementary evidence。
+
+### 当前重审结论
+
+这轮重审后，PRCV 主故事优先回到 `PSG`，而不是继续把 `LGPA-D + MaxSim + flip` 当主创新。
+
+当前更稳的写法是：
+1. **PSG** 是主创新点
+2. **2-stage PSG** 只作为 `PSG` 的最终 instantiation / final configuration，不单独抢主贡献位置
+3. **GCN 必须明确写进方法**，但定位为 *structural pose branch*，不是与 `PSG` 并列的第二主创新
+4. `LGPA-D / OA-SD / PLBOA` 作为完整系统资产
+5. `MaxSim / POT / flip` 只作为 supporting evaluation，不当训练端主贡献
+
+### 当前主判断
+
+1. `exp007` 已经足够支撑 `PSG` 本体：
+   - 单次 `58.3 / 67.9`
+   - 3-seed mean `57.83 / 67.13`
+   - backbone-level pose injection 明确优于 post-hoc part pooling
+
+2. `GCN` 应该被强调，但应强调其**作用位置**而不是单独吹成主创新：
+   - `GCN` 的价值是提供显式 skeleton structure evidence
+   - 更适合作为 `PSG` 支撑下的结构分支，而不是与 `PSG` 平行的主贡献
+   - `exp249` 与 `exp246` 已经说明 `LGPA-D + GCN` 双分支具备稳定互补性
+
+3. `2-stage PSG` 可以作为最终版本，但**不必在主叙事里和 1-stage 正面对打**
+   - `exp009`、`exp251`、`exp253` 都说明：multi-stage 不会在所有 scaffold 上自动更强
+   - 但 `exp255 vs exp255b` 明确说明：在 `GCN512` 这类高容量结构分支上，`2-stage PSG` 是关键条件
+
+4. 因为实验都可以重跑，接下来不把旧消融当最终版，而是重新设计干净的 `PSG` stage 消融矩阵
+
+### 当前最强系统 scaffold
+
+当前训练端最强实验是 `exp255`：
+- `Swin-Small + 2-stage PSG + LGPA-D + GCN512 + OA-SD + PLBOA`
+- `FINAL = 73.2 / 83.3`
+
+当前最关键的结构证据是：
+- `exp255`: `GCN512 + 2-stage PSG = 73.2 / 83.3`
+- `exp255b`: `GCN512 + 1-stage PSG = 71.5 / 81.9`
+
+这组对照最适合在**消融**里写成：
+> 最终实现采用 `2-stage PSG`；进一步对照显示，在高容量结构分支上，它比 `1-stage` 更能稳定支撑结构证据的发挥。
+
+### 推荐写作口径
+
+1. **标题 / 摘要 / 引言**
+   - 只讲 `PSG`
+   - 可以写：我们在 backbone 中间 stage 之间注入 pose 信息
+   - 最多补一句：最终实现采用 two-stage instantiation
+
+2. **方法部分**
+   - 把 `PSG` 定义成一个通用的 pose-guided spatial gating 机制
+   - 再说明：实际实验中采用 `2-stage PSG` 作为最终配置
+
+3. **消融部分**
+   - 再回答为什么最终选 `2-stage`
+   - 用 `1-stage / 2-stage / 3-stage` 小表说明选择依据即可
+
+### 论文里哪些模块要重点提及
+
+1. **第一层：主贡献**
+   - `PSG`
+   - 写法：backbone 内的 pose-guided spatial gating
+
+2. **第二层：关键支撑机制**
+   - `GCN`
+   - 写法：`GCN` 是 explicit structural pose reasoning branch
+   - `2-stage PSG` 放在最终实现与消融选择中说明，不单列为主贡献
+
+3. **第三层：完整系统资产**
+   - `LGPA-D`
+   - `OA-SD`
+   - `PLBOA`
+   - 写法：semantic branch + training recipe，不抢主创新位
+
+4. **第四层：附加评测资产**
+   - `MaxSim / POT / flip`
+   - 写法：test-time supporting evaluations
+
+### 推荐贡献点写法
+
+1. 提出 `PSG`，在 backbone 内进行 pose-guided spatial gating，而不是在特征形成后再做 pose-aware pooling 或 filtering
+2. 构建 semantic-structural complementary occluded ReID system，其中 `GCN` 提供显式 skeleton relational evidence，`LGPA-D` 提供语义 part evidence，与 `PSG` 形成互补
+3. 在 Occluded-Duke 上系统验证该框架，并采用 `2-stage PSG` 作为最终实现；实验表明该设计能够更稳定地支撑高容量结构分支，最终在 Swin-Small 上得到当前最佳训练端结果之一
+
+### 推荐摘要骨架
+
+可按下面 4 句展开：
+
+1. **问题句**
+   - 现有 pose-guided occluded ReID 往往在特征提取完成后才利用 pose，因而对表征学习阶段的结构先验注入不足。
+
+2. **方法句**
+   - 我们提出 `PSG`，在 backbone 中间层通过 pose-conditioned spatial gating 直接调制特征形成过程。
+
+3. **扩展句**
+   - 在此基础上，我们结合 `GCN` 结构分支，以显式建模 skeleton relational evidence，并在最终实现中采用 `2-stage PSG` 作为具体配置，从而形成 semantic-structural complementary representation。
+
+4. **结果句**
+   - 在 Occluded-Duke 等基准上，该框架取得了当前项目最优结果之一，其中 `Swin-Small` 配置达到 `73.2 / 83.3`；消融进一步表明，最终采用的 `2-stage PSG` 更适合支撑高容量结构分支。
+
+### 执行优先级
+
+1. 重新设计 `PSG` 的干净 stage 消融：
+   - no PSG
+   - 1-stage PSG
+   - 2-stage PSG
+   - 3-stage PSG
+2. 固定 branch 容量，单独验证 `2-stage PSG` 是否是高容量 `GCN` branch 的必要条件
+3. 在此基础上，再决定最终论文标题更偏 `PSG` 还是 `Hierarchical PSG`
+
+### 说明
+
+详细重审与文献压缩总结见：
+`experiments/paper_notes/2026-04-15_prcv_reset.md`
+
 ## Phase 5 Story Update (2026-04-08) — LGPA-D 时代
 
 ### 暂定标题

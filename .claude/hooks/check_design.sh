@@ -1,6 +1,6 @@
 #!/bin/bash
 # Hook: 阻止不满足前置条件的实验启动训练
-# 检查项: 1) design.md 存在  2) claude_review 审查通过
+# 检查项: 1) design.md 存在  2) claude_review 审查通过  3) codex_review 审查通过
 # 触发: PreToolUse on Bash commands containing train.py
 
 INPUT=$(cat)
@@ -65,6 +65,25 @@ if echo "$COMMAND" | grep -qE 'train\.py'; then
     REVIEW_LINES=$(wc -l < "$LATEST_REVIEW")
     if [ "$REVIEW_LINES" -lt 30 ]; then
       echo "{\"decision\":\"block\",\"reason\":\"Review in ${LATEST_REVIEW} is only ${REVIEW_LINES} lines. A proper Opus 4.6 sub-agent review should be >=30 lines with detailed analysis. You are writing a fake review instead of launching the Agent tool.\"}"
+      exit 2
+    fi
+
+    # 检查 4: Codex 审查必须存在且通过 (verdict: approve)
+    LATEST_CODEX_REVIEW=""
+    for codex_review in "${EXP_DIR}"codex_review*.md; do
+      if [ -f "$codex_review" ]; then
+        LATEST_CODEX_REVIEW="$codex_review"
+      fi
+    done
+
+    if [ -z "$LATEST_CODEX_REVIEW" ]; then
+      echo "{\"decision\":\"block\",\"reason\":\"No codex_review.md found in ${EXP_DIR}. You must run /codex:review and save results before starting training.\"}"
+      exit 2
+    fi
+
+    # Codex verdict 必须是 approve
+    if ! grep -qiE '(verdict.*approve|CODEX.?PASS|codex 审查通过)' "$LATEST_CODEX_REVIEW"; then
+      echo "{\"decision\":\"block\",\"reason\":\"Codex review in ${LATEST_CODEX_REVIEW} has NOT approved. Fix all Codex findings, then re-run /codex:review until verdict is approve.\"}"
       exit 2
     fi
   fi

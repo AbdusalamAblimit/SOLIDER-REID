@@ -178,3 +178,13 @@ MaxSim > SGCFR (+0.1/+0.3)。两者对比：MaxSim 用 ColBERT-style max pooling
 
 **Flip-test 在 MaxSim 上贡献巨大: +1.1/+1.0 (74.1→75.2, 84.6→85.6)**
 **75% mAP 和 85% R1 目标同时达成！！！在 Swin-Small 上已达成用户设定的 April 15 目标!**
+
+### [01:16/09:16] 检查点 #36 — exp259c ep103, exp255-seed42 ep24
+
+exp259c ep103, ep100=72.9/82.7 (vs exp255 73.0/83.0 = -0.1/-0.3). dp=0.2 neutral. Final ~1.5h.
+exp255 seed42 ep24, ep20=61.8/73.8 (vs seed1234 62.2/74.3 = -0.4/-0.5). Healthy. Final ~12h.
+
+### [01:56/10:06] 检查点 #37 — exp259c ep110 (ETA 52min), exp255-seed42 ep30
+
+exp259c ep110, ETA 52min. ep110 eval imminent. Last: ep100=72.9/82.7.
+exp255 seed42 ep30, ep30 eval imminent. Last: ep20=61.8/73.8.

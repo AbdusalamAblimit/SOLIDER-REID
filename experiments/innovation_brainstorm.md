@@ -1,5 +1,62 @@
 # 创新点头脑风暴 — Phase 2: Pure Pose Heatmap
 
+## 2026-04-15 PRCV 重审：回到 PSG 主线，重做 multi-stage 消融
+
+### 这轮重审后的核心判断
+
+1. `PSG` 仍然是当前最稳的主创新点  
+   - `exp007` 单次 `58.3 / 67.9`
+   - 3-seed mean `57.83 / 67.13`
+   - backbone injection 明确优于 post-hoc pooling
+
+2. `2-stage PSG` 有希望作为最终版本，但现有证据还不够干净  
+   - `exp009 / exp251 / exp253` 说明 multi-stage **不是普遍自动更优**
+   - `exp255 vs exp255b` 又强烈说明：在 `GCN512` 结构分支下，`2-stage PSG` 是关键条件
+
+3. `LGPA-D + GCN + OA-SD + MaxSim + flip` 更适合写成 supporting system，而不是主创新本体  
+   - `LGPA-D` 像 detached semantic part asset
+   - `MaxSim/POT/flip` 主要是 test-time
+   - `exp257-259` 已说明 recipe 空间基本耗尽
+
+### 当前真正该补的不是新故事，而是干净消融
+
+用户已明确说明所有实验都可以重跑，因此下一步最该做的是：
+
+1. 不再把旧结果当最终消融闭环
+2. 重新设计 `PSG` / `2-stage PSG` / `3-stage PSG` 的干净对照
+3. 把“multi-stage PSG 什么时候有用”这件事说清楚
+
+### 当前推荐验证顺序
+
+1. **基础 PSG 消融**
+   - no PSG
+   - 1-stage PSG
+   - 2-stage PSG
+   - 3-stage PSG
+
+2. **结构分支依赖性消融**
+   - GCN256 + 1-stage
+   - GCN256 + 2-stage
+   - GCN512 + 1-stage
+   - GCN512 + 2-stage
+
+3. **必要时再补 semantic 分支依赖性**
+   - LGPA-only + 1-stage / 2-stage
+   - LGPA+GCN + 1-stage / 2-stage
+
+### 当前主线口径
+
+从现在开始，PRCV 方向优先写成：
+
+- `PSG` = 主创新
+- `2-stage PSG` = scalable extension / 当前最终版本
+- `LGPA-D / GCN / OA-SD / MaxSim` = supporting assets
+
+### 参考
+
+详细文献压缩与路线说明见：
+`experiments/paper_notes/2026-04-15_prcv_reset.md`
+
 ## 前轮教训 (Phase 1, 33 experiments)
 - ViTPose visibility 向量不够可靠（AP 相关性仅 0.237）
 - 中间层 visibility modulation 有害（破坏预训练空间结构），但这是 visibility 特有问题

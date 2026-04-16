@@ -3471,3 +3471,88 @@ C. 如需更强创新: 需要跳出 Swin + detach 框架 (换 ViT 或全新问�
 1. POT 低成本快速验证, 作为 secondary contribution
 2. LGPA-D 虽然 single novelty 4.5/10, 但与 PSG+OA-SD+MaxSim 组成完整 framework novelty 更高
 3. exp249 (LGPA-D+GCN on Small) 有潜力达到 73-74% → 与 SOTA 竞争力足够
+
+### [2026-04-15 18:30] 决策 — PRCV 方向重审，停止把 LGPA/MaxSim 当主故事
+
+**上下文**: 用户要求重新阅读 `CLAUDE.md`、rules、全量实验文档，并进行新一轮线上文献调研；明确要求“不要被 Claude 的旧 story 误导，只看实验和结果”。  
+本轮重审后确认：
+- `exp109` oracle support bank 仍是仓库内最强问题证据
+- `exp257-259` 已基本说明当前 `exp255` recipe 空间耗尽
+- `LGPA-D + GCN + OA-SD + MaxSim + flip` 虽然结果强，但主问题定义仍偏弱
+- 文献上 visible-part / prompt / recovery / test-time matching 这些线都已有大量前人
+
+**选项**:
+  A. 继续沿 `LGPA-D + MaxSim/POT + test-time` 故事收论文
+  B. 回到 `exp109`，把主线改成“single-image support incomplete”的训练对象重写
+
+**选择**: B
+
+**理由**:
+1. `exp109` 已给出巨大 headroom：`61.88 -> 66.15 -> 70.40 mAP`，而后续任何实验都没有正面回应这个 gap
+2. `LGPA-D` 更像 detached semantic part asset，不足以单独撑起新的问题定义
+3. `MaxSim / POT / flip` 主要仍是 test-time supporting evidence，不能作为训练端主贡献
+4. 文献上最接近的前人（如 VPM/PGFA/PVPM/PAT/BPBreID、FRT/MVI²P、CLIP-ReID/Instruct-ReID/KPR）分别占据了 visible matching、recovery、language/prompt 等位置，但**“把单图不完整支持改写成可训练对象”** 仍有空位
+
+**新的主线定义**:
+
+**PSCD: Pose-defined Support-Complete Distillation**
+
+即：
+1. 用 pose 定义互补 support 伪视图，而不是随机多视图分类
+2. 用互补视图组装 support-complete teacher token set
+3. 只对低支持 token 做 confidence-gated distillation
+4. 再用轻量 set-level alignment 与已验证有效的 `MaxSim` 行为对齐
+
+**执行顺序**:
+1. 先做“单图互补视图 oracle”诊断；如果这一步 headroom 不明显，立即止损
+2. 若 oracle 为正，先在 Tiny 做 30-40 epoch 趋势验证
+3. 若 Tiny 为正，再上 `exp255` Small scaffold
+4. 必做消融：
+   - pose-defined vs random complementary masking
+   - assembly teacher vs 3-view classification
+   - low-confidence-only distill vs all-token distill
+   - token-only vs token+set alignment
+
+**补充说明**:
+- `LGPA-D / GCN / OA-SD / PLBOA / MaxSim` 现在统一降级为资产与 supporting evidence
+- 详细文献压缩与路线说明见 `experiments/paper_notes/2026-04-15_prcv_reset.md`
+
+### [2026-04-15 19:20] 决策 — 用户确认：PRCV 先收敛到 PSG 主线，旧实验允许重跑
+
+**上下文**: 用户明确表示当前目标是“把现在的探索结果包装成一个故事和创新点，先发 C 类”；并进一步确认：  
+1. 不必强行切到全新路线  
+2. 所有实验都可以重跑  
+3. 可以重新设计消融实验，不必被旧实验组织方式束缚
+
+**选项**:
+  A. 继续沿刚提出的 `PSCD/support-complete` 新路线展开
+  B. 回到 `PSG` 主线，把 `multi-stage PSG` 重新做成干净可辩护的扩展版本
+
+**选择**: B
+
+**理由**:
+1. `PSG` 本体已有最稳的证据链：`exp007` 单次正向，且 3-seed mean 明确成立
+2. 当前最强系统 `exp255` 使用的就是 `2-stage PSG`
+3. `exp255 vs exp255b` 给出最强信息：在 `GCN512` 高容量结构分支下，`2-stage PSG` 带来 `+1.7 / +1.4`
+4. 虽然 `exp009 / exp251 / exp253` 不支持“multi-stage 普遍更强”，但这恰好说明需要**重跑干净消融**，而不是放弃 PSG 主线
+5. 对 PRCV 来说，“PSG 为主创新，2-stage PSG 为 scalable extension” 比临时强切新问题定义更稳
+
+**新的文档口径**:
+1. `PSG` = 主创新
+2. `2-stage PSG` = 当前最终版本 / scalable extension
+3. `LGPA-D / GCN / OA-SD / MaxSim / POT / flip` = supporting assets
+
+**下一步实验任务**:
+1. 设计并重跑基础 PSG stage 消融：
+   - no PSG
+   - 1-stage PSG
+   - 2-stage PSG
+   - 3-stage PSG
+2. 固定 branch 容量，重跑结构分支依赖性消融：
+   - GCN256 + 1-stage
+   - GCN256 + 2-stage
+   - GCN512 + 1-stage
+   - GCN512 + 2-stage
+3. 视时间再补 semantic 分支依赖性消融
+
+**执行结果**: 待后续新一轮 PSG 消融实验补充。
