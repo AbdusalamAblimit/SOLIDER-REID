@@ -1501,4 +1501,5 @@
 | Tiny+PSG | 92.4% | 96.7% | — | — | |
 | Small+PSG (无PLBOA) | 93.9% | 96.9% | — | — | |
 | exp260b Market MaxSim+flip | 94.7% | 97.2% | — | — | |
-| **exp260b Market→Occluded-ReID** | **86.0%** | **88.5%** | **95.3%** | **97.9%** | **跨数据集** |
+| exp260b Market→Occluded-ReID (eq) | 86.0% | 88.5% | 95.3% | 97.9% | 跨数据集 equal_concat |
+| **exp260b Market→Occluded-ReID (MaxSim+flip)** | **88.0%** | **90.6%** | — | — | **跨数据集 MaxSim+flip** |
