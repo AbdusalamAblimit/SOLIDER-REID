@@ -425,6 +425,10 @@ _C.TEST.NECK_FEAT = 'after'
 # Whether feature is nomalized before test, if yes, it is equivalent to cosine distance
 _C.TEST.FEAT_NORM = 'yes'
 _C.TEST.POWER_NORM = 0.0                # Power normalization exponent (0=disabled, 0.5=sqrt)
+# Flip-test TTA: default ON. Evaluates on original + horizontally flipped batch,
+# averages features. Applies to both do_train mid-training eval and do_inference.
+# MaxSim 仍单独由 scripts/eval_fliptest_maxsim.py 跑，不在这里。
+_C.TEST.FLIP_TEST = True
 
 # Name for saving the distmat after testing.
 _C.TEST.DIST_MAT = "dist_mat.npy"

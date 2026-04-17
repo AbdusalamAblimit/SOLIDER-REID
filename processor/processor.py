@@ -10,6 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from utils.meter import AverageMeter
 from utils.metrics import R1_mAP_eval
+from utils.flip_test import flip_batch
 from torch.cuda import amp
 import torch.distributed as dist
 from model.modules.support_complete_bank import SupportCompleteBank
@@ -34,6 +35,43 @@ def _pose_to_device(pose_dict, device):
         else:
             result[k] = v
     return result
+
+
+def _extract_feat_flip(model, img, pose_dict, camids, target_view, use_pose, flip_test):
+    """Forward once (default) or twice with horizontal flip, return averaged feature.
+
+    When `flip_test=True`, features of original and flipped batch are averaged
+    element-wise before L2 normalization (done downstream by the evaluator).
+    Used by both mid-training eval and do_inference. MaxSim post-hoc eval stays
+    in `scripts/eval_fliptest_maxsim.py` and is NOT invoked here.
+
+    Output handling:
+    - Tensor `feat`: `(feat + feat_flip) / 2`. Evaluator still re-normalizes.
+      For `equal_concat` this is a slight deviation from per-block renorm
+      (see `scripts/eval_fliptest_maxsim.py`), but the gap is small and the
+      overall direction (≥ no-flip) is preserved.
+    - Dict `feat` (cvk_* / maxsim* modes): field-wise average on
+      `global_feat` / `kp_feats` / `kp_weights`; `mode` preserved.
+    """
+    if use_pose:
+        feat, _ = model(img, cam_label=camids, view_label=target_view, pose_dict=pose_dict)
+    else:
+        feat, _ = model(img, cam_label=camids, view_label=target_view)
+    if not flip_test:
+        return feat
+    img_f, pose_f = flip_batch(img, pose_dict if use_pose else None)
+    if use_pose:
+        feat_f, _ = model(img_f, cam_label=camids, view_label=target_view, pose_dict=pose_f)
+    else:
+        feat_f, _ = model(img_f, cam_label=camids, view_label=target_view)
+
+    if isinstance(feat, dict) and isinstance(feat_f, dict):
+        merged = dict(feat)
+        for k in ('global_feat', 'kp_feats', 'kp_weights'):
+            if k in feat and k in feat_f and isinstance(feat[k], torch.Tensor):
+                merged[k] = (feat[k] + feat_f[k]) / 2.0
+        return merged
+    return (feat + feat_f) / 2.0
 
 
 def _flatten_eval_like_feat(feat):
@@ -1282,6 +1320,10 @@ def do_train(cfg,
 
         if epoch % eval_period == 0:
             torch.cuda.empty_cache()  # Free training-reserved memory before eval
+            flip_test = getattr(cfg.TEST, 'FLIP_TEST', True)
+            if epoch == eval_period and not cfg.MODEL.DIST_TRAIN:
+                logger.info("Eval protocol: flip_test={} feat_norm={}".format(
+                    flip_test, cfg.TEST.FEAT_NORM))
             if cfg.MODEL.DIST_TRAIN:
                 if dist.get_rank() == 0:
                     model.eval()
@@ -1299,11 +1341,9 @@ def do_train(cfg,
                             img = img.to(device)
                             camids = camids.to(device)
                             target_view = target_view.to(device)
-                            if use_pose:
-                                feat, _ = model(img, cam_label=camids, view_label=target_view,
-                                                pose_dict=pose_dict)
-                            else:
-                                feat, _ = model(img, cam_label=camids, view_label=target_view)
+                            feat = _extract_feat_flip(
+                                model, img, pose_dict, camids, target_view,
+                                use_pose, flip_test)
                             evaluator.update((feat, vid, camid))
                     cmc, mAP, _, _, _, _, _ = evaluator.compute()
                     logger.info("Validation Results - Epoch: {}".format(epoch))
@@ -1327,11 +1367,9 @@ def do_train(cfg,
                         img = img.to(device)
                         camids = camids.to(device)
                         target_view = target_view.to(device)
-                        if use_pose:
-                            feat, _ = model(img, cam_label=camids, view_label=target_view,
-                                            pose_dict=pose_dict)
-                        else:
-                            feat, _ = model(img, cam_label=camids, view_label=target_view)
+                        feat = _extract_feat_flip(
+                            model, img, pose_dict, camids, target_view,
+                            use_pose, flip_test)
                         evaluator.update((feat, vid, camid))
                 cmc, mAP, _, _, _, _, _ = evaluator.compute()
                 logger.info("Validation Results - Epoch: {}".format(epoch))
@@ -1365,6 +1403,9 @@ def do_inference(cfg,
 
     model.eval()
     img_path_list = []
+    flip_test = getattr(cfg.TEST, 'FLIP_TEST', True)
+    if flip_test:
+        logger.info("Flip-test TTA: ON (cfg.TEST.FLIP_TEST)")
 
     for n_iter, batch_data in enumerate(val_loader):
         with torch.no_grad():
@@ -1377,11 +1418,8 @@ def do_inference(cfg,
             img = img.to(device)
             camids = camids.to(device)
             target_view = target_view.to(device)
-            if use_pose:
-                feat, _ = model(img, cam_label=camids, view_label=target_view,
-                                pose_dict=pose_dict)
-            else:
-                feat, _ = model(img, cam_label=camids, view_label=target_view)
+            feat = _extract_feat_flip(
+                model, img, pose_dict, camids, target_view, use_pose, flip_test)
             evaluator.update((feat, pid, camid))
             img_path_list.extend(imgpath)
 

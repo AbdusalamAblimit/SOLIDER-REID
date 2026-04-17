@@ -1,14 +1,41 @@
 # 训练监控协议
 
-## 监控节奏
+## 优先用 Monitor 工具（2026-04 起）
 
-sleep 间隔**严格不超过 5 分钟**：
+`Monitor` 流事件监控替代手动 sleep 轮询：
+
+```bash
+# 本地 —— 注意 train.py 的实际格式是 "Epoch[N]" 无空格
+Monitor: tail -F /tmp/exp{NNN}.log | grep -E --line-buffered \
+  "Epoch\[[0-9]+\]|mAP: |Rank-1:|Rank-5:|Rank-10:|Traceback|OOM|Killed|CUDA error|RuntimeError|FAILED|NaN|Inf"
+
+# 远程（必须含崩溃信号才不会 silence-as-success）
+Monitor: ssh srvX "tail -F /tmp/exp{NNN}.log" | grep -E --line-buffered \
+  "Epoch\[[0-9]+\]|mAP:|Rank-1:|Traceback|OOM|Killed|Error|RuntimeError|FAILED|NaN|Inf"
+```
+
+**关键**：过滤器必须同时捕获：
+- 进度：`Epoch\[X\]` 每 N iter 打印一行
+- **Eval 事件**：`mAP: X%` 每 `EVAL_PERIOD` (默认 10 epoch) 打印一次 → 用这个作为"10 epoch 里程碑"通知
+- `Rank-1:` / `Rank-5:` / `Rank-10:` 同样每 10 epoch 打印
+- 崩溃：`Traceback` / `OOM` / `Killed` / `NaN` / `Inf` / `RuntimeError`
+
+关键规则：
+- `grep --line-buffered` 必须加，否则管道会缓冲几分钟
+- 过滤器必须同时覆盖**进度信号**（Epoch / mAP）和**崩溃信号**（Traceback / OOM / Killed / Error）
+- 每次收到 epoch 事件通知就追加 monitor.md（hook 强制）
+- 收到 Traceback/OOM 立即按异常流程处理
+- `persistent: true` 用于整训练过程监控（不设 timeout）
+
+## Fallback：手动 sleep 轮询
+
+仅在 Monitor 不可用时降级到手动，间隔**严格不超过 5 分钟**：
 
 - Epoch 1-5（前期关键期）：每 **2 分钟**检查
 - Epoch 6-30（收敛观察期）：每 **3 分钟**检查
 - Epoch 30+（稳定期）：每 **5 分钟**检查
 
-后台训练用 `run_in_background` 或 `nohup` 启动。绝不阻塞等待训练完成。
+后台训练用 `Bash(run_in_background=true)` 或 `nohup` 启动。绝不阻塞等待训练完成。
 
 ## 每次检查记录模板
 
