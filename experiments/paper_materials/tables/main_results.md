@@ -52,3 +52,55 @@
 
 注意: NFC 和 Re-ranking 是通用后处理方法，非我们的训练端创新。
 KPR 的 75.1/84.3 也包含了 test-time prompting (可视为后处理)。
+
+---
+
+# PRCV 2026 主结果表 (填充中)
+
+## 模型 = Swin-{T/S/B} + 2-stage PSG + LGPA-D + GCN512 + OA-SD + PLBOA
+
+默认测试协议: `equal_concat + flip-test` (主行)；`+ MaxSim` 作为附加匹配独立行。
+
+### Table 1 — Cross-backbone × Cross-dataset 主表
+
+每格两行: 上行 = `Ours (eq+flip)`, 下行 = `+ MaxSim (1:2 hybrid)`。Occ-ReID 列均使用对应 Market ckpt 跨域 inference，不重新训练。
+
+| Backbone | Occ-Duke (mAP / R1) | Occ-PTrack (mAP / R1) | Market (mAP / R1) | Occ-ReID ← Market (mAP / R1) |
+|----------|---------------------|-----------------------|-------------------|------------------------------|
+| Swin-Tiny (28M) | exp261: TBD / TBD | exp264: TBD / TBD | exp267: TBD / TBD | exp267→OR: TBD / TBD |
+|  | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD |
+| Swin-Small (50M) | exp262: TBD / TBD | exp265: TBD / TBD | exp268: TBD / TBD | exp268→OR: TBD / TBD |
+|  | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD |
+| Swin-Base (88M) | exp263: DEFERRED | exp266: DEFERRED | exp269: DEFERRED | exp269→OR: DEFERRED |
+|  | + MaxSim: — | + MaxSim: — | + MaxSim: — | + MaxSim: — |
+
+**Base 行临时 reference**（旧协议 `exp260b` 本地 3090，不含默认 flip-test）：
+- Occ-Duke: 73.9 / 83.2 (eq_concat), 75.4 / 84.8 (MaxSim + flip)
+- Market FINAL: 94.4 / 97.1 (eq_concat), 94.7 / 97.2 (MaxSim + flip)
+- Occ-ReID ← Market: 86.0 / 88.5 (eq_concat), 88.0 / 90.6 (MaxSim + flip)
+
+（旧协议 exp255 Small 同期为 73.2/83.3 → 75.2/85.6 含 flip+MaxSim；新协议 exp262 预期 ≥74/83。）
+
+### 填表指引
+
+1. 训练完成后从 `/hy-tmp/log/<dataset>/<exp_id>/train_log.txt` 末尾的 `Validation Results - Epoch: 120` 段复制 `mAP:` 和 `CMC curve, Rank-1:` 数字
+2. `+ MaxSim` 行: 从 `test.py` 带 `--maxsim_hybrid 1:2` 的独立 eval log 拷贝
+3. Occ-ReID cross-domain 行: 用对应 Market ckpt 跑 `test.py --target occluded_reid`
+4. 所有数字必须精确复制 log, 严禁凭记忆填写
+5. Base 3 行当前 DEFERRED; Phase 1 Tiny/Small 完成后再评估是否回补
+
+### SOTA 对标 (PRCV 版, KPR + 更新参考)
+
+| Method | Venue | Backbone | Occ-Duke (mAP/R1) | Occ-PTrack (mAP/R1) | 备注 |
+|--------|-------|----------|-------------------|---------------------|------|
+| PAT | CVPR'21 | DeiT-S | 53.6 / 64.5 | — | |
+| FED | CVPR'22 | ViT-B | 56.4 / 68.1 | — | |
+| SOLIDER | CVPR'23 | Swin-B (88M) | 61.9 / 71.2 | — | |
+| BPBreID | WACV'23 | HRNet-W48 | 62.5 / 75.1 | — / — | 需查 KPR 表格补 Occ-PTrack |
+| KPR w/o prompt | ECCV'24 | Swin-B (88M) | 73.3 / 82.5 | — / — | 需查 KPR 表格补 Occ-PTrack |
+| KPR | ECCV'24 | Swin-B (88M) | 75.1 / 84.3 | — / — | 带 prompt |
+| **Ours (Tiny)** | — | Swin-T (28M) | TBD | TBD | 需 exp261+ 填 |
+| **Ours (Small)** | — | Swin-S (50M) | TBD | TBD | 需 exp262+ 填 |
+| **Ours (Base)** | — | Swin-B (88M) | 73.9 / 83.2 (旧协议) | — | DEFERRED，临时引 exp260b |
+
+（Occ-PTrack 对标 baseline 需从 KPR 论文 Table 补回。后面我补。）
