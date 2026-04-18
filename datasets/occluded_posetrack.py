@@ -42,8 +42,17 @@ class OccludedPoseTrack(BaseImageDataset):
         self.pid_begin = pid_begin
 
         train = self._process_dir(self.train_dir, self.train_list, relabel=True)
-        query = self._process_dir(self.query_dir, self.query_list, relabel=False)
-        gallery = self._process_dir(self.gallery_dir, self.gallery_list, relabel=False)
+        # Query / gallery use a globally-unique camid per image so that
+        # metrics.eval_func's same-pid + same-camid filter is a no-op.
+        # The filename's `c{NN}` is a video_id (PoseTrack has no cameras);
+        # keeping it would match KPR's `mot_inter_video` metric. We follow
+        # KPR's default `mot_inter_intra_video` — no video filter.
+        query = self._process_dir(
+            self.query_dir, self.query_list, relabel=False, unique_camid_offset=0
+        )
+        gallery = self._process_dir(
+            self.gallery_dir, self.gallery_list, relabel=False, unique_camid_offset=10_000_000
+        )
 
         if verbose:
             print("=> Occluded-PoseTrack-ReID loaded")
@@ -82,7 +91,8 @@ class OccludedPoseTrack(BaseImageDataset):
         if not osp.exists(self.gallery_list):
             raise RuntimeError("'{}' is not available".format(self.gallery_list))
 
-    def _process_dir(self, dir_path: str, list_path: str, relabel: bool = False):
+    def _process_dir(self, dir_path: str, list_path: str, relabel: bool = False,
+                     unique_camid_offset: int = None):
         with open(list_path, "r") as list_file:
             img_names = [line.strip() for line in list_file if line.strip()]
 
@@ -110,19 +120,22 @@ class OccludedPoseTrack(BaseImageDataset):
         pid2label = {pid: label for label, pid in enumerate(sorted(pid_container))}
 
         dataset = []
-        for img_path in sorted(img_paths):
+        for i, img_path in enumerate(sorted(img_paths)):
             match = pattern.search(osp.basename(img_path))
             if match is None:
                 continue
-            pid, camid = map(int, match.groups())
+            pid, video_id = map(int, match.groups())
             if pid == -1:
                 continue
             if pid < 0:
                 raise RuntimeError(
                     "Image '{}' has invalid pid '{}'".format(img_path, pid))
-            camid -= 1  # index starts from 0
             if relabel:
                 pid = pid2label[pid]
+            if unique_camid_offset is not None:
+                camid = unique_camid_offset + i
+            else:
+                camid = video_id - 1  # index starts from 0
             dataset.append((img_path, self.pid_begin + pid, camid, 1))
 
         return dataset

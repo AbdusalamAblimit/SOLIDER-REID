@@ -43,19 +43,21 @@
 
 3 backbones × 3 train sets，最强配置：
 
-| # | Exp ID | Train | Backbone | 机器 | 预计时长 |
-|---|--------|-------|----------|------|---------|
-| 1 | exp261_best_t_od_s42 | Occ-Duke | Tiny | srvB | 8h |
-| 2 | exp262_best_s_od_s42 | Occ-Duke | Small | srvA | 14h |
-| 3 | exp263_best_b_od_s42 | Occ-Duke | Base | local | 14h |
-| 4 | exp264_best_t_op_s42 | Occ-PTrack | Tiny | srvC | 8h |
-| 5 | exp265_best_s_op_s42 | Occ-PTrack | Small | srvC | 14h (接 #4) |
-| 6 | exp266_best_b_op_s42 | Occ-PTrack | Base | local | 14h (接 #3) |
-| 7 | exp267_best_t_m_s42 | Market | Tiny | srvB | 8h (接 #1) |
-| 8 | exp268_best_s_m_s42 | Market | Small | srvA | 14h (接 #2) |
-| 9 | exp269_best_b_m_s42 | Market | Base | local | 14h (接 #6) |
+| # | Exp ID | Train | Backbone | 机器 | 预计时长 | 状态 |
+|---|--------|-------|----------|------|---------|------|
+| 1 | exp261_best_t_od_s42 | Occ-Duke | Tiny | srvB | 8h | RUNNING e106/120 |
+| 2 | exp262_best_s_od_s42 | Occ-Duke | Small | srvA | 14h | RUNNING e70/120 |
+| 3 | exp263_best_b_od_s42 | Occ-Duke | Base | ~~local~~ | 14h | **DEFERRED**（3090 挂） |
+| 4 | exp264_best_t_op_s42 | Occ-PTrack | Tiny | srvC | 8h | RUNNING e83/120 |
+| 5 | exp265_best_s_op_s42 | Occ-PTrack | Small | srvC | 14h (接 #4) | QUEUED |
+| 6 | exp266_best_b_op_s42 | Occ-PTrack | Base | ~~local~~ | 14h | **DEFERRED**（3090 挂） |
+| 7 | exp267_best_t_m_s42 | Market | Tiny | srvB | 8h (接 #1) | QUEUED |
+| 8 | exp268_best_s_m_s42 | Market | Small | srvA | 14h (接 #2) | QUEUED |
+| 9 | exp269_best_b_m_s42 | Market | Base | ~~local~~ | 14h | **DEFERRED**（3090 挂） |
 
-**Wall time 估算**：local Base 最慢 = 42h ≈ 1.75 天。srvA 28h，srvB 24h，srvC 22h。
+> **2026-04-19 更新**：本地 3090 挂了，Base 3 个 run 全部推迟（decision C）。当前只跑 6 个 Tiny/Small run。若 Phase 3 消融跑完仍有时间预算，再单独决策是否上 Base。论文主表 Base 行短期可引 `exp260b = 73.9/83.2`（旧协议）。
+
+**Wall time 估算**（不含 Base）：srvA 28h，srvB 16h，srvC 22h。最慢 srvA ~1.2 天。
 
 **每 ckpt 测试**：
 - `*_od_*` → test Occ-Duke + Occ-ReID cross
@@ -151,13 +153,13 @@ full scaffold（LGPA-D + OA-SD + PLBOA + GCN + PSG）。
 
 3 个最重要配置补 seed 1234 + 2024，**同机器锁硬件**：
 
-| 配置 | 原机器 | 原 exp | multi-seed exp |
-|-----|--------|--------|---------------|
-| - [ ] | srvC | exp263_best_b_od | exp{300}_best_b_od_s1234 / s2024 |
-| - [ ] | srvA | exp262_best_s_od | exp{302}_best_s_od_s1234 / s2024 |
-| - [ ] | srvB | exp261_best_t_od | exp{304}_best_t_od_s1234 / s2024 |
+| 配置 | 原机器 | 原 exp | multi-seed exp | 状态 |
+|-----|--------|--------|---------------|------|
+| - [ ] | srvA | exp262_best_s_od | exp{302}_best_s_od_s1234 / s2024 | 等 Phase 1+3 |
+| - [ ] | srvB | exp261_best_t_od | exp{304}_best_t_od_s1234 / s2024 | 等 Phase 1+3 |
+| - [ ] | srvC | — (原 Base 推迟) | 若时间允许改跑 Small 补一组 | DEFERRED |
 
-6 runs × 12h = 72h / 3 机并行 = 24h
+Base multi-seed 因本地 3090 挂同步推迟（2026-04-19 决策 C）。4 runs × 12h = 48h / 2 机 = 24h；若补 srvC 一组 Small 则 6 runs × 12h / 3 机 = 24h。
 
 ### Phase 4 任务
 - [ ] 6 个 multi-seed 目录 + design（短版 design）

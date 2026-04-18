@@ -46,3 +46,26 @@
 3. `Occ-PTrack` 的最公平对标对象是 `KPR w/o prompt`
 4. 不把 `KPR with prompt` 设为最低门槛
 5. `Occ-PTrack` 只建议跑当前最强主配置，不为其展开完整新消融
+
+## [2026-04-19 03:00] 决策 — 本地 3090 挂了，Phase 1 Base 3 run 推迟
+
+**上下文**: 本地 3090（`phase1_design.md` 原定跑 Base 的 exp263/266/269 三个 run）已挂，不可用。另有 3 台 5060 Ti 16G 三台（`srvA/B/C`）在继续 Phase 1 前 6 个 run（Tiny + Small × 3 数据集）。
+
+Small 在 5060 Ti 上训练时 GPU memory ~7.8 GB / 16 GB，Base 参数量约为 Small 的 1.5–1.7×，BS=64 @ 384×128 大概率会逼近或超 16 GB；铁律禁止下调 BS。
+
+**选项**:
+  A. 迁到 5060 Ti 强上 Base（风险 OOM 或要破 BS 铁律）
+  B. PRCV 主表只上 Tiny + Small 两行，Base 留 rebuttal / camera-ready
+  C. 先把 Tiny + Small × 3 数据集 6 个 run 打完，回头再看显存与时间
+
+**选择**: C
+
+**理由**:
+1. 距离 2026-04-30 deadline 还有 11 天，Tiny/Small 6 run 估算总耗时 60–70h（三机并行），Phase 3 消融留约 30h，仍可在 deadline 前出全稿
+2. Base 的先验数据已有 `exp260b = 73.9/83.2`（本地 3090 旧协议），即便新协议 Base 不跑，论文主表 Base 行也可引旧协议作为 reference
+3. 若 Phase 3 消融跑完还剩时间，再评估是否把 Base 上 5060 Ti（届时可选择跑 192×64 输入或 Swin-Base@ 256×128 降分辨率，但这属于单独决策不在此处落）
+
+**执行结果**:
+- `todo.md` Phase 1 表中 Base 3 run（exp263/266/269）状态改为 DEFERRED
+- Phase 4 multi-seed 三个配置也从"Base 排 srvC"改成"Small 排任意"（原计划 Base 的 multi-seed 改走 Small）
+- 若时间允许再做 Base，单独开一条决策条目说明当时选项与约束

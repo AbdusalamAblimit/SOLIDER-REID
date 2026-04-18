@@ -164,7 +164,11 @@ class VCSRHead(nn.Module):
         if pose_bias is not None:
             attn_scores = attn_scores + pose_bias.unsqueeze(1)
 
+        # Clamp scores: prevents +Inf from softmax NaN (same as clip_part_head fix)
+        attn_scores = attn_scores.clamp(min=-50.0, max=50.0)
+
         attn_weights = F.softmax(attn_scores, dim=-1)
+        log_attn = F.log_softmax(attn_scores, dim=-1)  # stable for KL-div
         attn_weights_drop = self.attn_drop(attn_weights)
 
         output = torch.matmul(attn_weights_drop, V)
@@ -172,7 +176,10 @@ class VCSRHead(nn.Module):
         output = self.out_proj(output)
 
         attn_weights_avg = attn_weights.mean(dim=1)
-        return output, attn_weights_avg
+        # log(mean_H(softmax)) via logsumexp (bounded gradient, no +eps hack).
+        # Clamp from below: prevents kl_div NaN via 0 * inf when log_q hits -inf.
+        log_attn_avg = (torch.logsumexp(log_attn, dim=1) - math.log(self.num_heads)).clamp(min=-30.0)
+        return output, attn_weights_avg, log_attn_avg
 
     def forward(self, feat_map, heatmaps, return_cls=True):
         """
@@ -203,7 +210,7 @@ class VCSRHead(nn.Module):
         text_protos = self.text_proj(self.clip_text_features)
         text_protos = text_protos.unsqueeze(0).expand(B, -1, -1)
 
-        part_feats_raw, attn_weights = self._cross_attention_with_pose(
+        part_feats_raw, attn_weights, log_attn_weights = self._cross_attention_with_pose(
             text_protos, tokens, tokens, pose_bias)
         part_feats_raw = self.attn_norm(part_feats_raw)
 
@@ -216,13 +223,15 @@ class VCSRHead(nn.Module):
         vis_norm = vis_weights / vis_sum
         pooled_feat = sum(vis_norm[:, k:k+1] * all_part_feats[k] for k in range(NUM_PARTS))
 
-        # Assignment supervision loss
+        # Assignment supervision loss (stable KL: log_attn via logsumexp + NaN guard)
         assign_loss = torch.tensor(0.0, device=feat_map.device)
-        if self.training and heatmaps is not None and attn_weights is not None:
+        if self.training and heatmaps is not None and log_attn_weights is not None:
             gt_labels = self._compute_gt_assignment(heatmaps, fH, fW)
-            if gt_labels is not None:
-                assign_loss = F.kl_div(
-                    (attn_weights + 1e-8).log(), gt_labels, reduction='batchmean')
+            if gt_labels is not None and torch.isfinite(gt_labels).all():
+                raw_loss = F.kl_div(
+                    log_attn_weights, gt_labels, reduction='batchmean')
+                if torch.isfinite(raw_loss):
+                    assign_loss = raw_loss
 
         # Compute number of active parts per sample for logging
         n_active = active_mask.sum(dim=-1).mean().item()

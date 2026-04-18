@@ -193,8 +193,14 @@ class CLIPPartHead(nn.Module):
         if pose_bias is not None:
             attn_scores = attn_scores + pose_bias.unsqueeze(1)  # (B, H, L, N)
 
-        # Softmax + dropout
+        # Clamp scores to prevent late-training weight drift from producing +/-Inf
+        # that softmax turns into NaN (e.g. +inf - max(+inf) = NaN). [-50, 50] keeps
+        # exp in fp32-safe range; extreme differences still give clean 1-hot-ish softmax.
+        attn_scores = attn_scores.clamp(min=-50.0, max=50.0)
+
+        # Softmax (for V pooling) + log-softmax (for numerically stable KL-div)
         attn_weights_full = F.softmax(attn_scores, dim=-1)  # (B, H, L, N)
+        log_attn_full = F.log_softmax(attn_scores, dim=-1)  # (B, H, L, N), uses log-sum-exp trick
         attn_weights_drop = self.attn_drop(attn_weights_full)
 
         # Weighted sum of values
@@ -202,10 +208,16 @@ class CLIPPartHead(nn.Module):
         output = output.transpose(1, 2).reshape(B, L, C)  # (B, L, C)
         output = self.out_proj(output)
 
-        # Average attention weights across heads for logging/supervision
+        # Head-averaged attention (for downstream use) and its log (for loss).
+        # log(mean_H(softmax)) = logsumexp_H(log_softmax) - log(H), stable vs softmax→+eps→log.
         attn_weights_avg = attn_weights_full.mean(dim=1)  # (B, L, N)
+        log_attn_avg = torch.logsumexp(log_attn_full, dim=1) - math.log(self.num_heads)  # (B, L, N)
+        # Clamp from below: extreme attn_scores (late-training drift) can push log to -inf.
+        # kl_div hits `target * (log_target - (-inf)) = 0 * inf = NaN` when target is 0 but
+        # log_q is -inf. exp(-30) ≈ 9e-14 — any finer granularity is meaningless in fp32.
+        log_attn_avg = log_attn_avg.clamp(min=-30.0)
 
-        return output, attn_weights_avg
+        return output, attn_weights_avg, log_attn_avg
 
     def forward(self, feat_map, target_heatmaps, return_cls=True):
         """
@@ -235,10 +247,11 @@ class CLIPPartHead(nn.Module):
 
         # Pose-conditioned cross-attention: text queries → spatial keys/values
         # attn = softmax(QK^T / sqrt(d) + pose_bias)
-        part_feats_raw, attn_weights = self._cross_attention_with_pose(
+        part_feats_raw, attn_weights, log_attn_weights = self._cross_attention_with_pose(
             text_protos, tokens, tokens, pose_bias)
         # part_feats_raw: (B, num_labels, C)
-        # attn_weights: (B, num_labels, N) — pose-conditioned
+        # attn_weights:      (B, num_labels, N) — head-averaged softmax, for visibility/debug
+        # log_attn_weights:  (B, num_labels, N) — log of attn_weights via log-sum-exp, for KL-div
 
         part_feats_raw = self.attn_norm(part_feats_raw)
 
@@ -262,15 +275,22 @@ class CLIPPartHead(nn.Module):
 
         # Assignment supervision loss (pose-based GT)
         assign_loss = torch.tensor(0.0, device=feat_map.device)
-        if self.training and target_heatmaps is not None and attn_weights is not None:
+        if self.training and target_heatmaps is not None and log_attn_weights is not None:
             gt_labels = self._compute_gt_assignment(target_heatmaps, fH, fW)
-            if gt_labels is not None:
-                # KL(GT || predicted) — attn_weights are already pose-conditioned
-                assign_loss = F.kl_div(
-                    (attn_weights + 1e-8).log(),
+            if gt_labels is not None and torch.isfinite(gt_labels).all():
+                # KL(GT || predicted). log_attn_weights is log-sum-exp computed and
+                # clamped at -30, so both forward and backward are bounded.
+                raw_loss = F.kl_div(
+                    log_attn_weights,
                     gt_labels,
                     reduction='batchmean'
                 )
+                # Defensive: if some rare numerical path still produces NaN/Inf
+                # (e.g. gt_labels has 0 at a position where log_attn clamped at -30
+                # still lets target * log interactions go wrong), skip rather than
+                # letting it poison the LGPA head weights via backward.
+                if torch.isfinite(raw_loss):
+                    assign_loss = raw_loss
 
         aux_data = {
             'assign_loss': assign_loss,

@@ -3556,3 +3556,25 @@ C. 如需更强创新: 需要跳出 Swin + detach 框架 (换 ViT 或全新问�
 3. 视时间再补 semantic 分支依赖性消融
 
 **执行结果**: 待后续新一轮 PSG 消融实验补充。
+
+### [2026-04-19 03:00] 决策 — 本地 3090 挂了，Phase 1 Base 推迟（不丢）
+
+**上下文**: 本地 3090 已挂；`phase1_design.md` 原把 Base 3 个 run（exp263/266/269）全部排在 3090 上。剩余资源仅 srvA/B/C 三台 5060 Ti 16G，已在跑 Phase 1 前 3 个 Tiny/Small run（exp261/262/264）。
+
+**选项**:
+  A. Base 迁 5060 Ti（OOM 风险或违反 BS=64 铁律）
+  B. PRCV 只上 Tiny + Small 两行，Base 留 rebuttal
+  C. 先把 Tiny + Small × 3 数据集 6 个 run 打完，回头再评估 Base
+
+**选择**: C
+
+**理由**:
+1. deadline 2026-04-30，11 天，6 个非 Base run 三机并行约 60–70h，Phase 3 消融留约 30h，仍能在 deadline 前出全稿
+2. `exp260b Base = 73.9/83.2`（旧协议）可作 Base 行 reference，即便新协议 Base 最终不跑，论文仍有数据
+3. 若时间允许，再单独决策是否把 Base 上 5060 Ti（届时可考虑降输入分辨率等单独分支）
+
+**执行结果**:
+- `experiments/prcv_2026_psg/todo.md` Phase 1 表 Base 3 行标为 DEFERRED
+- Phase 4 multi-seed 三格原定的 Base 改为 Small，或按实际时间回写
+- 同步条目落在 `experiments/prcv_2026_psg/decisions.md`
+- Phase 1 当前运行: srvA=exp262(Small OD) e70, srvB=exp261(Tiny OD) e106, srvC=exp264(Tiny OP) e83；接下来按 srvB→exp267, srvC→exp265, srvA→exp268 顺序排队
