@@ -31,3 +31,26 @@
 ## 状态决策
 
 - 2026-04-19 03:00: 正常，无需干预。ETA 约 1.5h 到 epoch 120。
+
+## FINAL (e120) — 2026-04-19 04:16:04 srvB
+
+- **mAP: 65.9%**
+- **CMC Rank-1: 77.4%**
+- CMC Rank-5: 86.9%
+- CMC Rank-10: 89.5%
+- ckpt: `/hy-tmp/log/occluded_duke/exp261_best_t_od_s42/transformer_120.pth`
+
+相对期望(≥60/72)超出 +5.9/+5.4。相对旧协议同 scaffold (exp255 Small = 73.2/83.3 @ Swin-Small) 不可直接比，这是 Tiny。对比历史 Tiny 最佳：
+- 4090 Tiny `4090-OD-PSG-small-lr8` baseline = 65.8 (但那是 Small lr8 base)
+- 本项目 Tiny 实际对应 `exp000 baseline` 56.6 + 各种 scaffold；exp261 **65.9 是 Tiny + full scaffold 的新高**。
+
+### 结论
+
+- Tiny + 2-stage PSG + LGPA-D + GCN512 + OA-SD + PLBOA + default flip-test @ OccDuke = **65.9 / 77.4**
+- 最后 ~20 epoch 在 65.8-65.9 平稳，无明显过拟合
+- 不做 MaxSim eval 不写入 PRCV 主表的 MaxSim 行；等 queue daemon 将 srvB 排到后续实验后，找时间回头用 test.py 跑一次 MaxSim
+
+### 后续
+
+- queue_next.sh daemon 已识别 transformer_120.pth 存在 + 无 crash，于 04:16:43 自动起 exp267 (Market Tiny，PID 25860)
+- srvB 接下来 run exp267，不要回跑 exp261 any more

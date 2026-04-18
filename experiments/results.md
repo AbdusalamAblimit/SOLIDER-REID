@@ -1503,3 +1503,21 @@
 | exp260b Market MaxSim+flip | 94.7% | 97.2% | — | — | |
 | exp260b Market→Occluded-ReID (eq) | 86.0% | 88.5% | 95.3% | 97.9% | 跨数据集 equal_concat |
 | **exp260b Market→Occluded-ReID (MaxSim+flip)** | **88.0%** | **90.6%** | — | — | **跨数据集 MaxSim+flip** |
+
+## PRCV 2026 Phase 1 主表 runs (新协议，含 default flip-test)
+
+> 新协议: `equal_concat + flip-test` 默认；`MaxSim hybrid 1:2` 独立一行(需 `eval_fliptest_maxsim.py` 事后跑)。  
+> 训练 scaffold: 2-stage PSG + LGPA-D + GCN512 + OA-SD + PLBOA(OD/OP) / PLBOA off(Market)，BS=64，LR=8e-4，120 epoch，SEED=42。  
+> 机器: srvA/B/C = 5060 Ti 16G。本地 3090 挂，Base 3 run (exp263/266/269) DEFERRED。
+
+| Exp ID | Backbone | Dataset | eq_concat+flip mAP / R1 | MaxSim hybrid mAP / R1 | 备注 |
+|--------|----------|---------|-------------------------|------------------------|------|
+| exp261 | Swin-Tiny | Occ-Duke | **65.9% / 77.4%** | TBD | ✓ e120 FINAL @ 2026-04-19 04:16 srvB |
+| exp262 | Swin-Small | Occ-Duke | 进行中 e80 | TBD | srvA, ETA ~5h |
+| exp263 | Swin-Base | Occ-Duke | DEFERRED | — | 原 local 3090 |
+| exp264 | Swin-Tiny | Occ-PTrack | 进行中 e96 | TBD | srvC, ETA ~3h |
+| exp265 | Swin-Small | Occ-PTrack | QUEUED (等 exp264) | — | srvC |
+| exp266 | Swin-Base | Occ-PTrack | DEFERRED | — | 原 local 3090 |
+| exp267 | Swin-Tiny | Market | 进行中 e2 | TBD | srvB, 新起 @ 04:16 |
+| exp268 | Swin-Small | Market | QUEUED (等 exp262) | — | srvA |
+| exp269 | Swin-Base | Market | DEFERRED | — | 原 local 3090 |
