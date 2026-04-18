@@ -47,13 +47,13 @@
 |---|--------|-------|----------|------|---------|------|
 | 1 | exp261_best_t_od_s42 | Occ-Duke | Tiny | srvB | 8h | RUNNING e106/120 |
 | 2 | exp262_best_s_od_s42 | Occ-Duke | Small | srvA | 14h | RUNNING e70/120 |
-| 3 | exp263_best_b_od_s42 | Occ-Duke | Base | srvA/B/C 任一 | 17h @ with_cp | **DEFERRED**（Tiny/Small 完成后排入） |
+| 3 | exp263_best_b_od_s42 | Occ-Duke | Base | srvA/B/C 任一 | 17h @ with_cp | **QUEUED**（queue_on_ckpt 已挂，接在对应 Phase 1 run 之后） |
 | 4 | exp264_best_t_op_s42 | Occ-PTrack | Tiny | srvC | 8h | RUNNING e83/120 |
 | 5 | exp265_best_s_op_s42 | Occ-PTrack | Small | srvC | 14h (接 #4) | QUEUED |
-| 6 | exp266_best_b_op_s42 | Occ-PTrack | Base | srvA/B/C 任一 | 17h @ with_cp | **DEFERRED**（Tiny/Small 完成后排入） |
+| 6 | exp266_best_b_op_s42 | Occ-PTrack | Base | srvA/B/C 任一 | 17h @ with_cp | **QUEUED**（queue_on_ckpt 已挂，接在对应 Phase 1 run 之后） |
 | 7 | exp267_best_t_m_s42 | Market | Tiny | srvB | 8h (接 #1) | QUEUED |
 | 8 | exp268_best_s_m_s42 | Market | Small | srvA | 14h (接 #2) | QUEUED |
-| 9 | exp269_best_b_m_s42 | Market | Base | srvA/B/C 任一 | 17h @ with_cp | **DEFERRED**（Tiny/Small 完成后排入） |
+| 9 | exp269_best_b_m_s42 | Market | Base | srvA/B/C 任一 | 17h @ with_cp | **QUEUED**（queue_on_ckpt 已挂，接在对应 Phase 1 run 之后） |
 
 > **2026-04-19 更新**：本地 3090 挂了，Base 3 个 run 全部推迟（decision C）。但用户确认 `MODEL.WITH_CP: True`（已在 prcv_best_base.yml 打开）下 Base 显存只 6–8 GB，5060 Ti 16G 完全够。当前三台正在跑 Tiny/Small 6 run，完成后 Base 3 run 并排进 Phase 1。论文主表 Base 行短期仍可引 `exp260b = 73.9/83.2`（旧协议）。
 
