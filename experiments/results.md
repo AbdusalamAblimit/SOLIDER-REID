@@ -1515,8 +1515,8 @@
 | exp261 | Swin-Tiny | Occ-Duke | **65.9% / 77.4%** | TBD | ✓ e120 FINAL @ 2026-04-19 04:16 srvB |
 | exp262 | Swin-Small | Occ-Duke | 进行中 e80 | TBD | srvA, ETA ~5h |
 | exp263 | Swin-Base | Occ-Duke | DEFERRED | — | 原 local 3090 |
-| exp264 | Swin-Tiny | Occ-PTrack | 进行中 e96 | TBD | srvC, ETA ~3h |
-| exp265 | Swin-Small | Occ-PTrack | QUEUED (等 exp264) | — | srvC |
+| exp264 | Swin-Tiny | Occ-PTrack | **76.7% / 85.1%** | TBD | ✓ e120 FINAL @ 2026-04-19 07:15 srvC (R5=94.1 R10=97.0) |
+| exp265 | Swin-Small | Occ-PTrack | 进行中 e1 | TBD | srvC, 新起 @ 07:16 via queue_next daemon |
 | exp266 | Swin-Base | Occ-PTrack | DEFERRED | — | 原 local 3090 |
 | exp267 | Swin-Tiny | Market | 进行中 e2 | TBD | srvB, 新起 @ 04:16 |
 | exp268 | Swin-Small | Market | QUEUED (等 exp262) | — | srvA |

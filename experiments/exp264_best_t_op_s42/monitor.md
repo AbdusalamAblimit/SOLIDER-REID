@@ -35,3 +35,25 @@
 
 - 2026-04-19 03:00: 正常，ETA ~4.5h 到 epoch 120。
 - Occ-PTrack 是 secondary benchmark，目标只要不明显低于 KPR w/o prompt 就 OK；当前数字看上去很稳。
+
+## FINAL (e120) — 2026-04-19 07:15:40 srvC
+
+- **mAP: 76.7%**
+- **CMC Rank-1: 85.1%**
+- CMC Rank-5: 94.1%
+- CMC Rank-10: 97.0%
+- ckpt: `/hy-tmp/log/occluded_posetrack/exp264_best_t_op_s42/transformer_120.pth`
+
+最后 5 次 eval (e80-e120) mAP = 76.7/76.6/76.6/76.6/76.7，R1 对应 85.2/85.0/85.2/85.1/85.1 — 极稳平台。训练集 Occ-PTrack 原本简单，Tiny scaffold 已接近饱和。
+
+### 结论
+
+- Tiny + 2-stage PSG + LGPA-D + GCN512 + OA-SD + PLBOA + default flip-test @ Occ-PTrack = **76.7 / 85.1**
+- 对标 KPR Table（需等 KPR w/o prompt 数字回填才能定胜负）；从 SOLIDER / BPBreID 类 baseline 看应该优势明显
+- 不做 MaxSim eval 不写入 MaxSim 行
+
+### 后续
+
+- queue_next.sh daemon (srvC PID 32839) 识别 ckpt + 无 crash，于 07:16:46 自动起 exp265 (Small OP, PID 36015)
+- exp265 现已在 e1，loss 13 正常冷启动
+- queue_on_ckpt.sh daemon 34381 仍在位，等 exp265 完成接 exp266 (Base OP)
