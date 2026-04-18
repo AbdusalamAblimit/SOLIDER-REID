@@ -3561,20 +3561,22 @@ C. 如需更强创新: 需要跳出 Swin + detach 框架 (换 ViT 或全新问�
 
 **上下文**: 本地 3090 已挂；`phase1_design.md` 原把 Base 3 个 run（exp263/266/269）全部排在 3090 上。剩余资源仅 srvA/B/C 三台 5060 Ti 16G，已在跑 Phase 1 前 3 个 Tiny/Small run（exp261/262/264）。
 
+**更正（2026-04-19 同日）**: 用户指出 `MODEL.WITH_CP: True`（gradient checkpointing，已在 `configs/occluded_duke/prcv_best_base.yml:14` 打开）下，**Base 显存只 6–8 GB，5060 Ti 16G 完全够**。显存不是瓶颈，真正瓶颈是时间分配优先级。
+
 **选项**:
-  A. Base 迁 5060 Ti（OOM 风险或违反 BS=64 铁律）
+  A. Base 立刻并排 5060 Ti（挤占 Tiny/Small 进度）
   B. PRCV 只上 Tiny + Small 两行，Base 留 rebuttal
-  C. 先把 Tiny + Small × 3 数据集 6 个 run 打完，回头再评估 Base
+  C. 先把 Tiny + Small × 3 数据集 6 个 run 打完，再把 Base 3 个 run 排进同三台
 
 **选择**: C
 
 **理由**:
-1. deadline 2026-04-30，11 天，6 个非 Base run 三机并行约 60–70h，Phase 3 消融留约 30h，仍能在 deadline 前出全稿
-2. `exp260b Base = 73.9/83.2`（旧协议）可作 Base 行 reference，即便新协议 Base 最终不跑，论文仍有数据
-3. 若时间允许，再单独决策是否把 Base 上 5060 Ti（届时可考虑降输入分辨率等单独分支）
+1. deadline 2026-04-30，11 天。Tiny/Small 6 run 三机并行约 22–28h，Base 3 run @ with_cp 三机并行约 18h，Phase 3 消融约 30h。仍能在 deadline 前出全稿
+2. `exp260b Base = 73.9/83.2`（旧协议，本地 3090）可作 Base 行 reference
+3. 现在三台都在跑 Tiny/Small，并排 Base 反而拖慢现有进度
 
 **执行结果**:
-- `experiments/prcv_2026_psg/todo.md` Phase 1 表 Base 3 行标为 DEFERRED
-- Phase 4 multi-seed 三格原定的 Base 改为 Small，或按实际时间回写
+- `experiments/prcv_2026_psg/todo.md` Phase 1 表 Base 3 行标 DEFERRED，机器列改为"srvA/B/C 任一"（不再绑定 local）
+- Phase 4 multi-seed 短期 Small 优先；Phase 1 Base 跑完再补 Base multi-seed
 - 同步条目落在 `experiments/prcv_2026_psg/decisions.md`
-- Phase 1 当前运行: srvA=exp262(Small OD) e70, srvB=exp261(Tiny OD) e106, srvC=exp264(Tiny OP) e83；接下来按 srvB→exp267, srvC→exp265, srvA→exp268 顺序排队
+- Phase 1 当前运行: srvA=exp262(Small OD) e70, srvB=exp261(Tiny OD) e106, srvC=exp264(Tiny OP) e83；接下来按 srvB→exp267, srvC→exp265, srvA→exp268 顺序排队；Tiny/Small 6 run 完成后立即评估是否把 Base 3 run 并入 Phase 1

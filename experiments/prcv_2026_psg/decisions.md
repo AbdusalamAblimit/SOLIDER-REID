@@ -51,21 +51,23 @@
 
 **上下文**: 本地 3090（`phase1_design.md` 原定跑 Base 的 exp263/266/269 三个 run）已挂，不可用。另有 3 台 5060 Ti 16G 三台（`srvA/B/C`）在继续 Phase 1 前 6 个 run（Tiny + Small × 3 数据集）。
 
-Small 在 5060 Ti 上训练时 GPU memory ~7.8 GB / 16 GB，Base 参数量约为 Small 的 1.5–1.7×，BS=64 @ 384×128 大概率会逼近或超 16 GB；铁律禁止下调 BS。
+Small 在 5060 Ti 上训练时 GPU memory ~7.8 GB / 16 GB。用户确认: **`MODEL.WITH_CP: True`（gradient checkpointing，已在 `configs/occluded_duke/prcv_best_base.yml:14` 打开）下，Base 显存占用也只 6–8 GB**，在 16 GB 上完全够。显存不是瓶颈。
+
+**真正的瓶颈是时间预算**: 距 2026-04-30 deadline 11 天，Tiny/Small 6 个 run 三机并行约 22–28h；Base 3 个 run @ with_cp（额外 ~25% 前向开销）单 run ~17–18h，三机并行约 18h。Phase 3 消融留约 30h。Total ~66–76h 可达成，但必须按优先级排。
 
 **选项**:
-  A. 迁到 5060 Ti 强上 Base（风险 OOM 或要破 BS 铁律）
+  A. 迁到 5060 Ti 立刻并排 Base（会挤占 Tiny/Small 进度，Phase 3 消融压缩）
   B. PRCV 主表只上 Tiny + Small 两行，Base 留 rebuttal / camera-ready
-  C. 先把 Tiny + Small × 3 数据集 6 个 run 打完，回头再看显存与时间
+  C. 先把 Tiny + Small × 3 数据集 6 个 run 打完，再把 Base 3 个 run 排进同三台；Phase 3 按实际剩余时间调整
 
 **选择**: C
 
 **理由**:
-1. 距离 2026-04-30 deadline 还有 11 天，Tiny/Small 6 run 估算总耗时 60–70h（三机并行），Phase 3 消融留约 30h，仍可在 deadline 前出全稿
-2. Base 的先验数据已有 `exp260b = 73.9/83.2`（本地 3090 旧协议），即便新协议 Base 不跑，论文主表 Base 行也可引旧协议作为 reference
-3. 若 Phase 3 消融跑完还剩时间，再评估是否把 Base 上 5060 Ti（届时可选择跑 192×64 输入或 Swin-Base@ 256×128 降分辨率，但这属于单独决策不在此处落）
+1. Phase 1 主表目前 3 台都在跑 Tiny/Small，立刻并排 Base 会拖慢现有进度，反而风险更大
+2. `exp260b Base = 73.9/83.2`（本地 3090 旧协议，含 `WITH_CP: True`）已存在，即便最终新协议 Base 没跑完，Base 行仍有 reference
+3. Tiny/Small 6 run 预计 2026-04-20 晚至 2026-04-21 全部完成，届时再按剩余时间决策是否上 Base；三台 5060 Ti 每台都能容纳 Base
 
 **执行结果**:
-- `todo.md` Phase 1 表中 Base 3 run（exp263/266/269）状态改为 DEFERRED
-- Phase 4 multi-seed 三个配置也从"Base 排 srvC"改成"Small 排任意"（原计划 Base 的 multi-seed 改走 Small）
-- 若时间允许再做 Base，单独开一条决策条目说明当时选项与约束
+- `todo.md` Phase 1 表中 Base 3 run（exp263/266/269）状态标 DEFERRED，但机器列改为"srvA/B/C 任一"（不再绑定 local）
+- Phase 4 multi-seed 三个配置短期改为 Small 优先；若 Phase 1 Base 跑完，Phase 4 可补 Base 的 multi-seed
+- Tiny/Small 6 run 完成后立即评估：是否把 Base 3 run 并入 Phase 1，还是进 Phase 3 消融
