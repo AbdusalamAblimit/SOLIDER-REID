@@ -1519,5 +1519,5 @@
 | exp265 | Swin-Small | Occ-PTrack | 进行中 e1 | TBD | srvC, 新起 @ 07:16 via queue_next daemon |
 | exp266 | Swin-Base | Occ-PTrack | DEFERRED | — | 原 local 3090 |
 | exp267 | Swin-Tiny | Market | **92.5% / 96.4%** | TBD | ✓ e120 FINAL @ 2026-04-19 13:45 srvB (R5=98.9 R10=99.3) |
-| exp268 | Swin-Small | Market | 进行中 e3 | TBD | srvA, 新起 @ 10:00 via queue_next daemon |
-| exp269 | Swin-Base | Market | DEFERRED | — | 原 local 3090 |
+| exp268 | Swin-Small | Market | **94.3% / 97.3%** | TBD | ✓ e120 FINAL @ 2026-04-20 00:39 srvA (R5=99.1 R10=99.5) |
+| exp269 | Swin-Base | Market | 进行中 e1 | TBD | srvA, 新起 @ 00:40 via queue_on_ckpt daemon (Base 第 2 个, with_cp) |
