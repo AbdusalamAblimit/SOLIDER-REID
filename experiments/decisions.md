@@ -3634,3 +3634,29 @@ C. 如需更强创新: 需要跳出 Swin + detach 框架 (换 ViT 或全新问�
 **Market/Base 两个意外 OOM 的补救 ckpt**:
 - exp263 e100: Global+flip 72.5/81.8, MaxSim+flip 74.5/84.0
 - exp269 e80: Global+flip 94.4/97.0, MaxSim+flip 94.5/97.1
+
+### [2026-04-20 16:15] 决策 — srvA 失控(未续费),lab3090 回归
+
+**上下文**:
+- srvA (gpushare i-2:29162) 用户忘续费,SSH refused 持续 >1.5h。ckpt (exp262/268/269.pth) 和原始 train_log.txt 在 /hy-tmp/log/ 上,是否保留取决于 gpushare 平台对 expired 实例的处理策略(未确认)
+- exp274(Phase 3-A Small baseline)刚启 40min 丢失,无重要损失
+- 同时用户的实验室 3090 复活(tailscale 100.115.252.80:22,容器 `18fbbab202e1`),git pull 到 `f69b61c`(flip fix 版),正在跑 `exp263b_best_b_od_s42_3090`(Base OD 完整重跑)
+
+**决策**:
+1. srvA 视为永久失效,三机组合变为 **srvB + srvC + lab3090**
+2. 更新 cron `7d88e30d` 监控对象(去 srvA,加 lab3090)
+3. Phase 3 重新分配:
+   - srvB: Phase 3-A Tiny 全 4 格(exp270 ✓ / exp271 → exp272 → exp273)
+   - srvC: exp266 Base OP(完成后 → Phase 3-B 6 格)
+   - lab3090: exp263b Base OD 完成后(~2026-04-21 02:30 CST)→ Phase 3-A Small 4 格(exp274 重启+275/276/277)
+4. Phase 1 数字:exp262/268/269 FINAL 已 committed,不受 ckpt 丢失影响;若 gpushare 宽限期内能救回 ckpt 再说
+5. lab3090 3090 24GB 显存足以容纳 Base + full scaffold + default flip eval 不 OOM,原来在 5060Ti 16GB 上 OOM 的问题在 3090 上不复现;exp263b 完成后将给出干净的 e120 FINAL,作为 exp263 e100 salvage 的升级替代
+
+**执行结果**:
+- cron 已换 7d88e30d
+- lab3090 ssh 别名配置(只在 `~/.ssh/config`,不入 git)
+- 继续自动推 Phase 3
+
+**exp263b vs exp263 对照**:
+- exp263 新协议 e100 eff-FINAL(5060Ti srvB,OOM 后 salvage):Global+flip 72.5/81.8, MaxSim 74.5/84.0
+- exp263b 3090 完整 e120 FINAL(将来):预期 MaxSim 75+,超 KPR w/ prompt 75.1/84.3 可能性大
