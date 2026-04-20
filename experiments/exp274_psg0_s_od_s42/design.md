@@ -17,14 +17,16 @@
 ## CLI 配置
 
 ```bash
-python3 train.py --config_file configs/occluded_duke/prcv_best_small.yml \
+python train.py --config_file configs/occluded_duke/prcv_best_small.yml \
   MODEL.POSE_ENABLED False \
   SOLVER.SEED 42 \
-  OUTPUT_DIR /hy-tmp/log/occluded_duke/exp274_psg0_s_od_s42
+  OUTPUT_DIR ./log/occluded_duke/exp274_psg0_s_od_s42
 ```
 
 ## 输出
 
-- 机器: srvA(exp269 OOM 后空闲)
-- 预计时长: ~5h (Small 无 pose 模块 ~140-160s/epoch,比 Tiny 慢 ~2x)
-- 120 epoch 预计 2026-04-20 ~19:00 完成
+- 机器: **lab4090** (原 srvA 挂后,2026-04-20 19:30 重新在 lab4090 启动)
+- 预计时长: ~2.5-3h (4090 比 srvA 5060Ti 快 2x;Small 无 pose 模块)
+- 120 epoch 预计 2026-04-20 ~22:30 完成
+- Auto-chain: 完成后 → exp275 1-stage PSG
+- 环境: `/usr/local/anaconda3/envs/mmpose-abu/bin/python`
