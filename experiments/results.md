@@ -1530,5 +1530,5 @@
 |--------|----------|---------|------------|-------------------------------|------|
 | exp270 | Swin-Tiny | Occ-Duke | 无 (baseline) | **59.2 / 68.4** | ✓ e120 FINAL @ 2026-04-20 12:29 srvB (R5=82.2 R10=85.8). vs exp000 旧协议 56.6/66.5 → +default flip 贡献 +2.6/+1.9 |
 | exp271 | Swin-Tiny | Occ-Duke | `[-1]` (1-stage) | **60.2 / 69.5** | ✓ e120 FINAL @ 2026-04-20 16:36 srvB (R5=81.8 R10=85.9). vs exp270 Δ=+1.0/+1.1 = stage 3 PSG 独立贡献 |
-| exp272 | Swin-Tiny | Occ-Duke | `[-2,-1]` (2-stage) | 进行中 ~e15 | srvB, auto-chain from exp271 @ 16:37 via queue_on_ckpt (PID 60400) |
-| exp273 | Swin-Tiny | Occ-Duke | `[-3,-2,-1]` (3-stage) | pending | srvB, 将 auto-chain from exp272 |
+| exp272 | Swin-Tiny | Occ-Duke | `[-2,-1]` (2-stage) | **60.5 / 69.7** | ✓ e120 FINAL @ 2026-04-20 20:19 srvB (R5=82.6 R10=86.2). vs exp271 Δ=+0.3/+0.2 = stage 2 边际贡献微弱;vs exp270 Δ=+1.3/+1.3 = 2-stage 累计 |
+| exp273 | Swin-Tiny | Occ-Duke | `[-3,-2,-1]` (3-stage) | 进行中 ~e29 | srvB, auto-chain from exp272 @ 20:19 via queue_on_ckpt daemon;~23:45 FINAL |
