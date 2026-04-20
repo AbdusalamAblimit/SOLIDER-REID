@@ -35,3 +35,44 @@
 ## 预期 ETA
 
 - 2026-04-20 ~07:00 前后完成 → srvB 空闲,届时起 Phase 3-A Tiny 4 runs
+
+## 异常: e100 eval 期间 OOM-killed (2026-04-20 08:25-08:55)
+
+- **事件**: e100 训练完成 + transformer_100.pth 成功保存(08:25:34),随后 e100 eval 启动时 GPU mem 从训练 10.3GB 飙到 13.2GB 逼近 16GB 限,内核 SIGKILL 进程(log 末尾干净无 Traceback,dmesg 空)
+- **根因**: Base + PLBOA + flip-test eval @ BS=256 估算 6-8GB,叠加训练 model 驻留 10GB,总峰值触 16GB 天花板
+- **可恢复状态**: transformer_100.pth 完整,训练到 e100 OK。e110/e120 无 ckpt。
+- **决策**: 不重训 (train.py 无 resume 支持,从头跑另 20h 不值;后 20 epoch cosine decay 增益预计 ≤0.3 mAP);把 e100 作事实 FINAL
+
+## FINAL (effective e100, OOM 前最后完整 ckpt) — 2026-04-20 09:xx srvB
+
+通过 `scripts/eval_fliptest_maxsim.py` 独立 eval 出:
+
+- **Global cosine + flip: 72.5 / 81.8**
+- **MaxSim hybrid + flip: 74.5 / 84.0** ← 主结果
+- ckpt: `/hy-tmp/log/occluded_duke/exp263_best_b_od_s42/transformer_100.pth`
+
+### 训练内部 eq_concat+flip 轨迹(e60→e90)
+
+| Epoch | mAP | R-1 |
+|-------|-----|-----|
+| 60 | 72.4 | 82.1 |
+| 70 | 72.5 | 81.5 |
+| 80 | 73.1 | 81.7 |
+| 90 | 73.2 | 81.5 |
+| 100 | — (eval OOM 中断) | — |
+
+e100 训练内 eq_concat eval 没跑完,只有独立 eval 的 Global+flip 数 72.5/81.8 与 MaxSim+flip 74.5/84.0。
+
+### 对照
+
+- 旧协议 exp260b Base OD (3090, eq_concat, no flip): 73.9 / 83.2
+- 旧协议 exp260b Base OD + MaxSim+flip: 75.4 / 84.8
+- **KPR w/o prompt**: 73.3 / 82.5 → 我们 MaxSim **+1.2 / +1.5 ✅**
+- **KPR w/ prompt**: 75.1 / 84.3 → 我们 MaxSim **-0.6 / -0.3**(MaxSim vs prompt 差距可接受)
+
+若完整训到 e120,MaxSim 理论可达 ~74.8-75.0,接近 KPR w/ prompt(我们还是 prompt-free)。
+
+### 后续
+
+- srvB 空闲,下一步排 Phase 3-A Tiny PSG stage 消融(exp270-273)
+- OOM 事件暴露的风险: srvA exp269 / srvC exp266 Base 同样贴近内存上限,各自 eval 期间可能也 OOM。若发生,用同样方案 (e100 ckpt + 独立 eval) 顶上
