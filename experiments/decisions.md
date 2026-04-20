@@ -3776,3 +3776,32 @@ C. 如需更强创新: 需要跳出 Swin + detach 框架 (换 ViT 或全新问�
 **验证**: daemon v2 queue_log 含 `(PYTHON=/usr/local/anaconda3/envs/mmpose-abu/bin/python)` ✅
 
 **经验教训**: 跨机器移植 daemon 必须检查 python 路径/venv 差异,不能假设 python3 可用。
+
+### [2026-04-20 22:41] 事件 — srvC exp266 silent exit @ e70 (非 OOM)
+
+**上下文**:
+- exp266 Base OP Full Scaffold 从 04:46 启动,稳定跑到 e70 (~21:27 CST)
+- 21:27 后 PID 49593 消失,GPU 空闲 (16G free),无日志尾部 Traceback
+- 22:41 cron 发现 srvC 无 python 进程
+
+**诊断**:
+- Memory: 458G free / 515G total → **非系统 OOM**
+- GPU: 0% util, 2MB used → **非 CUDA error** (若 CUDA error python 会留 traceback)
+- dmesg: 权限拒绝,无法查 kernel OOM killer
+- log 最后一行: `Epoch 70 done. Time per epoch: 836.925[s]` 正常结束,无异常
+
+**推测**: hy-tmp 算力平台 maintenance/reboot 或外部 kill signal (SIGTERM/SIGKILL 未留 traceback)。
+
+**决策**: **不重训 exp266**。
+- e60 effective FINAL 78.4 / 86.2 (peak e50 78.5 / 86.3)
+- 与 exp265 Small FINAL 78.4 / 86.2 **完全持平** → Base 对 Small 在 Occ-PTrack 上 0 增益
+- 训练已从 e50 plateau,剩 60 epoch 期望涨幅 ~0.1-0.3 mAP
+- 重训 14h 挤占 Phase 3-B GPU,不值得
+
+**同 exp263/exp269 OOM 处理模式**: effective FINAL 用最后一次 eval 数字,不重训。
+
+**srvC 后续**:
+- GPU 空闲但 Occ-Duke 数据未同步 (之前跑 Occ-PTrack)
+- rsync Occ-Duke + pose_data ~5.5GB from srvB 会影响 exp273 磁盘 I/O
+- 暂**作 failover 备用**,如 srvB / lab4090 chain 故障可承接
+- 待 srvB exp273 FINAL (~23:47 CST) 后,如需启动 Phase 3-C 再 rsync 数据
