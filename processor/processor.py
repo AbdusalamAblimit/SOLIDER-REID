@@ -40,18 +40,28 @@ def _pose_to_device(pose_dict, device):
 def _extract_feat_flip(model, img, pose_dict, camids, target_view, use_pose, flip_test):
     """Forward once (default) or twice with horizontal flip, return averaged feature.
 
-    When `flip_test=True`, features of original and flipped batch are averaged
-    element-wise before L2 normalization (done downstream by the evaluator).
+    When `flip_test=True`, features of original and flipped batch are averaged.
     Used by both mid-training eval and do_inference. MaxSim post-hoc eval stays
     in `scripts/eval_fliptest_maxsim.py` and is NOT invoked here.
 
+    Fused-feature averaging requires **per-block L2-renorm** to preserve the
+    equal_concat semantics: model output `[g_norm | p1_norm | ... | pN_norm]`
+    has each block unit-norm; whole-vector averaging followed by a single global
+    L2-normalize distorts the per-block weights (blocks with high flip-invariance
+    get amplified, blocks with low flip-invariance get attenuated). The fix
+    detects `equal_concat` via `model.pose_test_feat` and re-normalizes each
+    C-dim block after averaging.
+
     Output handling:
-    - Tensor `feat`: `(feat + feat_flip) / 2`. Evaluator still re-normalizes.
-      For `equal_concat` this is a slight deviation from per-block renorm
-      (see `scripts/eval_fliptest_maxsim.py`), but the gap is small and the
-      overall direction (≥ no-flip) is preserved.
-    - Dict `feat` (cvk_* / maxsim* modes): field-wise average on
-      `global_feat` / `kp_feats` / `kp_weights`; `mode` preserved.
+    - Tensor `feat` in `equal_concat` mode: split into (B, n_blocks, C), average,
+      F.normalize per block, reshape back. Preserves equal-weight cosine fusion.
+    - Tensor `feat` in `global` / `gcn_only` / `part_only` (single block) modes:
+      straight `(feat + feat_flip) / 2` — whole-vector renorm downstream is
+      exactly correct for single block.
+    - Tensor `feat` in `concat_scaled`: straight average (scale factors baked
+      in by the model; whole-vector renorm downstream preserves relative weights).
+    - Dict `feat` (cvk_* / maxsim* modes): average each field, then L2-renorm
+      `global_feat` (dim=1) and `kp_feats` (dim=2) for downstream correctness.
     """
     if use_pose:
         feat, _ = model(img, cam_label=camids, view_label=target_view, pose_dict=pose_dict)
@@ -70,8 +80,28 @@ def _extract_feat_flip(model, img, pose_dict, camids, target_view, use_pose, fli
         for k in ('global_feat', 'kp_feats', 'kp_weights'):
             if k in feat and k in feat_f and isinstance(feat[k], torch.Tensor):
                 merged[k] = (feat[k] + feat_f[k]) / 2.0
+        # Re-normalize averaged feature blocks for MaxSim/CVK-style downstream
+        # (they expect unit-norm global/kp; maxsim script also does this post-hoc).
+        if 'global_feat' in merged and merged['global_feat'].dim() == 2:
+            merged['global_feat'] = F.normalize(merged['global_feat'], p=2, dim=1)
+        if 'kp_feats' in merged and merged['kp_feats'].dim() == 3:
+            merged['kp_feats'] = F.normalize(merged['kp_feats'], p=2, dim=2)
         return merged
-    return (feat + feat_f) / 2.0
+
+    avg = (feat + feat_f) / 2.0
+
+    # Per-block L2-renorm for equal_concat mode only.
+    mode = getattr(model, 'pose_test_feat', None)
+    if mode == 'equal_concat':
+        # Model feature dim (per-block C). Prefer in_planes which is set by
+        # build_transformer (1024 for Swin-Base, 768 for Swin-Tiny/Small).
+        C = getattr(model, 'in_planes', None) or getattr(model, 'num_features', None)
+        if C is not None and avg.dim() == 2 and avg.shape[1] > C and avg.shape[1] % C == 0:
+            n_blocks = avg.shape[1] // C
+            avg = avg.view(avg.shape[0], n_blocks, C)
+            avg = F.normalize(avg, p=2, dim=2)
+            avg = avg.reshape(avg.shape[0], n_blocks * C).contiguous()
+    return avg
 
 
 def _flatten_eval_like_feat(feat):
