@@ -3612,14 +3612,25 @@ C. 如需更强创新: 需要跳出 Swin + detach 框架 (换 ViT 或全新问�
 - **Phase 1 其余已完成** (exp261/262/264/265/267/268 + exp263 e100): 全部 test.py + 新 code 重测,在机器空闲时批量跑
 
 **待补事项**:
-- [ ] exp261 Tiny OD transformer_120.pth re-eval (srvB)
-- [ ] exp262 Small OD transformer_120.pth re-eval (srvA)
-- [ ] exp263 Base OD transformer_100.pth re-eval (srvB)
-- [ ] exp264 Tiny OP transformer_120.pth re-eval (srvC)
-- [ ] exp265 Small OP transformer_120.pth re-eval (srvC)
-- [ ] exp267 Tiny Market transformer_120.pth re-eval (srvB)
-- [ ] exp268 Small Market transformer_120.pth re-eval (srvA)
-- [ ] exp269 Base Market transformer_120.pth re-eval (srvA,待训完)
-- [ ] exp266 Base OP transformer_120.pth re-eval (srvC,待训完)
+- [x] exp262 Small OD transformer_120.pth re-eval → **73.8/83.1 (与原训练内部 eval 完全一致)**
+- [x] exp268 Small Market transformer_120.pth re-eval → **94.3/97.3 (与原训练内部 eval 完全一致)**
+- [~] 其余 Phase 1 ckpts: 理论上 bug 是 no-op(证据:上述 2 个验证),不再补
 
-每个 re-eval 给出 eq_concat+flip 的正确数,写入 results.md 作为主 FINAL,旧 broken FINAL 保留注释"pre-fix"方便对照差值。
+## 补充结论: bug 在 Phase 1 scaffold 上效应 ≈ 0(2026-04-20 14:13 实验验证)
+
+**原因**: Phase 1 所有配置 `POSE_GCN_PER_PART=False`(默认),所以 `gcn_feats = [skeleton_feat]` 只 1 元素。equal_concat 只有 2 个 block: `[global, skeleton_feat]`,**两者都是全身聚合 feature,flip 变换下 r_k ≈ 1**,whole-vector renorm 与 per-block renorm 数值上几乎等价。
+
+**两个 re-eval 实验**(用修好的 code 跑 test.py 对比训练内部 broken flip 数字):
+- exp262 Small OD: 73.8/83.1 (fixed) vs 73.8/83.1 (broken) — 完全一致
+- exp268 Small Market: 94.3/97.3 (fixed) vs 94.3/97.3 (broken) — 完全一致
+
+**fix 本身保留**(理论上正确 + 未来防患):
+- Phase 3-B / 以后如果启用 `POSE_GCN_PER_PART=True` 会有 6 个左右不对称 body-part blocks
+- OA_SD=True 训练打破 flip 对称性,会让 per-part block 的 r_k 显著 < 1
+- 彼时 bug 影响显现,fix 必要
+
+**Phase 1 主表数字结论**: 全部继续有效,不需要回补。MaxSim / POT 等 test-time 变体通过 `scripts/eval_fliptest_maxsim.py` 出,该脚本自带正确 per-block renorm 逻辑,也不受此 bug 影响。
+
+**Market/Base 两个意外 OOM 的补救 ckpt**:
+- exp263 e100: Global+flip 72.5/81.8, MaxSim+flip 74.5/84.0
+- exp269 e80: Global+flip 94.4/97.0, MaxSim+flip 94.5/97.1
