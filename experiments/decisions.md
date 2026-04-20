@@ -3872,7 +3872,29 @@ Tiny (stage 数递增收益递减):
 Small (1-stage peak mAP, 2-stage peak R1, 3-stage 塌缩):
 - no 68.1/76.8 → 1 68.8/76.8 → 2 68.3/77.2 → 3 **49.0/57.7**
 
-**Phase 3-A 科学结论**:
+**Phase 3-A 科学结论** (初版, exp277 seed 42 塌缩):
 1. PSG 本体在 Tiny 上 monotonic 增益至 2-stage, 在 Small 上 1-stage 已达 peak
 2. **3-stage 在大 backbone 上有训练塌缩风险**, 不 universal
 3. **Paper default 选 2-stage**: 安全,Tiny 达 peak,Small R1 peak
+
+### [2026-04-21 04:30] 决策更新 — exp277 塌缩重审为偶发 seed 问题,exp277b seed 41 重跑
+
+**上下文**:
+- 3:47 CST exp277 FINAL 49.0/57.7 归因为 "Small 3-stage PSG 系统塌缩"
+- 用户反馈: "之前类似情况出现过,是偶发的随机性的问题" — 不是系统问题
+- 决策修正: 换 seed 41 重跑验证
+
+**新决策**:
+- 新建 `exp277b_psg3_s_od_s41` 用 seed 41 重跑 (其他参数同 exp277)
+- daemon 3909905 挂 lab4090: exp284/transformer_120.pth → exp277b
+- 预计 tmr 11:50 CST FINAL (exp284 ~tmr 10:00 + 1h50min)
+- **exp277b 数字替代 exp277 作为 PRCV Table 2 Small 3-stage 行的数字**
+- exp277 (seed 42) 降级为 decisions.md 里 "偶发 seed 塌缩" 记录, results.md 标 strikethrough
+
+**预期**: 若 seed 41 FINAL 正常 (68-69/76-77),Phase 3-A Small 结论改为:
+- no → 68.1 → 1 68.8 → 2 68.3 → 3 68-69 (预期, 取代 49.0)
+- 和 Tiny 的 "stage 收益递减" pattern 一致 (Small 上 1-stage 已 peak)
+
+**若 seed 41 再塌缩**: 保留"系统问题"结论,考虑 gradient clipping / LR warmup 加长等修复。
+
+**不预判**, 等 exp277b 数据再下结论。当前 Phase 3-A 结论暂定 (基于 exp275/276 稳定的 1/2-stage 收益)。

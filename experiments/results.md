@@ -1537,7 +1537,8 @@
 | exp274 | Swin-Small | Occ-Duke | 无 (baseline) | **68.1 / 76.8** | ✓ e120 FINAL @ 2026-04-20 21:34 lab4090 (R5=87.8 R10=90.9). vs Tiny exp270 Δ=+8.9/+8.4 = Small vs Tiny backbone 容量差 |
 | exp275 | Swin-Small | Occ-Duke | `[-1]` (1-stage) | **68.8 / 76.8** | ✓ e120 FINAL @ 2026-04-20 23:37 lab4090 (R5=87.2 R10=90.4). vs exp274 no-PSG Δ=**+0.7/0** (mAP 涨 R1 持平). vs Tiny 1-stage 增益 (+1.0/+1.1),Small 上 +0.7/0 缩水 |
 | exp276 | Swin-Small | Occ-Duke | `[-2,-1]` (2-stage) | **68.3 / 77.2** | ✓ e120 FINAL @ 2026-04-21 01:41 lab4090 (R5=87.2 R10=90.1). vs exp275 1-stage Δ=-0.5 mAP/+0.4 R1 (**Small 上 2-stage 不同 Tiny,mAP 不涨但 R1 涨**) |
-| exp277 | Swin-Small | Occ-Duke | `[-3,-2,-1]` (3-stage) | **49.0 / 57.7 (塌缩)** ⚠️ | ✓ e120 FINAL @ 2026-04-21 03:47 lab4090 (R5=71.4 R10=76.9). **vs exp274 no-PSG Δ=-19.1/-19.1**. e2 id_global 卡 3.277=0.5×ln(702)=uniform output → BNNeck/classifier 梯度通路被 3-stage PSG gate 截断。Small 大 backbone 对多层 gate 敏感 |
+| exp277 | Swin-Small | Occ-Duke | `[-3,-2,-1]` (3-stage) | ~~49.0 / 57.7 (seed 42 偶发塌缩)~~ | abandoned @ 2026-04-21 03:47 (e2 id_global 卡 3.277 classifier uniform). **改 exp277b seed 41 重跑** (用户判断偶发) |
+| exp277b | Swin-Small | Occ-Duke | `[-3,-2,-1]` (3-stage) | pending | lab4090 auto-chain from exp284 (daemon 3909905, SEED 41). 替代 exp277 作 PRCV Table 2 数字 |
 
 ## PRCV 2026 Phase 3-B 消融 runs
 
