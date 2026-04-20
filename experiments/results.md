@@ -1536,3 +1536,18 @@
 | exp275 | Swin-Small | Occ-Duke | `[-1]` (1-stage) | 进行中 ~e0 | lab4090 @ 21:38 CST (daemon python3 bug 修复后手动启动); ETA 23:18 |
 | exp276 | Swin-Small | Occ-Duke | `[-2,-1]` (2-stage) | pending | lab4090 auto-chain from exp275 (daemon v2 with PYTHON env) |
 | exp277 | Swin-Small | Occ-Duke | `[-3,-2,-1]` (3-stage) | pending | lab4090 auto-chain from exp276 (daemon v2 with PYTHON env) |
+
+## PRCV 2026 Phase 3-B 消融 runs
+
+> Phase 3-B: **Full scaffold + 变量 GCN_HIDDEN × PSG_STAGES** (LGPA/OA-SD/ParAug/LOWER_BODY_OCC 全开,仅改 GCN 容量和 PSG stage)。单变量消融。回答"GCN cap 与 PSG stage 是否互补"。
+
+| Exp ID | Backbone | GCN_HIDDEN | PSG_STAGES | eq_concat+flip(global) mAP / R1 | 备注 |
+|--------|----------|-----------|------------|-------------------------------|------|
+| exp281 (= exp261) | Swin-Tiny | 512 | `[-2,-1]` | **65.9 / 77.4** | Phase 1 共享,不重跑 |
+| exp278 | Swin-Tiny | 256 | `[-1]` | pending | srvB auto-chain from exp273 (daemon 70447) |
+| exp279 | Swin-Tiny | 256 | `[-2,-1]` | pending | srvB auto-chain from exp278 (daemon 70448) |
+| exp280 | Swin-Tiny | 512 | `[-1]` | pending | srvB auto-chain from exp279 (daemon 70449). Phase 3-B 核心最小闭环 (Tiny) |
+| exp285 (= exp262) | Swin-Small | 512 | `[-2,-1]` | **73.8 / 83.1** | Phase 1 共享,不重跑 |
+| exp282 | Swin-Small | 256 | `[-1]` | pending | lab4090 auto-chain from exp277 (daemon 3674925) |
+| exp283 | Swin-Small | 256 | `[-2,-1]` | pending | lab4090 auto-chain from exp282 (daemon 3674926) |
+| exp284 | Swin-Small | 512 | `[-1]` | pending | lab4090 auto-chain from exp283 (daemon 3674927). Phase 3-B 核心最小闭环 (Small) |
