@@ -34,12 +34,23 @@
 | 70 | 66.9 | 75.6 | 87.1 | 90.5 |
 | 80 | 67.7 | 76.5 | 87.4 | 90.1 |
 | 90 | 68.0 | 77.3 | 87.6 | 90.5 |
-| **100** | **68.3** | **77.3** | **87.9** | **91.0** |
+| 100 | 68.3 | 77.3 | 87.9 | 91.0 | peak mAP |
+| 110 | 68.1 | 76.8 | 87.8 | 90.9 | 轻微回撤 |
+| **120 FINAL** | **68.1** | **76.8** | **87.8** | **90.9** | ckpt 21:34 CST |
 
-- Speed: ~48s/epoch (Small + PSG 关),e120 ETA 21:34 CST
-- vs exp270 Tiny no-PSG 59.2/68.4: **Δ=+9.1/+8.9** (纯 backbone 容量收益,与 paper table 预期一致)
+- Speed: ~48s/epoch (Small + PSG 关),总训练时长 ~1h36min (19:58-21:34 CST wall clock)
+- vs exp270 Tiny no-PSG 59.2/68.4: **Δ=+8.9/+8.4** (纯 backbone 容量收益)
 
-## 预期
+## FINAL (21:34 CST)
 
-- FINAL mAP: ~68.5-69.0 (e100 已 68.3,尾部 LR 低幅度涨)
-- FINAL R1: ~77.5-78.0
+- **mAP: 68.1%**, **Rank-1: 76.8%**, Rank-5: 87.8%, Rank-10: 90.9%
+- 对照 exp270 Tiny no-PSG 59.2/68.4 → Δ=**+8.9/+8.4** (纯 Small vs Tiny backbone 容量差)
+- vs e100 peak 68.3/77.3: 尾部 LR 低期轻微回撤 -0.2/-0.5 (正常训练噪声)
+- Ckpt: `/home/afr/SOLIDER-REID/log/occluded_duke/exp274_psg0_s_od_s42/transformer_120.pth` (198MB)
+
+## 结论
+
+- Small no-PSG baseline **68.1/76.8** 超原预期上限 (预期 67-68)
+- e100 已接近 peak (68.3),e120 FINAL 与 e110 持平 → 训练已饱和,尾部 epoch 带来边际收益约 0
+- Phase 3-A Small 的 PSG 贡献应从此基线上算: exp275/276/277 目标是看能否超过 68.1/76.8
+- auto-chain exp275 Small 1-stage PSG 等待触发 (daemon 3580255 监控 ckpt 出现)

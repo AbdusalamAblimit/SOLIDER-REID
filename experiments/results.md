@@ -1532,7 +1532,7 @@
 | exp271 | Swin-Tiny | Occ-Duke | `[-1]` (1-stage) | **60.2 / 69.5** | ✓ e120 FINAL @ 2026-04-20 16:36 srvB (R5=81.8 R10=85.9). vs exp270 Δ=+1.0/+1.1 = stage 3 PSG 独立贡献 |
 | exp272 | Swin-Tiny | Occ-Duke | `[-2,-1]` (2-stage) | **60.5 / 69.7** | ✓ e120 FINAL @ 2026-04-20 20:19 srvB (R5=82.6 R10=86.2). vs exp271 Δ=+0.3/+0.2 = stage 2 边际贡献微弱;vs exp270 Δ=+1.3/+1.3 = 2-stage 累计 |
 | exp273 | Swin-Tiny | Occ-Duke | `[-3,-2,-1]` (3-stage) | e30: 50.0/58.6 进行中 | srvB, auto-chain from exp272 @ 20:19;~23:37 FINAL |
-| exp274 | Swin-Small | Occ-Duke | 无 (baseline) | e100: 68.3/77.3 进行中 | lab4090 @ 19:30 CST;e120 ETA 21:34 (vs Tiny exp270 +9.1/+8.9 = backbone 容量收益) |
-| exp275 | Swin-Small | Occ-Duke | `[-1]` (1-stage) | pending | lab4090 auto-chain from exp274 (daemon 3580255) |
-| exp276 | Swin-Small | Occ-Duke | `[-2,-1]` (2-stage) | pending | lab4090 auto-chain from exp275 (daemon 3582039) |
-| exp277 | Swin-Small | Occ-Duke | `[-3,-2,-1]` (3-stage) | pending | lab4090 auto-chain from exp276 (daemon 3582037) |
+| exp274 | Swin-Small | Occ-Duke | 无 (baseline) | **68.1 / 76.8** | ✓ e120 FINAL @ 2026-04-20 21:34 lab4090 (R5=87.8 R10=90.9). vs Tiny exp270 Δ=+8.9/+8.4 = Small vs Tiny backbone 容量差 |
+| exp275 | Swin-Small | Occ-Duke | `[-1]` (1-stage) | 进行中 ~e0 | lab4090 @ 21:38 CST (daemon python3 bug 修复后手动启动); ETA 23:18 |
+| exp276 | Swin-Small | Occ-Duke | `[-2,-1]` (2-stage) | pending | lab4090 auto-chain from exp275 (daemon v2 with PYTHON env) |
+| exp277 | Swin-Small | Occ-Duke | `[-3,-2,-1]` (3-stage) | pending | lab4090 auto-chain from exp276 (daemon v2 with PYTHON env) |

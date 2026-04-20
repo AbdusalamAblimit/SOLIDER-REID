@@ -3752,3 +3752,27 @@ C. 如需更强创新: 需要跳出 Swin + detach 框架 (换 ViT 或全新问�
 - **训练效果等价**,可直接用
 
 **结论**: lab4090 Occluded-Duke pose_data **production-ready**,可接 Phase 3-A Small baseline(exp274 重启)。
+
+### [2026-04-20 21:35] 事件 — lab4090 queue_on_ckpt daemon python3 bug,exp275 crash 重启
+
+**上下文**:
+- 21:34 exp274 FINAL (68.1/76.8/87.8/90.9) ckpt 生成
+- daemon 3580255 立即触发 exp275,但 1 分钟内 crash
+- `/tmp/exp275.log` 只有 `ModuleNotFoundError: No module named 'torch'`
+
+**根因**: `tools/queue_on_ckpt.sh` 硬编码 `nohup python3 train.py` 使用系统 python3。
+- srvB/srvC 上系统 python3 安装了 torch → 正常
+- **lab4090 系统 python3 没 torch,只有 `/usr/local/anaconda3/envs/mmpose-abu/bin/python` 有** → fail
+- exp274 当初**手动**启动用的是完整 conda path,没用 daemon,所以 OK
+
+**修复**:
+1. 修改 `tools/queue_on_ckpt.sh`:增加 `PYTHON=\"${PYTHON:-python3}\"` 环境变量,`nohup "$PYTHON" train.py ...`,向下兼容 srvB/C(默认 python3)
+2. 同时扩展 `ps-grep` pattern 支持 conda python 检测: `(python3?|mmpose-abu/bin/python).*train.py`
+3. 本地 repo 同步(scp 回) + commit + push
+4. lab4090 kill 旧 daemon 3582039/3582037 (它们仍会用 python3)
+5. 手动启动 exp275 用 mmpose-abu python (PID 3653199)
+6. 用 `PYTHON=/usr/local/anaconda3/envs/mmpose-abu/bin/python` 启动新 daemon 链: 275→276, 276→277
+
+**验证**: daemon v2 queue_log 含 `(PYTHON=/usr/local/anaconda3/envs/mmpose-abu/bin/python)` ✅
+
+**经验教训**: 跨机器移植 daemon 必须检查 python 路径/venv 差异,不能假设 python3 可用。
