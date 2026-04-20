@@ -3580,3 +3580,46 @@ C. 如需更强创新: 需要跳出 Swin + detach 框架 (换 ViT 或全新问�
 - Phase 4 multi-seed 短期 Small 优先；Phase 1 Base 跑完再补 Base multi-seed
 - 同步条目落在 `experiments/prcv_2026_psg/decisions.md`
 - Phase 1 当前运行: srvA=exp262(Small OD) e70, srvB=exp261(Tiny OD) e106, srvC=exp264(Tiny OP) e83；接下来按 srvB→exp267, srvC→exp265, srvA→exp268 顺序排队；Tiny/Small 6 run 完成后立即评估是否把 Base 3 run 并入 Phase 1
+
+### [2026-04-20 13:00] 决策 — 修 flip-test per-block renorm bug,Phase 1 FINAL 需要回补
+
+**上下文**: 用户审查发现 `processor/processor.py::_extract_feat_flip` 在 `equal_concat` 模式下用 whole-vector 平均,让 evaluator 单次 L2-normalize,破坏了 `equal_concat` 在 model 端每块 L2-normed concat 的"均等贡献" cosine 语义。其他 pose 模块(如 OA-SD 打破训练端 flip 对称 + GCN per_part 的 L/R 非完全对齐)导致每块的 flip-后 norm `r_k` 不同,whole-vector 重归一化 `sqrt(Σ r_k²)` 给各块的有效权重被扭曲。
+
+**证据**:
+1. model 端 line 873-876 确认每块 L2-normed 后 concat
+2. processor line 74 确认直接 `(feat + feat_f) / 2` 未 per-block 重归一
+3. `scripts/eval_fliptest_maxsim.py` line 155-157 明确做 per-block renorm,所以 smoke test 上 flip 贡献 +0.9 mAP 是正确值
+4. Phase 1 新协议实际 flip 贡献只 +0.6 mAP,差 0.3 即 bug 扭曲量
+
+**选项**:
+  A. 不修,接受系统性 -0.3 mAP 偏低
+  B. 修 + 回补全部 Phase 1 FINAL 数字
+  C. 只修前向给新实验用,旧 ckpt 数字保留
+
+**选择**: B
+
+**理由**:
+1. 论文主表若保留 broken 数字,审稿人随便跑一次就能发现差异,难解释
+2. 修改代价极小(40 行 diff,零行为改动只在 equal_concat 路径)
+3. 回补只需 test.py 跑每个 ckpt_120(Tiny ~3-5min,Small ~5-8min,Base ~10min),全部 Phase 1 完成 ckpt 加起来不过 1 小时
+
+**执行**:
+- commit `f69b61c`: 在 `_extract_feat_flip` 加 per-block renorm,仅作用于 `equal_concat` tensor 模式;dict 模式 (maxsim/cvk) 也加 field-wise renorm;其他模式 (global/gcn_only/concat_scaled) 保持原 whole-vector 平均
+- 三台 servers git pull 到 `f69b61c` 
+- **Phase 3-A exp271** 刚起 15min,kill + restart 用新代码(`POSE_TEST_FEAT='global'` 单块,实际上受 bug 影响极小,但 restart 是对的)
+- **exp269 / exp266** 还在训中,Python 进程里缓存的是旧 code,e120 eval 会走 broken path → 完成后 test.py 重测
+- **exp270** `POSE_ENABLED=False` 单块模式,bug 不生效,数字 59.2/68.4 仍有效
+- **Phase 1 其余已完成** (exp261/262/264/265/267/268 + exp263 e100): 全部 test.py + 新 code 重测,在机器空闲时批量跑
+
+**待补事项**:
+- [ ] exp261 Tiny OD transformer_120.pth re-eval (srvB)
+- [ ] exp262 Small OD transformer_120.pth re-eval (srvA)
+- [ ] exp263 Base OD transformer_100.pth re-eval (srvB)
+- [ ] exp264 Tiny OP transformer_120.pth re-eval (srvC)
+- [ ] exp265 Small OP transformer_120.pth re-eval (srvC)
+- [ ] exp267 Tiny Market transformer_120.pth re-eval (srvB)
+- [ ] exp268 Small Market transformer_120.pth re-eval (srvA)
+- [ ] exp269 Base Market transformer_120.pth re-eval (srvA,待训完)
+- [ ] exp266 Base OP transformer_120.pth re-eval (srvC,待训完)
+
+每个 re-eval 给出 eq_concat+flip 的正确数,写入 results.md 作为主 FINAL,旧 broken FINAL 保留注释"pre-fix"方便对照差值。
