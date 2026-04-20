@@ -1521,3 +1521,11 @@
 | exp267 | Swin-Tiny | Market | **92.5% / 96.4%** | TBD | ✓ e120 FINAL @ 2026-04-19 13:45 srvB (R5=98.9 R10=99.3) |
 | exp268 | Swin-Small | Market | **94.3% / 97.3%** | TBD | ✓ e120 FINAL @ 2026-04-20 00:39 srvA (R5=99.1 R10=99.5) |
 | exp269 | Swin-Base | Market | 进行中 e1 | TBD | srvA, 新起 @ 00:40 via queue_on_ckpt daemon (Base 第 2 个, with_cp) |
+
+## PRCV 2026 Phase 3 消融 runs
+
+> Phase 3-A: **纯 PSG scaffold** (无 LGPA/GCN/OA-SD/PLBOA/Parallel-Aug),仅开 PSG 的 stage 数。单变量 = PSG_STAGES。回答"PSG 本体稳定性"。
+
+| Exp ID | Backbone | Dataset | PSG stages | eq_concat+flip(global) mAP / R1 | 备注 |
+|--------|----------|---------|------------|-------------------------------|------|
+| exp270 | Swin-Tiny | Occ-Duke | 无 (baseline) | 进行中 | srvB 新起 @ 2026-04-20 09:30 |
