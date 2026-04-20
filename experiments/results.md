@@ -1515,6 +1515,8 @@
 | exp261 | Swin-Tiny | Occ-Duke | **65.9% / 77.4%** | TBD | ✓ e120 FINAL @ 2026-04-19 04:16 srvB |
 | exp262 | Swin-Small | Occ-Duke | **73.8% / 83.1%** | TBD | ✓ e120 FINAL @ 2026-04-19 09:59 srvA (R5=90.2 R10=92.2). **略优 KPR w/o prompt 73.3/82.5** (+0.5/+0.6) |
 | exp263 | Swin-Base | Occ-Duke | **e100 eff FINAL: 72.5 / 81.8 (Global+flip), 74.5 / 84.0 (MaxSim+flip)** | ✓ @ 2026-04-20 09:01 srvB | ⚠️ e100 eval OOM-killed (内存 13.2G 触 16G),ckpt 100 完整,不重训。MaxSim hybrid+flip **74.5/84.0** 超 KPR w/o prompt +1.2/+1.5 |
+| exp263c | Swin-Base | Occ-Duke | ~~abandoned @ e31~~ | — lab3090 pwrlim280 seed 42 | seed 42 轨迹异常 (e10 2.7 / e20 17.0),用户指示换 seed 41 → 切 exp263d |
+| exp263d | Swin-Base | Occ-Duke | 进行中 ~e1 seed 41 | lab3090 pwrlim 280W @ 23:34 CST | exp263 系列 PRCV 主表用数字 (按用户指示 seed 41 替代 42)。ETA tmr ~13:30 CST |
 | exp264 | Swin-Tiny | Occ-PTrack | **76.7% / 85.1%** | TBD | ✓ e120 FINAL @ 2026-04-19 07:15 srvC (R5=94.1 R10=97.0) |
 | exp265 | Swin-Small | Occ-PTrack | **78.4% / 86.2%** | TBD | ✓ e120 FINAL @ 2026-04-20 04:45 srvC (R5=94.8 R10=97.3, Small >> Tiny 76.7/85.1) |
 | exp266 | Swin-Base | Occ-PTrack | **e60 eff FINAL: 78.4 / 86.2 (peak e50: 78.5/86.3)** | ✓ @ 2026-04-20 21:27 srvC | ⚠️ e70 后 silent exit (非 OOM 非 CUDA, 推测 hy-tmp 平台 kill)。**Base 对 Small (exp265 78.4/86.2) 0 增益**, 不重训 |
@@ -1551,3 +1553,14 @@
 | exp282 | Swin-Small | 256 | `[-1]` | pending | lab4090 auto-chain from exp277 (daemon 3674925) |
 | exp283 | Swin-Small | 256 | `[-2,-1]` | pending | lab4090 auto-chain from exp282 (daemon 3674926) |
 | exp284 | Swin-Small | 512 | `[-1]` | pending | lab4090 auto-chain from exp283 (daemon 3674927). Phase 3-B 核心最小闭环 (Small) |
+
+## PRCV 2026 Phase 3-C 消融 runs (optional, 提前启动)
+
+> Phase 3-C: **LGPA-only + 变量 PSG_STAGES** (关 GCN, 保留 LGPA/OA-SD/ParAug/LOWER_BODY_OCC)。回答"2-stage PSG 的收益是偏 structural 还是 semantic branch 也吃"。srvC exp266 silent exit 后空闲,利用上。
+
+| Exp ID | Backbone | PSG stages | mAP / R1 | 备注 |
+|--------|----------|-----------|----------|------|
+| exp286 | Swin-Tiny | `[-1]` | 进行中 | srvC PID 59845 @ 23:32 CST,ETA tmr 03:00 |
+| exp287 | Swin-Tiny | `[-2,-1]` | pending | srvC auto-chain from exp286 (daemon 59846) |
+| exp288 | Swin-Small | `[-1]` | pending | 待 Phase 3-B lab4090 完成后接 |
+| exp289 | Swin-Small | `[-2,-1]` | pending | 待 Phase 3-B lab4090 完成后接 |

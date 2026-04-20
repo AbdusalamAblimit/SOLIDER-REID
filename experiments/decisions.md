@@ -3804,4 +3804,41 @@ C. 如需更强创新: 需要跳出 Swin + detach 框架 (换 ViT 或全新问�
 - GPU 空闲但 Occ-Duke 数据未同步 (之前跑 Occ-PTrack)
 - rsync Occ-Duke + pose_data ~5.5GB from srvB 会影响 exp273 磁盘 I/O
 - 暂**作 failover 备用**,如 srvB / lab4090 chain 故障可承接
-- 待 srvB exp273 FINAL (~23:47 CST) 后,如需启动 Phase 3-C 再 rsync 数据
+
+### [2026-04-20 23:30] 事件 — srvC 其实有 Occ-Duke 数据,立即启动 Phase 3-C
+
+**发现**: 审查 srvC `/hy-tmp/data/occluded_duke/` 时发现 **数据已齐备** (4.9GB, train 22059 + query 4152 + gallery 24770, pose_data 四分区全),与我之前"需要 rsync"的假设相反。Pretrained swin_{tiny,small,base} + clip_part_text_features 也都在。
+
+**立即决策**: srvC 启动 **Phase 3-C exp286/287** (LGPA-only Tiny 2 runs,phase3_design.md L111-134 已规划),填补 srvC 空闲。
+
+**实际启动**:
+- exp286 (LGPA-only + 1-stg PSG + Tiny, PID 59845) @ 23:32 CST,config load + dataset load OK
+- daemon 59846 挂 exp286 → exp287 (2-stg PSG) auto-chain
+- 共 2 runs ~7h, ETA tmr 06:30 CST
+- Small 2 runs (exp288/289) 等 lab4090 Phase 3-B 完成后接
+
+**Phase 3-C 科学价值**: 回答 phase3_design.md 核心问题 3 — "2-stage PSG 收益是偏 structural branch (GCN) 还是 semantic branch (LGPA) 也吃"。和 Phase 3-B (GCN on) 对照,Table 4 (optional) 的 4 行素材。
+
+### [2026-04-20 23:30] 决策 — lab3090 exp263 系列 seed 切换
+
+**上下文**:
+- exp263c (lab3090 Base OD Full Scaffold pwrlim 280W seed 42) 跑到 e31,trajectory 异常:
+  - e10 mAP 2.7 / R1 4.5 (Base 正常 e10 期望 20+%)
+  - e20 恢复到 17.0 / 24.5
+  - e30 39.0 / 50.5
+  - 虽在恢复,但起步异常
+- 用户判断: "seed 42 可能有问题"
+
+**决策**: 切换 **seed 42 → seed 41**,新命名 `exp263d_best_b_od_s41_3090_pwrlim`。
+- kill exp263c main PID 266
+- 启动 exp263d seed 41 at 23:34 CST (PID 8248)
+- 保持其他参数 (Base Full Scaffold + pwrlim 280W + docker env) 不变
+
+**用户指示**: "报告时就报告这个是 seed 41 就行" — PRCV 主表 exp263 行用 exp263d seed 41 的数字。
+
+**影响**:
+- ETA: seed 41 14h → FINAL tmr 13:30 CST
+- 若 seed 41 e10-20 也低 → 不是 seed 问题,可能 pwrlim 影响 Base warmup,需再调查
+- 若 seed 41 正常 → 验证 seed 42 异常,主表用 seed 41 数字
+
+**Monitor 更新**: stop b9h22bdiy (old exp263c tail) → bizb8v35k (new exp263d tail)
