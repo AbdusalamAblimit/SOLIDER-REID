@@ -18,10 +18,10 @@
 
 核心: **exp272 vs exp273 的 mAP 差就是增加 stage 1 PSG 的边际贡献**。历史预期 3-stage ≤ 2-stage。
 
-## 进度
+## 进度 (最新 21:16 CST e30)
 
-- 启动后 ~50min,**e29/120**,loss 从 1.0 下降到 0.83 (与 exp272 e29 早期轨迹吻合)
-- id_global ~0.75, tri_global ~0.07,LR 6.9e-4 (ramp 阶段)
+- **e30 eval: mAP 50.0 R1 58.6 R5 72.4 R10 78.1** (对照 exp272 e30 51.8/60.8 → exp273 略低 Δ=-1.8/-2.2)
+- e29/120 loss 从 1.0 下降到 0.83,id_global ~0.75 tri_global ~0.07
 - queue daemon 62026 已退出 (任务完成),exp273 后无后继
 
 ## 自动化状态
