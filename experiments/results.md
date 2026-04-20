@@ -1528,4 +1528,5 @@
 
 | Exp ID | Backbone | Dataset | PSG stages | eq_concat+flip(global) mAP / R1 | 备注 |
 |--------|----------|---------|------------|-------------------------------|------|
-| exp270 | Swin-Tiny | Occ-Duke | 无 (baseline) | 进行中 | srvB 新起 @ 2026-04-20 09:30 |
+| exp270 | Swin-Tiny | Occ-Duke | 无 (baseline) | **59.2 / 68.4** | ✓ e120 FINAL @ 2026-04-20 12:29 srvB (R5=82.2 R10=85.8). vs exp000 旧协议 56.6/66.5 → +default flip 贡献 +2.6/+1.9 |
+| exp271 | Swin-Tiny | Occ-Duke | `[-1]` (1-stage) | 进行中 e1 | srvB, auto-chain from exp270 @ 12:30 via queue_on_ckpt (PID 53178) |
