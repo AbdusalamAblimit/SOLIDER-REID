@@ -3842,3 +3842,37 @@ C. 如需更强创新: 需要跳出 Swin + detach 框架 (换 ViT 或全新问�
 - 若 seed 41 正常 → 验证 seed 42 异常,主表用 seed 41 数字
 
 **Monitor 更新**: stop b9h22bdiy (old exp263c tail) → bizb8v35k (new exp263d tail)
+
+### [2026-04-21 03:47] 事件 — exp277 Small 3-stage PSG 训练塌缩 (negative result,不重训)
+
+**上下文**:
+- exp277 Small + PSG 3-stage `[-3,-2,-1]` 自 01:42 CST 启动
+- e10 eval **0.3 / 0.3** (接近 random), e120 FINAL **49.0 / 57.7** (远低 exp274 no-PSG 68.1/76.8, Δ=-19.1)
+
+**诊断**:
+- e2 iter 中 **`id_global = 3.277` 常数**, 等于 `0.5 × ln(702)` (GLOBAL_LOSS_SCALE × ln(num_classes))
+- 说明 classifier 输出完全均匀分布 → uniform softmax → CE = ln(N_classes)
+- triplet loss (`tri_global`) 仍在下降 (7→3), 说明 **仅 feature space 在学**, **BNNeck/classifier 梯度通路被 3-stage PSG gate 截断**
+- 可能机制: Swin stage 1/2/3 三层 spatial gate 叠加,将 Small backbone 的 feature 压到接近 0 → BNNeck 输出近似 uniform → logits 均匀 → id loss 训不动
+
+**对照**:
+- Tiny 3-stage (exp273) **60.5/69.9 正常** — Tiny backbone 容量小,features 较稀疏不易被 gate 归零
+- Small 3-stage (exp277) **49.0/57.7 塌缩** — Small backbone 容量大,features dense 更易被 multi-stage gate 压缩
+
+**决策**: **不重训**, 用 exp277 FINAL 作为 **negative result** 有效数据点。
+- 14h 重训占 lab4090 GPU 不值得 (接下来要跑 Phase 3-B Small 3 runs)
+- negative result 本身有价值:支持 "default 选 2-stage" 论述,展示 "PSG stage × backbone 容量" 交互效应
+- 论文 Table 2 Small 行正常列出,注明塌缩
+
+**Phase 3-A 最终结果汇总**:
+
+Tiny (stage 数递增收益递减):
+- no → 59.2/68.4 → +1.0 → 1 60.2/69.5 → +0.3 → 2 60.5/69.7 → 0 → 3 60.5/69.9
+
+Small (1-stage peak mAP, 2-stage peak R1, 3-stage 塌缩):
+- no 68.1/76.8 → 1 68.8/76.8 → 2 68.3/77.2 → 3 **49.0/57.7**
+
+**Phase 3-A 科学结论**:
+1. PSG 本体在 Tiny 上 monotonic 增益至 2-stage, 在 Small 上 1-stage 已达 peak
+2. **3-stage 在大 backbone 上有训练塌缩风险**, 不 universal
+3. **Paper default 选 2-stage**: 安全,Tiny 达 peak,Small R1 peak

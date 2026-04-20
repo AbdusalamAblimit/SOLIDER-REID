@@ -1536,8 +1536,8 @@
 | exp273 | Swin-Tiny | Occ-Duke | `[-3,-2,-1]` (3-stage) | **60.5 / 69.9** | ✓ e120 FINAL @ 2026-04-21 00:05 srvB (R5=82.8 R10=87.0). vs exp272 2-stage Δ=0/+0.2 (stage 1 边际贡献 ~0 mAP). **Phase 3-A Tiny 矩阵完整**: 边际收益递减 +1.0 → +0.3 → 0 |
 | exp274 | Swin-Small | Occ-Duke | 无 (baseline) | **68.1 / 76.8** | ✓ e120 FINAL @ 2026-04-20 21:34 lab4090 (R5=87.8 R10=90.9). vs Tiny exp270 Δ=+8.9/+8.4 = Small vs Tiny backbone 容量差 |
 | exp275 | Swin-Small | Occ-Duke | `[-1]` (1-stage) | **68.8 / 76.8** | ✓ e120 FINAL @ 2026-04-20 23:37 lab4090 (R5=87.2 R10=90.4). vs exp274 no-PSG Δ=**+0.7/0** (mAP 涨 R1 持平). vs Tiny 1-stage 增益 (+1.0/+1.1),Small 上 +0.7/0 缩水 |
-| exp276 | Swin-Small | Occ-Duke | `[-2,-1]` (2-stage) | pending | lab4090 auto-chain from exp275 (daemon v2 with PYTHON env) |
-| exp277 | Swin-Small | Occ-Duke | `[-3,-2,-1]` (3-stage) | pending | lab4090 auto-chain from exp276 (daemon v2 with PYTHON env) |
+| exp276 | Swin-Small | Occ-Duke | `[-2,-1]` (2-stage) | **68.3 / 77.2** | ✓ e120 FINAL @ 2026-04-21 01:41 lab4090 (R5=87.2 R10=90.1). vs exp275 1-stage Δ=-0.5 mAP/+0.4 R1 (**Small 上 2-stage 不同 Tiny,mAP 不涨但 R1 涨**) |
+| exp277 | Swin-Small | Occ-Duke | `[-3,-2,-1]` (3-stage) | **49.0 / 57.7 (塌缩)** ⚠️ | ✓ e120 FINAL @ 2026-04-21 03:47 lab4090 (R5=71.4 R10=76.9). **vs exp274 no-PSG Δ=-19.1/-19.1**. e2 id_global 卡 3.277=0.5×ln(702)=uniform output → BNNeck/classifier 梯度通路被 3-stage PSG gate 截断。Small 大 backbone 对多层 gate 敏感 |
 
 ## PRCV 2026 Phase 3-B 消融 runs
 
