@@ -4,13 +4,17 @@
 # already launches the intermediate exp via nohup, and this daemon simply watches
 # the intermediate exp's final ckpt file.
 #
-# Usage: queue_on_ckpt.sh <wait_ckpt> <next_config> <next_output_dir> <next_log> <tag>
+# Usage: queue_on_ckpt.sh <wait_ckpt> <next_config> <next_output_dir> <next_log> <tag> [extra_overrides...]
+# Extra yacs overrides (space-separated KEY VALUE pairs) are appended after SOLVER.SEED 42 OUTPUT_DIR ...
+# Example: queue_on_ckpt.sh ... exp270_to_271 MODEL.POSE_BACKBONE_PSG True MODEL.POSE_PSG_STAGES '[-1]'
 set -u
 WAIT_CKPT=$1
 NEXT_CONFIG=$2
 NEXT_OUTPUT_DIR=$3
 NEXT_LOG=$4
 TAG=$5
+shift 5
+EXTRA_OVERRIDES=("$@")
 
 QLOG=/tmp/queue_${TAG}.log
 REPO=/root/work/SOLIDER-REID
@@ -45,7 +49,7 @@ fi
 
 cd "$REPO"
 export PYTHONUNBUFFERED=1
-echo "[$(date)] launching: python3 train.py --config_file $NEXT_CONFIG SOLVER.SEED 42 OUTPUT_DIR $NEXT_OUTPUT_DIR" >> "$QLOG"
-nohup python3 train.py --config_file "$NEXT_CONFIG" SOLVER.SEED 42 OUTPUT_DIR "$NEXT_OUTPUT_DIR" > "$NEXT_LOG" 2>&1 &
+echo "[$(date)] launching: python3 train.py --config_file $NEXT_CONFIG SOLVER.SEED 42 OUTPUT_DIR $NEXT_OUTPUT_DIR ${EXTRA_OVERRIDES[*]}" >> "$QLOG"
+nohup python3 train.py --config_file "$NEXT_CONFIG" SOLVER.SEED 42 OUTPUT_DIR "$NEXT_OUTPUT_DIR" "${EXTRA_OVERRIDES[@]}" > "$NEXT_LOG" 2>&1 &
 NEW_PID=$!
 echo "[$(date)] next launched PID=$NEW_PID log=$NEXT_LOG" >> "$QLOG"
