@@ -3660,3 +3660,95 @@ C. 如需更强创新: 需要跳出 Swin + detach 框架 (换 ViT 或全新问�
 **exp263b vs exp263 对照**:
 - exp263 新协议 e100 eff-FINAL(5060Ti srvB,OOM 后 salvage):Global+flip 72.5/81.8, MaxSim 74.5/84.0
 - exp263b 3090 完整 e120 FINAL(将来):预期 MaxSim 75+,超 KPR w/ prompt 75.1/84.3 可能性大
+
+### [2026-04-20 17:40] 决策 — lab4090 加入 + pose_data 同步
+
+**上下文**:
+- 实验室导师合作公司的 RTX 4090 机器(内网 10.0.70.128)通过 Windows relay4090(100.94.229.1,tailscale + OpenSSH)提供 ProxyJump 访问
+- lab4090 有完整代码(`/home/afr/SOLIDER-REID`)、pretrained(swin_*, ViTPose-Huge, VisPredictHead, clip_part_text)、数据集(Occluded-Duke原图+pose_data)、mmpose-abu conda env(torch 1.13.1+cu,mmpose 1.3.2,mmdet 3.2.0)
+- **pose_data 版本旧**:index.json 缺 `target_person_idx/target_score/target_margin/person_targetness`(exp033 之前版本);heatmap .npz 缺 `visibility/visibility_binary`(extract_visibility.py b37edc3 之前版本)
+- 代码落后 origin/exp/pose_heatmap 37 commits
+
+**选项**:
+  A. 只跑 extract_visibility.py 补 visibility 字段,index 已在 16:xx 同步过
+  B. rsync srvB 完整 pose_data 到 lab4090(4.8GB),100% 一致
+  C. 不动 pose_data,接受 fallback(代码向后兼容)
+
+**选择**: B (用户明确要求"传输过去吧,为了保证一致性")
+**理由**:
+1. 确保 pose_data 在 lab4090 与 srvB(训练集 ground truth 源)完全一致,避免未来 Full Scaffold (OA-SD/PLBOA) 因 visibility 用 score proxy 出现微小精度漂移
+2. 4.8GB 一次传输成本可接受(预计总 1.5h),比后续 Phase 3-C/D 逐个重跑代价低
+3. 数据备份冗余:lab4090 多一份全量 pose_data 后,srvA/srvC 可能失效时有替代源
+
+**执行**:
+- srvB: 安装 zstd,tar+zstd → /hy-tmp/pose_data.tar.zst(4.7GB,npz 已压缩 → zstd 几乎无收益)
+- Windows: scp srvB→Win `/tmp/pose_data.tar.zst`(background,速度 ~1.7MB/s,ETA 40min)
+- 下一步: scp Win→lab4090 → 解压替换
+- 备份:lab4090 旧 index.json.bak_old 已保留(4 split 总 10MB),旧 .npz 将被 mv 到 pose_data.old
+
+**4 机组合 (2026-04-20 起)**:
+| 机器 | GPU | 角色 |
+|------|-----|------|
+| srvB | 5060Ti 16G | Phase 3-A Tiny 4 格 |
+| srvC | 5060Ti 16G | exp266 Base OP + Phase 3-B |
+| lab3090 | 3090 24G | exp263b Base OD + Phase 3-A Small 4 格(exp274-277 重启) |
+| **lab4090** | 4090 24G | 待 pose_data 同步完成 → 未分配(可接 Phase 3-C 或 Small 加速) |
+
+**风险**:
+- Windows relay 的 tailscale 带宽未知,Win→lab4090 可能比 srvB→Win 更慢
+- 如果 scp 超过 4h 不完成,改用 extract_visibility.py 直接在 lab4090 补字段(Plan A fallback)
+
+### [2026-04-20 18:30] 事件 — lab3090 GPU driver hang(container 内 NVML init 失败)
+
+**上下文**:
+- lab3090 (tailscale 100.115.252.80 docker container `18fbbab202e1`) 跑 exp263b (Base OD, Full Scaffold) 从 2026-04-20 ~08:00 本地起,到 e42 Iter 100 (10:14:56 UTC = 18:14 local) 卡住
+- 18:00-18:15 nvidia-smi 持续返回 `Unable to determine the device handle for GPU0000:65:00.0: Unknown Error`
+- 18:22 local 时 DataLoader workers 重新 spawn,但主进程 189605 未推进 log
+- `torch.cuda.is_available()` = False, `device_count()` = 0, NVML init 失败
+- 用户确认 "3090显卡又挂了"(暗示反复出现)
+
+**动作**:
+1. kill -9 189605 + `pkill -9 -f 'exp263b_best_b_od_s42_3090'` ✅
+2. ckpt40 (18:00 local 保存) 保留 → 可 salvage 或 resume
+3. container 内**无法自恢复**(不能 nvidia-smi -r / modprobe) → 需要 host 层面 reset driver / 重启容器
+4. e40 eval 未产生(本 run 只到 e30=某 mAP),需 GPU 恢复后用 `test.py` 跑 ckpt40 得 interim FINAL 作为 exp263 e100 salvage 的升级替代
+
+**决策**:
+- 暂停 lab3090,等待用户重启。srvB/srvC 照常运行
+- 如短期未恢复,exp263b e40 作为可接受 fallback(Base OD 中段,预期 ~70-72 mAP,低于完整 e120 但比 srvA exp263 e100 salvage 稍低)
+- 如长期挂机,lab4090(24G,pose_data 同步完成后)可接替 exp263b resume from ckpt40
+
+**预防**:
+- 后续 lab3090 exp 建议加 heartbeat 脚本,log 停滞 > 15min 触发告警(避免 GPU hang 浪费时间)
+
+### [2026-04-20 19:00] 事件 — lab4090 pose_data 完整修复(放弃 rsync,改本地 extract)
+
+**上下文**:
+- 18:30 决策走 rsync srvB pose_data.tar.zst (4.94GB) → Windows → lab4090
+- srvB→Win scp 正常(~1.7MB/s,40min完成),但 Win→lab4090 走 tailscale DERP 只有 **100KB/s**(14h ETA,不可接受)
+- 用户确认"如果提取脚本对就跑脚本也行"
+
+**验证 extract 路径一致性**:
+- lab3090 checkpoint `pretrained/best_coco_AP_epoch_210.pth` md5 = `90496f7405b61228dde244657c357c7a`
+- lab4090 同文件 md5 = `90496f7405b61228dde244657c357c7a` ✅ 同一 checkpoint
+- mmpose 版本: 两边都是 **1.3.2** ✅
+- config_vispredict.py md5 一致 ✅
+- inference 是 deterministic: 相同 checkpoint+config+bbox → bit-identical visibility 输出(理论)
+
+**实际执行** (2026-04-20 18:40-19:00):
+1. kill 失败的 srvB→lab4090 scp
+2. 恢复 lab4090 旧 index.json(persons 列表匹配实际 .npz)
+3. `scripts/extract_visibility.py` 在 lab4090 GPU: train(15618)+query(2210)+gallery(17661),4 分钟完成
+4. `scripts/compute_target_assignment.py` 补 target_person_idx/score/margin/person_targetness(CPU, 3s 完成)
+
+**验证完成度**:
+- 4 splits index.json **全部 7 字段齐**(num_persons/image_size/persons/target_person_idx/target_score/target_margin/person_targetness)
+- 3 splits .npz **全部 7 字段齐**(heatmap/keypoints/scores/bbox/crop_bounds/visibility/visibility_binary)
+- _val_merged 也补了 target 字段(persons 指 absolute paths 到 gallery/query,compute_target 脚本支持)
+
+**lab4090 与 lab3090 数值对比**:
+- visibility: 差异 ~5e-5 (float32 ULP 级),**visibility_binary bit-identical**
+- heatmap/keypoints/bbox: 差异 ~1e-4 ~1e-6 (3090↔4090 cudnn 非确定性)
+- **训练效果等价**,可直接用
+
+**结论**: lab4090 Occluded-Duke pose_data **production-ready**,可接 Phase 3-A Small baseline(exp274 重启)。
