@@ -1520,7 +1520,7 @@
 | exp266 | Swin-Base | Occ-PTrack | 进行中 e1 | TBD | srvC, 新起 @ 04:46 via queue_on_ckpt daemon (Base 第 3 个最后一个, with_cp) |
 | exp267 | Swin-Tiny | Market | **92.5% / 96.4%** | TBD | ✓ e120 FINAL @ 2026-04-19 13:45 srvB (R5=98.9 R10=99.3) |
 | exp268 | Swin-Small | Market | **94.3% / 97.3%** | TBD | ✓ e120 FINAL @ 2026-04-20 00:39 srvA (R5=99.1 R10=99.5) |
-| exp269 | Swin-Base | Market | 进行中 e1 | TBD | srvA, 新起 @ 00:40 via queue_on_ckpt daemon (Base 第 2 个, with_cp) |
+| exp269 | Swin-Base | Market | **e80 eff FINAL: 94.4 / 97.0 (Global+flip), 94.5 / 97.1 (MaxSim+flip)** | ✓ @ 2026-04-20 13:xx srvA | ⚠️ e80 eval OOM-killed 同 exp263 模式,ckpt80 完整,不重训。Base 对 Small 优势小(Market 已饱和) |
 
 ## PRCV 2026 Phase 3 消融 runs
 
