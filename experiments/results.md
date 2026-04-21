@@ -1562,7 +1562,7 @@
 
 | Exp ID | Backbone | PSG stages | mAP / R1 | 备注 |
 |--------|----------|-----------|----------|------|
-| exp286 | Swin-Tiny | `[-1]` | 进行中 | srvC PID 59845 @ 23:32 CST,ETA tmr 03:00 |
+| exp286 | Swin-Tiny | `[-1]` | **66.0 / 76.6** | ✓ e120 FINAL @ 2026-04-21 10:03 srvC (R5=86.4 R10=89.7). **vs exp261 Full Scaffold 65.9/77.4 Δ=+0.1/-0.8** → GCN 对 Tiny 几乎无贡献, LGPA-only 等价 Full |
 | exp287 | Swin-Tiny | `[-2,-1]` | pending | srvC auto-chain from exp286 (daemon 59846) |
 | exp288 | Swin-Small | `[-1]` | pending | 待 Phase 3-B lab4090 完成后接 |
 | exp289 | Swin-Small | `[-2,-1]` | pending | 待 Phase 3-B lab4090 完成后接 |
