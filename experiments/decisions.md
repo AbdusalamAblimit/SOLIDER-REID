@@ -3843,6 +3843,35 @@ C. 如需更强创新: 需要跳出 Swin + detach 框架 (换 ViT 或全新问�
 
 **Monitor 更新**: stop b9h22bdiy (old exp263c tail) → bizb8v35k (new exp263d tail)
 
+### [2026-04-21 12:00] 事件 — srvA 回归 + OP SOTA 刷 + 5060Ti Base TEST BATCH 约束
+
+**srvA resume**: 用户重新续费, ssh 通, GPU 0 MiB / 15849 free / 0% util, Occ-Duke + Occ-PoseTrack + Market + ReID 数据齐全, pretrained swin_{tiny,small,base} + clip 齐全。
+
+**立即利用 srvA 刷 OP SOTA**:
+- 启动 `exp265b_best_s_op_s41` (Small Full Scaffold OP seed 41) on srvA @ 12:00:30 CST, PID 633
+- config: `configs/occluded_posetrack/prcv_best_small.yml` default
+- 相对 exp265 (seed 42, srvC) 单变量 SEED 42→41
+- 预计 FINAL tmr 00:55 CST
+- 用途: 和 exp265 组成 2-seed ensemble 或 max, 强化 OP SOTA 声明 (vs KPR w/o prompt 73.3/82.5)
+
+**5060Ti 上跑 Base 的 eval TEST BATCH 约束 (用户指示)**:
+- 历史 exp263 Base OD 在 5060Ti e100 eval OOM (13.2G → 16G),  exp269 Base Market e80 eval OOM, exp266 Base OP silent exit (不确定 OOM)
+- **默认 `TEST.IMS_PER_BATCH 256` 在 5060Ti + Base 配置下 eval 阶段 OOM 风险高**
+- 凡 **5060Ti (srvA/srvB/srvC) 上跑 Base (含 Phase 1/Phase 3/OP rerun)**, CLI 必须 override `TEST.IMS_PER_BATCH 128` (or 64 更保守)
+- lab3090 (3090 24G) 和 lab4090 (4090 24G) 不需要降
+
+**挂 daemon exp265b → exp266b (5060Ti Base OP seed 41, 带 TEST BATCH 降)**:
+```
+queue_on_ckpt.sh /hy-tmp/log/occluded_posetrack/exp265b_.../transformer_120.pth \
+  configs/occluded_posetrack/prcv_best_base.yml \
+  /hy-tmp/log/occluded_posetrack/exp266b_best_b_op_s41 \
+  /tmp/exp266b.log exp265b_to_266b \
+  SOLVER.SEED 41 TEST.IMS_PER_BATCH 128
+```
+exp266b FINAL 预计后天上午,覆盖 exp266 silent exit 留下的 OP 主表瑕疵。
+
+Monitor b8y4oohc4 arm for srvA exp265b。
+
 ### [2026-04-21 03:47] 事件 — exp277 Small 3-stage PSG 训练塌缩 (negative result,不重训)
 
 **上下文**:
