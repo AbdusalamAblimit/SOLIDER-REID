@@ -18,8 +18,11 @@
 ```bash
 python3 train.py --config_file configs/occluded_posetrack/prcv_best_small.yml \
   SOLVER.SEED 41 \
+  TEST.IMS_PER_BATCH 128 \
   OUTPUT_DIR /hy-tmp/log/occluded_posetrack/exp265b_best_s_op_s41
 ```
+
+**注**: 2026-04-21 12:08 restart — 原 12:00 启动时未降 TEST BATCH, 用户反馈 "5060Ti 上所有实验预防性降 TEST BATCH" 后 kill 重启 (PID 1151, 原 633 已 kill)。
 
 ## 输出
 

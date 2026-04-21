@@ -3860,6 +3860,11 @@ C. 如需更强创新: 需要跳出 Swin + detach 框架 (换 ViT 或全新问�
 - 凡 **5060Ti (srvA/srvB/srvC) 上跑 Base (含 Phase 1/Phase 3/OP rerun)**, CLI 必须 override `TEST.IMS_PER_BATCH 128` (or 64 更保守)
 - lab3090 (3090 24G) 和 lab4090 (4090 24G) 不需要降
 
+**更新 (12:08 用户反馈)**: 不止 Base, **凡 5060Ti 上所有实验 (Tiny/Small/Base) 都预防性降 TEST.IMS_PER_BATCH 128**。
+- 理由: Small OP 未出现过 OOM 记录,但 "被动等 OOM 再修" 成本高 (已跑的 epoch 要重) vs 主动降 batch (eval 慢 1-2x 但无 OOM 风险), 风险收益比明显
+- 立即 apply: kill exp265b (12:00 版 TEST=256) + restart (12:08 版 TEST=128 PID 1151)
+- 未来规则: 所有 srvA/srvB/srvC 上的 train.py CLI **必须** 加 `TEST.IMS_PER_BATCH 128`
+
 **挂 daemon exp265b → exp266b (5060Ti Base OP seed 41, 带 TEST BATCH 降)**:
 ```
 queue_on_ckpt.sh /hy-tmp/log/occluded_posetrack/exp265b_.../transformer_120.pth \
