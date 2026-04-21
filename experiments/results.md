@@ -1554,7 +1554,7 @@
 | exp285b | Swin-Small | 512 | `[-2,-1]` | pending | **lab4090 同设备 rerun** for 严谨对照 (daemon 4027889 chain exp277b→exp285b) |
 | exp282 | Swin-Small | 256 | `[-1]` | **73.7 / 83.9** | ✓ e120 FINAL @ 2026-04-21 09:33 lab4090 (R5=90.5 R10=92.5). **vs exp262 73.8/83.1: mAP -0.1 R1 +0.8** → low-cap ≥ high-cap, Small Full Scaffold 容量饱和 |
 | exp283 | Swin-Small | 256 | `[-2,-1]` | **73.5 / 83.2** | ✓ e120 FINAL @ 2026-04-21 15:38 lab4090 (R5=90.7 R10=92.5). vs exp262 73.8/83.1 Δ=-0.3/+0.1. vs exp282 73.7/83.9 Δ=-0.2/-0.7 |
-| exp284 | Swin-Small | 512 | `[-1]` | pending | lab4090 auto-chain from exp283 (daemon 3674927). Phase 3-B 核心最小闭环 (Small) |
+| exp284 | Swin-Small | 512 | `[-1]` | **73.4 / 82.9** | ✓ e120 FINAL @ 2026-04-21 21:23 lab4090 (R5=89.9 R10=92.2). vs exp262 73.8/83.1 Δ=-0.4/-0.2. **Phase 3-B Small 2x2 完整: GCN256+1stg (83.9) 最 R1, GCN512+2stg (73.8 mAP) 最 mAP; GCN512+1stg 反而最弱** |
 
 ## PRCV 2026 Phase 3-C 消融 runs (optional, 提前启动)
 
