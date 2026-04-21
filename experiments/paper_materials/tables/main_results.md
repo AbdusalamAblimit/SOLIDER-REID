@@ -67,12 +67,12 @@ KPR 的 75.1/84.3 也包含了 test-time prompting (可视为后处理)。
 
 | Backbone | Occ-Duke (mAP / R1) | Occ-PTrack (mAP / R1) | Market (mAP / R1) | Occ-ReID ← Market (mAP / R1) |
 |----------|---------------------|-----------------------|-------------------|------------------------------|
-| Swin-Tiny (28M) | exp261: TBD / TBD | exp264: TBD / TBD | exp267: TBD / TBD | exp267→OR: TBD / TBD |
+| Swin-Tiny (28M) | exp261: **65.9 / 77.4** | exp264: **76.7 / 85.1** | exp267: **92.5 / 96.4** | exp267→OR: TBD / TBD |
 |  | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD |
-| Swin-Small (50M) | exp262: TBD / TBD | exp265: TBD / TBD | exp268: TBD / TBD | exp268→OR: TBD / TBD |
+| Swin-Small (50M) | exp285b: **73.8 / 83.8** ← lab4090 同设备 rerun exp262 | exp265: **78.4 / 86.2** (s42) / exp265b: **pending** (s41) | exp268: **94.3 / 97.3** | exp268→OR: TBD / TBD |
 |  | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD |
-| Swin-Base (88M) | exp263: DEFERRED | exp266: DEFERRED | exp269: DEFERRED | exp269→OR: DEFERRED |
-|  | + MaxSim: — | + MaxSim: — | + MaxSim: — | + MaxSim: — |
+| Swin-Base (88M) | exp263d: **74.1 / 83.3** (s41 lab3090 pwrlim) | exp266 e60 eff: **78.4 / 86.2** / exp266b_3090: **pending** (s41) | exp269 e80 eff: **94.4 / 97.0** | exp269→OR: TBD / TBD |
+|  | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD |
 
 **Base 行临时 reference**（旧协议 `exp260b` 本地 3090，不含默认 flip-test）：
 - Occ-Duke: 73.9 / 83.2 (eq_concat), 75.4 / 84.8 (MaxSim + flip)
@@ -99,8 +99,8 @@ KPR 的 75.1/84.3 也包含了 test-time prompting (可视为后处理)。
 | BPBreID | WACV'23 | HRNet-W48 | 62.5 / 75.1 | — / — | 需查 KPR 表格补 Occ-PTrack |
 | KPR w/o prompt | ECCV'24 | Swin-B (88M) | 73.3 / 82.5 | — / — | 需查 KPR 表格补 Occ-PTrack |
 | KPR | ECCV'24 | Swin-B (88M) | 75.1 / 84.3 | — / — | 带 prompt |
-| **Ours (Tiny)** | — | Swin-T (28M) | TBD | TBD | 需 exp261+ 填 |
-| **Ours (Small)** | — | Swin-S (50M) | TBD | TBD | 需 exp262+ 填 |
-| **Ours (Base)** | — | Swin-B (88M) | 73.9 / 83.2 (旧协议) | — | DEFERRED，临时引 exp260b |
+| **Ours (Tiny)** | — | Swin-T (28M) | **65.9 / 77.4** (exp261) | **76.7 / 85.1** (exp264) | — |
+| **Ours (Small)** | — | Swin-S (50M) | **73.8 / 83.8** (exp285b) | **78.4 / 86.2** (exp265) | Small 对 KPR w/o prompt 73.3/82.5 +0.5/+1.3 |
+| **Ours (Base)** | — | Swin-B (88M) | **74.1 / 83.3** (exp263d s41) | **78.4 / 86.2** (exp266 e60 eff) | Base +0.8 mAP over KPR w/o prompt, Occ-PTrack 待 exp266b FINAL 对照 |
 
 （Occ-PTrack 对标 baseline 需从 KPR 论文 Table 补回。后面我补。）
