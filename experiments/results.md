@@ -1538,7 +1538,7 @@
 | exp275 | Swin-Small | Occ-Duke | `[-1]` (1-stage) | **68.8 / 76.8** | ✓ e120 FINAL @ 2026-04-20 23:37 lab4090 (R5=87.2 R10=90.4). vs exp274 no-PSG Δ=**+0.7/0** (mAP 涨 R1 持平). vs Tiny 1-stage 增益 (+1.0/+1.1),Small 上 +0.7/0 缩水 |
 | exp276 | Swin-Small | Occ-Duke | `[-2,-1]` (2-stage) | **68.3 / 77.2** | ✓ e120 FINAL @ 2026-04-21 01:41 lab4090 (R5=87.2 R10=90.1). vs exp275 1-stage Δ=-0.5 mAP/+0.4 R1 (**Small 上 2-stage 不同 Tiny,mAP 不涨但 R1 涨**) |
 | exp277 | Swin-Small | Occ-Duke | `[-3,-2,-1]` (3-stage) | ~~49.0 / 57.7 (seed 42 偶发塌缩)~~ | abandoned @ 2026-04-21 03:47 (e2 id_global 卡 3.277 classifier uniform). **改 exp277b seed 41 重跑** (用户判断偶发) |
-| exp277b | Swin-Small | Occ-Duke | `[-3,-2,-1]` (3-stage) | pending | lab4090 auto-chain from exp284 (daemon 3909905, SEED 41). 替代 exp277 作 PRCV Table 2 数字 |
+| exp277b | Swin-Small | Occ-Duke | `[-3,-2,-1]` (3-stage) | **68.3 / 77.6** | ✓ e120 FINAL @ 2026-04-21 23:34 lab4090 (R5=87.4 R10=89.8). **R1 最强 Phase 3-A Small!** vs exp277 s42 塌缩 49.0/57.7 Δ=+19.3/+19.9. vs exp276 2-stg 68.3/77.2 Δ=0/+0.4. **seed 41 完全验证 exp277 塌缩是偶发** |
 
 ## PRCV 2026 Phase 3-B 消融 runs
 
