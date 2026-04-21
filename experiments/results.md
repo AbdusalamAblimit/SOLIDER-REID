@@ -1548,7 +1548,7 @@
 |--------|----------|-----------|------------|-------------------------------|------|
 | exp281 (= exp261) | Swin-Tiny | 512 | `[-2,-1]` | **65.9 / 77.4** | Phase 1 共享,不重跑 |
 | exp278 | Swin-Tiny | 256 | `[-1]` | **65.7 / 76.7** | ✓ e120 FINAL @ 2026-04-21 10:42 srvB (R5=86.7 R10=89.6). vs exp261 GCN512+2stg 65.9/77.4 Δ=-0.2/-0.7. vs exp286 LGPA-only 66.0/76.6 Δ=-0.3/+0.1 (GCN256 略弱于 no GCN) |
-| exp279 | Swin-Tiny | 256 | `[-2,-1]` | pending | srvB auto-chain from exp278 (daemon 70448) |
+| exp279 | Swin-Tiny | 256 | `[-2,-1]` | **65.7 / 76.9** | ✓ e120 FINAL @ 2026-04-21 21:32 srvB (R5=86.6 R10=90.1). vs exp278 GCN256+1stg 65.7/76.7 Δ=0/+0.2 (mAP 持平 R1 +0.2). vs exp261 65.9/77.4 Δ=-0.2/-0.5 |
 | exp280 | Swin-Tiny | 512 | `[-1]` | pending | srvB auto-chain from exp279 (daemon 70449). Phase 3-B 核心最小闭环 (Tiny) |
 | exp285 (= exp262) | Swin-Small | 512 | `[-2,-1]` | **73.8 / 83.1** | Phase 1 共享, srvA 5060Ti (原始), 已 re-eval flip fix 后 73.8/83.1 no-op |
 | exp285b | Swin-Small | 512 | `[-2,-1]` | pending | **lab4090 同设备 rerun** for 严谨对照 (daemon 4027889 chain exp277b→exp285b) |
