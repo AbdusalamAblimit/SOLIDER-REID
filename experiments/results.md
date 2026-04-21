@@ -1550,7 +1550,8 @@
 | exp278 | Swin-Tiny | 256 | `[-1]` | pending | srvB auto-chain from exp273 (daemon 70447) |
 | exp279 | Swin-Tiny | 256 | `[-2,-1]` | pending | srvB auto-chain from exp278 (daemon 70448) |
 | exp280 | Swin-Tiny | 512 | `[-1]` | pending | srvB auto-chain from exp279 (daemon 70449). Phase 3-B 核心最小闭环 (Tiny) |
-| exp285 (= exp262) | Swin-Small | 512 | `[-2,-1]` | **73.8 / 83.1** | Phase 1 共享,不重跑 |
+| exp285 (= exp262) | Swin-Small | 512 | `[-2,-1]` | **73.8 / 83.1** | Phase 1 共享, srvA 5060Ti (原始), 已 re-eval flip fix 后 73.8/83.1 no-op |
+| exp285b | Swin-Small | 512 | `[-2,-1]` | pending | **lab4090 同设备 rerun** for 严谨对照 (daemon 4027889 chain exp277b→exp285b) |
 | exp282 | Swin-Small | 256 | `[-1]` | pending | lab4090 auto-chain from exp277 (daemon 3674925) |
 | exp283 | Swin-Small | 256 | `[-2,-1]` | pending | lab4090 auto-chain from exp282 (daemon 3674926) |
 | exp284 | Swin-Small | 512 | `[-1]` | pending | lab4090 auto-chain from exp283 (daemon 3674927). Phase 3-B 核心最小闭环 (Small) |
