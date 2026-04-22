@@ -1576,5 +1576,5 @@
 |--------|----------|---------|------|-------------------------|-------------------|------|
 | exp290 | Swin-Small | Occ-PTrack | 42 | running e34+ (e30: 77.1/85.0) | exp265b e30 77.2/84.9 (Δ -0.1/+0.1) | srvB, OP 多人关键 SOTA 追求 |
 | exp291 | Swin-Small | Occ-Duke | 42 | **73.5 / 82.9** | exp285b 73.8/83.8 (Δ -0.3/-0.9) | ✓ e120 FINAL @ 2026-04-22 18:13 lab4090 (R5=90.7 R10=92.5). OD 多单人场景 near no-op, 机制无显著回归 |
-| exp292 | Swin-Small | Market | 42 | running e36+ (e30: 92.7/96.3) | exp268 FINAL 94.3/97.3 | lab3090 RESTART (OOM fix TEST.IMS_PER_BATCH 64) |
-| exp293 | Swin-Base | Market | 42 | running e1+ (PLBOA启用, 激活 OA-SD) | exp269 e80 eff 94.4/97.0 | lab4090 auto-chain from exp291 @ 18:14. **满血 Base Market + PLBOA** |
+| exp292 | Swin-Small | Market | 42 | **e90 eff FINAL: 94.2 / 97.1** | exp268 FINAL 94.3/97.3 (Δ -0.1/-0.2 持平) | ✓ 停于 e93 @ 2026-04-22 23:25 用户让出 lab3090。R5 99.2 R10 99.5 = exp268 FINAL R5 99.1 R10 99.5 |
+| exp293 | Swin-Base | Market + **PLBOA** | 42 | **e80 eff FINAL: 94.1 / 96.9** (Global+flip); **94.1 / 97.2** (MaxSim+flip) | exp269 e80 eff 94.4/97.0 (Δ -0.3/-0.1 Global; R1 +0.2 MaxSim) | ⚠️ OOM @ e80 flip-test eval (TEST.IMS_PER_BATCH 256 + 80 epoch memory frag). transformer_80.pth 独立 test.py 重跑 eval 成功。**PLBOA 在 Market net negative -0.3 mAP** — 主表仍用 exp269 |

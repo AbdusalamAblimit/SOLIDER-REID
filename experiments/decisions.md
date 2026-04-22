@@ -4113,3 +4113,46 @@ Small (1-stage peak mAP, 2-stage peak R1, 3-stage 塌缩):
 - daemon 706372 detected ckpt @ 10:14:09 UTC (18:14 CST), 20s 安全 + no-crash 检查 → launch exp293 PID 724112 @ 10:14:29 UTC
 - exp293 config 确认 PLBOA=True 激活, OA-SD WARNING 消失 (teacher/student 现有差异)
 - 预期 FINAL ~00:30 tmr
+
+### [2026-04-22 23:25] exp292 e90 eff FINAL + exp293 e80 eff FINAL — target-heatmap Market + PLBOA Base 双消融收尾
+
+**exp292 Small Market target-heatmap** (lab3090 PLBOA OFF default):
+- 停于 e93 (用户指令 "3090 有人用了, 停了吧")
+- **e90 eff FINAL: 94.2 / 97.1 / 99.2 / 99.5**
+- vs exp268 FINAL 94.3/97.3: Δ **-0.1 / -0.2** (essentially 持平)
+- 结论: target-heatmap 在 Market 全 single-person 严格 no-op, 和 exp291 OD (-0.3/-0.9) / exp290 OP (-0.1/0) 结论一致 — **机制 3 数据集都 near-持平**
+
+**exp293 Base Market + PLBOA** (lab4090, OA-SD 激活):
+- e80 iter 完成后 flip-test eval OOM (TEST.IMS_PER_BATCH 256 + 80 epoch memory fragmentation)
+- transformer_80.pth 独立 test.py 跑 e80 eval (TEST.IMS_PER_BATCH 64):
+  - **Global+flip: 94.1 / 96.9**
+  - **MaxSim+flip: 94.1 / 97.2**
+- vs exp269 e80 eff FINAL 94.4/97.0 (PLBOA OFF): Δ -0.3 / -0.1 (Global)
+- **PLBOA 在 Market net negative** (轻微): 
+  - 假设验证: 第 3 情景 "两力相抵, 微 net 负" (OA-SD 收益 < 分布偏差)
+  - 主表 Base Market 主数字 **仍用 exp269 94.4/97.0**
+  - exp293 作 supplementary "PLBOA on Market" 消融
+- 不 restart: e80 数据已足够支持结论, 5h 重跑 risk-adjusted expected gain ≤ 0.1 mAP
+
+**target-heatmap 机制最终定位** (论文 narrative):
+- 原 design.md 假设: OP 多人场景 SOTA 推动 (82+/92+ → KPR-with-prompt level)
+- 实际跨 3 数据集: OP -0.1/0, OD -0.3/-0.9, Market -0.1/-0.2 (均 near no-op)
+- **定位**: supplementary 消融, 证明机制 **backward-compat** (single-person 无回归) 和 **target disambiguation 语义正确**
+- 不作主创新, 主表 Small OD/OP/Market 仍用 exp285b/exp265/exp268 scene baseline
+
+**PLBOA 跨 dataset 策略** (清晰):
+- OD (exp285b etc): PLBOA True, OA-SD 蒸馏有效, +性能
+- OP (exp265 etc): PLBOA True, OA-SD 蒸馏有效, +性能
+- **Market: PLBOA False** (exp293 验证), 分布不匹配 → 保留关闭
+
+**lab3090 + lab4090 都 idle**, Phase 3/4 主矩阵基本完整:
+- Phase 3-A/B/C 数字齐全
+- Phase 1 main results 齐全
+- target-heatmap 3 数据集消融齐全
+- PLBOA Market 消融完成
+
+**下一可选任务** (等用户指示):
+- exp289 完成后 Phase 3-C 2x2 闭合 (srvC ~05:30 tmr FINAL)
+- exp266b srvA FINAL (~13:00 tmr) 作 Base OP seed 41 srvA 对照 (cross-device with lab3090)
+- exp290 srvB FINAL (~09:00 tmr)
+- lab4090 可做: Task #6 Small LR sensitivity / 或 cross-domain Market→Occ-ReID
