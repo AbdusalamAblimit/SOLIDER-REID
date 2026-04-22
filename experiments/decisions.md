@@ -3962,3 +3962,35 @@ Small (1-stage peak mAP, 2-stage peak R1, 3-stage 塌缩):
 - 论文主结论已稳 (Phase 3-A/B 9/10 + Phase 3-C 3/4), srvB idle 暂不急开新训练, 优先文档收尾
 
 **监控链 idle 判定**: monitor `boairmoh9` (srvB 事件) 保持 armed, 将捕获任意意外事件。exp280 FINAL 处理完毕 (monitor.md + results.md + ablation.md + decisions.md + memory + git push `08de230`)。
+
+### [2026-04-22 09:29] 事件 — exp266b_3090 FINAL 78.5/86.2 (Base OP s41 完整 120ep) + lab3090 idle
+
+**上下文**:
+- exp266b_3090 Swin-Base + Full Scaffold + Occ-PTrack + seed 41 FINAL @ 09:29 CST lab3090 (docker, pwrlim 280W)
+- **78.5 / 86.2 / R5 94.4 / R10 96.9** — 完整 120 epoch, 无 silent exit
+
+**对比**:
+- exp266 s42 srvC e60 eff: 78.4/86.2 → Δ +0.1/0 (持平, seed 41 微优 mAP)
+- exp265 Small OP s42: 78.4/86.2 → Δ +0.1/0 (**Base vs Small OP 0 mAP 增益**)
+- exp265b Small OP s41: 78.5/85.9 → Δ 0/+0.3 (Base 略优 R1 over Small 同 seed)
+
+**科学结论** (OP benchmark 饱和):
+1. Base vs Small 同 seed 0 mAP 差 → **OP 对 backbone cap 不敏感**
+2. 跨 seed + 跨设备所有 Δ ≤ 0.3 → 强鲁棒性
+3. 支持 "Swin-Small 已够用 for OP" 主张, 论文 Base OP 不是卖点, 但填齐表格
+
+**论文主数字**: Base OP 用 exp266b_3090 78.5/86.2 (完整 120ep), 替换 exp266 s42 e60 eff。
+
+**lab3090 状态**: idle, 无 chain daemon。Phase 3 lab3090 任务完成:
+- Phase 3-B Small GCN512+2stg rerun (exp285b) ✓
+- Base OD seed 41 (exp263d) ✓
+- Base OP seed 41 (exp266b_3090) ✓
+
+**后续 lab3090 options**:
+- Task #12 MaxSim eval (Base ckpts exp263d + exp266b_3090, 只需 test.py, ~5 min/ckpt)
+- 等 srvA exp266b + srvC Phase 3-C 都 FINAL 后统一批跑 (用户 wait 指令)
+- 或 now 跑 Base 独立 MaxSim (不影响 srvA/srvC 训练) — 保守选择: wait
+
+**当前五机**: srvA exp266b (刚启动 e2), srvB idle, srvC exp288 (e95), lab3090 idle, lab4090 idle。3 idle。
+
+**Monitor 状态**: `b6s64ytc0` lab3090 monitor stream 预期自然结束 (无后续事件)。

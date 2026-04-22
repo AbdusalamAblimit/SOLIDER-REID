@@ -94,6 +94,18 @@
 | Small PSG 3-stg OD | 49.0/57.7 (exp277 塌缩) | **68.3/77.6** (exp277b) | +19.3/+19.9 | 偶发 seed 塌缩问题 |
 | Base Full Scaffold OD | (exp263 e100 eff 72.5/81.8 seed 42) | **74.1/83.3** (exp263d s41) | +1.6/+1.5 | lab3090 pwrlim 280W |
 | **Small Full Scaffold OP** | 78.4/86.2 (exp265 srvC) | **78.5/85.9** (exp265b srvA) | +0.1/-0.3 | 跨 seed + 跨设备, OP 对 seed 最鲁棒 (Δ ≤ 0.3) |
+| **Base Full Scaffold OP** | 78.4/86.2 (exp266 srvC e60 eff, silent exit) | **78.5/86.2** (exp266b_3090 lab3090 完整 120ep) | +0.1/0 | 完整 120 epoch 下 Base OP s41 = Small OP s41 = 78.5 mAP → OP backbone 饱和 |
+
+---
+
+## Table F — Backbone 饱和 (OP benchmark)
+
+| Backbone | seed 42 | seed 41 | 平均 |
+|----------|---------|---------|------|
+| Swin-Small (exp265/265b) | 78.4/86.2 | 78.5/85.9 | 78.45/86.05 |
+| Swin-Base (exp266/266b_3090) | 78.4/86.2 e60 eff | 78.5/86.2 完整 | 78.45/86.2 |
+
+**结论**: OP benchmark 上 Base vs Small **0 mAP 增益**, R1 差 0.15 → 支持 "Swin-Small 已饱和 OP" 主张, 不需要 Base backbone。
 
 **结论**: 大多数 seed 对结果影响 ≤0.7 mAP, 但 **pure PSG 3-stg 有偶发塌缩风险**, 主表应避开此配置。
 

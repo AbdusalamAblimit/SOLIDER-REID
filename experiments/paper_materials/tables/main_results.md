@@ -71,7 +71,7 @@ KPR 的 75.1/84.3 也包含了 test-time prompting (可视为后处理)。
 |  | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD |
 | Swin-Small (50M) | exp285b: **73.8 / 83.8** ← lab4090 同设备 rerun exp262 | exp265: **78.4 / 86.2** (s42) / exp265b: **78.5 / 85.9** (s41, Δ +0.1/-0.3) | exp268: **94.3 / 97.3** | exp268→OR: TBD / TBD |
 |  | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD |
-| Swin-Base (88M) | exp263d: **74.1 / 83.3** (s41 lab3090 pwrlim) | exp266 e60 eff: **78.4 / 86.2** / exp266b_3090: **pending** (s41) | exp269 e80 eff: **94.4 / 97.0** | exp269→OR: TBD / TBD |
+| Swin-Base (88M) | exp263d: **74.1 / 83.3** (s41 lab3090 pwrlim) | exp266b_3090: **78.5 / 86.2** (s41, 完整 120ep) / exp266 s42 e60 eff: 78.4/86.2 | exp269 e80 eff: **94.4 / 97.0** | exp269→OR: TBD / TBD |
 |  | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD |
 
 **Base 行临时 reference**（旧协议 `exp260b` 本地 3090，不含默认 flip-test）：
@@ -101,6 +101,6 @@ KPR 的 75.1/84.3 也包含了 test-time prompting (可视为后处理)。
 | KPR | ECCV'24 | Swin-B (88M) | 75.1 / 84.3 | — / — | 带 prompt |
 | **Ours (Tiny)** | — | Swin-T (28M) | **65.9 / 77.4** (exp261) | **76.7 / 85.1** (exp264) | — |
 | **Ours (Small)** | — | Swin-S (50M) | **73.8 / 83.8** (exp285b) | **78.4 / 86.2** (exp265) | Small 对 KPR w/o prompt 73.3/82.5 +0.5/+1.3 |
-| **Ours (Base)** | — | Swin-B (88M) | **74.1 / 83.3** (exp263d s41) | **78.4 / 86.2** (exp266 e60 eff) | Base +0.8 mAP over KPR w/o prompt, Occ-PTrack 待 exp266b FINAL 对照 |
+| **Ours (Base)** | — | Swin-B (88M) | **74.1 / 83.3** (exp263d s41) | **78.5 / 86.2** (exp266b_3090 s41) | Base +0.8 mAP over KPR w/o prompt, **OP Base vs Small 0 增益** (均 78.5/86.2), backbone 饱和 |
 
 （Occ-PTrack 对标 baseline 需从 KPR 论文 Table 补回。后面我补。）
