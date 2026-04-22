@@ -68,11 +68,11 @@ KPR 的 75.1/84.3 也包含了 test-time prompting (可视为后处理)。
 | Backbone | Occ-Duke (mAP / R1) | Occ-PTrack (mAP / R1) | Market (mAP / R1) | Occ-ReID ← Market (mAP / R1) |
 |----------|---------------------|-----------------------|-------------------|------------------------------|
 | Swin-Tiny (28M) | exp261: **65.9 / 77.4** | exp264: **76.7 / 85.1** | exp267: **92.5 / 96.4** | exp267→OR: TBD / TBD |
-|  | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD |
+|  | + MaxSim: **66.4 / 77.7** (Δ +0.5/+0.3) | + MaxSim: TBD (exp264 srvC busy) | + MaxSim: 92.7 / 96.4 (Δ 0/0 饱和) | + MaxSim: TBD |
 | Swin-Small (50M) | exp285b: **73.8 / 83.8** ← lab4090 同设备 rerun exp262 | exp265: **78.4 / 86.2** (s42) / exp265b: **78.5 / 85.9** (s41, Δ +0.1/-0.3) | exp268: **94.3 / 97.3** | exp268→OR: TBD / TBD |
-|  | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD |
+|  | + MaxSim: **74.0 / 84.1** (Δ +0.2/+0.3) | + MaxSim: TBD (srvA/srvC busy) | + MaxSim: TBD (srvA busy) | + MaxSim: TBD |
 | Swin-Base (88M) | exp263d: **74.1 / 83.3** (s41 lab3090 pwrlim) | exp266b_3090: **78.5 / 86.2** (s41, 完整 120ep) / exp266 s42 e60 eff: 78.4/86.2 | exp269 e80 eff: **94.4 / 97.0** | exp269→OR: TBD / TBD |
-|  | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD |
+|  | + MaxSim: **75.2 / 84.8** (Δ **+1.1/+1.5** ✓ SOTA) | + MaxSim: **78.5 / 86.4** (Δ 0/+0.2) | + MaxSim: TBD (srvA busy) | + MaxSim: TBD |
 
 **Base 行临时 reference**（旧协议 `exp260b` 本地 3090，不含默认 flip-test）：
 - Occ-Duke: 73.9 / 83.2 (eq_concat), 75.4 / 84.8 (MaxSim + flip)

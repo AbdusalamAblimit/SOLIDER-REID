@@ -3994,3 +3994,41 @@ Small (1-stage peak mAP, 2-stage peak R1, 3-stage 塌缩):
 **当前五机**: srvA exp266b (刚启动 e2), srvB idle, srvC exp288 (e95), lab3090 idle, lab4090 idle。3 idle。
 
 **Monitor 状态**: `b6s64ytc0` lab3090 monitor stream 预期自然结束 (无后续事件)。
+
+### [2026-04-22 11:00] 批量 MaxSim+flip eval 完成 (17 ckpts 跨 3 idle 机器)
+
+**执行**:
+- srvB (5+4 batches): exp261 Tiny OD, exp267 Tiny Market (retry 后成功), exp278/279/280 Phase 3-B Tiny, exp271/272/273 Phase 3-A pure PSG Tiny
+- lab3090 (2 ckpts): exp263d Base OD, exp266b_3090 Base OP
+- lab4090 (4+5 batches): exp282/283/284/285b Phase 3-B Small, exp275/276/277/277b Phase 3-A pure PSG Small (exp274 POSE_ENABLED False crash)
+
+**🔥 核心数字**:
+1. **Base OD + MaxSim = 75.2/84.8 > KPR 75.1/84.3** → Δ +0.1/+0.5 (**SOTA on Occluded-Duke**)
+2. Small OD + MaxSim = 74.0/84.1 (+0.2/+0.3)
+3. Tiny OD + MaxSim = 66.4/77.7 (+0.5/+0.3)
+
+**🔥 MaxSim 增益 backbone 强相关**:
+- Base: +1.1 mAP / +1.5 R1 (最大)
+- Tiny: +0.5 / +0.3 (中)
+- Small: +0.2 / +0.3 (小)
+- Market/OP: 0 / 0-0.2 (饱和)
+
+**跨 eval 验证**: Phase 3-A pure PSG 所有 Global+flip 数字和训练 FINAL eq+flip 精确对齐 (差 ≤ 0.1 R1), **exp277 seed 42 塌缩 49.0/57.6 跨 eval 复现确认偶发 seed 训练塌缩**。
+
+**Phase 3-B 2×2 结论跨 eval 一致**:
+- Tiny 2×2: GCN512+2stg peak (exp261 66.4/77.7), GCN512+1stg 最弱 (exp280 66.1/76.7)
+- Small 2×2: GCN512+2stg peak mAP (exp285b 74.0/84.1), 四格方差 ≤ 0.3 mAP / 0.4 R1
+
+**待 eval** (srvA/srvC 训练完成后再处理):
+- srvC local: exp264 Tiny OP, exp265 Small OP, exp286/287 Phase 3-C Tiny LGPA-only, exp288/289 Phase 3-C Small LGPA-only
+- srvA local: exp262 (原始 srvA), exp265b Small OP s41, exp268 Small Market, exp269 Base Market
+
+**论文更新**:
+- main_results Table 1: + MaxSim 行填入已有 3 个 backbone × OD + 1 个 Base OP + 1 个 Tiny Market
+- ablation.md: 新增 Table G "MaxSim+flip hybrid eval" 完整汇总 17 ckpt
+- Phase 3-A 跨 eval 验证节 加入 Table A 下
+
+**下一步**:
+- 等 srvA exp266b FINAL ~14:00 → srvA idle → 补 exp262/265b/268/269 eval
+- 等 srvC exp288/289 FINAL ~17:00 → srvC idle → 补 exp264/265/286/287/288/289 eval
+- 可选: lab3090 上跑 cross-domain Market→Occ-ReID (Occ-ReID 数据集已解压, 需 rsync exp267/268/269 Market ckpt)

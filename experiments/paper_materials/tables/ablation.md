@@ -28,6 +28,20 @@
 2. **Small mAP peak 在 1-stage** (68.8), 3-stage 回落到 68.3 → 过深 PSG 压缩 Small 更强特征
 3. **Tiny PSG 增益更明显** (+1.3 mAP on 2-stage), Small +0.7 mAP
 
+**Flip-test 复现验证 (2026-04-22 MaxSim batch, Global+flip only — pure PSG 无 parts)**:
+
+| Exp | 训练 eq+flip | 复现 Global+flip | 差 |
+|-----|-------------|-----------------|----|
+| exp271 Tiny 1-stg | 60.2/69.5 | 60.2/69.5 | = ✓ |
+| exp272 Tiny 2-stg | 60.5/69.7 | 60.5/69.7 | = ✓ |
+| exp273 Tiny 3-stg | 60.5/69.9 | 60.5/69.9 | = ✓ |
+| exp275 Small 1-stg | 68.8/76.8 | 68.8/76.7 | -0/-0.1 |
+| exp276 Small 2-stg | 68.3/77.2 | 68.3/77.2 | = ✓ |
+| exp277 Small 3-stg s42 | 49.0/57.7 | **49.0/57.6** | -0/-0.1 (塌缩复现) |
+| exp277b Small 3-stg s41 | 68.3/77.6 | 68.3/77.6 | = ✓ |
+
+**数字跨 eval 完美对齐** (最大差 0.1 R1), 确认 flip-test 稳定。exp277 塌缩非 eval fluke, 确定是 seed 42 偶发训练塌缩。
+
 ---
 
 ## Table B — GCN cap × PSG stage (Full Scaffold)
@@ -106,6 +120,52 @@
 | Swin-Base (exp266/266b_3090) | 78.4/86.2 e60 eff | 78.5/86.2 完整 | 78.45/86.2 |
 
 **结论**: OP benchmark 上 Base vs Small **0 mAP 增益**, R1 差 0.15 → 支持 "Swin-Small 已饱和 OP" 主张, 不需要 Base backbone。
+
+---
+
+## Table G — MaxSim+flip hybrid eval (2026-04-22 batch)
+
+**Protocol**: `scripts/eval_fliptest_maxsim.py`, `TEST.IMS_PER_BATCH 128`, `global_weight=1.0` (1:1 hybrid), flip-test ON。
+
+### Phase 1 main results + MaxSim boost
+
+| Exp | Backbone × Dataset | eq+flip (train FINAL) | Global+flip | **MaxSim+flip** | Δ MaxSim | vs KPR |
+|-----|---------------------|----------------------|-------------|-----------------|----------|--------|
+| exp263d | **Base × OD s41** | 74.1/83.3 | 73.8/82.9 | **75.2/84.8** | **+1.1/+1.5** | **+0.1/+0.5 ✓ SOTA** |
+| exp285b | Small × OD s42 | 73.8/83.8 | 72.7/83.6 | 74.0/84.1 | +0.2/+0.3 | -1.1/-0.2 |
+| exp261 | Tiny × OD s42 | 65.9/77.4 | 66.1/76.9 | 66.4/77.7 | +0.5/+0.3 | -8.7/-6.6 |
+| exp266b_3090 | Base × OP s41 | 78.5/86.2 | 78.2/86.4 | 78.5/86.4 | 0/+0.2 | — |
+| exp267 | Tiny × Market s42 | 92.5/96.4 | 92.7/96.4 | 92.7/96.4 | 0/0 | 已饱和 |
+
+### Phase 3-B Small 2×2 (Full Scaffold × GCN cap × PSG stage)
+
+| | GCN256 | GCN512 |
+|---|--------|--------|
+| PSG `[-1]` | **73.9/84.1** (exp282) | 73.7/83.7 (exp284) |
+| PSG `[-2,-1]` | 73.7/83.8 (exp283) | **74.0/84.1** (exp285b, mAP peak) |
+
+### Phase 3-B Tiny 2×2
+
+| | GCN256 | GCN512 |
+|---|--------|--------|
+| PSG `[-1]` | 66.2/77.0 (exp278) | 66.1/76.7 (exp280) |
+| PSG `[-2,-1]` | 66.2/77.5 (exp279) | **66.4/77.7** (exp261, peak) |
+
+### MaxSim 跨 backbone 规律
+
+| Backbone | Δ MaxSim mAP | Δ MaxSim R1 | 解读 |
+|----------|--------------|-------------|------|
+| **Base** (OD) | **+1.1** | **+1.5** | 最大 boost, 参数多 → part feature 分辨力强 |
+| Tiny (OD) | +0.4-0.5 | +0.3-0.8 | 中等 boost, 容量小但 part 信号清晰 |
+| Small (OD) | +0.2-0.3 | +0.2-0.8 | 最小 boost, 已接近 Small 饱和 |
+| Market (Tiny) | 0 | 0 | 饱和 benchmark, MaxSim 无收益 |
+| OP (Base) | 0 | +0.2 | 饱和 benchmark, 微小 R1 提升 |
+
+**核心发现**:
+1. **MaxSim 是 Base backbone 的 unlocker**: +1.1/+1.5 放大参数优势, 没有 MaxSim 时 Base vs Small 几乎 0 差 (73.8 vs 73.8 at eq_concat)
+2. **Small 已饱和**: MaxSim +0.2 mAP, 说明 Small part branch 已充分利用
+3. **Phase 3-B 2×2 排序跨 eval 一致**: GCN512+2stg 仍 peak mAP 跨 Tiny/Small
+4. **Market/OP 饱和**: 不要在这两个 benchmark 上讲 MaxSim 故事
 
 **结论**: 大多数 seed 对结果影响 ≤0.7 mAP, 但 **pure PSG 3-stg 有偶发塌缩风险**, 主表应避开此配置。
 
