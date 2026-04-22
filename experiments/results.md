@@ -1568,7 +1568,7 @@
 | exp286 | Swin-Tiny | `[-1]` | **66.0 / 76.6** | ✓ e120 FINAL @ 2026-04-21 10:03 srvC (R5=86.4 R10=89.7). **vs exp261 Full Scaffold 65.9/77.4 Δ=+0.1/-0.8** → GCN 对 Tiny 几乎无贡献, LGPA-only 等价 Full |
 | exp287 | Swin-Tiny | `[-2,-1]` | **65.9 / 77.0** | ✓ e120 FINAL @ 2026-04-21 20:48 srvC (R5=87.0 R10=89.7). vs exp286 LGPA-only 1stg 66.0/76.6 Δ=-0.1/+0.4 (2-stg R1 微优). vs exp261 Full 65.9/77.4 Δ=0/-0.4 (GCN 主要给 R1) |
 | exp288 | Swin-Small | `[-1]` | **73.8 / 83.8** | ✓ e120 FINAL @ 2026-04-22 12:51 srvC (R5=90.5 R10=92.0). 🔥 **vs exp285b Full Scaffold 73.8/83.8 完全持平** (mAP/R1 identical, R5/R10 微差 0.2/0.7)。vs exp282 Full GCN256+1stg 73.7/83.9 Δ=+0.1/-0.1。**证实 GCN 对 Small OD 零贡献**, LGPA 单独达 Full Scaffold 性能 |
-| exp289 | Swin-Small | `[-2,-1]` | running e37+ (e30: 68.9/79.3) | srvC auto-chain from exp288 @ 12:52, PID 86783. 对照 exp288 验证 PSG stage in LGPA-only 配置 |
+| exp289 | Swin-Small | `[-2,-1]` | **73.8 / 83.3** | ✓ e120 FINAL @ 2026-04-23 05:39 srvC (R5=90.5 R10=92.4). **vs exp288 1-stg 73.8/83.8 Δ=0/-0.5**, vs exp285b Full Scaffold 73.8/83.8 Δ=0/-0.5 — **mAP 完全持平 Full Scaffold, GCN 零贡献 reconfirmed**. 和 Tiny Phase 3-C (exp287 2-stg 65.9/77.0 vs exp286 1-stg 66.0/76.6) 方向相反 (Small 1-stg R1 微优, Tiny 2-stg R1 微优), 但 mAP 均持平 |
 
 ## target-heatmap 机制 (POSE_USE_TARGET_HEATMAP=True)
 

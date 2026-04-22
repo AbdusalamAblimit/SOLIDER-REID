@@ -4156,3 +4156,36 @@ Small (1-stage peak mAP, 2-stage peak R1, 3-stage 塌缩):
 - exp266b srvA FINAL (~13:00 tmr) 作 Base OP seed 41 srvA 对照 (cross-device with lab3090)
 - exp290 srvB FINAL (~09:00 tmr)
 - lab4090 可做: Task #6 Small LR sensitivity / 或 cross-domain Market→Occ-ReID
+
+### [2026-04-23 05:40] exp289 FINAL 73.8/83.3 — Phase 3-C Small 2×2 闭合 + exp269b auto-chain 启动
+
+**exp289 FINAL**:
+- Swin-Small LGPA-only + 2-stage PSG (无 GCN) @ 2026-04-23 05:39:56 CST srvC
+- **73.8 / 83.3 / R5 90.5 / R10 92.4**
+- vs exp288 LGPA-only 1-stg 73.8/83.8/90.5/92.0: Δ 0 / -0.5 / 0 / +0.4
+- vs exp285b Full Scaffold 73.8/83.8: Δ 0 / -0.5
+
+**Phase 3-C Small 2×2 完整闭合**:
+| | 1-stg | 2-stg |
+|---|-------|-------|
+| LGPA-only | exp288 73.8/83.8 | exp289 73.8/**83.3** |
+
+- **mAP 两配置 = 73.8** (持平 Full Scaffold) — GCN 零贡献 reconfirmed
+- R1 1-stg 微优 +0.5, R10 2-stg 微优 +0.4 — 方差范围
+- 和 Tiny Phase 3-C (2-stg R1 优) 方向相反, 但 mAP 一致结论
+
+**exp269b auto-chain 启动成功** @ 05:40 srvC via daemon 94420:
+- Base Market PLBOA OFF full 120 epoch (公平对比 exp293 restart PLBOA ON)
+- TEST.IMS_PER_BATCH 64 ✓
+- e2 warmup @ 05:54, Loss 13.5
+- 预期 FINAL ~11:40 CST today
+
+**Phase 3 全部主实验完成状态**:
+- Phase 3-A (pure PSG stage): 8/8 FINAL ✓
+- Phase 3-B (GCN cap × PSG): 6/6 FINAL ✓
+- Phase 3-C (LGPA-only × PSG): **4/4 FINAL ✓** (刚刚 exp289 闭合!)
+- target-heatmap 3 数据集消融: OD FINAL, OP running, Market e90 eff ✓
+- PLBOA Market (exp293 restart + exp269b) 进行中 (~06:00-11:40 FINAL)
+- exp263b (Base OD s42 restart) queued on lab4090 after exp293
+
+srvC 接下来: exp269b FINAL ~11:40 → 再 idle (无 chain). 或可 queue exp263b_s42 之类。
