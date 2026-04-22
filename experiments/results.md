@@ -1568,4 +1568,13 @@
 | exp286 | Swin-Tiny | `[-1]` | **66.0 / 76.6** | ✓ e120 FINAL @ 2026-04-21 10:03 srvC (R5=86.4 R10=89.7). **vs exp261 Full Scaffold 65.9/77.4 Δ=+0.1/-0.8** → GCN 对 Tiny 几乎无贡献, LGPA-only 等价 Full |
 | exp287 | Swin-Tiny | `[-2,-1]` | **65.9 / 77.0** | ✓ e120 FINAL @ 2026-04-21 20:48 srvC (R5=87.0 R10=89.7). vs exp286 LGPA-only 1stg 66.0/76.6 Δ=-0.1/+0.4 (2-stg R1 微优). vs exp261 Full 65.9/77.4 Δ=0/-0.4 (GCN 主要给 R1) |
 | exp288 | Swin-Small | `[-1]` | **73.8 / 83.8** | ✓ e120 FINAL @ 2026-04-22 12:51 srvC (R5=90.5 R10=92.0). 🔥 **vs exp285b Full Scaffold 73.8/83.8 完全持平** (mAP/R1 identical, R5/R10 微差 0.2/0.7)。vs exp282 Full GCN256+1stg 73.7/83.9 Δ=+0.1/-0.1。**证实 GCN 对 Small OD 零贡献**, LGPA 单独达 Full Scaffold 性能 |
-| exp289 | Swin-Small | `[-2,-1]` | running e0+ | srvC auto-chain from exp288 @ 12:52, PID 86783. 对照 exp288 验证 PSG stage in LGPA-only 配置 |
+| exp289 | Swin-Small | `[-2,-1]` | running e37+ (e30: 68.9/79.3) | srvC auto-chain from exp288 @ 12:52, PID 86783. 对照 exp288 验证 PSG stage in LGPA-only 配置 |
+
+## target-heatmap 机制 (POSE_USE_TARGET_HEATMAP=True)
+
+| Exp ID | Backbone | Dataset | seed | eq_concat+flip mAP / R1 | vs scene baseline | 备注 |
+|--------|----------|---------|------|-------------------------|-------------------|------|
+| exp290 | Swin-Small | Occ-PTrack | 42 | running e34+ (e30: 77.1/85.0) | exp265b e30 77.2/84.9 (Δ -0.1/+0.1) | srvB, OP 多人关键 SOTA 追求 |
+| exp291 | Swin-Small | Occ-Duke | 42 | **73.5 / 82.9** | exp285b 73.8/83.8 (Δ -0.3/-0.9) | ✓ e120 FINAL @ 2026-04-22 18:13 lab4090 (R5=90.7 R10=92.5). OD 多单人场景 near no-op, 机制无显著回归 |
+| exp292 | Swin-Small | Market | 42 | running e36+ (e30: 92.7/96.3) | exp268 FINAL 94.3/97.3 | lab3090 RESTART (OOM fix TEST.IMS_PER_BATCH 64) |
+| exp293 | Swin-Base | Market | 42 | running e1+ (PLBOA启用, 激活 OA-SD) | exp269 e80 eff 94.4/97.0 | lab4090 auto-chain from exp291 @ 18:14. **满血 Base Market + PLBOA** |

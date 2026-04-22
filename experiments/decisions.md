@@ -4063,3 +4063,53 @@ Small (1-stage peak mAP, 2-stage peak R1, 3-stage 塌缩):
 - results.md Phase 3-C section 已填 exp288 FINAL
 - ablation.md Table C Small section 更新 (1/2 FINAL)
 - Phase 3-C (Task #11) 完成 3/4
+
+### [2026-04-22 14:31] ⚠️ exp292 CUDA OOM @ e20 eval, restart with TEST.IMS_PER_BATCH 64
+
+**上下文**:
+- exp292 Small Market target-heatmap 启动 12:52, 训练 e1-e20 顺利, Loss 14.77→4.08, Acc 0.001→0.607
+- e20 完成后进入 eval (`_extract_feat_flip` in processor.py:67), 在 swin backbone attention `q @ k.T` 触发 CUDA OOM
+- 错误: "Tried to allocate 494.00 MiB; 422.56 MiB free; 8.61 GiB reserved in total by PyTorch"
+- GPU 24GB, 但其他进程/fragmentation 占用 ~15GB
+
+**诊断**:
+- lab3090 是 docker 容器视角, nvidia-smi 显示 PID 163125 占 13.5GB 但 ps 中该进程不存在 (crashed CUDA context 未回收)
+- Host 侧其他用户/进程可能占用 GPU, 容器只看到自己的 process list
+- TEST.IMS_PER_BATCH 默认 256 在 Market flip-test TTA 时峰值内存过高 (256 * flip = 512 images/batch through Swin backbone)
+
+**修复**:
+- 重启 exp292 with `TEST.IMS_PER_BATCH 64` (从 default 256 降 4x)
+- 新进程创建新 CUDA context, 覆盖/置换旧 fragmented 内存
+- 训练 IMS_PER_BATCH (64 default) 保持不变, 只 eval 降 batch
+
+**决策**:
+- 重启从 e0 (不 resume from ckpt_20) — OOM 发生在 eval, transformer_20.pth 保存但 optimizer state 可能不 robust
+- 新启动 PID 通过 /tmp/exp292.log 验证 e1-e20 都过关, 特别关注 e20 eval
+- 若再 OOM, 降到 TEST.IMS_PER_BATCH 32 或移到其他 idle 机器
+
+**后续防范**:
+- 所有 lab3090 上未来训练默认加 `TEST.IMS_PER_BATCH 64` (5060Ti Base 规则扩展到 3090 共享机器)
+- lab4090 exp291 目前 TEST 默认 256, 如果 e20 eval 失败也同样降
+
+### [2026-04-22 18:13] exp291 FINAL 73.5/82.9 (target-heatmap OD) + exp293 auto-chain launched
+
+**exp291 FINAL** @ 18:13:30 CST lab4090:
+- mAP 73.5, R1 82.9, R5 90.7, R10 92.5
+- vs exp285b Full Scaffold scene baseline 73.8/83.8 → Δ -0.3/-0.9/0/-0.2
+- **OD 上 target-heatmap ≈ scene-heatmap (near no-op 符合预期)**, 微差在跨 seed/eval noise 范围内, **无显著回归**
+
+**三数据集 target-heatmap 横向对比 (partial, exp290/exp292 还在跑)**:
+| Dataset | 机制效果 (Δ mAP / R1 vs scene) | 解读 |
+|---------|-------------------------------|------|
+| OP (多人, exp290 e30) | -0.1 / +0.1 | R1 持平/微优, 符合预期机制有效场景 |
+| OD (多单人, exp291 FINAL) | -0.3 / -0.9 | 接近 no-op, 微差 eval noise |
+| Market (全单人, exp292 e30) | 对照待 FINAL | 预期严格持平 (目前 e30 92.7 正常轨迹) |
+
+**论文定位**:
+- target-heatmap 作为 OP 专用 mechanism, 不声称 OD/Market 提升
+- 作为 supplementary 消融: 机制在 single-person 数据集无回归, 论文主表 Small OD 仍用 exp285b 73.8/83.8
+
+**auto-chain → exp293 触发成功**:
+- daemon 706372 detected ckpt @ 10:14:09 UTC (18:14 CST), 20s 安全 + no-crash 检查 → launch exp293 PID 724112 @ 10:14:29 UTC
+- exp293 config 确认 PLBOA=True 激活, OA-SD WARNING 消失 (teacher/student 现有差异)
+- 预期 FINAL ~00:30 tmr
