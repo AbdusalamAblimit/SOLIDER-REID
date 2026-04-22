@@ -101,6 +101,13 @@ _C.MODEL.POSE_BACKBONE_PSG = False          # use PoseBackboneModel
 _C.MODEL.POSE_PSG_PART = False              # PSG + Part Pooling combination
 _C.MODEL.POSE_PSG_STAGES = [-1]             # which stages to inject PSG
 _C.MODEL.POSE_PSG_SPATIAL = False           # use 3x3 depthwise conv in PSG gate
+# Target-only heatmap (Occ-PTrack-style target disambiguation)
+# When True, pass person-0 (target) heatmap to PSG/LGPA/GCN/etc instead of
+# max-merged scene heatmap. Target is always at person index 0 in
+# pose_dataset.py:_load_persons (see target_person_idx reordering).
+# Only used in pose_backbone_model.py forward(); default False preserves
+# all existing behavior (scene heatmap = max over all persons).
+_C.MODEL.POSE_USE_TARGET_HEATMAP = False
 
 # ROA (Realistic Occlusion Augmentation)
 _C.MODEL.POSE_ROA = False                   # paste VOC objects

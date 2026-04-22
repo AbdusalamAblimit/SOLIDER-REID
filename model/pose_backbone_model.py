@@ -130,6 +130,14 @@ class PoseBackboneModel(build_transformer):
         if self.pose_dropout_p > 0:
             print(f'[PSG] Stochastic Pose Dropout enabled: p={self.pose_dropout_p}')
 
+        # Target-only heatmap (multi-person target disambiguation, Occ-PTrack)
+        # Default False preserves scene-heatmap (max over all persons) behavior.
+        self.use_target_heatmap = getattr(cfg.MODEL, 'POSE_USE_TARGET_HEATMAP', False)
+        if self.use_target_heatmap:
+            print('[POSE] POSE_USE_TARGET_HEATMAP=True: '
+                  'pose modules (PSG/LGPA/VCSR/PPA/STR/FSDC/...) will receive '
+                  'person-0 (target) heatmap instead of max-merged scene heatmap.')
+
         # GSPB: Gradient-Scaled Part Branch
         self._part_grad_scale = float(getattr(cfg.MODEL, 'POSE_PART_GRAD_SCALE', 0.0))
         if self._part_grad_scale > 0:
@@ -454,6 +462,15 @@ class PoseBackboneModel(build_transformer):
         target_heatmaps = None
         if pose_dict is not None:
             scene_heatmaps, _, target_heatmaps, _ = self._prepare_pose(pose_dict)
+
+        # Target-only heatmap swap (multi-person disambiguation).
+        # Substitute scene_heatmaps with target_heatmaps so all downstream
+        # pose-aware modules (PSG/LGPA/VCSR/PPA/STR/FSDC/etc.) receive the
+        # target-person (index 0) signal instead of max-merged scene.
+        # No other code path is touched: when use_target_heatmap is False
+        # (default), scene_heatmaps keeps its original max-merged value.
+        if self.use_target_heatmap and target_heatmaps is not None:
+            scene_heatmaps = target_heatmaps
 
         # Stochastic Pose Dropout: zero out heatmaps per-sample during training
         if self.training and scene_heatmaps is not None and self.pose_dropout_p > 0:
