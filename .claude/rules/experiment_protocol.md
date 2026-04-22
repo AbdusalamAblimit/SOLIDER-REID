@@ -28,6 +28,19 @@ exp245g  — 第七个变体（按字母顺序递增）
 
 每个实验使用独立 `OUTPUT_DIR`: `./log/occluded_duke/{实验名}`
 
+## 硬性 CLI override 默认
+
+**所有训练启动**必须加 `TEST.IMS_PER_BATCH 64` (无论机器)。默认 256 在 Market (22k+ test images) / Occ-PTrack (多样本) 下 flip-test TTA 会触发 OOM, 即使 24GB 4090/3090 也不例外 (80 epoch fragmentation 累积)。
+
+已发生过两次 OOM 因此规则 (2026-04-22 exp292 lab3090 e20 / exp293 lab4090 e80)。今后新训练命令模板:
+```
+python train.py --config_file xxx.yml \
+  SOLVER.SEED NN \
+  TEST.IMS_PER_BATCH 64 \
+  OUTPUT_DIR ./log/.../expNNN \
+  <其他 override>
+```
+
 ## 实验设计文档（design.md）
 
 每个实验**启动训练前**，必须先写 `experiments/exp{NNN}/design.md`：
