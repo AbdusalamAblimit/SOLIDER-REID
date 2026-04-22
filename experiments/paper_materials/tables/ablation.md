@@ -34,16 +34,18 @@
 
 **配置**: Swin + LGPA + GCN + OA-SD + ParAug + LOWER_BODY_OCC + PSG
 
-### Swin-Tiny
+### Swin-Tiny (4/4 FINAL)
 
 | | GCN256 | GCN512 |
 |---|---|---|
-| PSG `[-1]` | **65.7 / 76.7** (exp278) | **pending exp280** (e112 待 FINAL) |
-| PSG `[-2,-1]` | 65.7 / 76.9 (exp279) | **65.9 / 77.4** (exp261 / exp281) |
+| PSG `[-1]` | **65.7 / 76.7** (exp278) | **65.7 / 76.2** (exp280, weakest R1) |
+| PSG `[-2,-1]` | 65.7 / 76.9 (exp279) | **65.9 / 77.4** (exp261 / exp281, best) |
 
 **观察**:
+- **GCN512+1stg (exp280) 最弱 R1 = 76.2** — 和 Small 2×2 exp284 最弱模式一致
 - GCN256 下 1-stg ≈ 2-stg (mAP 65.7=65.7, R1 +0.2)
-- GCN512 下 2-stg 63.7/77.4 暂最强, exp280 1-stg 待对照
+- GCN512 下 2-stg (exp261) > 1-stg (exp280) R1 +1.2
+- **跨 backbone 结论一致**: 大 GCN 必须 2-stg 配套才完整 exploit
 
 ### Swin-Small
 
