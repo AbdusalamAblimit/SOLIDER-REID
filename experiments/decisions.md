@@ -3932,3 +3932,33 @@ Small (1-stage peak mAP, 2-stage peak R1, 3-stage 塌缩):
 **若 seed 41 再塌缩**: 保留"系统问题"结论,考虑 gradient clipping / LR warmup 加长等修复。
 
 **不预判**, 等 exp277b 数据再下结论。当前 Phase 3-A 结论暂定 (基于 exp275/276 稳定的 1/2-stage 收益)。
+
+### [2026-04-22 08:08] 事件 — exp280 FINAL 65.7/76.2, Phase 3-B Tiny 2×2 闭合 + srvB idle
+
+**上下文**:
+- exp280 Swin-Tiny + GCN512 + PSG `[-1]` FINAL @ 08:07 CST srvB
+- **65.7 / 76.2 / R5 86.7 / R10 89.7** (flip-test eq_concat global)
+- Phase 3-B Tiny 2×2 最后一格, 补齐 GCN{256,512} × PSG{1,2} stage 矩阵
+
+**Phase 3-B Tiny 2×2 完整**:
+| | GCN256 | GCN512 |
+|---|---|---|
+| PSG `[-1]` | 65.7/76.7 (exp278) | **65.7/76.2** (exp280, **weakest R1**) |
+| PSG `[-2,-1]` | 65.7/76.9 (exp279) | **65.9/77.4** (exp261) |
+
+**跨 backbone 一致模式** (Tiny + Small 2×2):
+- **GCN512+1stg 必弱**: Tiny 76.2 R1 最弱, Small exp284 82.9 R1 最弱
+- **GCN512+2stg 最强 mAP**: Tiny 65.9, Small 73.8
+- **GCN256 对 stage 不敏感**: Tiny +0.2 R1, Small -0.7 R1
+- **大 GCN 容量必须配 2-stg PSG 才完整 exploit**, 1-stg gate 浪费 GCN 容量
+
+**论文 Table 2 B 行数据完整**: Tiny 2×2 + Small 2×2 = 8 格全数字填齐。
+
+**srvB GPU 状态**: exp280 是 Phase 3-B Tiny chain 最后一个, 无 daemon 继承 → **srvB idle**。
+
+**下一步决策 (srvB idle)**:
+- Task #12 (批量 MaxSim+flip) 用户指令"等当前队列跑完再起", srvC Phase 3-C exp288→exp289 ~12.5h 后才全 FINAL
+- Task #6 (Small LR4 vs LR8) 需 design+双审查, 写 design 后 spawn claude_review+codex_review
+- 论文主结论已稳 (Phase 3-A/B 9/10 + Phase 3-C 3/4), srvB idle 暂不急开新训练, 优先文档收尾
+
+**监控链 idle 判定**: monitor `boairmoh9` (srvB 事件) 保持 armed, 将捕获任意意外事件。exp280 FINAL 处理完毕 (monitor.md + results.md + ablation.md + decisions.md + memory + git push `08de230`)。
