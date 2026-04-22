@@ -69,7 +69,7 @@ KPR 的 75.1/84.3 也包含了 test-time prompting (可视为后处理)。
 |----------|---------------------|-----------------------|-------------------|------------------------------|
 | Swin-Tiny (28M) | exp261: **65.9 / 77.4** | exp264: **76.7 / 85.1** | exp267: **92.5 / 96.4** | exp267→OR: TBD / TBD |
 |  | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD |
-| Swin-Small (50M) | exp285b: **73.8 / 83.8** ← lab4090 同设备 rerun exp262 | exp265: **78.4 / 86.2** (s42) / exp265b: **pending** (s41) | exp268: **94.3 / 97.3** | exp268→OR: TBD / TBD |
+| Swin-Small (50M) | exp285b: **73.8 / 83.8** ← lab4090 同设备 rerun exp262 | exp265: **78.4 / 86.2** (s42) / exp265b: **78.5 / 85.9** (s41, Δ +0.1/-0.3) | exp268: **94.3 / 97.3** | exp268→OR: TBD / TBD |
 |  | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD |
 | Swin-Base (88M) | exp263d: **74.1 / 83.3** (s41 lab3090 pwrlim) | exp266 e60 eff: **78.4 / 86.2** / exp266b_3090: **pending** (s41) | exp269 e80 eff: **94.4 / 97.0** | exp269→OR: TBD / TBD |
 |  | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD | + MaxSim: TBD / TBD |

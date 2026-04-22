@@ -1520,6 +1520,9 @@
 | exp264 | Swin-Tiny | Occ-PTrack | **76.7% / 85.1%** | TBD | ✓ e120 FINAL @ 2026-04-19 07:15 srvC (R5=94.1 R10=97.0) |
 | exp265 | Swin-Small | Occ-PTrack | **78.4% / 86.2%** | TBD | ✓ e120 FINAL @ 2026-04-20 04:45 srvC (R5=94.8 R10=97.3, Small >> Tiny 76.7/85.1) |
 | exp266 | Swin-Base | Occ-PTrack | **e60 eff FINAL: 78.4 / 86.2 (peak e50: 78.5/86.3)** | ✓ @ 2026-04-20 21:27 srvC | ⚠️ e70 后 silent exit (非 OOM 非 CUDA, 推测 hy-tmp 平台 kill)。**Base 对 Small (exp265 78.4/86.2) 0 增益**, 不重训 |
+| exp265b | Swin-Small | Occ-PTrack (seed 41) | **78.5% / 85.9%** | ✓ e120 FINAL @ 2026-04-22 09:03 srvA 5060Ti (R5=94.7 R10=97.1) | **vs exp265 s42 78.4/86.2 Δ=+0.1/-0.3**。seed 41 微优 mAP 略弱 R1, 论文主表仍用 exp265 s42 (更高 R1), exp265b 作跨 seed 鲁棒性 supplementary |
+| exp266b (srvA) | Swin-Base | Occ-PTrack (seed 41) | running e0 | 🔄 srvA 5060Ti 16G TEST.IMS_PER_BATCH 128 启动 @ 2026-04-22 09:05 (daemon 992 auto-chain from exp265b) | 和 lab3090 上的 exp266b_3090 形成**跨设备对照** |
+| exp266b_3090 | Swin-Base | Occ-PTrack (seed 41) | running e117 (e110 eval 78.5/86.2) | 🔄 lab3090 pwrlim 280W 启动 @ 2026-04-21 22:28 | FINAL ~09:22 CST 2026-04-22 |
 | exp267 | Swin-Tiny | Market | **92.5% / 96.4%** | TBD | ✓ e120 FINAL @ 2026-04-19 13:45 srvB (R5=98.9 R10=99.3) |
 | exp268 | Swin-Small | Market | **94.3% / 97.3%** | TBD | ✓ e120 FINAL @ 2026-04-20 00:39 srvA (R5=99.1 R10=99.5) |
 | exp269 | Swin-Base | Market | **e80 eff FINAL: 94.4 / 97.0 (Global+flip), 94.5 / 97.1 (MaxSim+flip)** | ✓ @ 2026-04-20 13:xx srvA | ⚠️ e80 eval OOM-killed 同 exp263 模式,ckpt80 完整,不重训。Base 对 Small 优势小(Market 已饱和) |
