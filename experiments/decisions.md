@@ -4032,3 +4032,34 @@ Small (1-stage peak mAP, 2-stage peak R1, 3-stage 塌缩):
 - 等 srvA exp266b FINAL ~14:00 → srvA idle → 补 exp262/265b/268/269 eval
 - 等 srvC exp288/289 FINAL ~17:00 → srvC idle → 补 exp264/265/286/287/288/289 eval
 - 可选: lab3090 上跑 cross-domain Market→Occ-ReID (Occ-ReID 数据集已解压, 需 rsync exp267/268/269 Market ckpt)
+
+### [2026-04-22 12:51] 🔥 exp288 FINAL 73.8/83.8 — GCN 对 Small OD 零贡献确认
+
+**上下文**:
+- exp288 Swin-Small + LGPA + OA-SD + ParAug + LOWER_BODY_OCC + PSG `[-1]` (**无 GCN**) FINAL @ 12:51 CST srvC
+- **73.8 / 83.8 / R5 90.5 / R10 92.0** — 精确达到 Full Scaffold 水平
+
+**对比**:
+- exp285b Full Scaffold (GCN512 + LGPA + 2-stg PSG): **73.8 / 83.8 / 90.7 / 92.7** → Δ 0/0/-0.2/-0.7
+- exp282 Full GCN256+1stg: 73.7/83.9 → Δ +0.1/-0.1
+- exp284 Full GCN512+1stg: 73.4/82.9 → Δ +0.4/+0.9 (LGPA-only 反超!)
+
+**科学发现**:
+1. **GCN 对 Swin-Small OD 零或负贡献** — LGPA 单独即满配性能
+2. 和 Tiny 结论 (exp286 LGPA-only 66.0 ≈ exp261 Full 65.9) **跨 backbone 一致**
+3. **Phase 3-B GCN cap × PSG 矩阵 方差 ≤ 0.4 mAP 本质是因为 GCN 不起作用**, 方差来自 PSG/LGPA 随机性
+4. Base backbone 尚未在 Phase 3-C 测试 (不必要, 我们已有 Base Full Scaffold 74.1/83.3 做主数字)
+
+**论文叙事升级**:
+- **main contribution**: PSG + LGPA (semantic branch) — GCN 不抢主位
+- **方法简化**: 去 GCN 省 0.6M params + 训练 15% 加速 + 0 性能损失
+- **Phase 3-C 为 method simplification 消融核心**, 在 D 节后独立章节讨论
+
+**后续**:
+- exp289 LGPA-only 2-stg 自动启动 (srvC PID 86783), FINAL ~16:50 对照 PSG stage in LGPA-only 配置
+- 建议: 跑完 exp289 → 评估是否也加 GCN 做 Market/OP 对照 (exp267 + exp264 本就无 GCN 配置?)
+
+**决策**:
+- results.md Phase 3-C section 已填 exp288 FINAL
+- ablation.md Table C Small section 更新 (1/2 FINAL)
+- Phase 3-C (Task #11) 完成 3/4

@@ -87,12 +87,18 @@
 | `[-1]` | **66.0** | 76.6 | exp286 | +0.1/-0.8 vs exp261 Full 65.9/77.4 |
 | `[-2,-1]` | 65.9 | 77.0 | exp287 | 0/-0.4 vs exp261 |
 
-### Swin-Small (0/2 FINAL; exp288 运行中 e80 73.1/83.5)
+### Swin-Small (1/2 FINAL)
 
-| PSG | mAP | R1 | Exp | 状态 |
-|-----|-----|----|----|------|
-| `[-1]` | TBD | TBD | exp288 | 🔄 srvC e80, FINAL ~12:45 |
-| `[-2,-1]` | TBD | TBD | exp289 | ⏳ queued (auto-chain after exp288) |
+| PSG | mAP | R1 | Exp | vs Full Scaffold |
+|-----|-----|----|----|------------------|
+| `[-1]` | **73.8** | **83.8** | exp288 ✓ | **= exp285b 73.8/83.8** (完全持平!) |
+| `[-2,-1]` | TBD | TBD | exp289 | 🔄 srvC running (FINAL ~16:50) |
+
+**观察 (Small)**:
+- **LGPA-only = Full Scaffold mAP/R1 identical** (73.8/83.8)
+- **GCN 对 Swin-Small OD 零贡献** — 和 Tiny 结论一致 (exp286 LGPA-only ≈ exp261 Full)
+- 模型可简化: 去 GCN 少 0.6M params + 训练 10-15% 更快 + 0 性能损失
+- R5/R10 微差 (90.5/92.0 vs 90.7/92.7): GCN 对 deep CMC 有微小正贡献
 
 **观察 (Tiny)**:
 - LGPA-only vs Full Scaffold 几乎无 mAP 差 (66.0 vs 65.9)
