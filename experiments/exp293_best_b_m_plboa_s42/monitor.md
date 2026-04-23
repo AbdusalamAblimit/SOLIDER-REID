@@ -7,7 +7,7 @@
 - Scaffold: Swin-Base + Full Scaffold (LGPA + GCN512 + OA-SD + ParAug + **PLBOA 启用** + 2-stage PSG) — 动机: Market 历史实验都关 PLBOA, OA-SD 蒸馏无差异 teacher/student; 本实验激活 PLBOA 看是否推 Market Base SOTA
 - Speed: ~208-297s/epoch (fluctuating)
 
-## 训练轨迹
+## 训练轨迹 (原 First Run, OOM 截断 @ e80)
 
 | Epoch | mAP | R1 | R5 | R10 |
 |-------|-----|----|----|----|
@@ -18,7 +18,35 @@
 | 50 | 93.0 | 96.9 | - | 99.3 |
 | 60 | 93.5 | 97.3 | - | 99.5 |
 | 70 | 93.9 | 97.1 | - | 99.4 |
-| **80 (eff FINAL)** | **94.1** | **96.9** | - | - |
+| 80 (OOM eff) | **94.1** | **96.9** | - | - |
+
+## 训练轨迹 (Restart Full 120 Epoch, TEST.IMS_PER_BATCH 64)
+
+| Epoch | mAP | R1 | R5 | R10 |
+|-------|-----|----|----|----|
+| 10 | 70.4 | 85.6 | 94.8 | 96.9 |
+| 20 | 88.6 | 95.3 | 98.1 | 99.0 |
+| 30 | 91.0 | 96.1 | 98.4 | 99.2 |
+| 40 | 92.2 | 96.9 | 98.5 | 99.1 |
+| 50 | 92.1 | 96.6 | 98.6 | 99.2 |
+| 60 | 92.9 | 96.9 | 98.8 | 99.5 |
+| 70 | 93.4 | 97.1 | 99.0 | 99.5 |
+| 80 | 93.6 | 97.2 | 98.9 | 99.4 |
+| 90 | 93.7 | 97.4 | 98.9 | 99.5 |
+| 100 | 93.8 | 97.3 | 99.0 | 99.5 |
+| 110 | 93.8 | 97.3 | 98.9 | 99.5 |
+| **120 FINAL** | **93.8** | **97.2** | **98.9** | **99.5** |
+
+## FINAL (Restart full 120, 2026-04-23 08:24:32 CST)
+
+- **mAP: 93.8%**, **Rank-1: 97.2%**, R5: 98.9%, R10: 99.5%
+- **对照 exp269 Base Market PLBOA OFF e80 eff**: 94.4/97.0 → Δ **-0.6/+0.2** (mAP 损 0.6, R1 +0.2)
+- **对照 exp293 first run e80 eff** (同 PLBOA ON): 94.1/96.9 → Δ **-0.3/+0.3** (同 config 跨 restart 方差 0.3 mAP)
+- **对照 exp268 Small Market**: 94.3/97.3 → Δ -0.5/-0.1
+
+**Cross-domain Market → Occluded-ReID (见 Plan A/B 后续 eval)**:
+- exp293 e80 eff ckpt (first run): Global 69.4/73.6, MaxSim **72.4/76.7** — PLBOA 灾难
+- 后续可 eval 新 e120 ckpt 看是否缓解 (训练完整后泛化可能更差)
 
 ## OOM Crash @ e80 flip-test eval (2026-04-22 23:07 CST)
 

@@ -4189,3 +4189,31 @@ Small (1-stage peak mAP, 2-stage peak R1, 3-stage 塌缩):
 - exp263b (Base OD s42 restart) queued on lab4090 after exp293
 
 srvC 接下来: exp269b FINAL ~11:40 → 再 idle (无 chain). 或可 queue exp263b_s42 之类。
+
+### [2026-04-23 08:24] exp293 FINAL 93.8/97.2 (restart full 120) + exp263b auto-chain launched
+
+**exp293 restart FINAL**:
+- Swin-Base + Full Scaffold + PLBOA ON on Market, SEED 42, TEST.IMS_PER_BATCH 64
+- **93.8 / 97.2 / R5 98.9 / R10 99.5** @ 2026-04-23 08:24:32 CST lab4090
+- 完整 120 epoch (first run OOM 截断 @ e80 eff 94.1/96.9)
+
+**对比 original exp269 (PLBOA OFF, e80 eff 94.4/97.0)**:
+- mAP -0.6, R1 +0.2, R5 -0.1, R10 +0.5
+- 但 exp269 只有 e80, 对比不公平 — 等 exp269b FINAL (~11:40) 才有公平 120ep vs 120ep
+
+**cross-restart noise (exp293 first run e80 eff vs restart e80)**:
+- first run e80: 94.1/96.9
+- restart e80: 93.6/97.2
+- Δ -0.5/+0.3 — 同 config, 跨 restart 方差 0.5 mAP (> normal)
+
+**exp263b auto-chain 启动 @ 08:24 lab4090**:
+- Base OD seed 42 full 120 restart (原 exp263 e100 eff 72.5/81.8 OOM 截断)
+- PID 1088888, TEST.IMS_PER_BATCH 64 ✓
+- 预期 FINAL ~15:30 today
+
+**5 restart 队列**:
+1. ✅ exp293 (PLBOA ON Base Market) FINAL 93.8/97.2
+2. 🔄 exp269b (PLBOA OFF Base Market) srvC e17, FINAL ~11:40
+3. 🔄 exp263b (Base OD s42) lab4090 e1 NEW, FINAL ~15:30
+4. ⏳ exp266c (Base OP s42) queued srvB after exp290 FINAL (~09:15)
+5. ✅ 已用 e80 eff 数据的 cross-domain 分析 (PLBOA ON cross-dom 灾难 -15.6 mAP vs PLBOA OFF)
