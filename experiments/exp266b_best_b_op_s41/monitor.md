@@ -54,8 +54,18 @@
 **Base vs Small 同 seed 41**: Δ **+0.2/+0.4** (Base 非 0 增益, 尤其 R1 显著)
 **论文主表 Base OP 数字更新**: 78.7/86.3 (srvA s41), 原计划用 78.5 (lab3090 s41)
 
+## MaxSim+flip eval FINAL (srvA, 2026-04-23 13:25 CST)
+
+| 评测模式 | mAP | R1 |
+|---------|-----|----|
+| train-side eq_concat+flip (training log) | 78.7 | 86.3 |
+| Global cosine+flip (post-hoc script) | 78.4 | **86.6** ← R1 peak |
+| **MaxSim hybrid+flip** (post-hoc script) | **78.7** | **86.3** |
+
+**结论**: MaxSim hybrid = eq_concat (training default)。Global-only 丢 0.3 mAP 但 R1 微升 +0.3 (部分分支对 R1 有轻微 overfit 效应)。**论文主表 Base OP 用 78.7/86.3** (两种评测等价)。
+
 ## auto-chain 后续
 
-- srvA 5060Ti 本 exp FINAL 后 idle
+- srvA 5060Ti 本 exp + MaxSim eval 全 FINAL @ 13:25 CST, idle
 - daemon 992 无下游任务 (chain 至 exp266b 终止)
-- 预计下一 slot: Task #12 MaxSim+flip batch eval 或用户指派新任务
+- 预计下一 slot: Task #12 MaxSim+flip 继续批跑或用户指派新任务
