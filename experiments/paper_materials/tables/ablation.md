@@ -145,6 +145,7 @@
 | exp266b_3090 | Base × OP s41 | 78.5/86.2 | 78.2/86.4 | 78.5/86.4 | 0/+0.2 | — |
 | **exp266b (srvA)** | **Base × OP s41** | **78.7/86.3** | 78.4/86.6 | **78.7/86.3** | **0/0** | **新 Base OP SOTA 主数字** |
 | exp267 | Tiny × Market s42 | 92.5/96.4 | 92.7/96.4 | 92.7/96.4 | 0/0 | 已饱和 |
+| **exp269b** | **Base × Market s42 (PLBOA OFF full120)** | **94.5/97.2** | 94.4/97.1 | **94.6/97.2** | +0.1/0 | **新 Base Market SOTA 主数字** |
 
 ### Phase 3-B Small 2×2 (Full Scaffold × GCN cap × PSG stage)
 

@@ -53,11 +53,26 @@ exp269b PLBOA OFF Market → Occ-REID 跨域:
 - exp269 orig e80 eff cross-domain: Global 85.0/89.0, MaxSim 88.2/91.2 (**Top-tier**)
 - exp269b e120 ckpt 可能进一步提升 (训练更稳定), 预期 ≥ exp269 orig
 
-## MaxSim+flip eval 待办
+## MaxSim+flip eval FINAL (srvC, 2026-04-24 01:25 CST)
 
-- ckpt: `srvC:/hy-tmp/log/market/exp269b_best_b_m_s42_full120/transformer_120.pth`
-- 在 srvC 本地跑 (srvC 5060Ti 16G, TEST.IMS_PER_BATCH 64)
-- 预期 MaxSim ≈ eq_concat (~94.5)
+| 评测模式 | mAP | R1 |
+|---------|-----|----|
+| train-side eq_concat+flip (FINAL) | 94.5 | 97.2 |
+| Global cosine+flip | 94.4 | 97.1 |
+| **MaxSim hybrid+flip** | **94.6** | **97.2** |
+
+**MaxSim 增益**: +0.1 mAP / 0 R1 (vs eq_concat)
+
+**对照 Market Base MaxSim 矩阵**:
+| Exp | PLBOA | eq+flip | Global+flip | MaxSim+flip |
+|-----|-------|---------|-------------|-------------|
+| exp269 orig e80 eff | OFF | 94.4/97.0 | ~94.4 | 94.5/97.1 |
+| **exp269b full 120** | **OFF** | **94.5/97.2** | 94.4/97.1 | **94.6/97.2** |
+| exp293 e80 eff | ON | 94.1/96.9 | - | 94.1/97.2 |
+| exp293b restart | ON | 93.8/97.2 | - | pending |
+
+**结论**: exp269b MaxSim 94.6/97.2 **超 exp269 orig MaxSim 94.5/97.1** by +0.1/+0.1。
+**论文 Market Base MaxSim 主数字升级为 94.6/97.2**。
 
 ## srvC idle (FINAL 后)
 
