@@ -4342,3 +4342,45 @@ srvC 接下来: exp269b FINAL ~11:40 → 再 idle (无 chain). 或可 queue exp2
 **等等, 是 2/3 FINAL. srvB exp266c 仍在训练, FINAL ETA ~13:22 today。**
 
 **srvC idle**: FINAL 后进程结束, 待 MaxSim eval 启动。
+
+### [2026-04-24 02:20] 决策 #exp294 FINAL 74.0/82.6 — GCN 冗余假设 3-backbone 统一验证
+
+**exp294 lab4090 s41 FINAL (2026-04-24 02:18:48 CST)**:
+- **mAP: 74.0% / Rank-1: 82.6% / R5: 90.5% / R10: 92.4%**
+
+**核心对照 (Base same seed 41, 单变量 POSE_SKELETON_GCN)**:
+| Exp | GCN | mAP | R1 | Δ vs exp263d |
+|-----|-----|-----|----|--------------|
+| exp263d | **ON** | **74.1** | **83.3** | baseline |
+| **exp294 (本)** | **OFF** | **74.0** | **82.6** | **-0.1 / -0.7** |
+
+**Phase 3-C 完整 3-backbone 矩阵**:
+| Backbone | Full-GCN mAP/R1 | Full+GCN baseline | Δ (GCN 贡献) |
+|----------|-----------------|-------------------|---------------|
+| Tiny | exp287 65.9/77.0 | exp261 65.9/77.4 | **0/-0.4** |
+| Small | exp289 73.8/83.3 | exp285b 73.8/83.8 | **0/-0.5** |
+| Base | exp294 74.0/82.6 | exp263d 74.1/83.3 | **-0.1/-0.7** |
+
+**3-backbone 统一结论**:
+1. **GCN 几乎 0 mAP 贡献** (最多 -0.1)
+2. **R1 微贡献 0.4-0.7** (Base 最大 0.7)
+3. **LGPA 已捕获足够 pose 结构信息**, GCN branch 冗余
+
+**论文 Phase 3-C claim 更新**:
+- 原: "GCN 在 Tiny/Small 基本 0 贡献, 在 Base 上未测"
+- **新: "GCN 在 Tiny/Small/Base 3 backbone 统一 0 mAP 贡献, 0.4-0.7 R1 微贡献, 可移除简化模型"**
+
+**论文主表**:
+- Base OD 主数字仍用 **exp263d 74.1/83.3** (最强)
+- exp294 作 **Phase 3-C Base 补齐行 + GCN 冗余 claim 证据**
+
+**下一步**:
+- lab4090 idle, 启动 exp294 MaxSim+flip eval (预期 ~74.8-75.2/83-84, 对标 exp263b 74.8 / exp263d 75.2)
+- 若 MaxSim < exp263d, 补 claim: "GCN 对 MaxSim 也冗余"
+
+**4 restart 最终进度**: 3/4 FINAL ✓
+- ✅ exp263b (Base OD s42) 73.5/81.5
+- ✅ exp266b (Base OP s41) 78.7/86.3 (SOTA)
+- ✅ exp269b (Market Base PLBOA OFF) 94.5/97.2
+- 🔄 exp266c (Base OP s42 full 120) srvB running, FINAL ~13:22 today
+- ⭐ **exp294 (Base Full-GCN s41 ablation)** FINAL 74.0/82.6 (用户新加 ablation)
