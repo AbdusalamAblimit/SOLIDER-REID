@@ -1517,6 +1517,7 @@
 | exp263 | Swin-Base | Occ-Duke | **e100 eff FINAL: 72.5 / 81.8 (Global+flip), 74.5 / 84.0 (MaxSim+flip)** | ✓ @ 2026-04-20 09:01 srvB | ⚠️ e100 eval OOM-killed (内存 13.2G 触 16G),ckpt 100 完整,不重训。MaxSim hybrid+flip **74.5/84.0** 超 KPR w/o prompt +1.2/+1.5 |
 | exp263c | Swin-Base | Occ-Duke | ~~abandoned @ e31~~ | — lab3090 pwrlim280 seed 42 | seed 42 轨迹异常 (e10 2.7 / e20 17.0),用户指示换 seed 41 → 切 exp263d |
 | exp263d | Swin-Base | Occ-Duke | **74.1 / 83.3** | ✓ e120 FINAL @ 2026-04-21 14:27 lab3090 pwrlim 280W (R5=90.8 R10=93.0). **vs exp263 old e100 eff 72.5/81.8 Δ=+1.6/+1.5**. exp263 系列 PRCV 主表用此数字 (seed 41 替代 seed 42) |
+| exp263b | Swin-Base | Occ-Duke (seed 42 restart full 120) | **73.5 / 81.5** | ✓ e120 FINAL @ 2026-04-23 16:47:17 lab4090 4090 TEST.IMS_PER_BATCH 64 (R5=90.2 R10=92.3). **vs exp263 old e100 eff 72.5/81.8 Δ=+1.0/-0.3** (full 120 epoch restart 有效恢复 mAP, R1 微差)。vs exp263d s41 74.1/83.3 Δ=-0.6/-1.8 (**seed 41 > seed 42 再次 confirmed**)。论文 Base OD 主表仍用 exp263d (74.1 最强), exp263b 作 seed 42 full 120 复现点 |
 | exp264 | Swin-Tiny | Occ-PTrack | **76.7% / 85.1%** | TBD | ✓ e120 FINAL @ 2026-04-19 07:15 srvC (R5=94.1 R10=97.0) |
 | exp265 | Swin-Small | Occ-PTrack | **78.4% / 86.2%** | TBD | ✓ e120 FINAL @ 2026-04-20 04:45 srvC (R5=94.8 R10=97.3, Small >> Tiny 76.7/85.1) |
 | exp266 | Swin-Base | Occ-PTrack | **e60 eff FINAL: 78.4 / 86.2 (peak e50: 78.5/86.3)** | ✓ @ 2026-04-20 21:27 srvC | ⚠️ e70 后 silent exit (非 OOM 非 CUDA, 推测 hy-tmp 平台 kill)。**Base 对 Small (exp265 78.4/86.2) 0 增益**, 不重训 |

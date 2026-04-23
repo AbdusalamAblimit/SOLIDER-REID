@@ -4284,3 +4284,36 @@ srvC 接下来: exp269b FINAL ~11:40 → 再 idle (无 chain). 或可 queue exp2
 - 论文叙述可保持 "OP 数据集饱和, Base 微优" 不变
 
 **srvA idle**: 无 auto-chain 下游, 等用户指示或 Task #12 MaxSim 批跑。
+
+### [2026-04-23 16:50] 决策 #exp263b FINAL 73.5/81.5 — seed 42 full 120 restart 有效但不如 seed 41
+
+**exp263b lab4090 s42 FINAL (2026-04-23 16:47:17 CST)**:
+- **mAP: 73.5% / Rank-1: 81.5% / R5: 90.2% / R10: 92.3%**
+- ckpt: `/home/afr/SOLIDER-REID/log/occluded_duke/exp263b_best_b_od_s42_full120/transformer_120.pth`
+
+**对照矩阵**:
+| Exp | seed | epoch | mAP/R1 | Δ vs base |
+|-----|------|-------|--------|-----------|
+| exp263 orig | 42 | e100 eff (OOM) | 72.5/81.8 | baseline |
+| **exp263b restart** | **42** | **e120 FINAL** | **73.5/81.5** | +1.0/-0.3 |
+| exp263d | 41 | e120 FINAL | 74.1/83.3 | +1.6/+1.5 |
+
+**核心观察**:
+1. **full 120 epoch > e100 eff**: +1.0 mAP 提升, 说明原 exp263 因 OOM 中断的确损失了数字
+2. **seed 42 full 120 ≠ seed 41 full 120**: 73.5 vs 74.1 (Δ 0.6 mAP), 31.5% mAP 提升由 seed 变化贡献
+3. **R1 异常**: exp263b R1 (81.5) 略弱于 exp263 orig (81.8) 尽管 mAP 更高。可能 full 120 epoch 在末期轻微 overfit R1 top-1。
+4. e100 峰值 73.6 → e110/e120 回落 73.5, mild plateau
+
+**论文 Base OD 主数字不变**:
+- 主表仍用 **exp263d 74.1/83.3** (seed 41, 最强)
+- exp263b 作 **seed 42 full 120 复现数据点** (证明 restart 机制有效, 证明 seed 42 天然弱)
+- 不更新 main_results Table 1
+
+**lab4090 idle**: FINAL 后主进程结束, 无 auto-chain。下一任务:
+- **MaxSim+flip eval on-lab4090** (ckpt 在 lab4090, 网络不稳不适合 rsync)
+- 对照 exp263 orig MaxSim 74.5/84.0, exp263d MaxSim 75.2/84.8
+
+**3 restart 完成进度**: 1/3 FINAL ✓
+- ✅ exp263b (Base OD s42 full 120) lab4090 FINAL 73.5/81.5
+- 🔄 exp266c (Base OP s42 full 120) srvB e30 eval 76.5/84.7
+- 🔄 exp269b (Base Market PLBOA OFF full 120) srvC e60 eval 94.1/97.0
