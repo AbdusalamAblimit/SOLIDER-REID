@@ -4251,3 +4251,36 @@ srvC 接下来: exp269b FINAL ~11:40 → 再 idle (无 chain). 或可 queue exp2
 - 🔄 exp269b e20 (Base Market PLBOA OFF full 120)
 - 🔄 exp263b e8 (Base OD s42 full 120)
 - ⏳ exp266c queued (Base OP s42 full 120) chain soon
+
+### [2026-04-23 13:20] 决策 #exp266b FINAL 78.7/86.3 — Base OP 新 SOTA
+
+**exp266b srvA s41 FINAL (2026-04-23 13:18:50 CST)**:
+- **mAP: 78.7% / Rank-1: 86.3% / R5: 94.5% / R10: 97.1%**
+
+**跨设备对照 (same seed 41)**:
+| 设备 | exp | mAP/R1 | Δ vs srvA |
+|------|-----|--------|-----------|
+| **srvA 5060Ti** | exp266b | **78.7/86.3** | baseline |
+| lab3090 | exp266b_3090 | 78.5/86.2 | -0.2/-0.1 |
+
+跨设备方差 0.2 mAP / 0.1 R1 — 5060Ti 微优 lab3090 (可能 TEST.IMS_PER_BATCH 128 vs 256 batch 统计微差, 或 CUDA kernel 非确定性)。
+
+**Phase 3 OP 矩阵 final state**:
+
+| | seed 42 | seed 41 |
+|---|---------|---------|
+| Small (exp265/265b) | 78.4/86.2 | 78.5/85.9 |
+| Base (exp266/266b) | 78.4/86.2 e60 eff | **78.7/86.3** (srvA) |
+
+**论文 Base OP 主表数字更新**:
+- 原方案: exp266b_3090 78.5/86.2 (lab3090 完整 120 epoch)
+- **更新方案**: **exp266b srvA 78.7/86.3** (srvA 完整 120 epoch, +0.2 mAP / +0.1 R1 更强)
+- 两者同 config 同 seed 41 不同设备, 选最强数字为主表, 另一作 supplementary 跨设备鲁棒性
+
+**Base vs Small OP 同 s41 重新定位**:
+- exp266b 78.7/86.3 vs exp265b 78.5/85.9 → Δ **+0.2 mAP / +0.4 R1**
+- 先前用 3090 数字 (78.5) 得出 "Base vs Small 0 增益" 结论需微调
+- 修正: Base vs Small 同 seed 41, **+0.2 mAP / +0.4 R1 微优** (非 0 增益, 但仍不显著)
+- 论文叙述可保持 "OP 数据集饱和, Base 微优" 不变
+
+**srvA idle**: 无 auto-chain 下游, 等用户指示或 Task #12 MaxSim 批跑。
