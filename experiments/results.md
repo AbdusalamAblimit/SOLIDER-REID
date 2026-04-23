@@ -1527,6 +1527,7 @@
 | exp267 | Swin-Tiny | Market | **92.5% / 96.4%** | TBD | ✓ e120 FINAL @ 2026-04-19 13:45 srvB (R5=98.9 R10=99.3) |
 | exp268 | Swin-Small | Market | **94.3% / 97.3%** | TBD | ✓ e120 FINAL @ 2026-04-20 00:39 srvA (R5=99.1 R10=99.5) |
 | exp269 | Swin-Base | Market | **e80 eff FINAL: 94.4 / 97.0 (Global+flip), 94.5 / 97.1 (MaxSim+flip)** | ✓ @ 2026-04-20 13:xx srvA | ⚠️ e80 eval OOM-killed 同 exp263 模式,ckpt80 完整,不重训。Base 对 Small 优势小(Market 已饱和) |
+| exp269b | Swin-Base | Market (seed 42 restart full 120, PLBOA OFF) | **94.5% / 97.2%** | ✓ e120 FINAL @ 2026-04-24 01:17:24 srvC 5060Ti TEST.IMS_PER_BATCH 64 (R5=99.1 R10=99.5). **vs exp269 orig e80 eff 94.4/97.0 Δ=+0.1/+0.2** (full 120 全面微优)。vs exp268 Small 94.3/97.3 Δ=+0.2/-0.1。vs exp293b Base PLBOA ON 93.8/97.2 Δ=+0.7/0 (**PLBOA 净 -0.7 mAP re-confirmed**)。**论文 Market Base 主数字升级为 94.5/97.2** (替代 exp269 orig) |
 
 ## PRCV 2026 Phase 3 消融 runs
 

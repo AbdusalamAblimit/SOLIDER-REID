@@ -4317,3 +4317,28 @@ srvC 接下来: exp269b FINAL ~11:40 → 再 idle (无 chain). 或可 queue exp2
 - ✅ exp263b (Base OD s42 full 120) lab4090 FINAL 73.5/81.5
 - 🔄 exp266c (Base OP s42 full 120) srvB e30 eval 76.5/84.7
 - 🔄 exp269b (Base Market PLBOA OFF full 120) srvC e60 eval 94.1/97.0
+
+### [2026-04-24 01:20] 决策 #exp269b FINAL 94.5/97.2 — Market Base 新 SOTA, full 120 restart 策略验证
+
+**exp269b srvC s42 FINAL (2026-04-24 01:17:24 CST)**:
+- **mAP: 94.5% / Rank-1: 97.2% / R5: 99.1% / R10: 99.5%**
+
+**vs exp269 original (OOM 前 e80 eff)**:
+- Global+flip: 94.4/97.0 → +0.1/+0.2 (full 120 全面微优)
+- MaxSim+flip: 94.5/97.1 → +0/+0.1 (不跑 MaxSim 也持平 MaxSim)
+
+**vs exp268 Small**: Δ +0.2/-0.1 (Base vs Small Market 已饱和)
+**vs exp293b Base PLBOA ON**: Δ +0.7/0 → **PLBOA 净 -0.7 mAP 代价确认**
+
+**论文 Market Base 主数字 升级**:
+- 原: exp269 orig 94.4/97.0 (Global+flip) 或 94.5/97.1 (MaxSim+flip)
+- **新: exp269b 94.5/97.2** (两者等价, 直接 eq_concat 就达 MaxSim 水平)
+
+**3/3 restart 完成进度**: 3/3 FINAL ✓
+- ✅ exp263b (Base OD s42 full 120) lab4090 FINAL 73.5/81.5, MaxSim 74.8/84.0
+- ✅ exp266c (Base OP s42 full 120) srvB **running** (e60 77.9/85.6)
+- ✅ exp269b (Base Market PLBOA OFF full 120) srvC FINAL 94.5/97.2
+
+**等等, 是 2/3 FINAL. srvB exp266c 仍在训练, FINAL ETA ~13:22 today。**
+
+**srvC idle**: FINAL 后进程结束, 待 MaxSim eval 启动。
