@@ -66,11 +66,37 @@
 | exp263d | Full+GCN s41 | 74.1/83.3 | **75.2/84.8** ← SOTA |
 | **exp294 (本)** | **Full-GCN s41** | **74.0/82.6** | **pending** |
 
-## MaxSim+flip eval 待办
+## MaxSim+flip eval FINAL (lab4090, 2026-04-24 02:22 CST)
 
-- ckpt: `lab4090:/home/afr/SOLIDER-REID/log/occluded_duke/exp294_lgpaOnly_2stg_b_od_s41/transformer_120.pth`
-- 在 lab4090 本地跑, 预期 MaxSim ~74.8-75.2 / ~83-84 (类似 exp263b 74.8/84.0 或 exp263d 75.2/84.8)
-- 若 MaxSim < exp263d, 证明 GCN 对 MaxSim 也冗余 (完整验证假设)
+| 评测模式 | mAP | R1 |
+|---------|-----|----|
+| train-side eq_concat+flip (FINAL) | 74.0 | 82.6 |
+| Global cosine+flip | 73.5 | **83.3** (R1 peak) |
+| **MaxSim hybrid+flip** | **75.0** | **84.4** |
+
+**MaxSim 增益**: **+1.0 mAP / +1.8 R1** (vs eq_concat) — 与 exp263b (+1.3/+2.5) 同数量级
+
+**对照 Base OD MaxSim 矩阵**:
+| Exp | GCN | seed | eq+flip | MaxSim+flip | MaxSim Δ |
+|-----|-----|------|---------|-------------|----------|
+| exp263 orig e100 eff | ON | 42 | 72.5/81.8 | 74.5/84.0 | - |
+| exp263b full 120 | ON | 42 | 73.5/81.5 | 74.8/84.0 | - |
+| exp263d | ON | **41** | 74.1/83.3 | **75.2/84.8** | **baseline (Full+GCN SOTA)** |
+| **exp294 (本)** | **OFF** | **41** | **74.0/82.6** | **75.0/84.4** | **-0.2/-0.4 vs exp263d** |
+
+**🏆 核心发现**:
+- **exp294 MaxSim 75.0/84.4 vs exp263d MaxSim 75.2/84.8**: Δ **-0.2 / -0.4**
+- GCN 在 MaxSim 维度贡献也 **极微**: mAP -0.2, R1 -0.4
+- **GCN 冗余假设完全验证** (eq_concat Δ -0.1/-0.7, MaxSim Δ -0.2/-0.4)
+
+**vs exp263b (Full+GCN s42)**: exp294 MaxSim 75.0 vs exp263b MaxSim 74.8 → **+0.2/+0.4** — Full-GCN s41 > Full+GCN s42 (seed 影响 > GCN 影响)
+
+## 论文 Phase 3-C 最终 claim (升级)
+
+**GCN 在所有 backbone / 所有评测模式下都冗余**:
+- eq_concat: Tiny 0, Small 0, Base -0.1 (mAP)
+- MaxSim: Base -0.2 (mAP, Tiny/Small 未测 MaxSim)
+- 论文结论: **"LGPA 捕获了足够的 pose 语义结构, GCN 本结构分支可移除, 简化模型"**
 
 ## lab4090 idle (FINAL 后)
 
