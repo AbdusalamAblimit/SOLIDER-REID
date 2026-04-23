@@ -48,11 +48,28 @@
 - 论文 **Base OD 主数字仍用 exp263d 74.1/83.3** (seed 41 最强)
 - exp263b 作 **seed 42 full 120 复现数据点**, 佐证 restart 有效 + seed 42 天然弱
 
-## MaxSim+flip eval 待办
+## MaxSim+flip eval FINAL (lab4090, 2026-04-23 ~17:55 CST)
 
-- ckpt: `/home/afr/SOLIDER-REID/log/occluded_duke/exp263b_best_b_od_s42_full120/transformer_120.pth`
-- 在 lab4090 本地跑 (网络不稳, 不适合 rsync 回 srvA)
-- 对照: exp263 old e100 eff MaxSim 74.5/84.0, exp263d MaxSim 75.2/84.8
+| 评测模式 | mAP | R1 |
+|---------|-----|----|
+| train-side eq_concat+flip (FINAL) | 73.5 | 81.5 |
+| Global cosine+flip | 72.4 | 81.4 |
+| **MaxSim hybrid+flip** | **74.8** | **84.0** |
+
+**MaxSim 增益**: **+1.3 mAP / +2.5 R1** (vs train-side eq_concat)
+
+**对照 Base OD MaxSim 矩阵**:
+| Exp | seed | mAP (MaxSim) | R1 (MaxSim) |
+|-----|------|--------------|-------------|
+| exp263 orig e100 eff | 42 | 74.5 | 84.0 |
+| **exp263b (本) full 120** | **42** | **74.8** | **84.0** |
+| exp263d | 41 | 75.2 | 84.8 |
+
+**结论**:
+- exp263b MaxSim (74.8) > exp263 orig MaxSim (74.5) by +0.3 mAP → **full 120 epoch 在 MaxSim 也微优**
+- 但 exp263b < exp263d s41 by -0.4 mAP / -0.8 R1 → **seed 41 仍是 Base OD 最强**
+- 论文 Base OD 主表 MaxSim 数字仍用 **exp263d 75.2/84.8** (seed 41)
+- exp263b MaxSim 作 **seed 42 full 120 补充数据点**
 
 ## lab4090 网络状态
 
