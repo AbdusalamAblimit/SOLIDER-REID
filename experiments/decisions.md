@@ -4217,3 +4217,37 @@ srvC 接下来: exp269b FINAL ~11:40 → 再 idle (无 chain). 或可 queue exp2
 3. 🔄 exp263b (Base OD s42) lab4090 e1 NEW, FINAL ~15:30
 4. ⏳ exp266c (Base OP s42) queued srvB after exp290 FINAL (~09:15)
 5. ✅ 已用 e80 eff 数据的 cross-domain 分析 (PLBOA ON cross-dom 灾难 -15.6 mAP vs PLBOA OFF)
+
+### [2026-04-23 09:22] exp290 FINAL 78.4/86.2 — target-heatmap OP 严格持平 scene + exp266c chain
+
+**exp290 FINAL**:
+- Swin-Small + Full Scaffold + target-heatmap on Occ-PTrack, seed 42
+- **78.4 / 86.2 / 94.8 / 97.4** @ 2026-04-23 09:22 srvB
+- **严格持平 exp265 scene baseline 78.4/86.2/94.8/97.3** (Δ 0/0/0/+0.1)
+
+**target-heatmap 3 数据集完整收尾 (full 120)**:
+| Dataset | target | scene baseline | Δ mAP/R1 |
+|---------|--------|----------------|----------|
+| OD (exp291) | 73.5/82.9 | 73.8/83.8 | -0.3/-0.9 |
+| **OP (exp290)** | **78.4/86.2** | **78.4/86.2** | **0/0 严格持平** |
+| Market (exp292 e90 eff) | 94.2/97.1 | 94.3/97.3 | -0.1/-0.2 |
+
+**核心结论**: target-heatmap 机制跨 3 数据集 **均 near no-op** (|Δ| ≤ 0.3 mAP)。
+- 原 design.md 假设 "OP 多人 SOTA" 未兑现
+- KPR-with-prompt 82.3 的 +3.8 gap 不能通过简单 scene→target swap 弥补
+- 说明 PSG/LGPA gate 在现有训练中已 implicitly 学会部分 disambiguation, 显式 target 换 scene 无额外增益
+- **论文定位**: supplementary no-regression 消融, 不 claim 主创新
+- 主表 Small OP 数字用 exp265 78.4/86.2 (= exp290, 等价)
+
+**exp266c chain**:
+- daemon 109773 detected exp290 ckpt @ 09:21
+- 等 prev process 退出后 launch (Base OP s42 full 120 restart)
+- 预期 launch ~09:25, FINAL ~15:00 CST
+
+**5 restart + 1 target-heatmap 实验组全图**:
+- ✅ exp289 FINAL 73.8/83.3 (Phase 3-C Small 2-stg)
+- ✅ exp290 FINAL 78.4/86.2 (target-heatmap OP)
+- ✅ exp293 FINAL 93.8/97.2 (Base Market PLBOA ON full 120)
+- 🔄 exp269b e20 (Base Market PLBOA OFF full 120)
+- 🔄 exp263b e8 (Base OD s42 full 120)
+- ⏳ exp266c queued (Base OP s42 full 120) chain soon

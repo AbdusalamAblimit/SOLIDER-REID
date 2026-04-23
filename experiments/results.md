@@ -1574,7 +1574,7 @@
 
 | Exp ID | Backbone | Dataset | seed | eq_concat+flip mAP / R1 | vs scene baseline | 备注 |
 |--------|----------|---------|------|-------------------------|-------------------|------|
-| exp290 | Swin-Small | Occ-PTrack | 42 | running e34+ (e30: 77.1/85.0) | exp265b e30 77.2/84.9 (Δ -0.1/+0.1) | srvB, OP 多人关键 SOTA 追求 |
+| exp290 | Swin-Small | Occ-PTrack | 42 | **78.4 / 86.2** | ✓ e120 FINAL @ 2026-04-23 09:22 srvB (R5=94.8 R10=97.4). 🔥 **严格持平 exp265 scene baseline 78.4/86.2/94.8/97.3** (Δ 0/0/0/+0.1). target-heatmap 3 数据集全 near-no-op, OP 多人场景预期增益未实现 |
 | exp291 | Swin-Small | Occ-Duke | 42 | **73.5 / 82.9** | exp285b 73.8/83.8 (Δ -0.3/-0.9) | ✓ e120 FINAL @ 2026-04-22 18:13 lab4090 (R5=90.7 R10=92.5). OD 多单人场景 near no-op, 机制无显著回归 |
 | exp292 | Swin-Small | Market | 42 | **e90 eff FINAL: 94.2 / 97.1** | exp268 FINAL 94.3/97.3 (Δ -0.1/-0.2 持平) | ✓ 停于 e93 @ 2026-04-22 23:25 用户让出 lab3090。R5 99.2 R10 99.5 = exp268 FINAL R5 99.1 R10 99.5 |
 | exp293 | Swin-Base | Market + **PLBOA** | 42 | **e120 FINAL (restart): 93.8 / 97.2** (完整 120ep) | exp269 e80 eff 94.4/97.0 (Δ -0.6/+0.2); first run e80 eff 94.1/96.9 (Δ -0.3/+0.3 跨 restart 方差) | ✓ restart full 120 @ 2026-04-23 08:24 lab4090 (R5=98.9 R10=99.5). First run e80 eval OOM, 重启 w/ TEST.IMS_PER_BATCH 64. **PLBOA 在 Market full 120 net -0.6 mAP / +0.2 R1** (vs exp269 PLBOA OFF e80) — 主表待 exp269b FINAL 公平对比 |
