@@ -96,8 +96,8 @@ def extract_features_flip(model, loader, device='cuda', do_flip=True):
                 kp = F.normalize(feat['kp_feats'], p=2, dim=2)
                 w = feat['kp_weights']
             else:
-                # Auto-detect feature dim: try 1024 (Base), 768 (Small/Tiny)
-                C = 1024 if feat.shape[1] % 1024 == 0 else 768
+                # Detect C from backbone type (6144 is divisible by both 768 and 1024, ambiguous)
+                C = 1024 if "base" in cfg.MODEL.TRANSFORMER_TYPE.lower() else 768
                 n_feats = feat.shape[1] // C
                 g = F.normalize(feat[:, :C], p=2, dim=1)
                 if n_feats > 1:
