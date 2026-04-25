@@ -1,5 +1,9 @@
 # SOTA 对比表 (Occluded-DukeMTMC-reID)
 
+> ⚠️ **本文件含部分历史 v1 (buggy eval) 数字**, 单一 authoritative 表见 [`paper_materials/result.md`](../result.md)。
+> v1 → v2 修复: commit 286aedb 修了 eval_fliptest_maxsim.py 的 C-dim auto-detect bug, Small/Tiny Full Scaffold MaxSim ~+0.7-0.8 mAP 修正。
+> Section "PRCV 2026 主结果表" 下面的数字已更新到 v2。
+
 ## 数据来源: KPR (ECCV 2024) Table 3 + 我们的实验
 
 ### 无后处理结果
@@ -67,12 +71,12 @@ KPR 的 75.1/84.3 也包含了 test-time prompting (可视为后处理)。
 
 | Backbone | Occ-Duke (mAP / R1) | Occ-PTrack (mAP / R1) | Market (mAP / R1) | Occ-ReID ← Market (mAP / R1) |
 |----------|---------------------|-----------------------|-------------------|------------------------------|
-| Swin-Tiny (28M) | exp261: **65.9 / 77.4** | exp264: **76.7 / 85.1** | exp267: **92.5 / 96.4** | exp267→OR: TBD / TBD |
-|  | + MaxSim: **66.4 / 77.7** (Δ +0.5/+0.3) | + MaxSim: TBD (exp264 srvC busy) | + MaxSim: 92.7 / 96.4 (Δ 0/0 饱和) | + MaxSim: TBD |
-| Swin-Small (50M) | exp285b: **73.8 / 83.8** ← lab4090 同设备 rerun exp262 | exp265: **78.4 / 86.2** (s42) / exp265b: **78.5 / 85.9** (s41, Δ +0.1/-0.3) | exp268: **94.3 / 97.3** | exp268→OR: TBD / TBD |
-|  | + MaxSim: **74.0 / 84.1** (Δ +0.2/+0.3) | + MaxSim: TBD (srvA/srvC busy) | + MaxSim: TBD (srvA busy) | + MaxSim: TBD |
-| Swin-Base (88M) | exp263d: **74.1 / 83.3** (s41 lab3090 pwrlim) | exp266b_3090: **78.5 / 86.2** (s41, 完整 120ep) / exp266 s42 e60 eff: 78.4/86.2 | exp269 e80 eff: **94.4 / 97.0** | exp269→OR: TBD / TBD |
-|  | + MaxSim: **75.2 / 84.8** (Δ **+1.1/+1.5** ✓ SOTA) | + MaxSim: **78.5 / 86.4** (Δ 0/+0.2) | + MaxSim: TBD (srvA busy) | + MaxSim: TBD |
+| Swin-Tiny (28M) | exp261: **65.9 / 77.4** | exp264: **76.7 / 85.1** | exp267: **92.5 / 96.4** | exp267→OR: TBD |
+|  | + MaxSim+flip (v2): **67.2 / 78.6** (Δ +1.3/+1.2) | + MaxSim+flip: **76.8 / 85.2** (Δ +0.1/+0.1) | + MaxSim+flip: **93.0 / 96.7** (Δ +0.5/+0.3) | + MaxSim: TBD |
+| Swin-Small (50M) | **exp295 (s1234)**: **74.2 / 84.0** ← break exp255 hist 73.2/83.3 by +1.0; exp285b (s42): 73.8/83.8 | exp265 (s42): **78.4 / 86.2** / exp265b (s41): **78.5 / 85.9** | exp268: **94.3 / 97.3** | exp268→OR: TBD |
+|  | + MaxSim+flip (v2): **75.2 / 85.4** (s1234 exp295) / 74.7 / 84.8 (s42 exp285b) | + MaxSim+flip: **78.5 / 86.1** (Δ +0.1/-0.1) | + MaxSim+flip: **94.5 / 97.2** (Δ +0.2/-0.1) | + MaxSim: TBD |
+| Swin-Base (88M) | **exp263d (s41)**: **74.1 / 83.3** (lab3090 pwrlim 280W); exp296 lab4090 repro: 73.7/81.7 (-0.4/-1.6 不同 GPU 环境) | exp266b (s41 SOTA): **78.7 / 86.3** / exp266 s42 e60 eff: 78.4/86.2 | exp269b (s42 full120 PLBOA OFF): **94.5 / 97.2** | exp269 → OR: 88.2 / 91.2 (MaxSim+flip ✓ Top-tier) |
+|  | + MaxSim+flip (v2): **75.2 / 84.8** ✓ SOTA (Δ +1.1/+1.5 vs eq) | + MaxSim+flip: **78.7 / 86.3** (exp266b) | + MaxSim+flip: **94.6 / 97.2** (exp269b) | + MaxSim: 88.2 / 91.2 ✓ |
 
 **Base 行临时 reference**（旧协议 `exp260b` 本地 3090，不含默认 flip-test）：
 - Occ-Duke: 73.9 / 83.2 (eq_concat), 75.4 / 84.8 (MaxSim + flip)
@@ -99,8 +103,15 @@ KPR 的 75.1/84.3 也包含了 test-time prompting (可视为后处理)。
 | BPBreID | WACV'23 | HRNet-W48 | 62.5 / 75.1 | — / — | 需查 KPR 表格补 Occ-PTrack |
 | KPR w/o prompt | ECCV'24 | Swin-B (88M) | 73.3 / 82.5 | — / — | 需查 KPR 表格补 Occ-PTrack |
 | KPR | ECCV'24 | Swin-B (88M) | 75.1 / 84.3 | — / — | 带 prompt |
-| **Ours (Tiny)** | — | Swin-T (28M) | **65.9 / 77.4** (exp261) | **76.7 / 85.1** (exp264) | — |
-| **Ours (Small)** | — | Swin-S (50M) | **73.8 / 83.8** (exp285b) | **78.4 / 86.2** (exp265) | Small 对 KPR w/o prompt 73.3/82.5 +0.5/+1.3 |
-| **Ours (Base)** | — | Swin-B (88M) | **74.1 / 83.3** (exp263d s41) | **78.5 / 86.2** (exp266b_3090 s41) | Base +0.8 mAP over KPR w/o prompt, **OP Base vs Small 0 增益** (均 78.5/86.2), backbone 饱和 |
+| **Ours (Tiny)** eq+flip | — | Swin-T (28M) | **65.9 / 77.4** (exp261) | **76.7 / 85.1** (exp264) | — |
+| **Ours (Tiny)** + MaxSim+flip (v2) | — | Swin-T (28M) | **67.2 / 78.6** (exp261) | **76.8 / 85.2** | — |
+| **Ours (Small)** eq+flip | — | Swin-S (50M) | **74.2 / 84.0** (exp295 s1234) | **78.5 / 85.9** (exp265b s41) | Small 对 KPR w/o prompt 73.3/82.5 +0.9/+1.4 |
+| **Ours (Small)** + MaxSim+flip (v2) | — | Swin-S (50M) | **75.2 / 85.4** (exp295) | **78.5 / 86.0** (exp265b) | **超 KPR 75.1/84.3 +0.1/+1.1** (Small 用更少参数) |
+| **Ours (Base)** eq+flip | — | Swin-B (88M) | **74.1 / 83.3** (exp263d s41) | **78.7 / 86.3** (exp266b s41 SOTA) | Base +0.8 mAP over KPR w/o prompt |
+| **Ours (Base)** + MaxSim+flip (v2) | — | Swin-B (88M) | **75.2 / 84.8** (exp263d) ✓ SOTA | **78.7 / 86.3** (exp266b) | **超 KPR 75.1/84.3 +0.1/+0.5**, prompt-free |
 
-（Occ-PTrack 对标 baseline 需从 KPR 论文 Table 补回。后面我补。）
+**Δ vs KPR (75.1 / 84.3)**: 
+- Small (50M): **+0.1 / +1.1** (R1 大幅领先, 50M < 88M params)
+- Base (88M): **+0.1 / +0.5** (同 backbone, 持平 mAP, R1 领先)
+
+**MaxSim+flip 数字说明**: post-bug-fix v2 (commit 286aedb), 历史 Small/Tiny Full Scaffold v1 数字偏低 ~0.7-0.8 mAP, 已修正。

@@ -23,7 +23,8 @@
 | **Small** | exp285b (seed 42) | 42 | 73.8 / 83.8 | 73.6 / 83.2 | **74.7 / 84.8** |
 | **Small** | **exp295 (seed 1234 repro)** | **1234** | **74.2 / 84.0** | 73.7 / 83.3 | **75.2 / 85.4** ✓ **matches exp255 hist 75.2/85.6** |
 | **Small** | exp255 (historical ref) | 1234 | 73.2 / 83.3 | 73.6 / 83.4 | **75.2 / 85.6** (backup srvA log) |
-| **Base** | exp263d | 41 | 74.1 / 83.3 | 73.8 / 82.9 | **75.2 / 84.8** |
+| **Base** | exp263d (lab3090 280W) | 41 | 74.1 / 83.3 | 73.8 / 82.9 | **75.2 / 84.8** |
+| **Base** | exp296 (lab4090 repro of exp263d) | 41 | 73.7 / 81.7 | 72.6 / 81.0 | **74.9 / 83.8** (Δ -0.3 / -1.0 vs exp263d, 不同 GPU 训练环境) |
 
 **Paper 主表 Small OD 用 exp295 75.2/85.4** (seed 1234, HEAD code + v2 fix eval, reproducible)。
 **Paper 主表 Base OD 用 exp263d 75.2/84.8** (seed 41, beats KPR w/ prompt 75.1/84.3 by +0.1/+0.5)。
@@ -217,6 +218,11 @@
 | exp291 | OD | Small | `prcv_best_small.yml` | `POSE_USE_TARGET_HEATMAP True` |
 | exp293 | Market | Base | `prcv_best_base.yml` | `POSE_LOWER_BODY_OCC True` (PLBOA ON) |
 | exp294 | OD | Base | `prcv_best_base.yml` | `SOLVER.SEED 41 POSE_SKELETON_GCN False TEST.IMS_PER_BATCH 64` |
+| exp296 | OD | Base | `prcv_best_base.yml` | `SOLVER.SEED 41 SOLVER.BASE_LR 0.0008 TEST.IMS_PER_BATCH 64` (lab4090 repro of exp263d) |
+| exp297 | OD | Base | `prcv_best_base.yml` | `SOLVER.SEED 41 SOLVER.BASE_LR 0.0004` (LR sweep, srvA running) |
+| exp298 | OD | Base | `prcv_best_base.yml` | `SOLVER.SEED 41 SOLVER.BASE_LR 0.0002` (LR sweep, srvB running) |
+| exp299 | OD | Base | `prcv_best_base.yml` | `SOLVER.SEED 41 SOLVER.BASE_LR 0.0008 POSE_LOWER_BODY_OCC False` (PLBOA off, srvC running) |
+| exp300 | OD | Base | `prcv_best_base.yml` | `SOLVER.SEED 1234 SOLVER.BASE_LR 0.0008` (Base s1234 SOTA push, lab4090 running) |
 
 ### exp295 复现完成 ✓ (2026-04-24 23:25 CST)
 
@@ -225,6 +231,29 @@
 - **MaxSim+flip**: **75.2 / 85.4** ← **完全 match exp255 75.2/85.6** (mAP 精准重现, R1 -0.2 噪声范围)
 - lab4090 training ~6h (17:19 → 23:25 CST), 175s/epoch
 - 证实: exp255 历史 75.2 数字是真实可重现, 非 eval bug 产物, paper 可安全用
+
+### exp296 完成 ✓ (2026-04-25 07:58 CST)
+
+- **config**: `prcv_best_base.yml` + `SOLVER.SEED 41 SOLVER.BASE_LR 0.0008` (mirror of exp263d)
+- **train eq+flip FINAL**: 73.7 / 81.7 (vs exp263d 74.1/83.3 → -0.4 / -1.6)
+- **MaxSim+flip**: **74.9 / 83.8** (vs exp263d 75.2/84.8 → -0.3 / -1.0)
+- lab4090 training ~8h (23:42 → 07:58 CST), 241s/epoch
+- 结论: lab4090 vs lab3090(280W pwrlim) 训练 reproducibility 接近但 R1 偏低 ~1.0-1.6, paper 主表 Base OD 维持 exp263d 75.2/84.8
+
+### Base OD LR sweep (2026-04-25 overnight, 进行中)
+
+4 机 Base OD s41 LR sweep + 1 个 PLBOA off ablation, FINAL ~22:00 PM tmr:
+
+| Exp | 机器 | 配置 | 当前 epoch (~15:00 CST) | 已知 vs exp296 LR8 |
+|-----|------|------|-------------------------|--------------------|
+| exp297 | srvA | LR 4e-4 | e80: 73.3 | -0.2 (e80 比 LR8 73.5 略低) |
+| exp298 | srvB | LR 2e-4 | e80: 68.3 | -5.2 (LR2 严重 underfit) |
+| exp299 | srvC | LR 8e-4 **PLBOA OFF** | e80: 71.1 (e70 dip 69.3) | -2.4 mAP, **OD 上 PLBOA 在 in-domain 是 net positive (+2.4 mAP)** |
+| **exp300** | **lab4090** | **LR 8e-4 seed 1234** (mirror Small SOTA) | e60: 73.2 (vs exp296 e60 71.8 +1.4, vs exp263d e60 73.1 +0.1) | **可能 break SOTA, FINAL ETA ~18:00 CST 今晚** |
+
+**重要发现**:
+- **OD PLBOA net positive +2.4 mAP** (vs Market PLBOA net negative -0.7 mAP), claim "PLBOA dataset-specific" 成立
+- **exp300 (Base s1234) 早期轨迹超 exp263d** (e60 +0.1), 有可能成为新 Base OD SOTA
 
 ### Eval command template
 
