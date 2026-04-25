@@ -27,9 +27,18 @@
 
 ## FINAL (2026-04-25 19:11 CST = 10:50 UTC)
 
-- **eq+flip**: mAP **74.0%**, R1 **83.8%**, R5 91.1%, R10 93.0%
-- **Global cosine+flip**: 73.9 / 83.9
-- **MaxSim hybrid+flip**: **75.0 / 85.0**
+- **eq+flip (e120)**: mAP **74.0%**, R1 **83.8%**, R5 91.1%, R10 93.0%
+- **Global cosine+flip (e120)**: 73.9 / 83.9
+- **MaxSim hybrid+flip (e120)**: **75.0 / 85.0**
+
+### e100 ckpt MaxSim eval (R1 peak)
+
+| Ckpt | Global cosine+flip | **MaxSim hybrid+flip** | vs exp263d 75.2/84.8 |
+|------|--------------------|------------------------|----------------------|
+| e100 | 73.7 / 83.8 | **75.0 / 85.2** | -0.2 / **+0.4** R1 best |
+| e120 (FINAL) | 73.9 / 83.9 | 75.0 / 85.0 | -0.2 / +0.2 |
+
+**e100 ckpt R1 比 e120 略好 +0.2** (e120 训练后期 R1 微 dip 84.2 → 83.7-83.8 plateau, ckpt e100 抓住 R1 peak)。
 
 ## 🎯 对照 exp263d (Base OD s41 LR8 SOTA reference)
 

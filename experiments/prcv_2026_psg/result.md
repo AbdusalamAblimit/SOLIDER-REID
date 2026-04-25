@@ -19,7 +19,8 @@
 | **Small** | **exp295** | **1234** | Full Scaffold default (复现 exp255 hist) | **74.2 / 84.0** | 73.7 / 83.3 | **75.2 / 85.4** ⭐ |
 | **Base** | **exp263d** | **41** | Full Scaffold default (lab3090 280W pwrlim) | 74.1 / 83.3 | 73.8 / 82.9 | **75.2 / 84.8** ⭐ |
 | **Base** | exp296 | 41 | Full Scaffold (lab4090 repro of exp263d) | 73.7 / 81.7 | 72.6 / 81.0 | 74.9 / 83.8 |
-| **Base** | exp300 | 1234 | Full Scaffold (lab4090, mirror Small s1234) | 74.0 / 83.8 | 73.9 / 83.9 | 75.0 / 85.0 |
+| **Base** | exp300 (e120 FINAL) | 1234 | Full Scaffold (lab4090, mirror Small s1234) | 74.0 / 83.8 | 73.9 / 83.9 | 75.0 / 85.0 |
+| **Base** | exp300 (e100 R1-peak ckpt) | 1234 | 同上 | 74.0 / **84.2** | 73.7 / 83.8 | **75.0 / 85.2** ← R1 +0.4 vs exp263d |
 
 ⭐ **Paper Small/Base OD 主行**: exp295 (Small) **75.2 / 85.4** + exp263d (Base) **75.2 / 84.8**
 
