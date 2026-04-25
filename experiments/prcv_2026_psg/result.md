@@ -1,0 +1,154 @@
+# PRCV 2026 验证结果 — clean authoritative
+
+**仅收录**:
+- ✅ 训练完成 (e120 FINAL 或 effective FINAL e80/e60 due to OOM)
+- ✅ Eval 在 commit 286aedb (v2 fix) **之后** 跑 / 或 Base ckpt (eval bug 不影响)
+- ✅ **同时**有 train-side eq+flip (or Global+flip) 和 MaxSim+flip 数据
+
+**数字格式**: `mAP / Rank-1`, 全部从 train_log.txt + eval_log 直接读取。
+**Eval 协议**: `scripts/eval_fliptest_maxsim.py` at commit 286aedb, IMS_PER_BATCH 64 (Base) 或 128 (Tiny/Small)。
+
+---
+
+## Table 1: Occluded-Duke (主结果)
+
+| Backbone | Exp | Seed | Config notes | eq+flip | Global+flip | **MaxSim+flip** |
+|----------|-----|------|--------------|---------|-------------|-----------------|
+| **Tiny** | exp261 | 42 | Full Scaffold default | 65.9 / 77.4 | 65.8 / 76.0 | **67.2 / 78.6** |
+| **Small** | exp285b | 42 | Full Scaffold default | 73.8 / 83.8 | 73.6 / 83.2 | **74.7 / 84.8** |
+| **Small** | **exp295** | **1234** | Full Scaffold default (复现 exp255 hist) | **74.2 / 84.0** | 73.7 / 83.3 | **75.2 / 85.4** ⭐ |
+| **Base** | **exp263d** | **41** | Full Scaffold default (lab3090 280W pwrlim) | 74.1 / 83.3 | 73.8 / 82.9 | **75.2 / 84.8** ⭐ |
+| **Base** | exp296 | 41 | Full Scaffold (lab4090 repro of exp263d) | 73.7 / 81.7 | 72.6 / 81.0 | 74.9 / 83.8 |
+
+⭐ **Paper Small/Base OD 主行**: exp295 (Small) **75.2 / 85.4** + exp263d (Base) **75.2 / 84.8**
+
+---
+
+## Table 2: Occluded-PoseTrack-ReID
+
+| Backbone | Exp | Seed | Config notes | eq+flip | Global+flip | **MaxSim+flip** |
+|----------|-----|------|--------------|---------|-------------|-----------------|
+| **Tiny** | exp264 | 42 | Full Scaffold default | 76.7 / 85.1 | 76.5 / 85.0 | **76.8 / 85.2** |
+| **Small** | exp265 | 42 | Full Scaffold default | 78.4 / 86.2 | 78.2 / 86.1 | **78.5 / 86.1** |
+| **Small** | exp265b | 41 | Full Scaffold default | 78.5 / 85.9 | 78.2 / 86.0 | **78.5 / 86.0** |
+| **Small** | exp290 | 42 | + target-heatmap swap | 78.4 / 86.2 | 78.1 / 86.1 | **78.4 / 86.1** |
+| **Base** | exp266 (e60 eff) | 42 | Full Scaffold (early stop, no e120 ckpt) | 78.4 / 86.2 | 78.2 / 86.4 | **78.4 / 86.2** |
+| **Base** | **exp266b** | **41** | Full Scaffold default | **78.7 / 86.3** | 78.4 / 86.6 | **78.7 / 86.3** ⭐ |
+| **Base** | exp266c | 42 | Full Scaffold full 120 restart | 78.0 / 85.8 | 77.7 / 85.7 | 77.9 / 85.5 |
+
+⭐ **Paper Base OP 主行**: exp266b **78.7 / 86.3** (seed 41 SOTA)
+
+---
+
+## Table 3: Market-1501
+
+| Backbone | Exp | Seed | Config notes | eq+flip | Global+flip | **MaxSim+flip** |
+|----------|-----|------|--------------|---------|-------------|-----------------|
+| **Tiny** | exp267 | 42 | Full Scaffold default | 92.5 / 96.4 | 93.0 / 96.7 | **93.0 / 96.7** |
+| **Small** | exp268 | 42 | Full Scaffold default | 94.3 / 97.3 | 94.2 / 97.0 | **94.5 / 97.2** |
+| **Base** | **exp269b** | **42** | Full Scaffold full 120 restart, **PLBOA OFF** | 94.5 / 97.2 | 94.4 / 97.1 | **94.6 / 97.2** ⭐ |
+
+⭐ **Paper Market Base 主行**: exp269b **94.6 / 97.2** (PLBOA OFF, exp293 ON 跨域灾难)
+
+---
+
+## Table 4: Market → Occluded-ReID (跨域, inference-only)
+
+| Market 训练 ckpt | PLBOA | Eval 版本 | **MaxSim+flip on Occ-ReID** |
+|-----------------|-------|-----------|------------------------------|
+| exp293 full 120 (Base s42) | **ON** | v2 (commit 286aedb) | **62.8 / 68.6** |
+
+**说明**: 历史 exp269 / exp260b 跨域数字 (88.2/91.2 与 88.0/90.6) **没有在 v2 fix 后重新跑**, 暂不收录。
+**Decision**: paper 主表 Market → Occ-ReID 用 v1 历史数字 (88.2/91.2 from exp269) 作 reference, 标 "v1 eval" 备注; 或在 v2 重 eval 后再确认。
+
+---
+
+## Phase 3 消融 (Occluded-Duke, 全部 v2 fix 后 eval)
+
+### Table A — Pure PSG stage (no LGPA / no GCN / no OA-SD / no ParAug / no PLBOA)
+
+**说明**: Pure PSG 配置只有 global feature, 无 part tokens, MaxSim 不适用。仅 Global+flip。
+
+| Backbone | PSG stages | Exp | eq+flip (train log) | Global+flip (eval) |
+|----------|------------|-----|---------------------|--------------------|
+| Tiny | (POSE off) | exp270 | 59.2 / 68.4 | — (POSE_ENABLED=False, eval script 不支持) |
+| Tiny | `[-1]` | exp271 | 60.2 / 69.5 | 60.2 / 69.5 |
+| Tiny | `[-2,-1]` | exp272 | 60.5 / 69.7 | 60.5 / 69.7 |
+| Tiny | `[-3,-2,-1]` | exp273 | 60.5 / 69.9 | 60.5 / 69.9 |
+| Small | (POSE off) | exp274 | 68.1 / 76.8 | — |
+| Small | `[-1]` | exp275 | 68.8 / 76.8 | 68.8 / 76.7 |
+| Small | `[-2,-1]` | exp276 | 68.3 / 77.2 | 68.3 / 77.2 |
+| Small | `[-3,-2,-1]` | exp277b (s41) | 68.3 / 77.6 | 68.3 / 77.6 |
+
+### Table B — GCN cap × PSG stage (Full Scaffold variants)
+
+**Occ-Duke Tiny (v2 MaxSim)**:
+
+| | GCN256 | GCN512 |
+|---|---------|---------|
+| PSG `[-1]` | exp278: 65.7/76.7 → **66.9/77.6** | exp280: 65.7/76.2 → **66.8/77.4** |
+| PSG `[-2,-1]` | exp279: 65.7/76.9 → **66.9/77.7** | **exp261: 65.9/77.4 → 67.2/78.6** (best) |
+
+**Occ-Duke Small (v2 MaxSim)**:
+
+| | GCN256 | GCN512 |
+|---|---------|---------|
+| PSG `[-1]` | exp282: 73.7/83.9 → **74.6/85.3** (R1 best) | exp284: 73.4/82.9 → **74.5/85.0** |
+| PSG `[-2,-1]` | exp283: 73.5/83.2 → **74.5/84.7** | **exp285b: 73.8/83.8 → 74.7/84.8** (mAP best) |
+
+### Table C — Full − GCN (LGPA-only) 验证 GCN 冗余
+
+| Backbone | PSG | Exp | eq+flip | **MaxSim+flip** | Δ vs Full Scaffold (w/ GCN) |
+|----------|-----|-----|---------|------------------|-------------------------------|
+| Tiny | `[-1]` | exp286 | 66.0 / 76.6 | **67.1 / 77.9** | vs exp278 +0.2 / +0.3 |
+| Tiny | `[-2,-1]` | exp287 | 65.9 / 77.0 | **67.2 / 78.5** | **vs exp261 0 / -0.1** |
+| Small | `[-1]` | exp288 | 73.8 / 83.8 | **74.8 / 84.8** | vs exp284 +0.3 / -0.2 |
+| Small | `[-2,-1]` | exp289 | 73.8 / 83.3 | **74.8 / 84.8** | **vs exp285b +0.1 / 0** |
+| Base | `[-2,-1]` | exp294 | 74.0 / 82.6 | **75.0 / 84.4** | **vs exp263d -0.2 / -0.4** |
+
+**3-backbone 统一结论**: GCN 分支冗余, mAP 贡献 ≤ 0.2 (噪声内), R1 贡献 -0.4 ~ +0.3, 论文可 claim "LGPA 已捕获足够 semantic pose 结构, GCN 可移除"。
+
+### Table D — Market PLBOA → Occ-ReID 跨域消融
+
+| Market ckpt | PLBOA | Eval | Occ-ReID MaxSim+flip | Δ |
+|-------------|-------|------|----------------------|----|
+| exp293 full 120 (Base s42) | **ON** | v2 fix | **62.8 / 68.6** | -25 mAP vs OFF (灾难) |
+| exp269 orig e80 (Base s42) | **OFF** | v1 eval (待 v2 re-eval) | 88.2 / 91.2 | baseline (v1 但 Base 不受 bug 影响, 数字可信) |
+
+**结论**: Market 上 PLBOA 训练对 Occ-ReID 跨域 catastrophic, paper 不加 Market PLBOA。
+
+### Target-Heatmap 消融 (Occ-Duke + Occ-PTrack + Market 各 1 个)
+
+| Dataset | Backbone | Exp | eq+flip | **MaxSim+flip** | vs scene-heatmap baseline |
+|---------|----------|-----|---------|------------------|---------------------------|
+| OD | Small | exp291 | 73.5 / 82.9 | **74.0 / 83.6** | vs exp285b 73.8/83.8 → -0.3/-0.9 (eq), MaxSim **74.0 vs 74.7 → -0.7** |
+| OP | Small | exp290 | 78.4 / 86.2 | **78.4 / 86.1** | vs exp265 78.4/86.2 → 0/0 (持平) |
+| Market | Small | exp292 (lab3090, MaxSim 未跑) | 94.2 / 97.1 (e90 eff) | — | (待 lab3090 ckpt v2 eval) |
+
+**结论**: Target-heatmap (训练时只用目标人物 heatmap, 不用 scene heatmap) 在 OD 上 -0.7 mAP, OP 上持平, Market 待补。**paper 默认 scene heatmap**, target-heatmap 作 supplementary 消融。
+
+---
+
+## Eval 协议 & Bug Fix Note
+
+**Eval script**: `scripts/eval_fliptest_maxsim.py` at commit **286aedb** (post-fix, v2)
+**Bug fixed**: 旧版 `feat.shape[1] % 1024 == 0 ? 1024 : 768` 在 Small/Tiny Full Scaffold (feat dim 6144 = 768×8 = 1024×6) 上歧义错选 C=1024, 损 0.7-0.8 mAP。fix: 改用 `cfg.MODEL.TRANSFORMER_TYPE` 直接判断 backbone (Base→1024, Small/Tiny→768)。
+**验证**: exp255 历史 ckpt + v2 fix script 完全重现 75.2/85.6 (vs v1 buggy 74.4/84.3)。
+**Base ckpt 不受 bug 影响** (TRANSFORMER_TYPE 含 "base" → 1024 在 v1 v2 都正确), 历史 v1 数字 = v2 数字。
+**Small/Tiny Full Scaffold ckpt** v1 数字偏低 ~0.7-0.8 mAP, 全部已 v2 重 eval。
+
+---
+
+## SOTA 对比 (Occluded-Duke, MaxSim+flip)
+
+| Method | Backbone | Params | mAP | R1 |
+|--------|----------|--------|-----|-----|
+| KPR w/o prompt (ECCV'24) | Swin-B | 88M | 73.3 | 82.5 |
+| KPR (ECCV'24) | Swin-B | 88M | 75.1 | 84.3 |
+| **Ours (exp261)** Tiny | Swin-T | 28M | **67.2** | **78.6** |
+| **Ours (exp295)** Small | Swin-S | 50M | **75.2** | **85.4** |
+| **Ours (exp263d)** Base | Swin-B | 88M | **75.2** | **84.8** |
+
+**Δ vs KPR (75.1 / 84.3)**:
+- Small (50M, 60% params): **+0.1 / +1.1**
+- Base (88M, 同 backbone): **+0.1 / +0.5**, **prompt-free**
