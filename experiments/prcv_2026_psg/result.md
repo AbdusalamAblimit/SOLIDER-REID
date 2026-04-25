@@ -22,6 +22,27 @@
 | **Base** | exp300 (e120 FINAL) | 1234 | Full Scaffold (lab4090, mirror Small s1234) | 74.0 / 83.8 | 73.9 / 83.9 | 75.0 / 85.0 |
 | **Base** | exp300 (e100 R1-peak ckpt) | 1234 | 同上 | 74.0 / **84.2** | 73.7 / 83.8 | **75.0 / 85.2** ← R1 +0.4 vs exp263d |
 
+### Base OD LR sweep (s41 PLBOA ON 默认, srvA/B 5060Ti)
+
+| Exp | LR | eq+flip | Global+flip | MaxSim+flip |
+|-----|----|---------|-------------|-------------|
+| exp296 (lab4090 baseline) | 8e-4 | 73.7/81.7 | 72.6/81.0 | 74.9/83.8 |
+| exp297 (srvA) | 4e-4 | 73.2/82.4 | 73.3/82.2 | **74.6/84.1** |
+| exp298 (srvB, floor) | 2e-4 | 68.6/78.6 | 67.5/75.0 | **69.6/79.1** (-5.3 mAP underfit) |
+
+**结论**: LR8 sweet spot, LR4 -0.3 mAP MaxSim (微差), LR2 -5.3 mAP underfit。
+
+### Base OD PLBOA ablation (s41, srvC, MaxSim 重要 paper claim)
+
+| Exp | PLBOA | eq+flip | MaxSim+flip | Δ vs exp296 ON |
+|-----|-------|---------|-------------|-----------------|
+| exp296 | **ON** | 73.7/81.7 | 74.9/83.8 | baseline |
+| **exp299** | **OFF** | **70.9/78.0** | **72.7/80.5** | **-2.2 mAP / -3.3 R1** |
+
+**核心 Paper claim — PLBOA dataset-specific**:
+- **Occ-Duke**: PLBOA ON > OFF by **+2.2 mAP / +3.3 R1** (MaxSim) — net positive
+- **Market**: PLBOA ON < OFF by -0.7 mAP (in-domain) AND -25.4 mAP (cross-domain Occ-ReID) — net negative
+
 ⭐ **Paper Small/Base OD 主行**: exp295 (Small) **75.2 / 85.4** + exp263d (Base) **75.2 / 84.8**
 
 ---
