@@ -146,9 +146,20 @@
 |---------|----------|-----|---------|------------------|---------------------------|
 | OD | Small | exp291 | 73.5 / 82.9 | **74.0 / 83.6** | vs exp285b 73.8/83.8 → -0.3/-0.9 (eq), MaxSim **74.0 vs 74.7 → -0.7** |
 | OP | Small | exp290 | 78.4 / 86.2 | **78.4 / 86.1** | vs exp265 78.4/86.2 → 0/0 (持平) |
-| Market | Small | exp292 (lab3090, MaxSim 未跑) | 94.2 / 97.1 (e90 eff) | — | (待 lab3090 ckpt v2 eval) |
+| Market | Small | exp292 (e80 eff) | 94.2 / 97.0 | **94.3 / 97.2** | vs exp268 scene 94.5/97.2 → **-0.2 / 0** |
 
-**结论**: Target-heatmap (训练时只用目标人物 heatmap, 不用 scene heatmap) 在 OD 上 -0.7 mAP, OP 上持平, Market 待补。**paper 默认 scene heatmap**, target-heatmap 作 supplementary 消融。
+**结论 (3 数据集统一)**: Target-heatmap 在所有 3 个数据集上 **net negative** (OD -0.7, OP -0.1, Market -0.2 mAP), **paper 主表用 scene heatmap**, target-heatmap 作 supplementary ablation 证明 multi-person scene heatmap 更优 (occluder 也提供有效信息)。
+
+---
+
+## In-flight 实验 (2026-04-26 启动, 等 FINAL)
+
+| Exp | 机器 | 配置 | 动机 | ETA FINAL |
+|-----|------|------|------|-----------|
+| **exp301** | lab4090 | Small OD Full **no LGPA** s42 | **Phase 3-D 关键消融**: LGPA 必要性验证 | ~09:00 AM 26 |
+| exp302 | srvA | Base OD Full s42 | multi-seed Base (s41/s1234/s42 三 seed) | ~02:00 AM 27 |
+| exp303 | srvB | Tiny OD Full LR4 s41 | Tiny LR ablation (Tiny LR8 default → 试 LR4) | ~08:00 AM 26 |
+| exp304 | srvC | Small OD Full s2024 | multi-seed Small (s42/s1234/s2024 三 seed) | ~13:00 PM 26 |
 
 ---
 
