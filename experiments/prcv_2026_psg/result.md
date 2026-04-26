@@ -43,16 +43,19 @@
 
 **结论 (Tiny LR4 vs LR8)**: Tiny 上 LR4 underfit 更显著 (-1.5 mAP MaxSim, vs Base LR4 仅 -0.3 mAP). 小 backbone 更敏感 LR 选择, **paper 建议**: 所有 backbone 用 LR 8e-4 default。
 
-### Base OD PLBOA ablation (s41, srvC, MaxSim 重要 paper claim)
+### OD PLBOA ablation (跨 backbone 一致性, MaxSim 重要 paper claim)
 
-| Exp | PLBOA | eq+flip | MaxSim+flip | Δ vs exp296 ON |
-|-----|-------|---------|-------------|-----------------|
-| exp296 | **ON** | 73.7/81.7 | 74.9/83.8 | baseline |
-| **exp299** | **OFF** | **70.9/78.0** | **72.7/80.5** | **-2.2 mAP / -3.3 R1** |
+| Backbone | PLBOA | Exp | eq+flip | MaxSim+flip | Δ vs ON |
+|----------|-------|-----|---------|-------------|---------|
+| Tiny | **ON** | exp261 | 65.9/77.4 | **67.2/78.6** | baseline |
+| Tiny | **OFF** | **exp307** | 62.8/71.8 | **64.5/73.5** | **-2.7/-5.1** |
+| Base | **ON** | exp296 | 73.7/81.7 | **74.9/83.8** | baseline |
+| Base | **OFF** | **exp299** | 70.9/78.0 | **72.7/80.5** | **-2.2/-3.3** |
 
-**核心 Paper claim — PLBOA dataset-specific**:
-- **Occ-Duke**: PLBOA ON > OFF by **+2.2 mAP / +3.3 R1** (MaxSim) — net positive
-- **Market**: PLBOA ON < OFF by -0.7 mAP (in-domain) AND -25.4 mAP (cross-domain Occ-ReID) — net negative
+**核心 Paper claim — PLBOA dataset-specific (跨 2 backbone 一致正贡献)**:
+- **Occ-Duke Tiny**: PLBOA +2.7 mAP / +5.1 R1 (MaxSim)
+- **Occ-Duke Base**: PLBOA +2.2 mAP / +3.3 R1 (MaxSim)
+- **Market**: PLBOA ON < OFF by -0.7 mAP (in-domain) AND -25.4 mAP (cross-domain Occ-ReID)
 
 ⭐ **Paper Small/Base OD 主行**: exp295 (Small) **75.2 / 85.4** + exp263d (Base) **75.2 / 84.8**
 
@@ -187,8 +190,9 @@
 | ~~exp303~~ | srvB | Tiny OD Full LR4 s41 | Tiny LR ablation | ✅ FINAL (LR sweep -1.5 mAP) |
 | ~~exp305~~ | lab4090 | Tiny OD Full **no LGPA** s42 | Phase 3-D Tiny 关键消融 | ✅ FINAL (Table C2 64.5/76.0) |
 | ~~exp304~~ | srvC | Small OD Full s2024 | multi-seed Small (s42/s1234/s2024) | ✅ FINAL 20:24, **74.3/84.0 MaxSim** (std 0.45 mAP across 3 seeds) |
-| **exp307** | srvB | Tiny OD Full **no PLBOA** s42 | PLBOA Tiny 消融 (与 exp299 Base 对照) | 🔄 e37, ETA ~05:00 AM 27 |
+| ~~exp307~~ | srvB | Tiny OD Full **no PLBOA** s42 | PLBOA Tiny 消融 (与 exp299 Base 对照) | ✅ FINAL 02:51, **64.5/73.5 MaxSim** (PLBOA Tiny +2.7 mAP, 跨 backbone 一致 +2.2-2.7) |
 | ~~exp302~~ | srvA | Base OD Full s42 | multi-seed Base (s41/s1234/s42) | ✅ FINAL 01:42, **74.4/83.6 MaxSim** (3-seed Base std 0.42 mAP, 0.78 R1) |
+| ✅ Market v2 | srvA/C | exp268/269b 重 eval | 验证 bug fix 是否影响 Market | exp268 Small 94.5/97.2 = v1, exp269b Base 94.6/97.2 = v1 (无变化) |
 | ⏸ exp306 | lab4090 | Base OD Full **no LGPA** s42 | Phase 3-D Base 完成 3-backbone | ❌ killed for classmate, 待 user OK 重启 |
 
 ---
