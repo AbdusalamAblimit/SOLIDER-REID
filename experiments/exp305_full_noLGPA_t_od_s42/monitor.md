@@ -26,7 +26,9 @@
 ## FINAL (2026-04-26 14:00 CST)
 
 - **eq+flip**: mAP **64.5%**, R1 **76.0%**, R5 86.2%, R10 89.2%
-- **MaxSim+flip**: pending (lab4090 GPU 被 gaitheat 占用 + ssh 断, 等空闲再跑)
+- **Global cosine+flip**: 65.7 / 76.2
+- **MaxSim hybrid+flip**: **64.5 / 76.0** (vs exp261 67.2/78.6 → **-2.7 / -2.6**)
+- 注: MaxSim = eq+flip, **MaxSim 无 boost**, 一致于 exp301 pattern (LGPA 是 MaxSim 主驱动)
 
 ## 🎯 Phase 3-D 3-backbone 完整 (LGPA ablation)
 
