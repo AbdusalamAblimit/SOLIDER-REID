@@ -17,6 +17,7 @@
 | **Tiny** | exp261 | 42 | Full Scaffold default | 65.9 / 77.4 | 65.8 / 76.0 | **67.2 / 78.6** |
 | **Small** | exp285b | 42 | Full Scaffold default | 73.8 / 83.8 | 73.6 / 83.2 | **74.7 / 84.8** |
 | **Small** | **exp295** | **1234** | Full Scaffold default (复现 exp255 hist) | **74.2 / 84.0** | 73.7 / 83.3 | **75.2 / 85.4** ⭐ |
+| **Small** | exp304 | 2024 | Full Scaffold default (multi-seed) | 73.3 / 82.7 | 73.3 / 83.3 | 74.3 / 84.0 |
 | **Base** | **exp263d** | **41** | Full Scaffold default (lab3090 280W pwrlim) | 74.1 / 83.3 | 73.8 / 82.9 | **75.2 / 84.8** ⭐ |
 | **Base** | exp296 | 41 | Full Scaffold (lab4090 repro of exp263d) | 73.7 / 81.7 | 72.6 / 81.0 | 74.9 / 83.8 |
 | **Base** | exp300 (e120 FINAL) | 1234 | Full Scaffold (lab4090, mirror Small s1234) | 74.0 / 83.8 | 73.9 / 83.9 | 75.0 / 85.0 |
@@ -177,14 +178,17 @@
 
 ---
 
-## In-flight 实验 (2026-04-26 启动, 等 FINAL)
+## In-flight 实验 (2026-04-26 状态)
 
-| Exp | 机器 | 配置 | 动机 | ETA FINAL |
+| Exp | 机器 | 配置 | 动机 | 状态 / ETA |
 |-----|------|------|------|-----------|
-| **exp301** | lab4090 | Small OD Full **no LGPA** s42 | **Phase 3-D 关键消融**: LGPA 必要性验证 | ~09:00 AM 26 |
-| exp302 | srvA | Base OD Full s42 | multi-seed Base (s41/s1234/s42 三 seed) | ~02:00 AM 27 |
-| exp303 | srvB | Tiny OD Full LR4 s41 | Tiny LR ablation (Tiny LR8 default → 试 LR4) | ~08:00 AM 26 |
-| exp304 | srvC | Small OD Full s2024 | multi-seed Small (s42/s1234/s2024 三 seed) | ~13:00 PM 26 |
+| ~~exp301~~ | lab4090 | Small OD Full **no LGPA** s42 | Phase 3-D Small 关键消融 | ✅ FINAL (Table C2 71.9/83.0) |
+| ~~exp303~~ | srvB | Tiny OD Full LR4 s41 | Tiny LR ablation | ✅ FINAL (LR sweep -1.5 mAP) |
+| ~~exp305~~ | lab4090 | Tiny OD Full **no LGPA** s42 | Phase 3-D Tiny 关键消融 | ✅ FINAL (Table C2 64.5/76.0) |
+| ~~exp304~~ | srvC | Small OD Full s2024 | multi-seed Small (s42/s1234/s2024) | ✅ FINAL 20:24, **74.3/84.0 MaxSim** (std 0.45 mAP across 3 seeds) |
+| **exp307** | srvB | Tiny OD Full **no PLBOA** s42 | PLBOA Tiny 消融 (与 exp299 Base 对照) | 🔄 e37, ETA ~05:00 AM 27 |
+| **exp302** | srvA | Base OD Full s42 | multi-seed Base (s41/s1234/s42) | 🔄 e86, ETA ~02:00 AM 27 |
+| ⏸ exp306 | lab4090 | Base OD Full **no LGPA** s42 | Phase 3-D Base 完成 3-backbone | ❌ killed for classmate, 待 user OK 重启 |
 
 ---
 
