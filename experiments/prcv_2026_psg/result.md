@@ -131,6 +131,21 @@
 
 **3-backbone 统一结论**: GCN 分支冗余, mAP 贡献 ≤ 0.2 (噪声内), R1 贡献 -0.4 ~ +0.3, 论文可 claim "LGPA 已捕获足够 semantic pose 结构, GCN 可移除"。
 
+### Table C2 — Full − LGPA (GCN-only) 验证 LGPA 关键 (Phase 3-D NEW)
+
+| Backbone | PSG | Exp | eq+flip | **MaxSim+flip** | Δ vs Full Scaffold |
+|----------|-----|-----|---------|------------------|--------------------|
+| Small | `[-2,-1]` | **exp301** | **71.9 / 83.0** | **71.9 / 83.0** | **vs exp285b -2.8 / -1.8** ⭐ critical |
+
+**关键 Paper Claim — LGPA 是 dominant contributor, GCN 冗余**:
+
+| Removed Module | Δ MaxSim+flip mAP | Δ MaxSim+flip R1 |
+|----------------|--------------------|--------------------|
+| − GCN (Phase 3-C exp289) | **+0.1** | **0** ← 冗余 |
+| − LGPA (Phase 3-D exp301) | **-2.8** | **-1.8** ← 关键 |
+
+**额外发现**: exp301 (no-LGPA) MaxSim 失去 boost (=eq+flip), 因为 GCN-only 的 part features 不足以驱动 MaxSim late interaction. **LGPA 提供的 CLIP-aligned semantic part features 是 MaxSim 主动力**。
+
 ### Table D — Market PLBOA → Occ-ReID 跨域消融
 
 | Market ckpt | PLBOA | Eval | Occ-ReID MaxSim+flip | Δ |
