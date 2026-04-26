@@ -22,6 +22,7 @@
 | **Base** | exp296 | 41 | Full Scaffold (lab4090 repro of exp263d) | 73.7 / 81.7 | 72.6 / 81.0 | 74.9 / 83.8 |
 | **Base** | exp300 (e120 FINAL) | 1234 | Full Scaffold (lab4090, mirror Small s1234) | 74.0 / 83.8 | 73.9 / 83.9 | 75.0 / 85.0 |
 | **Base** | exp300 (e100 R1-peak ckpt) | 1234 | 同上 | 74.0 / **84.2** | 73.7 / 83.8 | **75.0 / 85.2** ← R1 +0.4 vs exp263d |
+| **Base** | exp302 | 42 | Full Scaffold default (multi-seed) | 73.3 / 81.4 | 72.6 / 81.7 | 74.4 / 83.6 |
 
 ### Base OD LR sweep (s41 PLBOA ON 默认, srvA/B 5060Ti)
 
@@ -187,7 +188,7 @@
 | ~~exp305~~ | lab4090 | Tiny OD Full **no LGPA** s42 | Phase 3-D Tiny 关键消融 | ✅ FINAL (Table C2 64.5/76.0) |
 | ~~exp304~~ | srvC | Small OD Full s2024 | multi-seed Small (s42/s1234/s2024) | ✅ FINAL 20:24, **74.3/84.0 MaxSim** (std 0.45 mAP across 3 seeds) |
 | **exp307** | srvB | Tiny OD Full **no PLBOA** s42 | PLBOA Tiny 消融 (与 exp299 Base 对照) | 🔄 e37, ETA ~05:00 AM 27 |
-| **exp302** | srvA | Base OD Full s42 | multi-seed Base (s41/s1234/s42) | 🔄 e86, ETA ~02:00 AM 27 |
+| ~~exp302~~ | srvA | Base OD Full s42 | multi-seed Base (s41/s1234/s42) | ✅ FINAL 01:42, **74.4/83.6 MaxSim** (3-seed Base std 0.42 mAP, 0.78 R1) |
 | ⏸ exp306 | lab4090 | Base OD Full **no LGPA** s42 | Phase 3-D Base 完成 3-backbone | ❌ killed for classmate, 待 user OK 重启 |
 
 ---
