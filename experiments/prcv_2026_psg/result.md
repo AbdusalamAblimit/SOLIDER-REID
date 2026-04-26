@@ -32,6 +32,15 @@
 
 **结论**: LR8 sweet spot, LR4 -0.3 mAP MaxSim (微差), LR2 -5.3 mAP underfit。
 
+### Tiny OD LR sweep (s41 PLBOA ON 默认, srvB)
+
+| Exp | LR | eq+flip | MaxSim+flip |
+|-----|----|---------|-------------|
+| exp261 (default) | 8e-4 | 65.9/77.4 | 67.2/78.6 |
+| **exp303** | **4e-4** | **64.4/74.8** | **65.7/76.1** (-1.5/-2.5 vs LR8) |
+
+**结论 (Tiny LR4 vs LR8)**: Tiny 上 LR4 underfit 更显著 (-1.5 mAP MaxSim, vs Base LR4 仅 -0.3 mAP). 小 backbone 更敏感 LR 选择, **paper 建议**: 所有 backbone 用 LR 8e-4 default。
+
 ### Base OD PLBOA ablation (s41, srvC, MaxSim 重要 paper claim)
 
 | Exp | PLBOA | eq+flip | MaxSim+flip | Δ vs exp296 ON |
