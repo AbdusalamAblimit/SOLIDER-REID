@@ -192,7 +192,7 @@
 | ~~exp304~~ | srvC | Small OD Full s2024 | multi-seed Small (s42/s1234/s2024) | ✅ FINAL 20:24, **74.3/84.0 MaxSim** (std 0.45 mAP across 3 seeds) |
 | ~~exp307~~ | srvB | Tiny OD Full **no PLBOA** s42 | PLBOA Tiny 消融 (与 exp299 Base 对照) | ✅ FINAL 02:51, **64.5/73.5 MaxSim** (PLBOA Tiny +2.7 mAP, 跨 backbone 一致 +2.2-2.7) |
 | ~~exp302~~ | srvA | Base OD Full s42 | multi-seed Base (s41/s1234/s42) | ✅ FINAL 01:42, **74.4/83.6 MaxSim** (3-seed Base std 0.42 mAP, 0.78 R1) |
-| ✅ Market v2 | srvA/C | exp268/269b 重 eval | 验证 bug fix 是否影响 Market | exp268 Small 94.5/97.2 = v1, exp269b Base 94.6/97.2 = v1 (无变化) |
+| ✅ Market v2 | srvA/B/C | exp267/268/269b 全部重 eval | 验证 bug fix 是否影响 Market | **3/3 全部 v1 = v2** (Tiny 93.0/96.7, Small 94.5/97.2, Base 94.6/97.2 — bug 不触发 Market 数据) |
 | ⏸ exp306 | lab4090 | Base OD Full **no LGPA** s42 | Phase 3-D Base 完成 3-backbone | ❌ killed for classmate, 待 user OK 重启 |
 
 ---
@@ -203,7 +203,8 @@
 **Bug fixed**: 旧版 `feat.shape[1] % 1024 == 0 ? 1024 : 768` 在 Small/Tiny Full Scaffold (feat dim 6144 = 768×8 = 1024×6) 上歧义错选 C=1024, 损 0.7-0.8 mAP。fix: 改用 `cfg.MODEL.TRANSFORMER_TYPE` 直接判断 backbone (Base→1024, Small/Tiny→768)。
 **验证**: exp255 历史 ckpt + v2 fix script 完全重现 75.2/85.6 (vs v1 buggy 74.4/84.3)。
 **Base ckpt 不受 bug 影响** (TRANSFORMER_TYPE 含 "base" → 1024 在 v1 v2 都正确), 历史 v1 数字 = v2 数字。
-**Small/Tiny Full Scaffold ckpt** v1 数字偏低 ~0.7-0.8 mAP, 全部已 v2 重 eval。
+**Small/Tiny Full Scaffold ckpt OD eval**: v1 数字偏低 ~0.7-0.8 mAP, 全部已 v2 重 eval。
+**Market v2 re-eval (2026-04-27 验证)**: exp267/268/269b 三 backbone 全部 v1 = v2 (Market 全身图特征不触发 slice 边界错位 bug, 与 OD 表现不同)。
 
 ---
 
