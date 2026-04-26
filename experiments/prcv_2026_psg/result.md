@@ -135,7 +135,8 @@
 
 | Backbone | PSG | Exp | eq+flip | **MaxSim+flip** | Δ vs Full Scaffold |
 |----------|-----|-----|---------|------------------|--------------------|
-| Small | `[-2,-1]` | **exp301** | **71.9 / 83.0** | **71.9 / 83.0** | **vs exp285b -2.8 / -1.8** ⭐ critical |
+| Tiny | `[-2,-1]` | **exp305** | **64.5 / 76.0** | (pending, lab4090 OOM) | **vs exp261 -1.4 / -1.4** |
+| Small | `[-2,-1]` | **exp301** | **71.9 / 83.0** | **71.9 / 83.0** | **vs exp285b -1.9/-0.8 (eq), -2.8/-1.8 (MaxSim)** ⭐ critical |
 
 **关键 Paper Claim — LGPA 是 dominant contributor, GCN 冗余**:
 
