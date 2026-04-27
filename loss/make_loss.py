@@ -210,7 +210,8 @@ def make_loss(cfg, num_classes):    # modified by gu
                     if getattr(cfg.MODEL, 'POSE_STR_SUPCON', False) and getattr(cfg.MODEL, 'POSE_STR_SUPCON_GLOBAL', False):
                         supcon_g_w = float(getattr(cfg.MODEL, 'POSE_STR_SUPCON_WEIGHT', 0.5))
                         global_id = global_id + supcon_g_w * supcon_global_loss
-                    ID_LOSS = w_g * global_id + w_p * part_id_avg
+                    global_loss_scale = getattr(cfg.MODEL, 'GLOBAL_LOSS_SCALE', 1.0)
+                    ID_LOSS = global_loss_scale * w_g * global_id + w_p * part_id_avg
                     loss_details['id_global'] = global_id.item()
                     loss_details['id_part'] = part_id_avg.item()
                 else:
@@ -250,7 +251,8 @@ def make_loss(cfg, num_classes):    # modified by gu
                         use_norm = len(feat) > 3  # >3 parts = per-token mode
                         part_tris = [triplet(f, target, normalize_feature=use_norm)[0] for f in feat[1:]]
                         part_tri_avg = sum(part_tris) / len(part_tris)
-                    TRI_LOSS = wt_g * global_tri_base + wt_p * part_tri_avg
+                    global_loss_scale = getattr(cfg.MODEL, 'GLOBAL_LOSS_SCALE', 1.0)
+                    TRI_LOSS = global_loss_scale * wt_g * global_tri_base + wt_p * part_tri_avg
                     loss_details['tri_global'] = global_tri_base.item()
                     loss_details['tri_part'] = part_tri_avg.item()
                 else:
