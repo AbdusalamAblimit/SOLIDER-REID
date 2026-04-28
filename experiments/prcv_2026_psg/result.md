@@ -34,6 +34,21 @@
 
 **结论**: LR8 sweet spot, LR4 -0.3 mAP MaxSim (微差), LR2 -5.3 mAP underfit。
 
+### Tiny OD Loss Weight sweep (s42, MaxSim 重要 paper claim)
+
+baseline: exp261 Tiny default 65.9/77.4 eq, **67.2/78.6 MaxSim**
+
+| Exp | Override | eq+flip | Global+flip | **MaxSim+flip** | Δ MaxSim |
+|-----|----------|---------|-------------|-----------------|---------|
+| exp261 (baseline) | default | 65.9/77.4 | 65.8/76.0 | **67.2/78.6** | 0 |
+| exp312 | GLOBAL_LOSS_SCALE 2.0 | 65.7/76.6 | 65.4/75.3 | 66.8/77.2 | -0.4/-1.4 |
+| exp313 | POSE_PART_WEIGHT 2.0 | 65.8/77.0 | — | ⏳ srvA pending | — |
+| **exp314** | **POSE_PART_WEIGHT 0.5** | **65.8/77.5** | 66.0/76.5 | **67.2/78.6** | **0/0** ✓ |
+| exp315 | POSE_LGPA_ASSIGN_WEIGHT 1.0 | 65.8/76.9 | 65.7/75.9 | 67.0/77.4 | -0.2/-1.2 |
+| exp311b (Small) | GLOBAL_LOSS_SCALE 0.5 真生效 | 73.5/83.2 | 72.7/82.2 | 74.5/84.8 | -0.7/-0.6 (Small) |
+
+**结论**: 所有 sweep 都 ≤ baseline。GLOBAL_LOSS_SCALE 1.0 (default) sweet spot, POSE_PART_WEIGHT 0.5 持平 (没 boost), LGPA aux 0.5 (default) 比 1.0 略好。**Default loss weights 已经 well-tuned**, 加权调参 paper 上不成立改进 claim。
+
 ### Tiny OD LR sweep (s41 PLBOA ON 默认, srvB)
 
 | Exp | LR | eq+flip | MaxSim+flip |
