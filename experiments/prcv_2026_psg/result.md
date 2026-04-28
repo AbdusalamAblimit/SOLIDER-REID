@@ -51,6 +51,7 @@ baseline: exp261 Tiny default 65.9/77.4 eq, **67.2/78.6 MaxSim**
 | exp319 | POSE_OA_SD_WEIGHT 0.5 | 65.8/76.8 | 65.7/76.4 | 67.1/78.1 | -0.1/-0.5 |
 | exp311b (Small) | GLOBAL_LOSS_SCALE 0.5 真生效 | 73.5/83.2 | 72.7/82.2 | 74.5/84.8 | -0.7/-0.6 (Small) |
 | **exp320 (Small)** | **POSE_LGPA_DETACH=False** | **68.1/79.3** | 67.4/77.8 | **68.8/79.6** | **-6.4/-5.8 (Small)** ❌ |
+| **exp321b (Small s1234)** | POSE_LGPA_ASSIGN_WEIGHT 0.25 | 73.9/83.7 | 73.4/83.3 | 74.9/85.4 | **-0.3/0 (Small)** — Tiny winner 不 transfer |
 
 **结论**: 所有 sweep 都 ≤ baseline。GLOBAL_LOSS_SCALE 1.0 (default) sweet spot, POSE_PART_WEIGHT 0.5 持平 (没 boost), LGPA aux 0.5 (default) 比 1.0 略好。**Default loss weights 已经 well-tuned**, 加权调参 paper 上不成立改进 claim。
 
