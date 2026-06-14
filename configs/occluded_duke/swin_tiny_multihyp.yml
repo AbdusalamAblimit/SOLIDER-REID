@@ -1,3 +1,4 @@
+# Occluded-Duke 上的 MULTIHYP（跨数据集验证）。相对 baseline 仅翻开 MULTIHYP。
 MODEL:
   PRETRAIN_HW_RATIO: 2
   METRIC_LOSS_TYPE: 'triplet'
@@ -6,21 +7,22 @@ MODEL:
   NAME: 'transformer'
   NO_MARGIN: True
   DEVICE_ID: ('0')
-  TRANSFORMER_TYPE: 'swin_small_patch4_window7_224'
+  TRANSFORMER_TYPE: 'swin_tiny_patch4_window7_224'
   STRIDE_SIZE: [16, 16]
+  SIE_CAMERA: False
 
 INPUT:
   SIZE_TRAIN: [384, 128]
   SIZE_TEST: [384, 128]
-  PROB: 0.5 # random horizontal flip
-  RE_PROB: 0.5 # random erasing
+  PROB: 0.5
+  RE_PROB: 0.5
   PADDING: 10
   PIXEL_MEAN: [0.5, 0.5, 0.5]
   PIXEL_STD: [0.5, 0.5, 0.5]
 
 DATASETS:
-  NAMES: ('msmt17')
-  ROOT_DIR: ('path/to/msmt17/datasets')
+  NAMES: ('occluded_duke')
+  ROOT_DIR: ('/mnt1/afrdata')
 
 DATALOADER:
   SAMPLER: 'softmax_triplet'
@@ -36,18 +38,33 @@ SOLVER:
   WARMUP_METHOD: 'cosine'
   LARGE_FC_LR: False
   CHECKPOINT_PERIOD: 120
-  LOG_PERIOD: 20
-  EVAL_PERIOD: 10
+  LOG_PERIOD: 50
+  EVAL_PERIOD: 120
   WEIGHT_DECAY:  1e-4
   WEIGHT_DECAY_BIAS: 1e-4
   BIAS_LR_FACTOR: 2
 
 TEST:
   EVAL: True
-  IMS_PER_BATCH: 256
+  IMS_PER_BATCH: 64
   RE_RANKING: False
   WEIGHT: ''
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/msmt17/swin_small'
+MULTIHYP:
+  ENABLED: True
+  K: 3
+  DETACH: True
+  LOSS_W: 1.0
+  POS_MARGIN: 0.3
+  NEG_MARGIN: 0.7
+  DIV_W: 0.5
+  SET_TEMP: 0.1
+  ALPHA: 0.3
+  BONUS_CAP: 0.5
+  GATE_TAU: 10.0
+  GATE_SIGMA: 0.3
+  UNIQUE_MARGIN: -1.0
+
+OUTPUT_DIR: './log/occluded_duke/swin_tiny_multihyp'

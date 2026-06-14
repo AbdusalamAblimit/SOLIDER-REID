@@ -78,237 +78,90 @@ _C.MODEL.SIE_VIEW = False
 # Semantic Weight
 _C.MODEL.SEMANTIC_WEIGHT = 1.0
 
-# Checkpoint (gradient checkpointing to save memory)
-_C.MODEL.WITH_CP = False
+# -----------------------------------------------------------------------------
+# OBJGATE (TARDIS 身份条件目标性门控)；默认 ENABLED=False，全部退化为基线
+# -----------------------------------------------------------------------------
+_C.OBJGATE = CN()
+_C.OBJGATE.ENABLED = False
+_C.OBJGATE.HIDDEN = 192
+_C.OBJGATE.TAU = 1.0
+_C.OBJGATE.LAMBDA_TARGET = 1.0
+_C.OBJGATE.LAMBDA_WARMUP_EPOCHS = 10
+_C.OBJGATE.FEATMAP_INDEX = -1
+_C.OBJGATE.SPLIT_W = 1.0
+_C.OBJGATE.ANTI_W = 0.1
+_C.OBJGATE.ENTROPY_MIN = 0.0
+_C.OBJGATE.ENTROPY_MAX = 1.0e9
+# DETACH_SCORE=True 时打分头吃 detach 后的主干特征，使 L_split 只训练打分头、不污染主干
+# （诊断发现 L_split 梯度流进主干会把特征往"分辨目标侧"任务拽，掉 mAP）。默认 False 保留原行为。
+_C.OBJGATE.DETACH_SCORE = False
+# MODE='softmax' 原尖注意力替换池化；'suppress' 宽池化软抑制（门控只产抑制图、权重≥SUPPRESS_MIN，
+# 保留全局池化主体，避免尖门控窄化主干）。SUPPRESS_MIN=1 时退化为全局平均池化。
+_C.OBJGATE.MODE = 'softmax'
+_C.OBJGATE.SUPPRESS_MIN = 0.5
 
-# --- Pose-guided ReID settings ---
-_C.MODEL.POSE_ENABLED = False
-_C.MODEL.POSE_DATA_DIR = ''         # directory containing pose_data/{split}/
-_C.MODEL.POSE_THRESHOLD = 0.3       # minimum keypoint score for part validity
-_C.MODEL.POSE_PART_WEIGHT = 1.0     # weight for part losses
-_C.MODEL.POSE_PART_TRI_WEIGHT = 1.0 # weight for part triplet loss
-_C.MODEL.POSE_HEATMAP_SIZE = [96, 32]  # (H, W) heatmap size from dataloader
-_C.MODEL.POSE_HEATMAP_NORM = 'spatial_softmax'  # 'sigmoid' or 'spatial_softmax'
-_C.MODEL.POSE_TEMPERATURE = 1.0        # temperature for spatial softmax
-_C.MODEL.POSE_TEST_FEAT = 'concat_scaled'  # 'concat_scaled', 'part_only', 'equal_concat', 'cvk_only', 'cvk_hybrid', 'maxsim'
-_C.MODEL.POSE_PART_STAGE = -1              # which backbone stage for part pooling
-# Pose Feature Modulation (PFM) — hidden dim shared with PSG encoder
-_C.MODEL.POSE_PFM_ENABLED = False
-_C.MODEL.POSE_PFM_HIDDEN = 64              # hidden dim in PSG encoder
+# -----------------------------------------------------------------------------
+# MULTIHYP (exp003 全局锚定的多假设集合匹配)；默认 ENABLED=False，全部退化为基线
+# -----------------------------------------------------------------------------
+_C.MULTIHYP = CN()
+_C.MULTIHYP.ENABLED = False
+_C.MULTIHYP.K = 3                # 每图假设槽数
+_C.MULTIHYP.DETACH = True        # 假设分支对主干 detach（第一版只训头，不污染主干）
+_C.MULTIHYP.LOSS_W = 1.0         # 集合损失权重
+_C.MULTIHYP.POS_MARGIN = 0.3     # 同身份：soft-min 槽距离应 < 此
+_C.MULTIHYP.NEG_MARGIN = 0.7     # 不同身份：soft-min 槽距离应 >= 此
+_C.MULTIHYP.DIV_W = 0.5          # 同图槽多样性权重
+_C.MULTIHYP.SET_TEMP = 0.1       # soft-min 温度
+# 检索时保守距离 d = d_global + ALPHA*gate*unique*clamp(d_set-d_global,-CAP,0)
+_C.MULTIHYP.ALPHA = 0.1          # 修正强度；=0 时检索距离矩阵与基线逐数值相等
+_C.MULTIHYP.BONUS_CAP = 0.15     # 残差修正上限（只减距离、有上限）
+_C.MULTIHYP.GATE_TAU = 1.2       # gate：d_global<此(已判可能相似)才启用修正
+_C.MULTIHYP.GATE_SIGMA = 0.3
+_C.MULTIHYP.UNIQUE_MARGIN = 0.1  # 最优与次优槽匹配的间隔门槛
+# C2 DSHS（判别充分性对齐损失）：DSHS_W=0 时逐数值等于现有集合损失（干净退回）
+_C.MULTIHYP.DSHS_W = 0.0         # DSHS 损失权重（0=关闭）
+_C.MULTIHYP.DSHS_HARD = 'global' # 硬负来源：global=按全局相似度(正式)/random=随机负(对照)/set=按集合距离(消融)
+_C.MULTIHYP.DSHS_MARGIN = 0.3    # set-distance triplet 间隔
+_C.MULTIHYP.DSHS_NHARD = 10      # 每 anchor 取的硬负个数
 
-# PSG (Pose Spatial Gate) — backbone injection
-_C.MODEL.POSE_BACKBONE_PSG = False          # use PoseBackboneModel
-_C.MODEL.POSE_PSG_PART = False              # PSG + Part Pooling combination
-_C.MODEL.POSE_PSG_STAGES = [-1]             # which stages to inject PSG
-_C.MODEL.POSE_PSG_SPATIAL = False           # use 3x3 depthwise conv in PSG gate
-# Target-only heatmap (Occ-PTrack-style target disambiguation)
-# When True, pass person-0 (target) heatmap to PSG/LGPA/GCN/etc instead of
-# max-merged scene heatmap. Target is always at person index 0 in
-# pose_dataset.py:_load_persons (see target_person_idx reordering).
-# Only used in pose_backbone_model.py forward(); default False preserves
-# all existing behavior (scene heatmap = max over all persons).
-_C.MODEL.POSE_USE_TARGET_HEATMAP = False
+# -----------------------------------------------------------------------------
+# OSS (Occluder-Shortcut Suppression)；默认 ENABLED=False，训练和评测都退化为基线
+# -----------------------------------------------------------------------------
+_C.OSS = CN()
+_C.OSS.ENABLED = False
+_C.OSS.AUG_PROB = 0.3
+_C.OSS.POOL_SIZE = 256
+_C.OSS.W = 0.5
+_C.OSS.GRL_ALPHA = 1.0
+_C.OSS.RANDOM_LABEL = False
 
-# ROA (Realistic Occlusion Augmentation)
-_C.MODEL.POSE_ROA = False                   # paste VOC objects
-_C.MODEL.POSE_ROA_PATH = 'data/VOCdevkit/VOC2012'
-_C.MODEL.POSE_ROA_PROB = 0.5
-_C.MODEL.POSE_ROA_POSE_AWARE = False
-# PLBOA: Pose-guided Lower-Body Occlusion Augmentation
-_C.MODEL.POSE_LOWER_BODY_OCC = False
-_C.MODEL.POSE_LOWER_BODY_OCC_PROB = 0.5     # probability of applying
-_C.MODEL.POSE_LOWER_BODY_OCC_RATIO = 0.5    # fraction of lower body to occlude (0.3-0.7)
-_C.MODEL.POSE_LOWER_BODY_OCC_MODE = 'lower'  # 'lower' = hip下, 'gradient' = 从下到上概率递减
-_C.MODEL.POSE_UPPER_BODY_OCC = False          # PGMPOA: additionally occlude random upper-body parts
-_C.MODEL.POSE_UPPER_BODY_OCC_PROB = 0.3       # probability (applied AFTER lower-body occ)
-_C.MODEL.POSE_PATCH_EMBED = False             # PAPE: parallel pose patch embedding at input
-_C.MODEL.POSE_PATCH_EMBED_KS = 1             # PAPE kernel size (1=1x1, 3=3x3)
-# Pose Prompt Injection (KPR-style: argmax part ID → learnable embedding → additive)
-_C.MODEL.POSE_PROMPT = False
-_C.MODEL.POSE_PROMPT_NUM_PARTS = 18          # 17 keypoints + 1 background
-_C.MODEL.POSE_PROMPT_DROP = 0.0              # probability of using empty prompt (train only)
+# -----------------------------------------------------------------------------
+# DONOR_DECOUPLE（双出口反事实解耦）；默认 ENABLED=False，完全不构造新模块
+# -----------------------------------------------------------------------------
+_C.DONOR_DECOUPLE = CN()
+_C.DONOR_DECOUPLE.ENABLED = False
+_C.DONOR_DECOUPLE.PASTE_PROB = 0.5
+_C.DONOR_DECOUPLE.DONOR_REPEAT = 4
+_C.DONOR_DECOUPLE.AUX_DETACH = True
+_C.DONOR_DECOUPLE.SYN_ID_W = 0.25
+_C.DONOR_DECOUPLE.CF_W = 0.50
+_C.DONOR_DECOUPLE.SAMEB_NEG_W = 0.50
+_C.DONOR_DECOUPLE.DONOR_CLS_W = 0.20
+_C.DONOR_DECOUPLE.ORTH_W = 0.03
+_C.DONOR_DECOUPLE.NEG_MARGIN = 0.02
 
-# PAA (Pose Additive Adapter)
-_C.MODEL.POSE_ADDITIVE_ADAPTER = False
-_C.MODEL.POSE_PAA_ROUTED = False
-_C.MODEL.POSE_PAA_BOTTLENECK = 32
-_C.MODEL.POSE_PAA_ADAPTIVE_GATE = False
-
-# Stochastic Pose Dropout
-_C.MODEL.POSE_DROPOUT_P = 0.0
-
-# Global loss scale (0.5 simulates PDS list-loss effect)
-_C.MODEL.GLOBAL_LOSS_SCALE = 1.0
-
-# Skeleton GCN head
-_C.MODEL.POSE_SKELETON_GCN = False
-_C.MODEL.POSE_KEYPOINT_POOL_ONLY = False
-_C.MODEL.POSE_GCN_LAYERS = 2
-_C.MODEL.POSE_GCN_HIDDEN = 256
-_C.MODEL.POSE_KP_WEIGHT_MODE = 'score'
-_C.MODEL.POSE_KP_TRIPLET = False
-_C.MODEL.POSE_KP_TRIPLET_WEIGHT = 1.0
-
-# SPLADE: Learned Sparse Representation
-_C.MODEL.POSE_SPLADE = False
-_C.MODEL.POSE_SPLADE_DIM = 2048
-_C.MODEL.POSE_SPLADE_REG = 0.01           # Sparsity regularization weight
-
-# Evidential Deep Learning (Dirichlet classification head)
-_C.MODEL.POSE_EVIDENTIAL = False           # Replace GCN branch CE with Evidential loss
-_C.MODEL.POSE_EVIDENTIAL_KL_REG = 0.1     # KL regularization max weight
-_C.MODEL.POSE_EVIDENTIAL_ANNEAL = 0.6     # Fraction of training to reach full KL weight
-
-# PNIS: Pose-Normalized Identity Space
-_C.MODEL.POSE_NORMALIZE = False           # Factor out pose from identity feature
-_C.MODEL.POSE_NORMALIZE_HIDDEN = 256
-
-# STD-PR: Structural Token Decomposition with Pose-guided Routing
-_C.MODEL.POSE_STRUCTURAL_ROUTING = False
-_C.MODEL.POSE_STR_NUM_PARTS = 6
-_C.MODEL.POSE_STR_NUM_HEADS = 8
-_C.MODEL.POSE_STR_NUM_LAYERS = 2
-_C.MODEL.POSE_STR_PER_TOKEN = False       # Per-token classification (forces token diversity)
-_C.MODEL.POSE_STR_SUPCON = False          # Replace per-token CE with SupCon loss
-_C.MODEL.POSE_STR_SUPCON_TEMP = 0.07     # SupCon temperature
-_C.MODEL.POSE_STR_SUPCON_ADDITIVE = False # SupCon additive to CE (not replacing)
-_C.MODEL.POSE_STR_SUPCON_WEIGHT = 0.5    # Weight when additive
-_C.MODEL.POSE_STR_SUPCON_VIS_WEIGHT = False  # Visibility-weighted per-token SupCon
-_C.MODEL.POSE_STR_SUPCON_GLOBAL = False      # Also apply SupCon on global (pooled) feature
-_C.MODEL.POSE_STR_SELF_ATTN = False       # DPTL: self-attention among part tokens (dual-path)
-_C.MODEL.POSE_STR_PART_DROP = 0.0         # PLTD: part-level token dropout probability (0=disabled)
-
-# MaxSim triplet: set-to-set metric learning
-_C.MODEL.POSE_MAXSIM_TRIPLET = False
-_C.MODEL.POSE_MAXSIM_TRIPLET_TEMP = 0.05
-_C.MODEL.POSE_MAXSIM_TRIPLET_ADDITIVE = False  # If True, add to pooled triplet instead of replacing
-_C.MODEL.POSE_MAXSIM_TRIPLET_WEIGHT = 0.25     # Weight when additive
-
-# Parallel augmentation (3-view training)
-_C.MODEL.POSE_PARALLEL_AUG = False
-_C.MODEL.POSE_OA_SD = False               # Occlusion-Asymmetric Self-Distillation
-_C.MODEL.POSE_OA_SD_WEIGHT = 1.0          # Distillation loss weight
-_C.MODEL.POSE_OA_SD_EMA_DECAY = 0.999    # EMA teacher decay rate
-_C.MODEL.POSE_OA_SD_GLOBAL_ONLY = False   # Only distill global feature (not per-token)
-
-# OA-RD: Occlusion-Asymmetric Relational Distillation
-_C.MODEL.POSE_OA_RD = False                # Enable relational distillation (distill pairwise similarity structure)
-_C.MODEL.POSE_OA_RD_TEMP = 0.1            # Temperature for softmax on similarity matrix
-_C.MODEL.POSE_OA_RD_WEIGHT = 1.0          # Weight of relational distillation loss
-
-# KAMP: Keypoint-Anchored Multi-Scale Part features
-_C.MODEL.POSE_MULTI_SCALE_KP = False      # Enable multi-scale keypoint sampling
-_C.MODEL.POSE_MULTI_SCALE_STAGES = [2, 3] # Which stages to use (0-indexed, 3=last)
-
-# PADPQ: Pose-Anchored Deformable Part Queries — learned offsets around keypoints
-_C.MODEL.POSE_DEFORMABLE_SAMPLE = False    # Enable deformable keypoint sampling
-_C.MODEL.POSE_DEFORMABLE_K = 4            # Number of offset sampling points per keypoint
-
-# Per-body-part independent training (KPR-inspired)
-_C.MODEL.POSE_GCN_PER_PART = False        # Split 17 keypoints into 6 body parts, each with own classifier
-
-# PPA: Pose-Prompted Part-Assignment Head — end-to-end learnable part assignment
-_C.MODEL.POSE_PPA = False                 # Enable PPA (replaces GCN Part branch)
-_C.MODEL.POSE_PPA_NUM_PARTS = 5           # Number of body parts (5)
-_C.MODEL.POSE_PPA_ASSIGN_WEIGHT = 0.5     # Assignment loss weight
-_C.MODEL.POSE_PPA_GILT = False            # GiLt mode: Part triplet only, no Part CE
-
-# LGPA: Language-Grounded Part Assignment — CLIP text prototypes + cross-attention + pose masks
-_C.MODEL.POSE_LGPA = False                # Enable LGPA (replaces PPA / GCN Part branch)
-_C.MODEL.POSE_LGPA_CLIP_DIM = 512        # CLIP text feature dimension (ViT-B-32 = 512)
-_C.MODEL.POSE_LGPA_NUM_HEADS = 8         # Cross-attention heads
-_C.MODEL.POSE_LGPA_POSE_TEMP = 1.0       # Pose mask temperature
-_C.MODEL.POSE_LGPA_ASSIGN_WEIGHT = 0.5   # Assignment supervision loss weight
-_C.MODEL.POSE_LGPA_DETACH = False         # Detach features before LGPA (no gradient to backbone)
-
-# VCSR: Visibility-Conditional Semantic Routing — dynamic part gating + set matching
-_C.MODEL.POSE_VCSR = False                # Enable VCSR (replaces LGPA / GCN)
-_C.MODEL.POSE_VCSR_VIS_THR = 0.3          # Visibility threshold for part activation
-_C.MODEL.POSE_VCSR_ASSIGN_WEIGHT = 0.5    # Assignment loss weight
-
-# FSDC: Feature-Space Diffusion Completion — denoise occluded spatial tokens
-_C.MODEL.POSE_FSDC = False                # Enable feature denoiser
-_C.MODEL.POSE_FSDC_LAYERS = 2             # Denoiser transformer layers
-_C.MODEL.POSE_FSDC_HEADS = 8              # Attention heads
-_C.MODEL.POSE_FSDC_MASK_RATIO = 0.3       # Training mask ratio
-_C.MODEL.POSE_FSDC_NOISE_STD = 0.1        # Gaussian noise std for masked tokens
-_C.MODEL.POSE_FSDC_WEIGHT = 0.5           # Reconstruction loss weight
-
-# GSPB: Gradient-Scaled Part Branch — partial gradient flow from Part to backbone
-_C.MODEL.POSE_PART_GRAD_SCALE = 0.0       # 0.0 = detach (default), 1.0 = non-detach, 0.05 = scaled
-
-# PACI: Pose-Anchored Compositional Identity — per-ID per-part prototype bank
-_C.MODEL.POSE_PACI = False                # Enable PACI
-_C.MODEL.POSE_PACI_WEIGHT = 0.5           # Consistency loss weight
-_C.MODEL.POSE_PACI_MOMENTUM = 0.9         # EMA momentum for prototype update
-_C.MODEL.POSE_PACI_MARGIN = 0.3           # Triplet margin for consistency loss
-_C.MODEL.POSE_PACI_WARMUP = 5             # Epochs before consistency loss kicks in
-
-# OERL: Occlusion-Equivariant Representation Learning
-_C.MODEL.POSE_OERL = False                # Enable OERL Part Occlusion Invariance
-_C.MODEL.POSE_OERL_WEIGHT = 1.0           # POI loss weight
-_C.MODEL.POSE_OERL_OCC_RATIO = 0.5        # Fraction of keypoints to occlude (0.3-0.7)
-
-# BA-PKC: Backbone-Aware Per-Keypoint Contrastive — gradients flow to backbone (not detached)
-_C.MODEL.POSE_BA_PKC = False              # Enable BA-PKC
-_C.MODEL.POSE_BA_PKC_WEIGHT = 0.1         # BA-PKC loss weight
-
-# BT-PKD: Backbone-Through Per-Keypoint Distillation
-# Distill per-keypoint features from EMA teacher (clean image) to student (occluded image)
-# Uses NON-detached backbone features: smooth L2 gradient flows to backbone
-# Key difference from BA-PKC: L2 distillation (smooth) vs SupCon (sharp, catastrophic)
-_C.MODEL.POSE_BT_PKD = False              # Enable BT-PKD (requires OA-SD)
-_C.MODEL.POSE_BT_PKD_WEIGHT = 0.01       # Loss weight (keep low: gradients flow to backbone)
-_C.MODEL.POSE_BT_PKD_DECAY_EPOCH = 0     # Cosine decay BT-PKD weight to 0 by this epoch (0=no decay)
-
-# MST: MaxSim Triplet loss — directly optimizes per-keypoint features for MaxSim distance
-_C.MODEL.POSE_MST = False                 # Enable MaxSim Triplet
-_C.MODEL.POSE_MST_WEIGHT = 0.5            # MST loss weight
-_C.MODEL.POSE_MST_MARGIN = 0.3            # Triplet margin
-_C.MODEL.POSE_MST_VIS_THR = 0.3           # Visibility threshold
-
-# PKC: Per-Keypoint Contrastive loss on GCN keypoint features
-_C.MODEL.POSE_PKC = False                 # Enable per-keypoint SupCon
-_C.MODEL.POSE_PKC_WEIGHT = 0.5            # PKC loss weight
-_C.MODEL.POSE_PKC_TEMP = 0.07             # SupCon temperature
-_C.MODEL.POSE_PKC_VIS_THR = 0.3           # Visibility threshold for including keypoint
-
-# Structural Token Mixup (STM)
-_C.MODEL.POSE_STM = False                 # Enable token-level mixup within same ID
-_C.MODEL.POSE_STM_NUM_SWAP = 2            # Number of body parts to swap per mixup
-_C.MODEL.POSE_STM_PROB = 0.5              # Probability of applying mixup per sample
-_C.MODEL.POSE_STM_WEIGHT = 0.5            # Weight of mixup loss (added to main loss)
-
-# LTCS: Learn-to-Trust Common Support (pair-adaptive fusion)
-_C.MODEL.POSE_LTCS = False
-_C.MODEL.POSE_LTCS_WEIGHT = 0.5
-_C.MODEL.POSE_LTCS_WARMUP = 20
-_C.MODEL.POSE_LTCS_HIDDEN = 32
-_C.MODEL.POSE_LTCS_ST_LOW_THR = 0.3
-_C.MODEL.POSE_LTCS_ST_UPDATE_THR = 0.7
-_C.MODEL.POSE_LTCS_ST_MOM = 0.9
-_C.MODEL.POSE_LTCS_ST_MIN_COUNT = 1
-_C.MODEL.POSE_LTCS_ST_UPDATE_STOP_EPOCH = -1
-
-# LPCS: Learned Pair Correction Scorer
-_C.MODEL.POSE_LPCS = False
-_C.MODEL.POSE_LPCS_WEIGHT = 0.5
-_C.MODEL.POSE_LPCS_WARMUP = 20
-_C.MODEL.POSE_LPCS_HIDDEN = 32
-_C.MODEL.POSE_LPCS_DELTA_SCALE = 0.5
-_C.MODEL.POSE_LPCS_HEAD_MODE = 'residual'
-_C.MODEL.POSE_LPCS_CONF_WEIGHT = 0.25
-_C.MODEL.POSE_LPCS_PAIR_MODE = 'all'
-_C.MODEL.POSE_LPCS_PAIR_TOP_RATIO = 1.0
-_C.MODEL.POSE_LPCS_RANK_MODE = 'all'
-_C.MODEL.POSE_LPCS_RANK_TOP_RATIO = 1.0
-_C.MODEL.POSE_LPCS_RANK_TAU = 8.0
-_C.MODEL.POSE_LPCS_CONTEXT_MODE = 'none'
-_C.MODEL.POSE_LPCS_ST_LOW_THR = 0.3
-_C.MODEL.POSE_LPCS_ST_UPDATE_THR = 0.7
-_C.MODEL.POSE_LPCS_ST_MOM = 0.9
-_C.MODEL.POSE_LPCS_ST_MIN_COUNT = 1
-_C.MODEL.POSE_LPCS_ST_UPDATE_STOP_EPOCH = -1
+# -----------------------------------------------------------------------------
+# PARTIAL_EVIDENCE（部分证据训练）；默认 ENABLED=False，训练和测试都退化为基线
+# -----------------------------------------------------------------------------
+_C.PARTIAL_EVIDENCE = CN()
+_C.PARTIAL_EVIDENCE.ENABLED = False
+# True 为部分证据校准方法；False 为严格同路径 aug-only 对照，合成图直接走原始 loss_fn。
+_C.PARTIAL_EVIDENCE.CALIBRATE = True
+_C.PARTIAL_EVIDENCE.PASTE_PROB = 0.5
+_C.PARTIAL_EVIDENCE.MIN_KEEP = 0.2
+_C.PARTIAL_EVIDENCE.LS_MAX = 0.2
+_C.PARTIAL_EVIDENCE.MARGIN_SCALE = True
+_C.PARTIAL_EVIDENCE.NO_HARDNEG_BELOW = 0.4
 
 # -----------------------------------------------------------------------------
 # INPUT
@@ -328,6 +181,10 @@ _C.INPUT.PIXEL_MEAN = [0.485, 0.456, 0.406]
 _C.INPUT.PIXEL_STD = [0.229, 0.224, 0.225]
 # Value of padding size
 _C.INPUT.PADDING = 10
+# TARDIS 去偏合成混合；MIX_PROB=0 时 dataloader 与基线完全一致
+_C.INPUT.MIX_PROB = 0.0
+_C.INPUT.MIX_RATIO_RANGE = [0.3, 0.7]
+_C.INPUT.MIX_TYPE = 'both'  # 'cross_id' / 'self_mix' / 'both'
 
 # -----------------------------------------------------------------------------
 # Dataset
@@ -408,7 +265,6 @@ _C.SOLVER.EVAL_PERIOD = 10
 # contain 16 images per batch
 _C.SOLVER.IMS_PER_BATCH = 64
 _C.SOLVER.TRP_L2 = False
-_C.SOLVER.FREEZE_BACKBONE_EPOCHS = 0  # freeze backbone for first N epochs (0 = no freeze)
 
 # ---------------------------------------------------------------------------- #
 # TEST
@@ -419,23 +275,12 @@ _C.TEST = CN()
 _C.TEST.IMS_PER_BATCH = 128
 # If test with re-ranking, options: 'True','False'
 _C.TEST.RE_RANKING = False
-_C.TEST.CVK_GLOBAL_WEIGHT = 1.0
-_C.TEST.CVK_KP_WEIGHT = 1.0
-# NFC (Neighbor Feature Centralization) test-time augmentation
-_C.TEST.NFC = False
-_C.TEST.NFC_K1 = 2
-_C.TEST.NFC_K2 = 2
 # Path to trained model
 _C.TEST.WEIGHT = ""
 # Which feature of BNNeck to be used for test, before or after BNNneck, options: 'before' or 'after'
 _C.TEST.NECK_FEAT = 'after'
 # Whether feature is nomalized before test, if yes, it is equivalent to cosine distance
 _C.TEST.FEAT_NORM = 'yes'
-_C.TEST.POWER_NORM = 0.0                # Power normalization exponent (0=disabled, 0.5=sqrt)
-# Flip-test TTA: default ON. Evaluates on original + horizontally flipped batch,
-# averages features. Applies to both do_train mid-training eval and do_inference.
-# MaxSim 仍单独由 scripts/eval_fliptest_maxsim.py 跑，不在这里。
-_C.TEST.FLIP_TEST = True
 
 # Name for saving the distmat after testing.
 _C.TEST.DIST_MAT = "dist_mat.npy"

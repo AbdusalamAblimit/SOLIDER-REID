@@ -1,7 +1,7 @@
+# Occluded-Duke 基线（SOLIDER Swin-Tiny），作 MULTIHYP 跨数据集验证的对照下界。
+# 标准遮挡 ReID 口径：真实 camid、eval_func 同 pid+同 cam 去除（与 Occ-PoseTrack 的 no-removal 不同）。
 MODEL:
   PRETRAIN_HW_RATIO: 2
-  PRETRAIN_CHOICE: 'self'
-  PRETRAIN_PATH: 'pretrained/swin_tiny.pth'
   METRIC_LOSS_TYPE: 'triplet'
   IF_LABELSMOOTH: 'off'
   IF_WITH_CENTER: 'no'
@@ -10,8 +10,7 @@ MODEL:
   DEVICE_ID: ('0')
   TRANSFORMER_TYPE: 'swin_tiny_patch4_window7_224'
   STRIDE_SIZE: [16, 16]
-  SEMANTIC_WEIGHT: 0.2
-  WITH_CP: False
+  SIE_CAMERA: False
 
 INPUT:
   SIZE_TRAIN: [384, 128]
@@ -24,7 +23,7 @@ INPUT:
 
 DATASETS:
   NAMES: ('occluded_duke')
-  ROOT_DIR: ('data')
+  ROOT_DIR: ('/mnt1/afrdata')
 
 DATALOADER:
   SAMPLER: 'softmax_triplet'
@@ -40,18 +39,18 @@ SOLVER:
   WARMUP_METHOD: 'cosine'
   LARGE_FC_LR: False
   CHECKPOINT_PERIOD: 120
-  LOG_PERIOD: 20
-  EVAL_PERIOD: 10
-  WEIGHT_DECAY: 1e-4
+  LOG_PERIOD: 50
+  EVAL_PERIOD: 120
+  WEIGHT_DECAY:  1e-4
   WEIGHT_DECAY_BIAS: 1e-4
   BIAS_LR_FACTOR: 2
 
 TEST:
   EVAL: True
-  IMS_PER_BATCH: 256
+  IMS_PER_BATCH: 64
   RE_RANKING: False
   WEIGHT: ''
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/occluded_duke/exp000_baseline'
+OUTPUT_DIR: './log/occluded_duke/swin_tiny'

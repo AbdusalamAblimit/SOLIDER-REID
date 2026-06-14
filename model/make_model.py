@@ -109,6 +109,11 @@ class Backbone(nn.Module):
         if self.dropout_rate > 0:
             self.dropout = nn.Dropout(self.dropout_rate)
 
+        self.oss_head = None
+        if getattr(cfg, 'OSS', None) is not None and cfg.OSS.ENABLED:
+            from .occ_shortcut import OccluderHead
+            self.oss_head = OccluderHead(self.in_planes, cfg.OSS.POOL_SIZE)
+
         if pretrain_choice == 'self':
             self.load_param(model_path)
 
@@ -140,7 +145,7 @@ class Backbone(nn.Module):
                 return global_feat
 
     def load_param(self, trained_path):
-        param_dict = torch.load(trained_path, weights_only=False)
+        param_dict = torch.load(trained_path)
         if 'state_dict' in param_dict:
             param_dict = param_dict['state_dict']
         for i in param_dict:
@@ -153,7 +158,7 @@ class Backbone(nn.Module):
         print('Loading pretrained model from {}'.format(trained_path))
 
     #  def load_param(self, trained_path):
-        #  param_dict = torch.load(trained_path, map_location='cpu', weights_only=False)
+        #  param_dict = torch.load(trained_path, map_location = 'cpu')
         #  for i in param_dict:
             #  try:
                 #  self.state_dict()[i.replace('module.', '')].copy_(param_dict[i])
@@ -188,22 +193,7 @@ class build_transformer(nn.Module):
             view_num = 0
 
         convert_weights = True if pretrain_choice == 'imagenet' else False
-        backbone_kwargs = dict(
-            img_size=cfg.INPUT.SIZE_TRAIN,
-            drop_path_rate=cfg.MODEL.DROP_PATH,
-            drop_rate=cfg.MODEL.DROP_OUT,
-            attn_drop_rate=cfg.MODEL.ATT_DROP_RATE,
-            pretrained=model_path,
-            convert_weights=convert_weights,
-            semantic_weight=semantic_weight,
-        )
-        # Gradient checkpointing is implemented in the Swin backbone only.
-        if cfg.MODEL.TRANSFORMER_TYPE.startswith('swin'):
-            backbone_kwargs['with_cp'] = cfg.MODEL.WITH_CP
-        elif cfg.MODEL.WITH_CP:
-            print('WITH_CP is ignored for non-Swin backbones in this codebase')
-
-        self.base = factory[cfg.MODEL.TRANSFORMER_TYPE](**backbone_kwargs)
+        self.base = factory[cfg.MODEL.TRANSFORMER_TYPE](img_size=cfg.INPUT.SIZE_TRAIN, drop_path_rate=cfg.MODEL.DROP_PATH, drop_rate= cfg.MODEL.DROP_OUT,attn_drop_rate=cfg.MODEL.ATT_DROP_RATE, pretrained=model_path, convert_weights=convert_weights, semantic_weight=semantic_weight)
         if model_path != '':
             self.base.init_weights(model_path)
         self.in_planes = self.base.num_features[-1]
@@ -240,13 +230,71 @@ class build_transformer(nn.Module):
 
         self.dropout = nn.Dropout(self.dropout_rate)
 
+        # DONOR_DECOUPLE 双出口反事实解耦；默认 ENABLED=False，不构造 P_A/P_B，前向退回基线
+        self.donor_pa = None
+        self.donor_aux_head = None
+        self.donor_aux_detach = True
+        if getattr(cfg, 'DONOR_DECOUPLE', None) is not None and cfg.DONOR_DECOUPLE.ENABLED:
+            if self.reduce_feat_dim:
+                raise ValueError("DONOR_DECOUPLE 当前只支持 REDUCE_FEAT_DIM=False 的 Swin 全局分支。")
+            from .donor_decouple import DonorAuxHead, DonorMainProjector
+            dd_in = self.in_planes
+            self.donor_pa = DonorMainProjector(dd_in)
+            self.donor_aux_head = DonorAuxHead(dd_in, self.num_classes)
+            self.donor_aux_detach = bool(cfg.DONOR_DECOUPLE.AUX_DETACH)
+
+        # TARDIS 身份条件目标性门控（默认 OBJGATE.ENABLED=False，不构造、逐行退化为基线）
+        self.objgate = None
+        if getattr(cfg, 'OBJGATE', None) is not None and cfg.OBJGATE.ENABLED:
+            from .objectness_gate import ObjectnessGate
+            gate_in = self.base.num_features[-1]
+            self.objgate = ObjectnessGate(gate_in, hidden=cfg.OBJGATE.HIDDEN, tau=cfg.OBJGATE.TAU,
+                                          entropy_min=cfg.OBJGATE.ENTROPY_MIN, entropy_max=cfg.OBJGATE.ENTROPY_MAX,
+                                          detach_score=getattr(cfg.OBJGATE, 'DETACH_SCORE', False),
+                                          mode=getattr(cfg.OBJGATE, 'MODE', 'softmax'),
+                                          suppress_min=getattr(cfg.OBJGATE, 'SUPPRESS_MIN', 0.5))
+            self.objgate_lambda_target = cfg.OBJGATE.LAMBDA_TARGET
+            self.objgate_split_w = cfg.OBJGATE.SPLIT_W
+            self.objgate_anti_w = cfg.OBJGATE.ANTI_W
+
+        # MULTIHYP（exp003 多假设集合匹配）；默认 ENABLED=False 不构造、逐行退化为基线
+        self.multihyp = None
+        if getattr(cfg, 'MULTIHYP', None) is not None and cfg.MULTIHYP.ENABLED:
+            from .multihyp import MultiHypHead
+            mh_in = self.base.num_features[-1]
+            self.multihyp = MultiHypHead(mh_in, dim=mh_in, num_slots=cfg.MULTIHYP.K,
+                                         detach=cfg.MULTIHYP.DETACH)
+            self.multihyp_k = cfg.MULTIHYP.K
+
+        # OSS 遮挡物捷径抑制；默认 ENABLED=False 不构造头，训练和测试都走原基线路径
+        self.oss_head = None
+        if getattr(cfg, 'OSS', None) is not None and cfg.OSS.ENABLED:
+            from .occ_shortcut import OccluderHead
+            self.oss_head = OccluderHead(self.in_planes, cfg.OSS.POOL_SIZE)
+
         #if pretrain_choice == 'self':
         #    self.load_param(model_path)
 
-    def forward(self, x, label=None, cam_label= None, view_label=None):
+    def forward(self, x, label=None, cam_label= None, view_label=None,
+                obj_is_synth=None, obj_side=None, obj_ratio=None, obj_lambda=0.0,
+                donor_rects=None, donor_aux=False):
         global_feat, featmaps = self.base(x)
+        reg_loss = None
+        if self.objgate is not None:
+            # 训练用 warmup 传入的 lam；测试用训练好的目标 lam，保证门控在测试时也生效
+            lam = obj_lambda if self.training else self.objgate_lambda_target
+            global_feat, reg_loss = self.objgate(
+                featmaps[-1], global_feat, lam,
+                is_synth=obj_is_synth, split_side=obj_side, split_ratio=obj_ratio,
+                split_w=(self.objgate_split_w if self.training else 0.0),
+                anti_w=(self.objgate_anti_w if self.training else 0.0))
+        slots = None
+        if self.multihyp is not None:
+            slots = self.multihyp(featmaps[-1])      # (B,K,C)，已逐槽 L2 归一化
         if self.reduce_feat_dim:
             global_feat = self.fcneck(global_feat)
+        if self.donor_pa is not None:
+            global_feat = self.donor_pa(global_feat)
         feat = self.bottleneck(global_feat)
         feat_cls = self.dropout(feat)
 
@@ -256,17 +304,25 @@ class build_transformer(nn.Module):
             else:
                 cls_score = self.classifier(feat_cls)
 
+            if self.donor_aux_head is not None and donor_aux:
+                donor_logits, donor_feat = self.donor_aux_head(
+                    featmaps[-1], donor_rects, detach=self.donor_aux_detach)
+                return cls_score, global_feat, featmaps, donor_logits, donor_feat
+            if self.multihyp is not None:
+                return cls_score, global_feat, featmaps, slots  # 多返回假设槽供集合损失
+            if self.objgate is not None:
+                return cls_score, global_feat, featmaps, reg_loss  # 多返回 reg_loss
             return cls_score, global_feat, featmaps  # global feature for triplet loss
         else:
-            if self.neck_feat == 'after':
-                # print("Test with feature after BN")
-                return feat, featmaps
-            else:
-                # print("Test with feature before BN")
-                return global_feat, featmaps
+            base_feat = feat if self.neck_feat == 'after' else global_feat
+            if self.multihyp is not None:
+                g = torch.nn.functional.normalize(base_feat, dim=1, p=2)   # (B,C) 全局部分归一化
+                s = slots.reshape(slots.shape[0], -1)                      # (B,K*C) 各槽已归一化
+                return torch.cat([g, s], dim=1), featmaps                  # 拼接固定结构特征
+            return base_feat, featmaps
 
     def load_param(self, trained_path):
-        param_dict = torch.load(trained_path, map_location='cpu', weights_only=False)
+        param_dict = torch.load(trained_path, map_location = 'cpu')
         for i in param_dict:
             try:
                 self.state_dict()[i.replace('module.', '')].copy_(param_dict[i])
@@ -433,7 +489,7 @@ class build_transformer_local(nn.Module):
                     [global_feat, local_feat_1 / 4, local_feat_2 / 4, local_feat_3 / 4, local_feat_4 / 4], dim=1)
 
     def load_param(self, trained_path):
-        param_dict = torch.load(trained_path, weights_only=False)
+        param_dict = torch.load(trained_path)
         for i in param_dict:
             self.state_dict()[i.replace('module.', '')].copy_(param_dict[i])
         print('Loading pretrained model from {}'.format(trained_path))
@@ -451,27 +507,13 @@ __factory_T_type = {
 }
 
 def make_model(cfg, num_class, camera_num, view_num, semantic_weight):
+    donor_on = bool(getattr(cfg, 'DONOR_DECOUPLE', None) is not None and cfg.DONOR_DECOUPLE.ENABLED)
+    if donor_on and (cfg.MODEL.NAME != 'transformer' or cfg.MODEL.JPM):
+        raise ValueError("DONOR_DECOUPLE 当前只支持非 JPM 的 Swin transformer 全局分支。")
     if cfg.MODEL.NAME == 'transformer':
         if cfg.MODEL.JPM:
             model = build_transformer_local(num_class, camera_num, view_num, cfg, __factory_T_type, rearrange=cfg.MODEL.RE_ARRANGE)
             print('===========building transformer with JPM module ===========')
-        elif cfg.MODEL.POSE_ENABLED:
-            if getattr(cfg.MODEL, 'POSE_DUAL_STREAM', False):
-                from .pose_dual_stream_model import PoseDualStreamModel
-                model = PoseDualStreamModel(num_class, camera_num, view_num, cfg, __factory_T_type, semantic_weight)
-                print('===========building Pose Dual Stream (PDS) transformer===========')
-            elif getattr(cfg.MODEL, 'POSE_PSG_PART', False):
-                from .pose_psg_part_model import PosePSGPartModel
-                model = PosePSGPartModel(num_class, camera_num, view_num, cfg, __factory_T_type, semantic_weight)
-                print('===========building PSG + Part Pooling transformer===========')
-            elif getattr(cfg.MODEL, 'POSE_BACKBONE_PSG', False):
-                from .pose_backbone_model import PoseBackboneModel
-                model = PoseBackboneModel(num_class, camera_num, view_num, cfg, __factory_T_type, semantic_weight)
-                print('===========building pose-backbone (PSG) transformer===========')
-            else:
-                from .pose_model import PoseReIDModel
-                model = PoseReIDModel(num_class, camera_num, view_num, cfg, __factory_T_type, semantic_weight)
-                print('===========building pose-guided transformer===========')
         else:
             model = build_transformer(num_class, camera_num, view_num, cfg, __factory_T_type, semantic_weight)
             print('===========building transformer===========')

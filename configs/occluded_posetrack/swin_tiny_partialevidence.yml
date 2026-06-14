@@ -1,3 +1,4 @@
+# Occluded-PoseTrack 上的 PARTIAL_EVIDENCE。相对 baseline 只翻开 PARTIAL_EVIDENCE 开关。
 MODEL:
   PRETRAIN_HW_RATIO: 2
   METRIC_LOSS_TYPE: 'triplet'
@@ -6,21 +7,21 @@ MODEL:
   NAME: 'transformer'
   NO_MARGIN: True
   DEVICE_ID: ('0')
-  TRANSFORMER_TYPE: 'swin_small_patch4_window7_224'
+  TRANSFORMER_TYPE: 'swin_tiny_patch4_window7_224'
   STRIDE_SIZE: [16, 16]
 
 INPUT:
   SIZE_TRAIN: [384, 128]
   SIZE_TEST: [384, 128]
-  PROB: 0.5 # random horizontal flip
-  RE_PROB: 0.5 # random erasing
+  PROB: 0.5
+  RE_PROB: 0.5
   PADDING: 10
   PIXEL_MEAN: [0.5, 0.5, 0.5]
   PIXEL_STD: [0.5, 0.5, 0.5]
 
 DATASETS:
-  NAMES: ('msmt17')
-  ROOT_DIR: ('path/to/msmt17/datasets')
+  NAMES: ('occluded_posetrack')
+  ROOT_DIR: ('/root/reid-clean/data')
 
 DATALOADER:
   SAMPLER: 'softmax_triplet'
@@ -37,17 +38,27 @@ SOLVER:
   LARGE_FC_LR: False
   CHECKPOINT_PERIOD: 120
   LOG_PERIOD: 20
-  EVAL_PERIOD: 10
+  EVAL_PERIOD: 20
   WEIGHT_DECAY:  1e-4
   WEIGHT_DECAY_BIAS: 1e-4
   BIAS_LR_FACTOR: 2
 
+PARTIAL_EVIDENCE:
+  ENABLED: True
+  # 严格 aug-only 对照用：PARTIAL_EVIDENCE.CALIBRATE False。
+  CALIBRATE: True
+  PASTE_PROB: 0.5
+  MIN_KEEP: 0.2
+  LS_MAX: 0.2
+  MARGIN_SCALE: True
+  NO_HARDNEG_BELOW: 0.4
+
 TEST:
   EVAL: True
-  IMS_PER_BATCH: 256
+  IMS_PER_BATCH: 64
   RE_RANKING: False
   WEIGHT: ''
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/msmt17/swin_small'
+OUTPUT_DIR: './log/occluded_posetrack/swin_tiny_partialevidence'

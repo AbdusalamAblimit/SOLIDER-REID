@@ -1,3 +1,5 @@
+# MULTIHYP（exp003）配置：在 occluded_posetrack/swin_tiny.yml 基线之上，仅翻开 MULTIHYP 开关。
+# 单变量：相对基线只多了多假设分支 + 集合损失 + 检索时保守集合匹配距离，其余超参完全一致。
 MODEL:
   PRETRAIN_HW_RATIO: 2
   METRIC_LOSS_TYPE: 'triplet'
@@ -12,8 +14,8 @@ MODEL:
 INPUT:
   SIZE_TRAIN: [384, 128]
   SIZE_TEST: [384, 128]
-  PROB: 0.5 # random horizontal flip
-  RE_PROB: 0.5 # random erasing
+  PROB: 0.5
+  RE_PROB: 0.5
   PADDING: 10
   PIXEL_MEAN: [0.5, 0.5, 0.5]
   PIXEL_STD: [0.5, 0.5, 0.5]
@@ -50,4 +52,21 @@ TEST:
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/occluded_posetrack/swin_tiny'
+MULTIHYP:
+  ENABLED: True
+  K: 3
+  DETACH: True
+  LOSS_W: 1.0
+  POS_MARGIN: 0.3
+  NEG_MARGIN: 0.7
+  DIV_W: 0.5
+  SET_TEMP: 0.1
+  # 检索时距离：held-out 三种子验证后的简化胜出配置——gate/unique 关（恒为1），
+  # 真正起作用的是带 cap 上限的 α 加权集合匹配修正 d=d_global+α·clamp(d_set-d_global,-cap,0)。
+  ALPHA: 0.3
+  BONUS_CAP: 0.5
+  GATE_TAU: 10.0
+  GATE_SIGMA: 0.3
+  UNIQUE_MARGIN: -1.0
+
+OUTPUT_DIR: './log/occluded_posetrack/swin_tiny_multihyp'

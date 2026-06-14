@@ -2,7 +2,10 @@ import math
 import os.path as osp
 import torch
 from torch import nn as nn
-from torch._six import container_abcs
+try:
+    from torch._six import container_abcs
+except ImportError:
+    import collections.abc as container_abcs
 from functools import partial
 from itertools import repeat
 from torch.nn import functional as F
@@ -199,7 +202,7 @@ def load_checkpoint(model,
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
-    checkpoint = torch.load(filename, map_location=map_location, weights_only=False)
+    checkpoint = torch.load(filename, map_location=map_location)
     # OrderedDict is a subclass of dict
     if not isinstance(checkpoint, dict):
         raise RuntimeError(
