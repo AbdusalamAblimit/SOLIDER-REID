@@ -10,7 +10,7 @@ Monitor: tail -F /tmp/exp{NNN}.log | grep -E --line-buffered \
   "Epoch\[[0-9]+\]|mAP: |Rank-1:|Rank-5:|Rank-10:|Traceback|OOM|Killed|CUDA error|RuntimeError|FAILED|NaN|Inf"
 
 # 远程（必须含崩溃信号才不会 silence-as-success）
-Monitor: ssh srvX "tail -F /tmp/exp{NNN}.log" | grep -E --line-buffered \
+Monitor: ssh <srv> "tail -F /tmp/exp{NNN}.log" | grep -E --line-buffered \
   "Epoch\[[0-9]+\]|mAP:|Rank-1:|Traceback|OOM|Killed|Error|RuntimeError|FAILED|NaN|Inf"
 ```
 

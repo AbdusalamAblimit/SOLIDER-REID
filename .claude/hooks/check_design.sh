@@ -3,6 +3,9 @@
 # 检查项: 1) design.md 存在  2) claude_review 审查通过  3) codex_review 审查通过
 # 触发: PreToolUse on Bash commands containing train.py
 
+# 确保在项目根运行（hook 的 cwd 不一定是项目根），否则 experiments/ 相对路径失效
+cd "${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}" 2>/dev/null || true
+
 INPUT=$(cat)
 
 # 用 python 解析 JSON (stdin 方式，避免引号问题)
@@ -18,7 +21,7 @@ except:
 # 只检查包含 train.py 的命令
 if echo "$COMMAND" | grep -qE 'train\.py'; then
   # 从命令中提取实验编号 (如 exp153, exp030a 等)
-  EXP_ID=$(echo "$COMMAND" | grep -oP 'exp\d{3}' | head -1)
+  EXP_ID=$(echo "$COMMAND" | grep -oE 'exp[0-9]{3}' | head -1)
 
   if [ -n "$EXP_ID" ]; then
     # 找到实验目录
@@ -77,13 +80,13 @@ if echo "$COMMAND" | grep -qE 'train\.py'; then
     done
 
     if [ -z "$LATEST_CODEX_REVIEW" ]; then
-      echo "{\"decision\":\"block\",\"reason\":\"No codex_review.md found in ${EXP_DIR}. You must run /codex:review and save results before starting training.\"}"
+      echo "{\"decision\":\"block\",\"reason\":\"No codex_review.md found in ${EXP_DIR}. You must run 'codex --search exec -s read-only' on the diff and save results before starting training.\"}"
       exit 2
     fi
 
     # Codex verdict 必须是 approve
     if ! grep -qiE '(verdict.*approve|CODEX.?PASS|codex 审查通过)' "$LATEST_CODEX_REVIEW"; then
-      echo "{\"decision\":\"block\",\"reason\":\"Codex review in ${LATEST_CODEX_REVIEW} has NOT approved. Fix all Codex findings, then re-run /codex:review until verdict is approve.\"}"
+      echo "{\"decision\":\"block\",\"reason\":\"Codex review in ${LATEST_CODEX_REVIEW} has NOT approved. Fix all Codex findings, then re-run 'codex --search exec' until verdict is approve.\"}"
       exit 2
     fi
   fi

@@ -11,9 +11,11 @@
 4. `experiments/decisions.md`（完整历史）
 5. 最新 `experiments/exp{NNN}/design.md` + `monitor.md`
 
-## 当前阶段（PRCV 2026）
+## 当前阶段（PRCV 2026 已投 → 探索新创新点）
 
-- **Deadline**：2026-04-30 前交一稿 PRCV
+- **状态（2026-06-14）**：PRCV 2026 **已投出**。论文（PSG 主线）快照冻结在 `experiments/prcv_2026_psg/`，**不再赶 deadline、不再改投稿稿**。
+- **下一阶段目标**：**探索新的创新点**（post-PRCV）。候选方向见 `.claude/rules/innovation_and_decisions.md`「值得推进的方向」与 `experiments/research_directions.md`；走那里的「默认路线」做 gap analysis → 新机制设计，**不在已投的 PSG branch 上堆小模块**。
+- **以下为已投论文的固化内容**（作为新探索的 baseline / 起点，不是当前主攻）：
 - **主创新**：`PSG`（Pose Spatial Gate），在 backbone 中间 stage 做 pose-guided spatial gating
 - **最终实现**：`2-stage PSG`（作为 instantiation，不单独抬成主术语）
 - **结构补充**：`GCN` = structural pose branch（不与 PSG 并列主创新）
@@ -21,12 +23,9 @@
 - **主 benchmark**：Occluded-Duke；**补充 benchmark**：Occluded-PoseTrack-ReID（vs KPR w/o prompt）
 - **跨域评测**：Market 训练 → Occluded-ReID 测试
 
-### PRCV 必做实验矩阵（按优先级）
+### PRCV 实验矩阵（已完成，随投稿归档）
 
-- **A. 基础 PSG stage 消融**：no PSG / 1-stage / 2-stage / 3-stage
-- **B. 结构分支依赖性**：GCN256/512 × 1/2-stage PSG（共 4 格）
-- **C. 语义分支依赖性**（有时间才做）：LGPA-only / LGPA+GCN × 1/2-stage PSG
-- **补充**：Occ-PTrack 只跑一组最强配置
+PSG stage 消融 / 结构分支依赖性（GCN×stage）/ 语义分支依赖性（LGPA）/ Occ-PTrack 强配置均已跑完，结果在 `experiments/results.md`（exp261-290 段）与 `experiments/prcv_2026_psg/`。**新阶段不再以此矩阵为目标。**
 
 ### 当前最强训练端配置
 
@@ -85,31 +84,31 @@ GPU 空闲时**必须立刻**开下一个实验或补文档 / 审查，不允许
 - **语言**：md 文档中文，代码注释英文
 - **评测**：永远用 `test.py`，永远不用 `train.py` 评估（会覆盖 train log）
 
-## 资源基础设施（2026-04 最新）
+## 资源基础设施（2026-06 最新）
 
-### 4 台 GPU
+### 3 台机器 / 4 个 GPU slot
 
-| 别名 | 机器 | GPU | /root | /hy-tmp | 用途 |
-|------|------|-----|-------|---------|------|
-| local | RTX 3090 24G | 24G | 1.8T (982G free) | — | 主开发机 + 主实验 |
-| srvA | i-2:29162 | 5060 Ti 16G | 30G (紧) | 50G | 已配环境 + 部分 log |
-| srvB | i-1:61604 | 5060 Ti 16G | 30G | 50G | 新配 |
-| srvC | i-2:25551 | 5060 Ti 16G | 30G | 50G | 新配 |
+本地 Mac 只做编排开发，无训练 GPU。训练全在远程，细节见 `.claude/rules/remote_server.md`。
 
-远程三台全用 `ssh srvA|srvB|srvC`（密钥已在 `~/.ssh/config`），**不要再用 sshpass**。
+| 别名 | GPU | slot | 状态 | 用途 |
+|------|-----|------|------|------|
+| `lab-3090-d` | RTX 3090 24G | 1 | ⚠️ 探测时不可达（ProxyJump `lab-3090`） | 原"本地 3090"，现为 lab 3090 docker 容器 |
+| `lab-4090` | RTX 4090 24G | 1 | ⚠️ 探测时不可达（ProxyJump `relay4090`） | 历史跑过 exp285b |
+| `hyy`(=`hyy-5060ti-double`) | 5060 Ti 16G ×2 | 2 | ✅ 在线，py3.11.12 + torch 2.9.1+cu128 | 双卡，同时跑 2 实验 |
+
+三台全用 `ssh <别名>`（密钥已在 `~/.ssh/config`），**不要用 sshpass**。`lab-3090-d`/`lab-4090` 的磁盘/路径首次连通后补到 rules。
 
 ### 远程磁盘策略
 
-/root 只有 30G，必须：
-- 代码仓库 + 少量 pretrained 放 `/root/work/SOLIDER-REID/`
-- **训练输出强制到 `/hy-tmp/log/`**（`log` 已软链到 `/hy-tmp/log`）
-- **数据集强制到 `/hy-tmp/data/`**（`data` 已软链到 `/hy-tmp/data`）
+- hyy（gpushare）：`/`(overlay) 仅 30G，数据/ckpt 放 `/hy-tmp`。仓库 `/hy-tmp/reid-clean/SOLIDER-REID`，数据 `/hy-tmp/reid-clean/data/`，输出 `<repo>/log/`。
+- lab-3090-d / lab-4090（实验室 docker）：路径待确认，连上后 `find / -maxdepth 3 -name train.py -path '*SOLIDER*'` 定位。
+- **训练输出统一到 `<repo>/log/`**，数据放各机数据目录。
 
 ### 数据同步
 
-- **OSS 暂不可用**（`oss login` 账号未注册 / ent cert 过期）。需要时求用户提供可用凭证。
-- 当前用 `rsync -az --partial srvX:/path srvY:/path` over SSH。本地→远程 bandwidth 约 2 MB/s，大传输必须后台 + Monitor 跟踪。
-- `log_remote_srvA_backup/` 是 srvA log 的本地备份（gitignore 外）。
+- **OSS 暂不可用**（`oss login` 账号未注册 / ent cert 过期，仅 hyy 这类 gpushare 机器相关）。需要时求用户提供可用凭证。
+- 用 `rsync -az --partial <srv>:/path <srv>:/path` over SSH。带宽约 2 MB/s，大传输必须后台 + Monitor 跟踪。
+- 拉日志回本地：`rsync -az --partial <srv>:<repo>/log/ ./log_remote_<srv>_backup/`（gitignore 外）。
 
 ### 4 个数据集
 

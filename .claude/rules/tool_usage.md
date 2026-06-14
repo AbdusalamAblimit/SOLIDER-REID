@@ -12,12 +12,12 @@
 3. `tail -F`（大写）比 `-f` 更健壮
 4. 长训练用 `persistent: true`，不设 timeout
 
-**训练监控模板**（注意 `Epoch[X]` 无空格）：
+**训练监控模板**（注意 `Epoch[X]` 无空格）。`<srv>` ∈ {`lab-3090-d`, `lab-4090`, `hyy`}，`<repo>` 为该机仓库路径，见 `remote_server.md`：
 ```
 Monitor(
   persistent=true,
-  description="exp{NNN} srvX",
-  command=`ssh srvX "tail -F /tmp/exp{NNN}.log" | grep -E --line-buffered \
+  description="exp{NNN} <srv>",
+  command=`ssh <srv> "tail -F /tmp/exp{NNN}.log" | grep -E --line-buffered \
     "Epoch\[[0-9]+\]|mAP:|Rank-1:|Rank-5:|Rank-10:|Traceback|OOM|Killed|Error|RuntimeError|FAILED|NaN|Inf"`
 )
 ```
@@ -28,8 +28,8 @@ Monitor(
 ```
 Monitor(
   timeout_ms=600000,
-  description="wait for /hy-tmp/log/occluded_duke/exp{NNN}/transformer_120.pth",
-  command="until ssh srvX test -f /hy-tmp/log/occluded_duke/exp{NNN}/transformer_120.pth; do sleep 30; done && echo DONE"
+  description="wait for <repo>/log/occluded_duke/exp{NNN}/transformer_120.pth",
+  command="until ssh <srv> test -f <repo>/log/occluded_duke/exp{NNN}/transformer_120.pth; do sleep 30; done && echo DONE"
 )
 ```
 

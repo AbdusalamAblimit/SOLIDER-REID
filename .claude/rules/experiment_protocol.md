@@ -114,12 +114,19 @@ f. 与前序实验的对照 — 消融变量隔离性
 4. 结论记录在 `experiments/exp{NNN}/claude_review.md`（或 `claude_review_v{K}.md`）
 5. 审查分级：Critical / High / Medium / Low，所有级别都必须修复
 
-**第二轮：Codex Review（GPT 代码审查）**
+**第二轮：Codex Review（GPT 独立代码审查 — 用 codex CLI + 联网）**
 
-6. Claude 审查通过后，运行 `/codex:review` 对 git diff 做独立代码审查
-7. Codex 输出结构化审查结果（verdict + findings with severity）
-8. 将 Codex 审查结果保存到 `experiments/exp{NNN}/codex_review.md`
-9. 如果 verdict 不是 `approve`：修复所有 findings → 重新运行 `/codex:review` → 循环直到 approve
+6. Claude 审查通过后，用 **`codex --search exec`** 对 git diff 做独立审查（优于 `/codex:review`：纯 CLI 可脚本化，`--search` 能联网查新颖性/先例，正好对上"审想法新颖性"）。`--search` 是**顶层 flag**，必须放在 `exec` 前：
+   ```bash
+   codex --search exec -s read-only --color never \
+     "Review the working-tree git diff for exp{NNN}. 逐行查 bug/runtime error、train/test 对称、AMP 安全、config 引用正确、对照变量隔离；用 web search 查想法是否有先例。\
+      输出：Verdict (approve / needs-attention) + findings(severity: Critical/High/Medium/Low)。"
+   ```
+   - `-s read-only`：只读沙箱，审查不该改文件；联网走本机代理（`codex` shell 函数已带 proxy）
+   - 注意默认 `reasoning effort: xhigh`，一趟 ~45k tokens，质量高但有成本
+7. Codex 输出结构化结果（verdict + findings with severity）
+8. 保存到 `experiments/exp{NNN}/codex_review.md`
+9. verdict 不是 `approve`：修完所有 findings → 重跑 `codex --search exec` → 循环到 approve
 10. **两层审查都通过才能训练**（hook 同时检查 claude_review 和 codex_review）
 
 ### Codex 审查结果保存格式
@@ -132,7 +139,7 @@ f. 与前序实验的对照 — 消融变量隔离性
 **Review round**: {第几轮}
 
 ## Findings
-{从 /codex:review 输出直接复制}
+{从 codex --search exec 输出直接复制}
 
 ## 结论
 {verdict: approve 时写} codex 审查通过

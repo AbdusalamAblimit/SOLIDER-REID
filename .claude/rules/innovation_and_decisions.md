@@ -1,5 +1,7 @@
 # 创新方向与决策记录
 
+> **阶段（2026-06-14）**：PRCV 2026 已投（PSG 主线，快照在 `experiments/prcv_2026_psg/`）。现处于**探索新创新点**阶段——本文件「值得推进的方向」+「默认路线」即新阶段主指引。PSG 等已投资产当 baseline，**不再在其上堆小模块**。新方向先写设计、红蓝队辩论、再开实验。
+
 ## 决策记录格式
 
 追加到 `experiments/decisions.md`：
@@ -42,10 +44,10 @@
 
 ## 创新方向管控
 
-### 已确认有效的基础资产
-- PSG（Pose Spatial Gate）
+### 已确认有效的基础资产（PRCV 已投，固化为 baseline）
+- PSG（Pose Spatial Gate）— PRCV 2026 主创新，已投
 - 0.5x global loss
-- exp030a-eq（当前最强 3-seed 主线）
+- exp030a-eq（PRCV 主线 3-seed）
 
 ### 已证伪的方向（不再作为主线）
 - Visibility 各种变体（加权、pooling、小 head）
