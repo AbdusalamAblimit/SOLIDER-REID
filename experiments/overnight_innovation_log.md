@@ -524,3 +524,7 @@ burstiness 死后调研 agent(带"in-domain 死、frozen 会骗人"教训)Rank-1
 
 ### [跨域 probe: 弱 baseline Occ-Duke e120 → Occluded-REID = 不塌缩(无跨域 headroom)]
 GPU1 lean probe(载 e120 ckpt 直接评 Occluded-REID, query=occluded_body/gallery=whole_body, 200 ids)：**mAP 74.79 / R1 80.60**。比 in-domain Occ-Duke 53.5 **还高**(Occ-REID 是更易 benchmark)。→ **弱 baseline 跨域不塌缩、迁移良好**。跨域(至少 Occ-Duke→Occ-REID)**不是 headroom 方向**(模型已迁移好, 只是处处弱于 SOTA = capacity 差非跨域塌缩)。**又一干净负面, 进一步收窄。** 累积排除: in-domain 特征机制(吸收)/ 组合重定义(已鲁棒)/ 跨域(不塌缩)。剩: 新监督(DUL)/ 开集 / 重量级 import。
+
+### [Bet A 几何验证 re-ranker → KILL (−2.26), 诊断: 信号在内容非几何 (第8个 NO-GO)]
+调研 agent 第三轮 headline = **吸收陷阱**(输出是单图像素函数+联合优化的机制都被 backbone 内化吸收→4 死类全是其实例)。唯一结构性逃逸 Bet A = 冻结 ViT token 上几何验证 re-rank(非可微 inlier 计数, 无梯度可吸收)。**跑完: baseline cls 53.53 → 几何重排 51.27 = −2.26(几何伤)。KILL。** 诊断: occluded ReID 判别信号在**可见 patch 内容、非几何**(人非刚体/平面, 空间一致性噪声毁强内容排序)。连逃出吸收的机制也败=从新角度坐实吸收陷阱。Bet B(conformal 决策层)未跑(CPU, 不涨 mAP, reliability 重定义, 留诊断)。
+**今晚结账: 8 bet 全 NO-GO + 吸收陷阱定理式结论 + 完整避坑地图。唯一活线 VC-Norm 跨域(~8h 后, 慢)。诚实: occluded-ReID 搬机制提 mAP 这件事近乎关闭, 真实交付=诊断/analysis 论文。**

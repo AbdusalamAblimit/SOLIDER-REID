@@ -9,7 +9,15 @@
 - **组合泛化重定义**（exp330 group-DRO）→ 模型本就组合鲁棒（held-out gap +0.04）
 - **跨域**（弱 baseline Occ-Duke→Occ-REID 74.8）→ 不塌缩，无 headroom
 - **新监督/目标**（exp331 DUL）→ 采样噪声伤判别 + σ² 不捕捉遮挡（反号），mAP −1.95，NO-GO
-→ **完整 meta-finding：特征后处理 / 组合重定义 / 跨域 / 新监督——四大类在 occluded ReID 都无 headroom；frozen kill-switch 系统性骗人。** 只剩**重量级范式 import**（CompVMF / DINO-LoRA 全栈）没试，是大工程、低 EV、建议你醒着时定方向再上（我不在 context 末尾硬塞、怕搭出 buggy 半成品）。
+→ **完整 meta-finding：特征后处理 / 组合重定义 / 跨域 / 新监督——四大类在 occluded ReID 都无 headroom；frozen kill-switch 系统性骗人。**
+
+**⭐⭐⭐ 今晚最值钱的智力产出 = "吸收陷阱(absorption trap)"——7 连负的机制级解释（analysis 论文 headline）**：
+> **任何"输出是单张图像素的函数、且与度量联合优化"的机制，都会被端到端 backbone 内化吸收。** 四大死类全是它的实例（特征重加权/对齐/补全/重打分=per-image 函数；组合/跨域/新监督=换分布但仍 per-image+联合训）。**要逃出，机制的输出必须 NOT 是 backbone 能内化的 per-image 函数。** → 这把 7 个 kill 从"零散负面"升级成一个**可证明、可写的定理式结论**：搬一个机制提升 occluded-ReID mAP 这件事，空间近乎关闭，因为几乎所有 import 都退化成 per-image 特征变换。这比一个 +0.5 mAP 模块是**更硬的 CCF-B+ 贡献**，而你的 7 个 kill-switch 已是大部分证据。
+
+**唯一两个结构性逃逸（调研 agent 第三轮，带完整死类教训）**：
+- **Bet A（已跑完 → KILL，但诊断有价值）**：几何验证 re-ranker（冻结 ViT token + 空间一致 inlier 计数，非可微无梯度可吸收=真逃出陷阱）。结果 baseline 53.53 → 几何重排 **51.27 = −2.26（几何反而伤）**。**诊断证实：occluded ReID 判别信号在可见 patch 的内容、不在几何**（人不是刚体/平面 landmark，空间一致性噪声大、毁强内容排序）。**这是第 8 个 NO-GO，但从新角度强化吸收陷阱论**（连逃出吸收的机制也败，因信号不在几何）。
+- **Bet B（conformal 风控，未跑）**：CPU 后处理诊断（保证集大小是否随遮挡增大），不涨 mAP、是 reliability 重定义。留作 analysis 论文的"决策层遮挡=不可约模糊"证据，随时可跑。
+- **Bet B（决策层，不动特征）**：conformal 风险控制检索（保证集大小随遮挡增大），换交付物不换特征。不涨 mAP(设计如此)，是 reliability 重定义。~40% 可发。
 
 **今晚新做的（按时间）**：
 1. **VC-Norm（exp328，唯一活 method bet）**：遮挡=未对齐 domain factor，训练端对齐被遮挡 per-keypoint token 的归一化统计。probe 证有料（KL 94-300 近完美可分），实现→Claude+Codex 双审（Codex 抓到 High-1 机制空转 bug，修了）→**双卡训练中**（lab-3090-d VC-Norm + 4090 单变量对照）。Market e30：VC-Norm 90.4 vs 对照 91.0（−0.6，整体集小成本，符合预期）。**真判据=训练完跨域 Occ-ReID**，还没出。这是今晚最有希望的一条。

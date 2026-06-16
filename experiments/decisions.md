@@ -4579,3 +4579,10 @@ ALL 子集同向更明显（pose-part 3.21/7.87 vs holistic 0.64/0.90）。绝�
 **决策**: KILL。DUL 在 occluded ReID 无 headroom——采样噪声伤判别 + σ² 不捕捉遮挡。
 **理由**: e20+e40 双确认、gap 扩大、σ² 反号。
 **下一步**: 今晚 7 个 bet 全 NO-GO/kill。唯一活线 = VC-Norm 跨域(待 e120)。cheap/vetted 空间穷尽; 剩重量级 import(低 EV)留用户定。
+
+### [2026-06-17 ~07:0x] 决策: Bet A 几何验证判 KILL + 今晚穷尽收尾
+**上下文**: 调研第三轮给吸收陷阱解释 + Bet A(几何 re-rank, 结构性逃逸)。冻结 e120 probe。
+**结果**: baseline 53.53 → 几何 51.27 = −2.26。KILL。诊断: 信号在内容非几何。
+**决策**: KILL Bet A。8 bet 全 NO-GO。**吸收陷阱**(per-image+联合优化机制被吸收)= 7+1 连负的机制级解释, analysis headline。
+**理由**: 冻结判据干净; 人非刚体几何不稳。
+**下一步**: cheap/vetted 空间穷尽。VC-Norm 跨域(慢, ~8h)是唯一活线。剩重量级 import(mmcv-gated/低EV)留用户定。真实交付=诊断论文(8 kill + 吸收陷阱 + 张力 + 三堵墙)。
