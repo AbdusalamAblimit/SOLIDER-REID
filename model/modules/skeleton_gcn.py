@@ -305,7 +305,8 @@ class SkeletonGCNHead(nn.Module):
                  vcga=False,
                  deformable_sample=False, deformable_k=4,
                  multi_scale_kp=False, multi_scale_s2_dim=384,
-                 per_part=False):
+                 per_part=False,
+                 vcnorm=False, vcnorm_hidden=64, vcnorm_gain_scale=1.0):
         super().__init__()
         self.feat_dim = feat_dim
         self.per_part = per_part
@@ -417,6 +418,17 @@ class SkeletonGCNHead(nn.Module):
             )
         else:
             self.gcn = None
+
+        # VC-Norm: optional visibility-conditioned normalization on enhanced
+        # per-keypoint tokens (post-GCN, pre-pool). Owned by the head so its
+        # params land in the optimizer / state_dict naturally. None -> no-op.
+        if vcnorm:
+            from .vcnorm import VisibilityConditionedNorm
+            self.vcnorm = VisibilityConditionedNorm(
+                feat_dim=feat_dim, hidden=vcnorm_hidden,
+                gain_scale=vcnorm_gain_scale)
+        else:
+            self.vcnorm = None
 
         # Learnable Keypoint Attention (LKA)
         if self.kp_learnable_attn:
@@ -922,6 +934,15 @@ class SkeletonGCNHead(nn.Module):
         else:
             kp_feats_enhanced = kp_feats
 
+        # 3.5. VC-Norm: visibility-conditioned normalization on the enhanced
+        # per-keypoint tokens. Applied here (post-GCN, pre-pool) so it flows into
+        # BOTH the pooled skeleton feature (ReID) and the exported aux kp_feats
+        # (alignment loss / MaxSim). Single application point -> train/test
+        # symmetric. Zero-init module -> identity until trained.
+        vcn_stats = None
+        if getattr(self, 'vcnorm', None) is not None:
+            kp_feats_enhanced, vcn_stats = self.vcnorm(kp_feats_enhanced, kp_scores)
+
         # 4. Keypoint weighting for pooling
         # DPF precision weighting: use inverse variance as weights
         if self.dpf and kp_vars is not None:
@@ -973,6 +994,8 @@ class SkeletonGCNHead(nn.Module):
             'kp_feats': kp_feats_enhanced,  # (B, 17, C)
             'kp_weights': kp_weights,       # (B, 17)
         }
+        if vcn_stats is not None:
+            aux_data['vcn_stats'] = vcn_stats
         # DPF: export per-keypoint variance for probabilistic matching at test time
         if kp_vars is not None:
             aux_data['kp_vars'] = kp_vars  # (B, 17, C)

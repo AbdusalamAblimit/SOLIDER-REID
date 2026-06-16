@@ -310,6 +310,16 @@ _C.MODEL.POSE_LPCS_ST_MOM = 0.9
 _C.MODEL.POSE_LPCS_ST_MIN_COUNT = 1
 _C.MODEL.POSE_LPCS_ST_UPDATE_STOP_EPOCH = -1
 
+# VC-Norm: 把遮挡当 domain factor，对 GCN per-keypoint token 做 visibility-conditioned
+# normalization 对齐（occluded student 统计 -> clean EMA teacher 统计）。复用 OA-SD 双前向。
+_C.MODEL.POSE_VCNORM = False              # 总开关（默认 OFF，必须复现 baseline）
+_C.MODEL.POSE_VCNORM_WEIGHT = 0.5         # 对齐 loss 权重
+_C.MODEL.POSE_VCNORM_WARMUP = 20          # warmup epoch 后才上对齐（前期统计不稳）
+_C.MODEL.POSE_VCNORM_VIS_THR = 0.3        # teacher keypoint 可见性阈值（低于则跳过）
+_C.MODEL.POSE_VCNORM_HIDDEN = 64          # VCN 条件 MLP 隐藏维
+_C.MODEL.POSE_VCNORM_GAIN_SCALE = 1.0     # VCN 仿射 gain/shift 的 tanh 幅度上限
+_C.MODEL.POSE_VCNORM_MODULE = True        # 是否插 VCN 仿射模块（False = 只用对齐 loss）
+
 # -----------------------------------------------------------------------------
 # INPUT
 # -----------------------------------------------------------------------------

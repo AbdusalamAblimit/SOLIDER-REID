@@ -234,6 +234,10 @@ class PoseBackboneModel(build_transformer):
                 multi_scale_kp=getattr(cfg.MODEL, 'POSE_MULTI_SCALE_KP', False),
                 multi_scale_s2_dim=self.base.num_features[-2] if len(self.base.num_features) >= 2 else self.in_planes,
                 per_part=getattr(cfg.MODEL, 'POSE_GCN_PER_PART', False),
+                vcnorm=(getattr(cfg.MODEL, 'POSE_VCNORM', False)
+                        and getattr(cfg.MODEL, 'POSE_VCNORM_MODULE', True)),
+                vcnorm_hidden=int(getattr(cfg.MODEL, 'POSE_VCNORM_HIDDEN', 64)),
+                vcnorm_gain_scale=float(getattr(cfg.MODEL, 'POSE_VCNORM_GAIN_SCALE', 1.0)),
             )
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'concat_scaled')
             if keypoint_pool_only:
@@ -243,6 +247,19 @@ class PoseBackboneModel(build_transformer):
                 print(f'[PSG+GCN] Skeleton GCN head enabled: {gcn_layers} layers, '
                       f'hidden={gcn_hidden}, test_feat={self.pose_test_feat}, '
                       f'kp_weight={kp_weight_mode}')
+
+        # VC-Norm: Visibility-Conditioned Normalization on GCN per-keypoint tokens.
+        # Treats occlusion as a domain factor (probe: occluded tokens shift their
+        # per-channel norm statistics). The VCN affine module is OWNED BY the
+        # skeleton_head (created above when POSE_VCNORM_MODULE=True) and applied
+        # post-GCN/pre-pool, so it flows into both the pooled ReID feature and the
+        # exported kp_feats in BOTH train and test forward paths (symmetry).
+        # Zero-init -> identity at start, never breaks baseline reproduction. The
+        # batch-level statistic-alignment loss lives in processor.py.
+        self.use_vcnorm = getattr(cfg.MODEL, 'POSE_VCNORM', False)
+        if self.use_vcnorm and not self.use_skeleton_gcn:
+            raise ValueError('POSE_VCNORM requires POSE_SKELETON_GCN=True '
+                             '(VC-Norm operates on GCN per-keypoint tokens)')
 
         # PNIS: Pose-Normalized Identity Space
         self.use_pose_normalize = getattr(cfg.MODEL, 'POSE_NORMALIZE', False)
@@ -596,6 +613,8 @@ class PoseBackboneModel(build_transformer):
                     if gcn_data and 'kp_feats' in gcn_data:
                         kp_data['gcn_kp_feats'] = gcn_data['kp_feats']
                         kp_data['gcn_kp_weights'] = gcn_data['kp_weights']
+                        if 'vcn_stats' in gcn_data:
+                            kp_data['vcn_stats'] = gcn_data['vcn_stats']
                     return ([cls_score] + lgpa_cls_scores + gcn_cls_scores,
                             [global_feat] + lgpa_feats + gcn_feats,
                             featmaps, None, kp_data)
