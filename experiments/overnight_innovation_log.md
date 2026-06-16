@@ -400,3 +400,7 @@ TBPS 新主线 + gait/face/跨模态搬运调研(29 agent)。**7 候选，6 死�
 | P_dino_only | 0.71% | 0.91% | 1.01% |
 **decorr 强度 0→1→2：Jaccard 仅 0.2646→0.2604(Δ0.004 几乎不动)、fusion 75.74→75.70 几乎不变、单分支判别力 39.05→38.18 与 oracle +0.85→+0.78 都单调小降。** 即解相关不仅打不破"判别性-互补性张力"，过强还轻微有害(削判别力却换不来互补)。配合 decorr-floor(λ=2/10 双倍/十倍权重压不下 ~0.04 相关)→ **张力对显式干预 fundamental 鲁棒**。
 **occluded person ReID 主线到此彻底封板**：PSG 全栈 SOTA 75.2(exp255) + FM-import 全证负(MLLM/frozen-DINO/DIFT/LoRA/decorr) + 张力洞察(显式打不破) + capacity 修正(large ~54all/45heavy plateau, me-too) + exp109 三堵墙 + PoseFaith 残值。诊断论文素材齐。新主线=TBPS(PartNC 候选待用户拍板)。
+
+### [PartNC 首验脚本就绪 — 只差 CUHK-PEDES 数据]
+按用户睡前"不停+cheap kill-switch first"，自主把 TBPS 唯一幸存候选 PartNC 推到"数据一到就能判生死"：agent 读懂 RDE 接口(checkpoint 加载 / image 192-patch+text 77-token 特征 / CCD 的 min-max+2-GMM+低均值簇后验)，写 `scripts/partnc_killswitch.py`(本地+lab-3090-d，md5 一致)：(a) spaCy+lexicon 切 caption head/torso/legs + 部位级噪声注入(参数化, 有 regex fallback)；(b) RDE token 特征算 noun-phrase×patch per-part MaxSim cleanliness(复刻 eval_fliptest_maxsim einsum.max)；(c) AUROC(part-level) vs AUROC(实例级CCD)；(d) verdict。逻辑全验证通过(切分/注入/加载/形状/MaxSim/GMM/AUROC 方向性单测)。
+**caveat(必修)**：`--real` 现用"1−均值cleanliness"代理 CCD，会压低对照让 PartNC 偏强；数据到位**第一件事换 RDE 真 CCD(compute_per_loss 跑 dataloader)** 再判，否则 verdict 不可信。运行：`python3 partnc_killswitch.py --mode real --root_dir <CUHK-PEDES父目录> --noisy_rate 0.5`。**只差用户 odl login 下数据。**
