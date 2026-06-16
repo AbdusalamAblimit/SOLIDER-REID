@@ -2,7 +2,14 @@
 
 ## ⭐⭐ 06-17 晨更新（最新，醒来先看这段）
 
-**一句话**：今晚把你的"换弱 baseline + 搬范式"思路认真执行了——下了 4 个新 bet，**全部干净判负/NO-GO（有据可查、双审过、训练判据非frozen）**，但因此把"occluded ReID 还能从哪挖"收窄成一张**很强的避坑地图**；**唯一还活着的 method = VC-Norm（exp328），跨域判据训练完才出**。诚实讲：仍没拿到 beat-SOTA 新方法，但今晚的钱买到一个**robust 的负面结论 + 一条活线**。
+**一句话**：今晚把你的"换弱 baseline + 搬范式"思路认真执行到底——下了 **7 个新 bet，全部干净判负/NO-GO**（每个双审过、训练判据非frozen、有据可查），把"occluded ReID 还能从哪挖"**系统性穷尽成一张完整避坑地图**；**唯一还活着的 method = VC-Norm（exp328），跨域判据训练完（还几小时）才出**。诚实讲：仍没拿到 beat-SOTA 新方法，但今晚的钱买到一个**罕见完整的负面 map + 一条活线**。
+
+**7 个 bet 全 NO-GO（按机制类，每类都试到死）**：
+- **in-domain 特征机制**（burstiness/backdoor/TopoFR/UCE/FM-import）→ 训练吸收，强栈弱栈都死
+- **组合泛化重定义**（exp330 group-DRO）→ 模型本就组合鲁棒（held-out gap +0.04）
+- **跨域**（弱 baseline Occ-Duke→Occ-REID 74.8）→ 不塌缩，无 headroom
+- **新监督/目标**（exp331 DUL）→ 采样噪声伤判别 + σ² 不捕捉遮挡（反号），mAP −1.95，NO-GO
+→ **完整 meta-finding：特征后处理 / 组合重定义 / 跨域 / 新监督——四大类在 occluded ReID 都无 headroom；frozen kill-switch 系统性骗人。** 只剩**重量级范式 import**（CompVMF / DINO-LoRA 全栈）没试，是大工程、低 EV、建议你醒着时定方向再上（我不在 context 末尾硬塞、怕搭出 buggy 半成品）。
 
 **今晚新做的（按时间）**：
 1. **VC-Norm（exp328，唯一活 method bet）**：遮挡=未对齐 domain factor，训练端对齐被遮挡 per-keypoint token 的归一化统计。probe 证有料（KL 94-300 近完美可分），实现→Claude+Codex 双审（Codex 抓到 High-1 机制空转 bug，修了）→**双卡训练中**（lab-3090-d VC-Norm + 4090 单变量对照）。Market e30：VC-Norm 90.4 vs 对照 91.0（−0.6，整体集小成本，符合预期）。**真判据=训练完跨域 Occ-ReID**，还没出。这是今晚最有希望的一条。

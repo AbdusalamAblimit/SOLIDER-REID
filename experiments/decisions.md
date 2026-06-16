@@ -4572,3 +4572,10 @@ ALL 子集同向更明显（pose-part 3.21/7.87 vs holistic 0.64/0.90）。绝�
 **决策**: KILL。occluded ReID 模型已组合泛化(不学 occluder-class 捷径)→ 组合重定义无 headroom。与 in-domain 死法不同类不同因。
 **理由**: ERM 零 gap 独立判死; kill-switch 便宜捕获(省全量方法)。
 **下一步**: BET 2 (DUL identity-conditioned aleatoric variance) 待评估; VC-Norm 仍唯一活 method bet。
+
+### [2026-06-17 ~06:4x] 决策: exp331 DUL 判 NO-GO
+**上下文**: 最后未测的"新监督/目标"类(搬人脸 DUL)。双审过+smoke过+单变量(BN单更新)。e20+e40 kill-switch。
+**结果**: DUL mAP < DET 且 gap 扩大(−1.35→−1.95); σ² 缓慢收缩 + 遮挡相关性反号(遮挡更低)。双判据全失败。
+**决策**: KILL。DUL 在 occluded ReID 无 headroom——采样噪声伤判别 + σ² 不捕捉遮挡。
+**理由**: e20+e40 双确认、gap 扩大、σ² 反号。
+**下一步**: 今晚 7 个 bet 全 NO-GO/kill。唯一活线 = VC-Norm 跨域(待 e120)。cheap/vetted 空间穷尽; 剩重量级 import(低 EV)留用户定。

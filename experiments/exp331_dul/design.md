@@ -35,3 +35,14 @@
 
 ## 实现/审查
 - self-contained `scripts/exp331_dul.py`（--mode {det,dul}）。Claude broad review + Codex review（hook 双门）→ smoke → 训练 det(GPU0 after ERM) + dul(GPU1) 120ep 单变量。
+
+---
+
+## ⛔ KILL-SWITCH 判决 (2026-06-17, e20+e40 双确认)
+| epoch | DET mAP | DUL mAP | Δ(dul−det) | σ² mean | σ² query(occ) vs gallery(hol) diff |
+|---|---|---|---|---|---|
+| 20 | 48.51 | 47.16 | **−1.35** | 0.2555 | −0.0244 (occ 反而**更低**) |
+| 40 | 50.93 | 48.98 | **−1.95**(扩大) | 0.1739(↓收缩) | −0.0183 (仍反向) |
+- **NO-GO，双判据全失败**：(1) DUL mAP < DET 且 gap 扩大(−1.35→−1.95)，需 ≥+1.0 完全反向；(2) σ² 非塌到0但**缓慢收缩(0.256→0.174)** + **遮挡相关性反号**(遮挡 σ² 更低，应更高)→ σ² 没建模遮挡不确定性。
+- **机制**：reparameterization 噪声伤 ReID 判别(sampling 降辨识)；学到的 σ² 不捕捉遮挡(反号+收缩)。正是 Claude M1 预言的失败(σ²→0/no-op，此处变体=伤+反号)。
+- KILL exp331。**"新监督/目标"类(DUL)在 occluded ReID 也无 headroom。**
