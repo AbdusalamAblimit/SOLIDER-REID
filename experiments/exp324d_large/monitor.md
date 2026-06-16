@@ -57,3 +57,20 @@
 - relaunch 已确认干净启动：GPU0 5821 MiB/100%，进入 e1。等 e5 验证 eval 不再 OOM。
 
 ### relaunch 训练进度（eval_fwd_bs 8）
+- relaunch 复现原轨迹（同 seed 确定性）：e1 acc 0.373 / e2 0.811 / e3 0.944 / e4 0.973 / e5 0.983
+- **✅ e5 eval 通过（OOM_FIX_OK）**：eval_fwd_bs 8 修复了 eval 阶段 OOM，进程存活继续训练。
+
+### ★ Epoch[5] EVAL — capacity 对照（vs r32 base）★
+```
+cos  ALL  : mAP=46.75 R1=57.38   part ALL  : mAP=47.21 R1=59.19
+cos  HEAVY: mAP=37.13 R1=45.40   part HEAVY: mAP=38.50 R1=49.34
+```
+| 片 | large e5 | r32(base) e5 | Δ(large−base) | 冻结 |
+|----|----------|--------------|---------------|------|
+| part HEAVY mAP | **38.50** | 36.72 | +1.78 | 8.65 |
+| part ALL mAP | **47.21** | 44.54 | +2.67 | 14.61 |
+
+- **关键结论：capacity 不是瓶颈。** large(hidden 1024) 仅比 base 高 +1.8 heavy / +2.7 all，
+  落在**同一 ~40 heavy / ~48 all 带**，不是不同 regime。
+- 叠加 r32(LoRA rank32 vs rank16) 同样 plateau ~40 → **backbone 容量、adaptation 容量都不是瓶颈**，
+  瓶颈在**机制/问题结构**（pose-part-MaxSim 表征上限）。坐实"路线 2 刷绝对值无望，需机制重组/问题 reframe"。

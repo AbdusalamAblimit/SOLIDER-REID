@@ -1695,3 +1695,31 @@
 - 机制方向仍在（pose 0.73 > grid 0.35 > holistic 0.22，pose vs grid +0.38），但绝对判别性远低于 DINO。
 - **smoke 误导**：smoke（500 gallery）DIFT heavy 9.92，full（17661 gallery）塌到 0.73。DINO 从 smoke 2.55→full 1.86 仅小降，DIFT 从 9.92→0.73 灾难性塌 → **SD 特征 category-level 语义对应强（PCK 高）但 instance-level 身份判别弱**（SD-DINO/Tale-of-Two-Features 文献一致）。
 - **结论**：**SD/DIFT 特征不值得上头**（决定性问题答案=否），SD 线止损。教训：训练-free probe 必须用全量 gallery 判定，小 gallery smoke 只看流程不看绝对值。耗时 2065s（feature 1650s ensemble4 慢 + rep 405s）。
+
+### exp324d / exp324i: LoRA-unfreeze DINOv2 + 解相关对照（破冻结天花板 + 张力鲁棒性）
+
+> exp324d = LoRA 解冻 DINOv2-base/large + 可微 pose-part-MaxSim（破 exp324b 冻结天花板）。exp324i = 在其上加跨网络跨协方差解相关损失（逼 DINO-global 与 frozen-Swin-global 线性无关）。Occluded-Duke，BS=64，rank16 除非标注。**单分支 part-MaxSim = 纯模型；fusion(⊕Swin) = test-time 后处理(NFC 级)，不计训练端增益。**
+
+**(1) 纯模型 — LoRA 破冻结天花板 + capacity 对照（part-MaxSim，e30 除非标注）**
+
+| 变体 | HEAVY mAP/R1 | ALL mAP/R1 | 说明 |
+|------|-------------|-----------|------|
+| frozen base (exp324b 头) | 8.65 / — | 14.61 / — | 冻结天花板 |
+| LoRA base rank16 (λ=0) | 36.49 / 47.62 (e10) | 44.34 / 56.56 (e10) | 破天花板 ×4.2 |
+| **LoRA base rank32 e30** | **40.81 / 51.97** | **49.68 / 62.40** | 最终 plateau |
+| LoRA large rank16 (e5) | 38.50 / 49.34 | 47.21 / 59.19 | +backbone capacity |
+
+- **LoRA 解冻决定性破冻结天花板**（8.65→40.81 heavy，~4.7×）→ 瓶颈是 "frozen" 不是 DINO 表征。
+- **capacity 非瓶颈**：rank32≈rank16、large(1024d)≈base(768d) 都落 ~38-41 heavy / ~48-50 all 带，**远低于 SOTA all-query 60-72**（ProFD 62.8/PersonViT 72.2）→ 瓶颈在机制/问题结构，me-too。
+
+**(2) 解相关对照 — decorr 打不破"判别性-互补性张力"（exp324i e10 matched oracle，vs Swin MaxSim 75.16/72.57）**
+
+| 指标(heavy) | λ=0 无decorr | λ=1 decorr active | Δ |
+|---|---|---|---|
+| top-10 Jaccard vs Swin | 0.253 | 0.2513 | ≈0 |
+| oracle 上界 gain | +0.59 | +0.58 | ≈0 |
+| **fusion best ALL** | 75.53 (+0.37) | 75.52 (+0.37) | ≈0 |
+| fusion best HEAVY | 72.83 (+0.26) | 72.84 (+0.27) | ≈0 |
+
+- decorr loss 活跃(0.041)却完全没动 Jaccard/oracle/fusion → **显式全局线性解相关对 part-MaxSim 排序正交**，张力鲁棒。fusion +0.37 是 NFC 级后处理（w≥0.4 转负），非 beat-SOTA。
+- **结论**：FM-import（frozen/换源/LoRA/decorr-fusion）方法方向全负，各有机制；真产出 = 诊断研究（见 `fm_occluded_reid_study.md`）。[λ=2 + e30 matched 跑完补充]

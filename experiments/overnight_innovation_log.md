@@ -283,3 +283,70 @@ r32 part-MaxSim 轨迹（决定性）：
 **判据**：λ=1 vs λ=0 看 (1) decorr-DINO 单分支 mAP 是否被解相关拖垮；(2) top-10 Jaccard 是否下降（张力是否被打破）；(3) fusion(decorr-DINO⊕Swin) 重遮挡/全部是否真超 Swin。**无论成败都有价值**：成→真 method；败→把张力从"观察"升级为"显式施压也打不破"的强诊断结论。
 
 **先验（诚实）**：~75% 偏负——Swin 已占据最判别方向，正交补里 ID 信号更弱；且 global-only 解相关不针对 Swin 的遮挡盲点 + 95.8% 训练全可见墙仍在。但这是 FM-import 方向最后一个有原创性的方法介入，值得这一夜的空闲 GPU。
+
+### [heartbeat idea-probe ~03:40] 剩余未试 paradigm 廉价判死，不烧 GPU 凑数
+三块可用 GPU 全忙（λ=1 / large / r32→λ0 armed），lab-4090 env 坏（不敢自动装包破坏多用户 afr 环境）。趁等 λ=1 e10，过了一轮"还有什么热点没搬"：
+- **SAM/SAM2 遮挡 mask**：落入禁止清单 visibility 变体 + KPR 已 human parsing → 增量，不做。
+- **Pose2ID 式生成补全**：撞 exp109 墙（completion = identity-conditioned 不可实现）→ 不做。
+- **文本-grounded / CLIP-text**：occluded ReID 是 image-to-image 同网络匹配，文本不加信息 + CLIP-ReID 已先例 → 不做。
+- **3D/NeRF 人体重建**：太重、无廉价 kill-switch、仍撞补全墙 → 不做。
+**判断**：FM-import / generic-paradigm-import 方向保持关闭（各有机制，已入 memory+study）。真正没撞墙的下一前沿 = **问题 reframe**（reliability/uncertainty-aware matching 或 common-visible support / pair comparability，CLAUDE.md 钦定）——level-1 重定义创新，多日研究线，非一夜 kill-switch。**拒绝在 3am 编造注定撞同墙的 FM-import 实验充数**（CLAUDE.md：不做组合实验逃避创新）。当前真决策点 = λ=1 e10 oracle（Jaccard vs 0.253）。
+
+### [exp324d capacity 对照收尾 — large≈base，瓶颈是机制不是容量，FM 线探索性结论 firm]
+
+**large(dinov2-large hidden 1024) 与 base(dinov2-base) 在同一 plateau 带，capacity 不是瓶颈。**
+
+| 变体 | e5 part HEAVY | e5 part ALL | 容量维度 |
+|------|---------------|-------------|----------|
+| 冻结 base (exp324b) | 8.65 | 14.61 | baseline |
+| **r32 base LoRA rank32** | 36.72 | 44.54 | +LoRA 容量 |
+| **large LoRA rank16** | **38.50** | **47.21** | +backbone 容量 |
+
+- large 比 base 仅 **+1.8 heavy / +2.7 all**（同一 ~40/~48 带，非不同 regime）。r32(rank32 vs rank16) 也 plateau ~40。
+- **双对照结论：backbone 容量(base→large)、adaptation 容量(rank16→32)都不是瓶颈** → 瓶颈在**机制/问题结构**（pose-part-MaxSim 5 部位表征上限）。
+- **OOM 教训记录**：large 首跑 e4→e5 静默死（eval 阶段 dinov2-large 全量 gallery 前向显存超 16G，train 峰值才 5.34G）。修复 `--eval_fwd_bs 8`（不动 BS=64），relaunch 通过 e5 eval。→ 5060 Ti 16G 上 large backbone 的 eval 必须降 eval_fwd_bs。
+
+**FM 方向（DINO）探索性最终结论（firm）**：
+1. 冻结 FM 对 occluded ReID 部位匹配天花板低（8.65/14.61），换源(registers/DIFT/DINOv3)不破，oracle 无独立信息。
+2. **LoRA 解冻彻底破冻结天花板（8.65→~40 heavy，~4.6×）** → 瓶颈是"冻结"不是 DINO 表征本身。
+3. **但 LoRA-adapted 上限 plateau ~40 heavy / ~49 all，远低于 SOTA(60-72 all-query)，且加容量(large/rank32)不破** → 瓶颈转移到机制/问题结构。
+4. **新颖性 me-too**（DINOv2 backbone 饱和 / LoRA-ReID 已有 / pose-visible-part 匹配 PVPM2020→KPR2024）。
+
+→ **FM-as-backbone 刷点这条线到此为止（CLAUDE.md 铁律：不为 0.x 调参、不堆模块）。** 真正剩余价值：
+(a) **analysis 故事**（完整证据链：frozen 不行 → 换源不行 → LoRA 破冻结但 plateou → 容量非瓶颈 → 机制才是，对"FM 对 occluded ReID 能/不能做什么"是扎实诊断贡献）；
+(b) 若要做方法，必须走 **LoRA↔visibility 机制重组** 或 **common-visible-support/reliability 问题 reframe**（CLAUDE.md 钦定方向），不在这条曲线上继续。
+
+剩余：r32 跑到 e30（不改结论）、large 跑到 e30 看 large 最终是否仍 ≈base（预期是）。**两者 e30 后这条 FM 线探索关闭，转 analysis 或机制/问题 reframe 设计。**
+
+### [exp324d_r32 e30 完成 — FM-LoRA 线最终数字定格]
+
+**r32 训练完成（`[done] full training complete`），最终天花板定格：**
+
+| | part HEAVY mAP/R1 | part ALL mAP/R1 | vs 冻结 |
+|--|-------------------|-----------------|--------|
+| 冻结 base (exp324b) | 8.65 / — | 14.61 / — | baseline |
+| **r32 e30 (final)** | **40.81 / 51.97** | **49.68 / 62.40** | **+32.16 / +35.07 (~4.7× / ~3.4×)** |
+
+- 完整收敛曲线：e5 36.72 → e10 38.85 → e15 39.44 → e20 40.58 → e25 40.71 → **e30 40.81**（heavy）。e20 后基本不动。
+- ckpt 已存（head_30.pth + lora_30）。GPU1 释放。
+- **FM-LoRA 探索这条线正式关闭**：破冻结天花板证实(✅)，但 plateau ~40.8/49.7 远低于 SOTA 60-72(❌)，加容量(large e5 38.50≈base)不破(❌)，新颖性 me-too(❌)。
+- large 仍在跑到 e30（capacity 对照完整曲线，非 load-bearing，e5 已确认 ≈base，结论不变，~7h 后完成）。
+- **下一步不是再开 DINO-curve 实验**（CLAUDE.md 铁律：不刷点不堆模块），而是：转 analysis 故事整理，或设计 LoRA↔visibility 机制重组 / common-visible-support·reliability 问题 reframe（CLAUDE.md 钦定方向，需先写设计+红蓝队）。
+
+### [exp324i e10 ORACLE 判决 — decorr 没打破张力，张力升级为"显式施压也打不破"]
+
+λ=1（decorr active）e10 oracle vs λ=0（exp324d e10）matched 参考，**每个数都一样**：
+
+| 指标(heavy) | λ=0 无decorr | λ=1 decorr |
+|---|---|---|
+| DINO-only mAP | 36.78 | 36.49 |
+| **top-10 Jaccard vs Swin** | 0.253 | **0.2513** |
+| P_dino_only | 0.71% | 0.81% |
+| oracle 上界 | +0.59 | +0.58 |
+| **fusion best ALL** | 75.53(+0.37) | **75.52(+0.37)** |
+| fusion best HEAVY | 72.83(+0.26) | 72.84(+0.27) |
+
+- **decorr loss 全程活跃**（稳 0.041，远低于 λ=0 自然相关）**却完全没移动 Jaccard / oracle / fusion**。
+- **机制解读（关键）**：强迫 DINO-global 与 Swin-global **线性解相关**，对"模型给 query 排哪些 gallery"（part-MaxSim 排序）是**正交的**——决定检索的是 part-MaxSim over 相同可见身体部位证据，两模型受**同一份可见证据**约束而犯**同样的错**（Swin-only-r1-hit 370/989=37%，DINO 只补 8=0.81%）。global 线性相关只是排序的"装饰"，解它不改排序。
+- **结论**：**显式解相关施压打不破"判别性-互补性张力"** → 张力从"观察到的相关"升级为"对显式干预鲁棒"的**强诊断结论**。这是 exp324i 的真正价值：method shot 对 beat-SOTA 为负（fusion 仍 +0.37 NFC 级），但作为**严格对照**坐实了 headline 张力（诊断论文的关键实验）。
+- **待补强（让 sweep bulletproof）**：λ=2（更强 decorr）+ λ=0 fresh rank16 matched control 跑到 e30，确认 e10 结论在收敛点/更强 λ 下都成立（预期：Jaccard 仍不动）。

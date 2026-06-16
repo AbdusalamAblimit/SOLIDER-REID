@@ -77,8 +77,18 @@ cos  HEAVY: mAP=38.03 R1=49.04   part HEAVY: mAP=39.44 R1=49.75
 | e10 | 38.85 | 47.12 | +2.13 |
 | e15 | 39.44 | 47.71 | +0.59 |
 | e20 | 40.58 | 48.89 | +1.14 |
+| e25 | 40.71 | 49.57 | +0.13 |
+| **e30 (final)** | **40.81** | **49.68** | +0.10 |
 
 e20: `part ALL mAP=48.89 R1=61.18 / part HEAVY mAP=40.58 R1=52.17`（cos ALL 48.32 / cos HEAVY 39.25）
+e25: `part ALL mAP=49.57 R1=62.53 / part HEAVY mAP=40.71 R1=52.38`（cos ALL 48.98 / cos HEAVY 39.70）— **完全 plateau，e20→e25 仅 +0.13 heavy**
+e30: `part ALL mAP=49.68 R1=62.40 / part HEAVY mAP=40.81 R1=51.97`（cos ALL 49.00 / cos HEAVY 39.61）— **FINAL，`[done] full training complete`**
+
+## ★ r32 最终结论（e30 完成）★
+- **最终天花板：part HEAVY 40.81 / part ALL 49.68**（vs 冻结 8.65/14.61 = **+32.16 / +35.07，~4.7× / ~3.4×**）。
+- ckpt 保存：head_30.pth + lora_30（log/occluded_duke/exp324d_r32/）。
+- **核心问题 firm 答案：LoRA 解冻彻底破冻结天花板**，但 plateau ~40.8 heavy / ~49.7 all，**远低于 SOTA all-query 60-72**（ProFD 62.8 / PersonViT 72.2）。
+- 是 building block / 正向诊断证据，非 standalone strong-venue 方法。后续走机制重组(LoRA↔visibility) 或问题 reframe(common-visible support/reliability)。
 
 - **plateau 在 ~40 heavy / ~49 all**。LR cosine 衰减中(3e-5)、acc 0.999 训练饱和；e15→e20 +1.1 是低 LR 微调小涨，未脱离 plateau 带。
 - **核心问题已 firm 回答**：LoRA 解冻彻底破冻结 8.65 天花板(~4.6×)，但**上限远低于 SOTA(60-72 all-query)**。

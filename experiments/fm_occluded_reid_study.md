@@ -36,6 +36,18 @@ LoRA-DINO 单 pose-part 分支 **plateau ~37 heavy**(e5 34.92→e10 36.78，trai
 **关键**：让 DINO 判别化(8.65→37)的同时，它和 Swin **更一致了**(Jaccard 0.062→0.253)。adaptation 把 DINO 推向 Swin-like 判别方向 → **判别性升、互补性降，无法兼得**。adapted-DINO 救的是 Swin 也快对的 case，不是 Swin 的系统盲点。融合 +0.37 是 NFC/RR 级 test-time 后处理(项目规则不算训练端贡献)，远非"beat 75"。
 → **冻结 FM 互补但无用(无信息)；adapted FM 有用但趋同 SOTA(失互补)。通用 FM 无论冻结/adaptation 都无法 beat 或 boost purpose-built SOTA。这是 fundamental 的判别性-互补性张力。**
 
+**6b. ⭐⭐ 张力对显式干预鲁棒（exp324i decorr 对照，把张力从"观察"做成"打不破"）。**
+直接攻击张力：DINO-LoRA 训练加跨网络跨协方差解相关损失，逼 DINO-global 与 frozen-Swin-global **线性无关**（Barlow-Twins 跨网络版，Codex 查无直接先例）。λ=0(无decorr) vs λ=1(decorr) e10 matched oracle：
+| 指标(heavy) | λ=0 | λ=1 decorr | Δ |
+|---|---|---|---|
+| DINO-only mAP | 36.78 | 36.49 | -0.29 |
+| top-10 Jaccard vs Swin | 0.253 | 0.2513 | **≈0** |
+| P_dino_only | 0.71% | 0.81% | +0.10 |
+| oracle 上界 | +0.59 | +0.58 | ≈0 |
+| fusion best ALL/HEAVY | 75.53/72.83(+0.37) | 75.52/72.84(+0.37) | **≈0** |
+
+**decorr loss 全程活跃(稳 0.041)却完全没移动 Jaccard/oracle/fusion。** 机制：强迫 global 线性解相关对"排哪些 gallery"(part-MaxSim 排序)是**正交**的——检索由 part-MaxSim over 相同可见身体部位证据决定，两模型受**同一份可见证据**约束犯**同样的错**(Swin-only-r1-hit 370/989=37%，DINO 补 8=0.81%)。global 线性相关只是排序"装饰"。→ **显式施压也打不破张力 = 张力鲁棒、fundamental**。这是张力洞察最强的对照证据(诊断论文核心实验)。[λ=2 + e30 matched 跑完进一步坐实]
+
 ## 机制副发现（有用）
 - **姿态锚定是关键**：冻结时均匀网格 part-MaxSim 几乎不涨(0.67 vs 整图 0.55)，只有 pose 锚定涨(1.86)——涨点来自"用姿态把 dense token 约束到身体部位语义"，不是 trivial 分部位。单变量隔离干净。
 - **part-MaxSim > 整图 cosine** 在冻结和 adaptation 后都成立 → pose-part 机制不冗余。

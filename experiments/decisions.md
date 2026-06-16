@@ -4520,3 +4520,11 @@ ALL 子集同向更明显（pose-part 3.21/7.87 vs holistic 0.64/0.90）。绝�
 **理由**：(1) 不是堆模块 / 调参，是直攻 headline 张力的**单一新机制**（Barlow-Twins 跨网络版，Codex 查无直接先例）；(2) 无论成败都增信息——败也是诊断论文必需的对照（"显式解相关也打不破张力"）；(3) lab-3090-d 否则空转，符合"GPU 空闲必开下一个"铁律；(4) 双审查通过、dry-run 干净、加固两个 Low。
 **红蓝队**：未单独跑（决策风险低、可逆、纯空闲 GPU、双审查已过）；先验 ~75% 偏负（Swin 占最判别方向、global-only 解相关不针对遮挡盲点、95.8% 全可见墙）已诚实记入 design.md 失败模式。
 **执行结果**：λ=1 已上 lab-3090-d（30ep/rank16/seed1234，PID 在 /tmp/exp324i_lambda1.log）；λ=0 control 待 hyy r32 完→GPU1。eval 走 exp324h oracle/fusion + Jaccard-vs-λ 曲线。结果跑完并入 results.md + study + 晨报。**若败不编造 method，诚实呈现张力诊断。**
+
+### [2026-06-16] 决策 #exp324i-result — decorr 没打破张力，method 为负但诊断升级（执行结果）
+
+**上下文**：exp324i（解相关感知 DINO-LoRA）e10 matched oracle 出（λ=0 vs λ=1）。
+**结果**：**decorr 完全没移动 Jaccard(0.253→0.2513)/oracle(+0.59→+0.58)/fusion(+0.37→+0.37)**，decorr loss 活跃(0.041)但对 part-MaxSim 排序正交。
+**判定**：method shot 对 beat-SOTA **为负**（fusion 仍 +0.37 NFC 级，未超训练端门槛）；但作为**严格对照为正**——把"判别性-互补性张力"从观察升级为"显式解相关施压也打不破"的强诊断结论。
+**决策**：(1) 不在 decorr 上继续调 λ 找正收益（机制正交，调参无意义，CLAUDE.md 铁律）；(2) **跑 λ=2 + λ=0/λ=1 e30 matched** 把 sweep 做 bulletproof（确认更强 λ/收敛点仍不动），仅用空闲 GPU、不额外烧；(3) FM-import 方法方向**正式关闭**，夜间真产出 = 诊断研究(张力洞察 + 显式干预对照 + ×4 finding + capacity-control + 可复用 oracle 工具)；(4) 真 method 只能走问题 reframe（CLAUDE.md 钦定方向，多日线，醒后与用户定）。
+**执行结果**：λ=2 + e30 oracle 已 armed（λ=1 [done] 触发）。诚实呈现，不编造 SOTA 突破。
