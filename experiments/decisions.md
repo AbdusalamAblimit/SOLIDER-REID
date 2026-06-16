@@ -4384,3 +4384,139 @@ srvC 接下来: exp269b FINAL ~11:40 → 再 idle (无 chain). 或可 queue exp2
 - ✅ exp269b (Market Base PLBOA OFF) 94.5/97.2
 - 🔄 exp266c (Base OP s42 full 120) srvB running, FINAL ~13:22 today
 - ⭐ **exp294 (Base Full-GCN s41 ablation)** FINAL 74.0/82.6 (用户新加 ablation)
+
+---
+
+# Post-PRCV exp295–321b 决策回填（2026-06-15 补文档债）
+
+> 以下 6 条决策对应 post-PRCV 的复现/multi-seed/LR sweep/loss-weight sweep，数据回填自各 exp monitor.md + git commit（results.md 同日补「Post-PRCV 消融/复现/扫参 runs」段）。整体结论：**无一超越已投 baseline，产出为消融素材**。
+
+### [2026-04-27] 决策 #GLOBAL_LOSS_SCALE bugfix 后双向 sweep → 1.0 是 sweet spot（推翻早期 0.5 设置）
+
+**上下文**：commit `c059dca` 发现 `MODEL.GLOBAL_LOSS_SCALE` 早期设为 0.5，但代码 bug 导致只在 no-part 路径生效；Full Scaffold 走 part-path 完全忽略该值（effective=1.0）。修复后让 0.5 真在 part-path 生效。
+**选项**：A. 0.5× global loss 是真实改进，bugfix 后应能涨点；B. effective 1.0（default 行为）才是最优，0.5/2.0 双向均负
+**双向 sweep 证据**：0.5 真生效(exp311b Small) **-0.7 mAP**；1.0 default(exp295/exp261) baseline ⭐；2.0(exp312 Tiny) **-0.4 mAP**
+**选择**：B
+**理由**：bugfix 后 0.5 和 2.0 两个方向都 net negative，effective 1.0 最优。早期 config 里 `GLOBAL_LOSS_SCALE: 0.5` 是 bug 期间虚假观察。
+**执行结果**：GLOBAL_LOSS_SCALE 论文不需调，保持 1.0。`prcv_best_*.yml` 的 0.5 设置应纠正（occluded_duke 已改 1.0，occluded_posetrack/market 仍 0.5 待修）。
+
+### [2026-04-28] 决策 #Tiny 五维 loss-weight sweep 全 ≤ baseline → default recipe 已调优，停止扫参
+
+**上下文**：Tiny（seed 42）系统扫 5 个 loss weight 维度，验证 default recipe 是否还有调参空间。
+**8 个 sweep 点（vs exp261 67.2/78.6 MaxSim）**：GLS2.0 -0.4；PartW2.0 -0.3；PartW0.5 0；lgpaW1.0 -0.2；oasdW2.0 0；lgpaW0.25 **+0.2**；partTriW0.5 -0.1；oasdW0.5 -0.1
+**选择**：default recipe 各维度已是 sweet spot，停止 loss-weight 扫参。
+**理由**：8 点中 7 个 ≤ baseline，唯一正向（exp317 +0.2）在 multi-seed std（0.42-0.45）内、不可强 claim。
+**执行结果**：唯一候选 exp317 转 Small 验证（见下条）。loss-weight 维度收敛。
+
+### [2026-04-28] 决策 #exp317 Tiny lgpaW=0.25 的 +0.2 未迁移到 Small（exp321b）→ 判 seed noise 放弃
+
+**上下文**：exp317（Tiny，LGPA_ASSIGN_WEIGHT 0.25）是 Tiny sweep 中唯一 MaxSim 超 baseline 的点（+0.2 mAP），需在 Small 验证。
+**选项**：A. +0.2 真实，应在 Small/Base 重现写入论文；B. +0.2 在 multi-seed std 内，是 seed noise，放弃
+**验证**：exp317 Tiny/42 lgpaW0.25 67.4/78.6 (+0.2/0)；exp321b Small/1234 lgpaW0.25 **74.9/85.4 (-0.3/0)**
+**选择**：B
+**理由**：Tiny +0.2 未在 Small 重现（Small 反 slight -0.3，R1 持平）。Tiny std 0.42-0.45 覆盖 ±0.3，判 seed noise。
+**执行结果**：不写为论文改进，保持 default 0.5。（exp321b monitor 提及待 exp321c s42 复核，但未跑/无 FINAL；现有 Tiny+Small 证据已足判 noise）
+
+### [2026-04-28] 决策 #exp320 LGPA_DETACH=False -6.4 mAP catastrophic → detach 是必要设计（强 negative 消融）
+
+**上下文**：SOTA push 探索——让 LGPA aux loss 反传 backbone（default DETACH=True），测是否能让 LGPA shape backbone features。
+**结果（exp320 Small s1234 vs exp295）**：eq 68.1/79.3 vs 74.2/84.0（-6.1/-4.7）；MaxSim **68.8/79.6 vs 75.2/85.4（-6.4/-5.8）**
+**选择**：DETACH=True（current default）是必要选择，非任意 hyperparam。
+**理由**：DETACH=False → catastrophic underfit（e10 46% near-random，e80 plateau 68.3）。LGPA 须 detach，作为 frozen pose-spatial-gated features 上的 downstream attention head。
+**执行结果**：强 negative，写入论文消融（"LGPA must be detached; allowing backprop causes -6.4 mAP severe underfitting"）。POSE_LGPA_DETACH=True 保持。
+
+### [2026-04-25] 决策 #Base OD LR sweep → LR8 最优，LR2 下界，PLBOA OD net positive
+
+**上下文**：overnight Base OD LR sweep（exp296/297/298）+ PLBOA 消融（exp299）。
+**LR sweep（Base s41 vs exp296 LR8 74.9/83.8 MaxSim）**：LR8 baseline；LR4(exp297) -0.3/+0.3（近 tie）；LR2(exp298) **-5.3/-4.7**（下界）
+**PLBOA 消融**：exp299(OFF) 72.7/80.5 vs exp296(ON) 74.9/83.8 → OD 上 **PLBOA net +2.2 mAP**；配 Tiny exp307(+2.7) 2-backbone 一致
+**选择**：LR8 sweet spot；PLBOA OD-train 启用、Market-train 关闭（dataset-specific）。
+**理由**：LR4≈LR8（非显著 underfit），LR2 严重 underfit -5.3。PLBOA 在 Occ-Duke +2.2-2.7 mAP，但 Market→Occ-ReID 跨域 -25.4 mAP（exp293 vs exp269）。
+**执行结果**：Base OD 主表保持 exp263d 75.2/84.8；exp296-298 作 LR ablation，exp299/exp307 作 PLBOA dataset-specific evidence。
+
+### [2026-04-26~27] 决策 #multi-seed 3-backbone std ≤ 0.5 → "robust to seed" claim 成立
+
+**上下文**：补齐 Small/Base 各第 3 个 seed（exp304 Small s2024、exp302 Base s42），支撑 "robust to seed selection" claim。
+**multi-seed 统计（MaxSim+flip）**：Small(42/1234/2024) mean **74.7 std 0.45** 主行 exp295；Base(41/1234/42) mean **74.87 std 0.42** 主行 exp263d
+**选择**：论文写 "robust to seed selection (std ≤ 0.5 mAP, both Small & Base, 3 seeds each)"。各 backbone 主表用最强 seed。
+**理由**：两 backbone 3-seed std 均 < 0.5，一致性强；exp300(Base s1234) R1 微超但 mAP -0.2，未破 SOTA。
+**执行结果**：主表数字不变（Small 75.2/85.4 / Base 75.2/84.8）；exp302/304/300 作 multi-seed 补充数据点。
+
+### [2026-06-16] 决策 #exp323 — MLLM 视觉裁剪 A/B 廉价首验（3B 退化，不可判）
+
+**上下文**：post-PRCV「搬范式」首验（frozen Qwen2.5-VL-3B，零训练，lab-3090-d）。
+288 个重遮挡难例 pair（均衡 144 同/144 异），三条件 A/B/C：甲(裸)、乙(可见部位文字)、丙(姿态视觉裁剪)。
+假设：视觉裁剪/文字 grounding 改善小模型对遮挡 pair 的同人判定，且增益集中在重遮挡档。
+**结果（一个词 YES/NO 格式）**：三条件**全部恰好 50.0%**（=随机），各 n_visible 档全 50.0%。
+原因：Qwen2.5-VL-3B 有压倒性 NO-bias，几乎全输出 NO（甲 0 YES、丙 0 YES、乙 2 YES），
+连明显同人(pid 全可见)也答 NO。诊断探针：强制"必须选"仍全 NO；允许 reasoning 才开始区分。
+**对照**：同 288 对 GPT-5.5 裸=55.9% / 文字=55.6%（文字也无效，印证"强模型文字无用"）。
+**选择**：(a) always-NO 使一个词格式下 A/B/C **不可判**，非方法被证伪；
+(b) 补跑 reasoning 输出格式（先推理后 ANSWER:，max_new_tokens=128）让模型 commit，
+取得可判的 A/B/C（exp323 reason 变体，结果见 monitor.md）。
+**理由**：kill-switch 的前提是模型能给出非退化判定；一个词格式下小模型地板效应掩盖了任何信号。
+**执行结果**：见 experiments/exp323/monitor.md（两次 run 完整记录）。脚本：scripts/exp323_crop.py（视觉裁剪）、
+exp323_qwen3b.py（一词格式）、exp323_qwen3b_reason.py（推理格式）、exp323_analyze.py、exp323_diag.py。
+
+### [2026-06-16] 决策 #exp323-final — reasoning 格式 A/B/C 出可判结果，kill-switch 偏负
+
+**上下文**：一词格式 always-NO 不可判后，补跑 reasoning 输出格式（先推理后 ANSWER:，128 token）让 3B commit。
+**结果（UNK 计错）**：甲(裸)=54.2% > 乙(文字)=49.3%(-4.9pt) > 丙(视觉裁剪)=35.8%(-18.4pt, 71 UNK)。
+按 n_visible 无任何档丙>甲；heavy(≤4) 甲0.525/乙0.525/丙0.375。增益不存在、不集中重遮挡（撞红线#6 的"均匀"否定面）。
+丙最差机制：裁剪删上下文→模型对每个碎片长篇描述→128 token 内常没到 ANSWER→71 UNK。
+**选择**：判 "frozen 小 MLLM + pose 视觉裁剪/文字提示" 首验**不正向**。
+**理由**：两个 pose-guided 干预（文字、裁剪）对 frozen 3B 都无帮助且裁剪显著有害；
+裸图 54.2% 已接近 GPT-5.5 裸 56.5%，说明不是 3B 太弱，而是干预本身不 work。
+**执行结果**：建议砍 frozen-MLLM-reasoner 廉价首验，转 exp324（DINO-correspondence，更 frontier-independent）或换机制。
+保留 escape hatch：若坚持 MLLM 线需 LoRA 让模型学会用裁剪/grounding，但 frozen 证据偏负+沉没成本警告。
+
+### [2026-06-16] 决策 #exp324 — DINO emergent correspondence + pose-anchored part-MaxSim 首验偏正
+
+**上下文**：exp323 frozen-MLLM 线偏负后，按搬范式 #2 路线做 frozen DINOv2-base 廉价首验（training-free）：
+dense patch token → pose 锚定 5-part → 跨图只比 mutually-visible part 的 part-MaxSim。全量 Occluded-Duke。
+**选项**：
+  A. 机制有相对信号（pose-part 重遮挡超整图、且 pose 锚定 > 均匀网格）→ 推进 exp324b（轻量 part 投影头/LoRA）。
+  B. 无相对信号（与整图/均匀网格打平或更差）→ 与 exp323 一起判 pose-guided-frozen 这一大类偏负，换机制/退 DIFT。
+**结果**：重遮挡子集 pose-part 1.86 mAP / 3.54 R1，holistic CLS 仅 0.55/0.81（**+1.31 mAP / +2.73 R1，mAP×3.4 R1×4.4**）；
+均匀网格 grid-part 仅 0.67/1.21（vs holistic +0.12 mAP，几乎无效）→ **pose 锚定贡献占绝对主导**（pose vs grid +1.19 mAP / +2.33 R1）。
+ALL 子集同向更明显（pose-part 3.21/7.87 vs holistic 0.64/0.90）。绝对分低（heavy 1.86 mAP）但落在 DINO 零样本 ReID 文献区间（0.3-4.7）。
+**选择**：A。
+**理由**：(1) 三种表征**单变量隔离干净**——(b)/(c) 都是 5 同序 part 向量在 common-visible part 求均值，唯一差别是锚定方式（pose vs 固定带），grid 几乎不涨而 pose 大涨，直接证明"姿态把 DINO token 约束到身体部位语义"是涨点来源，不是部位分解 trivial 效果；
+(2) 重遮挡组涨幅 > 全体涨幅占比（机制对症遮挡），不撞红线 #6（非"均匀涨"）；
+(3) 与 exp323（frozen 干预无效）形成对照——同样 frozen + 同样 pose，但 DINO dense correspondence 这条**有信号**，差别在表征端而非 LLM-reasoning 端。
+**执行结果**：exp324b 候选——冻结 DINO，仅训一个轻量 part-projection 头（或 LoRA）把 token 投到 ReID-judiciable 空间，
+保留 pose 锚定 + mutually-visible part-MaxSim，全量对比 KPR。脚本 scripts/exp324_dino.py，特征已缓存 experiments/exp324/_cache。
+**待补**：rep-building 327s 瓶颈在每图重开 PIL 读尺寸（2 万次），exp324b 应把图尺寸随特征一并缓存或预存 npz 元数据。
+
+### [2026-06-16] 决策 #exp327 — 更强冻结对应源（DINOv2-with-registers）止损
+
+**上下文**：exp324 frozen DINOv2-base pose-part 重遮挡 1.86，天花板低。问"换更新/更干净的冻结 SSL 源能否抬过 1.86"。hyy GPU1，唯一变量=特征源。DINOv3-vitb16 gated（hf-mirror 需 token）下不了，改用 ungated 的 dinov2-with-registers-base（registers 去 high-norm artifact token，更干净 dense 特征）。
+**选项**：
+  A. 更强冻结源显著超 1.86（≥+1~2 mAP）→ 天花板瓶颈在模型新旧，值得上头。
+  B. 仅小幅/打平 → 瓶颈在 frozen 本身，换源无用，止损。
+**结果**：dinov2reg-b 重遮挡 pose-part **2.15/3.84（+0.29 mAP / +0.30 R1 vs 1.86/3.54）**，ALL 3.85/8.60（+0.64/+0.73）。机制保持（pose vs grid +1.44 mAP，grid 几乎不涨）。
+**选择**：B（小幅正向但止损）。
+**理由**：registers 更干净特征只蹭出 +0.29 mAP（heavy），远不足以独立可用（exp324b 头已到 14）；印证 exp324 假说**训练-free 天花板瓶颈在 "frozen" 本身，不在 SSL 模型新旧/registers**。换更强冻结 DINO 源不是天花板解。
+**执行结果**：exp327 线止损。若要上头优先选 DIFT（不同范式，smoke 趋势更强）。dinov3-b 因 gated 无法验证；按 registers 小幅增益外推预期也不破天花板，不为它申请 token。slim pose data pipeline 经 dinov2-b sanity（复现 exp324 数字）+ heavy-occ 989/2210 完全一致核验无损，可复用于后续 hyy 实验。
+
+### [2026-06-16] 决策 #exp326 — DIFT/SD 特征对应训练-free 决定性负，SD 线止损
+
+**上下文**：exp324 frozen DINOv2-base pose-part 重遮挡 1.86。对应特征综述称 SD UNet 中间特征（DIFT）在遮挡/姿态对应基准上比 DINO 高 14-19 PCK。问"换 SD-DIFT 特征源能否超 1.86"。hyy GPU0，唯一变量=特征源（DINOv2→SD-v1.5 UNet up_blocks[1] DIFT，t=100 ensemble=4）。
+**选项**：
+  A. DIFT 全量重遮挡超 1.86 → SD 特征值得上轻量头（exp326b）。
+  B. 不超 → SD 训练-free 不优于 DINO，止损。
+**结果**：DIFT smoke（500 gallery）pose-part heavy **9.92**（趋势第一，误导），但 **FULL（17661 gallery）塌到 0.73（−1.13 vs 1.86）**，更不及 dinov2-registers 2.15。机制方向仍在（pose 0.73 > grid 0.35 > holistic 0.22）但绝对判别性远低于 DINO。
+**选择**：B（决定性负）。
+**理由**：(1) DINO 从 smoke 2.55→full 1.86 仅小降，DIFT 从 9.92→0.73 **灾难性塌**——证明 **SD/DIFT 特征 category-level 语义对应强（PCK 高）但 instance-level 身份判别弱**（与 SD-DINO / Tale-of-Two-Features 文献一致：SD 与 DINO 互补、SD 不主导 instance retrieval）；(2) instance-discrimination 是 SD 特征的**结构性短板**（非超参问题），扫 t/up_block/ensemble 不会救；(3) 训头起点 0.73 远低于 DINO（1.86→14），不值得上 exp326b。
+**执行结果**：SD/DIFT 线止损，不上头。**重要方法论教训写入铁律：训练-free probe 必须用全量 gallery 判定绝对值，小 gallery smoke 只验流程不验数值**——DIFT 是活教材（smoke 排第一、full 垫底）。结合 exp327（registers +0.29 小幅、不破天花板）：**换特征源（更新 DINO / 换 SD 范式）都不是 frozen 天花板的解**，瓶颈在 frozen 本身（需 LoRA/解冻，即 exp324d 线）或换"DINO 补 Swin"重量级角度（planner #1 oracle）。
+
+### [2026-06-16] 决策 #exp324i — 做"解相关感知 DINO-LoRA"作 FM-import 方向最后一个真 method shot
+
+**上下文**：夜间 FM-import 全线证负，headline = 判别性-互补性张力（adaptation 让 DINO 判别化但趋同 Swin，融合只 +0.37）。lab-3090-d 空闲。用户睡前铁令"整夜不停务必找一个有用创新点"。问：直接用解相关损失攻击该张力，能否换来真互补、融合超 SOTA？
+**选项**：
+  A. 跑 exp324i（跨协方差解相关 DINO-LoRA，λ=0 vs λ=1 单变量）——真机制介入，成则 method、败则把张力升级为强结论。
+  B. 不跑，直接把夜间产出定为 analysis 诊断研究收尾。
+**选择**：A。
+**理由**：(1) 不是堆模块 / 调参，是直攻 headline 张力的**单一新机制**（Barlow-Twins 跨网络版，Codex 查无直接先例）；(2) 无论成败都增信息——败也是诊断论文必需的对照（"显式解相关也打不破张力"）；(3) lab-3090-d 否则空转，符合"GPU 空闲必开下一个"铁律；(4) 双审查通过、dry-run 干净、加固两个 Low。
+**红蓝队**：未单独跑（决策风险低、可逆、纯空闲 GPU、双审查已过）；先验 ~75% 偏负（Swin 占最判别方向、global-only 解相关不针对遮挡盲点、95.8% 全可见墙）已诚实记入 design.md 失败模式。
+**执行结果**：λ=1 已上 lab-3090-d（30ep/rank16/seed1234，PID 在 /tmp/exp324i_lambda1.log）；λ=0 control 待 hyy r32 完→GPU1。eval 走 exp324h oracle/fusion + Jaccard-vs-λ 曲线。结果跑完并入 results.md + study + 晨报。**若败不编造 method，诚实呈现张力诊断。**

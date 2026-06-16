@@ -1581,3 +1581,117 @@
 | exp291 | Swin-Small | Occ-Duke | 42 | **73.5 / 82.9** | exp285b 73.8/83.8 (Δ -0.3/-0.9) | ✓ e120 FINAL @ 2026-04-22 18:13 lab4090 (R5=90.7 R10=92.5). OD 多单人场景 near no-op, 机制无显著回归 |
 | exp292 | Swin-Small | Market | 42 | **e90 eff FINAL: 94.2 / 97.1** | exp268 FINAL 94.3/97.3 (Δ -0.1/-0.2 持平) | ✓ 停于 e93 @ 2026-04-22 23:25 用户让出 lab3090。R5 99.2 R10 99.5 = exp268 FINAL R5 99.1 R10 99.5 |
 | exp293 | Swin-Base | Market + **PLBOA** | 42 | **e120 FINAL (restart): 93.8 / 97.2** (完整 120ep) | exp269 e80 eff 94.4/97.0 (Δ -0.6/+0.2); first run e80 eff 94.1/96.9 (Δ -0.3/+0.3 跨 restart 方差) | ✓ restart full 120 @ 2026-04-23 08:24 lab4090 (R5=98.9 R10=99.5). First run e80 eval OOM, 重启 w/ TEST.IMS_PER_BATCH 64. **PLBOA 在 Market full 120 net -0.6 mAP / +0.2 R1** (vs exp269 PLBOA OFF e80) — 主表待 exp269b FINAL 公平对比 |
+
+## Post-PRCV 消融/复现/扫参 runs (exp295–321b, 2026-04-25~28)
+
+> post-PRCV（PRCV 已投后）的复现/multi-seed/LR sweep/loss-weight sweep/SOTA push。**整体结论：无一超越已投 baseline**，产出是消融素材而非训练端涨点。`eq` = equal_concat+flip（train-side 默认）；`MaxSim` = MaxSim hybrid+flip（test-time 后处理，**不算训练端贡献**）。Δ 用 MaxSim 口径。
+> 回填自各 exp monitor.md + git commit 交叉核对（2026-06-15，补先前文档债；decisions.md 对应 6 条决策同日回填）。
+
+### exp295–304: 复现 / multi-seed / LR sweep / Phase 3-D LGPA 消融
+
+> Scaffold 默认 = 2-stage PSG `[-2,-1]` + LGPA-D + GCN512 + OA-SD + ParAug + PLBOA(OD)。单变量见「关键改动」列。
+
+| Exp ID | Backbone | 关键改动（对照变量） | 机器 / seed | eq+flip mAP/R1 | MaxSim+flip mAP/R1 | vs baseline Δ (MaxSim) | 一句结论 |
+|--------|----------|----------------------|-------------|----------------|--------------------|--------------------------|----------|
+| exp295 | Swin-Small | Full Scaffold 复现 exp255 | lab4090 / 1234 | **74.2 / 84.0** | **75.2 / 85.4** | vs exp255 hist 75.2/85.6: **0 / -0.2** | ✅ 完全重现 exp255 75.2 mAP，证历史数字真实可复现（非 eval bug）。**Small OD 主表新 reference** |
+| exp296 | Swin-Base | LR 8e-4 复现 exp263d | lab4090 / 41 | 73.7 / 81.7 | 74.9 / 83.8 | vs exp263d 75.2/84.8: **-0.3 / -1.0** | reproducibility 接近但 R1 系统性偏低（lab4090 vs lab3090 硬件差）；主表仍用 exp263d |
+| exp297 | Swin-Base | **LR 4e-4** | srvA(5060Ti) / 41 | 73.2 / 82.4 | 74.6 / 84.1 | vs exp296 LR8: **-0.3 / +0.3**（近 tie） | LR4 vs LR8 接近持平，**非显著 underfit**；比 hist exp260 LR4(72.6) 高 0.6 mAP |
+| exp298 | Swin-Base | **LR 2e-4**（下界） | srvB(5060Ti) / 41 | 68.6 / 78.6 | 69.6 / 79.1 | vs exp296 LR8: **-5.3 / -4.7** | LR2 严重 underfit（e10 mAP 1.3 near-random），LR ablation 下界，证 LR8 不能再降 |
+| exp299 | Swin-Base | **PLBOA OFF** | srvC(5060Ti) / 41 | 70.9 / 78.0 | 72.7 / 80.5 | vs exp296 PLBOA ON: **-2.2 / -3.3** | OD 上 PLBOA net positive **+2.2 mAP MaxSim**；与 Market 上 PLBOA 有害形成 dataset-specific claim |
+| exp300 | Swin-Base | Full Scaffold seed 1234 | lab4090 / 1234 | 74.0 / 83.8 | 75.0 / 85.0（e100 ckpt 75.0/85.2） | vs exp263d 75.2/84.8: **-0.2 / +0.2**（e120） | 未破 exp263d SOTA mAP，但 R1 +0.2~0.4 微超；e100 ckpt R1 peak 85.2 |
+| exp301 | Swin-Small | **LGPA OFF**（Phase 3-D） | lab4090 / 42 | 71.9 / 83.0 | 71.9 / 83.0（MaxSim **0 boost**） | vs exp285b Full 74.7/84.8: **-2.8 / -1.8** | LGPA 贡献 +2.8 mAP MaxSim；移除 LGPA → MaxSim 失去 boost（LGPA 是 MaxSim 主驱动） |
+| exp302 | Swin-Base | Full Scaffold seed 42（multi-seed 第3） | srvA(5060Ti) / 42 | 73.3 / 81.4 | 74.4 / 83.6 | vs exp263d 75.2/84.8: **-0.8 / -1.2** | Base 3-seed(41/1234/42) MaxSim mAP mean **74.87 std 0.42**；主行仍用 exp263d |
+| exp303 | Swin-Tiny | **LR 4e-4** | srvB(5060Ti) / 41 | 64.4 / 74.8 | 65.7 / 76.1 | vs exp261 LR8 67.2/78.6: **-1.5 / -2.5** | Tiny LR4 underfit -1.5 mAP；LR8 仍 sweet spot（Tiny 比 Base 更 LR 敏感） |
+| exp304 | Swin-Small | Full Scaffold seed 2024（multi-seed 第3） | srvC(5060Ti) / 2024 | 73.3 / 82.7 | 74.3 / 84.0 | vs exp295 75.2/85.4: **-0.9 / -1.4** | Small 3-seed(42/1234/2024) MaxSim mAP mean **74.7 std 0.45**；主行仍用 exp295 |
+
+### exp305–307: Tiny LGPA / PLBOA 消融（Phase 3-D 跨 backbone 补齐）
+
+| Exp ID | Backbone | 关键改动 | 机器 / seed | eq+flip mAP/R1 | MaxSim+flip mAP/R1 | vs baseline Δ (MaxSim) | 一句结论 |
+|--------|----------|----------|-------------|----------------|--------------------|--------------------------|----------|
+| exp305 | Swin-Tiny | **LGPA OFF**（mirror exp301） | lab4090 / 42 | 64.5 / 76.0 | 64.5 / 76.0（**0 boost**） | vs exp261 67.2/78.6: **-2.7 / -2.6** | LGPA 贡献 +2.7 mAP MaxSim（+1.4 eq）；Phase 3-D Tiny+Small 双 backbone 完整 |
+| exp307 | Swin-Tiny | **PLBOA OFF**（mirror exp299） | srvB(5060Ti) / 42 | 62.8 / 71.8 | 64.5 / 73.5 | vs exp261 67.2/78.6: **-2.7 / -5.1** | Tiny PLBOA net positive **+2.7 mAP**；与 Base(+2.2) 一致。PLBOA dataset-specific 2-backbone evidence |
+
+### exp311–321b: GLOBAL_LOSS_SCALE bugfix + Tiny 五维 loss-weight sweep + Small SOTA push
+
+> commit `c059dca` 修复 GLOBAL_LOSS_SCALE 只在 no-part 路径生效的 bug（Full Scaffold 此前完全忽略，effective=1.0）。exp311+ 后 scale 才真在 part-path 生效。Tiny sweep seed 42 / baseline exp261(67.2/78.6)；Small 验证 seed 1234 / baseline exp295(75.2/85.4)。
+
+| Exp ID | Backbone | 关键改动 | 机器 / seed | eq+flip mAP/R1 | MaxSim+flip mAP/R1 | vs baseline Δ (MaxSim) | 一句结论 |
+|--------|----------|----------|-------------|----------------|--------------------|--------------------------|----------|
+| exp311b | Swin-Small | **GLOBAL_LOSS_SCALE 0.5**（bugfix 后真生效） | lab4090 / 1234 | 73.5 / 83.2（e100 eff，e101 OOM） | 74.5 / 84.8 | vs exp295: **-0.7 / -0.6** | 0.5× global 真生效后 net **-0.7 mAP**，非有效改进；effective 1.0 更好 |
+| exp312 | Swin-Tiny | **GLOBAL_LOSS_SCALE 2.0** | lab4090 / 42 | 65.7 / 76.6 | 66.8 / 77.2 | vs exp261: **-0.4 / -1.4** | 2.0× 也 net negative。结合 exp311b(0.5×负)，**双向都负 → 1.0 sweet spot**（推翻早期 0.5） |
+| exp313 | Swin-Tiny | **POSE_PART_WEIGHT 2.0**（ID favor part） | srvA(5060Ti) / 42 | 65.8 / 77.0 | 66.9 / 77.9 | vs exp261: **-0.3 / -0.7** | favor part 微 negative |
+| exp314 | Swin-Tiny | **POSE_PART_WEIGHT 0.5**（ID favor global） | srvB(5060Ti) / 42 | 65.8 / 77.5 | 67.2 / 78.6 | vs exp261: **0 / 0**（完全相等） | favor global net neutral；default 1.0 双 sweet spot |
+| exp315 | Swin-Tiny | **POSE_LGPA_ASSIGN_WEIGHT 1.0**（LGPA aux ×2） | srvC(5060Ti) / 42 | 65.8 / 76.9 | 67.0 / 77.4 | vs exp261: **-0.2 / -1.2** | LGPA aux 加倍 net negative；default 0.5 sweet spot |
+| exp316 | Swin-Tiny | **POSE_OA_SD_WEIGHT 2.0** | lab4090 / 42 | 66.0 / 77.6 | 67.2 / 78.0 | vs exp261: **0 / -0.6** | OA-SD ×2 net neutral；default 1.0 sweet spot |
+| exp317 | Swin-Tiny | **POSE_LGPA_ASSIGN_WEIGHT 0.25**（LGPA aux ÷2） | lab3090 / 42 | 66.2 / 77.4 | 67.4 / 78.6 | vs exp261: **+0.2 / 0** ⭐ | sweep 中**唯一 MaxSim 超 baseline**(+0.2)，但在 multi-seed std 内，需 Small 验证 |
+| exp318 | Swin-Tiny | **POSE_PART_TRI_WEIGHT 0.5**（Tri favor global） | srvB(5060Ti) / 42 | 65.9 / 77.7 | 67.1 / 78.3 | vs exp261: **-0.1 / -0.3** | Tri-side favor global slight neg；与 exp314 合证 default 双 sweet spot |
+| exp319 | Swin-Tiny | **POSE_OA_SD_WEIGHT 0.5** | srvC(5060Ti) / 42 | 65.8 / 76.8 | 67.1 / 78.1 | vs exp261: **-0.1 / -0.5** | OA-SD ÷2 slight neg；与 exp316(×2) 合证 default 1.0 sweet spot |
+| exp320 | Swin-Small | **POSE_LGPA_DETACH=False**（LGPA aux 反传 backbone） | lab4090 / 1234 | 68.1 / 79.3 | 68.8 / 79.6 | vs exp295: **-6.4 / -5.8** | **catastrophic -6.4 mAP**（e10 46% underfit）；证 LGPA detach 必要。强 negative 消融素材 |
+| exp321b | Swin-Small | **POSE_LGPA_ASSIGN_WEIGHT 0.25**（验证 exp317） | lab4090 / 1234 | 73.9 / 83.7 | 74.9 / 85.4 | vs exp295: **-0.3 / 0** | Tiny exp317 的 +0.2 **未迁移到 Small**（slight -0.3）→ 判 seed noise，保持 default 0.5 |
+
+> 跳号说明：exp306/308/309/310/321a/321c 无目录（实验号跳过/未跑，非数据丢失）。exp311(s42) e10 即被 kill，以 exp311b(s1234) 计入。exp296/exp302 R1 跨设备系统性偏低 1-1.6（5060Ti/lab4090 vs lab3090），主表用 lab3090 exp263d 不受影响。
+
+### exp323: MLLM 视觉裁剪 A/B 廉价首验（inference-only，非训练）
+
+> post-PRCV「搬范式」首验。Frozen Qwen2.5-VL-3B（lab-3090-d, RTX 3090），288 个重遮挡难例 pair（均衡 144 同/144 异，chance=50%）。三条件：甲(裸全图)、乙(裸图+可见部位文字)、丙(姿态视觉裁剪图)。**非训练端创新，不计入主表增益。**
+
+| 条件 | 一词格式 acc | reasoning 格式 acc | vs 甲 (reasoning) |
+|------|------|------|------|
+| 甲(裸) | 0.500 (0 YES/288 NO) | **0.542** (156/288) | — |
+| 乙(文字) | 0.500 (2 YES) | **0.493** (142/288, 4 UNK) | **-4.9pt** |
+| 丙(视觉裁剪) | 0.500 (0 YES) | **0.358** (103/288, 71 UNK) | **-18.4pt** |
+
+- **一词 YES/NO 格式**：3B NO-bias 致三条件全 50.0%（每个 n_visible 0-8 档都 50.0%），A/B/C **不可判**。
+- **reasoning 格式**（exp323_qwen3b_reason，先推理后 ANSWER:）让模型 commit：甲54.2% > 乙49.3% > 丙35.8%。
+  **文字 grounding 有害(-4.9pt)，视觉裁剪显著有害(-18.4pt，71 UNK)**；增益未集中重遮挡。
+  丙最差因裁剪删上下文→模型对碎片长篇描述，128 token 内常没到 ANSWER。
+- 对照 GPT-5.5（codex）同 288 对：裸=55.9% / 文字=55.6%（文字也无效）。3B 裸(54.2%)接近 GPT-5.5 裸。
+- 任务1 视觉裁剪：keypoints 确认在原图 jpg 像素空间（overlay 验证），288/288 对成功裁剪。
+- **结论**：frozen 小 MLLM + pose 视觉裁剪/文字提示这条廉价首验**不正向，建议砍**（kill-switch 信号明确）。
+
+### exp324: frozen DINOv2 emergent correspondence + pose-anchored part-MaxSim（inference-only，非训练）
+
+> post-PRCV「搬范式」#2 路线。frozen DINOv2-base（lab-3090-d, RTX 3090），全量 Occluded-Duke（2210 query × 17661 gallery，无后处理、无训练）。脚本 `scripts/exp324_dino.py`。输入 224W×448H → patch grid 32×16。keypoints 缩放到 grid → 每部位 3×3 窗均值池化成 5 个 part 向量 + per-part visibility，跨图只比 mutually-visible part 的 per-part cosine（part-MaxSim）。重遮挡子集 = query visibility_binary.sum()≤8（989/2210）。**training-free，不计入主表增益。**
+
+| 方法 | ALL mAP/R1 | HEAVY mAP/R1 |
+|------|-----------|-------------|
+| (a) holistic CLS | 0.64 / 0.90 | 0.55 / 0.81 |
+| (a) holistic mean-pool | 0.70 / 1.27 | 0.57 / 0.71 |
+| **(b) pose part-MaxSim** | **3.21 / 7.87** | **1.86 / 3.54** |
+| (c) grid part-MaxSim（均匀 5 带，无 pose） | 0.89 / 1.63 | 0.67 / 1.21 |
+
+- **重遮挡**：pose-part vs holistic CLS **+1.31 mAP / +2.73 R1**（mAP×3.4、R1×4.4）；vs grid-part **+1.19 mAP / +2.33 R1**。
+- **grid-part vs holistic 仅 +0.12 mAP**（几乎无效）→ 涨点几乎全来自 **pose 锚定**，不是部位分解本身。
+- 绝对分低（pose-part heavy 1.86 mAP）符合 DINO 零样本 ReID 文献区间（0.3-4.7 mAP）。
+- 耗时 629s（feature 293s + rep building 327s + distmat 0.8s），全部有 pose（no-pose 0）。
+- **结论**：机制**有明确相对信号**，pose-anchored DINO correspondence 在重遮挡上 3-4 倍超整图基准且 pose 锚定占绝对主导 → kill-switch 命中正向条件，**值得 exp324b 上轻量 part-projection 头 / LoRA**。
+
+### exp327: 更强/更新冻结对应特征源（DINOv2-with-registers）— pose-part-MaxSim training-free 天花板 check（inference-only）
+
+> 同 exp324 pipeline（pose 锚定 5-part + mutually-visible part-MaxSim + 重遮挡 vis.sum()≤8），**唯一变量=特征源**。hyy GPU1（5060 Ti），slim pose data（剥 heatmap，数值与 exp324 一致）。脚本 `scripts/exp327_dinov3.py`。**training-free，不计入主表增益。** DINOv3-vitb16 gated（hf-mirror 需 token）下不了，改用 ungated 的 `facebook/dinov2-with-registers-base`（registers 去 high-norm artifact token，更干净 dense 特征，patch14 grid 32×16，nreg=4）。
+
+| 方法 | ALL mAP/R1 | HEAVY mAP/R1 |
+|------|-----------|-------------|
+| (a) holistic CLS | 0.74 / 1.00 | 0.58 / 0.61 |
+| (a) holistic mean-pool | 0.88 / 1.09 | 0.69 / 0.71 |
+| **(b) pose part-MaxSim** | **3.85 / 8.60** | **2.15 / 3.84** |
+| (c) grid part-MaxSim（均匀 5 带） | 1.04 / 1.67 | 0.72 / 0.71 |
+
+- **vs exp324 DINOv2-base（heavy pose-part 1.86/3.54）**：dinov2reg-b heavy **2.15/3.84（+0.29 mAP / +0.30 R1）**；ALL 3.85/8.60 vs 3.21/7.87（+0.64/+0.73）。
+- 机制保持：pose-part vs holistic CLS heavy **+1.57 mAP / +3.24 R1**；grid vs holistic 仅 +0.13 mAP（几乎无效）→ 涨点仍几乎全来自 pose 锚定（pose vs grid +1.44 mAP）。
+- **结论**：registers 更干净 dense 特征给**小幅正向（+0.29 mAP）但没破天花板**。印证 exp324 假说——**训练-free 天花板瓶颈在 frozen 本身，不在 SSL 模型新旧/registers**。这点小增益不值得单独上头（exp324b 头已到 14）。**exp327 线止损**。dinov3-b 因 gated 无法验证更激进升级，按 registers 小幅增益外推预期也不破天花板。
+
+### exp326: DIFT（Stable-Diffusion emergent correspondence）— pose-part-MaxSim training-free（inference-only）
+
+> 同 exp324 pipeline，**唯一变量=特征源换成 SD-v1.5 UNet 中间特征**（VAE encode → t=100 加噪 → 单步 UNet → hook up_blocks[1] → ensemble=4 平均，feature map C=1280 grid 32×16）。hyy GPU0，slim pose data。脚本 `scripts/exp326_dift.py`。**training-free，不计入主表增益。** 注：SD 无 CLS，holistic 基准用 mean-pool。
+
+| 方法 | ALL mAP/R1 | HEAVY mAP/R1 |
+|------|-----------|-------------|
+| (a) holistic mean-pool | 0.21 / 0.14 | 0.22 / 0.20 |
+| **(b) pose part-MaxSim** | **0.92 / 2.58** | **0.73 / 1.42** |
+| (c) grid part-MaxSim（均匀 5 带） | 0.39 / 1.09 | 0.35 / 0.81 |
+
+- **vs exp324 DINOv2-base（heavy pose-part 1.86）**：DIFT heavy **0.73（−1.13 mAP）**——**DIFT 全量明显劣于 DINOv2-base**，更不及 dinov2-registers 的 2.15。
+- 机制方向仍在（pose 0.73 > grid 0.35 > holistic 0.22，pose vs grid +0.38），但绝对判别性远低于 DINO。
+- **smoke 误导**：smoke（500 gallery）DIFT heavy 9.92，full（17661 gallery）塌到 0.73。DINO 从 smoke 2.55→full 1.86 仅小降，DIFT 从 9.92→0.73 灾难性塌 → **SD 特征 category-level 语义对应强（PCK 高）但 instance-level 身份判别弱**（SD-DINO/Tale-of-Two-Features 文献一致）。
+- **结论**：**SD/DIFT 特征不值得上头**（决定性问题答案=否），SD 线止损。教训：训练-free probe 必须用全量 gallery 判定，小 gallery smoke 只看流程不看绝对值。耗时 2065s（feature 1650s ensemble4 慢 + rep 405s）。
