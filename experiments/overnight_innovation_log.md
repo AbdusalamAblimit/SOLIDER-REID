@@ -375,3 +375,28 @@ large e10 出来后须更正之前结论：matched e10 看 **base 36.78 < r32 38
 **收敛点也完全一致** —— decorr 对 Jaccard/oracle/fusion 零影响（λ=1 甚至在 oracle 上略低于 λ=0）。**配合 e10 matched（0.253 vs 0.2513）→ 早期+收敛双确认：解相关在任何训练阶段对互补性都是零效果。** fusion "BEATS 75"(75.74) 在有/无 decorr 下一模一样 → 纯粹是"加一个判别分支"的 NFC 级效果，不是 decorr 换来的，且 w=0.3 后处理非训练端 method。
 
 **最终结论（bulletproof）**：判别性-互补性张力**对显式解相关干预（e10/e30、λ=0/1/2、即将出 λ=10）全程鲁棒**。机制：全局线性解相关与 part-MaxSim 检索正交，且 ~0.041 残差相关是 ID-constrained floor（λ=2 双倍权重只降 ~1%）。**这是 analysis 论文最硬的对照实验：我们主动设计损失去打破张力，单变量证明打不破。** exp324i method 对 beat-SOTA 为负、作为诊断对照为强正。
+
+### [reid-gap-hunt workflow — 系统调研判定：现有问题上无 beat-SOTA 新 method，转换新任务]
+用户质疑"做这么多 λ 是不是逃避调研"——属实，止损：停 λ=10、不开 λ=0.5，启动真调研 workflow(32 agent / 167万 token / 6路扫文献→综合→对抗验证→选)。
+**结果：8 候选 0 过审(none_strong_enough)。** 双死因，每候选皆中：
+1. 撞项目已证实墙：occluder-gate 多人 no-op(exp290/291 Δ0)、exp109 +8.53 identity-conditioned 不可实现、训练集 95.8% 全可见无梯度、FM 判别性-互补性张力 fundamental。
+2. 皆有真实已发表先例无本质区别(联网查实)：CXR≈TransMatcher(NeurIPS21)/FRT(TMM23)；O-IQT≈GIQT(26)；Selective/Conformal≈RCIR(AAAI25)/UAL；Occluder-Leakage≈FED/PISNet；Corr-Validity≈HOReID/PVPM；STA≈KPR(ECCV24)；OGSP≈PAT/PLOT。
+唯一不撞墙残值：PoseFaith faithfulness 诊断(MaxSim 逐 qkp 贡献分解，无先例)——诊断工具非 method。
+**结论**：occluded person ReID 这个问题挖到底(有据可查，非偷懒)。真正的新主线只在需投入数据/基础设施的**新任务**(aerial/TBPS/video，cold-start)。**用户拍板：换新任务。** 具体任务待定。
+
+### [tbps-transfer-hunt workflow — 7候选1活，幸存=PartNC(pose 区分遮挡vs标注噪声)]
+TBPS 新主线 + gait/face/跨模态搬运调研(29 agent)。**7 候选，6 死于真实顶会先例(落进已证伪区)**：VG-TBPS/common-support≈MGCC(AAAI24 遮挡TBPS)/PLOT(AAAI25)/PMA(AAAI20 pose-短语对齐)/ProFD(MM24)；其余撞 Visual-Perturbation(AAAI25)、uncertainty-aware TBPS。
+**唯一幸存 PartNC(Part-level Noisy-Correspondence)**：用部位粒度 image-text 相似度估每个身体部位 clean/noisy 置信(RDE 的 CCD 从 pair 级下沉到部位级)；**真正空白=用 pose-visibility 先验区分"相似度低=遮挡(结构化)"vs"=标注错(随机)"**(RDE/DURA/GA-DMS 把 noise 当随机，表达不出)。复用我们 part-MaxSim 逻辑(einsum bkc,gpc->bgkp .max)+pose 可见性积累。
+**诚实定位**：非稳赢，是"七里挑一的探索性赌注"。precedent lens 判死过(部位级 NC 重加权被 GA-DMS/DEMA/DURA 占；空白只剩 occlusion-vs-noise 这窄条)。"image side 已搭好"是夸大(仓库无 CUHK-PEDES loader/caption 解析/IRRA backbone，per-part 文本相似度需重建~2-3天)。
+**kill-switch(干净廉价)**：纯数据扰动诊断、第一刀不碰 loss。CUHK-PEDES 部位级注噪(20/50%替换某身体部位子句)，用现成 IRRA/RDE checkpoint token 特征重建 part-level cleanliness AUROC vs RDE 实例级 CCD AUROC。50%噪声下打不过 CCD→当场判死。2-3天单卡。门槛若要"稳赢SOTA候选"则接近 none_strong_enough。
+
+### [★ occluded 封板 — decorr sweep(λ=0/1/2 e30 matched) 完整，张力 bulletproof]
+| 指标(e30 matched rank16) | λ=0 | λ=1 | λ=2 |
+|---|---|---|---|
+| single-branch heavy mAP | 39.05 | 38.69 | 38.18 |
+| top-10 Jaccard vs Swin | 0.2646 | 0.2627 | 0.2604 |
+| oracle gain | +0.85 | +0.80 | +0.78 |
+| fusion best ALL | 75.74 | 75.73 | 75.70 |
+| P_dino_only | 0.71% | 0.91% | 1.01% |
+**decorr 强度 0→1→2：Jaccard 仅 0.2646→0.2604(Δ0.004 几乎不动)、fusion 75.74→75.70 几乎不变、单分支判别力 39.05→38.18 与 oracle +0.85→+0.78 都单调小降。** 即解相关不仅打不破"判别性-互补性张力"，过强还轻微有害(削判别力却换不来互补)。配合 decorr-floor(λ=2/10 双倍/十倍权重压不下 ~0.04 相关)→ **张力对显式干预 fundamental 鲁棒**。
+**occluded person ReID 主线到此彻底封板**：PSG 全栈 SOTA 75.2(exp255) + FM-import 全证负(MLLM/frozen-DINO/DIFT/LoRA/decorr) + 张力洞察(显式打不破) + capacity 修正(large ~54all/45heavy plateau, me-too) + exp109 三堵墙 + PoseFaith 残值。诊断论文素材齐。新主线=TBPS(PartNC 候选待用户拍板)。

@@ -1725,14 +1725,15 @@
 
 - decorr loss 活跃(0.041)却完全没动 Jaccard/oracle/fusion → **显式全局线性解相关对 part-MaxSim 排序正交**，张力鲁棒。fusion +0.37 是 NFC 级后处理（w≥0.4 转负），非 beat-SOTA。
 
-**收敛点 e30 matched 双确认（同 rank16/seed/script）：**
+**收敛点 e30 matched 完整 decorr sweep（同 rank16/seed/script，λ=0/1/2）：**
 
-| 指标 | λ=0 e30 | λ=1 e30 | Δ |
+| 指标 | λ=0 e30 | λ=1 e30 | λ=2 e30 |
 |---|---|---|---|
-| single-branch heavy | 39.05 | 38.69 | -0.36 |
-| top-10 Jaccard | 0.2646 | 0.2627 | ≈0 |
-| oracle gain | +0.85 | +0.80 | λ=0 略高 |
-| fusion best ALL | 75.74 | 75.73 | ≈0 |
+| single-branch heavy | 39.05 | 38.69 | 38.18 |
+| top-10 Jaccard | 0.2646 | 0.2627 | 0.2604 |
+| oracle gain | +0.85 | +0.80 | +0.78 |
+| fusion best ALL | 75.74 | 75.73 | 75.70 |
+| P_dino_only | 0.71% | 0.91% | 1.01% |
 
-- **e10 + e30 双证据：decorr 在早期/收敛都对互补性零效果**；fusion ~75.7 有/无 decorr 一致（纯加分支的 NFC 效果）。**decorr-floor**：λ=2 双倍权重只把 0.041 降 ~1% → ~0.041 是 ID-constrained floor（共享判别方向 ID load-bearing，删不掉）。λ=10 进行中。
+- **e10 + e30 + λ sweep 三重证据：decorr 强度 0→1→2，Jaccard 仅降 0.004(几乎不动)、fusion 75.74→75.70 几乎不变、单分支判别力 39.05→38.18 与 oracle +0.85→+0.78 单调小降** → 解相关不仅打不破张力、过强还轻微有害(削判别力换不来互补)。**decorr-floor**：λ=2/10 双倍/十倍权重压不下 ~0.04 相关 → ID-constrained floor(共享判别方向 ID load-bearing，删不掉)。
 - **结论**：FM-import（frozen/换源/LoRA/decorr-fusion）方法方向全负，各有机制；张力对显式干预全程鲁棒。真产出 = 诊断研究（见 `fm_occluded_reid_study.md`）。
