@@ -414,3 +414,42 @@ TBPS 新主线 + gait/face/跨模态搬运调研(29 agent)。**7 候选，6 死�
 | 50% s123 | 0.7290 | 0.7538 | −0.025 |
 | 50% s777 | 0.7337 | 0.7560 | −0.022 |
 坑全干净(0 NaN, 0% 对齐失败, 注噪率精确)。**VERDICT: 判死** —— 同粒度公平对决 PartNC 输给真 CCD(门槛要 >+0.02, 实际 −0.025)。机制: 真 CCD(CLS全局+TSE token 双路)已吃透"某部位被换"信号, 拆部位反更弱; 之前"赢"是同源 MaxSim 代理的不公平对照。part-level 定位略高(+0.006~0.031)但属退化对照, 不翻案。**kill-switch 价值兑现: 几小时干净判死省成稿。** TBPS 唯一幸存候选亦死。
+
+### [gait-face-survey — 单独深挖, 3 个 ReID 真没借过的训练端机制(经 codebase grep 核对)]
+13 机制 / 6 标 no-gap, agent 逐条 grep 仓库核对, 砍掉一半(早借过/刚判死)。**3 个干净真空白(均训练端, 避开 test-time 禁令, 与已死方向正交)**：
+1. ⭐ **因果 backdoor-triplet**(搬 gait GaitC3I TIP25/GaitSCM CVIU24)：把 camera-id+occlusion-state 当显式混淆变量 C, backdoor adjustment 改 triplet 正样本采样, 让跨遮挡/跨摄像头正样本对不再发协变量差异冒充身份的有害梯度。仓库零因果/SCM 代码(唯一命中 DACHM/DACCM 是 training-free reranker, 另一 lever)。**唯一同时满足: 问题重定义+机制新+零代码+避所有已死框架**。遮挡状态从 pose 可见性直接得。0.5天无训练首验。
+2. **UCE 统一阈值校准 loss**(搬 face UniFace ICCV23)：可学阈值 b 分离所有正负, 校准分数尺度→开集拒识+跨域。训练时 loss(躲 test-time 禁)。
+3. **TopoFR 拓扑对齐+结构损伤难样本**(face NeurIPS24)：持续同调对齐+结构损伤分选难样本。重量级 import。
+CarGait 学习式 part reranker=第4, 贴 retrieval-scorer 禁区, 优先级最低。
+**砍掉(早借/已死, 负面先验)**：LGPA(text 解耦已建)/FSDC(补全已建+撞墙)/LTCS-LPCS(common-support 判死)/MLS-uncertainty(PartNC 刚死)/adaptive-margin(贴 visibility 证伪)/PACI(sub-center 已建)/conformal(test-time 禁)/counterfactual-attention(PGMA 已有)。
+**最强=backdoor-triplet, 0.5天现成特征验 confounder 是否真实。已启动 probe。**
+
+### [backdoor-triplet probe — KILL: 混淆真实但量级可忽略, SOTA 已压没内部 headroom]
+0.5天无训练 probe(现成 exp255 train 特征 + pose 可见性 + cam, 同序100%对齐)。同 pid 正样本对按 (同/跨cam)×(都清晰/跨遮挡/都遮挡) 分6桶看 d_ap=1−cos：
+| 桶 | n | mean d_ap |
+|---|---|---|
+| same-cam/both-holistic | 42548 | 0.0079 |
+| same-cam/cross-occ | 715 | 0.0143 |
+| cross-cam/both-holistic | 92663 | 0.0116 |
+| **cross-cam/cross-occ** | 1735 | **0.0163** |
+负样本 d_an=0.0950, 最难1% 负样本 p1=0.0582。
+**混淆统计真实**(cross-occ vs holistic: same-cam +0.0064 z=27.8, cross-cam +0.0047 z=36.8; cam 混淆 +0.0037 z=132.7, 方向一致系统性, 阈值放宽不变)**但量级可忽略**: 最虚高桶 0.016 离最难负样本 0.058 差 3.6×, 遮挡漂移 ~0.005 仅占正负 margin ~0.08 的 6%, 所有正样本已远低于任何负样本。
+**KILL**: backdoor 要消的"协变量冒充身份"虚高**没侵蚀决策边界**(SOTA exp255 已把跨cam/跨遮挡同人正样本压得离边界数量级远), 去掉不改变任何排序=无可回收错误=无 headroom。**深刻含义: SOTA ReID 特征上, in-domain 去混淆类训练端机制无 headroom** — 呼应张力+三堵墙+MEMORY"别在 ReID 内部找机制"。#3 拓扑(也 in-domain)大概率同命; #2 UCE(测跨域/开集分数尺度漂移)测不同维度, 待定。
+
+### [TopoFR 结构损伤 probe — KILL: 遮挡不破坏局部流形(SOTA 压平), 且是 ID-size 假信号]
+现成 exp255 特征 probe。purity@20 clean(0.714)→heavy(0.89) **反升 +0.067**(遮挡不破坏邻域); rho(damage,occlusion)=+0.072≈0; damage 与 triplet-hardness rho=+0.08、jaccard 0.095(≈随机)=噪声。诊断拆出真因: 遮挡图属大 ID(图数 40.6→101.5)→kNN purity 机械偏高=ID-size confound, 非结构优势; 近重复紧致度持平排除抱团。**KILL: TopoFR 赖以工作的"遮挡破坏拓扑"现象在 SOTA backbone 下不存在(被压平)。**
+**#1 backdoor + #3 TopoFR 死法完全一致: in-domain 内部训练端机制被 SOTA exp255 压没 headroom。** → 数据驱动地排除 in-domain 内部机制, 聚焦 SOTA 压不平的: 跨域/开集/新监督/新问题定义/重量级范式 import。#2 UCE(跨域) + wider-transfer-hunt(专挑 in-domain 外) 在跑。
+
+### [UCE 跨域校准 probe — KILL: SOTA 连跨域分数尺度都校准好了]
+现成资产(Market ckpt exp260b + test_on_occluded_reid.py + 两域数据, 无训练)。genuine/impostor 余弦分布: 源域 Market d'=6.51/AUROC.998/EER.95%/阈值0.636; 目标 Occluded-ReID d'=3.92/AUROC.994/EER3.65%/阈值0.642。**阈值迁移零代价**(源→目标 shift +0.006, 直搬 FAR4.06%/FRR3.14% vs 原生3.65%)。KILL: 跨域分离度掉是**遮挡判别性**问题不是 scale drift; 全局阈值几乎不动→SOTA 已校准好, UCE 无空间。(agent 已写 decisions.md commit f2411a9)
+**累积 pattern: gait/face 3 top pick(in-domain 因果#1 / 拓扑#3 / 跨域校准#2)全被 SOTA 占满。** 否证"跨域有空间"。→ 真正没被占的是 **新问题定义/新任务/重量级范式 import**(不是在 exp255 上加训练端机制)。wider-transfer-hunt 专瞄这几路, 在跑。
+
+### [large(DINOv2-large LoRA) e30 final — capacity 终点封板]
+e30: part HEAVY 45.04 / ALL 54.10, cos HEAVY 43.68 / ALL 53.27。capacity 修正定稿: large 比 base/r32(~40/49) 高 ~+4-5 但同样 plateau(e15-30 平), me-too, 离 SOTA 75 仍 ~20。occluded ReID 主线全部封板。
+
+### [后半夜2: VC-Norm 升级训练 + 用户洞察"换弱 baseline" + 范式 probe]
+**用户拍板**: 不停不问、范式级创新、"SOLIDER 太强就换 TransReID"。据此双线并行:
+- **VC-Norm 线(SOLIDER)**: probe PROCEED(遮挡=未对齐 domain factor, per-part token KL 94-300 近完美可分, 3 对照排除伪影) → 实现(崩溃 agent 留码, dryrun 全过) → Claude review PASS → **Codex 抓到 High-1 机制 bug(score 加权把被遮挡 token 踢出统计→空转)** → 修(改对齐 occluded subset, 单测证被遮挡 token 拿梯度 0.96) → Codex 复审 approve → **exp328 训练中(lab-3090-d, warmup10/40ep, VCA e11-40) + control(4090 VCNORM=False 单变量对照, 你的 uv 清华源救活第4卡)**。真 eval e20/e40。
+- **弱 baseline 线(用户洞察)**: in-domain 判死全在 exp255 强栈上测(headroom 被压没); 换弱 baseline 是有据可查的合法逃逸。**hyy 跑 TransReID vit_base Occ-Duke 弱 baseline(纯 PyTorch 避 mmcv, Blackwell+torch2.9, e20 mAP 47.5→奔~59)**, 给 COG 等范式候选当验证场。
+- **范式候选(paradigm-hunt, 6 个)**: HyperReID(双曲)/CompVMF(生成式 vMF) **0-GPU probe 都 KILL**(去 ID-size 混淆后前提反/弱); COG(组合泛化重定义, 最强范式相)/Pose-JEPA/Self-paced/RLVR 待 API 恢复+TransReID ready 后验。
+- 4090 env: uv 清华源装 torch1.13+cu117+mmcv2.1 成功(用户方案)。numpy<2 修 torch1.13 ABI。
