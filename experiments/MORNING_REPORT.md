@@ -1,4 +1,20 @@
-# 晨报：一夜自主探索总结（2026-06-15 夜 → 06-16 晨）
+# 晨报：一夜自主探索总结（2026-06-15 夜 → 06-17 晨）
+
+## ⭐⭐ 06-17 晨更新（最新，醒来先看这段）
+
+**一句话**：今晚把你的"换弱 baseline + 搬范式"思路认真执行了——下了 4 个新 bet，**全部干净判负/NO-GO（有据可查、双审过、训练判据非frozen）**，但因此把"occluded ReID 还能从哪挖"收窄成一张**很强的避坑地图**；**唯一还活着的 method = VC-Norm（exp328），跨域判据训练完才出**。诚实讲：仍没拿到 beat-SOTA 新方法，但今晚的钱买到一个**robust 的负面结论 + 一条活线**。
+
+**今晚新做的（按时间）**：
+1. **VC-Norm（exp328，唯一活 method bet）**：遮挡=未对齐 domain factor，训练端对齐被遮挡 per-keypoint token 的归一化统计。probe 证有料（KL 94-300 近完美可分），实现→Claude+Codex 双审（Codex 抓到 High-1 机制空转 bug，修了）→**双卡训练中**（lab-3090-d VC-Norm + 4090 单变量对照）。Market e30：VC-Norm 90.4 vs 对照 91.0（−0.6，整体集小成本，符合预期）。**真判据=训练完跨域 Occ-ReID**，还没出。这是今晚最有希望的一条。
+2. **burstiness 抑制（exp329，搬 VLAD-BuFF/face-set）→ KILL**：frozen DINO 上前提成立（遮挡更冗余 +0.0206），但**训练好的弱 baseline 上双判据全 KILL**（burst−uniform −0.29/−0.25，遮挡反而更不冗余）。**meta-finding：ReID 训练已吸收遮挡-burstiness，连弱 baseline 也吸收 → frozen kill-switch 会骗人。**
+3. **compositional 组合泛化 + group-DRO（exp330，搬 Sagawa）→ NO-GO**：(遮挡物类×身体部位) held-out 组合，赌模型学 occluder 捷径会崩。**ERM held-out vs seen GAP=+0.10≈0 → 模型本就组合鲁棒**（不学 occluder 捷径）。双审+smoke 全过、单变量干净，kill-switch 便宜判死。
+4. **gait/face 搬来的 backdoor 去混淆 / TopoFR 拓扑 / UCE 校准 → 全 KILL**（强 SOTA 已压没 in-domain headroom）。
+
+**强 meta-finding（这是今晚真正值钱的科学结论）**：**occluded ReID 上，凡"对训练好的模型做特征重加权/对齐/补全/重打分"这一整类 in-domain 机制，强栈弱栈都无 headroom**（被训练隐式吸收）；**连"组合泛化重定义"也无 headroom**（模型已组合鲁棒）。**frozen kill-switch 系统性误导**（frozen 看着有戏→训练后死）。→ 真正没被占的只剩：**跨域/开集、全新监督/目标、重量级范式 import**。
+
+**醒来可挑**：(a) 等 VC-Norm 跨域判据（最有希望，训完出）；(b) 我继续下一个 bet（BET2 = DUL 身份条件不确定性，不同类，待评估）；(c) 把这套**避坑地图 + 张力 + 训练吸收 meta-finding** 做成 analysis/诊断论文（最稳的真实产出，证据已非常齐）。
+
+---
 
 ## ⭐ 后半夜最新进展（醒来先看这一段）
 1. **occluded ReID 主线已彻底封板**：解相关(decorr)方法 shot 全证负（λ=0/1/2 × e10/e30，"判别性-互补性张力"对显式干预 bulletproof）+ capacity 修正（large ~54all/45heavy plateau，me-too）。诊断/analysis 论文素材齐（张力 + FM 全证负 + exp109 三堵墙 + PoseFaith）。**仍没有 beat-SOTA 的新 method——这点诚实不变。**

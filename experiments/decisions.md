@@ -4565,3 +4565,10 @@ ALL 子集同向更明显（pose-part 3.21/7.87 vs holistic 0.64/0.90）。绝�
 **决策**: KILL burstiness。**并据此收窄: in-domain 特征重加权/对齐/补全/重打分这一整类机制, 在任何训练好的 ReID 模型(强 SOTA 或弱 baseline)上都无 headroom** —— frozen kill-switch 会误导(frozen-promising → trained-absorbed)。否证"换弱 baseline 就有 headroom"对这类机制。
 **理由**: 双判据 + 前提诊断三重证负, 干净。归入 backdoor/TopoFR/UCE/FM-import 同 pattern, 现推广到弱 baseline。
 **下一步**: 不再碰 in-domain 特征机制。转(a)改问题定义/评测协议 (b)改监督/目标 (c)跨域泛化 (d)新匹配范式。新 bet 必须有**训练模型 kill-switch**(非 frozen)。已启动 informed 调研 agent。VC-Norm(唯一在训的训练端改表征机制)跨域判据待定。
+
+### [2026-06-17 ~06:1x] 决策: exp330 组合遮挡泛化 + group-DRO 判 NO-GO
+**上下文**: burstiness 死后调研 Rank-1 bet(改问题定义类, 结构性逃训练吸收)。双审过+smoke过+单变量干净。e20 kill-switch。
+**结果**: ERM held-out vs seen GAP=+0.10≈0(无组合结构); DRO mAP 0.26 训练塌缩(q runaway)。
+**决策**: KILL。occluded ReID 模型已组合泛化(不学 occluder-class 捷径)→ 组合重定义无 headroom。与 in-domain 死法不同类不同因。
+**理由**: ERM 零 gap 独立判死; kill-switch 便宜捕获(省全量方法)。
+**下一步**: BET 2 (DUL identity-conditioned aleatoric variance) 待评估; VC-Norm 仍唯一活 method bet。

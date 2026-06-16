@@ -53,3 +53,11 @@ ReID 模型在见过的遮挡组合上学到的是**occluder-specific 捷径**�
 
 ## Novelty（agent 已核）
 - 最近 cousin = OGFR (arXiv:2507.08520, 2025) 只做 occluder **类型** held-out（1-D），**无人做 2-D (类×部位) 组合 split + group-DRO**。`"compositional" occluder "body part"` / `group-DRO + reid + occlusion` web 搜零直接命中。
+
+---
+
+## ⛔ KILL-SWITCH 判决 (2026-06-17, e20)
+- **ERM**: SEEN mean mAP **35.69** | HELDOUT mean **35.60** | **GAP +0.10 ≈ 0** → 无组合 GAP，模型已组合鲁棒(不学 occluder-class 捷径)。
+- **DRO**: mAP **0.26** 训练塌缩(q 跑飞单组 car-head)。次要 finding：group-DRO present-group 重归一 + eta=0.01 不稳。
+- **NO-GO**：ERM 零 gap 独立判死(DRO 塌缩 moot)。"组合泛化重定义"在 occluded ReID 无 headroom — 模型已组合泛化。Claude reviewer 预言的 region-collapse 失败模式应验。
+- kill-switch 设计成功：训练判据(非frozen)便宜判死。ERM 续 e40 确认 gap 稳定。

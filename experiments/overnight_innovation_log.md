@@ -505,3 +505,19 @@ e30: part HEAVY 45.04 / ALL 54.10, cos HEAVY 43.68 / ALL 53.27。capacity 修正
 - **前提在训练模型上 FAIL(关键)**: query(遮挡) intra-sim **0.6890** vs gallery(整体) **0.7044 = −0.0154**(遮挡图**更不** bursty)。前提在 frozen DINO 上成立(+0.0206)、训练后**翻负**。
 - **⭐ Meta-finding(强、可写诊断论文)**: burstiness 前提 frozen-promising(DINO +0.0206)但 **trained-absorbed**(TransReID −0.0154)——**即便弱 baseline(53 mAP, 远未饱和), ReID 训练已隐式吸收遮挡-burstiness 结构, 显式 burst 降权无可回收**。这把"in-domain 特征机制 frozen 看着有戏 / 训练后被吸收"的 pattern 从强 SOTA(backdoor/TopoFR/UCE/FM-import)**推广到弱 baseline**——否证"换弱 baseline 就有 headroom"对这类机制。**收窄: in-domain 特征重加权/对齐/补全这一整类, 在任何训练好的 ReID 模型上(强或弱)都无 headroom。** 关联 [[burstiness-democratic-aggregation-bet]] [[fm-import-occluded-reid-closed]]。
 - **下一步**: 不再碰 in-domain 特征机制(数据驱动证负)。转**改目标/改问题**类(非推理期特征重加权)或**跨域/泛化**(训练模型隐式处理不迁移处)。VC-Norm 是唯一在训的"训练端改表征"机制(非推理重加权), 跨域判据待定——但 burstiness 诊断(训练吸收遮挡结构)是对 VC-Norm 的**弱负面前瞻**。
+
+### [exp330 Compositional Occluder Generalization + group-DRO — 双审通过, 双卡训练中]
+burstiness 死后调研 agent(带"in-domain 死、frozen 会骗人"教训)Rank-1 过审 bet。**为何逃过训练吸收(结构性)**: held-out (occluder类×部位)组合**按构造从没进训练集**→ 训练模型无可隐式吸收。
+- **设计**: 3 occluder类(car/bicycle/person, VOC2012 分割patch)× 3 部位(head/torso/legs=上/中/下三分区, region-based 免pose)=9 cells; 训练见 6, hold out 3 对角(car-legs/bicycle-torso/person-head); ERM(mean CE) vs online group-DRO(7组=6cell+clean, present-group 重归一保 CE 尺度=单变量)。eval=Market 整体 query 施 cell 合成遮挡(按(cell,image)确定性seed, ERM/DRO 同遮挡), clean gallery, per-cell mAP。
+- **kill-switch**: 先看 ERM 自己 held-out mean << seen mean(有无组合GAP); 有GAP再看 DRO 是否合上 ≥+1.5。**无frozen步骤, 训练模型判据(frozen 会骗人)。**
+- **双审**: Claude 广审(修 3 Critical: 手搓optimizer削弱substrate→复用 make_optimizer/scheduler; DRO单变量隔离缺陷→present-group重归一; AMP API) + Codex 独立审(修 scheduler.get_last_lr崩溃 + eval遮挡未seed不公平 + 空occluder类静默; make_model"High"是Codex误读本地SOLIDER repo的假警报, 实跑hyy vanilla TransReID已验证)→ **两轮 codex approve**。smoke 全验(3iter forward/DRO/backward + eval pipeline, score(64,702)/feat(64,768)确认接口)。
+- **训练中**(hyy, commit 8e1f4da): ERM=GPU0, DRO=GPU1, 同seed1234, 60ep(~1h)。ERM e1=DRO e1 loss 完全一致(10.3692 vs 10.3694)=单变量干净。DRO q 权重在动(机制活)。eval e20/40/60。monitor bbu89s7rb。
+- VOC2012 自己下到 hyy(2913 seg obj, car156/bicycle119/person536 occluders); market1501 symlink 进 ROOT_DIR。
+
+### [⛔ exp330 NO-GO: ERM 零组合 GAP(+0.10) + DRO 训练塌缩(0.26 mAP)]
+**e20 kill-switch 判决**：
+- **ERM e20**: SEEN mean mAP **35.69** | HELDOUT mean mAP **35.60** | **GAP=+0.10 ≈ 0**。→ **无组合 GAP**：训练见 6 cell 的模型在 3 个 held-out (occluder类×部位)组合上**和 seen 一样好**。eval 对遮挡敏感(各 cell ~35 vs 推测 clean 更高)但**对组合(哪个 cell)不敏感**→ 组合无结构。
+- **机制含义(干净 finding)**：occluded ReID 模型**不学 occluder-class 捷径**——它聚焦可见人体证据、对遮挡物外观鲁棒，所以 held-out 组合不难。**正是 Claude reviewer 预言的失败模式**(region 放置→组合塌缩成 region-only，所有 region 都见过→held-out 不难)。group-DRO 无 gap 可合 → NO-GO。
+- **DRO e20**: mAP **0.26**(near-random)= **训练塌缩**。q 跑飞到单组(car-head, e7 已 0.71→后 ~0.9+)→模型只训一个 cell→退化。次要 finding：我的 group-DRO(present-group 重归一 + eta=0.01)**不稳、q runaway**(未来用 group-DRO 需降 eta + 正则)。但 ERM 零 gap 已独立判 NO-GO，DRO 塌缩 moot。
+- **KILL exp330**。NO-GO 与 in-domain 死法**不同类**(问题重定义/非特征后处理)、**不同原因**(无组合结构/非训练吸收)。扩展诊断：**连"组合泛化重定义"在 occluded ReID 也无 headroom——模型已组合鲁棒。** ERM 继续到 e40 确认 gap 稳定~0(便宜二次确认)。
+- 双审 + smoke 全过、单变量干净(ERM e1=DRO e1 loss 一致)——**kill-switch 设计本身成功**：cheaply 在训练判据(非 frozen)上判死，省全量方法投入。
