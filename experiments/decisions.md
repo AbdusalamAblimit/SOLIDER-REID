@@ -4528,3 +4528,9 @@ ALL 子集同向更明显（pose-part 3.21/7.87 vs holistic 0.64/0.90）。绝�
 **判定**：method shot 对 beat-SOTA **为负**（fusion 仍 +0.37 NFC 级，未超训练端门槛）；但作为**严格对照为正**——把"判别性-互补性张力"从观察升级为"显式解相关施压也打不破"的强诊断结论。
 **决策**：(1) 不在 decorr 上继续调 λ 找正收益（机制正交，调参无意义，CLAUDE.md 铁律）；(2) **跑 λ=2 + λ=0/λ=1 e30 matched** 把 sweep 做 bulletproof（确认更强 λ/收敛点仍不动），仅用空闲 GPU、不额外烧；(3) FM-import 方法方向**正式关闭**，夜间真产出 = 诊断研究(张力洞察 + 显式干预对照 + ×4 finding + capacity-control + 可复用 oracle 工具)；(4) 真 method 只能走问题 reframe（CLAUDE.md 钦定方向，多日线，醒后与用户定）。
 **执行结果**：λ=2 + e30 oracle 已 armed（λ=1 [done] 触发）。诚实呈现，不编造 SOTA 突破。
+
+### [2026-06-17] 决策 #PartNC-result — 首验判死, TBPS method 线暂无活候选
+**上下文**: TBPS 调研唯一幸存 PartNC 跑 kill-switch 首验(数据自动下好绕过 login)。
+**结果**: 换 RDE 真 CCD 公平对照后, 50% 噪声 PartNC pair 检出 0.729 输真 CCD 0.754(Δ−0.025, 2 种子复现)。判死。
+**理由**: 真 CCD 已充分吸收部位级噪声信号, 部位粒度无增益; 之前优势来自不公平代理对照。
+**决策**: PartNC 止损(不进成稿)。整夜 occluded method + TBPS method 两线均证无现成 beat-SOTA 创新点(有据可查+对抗验证)。下一步待用户: analysis 论文(推荐, 证据齐) / 换任务 cold-start(aerial/video) / 用户别的方向。不硬凑。

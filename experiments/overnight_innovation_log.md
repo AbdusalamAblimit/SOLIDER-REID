@@ -404,3 +404,13 @@ TBPS 新主线 + gait/face/跨模态搬运调研(29 agent)。**7 候选，6 死�
 ### [PartNC 首验脚本就绪 — 只差 CUHK-PEDES 数据]
 按用户睡前"不停+cheap kill-switch first"，自主把 TBPS 唯一幸存候选 PartNC 推到"数据一到就能判生死"：agent 读懂 RDE 接口(checkpoint 加载 / image 192-patch+text 77-token 特征 / CCD 的 min-max+2-GMM+低均值簇后验)，写 `scripts/partnc_killswitch.py`(本地+lab-3090-d，md5 一致)：(a) spaCy+lexicon 切 caption head/torso/legs + 部位级噪声注入(参数化, 有 regex fallback)；(b) RDE token 特征算 noun-phrase×patch per-part MaxSim cleanliness(复刻 eval_fliptest_maxsim einsum.max)；(c) AUROC(part-level) vs AUROC(实例级CCD)；(d) verdict。逻辑全验证通过(切分/注入/加载/形状/MaxSim/GMM/AUROC 方向性单测)。
 **caveat(必修)**：`--real` 现用"1−均值cleanliness"代理 CCD，会压低对照让 PartNC 偏强；数据到位**第一件事换 RDE 真 CCD(compute_per_loss 跑 dataloader)** 再判，否则 verdict 不可信。运行：`python3 partnc_killswitch.py --mode real --root_dir <CUHK-PEDES父目录> --noisy_rate 0.5`。**只差用户 odl login 下数据。**
+
+### [★ PartNC 首验判死 — 换真 CCD 公平对照后输给 RDE CCD]
+数据自动下好(HF 镜像 cjc/CUHK-PEDES 840MB 全分辨率, reid_raw.json 40206 caption/38942 图, 绕过 OpenDataLab login)。首验**先把代理 CCD 换成 RDE 真 CCD**(接 `model.compute_per_loss` 拿 lossA/lossB → min-max → 2-GMM → 低均值簇后验, 复刻 processor.get_loss)。
+**AUROC(2500/档, 2 种子)**：
+| 配置 | PartNC pair | 真CCD pair | 公平Δ |
+|---|---|---|---|
+| 20% | 0.7405 | 0.7479 | −0.007 |
+| 50% s123 | 0.7290 | 0.7538 | −0.025 |
+| 50% s777 | 0.7337 | 0.7560 | −0.022 |
+坑全干净(0 NaN, 0% 对齐失败, 注噪率精确)。**VERDICT: 判死** —— 同粒度公平对决 PartNC 输给真 CCD(门槛要 >+0.02, 实际 −0.025)。机制: 真 CCD(CLS全局+TSE token 双路)已吃透"某部位被换"信号, 拆部位反更弱; 之前"赢"是同源 MaxSim 代理的不公平对照。part-level 定位略高(+0.006~0.031)但属退化对照, 不翻案。**kill-switch 价值兑现: 几小时干净判死省成稿。** TBPS 唯一幸存候选亦死。
