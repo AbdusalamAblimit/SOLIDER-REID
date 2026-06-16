@@ -1702,15 +1702,17 @@
 
 **(1) 纯模型 — LoRA 破冻结天花板 + capacity 对照（part-MaxSim，e30 除非标注）**
 
-| 变体 | HEAVY mAP/R1 | ALL mAP/R1 | 说明 |
-|------|-------------|-----------|------|
-| frozen base (exp324b 头) | 8.65 / — | 14.61 / — | 冻结天花板 |
-| LoRA base rank16 (λ=0) | 36.49 / 47.62 (e10) | 44.34 / 56.56 (e10) | 破天花板 ×4.2 |
-| **LoRA base rank32 e30** | **40.81 / 51.97** | **49.68 / 62.40** | 最终 plateau |
-| LoRA large rank16 (e5) | 38.50 / 49.34 | 47.21 / 59.19 | +backbone capacity |
+**matched epoch 对照（rank16 除非标注；同一 epoch 才公平，e10 列为主）：**
 
-- **LoRA 解冻决定性破冻结天花板**（8.65→40.81 heavy，~4.7×）→ 瓶颈是 "frozen" 不是 DINO 表征。
-- **capacity 非瓶颈**：rank32≈rank16、large(1024d)≈base(768d) 都落 ~38-41 heavy / ~48-50 all 带，**远低于 SOTA all-query 60-72**（ProFD 62.8/PersonViT 72.2）→ 瓶颈在机制/问题结构，me-too。
+| 变体 | e10 HEAVY / ALL | 最终 | 说明 |
+|------|-------------|------|------|
+| frozen base (exp324b 头) | — | 8.65 / 14.61 | 冻结天花板 |
+| LoRA base rank16 (λ=0/exp324d) | 36.78 / 44.67 | ~38.7 heavy (e20) | 破天花板 ×4.2 |
+| LoRA base rank32 | 38.85 / 47.12 | **40.81 / 49.68 (e30)** | +LoRA 容量 |
+| **LoRA large(1024d) rank16** | **41.72 / 50.65** | 跑 e30(~11h，e5→e10 仍在爬) | +backbone 容量 |
+
+- **LoRA 解冻决定性破冻结天花板**（8.65→40+ heavy，~4.7×）→ 瓶颈是 "frozen" 不是 DINO 表征。
+- **capacity 有真实增益但补不上 SOTA gap（诚实修正）**：matched e10 看 base 36.78 < rank32 38.85 < **large 41.72**（large 比 base +4.9 heavy 且 e5 38.50→e10 41.72 还在爬）——**容量（更大 backbone/更高 rank）单调有帮助 ~+3-5 mAP，不是"无帮助"**（早先基于 e5 快照的"large≈base"过度简化，已更正）。但 large ~42 heavy / ~51 all 仍比 SOTA(72.57/75) **低 ~25-30** → **容量帮得动一点、补不上 gap**，瓶颈仍主要在机制/问题结构。me-too 不变。
 
 **(2) 解相关对照 — decorr 打不破"判别性-互补性张力"（exp324i e10 matched oracle，vs Swin MaxSim 75.16/72.57）**
 

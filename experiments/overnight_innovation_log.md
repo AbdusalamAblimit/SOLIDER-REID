@@ -350,3 +350,6 @@ r32 part-MaxSim 轨迹（决定性）：
 - **机制解读（关键）**：强迫 DINO-global 与 Swin-global **线性解相关**，对"模型给 query 排哪些 gallery"（part-MaxSim 排序）是**正交的**——决定检索的是 part-MaxSim over 相同可见身体部位证据，两模型受**同一份可见证据**约束而犯**同样的错**（Swin-only-r1-hit 370/989=37%，DINO 只补 8=0.81%）。global 线性相关只是排序的"装饰"，解它不改排序。
 - **结论**：**显式解相关施压打不破"判别性-互补性张力"** → 张力从"观察到的相关"升级为"对显式干预鲁棒"的**强诊断结论**。这是 exp324i 的真正价值：method shot 对 beat-SOTA 为负（fusion 仍 +0.37 NFC 级），但作为**严格对照**坐实了 headline 张力（诊断论文的关键实验）。
 - **待补强（让 sweep bulletproof）**：λ=2（更强 decorr）+ λ=0 fresh rank16 matched control 跑到 e30，确认 e10 结论在收敛点/更强 λ 下都成立（预期：Jaccard 仍不动）。
+
+### [large e10 更正 — capacity 帮得动一点，"large≈base"是 e5 快照过度简化]
+large e10 出来后须更正之前结论：matched e10 看 **base 36.78 < r32 38.85 < large 41.72 heavy**（large 比 base +4.9，且 e5 38.50→e10 41.72 还在爬）。所以**容量单调有帮助 ~+3-5 mAP，不是"无帮助"**——之前 agent 基于 e5(large 38.50≈r32 36.72)下的"large≈base、capacity 非瓶颈"是过度简化，更正为：**capacity 帮得动一点但补不上 ~25-30 的 SOTA gap（large ~42 heavy << 72.57），瓶颈仍主要在机制/问题结构**。me-too + FM 方法关闭结论不变。诚实记录，避免把"容量无用"写死。
