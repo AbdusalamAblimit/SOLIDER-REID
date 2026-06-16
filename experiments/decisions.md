@@ -4545,3 +4545,16 @@ ALL 子集同向更明显（pose-part 3.21/7.87 vs holistic 0.64/0.90）。绝�
   - **阈值迁移**: 源阈值 0.636 → 目标 0.642, **shift 仅 +0.006**; 把源 Market 阈值直接搬到目标 OccReID: **FAR=4.06% FRR=3.14%**(vs 目标原生 EER 3.65%)——几乎零代价。
 **判定(看量级不只看显著)**: 跨域**分离度确实掉**(d' 6.51→3.92, EER 0.95%→3.65%)——这是难度上升, 不是尺度漂移。但 UCE 攻击的是"**单一全局阈值是否还分得开**"——**全局阈值几乎不动(0.006), 直接迁移零代价**, 说明 SOTA 已把分数尺度校准好, **统一阈值校准 loss 无 headroom**。分离度下降来自遮挡难度(impostor 尾巴变厚, gen 整体下移), calibration loss 治不了——那是判别性问题, 不是阈值/尺度问题, 落回"别在 ReID 内部找机制"老墙。
 **决策**: UCE-import **判死(kill)**, 不开训练。整夜+本轮三线(FM-import / TBPS / 校准-import)均证无现成 beat-SOTA 创新点。诚实呈现, 不编造。脚本/结果留档供复现。
+
+### [2026-06-17] 决策 #VCNorm-probe-result — 遮挡确在 per-part-token 归一化统计造成巨大可分离 shift, 且非采样伪影 → 有燃料 PROCEED(首验)
+**上下文**: 验证 VC-Norm(occlusion-as-domain-factor, visibility-conditioned normalization) 跨域创新的**前提**——遮挡是否在 per-part-token 的 normalization statistic(mean/var) 上造成可分离分布 shift。若 KL≈0 则无燃料 kill。lab-3090-d 无训练 probe。
+**资产**: Market-trained ckpt `log/market1501/exp260b_base_gcn512_2stage/transformer_120.pth`(Swin-Base+PSG+LGPA+GCN512, Occ-ReID baseline 88.0 mAP MaxSim+flip), 数据 Occluded-ReID(1000q/1000g+pose), env solider-reid(torch1.13+mmcv)。脚本 `scripts/vcnorm_probe.py`(主)+`scripts/vcnorm_probe_control.py`(对照), 结果 `experiments/vcnorm_probe/*.json` + README。
+**方法(无训练)**: per-part token = SkeletonGCNHead 在 PSG-modulated Stage-3 图上按 17 COCO kp bilinear 采样的 token(dim 1024, pre/post-GCN)。按 pose 置信度 score 把每 kp 的 token 分 high-vis(≥0.7) vs low-vis/遮挡(≤0.2), 算逐通道对角高斯对称 KL + 2-Wasserstein + Fisher-LDA held-out AUC。三对照排伪影: %border 坐标、KL(hi,**rand** 体内随机采样)、KL(hi,**lo_onbody** 剔边界坐标)。
+**结果**:
+  - 主探针 median: **KL_sym=288(pre)/170(post), LDA_AUC=0.97(pre)/0.98(post)**, 各 kp KL 94–300、AUC 0.95–0.99 → 遮挡 vs 可见 token 近完美线性可分, 远非 KL≈0。
+  - 对照 C1: low-vis 坐标 **仅 7% 在边界** → 不是退化坐标。
+  - 对照 C2: **KL(hi,lo)=288 ≫ KL(hi,rand)=125(~2.3×)** → shift 是遮挡特有, 不是泛泛 off-kp 采样噪声。
+  - 对照 C3: **KL(hi,lo_onbody)=294 ≈ KL(hi,lo)=288** → 剔边界坐标后 shift 不变, 非边界伪影。
+**判定(看量级)**: 前提**成立**——遮挡确是一条**巨大、可分离、遮挡特有、非采样伪影**的 domain 轴, 结构简单到对角高斯 KL 能量到、一个线性方向就近完美分开 → 符合"一个 normalization/对齐模块可吸收"的 VC-Norm 假设。GCN 已部分修复(post KL↓)但远未抹平 → VC-Norm 与 GCN 不重复、有 headroom。
+**重要 caveat**: 这是 **NECESSARY 非 SUFFICIENT**——有可对齐 domain 轴 ≠ 对齐后涨 mAP(可能连带抹掉身份信号), 只能训练验证。上半身 low-vis 样本不足(Occ-ReID 遮挡集中头部边缘+下肢), KL 表只覆盖头部+膝/踝, 但已足够给明确 PROCEED。test 端 Occ-ReID 不直接受 95.8% 训练全可见墙限制。
+**决策**: VC-Norm **PROCEED**(整夜多线首个非 kill 信号)。下一步若推进: 1-2d dual-forward Market 30ep(occluded/clean 两路 forward, per-part-token visibility-conditioned 对齐归一化统计), **目标 Occ-ReID mAP > 88.0**, 30ep 短训当 kill-switch 不涨即止损。是否开训待用户拍板。诚实呈现, 不夸大为已验证。
