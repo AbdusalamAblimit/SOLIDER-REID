@@ -521,3 +521,6 @@ burstiness 死后调研 agent(带"in-domain 死、frozen 会骗人"教训)Rank-1
 - **DRO e20**: mAP **0.26**(near-random)= **训练塌缩**。q 跑飞到单组(car-head, e7 已 0.71→后 ~0.9+)→模型只训一个 cell→退化。次要 finding：我的 group-DRO(present-group 重归一 + eta=0.01)**不稳、q runaway**(未来用 group-DRO 需降 eta + 正则)。但 ERM 零 gap 已独立判 NO-GO，DRO 塌缩 moot。
 - **KILL exp330**。NO-GO 与 in-domain 死法**不同类**(问题重定义/非特征后处理)、**不同原因**(无组合结构/非训练吸收)。扩展诊断：**连"组合泛化重定义"在 occluded ReID 也无 headroom——模型已组合鲁棒。** ERM 继续到 e40 确认 gap 稳定~0(便宜二次确认)。
 - 双审 + smoke 全过、单变量干净(ERM e1=DRO e1 loss 一致)——**kill-switch 设计本身成功**：cheaply 在训练判据(非 frozen)上判死，省全量方法投入。
+
+### [跨域 probe: 弱 baseline Occ-Duke e120 → Occluded-REID = 不塌缩(无跨域 headroom)]
+GPU1 lean probe(载 e120 ckpt 直接评 Occluded-REID, query=occluded_body/gallery=whole_body, 200 ids)：**mAP 74.79 / R1 80.60**。比 in-domain Occ-Duke 53.5 **还高**(Occ-REID 是更易 benchmark)。→ **弱 baseline 跨域不塌缩、迁移良好**。跨域(至少 Occ-Duke→Occ-REID)**不是 headroom 方向**(模型已迁移好, 只是处处弱于 SOTA = capacity 差非跨域塌缩)。**又一干净负面, 进一步收窄。** 累积排除: in-domain 特征机制(吸收)/ 组合重定义(已鲁棒)/ 跨域(不塌缩)。剩: 新监督(DUL)/ 开集 / 重量级 import。
