@@ -4534,3 +4534,14 @@ ALL 子集同向更明显（pose-part 3.21/7.87 vs holistic 0.64/0.90）。绝�
 **结果**: 换 RDE 真 CCD 公平对照后, 50% 噪声 PartNC pair 检出 0.729 输真 CCD 0.754(Δ−0.025, 2 种子复现)。判死。
 **理由**: 真 CCD 已充分吸收部位级噪声信号, 部位粒度无增益; 之前优势来自不公平代理对照。
 **决策**: PartNC 止损(不进成稿)。整夜 occluded method + TBPS method 两线均证无现成 beat-SOTA 创新点(有据可查+对抗验证)。下一步待用户: analysis 论文(推荐, 证据齐) / 换任务 cold-start(aerial/video) / 用户别的方向。不硬凑。
+
+### [2026-06-17] 决策 #UCE-probe-result — 跨域分数尺度不漂移, UCE 统一阈值校准无 headroom, 判死(首验)
+**上下文**: 验证把 UCE(UniFace ICCV23, 统一阈值校准 loss) 搬到 ReID 跨域/开集的**前提**——跨域时 genuine vs impostor 相似度尺度是否漂移、单一全局阈值能否分开正负。lab-3090-d 无训练 probe。
+**资产**: 现成 Market-trained ckpt `log/market1501/exp260b_base_gcn512_2stage/transformer_120.pth`(Swin-Base+PSG+LGPA+GCN512), 现成跨域 eval `test_on_occluded_reid.py`(Market→Occluded-ReID 86.0/88.5 已存), 两域数据+pose 齐。脚本 `scripts/uce_calib_probe.py`, 结果 `log/uce_calib_probe.json`。
+**方法(无训练)**: 同一 ckpt 提 L2-normed equal_concat 特征, in-domain=Market test(3368q/15913g), cross-domain=Occluded-ReID(1000q/1000g); 按 Market metric(去同 pid+同 cam)算 genuine/impostor 余弦相似度直方图; 报 d'/AUROC/EER/EER 阈值 + **阈值迁移测试**(源域 EER 阈值搬到目标域看 FAR/FRR)。
+**结果**:
+  - In-domain Market: gen=0.886±0.067 imp=0.365±0.091 **d'=6.51 AUROC=0.9983 EER=0.95% thr@EER=0.636**
+  - Cross-domain OccReID: gen=0.807±0.082 imp=0.442±0.103 **d'=3.92 AUROC=0.9942 EER=3.65% thr@EER=0.642**
+  - **阈值迁移**: 源阈值 0.636 → 目标 0.642, **shift 仅 +0.006**; 把源 Market 阈值直接搬到目标 OccReID: **FAR=4.06% FRR=3.14%**(vs 目标原生 EER 3.65%)——几乎零代价。
+**判定(看量级不只看显著)**: 跨域**分离度确实掉**(d' 6.51→3.92, EER 0.95%→3.65%)——这是难度上升, 不是尺度漂移。但 UCE 攻击的是"**单一全局阈值是否还分得开**"——**全局阈值几乎不动(0.006), 直接迁移零代价**, 说明 SOTA 已把分数尺度校准好, **统一阈值校准 loss 无 headroom**。分离度下降来自遮挡难度(impostor 尾巴变厚, gen 整体下移), calibration loss 治不了——那是判别性问题, 不是阈值/尺度问题, 落回"别在 ReID 内部找机制"老墙。
+**决策**: UCE-import **判死(kill)**, 不开训练。整夜+本轮三线(FM-import / TBPS / 校准-import)均证无现成 beat-SOTA 创新点。诚实呈现, 不编造。脚本/结果留档供复现。
