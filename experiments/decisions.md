@@ -4558,3 +4558,10 @@ ALL 子集同向更明显（pose-part 3.21/7.87 vs holistic 0.64/0.90）。绝�
 **判定(看量级)**: 前提**成立**——遮挡确是一条**巨大、可分离、遮挡特有、非采样伪影**的 domain 轴, 结构简单到对角高斯 KL 能量到、一个线性方向就近完美分开 → 符合"一个 normalization/对齐模块可吸收"的 VC-Norm 假设。GCN 已部分修复(post KL↓)但远未抹平 → VC-Norm 与 GCN 不重复、有 headroom。
 **重要 caveat**: 这是 **NECESSARY 非 SUFFICIENT**——有可对齐 domain 轴 ≠ 对齐后涨 mAP(可能连带抹掉身份信号), 只能训练验证。上半身 low-vis 样本不足(Occ-ReID 遮挡集中头部边缘+下肢), KL 表只覆盖头部+膝/踝, 但已足够给明确 PROCEED。test 端 Occ-ReID 不直接受 95.8% 训练全可见墙限制。
 **决策**: VC-Norm **PROCEED**(整夜多线首个非 kill 信号)。下一步若推进: 1-2d dual-forward Market 30ep(occluded/clean 两路 forward, per-part-token visibility-conditioned 对齐归一化统计), **目标 Occ-ReID mAP > 88.0**, 30ep 短训当 kill-switch 不涨即止损。是否开训待用户拍板。诚实呈现, 不夸大为已验证。
+
+### [2026-06-17 05:2x] 决策: burstiness 范式 bet 判 KILL + 收窄"in-domain 特征机制"整类
+**上下文**: 夜间范式调研唯一过审强 bet=burstiness(VLAD-BuFF/face-set import)。0-GPU 前提在 frozen DINO 成立(occluded +0.0206 更 bursty)。e120 弱 baseline(TransReID 53.5)训练模型真实判据。
+**结果**: pooled burst−uniform=−0.29、part-MaxSim=−0.25(双判据 KILL), cls+burst<cls(加 burst 伤特征), 前提训练后翻负(occluded −0.0154 更不 bursty)。
+**决策**: KILL burstiness。**并据此收窄: in-domain 特征重加权/对齐/补全/重打分这一整类机制, 在任何训练好的 ReID 模型(强 SOTA 或弱 baseline)上都无 headroom** —— frozen kill-switch 会误导(frozen-promising → trained-absorbed)。否证"换弱 baseline 就有 headroom"对这类机制。
+**理由**: 双判据 + 前提诊断三重证负, 干净。归入 backdoor/TopoFR/UCE/FM-import 同 pattern, 现推广到弱 baseline。
+**下一步**: 不再碰 in-domain 特征机制。转(a)改问题定义/评测协议 (b)改监督/目标 (c)跨域泛化 (d)新匹配范式。新 bet 必须有**训练模型 kill-switch**(非 frozen)。已启动 informed 调研 agent。VC-Norm(唯一在训的训练端改表征机制)跨域判据待定。

@@ -453,3 +453,55 @@ e30: part HEAVY 45.04 / ALL 54.10, cos HEAVY 43.68 / ALL 53.27。capacity 修正
 - **弱 baseline 线(用户洞察)**: in-domain 判死全在 exp255 强栈上测(headroom 被压没); 换弱 baseline 是有据可查的合法逃逸。**hyy 跑 TransReID vit_base Occ-Duke 弱 baseline(纯 PyTorch 避 mmcv, Blackwell+torch2.9, e20 mAP 47.5→奔~59)**, 给 COG 等范式候选当验证场。
 - **范式候选(paradigm-hunt, 6 个)**: HyperReID(双曲)/CompVMF(生成式 vMF) **0-GPU probe 都 KILL**(去 ID-size 混淆后前提反/弱); COG(组合泛化重定义, 最强范式相)/Pose-JEPA/Self-paced/RLVR 待 API 恢复+TransReID ready 后验。
 - 4090 env: uv 清华源装 torch1.13+cu117+mmcv2.1 成功(用户方案)。numpy<2 修 torch1.13 ABI。
+
+### [后半夜3 (compaction 后接手): 三线健康推进 + 重启范式调研 + 决定弱baseline 重测最强机制]
+**状态盘点(server 时间 ~04:0x)**：
+- **VC-Norm 线**: exp328(lab-3090-d) e12, VCA 活跃且在塌缩 moment gap —— `vca: 1.35(e10)→0.595(e12)`, `vcn_gain_abs 0.001→0.002` 上升, `vca_sd 1.02→0.34`(std-dist 大幅收窄)。证 High-1 修复后机制真在对齐, 非空转。control(4090) e13 健康(VCNORM=False 单变量)。**真 eval e20 Market(~40min) 是第一个 VCA vs control 信号。** lab-3090-d 跳板 banner 间歇超时但 monitor br88g09gi 仍在推 exp328 事件, 不需手动 SSH。
+- **TransReID 弱baseline 线**: hyy GPU0 e37, e20 mAP 47.5→奔 e120 ~59。冷启动 agent 已完成(pipeline 全验证)。清掉其逐epoch噪声 monitor, 换干净 monitor(只 mAP/崩溃)。
+- **代码提交**: VC-Norm 实现(loss/module/configs/wiring)之前只归档文档、代码在工作树未提交 → 补提交 2002ce5, 保证可转移+复现。
+- **hyy GPU1 空闲**。
+
+**战略锁定(数据驱动)**: backdoor/TopoFR/UCE 三个 in-domain 训练端机制全在 exp255 **强 SOTA** 特征上判死(headroom 被压没)。但这恰好是用户"换弱 baseline"洞察的实证理由——**同样的机制在弱 baseline(TransReID 59, 离 SOTA 还差 16 mAP)上可能有 headroom**。最强已 novelty 过审机制 = **因果 backdoor-triplet 去混淆**(搬 gait GaitC3I/GaitSCM, 仓库零 SCM 代码, 正是用户要的"从步态抄"), 强特征上混淆真实但仅占 margin 6% → 无可回收。**弱 baseline 重测 = 干净的 0-GPU kill-switch**: 用 TransReID-weak train 特征跑同一 6 桶 confounder probe, 看 cross-occ/cross-cam d_ap 虚高占负样本 margin 的比例是否远大于强特征的 6%。若 ≥20-30% → 有可回收 headroom, 升级全量训练; 若仍 ~6% → 弱 baseline 也无 → 彻底排除 in-domain 去混淆。
+
+**并行重启范式调研 agent**(后台): 专扫 gait/face/video/CC-ReID/vehicle-ReID 的 CCF-B+ 可迁移**范式**(问题重定义或无 occluded-ReID 先例的机制), 强制避开全部已关方向, 要求 novelty 证据 + <1天 kill-switch + 必须能在弱 baseline 显 headroom。瞄准 SOTA 压不平的空间(新问题定义/新任务/重量级 import)。
+
+### [范式调研产出 → BET#1 burstiness 抑制 / democratic part-set 聚合(最强候选, 已搭 probe)]
+调研 agent 扫完 gait/face/video/CC-ReID/vehicle/compositional, 多数撞已关方向(occlusion-type 预测=OA-ReID 已做; residual gait 补全=禁; vehicle cross-view=common-support 已死)。**唯一过审强 bet = burstiness suppression**(搬 VLAD-BuFF ECCV'24 地点识别 + On the Burstiness of Faces in Set arXiv'25-06 + Jegou CVPR'09)。
+- **机制**: burstiness = 某特征元素出现频率超独立性预期(大块近匀质躯干 patch/重复纹理)。相似度对元素求和→过表达元素抬分不加判别信息, 挤掉稀有可辨细节。修法 = self-similarity 反比降权(VLAD-BuFF 闭式 `w_i=1/Σ_j sim(f_i,f_j)`), democratic 聚合。
+- **为何非已关方向**: 与 visibility 加权**正交**(visibility 问"是否被遮挡"二值; burstiness 问"这个可见特征是否被过度计数"集内冗余统计)。一个 part 可完全可见且高 visibility 却 bursty(大块平躯干)——现有方法升权它, burstiness 说降权。非 completion(不重建)、非 scorer 微变体(改特征集聚合)、非 uncertainty(无 per-feature 置信)。**Novelty 已核: 无 occluded-ReID 做 burst-aware/democratic over part/patch 特征**(最近 cousin = Self-similarity guided probabilistic matching ESWA'23 是去噪/校验, 相反符号)。详见 memory [[burstiness-democratic-aggregation-bet]]。
+- **0-GPU kill-switch 已搭并验证**(`scripts/burstiness_probe.py`, staged on hyy): 复用 TransReID 自己的 make_dataloader/make_model/R1_mAP_eval(mAP 可直接对比训练日志), hook `base.norm` 取全 token 序列(B,129,768), 每图可见 token 集内算 burst 权重 → burst 加权 patch-pool vs **uniform patch-pool**(隔离 burstiness 机制, cls 仅作 context) → 重排比 mAP。**判据: burst−uniform ≥+1.0=真值得全量, <+0.3=kill。** + 诊断(query 遮挡 vs gallery 整体的集内 self-similarity)。
+- **smoke test(pretrained ImageNet 权重)全 pipeline 跑通**: cls 2.94/uniform 4.01/burst 4.04, **burst−uniform=+0.02→KILL**(未训练特征无真 burst 结构→证 metric 不虚高, 校准良好)。
+- **e120 自动触发已 armed**: 后台 until-loop 等 `transformer_120.pth`(CHECKPOINT_PERIOD=120 只在 e120 存档)→ 自动跑 burstiness probe 真实数(GPU1)→ monitor bc4m6btrv 推 VERDICT。预计 server ~05:2x。
+- **次选(fallback#2, 擦边禁区)**: CompositionalNet vMF 生成式 analysis-by-synthesis, 重且一步之遥退化成 occluder-gate, 仅 #1 鼓舞时考虑。
+- 范式调研同时**否证一批**: gait occlusion-type/residual=已关; CC-ReID 因果换衣=无遮挡 analog 不撞 disentangle; vehicle VANet 两度量=common-support 已死; set/video quality-pool=visibility 已关。诚实负面收窄空间。
+
+### [burstiness 前提早验(frozen DINOv2, GPU1, e120 前 ~45min)]
+不让 GPU1 空等 e120, 跑 `scripts/dino_burstiness_probe.py`: 复用 TransReID val_loader(同图/同 pid/同 query 划分), 换 frozen DINOv2-vits14, 256×128→224×112(patch14→16×8=128 token), 测**前提**(occluded 是否更 bursty) + 跨 backbone kill-switch。
+- **✅ 前提 HOLDS**: query(遮挡) intra-token self-sim **0.4459** vs gallery(整体) **0.4253** = **+0.0206**(occluded 更 bursty)。即便强通用 DINO 特征上, 遮挡图也确实有更多冗余/过表达 token(occluder/背景泄漏区天然高自相似)——正是机制要降权的对象。**机制有燃料。**
+- **⚠️ frozen-DINO 检索 kill-switch 不可用**: plain patch-mean 检索近随机(mAP 0.4, 无 pose 锚定, exp324 证 frozen DINO 要 pose 锚定才有 1.86)→ burst−uniform=-0.02 纯噪声底, 无意义。**检索判决必须用 identity-carrying 的训练特征 = e120 TransReID(已 armed)。** 诚实不过度解读 frozen 检索数。
+- 结论: 前提成立(occluded 更 bursty), 检索效力待 e120 训练模型定。GPU1 用完归位(继续 armed e120)。
+
+### [VC-Norm e10/e20 读数: e10 假警报(14.2 瞬态)→ e20 恢复 88.4, Market −1.0 vs control(符合预期)]
+- **e10=14.2% 是一次性 eval 瞬态(假警报)**: 一度怀疑 VCN 模块毁特征(14.2 vs control 86.2), 但查 VCN 模块确为 zero-init 恒等(gain~0.005 极小, 远不足以掉 72 分), 两机 git 同 commit(715c020)、同 vcnorm.py、单变量 config 核对无误。**e20 恢复 88.4%** → e10 是孤立 eval glitch(疑 AMP/LayerNorm 一次数值抖动), 非真实轨迹。教训: 单点 eval 异常先查模块幅度+对照再下结论, 别急判死。
+- **e20 真实对照(Market 整体集)**: VC-Norm **88.4** vs control **89.4 = −1.0 mAP**。**符合预期**: Market 整体无遮挡, VC-Norm 的遮挡对齐无处发力, 只显 VCN 模块的小成本(−1.0)。VCA 此时刚激活(warmup=20 结束, LR 降 2e-4 进主调度)。
+- **真正判据 = 跨域 Occluded-ReID eval**(有真遮挡处), 非 Market。训练用 PLBOA 合成遮挡, VCA 训练时对齐合成遮挡 token, 收益只在遮挡测试集显现。待 e40 Market(确认 VCA ramp 不进一步伤整体) + 训练完跨域 Occ-ReID(决定性)。
+
+### [burstiness probe 加 part-MaxSim 保险 + 前提 backbone 依赖性(重要 nuance)]
+- **加 part-MaxSim kill-switch(防 false-KILL)**: pooled 判据可能误杀——cls 是训练检索特征, patch-pool 天生弱于它。加 token 级 part-MaxSim 版本(128 patch→6 水平 part-band, 全局 burst 权重降权 band 内 bursty patch, part-MaxSim 检索 burst vs uniform)。pretrained smoke 全跑通: pooled burst−uniform=-0.01, part-MaxSim burst−uniform=-0.03(均 KILL, 未训练应如此=harness 校准正确)。e120 自动触发用更新脚本, 一次出 pooled+part-MaxSim 双判据 + 训练模型诊断。
+- **前提 backbone 依赖(诚实 nuance)**: frozen **DINOv2** occluded +0.0206(更 bursty, 前提成立); raw **ImageNet ViT**(TransReID 初始权重) occluded **−0.0040**(不更 bursty, 前提不成立)。→ "ReID 训练是否诱导遮挡-burstiness"正是 e120 训练模型诊断要定的, 两种结果都 informative。略降信心但不致命(两 frozen 都不是训练后的实际模型)。e120 决定性。
+
+### [⛔ burstiness e120 判决 = 双判据 KILL(干净、稳健、双确认) + 强 meta-finding]
+弱 baseline TransReID e120(mAP 53.5)训练模型上跑真实 burstiness 探针:
+| descriptor | mAP | R1 |
+|---|---|---|
+| cls(训练检索特征) | **53.53** | 60.59 |
+| uniform_patch | 43.14 | 48.28 |
+| burst_patch | 42.85 | 47.96 |
+| cls+burst | 49.81 | 55.79 |
+| partmaxsim_uniform | 42.80 | 47.47 |
+| partmaxsim_burst | 42.56 | 47.24 |
+
+- **PRIMARY pooled: burst−uniform = −0.29 → KILL**; **part-MaxSim(防误杀保险): burst−uniform = −0.25 → KILL**(两判据一致, 排除"pooled 误杀"). cls+burst(49.81) < cls(53.53) → 加 burst 反**伤**训练特征(−3.73)。
+- **前提在训练模型上 FAIL(关键)**: query(遮挡) intra-sim **0.6890** vs gallery(整体) **0.7044 = −0.0154**(遮挡图**更不** bursty)。前提在 frozen DINO 上成立(+0.0206)、训练后**翻负**。
+- **⭐ Meta-finding(强、可写诊断论文)**: burstiness 前提 frozen-promising(DINO +0.0206)但 **trained-absorbed**(TransReID −0.0154)——**即便弱 baseline(53 mAP, 远未饱和), ReID 训练已隐式吸收遮挡-burstiness 结构, 显式 burst 降权无可回收**。这把"in-domain 特征机制 frozen 看着有戏 / 训练后被吸收"的 pattern 从强 SOTA(backdoor/TopoFR/UCE/FM-import)**推广到弱 baseline**——否证"换弱 baseline 就有 headroom"对这类机制。**收窄: in-domain 特征重加权/对齐/补全这一整类, 在任何训练好的 ReID 模型上(强或弱)都无 headroom。** 关联 [[burstiness-democratic-aggregation-bet]] [[fm-import-occluded-reid-closed]]。
+- **下一步**: 不再碰 in-domain 特征机制(数据驱动证负)。转**改目标/改问题**类(非推理期特征重加权)或**跨域/泛化**(训练模型隐式处理不迁移处)。VC-Norm 是唯一在训的"训练端改表征"机制(非推理重加权), 跨域判据待定——但 burstiness 诊断(训练吸收遮挡结构)是对 VC-Norm 的**弱负面前瞻**。
