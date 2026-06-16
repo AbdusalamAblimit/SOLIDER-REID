@@ -46,7 +46,9 @@ LoRA-DINO 单 pose-part 分支 **plateau ~37 heavy**(e5 34.92→e10 36.78，trai
 | oracle 上界 | +0.59 | +0.58 | ≈0 |
 | fusion best ALL/HEAVY | 75.53/72.83(+0.37) | 75.52/72.84(+0.37) | **≈0** |
 
-**decorr loss 全程活跃(稳 0.041)却完全没移动 Jaccard/oracle/fusion。** 机制：强迫 global 线性解相关对"排哪些 gallery"(part-MaxSim 排序)是**正交**的——检索由 part-MaxSim over 相同可见身体部位证据决定，两模型受**同一份可见证据**约束犯**同样的错**(Swin-only-r1-hit 370/989=37%，DINO 补 8=0.81%)。global 线性相关只是排序"装饰"。→ **显式施压也打不破张力 = 张力鲁棒、fundamental**。这是张力洞察最强的对照证据(诊断论文核心实验)。[λ=2 + e30 matched 跑完进一步坐实]
+**decorr loss 全程活跃(稳 0.041)却完全没移动 Jaccard/oracle/fusion。** 机制：强迫 global 线性解相关对"排哪些 gallery"(part-MaxSim 排序)是**正交**的——检索由 part-MaxSim over 相同可见身体部位证据决定，两模型受**同一份可见证据**约束犯**同样的错**(Swin-only-r1-hit 370/989=37%，DINO 补 8=0.81%)。global 线性相关只是排序"装饰"。→ **显式施压也打不破张力 = 张力鲁棒、fundamental**。这是张力洞察最强的对照证据(诊断论文核心实验)。
+
+**收敛点(e30 matched)双确认**：λ=0 vs λ=1 同 rank16/seed/script 跑到 e30 oracle 仍**完全一致**——Jaccard 0.2646 vs 0.2627、oracle +0.85 vs +0.80、fusion best ALL 75.74 vs 75.73（λ=1 甚至略低）。**早期(e10)+收敛(e30) 双证据：解相关在任何训练阶段对互补性零效果。** 加上 decorr-floor 证据（λ=2 双倍权重只把 0.041 降 ~1% → ~0.041 是 ID-constrained floor，共享判别方向是 ID load-bearing 的、删不掉）。→ **张力对显式干预(e10/e30、λ∈{0,1,2}、λ=10 进行中)全程鲁棒，是 fundamental 的，不是可调超参。**
 
 ## 机制副发现（有用）
 - **姿态锚定是关键**：冻结时均匀网格 part-MaxSim 几乎不涨(0.67 vs 整图 0.55)，只有 pose 锚定涨(1.86)——涨点来自"用姿态把 dense token 约束到身体部位语义"，不是 trivial 分部位。单变量隔离干净。

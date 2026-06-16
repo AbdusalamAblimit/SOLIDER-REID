@@ -1724,4 +1724,15 @@
 | fusion best HEAVY | 72.83 (+0.26) | 72.84 (+0.27) | ≈0 |
 
 - decorr loss 活跃(0.041)却完全没动 Jaccard/oracle/fusion → **显式全局线性解相关对 part-MaxSim 排序正交**，张力鲁棒。fusion +0.37 是 NFC 级后处理（w≥0.4 转负），非 beat-SOTA。
-- **结论**：FM-import（frozen/换源/LoRA/decorr-fusion）方法方向全负，各有机制；真产出 = 诊断研究（见 `fm_occluded_reid_study.md`）。[λ=2 + e30 matched 跑完补充]
+
+**收敛点 e30 matched 双确认（同 rank16/seed/script）：**
+
+| 指标 | λ=0 e30 | λ=1 e30 | Δ |
+|---|---|---|---|
+| single-branch heavy | 39.05 | 38.69 | -0.36 |
+| top-10 Jaccard | 0.2646 | 0.2627 | ≈0 |
+| oracle gain | +0.85 | +0.80 | λ=0 略高 |
+| fusion best ALL | 75.74 | 75.73 | ≈0 |
+
+- **e10 + e30 双证据：decorr 在早期/收敛都对互补性零效果**；fusion ~75.7 有/无 decorr 一致（纯加分支的 NFC 效果）。**decorr-floor**：λ=2 双倍权重只把 0.041 降 ~1% → ~0.041 是 ID-constrained floor（共享判别方向 ID load-bearing，删不掉）。λ=10 进行中。
+- **结论**：FM-import（frozen/换源/LoRA/decorr-fusion）方法方向全负，各有机制；张力对显式干预全程鲁棒。真产出 = 诊断研究（见 `fm_occluded_reid_study.md`）。

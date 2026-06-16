@@ -353,3 +353,25 @@ r32 part-MaxSim 轨迹（决定性）：
 
 ### [large e10 更正 — capacity 帮得动一点，"large≈base"是 e5 快照过度简化]
 large e10 出来后须更正之前结论：matched e10 看 **base 36.78 < r32 38.85 < large 41.72 heavy**（large 比 base +4.9，且 e5 38.50→e10 41.72 还在爬）。所以**容量单调有帮助 ~+3-5 mAP，不是"无帮助"**——之前 agent 基于 e5(large 38.50≈r32 36.72)下的"large≈base、capacity 非瓶颈"是过度简化，更正为：**capacity 帮得动一点但补不上 ~25-30 的 SOTA gap（large ~42 heavy << 72.57），瓶颈仍主要在机制/问题结构**。me-too + FM 方法关闭结论不变。诚实记录，避免把"容量无用"写死。
+
+### [λ=1 e30 oracle 数已captured，verdict 等 matched λ=0/λ=2 e30]
+λ=1(decorr) e30 oracle：single-branch 38.69 heavy/47.20 all、top-10 Jaccard **0.2627**、oracle +0.80、fusion best ALL 75.73(+0.57, w0.3 zscore)/HVY 72.94(+0.37)。
+- vs λ=1 e10（Jaccard 0.2513、oracle +0.58、fusion +0.37）：收敛后 Jaccard/oracle/fusion 都升——但这是**任何 adapted 分支变判别后的预期**，不是 decorr 特有。
+- **不在 isolation 下结论**：decisive 是 **λ=1 e30 vs matched λ=0 e30**（λ=0 还在训 ~e15，~2.5h）。e10 matched pair 完全一致（张力held）；若 λ=0 e30 也 ~0.26 Jaccard/~+0.5 fusion，则收敛点 decorr 仍无效。fusion "BEATS 75"(75.73) 是 NFC 级后处理(w0.3)，非训练端 method（项目规则）。
+- 待 λ=0/λ=2 e30 oracle 跑完做 matched sweep 一次性 document + commit。
+
+### [★ matched e30 verdict — decorr 在收敛点也完全无效，张力 bulletproof]
+
+λ=0 vs λ=1 **同 rank16/seed/script，e30 收敛点 matched oracle**：
+
+| 指标(e30) | λ=0 无decorr | λ=1 decorr | Δ |
+|---|---|---|---|
+| single-branch heavy | 39.05 | 38.69 | -0.36 |
+| **top-10 Jaccard** | 0.2646 | 0.2627 | **-0.002（噪声）** |
+| P_dino_only | 0.71% | 0.91% | +0.20 |
+| oracle gain | +0.85 | +0.80 | λ=0 反而略高 |
+| **fusion best ALL** | **75.74** | **75.73** | **-0.01** |
+
+**收敛点也完全一致** —— decorr 对 Jaccard/oracle/fusion 零影响（λ=1 甚至在 oracle 上略低于 λ=0）。**配合 e10 matched（0.253 vs 0.2513）→ 早期+收敛双确认：解相关在任何训练阶段对互补性都是零效果。** fusion "BEATS 75"(75.74) 在有/无 decorr 下一模一样 → 纯粹是"加一个判别分支"的 NFC 级效果，不是 decorr 换来的，且 w=0.3 后处理非训练端 method。
+
+**最终结论（bulletproof）**：判别性-互补性张力**对显式解相关干预（e10/e30、λ=0/1/2、即将出 λ=10）全程鲁棒**。机制：全局线性解相关与 part-MaxSim 检索正交，且 ~0.041 残差相关是 ID-constrained floor（λ=2 双倍权重只降 ~1%）。**这是 analysis 论文最硬的对照实验：我们主动设计损失去打破张力，单变量证明打不破。** exp324i method 对 beat-SOTA 为负、作为诊断对照为强正。
