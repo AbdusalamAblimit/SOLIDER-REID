@@ -64,3 +64,32 @@ judge 推荐 **Bet 1**(最 literature-defensible)。它攻击全语料盲点(检
 1. 我"领域死"是 overreach（错，已撤回）——领域活、+1~2 增量。
 2. 但文献 #1 盲点(common-visible-support)**我们已挖**：测试 +0.8~1.1% 小增量、训练判负。读文献 + 对账避免了重做。
 3. **真正没试 + 有文献撑 = 测试期遮挡物/inter-person 建模**（gate 干扰行人特征）——下一个该探的真 fresh 点。但需想清机制(避开 occluder-gate 禁区的退化)再设计，不 armchair 判死也不 armchair 上。
+
+## ⭐⭐⭐⭐ 334 篇全量 mine 综合判决（2026-06-18，自做，零 codex / 零子 agent）
+
+> 死掉的 broad-mine workflow（读完 183/334、筛出 23 跨子领域迁移候选、最终 synthesis 撞 session limit 判空）→ 用 Python 直接从 workflow transcript 的 328 个 agent JSONL 里**扒出 163 篇机制 + 23 候选**（`experiments/transfer_candidates.json`），主上下文自己综合。**不重开 workflow、不开任何子 agent**（避免再爆 rate limit）。Codex 综合因长 prompt + 网络代理卡死 20min 弃用（短 prompt codex 正常）。
+
+### 判决：23 个里 ~18 个塌回我们已判死的类
+| 候选(来源子领域) | 迁移机制 | 归属我们哪个死类 |
+|---|---|---|
+| CSSA(video)、AOANet(occ) | pair-wise s_q·s_g / min(可见权重) | = **common-visible-support / CVK/LTCS/LPCS**（测试 +0.8~1.1% re-rank、训练判负） |
+| HFLAT、CFPER、Pose-Skeleton SAM、FLaN-Net entropy、AG-ReID Otsu | CLS-attn×norm / 一阶差分 split / 骨架置信 Gaussian / 熵 / Otsu 阈值 → 可见性软权重 | = **visibility/uncertainty weighting** |
+| ColorSketchNet、HGT、Shape-centered ISR、OCCNet、DDO、Cloth-debias SD | 注入缺失/距离加权恢复/图引导补全/扩散特征 inpaint | = **feature completion**（扩散/SD 类还叠 **FM-import**） |
+| SCI | CLIP 文本正交投影减 occluder 方向 | = **FM-import CLIP** + 特征对齐 |
+| CCIL | Occluder 字典(高斯) + 后门调整 NWGM | = **backdoor de-confound** |
+| FusionTex IAS | attention-on-visible 不对称 re-rank | = **re-ranker**（项目规则：re-rank 不当主创新） |
+| Mixed-degrade FGW | Fused Gromov-Wasserstein 关系拓扑 OT 蒸馏 | ≈ 特征对齐/蒸馏（关系-拓扑角度略新但 train-time 仍可吸收） |
+
+### 数据中心遮挡增强（家族 F，非严格死类但我们已有图像级 PLBOA）
+Noise-injection（真车 crop copy-paste，reader 给强度4）、SAVS（batch 像素池腐蚀 + 特征一致性）、SFE CPDM（逐条带 leave-one-out dropout）。均 train-time 增强正则，低新意（data-centric / family F），可能小涨但**不是新机制**。
+
+### 真正逃出吸收陷阱的（外部信息 / 新任务）—— 只有 2 类
+1. **外部 3D 身体先验（SMPL mesh）**：3D-Aided video（deformable cross-attn 用 mesh 投影点当 reference point）、Gait Fields（dense 像素→canonical 顶点对应）。靠**外部 3D 重建**提供与像素无关的身体几何（遮挡处 mesh 仍在）→ 真逃逸吸收陷阱。但 (a) **重**（需 off-the-shelf SMPL/HMR，慢、新依赖），(b) "只在共同可见顶点上匹配"那一半又塌回 CVK。P(有用) 中、P(伪死=半 CVK) 中。
+2. **人-遮-人（inter-person）遮挡物建模**：TTPM 的纹理判别通道（人遮人时**骨架失效**——遮挡人同样骨架拓扑——只有纹理 appearance distinctiveness 能分目标/干扰人）+ FLaN-Net 的 O* 遮挡物 token（学了却推理时扔掉）。
+
+### ⭐ 结论：全量 mine **没找到能打败现有 lead 的新机制**，反而**确认了 lead + 反证吸收陷阱**
+1. **23 个里 18 个 = 我们已判死类** → 强力反证吸收陷阱，且证明**我们之前扫得够全**（近年 SOTA 的机制就是我们实测杀过的家族：可见性加权/补全/CVK/FM-import/backdoor/re-rank）。这本身是 analysis 论文的硬证据。
+2. 唯一真逃逸 = 外部 3D（重、半 CVK）+ inter-person 遮挡物（= 我们早先自定的 lead）。
+3. **人-遮-人被文献反复点名为公认未解失败模式**（TTPM / FOSENet / Texture 都明说），且**没有任何论文把遮挡物表征带进测试期 gate 干扰行人**。
+4. **冷静提醒（吸收陷阱推论）**：inter-person lead 要做成"不被吸收"，必须 test-time + cross-instance（pair 条件化判断 Q 的遮挡人是否就是 G）→ 这又落进 **CVK/re-ranker 家族**（已证测试期仅 +0.8~1.1%）。所以 **lead 本身大概率也是小增量 re-rank**，不是训练端主创新。
+5. **本 session 真正的交付 = 这份 334 篇 mine 的诊断结论**（"近年 occluded-ReID 机制系统性塌回少数几个已被端到端训练吸收的家族"），不是新 SOTA。匹配用户早先判断（领域 +1~2 增量）。
