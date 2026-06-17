@@ -26,3 +26,27 @@
 - 真读后：领域在增量进步；近年 SOTA 是 CLIP 线（~65 mAP，低于我们 SOLIDER 73）；新机制存在但多 CLIP-specific 或与 PLBOA 重叠。
 - **最具体可试（grounded）**：exp332 = 给 SOLIDER 训练加 RMPSNet 式**特征/token 级下半身优先擦除**（我们只有图像级 PLBOA）。单变量、~半天。
 - **待办**：session reset 后跑完 28 篇中性 mine + 扩到 334 篇，拿完整 landscape，再定是否有更强的可移植点。
+
+## ⭐⭐ 28 篇全量中性 mine 完成（session reset 后 resume）——有据 landscape + 3 bets
+
+### 6 大方法家族（Occ-Duke 纯模型 mAP 多在 57-66，DDO 81.8 是 open-set 协议虚高）
+- **A 姿态/骨架引导部位对齐**：pose 在**推理期**用→偏低(57-63, MTIPE/Texture/PSCR)；pose 只当**训练监督**→偏高(Adaptive Occlusion-Aware 70.6)。2025-26 趋势=pose/parser 转训练监督、推理 aux-free。
+- **B 生成/特征补全**：DDO 潜扩散 inpaint(需合成 paired)、HGTDR recovery token(无监督)、MAHATMA DFC——核心弱点"补出来不保证对"。
+- **C 语言/属性/prompt on CLIP**：FLaN-Net 65.5、RMPSNet 65.0、AG-ReID。**三者推理时全把文本机器扔了、用纯图像特征检索**。
+- **D auxiliary-free 内部 saliency transformer**：HFLAT 64.7(cls-attn×特征norm 排 patch)。
+- **E mask/parsing 当训练监督、推理 mask-free**：Adaptive 70.6。
+- **F 数据中心遮挡合成**：NIReID(真车 crop 正激励噪声)、FOSENet(COCO mask 语义放置)、RMPSNet-RPE(下半身 70/30)。
+
+### ⭐ 全领域盲点（28 篇几乎都不做的——这是金矿）
+1. **推理是 per-image、点估计、单图**：除 DDO 闭集外，**没有方法在检索时联合推理 query-gallery 对**，也**不输出不确定性**。
+2. **遮挡物身份从不在测试期建模**：FLaN-Net 学了 O* 遮挡物 token 但推理时扔掉；**人-遮-人(inter-person)是公认未解失败模式**(Texture/FOSENet 明说)。
+3. **无 per-image 可见性**：AG-ReID 自陈属性伪标签是 **identity-level**(同 ID 所有图共享)→遮挡图继承它没显示的属性。多数无测试期 per-image/per-region 可见性。
+4. **补全非身份条件**：幻觉无正确性保证。
+
+### 3 个有据 bets（judge 排序）
+- **⭐ Bet 1（最强新意）= Pair-conditioned common-visible scoring**：扩展 Adaptive 的 pairwise-min OAM，但用**学习的 per-patch 可见性 logit**(cls-attn，推理免 pose)；匹配时**只在双方可见 patch 的交集上算距离**：dist=Σ_patch (v_q·v_g)·patch_dist / 共享可见 mass。**全语料无人做"学习的 per-patch query-gallery 可见性交集"检索**——让度量本身 pair+可见性条件化。kill-switch: 加可见性头(random-erase mask 监督,免 pose)，测试用 common-visible 加权距离，≥+1.5 mAP 过。**注: 这正是我之前红蓝队"理论判死"的 common-visible-support 方向——但文献证它是开放空白，我那次是 armchair 判死、没做实验。该实测。**
+- **Bet 2 = Gallery-as-target completion**：用检索到的 gallery 特征当补全目标(检索-补全反馈)。**廉价 kill-switch=oracle 天花板**: 把遮挡 query 特征换成同 ID 最高可见 gallery 特征重评，≥+4 mAP 过。**直接测 exp109"headroom is a wall"——大概率又是墙，0 训练可证否。**
+- **Bet 3（增量）= 推理期保留可见性向量**：别扔 FLaN-Net/AG-ReID 的机器，蒸成 per-image 可见性向量拼进距离。最弱。
+
+### 结论 / 下一步
+judge 推荐 **Bet 1**(最 literature-defensible)。它攻击全语料盲点(检索 per-image+对称)。**我要实测 Bet 1**(common-visible-support)——用现成 exp255 部位特征+pose 可见性做廉价 re-score 探针，看重遮挡子集是否 +1.5。这是对"我 armchair 判死的方向"的诚实复检。
