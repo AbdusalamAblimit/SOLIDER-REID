@@ -4586,3 +4586,10 @@ ALL 子集同向更明显（pose-part 3.21/7.87 vs holistic 0.64/0.90）。绝�
 **决策**: KILL Bet A。8 bet 全 NO-GO。**吸收陷阱**(per-image+联合优化机制被吸收)= 7+1 连负的机制级解释, analysis headline。
 **理由**: 冻结判据干净; 人非刚体几何不稳。
 **下一步**: cheap/vetted 空间穷尽。VC-Norm 跨域(慢, ~8h)是唯一活线。剩重量级 import(mmcv-gated/低EV)留用户定。真实交付=诊断论文(8 kill + 吸收陷阱 + 张力 + 三堵墙)。
+
+### [2026-06-17 ~01:4x] 决策: VC-Norm 跨域判 NO-GO — 最后活线死, 今晚 9/9 NO-GO
+**上下文**: VC-Norm 唯一"训练端改表征"活线。e40 后系统性挂起, 从 e40 ckpt 跑跨域 Occ-ReID 提前判(单变量对照 relay-copy 同环境评)。
+**结果**: VC-Norm vs control 跨域全变体 −3.3 mAP(global 77.3/80.6, part_only 79.3/82.7, equal_concat 77.5/80.9)。**VC-Norm 在真遮挡跨域上显著伤**(Market 学的对齐 transform 跨域误用)。
+**决策**: KILL VC-Norm。9 个 bet 全 NO-GO。**真实交付=诊断/analysis 论文**(9 kill + 吸收陷阱 + 张力 + 三堵墙)。
+**理由**: −3.3 显著、VCA 已激活 20ep、e120 反转极低概率。Market −0.6 + 跨域 −3.3 双向伤。
+**下一步**: occluded ReID 单图搬机制证负完毕。写 analysis 论文 / 重量级 import(用户定) / 换任务。
