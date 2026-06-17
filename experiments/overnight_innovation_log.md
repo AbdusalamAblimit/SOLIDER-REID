@@ -528,3 +528,11 @@ GPU1 lean probe(载 e120 ckpt 直接评 Occluded-REID, query=occluded_body/galle
 ### [Bet A 几何验证 re-ranker → KILL (−2.26), 诊断: 信号在内容非几何 (第8个 NO-GO)]
 调研 agent 第三轮 headline = **吸收陷阱**(输出是单图像素函数+联合优化的机制都被 backbone 内化吸收→4 死类全是其实例)。唯一结构性逃逸 Bet A = 冻结 ViT token 上几何验证 re-rank(非可微 inlier 计数, 无梯度可吸收)。**跑完: baseline cls 53.53 → 几何重排 51.27 = −2.26(几何伤)。KILL。** 诊断: occluded ReID 判别信号在**可见 patch 内容、非几何**(人非刚体/平面, 空间一致性噪声毁强内容排序)。连逃出吸收的机制也败=从新角度坐实吸收陷阱。Bet B(conformal 决策层)未跑(CPU, 不涨 mAP, reliability 重定义, 留诊断)。
 **今晚结账: 8 bet 全 NO-GO + 吸收陷阱定理式结论 + 完整避坑地图。唯一活线 VC-Norm 跨域(~8h 后, 慢)。诚实: occluded-ReID 搬机制提 mAP 这件事近乎关闭, 真实交付=诊断/analysis 论文。**
+
+### [video 时序 escape frozen probe → KILL: 已知多帧优势非创新, 质量加权 no-op (第10个 NO-GO)]
+吸收陷阱唯一结构性逃逸 = 时序聚合(跨帧非 per-image)。Occ-PoseTrack 冻结 probe(TransReID e120 跨域, tracklet=同 pid+cam):
+- single-frame 44.42 → **tracklet-MEAN 57.59(+13.17)** → tracklet-QUALITY(norm 加权) 57.65。
+- **tracklet-mean − single = +13.17**(时序信息存在且大帮)——**但这是已知多帧优势(平均含 clean 帧), 非创新**。
+- **tracklet-QUAL − mean = +0.06 → KILL**: 遮挡感知质量加权对 naive mean **零增益**(均值已聚合 clean+occluded, 显式降权多余)。
+- **第10个 NO-GO**: video 时序唯一逃逸口也证负——novel 方法角度(质量感知时序)是 no-op, 只剩已知多帧优势。**从跨帧角度再次坐实吸收陷阱**(简单均值已做了显式机制要做的)。
+**今晚最终: 10 bet 全 NO-GO(单图 9 + video 1)。method-exploration 真正穷尽。真实交付 = 诊断论文(10 kill + 吸收陷阱 + 张力 + 三堵墙)。**
