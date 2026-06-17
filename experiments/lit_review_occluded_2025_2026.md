@@ -50,3 +50,17 @@
 
 ### 结论 / 下一步
 judge 推荐 **Bet 1**(最 literature-defensible)。它攻击全语料盲点(检索 per-image+对称)。**我要实测 Bet 1**(common-visible-support)——用现成 exp255 部位特征+pose 可见性做廉价 re-score 探针，看重遮挡子集是否 +1.5。这是对"我 armchair 判死的方向"的诚实复检。
+
+## ⭐⭐⭐ 文献盲点 vs 我们已做 的完整对账（关键）
+查了自己代码+结果后，文献的 3 个"盲点"与我们的工作对账：
+- **盲点1 common-visible-support / pair-conditioned 匹配 = 我们的 CVK/LTCS/LPCS，已做透**：
+  - **测试期 CVK-hybrid = +0.8~0.9% mAP（exp039b/040b/045b 三 checkpoint 复核）；MaxSim-hybrid = +1.1%**（更强）。→ **作为测试期 re-score 真有效但增量小、且是 re-ranker（项目规则不当主创新）**。
+  - **训练期 common-support 失败**：CSGT(exp047) 中止——pos/neg pair 的 support overlap 几乎相同(≈0.65)，机制无法区分；LPCS(exp141) −5.3% mAP 训练干扰。
+  - → **文献 #1 盲点是真实的"已发表空白"，但我们已挖：测试增量小、训练判负。Bet 1 对我们不 fresh。**
+- **盲点2/3 测试期建模遮挡物 / inter-person 遮挡 = 真正没试**：FLaN-Net 学 O* 遮挡物 token 却推理时扔掉；inter-person(人遮人) 是公认未解失败；**无人在匹配时携带遮挡物表征去 gate 干扰行人特征**。我们也没做这个。← **这才是 fresh 角度**。
+- **盲点4 identity-conditioned 补全**：exp109 已证 oracle headroom 不可实现(墙)。
+
+### 修正后的完整诚实结论
+1. 我"领域死"是 overreach（错，已撤回）——领域活、+1~2 增量。
+2. 但文献 #1 盲点(common-visible-support)**我们已挖**：测试 +0.8~1.1% 小增量、训练判负。读文献 + 对账避免了重做。
+3. **真正没试 + 有文献撑 = 测试期遮挡物/inter-person 建模**（gate 干扰行人特征）——下一个该探的真 fresh 点。但需想清机制(避开 occluder-gate 禁区的退化)再设计，不 armchair 判死也不 armchair 上。
