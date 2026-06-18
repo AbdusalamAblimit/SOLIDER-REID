@@ -1,0 +1,68 @@
+# exp335 ViT-base + LGPA-D 复现 (CLIP 部位语义 cross-attn, detached)
+# baseline = exp333 ViT-base (53.09); LGPA-D 加 CLIP 部位分支 (POSE_LGPA + DETACH)
+MODEL:
+  PRETRAIN_CHOICE: 'imagenet'
+  PRETRAIN_PATH: 'pretrained/jx_vit_base_p16_224-80ecf9dd.pth'
+  METRIC_LOSS_TYPE: 'triplet'
+  IF_LABELSMOOTH: 'off'
+  IF_WITH_CENTER: 'no'
+  NAME: 'transformer'
+  NO_MARGIN: True
+  DEVICE_ID: ('0')
+  TRANSFORMER_TYPE: 'vit_base_patch16_224_TransReID'
+  STRIDE_SIZE: [16, 16]
+  # ---- pose / LGPA ----
+  POSE_ENABLED: True
+  POSE_DATA_DIR: 'data/occluded_duke'
+  POSE_HEATMAP_SIZE: [64, 32]
+  POSE_LGPA: True
+  POSE_LGPA_CLIP_DIM: 512
+  POSE_LGPA_NUM_HEADS: 8
+  POSE_LGPA_POSE_TEMP: 1.0
+  POSE_LGPA_ASSIGN_WEIGHT: 0.5
+  POSE_LGPA_DETACH: True          # "-D": detach backbone feats before LGPA (the key trick)
+  POSE_USE_TARGET_HEATMAP: False  # 原版默认 scene-merged 热图(非 target-only)→ 修复 assign=0 bug
+  GLOBAL_LOSS_SCALE: 0.5          # 原版 LGPA-D config: 压全局损失、强调部位分支
+
+INPUT:
+  SIZE_TRAIN: [256, 128]
+  SIZE_TEST: [256, 128]
+  PROB: 0.5
+  RE_PROB: 0.5
+  PADDING: 10
+  PIXEL_MEAN: [0.5, 0.5, 0.5]
+  PIXEL_STD: [0.5, 0.5, 0.5]
+
+DATASETS:
+  NAMES: ('occluded_duke')
+  ROOT_DIR: ('data')
+
+DATALOADER:
+  SAMPLER: 'softmax_triplet'
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+
+SOLVER:
+  OPTIMIZER_NAME: 'SGD'
+  MAX_EPOCHS: 120
+  BASE_LR: 0.008
+  WARMUP_EPOCHS: 20
+  WARMUP_METHOD: 'cosine'
+  IMS_PER_BATCH: 64
+  LARGE_FC_LR: False
+  CHECKPOINT_PERIOD: 120
+  LOG_PERIOD: 50
+  EVAL_PERIOD: 10
+  WEIGHT_DECAY: 1e-4
+  WEIGHT_DECAY_BIAS: 1e-4
+  BIAS_LR_FACTOR: 2
+
+TEST:
+  EVAL: True
+  IMS_PER_BATCH: 128
+  RE_RANKING: False
+  WEIGHT: ''
+  NECK_FEAT: 'before'
+  FEAT_NORM: 'yes'
+
+OUTPUT_DIR: './log/occluded_duke/exp335'

@@ -181,9 +181,12 @@ class PoseBackboneModel(build_transformer):
                 pose_mask_temp=float(getattr(cfg.MODEL, 'POSE_LGPA_POSE_TEMP', 1.0)),
             )
             self._lgpa_detach = getattr(cfg.MODEL, 'POSE_LGPA_DETACH', False)
+            self._lgpa_no_pose = getattr(cfg.MODEL, 'POSE_LGPA_NO_POSE', False)
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
             if self._lgpa_detach:
                 print('[LGPA] Running on DETACHED features (no gradient to backbone)')
+            if self._lgpa_no_pose:
+                print('[LGPA] NO-POSE ablation: heatmaps=None -> no pose-bias/assign/visibility (pure CLIP-text parts)')
 
         # PPA: Pose-Prompted Part-Assignment Head (replaces GCN)
         self.use_ppa = getattr(cfg.MODEL, 'POSE_PPA', False)
@@ -599,8 +602,9 @@ class PoseBackboneModel(build_transformer):
             elif getattr(self, 'use_lgpa', False) and scene_heatmaps is not None:
                 # LGPA: CLIP cross-attention part assignment
                 lgpa_input = featmaps[-1].detach() if getattr(self, '_lgpa_detach', False) else featmaps[-1]
+                lgpa_hm = None if getattr(self, '_lgpa_no_pose', False) else scene_heatmaps
                 lgpa_cls_scores, lgpa_feats, lgpa_data = self.clip_part_head(
-                    lgpa_input, scene_heatmaps, return_cls=True)
+                    lgpa_input, lgpa_hm, return_cls=True)
                 kp_data = lgpa_data
 
                 # LGPA + GCN dual branch: also run GCN on detached features
@@ -795,8 +799,9 @@ class PoseBackboneModel(build_transformer):
             # LGPA test path — uses scene_heatmaps (same as PPA for fair comparison)
             elif getattr(self, 'use_lgpa', False) and scene_heatmaps is not None and \
                     getattr(self, 'pose_test_feat', 'global') != 'global':
+                lgpa_hm = None if getattr(self, '_lgpa_no_pose', False) else scene_heatmaps
                 _, lgpa_feats, aux_data = self.clip_part_head(
-                    featmaps[-1], scene_heatmaps, return_cls=False)
+                    featmaps[-1], lgpa_hm, return_cls=False)
                 gcn_feats = lgpa_feats  # [pooled, part1..partK]
                 # LGPA + GCN dual: also get GCN features
                 if self.use_skeleton_gcn and pose_dict is not None:
