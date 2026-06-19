@@ -231,6 +231,7 @@ _C.MODEL.POSE_CLIP_ID_WEIGHT = 1.0
 _C.MODEL.POSE_CLIP_ID_POSE_GUIDED = False  # Option A: i2t/t2i aligns a pose-bias pooled feature (not raw global)
 _C.MODEL.POSE_CLIP_ID_POSE_TEMP = 1.0
 _C.MODEL.POSE_CLIP_ID_POSE_PROMPT = False  # Option B: per-image pose conditions the prompt context
+_C.MODEL.POSE_CLIP_ID_PART_GUIDED = False  # Option C: K pose-localized part features aligned to ID prototype
 
 # VCSR: Visibility-Conditional Semantic Routing — dynamic part gating + set matching
 _C.MODEL.POSE_VCSR = False                # Enable VCSR (replaces LGPA / GCN)

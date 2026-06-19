@@ -219,9 +219,20 @@ class PoseBackboneModel(build_transformer):
             self.use_clip_id_pose_guided = getattr(cfg.MODEL, 'POSE_CLIP_ID_POSE_GUIDED', False)
             if self.use_clip_id_pose_guided:
                 from .modules.clip_id_prompt import PoseGuidedPool
+                _rng = torch.get_rng_state()   # preserve RNG so downstream module inits match exp341
                 self.pose_guided_pool = PoseGuidedPool(
                     self.in_planes, float(getattr(cfg.MODEL, 'POSE_CLIP_ID_POSE_TEMP', 1.0)))
+                torch.set_rng_state(_rng)
                 print('[CLIP-ID-Prompt] POSE-GUIDED (A): i2t/t2i aligns a pose-bias pooled feature, not raw global')
+            # Option C: K pose-localized part features, each aligned to the ID prototype
+            self.use_clip_id_part_guided = getattr(cfg.MODEL, 'POSE_CLIP_ID_PART_GUIDED', False)
+            if self.use_clip_id_part_guided:
+                from .modules.clip_id_prompt import PoseGuidedPartPool
+                _rng = torch.get_rng_state()   # preserve RNG so downstream module inits match exp341
+                self.pose_guided_part_pool = PoseGuidedPartPool(
+                    self.in_planes, float(getattr(cfg.MODEL, 'POSE_CLIP_ID_POSE_TEMP', 1.0)))
+                torch.set_rng_state(_rng)
+                print('[CLIP-ID-Prompt] PART-GUIDED (C): K pose-localized part features aligned to ID prototype')
 
         # PPA: Pose-Prompted Part-Assignment Head (replaces GCN)
         self.use_ppa = getattr(cfg.MODEL, 'POSE_PPA', False)
@@ -581,19 +592,29 @@ class PoseBackboneModel(build_transformer):
             clip_id_loss = None
             if getattr(self, 'use_clip_id_prompt', False) and label is not None:
                 from .modules.clip_id_prompt import supcon_i2t
-                # Option A: align a POSE-GUIDED pooled feature (not raw global) to the ID prototype
-                if getattr(self, 'use_clip_id_pose_guided', False) and scene_heatmaps is not None:
-                    feat_for_clip = self.pose_guided_pool(featmaps[-1], scene_heatmaps)
-                else:
-                    feat_for_clip = global_feat
-                img_proj = self.clip_id_proj(feat_for_clip)       # (B, clip_dim)
-                # Option B: pass per-image pose vector (mean keypoint heatmap activation) to condition the prompt
+                # Option B: per-image pose conditions the prompt (pose_vec None unless pose_cond)
                 pose_vec = scene_heatmaps.float().mean(dim=(2, 3)) \
                     if (getattr(self.clip_id_prompt, 'pose_cond', False) and scene_heatmaps is not None) else None
                 txt_proto = self.clip_id_prompt(label, pose_vec)  # (B, clip_dim)
                 t = self.clip_id_temp
-                clip_id_loss = supcon_i2t(img_proj, txt_proto, label, t) + \
-                    supcon_i2t(txt_proto, img_proj, label, t)
+                if getattr(self, 'use_clip_id_part_guided', False) and scene_heatmaps is not None:
+                    # Option C: K pose-localized part features, each aligned to the ID prototype
+                    part_feats = self.pose_guided_part_pool(featmaps[-1], scene_heatmaps)  # (B, nP, C)
+                    clip_id_loss = 0.0
+                    for kp in range(part_feats.shape[1]):
+                        ipk = self.clip_id_proj(part_feats[:, kp])
+                        clip_id_loss = clip_id_loss + supcon_i2t(ipk, txt_proto, label, t) \
+                            + supcon_i2t(txt_proto, ipk, label, t)
+                    clip_id_loss = clip_id_loss / part_feats.shape[1]
+                else:
+                    # Option A (pose-guided pooled feat) or exp341 (raw global)
+                    if getattr(self, 'use_clip_id_pose_guided', False) and scene_heatmaps is not None:
+                        feat_for_clip = self.pose_guided_pool(featmaps[-1], scene_heatmaps)
+                    else:
+                        feat_for_clip = global_feat
+                    img_proj = self.clip_id_proj(feat_for_clip)   # (B, clip_dim)
+                    clip_id_loss = supcon_i2t(img_proj, txt_proto, label, t) \
+                        + supcon_i2t(txt_proto, img_proj, label, t)
 
             # VCSR: Visibility-Conditional Semantic Routing (detached)
             if getattr(self, 'use_vcsr', False) and scene_heatmaps is not None:

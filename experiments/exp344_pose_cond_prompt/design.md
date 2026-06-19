@@ -21,3 +21,7 @@ exp344 global **> exp341 global(59.8)**。零初始化保证最差 == exp341（�
 
 ## 审查重点
 pose_encoder 零初始化正确(起点=exp341);forward(label,pose) pose 传递与 shape(B,17→B,4,768);dtype(pose_delta 转 CLIP dtype);pose_encoder 进优化器;scene_heatmaps None → pose=None 不崩;test 端 prompt train-only;单变量 vs exp341。
+
+## 修复（codex B Medium-1）
+pose_encoder 建在 clip_id_proj 前会消耗 RNG → 下游初始化偏离 exp341。已加 `torch.get/set_rng_state` 保存/恢复,下游模块初始化对齐 exp341。A/C 同样处理。
+注：单 seed 比较下,init 差异≈seed 方差,真实增益需 >~0.3 才有意义（与是否修 RNG 无关，但修后更干净）。

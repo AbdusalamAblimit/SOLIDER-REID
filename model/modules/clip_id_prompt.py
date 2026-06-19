@@ -68,12 +68,14 @@ class CLIPIDPromptLearner(nn.Module):
         # Option B: pose-conditioned prompt — per-image pose modulates the per-ID context
         self.pose_cond = pose_cond
         if pose_cond:
+            _rng = torch.get_rng_state()   # preserve RNG so downstream module inits match exp341 (codex B Medium-1)
             self.pose_encoder = nn.Sequential(
                 nn.Linear(pose_dim, ctx_dim), nn.ReLU(inplace=True),
                 nn.Linear(ctx_dim, _N_CLS_CTX * ctx_dim))
             nn.init.zeros_(self.pose_encoder[-1].weight)   # start at 0-delta == exp341, then learn
             nn.init.zeros_(self.pose_encoder[-1].bias)
-            print(f'[CLIP-ID-Prompt] POSE-COND (B): prompt context modulated by pose ({pose_dim}-d), zero-init')
+            torch.set_rng_state(_rng)
+            print(f'[CLIP-ID-Prompt] POSE-COND (B): prompt context modulated by pose ({pose_dim}-d), zero-init, RNG-preserved')
 
     def forward(self, label, pose=None):
         """label: (B,) long -> (B, clip_dim) ID text prototypes. pose: (B, pose_dim) optional."""
@@ -132,3 +134,35 @@ class PoseGuidedPool(nn.Module):
         attn = F.softmax(attn, dim=1)                            # (B, N)
         pooled = torch.einsum('bn,bnc->bc', attn, tokens)        # (B, C) pose-guided feature
         return pooled
+
+
+class PoseGuidedPartPool(nn.Module):
+    """Option C: K pose-LOCALIZED part features. Each of K learnable queries pools the
+    backbone tokens biased by ITS body part's keypoint heatmap (head / torso+arms / legs).
+    Each part feature is then aligned to the per-ID prototype (pose-localized part-level
+    CLIP alignment) — finer-grained than Option A's single global pose pooling."""
+    PART_GROUPS = [[0, 1, 2, 3, 4],            # head: nose, eyes, ears
+                   [5, 6, 7, 8, 9, 10],        # torso+arms: shoulders, elbows, wrists
+                   [11, 12, 13, 14, 15, 16]]   # legs: hips, knees, ankles
+
+    def __init__(self, dim, pose_temp=1.0):
+        super().__init__()
+        self.n_parts = len(self.PART_GROUPS)
+        self.queries = nn.Parameter(torch.randn(self.n_parts, dim) * 0.02)
+        self.k_proj = nn.Linear(dim, dim)
+        self.pose_temp = float(pose_temp)
+
+    def forward(self, featmap, pose_heatmap):
+        # featmap (B,C,H,W); pose_heatmap (B,17,Hh,Ww) -> (B, n_parts, C)
+        B, C, H, W = featmap.shape
+        tokens = featmap.flatten(2).transpose(1, 2)             # (B, N, C)
+        k = self.k_proj(tokens)                                 # (B, N, C)
+        pose = F.interpolate(pose_heatmap.float(), size=(H, W),
+                             mode='bilinear', align_corners=False)  # (B, 17, H, W)
+        part_feats = []
+        for i, grp in enumerate(self.PART_GROUPS):
+            bias = pose[:, grp].amax(dim=1).flatten(1)          # (B, N) part-i visibility
+            attn = (k @ self.queries[i]) / (C ** 0.5) + self.pose_temp * bias
+            attn = F.softmax(attn, dim=1)                       # (B, N)
+            part_feats.append(torch.einsum('bn,bnc->bc', attn, tokens))  # (B, C)
+        return torch.stack(part_feats, dim=1)                   # (B, n_parts, C)
