@@ -26,3 +26,12 @@
 
 ## 审查说明
 代码与 exp340a 同（`experiments/exp340_swin_lgpa_fixedbands/` 已 Claude+Codex 双审通过）。本变体仅切换两个已存在、已审查的 config flag（`POSE_LGPA_DETACH`、`GLOBAL_LOSS_SCALE`），无新代码路径。下方 review 复核「config 变体是否安全 + 单变量隔离」。
+
+## ★ 结果（e120）—— un-detach 假说证伪
+| exp340b | mAP | vs exp340a(59.4 part) |
+|---|---|---|
+| global | 51.7 | −7.3 |
+| part_only | 56.1 | −3.3 ✗ |
+| equal_concat | 55.9 | −3.6 |
+
+**un-detach 全线下跌。M2 应验**：固定 canonical 的 assign-loss（image-independent）回传 backbone，把 backbone 往固定空间先验硬拽，破坏判别性（global 塌 51.7、part 塌 56.1）。**反向确认 detach 必须**（历史 detach +4.4）。用户假说"part 主导 backbone 更强"证伪——un-detach 不是让 part 更强，而是让整个 backbone 被固定先验腐蚀。NO-GO，不再追 un-detach 变体。
