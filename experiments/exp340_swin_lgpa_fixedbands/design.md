@@ -28,6 +28,8 @@
 - 变量隔离:exp340 = exp336 **仅多** `POSE_LGPA_FIXED_BANDS: True`(per-image pose → 固定 canonical)。其余(detach、equal_concat、0.5 global loss、384×128)全同。
 - 关键诚实对照(reviewer 必问,训练后补):固定文本 vs random 文本 prototype(同 canonical 先验)——证明涨点来自"固定 + 定位"而非 CLIP 词义本身;但**本实验目标是"固定语义(固定文本)standalone 涨点"这一事实**,random 对照属于归因分析。
 
+> **两套 baseline 口径**: test.py(含 flip)global = **59.0**(主对照,part_only 同口径比这个);exp339 frozen 脚本(无 flip)global = **58.20**(仅 frozen 内部自比)。
+
 ## 前置 frozen 测试结果(exp339b,均未训练,直接池化 pose-trained 特征)
 | frozen 配置 | mAP | vs baseline 58.20 |
 |---|---|---|

@@ -632,7 +632,7 @@ class PoseBackboneModel(build_transformer):
                     kp_data = {'str_stats': str_stats}
                     return [cls_score, str_cls], [global_feat, str_feat], featmaps, None, kp_data
 
-            elif getattr(self, 'use_lgpa', False) and scene_heatmaps is not None:
+            elif getattr(self, 'use_lgpa', False) and (scene_heatmaps is not None or getattr(self, '_lgpa_fixed_bands', False)):
                 # LGPA: CLIP cross-attention part assignment
                 lgpa_input = featmaps[-1].detach() if getattr(self, '_lgpa_detach', False) else featmaps[-1]
                 lgpa_hm = self._lgpa_heatmap(scene_heatmaps, x.shape[0], x.device)
@@ -830,7 +830,7 @@ class PoseBackboneModel(build_transformer):
                 gcn_feats = vcsr_feats
 
             # LGPA test path — uses scene_heatmaps (same as PPA for fair comparison)
-            elif getattr(self, 'use_lgpa', False) and scene_heatmaps is not None and \
+            elif getattr(self, 'use_lgpa', False) and (scene_heatmaps is not None or getattr(self, '_lgpa_fixed_bands', False)) and \
                     getattr(self, 'pose_test_feat', 'global') != 'global':
                 lgpa_hm = self._lgpa_heatmap(scene_heatmaps, x.shape[0], x.device)
                 _, lgpa_feats, aux_data = self.clip_part_head(

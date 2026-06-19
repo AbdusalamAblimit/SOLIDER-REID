@@ -34,7 +34,7 @@ MODEL:
   POSE_LOWER_BODY_OCC: False     # ★ 关 PLBOA(隔离)
   POSE_PARALLEL_AUG: False       # ★ 关多视图
   POSE_OA_SD: False              # ★ 关 OA-SD
-  # POSE_USE_TARGET_HEATMAP 不设 → 默认 False → scene-merged 热图(忠实原版)
+  # 注: pose dataloader 仍加载(scene_heatmaps 非None→进 LGPA 分支),但 FIXED_BANDS 下 LGPA 用固定 canonical 替代,pose 内容被忽略
 
 INPUT:
   SIZE_TRAIN: [384, 128]
