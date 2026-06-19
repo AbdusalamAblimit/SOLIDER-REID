@@ -21,3 +21,9 @@ exp345 global **> exp341 global(59.8)**。部位级对齐若过强可能干扰 g
 
 ## 审查重点
 PoseGuidedPartPool K 部位 shape/per-part pose bias(PART_GROUPS 正确)；per-part i2t/t2i 循环(proj 复用 in_planes→clip_dim、mean over K)；clip_id_loss 正确累加;RNG-preserve;scene_heatmaps None fallback;test 端 prompt train-only;单变量 vs exp341。
+
+## ★ 结果 (e120, test.py global) — NEGATIVE
+**C (K=3 pose-localized 部位对齐 ID 原型) global = 58.0%**。
+- vs exp341 (直接对齐 raw global) = 59.8 → **-1.8**
+- vs baseline = 57.6 → +0.4
+**结论**: PoseGuidedPartPool 的 K 个 query 通路**部分吸收** i2t/t2i 对齐(比 A 全吸收到 57.6 好,但仍低于 exp341)。部位级对齐没把增益传给 global 描述子。**Option C 失败:同 A 的吸收陷阱(部分)。**
