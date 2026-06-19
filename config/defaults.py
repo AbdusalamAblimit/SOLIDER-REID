@@ -221,6 +221,7 @@ _C.MODEL.POSE_LGPA_POSE_TEMP = 1.0       # Pose mask temperature
 _C.MODEL.POSE_LGPA_ASSIGN_WEIGHT = 0.5   # Assignment supervision loss weight
 _C.MODEL.POSE_LGPA_DETACH = False         # Detach features before LGPA (no gradient to backbone)
 _C.MODEL.POSE_LGPA_NO_POSE = False        # Ablation: pass None heatmaps to LGPA (no pose-bias/assign/visibility) = pure CLIP-text parts
+_C.MODEL.POSE_LGPA_FIXED_BANDS = False    # Fixed-semantics: replace per-image pose with a FIXED canonical pedestrian pose (fixed CLIP text + fixed anatomical prior, no per-image pose)
 
 # VCSR: Visibility-Conditional Semantic Routing — dynamic part gating + set matching
 _C.MODEL.POSE_VCSR = False                # Enable VCSR (replaces LGPA / GCN)

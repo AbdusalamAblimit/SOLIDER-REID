@@ -4593,3 +4593,19 @@ ALL 子集同向更明显（pose-part 3.21/7.87 vs holistic 0.64/0.90）。绝�
 **决策**: KILL VC-Norm。9 个 bet 全 NO-GO。**真实交付=诊断/analysis 论文**(9 kill + 吸收陷阱 + 张力 + 三堵墙)。
 **理由**: −3.3 显著、VCA 已激活 20ep、e120 反转极低概率。Market −0.6 + 跨域 −3.3 双向伤。
 **下一步**: occluded ReID 单图搬机制证负完毕。写 analysis 论文 / 重量级 import(用户定) / 换任务。
+
+### [2026-06-18 ~19:1x] 决策: CLIP/LGPA-D 复现弧线 — 增益是 pose 不是 CLIP 文本(拆解证据)
+**上下文**: post-SMPL,用户想把 LGPA-D 包装成新 CLIP 模块创新。先复现 ViT-baseline+LGPA-D 确认 CLIP +X。ViT 上 equalcat < global(负)。用户坚持"是你的复现 bug 非 backbone"。
+**调查**: 派 10 个 Codex 并行深挖(用户 rate-limit 不让开 300 Claude 子agent,Codex token 无限)→ 挖出**热图 bug**:exp335 喂 target-only 热图(`heatmaps[:,0]`+POSE_USE_TARGET_HEATMAP=True)→ LGPA assign KL 坍缩=0 → 部位退化。修(scene-merged)→ assign 0→7.02≈原版。但 ViT 仍只 +0.5、不翻盘。深挖发现 **LGPA-D 从未单独跑过**(exp244/245g 全是 PSG+LGPA+OASD+aug+384+Swin 全系统)。
+**结果**:
+- exp336(Swin 纯 LGPA-D,关 PSG/OASD/aug,`POSE_PSG_STAGES=[]`):equalcat 59.6 vs global 58.5 = **+1.1**(e60 时 +1.7)。→ CLIP 模块 standalone 在 Swin 上涨;**ViT 失败=ViT-specific**(单尺度池不出强部位)。
+- exp337(同配置 + `POSE_LGPA_NO_POSE=True`,LGPA 收 heatmaps=None,纯 CLIP-text 部位,assign=0):equalcat 58.7 vs global 58.8 = **≈0**。→ **那 +1.1 全来自 pose 注入,不是 CLIP 文本语义**。CLIP 文本"head/torso/legs"是 query 壳、冗余于 global;pose-bias 引导注意力到身体区才让部位有判别力。
+**决策**: **纯 CLIP 文本部位路线=死路**(语义冗余)。step2 的新 CLIP 接法必须带 global 没有的真信息(CLIP 视觉特征/遮挡推理/ID 级原型)。理想判据(用户定):baseline 58 → +CLIP 59(CLIP 单独过坎)→ +pose-CLIP 60;现状是 CLIP 单独那步=0。
+**验证完成（3-seed sweep,2026-06-18）**: 非噪声铁定。
+- pose-CLIP（exp336）增益: s0 +0.9 / s1 +0.9 / s2 +0.9 = **+0.9 ± 0.0**（equalcat/global: 59.9/59.0, 59.0/58.1, 60.1/59.2）。
+- no-pose（exp337）增益: s0 −0.1 / s1 −0.1 / s2 −0.3 = **−0.17 ± 0.1**（≈0,从不为正）。
+- → **增益来自 pose 注入(+0.9 稳),不是 CLIP 文本(≈0)。** 你担心的噪声不存在。
+- 基建: 清 hyy /hy-tmp(47→25G 用),传 pose_data 上 hyy(torch2.7+cu128 在 sm_120 上验证可跑 SOLIDER)。
+- 下一步: 下 CLIP-ReID 论文+代码,14 Codex 并行查 ours-vs-CLIP-ReID + pose×CLIP 创新性(含 web 查新)。
+**理由**: detach 保证 global==无-LGPA baseline,within-ckpt equalcat-vs-global 干净;no-pose ablation 单变量隔离 pose。
+**基建**: Clash 两修(都 live,非永久):① `PROCESS-NAME,tailscaled,DIRECT`(tailscaled 直连 DERP→4090 relay 复活)② `tun.dns-hijack: ['any:53']`(原为空→gpushare/hyy DNS 解析失败)。hyy(5060Ti sm_120)需 torch2.x,跑不了 SOLIDER 的 torch1.13+mmcv2.1。详见 [[lgpa-d-reproduction-gotchas]] memory。

@@ -25,4 +25,7 @@ pretrained/
 *.npz
 solider-logs/
 
-/viz_*
+/viz_*.git_token
+experiments/clip_reid_compare/CLIP-ReID/
+/.git_token
+.DS_Store

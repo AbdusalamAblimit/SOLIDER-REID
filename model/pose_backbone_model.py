@@ -182,11 +182,16 @@ class PoseBackboneModel(build_transformer):
             )
             self._lgpa_detach = getattr(cfg.MODEL, 'POSE_LGPA_DETACH', False)
             self._lgpa_no_pose = getattr(cfg.MODEL, 'POSE_LGPA_NO_POSE', False)
+            self._lgpa_fixed_bands = getattr(cfg.MODEL, 'POSE_LGPA_FIXED_BANDS', False)
+            self._canon_hm_cache = None  # (1,17,H,W) canonical pedestrian pose, built lazily
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
             if self._lgpa_detach:
                 print('[LGPA] Running on DETACHED features (no gradient to backbone)')
             if self._lgpa_no_pose:
                 print('[LGPA] NO-POSE ablation: heatmaps=None -> no pose-bias/assign/visibility (pure CLIP-text parts)')
+            if self._lgpa_fixed_bands:
+                print('[LGPA] FIXED-BANDS: per-image pose replaced by a FIXED canonical pedestrian pose '
+                      '(fixed CLIP text + fixed anatomical prior, NO per-image pose)')
 
         # PPA: Pose-Prompted Part-Assignment Head (replaces GCN)
         self.use_ppa = getattr(cfg.MODEL, 'POSE_PPA', False)
@@ -475,6 +480,34 @@ class PoseBackboneModel(build_transformer):
         else:
             return x, hw_shape, x, hw_shape
 
+    def _canonical_heatmap(self, B, device):
+        """Fixed canonical upright-pedestrian COCO-17 pose heatmap (NO per-image info).
+        FIXED-BANDS mode feeds this in place of per-image pose, giving the CLIP-text part
+        queries a fixed anatomical localization prior (head top -> ankles bottom)."""
+        if self._canon_hm_cache is None:
+            H, W = 96, 32
+            KP = [(0.50, 0.06), (0.46, 0.05), (0.54, 0.05), (0.42, 0.06), (0.58, 0.06),
+                  (0.36, 0.18), (0.64, 0.18), (0.32, 0.32), (0.68, 0.32), (0.30, 0.45), (0.70, 0.45),
+                  (0.40, 0.50), (0.60, 0.50), (0.41, 0.72), (0.59, 0.72), (0.42, 0.95), (0.58, 0.95)]
+            ys = torch.arange(H, dtype=torch.float32).view(H, 1)
+            xs = torch.arange(W, dtype=torch.float32).view(1, W)
+            hm = torch.zeros(1, 17, H, W)
+            sx, sy = 0.12 * W, 0.05 * H
+            for k, (nx, ny) in enumerate(KP):
+                cx, cy = nx * W, ny * H
+                hm[0, k] = torch.exp(-(((xs - cx) ** 2) / (2 * sx ** 2) + ((ys - cy) ** 2) / (2 * sy ** 2)))
+            self._canon_hm_cache = hm
+        return self._canon_hm_cache.to(device).expand(B, 17, -1, -1).contiguous()
+
+    def _lgpa_heatmap(self, scene_heatmaps, B, device):
+        """Select the heatmap fed to the LGPA head: None (no-pose), fixed canonical
+        (fixed-bands), or per-image scene heatmaps (default)."""
+        if getattr(self, '_lgpa_no_pose', False):
+            return None
+        if getattr(self, '_lgpa_fixed_bands', False):
+            return self._canonical_heatmap(B, device)
+        return scene_heatmaps
+
     def forward(self, x, label=None, cam_label=None, view_label=None,
                 pose_dict=None):
         # Prepare pose
@@ -602,7 +635,7 @@ class PoseBackboneModel(build_transformer):
             elif getattr(self, 'use_lgpa', False) and scene_heatmaps is not None:
                 # LGPA: CLIP cross-attention part assignment
                 lgpa_input = featmaps[-1].detach() if getattr(self, '_lgpa_detach', False) else featmaps[-1]
-                lgpa_hm = None if getattr(self, '_lgpa_no_pose', False) else scene_heatmaps
+                lgpa_hm = self._lgpa_heatmap(scene_heatmaps, x.shape[0], x.device)
                 lgpa_cls_scores, lgpa_feats, lgpa_data = self.clip_part_head(
                     lgpa_input, lgpa_hm, return_cls=True)
                 kp_data = lgpa_data
@@ -799,7 +832,7 @@ class PoseBackboneModel(build_transformer):
             # LGPA test path — uses scene_heatmaps (same as PPA for fair comparison)
             elif getattr(self, 'use_lgpa', False) and scene_heatmaps is not None and \
                     getattr(self, 'pose_test_feat', 'global') != 'global':
-                lgpa_hm = None if getattr(self, '_lgpa_no_pose', False) else scene_heatmaps
+                lgpa_hm = self._lgpa_heatmap(scene_heatmaps, x.shape[0], x.device)
                 _, lgpa_feats, aux_data = self.clip_part_head(
                     featmaps[-1], lgpa_hm, return_cls=False)
                 gcn_feats = lgpa_feats  # [pooled, part1..partK]
@@ -915,6 +948,10 @@ class PoseBackboneModel(build_transformer):
                     g_norm = F.normalize(test_feat, p=2, dim=1)
                     p_norm = [F.normalize(f, p=2, dim=1) for f in gcn_feats]
                     test_feat = torch.cat([g_norm] + p_norm, dim=1)
+                elif self.pose_test_feat == 'part_only':
+                    # Diagnostic: LGPA/part branch vectors ONLY (drop global), each L2-normed
+                    test_feat = torch.cat(
+                        [F.normalize(f, p=2, dim=1) for f in gcn_feats], dim=1)
                 elif self.pose_test_feat in ('cvk_only', 'cvk_hybrid', 'cvk_adaptive', 'cvk_residual', 'maxsim', 'maxsim_hybrid'):
                     test_feat = {
                         'mode': self.pose_test_feat,

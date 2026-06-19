@@ -25,4 +25,14 @@
 - exp336（有 pose,+1.7）vs exp337（无 pose,?）。单变量 = POSE_LGPA_NO_POSE。
 
 ## 机器
-4090 下线(relay 挂)/ hyy 不解析 → 待 3090 空(exp336 e120 后)或 4090 复活。Swin-Tiny 384 ~2-2.5h。
+4090（Clash 修复 PROCESS-NAME,tailscaled,DIRECT 后复活）并行跑,mmpose-abu env,29s/epoch（快于 3090）。
+
+## ✅ 结果（决定性）
+| | equalcat | global | 增益 |
+|---|---|---|---|
+| exp336 **有 pose** | 59.6 | 58.5 | **+1.1** |
+| exp337 **无 pose** | 58.7 | 58.8 | **≈0（−0.1）** |
+- sanity：exp337 全程 `lgpa_assign=0`（无 pose 注入）✓。
+- **结论：+1.1 增益完全来自 pose 注入，不是 CLIP 文本语义本身。** 纯 CLIP 文本原型 cross-attend token（无 pose-bias）→ 部位对 global 零贡献。CLIP 文本"head/torso/legs"自己定位不出判别性部位；是 pose-bias 引导注意力到对的身体区域才让部位有用。**CLIP 文本只是 query 壳，pose 是增益驱动。**
+- **step2 启示**：纯 CLIP 文本路线无效（语义冗余于 global）。新 CLIP 接法要么保留 pose 引导，要么换带 global 没有的新信息的 CLIP 信号（CLIP 视觉特征 / 遮挡推理 / ID 原型），不能靠 CLIP 文本部位语义本身。
+- 待补 ablation（可选）：pose-biased + **无 CLIP 文本**（学习 query）→ 测 CLIP 文本是否比学习 query 有任何增量。

@@ -36,8 +36,18 @@
 → **CLIP 模块(部位语义)有 standalone 价值**——带了 global 没有的信息。
 → **exp335 ViT 失败 = ViT-specific**:ViT 末层 token 全局抽象,detached 池不出强部位;Swin 多尺度 stage 特征部位友好。**backbone 决定部位特征质量**,非 CLIP 无用。
 → 用户全程对:① 热图 bug 真实(assign 0→7) ② 不是 backbone 否定 CLIP,而是 backbone 选择(ViT vs Swin)决定成败。
-待 e120 收敛值(gain 可能 +1.5~2.5)。
-| 70 | 58.6 | 67.1 | (equalcat 续涨,gap over global e60=54.9 在扩大) |
+| 70 | 58.6 | 67.1 |
+
+### ✅ e120 收敛对照（最终,test.py 同 ckpt）
+| 描述子 | mAP | R1 |
+|---|---|---|
+| **equalcat (LGPA)** | **59.6** | **68.8** |
+| **global (baseline)** | **58.5** | **67.5** |
+| **净增益** | **+1.1** | **+1.3** |
+
+- **最终结论**：纯 LGPA-D 在 Swin（无 PSG/OASD/aug）standalone 涨 **+1.1 mAP**（e60 时 +1.7,收敛中 global 追上→+1.1）。**CLIP 模块本身有价值**。
+- 对照 exp335 ViT（equalcat < global,负）→ **ViT 失败是 ViT-specific**（单尺度池不出强部位）。
+- 下一步 exp337（no-pose）拆解:这 +1.1 是 CLIP 语义本身还是 pose 注入。
 
 后续:e60/e120 checkpoint 跑 `test.py POSE_TEST_FEAT=global` 取 baseline,精确对照(within-ckpt equalcat vs global)。
 - e10 equalcat 35.9 = 早期爬升正常。终值参考:exp244 全系统 65.3;Swin-Tiny baseline ~56-60。
