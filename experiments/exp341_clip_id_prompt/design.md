@@ -25,3 +25,8 @@
 
 ## Step 2 预告（exp342）
 若 exp341 涨：把姿态像 LGPA 那样注入——per-ID prompt 之外再加 pose-conditioned part prompt / pose-bias，让姿态在「能涨的 CLIP 机制」上再加一层。
+
+## 审查修正（codex High）
+- `GLOBAL_LOSS_SCALE` 0.5→**1.0**：exp341 无 part 分支，global 即描述子，须全权重训练（0.5 会砍半 CE+triplet 并相对放大 clip_id_loss）。
+- 实际用 **ViT-L-14**（clip_dim 768），非 design 初稿的 B-32/512。
+- **精确对照 exp341base**：= exp341 但 `POSE_CLIP_ID_PROMPT: False`，同 GLOBAL_LOSS_SCALE 1.0。判据：exp341 global > exp341base global = CLIP-ReID 机制真涨。

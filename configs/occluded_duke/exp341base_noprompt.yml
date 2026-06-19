@@ -23,7 +23,7 @@ MODEL:
   POSE_PSG_STAGES: []            # ★ 空列表 → 无 PSG 模块(psg_modules_dict 空，backward-compat 跳过)
   POSE_PFM_HIDDEN: 64
   POSE_LGPA: False
-  POSE_CLIP_ID_PROMPT: True
+  POSE_CLIP_ID_PROMPT: False
   POSE_CLIP_ID_PRETRAINED: '/home/afr/SOLIDER-REID/clip_l14_openclip.safetensors'
   POSE_CLIP_ID_WEIGHT: 1.0
   POSE_LGPA_CLIP_DIM: 512
@@ -79,4 +79,4 @@ TEST:
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/occluded_duke/exp341_clip_id_prompt'
+OUTPUT_DIR: './log/occluded_duke/exp341base_noprompt'
