@@ -1,4 +1,4 @@
-# exp342: Step2 — exp341(CLIP-ID-prompt)+ LGPA 姿态部位分支(detached)+ equal_concat;姿态在能涨的 CLIP 机制上再涨
+# exp342: Step2 — CLIP-ID-prompt(可学习)+ 姿态部位分支(RANDOM query, 无固定语义壳)+ equal_concat
 # 问题：CLIP 模块(LGPA-D)本身能否 standalone 涨点，还是增益来自 PSG?
 # 基于 pose_psg_lgpa_detach.yml(exp244 原版)，仅关掉非-LGPA 组件 + 用 scene 热图。
 # 判据：同一 ckpt，test.py POSE_TEST_FEAT=equal_concat(LGPA) vs =global(baseline，detached→==baseline)。
@@ -23,6 +23,7 @@ MODEL:
   POSE_PSG_STAGES: []            # ★ 空列表 → 无 PSG 模块(psg_modules_dict 空，backward-compat 跳过)
   POSE_PFM_HIDDEN: 64
   POSE_LGPA: True
+  POSE_LGPA_RANDOM_TEXT: True
   POSE_CLIP_ID_PROMPT: True
   POSE_CLIP_ID_PRETRAINED: '/home/afr/SOLIDER-REID/clip_l14_openclip.safetensors'
   POSE_CLIP_ID_WEIGHT: 1.0
