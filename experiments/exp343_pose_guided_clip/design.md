@@ -21,3 +21,9 @@ exp343 global **> exp341 global(59.8)** → pose-guided 对齐比 raw-global 对
 
 ## 审查重点
 PoseGuidedPool 正确(shape、pose bias、softmax、可训)；img_proj 用 pose-guided 特征时 clip_id_loss 正确；pose_guided_pool 参数进优化器；scene_heatmaps None 时 fallback global;test 端 prompt train-only。
+
+## ★ 结果 (e120, test.py global) — NEGATIVE
+**A (pose-guided 图像特征) global = 57.6%** (R1 65.8)。
+- vs exp341 (直接对齐 raw global) = 59.8 → **-2.2**
+- vs baseline (exp341base 无 prompt) = 57.6 → **持平**
+**结论**: pose_guided_pool 有自己的 query/k_proj,把 i2t/t2i 对齐**吸收进自己的 pathway**,backbone/global 没拿到 exp341 那种直接对齐信号 → 抵消了 exp341 的 +2.2,退回 baseline。**Option A 失败:姿态这样融(换对齐的特征)反而去掉了 CLIP 机制的增益。**
