@@ -210,7 +210,8 @@ class PoseBackboneModel(build_transformer):
             self.clip_id_prompt = CLIPIDPromptLearner(
                 num_classes,
                 clip_arch=getattr(cfg.MODEL, 'POSE_CLIP_ID_ARCH', 'ViT-L-14'),
-                clip_pretrained=getattr(cfg.MODEL, 'POSE_CLIP_ID_PRETRAINED', 'openai'))
+                clip_pretrained=getattr(cfg.MODEL, 'POSE_CLIP_ID_PRETRAINED', 'openai'),
+                pose_cond=getattr(cfg.MODEL, 'POSE_CLIP_ID_POSE_PROMPT', False))
             self.clip_id_proj = nn.Linear(self.in_planes, self.clip_id_prompt.clip_dim)
             self.clip_id_temp = float(getattr(cfg.MODEL, 'POSE_CLIP_ID_TEMP', 0.07))
             print(f'[CLIP-ID-Prompt] enabled: proj {self.in_planes}->{self.clip_id_prompt.clip_dim}, temp {self.clip_id_temp}')
@@ -586,7 +587,10 @@ class PoseBackboneModel(build_transformer):
                 else:
                     feat_for_clip = global_feat
                 img_proj = self.clip_id_proj(feat_for_clip)       # (B, clip_dim)
-                txt_proto = self.clip_id_prompt(label)            # (B, clip_dim)
+                # Option B: pass per-image pose vector (mean keypoint heatmap activation) to condition the prompt
+                pose_vec = scene_heatmaps.float().mean(dim=(2, 3)) \
+                    if (getattr(self.clip_id_prompt, 'pose_cond', False) and scene_heatmaps is not None) else None
+                txt_proto = self.clip_id_prompt(label, pose_vec)  # (B, clip_dim)
                 t = self.clip_id_temp
                 clip_id_loss = supcon_i2t(img_proj, txt_proto, label, t) + \
                     supcon_i2t(txt_proto, img_proj, label, t)

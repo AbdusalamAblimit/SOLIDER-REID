@@ -17,11 +17,13 @@ _N_CLS_CTX = 4      # learnable per-ID context tokens (the X X X X)
 
 
 class CLIPIDPromptLearner(nn.Module):
-    def __init__(self, num_classes, clip_arch='ViT-B-32', clip_pretrained='openai'):
+    def __init__(self, num_classes, clip_arch='ViT-B-32', clip_pretrained='openai',
+                 pose_cond=False, pose_dim=17):
         super().__init__()
         clip_model, _, _ = open_clip.create_model_and_transforms(clip_arch, pretrained=clip_pretrained)
         tokenizer = open_clip.get_tokenizer(clip_arch)
         ctx_dim = clip_model.token_embedding.weight.shape[1]
+        self.ctx_dim = ctx_dim
         dtype = clip_model.token_embedding.weight.dtype
         self.clip_dim = clip_model.text_projection.shape[1]
 
@@ -63,10 +65,23 @@ class CLIPIDPromptLearner(nn.Module):
         print(f'[CLIP-ID-Prompt] CoOp prompts: {num_classes} IDs x {_N_CLS_CTX} ctx x {ctx_dim}, '
               f'clip_dim={self.clip_dim}, CLIP text encoder FROZEN')
 
-    def forward(self, label):
-        """label: (B,) long -> (B, clip_dim) ID text prototypes."""
+        # Option B: pose-conditioned prompt — per-image pose modulates the per-ID context
+        self.pose_cond = pose_cond
+        if pose_cond:
+            self.pose_encoder = nn.Sequential(
+                nn.Linear(pose_dim, ctx_dim), nn.ReLU(inplace=True),
+                nn.Linear(ctx_dim, _N_CLS_CTX * ctx_dim))
+            nn.init.zeros_(self.pose_encoder[-1].weight)   # start at 0-delta == exp341, then learn
+            nn.init.zeros_(self.pose_encoder[-1].bias)
+            print(f'[CLIP-ID-Prompt] POSE-COND (B): prompt context modulated by pose ({pose_dim}-d), zero-init')
+
+    def forward(self, label, pose=None):
+        """label: (B,) long -> (B, clip_dim) ID text prototypes. pose: (B, pose_dim) optional."""
         b = label.shape[0]
         cls_ctx = self.cls_ctx[label]                          # (B, n_cls_ctx, ctx_dim)
+        if self.pose_cond and pose is not None:
+            pose_delta = self.pose_encoder(pose.float()).view(b, _N_CLS_CTX, self.ctx_dim).type(self._dtype)
+            cls_ctx = cls_ctx + pose_delta                     # pose-conditioned context (Option B)
         prefix = self.token_prefix.expand(b, -1, -1)
         suffix = self.token_suffix.expand(b, -1, -1)
         prompts = torch.cat([prefix, cls_ctx, suffix], dim=1)  # (B, 77, ctx_dim)
