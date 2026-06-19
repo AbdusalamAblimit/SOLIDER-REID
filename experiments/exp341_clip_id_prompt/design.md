@@ -1,0 +1,27 @@
+# 实验 exp341: CLIP-ReID 式可学习 ID prompt 移植到 SOLIDER（Step 1 — 找能涨的 CLIP 机制）
+
+## 动机
+- exp340 系列彻底证明：**固定 CLIP 文本部位原型 = 壳**（random 文本反而更好 +1.0 vs CLIP +0.6）。死路。
+- 文献 + CLIP-ReID 证明：真能涨的 CLIP 机制是 **可学习 ID-level prompt（CoOp）+ 图文对比**，文本原型从数据学出 per-ID（不是固定词）。
+- 用户两步路线：① 先找一个真涨点的 CLIP-ReID 机制（本实验）② 再像 LGPA 那样加姿态再涨（exp342）。
+
+## 核心假设
+**给 SOLIDER global 加一个 CLIP-ReID 式可学习 ID 文本原型分支（CoOp prompt + SupCon i2t/t2i 对比），让文本原型监督/正则化 global 特征 → global 涨点。**
+
+## 技术方案（1-stage joint，最小可测）
+- 新模块 `model/modules/clip_id_prompt.py`：
+  - `CLIPIDPromptLearner`：用 open_clip ViT-B-32 的冻结文本组件（token_embedding/transformer/ln_final/text_projection）。模板 "A photo of a [X X X X] person."，`cls_ctx = nn.Parameter(num_classes, 4, 512)` per-ID 可学习；prefix/suffix 冻结 buffer。forward(label) → ID 文本原型。
+  - 投影：SOLIDER global(768) → CLIP dim(512)，可学习 Linear。
+- 损失（processor 加）：batch unique ID 的文本原型 vs 投影后的 global，`SupCon i2t + t2i`（CLIP-ReID stage1 损失），权重 `CLIP_ID_LOSS_WEIGHT`。加在现有 ID(FC)+triplet 之上。
+- 测试描述子：仍用 SOLIDER global（不动 LGPA），看 i2t/t2i 正则有没有让 global 涨。
+
+## 预期结果
+- 理想：global > baseline（CLIP-ReID ID 原型对齐让特征更判别）。哪怕 +0.3 就算「找到能涨的 CLIP 机制」→ 进 Step 2 加姿态。
+- 失败最可能原因：SOLIDER 已 73 很强，ID 文本原型正则边际为零；或 1-stage joint 不如 2-stage 稳（prompt 与特征互相追）。若 1-stage 平，再试 2-stage（stage1 冻特征学 prompt，stage2 冻 prompt 微调）。
+
+## 对照组
+- baseline：同 SOLIDER 配置但关 CLIP_ID_PROMPT（= 纯 global ID+triplet）。
+- 单变量：仅多 CLIP-ReID ID prompt 分支 + i2t/t2i 损失。
+
+## Step 2 预告（exp342）
+若 exp341 涨：把姿态像 LGPA 那样注入——per-ID prompt 之外再加 pose-conditioned part prompt / pose-bias，让姿态在「能涨的 CLIP 机制」上再加一层。

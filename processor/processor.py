@@ -1294,6 +1294,13 @@ def do_train(cfg,
                         details['paci_neg'] = hard_neg_sim[can_use].mean().item()
                         loss._loss_details = details
 
+            if kp_data is not None and kp_data.get('clip_id_loss') is not None:
+                clip_id_w = float(getattr(cfg.MODEL, 'POSE_CLIP_ID_WEIGHT', 1.0))
+                details = getattr(loss, '_loss_details', {})
+                loss = loss + clip_id_w * kp_data['clip_id_loss']
+                details['clip_id'] = kp_data['clip_id_loss'].item()
+                loss._loss_details = details
+
             scaler.scale(loss).backward()
 
             scaler.step(optimizer)

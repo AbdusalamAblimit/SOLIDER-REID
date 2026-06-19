@@ -203,6 +203,18 @@ class PoseBackboneModel(build_transformer):
                     self.clip_part_head.clip_text_features.copy_(_rand.float())
                 print('[LGPA] RANDOM-TEXT ablation: CLIP text prototypes -> FIXED random vectors (seed 42)')
 
+        # CLIP-ReID-style learnable ID prompts (the WORKING CLIP mechanism, vs dead fixed part text)
+        self.use_clip_id_prompt = getattr(cfg.MODEL, 'POSE_CLIP_ID_PROMPT', False)
+        if self.use_clip_id_prompt:
+            from .modules.clip_id_prompt import CLIPIDPromptLearner
+            self.clip_id_prompt = CLIPIDPromptLearner(
+                num_classes,
+                clip_arch=getattr(cfg.MODEL, 'POSE_CLIP_ID_ARCH', 'ViT-L-14'),
+                clip_pretrained=getattr(cfg.MODEL, 'POSE_CLIP_ID_PRETRAINED', 'openai'))
+            self.clip_id_proj = nn.Linear(self.in_planes, self.clip_id_prompt.clip_dim)
+            self.clip_id_temp = float(getattr(cfg.MODEL, 'POSE_CLIP_ID_TEMP', 0.07))
+            print(f'[CLIP-ID-Prompt] enabled: proj {self.in_planes}->{self.clip_id_prompt.clip_dim}, temp {self.clip_id_temp}')
+
         # PPA: Pose-Prompted Part-Assignment Head (replaces GCN)
         self.use_ppa = getattr(cfg.MODEL, 'POSE_PPA', False)
         if self.use_ppa:
@@ -556,6 +568,17 @@ class PoseBackboneModel(build_transformer):
             else:
                 cls_score = self.classifier(feat_cls)
 
+            # CLIP-ReID ID-prompt contrastive (the WORKING CLIP mechanism): align global feat
+            # to per-ID learnable text prototypes via SupCon i2t/t2i.
+            clip_id_loss = None
+            if getattr(self, 'use_clip_id_prompt', False) and label is not None:
+                from .modules.clip_id_prompt import supcon_i2t
+                img_proj = self.clip_id_proj(global_feat)         # (B, clip_dim)
+                txt_proto = self.clip_id_prompt(label)            # (B, clip_dim)
+                t = self.clip_id_temp
+                clip_id_loss = supcon_i2t(img_proj, txt_proto, label, t) + \
+                    supcon_i2t(txt_proto, img_proj, label, t)
+
             # VCSR: Visibility-Conditional Semantic Routing (detached)
             if getattr(self, 'use_vcsr', False) and scene_heatmaps is not None:
                 vcsr_input = featmaps[-1].detach()
@@ -821,6 +844,8 @@ class PoseBackboneModel(build_transformer):
                 # Return lists -> triggers list-loss path (implicit 0.5x global)
                 return [cls_score] + gcn_cls_scores, [global_feat] + gcn_feats, featmaps, None, kp_data
 
+            if clip_id_loss is not None:
+                return cls_score, global_feat, featmaps, None, {'clip_id_loss': clip_id_loss}
             return cls_score, global_feat, featmaps, None
         else:
             if self.neck_feat == 'after':
