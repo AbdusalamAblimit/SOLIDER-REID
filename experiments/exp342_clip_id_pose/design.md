@@ -23,3 +23,7 @@
 
 ## 审查重点
 clip_id_loss 走 LGPA 路径是否正确、不重复计；两机制损失（i2t/t2i + LGPA assign + ID + triplet）是否都正确累加；equal_concat 描述子组装；单变量隔离 vs exp341。
+
+## 审查提醒 M1（Claude，重要）
+开 LGPA 后模型返回 list → loss 走 list-path，global 有效权重变 **0.5x**（w_g=1/(1+POSE_PART_WEIGHT)=0.5），非 exp341 的 1.0x。这是标准 LGPA 训练 regime（+0.8~0.9 就在此测）。
+**正确解读 Step2 pose 增益**：用 **exp342 自己的 global（prompt, 0.5x）vs equal_concat（+pose, 0.5x）**，同尺度干净隔离 pose 贡献。Step1 的 prompt +2.2 是 1.0x（exp341），两步尺度不同但各自内部干净。记两个数。
