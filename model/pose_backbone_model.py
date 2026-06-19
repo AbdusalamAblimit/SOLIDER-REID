@@ -672,6 +672,8 @@ class PoseBackboneModel(build_transformer):
                 lgpa_cls_scores, lgpa_feats, lgpa_data = self.clip_part_head(
                     lgpa_input, lgpa_hm, return_cls=True)
                 kp_data = lgpa_data
+                if clip_id_loss is not None:
+                    kp_data['clip_id_loss'] = clip_id_loss   # carry CLIP-ID-prompt loss through LGPA path
 
                 # LGPA + GCN dual branch: also run GCN on detached features
                 if self.use_skeleton_gcn and pose_dict is not None:
