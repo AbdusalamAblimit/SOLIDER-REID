@@ -39,3 +39,12 @@
 | CLIP-grounded | 56.98 | −1.22 |
 
 **结论**：冻结池化全 < baseline，但 fixed bands 仅差 0.17（远好于 CLIP-grounded −1.22）。冻结在 pose-trained 特征上次优（frozen 误导）；训练让 head 适应固定 band 是翻正的关键 → 本实验。
+
+## ★ 结果（e120, test.py 同口径）—— 固定语义涨点达成
+| exp340a 描述子 | mAP | vs 自身 global |
+|---|---|---|
+| global | 58.8 | — |
+| **part_only（固定 CLIP 文本 + 固定 canonical 姿态）** | **59.4** | **+0.6** ✅ |
+| **equal_concat** | **59.5** | **+0.7** ✅ |
+
+**两个口径都 > global → 固定语义 standalone 涨点实现。** 全谱对比（part_only 口径）：no-pose −0.2 → **固定 canonical +0.6** → per-image pose +0.8。固定标准姿态抓住行人平均布局，拿到 per-image pose 约 75% 的增益，但无需 per-image pose、无可学习 prompt = 全固定。
