@@ -91,3 +91,29 @@ def supcon_i2t(image_feat, text_feat, labels, temperature=0.07):
     logp = F.log_softmax(logits, dim=1)
     loss = -(mask * logp).sum(1) / mask.sum(1).clamp(min=1)
     return loss.mean()
+
+
+class PoseGuidedPool(nn.Module):
+    """Option A: LGPA-style pose-bias pooling → a pose-guided (occlusion-aware) global
+    feature for the CLIP-ID-prompt to ALIGN. A learnable query attends the backbone tokens,
+    additively biased by the person pose heatmap (de-emphasizes occluders/background).
+    Pose guides WHAT the CLIP mechanism aligns (vs raw GAP global)."""
+    def __init__(self, dim, pose_temp=1.0):
+        super().__init__()
+        self.query = nn.Parameter(torch.randn(dim) * 0.02)
+        self.k_proj = nn.Linear(dim, dim)
+        self.pose_temp = float(pose_temp)
+
+    def forward(self, featmap, pose_heatmap):
+        # featmap (B,C,H,W); pose_heatmap (B,K,Hh,Ww)
+        B, C, H, W = featmap.shape
+        tokens = featmap.flatten(2).transpose(1, 2)              # (B, N, C)
+        k = self.k_proj(tokens)                                  # (B, N, C)
+        attn = (k @ self.query) / (C ** 0.5)                     # (B, N)
+        pose = F.interpolate(pose_heatmap.float(), size=(H, W),
+                             mode='bilinear', align_corners=False)
+        pose_region = pose.amax(dim=1).flatten(1)                # (B, N) person visibility
+        attn = attn + self.pose_temp * pose_region
+        attn = F.softmax(attn, dim=1)                            # (B, N)
+        pooled = torch.einsum('bn,bnc->bc', attn, tokens)        # (B, C) pose-guided feature
+        return pooled

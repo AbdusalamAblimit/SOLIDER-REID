@@ -228,6 +228,8 @@ _C.MODEL.POSE_CLIP_ID_ARCH = 'ViT-L-14'
 _C.MODEL.POSE_CLIP_ID_PRETRAINED = 'openai'  # path to local open_clip safetensors on the training machine
 _C.MODEL.POSE_CLIP_ID_TEMP = 0.07
 _C.MODEL.POSE_CLIP_ID_WEIGHT = 1.0
+_C.MODEL.POSE_CLIP_ID_POSE_GUIDED = False  # Option A: i2t/t2i aligns a pose-bias pooled feature (not raw global)
+_C.MODEL.POSE_CLIP_ID_POSE_TEMP = 1.0
 
 # VCSR: Visibility-Conditional Semantic Routing — dynamic part gating + set matching
 _C.MODEL.POSE_VCSR = False                # Enable VCSR (replaces LGPA / GCN)

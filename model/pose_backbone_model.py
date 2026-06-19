@@ -214,6 +214,13 @@ class PoseBackboneModel(build_transformer):
             self.clip_id_proj = nn.Linear(self.in_planes, self.clip_id_prompt.clip_dim)
             self.clip_id_temp = float(getattr(cfg.MODEL, 'POSE_CLIP_ID_TEMP', 0.07))
             print(f'[CLIP-ID-Prompt] enabled: proj {self.in_planes}->{self.clip_id_prompt.clip_dim}, temp {self.clip_id_temp}')
+            # Option A: pose-guided image feature for the i2t/t2i alignment (pose guides WHAT CLIP aligns)
+            self.use_clip_id_pose_guided = getattr(cfg.MODEL, 'POSE_CLIP_ID_POSE_GUIDED', False)
+            if self.use_clip_id_pose_guided:
+                from .modules.clip_id_prompt import PoseGuidedPool
+                self.pose_guided_pool = PoseGuidedPool(
+                    self.in_planes, float(getattr(cfg.MODEL, 'POSE_CLIP_ID_POSE_TEMP', 1.0)))
+                print('[CLIP-ID-Prompt] POSE-GUIDED (A): i2t/t2i aligns a pose-bias pooled feature, not raw global')
 
         # PPA: Pose-Prompted Part-Assignment Head (replaces GCN)
         self.use_ppa = getattr(cfg.MODEL, 'POSE_PPA', False)
@@ -573,7 +580,12 @@ class PoseBackboneModel(build_transformer):
             clip_id_loss = None
             if getattr(self, 'use_clip_id_prompt', False) and label is not None:
                 from .modules.clip_id_prompt import supcon_i2t
-                img_proj = self.clip_id_proj(global_feat)         # (B, clip_dim)
+                # Option A: align a POSE-GUIDED pooled feature (not raw global) to the ID prototype
+                if getattr(self, 'use_clip_id_pose_guided', False) and scene_heatmaps is not None:
+                    feat_for_clip = self.pose_guided_pool(featmaps[-1], scene_heatmaps)
+                else:
+                    feat_for_clip = global_feat
+                img_proj = self.clip_id_proj(feat_for_clip)       # (B, clip_dim)
                 txt_proto = self.clip_id_prompt(label)            # (B, clip_dim)
                 t = self.clip_id_temp
                 clip_id_loss = supcon_i2t(img_proj, txt_proto, label, t) + \
