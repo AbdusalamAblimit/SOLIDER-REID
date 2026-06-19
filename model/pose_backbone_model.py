@@ -192,6 +192,16 @@ class PoseBackboneModel(build_transformer):
             if self._lgpa_fixed_bands:
                 print('[LGPA] FIXED-BANDS: per-image pose replaced by a FIXED canonical pedestrian pose '
                       '(fixed CLIP text + fixed anatomical prior, NO per-image pose)')
+            if getattr(cfg.MODEL, 'POSE_LGPA_RANDOM_TEXT', False):
+                # Attribution ablation: replace CLIP text prototypes with FIXED random unit vectors.
+                # If part_only(random) ~= part_only(CLIP), the CLIP semantics contribute ~0 (shell).
+                _g = torch.Generator().manual_seed(42)
+                _rand = F.normalize(torch.randn(
+                    self.clip_part_head.num_labels, self.clip_part_head.clip_dim,
+                    generator=_g), p=2, dim=-1)
+                with torch.no_grad():
+                    self.clip_part_head.clip_text_features.copy_(_rand.float())
+                print('[LGPA] RANDOM-TEXT ablation: CLIP text prototypes -> FIXED random vectors (seed 42)')
 
         # PPA: Pose-Prompted Part-Assignment Head (replaces GCN)
         self.use_ppa = getattr(cfg.MODEL, 'POSE_PPA', False)

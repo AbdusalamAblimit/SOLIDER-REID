@@ -222,6 +222,7 @@ _C.MODEL.POSE_LGPA_ASSIGN_WEIGHT = 0.5   # Assignment supervision loss weight
 _C.MODEL.POSE_LGPA_DETACH = False         # Detach features before LGPA (no gradient to backbone)
 _C.MODEL.POSE_LGPA_NO_POSE = False        # Ablation: pass None heatmaps to LGPA (no pose-bias/assign/visibility) = pure CLIP-text parts
 _C.MODEL.POSE_LGPA_FIXED_BANDS = False    # Fixed-semantics: replace per-image pose with a FIXED canonical pedestrian pose (fixed CLIP text + fixed anatomical prior, no per-image pose)
+_C.MODEL.POSE_LGPA_RANDOM_TEXT = False     # Attribution ablation: replace CLIP text prototypes with FIXED random vectors (tests if CLIP semantics contribute vs pure structure)    # Fixed-semantics: replace per-image pose with a FIXED canonical pedestrian pose (fixed CLIP text + fixed anatomical prior, no per-image pose)
 
 # VCSR: Visibility-Conditional Semantic Routing — dynamic part gating + set matching
 _C.MODEL.POSE_VCSR = False                # Enable VCSR (replaces LGPA / GCN)
