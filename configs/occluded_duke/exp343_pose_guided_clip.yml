@@ -32,7 +32,7 @@ MODEL:
   POSE_LGPA_POSE_TEMP: 1.0
   POSE_LGPA_ASSIGN_WEIGHT: 0.5
   POSE_LGPA_DETACH: True
-  POSE_TEST_FEAT: 'equal_concat'
+  POSE_TEST_FEAT: 'global'
   GLOBAL_LOSS_SCALE: 1.0
   POSE_LOWER_BODY_OCC: False     # ★ 关 PLBOA(隔离)
   POSE_PARALLEL_AUG: False       # ★ 关多视图
