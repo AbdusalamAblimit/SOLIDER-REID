@@ -1737,3 +1737,21 @@
 
 - **e10 + e30 + λ sweep 三重证据：decorr 强度 0→1→2，Jaccard 仅降 0.004(几乎不动)、fusion 75.74→75.70 几乎不变、单分支判别力 39.05→38.18 与 oracle +0.85→+0.78 单调小降** → 解相关不仅打不破张力、过强还轻微有害(削判别力换不来互补)。**decorr-floor**：λ=2/10 双倍/十倍权重压不下 ~0.04 相关 → ID-constrained floor(共享判别方向 ID load-bearing，删不掉)。
 - **结论**：FM-import（frozen/换源/LoRA/decorr-fusion）方法方向全负，各有机制；张力对显式干预全程鲁棒。真产出 = 诊断研究（见 `fm_occluded_reid_study.md`）。
+
+## pose+CLIP 深度融合探索 (exp341–354, 2026-06-20 通宵)
+
+目标: 找 CLIP+姿态融合涨点的创新。**结论: 无 productive fusion(全局层冗余/有害, 空间层 CLIP 非空间)。** 详见 `experiments/overnight_pose_clip_search.md` + `pose_clip_codex_synthesis.md`。
+
+| 实验 | 配置 | mAP | vs 对照 |
+|---|---|---|---|
+| exp341base | Swin-Tiny 裸 global(无CLIP) | 57.6 | baseline |
+| **exp341** | + CLIP-ReID 可学习ID prompt | **59.8** | **+2.2 真CLIP增益** |
+| exp343/344/345 (A/B/C) | 姿态进CLIP对齐(池化/prompt/部位) | 57.6/57.6/58.0 | 全负, 吸收/稀释纯ID |
+| exp347/348 | de-occluded对齐 | 57.6 | 死 |
+| exp342 | CLIP + detached LGPA(外挂) | 60.0 | +0.2 冗余 |
+| **exp342b** | CLIP + **un-detach** LGPA | **60.7** | +0.9 vs exp341(但下行戳穿) |
+| **exp353** | **un-detach LGPA 无CLIP**(隔离) | **60.5** | pose单独已>CLIP单独59.8; 加CLIP只+0.2 |
+| **exp349** | 强系统 exp255(73.2) + CLIP | **71.4/71.3**(eq/global) | **CLIP有害 -1.8** |
+| exp354 PC-SOR | pose+CLIP文本 token归属(20-codex首推) | kill-switch FAILED | CLIP文本定位不了遮挡物/分不清目标vs任意人 |
+
+**完整画面**: CLIP 在裸弱baseline +2.2; 弱系统+pose 冗余(+0.2, exp353证+0.9大部分是pose); 强pose系统 -1.8 有害。CLIP=全局语义非空间, pose=空间结构, 无互补层面。交付=完整诊断(8实验+20-codex深搜+2 kill-switch)。
