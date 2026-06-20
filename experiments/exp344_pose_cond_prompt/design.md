@@ -25,3 +25,7 @@ pose_encoder 零初始化正确(起点=exp341);forward(label,pose) pose 传递�
 ## 修复（codex B Medium-1）
 pose_encoder 建在 clip_id_proj 前会消耗 RNG → 下游初始化偏离 exp341。已加 `torch.get/set_rng_state` 保存/恢复,下游模块初始化对齐 exp341。A/C 同样处理。
 注：单 seed 比较下,init 差异≈seed 方差,真实增益需 >~0.3 才有意义（与是否修 RNG 无关，但修后更干净）。
+
+## ★ 结果 (e120, test.py global) — NEGATIVE
+**B (pose-conditioned prompt) global = 57.6%** = baseline, -2.2 vs exp341。
+**结论**: pose 调制 prompt → prototype 变 pose-aware → 把 global 拉去编码姿态而非纯 ID,稀释了 exp341 的纯 ID 对齐增益。zero-init 没救回来(pose_encoder 学到的调制有害)。**Option B 失败。**
