@@ -4651,3 +4651,15 @@ exp341 的 +2.2 来自**纯 ID 对齐** (raw global ↔ 纯 ID 文本原型, 把
 
 **决策**: pose+CLIP 不存在有意义的融合增益(冗余, 非互补)。CLIP-ReID(+2.2)和 pose(LGPA)各自是干净贡献, 但二选一即可, 叠加无收益。这与 [[fm-import]]/[[occluded-reid-four-classes]] 一脉: 强判别 backbone 上"互补"信号总冗余。诚实负结果 = 这一夜的真交付。
 **执行**: exp349(detached 强系统+CLIP)收尾确认; 探索收敛, 不再开变体; 多 seed 留给用户。
+
+### [2026-06-21] 决策: pose+CLIP 训练端两机制(PGPD/PC-MSC)证负 + 整条线最终封板
+
+**上下文**: 20-codex 调研后用户选 PGPD(pose选完整teacher蒸馏prompt simplex暗知识)+ PC-MSC(pose mask可见部位重建冻结CLIP部位语义)两个训练端弱赌注。全协议(design→kill-switch→Claude+Codex双审→训练+random控制)走完。
+
+**结果**:
+- PGPD: exp355(pose)58.6 / exp355r(random)59.0 / exp341 59.8 → **-1.2**, pose选teacher≈random(噪声内)无价值。
+- PC-MSC: exp356(pose)57.1 / exp356r(random)57.3 / exp341 59.8 → **-2.7**, pose-mask≈random(噪声内)无价值。PC-MSC kill-switch 已预警(CLIP部位特征只带弱ID gap+0.01)。
+
+**决策**: pose+CLIP **五角度全负**(进对齐A/B/C 57.6死、强系统exp349 -1.8、空间归属PC-SOR kill-switch死、训练端蒸馏PGPD -1.2、训练端补全PC-MSC -2.7), 封板。pose 与 CLIP 无 productive fusion。
+**理由**: CLIP=全局语义工具(特征各向异性、部位ID弱), pose=空间结构工具; 二者能力不重叠处恰好无法在对方层面发挥。两训练端机制同模式: 机制本身负、pose成分(teacher/mask选择)无关。
+**执行**: pose+CLIP 探索彻底结束。Step1 CLIP-ReID(+2.2)和 pose 系统各自干净, 但不融。最强仍 exp342b 60.7 / 强系统 73.2。交付=详尽负结果诊断。多seed留用户。
