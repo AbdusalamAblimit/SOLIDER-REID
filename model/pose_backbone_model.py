@@ -258,6 +258,24 @@ class PoseBackboneModel(build_transformer):
                 print('[CLIP-ID-Prompt] PGPD (exp355): pose-guided prompt dark-distill, w=%.2f tau=%.2f random_teacher=%s'
                       % (self.pgpd_w, self.pgpd_tau, self.pgpd_random_teacher))
 
+            # exp356 PC-MSC: pose-conditioned masked semantic completion (training-only)
+            self.use_pcmsc = getattr(cfg.MODEL, 'POSE_PCMSC', False)
+            if self.use_pcmsc:
+                from .modules.clip_id_prompt import CLIPVisualEncoder
+                _rng = torch.get_rng_state()   # preserve RNG so backbone/bottleneck inits match exp341
+                self.pcmsc_visual = CLIPVisualEncoder(
+                    clip_arch=getattr(cfg.MODEL, 'POSE_CLIP_ID_ARCH', 'ViT-L-14'),
+                    clip_pretrained=getattr(cfg.MODEL, 'POSE_CLIP_ID_PRETRAINED', 'openai'))
+                self.pcmsc_w = float(getattr(cfg.MODEL, 'POSE_PCMSC_W', 1.0))
+                self.pcmsc_random_mask = getattr(cfg.MODEL, 'POSE_PCMSC_RANDOM_MASK', False)
+                self.pcmsc_mask_token = nn.Parameter(torch.zeros(self.in_planes))
+                self.pcmsc_query = nn.Parameter(torch.randn(3, self.in_planes) * 0.02)  # per-region query
+                self.pcmsc_decoder = nn.MultiheadAttention(self.in_planes, num_heads=8, batch_first=True)
+                self.pcmsc_proj = nn.Linear(self.in_planes, self.pcmsc_visual.clip_dim)
+                torch.set_rng_state(_rng)
+                print('[PC-MSC] enabled (exp356): w=%.2f random_mask=%s, decoder %d->%d'
+                      % (self.pcmsc_w, self.pcmsc_random_mask, self.in_planes, self.pcmsc_visual.clip_dim))
+
         # PPA: Pose-Prompted Part-Assignment Head (replaces GCN)
         self.use_ppa = getattr(cfg.MODEL, 'POSE_PPA', False)
         if self.use_ppa:
@@ -628,6 +646,47 @@ class PoseBackboneModel(build_transformer):
                   % (int(has_teacher.sum()), B, float(w.mean()), float(dark.mean()), P))
         return self.pgpd_w * pgpd
 
+    def _pcmsc_loss(self, featmap, img, scene_heatmaps):
+        """exp356 PC-MSC: pose-masked CLIP-semantic completion. Mask a (visible) region's
+        backbone tokens; reconstruct that region's frozen CLIP-visual feature from the visible
+        context. Training-only regularizer; the descriptor (global) is computed on the UNMASKED
+        featmap elsewhere. Returns a scalar loss tensor."""
+        import torch.nn.functional as F
+        B, C, H, W = featmap.shape
+        device = featmap.device
+        target = self.pcmsc_visual.part_targets(img)            # (B,3,clip_dim) frozen, fp32, detached
+        # region of each token by row (5/6/5 split of H ~ CLIP 16-grid head/torso/legs thirds)
+        h1, h2 = round(5.0 / 16 * H), round(11.0 / 16 * H)
+        h1 = max(1, min(h1, H - 2)); h2 = max(h1 + 1, min(h2, H - 1))
+        rows = torch.arange(H, device=device).repeat_interleave(W)       # (HW,)
+        region_of_token = (rows >= h1).long() + (rows >= h2).long()      # (HW,) in {0,1,2}
+        # per-region pose visibility
+        pose = F.interpolate(scene_heatmaps.float(), size=(H, W), mode='bilinear', align_corners=False)
+        vis_map = pose.amax(dim=1).flatten(1)                            # (B, HW)
+        reg_vis = torch.stack([vis_map[:, region_of_token == r].mean(1) for r in range(3)], dim=1)  # (B,3)
+        # select region to mask: visibility-weighted (pose) or uniform (control)
+        if self.pcmsc_random_mask:
+            sel = torch.randint(0, 3, (B,), device=device)
+        else:
+            sel = torch.multinomial(reg_vis.clamp(min=1e-6).softmax(dim=1), 1).squeeze(1)  # (B,)
+        # mask the selected region's tokens with the learnable mask token
+        tokens = featmap.flatten(2).transpose(1, 2)                      # (B, HW, C)
+        mask = (region_of_token.unsqueeze(0) == sel.unsqueeze(1))        # (B, HW) bool
+        mt = self.pcmsc_mask_token.view(1, 1, C).to(tokens.dtype)
+        tok_masked = torch.where(mask.unsqueeze(-1), mt, tokens)
+        # decoder: the selected region's query reconstructs from the (masked) token set
+        q = self.pcmsc_query[sel].unsqueeze(1).to(tokens.dtype)          # (B,1,C)
+        R = self.pcmsc_decoder(q, tok_masked, tok_masked)[0].squeeze(1)  # (B, C)
+        R = F.normalize(self.pcmsc_proj(R).float(), dim=-1)             # (B, clip_dim) fp32
+        tgt = target[torch.arange(B, device=device), sel]               # (B, clip_dim)
+        cos = (R * tgt).sum(-1)
+        loss = (1.0 - cos).mean()
+        if not getattr(self, '_pcmsc_logged', False):
+            self._pcmsc_logged = True
+            print('[PC-MSC] first-call diag: sel-region hist %s, mean cos %.3f'
+                  % (torch.bincount(sel, minlength=3).tolist(), float(cos.mean())))
+        return self.pcmsc_w * loss
+
     def _lgpa_heatmap(self, scene_heatmaps, B, device):
         """Select the heatmap fed to the LGPA head: None (no-pose), fixed canonical
         (fixed-bands), or per-image scene heatmaps (default)."""
@@ -717,6 +776,11 @@ class PoseBackboneModel(build_transformer):
                         tp = torch.nn.functional.normalize(txt_proto, dim=1)
                         repel = (occ_proj * tp).sum(1).clamp(min=0).mean()
                         clip_id_loss = clip_id_loss + self.clip_id_occ_repel_w * repel
+
+            # exp356 PC-MSC: pose-masked CLIP-semantic completion (training-only regularizer)
+            if getattr(self, 'use_pcmsc', False) and scene_heatmaps is not None and self.training:
+                pcmsc = self._pcmsc_loss(featmaps[-1], x, scene_heatmaps)
+                clip_id_loss = pcmsc if clip_id_loss is None else clip_id_loss + pcmsc
 
             # VCSR: Visibility-Conditional Semantic Routing (detached)
             if getattr(self, 'use_vcsr', False) and scene_heatmaps is not None:

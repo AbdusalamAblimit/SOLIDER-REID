@@ -241,6 +241,11 @@ _C.MODEL.POSE_PGPD = False           # pose selects a more-complete same-ID teac
 _C.MODEL.POSE_PGPD_W = 0.5           # lambda_dark
 _C.MODEL.POSE_PGPD_TAU = 0.1         # temperature for image-to-ID-prototype logits
 _C.MODEL.POSE_PGPD_RANDOM_TEACHER = False  # control: random same-ID teacher (ignore pose completeness)
+# exp356 PC-MSC: pose-conditioned masked semantic completion (training-only)
+_C.MODEL.POSE_PCMSC = False          # mask a visible part's backbone tokens, reconstruct that
+                                     # part's frozen-CLIP-visual semantic from the visible context
+_C.MODEL.POSE_PCMSC_W = 1.0          # completion loss weight
+_C.MODEL.POSE_PCMSC_RANDOM_MASK = False  # control: random region mask (ignore pose visibility)
 
 # VCSR: Visibility-Conditional Semantic Routing — dynamic part gating + set matching
 _C.MODEL.POSE_VCSR = False                # Enable VCSR (replaces LGPA / GCN)

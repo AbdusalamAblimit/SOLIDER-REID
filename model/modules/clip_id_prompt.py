@@ -188,3 +188,50 @@ class PoseWeightedPool(nn.Module):
         vis = pose.amax(dim=1).flatten(1)                       # (B, N) person visibility
         w = ((-vis if invert else vis) * self.pose_temp).softmax(dim=1)  # (B, N), no params
         return torch.einsum('bn,bnc->bc', w, tokens)           # (B, C)
+
+
+class CLIPVisualEncoder(nn.Module):
+    """exp356 PC-MSC: frozen CLIP ViT visual encoder. Produces per-region (head/torso/legs =
+    top/mid/bottom thirds of the 16x16 patch grid) dense-token features as the masked-semantic-
+    completion TARGET. Input is the SOLIDER-normalized image (0.5/0.5); re-normalized to CLIP.
+    Entirely frozen + @no_grad: never trains, never in the optimizer."""
+    _MEAN = (0.48145466, 0.4578275, 0.40821073)
+    _STD = (0.26862954, 0.26130258, 0.27577711)
+
+    def __init__(self, clip_arch='ViT-L-14', clip_pretrained='openai'):
+        super().__init__()
+        clip_model, _, _ = open_clip.create_model_and_transforms(clip_arch, pretrained=clip_pretrained)
+        self.visual = clip_model.visual
+        for p in self.visual.parameters():
+            p.requires_grad_(False)
+        self.visual.eval()
+        self.clip_dim = clip_model.text_projection.shape[1]
+        self.register_buffer('mean', torch.tensor(self._MEAN).view(1, 3, 1, 1))
+        self.register_buffer('std', torch.tensor(self._STD).view(1, 3, 1, 1))
+        self._tok = {}
+        self.visual.transformer.resblocks[-1].register_forward_hook(
+            lambda m, i, o: self._tok.__setitem__('t', o))
+        print(f'[PC-MSC] CLIP visual encoder FROZEN, clip_dim={self.clip_dim}')
+
+    @torch.no_grad()
+    def part_targets(self, img):
+        """img: (B,3,H,W) SOLIDER-normalized (0.5/0.5). Returns (B,3,clip_dim) L2-normed
+        per-region (head/torso/legs) frozen CLIP features as the completion target."""
+        wdtype = self.visual.conv1.weight.dtype
+        x = img.float() * 0.5 + 0.5                          # un-norm SOLIDER (mean=std=0.5) -> [0,1]
+        x = (x - self.mean) / self.std                       # CLIP norm
+        x = F.interpolate(x, size=(224, 224), mode='bilinear', align_corners=False)
+        self._tok.clear()
+        _ = self.visual(x.to(wdtype))                        # triggers hook; pooled output discarded
+        t = self._tok['t']
+        if t.shape[0] != x.shape[0]:                         # (seq, B, dim) -> (B, seq, dim)
+            t = t.permute(1, 0, 2)
+        patch = self.visual.ln_post(t[:, 1:])                # drop CLS -> (B, 256, dim)
+        if getattr(self.visual, 'proj', None) is not None:
+            patch = patch @ self.visual.proj                 # (B, 256, clip_dim)
+        B = patch.shape[0]
+        grid = patch.reshape(B, 16, 16, -1).float()
+        regions = torch.stack([grid[:, :5].mean((1, 2)),     # head  (top 5 rows)
+                               grid[:, 5:11].mean((1, 2)),    # torso (mid 6 rows)
+                               grid[:, 11:].mean((1, 2))], dim=1)   # legs (bottom 5 rows)
+        return F.normalize(regions, dim=-1)                  # (B, 3, clip_dim)
