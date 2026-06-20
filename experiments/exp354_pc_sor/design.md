@@ -36,3 +36,11 @@
 
 ## 状态
 设计完成, 等用户点头 → 先做 kill-switch 验证 → 有信号则全建+双审查+训练。
+
+## ★ Kill-switch 结果 (2026-06-20): FAILED (简单形式)
+冻结 CLIP ViT, 6 张 occluded_duke query 图, raw patch token 对文本锚点的归属:
+- 单人裁剪里"OTHER-PERSON"锚点却抢 90-159 patch(占大头)→ CLIP 分不清 目标人 vs 泛指人。
+- "OCCLUDER"锚点抓 ~0 → 遮挡物定位失败。"torso"=0。
+**结论: raw CLIP patch-文本对齐太噪(CLIP 只为全局CLS-文本训, 非patch级), 归属路由核心假设在简单形式下失败。**
+**救法**: MaskCLIP/CLIP-Surgery 式 dense 特征(去最后attn, 用value embedding) + pose 先验定位目标。但 occluder-via-text 仍存疑。
+**判断**: kill-switch 省了多小时白建。PC-SOR 需 MaskCLIP 改造才可能, 较重且不确定。备选 PC-MSC(#3, 不依赖patch-文本归属, 靠CLIP语义token重建)、PGPD(#5, 纯训练端prompt蒸馏)更干净。
