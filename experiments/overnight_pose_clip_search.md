@@ -60,3 +60,8 @@ exp353 (un-detach LGPA **无CLIP**) = 60.5/68.4 equal_concat (global 57.7≈base
 | un-detach LGPA + CLIP (exp342b) | 60.7 | +3.1 |
 **CLIP 加到 un-detach LGPA 上只 +0.2(60.5→60.7)。** CLIP(+2.2)与 un-detach LGPA(+2.9)**冗余**(合+3.1 << 和5.1, 都塑造backbone学ID)。equal_concat 被部位主导, CLIP 改善的global被稀释。
 **纠正结论: exp342b 的 +0.9 大部分是 pose(un-detach LGPA, 用户自己的机制), CLIP 只 +0.2 边际/冗余。无真正 CLIP+pose 协同。CLIP 给强pose系统加东西加不动(冗余), 与白天"强backbone上互补信号被吃掉"一致。**
+
+## ★ exp349 (强系统 scale-up) 最后确认: CLIP 有害 -1.8
+exp349 = exp255 全 pose 系统(Swin-Small + 2-stage PSG + LGPA + GCN512 + OA-SD + PLBOA)+ CLIP prompt, e120 训练eval mAP = **71.4%** vs exp255 **73.2%** → **CLIP 拉低强系统 -1.8**(test.py poll 待精确分解)。
+**完整画面: CLIP 在弱裸baseline +2.2; 弱系统+pose 冗余(+0.2); 强pose系统 -1.8 有害。** CLIP 只在裸弱baseline有用, 有pose结构后从冗余变累赘(纯ID对齐与全系统多loss/部位结构冲突)。
+**pose+CLIP 终极结论: 全局层冗余/有害, 空间层CLIP非空间(PC-SOR死)。无任何productive fusion。今晚交付=完整诊断(8实验+20codex+2 kill-switch+强系统确认)。**
