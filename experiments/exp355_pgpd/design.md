@@ -50,3 +50,8 @@
 - 实现: `model/pose_backbone_model.py::_pgpd_loss`(新方法); forward clip_id_loss 块 exp341 base 后调用; `config/defaults.py` 加 POSE_PGPD/_W/_TAU/_RANDOM_TEACHER; config `exp355_pgpd.yml`。
 - 数据流确认: PGPD 加到 clip_id_loss → line 973 (LGPA-off 路径) 返回 {'clip_id_loss'} → processor line 1300 `loss += clip_id_w * clip_id_loss`。POSE_PGPD False 时 _pgpd_loss 不调用 → 完全等价 exp341。
 - NaN 防护: P<3 跳过; 屏蔽真ID列后 0*(-inf) 用 masked_fill(prod,0) + nan_to_num; fp32 softmax; w.sum().clamp(min=1e-6)。
+
+## ★ 结果 (2026-06-21): FAILED -1.2
+exp355 PGPD(pose teacher)= global 58.6 / equal_concat 58.6, **vs exp341 59.8 = -1.2**。PGPD 弱赌注失败且为负。
+**为何**: dark-KD 逼遮挡 student 匹配完整 teacher 的硬负分布——可能过度约束(遮挡 student 本该更不确定)或与主 i2t/t2i supcon(+2.2)竞争。teacher coverage 48/64 mean_w 0.61 证明 PGPD 激活非空转, 故是机制本身负, 非空转。
+控制 exp355r(random teacher)~1.5h 后出 → 隔离: ≈exp355 则蒸馏本身负(pose 选无关); >exp355 则 pose 选 teacher 反而更糟。
