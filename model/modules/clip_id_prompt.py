@@ -213,10 +213,19 @@ class CLIPVisualEncoder(nn.Module):
             lambda m, i, o: self._tok.__setitem__('t', o))
         print(f'[PC-MSC] CLIP visual encoder FROZEN, clip_dim={self.clip_dim}')
 
+    def train(self, mode=True):
+        # keep the frozen CLIP visual in eval even when the parent model.train() is called each
+        # epoch — else dropout/patch-dropout would make the completion target stochastic and could
+        # break the fixed 16x16 patch reshape (Codex Medium).
+        super().train(mode)
+        self.visual.eval()
+        return self
+
     @torch.no_grad()
     def part_targets(self, img):
         """img: (B,3,H,W) SOLIDER-normalized (0.5/0.5). Returns (B,3,clip_dim) L2-normed
         per-region (head/torso/legs) frozen CLIP features as the completion target."""
+        self.visual.eval()                                   # belt-and-suspenders eval-stability
         wdtype = self.visual.conv1.weight.dtype
         x = img.float() * 0.5 + 0.5                          # un-norm SOLIDER (mean=std=0.5) -> [0,1]
         x = (x - self.mean) / self.std                       # CLIP norm
