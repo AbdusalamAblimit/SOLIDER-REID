@@ -1755,3 +1755,17 @@
 | exp354 PC-SOR | pose+CLIP文本 token归属(20-codex首推) | kill-switch FAILED | CLIP文本定位不了遮挡物/分不清目标vs任意人 |
 
 **完整画面**: CLIP 在裸弱baseline +2.2; 弱系统+pose 冗余(+0.2, exp353证+0.9大部分是pose); 强pose系统 -1.8 有害。CLIP=全局语义非空间, pose=空间结构, 无互补层面。交付=完整诊断(8实验+20-codex深搜+2 kill-switch)。
+
+## pose+CLIP 训练端两机制 (exp355 PGPD / exp356 PC-MSC, 2026-06-21)
+
+20-codex 调研后用户选的两个弱赌注, 全协议(design→kill-switch→双审→训练+控制)走完, 全证负。
+
+| 实验 | 机制 | mAP | vs exp341 59.8 | 控制(random) | 隔离 |
+|---|---|---|---|---|---|
+| exp355 PGPD | pose选完整teacher蒸馏prompt simplex暗知识 | 58.6 | **-1.2** | exp355r 59.0 | pose选teacher≈random→无价值 |
+| exp356 PC-MSC | pose mask可见部位重建冻结CLIP部位语义 | 57.1 | **-2.7** | exp356r 57.3 | pose-mask≈random→无价值 |
+
+**两机制同模式: 机制本身轻微~中度有害, pose 成分(teacher/mask 选择)在噪声内无贡献。** PC-MSC kill-switch 已预警(CLIP 部位特征只带弱 ID gap+0.01)。
+
+## ★ pose+CLIP 最终封板
+Step1 CLIP-ReID prompt +2.2(干净)。Step2 pose 融 CLIP **五角度全负**: 进对齐(A/B/C 57.6死)、强系统(exp349 -1.8)、空间归属(PC-SOR kill-switch死)、训练端蒸馏(PGPD -1.2)、训练端补全(PC-MSC -2.7)。**pose 与 CLIP 无 productive fusion**(CLIP=全局语义工具, pose=空间结构工具, 能力不重叠处无法在对方层面发挥)。最强仍 exp342b 60.7 / 强 pose 系统 73.2。交付 = 详尽负结果诊断。
