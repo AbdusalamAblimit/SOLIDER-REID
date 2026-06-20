@@ -44,3 +44,10 @@
 **结论: raw CLIP patch-文本对齐太噪(CLIP 只为全局CLS-文本训, 非patch级), 归属路由核心假设在简单形式下失败。**
 **救法**: MaskCLIP/CLIP-Surgery 式 dense 特征(去最后attn, 用value embedding) + pose 先验定位目标。但 occluder-via-text 仍存疑。
 **判断**: kill-switch 省了多小时白建。PC-SOR 需 MaskCLIP 改造才可能, 较重且不确定。备选 PC-MSC(#3, 不依赖patch-文本归属, 靠CLIP语义token重建)、PGPD(#5, 纯训练端prompt蒸馏)更干净。
+
+## ★ MaskCLIP 重试 (2026-06-20): 也 FAILED → PC-SOR 死
+MaskCLIP value-embedding dense 特征下: 部位略好(torso 0→4-12), 但两致命问题在:
+- "OTHER-PERSON"依然霸占 107-178 patch(单人裁剪!)→ CLIP 文本分不清"目标人"vs"任意人"("another person"匹配目标自己)。
+- "OCCLUDER"依然 ~0-8 → 遮挡物定位失败。
+**死因(深层): "目标人"是 pose 定义的非 CLIP 文本能定义(文本里"另一个人"匹配任何人); CLIP 文本定位不了多样遮挡物。所以归属里 CLIP 文本部分对 目标/遮挡 消歧毫无贡献——pose 自己做目标定位=就是 LGPA/PSG。**
+**合力结论: CLIP=全局语义非空间; pose=空间先验。全局层面融=冗余(今晚证); 空间层面融=CLIP非空间(归属失败,刚证)。没有层面能让 pose+CLIP 真互补涨点。**
