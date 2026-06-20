@@ -27,3 +27,7 @@ clip_id_loss 走 LGPA 路径是否正确、不重复计；两机制损失（i2t/
 ## 审查提醒 M1（Claude，重要）
 开 LGPA 后模型返回 list → loss 走 list-path，global 有效权重变 **0.5x**（w_g=1/(1+POSE_PART_WEIGHT)=0.5），非 exp341 的 1.0x。这是标准 LGPA 训练 regime（+0.8~0.9 就在此测）。
 **正确解读 Step2 pose 增益**：用 **exp342 自己的 global（prompt, 0.5x）vs equal_concat（+pose, 0.5x）**，同尺度干净隔离 pose 贡献。Step1 的 prompt +2.2 是 1.0x（exp341），两步尺度不同但各自内部干净。记两个数。
+
+## 变体 (打破冗余尝试, 配置级 ablation, 代码已审)
+- **exp342b** POSE_LGPA_DETACH False: 姿态去塑造 backbone (部位有独立 id_part/tri_part 监督, 不进 CLIP 对齐, 区别于 A/B/C)。假设: 姿态塑造 backbone 的部位判别 = CLIP 全局判别的互补, 打破"只当外挂"的冗余。
+- **exp342c** GLOBAL_LOSS_SCALE 2.0: 抵消 LGPA list-path 的 0.5x, 让 global 实际 1.0x (M1 修正), 看干净 global + pose 是否清噪声。
