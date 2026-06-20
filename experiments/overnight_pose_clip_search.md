@@ -39,3 +39,6 @@ exp342b global=58.8 (un-detach 姿态塑造与纯ID竞争↓), 但部位塑造�
 - **exp350 (un-detach + clean global 2.0x) = 59.7 equal_concat** (global 57.9) — **比 exp342b 60.7 差!** 2.0x 过度加权 global 抢了部位注意力(部位carry +0.9)→ 掉。**原 1.0x(exp342b)最优, 保护global想法错。** NO-GO。
 - exp351 (un-detach + de-occluded) 跑中
 - exp349b (Swin-Small scale-up) 跑中
+
+- **exp351 (un-detach + de-occluded) = 60.3** — 比 exp342b 60.7 略低。un-detach 已塑造backbone, de-occluded净化对齐多余。NO-GO(不加成)。
+- **深挖小结**: exp342b(un-detach 纯净, 1.0x scale)= 60.7/69.3 = +0.9 仍是最优。变体(clean global 2.0x=59.7, de-occluded叠加=60.3)均未超。un-detach 本身是关键, 加料不如纯净。
