@@ -249,6 +249,9 @@ class PoseBackboneModel(build_transformer):
             # so it activates for any CLIP-ID config (exp355 does NOT use noparam-pool).
             self.use_pgpd = getattr(cfg.MODEL, 'POSE_PGPD', False)
             if self.use_pgpd:
+                assert not getattr(cfg.MODEL, 'POSE_CLIP_ID_POSE_PROMPT', False), \
+                    'PGPD assumes per-label-identical ID prototypes (uniq_protos[inv] scatter); ' \
+                    'incompatible with POSE_CLIP_ID_POSE_PROMPT (pose-conditioned prompts).'
                 self.pgpd_w = float(getattr(cfg.MODEL, 'POSE_PGPD_W', 0.5))
                 self.pgpd_tau = float(getattr(cfg.MODEL, 'POSE_PGPD_TAU', 0.1))
                 self.pgpd_random_teacher = getattr(cfg.MODEL, 'POSE_PGPD_RANDOM_TEACHER', False)
@@ -561,12 +564,14 @@ class PoseBackboneModel(build_transformer):
             self._canon_hm_cache = hm
         return self._canon_hm_cache.to(device).expand(B, 17, -1, -1).contiguous()
 
-    def _pgpd_loss(self, img_proj, txt_proto, label, scene_heatmaps):
+    def _pgpd_loss(self, img_proj, txt_proto, label, scene_heatmaps, target_heatmaps=None):
         """exp355 PGPD: pose-guided prompt-prototype dark-knowledge distillation.
         Pose selects a more-complete same-ID teacher within the batch; distill the
         teacher's soft distribution over the batch's OTHER-ID prototypes (hard-negatives)
         to the (occluded) student. Training-only: no test-time pose, no new ID pathway in
-        the CLIP alignment, descriptor unchanged. Returns a scalar loss tensor."""
+        the CLIP alignment, descriptor unchanged. Returns a scalar loss tensor.
+        target_heatmaps (target person only) is used for completeness so a distractor in a
+        multi-person scene cannot inflate it (Codex Medium)."""
         import torch.nn.functional as F
         B = img_proj.shape[0]
         device = img_proj.device
@@ -583,8 +588,13 @@ class PoseBackboneModel(build_transformer):
         img_n = F.normalize(img_proj.float(), dim=1)
         proto_n = F.normalize(uniq_protos, dim=1)
         logits = img_n @ proto_n.t() / self.pgpd_tau           # (B, P)
-        # pose completeness per image (sum of per-keypoint peak activation), detached
-        comp = scene_heatmaps.float().amax(dim=(2, 3)).sum(dim=1).detach()   # (B,)
+        # TARGET pose completeness per image (sum of per-keypoint peak activation), detached.
+        # Use target_heatmaps (target person only), NOT scene_heatmaps (max-merged over all
+        # persons) — else a distractor can inflate completeness while the target is occluded,
+        # driving teacher selection by non-target pose (Codex Medium). Fall back to scene only
+        # if target is unavailable.
+        comp_hm = target_heatmaps if target_heatmaps is not None else scene_heatmaps
+        comp = comp_hm.float().amax(dim=(2, 3)).sum(dim=1).detach()   # (B,)
         same = label.view(B, 1) == label.view(1, B)            # (B, B)
         not_self = ~torch.eye(B, dtype=torch.bool, device=device)
         if self.pgpd_random_teacher:
@@ -698,7 +708,7 @@ class PoseBackboneModel(build_transformer):
                     # exp355 PGPD: pose selects a more-complete same-ID teacher; distill its
                     # soft distribution over the batch's other-ID prototypes to this student.
                     if getattr(self, 'use_pgpd', False) and scene_heatmaps is not None:
-                        clip_id_loss = clip_id_loss + self._pgpd_loss(img_proj, txt_proto, label, scene_heatmaps)
+                        clip_id_loss = clip_id_loss + self._pgpd_loss(img_proj, txt_proto, label, scene_heatmaps, target_heatmaps)
                     # exp348: occluder repulsion — push the occluder-region (low-visibility) feature
                     # away from the ID prototype (penalize only positive similarity → make it neutral).
                     if getattr(self, 'use_clip_id_occ_repel', False) and scene_heatmaps is not None:

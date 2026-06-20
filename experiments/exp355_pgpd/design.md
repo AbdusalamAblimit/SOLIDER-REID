@@ -11,7 +11,7 @@
 
 ## 核心机制(数据流)
 基于 exp341(CLIP-ReID 可学习 ID prompt + i2t/t2i SupCon, Swin-Tiny)。新增:
-1. **pose 完整度**: `comp_i = scene_heatmaps[i].amax(dim=(1,2)).sum()`(每图可见关键点强度和, detach)。
+1. **pose 完整度**: `comp_i = target_heatmaps[i].amax(dim=(1,2)).sum()`(每图**目标人**可见关键点强度和, detach)。**用 target_heatmaps 非 scene(max-merge 多人)**——否则多人遮挡图里干扰者会虚高完整度误导 teacher 选择(Codex Medium)。target 不可用时 fallback scene。
 2. **batch 内 teacher 选择**: 对每个 student i, 在**同 ID** 且 `comp_j > comp_i` 中选 comp 最大的 j 当 teacher。无更完整同 ID → 该图无蒸馏(w=0)。
 3. **ID-prototype logits**: batch 唯一 ID 的 prototype `P_uniq = clip_id_prompt(unique_labels)` (P, D); `logits = normalize(clip_id_proj(global)) @ normalize(P_uniq).t() / τ` (B, P)。
 4. **暗知识 KL(对硬负)**: 对 student i / teacher j, 屏蔽各自真 ID 那列(只留 P-1 硬负), `L_dark_i = KL(log_softmax(logits_i_masked) ‖ softmax(stopgrad(logits_j_masked)))`。teacher 分布 stop-grad(teacher 只当目标不被拉)。
