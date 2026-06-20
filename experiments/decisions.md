@@ -4609,3 +4609,23 @@ ALL 子集同向更明显（pose-part 3.21/7.87 vs holistic 0.64/0.90）。绝�
 - 下一步: 下 CLIP-ReID 论文+代码,14 Codex 并行查 ours-vs-CLIP-ReID + pose×CLIP 创新性(含 web 查新)。
 **理由**: detach 保证 global==无-LGPA baseline,within-ckpt equalcat-vs-global 干净;no-pose ablation 单变量隔离 pose。
 **基建**: Clash 两修(都 live,非永久):① `PROCESS-NAME,tailscaled,DIRECT`(tailscaled 直连 DERP→4090 relay 复活)② `tun.dns-hijack: ['any:53']`(原为空→gpushare/hyy DNS 解析失败)。hyy(5060Ti sm_120)需 torch2.x,跑不了 SOLIDER 的 torch1.13+mmcv2.1。详见 [[lgpa-d-reproduction-gotchas]] memory。
+
+### [2026-06-20] 决策: 姿态融进 CLIP-ID-prompt 机制 — 三方系统验证全 NEGATIVE
+
+**上下文**: Step1 exp341 (CLIP-ReID 可学习 ID prompt 对齐 raw global) = +2.2 (59.8 vs 57.6)。用户路线 = 把姿态融进这个能涨的 CLIP 机制再涨。建了 3 种融法 (A/B/C), 各双审查通过、机制验证激活、e120 test.py global。
+
+**结果**:
+- A (exp343, pose-bias 池化特征替代 global 对齐): 57.6, -2.2
+- B (exp344, pose 调制 prompt context, zero-init): 57.6, -2.2
+- C (exp345, K=3 pose-localized 部位对齐): 58.0, -1.8
+全部 ≤58.0 < exp341 59.8, 掉回 baseline 附近。
+
+**核心洞察 (机制层面, 非 bug)**:
+exp341 的 +2.2 来自**纯 ID 对齐** (raw global ↔ 纯 ID 文本原型, 把 global 塑成纯 ID-判别)。
+姿态以任何"融进对齐"的方式进来都跟纯 ID 抢/稀释:
+- A/C: 姿态建带参数新通路, 吸收 i2t/t2i 梯度 (吸收陷阱, 本项目反复出现)。
+- B: 姿态进 prompt → 原型 pose-aware → global 被拉去编码姿态而非纯 ID。
+
+**决策**: 整合式加 pose 在此 CLIP 机制上 = 死路 (3/3)。最后测分离式 exp342 (pose 当独立描述子拼接, 不碰对齐)。若也不涨, 结论 = exp341 (+2.2) 是干净贡献, 姿态加不动。
+
+**执行结果**: exp342 训练中 (4090, ~2h)。
