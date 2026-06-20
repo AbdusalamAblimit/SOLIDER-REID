@@ -582,7 +582,7 @@ class PoseBackboneModel(build_transformer):
         P = uniq_labels.shape[0]
         if P < 3:
             return img_proj.new_zeros(())          # need >=2 hard-negatives for a soft target
-        uniq_protos = img_proj.new_zeros(P, txt_proto.shape[1])
+        uniq_protos = img_proj.new_zeros(P, txt_proto.shape[1], dtype=torch.float32)  # fp32: match txt_proto.float() (AMP index_put dtype)
         uniq_protos[inv] = txt_proto.float()
         # image-to-ID-prototype logits (fp32 for softmax stability under AMP)
         img_n = F.normalize(img_proj.float(), dim=1)
