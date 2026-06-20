@@ -51,3 +51,8 @@
 ## ★ Kill-switch 结果 (2026-06-21): 弱通过
 CLIP 每部位特征(8 ID×4 实例)same-ID vs diff-ID gap: GLOBAL +0.022, head +0.011, torso +0.009, legs +0.013。
 **带 ID(gap 全正, 非 PC-SOR 式垃圾), 但偏弱(部位 gap≈global 一半; 绝对 sim~0.93 = CLIP 各向异性)。** 目标有意义但弱 → 预期温和信号, 非清晰涨/死。决定: 继续全建(用户要全协议 + 非清晰 kill), 经验训练定论。
+
+## ★ 结果 (2026-06-21): FAILED -2.7
+exp356 PC-MSC(pose-mask)= global 57.1 / equal_concat 57.1, **vs exp341 59.8 = -2.7**(比 PGPD -1.2 还差)。
+**为何**: kill-switch 早警示 CLIP 每部位特征只带弱 ID(gap+0.01, 各向异性挤窄锥)。逼 backbone 重建这个**弱且各向异性**的 CLIP 部位语义 → 把 backbone 拉向弱判别的 CLIP 特征、偏离 ID-判别方向 → 伤。补全目标弱 → 补全正则有害。
+控制 exp356r(random-mask, 3090)~2h 后出 → 隔离: ≈exp356 则补全机制本身负(pose-mask 无关); 但主结果 -2.7 已决定 PC-MSC 失败。
