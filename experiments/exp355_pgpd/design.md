@@ -55,3 +55,7 @@
 exp355 PGPD(pose teacher)= global 58.6 / equal_concat 58.6, **vs exp341 59.8 = -1.2**。PGPD 弱赌注失败且为负。
 **为何**: dark-KD 逼遮挡 student 匹配完整 teacher 的硬负分布——可能过度约束(遮挡 student 本该更不确定)或与主 i2t/t2i supcon(+2.2)竞争。teacher coverage 48/64 mean_w 0.61 证明 PGPD 激活非空转, 故是机制本身负, 非空转。
 控制 exp355r(random teacher)~1.5h 后出 → 隔离: ≈exp355 则蒸馏本身负(pose 选无关); >exp355 则 pose 选 teacher 反而更糟。
+
+## ★ 控制 exp355r 结果 → PGPD 封板 (2026-06-21)
+exp355r(random teacher)= global 59.0 / equal_concat 59.0。对比: exp341 59.8 > exp355r 59.0 ≈ exp355 58.6。
+**隔离结论: pose 选 teacher(58.6)≈ random(59.0)在噪声内 → pose 选 teacher 无价值。PGPD 蒸馏机制本身轻微有害(都<baseline 59.8), 非 teacher 选择问题。** PGPD 证负, 封板。
