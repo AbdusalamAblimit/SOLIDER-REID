@@ -244,14 +244,16 @@ class PoseBackboneModel(build_transformer):
                 if self.use_clip_id_occ_repel:
                     print('[CLIP-ID-Prompt] OCC-REPEL (exp348): push occluder feature away from ID prototype, w=%.2f' % self.clip_id_occ_repel_w)
 
-                # exp355 PGPD: pose-guided prompt-prototype dark-knowledge distillation (training-only)
-                self.use_pgpd = getattr(cfg.MODEL, 'POSE_PGPD', False)
-                if self.use_pgpd:
-                    self.pgpd_w = float(getattr(cfg.MODEL, 'POSE_PGPD_W', 0.5))
-                    self.pgpd_tau = float(getattr(cfg.MODEL, 'POSE_PGPD_TAU', 0.1))
-                    self.pgpd_random_teacher = getattr(cfg.MODEL, 'POSE_PGPD_RANDOM_TEACHER', False)
-                    print('[CLIP-ID-Prompt] PGPD (exp355): pose-guided prompt dark-distill, w=%.2f tau=%.2f random_teacher=%s'
-                          % (self.pgpd_w, self.pgpd_tau, self.pgpd_random_teacher))
+            # exp355 PGPD: pose-guided prompt-prototype dark-knowledge distillation (training-only).
+            # NOTE: indent 12 — inside `if self.use_clip_id_prompt:`, OUTSIDE the noparam-pool `if`,
+            # so it activates for any CLIP-ID config (exp355 does NOT use noparam-pool).
+            self.use_pgpd = getattr(cfg.MODEL, 'POSE_PGPD', False)
+            if self.use_pgpd:
+                self.pgpd_w = float(getattr(cfg.MODEL, 'POSE_PGPD_W', 0.5))
+                self.pgpd_tau = float(getattr(cfg.MODEL, 'POSE_PGPD_TAU', 0.1))
+                self.pgpd_random_teacher = getattr(cfg.MODEL, 'POSE_PGPD_RANDOM_TEACHER', False)
+                print('[CLIP-ID-Prompt] PGPD (exp355): pose-guided prompt dark-distill, w=%.2f tau=%.2f random_teacher=%s'
+                      % (self.pgpd_w, self.pgpd_tau, self.pgpd_random_teacher))
 
         # PPA: Pose-Prompted Part-Assignment Head (replaces GCN)
         self.use_ppa = getattr(cfg.MODEL, 'POSE_PPA', False)
@@ -610,6 +612,10 @@ class PoseBackboneModel(build_transformer):
         else:
             w = (comp[teacher_idx] - comp).clamp(min=0.0) * has_teacher.float()
         pgpd = (w * dark).sum() / w.sum().clamp(min=1e-6)
+        if not getattr(self, '_pgpd_logged', False):
+            self._pgpd_logged = True
+            print('[PGPD] first-call diag: teacher coverage %d/%d, mean_w %.3f, mean_dark %.3f, P %d'
+                  % (int(has_teacher.sum()), B, float(w.mean()), float(dark.mean()), P))
         return self.pgpd_w * pgpd
 
     def _lgpa_heatmap(self, scene_heatmaps, B, device):
