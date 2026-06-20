@@ -18,3 +18,19 @@ exp341 涨点来自**纯 ID 对齐**: raw global ↔ 纯 ID 文本原型, 把 gl
 - B: 姿态进 prompt → 原型 pose-aware → global 被拉去编码姿态而非纯 ID。
 
 ## 剩余未测: 姿态当独立描述子 (exp342, 不融进对齐, 拼接)
+
+## 全口径最终结果 (e120, test.py, mAP / Rank-1)
+| | pose 怎么加 | 描述子 | mAP | R1 |
+|---|---|---|---|---|
+| exp341 (Step1 纯 CLIP) | — | global | 59.8 | 68.4 |
+| A exp343 | 换对齐的特征 | global | 57.6 | 65.8 |
+| B exp344 | 调制 prompt | global | 57.6 | 66.4 |
+| C exp345 | 部位对齐 | global | 58.0 | 67.9 |
+| **exp342 (外挂/分离)** | LGPA 部位另算拼接 | equal_concat | **60.0** | **68.9** |
+
+exp342 global=59.6 → equal_concat 60.0 = pose 净 +0.4 mAP (同尺度)。
+
+## 终结论
+- 整合式 (姿态进对齐): 3/3 全负 (-1.8~-2.2 mAP), 姿态与纯 ID 对齐竞争。
+- 外挂式 (姿态当独立描述子, 不碰对齐): +0.2 mAP / +0.5 R1, **seed 噪声内, marginal**。
+- **Step1 CLIP 机制 (+2.2) 是真贡献; 姿态在其上最多 marginal, 且必须"外挂不碰对齐"**。用户路线: Step1 成, Step2 系统证明姿态加不动 (整合害, 外挂微涨)。
