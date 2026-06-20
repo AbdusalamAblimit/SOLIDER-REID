@@ -32,6 +32,7 @@ MODEL:
   POSE_LGPA_POSE_TEMP: 1.0
   POSE_LGPA_ASSIGN_WEIGHT: 0.5
   POSE_LGPA_DETACH: False
+  POSE_PART_WEIGHT: 2.0
   POSE_TEST_FEAT: 'equal_concat'
   GLOBAL_LOSS_SCALE: 1.0
   POSE_LOWER_BODY_OCC: False     # ★ 关 PLBOA(隔离)
@@ -81,4 +82,3 @@ TEST:
   FEAT_NORM: 'yes'
 
 OUTPUT_DIR: './log/occluded_duke/exp352_undetach_morepartw'
-  POSE_PART_WEIGHT: 2.0
