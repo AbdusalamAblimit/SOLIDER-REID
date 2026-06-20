@@ -50,3 +50,13 @@ un-detach 破坏了全系统(强系统为 detached LGPA 调好, un-detach 让 LG
 
 - **exp348 (de-occluded + occluder repulsion 独立) = 57.6 = baseline, -2.2 vs exp341** — de-occluded 对齐把 global 拉回 baseline。整条 de-occlusion(exp347/348)NEGATIVE 死。
 - **完整结论: un-detach(exp342b 60.7/69.3 +0.9)是唯一赢家。所有 7 变体(clean global/de-occluded×2/scale-up/occluder)均未超。纯净 un-detach 最优。**
+
+## ★★★ 重要纠正 (exp353 隔离, 用户问题戳穿): +0.9 大部分是 pose 不是 CLIP
+exp353 (un-detach LGPA **无CLIP**) = 60.5/68.4 equal_concat (global 57.7≈baseline)。
+| | mAP | over baseline 57.6 |
+|---|---|---|
+| 只 CLIP (exp341) | 59.8 | +2.2 |
+| 只 un-detach LGPA (exp353) | 60.5 | **+2.9 (已>CLIP!)** |
+| un-detach LGPA + CLIP (exp342b) | 60.7 | +3.1 |
+**CLIP 加到 un-detach LGPA 上只 +0.2(60.5→60.7)。** CLIP(+2.2)与 un-detach LGPA(+2.9)**冗余**(合+3.1 << 和5.1, 都塑造backbone学ID)。equal_concat 被部位主导, CLIP 改善的global被稀释。
+**纠正结论: exp342b 的 +0.9 大部分是 pose(un-detach LGPA, 用户自己的机制), CLIP 只 +0.2 边际/冗余。无真正 CLIP+pose 协同。CLIP 给强pose系统加东西加不动(冗余), 与白天"强backbone上互补信号被吃掉"一致。**
