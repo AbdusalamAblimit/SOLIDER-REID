@@ -25,3 +25,12 @@ exp341 +2.2 来自 **global 对齐纯 ID 文本原型**(把 global 塑成纯 ID-
 - pose-guided 遮挡增强 + CLIP 一致性(已部分在 exp349 的 PLBOA+CLIP)
 
 ## 结果(待填)
+
+## ★★★ 突破 (2026-06-20 凌晨): exp342b un-detach LGPA + CLIP = +0.9!
+| | 描述子 | mAP | R1 | vs exp341(59.8/68.4) |
+|---|---|---|---|---|
+| exp342 (detached LGPA) | equal_concat | 60.0 | 68.9 | +0.2/+0.5 (marginal) |
+| **exp342b (UN-detach LGPA)** | equal_concat | **60.7** | **69.3** | **+0.9/+0.9 清噪声!** |
+exp342b global=58.8 (un-detach 姿态塑造与纯ID竞争↓), 但部位塑造后判别↑ → equal_concat 净 +0.9。
+**机制**: un-detach 让 LGPA 部位的梯度流进 backbone, 部位有独立 id_part/tri_part 监督(不进CLIP对齐故不吸收CLIP), 姿态真塑造 backbone → 破"只当外挂"的冗余。**这是 pose 深度参与 + CLIP 的真涨。**
+**深挖方向**: (1) un-detach + 保护global(scale 2.0); (2) scale-up 到 Swin-Small 全系统(exp349, 若其LGPA本就un-detach); (3) un-detach + de-occluded对齐叠加。
