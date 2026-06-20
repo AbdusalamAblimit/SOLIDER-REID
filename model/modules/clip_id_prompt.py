@@ -166,3 +166,24 @@ class PoseGuidedPartPool(nn.Module):
             attn = F.softmax(attn, dim=1)                       # (B, N)
             part_feats.append(torch.einsum('bn,bnc->bc', attn, tokens))  # (B, C)
         return torch.stack(part_feats, dim=1)                   # (B, n_parts, C)
+
+
+class PoseWeightedPool(nn.Module):
+    """exp347: PARAMETER-FREE pose-visibility-weighted pooling. No learnable query/proj →
+    the i2t/t2i alignment gradient flows DIRECTLY into the backbone (no pathway to absorb it,
+    unlike Option A's PoseGuidedPool which had learnable params and absorbed → 57.6).
+    Aligns the DE-OCCLUDED global (visible-person weighted) to the pure-ID prototype; the
+    backbone is shaped to make visible-person features ID-discriminative. Descriptor stays raw GAP."""
+    def __init__(self, pose_temp=4.0):
+        super().__init__()
+        self.pose_temp = float(pose_temp)
+
+    def forward(self, featmap, pose_heatmap):
+        # featmap (B,C,H,W); pose_heatmap (B,17,Hh,Ww) -> (B, C) de-occluded global, NO params
+        B, C, H, W = featmap.shape
+        tokens = featmap.flatten(2).transpose(1, 2)             # (B, N, C)
+        pose = F.interpolate(pose_heatmap.float(), size=(H, W),
+                             mode='bilinear', align_corners=False)
+        vis = pose.amax(dim=1).flatten(1)                       # (B, N) person visibility
+        w = (vis * self.pose_temp).softmax(dim=1)               # (B, N) normalized, no params
+        return torch.einsum('bn,bnc->bc', w, tokens)           # (B, C)

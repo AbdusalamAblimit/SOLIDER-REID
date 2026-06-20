@@ -233,6 +233,12 @@ class PoseBackboneModel(build_transformer):
                     self.in_planes, float(getattr(cfg.MODEL, 'POSE_CLIP_ID_POSE_TEMP', 1.0)))
                 torch.set_rng_state(_rng)
                 print('[CLIP-ID-Prompt] PART-GUIDED (C): K pose-localized part features aligned to ID prototype')
+            # exp347: PARAMETER-FREE de-occluded pooling for the alignment (no params to absorb)
+            self.use_clip_id_noparam_pool = getattr(cfg.MODEL, 'POSE_CLIP_ID_NOPARAM_POOL', False)
+            if self.use_clip_id_noparam_pool:
+                from .modules.clip_id_prompt import PoseWeightedPool
+                self.pose_weighted_pool = PoseWeightedPool(float(getattr(cfg.MODEL, 'POSE_CLIP_ID_POSE_TEMP', 4.0)))
+                print('[CLIP-ID-Prompt] NOPARAM-POOL (exp347): align DE-OCCLUDED global (param-free) to pure-ID prototype')
 
         # PPA: Pose-Prompted Part-Assignment Head (replaces GCN)
         self.use_ppa = getattr(cfg.MODEL, 'POSE_PPA', False)
@@ -607,8 +613,10 @@ class PoseBackboneModel(build_transformer):
                             + supcon_i2t(txt_proto, ipk, label, t)
                     clip_id_loss = clip_id_loss / part_feats.shape[1]
                 else:
-                    # Option A (pose-guided pooled feat) or exp341 (raw global)
-                    if getattr(self, 'use_clip_id_pose_guided', False) and scene_heatmaps is not None:
+                    # exp347 (param-free de-occluded) / Option A (pose-guided pooled) / exp341 (raw global)
+                    if getattr(self, 'use_clip_id_noparam_pool', False) and scene_heatmaps is not None:
+                        feat_for_clip = self.pose_weighted_pool(featmaps[-1], scene_heatmaps)
+                    elif getattr(self, 'use_clip_id_pose_guided', False) and scene_heatmaps is not None:
                         feat_for_clip = self.pose_guided_pool(featmaps[-1], scene_heatmaps)
                     else:
                         feat_for_clip = global_feat

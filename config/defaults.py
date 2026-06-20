@@ -232,6 +232,7 @@ _C.MODEL.POSE_CLIP_ID_POSE_GUIDED = False  # Option A: i2t/t2i aligns a pose-bia
 _C.MODEL.POSE_CLIP_ID_POSE_TEMP = 1.0
 _C.MODEL.POSE_CLIP_ID_POSE_PROMPT = False  # Option B: per-image pose conditions the prompt context
 _C.MODEL.POSE_CLIP_ID_PART_GUIDED = False  # Option C: K pose-localized part features aligned to ID prototype
+_C.MODEL.POSE_CLIP_ID_NOPARAM_POOL = False  # exp347: param-free de-occluded pooling for alignment
 
 # VCSR: Visibility-Conditional Semantic Routing — dynamic part gating + set matching
 _C.MODEL.POSE_VCSR = False                # Enable VCSR (replaces LGPA / GCN)
