@@ -1,0 +1,83 @@
+# exp342: Step2 — CLIP-ID-prompt(可学习)+ 姿态部位分支(RANDOM query, 无固定语义壳)+ equal_concat
+# 问题：CLIP 模块(LGPA-D)本身能否 standalone 涨点，还是增益来自 PSG?
+# 基于 pose_psg_lgpa_detach.yml(exp244 原版)，仅关掉非-LGPA 组件 + 用 scene 热图。
+# 判据：同一 ckpt，test.py POSE_TEST_FEAT=equal_concat(LGPA) vs =global(baseline，detached→==baseline)。
+MODEL:
+  PRETRAIN_HW_RATIO: 2
+  PRETRAIN_CHOICE: 'self'
+  PRETRAIN_PATH: 'pretrained/swin_tiny.pth'
+  METRIC_LOSS_TYPE: 'triplet'
+  IF_LABELSMOOTH: 'off'
+  IF_WITH_CENTER: 'no'
+  NAME: 'transformer'
+  NO_MARGIN: True
+  DEVICE_ID: ('0')
+  TRANSFORMER_TYPE: 'swin_tiny_patch4_window7_224'
+  STRIDE_SIZE: [16, 16]
+  SEMANTIC_WEIGHT: 0.2
+  WITH_CP: False
+  POSE_ENABLED: True
+  POSE_DATA_DIR: 'data/occluded_duke'
+  POSE_HEATMAP_SIZE: [96, 32]
+  POSE_BACKBONE_PSG: True        # 选 PoseBackboneModel(承载 LGPA)
+  POSE_PSG_STAGES: []            # ★ 空列表 → 无 PSG 模块(psg_modules_dict 空，backward-compat 跳过)
+  POSE_PFM_HIDDEN: 64
+  POSE_LGPA: True
+  POSE_LGPA_RANDOM_TEXT: True
+  POSE_CLIP_ID_PROMPT: False
+  POSE_CLIP_ID_PRETRAINED: '/home/afr/SOLIDER-REID/clip_l14_openclip.safetensors'
+  POSE_CLIP_ID_WEIGHT: 1.0
+  POSE_LGPA_CLIP_DIM: 512
+  POSE_LGPA_NUM_HEADS: 8
+  POSE_LGPA_POSE_TEMP: 1.0
+  POSE_LGPA_ASSIGN_WEIGHT: 0.5
+  POSE_LGPA_DETACH: False
+  POSE_TEST_FEAT: 'equal_concat'
+  GLOBAL_LOSS_SCALE: 1.0
+  POSE_LOWER_BODY_OCC: False     # ★ 关 PLBOA(隔离)
+  POSE_PARALLEL_AUG: False       # ★ 关多视图
+  POSE_OA_SD: False              # ★ 关 OA-SD
+  # POSE_USE_TARGET_HEATMAP 不设 → 默认 False → scene-merged 热图(忠实原版)
+
+INPUT:
+  SIZE_TRAIN: [384, 128]
+  SIZE_TEST: [384, 128]
+  PROB: 0.5
+  RE_PROB: 0.5
+  PADDING: 10
+  PIXEL_MEAN: [0.5, 0.5, 0.5]
+  PIXEL_STD: [0.5, 0.5, 0.5]
+
+DATASETS:
+  NAMES: ('occluded_duke')
+  ROOT_DIR: ('data')
+
+DATALOADER:
+  SAMPLER: 'softmax_triplet'
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+
+SOLVER:
+  OPTIMIZER_NAME: 'SGD'
+  MAX_EPOCHS: 120
+  BASE_LR: 0.0008
+  WARMUP_EPOCHS: 20
+  IMS_PER_BATCH: 64
+  WARMUP_METHOD: 'cosine'
+  LARGE_FC_LR: False
+  CHECKPOINT_PERIOD: 60
+  LOG_PERIOD: 50
+  EVAL_PERIOD: 10
+  WEIGHT_DECAY: 1e-4
+  WEIGHT_DECAY_BIAS: 1e-4
+  BIAS_LR_FACTOR: 2
+
+TEST:
+  EVAL: True
+  IMS_PER_BATCH: 64
+  RE_RANKING: False
+  WEIGHT: ''
+  NECK_FEAT: 'before'
+  FEAT_NORM: 'yes'
+
+OUTPUT_DIR: './log/occluded_duke/exp353_undetach_noclip'
