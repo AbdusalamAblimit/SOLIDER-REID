@@ -244,6 +244,15 @@ class PoseBackboneModel(build_transformer):
                 if self.use_clip_id_occ_repel:
                     print('[CLIP-ID-Prompt] OCC-REPEL (exp348): push occluder feature away from ID prototype, w=%.2f' % self.clip_id_occ_repel_w)
 
+                # exp355 PGPD: pose-guided prompt-prototype dark-knowledge distillation (training-only)
+                self.use_pgpd = getattr(cfg.MODEL, 'POSE_PGPD', False)
+                if self.use_pgpd:
+                    self.pgpd_w = float(getattr(cfg.MODEL, 'POSE_PGPD_W', 0.5))
+                    self.pgpd_tau = float(getattr(cfg.MODEL, 'POSE_PGPD_TAU', 0.1))
+                    self.pgpd_random_teacher = getattr(cfg.MODEL, 'POSE_PGPD_RANDOM_TEACHER', False)
+                    print('[CLIP-ID-Prompt] PGPD (exp355): pose-guided prompt dark-distill, w=%.2f tau=%.2f random_teacher=%s'
+                          % (self.pgpd_w, self.pgpd_tau, self.pgpd_random_teacher))
+
         # PPA: Pose-Prompted Part-Assignment Head (replaces GCN)
         self.use_ppa = getattr(cfg.MODEL, 'POSE_PPA', False)
         if self.use_ppa:
@@ -550,6 +559,59 @@ class PoseBackboneModel(build_transformer):
             self._canon_hm_cache = hm
         return self._canon_hm_cache.to(device).expand(B, 17, -1, -1).contiguous()
 
+    def _pgpd_loss(self, img_proj, txt_proto, label, scene_heatmaps):
+        """exp355 PGPD: pose-guided prompt-prototype dark-knowledge distillation.
+        Pose selects a more-complete same-ID teacher within the batch; distill the
+        teacher's soft distribution over the batch's OTHER-ID prototypes (hard-negatives)
+        to the (occluded) student. Training-only: no test-time pose, no new ID pathway in
+        the CLIP alignment, descriptor unchanged. Returns a scalar loss tensor."""
+        import torch.nn.functional as F
+        B = img_proj.shape[0]
+        device = img_proj.device
+        # unique ID prototypes within the batch. Same-ID images share an identical prototype
+        # because exp355 keeps POSE_CLIP_ID_POSE_PROMPT off (prototype depends only on label),
+        # so scattering by inverse index is consistent.
+        uniq_labels, inv = torch.unique(label, return_inverse=True)   # inv: (B,) in [0,P)
+        P = uniq_labels.shape[0]
+        if P < 3:
+            return img_proj.new_zeros(())          # need >=2 hard-negatives for a soft target
+        uniq_protos = img_proj.new_zeros(P, txt_proto.shape[1])
+        uniq_protos[inv] = txt_proto.float()
+        # image-to-ID-prototype logits (fp32 for softmax stability under AMP)
+        img_n = F.normalize(img_proj.float(), dim=1)
+        proto_n = F.normalize(uniq_protos, dim=1)
+        logits = img_n @ proto_n.t() / self.pgpd_tau           # (B, P)
+        # pose completeness per image (sum of per-keypoint peak activation), detached
+        comp = scene_heatmaps.float().amax(dim=(2, 3)).sum(dim=1).detach()   # (B,)
+        same = label.view(B, 1) == label.view(1, B)            # (B, B)
+        not_self = ~torch.eye(B, dtype=torch.bool, device=device)
+        if self.pgpd_random_teacher:
+            cand = same & not_self                             # control: any same-ID teacher
+            score = torch.rand(B, B, device=device)            # random pick among candidates
+        else:
+            cand = same & (comp.view(1, B) > comp.view(B, 1)) & not_self  # teacher strictly more complete
+            score = comp.view(1, B).expand(B, B)               # pick the most-complete teacher
+        score = torch.where(cand, score, score.new_full((B, B), -1e9))
+        teacher_idx = score.argmax(dim=1)                      # (B,)
+        has_teacher = cand.any(dim=1)                          # (B,)
+        # hard-negative mask: drop each student's true-ID column (= inv). The teacher shares the
+        # same label, so the same column is its true ID too.
+        neg_mask = torch.ones(B, P, dtype=torch.bool, device=device)
+        neg_mask[torch.arange(B, device=device), inv] = False
+        student_logp = F.log_softmax(logits.masked_fill(~neg_mask, float('-inf')), dim=1)   # (B,P)
+        teacher_p = F.softmax(logits[teacher_idx].masked_fill(~neg_mask, float('-inf')), dim=1).detach()
+        # cross-entropy KD over hard-negatives; zero the masked column to avoid 0*(-inf)=NaN
+        prod = (teacher_p * student_logp).masked_fill(~neg_mask, 0.0)
+        dark = -prod.sum(dim=1)                                # (B,)
+        dark = torch.nan_to_num(dark, nan=0.0, posinf=0.0, neginf=0.0)
+        # weight: how much more complete the teacher is; 0 for students with no teacher
+        if self.pgpd_random_teacher:
+            w = has_teacher.float()
+        else:
+            w = (comp[teacher_idx] - comp).clamp(min=0.0) * has_teacher.float()
+        pgpd = (w * dark).sum() / w.sum().clamp(min=1e-6)
+        return self.pgpd_w * pgpd
+
     def _lgpa_heatmap(self, scene_heatmaps, B, device):
         """Select the heatmap fed to the LGPA head: None (no-pose), fixed canonical
         (fixed-bands), or per-image scene heatmaps (default)."""
@@ -627,6 +689,10 @@ class PoseBackboneModel(build_transformer):
                     img_proj = self.clip_id_proj(feat_for_clip)   # (B, clip_dim)
                     clip_id_loss = supcon_i2t(img_proj, txt_proto, label, t) \
                         + supcon_i2t(txt_proto, img_proj, label, t)
+                    # exp355 PGPD: pose selects a more-complete same-ID teacher; distill its
+                    # soft distribution over the batch's other-ID prototypes to this student.
+                    if getattr(self, 'use_pgpd', False) and scene_heatmaps is not None:
+                        clip_id_loss = clip_id_loss + self._pgpd_loss(img_proj, txt_proto, label, scene_heatmaps)
                     # exp348: occluder repulsion — push the occluder-region (low-visibility) feature
                     # away from the ID prototype (penalize only positive similarity → make it neutral).
                     if getattr(self, 'use_clip_id_occ_repel', False) and scene_heatmaps is not None:

@@ -235,6 +235,12 @@ _C.MODEL.POSE_CLIP_ID_PART_GUIDED = False  # Option C: K pose-localized part fea
 _C.MODEL.POSE_CLIP_ID_NOPARAM_POOL = False  # exp347: param-free de-occluded pooling for alignment
 _C.MODEL.POSE_CLIP_ID_OCC_REPEL = False  # exp348: push occluder feat away from ID prototype
 _C.MODEL.POSE_CLIP_ID_OCC_REPEL_W = 0.5
+# exp355 PGPD: pose-guided prompt-prototype dark-knowledge distillation (training-only)
+_C.MODEL.POSE_PGPD = False           # pose selects a more-complete same-ID teacher; distill its
+                                     # soft distribution over batch other-ID prototypes (hard-negs)
+_C.MODEL.POSE_PGPD_W = 0.5           # lambda_dark
+_C.MODEL.POSE_PGPD_TAU = 0.1         # temperature for image-to-ID-prototype logits
+_C.MODEL.POSE_PGPD_RANDOM_TEACHER = False  # control: random same-ID teacher (ignore pose completeness)
 
 # VCSR: Visibility-Conditional Semantic Routing — dynamic part gating + set matching
 _C.MODEL.POSE_VCSR = False                # Enable VCSR (replaces LGPA / GCN)
