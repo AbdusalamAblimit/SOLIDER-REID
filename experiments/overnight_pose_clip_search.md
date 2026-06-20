@@ -34,3 +34,8 @@ exp341 +2.2 来自 **global 对齐纯 ID 文本原型**(把 global 塑成纯 ID-
 exp342b global=58.8 (un-detach 姿态塑造与纯ID竞争↓), 但部位塑造后判别↑ → equal_concat 净 +0.9。
 **机制**: un-detach 让 LGPA 部位的梯度流进 backbone, 部位有独立 id_part/tri_part 监督(不进CLIP对齐故不吸收CLIP), 姿态真塑造 backbone → 破"只当外挂"的冗余。**这是 pose 深度参与 + CLIP 的真涨。**
 **深挖方向**: (1) un-detach + 保护global(scale 2.0); (2) scale-up 到 Swin-Small 全系统(exp349, 若其LGPA本就un-detach); (3) un-detach + de-occluded对齐叠加。
+
+## 深挖结果
+- **exp350 (un-detach + clean global 2.0x) = 59.7 equal_concat** (global 57.9) — **比 exp342b 60.7 差!** 2.0x 过度加权 global 抢了部位注意力(部位carry +0.9)→ 掉。**原 1.0x(exp342b)最优, 保护global想法错。** NO-GO。
+- exp351 (un-detach + de-occluded) 跑中
+- exp349b (Swin-Small scale-up) 跑中
