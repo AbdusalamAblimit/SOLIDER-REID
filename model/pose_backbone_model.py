@@ -239,6 +239,10 @@ class PoseBackboneModel(build_transformer):
                 from .modules.clip_id_prompt import PoseWeightedPool
                 self.pose_weighted_pool = PoseWeightedPool(float(getattr(cfg.MODEL, 'POSE_CLIP_ID_POSE_TEMP', 4.0)))
                 print('[CLIP-ID-Prompt] NOPARAM-POOL (exp347): align DE-OCCLUDED global (param-free) to pure-ID prototype')
+                self.use_clip_id_occ_repel = getattr(cfg.MODEL, 'POSE_CLIP_ID_OCC_REPEL', False)
+                self.clip_id_occ_repel_w = float(getattr(cfg.MODEL, 'POSE_CLIP_ID_OCC_REPEL_W', 0.5))
+                if self.use_clip_id_occ_repel:
+                    print('[CLIP-ID-Prompt] OCC-REPEL (exp348): push occluder feature away from ID prototype, w=%.2f' % self.clip_id_occ_repel_w)
 
         # PPA: Pose-Prompted Part-Assignment Head (replaces GCN)
         self.use_ppa = getattr(cfg.MODEL, 'POSE_PPA', False)
@@ -623,6 +627,14 @@ class PoseBackboneModel(build_transformer):
                     img_proj = self.clip_id_proj(feat_for_clip)   # (B, clip_dim)
                     clip_id_loss = supcon_i2t(img_proj, txt_proto, label, t) \
                         + supcon_i2t(txt_proto, img_proj, label, t)
+                    # exp348: occluder repulsion — push the occluder-region (low-visibility) feature
+                    # away from the ID prototype (penalize only positive similarity → make it neutral).
+                    if getattr(self, 'use_clip_id_occ_repel', False) and scene_heatmaps is not None:
+                        occ_feat = self.pose_weighted_pool(featmaps[-1], scene_heatmaps, invert=True)
+                        occ_proj = torch.nn.functional.normalize(self.clip_id_proj(occ_feat), dim=1)
+                        tp = torch.nn.functional.normalize(txt_proto, dim=1)
+                        repel = (occ_proj * tp).sum(1).clamp(min=0).mean()
+                        clip_id_loss = clip_id_loss + self.clip_id_occ_repel_w * repel
 
             # VCSR: Visibility-Conditional Semantic Routing (detached)
             if getattr(self, 'use_vcsr', False) and scene_heatmaps is not None:

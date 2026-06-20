@@ -178,12 +178,13 @@ class PoseWeightedPool(nn.Module):
         super().__init__()
         self.pose_temp = float(pose_temp)
 
-    def forward(self, featmap, pose_heatmap):
-        # featmap (B,C,H,W); pose_heatmap (B,17,Hh,Ww) -> (B, C) de-occluded global, NO params
+    def forward(self, featmap, pose_heatmap, invert=False):
+        # featmap (B,C,H,W); pose_heatmap (B,17,Hh,Ww) -> (B, C) pooled global, NO params.
+        # invert=True → weight the OCCLUDER (low-visibility) regions (exp348 occluder repulsion).
         B, C, H, W = featmap.shape
         tokens = featmap.flatten(2).transpose(1, 2)             # (B, N, C)
         pose = F.interpolate(pose_heatmap.float(), size=(H, W),
                              mode='bilinear', align_corners=False)
         vis = pose.amax(dim=1).flatten(1)                       # (B, N) person visibility
-        w = (vis * self.pose_temp).softmax(dim=1)               # (B, N) normalized, no params
+        w = ((-vis if invert else vis) * self.pose_temp).softmax(dim=1)  # (B, N), no params
         return torch.einsum('bn,bnc->bc', w, tokens)           # (B, C)

@@ -233,6 +233,8 @@ _C.MODEL.POSE_CLIP_ID_POSE_TEMP = 1.0
 _C.MODEL.POSE_CLIP_ID_POSE_PROMPT = False  # Option B: per-image pose conditions the prompt context
 _C.MODEL.POSE_CLIP_ID_PART_GUIDED = False  # Option C: K pose-localized part features aligned to ID prototype
 _C.MODEL.POSE_CLIP_ID_NOPARAM_POOL = False  # exp347: param-free de-occluded pooling for alignment
+_C.MODEL.POSE_CLIP_ID_OCC_REPEL = False  # exp348: push occluder feat away from ID prototype
+_C.MODEL.POSE_CLIP_ID_OCC_REPEL_W = 0.5
 
 # VCSR: Visibility-Conditional Semantic Routing — dynamic part gating + set matching
 _C.MODEL.POSE_VCSR = False                # Enable VCSR (replaces LGPA / GCN)
