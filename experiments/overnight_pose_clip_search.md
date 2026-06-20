@@ -47,3 +47,6 @@ exp342b global=58.8 (un-detach 姿态塑造与纯ID竞争↓), 但部位塑造�
 un-detach 破坏了全系统(强系统为 detached LGPA 调好, un-detach 让 LGPA 塑造 backbone 干扰 PSG/GCN/OA-SD 平衡)。
 **关键: un-detach 突破(exp342b +0.9)是 Swin-Tiny 纯 LGPA+CLIP 特有, 不泛化到全系统。** NO-GO。
 → 正确 scale-up = detached + CLIP(exp349, 测 CLIP 加到正确强系统)。
+
+- **exp348 (de-occluded + occluder repulsion 独立) = 57.6 = baseline, -2.2 vs exp341** — de-occluded 对齐把 global 拉回 baseline。整条 de-occlusion(exp347/348)NEGATIVE 死。
+- **完整结论: un-detach(exp342b 60.7/69.3 +0.9)是唯一赢家。所有 7 变体(clean global/de-occluded×2/scale-up/occluder)均未超。纯净 un-detach 最优。**
