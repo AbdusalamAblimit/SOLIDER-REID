@@ -47,3 +47,7 @@
 
 ## 状态
 设计完成 → 先跑 kill-switch(CLIP 每部位特征带不带 ID)→ 通过则全建+双审+训练。
+
+## ★ Kill-switch 结果 (2026-06-21): 弱通过
+CLIP 每部位特征(8 ID×4 实例)same-ID vs diff-ID gap: GLOBAL +0.022, head +0.011, torso +0.009, legs +0.013。
+**带 ID(gap 全正, 非 PC-SOR 式垃圾), 但偏弱(部位 gap≈global 一半; 绝对 sim~0.93 = CLIP 各向异性)。** 目标有意义但弱 → 预期温和信号, 非清晰涨/死。决定: 继续全建(用户要全协议 + 非清晰 kill), 经验训练定论。
