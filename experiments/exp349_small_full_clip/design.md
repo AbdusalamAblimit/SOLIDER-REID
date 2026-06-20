@@ -20,3 +20,6 @@ exp255(全 pose, 73.2)vs exp349(全 pose + CLIP)。单变量 = POSE_CLIP_ID_PROM
 
 ## 审查重点
 CLIP prompt 与全系统(PSG/LGPA/GCN/OA-SD/PLBOA)多分支多 loss 共存无冲突;clip_id_loss 经 dual 分支正确回传不重复;Swin-Small backbone 下 clip_id_proj 维度(in_planes)对;OA-SD 的 EMA teacher 不受 CLIP 干扰;单变量 vs exp255;Swin-Small 显存(+CLIP ViT-L)够。
+
+## 变体 exp349b: un-detach (winner scale-up)
+exp342b 证明 un-detach LGPA +0.9。exp255/exp349 本是 DETACH=True。exp349b = exp349 + POSE_LGPA_DETACH False → Swin-Small 全 pose 系统 + un-detach LGPA + CLIP = winner 方向的 scale-up。配置级 ablation(代码已审)。

@@ -31,3 +31,6 @@ clip_id_loss 走 LGPA 路径是否正确、不重复计；两机制损失（i2t/
 ## 变体 (打破冗余尝试, 配置级 ablation, 代码已审)
 - **exp342b** POSE_LGPA_DETACH False: 姿态去塑造 backbone (部位有独立 id_part/tri_part 监督, 不进 CLIP 对齐, 区别于 A/B/C)。假设: 姿态塑造 backbone 的部位判别 = CLIP 全局判别的互补, 打破"只当外挂"的冗余。
 - **exp342c** GLOBAL_LOSS_SCALE 2.0: 抵消 LGPA list-path 的 0.5x, 让 global 实际 1.0x (M1 修正), 看干净 global + pose 是否清噪声。
+
+## 变体 exp350: exp342b(un-detach) + clean global 2.0x
+exp342b global 掉到 58.8(un-detach 竞争纯ID)。exp350 = exp342b + GLOBAL_LOSS_SCALE 2.0(让 global 实际 1.0x,保护纯ID对齐)→ 期望 global 回到 ~59.8 + 部位 → equal_concat 更高(>60.7)。
