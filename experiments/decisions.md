@@ -4629,3 +4629,25 @@ exp341 的 +2.2 来自**纯 ID 对齐** (raw global ↔ 纯 ID 文本原型, 把
 **决策**: 整合式加 pose 在此 CLIP 机制上 = 死路 (3/3)。最后测分离式 exp342 (pose 当独立描述子拼接, 不碰对齐)。若也不涨, 结论 = exp341 (+2.2) 是干净贡献, 姿态加不动。
 
 **执行结果**: exp342 训练中 (4090, ~2h)。
+
+### [2026-06-20] 决策: 通宵 pose+CLIP 深度融合搜索 — 完整结论(诚实负结果)
+
+**上下文**: 用户要"找一个 CLIP+姿态融合涨点的创新", 通宵 3 台机探索。
+
+**全部结果** (Occluded-Duke, e120, test.py, over baseline 57.6):
+- CLIP-ReID prompt 单独 (exp341, raw global): 59.8 = +2.2 ← 真 CLIP 增益(干净)
+- 姿态**整合进 CLIP 对齐** (A/B/C exp343/344/345): 57.6/57.6/58.0 全负 ← 吸收/稀释纯 ID 对齐
+- 姿态**外挂** (exp342 detached LGPA): 60.0 +0.2 marginal
+- 姿态 **un-detach LGPA** + CLIP (exp342b): 60.7 +0.9 ← 一度以为是突破
+- **un-detach LGPA 单独无 CLIP (exp353): 60.5 = +2.9, 已 > CLIP 单独 59.8!**
+- 深挖 7 变体 (clean global/de-occluded×2/scale-up/occluder/part-weight): 均未超 60.7
+
+**核心结论(诚实)**:
+1. 姿态进 CLIP 对齐 = 死(A/B/C, 跟纯 ID 抢被吸收)。
+2. exp342b 的 +0.9 **大部分是 pose(un-detach LGPA), CLIP 只 +0.2**(exp353 隔离戳穿)。
+3. **CLIP(+2.2)与 un-detach LGPA(+2.9)冗余**: 合 +3.1 << 5.1, 都塑造 backbone 学 ID, 重叠。
+4. **无真正 CLIP+pose 协同。强 pose backbone 上 CLIP 加不动**, 反之亦然。
+5. un-detach 在简单设置(纯 LGPA)涨, 但破坏全系统(exp349b 65.7<<73.2)。
+
+**决策**: pose+CLIP 不存在有意义的融合增益(冗余, 非互补)。CLIP-ReID(+2.2)和 pose(LGPA)各自是干净贡献, 但二选一即可, 叠加无收益。这与 [[fm-import]]/[[occluded-reid-four-classes]] 一脉: 强判别 backbone 上"互补"信号总冗余。诚实负结果 = 这一夜的真交付。
+**执行**: exp349(detached 强系统+CLIP)收尾确认; 探索收敛, 不再开变体; 多 seed 留给用户。
