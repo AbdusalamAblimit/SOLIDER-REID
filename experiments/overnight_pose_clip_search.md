@@ -42,3 +42,8 @@ exp342b global=58.8 (un-detach 姿态塑造与纯ID竞争↓), 但部位塑造�
 
 - **exp351 (un-detach + de-occluded) = 60.3** — 比 exp342b 60.7 略低。un-detach 已塑造backbone, de-occluded净化对齐多余。NO-GO(不加成)。
 - **深挖小结**: exp342b(un-detach 纯净, 1.0x scale)= 60.7/69.3 = +0.9 仍是最优。变体(clean global 2.0x=59.7, de-occluded叠加=60.3)均未超。un-detach 本身是关键, 加料不如纯净。
+
+## exp349b (Swin-Small 全系统 + un-detach + CLIP) = 65.7/64.7 — 大跌 -7.5 vs exp255 73.2!
+un-detach 破坏了全系统(强系统为 detached LGPA 调好, un-detach 让 LGPA 塑造 backbone 干扰 PSG/GCN/OA-SD 平衡)。
+**关键: un-detach 突破(exp342b +0.9)是 Swin-Tiny 纯 LGPA+CLIP 特有, 不泛化到全系统。** NO-GO。
+→ 正确 scale-up = detached + CLIP(exp349, 测 CLIP 加到正确强系统)。
