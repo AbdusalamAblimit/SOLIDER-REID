@@ -712,9 +712,14 @@ class PoseBackboneModel(build_transformer):
             if self.training and getattr(self, 'use_pose_shuffle', False) and scene_heatmaps is not None:
                 Bp = scene_heatmaps.shape[0]
                 if Bp > 1:
-                    perm = torch.randperm(Bp, device=scene_heatmaps.device)
-                    if bool((perm == torch.arange(Bp, device=perm.device)).all()):
-                        perm = torch.roll(perm, 1, 0)   # guarantee non-identity
+                    # derangement: NO image keeps its own pose (Codex: randperm leaves ~1 fixed point)
+                    ar = torch.arange(Bp, device=scene_heatmaps.device)
+                    perm = torch.randperm(Bp, device=ar.device)
+                    tries = 0
+                    while bool((perm == ar).any()) and tries < 8:
+                        perm = torch.randperm(Bp, device=ar.device); tries += 1
+                    if bool((perm == ar).any()):
+                        perm = torch.roll(ar, 1, 0)     # guaranteed-derangement fallback (cyclic shift)
                     scene_heatmaps = scene_heatmaps[perm]
                     if target_heatmaps is not None:
                         target_heatmaps = target_heatmaps[perm]

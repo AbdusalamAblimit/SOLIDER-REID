@@ -32,3 +32,7 @@ exp353(真 pose, 60.5)vs exp357(shuffle pose)。单变量 = POSE_SHUFFLE。
 
 ## 状态
 设计完成 → 实现 → 双审 → 训练(3090/4090 空闲)→ 判地基。
+
+## Codex 修复 (2026-06-21)
+- Medium-1: randperm 留固定点(~1/64 图保留自己 pose)→ 改 **derangement**(re-roll 至无固定点, fallback cyclic shift), 每张图都用别人 pose。
+- Medium-2(判读): NO-DROP 侧被裁剪对齐混淆(别人 pose 仍带粗糙 canonical 头/躯干/腿先验)。Codex/Claude 一致: 掉点=干净铁证(图特定 pose correspondence 重要); 不掉=只能说"精确图特定 pose 在对齐裁剪下非必需", 需补 **cross-PART(17关键点通道)shuffle** 二次确认(测解剖通道身份是否重要, 同图空间 support 不变)。最佳矩阵: cross-image + per-image channel-shuffle + no-pose/fixed-canonical control。
