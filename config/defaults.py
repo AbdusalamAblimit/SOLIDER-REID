@@ -246,6 +246,8 @@ _C.MODEL.POSE_PCMSC = False          # mask a visible part's backbone tokens, re
                                      # part's frozen-CLIP-visual semantic from the visible context
 _C.MODEL.POSE_PCMSC_W = 1.0          # completion loss weight
 _C.MODEL.POSE_PCMSC_RANDOM_MASK = False  # control: random region mask (ignore pose visibility)
+# exp357 pose-shuffle kill-switch: training-only cross-image pose permutation (tests pose causality)
+_C.MODEL.POSE_SHUFFLE = False
 
 # VCSR: Visibility-Conditional Semantic Routing — dynamic part gating + set matching
 _C.MODEL.POSE_VCSR = False                # Enable VCSR (replaces LGPA / GCN)

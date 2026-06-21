@@ -132,6 +132,9 @@ class PoseBackboneModel(build_transformer):
 
         # Target-only heatmap (multi-person target disambiguation, Occ-PTrack)
         # Default False preserves scene-heatmap (max over all persons) behavior.
+        self.use_pose_shuffle = getattr(cfg.MODEL, 'POSE_SHUFFLE', False)
+        if self.use_pose_shuffle:
+            print('[exp357] POSE_SHUFFLE kill-switch ON: training-only cross-image pose permutation')
         self.use_target_heatmap = getattr(cfg.MODEL, 'POSE_USE_TARGET_HEATMAP', False)
         if self.use_target_heatmap:
             print('[POSE] POSE_USE_TARGET_HEATMAP=True: '
@@ -703,6 +706,18 @@ class PoseBackboneModel(build_transformer):
         target_heatmaps = None
         if pose_dict is not None:
             scene_heatmaps, _, target_heatmaps, _ = self._prepare_pose(pose_dict)
+            # exp357 pose-shuffle kill-switch: training-only cross-image permutation of the pose
+            # within the batch (each image gets ANOTHER image's real pose). Tests whether the
+            # CORRECT pose spatial content is causal for the LGPA gain. Test path uses true pose.
+            if self.training and getattr(self, 'use_pose_shuffle', False) and scene_heatmaps is not None:
+                Bp = scene_heatmaps.shape[0]
+                if Bp > 1:
+                    perm = torch.randperm(Bp, device=scene_heatmaps.device)
+                    if bool((perm == torch.arange(Bp, device=perm.device)).all()):
+                        perm = torch.roll(perm, 1, 0)   # guarantee non-identity
+                    scene_heatmaps = scene_heatmaps[perm]
+                    if target_heatmaps is not None:
+                        target_heatmaps = target_heatmaps[perm]
 
         # Target-only heatmap swap (multi-person disambiguation).
         # Substitute scene_heatmaps with target_heatmaps so all downstream
