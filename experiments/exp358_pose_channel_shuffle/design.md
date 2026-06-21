@@ -20,3 +20,8 @@ forward: POSE_SHUFFLE block 后加 per-image channel gather(argsort(rand(B,K))�
 ## Claude 审查 note
 - ★背景通道(1-body_max)对置换不变(body_max 全17通道 max)→ shuffle 只打乱5前景部位身份, 保留 fg/bg 分离。
 - Medium: 每forward重采样 = 随机正则, NO-DROP 时分不清"部位身份无关"vs"shuffle当补偿正则"。
+
+## ★ 结果 (2026-06-22): NO-DROP, 地基定论
+exp358(cross-part 乱部位身份)= equal_concat 60.2 / global 58.3 ≈ exp353 60.5(**-0.3 噪声内**)。
+**完整 kill-switch: exp353 60.5(真)/ exp357 59.8(乱图-pose, -0.7)/ exp358 60.2(乱部位身份, -0.3)。**
+**地基结论: pose 正确性只值+0.7, 解剖部位身份值~0。LGPA 增益大头=用图自己关键点位置做软部位池化+部位监督这个结构, pose 具体内容(对人/对部位)基本无所谓。** "Pose, Not Prompt"正面方法论文地基塌(pose 价值太弱当不了 headline)。但这是干净诊断材料: 精确拆出"pose-guided part ReID 凭什么涨=部位池化结构+监督, 非pose正确性/语义"。

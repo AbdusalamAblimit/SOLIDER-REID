@@ -36,3 +36,9 @@ LGPA 增益与语义无关, 本质三件事: (a) pose_bias 在 softmax 前给强
 
 ## 一句话
 **A 级的机制拆解证据, B-减的方法新意。** 唯一翻盘=#1 query-invariance + #2 probes(剥 visibility), 过 +0.8~1.0 硬门槛。打不过就当 PRCV 里强分析 section, 别单投。
+
+## ★ kill-switch 地基结果 (2026-06-22): 正面方法死, 诊断材料活
+exp353 60.5(真)/ exp357 59.8(乱图-pose -0.7)/ exp358 60.2(乱部位身份 -0.3)。
+**pose 正确性+0.7, 部位身份~0 → LGPA 价值=部位池化结构+监督, 非pose具体内容。**
+- 正面"Pose, Not Prompt"方法论文: **死**(#1 query-invariance 地基不稳, pose 价值太弱)。
+- 诊断研究材料: **强**(干净拆解"pose-guided part ReID 凭什么涨")→ 并入 B 类诊断论文(《What Helps Occluded ReID? A Controlled Study》)的"pose 引导"章节。
