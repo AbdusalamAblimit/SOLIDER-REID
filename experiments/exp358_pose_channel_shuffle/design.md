@@ -16,3 +16,7 @@ exp353 60.5 / exp357 59.8(cross-image)/ exp358(channel)。单变量 = POSE_CHANN
 
 ## 实现
 forward: POSE_SHUFFLE block 后加 per-image channel gather(argsort(rand(B,K))→ gather dim1)。defaults POSE_CHANNEL_SHUFFLE。config = exp353 + True。
+
+## Claude 审查 note
+- ★背景通道(1-body_max)对置换不变(body_max 全17通道 max)→ shuffle 只打乱5前景部位身份, 保留 fg/bg 分离。
+- Medium: 每forward重采样 = 随机正则, NO-DROP 时分不清"部位身份无关"vs"shuffle当补偿正则"。
