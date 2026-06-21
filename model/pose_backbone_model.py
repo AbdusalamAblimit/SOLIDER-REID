@@ -135,6 +135,9 @@ class PoseBackboneModel(build_transformer):
         self.use_pose_shuffle = getattr(cfg.MODEL, 'POSE_SHUFFLE', False)
         if self.use_pose_shuffle:
             print('[exp357] POSE_SHUFFLE kill-switch ON: training-only cross-image pose permutation')
+        self.use_pose_channel_shuffle = getattr(cfg.MODEL, 'POSE_CHANNEL_SHUFFLE', False)
+        if self.use_pose_channel_shuffle:
+            print('[exp358] POSE_CHANNEL_SHUFFLE kill-switch ON: training-only per-image keypoint-channel permutation')
         self.use_target_heatmap = getattr(cfg.MODEL, 'POSE_USE_TARGET_HEATMAP', False)
         if self.use_target_heatmap:
             print('[POSE] POSE_USE_TARGET_HEATMAP=True: '
@@ -723,6 +726,17 @@ class PoseBackboneModel(build_transformer):
                     scene_heatmaps = scene_heatmaps[perm]
                     if target_heatmaps is not None:
                         target_heatmaps = target_heatmaps[perm]
+            # exp358 cross-PART (channel) shuffle: per-image permutation of the K keypoint
+            # channels — destroys anatomical part identity while keeping each image's own spatial
+            # support. Complements exp357 (cross-image): together they isolate whether the LGPA
+            # gain needs correct pose-image correspondence and/or correct anatomical part assignment.
+            if self.training and getattr(self, 'use_pose_channel_shuffle', False) and scene_heatmaps is not None:
+                Kc = scene_heatmaps.shape[1]
+                cperm = torch.argsort(torch.rand(scene_heatmaps.shape[0], Kc, device=scene_heatmaps.device), dim=1)
+                idx = cperm[:, :, None, None].expand(-1, -1, scene_heatmaps.shape[2], scene_heatmaps.shape[3])
+                scene_heatmaps = torch.gather(scene_heatmaps, 1, idx)
+                if target_heatmaps is not None:
+                    target_heatmaps = torch.gather(target_heatmaps, 1, idx)
 
         # Target-only heatmap swap (multi-person disambiguation).
         # Substitute scene_heatmaps with target_heatmaps so all downstream
