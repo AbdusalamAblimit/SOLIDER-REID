@@ -36,3 +36,9 @@ exp353(真 pose, 60.5)vs exp357(shuffle pose)。单变量 = POSE_SHUFFLE。
 ## Codex 修复 (2026-06-21)
 - Medium-1: randperm 留固定点(~1/64 图保留自己 pose)→ 改 **derangement**(re-roll 至无固定点, fallback cyclic shift), 每张图都用别人 pose。
 - Medium-2(判读): NO-DROP 侧被裁剪对齐混淆(别人 pose 仍带粗糙 canonical 头/躯干/腿先验)。Codex/Claude 一致: 掉点=干净铁证(图特定 pose correspondence 重要); 不掉=只能说"精确图特定 pose 在对齐裁剪下非必需", 需补 **cross-PART(17关键点通道)shuffle** 二次确认(测解剖通道身份是否重要, 同图空间 support 不变)。最佳矩阵: cross-image + per-image channel-shuffle + no-pose/fixed-canonical control。
+
+## ★ 结果 (2026-06-21): 弱掉点 -0.7, 模糊中间
+exp357(cross-image shuffled pose)= equal_concat 59.8 / global 58.4, vs exp353(真 pose)60.5 = **-0.7**。
+- 真 pose +2.9 over baseline 57.6; 乱 pose +2.2 → **correct pose 只多 +0.7**。
+- 判读: LGPA 增益大头(+2.2)来自"有 pose-like 结构+部位监督", 正确 pose 因果很弱(+0.7)。被裁剪对齐混淆(别人 pose 在对齐裁剪里仍粗略定位)。**削弱"pose 空间先验是价值"故事。**
+- 下一步: cross-PART(通道)shuffle exp358 二次确认——打乱17关键点通道(破坏解剖部位身份, 保留同图空间 support)。若 exp358 也只小掉→解剖身份也不重要, 只是"某种空间池化结构"在涨→故事进一步塌; 若 exp358 大掉→解剖部位结构重要。
