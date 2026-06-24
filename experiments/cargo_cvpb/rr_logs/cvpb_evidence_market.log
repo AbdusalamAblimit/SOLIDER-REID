@@ -1,0 +1,79 @@
+################################################################################
+# EVIDENCE-SUFFICIENCY KILL-SWITCH  dataset=market1501  cache=/tmp/hub_market_feats.npz
+################################################################################
+[data] /tmp/hub_market_feats.npz: Nq=3368 Ng=15913 dim=1024 #q-IDs=750 #g-IDs=751
+[SANITY] frozen full-gallery mAP=94.61 nq=3368
+
+################################################################################
+# TEST 1 — POSITIVE-SUPPORT vs GALLERY-GROWTH-TAX residual (control 1x-top1-margin + #false-in-topk)
+################################################################################
+[1] core-IDs=150 pool-IDs=601 (incl 1 gallery-only)
+[1] core queries=678 core gallery=1150 (cap 8/ID) pool imgs=13209  max-achievable=12.49x
+[1] distractor pool DISJOINT: label-half=6604 visible-half=6605
+[1] 1x baseline (core only): mAP=97.084 nq=678
+[1] 6.7x (label half, 5 draws): mAP=93.615 dmAP=-3.468  (tax = -dAP)
+
+[1] raw Spearman(positive-support risk, tax) over 678 valid core queries:
+        lowtail-pos(soft-min): rho=+0.5637 (n=678)
+               pos-dispersion: rho=+0.4712 (n=678)
+          #cross-cam-pos(neg): rho=-0.0611 (n=678)
+         [triv]1x-top1-margin: rho=+0.4670 (n=678)
+         [triv]#false-in-topk: rho=+0.1058 (n=678)
+
+[1] ★PARTIAL Spearman(support-risk, tax | 1x-top1-margin + #false-in-topk):
+        lowtail-pos(soft-min): partial=+0.5162  (raw=+0.5637, n=678)  << survives
+               pos-dispersion: partial=+0.4966  (raw=+0.4712, n=678)  << survives
+          #cross-cam-pos(neg): partial=-0.3664  (raw=-0.0611, n=678)  << survives
+     [reverse] 1x-margin | support  = +0.3907   #false | support = +0.2366
+
+[1] big-tax (top-30% tax) OOF-AUC: trivials=0.7694  +support=0.9057  support-solo=0.8138  >> INCREMENT=+0.1363
+
+################################################################################
+# TEST 2 — POSITIVE-SUPPORT predicts per-query FAILURE (full gallery) vs trivial
+################################################################################
+[2] full-gallery mAP=94.609  failure=bottom-30% AP n=1010/3368
+
+                 predictor      AUC            95% CI
+     lowtail-pos(soft-min)   0.8481  [ 0.834, 0.862] <<SUPPORT
+            pos-dispersion   0.8189  [ 0.803, 0.834] <<SUPPORT
+       #cross-cam-pos(neg)   0.4239  [ 0.402, 0.443] <<SUPPORT
+      [triv]1x-top1-margin   0.8280  [ 0.813, 0.843]
+      [triv]#false-in-topk   0.6228  [ 0.604, 0.640]
+
+  -- vs-TRIVIAL incremental (5-fold OOF logistic, HUBNESS §7.6) --
+     trivials-only (3 proxies)   OOF-AUC = 0.8276
+     trivials + support          OOF-AUC = 0.9913
+     support-only (3 proxies)    OOF-AUC = 0.8593
+     >> INCREMENT support adds on top of trivials = +0.1637
+     >> best support AUC - best trivial AUC        = +0.0200
+     partial Spearman(lowtail-pos(soft-min), -AP | 3 trivials) = +0.6553 (raw=+0.6036)
+
+################################################################################
+# TEST 3 — ORACLE MULTI-QUERY recovery on LOW-SUPPORT failures (d14 core)
+################################################################################
+[3] full mAP=94.609  failures(bot-30%)=1010  low-support failures(bot-30%)=303
+
+[3] oracle multi-query on 303 low-support failure queries (mean AP, %):
+     single-query (baseline)        AP = 73.513
+     + same-ID union (MEAN-pool)     AP = 89.566  (d=+16.053)
+     + same-ID union (MAX-pool)      AP = 89.303  (d=+15.790)
+     + RANDOM cross-ID union (CTRL)  AP = 26.678  (d=-46.835)  [must NOT recover]
+     recovery-rate (dAP>+0.05): same-ID=0.488  random-ID=0.000
+
+[3] k-reciprocal (full-set re-rank, k1=20 k2=6 lam=0.3) then index the SAME 303 low-support failure queries:
+     base AP (these rows)= 73.513  (consistency vs single-probe loop base=73.513)
+     k-reciprocal AP     = 80.196  (d=+6.683 vs base)
+     >> same-ID union d=+16.053  vs  k-recip d=+6.683  [union is a UNIQUE evidence effect only if union >> k-recip]
+
+################################################################################
+# SUMMARY / VERDICT  (market1501)  [71s]
+################################################################################
+# A signal counts ONLY if it survives the trivial controls (1x-top1-margin + #false-in-topk). HUBNESS §7.6: high raw rho but partial~0 = NO unique signal = DEAD.
+[T1] tax-residual partial (| margin+#false): lowtail=+0.516  #cross-cam-pos=-0.366  dispersion=+0.497  | OOF incr over trivials=+0.136
+[T2] failure-AUC: best support-trivial gap=+0.020  OOF incr=+0.164  support-solo AUC=0.859  partial(best-supp,-AP|triv)=+0.655
+[T3] oracle on n=303 low-support failures: base=73.51 -> same-ID-union=89.57 (d=+16.05)  random-ID=26.68 (d=-46.84)  k-recip=80.20
+[T3] recovery-rate same-ID=0.488 vs random-ID=0.000
+
+[VERDICT] T1 independent-of-trivial signal: LIVE  | T2: DEAD  | T3 evidence-insufficiency: LIVE
+# (final call is human; flags are conservative thresholds, read the numbers above)
+[done]
