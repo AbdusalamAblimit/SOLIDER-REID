@@ -4663,3 +4663,38 @@ exp341 的 +2.2 来自**纯 ID 对齐** (raw global ↔ 纯 ID 文本原型, 把
 **决策**: pose+CLIP **五角度全负**(进对齐A/B/C 57.6死、强系统exp349 -1.8、空间归属PC-SOR kill-switch死、训练端蒸馏PGPD -1.2、训练端补全PC-MSC -2.7), 封板。pose 与 CLIP 无 productive fusion。
 **理由**: CLIP=全局语义工具(特征各向异性、部位ID弱), pose=空间结构工具; 二者能力不重叠处恰好无法在对方层面发挥。两训练端机制同模式: 机制本身负、pose成分(teacher/mask选择)无关。
 **执行**: pose+CLIP 探索彻底结束。Step1 CLIP-ReID(+2.2)和 pose 系统各自干净, 但不融。最强仍 exp342b 60.7 / 强系统 73.2。交付=详尽负结果诊断。多seed留用户。
+
+---
+
+### [2026-06-23] 决策 #97: AIRL fusion 零训练 oracle kill-switch = PASS(上完整 resolvability 双分支)
+
+**上下文**: AIRL(只退化 ground)在 CARGO Swin 上 A->G +3.15 / G->A -3.18, mean 翻平(60.83≈60.84)。红队 codex 指出方向路由上界=(61.90+62.93)/2=62.42=baseline +1.58。投入双分支前的最后廉价关: 合法固定 gate 能否逼近上界?
+
+**方法**(零训练, `airl_gate_oracle.py`, lab-4090): baseline + AIRL 两 ckpt(eval 架构逐键相同, missing=0/unexpected=0)各提 CARGO 双向特征, 复用 eval_market 测 5 类 gate 融合 mean。FULL sanity 逐键复现 doc(base 58.75/62.93, AIRL 61.90/59.75)→ pipeline 精确。
+
+**结果**:
+- view/方向 gate(合法上界): +1.58(复现红队)。
+- **硬路由(area/reliability, train 分位阈值)回收不了**: area +0.02~+0.41, reliability +0.07~+0.35 → 单标量阈值在两方向分布重叠, 选不出"A->G→AIRL / G->A→baseline"的方向性。**只看硬路由=KILL。**
+- **但 score 融合(软, cos=w·AIRL+(1-w)·base, 单全局 w)轻松过**: w=0.25 保守默认 **+1.46**, plateau w∈[0.25,0.75] 全 ≥+1.46, w=0.40 **+1.86 反超 view-gate 上界**。无 label、非 knife-edge=合法固定 gate。
+- per-query oracle +4.96 → headroom 远大于 +1.58。
+
+**选择**: **PASS**(合法固定 gate 由 score 融合达 +1.46~+1.86 ≥ +1.0 PASS 阈)。
+
+**理由**: 红队的方向路由"上界"不是真上界——硬路由丢方向内 per-query 互补性, 软融合保留, 故 +1.86 > +1.58。trade-off 可由合法机制(score-level fusion)回收, 不是单模型回收无望。代价=测试 2× inference(跑两 model)→ 正是 PASS 的意义: 单模型双分支(resolvability branch)可把两套特征空间内化进一次 forward, 拿 mean +1.5 同时省 2× 成本。area/reliability 硬路由死是诚实信号(cheap proxy 选不出方向), 不影响裁决(软融合是更强的合法 gate)。
+
+**执行结果**: 上完整 resolvability 双分支机制(area/altitude-conditioned recoverable-evidence ceiling, 单模型出两支特征 score 融合), 目标=单 forward 复现 +1.46~+1.86 mean 增益 + 解决 #2 标注的 G->A trade-off。脚本 `experiments/cargo_cvpb/airl_gate_oracle.py`, log `/tmp/airl_gate_oracle.log`(lab-4090)。
+
+---
+
+### [2026-06-25] 决策 #98: Gallery-组成三测试零训练 kill-switch — 仅 Gallery-Growth Tax 活, B/C 诚实判死
+
+**上下文**: 三个独立 codex(终身 d3 / 开集 d9 / 长尾 d10)收敛到同一 re-framing: ReID 失败由 GALLERY 组成(规模/膨胀/分布)驱动, 非只看 query/模型。用户要求零训练验证, ★铁律=每个 per-query 相关都控 trivial 代理(吸取 HUBNESS §7.6 教训: 上个诊断被漏控 #false-in-topk 证伪)。脚本 `cvpb_gallery_killswitch.py`, 复用 hubness 缓存特征, Market exp260b + Occluded-Duke exp255。双审(Claude broad 5 blocking 全修 + Codex)。
+
+**结果**(frozen, numpy, log `/tmp/cvpb_gallery_{market,oduke}.log`):
+- **测试 A Gallery-Growth Tax = LIVE**: frozen 模型旧 query mAP 随同域 gallery 膨胀结构性下降(Market 1x→10x −4.4, **OD −12.9**, 量级≈LReID 报的 forgetting)。CONTROL1(#false-in-topk, 杀 Hubness 的代理): ρ(−dAP,d#false)+0.74 大部分是 trivial 计数, 但"#false 完全不变"子集仍 −1.2(Market)/−2.6(OD) mAP, partial(OD)+0.28——结构成分过了致命代理。CONTROL2 ★决定性: real distractor −4.45(Market)/−13.16(OD) vs 列洗牌毁方向同 count −0.00 → tax 是结构性(distractor 身份几何咬人), 非机械 count。
+- **测试 B Gallery-Size Rejection = DEAD**: impostor max 随 watchlist size 升(REAL ρ+1.0)但 random-feature null 升一样猛(纯 max-of-N 极值)。CAL/EVAL 折去循环后净增益(REAL−RANDOM)drift-red −0.245(Market)/−0.282(OD) 为负。强 backbone 上 genuine~0.97/impostor~0.5 近完全可分, 拒识饱和, size-conditioning 表观增益全在 EVT trivial floor。
+- **测试 C Singleton Merge = DEAD**: NN-is-head 0.72 只反映 head 占 72% 图像质量。per-head-ID(n=450/311 真功效)Spearman(support, attraction-PER-IMAGE)+0.003/+0.005≈0, 分箱 per-image 甚至下降。support-calibrated 阈值几乎无增益(d≈−0.003)且 40-60% level 退回 global。被 "head 图多→NN 彩票多" trivial count 吃掉。
+
+**决策**: **仅推进测试 A(Gallery-Growth Tax)作为诊断/问题重定义候选**; B/C 诚实判死(各自被 max-of-N / count trivial 代理吃掉)。
+**理由**: A 是唯一过了 #false-in-topk + 列洗牌双控的信号, headline 干净: "frozen 强 ReID 旧 query 随同域 gallery 膨胀结构性掉点, LReID 误记为 catastrophic forgetting"。这正是上个 Hubness 诊断没做到的(被 trivial 代理吃光)——本次 A 的两个对照专为此教训设计且活下来。
+**执行(待办)**: A 当前是诊断, remedy(distractor-aware continual training)未验证, 需独立实验且警惕撞 backward-compatible LReID(arxiv 2403.10022)。诚实写明 CONTROL2 是主证据(CONTROL1 的结构残差 Market partial 仅+0.05 偏弱)。跨 backbone 普适性 + 与 re-rank 互补性未测。交付=`cvpb_gallery_result.md` 原始数字。
