@@ -201,6 +201,12 @@ def test_paired_extractions_require_identical_episode_metadata():
     with pytest.raises(ValueError, match="camids"):
         assert_paired_cache(target, canonical)
 
+    canonical = _synthetic_cache("canonical")
+    canonical["raw_pose_response"] = canonical["raw_pose_response"].clone()
+    canonical["raw_pose_response"][0, 0] += 1e-3
+    with pytest.raises(ValueError, match="raw_pose_response"):
+        assert_paired_cache(target, canonical)
+
 
 def test_metadata_duplicate_path_and_content_fail_before_metrics():
     cache = _synthetic_cache()

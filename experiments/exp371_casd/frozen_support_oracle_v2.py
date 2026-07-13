@@ -331,7 +331,7 @@ def assert_paired_cache(target: Mapping[str, object], other: Mapping[str, object
     for key in sequence_keys:
         if list(target[key]) != list(other[key]):  # type: ignore[arg-type]
             raise ValueError("paired cache metadata mismatch: %s" % key)
-    for key in ("target_person_valid", "person_count"):
+    for key in ("target_person_valid", "person_count", "raw_pose_response"):
         if not torch.equal(target[key], other[key]):  # type: ignore[arg-type]
             raise ValueError("paired cache tensor mismatch: %s" % key)
 

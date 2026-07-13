@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract target-only LGPA support blocks and pose-response metadata.
+"""Extract paired LGPA support blocks and target pose-response metadata.
 
 This script only creates frozen caches for exp371 Gate C.  It does not build
 same-ID support, evaluate an oracle, fit a projection, or train a student.
@@ -24,7 +24,29 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 SCHEMA_VERSION = "exp371_target_support_cache_v1"
-POSE_SOURCE = "target_person_index_0; POSE_USE_TARGET_HEATMAP=True"
+POSE_MODES = ("target", "canonical", "scene")
+POSE_PROVENANCE = {
+    "target": {
+        "mode": "target_only_correct",
+        "pose_source": "target_person_index_0; POSE_USE_TARGET_HEATMAP=True",
+    },
+    "canonical": {
+        "mode": "canonical_fixed",
+        "pose_source": (
+            "canonical_heatmap; PoseBackboneModel._canonical_heatmap; "
+            "POSE_LGPA_FIXED_BANDS=True"
+        ),
+    },
+    "scene": {
+        "mode": "scene_merged_correct",
+        "pose_source": (
+            "scene_merged_heatmap; model.modules.pose_utils.merge_person_heatmaps; "
+            "POSE_USE_TARGET_HEATMAP=False"
+        ),
+    },
+}
+# Backward-compatible alias used by the already-produced target cache.
+POSE_SOURCE = POSE_PROVENANCE["target"]["pose_source"]
 # Kept import-light for unit tests.  main() asserts this exact value against
 # model.modules.clip_part_head.PART_KPS before real extraction.
 PART_KPS = (
@@ -46,6 +68,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--config-file", required=True)
     parser.add_argument("--weight", required=True)
     parser.add_argument("--output-dir", required=True)
+    parser.add_argument(
+        "--pose-mode",
+        choices=POSE_MODES,
+        default="target",
+        help=(
+            "LGPA extraction heatmap. canonical/scene require the already-produced "
+            "paired target cache in --output-dir and never rewrite it."
+        ),
+    )
     parser.add_argument(
         "--splits", nargs="+", choices=("train", "val"), default=("train", "val")
     )
@@ -89,6 +120,20 @@ def atomic_json(path: Path, payload: Mapping[str, object]) -> None:
 
 def unwrap_model(model):
     return model.module if hasattr(model, "module") else model
+
+
+def pose_provenance(pose_mode: str) -> Mapping[str, str]:
+    if pose_mode not in POSE_PROVENANCE:
+        raise ValueError("unknown pose mode: %r" % pose_mode)
+    return POSE_PROVENANCE[pose_mode]
+
+
+def configure_pose_mode(config, pose_mode: str) -> None:
+    """Set the existing model switches which define each extraction arm."""
+    pose_provenance(pose_mode)
+    config.MODEL.POSE_USE_TARGET_HEATMAP = pose_mode == "target"
+    config.MODEL.POSE_LGPA_FIXED_BANDS = pose_mode == "canonical"
+    config.MODEL.POSE_LGPA_NO_POSE = False
 
 
 def pose_to_device(pose_dict: Mapping[str, object], device: str) -> Dict[str, object]:
@@ -147,13 +192,13 @@ def _target_heatmaps(pose_dict: Mapping[str, torch.Tensor]) -> Tuple[torch.Tenso
     return target, valid, count
 
 
-def raw_part_response(
-    pose_dict: Mapping[str, torch.Tensor], feature_hw: Tuple[int, int]
-) -> Dict[str, torch.Tensor]:
-    """Compute target-person raw and relative five-slot pose responses."""
-    target, valid, count = _target_heatmaps(pose_dict)
+def _part_response_from_heatmaps(
+    heatmaps: torch.Tensor, feature_hw: Tuple[int, int]
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    if heatmaps.ndim != 4 or heatmaps.shape[1] != 17:
+        raise ValueError("extraction heatmaps must have shape [B,17,H,W]")
     resized = F.interpolate(
-        target, size=feature_hw, mode="bilinear", align_corners=False
+        heatmaps.float(), size=feature_hw, mode="bilinear", align_corners=False
     )
     raw = torch.stack(
         [
@@ -162,8 +207,22 @@ def raw_part_response(
         ],
         dim=1,
     )
-    raw = raw * valid[:, None].float()
     relative = raw / raw.sum(dim=1, keepdim=True).clamp_min(1e-6)
+    if not torch.isfinite(raw).all() or not torch.isfinite(relative).all():
+        raise ValueError("pose response contains NaN/Inf")
+    if (raw < 0).any():
+        raise ValueError("pose response contains negative values")
+    return raw, relative
+
+
+def raw_part_response(
+    pose_dict: Mapping[str, torch.Tensor], feature_hw: Tuple[int, int]
+) -> Dict[str, torch.Tensor]:
+    """Compute target-person raw and relative five-slot pose responses."""
+    target, valid, count = _target_heatmaps(pose_dict)
+    raw, relative = _part_response_from_heatmaps(target, feature_hw)
+    raw = raw * valid[:, None].float()
+    relative = relative * valid[:, None].float()
     if not torch.isfinite(raw).all() or not torch.isfinite(relative).all():
         raise ValueError("raw pose response contains NaN/Inf")
     if (raw[~valid] != 0).any():
@@ -174,6 +233,39 @@ def raw_part_response(
         "target_person_valid": valid,
         "person_count": count,
     }
+
+
+def extraction_heatmaps(
+    model,
+    pose_dict: Mapping[str, torch.Tensor],
+    pose_mode: str,
+) -> torch.Tensor:
+    """Resolve an arm through the repository's production pose semantics."""
+    pose_provenance(pose_mode)
+    target = unwrap_model(model)
+    if pose_mode == "canonical":
+        canonical = getattr(target, "_canonical_heatmap", None)
+        if not callable(canonical):
+            raise TypeError("model has no callable _canonical_heatmap")
+        heatmaps = pose_dict.get("heatmaps")
+        if not isinstance(heatmaps, torch.Tensor) or heatmaps.ndim != 5:
+            raise ValueError("pose_dict heatmaps must have shape [B,P,17,H,W]")
+        result = canonical(int(heatmaps.shape[0]), heatmaps.device)
+    else:
+        prepare = getattr(target, "_prepare_pose", None)
+        if not callable(prepare):
+            raise TypeError("model has no callable _prepare_pose")
+        prepared = prepare(pose_dict)
+        if not isinstance(prepared, (tuple, list)) or len(prepared) != 4:
+            raise TypeError("_prepare_pose must return four pose tensors")
+        # These are exactly the existing max-merged scene and person-0 target
+        # tensors used by PoseBackboneModel.forward.
+        result = prepared[2] if pose_mode == "target" else prepared[0]
+    if not isinstance(result, torch.Tensor) or result.ndim != 4:
+        raise TypeError("selected extraction heatmap must have shape [B,17,H,W]")
+    if result.shape[1] != 17:
+        raise ValueError("selected extraction heatmap must have 17 channels")
+    return result
 
 
 def _feature_hw(extra: object) -> Tuple[int, int]:
@@ -203,6 +295,27 @@ def _set_test_mode(model, mode: str) -> str:
 
 def _restore_test_mode(model, previous: str) -> None:
     unwrap_model(model).pose_test_feat = previous
+
+
+def _assert_model_pose_mode(model, pose_mode: str) -> None:
+    pose_provenance(pose_mode)
+    target = unwrap_model(model)
+    actual = {
+        "target": bool(getattr(target, "use_target_heatmap", False)),
+        "canonical": bool(getattr(target, "_lgpa_fixed_bands", False)),
+        "no_pose": bool(getattr(target, "_lgpa_no_pose", False)),
+    }
+    expected = {
+        "target": pose_mode == "target",
+        "canonical": pose_mode == "canonical",
+        "no_pose": False,
+    }
+    failed = [key for key in expected if actual[key] != expected[key]]
+    if failed:
+        raise AssertionError(
+            "model pose-mode protocol failed for %s: %s"
+            % (pose_mode, ", ".join(failed))
+        )
 
 
 def _equal_concat_pair(
@@ -280,11 +393,13 @@ def extract_support_batch(
     *,
     flip_test: bool,
     block_dim: int,
+    pose_mode: str = "target",
     consistency_atol: float = 2e-5,
     flip_raw_atol: float = 2e-6,
 ) -> Dict[str, torch.Tensor]:
-    """Extract equal/maxsim views and target-only pose metadata for one batch."""
+    """Extract one E arm while preserving target-only routing metadata."""
     model.eval()
+    _assert_model_pose_mode(model, pose_mode)
     img_flip, pose_flip = flip_support_batch(img, pose_dict)
 
     previous = _set_test_mode(model, "equal_concat")
@@ -328,6 +443,8 @@ def extract_support_batch(
             % (global_error, part_error, consistency_atol)
         )
 
+    # Routing metadata is always from the original target person, regardless
+    # of which extraction heatmap generated the teacher blocks.
     pose_orig = raw_part_response(pose_dict, feature_hw)
     pose_flipped = raw_part_response(pose_flip, feature_hw) if flip_test else pose_orig
     if not torch.equal(
@@ -350,8 +467,32 @@ def extract_support_batch(
         + pose_flipped["raw_pose_response"]
     ) / 2.0
     raw_relative = raw / raw.sum(dim=1, keepdim=True).clamp_min(1e-6)
+
+    extraction_orig, _ = _part_response_from_heatmaps(
+        extraction_heatmaps(model, pose_dict, pose_mode), feature_hw
+    )
+    if flip_test:
+        extraction_flipped, _ = _part_response_from_heatmaps(
+            extraction_heatmaps(model, pose_flip, pose_mode), feature_hw
+        )
+    else:
+        extraction_flipped = extraction_orig
+    extraction_flip_error = float(
+        (extraction_orig - extraction_flipped).abs().max().item()
+    )
+    if extraction_flip_error > flip_raw_atol:
+        raise AssertionError(
+            "extraction pose response changed under flip: %.9g > %.9g"
+            % (extraction_flip_error, flip_raw_atol)
+        )
+    extraction_raw = (extraction_orig + extraction_flipped) / 2.0
+    extraction_relative = extraction_raw / extraction_raw.sum(
+        dim=1, keepdim=True
+    ).clamp_min(1e-6)
     allocation_error = float(
-        (raw_relative - maxsim_merged["relative_allocation"]).abs().max().item()
+        (
+            extraction_relative - maxsim_merged["relative_allocation"]
+        ).abs().max().item()
     )
     if allocation_error > consistency_atol:
         raise AssertionError(
@@ -371,6 +512,7 @@ def extract_support_batch(
         "part_consistency_max_abs": torch.tensor(part_error),
         "allocation_consistency_max_abs": torch.tensor(allocation_error),
         "raw_flip_max_abs_diff": torch.tensor(raw_flip_error),
+        "extraction_flip_max_abs_diff": torch.tensor(extraction_flip_error),
     }
 
 
@@ -386,7 +528,9 @@ def cache_payload(
     weight_sha256: str,
     script_sha256: str,
     flip_test: bool,
+    pose_mode: str = "target",
 ) -> Dict[str, object]:
+    provenance = pose_provenance(pose_mode)
     count = int(tensors["features"].shape[0])
     if not (len(pids) == len(camids) == len(paths) == count):
         raise ValueError("PID/CAM/path lengths must match tensor count")
@@ -398,6 +542,7 @@ def cache_payload(
     audit_keys = (
         "global_consistency_max_abs", "part_consistency_max_abs",
         "allocation_consistency_max_abs", "raw_flip_max_abs_diff",
+        "extraction_flip_max_abs_diff",
     )
     audit = {
         key: float(tensors[key].item())
@@ -409,11 +554,12 @@ def cache_payload(
         "camids": [int(value) for value in camids],
         "paths": [os.path.normpath(str(value)) for value in paths],
         "split": str(split),
-        "mode": "target_only_correct",
+        "mode": provenance["mode"],
         "num_query": int(num_query),
         "block_dim": int(block_dim),
         "schema_version": SCHEMA_VERSION,
-        "pose_source": POSE_SOURCE,
+        "pose_source": provenance["pose_source"],
+        "routing_pose_source": POSE_SOURCE,
         "relative_allocation_semantics": (
             "within-image five-slot relative pose-response allocation; "
             "not absolute visibility"
@@ -444,20 +590,84 @@ def cache_payload(
         "split": payload["split"],
         "num_query": payload["num_query"],
         "schema_version": payload["schema_version"],
+        "mode": payload["mode"],
         "pose_source": payload["pose_source"],
+        "routing_pose_source": payload["routing_pose_source"],
     })
     return payload
 
 
-def assert_protocol(config, model, expected_block_dim: int) -> None:
+def _torch_load(path: Path) -> Dict[str, object]:
+    try:
+        value = torch.load(path, map_location="cpu", weights_only=False)
+    except TypeError:  # PyTorch < 2.6
+        value = torch.load(path, map_location="cpu")
+    if not isinstance(value, dict):
+        raise TypeError("paired target cache must contain a mapping")
+    return value
+
+
+def assert_paired_target_cache(
+    target_cache: Mapping[str, object], other_cache: Mapping[str, object]
+) -> None:
+    """Fail closed unless a non-target cache is sample-for-sample paired."""
+    required = {
+        "schema_version", "mode", "pose_source", "pids", "camids", "paths",
+        "split", "num_query", "block_dim", "weight_sha256",
+        "target_person_valid", "person_count", "raw_pose_response",
+        "raw_response_relative_allocation",
+    }
+    for name, cache in (("target", target_cache), ("other", other_cache)):
+        missing = sorted(required.difference(cache))
+        if missing:
+            raise ValueError("%s cache missing paired keys: %s" % (name, missing))
+    if target_cache["schema_version"] != SCHEMA_VERSION:
+        raise ValueError("paired target cache schema mismatch")
+    if (
+        target_cache["mode"] != POSE_PROVENANCE["target"]["mode"]
+        or "target_person" not in str(target_cache["pose_source"])
+    ):
+        raise ValueError("paired reference is not a target-only cache")
+    if other_cache["mode"] == POSE_PROVENANCE["target"]["mode"]:
+        raise ValueError("paired other cache must use a non-target extraction mode")
+    for key in ("schema_version", "split", "num_query", "block_dim", "weight_sha256"):
+        if target_cache[key] != other_cache[key]:
+            raise ValueError("paired cache scalar mismatch: %s" % key)
+    for key in ("pids", "camids", "paths"):
+        if list(target_cache[key]) != list(other_cache[key]):  # type: ignore[arg-type]
+            raise ValueError("paired cache metadata mismatch: %s" % key)
+    for key in (
+        "target_person_valid", "person_count", "raw_pose_response",
+        "raw_response_relative_allocation",
+    ):
+        target_value = target_cache[key]
+        other_value = other_cache[key]
+        if not isinstance(target_value, torch.Tensor) or not isinstance(
+            other_value, torch.Tensor
+        ):
+            raise TypeError("paired cache key %s must be a tensor" % key)
+        if not torch.equal(target_value.cpu(), other_value.cpu()):
+            raise ValueError("paired cache tensor mismatch: %s" % key)
+
+
+def assert_protocol(
+    config, model, expected_block_dim: int, pose_mode: str = "target"
+) -> None:
+    pose_provenance(pose_mode)
     target = unwrap_model(model)
     checks = {
         "POSE_LGPA": bool(getattr(config.MODEL, "POSE_LGPA", False)),
         "POSE_LGPA_DETACH": bool(
             getattr(config.MODEL, "POSE_LGPA_DETACH", False)
         ),
-        "POSE_USE_TARGET_HEATMAP": bool(
+        "POSE_USE_TARGET_HEATMAP_MODE": bool(
             getattr(config.MODEL, "POSE_USE_TARGET_HEATMAP", False)
+        ) == (pose_mode == "target"),
+        "POSE_LGPA_FIXED_BANDS_MODE": bool(
+            getattr(config.MODEL, "POSE_LGPA_FIXED_BANDS", False)
+        ) == (pose_mode == "canonical"),
+        "POSE_LGPA_NO_POSE_OFF": not bool(
+            getattr(config.MODEL, "POSE_LGPA_NO_POSE", False)
         ),
         "POSE_BACKBONE_PSG": bool(
             getattr(config.MODEL, "POSE_BACKBONE_PSG", False)
@@ -478,15 +688,18 @@ def assert_protocol(config, model, expected_block_dim: int) -> None:
             getattr(config.MODEL, "POSE_PARALLEL_AUG", False)
         ),
         "LGPA_NO_POSE_OFF": not bool(getattr(target, "_lgpa_no_pose", False)),
-        "LGPA_FIXED_BANDS_OFF": not bool(
+        "LGPA_FIXED_BANDS_MODE": bool(
             getattr(target, "_lgpa_fixed_bands", False)
-        ),
+        ) == (pose_mode == "canonical"),
         "BLOCK_DIM": int(getattr(target, "in_planes", 0)) == expected_block_dim,
-        "MODEL_TARGET_HEATMAP": bool(getattr(target, "use_target_heatmap", False)),
+        "MODEL_TARGET_HEATMAP_MODE": bool(
+            getattr(target, "use_target_heatmap", False)
+        ) == (pose_mode == "target"),
     }
     failed = [name for name, passed in checks.items() if not passed]
     if failed:
         raise AssertionError("support-cache protocol failed: " + ", ".join(failed))
+    _assert_model_pose_mode(model, pose_mode)
 
 
 @torch.no_grad()
@@ -497,6 +710,7 @@ def extract_loader(
     device: str,
     flip_test: bool,
     block_dim: int,
+    pose_mode: str,
     consistency_atol: float,
     flip_raw_atol: float,
 ) -> Tuple[Dict[str, torch.Tensor], List[int], List[int], List[str]]:
@@ -521,6 +735,7 @@ def extract_loader(
             target_view.to(device),
             flip_test=flip_test,
             block_dim=block_dim,
+            pose_mode=pose_mode,
             consistency_atol=consistency_atol,
             flip_raw_atol=flip_raw_atol,
         )
@@ -543,6 +758,7 @@ def extract_loader(
 
 
 def main() -> None:
+    args = parse_args()
     # Keep training-stack imports out of the pure-function/unit-test path.
     from config import cfg
     from datasets import make_dataloader
@@ -554,7 +770,6 @@ def main() -> None:
         raise AssertionError("cache PART_KPS drifted from CLIPPartHead.PART_KPS")
     if tuple(tuple(pair) for pair in DATASET_FLIP_PAIRS) != FLIP_PAIRS:
         raise AssertionError("cache FLIP_PAIRS drifted from pose dataset")
-    args = parse_args()
     output_dir = Path(args.output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     weight = Path(args.weight).resolve()
@@ -568,7 +783,7 @@ def main() -> None:
     if opts:
         cfg.merge_from_list(opts)
     cfg.defrost()
-    cfg.MODEL.POSE_USE_TARGET_HEATMAP = True
+    configure_pose_mode(cfg, args.pose_mode)
     cfg.MODEL.POSE_TEST_FEAT = "equal_concat"
     cfg.TEST.WEIGHT = str(weight)
     cfg.OUTPUT_DIR = str(output_dir)
@@ -595,11 +810,12 @@ def main() -> None:
     )
     model.load_param(str(weight))
     model.to(args.device)
-    assert_protocol(cfg, model, args.expected_block_dim)
+    assert_protocol(cfg, model, args.expected_block_dim, args.pose_mode)
 
     weight_sha = file_sha256(weight)
     script_sha = file_sha256(Path(__file__).resolve())
     flip_test = bool(getattr(cfg.TEST, "FLIP_TEST", True))
+    provenance = pose_provenance(args.pose_mode)
     split_specs = {
         "train": (train_loader_normal, 0, "train_normal"),
         "val": (val_loader, int(num_query), "val"),
@@ -610,19 +826,60 @@ def main() -> None:
         "weight": str(weight),
         "weight_sha256": weight_sha,
         "script_sha256": script_sha,
-        "pose_source": POSE_SOURCE,
+        "pose_mode": args.pose_mode,
+        "mode": provenance["mode"],
+        "pose_source": provenance["pose_source"],
+        "routing_pose_source": POSE_SOURCE,
         "splits": list(args.splits),
         "flip_test": flip_test,
+        "paired_target_caches": {},
         "outputs": {},
     }
+    manifest_path = output_dir / (
+        "manifest.json" if args.pose_mode == "target"
+        else "manifest_%s.json" % args.pose_mode
+    )
     for requested in args.splits:
         loader, split_num_query, split_name = split_specs[requested]
+        output_path = output_dir / (
+            "%s_%s_support.pt" % (requested, args.pose_mode)
+        )
+        if output_path.exists():
+            raise FileExistsError(
+                "refusing to recompute or overwrite cache: %s" % output_path
+            )
+        paired_target: Optional[Dict[str, object]] = None
+        paired_target_path: Optional[Path] = None
+        if args.pose_mode != "target":
+            paired_target_path = output_dir / (requested + "_target_support.pt")
+            if not paired_target_path.is_file():
+                raise FileNotFoundError(
+                    "non-target extraction requires paired target cache: %s"
+                    % paired_target_path
+                )
+            paired_target = _torch_load(paired_target_path)
+            if (
+                paired_target.get("schema_version") != SCHEMA_VERSION
+                or paired_target.get("mode")
+                != POSE_PROVENANCE["target"]["mode"]
+                or "target_person" not in str(paired_target.get("pose_source", ""))
+            ):
+                raise ValueError(
+                    "paired target cache provenance failed: %s"
+                    % paired_target_path
+                )
+            if paired_target.get("weight_sha256") != weight_sha:
+                raise ValueError(
+                    "paired target cache checkpoint SHA mismatch: %s"
+                    % paired_target_path
+                )
         tensors, pids, camids, paths = extract_loader(
             model,
             loader,
             device=args.device,
             flip_test=flip_test,
             block_dim=args.expected_block_dim,
+            pose_mode=args.pose_mode,
             consistency_atol=args.consistency_atol,
             flip_raw_atol=args.flip_raw_atol,
         )
@@ -637,8 +894,15 @@ def main() -> None:
             weight_sha256=weight_sha,
             script_sha256=script_sha,
             flip_test=flip_test,
+            pose_mode=args.pose_mode,
         )
-        output_path = output_dir / (requested + "_target_support.pt")
+        if paired_target is not None:
+            assert_paired_target_cache(paired_target, payload)
+            manifest["paired_target_caches"][requested] = {
+                "path": str(paired_target_path),
+                "file_sha256": file_sha256(paired_target_path),
+                "metadata_sha256": paired_target.get("metadata_sha256"),
+            }
         atomic_torch_save(output_path, payload)
         manifest["outputs"][requested] = {
             "path": str(output_path),
@@ -647,7 +911,7 @@ def main() -> None:
             "tensor_sha256": payload["tensor_sha256"],
             "metadata_sha256": payload["metadata_sha256"],
         }
-        atomic_json(output_dir / "manifest.json", manifest)
+        atomic_json(manifest_path, manifest)
         print(json.dumps({requested: manifest["outputs"][requested]}, indent=2))
     print("COMPLETE: %s" % output_dir, flush=True)
 
