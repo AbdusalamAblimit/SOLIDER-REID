@@ -94,6 +94,24 @@ remote_artifacts/exp371_30aca94/
 - 根因不是 target-only pose 接线漂移，而是 orig/flip 融合的运算顺序不同：`equal_concat` 是“各视图先归一化，再平均并归一化”；原 cache MaxSim 路径是“先平均 raw，再归一化”。当 orig/flip norm 略有差异时两者不严格相等。
 - 修复不放宽阈值，只让 MaxSim 元数据路径复现 `equal_concat` 的既有归一化顺序，并新增不等 norm 的回归测试。本地 uv 全套相关测试 `12 passed`；远端通过后才允许重新启动唯一提取任务。
 
+## 2026-07-13 23:44 target-only cache 完成与独立审计
+
+- 修复提交：`f5b8b61`；远端脚本 SHA=`9e61cd36bbdc7180df3dc0f4a54ac8bde4fa5b7e15217a96c6e1a2acd23875bb`。
+- 唯一重启进程 PID=`4168962` 已自然退出并打印 `COMPLETE`；未启动训练。
+- train cache：`15,618` 张，文件 SHA=`1046a6df1036fad5bd6865c920150ff09106116bfab1bd4c8dc453db7c5a2a4f`。
+- val cache：`19,871` 张，其中 query=`2,210`，文件 SHA=`83b170efc31e6a81bb35fad428d04a27287183defa9f2edacc37a47e552d95e4`。
+- 两个 cache 的 manifest SHA、全部七类 tensor SHA、样本数、有限值、target-person validity 均独立复算通过；train/val path overlap=`0`。
+- equal/maxsim global、part、allocation 与 orig/flip raw-response 的最大差均为 `0`；train/val target valid 分别为 `15,618/15,618`、`19,871/19,871`。
+- 多人物图数量：train=`4,124`，val=`5,625`。
+
+## 2026-07-13 23:48 逐图内容 SHA 回填
+
+- 回填提交：`94df093`；只生成与 source-cache SHA 和 ordered-path SHA 双重绑定的 JSON sidecar，不重写 cache、不重算 feature。
+- train：`15,618/15,618` 个唯一内容，无重复。
+- val：`19,871` 条记录、`18,001` 个唯一内容，存在 `1,870` 组二次出现。
+- 逐组拆分确认：全部 `1,870` 组均恰好是 `1 query + 1 gallery`、同 PID、同 CAM、相同帧文件名；query-query、gallery-gallery、异 PID/CAM 与成员数大于 2 的重复均为 `0`。
+- 这是 Occluded-Duke 标准 query 目录与 `bounding_box_test` 的同图拷贝。后续协议只白名单这一种形式：标准 evaluator 会删除该 gallery endpoint，support donor 还必须按 content SHA 排除；其余任何内容重复继续 fail-closed。
+
 ## 保护事项
 
 - `experiments/decisions.md` 当前包含用户未提交的 #99/#100 改动；本阶段不修改、不暂存该文件。
