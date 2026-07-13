@@ -723,6 +723,7 @@ def extract_loader(
         "part_consistency_max_abs": 0.0,
         "allocation_consistency_max_abs": 0.0,
         "raw_flip_max_abs_diff": 0.0,
+        "extraction_flip_max_abs_diff": 0.0,
     }
     for batch in loader:
         img, pid, camid, camids, target_view, imgpath, pose_dict = batch

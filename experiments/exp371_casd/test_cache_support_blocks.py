@@ -18,6 +18,7 @@ from experiments.exp371_casd.cache_support_blocks import (
     _maxsim_pair,
     assert_paired_target_cache,
     cache_payload,
+    extract_loader,
     extract_support_batch,
     flip_support_batch,
     raw_part_response,
@@ -335,6 +336,45 @@ def test_pose_mode_model_switch_mismatch_fails_closed():
             block_dim=8,
             pose_mode="scene",
         )
+
+
+def test_extract_loader_audits_feed_cache_payload_without_missing_keys():
+    model = FakeLGPA(block_dim=8)
+    loader = [
+        (
+            torch.randn(2, 3, 16, 10),
+            torch.tensor([1, 2]),
+            torch.tensor([3, 4]),
+            torch.tensor([3, 4]),
+            torch.zeros(2, dtype=torch.long),
+            ["query/a.jpg", "gallery/b.jpg"],
+            _pose(),
+        )
+    ]
+    tensors, pids, camids, paths = extract_loader(
+        model,
+        loader,
+        device="cpu",
+        flip_test=True,
+        block_dim=8,
+        pose_mode="target",
+        consistency_atol=2e-5,
+        flip_raw_atol=2e-6,
+    )
+    payload = cache_payload(
+        tensors,
+        pids=pids,
+        camids=camids,
+        paths=paths,
+        split="val",
+        num_query=1,
+        block_dim=8,
+        weight_sha256="w" * 64,
+        script_sha256="s" * 64,
+        flip_test=True,
+        pose_mode="target",
+    )
+    assert "extraction_flip_max_abs_diff" in payload["audit"]
 
 
 @pytest.mark.parametrize("pose_mode", ["target", "canonical", "scene"])
