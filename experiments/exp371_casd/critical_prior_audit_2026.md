@@ -2,7 +2,7 @@
 
 日期：2026-07-13
 
-范围：只审计 CASD 相对 `MVI²P / UMTS / PAFormer` 以及 2026 年新近邻的最窄差异，并据此冻结 Gate C 与 frozen-student 的强对照。本文不实现 Gate C，不从标题或搜索摘要推断论文机制。
+范围：只审计 CASD 相对 `MVI²P / UMTS / PAFormer` 以及 2026 年新近邻的最窄差异，并据此冻结 Gate C 与 frozen-student 的强对照。本文不实现 Gate C；公开搜索索引只能用于确认其明确展示的出版社摘要片段，不能替代正文与公式审计。
 
 ## 结论先行
 
@@ -12,12 +12,13 @@ CASD 目前只能获得**待全文查新的条件性 GO**，不能写成已经�
 
 > Jianfeng Dong et al., *Learning from multi-view fragments: An adaptive consistency distillation framework for occluded person re-identification*, Neurocomputing 676 (2026), 133015, DOI: [10.1016/j.neucom.2026.133015](https://doi.org/10.1016/j.neucom.2026.133015).
 
-其题名同时出现 `multi-view fragments`、`consistency distillation` 和 `occluded person re-identification`，与 CASD 的问题和训练形态高度接近；但当前可合法访问的元数据没有摘要或方法正文。因此：
+ScienceDirect 的[公开搜索索引结果](https://search.brave.com/search?q=%22Learning+from+multi-view+fragments%22&source=web)已能确认，这篇论文提出 **Multi-View Consistency Distillation（MVCD）**：按 LUPI 范式构造训练期 multi-view teacher，teacher 额外访问 multi-view fragments 与 identity annotations，再以 consistency distillation 教给标准 single-view student；teacher 还含 label-guided 的 Saliency-Guided Feature Purification、Cross-View Patch Alignment 与 Reliability-Guided Aggregation。它已从“题名风险”升级为**摘要确认的直接方法邻居**。但当前仍没有合法公开正文、公式或代码。因此：
 
 1. 必须把它标为 **unresolved critical prior**；
-2. 不能从题名推断它已经覆盖或没有覆盖 strict LOO、pose-response routing、part correspondence、support-vs-self advantage；
-3. Gate C 可以继续作为内部机制 kill-switch，但在取得并审计合法全文前，不得给 CASD 最终新颖性 GO，也不得写“尚无同类方法”；
-4. 若全文显示它已联合覆盖 strict anchor exclusion、跨图局部 support 与 consistency/advantage distillation，CASD 必须重新裁决，不能靠术语改名继续。
+2. multi-view teacher→single-view student、跨视图 patch correspondence、可靠性聚合与 consistency distillation 的宽泛空间已经被它覆盖；
+3. 仍不能从摘要推断它已经覆盖或没有覆盖 strict LOO、pose-response routing、target-level current-evidence exclusion、support-vs-self advantage；
+4. Gate C 可以继续作为内部机制 kill-switch，但在取得并审计合法全文前，不得给 CASD 最终新颖性 GO，也不得写“尚无同类方法”；
+5. 若全文显示它已联合覆盖 strict anchor exclusion、跨图局部 support 与 consistency/advantage distillation，CASD 必须重新裁决，不能靠术语改名继续。
 
 ## 一、Dong et al. 2026：可核实证据
 
@@ -43,7 +44,7 @@ Crossref 只能证明书目信息，不能证明任何具体方法差异。
 - open access：`false`；
 - 文章页：[ScienceDirect](https://www.sciencedirect.com/science/article/pii/S0925231226004121)。
 
-未授权 API 只返回最小元数据，文章页要求人机验证且正文不是开放获取。本文没有绕过 CAPTCHA 或付费访问，也没有把搜索引擎生成摘要当作论文原文。
+未授权 API 只返回最小元数据，文章页要求人机验证且正文不是开放获取。本文没有绕过 CAPTCHA 或付费访问。下文只把可复现的 ScienceDirect 搜索索引片段记为“公开索引摘要”，不把它冒充正文。
 
 ### 1.3 Semantic Scholar / OpenAlex / ORCID
 
@@ -60,21 +61,21 @@ Crossref 只能证明书目信息，不能证明任何具体方法差异。
 2. exact-title + 第一作者：结果集中于 ScienceDirect、ResearchGate、Semantic Scholar 与 DBLP；ResearchGate 仅显示 `Request PDF`，没有公开全文；
 3. GitHub repository search：exact title、DOI、PII、`adaptive consistency distillation + ReID` 均未找到对应仓库；
 4. 未发现 arXiv ID 或官方代码声明。
+5. 2026-07-13 对 [ScienceDirect 文章页](https://www.sciencedirect.com/science/article/abs/pii/S0925231226004121)的[公开搜索索引结果](https://search.brave.com/search?q=%22Learning+from+multi-view+fragments%22&source=web)可复现下列摘要原文范围：`Multi-View Consistency Distillation (MVCD)`、`Learning Using Privileged Information (LUPI)`、training-only teacher 对 `multi-view fragments and identity annotations` 的 privileged access、standard single-view student，以及 `Saliency-Guided Feature Purification (SGFP) / Cross-View Patch Alignment (CVPA) / Reliability-Guided Aggregation (RGA)`。索引片段没有给出公式、采样器、anchor inclusion 或 loss 细节。
 
 搜索不到不构成“不存在”的证明。后续若作者公开预印本、accepted manuscript、机构仓储或代码，应优先审计，不使用非授权论文镜像。
 
 ### 1.5 目前明确不能确认的机制
 
-当前不能确认：
+公开索引摘要已经确认 training-only multi-view teacher、single-view student、跨视图 patch alignment 和 reliability aggregation，但仍不能确认：
 
-- `multi-view fragments` 是同 ID 多张图、单图内多尺度 fragment，还是生成/增强视图；
-- teacher 是否包含当前 anchor；
+- multi-view fragments 的确切采样单元，以及 teacher 是否包含当前 anchor；
 - 是否 strict leave-one-view-out；
 - 是否使用 pose、parsing、人体 part 或 target-only heatmap；
-- `adaptive consistency` 是 feature/logit/relation consistency，还是可靠性加权；
+- consistency target 是 feature、logit、relation、margin，还是它们的组合；
 - 是否比较 support 与 same-image self teacher；
 - 是否只迁移正向 relation correction；
-- 推理时是否 image-only；
+- single-view student 的最终推理输入与 descriptor/matching 细节；
 - 是否有 identity-only、permutation、anchor-inclusive 等因果对照。
 
 因此，任何把该论文写成“已经覆盖 CASD”或“显然没有覆盖 CASD”的结论都不成立。
@@ -240,7 +241,9 @@ LCR²S 仍未覆盖的联合条件是：
 | `FULL-INCL` | 完整 feature aggregate，包含 anchor | current-view leakage 与论文原型 |
 | `WRONG-ID` | 错身份 support，仅安全诊断 | support 身份纯度 |
 
-Gate C 的 pose-specific GO 条件是：correct part-response support 同时超过 `ID-MEAN`、`PART-EQUAL`、`SLOT-PERM`、`RESPONSE-PERM`、`AGREE` 和 `FULL-LOO`。只超过 `SELF` 或 `global` 不够。
+Gate C 的 pose-specific GO 条件是：correct part-response support 同时超过 `ID-MEAN`、`ID-GLOBAL`、`PART-EQUAL`、`SLOT-PERM`、`RESPONSE-PERM` 和 `AGREE`。只超过 `SELF` 或 `global` 不够。
+
+`FULL-LOO/FULL-INCL` 在 frozen geometry 阶段只作 boundary，不进入 pose-routing 主门：结构 routing arms 固定 query 自身 global/pooled，只替换五个 slots，而 full arms 会连七个 blocks、anchor inclusion 与全局路径一起改变，差值无法单变量归因于 pose-response routing。这不是降低新颖性门槛；完整 full-feature/relation 的 `LR-LOO / MV-INCL / LR-INCL` 必须在输出维度、loss mass、初始化和优化步数可匹配的 student 阶段进入 strongest-control 主门。
 
 ## 七、Frozen-student 必做强对照
 
@@ -255,9 +258,9 @@ Gate C 的 pose-specific GO 条件是：correct part-response support 同时超�
 | `U0` | `exp120/123`-style 内部强前驱 | 仓库内部新意 |
 | `MV-INCL` | anchor-inclusive full-feature KD | MVI²P/UMTS 论文原型 |
 | `LR-INCL` | current + other-view support，full-feature + relation KD | LCR²S 论文原型 |
-| `MV-LOO` | strict-LOO full-feature + relation KD | 普通跨图 KD 的最强去泄漏版本 |
+| `LR-LOO` | strict-LOO full-feature + relation KD | 普通跨图 KD 的最强去泄漏版本 |
 | `LEAK` | current-view support | 只量化泄漏虚高，不计主结果 |
-| `D26` | 待 Dong et al. 2026 全文后按原方法复现 | 2026 直接近邻；机制未知前不得臆造 |
+| `D26` | 待 Dong et al. 2026 全文后按原方法复现 | 摘要已确认 MVCD/SGFP/CVPA/RGA；正文细节未知前不得臆造 |
 
 所有训练臂必须同初始化、同 runtime、同 descriptor 维度、同优化步数，并报告：有效 loss coverage、effective sample size、每样本 loss mass、梯度预算和无 support 比例。
 

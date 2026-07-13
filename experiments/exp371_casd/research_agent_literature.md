@@ -7,7 +7,7 @@
 
 ## 2026-07-13 未决直接近邻覆盖说明
 
-最新审计见 `critical_prior_audit_2026.md`。Neurocomputing 2026 已出现 *Learning from multi-view fragments: An adaptive consistency distillation framework for occluded person re-identification*（DOI `10.1016/j.neucom.2026.133015`）。当前只取得 DOI、出版社、Semantic Scholar 与 ORCID 元数据，未取得合法公开摘要/全文，不能从标题推断它是否覆盖 strict LOO、pose-response 或 support-vs-self advantage。
+最新审计见 `critical_prior_audit_2026.md`。Neurocomputing 2026 已出现 *Learning from multi-view fragments: An adaptive consistency distillation framework for occluded person re-identification*（DOI `10.1016/j.neucom.2026.133015`）。ScienceDirect 的[公开搜索索引摘要](https://search.brave.com/search?q=%22Learning+from+multi-view+fragments%22&source=web)已确认其方法名为 MVCD，并明确采用 LUPI training-only multi-view teacher→single-view student、Cross-View Patch Alignment 和 Reliability-Guided Aggregation。它因此是摘要确认的直接方法邻居，不再只是题名风险；但合法公开正文/代码仍缺，strict LOO、pose-response 与 support-vs-self advantage 仍不能确认。
 
 此外，ACM MM 2023 的 `LCR²S` 已显式用同 ID 其他视图构造 support set，把 current+support 融合后的 enriched feature 与 relation matrix 蒸馏给单输入 student。所以下文关于 support set、other-view teacher 和 relation distillation 的单项新意全部作废；CASD 只剩“target 层面严格排除 current evidence + raw pose-response 逐部位 routing + support-vs-self 增量关系迁移”的联合差分。
 
@@ -103,7 +103,7 @@ MVI²P 也暴露了 CASD 可以利用的三个未解决点：
 
 | 工作 | 年份/代码 | 核心机制 | 与 CASD 的重叠 | 尚未覆盖的 CASD 条件 | 风险 |
 |---|---|---|---|---|---|
-| [Dong et al. 2026](https://doi.org/10.1016/j.neucom.2026.133015) | Neurocomputing 2026；正文未公开 | 题名为 multi-view fragments + adaptive consistency distillation + occluded ReID；当前无合法摘要/全文 | **题名层面同时命中 CASD 的问题与训练形态** | 机制未知；不得推断是否含 strict LOO、pose-response 或 support-vs-self gain | **未决致命邻居** |
+| [Dong et al. 2026 / MVCD](https://doi.org/10.1016/j.neucom.2026.133015) | Neurocomputing 2026；正文未公开 | LUPI multi-view teacher→single-view student；SGFP、跨视图 patch alignment、reliability aggregation、consistency distillation | **问题、训练形态、跨视图局部对应与可靠聚合均直接重合** | strict LOO、pose-response、target-level current exclusion 与 support-vs-self gain 未知 | **未决致命邻居** |
 | [MVI²P](https://arxiv.org/abs/2311.03828) | 2023/2024；[代码](https://github.com/nengdong96/MVIIP) | 同 ID 多图 CAM 定位、可靠性加权、综合 feature→单图 L2 propagation | **问题、数据组织、单图推理、遮挡场景全部直接重合** | strict LOO、pose part alignment、support-vs-self positive gain | **致命邻居** |
 | [UMTS](https://arxiv.org/abs/2001.05197) | AAAI 2020 | 同 ID K-shot 拼接 teacher→其中一张 single-shot student，多阶段 uncertainty KD | multi-shot comprehensive teacher→single image | teacher 含 anchor；无逐部位 LOO；无 gain-only transfer | 很高 |
 | [LCR²S](https://arxiv.org/abs/2310.11210) | ACM MM 2023 | 同 ID 其他视图组成 support set，current+support enriched teacher，以 feature MSE 与 relation matrix 蒸馏给单输入 student | same-ID support、other-view teacher、feature+relation KD、单输入推理均直接重合 | TIReID；target 含 current；无 pose-response routing 与 support-vs-self gain | **致命邻居** |
