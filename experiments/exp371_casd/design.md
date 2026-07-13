@@ -7,6 +7,58 @@
 - 当前只允许：归因复核、缓存特征 support oracle、冻结 backbone kill-switch
 - 禁止：直接完整训练、PBSR 小变体、Claude 审查、OT/MoE/slot 救场
 
+## 2026-07-13 Gate B/D 与外部查新后覆盖说明
+
+本节覆盖下文较早的“single-image support incomplete 首创”“精确姿态对齐是已成立前提”与旧 Gate C 定义。
+
+### 外部新颖性边界
+
+`MVI²P`（Information Fusion 2023/2024）已经在遮挡 ReID 中使用同 ID 多图形成 comprehensive representation，再蒸馏给测试时的单图分支；`UMTS` 更早覆盖 multi-shot teacher → single-shot student。因此 CASD 不能主张首次利用同 ID 多图、首次补全单图遮挡证据或首次多图 teacher 教单图 student。
+
+当前尚未发现的完整组合只有：
+
+1. teacher 严格 leave-one-view-out，anchor 当前图和 relation endpoint 都不进入 support；
+2. 固定 teacher features 后，只用 part/slot correspondence 与 pose-response 组织其他同 ID 视图；
+3. 只迁移 support 相对 same-image teacher 可验证改善的 class-free retrieval relation；
+4. 用 identity-only、slot permutation、same-image KD、`exp123`-style full relational target 和 MVI²P/UMTS 式 full-feature KD 做强对照。
+
+缺少其中任一项，CASD 都退化为 MVI²P/UMTS 的 part-wise 变体，主创新直接 NO-GO。
+
+### Gate B/D 已得事实
+
+同一 exp336 s0 checkpoint：
+
+| arm | mAP/R1 | 相对 global mAP |
+|---|---:|---:|
+| global | 58.9908/67.3756 | — |
+| correct | 59.8357/67.6018 | +0.8449 |
+| target-only | 59.8121/67.5113 | +0.8213 |
+| canonical | 59.7374/67.6471 | +0.7465 |
+| shuffled | 59.8037/67.7376 | +0.8129 |
+| uniform | 59.3689/66.8326 | +0.3781 |
+| no-pose | 59.4014/66.6063 | +0.4106 |
+
+五臂 global SHA 完全一致。`correct-shuffled=+0.0320 mAP`、`correct-canonical=+0.0984 mAP`，说明已验证资产是**结构化局部表示**，不是实例级精确姿态对应。后续只能把 pose 当作待验证的训练期 support organizer，不能预写为贡献。
+
+Gate D 单 seed：fixed JL-768 retention=`-0.2245`，train-only PCA-768 为 `59.9336/67.8733`、retention=`1.1158`、train/eval path overlap=`0`。这允许用同维 learned packing 做后续公平首验，但最终成本结论仍需三 seed。
+
+### Gate C 新硬门禁
+
+下文旧 Gate C 的 classifier CE、own-arm advantage 与简单 correct/uniform/shuffled 设计全部作废。新 Gate C 必须：
+
+1. 缓存 target-only teacher 的七个 raw blocks、未归一化 part pose response、相对 `kp_weights`、PID/CAMID/path；
+2. strict path LOO，并排除当前 relation endpoint；报告无 support 比例和近重复风险；
+3. 用未见身份上的 class-free retrieval margin，不使用训练 ID classifier 自证；
+4. extraction 与 routing 正交：固定同一 correct/target-only features，只比较 `pose-response / equal / slot permutation / identity-only`；
+5. shared mask、shared weight 与相同正负 loss mass；own-mask 仅作安全统计；
+6. 直接加入 `exp123`-style full relational target 与 MVI²P/UMTS 式 full-feature support control。
+
+只有 pose/slot-organized strict LOO support 同时超过 identity-only、slot permutation、full relational 和 full-feature KD，且优势至少 `+0.5 mAP`，才允许进入 frozen-student。否则停止 LGPA 自有化，不转 AERC 或小变体。
+
+### 备选路线裁决
+
+AERC 被 2025 `Neural Network Coding Layer` 的 structured redundancy、feature erasure 与 pseudo-inverse recovery 机制级覆盖，独立主创新 NO-GO。PELD/ACC/AEAD/ASMI 只作诊断或对照，不再形成第二条训练主线。
+
 ## 动机
 
 LGPA 与 PAFormer 的重合不能靠换 query 名称解决。本轮查新还发现：

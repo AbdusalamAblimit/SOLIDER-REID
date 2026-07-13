@@ -1,5 +1,21 @@
 # exp371 CASD：文献与代码查新
 
+## 2026-07-13 系统复查后的最高优先级覆盖
+
+更完整的外部查新见 `research_agent_literature.md`。该轮新增两个会改变主线的直接邻居：
+
+1. **MVI²P（Information Fusion 2023/2024）** 已在遮挡 ReID 中用同 ID 多图形成 comprehensive representation，再把多视图信息蒸馏给测试时单图分支；它与 CASD 原“single-image support incomplete + multi-view teacher”故事直接重合。
+2. **NNCL（IEEE Access 2025）** 已用 fixed/learnable coding matrix 给神经特征加入 structured redundancy，并在 feature erasure 后通过 pseudo-inverse 显式恢复；AERC 的 source/parity coding 因此独立 NO-GO。
+
+CASD 只能以以下联合差分获得条件新意：
+
+- support 严格排除 anchor 与当前 relation endpoint；
+- 固定 teacher features 后，按 part/slot 与 pose-response 组织其他同 ID 视图；
+- 只迁移 support 相对 same-image teacher 可验证改善的 class-free retrieval relation；
+- 同时超过 identity-only、slot permutation、same-image KD、`exp123`-style full relational target 与 MVI²P/UMTS 式 full-feature KD。
+
+Gate B 已显示 correct 与 shuffled/canonical 仅差 `0.03/0.10 mAP`，所以 pose-specific/anatomical claim 目前没有成立。若固定 feature 的 routing gate 仍不能超过 non-pose controls，CASD 被 MVI²P/UMTS 覆盖并正式 NO-GO。
+
 ## 查新结论
 
 PAFormer 已经直接覆盖“pose heatmap 监督 learnable pose tokens，推理不再调用 pose estimator”。因此 LGPA 不能靠换掉 CLIP query、learnable part token、teacher forcing 或 pose-free inference 重新获得新颖性。

@@ -84,6 +84,7 @@ LGPA 的稳定正信号是真实的，但当前只能严谨表述为：
 |---|---:|---:|---:|
 | global | 58.9908/67.3756 | — | -0.8449 |
 | correct | 59.8357/67.6018 | +0.8449 | — |
+| target-only | 59.8121/67.5113 | +0.8213 | -0.0236 |
 | canonical | 59.7374/67.6471 | +0.7465 | -0.0984 |
 | shuffled | 59.8037/67.7376 | +0.8129 | -0.0320 |
 | uniform | 59.3689/66.8326 | +0.3781 | -0.4668 |
@@ -94,7 +95,8 @@ LGPA 的稳定正信号是真实的，但当前只能严谨表述为：
 1. 局部融合增益真实存在；
 2. part-specific structured spatial support 有贡献，因为 canonical/shuffled 明显高于 uniform/no-pose；
 3. 当前图的精确 pose 对应几乎不是主来源，因为 shuffled/canonical 与 correct 的差只有 `0.03/0.10 mAP`；
-4. 因此后续不能把 `anatomical support` 当作默认成立的解释，必须由 target-only 与 support-routing 对照另行证明。
+4. scene-merged 与 target-only 只差 `0.024 mAP`，说明旁人 heatmap 不是该结果的主要混淆，但也没有证明目标人物精确 pose 具有独立优势；
+5. 因此后续不能把 `anatomical support` 当作默认成立的解释，必须由 support-routing 对照另行证明。
 
 ## 当前描述子的真实成本
 

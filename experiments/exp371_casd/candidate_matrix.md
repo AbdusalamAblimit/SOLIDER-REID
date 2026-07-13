@@ -1,5 +1,13 @@
 # exp371：LGPA 改造候选矩阵
 
+## 2026-07-13 外部查新与 Gate B/D 后最终裁决
+
+1. **CASD 仍是唯一条件主线**，但问题新意从“首次用同 ID 多图补全单图”降为：相对 MVI²P/UMTS，严格隔离 anchor 之外真正新增、可归因且可迁移的 cross-view support gain。
+2. Gate B 显示 `correct/shuffled/canonical` 只差 `0.03/0.10 mAP`，所以 `anatomical/precise-pose` 不是已成立资产；只有后续固定 feature 的 support-routing 门禁通过，才能保留 pose-organized claim。
+3. train-only PCA-768 单 seed retention=`1.1158`，同维 learned packing provisional GO；它解决成本公平性，不是创新。
+4. **AERC 已被 2025 NNCL 机制级覆盖，独立主创新 NO-GO**；不再作为 CASD 失败后的第二主线。
+5. PELD/ACC/AEAD/ASMI 只作诊断或强对照。若 CASD Gate C 失败，正式停止 LGPA 自有化，不转 OT/MoE/slot/erasure coding 小变体。
+
 ## 评价标准
 
 每个方案按六项判断：
@@ -15,7 +23,7 @@
 
 | 排名 | 方案 | 问题新意 | 机制新意 | 可验性 | 直接撞车风险 | 裁决 |
 |---:|---|---:|---:|---:|---:|---|
-| 1 | CASD：Cross-instance Anatomical Support-Advantage Distillation | 4/5 | 4/5 | 5/5 | 4/5 | **唯一条件主线** |
+| 1 | CASD：strict-LOO Cross-instance Support-Gain Distillation | 3/5 | 4/5 | 5/5 | 5/5 | **唯一条件主线；必须超过 MVI²P/UMTS 式控制** |
 | 2 | IPER：Pose-Advantage Interventional Routing | 4/5 | 3/5 | 5/5 | 5/5 | 降为 CASD 因果门禁/辅助监督 |
 | 3 | Continuous Anatomical Equivariance Field | 4/5 | 4/5 | 4/5 | 4/5 | 备查，不启动 |
 | 4 | Pose-Privileged Packed Descriptor | 3/5 | 2/5 | 5/5 | 4/5 | 只作同维 oracle/后续封装 |

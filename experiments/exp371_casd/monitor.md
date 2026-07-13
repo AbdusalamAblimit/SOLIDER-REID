@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-- 阶段：外部查新仍在收尾；Gate B / Gate D 单 seed 已完成；尚未启动训练
+- 阶段：外部查新、Gate B / Gate D 单 seed 已完成；Gate C 正在按新门禁重写；尚未启动训练
 - 主方案：CASD（Cross-instance Anatomical Support-Advantage Distillation）
 - IPER 位置：仅作为 support-quality 因果门禁/辅助权重，不作为 headline
 - 当前训练进程：无
@@ -29,6 +29,8 @@
 - [x] Gate B correct parity 通过：`59.8357 / 67.6018`，复现 exp336 s0 `59.9 / 67.6`
 - [x] Gate B 五臂完成；五臂 global SHA 完全一致，descriptor 均为 `7×768=5376-D`
 - [x] Gate D 单 seed 完成：train-only PCA-768 为 `59.9336 / 67.8733`，paired-gain retention=`1.1158`；固定 JL-768 失败
+- [x] Gate T target-only 推理干预完成：`59.8121 / 67.5113`，仅比 scene-merged correct 低 `0.0236 mAP`
+- [x] 外部系统查新完成：MVI²P 是 CASD 第一直接邻居；AERC 被 NNCL 机制级覆盖并独立 NO-GO
 
 ## Gate B / Gate D 单 seed 结果
 
@@ -36,6 +38,7 @@
 |---|---:|---:|---:|---|
 | global | 58.9908 | 67.3756 | — | 同一 checkpoint 的共同 global |
 | correct | 59.8357 | 67.6018 | +0.8449 | 原 exp336 scene-merged pose |
+| target-only | 59.8121 | 67.5113 | +0.8213 | 同一权重，仅把 person-0 目标人物 heatmap 送入 LGPA |
 | canonical | 59.7374 | 67.6471 | +0.7465 | 固定 canonical 只比 correct 低 0.0984 |
 | shuffled | 59.8037 | 67.7376 | +0.8129 | 异 PID 双射 donor pose 只比 correct 低 0.0320 |
 | uniform | 59.3689 | 66.8326 | +0.3781 | 删除通道特异结构但保留 foreground support |
@@ -59,6 +62,12 @@ PCA 只在 `train_loader_normal` 上拟合，train/eval path overlap=`0`；该�
 
 Gate B 的机制结论必须收紧：LGPA 的局部融合增益真实存在，但当前图精确姿态只解释很小部分；更可靠的资产是**结构化局部分解**，不是实例级精确姿态对齐。后续在 target-only / support-routing 门禁通过前，不把 `anatomical pose support` 当作已成立事实。
 
+小型原始日志、manifest 与 results 已回传至 Git 外：
+
+```text
+remote_artifacts/exp371_30aca94/
+```
+
 ## 尚未执行
 
 - [ ] Gate A：canonical CLIP/random 已闭合；待 correct-pose random-frozen/random-learned paired run
@@ -73,7 +82,7 @@ Gate B 的机制结论必须收紧：LGPA 的局部融合增益真实存在，�
 
 内部 `exp120/123/125/129/130` 是 CASD 必须超越的强对照，不是外部 prior，也不自动否定论文创新。若 CASD 能用 strict LOO、part-structured support 与 support advantage 解决旧实验“teacher 有新增关系但 student 无法兑现”的失败，它们反而构成完整的机制动机。正式新颖性只由外部查新裁决。
 
-下一执行顺序：先完成外部查新与内部前驱差分；随后把 Gate C 重写为 target-only、strict-path LOO、class-free、shared-mask、loss-matched 的 frozen support oracle，并直接加入 identity-only、slot permutation 与 exp123-style relational teacher。AERC 只作为正交备份，先做专项 ECOC/erasure-coding 查新与 frozen codec oracle。Gate A correct-pose learned query 已降为低优先级归因，不占用主线训练资源。
+下一执行顺序：把 Gate C 重写为 target-only、strict-path LOO、class-free、shared-mask、loss-matched 的 frozen support oracle，并直接加入 identity-only、slot permutation、`exp123`-style relational target 与 MVI²P/UMTS 式 full-feature KD。现有 final-descriptor cache 不含 raw pose response，不能据此裁决 pose-organized support；必须补缓存 target-only raw blocks、raw response 与相对 `kp_weights` 后再执行。AERC 已独立 NO-GO。Gate A correct-pose learned query 降为低优先级归因，不占用主线训练资源。
 
 原因：UMTS 已证明普通 multi-shot teacher-student 不是新意。CASD 的新颖性依赖“pose-organized part support + leave-one-view-out + support-vs-self advantage”相对 same-image KD、full multi-shot KD 和伪 pose support 都有独立价值；这尚未被数据证明。先在缓存 teacher parts 上验证 support coverage、identity margin 与 controls，能避免再投入一次机制工作但身份指标不动的完整训练。
 
