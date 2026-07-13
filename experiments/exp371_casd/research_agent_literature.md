@@ -5,6 +5,12 @@
 范围：pose-guided / pose-free occluded ReID、LUPI、同 ID 跨图 support、多视图 teacher-student、leave-one-out、关系/间隔蒸馏，以及 AERC/ECOC/feature-erasure coding。
 约束：本文件只裁决**外部新颖性**；仓库内部 `exp120/123/125/129/130` 是前驱与强对照，不是外部 prior。
 
+## 2026-07-13 未决直接近邻覆盖说明
+
+最新审计见 `critical_prior_audit_2026.md`。Neurocomputing 2026 已出现 *Learning from multi-view fragments: An adaptive consistency distillation framework for occluded person re-identification*（DOI `10.1016/j.neucom.2026.133015`）。当前只取得 DOI、出版社、Semantic Scholar 与 ORCID 元数据，未取得合法公开摘要/全文，不能从标题推断它是否覆盖 strict LOO、pose-response 或 support-vs-self advantage。
+
+因此，下文“尚未发现完整组合”降级为**待该论文全文审计的条件判断**。Gate C 可继续作为内部 kill-switch，但在全文八项机制核验完成前，不得给 CASD 最终外部新颖性 GO。
+
 ## 结论先行
 
 ### CASD
