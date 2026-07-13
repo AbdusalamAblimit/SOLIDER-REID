@@ -4,7 +4,7 @@
 
 LGPA 的稳定正信号是真实的，但当前只能严谨表述为：
 
-> 在 Swin-Tiny 上，detached 的姿态定位局部描述子与 global 做标准拼接后，相对同一 checkpoint 的 global 描述子稳定提高约 `+0.9 mAP`。
+> 在 Swin-Tiny 上，detached 的结构化局部描述子与 global 做标准拼接后，相对同一 checkpoint 的 global 描述子稳定提高约 `+0.9 mAP`；同权重推理干预进一步表明，精确的当前图姿态只解释其中很小一部分。
 
 它尚不能被表述为 CLIP 文本语义增益、正确逐图姿态的全部因果增益、标准 768-D global 增益、GCN 增益或 matching 增益。
 
@@ -12,7 +12,7 @@ LGPA 的稳定正信号是真实的，但当前只能严谨表述为：
 
 | 问题 | 证据 | 当前可下结论 |
 |---|---|---|
-| LGPA 是否有稳定增益 | `exp336` 三 seed 的 equal-concat/global 差均为 `+0.9 mAP` | pose-aware local descriptor 融合稳定有效 |
+| LGPA 是否有稳定增益 | `exp336` 三 seed 的 equal-concat/global 差均为 `+0.9 mAP` | structured local descriptor 融合稳定有效 |
 | 无 pose 时是否仍涨 | `exp337` 三 seed 为 `-0.1/-0.1/-0.3 mAP` | 纯 CLIP-text query 在无空间先验时无增益 |
 | 固定空间先验是否够用 | `exp340` canonical：global `58.8`，part-only `59.4`，equal-concat `59.5` | 通用人体布局已取得大部分局部增益 |
 | 正确逐图 pose 是否贡献全部增益 | `exp357` correct `60.5`、cross-image pose `59.8`；差约 `0.7` | 正确对应只提供较小增量，不是全部来源 |
@@ -78,6 +78,24 @@ LGPA 的稳定正信号是真实的，但当前只能严谨表述为：
 
 这两项在训练时扰动 pose，但测试仍使用正确 pose。它们能回答“训练期 pose 对应是否重要”，不能完全替代在同一 checkpoint 上将测试 pose 改成 correct/canonical/shuffled/uniform/no-pose 的干预矩阵。
 
+2026-07-13 已在同一 exp336 s0 checkpoint 上完成完整同权重干预：
+
+| arm | mAP/R1 | 相对 global mAP | 相对 correct mAP |
+|---|---:|---:|---:|
+| global | 58.9908/67.3756 | — | -0.8449 |
+| correct | 59.8357/67.6018 | +0.8449 | — |
+| canonical | 59.7374/67.6471 | +0.7465 | -0.0984 |
+| shuffled | 59.8037/67.7376 | +0.8129 | -0.0320 |
+| uniform | 59.3689/66.8326 | +0.3781 | -0.4668 |
+| no-pose | 59.4014/66.6063 | +0.4106 | -0.4344 |
+
+五臂的 global descriptor SHA 完全一致；shuffled 在 query/gallery 内分别满足异 PID、无碰撞、严格双射。结果支持：
+
+1. 局部融合增益真实存在；
+2. part-specific structured spatial support 有贡献，因为 canonical/shuffled 明显高于 uniform/no-pose；
+3. 当前图的精确 pose 对应几乎不是主来源，因为 shuffled/canonical 与 correct 的差只有 `0.03/0.10 mAP`；
+4. 因此后续不能把 `anatomical support` 当作默认成立的解释，必须由 target-only 与 support-routing 对照另行证明。
+
 ## 当前描述子的真实成本
 
 当前 `equal_concat` 由以下七个 768-D 块组成：
@@ -86,9 +104,15 @@ LGPA 的稳定正信号是真实的，但当前只能严谨表述为：
 2. pooled part；
 3. 五个 individual parts。
 
-因此总维度为 `7 × 768 = 5376-D`，且 eval 路径读取 heatmap。现有证据还没有证明：
+因此总维度为 `7 × 768 = 5376-D`，且原 eval 路径读取 heatmap。单 seed train-only packing oracle 已证明：
 
-- 768-D 固定维度下能保留这 `+0.9 mAP`；
+- full 5376-D：`59.8357/67.6018`；
+- fixed JL-768：`58.8011/67.5566`，paired-gain retention=`-0.2245`；
+- train-only PCA-768：`59.9336/67.8733`，paired-gain retention=`1.1158`；
+- train/eval path overlap=`0`，PCA 不读取 query/gallery 做 fit。
+
+所以“LGPA 增益必然来自 5376-D 扩维”已被单 seed 证据否定；但该结论仍需三 seed paired 复核。现有证据仍没有证明：
+
 - 测试完全无 pose 时能保留这 `+0.9 mAP`；
 - 普通 ViT 上能够成立。
 
@@ -98,8 +122,9 @@ LGPA 的稳定正信号是真实的，但当前只能严谨表述为：
 
 正式训练前必须先补三组廉价门禁：
 
-1. **query 归因**：canonical 条件的 CLIP/fixed-random 已由找回的原始日志闭合；再在 exp336 correct-pose 协议比较 frozen CLIP、fixed random、learned query ID，确认结论不依赖 canonical；
-2. **inference intervention**：同一 `exp336` checkpoint 比较 correct/canonical/shuffled/uniform/no-pose；
-3. **同维 oracle**：将已验证 5376-D teacher descriptor 压到 768-D，检查能否保留至少 80% 的相对增益。
+1. **query 归因**：canonical 条件的 CLIP/fixed-random 已闭合；correct-pose learned-query 只剩低优先级优化归因，不再影响去 CLIP 化结论；
+2. **inference intervention**：s0 已完成，三 seed 只在进入最终机制报告时补齐；
+3. **同维 oracle**：s0 PCA-768 provisional GO，最终需三 seed paired 验证；
+4. **support 归因**：必须 target-only、strict-path LOO、class-free、shared-mask、loss-matched，并直接对照 identity-only、slot permutation 与 exp123-style relational teacher。
 
-若 correct pose 不能比 controls 组织出更完整、更可靠的跨图 support，CASD 的 pose-privileged 故事立即失去地基；若 768-D oracle 也失败，则同维化只能降为长期问题，不能与首个机制实验捆绑。
+若 target-only/part routing 不能比 controls 组织出更完整、更可靠的跨图 support，CASD 必须去掉 pose-specific/anatomical claim；若 CASD 又不能超过 exp123-style 强对照，则主方法判负。PCA-768 已允许同维首验，但不能把单 seed oracle 冒充最终三 seed 成本结论。

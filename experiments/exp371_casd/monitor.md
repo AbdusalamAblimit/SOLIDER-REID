@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-- 阶段：大调研完成，候选收敛，设计已写；尚未启动训练
+- 阶段：外部查新仍在收尾；Gate B / Gate D 单 seed 已完成；尚未启动训练
 - 主方案：CASD（Cross-instance Anatomical Support-Advantage Distillation）
 - IPER 位置：仅作为 support-quality 因果门禁/辅助权重，不作为 headline
 - 当前训练进程：无
@@ -25,20 +25,55 @@
 - [x] 实现 Gate B 五臂评测与缓存脚本；shuffled 为 query/gallery 内异 PID 双射，uniform 为 common-body-support
 - [x] 实现 Gate D train-only JL/PCA-768 oracle 与 paired-gain retention
 - [x] 本地 uv 环境 11 项单元测试通过，Python compile 与 `git diff --check` 通过
+- [x] 3090 完整模型 query 接线 smoke 通过；4090 execution 的 11 项测试通过
+- [x] Gate B correct parity 通过：`59.8357 / 67.6018`，复现 exp336 s0 `59.9 / 67.6`
+- [x] Gate B 五臂完成；五臂 global SHA 完全一致，descriptor 均为 `7×768=5376-D`
+- [x] Gate D 单 seed 完成：train-only PCA-768 为 `59.9336 / 67.8733`，paired-gain retention=`1.1158`；固定 JL-768 失败
+
+## Gate B / Gate D 单 seed 结果
+
+| arm | mAP | R1 | 相对 global mAP | 解释边界 |
+|---|---:|---:|---:|---|
+| global | 58.9908 | 67.3756 | — | 同一 checkpoint 的共同 global |
+| correct | 59.8357 | 67.6018 | +0.8449 | 原 exp336 scene-merged pose |
+| canonical | 59.7374 | 67.6471 | +0.7465 | 固定 canonical 只比 correct 低 0.0984 |
+| shuffled | 59.8037 | 67.7376 | +0.8129 | 异 PID 双射 donor pose 只比 correct 低 0.0320 |
+| uniform | 59.3689 | 66.8326 | +0.3781 | 删除通道特异结构但保留 foreground support |
+| no-pose | 59.4014 | 66.6063 | +0.4106 | 同一 pose-trained head 的推理干预，不等于 exp337 重训 |
+
+五臂的共同 `global_sha256` 为：
+
+```text
+e5c3a041d6fe930c4c074ee3d7bdec1bea984503ff1c184f8f5cbf7ddfc0d310
+```
+
+单 seed packing：
+
+| method | dim | mAP | R1 | retention | 判断 |
+|---|---:|---:|---:|---:|---|
+| full equal-concat | 5376 | 59.8357 | 67.6018 | 1.0000 | reference |
+| fixed JL | 768 | 58.8011 | 67.5566 | -0.2245 | NO-GO |
+| train-only PCA | 768 | 59.9336 | 67.8733 | 1.1158 | provisional GO |
+
+PCA 只在 `train_loader_normal` 上拟合，train/eval path overlap=`0`；该结果只说明“线性 learned packing 可行”，不说明任意随机压缩可行。最终同维 claim 仍需三 seed paired 验证。
+
+Gate B 的机制结论必须收紧：LGPA 的局部融合增益真实存在，但当前图精确姿态只解释很小部分；更可靠的资产是**结构化局部分解**，不是实例级精确姿态对齐。后续在 target-only / support-routing 门禁通过前，不把 `anatomical pose support` 当作已成立事实。
 
 ## 尚未执行
 
 - [ ] Gate A：canonical CLIP/random 已闭合；待 correct-pose random-frozen/random-learned paired run
-- [ ] Gate B：exp336 checkpoint inference intervention 矩阵
+- [x] Gate B：exp336 checkpoint inference intervention 矩阵（s0）
 - [ ] Gate C：same-image / correct cross-image /伪 support 的 identity-relation advantage oracle
-- [ ] Gate D：5376-D→768-D frozen oracle
+- [x] Gate D：5376-D→768-D frozen oracle（s0 provisional；三 seed 待补）
 - [ ] Phase 1：缓存特征 CASD 六臂 kill-switch
 
 ## 当前判断
 
 **允许继续做廉价门禁，不允许直接开完整训练。**
 
-下一执行顺序：先在 exp336 s0 checkpoint 做 Gate B stock parity + 五臂全量；同一趟缓存 train/val correct descriptor 并运行 Gate D。两项无实现问题后，才并行启动 Gate A 两个 query attribution run。
+内部 `exp120/123/125/129/130` 是 CASD 必须超越的强对照，不是外部 prior，也不自动否定论文创新。若 CASD 能用 strict LOO、part-structured support 与 support advantage 解决旧实验“teacher 有新增关系但 student 无法兑现”的失败，它们反而构成完整的机制动机。正式新颖性只由外部查新裁决。
+
+下一执行顺序：先完成外部查新与内部前驱差分；随后把 Gate C 重写为 target-only、strict-path LOO、class-free、shared-mask、loss-matched 的 frozen support oracle，并直接加入 identity-only、slot permutation 与 exp123-style relational teacher。AERC 只作为正交备份，先做专项 ECOC/erasure-coding 查新与 frozen codec oracle。Gate A correct-pose learned query 已降为低优先级归因，不占用主线训练资源。
 
 原因：UMTS 已证明普通 multi-shot teacher-student 不是新意。CASD 的新颖性依赖“pose-organized part support + leave-one-view-out + support-vs-self advantage”相对 same-image KD、full multi-shot KD 和伪 pose support 都有独立价值；这尚未被数据证明。先在缓存 teacher parts 上验证 support coverage、identity margin 与 controls，能避免再投入一次机制工作但身份指标不动的完整训练。
 
