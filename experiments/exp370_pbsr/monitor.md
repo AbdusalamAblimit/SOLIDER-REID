@@ -107,3 +107,13 @@
 - **执行完整性复核修正**：B0 与 P0 分别运行在 3090/4090；torch/torchvision 虽已对齐，但 Python、NumPy/Pillow/timm 等没有逐项完全相同。epoch 60 的 `-0.9 mAP` 不足以压过这个非方法混杂，故此处只能记为“跨机 screening 负向”，不能冒充最终严格 NO-GO。
 - 最终裁决前只补一个必要的同机控制：在 4090、使用 P0 完全相同解释器、依赖路径、GPU、源码和 config 重跑 `POSE_PBSR=False` 的 B0 到 epoch 60。该控制不改变方法、不启动 P1/P4/P2/P3、不做超参救场。
 - 若同机 B0 仍高于或接近 P0、P0 未达到明确 `+0.8～1.0 mAP`，则正式 NO-GO；只有同机结果证明 P0 明确正向，才允许重新进入机制消融门禁。
+
+### [2026-07-13] 4090 同运行时 B0 控制启动
+
+- 唯一目的：消除首轮 B0/P0 的跨机器与依赖版本混杂；这不是新方法变体，也不改变预注册裁决点。
+- 执行目录：`/home/afr/SOLIDER-REID-exp370-14b2b68`；关键 config、PBSR 模块和 processor 的 SHA256 均与 execution commit `14b2b68` 对应文件一致。
+- 运行时与 P0 相同：Python `3.10.12`，torch/torchvision `2.4.1+cu121 / 0.19.1+cu121`，NumPy `2.2.6`，Pillow `12.2.0`，timm `1.0.27`。
+- 输出目录：`log/occluded_duke/exp370_b0_global_sameenv_s1234`；唯一 main PID `4143251`，其 8 个子进程为 DataLoader workers。
+- 命令行唯一方法覆盖为 `MODEL.POSE_PBSR False`；日志确认 `POSE_PBSR=False`、`MAX_EPOCHS=120`、seed `1234`、batch size `64`、AMP initial scale `1024`。
+- epoch 1 已完成：loss finite，`Loss=13.083`、`id_global=6.554`、`tri_global=6.530`；GPU 仅有 main PID 占用约 `6.95 GiB`，无重复 controller、NaN/Inf 或异常退出。
+- 当前判断：健康继续。保持 120-epoch cosine schedule，在 epoch 60 eval 落盘后精确终止；最终只与现有同机 P0 epoch 60 的 `54.4 mAP / 63.7 R1` 比较，不挑选其他 epoch。
