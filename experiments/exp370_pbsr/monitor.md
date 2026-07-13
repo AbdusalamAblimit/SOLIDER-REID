@@ -2,10 +2,12 @@
 
 ## 状态
 
-- 当前阶段：远程 CUDA smoke 通过；kill-switch manifest 已冻结，准备启动 B0/P0
-- 训练状态：未启动
-- 输出目录：尚未创建
-- GPU：未占用
+- 当前阶段：第一批 B0/P0 已按冻结 manifest 并行训练
+- 训练状态：B0 进行中；P0 进行中
+- exact execution commit：`14b2b68`
+- source archive SHA256：`188df5e7049ed5b9bc877bdbe7965e5853e4e653711da09496707d16970664ee`
+- B0 输出：3090 `/root/work/SOLIDER-REID-exp370-14b2b68/log/occluded_duke/exp370_b0_global_s1234`
+- P0 输出：4090 `/home/afr/SOLIDER-REID-exp370-14b2b68/log/occluded_duke/exp370_p0_coupled_s1234`
 
 ## 预训练门禁
 
@@ -63,3 +65,14 @@
 - 初始化 route entropy `3.87105513`、background share `0.14284959` 与均匀初始化预期一致；delta norm `2.41153574` finite。
 - 同 scale 的 B0：identity `21.99402428`，173/173 个有梯度参数 finite/nonzero；零门使 P0/B0 初始 identity 前向严格一致。
 - 当前判断：smoke 门禁通过，manifest FROZEN，允许只启动第一批 B0/P0；尚无训练结果，不得声称 PBSR 有效。
+
+### [2026-07-13] B0/P0 第一批启动
+
+- B0 于 3090 启动，唯一训练 main PID `1698212`；其余同命令进程为 DataLoader workers，不是第二 controller。
+- P0 于 4090 启动，唯一训练 main PID `4118839`；其余同命令进程为 8 个 DataLoader workers。
+- 两边均从 exact archive 解包到新隔离目录，未修改原 dirty repo；batch size 均为 64，AMP initial scale 均为 1024。
+- 两边 torch/torchvision 对齐为 `2.4.1+cu121 / 0.19.1+cu121`。4090 使用工作目录内 `uv` 创建的 `.venv` 入口，并显式组合只读依赖路径；其 CUDA smoke 已再次通过。
+- B0 epoch 10：`36.0% mAP / 44.8% R1`；epoch 20：`43.3% mAP / 53.5% R1`，来自原始 `runner_stdout.log`。
+- P0 epoch 5 完成：训练 loss finite；route loss 从首个日志点约 `1.556` 缓降至约 `1.547`；route entropy `3.871`、background share `0.143`、delta norm 约 `2.32`，无 NaN/Inf 或 background collapse。
+- P0 的 alpha 日志以三位小数显示，早期接近 0 不能据此判断未更新；CUDA smoke 已验证 optimizer step 后非零。后续以 checkpoint 参数和更高精度审计为准。
+- 当前判断：两臂健康继续。P0 尚无 eval，不能与 B0 作效果判断；等待相同 epoch 10/20/30 门禁。
