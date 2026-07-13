@@ -1452,3 +1452,26 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
 4. LGPA 与 PAFormer 的重合风险仍然存在；PBSR 负结果没有提供新的可投稿解法。
 
 当前没有诚实证据支持以 PBSR 重写一篇新论文。若后续恢复论文工作，应回到已经独立成立的 PSG/既有实证主线，或重新定义新的问题对象；不能把这次 NO-GO 改写成正结果。
+
+## 2026-07-13：新叙事候选——从单图 pose token 转向跨图 identity support
+
+大调研后的新叙事不再是“把 pose 注入网络的哪个位置”，也不是“用 learnable pose token 替代 CLIP query”。PAFormer、TSD 与 PGFL-KD 已经覆盖了 pose-token、privileged teacher 和 pose-free student 的常规故事。
+
+仓库自己的反事实证据给出了更自然的起点：
+
+- 局部结构描述子确实稳定涨点；
+- 通用 canonical 人体布局已经解释了大部分收益；
+- 正确逐图 pose 与解剖标签只提供较小增量；
+- 把整个结构分支写回 global 没有收益。
+
+所以新的问题是：
+
+> 遮挡图只携带不完整的身份 support，但训练集中的同 ID 多图往往拥有互补可见部位。能否用训练期 pose 组织这些跨图证据，形成 leave-one-view-out 的完整 anatomical support，再让单图、无姿态 student 学会其身份关系？
+
+exp371 CASD 保留 LGPA 作为 detached 训练期 extractor，但不保留 CLIP 语义 claim。它只用同 ID 其他视图的可见 part 构造 support，并严格排除 anchor 当前图；image-only student 只学习 support 相对 same-image teacher 真正新增的 identity relation。最终仍保留已经验证的 global+parts 标准 cosine 描述子；matching、GCN 与 CLIP 文本不进入贡献。
+
+correct/uniform/shuffled/wrong-person pose 只作为 support-quality 因果控制。2022 年已有题名精确撞车的 Pose-guided Counterfactual Inference，因此 counterfactual routing 不作为 headline。
+
+还必须承认 AAAI 2020 UMTS 已提出 multi-shot comprehensive teacher → single-shot student。CASD 的新颖性不能写成“多图补单图”，只能落在 pose-organized part support、hard leave-one-view-out 和 support-vs-self identity advantage 三者的联合机制上；若实验退化为完整 multi-shot feature KD，则论文 story 立即失效。
+
+这条 story 目前只是有查新边界和证据动机的候选，尚无正结果。只有 leave-one-view-out CASD 明确优于 same-image KD 与伪 support controls、且无姿态 student 恢复至少 80% 的 LGPA 增益后，才允许写成论文主方法。

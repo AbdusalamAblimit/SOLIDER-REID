@@ -3060,3 +3060,40 @@ PPA 替换 GCN Part branch，但保留 PSG + OA-SD + PLBOA。
 5. 历史 LGPA 的价值边界保持为“pose/part 分支在特定系统与融合中有信号”；PBSR 负结果不能上升为 pose 普遍无效，也不能挽救 LGPA 与 PAFormer 的新颖性重合问题。
 
 **结论**：PBSR 从主创新候选降为有完整机制审计的负结果；论文故事不得围绕它重写。
+
+---
+
+## 2026-07-13：exp371 CASD——从“单图姿态部位模块”转向“跨图解剖 support”
+
+### 新问题定义
+
+LGPA 的最新证据不支持“CLIP 语义定位了人体部位”这一旧解释：
+
+- pose-aware local descriptor 三 seed 稳定约 `+0.9 mAP`；
+- fixed canonical prior 已取得约 `+0.7 mAP`；
+- cross-image pose 只比 correct 低约 `0.7 mAP`；
+- 解剖通道身份打乱只低约 `0.3 mAP`；
+- PBSR route 学会但 standard global 为 `-0.1 mAP`。
+
+因此真正的问题不是继续设计 part token，而是：
+
+> 如何用训练期姿态组织同 ID 多图中的互补可见证据，构成当前单图缺失的 identity support，再让无姿态 student 学会吸收它？
+
+### 唯一主候选
+
+CASD 将 LGPA 降为 detached、训练期 pose-aware extractor。对每个 anchor，只聚合同 ID 其他图像中可见的对应 part，构成 leave-one-view-out anatomical support；image-only student 只学习 support 相对 same-image teacher 真正新增的 identity relation，而不是模仿当前图自己的 pose map。
+
+它与 PAFormer/TSD/PGFL-KD 的差异不在 pose-free、part query 或蒸馏，而在：
+
+1. 训练对象从单图 teacher 改为同 ID 跨图 support；
+2. support 由互补可见部位组织；
+3. 严格 leave-one-view-out，禁止 current-view copy；
+4. student 学跨实例 identity relation，而不是普通 feature KD。
+
+二次查新发现 AAAI 2020 UMTS 已覆盖 multi-shot comprehensive teacher → single-shot student，所以 CASD 不能以“多图教单图”为新意。查新边界进一步收紧为：pose-organized part support、硬 leave-one-view-out、support-vs-self advantage、伪 pose controls 四项必须同时成立。
+
+IPER/姿态干预仍保留为 correct/uniform/shuffled/wrong-person support 的因果门禁。由于 2022 年已有题名完全相撞的 Pose-guided Counterfactual Inference，它不再作为方法 headline。
+
+### 门禁
+
+先做缓存特征 support oracle 与冻结 student 六臂：无 support、same-image KD、correct CASD、伪 pose CASD、允许 current-view 的泄漏对照、UMTS 式完整 multi-shot feature KD。correct CASD 必须相对 baseline 至少 `+0.8 mAP`、领先最强有效 control 至少 `0.5 mAP`，且 pose-free student 至少恢复原 LGPA 增益的 80%；否则停止 LGPA 改造，不转 OT/MoE/slot/权重扫描。
