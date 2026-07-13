@@ -9,7 +9,7 @@ import json
 import math
 import sys
 from pathlib import Path
-from typing import Dict, Sequence
+from typing import Dict, Optional, Sequence
 
 import numpy as np
 import torch
@@ -101,7 +101,7 @@ def evaluate(features: torch.Tensor, cache: Dict) -> Dict[str, float]:
 def project_in_chunks(
     features: torch.Tensor,
     matrix: torch.Tensor,
-    mean: torch.Tensor | None,
+    mean: Optional[torch.Tensor],
     batch_size: int,
 ) -> torch.Tensor:
     projected = []
