@@ -3,6 +3,7 @@ import json
 import copy
 from pathlib import Path
 import sys
+from types import SimpleNamespace
 
 import pytest
 import torch
@@ -32,9 +33,12 @@ from experiments.exp371_casd.frozen_support_oracle_v2 import (
     json_sha256,
     load_cache,
     metadata_audit,
+    execution_parameters,
+    prepare_output_dir,
     response_permuted,
     run_oracle,
     support_descriptor,
+    validate_execution_args,
 )
 
 
@@ -345,6 +349,7 @@ def test_all_part_arms_keep_query_global_pooled_and_common_inactive_slots():
         "PART-EQUAL",
         "SLOT-PERM",
         "AGREE",
+        "POSE-SCALAR",
         "POSE-RESP",
         "RESP-PERM",
     ):
@@ -371,6 +376,50 @@ def test_all_part_arms_keep_query_global_pooled_and_common_inactive_slots():
                 blocks[0, 2 + slot],
                 atol=1e-6,
             )
+
+
+def test_pose_scalar_controls_total_response_without_slotwise_allocation():
+    generator = torch.Generator().manual_seed(371)
+    blocks = F.normalize(torch.randn(4, 7, 6, generator=generator), p=2, dim=2)
+    raw = torch.tensor(
+        [
+            [1.0, 1.0, 1.0, 1.0, 1.0],
+            [10.0, 1.0, 1.0, 1.0, 1.0],
+            [1.0, 2.0, 1.0, 1.0, 1.0],
+            [1.0, 1.0, 4.0, 1.0, 1.0],
+        ]
+    )
+    donor_paths = ["d0", "d1", "d2"]
+    active = common_active_mask(raw[1:], donor_paths, seed=1371)
+    scalar = support_descriptor(
+        blocks,
+        raw,
+        0,
+        [1, 2, 3],
+        active,
+        "POSE-SCALAR",
+        donor_paths=donor_paths,
+        permutation_seed=1371,
+    ).view(7, 6)
+    pose = support_descriptor(
+        blocks,
+        raw,
+        0,
+        [1, 2, 3],
+        active,
+        "POSE-RESP",
+        donor_paths=donor_paths,
+        permutation_seed=1371,
+    ).view(7, 6)
+    totals = raw[1:].sum(dim=1)
+    expected = F.normalize(
+        (totals[:, None] * blocks[1:, 2]).sum(dim=0), p=2, dim=0
+    )
+    assert torch.allclose(F.normalize(scalar[2], p=2, dim=0), expected, atol=1e-6)
+    assert not torch.allclose(
+        F.normalize(scalar[2], p=2, dim=0),
+        F.normalize(pose[2], p=2, dim=0),
+    )
 
 
 def test_extraction_routing_matrix_reuses_target_raw_response():
@@ -419,7 +468,7 @@ def test_cross_camera_protocol_never_falls_back_to_same_camera():
         )
 
 
-def test_full_oracle_has_unique_descriptors_all_arms_and_2x3_matrix():
+def test_full_oracle_has_unique_descriptors_all_arms_and_2x4_matrix():
     target = _synthetic_cache()
     canonical = _synthetic_cache("canonical")
     scene = _synthetic_cache("scene")
@@ -452,6 +501,49 @@ def test_full_oracle_has_unique_descriptors_all_arms_and_2x3_matrix():
     assert result["gate"]["full_geometry_boundary"]["enters_routing_gate"] is False
     assert len(result["gate"]["fold_strongest_control"]) == 5
     assert set(result["gate"]["fold_strongest_control"]).issubset(set(POSE_CONTROLS))
+
+
+def test_formal_cli_forbids_truncation_missing_pairs_and_artifact_overwrite(tmp_path: Path):
+    base = {
+        "max_queries": 0,
+        "expected_block_dim": 768,
+        "distance_batch": 128,
+        "execute_frozen_oracle": True,
+        "camera_protocol": "cross-camera",
+        "canonical_cache": "canonical.pt",
+        "scene_cache": "scene.pt",
+        "device": "cuda",
+        "split_seed": 371,
+        "permutation_seed": 1371,
+        "bootstrap_seed": 2371,
+        "bootstrap_replicates": 2000,
+    }
+    args = SimpleNamespace(**base)
+    validate_execution_args(args)
+    parameters = execution_parameters(args)
+    assert parameters["max_queries"] == 0
+    assert parameters["expected_block_dim"] == 768
+    assert parameters["distance_batch"] == 128
+    assert parameters["device"] == "cuda"
+
+    with pytest.raises(ValueError, match="truncation"):
+        validate_execution_args(SimpleNamespace(**{**base, "max_queries": 2}))
+    with pytest.raises(ValueError, match="paired canonical and scene"):
+        validate_execution_args(SimpleNamespace(**{**base, "scene_cache": None}))
+    with pytest.raises(ValueError, match="cross-camera"):
+        validate_execution_args(
+            SimpleNamespace(**{**base, "camera_protocol": "unrestricted"})
+        )
+    with pytest.raises(ValueError, match="explicit device"):
+        validate_execution_args(SimpleNamespace(**{**base, "device": "auto"}))
+    with pytest.raises(ValueError, match="preregistration"):
+        validate_execution_args(SimpleNamespace(**{**base, "split_seed": 372}))
+
+    output_dir = tmp_path / "formal"
+    prepare_output_dir(output_dir)
+    (output_dir / "manifest.json").write_text("{}")
+    with pytest.raises(FileExistsError, match="manifest.json"):
+        prepare_output_dir(output_dir)
 
 
 def test_default_real_cache_path_can_stop_at_metric_free_dry_run():

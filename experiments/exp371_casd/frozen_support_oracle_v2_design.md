@@ -7,6 +7,7 @@
 - 第一版 `frozen_support_oracle_design.md` 与其脚本是 rejected prototype，不得用于正式 GO/NO-GO。
 - v2 只筛选 frozen support routing geometry；不训练 student，不裁决 MVI²P、UMTS、LCR²S 或 `exp123` 的最终胜负。
 - 真实 cache 的 CLI 默认只做 provenance、duplicate、K-fold、camera 与 eligibility dry-run；只有显式 `--execute-frozen-oracle` 才计算 retrieval 指标。
+- formal oracle 强制 `max_queries=0`、`cross-camera`、显式 device、预注册 seeds/2000 bootstrap/768 block dim 且 target/canonical/scene 三份 cache 齐全；manifest 与 results 必须记录 device、distance batch、expected block dim、max queries 和全部 seeds。已有 `manifest.json/dry_run.json/results.json` 的 output dir 一律拒绝覆盖。
 - 本文件不授权运行真实 cache 或启动训练。实现与 synthetic tests 通过后仍需一次只读审查。
 - CASD 暂作工作名。pose-routing 门禁通过前，不能把 `anatomical` 当成已证实属性；中性展开为 **Cross-instance Allocation Support Distillation**。
 
@@ -213,9 +214,9 @@ a_k = 1[sum_j r_jk > eps]
 eps = 1e-12
 ```
 
-`a_k=0` 时 `ID-MEAN/PART-EQUAL/SLOT-PERM/AGREE/POSE-RESP/RESP-PERM` 全部保留 SELF slot。禁止某 arm denominator 为 0 时偷偷 fallback 到 equal mean。
+`a_k=0` 时 `ID-MEAN/PART-EQUAL/SLOT-PERM/AGREE/POSE-SCALAR/POSE-RESP/RESP-PERM` 全部保留 SELF slot。禁止某 arm denominator 为 0 时偷偷 fallback 到 equal mean。
 
-## 八、十一个预注册 arms
+## 八、十二个预注册 arms
 
 ### `SELF`
 
@@ -240,6 +241,18 @@ eps = 1e-12
 ### `AGREE`
 
 同 slot donor-consensus cosine 加权，至少 3 donors。它是 non-pose reliability control；不能替代主 arm。
+
+### `POSE-SCALAR`
+
+先把每个 donor 的五槽 raw response 求和为单一标量，再把同一个 donor 权重用于全部 slots：
+
+```text
+u_j = sum_k r_jk
+w_j = u_j / sum_j u_j
+slot_k = sum_j w_j s_jk
+```
+
+它保留人体尺度、pose detector 总响应或图像质量信号，但删除 response-slot allocation。`POSE-RESP` 必须明确超过它，才能排除 raw response 只是通用 donor-quality scalar 的解释。
 
 ### `POSE-RESP`
 
@@ -274,18 +287,18 @@ query anchor + support 的完整七块综合 target，标定 MVI²P/UMTS/LCR²S 
 
 必须报告：
 
-| extraction `E` | `R=EQUAL` | `R=POSE-RESP` | `R=RESP-PERM` |
-|---|---|---|---|
-| target-only correct blocks | `PART-EQUAL` | 主 routing | response-slot control |
-| canonical blocks | `PART-EQUAL` | target raw-response routing | response-slot control |
+| extraction `E` | `R=EQUAL` | `R=POSE-SCALAR` | `R=POSE-RESP` | `R=RESP-PERM` |
+|---|---|---|---|---|
+| target-only correct blocks | `PART-EQUAL` | donor-quality scalar control | 主 routing | response-slot control |
+| canonical blocks | `PART-EQUAL` | target total-response control | target raw-response routing | response-slot control |
 
 要求：
 
-1. 同一 extraction 行内三个 arms 的 feature tensors 逐 bit 相同，只改变 donor weights；
+1. 同一 extraction 行内四个 arms 的 feature tensors 逐 bit 相同，只改变 donor weights；
 2. canonical 行仍复用 paired target-only cache 的 raw response；
 3. 两行 metadata、fold、eligibility 与 common mask 完全相同；
 4. 不从 canonical 行挑 threshold/arm；
-5. scene-merged 是 paired sensitivity，不替代 `2×3` 矩阵。
+5. scene-merged 是 paired sensitivity，不替代 `2×4` 矩阵。
 
 这张矩阵只区分“提取到什么”和“如何路由”，不单独触发最终 GO。
 
@@ -318,24 +331,26 @@ query anchor + support 的完整七块综合 target，标定 MVI²P/UMTS/LCR²S 
 
 target-only 主协议必须全部满足：
 
-1. `POSE-RESP - max(ID-GLOBAL, ID-MEAN, PART-EQUAL, SLOT-PERM, AGREE, RESP-PERM) >=0.5 pp` equal-fold mean；
+1. `POSE-RESP - max(ID-GLOBAL, ID-MEAN, PART-EQUAL, SLOT-PERM, AGREE, POSE-SCALAR, RESP-PERM) >=0.5 pp` equal-fold mean；
 2. 每个 fold 都必须对该 fold 自己的最强 non-pose control 为正，不能只对“全局均值最强的某一个 control”为正；
-3. 对六个 non-pose controls 分别做 paired PID-grouped bootstrap，所有 95% CI lower 都必须 `>0`；
+3. 对七个 controls 分别做 paired PID-grouped bootstrap，所有 95% CI lower 都必须 `>0`；
 4. `PART-EQUAL - SLOT-PERM >=0.3 pp`；
 5. `POSE-RESP - PART-EQUAL >=0.3 pp`；
-6. `POSE-RESP - RESP-PERM >=0.5 pp`；
-7. 每 fold eligible query/PID ratios 均 `>=70%`；
-8. retained/removed SELF 难度已报告；
-9. target-only 与 scene-merged 关键方向不冲突；scene 必须对完整六个 non-pose routing controls 逐 fold 比较，不能只看 equal/response-perm；
-10. path/content leakage 为 0；有 tracklet 时 strict sensitivity 同向；
-11. canonical extraction 的 `2×3` routing matrix 完整落盘。
-12. `WRONG-ID` fail-safe 弱于 `POSE-RESP`，且 retained/removed SELF 难度或不可评分原因完整落盘。
+6. `POSE-RESP - POSE-SCALAR >=0.3 pp`；
+7. `POSE-RESP - RESP-PERM >=0.5 pp`；
+8. 每 fold eligible query/PID ratios 均 `>=70%`；
+9. retained/removed SELF 难度已报告；
+10. target-only 与 scene-merged 关键方向不冲突；scene 必须对完整七个 controls 逐 fold 比较，不能只看 equal/response-perm；
+11. path/content leakage 为 0；有 tracklet 时 strict sensitivity 同向；
+12. canonical extraction 的 `2×4` routing matrix 完整落盘；
+13. `WRONG-ID` fail-safe 弱于 `POSE-RESP`，且 retained/removed SELF 难度或不可评分原因完整落盘。
 
 出现下列任一情况立即 NO-GO，不扫温度、queue、slot 数或 response threshold：
 
 - `ID-MEAN` 最强：只是 same-ID prototype/denoising；
 - `PART-EQUAL≈SLOT-PERM`：slot correspondence 无价值；
 - `POSE-RESP≈PART-EQUAL`：raw response allocation 无价值；
+- `POSE-RESP≈POSE-SCALAR`：收益只来自人体尺度或通用 donor quality，不是逐 slot allocation；
 - `POSE-RESP≈RESP-PERM`：response-slot 对应无价值；
 - `AGREE>=POSE-RESP`：non-pose consensus 已解释 routing；
 - 某 fold 方向反转或 coverage 不过；
@@ -354,12 +369,23 @@ target-only 主协议必须全部满足：
 | `KD0` | same-image LGPA teacher |
 | `ID0-G / ID0-M` | strict-LOO identity-only support；分别对应 `ID-GLOBAL / ID-MEAN`，两臂都运行，不在 val 上挑一个 |
 | `P0-S / P0-R` | strict-LOO permutation controls；分别破坏 feature slot / response slot correspondence，保持其余 supervision protocol |
+| `PS0` | strict-LOO `POSE-SCALAR`；排除总 pose-response/通用 donor-quality scalar |
 | `R0` | 与 CASD 使用完全相同的 strict-LOO `POSE-RESP` target，但不做 support-gain selector；单独归因 selector |
+| `AI-ADV` | 与 CASD 相同 routing/transfer，但 target 显式包含 anchor；与 strict LOO 做 matched 对照 |
 | `MV-INCL` | anchor-inclusive multi-view full-feature target；覆盖 MVI²P/UMTS feature KD 边界 |
 | `LR-INCL` | current+support full feature + inter-sample relation KD；显式覆盖 LCR²S 边界 |
 | `LR-LOO` | strict-support full feature + relation KD，不含 anchor、不做 gain selector |
 | `EXP123` | strict-support full relational target，不做 advantage filtering；内部强对照 |
 | `CASD` | strict-LOO `POSE-RESP` support；support-gain selector 只在训练身份上定义 |
+
+除上述逐臂强对照外，还必须冻结 `routing × transfer` 的 `2×2` 因子矩阵：
+
+| | full relation transfer | support-vs-self increment transfer |
+|---|---|---|
+| `PART-EQUAL` | `PE-FULL` | `PE-ADV` |
+| `POSE-RESP` | `PR-FULL` | `PR-ADV`（CASD） |
+
+三 seed 交互项 `PR-ADV - PR-FULL - PE-ADV + PE-FULL` 的 mean 必须 `>=0.3 mAP`，且 seed-paired 95% CI lower `>0`。否则 routing 与增量迁移只是两个可替换的已知组件，不能作为联合机制贡献。
 
 公平要求：
 
@@ -373,11 +399,12 @@ target-only 主协议必须全部满足：
 
 ```text
 CASD - B0 >= 0.8 mAP
-CASD - max(KD0, ID0-G, ID0-M, P0-S, P0-R, R0,
-           MV-INCL, LR-INCL, LR-LOO, EXP123) >= 0.5 mAP
+CASD - max(KD0, ID0-G, ID0-M, P0-S, P0-R, PS0, R0, AI-ADV,
+           MV-INCL, LR-INCL, LR-LOO, EXP123,
+           PE-FULL, PE-ADV, PR-FULL) >= 0.5 mAP
 ```
 
-最终必须三 seed paired mean 为正、每 seed 同向，不能由单 seed 驱动。`R0` 用于证明收益不是普通 POSE-RESP target，`ID0/P0` 用于证明不是 identity prototype 或 permutation-insensitive support；只有 student 再超过 `MV-INCL/LR-INCL/LR-LOO/EXP123`，才能讨论跨过 MVI²P/UMTS/LCR²S/exp123 边界。
+最终必须三 seed paired mean 为正、每 seed 同向，不能由单 seed 驱动。`R0` 用于证明收益不是普通 POSE-RESP target，`PS0` 排除 pose 总质量，`AI-ADV` 隔离 strict LOO，`2×2` 交互证明 routing 与 increment transfer 的联合不可替换；`ID0/P0` 用于证明不是 identity prototype 或 permutation-insensitive support。只有 student 再超过 `MV-INCL/LR-INCL/LR-LOO/EXP123`，才能讨论跨过 MVI²P/UMTS/LCR²S/exp123 边界。
 
 ## 十三、执行顺序
 

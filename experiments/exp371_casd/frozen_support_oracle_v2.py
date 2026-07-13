@@ -42,19 +42,21 @@ MAIN_ARMS = (
     "PART-EQUAL",
     "SLOT-PERM",
     "AGREE",
+    "POSE-SCALAR",
     "POSE-RESP",
     "RESP-PERM",
     "FULL-INCL",
     "FULL-LOO",
     "WRONG-ID",
 )
-ROUTING_ARMS = ("PART-EQUAL", "POSE-RESP", "RESP-PERM")
+ROUTING_ARMS = ("PART-EQUAL", "POSE-SCALAR", "POSE-RESP", "RESP-PERM")
 POSE_CONTROLS = (
     "ID-GLOBAL",
     "ID-MEAN",
     "PART-EQUAL",
     "SLOT-PERM",
     "AGREE",
+    "POSE-SCALAR",
     "RESP-PERM",
 )
 SCENE_ARMS = ("SELF",) + POSE_CONTROLS + ("POSE-RESP", "WRONG-ID")
@@ -91,6 +93,71 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     return parser.parse_args()
+
+
+def validate_execution_args(args: argparse.Namespace) -> None:
+    if args.max_queries < 0:
+        raise ValueError("--max-queries must be nonnegative")
+    if args.expected_block_dim <= 0:
+        raise ValueError("--expected-block-dim must be positive")
+    if args.distance_batch <= 0:
+        raise ValueError("--distance-batch must be positive")
+    if args.bootstrap_replicates <= 0:
+        raise ValueError("--bootstrap-replicates must be positive")
+    if args.execute_frozen_oracle:
+        if args.max_queries != 0:
+            raise ValueError("formal frozen oracle forbids --max-queries truncation")
+        if args.camera_protocol != "cross-camera":
+            raise ValueError("formal frozen oracle requires cross-camera support")
+        if args.device == "auto":
+            raise ValueError("formal frozen oracle requires an explicit device")
+        frozen = (
+            args.split_seed,
+            args.permutation_seed,
+            args.bootstrap_seed,
+            args.bootstrap_replicates,
+            args.expected_block_dim,
+        )
+        if frozen != (371, 1371, 2371, 2000, 768):
+            raise ValueError("formal frozen oracle parameters drifted from preregistration")
+        if not args.canonical_cache or not args.scene_cache:
+            raise ValueError(
+                "formal frozen oracle requires paired canonical and scene caches"
+            )
+
+
+def prepare_output_dir(path: Path) -> None:
+    path.mkdir(parents=True, exist_ok=True)
+    existing = [
+        name
+        for name in ("manifest.json", "dry_run.json", "results.json")
+        if (path / name).exists()
+    ]
+    if existing:
+        raise FileExistsError(
+            "refusing to overwrite existing protocol artifacts: %s"
+            % ", ".join(existing)
+        )
+
+
+def execution_parameters(args: argparse.Namespace) -> Dict[str, object]:
+    return {
+        "fold_count": FOLD_COUNT,
+        "min_donors": MIN_DONORS,
+        "selected_donors": SELECTED_DONORS,
+        "min_eligible_ratio": MIN_ELIGIBLE_RATIO,
+        "active_eps": ACTIVE_EPS,
+        "split_seed": args.split_seed,
+        "permutation_seed": args.permutation_seed,
+        "bootstrap_seed": args.bootstrap_seed,
+        "bootstrap_replicates": args.bootstrap_replicates,
+        "camera_protocol": args.camera_protocol,
+        "device": args.device,
+        "distance_batch": args.distance_batch,
+        "expected_block_dim": args.expected_block_dim,
+        "max_queries": args.max_queries,
+        "execute_frozen_oracle": bool(args.execute_frozen_oracle),
+    }
 
 
 def atomic_json(path: Path, payload: Mapping[str, object]) -> None:
@@ -730,6 +797,16 @@ def support_descriptor(
             agreement = (values @ consensus).clamp_min(0.0) + 1e-8
             weights = agreement / agreement.sum()
             value = (weights[:, None] * values).sum(dim=0)
+        elif arm == "POSE-SCALAR":
+            # Preserve only per-donor total pose-response strength and apply the
+            # same scalar to every slot.  This removes response-slot allocation
+            # while controlling for person scale / detector quality.
+            scalar = raw.sum(dim=1)
+            denominator = scalar.sum()
+            if float(denominator.item()) <= ACTIVE_EPS:
+                raise AssertionError("active POSE-SCALAR support has zero denominator")
+            weights = scalar / denominator
+            value = (weights[:, None] * values).sum(dim=0)
         elif arm == "POSE-RESP":
             denominator = raw[:, slot].sum()
             if float(denominator.item()) <= ACTIVE_EPS:
@@ -1188,6 +1265,7 @@ def evaluate_main_gate(
         "vs_strongest_control": mean_map("POSE-RESP") - mean_map(strongest_control),
         "part_equal_vs_slot_perm": mean_map("PART-EQUAL") - mean_map("SLOT-PERM"),
         "pose_resp_vs_part_equal": mean_map("POSE-RESP") - mean_map("PART-EQUAL"),
+        "pose_resp_vs_pose_scalar": mean_map("POSE-RESP") - mean_map("POSE-SCALAR"),
         "pose_resp_vs_resp_perm": mean_map("POSE-RESP") - mean_map("RESP-PERM"),
         "pose_resp_vs_wrong_id": mean_map("POSE-RESP") - mean_map("WRONG-ID"),
     }
@@ -1246,6 +1324,7 @@ def evaluate_main_gate(
         "all_pairwise_pid_bootstrap_lowers_above_zero": bootstrap_all_positive,
         "slot_correspondence_at_least_0_3pp": target_differences["part_equal_vs_slot_perm"] >= 0.003,
         "pose_vs_equal_at_least_0_3pp": target_differences["pose_resp_vs_part_equal"] >= 0.003,
+        "pose_vs_scalar_at_least_0_3pp": target_differences["pose_resp_vs_pose_scalar"] >= 0.003,
         "pose_vs_response_perm_at_least_0_5pp": target_differences["pose_resp_vs_resp_perm"] >= 0.005,
         "eligible_query_and_pid_each_fold_at_least_70pct": coverage,
         "canonical_extraction_routing_matrix_complete": canonical_complete,
@@ -1437,6 +1516,7 @@ def dry_run_feasibility(
 
 def main() -> None:
     args = parse_args()
+    validate_execution_args(args)
     target_path = Path(args.target_cache).resolve()
     target_content_sidecar = (
         Path(args.target_content_sidecar).resolve() if args.target_content_sidecar else None
@@ -1451,7 +1531,7 @@ def main() -> None:
         Path(args.scene_content_sidecar).resolve() if args.scene_content_sidecar else None
     )
     output_dir = Path(args.output_dir).resolve()
-    output_dir.mkdir(parents=True, exist_ok=True)
+    prepare_output_dir(output_dir)
     target = load_cache(
         target_path,
         role="target",
@@ -1489,19 +1569,7 @@ def main() -> None:
         "scene_cache_sha256": scene["cache_file_sha256"] if scene is not None else None,
         "scene_content_provenance": scene["content_provenance"] if scene is not None else None,
         "target_weight_sha256": target["weight_sha256"],
-        "parameters": {
-            "fold_count": FOLD_COUNT,
-            "min_donors": MIN_DONORS,
-            "selected_donors": SELECTED_DONORS,
-            "min_eligible_ratio": MIN_ELIGIBLE_RATIO,
-            "active_eps": ACTIVE_EPS,
-            "split_seed": args.split_seed,
-            "permutation_seed": args.permutation_seed,
-            "bootstrap_seed": args.bootstrap_seed,
-            "bootstrap_replicates": args.bootstrap_replicates,
-            "camera_protocol": args.camera_protocol,
-            "execute_frozen_oracle": bool(args.execute_frozen_oracle),
-        },
+        "parameters": execution_parameters(args),
     }
     atomic_json(output_dir / "manifest.json", manifest)
     if not args.execute_frozen_oracle:
@@ -1514,6 +1582,7 @@ def main() -> None:
             camera_protocol=args.camera_protocol,
             max_queries=args.max_queries,
         )
+        result["execution_parameters"] = manifest["parameters"]
         atomic_json(output_dir / "dry_run.json", result)
         audit = result["metadata_audit"]
         console_summary = {
@@ -1566,6 +1635,7 @@ def main() -> None:
         device=choose_device(args.device),
         distance_batch=args.distance_batch,
     )
+    result["execution_parameters"] = manifest["parameters"]
     atomic_json(output_dir / "results.json", result)
     print(json.dumps({"gate": result["gate"], "output_dir": str(output_dir)}, indent=2))
     print("COMPLETE", flush=True)
