@@ -2,11 +2,11 @@
 
 ## 当前状态
 
-- 阶段：外部查新、Gate B / Gate D 单 seed 已完成；Gate C 正在按新门禁重写；尚未启动训练
-- 主方案：CASD（Cross-instance Anatomical Support-Advantage Distillation）
-- IPER 位置：仅作为 support-quality 因果门禁/辅助权重，不作为 headline
+- 阶段：Gate B / Gate D 单 seed 与 Gate C 三 cache metric-free dry-run 已完成；准备执行唯一正式 frozen routing screen；尚未启动训练
+- 主方案：CASD（Cross-instance Allocation Support Distillation，暂定中性展开）
+- IPER 位置：Gate B 的 correct-effect 门禁失败，已正式停止，不再作为主方案或辅助权重
 - 当前训练进程：无
-- 当前 GPU 占用：未因 exp371 启动任何任务
+- 当前 GPU 占用：paired cache 提取已自然结束；正式 frozen screen 启动前为空闲
 
 ## 已完成
 
@@ -72,13 +72,13 @@ remote_artifacts/exp371_30aca94/
 
 - [ ] Gate A：canonical CLIP/random 已闭合；待 correct-pose random-frozen/random-learned paired run
 - [x] Gate B：exp336 checkpoint inference intervention 矩阵（s0）
-- [ ] Gate C：same-image / correct cross-image /伪 support 的 identity-relation advantage oracle
+- [ ] Gate C：三 cache dry-run 已通过；唯一正式 frozen routing screen 待执行
 - [x] Gate D：5376-D→768-D frozen oracle（s0 provisional；三 seed 待补）
-- [ ] Phase 1：缓存特征 CASD 六臂 kill-switch
+- [ ] Phase 1：只有 Gate C 全过后，才设计 matched frozen-student 强对照矩阵
 
 ## 当前判断
 
-**允许继续做廉价门禁，不允许直接开完整训练。**
+**允许执行一次预注册的正式 frozen routing screen，不允许直接开完整训练。**
 
 内部 `exp120/123/125/129/130` 是 CASD 必须超越的强对照，不是外部 prior，也不自动否定论文创新。若 CASD 能用 strict LOO、part-structured support 与 support advantage 解决旧实验“teacher 有新增关系但 student 无法兑现”的失败，它们反而构成完整的机制动机。正式新颖性只由外部查新裁决。
 
@@ -111,6 +111,22 @@ remote_artifacts/exp371_30aca94/
 - val：`19,871` 条记录、`18,001` 个唯一内容，存在 `1,870` 组二次出现。
 - 逐组拆分确认：全部 `1,870` 组均恰好是 `1 query + 1 gallery`、同 PID、同 CAM、相同帧文件名；query-query、gallery-gallery、异 PID/CAM 与成员数大于 2 的重复均为 `0`。
 - 这是 Occluded-Duke 标准 query 目录与 `bounding_box_test` 的同图拷贝。后续协议只白名单这一种形式：标准 evaluator 会删除该 gallery endpoint，support donor 还必须按 content SHA 排除；其余任何内容重复继续 fail-closed。
+
+## 2026-07-14 Gate C v2 配对 cache 与 metric-free dry-run
+
+- fixed-three-donor 与 paired extraction 实现提交：`c3129b3 / 1406a03 / 3947c04 / 005ab74`；正式 oracle 脚本 SHA=`9eae0cfaa3c58f03b56cc0395ac57d23f412b06b087904ad57888237cca4ef95`。
+- 本地 uv 相关测试最终为 `31 passed`，`py_compile` 与 `git diff --check` 通过；两轮只读红队审计无剩余阻塞。
+- canonical val cache：`19,871` 张，文件 SHA=`4de51adf795ad21037250ba626a27a435105f951543480114920045ee13fdfc2`。
+- scene val cache：`19,871` 张，文件 SHA=`0517eac367d4f7831cf79c5dacd73b85d6acd26ba1a6304b25899f1cc50fe220`。
+- target/canonical/scene 的 target raw-response SHA 均为 `8393eec6190fa54d53eb2f668d3f7e5ae58c7529fd08a69a7322b5aaf143ec7c`；target validity、person count、PID/CAM/path/checkpoint/num-query/block-dim 逐项配对通过。
+- canonical/scene 各自 content sidecar 均记录 `19,871` 样本、`18,001` 唯一内容、`1,870` 组标准 query↔gallery 同 PID/CAM 拷贝；source-cache SHA 与 ordered-path SHA 绑定通过。
+- 三 cache dry-run 状态为 `DRY_RUN_COMPLETE`、`metrics_computed=false`、`coverage_hard_gate=true`、`max_queries=0`、`cross-camera`；canonical/scene 均已实际加载。
+- 五 fold query coverage=`0.9615/0.9543/0.9403/0.9348/0.9348`，PID coverage=`0.9595/0.9557/0.9538/0.9461/0.9287`。
+- 每个 eligible query 的 selected donor 恒为 `3`；support/reference path overlap=`0`、content overlap=`0`；五个 active slots 全部有效；forbidden duplicate=`0`。
+- 数据 cache 没有 tracklet/frame metadata，`near_duplicate_tracklet_answerable=false`。因此正式结论必须保留“同轨近重复泄漏不可回答”的限制，不能写成已完成 strict tracklet sensitivity。
+- 红队新增 `POSE-SCALAR` donor-quality control、canonical `2×4` E×R、student routing×transfer `2×2` 与 matched anchor-inclusive control；这些都在看正式指标前冻结。
+- 小型 manifest、dry-run、sidecar 与 stdout 已回传到 Git 外 `remote_artifacts/exp371_gate_c_paired_005ab74/`，未下载 700MB 级 cache。
+- 2026 第二轮查新新增 MVCD/MHSF 两个 unresolved critical priors；即使 frozen screen 通过，也只能记“内部机制可行、外部新颖性未决”。
 
 ## 保护事项
 
