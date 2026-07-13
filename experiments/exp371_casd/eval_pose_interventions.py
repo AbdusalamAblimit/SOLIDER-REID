@@ -237,8 +237,11 @@ def main() -> None:
         raise FileNotFoundError(weight)
 
     cfg.merge_from_file(args.config_file)
-    if args.opts:
-        cfg.merge_from_list(args.opts)
+    opts = list(args.opts)
+    if opts and opts[0] == "--":
+        opts = opts[1:]
+    if opts:
+        cfg.merge_from_list(opts)
     cfg.defrost()
     cfg.TEST.WEIGHT = str(weight)
     cfg.OUTPUT_DIR = str(output_dir)
