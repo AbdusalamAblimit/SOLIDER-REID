@@ -1032,6 +1032,24 @@ def do_train(cfg,
                     details['lgpa_assign'] = lgpa_assign_loss.item()
                     loss._loss_details = details
 
+                # PBSR: pose supervises router parameters through a detached
+                # backbone input. The retrieval loss remains the standard
+                # single-global ID/triplet path.
+                pbsr_enabled = getattr(cfg.MODEL, 'POSE_PBSR', False)
+                if pbsr_enabled and kp_data is not None and 'pbsr_route_loss' in kp_data:
+                    pbsr_route_w = float(getattr(
+                        cfg.MODEL, 'POSE_PBSR_ROUTE_WEIGHT', 0.5))
+                    pbsr_route_loss = kp_data['pbsr_route_loss']
+                    details = getattr(loss, '_loss_details', {})
+                    loss = loss + pbsr_route_w * pbsr_route_loss
+                    details['pbsr_route'] = pbsr_route_loss.item()
+                    pbsr_stats = kp_data.get('pbsr_stats', {})
+                    details['pbsr_alpha'] = pbsr_stats.get('write_scale', 0)
+                    details['pbsr_entropy'] = pbsr_stats.get('route_entropy', 0)
+                    details['pbsr_bg'] = pbsr_stats.get('background_share', 0)
+                    details['pbsr_delta'] = pbsr_stats.get('delta_norm', 0)
+                    loss._loss_details = details
+
                 # VCSR: Visibility-Conditional assignment loss + diagnostics
                 vcsr_enabled = getattr(cfg.MODEL, 'POSE_VCSR', False)
                 if vcsr_enabled and kp_data is not None and 'assign_loss' in kp_data:

@@ -209,6 +209,53 @@ class PoseBackboneModel(build_transformer):
                     self.clip_part_head.clip_text_features.copy_(_rand.float())
                 print('[LGPA] RANDOM-TEXT ablation: CLIP text prototypes -> FIXED random vectors (seed 42)')
 
+        # PBSR: pose-supervised coupled structural read/write.  Pose is only a
+        # training target; the representation forward and eval never read it.
+        self.use_pbsr = getattr(cfg.MODEL, 'POSE_PBSR', False)
+        if self.use_pbsr:
+            incompatible = {
+                'POSE_LGPA': getattr(cfg.MODEL, 'POSE_LGPA', False),
+                'POSE_PPA': getattr(cfg.MODEL, 'POSE_PPA', False),
+                'POSE_VCSR': getattr(cfg.MODEL, 'POSE_VCSR', False),
+                'POSE_STRUCTURAL_ROUTING': getattr(
+                    cfg.MODEL, 'POSE_STRUCTURAL_ROUTING', False),
+                'POSE_SKELETON_GCN': getattr(
+                    cfg.MODEL, 'POSE_SKELETON_GCN', False),
+            }
+            enabled = [name for name, value in incompatible.items() if value]
+            if enabled:
+                raise ValueError(
+                    'POSE_PBSR isolation run is incompatible with: '
+                    + ', '.join(enabled))
+            from .modules.pose_bidirectional_router import (
+                PoseSupervisedBidirectionalRouter,
+            )
+            # Preserve the global RNG stream so paired baseline runs do not get
+            # different sampler/drop-path randomness merely from module init.
+            _pbsr_rng = torch.get_rng_state()
+            self.pbsr = PoseSupervisedBidirectionalRouter(
+                feat_dim=self.in_planes,
+                route_dim=int(getattr(cfg.MODEL, 'POSE_PBSR_DIM', 256)),
+                num_slots=int(getattr(cfg.MODEL, 'POSE_PBSR_NUM_SLOTS', 6)),
+                num_heads=int(getattr(cfg.MODEL, 'POSE_PBSR_NUM_HEADS', 4)),
+                slot_mixer=bool(getattr(
+                    cfg.MODEL, 'POSE_PBSR_SLOT_MIXER', True)),
+                writeback=bool(getattr(
+                    cfg.MODEL, 'POSE_PBSR_WRITEBACK', True)),
+                coupled_write=bool(getattr(
+                    cfg.MODEL, 'POSE_PBSR_COUPLED_WRITE', True)),
+                supervision=str(getattr(
+                    cfg.MODEL, 'POSE_PBSR_SUPERVISION', 'correct')),
+            )
+            torch.set_rng_state(_pbsr_rng)
+            pbsr_params = sum(p.numel() for p in self.pbsr.parameters())
+            print('[PBSR] enabled: slots=%d, dim=%d, heads=%d, '
+                  'writeback=%s, coupled=%s, supervision=%s, params=%d'
+                  % (self.pbsr.num_body_slots, self.pbsr.route_dim,
+                     self.pbsr.num_heads, self.pbsr.use_writeback,
+                     self.pbsr.coupled_write, self.pbsr.supervision,
+                     pbsr_params))
+
         # CLIP-ReID-style learnable ID prompts (the WORKING CLIP mechanism, vs dead fixed part text)
         self.use_clip_id_prompt = getattr(cfg.MODEL, 'POSE_CLIP_ID_PROMPT', False)
         if self.use_clip_id_prompt:
@@ -756,6 +803,18 @@ class PoseBackboneModel(build_transformer):
         # Run backbone with PSG injection
         global_feat, featmaps = self._run_backbone_with_psg(x, scene_heatmaps)
 
+        # PBSR replaces only the standard final spatial/global representation.
+        # Target pose is consumed inside the auxiliary loss during training and
+        # is ignored by the representation path and by evaluation.
+        pbsr_data = None
+        if getattr(self, 'use_pbsr', False):
+            pbsr_hm = scene_heatmaps if self.training else None
+            refined_map, pbsr_data = self.pbsr(featmaps[-1], pbsr_hm)
+            featmaps = list(featmaps)
+            featmaps[-1] = refined_map
+            global_feat = self.base.avgpool(refined_map)
+            global_feat = torch.flatten(global_feat, 1)
+
         if self.reduce_feat_dim:
             global_feat = self.fcneck(global_feat)
 
@@ -1085,6 +1144,8 @@ class PoseBackboneModel(build_transformer):
 
             if clip_id_loss is not None:
                 return cls_score, global_feat, featmaps, None, {'clip_id_loss': clip_id_loss}
+            if pbsr_data is not None:
+                return cls_score, global_feat, featmaps, None, pbsr_data
             return cls_score, global_feat, featmaps, None
         else:
             if self.neck_feat == 'after':

@@ -223,6 +223,17 @@ _C.MODEL.POSE_LGPA_DETACH = False         # Detach features before LGPA (no grad
 _C.MODEL.POSE_LGPA_NO_POSE = False        # Ablation: pass None heatmaps to LGPA (no pose-bias/assign/visibility) = pure CLIP-text parts
 _C.MODEL.POSE_LGPA_FIXED_BANDS = False    # Fixed-semantics: replace per-image pose with a FIXED canonical pedestrian pose (fixed CLIP text + fixed anatomical prior, no per-image pose)
 _C.MODEL.POSE_LGPA_RANDOM_TEXT = False     # Attribution ablation: replace CLIP text prototypes with FIXED random vectors (tests if CLIP semantics contribute vs pure structure)    # Fixed-semantics: replace per-image pose with a FIXED canonical pedestrian pose (fixed CLIP text + fixed anatomical prior, no per-image pose)
+# PBSR: pose-supervised structural decomposition/recomposition. Pose only
+# supervises routing during training; retrieval uses the same-size global feat.
+_C.MODEL.POSE_PBSR = False
+_C.MODEL.POSE_PBSR_NUM_SLOTS = 6
+_C.MODEL.POSE_PBSR_DIM = 256
+_C.MODEL.POSE_PBSR_NUM_HEADS = 4
+_C.MODEL.POSE_PBSR_ROUTE_WEIGHT = 0.5
+_C.MODEL.POSE_PBSR_SLOT_MIXER = True
+_C.MODEL.POSE_PBSR_WRITEBACK = True
+_C.MODEL.POSE_PBSR_COUPLED_WRITE = True
+_C.MODEL.POSE_PBSR_SUPERVISION = 'correct'  # correct | uniform | shuffled | none
 _C.MODEL.POSE_CLIP_ID_PROMPT = False      # CLIP-ReID-style learnable ID text prompts (CoOp) + i2t/t2i contrastive — the WORKING CLIP mechanism
 _C.MODEL.POSE_CLIP_ID_ARCH = 'ViT-L-14'
 _C.MODEL.POSE_CLIP_ID_PRETRAINED = 'openai'  # path to local open_clip safetensors on the training machine
