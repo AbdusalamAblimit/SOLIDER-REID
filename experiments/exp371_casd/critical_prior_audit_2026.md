@@ -8,7 +8,7 @@
 
 CASD 目前只能获得**待全文查新的条件性 GO**，不能写成已经成立的创新。ACM MM 2023 的 `LCR²S` 还进一步证明：`same-ID other-view support set + current sample fusion + full-feature/relation distillation + single-input inference` 已经存在于 person ReID 相邻任务中；support set、跨视图关系蒸馏与单输入 student 都不能单列为新意。
 
-一个此前未列入文档的 2026 年直接近邻必须升为最高风险：
+两个 2026 年、且作者组高度重合的直接近邻必须同时升为最高风险。第一篇已有公开索引摘要：
 
 > Jianfeng Dong et al., *Learning from multi-view fragments: An adaptive consistency distillation framework for occluded person re-identification*, Neurocomputing 676 (2026), 133015, DOI: [10.1016/j.neucom.2026.133015](https://doi.org/10.1016/j.neucom.2026.133015).
 
@@ -19,6 +19,8 @@ ScienceDirect 的[公开搜索索引结果](https://search.brave.com/search?q=%2
 3. 仍不能从摘要推断它已经覆盖或没有覆盖 strict LOO、pose-response routing、target-level current-evidence exclusion、support-vs-self advantage；
 4. Gate C 可以继续作为内部机制 kill-switch，但在取得并审计合法全文前，不得给 CASD 最终新颖性 GO，也不得写“尚无同类方法”；
 5. 若全文显示它已联合覆盖 strict anchor exclusion、跨图局部 support 与 consistency/advantage distillation，CASD 必须重新裁决，不能靠术语改名继续。
+
+第二篇是 Yue Dong et al. 的 *MHSF: Multi-view hierarchical semantic fusion network for occluded person ReID*（DOI [10.1016/j.displa.2026.103424](https://doi.org/10.1016/j.displa.2026.103424)）。它目前没有合法公开摘要或正文，不能从标题推断训练协议或公式；但同作者组、同任务与 `multi-view hierarchical semantic fusion` 的题名已足以把它列为**第二个 unresolved critical prior**，而不是普通 secondary prior。即使 MVCD 全文最终没有覆盖 CASD 联合差分，MHSF 仍需独立完成同一八项审计。
 
 ## 一、Dong et al. 2026：可核实证据
 
@@ -196,7 +198,16 @@ LCR²S 仍未覆盖的联合条件是：
 
 > Yue Dong et al., *MHSF: Multi-view hierarchical semantic fusion network for occluded person ReID*, Displays (2026), DOI: [10.1016/j.displa.2026.103424](https://doi.org/10.1016/j.displa.2026.103424), PII `S0141938226000879`。
 
-出版社元数据标记为非开放获取，当前也没有可合法读取的摘要/正文。`multi-view` 可能指多尺度/多层视图，不能从标题推断为同 ID 跨图 support。它列为 secondary unresolved prior，全文可得后按同一八项清单核验，但风险低于题名直接包含 distillation 的 Dong et al. 2026。
+本轮可复现证据为：
+
+- [Crossref DOI 记录](https://api.crossref.org/works/10.1016/j.displa.2026.103424)确认题名、*Displays*、作者与 PII `S0141938226000879`；作者中 Shengwei Tian、Hongfeng You、Long Yu、Qimeng Yang、Jinmiao Song、Xinjun Pei、Feng Shi、Kun Wu 与 MVCD 重合；
+- [Elsevier Article Retrieval API](https://api.elsevier.com/content/article/pii/S0141938226000879)只返回非开放获取的最小元数据；[Unpaywall](https://api.unpaywall.org/v2/10.1016/j.displa.2026.103424?email=codex@openai.com)标记 `closed`、`has_repository_copy=false`；
+- [Semantic Scholar](https://www.semanticscholar.org/paper/4e863c9548b18fa0395f31382fb7c258ab3ed5e5)没有 abstract 或 open PDF；[ResearchGate](https://www.researchgate.net/publication/401628469_MHSF_Multi-view_hierarchical_semantic_fusion_network_for_occluded_person_ReID)明确显示 `No full-text available`；
+- Crossref 的公开参考文献包含 `MVI²P`、`UMTS`、*Robust Re-identification by Multiple Views Knowledge Distillation*、KPR 及 pose/part 工作。这只证明该文主动处在 multi-view/KD/part ReID 邻域，不能证明它具体采用这些机制。
+
+当前不能确认：`multi-view` 是同 ID 跨图、增强视图、尺度/层级视图还是测试期多图；是否 training-only teacher→single-view student；是否包含 anchor；是否 strict LOO；是否使用 pose/part correspondence；hierarchical semantic fusion 的 target、loss 与推理 descriptor 是什么；是否比较 support-vs-self 增量。
+
+Google 搜索页的 AI overview 曾生成 collaborative supervision、confidence-aware fusion 与 feature distillation 等描述，但其可见引用混入了另一篇 ScienceDirect 文章，不能视为论文证据，本文不据此填写 MHSF 机制。题名与作者组重合已足以把它升级为**第二个 unresolved critical prior**；证据强度低于已有摘要确认的 MVCD，但在取得合法正文前同样阻止 CASD 获得最终外部新颖性 GO。
 
 ### 4.1 2025/2026 补充边界：OGFR 与 PRCV pose/GCN 框架
 
@@ -209,13 +220,13 @@ LCR²S 仍未覆盖的联合条件是：
 
 ## 五、CASD 的最窄可证伪 claim
 
-在 Dong et al. 2026 全文未审计前，下述只是一条**内部假设**，不可写成最终论文首创：
+在 MVCD 与 MHSF 全文均未审计前，下述只是一条**内部假设**，不可写成最终论文首创：
 
-> 现有 multi-view ReID distillation 将 anchor self-evidence 与其他视图的 complementary evidence 混入同一 teacher。CASD 使用 target-only pose response，从严格排除 anchor 与 relation endpoint 的同 ID 视图中组织 part-wise support，并仅迁移该 support 相对 same-image teacher 在预定义 class-free retrieval relation 上产生的改善。
+> 已公开可审计的 multi-view ReID distillation 通常将 anchor self-evidence 与其他视图的 complementary evidence 混入同一 teacher。CASD 使用 target-only pose response，从严格排除 anchor 与 relation endpoint 的同 ID 视图中组织 part-wise support，并仅迁移该 support 相对 same-image teacher 在预定义 class-free retrieval relation 上产生的改善。MVCD 与 MHSF 正文未审计前，这只能是内部待证假设，不能写成普遍文献结论。
 
 这条 claim 可被直接推翻：
 
-1. 若 Dong et al. 2026 已覆盖同一联合机制，则外部新颖性失败；
+1. 若 MVCD 或 MHSF 已覆盖同一联合机制，则外部新颖性失败；
 2. 若 strict-LOO full-feature/relation KD 或 LCR²S 式 current+support feature/relation KD 与 CASD 持平，则 part-response/advantage 没有独立价值；
 3. 若 `PART-EQUAL / SLOT-PERM / RESPONSE-PERM / ID-MEAN` 与 CASD 持平，则 pose organization 没有独立价值；
 4. 若 same-image pose KD 与 CASD 持平，则跨实例 support 没有独立价值；
@@ -261,6 +272,7 @@ Gate C 的 pose-specific GO 条件是：correct part-response support 同时超�
 | `LR-LOO` | strict-LOO full-feature + relation KD | 普通跨图 KD 的最强去泄漏版本 |
 | `LEAK` | current-view support | 只量化泄漏虚高，不计主结果 |
 | `D26` | 待 Dong et al. 2026 全文后按原方法复现 | 摘要已确认 MVCD/SGFP/CVPA/RGA；正文细节未知前不得臆造 |
+| `M26` | 待 MHSF 合法全文后按原方法复现 | 题名与作者组构成直接风险；无摘要/公式时不得按搜索 AI 摘要臆造 |
 
 所有训练臂必须同初始化、同 runtime、同 descriptor 维度、同优化步数，并报告：有效 loss coverage、effective sample size、每样本 loss mass、梯度预算和无 support 比例。
 
@@ -272,10 +284,10 @@ Gate C 的 pose-specific GO 条件是：correct part-response support 同时超�
 4. 三 seed paired mean 同向，不能由单 seed 驱动；
 5. 测试 descriptor 对 pose 输入逐元素不变；
 6. 5376-D 与 768-D 分开公平比较；
-7. Dong et al. 2026 全文审计未完成时，即使数值过门也只能记为“机制可行、外部新颖性未决”。
+7. MVCD 与 MHSF 任一全文审计未完成时，即使数值过门也只能记为“机制可行、外部新颖性未决”。
 
 ## 最终裁决
 
-`MVI²P / UMTS / LCR²S / PAFormer` 仍给 CASD 留下一条很窄但可实验裁决的联合差分：**strict LOO complementarity isolation + target-only part-response organization + support-vs-self class-free relation correction**。然而 Dong et al. 2026 的出现使这条差分在外部新颖性上暂时不可确认。
+`MVI²P / UMTS / LCR²S / PAFormer` 仍给 CASD 留下一条很窄但可实验裁决的联合差分：**strict LOO complementarity isolation + target-only part-response organization + support-vs-self class-free relation correction**。然而 MVCD 与 MHSF 两篇 2026 直接近邻使这条差分在外部新颖性上暂时不可确认。
 
-合理顺序是：继续 Gate C 廉价 kill-switch，同时寻找合法全文；Gate C 失败则直接 NO-GO，不需要再查论文救机制。Gate C 通过也不能直接进入“已创新”结论，必须先完成 Dong et al. 2026 的八项全文审计与 `D26` 强对照设计。
+合理顺序是：继续 Gate C 廉价 kill-switch，同时寻找两篇合法全文；Gate C 失败则直接 NO-GO，不需要再查论文救机制。Gate C 通过也不能直接进入“已创新”结论，必须先完成 MVCD/MHSF 的八项全文审计与 `D26/M26` 强对照设计。

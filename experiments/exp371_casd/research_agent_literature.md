@@ -9,9 +9,11 @@
 
 最新审计见 `critical_prior_audit_2026.md`。Neurocomputing 2026 已出现 *Learning from multi-view fragments: An adaptive consistency distillation framework for occluded person re-identification*（DOI `10.1016/j.neucom.2026.133015`）。ScienceDirect 的[公开搜索索引摘要](https://search.brave.com/search?q=%22Learning+from+multi-view+fragments%22&source=web)已确认其方法名为 MVCD，并明确采用 LUPI training-only multi-view teacher→single-view student、Cross-View Patch Alignment 和 Reliability-Guided Aggregation。它因此是摘要确认的直接方法邻居，不再只是题名风险；但合法公开正文/代码仍缺，strict LOO、pose-response 与 support-vs-self advantage 仍不能确认。
 
+同一高度重合作者组还发表了 *MHSF: Multi-view hierarchical semantic fusion network for occluded person ReID*（DOI [10.1016/j.displa.2026.103424](https://doi.org/10.1016/j.displa.2026.103424)）。[Crossref](https://api.crossref.org/works/10.1016/j.displa.2026.103424)、[Unpaywall](https://api.unpaywall.org/v2/10.1016/j.displa.2026.103424?email=codex@openai.com)、[Semantic Scholar](https://www.semanticscholar.org/paper/4e863c9548b18fa0395f31382fb7c258ab3ed5e5)与[ResearchGate](https://www.researchgate.net/publication/401628469_MHSF_Multi-view_hierarchical_semantic_fusion_network_for_occluded_person_ReID)共同确认题名和 closed-access 状态，当前没有 repository copy、公开摘要或全文。它的参考文献含 MVI²P、UMTS 与 multiple-view KD，但不能据此推断公式；因此 MHSF 是第二个 unresolved critical prior，而不是已经证实覆盖 CASD 的论文。
+
 此外，ACM MM 2023 的 `LCR²S` 已显式用同 ID 其他视图构造 support set，把 current+support 融合后的 enriched feature 与 relation matrix 蒸馏给单输入 student。所以下文关于 support set、other-view teacher 和 relation distillation 的单项新意全部作废；CASD 只剩“target 层面严格排除 current evidence + raw pose-response 逐部位 routing + support-vs-self 增量关系迁移”的联合差分。
 
-因此，下文“尚未发现完整组合”降级为**待该论文全文审计的条件判断**。Gate C 可继续作为内部 kill-switch，但在全文八项机制核验完成前，不得给 CASD 最终外部新颖性 GO。
+因此，下文“尚未发现完整组合”降级为**待两篇 2026 直接近邻全文审计的条件判断**。Gate C 可继续作为内部 kill-switch，但在 MVCD 与 MHSF 的八项机制核验完成前，不得给 CASD 最终外部新颖性 GO。
 
 ## 结论先行
 
@@ -104,6 +106,7 @@ MVI²P 也暴露了 CASD 可以利用的三个未解决点：
 | 工作 | 年份/代码 | 核心机制 | 与 CASD 的重叠 | 尚未覆盖的 CASD 条件 | 风险 |
 |---|---|---|---|---|---|
 | [Dong et al. 2026 / MVCD](https://doi.org/10.1016/j.neucom.2026.133015) | Neurocomputing 2026；正文未公开 | LUPI multi-view teacher→single-view student；SGFP、跨视图 patch alignment、reliability aggregation、consistency distillation | **问题、训练形态、跨视图局部对应与可靠聚合均直接重合** | strict LOO、pose-response、target-level current exclusion 与 support-vs-self gain 未知 | **未决致命邻居** |
+| [MHSF](https://doi.org/10.1016/j.displa.2026.103424) | Displays 2026；无公开摘要/正文 | 只能确认题名为 multi-view hierarchical semantic fusion；参考文献进入 MVI²P/UMTS/multiple-view KD 邻域，具体机制未知 | **同作者组、同任务与 multi-view fusion 问题空间直接重合** | multi-view 单元、训练/推理形态、strict LOO、pose-response、distillation 与 support-vs-self 全部未知 | **未决致命邻居（不得从题名推公式）** |
 | [MVI²P](https://arxiv.org/abs/2311.03828) | 2023/2024；[代码](https://github.com/nengdong96/MVIIP) | 同 ID 多图 CAM 定位、可靠性加权、综合 feature→单图 L2 propagation | **问题、数据组织、单图推理、遮挡场景全部直接重合** | strict LOO、pose part alignment、support-vs-self positive gain | **致命邻居** |
 | [UMTS](https://arxiv.org/abs/2001.05197) | AAAI 2020 | 同 ID K-shot 拼接 teacher→其中一张 single-shot student，多阶段 uncertainty KD | multi-shot comprehensive teacher→single image | teacher 含 anchor；无逐部位 LOO；无 gain-only transfer | 很高 |
 | [LCR²S](https://arxiv.org/abs/2310.11210) | ACM MM 2023 | 同 ID 其他视图组成 support set，current+support enriched teacher，以 feature MSE 与 relation matrix 蒸馏给单输入 student | same-ID support、other-view teacher、feature+relation KD、单输入推理均直接重合 | TIReID；target 含 current；无 pose-response routing 与 support-vs-self gain | **致命邻居** |
@@ -256,4 +259,6 @@ AERC 相对 NNCL 只剩：
 - FCFormer、DPM 论文全文；
 - PGFL-KD、TSD、PAFormer、PFD、Holistic Guidance、Metric LUPI、RKD、DarkRank 等论文摘要与公开实现入口。
 
-未发现包含 CASD 后三项条件的完整公开先例，不等于绝对不存在；投稿前仍应以 `MVI²P` 为第一相关工作和第一强对照，而不是只强调 PAFormer 或 UMTS。
+另对 MVCD/MHSF 做了 DOI、PII、Crossref、Elsevier 最小元数据、Unpaywall、Semantic Scholar、ORCID、ResearchGate、作者/机构仓储与代码入口核验。MHSF 的 Google AI overview 可见引用混入无关文章，因此没有被当作摘要或方法证据。
+
+未发现包含 CASD 后三项条件的完整**可公开核验**先例，不等于绝对不存在；MVCD/MHSF 未完成全文审计前，不能把这句话写成论文新颖性结论。内部实验仍应以 `MVI²P` 为第一可实现强对照，而不是只强调 PAFormer 或 UMTS。
