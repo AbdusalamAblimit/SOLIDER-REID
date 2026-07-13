@@ -86,6 +86,14 @@ remote_artifacts/exp371_30aca94/
 
 原因：UMTS 已证明普通 multi-shot teacher-student 不是新意。CASD 的新颖性依赖“pose-organized part support + leave-one-view-out + support-vs-self advantage”相对 same-image KD、full multi-shot KD 和伪 pose support 都有独立价值；这尚未被数据证明。先在缓存 teacher parts 上验证 support coverage、identity margin 与 controls，能避免再投入一次机制工作但身份指标不动的完整训练。
 
+## 2026-07-13 23:27 target-only cache 首批安全退出
+
+- 唯一提取进程 PID=`4168018`；未启动训练，首批断言失败后已退出。
+- `equal_concat` 与 `maxsim_hybrid` 的 part block 最大差为 `2.37673521e-06`，通过 `2e-05` 门限。
+- global block 最大差为 `2.58302316e-05`，超过 `2e-05` 门限，未生成任何 `.pt` cache。
+- 根因不是 target-only pose 接线漂移，而是 orig/flip 融合的运算顺序不同：`equal_concat` 是“各视图先归一化，再平均并归一化”；原 cache MaxSim 路径是“先平均 raw，再归一化”。当 orig/flip norm 略有差异时两者不严格相等。
+- 修复不放宽阈值，只让 MaxSim 元数据路径复现 `equal_concat` 的既有归一化顺序，并新增不等 norm 的回归测试。本地 uv 全套相关测试 `12 passed`；远端通过后才允许重新启动唯一提取任务。
+
 ## 保护事项
 
 - `experiments/decisions.md` 当前包含用户未提交的 #99/#100 改动；本阶段不修改、不暂存该文件。

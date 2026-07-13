@@ -230,13 +230,23 @@ def _maxsim_pair(
     missing = [key for key in required if key not in feat or key not in feat_flip]
     if missing:
         raise ValueError("maxsim output missing keys: %s" % missing)
+    # ``equal_concat`` normalizes every block inside each forward before the
+    # original/flip arithmetic mean is formed.  Mirror that exact order here;
+    # averaging raw MaxSim outputs first is mathematically close but not the
+    # same when the two views have slightly different norms.
     global_feat = F.normalize(
-        (feat["global_feat"].float() + feat_flip["global_feat"].float()) / 2.0,
+        (
+            F.normalize(feat["global_feat"].float(), p=2, dim=1)
+            + F.normalize(feat_flip["global_feat"].float(), p=2, dim=1)
+        ) / 2.0,
         p=2,
         dim=1,
     )
     kp_feats = F.normalize(
-        (feat["kp_feats"].float() + feat_flip["kp_feats"].float()) / 2.0,
+        (
+            F.normalize(feat["kp_feats"].float(), p=2, dim=2)
+            + F.normalize(feat_flip["kp_feats"].float(), p=2, dim=2)
+        ) / 2.0,
         p=2,
         dim=2,
     )

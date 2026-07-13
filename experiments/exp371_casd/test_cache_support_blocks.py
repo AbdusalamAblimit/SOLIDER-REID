@@ -14,11 +14,44 @@ if str(ROOT) not in sys.path:
 from experiments.exp371_casd.cache_support_blocks import (
     PART_KPS,
     SCHEMA_VERSION,
+    _maxsim_pair,
     cache_payload,
     extract_support_batch,
     flip_support_batch,
     raw_part_response,
 )
+
+
+def test_maxsim_merge_matches_equal_concat_normalize_then_average_order():
+    global_orig = torch.tensor([[3.0, 4.0]])
+    global_flip = torch.tensor([[0.0, 2.0]])
+    parts_orig = global_orig[:, None, :].repeat(1, 5, 1)
+    parts_flip = global_flip[:, None, :].repeat(1, 5, 1)
+    merged = _maxsim_pair(
+        {
+            "global_feat": global_orig,
+            "kp_feats": parts_orig,
+            "kp_weights": torch.full((1, 5), 0.2),
+        },
+        {
+            "global_feat": global_flip,
+            "kp_feats": parts_flip,
+            "kp_weights": torch.full((1, 5), 0.2),
+        },
+        block_dim=2,
+    )
+    expected = F.normalize(
+        (
+            F.normalize(global_orig, p=2, dim=1)
+            + F.normalize(global_flip, p=2, dim=1)
+        ) / 2.0,
+        p=2,
+        dim=1,
+    )
+    raw_first = F.normalize((global_orig + global_flip) / 2.0, p=2, dim=1)
+    assert torch.allclose(merged["global_feat"], expected)
+    assert torch.allclose(merged["kp_feats"][:, 0], expected)
+    assert not torch.allclose(expected, raw_first)
 
 
 def _pose(batch: int = 2, persons: int = 2, height: int = 8, width: int = 6):
