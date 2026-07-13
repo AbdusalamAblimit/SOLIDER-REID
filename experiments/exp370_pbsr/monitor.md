@@ -91,7 +91,7 @@
 - 机制统计显示 router 与写回门正在学习，无 NaN/Inf、dead route 或 background collapse；alpha 为负只表示残差方向由 identity loss 学得，不构成异常。
 - 当前判断：严格按 manifest 继续到 epoch 60；当前 P0 仍未超过 B0，不启动 P1/P4，也不补任何救场变体。
 
-### [2026-07-13] epoch 60 kill-switch：PBSR NO-GO，决定终止 B0/P0
+### [2026-07-13] epoch 60 跨机 screening：负向，终止首轮 B0/P0
 
 | Epoch | B0 mAP / R1 | P0 mAP / R1 | P0-B0 mAP / R1 |
 |---:|---:|---:|---:|
@@ -103,5 +103,7 @@
 - epoch 50 的单点 `+0.8/+0.9` 在 epoch 60 反转，说明当前证据不稳定，不能挑最好中间点宣称有效。
 - 等待较慢 B0 的 epoch 60 时，P0 自动运行到 epoch 80：epoch 70 为 `56.9/66.6`，epoch 80 为 `57.9/67.6`。这两个值缺少同 epoch B0，只作为训练完整性诊断，**不用于因果比较**。
 - epoch 60 机制统计仍健康：route loss 约 `0.90`、alpha 约 `-0.042`、entropy 约 `3.36`、background share 约 `0.196`、delta norm 约 `2.06`。因此失败不是 NaN、死门或 background collapse，而是“路由确实学会了 pose target，但写回没有改善 identity global”。
-- 预注册裁决：**PBSR P0 NO-GO**。决定精确终止 P0 main PID `4118839` 与 B0 main PID `1698212`；保留日志和 epoch 20/40/60（P0 另有 80）checkpoint，不运行 P1/P4/P2/P3，不做超参救场。
-- 该结论只否定当前“共享路由结构分解—写回”机制，不否定历史 LGPA 的 pose branch 信号；但它足以阻止把 PBSR 写成论文主贡献或扩三 seed/跨 backbone。
+- 首轮执行已精确终止：B0 在 epoch 64 训练中、P0 在 epoch 85 训练中收到 TERM；两张 GPU 已释放。B0 保留 epoch 20/40/60 checkpoint，P0 保留 20/40/60/80 checkpoint；原始日志已回传到 `execution_14b2b68/`。
+- **执行完整性复核修正**：B0 与 P0 分别运行在 3090/4090；torch/torchvision 虽已对齐，但 Python、NumPy/Pillow/timm 等没有逐项完全相同。epoch 60 的 `-0.9 mAP` 不足以压过这个非方法混杂，故此处只能记为“跨机 screening 负向”，不能冒充最终严格 NO-GO。
+- 最终裁决前只补一个必要的同机控制：在 4090、使用 P0 完全相同解释器、依赖路径、GPU、源码和 config 重跑 `POSE_PBSR=False` 的 B0 到 epoch 60。该控制不改变方法、不启动 P1/P4/P2/P3、不做超参救场。
+- 若同机 B0 仍高于或接近 P0、P0 未达到明确 `+0.8～1.0 mAP`，则正式 NO-GO；只有同机结果证明 P0 明确正向，才允许重新进入机制消融门禁。
