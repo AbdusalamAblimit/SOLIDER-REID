@@ -51,9 +51,11 @@ Crossref 只能证明书目信息，不能证明任何具体方法差异。
 ### 1.3 Semantic Scholar / OpenAlex / ORCID
 
 - [Semantic Scholar 记录](https://www.semanticscholar.org/paper/85ddea08d3f1b09d1e9788bb6894b0ef78d37d43)确认题名、2026、Neurocomputing；检索 API 未返回 abstract 或 arXiv 编号。
+- [OpenAIRE](https://api.openaire.eu/search/publications?title=Learning%20from%20multi-view%20fragments&format=json&size=100)标记 access right 为 `CLOSED`，当前实例只聚合 Crossref/DBLP，没有 repository copy 或 accepted manuscript。
 - OpenAlex DOI 查询在本轮返回 `429` 配额限制，未取得可引用记录。该失败不等于 OpenAlex 无记录，也不能用于判断开放获取状态。
 - 第一作者 [ORCID 0009-0005-2526-834X](https://orcid.org/0009-0005-2526-834X) 的公开记录未列机构、链接或 works。
 - 第二作者 [ORCID 0000-0003-3525-5102](https://orcid.org/0000-0003-3525-5102) 的公开 works 列出该题名与 DOI，但没有作者预印本或代码链接。
+- [DBLP](https://dblp.org/rec/journals/ijon/DongTYYYSPSW26)与 [Researchr](https://researchr.org/publication/DongTYYYSPSW26)只有书目信息，后者明确缺少 abstract。
 
 ### 1.4 预印本、机构仓储与代码检索
 
@@ -64,8 +66,10 @@ Crossref 只能证明书目信息，不能证明任何具体方法差异。
 3. GitHub repository search：exact title、DOI、PII、`adaptive consistency distillation + ReID` 均未找到对应仓库；
 4. 未发现 arXiv ID 或官方代码声明。
 5. 2026-07-13 对 [ScienceDirect 文章页](https://www.sciencedirect.com/science/article/abs/pii/S0925231226004121)的[公开搜索索引结果](https://search.brave.com/search?q=%22Learning+from+multi-view+fragments%22&source=web)可复现下列摘要原文范围：`Multi-View Consistency Distillation (MVCD)`、`Learning Using Privileged Information (LUPI)`、training-only teacher 对 `multi-view fragments and identity annotations` 的 privileged access、standard single-view student，以及 `Saliency-Guided Feature Purification (SGFP) / Cross-View Patch Alignment (CVPA) / Reliability-Guided Aggregation (RGA)`。索引片段没有给出公式、采样器、anchor inclusion 或 loss 细节。
+6. [Bing 精确标题索引](https://www.bing.com/search?q=%22Learning+from+multi-view+fragments%3A+An+adaptive+consistency+distillation+framework+for+occluded+person+re-identification%22)还暴露摘要首句的问题表述：`information incompleteness paradox`，即单张遮挡视图缺失判别线索。这个片段只确认问题 framing，不补足任何公式级机制；CASD 也因此不能把“首次定义单图信息不完整”写成贡献。
+7. [新疆大学官方作者页](https://it.xju.edu.cn/info/1143/1434.htm)确认共同作者田生伟及其多模态信息处理研究背景，但页面没有论文附件或代码。联系作者索取 accepted manuscript 属于对外沟通，未获用户单独授权时不执行。
 
-搜索不到不构成“不存在”的证明。后续若作者公开预印本、accepted manuscript、机构仓储或代码，应优先审计，不使用非授权论文镜像。
+本轮还检查了 arXiv、Research Square、SSRN、HAL、Zenodo、Europe PMC、OSF、Harvard Dataverse、Figshare、OpenAIRE repository instances、Internet Archive 与 GitHub repository search，均未取得合法全文、补充材料或代码。匿名 GitHub code search 受认证限制，BASE/CORE 访问受限，因此不能把“未检到”升级为“全网不存在”。后续若作者公开预印本、accepted manuscript、机构仓储或代码，应优先审计，不使用非授权论文镜像。
 
 ### 1.5 目前明确不能确认的机制
 

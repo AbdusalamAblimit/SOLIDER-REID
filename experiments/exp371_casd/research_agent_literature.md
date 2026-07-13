@@ -7,7 +7,7 @@
 
 ## 2026-07-13 未决直接近邻覆盖说明
 
-最新审计见 `critical_prior_audit_2026.md`。Neurocomputing 2026 已出现 *Learning from multi-view fragments: An adaptive consistency distillation framework for occluded person re-identification*（DOI `10.1016/j.neucom.2026.133015`）。ScienceDirect 的[公开搜索索引摘要](https://search.brave.com/search?q=%22Learning+from+multi-view+fragments%22&source=web)已确认其方法名为 MVCD，并明确采用 LUPI training-only multi-view teacher→single-view student、Cross-View Patch Alignment 和 Reliability-Guided Aggregation。它因此是摘要确认的直接方法邻居，不再只是题名风险；但合法公开正文/代码仍缺，strict LOO、pose-response 与 support-vs-self advantage 仍不能确认。
+最新审计见 `critical_prior_audit_2026.md`。Neurocomputing 2026 已出现 *Learning from multi-view fragments: An adaptive consistency distillation framework for occluded person re-identification*（DOI `10.1016/j.neucom.2026.133015`）。ScienceDirect 的[公开搜索索引摘要](https://search.brave.com/search?q=%22Learning+from+multi-view+fragments%22&source=web)已确认其方法名为 MVCD，并明确采用 LUPI training-only multi-view teacher→single-view student、Cross-View Patch Alignment 和 Reliability-Guided Aggregation；[Bing 精确标题索引](https://www.bing.com/search?q=%22Learning+from+multi-view+fragments%3A+An+adaptive+consistency+distillation+framework+for+occluded+person+re-identification%22)还暴露其摘要首句使用 `information incompleteness paradox` 描述单张遮挡视图缺失判别线索。它因此同时直接重合问题 framing 与方法形态，不再只是题名风险；但合法公开正文/代码仍缺，strict LOO、pose-response 与 support-vs-self advantage 仍不能确认。
 
 同一高度重合作者组还发表了 *MHSF: Multi-view hierarchical semantic fusion network for occluded person ReID*（DOI [10.1016/j.displa.2026.103424](https://doi.org/10.1016/j.displa.2026.103424)）。[Crossref](https://api.crossref.org/works/10.1016/j.displa.2026.103424)、[Unpaywall](https://api.unpaywall.org/v2/10.1016/j.displa.2026.103424?email=codex@openai.com)、[Semantic Scholar](https://www.semanticscholar.org/paper/4e863c9548b18fa0395f31382fb7c258ab3ed5e5)与[ResearchGate](https://www.researchgate.net/publication/401628469_MHSF_Multi-view_hierarchical_semantic_fusion_network_for_occluded_person_ReID)共同确认题名和 closed-access 状态，当前没有 repository copy、公开摘要或全文。它的参考文献含 MVI²P、UMTS 与 multiple-view KD，但不能据此推断公式；因此 MHSF 是第二个 unresolved critical prior，而不是已经证实覆盖 CASD 的论文。
 
@@ -259,6 +259,6 @@ AERC 相对 NNCL 只剩：
 - FCFormer、DPM 论文全文；
 - PGFL-KD、TSD、PAFormer、PFD、Holistic Guidance、Metric LUPI、RKD、DarkRank 等论文摘要与公开实现入口。
 
-另对 MVCD/MHSF 做了 DOI、PII、Crossref、Elsevier 最小元数据、Unpaywall、Semantic Scholar、ORCID、ResearchGate、作者/机构仓储与代码入口核验。MHSF 的 Google AI overview 可见引用混入无关文章，因此没有被当作摘要或方法证据。
+另对 MVCD/MHSF 做了 DOI、PII、Crossref、Elsevier 最小元数据、Unpaywall、OpenAIRE、Semantic Scholar、ORCID、DBLP、ResearchGate、作者/机构仓储与代码入口核验。OpenAIRE 对 MVCD 标记 `CLOSED` 且没有 repository instance；MHSF 的 Google AI overview 可见引用混入无关文章，因此没有被当作摘要或方法证据。
 
 未发现包含 CASD 后三项条件的完整**可公开核验**先例，不等于绝对不存在；MVCD/MHSF 未完成全文审计前，不能把这句话写成论文新颖性结论。内部实验仍应以 `MVI²P` 为第一可实现强对照，而不是只强调 PAFormer 或 UMTS。
