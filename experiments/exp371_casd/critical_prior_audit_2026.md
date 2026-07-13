@@ -6,7 +6,7 @@
 
 ## 结论先行
 
-CASD 目前只能获得**待全文查新的条件性 GO**，不能写成已经成立的创新。
+CASD 目前只能获得**待全文查新的条件性 GO**，不能写成已经成立的创新。ACM MM 2023 的 `LCR²S` 还进一步证明：`same-ID other-view support set + current sample fusion + full-feature/relation distillation + single-input inference` 已经存在于 person ReID 相邻任务中；support set、跨视图关系蒸馏与单输入 student 都不能单列为新意。
 
 一个此前未列入文档的 2026 年直接近邻必须升为最高风险：
 
@@ -160,6 +160,35 @@ Crossref 只能证明书目信息，不能证明任何具体方法差异。
 
 但 PAFormer 是 same-image pose supervision，没有同 ID 其他视图 strict-LOO support。它因此不是 CASD 联合机制的完整先例，却是 `KD0 same-image pose teacher` 的必做外部强对照。CASD 不能把 part token、pose-free、visibility predictor 或 part-to-part comparison 列为贡献。
 
+### 3.3 LCR²S：support set 与 relation KD 的直接术语/机制邻居
+
+来源：
+
+- Shuanglin Yan et al., *Learning Comprehensive Representations with Richer Self for Text-to-Image Person Re-Identification*；
+- [arXiv 2310.11210](https://arxiv.org/abs/2310.11210)，[ACM MM 2023 DOI 10.1145/3581783.3611832](https://doi.org/10.1145/3581783.3611832)。
+
+论文摘要、第 3.2--3.3 节和公式 (5)--(16) 明确：
+
+1. 对每个 image/text，从同 ID 的其他视图随机选取样本构造 `support set`；
+2. MHAF 的输入是 `current sample + support set`，因此 support set 本身排除 self，但 enriched teacher target 仍包含 current sample；
+3. teacher 学习 enriched multi-view feature；
+4. student 从头训练，只输入单张 image/text；
+5. teacher 先训练并冻结，再用 enriched feature MSE 与 batch 内 inter-modal relation matrix Frobenius loss 蒸馏 student；
+6. 测试只保留单输入 student。
+
+这比 MVI²P 更直接地撞上 CASD 的术语和训练形态。CASD 不能声称：首次 same-ID support set、首次把 other-view support 教给单输入 student、首次同时做 feature/relation distillation、首次 frozen richer teacher。
+
+LCR²S 仍未覆盖的联合条件是：
+
+- 任务是 text-image ReID，不是 image-only occluded ReID；
+- enriched target 显式保留 current sample，未隔离其他视图相对 self 的增量；
+- support 随机选择，不按 pose/anatomical part response 路由；
+- 完整 feature 与 relation matrix 全量迁移，不比较 support-vs-self gain。
+
+因此 CASD 的差异必须准确写成 **teacher/support target 层面排除 current evidence**，不能只写“support set 排除 anchor”，因为 LCR²S 的 support set 已经这样做。外部强对照还必须包含 `current + other-view support` 的 feature+relation KD，而不能只做 MVI²P 的 feature L2。
+
+论文未声明官方代码，本轮以 exact title、`LCR2S` 与 arXiv ID 检索未找到可核验仓库。后续强对照应依据论文公式实现，并报告支持集大小、teacher freeze、feature/relation loss mass。
+
 ## 四、第二个 2026 同组近邻
 
 同一组作者还发表：
@@ -177,13 +206,13 @@ Crossref 只能证明书目信息，不能证明任何具体方法差异。
 这条 claim 可被直接推翻：
 
 1. 若 Dong et al. 2026 已覆盖同一联合机制，则外部新颖性失败；
-2. 若 strict-LOO full-feature KD 与 CASD 持平，则 part-response/advantage 没有独立价值；
+2. 若 strict-LOO full-feature/relation KD 或 LCR²S 式 current+support feature/relation KD 与 CASD 持平，则 part-response/advantage 没有独立价值；
 3. 若 `PART-EQUAL / SLOT-PERM / RESPONSE-PERM / ID-MEAN` 与 CASD 持平，则 pose organization 没有独立价值；
 4. 若 same-image pose KD 与 CASD 持平，则跨实例 support 没有独立价值；
 5. 若只有 anchor-inclusive arm 更高，则结果主要来自 current-view leakage，不能作为 CASD 证据；
 6. 若只在 5376-D 而非 matched 768-D 成立，则不能排除 descriptor capacity。
 
-不能声称：首次 multi-view distillation、首次同 ID 补全、首次 pose-free pose KD、首次 relation/margin KD、首次 leave-one-out prototype、首次 consistency distillation。
+不能声称：首次 multi-view distillation、首次同 ID support set/补全、首次 pose-free pose KD、首次 feature+relation/margin KD、首次 leave-one-out prototype、首次 consistency distillation。
 
 ## 六、Gate C 必做 frozen-feature arms
 
@@ -216,7 +245,8 @@ Gate C 的 pose-specific GO 条件是：correct part-response support 同时超�
 | `R0` | 同 target，但 full relation KD、无 advantage selection | advantage 机制必要性 |
 | `U0` | `exp120/123`-style 内部强前驱 | 仓库内部新意 |
 | `MV-INCL` | anchor-inclusive full-feature KD | MVI²P/UMTS 论文原型 |
-| `MV-LOO` | strict-LOO full-feature KD | 普通跨图 KD 的最强公平版本 |
+| `LR-INCL` | current + other-view support，full-feature + relation KD | LCR²S 论文原型 |
+| `MV-LOO` | strict-LOO full-feature + relation KD | 普通跨图 KD 的最强去泄漏版本 |
 | `LEAK` | current-view support | 只量化泄漏虚高，不计主结果 |
 | `D26` | 待 Dong et al. 2026 全文后按原方法复现 | 2026 直接近邻；机制未知前不得臆造 |
 
@@ -234,6 +264,6 @@ Gate C 的 pose-specific GO 条件是：correct part-response support 同时超�
 
 ## 最终裁决
 
-`MVI²P / UMTS / PAFormer` 仍给 CASD 留下一条很窄但可实验裁决的联合差分：**strict LOO complementarity isolation + target-only part-response organization + support-vs-self class-free relation correction**。然而 Dong et al. 2026 的出现使这条差分在外部新颖性上暂时不可确认。
+`MVI²P / UMTS / LCR²S / PAFormer` 仍给 CASD 留下一条很窄但可实验裁决的联合差分：**strict LOO complementarity isolation + target-only part-response organization + support-vs-self class-free relation correction**。然而 Dong et al. 2026 的出现使这条差分在外部新颖性上暂时不可确认。
 
 合理顺序是：继续 Gate C 廉价 kill-switch，同时寻找合法全文；Gate C 失败则直接 NO-GO，不需要再查论文救机制。Gate C 通过也不能直接进入“已创新”结论，必须先完成 Dong et al. 2026 的八项全文审计与 `D26` 强对照设计。

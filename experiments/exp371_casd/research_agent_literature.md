@@ -9,6 +9,8 @@
 
 最新审计见 `critical_prior_audit_2026.md`。Neurocomputing 2026 已出现 *Learning from multi-view fragments: An adaptive consistency distillation framework for occluded person re-identification*（DOI `10.1016/j.neucom.2026.133015`）。当前只取得 DOI、出版社、Semantic Scholar 与 ORCID 元数据，未取得合法公开摘要/全文，不能从标题推断它是否覆盖 strict LOO、pose-response 或 support-vs-self advantage。
 
+此外，ACM MM 2023 的 `LCR²S` 已显式用同 ID 其他视图构造 support set，把 current+support 融合后的 enriched feature 与 relation matrix 蒸馏给单输入 student。所以下文关于 support set、other-view teacher 和 relation distillation 的单项新意全部作废；CASD 只剩“target 层面严格排除 current evidence + raw pose-response 逐部位 routing + support-vs-self 增量关系迁移”的联合差分。
+
 因此，下文“尚未发现完整组合”降级为**待该论文全文审计的条件判断**。Gate C 可继续作为内部 kill-switch，但在全文八项机制核验完成前，不得给 CASD 最终外部新颖性 GO。
 
 ## 结论先行
