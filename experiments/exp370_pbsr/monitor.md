@@ -90,3 +90,18 @@
 - epoch 30 P0 route loss 约 `1.13`，相对初始约 `1.56` 明显下降；alpha 约 `-0.029`，route entropy 从 `3.871` 降至约 `3.718`，background share 约 `0.158`，delta norm 约 `2.21`。
 - 机制统计显示 router 与写回门正在学习，无 NaN/Inf、dead route 或 background collapse；alpha 为负只表示残差方向由 identity loss 学得，不构成异常。
 - 当前判断：严格按 manifest 继续到 epoch 60；当前 P0 仍未超过 B0，不启动 P1/P4，也不补任何救场变体。
+
+### [2026-07-13] epoch 60 kill-switch：PBSR NO-GO，决定终止 B0/P0
+
+| Epoch | B0 mAP / R1 | P0 mAP / R1 | P0-B0 mAP / R1 |
+|---:|---:|---:|---:|
+| 40 | 51.8 / 61.7 | 51.4 / 61.0 | -0.4 / -0.7 |
+| 50 | 52.4 / 62.6 | 53.2 / 63.5 | +0.8 / +0.9 |
+| **60（冻结门禁）** | **55.3 / 64.7** | **54.4 / 63.7** | **-0.9 / -1.0** |
+
+- epoch 60 是 manifest 在 epoch 30 未触发强早停后的第二裁决点；P0 不仅未达到目标 `+0.8～1.0 mAP`，而且相对 B0 为负，因此不具备“明确正向”。
+- epoch 50 的单点 `+0.8/+0.9` 在 epoch 60 反转，说明当前证据不稳定，不能挑最好中间点宣称有效。
+- 等待较慢 B0 的 epoch 60 时，P0 自动运行到 epoch 80：epoch 70 为 `56.9/66.6`，epoch 80 为 `57.9/67.6`。这两个值缺少同 epoch B0，只作为训练完整性诊断，**不用于因果比较**。
+- epoch 60 机制统计仍健康：route loss 约 `0.90`、alpha 约 `-0.042`、entropy 约 `3.36`、background share 约 `0.196`、delta norm 约 `2.06`。因此失败不是 NaN、死门或 background collapse，而是“路由确实学会了 pose target，但写回没有改善 identity global”。
+- 预注册裁决：**PBSR P0 NO-GO**。决定精确终止 P0 main PID `4118839` 与 B0 main PID `1698212`；保留日志和 epoch 20/40/60（P0 另有 80）checkpoint，不运行 P1/P4/P2/P3，不做超参救场。
+- 该结论只否定当前“共享路由结构分解—写回”机制，不否定历史 LGPA 的 pose branch 信号；但它足以阻止把 PBSR 写成论文主贡献或扩三 seed/跨 backbone。
