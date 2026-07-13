@@ -3097,3 +3097,23 @@ IPER/姿态干预仍保留为 correct/uniform/shuffled/wrong-person support 的�
 ### 门禁
 
 先做缓存特征 support oracle 与冻结 student 六臂：无 support、same-image KD、correct CASD、伪 pose CASD、允许 current-view 的泄漏对照、UMTS 式完整 multi-shot feature KD。correct CASD 必须相对 baseline 至少 `+0.8 mAP`、领先最强有效 control 至少 `0.5 mAP`，且 pose-free student 至少恢复原 LGPA 增益的 80%；否则停止 LGPA 改造，不转 OT/MoE/slot/权重扫描。
+
+## 2026-07-14：exp371 Gate C 后的最终创新裁决
+
+CASD 的必要前提已经被正式 frozen oracle 否定。target POSE-RESP 为 `94.2355` episodic mAP，低于最强 `PART-EQUAL=94.3121`（`-0.0766` pp），也低于 `POSE-SCALAR=94.2517` 与 `RESP-PERM=94.2727`。相对每折最强 control 五折全部为负；PID-grouped bootstrap 对 PART-EQUAL 的 95% CI 为 `[-0.1561,+0.0022]` pp。scene-merged 协议同样五折全负。
+
+这轮审计保留下来的事实只有：
+
+1. same-ID support 很强，wrong-ID 会灾难性失败；
+2. 固定 slot correspondence 有效，`PART-EQUAL−SLOT-PERM=+1.2347` pp；
+3. 但逐图 pose response 没有超越 equal、scalar 或 permuted routing，因此不能解释前两项收益。
+
+创新判断随之收缩：
+
+- **CASD 不能成为主创新。** generic multi-view identity support 已有 UMTS/MVI²P 邻居，part-aligned support 本身也不足以建立新的 pose 机制；
+- “过去 `exp123` 失败、现在成功”本来可以形成创新证据，但前提是现在的新机制成功越过强 controls。本次没有越过，因此不能靠历史失败反向包装；
+- 不进入 student，不转 AERC/OT/MoE/slot/temperature/queue/权重小变体；
+- 不把 matching、GCN、CLIP 文本、same-ID support 或 fixed part correspondence 改名为贡献；
+- 历史 LGPA 的 honest 定位仍是**有用的结构化局部性能资产**，而不是当前已经归属我们的新方法。
+
+因此 LGPA 自有化主线在 IPER、PBSR、CASD 三个正交门禁后停止。这个结论不证明所有未来 pose 方法都无效，但足以禁止在本仓库当前证据上继续以小变体消耗算力或重写论文故事。

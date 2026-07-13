@@ -2,6 +2,8 @@
 
 日期：2026-07-14
 
+状态：**历史审计。Gate C formal frozen oracle 已正式 NO-GO，CASD student 不再实现；本文件只保留 batch-local donor 不可兑现的协议证据。**
+
 ## 结论
 
 Gate C 的 metric-free dry-run 已证明：在完整身份 support pool 中，五折 query/PID coverage 最低分别为 `93.48%/92.87%`，每个 eligible query 均可固定取得三名 cross-camera donors，禁止的 path/content 泄漏为 `0`。

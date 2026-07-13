@@ -2,11 +2,11 @@
 
 ## 当前状态
 
-- 阶段：Gate B / Gate D 单 seed 与 Gate C 三 cache metric-free dry-run 已完成；准备执行唯一正式 frozen routing screen；尚未启动训练
-- 主方案：CASD（Cross-instance Allocation Support Distillation，暂定中性展开）
+- 阶段：Gate C 唯一正式 frozen routing screen 已完成；**CASD 正式 NO-GO**；未启动训练
+- 主方案：CASD（Cross-instance Allocation Support Distillation）已停止，不再进入 student
 - IPER 位置：Gate B 的 correct-effect 门禁失败，已正式停止，不再作为主方案或辅助权重
 - 当前训练进程：无
-- 当前 GPU 占用：paired cache 提取已自然结束；正式 frozen screen 启动前为空闲
+- 当前 GPU 占用：formal oracle 已自然结束；未启动后续训练
 
 ## 已完成
 
@@ -31,6 +31,7 @@
 - [x] Gate D 单 seed 完成：train-only PCA-768 为 `59.9336 / 67.8733`，paired-gain retention=`1.1158`；固定 JL-768 失败
 - [x] Gate T target-only 推理干预完成：`59.8121 / 67.5113`，仅比 scene-merged correct 低 `0.0236 mAP`
 - [x] 外部系统查新完成：MVI²P 是 CASD 第一直接邻居；AERC 被 NNCL 机制级覆盖并独立 NO-GO
+- [x] Gate C 正式 frozen oracle 完成：POSE-RESP 相对最强 `PART-EQUAL` 为 `-0.0766` mAP pp，五折全负，正式 NO-GO
 
 ## Gate B / Gate D 单 seed 结果
 
@@ -68,23 +69,21 @@ Gate B 的机制结论必须收紧：LGPA 的局部融合增益真实存在，�
 remote_artifacts/exp371_30aca94/
 ```
 
-## 尚未执行
+## 执行裁决
 
-- [ ] Gate A：canonical CLIP/random 已闭合；待 correct-pose random-frozen/random-learned paired run
+- [ ] Gate A：canonical CLIP/random 已闭合；correct-pose random-frozen/random-learned 不再占用资源
 - [x] Gate B：exp336 checkpoint inference intervention 矩阵（s0）
-- [ ] Gate C：三 cache dry-run 已通过；唯一正式 frozen routing screen 待执行
-- [x] Gate D：5376-D→768-D frozen oracle（s0 provisional；三 seed 待补）
-- [ ] Phase 1：只有 Gate C 全过后，才设计 matched frozen-student 强对照矩阵
+- [x] Gate C：三 cache dry-run与唯一正式 frozen routing screen 均完成；`all_pass=false`
+- [x] Gate D：5376-D→768-D frozen oracle（s0 provisional）；因主机制判负，不补三 seed
+- [ ] Phase 1：**禁止执行**；Gate C 失败不能由 student 补救
 
 ## 当前判断
 
-**允许执行一次预注册的正式 frozen routing screen，不允许直接开完整训练。**
+**CASD 正式 NO-GO；停止 LGPA→CASD 自有化，不实现或训练 student。**
 
-内部 `exp120/123/125/129/130` 是 CASD 必须超越的强对照，不是外部 prior，也不自动否定论文创新。若 CASD 能用 strict LOO、part-structured support 与 support advantage 解决旧实验“teacher 有新增关系但 student 无法兑现”的失败，它们反而构成完整的机制动机。正式新颖性只由外部查新裁决。
+内部 `exp120/123/125/129/130` 可以作为动机历史，但“过去失败、现在成功”只有在新机制越过强 control 时才成立。本次 formal oracle 没有成功：same-ID、part-aligned support 很强，但 POSE-RESP 低于 `PART-EQUAL`、`POSE-SCALAR` 与 `RESP-PERM`，scene 协议也五折全负。因此不能把 generic multi-view/part support 重命名为 CASD 创新。
 
-下一执行顺序：把 Gate C 重写为 target-only、strict-path LOO、class-free、shared-mask、loss-matched 的 frozen support oracle，并直接加入 identity-only、slot permutation、`exp123`-style relational target 与 MVI²P/UMTS 式 full-feature KD。现有 final-descriptor cache 不含 raw pose response，不能据此裁决 pose-organized support；必须补缓存 target-only raw blocks、raw response 与相对 `kp_weights` 后再执行。AERC 已独立 NO-GO。Gate A correct-pose learned query 降为低优先级归因，不占用主线训练资源。
-
-原因：UMTS 已证明普通 multi-shot teacher-student 不是新意。CASD 的新颖性依赖“pose-organized part support + leave-one-view-out + support-vs-self advantage”相对 same-image KD、full multi-shot KD 和伪 pose support 都有独立价值；这尚未被数据证明。先在缓存 teacher parts 上验证 support coverage、identity margin 与 controls，能避免再投入一次机制工作但身份指标不动的完整训练。
+严格停止范围：不转 AERC、OT、MoE、slot 数、temperature、queue 或 loss-weight 小变体；不进入三 seed、ResNet/ViT 或多数据集。该裁决不否定 LGPA 的 `global+parts` 性能资产，只否定“逐图 pose response 组织跨实例 support”作为其可投稿的新机制。
 
 ## 2026-07-13 23:27 target-only cache 首批安全退出
 
@@ -128,9 +127,25 @@ remote_artifacts/exp371_30aca94/
 - 小型 manifest、dry-run、sidecar 与 stdout 已回传到 Git 外 `remote_artifacts/exp371_gate_c_paired_005ab74/`，未下载 700MB 级 cache。
 - 2026 第二轮查新新增 MVCD/MHSF 两个 unresolved critical priors；即使 frozen screen 通过，也只能记“内部机制可行、外部新颖性未决”。
 
+## 2026-07-14 Gate C formal frozen oracle：COMPLETE / NO-GO
+
+- 唯一进程 PID=`4175845` 自然结束并打印 `COMPLETE`；未启动 controller 或训练。
+- 正式参数：`max_queries=0`、五折、`cross-camera`、每个 eligible query 固定三名 donor、`2000` 次 PID-grouped bootstrap、CUDA distance。
+- target oracle mAP：`PART-EQUAL=94.3121`、`POSE-SCALAR=94.2517`、`POSE-RESP=94.2355`、`RESP-PERM=94.2727`、`SLOT-PERM=93.0774`、`ID-MEAN=93.9357`。
+- POSE-RESP 相对最强 `PART-EQUAL=-0.0766` pp；五折差=`-0.1504/-0.0139/-0.0623/-0.0936/-0.1238` pp。
+- PID-grouped bootstrap（POSE-RESP−PART-EQUAL）：point=`-0.0765` pp，95% CI=`[-0.1561,+0.0022]` pp。
+- POSE-RESP−POSE-SCALAR=`-0.0162` pp；POSE-RESP−RESP-PERM=`-0.0372` pp。
+- scene-merged POSE-RESP−本协议最强 routing control=`-0.0868` pp，五折全部为负；canonical `2×4` 矩阵完整但未提供反向证据。
+- 唯一通过的核心结构信号是 `PART-EQUAL−SLOT-PERM=+1.2347` pp；wrong-ID 为 `1.2525` mAP，说明同 ID 与固定 slot 对应重要，但不支持逐图 pose-response routing。
+- 安全门禁有效：五折 query/PID coverage 均高于 `70%`、selected donor 恒为 `3`、五个 slot 全 active、path/content overlap=`0`、forbidden duplicate=`0`。`near_duplicate_tracklet_answerable=false` 限制继续保留。
+- 总门禁：12 项中 5 项通过、7 项失败，`routing_screen_all_pass=false`、`all_pass=false`。
+- SHA：raw `results.json=2213d91fdf4594409d38e4ce2ab7c03dccdef8e1390cd9bcb3837f92006b429f`；manifest=`bb977bdc5b80d05370306be77c874bcaa160406acb7b946895160cb85e9a797d`；stdout=`2565890f4d9f05dd791fb0f6a0d972d4068c0ba83e0cae6cec4006d92adf1483`。
+- 本地 Git 外结果包：`remote_artifacts/exp371_gate_c_formal_005ab74/`；`results.json.gz` 完整性通过，SHA=`98fbbbaa4584185b9d2f17dbc68d245fa9735f9d428d3cdedfc11e7c7d7a882b`。三份约 700MB cache 未下载。
+- 15 分钟 heartbeat automation `monitor-exp371-lgpa-ownership` 已删除；无需继续监控。
+
 ## 保护事项
 
-- `experiments/decisions.md` 当前包含用户未提交的 #99/#100 改动；本阶段不修改、不暂存该文件。
+- `experiments/decisions.md` 当前包含用户未提交的 #99/#100 改动；本轮只在末尾追加 exp371 裁决，并在暂存时隔离用户内容。
 - 不修改现有 tracked 模型/config，不启动 3090/4090 训练。
 - 后续若使用 Python，必须先在工作目录通过 `uv` 建立环境。
 - 禁止 Claude；正式训练前的审查改由 Codex 与可复现机制测试完成。

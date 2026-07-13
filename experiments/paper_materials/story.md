@@ -1475,3 +1475,24 @@ correct/uniform/shuffled/wrong-person pose 只作为 support-quality 因果控�
 还必须承认 AAAI 2020 UMTS 已提出 multi-shot comprehensive teacher → single-shot student。CASD 的新颖性不能写成“多图补单图”，只能落在 pose-organized part support、hard leave-one-view-out 和 support-vs-self identity advantage 三者的联合机制上；若实验退化为完整 multi-shot feature KD，则论文 story 立即失效。
 
 这条 story 目前只是有查新边界和证据动机的候选，尚无正结果。只有 leave-one-view-out CASD 明确优于 same-image KD 与伪 support controls、且无姿态 student 恢复至少 80% 的 LGPA 增益后，才允许写成论文主方法。
+
+## 2026-07-14：CASD 门禁失败，LGPA 自有化故事正式停止
+
+exp371 的唯一正式 frozen oracle 已完成，且不是边缘性失败：POSE-RESP 相对最强 PART-EQUAL 为 `-0.0766` mAP pp，五折方向全部为负；相对 POSE-SCALAR 与 RESP-PERM 也分别为 `-0.0162/-0.0372` pp。scene-merged 协议同样为负且五折一致。coverage、strict-three-donor、path/content disjoint、canonical matrix 与 wrong-ID fail-safe 均正常，因此不能把结果解释成实现或协议没有工作。
+
+可写进论文素材的机制边界是：
+
+- same-ID 多图 support 确实能形成强 identity geometry；
+- 固定部位对应比 slot permutation 高 `+1.2347` pp；
+- 但实例级 pose response 没有给 equal/scalar/permuted routing 增加独立价值。
+
+这意味着 CASD 的 headline——“用训练期 pose 组织跨图互补 support，再蒸馏给 RGB-only student”——缺少最关键的 pose-specific 因果证据。由于普通 multi-shot support 又已有 UMTS/MVI²P 等直接邻居，继续训练 student 只可能验证一个非独占的 generic support 故事，不能解决 LGPA 的归属问题。
+
+论文叙事必须据此止损：
+
+1. 不写 CASD，不把未训练的 student 设计写成方法；
+2. 不把 LGPA、matching、GCN 或 CLIP 文本换名后声称自有创新；
+3. LGPA 可作为历史系统中的性能组件或对照，但其 `+0.82～0.85 mAP` 不能承担新论文主贡献；
+4. 若继续写全新论文，应回到独立成立的 PSG/既有证据，或重新定义与 LGPA 无关的问题对象，而不是继续修 pose routing 小变体。
+
+到此，IPER 的实例 pose effect、PBSR 的无姿态 read/write global、CASD 的跨实例 pose support 三条路线均被各自预注册门禁否定。LGPA 自有化目标在当前证据下未实现，诚实结论是停止，而不是放宽门槛。

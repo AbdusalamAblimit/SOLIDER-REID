@@ -1,11 +1,27 @@
-# 实验 exp371：CASD（Cross-instance Anatomical Support-Advantage Distillation）
+# 实验 exp371：CASD（Cross-instance Allocation Support Distillation）
 
 ## 状态
 
-- 当前阶段：大调研与设计冻结
-- 正式训练：未启动
-- 当前只允许：归因复核、缓存特征 support oracle、冻结 backbone kill-switch
-- 禁止：直接完整训练、PBSR 小变体、Claude 审查、OT/MoE/slot 救场
+- 当前阶段：**Gate C formal frozen routing screen 已完成，CASD 正式 NO-GO**
+- 正式训练：未启动，且按预注册停止规则不再启动 CASD student
+- 已完成：归因复核、三份配对 cache、metric-free dry-run、全量 frozen oracle 与 PID-grouped bootstrap
+- 禁止：CASD student、PBSR/CASD 小变体、Claude 审查、OT/MoE/slot/温度/权重救场
+
+## 2026-07-14 Gate C 正式裁决
+
+唯一正式 oracle 使用 `max_queries=0`、五折、cross-camera、每个 eligible query 固定三名 donor、`2000` 次 PID-grouped bootstrap。协议与安全门禁均有效：五折 query/PID coverage 全部高于 `70%`，support/reference path 与 content overlap 均为 `0`，canonical 配对矩阵完整，wrong-ID fail-safe 正常。
+
+但核心机制门禁明确失败：
+
+| 比较 | POSE-RESP 差值（mAP percentage point） | 裁决 |
+|---|---:|---|
+| vs 最强 control `PART-EQUAL` | `-0.0766` | 未达 `+0.5`，且方向为负 |
+| vs `POSE-SCALAR` | `-0.0162` | 未达 `+0.3` |
+| vs `RESP-PERM` | `-0.0372` | 未达 `+0.5` |
+
+POSE-RESP 相对每折最强 control 的五折差值为 `-0.1504/-0.0139/-0.0623/-0.0936/-0.1238` pp，全部为负。相对 `PART-EQUAL` 的 PID-grouped bootstrap 为 `-0.0765` pp，95% CI=`[-0.1561,+0.0022]` pp。scene-merged 协议同样为 `-0.0868` pp，五折全负。`routing_screen_all_pass=false`、`all_pass=false`。
+
+因此 CASD 的必要命题“pose-response 能在严格 LOO same-ID support 上提供超越 equal/scalar/permuted routing 的独立价值”不成立。`PART-EQUAL-SLOT-PERM=+1.2347` pp 只支持固定部位对应本身有用；wrong-ID 崩溃只支持 same-ID support 有用。二者都不能归因给逐图 pose response，也不足以形成 CASD 创新。下文 Phase 1/2/3 只保留为预注册历史，不再执行。
 
 ## 2026-07-13 Gate B/D 与外部查新后覆盖说明
 

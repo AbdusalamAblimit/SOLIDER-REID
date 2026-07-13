@@ -1788,3 +1788,34 @@ Step1 CLIP-ReID prompt +2.2(干净)。Step2 pose 融 CLIP **五角度全负**: �
 - **裁决：PBSR P0 未达到 `+0.8～1.0 mAP` 明确正向门槛，正式 NO-GO。** 停止 P1/P4/P2/P3、三 seed和跨 backbone，不做小变体救场。
 - 结论只否定 PBSR 写回机制作为论文主创新，不否定历史 LGPA/pose 分支的已有增益；matching、GCN 与 CLIP 语义仍不得包装成 PBSR 创新。
 - 原始日志与 SHA：`experiments/exp370_pbsr/execution_14b2b68/manifest.md`。
+
+## exp371：CASD frozen routing screen — 正式 NO-GO（2026-07-14）
+
+> 这不是标准 Occluded-Duke test mAP，而是固定 exp336 teacher geometry 上的五折、cross-camera、class-free episodic oracle。每个 eligible query 固定三名 strict-LOO same-ID donor，`max_queries=0`，并做 `2000` 次 PID-grouped bootstrap。其用途是回答 pose-response routing 是否比 matched support controls 更好。
+
+| target arm | episodic mAP | R1 | 说明 |
+|---|---:|---:|---|
+| SELF | 63.8019 | 65.2596 | 当前图 teacher geometry |
+| ID-MEAN | 93.9357 | 97.3732 | 同 ID bag mean |
+| PART-EQUAL | **94.3121** | 97.4096 | 最强 routing control |
+| SLOT-PERM | 93.0774 | 96.7512 | 部位对应打乱 |
+| POSE-SCALAR | 94.2517 | 97.4580 | donor-level pose quality，仅无逐 slot allocation |
+| POSE-RESP | 94.2355 | 97.4488 | CASD 必要 routing arm |
+| RESP-PERM | 94.2727 | 97.4677 | response-slot 打乱 |
+| FULL-INCL | 94.2681 | 97.4771 | 完整特征、含 anchor 边界 |
+| FULL-LOO | 94.0600 | 97.2842 | 完整特征、严格 LOO 边界 |
+| WRONG-ID | 1.2525 | 0.2970 | fail-safe |
+
+正式门禁结果：
+
+- `POSE-RESP−PART-EQUAL=-0.0766` mAP pp，未达预注册 `+0.5` pp；
+- 五折相对各折最强 control 均为负：`-0.1504/-0.0139/-0.0623/-0.0936/-0.1238` pp；
+- 对 PART-EQUAL 的 PID bootstrap point=`-0.0765` pp，95% CI=`[-0.1561,+0.0022]` pp；
+- `POSE-RESP−POSE-SCALAR=-0.0162` pp，`POSE-RESP−RESP-PERM=-0.0372` pp；
+- scene-merged 同样为 `-0.0868` pp且五折全负；
+- coverage、三 donor、slot active、path/content disjoint、canonical matrix 与 wrong-ID fail-safe 均通过，排除协议失效或执行故障；
+- `PART-EQUAL−SLOT-PERM=+1.2347` pp 是唯一清晰的结构信号：固定部位对应有价值，但逐图 pose-response allocation 没有独立价值。
+
+**裁决：CASD 正式 NO-GO。** 不进入 matched RGB-only student，不做 OT/MoE/slot/temperature/queue/loss-weight 救场，不扩三 seed或跨 backbone。历史 LGPA `global+parts` 的约 `+0.82～0.85 mAP` 性能资产仍成立；本结果只否定把它改写为“pose-response 组织跨实例 support”的自有创新。
+
+原始结果保留在 4090；本地 Git 外回传 `manifest.json`、`runner_stdout.log` 与完整 `results.json.gz` 至 `remote_artifacts/exp371_gate_c_formal_005ab74/`。raw results SHA=`2213d91fdf4594409d38e4ce2ab7c03dccdef8e1390cd9bcb3837f92006b429f`，gzip SHA=`98fbbbaa4584185b9d2f17dbc68d245fa9735f9d428d3cdedfc11e7c7d7a882b`。

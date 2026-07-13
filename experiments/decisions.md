@@ -4708,3 +4708,15 @@ exp341 的 +2.2 来自**纯 ID 对齐** (raw global ↔ 纯 ID 文本原型, 把
 **决策**：**PBSR P0 正式 NO-GO。** 未达到预注册 `+0.8～1.0 mAP`，不运行 P1/P4/P2/P3，不扩三 seed或 ResNet/ViT/Swin，不做超参救场和结构槽小变体。由于主门禁已失败，uniform/shuffled 不再运行，因此不能声称正确 pose 的因果优越性。
 
 **边界**：这不推翻历史 LGPA/pose 分支“有信号”的结论；它只说明把 pose 监督路由学习进一步改造成共享读写的 global residual，在当前干净隔离下没有身份检索收益。PBSR 不得写成新论文主贡献，matching、GCN、CLIP 语义也继续不作为创新点。
+
+### [2026-07-14] 决策：exp371 CASD Gate C 正式 NO-GO，停止 LGPA 自有化主线
+
+**上下文**：Gate B 已证明 LGPA 的 `global+parts` 局部融合资产真实，但 correct 只比 shuffled/canonical 高 `0.0320/0.0984 mAP`，实例级精确姿态不是主要来源。为判断能否形成自有机制，exp371 用 target/canonical/scene 三份配对 cache，执行 strict-LOO、三 donor、cross-camera、class-free、五折 frozen support oracle；所有门禁和阈值均在看正式指标前冻结。
+
+**严格结果**：target `POSE-RESP=94.2355` episodic mAP，低于最强 `PART-EQUAL=94.3121`，差 `-0.0766` pp；低于 `POSE-SCALAR` 与 `RESP-PERM` `-0.0162/-0.0372` pp。相对每折最强 control 五折全负；对 PART-EQUAL 的 PID-grouped bootstrap 95% CI=`[-0.1561,+0.0022]` pp。scene-merged 同样 `-0.0868` pp且五折全负。coverage、三 donor、path/content disjoint、canonical matrix、slot active 与 wrong-ID fail-safe 均通过，排除执行故障。
+
+**解释**：`PART-EQUAL−SLOT-PERM=+1.2347` pp 与 wrong-ID 崩溃说明 same-ID support 和固定部位对应有效；但 POSE-RESP 不优于 equal/scalar/permuted routing，不能把这些 generic 结构收益归因给逐图 pose。UMTS/MVI²P 又已覆盖普通 multi-shot teacher/support 邻域，因此 generic support 不能单独承担 CASD 新颖性。
+
+**决策**：**CASD 正式 NO-GO。** 不进入 matched RGB-only student，不补 Gate A learned-query，不转 AERC/OT/MoE/slot/temperature/queue/loss-weight 小变体，不扩三 seed、ResNet/ViT 或多数据集。IPER、PBSR、CASD 三个正交机制均未通过预注册门禁，LGPA 自有化主线到此停止。
+
+**边界**：这不推翻 LGPA 约 `+0.82～0.85 mAP` 的结构化局部性能资产，也不证明所有 pose 方法无效；它只说明当前证据不足以把 LGPA 改造成可归属我们的新方法。matching、GCN、CLIP 文本、same-ID support 与 fixed part correspondence 均不得换名包装成创新。

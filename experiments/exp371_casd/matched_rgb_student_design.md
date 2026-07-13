@@ -2,7 +2,7 @@
 
 日期：2026-07-14
 
-状态：**只完成设计；Gate C formal frozen oracle 未裁决前，不实现、不训练。**
+状态：**已取消。Gate C formal frozen oracle 于 2026-07-14 正式 NO-GO；本设计不实现、不训练，仅保留为预注册历史。**
 
 ## 一、前置条件与目标边界
 
