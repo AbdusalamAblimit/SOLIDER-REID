@@ -103,8 +103,10 @@ MVI²P 也暴露了 CASD 可以利用的三个未解决点：
 
 | 工作 | 年份/代码 | 核心机制 | 与 CASD 的重叠 | 尚未覆盖的 CASD 条件 | 风险 |
 |---|---|---|---|---|---|
+| [Dong et al. 2026](https://doi.org/10.1016/j.neucom.2026.133015) | Neurocomputing 2026；正文未公开 | 题名为 multi-view fragments + adaptive consistency distillation + occluded ReID；当前无合法摘要/全文 | **题名层面同时命中 CASD 的问题与训练形态** | 机制未知；不得推断是否含 strict LOO、pose-response 或 support-vs-self gain | **未决致命邻居** |
 | [MVI²P](https://arxiv.org/abs/2311.03828) | 2023/2024；[代码](https://github.com/nengdong96/MVIIP) | 同 ID 多图 CAM 定位、可靠性加权、综合 feature→单图 L2 propagation | **问题、数据组织、单图推理、遮挡场景全部直接重合** | strict LOO、pose part alignment、support-vs-self positive gain | **致命邻居** |
 | [UMTS](https://arxiv.org/abs/2001.05197) | AAAI 2020 | 同 ID K-shot 拼接 teacher→其中一张 single-shot student，多阶段 uncertainty KD | multi-shot comprehensive teacher→single image | teacher 含 anchor；无逐部位 LOO；无 gain-only transfer | 很高 |
+| [LCR²S](https://arxiv.org/abs/2310.11210) | ACM MM 2023 | 同 ID 其他视图组成 support set，current+support enriched teacher，以 feature MSE 与 relation matrix 蒸馏给单输入 student | same-ID support、other-view teacher、feature+relation KD、单输入推理均直接重合 | TIReID；target 含 current；无 pose-response routing 与 support-vs-self gain | **致命邻居** |
 | [VKD](https://arxiv.org/abs/2007.04174) | ECCV 2020；[代码](https://github.com/aimagelab/VKD) | 多帧/多视图 video teacher→少帧 student | multiple-view KD、测试减少视图 | 视频任务；无 pose/LOO/gain filter | 高 |
 | [Temporal Knowledge Propagation](https://doi.org/10.1109/ICCV.2019.00974) | ICCV 2019 | video representation 的 temporal knowledge 传播给 image network | privileged multi-view→single image | 非遮挡 anatomy support | 中高 |
 | [Holistic Guidance](https://arxiv.org/abs/2104.06524) | BMVC 2021 | holistic reference 的 within/between-class distance distributions 教 occluded model | privileged relation / margin 与遮挡 ReID | 非同 ID LOO support；无 pose parts | 高 |
@@ -113,6 +115,8 @@ MVI²P 也暴露了 CASD 可以利用的三个未解决点：
 | [PGFL-KD](https://arxiv.org/abs/2108.00139) | ACM MM 2021 | pose branches 教 main branch，测试丢弃 pose | pose privileged、pose-free inference | 只做 same-image pose KD | 很高 |
 | [TSD](https://arxiv.org/abs/2312.09797) | ICASSP 2024；[代码](https://github.com/hh23333/TSD) | parsing-aware teacher decoder→standard student decoder | structural teacher、part feature distill、pose-free student | 无 cross-instance LOO support | 很高 |
 | [PAFormer](https://arxiv.org/abs/2408.05918) | 2024 | heatmap supervision、learnable pose tokens、visibility predictor、推理无需 pose estimator | pose-aware part tokens 与 pose-free inference | 无同 ID LOO support | 很高 |
+| [OGFR](https://doi.org/10.64509/jicn.12.31) | 2025；[公开全文](https://www.ffspub.com/index.php/jicn/article/download/31/17) | 同一原图 holistic teacher→遮挡增强 student；global/part MSE、cosine、KL/ID KD；测试用 parsing visibility matching | holistic knowledge transfer、part KD、visibility matching | 非 same-ID other-view；无 strict LOO/support-gain | 高（对 KD/part/visibility claim） |
+| [Rethinking Pose Guidance](https://doi.org/10.1007/978-981-95-5699-1_15) | PRCV 2026；正文非开放 | 多 pose cue attention、pose-guided part partition、改进 GCN joint semantics | pose attention、part、GCN 与 LGPA 组件重合 | 公开摘要未见跨图 support/LOO/student KD | 高（对 pose/GCN claim） |
 | [PFD](https://arxiv.org/abs/2112.02466) | AAAI 2022；[代码](https://github.com/WangTaoAs/PFD_Net) | pose-guided part disentangling / visible-part matching | pose-conditioned anatomy parts | 无跨图 support distillation | 中高 |
 | [Feature Completion Transformer](https://arxiv.org/abs/2303.01656) | TMM 2024 | 自生成 occluded-holistic pairs、completion decoder、distribution consistency | 缺失 feature 补全、同 ID metric bridging | support 来自同图增广，不是其他同 ID LOO | 中高 |
 | [Feature Completion / RFCnet](https://arxiv.org/abs/2106.12733) | TPAMI 2021 | 空间/时间上下文恢复遮挡区域 feature | feature completion / temporal support | 无 pose LOO advantage | 中 |

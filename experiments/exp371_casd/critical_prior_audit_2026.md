@@ -197,6 +197,15 @@ LCR²S 仍未覆盖的联合条件是：
 
 出版社元数据标记为非开放获取，当前也没有可合法读取的摘要/正文。`multi-view` 可能指多尺度/多层视图，不能从标题推断为同 ID 跨图 support。它列为 secondary unresolved prior，全文可得后按同一八项清单核验，但风险低于题名直接包含 distillation 的 Dong et al. 2026。
 
+### 4.1 2025/2026 补充边界：OGFR 与 PRCV pose/GCN 框架
+
+本轮还补查了两个不会完整覆盖 CASD、但会进一步收紧单项 claim 的近邻。
+
+1. **OGFR**：Yufei Zheng et al., *Occlusion-Guided Feature Purification Learning via Reinforced Knowledge Distillation for Occluded Person Re-Identification*, Journal of Intelligent Computing and Networking 2025, DOI [10.64509/jicn.12.31](https://doi.org/10.64509/jicn.12.31)，[公开全文](https://www.ffspub.com/index.php/jicn/article/download/31/17)。论文第 3 节明确让 teacher 读取未遮挡原图、student 读取该图的遮挡增强，并以完整 feature MSE、global/part cosine 和 KL/ID loss 迁移 holistic knowledge；测试仍用 parsing-derived part visibility 做共同可见部位距离。因此 holistic-to-occluded KD、完整图知识迁移、pose/parsing part token 与 visibility-based matching 都不能成为 CASD 单项贡献。它没有使用同 ID 的其他真实图像，也没有 strict support LOO、support-vs-self 增量隔离或 pose-response donor routing，故不是 CASD 联合机制的直接先例。
+2. **Rethinking Pose Guidance**：Zengxi Huang et al., *Rethinking Pose Guidance for Occluded Person Re-identification: A Multi-granularity Feature Learning Framework*, PRCV 2026, DOI [10.1007/978-981-95-5699-1_15](https://doi.org/10.1007/978-981-95-5699-1_15)。出版社公开摘要明确覆盖多 pose cue 手工/学习 attention、pose-guided body-part partition 和改进 GCN joint-semantic features。正文非开放获取，因此不推断摘要外机制；但 pose attention、part partition、GCN joint reasoning 已更不能写成 LGPA 改造的新意。公开摘要未出现同 ID 跨图 support、strict LOO 或 student distillation。
+
+这两篇不会解除 Dong et al. 2026 的未决状态，也不会扩大 CASD 的 claim。它们只进一步确认：最终贡献必须放在**跨图 support 的隔离、组织与增量迁移**，而不是 pose attention、GCN、part token、完整图 KD 或共同可见 matching。
+
 ## 五、CASD 的最窄可证伪 claim
 
 在 Dong et al. 2026 全文未审计前，下述只是一条**内部假设**，不可写成最终论文首创：
