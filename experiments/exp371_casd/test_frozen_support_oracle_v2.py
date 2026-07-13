@@ -242,11 +242,12 @@ def test_allowed_query_gallery_copy_is_excluded_from_support_and_reference():
             permutation_seed=1371,
             camera_protocol="cross-camera",
         )
-        local = episode["query_indices"].index(query_index)
-        assert gallery_index not in episode["donors"][local]
         if gallery_index in episode["reference_indices"]:
-            ref_local = episode["reference_indices"].index(gallery_index)
-            assert not bool(episode["valid"][local, ref_local].item())
+            assert query_index not in episode["query_indices"]
+            assert episode["removal_reasons"]["no_valid_positive_reference"] >= 1
+        else:
+            local = episode["query_indices"].index(query_index)
+            assert gallery_index not in episode["donors"][local]
 
     cache["camids"][gallery_index] = cache["camids"][query_index] + 1
     with pytest.raises(ValueError, match="hard gate"):
