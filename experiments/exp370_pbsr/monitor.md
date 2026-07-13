@@ -2,7 +2,7 @@
 
 ## 状态
 
-- 当前阶段：查新、设计、隔离实现与本地机制审计完成；等待远程 CUDA smoke
+- 当前阶段：远程 CUDA smoke 通过；kill-switch manifest 已冻结，准备启动 B0/P0
 - 训练状态：未启动
 - 输出目录：尚未创建
 - GPU：未占用
@@ -19,8 +19,8 @@
 - [x] 完成 pose-loss/backbone 梯度防火墙测试
 - [x] 完成 eval 无姿态依赖测试
 - [x] 完成 CPU bfloat16 autocast smoke test
-- [ ] 完成远程真实 dataloader + CUDA AMP smoke test
-- [ ] 冻结 kill-switch manifest 后方可启动训练
+- [x] 完成远程真实 dataloader + CUDA AMP smoke test
+- [x] 冻结 kill-switch manifest 后方可启动训练
 
 ## 事件记录
 
@@ -52,3 +52,14 @@
 - YACS 成功读取冻结 `configs/occluded_duke/exp370_pbsr.yml`，batch size 保持 64。
 - 本地测试输出：`PBSR mechanism checks: PASS`。
 - 当前判断：允许远程单批次 CUDA smoke，仍不允许直接启动 120 epoch 正式训练。
+
+### [2026-07-13] 3090 真实 CUDA smoke PASS
+
+- 隔离目录：`/root/work/SOLIDER-REID-exp370`，未修改原 dirty repo。
+- 真实 Occluded-Duke dataloader、Swin-Tiny 预训练权重、batch size 64、标准 ID/triplet、route loss、CUDA AMP、生产 optimizer 全链路执行一批。
+- 历史默认 AMP scale `65536` 在 P0 和纯 B0 上均产生首批 backbone overflow，排除 PBSR 特有错误；P0 在 `2048` 通过，矩阵统一保守冻结为 `1024`。
+- P0：identity `21.99402428`，route `1.52670991`，total `22.75737953`；203 个有梯度参数全部 finite，177 个 nonzero。
+- write-scale gradient `1.87530518e-02`，optimizer step 后 `0 -> 1.50024407e-05`；slot query、key projection、backbone gradient 均 finite/nonzero。
+- 初始化 route entropy `3.87105513`、background share `0.14284959` 与均匀初始化预期一致；delta norm `2.41153574` finite。
+- 同 scale 的 B0：identity `21.99402428`，173/173 个有梯度参数 finite/nonzero；零门使 P0/B0 初始 identity 前向严格一致。
+- 当前判断：smoke 门禁通过，manifest FROZEN，允许只启动第一批 B0/P0；尚无训练结果，不得声称 PBSR 有效。

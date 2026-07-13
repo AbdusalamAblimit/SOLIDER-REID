@@ -9,10 +9,13 @@
 - optimizer：SGD，LR 8e-4，weight decay 1e-4
 - schedule：120 epoch，20 epoch warmup，cosine
 - seed：1234
+- AMP 初始 scale：1024（B0/P0/P1/P4 公共；历史默认 65536 不适用于本矩阵）
 - baseline descriptor：768-d global，before BN，L2 normalize by evaluator
 - 禁用：PSG、LGPA、GCN、PPA、VCSR、CLIP、OA-SD、PLBOA、parallel aug、re-ranking、MaxSim、part concat
 - pose：target-person heatmap，仅作为 PBSR route loss target
 - 公共 config：`configs/occluded_duke/exp370_pbsr.yml`
+
+manifest 状态：**FROZEN / 允许启动第一批 B0、P0**。任何参数变更都必须新建 execution，不得覆盖本矩阵。
 
 ## 第一批四臂
 

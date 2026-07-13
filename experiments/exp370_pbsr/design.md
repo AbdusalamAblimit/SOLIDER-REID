@@ -126,9 +126,13 @@ MODEL:
   POSE_PBSR_WRITEBACK: True
   POSE_PBSR_COUPLED_WRITE: True
   POSE_PBSR_SUPERVISION: correct   # correct | uniform | shuffled | none
+SOLVER:
+  AMP_INIT_SCALE: 1024.0           # B0/P0 公共设置；避免首批 AMP 溢出
 ```
 
 `POSE_PBSR=False` 时不得实例化模块，不得改变 RNG 流、返回结构、loss 路径或 baseline 行为。
+
+3090 真实单批次审计发现，历史默认 AMP 初始 scale `65536` 在纯 global baseline 和 PBSR 上都会使首批 backbone 梯度溢出；这不是 PBSR 特有问题。exp370 将 B0/P0 的公共初始 scale 冻结为 `1024`，默认配置值仍保留 `65536`，因此不改变其他实验。两臂必须使用同一个 scale，禁止只给 P0 降 scale。
 
 PBSR 开启时，模块构造必须保存并恢复全局 CPU RNG 状态，确保新增参数初始化不推进后续训练随机流。shuffled 对照使用固定的 batch roll 或独立局部 generator，不得消耗训练主 RNG。正式 manifest 还需在模型构造后重设一次 seed，使 B0/P0 的 sampler、drop-path 和数据增强尽可能成对。
 

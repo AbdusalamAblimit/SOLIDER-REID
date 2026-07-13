@@ -421,6 +421,9 @@ _C.SOLVER.LARGE_FC_LR = False
 _C.SOLVER.BIAS_LR_FACTOR = 1
 # Factor of learning bias
 _C.SOLVER.SEED = 1234
+# CUDA AMP loss-scale initialization.  The historical default is preserved;
+# experiments may lower it explicitly when the first scaled backward overflows.
+_C.SOLVER.AMP_INIT_SCALE = 65536.0
 # Momentum
 _C.SOLVER.MOMENTUM = 0.9
 # Margin of triplet loss

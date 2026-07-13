@@ -2,7 +2,7 @@
 
 ## 审查结论
 
-**设计与隔离实现通过，允许进入远程单批次 smoke；正式训练仍未通过。**
+**设计、隔离实现与远程单批次 CUDA smoke 全部通过；允许按冻结 manifest 启动第一批 B0/P0。**
 
 方法边界已经从“姿态监督部位 query”收紧为“共享路由的结构分解—重组”，并且最终只输出 baseline 同维 global descriptor。该方向避开了 PAFormer、ProFD、TSD 的直接主张，但仍属于高近邻密度区域，实验必须证明 coupled write-back 的独立价值。
 
@@ -82,8 +82,8 @@ background 参与列归一，但其 message 固定为 0。必须记录每槽质�
 7. [x] fp32 与 CPU bfloat16 autocast 的 shape、finite、backward 通过；
 8. [x] config 可由 YACS 合并/冻结，processor 静态编译通过；
 9. [x] 目标 diff 未触碰用户无关文件；
-10. [ ] 远程真实 dataloader + CUDA AMP + optimizer 单批次 smoke；
-11. [ ] smoke 后检查 route/alpha/entropy/bg/delta 日志可观测性。
+10. [x] 远程真实 dataloader + CUDA AMP + optimizer 单批次 smoke；
+11. [x] smoke 后检查 route/alpha/entropy/bg/delta 日志可观测性。
 
 本地命令：
 
@@ -94,3 +94,27 @@ background 参与列归一，但其 message 固定为 0。必须记录每槽质�
 ```
 
 结果：`PBSR mechanism checks: PASS`。
+
+## 远程 CUDA 审查结果
+
+执行环境：RTX 3090，真实 Occluded-Duke dataloader，batch size 64，Swin-Tiny 预训练权重，标准 ID/triplet loss，CUDA AMP 和生产 optimizer。
+
+首先复现到历史默认 AMP 初始 scale `65536` 会使首批 backbone 梯度溢出；关闭 PBSR 的纯 global baseline 同样出现 156 个非有限梯度参数，因此排除 PBSR 特有数值错误。PBSR 在 scale `4096` 仍有 2 个 backbone 参数溢出，在 `2048` 已通过。为覆盖批次波动，冻结矩阵统一使用更保守的 `1024`；该值只由 exp370 config 显式启用，其他实验默认行为不变。
+
+最终 P0 单批次结果：
+
+```text
+PBSR CUDA integration smoke: PASS
+batch=64 image=(64, 3, 384, 128)
+loss identity=21.99402428 route=1.52670991 total=22.75737953
+write_scale=0.00000000 route_entropy=3.87105513
+background_share=0.14284959 delta_norm=2.41153574
+finite_grad_params=203 nonzero_grad_params=177
+backbone.patch_embed grad=1.83466599e+02
+pbsr.write_scale grad=1.87530518e-02
+pbsr.slot_queries grad=3.92610133e-02
+pbsr.key_proj.weight grad=3.94807458e-02
+write_scale 0.00000000e+00 -> 1.50024407e-05
+```
+
+相同 `1024` 设置下 B0 也通过：identity loss `21.99402428`，173/173 个现有梯度参数均 finite/nonzero，patch-embed grad 与 P0 首步一致。P0 在零门初始化时不改变 identity 前向，数值与 B0 完全一致；新增 route loss 只提供 router 监督，符合设计。

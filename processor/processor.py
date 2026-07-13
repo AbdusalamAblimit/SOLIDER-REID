@@ -442,7 +442,8 @@ def do_train(cfg,
     detail_meters = {}
 
     evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM, cfg=cfg)
-    scaler = amp.GradScaler()
+    scaler = amp.GradScaler(
+        init_scale=float(getattr(cfg.SOLVER, 'AMP_INIT_SCALE', 65536.0)))
 
     # Backbone freeze warmup
     freeze_epochs = cfg.SOLVER.FREEZE_BACKBONE_EPOCHS
