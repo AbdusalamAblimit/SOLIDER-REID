@@ -3035,3 +3035,28 @@ PPA 替换 GCN Part branch，但保留 PSG + OA-SD + PLBOA。
 4. **如需更强创新**: 需要跳出当前 Swin-Tiny/Small + detach 框架
    - 换 ViT backbone (用户 4090 已在跑)
    - 或找到全新的问题定义
+
+---
+
+## 2026-07-13：exp370 PBSR 严格因果门禁后的创新判断
+
+### 原假设
+
+将 LGPA/PAFormer 式单向部位读取改为共享路由双向结构重组：空间特征读取结构槽，槽间推理后沿同一路由写回标准 global；pose 只监督 detached routing target，推理不依赖姿态。
+
+### 证据
+
+- novelty/实现/梯度/无姿态推理/CUDA smoke 均通过，机制没有工程性失效。
+- 同机同运行时 epoch 60：PBSR-off B0 `54.5/63.8`，PBSR P0 `54.4/63.7`，差 `-0.1/-0.1`。
+- route loss 明显下降，alpha、entropy、background share 与 delta norm 均健康，但 identity global 不受益。
+- 完整 mAP 差序列 `+0.8/-4.7/-0.7/-1.4/+0.2/-0.1` 说明孤立中间正点不稳定。
+
+### 收缩后的判断
+
+1. “姿态监督的内部结构路由学会了”不等于“身份表征更好”；监督可辨认性与检索效用必须分开证明。
+2. 共享 read/write 与无姿态推理仍有概念差异，但没有效果证据就不能成为论文贡献。
+3. 主 B0/P0 门禁已失败，uniform/shuffled/write-off 不再值得投入；因而不能宣称正确 pose 对应优于伪控制。
+4. 不再沿结构槽数量、write scale、mixer 深度或 loss 权重堆小变体，也不扩跨 backbone。
+5. 历史 LGPA 的价值边界保持为“pose/part 分支在特定系统与融合中有信号”；PBSR 负结果不能上升为 pose 普遍无效，也不能挽救 LGPA 与 PAFormer 的新颖性重合问题。
+
+**结论**：PBSR 从主创新候选降为有完整机制审计的负结果；论文故事不得围绕它重写。

@@ -4698,3 +4698,13 @@ exp341 的 +2.2 来自**纯 ID 对齐** (raw global ↔ 纯 ID 文本原型, 把
 **决策**: **仅推进测试 A(Gallery-Growth Tax)作为诊断/问题重定义候选**; B/C 诚实判死(各自被 max-of-N / count trivial 代理吃掉)。
 **理由**: A 是唯一过了 #false-in-topk + 列洗牌双控的信号, headline 干净: "frozen 强 ReID 旧 query 随同域 gallery 膨胀结构性掉点, LReID 误记为 catastrophic forgetting"。这正是上个 Hubness 诊断没做到的(被 trivial 代理吃光)——本次 A 的两个对照专为此教训设计且活下来。
 **执行(待办)**: A 当前是诊断, remedy(distractor-aware continual training)未验证, 需独立实验且警惕撞 backward-compatible LReID(arxiv 2403.10022)。诚实写明 CONTROL2 是主证据(CONTROL1 的结构残差 Market partial 仅+0.05 偏弱)。跨 backbone 普适性 + 与 re-rank 互补性未测。交付=`cvpb_gallery_result.md` 原始数字。
+
+### [2026-07-13] 决策：exp370 PBSR 同机 epoch 60 门禁 NO-GO，停止该机制家族
+
+**上下文**：LGPA 与 PAFormer 高度重合后，尝试把单向部位查询改造成 PBSR：共享路由从空间特征读取结构槽、槽间混合，再沿同一路由写回标准 global；pose 只作为 detached routing target，推理不依赖姿态。首轮 B0/P0 分别跑在 3090/4090，故补了 4090 同解释器、同依赖、同 execution 的 B0 控制。
+
+**严格结果**：同机 epoch 60，B0 `54.5 mAP / 63.8 R1`，P0 `54.4 / 63.7`，P0-B0=`-0.1/-0.1`。完整 epoch 10/20/30/40/50/60 mAP 差依次为 `+0.8/-4.7/-0.7/-1.4/+0.2/-0.1`，不存在稳定正向。机制统计健康，排除 NaN、死门、background collapse 与执行失败。
+
+**决策**：**PBSR P0 正式 NO-GO。** 未达到预注册 `+0.8～1.0 mAP`，不运行 P1/P4/P2/P3，不扩三 seed或 ResNet/ViT/Swin，不做超参救场和结构槽小变体。由于主门禁已失败，uniform/shuffled 不再运行，因此不能声称正确 pose 的因果优越性。
+
+**边界**：这不推翻历史 LGPA/pose 分支“有信号”的结论；它只说明把 pose 监督路由学习进一步改造成共享读写的 global residual，在当前干净隔离下没有身份检索收益。PBSR 不得写成新论文主贡献，matching、GCN、CLIP 语义也继续不作为创新点。

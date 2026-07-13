@@ -1769,3 +1769,22 @@
 
 ## ★ pose+CLIP 最终封板
 Step1 CLIP-ReID prompt +2.2(干净)。Step2 pose 融 CLIP **五角度全负**: 进对齐(A/B/C 57.6死)、强系统(exp349 -1.8)、空间归属(PC-SOR kill-switch死)、训练端蒸馏(PGPD -1.2)、训练端补全(PC-MSC -2.7)。**pose 与 CLIP 无 productive fusion**(CLIP=全局语义工具, pose=空间结构工具, 能力不重叠处无法在对方层面发挥)。最强仍 exp342b 60.7 / 强 pose 系统 73.2。交付 = 详尽负结果诊断。
+
+## exp370: PBSR 姿态监督双向结构槽路由 — 同机严格门禁 NO-GO（2026-07-13）
+
+> Swin-Tiny / Occluded-Duke / seed 1234 / batch 64 / 标准 768-d global descriptor。P0 只增加 `spatial → shared routing → structural slots → slot mixer → same routing write-back`；pose 只监督 detached routing target，eval 不读 heatmap。最终严格对照在同一 RTX 4090、同一 Python/依赖、同一 execution `14b2b68` 下完成。
+
+| Epoch | PBSR-off B0 mAP / R1 | PBSR P0 mAP / R1 | P0-B0 mAP / R1 |
+|---:|---:|---:|---:|
+| 10 | 33.4 / 42.7 | 34.2 / 43.0 | +0.8 / +0.3 |
+| 20 | 43.1 / 53.3 | 38.4 / 48.1 | -4.7 / -5.2 |
+| 30 | 49.2 / 59.5 | 48.5 / 57.8 | -0.7 / -1.7 |
+| 40 | 52.8 / 62.5 | 51.4 / 61.0 | -1.4 / -1.5 |
+| 50 | 53.0 / 63.3 | 53.2 / 63.5 | +0.2 / +0.2 |
+| **60（冻结门禁）** | **54.5 / 63.8** | **54.4 / 63.7** | **-0.1 / -0.1** |
+
+- 所有 matched eval 均列出；epoch 10/50 的孤立正点不能替代 epoch 60 预注册裁决。
+- 机制审计健康：route loss 下降，写回门、路由熵、background share 与 residual norm 均 finite，无 NaN/死门/background collapse；失败属于“机制学会但 identity 无收益”，不是执行故障。
+- **裁决：PBSR P0 未达到 `+0.8～1.0 mAP` 明确正向门槛，正式 NO-GO。** 停止 P1/P4/P2/P3、三 seed和跨 backbone，不做小变体救场。
+- 结论只否定 PBSR 写回机制作为论文主创新，不否定历史 LGPA/pose 分支的已有增益；matching、GCN 与 CLIP 语义仍不得包装成 PBSR 创新。
+- 原始日志与 SHA：`experiments/exp370_pbsr/execution_14b2b68/manifest.md`。

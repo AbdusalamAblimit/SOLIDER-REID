@@ -1433,3 +1433,22 @@ Pose-Calibrated Part Learning with Visibility-Weighted Matching for Occluded Per
 - **把单图改写成伪多 support 训练对象**
 
 这条叙事比继续做 scorer 小修补更大，也更有可能回应“为什么 `exp109` 的 oracle headroom 到现在一直兑现不出来”。
+
+## 2026-07-13：LGPA 改造线的最终收缩——PBSR 不进入论文故事
+
+为解决 LGPA 与 PAFormer 高度重合的问题，exp370 曾提出 PBSR：用 pose 监督共享 routing，将空间特征读入结构槽、进行槽间推理，再写回标准 global；pose 不进入表征前向，推理无姿态依赖。这个故事在问题与机制层面比“在哪里注入 pose”更自然，也避开了 GCN、CLIP 语义和 matching 作为创新点。
+
+但严格证据不支持把它写成论文方法：
+
+- 同机同运行时 epoch 60，PBSR-off B0 为 `54.5 mAP / 63.8 R1`，PBSR P0 为 `54.4 / 63.7`；
+- P0-B0=`-0.1/-0.1`，未达到预注册 `+0.8～1.0 mAP`；
+- route loss 与写回统计均健康，说明不是实现未工作，而是“结构路由学会了，身份检索没有获益”。
+
+因此论文叙事必须明确收缩：
+
+1. **不把 PBSR 写成主贡献，也不继续为它补结构槽小变体。**
+2. **不宣称正确 pose 优于 uniform/shuffled。** 主门禁已失败，这两个控制按预注册止损没有运行。
+3. **不把 matching、GCN 或 CLIP 文本语义包装成创新。** 历史结果只能说明 LGPA/pose 分支在特定融合系统中有信号。
+4. LGPA 与 PAFormer 的重合风险仍然存在；PBSR 负结果没有提供新的可投稿解法。
+
+当前没有诚实证据支持以 PBSR 重写一篇新论文。若后续恢复论文工作，应回到已经独立成立的 PSG/既有实证主线，或重新定义新的问题对象；不能把这次 NO-GO 改写成正结果。
