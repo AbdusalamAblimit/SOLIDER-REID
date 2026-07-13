@@ -344,6 +344,9 @@ target-only 主协议必须全部满足：
 |---|---|
 | `B0` | 无 KD |
 | `KD0` | same-image LGPA teacher |
+| `ID0-G / ID0-M` | strict-LOO identity-only support；分别对应 `ID-GLOBAL / ID-MEAN`，两臂都运行，不在 val 上挑一个 |
+| `P0-S / P0-R` | strict-LOO permutation controls；分别破坏 feature slot / response slot correspondence，保持其余 supervision protocol |
+| `R0` | 与 CASD 使用完全相同的 strict-LOO `POSE-RESP` target，但不做 support-gain selector；单独归因 selector |
 | `MV-INCL` | anchor-inclusive multi-view full-feature target；覆盖 MVI²P/UMTS feature KD 边界 |
 | `LR-INCL` | current+support full feature + inter-sample relation KD；显式覆盖 LCR²S 边界 |
 | `LR-LOO` | strict-support full feature + relation KD，不含 anchor、不做 gain selector |
@@ -362,10 +365,11 @@ target-only 主协议必须全部满足：
 
 ```text
 CASD - B0 >= 0.8 mAP
-CASD - max(KD0, MV-INCL, LR-INCL, LR-LOO, EXP123) >= 0.5 mAP
+CASD - max(KD0, ID0-G, ID0-M, P0-S, P0-R, R0,
+           MV-INCL, LR-INCL, LR-LOO, EXP123) >= 0.5 mAP
 ```
 
-最终必须三 seed paired mean 为正、每 seed 同向，不能由单 seed 驱动。只有 student 超过 `MV-INCL/LR-INCL/LR-LOO/EXP123`，才能讨论跨过 MVI²P/UMTS/LCR²S/exp123 边界。
+最终必须三 seed paired mean 为正、每 seed 同向，不能由单 seed 驱动。`R0` 用于证明收益不是普通 POSE-RESP target，`ID0/P0` 用于证明不是 identity prototype 或 permutation-insensitive support；只有 student 再超过 `MV-INCL/LR-INCL/LR-LOO/EXP123`，才能讨论跨过 MVI²P/UMTS/LCR²S/exp123 边界。
 
 ## 十三、执行顺序
 
