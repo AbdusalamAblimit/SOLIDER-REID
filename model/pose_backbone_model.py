@@ -179,12 +179,25 @@ class PoseBackboneModel(build_transformer):
             raise ValueError('POSE_LGPA and POSE_PPA cannot both be enabled')
         if self.use_lgpa:
             from .modules.clip_part_head import CLIPPartHead
+            query_mode = str(getattr(
+                cfg.MODEL, 'POSE_LGPA_QUERY_MODE', 'clip_frozen'))
+            legacy_random_text = bool(getattr(
+                cfg.MODEL, 'POSE_LGPA_RANDOM_TEXT', False))
+            if legacy_random_text:
+                if query_mode != 'clip_frozen':
+                    raise ValueError(
+                        'POSE_LGPA_RANDOM_TEXT is a legacy alias for '
+                        'POSE_LGPA_QUERY_MODE=random_frozen and cannot be '
+                        f'combined with query_mode={query_mode!r}')
+                query_mode = 'random_frozen'
             self.clip_part_head = CLIPPartHead(
                 feat_dim=self.in_planes,
                 num_classes=num_classes,
                 clip_dim=int(getattr(cfg.MODEL, 'POSE_LGPA_CLIP_DIM', 512)),
                 num_heads=int(getattr(cfg.MODEL, 'POSE_LGPA_NUM_HEADS', 8)),
                 pose_mask_temp=float(getattr(cfg.MODEL, 'POSE_LGPA_POSE_TEMP', 1.0)),
+                query_mode=query_mode,
+                query_seed=int(getattr(cfg.MODEL, 'POSE_LGPA_QUERY_SEED', 42)),
             )
             self._lgpa_detach = getattr(cfg.MODEL, 'POSE_LGPA_DETACH', False)
             self._lgpa_no_pose = getattr(cfg.MODEL, 'POSE_LGPA_NO_POSE', False)
@@ -198,16 +211,9 @@ class PoseBackboneModel(build_transformer):
             if self._lgpa_fixed_bands:
                 print('[LGPA] FIXED-BANDS: per-image pose replaced by a FIXED canonical pedestrian pose '
                       '(fixed CLIP text + fixed anatomical prior, NO per-image pose)')
-            if getattr(cfg.MODEL, 'POSE_LGPA_RANDOM_TEXT', False):
-                # Attribution ablation: replace CLIP text prototypes with FIXED random unit vectors.
-                # If part_only(random) ~= part_only(CLIP), the CLIP semantics contribute ~0 (shell).
-                _g = torch.Generator().manual_seed(42)
-                _rand = F.normalize(torch.randn(
-                    self.clip_part_head.num_labels, self.clip_part_head.clip_dim,
-                    generator=_g), p=2, dim=-1)
-                with torch.no_grad():
-                    self.clip_part_head.clip_text_features.copy_(_rand.float())
-                print('[LGPA] RANDOM-TEXT ablation: CLIP text prototypes -> FIXED random vectors (seed 42)')
+            if query_mode != 'clip_frozen':
+                print(f'[LGPA] Query attribution arm: {query_mode} '
+                      f'(seed={getattr(cfg.MODEL, "POSE_LGPA_QUERY_SEED", 42)})')
 
         # PBSR: pose-supervised coupled structural read/write.  Pose is only a
         # training target; the representation forward and eval never read it.

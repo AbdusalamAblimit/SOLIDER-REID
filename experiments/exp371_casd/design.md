@@ -137,9 +137,23 @@ Swrong-id : 用错误身份的互补 support
 
 若 random/learned 与 CLIP 持平，CASD 正式去 CLIP 化。
 
+实现锁定为 `POSE_LGPA_QUERY_MODE=clip_frozen|random_frozen|random_learned`。后两臂使用逐 bit 相同的 seed-42、row-normalized `6×512` 初值，只改变 buffer/Parameter 注册，learned 仅增加 3072 个参数，不设置独立 LR、loss 或 warmup。
+
+已找回 canonical-pose 原始结果：CLIP `59.5/68.1`、fixed-random `59.9/68.7`，共同 global `58.8/67.8`。因此 CLIP 语义已可移出贡献；correct-pose random-frozen/random-learned 作为协议补全继续执行。
+
 ### Gate B：inference pose intervention
 
 同一 `exp336` checkpoint 完整报告 correct/canonical/shuffled/uniform/no-pose，补齐现有训练期 shuffle 不能回答的测试干预边界。
+
+控制定义锁定为：
+
+- `correct`：exp336 原始 scene-level max-merged heatmap；
+- `canonical`：调用仓库已有 `_canonical_heatmap`，不重写坐标；
+- `shuffled`：query 与 gallery 内部分别构造确定性、无 fixed point、异 PID、双射 donor map，不允许 batch randperm；
+- `uniform`：保留当前图整体人体 foreground support，但复制到全部 17 个通道，删除 part-specific anatomy；
+- `no-pose`：LGPA head 收 `None`，仍输出完整七块描述子，不得静默回落为 global。
+
+五臂必须共享完全相同的 global descriptor SHA；correct 必须复现 stock checkpoint 指标，否则 Gate B 整体无效。
 
 ### Gate C：support oracle
 
@@ -162,6 +176,20 @@ correct support 必须同时优于 same-image teacher 和最强伪 control，否
 ### Gate D：同维压缩 oracle
 
 在 frozen teacher descriptors 上测试 5376-D→768-D 的可复现上界。若不能保留原 LGPA 相对 global 增益的至少 80%，同维版本不与 CASD 首验捆绑。
+
+fit 数据只允许 deterministic `train_loader_normal`，query/gallery 不参与均值、投影、seed、轮数或超参选择。依次报告：
+
+1. 固定 seed Rademacher/JL-768：无 fit 的纯 bottleneck 诊断；
+2. train-only PCA-768：主简单 oracle，不 whitening；
+3. 仅当 PCA 不过时再做 train-only LinKD-768 线性上界。
+
+保留率使用 paired gain：
+
+```text
+R = (mAP_packed - mAP_global) / (mAP_5376 - mAP_global)
+```
+
+单 seed `R>=0.80` 只算 provisional；最终必须三 seed paired mean 达标且每个 seed 都为正。PCA 不过但 LinKD 通过，只能说明 learned packing 有条件可行；两者都不过只判同维化 NO-GO，不影响 CASD 首验继续使用诚实标注的 5376-D。
 
 ## Phase 1：冻结 backbone kill-switch
 

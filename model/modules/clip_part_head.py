@@ -50,7 +50,8 @@ class CLIPPartHead(nn.Module):
     """
 
     def __init__(self, feat_dim=768, num_classes=702, clip_dim=512,
-                 num_heads=8, pose_mask_temp=1.0):
+                 num_heads=8, pose_mask_temp=1.0,
+                 query_mode='clip_frozen', query_seed=42):
         super().__init__()
         self.feat_dim = feat_dim
         self.clip_dim = clip_dim
@@ -59,6 +60,13 @@ class CLIPPartHead(nn.Module):
         self.num_heads = num_heads
         self.pose_mask_temp = pose_mask_temp
         self.head_dim = feat_dim // num_heads
+        self.query_mode = str(query_mode)
+        self.query_seed = int(query_seed)
+        valid_query_modes = {'clip_frozen', 'random_frozen', 'random_learned'}
+        if self.query_mode not in valid_query_modes:
+            raise ValueError(
+                f'Unknown LGPA query_mode={self.query_mode!r}; '
+                f'expected one of {sorted(valid_query_modes)}')
 
         # Project CLIP text features to backbone dimension
         self.text_proj = nn.Linear(clip_dim, feat_dim)
@@ -90,12 +98,31 @@ class CLIPPartHead(nn.Module):
         nn.init.constant_(self.pooled_bn.bias, 0.0)
         self.pooled_classifier = nn.Linear(feat_dim, num_classes, bias=False)
 
-        # Pre-compute and register CLIP text features
-        self._init_clip_features()
+        # Register the six query codes under the historical state-dict key.
+        # random_frozen and random_learned start from exactly the same tensor;
+        # only buffer-vs-Parameter registration differs.
+        self._init_query_features()
 
-        print(f'[LGPA] CLIP Part Head: {NUM_PARTS} parts, '
+        print(f'[LGPA] Part Head: {NUM_PARTS} parts, '
               f'clip_dim={clip_dim}, num_heads={num_heads}, '
-              f'pose_temp={pose_mask_temp}')
+              f'pose_temp={pose_mask_temp}, query_mode={self.query_mode}, '
+              f'query_seed={self.query_seed}')
+
+    def _init_query_features(self):
+        if self.query_mode == 'clip_frozen':
+            self._init_clip_features()
+            return
+
+        generator = torch.Generator(device='cpu').manual_seed(self.query_seed)
+        query_features = F.normalize(
+            torch.randn(self.num_labels, self.clip_dim, generator=generator),
+            p=2, dim=-1).float()
+        if self.query_mode == 'random_learned':
+            self.clip_text_features = nn.Parameter(query_features)
+        else:
+            self.register_buffer('clip_text_features', query_features)
+        print(f'[LGPA] Random query IDs initialized: {query_features.shape}, '
+              f'seed={self.query_seed}, learned={self.query_mode == "random_learned"}')
 
     def _init_clip_features(self):
         """Load frozen CLIP text features. Try cached file first, then live CLIP."""

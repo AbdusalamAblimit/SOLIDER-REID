@@ -46,6 +46,22 @@ LGPA 的稳定正信号是真实的，但当前只能严谨表述为：
 - 无 pose 时 CLIP-text-alone 无效；
 - 不能说 CLIP 在 pose 条件下已经被严格证明为零贡献。
 
+2026-07-13 在 4090 找回了 `exp340c` 原始 checkpoint、train log 和三种 test log，补上了此前缺失的 canonical-pose 单变量证据：
+
+| Query 来源 | global | part-only | equal-concat | 相对 global |
+|---|---:|---:|---:|---:|
+| frozen CLIP | 58.8/67.8 | 59.4/68.1 | 59.5/68.1 | +0.7/+0.3 |
+| seed-42 fixed random | 58.8/67.8 | 59.8/68.7 | 59.9/68.7 | +1.1/+0.9 |
+
+两臂均为 seed 1234、fixed canonical pose、detach、同协议 e120；两个 global 完全一致。原始 SHA：
+
+- CLIP checkpoint：`5acb031981a0cccd0fcfad38fe161ee593589ebe004f93f99f128a37fee97b7f`
+- random checkpoint：`885bc90e28c49b9660a2c509990cd6cef48c0fd7c028808f7a4d59638852af62`
+- CLIP 三份 test log：`70aea744... / 9617c972... / 4248203...`
+- random 三份 test log：`8ced06b9... / a60555cd... / d91d357d...`
+
+这足以把“CLIP 词义是 LGPA 涨点来源”判负；random 并未损失增益，反而高 `0.4/0.6`。learned query 仍需与同一 random 初始化做单变量对照，但它只回答可学习性，不再影响去 CLIP 化裁决。
+
 ### 2. “正确逐图 pose 是增益核心”表述过强
 
 `exp340/357/358` 联合说明：
@@ -82,7 +98,7 @@ LGPA 的稳定正信号是真实的，但当前只能严谨表述为：
 
 正式训练前必须先补三组廉价门禁：
 
-1. **query 归因**：同一 correct pose 下比较 frozen CLIP、fixed random、learned query ID；
+1. **query 归因**：canonical 条件的 CLIP/fixed-random 已由找回的原始日志闭合；再在 exp336 correct-pose 协议比较 frozen CLIP、fixed random、learned query ID，确认结论不依赖 canonical；
 2. **inference intervention**：同一 `exp336` checkpoint 比较 correct/canonical/shuffled/uniform/no-pose；
 3. **同维 oracle**：将已验证 5376-D teacher descriptor 压到 768-D，检查能否保留至少 80% 的相对增益。
 

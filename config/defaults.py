@@ -223,6 +223,8 @@ _C.MODEL.POSE_LGPA_DETACH = False         # Detach features before LGPA (no grad
 _C.MODEL.POSE_LGPA_NO_POSE = False        # Ablation: pass None heatmaps to LGPA (no pose-bias/assign/visibility) = pure CLIP-text parts
 _C.MODEL.POSE_LGPA_FIXED_BANDS = False    # Fixed-semantics: replace per-image pose with a FIXED canonical pedestrian pose (fixed CLIP text + fixed anatomical prior, no per-image pose)
 _C.MODEL.POSE_LGPA_RANDOM_TEXT = False     # Attribution ablation: replace CLIP text prototypes with FIXED random vectors (tests if CLIP semantics contribute vs pure structure)    # Fixed-semantics: replace per-image pose with a FIXED canonical pedestrian pose (fixed CLIP text + fixed anatomical prior, no per-image pose)
+_C.MODEL.POSE_LGPA_QUERY_MODE = 'clip_frozen'  # clip_frozen | random_frozen | random_learned
+_C.MODEL.POSE_LGPA_QUERY_SEED = 42         # independent generator seed for random query IDs
 # PBSR: pose-supervised structural decomposition/recomposition. Pose only
 # supervises routing during training; retrieval uses the same-size global feat.
 _C.MODEL.POSE_PBSR = False

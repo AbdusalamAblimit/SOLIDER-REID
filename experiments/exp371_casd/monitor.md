@@ -20,10 +20,15 @@
 - [x] 冻结唯一主方案与停止规则
 - [x] 创建长期 Goal；其总目标仍是保留 LGPA 涨点并改造成自有创新
 - [ ] 替换 Goal 的旧 IPER 主方案正文：工具不支持原地编辑 active Goal，需清空/结束旧 Goal 后按 CASD 正文重建；在此之前以本设计为执行真值
+- [x] 在 4090 找回 exp340/340c 的原始 checkpoint、train/test logs 与 SHA；canonical fixed-random `59.9/68.7` 高于 CLIP `59.5/68.1`，共同 global `58.8/67.8`
+- [x] 实现 query mode 枚举；random-frozen/random-learned 初值逐 bit 相同，仅差 3072 个可训练参数
+- [x] 实现 Gate B 五臂评测与缓存脚本；shuffled 为 query/gallery 内异 PID 双射，uniform 为 common-body-support
+- [x] 实现 Gate D train-only JL/PCA-768 oracle 与 paired-gain retention
+- [x] 本地 uv 环境 11 项单元测试通过，Python compile 与 `git diff --check` 通过
 
 ## 尚未执行
 
-- [ ] Gate A：CLIP/random/learned query 归因
+- [ ] Gate A：canonical CLIP/random 已闭合；待 correct-pose random-frozen/random-learned paired run
 - [ ] Gate B：exp336 checkpoint inference intervention 矩阵
 - [ ] Gate C：same-image / correct cross-image /伪 support 的 identity-relation advantage oracle
 - [ ] Gate D：5376-D→768-D frozen oracle
@@ -32,6 +37,8 @@
 ## 当前判断
 
 **允许继续做廉价门禁，不允许直接开完整训练。**
+
+下一执行顺序：先在 exp336 s0 checkpoint 做 Gate B stock parity + 五臂全量；同一趟缓存 train/val correct descriptor 并运行 Gate D。两项无实现问题后，才并行启动 Gate A 两个 query attribution run。
 
 原因：UMTS 已证明普通 multi-shot teacher-student 不是新意。CASD 的新颖性依赖“pose-organized part support + leave-one-view-out + support-vs-self advantage”相对 same-image KD、full multi-shot KD 和伪 pose support 都有独立价值；这尚未被数据证明。先在缓存 teacher parts 上验证 support coverage、identity margin 与 controls，能避免再投入一次机制工作但身份指标不动的完整训练。
 
