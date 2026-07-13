@@ -76,3 +76,17 @@
 - P0 epoch 5 完成：训练 loss finite；route loss 从首个日志点约 `1.556` 缓降至约 `1.547`；route entropy `3.871`、background share `0.143`、delta norm 约 `2.32`，无 NaN/Inf 或 background collapse。
 - P0 的 alpha 日志以三位小数显示，早期接近 0 不能据此判断未更新；CUDA smoke 已验证 optimizer step 后非零。后续以 checkpoint 参数和更高精度审计为准。
 - 当前判断：两臂健康继续。P0 尚无 eval，不能与 B0 作效果判断；等待相同 epoch 10/20/30 门禁。
+
+### [2026-07-13] epoch 30 kill-switch：继续到 epoch 60
+
+| Epoch | B0 mAP / R1 | P0 mAP / R1 | P0-B0 mAP / R1 |
+|---:|---:|---:|---:|
+| 10 | 36.0 / 44.8 | 34.2 / 43.0 | -1.8 / -1.8 |
+| 20 | 43.3 / 53.5 | 38.4 / 48.1 | -4.9 / -5.4 |
+| 30 | 48.9 / 58.6 | 48.5 / 57.8 | -0.4 / -0.8 |
+
+- 所有数值均从各自隔离目录的原始 `runner_stdout.log` 读取。
+- P0 在 epoch 20 出现明显落后，但 epoch 30 恢复到预注册的 `±1.0 mAP` 继续区间，未触发“落后超过 1.0 mAP”早停。
+- epoch 30 P0 route loss 约 `1.13`，相对初始约 `1.56` 明显下降；alpha 约 `-0.029`，route entropy 从 `3.871` 降至约 `3.718`，background share 约 `0.158`，delta norm 约 `2.21`。
+- 机制统计显示 router 与写回门正在学习，无 NaN/Inf、dead route 或 background collapse；alpha 为负只表示残差方向由 identity loss 学得，不构成异常。
+- 当前判断：严格按 manifest 继续到 epoch 60；当前 P0 仍未超过 B0，不启动 P1/P4，也不补任何救场变体。
