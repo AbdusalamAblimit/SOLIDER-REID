@@ -284,7 +284,8 @@ def test_pid_internal_folds_are_stable_and_support_reference_disjoint():
     assert episode["eligible_pid_ratio"] == 1.0
     assert episode["support_reference_path_overlap"] == 0
     assert episode["support_reference_content_overlap"] == 0
-    assert all(count == 4 for count in episode["donor_count"])
+    assert all(count == 3 for count in episode["donor_count"])
+    assert all(count == 4 for count in episode["available_donor_count"])
     for query_index, same_donors, wrong_donors in zip(
         episode["query_indices"], episode["donors"], episode["wrong_donors"]
     ):

@@ -31,6 +31,7 @@ BLOCK_NAMES = ("global", "pooled", "slot1", "slot2", "slot3", "slot4", "slot5")
 SLOT_COUNT = 5
 FOLD_COUNT = 5
 MIN_DONORS = 3
+SELECTED_DONORS = 3
 MIN_ELIGIBLE_RATIO = 0.70
 ACTIVE_EPS = 1e-12
 
@@ -513,6 +514,7 @@ def build_fold_episode(
     removal_reasons: Counter = Counter()
     removed_queries: List[Dict[str, object]] = []
     donor_camera_counts: List[int] = []
+    available_donor_counts: List[int] = []
 
     def reject(query_index: int, reason: str) -> None:
         removal_reasons[reason] += 1
@@ -543,10 +545,21 @@ def build_fold_episode(
             if camera_protocol == "cross-camera" and int(camids[donor]) == camid:
                 continue
             candidate_donors.append(donor)
-        candidate_donors = sorted(candidate_donors, key=lambda index: paths[index])
+        available_donor_count = len(candidate_donors)
         if len(candidate_donors) < MIN_DONORS:
             reject(query_index, "fewer_than_three_support_donors")
             continue
+        # Match the intended P x K (K=4) student protocol: an anchor can use
+        # exactly the other three views. Selection is feature/pose independent
+        # and shared by every arm.
+        candidate_donors = sorted(
+            candidate_donors,
+            key=lambda index: stable_key(
+                permutation_seed,
+                "same-id-donor",
+                "%s:%s" % (query_path, paths[index]),
+            ),
+        )[:SELECTED_DONORS]
 
         same_pid = ref_pids.eq(pid)
         same_cam = ref_camids.eq(camid)
@@ -599,6 +612,7 @@ def build_fold_episode(
         valid_rows.append(valid)
         positive_rows.append(positive)
         donor_camera_counts.append(len({int(camids[index]) for index in candidate_donors}))
+        available_donor_counts.append(available_donor_count)
 
     if not eligible_indices:
         raise ValueError("fold %d has no eligible query" % fold)
@@ -632,6 +646,7 @@ def build_fold_episode(
         "removal_reasons": dict(removal_reasons),
         "removed_queries": removed_queries,
         "donor_count": [len(value) for value in donors],
+        "available_donor_count": available_donor_counts,
         "donor_camera_count": donor_camera_counts,
         "active_slot_count": torch.stack(active_masks).sum(dim=1).tolist(),
         "support_reference_path_overlap": 0,
@@ -1018,6 +1033,7 @@ def run_extraction(
                         "eligible_pid_ratio",
                         "removal_reasons",
                         "donor_count",
+                        "available_donor_count",
                         "donor_camera_count",
                         "active_slot_count",
                         "support_reference_path_overlap",
@@ -1394,6 +1410,7 @@ def dry_run_feasibility(
                     "eligible_pid_ratio",
                     "removal_reasons",
                     "donor_count",
+                    "available_donor_count",
                     "donor_camera_count",
                     "active_slot_count",
                     "support_reference_path_overlap",
@@ -1475,6 +1492,7 @@ def main() -> None:
         "parameters": {
             "fold_count": FOLD_COUNT,
             "min_donors": MIN_DONORS,
+            "selected_donors": SELECTED_DONORS,
             "min_eligible_ratio": MIN_ELIGIBLE_RATIO,
             "active_eps": ACTIVE_EPS,
             "split_seed": args.split_seed,
@@ -1497,7 +1515,41 @@ def main() -> None:
             max_queries=args.max_queries,
         )
         atomic_json(output_dir / "dry_run.json", result)
-        print(json.dumps(result, indent=2))
+        audit = result["metadata_audit"]
+        console_summary = {
+            "status": result["status"],
+            "metrics_computed": result["metrics_computed"],
+            "coverage_hard_gate": result["coverage_hard_gate"],
+            "paired_canonical_present": result["paired_canonical_present"],
+            "paired_scene_present": result["paired_scene_present"],
+            "metadata": {
+                "sample_count": audit["sample_count"],
+                "allowed_query_gallery_same_pidcam_content_count": audit[
+                    "allowed_query_gallery_same_pidcam_content_count"
+                ],
+                "forbidden_duplicate_content_count": audit[
+                    "forbidden_duplicate_content_count"
+                ],
+            },
+            "folds": [
+                {
+                    "fold": fold["fold"],
+                    "eligible_query_ratio": fold["eligible_query_ratio"],
+                    "eligible_pid_ratio": fold["eligible_pid_ratio"],
+                    "removal_reasons": fold["removal_reasons"],
+                    "selected_donor_count_min_max": [
+                        min(fold["donor_count"]),
+                        max(fold["donor_count"]),
+                    ],
+                    "available_donor_count_min_max": [
+                        min(fold["available_donor_count"]),
+                        max(fold["available_donor_count"]),
+                    ],
+                }
+                for fold in result["folds"]
+            ],
+        }
+        print(json.dumps(console_summary, indent=2))
         print("DRY_RUN_COMPLETE", flush=True)
         return
 

@@ -175,11 +175,19 @@ reference 继续执行标准 same-PID/same-camera exclusion；support/reference 
 - 禁止 fallback 到 same-camera；
 - unrestricted-camera 只能作为 sensitivity。
 
+### donor budget
+
+主协议必须与后续 `P×K, K=4` student 的 support budget 一致。每个
+query/fold 从合格 cross-camera pool 中按固定、feature/pose 无关的
+`SHA256(seed:query_path:donor_path)` 排序，**恰好选择 3 个 donors**。全部
+arms 共享同一三张图，并同时报告选择前的 available donor count。禁止在
+frozen oracle 中使用某身份的全部图像，把 multi-shot 上界冒充为训练时可兑现的机制。
+
 ### eligibility
 
 每 query/fold 必须：
 
-1. 至少 3 个 unique-path、content-disjoint、cross-camera donors；
+1. 至少 3 个 unique-path、content-disjoint、cross-camera donors，并从中按预注册 hash 恰好选择 3 个；
 2. 至少一个经过标准 exclusion 的 positive reference；
 3. target person 有效；
 4. feature/raw response finite；
