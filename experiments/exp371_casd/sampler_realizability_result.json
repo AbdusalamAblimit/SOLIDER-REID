@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "audit": "exp371_random_identity_sampler_cross_camera_realizability",
+  "input": {
+    "path": "/home/afr/SOLIDER-REID-exp371-146bc44/data/occluded_duke/train.list",
+    "resolved_data_root": "/home/afr/SOLIDER-REID/data",
+    "sha256": "dadffee79d8601545ca2217a38406c1cb6dab39d0b4b0c6370c8486738dee059",
+    "pid_count": 702,
+    "image_count": 15618,
+    "pid_image_count_min": 6,
+    "pid_image_count_max": 426
+  },
+  "registered_protocol": {
+    "epochs": 1000,
+    "epoch_seed_formula": "371000 + epoch_index",
+    "seed_first": 371000,
+    "seed_last": 371999,
+    "group_size": 4,
+    "selected_donors": 3,
+    "camera_rule": "each donor camera differs from anchor camera",
+    "donor_pairwise_camera_distinct_required": false,
+    "rng_note": "Ruby Random Monte Carlo; not a bitwise replay of Python random.shuffle"
+  },
+  "simulation": {
+    "used_anchors_per_epoch": 14528,
+    "tail_dropped_per_epoch": 1090,
+    "used_anchors_all_epochs": 14528000,
+    "donor_count_histogram": {
+      "0": 1247348,
+      "1": 3052299,
+      "2": 5654238,
+      "3": 4574115
+    },
+    "donor_count_ratio": {
+      "0": 0.0858582048,
+      "1": 0.2100976735,
+      "2": 0.3891958976,
+      "3": 0.3148482241
+    },
+    "strict3_epoch_coverage": {
+      "min": 0.3037582599,
+      "min_epoch_index": 763,
+      "min_count": 4413,
+      "mean": 0.3148482241,
+      "mean_count": 4574.115,
+      "max": 0.3266106828,
+      "max_epoch_index": 518,
+      "max_count": 4745
+    }
+  },
+  "static_global_pool": {
+    "eligible_anchor_count": 15502,
+    "ineligible_anchor_count": 116,
+    "eligible_anchor_ratio": 0.9925726726,
+    "definition": "anchor PID has at least three images from cameras different from the anchor"
+  },
+  "closed_form_check": {
+    "donor_count_ratio": {
+      "0": 0.0837133647,
+      "1": 0.2111404089,
+      "2": 0.3911673079,
+      "3": 0.3139789185
+    },
+    "strict3_ratio": 0.3139789185,
+    "three_donors_from_three_distinct_cameras_ratio": 0.0450130524
+  }
+}
