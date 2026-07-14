@@ -14,12 +14,14 @@
 ## 当前总裁决
 
 - 设计：`PASS_FOR_AUDIT_SCRIPT_DESIGN`
-- unit/synthetic tests：`NO_GO_FOR_TESTS`
+- unit/synthetic tests：`PASS`（85/85）
 - 正式 Gate A/训练：`NO_GO_FOR_EXECUTION`
 
 统计、工程与独立总红队已分别完成第三轮只读签字；该 PASS 只授权编写 audit-only
-脚本。正式脚本尚不存在，provenance 也只能支持 legacy screen，因此当前仍禁止运行
-测试、训练、正式评测或用旧 flag 拼出近似干预。
+脚本。当前 audit-only runner、协议层、模型三态 seam，以及对应的纯 CPU/synthetic
+测试文件均已完成多路静态审查；冻结 SHA 对应的 85 个纯 CPU/synthetic tests 已全部
+PASS。checkpoint provenance 也只能支持 legacy screen，且 formal preflight 尚未审签，
+因此当前仍禁止 prepare、真实资产 preflight、训练、正式评测或用旧 flag 拼出近似干预。
 
 ## 分项裁决
 
@@ -34,8 +36,8 @@
 | checkpoint 文件完整性 | 完成 | PASS |
 | exact execution provenance | 完成 | FAIL：目录复用、文档与当前 checkpoint 日志错代、无 Git SHA |
 | true bypass 语义 | 完成 | PASS：同模型传 `pose_dict=None` |
-| matched donor/centroid 实现 | 未实现 | 设计已唯一化；脚本、静态审查和 synthetic test 均未开始 |
-| per-query/层级 bootstrap | 设计完成 | 两 primary contrasts 统计设计 PASS；实现仍未开始 |
+| matched donor/centroid 实现 | 单元测试 PASS | runner/protocol 静态复审与 synthetic test 均 PASS；formal preflight 未做 |
+| per-query/层级 bootstrap | 单元测试 PASS | 两 primary contrasts 的 synthetic test PASS；正式输入 preflight 未做 |
 | 资源安全 | 设计完成 | 492 passes、4.25–4.5h、矩阵 hash 后释放、80GB 门槛；执行 preflight 未做 |
 | 不确定度约束联合 transport 数学对象 | 未完成 | BLOCKED：当前只有问题描述，没有清晰联合目标与可行域 |
 | 2026 TTPM / Pose-Guided Feature Restoration 全文边界 | 部分完成 | TTPM 已核；后一篇仍 BLOCKED，阻止新机制训练 |
@@ -76,14 +78,16 @@
 - per-query AP/R1/margin；
 - 三 seed 固定 paired blocks + 同步 PID-cluster bootstrap；
 - shuffle/bypass 两个 primary contrasts 的 one-sided simultaneous max-deviation intervals；
-- 七组只作 secondary simultaneous sensitivity，不触发 GO；
+- 七组只作 secondary sensitivity，不触发 GO；若额外报告 seven-group simultaneous
+  interval，必须使用冻结设计中的同一 PID replicate，不能事后选择性添加或删组；
 - create-exclusive output、atomic publish、逐项 hash resume 和异常 fail closed；
 - 逐臂释放 feature/distance matrix，启动前目标卷至少 80 GB。
 
 ## 下一轮审查顺序
 
-1. 编写 audit-only 脚本，不运行；
-2. 多路代码静态审查；
-3. 代码审查 PASS 后才运行 unit/synthetic tests；
-4. 测试结果与资源 preflight 再审；
+1. 编写 formal preflight，但不运行；
+2. 多路静态审查 preflight，覆盖真实 solver 20-map/Hamming、execution lock、完整
+   arm/hash/resume 链与真实 Swin PSG 插入链；
+3. 静态审查 PASS 后才运行 preflight；
+4. preflight 结果与资源状态再审；
 5. 总裁决改为 `PASS_FOR_LEGACY_GATE_A` 后，才允许正式评测。

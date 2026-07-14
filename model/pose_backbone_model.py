@@ -21,6 +21,12 @@ from .modules.pair_adaptive_fusion import (
 )
 
 
+# exp374 audit seam.  The sentinel distinguishes the normal pose_dict path
+# from an explicit None, which means a true PSG bypass.  The keyword remains
+# optional, so every pre-existing caller keeps the exact legacy behavior.
+SCENE_HEATMAPS_UNSET = object()
+
+
 class PoseBackboneModel(build_transformer):
     """ReID model with pose injection inside backbone.
 
@@ -35,6 +41,11 @@ class PoseBackboneModel(build_transformer):
 
     def __init__(self, num_classes, camera_num, view_num, cfg, factory, semantic_weight):
         super().__init__(num_classes, camera_num, view_num, cfg, factory, semantic_weight)
+
+        # Closed by default.  The exp374 audit opens this only inside a
+        # short-lived context manager; ordinary inference cannot activate the
+        # final-scene override accidentally.
+        self._audit_scene_override_enabled = False
 
         # Determine which stages get pose injection
         psg_stages = list(getattr(cfg.MODEL, 'POSE_PSG_STAGES', [-1]))
@@ -756,11 +767,46 @@ class PoseBackboneModel(build_transformer):
         return scene_heatmaps
 
     def forward(self, x, label=None, cam_label=None, view_label=None,
-                pose_dict=None):
+                pose_dict=None, *,
+                scene_heatmaps_override=SCENE_HEATMAPS_UNSET):
         # Prepare pose
         scene_heatmaps = None
         target_heatmaps = None
-        if pose_dict is not None:
+        override_active = scene_heatmaps_override is not SCENE_HEATMAPS_UNSET
+        if override_active:
+            if not self._audit_scene_override_enabled:
+                raise RuntimeError(
+                    'scene_heatmaps_override is disabled outside an audit context')
+            if self.training:
+                raise RuntimeError(
+                    'scene_heatmaps_override is audit-only and requires eval mode')
+            if pose_dict is not None:
+                raise ValueError(
+                    'scene_heatmaps_override and pose_dict are mutually exclusive')
+            if (scene_heatmaps_override is not None
+                    and not torch.is_tensor(scene_heatmaps_override)):
+                raise TypeError(
+                    'scene_heatmaps_override must be Tensor, explicit None, '
+                    'or SCENE_HEATMAPS_UNSET')
+            if scene_heatmaps_override is not None:
+                expected_shape = (x.shape[0], 17, 96, 32)
+                if tuple(scene_heatmaps_override.shape) != expected_shape:
+                    raise ValueError(
+                        'scene_heatmaps_override shape mismatch: expected '
+                        f'{expected_shape}, got {tuple(scene_heatmaps_override.shape)}')
+                if scene_heatmaps_override.dtype != torch.float32:
+                    raise TypeError('scene_heatmaps_override must be float32')
+                if scene_heatmaps_override.device != x.device:
+                    raise ValueError(
+                        'scene_heatmaps_override must be on the RGB input device')
+                if not scene_heatmaps_override.is_contiguous():
+                    raise ValueError('scene_heatmaps_override must be contiguous')
+                if not bool(torch.isfinite(scene_heatmaps_override).all()):
+                    raise ValueError('scene_heatmaps_override contains NaN/Inf')
+                if not bool((scene_heatmaps_override >= 0).all()):
+                    raise ValueError('scene_heatmaps_override must be nonnegative')
+            scene_heatmaps = scene_heatmaps_override
+        elif pose_dict is not None:
             scene_heatmaps, _, target_heatmaps, _ = self._prepare_pose(pose_dict)
             # exp357 pose-shuffle kill-switch: training-only cross-image permutation of the pose
             # within the batch (each image gets ANOTHER image's real pose). Tests whether the

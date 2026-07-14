@@ -114,7 +114,51 @@ centroid 边界、final-scene override、R1 聚合、反向 NO-GO、manifest/恢
 
 ## 下一检查点
 
-1. 实现 audit-only 脚本但不运行；
-2. 脚本实现后先静态审查，不立即运行；
-3. 单元/合成测试也要在代码审查 PASS 后才启动；
+1. 使用仓库内隔离 `uv` 环境运行已审签 SHA 对应的三组单元/合成测试；
+2. 若失败，保持 `NO_GO_FOR_EXECUTION`，只修复并重新静态审查失败路径；
+3. 测试 PASS 后补 execution lock、真实 solver 20-map、完整 arm hash/resume 的 preflight；
 4. 所有单元测试和 preflight PASS 后，才允许 4090 顺序执行 Gate A。
+
+## 2026-07-15 — Audit 实现已落盘，等待实现后静态签字
+
+- 已编写、未运行：`protocol.py`、`audit_gate_a.py`、模型 final-scene 三态 override seam；
+- 已编写、未运行：`test_protocol.py`、`test_audit_runner.py`、
+  `test_model_audit_seam_cpu.py`；
+- 当前没有测试、推理、正式评测或训练进程，3090/4090 均未被本实验占用；
+- 本检查点只允许静态阅读和修复审查发现，`NO_GO_FOR_TESTS` 与
+  `NO_GO_FOR_EXECUTION` 当时保持不变；后续状态见下一节。
+
+## 2026-07-15 — 实现与测试静态审查 PASS
+
+- 生产实现冻结 SHA：
+  - `model/pose_backbone_model.py`：`b76a2e103a507bac0686b0b5562a6a7c5bcdbe8916a6afb59adb81343ca6ce37`；
+  - `protocol.py`：`82427920ce2f1c11d4e0bb6efb7b6f76a0df5f7c12a78976ce04693f2920eb3c`；
+  - `audit_gate_a.py`：`5df37ed1dd6e6aba34b19379a7efaa85e7e054405fe9fcf9445201859822352b`；
+- 测试冻结 SHA：
+  - `test_protocol.py`：`8e3ca5801930f253d0733bf19b5e253f1bf4a8f4f6e592666cb4faeff568bf4e`；
+  - `test_audit_runner.py`：`c215928833b4801055e86da2f8655ddf55e84c5811268bfc0cd94f41f3ee966f`；
+  - `test_model_audit_seam_cpu.py`：`cfad6b41d61fafabf3aad04ed2a8eb1b4c111a32a5128f1509de6c324592d363`；
+- 三路交叉静态审查、AST parse 与 focused Ruff 均 PASS；未运行任何测试、推理或训练；
+- 当前门禁升级为 `PASS_FOR_SYNTHETIC_TEST_EXECUTION`，只授权上述 SHA 的纯
+  CPU/synthetic tests；正式 Gate A 继续 `NO_GO_FOR_EXECUTION`；
+- 正式 preflight 仍需覆盖真实 solver 的 20-map/Hamming、execution lock、完整
+  `RUN_ARM_MANIFEST`/arm marker/hash/resume 链，以及真实 Swin stage PSG 插入位置。
+
+## 2026-07-15 — 纯 CPU/synthetic tests 85/85 PASS
+
+- 隔离环境：仓库内 `.venv-exp374`，由 `uv` 创建并安装测试依赖；未污染系统 Python；
+- `test_protocol.py`：14/14 PASS；
+- `test_model_audit_seam_cpu.py`：37/37 PASS；
+- `test_audit_runner.py`：34/34 PASS，另 5 个 subtests PASS；
+- 首轮 protocol 执行中的两个失败均为隔离环境依赖缺失：依次补入 `torchvision` 与
+  `timm` 后，冻结测试文件原样重跑 PASS；没有协议或断言失败；
+- 仅出现 67 条 PyTorch JIT deprecation warnings，不影响数值、异常门禁或结果；
+- JUnit XML 保存在 Git 外
+  `remote_artifacts/exp374_local_unit_tests_20260715/`，三份 SHA 分别为：
+  - protocol：`6ce8e00c23f820fe72606fcb4fbfd4a54e7503c36f3c48947945241279b3fa7b`；
+  - runner：`8839f254f05b892e478140e2cd22feb2f4ac25d984fce011300f103892b9b631`；
+  - seam：`a8981c07bb2257b97a9a015bb96bc3f8c23c176c2019db5407e7e2b24a1e4373`；
+- 测试后六个实现/测试文件 SHA 与审签值完全一致；没有 prepare、真实数据读取、
+  checkpoint 加载、GPU 推理、正式评测或训练；
+- 当前状态升级为 `UNIT_TESTS_PASS_PREFLIGHT_REVIEW_REQUIRED`：允许编写和静态审查
+  formal preflight，但 Gate A 继续 `NO_GO_FOR_EXECUTION`。

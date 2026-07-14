@@ -2,13 +2,13 @@
 
 ## 当前状态
 
-- 阶段：`PASS_FOR_AUDIT_SCRIPT_DESIGN`
+- 阶段：`UNIT_TESTS_PASS_PREFLIGHT_REVIEW_REQUIRED`
 - 训练：未启动
 - 正式评测：未启动
-- 代码实现：未开始
+- 代码实现：audit-only runner、协议层、模型三态 seam 已编写；85 个纯 CPU/synthetic tests 全部 PASS
 - GPU：未占用
-- 当前执行许可：允许编写 audit-only 脚本并做静态代码审查；仍禁止运行 unit/synthetic
-  tests、推理、正式评测或训练
+- 当前执行许可：允许编写并静态审查 formal preflight；在 preflight 单独签字前，仍禁止
+  prepare、真实 checkpoint/data preflight、推理、正式评测或训练
 
 ## 动机
 
