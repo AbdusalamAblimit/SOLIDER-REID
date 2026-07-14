@@ -3132,3 +3132,30 @@ CASD 后额外审计了一个真正换 backbone/作用位置的候选：在 offi
 因此 PCAR 在新颖性 Gate 直接 NO-GO，不用性能实验为一个已可归约的机制“争取创新”。允许保留的只有实验纪律：matched derangement、affine-fitted canonical、correct/shuffled 2×2 train/eval，以及 frozen Gate 只审 parity/attention尺度而不乱用 mAP 杀 adapter。
 
 未来若还要从 pose attention 重新出发，最低要求不再是“换到 CLIP”“减去 canonical”或“只改少量 head”，而是提出一个无法分解成实例 pose bias加静态 bias、且有独立问题对象和强控制可验证的机制。否则继续写 PSG/已有论文资产，比硬包装 LGPA 更诚实。
+
+## 2026-07-15：SA 正交耦合查新封板——多层 PSG+PAA 与正交补都不能承担主创新
+
+用户提出一个合理质疑：既然 PSG 可能从更深的层次调制中受益，PAA 是否应在
+相同 block 同时工作，并把 scale 与 shift 合成统一 SA。仓库复盘先纠正了两个前提：
+
+1. 当前实现本来就是每个启用 block 后 PSG→PAA，不是最终层才做一次 PAA；
+2. “PSG 层数越多越好”不是普遍规律。Tiny 的 clean mAP 为
+   `59.2→60.2→60.5→60.5`，Small 为 `68.1→68.8→68.3→68.3`，主要收益来自
+   Stage3，后续 stage 边际接近零且依赖 backbone。
+
+普通 SA 可直接写成 `gamma(H)*x+beta(H)`，与 FiLM/SPADE 重合。唯一稍强的
+候选是把 PAA residual 投影到 PSG actual displacement 的正交补，使 shift
+显式不重复 scale 更新。但专项查新表明：hard orthogonal residual update 已有
+arXiv 2025 直接先例；Shape-Erased VI-ReID 和 Ortho-ReID 又覆盖了 ReID 中
+结构/外观子空间与正交补身份表征。将投影参考从输入换成 PSG displacement，
+不足以形成新问题对象或新 operator。
+
+因此 exp373 在新颖性 Gate 直接 NO-GO。保留下来的有用认识是：
+
+- `POSE_PAA_STAGES` 独立开关和“中层 scale、深层 shift”是合理工程消融，
+  但不是贡献；
+- `[0,1]` heatmap 重复 sigmoid 会令 zero-input 变成 0.5，未来任何 pose 机制
+  都必须保证 true no-pose/identity 可解释；
+- overlap energy、经验 null、virtual projection 是好的诊断协议，但证据设计
+  不能为已有 operator 创造新颖性；
+- PAA 若保留，只能是 PSG 系统中的辅助组件，不再承担第二主创新。

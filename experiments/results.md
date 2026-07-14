@@ -1829,3 +1829,20 @@ Step1 CLIP-ReID prompt +2.2(干净)。Step2 pose 融 CLIP **五角度全负**: �
 - 外部查新：PeVL/PAAB 已覆盖 pose-conditioned CLIP/ViT attention，MUVA 已在 ReID 中把动态 body-part mask逐层注入 CLIP ViT self-attention；PAFormer/KPR/ProFD 又覆盖相邻 pose/part/CLIP attention 路线；
 - 内部证据：exp371 Gate B 的 correct 只比 shuffled/canonical 高 `+0.0320/+0.0984 mAP`，实例 pose residual 缺少关键燃料；
 - **裁决：新颖性 Gate FAIL，PCAR 正式 NO-GO。** 不实现、不训练、不转 layer/head/temperature 小变体。历史 LGPA 增益仍成立，本结果只禁止把它通过中心化 attention bias 重新包装为自有创新。
+
+## exp373：SA 非冗余正交调制新颖性 Gate — NO-GO（2026-07-15）
+
+> 本实验在训练前的新颖性门禁停止，没有运行 forward audit、没有 mAP/R1，
+> 不得写成性能负结果。
+
+- 现有实现核对：每个启用 stage 的每个 block 本来就执行 PSG→PAA；
+- 历史证据：`exp073` 多层同步 PSG+PAA 比 Stage-3-only 低 `0.5 mAP`；
+  matched `exp251/exp254` 中两阶段 PAA 为 `-0.3 mAP/-0.6 R1`；
+- 普通版本：`x*(1+g(H))+a(H)` 是 FiLM/SPADE 类条件仿射；
+- 候选版本：把 PAA residual 投影到 PSG displacement 正交补；
+- 查新结果：arXiv 2025 Orthogonal Residual Update 已覆盖 hard orthogonal
+  residual operator；CVPR 2023 Shape-Erased VI-ReID、ICML 2026 CoLoRAI
+  Workshop Ortho-ReID 已覆盖 ReID 中人体结构/外观相关子空间与正交补身份表征；
+- **裁决：新颖性 Gate FAIL，exp373 正式 NO-GO。** exact exp066 checkpoint、
+  commit、数据均已找到，停止不是资产阻塞，而是机制归属不足。未实现、未训练、
+  未占用 GPU，也不转 transport/routing/FiLM/层数小变体。

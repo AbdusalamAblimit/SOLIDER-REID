@@ -1511,3 +1511,32 @@ exp371 的唯一正式 frozen oracle 已完成，且不是边缘性失败：POSE
 - “把 LGPA 换到 official CLIP-ReID 后即可归属为我们的创新”。
 
 当前最诚实的故事边界仍是：LGPA 是有稳定增益的结构化局部资产，但不是已经完成归属的新方法。PCAR 不进入方法、实验表或摘要；如果继续全新论文，应回到独立成立的 PSG/已有证据，或重新定义与 additive pose attention、part assembly 无关的问题对象。
+
+## 2026-07-15：SA 正交 scale–shift 不进入论文故事
+
+在 PCAR 之后又审计了 PSG/PAA 合并路线。首先，论文不能把 PAA 描述为“只在
+最终层添加”：真实代码已经在每个启用 Swin block 后依次执行 PSG 与 PAA；
+Stage2+3 同步注入也已经由 `exp073` 跑过且没有增益。其次，clean stage sweep
+只支持“Stage3 最稳定、更多层边际递减”，不支持“调制层数越多越好”。
+
+把两支直接统一为
+
+\[
+y=x\odot(1+g(H))+a(H)
+\]
+
+只是空间条件仿射，与 FiLM/SPADE 重合。进一步把 PAA residual 投影到 PSG
+displacement 的正交补，虽然比普通 scale–shift 多了 content-conditioned hard
+constraint，但 orthogonal residual update 已有直接 vision 先例，ReID 中也已有
+人体 shape/pose 子空间与正交补 identity feature 的直接工作。因此该变化最多是
+PSG+PAA 的辅助正则，不是新的主方法。
+
+论文故事据此锁定：
+
+1. PSG 仍可按既有跨数据集、跨 backbone 证据作为独立方法资产；
+2. PAA 可作为历史辅助组件或消融，但其正信号主要来自含 GCN 的旧 scaffold，
+   不能直接宣称改善纯 global descriptor；
+3. 不写“首次统一 multiplicative/additive pose modulation”；
+4. 不写“正交化使 PSG/PAA 可识别”或“正交补本身是新 ReID 机制”；
+5. 若论文需要第二个真正贡献，必须另找独立问题对象，而不是继续修 scale/shift
+   的层数、路由、阈值或投影形式。

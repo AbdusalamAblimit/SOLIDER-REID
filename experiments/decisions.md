@@ -4735,3 +4735,37 @@ exp341 的 +2.2 来自**纯 ID 对齐** (raw global ↔ 纯 ID 文本原型, 把
 **决策**：**PCAR 新颖性 Gate FAIL，正式 NO-GO。** 不下载 checkpoint、不修改代码、不占用 3090/4090、不运行六臂性能 screen，不转 layer/head/alpha/temperature/query/OT/MoE 小变体。即使未来工程移植涨点，也只能先称 pose-conditioned attention adapter，不能作为“我们的 LGPA 创新”。
 
 **边界**：本决策不否定 LGPA 的结构化局部增益，也不否定未来所有 pose×CLIP 方法；它只否定当前可归约的 centered additive attention 方案。若未来重开，必须先提出无法写成“实例 pose bias + 静态 bias”的非可分解机制。
+
+### [2026-07-15] 决策：exp373 SA 正交耦合新颖性 Gate NO-GO，不运行 fuel audit 或训练
+
+**上下文**：用户提出把 PSG 与 PAA 在多层同时结合，并希望把 scale/shift 改造成
+可归属的自有创新。仓库核对发现，现代码已经在每个启用 stage 的每个 block 后
+执行 PSG→PAA；`exp073` 已跑 Stage2+3 同步注入且比 Stage3-only 低 `0.5 mAP`，
+matched `exp251/exp254` 中两阶段 PAA 也为 `-0.3/-0.6`。因此不能把“多层共置”
+当作未做过的新结构。
+
+**候选**：定义实际 PSG displacement `d=x_PSG-x`、PAA residual
+`b=x_PAA-x_PSG`，用 `b_perp=b-Proj_sg(d)(b)` 强制两支逐 token 正交；若门禁
+通过，再考虑 PSG Stage2+3、PAA Stage3 的深度非对称实现。
+
+**查新判定**：普通 PSG+PAA 是 FiLM/SPADE 类条件仿射。若投影相对 pose-only
+gate，候选仍是带正交约束的 FiLM 子集；若投影相对实际 `x*g(H)` displacement，
+关键 hard orthogonal residual operator 已被 arXiv 2025 Orthogonal Residual
+Update 直接覆盖。CVPR 2023 Shape-Erased VI-ReID 与 ICML 2026 CoLoRAI
+Workshop Ortho-ReID 又已覆盖 ReID 中人体结构/外观相关子空间和正交补身份表征。
+stop-gradient、zero-init、独立 stage mask 和强 controls 不能消除该重合。
+
+**资产核对**：exact exp066 seed1234 checkpoint 仍在
+`lab-3090-d:/root/work/SOLIDER-REID/log/occluded_duke/exp066_paa/transformer_120.pth`，
+SHA256=`a084d84995f8fcfd53eea19d8c674d1cdce07d954d9cafbd78e73a211a8903ad`，
+execution commit=`8eacaf16dcd797ab8090fe19aca49f80f86bec6a`，数据/pose_data 齐全。
+因此停止不是 checkpoint、数据或执行环境阻塞。
+
+**决策**：**exp373 新颖性 Gate FAIL，正式 NO-GO。** 按预注册规则不运行
+checkpoint forward fuel audit，不实现 `POSE_PAA_STAGES` 或正交投影，不占用
+3090/4090，不进入 e60/e120；也不转 transport、routing、adaptive gate、
+content-LoRA、普通 FiLM、层数或阈值小变体。
+
+**边界**：本决策不否定 PSG 的跨数据集/跨 backbone 历史增益，也不抹去 PAA
+在早期 `PSG+GCN` 两 seed 上的正信号。它只否定“给 PSG/PAA 加正交投影”能够
+承担新论文主贡献。若未来仅为工程优化使用，必须降级为辅助正则，不能写成主创新。
