@@ -1,5 +1,12 @@
 # 论文故事线（持续更新）
 
+> **⚠️ 2026-07-15 PSG 新颖性审计覆盖：下方 PRCV Reset 中“PSG 主创新”的旧判断
+> 已失效。** WACV 2020 已直接覆盖 ReID backbone 中层的 pose-guided spatial x
+> channel gating；SFT/FiLM 又覆盖其条件仿射与 `1+delta gamma` 形式。PSG 仍是
+> 有效组件和实验资产，但不能以当前公式单独承担论文主贡献。完整 claim-by-claim
+> 审计见 `experiments/paper_notes/psg_novelty_audit_20260715.md`。本文件下方历史
+> 段落不删除，以保留决策轨迹，但不得再把“首次前移 pose 注入”复制到新稿。
+
 > **⚠️ Phase 1-4 内容保留在下方。Phase 5 更新如下。**
 
 ## PRCV Reset (2026-04-15) — PSG 主线 + GCN 结构补充

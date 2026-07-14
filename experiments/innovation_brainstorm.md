@@ -3159,3 +3159,37 @@ arXiv 2025 直接先例；Shape-Erased VI-ReID 和 Ortho-ReID 又覆盖了 ReID 
 - overlap energy、经验 null、virtual projection 是好的诊断协议，但证据设计
   不能为已有 operator 创造新颖性；
 - PAA 若保留，只能是 PSG 系统中的辅助组件，不再承担第二主创新。
+
+## 2026-07-15：PSG 本体查新封板——有效组件，不再作为主创新
+
+对当前 PSG 公式 `Y=X*(1+E(H))` 做了原文级 prior-art 审计。决定性先例是
+Bhuiyan et al. 的 WACV 2020 *Pose Guided Gated Fusion for Person
+Re-identification*：它已经把 pose confidence/affinity maps 与 backbone 中层
+appearance feature 融合，生成同空间、同通道 gate，再用 Hadamard product 调制
+feature 并继续向后传播，还系统比较了 C2-C5 注入位置。
+
+通用机制边界同样明确：SFT 的 `gamma(Psi)*X+beta(Psi)` 令
+`Psi=H, gamma=1+E(H), beta=0` 即严格得到 PSG；FiLM 补充材料也明确使用
+`gamma=1+delta_gamma`，ControlNet/adaLN-Zero 则覆盖新增条件分支从 identity
+启动。因此 pose-only、Swin、zero-init、`1+g`、多 block/stage 和小参数量都只是
+有价值的实现差异，不能把 PSG 变成新的函数类。
+
+本轮结论不推翻 PSG 的实证价值：旧协议三 seed mAP 从 `56.50` 到 `57.83`
+且方向全正；新 clean sweep 中 Tiny `59.2->60.2->60.5->60.5`，Small
+`68.1->68.8->68.3->68.3`。但这只支持“PSG 有用、主要收益来自 Stage3、更多
+stage 边际依赖 backbone”，不支持“PSG 本体是首创”或“层数越多越好”。
+
+论文与后续实验边界更新为：
+
+1. PSG 可保留为轻量、有效的 SFT/FiLM 式 pose-conditioned recalibration、强基线
+   或新机制的载体；
+2. 不再写“现有 pose-ReID 都在 feature extraction 后使用 pose”或“首次在
+   backbone 中层做 pose gating”；
+3. 移植到 ResNet/普通 ViT 只能补通用性，不会创造新颖性，ResNet 反而更贴近
+   WACV 2020；
+4. 下一候选必须离开逐位置对角仿射 `gamma*X+beta`，并先过独立查新；
+5. 若声称恢复/移动视觉证据，必须含真正的跨位置 off-diagonal interaction，并用
+   correct/shuffled/canonical/bypass 和 parameter-matched PSG/SFT 做强控制。
+
+完整来源、公式和 claim 表见
+`experiments/paper_notes/psg_novelty_audit_20260715.md`。

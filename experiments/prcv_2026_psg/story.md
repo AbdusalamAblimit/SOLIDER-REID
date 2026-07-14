@@ -1,5 +1,14 @@
 # 当前论文故事（PRCV / PSG 线）
 
+> **2026-07-15 新颖性审计覆盖：本文件下方“PSG 是主创新”及“现有工作只在特征
+> 形成后使用 pose”的旧叙事已经失效，暂不可用于标题、摘要、引言或贡献列表。**
+> WACV 2020 *Pose Guided Gated Fusion for Person Re-identification* 已在 ReID
+> backbone 中层生成逐位置逐通道 pose-guided gate，并调制 appearance feature 后
+> 继续向后传播；PSG 又可写成 SFT 的 `gamma=1+E(H), beta=0` 特例。PSG 的涨点和
+> 工程价值仍保留，但当前公式不能单独承担主创新。完整证据见
+> `experiments/paper_notes/psg_novelty_audit_20260715.md`。在新方法通过独立查新前，
+> 本目录只作为历史实验资产保留，不得继续沿用旧 claim。
+
 ## 一句话故事
 
 现有 pose-guided occluded ReID 大多在特征形成之后再使用 pose 信息；我们提出 `PSG`，将 pose 先验前移到 backbone 表征学习阶段，并在最终系统中引入 `GCN` 结构分支做显式 skeleton relational reasoning，形成 semantic-structural complementary evidence。
