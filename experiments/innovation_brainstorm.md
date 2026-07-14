@@ -3117,3 +3117,18 @@ CASD 的必要前提已经被正式 frozen oracle 否定。target POSE-RESP 为 
 - 历史 LGPA 的 honest 定位仍是**有用的结构化局部性能资产**，而不是当前已经归属我们的新方法。
 
 因此 LGPA 自有化主线在 IPER、PBSR、CASD 三个正交门禁后停止。这个结论不证明所有未来 pose 方法都无效，但足以禁止在本仓库当前证据上继续以小变体消耗算力或重写论文故事。
+
+## 2026-07-15：PCAR 查新后封板——canonical residual 不是新的 attention 机制
+
+CASD 后额外审计了一个真正换 backbone/作用位置的候选：在 official CLIP-ReID 的 CLIP ViT 内，仅修改少量 self-attention heads，用 `B(Pinstance)-B(Pcanonical)` 表示相对 canonical layout 的实例姿态残差，保持 untouched semantic heads 与标准 global descriptor。
+
+这条路线仍不能恢复 LGPA 自有化资格：
+
+1. 数学上，固定 canonical subtraction 只是普通 additive pose bias 的中心化，不扩大函数族；
+2. PeVL 已覆盖 pose mask调制 CLIP visual attention，PAAB 已覆盖 pose-pair mask进入 ViT logits，MUVA 又已在 ReID 中逐层向 CLIP ViT 注入动态 body-part mask；
+3. zero-init、少量 heads、语义锚和 global-only 输出是干净实现属性，不足以单独形成方法贡献；
+4. exp371 correct≈shuffled/canonical 的内部证据也不支持 instance-relative pose 是强燃料。
+
+因此 PCAR 在新颖性 Gate 直接 NO-GO，不用性能实验为一个已可归约的机制“争取创新”。允许保留的只有实验纪律：matched derangement、affine-fitted canonical、correct/shuffled 2×2 train/eval，以及 frozen Gate 只审 parity/attention尺度而不乱用 mAP 杀 adapter。
+
+未来若还要从 pose attention 重新出发，最低要求不再是“换到 CLIP”“减去 canonical”或“只改少量 head”，而是提出一个无法分解成实例 pose bias加静态 bias、且有独立问题对象和强控制可验证的机制。否则继续写 PSG/已有论文资产，比硬包装 LGPA 更诚实。

@@ -1819,3 +1819,13 @@ Step1 CLIP-ReID prompt +2.2(干净)。Step2 pose 融 CLIP **五角度全负**: �
 **裁决：CASD 正式 NO-GO。** 不进入 matched RGB-only student，不做 OT/MoE/slot/temperature/queue/loss-weight 救场，不扩三 seed或跨 backbone。历史 LGPA `global+parts` 的约 `+0.82～0.85 mAP` 性能资产仍成立；本结果只否定把它改写为“pose-response 组织跨实例 support”的自有创新。
 
 原始结果保留在 4090；本地 Git 外回传 `manifest.json`、`runner_stdout.log` 与完整 `results.json.gz` 至 `remote_artifacts/exp371_gate_c_formal_005ab74/`。raw results SHA=`2213d91fdf4594409d38e4ce2ab7c03dccdef8e1390cd9bcb3837f92006b429f`，gzip SHA=`98fbbbaa4584185b9d2f17dbc68d245fa9735f9d428d3cdedfc11e7c7d7a882b`。
+
+## exp372：PCAR 新颖性 Gate — NO-GO（2026-07-15）
+
+> 本实验停在训练前查新阶段，因此没有可报告的 mAP/R1，不得把“未运行”写成性能负结果。
+
+- 候选：在 official CLIP-ReID 的 CLIP ViT self-attention 内注入 `B(Pinstance)-B(Pcanonical)` 零初始化残差，只改少量 heads/layers，输出仍为标准 global descriptor；
+- 数学审计：canonical subtraction 可写成实例 pose bias 与静态 canonical bias 的和，不扩大普通 additive pose-bias 函数族；
+- 外部查新：PeVL/PAAB 已覆盖 pose-conditioned CLIP/ViT attention，MUVA 已在 ReID 中把动态 body-part mask逐层注入 CLIP ViT self-attention；PAFormer/KPR/ProFD 又覆盖相邻 pose/part/CLIP attention 路线；
+- 内部证据：exp371 Gate B 的 correct 只比 shuffled/canonical 高 `+0.0320/+0.0984 mAP`，实例 pose residual 缺少关键燃料；
+- **裁决：新颖性 Gate FAIL，PCAR 正式 NO-GO。** 不实现、不训练、不转 layer/head/temperature 小变体。历史 LGPA 增益仍成立，本结果只禁止把它通过中心化 attention bias 重新包装为自有创新。

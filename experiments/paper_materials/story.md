@@ -1496,3 +1496,18 @@ exp371 的唯一正式 frozen oracle 已完成，且不是边缘性失败：POSE
 4. 若继续写全新论文，应回到独立成立的 PSG/既有证据，或重新定义与 LGPA 无关的问题对象，而不是继续修 pose routing 小变体。
 
 到此，IPER 的实例 pose effect、PBSR 的无姿态 read/write global、CASD 的跨实例 pose support 三条路线均被各自预注册门禁否定。LGPA 自有化目标在当前证据下未实现，诚实结论是停止，而不是放宽门槛。
+
+## 2026-07-15：PCAR 不进入论文故事
+
+最后一次正交尝试把作用位置从 LGPA head 移到 official CLIP-ReID 的 CLIP ViT 内部：用相对 canonical layout 的实例姿态 residual 修改少量 self-attention heads，同时保留标准 global descriptor。该候选在训练前查新阶段即被否定。
+
+否定理由不是“完全相同的名字已出现”，而是机制可归约：`B(Pinstance)-B(Pcanonical)` 仍是普通 additive pose bias；PeVL/PAAB 已覆盖 pose-conditioned CLIP/ViT attention，MUVA 已在 ReID 中逐层修改 CLIP ViT attention。少量 heads、zero-init、untouched semantic heads和 global-only输出只能形成一种更克制的 adapter 配置，不能承担主贡献。
+
+因此新论文不得写：
+
+- “首次将姿态注入 CLIP attention”；
+- “canonical-relative residual 本身是一种新 attention”；
+- “六臂控制更严格，所以机制就是新的”；
+- “把 LGPA 换到 official CLIP-ReID 后即可归属为我们的创新”。
+
+当前最诚实的故事边界仍是：LGPA 是有稳定增益的结构化局部资产，但不是已经完成归属的新方法。PCAR 不进入方法、实验表或摘要；如果继续全新论文，应回到独立成立的 PSG/已有证据，或重新定义与 additive pose attention、part assembly 无关的问题对象。

@@ -4720,3 +4720,18 @@ exp341 的 +2.2 来自**纯 ID 对齐** (raw global ↔ 纯 ID 文本原型, 把
 **决策**：**CASD 正式 NO-GO。** 不进入 matched RGB-only student，不补 Gate A learned-query，不转 AERC/OT/MoE/slot/temperature/queue/loss-weight 小变体，不扩三 seed、ResNet/ViT 或多数据集。IPER、PBSR、CASD 三个正交机制均未通过预注册门禁，LGPA 自有化主线到此停止。
 
 **边界**：这不推翻 LGPA 约 `+0.82～0.85 mAP` 的结构化局部性能资产，也不证明所有 pose 方法无效；它只说明当前证据不足以把 LGPA 改造成可归属我们的新方法。matching、GCN、CLIP 文本、same-ID support 与 fixed part correspondence 均不得换名包装成创新。
+
+### [2026-07-15] 决策：exp372 PCAR 新颖性 Gate NO-GO，不进入 official CLIP-ReID 训练
+
+**上下文**：CASD 封板后，提出一条与旧 LGPA head 正交的新候选：在 official CLIP-ReID 的真实 CLIP ViT 内，以零初始化、少量 head/layer 的方式注入 `B(Pinstance)-B(Pcanonical)` attention residual，保留 untouched CLIP heads 与标准 global descriptor。Goal 预注册要求：若查新后只剩普通 additive pose bias 或模块迁移，直接 NO-GO。
+
+**查新结果**：PeVL 已用 pose mask 调制 CLIP visual attention；PAAB 已把 pose-pair mask送入 ViT attention logits并残差写回；2026 MUVA 已在 ReID 中把动态 grounding body-part mask逐层送入 CLIP ViT self-attention。PAFormer、KPR、ProFD 分别覆盖 pose-supervised cross-attention、pose-conditioned encoder与 CLIP part decoder。仓库 exp012/052/143 又已覆盖 unary/pairwise/skeleton attention bias。
+
+**数学判定**：
+`L+γ[B(P)-B(Pc)] = (L-γB(Pc))+γB(P)`。固定 canonical 项只是静态 attention bias；ordinary additive pose-bias 模块可以直接输出同一个 centered residual。zero-init、少量 heads/layers、untouched heads 与 global-only 输出是良好的工程和证据约束，但不构成新的函数族。
+
+**燃料边界**：exp371 Gate B 中 correct 只比 shuffled/canonical 高 `+0.0320/+0.0984 mAP`，说明实例级姿态残差并非当前 LGPA 增益的主要来源。六臂协议仍是好控制，但更严格的证据设计不能替代机制创新。
+
+**决策**：**PCAR 新颖性 Gate FAIL，正式 NO-GO。** 不下载 checkpoint、不修改代码、不占用 3090/4090、不运行六臂性能 screen，不转 layer/head/alpha/temperature/query/OT/MoE 小变体。即使未来工程移植涨点，也只能先称 pose-conditioned attention adapter，不能作为“我们的 LGPA 创新”。
+
+**边界**：本决策不否定 LGPA 的结构化局部增益，也不否定未来所有 pose×CLIP 方法；它只否定当前可归约的 centered additive attention 方案。若未来重开，必须先提出无法写成“实例 pose bias + 静态 bias”的非可分解机制。
