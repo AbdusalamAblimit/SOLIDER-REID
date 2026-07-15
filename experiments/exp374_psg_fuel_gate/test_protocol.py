@@ -7,6 +7,7 @@ for every fail-closed path covered here.
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Dict, Mapping, Sequence, Tuple
 
 import numpy as np
@@ -22,22 +23,185 @@ def _record(
     *,
     pid: int | None = None,
     camid: int = 0,
+    viewid: int = 0,
     person_count: int = 1,
     frame: int = 0,
+    split: str = "query",
+    metadata_schema: str = p.SCENE_METADATA_SCHEMA_V2,
+    continuous: Tuple[float, ...] | None = None,
+    full_pose_person_relpaths: Tuple[str, ...] | None = None,
+    full_pose_person_paths: Tuple[str, ...] | None = None,
+    full_pose_person_sha256: Tuple[str, ...] | None = None,
+    effective_pose_person_relpaths: Tuple[str, ...] | None = None,
+    effective_pose_person_paths: Tuple[str, ...] | None = None,
+    effective_pose_person_sha256: Tuple[str, ...] | None = None,
 ) -> p.SceneRecord:
+    resolved_pid = index if pid is None else pid
+    person_relpaths = tuple(
+        f"pose_data/{split}/person-{index}-{slot}.npz"
+        for slot in range(person_count)
+    )
+    person_paths = tuple(
+        f"/synthetic/pose_data/{split}/person-{index}-{slot}.npz"
+        for slot in range(person_count)
+    )
+    person_sha256 = tuple(
+        f"person-content-{split}-{index}-{slot}"
+        for slot in range(person_count)
+    )
     return p.SceneRecord(
+        metadata_schema=metadata_schema,
         index=index,
-        split="query",
+        split=split,
         path=path,
         rgb_sha256=f"rgb-{index}",
         pose_path_sha256=f"pose-path-{index}",
         pose_content_sha256=f"pose-content-{index}",
-        pid=index if pid is None else pid,
+        pid=resolved_pid,
         camid=camid,
+        viewid=viewid,
         person_count=person_count,
-        continuous=tuple([0.0] * 95),
+        continuous=tuple([0.0] * 95) if continuous is None else continuous,
         frame=frame,
         report={},
+        source_pid=resolved_pid,
+        source_camid=camid,
+        source_frame_id=frame,
+        target_person_idx=0,
+        full_pose_person_relpaths=(
+            person_relpaths
+            if full_pose_person_relpaths is None else full_pose_person_relpaths
+        ),
+        full_pose_person_paths=(
+            person_paths if full_pose_person_paths is None else full_pose_person_paths
+        ),
+        full_pose_person_sha256=(
+            person_sha256 if full_pose_person_sha256 is None else full_pose_person_sha256
+        ),
+        effective_pose_person_relpaths=(
+            person_relpaths
+            if effective_pose_person_relpaths is None
+            else effective_pose_person_relpaths
+        ),
+        effective_pose_person_paths=(
+            person_paths
+            if effective_pose_person_paths is None
+            else effective_pose_person_paths
+        ),
+        effective_pose_person_sha256=(
+            person_sha256
+            if effective_pose_person_sha256 is None
+            else effective_pose_person_sha256
+        ),
+    )
+
+
+def _summary(payload: object) -> Dict[str, object]:
+    canonical = p.canonical_json_bytes(payload)
+    return {
+        "count": len(payload) if isinstance(payload, (list, tuple)) else 0,
+        "canonical_bytes": len(canonical),
+        "sha256": p.sha256_bytes(canonical),
+    }
+
+
+def _within(records: Sequence[p.SceneRecord]) -> Dict[str, int]:
+    def duplicates(values: Sequence[object]) -> int:
+        return len(values) - len(set(values))
+
+    full_paths = [value for record in records for value in record.full_pose_person_paths]
+    full_content = [value for record in records for value in record.full_pose_person_sha256]
+    effective_paths = [
+        value for record in records for value in record.effective_pose_person_paths
+    ]
+    effective_content = [
+        value for record in records for value in record.effective_pose_person_sha256
+    ]
+    return {
+        "path_duplicate_count": duplicates([record.path for record in records]),
+        "rgb_sha256_duplicate_count": duplicates(
+            [record.rgb_sha256 for record in records]),
+        "pose_path_sha256_duplicate_count": duplicates(
+            [record.pose_path_sha256 for record in records]),
+        "pose_content_sha256_duplicate_count": duplicates(
+            [record.pose_content_sha256 for record in records]),
+        "full_pose_person_path_duplicate_count": duplicates(full_paths),
+        "full_pose_person_content_duplicate_count": duplicates(full_content),
+        "effective_pose_person_path_duplicate_count": duplicates(effective_paths),
+        "effective_pose_person_content_duplicate_count": duplicates(effective_content),
+        "source_pid_count": len({record.source_pid for record in records}),
+        "target_outside_effective_count": sum(
+            record.target_person_idx >= len(record.effective_pose_person_paths)
+            for record in records
+        ),
+    }
+
+
+def _relation_report(
+    records: Sequence[p.SceneRecord],
+    *,
+    split: str = "query",
+) -> Dict[str, object]:
+    empty_summary = _summary([])
+    split_records = {
+        name: list(records) if name == split else []
+        for name in ("train", "query", "gallery")
+    }
+    report: Dict[str, object] = {
+        "schema": p.SPLIT_RELATION_SCHEMA_V2,
+        "official_source": {},
+        "official_lists": {},
+        "split_counts": {
+            name: len(values) for name, values in split_records.items()
+        },
+        "within_split": {
+            name: _within(values) for name, values in split_records.items()
+        },
+        "cross_split": {},
+        "relations": {
+            "query_gallery_shared_basenames": dict(empty_summary),
+            "query_gallery_shared_rgb_sha256_legacy": dict(empty_summary),
+            "query_gallery_shared_rgb_sha256": dict(empty_summary),
+            "query_gallery_endpoint_pairs": {
+                "equal": True,
+                "rgb": dict(empty_summary),
+                "pose": dict(empty_summary),
+            },
+            "query_gallery_joint_metadata_pairs": dict(empty_summary),
+            "query_gallery_joint_pairs": dict(empty_summary),
+            "split_record_sets": {
+                name: p.canonical_scene_record_set_summary(values)
+                for name, values in split_records.items()
+            },
+            "allowed_pair_count": 0,
+            "junk_true_count": 0,
+            "junk_false_count": 0,
+            "forbidden_pair_count": 0,
+        },
+        "pairs": [],
+    }
+    report["relation_report_sha256"] = p.sha256_bytes(
+        p.canonical_json_bytes(report))
+    return report
+
+
+def _rehash_relation_report(report: Mapping[str, object]) -> Dict[str, object]:
+    payload = dict(report)
+    payload.pop("relation_report_sha256", None)
+    payload["relation_report_sha256"] = p.sha256_bytes(
+        p.canonical_json_bytes(payload))
+    return payload
+
+
+def _relation_token(
+    records: Sequence[p.SceneRecord],
+    *,
+    split: str = "query",
+) -> p._ValidatedRelationToken:
+    return p._validated_relation_token(
+        records,
+        relation_report=_relation_report(records, split=split),
+        split=split,
     )
 
 
@@ -123,11 +287,14 @@ def test_exact_sparse_candidates_and_hall_gate() -> None:
         _record(2, "a"),
         _record(3, "c"),
     ]
+    token = _relation_token(records)
     candidates, costs = p.exact_sparse_candidates(
-        records,
         np.zeros((4, 95), dtype=np.float64),
         device=torch.device("cpu"),
         anchor_chunk=2,
+        token=token,
+        global_indices=tuple(range(4)),
+        local_records=records,
     )
 
     for left, donors in enumerate(candidates):
@@ -144,12 +311,15 @@ def test_exact_sparse_candidates_and_hall_gate() -> None:
     assert selected_k == 3
 
     ineligible = [_record(0, "x", pid=7), _record(1, "y", pid=7)]
+    ineligible_token = _relation_token(ineligible)
     _assert_code(
         "E_MATCH_NO_ELIGIBLE",
         p.exact_sparse_candidates,
-        ineligible,
         np.zeros((2, 95), dtype=np.float64),
         torch.device("cpu"),
+        token=ineligible_token,
+        global_indices=(0, 1),
+        local_records=ineligible,
     )
     _assert_code("E_MATCH_HALL", p._selected_k_adjacency, [[0], [0]])
 
@@ -168,11 +338,14 @@ def test_exact_sparse_nonzero_continuous_camera_and_frame_cost() -> None:
         np.full(95, 5.0, dtype=np.float64),
     ])
 
+    token = _relation_token(records)
     candidates, costs = p.exact_sparse_candidates(
-        records,
         standardized,
         device=torch.device("cpu"),
         anchor_chunk=2,
+        token=token,
+        global_indices=tuple(range(4)),
+        local_records=records,
     )
 
     assert set(candidates[0]) == {1, 2, 3}
@@ -190,6 +363,229 @@ def test_exact_sparse_nonzero_continuous_camera_and_frame_cost() -> None:
         rtol=0.0,
         atol=1e-12,
     )
+
+
+def test_strict_v2_records_and_relation_report_fail_closed() -> None:
+    records = [_record(index, f"q{index}") for index in range(4)]
+    report = _relation_report(records)
+    token = p._validated_relation_token(
+        records,
+        relation_report=report,
+        split="query",
+    )
+    assert token.split == "query"
+    assert token.full_record_set_sha256 == (
+        report["relations"]["split_record_sets"]["query"]["sha256"]
+    )
+
+    v1_record = replace(records[0], metadata_schema="exp374-scene-metadata-v1")
+    _assert_code(
+        "E_MATCH_RELATION_TOKEN",
+        p._validated_relation_token,
+        [v1_record, *records[1:]],
+        relation_report=report,
+        split="query",
+    )
+    for field_name in (
+        "full_pose_person_relpaths",
+        "full_pose_person_paths",
+        "full_pose_person_sha256",
+        "effective_pose_person_relpaths",
+        "effective_pose_person_paths",
+        "effective_pose_person_sha256",
+    ):
+        empty_tuple_record = replace(records[0], **{field_name: ()})
+        _assert_code(
+            "E_MATCH_RELATION_TOKEN",
+            p._validated_relation_token,
+            [empty_tuple_record, *records[1:]],
+            relation_report=report,
+            split="query",
+        )
+
+    self_hash_drift = dict(report)
+    self_hash_drift["relation_report_sha256"] = "drift"
+    _assert_code(
+        "E_MATCH_RELATION_TOKEN",
+        p._validated_relation_token,
+        records,
+        relation_report=self_hash_drift,
+        split="query",
+    )
+    _assert_code(
+        "E_MATCH_RELATION_TOKEN",
+        p._validated_relation_token,
+        records,
+        relation_report=report,
+        split="gallery",
+    )
+
+    summary_drift = dict(report)
+    relations = dict(summary_drift["relations"])
+    record_sets = dict(relations["split_record_sets"])
+    query_summary = dict(record_sets["query"])
+    query_summary["sha256"] = "drift"
+    record_sets["query"] = query_summary
+    relations["split_record_sets"] = record_sets
+    summary_drift["relations"] = relations
+    summary_drift = _rehash_relation_report(summary_drift)
+    _assert_code(
+        "E_MATCH_RELATION_TOKEN",
+        p._validated_relation_token,
+        records,
+        relation_report=summary_drift,
+        split="query",
+    )
+
+
+@pytest.mark.parametrize(
+    "field_name,replacement_value",
+    [
+        ("camid", 9),
+        ("frame", 15),
+        ("continuous", tuple([1.0] + [0.0] * 94)),
+        ("full_pose_person_relpaths", ("pose_data/query/drift.npz",)),
+        ("full_pose_person_paths", ("/synthetic/drift.npz",)),
+        ("full_pose_person_sha256", ("drift-full-content",)),
+        ("effective_pose_person_relpaths", ("pose_data/query/drift-effective.npz",)),
+        ("effective_pose_person_paths", ("/synthetic/drift-effective.npz",)),
+        ("effective_pose_person_sha256", ("drift-effective-content",)),
+    ],
+)
+def test_full_record_digest_binds_cost_and_constituent_fields(
+    field_name: str,
+    replacement_value: object,
+) -> None:
+    records = [_record(index, f"q{index}") for index in range(4)]
+    report = _relation_report(records)
+    drifted = list(records)
+    drifted[0] = replace(records[0], **{field_name: replacement_value})
+    _assert_code(
+        "E_MATCH_RELATION_TOKEN",
+        p._validated_relation_token,
+        drifted,
+        relation_report=report,
+        split="query",
+    )
+
+
+def test_exact_sparse_token_identity_and_complete_stratum_gate() -> None:
+    records = [_record(index, f"q{index}") for index in range(4)]
+    token = _relation_token(records)
+    standardized = np.zeros((4, 95), dtype=np.float64)
+    with pytest.raises(TypeError):
+        p.exact_sparse_candidates(
+            standardized,
+            torch.device("cpu"),
+            global_indices=(0, 1, 2, 3),
+            local_records=records,
+        )
+    fake_token = replace(token, _factory_identity=object())
+    _assert_code(
+        "E_MATCH_RELATION_TOKEN",
+        p.exact_sparse_candidates,
+        standardized,
+        torch.device("cpu"),
+        token=fake_token,
+        global_indices=(0, 1, 2, 3),
+        local_records=records,
+    )
+
+    invalid_calls = [
+        ("omission", (0, 1, 2), records[:3]),
+        ("superset", (0, 1, 2, 3, 4), [*records, records[0]]),
+        ("reorder", (1, 0, 2, 3), [records[1], records[0], records[2], records[3]]),
+        ("duplicate", (0, 1, 1, 3), [records[0], records[1], records[1], records[3]]),
+        ("out_of_bounds", (0, 1, 2, 4), records),
+        ("wrong_subset", (0, 2), [records[0], records[2]]),
+    ]
+    for _case, global_indices, local_records in invalid_calls:
+        _assert_code(
+            "E_MATCH_RELATION_TOKEN",
+            p.exact_sparse_candidates,
+            np.zeros((len(local_records), 95), dtype=np.float64),
+            torch.device("cpu"),
+            token=token,
+            global_indices=global_indices,
+            local_records=local_records,
+        )
+
+    for global_indices, local_records in (
+        ((0, 1), records[:2]),
+        ((2, 3), records[2:]),
+    ):
+        _assert_code(
+            "E_MATCH_RELATION_TOKEN",
+            p.exact_sparse_candidates,
+            np.zeros((2, 95), dtype=np.float64),
+            torch.device("cpu"),
+            token=token,
+            global_indices=global_indices,
+            local_records=local_records,
+        )
+
+    cross_records = [
+        _record(0, "q0", person_count=1),
+        _record(1, "q1", person_count=2),
+        _record(2, "q2", person_count=1),
+        _record(3, "q3", person_count=2),
+    ]
+    cross_token = _relation_token(cross_records)
+    _assert_code(
+        "E_MATCH_RELATION_TOKEN",
+        p.exact_sparse_candidates,
+        np.zeros((2, 95), dtype=np.float64),
+        torch.device("cpu"),
+        token=cross_token,
+        global_indices=(0, 1),
+        local_records=cross_records[:2],
+    )
+
+
+def test_cpu_eligible_pair_matches_token_gated_gpu_candidate_edges() -> None:
+    records = [_record(index, f"q{index}") for index in range(4)]
+    token = _relation_token(records)
+    candidates, _costs = p.exact_sparse_candidates(
+        np.zeros((4, 95), dtype=np.float64),
+        device=torch.device("cpu"),
+        anchor_chunk=2,
+        token=token,
+        global_indices=(0, 1, 2, 3),
+        local_records=records,
+    )
+    for left, anchor in enumerate(records):
+        for right, donor in enumerate(records):
+            assert (right in candidates[left]) is p.eligible_pair(anchor, donor)
+
+    constituent_fields = (
+        "full_pose_person_paths",
+        "full_pose_person_sha256",
+        "effective_pose_person_paths",
+        "effective_pose_person_sha256",
+    )
+    for field_name in constituent_fields:
+        drifted = list(records)
+        drifted[1] = replace(
+            records[1],
+            **{field_name: getattr(records[0], field_name)},
+        )
+        assert not p.eligible_pair(drifted[0], drifted[1])
+        _assert_code(
+            "E_MATCH_RELATION_TOKEN",
+            p._validated_relation_token,
+            drifted,
+            relation_report=_relation_report(drifted),
+            split="query",
+        )
+        _assert_code(
+            "E_MATCH_RELATION_TOKEN",
+            p.exact_sparse_candidates,
+            np.zeros((4, 95), dtype=np.float64),
+            torch.device("cpu"),
+            token=token,
+            global_indices=(0, 1, 2, 3),
+            local_records=drifted,
+        )
 
 
 def test_randomized_full_matching_is_reproducible_and_bijective() -> None:
@@ -250,14 +646,19 @@ def _install_tiny_mapping_stubs(
     hamming: float,
 ) -> list[Tuple[Dict[Tuple[int, int], int], int]]:
     def fake_candidates(
-        records: Sequence[p.SceneRecord],
         _standardized: np.ndarray,
         device: torch.device,
         anchor_chunk: int = 16,
+        *,
+        token: p._ValidatedRelationToken,
+        global_indices: Sequence[int],
+        local_records: Sequence[p.SceneRecord],
     ):
         del device, anchor_chunk
-        names = tuple(record.path for record in records)
-        if names == ("a1", "z0"):
+        assert token.split == "query"
+        assert tuple(record.index for record in local_records) == tuple(global_indices)
+        names = tuple(record.path for record in local_records)
+        if names == ("z0", "a1"):
             return [[1], [0]], {(0, 1): 10.0, (1, 0): 20.0}
         if names == ("a0", "z1"):
             return [[1], [0]], {(0, 1): 30.0, (1, 0): 40.0}
@@ -304,8 +705,14 @@ def test_global_tie_rank_gumbel_order_and_persistence(
     tmp_path,
 ) -> None:
     tie_calls = _install_tiny_mapping_stubs(monkeypatch, hamming=0.90)
+    records = _tiny_mapping_records()
     payload = p.prepare_split_mappings(
-        _tiny_mapping_records(), device=torch.device("cpu"), anchor_chunk=2)
+        records,
+        device=torch.device("cpu"),
+        anchor_chunk=2,
+        relation_report=_relation_report(records),
+        split="query",
+    )
 
     assert len(tie_calls) == 40
     for call in range(0, len(tie_calls), 2):
@@ -317,9 +724,9 @@ def test_global_tie_rank_gumbel_order_and_persistence(
     for mapping_index, seed in enumerate(p.MAPPING_SEEDS):
         noise = np.random.Generator(np.random.PCG64DXSM(seed)).gumbel(size=4)
         expected = np.asarray([
-            20.0 + 1.25 * noise[2],
+            10.0 + 1.25 * noise[2],
             30.0 + 1.25 * noise[0],
-            10.0 + 1.25 * noise[1],
+            20.0 + 1.25 * noise[1],
             40.0 + 1.25 * noise[3],
         ], dtype=np.float64)
         np.testing.assert_array_equal(payload["randomized_edge_costs"][mapping_index], expected)
@@ -343,12 +750,15 @@ def test_prepare_split_rejects_insufficient_mapping_hamming(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _install_tiny_mapping_stubs(monkeypatch, hamming=0.89)
+    records = _tiny_mapping_records()
     _assert_code(
         "E_MAPPING_HAMMING",
         p.prepare_split_mappings,
-        _tiny_mapping_records(),
+        records,
         torch.device("cpu"),
         2,
+        relation_report=_relation_report(records),
+        split="query",
     )
 
 

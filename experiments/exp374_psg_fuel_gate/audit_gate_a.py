@@ -20,10 +20,13 @@ import os
 import re
 import shutil
 import socket
+import stat
 import subprocess
 import sys
 import tempfile
+import time
 import traceback
+from collections import defaultdict
 from pathlib import Path
 from typing import Callable, Dict, List, Mapping, MutableMapping, Sequence, Tuple
 
@@ -58,12 +61,15 @@ from experiments.exp374_psg_fuel_gate.protocol import (  # noqa: E402
     GateProtocolError,
     K_SEQUENCE,
     MAPPING_SEEDS,
+    SCENE_METADATA_SCHEMA_V2,
+    SPLIT_RELATION_SCHEMA_V2,
     SceneRecord,
     absolute_centroid_targets,
     actual_psg_input,
     aggregate_mapping_queries,
     atomic_write_bytes,
     atomic_write_json,
+    canonical_scene_record_set_summary,
     canonical_json_bytes,
     core_schedule,
     create_execution_directory,
@@ -116,6 +122,155 @@ DEFAULT_CHECKPOINTS = (
 )
 
 
+SCENE_METADATA_SCHEMA = SCENE_METADATA_SCHEMA_V2
+RELATION_REPORT_SCHEMA = SPLIT_RELATION_SCHEMA_V2
+BURNED_A02_ROOT = Path("/home/afr/exp374_gate_a_8ca57ed_a02_20260715")
+OFFICIAL_REPOSITORY = "https://github.com/lightas/Occluded-DukeMTMC-Dataset"
+OFFICIAL_COMMIT = "dcba185bb20cbd53d3da2c8a4bfc25aa6971ce1d"
+FILENAME_REGEX = r"^(\d{4})_c([1-8])_f(\d{7})\.jpg$"
+FILENAME_PATTERN = re.compile(FILENAME_REGEX)
+OFFICIAL_SPLITS = {
+    "train": {
+        "root": "bounding_box_train",
+        "list": "train.list",
+        "count": 15618,
+        "raw_bytes": 327978,
+        "raw_sha256": "dadffee79d8601545ca2217a38406c1cb6dab39d0b4b0c6370c8486738dee059",
+        "canonical_bytes": 359216,
+        "canonical_sha256": "96aa7aa80a3bb09cb48e16089f04d13ef51575442ba1aab162721add27c07189",
+        "pose_index_bytes": 4713227,
+        "pose_index_sha256": "63dc1f5db9bab90717a484dfc5033a197ee8b95f9c94a92f2082dc18a588103b",
+    },
+    "query": {
+        "root": "query",
+        "list": "query.list",
+        "count": 2210,
+        "raw_bytes": 46410,
+        "raw_sha256": "fb5e1b1a749a0ab8602414bc9159e7a03216c2bdc519b5a4e513e05e3f612333",
+        "canonical_bytes": 50832,
+        "canonical_sha256": "e7bff615f1722a10be3d108341d0e9ceb2934ebbfcfb7506957100201cdd887b",
+        "pose_index_bytes": 719516,
+        "pose_index_sha256": "6b60745066f9b921d347558db3ad8ee7021ad103182db8afe7fffd510bc5f7c4",
+    },
+    "gallery": {
+        "root": "bounding_box_test",
+        "list": "gallery.list",
+        "count": 17661,
+        "raw_bytes": 370881,
+        "raw_sha256": "0393fa86344ef4c220a5589aaad409f3adda1e14e39fc8425c80e90196065fca",
+        "canonical_bytes": 406205,
+        "canonical_sha256": "81d57ac6b5015497133d9771b18ded6fdbb60c430341ffd589da291f3a799271",
+        "pose_index_bytes": 5320783,
+        "pose_index_sha256": "d5f2e14f8665ce045dfa8085dbdff031a1c9de7a7c258a594802e2a63ccefabc",
+    },
+}
+
+OFFICIAL_SOURCE_PID_COUNTS = {"train": 702, "query": 519, "gallery": 1110}
+OFFICIAL_QUERY_GALLERY_COUNTS = {
+    "path_overlap_count": 0,
+    "rgb_sha256_overlap_count": 1870,
+    "pose_path_sha256_overlap_count": 0,
+    "pose_content_sha256_overlap_count": 1870,
+    "full_pose_person_path_overlap_count": 0,
+    "full_pose_person_content_overlap_count": 3486,
+    "effective_pose_person_path_overlap_count": 0,
+    "effective_pose_person_content_overlap_count": 3486,
+    "source_pid_overlap_count": 519,
+    "rgb_content_forbidden_group_count": 0,
+    "pose_content_forbidden_group_count": 0,
+    "full_pose_person_content_forbidden_count": 0,
+    "effective_pose_person_content_forbidden_count": 0,
+    "forbidden_overlap_count": 0,
+}
+OFFICIAL_ALLOWED_PAIR_COUNT = 1870
+
+RELATION_EXACT = {
+    "shared_basename": (1870, 43012,
+                        "e940491d5471d3b976095335d1472e734fe8e6a76c192a3e98d5d0e9dbb7567f"),
+    "shared_rgb_legacy": (1870, 125291,
+                          "e02e1be9b04d1428691809d81627235a3c4bb489e794d9b125c1f6c9c55b2e0c"),
+    "shared_rgb": (1870, 125292,
+                   "54a624b1490cecfa77677ae275229d59b68714d5216bd7ab5bf749d66b9a552d"),
+    "endpoint_pairs": (1870, 21666,
+                       "4135cdc4bb3cecd52dcf79423cf24d53595ce695a8b91544e2732be4bf3ebdfc"),
+    "joint_metadata": (1870, 566372,
+                       "e59e8e935c9aa1cb19888ad23ab4f23a052cdda0d35fbb84928ae0d1ea1c3f51"),
+    "joint_pairs": (1870, 3542413,
+                    "b82fd6aa1a81faf85e80b876a62bd892d259e3c7e1e9bb9d9a381641dbb3df93"),
+}
+
+OFFICIAL_QG_CACHE_FILES = {
+    "query": {
+        "heatmaps": (461660288,
+                     "ce908ee4e57a602f03e66340ab66c16097d0ff9f26a678f5d249a4ba10f7b45f"),
+        "scores": (150408,
+                   "30a40c5d4c349d38b6527b8ad13b4b3f2b5e4dbfdbd0cf285d484a0be1116ce4"),
+        "nuisance": (1679728,
+                     "bdf7c98729b369904187d8711a39f9441013c4a0b423e22cb4e468aea6b90cfb"),
+    },
+    "gallery": {
+        "heatmaps": (3689312384,
+                     "645c352137680dcde416a33b0abe37fc32109000243a1c97b6310c9172c90d3d"),
+        "scores": (1201076,
+                   "8385ea376e03b460d3b5e7c3084712b2fac70b81e74b1a71b19e9d3c6096b09d"),
+        "nuisance": (13422488,
+                     "b3127a3bfb388a8ce5542386bde6f715be78096e9e5da44b6408054f635d2c65"),
+    },
+}
+
+RELATION_REPORT_KEYS = frozenset({
+    "schema", "official_source", "official_lists", "split_counts",
+    "within_split", "cross_split", "relations", "pairs",
+    "relation_report_sha256",
+})
+OFFICIAL_LIST_ROW_KEYS = frozenset({
+    "rgb_root", "list", "count", "raw_bytes", "raw_sha256",
+    "canonical_bytes", "canonical_sha256", "pose_index_bytes",
+    "pose_index_sha256",
+})
+WITHIN_SPLIT_ROW_KEYS = frozenset({
+    "path_duplicate_count", "rgb_sha256_duplicate_count",
+    "pose_path_sha256_duplicate_count", "pose_content_sha256_duplicate_count",
+    "full_pose_person_path_duplicate_count",
+    "full_pose_person_content_duplicate_count",
+    "effective_pose_person_path_duplicate_count",
+    "effective_pose_person_content_duplicate_count", "source_pid_count",
+    "target_outside_effective_count",
+})
+CROSS_SPLIT_ROW_KEYS = frozenset({
+    "path_overlap_count", "rgb_sha256_overlap_count",
+    "pose_path_sha256_overlap_count", "pose_content_sha256_overlap_count",
+    "full_pose_person_path_overlap_count",
+    "full_pose_person_content_overlap_count",
+    "effective_pose_person_path_overlap_count",
+    "effective_pose_person_content_overlap_count", "source_pid_overlap_count",
+    "rgb_content_forbidden_group_count", "pose_content_forbidden_group_count",
+    "full_pose_person_content_forbidden_count",
+    "effective_pose_person_content_forbidden_count", "forbidden_overlap_count",
+})
+RELATIONS_KEYS = frozenset({
+    "query_gallery_shared_basenames",
+    "query_gallery_shared_rgb_sha256_legacy",
+    "query_gallery_shared_rgb_sha256", "query_gallery_endpoint_pairs",
+    "query_gallery_joint_metadata_pairs", "query_gallery_joint_pairs",
+    "split_record_sets", "allowed_pair_count", "junk_true_count",
+    "junk_false_count", "forbidden_pair_count",
+})
+SUMMARY_KEYS = frozenset({"count", "canonical_bytes", "sha256"})
+PAIR_KEYS = frozenset({
+    "basename", "camid", "effective_pose_person_sha256", "frame",
+    "full_pose_person_sha256", "gallery_effective_pose_person_relpaths",
+    "gallery_full_pose_person_relpaths", "gallery_index",
+    "gallery_pose_path_sha256", "gallery_rgb_relpath",
+    "gallery_target_person_idx", "hraw_sha256", "nuisance_sha256",
+    "person_count", "pid", "pose_content_sha256",
+    "query_effective_pose_person_relpaths", "query_full_pose_person_relpaths",
+    "query_index", "query_pose_path_sha256", "query_rgb_relpath",
+    "query_target_person_idx", "report", "rgb_sha256", "score_sha256",
+    "source_camid", "source_frame_id", "source_pid", "viewid",
+})
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="phase", required=True)
@@ -139,6 +294,18 @@ def parse_args() -> argparse.Namespace:
     summarize.add_argument("--execution-dir", required=True)
     summarize.add_argument("--device", default="cuda:0")
     return parser.parse_args()
+
+
+def _is_burned_execution(path: Path) -> bool:
+    resolved = str(Path(path).resolve())
+    burned = str(Path(BURNED_A02_ROOT).resolve())
+    return resolved == burned or resolved.startswith(burned + os.sep)
+
+
+def _assert_not_burned_execution(path: Path) -> None:
+    resolved = str(Path(path).resolve())
+    require(not _is_burned_execution(path),
+            "E_A02_BURNED_EXECUTION", resolved)
 
 
 def resolved_config(config_file: Path, opts: Sequence[str]):
@@ -355,24 +522,229 @@ def split_loader(dataset: PoseImageDataset, local_cfg) -> DataLoader:
     )
 
 
-def _pose_asset_identity(dataset: PoseImageDataset, image_path: str,
-                         file_hash_cache: MutableMapping[str, str]) -> Tuple[str, str]:
-    entry = dataset.index.get(Path(image_path).name)
-    require(entry is not None, "E_POSE_INDEX_MISSING", image_path)
-    person_paths = [
-        str((Path(value) if os.path.isabs(value) else Path(dataset.pose_dir) / value).resolve())
-        for value in entry.get("persons", [])
-    ]
-    require(person_paths, "E_POSE_PERSONS_EMPTY", image_path)
-    for person_path in person_paths:
-        require(Path(person_path).is_file(), "E_POSE_ASSET_MISSING", person_path)
-        if person_path not in file_hash_cache:
-            file_hash_cache[person_path] = sha256_file(Path(person_path))
-    path_sha = sha256_bytes(canonical_json_bytes(person_paths))
-    content_sha = sha256_bytes(canonical_json_bytes([
-        file_hash_cache[person_path] for person_path in person_paths
-    ]))
-    return path_sha, content_sha
+def _file_identity(value: os.stat_result) -> Tuple[int, ...]:
+    return (
+        int(value.st_dev), int(value.st_ino), int(value.st_mode),
+        int(value.st_nlink), int(value.st_size), int(value.st_mtime_ns),
+        int(value.st_ctime_ns),
+    )
+
+
+def _stable_regular_file(path: Path, return_bytes: bool = False):
+    """Read one non-symlink regular file through a stable descriptor."""
+
+    path = Path(path)
+    try:
+        before = path.lstat()
+    except OSError as error:
+        raise GateProtocolError(
+            "E_RELATION_FILE_IO",
+            f"{path}: {error.__class__.__name__}") from error
+    require(stat.S_ISREG(before.st_mode), "E_RELATION_FILE_TYPE", str(path))
+    digest = hashlib.sha256()
+    chunks: List[bytes] | None = [] if return_bytes else None
+    try:
+        handle = path.open("rb")
+    except OSError as error:
+        raise GateProtocolError(
+            "E_RELATION_FILE_IO",
+            f"{path}: {error.__class__.__name__}") from error
+    try:
+        with handle:
+            descriptor_before = os.fstat(handle.fileno())
+            require(_file_identity(before) == _file_identity(descriptor_before),
+                    "E_RELATION_FILE_TOCTOU", str(path))
+            for chunk in iter(lambda: handle.read(8 * 1024 * 1024), b""):
+                digest.update(chunk)
+                if chunks is not None:
+                    chunks.append(chunk)
+            descriptor_after = os.fstat(handle.fileno())
+    except GateProtocolError:
+        raise
+    except OSError as error:
+        raise GateProtocolError(
+            "E_RELATION_FILE_TOCTOU",
+            f"{path}: {error.__class__.__name__}") from error
+    try:
+        after = path.lstat()
+    except OSError as error:
+        raise GateProtocolError(
+            "E_RELATION_FILE_TOCTOU",
+            f"{path}: {error.__class__.__name__}") from error
+    identity = _file_identity(before)
+    require(identity == _file_identity(descriptor_after) == _file_identity(after),
+            "E_RELATION_FILE_TOCTOU", str(path))
+    payload = b"".join(chunks) if chunks is not None else None
+    return {
+        "bytes": int(before.st_size),
+        "sha256": digest.hexdigest(),
+    }, identity, payload
+
+
+def _register_identity(registry: MutableMapping[str, Tuple[int, ...]],
+                       path: Path, identity: Tuple[int, ...]) -> None:
+    key = str(Path(path))
+    if key in registry:
+        require(registry[key] == identity, "E_RELATION_FILE_TOCTOU", key)
+    else:
+        registry[key] = identity
+
+
+def _recheck_identities(registry: Mapping[str, Tuple[int, ...]]) -> None:
+    for value, expected in sorted(registry.items()):
+        try:
+            current = Path(value).lstat()
+        except OSError as error:
+            raise GateProtocolError(
+                "E_RELATION_FILE_TOCTOU",
+                f"{value}: {error.__class__.__name__}") from error
+        require(stat.S_ISREG(current.st_mode), "E_RELATION_FILE_TYPE", value)
+        require(_file_identity(current) == expected,
+                "E_RELATION_FILE_TOCTOU", value)
+
+
+def _stable_json(path: Path, registry: MutableMapping[str, Tuple[int, ...]],
+                 code: str):
+    report, identity, raw = _stable_regular_file(path, return_bytes=True)
+    _register_identity(registry, path, identity)
+    try:
+        payload = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise GateProtocolError(code, f"{path}: {error}") from error
+    return payload, report
+
+
+def _require_direct_child(path: Path, parent: Path, code: str) -> None:
+    path = Path(path)
+    parent = Path(parent)
+    require(path.parent == parent and path.name not in {"", ".", ".."},
+            code, str(path))
+
+
+def _lexical_absolute(path: str | Path) -> Path:
+    """Normalize ``.``/``..`` without resolving any symlink component."""
+
+    return Path(os.path.abspath(os.fspath(path)))
+
+
+def _exact_lexical_child(
+    configured: str | Path,
+    parent: str | Path,
+    child_parts: Sequence[str],
+    code: str,
+) -> Path:
+    """Bind the un-resolved configured spelling to one frozen child path."""
+
+    raw = Path(configured)
+    expected = Path(parent).joinpath(*child_parts)
+    require(raw == expected and ".." not in raw.parts,
+            code, f"{raw}!={expected}")
+    return _lexical_absolute(raw)
+
+
+def _require_real_directory(path: Path, code: str) -> None:
+    """Require the final lexical path component to be a real directory."""
+
+    path = Path(path)
+    try:
+        value = path.lstat()
+    except OSError as error:
+        raise GateProtocolError(code, f"{path}: {error}") from error
+    require(stat.S_ISDIR(value.st_mode), code, str(path))
+
+
+def _source_labels(basename: str) -> Tuple[int, int, int]:
+    match = FILENAME_PATTERN.fullmatch(basename)
+    require(match is not None, "E_RELATION_FILENAME", basename)
+    return (
+        int(match.group(1)),
+        int(match.group(2)) - 1,
+        int(match.group(3)),
+    )
+
+
+def _pose_asset_manifest_v2(
+    dataset: PoseImageDataset,
+    image_path: str,
+    file_hash_cache: MutableMapping[str, str],
+    identity_registry: MutableMapping[str, Tuple[int, ...]] | None = None,
+) -> Dict[str, object]:
+    """Freeze full and loader-effective constituent identities for one RGB."""
+
+    basename = Path(image_path).name
+    entry = dataset.index.get(basename)
+    require(isinstance(entry, Mapping), "E_POSE_INDEX_MISSING", image_path)
+    raw_persons = entry.get("persons")
+    require(isinstance(raw_persons, list) and raw_persons,
+            "E_POSE_PERSONS_EMPTY", image_path)
+    require(all(isinstance(value, str) for value in raw_persons),
+            "E_POSE_PERSON_ENTRY", basename)
+    require(len(set(raw_persons)) == len(raw_persons),
+            "E_POSE_PERSON_DUPLICATE", basename)
+    pose_root = Path(dataset.pose_dir).resolve()
+    full_relpaths: List[str] = []
+    full_paths: List[str] = []
+    full_sha256: List[str] = []
+    basename_to_asset: Dict[str, Tuple[str, str, str]] = {}
+    split = pose_root.name
+    for value in raw_persons:
+        candidate = Path(value)
+        require(
+            not candidate.is_absolute() and value == candidate.name
+            and value not in {"", ".", ".."} and "/" not in value
+            and "\\" not in value and candidate.suffix == ".npz",
+            "E_POSE_PERSON_PATH", value,
+        )
+        path = (pose_root / value).resolve()
+        require(path.parent == pose_root, "E_POSE_PERSON_ROOT", str(path))
+        if str(path) not in file_hash_cache:
+            report, identity, _unused = _stable_regular_file(path)
+            file_hash_cache[str(path)] = str(report["sha256"])
+            if identity_registry is not None:
+                _register_identity(identity_registry, path, identity)
+        elif identity_registry is not None:
+            try:
+                current = path.lstat()
+            except OSError as error:
+                raise GateProtocolError(
+                    "E_RELATION_FILE_TOCTOU",
+                    f"{path}: {error.__class__.__name__}") from error
+            _register_identity(identity_registry, path, _file_identity(current))
+        relpath = f"pose_data/{split}/{value}"
+        digest = file_hash_cache[str(path)]
+        full_relpaths.append(relpath)
+        full_paths.append(str(path))
+        full_sha256.append(digest)
+        basename_to_asset[value] = (relpath, str(path), digest)
+
+    raw_target = entry.get("target_person_idx", 0)
+    require(type(raw_target) is int, "E_POSE_TARGET_INDEX", basename)
+    target_person_idx = int(raw_target)
+    require(0 <= target_person_idx < len(raw_persons),
+            "E_POSE_TARGET_INDEX", basename)
+    effective_names = list(raw_persons[:int(dataset.max_persons)])
+    require(bool(effective_names), "E_POSE_PERSONS_EMPTY", basename)
+    target_outside_effective = target_person_idx >= len(effective_names)
+    if 0 < target_person_idx < len(effective_names):
+        target = effective_names.pop(target_person_idx)
+        effective_names.insert(0, target)
+    effective_assets = [basename_to_asset[value] for value in effective_names]
+    source_pid, source_camid, source_frame_id = _source_labels(basename)
+    return {
+        "pose_path_sha256": sha256_bytes(canonical_json_bytes(full_paths)),
+        "pose_content_sha256": sha256_bytes(canonical_json_bytes(full_sha256)),
+        "source_pid": source_pid,
+        "source_camid": source_camid,
+        "source_frame_id": source_frame_id,
+        "target_person_idx": target_person_idx,
+        "target_outside_effective": target_outside_effective,
+        "full_pose_person_relpaths": tuple(full_relpaths),
+        "full_pose_person_paths": tuple(full_paths),
+        "full_pose_person_sha256": tuple(full_sha256),
+        "effective_pose_person_relpaths": tuple(value[0] for value in effective_assets),
+        "effective_pose_person_paths": tuple(value[1] for value in effective_assets),
+        "effective_pose_person_sha256": tuple(value[2] for value in effective_assets),
+    }
 
 
 def _new_memmap(path: Path, shape: Tuple[int, ...], dtype: str):
@@ -554,13 +926,16 @@ def build_actual_space_audit(prepared: Path, split: str, count: int,
     require(source.shape == (count, 17, 96, 32) and source.dtype == np.float32,
             "E_SIGN_AUDIT_SHAPE", f"{split}: {source.shape}/{source.dtype}")
     state = _new_actual_space_audit()
-    for start in range(0, count, batch_size):
-        stop = min(start + batch_size, count)
-        host = np.array(source[start:stop], dtype=np.float32, copy=True, order="C")
-        raw = torch.from_numpy(host).to(device, non_blocking=False)
-        _update_actual_space_audit(state, raw)
-        del raw, host
-    return _finalize_actual_space_audit(state, split, count, device)
+    try:
+        for start in range(0, count, batch_size):
+            stop = min(start + batch_size, count)
+            host = np.array(source[start:stop], dtype=np.float32, copy=True, order="C")
+            raw = torch.from_numpy(host).to(device, non_blocking=False)
+            _update_actual_space_audit(state, raw)
+            del raw, host
+        return _finalize_actual_space_audit(state, split, count, device)
+    finally:
+        _close_memmap(source)
 
 
 def cache_split(
@@ -577,6 +952,7 @@ def cache_split(
     metadata: List[Dict[str, object]] = []
     continuous = _new_memmap(destination / f"{split}_continuous.npy", (count, 95), "float64")
     file_hash_cache: Dict[str, str] = {}
+    pose_identity_registry: Dict[str, Tuple[int, ...]] = {}
     cursor = 0
     expected_records = list(dataset.dataset)
     basenames = [Path(record[0]).name for record in expected_records]
@@ -600,8 +976,8 @@ def cache_split(
             require(int(camids[offset]) == int(expected_camid), "E_LOADER_CAM_ORDER", actual_path)
             require(int(viewids[offset]) == int(expected_viewid), "E_LOADER_VIEW_ORDER", actual_path)
             rgb_sha = sha256_file(Path(actual_path))
-            pose_path_sha, pose_content_sha = _pose_asset_identity(
-                dataset, actual_path, file_hash_cache)
+            pose_manifest = _pose_asset_manifest_v2(
+                dataset, actual_path, file_hash_cache, pose_identity_registry)
             try:
                 vector, frame, report = summarize_scene(scene[offset], scene_scores[offset])
             except GateProtocolError as error:
@@ -616,25 +992,49 @@ def cache_split(
                     "scene_entropy": 0.0,
                 }
             continuous[row] = np.asarray(vector, dtype=np.float64)
+            person_count = int(pose_dict["num_persons"][offset])
+            require(person_count == len(pose_manifest["effective_pose_person_paths"]),
+                    "E_METADATA_SCHEMA_V2", f"{split}/{row}/person_count")
             metadata.append({
+                "schema": SCENE_METADATA_SCHEMA,
                 "index": row,
                 "split": split,
                 "path": actual_path,
                 "rgb_sha256": rgb_sha,
-                "pose_path_sha256": pose_path_sha,
-                "pose_content_sha256": pose_content_sha,
+                "pose_path_sha256": pose_manifest["pose_path_sha256"],
+                "pose_content_sha256": pose_manifest["pose_content_sha256"],
                 "pid": int(pids[offset]),
                 "camid": int(camids[offset]),
                 "viewid": int(viewids[offset]),
-                "person_count": int(pose_dict["num_persons"][offset]),
+                "person_count": person_count,
                 "frame": frame,
                 "report": report,
+                "source_pid": pose_manifest["source_pid"],
+                "source_camid": pose_manifest["source_camid"],
+                "source_frame_id": pose_manifest["source_frame_id"],
+                "target_person_idx": pose_manifest["target_person_idx"],
+                "full_pose_person_relpaths": list(
+                    pose_manifest["full_pose_person_relpaths"]),
+                "full_pose_person_paths": list(
+                    pose_manifest["full_pose_person_paths"]),
+                "full_pose_person_sha256": list(
+                    pose_manifest["full_pose_person_sha256"]),
+                "effective_pose_person_relpaths": list(
+                    pose_manifest["effective_pose_person_relpaths"]),
+                "effective_pose_person_paths": list(
+                    pose_manifest["effective_pose_person_paths"]),
+                "effective_pose_person_sha256": list(
+                    pose_manifest["effective_pose_person_sha256"]),
             })
         cursor += batch_size
     require(cursor == count, "E_CACHE_COUNT", f"{split}: {cursor}!={count}")
     heatmaps.flush()
     scores.flush()
     continuous.flush()
+    _close_memmap(heatmaps)
+    _close_memmap(scores)
+    _close_memmap(continuous)
+    _recheck_identities(pose_identity_registry)
     atomic_write_json(destination / f"{split}_metadata.json", metadata)
     return {
         "count": count,
@@ -647,36 +1047,1313 @@ def cache_split(
     }
 
 
+def _scene_records_from_payload(metadata: object, continuous: np.ndarray,
+                                split: str) -> List[SceneRecord]:
+    require(isinstance(metadata, list) and metadata,
+            "E_METADATA_SCHEMA_V2", f"{split}/root")
+    require(isinstance(continuous, np.ndarray),
+            "E_CONTINUOUS_CACHE_V2", f"{split}/root")
+    require(continuous.dtype.str == "<f8" and continuous.shape == (len(metadata), 95),
+            "E_CONTINUOUS_CACHE_V2", f"{split}: {continuous.dtype.str}/{continuous.shape}")
+    require(bool(np.isfinite(continuous).all()), "E_CONTINUOUS_CACHE_V2", f"{split}/nonfinite")
+    required = {
+        "schema", "index", "split", "path", "rgb_sha256", "pose_path_sha256",
+        "pose_content_sha256", "pid", "camid", "viewid", "person_count", "frame",
+        "report", "source_pid", "source_camid", "source_frame_id",
+        "target_person_idx", "full_pose_person_relpaths", "full_pose_person_paths",
+        "full_pose_person_sha256", "effective_pose_person_relpaths",
+        "effective_pose_person_paths", "effective_pose_person_sha256",
+    }
+    records: List[SceneRecord] = []
+    for index, row in enumerate(metadata):
+        require(isinstance(row, Mapping) and set(row) == required,
+                "E_METADATA_SCHEMA_V2", f"{split}/{index}/keys")
+        integer_fields = (
+            "index", "pid", "camid", "viewid", "person_count", "frame",
+            "source_pid", "source_camid", "source_frame_id", "target_person_idx",
+        )
+        string_fields = (
+            "schema", "split", "path", "rgb_sha256",
+            "pose_path_sha256", "pose_content_sha256",
+        )
+        tuple_fields = (
+            "full_pose_person_relpaths", "full_pose_person_paths",
+            "full_pose_person_sha256", "effective_pose_person_relpaths",
+            "effective_pose_person_paths", "effective_pose_person_sha256",
+        )
+        require(
+            all(type(row[field]) is int for field in integer_fields)
+            and all(isinstance(row[field], str) and row[field] for field in string_fields)
+            and all(isinstance(row[field], list) for field in tuple_fields)
+            and isinstance(row["report"], Mapping),
+            "E_METADATA_SCHEMA_V2", f"{split}/{index}/types",
+        )
+        require(row["schema"] == SCENE_METADATA_SCHEMA and row["split"] == split
+                and row["index"] == index,
+                "E_METADATA_SCHEMA_V2", f"{split}/{index}/identity")
+        try:
+            canonical_json_bytes(dict(row["report"]))
+        except (TypeError, ValueError) as error:
+            raise GateProtocolError(
+                "E_METADATA_SCHEMA_V2", f"{split}/{index}/report: {error}") from error
+        full_relpaths = tuple(row["full_pose_person_relpaths"])
+        full_paths = tuple(row["full_pose_person_paths"])
+        full_sha256 = tuple(row["full_pose_person_sha256"])
+        effective_relpaths = tuple(row["effective_pose_person_relpaths"])
+        effective_paths = tuple(row["effective_pose_person_paths"])
+        effective_sha256 = tuple(row["effective_pose_person_sha256"])
+        require(
+            len(full_relpaths) == len(full_paths) == len(full_sha256) > 0
+            and len(effective_relpaths) == len(effective_paths) == len(effective_sha256) > 0
+            and int(row["person_count"]) == len(effective_paths)
+            and 0 <= int(row["target_person_idx"]) < len(full_paths)
+            and all(isinstance(value, str) and value for values in (
+                full_relpaths, full_paths, full_sha256,
+                effective_relpaths, effective_paths, effective_sha256,
+            ) for value in values),
+            "E_METADATA_SCHEMA_V2", f"{split}/{index}/constituents",
+        )
+        records.append(SceneRecord(
+            metadata_schema=str(row["schema"]),
+            index=index,
+            split=split,
+            path=str(row["path"]),
+            rgb_sha256=str(row["rgb_sha256"]),
+            pose_path_sha256=str(row["pose_path_sha256"]),
+            pose_content_sha256=str(row["pose_content_sha256"]),
+            pid=int(row["pid"]),
+            camid=int(row["camid"]),
+            viewid=int(row["viewid"]),
+            person_count=int(row["person_count"]),
+            continuous=tuple(float(value) for value in continuous[index]),
+            frame=int(row["frame"]),
+            report=dict(row["report"]),
+            source_pid=int(row["source_pid"]),
+            source_camid=int(row["source_camid"]),
+            source_frame_id=int(row["source_frame_id"]),
+            target_person_idx=int(row["target_person_idx"]),
+            full_pose_person_relpaths=full_relpaths,
+            full_pose_person_paths=full_paths,
+            full_pose_person_sha256=full_sha256,
+            effective_pose_person_relpaths=effective_relpaths,
+            effective_pose_person_paths=effective_paths,
+            effective_pose_person_sha256=effective_sha256,
+        ))
+    return records
+
+
 def load_scene_records(prepared: Path, split: str) -> List[SceneRecord]:
-    metadata = json.loads((prepared / f"{split}_metadata.json").read_text(encoding="utf-8"))
-    continuous = np.load(prepared / f"{split}_continuous.npy", mmap_mode="r")
-    require(continuous.shape == (len(metadata), 95), "E_NUISANCE_MATRIX", split)
-    return [SceneRecord(
-        index=int(row["index"]),
-        split=str(row["split"]),
-        path=str(row["path"]),
-        rgb_sha256=str(row["rgb_sha256"]),
-        pose_path_sha256=str(row["pose_path_sha256"]),
-        pose_content_sha256=str(row["pose_content_sha256"]),
-        pid=int(row["pid"]),
-        camid=int(row["camid"]),
-        person_count=int(row["person_count"]),
-        continuous=tuple(float(value) for value in continuous[index]),
-        frame=int(row["frame"]),
-        report=dict(row["report"]),
-    ) for index, row in enumerate(metadata)]
+    identity_registry: Dict[str, Tuple[int, ...]] = {}
+    metadata_path = Path(prepared) / f"{split}_metadata.json"
+    metadata, _metadata_report = _stable_json(
+        metadata_path, identity_registry, "E_METADATA_SCHEMA_V2")
+    continuous_path = Path(prepared) / f"{split}_continuous.npy"
+    _continuous_report, continuous_identity, continuous_raw = (
+        _stable_regular_file(continuous_path, return_bytes=True))
+    _register_identity(identity_registry, continuous_path, continuous_identity)
+    try:
+        continuous = np.load(io.BytesIO(continuous_raw), allow_pickle=False)
+    except (EOFError, OSError, ValueError) as error:
+        raise GateProtocolError(
+            "E_CONTINUOUS_CACHE_V2",
+            f"{split}: {error.__class__.__name__}") from error
+    try:
+        records = _scene_records_from_payload(metadata, continuous, split)
+        _recheck_identities(identity_registry)
+        return records
+    finally:
+        if hasattr(continuous, "close"):
+            continuous.close()
+        else:
+            _close_memmap(continuous)
 
 
-def assert_disjoint_records(groups: Mapping[str, Sequence[SceneRecord]]) -> None:
-    keys = ("path", "rgb_sha256", "pose_path_sha256", "pose_content_sha256")
-    names = list(groups)
-    for first_index, first in enumerate(names):
-        for second in names[first_index + 1:]:
-            for key in keys:
-                left = {getattr(record, key) for record in groups[first]}
-                right = {getattr(record, key) for record in groups[second]}
-                require(not left.intersection(right), "E_SPLIT_CONTENT_OVERLAP",
-                        f"{first}/{second}/{key}")
+def array_sha256_v1(value: np.ndarray, expected_dtype: str,
+                    expected_shape: Sequence[int]) -> str:
+    array = np.asarray(value)
+    require(array.dtype.str == expected_dtype,
+            "E_RELATION_ARRAY_DTYPE", f"{array.dtype.str}!={expected_dtype}")
+    require(list(array.shape) == [int(item) for item in expected_shape],
+            "E_RELATION_ARRAY_SHAPE", str(array.shape))
+    require(bool(np.isfinite(array).all()), "E_RELATION_ARRAY_NONFINITE", "")
+    normalized = np.ascontiguousarray(array, dtype=np.dtype(expected_dtype))
+    header = canonical_json_bytes({
+        "schema": "array_sha256_v1",
+        "dtype": np.dtype(expected_dtype).str,
+        "shape": [int(item) for item in expected_shape],
+        "order": "C",
+    })
+    return sha256_bytes(header + normalized.tobytes(order="C"))
+
+
+def _canonical_summary(payload: object) -> Dict[str, object]:
+    canonical = canonical_json_bytes(payload)
+    return {
+        "count": len(payload),
+        "canonical_bytes": len(canonical),
+        "sha256": sha256_bytes(canonical),
+    }
+
+
+def _duplicate_count(values: Sequence[object]) -> int:
+    return len(values) - len(set(values))
+
+
+def _flatten_record_values(records: Sequence[SceneRecord], field: str) -> List[str]:
+    output: List[str] = []
+    for record in records:
+        output.extend(str(value) for value in getattr(record, field))
+    return output
+
+
+def _close_memmap(value: np.ndarray) -> None:
+    mmap = getattr(value, "_mmap", None)
+    if mmap is not None:
+        mmap.close()
+
+
+def _official_lists_v2(
+    dataset: OccludedDukeMTMC,
+    identity_registry: MutableMapping[str, Tuple[int, ...]],
+) -> Tuple[Dict[str, List[str]], Dict[str, object]]:
+    configured_paths = {
+        "train": _exact_lexical_child(
+            dataset.train_list, dataset.dataset_dir, ("train.list",),
+            "E_OFFICIAL_LIST_PATH"),
+        "query": _exact_lexical_child(
+            dataset.query_list, dataset.dataset_dir, ("query.list",),
+            "E_OFFICIAL_LIST_PATH"),
+        "gallery": _exact_lexical_child(
+            dataset.gallery_list, dataset.dataset_dir, ("gallery.list",),
+            "E_OFFICIAL_LIST_PATH"),
+    }
+    lexical_root = _lexical_absolute(dataset.dataset_dir)
+    root = lexical_root.resolve()
+    output: Dict[str, List[str]] = {}
+    report: Dict[str, object] = {}
+    for split, configured_path in configured_paths.items():
+        expected = OFFICIAL_SPLITS[split]
+        expected_path = lexical_root / str(expected["list"])
+        require(configured_path == expected_path,
+                "E_OFFICIAL_LIST_PATH", f"{configured_path}!={expected_path}")
+        try:
+            configured_stat = configured_path.lstat()
+        except OSError as error:
+            raise GateProtocolError(
+                "E_OFFICIAL_LIST_PATH", f"{configured_path}: {error}") from error
+        require(stat.S_ISREG(configured_stat.st_mode),
+                "E_OFFICIAL_LIST_PATH", str(configured_path))
+        path = configured_path.resolve()
+        _require_direct_child(path, root, "E_OFFICIAL_LIST_PATH")
+        require(path == root / str(expected["list"]),
+                "E_OFFICIAL_LIST_PATH", f"{path}!={root / str(expected['list'])}")
+        raw_report, identity, raw = _stable_regular_file(path, return_bytes=True)
+        _register_identity(identity_registry, path, identity)
+        try:
+            text = raw.decode("utf-8")
+        except UnicodeDecodeError as error:
+            raise GateProtocolError("E_OFFICIAL_LIST_UTF8", str(path)) from error
+        names = [line.strip() for line in text.splitlines() if line.strip()]
+        require(len(names) == len(set(names)), "E_OFFICIAL_LIST_DUPLICATE", split)
+        require(all(
+            value == Path(value).name and value not in {"", ".", ".."}
+            and "/" not in value and "\\" not in value
+            and not Path(value).is_absolute()
+            and FILENAME_PATTERN.fullmatch(value) is not None
+            for value in names
+        ), "E_OFFICIAL_LIST_ENTRY", split)
+        ordered = sorted(names)
+        canonical = canonical_json_bytes(ordered)
+        output[split] = ordered
+        report[split] = {
+            "rgb_root": str(expected["root"]),
+            "list": str(expected["list"]),
+            "count": len(ordered),
+            "raw_bytes": int(raw_report["bytes"]),
+            "raw_sha256": str(raw_report["sha256"]),
+            "canonical_bytes": len(canonical),
+            "canonical_sha256": sha256_bytes(canonical),
+            "pose_index_bytes": 0,
+            "pose_index_sha256": "",
+        }
+    return output, report
+
+
+def _record_metadata_projection(record: SceneRecord) -> Dict[str, object]:
+    return {
+        "metadata_schema": record.metadata_schema,
+        "index": record.index,
+        "split": record.split,
+        "path": record.path,
+        "rgb_sha256": record.rgb_sha256,
+        "pose_path_sha256": record.pose_path_sha256,
+        "pose_content_sha256": record.pose_content_sha256,
+        "pid": record.pid,
+        "camid": record.camid,
+        "viewid": record.viewid,
+        "person_count": record.person_count,
+        "continuous": list(record.continuous),
+        "frame": record.frame,
+        "report": dict(record.report),
+        "source_pid": record.source_pid,
+        "source_camid": record.source_camid,
+        "source_frame_id": record.source_frame_id,
+        "target_person_idx": record.target_person_idx,
+        "full_pose_person_relpaths": list(record.full_pose_person_relpaths),
+        "full_pose_person_paths": list(record.full_pose_person_paths),
+        "full_pose_person_sha256": list(record.full_pose_person_sha256),
+        "effective_pose_person_relpaths": list(record.effective_pose_person_relpaths),
+        "effective_pose_person_paths": list(record.effective_pose_person_paths),
+        "effective_pose_person_sha256": list(record.effective_pose_person_sha256),
+    }
+
+
+def _record_set_summary(records: Sequence[SceneRecord]) -> Dict[str, object]:
+    expected = canonical_scene_record_set_summary(records)
+    local = _canonical_summary([_record_metadata_projection(record) for record in records])
+    require(local == expected, "E_RELATION_RECORD_PROJECTION", str(local))
+    return expected
+
+
+def _joint_metadata_projection(pairs: Sequence[Mapping[str, object]]) -> List[Dict[str, object]]:
+    return [{
+        "basename": row["basename"], "rgb_sha256": row["rgb_sha256"],
+        "pose_content_sha256": row["pose_content_sha256"],
+        "query_index": row["query_index"], "gallery_index": row["gallery_index"],
+        "pid": row["pid"], "camid": row["camid"], "viewid": row["viewid"],
+        "person_count": row["person_count"], "frame": row["frame"],
+    } for row in pairs]
+
+
+def _require_exact_mapping(
+    value: object,
+    keys: Sequence[str],
+    code: str,
+    label: str,
+) -> Mapping[str, object]:
+    require(isinstance(value, Mapping) and set(value) == set(keys),
+            code, label)
+    return value
+
+
+def _require_summary_schema(value: object, code: str, label: str) -> Mapping[str, object]:
+    summary = _require_exact_mapping(value, SUMMARY_KEYS, code, label)
+    require(type(summary["count"]) is int and int(summary["count"]) >= 0
+            and type(summary["canonical_bytes"]) is int
+            and int(summary["canonical_bytes"]) >= 0
+            and isinstance(summary["sha256"], str)
+            and re.fullmatch(r"[0-9a-f]{64}", str(summary["sha256"])) is not None,
+            code, label)
+    return summary
+
+
+def _validate_relation_record_projection(record: SceneRecord) -> None:
+    """Validate the full/effective pose projection used by the active loader."""
+
+    canonical_scene_record_set_summary([record])
+    full_relpaths = record.full_pose_person_relpaths
+    full_paths = record.full_pose_person_paths
+    full_content = record.full_pose_person_sha256
+    effective_relpaths = record.effective_pose_person_relpaths
+    effective_paths = record.effective_pose_person_paths
+    effective_content = record.effective_pose_person_sha256
+    require(len(full_relpaths) == len(full_paths) == len(full_content) > 0,
+            "E_RELATION_CONSTITUENT_PROJECTION", record.path)
+    require(0 <= record.target_person_idx < len(full_paths),
+            "E_RELATION_EFFECTIVE_PROJECTION", record.path)
+    expected_indices = list(range(min(len(full_paths), 6)))
+    if 0 < record.target_person_idx < len(expected_indices):
+        target = expected_indices.pop(record.target_person_idx)
+        expected_indices.insert(0, target)
+    require(record.person_count == len(expected_indices),
+            "E_RELATION_EFFECTIVE_PROJECTION", record.path)
+    require(
+        effective_relpaths == tuple(full_relpaths[index] for index in expected_indices)
+        and effective_paths == tuple(full_paths[index] for index in expected_indices)
+        and effective_content == tuple(full_content[index] for index in expected_indices),
+        "E_RELATION_EFFECTIVE_PROJECTION", record.path,
+    )
+    for relpath, path in zip(full_relpaths, full_paths):
+        basename = Path(path).name
+        require(Path(path).is_absolute() and relpath ==
+                f"pose_data/{record.split}/{basename}",
+                "E_RELATION_CONSTITUENT_PROJECTION", record.path)
+    require(
+        record.pose_path_sha256 == sha256_bytes(canonical_json_bytes(list(full_paths)))
+        and record.pose_content_sha256 ==
+        sha256_bytes(canonical_json_bytes(list(full_content))),
+        "E_RELATION_BUNDLE_PROJECTION", record.path,
+    )
+
+
+def audit_split_relations_v2(
+    records: Mapping[str, Sequence[SceneRecord]],
+    official_lists: Mapping[str, Sequence[str]],
+    official_report: Mapping[str, object],
+    cache_arrays: Mapping[str, Mapping[str, np.ndarray]],
+) -> Dict[str, object]:
+    """Dataset-agnostic structural relation audit with strict fail-closed aliases."""
+
+    split_names = ("train", "query", "gallery")
+    _require_exact_mapping(records, split_names, "E_RELATION_INPUT_SCHEMA", "records")
+    _require_exact_mapping(
+        official_lists, split_names, "E_RELATION_INPUT_SCHEMA", "official_lists")
+    official_rows = _require_exact_mapping(
+        official_report, split_names, "E_RELATION_INPUT_SCHEMA", "official_report")
+    for split in split_names:
+        require(isinstance(records[split], Sequence)
+                and not isinstance(records[split], (str, bytes)),
+                "E_RELATION_INPUT_SCHEMA", f"records/{split}")
+        require(all(isinstance(record, SceneRecord) for record in records[split]),
+                "E_RELATION_INPUT_SCHEMA", f"records/{split}/items")
+        official_row = _require_exact_mapping(
+            official_rows[split], OFFICIAL_LIST_ROW_KEYS,
+            "E_RELATION_INPUT_SCHEMA", f"official_report/{split}")
+        require(
+            all(type(official_row[key]) is int and int(official_row[key]) >= 0
+                for key in ("count", "raw_bytes", "canonical_bytes",
+                            "pose_index_bytes"))
+            and all(isinstance(official_row[key], str) and official_row[key]
+                    for key in ("rgb_root", "list", "raw_sha256",
+                                "canonical_sha256", "pose_index_sha256"))
+            and all(re.fullmatch(r"[0-9a-f]{64}", str(official_row[key])) is not None
+                    for key in ("raw_sha256", "canonical_sha256",
+                                "pose_index_sha256")),
+            "E_RELATION_INPUT_SCHEMA", f"official_report/{split}/types",
+        )
+        require(isinstance(official_lists[split], Sequence)
+                and not isinstance(official_lists[split], (str, bytes)),
+                "E_RELATION_INPUT_SCHEMA", f"official_lists/{split}")
+        require(all(isinstance(value, str) and value
+                    for value in official_lists[split]),
+                "E_RELATION_INPUT_SCHEMA", f"official_lists/{split}/items")
+        require(int(official_row["count"]) == len(records[split]) ==
+                len(official_lists[split]),
+                "E_RELATION_INPUT_SCHEMA", f"official_report/{split}/count")
+    cache_root = _require_exact_mapping(
+        cache_arrays, ("heatmaps", "scores", "nuisance"),
+        "E_RELATION_INPUT_SCHEMA", "cache_arrays")
+    expected_cache = {
+        "heatmaps": ("<f4", (17, 96, 32)),
+        "scores": ("<f4", (17,)),
+        "nuisance": ("<f8", (95,)),
+    }
+    for name, (dtype, trailing_shape) in expected_cache.items():
+        by_split = _require_exact_mapping(
+            cache_root[name], split_names,
+            "E_RELATION_INPUT_SCHEMA", f"cache_arrays/{name}")
+        for split in split_names:
+            try:
+                value = np.asarray(by_split[split])
+            except (TypeError, ValueError) as error:
+                raise GateProtocolError(
+                    "E_RELATION_INPUT_SCHEMA",
+                    f"cache_arrays/{name}/{split}: {error}") from error
+            require(value.dtype.str == dtype,
+                    "E_RELATION_CACHE_DTYPE",
+                    f"{name}/{split}/{value.dtype.str}!={dtype}")
+            require(value.shape == (len(records[split]), *trailing_shape),
+                    "E_RELATION_CACHE_SHAPE",
+                    f"{name}/{split}/{value.shape}")
+    within: Dict[str, object] = {}
+    for split in split_names:
+        values = list(records[split])
+        require([record.index for record in values] == list(range(len(values))),
+                "E_RELATION_RECORD_ORDER", split)
+        require(all(record.split == split for record in values),
+                "E_RELATION_RECORD_SPLIT", split)
+        for record in values:
+            _validate_relation_record_projection(record)
+        require([Path(record.path).name for record in values] == list(official_lists[split]),
+                "E_RELATION_OFFICIAL_ORDER", split)
+        row: Dict[str, object] = {}
+        for key in ("path", "rgb_sha256", "pose_path_sha256", "pose_content_sha256"):
+            row[f"{key}_duplicate_count"] = _duplicate_count(
+                [getattr(record, key) for record in values])
+        for scope in ("full", "effective"):
+            row[f"{scope}_pose_person_path_duplicate_count"] = _duplicate_count(
+                _flatten_record_values(values, f"{scope}_pose_person_paths"))
+            row[f"{scope}_pose_person_content_duplicate_count"] = _duplicate_count(
+                _flatten_record_values(values, f"{scope}_pose_person_sha256"))
+        row["source_pid_count"] = len({record.source_pid for record in values})
+        row["target_outside_effective_count"] = sum(
+            int(record.target_person_idx >= min(
+                len(record.full_pose_person_paths), 6))
+            for record in values
+        )
+        duplicate_codes = {
+            "path_duplicate_count": "E_RELATION_WITHIN_PATH_DUPLICATE",
+            "rgb_sha256_duplicate_count": "E_RELATION_WITHIN_RGB_CONTENT_DUPLICATE",
+            "pose_path_sha256_duplicate_count": "E_RELATION_WITHIN_POSE_PATH_DUPLICATE",
+            "pose_content_sha256_duplicate_count":
+                "E_RELATION_WITHIN_POSE_CONTENT_DUPLICATE",
+            "effective_pose_person_path_duplicate_count":
+                "E_RELATION_WITHIN_EFFECTIVE_CONSTITUENT_PATH_DUPLICATE",
+            "effective_pose_person_content_duplicate_count":
+                "E_RELATION_WITHIN_EFFECTIVE_CONSTITUENT_CONTENT_DUPLICATE",
+            "full_pose_person_path_duplicate_count":
+                "E_RELATION_WITHIN_FULL_CONSTITUENT_PATH_DUPLICATE",
+            "full_pose_person_content_duplicate_count":
+                "E_RELATION_WITHIN_FULL_CONSTITUENT_CONTENT_DUPLICATE",
+        }
+        for key, code in duplicate_codes.items():
+            require(int(row[key]) == 0, code, f"{split}/{key}")
+        within[split] = row
+
+    cross: Dict[str, object] = {}
+    cross_pairs = (
+        ("train", "query", "train_query"),
+        ("train", "gallery", "train_gallery"),
+        ("query", "gallery", "query_gallery"),
+    )
+    for left, right, label in cross_pairs:
+        left_records = list(records[left])
+        right_records = list(records[right])
+        row = {}
+        for key in ("path", "rgb_sha256", "pose_path_sha256", "pose_content_sha256"):
+            row[f"{key}_overlap_count"] = len(
+                {getattr(record, key) for record in left_records}
+                & {getattr(record, key) for record in right_records})
+        for scope in ("full", "effective"):
+            row[f"{scope}_pose_person_path_overlap_count"] = len(
+                set(_flatten_record_values(left_records, f"{scope}_pose_person_paths"))
+                & set(_flatten_record_values(right_records, f"{scope}_pose_person_paths")))
+            row[f"{scope}_pose_person_content_overlap_count"] = len(
+                set(_flatten_record_values(left_records, f"{scope}_pose_person_sha256"))
+                & set(_flatten_record_values(right_records, f"{scope}_pose_person_sha256")))
+        row["source_pid_overlap_count"] = len(
+            {record.source_pid for record in left_records}
+            & {record.source_pid for record in right_records})
+        row["rgb_content_forbidden_group_count"] = int(row["rgb_sha256_overlap_count"])
+        row["pose_content_forbidden_group_count"] = int(
+            row["pose_content_sha256_overlap_count"])
+        row["full_pose_person_content_forbidden_count"] = int(
+            row["full_pose_person_content_overlap_count"])
+        row["effective_pose_person_content_forbidden_count"] = int(
+            row["effective_pose_person_content_overlap_count"])
+        row["forbidden_overlap_count"] = sum(int(value) for key, value in row.items()
+                                             if key != "source_pid_overlap_count")
+        cross[label] = row
+
+    train_eval_alias_codes = {
+        "path_overlap_count": "E_RELATION_TRAIN_EVAL_PATH_ALIAS",
+        "rgb_sha256_overlap_count": "E_RELATION_TRAIN_EVAL_RGB_CONTENT_ALIAS",
+        "pose_path_sha256_overlap_count": "E_RELATION_TRAIN_EVAL_POSE_PATH_ALIAS",
+        "pose_content_sha256_overlap_count":
+            "E_RELATION_TRAIN_EVAL_POSE_CONTENT_ALIAS",
+        "effective_pose_person_path_overlap_count":
+            "E_RELATION_TRAIN_EVAL_EFFECTIVE_CONSTITUENT_PATH_ALIAS",
+        "effective_pose_person_content_overlap_count":
+            "E_RELATION_TRAIN_EVAL_EFFECTIVE_CONSTITUENT_CONTENT_ALIAS",
+        "full_pose_person_path_overlap_count":
+            "E_RELATION_TRAIN_EVAL_FULL_CONSTITUENT_PATH_ALIAS",
+        "full_pose_person_content_overlap_count":
+            "E_RELATION_TRAIN_EVAL_FULL_CONSTITUENT_CONTENT_ALIAS",
+        "source_pid_overlap_count": "E_RELATION_TRAIN_EVAL_SOURCE_PID_ALIAS",
+    }
+    for label in ("train_query", "train_gallery"):
+        for key, code in train_eval_alias_codes.items():
+            require(int(cross[label][key]) == 0, code, f"{label}/{key}")
+        require(int(cross[label]["forbidden_overlap_count"]) == 0,
+                "E_RELATION_TRAIN_EVAL_AGGREGATE", label)
+
+    query = list(records["query"])
+    gallery = list(records["gallery"])
+    query_by_rgb = {record.rgb_sha256: record for record in query}
+    gallery_by_rgb = {record.rgb_sha256: record for record in gallery}
+    query_by_pose = {record.pose_content_sha256: record for record in query}
+    gallery_by_pose = {record.pose_content_sha256: record for record in gallery}
+    require(len(query_by_rgb) == len(query) and len(gallery_by_rgb) == len(gallery),
+            "E_RELATION_RGB_GROUP", "within split")
+    require(len(query_by_pose) == len(query) and len(gallery_by_pose) == len(gallery),
+            "E_RELATION_POSE_GROUP", "within split")
+    shared_rgb = sorted(set(query_by_rgb) & set(gallery_by_rgb))
+    shared_pose = sorted(set(query_by_pose) & set(gallery_by_pose))
+    rgb_endpoints = sorted((query_by_rgb[value].index, gallery_by_rgb[value].index)
+                           for value in shared_rgb)
+    pose_endpoints = sorted((query_by_pose[value].index, gallery_by_pose[value].index)
+                            for value in shared_pose)
+    endpoint_equal = rgb_endpoints == pose_endpoints
+
+    qg = cross["query_gallery"]
+    for key, code in (
+        ("path_overlap_count", "E_RELATION_QUERY_GALLERY_RGB_PATH_ALIAS"),
+        ("pose_path_sha256_overlap_count",
+         "E_RELATION_QUERY_GALLERY_POSE_PATH_ALIAS"),
+        ("effective_pose_person_path_overlap_count",
+         "E_RELATION_QUERY_GALLERY_EFFECTIVE_CONSTITUENT_PATH_ALIAS"),
+        ("full_pose_person_path_overlap_count",
+         "E_RELATION_QUERY_GALLERY_FULL_CONSTITUENT_PATH_ALIAS"),
+    ):
+        require(int(qg[key]) == 0, code, key)
+    require(endpoint_equal, "E_RELATION_QUERY_GALLERY_ENDPOINT_MISMATCH",
+            f"rgb={rgb_endpoints}/pose={pose_endpoints}")
+    qg["rgb_content_forbidden_group_count"] = 0
+    qg["pose_content_forbidden_group_count"] = 0
+    qg["full_pose_person_content_forbidden_count"] = 0
+    qg["effective_pose_person_content_forbidden_count"] = 0
+    allowed_endpoint_set = set(rgb_endpoints) if endpoint_equal else set()
+    for scope in ("effective", "full"):
+        left_positions: Dict[str, List[Tuple[int, int]]] = defaultdict(list)
+        right_positions: Dict[str, List[Tuple[int, int]]] = defaultdict(list)
+        for record in query:
+            for position, digest in enumerate(
+                    getattr(record, f"{scope}_pose_person_sha256")):
+                left_positions[digest].append((record.index, position))
+        for record in gallery:
+            for position, digest in enumerate(
+                    getattr(record, f"{scope}_pose_person_sha256")):
+                right_positions[digest].append((record.index, position))
+        forbidden = 0
+        for digest in set(left_positions) & set(right_positions):
+            left_values = left_positions[digest]
+            right_values = right_positions[digest]
+            valid = (
+                len(left_values) == len(right_values) == 1
+                and (left_values[0][0], right_values[0][0]) in allowed_endpoint_set
+                and left_values[0][1] == right_values[0][1]
+            )
+            require(valid, (
+                "E_RELATION_QUERY_GALLERY_FULL_CONSTITUENT_CONTENT_ALIAS"
+                if scope == "full" else
+                "E_RELATION_QUERY_GALLERY_EFFECTIVE_CONSTITUENT_CONTENT_ALIAS"
+            ), f"{scope}/{digest}")
+            forbidden += int(not valid)
+        qg[f"{scope}_pose_person_content_forbidden_count"] = forbidden
+
+    pairs: List[Dict[str, object]] = []
+    junk_true = 0
+    junk_false = 0
+    forbidden_pair = 0
+    heatmaps = cache_arrays["heatmaps"]
+    scores = cache_arrays["scores"]
+    nuisance = cache_arrays["nuisance"]
+    official_shared_basenames = sorted(
+        set(official_lists["query"]) & set(official_lists["gallery"]))
+    for digest in shared_rgb:
+        qrecord = query_by_rgb[digest]
+        grecord = gallery_by_rgb[digest]
+        basename = Path(qrecord.path).name
+        require(
+            basename == Path(grecord.path).name
+            and basename in official_shared_basenames,
+            "E_RELATION_PAIR_BASENAME", basename,
+        )
+        is_junk = qrecord.pid == grecord.pid and qrecord.camid == grecord.camid
+        require(is_junk, "E_RELATION_PAIR_NOT_JUNK", basename)
+        require(
+            qrecord.pid == grecord.pid
+            and qrecord.camid == grecord.camid
+            and qrecord.viewid == grecord.viewid
+            and qrecord.person_count == grecord.person_count
+            and qrecord.frame == grecord.frame
+            and qrecord.source_pid == grecord.source_pid == qrecord.pid
+            and qrecord.source_camid == grecord.source_camid == qrecord.camid
+            and qrecord.source_frame_id == grecord.source_frame_id
+            and qrecord.target_person_idx == grecord.target_person_idx
+            and qrecord.pose_content_sha256 == grecord.pose_content_sha256
+            and qrecord.full_pose_person_sha256 == grecord.full_pose_person_sha256
+            and qrecord.effective_pose_person_sha256 ==
+                grecord.effective_pose_person_sha256
+            and tuple(Path(value).name for value in qrecord.full_pose_person_relpaths) ==
+                tuple(Path(value).name for value in grecord.full_pose_person_relpaths)
+            and tuple(Path(value).name for value in
+                      qrecord.effective_pose_person_relpaths) ==
+                tuple(Path(value).name for value in
+                      grecord.effective_pose_person_relpaths)
+            and canonical_json_bytes(dict(qrecord.report)) ==
+                canonical_json_bytes(dict(grecord.report)),
+            "E_RELATION_PAIR_METADATA", basename,
+        )
+        valid = (
+            endpoint_equal
+            and basename == Path(grecord.path).name
+            and basename in official_shared_basenames
+            and qrecord.pid == grecord.pid
+            and qrecord.camid == grecord.camid
+            and qrecord.viewid == grecord.viewid
+            and qrecord.person_count == grecord.person_count
+            and qrecord.frame == grecord.frame
+            and qrecord.source_pid == grecord.source_pid == qrecord.pid
+            and qrecord.source_camid == grecord.source_camid == qrecord.camid
+            and qrecord.source_frame_id == grecord.source_frame_id
+            and qrecord.target_person_idx == grecord.target_person_idx
+            and qrecord.pose_content_sha256 == grecord.pose_content_sha256
+            and qrecord.full_pose_person_sha256 == grecord.full_pose_person_sha256
+            and qrecord.effective_pose_person_sha256 == grecord.effective_pose_person_sha256
+            and tuple(Path(value).name for value in qrecord.full_pose_person_relpaths) ==
+                tuple(Path(value).name for value in grecord.full_pose_person_relpaths)
+            and tuple(Path(value).name for value in qrecord.effective_pose_person_relpaths) ==
+                tuple(Path(value).name for value in grecord.effective_pose_person_relpaths)
+            and canonical_json_bytes(dict(qrecord.report)) ==
+                canonical_json_bytes(dict(grecord.report))
+        )
+        junk_true += int(is_junk)
+        junk_false += int(not is_junk)
+        forbidden_pair += int(not valid or not is_junk)
+        if not valid or not is_junk:
+            continue
+        qi, gi = qrecord.index, grecord.index
+        q_hraw = array_sha256_v1(heatmaps["query"][qi], "<f4", [17, 96, 32])
+        g_hraw = array_sha256_v1(heatmaps["gallery"][gi], "<f4", [17, 96, 32])
+        q_score = array_sha256_v1(scores["query"][qi], "<f4", [17])
+        g_score = array_sha256_v1(scores["gallery"][gi], "<f4", [17])
+        q_nuisance = array_sha256_v1(nuisance["query"][qi], "<f8", [95])
+        g_nuisance = array_sha256_v1(nuisance["gallery"][gi], "<f8", [95])
+        require(q_hraw == g_hraw,
+                "E_RELATION_CACHE_HRAW_MISMATCH", basename)
+        require(q_score == g_score,
+                "E_RELATION_CACHE_SCORE_MISMATCH", basename)
+        require(q_nuisance == g_nuisance,
+                "E_RELATION_CACHE_NUISANCE_MISMATCH", basename)
+        cache_equal = q_hraw == g_hraw and q_score == g_score and q_nuisance == g_nuisance
+        forbidden_pair += int(not cache_equal)
+        if not cache_equal:
+            continue
+        pairs.append({
+            "basename": basename,
+            "camid": qrecord.camid,
+            "effective_pose_person_sha256": list(qrecord.effective_pose_person_sha256),
+            "frame": qrecord.frame,
+            "full_pose_person_sha256": list(qrecord.full_pose_person_sha256),
+            "gallery_effective_pose_person_relpaths": list(
+                grecord.effective_pose_person_relpaths),
+            "gallery_full_pose_person_relpaths": list(grecord.full_pose_person_relpaths),
+            "gallery_index": gi,
+            "gallery_pose_path_sha256": grecord.pose_path_sha256,
+            "gallery_rgb_relpath": f"bounding_box_test/{basename}",
+            "gallery_target_person_idx": grecord.target_person_idx,
+            "hraw_sha256": q_hraw,
+            "nuisance_sha256": q_nuisance,
+            "person_count": qrecord.person_count,
+            "pid": qrecord.pid,
+            "pose_content_sha256": qrecord.pose_content_sha256,
+            "query_effective_pose_person_relpaths": list(
+                qrecord.effective_pose_person_relpaths),
+            "query_full_pose_person_relpaths": list(qrecord.full_pose_person_relpaths),
+            "query_index": qi,
+            "query_pose_path_sha256": qrecord.pose_path_sha256,
+            "query_rgb_relpath": f"query/{basename}",
+            "query_target_person_idx": qrecord.target_person_idx,
+            "report": dict(qrecord.report),
+            "rgb_sha256": digest,
+            "score_sha256": q_score,
+            "source_camid": qrecord.source_camid,
+            "source_frame_id": qrecord.source_frame_id,
+            "source_pid": qrecord.source_pid,
+            "viewid": qrecord.viewid,
+        })
+    pairs.sort(key=lambda row: (
+        row["rgb_sha256"], row["basename"], row["query_index"], row["gallery_index"]))
+
+    qg["rgb_content_forbidden_group_count"] += abs(len(shared_rgb) - len(pairs))
+    qg["pose_content_forbidden_group_count"] += (
+        abs(len(shared_pose) - len(pairs)) + int(not endpoint_equal))
+    require(int(qg["rgb_content_forbidden_group_count"]) == 0,
+            "E_RELATION_QUERY_GALLERY_RGB_CONTENT_MULTIPLICITY", "")
+    require(int(qg["pose_content_forbidden_group_count"]) == 0,
+            "E_RELATION_QUERY_GALLERY_POSE_CONTENT_MULTIPLICITY", "")
+    require(int(qg["full_pose_person_content_forbidden_count"]) == 0,
+            "E_RELATION_QUERY_GALLERY_FULL_CONSTITUENT_CONTENT_ALIAS", "")
+    require(int(qg["effective_pose_person_content_forbidden_count"]) == 0,
+            "E_RELATION_QUERY_GALLERY_EFFECTIVE_CONSTITUENT_CONTENT_ALIAS", "")
+    require(forbidden_pair == 0,
+            "E_RELATION_QUERY_GALLERY_FORBIDDEN_PAIR", str(forbidden_pair))
+    qg["forbidden_overlap_count"] = sum(int(qg[key]) for key in (
+        "path_overlap_count", "pose_path_sha256_overlap_count",
+        "full_pose_person_path_overlap_count", "effective_pose_person_path_overlap_count",
+        "rgb_content_forbidden_group_count", "pose_content_forbidden_group_count",
+        "full_pose_person_content_forbidden_count",
+        "effective_pose_person_content_forbidden_count",
+    )) + forbidden_pair
+    require(int(qg["forbidden_overlap_count"]) == 0,
+            "E_RELATION_QUERY_GALLERY_ALIAS", str(qg))
+
+    require([row["basename"] for row in sorted(pairs, key=lambda row: row["basename"])] ==
+            official_shared_basenames,
+            "E_RELATION_PAIR_BASENAME_PROJECTION", "basename")
+    require([row["rgb_sha256"] for row in pairs] == shared_rgb,
+            "E_RELATION_PAIR_RGB_PROJECTION", "rgb")
+    metadata_projection = _joint_metadata_projection(pairs)
+    legacy_rgb_payload = json.dumps(
+        shared_rgb, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+        allow_nan=False).encode("utf-8")
+    relations = {
+        "query_gallery_shared_basenames": _canonical_summary(official_shared_basenames),
+        "query_gallery_shared_rgb_sha256_legacy": {
+            "count": len(shared_rgb),
+            "canonical_bytes": len(legacy_rgb_payload),
+            "sha256": sha256_bytes(legacy_rgb_payload),
+        },
+        "query_gallery_shared_rgb_sha256": _canonical_summary(shared_rgb),
+        "query_gallery_endpoint_pairs": {
+            "equal": endpoint_equal,
+            "rgb": _canonical_summary(rgb_endpoints),
+            "pose": _canonical_summary(pose_endpoints),
+        },
+        "query_gallery_joint_metadata_pairs": _canonical_summary(metadata_projection),
+        "query_gallery_joint_pairs": _canonical_summary(pairs),
+        "split_record_sets": {
+            split: _record_set_summary(records[split]) for split in split_names
+        },
+        "allowed_pair_count": len(pairs),
+        "junk_true_count": junk_true,
+        "junk_false_count": junk_false,
+        "forbidden_pair_count": forbidden_pair,
+    }
+    report = {
+        "schema": RELATION_REPORT_SCHEMA,
+        "official_source": {
+            "repository": OFFICIAL_REPOSITORY,
+            "commit": OFFICIAL_COMMIT,
+            "filename_regex": FILENAME_REGEX,
+        },
+        "official_lists": dict(official_report),
+        "split_counts": {split: len(records[split]) for split in split_names},
+        "within_split": within,
+        "cross_split": cross,
+        "relations": relations,
+        "pairs": pairs,
+    }
+    report["relation_report_sha256"] = sha256_bytes(canonical_json_bytes(report))
+    return report
+
+
+def _validate_official_report_schema(report: object) -> Mapping[str, object]:
+    report_map = _require_exact_mapping(
+        report, RELATION_REPORT_KEYS, "E_OFFICIAL_REPORT_SCHEMA", "report")
+    require(report_map.get("schema") == RELATION_REPORT_SCHEMA,
+            "E_OFFICIAL_REPORT_SCHEMA", str(report_map.get("schema")))
+    source = _require_exact_mapping(
+        report_map["official_source"], ("repository", "commit", "filename_regex"),
+        "E_OFFICIAL_REPORT_SCHEMA", "official_source")
+    require(all(isinstance(source[key], str) and source[key]
+                for key in source), "E_OFFICIAL_REPORT_SCHEMA", "official_source")
+
+    split_names = ("train", "query", "gallery")
+    split_counts = _require_exact_mapping(
+        report_map["split_counts"], split_names,
+        "E_OFFICIAL_REPORT_SCHEMA", "split_counts")
+    require(all(type(split_counts[split]) is int and int(split_counts[split]) >= 0
+                for split in split_names),
+            "E_OFFICIAL_REPORT_SCHEMA", "split_counts")
+
+    official_lists = _require_exact_mapping(
+        report_map["official_lists"], split_names,
+        "E_OFFICIAL_LIST_SCHEMA", "official_lists")
+    list_integer_keys = (
+        "count", "raw_bytes", "canonical_bytes", "pose_index_bytes")
+    list_string_keys = (
+        "rgb_root", "list", "raw_sha256", "canonical_sha256",
+        "pose_index_sha256")
+    for split in split_names:
+        row = _require_exact_mapping(
+            official_lists[split], OFFICIAL_LIST_ROW_KEYS,
+            "E_OFFICIAL_LIST_SCHEMA", split)
+        require(all(type(row[key]) is int and int(row[key]) >= 0
+                    for key in list_integer_keys)
+                and all(isinstance(row[key], str) and row[key]
+                        for key in list_string_keys)
+                and all(re.fullmatch(r"[0-9a-f]{64}", str(row[key])) is not None
+                        for key in ("raw_sha256", "canonical_sha256",
+                                    "pose_index_sha256")),
+                "E_OFFICIAL_LIST_SCHEMA", split)
+
+    within = _require_exact_mapping(
+        report_map["within_split"], split_names,
+        "E_OFFICIAL_WITHIN_SCHEMA", "within_split")
+    for split in split_names:
+        row = _require_exact_mapping(
+            within[split], WITHIN_SPLIT_ROW_KEYS,
+            "E_OFFICIAL_WITHIN_SCHEMA", split)
+        require(all(type(row[key]) is int and int(row[key]) >= 0 for key in row),
+                "E_OFFICIAL_WITHIN_SCHEMA", split)
+
+    cross_labels = ("train_query", "train_gallery", "query_gallery")
+    cross = _require_exact_mapping(
+        report_map["cross_split"], cross_labels,
+        "E_OFFICIAL_CROSS_SCHEMA", "cross_split")
+    for label in cross_labels:
+        row = _require_exact_mapping(
+            cross[label], CROSS_SPLIT_ROW_KEYS,
+            "E_OFFICIAL_CROSS_SCHEMA", label)
+        require(all(type(row[key]) is int and int(row[key]) >= 0 for key in row),
+                "E_OFFICIAL_CROSS_SCHEMA", label)
+
+    relations = _require_exact_mapping(
+        report_map["relations"], RELATIONS_KEYS,
+        "E_OFFICIAL_RELATIONS_SCHEMA", "relations")
+    for key in (
+        "query_gallery_shared_basenames",
+        "query_gallery_shared_rgb_sha256_legacy",
+        "query_gallery_shared_rgb_sha256",
+        "query_gallery_joint_metadata_pairs",
+        "query_gallery_joint_pairs",
+    ):
+        _require_summary_schema(
+            relations[key], "E_OFFICIAL_SUMMARY_SCHEMA", key)
+    endpoint = _require_exact_mapping(
+        relations["query_gallery_endpoint_pairs"], ("equal", "rgb", "pose"),
+        "E_OFFICIAL_RELATIONS_SCHEMA", "endpoint")
+    require(type(endpoint["equal"]) is bool,
+            "E_OFFICIAL_RELATIONS_SCHEMA", "endpoint/equal")
+    _require_summary_schema(
+        endpoint["rgb"], "E_OFFICIAL_SUMMARY_SCHEMA", "endpoint/rgb")
+    _require_summary_schema(
+        endpoint["pose"], "E_OFFICIAL_SUMMARY_SCHEMA", "endpoint/pose")
+    record_sets = _require_exact_mapping(
+        relations["split_record_sets"], split_names,
+        "E_OFFICIAL_RELATIONS_SCHEMA", "split_record_sets")
+    for split in split_names:
+        summary = _require_summary_schema(
+            record_sets[split], "E_OFFICIAL_SUMMARY_SCHEMA",
+            f"split_record_sets/{split}")
+        require(summary["count"] == split_counts[split],
+                "E_OFFICIAL_SUMMARY_SCHEMA", f"split_record_sets/{split}/count")
+    for key in (
+        "allowed_pair_count", "junk_true_count", "junk_false_count",
+        "forbidden_pair_count",
+    ):
+        require(type(relations[key]) is int and int(relations[key]) >= 0,
+                "E_OFFICIAL_RELATIONS_SCHEMA", key)
+
+    pairs = report_map["pairs"]
+    require(isinstance(pairs, list), "E_OFFICIAL_PAIR_SCHEMA", "pairs")
+    pair_integer_keys = (
+        "camid", "frame", "gallery_index", "gallery_target_person_idx",
+        "person_count", "pid", "query_index", "query_target_person_idx",
+        "source_camid", "source_frame_id", "source_pid", "viewid")
+    pair_string_keys = (
+        "basename", "gallery_pose_path_sha256", "gallery_rgb_relpath",
+        "hraw_sha256", "nuisance_sha256", "pose_content_sha256",
+        "query_pose_path_sha256", "query_rgb_relpath", "rgb_sha256",
+        "score_sha256")
+    pair_list_keys = (
+        "effective_pose_person_sha256", "full_pose_person_sha256",
+        "gallery_effective_pose_person_relpaths",
+        "gallery_full_pose_person_relpaths",
+        "query_effective_pose_person_relpaths", "query_full_pose_person_relpaths")
+    pair_sha_keys = (
+        "gallery_pose_path_sha256", "hraw_sha256", "nuisance_sha256",
+        "pose_content_sha256", "query_pose_path_sha256", "rgb_sha256",
+        "score_sha256")
+    normalized_pairs: List[Dict[str, object]] = []
+    for index, row_value in enumerate(pairs):
+        row = _require_exact_mapping(
+            row_value, PAIR_KEYS, "E_OFFICIAL_PAIR_SCHEMA", f"pairs/{index}")
+        require(all(type(row[key]) is int for key in pair_integer_keys)
+                and all(isinstance(row[key], str) and row[key]
+                        for key in pair_string_keys)
+                and all(isinstance(row[key], list) and row[key]
+                        and all(isinstance(item, str) and item for item in row[key])
+                        for key in pair_list_keys)
+                and isinstance(row["report"], Mapping),
+                "E_OFFICIAL_PAIR_SCHEMA", f"pairs/{index}/types")
+        require(FILENAME_PATTERN.fullmatch(str(row["basename"])) is not None
+                and int(row["query_index"]) >= 0
+                and int(row["gallery_index"]) >= 0,
+                "E_OFFICIAL_PAIR_SCHEMA", f"pairs/{index}/identity")
+        require(all(re.fullmatch(r"[0-9a-f]{64}", str(row[key])) is not None
+                    for key in pair_sha_keys)
+                and all(re.fullmatch(r"[0-9a-f]{64}", str(item)) is not None
+                        for key in ("effective_pose_person_sha256",
+                                    "full_pose_person_sha256")
+                        for item in row[key]),
+                "E_OFFICIAL_PAIR_SCHEMA", f"pairs/{index}/sha256")
+        try:
+            normalized_report = dict(row["report"])
+            canonical_json_bytes(normalized_report)
+        except (TypeError, ValueError) as error:
+            raise GateProtocolError(
+                "E_OFFICIAL_PAIR_SCHEMA", f"pairs/{index}/report: {error}") from error
+
+        full_sha = list(row["full_pose_person_sha256"])
+        effective_sha = list(row["effective_pose_person_sha256"])
+        query_full = list(row["query_full_pose_person_relpaths"])
+        gallery_full = list(row["gallery_full_pose_person_relpaths"])
+        query_effective = list(row["query_effective_pose_person_relpaths"])
+        gallery_effective = list(row["gallery_effective_pose_person_relpaths"])
+        require(
+            len(full_sha) == len(query_full) == len(gallery_full) > 0
+            and len(effective_sha) == len(query_effective) ==
+                len(gallery_effective) > 0,
+            "E_OFFICIAL_PAIR_SCHEMA", f"pairs/{index}/constituent lengths",
+        )
+        query_target = int(row["query_target_person_idx"])
+        gallery_target = int(row["gallery_target_person_idx"])
+        expected_indices = list(range(min(len(full_sha), 6)))
+        require(query_target == gallery_target
+                and 0 <= query_target < len(expected_indices),
+                "E_OFFICIAL_PAIR_SCHEMA", f"pairs/{index}/target")
+        if query_target > 0:
+            target = expected_indices.pop(query_target)
+            expected_indices.insert(0, target)
+        require(
+            int(row["person_count"]) == len(expected_indices)
+            and effective_sha == [full_sha[position] for position in expected_indices],
+            "E_OFFICIAL_PAIR_SCHEMA", f"pairs/{index}/effective projection",
+        )
+        query_full_names = [Path(value).name for value in query_full]
+        gallery_full_names = [Path(value).name for value in gallery_full]
+        query_effective_names = [Path(value).name for value in query_effective]
+        gallery_effective_names = [Path(value).name for value in gallery_effective]
+        require(
+            query_full_names == gallery_full_names
+            and query_effective_names == gallery_effective_names
+            and query_effective_names ==
+                [query_full_names[position] for position in expected_indices]
+            and all(value == f"pose_data/query/{Path(value).name}"
+                    and Path(value).name not in ("", ".", "..")
+                    for value in query_full + query_effective)
+            and all(value == f"pose_data/gallery/{Path(value).name}"
+                    and Path(value).name not in ("", ".", "..")
+                    for value in gallery_full + gallery_effective),
+            "E_OFFICIAL_PAIR_SCHEMA", f"pairs/{index}/constituent projection",
+        )
+        basename = str(row["basename"])
+        require(
+            row["query_rgb_relpath"] == f"query/{basename}"
+            and row["gallery_rgb_relpath"] == f"bounding_box_test/{basename}"
+            and row["pose_content_sha256"] ==
+                sha256_bytes(canonical_json_bytes(full_sha)),
+            "E_OFFICIAL_PAIR_SCHEMA", f"pairs/{index}/asset projection",
+        )
+        normalized_row = dict(row)
+        normalized_row["report"] = normalized_report
+        normalized_pairs.append(normalized_row)
+
+    expected_order = sorted(pairs, key=lambda row: (
+        row["rgb_sha256"], row["basename"], row["query_index"], row["gallery_index"]))
+    require(pairs == expected_order,
+            "E_OFFICIAL_PAIR_SCHEMA", "pair order")
+    for key in ("basename", "rgb_sha256", "query_index", "gallery_index"):
+        require(len({row[key] for row in pairs}) == len(pairs),
+                "E_OFFICIAL_PAIR_SCHEMA", f"pair uniqueness/{key}")
+
+    shared_basenames = sorted(str(row["basename"]) for row in normalized_pairs)
+    shared_rgb = [str(row["rgb_sha256"]) for row in normalized_pairs]
+    endpoint_pairs = sorted(
+        (int(row["query_index"]), int(row["gallery_index"]))
+        for row in normalized_pairs)
+    legacy_rgb_payload = json.dumps(
+        shared_rgb, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+        allow_nan=False).encode("utf-8")
+    recomputed = {
+        "query_gallery_shared_basenames": _canonical_summary(shared_basenames),
+        "query_gallery_shared_rgb_sha256_legacy": {
+            "count": len(shared_rgb),
+            "canonical_bytes": len(legacy_rgb_payload),
+            "sha256": sha256_bytes(legacy_rgb_payload),
+        },
+        "query_gallery_shared_rgb_sha256": _canonical_summary(shared_rgb),
+        "query_gallery_joint_metadata_pairs": _canonical_summary(
+            _joint_metadata_projection(normalized_pairs)),
+        "query_gallery_joint_pairs": _canonical_summary(normalized_pairs),
+    }
+    for key, expected in recomputed.items():
+        require(relations[key] == expected,
+                "E_OFFICIAL_PAIR_RELATION_CLOSURE", key)
+    expected_endpoint = _canonical_summary(endpoint_pairs)
+    require(relations["query_gallery_endpoint_pairs"] == {
+        "equal": True, "rgb": expected_endpoint, "pose": expected_endpoint,
+    }, "E_OFFICIAL_PAIR_RELATION_CLOSURE", "query_gallery_endpoint_pairs")
+    require(
+        int(relations["allowed_pair_count"]) == len(normalized_pairs)
+        and int(relations["junk_true_count"]) == len(normalized_pairs)
+        and int(relations["junk_false_count"]) == 0
+        and int(relations["forbidden_pair_count"]) == 0,
+        "E_OFFICIAL_PAIR_RELATION_CLOSURE", "pair counts",
+    )
+
+    without_self = dict(report_map)
+    frozen_sha = without_self.pop("relation_report_sha256")
+    try:
+        expected_self_hash = sha256_bytes(canonical_json_bytes(without_self))
+    except (TypeError, ValueError) as error:
+        raise GateProtocolError(
+            "E_RELATION_REPORT_SELF_HASH", f"canonicalization: {error}") from error
+    require(isinstance(frozen_sha, str)
+            and re.fullmatch(r"[0-9a-f]{64}", frozen_sha) is not None
+            and frozen_sha == expected_self_hash,
+            "E_RELATION_REPORT_SELF_HASH", str(frozen_sha))
+    return report_map
+
+
+def assert_occluded_duke_official_v1(report: Mapping[str, object]) -> None:
+    report = _validate_official_report_schema(report)
+    require(report.get("official_source") == {
+        "repository": OFFICIAL_REPOSITORY,
+        "commit": OFFICIAL_COMMIT,
+        "filename_regex": FILENAME_REGEX,
+    }, "E_OFFICIAL_SOURCE", str(report.get("official_source")))
+    require(report.get("split_counts") == {
+        split: int(OFFICIAL_SPLITS[split]["count"])
+        for split in ("train", "query", "gallery")
+    }, "E_OFFICIAL_SPLIT_COUNT", str(report.get("split_counts")))
+    for split, expected in OFFICIAL_SPLITS.items():
+        actual = report["official_lists"][split]
+        require(actual == {
+            "rgb_root": expected["root"], "list": expected["list"],
+            "count": expected["count"], "raw_bytes": expected["raw_bytes"],
+            "raw_sha256": expected["raw_sha256"],
+            "canonical_bytes": expected["canonical_bytes"],
+            "canonical_sha256": expected["canonical_sha256"],
+            "pose_index_bytes": expected["pose_index_bytes"],
+            "pose_index_sha256": expected["pose_index_sha256"],
+        }, "E_OFFICIAL_LIST_DIGEST", split)
+        within = report["within_split"][split]
+        require(int(within["target_outside_effective_count"]) == 0,
+                "E_OFFICIAL_TARGET_OUTSIDE", split)
+        require(all(int(value) == 0 for key, value in within.items()
+                    if key.endswith("duplicate_count")),
+                "E_OFFICIAL_WITHIN_DUPLICATE", split)
+    require({split: int(report["within_split"][split]["source_pid_count"])
+             for split in OFFICIAL_SOURCE_PID_COUNTS} == OFFICIAL_SOURCE_PID_COUNTS,
+            "E_OFFICIAL_SOURCE_PID_COUNT", str(report["within_split"]))
+    for label in ("train_query", "train_gallery"):
+        require(all(int(value) == 0 for value in report["cross_split"][label].values()),
+                "E_OFFICIAL_TRAIN_EVAL_ALIAS", label)
+    qg = report["cross_split"]["query_gallery"]
+    require(qg == OFFICIAL_QUERY_GALLERY_COUNTS,
+            "E_OFFICIAL_QUERY_GALLERY_RELATION", str(qg))
+    relations = report["relations"]
+    for key, constant in (
+        ("query_gallery_shared_basenames", RELATION_EXACT["shared_basename"]),
+        ("query_gallery_shared_rgb_sha256_legacy", RELATION_EXACT["shared_rgb_legacy"]),
+        ("query_gallery_shared_rgb_sha256", RELATION_EXACT["shared_rgb"]),
+        ("query_gallery_joint_metadata_pairs", RELATION_EXACT["joint_metadata"]),
+        ("query_gallery_joint_pairs", RELATION_EXACT["joint_pairs"]),
+    ):
+        count, size, digest = constant
+        require(relations[key] == {
+            "count": count, "canonical_bytes": size, "sha256": digest,
+        }, "E_OFFICIAL_RELATION_DIGEST", key)
+    count, size, digest = RELATION_EXACT["endpoint_pairs"]
+    endpoint = relations["query_gallery_endpoint_pairs"]
+    expected_endpoint = {"count": count, "canonical_bytes": size, "sha256": digest}
+    require(endpoint == {"equal": True, "rgb": expected_endpoint, "pose": expected_endpoint},
+            "E_OFFICIAL_ENDPOINT_DIGEST", str(endpoint))
+    require(
+        len(report["pairs"]) == OFFICIAL_ALLOWED_PAIR_COUNT
+        and int(relations["allowed_pair_count"]) == OFFICIAL_ALLOWED_PAIR_COUNT
+        and int(relations["junk_true_count"]) == OFFICIAL_ALLOWED_PAIR_COUNT
+        and int(relations["junk_false_count"]) == 0
+        and int(relations["forbidden_pair_count"]) == 0,
+        "E_OFFICIAL_PAIR_COUNT", str(relations),
+    )
+    without_self = dict(report)
+    frozen_sha = str(without_self.pop("relation_report_sha256", ""))
+    require(frozen_sha == sha256_bytes(canonical_json_bytes(without_self)),
+            "E_RELATION_REPORT_SELF_HASH", frozen_sha)
+
+
+def build_relation_report_v2(
+    dataset: OccludedDukeMTMC,
+    split_datasets: Mapping[str, PoseImageDataset],
+    prepared: Path,
+) -> Tuple[Dict[str, object], Dict[str, Tuple[int, ...]], Dict[str, Tuple[int, ...]]]:
+    """Build the full active-asset report and return full/quick identities."""
+
+    started = time.monotonic()
+    prepared = Path(prepared).resolve()
+    lexical_data_root = _lexical_absolute(dataset.dataset_dir)
+    data_root = lexical_data_root.resolve()
+    require(data_root.is_dir(), "E_RELATION_DATA_ROOT", str(data_root))
+    require(set(split_datasets) == {"train", "query", "gallery"},
+            "E_RELATION_SPLITS", str(split_datasets.keys()))
+    identity_registry: Dict[str, Tuple[int, ...]] = {}
+    quick_paths: List[Path] = []
+    official_lists, official_report = _official_lists_v2(dataset, identity_registry)
+    quick_paths.extend([
+        Path(dataset.train_list).resolve(),
+        Path(dataset.query_list).resolve(),
+        Path(dataset.gallery_list).resolve(),
+    ])
+
+    records: Dict[str, List[SceneRecord]] = {}
+    cache_arrays: Dict[str, Dict[str, np.ndarray]] = {
+        "heatmaps": {}, "scores": {}, "nuisance": {},
+    }
+    cache_reports: Dict[Path, Tuple[Dict[str, object], Tuple[int, ...]]] = {}
+    file_hash_cache: Dict[str, str] = {}
+    try:
+        for split in ("train", "query", "gallery"):
+            split_dataset = split_datasets[split]
+            expected = OFFICIAL_SPLITS[split]
+            require(int(split_dataset.max_persons) == 6,
+                    "E_OFFICIAL_MAX_PERSONS", f"{split}/{split_dataset.max_persons}")
+            configured_rgb_root = _exact_lexical_child(
+                getattr(dataset, f"{split}_dir"),
+                dataset.dataset_dir,
+                (str(expected["root"]),),
+                "E_RELATION_RGB_ROOT",
+            )
+            expected_rgb_root = lexical_data_root / str(expected["root"])
+            require(configured_rgb_root == expected_rgb_root,
+                    "E_RELATION_RGB_ROOT",
+                    f"{split}/{configured_rgb_root}!={expected_rgb_root}")
+            _require_real_directory(configured_rgb_root, "E_RELATION_RGB_ROOT")
+            rgb_root = configured_rgb_root.resolve()
+            require(rgb_root == data_root / str(expected["root"])
+                    and rgb_root.parent == data_root,
+                    "E_RELATION_RGB_ROOT", f"{split}/{rgb_root}")
+            configured_pose_base = lexical_data_root / "pose_data"
+            configured_pose_root = _exact_lexical_child(
+                split_dataset.pose_dir,
+                dataset.dataset_dir,
+                ("pose_data", split),
+                "E_RELATION_POSE_ROOT",
+            )
+            expected_pose_root = configured_pose_base / split
+            require(configured_pose_root == expected_pose_root,
+                    "E_RELATION_POSE_ROOT",
+                    f"{split}/{configured_pose_root}!={expected_pose_root}")
+            _require_real_directory(configured_pose_base, "E_RELATION_POSE_ROOT")
+            _require_real_directory(configured_pose_root, "E_RELATION_POSE_ROOT")
+            pose_root = configured_pose_root.resolve()
+            require(pose_root == data_root / "pose_data" / split,
+                    "E_RELATION_POSE_ROOT", f"{split}/{pose_root}")
+            index_path = pose_root / "index.json"
+            _require_direct_child(index_path, pose_root, "E_RELATION_POSE_INDEX_PATH")
+            index, index_report = _stable_json(
+                index_path, identity_registry, "E_RELATION_POSE_INDEX_JSON")
+            require(isinstance(index, dict) and index == split_dataset.index,
+                    "E_RELATION_ACTIVE_INDEX_DRIFT", split)
+            require(sorted(index) == list(official_lists[split]),
+                    "E_RELATION_POSE_INDEX_KEYS", split)
+            official_report[split]["pose_index_bytes"] = int(index_report["bytes"])
+            official_report[split]["pose_index_sha256"] = str(index_report["sha256"])
+            quick_paths.append(index_path)
+
+            metadata_path = prepared / f"{split}_metadata.json"
+            metadata, _metadata_report = _stable_json(
+                metadata_path, identity_registry, "E_METADATA_SCHEMA_V2")
+            quick_paths.append(metadata_path)
+            count = len(official_lists[split])
+            specs = {
+                "heatmaps": (prepared / f"{split}_scene_heatmaps.npy",
+                             [count, 17, 96, 32], "<f4"),
+                "scores": (prepared / f"{split}_scene_scores.npy", [count, 17], "<f4"),
+                "nuisance": (prepared / f"{split}_continuous.npy", [count, 95], "<f8"),
+            }
+            for name, (path, shape, dtype) in specs.items():
+                before_report, before_identity, _unused = _stable_regular_file(path)
+                if split in OFFICIAL_QG_CACHE_FILES:
+                    expected_bytes, expected_sha = OFFICIAL_QG_CACHE_FILES[split][name]
+                    require(before_report == {
+                        "bytes": expected_bytes, "sha256": expected_sha,
+                    }, "E_OFFICIAL_CACHE_DIGEST", f"{split}/{name}")
+                _register_identity(identity_registry, path, before_identity)
+                try:
+                    value = np.load(path, mmap_mode="r", allow_pickle=False)
+                except OSError as error:
+                    raise GateProtocolError(
+                        "E_RELATION_FILE_TOCTOU",
+                        f"{path}: {error.__class__.__name__}") from error
+                except (ValueError, EOFError) as error:
+                    raise GateProtocolError(
+                        "E_RELATION_CACHE_LOAD",
+                        f"{path}: {error.__class__.__name__}") from error
+                require(value.dtype.str == dtype,
+                        "E_RELATION_CACHE_DTYPE",
+                        f"{path}/{value.dtype.str}!={dtype}")
+                require(list(value.shape) == shape,
+                        "E_RELATION_CACHE_SHAPE", f"{path}/{value.shape}")
+                for start in range(0, count, 32):
+                    stop = min(start + 32, count)
+                    require(bool(np.isfinite(value[start:stop]).all()),
+                            "E_RELATION_CACHE_NONFINITE", f"{path}[{start}:{stop}]")
+                cache_arrays[name][split] = value
+                cache_reports[path] = (before_report, before_identity)
+                quick_paths.append(path)
+
+            split_records = _scene_records_from_payload(
+                metadata, cache_arrays["nuisance"][split], split)
+            require(len(split_dataset.dataset) == len(split_records) == count,
+                    "E_RELATION_ACTIVE_COUNT", split)
+            for index_value, (active, record) in enumerate(
+                    zip(split_dataset.dataset, split_records)):
+                active_path, active_pid, active_camid, active_viewid = active
+                resolved = Path(active_path).resolve()
+                require(
+                    record.index == index_value
+                    and record.path == str(resolved)
+                    and record.pid == int(active_pid)
+                    and record.camid == int(active_camid)
+                    and record.viewid == int(active_viewid),
+                    "E_RELATION_ACTIVE_RECORD", f"{split}/{index_value}",
+                )
+                require(resolved.parent == rgb_root
+                        and resolved.name == official_lists[split][index_value],
+                        "E_RELATION_RGB_ROOT", str(resolved))
+                rgb_report, rgb_identity, _unused = _stable_regular_file(resolved)
+                _register_identity(identity_registry, resolved, rgb_identity)
+                require(str(rgb_report["sha256"]) == record.rgb_sha256,
+                        "E_RELATION_RGB_SHA", str(resolved))
+                pose = _pose_asset_manifest_v2(
+                    split_dataset, str(resolved), file_hash_cache, identity_registry)
+                require(
+                    record.pose_path_sha256 == pose["pose_path_sha256"]
+                    and record.pose_content_sha256 == pose["pose_content_sha256"]
+                    and record.source_pid == pose["source_pid"]
+                    and record.source_camid == pose["source_camid"]
+                    and record.source_frame_id == pose["source_frame_id"]
+                    and record.target_person_idx == pose["target_person_idx"]
+                    and record.full_pose_person_relpaths ==
+                        pose["full_pose_person_relpaths"]
+                    and record.full_pose_person_paths == pose["full_pose_person_paths"]
+                    and record.full_pose_person_sha256 == pose["full_pose_person_sha256"]
+                    and record.effective_pose_person_relpaths ==
+                        pose["effective_pose_person_relpaths"]
+                    and record.effective_pose_person_paths ==
+                        pose["effective_pose_person_paths"]
+                    and record.effective_pose_person_sha256 ==
+                        pose["effective_pose_person_sha256"],
+                    "E_RELATION_POSE_ASSET_DRIFT", f"{split}/{index_value}",
+                )
+                require(record.camid == record.source_camid,
+                        "E_RELATION_SOURCE_CAM", f"{split}/{index_value}")
+                if split != "train":
+                    require(record.pid == record.source_pid,
+                            "E_RELATION_SOURCE_PID", f"{split}/{index_value}")
+            records[split] = split_records
+
+        train_pid_map: Dict[int, set] = defaultdict(set)
+        for record in records["train"]:
+            train_pid_map[record.source_pid].add(record.pid)
+        require(all(len(values) == 1 for values in train_pid_map.values())
+                and len({next(iter(values)) for values in train_pid_map.values()}) ==
+                len(train_pid_map),
+                "E_RELATION_TRAIN_PID_BIJECTION", "")
+
+        report = audit_split_relations_v2(
+            records, official_lists, official_report, cache_arrays)
+        assert_occluded_duke_official_v1(report)
+    finally:
+        for by_split in cache_arrays.values():
+            for value in by_split.values():
+                _close_memmap(value)
+
+    for path, (before_report, before_identity) in cache_reports.items():
+        after_report, after_identity, _unused = _stable_regular_file(path)
+        require(after_report == before_report and after_identity == before_identity,
+                "E_RELATION_CACHE_TOCTOU", str(path))
+    _recheck_identities(identity_registry)
+    quick_registry = {
+        str(path): identity_registry[str(path)]
+        for path in quick_paths
+    }
+    relation_path = prepared / "split_relations.json"
+    if relation_path.is_file():
+        _relation_report, relation_identity, _unused = _stable_regular_file(relation_path)
+        _register_identity(identity_registry, relation_path, relation_identity)
+        quick_registry[str(relation_path)] = relation_identity
+    _recheck_identities(identity_registry)
+    elapsed = time.monotonic() - started
+    require(elapsed <= 90.0, "E_RELATION_AUDIT_TIMEOUT", f"{elapsed:.3f}s")
+    require(len(quick_registry) in {18, 19},
+            "E_RELATION_QUICK_SET", str(len(quick_registry)))
+    return report, identity_registry, quick_registry
 
 
 def save_mapping_payload(destination: Path, split: str, payload: Mapping[str, object]) -> Dict[str, str]:
@@ -734,8 +2411,12 @@ def save_mapping_payload(destination: Path, split: str, payload: Mapping[str, ob
 
 def build_centroid_cache(prepared: Path, counts: Mapping[str, int]) -> Dict[str, object]:
     train = np.load(prepared / "train_scene_heatmaps.npy", mmap_mode="r")
-    targets = fit_normalized_centroid_targets(
-        torch.from_numpy(np.asarray(train[index])) for index in range(int(counts["train"])))
+    try:
+        targets = fit_normalized_centroid_targets(
+            torch.from_numpy(np.asarray(train[index]))
+            for index in range(int(counts["train"])))
+    finally:
+        _close_memmap(train)
     require(all(target is not None for target in targets), "E_CENTROID_TARGET", "missing train joint")
     atomic_write_json(prepared / "centroid_targets.json", targets)
     status: Dict[str, object] = {
@@ -752,11 +2433,15 @@ def build_centroid_cache(prepared: Path, counts: Mapping[str, int]) -> Dict[str,
             tuple(source.shape),
             "float32",
         )
-        for index in range(source.shape[0]):
-            scene = torch.from_numpy(np.asarray(source[index]))
-            absolute = absolute_centroid_targets(scene, targets)
-            output[index] = apply_scene_centroid_control(scene, absolute).numpy()
-        output.flush()
+        try:
+            for index in range(source.shape[0]):
+                scene = torch.from_numpy(np.asarray(source[index]))
+                absolute = absolute_centroid_targets(scene, targets)
+                output[index] = apply_scene_centroid_control(scene, absolute).numpy()
+            output.flush()
+        finally:
+            _close_memmap(output)
+            _close_memmap(source)
     return status
 
 
@@ -772,8 +2457,11 @@ def prepare_phase(args: argparse.Namespace) -> None:
     config_file = Path(args.config_file).resolve()
     require(config_file.is_file(), "E_CONFIG_MISSING", str(config_file))
     local_cfg = resolved_config(config_file, args.opts)
-    specs = checkpoint_specs(args.checkpoint_manifest)
+    resume_path = Path(args.resume).resolve() if args.resume else None
+    if resume_path is not None:
+        _assert_not_burned_execution(resume_path)
     output_root = Path(args.output_root).resolve()
+    _assert_not_burned_execution(output_root)
     output_root.mkdir(parents=True, exist_ok=True)
     staging = Path(tempfile.mkdtemp(prefix=".exp374_prepare_", dir=str(output_root)))
     execution_dir: Path | None = None
@@ -783,11 +2471,21 @@ def prepare_phase(args: argparse.Namespace) -> None:
             split: cache_split(split, split_dataset, local_cfg, staging)
             for split, split_dataset in datasets.items()
         }
+        relation_report, _relation_full_identity, _relation_quick_identity = (
+            build_relation_report_v2(dataset, datasets, staging)
+        )
+        assert_occluded_duke_official_v1(relation_report)
+        atomic_write_json(staging / "split_relations.json", relation_report)
+        relation_payload = canonical_json_bytes(relation_report)
+        relation_artifact = {
+            "relpath": "split_relations.json",
+            "bytes": len(relation_payload),
+            "sha256": sha256_bytes(relation_payload),
+        }
         records = {
             split: load_scene_records(staging, split)
             for split in ("train", "query", "gallery")
         }
-        assert_disjoint_records(records)
         require(torch.cuda.is_available(), "E_MATCH_GPU_REQUIRED", "exact sparse candidate build")
         device = torch.device("cuda:0")
         for split in ("train", "query", "gallery"):
@@ -801,14 +2499,27 @@ def prepare_phase(args: argparse.Namespace) -> None:
                 )
             )
         torch.cuda.empty_cache()
+        _recheck_identities(_relation_full_identity)
+        require(
+            sha256_file(staging / "split_relations.json") == relation_artifact["sha256"],
+            "E_RELATION_PREPARED_TRIPLE", "prepare pre-matching",
+        )
         mapping_manifest = {}
         for split in ("query", "gallery"):
             payload = prepare_split_mappings(
-                records[split], device=device, anchor_chunk=int(args.anchor_chunk))
+                records[split], device=device, anchor_chunk=int(args.anchor_chunk),
+                relation_report=relation_report, split=split)
             mapping_manifest[split] = save_mapping_payload(staging, split, payload)
             del payload
             gc.collect()
             torch.cuda.empty_cache()
+
+        _recheck_identities(_relation_full_identity)
+        require(
+            sha256_file(staging / "split_relations.json") == relation_artifact["sha256"],
+            "E_RELATION_PREPARED_TRIPLE", "prepare post-matching",
+        )
+        specs = checkpoint_specs(args.checkpoint_manifest)
 
         try:
             centroid_status = build_centroid_cache(
@@ -844,6 +2555,8 @@ def prepare_phase(args: argparse.Namespace) -> None:
                 "num_query": len(datasets["query"]),
                 "num_gallery": len(datasets["gallery"]),
                 "cache": cache_manifest,
+                "split_relations": relation_report,
+                "split_relations_artifact": relation_artifact,
             },
             "matching": mapping_manifest,
             "centroid": centroid_status,
@@ -855,7 +2568,10 @@ def prepare_phase(args: argparse.Namespace) -> None:
                 "minimum_free_bytes": 80 * 1024 ** 3,
             },
         }
-        resume_path = Path(args.resume).resolve() if args.resume else None
+        require(
+            prepared_hashes.get("split_relations.json") == relation_artifact["sha256"],
+            "E_RELATION_PREPARED_TRIPLE", str(relation_artifact),
+        )
         lock_context = (
             exclusive_execution_lock(resume_path, "prepare-resume")
             if resume_path is not None else contextlib.nullcontext()
@@ -875,6 +2591,10 @@ def prepare_phase(args: argparse.Namespace) -> None:
                 shutil.rmtree(staging)
             else:
                 publish_directory(staging, prepared_destination)
+            if resume_path is not None:
+                verify_relation_runtime(
+                    premetric_manifest, dataset, datasets,
+                    prepared_destination, "prepare_resume")
             atomic_write_json(execution_dir / "PREPARED.json", {
                 "execution_sha256": execution_sha,
                 "prepared_artifact_sha256": prepared_hashes,
@@ -925,6 +2645,73 @@ def verify_prepared_artifacts(execution_dir: Path) -> Dict[str, object]:
     return manifest
 
 
+def _verify_relation_artifact_triple(
+    manifest: Mapping[str, object],
+    prepared: Path,
+) -> Dict[str, object]:
+    dataset_manifest = manifest.get("dataset")
+    require(isinstance(dataset_manifest, Mapping),
+            "E_RELATION_PREPARED_TRIPLE", "dataset manifest")
+    report = dataset_manifest.get("split_relations")
+    descriptor = dataset_manifest.get("split_relations_artifact")
+    require(isinstance(report, Mapping) and isinstance(descriptor, Mapping),
+            "E_RELATION_PREPARED_TRIPLE", "missing relation object/artifact")
+    assert_occluded_duke_official_v1(report)
+    payload = canonical_json_bytes(report)
+    expected = {
+        "relpath": "split_relations.json",
+        "bytes": len(payload),
+        "sha256": sha256_bytes(payload),
+    }
+    require(dict(descriptor) == expected,
+            "E_RELATION_PREPARED_TRIPLE", "artifact descriptor")
+    prepared_hashes = manifest.get("prepared_artifact_sha256")
+    require(isinstance(prepared_hashes, Mapping)
+            and prepared_hashes.get("split_relations.json") == expected["sha256"],
+            "E_RELATION_PREPARED_TRIPLE", "prepared hash")
+    relation_path = Path(prepared) / "split_relations.json"
+    file_report, _identity, raw = _stable_regular_file(relation_path, return_bytes=True)
+    require(raw == payload and file_report == {
+        "bytes": expected["bytes"], "sha256": expected["sha256"],
+    }, "E_RELATION_PREPARED_TRIPLE", str(relation_path))
+    return dict(report)
+
+
+def verify_relation_runtime(
+    manifest: Mapping[str, object],
+    dataset: OccludedDukeMTMC,
+    split_datasets: Mapping[str, PoseImageDataset],
+    prepared: Path,
+    phase: str,
+) -> Dict[str, object]:
+    allowed_phases = {
+        "prepare_resume", "run_entry", "run_tail",
+        "summarize_entry", "summarize_pre_results",
+    }
+    require(phase in allowed_phases, "E_RELATION_RUNTIME_PHASE", phase)
+    frozen = _verify_relation_artifact_triple(manifest, prepared)
+    rebuilt, full_identity, quick_identity = build_relation_report_v2(
+        dataset, split_datasets, prepared)
+    require(canonical_json_bytes(rebuilt) == canonical_json_bytes(frozen),
+            "E_RELATION_RUNTIME_DRIFT", phase)
+    _verify_relation_artifact_triple(manifest, prepared)
+    return {
+        "phase": phase,
+        "full_identity": full_identity,
+        "quick_identity": quick_identity,
+        "relation_report_sha256": rebuilt["relation_report_sha256"],
+    }
+
+
+def verify_relation_identity_snapshot(snapshot: Mapping[str, object],
+                                      scope: str) -> None:
+    require(scope in {"full", "quick"}, "E_RELATION_IDENTITY_SCOPE", scope)
+    key = f"{scope}_identity"
+    registry = snapshot.get(key)
+    require(isinstance(registry, Mapping), "E_RELATION_IDENTITY_SCOPE", key)
+    _recheck_identities(registry)
+
+
 def assert_free_space(path: Path, minimum_bytes: int) -> None:
     free = shutil.disk_usage(path).free
     require(free >= minimum_bytes, "E_DISK_SPACE", f"{free} < {minimum_bytes}")
@@ -971,7 +2758,7 @@ def exclusive_execution_lock(execution_dir: Path, phase: str):
                 os.close(directory_descriptor)
 
 
-def verify_frozen_runtime(
+def verify_frozen_config_environment(
     manifest: Mapping[str, object],
     device: torch.device,
 ):
@@ -988,7 +2775,15 @@ def verify_frozen_runtime(
             "E_REPOSITORY_DRIFT", "repository/package/code manifest")
     require(runtime_environment_manifest(device) == manifest["environment"],
             "E_ENVIRONMENT_DRIFT", "runtime environment")
+    return local_cfg
 
+
+def verify_frozen_checkpoint_specs(
+    manifest: Mapping[str, object],
+    device: torch.device,
+):
+    require(device.type == "cuda" and torch.cuda.is_available(),
+            "E_DEVICE", str(device))
     specs = [dict(value) for value in manifest["checkpoints"]]
     require({int(value["seed"]) for value in specs} == {42, 1234, 2024},
             "E_CHECKPOINT_SEEDS", str([value["seed"] for value in specs]))
@@ -1004,7 +2799,7 @@ def verify_frozen_runtime(
                 require(parse_flat_log_metrics_bytes(asset_payload, str(path)) ==
                         spec["flat_log_metrics"],
                         "E_FLAT_LOG_DRIFT", str(spec["seed"]))
-    return local_cfg, sorted(specs, key=lambda value: int(value["seed"]))
+    return sorted(specs, key=lambda value: int(value["seed"]))
 
 
 def combined_metadata(prepared: Path) -> List[Dict[str, object]]:
@@ -1019,55 +2814,17 @@ def combined_metadata(prepared: Path) -> List[Dict[str, object]]:
     return rows
 
 
-def verify_runtime_datasets(
-    split_datasets: Mapping[str, PoseImageDataset],
+def runtime_metadata_from_relation_snapshot(
     prepared: Path,
+    snapshot: Mapping[str, object],
 ) -> List[Dict[str, object]]:
-    file_hash_cache: Dict[str, str] = {}
-    rgb_stats: Dict[str, Dict[str, int]] = {}
-    by_split = {
-        split: json.loads(
-            (prepared / f"{split}_metadata.json").read_text(encoding="utf-8"))
-        for split in ("train", "query", "gallery")
-    }
-    for split, dataset in split_datasets.items():
-        frozen = by_split[split]
-        require(len(dataset.dataset) == len(frozen), "E_RUNTIME_DATASET_COUNT", split)
-        for index, (record, row) in enumerate(zip(dataset.dataset, frozen)):
-            path, pid, camid, viewid = record
-            resolved = str(Path(path).resolve())
-            require(index == int(row["index"]), "E_RUNTIME_DATASET_ORDER", split)
-            require(resolved == row["path"], "E_RUNTIME_DATASET_PATH", resolved)
-            require(int(pid) == int(row["pid"]), "E_RUNTIME_DATASET_PID", resolved)
-            require(int(camid) == int(row["camid"]), "E_RUNTIME_DATASET_CAM", resolved)
-            require(int(viewid) == int(row["viewid"]), "E_RUNTIME_DATASET_VIEW", resolved)
-            stat_before = Path(resolved).stat()
-            require(sha256_file(Path(resolved)) == row["rgb_sha256"],
-                    "E_RUNTIME_RGB_SHA", resolved)
-            stat = Path(resolved).stat()
-            require((stat_before.st_dev, stat_before.st_ino, stat_before.st_size,
-                     stat_before.st_mtime_ns) ==
-                    (stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns),
-                    "E_RUNTIME_RGB_TOCTOU", resolved)
-            rgb_stats[resolved] = {
-                "device": int(stat.st_dev),
-                "inode": int(stat.st_ino),
-                "size": int(stat.st_size),
-                "mtime_ns": int(stat.st_mtime_ns),
-            }
-            pose_path_sha, pose_content_sha = _pose_asset_identity(
-                dataset, resolved, file_hash_cache)
-            require(pose_path_sha == row["pose_path_sha256"],
-                    "E_RUNTIME_POSE_PATH_SHA", resolved)
-            require(pose_content_sha == row["pose_content_sha256"],
-                    "E_RUNTIME_POSE_CONTENT_SHA", resolved)
-    assert_disjoint_records({
-        split: load_scene_records(prepared, split)
-        for split in ("train", "query", "gallery")
-    })
+    registry = snapshot.get("full_identity")
+    require(isinstance(registry, Mapping), "E_RELATION_IDENTITY_SCOPE", "full")
     combined = combined_metadata(prepared)
     for row in combined:
-        row["runtime_rgb_stat"] = rgb_stats[str(row["path"])]
+        path = str(row["path"])
+        require(path in registry, "E_RELATION_IDENTITY_SCOPE", path)
+        row["runtime_rgb_identity"] = tuple(registry[path])
     return combined
 
 
@@ -1132,6 +2889,8 @@ def publish_arm(
     temporary: Path,
     published: Path,
     provenance: Mapping[str, object],
+    *,
+    quick_identity: Mapping[str, Tuple[int, ...]],
     status: str = "PASS",
 ) -> Dict[str, object]:
     require(status in {"PASS", "INVALID_SECONDARY"}, "E_ARM_STATUS", status)
@@ -1142,6 +2901,8 @@ def publish_arm(
         "provenance": dict(provenance),
     }
     atomic_write_json(temporary / "COMPLETE.json", marker)
+    require(len(quick_identity) == 19, "E_RELATION_QUICK_SET", str(len(quick_identity)))
+    _recheck_identities(quick_identity)
     publish_directory(temporary, published)
     return marker
 
@@ -1671,14 +3432,8 @@ def extract_arm(
             require(int(frozen["combined_index"]) == cursor + offset,
                     "E_RUNTIME_LOADER_ORDER", resolved)
             require(resolved == frozen["path"], "E_RUNTIME_LOADER_PATH", resolved)
-            stat = Path(resolved).stat()
-            current_stat = {
-                "device": int(stat.st_dev),
-                "inode": int(stat.st_ino),
-                "size": int(stat.st_size),
-                "mtime_ns": int(stat.st_mtime_ns),
-            }
-            require(current_stat == frozen["runtime_rgb_stat"],
+            current_identity = _file_identity(Path(resolved).lstat())
+            require(current_identity == frozen["runtime_rgb_identity"],
                     "E_RUNTIME_RGB_TOCTOU", resolved)
             require(int(batch_pids[offset]) == int(frozen["pid"]),
                     "E_RUNTIME_LOADER_PID", resolved)
@@ -1811,6 +3566,7 @@ def extract_and_publish_unpublished_arm(
     arm_dir: Path,
     row: Mapping[str, object],
     provenance: Mapping[str, object],
+    quick_identity: Mapping[str, Tuple[int, ...]],
 ) -> str:
     """Publish one arm; only a centroid protocol failure is secondary-invalid."""
 
@@ -1839,10 +3595,12 @@ def extract_and_publish_unpublished_arm(
             temporary,
             arm_dir,
             provenance,
+            quick_identity=quick_identity,
             status="INVALID_SECONDARY",
         )
         return "INVALID_SECONDARY"
-    publish_arm(temporary, arm_dir, provenance)
+    publish_arm(
+        temporary, arm_dir, provenance, quick_identity=quick_identity)
     return "PASS"
 
 
@@ -1950,13 +3708,19 @@ def verify_run_completion(
 def run_phase(args: argparse.Namespace) -> None:
     os.chdir(ROOT)
     execution_dir = Path(args.execution_dir).resolve()
+    _assert_not_burned_execution(execution_dir)
     require(execution_dir.is_dir(), "E_RESUME_MISSING", str(execution_dir))
     device = torch.device(args.device)
     require(device.type == "cuda" and torch.cuda.is_available(), "E_DEVICE", str(device))
     with exclusive_execution_lock(execution_dir, "run"):
         manifest = verify_prepared_artifacts(execution_dir)
+        local_cfg = verify_frozen_config_environment(manifest, device)
+        dataset, split_datasets = direct_datasets(local_cfg)
+        prepared = execution_dir / "prepared"
+        relation_entry = verify_relation_runtime(
+            manifest, dataset, split_datasets, prepared, "run_entry")
+        specs = verify_frozen_checkpoint_specs(manifest, device)
         assert_free_space(execution_dir, int(manifest["resource"]["minimum_free_bytes"]))
-        local_cfg, specs = verify_frozen_runtime(manifest, device)
         expected_schedule = core_schedule([int(spec["seed"]) for spec in specs])
         spec_by_seed = {int(spec["seed"]): spec for spec in specs}
         require(manifest["schedule"] == expected_schedule,
@@ -1965,9 +3729,8 @@ def run_phase(args: argparse.Namespace) -> None:
                 "E_SCHEDULE_ID", "arm ids not unique")
         _remove_stale_arm_temporaries(execution_dir)
 
-        dataset, split_datasets = direct_datasets(local_cfg)
-        prepared = execution_dir / "prepared"
-        frozen_metadata = verify_runtime_datasets(split_datasets, prepared)
+        frozen_metadata = runtime_metadata_from_relation_snapshot(
+            prepared, relation_entry)
         num_query = int(manifest["dataset"]["num_query"])
         require(num_query == len(split_datasets["query"]), "E_SCENE_QUERY_COUNT", "")
         loader = validation_loader(split_datasets, local_cfg)
@@ -1981,7 +3744,7 @@ def run_phase(args: argparse.Namespace) -> None:
 
         for spec in specs:
             seed = int(spec["seed"])
-            frozen_metadata = verify_runtime_datasets(split_datasets, prepared)
+            verify_relation_identity_snapshot(relation_entry, "full")
             seed_rows = [row for row in expected_schedule if int(row["seed"]) == seed]
             require(len(seed_rows) == 164, "E_SCHEDULE_ARM_COUNT", str(seed))
             model = make_model(
@@ -1999,6 +3762,7 @@ def run_phase(args: argparse.Namespace) -> None:
             model.eval()
             assert_isolated_psg(local_cfg, model)
             capture = PSGInputCapture(model)
+            correct_actual = None
             try:
                 preflight = seam_preflight(model, capture, loader, scenes, device)
                 atomic_write_json(execution_dir / f"seed_{seed}_preflight.json", {
@@ -2023,7 +3787,9 @@ def run_phase(args: argparse.Namespace) -> None:
                         model, capture, loader, scenes, start_row, device,
                         frozen_metadata, temporary, None, None, start_provenance,
                     )
-                    publish_arm(temporary, start_dir, start_provenance)
+                    publish_arm(
+                        temporary, start_dir, start_provenance,
+                        quick_identity=relation_entry["quick_identity"])
                 start_summary = read_arm_summary(start_dir, start_provenance)
                 assert_flat_log_parity(start_summary, spec)
                 actual_path = start_dir / "actual_psg_input.npy"
@@ -2060,6 +3826,7 @@ def run_phase(args: argparse.Namespace) -> None:
                             })
                             publish_arm(
                                 temporary, arm_dir, provenance,
+                                quick_identity=relation_entry["quick_identity"],
                                 status="INVALID_SECONDARY")
                         else:
                             extract_and_publish_unpublished_arm(
@@ -2072,6 +3839,7 @@ def run_phase(args: argparse.Namespace) -> None:
                                 arm_dir,
                                 row,
                                 provenance,
+                                relation_entry["quick_identity"],
                             )
                     verify_published_arm(arm_dir, provenance)
                     atomic_write_json(execution_dir / "RUN_PROGRESS.json", {
@@ -2087,21 +3855,29 @@ def run_phase(args: argparse.Namespace) -> None:
                 end_summary = read_arm_summary(end_dir, end_provenance)
                 assert_correct_repeat(start_summary, end_summary)
                 assert_flat_log_parity(end_summary, spec)
-                verify_runtime_datasets(split_datasets, prepared)
+                verify_relation_identity_snapshot(relation_entry, "full")
             finally:
                 capture.close()
+                if correct_actual is not None:
+                    _close_memmap(correct_actual)
                 del model
                 gc.collect()
                 torch.cuda.empty_cache()
 
+        relation_tail = verify_relation_runtime(
+            manifest, dataset, split_datasets, prepared, "run_tail")
+        require(
+            relation_tail["relation_report_sha256"] ==
+            relation_entry["relation_report_sha256"],
+            "E_RELATION_RUNTIME_DRIFT", "run_tail/entry",
+        )
         for row in expected_schedule:
             spec = spec_by_seed[int(row["seed"])]
             provenance = expected_arm_provenance(manifest, spec, row, scenes)
             require(verify_published_arm(
                 arms_root / schedule_arm_id(row), provenance) is not None,
                     "E_ARM_MISSING", schedule_arm_id(row))
-        verify_runtime_datasets(split_datasets, prepared)
-        verify_frozen_runtime(manifest, device)
+        verify_relation_identity_snapshot(relation_tail, "quick")
         publish_run_completion(
             execution_dir,
             [schedule_arm_id(row) for row in expected_schedule],
@@ -2224,14 +4000,18 @@ def archive_transient_state(execution_dir: Path) -> None:
 def summarize_phase(args: argparse.Namespace) -> None:
     os.chdir(ROOT)
     execution_dir = Path(args.execution_dir).resolve()
+    _assert_not_burned_execution(execution_dir)
     require(execution_dir.is_dir(), "E_RESUME_MISSING", str(execution_dir))
     with exclusive_execution_lock(execution_dir, "summarize"):
         manifest = verify_prepared_artifacts(execution_dir)
         device = torch.device(args.device)
         require(device.type == "cuda" and torch.cuda.is_available(), "E_DEVICE", str(device))
-        local_cfg, verified_specs = verify_frozen_runtime(manifest, device)
-        _dataset, split_datasets = direct_datasets(local_cfg)
-        verify_runtime_datasets(split_datasets, execution_dir / "prepared")
+        local_cfg = verify_frozen_config_environment(manifest, device)
+        dataset, split_datasets = direct_datasets(local_cfg)
+        prepared = execution_dir / "prepared"
+        relation_entry = verify_relation_runtime(
+            manifest, dataset, split_datasets, prepared, "summarize_entry")
+        verified_specs = verify_frozen_checkpoint_specs(manifest, device)
         schedule = manifest["schedule"]
         require(schedule == core_schedule([
             int(spec["seed"]) for spec in manifest["checkpoints"]
@@ -2242,9 +4022,9 @@ def summarize_phase(args: argparse.Namespace) -> None:
             [schedule_arm_id(row) for row in schedule],
         )
         num_query = int(manifest["dataset"]["num_query"])
-        scenes = PreparedSceneAccess(execution_dir / "prepared", num_query)
+        scenes = PreparedSceneAccess(prepared, num_query)
         query_metadata = json.loads(
-            (execution_dir / "prepared/query_metadata.json").read_text(encoding="utf-8"))
+            (prepared / "query_metadata.json").read_text(encoding="utf-8"))
         query_pids = np.asarray([int(row["pid"]) for row in query_metadata], dtype=np.int64)
         require(query_pids.shape == (num_query,), "E_QUERY_PID_SHAPE", str(query_pids.shape))
 
@@ -2414,6 +4194,11 @@ def summarize_phase(args: argparse.Namespace) -> None:
             },
             "audits": {
                 "prepared_artifact_sha256": manifest["prepared_artifact_sha256"],
+                "split_relations": {
+                    "relation_report_sha256": manifest["dataset"]
+                    ["split_relations"]["relation_report_sha256"],
+                    "artifact": manifest["dataset"]["split_relations_artifact"],
+                },
                 "weak_intervention": weak_audits,
                 "all_primary_audits_passed": True,
             },
@@ -2434,8 +4219,28 @@ def summarize_phase(args: argparse.Namespace) -> None:
             aggregate_arrays[f"seed_{seed}_shuffle_R1"] = control_r1["shuffle"][seed]
             aggregate_arrays[f"seed_{seed}_bypass_AP"] = control_ap["bypass"][seed]
             aggregate_arrays[f"seed_{seed}_bypass_R1"] = control_r1["bypass"][seed]
+        relation_pre_results = verify_relation_runtime(
+            manifest, dataset, split_datasets, prepared, "summarize_pre_results")
+        require(
+            relation_pre_results["relation_report_sha256"] ==
+            relation_entry["relation_report_sha256"],
+            "E_RELATION_RUNTIME_DRIFT", "summarize_pre_results/entry",
+        )
+        verify_run_completion(
+            execution_dir, [schedule_arm_id(row) for row in schedule])
+        for row in schedule:
+            seed = int(row["seed"])
+            provenance = provenance_for(seed, row)
+            require(verify_published_arm(
+                arms_root / schedule_arm_id(row), provenance) is not None,
+                    "E_ARM_MISSING", schedule_arm_id(row))
         result_hashes = publish_or_verify_results(
             execution_dir, results, aggregate_arrays)
+        verify_relation_identity_snapshot(relation_pre_results, "quick")
+        _verify_relation_artifact_triple(manifest, prepared)
+        result_marker = verify_results_directory(execution_dir / "results")
+        require(result_marker["artifact_sha256"] == result_hashes,
+                "E_RESULTS_HASH", "pre-COMPLETE")
         archive_transient_state(execution_dir)
         atomic_write_json(execution_dir / "COMPLETE", {
             "status": "COMPLETE",
@@ -2454,6 +4259,8 @@ def _write_failure_manifest(args: argparse.Namespace, error: BaseException) -> N
     if execution_value is None:
         return
     execution_dir = Path(execution_value).resolve()
+    if _is_burned_execution(execution_dir):
+        return
     if not execution_dir.is_dir():
         return
     if (execution_dir / "COMPLETE").exists():

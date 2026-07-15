@@ -30,6 +30,7 @@ MAX_TEMPORARY_BYTES = 16 * 1024 * 1024
 def _fixture_records() -> list[p.SceneRecord]:
     return [
         p.SceneRecord(
+            metadata_schema=p.SCENE_METADATA_SCHEMA_V2,
             index=index,
             split="query",
             path=f"/synthetic/q_{index:03d}.jpg",
@@ -38,13 +39,118 @@ def _fixture_records() -> list[p.SceneRecord]:
             pose_content_sha256=f"pose-content-{index:03d}",
             pid=index,
             camid=0,
+            viewid=0,
             person_count=1,
             continuous=tuple([0.0] * NUISANCE_DIMENSION),
             frame=0,
             report={},
+            source_pid=index,
+            source_camid=0,
+            source_frame_id=0,
+            target_person_idx=0,
+            full_pose_person_relpaths=(
+                f"pose_data/query/person-{index:03d}.npz",
+            ),
+            full_pose_person_paths=(
+                f"/synthetic/pose_data/query/person-{index:03d}.npz",
+            ),
+            full_pose_person_sha256=(f"person-content-{index:03d}",),
+            effective_pose_person_relpaths=(
+                f"pose_data/query/person-{index:03d}.npz",
+            ),
+            effective_pose_person_paths=(
+                f"/synthetic/pose_data/query/person-{index:03d}.npz",
+            ),
+            effective_pose_person_sha256=(f"person-content-{index:03d}",),
         )
         for index in range(FIXTURE_COUNT)
     ]
+
+
+def _empty_summary() -> dict[str, object]:
+    payload = p.canonical_json_bytes([])
+    return {
+        "count": 0,
+        "canonical_bytes": len(payload),
+        "sha256": p.sha256_bytes(payload),
+    }
+
+
+def _within(records: Sequence[p.SceneRecord]) -> dict[str, int]:
+    def duplicates(values: Sequence[object]) -> int:
+        return len(values) - len(set(values))
+
+    full_paths = [value for record in records for value in record.full_pose_person_paths]
+    full_content = [value for record in records for value in record.full_pose_person_sha256]
+    effective_paths = [
+        value for record in records for value in record.effective_pose_person_paths
+    ]
+    effective_content = [
+        value for record in records for value in record.effective_pose_person_sha256
+    ]
+    return {
+        "path_duplicate_count": duplicates([record.path for record in records]),
+        "rgb_sha256_duplicate_count": duplicates(
+            [record.rgb_sha256 for record in records]),
+        "pose_path_sha256_duplicate_count": duplicates(
+            [record.pose_path_sha256 for record in records]),
+        "pose_content_sha256_duplicate_count": duplicates(
+            [record.pose_content_sha256 for record in records]),
+        "full_pose_person_path_duplicate_count": duplicates(full_paths),
+        "full_pose_person_content_duplicate_count": duplicates(full_content),
+        "effective_pose_person_path_duplicate_count": duplicates(effective_paths),
+        "effective_pose_person_content_duplicate_count": duplicates(effective_content),
+        "source_pid_count": len({record.source_pid for record in records}),
+        "target_outside_effective_count": 0,
+    }
+
+
+def _fixture_relation_report(
+    records: Sequence[p.SceneRecord],
+) -> dict[str, object]:
+    empty_summary = _empty_summary()
+    empty_records: list[p.SceneRecord] = []
+    report: dict[str, object] = {
+        "schema": p.SPLIT_RELATION_SCHEMA_V2,
+        "official_source": {},
+        "official_lists": {},
+        "split_counts": {
+            "train": 0,
+            "query": len(records),
+            "gallery": 0,
+        },
+        "within_split": {
+            "train": _within(empty_records),
+            "query": _within(records),
+            "gallery": _within(empty_records),
+        },
+        "cross_split": {},
+        "relations": {
+            "query_gallery_shared_basenames": dict(empty_summary),
+            "query_gallery_shared_rgb_sha256_legacy": dict(empty_summary),
+            "query_gallery_shared_rgb_sha256": dict(empty_summary),
+            "query_gallery_endpoint_pairs": {
+                "equal": True,
+                "rgb": dict(empty_summary),
+                "pose": dict(empty_summary),
+            },
+            "query_gallery_joint_metadata_pairs": dict(empty_summary),
+            "query_gallery_joint_pairs": dict(empty_summary),
+            "split_record_sets": {
+                "train": p.canonical_scene_record_set_summary(empty_records),
+                "query": p.canonical_scene_record_set_summary(records),
+                "gallery": p.canonical_scene_record_set_summary(empty_records),
+            },
+            "allowed_pair_count": 0,
+            "junk_true_count": 0,
+            "junk_false_count": 0,
+            "forbidden_pair_count": 0,
+        },
+        "pairs": [],
+    }
+    report["relation_report_sha256"] = p.sha256_bytes(
+        p.canonical_json_bytes(report))
+    return report
 
 
 def _array_sha256(array: np.ndarray) -> str:
@@ -159,45 +265,32 @@ def test_formal_protocol_preflight_cpu(tmp_path: Path) -> None:
     assert len({record.rgb_sha256 for record in records}) == FIXTURE_COUNT
     assert len({record.pose_path_sha256 for record in records}) == FIXTURE_COUNT
     assert len({record.pose_content_sha256 for record in records}) == FIXTURE_COUNT
-    fixture_hash = p.sha256_bytes(p.canonical_json_bytes([
-        {
-            "index": record.index,
-            "split": record.split,
-            "path": record.path,
-            "rgb_sha256": record.rgb_sha256,
-            "pose_path_sha256": record.pose_path_sha256,
-            "pose_content_sha256": record.pose_content_sha256,
-            "pid": record.pid,
-            "camid": record.camid,
-            "person_count": record.person_count,
-            "continuous": list(record.continuous),
-            "frame": record.frame,
-        }
-        for record in records
-    ]))
-    assert fixture_hash == p.sha256_bytes(p.canonical_json_bytes([
-        {
-            "index": record.index,
-            "split": record.split,
-            "path": record.path,
-            "rgb_sha256": record.rgb_sha256,
-            "pose_path_sha256": record.pose_path_sha256,
-            "pose_content_sha256": record.pose_content_sha256,
-            "pid": record.pid,
-            "camid": record.camid,
-            "person_count": record.person_count,
-            "continuous": list(record.continuous),
-            "frame": record.frame,
-        }
-        for record in _fixture_records()
-    ]))
+    fixture_hash = p.canonical_scene_record_set_summary(records)["sha256"]
+    assert fixture_hash == p.canonical_scene_record_set_summary(
+        _fixture_records())["sha256"]
+    relation_report = _fixture_relation_report(records)
+    assert p.validate_relation_report_self_hash(relation_report) == (
+        relation_report["relation_report_sha256"]
+    )
 
     previous_threads = torch.get_num_threads()
     torch.set_num_threads(1)
     try:
         assert torch.get_num_threads() == 1
-        first = p.prepare_split_mappings(records, device=device, anchor_chunk=ANCHOR_CHUNK)
-        second = p.prepare_split_mappings(records, device=device, anchor_chunk=ANCHOR_CHUNK)
+        first = p.prepare_split_mappings(
+            records,
+            device=device,
+            anchor_chunk=ANCHOR_CHUNK,
+            relation_report=relation_report,
+            split="query",
+        )
+        second = p.prepare_split_mappings(
+            records,
+            device=device,
+            anchor_chunk=ANCHOR_CHUNK,
+            relation_report=relation_report,
+            split="query",
+        )
     finally:
         torch.set_num_threads(previous_threads)
 

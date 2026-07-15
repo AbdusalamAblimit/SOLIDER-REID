@@ -628,3 +628,168 @@ clone `/home/afr/SOLIDER-REID-exp374-8ca57ed-v4` 和证据目录
 `PASS_FOR_A02_PREPARE_REVIEW_ONLY`。这只允许进入一次全新 A02 prepare-only 的
 命令、资源和边界审查；A02 尚未授权或启动，Gate A `run`/`summarize` 与训练仍为
 `NO_GO`。
+
+## 2026-07-15 — A02 prepare-only 安全失败：官方 mirror 协议假设过强
+
+A02 wrapper 与 launcher 经两路独立静态复签后，只取得一次 prepare-only 授权：
+
+- wrapper：`16275 B`，SHA
+  `7c79818bdecdeb9546939707461d8412cf68ff774e57e721914fb20b9f2feb61`；
+- launcher：`3747 B`，SHA
+  `806c1a69ebc7b9ef39544c46f80ebaec6f5ad28486a15e5ef7558360494f8fb8`；
+- 远端 exact detached HEAD：`8ca57edc2bf7b5db66a0913dad2be2b4078a38d7`；
+- 启动前 A02 output/lock/PID/log/status 与两份远端脚本均不存在，GPU `2 MiB/0%`，
+  可用空间 `229624778752 B`；
+- 唯一 launcher 成功握手 wrapper PID `3138`，命令只有 `prepare`，没有
+  `run`、`summarize`、`--resume` 或训练。
+
+prepare 在三个 split 的 deterministic metadata/cache 物化后、任何 matching、checkpoint
+forward、arm 或指标生成前，因
+`E_SPLIT_CONTENT_OVERLAP: query/gallery/rgb_sha256` 返回 exit code `1`。status finished
+UTC 为 `2026-07-15T04:17:14Z`。没有发布 `gate_a_<sha>` execution，也没有
+`PREPARED.json`、arms、results、RUN_COMPLETE、COMPLETE 或正式指标。失败后 PID/Gate-A
+进程为空、lock 可重新取得、GPU 回到 `2 MiB/0%`。A02 output/staging、外围 lock/PID/
+log/status 和部署脚本全部永久保留，禁止 resume、复用或同名重试。
+
+外围失败证据 SHA（lock/PID/log/status）分别为：
+
+- `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；
+- `a3fe40281a02fd330fdfd6fdf129ac48c6410f207f3ca3de3024e6e0286e2e39`；
+- `22bc27cf2028e5d31682641d48499685d25ead19322c437e8f73d63d47511d0f`；
+- `647c5fa40b462864e114d1427fee5e2c14fdc68f8267292cc54025c77883b715`。
+
+staging `FAILED.json` SHA 为
+`740c4cabfb3475f35ab4086b5912749e427b4b59dbcca29e6582615db1352bfe`。
+三份 metadata 已完整回传到 Git 外
+`remote_artifacts/exp374_gate_a_8ca57ed_a02_20260715_failure/`；train/query/gallery 的
+大小与 SHA 分别为：
+
+- `8755781 B` / `6e94380939d1ceb2b0f2cb9f3c3cfa0f244b5ebda6afaa3f8233b3b681a189fc`；
+- `1209118 B` / `236f7967a5f7c1a28b3dbc0b773268802c75028e67b91f732eaffb8d983b0fb6`；
+- `9931008 B` / `5fdcfd64ca55b7ec2c8def03195a24ed89f19917e1b07f9fc3faf145ded6e959`。
+
+主线与三路独立诊断一致确认根因是 `PROTOCOL_ASSUMPTION_BUG`，不是数据污染：
+
+1. 三 split 内 path/RGB SHA/pose-path SHA/pose-content SHA 各自全部唯一；
+2. train↔query 与 train↔gallery 的四类交集全部为 0；
+3. query↔gallery path 与 pose-path 交集为 0，RGB SHA 与 pose-content SHA 均恰有
+   1870 个一对一交集；
+4. 1870 对全部同 basename、PID、camid、viewid、person_count、frame，cached Hraw、
+   scene score、continuous nuisance 逐值相同，0 forbidden/额外碰撞；
+5. 该关系与 exp371 永久证据以及 Occluded-Duke 官方 lists 完全一致；标准 evaluator
+   会删除同 PID、同相机的 gallery endpoint。
+
+当前裁决为
+`A02_FAILED_NONREPORTABLE / PROTOCOL_ASSUMPTION_BUG / NO_GO_FOR_RUN`。不能简单删除
+disjoint 断言，更不能删 gallery 样本或改 evaluator；已先在 `design.md` 冻结结构化、
+可哈希、fail-closed 的 official-mirror relation gate，正在做多路静态设计复审。设计
+复审通过前禁止实现或测试；随后仍需新 exact commit 的本地/历史环境全量复验与全新
+A03 prepare-only 审批。
+
+## 2026-07-15 — A02 official-mirror 全资产只读证据闭合
+
+只读诊断脚本经过多轮移动目标复审后，最终冻结为 `42218 B` / SHA256
+`88db86bb09a8d7d6fde7394ba2d12f8b115d517f9609bffe3c40ffd8836c7348`；对应 design SHA 为
+`39513400ce65652ca787cafbc69e2fe247716cb6e5e8091e8a9322650b568d68`。两路独立 Codex
+均从头签 `PASS_FOR_READONLY_A02_DIAGNOSTIC` 后，脚本才部署到 A02 失败树之外的
+`/home/afr/exp374_a02_readonly_mirror_88db86bb.py`，remote size/SHA 与本地逐项一致，权限
+`0400`。执行固定使用 Python `-B -s`、`PYTHONDONTWRITEBYTECODE=1`、
+`PYTHONNOUSERSITE=1`，只读取 A02 staging 与 resolved data root，不加载 checkpoint、
+不运行 GPU forward、不读取/生成 ReID 指标。
+
+同一冻结脚本只读执行两次均 exit `0`，第二次 stdout 原样保存在 Git 外
+`remote_artifacts/exp374_a02_readonly_mirror_report_88db86bb.json`，为 `9290 B` / SHA256
+`7b070824f86304e9ce4a4fd24e69b0b1c2bda6bea1f24c049c5b844b79553fa2`。两路独立证据
+复审均签 `PASS_FOR_A02_ASSET_EVIDENCE`。核心结果：
+
+- status=`PASS_READONLY_A02_DIAGNOSTIC`，共绑定并尾部复核 `86477` 个文件 identity；
+- train/query/gallery 的 bundle 与 full/effective constituent split 内 duplicate 全为 `0`，
+  `target_outside_effective_count` 也全部为 `0`；
+- train↔query/train↔gallery 所有 overlap 均为 `0`；
+- q/g 只有 `1870` 组 official RGB/pose-content mirror 和 `3486` 个同 endpoint/同 position
+  constituent content mirror，path overlap 与 forbidden overlap 均为 `0`；
+- `junk_true/junk_false/forbidden_pair=1870/0/0`；
+- RGB/pose endpoint list 均为 `1870` 对、`21666 B`、SHA256
+  `4135cdc4bb3cecd52dcf79423cf24d53595ce695a8b91544e2732be4bf3ebdfc`，逐项相等；
+- full joint-pair canonical payload 为 `3542413 B` / SHA256
+  `b82fd6aa1a81faf85e80b876a62bd892d259e3c7e1e9bb9d9a381641dbb3df93`；
+- 六个 q/g cache 全局 shape/dtype/finite、whole-file pre/post SHA 与 identity 全部闭合。
+
+执行后 remote 诊断脚本 SHA 未变；A02 root 仍只含原 staging，没有 PREPARED、
+RUN_COMPLETE、COMPLETE、arms/results 或 `__pycache__`；没有 GPU compute process。当前只把
+许可升级为 `PASS_FOR_PRODUCTION_RELATION_CODE_DESIGN_REVIEW`：先冻结 production report、
+manifest nesting、negative regression matrix 与 runtime 成本，再做多路代码设计审查。
+仍禁止实现后直接测试、A03 prepare、Gate A run/summarize、指标生成或训练。
+
+## 2026-07-15 — production relation 设计第四轮：完整 stratum token 契约
+
+对 `fcaecc2cf9b78ae883514194ed32c2b538e07336d3ac6210b10434a748c6ba6f`
+的三路从头复审得到两路 PASS、一路精确阻塞。阻塞不是 official mirror 或 metadata
+语义，而是 matching 底层契约仍不能识别“同一 person-count stratum 漏掉部分 row”或
+“把完整 stratum 拆成多次调用”：旧 token 只有按 global index 排列的 per-record SHA，
+无法从未传入的 slot 推回它属于哪个 person-count，因此设计声称的错 subset 必拒绝尚未
+闭合。旧版 PASS 不沿用为最终授权。
+
+设计已改为由验证 full records 的 module-private factory 唯一派生并冻结
+`strata_global_indices: person_count -> exact ordered tuple[global_index]`。底层
+`exact_sparse_candidates` 必须要求传入 indices 与对应完整 tuple 逐项相等，再逐 row
+核 local record SHA；omission、superset、reorder、split-call、重复、越界和跨 stratum
+全部 fail closed。回归矩阵同步加入这些负例。新候选为 `60679 B` / `970` 行 / SHA256
+`c5d43998c8dea7cb76a6163c096d96a8b690fc8a346c89e41f86fef0cab42406`，已重新送三路
+从头只读复审。裁决收齐前继续禁止实现、测试、远端操作、A03 prepare、Gate A
+run/summarize、arm/per-query 指标和训练。
+
+三路最终复审现已全部收齐，且都只对 exact design
+`c5d43998c8dea7cb76a6163c096d96a8b690fc8a346c89e41f86fef0cab42406`
+签署 `PASS_FOR_PRODUCTION_RELATION_CODE_DESIGN`。matching 专项确认完整 stratum tuple
+能拒绝 omission/superset/reorder/split-call；工程专项确认实现拓扑、调用顺序与 I/O
+预算可落地；独立 protocol 专项确认 official mirror、strict-v2、report 三重闭环和六个
+runtime callpoint 保持闭合。许可只升级为“可以实现 production relation v2，并在实现后
+做独立静态代码审查”；仍不授权执行测试、远端操作、A03 prepare、Gate A run/summarize、
+指标或训练。
+
+## 2026-07-15 — relation-v2 实现静态审查与本地全量复验
+
+relation-v2 production、protocol、state machine 与 synthetic negative matrix 已实现。
+多轮静态红队先后发现并闭合：pairs 未反向约束 relations、nested schema 可增键、cache
+dtype/shape 混码、full/effective 错误码死分支、非 junk 谓词死分支、坏输入原生异常、
+A02 入口拒绝后 failure writer 反写、稳定文件 I/O/TOCTOU 分类等问题。最终 production
+冻结为：
+
+- audit SHA256：
+  `345056f499567ea4f2c9e7cad3daa7a4d9e723939123eb38ebd7334d6a875b39`；
+- protocol SHA256：
+  `99c72a8a0bb2d26f2173cb2b8d50de281edbb801e33397725f1f20bd6f7af409`；
+- runner tests SHA256：
+  `a8d26e0d4379647d209a4e88abc2f66b7b9fdef8368156c9e806fa4489407aca`；
+- formal state tests SHA256：
+  `ee709efc3722e455c28e47fd49b315594e6acf6557035a2c9c6d72ec881aca7b`。
+
+首轮本地执行前五套 PASS，runner 为 `15 failed / 91 passed / 135 subtests passed`。
+唯一 production 缺陷是 burned root 常量未先 `resolve()`，macOS tempfile 的
+`/var`→`/private/var` 规范化使 exact root/descendant 拒写测试失败；修复后经独立红队
+复签。其余失败是测试夹具未同步严格谓词前置顺序或 19-file quick identity 参数，不是
+放宽 production；夹具均改为真实违规构造。
+
+最终六套从头重跑结果：formal state `41`、formal protocol `1`、formal Swin `1`、
+protocol `31`、model seam `38`、runner `95 + 146 subtests`，即 `207 direct + 146
+subtests` 全 PASS；JUnit 总计 `353`，`errors/failures/skipped=0/0/0`。Git 外证据目录：
+
+`remote_artifacts/exp374_local_relation_tests_345056f_rerun1_20260715/`
+
+证据 manifest SHA256：
+`0179eedfd98833e042fba6ac95f37ac26601badf6564a7617606f3ecfbb767d3`。两路独立复核确认
+命令、9 份源码 SHA、12 份 log/JUnit SHA、环境和计数全部一致，且正式 rerun 后没有新增
+pytest cache/bytecode。
+
+当前状态升级为 `PASS_FOR_LOCAL_RELATION_TEST_EVIDENCE`。下一步只允许显式小步提交、
+bundle 双端验签及历史 Python 3.8/torch 1.13.1 隔离 clone 全量复验；远端真实资产、A03
+prepare、Gate A `run`/`summarize`、arm/per-query 指标和训练继续 `NO_GO`。
+
+提交边界：formal Swin 本地 PASS 绑定了接手前已脏的
+`model/backbones/swin_transformer.py`（SHA256
+`e0223a1d0fbf1bd6fc9c46a55a35081fd570eab82743577feea425ce31d08c4d`），唯一 diff 为
+`.cuda()`→`.to(x.device)`。该文件不混入本轮 9 个 exp374 文件的小步提交；但 HEAD 版本
+无法复现 formal CPU seam。因此在这条既有改动的提交归属明确前，bundle/历史环境全量
+复验保持 `BLOCKED_BY_SWINT_SEAM_PROVENANCE`，不能用工作树 PASS 冒充 isolated exact
+commit PASS。

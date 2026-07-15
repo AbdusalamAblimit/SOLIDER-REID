@@ -14,7 +14,7 @@ import math
 import os
 import tempfile
 from collections import deque
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Sequence, Tuple
 
@@ -24,6 +24,8 @@ import torch.nn.functional as F
 
 
 SCHEMA_VERSION = "exp374-gate-a-v1"
+SCENE_METADATA_SCHEMA_V2 = "exp374-scene-metadata-v2"
+SPLIT_RELATION_SCHEMA_V2 = "occluded_duke_official_mirror_v2"
 MAPPING_SEEDS = tuple(range(374001, 374021))
 BASELINE_SEEDS = tuple(range(475000, 476000))
 BOOTSTRAP_SEED = 374900
@@ -169,6 +171,7 @@ def create_execution_directory(
 
 @dataclass(frozen=True)
 class SceneRecord:
+    metadata_schema: str
     index: int
     split: str
     path: str
@@ -177,10 +180,299 @@ class SceneRecord:
     pose_content_sha256: str
     pid: int
     camid: int
+    viewid: int
     person_count: int
     continuous: Tuple[float, ...]
     frame: int
-    report: Mapping[str, float]
+    report: Mapping[str, object]
+    source_pid: int
+    source_camid: int
+    source_frame_id: int
+    target_person_idx: int
+    full_pose_person_relpaths: Tuple[str, ...]
+    full_pose_person_paths: Tuple[str, ...]
+    full_pose_person_sha256: Tuple[str, ...]
+    effective_pose_person_relpaths: Tuple[str, ...]
+    effective_pose_person_paths: Tuple[str, ...]
+    effective_pose_person_sha256: Tuple[str, ...]
+
+
+_RELATION_REPORT_KEYS = frozenset({
+    "schema",
+    "official_source",
+    "official_lists",
+    "split_counts",
+    "within_split",
+    "cross_split",
+    "relations",
+    "pairs",
+    "relation_report_sha256",
+})
+_RELATION_KEYS = frozenset({
+    "query_gallery_shared_basenames",
+    "query_gallery_shared_rgb_sha256_legacy",
+    "query_gallery_shared_rgb_sha256",
+    "query_gallery_endpoint_pairs",
+    "query_gallery_joint_metadata_pairs",
+    "query_gallery_joint_pairs",
+    "split_record_sets",
+    "allowed_pair_count",
+    "junk_true_count",
+    "junk_false_count",
+    "forbidden_pair_count",
+})
+_WITHIN_SPLIT_KEYS = frozenset({
+    "path_duplicate_count",
+    "rgb_sha256_duplicate_count",
+    "pose_path_sha256_duplicate_count",
+    "pose_content_sha256_duplicate_count",
+    "full_pose_person_path_duplicate_count",
+    "full_pose_person_content_duplicate_count",
+    "effective_pose_person_path_duplicate_count",
+    "effective_pose_person_content_duplicate_count",
+    "source_pid_count",
+    "target_outside_effective_count",
+})
+_RELATION_SPLITS = ("train", "query", "gallery")
+_RELATION_TOKEN_FACTORY_IDENTITY = object()
+
+
+@dataclass(frozen=True)
+class _ValidatedRelationToken:
+    split: str
+    full_record_set_sha256: str
+    relation_report_sha256: str
+    per_record_sha256: Tuple[str, ...]
+    strata_global_indices: Tuple[Tuple[int, Tuple[int, ...]], ...]
+    _factory_identity: object = field(repr=False, compare=False)
+
+
+def _require_record_string(value: object, field_name: str) -> str:
+    require(isinstance(value, str) and bool(value),
+            "E_MATCH_RELATION_TOKEN", f"invalid SceneRecord.{field_name}")
+    return value
+
+
+def _require_record_integer(value: object, field_name: str) -> int:
+    require(type(value) is int,
+            "E_MATCH_RELATION_TOKEN", f"invalid SceneRecord.{field_name}")
+    return value
+
+
+def _require_record_string_tuple(
+    value: object,
+    field_name: str,
+) -> Tuple[str, ...]:
+    require(isinstance(value, tuple) and bool(value),
+            "E_MATCH_RELATION_TOKEN", f"invalid SceneRecord.{field_name}")
+    require(all(isinstance(item, str) and bool(item) for item in value),
+            "E_MATCH_RELATION_TOKEN", f"invalid SceneRecord.{field_name} item")
+    return value
+
+
+def canonical_scene_record_projection(record: SceneRecord) -> Dict[str, object]:
+    """Return the complete, exact JSON projection of one strict-v2 record."""
+
+    require(isinstance(record, SceneRecord),
+            "E_MATCH_RELATION_TOKEN", "record is not SceneRecord")
+    metadata_schema = _require_record_string(record.metadata_schema, "metadata_schema")
+    require(metadata_schema == SCENE_METADATA_SCHEMA_V2,
+            "E_MATCH_RELATION_TOKEN", metadata_schema)
+    index = _require_record_integer(record.index, "index")
+    split = _require_record_string(record.split, "split")
+    path = _require_record_string(record.path, "path")
+    rgb_sha256 = _require_record_string(record.rgb_sha256, "rgb_sha256")
+    pose_path_sha256 = _require_record_string(record.pose_path_sha256, "pose_path_sha256")
+    pose_content_sha256 = _require_record_string(
+        record.pose_content_sha256, "pose_content_sha256")
+    pid = _require_record_integer(record.pid, "pid")
+    camid = _require_record_integer(record.camid, "camid")
+    viewid = _require_record_integer(record.viewid, "viewid")
+    person_count = _require_record_integer(record.person_count, "person_count")
+    frame = _require_record_integer(record.frame, "frame")
+    source_pid = _require_record_integer(record.source_pid, "source_pid")
+    source_camid = _require_record_integer(record.source_camid, "source_camid")
+    source_frame_id = _require_record_integer(record.source_frame_id, "source_frame_id")
+    target_person_idx = _require_record_integer(
+        record.target_person_idx, "target_person_idx")
+
+    require(isinstance(record.continuous, tuple),
+            "E_MATCH_RELATION_TOKEN", "invalid SceneRecord.continuous container")
+    try:
+        continuous = tuple(float(value) for value in record.continuous)
+        continuous_array = np.asarray(continuous, dtype=np.float64)
+    except (TypeError, ValueError, OverflowError) as error:
+        raise GateProtocolError("E_MATCH_RELATION_TOKEN", str(error)) from error
+    require(len(continuous) == 95 and bool(np.isfinite(continuous_array).all()),
+            "E_MATCH_RELATION_TOKEN", "invalid SceneRecord.continuous")
+    require(isinstance(record.report, Mapping),
+            "E_MATCH_RELATION_TOKEN", "invalid SceneRecord.report")
+
+    full_relpaths = _require_record_string_tuple(
+        record.full_pose_person_relpaths, "full_pose_person_relpaths")
+    full_paths = _require_record_string_tuple(
+        record.full_pose_person_paths, "full_pose_person_paths")
+    full_sha256 = _require_record_string_tuple(
+        record.full_pose_person_sha256, "full_pose_person_sha256")
+    effective_relpaths = _require_record_string_tuple(
+        record.effective_pose_person_relpaths, "effective_pose_person_relpaths")
+    effective_paths = _require_record_string_tuple(
+        record.effective_pose_person_paths, "effective_pose_person_paths")
+    effective_sha256 = _require_record_string_tuple(
+        record.effective_pose_person_sha256, "effective_pose_person_sha256")
+    require(len(full_relpaths) == len(full_paths) == len(full_sha256),
+            "E_MATCH_RELATION_TOKEN", "full constituent tuple length mismatch")
+    require(len(effective_relpaths) == len(effective_paths) == len(effective_sha256),
+            "E_MATCH_RELATION_TOKEN", "effective constituent tuple length mismatch")
+    require(len(effective_paths) == person_count,
+            "E_MATCH_RELATION_TOKEN", "effective/person_count mismatch")
+    require(0 <= target_person_idx < len(full_paths),
+            "E_MATCH_RELATION_TOKEN", "target_person_idx outside full persons")
+
+    projection: Dict[str, object] = {
+        "metadata_schema": metadata_schema,
+        "index": index,
+        "split": split,
+        "path": path,
+        "rgb_sha256": rgb_sha256,
+        "pose_path_sha256": pose_path_sha256,
+        "pose_content_sha256": pose_content_sha256,
+        "pid": pid,
+        "camid": camid,
+        "viewid": viewid,
+        "person_count": person_count,
+        "continuous": list(continuous),
+        "frame": frame,
+        "report": dict(record.report),
+        "source_pid": source_pid,
+        "source_camid": source_camid,
+        "source_frame_id": source_frame_id,
+        "target_person_idx": target_person_idx,
+        "full_pose_person_relpaths": list(full_relpaths),
+        "full_pose_person_paths": list(full_paths),
+        "full_pose_person_sha256": list(full_sha256),
+        "effective_pose_person_relpaths": list(effective_relpaths),
+        "effective_pose_person_paths": list(effective_paths),
+        "effective_pose_person_sha256": list(effective_sha256),
+    }
+    try:
+        canonical_json_bytes(projection)
+    except (TypeError, ValueError) as error:
+        raise GateProtocolError("E_MATCH_RELATION_TOKEN", str(error)) from error
+    return projection
+
+
+def canonical_scene_record_sha256(record: SceneRecord) -> str:
+    return sha256_bytes(canonical_json_bytes(canonical_scene_record_projection(record)))
+
+
+def canonical_scene_record_set_summary(
+    records: Sequence[SceneRecord],
+) -> Dict[str, object]:
+    projections = [canonical_scene_record_projection(record) for record in records]
+    payload = canonical_json_bytes(projections)
+    return {
+        "count": len(projections),
+        "canonical_bytes": len(payload),
+        "sha256": sha256_bytes(payload),
+    }
+
+
+def validate_relation_report_self_hash(
+    relation_report: Mapping[str, object],
+) -> str:
+    """Validate the exact v2 report envelope and its non-circular self-hash."""
+
+    require(isinstance(relation_report, Mapping),
+            "E_MATCH_RELATION_TOKEN", "relation report is not a mapping")
+    report = dict(relation_report)
+    require(set(report) == _RELATION_REPORT_KEYS,
+            "E_MATCH_RELATION_TOKEN", "relation report key drift")
+    require(report.get("schema") == SPLIT_RELATION_SCHEMA_V2,
+            "E_MATCH_RELATION_TOKEN", "relation report schema drift")
+    expected = report.pop("relation_report_sha256", None)
+    require(isinstance(expected, str) and bool(expected),
+            "E_MATCH_RELATION_TOKEN", "relation report self-hash missing")
+    try:
+        actual = sha256_bytes(canonical_json_bytes(report))
+    except (TypeError, ValueError) as error:
+        raise GateProtocolError("E_MATCH_RELATION_TOKEN", str(error)) from error
+    require(actual == expected,
+            "E_MATCH_RELATION_TOKEN", "relation report self-hash drift")
+    return actual
+
+
+def _validated_relation_token(
+    records: Sequence[SceneRecord],
+    *,
+    relation_report: Mapping[str, object],
+    split: str,
+) -> _ValidatedRelationToken:
+    require(split in _RELATION_SPLITS,
+            "E_MATCH_RELATION_TOKEN", f"invalid split: {split}")
+    require(bool(records), "E_MATCH_RELATION_TOKEN", "empty full split records")
+    per_record_sha256: List[str] = []
+    strata: Dict[int, List[int]] = {}
+    for global_index, record in enumerate(records):
+        require(isinstance(record, SceneRecord),
+                "E_MATCH_RELATION_TOKEN", "record is not SceneRecord")
+        require(record.index == global_index,
+                "E_MATCH_RELATION_TOKEN", "record/global index drift")
+        require(record.split == split,
+                "E_MATCH_RELATION_TOKEN", "record split drift")
+        per_record_sha256.append(canonical_scene_record_sha256(record))
+        strata.setdefault(record.person_count, []).append(global_index)
+
+    report_sha256 = validate_relation_report_self_hash(relation_report)
+    relations = relation_report.get("relations")
+    require(isinstance(relations, Mapping) and set(relations) == _RELATION_KEYS,
+            "E_MATCH_RELATION_TOKEN", "relation summary key drift")
+    record_sets = relations.get("split_record_sets")
+    require(isinstance(record_sets, Mapping)
+            and set(record_sets) == set(_RELATION_SPLITS),
+            "E_MATCH_RELATION_TOKEN", "split record-set summary drift")
+    expected_summary = canonical_scene_record_set_summary(records)
+    actual_summary = record_sets.get(split)
+    require(isinstance(actual_summary, Mapping)
+            and set(actual_summary) == {"count", "canonical_bytes", "sha256"}
+            and dict(actual_summary) == expected_summary,
+            "E_MATCH_RELATION_TOKEN", "full split record-set digest drift")
+
+    within_split = relation_report.get("within_split")
+    require(isinstance(within_split, Mapping)
+            and set(within_split) == set(_RELATION_SPLITS),
+            "E_MATCH_RELATION_TOKEN", "within-split report drift")
+    within = within_split.get(split)
+    require(isinstance(within, Mapping) and set(within) == _WITHIN_SPLIT_KEYS,
+            "E_MATCH_RELATION_TOKEN", "within-split key drift")
+    constituent_fields = (
+        ("full_pose_person_paths", "full_pose_person_path_duplicate_count"),
+        ("full_pose_person_sha256", "full_pose_person_content_duplicate_count"),
+        ("effective_pose_person_paths", "effective_pose_person_path_duplicate_count"),
+        ("effective_pose_person_sha256", "effective_pose_person_content_duplicate_count"),
+    )
+    for field_name, report_key in constituent_fields:
+        flattened = [
+            value
+            for record in records
+            for value in getattr(record, field_name)
+        ]
+        duplicate_count = len(flattened) - len(set(flattened))
+        require(duplicate_count == 0 and type(within.get(report_key)) is int
+                and within.get(report_key) == duplicate_count,
+                "E_MATCH_RELATION_TOKEN", f"constituent duplicate: {field_name}")
+
+    return _ValidatedRelationToken(
+        split=split,
+        full_record_set_sha256=str(expected_summary["sha256"]),
+        relation_report_sha256=report_sha256,
+        per_record_sha256=tuple(per_record_sha256),
+        strata_global_indices=tuple(
+            (person_count, tuple(global_indices))
+            for person_count, global_indices in sorted(strata.items())
+        ),
+        _factory_identity=_RELATION_TOKEN_FACTORY_IDENTITY,
+    )
 
 
 def _normalized_entropy(channel: torch.Tensor) -> float:
@@ -314,6 +606,14 @@ def eligible_pair(anchor: SceneRecord, donor: SceneRecord) -> bool:
         and anchor.rgb_sha256 != donor.rgb_sha256
         and anchor.pose_path_sha256 != donor.pose_path_sha256
         and anchor.pose_content_sha256 != donor.pose_content_sha256
+        and set(anchor.full_pose_person_paths).isdisjoint(
+            donor.full_pose_person_paths)
+        and set(anchor.full_pose_person_sha256).isdisjoint(
+            donor.full_pose_person_sha256)
+        and set(anchor.effective_pose_person_paths).isdisjoint(
+            donor.effective_pose_person_paths)
+        and set(anchor.effective_pose_person_sha256).isdisjoint(
+            donor.effective_pose_person_sha256)
         and anchor.index != donor.index
     )
 
@@ -451,11 +751,49 @@ def _identifier_codes(values: Sequence[object]) -> torch.Tensor:
     return torch.tensor(codes, dtype=torch.int64)
 
 
+def _validated_stratum_records(
+    token: _ValidatedRelationToken,
+    global_indices: Sequence[int],
+    local_records: Sequence[SceneRecord],
+) -> List[SceneRecord]:
+    require(type(token) is _ValidatedRelationToken
+            and token._factory_identity is _RELATION_TOKEN_FACTORY_IDENTITY,
+            "E_MATCH_RELATION_TOKEN", "invalid relation token identity")
+    require(bool(local_records),
+            "E_MATCH_RELATION_TOKEN", "empty stratum records")
+    require(all(type(value) is int for value in global_indices),
+            "E_MATCH_RELATION_TOKEN", "invalid global index type")
+    indices = tuple(global_indices)
+    require(len(indices) == len(local_records),
+            "E_MATCH_RELATION_TOKEN", "stratum index/record count drift")
+    person_counts = {record.person_count for record in local_records}
+    require(len(person_counts) == 1,
+            "E_MATCH_RELATION_TOKEN", "mixed person-count stratum")
+    person_count = next(iter(person_counts))
+    strata = dict(token.strata_global_indices)
+    require(person_count in strata and indices == strata[person_count],
+            "E_MATCH_RELATION_TOKEN", "incomplete or reordered stratum")
+    require(len(set(indices)) == len(indices)
+            and all(0 <= value < len(token.per_record_sha256) for value in indices),
+            "E_MATCH_RELATION_TOKEN", "invalid stratum global indices")
+    records = list(local_records)
+    for global_index, record in zip(indices, records):
+        require(record.split == token.split and record.index == global_index,
+                "E_MATCH_RELATION_TOKEN", "stratum record identity drift")
+        require(canonical_scene_record_sha256(record) ==
+                token.per_record_sha256[global_index],
+                "E_MATCH_RELATION_TOKEN", "stratum record digest drift")
+    return records
+
+
 def exact_sparse_candidates(
-    records: Sequence[SceneRecord],
     standardized: np.ndarray,
     device: torch.device,
     anchor_chunk: int = 16,
+    *,
+    token: _ValidatedRelationToken,
+    global_indices: Sequence[int],
+    local_records: Sequence[SceneRecord],
 ) -> Tuple[List[List[int]], Dict[Tuple[int, int], float]]:
     """Compute exact float64 top-256 C_base edges without storing N x N.
 
@@ -463,6 +801,7 @@ def exact_sparse_candidates(
     full cost matrix is never materialized or persisted.
     """
 
+    records = _validated_stratum_records(token, global_indices, local_records)
     count = len(records)
     require(count > 1, "E_MATCH_STRATUM_SIZE", str(count))
     require(standardized.shape == (count, 95), "E_NUISANCE_MATRIX", str(standardized.shape))
@@ -543,25 +882,35 @@ def prepare_split_mappings(
     records: Sequence[SceneRecord],
     device: torch.device,
     anchor_chunk: int = 16,
+    *,
+    relation_report: Mapping[str, object],
+    split: str,
 ) -> Dict[str, object]:
     """Freeze candidates, 20 maps, and pair-quality audits for one split."""
 
-    require(len({record.split for record in records}) == 1, "E_MATCH_SPLIT", "mixed split")
+    token = _validated_relation_token(
+        records,
+        relation_report=relation_report,
+        split=split,
+    )
     continuous = np.asarray([record.continuous for record in records], dtype=np.float64)
     standardized, scaler = robust_scale(continuous)
-    strata: Dict[int, List[int]] = {}
-    for index, record in enumerate(records):
-        strata.setdefault(record.person_count, []).append(index)
 
     selected_global: List[List[int]] = [[] for _ in records]
     base_global: Dict[Tuple[int, int], float] = {}
     stratum_payload: Dict[str, object] = {}
-    for person_count, global_indices_unsorted in sorted(strata.items()):
-        global_indices = sorted(global_indices_unsorted, key=lambda index: records[index].path)
+    for person_count, global_indices_tuple in token.strata_global_indices:
+        global_indices = list(global_indices_tuple)
         local_records = [records[index] for index in global_indices]
         local_z = standardized[global_indices]
         candidates, base_edges = exact_sparse_candidates(
-            local_records, local_z, device=device, anchor_chunk=anchor_chunk)
+            local_z,
+            device=device,
+            anchor_chunk=anchor_chunk,
+            token=token,
+            global_indices=global_indices,
+            local_records=local_records,
+        )
         selected, selected_k = _selected_k_adjacency(candidates)
         for local_left, donors in enumerate(selected):
             global_left = global_indices[local_left]

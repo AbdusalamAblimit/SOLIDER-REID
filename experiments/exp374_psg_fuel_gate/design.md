@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-- 阶段：`PREPARE_A01_FAIL_E_SCENE_NEGATIVE_DIAGNOSIS_ONLY`
+- 阶段：`PREPARE_A02_FAIL_OFFICIAL_MIRROR_PROTOCOL_REVISION_ONLY`
 - 训练：未启动
 - 正式评测：未启动
 - 代码实现：audit-only runner、协议层、模型三态 seam 已编写；首次 prepare 因历史
@@ -10,10 +10,12 @@
   regression 87/87 已从头 PASS；远端历史环境 formal 20/20 与 regression 87/87
   也已绑定 exact execution commit 全量 PASS
 - GPU：未占用
-- 当前执行许可：prepare attempt `bffb8be_a01_20260715` 已因训练 split scene heatmap
-  出现负值而 fail closed；该 attempt 已烧毁并保留。当前只允许只读诊断负值来源、
-  复核协议假设与编写/审查修复测试；禁止重试 prepare、Gate A `run`、当前
-  arm/per-query 指标生成、`summarize` 和训练
+- 当前执行许可：A01 已因 signed scene 假设安全失败并永久保留；C+ signed-raw 修复在
+  exact `8ca57ed…` 上完成本地/历史环境全量复验后，唯一 A02 prepare-only 又因
+  blanket query/gallery RGB content-disjoint 假设与 Occluded-Duke 官方 mirror 冲突而
+  fail closed。A02 也已烧毁并保留。当前只允许冻结、审查 official-mirror 关系协议；
+  禁止 resume/复用 A02、全新 prepare、Gate A `run`、arm/per-query 指标生成、
+  `summarize` 和训练
 
 ## 动机
 
@@ -179,6 +181,328 @@ fail closed，不产生指标。
 三个 checkpoint 的 correct mAP/R1 都必须复现各自 flat 日志到打印精度，即四舍五入
 到 `0.1 pp` 后完全一致；否则 Gate A 整体 `INVALID`。若补 flip secondary，必须先
 固定受控 scene bundle，再同步翻转 RGB 与该 bundle，禁止重新抽 donor。
+
+### Occluded-Duke 官方 query/gallery mirror 关系门禁
+
+A02 在任何 matching、checkpoint forward 或指标读取前安全失败：train/query/gallery
+分别已完成 `15618/2210/17661` 条 metadata 物化，但旧
+`assert_disjoint_records` 要求任意两个 split 的 RGB/pose 内容 SHA 完全不交。只读审计
+证明该假设过强，而不是数据污染：train 与 query/gallery 的 path、RGB content、
+pose path、pose content 四类交集全部为 0；三个 split 内四类标识也分别唯一。唯一交集
+是 Occluded-Duke 官方 query/gallery mirror：恰有 1870 个一对一 RGB content group，
+同时也是恰有 1870 个一对一 pose-content group。每对均同 basename、PID、camid、
+viewid、person_count 和 frame，cached `Hraw`、scene score 与 95 维 nuisance 逐值相同；
+query/gallery 的真实 path 与 pose-path 标识仍不同。本仓库标准 evaluator 会删除同
+PID、同相机的 gallery endpoint；这些 mirror 对其对应 query 是 official junk，但对
+其它 query 仍可能是合法 gallery，禁止删除、合并或修改 evaluator。
+
+修订分为结构层 `audit_split_relations_v2` 与 exact-asset 层
+`assert_occluded_duke_official_v1`。结构层可以接受 query/gallery 无重复；exact 层才要求
+当前官方数据必须精确复现 1870 对。prepare 必须先完成二者，再生成 donor candidate、
+读取 checkpoint 或计算任何指标。
+
+#### 路径、标签与 identity split
+
+1. 每个 split 内的 RGB absolute path、RGB content SHA、pose bundle path SHA 和 pose
+   bundle content SHA 必须分别唯一。basename 唯一匹配
+   `^(?P<pid>\\d{4})_c(?P<cam>[1-8])_f(?P<frame>\\d{7})\\.jpg$`。query/gallery 的
+   metadata `pid` 必须等于 basename PID，`camid` 必须等于 `cam-1`；train PID 已
+   relabel，只能另存 basename 解析的 `source_pid`。train source-PID 集与 query/gallery
+   source-PID 集必须无交集。
+2. official list 的每个 stripped nonempty entry 必须本身就是 basename：禁止 `/`、`\\`、
+   `.`、`..`、absolute path 或重复。每个 RGB resolved path 必须是预期 split root 的直接
+   child：train=`bounding_box_train`、query=`query`、gallery=`bounding_box_test`；不能只
+   比 basename 后放行 traversal、symlink escape 或错误 split root。
+3. 每个 pose index entry 必须同时冻结原始 `persons` 全列表和 loader 实际使用的
+   effective 列表：先取 `persons[:max_persons]`；仅当 `target_person_idx` 仍落在该截断列表
+   内且大于 0 时才把目标移到首位，否则保持截断顺序。每个 split 必须另报
+   `target_outside_effective_count`，禁止把条件语义写成无条件 target-first。
+   每个 entry 必须是 pose split root 的直接 child basename，resolved 后仍位于该 root。
+   metadata 新增两套 constituent path/content SHA list；旧聚合 bundle SHA 只能作便捷摘要，
+   不能替代 constituent 审计。每个 split 内 constituent path/content 必须唯一；
+   train↔evaluation 的任一 full/effective constituent path/content alias 都 fail closed。
+4. train↔query、train↔gallery 的四类 bundle 标识与 source PID 均必须零交集。错误码按
+   failure predicate 唯一，不再使用宽泛 `INVALID_DATA_RELATION`。
+
+#### query/gallery official junk 的唯一白名单
+
+1. query/gallery RGB path、pose bundle path 和 constituent pose path 必须无交集。
+2. 合并后的 RGB-content duplicate group 唯一允许：group size=2、恰有 1Q+1G、各 split
+   内 multiplicity=1、basename/PID/camid/viewid/person_count/frame/report 完全相同，且
+   仓库标准 junk predicate 对该 endpoint 返回 true。Q/Q、G/G、三成员、异名、标签漂移
+   或未被 evaluator 删除均 fail closed。
+3. RGB duplicate endpoint set、pose-bundle-content duplicate endpoint set 唯一编码为按
+   `(query_index,gallery_index)` 排序的 JSON pair list，二者必须逐项完全相等。所有跨 q/g
+   constituent pose-content alias 还必须落在同一 allowed endpoint 且 person position
+   相同；full/effective content list 在 mirror 两端逐项相等，禁止部分 alias、跨 mirror
+   alias、位置置换或 orphan alias。
+4. 两端 cached `Hraw`、scene score、95-D nuisance、frame 与 report 必须 bitwise/逐字段
+   相同；同一原图形成不同 PSG 因果输入时禁止白名单化。
+
+#### official provenance 与 canonical digests
+
+官方 source 固定为 `lightas/Occluded-DukeMTMC-Dataset` commit
+`dcba185bb20cbd53d3da2c8a4bfc25aa6971ce1d`。raw list SHA256 固定为 train/query/gallery：
+`dadffee79d8601545ca2217a38406c1cb6dab39d0b4b0c6370c8486738dee059` /
+`fb5e1b1a749a0ab8602414bc9159e7a03216c2bdc519b5a4e513e05e3f612333` /
+`0393fa86344ef4c220a5589aaad409f3adda1e14e39fc8425c80e90196065fca`，count 固定为
+`15618/2210/17661`。
+
+当前 active pose index 也作为 exact asset 冻结，train/query/gallery 的 byte length / SHA256
+分别为：`4713227` /
+`63dc1f5db9bab90717a484dfc5033a197ee8b95f9c94a92f2082dc18a588103b`、
+`719516` / `6b60745066f9b921d347558db3ad8ee7021ad103182db8afe7fffd510bc5f7c4`、
+`5320783` / `d5f2e14f8665ce045dfa8085dbdff031a1c9de7a7c258a594802e2a63ccefabc`。
+metadata、official list 与 index 必须从同一个已 `fstat` 前后稳定的文件描述符读取 bytes、
+计算 SHA 后直接解析，禁止“先哈希、再另开文件读取”。六个 q/g cache `.npy` 必须在
+mmap 前整文件 SHA+identity 绑定，按首维分块验证全局 finite，读取完成关闭 mmap 后再做
+整文件 SHA+identity 复核；所有已读取 RGB/NPZ/list/index/metadata 的 identity 在输出前
+统一复核。只读诊断必须以 `PYTHONDONTWRITEBYTECODE=1 PYTHONNOUSERSITE=1` 和 Python
+`-B -s` 启动，并在导入 NumPy 前 fail closed 验证两项环境与 `sys.flags.no_user_site`。
+最终 launcher 必须在执行前后分别复算诊断脚本 SHA，命令行只接受冻结的 absolute
+staging/data-root，且 stdout `resolved_inputs` 必须逐字等于这两个 resolved 路径。
+
+所有列表字符串按 Unicode/codepoint 升序。`canonical_json_bytes` 唯一定义为当前
+protocol 的 UTF-8、`ensure_ascii=False`、`sort_keys=True`、
+`separators=(",",":")`、`allow_nan=False`，并尾随一个 LF。字段固定如下：
+
+1. `official_lists.canonical_basename_sha256.{train,query,gallery}` =
+   `96aa7aa80a3bb09cb48e16089f04d13ef51575442ba1aab162721add27c07189` /
+   `e7bff615f1722a10be3d108341d0e9ceb2934ebbfcfb7506957100201cdd887b` /
+   `81d57ac6b5015497133d9771b18ded6fdbb60c430341ffd589da291f3a799271`。
+2. `relations.query_gallery_shared_basenames`：count=`1870`、canonical byte length=`43012`、
+   SHA=`e940491d5471d3b976095335d1472e734fe8e6a76c192a3e98d5d0e9dbb7567f`。
+3. `relations.query_gallery_shared_rgb_sha256_legacy` 唯一使用
+   `json.dumps(sorted_list,ensure_ascii=False,sort_keys=True,separators=(",",":"),
+   allow_nan=False).encode("utf-8")`，无尾随 LF；count=`1870`、byte length=`125291`、
+   SHA=`e02e1be9b04d1428691809d81627235a3c4bb489e794d9b125c1f6c9c55b2e0c`。
+4. `relations.query_gallery_shared_rgb_sha256` 对同一 list 使用 `canonical_json_bytes`；
+   count=`1870`、byte length=`125292`、SHA=
+   `54a624b1490cecfa77677ae275229d59b68714d5216bd7ab5bf749d66b9a552d`。
+5. `relations.query_gallery_joint_metadata_pairs` 使用下一小节的 joint metadata 投影，
+   count=`1870`、canonical byte length=`566372`、A02-derived SHA=
+   `e59e8e935c9aa1cb19888ad23ab4f23a052cdda0d35fbb84928ae0d1ea1c3f51`。
+
+joint pair projections 不能互相替代：按 pair sort 后的 `[pair.basename]` 必须逐项等于
+official shared-basename list，`[pair.rgb_sha256]` 再独立排序后必须逐项等于 shared-RGB
+list；RGB 与 pose duplicate endpoint pair list 则按 `(query_index,gallery_index)` 逐项
+相等。这样既拒绝子/超集，也拒绝只保持两个边缘投影的成对置换。
+
+A02 只读诊断脚本固定为 `42218 B` / SHA256
+`88db86bb09a8d7d6fde7394ba2d12f8b115d517f9609bffe3c40ffd8836c7348`；stdout 原样证据位于
+Git 外 `remote_artifacts/exp374_a02_readonly_mirror_report_88db86bb.json`，固定为
+`9290 B` / SHA256
+`7b070824f86304e9ce4a4fd24e69b0b1c2bda6bea1f24c049c5b844b79553fa2`。两次独立只读执行均
+exit `0`，resolved data/staging 分别为 `/mnt1/afrdata/Occluded_Duke` 与
+`/home/afr/exp374_gate_a_8ca57ed_a02_20260715/.exp374_prepare_qdm_o793`。A02-derived
+新增冻结常量为：
+
+1. RGB 与 pose endpoint pair list 各 count=`1870`、canonical bytes=`21666`、SHA256=
+   `4135cdc4bb3cecd52dcf79423cf24d53595ce695a8b91544e2732be4bf3ebdfc`，且逐项相等；
+2. 完整 joint pair payload count=`1870`、canonical bytes=`3542413`、SHA256=
+   `b82fd6aa1a81faf85e80b876a62bd892d259e3c7e1e9bb9d9a381641dbb3df93`；
+3. train/query/gallery 的 `target_outside_effective_count` 均为 `0`；
+4. `junk_true/junk_false/forbidden_pair`=`1870/0/0`，train↔eval 全部 overlap=`0`，q/g
+   forbidden overlap=`0`；full/effective constituent content mirror 均为 `3486`，path
+   overlap 均为 `0`；
+5. 六个 A02 cache 的 bytes/SHA256 固定为：query Hraw
+   `461660288/ce908ee4e57a602f03e66340ab66c16097d0ff9f26a678f5d249a4ba10f7b45f`、
+   score `150408/30a40c5d4c349d38b6527b8ad13b4b3f2b5e4dbfdbd0cf285d484a0be1116ce4`、
+   nuisance `1679728/bdf7c98729b369904187d8711a39f9441013c4a0b423e22cb4e468aea6b90cfb`；
+   gallery Hraw
+   `3689312384/645c352137680dcde416a33b0abe37fc32109000243a1c97b6310c9172c90d3d`、
+   score `1201076/8385ea376e03b460d3b5e7c3084712b2fac70b81e74b1a71b19e9d3c6096b09d`、
+   nuisance `13422488/b3127a3bfb388a8ce5542386bde6f715be78096e9e5da44b6408054f635d2c65`。
+
+#### frozen report schema 与数组 SHA
+
+premetric manifest 的 `dataset.split_relations` schema 固定为
+`occluded_duke_official_mirror_v2`，只含以下顶层 key：`schema`、`official_source`、
+`official_lists`、`split_counts`、`within_split`、`cross_split`、`relations`、`pairs`、
+`relation_report_sha256`。所有 count 为 JSON integer，SHA/dtype/schema 为 JSON string，
+shape 为 JSON integer list，禁止 set/tuple/repr。`official_source` 精确含
+`repository/commit/filename_regex`；`official_lists.{split}` 精确含
+`rgb_root/list/count/raw_bytes/raw_sha256/canonical_bytes/canonical_sha256/
+pose_index_bytes/pose_index_sha256`；`split_counts` 精确含 `train/query/gallery`。
+
+- `within_split.{split}` 精确含 `path_duplicate_count/rgb_sha256_duplicate_count/
+  pose_path_sha256_duplicate_count/pose_content_sha256_duplicate_count/
+  full_pose_person_path_duplicate_count/full_pose_person_content_duplicate_count/
+  effective_pose_person_path_duplicate_count/effective_pose_person_content_duplicate_count/
+  source_pid_count/target_outside_effective_count`；
+- `cross_split.{train_query,train_gallery,query_gallery}` 统一使用精确 key：
+  `path_overlap_count/rgb_sha256_overlap_count/pose_path_sha256_overlap_count/
+  pose_content_sha256_overlap_count/full_pose_person_path_overlap_count/
+  full_pose_person_content_overlap_count/effective_pose_person_path_overlap_count/
+  effective_pose_person_content_overlap_count/source_pid_overlap_count/
+  rgb_content_forbidden_group_count/pose_content_forbidden_group_count/
+  full_pose_person_content_forbidden_count/effective_pose_person_content_forbidden_count/
+  forbidden_overlap_count`。train↔eval 的四个 content-forbidden count 分别等于对应
+  content overlap，q/g 则只把 official mirror 关系之外的 group/orphan 计为 forbidden；
+- `relations` 精确含 `query_gallery_shared_basenames/
+  query_gallery_shared_rgb_sha256_legacy/query_gallery_shared_rgb_sha256/
+  query_gallery_endpoint_pairs/query_gallery_joint_metadata_pairs/
+  query_gallery_joint_pairs/split_record_sets/allowed_pair_count/junk_true_count/
+  junk_false_count/forbidden_pair_count`。所有摘要对象精确含
+  `count/canonical_bytes/sha256`；endpoint 对象另含 `equal` 与 `rgb/pose` 两个摘要；
+  `split_record_sets` 精确含 `train/query/gallery` 三个摘要；
+- `pairs` 按 `(rgb_sha256,basename,query_index,gallery_index)` 排序。`query_index` 与
+  `gallery_index` 唯一定义为冻结 metadata 的 `index` 字段，不是当前迭代位置。每项的
+  shared key 精确为：`basename/camid/effective_pose_person_sha256/frame/
+  full_pose_person_sha256/hraw_sha256/nuisance_sha256/person_count/pid/
+  pose_content_sha256/report/rgb_sha256/score_sha256/source_camid/source_frame_id/
+  source_pid/viewid`；endpoint-specific key 精确为：
+  `query_index/gallery_index/query_rgb_relpath/gallery_rgb_relpath/
+  query_pose_path_sha256/gallery_pose_path_sha256/query_target_person_idx/
+  gallery_target_person_idx/query_full_pose_person_relpaths/
+  gallery_full_pose_person_relpaths/query_effective_pose_person_relpaths/
+  gallery_effective_pose_person_relpaths`。RGB relpath 必须含 `query/` 或
+  `bounding_box_test/` split prefix；pose relpath 必须含 `pose_data/query/` 或
+  `pose_data/gallery/` prefix。report 先验证两端 canonical JSON 相同，再只保存 shared
+  一份；Hraw/score/nuisance 两端各自哈希相等后也只保存 shared 一枚。
+
+`array_sha256_v1(array, expected_dtype, expected_shape)` 唯一执行：验证 array finite 且
+shape 精确；转换成 little-endian `expected_dtype` 的 C-contiguous array；header 精确为
+`{"schema":"array_sha256_v1","dtype":np.dtype(expected_dtype).str,
+"shape":[int...],"order":"C"}`；返回
+`SHA256(canonical_json_bytes(header)+array.tobytes(order="C"))`。Hraw/score/nuisance 分别
+固定 `expected_dtype=<f4/<f4/<f8`、shape=`[17,96,32]/[17]/[95]`。q/g 两端必须各自重算
+后逐值相等。`relation_report_sha256` 对移除自身后的整个 report 使用
+`canonical_json_bytes` 计算；execution SHA 覆盖含该字段的 report。prepare 同时原子写
+`prepared/split_relations.json`，run/summarize 在 RGB/pose TOCTOU 验证后完整复算并逐字节
+相等。
+
+manifest 嵌套固定如下，不允许把摘要移到 execution SHA 之外：
+
+1. `premetric_manifest.dataset.split_relations` 保存含
+   `relation_report_sha256` 的完整 report object；
+2. `premetric_manifest.dataset.split_relations_artifact` 精确含
+   `relpath="split_relations.json"/bytes/sha256`，其中 bytes/SHA 对
+   `canonical_json_bytes(dataset.split_relations)` 计算；
+3. `premetric_manifest.prepared_artifact_sha256["split_relations.json"]` 必须等于上项
+   SHA；`prepared/split_relations.json` 必须由 `atomic_write_json` 原子写入同一 canonical
+   bytes；
+4. prepare-resume、run 入口、`RUN_COMPLETE` 发布前、summarize 入口及 results 发布前，
+   都必须从真实 RGB/official lists/pose index/NPZ/metadata/cache 重算完整 report，验证
+   object、artifact bytes/SHA 与 prepared artifact manifest 三者同时相等；不得只信
+   frozen JSON 或只重查 RGB。`verify_prepared_artifacts` 只负责 manifest/prepared file
+   hashes；新增 `verify_relation_runtime(manifest, split_datasets, prepared, phase)` 负责
+   active dataset 全资产重算并返回 entry-bound identity set。summarize 在
+   `publish_or_verify_results` 前做 full tail audit，再重验 RUN_COMPLETE/全部 arm marker；
+   results 发布后、COMPLETE 前再次做 quick identity、prepared triple 与 result hash 复核；
+   任一漂移全局失败且不得发布 COMPLETE；
+5. execution `premetric_manifest.schema` 仍为 `exp374-gate-a-v1`，dataset 原有
+   `name/num_train_pids/num_train_cams/num_train_vids/num_query/num_gallery/cache` 不删除，
+   只新增上述两个 key；matching、centroid、schedule 与结果均不得进入 split-relation
+   构造输入。
+
+#### matching、回归与 attempt 边界
+
+query/gallery donor matching 仍各自在 split 内独立生成；`eligible_pair` 的 different
+PID/path/RGB content/pose bundle path/content/constituent path/content、exact person count、
+bijection 与 no-fixed-point 均不得放宽。official mirror 白名单只描述 cross-split dataset
+relation，不授权跨 split donor，也不改变 evaluator。
+
+production seam 固定为：
+
+1. 以 `_pose_asset_manifest_v2` 替换当前只返回两个聚合 SHA 的
+   `_pose_asset_identity`；它从 active `PoseImageDataset.index/max_persons` 同时返回 full 与
+   conditional-target-first effective 的 relpath/path/content tuple、两个旧聚合 SHA、
+   `target_person_idx` 和 source filename 标签；cache metadata 每行必须写
+   `schema="exp374-scene-metadata-v2"` 及全部非空 full/effective tuple。
+   v2 metadata row required 字段精确覆盖现有
+   `schema/index/split/path/rgb_sha256/pose_path_sha256/pose_content_sha256/pid/camid/
+   viewid/person_count/frame/report`，再追加
+   `source_pid/source_camid/source_frame_id/target_person_idx/
+   full_pose_person_relpaths/full_pose_person_paths/full_pose_person_sha256/
+   effective_pose_person_relpaths/effective_pose_person_paths/
+   effective_pose_person_sha256`。row 不重复保存 95-D `continuous`；它的唯一权威源仍是
+   `{split}_continuous.npy`。`SceneRecord` required 字段为上述 row 去掉 `schema` 后加
+   `metadata_schema` 与 `continuous`；`load_scene_records` 必须同时验证 metadata count/order
+   和 continuous cache 的 exact `<f8`、`[N,95]`、finite，再逐 index 合成 record，错误码
+   `E_METADATA_SCHEMA_V2/E_CONTINUOUS_CACHE_V2`；
+   `load_scene_records` 只接受 v2，缺字段、空 tuple、长度错位或 v1 一律
+   `E_METADATA_SCHEMA_V2`。`SceneRecord` 新字段全部 required、无空默认；现有 synthetic
+   fixture 必须机械补齐 v2 字段，禁止以 legacy default 让 hard gate vacuous。A02 old
+   metadata 只由已冻结的 Git 外只读 evidence adapter 读取，production/A03 resume 不得
+   转换、补字段或接受；
+2. 纯 CPU `eligible_pair` 逐项拒绝 constituent path/content overlap。report 的
+   `relations.split_record_sets.{train,query,gallery}` 另存用于 matching 的完整 canonical
+   `SceneRecord` projection 摘要，精确含 `count/canonical_bytes/sha256`；projection 覆盖
+   上述每一个 required dataclass 字段，包括 base-cost 使用的 `camid/frame/continuous`、
+   eligible predicate 使用的 path/content/PID/person-count/constituents、`viewid`、source/
+   target 标签和 canonical report；不得用字段子集冒充 complete record digest。
+   public `prepare_split_mappings` 必须新增无默认的 keyword-only `relation_report` 与
+   `split`；入口以 full-split records 重算 record-set digest、relation self-hash，并要求
+   对应 within-split full/effective path/content duplicate 全为 0，否则
+   `E_MATCH_RELATION_TOKEN`。验证成功后只能由 module-private factory 构造 immutable
+   `_ValidatedRelationToken`，精确绑定 split、full record-set/report SHA、按 global index
+   排列的 per-record canonical SHA，以及由已验证 full records 唯一派生的
+   `strata_global_indices: person_count -> exact ordered tuple[global_index]`。tuple 顺序唯一为
+   full-split record 顺序，必须覆盖该 person-count 的全部且仅这些 global rows；不得由调用者
+   提供、裁剪或重排。底层 GPU `exact_sparse_candidates` 不再重验 full digest，而是强制接收
+   无默认的 token、`global_indices` 与 stratum `local_records`；先要求 local records 的唯一
+   person-count 存在于 token，且传入 `global_indices` 与 token 对应的完整 ordered tuple
+   逐项完全相等，再逐项重算 local record SHA 并与 token 对应 global slot 相等。任何遗漏、
+   超集、重排、把同一 stratum 拆成多次调用、indices 重复/越界或跨 person-count 都必须以
+   `E_MATCH_RELATION_TOKEN` 失败。这样当前按 person-count 分层实现可落地，又无法独立、
+   错 subset、拆分 subset 或未审计调用；GPU 才能在已证明 global uniqueness 后用 distinct
+   index 省略 variable-length 比较。
+   新增 synthetic equivalence test 必须证明 GPU candidate edge 与纯 CPU predicate 完全
+   一致，并覆盖缺 token、伪造/错 split/token drift、partial/full/effective overlap；
+3. `audit_split_relations_v2` 是 dataset-agnostic 结构层，只接受 metadata/cache/constituent
+   显式输入并允许 q/g 零 overlap；`assert_occluded_duke_official_v1` 只在结构层 PASS 后
+   叠加 official source/count/digest/1870 exact gate；两者都不得读取 checkpoint、历史或
+   当前 ReID 指标、matching output、arm/per-query 结果；
+4. prepare 调用顺序唯一为：cache 三 split → 构造 full report → exact official gate →
+   原子写 `split_relations.json` → 生成 split-local donor candidate/mappings → 调用
+   `checkpoint_specs` 解析 checkpoint/log/parity。当前 prepare 顶部的 `checkpoint_specs`
+   必须后移，任何 relation 失败都必须发生在 mapping、checkpoint 与指标之前；
+5. 当前 `verify_frozen_runtime` 必须拆成
+   `verify_frozen_config_environment(manifest,device)` 与
+   `verify_frozen_checkpoint_specs(manifest,device)`。run/summarize 唯一顺序为：
+   `verify_prepared_artifacts` → config/environment-only → `direct_datasets` →
+   `verify_relation_runtime` full entry → checkpoint/log verification → schedule/arm/result。
+   relation runtime 不得因拿不到 active index 而退化；prepared metadata/cache 加 active
+   RGB/list/index/NPZ 必须复用同一 report builder，不得维护第二套“较宽松”的 resume/run
+   validator。A02 的旧
+   `assert_disjoint_records` 删除后只能由这两个更强 gate 替代，禁止简单跳过 q/g 检查。
+
+I/O 边界固定如下：full audit 包含全部 9 个三 split scene cache（q/g 六份另做 mirror
+endpoint audit）、三 split RGB/NPZ/list/index/metadata 的 SHA/identity；A02 的 q/g 六 cache+
+86477 identities 实测约 30 秒，production 单次上限 90 秒。单个 lifecycle 正常最多
+prepare、run entry/tail、summarize entry/tail 共 5 次，连一次 resume 预算上限 6 次/
+10 分钟；超限必须记录性能异常并停止授权链，不能删门禁。每个 arm publication 前的
+quick set 只含 19 个高扇出
+文件 identity：3 official lists、3 pose indices、3 metadata、9 scene cache 和
+`split_relations.json`，不得扫描 86477 个资产；每个 seed 开始/结束各复核 full identity
+registry，run 尾再整文件重哈希。这样 492 arms 只增加 `492×19` 次 stat；任何 seed/tail
+漂移都令整个 execution `FAILED_NONREPORTABLE`，即使已有原子 arm 也不得汇总。
+
+新增回归至少覆盖：结构层 q/g 无 overlap PASS；合法 1Q+1G mirror PASS；四类 split 内
+duplicate；四类 train/eval alias 与 source-PID overlap；q/g RGB/pose/constituent path
+alias；Q/Q、G/G、三成员、pair-count drift；basename PID/cam、view/person-count/frame/report
+drift；list count/raw/canonical digest、traversal/prefix/symlink-root drift；pose constituent
+部分/跨 mirror/位置置换 alias；RGB joint pair 置换；协调 pose/cache 漂移；Hraw/score/
+nuisance dtype/shape/byte-order drift；mirror 零距离仍被 junk mask 删除；canonical order/hash
+不依赖输入遍历顺序；manifest/prepared/resume/runtime drift；以及 mirror 白名单不能放宽
+split-local `eligible_pair`。另必须显式覆盖：v1/缺字段/空 tuple metadata 拒绝；
+`target_person_idx` 在 full 合法但落于 `persons[:6]` 外时只计数且不重排，以及 full index
+非法；matching 缺/伪造/错 split relation report，以及 token 后 `camid/frame/continuous` 或
+任一 constituent 字段漂移、global_indices 重复/越界、完整 stratum 的 omission/superset/
+reorder/split-call、错 subset/跨 person-count stratum；
+metadata 与 continuous cache count/order/dtype/shape/nonfinite drift；
+relation-before-checkpoint/log/metric/mapping
+的 spy；prepare-resume、run entry、run tail、summarize entry、summarize pre-results、
+pre-COMPLETE 六调用点逐一 drift；quick-set 与 full-registry drift；A02 path/resume 永久拒绝；
+已有 A02 old metadata 不能经 production adapter 升级。错误码必须按 predicate 唯一覆盖
+上述分支。
+
+A02 永久保留的三份 metadata、六个 q/g cache arrays 与 pose index/NPZ constituent 只读
+preflight 必须复现全部 fixed digest、1870 allowed 与 0 forbidden。A02 禁止 resume 或
+同名重试；design、实现、真实资产 preflight、本地/历史 Python 3.8 全量复验和多路证据
+审查全部 PASS 后，才允许为新 exact commit/bundle/clone 设计全新 A03 prepare-only；
+仍不授权 Gate A `run`、`summarize` 或训练。
 
 ### A1 matched-shuffled（primary）
 
@@ -425,7 +749,8 @@ channels 保持 correct。每组使用与 primary shuffle 完全相同的 20 个
 - 每 query R1 indicator；
 - 每 query retrieval margin（最近负样本距离减最近正样本距离）；
 - descriptor、distance matrix、donor map、centroid 参数与运行 manifest 的 SHA256；
-- query/gallery 文件路径和内容哈希无交叉的断言结果。
+- split relation canonical audit：train/eval 完全无交叉，以及 1870 组严格
+  official query/gallery mirror、0 forbidden duplicate 的断言结果。
 
 retrieval margin 必须在 official junk removal 后定义为
 `min(valid negative distance) - min(valid positive distance)`；不存在 valid positive 或
@@ -582,8 +907,9 @@ Gate A GO 只授权 Gate B 的干净配对训练设计与审查，不授权新�
 
 ### INVALID / INCONCLUSIVE
 
-- donor map 非双射、跨 split、PID 碰撞、路径/内容交叉、匹配门槛或能量门槛失败：
-  `INVALID`，只允许修协议后重跑；
+- donor map 非双射、跨 split、PID 碰撞、split 内 donor 路径/内容碰撞、official
+  mirror 关系之外的任意数据 alias、匹配门槛或能量门槛失败：`INVALID`，只允许修协议
+  后以全新 execution 重跑；
 - 任一 matching 数值门槛失败均使 primary Gate A `INVALID`；secondary centroid arm
   数值门槛失败只使该 arm `INVALID`。禁止逐样本删除，所有可比较 arms 使用同一
   query 集合；
