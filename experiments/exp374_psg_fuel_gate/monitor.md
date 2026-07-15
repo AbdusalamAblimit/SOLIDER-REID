@@ -8,6 +8,8 @@
   effective_unique=1` 失败，说明 20 个扰动 seed 最终只有一个有效匹配解；
 - 决策：不再调 matching 优化器，也不运行 492 个大量重复的前向臂。改为三 seed、每
   seed 四臂，共 12 臂的 primary-only screen；secondary 延后；
+- A05 证明 gallery 上 1,000 次随机 full matching 仍会让辅助准备压过实验本身；已安全
+  终止并降为固定 20 次，该 baseline 不进入正式指标或决策；
 - 代码与测试：affected protocol/runner suites 合计 `207 passed + 146 subtests passed`；
   训练仍未启动，尚无正式 Gate A 指标。
 

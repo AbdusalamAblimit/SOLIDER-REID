@@ -29,6 +29,8 @@
 4. secondary centroid/anatomical groups 标为 `DEFERRED`；
 5. 本次收缩只减少重复控制与计算量，不修改 checkpoint、RGB、pose、descriptor、
    evaluator 或决策阈值。
+6. 随机 full-matching cost baseline 从 1,000 次降为固定 20 次；它只作配对质量
+   fail-safe，不进入 mAP/R1 估计、bootstrap 或 GO/NO-GO 证据。
 
 ## 动机
 

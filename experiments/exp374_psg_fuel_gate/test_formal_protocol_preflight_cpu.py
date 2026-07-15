@@ -253,7 +253,7 @@ def test_formal_protocol_preflight_cpu(tmp_path: Path) -> None:
     assert ANCHOR_CHUNK * FIXTURE_COUNT * NUISANCE_DIMENSION * 8 < 2 * 1024 * 1024
     assert EXPECTED_EDGE_COUNT == 16_256
     assert len(p.MAPPING_SEEDS) * EXPECTED_EDGE_COUNT * 8 < 3 * 1024 * 1024
-    assert len(p.BASELINE_SEEDS) == 1_000
+    assert len(p.BASELINE_SEEDS) == 20
     assert len(p.MAPPING_SEEDS) == 1
 
     device = torch.device("cpu")
@@ -341,10 +341,11 @@ def test_formal_protocol_preflight_cpu(tmp_path: Path) -> None:
     assert first["effective_unique_count"] == 1
 
     baseline = np.asarray(first["baseline_mean_costs"], dtype=np.float64)
-    assert baseline.shape == (1_000,)
+    assert baseline.shape == (len(p.BASELINE_SEEDS),)
     assert np.isfinite(baseline).all()
     assert np.max(np.abs(baseline)) <= 1e-12
-    for seed in (p.BASELINE_SEEDS[0], p.BASELINE_SEEDS[500], p.BASELINE_SEEDS[-1]):
+    for seed in (p.BASELINE_SEEDS[0], p.BASELINE_SEEDS[len(p.BASELINE_SEEDS) // 2],
+                 p.BASELINE_SEEDS[-1]):
         baseline_first = p.randomized_full_matching(adjacency, seed)
         baseline_second = p.randomized_full_matching(adjacency, seed)
         np.testing.assert_array_equal(baseline_first, baseline_second)
