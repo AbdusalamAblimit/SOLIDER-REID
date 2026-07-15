@@ -215,12 +215,13 @@ production runner 重构后又原样重跑三组 regression：
 独立只读资源红队未创建文件、未 prepare、未加载 checkpoint、未解析日志指标：
 
 - 三枚 checkpoint 均为 `113,033,331 B`，SHA 与设计冻结值逐一一致；
-- 六份日志只做文件 hash，不读取内容：
-  - seed 1234 flat/train：`2c42dd62c48119cacbb7979944762a51d3f0d85d117e6fc8a3f50359c386a4ac` /
+- 六份日志只做文件 hash，不读取内容；事后确认前三个当时被误标为 flat，实际是旧
+  nested `test_default/test_log.txt`，这里保留为历史资源审计记录：
+  - seed 1234 nested/train：`2c42dd62c48119cacbb7979944762a51d3f0d85d117e6fc8a3f50359c386a4ac` /
     `f29a870b3d8edfadba64bc57abccfacd6ae351ee5a68c084b5604313da22472b`；
-  - seed 42 flat/train：`9794757c8009f540950dd665fa7c9560f84315b920761fcfaeb126bb8c2631ca` /
+  - seed 42 nested/train：`9794757c8009f540950dd665fa7c9560f84315b920761fcfaeb126bb8c2631ca` /
     `091eb57cd0aea9c4b080bd0ba6699a814c771150fa58356d0de91a18d8c1cf14`；
-  - seed 2024 flat/train：`57362690072021d75206e3be247b606eb534436f3b065524de0c772936744255` /
+  - seed 2024 nested/train：`57362690072021d75206e3be247b606eb534436f3b065524de0c772936744255` /
     `7c6000152f57508a788bdf6bc77c089c3cc68392b2622c2621608a145b61e392`；
 - `/home/afr` 可用 `232,580,870,144 B`（约 216.6 GiB），超过 80 GiB 门槛；
 - RTX 4090 D 仅 2 MiB 显存、0% 利用率，无 compute/exp374 进程；
@@ -341,3 +342,67 @@ run 许可。prepare 约束：
 5. 只运行 `prepare`，绝不链 `run`；`PREPARED_ONLY` 后 wrapper 退出；
 6. 之后核 canonical execution dir、PREPARED marker、cache/mapping/energy/hash/schedule、
    无 arms/results/current metrics 且剩余至少 80 GiB，再另行决定是否授权 production smoke/run。
+
+## 2026-07-15 — 首次 prepare 因 flat 日志错绑安全失败
+
+唯一 prepare wrapper 使用 exact execution source
+`f053a43cd520ff6f93ffff2df7ece8b358b62150`，在远端历史环境中按 outer `flock -n`
+和 prepare-only 边界启动，但 `checkpoint_specs()` 对 seed 1234 旧 nested 日志触发
+`E_FLAT_LOG_AMBIGUOUS`，在创建 canonical output root、读取 dataset、构造 matching 或
+执行任何 Gate-A/GPU forward 前 fail closed。保留证据：
+
+- `/home/afr/exp374_gate_a_f053a43.prepare.log`；
+- `/home/afr/exp374_gate_a_f053a43.prepare.lock`；
+- `/home/afr/exp374_gate_a_f053a43.prepare.pid`；
+- PID `4185900` 已退出；
+- `/home/afr/exp374_gate_a_f053a43` 不存在。
+
+根因不是 checkpoint、数据或模型失败，而是默认 checkpoint manifest 把三份 flat parity
+日志指向旧 nested `test_default/test_log.txt`。当前三枚 checkpoint 对应的正确 flat 日志
+均为同 seed 目录下的 `test_default.txt`，且各自只有一组 mAP/R1：
+
+- seed 1234：`58.3 / 68.1`，SHA
+  `d8d724d10e5de8ad536dfb49bc74a250bafa9df96dfa780664efa98e5595d41d`；
+- seed 42：`57.5 / 66.7`，SHA
+  `200d18c80e279b1689bd31aff5948b5ee088d76116a07633aef3f313a345426b`；
+- seed 2024：`58.0 / 68.4`，SHA
+  `ede3c4c3bca332e6c5c2c53edb375aeb1d50cdb033ef67295dca5b340317eb3c`。
+
+旧 nested 日志与当前 checkpoint provenance 不一致：seed 1234 还含两组重复指标，严格
+parser 正确拒绝；seed 42/2024 分别是 `57.9/66.7`、`57.3/66.6`，也不允许拿来替代。
+因此本次失败验证了 parser 与 prepare phase ordering 的 fail-closed 行为，不产生
+任何可报告科学结果。
+
+## 2026-07-15 — flat 日志修复与本机 20+87 全量复验 PASS
+
+修复仅包含三条默认 `flat_log` 路径替换，并新增 seed→flat-path 精确回归断言，防止任何
+seed 再退回 nested 日志；第二个 synthetic 用例还验证实际日志指标与 manifest 不符时
+必须触发 `E_FLAT_LOG_MANIFEST`。两轮独立 Codex 静态红队核对路径、指标、checkpoint
+provenance、Python 3.8 兼容性和 diff scope，结论均为 `PASS`。冻结值：
+
+- exact code commit：`1b3e155aadd63f429f5652f88692d4437ddfd0de`；
+- `audit_gate_a.py`：
+  `b759e897962a50c75e946ae54cea6628594061fe8239b40d16035ab03cb99e4c`；
+- `test_audit_runner.py`：
+  `b8653cbf2db5786d91dd0322185cbe8d2dff4d2d7cdbea88f0155e27e90b672c`。
+
+本机工作目录内 `.venv-exp374` 从头顺序执行：
+
+- formal state-machine/protocol/Swin：18/18、1/1、1/1 PASS；
+- regression protocol/seam/runner：14/14、37/37、36/36 PASS，另 5 subtests PASS；
+- 六份 JUnit 位于 Git 外
+  `remote_artifacts/exp374_flatlog_retest_20260715_local_v2/`，SHA 为：
+  - state-machine/protocol/Swin：
+    `0c7a36579de36f9338dd3b1fc66c6f2067dc734eebb59d2a76e5b60084f6284b` /
+    `358db8b1806edcc1b1794ecb20a44cf529ba70edd3e7a9dabdfd713905038f4c` /
+    `1e6a179d9c4d94f97092247aa44582bea0084d3d4035b0fea6ba8159042b58a6`；
+  - regression protocol/seam/runner：
+    `eb4e70f5a6107330b9c146d61b01b59eaad954949dfc100f316d3577682644a5` /
+    `d96a2ac23662dad917b780b7a4b8c9bcf27622dc7b879bb9be669901f7137233` /
+    `200b711ec415ff93afa6d8e13008625f083916ae216dc8b2137ff6bfe19ef5e3`。
+
+当前状态回退为 `NO_GO_FOR_PREPARE`：旧远端 20+85 PASS 和 prepare-only 授权只绑定
+`f053a43…`，不能跨 commit 继承。下一步只允许构建绑定新 exact commit 的增量 bundle、
+双端验签、部署到新隔离 clone，并在同一 Python 3.8/torch 1.13.1 环境从头重跑
+formal 20/20 与 regression 87/87；全 PASS 后才可重新申请 prepare-only 授权。新的
+prepare 必须使用全新 output root、lock、PID 和 log，禁止 resume 本次失败尝试。

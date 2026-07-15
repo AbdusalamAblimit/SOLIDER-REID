@@ -2,16 +2,16 @@
 
 ## 当前状态
 
-- 阶段：`REMOTE_FULL_PREFLIGHT_PASS_PREPARE_ONLY`
+- 阶段：`FLAT_LOG_FIX_LOCAL_20_PLUS_87_PASS_REMOTE_FULL_RETEST_REQUIRED`
 - 训练：未启动
 - 正式评测：未启动
-- 代码实现：audit-only runner、协议层、模型三态 seam 已编写；20 个 formal preflight
-  tests 与原 85 个纯 CPU/synthetic regression tests 全部 PASS
+- 代码实现：audit-only runner、协议层、模型三态 seam 已编写；首次 prepare 因历史
+  flat 日志路径错绑而在 output 创建前 fail closed，修复后本机 formal 20/20 与
+  regression 87/87 已从头 PASS，远端历史环境全量复验待执行
 - GPU：未占用
-- 当前执行许可：只允许在外层独占锁、前置可用空间至少 100 GiB 的条件下运行一次
-  `prepare`，并在 `PREPARED_ONLY` 后强制停住；prepare 可按冻结协议加载 checkpoint、
-  解析历史 flat parity 指标、读取 RGB/pose 资产并用 GPU 构造 matching，但仍禁止
-  Gate A `run`、当前 arm/per-query 指标生成、`summarize` 或训练
+- 当前执行许可：只允许本机与远端从头重跑 formal/regression preflight、构建并验签
+  绑定新 exact commit 的隔离部署；旧 prepare-only 授权已失效。新的 prepare、Gate A
+  `run`、当前 arm/per-query 指标生成、`summarize` 和训练全部禁止
 
 ## 动机
 

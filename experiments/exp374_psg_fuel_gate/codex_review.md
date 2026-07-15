@@ -14,12 +14,12 @@
 ## 当前总裁决
 
 - 设计：`PASS_FOR_AUDIT_SCRIPT_DESIGN`
-- unit/synthetic tests：`PASS`（85/85）
+- unit/synthetic tests：`PASS_LOCAL_AT_1B3E155`（87/87）
 - formal preflight：`PASS`（20/20）
 - 4090 checkpoint/data/disk/GPU 资源：`PASS`
-- 4090 isolated deployment：`PASS_AT_F053A43`
-- 4090 remote CPU preflight：`PASS`（20/20 formal + 85/85 regression）
-- Gate A prepare：`PASS_FOR_PREPARE_ONLY`
+- 4090 isolated deployment：`STALE_AT_F053A43`（等待部署 `1b3e155…`）
+- 4090 remote CPU preflight：旧 commit `PASS`；新 commit `PENDING_FULL_RETEST`
+- Gate A prepare：`NO_GO_AFTER_FAIL_CLOSED`
 - 正式 Gate A/训练：`NO_GO_FOR_EXECUTION`
 
 统计、工程与独立总红队已分别完成第三轮只读签字；该 PASS 只授权编写 audit-only
@@ -53,6 +53,17 @@ formal 20/20、regression 85/85 全部 PASS。执行后 exact HEAD、Git clean�
 `PASS_FOR_PREPARE_ONLY`：prepare 必须由外层 `flock -n` 覆盖 staging 全生命周期，
 前置磁盘至少 100 GiB，命令不得链接 run；`PREPARED_ONLY` 后必须退出并重新审查。
 
+首次 prepare 随后按上述边界安全失败：默认 manifest 把三份 checkpoint 的 flat parity
+日志错绑为旧 nested `test_default/test_log.txt`，而当前 checkpoint 对应的是同 seed 目录
+下唯一一组指标的 `test_default.txt`。进程在任何 Gate-A forward 和 canonical output root
+创建前退出，失败日志、锁和 PID 证据保留。修复 code commit
+`1b3e155aadd63f429f5652f88692d4437ddfd0de` 只替换三条路径，并新增默认
+seed→flat-path→expected mAP/R1 精确断言与 manifest 指标不符的 fail-closed 测试；
+两轮独立静态红队 PASS，本机从头重跑 formal 20/20 与 regression 87/87（另 5
+subtests）全部 PASS。旧
+`PASS_FOR_PREPARE_ONLY` 因 execution source 已变化而自动撤销；必须把新 exact commit
+部署到新隔离 clone，并在历史环境从头重跑 20+87 后，才能重新申请 prepare-only 授权。
+
 ## 分项裁决
 
 | 审查项 | 状态 | 裁决 |
@@ -66,9 +77,9 @@ formal 20/20、regression 85/85 全部 PASS。执行后 exact HEAD、Git clean�
 | checkpoint 文件完整性 | 完成 | PASS |
 | exact execution provenance | 完成 | FAIL：目录复用、文档与当前 checkpoint 日志错代、无 Git SHA |
 | 4090 数据/磁盘/GPU | 完成 | PASS：RGB/pose 三 split 齐全，可用约 216.6 GiB，4090 无计算进程 |
-| 4090 execution source | 完成 | exact `f053a43…` 新隔离 clone，bundle 双端验签、tracked SHA 与 clean status 全 PASS；基础 dirty repo 未修改 |
+| 4090 execution source | 待更新 | `f053a43…` 隔离 clone 的旧复验 PASS，但已被 `1b3e155…` 路径/provenance 修复 supersede；基础 dirty repo 仍不得修改 |
 | legacy Python 3.8 compatibility | 完成 | 两处 `removeprefix` 等价改写后，远端 Python 3.8 完整 20+85 PASS |
-| Gate A prepare | 已授权未启动 | 必须 outer lock、单 wrapper、≥100 GiB；PREPARED_ONLY 后停，不得链 run |
+| Gate A prepare | 首次安全失败，授权撤销 | 未创建 canonical output root、未做 Gate-A forward；新 commit 双端全量复验后才可重新授权 |
 | true bypass 语义 | 完成 | PASS：同模型传 `pose_dict=None` |
 | matched donor/centroid 实现 | formal preflight PASS | runner/protocol 静态复审、synthetic regression 与完整 N=128 matching preflight 均 PASS |
 | per-query/层级 bootstrap | 单元测试 PASS | 两 primary contrasts 的 synthetic test PASS；正式输入 preflight 未做 |
@@ -121,15 +132,20 @@ formal 20/20、regression 85/85 全部 PASS。执行后 exact HEAD、Git clean�
 
 ## 下一轮审查顺序
 
-1. 从 full commit `a02feff714f235e8985fa354fe1e31be42e2c87d` 创建 bundle；本地与
-   远端分别核 bundle SHA、`git bundle verify/list-heads`，clone 目标必须事先不存在；
-2. 新 clone detached checkout exact full SHA，逐项核 production/tests SHA；data 仅称
+1. 先显式提交本轮三份审查文档，取得包含 `1b3e155…` code ancestry 的最终 exact
+   execution commit；只从该最终 commit 创建 bundle，本地与远端分别核 bundle SHA、
+   `git bundle verify/list-heads`；
+2. clone 目标必须事先不存在并按新 exact SHA 命名；新 clone detached checkout 与
+   bundle 相同的 exact full SHA，逐项核 production/tests SHA；data 仅称
    策略式只读 symlink，并由 runner 的 path/content hash 做 pre/post 审计；
 3. clone 内用 `uv` 创建 `.venv`，只复用已核候选 base Python 的 system packages；
    `.git/info/exclude` 排除 `.venv/`，pytest 禁用 cacheprovider，所有 JUnit/log 放仓库外；
-4. 远端独立重跑 20 formal + 85 regression；前后核 exact HEAD、clean status、源码 SHA、
-   environment freeze SHA、GPU/进程/磁盘；当前已全 PASS；
-5. 只运行一次 prepare：outer `flock -n` 覆盖 staging 全生命周期，唯一 wrapper/PID/log
+4. 以含 `1b3e155aadd63f429f5652f88692d4437ddfd0de` code ancestry 的最终 execution
+   commit，远端独立重跑 20 formal + 87 regression；前后核 exact HEAD、clean status、
+   源码 SHA、environment
+   freeze SHA、GPU/进程/磁盘；
+5. 仅在上一步全 PASS 后重新申请 prepare-only 授权；获批后只运行一次 prepare：outer
+   `flock -n` 覆盖 staging 全生命周期，唯一 wrapper/PID/log
    位于 execution root 外，前置磁盘至少 100 GiB，命令绝不链接 run；
 6. prepare 会加载冻结 checkpoint 并解析历史 flat parity 指标，正确口径不是“无指标
    读取”，而是“matching 不读取当前 arm/per-query 结果”；prepare 后至少 80 GiB；
