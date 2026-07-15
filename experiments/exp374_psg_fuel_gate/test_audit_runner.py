@@ -141,20 +141,68 @@ class FlatLogAndCheckpointBytesTests(GateCodeMixin, unittest.TestCase):
 
     def test_default_checkpoint_logs_bind_flat_checkpoint_evaluations(self):
         expected = {
-            seed: (
+            42: (
                 "/home/afr/SOLIDER-REID/log/multiseed/"
-                f"exp007_psg_seed{seed}/test_default.txt"
-            )
-            for seed in (42, 1234, 2024)
+                "exp007_psg_seed42/test_default.txt",
+                57.5,
+                66.7,
+            ),
+            1234: (
+                "/home/afr/SOLIDER-REID/log/multiseed/"
+                "exp007_psg_seed1234/test_default.txt",
+                58.3,
+                68.1,
+            ),
+            2024: (
+                "/home/afr/SOLIDER-REID/log/multiseed/"
+                "exp007_psg_seed2024/test_default.txt",
+                58.0,
+                68.4,
+            ),
         }
 
         actual = {
-            int(spec["seed"]): str(spec["flat_log"])
+            int(spec["seed"]): (
+                str(spec["flat_log"]),
+                float(spec["expected_mAP"]),
+                float(spec["expected_R1"]),
+            )
             for spec in runner.DEFAULT_CHECKPOINTS
         }
 
         self.assertEqual(actual, expected)
-        self.assertTrue(all(Path(path).name == "test_default.txt" for path in actual.values()))
+
+    def test_checkpoint_specs_rejects_flat_log_metric_manifest_mismatch(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_specs = []
+            for offset, seed in enumerate((42, 1234, 2024)):
+                weight = root / f"seed_{seed}.pth"
+                flat_log = root / f"seed_{seed}_flat.log"
+                train_log = root / f"seed_{seed}_train.log"
+                torch.save(self.synthetic_alias_state(offset), weight)
+                expected_map = 50.0 + offset
+                expected_r1 = 60.0 + offset
+                flat_log.write_bytes(
+                    f"mAP: {expected_map:.1f}%\nRank-1: {expected_r1:.1f}%\n".encode())
+                train_log.write_bytes(f"synthetic seed={seed}\n".encode())
+                source_specs.append({
+                    "seed": seed,
+                    "weight": str(weight),
+                    "weight_sha256": protocol.sha256_bytes(weight.read_bytes()),
+                    "flat_log": str(flat_log),
+                    "train_log": str(train_log),
+                    "expected_mAP": expected_map,
+                    "expected_R1": expected_r1,
+                })
+            source_specs[0]["expected_mAP"] = 99.0
+
+            with mock.patch.object(runner, "DEFAULT_CHECKPOINTS", tuple(source_specs)):
+                self.assert_gate_code(
+                    "E_FLAT_LOG_MANIFEST",
+                    runner.checkpoint_specs,
+                    None,
+                )
 
     def test_checkpoint_specs_freezes_sha_log_parse_and_aliases_from_one_read(self):
         with tempfile.TemporaryDirectory() as directory:
