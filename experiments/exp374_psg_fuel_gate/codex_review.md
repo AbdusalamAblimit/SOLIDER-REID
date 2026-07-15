@@ -27,8 +27,10 @@
 - A02 official-mirror 全资产只读证据：`PASS`（两路独立审查）
 - production relation-v2 修复：`PASS_LOCAL_IMPLEMENTATION_AND_TEST_EVIDENCE`
   （audit `345056f4…`，protocol `99c72a8a…`，本地 207 direct + 146 subtests）
-- relation-v2 历史 Python 3.8/torch 1.13.1 远端复验：`PENDING_EXACT_COMMIT`
-- 正式 Gate A/训练：`NO_GO_FOR_EXECUTION`
+- relation-v2 历史 Python 3.8/torch 1.13.1 远端复验：`PASS`
+  （exact `2b1b17f…`，JUnit 207/207 + runner 146 subtests）
+- 当前授权：`PASS_FOR_A03_PREPARE_COMMAND_REVIEW_ONLY`
+- A03 `prepare`、Gate A `run`/`summarize` 与训练：`NO_GO_FOR_EXECUTION`
 
 统计、工程与独立总红队已分别完成第三轮只读签字；该 PASS 只授权编写 audit-only
 脚本。当前 audit-only runner、协议层、模型三态 seam，以及对应的纯 CPU/synthetic
@@ -392,3 +394,57 @@ A03 prepare、Gate A `run`/`summarize`、arm/per-query 指标或任何训练。
 测试；它不继承工作树结果为 exact-clone 结果。isolated 复验和历史 Python 3.8/torch
 1.13.1 远端复验尚未通过，因此 A03 `prepare`、Gate A `run`/`summarize`、真实 arm/
 per-query 指标和训练仍为 `NO_GO`。
+
+## 2026-07-15 — relation-v2 exact bundle 与历史环境复验最终裁决
+
+Swin seam 归属闭合后，最终 execution source 固定为
+`2b1b17f096aab11ec73f0d1534eb22535ff45412`。完整 bundle 大小为
+`22,775,101 B`，SHA256 为
+`07e2d8ceba224747a471b848b7b40bc525bb2f89080fccb789480d390521538b`；
+双端 `verify/list-heads` 均确认完整历史、唯一
+`refs/heads/exp/pose_heatmap` 指向该 exact HEAD。
+
+本地全新 detached clone 先重跑六套：pytest 9 JUnit `353/353`
+（`207 direct + 146 subtests`），0 error/failure/skip。Git 外证据为
+`remote_artifacts/exp374_local_exactclone_2b1b17f_20260715/`，
+`evidence_manifest.md` SHA256 为
+`2d72d4e1c36702becaffde384832ffc9acc9ee35a9de452c3e87244c2b8f00a8`。
+
+三路静态红队随后对远端 launcher exact SHA
+`aa885e90a3e110a7a9dba6fb79d45b3e4c39fdda643249bb7eb6cce2d3581f5f`
+复签 PASS。launcher 只允许在全新 clone 中创建历史环境、隐藏 CUDA，并运行六套
+CPU/synthetic 测试；没有 data symlink、`prepare/run/summarize`、arm/per-query 指标或
+训练入口。首个 scp 在链路中断后留下的 `2,611,200 B` 错误 partial 已按 SHA 单独归档；
+完整 bundle 通过前缀续传、全文件大小/SHA 与原子替换后才进入正式路径。
+
+4090 历史环境复验结果：
+
+| suite | pytest 8 JUnit | errors/failures/skipped |
+|---|---:|---:|
+| formal state machine | 41 | 0/0/0 |
+| formal protocol preflight | 1 | 0/0/0 |
+| formal Swin preflight | 1 | 0/0/0 |
+| protocol | 31 | 0/0/0 |
+| model audit seam | 38 | 0/0/0 |
+| audit runner | 95 | 0/0/0 |
+| 合计 | 207 | 0/0/0 |
+
+pytest 8 不把 successful `unittest.subTest` 展开为独立 JUnit case，因此又用原生
+`unittest` 在同一 exact source 上独立执行，得到 `95 methods + 146 subtests` 全 PASS。
+环境冻结为 Python 3.8.20、NumPy 1.24.4、pytest 8.3.5、torch 1.13.1、CUDA 11.7、
+torchvision 0.14.1、timm 1.0.22 与 cuDNN 8500。
+
+回传目录
+`remote_artifacts/exp374_remote_retest_2b1b17f_relation_v2/` 的
+`evidence_sha256.txt` SHA256 为
+`5a326f3f2f13fdc4d58316f82eb6e60de2d299ce49fda38ad22d126d276128a5`，
+30/30 项逐一通过；`final_status.txt` SHA256 为
+`9aa1d54192702a116e062233947b5a394ca213d9bbdabd8a01c05abe7fe5f222`。
+10 项源码、37 项 tracked bytecode 前后完全相同，post audit 为 detached exact HEAD、
+Git clean、无 data/cache/Gate-A marker、无 GPU compute process。三路独立证据红队均复签
+PASS；本地复核记录 SHA256 为
+`97ec7b9a0109307e784125c74ebe69d7e109a151dfee9ffc22e94ce816c72fed`。
+
+最终权限只升级为 `PASS_FOR_A03_PREPARE_COMMAND_REVIEW_ONLY`：可以设计和红队全新
+A03 prepare-only wrapper/launcher。A01/A02 永久烧毁且不得复用；A03 `prepare` 本身、
+Gate A `run`/`summarize`、arm/per-query 指标及任何训练仍未授权。

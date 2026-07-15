@@ -811,3 +811,50 @@ commit PASS。
 exact HEAD 构建/验签 bundle，并在全新隔离 clone 中从头重跑六套测试。isolated clone
 353/353 与历史 Python 3.8/torch 1.13.1 复验完成前，远端真实资产、A03 `prepare`、Gate A
 `run`/`summarize`、arm/per-query 指标和训练继续 `NO_GO`。
+
+## 2026-07-15 — exact-clone 与远端历史环境 relation-v2 全量复验 PASS
+
+最终 execution source 为
+`2b1b17f096aab11ec73f0d1534eb22535ff45412`。完整 bundle：
+
+- 路径：`remote_artifacts/exp374_execution_2b1b17f.bundle`；
+- 大小：`22,775,101 B`；
+- SHA256：
+  `07e2d8ceba224747a471b848b7b40bc525bb2f89080fccb789480d390521538b`；
+- 双端 `git bundle verify/list-heads`：完整历史、唯一 head 精确指向
+  `2b1b17f…`。
+
+本地全新 detached clone 六套全量重跑为 pytest 9 JUnit `353/353`
+（`207 direct + 146 subtests`），0 error/failure/skip；证据 manifest SHA256：
+`2d72d4e1c36702becaffde384832ffc9acc9ee35a9de452c3e87244c2b8f00a8`。
+
+远端 launcher 经三路静态红队冻结为 SHA256
+`aa885e90a3e110a7a9dba6fb79d45b3e4c39fdda643249bb7eb6cce2d3581f5f`。
+4090 的 Python 3.8.20 / torch 1.13.1 / CUDA 11.7 历史环境从头重跑六套：
+`41+1+1+31+38+95=207` 个 pytest 8 JUnit case 全 PASS，
+`errors/failures/skipped=0/0/0`；原生 unittest 另核
+`95 methods + 146 subtests` 全 PASS。六个 rc 均为 0。
+
+回传证据目录：
+`remote_artifacts/exp374_remote_retest_2b1b17f_relation_v2/`。其中：
+
+- `evidence_sha256.txt` SHA256：
+  `5a326f3f2f13fdc4d58316f82eb6e60de2d299ce49fda38ad22d126d276128a5`，
+  30/30 项 PASS；
+- `final_status.txt` SHA256：
+  `9aa1d54192702a116e062233947b5a394ca213d9bbdabd8a01c05abe7fe5f222`；
+- environment freeze SHA256：
+  `7699815505136173aa3f398ac43a0c82fabfa8af9aad2e769b3badaab32cd6c6`；
+- 10 项源码和 37 项 tracked bytecode pre/post 完全相同；
+- post audit：detached exact HEAD、Git clean、无 data/pytest cache/Gate A marker、
+  无 GPU compute process；
+- 三路独立证据红队均 PASS；本地复核记录 SHA256：
+  `97ec7b9a0109307e784125c74ebe69d7e109a151dfee9ffc22e94ce816c72fed`。
+
+链路异常边界：首次 scp 中断形成的 `2,611,200 B` 错误 partial 以 SHA
+`1bbc7afaa78985c484bdb9ff854cbeeb1d6fc1f899aa782fda837529434d0968`
+单独归档；正式路径只在 incoming 完整大小与全文件 SHA 均通过后原子替换，故未污染复验。
+
+当前状态为 `PASS_FOR_A03_PREPARE_COMMAND_REVIEW_ONLY`。只允许设计、冻结并多路红队
+全新 A03 prepare-only 命令；A01/A02 永久烧毁，A03 `prepare`、Gate A
+`run`/`summarize`、arm/per-query 指标和训练仍为 `NO_GO`。
