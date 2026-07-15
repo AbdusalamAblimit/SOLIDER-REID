@@ -357,11 +357,14 @@ class SignedSceneAuditTests(GateCodeMixin, unittest.TestCase):
     @staticmethod
     def signed_batch():
         scene = torch.zeros((2, 17, 96, 32), dtype=torch.float32)
-        scene[0, 10, 2, 3] = -0.25
-        scene[0, 10, 2, 4] = -0.05
-        scene[1, 6, 5, 7] = -0.07
-        scene[0, 0, 20, 10] = 1.25
-        scene[1, 1, 40, 11] = 0.75
+        # Broad, sample-distinct regions remain visible after the frozen
+        # 96x32 -> 12x4 bilinear resize.  Single-pixel negatives can be
+        # legitimately missed by that sampling grid and are not a valid
+        # nonzero-Delta fixture.
+        scene[0, 10, 0:16, 0:16] = -0.25
+        scene[1, 6, 32:64, 16:32] = -0.07
+        scene[0, 0, 16:48, 8:24] = 1.25
+        scene[1, 1, 48:80, 0:16] = 0.75
         return scene
 
     @staticmethod
@@ -395,11 +398,11 @@ class SignedSceneAuditTests(GateCodeMixin, unittest.TestCase):
         self.assertEqual(audit["raw_dtype"], "<f4")
         self.assertEqual(audit["raw_element_count"], 2 * 17 * 96 * 32)
         self.assertAlmostEqual(audit["raw_min"], -0.25)
-        self.assertEqual(audit["negative_element_count"], 3)
+        self.assertEqual(audit["negative_element_count"], 768)
         self.assertEqual(audit["negative_sample_count"], 2)
         self.assertEqual(audit["negative_sample_channel_count"], 2)
         self.assertEqual(audit["negative_channel_indices_0based"], [6, 10])
-        self.assertAlmostEqual(audit["negative_absolute_mass"], 0.37, places=6)
+        self.assertAlmostEqual(audit["negative_absolute_mass"], 99.84, places=4)
         self.assertEqual(actual_audit["compute_backend"], "torch_cpu_test_only")
         self.assertEqual(
             actual_audit["active_psg_blocks"]["s3_b0"],
@@ -969,15 +972,18 @@ class ExecutionResumeTests(GateCodeMixin, unittest.TestCase):
             manifest["dataset"] = {"cache": {"train": {"signed_raw_audit": signed}}}
             execution, _sha = protocol.create_execution_directory(
                 output_root, manifest, None)
-            drifted = json.loads(protocol.canonical_json_bytes(manifest))
-            drifted["dataset"]["cache"]["train"]["signed_raw_audit"][
+            frozen = json.loads(
+                (execution / "premetric_manifest.json").read_text(encoding="utf-8"))
+            frozen["dataset"]["cache"]["train"]["signed_raw_audit"][
                 "negative_channel_indices_0based"] = [6]
+            protocol.atomic_write_json(
+                execution / "premetric_manifest.json", frozen)
 
             self.assert_gate_code(
                 "E_RESUME_HASH_DRIFT",
                 protocol.create_execution_directory,
                 output_root,
-                drifted,
+                manifest,
                 execution,
             )
 
