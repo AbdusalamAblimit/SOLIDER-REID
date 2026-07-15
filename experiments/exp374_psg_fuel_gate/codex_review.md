@@ -16,6 +16,8 @@
 - 设计：`PASS_FOR_AUDIT_SCRIPT_DESIGN`
 - unit/synthetic tests：`PASS`（85/85）
 - formal preflight：`PASS`（20/20）
+- 4090 checkpoint/data/disk/GPU 资源：`PASS`
+- 4090 isolated deployment/remote CPU preflight：`AUTHORIZED_NOT_STARTED`
 - 正式 Gate A/训练：`NO_GO_FOR_EXECUTION`
 
 统计、工程与独立总红队已分别完成第三轮只读签字；该 PASS 只授权编写 audit-only
@@ -27,6 +29,12 @@ PASS。三项 formal preflight 也已分别完成自审与独立交叉静态审�
 资产与资源只读复审、并把总裁决显式升级为 `PASS_FOR_LEGACY_GATE_A` 前，仍禁止
 prepare、读取真实 checkpoint/data 或指标、GPU 推理、训练、正式评测或用旧 flag
 拼出近似干预。
+
+4090 资源复审后，三枚冻结 checkpoint、六份日志、Occluded-Duke RGB/pose 资产、磁盘和
+GPU 均 PASS；但基础仓库是旧 commit 且有大量用户工作树，不能原地修改。部署计划红队
+初审对原方案判 `FAIL_AS_WRITTEN`，指出 bundle 双端校验、Git provenance、环境冻结、
+data symlink 口径、prepare 外层锁、历史指标读取口径和前后磁盘门槛必须修正。当前已
+逐项接受这些条件，只授权建立新隔离 clone 并运行远端 CPU preflight；prepare 尚未授权。
 
 ## 分项裁决
 
@@ -40,6 +48,8 @@ prepare、读取真实 checkpoint/data 或指标、GPU 推理、训练、正式�
 | Gate A 对应依赖协议 | 完成 | 三路第三轮均签 `PASS_FOR_AUDIT_SCRIPT_DESIGN` |
 | checkpoint 文件完整性 | 完成 | PASS |
 | exact execution provenance | 完成 | FAIL：目录复用、文档与当前 checkpoint 日志错代、无 Git SHA |
+| 4090 数据/磁盘/GPU | 完成 | PASS：RGB/pose 三 split 齐全，可用约 216.6 GiB，4090 无计算进程 |
+| 4090 execution source | 待部署 | 基础 repo HEAD `715c020e…` 且 dirty；必须从双端验签 bundle 新建隔离 clone，禁止原地覆盖 |
 | true bypass 语义 | 完成 | PASS：同模型传 `pose_dict=None` |
 | matched donor/centroid 实现 | formal preflight PASS | runner/protocol 静态复审、synthetic regression 与完整 N=128 matching preflight 均 PASS |
 | per-query/层级 bootstrap | 单元测试 PASS | 两 primary contrasts 的 synthetic test PASS；正式输入 preflight 未做 |
@@ -92,9 +102,17 @@ prepare、读取真实 checkpoint/data 或指标、GPU 推理、训练、正式�
 
 ## 下一轮审查顺序
 
-1. 只读复审 4090 上三枚冻结 checkpoint/log 路径及文件 SHA、空闲 GPU、现存进程、
-   目标卷容量和预计 492-pass 资源；不得加载 checkpoint 内容或读取 ReID 指标；
-2. 核对本地源码、测试和六份 JUnit SHA，确认没有未审签漂移；
-3. 根据真实资产/资源复审形成最终执行清单与 fail-closed 条件；
-4. 总裁决改为 `PASS_FOR_LEGACY_GATE_A` 后，才允许 prepare 与正式 legacy Gate A；
-5. Gate A 即使 GO，也只授权另写 Gate B 设计与审查，不授权新机制训练。
+1. 从 full commit `a02feff714f235e8985fa354fe1e31be42e2c87d` 创建 bundle；本地与
+   远端分别核 bundle SHA、`git bundle verify/list-heads`，clone 目标必须事先不存在；
+2. 新 clone detached checkout exact full SHA，逐项核 production/tests SHA；data 仅称
+   策略式只读 symlink，并由 runner 的 path/content hash 做 pre/post 审计；
+3. clone 内用 `uv` 创建 `.venv`，只复用已核候选 base Python 的 system packages；
+   `.git/info/exclude` 排除 `.venv/`，pytest 禁用 cacheprovider，所有 JUnit/log 放仓库外；
+4. 远端独立重跑 20 formal + 85 regression；前后核 exact HEAD、clean status、源码 SHA、
+   environment freeze SHA、GPU/进程/磁盘；任一失败立即停；
+5. remote CPU preflight 全 PASS 后另行审签 `PASS_FOR_PREPARE_ONLY`。prepare 必须有覆盖
+   staging 全生命周期的外层独占锁，前置磁盘至少 100 GiB，`PREPARED_ONLY` 后强制停；
+6. prepare 会加载冻结 checkpoint 并解析历史 flat parity 指标，正确口径不是“无指标
+   读取”，而是“matching 不读取当前 arm/per-query 结果”；prepare 后至少 80 GiB；
+7. 审计 PREPARED manifest/cache/mapping/hash/schedule 且单独升级授权后才允许 run；
+   RUN_COMPLETE 后再次单独授权 summarize。Gate A 即使 GO，也不授权新机制训练。

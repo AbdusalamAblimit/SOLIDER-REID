@@ -209,3 +209,45 @@ production runner 重构后又原样重跑三组 regression：
 `FORMAL_PREFLIGHT_PASS_RESOURCE_REVIEW_REQUIRED`；正式 Gate A 继续
 `NO_GO_FOR_EXECUTION`。下一步只做 4090 真实资产、磁盘、进程、GPU 与预计资源的
 只读复审，禁止 prepare、读取 checkpoint 内容/指标、GPU 推理、正式评测或训练。
+
+## 2026-07-15 — 4090 真实资产/资源 PASS，旧源码环境阻塞
+
+独立只读资源红队未创建文件、未 prepare、未加载 checkpoint、未解析日志指标：
+
+- 三枚 checkpoint 均为 `113,033,331 B`，SHA 与设计冻结值逐一一致；
+- 六份日志只做文件 hash，不读取内容：
+  - seed 1234 flat/train：`2c42dd62c48119cacbb7979944762a51d3f0d85d117e6fc8a3f50359c386a4ac` /
+    `f29a870b3d8edfadba64bc57abccfacd6ae351ee5a68c084b5604313da22472b`；
+  - seed 42 flat/train：`9794757c8009f540950dd665fa7c9560f84315b920761fcfaeb126bb8c2631ca` /
+    `091eb57cd0aea9c4b080bd0ba6699a814c771150fa58356d0de91a18d8c1cf14`；
+  - seed 2024 flat/train：`57362690072021d75206e3be247b606eb534436f3b065524de0c772936744255` /
+    `7c6000152f57508a788bdf6bc77c089c3cc68392b2622c2621608a145b61e392`；
+- `/home/afr` 可用 `232,580,870,144 B`（约 216.6 GiB），超过 80 GiB 门槛；
+- RTX 4090 D 仅 2 MiB 显存、0% 利用率，无 compute/exp374 进程；
+- RGB train/query/gallery 数量为 `15,618 / 2,210 / 17,661`；pose_data 为
+  `22,050 / 4,155 / 24,779`，六目录均存在；
+- legacy Python 环境及所需核心包存在；`uv`、git、sha256sum、flock、timeout 均可用；
+- 没有旧 exp374 输出根、锁或 completion/failure marker。
+
+资源本身 PASS，但旧基础 repo HEAD=`715c020e…` 且 dirty，缺 `audit_gate_a.py`、
+`protocol.py`，远端 `pose_backbone_model.py` SHA=`634939…`，不能原地覆盖，故资源红队
+当时裁决 `KEEP_NO_GO_FOR_EXECUTION`。
+
+## 2026-07-15 — 隔离部署计划红队与修订
+
+原部署草案被判 `FAIL_AS_WRITTEN`，所有阻塞均属于部署流程而非 runner 代码：
+
+1. bundle 必须绑定 full commit `a02feff714f235e8985fa354fe1e31be42e2c87d`，双端核
+   SHA、bundle integrity 与 heads；
+2. clone 目标必须不存在，detached checkout exact commit，逐项核源码/测试 SHA；
+3. `.venv/` 写入 clone 私有 `.git/info/exclude`，pytest 禁 cacheprovider，禁止
+   editable/setup install；环境冻结后不再升级包；
+4. data symlink 只称策略式只读，真正的不变性由 runner 的 path/content hash 复核；
+5. prepare 必须加覆盖 staging 全生命周期的外层独占锁，不能链 run；
+6. prepare 会加载 checkpoint 并解析历史 flat parity 指标；冻结的因果隔离要求是
+   matching 不接收任何当前 Gate-A arm/per-query 结果，而不是字面“零指标读取”；
+7. prepare 前至少 100 GiB，PREPARED_ONLY 后再要求至少 80 GiB。
+
+当前只授权双端验签 bundle、新隔离 clone、工作目录内 uv 环境和远端纯 CPU 20+85
+preflight。正式 Gate A 与 prepare 继续 `NO_GO_FOR_EXECUTION`；remote preflight 全 PASS
+后才可另行升级为 `PASS_FOR_PREPARE_ONLY`。
