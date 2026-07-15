@@ -25,7 +25,7 @@ import sys
 import tempfile
 import traceback
 from pathlib import Path
-from typing import Dict, List, Mapping, MutableMapping, Sequence, Tuple
+from typing import Callable, Dict, List, Mapping, MutableMapping, Sequence, Tuple
 
 import numpy as np
 import torch
@@ -379,6 +379,190 @@ def _new_memmap(path: Path, shape: Tuple[int, ...], dtype: str):
     return np.lib.format.open_memmap(path, mode="w+", dtype=dtype, shape=shape)
 
 
+ACTIVE_PSG_BLOCK_SHAPES = {
+    "s3_b0": (12, 4),
+    "s3_b1": (12, 4),
+}
+
+CENTROID_RUNTIME_SECONDARY_CODES = frozenset({
+    "E_CENTROID_WEAK_CHANNEL",
+    "E_CENTROID_EMPTY",
+    "E_CENTROID_TARGET",
+    "E_CENTROID_ZERO",
+    "E_CENTROID_COMMUTATION",
+    "E_CENTROID_ERROR",
+    "E_CENTROID_L1",
+    "E_CENTROID_PEAK",
+    "E_CENTROID_ENTROPY",
+    "E_CENTROID_NEGATIVE_ZERO",
+    "E_CENTROID_NEGATIVE_L1",
+})
+
+
+def _new_signed_scene_audit() -> Dict[str, object]:
+    return {
+        "raw_min": float("inf"),
+        "negative_element_count": 0,
+        "negative_sample_count": 0,
+        "negative_sample_channel_count": 0,
+        "negative_channel_indices_0based": set(),
+        "negative_absolute_mass": 0.0,
+        "sample_count": 0,
+    }
+
+
+def _new_actual_space_audit() -> Dict[str, object]:
+    return {
+        "sample_count": 0,
+        "blocks": {
+            key: {
+                "shape": shape,
+                "sraw": hashlib.sha256(),
+                "spos": hashlib.sha256(),
+                "delta": hashlib.sha256(),
+                "delta_max_abs": 0.0,
+                "delta_sum_abs": 0.0,
+                "element_count": 0,
+            }
+            for key, shape in ACTIVE_PSG_BLOCK_SHAPES.items()
+        },
+    }
+
+
+def _little_endian_float32_bytes(value: torch.Tensor) -> bytes:
+    array = np.asarray(value.detach().cpu().numpy(), dtype=np.dtype("<f4"))
+    return np.ascontiguousarray(array).tobytes(order="C")
+
+
+def _update_signed_scene_audit(state: MutableMapping[str, object],
+                               scene: torch.Tensor) -> None:
+    raw = scene.detach().float().cpu().contiguous()
+    require(raw.ndim == 4 and tuple(raw.shape[1:]) == (17, 96, 32),
+            "E_SIGN_AUDIT_SHAPE", str(tuple(raw.shape)))
+    require(bool(torch.isfinite(raw).all()), "E_SCENE_NONFINITE", "signed audit")
+    negative = raw < 0
+    state["raw_min"] = min(float(state["raw_min"]), float(raw.min().item()))
+    state["negative_element_count"] = (
+        int(state["negative_element_count"]) + int(negative.sum().item()))
+    state["negative_sample_count"] = (
+        int(state["negative_sample_count"])
+        + int(negative.flatten(1).any(1).sum().item()))
+    sample_channels = negative.flatten(2).any(2)
+    state["negative_sample_channel_count"] = (
+        int(state["negative_sample_channel_count"])
+        + int(sample_channels.sum().item()))
+    channel_union = negative.permute(1, 0, 2, 3).flatten(1).any(1).nonzero(
+        as_tuple=False).flatten().tolist()
+    state["negative_channel_indices_0based"].update(int(value) for value in channel_union)
+    for sample in range(raw.shape[0]):
+        state["negative_absolute_mass"] = (
+            float(state["negative_absolute_mass"])
+            + float((-raw[sample].clamp_max(0)).double().sum().item()))
+    state["sample_count"] = int(state["sample_count"]) + int(raw.shape[0])
+
+
+def _update_actual_space_audit(state: MutableMapping[str, object],
+                               scene: torch.Tensor) -> None:
+    raw = scene.detach().to(dtype=torch.float32).contiguous()
+    require(raw.ndim == 4 and tuple(raw.shape[1:]) == (17, 96, 32),
+            "E_SIGN_AUDIT_SHAPE", str(tuple(raw.shape)))
+    require(bool(torch.isfinite(raw).all()), "E_SCENE_NONFINITE", "actual-space audit")
+    positive = raw.clamp_min(0)
+    for key, shape in ACTIVE_PSG_BLOCK_SHAPES.items():
+        block = state["blocks"][key]
+        sraw = actual_psg_input(raw, shape)
+        spos = actual_psg_input(positive, shape)
+        delta = sraw - spos
+        for sample in range(raw.shape[0]):
+            block["sraw"].update(_little_endian_float32_bytes(sraw[sample]))
+            block["spos"].update(_little_endian_float32_bytes(spos[sample]))
+            block["delta"].update(_little_endian_float32_bytes(delta[sample]))
+            delta_abs = delta[sample].double().abs()
+            block["delta_max_abs"] = max(
+                float(block["delta_max_abs"]), float(delta_abs.max().item()))
+            block["delta_sum_abs"] = (
+                float(block["delta_sum_abs"]) + float(delta_abs.sum().item()))
+        block["element_count"] = int(block["element_count"]) + int(delta.numel())
+    state["sample_count"] = int(state["sample_count"]) + int(raw.shape[0])
+
+
+def _finalize_signed_scene_audit(state: Mapping[str, object], split: str,
+                                 count: int) -> Dict[str, object]:
+    require(int(state["sample_count"]) == count and count > 0,
+            "E_SIGN_AUDIT_COUNT", f"{split}: {state['sample_count']}!={count}")
+    return {
+        "transform": "positive_part_v1",
+        "sample_order": "dataset_index_0_to_N_minus_1",
+        "raw_shape": [count, 17, 96, 32],
+        "raw_dtype": "<f4",
+        "raw_element_count": count * 17 * 96 * 32,
+        "raw_min": float(state["raw_min"]),
+        "negative_element_count": int(state["negative_element_count"]),
+        "negative_sample_count": int(state["negative_sample_count"]),
+        "negative_sample_channel_count": int(state["negative_sample_channel_count"]),
+        "negative_channel_indices_0based": sorted(
+            int(value) for value in state["negative_channel_indices_0based"]),
+        "negative_absolute_mass": float(state["negative_absolute_mass"]),
+    }
+
+
+def _finalize_actual_space_audit(state: Mapping[str, object], split: str,
+                                 count: int, device: torch.device) -> Dict[str, object]:
+    require(int(state["sample_count"]) == count and count > 0,
+            "E_SIGN_AUDIT_COUNT", f"{split}: {state['sample_count']}!={count}")
+    blocks: Dict[str, object] = {}
+    for key, shape in ACTIVE_PSG_BLOCK_SHAPES.items():
+        source = state["blocks"][key]
+        element_count = int(source["element_count"])
+        require(element_count == count * 17 * shape[0] * shape[1],
+                "E_SIGN_AUDIT_COUNT", f"{split}/{key}: {element_count}")
+        blocks[key] = {
+            "shape": [count, 17, shape[0], shape[1]],
+            "dtype": "<f4",
+            "element_count": element_count,
+            "sraw_sha256": source["sraw"].hexdigest(),
+            "spos_sha256": source["spos"].hexdigest(),
+            "delta_sha256": source["delta"].hexdigest(),
+            "delta_max_abs": float(source["delta_max_abs"]),
+            "delta_sum_abs": float(source["delta_sum_abs"]),
+            "delta_mean_abs": float(source["delta_sum_abs"]) / element_count,
+        }
+    by_shape: Dict[Tuple[int, int], Mapping[str, object]] = {}
+    for key, shape in ACTIVE_PSG_BLOCK_SHAPES.items():
+        if shape in by_shape:
+            require(blocks[key] == by_shape[shape], "E_SIGN_BLOCK_DRIFT", f"{split}/{key}")
+        else:
+            by_shape[shape] = blocks[key]
+    return {
+        "compute_device": str(device),
+        "compute_backend": "torch_cuda" if device.type == "cuda" else "torch_cpu_test_only",
+        "operator": (
+            "actual_psg_input_v1=F.interpolate(mode=bilinear,align_corners=False,"
+            "float32)+torch.sigmoid"
+        ),
+        "sample_order": "dataset_index_0_to_N_minus_1",
+        "active_psg_blocks": blocks,
+    }
+
+
+def build_actual_space_audit(prepared: Path, split: str, count: int,
+                             device: torch.device, batch_size: int) -> Dict[str, object]:
+    require(device.type == "cuda" and torch.cuda.is_available(),
+            "E_SIGN_AUDIT_DEVICE", str(device))
+    require(batch_size > 0, "E_SIGN_AUDIT_BATCH", str(batch_size))
+    source = np.load(prepared / f"{split}_scene_heatmaps.npy", mmap_mode="r")
+    require(source.shape == (count, 17, 96, 32) and source.dtype == np.float32,
+            "E_SIGN_AUDIT_SHAPE", f"{split}: {source.shape}/{source.dtype}")
+    state = _new_actual_space_audit()
+    for start in range(0, count, batch_size):
+        stop = min(start + batch_size, count)
+        host = np.array(source[start:stop], dtype=np.float32, copy=True, order="C")
+        raw = torch.from_numpy(host).to(device, non_blocking=False)
+        _update_actual_space_audit(state, raw)
+        del raw, host
+    return _finalize_actual_space_audit(state, split, count, device)
+
+
 def cache_split(
     split: str,
     dataset: PoseImageDataset,
@@ -397,6 +581,7 @@ def cache_split(
     expected_records = list(dataset.dataset)
     basenames = [Path(record[0]).name for record in expected_records]
     require(len(set(basenames)) == len(basenames), "E_RGB_BASENAME_COLLISION", split)
+    signed_scene_audit = _new_signed_scene_audit()
 
     for batch in split_loader(dataset, local_cfg):
         _images, pids, camids, _camids_tensor, viewids, paths, pose_dict = batch
@@ -405,6 +590,7 @@ def cache_split(
         require(tuple(scene.shape[1:]) == (17, 96, 32), "E_CACHE_SCENE_SHAPE", str(scene.shape))
         heatmaps[cursor:cursor + batch_size] = scene.numpy().astype(np.float32, copy=False)
         scores[cursor:cursor + batch_size] = scene_scores.numpy().astype(np.float32, copy=False)
+        _update_signed_scene_audit(signed_scene_audit, scene)
         for offset in range(batch_size):
             row = cursor + offset
             expected_path, expected_pid, expected_camid, expected_viewid = expected_records[row]
@@ -456,6 +642,8 @@ def cache_split(
         "scores": score_path.name,
         "continuous": f"{split}_continuous.npy",
         "metadata": f"{split}_metadata.json",
+        "signed_raw_audit": _finalize_signed_scene_audit(
+            signed_scene_audit, split, count),
     }
 
 
@@ -550,7 +738,13 @@ def build_centroid_cache(prepared: Path, counts: Mapping[str, int]) -> Dict[str,
         torch.from_numpy(np.asarray(train[index])) for index in range(int(counts["train"])))
     require(all(target is not None for target in targets), "E_CENTROID_TARGET", "missing train joint")
     atomic_write_json(prepared / "centroid_targets.json", targets)
-    status: Dict[str, object] = {"status": "PASS", "targets": targets}
+    status: Dict[str, object] = {
+        "status": "PASS",
+        "geometry_transform": "positive_part_v1",
+        "output_transform": "translate_signed_raw_v1",
+        "negative_mass_ratio_bounds": [0.95, 1.05],
+        "targets": targets,
+    }
     for split in ("query", "gallery"):
         source = np.load(prepared / f"{split}_scene_heatmaps.npy", mmap_mode="r")
         output = _new_memmap(
@@ -596,6 +790,17 @@ def prepare_phase(args: argparse.Namespace) -> None:
         assert_disjoint_records(records)
         require(torch.cuda.is_available(), "E_MATCH_GPU_REQUIRED", "exact sparse candidate build")
         device = torch.device("cuda:0")
+        for split in ("train", "query", "gallery"):
+            cache_manifest[split]["signed_raw_audit"]["actual_space"] = (
+                build_actual_space_audit(
+                    staging,
+                    split,
+                    int(cache_manifest[split]["count"]),
+                    device,
+                    int(local_cfg.TEST.IMS_PER_BATCH),
+                )
+            )
+        torch.cuda.empty_cache()
         mapping_manifest = {}
         for split in ("query", "gallery"):
             payload = prepare_split_mappings(
@@ -614,7 +819,7 @@ def prepare_phase(args: argparse.Namespace) -> None:
             for partial in staging.glob("*_centroid_heatmaps.npy"):
                 partial.unlink()
             centroid_status = {
-                "status": "INVALID",
+                "status": "INVALID_SECONDARY",
                 "error_code": error.code,
                 "message": str(error),
             }
@@ -1336,6 +1541,14 @@ def expected_arm_provenance(
     row: Mapping[str, object],
     scenes: PreparedSceneAccess,
 ) -> Dict[str, object]:
+    correct_sraw = {
+        split: {
+            key: manifest["dataset"]["cache"][split]["signed_raw_audit"]
+            ["actual_space"]["active_psg_blocks"][key]["sraw_sha256"]
+            for key in ACTIVE_PSG_BLOCK_SHAPES
+        }
+        for split in ("query", "gallery")
+    }
     return {
         "execution_sha256": sha256_bytes(canonical_json_bytes(manifest)),
         "checkpoint_sha256": spec["weight_sha256"],
@@ -1348,7 +1561,77 @@ def expected_arm_provenance(
         "row": dict(row),
         "arm_id": schedule_arm_id(row),
         "mapping": _mapping_row_hashes(scenes, row),
+        "correct_actual_sraw_sha256": correct_sraw,
     }
+
+
+def _actual_input_split_sha256(actual: torch.Tensor, num_query: int) -> Dict[str, str]:
+    require(actual.ndim == 4 and actual.shape[1:] == (17, 12, 4),
+            "E_HOOK_SHAPE", str(actual.shape))
+    require(0 < num_query < len(actual), "E_SCENE_QUERY_COUNT", str(num_query))
+    output: Dict[str, str] = {}
+    for split, value in (
+        ("query", actual[:num_query]),
+        ("gallery", actual[num_query:]),
+    ):
+        digest = hashlib.sha256()
+        for sample in value:
+            digest.update(_little_endian_float32_bytes(sample))
+        output[split] = digest.hexdigest()
+    return output
+
+
+def _actual_input_audit_summary(
+    actual: torch.Tensor | None,
+    arm: str,
+    total: int,
+    num_query: int,
+    provenance: Mapping[str, object],
+) -> Dict[str, object]:
+    if actual is None:
+        return {
+            "actual_psg_input_sha256": None,
+            "actual_psg_input_shape": None,
+            "actual_psg_input_split_sha256": None,
+        }
+    require(actual.shape == (total, 17, 12, 4),
+            "E_HOOK_SHAPE", str(actual.shape))
+    summary: Dict[str, object] = {
+        "actual_psg_input_sha256": sha256_tensor(actual),
+        "actual_psg_input_shape": list(actual.shape),
+        "actual_psg_input_split_sha256": None,
+    }
+    if arm == "correct":
+        split_hashes = _actual_input_split_sha256(actual, num_query)
+        expected_hashes = provenance["correct_actual_sraw_sha256"]
+        for split in ("query", "gallery"):
+            for key in ACTIVE_PSG_BLOCK_SHAPES:
+                require(
+                    split_hashes[split] == expected_hashes[split][key],
+                    "E_HOOK_PREMETRIC_DRIFT",
+                    f"{split}/{key}",
+                )
+        summary["actual_psg_input_split_sha256"] = split_hashes
+    return summary
+
+
+def _audited_metric_payload(
+    features: torch.Tensor,
+    pids: Sequence[int],
+    camids: Sequence[int],
+    num_query: int,
+    arm: str,
+    actual: torch.Tensor | None,
+    total: int,
+    provenance: Mapping[str, object],
+) -> Tuple[Dict[str, object], Dict[str, np.ndarray]]:
+    """Complete every input audit before computing any ReID metric."""
+
+    actual_summary = _actual_input_audit_summary(
+        actual, arm, total, num_query, provenance)
+    summary, arrays = _metric_payload(features, pids, camids, num_query)
+    summary.update(actual_summary)
+    return summary, arrays
 
 
 def extract_arm(
@@ -1482,18 +1765,19 @@ def extract_arm(
             for split in ("query", "gallery")
         }
 
-    # Metric computation is deliberately below the complete shuffle intervention gate.
+    # Metric computation is deliberately below every intervention and actual-input gate.
     feature_tensor = torch.cat(features, dim=0)
-    summary, arrays = _metric_payload(feature_tensor, pids, camids, scenes.num_query)
     actual_tensor = torch.cat(actual_inputs, dim=0) if actual_inputs else None
-    if actual_tensor is not None:
-        require(actual_tensor.shape == (scenes.total, 17, 12, 4),
-                "E_HOOK_SHAPE", str(actual_tensor.shape))
-        summary["actual_psg_input_sha256"] = sha256_tensor(actual_tensor)
-        summary["actual_psg_input_shape"] = list(actual_tensor.shape)
-    else:
-        summary["actual_psg_input_sha256"] = None
-        summary["actual_psg_input_shape"] = None
+    summary, arrays = _audited_metric_payload(
+        feature_tensor,
+        pids,
+        camids,
+        scenes.num_query,
+        arm,
+        actual_tensor,
+        scenes.total,
+        provenance,
+    )
     summary.update({
         "status": "PASS",
         "row": dict(row),
@@ -1519,6 +1803,47 @@ def extract_arm(
     if device.type == "cuda":
         torch.cuda.empty_cache()
     return summary
+
+
+def extract_and_publish_unpublished_arm(
+    extract_call: Callable[[], object],
+    temporary: Path,
+    arm_dir: Path,
+    row: Mapping[str, object],
+    provenance: Mapping[str, object],
+) -> str:
+    """Publish one arm; only a centroid protocol failure is secondary-invalid."""
+
+    try:
+        extract_call()
+    except GateProtocolError as error:
+        if (str(row["arm"]) != "centroid"
+                or error.code not in CENTROID_RUNTIME_SECONDARY_CODES):
+            raise
+        require(temporary.is_dir(), "E_ARM_TEMP", str(temporary))
+        shutil.rmtree(temporary)
+        temporary.mkdir(exist_ok=False)
+        atomic_write_json(temporary / "summary.json", {
+            "status": "INVALID_SECONDARY",
+            "row": dict(row),
+            "arm_id": schedule_arm_id(row),
+            "reason": {
+                "error_code": error.code,
+                "message": str(error),
+                "phase": "runtime_extract",
+            },
+            "mapping": {},
+            "provenance": dict(provenance),
+        })
+        publish_arm(
+            temporary,
+            arm_dir,
+            provenance,
+            status="INVALID_SECONDARY",
+        )
+        return "INVALID_SECONDARY"
+    publish_arm(temporary, arm_dir, provenance)
+    return "PASS"
 
 
 def read_arm_summary(
@@ -1548,6 +1873,7 @@ def assert_correct_repeat(
         "mAP", "R1", "R5", "R10",
         "raw_descriptor_sha256", "normalized_descriptor_sha256",
         "distance_sha256", "actual_psg_input_sha256",
+        "actual_psg_input_split_sha256",
         "descriptor_shape", "distance_shape", "actual_psg_input_shape",
     )
     for key in exact_keys:
@@ -1736,12 +2062,17 @@ def run_phase(args: argparse.Namespace) -> None:
                                 temporary, arm_dir, provenance,
                                 status="INVALID_SECONDARY")
                         else:
-                            extract_arm(
-                                model, capture, loader, scenes, row, device,
-                                frozen_metadata, temporary, correct_actual,
-                                correct_sample_hashes, provenance,
+                            extract_and_publish_unpublished_arm(
+                                lambda: extract_arm(
+                                    model, capture, loader, scenes, row, device,
+                                    frozen_metadata, temporary, correct_actual,
+                                    correct_sample_hashes, provenance,
+                                ),
+                                temporary,
+                                arm_dir,
+                                row,
+                                provenance,
                             )
-                            publish_arm(temporary, arm_dir, provenance)
                     verify_published_arm(arm_dir, provenance)
                     atomic_write_json(execution_dir / "RUN_PROGRESS.json", {
                         "status": "RUNNING",

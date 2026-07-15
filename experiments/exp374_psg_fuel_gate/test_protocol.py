@@ -47,6 +47,50 @@ def _assert_code(expected: str, function, *args, **kwargs) -> None:
     assert captured.value.code == expected
 
 
+def test_historical_signed_person_merge_below_and_at_capacity() -> None:
+    from model.modules.pose_utils import merge_person_heatmaps
+
+    heatmaps = torch.full((2, 6, 17, 2, 2), -0.6, dtype=torch.float32)
+    for person in range(6):
+        heatmaps[:, person] -= 0.01 * person
+    heatmaps[:, 4, :, 0, 0] = 0.4
+    heatmaps[:, 5, :, 0, 0] = 0.8
+    person_mask = torch.tensor([
+        [1, 1, 1, 1, 1, 0],
+        [1, 1, 1, 1, 1, 1],
+    ], dtype=torch.float32)
+    before = heatmaps.clone()
+
+    merged = merge_person_heatmaps(heatmaps, person_mask)
+
+    # Historical zero masking dominates an all-negative location below the
+    # six-person capacity, whereas a full six-person scene retains raw signs.
+    assert torch.equal(merged[0, :, 1, 1], torch.zeros(17))
+    assert torch.equal(merged[1, :, 1, 1], torch.full((17,), -0.6))
+    assert torch.equal(merged[0, :, 0, 0], torch.full((17,), 0.4))
+    assert torch.equal(merged[1, :, 0, 0], torch.full((17,), 0.8))
+    assert torch.equal(heatmaps, before)
+
+
+def test_signed_nuisance_uses_positive_view_without_mutating_raw() -> None:
+    raw = torch.full((17, 4, 4), -0.25, dtype=torch.float32)
+    raw[:, 1, 1] = 0.5
+    raw[6, 2, 2] = -7.5e-5
+    scores = torch.linspace(0.1, 0.9, 17, dtype=torch.float32)
+    before = raw.clone()
+    before_sha = p.sha256_tensor(raw)
+
+    signed = p.summarize_scene(raw, scores)
+    explicit_positive = p.summarize_scene(raw.clamp_min(0.0), scores)
+
+    assert signed == explicit_positive
+    assert torch.equal(raw, before)
+    assert p.sha256_tensor(raw) == before_sha
+
+    all_negative = torch.full((17, 4, 4), -1e-4, dtype=torch.float32)
+    _assert_code("E_MATCH_EMPTY_SUPPORT", p.summarize_scene, all_negative, scores)
+
+
 def test_robust_scale_constant_mad_and_winsor() -> None:
     matrix = np.full((5, 95), 7.0, dtype=np.float64)
     matrix[:, 0] = [0.0, 1.0, 2.0, 3.0, 1000.0]
@@ -382,6 +426,18 @@ def test_intervention_strength_and_fail_closed_audits() -> None:
     )
 
 
+def test_intervention_centroid_uses_positive_response_mass() -> None:
+    below_a = torch.full((1, 17, 3, 3), 0.49, dtype=torch.float32)
+    below_b = torch.full((1, 17, 3, 3), 0.40, dtype=torch.float32)
+    no_mass = p.intervention_strength(below_a, below_b)
+    np.testing.assert_array_equal(no_mass["centroid_displacement"], [0.0])
+
+    one_sided = below_b.clone()
+    one_sided[:, :, 1, 1] = 0.51
+    one_mass = p.intervention_strength(below_a, one_sided)
+    np.testing.assert_array_equal(one_mass["centroid_displacement"], [1.0])
+
+
 def test_centroid_control_translation_and_crop_failure() -> None:
     scene = torch.zeros((17, 5, 5), dtype=torch.float32)
     scene[:, 1, 1] = 1.0
@@ -407,6 +463,51 @@ def test_centroid_control_translation_and_crop_failure() -> None:
     _assert_code(
         "E_CENTROID_L1", p.apply_scene_centroid_control,
         cropped, tuple([(4.0, 2.0)] * 17))
+
+
+def test_signed_centroid_translates_raw_with_positive_geometry() -> None:
+    scene = torch.zeros((17, 5, 5), dtype=torch.float32)
+    scene[:, 2, 2] = 1.0
+    scene[:, 1, 1] = -0.25
+    before = scene.clone()
+    targets = tuple([(3.0, 2.0)] * 17)
+
+    output = p.apply_scene_centroid_control(scene, targets)
+    expected = torch.zeros_like(scene)
+    expected[:, 2, 3] = 1.0
+    expected[:, 1, 2] = -0.25
+
+    assert torch.equal(output, expected)
+    assert torch.equal(scene, before)
+    assert torch.equal(output.clamp_min(0.0), p.translate_zero_padded(
+        scene.clamp_min(0.0)[0], 1, 0).unsqueeze(0).expand_as(output))
+    assert torch.equal(
+        output.clamp_max(0.0).abs().sum(dim=(1, 2)),
+        scene.clamp_max(0.0).abs().sum(dim=(1, 2)),
+    )
+
+    negative_crop = torch.zeros((17, 5, 5), dtype=torch.float32)
+    negative_crop[:, 2, 2] = 1.0
+    negative_crop[:, 1, 0] = -0.25
+    _assert_code(
+        "E_CENTROID_NEGATIVE_L1",
+        p.apply_scene_centroid_control,
+        negative_crop,
+        tuple([(1.0, 2.0)] * 17),
+    )
+
+
+def test_all_negative_centroid_scene_is_preserved_bitwise() -> None:
+    scene = torch.full((17, 5, 5), -0.125, dtype=torch.float32)
+    targets = tuple([None] * 17)
+
+    normalized = p.fit_normalized_centroid_targets([scene])
+    assert normalized == tuple([None] * 17)
+    absolute = p.absolute_centroid_targets(scene, normalized)
+    assert absolute == tuple([None] * 17)
+    output = p.apply_scene_centroid_control(scene, targets)
+    assert torch.equal(output, scene)
+    assert p.sha256_tensor(output) == p.sha256_tensor(scene)
 
 
 def test_centroid_fit_to_absolute_target_round_trip() -> None:

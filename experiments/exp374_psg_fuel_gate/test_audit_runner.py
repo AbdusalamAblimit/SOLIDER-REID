@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import io
+import hashlib
 import tempfile
 import unittest
 from pathlib import Path
@@ -352,6 +353,186 @@ class AtomicPublishTests(GateCodeMixin, unittest.TestCase):
             self.assertFalse(published.exists())
 
 
+class SignedSceneAuditTests(GateCodeMixin, unittest.TestCase):
+    @staticmethod
+    def signed_batch():
+        scene = torch.zeros((2, 17, 96, 32), dtype=torch.float32)
+        scene[0, 10, 2, 3] = -0.25
+        scene[0, 10, 2, 4] = -0.05
+        scene[1, 6, 5, 7] = -0.07
+        scene[0, 0, 20, 10] = 1.25
+        scene[1, 1, 40, 11] = 0.75
+        return scene
+
+    @staticmethod
+    def actual_audit(scene):
+        state = runner._new_actual_space_audit()
+        runner._update_actual_space_audit(state, scene)
+        return runner._finalize_actual_space_audit(
+            state, "synthetic", len(scene), torch.device("cpu"))
+
+    @staticmethod
+    def expected_digest(value):
+        digest = hashlib.sha256()
+        for sample in value:
+            array = np.asarray(sample.detach().cpu().numpy(), dtype=np.dtype("<f4"))
+            digest.update(np.ascontiguousarray(array).tobytes(order="C"))
+        return digest.hexdigest()
+
+    def test_signed_audit_freezes_raw_sign_and_actual_space_provenance(self):
+        scene = self.signed_batch()
+        frozen_raw = scene.clone()
+        state = runner._new_signed_scene_audit()
+        runner._update_signed_scene_audit(state, scene)
+        audit = runner._finalize_signed_scene_audit(state, "synthetic", 2)
+        actual_audit = self.actual_audit(scene)
+        audit["actual_space"] = actual_audit
+
+        self.assertTrue(torch.equal(scene, frozen_raw))
+        self.assertEqual(audit["transform"], "positive_part_v1")
+        self.assertEqual(audit["sample_order"], "dataset_index_0_to_N_minus_1")
+        self.assertEqual(audit["raw_shape"], [2, 17, 96, 32])
+        self.assertEqual(audit["raw_dtype"], "<f4")
+        self.assertEqual(audit["raw_element_count"], 2 * 17 * 96 * 32)
+        self.assertAlmostEqual(audit["raw_min"], -0.25)
+        self.assertEqual(audit["negative_element_count"], 3)
+        self.assertEqual(audit["negative_sample_count"], 2)
+        self.assertEqual(audit["negative_sample_channel_count"], 2)
+        self.assertEqual(audit["negative_channel_indices_0based"], [6, 10])
+        self.assertAlmostEqual(audit["negative_absolute_mass"], 0.37, places=6)
+        self.assertEqual(actual_audit["compute_backend"], "torch_cpu_test_only")
+        self.assertEqual(
+            actual_audit["active_psg_blocks"]["s3_b0"],
+            actual_audit["active_psg_blocks"]["s3_b1"],
+        )
+        block = actual_audit["active_psg_blocks"]["s3_b0"]
+        self.assertEqual(block["shape"], [2, 17, 12, 4])
+        self.assertEqual(block["dtype"], "<f4")
+        self.assertEqual(block["element_count"], 2 * 17 * 12 * 4)
+        self.assertGreater(block["delta_max_abs"], 0.0)
+        self.assertGreater(block["delta_sum_abs"], 0.0)
+        self.assertGreater(block["delta_mean_abs"], 0.0)
+        for name in ("sraw_sha256", "spos_sha256", "delta_sha256"):
+            self.assertEqual(len(block[name]), 64)
+        self.assertNotEqual(block["sraw_sha256"], block["spos_sha256"])
+        sraw = protocol.actual_psg_input(scene, (12, 4))
+        spos = protocol.actual_psg_input(scene.clamp_min(0.0), (12, 4))
+        delta = sraw - spos
+        self.assertEqual(block["sraw_sha256"], self.expected_digest(sraw))
+        self.assertEqual(block["spos_sha256"], self.expected_digest(spos))
+        self.assertEqual(block["delta_sha256"], self.expected_digest(delta))
+        split_hashes = runner._actual_input_split_sha256(sraw, num_query=1)
+        self.assertEqual(split_hashes, {
+            "query": self.expected_digest(sraw[:1]),
+            "gallery": self.expected_digest(sraw[1:]),
+        })
+
+    def test_signed_audit_is_sample_ordered_and_canonical(self):
+        scene = self.signed_batch()
+        whole = runner._new_signed_scene_audit()
+        runner._update_signed_scene_audit(whole, scene)
+        whole_audit = runner._finalize_signed_scene_audit(whole, "synthetic", 2)
+        whole_actual = self.actual_audit(scene)
+
+        streamed = runner._new_signed_scene_audit()
+        runner._update_signed_scene_audit(streamed, scene[:1])
+        runner._update_signed_scene_audit(streamed, scene[1:])
+        streamed_audit = runner._finalize_signed_scene_audit(streamed, "synthetic", 2)
+        streamed_actual_state = runner._new_actual_space_audit()
+        runner._update_actual_space_audit(streamed_actual_state, scene[:1])
+        runner._update_actual_space_audit(streamed_actual_state, scene[1:])
+        streamed_actual = runner._finalize_actual_space_audit(
+            streamed_actual_state, "synthetic", 2, torch.device("cpu"))
+        self.assertEqual(
+            protocol.canonical_json_bytes(whole_audit),
+            protocol.canonical_json_bytes(streamed_audit),
+        )
+        self.assertEqual(
+            protocol.canonical_json_bytes(whole_actual),
+            protocol.canonical_json_bytes(streamed_actual),
+        )
+
+        reversed_scene = scene.flip(0).contiguous()
+        reversed_sign = runner._new_signed_scene_audit()
+        runner._update_signed_scene_audit(reversed_sign, reversed_scene)
+        reversed_sign_audit = runner._finalize_signed_scene_audit(
+            reversed_sign, "synthetic", 2)
+        reversed_actual = self.actual_audit(reversed_scene)
+        for name in (
+            "raw_min",
+            "negative_element_count",
+            "negative_sample_count",
+            "negative_sample_channel_count",
+            "negative_channel_indices_0based",
+            "negative_absolute_mass",
+        ):
+            self.assertEqual(whole_audit[name], reversed_sign_audit[name])
+        for block_name in runner.ACTIVE_PSG_BLOCK_SHAPES:
+            original = whole_actual["active_psg_blocks"][block_name]
+            reversed_block = reversed_actual["active_psg_blocks"][block_name]
+            for name in ("sraw_sha256", "spos_sha256", "delta_sha256"):
+                self.assertNotEqual(original[name], reversed_block[name])
+
+    def test_wrong_correct_hook_sha_fails_before_metric_computation(self):
+        features = torch.zeros((2, 768), dtype=torch.float32)
+        actual = torch.zeros((2, 17, 12, 4), dtype=torch.float32)
+        wrong = {
+            "correct_actual_sraw_sha256": {
+                split: {key: "0" * 64 for key in runner.ACTIVE_PSG_BLOCK_SHAPES}
+                for split in ("query", "gallery")
+            },
+        }
+        with mock.patch.object(runner, "_metric_payload") as metric:
+            self.assert_gate_code(
+                "E_HOOK_PREMETRIC_DRIFT",
+                runner._audited_metric_payload,
+                features,
+                [1, 2],
+                [1, 2],
+                1,
+                "correct",
+                actual,
+                2,
+                wrong,
+            )
+        metric.assert_not_called()
+
+
+class PreparedSignedRawProvenanceTests(unittest.TestCase):
+    def test_correct_shuffle_and_group_preserve_signed_raw_values(self):
+        with tempfile.TemporaryDirectory() as directory:
+            prepared = Path(directory)
+            query = np.zeros((2, 17, 96, 32), dtype=np.float32)
+            gallery = np.zeros((2, 17, 96, 32), dtype=np.float32)
+            query[0, 6, 1, 1] = -0.1
+            query[1, 6, 1, 1] = -0.2
+            gallery[0, 10, 2, 2] = -0.3
+            gallery[1, 10, 2, 2] = -0.4
+            np.save(prepared / "query_scene_heatmaps.npy", query, allow_pickle=False)
+            np.save(prepared / "gallery_scene_heatmaps.npy", gallery, allow_pickle=False)
+            mappings = np.tile(np.asarray([[1, 0]], dtype=np.int32), (20, 1))
+            np.save(prepared / "query_mappings.npy", mappings, allow_pickle=False)
+            np.save(prepared / "gallery_mappings.npy", mappings, allow_pickle=False)
+            scenes = runner.PreparedSceneAccess(prepared, num_query=2)
+            rows = np.arange(4, dtype=np.int64)
+
+            correct = scenes.scenes_for_rows(rows, {"arm": "correct"})
+            shuffle = scenes.scenes_for_rows(
+                rows, {"arm": "shuffle", "mapping": 0})
+            group = scenes.scenes_for_rows(
+                rows, {"arm": "group", "mapping": 0, "group": "shoulder"})
+
+            self.assertTrue(np.array_equal(correct[:2], query))
+            self.assertTrue(np.array_equal(correct[2:], gallery))
+            self.assertAlmostEqual(float(shuffle[0, 6, 1, 1]), -0.2)
+            self.assertAlmostEqual(float(shuffle[1, 6, 1, 1]), -0.1)
+            self.assertAlmostEqual(float(shuffle[2, 10, 2, 2]), -0.4)
+            self.assertAlmostEqual(float(shuffle[3, 10, 2, 2]), -0.3)
+            self.assertTrue(np.array_equal(group[:, 5:7], shuffle[:, 5:7]))
+            self.assertTrue(np.array_equal(group[:, :5], correct[:, :5]))
+            self.assertTrue(np.array_equal(group[:, 7:], correct[:, 7:]))
+
+
 class ArmProvenanceTests(GateCodeMixin, unittest.TestCase):
     @staticmethod
     def provenance(row):
@@ -450,6 +631,21 @@ class ArmProvenanceTests(GateCodeMixin, unittest.TestCase):
             "config_file_sha256": "config-file",
             "resolved_config_sha256": "resolved-config",
             "prepared_artifact_sha256": {"prepared.bin": "prepared-sha"},
+            "dataset": {
+                "cache": {
+                    split: {
+                        "signed_raw_audit": {
+                            "actual_space": {
+                                "active_psg_blocks": {
+                                    key: {"sraw_sha256": f"{split}-{key}-sraw"}
+                                    for key in runner.ACTIVE_PSG_BLOCK_SHAPES
+                                },
+                            },
+                        },
+                    }
+                    for split in ("query", "gallery")
+                },
+            },
         }
         spec = {
             "weight_sha256": "checkpoint",
@@ -462,6 +658,10 @@ class ArmProvenanceTests(GateCodeMixin, unittest.TestCase):
         self.assertEqual(provenance["mapping"], {
             "query_mapping_sha256": runner._array_sha256(query_mappings[7]),
             "gallery_mapping_sha256": runner._array_sha256(gallery_mappings[7]),
+        })
+        self.assertEqual(provenance["correct_actual_sraw_sha256"]["query"], {
+            "s3_b0": "query-s3_b0-sraw",
+            "s3_b1": "query-s3_b1-sraw",
         })
         other = runner.expected_arm_provenance(
             manifest,
@@ -573,6 +773,111 @@ class ArmProvenanceTests(GateCodeMixin, unittest.TestCase):
                 provenance,
             )
 
+    def test_runtime_centroid_protocol_failure_is_secondary_and_primary_continues(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            outcomes = []
+            rows = (
+                {"seed": 42, "arm": "centroid"},
+                {"seed": 42, "arm": "shuffle", "mapping": 0},
+            )
+            for row in rows:
+                provenance = self.provenance(row)
+                temporary = root / f".{runner.schedule_arm_id(row)}.tmp-arm"
+                published = root / runner.schedule_arm_id(row)
+                temporary.mkdir()
+
+                def synthetic_extract(current=row, temp=temporary, prov=provenance):
+                    if current["arm"] == "centroid":
+                        (temp / "partial.bin").write_bytes(b"must-be-removed")
+                        raise protocol.GateProtocolError(
+                            "E_CENTROID_NEGATIVE_L1", "synthetic crop")
+                    self.write_summary(temp, current, prov, "PASS")
+                    self.write_per_query(temp)
+
+                outcomes.append(runner.extract_and_publish_unpublished_arm(
+                    synthetic_extract,
+                    temporary,
+                    published,
+                    row,
+                    provenance,
+                ))
+
+            self.assertEqual(outcomes, ["INVALID_SECONDARY", "PASS"])
+            centroid_dir = root / "seed_42__centroid"
+            centroid_summary = json.loads(
+                (centroid_dir / "summary.json").read_text(encoding="utf-8"))
+            self.assertEqual(centroid_summary["status"], "INVALID_SECONDARY")
+            self.assertEqual(
+                centroid_summary["reason"]["error_code"],
+                "E_CENTROID_NEGATIVE_L1",
+            )
+            self.assertEqual(
+                centroid_summary["reason"]["phase"], "runtime_extract")
+            self.assertFalse((centroid_dir / "per_query.npz").exists())
+            self.assertFalse((centroid_dir / "partial.bin").exists())
+            self.assertEqual(
+                runner.verify_published_arm(
+                    centroid_dir, self.provenance(rows[0]))["status"],
+                "INVALID_SECONDARY",
+            )
+            self.assertEqual(
+                runner.verify_published_arm(
+                    root / "seed_42__shuffle_m00", self.provenance(rows[1]))["status"],
+                "PASS",
+            )
+
+    def test_runtime_primary_protocol_failure_remains_global_failure(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            row = {"seed": 42, "arm": "shuffle", "mapping": 0}
+            provenance = self.provenance(row)
+            temporary = root / ".seed_42__shuffle_m00.tmp-arm"
+            published = root / "seed_42__shuffle_m00"
+            temporary.mkdir()
+
+            def fail_primary():
+                (temporary / "partial.bin").write_bytes(b"preserved-for-diagnosis")
+                raise protocol.GateProtocolError("E_PRIMARY", "synthetic")
+
+            self.assert_gate_code(
+                "E_PRIMARY",
+                runner.extract_and_publish_unpublished_arm,
+                fail_primary,
+                temporary,
+                published,
+                row,
+                provenance,
+            )
+            self.assertTrue((temporary / "partial.bin").is_file())
+            self.assertFalse(published.exists())
+
+    def test_runtime_centroid_integrity_failure_remains_global_failure(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            row = {"seed": 42, "arm": "centroid"}
+            provenance = self.provenance(row)
+            temporary = root / ".seed_42__centroid.tmp-arm"
+            published = root / "seed_42__centroid"
+            temporary.mkdir()
+
+            def fail_integrity():
+                (temporary / "partial.bin").write_bytes(b"preserved-for-diagnosis")
+                raise protocol.GateProtocolError(
+                    "E_RUNTIME_RGB_TOCTOU", "synthetic integrity failure")
+
+            self.assert_gate_code(
+                "E_RUNTIME_RGB_TOCTOU",
+                runner.extract_and_publish_unpublished_arm,
+                fail_integrity,
+                temporary,
+                published,
+                row,
+                provenance,
+            )
+            self.assertTrue((temporary / "partial.bin").is_file())
+            self.assertFalse(published.exists())
+
     def test_correct_start_is_the_only_arm_allowed_to_store_actual_input(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -647,6 +952,32 @@ class ExecutionResumeTests(GateCodeMixin, unittest.TestCase):
                 protocol.create_execution_directory,
                 output_root,
                 manifest,
+                execution,
+            )
+
+    def test_execution_resume_rejects_signed_premetric_drift(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output_root = Path(directory)
+            signed = {
+                "transform": "positive_part_v1",
+                "negative_channel_indices_0based": [6, 10],
+                "active_psg_blocks": {
+                    "s3_b0": {"sraw_sha256": "raw", "delta_sum_abs": 1.0},
+                },
+            }
+            manifest = self.base_manifest()
+            manifest["dataset"] = {"cache": {"train": {"signed_raw_audit": signed}}}
+            execution, _sha = protocol.create_execution_directory(
+                output_root, manifest, None)
+            drifted = json.loads(protocol.canonical_json_bytes(manifest))
+            drifted["dataset"]["cache"]["train"]["signed_raw_audit"][
+                "negative_channel_indices_0based"] = [6]
+
+            self.assert_gate_code(
+                "E_RESUME_HASH_DRIFT",
+                protocol.create_execution_directory,
+                output_root,
+                drifted,
                 execution,
             )
 

@@ -273,11 +273,12 @@ def test_real_swin_full_forward_override_and_bypass_cpu(
 
         rgb = torch.zeros((1, 3, 384, 128), dtype=torch.float32)
         override = torch.linspace(
-            0.0,
+            -0.1,
             1.0,
             17 * 96 * 32,
             dtype=torch.float32,
         ).reshape(1, 17, 96, 32).contiguous()
+        frozen_override = override.clone()
         _assert_cpu_tensor(rgb)
         _assert_cpu_tensor(override)
 
@@ -308,6 +309,9 @@ def test_real_swin_full_forward_override_and_bypass_cpu(
             _assert_same_storage(override, references["g1_in_scene"])
 
             expected_encoder_input = actual_psg_input(override, (12, 4))
+            assert torch.equal(override, frozen_override)
+            assert float(expected_encoder_input.min()) < 0.5
+            assert float(expected_encoder_input.max()) > 0.5
             assert len(capture.values["s3_b0"]) == 1
             assert len(capture.values["s3_b1"]) == 1
             for key, reference_key in (

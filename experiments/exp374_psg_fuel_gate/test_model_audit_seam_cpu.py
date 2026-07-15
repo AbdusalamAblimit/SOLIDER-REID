@@ -103,6 +103,12 @@ def _valid_scene(maximum: float = 2.0) -> torch.Tensor:
     ).reshape(SCENE_SHAPE).contiguous()
 
 
+def _signed_scene() -> torch.Tensor:
+    return torch.linspace(
+        -2.0, 2.0, BATCH * 17 * 96 * 32, dtype=torch.float32,
+    ).reshape(SCENE_SHAPE).contiguous()
+
+
 def _assert_eval_output(output) -> None:
     assert isinstance(output, tuple)
     assert len(output) == 2
@@ -189,7 +195,7 @@ def test_tensor_override_bypasses_prepare_and_hits_both_real_gates(
     captured_model,
 ) -> None:
     model, capture = captured_model
-    scene = _valid_scene(maximum=2.0)
+    scene = _signed_scene()
     with audit_override_context(model):
         output = model(
             _images(), pose_dict=None, scene_heatmaps_override=scene)
@@ -200,7 +206,45 @@ def test_tensor_override_bypasses_prepare_and_hits_both_real_gates(
     actual = capture.pop(expected_calls=1)
     assert actual is not None
     _assert_gate_input(scene, actual)
+    assert bool((scene < 0).any())
+    assert float(actual.min()) < 0.5
+    assert float(actual.max()) > 0.5
     assert all(not values for values in capture.values.values())
+
+
+def test_signed_legacy_and_override_have_exact_gate_and_output_parity(
+    captured_model,
+) -> None:
+    model, capture = captured_model
+    scene = _signed_scene()
+    model.legacy_scene = scene
+    pose = object()
+
+    legacy_output = model(_images(), pose_dict=pose)
+    legacy_actual = capture.pop(expected_calls=1)
+    assert legacy_actual is not None
+
+    with audit_override_context(model):
+        override_output = model(
+            _images(), pose_dict=None, scene_heatmaps_override=scene)
+    override_actual = capture.pop(expected_calls=1)
+    assert override_actual is not None
+
+    _assert_eval_output(legacy_output)
+    _assert_eval_output(override_output)
+    assert torch.equal(legacy_actual, override_actual)
+    _assert_gate_input(scene, legacy_actual)
+    assert torch.equal(legacy_output[0], override_output[0])
+    assert len(legacy_output[1]) == len(override_output[1])
+    assert all(
+        torch.equal(legacy, override)
+        for legacy, override in zip(legacy_output[1], override_output[1])
+    )
+    assert model.prepare_calls == [pose]
+    assert len(model.run_scenes) == 2
+    assert model.run_scenes[0] is scene
+    assert model.run_scenes[1] is scene
+    assert model._audit_scene_override_enabled is False
 
 
 @pytest.mark.parametrize("kind", ["none", "tensor"])
@@ -338,38 +382,36 @@ def test_override_rejects_noncontiguous_tensor(
 
 @pytest.mark.parametrize("bad_value", [float("nan"), float("inf"), -float("inf")])
 def test_override_rejects_nonfinite_values(
-    model: TinyForwardHarness,
+    captured_model,
     bad_value: float,
 ) -> None:
+    model, capture = captured_model
     override = torch.zeros(SCENE_SHAPE, dtype=torch.float32)
     override[0, 0, 0, 0] = bad_value
     with audit_override_context(model):
         with pytest.raises(ValueError, match="contains NaN/Inf"):
             model(_images(), scene_heatmaps_override=override)
     assert model.run_scenes == []
+    assert capture.pop(expected_calls=0) is None
 
 
-def test_override_rejects_negative_but_allows_zero_and_values_above_one(
+def test_override_accepts_finite_signed_zero_and_values_above_one(
     model: TinyForwardHarness,
 ) -> None:
-    negative = torch.zeros(SCENE_SHAPE, dtype=torch.float32)
-    negative[0, 0, 0, 0] = -torch.finfo(torch.float32).eps
-    with audit_override_context(model):
-        with pytest.raises(ValueError, match="must be nonnegative"):
-            model(_images(), scene_heatmaps_override=negative)
-
     for valid in (
+        _signed_scene(),
         torch.zeros(SCENE_SHAPE, dtype=torch.float32),
         torch.full(SCENE_SHAPE, 3.0, dtype=torch.float32),
     ):
         with audit_override_context(model):
             output = model(_images(), scene_heatmaps_override=valid)
         _assert_eval_output(output)
-    assert len(model.run_scenes) == 2
+    assert len(model.run_scenes) == 3
+    assert torch.equal(model.run_scenes[0], _signed_scene())
     assert torch.equal(
-        model.run_scenes[0], torch.zeros(SCENE_SHAPE, dtype=torch.float32))
+        model.run_scenes[1], torch.zeros(SCENE_SHAPE, dtype=torch.float32))
     assert torch.equal(
-        model.run_scenes[1], torch.full(SCENE_SHAPE, 3.0, dtype=torch.float32))
+        model.run_scenes[2], torch.full(SCENE_SHAPE, 3.0, dtype=torch.float32))
 
 
 def test_validation_order_is_fail_closed(model: TinyForwardHarness) -> None:

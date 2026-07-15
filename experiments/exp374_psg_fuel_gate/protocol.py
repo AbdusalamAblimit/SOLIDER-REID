@@ -203,11 +203,13 @@ def summarize_scene(
     require(scene_heatmap.ndim == 3, "E_SCENE_SHAPE", str(tuple(scene_heatmap.shape)))
     require(scene_heatmap.shape[0] == 17, "E_SCENE_CHANNELS", str(scene_heatmap.shape[0]))
     require(scene_scores.shape == (17,), "E_SCORE_SHAPE", str(tuple(scene_scores.shape)))
-    heatmap = scene_heatmap.detach().float().cpu()
+    raw_heatmap = scene_heatmap.detach().float().cpu()
     scores = scene_scores.detach().float().cpu()
-    require(bool(torch.isfinite(heatmap).all()), "E_SCENE_NONFINITE", "heatmap")
+    require(bool(torch.isfinite(raw_heatmap).all()), "E_SCENE_NONFINITE", "heatmap")
     require(bool(torch.isfinite(scores).all()), "E_SCORE_NONFINITE", "scores")
-    require(bool((heatmap >= 0).all()), "E_SCENE_NEGATIVE", "heatmap")
+    # Hraw remains the authoritative causal tensor.  Matching nuisance and
+    # geometry are defined on the local, read-only positive view only.
+    heatmap = raw_heatmap.clamp_min(0.0)
 
     height, width = int(heatmap.shape[1]), int(heatmap.shape[2])
     l1_values: List[float] = []
@@ -747,8 +749,8 @@ def intervention_strength(
     ) + 1e-12
     relative = numerator / denominator
 
-    response_correct = correct - 0.5
-    response_donor = donor - 0.5
+    response_correct = (correct - 0.5).clamp_min(0.0)
+    response_donor = (donor - 0.5).clamp_min(0.0)
     batch, _, height, width = response_correct.shape
     yy, xx = torch.meshgrid(
         torch.arange(height, device=correct.device, dtype=torch.float32),
@@ -839,25 +841,45 @@ def _channel_centroid(channel: torch.Tensor) -> Tuple[float, float]:
     require(mass > 0.0, "E_CENTROID_ZERO", "")
     height, width = channel.shape
     yy, xx = torch.meshgrid(
-        torch.arange(height, dtype=torch.float64),
-        torch.arange(width, dtype=torch.float64),
+        torch.arange(height, device=channel.device, dtype=torch.float64),
+        torch.arange(width, device=channel.device, dtype=torch.float64),
         indexing="ij",
     )
     weights = channel.double() / mass
     return float((weights * xx).sum()), float((weights * yy).sum())
 
 
+def _positive_channel_is_valid(channel: torch.Tensor, joint: int,
+                               context: str) -> bool:
+    """Classify one Hpos channel under the frozen all-zero/valid predicate."""
+
+    require(bool(torch.isfinite(channel).all()), "E_CENTROID_NONFINITE", context)
+    nonzero = bool(torch.count_nonzero(channel).item())
+    if not nonzero:
+        return False
+    l1 = float(channel.sum().item())
+    peak = float(channel.max().item())
+    require(
+        l1 > 1e-8 and peak > 1e-6,
+        "E_CENTROID_WEAK_CHANNEL",
+        f"{context}: joint={joint}",
+    )
+    return True
+
+
 def _scene_support_bbox(scene: torch.Tensor) -> Tuple[int, int, int, int]:
+    """Return support bbox for an Hpos scene; signed Hraw is not accepted here."""
+
+    require(scene.ndim == 3 and scene.shape[0] == 17,
+            "E_CENTROID_SHAPE", str(scene.shape))
+    require(bool((scene >= 0).all()), "E_CENTROID_POSITIVE_VIEW", "scene")
     union = torch.zeros(scene.shape[1:], dtype=torch.bool, device=scene.device)
     valid_count = 0
-    for channel in scene:
-        l1 = float(channel.sum().item())
-        peak = float(channel.max().item())
-        if l1 > 1e-8 and peak > 1e-6:
+    for joint, channel in enumerate(scene):
+        if _positive_channel_is_valid(channel, joint, "scene bbox"):
+            peak = float(channel.max().item())
             union |= channel > (0.10 * peak)
             valid_count += 1
-        elif l1 > 1e-8 or peak > 1e-6:
-            raise GateProtocolError("E_CENTROID_WEAK_CHANNEL", "scene bbox")
     require(valid_count > 0 and bool(union.any()), "E_CENTROID_EMPTY", "")
     ys, xs = union.nonzero(as_tuple=True)
     return int(xs.min()), int(ys.min()), int(xs.max()), int(ys.max())
@@ -867,19 +889,23 @@ def fit_normalized_centroid_targets(
     train_scenes: Iterable[torch.Tensor],
 ) -> Tuple[Tuple[float, float] | None, ...]:
     observations: List[List[Tuple[float, float]]] = [[] for _ in range(17)]
-    for scene in train_scenes:
-        require(scene.shape[0] == 17, "E_CENTROID_SHAPE", str(scene.shape))
-        if float(scene.sum().item()) <= 1e-8:
+    for raw_scene in train_scenes:
+        require(raw_scene.ndim == 3 and raw_scene.shape[0] == 17,
+                "E_CENTROID_SHAPE", str(raw_scene.shape))
+        require(bool(torch.isfinite(raw_scene).all()), "E_CENTROID_NONFINITE", "train")
+        scene = raw_scene.clamp_min(0.0)
+        valid = [
+            _positive_channel_is_valid(channel, joint, "train")
+            for joint, channel in enumerate(scene)
+        ]
+        if not any(valid):
             continue
         x_min, y_min, x_max, y_max = _scene_support_bbox(scene)
         width = max(x_max - x_min, 1)
         height = max(y_max - y_min, 1)
         for joint, channel in enumerate(scene):
-            l1 = float(channel.sum().item())
-            peak = float(channel.max().item())
-            if l1 <= 1e-8 and peak <= 1e-6:
+            if not valid[joint]:
                 continue
-            require(l1 > 1e-8 and peak > 1e-6, "E_CENTROID_WEAK_CHANNEL", str(joint))
             x, y = _channel_centroid(channel)
             observations[joint].append(((x - x_min) / width, (y - y_min) / height))
     targets: List[Tuple[float, float] | None] = []
@@ -897,9 +923,17 @@ def absolute_centroid_targets(
     normalized_targets: Sequence[Tuple[float, float] | None],
 ) -> Tuple[Tuple[float, float] | None, ...]:
     require(len(normalized_targets) == 17, "E_CENTROID_TARGET", "target count")
-    if float(scene.sum().item()) <= 1e-8:
+    require(scene.ndim == 3 and scene.shape[0] == 17,
+            "E_CENTROID_SHAPE", str(scene.shape))
+    require(bool(torch.isfinite(scene).all()), "E_CENTROID_NONFINITE", "target")
+    positive = scene.clamp_min(0.0)
+    valid = [
+        _positive_channel_is_valid(channel, joint, "target")
+        for joint, channel in enumerate(positive)
+    ]
+    if not any(valid):
         return tuple([None] * 17)
-    x_min, y_min, x_max, y_max = _scene_support_bbox(scene)
+    x_min, y_min, x_max, y_max = _scene_support_bbox(positive)
     width = max(x_max - x_min, 1)
     height = max(y_max - y_min, 1)
     return tuple(
@@ -915,34 +949,65 @@ def apply_scene_centroid_control(
     scene: torch.Tensor,
     targets: Sequence[Tuple[float, float] | None],
 ) -> torch.Tensor:
-    require(scene.shape[0] == 17 and len(targets) == 17, "E_CENTROID_SHAPE", "")
-    output = torch.zeros_like(scene)
-    for joint, channel in enumerate(scene):
-        l1 = float(channel.sum().item())
-        peak = float(channel.max().item())
-        if l1 <= 1e-8 and peak <= 1e-6:
-            output[joint] = channel
+    require(scene.ndim == 3 and scene.shape[0] == 17 and len(targets) == 17,
+            "E_CENTROID_SHAPE", "")
+    require(bool(torch.isfinite(scene).all()), "E_CENTROID_NONFINITE", "input")
+    positive = scene.clamp_min(0.0)
+    valid = [
+        _positive_channel_is_valid(channel, joint, "control")
+        for joint, channel in enumerate(positive)
+    ]
+    # In particular, an all-negative Hraw scene is preserved bitwise rather
+    # than being replaced by an all-zero Hpos tensor.
+    output = scene.clone()
+    if not any(valid):
+        return output
+
+    for joint, raw_channel in enumerate(scene):
+        positive_channel = positive[joint]
+        if not valid[joint]:
             continue
-        require(l1 > 1e-8 and peak > 1e-6, "E_CENTROID_WEAK_CHANNEL", str(joint))
         target = targets[joint]
         require(target is not None, "E_CENTROID_TARGET", str(joint))
-        source_x, source_y = _channel_centroid(channel)
+        source_x, source_y = _channel_centroid(positive_channel)
         dx = half_away_from_zero(target[0] - source_x)
         dy = half_away_from_zero(target[1] - source_y)
-        translated = translate_zero_padded(channel, dx, dy)
-        translated_x, translated_y = _channel_centroid(translated)
+        translated_raw = translate_zero_padded(raw_channel, dx, dy)
+        translated_positive = translate_zero_padded(positive_channel, dx, dy)
+        require(
+            torch.equal(translated_raw.clamp_min(0.0), translated_positive),
+            "E_CENTROID_COMMUTATION",
+            str(joint),
+        )
+        translated_x, translated_y = _channel_centroid(translated_positive)
         error = math.hypot(translated_x - target[0], translated_y - target[1])
         require(error <= 0.75, "E_CENTROID_ERROR", f"joint={joint}, error={error}")
-        new_l1 = float(translated.sum().item())
-        new_peak = float(translated.max().item())
+        l1 = float(positive_channel.sum().item())
+        peak = float(positive_channel.max().item())
+        new_l1 = float(translated_positive.sum().item())
+        new_peak = float(translated_positive.max().item())
         require(0.95 <= new_l1 / l1 <= 1.05, "E_CENTROID_L1", str(joint))
         require(0.95 <= new_peak / peak <= 1.05, "E_CENTROID_PEAK", str(joint))
         require(
-            abs(_normalized_entropy(translated) - _normalized_entropy(channel)) <= 0.01,
+            abs(
+                _normalized_entropy(translated_positive)
+                - _normalized_entropy(positive_channel)
+            ) <= 0.01,
             "E_CENTROID_ENTROPY",
             str(joint),
         )
-        output[joint] = translated
+        negative_l1 = float(raw_channel.clamp_max(0.0).abs().sum().item())
+        new_negative_l1 = float(translated_raw.clamp_max(0.0).abs().sum().item())
+        if negative_l1 == 0.0:
+            require(new_negative_l1 == 0.0, "E_CENTROID_NEGATIVE_ZERO", str(joint))
+        else:
+            ratio = new_negative_l1 / negative_l1
+            require(
+                0.95 <= ratio <= 1.05,
+                "E_CENTROID_NEGATIVE_L1",
+                f"joint={joint}, ratio={ratio}",
+            )
+        output[joint] = translated_raw
     require(bool(torch.isfinite(output).all()), "E_CENTROID_NONFINITE", "")
     return output
 

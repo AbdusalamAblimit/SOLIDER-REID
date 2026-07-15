@@ -132,7 +132,12 @@ actual-space provenance 对 active inventory `s3_b0,s3_b1` 分别冻结；每个
 sample 顺序把 bytes streaming 输入 SHA256；manifest 分别保存 `Sraw/Spos/Delta` SHA、
 shape、dtype、element count，以及 `Delta` 的 max-abs、sum-abs、mean-abs。相同 shape 的
 两个 PSG block 三组 SHA 与差异统计必须完全一致。上述字段属于 canonical premetric
-payload，resume 时任何字段漂移都由 execution SHA 与逐项复算共同拒绝。
+payload，resume 时任何字段漂移都由 execution SHA 与逐项复算共同拒绝。为避免把 CPU
+reference digest 冒充真实 hook provenance，这三组 tensor 必须在 prepare 的冻结
+`cuda:0` 环境由同一个 `actual_psg_input` 算子生成，manifest 明示 compute device/backend/
+operator；正式 `correct_start` 又按 query/gallery、相同 sample order 与 `<f4` bytes 从
+真实 PSG hook 重算 `Sraw` SHA，并对两个 active block 逐项 bitwise 对齐。任一不一致
+fail closed，不产生指标。
 
 该修订是对审计协议与真实历史输入契约的纠错，不是性能方法改动。A01 及 partial cache
 永久保留且不可 resume；只有修订通过独立静态审查、formal 与全部 regression 在本地和

@@ -803,8 +803,8 @@ class PoseBackboneModel(build_transformer):
                     raise ValueError('scene_heatmaps_override must be contiguous')
                 if not bool(torch.isfinite(scene_heatmaps_override).all()):
                     raise ValueError('scene_heatmaps_override contains NaN/Inf')
-                if not bool((scene_heatmaps_override >= 0).all()):
-                    raise ValueError('scene_heatmaps_override must be nonnegative')
+                # exp374 C+: raw pose activations are authoritative and may be
+                # signed; pass every finite value through without clamping.
             scene_heatmaps = scene_heatmaps_override
         elif pose_dict is not None:
             scene_heatmaps, _, target_heatmaps, _ = self._prepare_pose(pose_dict)
