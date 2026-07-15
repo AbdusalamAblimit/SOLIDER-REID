@@ -406,3 +406,51 @@ provenance、Python 3.8 兼容性和 diff scope，结论均为 `PASS`。冻结�
 双端验签、部署到新隔离 clone，并在同一 Python 3.8/torch 1.13.1 环境从头重跑
 formal 20/20 与 regression 87/87；全 PASS 后才可重新申请 prepare-only 授权。新的
 prepare 必须使用全新 output root、lock、PID 和 log，禁止 resume 本次失败尝试。
+
+## 2026-07-15 — 新 execution source 远端 20+87 PASS
+
+本地最终 execution commit、完整 bundle 与远端隔离部署已逐层验签：
+
+- exact commit：`bffb8be252b4a155ce404618362ee42f2a76b1cc`；
+- bundle：`remote_artifacts/exp374_execution_bffb8be.bundle`；
+- bundle SHA256：
+  `79cad8c71d9a120504d56c91069bdc5c3de95199fae5387a085b08b8def8bcac`；
+- 远端 clone：`/home/afr/SOLIDER-REID-exp374-bffb8be`；
+- bundle 双端 `verify/list-heads` 均指向同一 exact HEAD，完整历史无 prerequisite；
+- clone detached exact HEAD，测试前后 Git status 均为空；基础 dirty repo 未修改；
+- `audit_gate_a.py`、`protocol.py`、`pose_backbone_model.py` 与六份测试文件的远端 SHA
+  均与本地逐项一致；
+- runtime 仍为 Python 3.8.20、torch 1.13.1+cu117、torchvision 0.14.1、
+  timm 1.0.22、NumPy 1.24.4、cuDNN 8500；freeze SHA 仍为
+  `7699815505136173aa3f398ac43a0c82fabfa8af9aad2e769b3badaab32cd6c6`。
+
+远端同一环境从头顺序执行，不是补跑新增测试：
+
+- formal state-machine/protocol/Swin：18/18、1/1、1/1 PASS；
+- regression protocol/seam/runner：14/14、37/37、36/36 PASS；runner 内 5 个
+  `unittest.subTest` 属于同一 pytest item，JUnit 计 36 正确；
+- 六个 suite 的 errors/failures/skipped 均为 0；
+- JUnit 已回传到 Git 外
+  `remote_artifacts/exp374_remote_retest_bffb8be/`，SHA 为：
+  - state-machine/protocol/Swin：
+    `48e910511c3c34c8d7b439dbedefb170e895b41f5c8273b4eefb0b617e92ac87` /
+    `a3601e4145b85e983869459083db3737e78f861c4aa5feb7af67388e9b78c7e1` /
+    `c6f8f4d5da907514c7a59ae763fc78096a183cbdefafe905c6d2b4729c468b36`；
+  - regression protocol/seam/runner：
+    `f33b1a70913921315d733312f897788c4d4c74e12f80d262fc6745ad058526c2` /
+    `f5207c909c819548881cd23f1a554f15065dab5d379dc959283832071808ff7b` /
+    `8af3326cef76e0e44907035aa17a0e9832c7fcc66a7a6fb1e3ca73275d6698b2`。
+
+测试前后 GPU 均为 2 MiB/0%，compute process 为空；可用空间从
+`230,169,919,488 B` 到 `230,167,740,416 B`，远高于 100 GiB；没有
+`exp374_gate_a_bffb8be*`、PREPARED、RUN_COMPLETE 或正式 Gate-A 进程。独立远端证据
+红队裁决 `PASS_FOR_NEW_PREPARE_ONLY`。
+
+当前重新授权 exact `bffb8be…` clone 的一次全新 prepare，仍不授权 run/summarize：
+
+1. output root、outer lock、PID、log 必须全新且不得含/复用 `f053a43`；
+2. 禁止 `--resume`，outer `flock -n` 必须覆盖 staging 全生命周期；
+3. 启动前重新核 exact HEAD、clean、无旧进程、目标不存在、同卷空间至少 100 GiB；
+4. 命令只含 `prepare`，看到 `PREPARED_ONLY` 后 wrapper 退出；
+5. 随后只读审计 20 mappings、Hamming、artifact hash、schedule=492、剩余空间至少
+   80 GiB，并确认无 arms/results/current metrics；单独签字后才讨论 Gate A run。

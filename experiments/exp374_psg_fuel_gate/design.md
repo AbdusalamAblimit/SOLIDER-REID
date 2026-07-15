@@ -2,16 +2,18 @@
 
 ## 当前状态
 
-- 阶段：`FLAT_LOG_FIX_LOCAL_20_PLUS_87_PASS_REMOTE_FULL_RETEST_REQUIRED`
+- 阶段：`REMOTE_20_PLUS_87_PASS_NEW_PREPARE_ONLY`
 - 训练：未启动
 - 正式评测：未启动
 - 代码实现：audit-only runner、协议层、模型三态 seam 已编写；首次 prepare 因历史
   flat 日志路径错绑而在 output 创建前 fail closed，修复后本机 formal 20/20 与
-  regression 87/87 已从头 PASS，远端历史环境全量复验待执行
+  regression 87/87 已从头 PASS；远端历史环境 formal 20/20 与 regression 87/87
+  也已绑定 exact execution commit 全量 PASS
 - GPU：未占用
-- 当前执行许可：只允许本机与远端从头重跑 formal/regression preflight、构建并验签
-  绑定新 exact commit 的隔离部署；旧 prepare-only 授权已失效。新的 prepare、Gate A
-  `run`、当前 arm/per-query 指标生成、`summarize` 和训练全部禁止
+- 当前执行许可：只允许 exact execution commit `bffb8be…` 的新隔离 clone 在全新
+  output root/lock/PID/log 下运行一次 `prepare`；必须由 outer `flock -n` 覆盖全生命
+  周期，前置空间至少 100 GiB，看到 `PREPARED_ONLY` 后退出。Gate A `run`、当前
+  arm/per-query 指标生成、`summarize` 和训练仍全部禁止
 
 ## 动机
 
