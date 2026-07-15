@@ -21,6 +21,9 @@
 - 4090 remote CPU preflight：`PASS`（20/20 formal + 87/87 regression）
 - Gate A prepare：`NO_GO_AFTER_A01_E_SCENE_NEGATIVE`
 - C+ signed-raw 修复设计：`PASS_FOR_CODE_DESIGN`（两路独立红队，同一 SHA）
+- C+ 本地实现/全量复验：`PASS`（exact `8ca57ed…`，pytest 9 JUnit 126/126）
+- C+ 远端历史环境全量复验：`PASS`（pytest 8 JUnit 121/121 + 5 个源码内 subTest row）
+- A02 prepare-only：`NO_GO_PENDING_COMMAND_REVIEW`
 - 正式 Gate A/训练：`NO_GO_FOR_EXECUTION`
 
 统计、工程与独立总红队已分别完成第三轮只读签字；该 PASS 只授权编写 audit-only
@@ -85,6 +88,31 @@ input 与 correct/shuffle/group provenance 不变。两路独立红队已对相�
 `PASS_FOR_CODE_DESIGN`。该 PASS 只授权实现代码与测试；不授权写完即执行测试，更不
 授权 A02。
 
+C+ 实现随后经过三轮双路静态红队：先修正 actual-space CPU/CUDA provenance、独立
+little-endian 字节 oracle 与 sample-order 覆盖，再把 correct hook SHA 门禁前移到任何
+ReID 指标计算之前，并把 centroid runtime 降级限制为精确几何/能量错误白名单；TOCTOU、
+hook、模型与 provenance 错误仍全局失败。最终 production commit=`4b3a07f…`，test-only
+fixture commit=`8ca57ed…`。干净 detached worktree 对最终 commit 从头重跑六组：formal
+`18+1+1`、regression `19+38+49`，共 126 个 JUnit case 全部 PASS，0 error/failure/skip。
+两路证据红队均签 `PASS_FOR_REMOTE_RETEST_ONLY`；当前只允许在历史 Python 3.8 / torch
+1.13.1 环境完整重跑六组，仍不授权 A02。
+
+远端完整 bundle 随后以 SHA
+`773b4a46f0d7db6a4d8c6f9d894f8961ac2bbf10caa9e4f94c8fa13bc2672696`
+部署到全新 v4 clone。三份更早的 Git 外执行证据分别保留 SHA 转录失败、环境版本字段
+转录失败和 post-audit 规则误报；前两者没有启动测试，第三者六组 RC 均为 0，但不作为
+最终成功目录。v4 从 bundle 验签、clone、uv 环境开始完整重跑，exact detached HEAD、
+Git clean、9 项源码 SHA、环境 freeze 和 37 项历史 bytecode pre/post manifest 全部通过。
+
+远端 pytest 8 的六份 JUnit 为 `18+1+1+19+38+44=121`，全部零
+error/failure/skip；冻结 runner 源码另含 5 个同步 `unittest.subTest` row。pytest 8 不把
+这些 row 展开成 JUnit testcase，而本地 pytest 9 会把它们加入 testsuite header，因此
+本地 126 与远端 121 是版本计数语义差异，不是少跑。六份 JUnit、每组 rc/out、前后
+源码/bytecode、环境和 post-audit 已逐文件回传到 Git 外
+`remote_artifacts/exp374_remote_retest_8ca57ed_v4/`，传输前后 SHA 全一致。主线与独立
+红队均重算通过，裁决为 `PASS_FOR_A02_PREPARE_REVIEW_ONLY`；该裁决只允许下一步
+审查 A02 prepare-only 命令，尚不授权 A02，更不授权 `run`、`summarize` 或训练。
+
 ## 分项裁决
 
 | 审查项 | 状态 | 裁决 |
@@ -102,6 +130,7 @@ input 与 correct/shuffle/group provenance 不变。两路独立红队已对相�
 | legacy Python 3.8 compatibility | 完成 | 两处 `removeprefix` 等价改写后，远端 Python 3.8 完整 20+85 PASS |
 | Gate A prepare | A01 安全失败，授权消耗 | `E_SCENE_NEGATIVE`；只允许诊断与修复审查，禁止重试 |
 | C+ signed-raw 设计 | 两路独立复审完成 | `PASS_FOR_CODE_DESIGN`；Hraw 因果输入、Hpos 统计视图、signed manifest 与 centroid 语义已唯一化 |
+| C+ signed-raw 实现 | 本地与远端完整复验完成 | exact `8ca57ed…`；本地 pytest 9 JUnit 126/126，远端 pytest 8 JUnit 121/121 + 5 个源码 subTest row；`PASS_FOR_A02_PREPARE_REVIEW_ONLY` |
 | true bypass 语义 | 完成 | PASS：同模型传 `pose_dict=None` |
 | matched donor/centroid 实现 | formal preflight PASS | runner/protocol 静态复审、synthetic regression 与完整 N=128 matching preflight 均 PASS |
 | per-query/层级 bootstrap | 单元测试 PASS | 两 primary contrasts 的 synthetic test PASS；正式输入 preflight 未做 |
@@ -172,3 +201,16 @@ input 与 correct/shuffle/group provenance 不变。两路独立红队已对相�
    读取”，而是“matching 不读取当前 arm/per-query 结果”；prepare 后至少 80 GiB；
 7. 审计 PREPARED manifest/cache/mapping/hash/schedule 且单独升级授权后才允许 run；
    RUN_COMPLETE 后再次单独授权 summarize。Gate A 即使 GO，也不授权新机制训练。
+
+## 2026-07-15 当前覆盖顺序
+
+上面的部署顺序保留为历史记录。C+ exact `8ca57ed…` 的本地与远端全量复验现在均已
+闭合，当前只允许：
+
+1. 显式提交 `monitor.md` 与本文件的远端证据记录；
+2. 为全新 A02 output/lock/PID/log/status 设计 prepare-only 命令并做只读红队；
+3. 只有命令、GPU/进程、磁盘、clone/source SHA 和旧 A01/A02 目标隔离全部 PASS，才可
+   单独签发一次 A02 prepare-only；
+4. A02 只能执行 `prepare`，看到 `PREPARED_ONLY` 后退出；随后再次独立审计 cache、
+   mapping、signed manifest、energy、schedule 和 hash；
+5. 未取得下一轮明确签字前，Gate A `run`、`summarize` 与任何训练继续 `NO_GO`。

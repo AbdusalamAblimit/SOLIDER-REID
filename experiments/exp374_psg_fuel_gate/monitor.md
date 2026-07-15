@@ -525,3 +525,106 @@ nuisance/support/entropy/bbox/centroid 几何视图。全量或阈值 clamp raw�
 
 该 PASS 仅授权实现代码与测试，再进入静态代码审查；不授权执行测试、A02 prepare、
 Gate A `run`、`summarize` 或训练。当前继续 `NO_GO_FOR_PREPARE`。
+
+## 2026-07-15 — C+ 实现、静态红队与本地全量复验 PASS
+
+实现严格保持 `Hraw` 为 correct/shuffle/group/override 的唯一 raw tensor，`Hpos` 只进入
+nuisance 与 centroid 几何；新增 signed manifest、CUDA actual-space
+Sraw/Spos/Delta、correct hook premetric 门禁、Rplus intervention、Hpos 几何/Hraw 位移、
+Mneg 与 centroid runtime `INVALID_SECONDARY` 白名单。冻结提交：
+
+- production + design：`4b3a07f4f01ef099b5b69677698234a7ea3ead76`；
+- test-only fixture：`8ca57edc2bf7b5db66a0913dad2be2b4078a38d7`；
+- production SHA（protocol/audit/model）：
+  `b6536d2e8d1e6d9e48ce1d2a0e534dc9cc99fb1604c5e1c398dcfa6d80e6d0f7` /
+  `94c36a363bc007abd7b286009272072fa009b8af9eb42022c35217e8d488c693` /
+  `f60980f28bef0ded7b71b94bcd64d3f99373b42f8aecdc4bd7e558b2bb0a7100`；
+- regression tests SHA（protocol/runner/model seam）：
+  `c56adaf7e07db7915406a00dbe597cca71e55b948da825a53d58c7ea52d8d1b2` /
+  `a678fda1190613bb652fd92f893fd3756c00c9b9e6a1f131d7e96f763c5635f9` /
+  `cfa4451b103f8e5c9c3dacf78d978957f9c7cc68ba5d9e2ed87bf95984f5b2f3`。
+
+第一轮完整本地执行中 formal 20/20、protocol 19/19、model seam 38/38 PASS；runner
+三个新 fixture 失败：单像素负值未落在 12×4 bilinear 采样网格，以及 resume 用例先命中
+execution-dir SHA。production 没有失败。失败 JUnit 永久保留于 Git 外
+`remote_artifacts/exp374_signed_retest_4b3a07f_local/`；不作有效 PASS 证据。
+
+test-only fixture 经双路静态复审后，在最终 exact commit 的全新 detached clean worktree
+从头重跑全部六组，不是只补失败项：
+
+- formal state/protocol/Swin：`18/18 + 1/1 + 1/1`；
+- regression protocol/model seam/runner：`19/19 + 38/38 + 49/49`；
+- 总计 126/126 JUnit case，0 error、0 failure、0 skip；runner 命令口径为
+  44 passed + 5 subtests；
+- 证据目录：Git 外 `remote_artifacts/exp374_signed_retest_8ca57ed_local_v2/`；
+- JUnit SHA（formal protocol/state/Swin）：
+  `d158662ff90f40b7c1dcde96df72992d5b117a2c5fa738fa99fb82979b4b5b18` /
+  `e944f1d29395e98414b0d4c05d6b89f5f4a4922736493523dd39d5fe52639f19` /
+  `f97f011f09d4cbe0f094d21e077027fd69eadc90a11289aa082fd7aa1d09e920`；
+- JUnit SHA（regression model/protocol/runner）：
+  `3037484056b4a0f75ea02a899c37fec94b72c48821b959b0157932100aacaa4a` /
+  `8a7366be1ca20c68a2028cb73a60ffa3789f0d0ff6aca916004e228a03141bd9` /
+  `8ece82c9f862d13e5ecb4b78f74df39010f675be40f4e1aec4fff4f184853769`。
+
+两路独立证据红队均签 `PASS_FOR_REMOTE_RETEST_ONLY`。完整 bundle
+`remote_artifacts/exp374_execution_8ca57ed.bundle` 的 SHA256 为
+`773b4a46f0d7db6a4d8c6f9d894f8961ac2bbf10caa9e4f94c8fa13bc2672696`，记录完整历史且
+head 精确指向 `8ca57ed…`。当前只允许新隔离 clone 的历史 Python 3.8/torch 1.13.1
+六组全量复验；A02 prepare、Gate A run/summarize 和训练继续 `NO_GO`。
+
+## 2026-07-15 — C+ 远端历史环境全量复验与证据核验 PASS
+
+完整 bundle 已经唯一传输到 4090 并完成双端验签：
+
+- bundle：`/home/afr/exp374_execution_8ca57ed.bundle`；
+- 大小：`22,734,688 B`；
+- SHA256：
+  `773b4a46f0d7db6a4d8c6f9d894f8961ac2bbf10caa9e4f94c8fa13bc2672696`；
+- `git bundle verify/list-heads`：完整历史，唯一目标 head 为
+  `8ca57edc2bf7b5db66a0913dad2be2b4078a38d7`。
+
+正式成功前保留了三份 Git 外执行层失败证据，均没有改变 exact 代码：
+
+1. 首个新 clone 在创建 venv/运行测试前被外部 expected SHA 多写两位拦下，标记
+   `PRE_SOURCE_SHA_TRANSCRIPTION_FAIL`；
+2. v2 的七包 freeze 已通过，但把 `torch.__version__` 与 CUDA 构建信息误拼成
+   `1.13.1+cu117`，在测试前标记
+   `ENVIRONMENT_VERSION_ASSERT_TRANSCRIPTION_FAIL`。真实字段为
+   `torch.__version__=1.13.1`、`torch.version.cuda=11.7`；
+3. v3 六组 pytest 均返回 0，但旧 post-audit 误要求源码树不存在 `__pycache__`，并把
+   本地 pytest 9 的 subTest 计数硬套到远端 pytest 8。exact commit 本来就跟踪 37 个
+   Python 3.7 bytecode；该次标记 `POST_AUDIT_RULE_MISMATCH`，不作为最终证据目录。
+
+三次失败 clone、证据、脚本、PID/log/status 均保留，禁止删除或 resume。v4 使用全新
+clone `/home/afr/SOLIDER-REID-exp374-8ca57ed-v4` 和证据目录
+`/home/afr/exp374_remote_retest_8ca57ed_v4`，从 bundle 验签开始完整重做全部流程：
+
+- detached exact HEAD、前后 Git clean、9 项 production/tests SHA 全部一致；
+- Python 3.8.20、torch 1.13.1、CUDA 11.7、torchvision 0.14.1、timm 1.0.22、
+  NumPy 1.24.4、cuDNN 8500；七包 freeze SHA 为
+  `7699815505136173aa3f398ac43a0c82fabfa8af9aad2e769b3badaab32cd6c6`；
+- formal state/protocol/Swin：`18/18 + 1/1 + 1/1`；
+- regression protocol/model seam/runner：`19/19 + 38/38 + 44/44`；
+- 远端 pytest 8 的 JUnit 权威总数为 121/121，errors/failures/skipped 均为 0；runner
+  另有冻结源码内 5 个同步 `unittest.subTest` row，AST 核验为 44 个 test method、
+  1 个 subTest site、5 个 row。它们在远端 JUnit 中不展开，不能误写成 49 个 JUnit
+  testcase；本地 pytest 9 的 49 是版本相关的 header 口径，不代表远端少跑；
+- exact commit 跟踪的 37 个 `cpython-37.pyc` 在 pre/post 的 path、regular type、mode、
+  size、SHA256 与 HEAD blob 全部一致；bytecode manifest SHA 前后均为
+  `477199f65d43035dd3d37709968374df7345f4d1fbaa8c6faa1c79bc14115806`；
+- 六份远端 JUnit SHA（state/protocol/Swin/protocol/model/runner）：
+  `c9da3515a6c4d55c0ef74d79bb610c1ebd5243106dbbf635fa29a1760930a622` /
+  `0afae60053c41f23dfeece2ee4534a8508464c436bd1b9739e3bb22017b56145` /
+  `3fa2e71c8c26990b2aefb91637df52d3d5f113ead117c2234a3323b773bd1bce` /
+  `c3f5c7b661c868d646fee1ed74fb5e706189d34e2dfc6cd820f233c03aa300a1` /
+  `9bc7c0de4a07ed678e26e490d3b5e92778f569ca476cf7c19f02c20961cb10dc` /
+  `a4db42dcf494184962b1b607a4fb1e34c5a176690659a087fa0b0e54de41eca6`；
+- GPU 2 MiB/0%、compute process 为空、无 pytest/Gate-A 进程、无 PREPARED/
+  RUN_COMPLETE/FAILED/arms/results，剩余空间约 229.62 GB；
+- 远端证据已逐文件回传到 Git 外
+  `remote_artifacts/exp374_remote_retest_8ca57ed_v4/`，本地/远端全目录 SHA 对账一致。
+
+主线与独立证据红队均完成重算，独立裁决为
+`PASS_FOR_A02_PREPARE_REVIEW_ONLY`。这只允许进入一次全新 A02 prepare-only 的
+命令、资源和边界审查；A02 尚未授权或启动，Gate A `run`/`summarize` 与训练仍为
+`NO_GO`。
