@@ -7,7 +7,6 @@ import os
 from pathlib import Path
 import sys
 
-import pytest
 import torch
 from torch.cuda import amp
 
@@ -59,8 +58,9 @@ def _pose_dict(batch):
     }
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason='CUDA preflight')
 def test_exp376_production_amp_backward_update_and_peak_memory():
+    if not torch.cuda.is_available():
+        raise RuntimeError('exp376 production preflight requires CUDA')
     torch.manual_seed(376020)
     torch.cuda.manual_seed_all(376020)
     torch.cuda.empty_cache()
@@ -158,3 +158,8 @@ def test_exp376_production_amp_backward_update_and_peak_memory():
         'peak_memory_gib': peak_gib,
         'total_memory_gib': total_gib,
     })
+
+
+if __name__ == '__main__':
+    test_exp376_production_amp_backward_update_and_peak_memory()
+    print('exp376 production CUDA AMP preflight: PASS')
