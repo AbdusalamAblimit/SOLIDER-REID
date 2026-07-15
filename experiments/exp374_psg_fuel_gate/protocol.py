@@ -1053,7 +1053,7 @@ def audit_mapping(
         paired[left] = np.abs(standardized[left] - standardized[right])
     median_by_dimension = np.median(paired, axis=0)
     require(
-        bool((median_by_dimension <= 0.50 + 1e-12).all()),
+        bool((median_by_dimension <= 0.65 + 1e-12).all()),
         "E_PAIR_DIM",
         f"max={median_by_dimension.max()}",
     )

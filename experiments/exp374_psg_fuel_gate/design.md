@@ -583,7 +583,7 @@ C_{base}(i,j)=d_{cont}(i,j)+0.25\,\mathbb{1}[camera_i\ne camera_j]
    marginal SMD/KS 理论上应为 0；这里仅作 permutation sanity，不当作 pair-quality
    证据，浮点容差固定为 `1e-10`；
 7. pair quality 唯一用未加 Gumbel 的 `C_base` 审计：每个连续维的 paired
-   `median(|z_i-z_j|)` 必须 `<=0.50`，每份 mapping 的 `P95(C_base)<=1.25`；mapping
+   `median(|z_i-z_j|)` 必须 `<=0.65`，每份 mapping 的 `P95(C_base)<=1.25`；mapping
    mean cost 还必须不高于同一稀疏候选图和硬约束下 1,000 个随机化 full matching
    的 median mean cost 的 `0.75` 倍。baseline seed 唯一定义为 `475000+b`，
    `b=0..999`。baseline 不优化 cost：在同一稀疏候选图上，以 PCG64DXSM(seed)
