@@ -377,3 +377,18 @@ A03 prepare、Gate A `run`/`summarize`、arm/per-query 指标或任何训练。
 未提交脏改，当前不混入 relation-v2 小步提交。因为 HEAD 版本仍会在 formal CPU preflight
 触发 `.cuda()`，在其提交归属明确前，不能声称仅凭新 relation commit 的 isolated bundle
 可以复现 353/353，也不得启动远端全量复验。
+
+## 2026-07-15 — Swin compatibility seam 独立提交裁决
+
+主线已在用户授权技术取舍后，把既有 `.cuda()`→`.to(x.device)` 兼容修复作为独立提交
+`75605b7592785e5e1f043f148b624e75807ba010` 固化；该提交只包含
+`model/backbones/swin_transformer.py`，文件 SHA256 仍为
+`e0223a1d0fbf1bd6fc9c46a55a35081fd570eab82743577feea425ce31d08c4d`。因此 relation-v2
+源码提交与 backbone 兼容提交的归属相互独立，而后续 exact HEAD 同时包含本地 353/353
+证据绑定的两部分源码。
+
+裁决升级为 `PASS_FOR_EXACT_BUNDLE_AND_ISOLATED_FULL_RETEST`。该 PASS 只允许：显式提交
+本记录、从最终 exact HEAD 构建/双端验签 bundle，以及在全新 isolated clone 中重跑六套
+测试；它不继承工作树结果为 exact-clone 结果。isolated 复验和历史 Python 3.8/torch
+1.13.1 远端复验尚未通过，因此 A03 `prepare`、Gate A `run`/`summarize`、真实 arm/
+per-query 指标和训练仍为 `NO_GO`。

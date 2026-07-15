@@ -793,3 +793,21 @@ prepare、Gate A `run`/`summarize`、arm/per-query 指标和训练继续 `NO_GO`
 无法复现 formal CPU seam。因此在这条既有改动的提交归属明确前，bundle/历史环境全量
 复验保持 `BLOCKED_BY_SWINT_SEAM_PROVENANCE`，不能用工作树 PASS 冒充 isolated exact
 commit PASS。
+
+## 2026-07-15 — Swin seam provenance 已独立闭合
+
+用户将后续技术取舍交由主线决定。为避免把既有工作树改动混入 relation-v2 提交，同时让
+本地 formal Swin 证据可以由精确提交复现，已将该兼容修复单独提交：
+
+- commit：`75605b7592785e5e1f043f148b624e75807ba010`；
+- 目标文件：仅 `model/backbones/swin_transformer.py`；
+- 文件 SHA256：
+  `e0223a1d0fbf1bd6fc9c46a55a35081fd570eab82743577feea425ce31d08c4d`；
+- 语义：默认 semantic weight 从硬编码 `.cuda()` 改为 `.to(x.device)`；正常单卡 CUDA
+  路径保持等价，同时支持 CPU、非默认 CUDA device 与隔离 preflight；
+- 其他 `.claude/*`、`CLAUDE.md`、`experiments/decisions.md` 和未跟踪资产均未暂存或提交。
+
+`BLOCKED_BY_SWINT_SEAM_PROVENANCE` 已解除。下一步只授权：把本记录显式小步提交，从新的
+exact HEAD 构建/验签 bundle，并在全新隔离 clone 中从头重跑六套测试。isolated clone
+353/353 与历史 Python 3.8/torch 1.13.1 复验完成前，远端真实资产、A03 `prepare`、Gate A
+`run`/`summarize`、arm/per-query 指标和训练继续 `NO_GO`。
