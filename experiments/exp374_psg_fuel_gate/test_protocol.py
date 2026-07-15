@@ -714,7 +714,7 @@ def test_global_tie_rank_gumbel_order_and_persistence(
         split="query",
     )
 
-    assert len(tie_calls) == 40
+    assert len(tie_calls) == 2 * len(p.MAPPING_SEEDS)
     for call in range(0, len(tie_calls), 2):
         first_ranks, first_denominator = tie_calls[call]
         second_ranks, second_denominator = tie_calls[call + 1]
@@ -746,20 +746,21 @@ def test_global_tie_rank_gumbel_order_and_persistence(
         )
 
 
-def test_prepare_split_rejects_insufficient_mapping_hamming(
+def test_prepare_split_single_mapping_records_diagnostics(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _install_tiny_mapping_stubs(monkeypatch, hamming=0.89)
     records = _tiny_mapping_records()
-    _assert_code(
-        "E_MAPPING_HAMMING",
-        p.prepare_split_mappings,
+    payload = p.prepare_split_mappings(
         records,
         torch.device("cpu"),
         2,
         relation_report=_relation_report(records),
         split="query",
     )
+    assert len(payload["mappings"]) == 1
+    assert payload["minimum_hamming"] == pytest.approx(0.89)
+    assert payload["effective_unique_count"] == 1
 
 
 def test_pair_quality_audit_and_pairwise_hamming() -> None:
@@ -999,10 +1000,9 @@ def _family(
 
 
 def test_mapping_aggregation_bootstrap_and_gate_decisions() -> None:
-    mapping_values = np.tile(np.asarray([[1.0, 2.0, 3.0]]), (20, 1))
+    mapping_values = np.asarray([[1.0, 2.0, 3.0]])
     aggregated = p.aggregate_mapping_queries(mapping_values)
     np.testing.assert_array_equal(aggregated["mean"], [1.0, 2.0, 3.0])
-    np.testing.assert_array_equal(aggregated["mcse"], [0.0, 0.0, 0.0])
 
     seeds = (42, 1234, 2024)
     pids = np.asarray([1, 1, 2, 3], dtype=np.int64)

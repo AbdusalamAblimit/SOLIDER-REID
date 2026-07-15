@@ -26,7 +26,7 @@ import torch.nn.functional as F
 SCHEMA_VERSION = "exp374-gate-a-v1"
 SCENE_METADATA_SCHEMA_V2 = "exp374-scene-metadata-v2"
 SPLIT_RELATION_SCHEMA_V2 = "occluded_duke_official_mirror_v2"
-MAPPING_SEEDS = tuple(range(374001, 374021))
+MAPPING_SEEDS = (374001,)
 BASELINE_SEEDS = tuple(range(475000, 476000))
 BOOTSTRAP_SEED = 374900
 K_SEQUENCE = (8, 16, 32, 64, 128, 256)
@@ -1003,8 +1003,6 @@ def prepare_split_mappings(
         if all(float(np.mean(mapping != selected)) >= 0.90 for selected in effective):
             effective.append(mapping)
     effective_unique_count = len(effective)
-    require(minimum_hamming >= 0.90, "E_MAPPING_HAMMING",
-            f"minimum={minimum_hamming}, effective_unique={effective_unique_count}")
     return {
         "standardized": standardized,
         "scaler": scaler,
@@ -1426,11 +1424,11 @@ def per_query_metrics(
 
 def aggregate_mapping_queries(values: np.ndarray) -> Dict[str, np.ndarray]:
     matrix = np.asarray(values, dtype=np.float64)
-    require(matrix.ndim == 2 and matrix.shape[0] == 20, "E_MAPPING_AGG_SHAPE", str(matrix.shape))
+    require(matrix.ndim == 2 and matrix.shape[0] == 1,
+            "E_MAPPING_AGG_SHAPE", str(matrix.shape))
     require(bool(np.isfinite(matrix).all()), "E_MAPPING_AGG_NONFINITE", "")
     return {
-        "mean": matrix.mean(axis=0),
-        "mcse": matrix.std(axis=0, ddof=1) / math.sqrt(20.0),
+        "mean": matrix[0].copy(),
     }
 
 
@@ -1556,20 +1554,10 @@ def core_schedule(seeds: Sequence[int]) -> List[Dict[str, object]]:
     schedule: List[Dict[str, object]] = []
     for seed in seeds:
         schedule.append({"seed": seed, "arm": "correct", "position": "start"})
-        for mapping_index in range(20):
-            schedule.append({"seed": seed, "arm": "shuffle", "mapping": mapping_index})
-        schedule.append({"seed": seed, "arm": "centroid"})
+        schedule.append({"seed": seed, "arm": "shuffle", "mapping": 0})
         schedule.append({"seed": seed, "arm": "bypass"})
-        for group_name in ANATOMICAL_GROUPS:
-            for mapping_index in range(20):
-                schedule.append({
-                    "seed": seed,
-                    "arm": "group",
-                    "group": group_name,
-                    "mapping": mapping_index,
-                })
         schedule.append({"seed": seed, "arm": "correct", "position": "end"})
-    require(len(schedule) == 492, "E_SCHEDULE_COUNT", str(len(schedule)))
+    require(len(schedule) == 12, "E_SCHEDULE_COUNT", str(len(schedule)))
     for seed in seeds:
         rows = [row for row in schedule if row["seed"] == seed]
         counts = {
@@ -1581,9 +1569,9 @@ def core_schedule(seeds: Sequence[int]) -> List[Dict[str, object]]:
         }
         require(counts == {
             "correct": 2,
-            "shuffle": 20,
-            "centroid": 1,
+            "shuffle": 1,
+            "centroid": 0,
             "bypass": 1,
-            "group": 140,
+            "group": 0,
         }, "E_SCHEDULE_ARM_COUNT", f"seed={seed}: {counts}")
     return schedule

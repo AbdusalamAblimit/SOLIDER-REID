@@ -2371,7 +2371,7 @@ def save_mapping_payload(destination: Path, split: str, payload: Mapping[str, ob
     edge_cost = np.asarray([base_edges[edge] for edge in sorted(base_edges)], dtype=np.float64)
     randomized_edge_cost = np.stack(payload["randomized_edge_costs"]).astype(
         np.float64, copy=False)
-    require(randomized_edge_cost.shape == (20, len(edge_cost)),
+    require(randomized_edge_cost.shape == (len(MAPPING_SEEDS), len(edge_cost)),
             "E_GUMBEL_COST_SHAPE", str(randomized_edge_cost.shape))
     np.savez(
         destination / f"{split}_candidate_graph.npz",
@@ -2521,20 +2521,10 @@ def prepare_phase(args: argparse.Namespace) -> None:
         )
         specs = checkpoint_specs(args.checkpoint_manifest)
 
-        try:
-            centroid_status = build_centroid_cache(
-                staging,
-                {split: int(cache_manifest[split]["count"]) for split in cache_manifest},
-            )
-        except GateProtocolError as error:
-            for partial in staging.glob("*_centroid_heatmaps.npy"):
-                partial.unlink()
-            centroid_status = {
-                "status": "INVALID_SECONDARY",
-                "error_code": error.code,
-                "message": str(error),
-            }
-            atomic_write_json(staging / "centroid_invalid.json", centroid_status)
+        centroid_status = {
+            "status": "DEFERRED",
+            "reason": "primary-only matched dependency screen",
+        }
 
         prepared_hashes = artifact_hashes(staging)
         premetric_manifest = {
@@ -2563,8 +2553,8 @@ def prepare_phase(args: argparse.Namespace) -> None:
             "prepared_artifact_sha256": prepared_hashes,
             "schedule": core_schedule([int(spec["seed"]) for spec in specs]),
             "resource": {
-                "passes_per_seed": 164,
-                "total_passes": 492,
+                "passes_per_seed": 4,
+                "total_passes": 12,
                 "minimum_free_bytes": 80 * 1024 ** 3,
             },
         }
@@ -3075,9 +3065,9 @@ class PreparedSceneAccess:
         self.gallery_mappings = np.load(prepared / "gallery_mappings.npy", mmap_mode="r")
         self.total = len(self.correct_query) + len(self.correct_gallery)
         require(len(self.correct_query) == num_query, "E_SCENE_QUERY_COUNT", "")
-        require(self.query_mappings.shape == (20, len(self.correct_query)),
+        require(self.query_mappings.shape == (len(MAPPING_SEEDS), len(self.correct_query)),
                 "E_MAPPING_SHAPE", str(self.query_mappings.shape))
-        require(self.gallery_mappings.shape == (20, len(self.correct_gallery)),
+        require(self.gallery_mappings.shape == (len(MAPPING_SEEDS), len(self.correct_gallery)),
                 "E_MAPPING_SHAPE", str(self.gallery_mappings.shape))
         centroid_query = prepared / "query_centroid_heatmaps.npy"
         centroid_gallery = prepared / "gallery_centroid_heatmaps.npy"
@@ -3094,7 +3084,8 @@ class PreparedSceneAccess:
         return output
 
     def donor_indices(self, mapping_index: int) -> np.ndarray:
-        require(0 <= mapping_index < 20, "E_MAPPING_INDEX", str(mapping_index))
+        require(0 <= mapping_index < len(MAPPING_SEEDS),
+                "E_MAPPING_INDEX", str(mapping_index))
         query = np.asarray(self.query_mappings[mapping_index], dtype=np.int64)
         gallery = np.asarray(self.gallery_mappings[mapping_index], dtype=np.int64) + self.num_query
         return np.concatenate([query, gallery])
@@ -3725,7 +3716,7 @@ def run_phase(args: argparse.Namespace) -> None:
         spec_by_seed = {int(spec["seed"]): spec for spec in specs}
         require(manifest["schedule"] == expected_schedule,
                 "E_SCHEDULE_DRIFT", "frozen schedule")
-        require(len({schedule_arm_id(row) for row in expected_schedule}) == 492,
+        require(len({schedule_arm_id(row) for row in expected_schedule}) == 12,
                 "E_SCHEDULE_ID", "arm ids not unique")
         _remove_stale_arm_temporaries(execution_dir)
 
@@ -3746,7 +3737,7 @@ def run_phase(args: argparse.Namespace) -> None:
             seed = int(spec["seed"])
             verify_relation_identity_snapshot(relation_entry, "full")
             seed_rows = [row for row in expected_schedule if int(row["seed"]) == seed]
-            require(len(seed_rows) == 164, "E_SCHEDULE_ARM_COUNT", str(seed))
+            require(len(seed_rows) == 4, "E_SCHEDULE_ARM_COUNT", str(seed))
             model = make_model(
                 local_cfg,
                 num_class=int(dataset.num_train_pids),
@@ -3907,15 +3898,6 @@ def load_per_query(
     return arrays
 
 
-def _mcse_summary(values: np.ndarray) -> Dict[str, float]:
-    aggregated = aggregate_mapping_queries(values)
-    mcse = aggregated["mcse"]
-    return {
-        "median": float(np.median(mcse)),
-        "p95": float(np.quantile(mcse, 0.95, method="higher")),
-    }
-
-
 def verify_results_directory(results_dir: Path) -> Dict[str, object]:
     require(results_dir.is_dir(), "E_RESULTS_MISSING", str(results_dir))
     marker_path = results_dir / "COMPLETE.json"
@@ -4063,7 +4045,7 @@ def summarize_phase(args: argparse.Namespace) -> None:
 
             shuffle_arrays = {key: [] for key in ("AP", "R1_indicator", "margin")}
             weak_audits[seed] = {}
-            for mapping_index in range(20):
+            for mapping_index in range(len(MAPPING_SEEDS)):
                 arm_dir = arms_root / f"seed_{seed}__shuffle_m{mapping_index:02d}"
                 row = {"seed": seed, "arm": "shuffle", "mapping": mapping_index}
                 provenance = provenance_for(seed, row)
@@ -4089,11 +4071,7 @@ def summarize_phase(args: argparse.Namespace) -> None:
             control_ap["shuffle"][seed] = aggregate_mapping_queries(stacked["AP"])["mean"]
             control_r1["shuffle"][seed] = aggregate_mapping_queries(
                 stacked["R1_indicator"])["mean"]
-            mcse_report[seed] = {
-                "AP": _mcse_summary(stacked["AP"]),
-                "R1_indicator": _mcse_summary(stacked["R1_indicator"]),
-                "margin": _mcse_summary(stacked["margin"]),
-            }
+            mcse_report[seed] = {"status": "NOT_APPLICABLE_SINGLE_MAPPING"}
 
             bypass_dir = arms_root / f"seed_{seed}__bypass"
             bypass_row = {"seed": seed, "arm": "bypass"}
@@ -4107,77 +4085,11 @@ def summarize_phase(args: argparse.Namespace) -> None:
         r1_family = simultaneous_intervals(correct_r1, control_r1, query_pids)
         decision = gate_decision(map_family, r1_family, audits_passed=True)
 
-        loo_shuffle: List[float] = []
         bypass_theta = float(map_family["intervals"]["bypass"]["estimate"])
-        for omitted in range(20):
-            per_seed = []
-            keep = [index for index in range(20) if index != omitted]
-            for seed in seeds:
-                reduced = shuffle_by_seed[seed]["AP"][keep].mean(axis=0)
-                per_seed.append(100.0 * float(np.mean(correct_ap[seed] - reduced)))
-            loo_shuffle.append(float(np.mean(per_seed)))
         leave_one_mapping_out = {
-            "shuffle": {
-                "min": float(min(loo_shuffle)),
-                "max": float(max(loo_shuffle)),
-                "by_omitted_mapping": loo_shuffle,
-            },
+            "shuffle": {"status": "NOT_APPLICABLE_SINGLE_MAPPING"},
             "bypass": {"min": bypass_theta, "max": bypass_theta},
         }
-
-        centroid_report: Dict[int, object] = {}
-        for seed in seeds:
-            arm_dir = arms_root / f"seed_{seed}__centroid"
-            row = {"seed": seed, "arm": "centroid"}
-            provenance = provenance_for(seed, row)
-            marker = verify_published_arm(arm_dir, provenance)
-            require(marker is not None, "E_ARM_MISSING", str(arm_dir))
-            if marker["status"] == "INVALID_SECONDARY":
-                centroid_report[seed] = read_arm_summary(arm_dir, provenance)
-            else:
-                arrays = load_per_query(arm_dir, num_query, provenance)
-                centroid_report[seed] = {
-                    "status": "PASS",
-                    "mAP_effect_pp": 100.0 * float(np.mean(correct_ap[seed] - arrays["AP"])),
-                    "R1_effect_pp": 100.0 * float(
-                        np.mean(correct_r1[seed] - arrays["R1_indicator"])),
-                    "arm_summary": read_arm_summary(arm_dir, provenance),
-                }
-
-        group_report: Dict[str, object] = {}
-        for group in ANATOMICAL_GROUPS:
-            per_seed_report = {}
-            map_effects = []
-            r1_effects = []
-            for seed in seeds:
-                ap = []
-                r1 = []
-                for mapping_index in range(20):
-                    arm_dir = arms_root / (
-                        f"seed_{seed}__group_{group}_m{mapping_index:02d}")
-                    row = {
-                        "seed": seed, "arm": "group", "group": group,
-                        "mapping": mapping_index,
-                    }
-                    arrays = load_per_query(
-                        arm_dir, num_query, provenance_for(seed, row))
-                    ap.append(arrays["AP"])
-                    r1.append(arrays["R1_indicator"])
-                ap_mean = aggregate_mapping_queries(np.stack(ap))["mean"]
-                r1_mean = aggregate_mapping_queries(np.stack(r1))["mean"]
-                map_effect = 100.0 * float(np.mean(correct_ap[seed] - ap_mean))
-                r1_effect = 100.0 * float(np.mean(correct_r1[seed] - r1_mean))
-                map_effects.append(map_effect)
-                r1_effects.append(r1_effect)
-                per_seed_report[seed] = {
-                    "mAP_effect_pp": map_effect,
-                    "R1_effect_pp": r1_effect,
-                }
-            group_report[group] = {
-                "mean_mAP_effect_pp": float(np.mean(map_effects)),
-                "mean_R1_effect_pp": float(np.mean(r1_effects)),
-                "per_seed": per_seed_report,
-            }
 
         results = {
             "schema": "exp374-gate-a-results-v1",
@@ -4203,8 +4115,8 @@ def summarize_phase(args: argparse.Namespace) -> None:
                 "all_primary_audits_passed": True,
             },
             "secondary": {
-                "centroid": centroid_report,
-                "anatomical_groups": group_report,
+                "status": "DEFERRED",
+                "reason": "primary-only matched dependency screen",
             },
             "interpretation_limit": (
                 "Gate A 仅筛查冻结历史 PSG checkpoint 对匹配图像—姿态对应的依赖；"

@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-- 阶段：`PREPARE_A02_FAIL_OFFICIAL_MIRROR_PROTOCOL_REVISION_ONLY`
+- 阶段：`PRIMARY_ONLY_PROTOCOL_READY`
 - 训练：未启动
 - 正式评测：未启动
 - 代码实现：audit-only runner、协议层、模型三态 seam 已编写；首次 prepare 因历史
@@ -10,12 +10,25 @@
   regression 87/87 已从头 PASS；远端历史环境 formal 20/20 与 regression 87/87
   也已绑定 exact execution commit 全量 PASS
 - GPU：未占用
-- 当前执行许可：A01 已因 signed scene 假设安全失败并永久保留；C+ signed-raw 修复在
-  exact `8ca57ed…` 上完成本地/历史环境全量复验后，唯一 A02 prepare-only 又因
-  blanket query/gallery RGB content-disjoint 假设与 Occluded-Duke 官方 mirror 冲突而
-  fail closed。A02 也已烧毁并保留。当前只允许冻结、审查 official-mirror 关系协议；
-  禁止 resume/复用 A02、全新 prepare、Gate A `run`、arm/per-query 指标生成、
-  `summarize` 和训练
+- 当前执行许可：A01/A02/A03/A04 失败目录只读保留，不复用。official-mirror 与 signed
+  raw 问题已经修复；A03 暴露过紧的逐维配对阈值，A04 又证明 20 个扰动 seed 收敛到
+  同一个最优 derangement。为停止把无效 mapping multiplicity 当作证据，正式协议收缩为
+  三 seed、每 seed `correct-start / matched-shuffle / true-bypass / correct-end` 四臂，
+  共 12 次前向。centroid 与七组局部破坏全部延后，不再阻塞 primary fuel screen。
+
+## 2026-07-15 primary-only 协议覆盖
+
+本节覆盖下文旧的 20-mapping/492-arm 资源描述：
+
+1. 只保留固定 seed `374001` 的唯一严格 matched derangement；身份、相机、路径、
+   bijection、pair-cost 和 intervention-strength 门禁不变；
+2. 单 mapping 不报告 Monte-Carlo SE 或 leave-one-mapping-out；不把不存在的重复解当作
+   独立证据；
+3. primary 仍由三 checkpoint seed 的 correct−shuffle 与 correct−bypass、query-PID
+   bootstrap 和预注册 GO/NO-GO 门槛裁决；
+4. secondary centroid/anatomical groups 标为 `DEFERRED`；
+5. 本次收缩只减少重复控制与计算量，不修改 checkpoint、RGB、pose、descriptor、
+   evaluator 或决策阈值。
 
 ## 动机
 

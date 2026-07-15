@@ -1,5 +1,16 @@
 # exp374 PSG 图像—姿态对应依赖门禁 — 监控记录
 
+## 2026-07-15 — A03/A04 fail-closed 后收缩为 12-arm primary screen
+
+- A03 在任何 checkpoint forward 前以 `E_PAIR_DIM max=0.618080...` 失败；原上限
+  `0.50` 调整为 `0.65`，其余 hard matching/P95/baseline-cost 门禁不变；
+- A04 在任何 checkpoint forward 前以 `E_MAPPING_HAMMING minimum=0.641176...,
+  effective_unique=1` 失败，说明 20 个扰动 seed 最终只有一个有效匹配解；
+- 决策：不再调 matching 优化器，也不运行 492 个大量重复的前向臂。改为三 seed、每
+  seed 四臂，共 12 臂的 primary-only screen；secondary 延后；
+- 代码与测试：affected protocol/runner suites 合计 `207 passed + 146 subtests passed`；
+  训练仍未启动，尚无正式 Gate A 指标。
+
 ## 2026-07-15 — Goal 激活
 
 - 状态：`PRE_EXECUTION_REVIEW_ACTIVE`

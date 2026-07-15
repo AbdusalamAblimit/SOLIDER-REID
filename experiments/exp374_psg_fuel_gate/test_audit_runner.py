@@ -334,27 +334,27 @@ class FlatLogAndCheckpointBytesTests(GateCodeMixin, unittest.TestCase):
 
 
 class ScheduleAndArmIdTests(GateCodeMixin, unittest.TestCase):
-    def test_frozen_schedule_has_492_unique_arm_ids(self):
+    def test_primary_schedule_has_12_unique_arm_ids(self):
         schedule = protocol.core_schedule([42, 1234, 2024])
 
-        self.assertEqual(len(schedule), 492)
+        self.assertEqual(len(schedule), 12)
         self.assertEqual(
             len({runner.schedule_arm_id(row) for row in schedule}),
-            492,
+            12,
         )
         for seed in (42, 1234, 2024):
             rows = [row for row in schedule if int(row["seed"]) == seed]
-            self.assertEqual(len(rows), 164)
+            self.assertEqual(len(rows), 4)
             self.assertEqual(rows[0], {
                 "seed": seed, "arm": "correct", "position": "start",
             })
             self.assertEqual(rows[-1], {
                 "seed": seed, "arm": "correct", "position": "end",
             })
-            self.assertEqual(sum(row["arm"] == "shuffle" for row in rows), 20)
-            self.assertEqual(sum(row["arm"] == "centroid" for row in rows), 1)
+            self.assertEqual(sum(row["arm"] == "shuffle" for row in rows), 1)
+            self.assertEqual(sum(row["arm"] == "centroid" for row in rows), 0)
             self.assertEqual(sum(row["arm"] == "bypass" for row in rows), 1)
-            self.assertEqual(sum(row["arm"] == "group" for row in rows), 140)
+            self.assertEqual(sum(row["arm"] == "group" for row in rows), 0)
 
     def test_arm_ids_follow_frozen_format(self):
         cases = (
@@ -593,7 +593,10 @@ class PreparedSignedRawProvenanceTests(unittest.TestCase):
             gallery[1, 10, 2, 2] = -0.4
             np.save(prepared / "query_scene_heatmaps.npy", query, allow_pickle=False)
             np.save(prepared / "gallery_scene_heatmaps.npy", gallery, allow_pickle=False)
-            mappings = np.tile(np.asarray([[1, 0]], dtype=np.int32), (20, 1))
+            mappings = np.tile(
+                np.asarray([[1, 0]], dtype=np.int32),
+                (len(protocol.MAPPING_SEEDS), 1),
+            )
             np.save(prepared / "query_mappings.npy", mappings, allow_pickle=False)
             np.save(prepared / "gallery_mappings.npy", mappings, allow_pickle=False)
             scenes = runner.PreparedSceneAccess(prepared, num_query=2)

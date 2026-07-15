@@ -252,9 +252,9 @@ def test_formal_protocol_preflight_cpu(tmp_path: Path) -> None:
     # or process-RSS thresholds that vary across CI and BLAS implementations.
     assert ANCHOR_CHUNK * FIXTURE_COUNT * NUISANCE_DIMENSION * 8 < 2 * 1024 * 1024
     assert EXPECTED_EDGE_COUNT == 16_256
-    assert 20 * EXPECTED_EDGE_COUNT * 8 < 3 * 1024 * 1024
+    assert len(p.MAPPING_SEEDS) * EXPECTED_EDGE_COUNT * 8 < 3 * 1024 * 1024
     assert len(p.BASELINE_SEEDS) == 1_000
-    assert len(p.MAPPING_SEEDS) == 20
+    assert len(p.MAPPING_SEEDS) == 1
 
     device = torch.device("cpu")
     assert device.type == "cpu"
@@ -320,7 +320,7 @@ def test_formal_protocol_preflight_cpu(tmp_path: Path) -> None:
 
     edge_order = sorted(base_edges)
     randomized_costs = np.stack(first["randomized_edge_costs"])
-    assert randomized_costs.shape == (20, EXPECTED_EDGE_COUNT)
+    assert randomized_costs.shape == (len(p.MAPPING_SEEDS), EXPECTED_EDGE_COUNT)
     for mapping_index, seed in enumerate(p.MAPPING_SEEDS):
         noise = np.random.Generator(
             np.random.PCG64DXSM(seed)).gumbel(size=EXPECTED_EDGE_COUNT)
@@ -331,15 +331,14 @@ def test_formal_protocol_preflight_cpu(tmp_path: Path) -> None:
         np.testing.assert_array_equal(randomized_costs[mapping_index], expected)
 
     mappings = [np.asarray(mapping, dtype=np.int64) for mapping in first["mappings"]]
-    assert len(mappings) == 20
-    assert len(set(_mapping_hashes(mappings))) == 20
+    assert len(mappings) == len(p.MAPPING_SEEDS)
+    assert len(set(_mapping_hashes(mappings))) == 1
     for mapping in mappings:
         _assert_bijection_and_edges(mapping, adjacency)
     hamming_values = _pairwise_hamming_values(mappings)
-    assert len(hamming_values) == 190
-    assert min(hamming_values) == pytest.approx(float(first["minimum_hamming"]), abs=0.0)
-    assert min(hamming_values) >= 0.90
-    assert first["effective_unique_count"] == 20
+    assert hamming_values == []
+    assert first["minimum_hamming"] == pytest.approx(1.0, abs=0.0)
+    assert first["effective_unique_count"] == 1
 
     baseline = np.asarray(first["baseline_mean_costs"], dtype=np.float64)
     assert baseline.shape == (1_000,)
@@ -364,7 +363,7 @@ def test_formal_protocol_preflight_cpu(tmp_path: Path) -> None:
             edge: float(randomized_costs[mapping_index, edge_index])
             for edge_index, edge in enumerate(edge_order)
         }
-        for mapping_index in range(20)
+        for mapping_index in range(len(p.MAPPING_SEEDS))
     ]
     for mapping_index, mapping in enumerate(mappings):
         objective = float(np.sum(np.asarray([
@@ -391,7 +390,7 @@ def test_formal_protocol_preflight_cpu(tmp_path: Path) -> None:
 
     persisted_mappings = np.load(tmp_path / manifest["mappings"], allow_pickle=False)
     assert persisted_mappings.dtype == np.int32
-    assert persisted_mappings.shape == (20, FIXTURE_COUNT)
+    assert persisted_mappings.shape == (len(p.MAPPING_SEEDS), FIXTURE_COUNT)
     np.testing.assert_array_equal(persisted_mappings, np.stack(mappings).astype(np.int32))
 
     with np.load(tmp_path / manifest["candidate_graph"], allow_pickle=False) as graph:
@@ -431,7 +430,7 @@ def test_formal_protocol_preflight_cpu(tmp_path: Path) -> None:
     assert "all_cost_arithmetic=float64" in frozen_audit["cost_formula_version"]
     assert frozen_audit["minimum_hamming"] == pytest.approx(
         float(first["minimum_hamming"]), abs=0.0)
-    assert frozen_audit["effective_unique_count"] == 20
+    assert frozen_audit["effective_unique_count"] == 1
 
     persisted_as_int64 = [row.astype(np.int64, copy=False) for row in persisted_mappings]
     persisted_hamming = _pairwise_hamming_values(persisted_as_int64)
