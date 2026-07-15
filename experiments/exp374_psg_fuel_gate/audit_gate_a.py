@@ -178,7 +178,8 @@ def _normalized_checkpoint_state(raw: object) -> Dict[str, torch.Tensor]:
     require(isinstance(raw, Mapping), "E_CHECKPOINT_FORMAT", type(raw).__name__)
     state: Dict[str, torch.Tensor] = {}
     for key, value in raw.items():
-        normalized = str(key).removeprefix("module.")
+        key_text = str(key)
+        normalized = key_text[len("module."):] if key_text.startswith("module.") else key_text
         require(normalized not in state, "E_CHECKPOINT_KEY_COLLISION", normalized)
         state[normalized] = value
     require(all(torch.is_tensor(value) for value in state.values()),
@@ -698,7 +699,7 @@ def verify_prepared_artifacts(execution_dir: Path) -> Dict[str, object]:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     require(execution_dir.name.startswith("gate_a_"),
             "E_RESUME_EXECUTION_SHA", execution_dir.name)
-    expected_sha = execution_dir.name.removeprefix("gate_a_")
+    expected_sha = execution_dir.name[len("gate_a_"):]
     require(sha256_bytes(canonical_json_bytes(manifest)) == expected_sha,
             "E_RESUME_EXECUTION_SHA", str(execution_dir))
     prepared = execution_dir / "prepared"
