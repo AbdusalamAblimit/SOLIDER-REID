@@ -246,6 +246,16 @@ _C.MODEL.POSE_PRSM_RES_SCALE_INIT = 0.001
 _C.MODEL.POSE_PRSM_ROUTING = 'parts'  # parts | foreground_uniform | uniform | zero
 _C.MODEL.POSE_PRSM_POSE_SOURCE = 'input'  # input | canonical | zero
 _C.MODEL.POSE_PRSM_BIDIRECTIONAL = True
+# Pose Hyper-LoRA: local pose dynamically mixes low-rank A/B bases after
+# selected Swin blocks.  Disabled by default to preserve every legacy path.
+_C.MODEL.POSE_HYPER_LORA = False
+_C.MODEL.POSE_HYPER_LORA_STAGES = [2, 3]
+_C.MODEL.POSE_HYPER_LORA_RANK = 4
+_C.MODEL.POSE_HYPER_LORA_BASES = 4
+_C.MODEL.POSE_HYPER_LORA_HIDDEN = 32
+_C.MODEL.POSE_HYPER_LORA_RES_SCALE_INIT = 0.001
+_C.MODEL.POSE_HYPER_LORA_POSE_SOURCE = 'input'  # input | canonical | zero
+_C.MODEL.POSE_HYPER_LORA_FACTORIZATION = 'basis'  # basis | diagonal
 _C.MODEL.POSE_CLIP_ID_PROMPT = False      # CLIP-ReID-style learnable ID text prompts (CoOp) + i2t/t2i contrastive — the WORKING CLIP mechanism
 _C.MODEL.POSE_CLIP_ID_ARCH = 'ViT-L-14'
 _C.MODEL.POSE_CLIP_ID_PRETRAINED = 'openai'  # path to local open_clip safetensors on the training machine

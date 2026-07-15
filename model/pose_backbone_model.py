@@ -14,6 +14,7 @@ from .modules.pose_spatial_gate import PoseSpatialGate
 from .modules.pose_utils import merge_person_heatmaps
 from .modules.skeleton_gcn import SkeletonGCNHead
 from .modules.pose_additive_adapter import PoseAdditiveAdapter
+from .modules.pose_hyper_lora import PoseHyperLoRA
 from .modules.pair_adaptive_fusion import (
     PairAdaptiveFusionHead,
     PairResidualConfidenceScorer,
@@ -83,6 +84,69 @@ class PoseBackboneModel(build_transformer):
                 self.psg_modules_dict[f's{last_stage_idx}_b{j}']
                 for j in range(len(self.base.stages[last_stage_idx].blocks))
             ])
+
+        # exp376 Pose Hyper-LoRA: local pose generates the effective low-rank
+        # A/B transform independently at every selected block and token.
+        self.use_pose_hyper_lora = bool(getattr(
+            cfg.MODEL, 'POSE_HYPER_LORA', False))
+        self.pose_hyper_lora_stage_indices = set()
+        self.pose_hyper_lora_modules = nn.ModuleDict()
+        self.pose_hyper_lora_pose_source = str(getattr(
+            cfg.MODEL, 'POSE_HYPER_LORA_POSE_SOURCE', 'input'))
+        if self.pose_hyper_lora_pose_source not in (
+                'input', 'canonical', 'zero'):
+            raise ValueError(
+                'POSE_HYPER_LORA_POSE_SOURCE must be input, canonical, or zero')
+        if self.use_pose_hyper_lora:
+            hyper_lora_stages = list(getattr(
+                cfg.MODEL, 'POSE_HYPER_LORA_STAGES', [2, 3]))
+            if not hyper_lora_stages:
+                raise ValueError(
+                    'POSE_HYPER_LORA=True requires at least one stage')
+            for stage_number in hyper_lora_stages:
+                stage_idx = stage_number if stage_number >= 0 \
+                    else num_backbone_stages + stage_number
+                if stage_idx < 0 or stage_idx >= num_backbone_stages:
+                    raise ValueError(
+                        'invalid POSE_HYPER_LORA_STAGES entry: %s'
+                        % stage_number)
+                self.pose_hyper_lora_stage_indices.add(stage_idx)
+
+            # Module construction must not perturb the paired backbone/classifier
+            # initialization relative to B0 or between P0 and M0.
+            _hyper_lora_rng = torch.get_rng_state()
+            for stage_idx in sorted(self.pose_hyper_lora_stage_indices):
+                stage = self.base.stages[stage_idx]
+                feat_ch = self.base.num_features[stage_idx]
+                for block_idx in range(len(stage.blocks)):
+                    key = f's{stage_idx}_b{block_idx}'
+                    self.pose_hyper_lora_modules[key] = PoseHyperLoRA(
+                        feat_dim=feat_ch,
+                        rank=int(getattr(
+                            cfg.MODEL, 'POSE_HYPER_LORA_RANK', 4)),
+                        num_bases=int(getattr(
+                            cfg.MODEL, 'POSE_HYPER_LORA_BASES', 4)),
+                        pose_hidden_dim=int(getattr(
+                            cfg.MODEL, 'POSE_HYPER_LORA_HIDDEN', 32)),
+                        residual_scale_init=float(getattr(
+                            cfg.MODEL,
+                            'POSE_HYPER_LORA_RES_SCALE_INIT', 1e-3)),
+                        factorization=str(getattr(
+                            cfg.MODEL,
+                            'POSE_HYPER_LORA_FACTORIZATION', 'basis')),
+                    )
+            torch.set_rng_state(_hyper_lora_rng)
+            hyper_lora_params = sum(
+                p.numel() for p in self.pose_hyper_lora_modules.parameters())
+            print('[PoseHyperLoRA] enabled: stages=%s, blocks=%d, '
+                  'source=%s, factorization=%s, params=%d'
+                  % (sorted(self.pose_hyper_lora_stage_indices),
+                     len(self.pose_hyper_lora_modules),
+                     self.pose_hyper_lora_pose_source,
+                     str(getattr(cfg.MODEL,
+                                 'POSE_HYPER_LORA_FACTORIZATION', 'basis')),
+                     hyper_lora_params))
+        self._last_pose_hyper_lora_stats = {}
 
         # PAA (Pose Additive Adapter): additive injection alongside PSG
         self.use_paa = getattr(cfg.MODEL, 'POSE_ADDITIVE_ADAPTER', False)
@@ -617,9 +681,12 @@ class PoseBackboneModel(build_transformer):
             sem_weight = None
 
         outs = []
+        instrumented_stages = (
+            self.psg_stage_indices | self.pose_hyper_lora_stage_indices)
+        self._last_pose_hyper_lora_stats = {}
         for i, stage in enumerate(self.base.stages):
-            if i in self.psg_stage_indices:
-                # Stage with PSG: manually run blocks with injection
+            if i in instrumented_stages:
+                # Stage with block-level PSG/PAA/Pose Hyper-LoRA injection.
                 x, hw_shape, out, out_hw_shape = self._run_stage_with_psg(
                     stage, x, hw_shape, scene_heatmaps, stage_idx=i)
             else:
@@ -663,7 +730,16 @@ class PoseBackboneModel(build_transformer):
 
     def _run_stage_with_psg(self, stage, x, hw_shape, scene_heatmaps,
                             stage_idx=None):
-        """Run a stage's blocks with PSG and optional PAA injection."""
+        """Run a stage's blocks with optional PSG/PAA/Hyper-LoRA injection."""
+        hyper_lora_heatmaps = scene_heatmaps
+        if (getattr(self, 'use_pose_hyper_lora', False)
+                and stage_idx in self.pose_hyper_lora_stage_indices):
+            if self.pose_hyper_lora_pose_source == 'canonical':
+                hyper_lora_heatmaps = self._canonical_heatmap(
+                    x.shape[0], x.device)
+            elif self.pose_hyper_lora_pose_source == 'zero':
+                hyper_lora_heatmaps = None if scene_heatmaps is None \
+                    else torch.zeros_like(scene_heatmaps)
         for block_idx, block in enumerate(stage.blocks):
             key = f's{stage_idx}_b{block_idx}'
 
@@ -677,6 +753,14 @@ class PoseBackboneModel(build_transformer):
             # PAA: apply additive adapter after PSG
             if getattr(self, 'use_paa', False) and scene_heatmaps is not None and key in getattr(self, 'paa_modules_dict', {}):
                 x = self.paa_modules_dict[key](x, hw_shape, scene_heatmaps)
+
+            # Pose Hyper-LoRA is deliberately last: exp376 configs disable
+            # PSG/PAA, while this ordering keeps combinations well-defined for
+            # future ablations without altering any legacy path.
+            if key in self.pose_hyper_lora_modules:
+                x, stats = self.pose_hyper_lora_modules[key](
+                    x, hw_shape, hyper_lora_heatmaps)
+                self._last_pose_hyper_lora_stats[key] = stats
 
         # Handle downsample (Stage 3 has no downsample in Swin)
         if stage.downsample:

@@ -193,6 +193,32 @@ def do_train(cfg,
         logger.info(f'[LPCS] enabled: weight={lpcs_weight}, warmup={lpcs_warmup}, '
                     f'head_mode={lpcs_head_mode}, context_mode={lpcs_context_mode}')
 
+    def _pose_hyper_lora_log(current_model):
+        """Compact live audit for exp376; empty on every legacy config."""
+        base_model = (current_model.module
+                      if hasattr(current_model, 'module') else current_model)
+        modules = getattr(base_model, 'pose_hyper_lora_modules', None)
+        stats = getattr(base_model, '_last_pose_hyper_lora_stats', {})
+        if not modules or not stats:
+            return ''
+        alphas = torch.stack([
+            module.residual_scale.detach().float().cpu()
+            for module in modules.values()])
+        visibility = torch.stack([
+            value['visibility_mean'].detach().float().cpu()
+            for value in stats.values()])
+        coefficients = torch.stack([
+            value['coefficient_abs_mean'].detach().float().cpu()
+            for value in stats.values()])
+        delta_rms = torch.stack([
+            value['delta_rms'].detach().float().cpu()
+            for value in stats.values()])
+        return (' | HyperLoRA alpha={:.3e}[{:.3e},{:.3e}] '
+                'vis={:.3e} coeff={:.3e} delta_rms={:.3e}'.format(
+                    alphas.mean().item(), alphas.min().item(),
+                    alphas.max().item(), visibility.mean().item(),
+                    coefficients.mean().item(), delta_rms.mean().item()))
+
     def _compute_ltcs_loss(ltcs_head, global_feat, kp_feats, kp_weights, teacher_kp_feats, labels):
         feat_g = F.normalize(global_feat.detach(), dim=-1)
         kp_base = F.normalize(kp_feats.detach(), dim=-1)
@@ -1389,6 +1415,7 @@ def do_train(cfg,
                             epoch, (n_iter + 1), len(train_loader), loss_meter.avg, acc_meter.avg, base_lr)
                         if detail_str:
                             log_msg += f" | {detail_str}"
+                        log_msg += _pose_hyper_lora_log(model)
                         logger.info(log_msg)
             else:
                 if (n_iter + 1) % log_period == 0:
@@ -1398,6 +1425,7 @@ def do_train(cfg,
                         epoch, (n_iter + 1), len(train_loader), loss_meter.avg, acc_meter.avg, base_lr)
                     if detail_str:
                         log_msg += f" | {detail_str}"
+                    log_msg += _pose_hyper_lora_log(model)
                     logger.info(log_msg)
 
         end_time = time.time()
