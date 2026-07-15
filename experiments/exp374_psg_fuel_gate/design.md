@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-- 阶段：`REMOTE_20_PLUS_87_PASS_NEW_PREPARE_ONLY`
+- 阶段：`PREPARE_A01_FAIL_E_SCENE_NEGATIVE_DIAGNOSIS_ONLY`
 - 训练：未启动
 - 正式评测：未启动
 - 代码实现：audit-only runner、协议层、模型三态 seam 已编写；首次 prepare 因历史
@@ -10,10 +10,10 @@
   regression 87/87 已从头 PASS；远端历史环境 formal 20/20 与 regression 87/87
   也已绑定 exact execution commit 全量 PASS
 - GPU：未占用
-- 当前执行许可：只允许 exact execution commit `bffb8be…` 的新隔离 clone 在全新
-  output root/lock/PID/log 下运行一次 `prepare`；必须由 outer `flock -n` 覆盖全生命
-  周期，前置空间至少 100 GiB，看到 `PREPARED_ONLY` 后退出。Gate A `run`、当前
-  arm/per-query 指标生成、`summarize` 和训练仍全部禁止
+- 当前执行许可：prepare attempt `bffb8be_a01_20260715` 已因训练 split scene heatmap
+  出现负值而 fail closed；该 attempt 已烧毁并保留。当前只允许只读诊断负值来源、
+  复核协议假设与编写/审查修复测试；禁止重试 prepare、Gate A `run`、当前
+  arm/per-query 指标生成、`summarize` 和训练
 
 ## 动机
 
@@ -83,6 +83,74 @@ Gate A 不训练，只使用 4090 上现存的三枚 PSG-only checkpoint：
 
 Gate B 的代码、配置和资源方案必须另行 PASS，Gate A 通过本身不授权训练。
 
+## Signed raw heatmap 修订：因果输入与统计视图分层
+
+prepare A01 证明“scene heatmap 必须逐元素非负”的原假设与真实历史数据不一致。只读
+追溯定位到训练 row 904、图像 `0093_c2_f0068896.jpg`：该图有 6 个有效人，六份 pose
+NPZ 保存的是 ViTPose-Huge MSE head 的 raw output activation，经 float16 落盘；每个人
+原始 heatmap 都含有限负响应。`_place_heatmap` 和两次 bilinear resize 只传播这些值，
+6 人 max-merge 仅在六人同一位置均为负时留下 scene 负值。A01 partial train cache 只有
+rows `0..1023` 已 materialize；这 `53,477,376` 个元素中有 10 个负值，均在 row 904
+的 0-based channel 6/10，最小值 `-7.5766431e-05`。mmap 未写尾部是零页，因此该比例
+不得外推到完整 train split。这不是文件损坏，也不能被事后称为概率或强制截断。
+
+修订冻结为 C+ 双视图，禁止混淆：
+
+1. `Hraw` 是唯一因果输入。cache、manifest、correct、shuffle、group corruption 与
+   model override 必须逐值保存/传递原始 merged scene；PSG 继续消费
+   `sigmoid(bilinear_resize(Hraw))`。禁止在 model 前 clamp，禁止改变历史 descriptor。
+2. `Hpos = clamp_min(Hraw, 0)` 只是统计/几何解释视图。95-D nuisance 中的 L1、peak、
+   entropy、support、bbox 与 matching cost 只在局部只读 `Hpos` 上计算；不得原地修改
+   `Hraw`。
+3. 每个 split 的 premetric manifest 必须冻结：raw min、负元素数、负 sample 数、负
+   sample-channel 数、`negative_channel_indices_0based`，以及负绝对质量
+   `Mneg(Hraw)=sum(clamp(-Hraw,0))`。这些计数只能在 split 全部 materialize 后按数据集
+   index `0..N-1` 聚合，不得把 mmap 未写零页计入分母。transform 名固定为
+   `positive_part_v1`。其中 `negative_channel_indices_0based` 唯一定义为该 split 所有
+   sample 中出现过负元素的 channel index 的 sorted unique union，按严格升序编码为
+   JSON integer array；禁止写成逐 sample 列表、集合字符串或未排序遍历结果。整个
+   premetric payload 继续使用 `protocol.canonical_json_bytes`（`sort_keys=True`、
+   `separators=(",", ":")`）序列化并参与 execution SHA，resume 必须逐项复算一致。
+4. audit override 接受 finite signed float32 raw tensor，仍严格保留 shape/device/
+   contiguous 与 audit-only 三态门禁；signed legacy 与 signed override 的 descriptor、
+   hook tensor 必须逐值相等。
+5. intervention 的 relative-L1 继续直接比较真实 actual PSG input；质心位移的质量改为
+   `(actual - 0.5).clamp_min(0)`。在旧 nonnegative raw 假设下这与原定义完全等价，在
+   signed raw 下则避免负质量质心。
+6. centroid secondary 在 `Hpos` 上拟合 bbox/target/质心与 entropy，但输出必须是同一
+   `(dx,dy)` 对 `Hraw` 的 zero-padded 纯平移。必须验证
+   `clamp(translate(Hraw),0) == translate(Hpos)`，positive L1/peak/entropy 仍过原门槛；
+   若输入 `Mneg>0`，输出/输入负绝对质量比也必须在 `[0.95,1.05]`；若输入 `Mneg=0`，
+   输出必须仍为 0，不定义 0/0 ratio。任一失败只令 centroid
+   `INVALID_SECONDARY`，不得影响 primary GO/NO-GO。
+7. bypass 仍为显式 `None`；不得以 clamp、zero 或 Hpos 冒充 bypass/correct/control。
+
+actual-space provenance 对 active inventory `s3_b0,s3_b1` 分别冻结；每个 block 使用其
+真实 `(H,W)`（当前二者均为 `(12,4)`），按上述 split sample order 依次计算
+`Sraw=sigmoid(bilinear(Hraw))`、`Spos=sigmoid(bilinear(Hpos))` 与
+`Delta=Sraw-Spos`。每个 sample tensor 必须转为 C-contiguous little-endian float32，按
+sample 顺序把 bytes streaming 输入 SHA256；manifest 分别保存 `Sraw/Spos/Delta` SHA、
+shape、dtype、element count，以及 `Delta` 的 max-abs、sum-abs、mean-abs。相同 shape 的
+两个 PSG block 三组 SHA 与差异统计必须完全一致。上述字段属于 canonical premetric
+payload，resume 时任何字段漂移都由 execution SHA 与逐项复算共同拒绝。
+
+该修订是对审计协议与真实历史输入契约的纠错，不是性能方法改动。A01 及 partial cache
+永久保留且不可 resume；只有修订通过独立静态审查、formal 与全部 regression 在本地和
+历史远端环境从头 PASS 后，才可为新 exact commit 申请全新 A02 prepare-only 授权。
+
+修订最少测试：
+
+1. person count `<6` 与 `=6` 的 synthetic signed merge，证明历史 merge 未改；
+2. signed raw nuisance 等于显式 Hpos nuisance，且 raw tensor/SHA 不变；全负无 positive
+   support 仍 fail closed；
+3. sign manifest 字段、actual-space SHA/差异与 resume drift；
+4. signed override 接受、nonfinite 等旧门禁拒绝，legacy/override exact parity；
+5. real Swin formal seam 使用含负 raw，验证事件顺序、actual sigmoid input、state SHA
+   与 bypass；
+6. signed actual 的 positive-mass centroid：双边无质量为 0、单边有质量为 1；
+7. centroid raw translation/Hpos commutation 与正负质量保存，失败只作 secondary INVALID；
+8. correct start/end、flat parity、raw cache provenance、shuffle/group raw donor provenance。
+
 ## Gate A 干预臂
 
 所有臂固定相同 RGB、checkpoint、resize、descriptor 定义/归一化和距离计算，只改变
@@ -137,7 +205,9 @@ query 与 gallery 分别生成 20 份固定、无 fixed point、严格一一的 
    log(w/h)`、四边 border-touch indicator 和 crop degree，共 10 维；这里 `H_hm,W_hm`
    是 heatmap 高宽，crop degree 是四个 border-touch indicator 的均值。
 
-所有 heatmap 值必须非负；零 channel 的 L1、peak、entropy、support 均定义为 0；
+`Hraw` 只要求 finite，可以为 signed；本小节所有统计中的 `H` 唯一指
+`Hpos=clamp_min(Hraw,0)`，所以必须非负。零 Hpos channel 的 L1、peak、entropy、support
+均定义为 0；
 normalized entropy 唯一定义为
 
 \[
@@ -221,9 +291,10 @@ D_{rel}(i,j)=\frac{\|S(H_i)-S(H_j)\|_1}
 {0.5(\|S(H_i)-0.5\|_1+\|S(H_j)-0.5\|_1)+10^{-12}}.
 \]
 
-另对 `R(H)=S(H)-0.5` 的 17 个 channel 计算 centroid displacement，并除以 block 网格
-对角线。每个 block/channel 唯一以 `mass=sum R >1e-8` 且 `peak(R)>1e-6` 判为有效，
-centroid 权重为 `R/mass`；两边有效则用 centroid 欧氏距离，仅一边有效则记为 1，
+另对 `Rplus(H)=clamp_min(S(H)-0.5,0)` 的 17 个 channel 计算 centroid displacement，
+并除以 block 网格对角线。每个 block/channel 唯一以 `mass=sum Rplus >1e-8` 且
+`peak(Rplus)>1e-6` 判为有效，centroid 权重为 `Rplus/mass`；两边有效则用 centroid
+欧氏距离，仅一边有效则记为 1，
 两边均无响应则记为 0，最后对 17 channels 等权平均。每份 query map 与 gallery map
 分别要求：全部 sample
 tensor content SHA 不同、`median(D_rel)>=0.10`、`P10(D_rel)>=0.01`、median normalized
@@ -240,33 +311,43 @@ centroid displacement `>=0.03`。两个 block 若 shape 相同，审计值必须
 
 唯一算法固定如下：
 
-1. 用训练集 deterministic、无增强的原 `_prepare_pose` scene heatmap 拟合；
+1. 用训练集 deterministic、无增强的原 `_prepare_pose` 得到 `Hraw`，仅以其派生的
+   `Hpos` 拟合几何；
    训练集与 query/gallery 的 RGB path、RGB content SHA、pose path 和 pose content SHA
    必须完全无交集，否则该 secondary arm `INVALID`；
-2. joint channel 有效条件始终统一为 L1 `>1e-8` 且 peak `>1e-6`；scene bbox 定义为所有
+2. joint channel 有效条件始终在 `Hpos` 上统一为 L1 `>1e-8` 且 peak `>1e-6`；scene
+   bbox 定义为所有
    有效 channels 中大于各自 `0.10 × peak` 的 support union；有效 channel 少于 2 个
-   时：0 个有效 channel 必须输出原 all-zero scene；恰有 1 个有效 channel 则以该
+   时：0 个有效 channel 必须逐值输出原 `Hraw` scene（其 `Hpos` 虽全零，但 `Hraw`
+   可能含有限负值，禁止造出 all-zero tensor）；恰有 1 个有效 channel 则以该
    channel support 作为 scene bbox，并按该 joint 的训练集 median 平移；任何非零但
    不满足有效谓词的 weak channel、空 union、或缺失训练 median 都使整个 arm `INVALID`；
-3. 对每个有效 channel 计算 heatmap centroid，在 scene bbox 中归一化；训练集
+3. 对每个有效 Hpos channel 计算 heatmap centroid，在 scene bbox 中归一化；训练集
    centroid target 是该 joint 有效样本 normalized centroid 的逐坐标 median；
-4. 测试时以测试 scene 自身 bbox 恢复目标 centroid，只对原 channel 做 zero-padded
-   integer translation；整数取整固定为 half-away-from-zero。禁止 wrap-around、插值
+4. 测试时以测试 Hpos scene bbox 恢复目标 centroid；用 Hpos 得到唯一整数位移后，只对
+   对应 `Hraw` 原 channel 做同一 zero-padded integer translation，输出仍为 signed raw。
+   整数取整固定为 half-away-from-zero。禁止 wrap-around、插值
    变形或重新生成 Gaussian；target 与实际输出 centroid 的误差在平移和裁剪后计算，
    必须 `<=0.75` heatmap pixel；
-5. 该操作只平移 anchor 自身 channel，因此原 L1、peak、shape 和零通道应保持；任何
+5. 必须逐值验证 `clamp_min(translate(Hraw),0)==translate(Hpos)`；positive L1、peak、
+   entropy 与 shape 应保持。负绝对质量按上文零质量规则审计；任何
    边界裁剪都由下述门禁 fail closed，不能逐样本修补或删除。
 
-对 correct 中不满足统一有效谓词的 channel，只有原 all-zero channel 可保持全零；
+对 correct Hpos 中不满足统一有效谓词的 channel，只有 Hpos all-zero channel 可保持
+对应 Hraw 原样；
 其它情况已按上文 fail closed。所有有效 channel 要求：
 
 - 100% 数值 finite；
-- 100% 的 sample-channel L1 ratio 位于 `[0.95,1.05]`；
-- 100% 的 sample-channel peak ratio 位于 `[0.95,1.05]`；
-- normalized spatial entropy 绝对差 100% 不超过 `0.01`；
+- 100% 的 sample-channel positive L1 ratio 位于 `[0.95,1.05]`；
+- 100% 的 sample-channel positive peak ratio 位于 `[0.95,1.05]`；
+- Hpos normalized spatial entropy 绝对差 100% 不超过 `0.01`；
+- 100% 的有负质量 sample-channel 满足 negative absolute mass ratio `[0.95,1.05]`；
+  输入负质量为 0 的 channel 输出负质量必须也为 0；
 - 不允许删除违规样本；任一比例门槛失败，整个 centroid arm `INVALID`。
 
-这些审计直接发生在 final PSG input 上。若边界导致任何非零 channel 超门槛，整个
+几何/能量审计发生在 Hpos，实际 arm tensor 是 translated Hraw；runner 还必须 hash
+translated Hraw 经过真实 resize+sigmoid 的 actual PSG input。若边界导致任何非零
+channel 超门槛，整个
 secondary centroid arm `INVALID`，但不使 primary Gate A 失效；只能报告该 secondary
 control 不可用，禁止据此修改 primary 结论。
 
@@ -364,6 +445,9 @@ atomic-published 的 arm 只读复用，残留临时 arm 目录必须删除后�
    1,000 baseline seeds、candidate edges、mappings 和 centroid 参数 SHA；
 5. Python/PyTorch/CUDA/cuDNN/GPU、determinism flags 与 package lock；
 6. checkpoint 中 PSG canonical keys 与兼容 alias keys 的 shape、内容 SHA 和逐值一致性。
+7. 每个 split 的 signed raw audit、`positive_part_v1`、两个 active PSG block 的
+   Sraw/Spos/Delta streaming SHA、shape/dtype/count 与差异统计；它们全部进入 canonical
+   premetric payload 和 resume drift 复算。
 
 每个 arm 只可写临时目录，全部文件 fsync、SHA 与断言 PASS 后 atomic rename；失败保留
 失败 manifest 但不得发布半成品。恢复前必须逐项重算上述 SHA，任何路径、顺序、shape、

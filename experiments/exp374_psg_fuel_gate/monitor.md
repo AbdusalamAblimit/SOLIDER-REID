@@ -454,3 +454,74 @@ prepare 必须使用全新 output root、lock、PID 和 log，禁止 resume 本�
 4. 命令只含 `prepare`，看到 `PREPARED_ONLY` 后 wrapper 退出；
 5. 随后只读审计 20 mappings、Hamming、artifact hash、schedule=492、剩余空间至少
    80 GiB，并确认无 arms/results/current metrics；单独签字后才讨论 Gate A run。
+
+## 2026-07-15 — prepare A01 在 scene 非负门禁安全失败
+
+经最终 command 红队 `PASS_FOR_PREPARE_COMMAND` 后，唯一 attempt
+`bffb8be_a01_20260715` 启动：
+
+- output root：`/home/afr/exp374_gate_a_bffb8be_a01_20260715`；
+- wrapper/launcher SHA：
+  `c73425540c88d924ffd68bd170d5eda96ae96b771c6b15691d3750d79f15e809` /
+  `9d704ba13de47ce9fa93b3c6d4b26ce3ca47486b954297cd6d59405d00149c93`；
+- wrapper PID：`4188179`；
+- 启动前可用空间：`230,159,323,136 B`；
+- outer lock、PID、log、status 全部为全新 create-exclusive 证据。
+
+wrapper 退出码为 1，结束时间 `2026-07-15T01:57:10Z`。日志显示三 split pose index
+成功加载后，在训练 split `cache_split()` 调用 `summarize_scene()` 时触发：
+
+```text
+E_SCENE_NEGATIVE: heatmap
+```
+
+失败发生在 canonical execution 目录与 `PREPARED.json` 创建前：
+
+- output root 内只有 `.exp374_prepare_zo18jmvf` staging，物理占用约 205 MiB；
+- staging 含 partial train cache 与 `FAILED.json`；
+- 没有 `gate_a_*` canonical dir、PREPARED、arms、results 或 COMPLETE；
+- wrapper/Python 均已退出，GPU 回到 2 MiB/0%。
+
+因此 A01 是不可报告的 prepare 失败，不产生 Gate-A 科学结果。该 attempt、lock、PID、
+log、status 和 partial staging 必须保留，禁止删除后同名重跑。当前正式回退为
+`NO_GO_FOR_PREPARE`：只允许量化负值大小/频率、追溯 raw pose 与 resize/merge 来源，
+并审查 nonnegative 假设是否与实际 PSG 输入相容；在修复、回归测试、双端全量复验和
+新的独立授权前，禁止任何 A02 或 Gate A run。
+
+## 2026-07-15 — signed raw 只读溯源完成
+
+A01 partial train memmap 全阵列只读扫描结果：
+
+- shape=`(15618,17,96,32)`、float32；tensor data 逻辑字节数为
+  `3,262,537,728 B`，`.npy` 文件另含 128 B header；
+- A01 在前三批完成后预写当前 batch，只有 rows `0..1023` 已 materialize，其余 mmap
+  页是未写零值；已物化 `53,477,376` 个元素中有 10 个负值，占约 `1.86995e-7`，
+  **不得外推为完整训练集频率**；
+- 全部集中在 row 904、0-based channel 6/10；min=`-7.576643110951409e-05`，负值中位数
+  `-1.9857e-05`，最接近 0 为 `-3.3474e-06`；
+- row 904 对应 `data/occluded_duke/bounding_box_train/0093_c2_f0068896.jpg`，有 6 人。
+
+六份 raw pose NPZ 均 finite，但各自已有 5,692–20,692 个负响应，raw min 约
+`-0.00466` 至 `-0.01169`；channel 6/10 也各有数百至数千负值。提取脚本保存的是
+ViTPose-Huge hook 捕获的 MSE heatmap head raw output，并以 float16 落盘。因此负值是
+真实历史输入的有限低响应；bilinear 只传播/平滑，6 人 max-merge 只在 6/6 同负时暴露，
+不是插值凭空产生，也不是数据损坏。
+
+当前修复裁决冻结为 C+：`Hraw` 保留为 PSG 因果输入，`Hpos=clamp_min(Hraw,0)` 仅作
+nuisance/support/entropy/bbox/centroid 几何视图。全量或阈值 clamp raw、直接用 signed
+质量算 entropy/centroid、以 Hpos 替代 correct arm 均禁止。完整语义与测试门禁已写入
+`design.md`；下一步只做独立静态设计审查，仍为 `NO_GO_FOR_PREPARE`。
+
+## 2026-07-15 — C+ signed-raw 设计双重复审 PASS
+
+两路独立只读红队均核对同一份 `design.md`：
+
+- SHA256：`87fcff641a893ecbb35dc0316334566f7a2378023237710b732de916d5b80df9`；
+- 裁决：两路均为 `PASS_FOR_CODE_DESIGN`；
+- 已闭合：partial mmap 正确分母、Hpos 全零时逐值保留 Hraw、split-level sorted unique
+  负 channel payload、canonical JSON、Sraw/Spos/Delta streaming SHA、Rplus intervention
+  质心、Hpos 几何/Hraw 位移与 Mneg 零质量规则；
+- 全文未残留旧“raw 全非负”或 signed `R=S-0.5` 质量公式。
+
+该 PASS 仅授权实现代码与测试，再进入静态代码审查；不授权执行测试、A02 prepare、
+Gate A `run`、`summarize` 或训练。当前继续 `NO_GO_FOR_PREPARE`。

@@ -19,7 +19,8 @@
 - 4090 checkpoint/data/disk/GPU 资源：`PASS`
 - 4090 isolated deployment：`PASS_AT_BFFB8BE`
 - 4090 remote CPU preflight：`PASS`（20/20 formal + 87/87 regression）
-- Gate A prepare：`PASS_FOR_ONE_NEW_PREPARE_ONLY`
+- Gate A prepare：`NO_GO_AFTER_A01_E_SCENE_NEGATIVE`
+- C+ signed-raw 修复设计：`PASS_FOR_CODE_DESIGN`（两路独立红队，同一 SHA）
 - 正式 Gate A/训练：`NO_GO_FOR_EXECUTION`
 
 统计、工程与独立总红队已分别完成第三轮只读签字；该 PASS 只授权编写 audit-only
@@ -69,6 +70,21 @@ Python 3.8 环境冻结值以及 formal 20/20 + regression 87/87 均通过双端
 新 execution source 固定为 `bffb8be252b4a155ce404618362ee42f2a76b1cc`，当前只重新授权
 一次使用全新 output/lock/PID/log 的 `prepare`，仍不授权 Gate A `run` 或 `summarize`。
 
+该一次性 attempt 随后在训练 split cache 阶段触发 `E_SCENE_NEGATIVE` 并 fail closed；
+没有 canonical `gate_a_*` execution、PREPARED marker、arm/result 或 GPU 推理，wrapper
+退出码为 1，PID 已退出。该授权已消耗且 attempt 禁止复用；当前回退为 diagnosis-only，
+任何修复必须先证明不会改变 correct-arm 实际 PSG 输入或伪造非负性，再重新走静态与
+双端全量测试授权链。
+
+两路独立只读红队已对修复空间作出一致裁决：全量 clamp、阈值式 tiny-negative clamp
+都会改变历史 raw cache/actual input，直接 FAIL；把 signed raw 直接塞入原 L1/entropy/
+centroid 公式也因负质量而 FAIL。唯一可进入代码设计审查的是 C+：raw 因果输入与
+positive-part 统计视图分离，centroid 只用 Hpos 求几何但对 Hraw 做同位移，实际 PSG
+input 与 correct/shuffle/group provenance 不变。两路独立红队已对相同 design SHA
+`87fcff641a893ecbb35dc0316334566f7a2378023237710b732de916d5b80df9` 给出
+`PASS_FOR_CODE_DESIGN`。该 PASS 只授权实现代码与测试；不授权写完即执行测试，更不
+授权 A02。
+
 ## 分项裁决
 
 | 审查项 | 状态 | 裁决 |
@@ -84,7 +100,8 @@ Python 3.8 环境冻结值以及 formal 20/20 + regression 87/87 均通过双端
 | 4090 数据/磁盘/GPU | 完成 | PASS：RGB/pose 三 split 齐全，可用约 216.6 GiB，4090 无计算进程 |
 | 4090 execution source | 完成 | exact `bffb8be…` 完整 bundle 双端验签，新隔离 clone detached clean；基础 dirty repo 未修改 |
 | legacy Python 3.8 compatibility | 完成 | 两处 `removeprefix` 等价改写后，远端 Python 3.8 完整 20+85 PASS |
-| Gate A prepare | 新一次性授权 | 首次失败证据保留且禁止 resume；仅允许全新命名的一次 prepare，PREPARED_ONLY 后停 |
+| Gate A prepare | A01 安全失败，授权消耗 | `E_SCENE_NEGATIVE`；只允许诊断与修复审查，禁止重试 |
+| C+ signed-raw 设计 | 两路独立复审完成 | `PASS_FOR_CODE_DESIGN`；Hraw 因果输入、Hpos 统计视图、signed manifest 与 centroid 语义已唯一化 |
 | true bypass 语义 | 完成 | PASS：同模型传 `pose_dict=None` |
 | matched donor/centroid 实现 | formal preflight PASS | runner/protocol 静态复审、synthetic regression 与完整 N=128 matching preflight 均 PASS |
 | per-query/层级 bootstrap | 单元测试 PASS | 两 primary contrasts 的 synthetic test PASS；正式输入 preflight 未做 |
