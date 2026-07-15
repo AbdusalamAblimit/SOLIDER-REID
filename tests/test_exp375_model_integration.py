@@ -6,15 +6,19 @@ tests code/config/data-flow rather than external assets.
 """
 
 from pathlib import Path
+import sys
 
 import torch
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from config import cfg as base_cfg
 from model import make_model
 from model.pose_backbone_model import PoseBackboneModel
 
 
-ROOT = Path(__file__).resolve().parents[1]
 CONFIGS = {
     'b0': ROOT / 'configs/occluded_duke/exp375_b0.yml',
     'm0': ROOT / 'configs/occluded_duke/exp375_m0_canonical.yml',

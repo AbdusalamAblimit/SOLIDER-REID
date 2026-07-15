@@ -27,3 +27,7 @@ PRSM mechanism checks: PASS
 敏感性、双向纵翻转等变性、uniform 对 pose bitwise 不敏感及 CPU bfloat16 autocast。当前
 状态升级为 `PASS_FOR_REAL_MODEL_GPU_SMOKE`；下一步只做 4090 production
 B0/M0/P0 forward/backward/reload smoke，通过后直接启动训练。
+
+首次远端 smoke 在进入模型构造前即以 `ModuleNotFoundError: config` 退出：直接执行
+`tests/...py` 时 Python 只把 `tests/` 放入 import path。该失败未运行 forward、未产生指标，
+属于测试入口缺失。测试已显式把仓库 root 放入 `sys.path`；模块与实验机制未改动。
