@@ -46,6 +46,9 @@ class PoseBackboneModel(build_transformer):
         # short-lived context manager; ordinary inference cannot activate the
         # final-scene override accidentally.
         self._audit_scene_override_enabled = False
+        # Shared by LGPA fixed-bands and PRSM canonical controls.  It must
+        # exist even when LGPA itself is disabled.
+        self._canon_hm_cache = None
 
         # Determine which stages get pose injection
         psg_stages = list(getattr(cfg.MODEL, 'POSE_PSG_STAGES', [-1]))
@@ -272,6 +275,43 @@ class PoseBackboneModel(build_transformer):
                      self.pbsr.num_heads, self.pbsr.use_writeback,
                      self.pbsr.coupled_write, self.pbsr.supervision,
                      pbsr_params))
+
+        # PRSM: current-image pose routes RGB tokens into recurrent body-part
+        # states.  Pose never enters the candidate, read query, or output path.
+        self.use_prsm = bool(getattr(cfg.MODEL, 'POSE_PRSM', False))
+        if self.use_prsm:
+            from .modules.pose_routed_selective_memory import (
+                PoseRoutedSelectiveMemory,
+            )
+            self.prsm_pose_source = str(getattr(
+                cfg.MODEL, 'POSE_PRSM_POSE_SOURCE', 'input'))
+            if self.prsm_pose_source not in ('input', 'canonical', 'zero'):
+                raise ValueError(
+                    'POSE_PRSM_POSE_SOURCE must be input, canonical, or zero')
+            # Keep the global RNG stream paired with the no-module baseline.
+            _prsm_rng = torch.get_rng_state()
+            self.prsm = PoseRoutedSelectiveMemory(
+                feat_dim=self.in_planes,
+                state_dim=int(getattr(
+                    cfg.MODEL, 'POSE_PRSM_STATE_DIM', 128)),
+                num_parts=int(getattr(
+                    cfg.MODEL, 'POSE_PRSM_NUM_PARTS', 6)),
+                retention_init=float(getattr(
+                    cfg.MODEL, 'POSE_PRSM_RETENTION_INIT', 0.95)),
+                residual_scale_init=float(getattr(
+                    cfg.MODEL, 'POSE_PRSM_RES_SCALE_INIT', 1e-3)),
+                routing=str(getattr(
+                    cfg.MODEL, 'POSE_PRSM_ROUTING', 'parts')),
+                bidirectional=bool(getattr(
+                    cfg.MODEL, 'POSE_PRSM_BIDIRECTIONAL', True)),
+            )
+            torch.set_rng_state(_prsm_rng)
+            prsm_params = sum(p.numel() for p in self.prsm.parameters())
+            print('[PRSM] enabled: state_dim=%d, routing=%s, source=%s, '
+                  'bidirectional=%s, params=%d'
+                  % (self.prsm.state_dim, self.prsm.routing,
+                     self.prsm_pose_source, self.prsm.bidirectional,
+                     prsm_params))
 
         # CLIP-ReID-style learnable ID prompts (the WORKING CLIP mechanism, vs dead fixed part text)
         self.use_clip_id_prompt = getattr(cfg.MODEL, 'POSE_CLIP_ID_PROMPT', False)
@@ -602,6 +642,18 @@ class PoseBackboneModel(build_transformer):
 
         # Pooling
         featmap = outs[-1]  # (B, C, fH, fW)
+
+        if getattr(self, 'use_prsm', False):
+            prsm_heatmaps = scene_heatmaps
+            if self.prsm_pose_source == 'canonical':
+                prsm_heatmaps = self._canonical_heatmap(
+                    featmap.shape[0], featmap.device)
+            elif self.prsm_pose_source == 'zero':
+                prsm_heatmaps = None if scene_heatmaps is None \
+                    else torch.zeros_like(scene_heatmaps)
+            featmap, self._last_prsm_stats = self.prsm(
+                featmap, prsm_heatmaps)
+            outs[-1] = featmap
 
         # Standard GAP
         global_feat = self.base.avgpool(featmap)
