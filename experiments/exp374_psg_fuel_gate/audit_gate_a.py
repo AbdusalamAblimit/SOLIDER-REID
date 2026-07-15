@@ -1561,6 +1561,65 @@ def _remove_stale_arm_temporaries(execution_dir: Path) -> None:
             path.unlink()
 
 
+def publish_run_completion(
+    execution_dir: Path,
+    ordered_arm_ids: Sequence[str],
+) -> Tuple[Dict[str, str], Dict[str, object]]:
+    """Freeze the arm markers, then atomically publish the run marker."""
+    arm_ids = [str(arm_id) for arm_id in ordered_arm_ids]
+    require(len(set(arm_ids)) == len(arm_ids),
+            "E_RUN_ARM_MANIFEST", "duplicate arm ids")
+    arms_root = execution_dir / "arms"
+    arm_manifest: Dict[str, str] = {}
+    for arm_id in arm_ids:
+        marker = arms_root / arm_id / "COMPLETE.json"
+        require(marker.is_file(), "E_RUN_ARM_MANIFEST", arm_id)
+        arm_manifest[arm_id] = sha256_file(marker)
+    run_payload: Dict[str, object] = {
+        "status": "PASS",
+        "published_arms": len(arm_ids),
+        "metrics_summarized": False,
+        "arm_manifest_sha256": sha256_bytes(canonical_json_bytes(arm_manifest)),
+    }
+    atomic_write_json(execution_dir / "RUN_ARM_MANIFEST.json", arm_manifest)
+    atomic_write_json(execution_dir / "RUN_COMPLETE.json", run_payload)
+    return arm_manifest, run_payload
+
+
+def verify_run_completion(
+    execution_dir: Path,
+    ordered_arm_ids: Sequence[str],
+) -> Dict[str, str]:
+    """Verify both levels of the frozen run-completion marker chain."""
+    arm_ids = [str(arm_id) for arm_id in ordered_arm_ids]
+    require(len(set(arm_ids)) == len(arm_ids),
+            "E_RUN_ARM_MANIFEST", "duplicate arm ids")
+    run_marker = execution_dir / "RUN_COMPLETE.json"
+    require(run_marker.is_file(), "E_RUN_INCOMPLETE", str(run_marker))
+    arm_manifest_path = execution_dir / "RUN_ARM_MANIFEST.json"
+    require(arm_manifest_path.is_file(),
+            "E_RUN_INCOMPLETE", str(arm_manifest_path))
+    arm_manifest = json.loads(arm_manifest_path.read_text(encoding="utf-8"))
+    require(isinstance(arm_manifest, dict),
+            "E_RUN_ARM_MANIFEST", "manifest type")
+    run_payload = json.loads(run_marker.read_text(encoding="utf-8"))
+    require(run_payload == {
+        "status": "PASS",
+        "published_arms": len(arm_ids),
+        "metrics_summarized": False,
+        "arm_manifest_sha256": sha256_bytes(canonical_json_bytes(arm_manifest)),
+    }, "E_RUN_INCOMPLETE", str(run_payload))
+    require(set(arm_manifest) == set(arm_ids),
+            "E_RUN_ARM_MANIFEST", "arm ids")
+    arms_root = execution_dir / "arms"
+    for arm_id, expected_sha in arm_manifest.items():
+        marker = arms_root / arm_id / "COMPLETE.json"
+        require(marker.is_file(), "E_RUN_ARM_MANIFEST", arm_id)
+        require(sha256_file(marker) == expected_sha,
+                "E_RUN_ARM_MANIFEST", arm_id)
+    return {str(key): str(value) for key, value in arm_manifest.items()}
+
+
 def run_phase(args: argparse.Namespace) -> None:
     os.chdir(ROOT)
     execution_dir = Path(args.execution_dir).resolve()
@@ -1711,18 +1770,10 @@ def run_phase(args: argparse.Namespace) -> None:
                     "E_ARM_MISSING", schedule_arm_id(row))
         verify_runtime_datasets(split_datasets, prepared)
         verify_frozen_runtime(manifest, device)
-        arm_manifest = {
-            schedule_arm_id(row): sha256_file(
-                arms_root / schedule_arm_id(row) / "COMPLETE.json")
-            for row in expected_schedule
-        }
-        atomic_write_json(execution_dir / "RUN_ARM_MANIFEST.json", arm_manifest)
-        atomic_write_json(execution_dir / "RUN_COMPLETE.json", {
-            "status": "PASS",
-            "published_arms": 492,
-            "metrics_summarized": False,
-            "arm_manifest_sha256": sha256_bytes(canonical_json_bytes(arm_manifest)),
-        })
+        publish_run_completion(
+            execution_dir,
+            [schedule_arm_id(row) for row in expected_schedule],
+        )
 
 
 def load_per_query(
@@ -1768,6 +1819,55 @@ def verify_results_directory(results_dir: Path) -> Dict[str, object]:
     return marker
 
 
+def publish_or_verify_results(
+    execution_dir: Path,
+    results: Mapping[str, object],
+    aggregate_arrays: Mapping[str, np.ndarray],
+) -> Dict[str, str]:
+    """Publish results once, or verify an identical crash-surviving publish."""
+    results_dir = execution_dir / "results"
+    temporary = execution_dir / ".results.tmp"
+    if temporary.exists():
+        if temporary.is_dir():
+            shutil.rmtree(temporary)
+        else:
+            temporary.unlink()
+    if results_dir.exists():
+        results_marker = verify_results_directory(results_dir)
+        frozen_results = json.loads(
+            (results_dir / "gate_a_results.json").read_text(encoding="utf-8"))
+        normalized_results = json.loads(canonical_json_bytes(results))
+        require(frozen_results == normalized_results,
+                "E_RESULTS_DRIFT", "gate_a_results.json")
+        with np.load(
+            results_dir / "primary_query_aggregates.npz",
+            allow_pickle=False,
+        ) as payload:
+            require(set(payload.files) == set(aggregate_arrays),
+                    "E_RESULTS_DRIFT", "aggregate keys")
+            for key, expected in aggregate_arrays.items():
+                require(np.array_equal(payload[key], expected),
+                        "E_RESULTS_DRIFT", key)
+        return {
+            str(key): str(value)
+            for key, value in results_marker["artifact_sha256"].items()
+        }
+
+    temporary.mkdir(exist_ok=False)
+    atomic_write_json(temporary / "gate_a_results.json", results)
+    np.savez(temporary / "primary_query_aggregates.npz", **dict(aggregate_arrays))
+    result_hashes = arm_artifact_hashes(temporary)
+    atomic_write_json(temporary / "COMPLETE.json", {
+        "status": "PASS",
+        "artifact_sha256": result_hashes,
+    })
+    publish_directory(temporary, results_dir)
+    published_marker = verify_results_directory(results_dir)
+    require(published_marker["artifact_sha256"] == result_hashes,
+            "E_RESULTS_HASH", str(results_dir))
+    return result_hashes
+
+
 def archive_transient_state(execution_dir: Path) -> None:
     candidates = [
         path for path in (execution_dir / "FAILED.json", execution_dir / "RUN_PROGRESS.json")
@@ -1800,28 +1900,15 @@ def summarize_phase(args: argparse.Namespace) -> None:
         local_cfg, verified_specs = verify_frozen_runtime(manifest, device)
         _dataset, split_datasets = direct_datasets(local_cfg)
         verify_runtime_datasets(split_datasets, execution_dir / "prepared")
-        run_marker = execution_dir / "RUN_COMPLETE.json"
-        require(run_marker.is_file(), "E_RUN_INCOMPLETE", str(run_marker))
-        run_payload = json.loads(run_marker.read_text(encoding="utf-8"))
-        arm_manifest_path = execution_dir / "RUN_ARM_MANIFEST.json"
-        require(arm_manifest_path.is_file(), "E_RUN_INCOMPLETE", str(arm_manifest_path))
-        arm_manifest = json.loads(arm_manifest_path.read_text(encoding="utf-8"))
-        require(run_payload == {
-            "status": "PASS",
-            "published_arms": 492,
-            "metrics_summarized": False,
-            "arm_manifest_sha256": sha256_bytes(canonical_json_bytes(arm_manifest)),
-        }, "E_RUN_INCOMPLETE", str(run_payload))
         schedule = manifest["schedule"]
         require(schedule == core_schedule([
             int(spec["seed"]) for spec in manifest["checkpoints"]
         ]), "E_SCHEDULE_DRIFT", "summarize")
         arms_root = execution_dir / "arms"
-        require(set(arm_manifest) == {schedule_arm_id(row) for row in schedule},
-                "E_RUN_ARM_MANIFEST", "arm ids")
-        for arm_id, expected_sha in arm_manifest.items():
-            require(sha256_file(arms_root / arm_id / "COMPLETE.json") == expected_sha,
-                    "E_RUN_ARM_MANIFEST", arm_id)
+        verify_run_completion(
+            execution_dir,
+            [schedule_arm_id(row) for row in schedule],
+        )
         num_query = int(manifest["dataset"]["num_query"])
         scenes = PreparedSceneAccess(execution_dir / "prepared", num_query)
         query_metadata = json.loads(
@@ -2007,8 +2094,6 @@ def summarize_phase(args: argparse.Namespace) -> None:
                 "GO 只授权 Gate B 设计审查，不授权新机制训练。"
             ),
         }
-        results_dir = execution_dir / "results"
-        temporary = execution_dir / ".results.tmp"
         aggregate_arrays = {}
         for seed in seeds:
             aggregate_arrays[f"seed_{seed}_correct_AP"] = correct_ap[seed]
@@ -2017,38 +2102,8 @@ def summarize_phase(args: argparse.Namespace) -> None:
             aggregate_arrays[f"seed_{seed}_shuffle_R1"] = control_r1["shuffle"][seed]
             aggregate_arrays[f"seed_{seed}_bypass_AP"] = control_ap["bypass"][seed]
             aggregate_arrays[f"seed_{seed}_bypass_R1"] = control_r1["bypass"][seed]
-        if temporary.exists():
-            if temporary.is_dir():
-                shutil.rmtree(temporary)
-            else:
-                temporary.unlink()
-        if results_dir.exists():
-            results_marker = verify_results_directory(results_dir)
-            frozen_results = json.loads(
-                (results_dir / "gate_a_results.json").read_text(encoding="utf-8"))
-            normalized_results = json.loads(canonical_json_bytes(results))
-            require(frozen_results == normalized_results,
-                    "E_RESULTS_DRIFT", "gate_a_results.json")
-            with np.load(results_dir / "primary_query_aggregates.npz", allow_pickle=False) as payload:
-                require(set(payload.files) == set(aggregate_arrays),
-                        "E_RESULTS_DRIFT", "aggregate keys")
-                for key, expected in aggregate_arrays.items():
-                    require(np.array_equal(payload[key], expected),
-                            "E_RESULTS_DRIFT", key)
-            result_hashes = results_marker["artifact_sha256"]
-        else:
-            temporary.mkdir(exist_ok=False)
-            atomic_write_json(temporary / "gate_a_results.json", results)
-            np.savez(temporary / "primary_query_aggregates.npz", **aggregate_arrays)
-            result_hashes = arm_artifact_hashes(temporary)
-            atomic_write_json(temporary / "COMPLETE.json", {
-                "status": "PASS",
-                "artifact_sha256": result_hashes,
-            })
-            publish_directory(temporary, results_dir)
-            published_marker = verify_results_directory(results_dir)
-            require(published_marker["artifact_sha256"] == result_hashes,
-                    "E_RESULTS_HASH", str(results_dir))
+        result_hashes = publish_or_verify_results(
+            execution_dir, results, aggregate_arrays)
         archive_transient_state(execution_dir)
         atomic_write_json(execution_dir / "COMPLETE", {
             "status": "COMPLETE",

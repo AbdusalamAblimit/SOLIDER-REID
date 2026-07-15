@@ -2,13 +2,14 @@
 
 ## 当前状态
 
-- 阶段：`UNIT_TESTS_PASS_PREFLIGHT_REVIEW_REQUIRED`
+- 阶段：`FORMAL_PREFLIGHT_PASS_RESOURCE_REVIEW_REQUIRED`
 - 训练：未启动
 - 正式评测：未启动
-- 代码实现：audit-only runner、协议层、模型三态 seam 已编写；85 个纯 CPU/synthetic tests 全部 PASS
+- 代码实现：audit-only runner、协议层、模型三态 seam 已编写；20 个 formal preflight
+  tests 与原 85 个纯 CPU/synthetic regression tests 全部 PASS
 - GPU：未占用
-- 当前执行许可：允许编写并静态审查 formal preflight；在 preflight 单独签字前，仍禁止
-  prepare、真实 checkpoint/data preflight、推理、正式评测或训练
+- 当前执行许可：只允许进行 4090 真实资产、磁盘、进程、GPU 与预计资源的只读复审；
+  仍禁止 prepare、读取 checkpoint 内容或 ReID 指标、GPU 推理、正式 Gate A 评测或训练
 
 ## 动机
 

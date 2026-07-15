@@ -162,3 +162,50 @@ centroid 边界、final-scene override、R1 聚合、反向 NO-GO、manifest/恢
   checkpoint 加载、GPU 推理、正式评测或训练；
 - 当前状态升级为 `UNIT_TESTS_PASS_PREFLIGHT_REVIEW_REQUIRED`：允许编写和静态审查
   formal preflight，但 Gate A 继续 `NO_GO_FOR_EXECUTION`。
+
+## 2026-07-15 — Formal preflight 静态审查 PASS
+
+- production publication state machine 已从 runner 主流程中提取为可直接审计的
+  `publish_run_completion`、`verify_run_completion` 与 `publish_or_verify_results`；
+- production runner 冻结 SHA：
+  - `audit_gate_a.py`：`6882e96886d4319c3760e7efc846a1d1a90c0b05615231862572cbcfc1192fda`；
+- 三项 formal preflight 冻结 SHA：
+  - state machine：`1240df696a93a0cf875fa2341da8d5979a859755357a6635b2a2f966fcc010cf`；
+  - complete matching protocol：`4a80835b09163d2fb05c707ad374d70fa4ada4c34faf8ba81b28ced6787db7f6`；
+  - real Swin seam：`c96e6b41661a640132e435d35a2db7030f33b5abeebc5d39eb91a1c4f98ede98`；
+- protocol、state-machine 与 real-Swin 三路均完成自审和独立交叉静态审查，结论均为
+  `PASS_FOR_PREFLIGHT_EXECUTION`；AST、focused Ruff、whitespace 检查均 PASS；
+- 当前仅授权在独立 CPU 进程中顺序执行上述三项 preflight。protocol 与 Swin 使用
+  外部 300 秒 timeout；Swin 进程启动前固定 OMP/MKL 各 4 线程；
+- 正式 Gate A 仍为 `NO_GO_FOR_EXECUTION`：禁止读取真实 checkpoint/data、GPU 推理、
+  正式评测与训练。任一 preflight 失败只修该路径并重新静态审查。
+
+## 2026-07-15 — Formal preflight 20/20 与 regression 85/85 PASS
+
+三项 formal preflight 均在独立 CPU 进程、外部 300 秒 timeout 下按冻结 SHA 原样执行：
+
+- publication state machine：18/18 PASS；
+- complete matching protocol：1/1 PASS，固定 N=128、Hall `selected_k=127`、1,000
+  baseline 与 20 份 Gumbel min-cost mapping 完整执行；
+- real Swin seam：1/1 PASS，CPU batch 1、384×128、OMP/MKL 各 4 线程；未加载
+  checkpoint/data，未访问 CUDA/MPS。
+
+production runner 重构后又原样重跑三组 regression：
+
+- `test_protocol.py`：14/14 PASS；
+- `test_model_audit_seam_cpu.py`：37/37 PASS；
+- `test_audit_runner.py`：34/34 PASS，另 5 个 subtests PASS。
+
+六份 JUnit 均位于 Git 外 `remote_artifacts/exp374_formal_preflight_20260715/`：
+
+- `state_machine.xml`：`b90b6045b7aa1e323a22ae096af315ba2d64627a35637afc9b87b3e80f4a2c5e`；
+- `protocol.xml`：`f3dca226e49fa523b2e29fdf0c0c9690e4facff597707dd71ec203140c9f427a`；
+- `swin.xml`：`61436312bbea33ee75d6270ef953ef97016423816060da2b3b3efa7075f0c9d3`；
+- `regression_protocol.xml`：`b104dfcc9a2fe0d1d34dcdc44ed3f64c6f688b01948ac2408bb29fdbb25d2c3e`；
+- `regression_seam.xml`：`1a23bf03a592a1ebdb9e7d67455a47f9236f3b67d6d5ee1882e13545f9012786`；
+- `regression_runner.xml`：`eb1a459088e2fdb0f0e7725330f024c4ac89edb3aeefd7cfe5d4ef08b5da647f`。
+
+执行后 production/test SHA 与审签值完全一致。当前仅升级为
+`FORMAL_PREFLIGHT_PASS_RESOURCE_REVIEW_REQUIRED`；正式 Gate A 继续
+`NO_GO_FOR_EXECUTION`。下一步只做 4090 真实资产、磁盘、进程、GPU 与预计资源的
+只读复审，禁止 prepare、读取 checkpoint 内容/指标、GPU 推理、正式评测或训练。

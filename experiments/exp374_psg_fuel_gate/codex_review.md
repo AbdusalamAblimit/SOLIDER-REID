@@ -15,13 +15,18 @@
 
 - 设计：`PASS_FOR_AUDIT_SCRIPT_DESIGN`
 - unit/synthetic tests：`PASS`（85/85）
+- formal preflight：`PASS`（20/20）
 - 正式 Gate A/训练：`NO_GO_FOR_EXECUTION`
 
 统计、工程与独立总红队已分别完成第三轮只读签字；该 PASS 只授权编写 audit-only
 脚本。当前 audit-only runner、协议层、模型三态 seam，以及对应的纯 CPU/synthetic
 测试文件均已完成多路静态审查；冻结 SHA 对应的 85 个纯 CPU/synthetic tests 已全部
-PASS。checkpoint provenance 也只能支持 legacy screen，且 formal preflight 尚未审签，
-因此当前仍禁止 prepare、真实资产 preflight、训练、正式评测或用旧 flag 拼出近似干预。
+PASS。三项 formal preflight 也已分别完成自审与独立交叉静态审查，并在独立 CPU
+进程中按冻结 SHA全部 PASS；production runner 重构后，原 85 个 regression tests 亦
+原样重跑全 PASS。checkpoint provenance 仍只能支持 legacy screen；在完成 4090 真实
+资产与资源只读复审、并把总裁决显式升级为 `PASS_FOR_LEGACY_GATE_A` 前，仍禁止
+prepare、读取真实 checkpoint/data 或指标、GPU 推理、训练、正式评测或用旧 flag
+拼出近似干预。
 
 ## 分项裁决
 
@@ -36,9 +41,11 @@ PASS。checkpoint provenance 也只能支持 legacy screen，且 formal prefligh
 | checkpoint 文件完整性 | 完成 | PASS |
 | exact execution provenance | 完成 | FAIL：目录复用、文档与当前 checkpoint 日志错代、无 Git SHA |
 | true bypass 语义 | 完成 | PASS：同模型传 `pose_dict=None` |
-| matched donor/centroid 实现 | 单元测试 PASS | runner/protocol 静态复审与 synthetic test 均 PASS；formal preflight 未做 |
+| matched donor/centroid 实现 | formal preflight PASS | runner/protocol 静态复审、synthetic regression 与完整 N=128 matching preflight 均 PASS |
 | per-query/层级 bootstrap | 单元测试 PASS | 两 primary contrasts 的 synthetic test PASS；正式输入 preflight 未做 |
-| 资源安全 | 设计完成 | 492 passes、4.25–4.5h、矩阵 hash 后释放、80GB 门槛；执行 preflight 未做 |
+| publication state machine | formal preflight PASS | 18/18：execution lock、arm/run/results 原子发布、哈希恢复与语义漂移拒绝均通过 |
+| 真实 Swin seam | formal preflight PASS | 1/1：随机初始化真实 Swin-Tiny 的插入顺序、encoder 输入、bypass 与状态不变性均通过 |
+| 资源安全 | 设计完成 | 492 passes、4.25–4.5h、矩阵 hash 后释放、80GB 门槛；正式资源 preflight 未做 |
 | 不确定度约束联合 transport 数学对象 | 未完成 | BLOCKED：当前只有问题描述，没有清晰联合目标与可行域 |
 | 2026 TTPM / Pose-Guided Feature Restoration 全文边界 | 部分完成 | TTPM 已核；后一篇仍 BLOCKED，阻止新机制训练 |
 
@@ -85,9 +92,9 @@ PASS。checkpoint provenance 也只能支持 legacy screen，且 formal prefligh
 
 ## 下一轮审查顺序
 
-1. 编写 formal preflight，但不运行；
-2. 多路静态审查 preflight，覆盖真实 solver 20-map/Hamming、execution lock、完整
-   arm/hash/resume 链与真实 Swin PSG 插入链；
-3. 静态审查 PASS 后才运行 preflight；
-4. preflight 结果与资源状态再审；
-5. 总裁决改为 `PASS_FOR_LEGACY_GATE_A` 后，才允许正式评测。
+1. 只读复审 4090 上三枚冻结 checkpoint/log 路径及文件 SHA、空闲 GPU、现存进程、
+   目标卷容量和预计 492-pass 资源；不得加载 checkpoint 内容或读取 ReID 指标；
+2. 核对本地源码、测试和六份 JUnit SHA，确认没有未审签漂移；
+3. 根据真实资产/资源复审形成最终执行清单与 fail-closed 条件；
+4. 总裁决改为 `PASS_FOR_LEGACY_GATE_A` 后，才允许 prepare 与正式 legacy Gate A；
+5. Gate A 即使 GO，也只授权另写 Gate B 设计与审查，不授权新机制训练。
