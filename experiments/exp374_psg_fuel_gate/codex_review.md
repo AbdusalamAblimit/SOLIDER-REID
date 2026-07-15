@@ -17,8 +17,9 @@
 - unit/synthetic tests：`PASS`（85/85）
 - formal preflight：`PASS`（20/20）
 - 4090 checkpoint/data/disk/GPU 资源：`PASS`
-- 4090 isolated deployment：`PASS_AT_A02FEFF_THEN_COMPAT_FIX_REQUIRED`
-- 4090 remote CPU preflight：`PY38_COMPAT_FAILURE_FIXED_LOCAL_RETEST_PASS`
+- 4090 isolated deployment：`PASS_AT_F053A43`
+- 4090 remote CPU preflight：`PASS`（20/20 formal + 85/85 regression）
+- Gate A prepare：`PASS_FOR_PREPARE_ONLY`
 - 正式 Gate A/训练：`NO_GO_FOR_EXECUTION`
 
 统计、工程与独立总红队已分别完成第三轮只读签字；该 PASS 只授权编写 audit-only
@@ -46,6 +47,12 @@ PASS。兼容修复 commit=`f053a43cd520ff6f93ffff2df7ece8b358b62150`，runner
 SHA=`fc002330a4bb25711fc8caf977b30a3f29ec1f35c1be650cbf80d9a797db5b4d`。
 正式 Gate A 仍未授权，必须先在远端历史 Python 3.8/torch 1.13.1 环境从头全量复验。
 
+兼容修复已在新隔离 clone 的历史 Python 3.8.20/torch 1.13.1+cu117 环境从头复验：
+formal 20/20、regression 85/85 全部 PASS。执行后 exact HEAD、Git clean、三份 production
+与六份 tests SHA、environment freeze、GPU 空闲、无旧 marker 均 PASS。当前只升级为
+`PASS_FOR_PREPARE_ONLY`：prepare 必须由外层 `flock -n` 覆盖 staging 全生命周期，
+前置磁盘至少 100 GiB，命令不得链接 run；`PREPARED_ONLY` 后必须退出并重新审查。
+
 ## 分项裁决
 
 | 审查项 | 状态 | 裁决 |
@@ -59,8 +66,9 @@ SHA=`fc002330a4bb25711fc8caf977b30a3f29ec1f35c1be650cbf80d9a797db5b4d`。
 | checkpoint 文件完整性 | 完成 | PASS |
 | exact execution provenance | 完成 | FAIL：目录复用、文档与当前 checkpoint 日志错代、无 Git SHA |
 | 4090 数据/磁盘/GPU | 完成 | PASS：RGB/pose 三 split 齐全，可用约 216.6 GiB，4090 无计算进程 |
-| 4090 execution source | 待部署 | 基础 repo HEAD `715c020e…` 且 dirty；必须从双端验签 bundle 新建隔离 clone，禁止原地覆盖 |
-| legacy Python 3.8 compatibility | 修复待远端复验 | 两处 `removeprefix` 已作语义等价改写；静态 PASS、本机 20+85 PASS，远端必须从头重跑 |
+| 4090 execution source | 完成 | exact `f053a43…` 新隔离 clone，bundle 双端验签、tracked SHA 与 clean status 全 PASS；基础 dirty repo 未修改 |
+| legacy Python 3.8 compatibility | 完成 | 两处 `removeprefix` 等价改写后，远端 Python 3.8 完整 20+85 PASS |
+| Gate A prepare | 已授权未启动 | 必须 outer lock、单 wrapper、≥100 GiB；PREPARED_ONLY 后停，不得链 run |
 | true bypass 语义 | 完成 | PASS：同模型传 `pose_dict=None` |
 | matched donor/centroid 实现 | formal preflight PASS | runner/protocol 静态复审、synthetic regression 与完整 N=128 matching preflight 均 PASS |
 | per-query/层级 bootstrap | 单元测试 PASS | 两 primary contrasts 的 synthetic test PASS；正式输入 preflight 未做 |
@@ -120,9 +128,9 @@ SHA=`fc002330a4bb25711fc8caf977b30a3f29ec1f35c1be650cbf80d9a797db5b4d`。
 3. clone 内用 `uv` 创建 `.venv`，只复用已核候选 base Python 的 system packages；
    `.git/info/exclude` 排除 `.venv/`，pytest 禁用 cacheprovider，所有 JUnit/log 放仓库外；
 4. 远端独立重跑 20 formal + 85 regression；前后核 exact HEAD、clean status、源码 SHA、
-   environment freeze SHA、GPU/进程/磁盘；任一失败立即停；
-5. remote CPU preflight 全 PASS 后另行审签 `PASS_FOR_PREPARE_ONLY`。prepare 必须有覆盖
-   staging 全生命周期的外层独占锁，前置磁盘至少 100 GiB，`PREPARED_ONLY` 后强制停；
+   environment freeze SHA、GPU/进程/磁盘；当前已全 PASS；
+5. 只运行一次 prepare：outer `flock -n` 覆盖 staging 全生命周期，唯一 wrapper/PID/log
+   位于 execution root 外，前置磁盘至少 100 GiB，命令绝不链接 run；
 6. prepare 会加载冻结 checkpoint 并解析历史 flat parity 指标，正确口径不是“无指标
    读取”，而是“matching 不读取当前 arm/per-query 结果”；prepare 后至少 80 GiB；
 7. 审计 PREPARED manifest/cache/mapping/hash/schedule 且单独升级授权后才允许 run；

@@ -302,3 +302,42 @@ JUnit/log 和失败环境全部保留。曾尝试创建 Python 3.10 + legacy tor
 
 当前仍为 `NO_GO_FOR_EXECUTION`；只授权把新 exact commit 部署到新的隔离 clone，并在
 历史 Python 3.8/torch 1.13.1 环境从头重跑 20+85。不得只补跑五个失败项。
+
+## 2026-07-15 — 远端 Python 3.8 全量复验 20+85 PASS
+
+兼容修复 commit 已从双端验签 bundle 部署到新的隔离 clone：
+
+- exact HEAD：`f053a43cd520ff6f93ffff2df7ece8b358b62150`；
+- clone：`/home/afr/SOLIDER-REID-exp374-f053a43`；
+- bundle SHA：`2e1ba75d00aa5ace623962936fa065917dce9df405f87e077d6a4f2c64656466`；
+- runtime：Python 3.8.20、torch 1.13.1+cu117、torchvision 0.14.1、timm 1.0.22、
+  cuDNN 8500；uv freeze SHA 仍为
+  `7699815505136173aa3f398ac43a0c82fabfa8af9aad2e769b3badaab32cd6c6`；
+- 执行前后 Git status clean，production/tests SHA 与冻结值逐一一致。
+
+同一环境中从头执行，不是只补五项：
+
+- formal state-machine/protocol/Swin：18/18、1/1、1/1 PASS；
+- regression protocol/seam/runner：14/14、37/37、34/34 PASS，另 5 subtests PASS；
+- 六份 JUnit 位于 `/home/afr/exp374_remote_preflight_f053a43/`，SHA 为：
+  - state-machine/protocol/Swin：
+    `ff42c222c9e72e17771a505581a8013ae7c6d39edb84b21409cc7a910f59e59d` /
+    `26e785709b436fd01d09807f9ead7edc9c73be41476976a7da2281da87a06338` /
+    `9ff630082338415445cdddcab248e2e88b203dfa7c23b6f9a429cfb5565b0a38`；
+  - regression protocol/seam/runner：
+    `9d11a3aeca8a5a8c43ac93fb69e21090c6016a72bcf9fc375ee722a80f87545b` /
+    `f54fcfb3b604fb6a08d361e1eaf8b7ba07b69e7399629c4f68828d7868e0f6b9` /
+    `8c90a76ea43a3cd6e7ae79eeef4049d4ec8616058eb54a009bea5321f0fd0749`。
+
+执行后无 exp374 正式 marker，GPU 0%/2 MiB，无 compute process；可用磁盘
+`230,264,311,808 B`。当前裁决升级为 `PASS_FOR_PREPARE_ONLY`，仍不是正式 Gate A
+run 许可。prepare 约束：
+
+1. 输出根、outer lock、PID/log 必须事先不存在；
+2. outer `flock -n` 覆盖 staging 全生命周期，只允许唯一 wrapper；
+3. 前置同卷可用空间至少 100 GiB；
+4. prepare 可加载冻结 checkpoint 并解析历史 flat parity 指标，但 matching 数据流不得
+   接收任何当前 arm/per-query 结果；
+5. 只运行 `prepare`，绝不链 `run`；`PREPARED_ONLY` 后 wrapper 退出；
+6. 之后核 canonical execution dir、PREPARED marker、cache/mapping/energy/hash/schedule、
+   无 arms/results/current metrics 且剩余至少 80 GiB，再另行决定是否授权 production smoke/run。

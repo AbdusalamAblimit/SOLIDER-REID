@@ -2,16 +2,16 @@
 
 ## 当前状态
 
-- 阶段：`LEGACY_PYTHON_COMPAT_FIX_LOCAL_PASS_REMOTE_RETEST_REQUIRED`
+- 阶段：`REMOTE_FULL_PREFLIGHT_PASS_PREPARE_ONLY`
 - 训练：未启动
 - 正式评测：未启动
 - 代码实现：audit-only runner、协议层、模型三态 seam 已编写；20 个 formal preflight
   tests 与原 85 个纯 CPU/synthetic regression tests 全部 PASS
 - GPU：未占用
-- 当前执行许可：只允许把兼容修复 exact commit
-  `f053a43cd520ff6f93ffff2df7ece8b358b62150` 部署到 4090 新隔离目录并从头重跑纯
-  CPU formal/regression preflight；仍禁止 prepare、
-  加载真实 checkpoint、解析指标、GPU 推理、正式 Gate A 评测或训练
+- 当前执行许可：只允许在外层独占锁、前置可用空间至少 100 GiB 的条件下运行一次
+  `prepare`，并在 `PREPARED_ONLY` 后强制停住；prepare 可按冻结协议加载 checkpoint、
+  解析历史 flat parity 指标、读取 RGB/pose 资产并用 GPU 构造 matching，但仍禁止
+  Gate A `run`、当前 arm/per-query 指标生成、`summarize` 或训练
 
 ## 动机
 
