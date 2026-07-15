@@ -20,7 +20,9 @@ from config import cfg as base_cfg
 from model import make_model
 
 
-CONFIG = ROOT / 'configs/occluded_duke/exp376_p0_hyper_lora.yml'
+CONFIG = ROOT / os.environ.get(
+    'EXP376_SMOKE_CONFIG',
+    'configs/occluded_duke/exp376_p0_hyper_lora.yml')
 
 
 def _build():
