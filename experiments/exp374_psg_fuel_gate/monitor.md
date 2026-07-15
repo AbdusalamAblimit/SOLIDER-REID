@@ -251,3 +251,54 @@ production runner 重构后又原样重跑三组 regression：
 当前只授权双端验签 bundle、新隔离 clone、工作目录内 uv 环境和远端纯 CPU 20+85
 preflight。正式 Gate A 与 prepare 继续 `NO_GO_FOR_EXECUTION`；remote preflight 全 PASS
 后才可另行升级为 `PASS_FOR_PREPARE_ONLY`。
+
+## 2026-07-15 — 首次远端 CPU preflight 的 Python 3.8 兼容失败
+
+exact `a02feff714f235e8985fa354fe1e31be42e2c87d` 已经双端验签 bundle 部署到
+新 clone `/home/afr/SOLIDER-REID-exp374-a02feff`；bundle SHA 为
+`84afe11107053b2822402f56b92160bf4d68f01de286a4ff296ce901a4bf8a4d`，clone detached
+HEAD 与全部 production/tests SHA 正确，Git status clean。`data` 只作策略式只读
+symlink，并在 clone 私有 `.git/info/exclude` 中排除，不修改基础 dirty repo。
+
+远端工作目录内 uv 环境固定为 Python 3.8.20、torch 1.13.1+cu117、torchvision 0.14.1、
+timm 1.0.22、NumPy 1.24.4；只额外安装 pytest 8.3.5，freeze SHA=
+`7699815505136173aa3f398ac43a0c82fabfa8af9aad2e769b3badaab32cd6c6`。执行结果：
+
+- formal state-machine/protocol/Swin：18/18、1/1、1/1 PASS；
+- regression protocol/model seam：14/14、37/37 PASS；
+- regression runner：29/34 PASS，五项统一以 Python 3.8
+  `AttributeError: 'str' object has no attribute 'removeprefix'` 失败。
+
+失败只触及 synthetic checkpoint key normalization 和 synthetic prepared-resume tests；
+没有运行 prepare、没有加载真实 checkpoint/data/指标、没有 GPU forward。原 Python 3.8
+JUnit/log 和失败环境全部保留。曾尝试创建 Python 3.10 + legacy torch 的新 uv 环境，但
+1.7 GiB wheel 下载/解压过慢；确认任务仍健康但尚未完成后主动 TERM，只保留为失败环境
+证据，未改 base env，未切换到变量更大的 torch 2.6。
+
+## 2026-07-15 — Python 3.8 等价兼容修复与本机全量复验 PASS
+
+只修复上述失败路径：
+
+- `str(key).removeprefix("module.")` 改为先 `startswith` 再单次定长切片；
+- 已通过 `gate_a_` 前缀 require 的 execution dirname 同样改为定长切片。
+
+独立静态红队核对 collision、重复前缀、空后缀、Unicode 与 fail-closed 行为完全等价，
+结论 `PASS_FOR_FULL_RETEST`；AST、focused Ruff、whitespace 均 PASS。新冻结值：
+
+- exact commit：`f053a43cd520ff6f93ffff2df7ece8b358b62150`；
+- `audit_gate_a.py`：`fc002330a4bb25711fc8caf977b30a3f29ec1f35c1be650cbf80d9a797db5b4d`。
+
+本机又从头重跑 formal 20/20 与 regression 85/85，全部 PASS；六份 JUnit 位于 Git 外
+`remote_artifacts/exp374_compat_retest_20260715/`，SHA 为：
+
+- formal state-machine/protocol/Swin：
+  `51df064b0a50fae6420b59411bbf459cb7e506cd2e3994e53dbcf1e938aba27d` /
+  `732949154ae83b26fa327217232c852a2a58c85ea977787ceed5d9559a81833e` /
+  `b7f1522b57725e5aef43de6f9434826cd0d1d0715e158ca8123d1a23231d8d55`；
+- regression protocol/seam/runner：
+  `21c8d94b4e381f2a23392d76026ef108f2009bc9bae168b940554fdba176f674` /
+  `8f577fe8ba0e384a383e3dce1e8335eeda662e3de4e17c7b525a1238326abd5f` /
+  `91537b350cceeb04a543378306b2acf56f4bfe2a7952dafa792661f460abde0e`。
+
+当前仍为 `NO_GO_FOR_EXECUTION`；只授权把新 exact commit 部署到新的隔离 clone，并在
+历史 Python 3.8/torch 1.13.1 环境从头重跑 20+85。不得只补跑五个失败项。

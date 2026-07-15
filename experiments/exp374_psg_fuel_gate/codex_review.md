@@ -17,7 +17,8 @@
 - unit/synthetic tests：`PASS`（85/85）
 - formal preflight：`PASS`（20/20）
 - 4090 checkpoint/data/disk/GPU 资源：`PASS`
-- 4090 isolated deployment/remote CPU preflight：`AUTHORIZED_NOT_STARTED`
+- 4090 isolated deployment：`PASS_AT_A02FEFF_THEN_COMPAT_FIX_REQUIRED`
+- 4090 remote CPU preflight：`PY38_COMPAT_FAILURE_FIXED_LOCAL_RETEST_PASS`
 - 正式 Gate A/训练：`NO_GO_FOR_EXECUTION`
 
 统计、工程与独立总红队已分别完成第三轮只读签字；该 PASS 只授权编写 audit-only
@@ -36,6 +37,15 @@ GPU 均 PASS；但基础仓库是旧 commit 且有大量用户工作树，不能
 data symlink 口径、prepare 外层锁、历史指标读取口径和前后磁盘门槛必须修正。当前已
 逐项接受这些条件，只授权建立新隔离 clone 并运行远端 CPU preflight；prepare 尚未授权。
 
+首次远端 CPU 执行中，formal 20/20、protocol regression 14/14、model seam regression
+37/37 均 PASS；runner regression 为 29/34，五项统一因 Python 3.8 缺少
+`str.removeprefix` 失败。该失败发生在 synthetic checkpoint key/prepare resume 单测，
+未加载真实资产、未运行 prepare。修复只把两处 `removeprefix` 改为严格等价的
+`startswith + slice`；独立静态审查已签 `PASS_FOR_FULL_RETEST`，本机完整 20+85 又全部
+PASS。兼容修复 commit=`f053a43cd520ff6f93ffff2df7ece8b358b62150`，runner
+SHA=`fc002330a4bb25711fc8caf977b30a3f29ec1f35c1be650cbf80d9a797db5b4d`。
+正式 Gate A 仍未授权，必须先在远端历史 Python 3.8/torch 1.13.1 环境从头全量复验。
+
 ## 分项裁决
 
 | 审查项 | 状态 | 裁决 |
@@ -50,6 +60,7 @@ data symlink 口径、prepare 外层锁、历史指标读取口径和前后磁�
 | exact execution provenance | 完成 | FAIL：目录复用、文档与当前 checkpoint 日志错代、无 Git SHA |
 | 4090 数据/磁盘/GPU | 完成 | PASS：RGB/pose 三 split 齐全，可用约 216.6 GiB，4090 无计算进程 |
 | 4090 execution source | 待部署 | 基础 repo HEAD `715c020e…` 且 dirty；必须从双端验签 bundle 新建隔离 clone，禁止原地覆盖 |
+| legacy Python 3.8 compatibility | 修复待远端复验 | 两处 `removeprefix` 已作语义等价改写；静态 PASS、本机 20+85 PASS，远端必须从头重跑 |
 | true bypass 语义 | 完成 | PASS：同模型传 `pose_dict=None` |
 | matched donor/centroid 实现 | formal preflight PASS | runner/protocol 静态复审、synthetic regression 与完整 N=128 matching preflight 均 PASS |
 | per-query/层级 bootstrap | 单元测试 PASS | 两 primary contrasts 的 synthetic test PASS；正式输入 preflight 未做 |

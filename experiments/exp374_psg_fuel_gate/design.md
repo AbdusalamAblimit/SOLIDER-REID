@@ -2,14 +2,15 @@
 
 ## 当前状态
 
-- 阶段：`RESOURCE_ASSETS_PASS_ISOLATED_DEPLOYMENT_AUTHORIZED`
+- 阶段：`LEGACY_PYTHON_COMPAT_FIX_LOCAL_PASS_REMOTE_RETEST_REQUIRED`
 - 训练：未启动
 - 正式评测：未启动
 - 代码实现：audit-only runner、协议层、模型三态 seam 已编写；20 个 formal preflight
   tests 与原 85 个纯 CPU/synthetic regression tests 全部 PASS
 - GPU：未占用
-- 当前执行许可：只允许把 exact commit `a02feff714f235e8985fa354fe1e31be42e2c87d`
-  部署到 4090 新隔离目录并重跑纯 CPU formal/regression preflight；仍禁止 prepare、
+- 当前执行许可：只允许把兼容修复 exact commit
+  `f053a43cd520ff6f93ffff2df7ece8b358b62150` 部署到 4090 新隔离目录并从头重跑纯
+  CPU formal/regression preflight；仍禁止 prepare、
   加载真实 checkpoint、解析指标、GPU 推理、正式 Gate A 评测或训练
 
 ## 动机
