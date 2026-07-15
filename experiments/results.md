@@ -1846,3 +1846,27 @@ Step1 CLIP-ReID prompt +2.2(干净)。Step2 pose 融 CLIP **五角度全负**: �
 - **裁决：新颖性 Gate FAIL，exp373 正式 NO-GO。** exact exp066 checkpoint、
   commit、数据均已找到，停止不是资产阻塞，而是机制归属不足。未实现、未训练、
   未占用 GPU，也不转 transport/routing/FiLM/层数小变体。
+
+## exp374：PSG 图像—姿态对应依赖 Gate A — 正式 NO-GO（2026-07-15）
+
+> 三 seed、primary-only 12 臂；每个 seed 顺序执行 correct-start、一个
+> matched-shuffle、bypass、correct-end。该实验是冻结 checkpoint 的因果评测，不是训练。
+
+| seed | correct mAP / R1 | matched-shuffle mAP / R1 | bypass mAP / R1 |
+|---:|---:|---:|---:|
+| 42 | 57.5281 / 66.6968 | 57.5296 / 66.6516 | 53.4920 / 62.6244 |
+| 1234 | 58.2909 / 68.1448 | 58.2825 / 68.1448 | 54.5796 / 62.8054 |
+| 2024 | 57.9931 / 68.3710 | 57.9966 / 68.4163 | 54.1675 / 62.3529 |
+
+- correct−shuffle mAP=`+0.001163 pp`，区间=`[-0.363577,+0.377887]`；
+- correct−bypass mAP=`+3.857684 pp`，区间=`[+3.492944,+4.234408]`；
+- correct−shuffle R1=`0.000000 pp`，correct−bypass R1=`+5.143288 pp`；
+- 三 seed correct−shuffle mAP 为 `-0.001421/+0.008382/-0.003472`，两 seed 非正。
+
+**裁决：正式 `NO_GO`。** PSG 相对 bypass 的价值很大且三 seed 稳定，但 matched 错姿态与
+正确姿态几乎等价。这证明“PSG 有用”，同时否定“收益主要来自当前图像—正确实例姿态
+对应关系”。停止 PSG gate 权重、层数、canonical/centroid/anatomical 小变体；下一路线
+转向与逐位置仿射调制不同的 pose-controlled state dynamics。
+
+原始结果：`remote_artifacts/exp374_a06_cce2982/evidence/`；execution commit=
+`cce29820ccf09cb33a43ab0ff701733f58826c35`。

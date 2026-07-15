@@ -3193,3 +3193,20 @@ stage 边际依赖 backbone”，不支持“PSG 本体是首创”或“层数�
 
 完整来源、公式和 claim 表见
 `experiments/paper_notes/psg_novelty_audit_20260715.md`。
+
+## 2026-07-15：exp374 因果 Gate——PSG 的涨点成立，但不是实例姿态对应收益
+
+三 seed 冻结 checkpoint 的 primary intervention 给出一个非常清楚的分离：correct 相对
+true bypass 为 `+3.8577 mAP / +5.1433 R1`，但 correct 相对 matched 错姿态只有
+`+0.0012 mAP / 0.0000 R1`，且 mAP 区间跨过零、三 seed 中两 seed 非正。
+
+所以不能把“PSG 本体有效”和“正确实例姿态有效”混成同一个结论。前者得到更强确认；
+后者在当前机制上被否定。最合理解释是 PSG 学到通用人体空间先验、条件容量或训练正则，
+并不真正使用 image-pose correspondence。继续改变 gate 的层数、非线性、温度、
+canonical 或 shuffle 方式，只是在缺乏因果燃料的函数族内微调。
+
+这反而给下一条路线划出了更好的机制边界：pose-controlled Mamba 不能再做
+`gamma(H)*X+beta(H)`，而要让 pose 进入状态动力学，例如控制 selective update 的
+`Delta/B/C`、保留/遗忘系数、解剖扫描顺序或跨身体区域状态传递。是否值得推进取决于两个
+问题：它是否超出已有 pose-Mamba 的普通输入融合；correct pose 是否相对 shuffle 和
+parameter-matched image-only SSM 产生可重复的额外价值。

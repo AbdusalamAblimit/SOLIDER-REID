@@ -871,3 +871,36 @@ exact HEAD 构建/验签 bundle，并在全新隔离 clone 中从头重跑六套
 当前状态为 `PASS_FOR_A03_PREPARE_COMMAND_REVIEW_ONLY`。只允许设计、冻结并多路红队
 全新 A03 prepare-only 命令；A01/A02 永久烧毁，A03 `prepare`、Gate A
 `run`/`summarize`、arm/per-query 指标和训练仍为 `NO_GO`。
+
+## 2026-07-15 — A06 正式执行完成：PSG 有效，但不依赖正确实例姿态
+
+为避免协议继续压过科学问题，最终 execution 收缩为 primary-only 12 臂：每个 seed 只做
+`correct-start`、一个合法 matched-shuffle、`bypass`、`correct-end`。三 seed 均完成，
+start/end 完全一致，正式状态为 `COMPLETE / NO_GO`。
+
+| seed | correct mAP / R1 | matched-shuffle mAP / R1 | bypass mAP / R1 |
+|---:|---:|---:|---:|
+| 42 | 57.5281 / 66.6968 | 57.5296 / 66.6516 | 53.4920 / 62.6244 |
+| 1234 | 58.2909 / 68.1448 | 58.2825 / 68.1448 | 54.5796 / 62.8054 |
+| 2024 | 57.9931 / 68.3710 | 57.9966 / 68.4163 | 54.1675 / 62.3529 |
+
+正式 paired 汇总：
+
+- correct−shuffle mAP=`+0.001163 pp`，simultaneous interval=
+  `[-0.363577,+0.377887]`；三 seed 为
+  `-0.001421/+0.008382/-0.003472`，两 seed 非正；
+- correct−bypass mAP=`+3.857684 pp`，interval=`[+3.492944,+4.234408]`；
+- correct−shuffle R1=`0.000000 pp`，interval=`[-0.677057,+0.711475]`；
+- correct−bypass R1=`+5.143288 pp`，interval=`[+4.466231,+5.854763]`。
+
+所以 exp374 回答了两个不同问题：PSG 分支本身确实提供很大的性能价值；但这份价值几乎
+不依赖当前图像与正确实例姿态的对应关系。现有收益更像通用人体空间先验、条件容量或训练
+正则，而不是 instance-specific pose control。按 Gate A 规则正式 `NO_GO`：停止继续修改
+PSG gate 权重、canonical/centroid/anatomical 小变体，不把该分支重新包装为自有主创新。
+
+正式 execution commit 为 `cce29820ccf09cb33a43ab0ff701733f58826c35`。小型原始证据已
+回传至 `remote_artifacts/exp374_a06_cce2982/evidence/`；其中
+`gate_a_results.json` SHA256 为
+`fcfe6a717bef5c050adb78f289913874b75ff256a1e7069dc898667082d2c13e`，
+`primary_query_aggregates.npz` SHA256 为
+`647be26c8b1c7db8d5749e2b55638033ca174921974780af8e2d533494e864c3`。

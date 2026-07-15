@@ -1547,3 +1547,20 @@ PSG+PAA 的辅助正则，不是新的主方法。
 4. 不写“正交化使 PSG/PAA 可识别”或“正交补本身是新 ReID 机制”；
 5. 若论文需要第二个真正贡献，必须另找独立问题对象，而不是继续修 scale/shift
    的层数、路由、阈值或投影形式。
+
+## 2026-07-15：exp374 终止 PSG 自有化，下一故事转向姿态控制状态动力学
+
+exp374 把 PSG 的两个命题彻底拆开。相对 true bypass，正确 PSG 平均提高
+`+3.8577 mAP / +5.1433 R1`，所以它不是无效组件；但把当前实例姿态替换为严格 matched
+的其他实例姿态后，平均只变化 `+0.0012 mAP / 0.0000 R1`，三 seed 中两 seed 的 mAP
+方向还非正。因此论文不能再把 PSG 的涨点解释成网络利用了当前行人的精确姿态。
+
+这条结果不是要删除 PSG：它仍可作为强基线、通用人体空间先验或系统性能组件。被终止的
+是“继续修改 PSG gate 后把它写成我们的 instance-specific pose reasoning”这一故事。
+后续也不再围绕 layer、temperature、canonical、centroid 或 anatomical group 做救场。
+
+下一故事候选独立转向 pose-controlled state-space dynamics：姿态不再逐位置缩放特征，
+而是控制视觉证据如何被状态保留、遗忘、更新和跨身体区域传递。它必须同时满足：机制上
+超出普通 pose token/input fusion；实验上正确 pose 明确优于 shuffle；并相对参数匹配的
+image-only Mamba 与 PSG/SFT 对照产生稳定增益。该方向目前是待查新、待实现的候选，尚未
+形成论文正结论。

@@ -4769,3 +4769,22 @@ content-LoRA、普通 FiLM、层数或阈值小变体。
 **边界**：本决策不否定 PSG 的跨数据集/跨 backbone 历史增益，也不抹去 PAA
 在早期 `PSG+GCN` 两 seed 上的正信号。它只否定“给 PSG/PAA 加正交投影”能够
 承担新论文主贡献。若未来仅为工程优化使用，必须降级为辅助正则，不能写成主创新。
+
+### [2026-07-15] 决策：exp374 因果 Gate A NO-GO，停止 PSG gate 自有化
+
+**问题**：PSG 的稳定涨点究竟来自当前图像与正确实例姿态的对应关系，还是只要提供一个
+合法的人体空间先验就能得到相同收益？exp374 在三 seed 冻结 checkpoint 上比较
+correct、matched-shuffle 与 true bypass，并用 correct-start/end 检查执行漂移。
+
+**结果**：correct−shuffle mAP 仅 `+0.001163 pp`，simultaneous interval=
+`[-0.363577,+0.377887]`，三 seed 中两 seed 非正；correct−shuffle R1 为 `0.000000 pp`。
+与此同时 correct−bypass 为 `+3.857684 mAP / +5.143288 R1`，区间均明确为正。
+
+**决策**：**exp374 正式 NO-GO。** PSG 分支的性能价值真实，但没有证据表明它依赖正确
+实例 pose；因此不继续 gate 权重、层数、shuffle/canonical/centroid/anatomical 小变体，
+不把通用人体先验收益改写为 instance-specific pose reasoning 创新。
+
+**下一步**：独立转向 pose-controlled Mamba/state-space 路线，优先研究 pose 是否能控制
+selective state update、保留/遗忘、解剖扫描顺序或身体区域间状态传递。新路线必须用
+parameter-matched image-only Mamba、pose-shuffle 与 PSG/SFT 强对照，但不因相邻 Mamba
+论文存在就自动放弃；先建立直接先例边界，再尽快实现最小原型。

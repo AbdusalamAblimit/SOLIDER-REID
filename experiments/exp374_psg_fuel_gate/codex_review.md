@@ -448,3 +448,16 @@ PASS；本地复核记录 SHA256 为
 最终权限只升级为 `PASS_FOR_A03_PREPARE_COMMAND_REVIEW_ONLY`：可以设计和红队全新
 A03 prepare-only wrapper/launcher。A01/A02 永久烧毁且不得复用；A03 `prepare` 本身、
 Gate A `run`/`summarize`、arm/per-query 指标及任何训练仍未授权。
+
+## 2026-07-15 — 收缩版 A06 最终审查与执行后裁决
+
+针对用户要求“直接完成科学实验、减少形式门禁”，正式矩阵从 492 臂收缩为三 seed、
+每 seed 四臂的 primary screen；每维匹配阈值固定为 `0.65`，随机 full-matching 基线固定
+20 次，单 mapping 明确不伪造 MCSE/LOO。执行前六套测试为 `207 direct + 146 subtests`
+全 PASS；执行、科学解释与 shell 边界三路 Codex 最终审查均为 PASS。
+
+A06 12/12 完成后，原始结果给出 correct−shuffle mAP=`+0.001163 pp`
+（区间 `[-0.363577,+0.377887]`），而 correct−bypass mAP=`+3.857684 pp`
+（区间 `[+3.492944,+4.234408]`）。因此裁决是 `COMPLETE / NO_GO`，不是执行失败：
+PSG 有效，但正确实例姿态没有提供可分辨的额外因果价值。不得继续 PSG 权重小变体；下一
+方向必须更换状态交互机制，而不是把 PSG 搬到其他 backbone 后改名。
