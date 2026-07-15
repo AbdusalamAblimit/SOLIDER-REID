@@ -139,6 +139,23 @@ class FlatLogAndCheckpointBytesTests(GateCodeMixin, unittest.TestCase):
             {"weight": "not-a-tensor"},
         )
 
+    def test_default_checkpoint_logs_bind_flat_checkpoint_evaluations(self):
+        expected = {
+            seed: (
+                "/home/afr/SOLIDER-REID/log/multiseed/"
+                f"exp007_psg_seed{seed}/test_default.txt"
+            )
+            for seed in (42, 1234, 2024)
+        }
+
+        actual = {
+            int(spec["seed"]): str(spec["flat_log"])
+            for spec in runner.DEFAULT_CHECKPOINTS
+        }
+
+        self.assertEqual(actual, expected)
+        self.assertTrue(all(Path(path).name == "test_default.txt" for path in actual.values()))
+
     def test_checkpoint_specs_freezes_sha_log_parse_and_aliases_from_one_read(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
