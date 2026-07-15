@@ -1397,7 +1397,12 @@ class SwinTransformer(BaseModule):
         if self.semantic_weight >= 0 and semantic_weight == None:
             w = torch.ones(x.shape[0],1) * self.semantic_weight
             w = torch.cat([w, 1-w], axis=-1)
-            semantic_weight = w.cuda()
+            # follow the input device instead of a hard-coded .cuda(): keeps the
+            # semantic weight on the same device as x (works on CPU / non-default
+            # CUDA device, and under eval on any device) -- identical to .cuda() in
+            # the usual single-GPU path. dtype left fp32 (the semantic_embed_*
+            # Linears are fp32; autocast handles the cast), preserving old behaviour.
+            semantic_weight = w.to(x.device)
 
         x, hw_shape = self.patch_embed(x)
 
