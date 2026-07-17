@@ -372,9 +372,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True)
     parser.add_argument("--checkpoint", required=True)
+    parser.add_argument(
+        "--config", default="configs/occluded_duke/swin_tiny_tapf_d0.yml"
+    )
     args = parser.parse_args()
 
-    config_path = Path("configs/occluded_duke/swin_tiny_tapf_d0.yml")
+    config_path = Path(args.config)
     cfg.merge_from_file(str(config_path))
     cfg.freeze()
     set_seed(cfg.SOLVER.SEED)

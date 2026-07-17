@@ -62,8 +62,8 @@ def make_dataloader(cfg):
         dataset = __factory[cfg.DATASETS.NAMES](root=cfg.DATASETS.ROOT_DIR)
 
     if cfg.MODEL.TAPF.ENABLED:
-        if cfg.DATASETS.NAMES != 'occluded_duke':
-            raise ValueError('Clean TAPF D0 only supports occluded_duke')
+        if cfg.DATASETS.NAMES not in ('occluded_duke', 'market1501'):
+            raise ValueError('Clean TAPF D0 only supports audited image ReID datasets')
         pose_store = PoseTargetStore(
             cfg.MODEL.TAPF.ARTIFACT_DIR,
             cfg.MODEL.TAPF.MANIFEST_SHA256,

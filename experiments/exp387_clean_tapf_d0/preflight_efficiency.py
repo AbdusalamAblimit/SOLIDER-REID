@@ -23,6 +23,10 @@ NUM_CLASSES = 702
 CAMERA_NUM = 8
 VIEW_NUM = 1
 TEACHER_PATH = "/home/afr/reid-clean/weights/solider_swin_tiny_tea.pth"
+B0_CONFIG = "configs/occluded_duke/swin_tiny.yml"
+D0_CONFIG = "configs/occluded_duke/swin_tiny_tapf_d0.yml"
+DATASET_ROOT = None
+SEMANTIC_WEIGHT = None
 
 
 def set_seed(seed):
@@ -54,14 +58,14 @@ def tensor_sha256(tensor):
 
 def make_cfg(tapf):
     config = default_cfg.clone()
-    config.merge_from_file(
-        "configs/occluded_duke/swin_tiny_tapf_d0.yml"
-        if tapf
-        else "configs/occluded_duke/swin_tiny.yml"
-    )
+    config.merge_from_file(D0_CONFIG if tapf else B0_CONFIG)
     config.defrost()
     config.MODEL.PRETRAIN_CHOICE = "self"
     config.MODEL.PRETRAIN_PATH = TEACHER_PATH
+    if DATASET_ROOT is not None:
+        config.DATASETS.ROOT_DIR = DATASET_ROOT
+    if SEMANTIC_WEIGHT is not None:
+        config.MODEL.SEMANTIC_WEIGHT = SEMANTIC_WEIGHT
     config.freeze()
     return config
 
@@ -265,16 +269,8 @@ def audit_arm(
 ):
     config = make_cfg(tapf)
     return {
-        "config": (
-            "configs/occluded_duke/swin_tiny_tapf_d0.yml"
-            if tapf
-            else "configs/occluded_duke/swin_tiny.yml"
-        ),
-        "config_sha256": sha256_file(
-            "configs/occluded_duke/swin_tiny_tapf_d0.yml"
-            if tapf
-            else "configs/occluded_duke/swin_tiny.yml"
-        ),
+        "config": D0_CONFIG if tapf else B0_CONFIG,
+        "config_sha256": sha256_file(D0_CONFIG if tapf else B0_CONFIG),
         "train": train_benchmark(
             config, tapf, train_batch, train_warmup, train_steps
         ),
@@ -296,13 +292,30 @@ def relative_delta(d0, b0):
 
 
 def main():
+    global NUM_CLASSES, CAMERA_NUM, VIEW_NUM, B0_CONFIG, D0_CONFIG
+    global DATASET_ROOT, SEMANTIC_WEIGHT
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True)
+    parser.add_argument("--b0-config", default=B0_CONFIG)
+    parser.add_argument("--d0-config", default=D0_CONFIG)
+    parser.add_argument("--num-classes", type=int, default=NUM_CLASSES)
+    parser.add_argument("--camera-num", type=int, default=CAMERA_NUM)
+    parser.add_argument("--view-num", type=int, default=VIEW_NUM)
+    parser.add_argument("--dataset-root")
+    parser.add_argument("--semantic-weight", type=float)
     parser.add_argument("--train-warmup", type=int, default=3)
     parser.add_argument("--train-steps", type=int, default=12)
     parser.add_argument("--eval-warmup", type=int, default=5)
     parser.add_argument("--eval-steps", type=int, default=20)
     args = parser.parse_args()
+
+    B0_CONFIG = args.b0_config
+    D0_CONFIG = args.d0_config
+    NUM_CLASSES = args.num_classes
+    CAMERA_NUM = args.camera_num
+    VIEW_NUM = args.view_num
+    DATASET_ROOT = args.dataset_root
+    SEMANTIC_WEIGHT = args.semantic_weight
 
     train_batch, eval_images = load_fixed_real_batches()
     b0 = audit_arm(
@@ -339,7 +352,7 @@ def main():
         raise RuntimeError("Expected positive TAPF FLOP delta")
 
     result = {
-        "status": "EXP387_MATCHED_EFFICIENCY_PASS",
+        "status": "TAPF_MATCHED_EFFICIENCY_PASS",
         "torch_version": torch.__version__,
         "cuda_version": torch.version.cuda,
         "device": torch.cuda.get_device_name(0),

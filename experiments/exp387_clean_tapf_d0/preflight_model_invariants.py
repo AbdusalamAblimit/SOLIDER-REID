@@ -1,5 +1,6 @@
 """Audit matched construction, state, RNG, and optimizer membership."""
 
+import argparse
 import hashlib
 import random
 
@@ -20,18 +21,16 @@ def set_seed(seed):
     random.seed(seed)
 
 
-def make_cfg(tapf):
+def make_cfg(tapf, b0_config, d0_config, semantic_weight):
     config = default_cfg.clone()
-    config.merge_from_file(
-        "configs/occluded_duke/swin_tiny_tapf_d0.yml"
-        if tapf
-        else "configs/occluded_duke/swin_tiny.yml"
-    )
+    config.merge_from_file(d0_config if tapf else b0_config)
     config.defrost()
     config.MODEL.PRETRAIN_CHOICE = "self"
     config.MODEL.PRETRAIN_PATH = (
         "/home/afr/reid-clean/weights/solider_swin_tiny_tea.pth"
     )
+    if semantic_weight is not None:
+        config.MODEL.SEMANTIC_WEIGHT = semantic_weight
     config.freeze()
     return config
 
@@ -63,16 +62,45 @@ def optimizer_description(config, model):
 
 
 def main():
-    b0_cfg = make_cfg(False)
-    d0_cfg = make_cfg(True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--b0-config", default="configs/occluded_duke/swin_tiny.yml"
+    )
+    parser.add_argument(
+        "--d0-config", default="configs/occluded_duke/swin_tiny_tapf_d0.yml"
+    )
+    parser.add_argument("--num-classes", type=int, default=702)
+    parser.add_argument("--camera-num", type=int, default=8)
+    parser.add_argument("--view-num", type=int, default=1)
+    parser.add_argument("--semantic-weight", type=float)
+    args = parser.parse_args()
+
+    b0_cfg = make_cfg(
+        False, args.b0_config, args.d0_config, args.semantic_weight
+    )
+    d0_cfg = make_cfg(
+        True, args.b0_config, args.d0_config, args.semantic_weight
+    )
 
     set_seed(1234)
-    b0 = make_model(b0_cfg, 702, 8, 1, b0_cfg.MODEL.SEMANTIC_WEIGHT)
+    b0 = make_model(
+        b0_cfg,
+        args.num_classes,
+        args.camera_num,
+        args.view_num,
+        b0_cfg.MODEL.SEMANTIC_WEIGHT,
+    )
     b0_cpu_rng = torch.get_rng_state().clone()
     b0_cuda_rng = [state.clone() for state in torch.cuda.get_rng_state_all()]
 
     set_seed(1234)
-    d0 = make_model(d0_cfg, 702, 8, 1, d0_cfg.MODEL.SEMANTIC_WEIGHT)
+    d0 = make_model(
+        d0_cfg,
+        args.num_classes,
+        args.camera_num,
+        args.view_num,
+        d0_cfg.MODEL.SEMANTIC_WEIGHT,
+    )
     d0_cpu_rng = torch.get_rng_state().clone()
     d0_cuda_rng = [state.clone() for state in torch.cuda.get_rng_state_all()]
 
@@ -132,7 +160,7 @@ def main():
     if d0_parameters - b0_parameters != tapf_parameters:
         raise RuntimeError("TAPF parameter accounting mismatch")
 
-    print("EXP387_MODEL_INVARIANTS_PASS")
+    print("TAPF_MODEL_INVARIANTS_PASS")
     print("common_state_count={}".format(len(b0_state)))
     print("common_state_sha256={}".format(tensor_sha(b0_state.items())))
     print("common_optimizer_parameters={}".format(len(b0_optimizer)))

@@ -45,19 +45,28 @@ def set_seed(seed):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True)
+    parser.add_argument(
+        "--config", default="configs/occluded_duke/swin_tiny.yml"
+    )
+    parser.add_argument("--num-classes", type=int, default=702)
+    parser.add_argument("--camera-num", type=int, default=8)
+    parser.add_argument("--view-num", type=int, default=1)
+    parser.add_argument("--semantic-weight", type=float)
     args = parser.parse_args()
 
-    cfg.merge_from_file("configs/occluded_duke/swin_tiny.yml")
+    cfg.merge_from_file(args.config)
     cfg.MODEL.PRETRAIN_CHOICE = "self"
     cfg.MODEL.PRETRAIN_PATH = "/home/afr/reid-clean/weights/solider_swin_tiny_tea.pth"
+    if args.semantic_weight is not None:
+        cfg.MODEL.SEMANTIC_WEIGHT = args.semantic_weight
     cfg.freeze()
 
     set_seed(1234)
     model = make_model(
         cfg,
-        num_class=702,
-        camera_num=8,
-        view_num=1,
+        num_class=args.num_classes,
+        camera_num=args.camera_num,
+        view_num=args.view_num,
         semantic_weight=cfg.MODEL.SEMANTIC_WEIGHT,
     )
     initial_hash, state_count = hash_named_tensors(model.state_dict().items())
@@ -67,7 +76,7 @@ def main():
         b"".join(state.cpu().numpy().tobytes() for state in torch.cuda.get_rng_state_all())
     ).hexdigest()
 
-    loss_fn, center_criterion = make_loss(cfg, num_classes=702)
+    loss_fn, center_criterion = make_loss(cfg, num_classes=args.num_classes)
     optimizer, _ = make_optimizer(cfg, model, center_criterion)
     parameter_names = {id(parameter): name for name, parameter in model.named_parameters()}
     optimizer_groups = [

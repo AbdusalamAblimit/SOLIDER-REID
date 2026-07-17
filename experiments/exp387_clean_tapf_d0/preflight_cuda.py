@@ -138,12 +138,15 @@ def found_inf_value(scaler, optimizer):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True)
+    parser.add_argument(
+        "--config", default="configs/occluded_duke/swin_tiny_tapf_d0.yml"
+    )
     parser.add_argument("--steps", type=int, default=24)
     args = parser.parse_args()
     if args.steps < 1:
         raise ValueError("steps must be positive")
 
-    config_path = Path("configs/occluded_duke/swin_tiny_tapf_d0.yml")
+    config_path = Path(args.config)
     cfg.merge_from_file(str(config_path))
     cfg.freeze()
     if cfg.SOLVER.IMS_PER_BATCH != 64 or cfg.DATALOADER.NUM_WORKERS != 8:
