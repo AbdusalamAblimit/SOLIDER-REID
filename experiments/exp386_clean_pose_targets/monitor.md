@@ -65,3 +65,29 @@
 - 唯一模型加载提示仍为官方已知的 unexpected `backbone.cls_token`；首检无 NaN/Inf/Traceback/RuntimeError/OOM/nonfinite
 
 全量任务保持后台运行；依赖 15 分钟 heartbeat 监控，不阻塞等待，不并行 ReID 训练或第二条 pose 提取。
+
+## 全量完成与终审
+
+- 完成：15,618/15,618；438.4 s，35.62 image/s
+- 原 PID `1005655` 已退出；`.incomplete` 已原子切换为 final
+- GPU 回到 2 MiB / 0%；pose/ReID 训练进程均为 0
+- runner SHA256：`669a92e858dde55a8ae8d1f2bed5270e1ed055037faae556561d7624046ff472`
+- manifest SHA256：`cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8`
+- records manifest SHA256：`cd3dc28661a06daa4cc7b2a30dc5d5ddac1475f144330fba75931365a68a43c7`
+- 62 shards：前 61 个各 256 条，末 shard 2 条
+- shard SHA/count/schema 全部 PASS；schema 固定为 relative path、RGB SHA、原图尺寸、17×2 keypoints、17 scores
+- 15,618 条 relative path 与原始 train JPG 排序后一一 exact，unique=15,618
+- 逐图 RGB SHA 与尺寸全量重算 exact；dataset manifest 重算仍为 `9be350a47c848844053c86a7f58e7f7a98b92c4940aaad9c18b80386e276f304`
+- records manifest 从 NPZ 内容独立重算 exact；keypoints/scores 全量有限
+- score min/mean/max=`0.01334639/0.85300736/1.06461477`；低于 0.5 为 10,013/265,506
+- 原图范围外 joint 为 1,129/265,506；保留 teacher 原始输出，交给 paired transform 的显式有效 mask
+- teacher score 不保证严格落在 `[0,1]`；不静默裁剪，后续可靠性变换必须在设计中显式定义
+- runner 严格检索 NaN/Inf/Traceback/RuntimeError/OOM/nonfinite：0
+
+固定 seed=386 从全量记录抽取 8 张，重新加载同一 fresh teacher 并在线推理：
+
+- 8/8 keypoints 逐 bit exact；全局 max abs diff=0
+- 8/8 scores 逐 bit exact；全局 max abs diff=0
+- 在线校验退出后 GPU 仍为 2 MiB / 0%，无遗留进程
+
+结论：fresh train-only pose target 提取、可追溯性、全量结构与在线—离线等价门禁全部 PASS。query/gallery 从未生成 pose；下一步只实现 paired augmentation 与 pose target loader 门禁，暂不启动 D0。
