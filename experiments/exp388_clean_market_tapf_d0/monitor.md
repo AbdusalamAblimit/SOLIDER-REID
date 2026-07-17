@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-- 状态：POSE ARTIFACT SEALED / D0 IMPLEMENTATION PREFLIGHT
+- 状态：ALL D0 PREFLIGHT GATES PASS / FORMAL LAUNCH PENDING
 - 直接对照：exp384 official clean Market B0 e120=`91.6/96.3/98.7/99.2`
 - exp387 clean Occ-Duke D0 已封板：`57.6/67.7/80.8/84.6`，相对 B0=`+0.2/+0.3/+0.2/−0.6`
 - 4090：Market pose extraction 已退出并终审通过，当前 GPU 空闲
@@ -74,3 +74,51 @@
 - 可执行结论：`EXP388_FULL_POSE_AUDIT_PASS`。
 
 pose artifact 数据门禁已封板。下一步只允许把现有 clean strict loader 最小泛化到 `market1501` 并复跑全部数据、数值、因果与 pose-free 门禁；在全部 PASS 前仍不创建正式 D0 output。
+
+## Market 最小泛化实现
+
+- 本地提交：`879760e`；远端执行提交：`5bbbe4e64815a1b10b469ccfd4a20cac4675da67`；
+- 代码变量只有：clean TAPF dataloader 白名单加入 `market1501`，并新增 matched Market D0 config；anchor、renderer、PSG、handoff、loss 与 exp387 完全相同；
+- D0 config SHA256=`81abd0d4247c26bdb306f54be0e9c9d1c8a595a64e85c30e40bd606a86b2cc80`；
+- patch SHA256=`b11407209a1e438a67ee18584d38e24edafdf32f4655209abfce42229f246146`；
+- clean data unit 5/5 PASS；真实 artifact strict load 12,936 条，query/gallery lookup 明确拒绝；Market 原始 RGB 在 32 个固定 seed 下与官方 transform 逐 tensor bit exact。
+
+## D0 启动前全门禁
+
+### config-off 与构造不变量
+
+- pre-TAPF clean commit=`d4fa227b30f7ea9a7c97973854323637d9fc8126` 与新提交在 Market B0 config 下运行同一 10-step CUDA/AMP 指纹脚本；
+- 两份完整 JSON SHA256 均为 `dbc7c5964cd118d1a3469346ec8af01fa54ee39956b0b6f45bab5b718f420c4a`，211 state、构造后 CPU/CUDA RNG、optimizer groups、10 次 loss/output/173 gradients、最终 state、173 momentum 与 GradScaler scale=512 全部 exact；
+- B0/D0 公共 state、构造后 CPU/CUDA RNG 与 179 个公共 optimizer 参数顺序/超参数 exact；12 个 TAPF parameter tensor 全部且只出现一次；
+- 参数：B0=`28,111,674`，D0=`28,217,116`，新增 `105,442 / 0.375083%`；两个 PSG bank 参数独立、末投影 zero-init。
+
+### 数据、CUDA/AMP 与因果路径
+
+- 真实 Market batch64/8 workers 连续 24 step：默认 GradScaler `65536→4096`，4 次可恢复 overflow，随后连续 20 次有限更新；最终 optimizer 185 state 全有限；
+- changed parameter tensor：Swin `171/193`、anchor `8/8`、PSG `4/4`、head `2/3`；峰值 allocated/reserved=`6,489,576,960/6,796,869,632` bytes；
+- e1/e6/e10/e11 student fraction=`0/0.2/1/1`，两个独立 PSG bank 每次各消费一次；
+- pose loss 只更新 anchor `8/8`，Swin/PSG/head 精确为零或无梯度；ReID loss 更新 Swin/PSG/head，anchor 精确为零或无梯度；
+- 人为 nonfinite 后 `found_inf=1`、scale=`1→0.5`，208 个 model parameter tensor 与 185 项 optimizer state 整步逐元素 exact skip；
+- strict roundtrip 223 state，missing/unexpected=`0/0`，correct/shuffle/None/exploding pose 的 descriptor/student field/两个 gate delta 逐元素 exact；query/gallery 仍为 RGB `ImageDataset`。
+
+关键证据 SHA256：CUDA24 JSON=`c6d2414c884e88613d86924a81ac244b6406c00da04357280e6628aa470aa606`；semantics JSON=`4d021675505dd923dd41d1bdb7cc633b6f299fa360e4334cb60928a90f0797c7`；roundtrip checkpoint=`76a31c52aebb1956b85ec248a358fe5f356b4745c1eae57e2a9bde361f1c6662`；data/RGB parity runner=`21aadecaee9e8cfc5a48d6108bc9a57a038dff7be07505d36abb8d3ded00dedd`。
+
+### Matched efficiency
+
+| 项目 | Market B0 | Market D0 | D0−B0 |
+|---|---:|---:|---:|
+| 参数 | 28,111,674 | 28,217,116 | +105,442 / +0.375083% |
+| supported-op FLOPs / image | 5,535,368,448 | 5,548,787,520 | +13,419,072 / +0.242424% |
+| train batch64 mean step | 101.003 ms | 102.775 ms | +1.771 ms |
+| train peak allocated | 6,044,115,968 B | 6,186,716,160 B | +142,600,192 B |
+| eval batch256 mean step | 225.232 ms | 228.983 ms | +3.751 ms |
+| eval peak allocated | 4,725,344,768 B | 4,725,308,928 B | −35,840 B（分配测量噪声） |
+
+效率 JSON SHA256=`54113a19da0a8e5157b76a8ad2df336819bd5adf8c534ba64d51100bf04464d6`。FLOPs 只报告 analyzer 支持算子，两臂未支持的 elementwise/normalization 不伪装为完整理论 FLOPs；eval 两臂均显式 RGB-only。
+
+## Fresh 正式执行门禁
+
+- full-history bundle=`/home/afr/reid-clean/bundles/exp388_market_d0_5bbbe4e.bundle`；SHA256=`23df2f88afd0d1defb4b6b4aed1dfa5c53a5e45c81b3e69b7033d05d8cdec0fa`；
+- planned formal repo=`/home/afr/SOLIDER-REID-exp388-d0-5bbbe4e`，detached exact HEAD=`5bbbe4e64815a1b10b469ccfd4a20cac4675da67`；
+- fresh repo tracked clean，formal output 不存在，GPU=`2 MiB/0%`，fresh unit 5/5 PASS；
+- 全部 Gate 结论由 `NO-START` 更新为 `GO`。下一步只允许以该 exact commit/config fresh 启动唯一 Market D0，并自然运行至 e120。
