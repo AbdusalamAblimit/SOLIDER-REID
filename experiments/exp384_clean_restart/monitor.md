@@ -85,3 +85,9 @@
 - 启动前 GPU 空闲、output 不存在、tracked source clean
 
 启动后检查：唯一 main + 8 workers；e1-e5 自然完成，e6 训练中；GPU 约 6.8 GiB；严格异常 0。e5 epoch 平均 loss 6.978，训练精度 0.256，未用于性能裁决。
+
+### e10
+
+- mAP / R1 / R5 / R10：78.4 / 90.8 / 96.9 / 97.9
+- 首次正式完整 eval；仅作训练轨迹记录，不与官方 e120 指标直接裁决
+- eval 后训练继续，未改代码、config 或进程
