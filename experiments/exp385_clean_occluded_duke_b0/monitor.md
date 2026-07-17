@@ -69,3 +69,19 @@ smoke 产物 SHA256：
 - train log：`9a5d2414c167e337ddab454cda94c67f72f08433e03d80311dc3fec31f3819ae`
 
 结论：loader/unit/CUDA/AMP/overflow/eval/checkpoint 门禁全部通过。确认正式 output 不存在、GPU 空闲后，可 fresh 启动 120-epoch Occluded-Duke B0。
+
+## 正式 B0 启动
+
+- 启动时间：2026-07-17 19:19（远端日志时间）
+- output：`log/occluded_duke/official_swin_tiny_b0_s1234`
+- main PID：969538
+- execution HEAD：`3ce6506768ffe5cdf5453640a3ef0e1b721e6641`
+- config SHA256：`90d715d29324a069a0245e27a06d79fda8f261427a4f46b7e202c3e0351ad867`
+- 环境：`/usr/local/anaconda3/envs/mmpose-abu/bin/python`
+- batch/seed/epochs：64 / 1234 / 120
+- optimizer/base LR：SGD / 0.0008
+- semantic weight：0.2
+- eval/checkpoint period：10 / 120
+- 启动前正式 output 不存在、GPU 空闲、无其他训练、tracked source clean
+
+启动后检查：唯一 main + 8 workers，GPU 约 6.85 GiB；数据统计、teacher exact load 和首 20 iter 正常。正式训练不改代码/config、不续训、不选择中途 best，必须自然运行至 e120。
