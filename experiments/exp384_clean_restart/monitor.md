@@ -91,3 +91,17 @@
 - mAP / R1 / R5 / R10：78.4 / 90.8 / 96.9 / 97.9
 - 首次正式完整 eval；仅作训练轨迹记录，不与官方 e120 指标直接裁决
 - eval 后训练继续，未改代码、config 或进程
+
+### e20
+
+- mAP / R1 / R5 / R10：82.2 / 92.4 / 97.4 / 98.3
+- 训练继续，严格异常 0
+
+### e30
+
+- mAP / R1 / R5 / R10：87.0 / 94.3 / 98.0 / 98.8
+- e32 已自然完成；唯一 main + 8 workers，GPU 约 6.8 GiB，tracked source clean
+
+## 官方 `sw` / `with_cp` 并行审计
+
+CPU 单测确认：`sw` 存在设备硬编码和 terminal controller 死路径；`with_cp` 内核前向/梯度 exact parity，但官方 config/make_model 无法开启。证据与后续修复边界见 `official_sw_withcp_audit.md`。当前 B0 不改代码、不重启。
