@@ -2,10 +2,10 @@
 
 ## 当前状态
 
-- 状态：POSE EXTRACTION PREFLIGHT
+- 状态：POSE ARTIFACT SEALED / D0 IMPLEMENTATION PREFLIGHT
 - 直接对照：exp384 official clean Market B0 e120=`91.6/96.3/98.7/99.2`
 - exp387 clean Occ-Duke D0 已封板：`57.6/67.7/80.8/84.6`，相对 B0=`+0.2/+0.3/+0.2/−0.6`
-- 4090：exp387 已退出并终审通过，当前 GPU 空闲
+- 4090：Market pose extraction 已退出并终审通过，当前 GPU 空闲
 - 正式 Market D0：尚未创建 output 或启动
 
 ## Market 原始数据审计
@@ -57,4 +57,20 @@
 - 首检为唯一 pose 进程，GPU 约 `3,102 MiB / 93%`；已处理 300/12,936，约 33.90 image/s，已有 1 个完整 shard；
 - 唯一加载提示仍为官方已知的 unexpected `backbone.cls_token`；NaN/Inf/Traceback/RuntimeError/OOM/nonfinite 严格命中为 0。
 
-当前 4090 唯一工作为该 full extraction。完成前不得启动 ReID 训练或第二个 pose 进程；完成后先做 12,936 一一覆盖、shard/records/manifest/RGB SHA/尺寸/finite 与随机在线重跑 exact 终审。
+提取期间 4090 唯一工作为该 full extraction，未并行 ReID 训练或第二个 pose 进程；完成后先做了 12,936 一一覆盖、shard/records/manifest/RGB SHA/尺寸/finite 与随机在线重跑 exact 终审。
+
+## 全量 pose artifact 完成与终审
+
+- 完成：12,936/12,936；364.04 秒，35.53 image/s；原 PID=`1048801` 已退出，`.incomplete` 已原子切换为 final；
+- final manifest SHA256=`cc297ce97325b042a18e0b20512f9fd24322b72300ad8d66c88c0773239f3134`；
+- records manifest SHA256=`ddefe09234dbb7a51a5d3927ae26a1d675543e5814bb32da3b9f584010796798`；
+- runner SHA256=`ae9e864bd3b5a0d18d79237c63191a0220abd7e5518d555f43c7da4405866195`；
+- 51 shards：前 50 个各 256 条，末 shard 136 条；全部 shard SHA/count/schema、float32 shape 与 finite 独立重算 PASS；
+- 12,936 条 relative path 唯一且与 train JPG 排序后一一 exact；逐图 RGB SHA、尺寸与 dataset manifest 全量重算 exact；
+- query/gallery relative path 为 0，artifact 只覆盖 `bounding_box_train`；
+- score min/mean/max=`0.004411/0.850207/1.075122`，低于 0.5 为 9,226/219,912；原图范围外 joint 为 1,954/219,912；均保留原始值并由 paired transform/renderer 显式处理；
+- seed=388 随机抽取 8 张，用同一 fresh teacher 重跑，keypoints 与 scores 全部逐 bit exact；
+- runner 严格异常命中为 0；终审后 pose/ReID 进程为 0，GPU=`2 MiB/0%`；
+- 可执行结论：`EXP388_FULL_POSE_AUDIT_PASS`。
+
+pose artifact 数据门禁已封板。下一步只允许把现有 clean strict loader 最小泛化到 `market1501` 并复跑全部数据、数值、因果与 pose-free 门禁；在全部 PASS 前仍不创建正式 D0 output。
