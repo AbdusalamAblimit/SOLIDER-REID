@@ -13,6 +13,7 @@ from mmengine.analysis import get_model_complexity_info
 from torch.cuda import amp
 
 from config import cfg as default_cfg
+from datasets import make_dataloader
 from loss import make_loss
 from model import make_model
 from solver import make_optimizer
@@ -42,6 +43,15 @@ def sha256_file(path):
     return digest.hexdigest()
 
 
+def tensor_sha256(tensor):
+    tensor = tensor.detach().cpu().contiguous()
+    digest = hashlib.sha256()
+    digest.update(str(tensor.dtype).encode("ascii"))
+    digest.update(str(tuple(tensor.shape)).encode("ascii"))
+    digest.update(tensor.numpy().tobytes())
+    return digest.hexdigest()
+
+
 def make_cfg(tapf):
     config = default_cfg.clone()
     config.merge_from_file(
@@ -56,32 +66,42 @@ def make_cfg(tapf):
     return config
 
 
-def make_synthetic(config, tapf, batch_size):
-    generator = torch.Generator().manual_seed(20260718)
-    images = torch.randn(
-        batch_size,
-        3,
-        config.INPUT.SIZE_TRAIN[0],
-        config.INPUT.SIZE_TRAIN[1],
-        generator=generator,
-    ).cuda()
-    labels = torch.tensor(
-        [(index // config.DATALOADER.NUM_INSTANCE) % NUM_CLASSES for index in range(batch_size)],
-        device="cuda",
-    )
-    cameras = torch.tensor(
-        [index % CAMERA_NUM for index in range(batch_size)], device="cuda"
-    )
-    views = torch.ones(batch_size, dtype=torch.long, device="cuda")
+def load_fixed_real_batches():
+    config = make_cfg(True)
+    set_seed(config.SOLVER.SEED)
+    train_loader, _, val_loader, _, _, _, _ = make_dataloader(config)
+    train_iterator = iter(train_loader)
+    try:
+        train_batch = next(train_iterator)
+    finally:
+        if hasattr(train_iterator, "_shutdown_workers"):
+            train_iterator._shutdown_workers()
+    val_iterator = iter(val_loader)
+    try:
+        val_batch = next(val_iterator)
+    finally:
+        if hasattr(val_iterator, "_shutdown_workers"):
+            val_iterator._shutdown_workers()
+    if tuple(train_batch[0].shape) != (64, 3, 384, 128):
+        raise RuntimeError("Unexpected fixed train batch")
+    if tuple(val_batch[0].shape) != (256, 3, 384, 128):
+        raise RuntimeError("Unexpected fixed eval batch")
+    return train_batch, val_batch[0]
+
+
+def move_train_batch(cpu_batch, tapf):
+    images, labels, cameras, views, cpu_pose = cpu_batch
+    images = images.cuda()
+    labels = labels.cuda()
+    cameras = cameras.cuda()
+    views = views.cuda()
     pose = None
     if tapf:
-        keypoints = torch.zeros(batch_size, 17, 2, device="cuda")
-        keypoints[..., 0] = torch.linspace(8.0, 120.0, 17, device="cuda")
-        keypoints[..., 1] = torch.linspace(16.0, 368.0, 17, device="cuda")
-        scores = torch.linspace(0.2, 1.1, 17, device="cuda").repeat(batch_size, 1)
-        valid = torch.ones(batch_size, 17, dtype=torch.bool, device="cuda")
-        valid[:, -1] = False
-        pose = {"keypoints": keypoints, "scores": scores, "valid": valid}
+        pose = {
+            "keypoints": cpu_pose["keypoints"].cuda(),
+            "scores": cpu_pose["scores"].cuda(),
+            "valid": cpu_pose["valid"].cuda(),
+        }
     return images, labels, cameras, views, pose
 
 
@@ -125,7 +145,7 @@ def train_step(model, optimizer, scaler, loss_fn, config, batch, tapf):
     return float(loss.detach().item())
 
 
-def train_benchmark(config, tapf, warmup_steps, measured_steps):
+def train_benchmark(config, tapf, cpu_batch, warmup_steps, measured_steps):
     torch.cuda.empty_cache()
     set_seed(config.SOLVER.SEED)
     model = make_model(
@@ -138,7 +158,7 @@ def train_benchmark(config, tapf, warmup_steps, measured_steps):
     loss_fn, center_criterion = make_loss(config, NUM_CLASSES)
     optimizer, _ = make_optimizer(config, model, center_criterion)
     scaler = amp.GradScaler(init_scale=1.0)
-    batch = make_synthetic(config, tapf, config.SOLVER.IMS_PER_BATCH)
+    batch = move_train_batch(cpu_batch, tapf)
 
     for _ in range(warmup_steps):
         train_step(model, optimizer, scaler, loss_fn, config, batch, tapf)
@@ -175,7 +195,7 @@ def train_benchmark(config, tapf, warmup_steps, measured_steps):
     return result
 
 
-def eval_benchmark(config, tapf, warmup_steps, measured_steps):
+def eval_benchmark(config, tapf, cpu_images, warmup_steps, measured_steps):
     torch.cuda.empty_cache()
     set_seed(config.SOLVER.SEED)
     model = make_model(
@@ -185,14 +205,7 @@ def eval_benchmark(config, tapf, warmup_steps, measured_steps):
         VIEW_NUM,
         config.MODEL.SEMANTIC_WEIGHT,
     ).cuda().eval()
-    generator = torch.Generator().manual_seed(20260718)
-    images = torch.randn(
-        config.TEST.IMS_PER_BATCH,
-        3,
-        config.INPUT.SIZE_TEST[0],
-        config.INPUT.SIZE_TEST[1],
-        generator=generator,
-    ).cuda()
+    images = cpu_images.cuda()
 
     with torch.no_grad():
         for _ in range(warmup_steps):
@@ -241,7 +254,15 @@ def eval_benchmark(config, tapf, warmup_steps, measured_steps):
     return result
 
 
-def audit_arm(tapf, train_warmup, train_steps, eval_warmup, eval_steps):
+def audit_arm(
+    tapf,
+    train_batch,
+    eval_images,
+    train_warmup,
+    train_steps,
+    eval_warmup,
+    eval_steps,
+):
     config = make_cfg(tapf)
     return {
         "config": (
@@ -249,8 +270,17 @@ def audit_arm(tapf, train_warmup, train_steps, eval_warmup, eval_steps):
             if tapf
             else "configs/occluded_duke/swin_tiny.yml"
         ),
-        "train": train_benchmark(config, tapf, train_warmup, train_steps),
-        "eval_rgb_only": eval_benchmark(config, tapf, eval_warmup, eval_steps),
+        "config_sha256": sha256_file(
+            "configs/occluded_duke/swin_tiny_tapf_d0.yml"
+            if tapf
+            else "configs/occluded_duke/swin_tiny.yml"
+        ),
+        "train": train_benchmark(
+            config, tapf, train_batch, train_warmup, train_steps
+        ),
+        "eval_rgb_only": eval_benchmark(
+            config, tapf, eval_images, eval_warmup, eval_steps
+        ),
     }
 
 
@@ -274,8 +304,11 @@ def main():
     parser.add_argument("--eval-steps", type=int, default=20)
     args = parser.parse_args()
 
+    train_batch, eval_images = load_fixed_real_batches()
     b0 = audit_arm(
         False,
+        train_batch,
+        eval_images,
         args.train_warmup,
         args.train_steps,
         args.eval_warmup,
@@ -283,6 +316,8 @@ def main():
     )
     d0 = audit_arm(
         True,
+        train_batch,
+        eval_images,
         args.train_warmup,
         args.train_steps,
         args.eval_warmup,
@@ -310,9 +345,15 @@ def main():
         "device": torch.cuda.get_device_name(0),
         "script_sha256": sha256_file(__file__),
         "measurement_scope": {
-            "train": "synthetic model forward+backward+SGD step, AMP, scale=1",
-            "eval": "synthetic RGB-only model forward, FP32",
+            "train": "one fixed real paired batch; model forward+backward+SGD step, AMP, scale=1",
+            "eval": "one fixed real RGB-only validation batch; model forward, FP32",
             "flops": "MMEngine supported-operator trace; unsupported elementwise ops excluded equally",
+        },
+        "fixed_batch_sha256": {
+            "train_rgb": tensor_sha256(train_batch[0]),
+            "train_pid": tensor_sha256(train_batch[1]),
+            "train_pose_keypoints": tensor_sha256(train_batch[4]["keypoints"]),
+            "eval_rgb": tensor_sha256(eval_images),
         },
         "b0": b0,
         "d0": d0,
