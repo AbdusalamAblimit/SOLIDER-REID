@@ -126,6 +126,12 @@
 - 评测后自然进入 e71；R1 到达官方报告值不构成提前结束条件，继续运行至 e120
 - 唯一 main + 8 workers，GPU 约 6.8 GiB，exact HEAD 与 tracked source clean，严格异常 0
 
+### e80
+
+- mAP / R1 / R5 / R10：91.3 / 96.1 / 98.8 / 99.2
+- 评测后自然进入 e81；mAP 距官方报告值 0.3 不构成提前结束条件，继续运行至 e120
+- 唯一 main + 8 workers，GPU 约 6.8 GiB，exact HEAD 与 tracked source clean，严格异常 0
+
 ## 官方 `sw` / `with_cp` 并行审计
 
 CPU 单测确认：`sw` 存在设备硬编码和 terminal controller 死路径；`with_cp` 内核前向/梯度 exact parity，但官方 config/make_model 无法开启。证据与后续修复边界见 `official_sw_withcp_audit.md`。当前 B0 不改代码、不重启。
