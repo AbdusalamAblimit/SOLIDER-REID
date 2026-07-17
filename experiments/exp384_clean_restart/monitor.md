@@ -102,6 +102,18 @@
 - mAP / R1 / R5 / R10：87.0 / 94.3 / 98.0 / 98.8
 - e32 已自然完成；唯一 main + 8 workers，GPU 约 6.8 GiB，tracked source clean
 
+### e40
+
+- mAP / R1 / R5 / R10：88.9 / 95.4 / 98.5 / 99.0
+- 评测后训练继续；唯一 main + 8 workers，GPU 约 6.8 GiB，exact HEAD 与 tracked source clean
+- `NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow` 严格异常 0
+
+### e50
+
+- mAP / R1 / R5 / R10：89.8 / 95.5 / 98.8 / 99.3
+- 评测后自然进入 e51；未改代码、config 或进程，不作中途性能裁决
+- 唯一 main + 8 workers，GPU 约 6.8 GiB，exact HEAD 与 tracked source clean，严格异常 0
+
 ## 官方 `sw` / `with_cp` 并行审计
 
 CPU 单测确认：`sw` 存在设备硬编码和 terminal controller 死路径；`with_cp` 内核前向/梯度 exact parity，但官方 config/make_model 无法开启。证据与后续修复边界见 `official_sw_withcp_audit.md`。当前 B0 不改代码、不重启。
