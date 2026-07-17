@@ -2,14 +2,14 @@
 
 ## 当前状态
 
-- 状态：FORMAL D0 RUNNING
+- 状态：SEALED / FORMAL D0 COMPLETE
 - 直接对照：exp385 official clean B0 e120=`57.4/67.4/80.6/85.2`
 - pose provenance：exp386 final manifest SHA256=`cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8`
 - exp386 extraction/loader/paired augmentation/RGB parity/DataLoader CUDA：PASS
-- 4090：唯一正式 D0 运行中
-- 正式 D0：fresh 启动，main PID=`1013560`
+- 4090：正式 D0 已自然结束并终审通过，当前 GPU 空闲
+- 正式 D0：fresh 运行完整结束，原 main PID=`1013560` 及 workers 已退出
 
-实现与全部启动前 Gate 已通过；fresh execution 门禁也已通过。当前只允许该 D0 自然运行至 e120，不因单 epoch、阈值或 best checkpoint 提前停止。
+实现与全部启动前 Gate、fresh execution 门禁及 e120 终审均已通过。该 arm 已封板，禁止重启、续训或重复。
 
 ## 实现阶段
 
@@ -217,7 +217,36 @@ e30–e60 的正负波动只记录训练轨迹，不选择局部节点，也不�
 - e100 末尾 `Pose=0.462`、`Student=1`、`GateAbs=2.412e-02`；
 - 评测后自然进入 e101，训练进程与全部已登记执行不变量保持健康。
 
-e70–e100 仍然只用于完整轨迹审计，不以正负单点、局部 best 或阈值裁决；继续自然运行至 e120。
+e70–e100 仅用于完整轨迹审计，未以正负单点、局部 best 或阈值裁决；随后已按协议自然运行至 e120。
+
+### e110
+
+- mAP / R1 / R5 / R10：`57.4 / 67.4 / 80.5 / 84.6`；
+- 同 epoch exp385 B0：`57.3 / 67.3 / 80.3 / 85.2`；
+- D0−B0：`+0.1 / +0.1 / +0.2 / −0.6`。
+
+### e120 final
+
+- mAP / R1 / R5 / R10：`57.6 / 67.7 / 80.8 / 84.6`；
+- exp385 B0 e120：`57.4 / 67.4 / 80.6 / 85.2`；
+- D0−B0：`+0.2 / +0.3 / +0.2 / −0.6`；
+- e120 末尾 `Pose=0.462`、`Student=1`、`GateAbs=2.396e-02`；
+- 全程自然运行至 e120，以 final checkpoint 报告；未挑选局部 best，也未用单点或阈值提前裁决。
+
+## e120 终审
+
+- 原 main PID=`1013560` 及全部 workers 自然退出，GPU=`2 MiB / 0%`；
+- output 只有 `train_log.txt` 与唯一 `transformer_120.pth`，不存在中途 checkpoint；
+- checkpoint SHA256=`59017755d61370754aa2e852a487d8e242fcee8814685f77f5388ba3a430e069`；
+- runner SHA256=`9ed4523a85e6cf72d04fa3a8b868abf55053b2894e346749959174c66c6772c3`；
+- train log SHA256=`5d7d872113f0fe495c3ba3be2c6f6dae1d672a30b35174963aa363cb50333901`；
+- runner/train log 的边界词严格异常命中为 0；exact HEAD/config 与 tracked source clean；
+- checkpoint 共 `223` 个 state tensor，全部浮点 tensor 有限，strict load missing/unexpected=`0/0`；
+- 相对同 seed fresh 初始化的参数轨迹：anchor `8/8`、PSG bank0 `2/2`、PSG bank1 `2/2`、Swin `171/193`、head `2/3` changed；两个 PSG bank 均真实学习且保持独立；
+- final checkpoint 上 correct pose、batch-shuffle pose、`None` 与 exploding pose 的 descriptor、student field、两个 gate delta 逐元素 exact；query/gallery 继续为 RGB-only；
+- 可执行终审结论：`EXP387_FINAL_AUDIT_PASS`。
+
+最终结论边界：官方干净代码、fresh ViTPose-H target 与单 seed matched recipe 下，完整 anchor+PSG 的 mAP/R1/R5 为小幅正增益，R10 为负；这支持进入 Market 外部验证，但不足以用单 seed 宣称稳定普适提升。
 
 ## 官方 Swin 只读审计
 
