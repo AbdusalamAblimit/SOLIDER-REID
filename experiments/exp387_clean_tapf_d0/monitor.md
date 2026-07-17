@@ -2,14 +2,14 @@
 
 ## 当前状态
 
-- 状态：PREFLIGHT PASS / READY-TO-START
+- 状态：FORMAL D0 RUNNING
 - 直接对照：exp385 official clean B0 e120=`57.4/67.4/80.6/85.2`
 - pose provenance：exp386 final manifest SHA256=`cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8`
 - exp386 extraction/loader/paired augmentation/RGB parity/DataLoader CUDA：PASS
-- 4090：空闲
-- 正式 D0：尚未启动；正式 output 仍不存在
+- 4090：唯一正式 D0 运行中
+- 正式 D0：fresh 启动，main PID=`1013560`
 
-实现与全部启动前 Gate 已通过。下一步只能从完整 history bundle 建 fresh 独立 repo，复核 exact commit/config/output/GPU 后启动一次正式 D0。
+实现与全部启动前 Gate 已通过；fresh execution 门禁也已通过。当前只允许该 D0 自然运行至 e120，不因单 epoch、阈值或 best checkpoint 提前停止。
 
 ## 实现阶段
 
@@ -123,3 +123,18 @@ FLOPs 只报告 analyzer 支持的算子；两臂共同未计入的 elementwise/
 - 固定 eval RGB SHA256=`64263ed38d2f07d303a6db100c420ce980a6c8828299c35936aee49d9ba1df22`；
 - JSON SHA256=`753b4f3f761e7b07bcbb487412292e334ff766021493e990980744146ffe368a`；
 - runner SHA256=`bee5f8674f31a0d2b5b6549ba5a843546c3998c86c87373c352354de794fcb82`。
+
+## 正式执行
+
+- fresh repo：`/home/afr/SOLIDER-REID-exp387-d0-0d1822a`；
+- exact execution commit：`0d1822a07dda8daac0210b68916035b1886d5d99`；
+- full-history bundle：`/home/afr/reid-clean/bundles/exp387_clean_d0_0d1822a.bundle`；
+- bundle SHA256：`f10fcce50129c71663a0db835e9de9c5e5313d42c413f1c0f868c4f722aeacb1`；
+- config SHA256：`510f52604cbb455a6f61139d266705c3292e1bb431b2f603e5e750f56edd2c8b`；
+- output：`log/occluded_duke/exp387_clean_swin_tiny_d0_s1234`；
+- runner：`/home/afr/train-logs/exp387_clean_d0_s1234.runner.log`；
+- main PID：`1013560`。
+
+启动前 fresh repo 为 detached exact HEAD、tracked clean、正式 output 不存在、GPU `2 MiB/0%`，并在 fresh repo 原生环境复跑 TAPF unit `5/5 PASS`。正式 output 只在训练命令启动后创建。
+
+首次健康检查：唯一 main+8 DataLoader workers，GPU 约 `6,994 MiB`、利用率 `96%`；e1 已到 iter120/227，`Loss=14.477`、`Pose=0.918`、`Student=0`、`Reliability=0.850`、`GateAbs=7.895e-05`，日志中的 NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow 严格命中为 0。继续运行，不作早期效果裁决。
