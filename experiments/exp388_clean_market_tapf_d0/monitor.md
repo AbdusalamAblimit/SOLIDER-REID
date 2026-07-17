@@ -2,11 +2,11 @@
 
 ## 当前状态
 
-- 状态：ALL D0 PREFLIGHT GATES PASS / FORMAL LAUNCH PENDING
+- 状态：FORMAL MARKET D0 RUNNING
 - 直接对照：exp384 official clean Market B0 e120=`91.6/96.3/98.7/99.2`
 - exp387 clean Occ-Duke D0 已封板：`57.6/67.7/80.8/84.6`，相对 B0=`+0.2/+0.3/+0.2/−0.6`
-- 4090：Market pose extraction 已退出并终审通过，当前 GPU 空闲
-- 正式 Market D0：尚未创建 output 或启动
+- 4090：唯一正式 Market D0 运行中
+- 正式 Market D0：fresh 启动，main PID=`1051663`
 
 ## Market 原始数据审计
 
@@ -122,3 +122,18 @@ pose artifact 数据门禁已封板。下一步只允许把现有 clean strict l
 - planned formal repo=`/home/afr/SOLIDER-REID-exp388-d0-5bbbe4e`，detached exact HEAD=`5bbbe4e64815a1b10b469ccfd4a20cac4675da67`；
 - fresh repo tracked clean，formal output 不存在，GPU=`2 MiB/0%`，fresh unit 5/5 PASS；
 - 全部 Gate 结论由 `NO-START` 更新为 `GO`。下一步只允许以该 exact commit/config fresh 启动唯一 Market D0，并自然运行至 e120。
+
+## 正式 D0 启动
+
+- formal repo=`/home/afr/SOLIDER-REID-exp388-d0-5bbbe4e`；
+- exact HEAD=`5bbbe4e64815a1b10b469ccfd4a20cac4675da67`；
+- config SHA256=`81abd0d4247c26bdb306f54be0e9c9d1c8a595a64e85c30e40bd606a86b2cc80`；
+- output=`log/market1501/exp388_clean_swin_tiny_d0_s1234`；
+- runner=`/home/afr/train-logs/exp388_clean_market_d0_s1234.runner.log`；
+- main PID=`1051663`；环境=`/usr/local/anaconda3/envs/mmpose-abu/bin/python`；
+- 启动前 detached exact HEAD、tracked source clean、formal output/runner 不存在、GPU=`2 MiB/0%`；fresh unit 5/5 PASS；
+- recipe 固定为 Market official B0 matched 的 batch64/seed1234/120epoch/SGD/lr0.0008/semantic weight0.2/eval10/checkpoint120；
+- 首检唯一 main+8 workers，GPU 约 `6,994 MiB/92%`；e1 已到 iter160/186，`Loss=11.948`、`Pose=0.904`、`Student=0`、`Reliability=0.837`、`GateAbs=8.784e-05`；
+- exact HEAD/config 与 tracked source clean，严格异常命中为 0，当前仅有 train log、无 checkpoint。
+
+该 arm 必须自然跑满 e120，不改运行中代码/config，不续训、不重复；每次完整 eval 相对 exp384 Market B0 同 epoch 显式计算 mAP/R1/R5/R10 四项差值，只更新并提交本 monitor。
