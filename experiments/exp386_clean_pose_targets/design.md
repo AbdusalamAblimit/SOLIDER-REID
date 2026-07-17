@@ -52,6 +52,20 @@ exp385 已在官方 SOLIDER 干净代码上完成 Occluded-Duke B0，final=`57.4
 
 crop 后落在视野外的关节在该增强样本中置为无效；不得把未同步增强的原图坐标直接监督增强后的 RGB。
 
+## Paired augmentation 实现约束
+
+新增数据代码必须与官方 RGB 增强保持同序：固定尺寸 bicubic resize、随机水平翻转、对称 pad、随机 crop、ToTensor、Normalize、Random Erasing。几何随机量只采样一次，同时作用于 RGB 与 pose；Random Erasing 位于几何变换之后且只改变 RGB tensor。
+
+pose target loader 必须：
+
+1. 只接受本实验 final manifest，并显式校验 manifest、每个 shard、records digest 与样本数；
+2. 用 manifest 的 `image_root` 建立相对路径映射，不提供旧 `pose_data` 或文件名猜测 fallback；
+3. 每次返回 keypoints/scores 的独立副本，避免 DataLoader worker 原地修改共享记录；
+4. 在变换入口核对 PIL 原图尺寸与 target 中记录的宽高；
+5. 原始或 crop 后越界 joint 的 `valid=False`，confidence 保留 teacher 原值且不得静默截断到 `[0,1]`。
+
+水平翻转采用 COCO-17 固定左右置换 `[0,2,1,4,3,6,5,8,7,10,9,12,11,14,13,16,15]`，坐标变换为 `x' = W - 1 - x`。resize 使用连续图像坐标比例 `x' = x·W'/W, y' = y·H'/H`；pad 后加左/上偏移，crop 后减 crop 左/上偏移。该模块不接入官方 B0 默认 dataloader；本实验先以独立 unit 和真实样本 CUDA/DataLoader smoke 证明行为，D0 设计通过后再由显式 config 开关接线。
+
 ## 门禁
 
 1. fresh 官方 checkpoint 下载完成，URL/config/weight SHA 固定；不依赖旧仓库文件。
