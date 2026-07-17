@@ -53,3 +53,21 @@
 - batch-4 CUDA AMP train step：loss 6.625，梯度全部有限，GradScaler scale 65536
 
 结论：数据、官方权重和模型前向门禁通过。下一步运行官方 `train.py` 的单 epoch 全链路 smoke；该 smoke 仅检查训练/评测链路，不作为性能结果。
+
+## 官方全链路 smoke
+
+- 远端兼容执行提交：`b72ebf17b7731d52313effc96ed44b8055a76ecb`
+- 官方 Swin-Tiny config SHA256：`8f810e0c62bae9a6bed0d4d471b39f91eb5a2bc500015cd01035358c8957ff0f`
+- output：`log/market1501/official_swin_tiny_smoke_e1`
+- 唯一训练进程 + 8 workers，batch64，186 iterations
+- e1 训练时间：20.770 秒；速度：563.9 samples/s
+- e1 eval：47.0 mAP / 71.5 R1 / 87.1 R5 / 91.4 R10
+- 原进程与 workers 自然退出，GPU 释放，严格异常 0
+
+产物 SHA256：
+
+- runner stdout：`6cefcff27f3bbad9ba4a3d973cd948905177084b3ac14ed2f5c62ee4c64eb0e9`
+- train log：`6f494ffaae68172dffc3673b895e52abfafd82e5298ae9e5d927f77311dc9b6b`
+- e1 checkpoint：`5c55ed270061fa100ea30e716f9c8615ac245cdec68e8833f475ed8a262797fa`
+
+该 smoke 把 `MAX_EPOCHS/EVAL_PERIOD/CHECKPOINT_PERIOD` 临时设为 1，只用于验证官方 train/eval/checkpoint 链路，不能与正式 120-epoch 性能比较。正式 B0 使用官方 config 原值与独立 output。
