@@ -71,3 +71,17 @@
 - e1 checkpoint：`5c55ed270061fa100ea30e716f9c8615ac245cdec68e8833f475ed8a262797fa`
 
 该 smoke 把 `MAX_EPOCHS/EVAL_PERIOD/CHECKPOINT_PERIOD` 临时设为 1，只用于验证官方 train/eval/checkpoint 链路，不能与正式 120-epoch 性能比较。正式 B0 使用官方 config 原值与独立 output。
+
+## Market1501 正式 B0
+
+- output：`log/market1501/official_swin_tiny_b0_s1234`
+- main PID：924146
+- execution commit：`b72ebf17b7731d52313effc96ed44b8055a76ecb`
+- 环境：mmpose-abu
+- batch/seed/epoch：64 / 1234 / 120
+- optimizer/base LR：SGD / 0.0008
+- semantic weight：0.2
+- eval/checkpoint period：10 / 120
+- 启动前 GPU 空闲、output 不存在、tracked source clean
+
+启动后检查：唯一 main + 8 workers；e1-e5 自然完成，e6 训练中；GPU 约 6.8 GiB；严格异常 0。e5 epoch 平均 loss 6.978，训练精度 0.256，未用于性能裁决。
