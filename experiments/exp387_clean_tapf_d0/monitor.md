@@ -209,7 +209,15 @@ e30–e60 的正负波动只记录训练轨迹，不选择局部节点，也不�
 - e90 末尾 `Pose=0.463`、`Student=1`、`GateAbs=2.410e-02`；
 - 评测后训练自然推进，最新现场检查已完成 e97。唯一 main+8 workers，GPU 约 `7.10 GiB`；exact HEAD/config、tracked source clean，runner/train log 用边界词重算的 NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow/AMP warning 严格命中均为 0，尚无 checkpoint。
 
-e70–e90 仍然只用于完整轨迹审计，不以正负单点、局部 best 或阈值裁决；继续自然运行至 e120。
+### e100
+
+- mAP / R1 / R5 / R10：`56.9 / 67.1 / 79.6 / 83.8`；
+- 同 epoch exp385 B0：`57.0 / 67.4 / 80.1 / 85.2`；
+- D0−B0：`−0.1 / −0.3 / −0.5 / −1.4`；
+- e100 末尾 `Pose=0.462`、`Student=1`、`GateAbs=2.412e-02`；
+- 评测后自然进入 e101，训练进程与全部已登记执行不变量保持健康。
+
+e70–e100 仍然只用于完整轨迹审计，不以正负单点、局部 best 或阈值裁决；继续自然运行至 e120。
 
 ## 官方 Swin 只读审计
 
