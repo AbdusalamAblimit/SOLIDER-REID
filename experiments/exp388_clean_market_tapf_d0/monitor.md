@@ -30,4 +30,16 @@
 - planned incomplete=`/mnt1/afrderived/exp388_market_vitpose_huge_train.incomplete`；
 - planned final=`/mnt1/afrderived/exp388_market_vitpose_huge_train`。
 
-正式提取前先执行独立 smoke，并再次确认输出不存在、唯一 GPU 工作与严格异常为 0。
+## 提取器与 smoke 门禁
+
+- 执行 repo：`/home/afr/SOLIDER-REID-exp387-d0-0d1822a`，exact HEAD=`0d1822a07dda8daac0210b68916035b1886d5d99`，tracked source clean；
+- 通用 fresh 提取器 SHA256=`e57ae6fc21df7ac594774490fade69884e879b0d6324574b59cedddc24b83045`；
+- full 与 `.incomplete` 输出在 smoke 前均不存在，GPU 无计算进程；
+- smoke output=`/mnt1/afrderived/exp388_market_vitpose_huge_smoke16`；
+- 16 records / 2 shards，keypoints=`16×17×2`、scores=`16×17`，全量 finite；
+- manifest SHA256=`79beebf79e14feb08254702441d15318710c18018002bf73be58115e905570ff`；
+- score min/mean/max=`0.177427/0.863472/1.006203`，保留 teacher 原值，不静默裁剪；
+- 固定样本 `bounding_box_train/0002_c1s2_050846_02.jpg` 重新在线推理，keypoints/scores 与离线记录逐 bit exact；
+- 唯一模型加载提示为 MMPose 官方 checkpoint 已知的 unexpected `backbone.cls_token`；无 NaN/Inf/Traceback/RuntimeError/OOM/nonfinite，退出后 GPU=`2 MiB/0%`。
+
+结论：teacher provenance、Market 低分辨率输入 API、artifact schema/finite 与在线—离线等价 smoke 全部 PASS。允许 fresh 启动 12,936 张 train-only 全量提取；仍禁止处理 query/gallery 或并行 ReID 训练。
