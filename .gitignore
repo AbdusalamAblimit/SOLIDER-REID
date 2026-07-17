@@ -1,0 +1,22 @@
+# Local machine state
+.DS_Store
+.git_token
+__pycache__/
+*.py[cod]
+
+# Runtime outputs and downloaded assets
+log/
+logs/
+4090_log/
+tmp/
+remote_artifacts/
+*.pth
+*.pt
+*.ckpt
+*.bin
+
+# Archived experiment-local assets are not runtime source.
+experiments/**/.DS_Store
+experiments/**/__pycache__/
+experiments/**/data/
+experiments/clip_reid_compare/CLIP-ReID/
