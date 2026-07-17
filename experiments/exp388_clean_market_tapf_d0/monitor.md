@@ -137,3 +137,21 @@ pose artifact 数据门禁已封板。下一步只允许把现有 clean strict l
 - exact HEAD/config 与 tracked source clean，严格异常命中为 0，当前仅有 train log、无 checkpoint。
 
 该 arm 必须自然跑满 e120，不改运行中代码/config，不续训、不重复；每次完整 eval 相对 exp384 Market B0 同 epoch 显式计算 mAP/R1/R5/R10 四项差值，只更新并提交本 monitor。
+
+## 正式训练阶段评测（e10–e50）
+
+| Epoch | exp388 D0 mAP / R1 / R5 / R10 | exp384 B0 同 epoch | D0−B0 |
+|---:|---:|---:|---:|
+| 10 | 80.2 / 91.6 / 97.1 / 98.3 | 78.4 / 90.8 / 96.9 / 97.9 | +1.8 / +0.8 / +0.2 / +0.4 |
+| 20 | 83.3 / 93.4 / 97.8 / 98.6 | 82.2 / 92.4 / 97.4 / 98.3 | +1.1 / +1.0 / +0.4 / +0.3 |
+| 30 | 88.1 / 94.8 / 98.4 / 99.1 | 87.0 / 94.3 / 98.0 / 98.8 | +1.1 / +0.5 / +0.4 / +0.3 |
+| 40 | 89.4 / 95.4 / 98.3 / 98.8 | 88.9 / 95.4 / 98.5 / 99.0 | +0.5 / +0.0 / −0.2 / −0.2 |
+| 50 | 90.4 / 96.3 / 98.8 / 99.1 | 89.8 / 95.5 / 98.8 / 99.3 | +0.6 / +0.8 / +0.0 / −0.2 |
+
+- e10 末：`Pose=0.784`、`Student=1.00`、`GateAbs=5.300e-03`；
+- e20 末：`Pose=0.602`、`Student=1.00`、`GateAbs=1.516e-02`；
+- e30 末：`Pose=0.521`、`Student=1.00`、`GateAbs=2.066e-02`；
+- e40 末：`Pose=0.499`、`Student=1.00`、`GateAbs=2.241e-02`；
+- e50 末：`Pose=0.490`、`Student=1.00`、`Reliability=0.854`、`GateAbs=2.332e-02`。
+
+截至 e50，五次完整评测均正常完成；同 epoch mAP 差值由 `+1.8` 收敛到 `+0.6`，e50 的 R1/R5/R10 差值为 `+0.8/+0.0/−0.2`。这些仅是中途轨迹，不作单点裁决，正式 arm 继续自然运行到 e120。期间 exact HEAD/config 保持不变，唯一 main+8 workers，未生成早期 checkpoint，AMP/NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow 严格异常命中为 0。
