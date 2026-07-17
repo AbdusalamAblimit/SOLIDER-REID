@@ -142,3 +142,30 @@ smoke 产物 SHA256：
 - 评测后自然进入 e101；相对 e90 的小幅波动不作中途裁决，继续至 e120
 - 唯一 main + 8 workers，GPU 约 6.91 GiB
 - exact HEAD/config、tracked source clean；无中途 checkpoint，严格异常与 AMP warning 为 0
+
+### e110
+
+- mAP / R1 / R5 / R10：57.3 / 67.3 / 80.3 / 85.2
+- 完整评测后自然继续；不选择中途 best，以 e120 封板
+
+### e120 final
+
+- mAP / R1 / R5 / R10：57.4 / 67.4 / 80.6 / 85.2
+- 以 e120 final 而非 e90/e110 中途节点封板
+- 原 main PID 969538 与 8 workers 自然退出；GPU 回到 2 MiB / 0%
+- 唯一 checkpoint：`transformer_120.pth`，112,619,971 bytes
+
+产物 SHA256：
+
+- e120 checkpoint：`268621dbe1a2c201a7cf5dc90bba022a727d7b8593ed3268baa1538d1e56e346`
+- runner stdout：`35b6966c8f3e10be35996c59a4f151b53895ed003826aa732ddb55db49103138`
+- train log：`f570d35bffa1f64e9ab0a18cfef4981d3c9554863b4b868f1c24e082044a29f6`
+
+终审：
+
+- execution HEAD/config SHA 保持精确，tracked source clean
+- 全程只有 e120 checkpoint；严格 `NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow` 与 AMP warning 扫描为 0
+- checkpoint strict load：0 missing / 0 unexpected；211 个 state tensor 全部有限
+- CUDA AMP descriptor：`[1,768]`，descriptor 与全部 featmaps 有限，峰值 allocated 167.44 MiB；检查后 GPU 释放
+
+结论：干净 Occluded-Duke Swin-Tiny B0 全量 baseline 封板通过，final=`57.4/67.4/80.6/85.2`。禁止重启、续训或重复该 arm；下一步从原始 RGB 重新提取 pose，并在干净代码上从零实现 matched TAPF D0。
