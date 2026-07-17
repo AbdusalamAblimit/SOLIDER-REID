@@ -139,6 +139,23 @@ FLOPs 只报告 analyzer 支持的算子；两臂共同未计入的 elementwise/
 
 首次健康检查：唯一 main+8 DataLoader workers，GPU 约 `6,994 MiB`、利用率 `96%`；e1 已到 iter120/227，`Loss=14.477`、`Pose=0.918`、`Student=0`、`Reliability=0.850`、`GateAbs=7.895e-05`，日志中的 NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow 严格命中为 0。继续运行，不作早期效果裁决。
 
+### e10
+
+- mAP / R1 / R5 / R10：`33.4 / 42.7 / 59.8 / 65.2`；
+- 同 epoch exp385 B0：`33.2 / 43.2 / 59.0 / 65.2`；
+- D0−B0：`+0.2 / −0.5 / +0.8 / +0.0`；
+- 此时 handoff 刚到 `Student=1`，只记录完整轨迹，不用单点判断方法成败。
+
+### e20
+
+- mAP / R1 / R5 / R10：`42.2 / 52.4 / 67.6 / 74.0`；
+- 同 epoch exp385 B0：`39.8 / 51.1 / 66.3 / 72.9`；
+- D0−B0：`+2.4 / +1.3 / +1.3 / +1.1`；
+- e20 训练末尾 `Pose=0.564`、`Student=1`、`GateAbs=1.809e-02`，anchor supervision 与两个 PSG consumer 均保持 active；
+- 评测后自然进入 e21/e22。检查时 exact HEAD/config 与 tracked source clean，唯一 main+8 workers，GPU 约 `7.16 GiB`；runner/train log 的严格异常及 AMP warning 均为 0。
+
+e10→e20 的变化不替代 e120 final；不得据此提前停止或挑选中途节点。
+
 ## 官方 Swin 只读审计
 
 训练期间按用户要求只读核查官方 `semantic_weight` 与 `with_cp`，完整证据见 `official_swin_audit.md`，可执行结果为 `EXP387_OFFICIAL_SWIN_AUDIT_PASS`。结论是：`with_cp` block 核心 exact，但官方 defaults/builder 未接线；semantic stage0–2 有效，terminal stage3 对 descriptor 为 dead path；另有硬编码 `.cuda()` 与 backbone `.train()/.eval()` 返回 `None` 的 API 边界。当前 B0/D0 共享这些官方行为，不构成 D0−B0 混淆，也不修改运行中代码/config。
