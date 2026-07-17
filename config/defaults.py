@@ -78,6 +78,20 @@ _C.MODEL.SIE_VIEW = False
 # Semantic Weight
 _C.MODEL.SEMANTIC_WEIGHT = 1.0
 
+# Minimal clean TAPF D0. Disabled by default.
+_C.MODEL.TAPF = CN()
+_C.MODEL.TAPF.ENABLED = False
+_C.MODEL.TAPF.ARTIFACT_DIR = ""
+_C.MODEL.TAPF.MANIFEST_SHA256 = ""
+_C.MODEL.TAPF.VERIFY_IMAGE_SHA = False
+_C.MODEL.TAPF.ANCHOR_HIDDEN = 128
+_C.MODEL.TAPF.PSG_HIDDEN = 32
+_C.MODEL.TAPF.GAUSSIAN_SIGMA = 1.5
+_C.MODEL.TAPF.GATE_RELEASE = 0.5
+_C.MODEL.TAPF.TEACHER_EPOCHS = 5
+_C.MODEL.TAPF.HANDOFF_EPOCHS = 5
+_C.MODEL.TAPF.POSE_LOSS_WEIGHT = 0.1
+
 # -----------------------------------------------------------------------------
 # INPUT
 # -----------------------------------------------------------------------------

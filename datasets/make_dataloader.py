@@ -8,6 +8,9 @@ from .sampler import RandomIdentitySampler, RandomIdentitySampler_IdUniform
 from .market1501 import Market1501
 from .msmt17 import MSMT17
 from .occluded_duke import OccludedDuke
+from .paired_pose_transform import PairedPoseTransform
+from .pose_dataset import PoseImageDataset, pose_train_collate_fn
+from .pose_targets import PoseTargetStore
 from .sampler_ddp import RandomIdentitySampler_DDP
 import torch.distributed as dist
 from .mm import MM
@@ -58,7 +61,31 @@ def make_dataloader(cfg):
     else:
         dataset = __factory[cfg.DATASETS.NAMES](root=cfg.DATASETS.ROOT_DIR)
 
-    train_set = ImageDataset(dataset.train, train_transforms)
+    if cfg.MODEL.TAPF.ENABLED:
+        if cfg.DATASETS.NAMES != 'occluded_duke':
+            raise ValueError('Clean TAPF D0 only supports occluded_duke')
+        pose_store = PoseTargetStore(
+            cfg.MODEL.TAPF.ARTIFACT_DIR,
+            cfg.MODEL.TAPF.MANIFEST_SHA256,
+        )
+        paired_transform = PairedPoseTransform(
+            size_train=cfg.INPUT.SIZE_TRAIN,
+            flip_probability=cfg.INPUT.PROB,
+            padding=cfg.INPUT.PADDING,
+            pixel_mean=cfg.INPUT.PIXEL_MEAN,
+            pixel_std=cfg.INPUT.PIXEL_STD,
+            erasing_probability=cfg.INPUT.RE_PROB,
+        )
+        train_set = PoseImageDataset(
+            dataset.train,
+            pose_store,
+            paired_transform,
+            verify_image_sha=cfg.MODEL.TAPF.VERIFY_IMAGE_SHA,
+        )
+        selected_train_collate_fn = pose_train_collate_fn
+    else:
+        train_set = ImageDataset(dataset.train, train_transforms)
+        selected_train_collate_fn = train_collate_fn
     train_set_normal = ImageDataset(dataset.train, val_transforms)
     num_classes = dataset.num_train_pids
     cam_num = dataset.num_train_cams
@@ -75,27 +102,27 @@ def make_dataloader(cfg):
                 train_set,
                 num_workers=num_workers,
                 batch_sampler=batch_sampler,
-                collate_fn=train_collate_fn,
+                collate_fn=selected_train_collate_fn,
                 pin_memory=True,
             )
         else:
             train_loader = DataLoader(
                 train_set, batch_size=cfg.SOLVER.IMS_PER_BATCH,
                 sampler=RandomIdentitySampler(dataset.train, cfg.SOLVER.IMS_PER_BATCH, cfg.DATALOADER.NUM_INSTANCE),
-                num_workers=num_workers, collate_fn=train_collate_fn
+                num_workers=num_workers, collate_fn=selected_train_collate_fn
             )
     elif cfg.DATALOADER.SAMPLER == 'softmax':
         print('using softmax sampler')
         train_loader = DataLoader(
             train_set, batch_size=cfg.SOLVER.IMS_PER_BATCH, shuffle=True, num_workers=num_workers,
-            collate_fn=train_collate_fn
+            collate_fn=selected_train_collate_fn
         )
     elif cfg.DATALOADER.SAMPLER in ['id_triplet', 'id']:
         print('using ID sampler')
         train_loader = DataLoader(
                 train_set, batch_size=cfg.SOLVER.IMS_PER_BATCH,
                 sampler=RandomIdentitySampler_IdUniform(dataset.train, cfg.DATALOADER.NUM_INSTANCE),
-                num_workers=num_workers, collate_fn=train_collate_fn, drop_last = True,
+                num_workers=num_workers, collate_fn=selected_train_collate_fn, drop_last = True,
         )
     else:
         print('unsupported sampler! expected softmax or triplet but got {}'.format(cfg.SAMPLER))

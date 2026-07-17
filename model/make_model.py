@@ -6,6 +6,7 @@ from .backbones.vit_pytorch import vit_base_patch16_224_TransReID, vit_small_pat
 from .backbones.swin_transformer import swin_base_patch4_window7_224, swin_small_patch4_window7_224, swin_tiny_patch4_window7_224
 from loss.metric_learning import Arcface, Cosface, AMSoftmax, CircleLoss
 from .backbones.resnet_ibn_a import resnet50_ibn_a,resnet101_ibn_a
+from .tapf import CleanTapfD0
 
 def shuffle_unit(features, shift, group, begin=1):
 
@@ -225,11 +226,45 @@ class build_transformer(nn.Module):
 
         self.dropout = nn.Dropout(self.dropout_rate)
 
+        self.tapf_enabled = cfg.MODEL.TAPF.ENABLED
+        if self.tapf_enabled:
+            cpu_rng_state = torch.get_rng_state()
+            cuda_rng_state = (
+                torch.cuda.get_rng_state_all() if torch.cuda.is_initialized() else None
+            )
+            self.base.enable_tapf(
+                CleanTapfD0(
+                    anchor_hidden=cfg.MODEL.TAPF.ANCHOR_HIDDEN,
+                    psg_hidden=cfg.MODEL.TAPF.PSG_HIDDEN,
+                    gaussian_sigma=cfg.MODEL.TAPF.GAUSSIAN_SIGMA,
+                    gate_release=cfg.MODEL.TAPF.GATE_RELEASE,
+                    teacher_epochs=cfg.MODEL.TAPF.TEACHER_EPOCHS,
+                    handoff_epochs=cfg.MODEL.TAPF.HANDOFF_EPOCHS,
+                )
+            )
+            torch.set_rng_state(cpu_rng_state)
+            if cuda_rng_state is not None:
+                torch.cuda.set_rng_state_all(cuda_rng_state)
+
         #if pretrain_choice == 'self':
         #    self.load_param(model_path)
 
-    def forward(self, x, label=None, cam_label= None, view_label=None):
-        global_feat, featmaps = self.base(x)
+    def forward(
+        self,
+        x,
+        label=None,
+        cam_label=None,
+        view_label=None,
+        pose_batch=None,
+        tapf_epoch=None,
+    ):
+        base_output = self.base(
+            x, pose_batch=pose_batch, tapf_epoch=tapf_epoch
+        )
+        if self.tapf_enabled:
+            global_feat, featmaps, tapf_aux = base_output
+        else:
+            global_feat, featmaps = base_output
         if self.reduce_feat_dim:
             global_feat = self.fcneck(global_feat)
         feat = self.bottleneck(global_feat)
@@ -241,6 +276,8 @@ class build_transformer(nn.Module):
             else:
                 cls_score = self.classifier(feat_cls)
 
+            if self.tapf_enabled:
+                return cls_score, global_feat, featmaps, tapf_aux
             return cls_score, global_feat, featmaps  # global feature for triplet loss
         else:
             if self.neck_feat == 'after':

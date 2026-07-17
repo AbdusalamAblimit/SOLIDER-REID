@@ -38,6 +38,7 @@ def do_train(cfg,
 
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
+    pose_loss_meter = AverageMeter()
 
     evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM)
     scaler = amp.GradScaler()
@@ -46,9 +47,20 @@ def do_train(cfg,
         start_time = time.time()
         loss_meter.reset()
         acc_meter.reset()
+        pose_loss_meter.reset()
         evaluator.reset()
         model.train()
-        for n_iter, (img, vid, target_cam, target_view) in enumerate(train_loader):
+        for n_iter, batch in enumerate(train_loader):
+            if cfg.MODEL.TAPF.ENABLED:
+                img, vid, target_cam, target_view, pose_batch = batch
+                pose_batch = {
+                    "keypoints": pose_batch["keypoints"].to(device),
+                    "scores": pose_batch["scores"].to(device),
+                    "valid": pose_batch["valid"].to(device),
+                }
+            else:
+                img, vid, target_cam, target_view = batch
+                pose_batch = None
             optimizer.zero_grad()
             optimizer_center.zero_grad()
             img = img.to(device)
@@ -56,8 +68,23 @@ def do_train(cfg,
             target_cam = target_cam.to(device)
             target_view = target_view.to(device)
             with amp.autocast(enabled=True):
-                score, feat, _ = model(img, label=target, cam_label=target_cam, view_label=target_view )
-                loss = loss_fn(score, feat, target, target_cam)
+                model_output = model(
+                    img,
+                    label=target,
+                    cam_label=target_cam,
+                    view_label=target_view,
+                    pose_batch=pose_batch,
+                    tapf_epoch=epoch,
+                )
+                if cfg.MODEL.TAPF.ENABLED:
+                    score, feat, _, tapf_aux = model_output
+                    reid_loss = loss_fn(score, feat, target, target_cam)
+                    loss = reid_loss + (
+                        cfg.MODEL.TAPF.POSE_LOSS_WEIGHT * tapf_aux["pose_loss"]
+                    )
+                else:
+                    score, feat, _ = model_output
+                    loss = loss_fn(score, feat, target, target_cam)
 
             scaler.scale(loss).backward()
 
@@ -76,19 +103,47 @@ def do_train(cfg,
 
             loss_meter.update(loss.item(), img.shape[0])
             acc_meter.update(acc, 1)
+            if cfg.MODEL.TAPF.ENABLED:
+                pose_loss_meter.update(tapf_aux["pose_loss"].item(), img.shape[0])
 
             torch.cuda.synchronize()
             if cfg.MODEL.DIST_TRAIN:
                 if dist.get_rank() == 0:
                     if (n_iter + 1) % log_period == 0:
                         base_lr = scheduler._get_lr(epoch)[0] if cfg.SOLVER.WARMUP_METHOD == 'cosine' else scheduler.get_lr()[0]
-                        logger.info("Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Base Lr: {:.2e}"
-                                    .format(epoch, (n_iter + 1), len(train_loader), loss_meter.avg, acc_meter.avg, base_lr))
+                        if cfg.MODEL.TAPF.ENABLED:
+                            logger.info(
+                                "Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Pose: {:.3f}, Acc: {:.3f}, Student: {:.2f}, Base Lr: {:.2e}"
+                                .format(epoch, (n_iter + 1), len(train_loader), loss_meter.avg, pose_loss_meter.avg, acc_meter.avg, tapf_aux["student_fraction"], base_lr)
+                            )
+                        else:
+                            logger.info("Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Base Lr: {:.2e}"
+                                        .format(epoch, (n_iter + 1), len(train_loader), loss_meter.avg, acc_meter.avg, base_lr))
             else:
                 if (n_iter + 1) % log_period == 0:
                     base_lr = scheduler._get_lr(epoch)[0] if cfg.SOLVER.WARMUP_METHOD == 'cosine' else scheduler.get_lr()[0]
-                    logger.info("Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Base Lr: {:.2e}"
-                                .format(epoch, (n_iter + 1), len(train_loader), loss_meter.avg, acc_meter.avg, base_lr))
+                    if cfg.MODEL.TAPF.ENABLED:
+                        gate_abs = torch.stack(
+                            [delta.detach().float().abs().mean() for delta in tapf_aux["gate_deltas"]]
+                        ).mean().item()
+                        logger.info(
+                            "Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Pose: {:.3f}, Acc: {:.3f}, Student: {:.2f}, Reliability: {:.3f}, GateAbs: {:.3e}, Base Lr: {:.2e}"
+                            .format(
+                                epoch,
+                                (n_iter + 1),
+                                len(train_loader),
+                                loss_meter.avg,
+                                pose_loss_meter.avg,
+                                acc_meter.avg,
+                                tapf_aux["student_fraction"],
+                                tapf_aux["reliability"].detach().float().mean().item(),
+                                gate_abs,
+                                base_lr,
+                            )
+                        )
+                    else:
+                        logger.info("Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Base Lr: {:.2e}"
+                                    .format(epoch, (n_iter + 1), len(train_loader), loss_meter.avg, acc_meter.avg, base_lr))
 
         end_time = time.time()
         time_per_batch = (end_time - start_time) / (n_iter + 1)
@@ -180,5 +235,3 @@ def do_inference(cfg,
     for r in [1, 5, 10]:
         logger.info("CMC curve, Rank-{:<3}:{:.1%}".format(r, cmc[r - 1]))
     return cmc[0], cmc[4]
-
-

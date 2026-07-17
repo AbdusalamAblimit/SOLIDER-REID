@@ -1357,7 +1357,20 @@ class SwinTransformer(BaseModule):
             res = self.load_state_dict(state_dict, False)
             print('unloaded parameters:', res)
 
-    def forward(self, x, semantic_weight=None):
+    def enable_tapf(self, tapf_module):
+        if hasattr(self, "tapf"):
+            raise RuntimeError("TAPF is already enabled")
+        self.tapf = tapf_module
+
+    def forward(
+        self,
+        x,
+        semantic_weight=None,
+        pose_batch=None,
+        tapf_epoch=None,
+    ):
+        input_hw = x.shape[-2:]
+        tapf = getattr(self, "tapf", None)
         if self.semantic_weight >= 0 and semantic_weight == None:
             w = torch.ones(x.shape[0],1) * self.semantic_weight
             w = torch.cat([w, 1-w], axis=-1)
@@ -1370,8 +1383,30 @@ class SwinTransformer(BaseModule):
         x = self.drop_after_pos(x)
 
         outs = []
+        tapf_state = None
         for i, stage in enumerate(self.stages):
-            x, hw_shape, out, out_hw_shape = stage(x, hw_shape)
+            if tapf is not None and i == 3:
+                if stage.downsample is not None or len(stage.blocks) != 2:
+                    raise RuntimeError("Clean TAPF expects two final Swin blocks")
+                out_hw_shape = hw_shape
+                for bank_index, block in enumerate(stage.blocks):
+                    x = block(x, hw_shape)
+                    x = tapf.apply_gate(bank_index, x, hw_shape, tapf_state)
+                out = x
+            else:
+                x, hw_shape, out, out_hw_shape = stage(x, hw_shape)
+            if tapf is not None and i == 2:
+                source = getattr(self, "norm2")(out)
+                source = source.view(
+                    -1, *out_hw_shape, self.num_features[2]
+                ).permute(0, 3, 1, 2).contiguous()
+                tapf_state = tapf.prepare(
+                    source,
+                    pose_batch=pose_batch,
+                    image_hw=input_hw,
+                    epoch=tapf_epoch,
+                    training=self.training,
+                )
             if self.semantic_weight >= 0:
                 sw = self.semantic_embed_w[i](semantic_weight).unsqueeze(1)
                 sb = self.semantic_embed_b[i](semantic_weight).unsqueeze(1)
@@ -1385,6 +1420,8 @@ class SwinTransformer(BaseModule):
                 outs.append(out)
         x = self.avgpool(outs[-1])
         x = torch.flatten(x, 1)
+        if tapf is not None:
+            return x, outs, tapf_state
         return x, outs
 
 def swin_base_patch4_window7_224(img_size=224,drop_rate=0.0, attn_drop_rate=0.0, drop_path_rate=0., **kwargs):
