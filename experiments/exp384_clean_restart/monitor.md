@@ -150,6 +150,29 @@
 - mAP 达到官方报告值、R1 高 0.3；评测后自然进入 e111，仍以 e120 final/checkpoint 封板
 - 唯一 main + 8 workers，GPU 约 6.8 GiB，exact HEAD/config SHA 与 tracked source clean，严格异常 0
 
+### e120 final
+
+- mAP / R1 / R5 / R10：91.6 / 96.3 / 98.7 / 99.2
+- 相对官方报告的 91.6 mAP / 96.1 R1：mAP exact，R1 +0.2；以 e120 而非中途 best 封板
+- 原 main PID 924146 与 8 workers 自然退出；GPU 回到 2 MiB / 0%，未续训或重启
+- 唯一 checkpoint：`transformer_120.pth`，112,770,499 bytes
+
+产物 SHA256：
+
+- e120 checkpoint：`7c968e729b20560143e8779186ced19ecd6f89a9e8edc169ef0b2ed60b37acf4`
+- runner stdout：`ddc539b20d5d00fbdb9a66f32c9258777bbae3e8285197643e385a0170d98a69`
+- train log：`ad660d4fc7a5a5e7b360edcd4ceaba084ac75dd6cdce4a8a39ad0b1732087ee2`
+
+终审：
+
+- execution HEAD：`b72ebf17b7731d52313effc96ed44b8055a76ecb`
+- config SHA256：`8f810e0c62bae9a6bed0d4d471b39f91eb5a2bc500015cd01035358c8957ff0f`
+- tracked source clean；严格 `NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow` 与 AMP warning 扫描均为 0
+- checkpoint strict load：0 missing / 0 unexpected；211 个 state tensor 全部有限
+- CUDA AMP descriptor：`[1, 768]`，descriptor 与全部 featmaps 有限，峰值 allocated 168.5 MiB；检查后 GPU 释放
+
+结论：官方干净 Market1501 Swin-Tiny B0 全量复现通过，禁止重启、续训或重复该 arm。下一步仅在同一干净代码上审计并建立 Occluded-Duke B0。
+
 ## 官方 `sw` / `with_cp` 并行审计
 
 CPU 单测确认：`sw` 存在设备硬编码和 terminal controller 死路径；`with_cp` 内核前向/梯度 exact parity，但官方 config/make_model 无法开启。证据与后续修复边界见 `official_sw_withcp_audit.md`。当前 B0 不改代码、不重启。
