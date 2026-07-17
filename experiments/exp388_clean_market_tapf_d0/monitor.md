@@ -43,3 +43,18 @@
 - 唯一模型加载提示为 MMPose 官方 checkpoint 已知的 unexpected `backbone.cls_token`；无 NaN/Inf/Traceback/RuntimeError/OOM/nonfinite，退出后 GPU=`2 MiB/0%`。
 
 结论：teacher provenance、Market 低分辨率输入 API、artifact schema/finite 与在线—离线等价 smoke 全部 PASS。允许 fresh 启动 12,936 张 train-only 全量提取；仍禁止处理 query/gallery 或并行 ReID 训练。
+
+## 全量 train-only 提取启动
+
+- 启动时间：exp387 终审封板、GPU 空闲后串行启动；
+- 执行 repo/exact HEAD：`/home/afr/SOLIDER-REID-exp387-d0-0d1822a` / `0d1822a07dda8daac0210b68916035b1886d5d99`；
+- main PID=`1048801`；
+- runner=`/home/afr/pose-logs/exp388_market_vitpose_huge_train.runner.log`；
+- incomplete=`/mnt1/afrderived/exp388_market_vitpose_huge_train.incomplete`；
+- final=`/mnt1/afrderived/exp388_market_vitpose_huge_train`；
+- 输入严格限定 `bounding_box_train`，expected count=`12,936`，dataset/config/weight SHA 门禁全部启用，shard size=`256`；
+- 启动前 final/incomplete/runner 均不存在，tracked source clean，GPU 无计算进程；
+- 首检为唯一 pose 进程，GPU 约 `3,102 MiB / 93%`；已处理 300/12,936，约 33.90 image/s，已有 1 个完整 shard；
+- 唯一加载提示仍为官方已知的 unexpected `backbone.cls_token`；NaN/Inf/Traceback/RuntimeError/OOM/nonfinite 严格命中为 0。
+
+当前 4090 唯一工作为该 full extraction。完成前不得启动 ReID 训练或第二个 pose 进程；完成后先做 12,936 一一覆盖、shard/records/manifest/RGB SHA/尺寸/finite 与随机在线重跑 exact 终审。
