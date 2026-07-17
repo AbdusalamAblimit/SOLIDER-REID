@@ -156,6 +156,37 @@ FLOPs 只报告 analyzer 支持的算子；两臂共同未计入的 elementwise/
 
 e10→e20 的变化不替代 e120 final；不得据此提前停止或挑选中途节点。
 
+### e30
+
+- mAP / R1 / R5 / R10：`46.6 / 56.2 / 71.3 / 76.4`；
+- 同 epoch exp385 B0：`45.4 / 55.0 / 70.5 / 76.2`；
+- D0−B0：`+1.2 / +1.2 / +0.8 / +0.2`；
+- e30 末尾 `Pose=0.491`、`Student=1`、`GateAbs=2.275e-02`。
+
+### e40
+
+- mAP / R1 / R5 / R10：`50.0 / 60.7 / 76.2 / 81.0`；
+- 同 epoch exp385 B0：`49.8 / 61.2 / 76.0 / 81.1`；
+- D0−B0：`+0.2 / −0.5 / +0.2 / −0.1`；
+- e40 末尾 `Pose=0.474`、`Student=1`、`GateAbs=2.346e-02`。
+
+### e50
+
+- mAP / R1 / R5 / R10：`52.1 / 62.8 / 77.0 / 81.9`；
+- 同 epoch exp385 B0：`52.7 / 63.1 / 77.1 / 82.2`；
+- D0−B0：`−0.6 / −0.3 / −0.1 / −0.3`；
+- e50 末尾 `Pose=0.468`、`Student=1`、`GateAbs=2.371e-02`。
+
+### e60
+
+- mAP / R1 / R5 / R10：`55.1 / 66.1 / 79.0 / 83.3`；
+- 同 epoch exp385 B0：`54.7 / 65.0 / 79.6 / 83.5`；
+- D0−B0：`+0.4 / +1.1 / −0.6 / −0.2`；
+- e60 末尾 `Pose=0.467`、`Student=1`、`GateAbs=2.404e-02`；
+- 评测后自然进入 e61。唯一 main+8 workers，GPU 约 `7.08 GiB`；exact HEAD/config、tracked source clean，runner/train log 严格异常与 AMP warning 均为 0，尚无 checkpoint。
+
+e30–e60 的正负波动只记录训练轨迹，不选择局部节点，也不改变必须自然跑满 e120 的协议。
+
 ## 官方 Swin 只读审计
 
 训练期间按用户要求只读核查官方 `semantic_weight` 与 `with_cp`，完整证据见 `official_swin_audit.md`，可执行结果为 `EXP387_OFFICIAL_SWIN_AUDIT_PASS`。结论是：`with_cp` block 核心 exact，但官方 defaults/builder 未接线；semantic stage0–2 有效，terminal stage3 对 descriptor 为 dead path；另有硬编码 `.cuda()` 与 backbone `.train()/.eval()` 返回 `None` 的 API 边界。当前 B0/D0 共享这些官方行为，不构成 D0−B0 混淆，也不修改运行中代码/config。
