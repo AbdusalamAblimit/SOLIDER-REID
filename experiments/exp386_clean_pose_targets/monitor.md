@@ -91,3 +91,32 @@
 - 在线校验退出后 GPU 仍为 2 MiB / 0%，无遗留进程
 
 结论：fresh train-only pose target 提取、可追溯性、全量结构与在线—离线等价门禁全部 PASS。query/gallery 从未生成 pose；下一步只实现 paired augmentation 与 pose target loader 门禁，暂不启动 D0。
+
+## Clean pose data path 与 paired augmentation
+
+- 本地实现提交：`749850d`
+- 远端门禁提交：`d4fa227b30f7ea9a7c97973854323637d9fc8126`
+- `pose_targets.py` SHA256：`42f6e35eff2ad572445143cb3ecc5b6a22d856facc4453b989411300dec22624`
+- `paired_pose_transform.py` SHA256：`5a88021e80acc3e0a0ff45571cedcd13b7acf02f5e07570ec65be972eda191dd`
+- `pose_dataset.py` SHA256：`876065939acf278265ab5a99572b7d148c723c26ec557f6da2f47f64e91aed6f`
+- unit SHA256：`72a7ad6a30cf1a08e22bd7f18ceca33713e3e79e3555f36c0cfc7bfdd57114f2`
+
+实现边界：
+
+- loader 强制 manifest SHA、每个 shard SHA、records digest、COCO-17 schema/count/float32/finite/unique path；拒绝路径逃逸和任何 `pose_data` 路径；
+- 每次 lookup 返回 tensor 副本，并可逐图重验 RGB SHA；query 路径没有 fallback，现场确认抛出 `KeyError`；
+- resize/flip/COCO 左右交换/pad/crop 共用一组几何随机量；原始越界 joint 不会因 pad 重新变为有效；
+- score 保持 teacher 原始数值，不裁剪；Random Erasing 位于归一化后且只改变 RGB；
+- 新数据集与 collate 尚未接入官方默认 dataloader，B0 路径不受影响。
+
+原生 torch1.13.1/torchvision unit：5/5 PASS，覆盖 manifest 与 shard 篡改拒绝、lookup 副本、resize、左右交换、pad/crop、越界 mask、Random Erasing pose 不变。pose-disabled RGB 路径在 32 个固定随机种子下与官方 Compose 逐 tensor bit exact。
+
+真实 Occluded-Duke 门禁：
+
+- final artifact 严格加载 15,618 条；query pose absent；
+- 8 workers、batch64，连续 4 batches/256 张逐图 RGB SHA 校验；RGB=`64×3×384×128`、pose=`64×17×2`、scores=`64×17`；
+- RGB/keypoints/scores CPU→CUDA 全有限，crop 后 valid 与输出边界一致；4 batches 有效 joints=4,265/4,352；
+- 最终代码复检 batch64/8 workers/CUDA PASS，有效 joints=1,050/1,088；退出后 workers=0、GPU=2 MiB/1%；
+- 远端 tracked source/index clean，无 ReID 或 pose 进程。
+
+结论：exp386 的提取、严格 loader、paired augmentation、RGB parity 与真实 DataLoader/CUDA 门禁全部 PASS。下一步另写 TAPF D0 单变量设计和 config；在模型 route/gradient/AMP/overflow/state-RNG-optimizer/eval pose-free parity 全部通过前不启动正式训练。
