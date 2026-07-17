@@ -1,0 +1,38 @@
+结论：**不建议投第一次训练。Hubness 降级为 r_2 备胎，把诊断写成 observation；主线切到 Rank-Instability。信心 8/10。**
+
+蓝队理由很硬：你的 D4 证明的是“Gallery negative hubness 是真实失败结构”，但 D2 证明的是“当前可落地方法入口不够强”。这两件事不能混在一起。零训练 `cos - λlog(1+H_k)` 在 Market 只给 `+0.31 mAP`，而 k-reciprocal `+1.26 mAP`、camera downweight `+0.67 mAP` 都是免费 test-time。训练版如果要成为 CCF-B 方法稿，不能只赢 raw cosine，至少要在 mAP 上打过这些便宜强基线，否则审稿人会说：你发现了 hubness，但有效解法还是 re-ranking/camera prior。
+
+联网查后的判断：
+
+1. **hubness-aware training 不是空白，但证据不迁移到 ReID。**  
+   HAL 确实在 text-image matching 里提出 hubness-aware loss，用 memory bank/global-local statistics 给 hubs 加权，并报告 MS-COCO/Flickr30k R@1 提升；但它比较的是 Sum/Max ranking loss，不是 person ReID 的 k-reciprocal/camera-aware re-ranking。NeighborRetr 也明确说跨模态里已有 HAL、Dual Softmax、QB-Norm、DBNorm 等路线，并且 HAL 这种“放大 hub loss”的策略可能惩罚 beneficial hubs，需要区分 good/bad hubs。来源：HAL 方法描述和结果、NeighborRetr related work。  
+   参考：HAL 论文 https://arxiv.org/abs/1911.10097 ，NeighborRetr https://arxiv.org/abs/2503.10526
+
+2. **ReID 里的强 test-time 图结构基线太成熟。**  
+   k-reciprocal re-ranking 本来就是 ReID 图库拓扑修正：无标注、无训练、对任意初始排序可用；原论文在 Market/MARS/CUHK03/PRW 上展示大 mAP 增益，例如 IDE(R)+KISSME 在 Market 上 mAP 从 49.05 到 63.63，论文自己强调 mAP 提升显著。你的 hub score 本质也是图库图结构惩罚，但零训练 mAP 被 k-reciprocal 覆盖，这直接把训练版的证明门槛抬高。  
+   参考：k-reciprocal ReID https://arxiv.org/abs/1701.08398
+
+3. **camera prior 不是小 trick，而是 ReID 特有强混杂。**  
+   近年的 CA-Jaccard 明确指出 camera variation 会让 Jaccard/re-ranking 邻域被 intra-camera samples 主导，带来 intra-camera negatives、排除 inter-camera positives；它用 camera-aware k-reciprocal neighbor 和 local query expansion 修正。你的 D2 里同相机降权直接赢 hub penalty，说明 hubness 可能仍被 camera topology 解释/覆盖一部分。  
+   参考：CA-Jaccard https://arxiv.org/abs/2311.10605
+
+4. **R1 赢、mAP 输更像 top-1 排序修补，不像新增判别信息。**  
+   ReID 的 mAP 看的是多正样本整体排序。hub penalty 让 R1 `+1.13`，但 mAP 只 `+0.31` 且输给 k-reciprocal/camera，说明它可能只是把少数 false-top1 hub 压下去，没有系统性把所有 positives 拉上来。训练版也许能扩大这个效应，但当前证据更像“rank head repair”，不是“embedding 判别力提升”。
+
+5. **Market 已接近天花板，训练风险和收益不对称。**  
+   SOLIDER/Swin 系强 ReID 在 Market 已到 93-94 mAP、96-97 R1 量级；SOLIDER 论文表格也显示 Market1501 已非常饱和。你现在 sanity cosine `94.61 mAP`，headroom 极小。训练一个复杂 memory-bank anti-hub loss，最容易得到的是 `+0.1/-0.3` 噪声和多 seed 争议。  
+   参考：SOLIDER https://arxiv.org/abs/2303.17602
+
+因此我会把 Gallery Hubness 定位成：
+
+> 一个很好的诊断型 observation：强 ReID 的部分失败呈现 many-to-one gallery absorption，且 negative in-degree 与 generic popularity 近正交。  
+> 但当前方法证据不足以支撑“训练端 anti-hub embedding 是主贡献”。
+
+建议决策写法：
+
+- **不启动 exp 训练版 anti-hub。**
+- Hubness 进入 `r_2 / appendix / analysis module`。
+- 只有在额外零训练 kill-switch 上同时满足这些门槛才重新升级：OccludedDuke 或 MSMT 上 mAP 增益显著高于 k-reciprocal/camera；hub penalty 与 k-reciprocal 组合后仍有独立 mAP 增益；不是只涨 R1。
+- 主线切 Rank-Instability，因为它更可能解释“强 embedding 下排序不稳定/邻域拓扑变化”的方法空间，而不是在已被免费 re-ranking 覆盖的 hub penalty 上硬训。
+
+信心：**8/10**。不是说 hubness 是错的，而是说“诊断真”到“训练版可发”中间缺的正是 D2 没过的那一关。

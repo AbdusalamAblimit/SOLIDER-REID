@@ -1,0 +1,32 @@
+**判决**
+是。对一篇 CCF-B **方法稿**来说，当前 CARGO / aerial-ground empirical 主线已经是死胡同。结论不是“AGPReID 领域死了”，而是：你们这条靠 `avg > MaxSim`、OVP/OVLI、containment 反复 re-frame 的路线，已经没有能自然长出方法贡献的隐藏变量了。**该放弃换战场。**
+
+核心原因很简单：
+
+1. `avg-pool 52.37` 只是一个负诊断，不是方法。它最多说明极端跨视角下局部 late interaction 会捞假匹配；但你们后续 OVP、MaxSim training、containment 都没把它变成“可优化的中间变量”。
+
+2. containment kill-switch 杀得很干净。它不是某个实现失败，而是物理前提失败：航拍 TTA 方差更低、合成退化方差反降、view-mean / 同视角置换不掉分。这个方向不能再包装成“信息欠定包含”。
+
+3. 外部空间已经被 2024-2026 的方法线压住了：  
+   VDT 已经把 CARGO/AGPReID 定义成 view discrepancy / view decoupling 问题，并用 view token、subtractive separation、orthogonal loss 做了方法闭环。  
+   GSAlign 直接占了“几何变形 + 语义可见性对齐”，还报了 CARGO aerial-ground 上大幅提升，并是 NeurIPS 2025。  
+   SeCap 占了 prompt + local refinement，还新增 LAGPeR / G2APS-ReID 数据。  
+   DTST 占了 dynamic token selection。  
+   ViSA 2026 更致命：它明确反驳纯 view-invariant / part alignment，转向 view-specific cues + semantic experts，正好卡住你们“avg > MaxSim → 局部对齐错”的可讲空间。  
+   SD-ReID 又占了 view-specific generative representation。
+
+4. 数据/赛道也在往 video、VIR、challenge 化走。AG-ReID.v2、AG-VPReID、AG-VPReID.VIR 都是 benchmark/系统级扩展，AG-VPReID 已经是 CVPR 2025 级大数据集+三流网络，challenge 里也已有多流、transformer temporal reasoning、physics-informed modeling。你们现在拿一个 image-level empirical trick 去打，不占便宜。
+
+**该回到哪里**
+最该回到：**遮挡 ReID 的“同框入侵身份泄漏 / source separation”问题**，不是回到旧的 pose / visibility / completion。
+
+理由：
+
+- 你们真实资产是遮挡历史失败、强 Swin baseline、SMPL/人体几何基建，而不是 aerial-ground SOTA 方法线。
+- SMPL-β 已证对 ReID 近似随机，所以 SMPL 不应再当身份特征；但它可以当人体几何/遮挡构造工具。
+- 遮挡方向不能再讲“缺失补全”，要重定义为：遮挡不是少信息，而是**别人的身份信息污染 target embedding**。
+- 这能自然长出方法：训练期合成已知 donor identity 的人遮挡、压制 donor-ID 可预测性、保持 target identity 一致；推理期不加任何外部输入。
+- 关键 kill-switch 很硬：冻结强 Swin embedding，训练 probe 预测遮挡者 / donor ID。若 probe 显著高于随机，且在人遮挡 split 高、物体遮挡/Market 低，这就是 B 类方法稿需要的隐藏变量。
+
+**如果非要留 aerial-ground**
+最多只留一个 48 小时 kill-switch：证明 `avg > MaxSim` 背后存在稳定、可测、可修正的“假局部匹配率”，并且它不是 ViSA/GSAlign/SeCap 已经覆盖的 view-specific / semantic alignment 问题。过不了就彻底关。我的判断是：不值得作为主线继续赌。

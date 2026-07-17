@@ -1,0 +1,34 @@
+184,386
+**Verdict: needs-attention**
+
+No Critical runtime/shape/device bug found, but I would not launch this as-is because two training-design issues can invalidate exp359.
+
+**Findings**
+
+- **High** [cvpb_lm_reid_train.py:173](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:173): per-sample RNG is reset from `seed + idx`, so each image gets the same height and same lattice variants every epoch. This contradicts design “每图每 iter 采样 M variants”.
+  Fix: include epoch/worker/call randomness, e.g. dataset `set_epoch(ep)` plus `seed ^ epoch ^ idx`, or use worker-seeded `np.random`/`torch.initial_seed()` so variants change per iteration while remaining reproducible.
+
+- **High** [cvpb_lm_reid_train.py:48](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:48), [cvpb_lm_reid_train.py:118](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:118): default `M=2` plus `mode = j % 3` trains only canonical + bbox-shift/bilinear. It does not train sub-pixel phase or zoom/antialias axes despite the method claim.
+  Fix: make real training default `M>=4` at minimum, or sample perturbation mode/kernel for each noncanonical variant; if keeping `L_adv`, store actual lattice labels.
+
+- **Medium** [cvpb_lm_reid_train.py:372](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:372), [cvpb_lm_reid_train.py:377](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:377): GRL adversarial loss is lambda-scaled twice for the backbone gradient: once inside `GradReverse(..., adv_lamb)` and once in `+ adv_lamb * L_adv`. With `0.02-0.05`, the adversarial signal becomes `λ²`.
+  Fix: either `GradReverse.apply(z, 1.0)` and keep `adv_lamb * L_adv`, or keep GRL lambda and add unweighted `L_adv`.
+
+- **Medium** [cvpb_lm_reid_train.py:345](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:345): `L_id` triplet is computed over flattened `B*M`, not `mean_l Triplet(gf[:, l], y)`. This treats other variants of the same image as positives and is not exactly the stated per-lattice-slot formula.
+  Fix if strict design matters: reshape first and average `batch_hard_triplet(gf_bm[:, m], y, margin)` over `m`.
+
+- **Low** [cvpb_lm_reid_train.py:96](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:96): lattice generation appears output-equivalent to kill-switch, but not literally byte-identical source.  
+  Fix: move shared degradation functions into one imported helper, or add a hash/regression test comparing generated PIL bytes for fixed seed.
+
+**Checks That Look Correct**
+
+- `pose_dict=None` path is correct. `PoseBackboneModel.forward` returns `(cls_score, global_feat, featmaps, None)` at [pose_backbone_model.py:1088](/Users/abdslm/Desktop/SOLIDER-REID/model/pose_backbone_model.py:1088). Pose/LGPA/GCN branches are skipped because `scene_heatmaps is None`; `_lgpa_fixed_bands` default is `False`.
+- AMP is basically safe: autocast wraps only model forward; `cls/gf.float()` makes loss fp32; `GradScaler.scale/step/update` is used.
+- Image-major layout is aligned: `xb.view(B*M, ...)`, `y.repeat_interleave(M)`, `view(B,M,...)`, and `arange(M).repeat(B)` all match `[i*M+m]`.
+- `batch_hard_triplet` masks are correct under default PK sampling.
+- `PKSampler` default gives positives and negatives (`P=16,Kins=4`).
+- `torch.save(model.state_dict())` is compatible with SOLIDER `load_param`, which copies matching keys and ignores failures.
+
+**Web Search**
+
+I did not find an exact prior for “sampling-lattice hidden variable / sub-pixel phase marginalization” in low-res ReID. Closest works model resolution gap or resolution-invariant features, not lattice phase marginalization: VPFA, LRAR, RFD; BlurPool covers general anti-aliasing/shift-invariance but not ReID lattice marginalization. Sources: [VPFA](https://arxiv.org/abs/2510.00936), [LRAR](https://arxiv.org/abs/2207.13037), [RFD](https://arxiv.org/abs/2109.07871), [BlurPool](https://arxiv.org/abs/1904.11486).

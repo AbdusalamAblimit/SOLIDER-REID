@@ -1,0 +1,55 @@
+你列的是 6 篇，不是 10 篇。我按列出的 6 篇逐篇读了方法部分和实验消融。
+
+**1. DMPF，Disentangling Modality and Posture Factors**
+
+1. 触发观察：作者抓住的是可见光-红外 ReID 的类内差异不只是模态差异，还混着姿态差异。已有方法大多只在图像层或批次特征层对齐模态，忽略批次外的训练集整体差异，也忽略姿态变化。
+2. 重定义动作：他们把问题从“跨模态对齐”改写成“身份表征里混入了两个身份无关因子，模态因子和姿态因子”。关键词是 `disentangling modality and posture factors`、`entire training set`、`identity-unrelated factors`。
+3. 机制怎么长出来：模态因子既然跨整个训练集存在，就用类别记忆队列加 memory-attention，再用 OT 让同身份跨模态记忆靠近。姿态因子既然来自人体结构，就用 parsing 和 landmark 生成 skeleton，再用正交分解把 skeleton 里的姿态信息和身份信息拆开。机制和重定义绑定较紧，但模块偏重。
+4. 证据闭环：关键不是总表涨点，而是 MFD、PFD 单独消融，batch-attention 对 memory-attention，OT loss 在 memory-attention 输出上收敛，parsing 与 landmark 组合对照，impure skeleton 对正交 posture feature 对照。t-SNE 还把模态间隔和姿态离群点分别可视化出来。
+5. reviewer 为什么买账：卖的是“VI-ReID 不应只讲模态，还要同时解释姿态污染身份表征”的视角，机制只是顺着两个因子分别长出来。novelty 主要来自问题拆分和证据闭环，不是 attention 或 orthogonal 本身。
+
+**2. DASA，Distribution Aligned Semantics Adaption**
+
+1. 触发观察：直接用预训练权重初始化，在 LReID 中收益有限；旧方法靠 exemplar replay 和 logit distillation，但 ReID 是细粒度开放集，旧分类器和旧样本既不合适也不现实。
+2. 重定义动作：他们把 LReID 从“旧知识怎么蒸馏”改成“预训练得到的人体语义如何在新域中低成本适配”。关键词是 `robust and general human semantics`、`shared knowledge`、`distribution alignment`、`semantics adaption`、`exemplar-free`。
+3. 机制怎么长出来：如果 Conv 里保存通用人体语义，就冻结 Conv；如果新域分布会干扰语义使用，就调 domain-specific BN；如果通用语义还不够区分身份，就加轻量 SA 模块做空间聚合。这个机制和重定义非常紧，几乎没有多余零件。
+4. 证据闭环：它的核心消融是 DA 单独有效、SA 单独有效、DASA 组合最好；核大小 1 会变差，3 或 5 变好，证明 SA 不是随便加卷积，而是需要空间语义聚合；不同预训练数据对照证明“人体预训练语义”确实是上限来源；存储对照证明不用 exemplar 也能长期演化。
+5. reviewer 为什么买账：这篇主要卖范式，不是卖模块。它把“终身 ReID 必须蒸馏旧模型”改成“保存预训练人体语义，再按域适配”，这个视角比一个 SA 模块更值钱。
+
+**3. DRE，Diverse Representations Embedding**
+
+1. 触发观察：CNN 终身 ReID 方法为了多表示要加多分支，分支之间独立且难控制；固定 teacher 又会压制新任务适应。作者看到的是旧方法在实例级表征上太单薄。
+2. 重定义动作：他们把 LReID 的遗忘问题重定义为“实例级表示不够丰富，导致旧知识保存和新知识适应都受限”。关键词是 `diverse representations`、`primary embedding`、`auxiliary embeddings`、`instance-level and task-level layout`。
+3. 机制怎么长出来：Transformer 的多 class token 天然能产生多视角表示，所以引入多个 class token；主表示负责丰富身体信息，辅助表示负责判别性；ACM 对辅助表示做正交分离，再自适应并入主表示；任务级再用 adjustment model 和 learner model 做 KU/KP。
+4. 证据闭环：关键证据是 ResNet 版本明显弱于 transformer 版本，CODA 加 ACM 优于 CODA，DRE-KU 缺 KP 会泛化不足，冻结 adjustment model 的 DRE-KUP 适应性不如完整 DRE。辅助表示数量消融也证明不是“越多越好”，两个辅助表示较合适。
+5. reviewer 为什么买账：这篇卖的是机制多于视角。视角是“实例级多表示帮助终身学习”，但说法不如 DASA 和 DMDL锋利；真正支撑 novelty 的是把纯 transformer、多 class token、ACM、KU/KP 组合成 LReID 框架。
+
+**4. DiverseReID**
+
+1. 触发观察：DG ReID 里，现有风格增强方法用 Beta、Dirichlet 等固定分布采样混合权重，调参麻烦，而且生成风格可能仍贴近已有源域。作者抓的是“训练数据量不是关键，风格多样性才是关键”。
+2. 重定义动作：他们把域泛化从“学域不变特征”改写成“最大化源域风格空间”。关键词是 `style diversity`、`intra-domain diversity`、`inter-domain diversity`、`dynamic style hallucination`、`decoupled domain experts`。
+3. 机制怎么长出来：域内多样性不足，就用 DSH 根据两张图的 style Wasserstein distance 动态决定混合权重；域间多样性不足，就维护每个源域的 memory expert，用 DED 让不同域专家的特征去相关。机制很顺，且参数很少。
+4. 证据闭环：它不只做 DSH 和 DED 消融，还把 DSH 与 MixStyle、pAdaIN、DSU、SagNet 的 style randomization、SHADE 等对比，并在去掉 DED 后单独比较风格生成方式。另有 DSH 插入位置、采样策略、权重计算方式、DED 权重敏感性和 Grad-CAM。
+5. reviewer 为什么买账：这篇卖的是“多样性原则”，不是某个新层。它把两个简单机制分别钉在域内和域间多样性上，且用对比证明自适应风格混合比固定分布更贴合问题。
+
+**5. DCR，Domain Consistency Representation Learning**
+
+1. 触发观察：LReID 有一个矛盾，域内需要更细判别相似身份，域间又需要一致性防遗忘。旧蒸馏方法主要压域间 gap，容易牺牲当前域内判别。
+2. 重定义动作：他们把“保存旧知识和学习新知识”改写成“最大化域内判别和最小化域间 gap 的权衡”。关键词是 `domain consistency representation`、`global and attribute-wise representations`、`bridge`、`intra-domain discrimination`、`inter-domain gaps`。
+3. 机制怎么长出来：全局表征负责整个人，属性表征负责细粒度局部属性。ATG 先用属性识别器生成属性文本，TGA 用 CLIP 融合图文得到全局表征，ACN 得到属性级表征；AF 用属性表征对齐旧新模型，KC 用全局表征做知识转移。
+4. 证据闭环：它用跨五个数据集的 t-SNE 证明域间一致性，用 Market 的身份聚类可视化证明域内判别增强。组件消融显示 PFM、ACN、AF、KC 分别贡献；ATG 用具体属性文本优于泛化的 “a photo of a person”；阈值 0.8 的消融说明属性可靠性被认真控制。
+5. reviewer 为什么买账：这篇卖的是 trade-off 视角。CLIP、属性、蒸馏都不新，但“属性级表征作为域内判别和域间一致性的桥”把这些零件串成了一个可审稿的故事。
+
+**6. DMDL，Dual-level Modality Debiasing Learning**
+
+1. 触发观察：无监督 VI-ReID 的两阶段流程先做单模态学习，再做跨模态学习。作者指出第一阶段学到的模态特异线索会进入第二阶段伪标签，并在训练中继续放大。
+2. 重定义动作：他们把问题从“伪标签不准”或“模态差异大”改写成“模态偏置从数据传播到标签，再传播到特征”。关键词是 `modality bias`、`dual-level debiasing`、`causal intervention`、`bias propagation`、`model level and optimization level`。
+3. 机制怎么长出来：如果模态是混杂变量，就用 CAI 做 backdoor adjustment，优化 `P(Y|do(X))` 而不是普通 `P(Y|X)`；如果偏置还会在训练中传播，就用 CBT 在数据、标签、特征三层拦截，分别是模态特异增广、原图与增广图交换预测做标签细化、原图与增广图特征对齐。
+4. 证据闭环：CAI 替代似然建模有单独增益，CBT 叠加后进一步增益；只用 CBT 不如 CAI+CBT，说明两层互补。随机增广替代模态特异增广会掉点，去掉 prediction exchange 或动态 memory 会掉点，传统跨模态 MMD 对齐也会掉点。最有说服力的是伪标签质量曲线和 t-SNE，直接证明“偏置传播”这件事被缓解了。
+5. reviewer 为什么买账：这篇卖的是视角，而且是很强的视角。它没有只说“我做了去偏”，而是把两阶段 USL-VI-ReID 的失败路径画成因果图，再把机制一一对应到模型层和优化层，证据也直接打在伪标签质量和模态 gap 上。
+
+**共同套路**
+
+这批论文共同做法不是先想一个模块，而是先把旧任务里的模糊失败重新命名成一个更尖锐的隐藏变量，比如模态加姿态、预训练语义适配、实例级多表示、风格多样性、域内域间权衡、偏置传播。然后让机制从这个命名里自然长出来，最后用消融和可视化证明“这个隐藏变量确实被处理了”，而不只是证明模型涨点。
+
+联网核验主要用到 DASA、DRE、DCR、DMDL 的 arXiv 页面；DMPF 和 DiverseReID 主要依据本地 PDF 正文。DASA 的 arXiv 页面也确认其核心说法是 exemplar-free 的预训练语义适配范式([arxiv.org](https://arxiv.org/abs/2405.19695))；DRE 页面确认其主张是 pure transformer 加多表示用于 LReID([arxiv.org](https://arxiv.org/abs/2403.16003))；DCR 页面确认其核心问题是域内判别和域间 gap 的权衡([arxiv.org](https://arxiv.org/abs/2409.19954))；DMDL 页面确认其主张是模型层和优化层双层模态去偏([arxiv.org](https://arxiv.org/abs/2512.03745))。

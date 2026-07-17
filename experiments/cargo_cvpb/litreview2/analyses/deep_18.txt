@@ -1,0 +1,53 @@
+已按本地 PDF 用 `pdftotext` 读了方法和关键实验分析。你列的是 6 个文件，其中 Mix-Modality 有 arXiv 版和 ACM 正式版，方法基本一致，但我按两篇分别拆。
+
+**1. Memory-augmented shuffled meta learning for visible-infrared person re-identification**
+
+1. **触发观察**：作者抓住的是现有 VI-ReID 度量学习的两个局限。样本级方法只看局部样本对，中心级方法又把类内复杂变化压成中心，都会低估跨模态同身份内部变化。更具体的是，普通 meta learning 只用一组 query-support，样本利用率是 `1/K`，而 ReID 检索本质上每张图都可能当 query，也可能当 gallery。
+2. **重定义动作**：他们把“跨模态距离没学好”重写成“没有学到全局 meta metric”。关键词是 `shuffled meta learning`、`memory meta learning`、`global meta metrics`、`historical information`、`query-support`。旧问题是模态差异，新问题变成了 query-support 组织方式不足和 batch-local 度量不足。
+3. **机制怎么长出来**：机制基本是顺着重定义推出来的。既然 ReID 是 query 查 support，就把每个身份的可见光和红外样本循环拆成 query/support，让每张图都轮流参与。既然单 batch 不够全局，就用 memory bank 存历史特征，把历史样本当扩展 support。SMR 再约束 V2I 和 I2V 的预测一致性。
+4. **证据闭环**：关键不是总表，而是消融。CE 到 CE+CM 后，RegDB V2I Rank-1 从 59.0 到 88.0，SYSU all-search 从 56.5 到 67.1，证明 meta metric 本身有效。加 SMR 后 RegDB 从 88.0 到 94.1，证明双向一致性有用。去掉 shuffling 后 RegDB 只有 89.3，加回后到 94.1，SYSU 从 63.6 到 68.6，说明“全样本轮流 query-support”不是装饰。MM 的收益较小，更多证明 memory 是辅助增强。
+5. **reviewer 为什么买账**：这篇卖的是视角加度量组织，不是 backbone。novelty 来自把 ReID 检索过程解释成 meta query-support 度量学习，并用 shuffling 和 memory 把这个解释落地。模块本身不算惊艳，但逻辑闭合度还可以。
+
+**2. Meta Pairwise Relationship Distillation for Unsupervised Person Re-Identification**
+
+1. **触发观察**：无监督 ReID 常用聚类或分类式伪标签，但聚类要估类别数，且错误伪标签会滚雪球。作者观察到，单看两张图的相似度很脆弱，但看这对样本周围的邻域结构，能更稳地判断它们是不是同一身份。
+2. **重定义动作**：他们把“给图片估伪身份标签”改写成“给样本对估 pairwise relationship”。关键词是 `pairwise pseudo label`、`pairwise neighborhood structure`、`relationship estimation`、`GCN pseudo label generator`。这一步很关键，因为它绕开了聚类类别数这个老难题。
+3. **机制怎么长出来**：机制很自然。CNN 提图像特征并维护 feature memory，针对样本对构建 k 近邻图，GCN 输入这个 pairwise neighborhood structure，输出这对图是不是同身份。CNN 用 GCN 给的 pairwise label 训练，GCN 又用 CNN 的特征更新，两者交替优化。少量 labeled metadata 只用于启动 GCN，不直接训练 CNN。
+4. **证据闭环**：最关键的消融是和 KNN、相似度阈值、MPLP 比。Market 上相似度阈值是 72.8 Rank-1、39.9 mAP，MPRD 到 83.0、51.1。去掉大量无标签数据训练 GCN 的版本只有 75.8、43.1，说明不是 metadata 本身撑起来的。t-SNE 里加 GCN 后同身份更聚、易混身份分开，直接对应“邻域关系比点对相似度更可靠”。
+5. **reviewer 为什么买账**：这篇真正卖的是任务重写。GCN 是载体，核心 novelty 是把无监督 ReID 从聚类伪身份，改成图结构上的样本对关系估计。它的弱点是用了少量标注身份，严格无监督口径会被质疑，但作者用“只训练 GCN，不训练 CNN”来缓解。
+
+**3. Mix-Modality Person Re-Identification，arXiv 版**
+
+1. **触发观察**：现有 VI-ReID 默认是可见光 query 查红外 gallery，或反过来。但真实系统里 query 和 gallery 往往都是混合模态。旧方法一到混合模态场景就出现 `modality confusion`，同模态不同身份可能比跨模态同身份更近。
+2. **重定义动作**：这篇是典型的“改问题定义”。它说大家以为 VI-ReID 只需要处理双模态互查，其实更实际的是 `Mix-Modality ReID`。关键词是 `new practical paradigm`、`mix-modality testing paradigm`、`modality mixing ratio`、`modality confusion`。
+3. **机制怎么长出来**：机制和问题绑定很紧。既然同模态相似性会干扰身份，CIDHL 就用同身份跨模态中心拉近、不同身份中心推远、同模态同身份样本向中心聚合。既然测试时混合 gallery 中存在同模态桥，MBSOS 就把 query-gallery 直连距离改成经过 gallery bridge node 的最短路径问题。
+4. **证据闭环**：核心证据是先构造 mix-modality 测试集，再看 AGW 等旧方法在不同 mixing ratio 下 mAP 和 mINP 普遍下降，说明新问题真实存在。之后在 AGW、HCTL、DEEN 等方法上加 CIDHL 和 MBSOS，大多指标恢复或提升。t-SNE 显示加 CIDHL 后同身份更聚、不同身份更分，支撑“modality confusion 被缓解”。
+5. **reviewer 为什么买账**：主要买的是新范式，不是 CIDHL 或 MBSOS 本身。loss 和路径优化都不复杂，但它们服务于一个清楚的新评测场景。对 reviewer 来说，这篇的 novelty 来源是“旧协议不实用，新协议暴露新失败模式”。
+
+**4. Mix-Modality Person Re-Identification，ACM TOMM 正式版**
+
+1. **触发观察**：正式版进一步把观察说得更工程化，单模态 ReID 和传统 VI-ReID 都没有覆盖“query 集和 gallery 集同时混合可见光与红外”的情况。作者强调 Rank-1 有时会因为同模态易匹配而变好，但 mAP 和 mINP 下降，说明整体检索质量变差。
+2. **重定义动作**：正式版把这个问题固定成 `MM-ReID`，并把混合比例变成可控变量。旧说法是“跨模态差异”，新说法是“同模态自然相似性会污染跨模态身份匹配”。这个措辞比单纯说 domain gap 更具体。
+3. **机制怎么长出来**：CIDHL 对训练分布动手，要求同身份跨模态中心接近，不同身份无论同模态还是跨模态都远离，并控制同模态同身份样本到中心的距离。MBSOS 对测试距离动手，把 gallery 里的相似模态样本作为桥，重新计算 query 到 gallery 的最短路径距离。
+4. **证据闭环**：正式版的证据链更完整。它先用 mixing ratio 展示旧方法在 RegDB、SYSU-MM01、LLCM 上的系统性退化，再用 `+C`、`+M`、`+C+M` 证明两个机制能迁移到多个基线。δ 和 λ 的消融证明两个超参不是任意选的。t-SNE 则证明 CIDHL 后身份结构更清楚。
+5. **reviewer 为什么买账**：这篇正式版买账点仍然是问题定义。它不是说“我有一个更强损失”，而是说“你们一直评错了实际场景”。这类论文能发的关键，是先把协议变化讲成现实需求，再让机制看起来只是对新失败模式的必要修补。
+
+**5. MoDA，Mixture of Domain Adapters for Parameter-efficient Generalizable Person Re-identification**
+
+1. **触发观察**：DG ReID 里 MoE 方法有用，但通常要全量微调整个 backbone 和多个专家，参数量随源域数增长，分类头也随身份数膨胀。换成 CLIP 这类大模型后，全量微调更不现实，还可能破坏预训练泛化能力。
+2. **重定义动作**：作者把“怎么做更强 DG ReID”重写成“怎么做参数高效、可扩展的 DG ReID”。关键词是 `parameter-efficient`、`frozen CLIP`、`domain adapters`、`global adapter`、`block-aware voting network`、`tunable parameters`。
+3. **机制怎么长出来**：机制很顺。参数效率要求冻结 CLIP，只训 adapter。DG 要保留源域互补性，所以每个源域一个 domain-specific adapter，再加一个 global adapter。ViT 的 adapter 在每个 block 里，如果按传统专家投票要多次 forward，于是提出 block-aware voting，在每个 block 用 CLIP 学到的 ID-specific text tokens 作为 domain prototypes 来算权重。
+4. **证据闭环**：关键证据不是单纯 SOTA，而是性能和参数量一起报。Protocol-1 中 MoDA 用 19.1M 可训练参数，和 57M 到 165M 参数量的方法竞争。Table 6 证明只用 global 或只用 expert 都不如组合，去掉 voting network 也变差。Table 7 证明从第 4 层开始 voting 最好。Table 8 说明加 ID 分类头只带来很小收益，却显著增加参数，支撑“不要分类头”的设计。
+5. **reviewer 为什么买账**：这篇卖的是工程约束下的新视角。它不是发现了新的身份线索，而是把 DG ReID 和 PEFT、CLIP、MoE 组合成一个参数效率故事。reviewer 买账的前提是接受“同等或接近性能，少很多可训练参数”本身就是贡献。
+
+**6. MSP-ReID，Hairstyle-Robust Cloth-Changing Person Re-Identification**
+
+1. **触发观察**：CC-ReID 为了去衣服偏差，常把注意力推向 head 区域，但 human parsing 往往把 face 和 hair 合在 head 里。结果模型看似摆脱衣服，其实转而依赖 hairstyle。作者把这叫 `hairstyle shortcut`。同时，粗暴删除衣服区域会把身体结构和空间上下文也删掉。
+2. **重定义动作**：它把“换衣 ReID 的核心是衣服偏差”改成“换衣 ReID 同时有 hairstyle shortcut 和 clothing structure loss”。关键词是 `hairstyle distraction`、`structural preservation`、`same-identity different-hairstyle`、`cloth-preserved random erasing`。
+3. **机制怎么长出来**：机制是三件套。HSOA 用 HairFastGAN 合成同身份不同发型，强迫 embedding 不依赖发型。CPRE 只在衣服区域内按比例擦除，保留部分衣服像素和身体结构，而不是全删。RPA 用 parsing 监督 attention 强调 face 和 limbs，压低 hair。测试时只用 RGB 图像和 ID 分支。
+4. **证据闭环**：它的证据主要是组件消融和可视化。Tab. 4 展示 HSOA、CPRE、RPA 单独和组合都有收益，三者一起最好。定性图显示 baseline 会被相似衣服或发型干扰，MSP 的 attention 呈现“脸和肢体高响应，头发和大衣服区域低响应”。不过从方法论角度看，它最缺的是一个真实 hairstyle-change 分组评测，现有证据更多证明模块涨点和注意力变化。
+5. **reviewer 为什么买账**：如果买账，买的是“hairstyle shortcut”这个被忽略的 nuisance，而不是 HairFastGAN、random erasing、parsing attention 这些零件。它的 novelty 来源是把 CC-ReID 的失败从衣服扩展到发型，并指出旧方法的 head reliance 其实埋了新捷径。
+
+**共同套路**
+
+这批论文共同的套路是：先找一个旧范式没有显式处理的错位点，比如 batch-local 度量、聚类伪标签、纯双模态协议、全量微调成本、head 区域里的发型捷径，再把它命名成一个新问题。机制通常不复杂，但要和新问题强绑定，最后用“旧设定下的失败现象加针对性消融或可视化”证明不是单纯堆模块涨点。

@@ -1,0 +1,79 @@
+我按每篇的 `method/approach` 和必要的实验消融段读，不按摘要概括。下面只拆“创新是怎么构造出来的”。
+
+**1. Occlusion-aware Cross-modality Completion Network for Occluded Visible-Infrared Person Re-Identification**
+
+1. **触发观察**：已有 VI-ReID 大多默认行人完整可见；已有遮挡 ReID 又多是单模态，做法是定位可见区域、丢掉遮挡区域。作者抓住的现象是：在 VI-ReID 里，遮挡不只是少了一块可见信息，还会让可见光和红外的缺失位置、退化形式不同，导致跨模态对齐更坏。
+
+2. **重定义动作**：他们把问题从“如何关注可见区域”改写成“如何补全缺失身份线索”。关键词是 `completion perspective rather than discarding`、`cross-modality feature completion`、`token-level completion`、`region-level completion`、`multi-distribution consistency`。这一步很关键，它把旧问题里的“遮挡鲁棒特征提取”升级成“遮挡 VI-ReID 的跨模态补全”。
+
+3. **机制怎么长出来**：机制基本顺着重定义推出。既然是缺失补全，就先在单模态内部用语义图引导 token 互相补，再在区域级从另一模态软查询互补信息，最后用 MCA 让 token 补全、region 补全和伪整体分布一致。GFCT、SRCM、MCA 不是孤立模块，逻辑链是“局部缺失、跨模态不一致、多路径补全需一致”。
+
+4. **证据闭环**：关键证据不是单个 SOTA 表，而是模块组合消融。GFCT、SRCM、MCA 单独加都涨，GFCT+SRCM 比单独更好，完整组合最好；MCA 又和直接互相对齐对比，证明“对齐到伪整体参考”比简单两路互拉更合理。另一个闭环是他们构造了语义遮挡数据集，并和随机擦除对比，说明他们讨论的是更真实的遮挡，而不是普通增强。
+
+5. **reviewer 为什么买账**：买账点主要是视角和任务定义，不是图注意力或 KL 本身多新。它把“遮挡 VI-ReID”讲成一个尚未充分处理的交叉问题：缺失身份线索和跨模态错位同时发生。因此模块虽然常见，但被一个清楚的问题链条串住了。
+
+**2. Optimal Illumination Distance Metrics for Person Re-Identification in Complex Lighting Conditions**
+
+1. **触发观察**：传统复杂光照 ReID 要么学光照不变特征，要么把图片统一到标准光照。作者先做了一个很具体的观察：同一图像对在不同光照下距离不同，而且每个图像对都有自己的最小距离光照；最优光照不一定是正常光照。
+
+2. **重定义动作**：他们把光照从“要消除的干扰”改写成“检索距离里的可选择条件”。关键词是 `optimal illumination`、`optimal illumination distance`、`distance replacement`、`each image pair has a unique optimal lighting`。旧问题是做光照归一化，新问题是为每个图像对选择最能表达语义距离的光照状态。
+
+3. **机制怎么长出来**：机制非常直接。先用 GAN 把图库归一到正常光照，再用一组预定义光照生成器产生多种光照版本；对每种光照都提特征并算距离矩阵，最后在距离矩阵通道上取最小值作为最终检索距离。这个方法简单，但和观察绑定很紧：既然每对图像存在最小距离，就枚举光照并取最小距离。
+
+4. **证据闭环**：最关键的是三类对比：随机替换、部分随机替换、固定光照替换，都不如最优光照选择。作者还统计 replacement 和 effective replacement，承认并分析“并非每次替换都有效”，这反而让论证更可信。图像对距离随光照变化的分析图，是支撑重定义的第一证据。
+
+5. **reviewer 为什么买账**：这篇卖的是视角，不是模型复杂度。它的 novelty 来自把“统一光照”反过来讲成“统一光照可能丢失最优语义距离”，然后给出一个可验证的距离替换框架。弱点也明显：枚举预定义光照很粗，但观察足够具体。
+
+**3. Optimal Proxy Mining Contrastive Network for Unsupervised Person Re-Identification**
+
+1. **触发观察**：无监督 ReID 的代理对比学习依赖伪标签和 camera-aware proxy，但正负样本选错会严重伤训练。作者抓住两个反直觉点：对应 proxy 太容易，优化信号弱；所有同簇 proxy 都当正样本又太杂，会让方向不清。另一个观察是，同相机 proxy 往往背景和视角相似，会干扰假负样本挖掘。
+
+2. **重定义动作**：他们把问题从“如何生成更好伪标签”改成“如何选择最有训练价值的 proxy 对”。关键词是 `optimal proxy mining`、`hardest camera proxy`、`false negative proxies mining`、`misaligned contrastive pairs`、`camera-constrained hard negative mining`、`anti-noise ranking`。这让创新点落在训练信号选择，而不是聚类算法本身。
+
+3. **机制怎么长出来**：HCPM 假设当前伪标签基本可信，从同簇里找和 query 最不相似的相机 proxy 当 hardest positive，再从这个 hardest camera 里找 hard negatives，控制背景和视角因素。FNPM 则承认伪标签有噪声，先排除同相机 proxy，再按相似度排序挖潜在假负样本，并用同 proxy 多 query 排名求和做抗噪。PKGC 是额外的特征增强，用多尺度全局上下文让网络看身份相关区域。
+
+4. **证据闭环**：关键消融是正样本选择策略对比：corresponding proxy、all proxies、hardest positive proxy，以及是否使用 CCHNM。FNPM 部分又验证了排除同相机 proxy 和 anti-noise ranking 的作用。可视化包括 t-SNE、Top-10 检索和 Grad-CAM，用来证明不是只涨点，而是类内更紧、类间更开、注意力更落在人身上。
+
+5. **reviewer 为什么买账**：真正买账的是“proxy 不是越多越好，也不是越近越好，而是要按相机和噪声结构选最有信息的对比对象”。PKGC 相对像常规增强，novelty 主要来自 proxy mining 视角。它把无监督 ReID 的噪声问题讲成了“对比对构造错误”的问题。
+
+**4. Part-Based Feature Complementary Denoising for Unsupervised Person Re-Identification**
+
+1. **触发观察**：USL ReID 大多用全局特征聚类生成伪标签，但全局特征会偏向最显眼外观，遇到衣服颜色相似、局部细节不同的人容易混。已有局部特征方法又常把局部特征单独聚类或单独监督，忽略全局和局部的互补。作者还指出一个更细的问题：伪类别内部也有噪声，会把类中心拉偏。
+
+2. **重定义动作**：他们把问题从“伪标签有噪声”改成“伪标签噪声来自全局特征偏置和伪类内部低置信特征”。关键词是 `part-based feature complementary denoising`、`global-local complementarity`、`within pseudo-class noise`、`low-confidence feature denoising`、`modular knowledge distillation`。
+
+3. **机制怎么长出来**：如果全局有偏，就把上半身、下半身局部特征和全局特征加权融合，并把全局、局部 Jaccard 距离融合后再聚类，保证伪标签来自互补视角。若伪类内部有低置信噪声，就用 GMM 根据识别损失估计置信度，再用高置信样本估计高斯先验，对低置信特征做特征级去噪。MKD 则用训练好的 teacher 带 student，缓解早期伪标签不稳。
+
+4. **证据闭环**：它的闭环比较完整。PFCS、GFD、MKD 分别消融，三者组合最好；t-SNE 展示 baseline、去掉 MKD、去掉 GFD、完整模型的聚类紧致度差异；Top-5 检索可视化显示错误匹配减少。阈值 δ 的实验也重要，说明“只去噪低置信样本”这个定义是对的，扩大去噪范围反而会掉。
+
+5. **reviewer 为什么买账**：这篇卖的是机制和训练流程，但背后的视角也清楚：局部特征不是另一个分支，而是提高伪标签质量和去噪可靠性的补充证据。它不是发明一个新零件，而是把“局部互补、类内去噪、教师稳定”包装成一个一致的无监督噪声治理框架。
+
+**5. Pose-Skeleton Guided Cross-Attention Representation Fusion for Occluded Pedestrian Re-Identification**
+
+1. **触发观察**：现有遮挡 ReID 常在 backbone 输出后用姿态或解析模型找可见区域。作者抓住一个更深的失败点：到输出层时感受野已经扩大，遮挡信息已经扩散到原本未遮挡区域，后处理式过滤太晚了。同时，关键点热图只覆盖点附近，关键点之间的身体区域会丢信息。
+
+2. **重定义动作**：他们把问题从“如何在输出特征上找可见区域”改成“如何在中间层阻断遮挡信息扩散，并用骨架区域补足关键点之间的外观”。关键词是 `occlusion information diffusion`、`decouple pedestrian features and occlusion information`、`visible appearance region attention`、`skeletal area modeling`、`skeleton-modulated cross-attention`。
+
+3. **机制怎么长出来**：VARA 插在 ResNet 中间层，用姿态热图做前景通道注意力和空间交叉注意力，让 backbone 早一点学习遮挡和行人的区别。SAM 不直接拿关键点热图当 mask，而是根据两端关键点坐标和置信度，把手臂、腿、躯干等 14 个骨架区域建成软 mask。SMCF 再让骨架局部特征作为 query，与 backbone 特征做受 mask 约束的交叉注意力融合。
+
+4. **证据闭环**：最关键消融是 VARA、SAM、SMCF 分开加。VARA 证明中间层抑制有效，SAM 证明骨架区域比点热图更完整。进一步分析 VARA 插入位置，发现中层最好，这正好支撑“输出层太晚、低层语义不够、高层分辨率太低”的重定义。SAM 的 α、γ、T 可视化和不同遮挡程度可视化，也在证明骨架区域建模确实覆盖可见身体而抑制遮挡。
+
+5. **reviewer 为什么买账**：这篇真正卖的是“遮挡信息扩散”这个视角。姿态、mask、cross-attention 都不新，但“为什么不能只在输出层用姿态过滤”说得清楚，机制也自然落到中间层和骨架区域建模上。它的可视化证据和参数分析让这个视角比较容易被接受。
+
+**6. Privacy preserving person re-identification via anonymizing diffusion model**
+
+1. **触发观察**：公开 ReID 数据集有隐私风险，已有模糊、加噪、加密、对抗扰动方法多是在原图上“隐藏身份”，并没有消除真实身份关联，人或模型仍可能找回原 ID。纯合成数据隐私好，但和真实 ReID 域差距大；只靠噪声生成又难保证同一合成 ID 的一致性。
+
+2. **重定义动作**：他们把隐私保护从“改造真实图片”改成“用新合成 ID 替换真实 ID，同时保留 ReID 训练效用”。关键词是 `new IDs`、`anonymizing diffusion model`、`privacy-compliant benchmarks`、`ID separation degree`、`privacy-utility trade-off`、`eliminate at source`。这一步把任务从图像脱敏变成了数据集替代。
+
+3. **机制怎么长出来**：既然要新 ID 又要可训练，就用文本控制身份属性，用扩散模型生成。Stage 1 在全数据上微调 Stable Diffusion 学 ReID 风格；Stage 2 在小子集上微调，限制属性重叠，让 prompt 更稳定地绑定视觉模式；class embedding 提高同一合成 ID 内一致性；prompt griddle 重组头发、上装、下装属性生成未出现的新 prompt；ADM griddle 过滤每个 ID 的离群样本。ISD 则量化合成 ID 和真实 ID 的分离程度。
+
+4. **证据闭环**：证据不是只看 ReID 准确率，而是同时看 utility 和 privacy。`Tg/Tu` 证明生成数据还能训练和区分，`Tp` 和攻击检索 demo 证明真实 query 难以找回对应生成 ID，ISD 和余弦距离分布证明生成特征远离真实 ID 中心。消融则验证两阶段微调、class embedding、griddle 过滤分别服务于风格、ID 一致性和样本稳定性。
+
+5. **reviewer 为什么买账**：这篇卖的是视角和基准范式，不是 Stable Diffusion 本身。它把隐私 ReID 从“降低可识别性”改成“替换身份实体”，并且提出 ISD 这种能讨论隐私强度的指标。reviewer 买的是问题定义、数据集替代价值和隐私-效用闭环。
+
+**共同套路**
+
+这批论文的共同套路是：先找一个旧范式默认成立的假设，然后证明它在某个更真实场景里不成立。比如“遮挡就看可见区域”“光照应统一”“proxy 越近越正”“全局特征能代表伪类”“输出层再处理遮挡也来得及”“匿名就是改原图”。
+
+能发的关键不是模块堆得多，而是把观察改写成一个新变量：补全路径、最优光照、最优代理、全局-局部互补、遮挡扩散、新 ID 替代。机制只要顺着这个新变量自然长出来，再用一组能直接反驳旧假设的消融或可视化闭环，reviewer 就更容易买账。

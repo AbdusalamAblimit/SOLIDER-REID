@@ -1,0 +1,167 @@
+'Knowledge and experience' for visible-infrared person re-identification.pdf
+3D-Aided Pedestrian Representation Learning for Video-Based Person Re-Identification.pdf
+4SNet - Spatial and Spectrum Self-adaptive Synergy Network for Visible-Infrared Person Re-identification.pdf
+A Semantic-Aware Attention and Visual Shielding Network for Cloth-Changing Person Re-Identification.pdf
+A Semantic-guided occlusion simulation based local feature semantic expansion network for person re-identification.pdf
+A Survey on 3D Skeleton Based Person Re-Identification - Taxonomy, Advances, Challenges, and Interdisciplinary Prospects.pdf
+A training-free framework for text-to-image person re-identification via query-prototype matching.pdf
+A2HA - Attribute-aware hierarchical alignment for text-image person re-identification.pdf
+ADA framework for unsupervised domain adaptation person re-identification.pdf
+Adaptive Occlusion-Aware Network for Occluded Person Re-Identification.pdf
+Adaptive Pseudo-Label Purification and Debiasing for Unsupervised Visible-Infrared Person Re-Identification.pdf
+Adaptive transformer with Pyramid Fusion for cloth-changing Person Re-Identification.pdf
+Adversarial flow-based generative models for visible-to-Infrared person re-Identification.pdf
+Adversarial perturbation and defense for generalizable person re-identification.pdf
+Attribute Conditional Diffusion-Augmented Person Re-Identification.pdf
+Attribute Guidance with Inherent Pseudo-Label for Occluded Person Re-Identification.pdf
+Base-Detail Feature Learning Framework for Visible-Infrared Person Re-Identification.pdf
+Beyond geometry - The power of texture in interpretable 3D person ReID.pdf
+Bidirectional modality information interaction for Visible-Infrared Person Re-identification.pdf
+Bridging the gap - Learning adaptive knowledge transition for lifelong person re-identification.pdf
+Camera-aware graph multi-domain adaptive learning for unsupervised person re-identification.pdf
+Camera-Proxy Enhanced Identity-Recalibration Learning for Unsupervised Visible-Infrared Person Re-Identification.pdf
+Categorical Attention - Fine-grained Language-guided Noise Filtering Network for Occluded Person Re-Identification.pdf
+Causal Clothes-Invariant Feature Learning for Cloth-Changing Person Re-ID.pdf
+CCFL - Customized Client Federated Learning for Unsupervised Person Re-identification.pdf
+CCUP - A Controllable Synthetic Data Generation Pipeline for Pretraining Cloth-Changing Person Re-Identification Models.pdf
+CFPER - Coarse-to-Fine Part-Experts Retrieval for Efficient Person Re-identification.pdf
+Channel-aware feature mining network for Visible-Infrared Person Re-identification.pdf
+CLIP-Based Camera-Agnostic Feature Learning for Intra-Camera Supervised Person Re-Identification.pdf
+CLIP-driven fine-grained mining for text-based person search.pdf
+CLIP-powered modality centering with spiral training for visible-infrared person re-identification.pdf
+CLNS - Camera-aware label noise suppression for unsupervised visible-infrared person re-identification.pdf
+Cloth-debiasing with Stable Diffusion in Cloth-changing Person Re-identification.pdf
+CMAG - Cross-Modal Attention and Graph-Enhanced Memory for Unsupervised Visible-Infrared Person Re-Identification.pdf
+Coarse-to-Fine Cross-Modality Generation for Enhancing Vehicle Re-Identification with High-Fidelity Synthetic Data.pdf
+ColorSketchNet - Unifying color, sketch and texture for modality-agnostic multi-modal person re-identification.pdf
+Condense loss - Exploiting vector magnitude during person Re-identification training process.pdf
+Confidence guided semi-supervised cross-modality person re-identification.pdf
+Content and Salient Semantics Collaboration for Cloth-Changing Person Re-Identification.pdf
+Context-Aided Semantic-Aware Self-Alignment for Video-Based Person Re-Identification.pdf
+Corruption-Invariant Person Re-Identification via Coarse-to-Fine Feature Alignment.pdf
+Cross-domain person re-identification via learning Heterogeneous Pseudo Labels.pdf
+Cross-modal Collaborative Representation Learning for Text-to-Image Person Retrieval.pdf
+Cross-Modal Full-Mode Fine-Grained Alignment for Text-to-Image Person Retrieval [2026 ACM TOMM acm_browser_subscription].pdf
+Cross-Modal Full-Mode Fine-Grained Alignment for Text-to-Image Person Retrieval [2026 ACM TOMM arXiv].pdf
+Cross-modality average precision optimization for visible thermal person re-identification.pdf
+CSGN - CLIP-driven semantic guidance network for Clothes-Changing Person Re-Identification.pdf
+CVAF - A CLIP-Based View-Consistent Alignment Framework for Aerial-Ground Person Re-Identification.pdf
+CycleTrans - Learning Neutral Yet Discriminative Features via Cycle Construction for Visible-Infrared Person Re-Identification.pdf
+DATE - Dual Asymmetric Textual Embedding guided Person Re-Identification.pdf
+Deep intelligent technique for person Re-identification system in surveillance images.pdf
+Dependability Feature Learning Based on Sample Generation for Unsupervised Text-to-Image Person Re-Identification.pdf
+DIRL - Learning Discriminative ID-Related Representations for Video Visible-Infrared Person ReID.pdf
+Discovering Multi-Frequency Embedding for Visible-Infrared Person Re-Identification.pdf
+Disentangling Modality and Posture Factors - Memory-Attention and Orthogonal Decomposition for Visible-Infrared Person Re-Identification.pdf
+Distribution aligned semantics adaption for lifelong person re-identification.pdf
+Diverse Representations Embedding for Lifelong Person Re-Identification.pdf
+DiverseReID - Towards generalizable person re-identification via Dynamic Style Hallucination and decoupled domain experts.pdf
+Domain Consistency Representation Learning for Lifelong Person Re-Identification.pdf
+Dual-level modality debiasing learning for unsupervised visible-infrared person re-identification.pdf
+Dual-Modality-Shared Learning and Label Refinement for Unsupervised Visible-Infrared Person ReID.pdf
+Dynamic adaptive multi-view contrastive learning for unsupervised person re-identification.pdf
+Dynamic Modality-Camera-Invariant Clustering for Unsupervised Visible-Infrared Person Re-Identification.pdf
+Dynamic Token Selective Transformer for Aerial-Ground Person Re-Identification.pdf
+Efficient Lightweight Multi-Source Domain Adaptation for Person Re-ID via Self-paced Meta-Learning.pdf
+Enhancing Visible-Infrared Person Re-Identification With Modality- and Instance-Aware Adaptation Learning.pdf
+ESTI - An Efficient Spatial-Temporal Interaction Network For Video-Based Person Re-Identification.pdf
+Exploring Part-Informed Visual-Language Learning for Person Re-Identification.pdf
+False Negatives Consensus Suppression for Text-to-Image Person Re-identification.pdf
+FDGReID - Federated Domain Generalization for Person Re-identification.pdf
+Find Hidden Modality Divergence - Adversarial Aware Learning for Unsupervised Visible-Infrared Person Re-Identification.pdf
+FLAG - A Framework With Explicit Learning Based on Appearance and Gait for Video-Based Clothes-Changing Person Re-Identification.pdf
+FMCNet+ - Feature-Level Modality Compensation for Visible-Infrared Person Re-Identification.pdf
+Focusing on pedestrians like human for clothes changing person re-identification.pdf
+GAE-Net - A gait-assisted enhancement network for video-based person re-identification.pdf
+GAReID - Grouped and Attentive High-Order Representation Learning for Person Re-Identification.pdf
+Generalizable person re-identification method using bi-stream interactive learning with feature reconstruction.pdf
+Global aggregated gradient-guided adversarial attacks for person re-identification.pdf
+GSTNET - A Geospatial-Temporal Graph Network for Group Person Re-Identification.pdf
+Harnessing Knowledge From Pretrained VLMs for Unsupervised Person Search.pdf
+Heterogeneous Generative Tokens and Distance-Aware Recovery Network for Occluded Person Re-Identification.pdf
+Hierarchical fusion and local-aware transformer for occluded person re-identification.pdf
+Hierarchical knowledge-guided reasoning for text-based person re-identification.pdf
+Hierarchical Proxy Learning for Cloth-Changing Person Re-Identification.pdf
+HOH-Net - High-Order Hierarchical Middle-Feature Learning Network for Visible-Infrared Person Re-Identification.pdf
+HPRNet - Human Parsing Reconstruction With Non-Local Multi-Scale Perception Network for Cloth-Changing Person Re-Identification.pdf
+Identity-aware Feature Decoupling Learning for Clothing-change Person Re-identification.pdf
+Identity-aware infrared person image generation and re-identification via controllable diffusion model.pdf
+Improving Text-Based Person Retrieval by Excavating All-Round Information Beyond Color.pdf
+InfinitePerson - Innovating Synthetic Data Creation for Generalization Person Re-Identification.pdf
+Instant pose extraction based on mask transformer for occluded person re-identification.pdf
+Interactive Sketch-Based Person Re-Identification with Text Feedback.pdf
+Internal-External Context Interaction Network for Person Re-Identification.pdf
+Latent Diffusion-Guided Feature Inpainting for Occluded Person Re-Identification With Hybrid Re-Ranking.pdf
+Learning From Yourself to Others for Unsupervised Visible-Infrared Re-Identification.pdf
+Learning multi-granularity representation with transformer for visible-infrared person re-identification.pdf
+Learning Visual-Semantic Embedding for Generalizable Person Re-Identification - A Unified Perspective.pdf
+Lifelong person re-identification via dynamically knowledge adaptation and retention.pdf
+Lifelong visible-infrared person re-identification via replay samples domain-modality-mix reconstruction and cross-domain cognitive network.pdf
+Lifelong Visible-Infrared Person Re-Identification with Prompt Pool and Instance-level Prompt Generator.pdf
+Local-Aware Residual Attention Vision Transformer for Visible-Infrared Person Re-Identification.pdf
+Mask-Aware Hierarchical Aggregation Transformer for Occluded Person Re-Identification.pdf
+Memory-augmented shuffled meta learning for visible-infrared person re-identification.pdf
+Meta Pairwise Relationship Distillation for Unsupervised Person Re-Identification.pdf
+Mix-Modality Person Re-Identification - A New and Practical Paradigm [2025 ACM TOMM acm_browser_subscription].pdf
+Mix-Modality Person Re-Identification - A New and Practical Paradigm [2025 ACM TOMM arXiv].pdf
+MoDA - Mixture of Domain Adapters for Parameter-efficient Generalizable Person Re-identification.pdf
+MSP-ReID - Hairstyle-Robust Cloth-Changing Person Re-Identification.pdf
+Multi Queue for Unsupervised Person Re-identification.pdf
+Multi-Branch Clothes-Agnostic Feature Learning for Cloth-Changing Person Re-Identification.pdf
+Multi-feature balanced network for clothes-changing person re-identification.pdf
+Multi-Granularity Attribute Prompt Learning for Cloth-Changing Person Re-Identification.pdf
+Multi-granularity collaborative constraint feature alignment network for unsupervised person re-identification.pdf
+Multi-Granularity Dynamic Hierarchical Graphs for Video-Based Person Re-Identification.pdf
+Multi-Model Synergy Perception for Open-World Person Re-Identification.pdf
+Multi-Scale Dynamic Fusion for Visible-Infrared Person Re-Identification.pdf
+Multi-year long-term person re-identification using gait and HAR features.pdf
+Mutual Distillation Driven Dual-Space Matching for Visible-Infrared Person Re-Identification.pdf
+Nearest Neighbor Sample Constraint and ODE Guided Feature Reconstruction for Unsupervised Person Re-Identification.pdf
+Occluded person Re-Identification with noise injection.pdf
+Occlusion-aware Cross-modality Completion Network for Occluded Visible-Infrared Person Re-Identification.pdf
+Optimal Illumination Distance Metrics for Person Re-Identification in Complex Lighting Conditions.pdf
+Optimal Proxy Mining Contrastive Network for Unsupervised Person Re-Identification.pdf
+Part-Based Feature Complementary Denoising for Unsupervised Person Re-Identification.pdf
+Pose-Skeleton Guided Cross-Attention Representation Fusion for Occluded Pedestrian Re-Identification.pdf
+Privacy preserving person re-identification via anonymizing diffusion model.pdf
+Probabilistic Distribution Alignment for Text-Based Person Retrieval.pdf
+Prototype-Driven Multi-Feature Generation for Visible-Infrared Person Re-identification.pdf
+Prototype-guided Knowledge Propagation with Adaptive Learning for Lifelong Person Re-identification.pdf
+Rethinking Joint Optimization in Feature Compression - Insights from Person Re-Identification.pdf
+Richer Semantics, Better Alignment - Aligning Visual Features with Explicit and Enriched Semantics for Visible-Infrared Person Re-Identification.pdf
+RMGNet - The Progressive Relationship-Mining Graph Neural Network for Text-to-Image Person Re-Identification.pdf
+RMPSNet - Occluded person re-identification via regional masking and prompt-distribution synergy.pdf
+Robust mixed-degradation person Re-identification via structural consistency distillation.pdf
+See what you seek - Semantic contextual integration for cloth-changing person re-identification.pdf
+Self-Rectification Historical Consistency Learning for Coupled Noisy Visible-Infrared Person Re-Identification.pdf
+Semantic Alignment and Hard Sample Retraining for Visible-Infrared Person Re-Identification.pdf
+Semantic Consistency And Integrity Network For Cloth-changing Person Re-identification.pdf
+Shape-centered representation learning for visible-infrared person re-identification.pdf
+Similarity Regulation and Calibration Alignment for Weakly Supervised Text-Based Person Re-Identification.pdf
+Spatial-Temporal Federated Learning for Lifelong Person Re-Identification on Distributed Edges.pdf
+Spatial-Temporal High-Frequency Learning for Video-based Visible-Infrared Person Re-Identification.pdf
+Spatio-temporal Feature-level Augmentation Vision Transformer for video-based person re-identification.pdf
+SPCL - Semantic Polymorphism and Commonality Learning for Text-Based Person Retrieval.pdf
+Spectrum-guided feature enhancement network for event person re-identification.pdf
+Stochastic style perturbation modelling for visible-Infrared person re-Identification with severely modality imbalance.pdf
+Structured Distilled 3D Gait Fields for Clothes-Changing Person Re-Identification in Videos.pdf
+Text-Guided Cross-Modal Alignment with Attribute and Contour Prototypes for Visible-Infrared Person Re-Identification.pdf
+Text-to-image Person Search based on Semantic Reorganization.pdf
+Texture-aware transformer with pose-patch mapping for occluded person re-identification.pdf
+TIENet - A Tri-Interaction Enhancement Network for Multimodal Person Reidentification.pdf
+Towards Anytime Retrieval - A Benchmark for Anytime Person Re-Identification.pdf
+TP-LReID - Lifelong person re-identification using text prompts.pdf
+Two-stage knowledge distillation for visible-infrared person re-identification.pdf
+UAV-based person re-identification - A survey of UAV datasets, approaches, and challenges.pdf
+Uniform Light Transformer for Person Re-identification under Complex Illumination.pdf
+Unleashing the potential of traditional person re-ID methods to clothes changed scenario via curriculum learning.pdf
+Unsupervised Lifelong Person Re-Identification via Affinity Harmonization.pdf
+Unsupervised person re-identification via camera-aware multi-level label refinement.pdf
+Unsupervised Person Re-Identification With Diffusion Model via Semantic-Aware Disentanglement Representation Learning.pdf
+Unsupervised Visible-Infrared Person ReID via Modality-Camera Balance Label Refinement.pdf
+Unveiling Local Well-posedness Influence for Cross-modal Person Re-Identification.pdf
+UP-Person - Unified Parameter-Efficient Transfer Learning for Text-Based Person Retrieval.pdf
+Visible-Infrared Person Re-Identification Based on Feature Decoupling and Refinement.pdf
+Visible-Infrared Person Re-Identification via Mutual Reinforcement of Prompts and Image Encoders.pdf
+Visible-Infrared Person Re-Identification With Real-World Label Noise.pdf
+When Large Vision-Language Models Meet Person Re-Identification.pdf

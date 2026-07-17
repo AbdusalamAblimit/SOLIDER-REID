@@ -1,0 +1,105 @@
+{
+  "config": {
+    "lo_thr": 0.2,
+    "hi_thr": 0.7,
+    "border_frac": 0.08
+  },
+  "rows": [
+    {
+      "kp": 0,
+      "name": "nose",
+      "n_lo": 64,
+      "pct_border": 10.9375,
+      "kl_hi_lo": 289.46435546875,
+      "kl_hi_rand": 121.49736785888672,
+      "kl_hi_lo_onbody": 294.52972412109375,
+      "n_lo_onbody": 57
+    },
+    {
+      "kp": 1,
+      "name": "l_eye",
+      "n_lo": 69,
+      "pct_border": 8.695652173913043,
+      "kl_hi_lo": 288.1260070800781,
+      "kl_hi_rand": 133.6328887939453,
+      "kl_hi_lo_onbody": 293.769287109375,
+      "n_lo_onbody": 63
+    },
+    {
+      "kp": 2,
+      "name": "r_eye",
+      "n_lo": 67,
+      "pct_border": 17.91044776119403,
+      "kl_hi_lo": 270.6176452636719,
+      "kl_hi_rand": 132.94020080566406,
+      "kl_hi_lo_onbody": 291.0575256347656,
+      "n_lo_onbody": 55
+    },
+    {
+      "kp": 3,
+      "name": "l_ear",
+      "n_lo": 56,
+      "pct_border": 3.5714285714285716,
+      "kl_hi_lo": 257.8622741699219,
+      "kl_hi_rand": 124.56438446044922,
+      "kl_hi_lo_onbody": 277.61676025390625,
+      "n_lo_onbody": 54
+    },
+    {
+      "kp": 4,
+      "name": "r_ear",
+      "n_lo": 57,
+      "pct_border": 8.771929824561404,
+      "kl_hi_lo": 297.6541442871094,
+      "kl_hi_rand": 122.98728942871094,
+      "kl_hi_lo_onbody": 344.9879150390625,
+      "n_lo_onbody": 52
+    },
+    {
+      "kp": 13,
+      "name": "l_knee",
+      "n_lo": 204,
+      "pct_border": 5.392156862745098,
+      "kl_hi_lo": 121.99861145019531,
+      "kl_hi_rand": 90.86930847167969,
+      "kl_hi_lo_onbody": 126.56930541992188,
+      "n_lo_onbody": 193
+    },
+    {
+      "kp": 14,
+      "name": "r_knee",
+      "n_lo": 208,
+      "pct_border": 7.211538461538462,
+      "kl_hi_lo": 126.6876449584961,
+      "kl_hi_rand": 90.18083190917969,
+      "kl_hi_lo_onbody": 125.99309539794922,
+      "n_lo_onbody": 193
+    },
+    {
+      "kp": 15,
+      "name": "l_ankle",
+      "n_lo": 318,
+      "pct_border": 7.232704402515723,
+      "kl_hi_lo": 300.8951721191406,
+      "kl_hi_rand": 187.96630859375,
+      "kl_hi_lo_onbody": 315.907470703125,
+      "n_lo_onbody": 295
+    },
+    {
+      "kp": 16,
+      "name": "r_ankle",
+      "n_lo": 324,
+      "pct_border": 6.481481481481482,
+      "kl_hi_lo": 293.46142578125,
+      "kl_hi_rand": 181.22698974609375,
+      "kl_hi_lo_onbody": 314.63226318359375,
+      "n_lo_onbody": 303
+    }
+  ],
+  "summary": {
+    "median_kl_hi_lo": 288.1260070800781,
+    "median_kl_hi_rand": 124.56438446044922,
+    "median_kl_hi_lo_onbody": 293.769287109375,
+    "median_pct_border": 7.232704402515723
+  }
+}

@@ -1,0 +1,37 @@
+结论先说：**普通 noisy-label ReID 很红，不建议做“再来一个置信度/小损失/邻域修标签”**。2026 CARE 已把 supervised noisy-label ReID 的软最大置信、hard-positive 被误删、证据校准、样本重权重都占了一遍，并且显式覆盖 random / patterned noise；它的 related work 也列了 PurifyNet、CORE、LRP、LRNI-HSR、TSNT、ICLR 等同类线。([arxiv.org](https://arxiv.org/abs/2602.23133)) 无监督/伪标签噪声也很挤，2024 CALR 做 camera-aware label refinement，2025 RoDE 做 UVI-ReID pseudo-label noise。([arxiv.org](https://arxiv.org/abs/2403.16450)) ([arxiv.org](https://arxiv.org/abs/2505.02549)) 文本图像 noisy correspondence 也已有 RDE/RSTPReID 线，不建议碰。([arxiv.org](https://arxiv.org/abs/2308.09911))
+
+**机会 1：Partial-ID / Missing-Positive Noisy ReID**
+触发观察：真实低成本标注里，常见错误未必是“某张图标错成另一个 ID”，而是**同一个人被拆成多个局部 ID**，例如按 camera、tracklet、批次各自编号。传统 noisy-label 方法会把每个局部 ID 看成干净小类，softmax loss 也可能很低，因此不会被 CARE 类 sample selection 抓出来。
+
+重定义：大家以为 noisy-label ReID 是“找脏样本”，其实有一类更 ReID-specific 的问题是**缺失正边 / false-negative supervision**：标签局部正确，但全局 identity graph 不完整。核心隐藏变量是 label topology：split 和 merge 在同样噪声率下对 metric learning 的破坏完全不同。
+
+机制草案：做 `Positive-Unlabeled Identity Graph`。用 frozen SOLIDER/Swin 特征构建跨标签 reciprocal must-link 候选，只把极高置信的跨标签边作为 soft positive；训练时不急着合并类，而是用 set-valued target / multi-positive contrastive，让疑似同人标签“不再互为强负样本”。分类头保留局部 ID，多原型维护，避免早期误合并。
+
+廉价 kill-switch：零训练即可。  
+在 Market/MSMT 上人为构造 camera-split label：同一 GT ID 按 camera 拆成多个伪 ID。用现有 frozen 特征只做 cross-label reciprocal graph，统计 top-B must-link precision / coverage。  
+Go 条件：top 1%-5% 候选边 precision > 80%，且普通 small-loss / label compactness proxy 对这些 split 类基本失效。  
+Kill 条件：precision 低于 70%，或者简单 k-reciprocal 最近邻已经同等好，说明没有方法空间。
+
+撞车判断：CALR 2024 很接近“camera-aware / intra-camera labels”，但它是纯无监督伪标签 refinement，不是 supervised noisy labels 下的 missing-positive partial-ID formulation。CARE 2026 是 clean/noisy sample calibration，不是恢复缺失正边。**不算红海，但必须避开“相机伪标签细化”的叙事。**
+
+Verdict：值得首验。  
+信心：7/10。  
+现有数据：Market/MSMT 可首验；occluded_duke 可做 hard-positive stress test；CARGO/AG-ReID.v2 若有 camera/track metadata 可作为真实场景补强；不需要新数据。
+
+**机会 2：Budgeted Label Repair for ReID Noise**
+触发观察：如果 #1 的零训练图诊断成立，一个更务实的 B 类角度是：不要声称全自动修完噪声，而是研究**给定极小人工核验预算，优先修哪些 identity edges 最涨 ReID**。这避开了纯 robust loss 红海，也更符合真实 ReID 数据生产。
+
+重定义：大家以为 active ReID 是“少标数据训练模型”，其实 noisy-label ReID 更需要的是**少量核验修复高杠杆 label edge**。一个错误 merge/split 不是一个样本错，而是污染大量 triplet/contrastive 约束；因此查询单位应是 identity edge / component，不是单图不确定性。
+
+机制草案：`Constraint-Leverage Label Repair`。frozen 特征图上找两类候选：同标签多连通分量疑似 false-merge，跨标签 reciprocal clique 疑似 false-split。按“修复后解除多少矛盾正负约束”排序，预算内让人工或高置信自动规则确认；然后用普通 SOLIDER baseline 重训。方法贡献在 edge leverage scoring + repair-aware training protocol。
+
+廉价 kill-switch：还是零训练。  
+在 Market/MSMT 注入 split/merge 噪声，比较三种排序的 precision@budget 和 recovered polluted constraints：随机、最近邻相似度、constraint-leverage。  
+Go 条件：用 0.5%-1% pair/query budget 能恢复 >40%-50% 的污染约束，且明显强于最近邻。  
+Kill 条件：最近邻排序已经等价，或者预算曲线太平，说明只是 active learning 老问题。
+
+撞车判断：老 active ReID 有 video tracklet pair annotation 和 label merging，例如 2018 deep active video ReID；但我没查到 2024-26 有专门面向 **noisy supervised image-ReID label repair** 的工作。([arxiv.org](https://arxiv.org/abs/1812.05785)) 风险是会被审稿人归到 active learning，必须把卖点压在“noisy label topology + constraint leverage”，不能写成省标注。
+
+Verdict：备选，可和机会 1 共用 kill 实验；若团队不想做人机/预算设定，就不要主推。  
+信心：5.5/10。  
+现有数据：Market/MSM T 可完全模拟；真实说服力最好再从 CARGO/AG-ReID.v2 抽少量疑似错误做人工核验。

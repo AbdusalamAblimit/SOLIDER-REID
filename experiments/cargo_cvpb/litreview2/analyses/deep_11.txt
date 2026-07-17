@@ -1,0 +1,77 @@
+你这次列出的标题是 6 篇，不是 11 篇。我按这 6 篇拆；长文里方法超过前 8 页的，我补读了后续方法和关键消融页。
+
+**1. Dual-Modality-Shared Learning and Label Refinement for Unsupervised Visible-Infrared Person ReID**
+
+1. 触发观察：无监督 VI-ReID 不是简单缺标签，而是跨模态聚类会产生两类错。一类是同一身份被拆成多个簇，另一类是不同身份被错误合并。已有方法只做跨模态 cluster matching，却默认匹配关系可靠。作者还注意到 memory bank 用簇均值初始化，会被两模态样本数量不均和难样本拖偏。
+
+2. 重定义动作：他们把问题从“怎么匹配可见光和红外簇”改成“跨模态匹配关系本身可以反过来诊断和修正伪标签”。关键词是 modality-shared pseudo labels、cluster relationship-based label refinement、weighted modality-shared memory、hard samples。这里的重点不是又做一个匹配算法，而是把匹配后的 many-to-one 关系解释成伪标签错误的信号。
+
+3. 机制怎么长出来：先用 CSM 做双向 cluster similarity matching，得到跨模态伪标签。然后 CRLR 看哪些簇共同匹配到同一个异模态簇，如果同模态簇之间相似就合并；如果一个异模态簇被多个合并簇匹配，就用 k-means 把它切开。最后 WMM 不直接平均所有样本，而是先平衡两模态中心，再按样本到共享中心的关系给权重，让难样本在 memory 初始化里有更大作用。这个机制和重定义绑定较紧，因为每一步都在处理“伪标签关系不可靠”和“记忆中心不可靠”。
+
+4. 证据闭环：它的关键不是只报涨点。消融里 baseline 到 CSM+MM 有大提升，CRLR 和 WMM 再分别增益；CRLR 还用伪标签质量指标证明 refinement 前后质量提高。t-SNE 显示跨模态簇边界变清，正负跨模态距离分布重叠变小，伪类数量逐渐接近真实类别数，ARI 也更高。这些证据直接服务于“伪标签关系能被修正”这个重定义。
+
+5. reviewer 为什么买账：这篇卖的是“跨模态匹配关系可以用于 label refinement”的视角，加上一个完整训练框架。真正 novelty 不在某个复杂模块，而在把 cross-modality correspondence 从监督信号升级成诊断信号。审稿人会买账，是因为它把动机、机制和伪标签质量证据连起来了。
+
+**2. Dynamic adaptive multi-view contrastive learning for unsupervised person re-identification**
+
+1. 触发观察：作者抓住无监督 ReID memory contrastive learning 的三个内部矛盾。第一，camera variation 会让同相机不同身份比跨相机同身份更近，Jaccard 聚类偏向错误邻居。第二，已有方法用 mean feature 当 cluster proxy，默认簇是球形，但 ReID 特征常是非球形流形，均值可能落在低密度空区。第三，one-hot hard pseudo label 对噪声不稳，会放大错误监督。
+
+2. 重定义动作：他们没有泛泛说“伪标签有噪声”，而是把噪声拆成三个更具体的问题：距离度量不懂相机，代理点不符合 DBSCAN 的局部密度结构，监督目标太硬。关键词是 dynamic adaptive camera Jaccard、manifold、medoid proxy、dynamic adaptive proxies、soft pseudo labels。
+
+3. 机制怎么长出来：DACJ 为每个样本估计跨相机和同相机邻居差异，动态增加跨相机正样本在 k-reciprocal 和 local query expansion 里的比例。DAP 用 medoid 代替 mean proxy，因为 medoid 是真实样本点，更贴合非球形流形；同时用 instance memory 补充簇内细粒度关系，并去掉动量均值更新。DAKD 再用 teacher-student 和 soft label 缓解 hard label 噪声。多视图的上半身、下半身、全局特征是补充判别信息。
+
+4. 证据闭环：它的证据很对题。proxy 对比里 optimal medoid 优于 hardest、easiest、random；momentum update 和 optimal update 对比显示复杂 MSMT17 上差距很大；DOCP 和 DIP 单独作用小，合起来明显更强，证明两个代理层次互补。DACJ 的消融在 MSMT17 上尤其明显，说明相机差异越强越有用。t-SNE 显示同身份跨相机更紧，参数分析也围绕跨相机邻居比例展开。
+
+5. reviewer 为什么买账：这篇卖的是“现有无监督 ReID 管线的几个默认假设错了”的视角。机制本身是多个组件，但每个组件都对应一个被重定义的假设错误。最有价值的是把“均值代理不适合 DBSCAN 发现的非球形簇”讲成了一个方法问题，而不是只说换个 proxy 涨点。
+
+**3. Dynamic Modality-Camera-Invariant Clustering for Unsupervised Visible-Infrared Person Re-Identification**
+
+1. 触发观察：USL-VI-ReID 里，大家主要盯着 visible-infrared modality gap，但作者观察到 clustering 阶段还有 camera discrepancy。可见光图像受相机、光照、视角影响更大，导致同一身份被过度拆裂。已有 graph matching 或 optimal transport 如果建立在拆裂簇上，反而会放大 noisy labels。
+
+2. 重定义动作：它把问题从“跨模态关联不准”改成“聚类过程被模态和相机信息同时污染”。关键词是 modality-camera invariant clustering、identity splitting、clustering-level discrepancy、from discriminability to generalization。这个表述比“减少模态差异”更具体，因为它把失败点锁定在聚类输入和聚类目标上。
+
+3. 机制怎么长出来：MIE 在 k-reciprocal distance encoding 里均衡融合不同相机的信息，让 clustering embedding 不被同相机近邻主导。DNC 动态调 eps 和 k2，早期收缩半径排除噪声，先学可靠簇的判别性；后期扩大半径，把跨相机和跨模态正样本逐渐并进来。HMCL 先 intra-modality 再 inter-modality，用 cluster-level 和 instance-level memory 学模态相机不变表示。逻辑绑定很强，特别是 MIE 和 DNC 都直接服务于 identity splitting。
+
+4. 证据闭环：关键证据是 clustering ablation 和 cluster number visualization。文本说明 MIE 带来约 10 到 15 个点 mAP，DNC 再带来 2 到 5 个点，合起来 14 到 17 个点。可视化里 visible cluster 数量更接近真实类别数，t-SNE 显示 MIE+DNC 后同身份跨模态更紧。objective ablation 里 inter-modality cluster loss 贡献最大，说明改好的跨模态伪标签确实在驱动训练。
+
+5. reviewer 为什么买账：这篇卖的是视角，不只是模块。它把 USL-VI-ReID 的痛点从“模态对齐”推进到“模态和相机共同破坏聚类”。如果 reviewer 接受 identity splitting 是主要失败模式，MIE 和 DNC 就显得自然。它的 novelty 来源是把 camera-aware 思路放到 VI 全局聚类阶段，而不是只做相机代理损失。
+
+**4. Dynamic Token Selective Transformer for Aerial-Ground Person Re-Identification**
+
+1. 触发观察：AGPReID 的难点不只是 aerial 和 ground 视角差异，还包括大范围观测带来的尺度变化、背景冗余和无关区域。已有 VDT 能做 view decoupling，但仍然把大量 token 都送进 transformer，缺少对关键身份区域的动态选择。
+
+2. 重定义动作：它把 aerial-ground ReID 从“视角差异问题”改写成“视角差异下的 token 冗余和关键区域选择问题”。关键词是 dynamic token selection、top-k informative tokens、compact long-range modeling、irrelevant tokens、view-heterogeneous ReID。
+
+3. 机制怎么长出来：在 VDT 框架上保留 meta token 和 view token，用 identity、view classifier 和 orthogonal loss 做 view-related 与 view-unrelated disentanglement。新增 VTS，用轻量 attention 给每个 token 打分，取 top-K token，再用 Gumbel-Softmax 近似使选择可反传。最后选中的 token 和 class token 进入后续聚合。机制和重定义有一定绑定，但更多是把已有 token selection 思路迁移到 AGPReID。
+
+4. 证据闭环：主要证据是消融。加 VTS 后 CARGO 的 A-G 协议 rank1 从 45.00 到 50.63，mAP 从 42.05 到 43.39。head 数、token 数、插入位置的消融说明 token 不是越多越好，2 个 token、2 个 head、最后一层插入最好，这支持“少量关键 token 更有效”的说法。但它缺少更强的 token 可视化或失败案例分析，所以证据闭环比前几篇弱。
+
+5. reviewer 为什么买账：这篇更多卖机制迁移，而不是强视角。AGPReID 是新任务，VDT 是清晰强基线，在这个基线上加动态 token selection 有明确增益，reviewer 容易接受。真正 novelty 是“AGPReID 里显式选择关键 token”，但方法论上它不是最强的创新构造样本。
+
+**5. Efficient Lightweight Multi-Source Domain Adaptation for Person Re-ID via Self-paced Meta-Learning**
+
+1. 触发观察：UDA ReID 常用目标域聚类和伪标签，但源域知识利用不足；DG 学泛化，却不直接适配目标域。现实部署还有边缘设备算力、隐私和低资源限制。另一方面，global-only feature 在遮挡、光照和低清场景下不够细。
+
+2. 重定义动作：它把 UDA 从“目标域伪标签怎么修”改成“先用多源域学一个更好的、轻量的、可泛化初始化，再进入目标域伪标签学习”。关键词是 lightweight multi-source domain adaptation、self-paced meta-learning、style uncertainty augment、whole-part feature、edge deployment。它还把效率从附加指标提升成问题定义的一部分。
+
+3. 机制怎么长出来：WPOSNet 用 OSNet 的轻量深度可分离卷积，做 whole branch 和 part branch，垂直切分人体局部再拼接。SpML 把每个源域看成任务，用 SuA 扰动特征均值和方差形成不同难度，从无扰动、弱扰动到强扰动，模拟由易到难学习源域不变知识。最后用 MMT 在目标域做 hard pseudo label 和 EMA soft pseudo label 互教。逻辑上，SpML 与“多源泛化初始化”绑定较紧，WPOSNet 是另一个实用贡献，MMT 则是成熟框架复用。
+
+4. 证据闭环：它用轻量指标和真实 Railway 数据补强 practical story。消融显示 whole 和 part 单独相近，合起来在 SpML 下 mAP 提升约 3 个点；MMT+SpML 比只用 MMT 高 5.2 个点，说明多源自步学习确实改善目标适配。ResNet50 和 WPOSNet 上都验证 SpML+MMT 有效，证明不是只靠某个骨干。GradCAM 显示 part branch 关注背包等局部，whole branch 补全上下文。
+
+5. reviewer 为什么买账：这篇卖的是实用系统视角，机制新意不如 DMIC 或 MIP 紧。它的优势是把多源、轻量、目标适配和真实场景部署放在同一个问题框架里，并用 Params、FLOPs、Railway 数据支撑。reviewer 买账点是“现实约束下的 UDA ReID”，不是单个模块非常新。
+
+**6. Enhancing Visible-Infrared Person Re-Identification With Modality- and Instance-Aware Adaptation Learning**
+
+1. 触发观察：VI-ReID 里很多方法都试图补齐或消除可见光和红外的信息差，比如生成、对齐、模态不变特征。作者反过来指出，完全桥接信息差很难，而且即使桥接，也不一定能稳定抓到身份判别线索。真正挑战是模型面对不同模态、不同实例、不同 query 时都要能灵活适配。
+
+2. 重定义动作：它把“缩小 modality gap”重定义成“增强模型对 modality、input instance、query instance 的适应能力”。关键词是 model adaptability、flexibility、modality-aware prompts、instance-aware prompts、query-guiding prompts、adaptive feature space。这个转向很重要，因为它避开了“把两种模态硬映射到同一空间”的旧叙事。
+
+3. 机制怎么长出来：MPL 为 visible 和 infrared 各维护一套 layer-wise prompts，让模型按模态适配。SIPG 从当前图像 embedding 生成 instance-aware prompts，解决不能为无限测试实例存独立 prompt 的问题。QIPG 从 query embedding 生成 query-guiding prompts，在额外 transformer 层里让特征提取适配当前匹配任务。CPF 用当前实例特征重加权 modality prompt，再和 instance prompt 融合，避免两类 prompt 冲突。IAEL 防止实例 prompt 退化成无差别提示，CEL 约束 query-guiding prompt 学到同身份相关而不是冗余信息。机制和重定义绑定很强，三类 prompt 分别对应三类适配对象。
+
+4. 证据闭环：这篇的证据最像“方法论完整闭环”。它不只做组件消融，还专门验证普通 visual prompt 是否足够。结果显示 general prompts 只带来约 0.5 个点，而 MPL 和 SIPG 各自带来约 2.3 到 2.6 个点，二者合起来约 4 个点，证明提升不是“prompt tuning 本身”。它还比较 generation-based 和 fusion-based SIPG，t-SNE 显示 generation-based prompt 有更清楚的身份边界。CPF 优于直接拼接和投影，QIPG 加 CEL 进一步提升。CAM 显示 MPL、IPG 让模型更关注身体判别区域并减少无关细节。
+
+5. reviewer 为什么买账：这篇主要卖视角，然后用机制兑现视角。真正 novelty 是把 VI-ReID 从“模态对齐”改写成“模型适配”，并把适配拆成模态、实例、query 三个轴。reviewer 容易买账，是因为它提前防住了几个质疑：普通 prompt 不够，实例 prompt 会退化，模态 prompt 和实例 prompt 会冲突，query prompt 需要约束。
+
+**共同套路**
+
+这批论文共同的构造方式是：先不说“我要加模块”，而是把 baseline 的失败解释成某个旧假设不成立，例如伪标签可靠、均值代理合理、只需模态对齐、token 越多越完整、单源初始化足够。然后把新方法做成这个新解释的直接后果，每个模块都对应一个失败来源。最能打动 reviewer 的不是最终涨点，而是有一组消融、伪标签质量、聚类数量、t-SNE、attention map 或真实场景测试，能证明“我重新定义的问题确实存在，而且我的机制正好在修它”。

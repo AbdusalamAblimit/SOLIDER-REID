@@ -1,0 +1,75 @@
+我基于本地 PDF 的方法和补读页拆解。判断重点放在“观察怎样变成问题”，不是复述模块。
+
+**1. TIENet**
+
+1. 触发观察：多模态 ReID 不是缺一个融合层，而是现有方法大多只在空间域融合，忽略频域差异和模态间关系。作者用傅里叶可视化发现，相位主要保留结构，幅度更能区分模态和身份。
+
+2. 重定义动作：他们把“多模态融合”重定义为“三类交互不足”。关键词是频域和空间域交互、模态间交互、模态内人体结构交互。这样旧问题从“怎么拼 RGB、近红外、热红外”变成“怎么分别保留模态特异性和互补性”。
+
+3. 机制怎么长出来：SFI 用幅度注意力引导相位，再用空间卷积保留局部细节；IMMI 用相似度掩码做自适应模态交互；IMFF 用位置注意力建模身体局部上下文；MAS loss 同时做模态间分离和模态内聚合。SFI 和观察绑定最紧，IMFF 更像补强模块，逻辑稍泛。
+
+4. 证据闭环：关键不是最终涨点，而是频域重构和 t-SNE 先证明幅度、相位确实承载不同信息；GAP 和 GMP 替换证明“幅度全局信息”有用；IMMI 对比 SUM、CIM 和不同交互阶段证明固定融合会引入冲突；MAS removal、距离分布、t-SNE 和检索可视化补足“特异性和互补性同时改善”。
+
+5. reviewer 为什么买账：这篇卖的是“多模态融合不只是拼接，而是频域、模态关系、人体结构三重交互”的视角，加上频域观察让模块堆叠看起来有根。真正的新颖性来自频域解释和三重交互框架，不是单个注意力模块。
+
+**2. Towards Anytime Retrieval**
+
+1. 触发观察：真实系统要求任何时间都能检索，包括白天、夜晚、短期、长期换衣。但传统 ReID、可见红外 ReID、换衣 ReID 被拆成不同任务，数据集也各自只覆盖一部分场景。
+
+2. 重定义动作：作者把 ReID 从单一任务重定义为 Anytime ReID，用“时间点”和“时间间隔”划出六个场景。关键词是 anytime retrieval、multi-scenario retrieval、scenario-specific cues、inter-scenario interference。
+
+3. 机制怎么长出来：既然六个场景依赖的线索不同，一个统一特征会互相伤害，所以 MS-ReID 用六个 CLS token 学不同场景特征；短期用衣服类别监督，长期用身份监督；MoAE 按白天、夜晚、全天、短期、长期这些属性共享专家；HDW 按任务难度动态加权。机制基本是从任务重定义自然推出的。
+
+4. 证据闭环：数据集 AT-USTC 本身证明旧数据集缺口，21 个月、RGB 和红外、多衣服、多季节支撑“anytime”成立。模型证据包括六场景分别评测、跨数据集泛化、MS-ReID、MoAE、HDW 消融，以及和其他 MoE 方法对比，证明不是单纯多头分类。
+
+5. reviewer 为什么买账：这篇主要卖问题和 benchmark，机制是配套证明新任务可做。新颖性核心是把三个割裂子任务合成一个时间驱动的统一任务空间。
+
+**3. TP-LReID**
+
+1. 触发观察：终身 ReID 主要解决旧域遗忘，但现实还要求未来未见域泛化。作者观察到普通 ReID 当前域强，终身 ReID 旧域强，泛化 ReID 未来域强，三者各管一段；同时文本特征比图像特征更跨域一致。
+
+2. 重定义动作：他们把 LReID 从“防止忘记过去”重定义为“过去、现在、未来三类域同时负责”。关键词是 text prompts、domain-consistent features、future-style generation、past-present-future domains。
+
+3. 机制怎么长出来：文本更稳定，所以用文本 prompt 作为跨域语义锚；域按顺序到来，所以 prompt generator 和 image encoder 交替、连续更新；未来域不可见，所以在特征空间用风格对抗扰动模拟未来样本，再让文本和原图、未来风格图一起对齐。逻辑比较紧。
+
+4. 证据闭环：它不只报平均成绩，而是分 past、present、future 比较普通 ReID、终身 ReID、泛化 ReID；消融分别看文本 prompt 和未来扰动；比较 continual prompt 和非 continual prompt；还跑 24 种到达顺序，看第一个旧域遗忘和所有未见域泛化。
+
+5. reviewer 为什么买账：这篇卖的是视角，终身 ReID 不应只防遗忘，还要负责未来域。机制里的 CLIP、prompt、StyleAdv 都不是全新零件，但组合被“过去、现在、未来”这个新定义绑住了。
+
+**4. Two-stage knowledge distillation**
+
+1. 触发观察：可见红外 ReID 的主流做法急着做跨模态对齐，但同模态差异本来比跨模态小很多。直接多对多跨模态对齐既难，又依赖完整标注。
+
+2. 重定义动作：作者把“跨模态 gap 太大”重定义为“对齐顺序错了”。关键词是 simple-to-difficult strategy、intra-modality discrepancy、self-mimic learning、mutual distillation、weak supervision。
+
+3. 机制怎么长出来：先用少量标注训练分类器，给无标注样本生成带置信度的软身份标签；再用 self-mimic 把同一身份在同一模态内拉向模态特定原型；最后用 mutual distillation 做可见和红外的双向分布对齐。先同模态收紧，再跨模态对齐，机制和重定义绑定很紧。
+
+4. 证据闭环：关键消融是 SI、SM、MD 在全监督和弱监督下逐项加入；还比较离线原型、在线原型、center loss 和 self-mimic；可视化同模态距离均值和方差下降；比较红外到可见、可见到红外、双向蒸馏，证明单向对齐会损失信息；伪标签准确率也单独验证。
+
+5. reviewer 为什么买账：这篇卖的是机制加顺序视角。蒸馏本身不新，但“先易后难，把多对多跨模态对齐拆成同模态原型收紧和跨模态分布互蒸馏”是它的真正新意。
+
+**5. UAV-based person re-identification survey**
+
+1. 触发观察：大多数 ReID 研究默认固定地面摄像头，但 UAV 有高空视角、动态背景、运动模糊、低分辨率、续航和算力约束。作者还指出 UAV-ReID 数据集非常少，和普通 ReID 数据集规模不成比例。
+
+2. 重定义动作：这篇不是方法论文，它把 UAV-ReID 从“普通 ReID 的一个数据集变体”重定义成独立问题域。关键词是 aerial perspective、dynamic background、motion blur、resource constraints、aerial-ground gap、privacy concerns。
+
+3. 机制怎么长出来：作为综述，它的“机制”是分类框架。它按数据集、挑战、方法谱系、结果和未来方向组织领域，把 MRP、DRHIT01、P-DESTRE、PRAI-1581、AHU-UAV、UAV-Human、AG-ReID 等串起来，再把方法从 ELF、SVM、triplet loss、CNN、subspace pooling、federated learning、ViT、elevated-view attention 统一归档。
+
+4. 证据闭环：它用数据集表证明资源稀缺，用方法表证明现有技术大多迁移自地面 ReID，用结果表证明不同 UAV 场景难度差异很大。例如 PRAI-1581 的绝对精度仍低，P-DESTRE 短期较稳但长期明显掉，AG-ReID 的 aerial-ground 设置需要专门的 elevated-view attention。
+
+5. reviewer 为什么买账：这篇卖的是领域地图和问题边界，而不是算法。它让 reviewer 相信 UAV-ReID 不是普通 ReID 换相机，而是数据、视角、部署约束和伦理问题共同定义的新应用域。
+
+**6. Uniform Light Transformer**
+
+1. 触发观察：已有复杂光照 ReID 用一对一光照转换器，随着光照种类增加会变得冗余。作者问一个反直觉问题：能不能只用一个统一光照转换器处理任意光照？实验发现视觉上转换还行，但低频信息差异随光照尺度增加而变大，检索效果受损。
+
+2. 重定义动作：他们把问题从“光照归一化不够好”重定义为“统一光照转换器在多光照输入下低频建模能力不足”。关键词是 Unified Lighting Transformer、low-frequency information、discriminative feature spectrum consistency、low-frequency information constraints。
+
+3. 机制怎么长出来：既然问题被定位到低频信息，方法就围绕低频约束展开。DFSC 用谱约束网络把 ReID 特征图映射成真实判别特征，约束生成图的判别频谱；LFCM 把生成图低频和真实图高频拼成虚拟样本，再用预训练 ReID 模型的分类 logits 做蒸馏，让低频差异在身份特征层面被惩罚；总损失是 GAN 生成损失、DFSC、LFCM 三部分。
+
+4. 证据闭环：最关键的是图 1 的频域分析，说明高频差异小且稳定，低频差异随光照尺度增加而扩大。消融里单独 ULT 甚至不如强 ReID baseline，说明“一个转换器”不是自然有效；加入 DFSC、LFCM 都提升，合起来最好，证明重定义的低频瓶颈确实被命中。
+
+5. reviewer 为什么买账：这篇卖的是诊断视角加机制。它不是又做一个 GAN，而是先解释为什么统一光照转换失败，再提出两个专门约束低频的证据化模块。
+
+这批论文共同套路很明显：先抓一个具体失败或缺口，不急着说“我加了模块”，而是把旧问题改写成更尖锐的新问题。然后机制要从新定义里自然长出来，证据也要证明这个新定义成立，而不是只证明最终 mAP 涨了。对我们最有用的是，创新最好从“任务边界、干扰来源、训练顺序、信息载体”里长出来，模块只是这个判断的执行形式。

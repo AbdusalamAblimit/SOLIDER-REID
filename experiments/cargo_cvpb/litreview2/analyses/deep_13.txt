@@ -1,0 +1,45 @@
+你这条消息实际列了 6 篇，我按这 6 篇逐篇拆。
+
+**1. FMCNet+**
+1. **触发观察**：VI-ReID 里大家都在学 modality-shared feature，但这样会丢掉一部分有判别力的 modality-specific 信息。已有补偿方法走图像生成，RGB 和 IR 互转太难，尤其 IR 生成可见光会带来颜色不一致等噪声，所以补偿线反而不如 shared feature 线。
+2. **重定义动作**：作者把问题从“跨模态差异大”改成“缺失的 modality-specific 信息应该补偿，但补偿层级错了”。关键词是 feature-level modality compensation、modality-shared/specific decomposition、discriminative person-related modality-specific features。
+3. **机制怎么长出来**：既然图像级补偿噪声大，就先用 SFD 把单模态特征拆成 shared 和 specific，再用 FMC 从对方 shared feature 生成缺失 specific feature，最后用 SFF 融合 shared、原 specific、生成 specific。逻辑绑定很紧，模块基本是从“特征级补偿比图像级更可控”自然推出的。
+4. **证据闭环**：关键消融是 Base 57.09/53.11，加 SFD 到 63.16/58.83，加 FMC 到 65.50/62.32，加 SFF 到 66.34/62.51。MD loss 的三项逐步提升，FMC 里没有 adversarial loss 时反而掉点，说明不是“随便生成特征”有效，而是要让生成 specific feature 接近真实 specific feature 且保持身份判别。特征分布图也证明 shared/specific 被分开，生成特征贴近真实特征。
+5. **reviewer 为什么买账**：卖的是视角，不只是模块。它把一条表现不佳的旧路线，图像级模态补偿，诊断为“补偿层级错了”，再给出端到端特征级补偿。这比单纯做一个跨模态融合模块更像创新。
+
+**2. Focusing on pedestrians like human**
+1. **触发观察**：换衣 ReID 方法多在网络结构上做身份相关信息、衣服无关信息、局部细节分支，但数据增强几乎没被系统做。衣服占图像大部分，脸、体态、步态等身份线索只在小局部，普通随机裁剪、旋转还可能破坏这些小线索。
+2. **重定义动作**：作者把换衣问题从“去掉衣服干扰”重讲成“训练图像应该像人一样同时关注多个局部身份线索”。关键词是 human focus、ensemble coding hypothesis、image-level local detail learning、central emphasis、component continuity。
+3. **机制怎么长出来**：CES 用 5×5 网格放大 body component 中央区域，CCP 把人体分成头肩、左右上身、左右下身五块，并用共享纵向偏移、左右镜像横向偏移保证连续，再用 smoothing 处理拼接断裂。机制和叙事有绑定，但具体网格、平滑是工程化选择，不如 FMCNet 和 GAReID 那么“公式自然推出”。
+4. **证据闭环**：它和普通增强比较，HFIA 优于 AutoAugment 等，随机裁剪和旋转明显伤害性能，支撑“换衣需要定制增强”。消融里 CES 和 CCP 单独都不如组合，body components、pedestrian-oriented 配置、enlargement grid、smoothing 都分别带来提升。可视化显示 HFIA 更集中在行人和身份相关区域，检索例子也展示它不再被相似衣服强干扰。
+5. **reviewer 为什么买账**：主要卖视角。它不是新 backbone，而是把“局部细节学习”从 feature branch 搬到 image augmentation，并且训练期使用、测试无开销。新意来自“换衣 ReID 的局部细节增强可以在图像层完成”，不是 CES 这个小操作本身。
+
+**3. GAE-Net**
+1. **触发观察**：视频 ReID 虽然有时序建模，但仍强依赖外观，容易被光照、颜色、穿着变化干扰。gait 对外观变化更鲁棒，但单独 gait 缺少外观信息，已有 gait-assisted 方法也没有充分解决 RGB 和 gait 的互补融合。
+2. **重定义动作**：作者把视频 ReID 从“更强时序聚合”重定义为“外观和步态两个互补模态的训练期协同，再蒸馏回单模态部署”。关键词是 gait-assisted enhancement、dynamic two-stream aggregation、privileged multimodal teacher、local perceptual complementary distillation。
+3. **机制怎么长出来**：DTA-Net 用 RGB ReID 分支和 GaitGL 分支形成多模态教师，DFA 用 DAW 和 DWA 动态融合外观与步态。然后 LPCD 把教师知识蒸馏给 RGB-only 学生，并把全局 logit 拆成多尺度局部 logit，区分 consistent 和 complementary knowledge。机制逻辑较紧，因为“训练期有 gait，测试期只用 RGB”自然导向蒸馏。
+4. **证据闭环**：ReID branch 是 84.3 mAP，gait branch 单独只有 10.7，DTA-Net 到 85.8，GAE-Net 经 LPCD 到 87.7，同时参数从 164.1M 降到 24.8M。DAW、DWA、完整 DFA 逐步提升。LPCD 明显优于普通 KD、WSLD、NKD、DIST，多尺度集合 {1,2,4} 最好。检索、t-SNE 和激活图证明 gait 信息帮助压制遮挡和噪声。
+5. **reviewer 为什么买账**：卖的是“特权信息蒸馏”的视角。真正 novelty 不是又加一个 gait 分支，而是让 gait 成为训练期教师，并通过局部互补知识把多模态能力压进单模态模型，部署时不用额外 gait 输入。
+
+**4. GAReID**
+1. **触发观察**：part misalignment 来自拍摄视角、检测误差、遮挡和背景。part-based 方法划分太粗，landmark-based 方法需要检测器和额外代价。作者进一步指出，GAP 后两张图的相似度其实是所有 part pair 相似度的平均，其中 misaligned pair 数量远多于 aligned pair，背景 pair 也会污染平均。
+2. **重定义动作**：它把“人体部位没对齐”重定义为“相似度聚合中，对齐 part 的贡献被大量错配 part 稀释”。关键词是 high-order part similarity、grouped high-order pooling、attentive high-order pooling、landmark-free alignment。
+3. **机制怎么长出来**：如果 aligned part 的相似度天然更高，那么高阶函数会放大高相似 pair 和低相似 pair 的差距。于是 GHOP 用高阶 Kronecker 交互做无 landmark 对齐，再用 group 和 shuffle 压缩维度。背景会污染相似度，所以 AHOP 用基于特征范数的前景 attention 抑制背景。这个逻辑非常紧。
+4. **证据闭环**：最强证据不是单纯涨点，而是 Fig. 6 和 Fig. 7 的相似度可视化。高阶后 aligned landmark pair 更突出，misaligned pair 的高相似减少。n=3 相比 n=1 在 Market mAP 提升 3.57，在 Duke 提升 7.99，n>3 后收益饱和，符合“错位已被大幅缓解”的解释。AHOP 优于 GHOP，说明前景过滤确实补上了背景污染问题。
+5. **reviewer 为什么买账**：这篇卖的是视角加机制。它没有借助姿态或人体解析，却用一个相似度分解公式解释为什么 misalignment 会发生，再让高阶映射成为自然解法。novelty 的核心是问题数学化，而不是高阶池化这个名词。
+
+**5. Generalizable ReID with bi-stream interactive learning**
+1. **触发观察**：ReID 跨数据集泛化差。PK sampler 全局随机，小 batch 内样本关系弱，难以提供有效 hard samples。已有 graph sampler 又慢，数据规模大时不稳定。作者还注意到，采样质量依赖 backbone 特征，而 backbone 又依赖采样到的训练样本。
+2. **重定义动作**：作者把泛化问题从“换一个更强网络或损失”重定义为“metric learning sampling 和 representation learning 之间缺少交互”。关键词是 bi-stream interactive learning、correlation graph sampler、learnable batch sampling、feature reconstruction。
+3. **机制怎么长出来**：CGS 每个 epoch 用 Spherical-LSH 先把相近类别放进 bucket，再用 feature-map adaptive matching 找邻近类别，构造相关 hard batch。GSANet 保持高分辨率流，GRSR 用稀疏全局相关像素重构特征，提升特征质量。特征更好会让下一轮 CGS 更好，CGS 更好又提供更有价值样本。这个“互相增强”的逻辑成立，但模块数量较多，绑定不如 GAReID 干净。
+4. **证据闭环**：采样对比显示 CGS 好于 random、PK、cluster，并且比已有 GS 快很多，Market 上采样 0.1 秒对 4 秒，MSMT(all) 上 1 秒对 40 秒。CGS 相比 Cluster 在 Market 到 CUHK03 上提升约 3.0 Rank-1 和 2.8 mAP，在 Market 到 MSMT17 上提升约 3.9 和 2.9。CGS、GRSR、GSANet 的组合消融显示完整模型最好。采样可视化证明 CGS 找到衣服颜色、局部外观相近的邻近类别。
+5. **reviewer 为什么买账**：卖的是系统机制。单看每个部件都不算特别新，但“采样器和特征网络闭环互动”给了它论文结构。风险是东西较多，reviewer 会要求每个部件隔离清楚，否则容易被看成堆模块。
+
+**6. Global aggregated gradient-guided adversarial attacks**
+1. **触发观察**：ReID 是 open-set ranking，分类攻击不能直接搬。已有 ReID 攻击黑盒迁移差，作者观察到早期迭代里 current gradient 和 global aggregated gradient 一致性很低，更新方向随机震荡，导致迁移性不足。
+2. **重定义动作**：作者把“黑盒攻击迁移差”重定义为“早期攻击阶段的梯度一致性不足”。关键词是 global aggregated gradient、gradient consistency、pre-convergence、weighted gradient。
+3. **机制怎么长出来**：每次外层更新前做 inner loop，沿预收敛路径采样多个梯度并平均成 global aggregated gradient。再计算当前梯度和全局聚合梯度的余弦一致性，低一致时更信任全局梯度，高一致时更信任当前梯度。机制几乎直接从重定义推出。
+4. **证据闭环**：Fig. 3 先证明旧方法早期 gradient consistency 低。update direction 消融比较 current gradient、GAG 和 weighted gradient，weighted gradient 最好。inner iteration 数 m 和噪声边界 beta 的实验展示存在合理区间，不是随便加算力。黑盒、白盒、ensemble、防御模型、跨模态 ReID 都验证有效，检索可视化显示 adversarial query 会让 top-10 全错。
+5. **reviewer 为什么买账**：卖的是可测中间变量。它不是说“我们攻击更强”，而是提出“迁移性差的原因是早期梯度一致性低”，再用一个很直接的算法修这个变量。novelty 的来源是诊断变量，而不是攻击 loss 本身。
+
+这批论文共同套路很明确：先抓一个具体失败点，不是泛泛说任务难，再把失败点命名成一个可操作的新问题。然后机制要尽量从这个新问题自然长出来，最后用消融或可视化证明那个中间问题确实被修了，而不是只报 SOTA 表。对我们做 B 类 ReID 方法稿来说，最值得学的是找“可测的中间变量”，例如补偿层级、错位 pair 占比、采样相关性、梯度一致性，而不是先想一个模块名字。

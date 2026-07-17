@@ -1,0 +1,33 @@
+先判定：**传统 LReID “学新域不忘旧”已经偏红海**。2024-2026 已覆盖不少方向：adapter/auto-selection（[AdalReID](https://arxiv.org/abs/2405.19005)）、distribution/expert + exemplar-free（[DAFC](https://arxiv.org/abs/2504.15041)）、re-index/backward compatibility（[Backward-Compatible LReID](https://arxiv.org/abs/2403.10022)、[Bi-C2R](https://arxiv.org/abs/2512.25000)）、semi-supervised（[SPRED, ICCV 2025](https://arxiv.org/abs/2507.01884)）、hybrid clothing + text（[Teata, TIP 2025](https://arxiv.org/abs/2405.16600)）、few-shot 也有人碰过（[CFReID，虽已 withdrawn](https://arxiv.org/abs/2503.18469)）。所以不能再做“加 KD / replay / prompt / adapter 抗遗忘”。
+
+**机会 1：Gallery-Growth-Aware Lifelong ReID**
+触发观察：大家把旧域 mAP 掉点解释成 catastrophic forgetting，但真实部署里 gallery 会随时间膨胀。即使模型完全 frozen，旧 query 也可能因为新域 distractor 进入候选集而掉 mAP/R1。隐藏变量是：**不是只忘了旧知识，而是检索空间变大导致旧身份被新域伪近邻挤掉**。
+
+重定义：LReID 应拆成两种衰退：`representation forgetting` 和 `gallery-growth tax`。前者是模型变了，后者是候选集变了。现有 backward-compatible / re-index-free 工作注意到历史 gallery 累积和重提特征成本，但核心还是兼容新旧模型，不是把“候选集膨胀”作为独立问题建模。
+
+机制草案：训练端做 **distractor-aware continual learning**。不存旧图，只存每域 hard-negative feature sketch：均值/协方差、top-K hard negative centroid、跨域混淆矩阵。新域训练时加入 virtual open-gallery contrastive loss，让当前域 identity 不只和 batch 内负样本分开，还和历史/未来型 distractor 分布拉开。主贡献不是 test-time re-ranking，而是把“未来 gallery 压力”提前注入训练。
+
+廉价 kill-switch：零训练。用现有 `exp030a/SOLIDER` frozen 特征：
+1. 对 Market/MSMT/occluded_duke/CARGO/AG-ReID.v2 分别算原始 `q_i -> g_i`。
+2. 固定模型和旧 query/gallery，把其它数据集 gallery 作为纯 distractor 追加：`q_i -> g_i + g_j + g_k...`。
+3. 记录 `ΔmAP_expand / ΔR1_expand / false-domain-in-topK`。
+4. 若 median 掉点小于 2-3 mAP，直接杀；若常见掉 5-10 mAP，且量级接近 LReID 报告中的 forgetting，就有问题级新意。
+
+撞车核查：2024-26 没搜到直接以 “gallery expansion / distractor tax / search-space growth” 重定义 LReID 的工作。最近主流集中在 adapter、distribution/expert、re-index compatibility、semi-supervised。  
+verdict：**值得首验，优先级最高**。信心 **7/10**。现有数据 **足够首验**，不需新数据。
+
+**机会 2：Recurring-Domain Lifelong ReID**
+触发观察：当前 LReID benchmark 默认 domain/task 单向到来，且多为数据集级新域。但真实系统更像 A-B-A：同一商场、摄像头组、天气/季节/时间段会反复出现。问题不只是“新域来了怎么学”，而是：**新 batch 到底是新域，还是旧域回流？该复用旧知识，还是新开容量？**
+
+重定义：大家以为 continual ReID 的核心是 learn-new/not-forget-old；但实际第一步是 **reuse-or-allocate**。如果把回流域当新任务，会造成 adapter 膨胀、知识碎片化、同分布样本被分到多个容器；如果把真新域错当旧域，会负迁移。
+
+机制草案：**Domain Signature Memory + Reuse/Merge Adapter**。每个历史域只保存隐私安全 signature：feature 均值/协方差、camera/style cluster、少量 centroid。新 batch 到来先做 novelty test：复用旧 adapter、更新旧 adapter 的低秩 delta，或新建 adapter。混合 batch 则 cluster-level routing。注意它必须写成“容量治理/回流域识别”，不能写成普通 adapter router，否则会撞 AdalReID/DAFC。
+
+廉价 kill-switch：零训练或极低成本。
+1. 从 Market/MSMT/CARGO/AG-ReID.v2 构造 A-B-A stream：例如 Market-ID split A，MSMT B，Market disjoint-ID A'；或 CARGO 场景/相机 split。
+2. 用 frozen SOLIDER 特征计算 2-Wasserstein / MMD / nearest-domain signature。
+3. 看 A' 是否稳定最近 A，而不是被 B/C 混掉。
+4. 若 recurrence detection 准确率不到 80% 或距离 margin 很小，杀；若稳定可分，再做小 LoRA/adaptor 训练验证 reuse 比 allocate 更省容量且不掉旧域。
+
+撞车核查：AdalReID 已有 adapter auto-selection 并存均值/协方差；DAFC 也有 domain-specific expert，所以机制很近。2024-26 未搜到 “recurring domain / domain recurrence” 作为 LReID 新设定，但必须靠 A-B-A benchmark 和 reuse-vs-allocate 指标撑新意。  
+verdict：**可做二号机会，但比机会 1 更容易被审稿人说成 adapter 变体**。信心 **6/10**。现有数据 **可首验**，CARGO/AG-ReID.v2 若有场景/相机/时间元信息会更好；没有也能用 Market/MSMT 的 split 模拟。

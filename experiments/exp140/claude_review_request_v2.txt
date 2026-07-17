@@ -1,0 +1,44 @@
+请对 `/root/work/SOLIDER-REID` 中准备 **clean rerun** 的 `exp140` 再做一次**全面代码审查**，目标是判断修复后的 `residual_conf` 版本是否允许重新启动训练。
+
+这次不是重新审原设计，而是重点审查：
+- 首轮 `exp140` 在 `epoch 21+` 暴露出的实现问题是否已被正确修复
+- 修复后是否仍保持单变量
+- train / test 路径是否仍然对称
+
+请重点阅读并审查这些文件：
+
+1. `/root/work/SOLIDER-REID/experiments/exp140/design.md`
+2. `/root/work/SOLIDER-REID/experiments/exp140/monitor.md`
+3. `/root/work/SOLIDER-REID/configs/occluded_duke/pose_psg_gcn_lpcs_conf.yml`
+4. `/root/work/SOLIDER-REID/config/defaults.py`
+5. `/root/work/SOLIDER-REID/model/modules/pair_adaptive_fusion.py`
+6. `/root/work/SOLIDER-REID/model/pose_backbone_model.py`
+7. `/root/work/SOLIDER-REID/processor/processor.py`
+8. `/root/work/SOLIDER-REID/utils/metrics.py`
+9. `/root/work/SOLIDER-REID/experiments/exp135/design.md`
+
+本轮审查重点：
+
+1. 当前 `residual_conf` 是否已从 `sigmoid + binary_cross_entropy` 正确改成 AMP 安全的 logits 形式
+2. 测试时 `cvk_residual` 是否与训练保持同一语义：
+   - `delta = sigmoid(conf_logits) * raw_delta`
+3. 修复后 `exp140` 相对 `exp135` 是否仍是**单变量实验**
+4. 默认行为是否被破坏
+5. 是否仍存在足以阻止 clean rerun 启动的 blocking 问题
+
+请输出到：
+
+- `/root/work/SOLIDER-REID/experiments/exp140/claude_review_v2.md`
+
+输出格式要求：
+
+1. 首行必须明确写：
+   - `结论：允许启动`
+   或
+   - `结论：不允许启动`
+2. 然后列出：
+   - blocking 问题
+   - 非阻塞提醒
+   - 你对“这次是否可以作为 exp140 clean rerun 放行”的判断
+
+请不要做训练，不要修改代码，只做审查。

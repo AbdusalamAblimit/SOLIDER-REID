@@ -1,0 +1,62 @@
+结论先说：我会把主线从“怎么对齐航拍-地面”转成“训练标签里的同一身份关系并不等价”。SMPL 不再当身份特征，也不再做 canonical/visibility 对齐，而是当 **可测的几何条件变量**，用来重排训练关系或做因果干预。
+
+联网撞车边界也很明确：VDT 已做 view-related/view-unrelated 解耦和 CARGO AGPReID 框架，GSAlign 已占 TPS 几何变形 + visibility-aware mask，SeCap/ViSA 已占 prompt、local refinement、view-aware semantic expert 这条线；CSCL 已把 2D-3D correspondence 当 shape embedding 做 CC-ReID；CCIL 已把衣服捷径写成 causal intervention。所以不能再卖“SMPL 几何更准/更对齐/更可见”。
+
+**方向 1：GOPL，Geometry-Ordered Positive Learning**
+推荐优先级：最高。
+
+触发观察：containment 死掉说明“航拍信息欠定=宽分布”这个物理叙事不成立；exp333 又说明 SMPL-β 不能当身份特征。但这不代表 SMPL 没用。更可能的问题是：ReID 训练把所有 same-ID pair 都当成等价正样本，实际上两张图可共同观察到的人体表面可能几乎不重叠。这个会把“同一身份”标签变成过强监督。
+
+重定义：大家以为跨视角/遮挡 ReID 的难点是“特征对齐不够”，其实是 **正样本关系粒度错了**。同一个 ID 下，高共同可见表面对是可靠正边；低共同表面对不是“该强拉近的正样本”，而是需要桥接、延迟或弱约束的远程正边。
+
+机制怎么长：  
+用 SMPL mesh 投影计算 pairwise `common observable surface overlap`，比如两图同时可见、且有足够像素面积的 canonical vertices / body-surface bins 的 IoU。训练时不改 backbone 大结构：
+
+- 高 overlap 正边：正常 CE/SupCon/triplet，早期强拉近。
+- 中 overlap 正边：较低权重，走 prototype/teacher consistency。
+- 低 overlap 正边：不做强局部拉近，等 identity manifold 稳定后再逐步加入。
+- sampler 建 “geometry-positive graph”：每个 ID 先用高可靠边形成局部簇，再用 bridge edges 连接极端视角。
+
+这不是 visibility，也不是 alignment；SMPL 只定义“这个正样本监督有多可信”。
+
+廉价 kill-switch：一天内可跑，不训练。
+
+1. frozen Swin/SOLIDER 提特征，计算所有 same-ID pair 的 cosine distance。
+2. 用 SMPL 投影算 `overlap(i,j)`，控制 view label、bbox area、pose yaw 后，看 `distance` 是否随 `1-overlap` 单调上升。
+3. 按 query 的 true-gallery 最大 overlap 分桶，看底桶 AP/mAP 是否显著低于顶桶。
+4. 在训练集 hard positive tail 里统计低-overlap pair 占比；如果 hard positives 主要是低-overlap，说明现有 loss 在强拉不该早拉的边。
+5. 置换 SMPL overlap 或只用 bbox/view 分桶作为破坏对照。若置换后同样解释失败，则杀掉。
+
+通过线：低-overlap 桶明显更差，且 SMPL overlap 比 view/bbox 单独解释更多；否则不做。
+
+撞车核查：  
+VDT 是 view 解耦，不处理 same-ID 正边可信度；GSAlign 是几何/语义对齐和 visibility mask；SeCap/ViSA 是 prompt/local semantic alignment；CSCL 是把 2D-3D correspondence 做 shape embedding。GOPL 的切口是“训练关系组织错了”，SMPL 是 pair reliability meter，不是身份特征或对齐模块。
+
+**方向 2：SCEI，Surface-Causal Evidence Intervention**
+推荐优先级：备选，但如果 kill-switch 强，论文味很足。
+
+触发观察：exp333 说明身体形状本身≈random，但模型可能仍在依赖某些身体表面的外观捷径。换句话说，SMPL-β 不识别人，但 SMPL surface 可以告诉我们“模型到底把身份证据押在哪些身体区域”。这比继续加 pose/part/attention 更像问题重定义。
+
+重定义：大家以为遮挡/跨视角失败是“可见区域不够”，其实是 **身份判别权重被少数表面错误垄断**。某些表面在训练集中稳定、显著、容易学，比如裤腿、鞋、背包、上衣纹理；但在航拍-地面、遮挡、VI 或换衣条件下，这些表面并不稳定。问题不是“找可见区域”，而是“估计并打断 surface ownership shortcut”。
+
+机制怎么长：
+
+- 用 SMPL surface bins 做干预单位，不用 β。
+- 对每个 surface 做 causal masking / token dropout / texture blur，估计 surface ACE：mask 掉该表面对 ID logit、positive cosine、false-positive similarity 的影响。
+- 找到高 ACE 但跨视角不稳定的 surface，训练时做 targeted counterfactual dropout。
+- 加一致性：原图和 surface-intervened 图保持 ID；但不要求所有 surface 等权，而是按 ACE 和跨视角稳定度调节。
+- CARGO 合成数据可用更干净 surface mask；AG-ReID.v2 可用 SMPL 投影近似。
+
+廉价 kill-switch：
+
+1. 在现有 checkpoint/frozen 特征上，对每个 canonical surface bin 做 mask，得到 `ACE_s = AP_drop / logit_drop / positive-sim drop`。
+2. 看 ACE 是否集中：例如 top 20% surface 贡献超过 50% 的 identity evidence。
+3. 看 false positives 是否共享高-ACE surface 外观，而 true positives 不依赖这些 surface。
+4. 对照：随机人体 mask、bbox mask、打乱 surface label。如果 targeted surface intervention 不比随机强，杀掉。
+5. 小训练 smoke：只加 targeted dropout 10-20 epoch，若比随机遮挡/普通 ROA 更快改善低-overlap或跨视角桶，继续。
+
+撞车核查：  
+CCIL 已做 clothing shortcut 的 causal intervention，所以不能写“我们首次因果去衣服”。切口必须是 **SMPL surface-level evidence ownership**，不依赖衣服标签，也不把衣服当唯一 confounder。CSCL 已做 2D-3D shape embedding，所以不能把 surface embedding 当贡献；我们只用 surface 做干预和诊断。
+
+**我的取舍**
+先做方向 1。它最贴合当前失败链：不救 avg/MaxSim，不碰 visibility 红海，不再把 SMPL 当身份特征，而且 kill-switch 足够干净。方向 2 作为备选，只有在 surface ACE 非常集中时再推进，否则容易被审稿人归类为“又一个人体区域遮挡增强”。

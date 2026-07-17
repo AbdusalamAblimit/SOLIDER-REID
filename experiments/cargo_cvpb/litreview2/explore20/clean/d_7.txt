@@ -1,0 +1,47 @@
+结论：USL/UDA ReID 的“普通伪标签 refinement / camera-aware / noisy-label robust / VI 无监督”已经很红，不建议硬推。2024 的 CALR 已经把 camera-aware label refinement 做到 intra-camera clustering + global label refinement；VI-USL 2024-25 也有 MULT/RPNR/RoDE 一串伪标签噪声和跨模态关联工作。([arxiv.org](https://arxiv.org/abs/2403.16450)) ([arxiv.org](https://arxiv.org/abs/2402.00672)) ([arxiv.org](https://arxiv.org/abs/2405.05613)) ([arxiv.org](https://arxiv.org/abs/2505.02549))
+
+**机会 1：Open-Composition UDA ReID / Repeatability-Aware Pseudo Labeling**
+
+触发观察：现有 USL/UDA 默认 unlabeled target 里的身份是“可重复、可聚类”的。但真实摄像头池里大量行人只出现一次、只在单 camera 出现，或根本不是后续 ReID 可学习对象。大家以为问题是 pseudo-label noise，其实隐藏变量可能是 **identity repeatability / support distribution**：哪些样本本来就不该被硬塞进伪 ID 类。
+
+重定义：不是“如何把所有 target 图聚得更准”，而是“先判断 target 样本是否具备可监督的跨视角身份证据”。可写成 Open-Composition UDA：target pool = repeatable identities + transient/singleton identities；后者只能做 instance consistency 或 hard negative，不能当正类训练。
+
+机制草案：  
+1. frozen feature 上建 k-reciprocal / mutual-NN 图。  
+2. 给每个样本算 repeatability score：跨 camera reciprocal support、epsilon 稳定性、cluster persistence、neighbor camera diversity。  
+3. 高 repeatability 样本进入 cluster-level contrastive；低 repeatability 样本进入 no-positive memory，只做 instance consistency / teacher consistency / weak negative，不参与伪 ID 正样本。  
+4. 训练中允许 delayed admission：后续若 support 变稳定，再进入 ID cluster。
+
+廉价 kill-switch：零训练。  
+- 用 Market/MSMT/Occluded-Duke/CARGO train split，隐藏 ID。  
+- 构造 singleton ratio = 0/25/50/75%：随机把部分 ID 截成单图或单 camera；也可从另一个数据集注入 one-off distractors。  
+- 用 frozen SOLIDER/exp030a feature 跑 DBSCAN/k-reciprocal 聚类。  
+- 看四个指标：pseudo pair precision、repeat-ID recall、singleton false-merge rate、repeatability score 对“伪标签正确”的 AUROC。  
+- 若 singleton 增加并不显著破坏聚类，或简单 cluster-size/outlier filter 已经解决，直接 kill。若 repeatability score AUROC > 0.70 且能比 DBSCAN/outlier filter 稳定提高 pseudo-label F1，值得开训练。
+
+撞车核查：没查到 2024-26 直接做 “singleton/open-composition target pool” 的 USL/UDA ReID。已有工作更多是 camera bias、伪标签噪声、online stream。OUDA/S2P 做的是 streaming/privacy/catastrophic forgetting，不是 target 身份可重复性。([arxiv.org](https://arxiv.org/abs/2205.04383)) ([arxiv.org](https://arxiv.org/abs/2402.15206))
+
+Verdict：最值得先杀。信心 7/10。现有数据可首验，不需要新数据；CARGO/AG-ReID.v2 可作为额外 domain/distractor，不要把航拍设成主问题。
+
+**机会 2：Disjoint-Site / Mixed-Target UDA ReID**
+
+触发观察：很多团队会把多个无标注目标场景混在一起做 UDA，以为“数据越多越好”。但不同园区/商场/数据集之间身份物理上不可能重复。全局聚类会把跨 site 相似衣着的人错误合成同一伪 ID。隐藏变量不是 camera gap，而是 **identity-overlap topology**：哪些 camera/site 之间允许出现同一人。
+
+重定义：Multi-target UDA 不应是简单混合 target domain，而是带身份拓扑约束的 UDA：site 内可产生正伪标签，site 间默认不能产生正 ID，只能共享 backbone 和使用 hard-negative/domain-regularization。
+
+机制草案：  
+1. site-local pseudo-label memory：每个 site 独立聚类、独立 prototype。  
+2. shared encoder + site-balanced update；跨 site 只作为 topology-forbidden positive，避免同伪 ID。  
+3. 若 site tag 未知，先用 camera/style graph 做 site discovery；但首版最好假设 site tag 已知，降低变量。  
+4. 论文贡献要落在“身份重叠拓扑约束”，不是多域 BN/adapter 小模块。
+
+廉价 kill-switch：零训练。  
+- 合并 Market+MSMT+Occluded-Duke+CARGO 的 unlabeled train；不同数据集身份必不重叠。  
+- frozen feature 上跑全局 DBSCAN/k-reciprocal。  
+- 统计 cross-dataset cluster mass：任何跨数据集同 cluster 都是 false positive。  
+- 对比 site-local clustering 与 topology-constrained clustering 的 pseudo pair F1。  
+- 若全局聚类几乎不跨 site 错合，或 site-local 只带来微小提升，则 kill。若跨 site false positive 大且 topology 约束显著提升伪标签质量，再进入训练。
+
+撞车核查：有 2022 KD-ReID 明确做 multi-target DA，并指出 blending multiple targets + STDA 会 poor generalization；所以这个方向不是无人区。([arxiv.org](https://arxiv.org/abs/2205.06237)) 但它偏 distillation/real-time student，不是“identity-overlap topology 约束伪标签”。2024-26 没看到直接撞这个问题定义。
+
+Verdict：可做二号备选，但比机会 1 风险高。信心 5.5/10。现有数据可首验；若要投 B，最好再找一个真实多 site 无标注场景或用 CARGO/AG/Market/MSMT 设计严格 mixed-target protocol。

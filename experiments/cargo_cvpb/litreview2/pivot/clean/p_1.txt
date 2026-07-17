@@ -1,0 +1,66 @@
+**结论**
+
+还没到“救不动”。我认为唯一相对还活着的 B 类 re-frame 是：
+
+**航拍-地面 ReID 不是“低清欠定”或“局部对齐失败”，而是“共同可支持的空间带宽不对称”问题。**  
+航拍图像更平滑，说明它稳定传递的是低阶空间结构；地面图像多出来的细节不是补充证据，而是 A-G 匹配中没有航拍支持的高频私有证据。`avg > MaxSim` 说明局部最强 patch 证据反而危险，但 `avg` 只是 DC-only 近似，下一步应验证 **低阶非 DC 空间谐波** 是否比纯平均更有身份信息。
+
+**候选 1：SHSM / Smooth Harmonic Support Matching**
+
+核心机制：
+
+- 从 Swin token map 做 2D DCT / Fourier 低阶投影。
+- `DC` 系数等价于 global average，是强对照。
+- 保留 `low non-DC` 系数，例如头-躯干-腿的粗空间布局、上下/左右颜色分布。
+- 丢弃或隔离 mid/high frequency 地面细节。
+- 训练端可做 fixed harmonic pooling + high-band dropout/swap，但主贡献必须落在“低阶非 DC 支架”，不是 blur、SR、avg pooling。
+
+为什么符合两个硬事实：
+
+- `σ_aerial < σ_ground`：航拍不是噪声更大，而是高频少、低阶结构更稳定。
+- `avg > MaxSim`：错误不是没有局部对齐，而是局部高频/patch max 在 A-G 中抓到伪证据。
+- `avg` 的成功可以被解释为“退到 DC 避免高频伤害”；但如果 `low non-DC` 能进一步涨，才证明不是 reduce to avg。
+
+零训练 kill-switch：
+
+```text
+冻结 swin_fix256，取最后 token map F[H,W,C]
+对 H,W 做 2D DCT
+D0   = C[0,0,:]                      # DC = avg
+Dlow = low non-DC coefficients         # 如 u+v<=2 且非(0,0)
+Dhi  = mid/high coefficients
+```
+
+必须跑这些对照：
+
+1. `D0` vs `D0 + Dlow`  
+   如果 `D0 + Dlow` 不能稳定高于 `D0`，直接判死，因为它退化成 avg。
+
+2. `Dlow` vs `Dhi`  
+   如果 high-band 比 low non-DC 更有用，重定义不成立。
+
+3. `D0 + Dlow + Dhi` vs `D0 + Dlow`  
+   如果加 high-band 提升 A→G，说明“地面细节是私有伪证据”不成立。
+
+4. band-level TTA σ  
+   复查 `σ_aerial < σ_ground` 是否主要发生在 mid/high band；如果低阶 band 也乱，故事不干净。
+
+通过门槛建议很硬一点：  
+`D0 + Dlow` 至少在 CARGO A→G 比 `D0` 高 `+0.5 mAP` 以上，并且 AG-ReID.v2 不掉；否则不要开训练。
+
+**撞车核查**
+
+- 不撞 GSAlign：GSAlign 是 TPS 几何变形 + semantic/visibility mask，对齐 severe pose / spatial misalignment。SHSM 不做 keypoint、warp、visibility mask。来源：[GSAlign arXiv](https://arxiv.org/abs/2510.22268)
+- 不撞 VDT：VDT 是 view-related / view-unrelated decoupling。SHSM 不是 view expert，也不是正交解耦，而是可观测空间带宽。来源：[VDT arXiv](https://arxiv.org/abs/2403.14513)
+- 不撞 SeCap：SeCap 是 adaptive prompt + local feature refinement。SHSM 反而反对局部细节主导。来源：[SeCap arXiv](https://arxiv.org/abs/2503.06965)
+- 不撞 ViSA：ViSA 是 view-aware semantic queries + graph local fusion。SHSM 不做 semantic local alignment。来源：[ViSA arXiv](https://arxiv.org/abs/2605.18192)
+- 有跨分辨率撞车风险，但可避开：CR-ReID 常见是 SR、multi-resolution fusion、resolution-invariant distillation、feature panning。SHSM 不能写成“低清到高清”或“resolution gap”，必须写成 **A-G 方向性的 unsupported high-frequency evidence**。参考红线：[RFD](https://arxiv.org/abs/2109.07871)、[MRJL](https://arxiv.org/abs/2105.12684)、[VPFA](https://arxiv.org/abs/2510.00936)
+- 频域本身不新，VI-ReID 已有频域方法，所以 novelty 不能是“用了 DCT/Fourier”。只能是：`avg` 是 DC-only 症状，AG-ReID 需要低阶非 DC harmonic scaffold。参考风险：[FDMNet](https://arxiv.org/abs/2401.01839)
+
+**其他候选判定**
+
+- 纯 ground blur / low-pass：不合格。太像 cross-resolution / degradation robustness，也容易 reduce to avg。
+- coverage/consensus token matching：可做辅助 kill-switch，但单独做主线会撞 local matching / ViSA / OT 类方法。
+- style mean-variance / Gram pooling：不够 B，ReID/style/second-order 旧味太重，除非零训练大幅超过 avg，否则不建议。
+
+最终建议：先跑 **DCT token-band kill-switch**。如果 `low non-DC` 不能赢 `DC(avg)`，这条也死；那就基本可以诚实说当前两个硬事实救不出干净 B 类方法稿。

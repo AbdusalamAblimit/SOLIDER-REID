@@ -1,0 +1,52 @@
+结论先说：**Animal-ReID 本身已经不蓝**。2024-26 已经出现了 WildlifeReID-10k / MegaDescriptor、WildFusion、OpenAnimals/ARBase、多物种大模型、CLIP 文本框架、keypoint、metadata、active learning、edge deployment 等一批工作。泛泛做“把人 ReID 迁到动物”“加 pose/keypoint/CLIP/local matching”基本会撞红海。([arxiv.org](https://arxiv.org/abs/2406.09211)) ([arxiv.org](https://arxiv.org/abs/2408.12934)) ([arxiv.org](https://arxiv.org/abs/2410.00204)) ([arxiv.org](https://arxiv.org/abs/2412.05602))
+
+但还有两个窄入口值得 cheap-kill。
+
+**机会 1：Evidence-Complete Animal ReID**
+触发观察/失败：动物个体识别依赖“可见生物标记”，但很多动物标记是**视角/部位单侧可见**的，例如牛左右体侧花纹、海龟头部鳞片、鲸鲨局部斑点。当前 ReID 默认任何 query-gallery 都应该可匹配，实际有些 pair 是“证据不完整”，不是模型没学好。MOO 2026 已经证明 cattle cross-view 有明确视角阈值，但它更像 viewpoint benchmark/geometry prior，不是“该不该判定可识别”的 retrieval 机制。([arxiv.org](https://arxiv.org/abs/2603.04314)) MultiCamCows2024 也说明多摄像头/多视角牛识别可行，但目标是自动识别框架，不是 unmatchable pair 建模。([arxiv.org](https://arxiv.org/abs/2410.12695))
+
+重定义：大家以为 animal ReID 是“学习更 view-invariant 的 identity embedding”，其实一部分失败来自 **identity evidence missing**。新问题可以定义为：给定单图 query 和 gallery，先判断二者是否共享足够的个体证据面，再做匹配；不可证实时应降权、拒识、或要求补视角。
+
+机制草案：  
+`Evidence-Complete Retrieval`：冻结 MegaDescriptor/DINO/SOLIDER 特征 + LightGlue/LoFTR 局部匹配，估计三类量：视角重叠、局部标记匹配密度、同一图像增强下的证据稳定性。最终不是单一 similarity，而是：
+`score = identity_similarity * evidence_overlap_confidence`，并允许 `abstain / ask-another-view / multi-shot gallery expansion`。训练版可做 view-evidence token 或 matchability head，但第一刀必须零训练。
+
+廉价 kill-switch：  
+零训练跑公开数据即可，不需要先训练动物模型。
+
+1. 在 MOO / MultiCamCows 上按视角差分桶，测试 MegaDescriptor/WildFusion/LightGlue 的 same-ID rank 是否随“证据面不重叠”系统性崩。  
+2. 做 oracle evidence gate：把低 evidence-overlap 的 pair/query 降权或拒识，看 false top-k 是否明显下降。  
+3. kill 条件：如果 view/evidence score 不能解释错误，或者只等价于普通 viewpoint bin calibration，直接杀。
+
+撞车核查：  
+有 viewpoint cattle 数据 MOO，有多摄像头 cattle，有 WildFusion 的 global+local 零训练融合，有 CKPE keypoint animal ReID。([arxiv.org](https://arxiv.org/abs/2603.04314)) ([arxiv.org](https://arxiv.org/abs/2410.12695)) ([arxiv.org](https://arxiv.org/abs/2408.12934)) ([arxiv.org](https://arxiv.org/abs/2412.00818)) 但我没看到 2024-26 明确把 animal ReID 重定义为“evidence-complete / unmatchable-pair-aware retrieval”的主方法。这个洞是窄的，但不是纯红海。
+
+verdict：**可追，优先级高于泛 animal ReID**。  
+信心：**7/10**。  
+现有数据能否首验：**现有 Market/MSMT/occluded_duke/CARGO/AG-ReID.v2 不能支撑 animal claim**；只能用 AG/CARGO 做 cross-view 代理诊断。真正首验需要下载公开 MOO / MultiCamCows / WildlifeReID-10k 子集。
+
+**机会 2：Cue-Type Routed Fine-Grained Retrieval**
+触发观察/失败：WildFusion 已经把“全局 embedding + 局部匹配”做成强零训练 SOTA，PRISM 在商品检索里也用 VLM 预筛 + segmentation + LightGlue。([arxiv.org](https://arxiv.org/abs/2408.12934)) ([arxiv.org](https://arxiv.org/abs/2509.14985?utm_source=openai)) 所以再做普通 local/global fusion 会撞死。但 WildFusion 是校准融合，核心没有显式回答：不同动物/商品到底靠什么身份线索，斑点、条纹、轮廓、脸、文字、logo、包装局部，哪类 cue 在当前 query 可用？
+
+重定义：大家以为跨物种/商品 fine-grained retrieval 需要一个更强统一 embedding，其实隐藏变量是 **biometric cue type / evidence type**。不是 species-conditioned，而是 query-conditioned：同一物种内也可能一张图靠纹理，一张图靠轮廓，一张图根本没有可用局部标记。
+
+机制草案：  
+`Cue-Routed Retrieval`：构建多个冻结 matcher：global embedding、local geometric matcher、color/texture histogram、shape/silhouette、OCR/logo/text matcher。先用零训练 cue probes 判断 query 的可用证据类型，再动态选择或加权 matcher。训练版可以把 cue probe 蒸馏成轻量 router，主张是“按证据类型检索”，不是“又一个 fusion”。
+
+廉价 kill-switch：  
+先做 oracle router。
+
+1. 在 WildlifeReID-10k 若干子集上分别跑 MegaDescriptor、DINO/SOLIDER、LightGlue、颜色/纹理、shape。  
+2. 统计每个 query 的 best matcher 是否高度分化。若 70% query 都是同一个 matcher 赢，杀。  
+3. 用无监督 cue features 预测 best matcher：边缘/斑点密度、局部匹配自一致性、mask 面积、OCR/token 存在。若 router 不能追回 oracle gain 的一半，杀。  
+4. 商品侧可用 MIMEX/ABV/RP2K 做外部验证，但不要把它作为主 claim 起点。MIMEX 已证明 VLM 零样本细粒度商品分类弱，PRISM 已占了 hybrid matching。([arxiv.org](https://arxiv.org/abs/2409.14963?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2509.14985?utm_source=openai))
+
+撞车核查：  
+WildFusion 是最大风险；MIMEX/PRISM 是商品侧最大风险；OpenAnimals/ARBase 和多物种模型占了“强 baseline/多物种训练”；IndivAID、CKPE、MetaWild 分别占了文本、keypoint、metadata。([arxiv.org](https://arxiv.org/abs/2410.00204)) ([arxiv.org](https://arxiv.org/abs/2412.05602)) ([arxiv.org](https://arxiv.org/abs/2410.22927)) ([arxiv.org](https://arxiv.org/abs/2412.00818)) ([arxiv.org](https://arxiv.org/abs/2501.13368)) 剩下的新意只能落在“query-level cue routing”，否则会被认为是 WildFusion 小改。
+
+verdict：**可 cheap-kill，但论文风险中等偏高**。  
+信心：**5.5/10**。  
+现有数据能否首验：**不能直接首验**。需要公开 animal/product 数据；现有人 ReID 数据最多只能验证 router 框架工程，不支持主叙事。
+
+**不建议推进的动物方向**
+不要做泛化版 Animal-ReID baseline、CLIP 文本描述、keypoint/pose embedding、metadata 融合、active learning、低质图增强、edge 小模型、普通 local/global fusion。这些 2024-26 都已有强撞车或正在变红海。

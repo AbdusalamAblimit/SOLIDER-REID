@@ -1,0 +1,26 @@
+**Verdict**
+
+没有看到明确“活的被当死的”的翻案证据。6 个 KILL 里，B / GOPL / Hubness / OSAC / Rank-Regret 的死因基本可信；唯一最值得做一次零训练复核的是 **⑤ RMA-TIReID**，因为它的死因是“边缘死”，更像测量口径可能过窄，而不是物理/数学硬墙。
+
+**逐项审计**
+
+| 方向 | 反向 audit 结论 | 信心 |
+|---|---|---:|
+| ① B 航拍不确定性包含 | Kill 基本 robust。TTA 方差确实可能不是“身份欠定度”的完美代理，但本地结果不是只靠 `σ_aerial < σ_ground`：合成退化 σ 不升反降、view-mean σ 反而更好、within-view σ 置换不掉、G→A 崩到 17.37，说明收益不是图像级物理包含，而是方差分母检索 artifact。若换成“视角语义/可见性/几何对齐”，外部已有 GSAlign / SeCap / ViSA 等 AGPReID 方向占位。([arxiv.org](https://arxiv.org/abs/2510.22268?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2503.06965?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2605.18192?utm_source=openai)) | 8/10 |
+| ② GOPL | Kill robust。GOPL 的可发点必须是 SMPL-3D 共同可见提供 2D visibility / occlusion-count 之外的独特信号；若 cov3d≈cov2d 且被 occlusion-count 解释，就退化成 VPM/PVPM/QPM 老线。外部文献里 shared visible parts / visibility-aware part matching 已经是成熟路线。([arxiv.org](https://arxiv.org/abs/1904.00537?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2004.00230?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2201.00107?utm_source=openai)) | 8/10 |
+| ③ Gallery Hubness remedy | Kill robust，但要分清：单说“被 k-reciprocal 占”略过强，因为训练成 single embedding 理论上还能争部署价值；但 §7.6 新控制更致命，`M(q)` 控 `#false-in-topk` 后偏相关≈0，说明 hubness 诊断本身无增量。k-reciprocal 本来就是 ReID 里标准、无监督、邻域拓扑 re-ranking。([arxiv.org](https://arxiv.org/abs/1701.08398?utm_source=openai)) Hubness 及 hub-aware retrieval 也不是新问题。([arxiv.org](https://arxiv.org/abs/2503.10526?utm_source=openai)) | 9/10 |
+| ④ OSAC 谱过坍缩 | Kill 基本 robust。训练 effective rank 反升、身份信号在 top-PC 而非谱尾、ABTT/whitening 在 k-recip 后无残余，直接打掉“seen-ID 过坍缩压掉 unseen 谱尾证据”的核心前提。理论上 NC1/类内方差可能和 global rank 不完全等价，但外部 Neural Collapse 文献并不支持“collapse 必然伤 transfer”，甚至有工作认为 NC 可泛化到新类。([arxiv.org](https://arxiv.org/abs/2112.15121?utm_source=openai)) 机制零件还撞 VICReg / dimensional collapse / whitening 大路线。([arxiv.org](https://arxiv.org/abs/2105.04906?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2110.09348?utm_source=openai)) | 8/10 |
+| ⑤ RMA-TIReID | **最可疑，但不是“看起来活”。** 现有 kill 是 token-prototype≈color-only、非颜色 token 约 1 mAP、跨域 R1 49。这个更像“当前 probe 没测到非颜色语义”，不如前几项硬。Text-image ReID 外部主线已经很卷，IRRA/RDE 等都在做 cross-modal/local alignment/noisy correspondence。([arxiv.org](https://arxiv.org/abs/2303.12501?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2308.09911?utm_source=openai)) 所以它最多值得一次廉价复核，不值得直接复活。 | 6/10 |
+| ⑥ Rank-Regret | Kill 最硬之一。Swin stage0/1 几乎随机，stage2 才可用但已吃 91.7% 算力；这不是统计控制问题，是架构 FLOPs/特征可用性硬墙。再加 RI 被 static difficulty 解释，当前 Swin frozen 设置下无 false-negative。换 ResNet/多-exit 是另一个问题。 | 9.5/10 |
+
+**建议的唯一廉价 re-test**
+
+只复测 **⑤ RMA-TIReID**，零训练即可：
+
+1. 在 RSTPReid 上构造三类文本：full caption、color-only、color-stripped / non-color-only。
+2. 做同色 hard subset：只比较颜色词一致的候选，看非颜色 token 是否仍有显著区分力。
+3. 做 binding test：保持词集合不变，只交换颜色-部位绑定，例如 “red shirt blue pants” ↔ “blue shirt red pants”。
+4. 通过线：non-color 或 binding 信号相对 color-only 至少带来清晰增量，比如 R1/mAP ≥ +3～5，且不是只在少量样例上成立。
+5. 若仍约 +1 或跨域仍 R1≈49，RMA kill 确认。
+
+我的总判断：**负结果整体可信，没有需要翻案的主线。** RMA 是唯一值得补一刀的 false-negative 审计点；其余 5 个不建议再花训练资源。

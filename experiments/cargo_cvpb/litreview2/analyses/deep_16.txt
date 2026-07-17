@@ -1,0 +1,51 @@
+我按本地 PDF 提取并读了方法和关键消融。列表里实际是 6 篇，下面逐篇拆。
+
+**1. Instant Pose Extraction Based on Mask Transformer for Occluded Person ReID**
+
+1. 触发观察：遮挡不是简单少了一块图像，而是会让可见人体部位和遮挡噪声混在一起，导致局部匹配错位。作者还观察到 Transformer 越深，patch 特征越相似，动态掩码很难生成有效的部位原型。
+2. 重定义动作：他们把遮挡 ReID 从“抑制遮挡区域”改写成“即时提取可用姿态和可见部位原型”。关键词是 dynamic mask、prototype mask、valid subspace、non-occluded body parts、pose key-points。
+3. 机制怎么长出来：如果问题是“遮挡下可见部位需要被重新定位和匹配”，那么动态掩码、姿态热图、局部原型、非遮挡部位匹配就能顺着长出来。但这篇机制绑定不算特别紧，因为模块较多，MAM、MACM、PAM、FMM 都在承担一部分解释，容易显得是组合拳。
+4. 证据闭环：主要证据是 Occluded-Duke 上分模块消融，MTE 带来约 +5.2 mAP，LPTD 带来约 +6.3 mAP，完整模型约 +9.4 mAP；可视化显示 MAM 和 MACM 能定位遮挡相关部位；局部原型数量在 Occluded-Duke 上更细粒度更好。
+5. reviewer 为什么买账：更买机制完整性和遮挡场景表现，不完全是视角。真正 novelty 来自“用动态原型掩码加姿态聚合做可见部位匹配”的组合，而不是单个模块。对我们有用的教训是，遮挡论文如果只是“加部位模块”，必须有强可视化和分模块消融支撑，否则视角不够硬。
+
+**2. Interactive Sketch-Based Person ReID with Text Feedback**
+
+1. 触发观察：草图能表达轮廓和结构，但表达不了颜色、性别、衣服语义等高层意图。已有 sketch+text 方法把草图和文本简单组合，既有模态干扰，又依赖昂贵的三模态数据。
+2. 重定义动作：他们把 Sketch ReID 从“一次性草图检索”改写成“用户反馈驱动的交互检索”。关键词是 context assistance、feedback guidance、pseudo-word token、explicit sketch-text compositionality、textual token concatenation。
+3. 机制怎么长出来：这个绑定很紧。既然用户反馈是文本，CLIP 文本空间又擅长组合语义，那么自然做法就是把草图映射成一个伪词 token，再和用户反馈 token 拼接，让 CLIP 文本编码器完成组合查询。
+4. 证据闭环：他们不是只报涨点，而是问了三个对故事很关键的问题。任务适配 CLIP 是否必要，视觉到文本转换网络是否必要，伪词 token 是否真的保留草图语义。最关键的是用草图伪词去检索草图库，R@1 达到 95.64%，证明伪词不是随机向量，而确实携带草图语义。
+5. reviewer 为什么买账：主要买视角。它把检索流程从静态查询改成了可交互流程，把草图和文本统一到文本 token 空间，机制很轻但叙事很顺。对我们有用的是，好的创新不一定复杂，关键是把“真实用户流程里的缺口”定义出来。
+
+**3. Internal-External Context Interaction Network for Person ReID**
+
+1. 触发观察：传统注意力主要利用单个样本内部上下文，自注意力只看样本自身的元素关系，容易只盯显著区域，忽略背包、衣服纹理等细微但有身份区分力的外部线索。
+2. 重定义动作：他们把注意力问题从“样本内部哪里重要”改写成“样本内部局部上下文应该和跨样本潜在上下文交互”。关键词是 internal-external context interaction、inter-sample latent context、intra-sample local context、external learnable memory。
+3. 机制怎么长出来：绑定比较紧。既然要引入跨样本上下文，就需要一个外部可学习记忆；既然还要保留样本自身结构，就用局部窗口提取内部上下文；然后把局部 query 投影到外部 key 上生成空间和通道权重。
+4. 证据闭环：最关键消融是 IEI-S 对比普通 self-attention。两者都做位置特征重加权，但 IEI-S 多了跨样本上下文，结果在 Market1501 和 CUHK03 上更好且计算量更低。热图也对应了重定义，普通注意力偏下半身，IEI-S 能同时关注上身、背包、T 恤纹理等身份线索。
+5. reviewer 为什么买账：视角和机制都能买账。它不是泛泛说“注意力更强”，而是明确指出自注意力的参考范围太窄，并用外部记忆修正这个范围。对我们有用的是，如果要做注意力类方法，最好改变“注意力依据什么信息产生”，而不是只换注意力形式。
+
+**4. Latent Diffusion-Guided Feature Inpainting for Occluded Person ReID**
+
+1. 触发观察：很多遮挡方法只是让模型适应遮挡或压低遮挡影响，但最终 embedding 仍然是被遮挡污染过的。标准重排序在大图库里还会被离群样本和噪声邻域放大错误。
+2. 重定义动作：他们把遮挡从“需要鲁棒特征”改写成“特征空间里的结构化污染，需要反变换恢复干净身份表征”。关键词是 feature-level inpainting、inverse transform、clean identity-preserving embedding、de-occlusion、centroid-guided pruning。
+3. 机制怎么长出来：如果接受“遮挡是特征污染”，扩散式去噪补全就很自然。DDO 用冻结 ViT 的干净特征作监督，把遮挡特征恢复成干净特征。HRR 则利用身份中心先筛候选，再做局部重排序。不过 HRR 依赖闭集身份结构，协议风险比 DDO 大。
+4. 证据闭环：证据比较直接。可视化显示 DDO 把注意力从白墙、遮挡物拉回衣服、脸和可见身体；MSE、余弦误差和 SSIM 显示补全后特征更接近干净特征；DDO 插到 TransReID 和 Pass-ViT 也有增益。HRR 的证据更复杂，Occluded-Duke 上 mAP 从 81.8 到 90.6，但 Occluded-ReID 上会从 92.3 降到 90.1，作者也承认图库身份样本少或重遮挡时中心会偏。
+5. reviewer 为什么买账：主要买问题重定义，“不要忍受遮挡，而是恢复被污染的特征”。但这篇也最容易被挑协议和监督来源，尤其是合成遮挡配对、闭集重排序、中心标签使用。对我们有用的是，“特征污染反演”是强视角，但测试期重排序不适合作主贡献。
+
+**5. Learning From Yourself to Others for Unsupervised Visible-Infrared ReID**
+
+1. 触发观察：无监督 VI-ReID 里，伪标签噪声不是只在 loss 反传时造成问题。噪声样本已经在前向传播、聚类原型、跨模态匹配阶段污染了表示。已有方法常用损失函数补救，但补救太晚。
+2. 重定义动作：他们把问题从“如何缩小可见红外模态差异”改写成“先判断哪些伪标签可信，再从单模态可靠样本走向跨模态匹配”。标题里的 yourself to others 就是这个叙事。关键词是 noisy labels、forward propagation、closeness centrality、reliable homogeneous prototype、local-to-global hierarchical matching。
+3. 机制怎么长出来：绑定很紧。既然要先学自己，就在每个单模态 cluster 内用 closeness centrality 找可靠样本，低可靠样本前向阶段直接丢掉。既然再学别人，就用中心锚点做双向一致局部匹配，再把可靠局部匹配送进全局最优传输，最后用异质对比损失学跨模态不变特征。
+4. 证据闭环：消融非常贴问题定义。CCE 在 SYSU-MM01 和 RegDB 上 Rank-1 分别约 +6 和 +7；BCLM 约 +3 Rank-1 和 +3 mAP；GPRA 加 LDRHL 在 SYSU-MM01 上带来约 +17 Rank-1 和 +14 mAP。t-SNE 也不是泛泛展示聚类更好，而是专门显示已有方法虽然模态靠近了，但噪声标签还在，而 HCCL 缓解了这个问题。
+5. reviewer 为什么买账：主要买视角。它抓住“噪声样本必须在前向阶段处理”这个具体观察，再把单模态可靠性和跨模态匹配串成自然流程。对我们最有参考价值的是，它的每个模块都对应一句可检验的话，而不是先有模块再找解释。
+
+**6. Learning Multi-Granularity Representation with Transformer for VI-ReID**
+
+1. 触发观察：可见红外两种模态的有效身份线索大小和位置不一致，可能是全局衣服颜色、局部姿态，也可能是鞋子或脸部这类很小区域。单一全局或单一部位粒度会造成 irrelevant matching 和 ambiguous alignment。
+2. 重定义动作：他们把 VI-ReID 从“模态差异问题”改写成“跨模态、跨粒度的对齐问题”。关键词是 global-patch-pixel、multi-granularity、saliency consistency、cross-granularity alignment、nearest-neighbor clustering。
+3. 机制怎么长出来：机制基本顺着重定义生长。既然单粒度不够，就抽 global、patch、pixel 三个层级；既然不同模态和粒度关注区域不一致，就用 saliency-enhanced Transformer 做同粒度跨模态融合和同模态跨粒度融合；既然同类跨模态距离仍远，就用 CNC 拉近最近邻同类样本。
+4. 证据闭环：MGFE 在 SYSU-MM01 两种模式下 Rank-1 分别约 +6.26 和 +4.47；MGFT 和 CNC 继续提升；三粒度组合明显优于单粒度或两粒度。热图也服务于视角，global 关注大区域，patch 关注轮廓和局部，pixel 捕捉姿态和手臂动作，组合后覆盖更完整语义。
+5. reviewer 为什么买账：买的是“单粒度导致错配”的视角加充分消融，但机制本身偏常规。它的创新来源不是 Transformer 分支，而是把 VI-ReID 的失败解释成粒度不匹配，并用三粒度实验证据把这个解释坐实。
+
+这批论文共同套路很清楚：先抓一个具体失败现象，再把它改写成一个更高层的问题定义，让机制看起来像自然结果。强论文的关键不是模块多，而是有一个消融或可视化能直接证明“这个新问题定义是对的”，例如伪词确实有草图语义、外部上下文确实比自注意力多看身份线索、前向丢噪声确实缓解伪标签污染。对我们做 ReID 方法稿，最该学的是先找一个可被证伪的失败解释，再设计一个如果失败就会推翻叙事的证据闭环。

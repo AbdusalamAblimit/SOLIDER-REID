@@ -1,0 +1,75 @@
+我按每篇前 8 页方法正文读了，并补读了后半部分的关键消融和可视化页。下面拆的是“创新怎么被构造出来”，不是模块复述。
+
+**1. Multi Queue for Unsupervised Person Re-identification**
+
+1. 触发观察：作者盯上的不是聚类本身，而是无监督 ReID 里 memory bank 和 momentum update 的细节。SpCL、Cluster Contrast 这类方法默认用动量方式更新历史特征，但这会把一个伪身份压成较固定的历史表示，负样本矩阵也缺少足够的类内变化。另一个观察是固定温度系数无法随训练阶段和数据难度调整对难样本的关注。
+
+2. 重定义动作：他们把“memory bank 怎么更新”从实现细节抬成了核心问题。旧说法是无监督 ReID 难在伪标签噪声和聚类质量；他们的新说法是，伪标签生成后，历史特征如何被保存、采样、淘汰，会直接决定对比学习看到的负样本分布。关键词是 multi-queue、historical features、resampling、trainable temperature、hard samples。
+
+3. 机制怎么长出来：机制基本顺着重定义出来。既然问题是单一动量特征不足以表示一个伪身份，那就给每个伪身份维护一个队列，按入队出队保留近期多个历史特征，再随机采样构造负样本矩阵。既然不同数据集和训练阶段难度不同，那就把 InfoNCE 的温度变成可训练参数，让模型自己调节难样本敏感度。
+
+4. 证据闭环：关键证据是队列长度消融和可训练温度消融。队列长度实验说明保留一部分旧特征有利于表示能力，但太长会引入过旧噪声。温度实验显示可训练温度在多个数据集上有效，且温度随训练下降，MSMT17 这类更难数据下降更快，作者用它证明模型确实逐步转向难样本。
+
+5. 审稿人为什么买账：这篇卖的主要是机制，不是很强的新视角。它的真实新意在于把 memory bank 的“更新策略”讲成了负样本分布管理问题。对我们有用的地方是：一个小机制也能发，但前提是你要把它和训练信号分布、难样本日程、过拟合风险绑定起来，而不是只说“我换了一个队列”。
+
+**2. Multi-Branch Clothes-Agnostic Feature Learning for Cloth-Changing Person Re-Identification**
+
+1. 触发观察：已有换衣 ReID 往往回避衣服信息，或者用非衣服描述如体型、姿态、轮廓来学习不变特征。但这些非衣服描述经常不精确，CLIP 文本和细粒度图像之间又有语义差距。作者反过来观察到，衣服描述虽然不该成为最终身份特征，但它可以告诉模型“哪些东西应该被压掉”。
+
+2. 重定义动作：旧问题是“如何避免模型依赖衣服”；新问题是“如何准确定位衣服语义并把它从视觉特征中减掉”。这一步很关键，因为作者不是说衣服文本有用来识别人，而是说衣服文本有用来抑制衣服。关键词是 clothing descriptions、coarse-to-fine、semantic-guided、clothes-agnostic、parsing image。
+
+3. 机制怎么长出来：机制和重定义绑定较紧。先用 human parsing 抠出衣服区域，让多个 LVLM 只描述衣服，并用粗粒度和细粒度提示生成多种衣服 caption。再用 CLIP 相似度过滤，保留最可信的两个描述。SGE 分支让图像特征和衣服文本做注意力，然后从视觉特征里减去衣服相关成分。PIE 分支直接遮掉衣服区域训练，让模型被迫使用更稳定的身体、姿态、局部线索。
+
+4. 证据闭环：关键证据不是单纯 SOTA，而是 caption 数量和模块消融。单 caption 有提升，多模型多粒度 caption 更好，但 caption 太多反而引入冲突语义，说明作者讲的“多样性和噪声平衡”成立。特征图显示 baseline 更看衣服和背景，方法更看脸部、姿态、配饰等稳定区域。局部特征优于全局特征也支撑了细粒度抑制衣服的叙事。
+
+5. 审稿人为什么买账：这篇卖的是视角多于模块。真正的新意是把“衣服语义”从要丢弃的干扰项，改造成可用的负向指导信号。这个构造很值得学：不是增加一个 VLM，而是改变 VLM 语义在任务里的角色。
+
+**3. Multi-feature balanced network for clothes-changing person re-identification**
+
+1. 触发观察：作者注意到换衣 ReID 里单一线索都不可靠。RGB 外观会被衣服误导，mask 或 silhouette 丢掉颜色、脸部和配饰等有用线索，身体局部裁剪又会受背景和局部噪声影响。简单拼接多个特征也不够，因为不同特征权重固定，空间语义也未对齐。
+
+2. 重定义动作：旧说法是“找到一种衣服无关特征”；新说法是“不同衣服无关线索各有缺陷，关键是平衡和协同”。关键词是 multi-feature balanced、clothing-unrelated branch、mask branch、knowledge transfer、background constraint、cross fusion。
+
+3. 机制怎么长出来：机制是三分支。global branch 保留完整 RGB 外观，但用 clothing-unrelated branch 的知识通过 KTM 引导它看衣服无关区域。clothing-unrelated branch 按人体比例裁剪头肩、腿部等受衣服影响较小的区域，用 FAM 分出身份前景和背景，并用背景约束让身份特征靠近全局特征、远离背景特征。mask branch 使用 silhouette 学身体形状，再用双向 cross-attention 把 mask 特征和衣服无关局部特征融合。
+
+4. 证据闭环：作者用分支消融证明 global、clothing-unrelated、mask 都有增益，完整三分支最好。还比较了直接拼接、单向注意力和双向 CFM，证明“融合方式”确实比简单堆特征重要。检索可视化展示换衣场景下返回结果更稳定。不过它对“balanced”的证明还不够强，缺少动态权重或各线索可靠性变化的直接证据。
+
+5. 审稿人为什么买账：这篇更偏机制工程。买账点是它把换衣下的多种稳定线索系统化，且每个分支都有消融支撑。对我们来说，它也暴露一个风险：如果主张叫“平衡”，就最好真的证明平衡过程，而不是只证明多个分支相加有效。
+
+**4. Multi-Granularity Attribute Prompt Learning for Cloth-Changing Person Re-Identification**
+
+1. 触发观察：作者看到现有多模态换衣 ReID 没把属性用充分。AD-ViT、MADE 一类用属性标签，但多是一维 one-hot；CCAF、MIPL 一类用文本，但缺少结构化属性信息；很多方法还依赖人工衣服标签。另一个观察是，像素级遮衣服能做低层解耦，但缺少高层语义指导。
+
+2. 重定义动作：旧问题是“属性能不能作为辅助标签”；新问题是“属性文本能不能作为多粒度提示，明确规定哪些语义该保留、哪些该压制”。关键词是 multi-granularity attribute prompt、attribute-level、caption-level、identity-related、clothing-related、pseudo label。
+
+3. 机制怎么长出来：机制很顺。先用 SCHP 生成衣服擦除图，再用 AAPAR 识别 35 类属性。年龄、性别被当作身份相关属性，头饰、上衣、下装、鞋、配饰等被当作衣服相关属性。然后用模板把属性变成文本，在 raw image branch 和 masked image branch 上用 CLIP ViT 加 visual deep prompt 学图像表示。属性解耦部分把图像特征和身份相关文本拼接，用 triplet 促进保留；对衣服相关文本用负向损失或对抗约束进行压制。BNNeck 用来隔开图像调优和文本对齐，避免一个目标破坏另一个目标。
+
+4. 证据闭环：消融很对题。baseline 加 clothing adversarial attribute 后提升，说明压制衣服属性有效；加 identity-relevant attribute 后继续提升，说明保留稳定属性有效；再加 caption-level 约束提升，说明多粒度文本不是摆设；masked branch 的属性解耦去掉后也下降，说明擦衣服后仍有残留衣服语义。检索可视化显示 baseline 受颜色和款式影响更重，MAPL 更能跨衣服找人。
+
+5. 审稿人为什么买账：这篇卖的是视角。它不是“又用了属性”，而是把属性拆成正向身份语义和负向衣服语义，再用文本提示做多粒度解耦。真正新意来自“属性从标签变成 prompt 化的解耦约束”，同时减少人工衣服标签依赖。
+
+**5. Multi-granularity collaborative constraint feature alignment network for unsupervised person re-identification**
+
+1. 触发观察：无监督 ReID 已经有很多 global-local、多粒度和细粒度方法，但大多默认模型会自己学到不同粒度之间的语义一致性。作者指出，在伪标签噪声和局部特征噪声共存时，模型可能学到的是虚假的互补信息，导致 global、part、patch 之间语义错位。
+
+2. 重定义动作：旧问题是“局部细节不够”；新问题是“多粒度特征之间缺少显式语义对齐”。这一步很强，因为它把多粒度从“多加几个特征”提升为“不同粒度之间需要保持同一个身份语义”。关键词是 explicit alignment、semantic consistency、multi-granularity collaborative constraint、center-constrained filtering、within-sample alignment。
+
+3. 机制怎么长出来：机制围绕对齐展开。Transformer 输出 global、part、patch 三种粒度。多粒度 collaborative loss 把 RTMem 式 instance memory 和 cluster memory 扩展到三种粒度，让每种粒度都参与判别学习。constraint loss 不看样本间关系，而是在同一样本内部，用 part 特征和 global 排名选出语义一致的 patch token，把 part、patch、global 拉到同一个语义方向。聚类阶段也用语义一致的细粒度特征和 global 特征融合成距离矩阵。CCF 模块在 memory bank 初始化前，用 global cluster centroid 过滤偏离身份中心的局部特征。
+
+4. 证据闭环：这篇证据闭环比较完整。消融从只用 baseline，到加多粒度判别损失、加约束损失、加约束聚类、加 CCF，逐步证明每一步都服务于对齐。CCF 过滤比例随训练下降，说明早期局部噪声多、后期特征变稳定；MSMT17 上过滤更强，也符合复杂数据更噪的说法。t-SNE、类内类间距离、rank-list、attention heatmap 都围绕“语义更一致、细节更准确”展开。
+
+5. 审稿人为什么买账：这篇卖的是视角，而且机制绑定很紧。它不是泛泛说多粒度有效，而是说多粒度在无监督下会错位，所以要在损失、聚类、memory bank 三个阶段都做显式对齐。这个构造对我们最值得学：一个好问题重定义，会自然长出一组同向机制。
+
+**6. Multi-Granularity Dynamic Hierarchical Graphs for Video-Based Person Re-Identification**
+
+1. 触发观察：视频 ReID 里，很多方法只建模固定长度的全局时间线索。但人的不同身体部位运动和遮挡规律不同，腿部变化大，躯干更稳定，某些部位会在部分帧被遮挡后又出现。已有水平切分图方法虽然能做局部建模，但切分固定、邻居数量固定，容易连接低相关节点。
+
+2. 重定义动作：旧问题是“怎么建模视频时间特征”；新问题是“怎么按身体部位自适应选择不同长度的时间线索”。关键词是 dynamic hierarchical graph、adaptive multi-granularity temporal clues、part-consistent graph、mutual nearest neighbor、similarity weighted inference。
+
+3. 机制怎么长出来：DHGN 先把每帧特征图水平细分，再按特征相似度聚成自适应语义区域，而不是固定条带。每个语义层级跨帧建图，同一身体部位的节点才互连。边用 mutual nearest neighbor 建，避免低相关节点干扰。GC layer 用相似度加权聚合邻居信息，再用注意力在原节点和邻居信息之间重构残差特征。末端 GFC layer 建全局帧图，用 temporal graph pooling 排除干扰帧。SWIM 再用 gallery-gallery 相似度修正 query-gallery 相似度。
+
+4. 证据闭环：消融非常贴合问题定义。GC、GC+attention、GFC、DHGN、SWIM 分别验证局部动态时间建模、注意力重构、全局时间建模和图库关系推理。粒度数、水平划分数、插入层位置、邻居 K1 和 K2 都直接对应“动态多粒度图是否必要”。节点相似度可视化最关键，它显示遮挡时模型会找长程相似帧，无遮挡时更偏短程运动线索。activation map 和 t-SNE 则证明特征更集中、更可分。
+
+5. 审稿人为什么买账：这篇同时卖视角和机制。核心新意是把视频时间建模从固定全局序列，改成部位级、动态邻居、可变时间范围的图建模。SWIM 更像附加推理增强，真正支撑论文的是 DHGN 对“不同部位需要不同时间线索”的机制化落实。
+
+最后看这批论文，共同套路很明确：作者先不急着造模块，而是把一个已有系统里的次级矛盾抬成主问题，比如 memory bank 更新、多粒度错位、衣服语义怎么用、视频时间线索固定。然后机制必须在多个位置反复服务同一句重定义，最后用消融和可视化证明“这个重定义本身是对的”，而不是只证明最终涨点。

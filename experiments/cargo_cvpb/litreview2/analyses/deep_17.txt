@@ -1,0 +1,75 @@
+我按你指定的 `pdftotext -f 1 -l 8` 读了方法段；其中几篇方法跨过第 8 页，我又补读后续页把方法收完整。
+
+## 1. Learning Visual-Semantic Embedding for Generalizable Person Re-Identification
+
+1. 触发观察：普通泛化 ReID 主要还是图像特征学习，视觉语言方法又常要求图文配对完整。现实里可能只有图像、只有文本、或图文都有，现有方法没有统一处理“模态缺失”的能力。
+
+2. 重定义动作：作者把问题从“做更强 DG ReID”改成“学习一个视觉语义统一嵌入”。关键词是 `visual-semantic embedding`、`unimodal or multimodal`、`incomplete modality`、`unified perspective`。这让图像 ReID、文本 ReID、图文 ReID 被讲成同一个问题。
+
+3. 机制怎么长出来：既然要同时处理图像、文本、图文，就自然长出图像编码器、文本编码器、多模态编码器。既然模态会缺失，就用图像掩码、文本掩码、图文联合掩码来预训练。`MMM` 不是单纯随机遮挡，而是强调行人区域，服务于“视觉语义嵌入要关注人本体”的叙事。
+
+4. 证据闭环：关键消融是 ViT 基线、MMET 加随机掩码、MMET 加 MMM。MMM 在 Market 和 MSMT 上明显优于随机掩码。另一个闭环是 MIM、MLM、MMM 的对比，证明图像和文本联合掩码确实比单模态掩码更贴合“统一视觉语义”的定义。
+
+5. 审稿人为什么买账：这篇卖的主要是视角，不是某个新模块。真正的新意是把 ReID 泛化、图文预训练、模态缺失统一到一个训练框架里。机制很多来自视觉语言预训练，但套到 ReID 的“模态不完整泛化”上，有清楚的问题重定义。
+
+## 2. Lifelong person re-identification via dynamically knowledge adaptation and retention
+
+1. 触发观察：终身 ReID 里，很多方法为了不忘旧域，会限制模型适应新域。这样虽然缓解遗忘，但会让模型在每个具体域上都不是最优。作者抓住的反直觉点是：防遗忘不应该等于少适应。
+
+2. 重定义动作：作者把问题从“如何保留旧知识”改成“如何保留模型对旧域的适应能力”。关键词是 `dynamic adaptation`、`adaptability retention`、`readapt to each domain`。这比普通蒸馏更进一步，因为蒸馏对象变成了“动态参数生成能力”。
+
+3. 机制怎么长出来：如果每个域都需要不同适应方式，就用 DyAdap 动态卷积，根据输入特征生成卷积参数；如果动态适应器本身也会忘，就用 AdRet 约束当前模型和旧模型在特征以及动态参数上的一致性；如果批归一化带有域统计，就加 BNF 融合旧新 BN。
+
+4. 证据闭环：关键消融是逐步加入 DyAdap、AdRet、BNF。文中报告 DyAdap 平均带来 15.2 mAP，AdRet 带来 4.9 mAP，同时加入带来 34.7 mAP，BNF 还有小幅增益。这个消融证明“动态适应”和“保留适应能力”是两个不同但互补的轴。
+
+5. 审稿人为什么买账：这篇卖的是“防遗忘不等于冻结适应”的视角。机制不是简单再蒸馏一次，而是把蒸馏落到动态参数生成器上，和重定义绑定比较紧。
+
+## 3. Lifelong visible-infrared person re-identification via DMM and CDCN
+
+1. 触发观察：LVI-ReID 不只是终身学习，也不只是可见光红外 ReID。连续到来的新域同时带来域差异和模态差异，小 memory bank 反复重放还会过拟合旧样本，导致适应性和抗遗忘能力一起下降。
+
+2. 重定义动作：作者把问题拆成两个指标轴：`domain adaptability` 和 `anti-forgetting ability`。再进一步说，二者的下降来自 `domain semantic gap` 和 `modality semantic gap`。这让方法可以自然分成一个管适应、一个管遗忘。
+
+3. 机制怎么长出来：DMM 在图像层面对 memory bank 样本做域和模态混合，增加有限重放样本的多样性，主攻抗遗忘。CDCN 在特征层面建相机认知节点和图卷积，建模同模态一致性、跨模态相似性、跨域共享，主攻适应性。一个在 rehearsal 阶段用，一个在 adaptation 阶段用，逻辑上刚好对应两类退化。
+
+4. 证据闭环：关键不是只报最终涨点，而是分别证明 DMM 和 CDCN 的角色。消融显示 DMM 提升抗遗忘但会牺牲适应性，CDCN 提升适应性并改善记忆，二者组合互相补偿。另一个关键证据是 DMM 只放在重放阶段最好，放在适应阶段会污染相机认知节点。
+
+5. 审稿人为什么买账：这篇卖的是“二维问题拆解”。DMM 和 CDCN 单看都不算特别新，但它们分别对应抗遗忘和适应性，组合后形成闭环，所以贡献来自问题结构化，而不是单个零件。
+
+## 4. Lifelong Visible-Infrared Person Re-Identification with Prompt Pool and Instance-level Prompt Generator
+
+1. 触发观察：终身提示学习里，固定 prompt pool 能记共享知识，但容量和任务数绑定；实例级 prompt 适应性强，但长期共享和连续记忆弱。LVI-ReID 还要求测试时没有任务标签，只能自己判断当前输入该用什么提示和分类器。
+
+2. 重定义动作：作者把 LVI-ReID 从“持续更新模型”改成“任务无关的提示选择和实例级提示生成”。关键词是 `Prompt Pool`、`Instance-level Prompt Generator`、`query-key mechanism`、`task-agnostic inference`、`parameter scalability`。
+
+3. 机制怎么长出来：Prompt Pool 保存跨任务共享和域相关提示，IPG 根据输入 token 和推断出的任务标识生成实例级提示。查询键机制用类 token 选 prompt，用额外 query token 选分类器和任务标识。这样固定池负责连续性，实例生成器负责细粒度适应。
+
+4. 证据闭环：表 2 是核心。IPG 单独用时，后期比基线明显好，说明实例提示抗遗忘有效；Prompt Pool 单独用时，任务越多记忆优势越明显；两者组合最好。图 5 的 key 选择频率从训练前随机变成训练后有结构，证明模型确实学会了无任务标签的路由。
+
+5. 审稿人为什么买账：这篇卖的是 prompt learning 在 LVI-ReID 中的可扩展用法。新意不在 prompt 这个概念，而在把固定池和实例生成做成互补结构，并用 task-agnostic inference 解释现实部署价值。
+
+## 5. Local-Aware Residual Attention Vision Transformer for Visible-Infrared Person Re-Identification
+
+1. 触发观察：CNN 有局部性但缺全局依赖，ViT 有全局建模但越深越全局化，patch 之间越来越相似，浅层颜色、纹理、局部细节被冲淡。作者用 GradCAM 和特征相似矩阵先把这个现象可视化出来。
+
+2. 重定义动作：作者把 VI-ReID 的困难从“模态差异”重说成“Transformer 过度全局化和特征坍缩导致局部低层线索丢失”。关键词是 `over-globalization`、`feature collapse`、`low-level cues`、`Local Residual Attention`。
+
+3. 机制怎么长出来：既然 patch embedding 里有卷积局部感受野，就用 PCR 对 patch 做通道重权重；既然低层局部关系会在深层消失，就用 LAR 把局部区域的注意力关系从浅层残差传到深层；既然 VI-ReID 还有模态差异，就用 CAL 适度拉近可见光和红外中心，而不是过强压缩。
+
+4. 证据闭环：最关键的是图 2 的相似矩阵，它直接支撑“深层 patch 变得过度相似”的重定义。表 4 中基线 62.2/57.5，加入 PCR、LAR、CAL 后逐步提升，完整模型到 76.7/72.9。后续还有局部分区、注意力残差、热力图、t-SNE 和类内类间距离可视化。
+
+5. 审稿人为什么买账：这篇卖的是诊断视角加机制。它不是泛泛地说“加局部特征”，而是先证明 ViT 在 VI-ReID 中会丢失低层局部差异，再让 PCR 和 LAR 顺着这个诊断长出来。
+
+## 6. Mask-Aware Hierarchical Aggregation Transformer for Occluded Person Re-Identification
+
+1. 触发观察：遮挡 ReID 中，Transformer 的多头注意力虽然能看不同部位，但也会被背景和遮挡物吸引。与此同时，patch 级处理会丢掉像素和局部模式之间的细粒度信息。
+
+2. 重定义动作：作者把遮挡问题从“身体部位缺失”改成“注意力被遮挡污染，并且细粒度局部模式没有被保住”。关键词是 `mask-aware`、`non-occluded body parts`、`foreground semantic embeddings`、`hierarchical feature aggregation`。
+
+3. 机制怎么长出来：如果注意力会看错，就用 HRNet 解析出人体前景 mask，把 mask patch 投影成语义嵌入，和图像 patch、位置、相机嵌入一起送入 Transformer。若高层 patch 太平滑，就聚合第 2、4、10、12 层的 patch 表征做 HFA。若遮挡导致全局特征断裂，就用多分支空洞卷积 DFC 补全不同感受野下的全局信息。
+
+4. 证据闭环：图 1 的注意力热图直接证明 TransReID 会看遮挡和背景，而 MAHATMA 更关注未遮挡人体。表 V 中 MIE、HFA、DFC 分别带来明显提升，完整模型在 Occluded-Duke 达到 73.3 rank1 和 62.3 mAP。图 3 的 t-SNE 进一步显示，随着 MIE、HFA、DFC 加入，遮挡造成的离群特征逐步消失。
+
+5. 审稿人为什么买账：这篇更偏机制稿，但它有清楚的观察闭环。MIE 对应注意力定位错误，HFA 对应细粒度信息丢失，DFC 对应遮挡下全局特征不完整，三个部件虽然多，但各自有明确病因。
+
+共同套路：这些论文都不是先说“我加了一个模块”，而是先找一个具体失败现象，再把它升级成一个新问题词汇。能发的方法稿通常让机制看起来像是从这个新问题自然长出来的，然后用一个消融或可视化证明“这个新问题确实存在”，而不是只证明最终涨点。

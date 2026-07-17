@@ -1,0 +1,31 @@
+2026-06-18 12:52:04,931 exp335 use_lgpa=True detach=True seed=1234 out=log/occluded_duke/exp335_lgpa_gls05
+2026-06-18 12:52:51,298 Epoch[1] loss=6.643 assign=0.000 lr=4.76e-04
+2026-06-18 12:55:37,204 Epoch[5] loss=5.363 assign=0.000 lr=2.06e-03
+2026-06-18 12:59:05,660 Epoch[10] loss=3.750 assign=0.000 lr=4.04e-03
+2026-06-18 12:59:57,098 [eval global-only] mAP=0.3142 R1=0.3824
+2026-06-18 13:00:00,270 [eval equalcat partW=0.50] mAP=0.2687 R1=0.3407
+2026-06-18 13:00:03,498 [eval equalcat partW=1.00] mAP=0.2335 R1=0.3131
+2026-06-18 13:00:06,688 [eval equalcat partW=1.50] mAP=0.2209 R1=0.3027
+2026-06-18 13:00:09,905 [eval equalcat partW=2.00] mAP=0.2157 R1=0.2977
+2026-06-18 13:03:40,513 Epoch[15] loss=2.336 assign=0.000 lr=6.02e-03
+2026-06-18 13:07:10,709 Epoch[20] loss=1.473 assign=0.000 lr=7.47e-03
+2026-06-18 13:08:03,139 [eval global-only] mAP=0.4365 R1=0.5190
+2026-06-18 13:08:06,362 [eval equalcat partW=0.50] mAP=0.4005 R1=0.4805
+2026-06-18 13:08:09,571 [eval equalcat partW=1.00] mAP=0.3841 R1=0.4638
+2026-06-18 13:08:12,777 [eval equalcat partW=1.50] mAP=0.3797 R1=0.4611
+2026-06-18 13:08:15,982 [eval equalcat partW=2.00] mAP=0.3781 R1=0.4602
+2026-06-18 13:11:46,734 Epoch[25] loss=1.016 assign=0.000 lr=7.18e-03
+2026-06-18 13:15:17,940 Epoch[30] loss=0.796 assign=0.000 lr=6.83e-03
+2026-06-18 13:16:10,773 [eval global-only] mAP=0.4707 R1=0.5484
+2026-06-18 13:16:13,962 [eval equalcat partW=0.50] mAP=0.4387 R1=0.5145
+2026-06-18 13:16:17,169 [eval equalcat partW=1.00] mAP=0.4217 R1=0.5018
+2026-06-18 13:16:20,371 [eval equalcat partW=1.50] mAP=0.4172 R1=0.4991
+2026-06-18 13:16:23,564 [eval equalcat partW=2.00] mAP=0.4154 R1=0.4986
+2026-06-18 13:19:54,732 Epoch[35] loss=0.685 assign=0.000 lr=6.44e-03
+2026-06-18 13:23:27,018 Epoch[40] loss=0.621 assign=0.000 lr=6.00e-03
+2026-06-18 13:24:19,840 [eval global-only] mAP=0.4917 R1=0.5679
+2026-06-18 13:24:23,016 [eval equalcat partW=0.50] mAP=0.4637 R1=0.5425
+2026-06-18 13:24:26,224 [eval equalcat partW=1.00] mAP=0.4462 R1=0.5262
+2026-06-18 13:24:29,433 [eval equalcat partW=1.50] mAP=0.4412 R1=0.5217
+2026-06-18 13:24:32,641 [eval equalcat partW=2.00] mAP=0.4392 R1=0.5217
+2026-06-18 13:28:03,559 Epoch[45] loss=0.576 assign=0.000 lr=5.54e-03

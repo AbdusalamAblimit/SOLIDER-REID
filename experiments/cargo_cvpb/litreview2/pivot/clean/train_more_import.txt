@@ -1,0 +1,86 @@
+146,232
+**定夺**
+最值两个：
+
+1. **LC-STN / Bbox-Lattice Canonicalizer**：信心 **7/10**，优先做。
+2. **Gallery-conditioned DeepSets Marginalizer**：信心 **6.5/10**，作为 LPA 失败后的补位，不再做 query-side 预测。
+
+其它 lens 先不主推：TTT/TENT 太容易变 query-only 自我确认；DRO/Hard-Lattice 已接近将死路线；Neural Process 完整版偏重且容易退化成 feature/HR 回归。
+
+**1. LC-STN**
+机制：只打当前证据最强的 bbox ±1 LR-pixel crop 不确定性。
+
+```text
+LR query variant x_z
+ -> tiny localization net
+ -> bounded offset (dx, dy), max_shift=1.25 LR px
+ -> grid_sample 重采样到 canonical crop
+ -> frozen / later unfrozen ReID backbone
+ -> test-time K lattice marginalization over residual
+```
+
+训练损失：
+
+```text
+L = CE + Triplet on f(grid_sample(x_z, θ_hat))
+  + λ_geo SmoothL1(θ_hat, -δ_z)
+  + λ_reg ||θ_hat||^2
+```
+
+第一版只做 translation，不做 affine/TPS/deformable。`δ_z` 来自你自己生成的 bbox/phase lattice，所以几何监督是干净的。
+
+为什么不重蹈死法：它不要求 `f(x_1)=f(x_2)`，压的是**几何偏移参数**，不是身份 embedding。K-spread 只做 monitor，不进 loss。测试时仍保留 K=9 decision marginalization，canonicalizer 负责削弱 bbox 主因子，marginalization 负责 phase/kernel/残差。
+
+Kill-switch：
+
+- 冻结当前 no-LM-loss backbone，只训 canonicalizer。
+- h=12/16，先 bbox-only lattice。
+- 过线标准：
+  - offset MAE `<0.35` LR pixel；
+  - bbox-axis feature spread 降 `>=20%`，但 identity margin 不降；
+  - K=1 mAP `+0.8` 以上，或 K=9 在现有 lattice-marg 上再 `+0.3~0.5`；
+  - h=32 / HR sanity 掉 `<0.3`；
+  - `θ_hat` 不大量贴边，saturation `<10%`。
+- 如果只降 spread 不涨 mAP，直接杀。
+
+Novelty：STN 本身很老，ReID 也有 STNReID / part alignment 先例，所以不能卖“STN for ReID”。可卖的是：**LR ReID 的 bbox sampling-lattice hidden variable + supervised geometric canonicalization + residual decision marginalization**。我没查到这个组合的直接先例。相关先例：STN 可微几何变换，STNReID 用 pairwise STN 做 partial ReID，BlurPool/anti-aliasing说明 shift/aliasing 是已知问题，CR-ReID 近作仍主要讲 resolution gap / feature distillation，而非 lattice hidden variable。([arxiv.org](https://arxiv.org/abs/1506.02025)) ([arxiv.org](https://arxiv.org/abs/1903.07072)) ([arxiv.org](https://arxiv.org/abs/1904.11486)) ([arxiv.org](https://arxiv.org/abs/2109.07871)) ([arxiv.org](https://arxiv.org/abs/2510.00936))
+
+**2. Gallery-Conditioned DeepSets Marginalizer**
+这是给 LPA 失败后的替代。LPA 死因是“最佳 variant 由 query+gallery 共同决定，单看 query 预测不了”。那就不要预测 query 的最佳 variant，改成 pairwise evidence set scorer。
+
+对每个 `(q, g)`：
+
+```text
+E(q,g) = { e_k = [cos(f(q_k), f(g)), z_k, s_k-mean_s, rank stats] }_{k=1..K}
+
+S(q,g) = mean_k cos(f(q_k), f(g))
+       + α · ρ( Σ_k φ(e_k) )
+```
+
+`φ/ρ` 是 DeepSets 小 MLP，`α` 初始化为 0 且限幅，只学 uniform marginalization 的 residual calibration。也可以用 Set Transformer，但 K=9 小，DeepSets 足够。
+
+训练：
+
+- 冻结 backbone；
+- 用 train IDs 构造 query-positive-gallery / hard-negative-gallery pair；
+- listwise softmax 或 binary logistic；
+- 只训练 scorer，不回传到 embedding。
+
+为什么不 collapse：embedding 完全冻结，不做 feature mean，不做 L_marg，不做 query-side variant selection。它学的是“这组 K 个 pairwise scores 怎么合成一个更可靠检索分数”。
+
+Kill-switch：
+
+- 先离线 cache features，CPU/GPU 小头即可。
+- h=12/16 上相对 uniform lattice-marg `+0.4 mAP` 才活；
+- h=24/32 不掉；
+- 同样训练一个 ordinary-TTA scorer：如果 ordinary scorer 追平 lattice scorer，说明只是 generic learned TTA aggregation，杀；
+- scorer residual 不能主导原始 cosine，`α` 建议限在小范围。
+
+Novelty：DeepSets/Set Transformer 是通用 set 机制，learned TTA aggregation 也有分类先例；ReID 里也有视频/多帧 aggregation。但“对 LR-query 的 sampling-lattice evidence set 做 gallery-conditioned marginalization”我没查到直接撞车。它的定位应是辅助训练端 scorer，不是主创新本体。([arxiv.org](https://arxiv.org/abs/1703.06114)) ([arxiv.org](https://arxiv.org/abs/1810.00825)) ([arxiv.org](https://arxiv.org/abs/2011.11156)) ([arxiv.org](https://arxiv.org/abs/2010.11422))
+
+**不建议现在做**
+- **TTT/TENT**：信心 3/10。无标签 test-time entropy/consistency 很可能自我确认错 variant。([arxiv.org](https://arxiv.org/abs/1909.13231))
+- **DRO/Hard-Lattice**：信心 4/10。基本就是更强 Hard-Lattice ERM，与你已判“将死”的方向重合。([arxiv.org](https://arxiv.org/abs/2303.05809))
+- **Uncertainty/PFE 风格**：信心 4/10。ReID 已有 posterior/prior uncertainty 建模；而且 LPA 已说明 query-side uncertainty 不够。若做，也必须 pairwise，不要 Gaussian embedding。([arxiv.org](https://arxiv.org/abs/2007.08785))
+
+我的执行顺序：先 LC-STN frozen probe；同时可并行跑 DeepSets offline scorer。LC-STN 过线就作为训练端主补充；DeepSets 过线则作为 learned decision marginalization 辅助，不抢主贡献。

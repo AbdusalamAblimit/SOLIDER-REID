@@ -1,0 +1,4434 @@
+Reading additional input from stdin...
+OpenAI Codex v0.137.0
+--------
+workdir: /Users/abdslm/Desktop/reid-paper/experiments/paper_materials/pdfs_by_title
+model: gpt-5.5
+provider: openai_http
+approval: never
+sandbox: read-only
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 019ef71f-9751-7623-ae55-42beaf5a1591
+--------
+user
+你是 ReID 论文创新挖掘员 11/20。当前目录就是论文库,下面这批 PDF 在本目录。用 `pdftotext -l 3 '文件名' -` 读每篇的摘要+引言(只读前3页,不读全文,省时间)。
+
+== 团队资产(新创新点要能挂上其中之一)==
+- SOLIDER-Swin 强 backbone(自监督人体预训练,in_planes=768)
+- aerial-ground 跨视角 ReID(CARGO / AG-ReID.v2,航拍↔地面极端视角+低清)
+- pose 热图门控(PSG / LGPA-D,姿态引导空间 gating)
+- SMPL 3D 几何(mesh/joints/2D投影,团队已打通基建)
+
+== 目标 ==
+找能投 B 类(Pattern Recognition / TMM / TCSVT / AAAI 级)的**强创新点**。不要中等工程组合,要问题层面或机制层面有真新意的。
+
+== 每篇提取(简洁)==
+(1) 创新类型: 问题重定义 / 新机制 / 新数据-设定 / 工程组合(标注哪种)
+(2) 为什么能发: 填了什么 gap + 证据链怎么搭的
+(3) story 套路: 怎么把卖点讲成 headline 的
+
+== 然后综合这批,产出 2-4 个针对团队资产的强创新点候选 ==
+每个候选要: a) 一句话 headline; b) 挂哪个团队资产; c) 和这批里最像的工作的区别(切开点); d) cheap kill-switch(怎么花最小代价首验真假)。
+
+这批论文(11/20):
+Instant pose extraction based on mask transformer for occluded person re-identification.pdf
+Interactive Sketch-Based Person Re-Identification with Text Feedback.pdf
+Internal-External Context Interaction Network for Person Re-Identification.pdf
+Latent Diffusion-Guided Feature Inpainting for Occluded Person Re-Identification With Hybrid Re-Ranking.pdf
+Learning From Yourself to Others for Unsupervised Visible-Infrared Re-Identification.pdf
+Learning multi-granularity representation with transformer for visible-infrared person re-identification.pdf
+Learning Visual-Semantic Embedding for Generalizable Person Re-Identification - A Unified Perspective.pdf
+Lifelong person re-identification via dynamically knowledge adaptation and retention.pdf
+Lifelong visible-infrared person re-identification via replay samples domain-modality-mix reconstruction and cross-domain cognitive network.pdf
+
+中文输出,务实。重点不是总结论文,是**反推出能让我们发 B 类的新强创新点**。
+codex
+我会按你的限制只读每篇前 3 页，用 `pdftotext -l 3` 抽摘要和引言；先确认项目规则文件和 PDF 文件是否在当前只读范围内可访问。
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "pwd && rg --files -g 'GOAL.md' -g 'CLAUDE.md' -g 'AGENTS.md' -g 'STATUS.md' -g '*.pdf' . .. ../.. ../../.." in /Users/abdslm/Desktop/reid-paper/experiments/paper_materials/pdfs_by_title
+ succeeded in 0ms:
+/Users/abdslm/Desktop/reid-paper/experiments/paper_materials/pdfs_by_title
+../../../CLAUDE.md
+../../../AGENTS.md
+../../../GOAL.md
+./Privacy preserving person re-identification via anonymizing diffusion model.pdf
+./RMPSNet - Occluded person re-identification via regional masking and prompt-distribution synergy.pdf
+./Dynamic Token Selective Transformer for Aerial-Ground Person Re-Identification.pdf
+./UAV-based person re-identification - A survey of UAV datasets, approaches, and challenges.pdf
+./Semantic Alignment and Hard Sample Retraining for Visible-Infrared Person Re-Identification.pdf
+./ESTI - An Efficient Spatial-Temporal Interaction Network For Video-Based Person Re-Identification.pdf
+./Adaptive Pseudo-Label Purification and Debiasing for Unsupervised Visible-Infrared Person Re-Identification.pdf
+./Attribute Conditional Diffusion-Augmented Person Re-Identification.pdf
+./Spatio-temporal Feature-level Augmentation Vision Transformer for video-based person re-identification.pdf
+./Multi-Granularity Dynamic Hierarchical Graphs for Video-Based Person Re-Identification.pdf
+./When Large Vision-Language Models Meet Person Re-Identification.pdf
+./DIRL - Learning Discriminative ID-Related Representations for Video Visible-Infrared Person ReID.pdf
+./SPCL - Semantic Polymorphism and Commonality Learning for Text-Based Person Retrieval.pdf
+./CCUP - A Controllable Synthetic Data Generation Pipeline for Pretraining Cloth-Changing Person Re-Identification Models.pdf
+./A Semantic-guided occlusion simulation based local feature semantic expansion network for person re-identification.pdf
+./Multi-Model Synergy Perception for Open-World Person Re-Identification.pdf
+./Prototype-Driven Multi-Feature Generation for Visible-Infrared Person Re-identification.pdf
+./Cloth-debiasing with Stable Diffusion in Cloth-changing Person Re-identification.pdf
+./Occluded person Re-Identification with noise injection.pdf
+./Identity-aware Feature Decoupling Learning for Clothing-change Person Re-identification.pdf
+./Robust mixed-degradation person Re-identification via structural consistency distillation.pdf
+./DiverseReID - Towards generalizable person re-identification via Dynamic Style Hallucination and decoupled domain experts.pdf
+./Bridging the gap - Learning adaptive knowledge transition for lifelong person re-identification.pdf
+./MSP-ReID - Hairstyle-Robust Cloth-Changing Person Re-Identification.pdf
+./Text-Guided Cross-Modal Alignment with Attribute and Contour Prototypes for Visible-Infrared Person Re-Identification.pdf
+./CLIP-driven fine-grained mining for text-based person search.pdf
+./'Knowledge and experience' for visible-infrared person re-identification.pdf
+./Enhancing Visible-Infrared Person Re-Identification With Modality- and Instance-Aware Adaptation Learning.pdf
+./Dynamic adaptive multi-view contrastive learning for unsupervised person re-identification.pdf
+./Cross-modality average precision optimization for visible thermal person re-identification.pdf
+./CMAG - Cross-Modal Attention and Graph-Enhanced Memory for Unsupervised Visible-Infrared Person Re-Identification.pdf
+./Multi-Branch Clothes-Agnostic Feature Learning for Cloth-Changing Person Re-Identification.pdf
+./Base-Detail Feature Learning Framework for Visible-Infrared Person Re-Identification.pdf
+./CLNS - Camera-aware label noise suppression for unsupervised visible-infrared person re-identification.pdf
+./Cross-Modal Full-Mode Fine-Grained Alignment for Text-to-Image Person Retrieval [2026 ACM TOMM arXiv].pdf
+./Instant pose extraction based on mask transformer for occluded person re-identification.pdf
+./FLAG - A Framework With Explicit Learning Based on Appearance and Gait for Video-Based Clothes-Changing Person Re-Identification.pdf
+./Memory-augmented shuffled meta learning for visible-infrared person re-identification.pdf
+./Multi-Granularity Attribute Prompt Learning for Cloth-Changing Person Re-Identification.pdf
+./Text-to-image Person Search based on Semantic Reorganization.pdf
+./See what you seek - Semantic contextual integration for cloth-changing person re-identification.pdf
+./CLIP-powered modality centering with spiral training for visible-infrared person re-identification.pdf
+./Latent Diffusion-Guided Feature Inpainting for Occluded Person Re-Identification With Hybrid Re-Ranking.pdf
+./CVAF - A CLIP-Based View-Consistent Alignment Framework for Aerial-Ground Person Re-Identification.pdf
+./Learning From Yourself to Others for Unsupervised Visible-Infrared Re-Identification.pdf
+./A Semantic-Aware Attention and Visual Shielding Network for Cloth-Changing Person Re-Identification.pdf
+./Learning Visual-Semantic Embedding for Generalizable Person Re-Identification - A Unified Perspective.pdf
+./Mask-Aware Hierarchical Aggregation Transformer for Occluded Person Re-Identification.pdf
+./Unsupervised Visible-Infrared Person ReID via Modality-Camera Balance Label Refinement.pdf
+./CycleTrans - Learning Neutral Yet Discriminative Features via Cycle Construction for Visible-Infrared Person Re-Identification.pdf
+./Internal-External Context Interaction Network for Person Re-Identification.pdf
+./Learning multi-granularity representation with transformer for visible-infrared person re-identification.pdf
+./Lifelong Visible-Infrared Person Re-Identification with Prompt Pool and Instance-level Prompt Generator.pdf
+./Shape-centered representation learning for visible-infrared person re-identification.pdf
+./Multi-feature balanced network for clothes-changing person re-identification.pdf
+./Dependability Feature Learning Based on Sample Generation for Unsupervised Text-to-Image Person Re-Identification.pdf
+./Content and Salient Semantics Collaboration for Cloth-Changing Person Re-Identification.pdf
+./GSTNET - A Geospatial-Temporal Graph Network for Group Person Re-Identification.pdf
+./Adaptive transformer with Pyramid Fusion for cloth-changing Person Re-Identification.pdf
+./ColorSketchNet - Unifying color, sketch and texture for modality-agnostic multi-modal person re-identification.pdf
+./Deep intelligent technique for person Re-identification system in surveillance images.pdf
+./Cross-modal Collaborative Representation Learning for Text-to-Image Person Retrieval.pdf
+./FDGReID - Federated Domain Generalization for Person Re-identification.pdf
+./Identity-aware infrared person image generation and re-identification via controllable diffusion model.pdf
+./HOH-Net - High-Order Hierarchical Middle-Feature Learning Network for Visible-Infrared Person Re-Identification.pdf
+./A training-free framework for text-to-image person re-identification via query-prototype matching.pdf
+./CCFL - Customized Client Federated Learning for Unsupervised Person Re-identification.pdf
+./FMCNet+ - Feature-Level Modality Compensation for Visible-Infrared Person Re-Identification.pdf
+./Spatial-Temporal High-Frequency Learning for Video-based Visible-Infrared Person Re-Identification.pdf
+./Focusing on pedestrians like human for clothes changing person re-identification.pdf
+./Attribute Guidance with Inherent Pseudo-Label for Occluded Person Re-Identification.pdf
+./Mix-Modality Person Re-Identification - A New and Practical Paradigm [2025 ACM TOMM arXiv].pdf
+./Condense loss - Exploiting vector magnitude during person Re-identification training process.pdf
+./Improving Text-Based Person Retrieval by Excavating All-Round Information Beyond Color.pdf
+./Occlusion-aware Cross-modality Completion Network for Occluded Visible-Infrared Person Re-Identification.pdf
+./Texture-aware transformer with pose-patch mapping for occluded person re-identification.pdf
+./Nearest Neighbor Sample Constraint and ODE Guided Feature Reconstruction for Unsupervised Person Re-Identification.pdf
+./Semantic Consistency And Integrity Network For Cloth-changing Person Re-identification.pdf
+./Meta Pairwise Relationship Distillation for Unsupervised Person Re-Identification.pdf
+./Unleashing the potential of traditional person re-ID methods to clothes changed scenario via curriculum learning.pdf
+./A2HA - Attribute-aware hierarchical alignment for text-image person re-identification.pdf
+./Two-stage knowledge distillation for visible-infrared person re-identification.pdf
+./Disentangling Modality and Posture Factors - Memory-Attention and Orthogonal Decomposition for Visible-Infrared Person Re-Identification.pdf
+./ADA framework for unsupervised domain adaptation person re-identification.pdf
+./Optimal Illumination Distance Metrics for Person Re-Identification in Complex Lighting Conditions.pdf
+./Local-Aware Residual Attention Vision Transformer for Visible-Infrared Person Re-Identification.pdf
+./Efficient Lightweight Multi-Source Domain Adaptation for Person Re-ID via Self-paced Meta-Learning.pdf
+./Confidence guided semi-supervised cross-modality person re-identification.pdf
+./Similarity Regulation and Calibration Alignment for Weakly Supervised Text-Based Person Re-Identification.pdf
+./Hierarchical Proxy Learning for Cloth-Changing Person Re-Identification.pdf
+./Hierarchical knowledge-guided reasoning for text-based person re-identification.pdf
+./Rethinking Joint Optimization in Feature Compression - Insights from Person Re-Identification.pdf
+./Beyond geometry - The power of texture in interpretable 3D person ReID.pdf
+./Lifelong person re-identification via dynamically knowledge adaptation and retention.pdf
+./CSGN - CLIP-driven semantic guidance network for Clothes-Changing Person Re-Identification.pdf
+./Spatial-Temporal Federated Learning for Lifelong Person Re-Identification on Distributed Edges.pdf
+./Mix-Modality Person Re-Identification - A New and Practical Paradigm [2025 ACM TOMM acm_browser_subscription].pdf
+./Cross-domain person re-identification via learning Heterogeneous Pseudo Labels.pdf
+./GAReID - Grouped and Attentive High-Order Representation Learning for Person Re-Identification.pdf
+./CLIP-Based Camera-Agnostic Feature Learning for Intra-Camera Supervised Person Re-Identification.pdf
+./HPRNet - Human Parsing Reconstruction With Non-Local Multi-Scale Perception Network for Cloth-Changing Person Re-Identification.pdf
+./MoDA - Mixture of Domain Adapters for Parameter-efficient Generalizable Person Re-identification.pdf
+./Adaptive Occlusion-Aware Network for Occluded Person Re-Identification.pdf
+./InfinitePerson - Innovating Synthetic Data Creation for Generalization Person Re-Identification.pdf
+./TP-LReID - Lifelong person re-identification using text prompts.pdf
+./Dual-Modality-Shared Learning and Label Refinement for Unsupervised Visible-Infrared Person ReID.pdf
+./Part-Based Feature Complementary Denoising for Unsupervised Person Re-Identification.pdf
+./Hierarchical fusion and local-aware transformer for occluded person re-identification.pdf
+./Optimal Proxy Mining Contrastive Network for Unsupervised Person Re-Identification.pdf
+./Causal Clothes-Invariant Feature Learning for Cloth-Changing Person Re-ID.pdf
+./Channel-aware feature mining network for Visible-Infrared Person Re-identification.pdf
+./3D-Aided Pedestrian Representation Learning for Video-Based Person Re-Identification.pdf
+./Global aggregated gradient-guided adversarial attacks for person re-identification.pdf
+./Dual-level modality debiasing learning for unsupervised visible-infrared person re-identification.pdf
+./Probabilistic Distribution Alignment for Text-Based Person Retrieval.pdf
+./Towards Anytime Retrieval - A Benchmark for Anytime Person Re-Identification.pdf
+./Camera-Proxy Enhanced Identity-Recalibration Learning for Unsupervised Visible-Infrared Person Re-Identification.pdf
+./Adversarial flow-based generative models for visible-to-Infrared person re-Identification.pdf
+./Visible-Infrared Person Re-Identification With Real-World Label Noise.pdf
+./Unsupervised Lifelong Person Re-Identification via Affinity Harmonization.pdf
+./Context-Aided Semantic-Aware Self-Alignment for Video-Based Person Re-Identification.pdf
+./Categorical Attention - Fine-grained Language-guided Noise Filtering Network for Occluded Person Re-Identification.pdf
+./CFPER - Coarse-to-Fine Part-Experts Retrieval for Efficient Person Re-identification.pdf
+./Cross-Modal Full-Mode Fine-Grained Alignment for Text-to-Image Person Retrieval [2026 ACM TOMM acm_browser_subscription].pdf
+./Multi-year long-term person re-identification using gait and HAR features.pdf
+./Dynamic Modality-Camera-Invariant Clustering for Unsupervised Visible-Infrared Person Re-Identification.pdf
+./Multi-Scale Dynamic Fusion for Visible-Infrared Person Re-Identification.pdf
+./Corruption-Invariant Person Re-Identification via Coarse-to-Fine Feature Alignment.pdf
+./Multi Queue for Unsupervised Person Re-identification.pdf
+./Interactive Sketch-Based Person Re-Identification with Text Feedback.pdf
+./Camera-aware graph multi-domain adaptive learning for unsupervised person re-identification.pdf
+./Lifelong visible-infrared person re-identification via replay samples domain-modality-mix reconstruction and cross-domain cognitive network.pdf
+./Richer Semantics, Better Alignment - Aligning Visual Features with Explicit and Enriched Semantics for Visible-Infrared Person Re-Identification.pdf
+./Prototype-guided Knowledge Propagation with Adaptive Learning for Lifelong Person Re-identification.pdf
+./Mutual Distillation Driven Dual-Space Matching for Visible-Infrared Person Re-Identification.pdf
+./UP-Person - Unified Parameter-Efficient Transfer Learning for Text-Based Person Retrieval.pdf
+./A Survey on 3D Skeleton Based Person Re-Identification - Taxonomy, Advances, Challenges, and Interdisciplinary Prospects.pdf
+./Find Hidden Modality Divergence - Adversarial Aware Learning for Unsupervised Visible-Infrared Person Re-Identification.pdf
+./4SNet - Spatial and Spectrum Self-adaptive Synergy Network for Visible-Infrared Person Re-identification.pdf
+./Self-Rectification Historical Consistency Learning for Coupled Noisy Visible-Infrared Person Re-Identification.pdf
+./Spectrum-guided feature enhancement network for event person re-identification.pdf
+./Stochastic style perturbation modelling for visible-Infrared person re-Identification with severely modality imbalance.pdf
+./Visible-Infrared Person Re-Identification Based on Feature Decoupling and Refinement.pdf
+./Bidirectional modality information interaction for Visible-Infrared Person Re-identification.pdf
+./Pose-Skeleton Guided Cross-Attention Representation Fusion for Occluded Pedestrian Re-Identification.pdf
+./Multi-granularity collaborative constraint feature alignment network for unsupervised person re-identification.pdf
+./Harnessing Knowledge From Pretrained VLMs for Unsupervised Person Search.pdf
+./Unveiling Local Well-posedness Influence for Cross-modal Person Re-Identification.pdf
+./False Negatives Consensus Suppression for Text-to-Image Person Re-identification.pdf
+./Exploring Part-Informed Visual-Language Learning for Person Re-Identification.pdf
+./Uniform Light Transformer for Person Re-identification under Complex Illumination.pdf
+./Generalizable person re-identification method using bi-stream interactive learning with feature reconstruction.pdf
+./Unsupervised person re-identification via camera-aware multi-level label refinement.pdf
+./Distribution aligned semantics adaption for lifelong person re-identification.pdf
+./TIENet - A Tri-Interaction Enhancement Network for Multimodal Person Reidentification.pdf
+./DATE - Dual Asymmetric Textual Embedding guided Person Re-Identification.pdf
+./Visible-Infrared Person Re-Identification via Mutual Reinforcement of Prompts and Image Encoders.pdf
+./Diverse Representations Embedding for Lifelong Person Re-Identification.pdf
+./Adversarial perturbation and defense for generalizable person re-identification.pdf
+./RMGNet - The Progressive Relationship-Mining Graph Neural Network for Text-to-Image Person Re-Identification.pdf
+./Domain Consistency Representation Learning for Lifelong Person Re-Identification.pdf
+./Structured Distilled 3D Gait Fields for Clothes-Changing Person Re-Identification in Videos.pdf
+./Coarse-to-Fine Cross-Modality Generation for Enhancing Vehicle Re-Identification with High-Fidelity Synthetic Data.pdf
+./GAE-Net - A gait-assisted enhancement network for video-based person re-identification.pdf
+./Unsupervised Person Re-Identification With Diffusion Model via Semantic-Aware Disentanglement Representation Learning.pdf
+./Discovering Multi-Frequency Embedding for Visible-Infrared Person Re-Identification.pdf
+./Heterogeneous Generative Tokens and Distance-Aware Recovery Network for Occluded Person Re-Identification.pdf
+../../../experiments/STATUS.md
+../subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3749843_visible_infrared_person_re_identification_based_on_feature_decoupling_and_refinement.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325005102_two_stage_knowledge_distillation_for_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325000093_deep_intelligent_technique_for_person_re_identification_system_in_surveillance_images.pdf
+../subscription_reid_papers/pdfs/2025_icme_ieee_11209571_esti_an_efficient_spatial_temporal_interaction_network_for_video_based_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S003132032500473X_spatio_temporal_feature_level_augmentation_vision_transformer_for_video_based_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320324008331_instant_pose_extraction_based_on_mask_transformer_for_occluded_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_acm_tomm_acm_browser_subscription_10_1145_3785482_cvaf_a_clip_based_view_consistent_alignment_framework_for_aerial_ground_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3712595_moda_mixture_of_domain_adapters_for_parameter_efficient_generalizable_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10915644_camera_proxy_enhanced_identity_recalibration_learning_for_unsupervised_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3715142_mix_modality_person_re_identification_a_new_and_practical_paradigm.pdf
+../subscription_reid_papers/pdfs/2026_acm_tomm_acm_browser_subscription_10_1145_3798053_efficient_lightweight_multi_source_domain_adaptation_for_person_re_id_via_self_paced_meta_learning.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10804861_heterogeneous_generative_tokens_and_distance_aware_recovery_network_for_occluded_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11202989_unsupervised_person_re_identification_with_diffusion_model_via_semantic_aware_disentanglement_representation_learning.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_11010847_learning_from_yourself_to_others_for_unsupervised_visible_infrared_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11108282_internal_external_context_interaction_network_for_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3700771_optimal_illumination_distance_metrics_for_person_re_identification_in_complex_lighting_conditions.pdf
+../subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11113354_cmag_cross_modal_attention_and_graph_enhanced_memory_for_unsupervised_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325008994_ada_framework_for_unsupervised_domain_adaptation_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025004824_diversereid_towards_generalizable_person_re_identification_via_dynamic_style_hallucination_and_decoupled_domain_experts.pdf
+../subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11500501_occlusion_aware_cross_modality_completion_network_for_occluded_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325012907_multi_year_long_term_person_re_identification_using_gait_and_har_features.pdf
+../subscription_reid_papers/pdfs/2026_icassp_ieee_11464029_multi_granularity_attribute_prompt_learning_for_cloth_changing_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_icme_ieee_11210050_interactive_sketch_based_person_re_identification_with_text_feedback.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325016024_privacy_preserving_person_re_identification_via_anonymizing_diffusion_model.pdf
+../subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3726528_learning_visual_semantic_embedding_for_generalizable_person_re_identification_a_unified_perspective.pdf
+../subscription_reid_papers/pdfs/2026_cviu_elsevier_S1077314226001086_clip_driven_fine_grained_mining_for_text_based_person_search.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10847698_context_aided_semantic_aware_self_alignment_for_video_based_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_tnnls_ieee_9711503_meta_pairwise_relationship_distillation_for_unsupervised_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326006412_multi_granularity_collaborative_constraint_feature_alignment_network_for_unsupervised_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_11131219_spcl_semantic_polymorphism_and_commonality_learning_for_text_based_person_retrieval.pdf
+../subscription_reid_papers/pdfs/2025_icme_ieee_11209501_date_dual_asymmetric_textual_embedding_guided_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325012853_adversarial_flow_based_generative_models_for_visible_to_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10764763_infiniteperson_innovating_synthetic_data_creation_for_generalization_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325013688_spectrum_guided_feature_enhancement_network_for_event_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10849803_rmgnet_the_progressive_relationship_mining_graph_neural_network_for_text_to_image_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11478502_mutual_distillation_driven_dual_space_matching_for_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325011057_condense_loss_exploiting_vector_magnitude_during_person_re_identification_training_process.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320324010525_bidirectional_modality_information_interaction_for_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S089360802500841X_focusing_on_pedestrians_like_human_for_clothes_changing_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_tnnls_ieee_11535598_harnessing_knowledge_from_pretrained_vlms_for_unsupervised_person_search.pdf
+../subscription_reid_papers/pdfs/2025_icassp_ieee_10887789_attribute_conditional_diffusion_augmented_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10813454_clip_based_camera_agnostic_feature_learning_for_intra_camera_supervised_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3715330_multi_scale_dynamic_fusion_for_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11162711_part_based_feature_complementary_denoising_for_unsupervised_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325002511_generalizable_person_re_identification_method_using_bi_stream_interactive_learning_with_feature_reconstruction.pdf
+../subscription_reid_papers/pdfs/2025_tnnls_ieee_10453278_improving_text_based_person_retrieval_by_excavating_all_round_information_beyond_color.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10963697_enhancing_visible_infrared_person_re_identification_with_modality_and_instance_aware_adaptation_learning.pdf
+../subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11296877_self_rectification_historical_consistency_learning_for_coupled_noisy_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11121372_hprnet_human_parsing_reconstruction_with_non_local_multi_scale_perception_network_for_cloth_changing_person_re_identific.pdf
+../subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11245503_nearest_neighbor_sample_constraint_and_ode_guided_feature_reconstruction_for_unsupervised_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10703072_corruption_invariant_person_re_identification_via_coarse_to_fine_feature_alignment.pdf
+../subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326006709_a_training_free_framework_for_text_to_image_person_re_identification_via_query_prototype_matching.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_11026921_multi_model_synergy_perception_for_open_world_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11421899_spatial_temporal_high_frequency_learning_for_video_based_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_neural_networks_elsevier_S0893608026003448_hierarchical_fusion_and_local_aware_transformer_for_occluded_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326009313_4snet_spatial_and_spectrum_self_adaptive_synergy_network_for_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025006926_memory_augmented_shuffled_meta_learning_for_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025008275_gae_net_a_gait_assisted_enhancement_network_for_video_based_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025004976_multi_feature_balanced_network_for_clothes_changing_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325012300_a_semantic_guided_occlusion_simulation_based_local_feature_semantic_expansion_network_for_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326006540_occluded_person_re_identification_with_noise_injection.pdf
+../subscription_reid_papers/pdfs/2025_tnnls_ieee_11098987_find_hidden_modality_divergence_adversarial_aware_learning_for_unsupervised_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10844683_mask_aware_hierarchical_aggregation_transformer_for_occluded_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10819458_adaptive_occlusion_aware_network_for_occluded_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_tnnls_ieee_10495189_cycletrans_learning_neutral_yet_discriminative_features_via_cycle_construction_for_visible_infrared_person_re_identifica.pdf
+../subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3745784_dirl_learning_discriminative_id_related_representations_for_video_visible_infrared_person_reid.pdf
+../subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326004759_unleashing_the_potential_of_traditional_person_re_id_methods_to_clothes_changed_scenario_via_curriculum_learning.pdf
+../subscription_reid_papers/pdfs/2026_neural_networks_elsevier_S0893608026006994_multi_granularity_dynamic_hierarchical_graphs_for_video_based_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_cviu_elsevier_S1077314225002759_channel_aware_feature_mining_network_for_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3745786_uniform_light_transformer_for_person_re_identification_under_complex_illumination.pdf
+../subscription_reid_papers/pdfs/2026_cviu_elsevier_S1077314226001001_text_to_image_person_search_based_on_semantic_reorganization.pdf
+../subscription_reid_papers/pdfs/2026_neural_networks_elsevier_S0893608026000298_lifelong_person_re_identification_via_dynamically_knowledge_adaptation_and_retention.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_11072453_3d_aided_pedestrian_representation_learning_for_video_based_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_icassp_ieee_11464579_gstnet_a_geospatial_temporal_graph_network_for_group_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11175191_discovering_multi_frequency_embedding_for_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11131229_dependability_feature_learning_based_on_sample_generation_for_unsupervised_text_to_image_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11511785_structured_distilled_3d_gait_fields_for_clothes_changing_person_re_identification_in_videos.pdf
+../subscription_reid_papers/pdfs/2025_cviu_elsevier_S1077314224003424_uav_based_person_re_identification_a_survey_of_uav_datasets_approaches_and_challenges.pdf
+../subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3711861_similarity_regulation_and_calibration_alignment_for_weakly_supervised_text_based_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325003620_cross_domain_person_re_identification_via_learning_heterogeneous_pseudo_labels.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_11007734_adaptive_pseudo_label_purification_and_debiasing_for_unsupervised_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_tnnls_ieee_9880449_fmcnet_feature_level_modality_compensation_for_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325014232_global_aggregated_gradient_guided_adversarial_attacks_for_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_machine_learning_springer_10_1007_s10994_025_06974_z_fdgreid_federated_domain_generalization_for_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325001499_cross_modality_average_precision_optimization_for_visible_thermal_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_tnnls_ieee_10934016_tienet_a_tri_interaction_enhancement_network_for_multimodal_person_reidentification.pdf
+../subscription_reid_papers/pdfs/2025_icassp_ieee_10887740_unveiling_local_well_posedness_influence_for_cross_modal_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_acm_tomm_acm_browser_subscription_10_1145_3796720_text_guided_cross_modal_alignment_with_attribute_and_contour_prototypes_for_visible_infrared_person_re_identif.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320324009683_camera_aware_graph_multi_domain_adaptive_learning_for_unsupervised_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11386968_probabilistic_distribution_alignment_for_text_based_person_retrieval.pdf
+../subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025007695_hierarchical_knowledge_guided_reasoning_for_text_based_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11475505_latent_diffusion_guided_feature_inpainting_for_occluded_person_re_identification_with_hybrid_re_ranking.pdf
+../subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326002980_clip_powered_modality_centering_with_spiral_training_for_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_icassp_ieee_10890656_semantic_consistency_and_integrity_network_for_cloth_changing_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_icme_ieee_11210054_dynamic_token_selective_transformer_for_aerial_ground_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3723358_local_aware_residual_attention_vision_transformer_for_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3724397_dual_modality_shared_learning_and_label_refinement_for_unsupervised_visible_infrared_person_reid.pdf
+../subscription_reid_papers/pdfs/2025_cviu_elsevier_S1077314225001298_csgn_clip_driven_semantic_guidance_network_for_clothes_changing_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_tnnls_ieee_10500441_disentangling_modality_and_posture_factors_memory_attention_and_orthogonal_decomposition_for_visible_infrared_person_re.pdf
+../subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326010654_a2ha_attribute_aware_hierarchical_alignment_for_text_image_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_icassp_ieee_10889915_hierarchical_proxy_learning_for_cloth_changing_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325001700_learning_multi_granularity_representation_with_transformer_for_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10829635_visible_infrared_person_re_identification_with_real_world_label_noise.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325010027_texture_aware_transformer_with_pose_patch_mapping_for_occluded_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325003292_confidence_guided_semi_supervised_cross_modality_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_icassp_ieee_10889622_multi_queue_for_unsupervised_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10721605_flag_a_framework_with_explicit_learning_based_on_appearance_and_gait_for_video_based_clothes_changing_person_re_identifi.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325012166_knowledge_and_experience_for_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3772086_unsupervised_visible_infrared_person_reid_via_modality_camera_balance_label_refinement.pdf
+../subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11142883_optimal_proxy_mining_contrastive_network_for_unsupervised_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_icme_ieee_11209843_cfper_coarse_to_fine_part_experts_retrieval_for_efficient_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025012559_colorsketchnet_unifying_color_sketch_and_texture_for_modality_agnostic_multi_modal_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3779124_unsupervised_lifelong_person_re_identification_via_affinity_harmonization.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325016103_bridging_the_gap_learning_adaptive_knowledge_transition_for_lifelong_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325009872_tp_lreid_lifelong_person_re_identification_using_text_prompts.pdf
+../subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11552757_causal_clothes_invariant_feature_learning_for_cloth_changing_person_re_id.pdf
+../subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326008848_rmpsnet_occluded_person_re_identification_via_regional_masking_and_prompt_distribution_synergy.pdf
+../subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326009039_robust_mixed_degradation_person_re_identification_via_structural_consistency_distillation.pdf
+../subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025011736_unsupervised_person_re_identification_via_camera_aware_multi_level_label_refinement.pdf
+../subscription_reid_papers/pdfs/2025_tnnls_ieee_9911993_gareid_grouped_and_attentive_high_order_representation_learning_for_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_icmr_acm_browser_subscription_10_1145_3731715_3733373_lifelong_visible_infrared_person_re_identification_with_prompt_pool_and_instance_level_prompt_generator.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325001037_adaptive_transformer_with_pyramid_fusion_for_cloth_changing_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_icme_ieee_11209807_false_negatives_consensus_suppression_for_text_to_image_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_ecai_iospress_browser_10_3233_faia250870_multi_branch_clothes_agnostic_feature_learning_for_cloth_changing_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025001662_adversarial_perturbation_and_defense_for_generalizable_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10945980_pose_skeleton_guided_cross_attention_representation_fusion_for_occluded_pedestrian_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_icme_ieee_11209802_rethinking_joint_optimization_in_feature_compression_insights_from_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_icmr_acm_browser_subscription_10_1145_3731715_3733496_visible_infrared_person_re_identification_via_mutual_reinforcement_of_prompts_and_image_encoders.pdf
+../subscription_reid_papers/pdfs/2025_icme_ieee_11209289_semantic_alignment_and_hard_sample_retraining_for_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2026_neural_networks_elsevier_S0893608026005435_dynamic_adaptive_multi_view_contrastive_learning_for_unsupervised_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_icassp_ieee_10890718_cloth_debiasing_with_stable_diffusion_in_cloth_changing_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_cviu_elsevier_S1077314225002401_beyond_geometry_the_power_of_texture_in_interpretable_3d_person_reid.pdf
+../subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3735134_ccfl_customized_client_federated_learning_for_unsupervised_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325002213_identity_aware_infrared_person_image_generation_and_re_identification_via_controllable_diffusion_model.pdf
+../subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025010871_stochastic_style_perturbation_modelling_for_visible_infrared_person_re_identification_with_severely_modality_imbalance.pdf
+../subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326008381_clns_camera_aware_label_noise_suppression_for_unsupervised_visible_infrared_person_re_identification.pdf
+../subscription_reid_papers/pdfs/2025_icra_ieee_11127895_coarse_to_fine_cross_modality_generation_for_enhancing_vehicle_re_identification_with_high_fidelity_synthetic_data.pdf
+../subscription_reid_papers/pdfs/2026_acm_tomm_acm_browser_subscription_10_1145_3786798_cross_modal_full_mode_fine_grained_alignment_for_text_to_image_person_retrieval.pdf
+../subscription_reid_papers/elsevier_test/test.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3749843_visible_infrared_person_re_identification_based_on_feature_decoupling_and_refinement.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325005102_two_stage_knowledge_distillation_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325000093_deep_intelligent_technique_for_person_re_identification_system_in_surveillance_images.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_icme_ieee_11209571_esti_an_efficient_spatial_temporal_interaction_network_for_video_based_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S003132032500473X_spatio_temporal_feature_level_augmentation_vision_transformer_for_video_based_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320324008331_instant_pose_extraction_based_on_mask_transformer_for_occluded_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_acm_tomm_acm_browser_subscription_10_1145_3785482_cvaf_a_clip_based_view_consistent_alignment_framework_for_aerial_ground_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3712595_moda_mixture_of_domain_adapters_for_parameter_efficient_generalizable_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10915644_camera_proxy_enhanced_identity_recalibration_learning_for_unsupervised_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3715142_mix_modality_person_re_identification_a_new_and_practical_paradigm.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_acm_tomm_acm_browser_subscription_10_1145_3798053_efficient_lightweight_multi_source_domain_adaptation_for_person_re_id_via_self_paced_meta_learning.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10804861_heterogeneous_generative_tokens_and_distance_aware_recovery_network_for_occluded_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11202989_unsupervised_person_re_identification_with_diffusion_model_via_semantic_aware_disentanglement_representation_learning.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_11010847_learning_from_yourself_to_others_for_unsupervised_visible_infrared_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11108282_internal_external_context_interaction_network_for_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3700771_optimal_illumination_distance_metrics_for_person_re_identification_in_complex_lighting_conditions.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11113354_cmag_cross_modal_attention_and_graph_enhanced_memory_for_unsupervised_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325008994_ada_framework_for_unsupervised_domain_adaptation_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025004824_diversereid_towards_generalizable_person_re_identification_via_dynamic_style_hallucination_and_decoupled_domain_experts.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11500501_occlusion_aware_cross_modality_completion_network_for_occluded_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325012907_multi_year_long_term_person_re_identification_using_gait_and_har_features.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_icassp_ieee_11464029_multi_granularity_attribute_prompt_learning_for_cloth_changing_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_icme_ieee_11210050_interactive_sketch_based_person_re_identification_with_text_feedback.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325016024_privacy_preserving_person_re_identification_via_anonymizing_diffusion_model.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3726528_learning_visual_semantic_embedding_for_generalizable_person_re_identification_a_unified_perspective.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_cviu_elsevier_S1077314226001086_clip_driven_fine_grained_mining_for_text_based_person_search.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10847698_context_aided_semantic_aware_self_alignment_for_video_based_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_tnnls_ieee_9711503_meta_pairwise_relationship_distillation_for_unsupervised_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326006412_multi_granularity_collaborative_constraint_feature_alignment_network_for_unsupervised_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_11131219_spcl_semantic_polymorphism_and_commonality_learning_for_text_based_person_retrieval.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_icme_ieee_11209501_date_dual_asymmetric_textual_embedding_guided_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325012853_adversarial_flow_based_generative_models_for_visible_to_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10764763_infiniteperson_innovating_synthetic_data_creation_for_generalization_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325013688_spectrum_guided_feature_enhancement_network_for_event_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10849803_rmgnet_the_progressive_relationship_mining_graph_neural_network_for_text_to_image_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11478502_mutual_distillation_driven_dual_space_matching_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325011057_condense_loss_exploiting_vector_magnitude_during_person_re_identification_training_process.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320324010525_bidirectional_modality_information_interaction_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S089360802500841X_focusing_on_pedestrians_like_human_for_clothes_changing_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_tnnls_ieee_11535598_harnessing_knowledge_from_pretrained_vlms_for_unsupervised_person_search.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_icassp_ieee_10887789_attribute_conditional_diffusion_augmented_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10813454_clip_based_camera_agnostic_feature_learning_for_intra_camera_supervised_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3715330_multi_scale_dynamic_fusion_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11162711_part_based_feature_complementary_denoising_for_unsupervised_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325002511_generalizable_person_re_identification_method_using_bi_stream_interactive_learning_with_feature_reconstruction.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_tnnls_ieee_10453278_improving_text_based_person_retrieval_by_excavating_all_round_information_beyond_color.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10963697_enhancing_visible_infrared_person_re_identification_with_modality_and_instance_aware_adaptation_learning.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11296877_self_rectification_historical_consistency_learning_for_coupled_noisy_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11121372_hprnet_human_parsing_reconstruction_with_non_local_multi_scale_perception_network_for_cloth_changing_person_re_identific.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11245503_nearest_neighbor_sample_constraint_and_ode_guided_feature_reconstruction_for_unsupervised_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10703072_corruption_invariant_person_re_identification_via_coarse_to_fine_feature_alignment.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326006709_a_training_free_framework_for_text_to_image_person_re_identification_via_query_prototype_matching.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_11026921_multi_model_synergy_perception_for_open_world_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11421899_spatial_temporal_high_frequency_learning_for_video_based_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_neural_networks_elsevier_S0893608026003448_hierarchical_fusion_and_local_aware_transformer_for_occluded_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326009313_4snet_spatial_and_spectrum_self_adaptive_synergy_network_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025006926_memory_augmented_shuffled_meta_learning_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025008275_gae_net_a_gait_assisted_enhancement_network_for_video_based_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025004976_multi_feature_balanced_network_for_clothes_changing_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325012300_a_semantic_guided_occlusion_simulation_based_local_feature_semantic_expansion_network_for_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326006540_occluded_person_re_identification_with_noise_injection.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_tnnls_ieee_11098987_find_hidden_modality_divergence_adversarial_aware_learning_for_unsupervised_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10844683_mask_aware_hierarchical_aggregation_transformer_for_occluded_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10819458_adaptive_occlusion_aware_network_for_occluded_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_tnnls_ieee_10495189_cycletrans_learning_neutral_yet_discriminative_features_via_cycle_construction_for_visible_infrared_person_re_identifica.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3745784_dirl_learning_discriminative_id_related_representations_for_video_visible_infrared_person_reid.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326004759_unleashing_the_potential_of_traditional_person_re_id_methods_to_clothes_changed_scenario_via_curriculum_learning.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_neural_networks_elsevier_S0893608026006994_multi_granularity_dynamic_hierarchical_graphs_for_video_based_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_cviu_elsevier_S1077314225002759_channel_aware_feature_mining_network_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3745786_uniform_light_transformer_for_person_re_identification_under_complex_illumination.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_cviu_elsevier_S1077314226001001_text_to_image_person_search_based_on_semantic_reorganization.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_neural_networks_elsevier_S0893608026000298_lifelong_person_re_identification_via_dynamically_knowledge_adaptation_and_retention.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_11072453_3d_aided_pedestrian_representation_learning_for_video_based_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_icassp_ieee_11464579_gstnet_a_geospatial_temporal_graph_network_for_group_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11175191_discovering_multi_frequency_embedding_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11131229_dependability_feature_learning_based_on_sample_generation_for_unsupervised_text_to_image_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11511785_structured_distilled_3d_gait_fields_for_clothes_changing_person_re_identification_in_videos.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_cviu_elsevier_S1077314224003424_uav_based_person_re_identification_a_survey_of_uav_datasets_approaches_and_challenges.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3711861_similarity_regulation_and_calibration_alignment_for_weakly_supervised_text_based_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325003620_cross_domain_person_re_identification_via_learning_heterogeneous_pseudo_labels.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_11007734_adaptive_pseudo_label_purification_and_debiasing_for_unsupervised_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_tnnls_ieee_9880449_fmcnet_feature_level_modality_compensation_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325014232_global_aggregated_gradient_guided_adversarial_attacks_for_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_machine_learning_springer_10_1007_s10994_025_06974_z_fdgreid_federated_domain_generalization_for_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325001499_cross_modality_average_precision_optimization_for_visible_thermal_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_tnnls_ieee_10934016_tienet_a_tri_interaction_enhancement_network_for_multimodal_person_reidentification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_icassp_ieee_10887740_unveiling_local_well_posedness_influence_for_cross_modal_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_acm_tomm_acm_browser_subscription_10_1145_3796720_text_guided_cross_modal_alignment_with_attribute_and_contour_prototypes_for_visible_infrared_person_re_identif.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320324009683_camera_aware_graph_multi_domain_adaptive_learning_for_unsupervised_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11386968_probabilistic_distribution_alignment_for_text_based_person_retrieval.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025007695_hierarchical_knowledge_guided_reasoning_for_text_based_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11475505_latent_diffusion_guided_feature_inpainting_for_occluded_person_re_identification_with_hybrid_re_ranking.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326002980_clip_powered_modality_centering_with_spiral_training_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_icassp_ieee_10890656_semantic_consistency_and_integrity_network_for_cloth_changing_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_icme_ieee_11210054_dynamic_token_selective_transformer_for_aerial_ground_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3723358_local_aware_residual_attention_vision_transformer_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3724397_dual_modality_shared_learning_and_label_refinement_for_unsupervised_visible_infrared_person_reid.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_cviu_elsevier_S1077314225001298_csgn_clip_driven_semantic_guidance_network_for_clothes_changing_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_tnnls_ieee_10500441_disentangling_modality_and_posture_factors_memory_attention_and_orthogonal_decomposition_for_visible_infrared_person_re.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326010654_a2ha_attribute_aware_hierarchical_alignment_for_text_image_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_icassp_ieee_10889915_hierarchical_proxy_learning_for_cloth_changing_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325001700_learning_multi_granularity_representation_with_transformer_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10829635_visible_infrared_person_re_identification_with_real_world_label_noise.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325010027_texture_aware_transformer_with_pose_patch_mapping_for_occluded_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325003292_confidence_guided_semi_supervised_cross_modality_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_icassp_ieee_10889622_multi_queue_for_unsupervised_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10721605_flag_a_framework_with_explicit_learning_based_on_appearance_and_gait_for_video_based_clothes_changing_person_re_identifi.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325012166_knowledge_and_experience_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3772086_unsupervised_visible_infrared_person_reid_via_modality_camera_balance_label_refinement.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11142883_optimal_proxy_mining_contrastive_network_for_unsupervised_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_icme_ieee_11209843_cfper_coarse_to_fine_part_experts_retrieval_for_efficient_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025012559_colorsketchnet_unifying_color_sketch_and_texture_for_modality_agnostic_multi_modal_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3779124_unsupervised_lifelong_person_re_identification_via_affinity_harmonization.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325016103_bridging_the_gap_learning_adaptive_knowledge_transition_for_lifelong_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325009872_tp_lreid_lifelong_person_re_identification_using_text_prompts.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11552757_causal_clothes_invariant_feature_learning_for_cloth_changing_person_re_id.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326008848_rmpsnet_occluded_person_re_identification_via_regional_masking_and_prompt_distribution_synergy.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326009039_robust_mixed_degradation_person_re_identification_via_structural_consistency_distillation.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025011736_unsupervised_person_re_identification_via_camera_aware_multi_level_label_refinement.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_tnnls_ieee_9911993_gareid_grouped_and_attentive_high_order_representation_learning_for_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_icmr_acm_browser_subscription_10_1145_3731715_3733373_lifelong_visible_infrared_person_re_identification_with_prompt_pool_and_instance_level_prompt_generator.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325001037_adaptive_transformer_with_pyramid_fusion_for_cloth_changing_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_icme_ieee_11209807_false_negatives_consensus_suppression_for_text_to_image_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ecai_iospress_browser_10_3233_faia250870_multi_branch_clothes_agnostic_feature_learning_for_cloth_changing_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025001662_adversarial_perturbation_and_defense_for_generalizable_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10945980_pose_skeleton_guided_cross_attention_representation_fusion_for_occluded_pedestrian_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_icme_ieee_11209802_rethinking_joint_optimization_in_feature_compression_insights_from_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_icmr_acm_browser_subscription_10_1145_3731715_3733496_visible_infrared_person_re_identification_via_mutual_reinforcement_of_prompts_and_image_encoders.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_icme_ieee_11209289_semantic_alignment_and_hard_sample_retraining_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_neural_networks_elsevier_S0893608026005435_dynamic_adaptive_multi_view_contrastive_learning_for_unsupervised_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_icassp_ieee_10890718_cloth_debiasing_with_stable_diffusion_in_cloth_changing_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_cviu_elsevier_S1077314225002401_beyond_geometry_the_power_of_texture_in_interpretable_3d_person_reid.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3735134_ccfl_customized_client_federated_learning_for_unsupervised_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325002213_identity_aware_infrared_person_image_generation_and_re_identification_via_controllable_diffusion_model.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025010871_stochastic_style_perturbation_modelling_for_visible_infrared_person_re_identification_with_severely_modality_imbalance.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326008381_clns_camera_aware_label_noise_suppression_for_unsupervised_visible_infrared_person_re_identification.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2025_icra_ieee_11127895_coarse_to_fine_cross_modality_generation_for_enhancing_vehicle_re_identification_with_high_fidelity_synthetic_data.pdf
+../../paper_materials/subscription_reid_papers/pdfs/2026_acm_tomm_acm_browser_subscription_10_1145_3786798_cross_modal_full_mode_fine_grained_alignment_for_text_to_image_person_retrieval.pdf
+../../paper_materials/subscription_reid_papers/elsevier_test/test.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11552757_causal_clothes_invariant_feature_learning_for_cloth_changing_person_re_id.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326008848_rmpsnet_occluded_person_re_identification_via_regional_masking_and_prompt_distribution_synergy.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326009039_robust_mixed_degradation_person_re_identification_via_structural_consistency_distillation.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025011736_unsupervised_person_re_identification_via_camera_aware_multi_level_label_refinement.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_tnnls_ieee_9911993_gareid_grouped_and_attentive_high_order_representation_learning_for_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_icmr_acm_browser_subscription_10_1145_3731715_3733373_lifelong_visible_infrared_person_re_identification_with_prompt_pool_and_instance_level_prompt_generator.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325001037_adaptive_transformer_with_pyramid_fusion_for_cloth_changing_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_icme_ieee_11209807_false_negatives_consensus_suppression_for_text_to_image_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ecai_iospress_browser_10_3233_faia250870_multi_branch_clothes_agnostic_feature_learning_for_cloth_changing_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025001662_adversarial_perturbation_and_defense_for_generalizable_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10945980_pose_skeleton_guided_cross_attention_representation_fusion_for_occluded_pedestrian_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_icme_ieee_11209802_rethinking_joint_optimization_in_feature_compression_insights_from_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_icmr_acm_browser_subscription_10_1145_3731715_3733496_visible_infrared_person_re_identification_via_mutual_reinforcement_of_prompts_and_image_encoders.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_icme_ieee_11209289_semantic_alignment_and_hard_sample_retraining_for_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_neural_networks_elsevier_S0893608026005435_dynamic_adaptive_multi_view_contrastive_learning_for_unsupervised_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_icassp_ieee_10890718_cloth_debiasing_with_stable_diffusion_in_cloth_changing_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_cviu_elsevier_S1077314225002401_beyond_geometry_the_power_of_texture_in_interpretable_3d_person_reid.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3735134_ccfl_customized_client_federated_learning_for_unsupervised_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325002213_identity_aware_infrared_person_image_generation_and_re_identification_via_controllable_diffusion_model.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025010871_stochastic_style_perturbation_modelling_for_visible_infrared_person_re_identification_with_severely_modality_imbalance.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326008381_clns_camera_aware_label_noise_suppression_for_unsupervised_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_icra_ieee_11127895_coarse_to_fine_cross_modality_generation_for_enhancing_vehicle_re_identification_with_high_fidelity_synthetic_data.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_acm_tomm_acm_browser_subscription_10_1145_3786798_cross_modal_full_mode_fine_grained_alignment_for_text_to_image_person_retrieval.pdf
+../../../experiments/paper_materials/figures/fig1_orthogonal_capacity_law.pdf
+../../../experiments/paper_materials/subscription_reid_papers/elsevier_test/test.pdf
+../../../experiments/paper_materials/figures/fig2_worst_group_coverage.pdf
+../../../experiments/paper_materials/figures/fig3_selective_risk_coverage.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_machine_learning_springer_10_1007_s10994_025_06974_z_fdgreid_federated_domain_generalization_for_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325001499_cross_modality_average_precision_optimization_for_visible_thermal_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_tnnls_ieee_10934016_tienet_a_tri_interaction_enhancement_network_for_multimodal_person_reidentification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_icassp_ieee_10887740_unveiling_local_well_posedness_influence_for_cross_modal_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_acm_tomm_acm_browser_subscription_10_1145_3796720_text_guided_cross_modal_alignment_with_attribute_and_contour_prototypes_for_visible_infrared_person_re_identif.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320324009683_camera_aware_graph_multi_domain_adaptive_learning_for_unsupervised_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11386968_probabilistic_distribution_alignment_for_text_based_person_retrieval.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025007695_hierarchical_knowledge_guided_reasoning_for_text_based_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11475505_latent_diffusion_guided_feature_inpainting_for_occluded_person_re_identification_with_hybrid_re_ranking.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326002980_clip_powered_modality_centering_with_spiral_training_for_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_icassp_ieee_10890656_semantic_consistency_and_integrity_network_for_cloth_changing_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_icme_ieee_11210054_dynamic_token_selective_transformer_for_aerial_ground_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3723358_local_aware_residual_attention_vision_transformer_for_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3724397_dual_modality_shared_learning_and_label_refinement_for_unsupervised_visible_infrared_person_reid.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_cviu_elsevier_S1077314225001298_csgn_clip_driven_semantic_guidance_network_for_clothes_changing_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_tnnls_ieee_10500441_disentangling_modality_and_posture_factors_memory_attention_and_orthogonal_decomposition_for_visible_infrared_person_re.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326010654_a2ha_attribute_aware_hierarchical_alignment_for_text_image_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_icassp_ieee_10889915_hierarchical_proxy_learning_for_cloth_changing_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325001700_learning_multi_granularity_representation_with_transformer_for_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10829635_visible_infrared_person_re_identification_with_real_world_label_noise.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325010027_texture_aware_transformer_with_pose_patch_mapping_for_occluded_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325003292_confidence_guided_semi_supervised_cross_modality_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_icassp_ieee_10889622_multi_queue_for_unsupervised_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10721605_flag_a_framework_with_explicit_learning_based_on_appearance_and_gait_for_video_based_clothes_changing_person_re_identifi.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325012166_knowledge_and_experience_for_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3772086_unsupervised_visible_infrared_person_reid_via_modality_camera_balance_label_refinement.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11142883_optimal_proxy_mining_contrastive_network_for_unsupervised_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_icme_ieee_11209843_cfper_coarse_to_fine_part_experts_retrieval_for_efficient_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025012559_colorsketchnet_unifying_color_sketch_and_texture_for_modality_agnostic_multi_modal_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3779124_unsupervised_lifelong_person_re_identification_via_affinity_harmonization.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325016103_bridging_the_gap_learning_adaptive_knowledge_transition_for_lifelong_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325009872_tp_lreid_lifelong_person_re_identification_using_text_prompts.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10819458_adaptive_occlusion_aware_network_for_occluded_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_tnnls_ieee_10495189_cycletrans_learning_neutral_yet_discriminative_features_via_cycle_construction_for_visible_infrared_person_re_identifica.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3745784_dirl_learning_discriminative_id_related_representations_for_video_visible_infrared_person_reid.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326004759_unleashing_the_potential_of_traditional_person_re_id_methods_to_clothes_changed_scenario_via_curriculum_learning.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_neural_networks_elsevier_S0893608026006994_multi_granularity_dynamic_hierarchical_graphs_for_video_based_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_cviu_elsevier_S1077314225002759_channel_aware_feature_mining_network_for_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3745786_uniform_light_transformer_for_person_re_identification_under_complex_illumination.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_cviu_elsevier_S1077314226001001_text_to_image_person_search_based_on_semantic_reorganization.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_neural_networks_elsevier_S0893608026000298_lifelong_person_re_identification_via_dynamically_knowledge_adaptation_and_retention.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_11072453_3d_aided_pedestrian_representation_learning_for_video_based_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_icassp_ieee_11464579_gstnet_a_geospatial_temporal_graph_network_for_group_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11175191_discovering_multi_frequency_embedding_for_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11131229_dependability_feature_learning_based_on_sample_generation_for_unsupervised_text_to_image_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11511785_structured_distilled_3d_gait_fields_for_clothes_changing_person_re_identification_in_videos.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_cviu_elsevier_S1077314224003424_uav_based_person_re_identification_a_survey_of_uav_datasets_approaches_and_challenges.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3711861_similarity_regulation_and_calibration_alignment_for_weakly_supervised_text_based_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325003620_cross_domain_person_re_identification_via_learning_heterogeneous_pseudo_labels.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_11007734_adaptive_pseudo_label_purification_and_debiasing_for_unsupervised_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_tnnls_ieee_9880449_fmcnet_feature_level_modality_compensation_for_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325014232_global_aggregated_gradient_guided_adversarial_attacks_for_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11421899_spatial_temporal_high_frequency_learning_for_video_based_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_neural_networks_elsevier_S0893608026003448_hierarchical_fusion_and_local_aware_transformer_for_occluded_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326009313_4snet_spatial_and_spectrum_self_adaptive_synergy_network_for_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025006926_memory_augmented_shuffled_meta_learning_for_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025008275_gae_net_a_gait_assisted_enhancement_network_for_video_based_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025004976_multi_feature_balanced_network_for_clothes_changing_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325012300_a_semantic_guided_occlusion_simulation_based_local_feature_semantic_expansion_network_for_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326006540_occluded_person_re_identification_with_noise_injection.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_tnnls_ieee_11098987_find_hidden_modality_divergence_adversarial_aware_learning_for_unsupervised_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10844683_mask_aware_hierarchical_aggregation_transformer_for_occluded_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11121372_hprnet_human_parsing_reconstruction_with_non_local_multi_scale_perception_network_for_cloth_changing_person_re_identific.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11245503_nearest_neighbor_sample_constraint_and_ode_guided_feature_reconstruction_for_unsupervised_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10703072_corruption_invariant_person_re_identification_via_coarse_to_fine_feature_alignment.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326006709_a_training_free_framework_for_text_to_image_person_re_identification_via_query_prototype_matching.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_11026921_multi_model_synergy_perception_for_open_world_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10963697_enhancing_visible_infrared_person_re_identification_with_modality_and_instance_aware_adaptation_learning.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11296877_self_rectification_historical_consistency_learning_for_coupled_noisy_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_tnnls_ieee_10453278_improving_text_based_person_retrieval_by_excavating_all_round_information_beyond_color.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325002511_generalizable_person_re_identification_method_using_bi_stream_interactive_learning_with_feature_reconstruction.pdf
+../figures/fig1_orthogonal_capacity_law.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3749843_visible_infrared_person_re_identification_based_on_feature_decoupling_and_refinement.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325005102_two_stage_knowledge_distillation_for_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325000093_deep_intelligent_technique_for_person_re_identification_system_in_surveillance_images.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_icme_ieee_11209571_esti_an_efficient_spatial_temporal_interaction_network_for_video_based_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S003132032500473X_spatio_temporal_feature_level_augmentation_vision_transformer_for_video_based_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320324008331_instant_pose_extraction_based_on_mask_transformer_for_occluded_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_acm_tomm_acm_browser_subscription_10_1145_3785482_cvaf_a_clip_based_view_consistent_alignment_framework_for_aerial_ground_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3712595_moda_mixture_of_domain_adapters_for_parameter_efficient_generalizable_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10915644_camera_proxy_enhanced_identity_recalibration_learning_for_unsupervised_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3715142_mix_modality_person_re_identification_a_new_and_practical_paradigm.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_acm_tomm_acm_browser_subscription_10_1145_3798053_efficient_lightweight_multi_source_domain_adaptation_for_person_re_id_via_self_paced_meta_learning.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10804861_heterogeneous_generative_tokens_and_distance_aware_recovery_network_for_occluded_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11202989_unsupervised_person_re_identification_with_diffusion_model_via_semantic_aware_disentanglement_representation_learning.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_11010847_learning_from_yourself_to_others_for_unsupervised_visible_infrared_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11108282_internal_external_context_interaction_network_for_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3700771_optimal_illumination_distance_metrics_for_person_re_identification_in_complex_lighting_conditions.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11113354_cmag_cross_modal_attention_and_graph_enhanced_memory_for_unsupervised_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325008994_ada_framework_for_unsupervised_domain_adaptation_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S0893608025004824_diversereid_towards_generalizable_person_re_identification_via_dynamic_style_hallucination_and_decoupled_domain_experts.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11500501_occlusion_aware_cross_modality_completion_network_for_occluded_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325012907_multi_year_long_term_person_re_identification_using_gait_and_har_features.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_icassp_ieee_11464029_multi_granularity_attribute_prompt_learning_for_cloth_changing_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_icme_ieee_11210050_interactive_sketch_based_person_re_identification_with_text_feedback.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325016024_privacy_preserving_person_re_identification_via_anonymizing_diffusion_model.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3726528_learning_visual_semantic_embedding_for_generalizable_person_re_identification_a_unified_perspective.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_cviu_elsevier_S1077314226001086_clip_driven_fine_grained_mining_for_text_based_person_search.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10847698_context_aided_semantic_aware_self_alignment_for_video_based_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_tnnls_ieee_9711503_meta_pairwise_relationship_distillation_for_unsupervised_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_pattern_recognition_elsevier_S0031320326006412_multi_granularity_collaborative_constraint_feature_alignment_network_for_unsupervised_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_11131219_spcl_semantic_polymorphism_and_commonality_learning_for_text_based_person_retrieval.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_icme_ieee_11209501_date_dual_asymmetric_textual_embedding_guided_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325012853_adversarial_flow_based_generative_models_for_visible_to_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10764763_infiniteperson_innovating_synthetic_data_creation_for_generalization_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325013688_spectrum_guided_feature_enhancement_network_for_event_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10849803_rmgnet_the_progressive_relationship_mining_graph_neural_network_for_text_to_image_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11478502_mutual_distillation_driven_dual_space_matching_for_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320325011057_condense_loss_exploiting_vector_magnitude_during_person_re_identification_training_process.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_pattern_recognition_elsevier_S0031320324010525_bidirectional_modality_information_interaction_for_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_neural_networks_elsevier_S089360802500841X_focusing_on_pedestrians_like_human_for_clothes_changing_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_tnnls_ieee_11535598_harnessing_knowledge_from_pretrained_vlms_for_unsupervised_person_search.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_icassp_ieee_10887789_attribute_conditional_diffusion_augmented_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_ieee_transactions_on_circuits_and_systems_for_ieee_10813454_clip_based_camera_agnostic_feature_learning_for_intra_camera_supervised_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2025_acm_tomm_acm_browser_subscription_10_1145_3715330_multi_scale_dynamic_fusion_for_visible_infrared_person_re_identification.pdf
+../../../experiments/paper_materials/subscription_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_systems_for_ieee_11162711_part_based_feature_complementary_denoising_for_unsupervised_person_re_identification.pdf
+../figures/fig3_selective_risk_coverage.pdf
+../figures/fig2_worst_group_coverage.pdf
+../../paper_materials/open_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_s_openalex_10_1109_tcsvt_2025_3609840_hoh_net_high_order_hierarchical_middle_feature_learning_network_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/open_reid_papers/pdfs/2025_cviu_openalex_10_1016_j_cviu_2025_104328_lifelong_visible_infrared_person_re_identification_via_replay_samples_domain_modality_mix_reconstruction_and_c.pdf
+../../paper_materials/open_reid_papers/pdfs/2025_ijcai_official_10_24963_ijcai_2025_90_categorical_attention_fine-grained_language-guided_noise_filtering_network_for_occluded_person_re-identification.pdf
+../../paper_materials/open_reid_papers/pdfs/2025_ijcai_official_10_24963_ijcai_2025_240_cross-modal_collaborative_representation_learning_for_text-to-image_person_retrieval.pdf
+../../paper_materials/open_reid_papers/pdfs/2025_ijcai_official_10_24963_ijcai_2025_104_richer_semantics_better_alignment_aligning_visual_features_with_explicit_and_enriched_semantics_for_visible-infrared_person_re-identific.pdf
+../../paper_materials/open_reid_papers/pdfs/2025_ijcai_official_10_24963_ijcai_2025_651_prototype-guided_knowledge_propagation_with_adaptive_learning_for_lifelong_person_re-identification.pdf
+../../STATUS.md
+../../paper_materials/arxiv_reid_papers/pdfs/2025_icassp_2501.05851v1_identity_aware_feature_decoupling_learning_for_clothing_change_person_re_identification.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2025_acm_tomm_2412.04719v1_mix_modality_person_re_identification_a_new_and_practical_paradigm.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2025_ijcai_2505.03286v1_base_detail_feature_learning_framework_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2025_machine_learning_2405.19695v2_distribution_aligned_semantics_adaption_for_lifelong_person_re_identification.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2026_pattern_recognition_2512.03745v2_dual_level_modality_debiasing_learning_for_unsupervised_visible_infrared_person_re_identification.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2025_icme_2308.02738v2_exploring_part_informed_visual_language_learning_for_person_re_identification.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2025_tnnls_2207.08387v2_a_semantic_aware_attention_and_visual_shielding_network_for_cloth_changing_person_re_identification.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2025_icassp_2409.05642v1_prototype_driven_multi_feature_generation_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2025_icme_2410.13567v3_ccup_a_controllable_synthetic_data_generation_pipeline_for_pretraining_cloth_changing_person_re_identification.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2025_icassp_2405.16597v2_content_and_salient_semantics_collaboration_for_cloth_changing_person_re_identification.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2025_tnnls_2403.16003v2_diverse_representations_embedding_for_lifelong_person_re_identification.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2026_ijcai_ecai_2401.15296v3_a_survey_on_3d_skeleton_based_person_re_identification_taxonomy_advances_challenges_and_interdisciplinary_pros.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2026_icassp_2603.01640v2_msp_reid_hairstyle_robust_cloth_changing_person_re_identification.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2026_acm_tomm_2509.13754v2_cross_modal_full_mode_fine_grained_alignment_for_text_to_image_person_retrieval.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2025_ijcai_2509.16635v2_towards_anytime_retrieval_a_benchmark_for_anytime_person_re_identification.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2025_tnnls_2412.08231v1_dynamic_modality_camera_invariant_clustering_for_unsupervised_visible_infrared_person_re_identification.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2026_icassp_2411.18111v2_when_large_vision_language_models_meet_person_re_identification.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2025_ieee_transactions_on_circuits_2504.10084v1_up_person_unified_parameter_efficient_transfer_learning_for_text_based_person_retrieval.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2025_pattern_recognition_2310.17952v3_shape_centered_representation_learning_for_visible_infrared_person_re_identification.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2025_ieee_transactions_on_circuits_2207.11759v2_spatial_temporal_federated_learning_for_lifelong_person_re_identification_on_distributed_edges.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2026_ieee_transactions_on_circuits_2409.19954v4_domain_consistency_representation_learning_for_lifelong_person_re_identification.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2025_ecai_2508.04998v1_attribute_guidance_with_inherent_pseudo_label_for_occluded_person_re_identification.pdf
+../../paper_materials/arxiv_reid_papers/pdfs/2026_pattern_recognition_2412.01345v2_see_what_you_seek_semantic_contextual_integration_for_cloth_changing_person_re_identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Unsupervised person re-identification via camera-aware multi-level label refinement.pdf
+../../../experiments/paper_materials/pdfs_by_title/Distribution aligned semantics adaption for lifelong person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/TIENet - A Tri-Interaction Enhancement Network for Multimodal Person Reidentification.pdf
+../../../experiments/paper_materials/pdfs_by_title/DATE - Dual Asymmetric Textual Embedding guided Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Visible-Infrared Person Re-Identification via Mutual Reinforcement of Prompts and Image Encoders.pdf
+../../../experiments/paper_materials/pdfs_by_title/Diverse Representations Embedding for Lifelong Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Adversarial perturbation and defense for generalizable person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/RMGNet - The Progressive Relationship-Mining Graph Neural Network for Text-to-Image Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Domain Consistency Representation Learning for Lifelong Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Structured Distilled 3D Gait Fields for Clothes-Changing Person Re-Identification in Videos.pdf
+../../../experiments/paper_materials/pdfs_by_title/Coarse-to-Fine Cross-Modality Generation for Enhancing Vehicle Re-Identification with High-Fidelity Synthetic Data.pdf
+../../../experiments/paper_materials/pdfs_by_title/GAE-Net - A gait-assisted enhancement network for video-based person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Unsupervised Person Re-Identification With Diffusion Model via Semantic-Aware Disentanglement Representation Learning.pdf
+../../../experiments/paper_materials/pdfs_by_title/Discovering Multi-Frequency Embedding for Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Heterogeneous Generative Tokens and Distance-Aware Recovery Network for Occluded Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Bidirectional modality information interaction for Visible-Infrared Person Re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Pose-Skeleton Guided Cross-Attention Representation Fusion for Occluded Pedestrian Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Multi-granularity collaborative constraint feature alignment network for unsupervised person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Harnessing Knowledge From Pretrained VLMs for Unsupervised Person Search.pdf
+../../../experiments/paper_materials/pdfs_by_title/Unveiling Local Well-posedness Influence for Cross-modal Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/False Negatives Consensus Suppression for Text-to-Image Person Re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Exploring Part-Informed Visual-Language Learning for Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Uniform Light Transformer for Person Re-identification under Complex Illumination.pdf
+../../../experiments/paper_materials/pdfs_by_title/Generalizable person re-identification method using bi-stream interactive learning with feature reconstruction.pdf
+../../../experiments/paper_materials/pdfs_by_title/4SNet - Spatial and Spectrum Self-adaptive Synergy Network for Visible-Infrared Person Re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Self-Rectification Historical Consistency Learning for Coupled Noisy Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Spectrum-guided feature enhancement network for event person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Stochastic style perturbation modelling for visible-Infrared person re-Identification with severely modality imbalance.pdf
+../../../experiments/paper_materials/pdfs_by_title/Visible-Infrared Person Re-Identification Based on Feature Decoupling and Refinement.pdf
+../../../experiments/paper_materials/pdfs_by_title/UP-Person - Unified Parameter-Efficient Transfer Learning for Text-Based Person Retrieval.pdf
+../../../experiments/paper_materials/pdfs_by_title/A Survey on 3D Skeleton Based Person Re-Identification - Taxonomy, Advances, Challenges, and Interdisciplinary Prospects.pdf
+../../../experiments/paper_materials/pdfs_by_title/Find Hidden Modality Divergence - Adversarial Aware Learning for Unsupervised Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Mutual Distillation Driven Dual-Space Matching for Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Prototype-guided Knowledge Propagation with Adaptive Learning for Lifelong Person Re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Richer Semantics, Better Alignment - Aligning Visual Features with Explicit and Enriched Semantics for Visible-Infrared Person Re-Identification.pdf
+../open_reid_papers/pdfs/2026_ieee_transactions_on_circuits_and_s_openalex_10_1109_tcsvt_2025_3609840_hoh_net_high_order_hierarchical_middle_feature_learning_network_for_visible_infrared_person_re_identification.pdf
+../open_reid_papers/pdfs/2025_cviu_openalex_10_1016_j_cviu_2025_104328_lifelong_visible_infrared_person_re_identification_via_replay_samples_domain_modality_mix_reconstruction_and_c.pdf
+../open_reid_papers/pdfs/2025_ijcai_official_10_24963_ijcai_2025_90_categorical_attention_fine-grained_language-guided_noise_filtering_network_for_occluded_person_re-identification.pdf
+../open_reid_papers/pdfs/2025_ijcai_official_10_24963_ijcai_2025_240_cross-modal_collaborative_representation_learning_for_text-to-image_person_retrieval.pdf
+../open_reid_papers/pdfs/2025_ijcai_official_10_24963_ijcai_2025_104_richer_semantics_better_alignment_aligning_visual_features_with_explicit_and_enriched_semantics_for_visible-infrared_person_re-identific.pdf
+../open_reid_papers/pdfs/2025_ijcai_official_10_24963_ijcai_2025_651_prototype-guided_knowledge_propagation_with_adaptive_learning_for_lifelong_person_re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Adversarial flow-based generative models for visible-to-Infrared person re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Visible-Infrared Person Re-Identification With Real-World Label Noise.pdf
+../../../experiments/paper_materials/pdfs_by_title/Unsupervised Lifelong Person Re-Identification via Affinity Harmonization.pdf
+../../../experiments/paper_materials/pdfs_by_title/Context-Aided Semantic-Aware Self-Alignment for Video-Based Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Categorical Attention - Fine-grained Language-guided Noise Filtering Network for Occluded Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/CFPER - Coarse-to-Fine Part-Experts Retrieval for Efficient Person Re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Cross-Modal Full-Mode Fine-Grained Alignment for Text-to-Image Person Retrieval [2026 ACM TOMM acm_browser_subscription].pdf
+../../../experiments/paper_materials/pdfs_by_title/Multi-year long-term person re-identification using gait and HAR features.pdf
+../../../experiments/paper_materials/pdfs_by_title/Dynamic Modality-Camera-Invariant Clustering for Unsupervised Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Multi-Scale Dynamic Fusion for Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Corruption-Invariant Person Re-Identification via Coarse-to-Fine Feature Alignment.pdf
+../../../experiments/paper_materials/pdfs_by_title/Multi Queue for Unsupervised Person Re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Interactive Sketch-Based Person Re-Identification with Text Feedback.pdf
+../../../experiments/paper_materials/pdfs_by_title/Camera-aware graph multi-domain adaptive learning for unsupervised person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Lifelong visible-infrared person re-identification via replay samples domain-modality-mix reconstruction and cross-domain cognitive network.pdf
+../../../experiments/paper_materials/pdfs_by_title/Causal Clothes-Invariant Feature Learning for Cloth-Changing Person Re-ID.pdf
+../../../experiments/paper_materials/pdfs_by_title/Channel-aware feature mining network for Visible-Infrared Person Re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/3D-Aided Pedestrian Representation Learning for Video-Based Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Global aggregated gradient-guided adversarial attacks for person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Dual-level modality debiasing learning for unsupervised visible-infrared person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Probabilistic Distribution Alignment for Text-Based Person Retrieval.pdf
+../../../experiments/paper_materials/pdfs_by_title/Towards Anytime Retrieval - A Benchmark for Anytime Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Camera-Proxy Enhanced Identity-Recalibration Learning for Unsupervised Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Dual-Modality-Shared Learning and Label Refinement for Unsupervised Visible-Infrared Person ReID.pdf
+../../../experiments/paper_materials/pdfs_by_title/Part-Based Feature Complementary Denoising for Unsupervised Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Hierarchical fusion and local-aware transformer for occluded person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Optimal Proxy Mining Contrastive Network for Unsupervised Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/InfinitePerson - Innovating Synthetic Data Creation for Generalization Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/TP-LReID - Lifelong person re-identification using text prompts.pdf
+../../../experiments/paper_materials/pdfs_by_title/Adaptive Occlusion-Aware Network for Occluded Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/UP-Person - Unified Parameter-Efficient Transfer Learning for Text-Based Person Retrieval.pdf
+../../paper_materials/pdfs_by_title/A Survey on 3D Skeleton Based Person Re-Identification - Taxonomy, Advances, Challenges, and Interdisciplinary Prospects.pdf
+../../paper_materials/pdfs_by_title/Find Hidden Modality Divergence - Adversarial Aware Learning for Unsupervised Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/4SNet - Spatial and Spectrum Self-adaptive Synergy Network for Visible-Infrared Person Re-identification.pdf
+../../paper_materials/pdfs_by_title/Self-Rectification Historical Consistency Learning for Coupled Noisy Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Spectrum-guided feature enhancement network for event person re-identification.pdf
+../../paper_materials/pdfs_by_title/Stochastic style perturbation modelling for visible-Infrared person re-Identification with severely modality imbalance.pdf
+../../paper_materials/pdfs_by_title/Visible-Infrared Person Re-Identification Based on Feature Decoupling and Refinement.pdf
+../../paper_materials/pdfs_by_title/Bidirectional modality information interaction for Visible-Infrared Person Re-identification.pdf
+../../paper_materials/pdfs_by_title/Pose-Skeleton Guided Cross-Attention Representation Fusion for Occluded Pedestrian Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Multi-granularity collaborative constraint feature alignment network for unsupervised person re-identification.pdf
+../../paper_materials/pdfs_by_title/Harnessing Knowledge From Pretrained VLMs for Unsupervised Person Search.pdf
+../../paper_materials/pdfs_by_title/Unveiling Local Well-posedness Influence for Cross-modal Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/False Negatives Consensus Suppression for Text-to-Image Person Re-identification.pdf
+../../paper_materials/pdfs_by_title/Exploring Part-Informed Visual-Language Learning for Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Uniform Light Transformer for Person Re-identification under Complex Illumination.pdf
+../../paper_materials/pdfs_by_title/Generalizable person re-identification method using bi-stream interactive learning with feature reconstruction.pdf
+../../paper_materials/pdfs_by_title/Unsupervised person re-identification via camera-aware multi-level label refinement.pdf
+../../paper_materials/pdfs_by_title/Distribution aligned semantics adaption for lifelong person re-identification.pdf
+../../paper_materials/pdfs_by_title/TIENet - A Tri-Interaction Enhancement Network for Multimodal Person Reidentification.pdf
+../../paper_materials/pdfs_by_title/DATE - Dual Asymmetric Textual Embedding guided Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Visible-Infrared Person Re-Identification via Mutual Reinforcement of Prompts and Image Encoders.pdf
+../../paper_materials/pdfs_by_title/Diverse Representations Embedding for Lifelong Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Adversarial perturbation and defense for generalizable person re-identification.pdf
+../../paper_materials/pdfs_by_title/RMGNet - The Progressive Relationship-Mining Graph Neural Network for Text-to-Image Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Domain Consistency Representation Learning for Lifelong Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Structured Distilled 3D Gait Fields for Clothes-Changing Person Re-Identification in Videos.pdf
+../../paper_materials/pdfs_by_title/Coarse-to-Fine Cross-Modality Generation for Enhancing Vehicle Re-Identification with High-Fidelity Synthetic Data.pdf
+../../paper_materials/pdfs_by_title/GAE-Net - A gait-assisted enhancement network for video-based person re-identification.pdf
+../../paper_materials/pdfs_by_title/Unsupervised Person Re-Identification With Diffusion Model via Semantic-Aware Disentanglement Representation Learning.pdf
+../../paper_materials/pdfs_by_title/Discovering Multi-Frequency Embedding for Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Heterogeneous Generative Tokens and Distance-Aware Recovery Network for Occluded Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Visible-Infrared Person Re-Identification With Real-World Label Noise.pdf
+../../paper_materials/pdfs_by_title/Unsupervised Lifelong Person Re-Identification via Affinity Harmonization.pdf
+../../paper_materials/pdfs_by_title/Context-Aided Semantic-Aware Self-Alignment for Video-Based Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Categorical Attention - Fine-grained Language-guided Noise Filtering Network for Occluded Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/CFPER - Coarse-to-Fine Part-Experts Retrieval for Efficient Person Re-identification.pdf
+../../paper_materials/pdfs_by_title/Cross-Modal Full-Mode Fine-Grained Alignment for Text-to-Image Person Retrieval [2026 ACM TOMM acm_browser_subscription].pdf
+../../paper_materials/pdfs_by_title/Multi-year long-term person re-identification using gait and HAR features.pdf
+../../paper_materials/pdfs_by_title/Dynamic Modality-Camera-Invariant Clustering for Unsupervised Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Multi-Scale Dynamic Fusion for Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Corruption-Invariant Person Re-Identification via Coarse-to-Fine Feature Alignment.pdf
+../../paper_materials/pdfs_by_title/Multi Queue for Unsupervised Person Re-identification.pdf
+../../paper_materials/pdfs_by_title/Interactive Sketch-Based Person Re-Identification with Text Feedback.pdf
+../../paper_materials/pdfs_by_title/Camera-aware graph multi-domain adaptive learning for unsupervised person re-identification.pdf
+../../paper_materials/pdfs_by_title/Lifelong visible-infrared person re-identification via replay samples domain-modality-mix reconstruction and cross-domain cognitive network.pdf
+../../paper_materials/pdfs_by_title/Richer Semantics, Better Alignment - Aligning Visual Features with Explicit and Enriched Semantics for Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Prototype-guided Knowledge Propagation with Adaptive Learning for Lifelong Person Re-identification.pdf
+../../paper_materials/pdfs_by_title/Mutual Distillation Driven Dual-Space Matching for Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Channel-aware feature mining network for Visible-Infrared Person Re-identification.pdf
+../../paper_materials/pdfs_by_title/3D-Aided Pedestrian Representation Learning for Video-Based Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Global aggregated gradient-guided adversarial attacks for person re-identification.pdf
+../../paper_materials/pdfs_by_title/Dual-level modality debiasing learning for unsupervised visible-infrared person re-identification.pdf
+../../paper_materials/pdfs_by_title/Probabilistic Distribution Alignment for Text-Based Person Retrieval.pdf
+../../paper_materials/pdfs_by_title/Towards Anytime Retrieval - A Benchmark for Anytime Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Camera-Proxy Enhanced Identity-Recalibration Learning for Unsupervised Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Adversarial flow-based generative models for visible-to-Infrared person re-Identification.pdf
+../../paper_materials/pdfs_by_title/Part-Based Feature Complementary Denoising for Unsupervised Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Hierarchical fusion and local-aware transformer for occluded person re-identification.pdf
+../../paper_materials/pdfs_by_title/Optimal Proxy Mining Contrastive Network for Unsupervised Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Causal Clothes-Invariant Feature Learning for Cloth-Changing Person Re-ID.pdf
+../../paper_materials/pdfs_by_title/TP-LReID - Lifelong person re-identification using text prompts.pdf
+../../paper_materials/pdfs_by_title/Dual-Modality-Shared Learning and Label Refinement for Unsupervised Visible-Infrared Person ReID.pdf
+../../paper_materials/pdfs_by_title/InfinitePerson - Innovating Synthetic Data Creation for Generalization Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Adaptive Occlusion-Aware Network for Occluded Person Re-Identification.pdf
+../../paper_materials/figures/fig2_worst_group_coverage.pdf
+../../paper_materials/figures/fig3_selective_risk_coverage.pdf
+../../paper_materials/figures/fig1_orthogonal_capacity_law.pdf
+../../../experiments/paper_materials/pdfs_by_title/Hierarchical knowledge-guided reasoning for text-based person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Rethinking Joint Optimization in Feature Compression - Insights from Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Beyond geometry - The power of texture in interpretable 3D person ReID.pdf
+../../../experiments/paper_materials/pdfs_by_title/Lifelong person re-identification via dynamically knowledge adaptation and retention.pdf
+../../../experiments/paper_materials/pdfs_by_title/CSGN - CLIP-driven semantic guidance network for Clothes-Changing Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Spatial-Temporal Federated Learning for Lifelong Person Re-Identification on Distributed Edges.pdf
+../../../experiments/paper_materials/pdfs_by_title/Mix-Modality Person Re-Identification - A New and Practical Paradigm [2025 ACM TOMM acm_browser_subscription].pdf
+../../../experiments/paper_materials/pdfs_by_title/Cross-domain person re-identification via learning Heterogeneous Pseudo Labels.pdf
+../../../experiments/paper_materials/pdfs_by_title/GAReID - Grouped and Attentive High-Order Representation Learning for Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/CLIP-Based Camera-Agnostic Feature Learning for Intra-Camera Supervised Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/HPRNet - Human Parsing Reconstruction With Non-Local Multi-Scale Perception Network for Cloth-Changing Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/MoDA - Mixture of Domain Adapters for Parameter-efficient Generalizable Person Re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Unleashing the potential of traditional person re-ID methods to clothes changed scenario via curriculum learning.pdf
+../../../experiments/paper_materials/pdfs_by_title/A2HA - Attribute-aware hierarchical alignment for text-image person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Two-stage knowledge distillation for visible-infrared person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Disentangling Modality and Posture Factors - Memory-Attention and Orthogonal Decomposition for Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/ADA framework for unsupervised domain adaptation person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Optimal Illumination Distance Metrics for Person Re-Identification in Complex Lighting Conditions.pdf
+../../../experiments/paper_materials/pdfs_by_title/Local-Aware Residual Attention Vision Transformer for Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Efficient Lightweight Multi-Source Domain Adaptation for Person Re-ID via Self-paced Meta-Learning.pdf
+../../../experiments/paper_materials/pdfs_by_title/Confidence guided semi-supervised cross-modality person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Similarity Regulation and Calibration Alignment for Weakly Supervised Text-Based Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Hierarchical Proxy Learning for Cloth-Changing Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Improving Text-Based Person Retrieval by Excavating All-Round Information Beyond Color.pdf
+../../../experiments/paper_materials/pdfs_by_title/Occlusion-aware Cross-modality Completion Network for Occluded Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Texture-aware transformer with pose-patch mapping for occluded person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Nearest Neighbor Sample Constraint and ODE Guided Feature Reconstruction for Unsupervised Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Semantic Consistency And Integrity Network For Cloth-changing Person Re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Meta Pairwise Relationship Distillation for Unsupervised Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Attribute Guidance with Inherent Pseudo-Label for Occluded Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Spatial-Temporal High-Frequency Learning for Video-based Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Mix-Modality Person Re-Identification - A New and Practical Paradigm [2025 ACM TOMM arXiv].pdf
+../../../experiments/paper_materials/pdfs_by_title/Focusing on pedestrians like human for clothes changing person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Condense loss - Exploiting vector magnitude during person Re-identification training process.pdf
+../../../experiments/paper_materials/pdfs_by_title/CCFL - Customized Client Federated Learning for Unsupervised Person Re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/FMCNet+ - Feature-Level Modality Compensation for Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/A training-free framework for text-to-image person re-identification via query-prototype matching.pdf
+../../../experiments/paper_materials/pdfs_by_title/HOH-Net - High-Order Hierarchical Middle-Feature Learning Network for Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Identity-aware infrared person image generation and re-identification via controllable diffusion model.pdf
+../../../experiments/paper_materials/pdfs_by_title/FDGReID - Federated Domain Generalization for Person Re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/CycleTrans - Learning Neutral Yet Discriminative Features via Cycle Construction for Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Internal-External Context Interaction Network for Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Learning multi-granularity representation with transformer for visible-infrared person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Lifelong Visible-Infrared Person Re-Identification with Prompt Pool and Instance-level Prompt Generator.pdf
+../../../experiments/paper_materials/pdfs_by_title/Shape-centered representation learning for visible-infrared person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Multi-feature balanced network for clothes-changing person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Dependability Feature Learning Based on Sample Generation for Unsupervised Text-to-Image Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Content and Salient Semantics Collaboration for Cloth-Changing Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/GSTNET - A Geospatial-Temporal Graph Network for Group Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Adaptive transformer with Pyramid Fusion for cloth-changing Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/ColorSketchNet - Unifying color, sketch and texture for modality-agnostic multi-modal person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Deep intelligent technique for person Re-identification system in surveillance images.pdf
+../../../experiments/paper_materials/pdfs_by_title/Cross-modal Collaborative Representation Learning for Text-to-Image Person Retrieval.pdf
+../../../experiments/paper_materials/pdfs_by_title/CVAF - A CLIP-Based View-Consistent Alignment Framework for Aerial-Ground Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Learning From Yourself to Others for Unsupervised Visible-Infrared Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/A Semantic-Aware Attention and Visual Shielding Network for Cloth-Changing Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Learning Visual-Semantic Embedding for Generalizable Person Re-Identification - A Unified Perspective.pdf
+../../../experiments/paper_materials/pdfs_by_title/Mask-Aware Hierarchical Aggregation Transformer for Occluded Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Unsupervised Visible-Infrared Person ReID via Modality-Camera Balance Label Refinement.pdf
+../../../experiments/paper_materials/pdfs_by_title/See what you seek - Semantic contextual integration for cloth-changing person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/CLIP-powered modality centering with spiral training for visible-infrared person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Latent Diffusion-Guided Feature Inpainting for Occluded Person Re-Identification With Hybrid Re-Ranking.pdf
+../../../experiments/paper_materials/pdfs_by_title/Multi-Granularity Attribute Prompt Learning for Cloth-Changing Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Text-to-image Person Search based on Semantic Reorganization.pdf
+../../../experiments/paper_materials/pdfs_by_title/Memory-augmented shuffled meta learning for visible-infrared person re-identification.pdf
+../arxiv_reid_papers/pdfs/2025_icassp_2501.05851v1_identity_aware_feature_decoupling_learning_for_clothing_change_person_re_identification.pdf
+../arxiv_reid_papers/pdfs/2025_acm_tomm_2412.04719v1_mix_modality_person_re_identification_a_new_and_practical_paradigm.pdf
+../arxiv_reid_papers/pdfs/2025_ijcai_2505.03286v1_base_detail_feature_learning_framework_for_visible_infrared_person_re_identification.pdf
+../arxiv_reid_papers/pdfs/2025_machine_learning_2405.19695v2_distribution_aligned_semantics_adaption_for_lifelong_person_re_identification.pdf
+../arxiv_reid_papers/pdfs/2026_pattern_recognition_2512.03745v2_dual_level_modality_debiasing_learning_for_unsupervised_visible_infrared_person_re_identification.pdf
+../arxiv_reid_papers/pdfs/2025_icme_2308.02738v2_exploring_part_informed_visual_language_learning_for_person_re_identification.pdf
+../arxiv_reid_papers/pdfs/2025_tnnls_2207.08387v2_a_semantic_aware_attention_and_visual_shielding_network_for_cloth_changing_person_re_identification.pdf
+../arxiv_reid_papers/pdfs/2025_icassp_2409.05642v1_prototype_driven_multi_feature_generation_for_visible_infrared_person_re_identification.pdf
+../arxiv_reid_papers/pdfs/2025_icme_2410.13567v3_ccup_a_controllable_synthetic_data_generation_pipeline_for_pretraining_cloth_changing_person_re_identification.pdf
+../arxiv_reid_papers/pdfs/2025_icassp_2405.16597v2_content_and_salient_semantics_collaboration_for_cloth_changing_person_re_identification.pdf
+../arxiv_reid_papers/pdfs/2025_tnnls_2403.16003v2_diverse_representations_embedding_for_lifelong_person_re_identification.pdf
+../arxiv_reid_papers/pdfs/2026_ijcai_ecai_2401.15296v3_a_survey_on_3d_skeleton_based_person_re_identification_taxonomy_advances_challenges_and_interdisciplinary_pros.pdf
+../arxiv_reid_papers/pdfs/2026_icassp_2603.01640v2_msp_reid_hairstyle_robust_cloth_changing_person_re_identification.pdf
+../arxiv_reid_papers/pdfs/2026_acm_tomm_2509.13754v2_cross_modal_full_mode_fine_grained_alignment_for_text_to_image_person_retrieval.pdf
+../arxiv_reid_papers/pdfs/2025_ijcai_2509.16635v2_towards_anytime_retrieval_a_benchmark_for_anytime_person_re_identification.pdf
+../arxiv_reid_papers/pdfs/2025_tnnls_2412.08231v1_dynamic_modality_camera_invariant_clustering_for_unsupervised_visible_infrared_person_re_identification.pdf
+../arxiv_reid_papers/pdfs/2026_icassp_2411.18111v2_when_large_vision_language_models_meet_person_re_identification.pdf
+../arxiv_reid_papers/pdfs/2025_ieee_transactions_on_circuits_2504.10084v1_up_person_unified_parameter_efficient_transfer_learning_for_text_based_person_retrieval.pdf
+../arxiv_reid_papers/pdfs/2025_pattern_recognition_2310.17952v3_shape_centered_representation_learning_for_visible_infrared_person_re_identification.pdf
+../arxiv_reid_papers/pdfs/2025_ieee_transactions_on_circuits_2207.11759v2_spatial_temporal_federated_learning_for_lifelong_person_re_identification_on_distributed_edges.pdf
+../arxiv_reid_papers/pdfs/2026_ieee_transactions_on_circuits_2409.19954v4_domain_consistency_representation_learning_for_lifelong_person_re_identification.pdf
+../arxiv_reid_papers/pdfs/2025_ecai_2508.04998v1_attribute_guidance_with_inherent_pseudo_label_for_occluded_person_re_identification.pdf
+../arxiv_reid_papers/pdfs/2026_pattern_recognition_2412.01345v2_see_what_you_seek_semantic_contextual_integration_for_cloth_changing_person_re_identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Privacy preserving person re-identification via anonymizing diffusion model.pdf
+../../../experiments/paper_materials/pdfs_by_title/RMPSNet - Occluded person re-identification via regional masking and prompt-distribution synergy.pdf
+../../../experiments/paper_materials/pdfs_by_title/Dynamic Token Selective Transformer for Aerial-Ground Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/UAV-based person re-identification - A survey of UAV datasets, approaches, and challenges.pdf
+../../../experiments/paper_materials/pdfs_by_title/Semantic Alignment and Hard Sample Retraining for Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/ESTI - An Efficient Spatial-Temporal Interaction Network For Video-Based Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Adaptive Pseudo-Label Purification and Debiasing for Unsupervised Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Attribute Conditional Diffusion-Augmented Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Spatio-temporal Feature-level Augmentation Vision Transformer for video-based person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Multi-Granularity Dynamic Hierarchical Graphs for Video-Based Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/When Large Vision-Language Models Meet Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/DIRL - Learning Discriminative ID-Related Representations for Video Visible-Infrared Person ReID.pdf
+../../../experiments/paper_materials/pdfs_by_title/SPCL - Semantic Polymorphism and Commonality Learning for Text-Based Person Retrieval.pdf
+../../../experiments/paper_materials/pdfs_by_title/CCUP - A Controllable Synthetic Data Generation Pipeline for Pretraining Cloth-Changing Person Re-Identification Models.pdf
+../../../experiments/paper_materials/pdfs_by_title/A Semantic-guided occlusion simulation based local feature semantic expansion network for person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Multi-Model Synergy Perception for Open-World Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Prototype-Driven Multi-Feature Generation for Visible-Infrared Person Re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Cloth-debiasing with Stable Diffusion in Cloth-changing Person Re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Occluded person Re-Identification with noise injection.pdf
+../../../experiments/paper_materials/pdfs_by_title/Identity-aware Feature Decoupling Learning for Clothing-change Person Re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Robust mixed-degradation person Re-identification via structural consistency distillation.pdf
+../../../experiments/paper_materials/pdfs_by_title/DiverseReID - Towards generalizable person re-identification via Dynamic Style Hallucination and decoupled domain experts.pdf
+../../../experiments/paper_materials/pdfs_by_title/Bridging the gap - Learning adaptive knowledge transition for lifelong person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/MSP-ReID - Hairstyle-Robust Cloth-Changing Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Text-Guided Cross-Modal Alignment with Attribute and Contour Prototypes for Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/CLIP-driven fine-grained mining for text-based person search.pdf
+../../../experiments/paper_materials/pdfs_by_title/'Knowledge and experience' for visible-infrared person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Enhancing Visible-Infrared Person Re-Identification With Modality- and Instance-Aware Adaptation Learning.pdf
+../../../experiments/paper_materials/pdfs_by_title/Dynamic adaptive multi-view contrastive learning for unsupervised person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Cross-modality average precision optimization for visible thermal person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/CMAG - Cross-Modal Attention and Graph-Enhanced Memory for Unsupervised Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Multi-Branch Clothes-Agnostic Feature Learning for Cloth-Changing Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Base-Detail Feature Learning Framework for Visible-Infrared Person Re-Identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/CLNS - Camera-aware label noise suppression for unsupervised visible-infrared person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/Cross-Modal Full-Mode Fine-Grained Alignment for Text-to-Image Person Retrieval [2026 ACM TOMM arXiv].pdf
+../../../experiments/paper_materials/pdfs_by_title/Instant pose extraction based on mask transformer for occluded person re-identification.pdf
+../../../experiments/paper_materials/pdfs_by_title/FLAG - A Framework With Explicit Learning Based on Appearance and Gait for Video-Based Clothes-Changing Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Confidence guided semi-supervised cross-modality person re-identification.pdf
+../../paper_materials/pdfs_by_title/Similarity Regulation and Calibration Alignment for Weakly Supervised Text-Based Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Hierarchical Proxy Learning for Cloth-Changing Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Hierarchical knowledge-guided reasoning for text-based person re-identification.pdf
+../../paper_materials/pdfs_by_title/Rethinking Joint Optimization in Feature Compression - Insights from Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Beyond geometry - The power of texture in interpretable 3D person ReID.pdf
+../../paper_materials/pdfs_by_title/Lifelong person re-identification via dynamically knowledge adaptation and retention.pdf
+../../paper_materials/pdfs_by_title/CSGN - CLIP-driven semantic guidance network for Clothes-Changing Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Spatial-Temporal Federated Learning for Lifelong Person Re-Identification on Distributed Edges.pdf
+../../paper_materials/pdfs_by_title/Mix-Modality Person Re-Identification - A New and Practical Paradigm [2025 ACM TOMM acm_browser_subscription].pdf
+../../paper_materials/pdfs_by_title/Cross-domain person re-identification via learning Heterogeneous Pseudo Labels.pdf
+../../paper_materials/pdfs_by_title/GAReID - Grouped and Attentive High-Order Representation Learning for Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/CLIP-Based Camera-Agnostic Feature Learning for Intra-Camera Supervised Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/HPRNet - Human Parsing Reconstruction With Non-Local Multi-Scale Perception Network for Cloth-Changing Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/MoDA - Mixture of Domain Adapters for Parameter-efficient Generalizable Person Re-identification.pdf
+../../paper_materials/pdfs_by_title/Occlusion-aware Cross-modality Completion Network for Occluded Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Texture-aware transformer with pose-patch mapping for occluded person re-identification.pdf
+../../paper_materials/pdfs_by_title/Nearest Neighbor Sample Constraint and ODE Guided Feature Reconstruction for Unsupervised Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Semantic Consistency And Integrity Network For Cloth-changing Person Re-identification.pdf
+../../paper_materials/pdfs_by_title/Meta Pairwise Relationship Distillation for Unsupervised Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Unleashing the potential of traditional person re-ID methods to clothes changed scenario via curriculum learning.pdf
+../../paper_materials/pdfs_by_title/A2HA - Attribute-aware hierarchical alignment for text-image person re-identification.pdf
+../../paper_materials/pdfs_by_title/Two-stage knowledge distillation for visible-infrared person re-identification.pdf
+../../paper_materials/pdfs_by_title/Disentangling Modality and Posture Factors - Memory-Attention and Orthogonal Decomposition for Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/ADA framework for unsupervised domain adaptation person re-identification.pdf
+../../paper_materials/pdfs_by_title/Optimal Illumination Distance Metrics for Person Re-Identification in Complex Lighting Conditions.pdf
+../../paper_materials/pdfs_by_title/Local-Aware Residual Attention Vision Transformer for Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Efficient Lightweight Multi-Source Domain Adaptation for Person Re-ID via Self-paced Meta-Learning.pdf
+../../paper_materials/pdfs_by_title/CCFL - Customized Client Federated Learning for Unsupervised Person Re-identification.pdf
+../../paper_materials/pdfs_by_title/FMCNet+ - Feature-Level Modality Compensation for Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Spatial-Temporal High-Frequency Learning for Video-based Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Focusing on pedestrians like human for clothes changing person re-identification.pdf
+../../paper_materials/pdfs_by_title/Attribute Guidance with Inherent Pseudo-Label for Occluded Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Mix-Modality Person Re-Identification - A New and Practical Paradigm [2025 ACM TOMM arXiv].pdf
+../../paper_materials/pdfs_by_title/Condense loss - Exploiting vector magnitude during person Re-identification training process.pdf
+../../paper_materials/pdfs_by_title/Improving Text-Based Person Retrieval by Excavating All-Round Information Beyond Color.pdf
+../../paper_materials/pdfs_by_title/FDGReID - Federated Domain Generalization for Person Re-identification.pdf
+../../paper_materials/pdfs_by_title/Identity-aware infrared person image generation and re-identification via controllable diffusion model.pdf
+../../paper_materials/pdfs_by_title/HOH-Net - High-Order Hierarchical Middle-Feature Learning Network for Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/A training-free framework for text-to-image person re-identification via query-prototype matching.pdf
+../../paper_materials/pdfs_by_title/Deep intelligent technique for person Re-identification system in surveillance images.pdf
+../../paper_materials/pdfs_by_title/Cross-modal Collaborative Representation Learning for Text-to-Image Person Retrieval.pdf
+../../paper_materials/pdfs_by_title/Adaptive transformer with Pyramid Fusion for cloth-changing Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/ColorSketchNet - Unifying color, sketch and texture for modality-agnostic multi-modal person re-identification.pdf
+../../paper_materials/pdfs_by_title/GSTNET - A Geospatial-Temporal Graph Network for Group Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Content and Salient Semantics Collaboration for Cloth-Changing Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Dependability Feature Learning Based on Sample Generation for Unsupervised Text-to-Image Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Privacy preserving person re-identification via anonymizing diffusion model.pdf
+../../paper_materials/pdfs_by_title/RMPSNet - Occluded person re-identification via regional masking and prompt-distribution synergy.pdf
+../../paper_materials/pdfs_by_title/Dynamic Token Selective Transformer for Aerial-Ground Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/UAV-based person re-identification - A survey of UAV datasets, approaches, and challenges.pdf
+../../paper_materials/pdfs_by_title/Semantic Alignment and Hard Sample Retraining for Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/ESTI - An Efficient Spatial-Temporal Interaction Network For Video-Based Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Adaptive Pseudo-Label Purification and Debiasing for Unsupervised Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Attribute Conditional Diffusion-Augmented Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Spatio-temporal Feature-level Augmentation Vision Transformer for video-based person re-identification.pdf
+../../paper_materials/pdfs_by_title/Multi-Granularity Dynamic Hierarchical Graphs for Video-Based Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/When Large Vision-Language Models Meet Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/DIRL - Learning Discriminative ID-Related Representations for Video Visible-Infrared Person ReID.pdf
+../../paper_materials/pdfs_by_title/SPCL - Semantic Polymorphism and Commonality Learning for Text-Based Person Retrieval.pdf
+../../paper_materials/pdfs_by_title/CCUP - A Controllable Synthetic Data Generation Pipeline for Pretraining Cloth-Changing Person Re-Identification Models.pdf
+../../paper_materials/pdfs_by_title/A Semantic-guided occlusion simulation based local feature semantic expansion network for person re-identification.pdf
+../../paper_materials/pdfs_by_title/Multi-Model Synergy Perception for Open-World Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Prototype-Driven Multi-Feature Generation for Visible-Infrared Person Re-identification.pdf
+../../paper_materials/pdfs_by_title/Cloth-debiasing with Stable Diffusion in Cloth-changing Person Re-identification.pdf
+../../paper_materials/pdfs_by_title/Occluded person Re-Identification with noise injection.pdf
+../../paper_materials/pdfs_by_title/Identity-aware Feature Decoupling Learning for Clothing-change Person Re-identification.pdf
+../../paper_materials/pdfs_by_title/Robust mixed-degradation person Re-identification via structural consistency distillation.pdf
+../../paper_materials/pdfs_by_title/DiverseReID - Towards generalizable person re-identification via Dynamic Style Hallucination and decoupled domain experts.pdf
+../../paper_materials/pdfs_by_title/Bridging the gap - Learning adaptive knowledge transition for lifelong person re-identification.pdf
+../../paper_materials/pdfs_by_title/MSP-ReID - Hairstyle-Robust Cloth-Changing Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Text-Guided Cross-Modal Alignment with Attribute and Contour Prototypes for Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/CLIP-driven fine-grained mining for text-based person search.pdf
+../../paper_materials/pdfs_by_title/'Knowledge and experience' for visible-infrared person re-identification.pdf
+../../paper_materials/pdfs_by_title/Enhancing Visible-Infrared Person Re-Identification With Modality- and Instance-Aware Adaptation Learning.pdf
+../../paper_materials/pdfs_by_title/Dynamic adaptive multi-view contrastive learning for unsupervised person re-identification.pdf
+../../paper_materials/pdfs_by_title/Cross-modality average precision optimization for visible thermal person re-identification.pdf
+../../paper_materials/pdfs_by_title/CMAG - Cross-Modal Attention and Graph-Enhanced Memory for Unsupervised Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Multi-Branch Clothes-Agnostic Feature Learning for Cloth-Changing Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Base-Detail Feature Learning Framework for Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/CLNS - Camera-aware label noise suppression for unsupervised visible-infrared person re-identification.pdf
+../../paper_materials/pdfs_by_title/Cross-Modal Full-Mode Fine-Grained Alignment for Text-to-Image Person Retrieval [2026 ACM TOMM arXiv].pdf
+../../paper_materials/pdfs_by_title/Instant pose extraction based on mask transformer for occluded person re-identification.pdf
+../../paper_materials/pdfs_by_title/FLAG - A Framework With Explicit Learning Based on Appearance and Gait for Video-Based Clothes-Changing Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Memory-augmented shuffled meta learning for visible-infrared person re-identification.pdf
+../../paper_materials/pdfs_by_title/Multi-Granularity Attribute Prompt Learning for Cloth-Changing Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Text-to-image Person Search based on Semantic Reorganization.pdf
+../../paper_materials/pdfs_by_title/See what you seek - Semantic contextual integration for cloth-changing person re-identification.pdf
+../../paper_materials/pdfs_by_title/CLIP-powered modality centering with spiral training for visible-infrared person re-identification.pdf
+../../paper_materials/pdfs_by_title/Latent Diffusion-Guided Feature Inpainting for Occluded Person Re-Identification With Hybrid Re-Ranking.pdf
+../../paper_materials/pdfs_by_title/CVAF - A CLIP-Based View-Consistent Alignment Framework for Aerial-Ground Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Learning From Yourself to Others for Unsupervised Visible-Infrared Re-Identification.pdf
+../../paper_materials/pdfs_by_title/A Semantic-Aware Attention and Visual Shielding Network for Cloth-Changing Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Learning Visual-Semantic Embedding for Generalizable Person Re-Identification - A Unified Perspective.pdf
+../../paper_materials/pdfs_by_title/Mask-Aware Hierarchical Aggregation Transformer for Occluded Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Unsupervised Visible-Infrared Person ReID via Modality-Camera Balance Label Refinement.pdf
+../../paper_materials/pdfs_by_title/CycleTrans - Learning Neutral Yet Discriminative Features via Cycle Construction for Visible-Infrared Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Internal-External Context Interaction Network for Person Re-Identification.pdf
+../../paper_materials/pdfs_by_title/Learning multi-granularity representation with transformer for visible-infrared person re-identification.pdf
+../../paper_materials/pdfs_by_title/Lifelong Visible-Infrared Person Re-Identification with Prompt Pool and Instance-level Prompt Generator.pdf
+../../paper_materials/pdfs_by_title/Shape-centered representation learning for visible-infrared person re-identification.pdf
+../../paper_materials/pdfs_by_title/Multi-feature balanced network for clothes-changing person re-identification.pdf
+../pdfs_by_title/UP-Person - Unified Parameter-Efficient Transfer Learning for Text-Based Person Retrieval.pdf
+../pdfs_by_title/A Survey on 3D Skeleton Based Person Re-Identification - Taxonomy, Advances, Challenges, and Interdisciplinary Prospects.pdf
+../pdfs_by_title/Find Hidden Modality Divergence - Adversarial Aware Learning for Unsupervised Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/4SNet - Spatial and Spectrum Self-adaptive Synergy Network for Visible-Infrared Person Re-identification.pdf
+../pdfs_by_title/Self-Rectification Historical Consistency Learning for Coupled Noisy Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/Spectrum-guided feature enhancement network for event person re-identification.pdf
+../pdfs_by_title/Stochastic style perturbation modelling for visible-Infrared person re-Identification with severely modality imbalance.pdf
+../pdfs_by_title/Visible-Infrared Person Re-Identification Based on Feature Decoupling and Refinement.pdf
+../pdfs_by_title/Bidirectional modality information interaction for Visible-Infrared Person Re-identification.pdf
+../pdfs_by_title/Pose-Skeleton Guided Cross-Attention Representation Fusion for Occluded Pedestrian Re-Identification.pdf
+../pdfs_by_title/Multi-granularity collaborative constraint feature alignment network for unsupervised person re-identification.pdf
+../pdfs_by_title/Harnessing Knowledge From Pretrained VLMs for Unsupervised Person Search.pdf
+../pdfs_by_title/Unveiling Local Well-posedness Influence for Cross-modal Person Re-Identification.pdf
+../pdfs_by_title/False Negatives Consensus Suppression for Text-to-Image Person Re-identification.pdf
+../pdfs_by_title/Exploring Part-Informed Visual-Language Learning for Person Re-Identification.pdf
+../pdfs_by_title/Uniform Light Transformer for Person Re-identification under Complex Illumination.pdf
+../pdfs_by_title/Generalizable person re-identification method using bi-stream interactive learning with feature reconstruction.pdf
+../pdfs_by_title/Unsupervised person re-identification via camera-aware multi-level label refinement.pdf
+../pdfs_by_title/Distribution aligned semantics adaption for lifelong person re-identification.pdf
+../pdfs_by_title/TIENet - A Tri-Interaction Enhancement Network for Multimodal Person Reidentification.pdf
+../pdfs_by_title/DATE - Dual Asymmetric Textual Embedding guided Person Re-Identification.pdf
+../pdfs_by_title/Visible-Infrared Person Re-Identification via Mutual Reinforcement of Prompts and Image Encoders.pdf
+../pdfs_by_title/Diverse Representations Embedding for Lifelong Person Re-Identification.pdf
+../pdfs_by_title/Adversarial perturbation and defense for generalizable person re-identification.pdf
+../pdfs_by_title/RMGNet - The Progressive Relationship-Mining Graph Neural Network for Text-to-Image Person Re-Identification.pdf
+../pdfs_by_title/Domain Consistency Representation Learning for Lifelong Person Re-Identification.pdf
+../pdfs_by_title/Structured Distilled 3D Gait Fields for Clothes-Changing Person Re-Identification in Videos.pdf
+../pdfs_by_title/Coarse-to-Fine Cross-Modality Generation for Enhancing Vehicle Re-Identification with High-Fidelity Synthetic Data.pdf
+../pdfs_by_title/GAE-Net - A gait-assisted enhancement network for video-based person re-identification.pdf
+../pdfs_by_title/Unsupervised Person Re-Identification With Diffusion Model via Semantic-Aware Disentanglement Representation Learning.pdf
+../pdfs_by_title/Discovering Multi-Frequency Embedding for Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/Heterogeneous Generative Tokens and Distance-Aware Recovery Network for Occluded Person Re-Identification.pdf
+../pdfs_by_title/Visible-Infrared Person Re-Identification With Real-World Label Noise.pdf
+../pdfs_by_title/Unsupervised Lifelong Person Re-Identification via Affinity Harmonization.pdf
+../pdfs_by_title/Context-Aided Semantic-Aware Self-Alignment for Video-Based Person Re-Identification.pdf
+../pdfs_by_title/Categorical Attention - Fine-grained Language-guided Noise Filtering Network for Occluded Person Re-Identification.pdf
+../pdfs_by_title/CFPER - Coarse-to-Fine Part-Experts Retrieval for Efficient Person Re-identification.pdf
+../pdfs_by_title/Cross-Modal Full-Mode Fine-Grained Alignment for Text-to-Image Person Retrieval [2026 ACM TOMM acm_browser_subscription].pdf
+../pdfs_by_title/Multi-year long-term person re-identification using gait and HAR features.pdf
+../pdfs_by_title/Dynamic Modality-Camera-Invariant Clustering for Unsupervised Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/Multi-Scale Dynamic Fusion for Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/Corruption-Invariant Person Re-Identification via Coarse-to-Fine Feature Alignment.pdf
+../pdfs_by_title/Multi Queue for Unsupervised Person Re-identification.pdf
+../pdfs_by_title/Interactive Sketch-Based Person Re-Identification with Text Feedback.pdf
+../pdfs_by_title/Camera-aware graph multi-domain adaptive learning for unsupervised person re-identification.pdf
+../pdfs_by_title/Lifelong visible-infrared person re-identification via replay samples domain-modality-mix reconstruction and cross-domain cognitive network.pdf
+../pdfs_by_title/Richer Semantics, Better Alignment - Aligning Visual Features with Explicit and Enriched Semantics for Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/Prototype-guided Knowledge Propagation with Adaptive Learning for Lifelong Person Re-identification.pdf
+../pdfs_by_title/Mutual Distillation Driven Dual-Space Matching for Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/Channel-aware feature mining network for Visible-Infrared Person Re-identification.pdf
+../pdfs_by_title/3D-Aided Pedestrian Representation Learning for Video-Based Person Re-Identification.pdf
+../pdfs_by_title/Global aggregated gradient-guided adversarial attacks for person re-identification.pdf
+../pdfs_by_title/Dual-level modality debiasing learning for unsupervised visible-infrared person re-identification.pdf
+../pdfs_by_title/Probabilistic Distribution Alignment for Text-Based Person Retrieval.pdf
+../pdfs_by_title/Towards Anytime Retrieval - A Benchmark for Anytime Person Re-Identification.pdf
+../pdfs_by_title/Camera-Proxy Enhanced Identity-Recalibration Learning for Unsupervised Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/Adversarial flow-based generative models for visible-to-Infrared person re-Identification.pdf
+../pdfs_by_title/Part-Based Feature Complementary Denoising for Unsupervised Person Re-Identification.pdf
+../pdfs_by_title/Hierarchical fusion and local-aware transformer for occluded person re-identification.pdf
+../pdfs_by_title/Optimal Proxy Mining Contrastive Network for Unsupervised Person Re-Identification.pdf
+../pdfs_by_title/Causal Clothes-Invariant Feature Learning for Cloth-Changing Person Re-ID.pdf
+../pdfs_by_title/TP-LReID - Lifelong person re-identification using text prompts.pdf
+../pdfs_by_title/Dual-Modality-Shared Learning and Label Refinement for Unsupervised Visible-Infrared Person ReID.pdf
+../pdfs_by_title/InfinitePerson - Innovating Synthetic Data Creation for Generalization Person Re-Identification.pdf
+../pdfs_by_title/Adaptive Occlusion-Aware Network for Occluded Person Re-Identification.pdf
+../pdfs_by_title/Privacy preserving person re-identification via anonymizing diffusion model.pdf
+../pdfs_by_title/RMPSNet - Occluded person re-identification via regional masking and prompt-distribution synergy.pdf
+../pdfs_by_title/Dynamic Token Selective Transformer for Aerial-Ground Person Re-Identification.pdf
+../pdfs_by_title/UAV-based person re-identification - A survey of UAV datasets, approaches, and challenges.pdf
+../pdfs_by_title/Semantic Alignment and Hard Sample Retraining for Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/ESTI - An Efficient Spatial-Temporal Interaction Network For Video-Based Person Re-Identification.pdf
+../pdfs_by_title/Adaptive Pseudo-Label Purification and Debiasing for Unsupervised Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/Attribute Conditional Diffusion-Augmented Person Re-Identification.pdf
+../pdfs_by_title/Spatio-temporal Feature-level Augmentation Vision Transformer for video-based person re-identification.pdf
+../pdfs_by_title/Multi-Granularity Dynamic Hierarchical Graphs for Video-Based Person Re-Identification.pdf
+../pdfs_by_title/When Large Vision-Language Models Meet Person Re-Identification.pdf
+../pdfs_by_title/DIRL - Learning Discriminative ID-Related Representations for Video Visible-Infrared Person ReID.pdf
+../pdfs_by_title/SPCL - Semantic Polymorphism and Commonality Learning for Text-Based Person Retrieval.pdf
+../pdfs_by_title/CCUP - A Controllable Synthetic Data Generation Pipeline for Pretraining Cloth-Changing Person Re-Identification Models.pdf
+../pdfs_by_title/A Semantic-guided occlusion simulation based local feature semantic expansion network for person re-identification.pdf
+../pdfs_by_title/Multi-Model Synergy Perception for Open-World Person Re-Identification.pdf
+../pdfs_by_title/Prototype-Driven Multi-Feature Generation for Visible-Infrared Person Re-identification.pdf
+../pdfs_by_title/Cloth-debiasing with Stable Diffusion in Cloth-changing Person Re-identification.pdf
+../pdfs_by_title/Occluded person Re-Identification with noise injection.pdf
+../pdfs_by_title/Identity-aware Feature Decoupling Learning for Clothing-change Person Re-identification.pdf
+../pdfs_by_title/Robust mixed-degradation person Re-identification via structural consistency distillation.pdf
+../pdfs_by_title/DiverseReID - Towards generalizable person re-identification via Dynamic Style Hallucination and decoupled domain experts.pdf
+../pdfs_by_title/Bridging the gap - Learning adaptive knowledge transition for lifelong person re-identification.pdf
+../pdfs_by_title/MSP-ReID - Hairstyle-Robust Cloth-Changing Person Re-Identification.pdf
+../pdfs_by_title/Text-Guided Cross-Modal Alignment with Attribute and Contour Prototypes for Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/CLIP-driven fine-grained mining for text-based person search.pdf
+../pdfs_by_title/'Knowledge and experience' for visible-infrared person re-identification.pdf
+../pdfs_by_title/Enhancing Visible-Infrared Person Re-Identification With Modality- and Instance-Aware Adaptation Learning.pdf
+../pdfs_by_title/Dynamic adaptive multi-view contrastive learning for unsupervised person re-identification.pdf
+../pdfs_by_title/Cross-modality average precision optimization for visible thermal person re-identification.pdf
+../pdfs_by_title/CMAG - Cross-Modal Attention and Graph-Enhanced Memory for Unsupervised Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/Multi-Branch Clothes-Agnostic Feature Learning for Cloth-Changing Person Re-Identification.pdf
+../pdfs_by_title/Base-Detail Feature Learning Framework for Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/CLNS - Camera-aware label noise suppression for unsupervised visible-infrared person re-identification.pdf
+../pdfs_by_title/Cross-Modal Full-Mode Fine-Grained Alignment for Text-to-Image Person Retrieval [2026 ACM TOMM arXiv].pdf
+../pdfs_by_title/Instant pose extraction based on mask transformer for occluded person re-identification.pdf
+../pdfs_by_title/FLAG - A Framework With Explicit Learning Based on Appearance and Gait for Video-Based Clothes-Changing Person Re-Identification.pdf
+../pdfs_by_title/Memory-augmented shuffled meta learning for visible-infrared person re-identification.pdf
+../pdfs_by_title/Multi-Granularity Attribute Prompt Learning for Cloth-Changing Person Re-Identification.pdf
+../pdfs_by_title/Text-to-image Person Search based on Semantic Reorganization.pdf
+../pdfs_by_title/See what you seek - Semantic contextual integration for cloth-changing person re-identification.pdf
+../pdfs_by_title/CLIP-powered modality centering with spiral training for visible-infrared person re-identification.pdf
+../pdfs_by_title/Latent Diffusion-Guided Feature Inpainting for Occluded Person Re-Identification With Hybrid Re-Ranking.pdf
+../pdfs_by_title/CVAF - A CLIP-Based View-Consistent Alignment Framework for Aerial-Ground Person Re-Identification.pdf
+../pdfs_by_title/Learning From Yourself to Others for Unsupervised Visible-Infrared Re-Identification.pdf
+../pdfs_by_title/A Semantic-Aware Attention and Visual Shielding Network for Cloth-Changing Person Re-Identification.pdf
+../pdfs_by_title/Learning Visual-Semantic Embedding for Generalizable Person Re-Identification - A Unified Perspective.pdf
+../pdfs_by_title/Mask-Aware Hierarchical Aggregation Transformer for Occluded Person Re-Identification.pdf
+../pdfs_by_title/Unsupervised Visible-Infrared Person ReID via Modality-Camera Balance Label Refinement.pdf
+../pdfs_by_title/CycleTrans - Learning Neutral Yet Discriminative Features via Cycle Construction for Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/Internal-External Context Interaction Network for Person Re-Identification.pdf
+../pdfs_by_title/Learning multi-granularity representation with transformer for visible-infrared person re-identification.pdf
+../pdfs_by_title/Lifelong Visible-Infrared Person Re-Identification with Prompt Pool and Instance-level Prompt Generator.pdf
+../pdfs_by_title/Shape-centered representation learning for visible-infrared person re-identification.pdf
+../pdfs_by_title/Multi-feature balanced network for clothes-changing person re-identification.pdf
+../pdfs_by_title/Dependability Feature Learning Based on Sample Generation for Unsupervised Text-to-Image Person Re-Identification.pdf
+../pdfs_by_title/Content and Salient Semantics Collaboration for Cloth-Changing Person Re-Identification.pdf
+../pdfs_by_title/GSTNET - A Geospatial-Temporal Graph Network for Group Person Re-Identification.pdf
+../pdfs_by_title/Adaptive transformer with Pyramid Fusion for cloth-changing Person Re-Identification.pdf
+../pdfs_by_title/ColorSketchNet - Unifying color, sketch and texture for modality-agnostic multi-modal person re-identification.pdf
+../pdfs_by_title/Deep intelligent technique for person Re-identification system in surveillance images.pdf
+../pdfs_by_title/Cross-modal Collaborative Representation Learning for Text-to-Image Person Retrieval.pdf
+../pdfs_by_title/FDGReID - Federated Domain Generalization for Person Re-identification.pdf
+../pdfs_by_title/Identity-aware infrared person image generation and re-identification via controllable diffusion model.pdf
+../pdfs_by_title/HOH-Net - High-Order Hierarchical Middle-Feature Learning Network for Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/A training-free framework for text-to-image person re-identification via query-prototype matching.pdf
+../pdfs_by_title/CCFL - Customized Client Federated Learning for Unsupervised Person Re-identification.pdf
+../pdfs_by_title/FMCNet+ - Feature-Level Modality Compensation for Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/Spatial-Temporal High-Frequency Learning for Video-based Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/Focusing on pedestrians like human for clothes changing person re-identification.pdf
+../pdfs_by_title/Attribute Guidance with Inherent Pseudo-Label for Occluded Person Re-Identification.pdf
+../pdfs_by_title/Mix-Modality Person Re-Identification - A New and Practical Paradigm [2025 ACM TOMM arXiv].pdf
+../pdfs_by_title/Condense loss - Exploiting vector magnitude during person Re-identification training process.pdf
+../pdfs_by_title/Improving Text-Based Person Retrieval by Excavating All-Round Information Beyond Color.pdf
+../pdfs_by_title/Occlusion-aware Cross-modality Completion Network for Occluded Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/Texture-aware transformer with pose-patch mapping for occluded person re-identification.pdf
+../pdfs_by_title/Nearest Neighbor Sample Constraint and ODE Guided Feature Reconstruction for Unsupervised Person Re-Identification.pdf
+../pdfs_by_title/Semantic Consistency And Integrity Network For Cloth-changing Person Re-identification.pdf
+../pdfs_by_title/Meta Pairwise Relationship Distillation for Unsupervised Person Re-Identification.pdf
+../pdfs_by_title/Unleashing the potential of traditional person re-ID methods to clothes changed scenario via curriculum learning.pdf
+../pdfs_by_title/A2HA - Attribute-aware hierarchical alignment for text-image person re-identification.pdf
+../pdfs_by_title/Two-stage knowledge distillation for visible-infrared person re-identification.pdf
+../pdfs_by_title/Disentangling Modality and Posture Factors - Memory-Attention and Orthogonal Decomposition for Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/ADA framework for unsupervised domain adaptation person re-identification.pdf
+../pdfs_by_title/Optimal Illumination Distance Metrics for Person Re-Identification in Complex Lighting Conditions.pdf
+../pdfs_by_title/Local-Aware Residual Attention Vision Transformer for Visible-Infrared Person Re-Identification.pdf
+../pdfs_by_title/Efficient Lightweight Multi-Source Domain Adaptation for Person Re-ID via Self-paced Meta-Learning.pdf
+../pdfs_by_title/Confidence guided semi-supervised cross-modality person re-identification.pdf
+../pdfs_by_title/Similarity Regulation and Calibration Alignment for Weakly Supervised Text-Based Person Re-Identification.pdf
+../pdfs_by_title/Hierarchical Proxy Learning for Cloth-Changing Person Re-Identification.pdf
+../pdfs_by_title/Hierarchical knowledge-guided reasoning for text-based person re-identification.pdf
+../pdfs_by_title/Rethinking Joint Optimization in Feature Compression - Insights from Person Re-Identification.pdf
+../pdfs_by_title/Beyond geometry - The power of texture in interpretable 3D person ReID.pdf
+../pdfs_by_title/Lifelong person re-identification via dynamically knowledge adaptation and retention.pdf
+../pdfs_by_title/CSGN - CLIP-driven semantic guidance network for Clothes-Changing Person Re-Identification.pdf
+../pdfs_by_title/Spatial-Temporal Federated Learning for Lifelong Person Re-Identification on Distributed Edges.pdf
+../pdfs_by_title/Mix-Modality Person Re-Identification - A New and Practical Paradigm [2025 ACM TOMM acm_browser_subscription].pdf
+../pdfs_by_title/Cross-domain person re-identification via learning Heterogeneous Pseudo Labels.pdf
+../pdfs_by_title/GAReID - Grouped and Attentive High-Order Representation Learning for Person Re-Identification.pdf
+../pdfs_by_title/CLIP-Based Camera-Agnostic Feature Learning for Intra-Camera Supervised Person Re-Identification.pdf
+../pdfs_by_title/HPRNet - Human Parsing Reconstruction With Non-Local Multi-Scale Perception Network for Cloth-Changing Person Re-Identification.pdf
+../pdfs_by_title/MoDA - Mixture of Domain Adapters for Parameter-efficient Generalizable Person Re-identification.pdf
+
+codex
+我已经看到 `GOAL.md`、`CLAUDE.md`、`AGENTS.md` 和 `experiments/STATUS.md` 在父目录可读。下一步先快速读这些规则的关键部分，再逐篇抽取前 3 页。
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "sed -n '1,220p' ../../../GOAL.md" in /Users/abdslm/Desktop/reid-paper/experiments/paper_materials/pdfs_by_title
+ succeeded in 0ms:
+# 当前目标（唯一来源，随时改这里来调方向）
+
+这是 Claude 当前要追的目标。要调整方向，直接改这个文件就行，不用 `/goal clear` 那一套。Claude 每次接手、每个大步骤开始前都会重新读它，以它为准（见 `CLAUDE.md` 第 1 节和第 6 节）。这个文件由用户来写，定的是"做什么"；`experiments/STATUS.md` 由 Claude 来写，记的是"进度到哪"。两者不要混。
+
+## 主目标
+
+做一篇 CCF-B 级别、真正新颖、有效、又讲得清楚的行人重识别工作。
+
+## 现在这一步
+
+自己读文献、做差距分析，提出几个有野心、又确实能做出来的候选方向。每个方向写清楚：它解决的是什么真问题，新机制是什么，打算怎么证明它有效，和最接近的已有工作差在哪里。提完拿给用户挑。先不要开实验。
+
+## 这一步什么时候算完成
+
+提出三到五个候选方向，每个都满足"问题、机制、证据这三条里至少占两条"，并且和最接近的工作区分清楚。和codex或者子代理去讨论之后选择其中一个，才进入写设计文档、做两轮审查、正式训练的环节。
+
+## 不要做的事
+
+- 方向还没定、还没通过对新方向的要求之前，不要开实验。
+- 不要夸大。一个结果，没有同时满足"对新方向的要求、三个种子的均值和标准差、涨幅超过噪声范围、和已有工作区分清楚"这几条，就只能叫"信号"。
+
+## 暂停信号
+
+- 用户说"停"就停。
+- 这个文件的主目标被清空、或者写成"暂停"，就表示当前没有目标，等用户的指示，不要自己找活干。
+
+exec
+/bin/zsh -lc "sed -n '1,180p' /Users/abdslm/.codex/plugins/cache/openai-primary-runtime/pdf/26.622.11653/skills/pdf/SKILL.md" in /Users/abdslm/Desktop/reid-paper/experiments/paper_materials/pdfs_by_title
+ succeeded in 0ms:
+---
+name: "pdf"
+description: "Read, create, inspect, render, and verify PDF files where visual layout matters. Use Poppler rendering plus Python tools such as reportlab, pdfplumber, and pypdf for generation and extraction."
+---
+
+# PDF Skill
+
+## When To Use
+
+- Read or review PDF content where layout and visuals matter.
+- Create PDFs programmatically with reliable formatting.
+- Validate final rendering before delivery.
+
+## Workflow
+
+1. Prefer visual review: render PDF pages to PNGs and inspect them.
+   - Use `pdftoppm` from the bundled runtime or system Poppler when available.
+   - If unavailable, install Poppler or ask the user to review the output locally.
+2. Use `reportlab` to generate PDFs when creating new documents.
+3. Use `pdfplumber` or `pypdf` for text extraction and quick checks; do not rely on text extraction for layout fidelity.
+4. After each meaningful update, re-render pages and verify alignment, spacing, and legibility.
+
+## Temp And Output Conventions
+
+- Use `tmp/pdfs/` for intermediate files; delete them when done.
+- Write final artifacts under `output/pdf/` when working in this repo.
+- Keep filenames stable and descriptive.
+
+## Dependencies
+
+Prefer the Codex bundled workspace/runtime dependencies when available. The primary runtime is expected to include:
+
+- Python packages: `reportlab`, `pdfplumber`, `pypdf`
+- Rendering tools: `pdftoppm` and `pdfinfo` from Poppler
+
+If a dependency is missing, install only what is needed.
+
+Python packages:
+
+```bash
+uv pip install reportlab pdfplumber pypdf
+```
+
+If `uv` is unavailable:
+
+```bash
+python3 -m pip install reportlab pdfplumber pypdf
+```
+
+System tools for rendering:
+
+```bash
+# macOS (Homebrew)
+brew install poppler
+
+# Ubuntu/Debian
+sudo apt-get install -y poppler-utils
+```
+
+If installation is not possible in this environment, tell the user which dependency is missing and how to install it locally.
+
+## Environment
+
+No required environment variables.
+
+## Rendering Command
+
+```bash
+pdftoppm -png "$INPUT_PDF" "$OUTPUT_PREFIX"
+```
+
+## Quality Expectations
+
+- Maintain polished visual design: consistent typography, spacing, margins, and section hierarchy.
+- Avoid rendering issues: clipped text, overlapping elements, broken tables, black squares, or unreadable glyphs.
+- Charts, tables, and images must be sharp, aligned, and clearly labeled.
+- Use ASCII hyphens only. Avoid U+2011 and other Unicode dashes.
+- Citations and references must be human-readable; never leave tool tokens or placeholder strings.
+
+## Final Checks
+
+- Do not deliver until the latest PNG inspection shows zero visual or formatting defects.
+- Confirm headers, footers, page numbering, and section transitions look polished.
+- Keep intermediate files organized or remove them after final approval.
+
+exec
+/bin/zsh -lc "sed -n '1,220p' ../../../CLAUDE.md" in /Users/abdslm/Desktop/reid-paper/experiments/paper_materials/pdfs_by_title
+ succeeded in 0ms:
+# CLAUDE.md · ReID 工作区（reid-paper）
+
+## 0. 这个工作区是什么
+
+这是一个全新的 ReID 研究工作区。目标是做一篇 CCF-B 级别、真正新颖、有效、又能讲清楚的行人重识别工作。具体做哪个子方向（遮挡、标准、跨域、长期等等），自己调研之后再定。
+
+目录说明：
+- `SOLIDER-REID/` 是干净的上游代码（github.com/tinyvision/SOLIDER-REID，版本 8c08e1c）。它只是底子，提供 SOLIDER 预训练权重和 Swin 主干，本身不是创新点。所有方法代码都在这里从零写。
+- `experiments/` 是实验记录，从 exp000 开始编号。
+- `.claude/rules/` 是详细规则，`.claude/hooks/` 是用来强制执行纪律的检查脚本。
+
+## 1. 接手要先做什么（最高优先级）
+
+第一步不是开实验，而是先对齐目标，再放开去调研、把方向定下来。
+
+1. 先读 `GOAL.md`。这是当前目标的唯一来源，由用户来写。用户随时会改它来调整方向，所以每次接手、每个大的步骤开始之前都要重新读一遍，以它为准。它说的是"现在要做什么"，你写的 `experiments/STATUS.md` 记的是"进度到了哪里"，两者不要混。
+2. 读本文件，了解铁律、三条研究纪律、对新方向的要求、以及训练前的审查规矩。
+3. 读 `experiments/STATUS.md`，看现在到了哪一步。
+4. 按 `GOAL.md` 当前的目标，自己读文献、做差距分析：ReID 现在还有哪些没解决好的真问题？最新的工作都在改进什么、又漏掉了什么？形成你自己对"哪里能做出真正新东西"的判断，提出几个有野心、又确实能做出来的候选方向。
+
+方向没想清楚之前，不要开实验。
+
+## 2. 铁律（违反了基本等于白做）
+
+1. 数字只认日志。所有指标都要用代码从日志文件里解析出来，不能凭记忆、凭印象写。
+2. 凡是要写进论文的结论，都要把 seed 0、1、2 三个随机种子都跑一遍，报告均值和标准差。
+3. 正常波动范围：rank1 的差异小于 0.5、mAP 的差异小于 0.4，就算落在噪声范围里，不能算作成果。
+4. 每涨一次点，都要换一个挑刺的角度重新核对一遍，看它是不是噪声、是不是数据泄漏、是不是评测口径前后不一致。
+5. 评测口径是冻结的。要改评测口径，必须先问用户。
+6. 正式训练之前先用很小的规模快跑一遍，确认不会崩、模块确实在起作用。
+7. 做好实验记录（`experiments/decisions.md` 和 `results.md`）。同样的配置加同样的种子，不要重复跑。
+
+永远不要挑随机种子，也不要挑表现最好的那个 epoch，那等于评测作弊。一律上报最后一个 epoch 的结果，不要用 best_model。
+
+## 3. 三条研究纪律（这个项目最容易栽跟头的地方，必须遵守）
+
+第一，判定一个方向"死了"之前，要先定好标准、并且有足够的证据。开始跑之前就把"什么样的结果才算这条路走死了"写进 `design.md`，比如三个种子配上两种配置都落在噪声范围内或者为负。只有一两个负结果的时候，只能写"还需要再试"，不能判定整条方向死掉，更不能据此就推翻方向。一个活跃的方向往往要反复试很多次才出东西，掉几个点很正常，不要一受挫就放弃。
+
+第二，自己写的评测或分析脚本，要先用它复现一个已知的基准成绩，对得上之后才能用它的结果下结论。任何新的评测口径、新的度量、新的评测脚本，都要先拿它跑出一个已知的基线成绩，确认对得上，才能信任它的输出。一个写错的脚本足以把整条方向引到沟里去。
+
+第三，"贡献"是个有门槛的词，不要夸大。一个结果，只有同时满足下面几条，才能叫做贡献、才能说可以投稿：通过了第 4 节对新方向的要求；跑了三个种子、报了均值和标准差；涨幅超过了噪声范围；并且和最接近的已有工作区分得清清楚楚。在那之前，一律只叫它"信号"或"探索"。复现别人的方法、公开别人没公开的基准、做一个分析，这些都不算贡献。
+
+## 4. 一个新方向值不值得做（先过这一关）
+
+ReID 是个活跃领域，每年都在出 B 类甚至 A 类的工作。不要一上来就觉得"能做的都被做完了"，那是错觉。你的任务是放开去找一个真正新颖、有效、又讲得清楚的角度。
+
+一个新方向至少要满足下面三条里的两条，否则不作为主线：
+1. 问题上有新意：不是"加一个模块"，而是重新定义、或者更准确地刻画一个真实存在的问题。
+2. 机制上有新意：是过去的工作没有清楚写出来、而且代码上能实现的机制。
+3. 证据上讲得清：能设计出干净的对照和消融，能回答"它为什么有效"。
+
+另外几条硬要求：
+- 要和最接近的已有工作区分得清清楚楚，不能是换个名字的同一个东西。
+- 方向定下来之前，自己和 codex 或者子代理讨论核实，确认它确实是新的、和最接近的工作区分得清楚。
+- 不能拿测试时的小技巧（重排序、特征归一化、翻转测试这类）当作主要贡献。
+- 不能用"比基线高了零点几"来定义创新。
+
+先把文献读够、把方向选准，再去花算力。要保持不轻易放弃的劲头，但动手之前多花时间读论文、做差距分析。
+
+## 5. 正式训练前的两轮独立审查（改了方法的实验，必须做）
+
+任何改了模型、或者有新设计的实验，在启动训练之前，都要经过两轮互不通气的独立审查：
+- 一轮由 Claude 做：用 Agent 工具起一个 opus 子代理来审。
+- 一轮由 codex 做：用 `codex exec`，内联在 Bash 里跑。
+
+两个审查者互相看不到对方的结论，也不知道这是第几轮、不知道你改了什么。每一轮的结论分别写进 `experiments/expNNN/review-claude.md` 和 `review-codex.md`。
+
+规矩是这样：
+- 只拦实质问题：代码正确性的错误、数据泄漏、评测协议前后不一致、变量没隔离干净、比较不公平。
+- 操作上的、文档上的小问题，记成待办，不拦。
+- 实质问题修好之后必须再审一轮，不能修完就放行。某一轮里两个审查都没有实质问题，才算放行。
+- 纯复现实验（只改随机种子）不用审查，在 `design.md` 里写一行"需要训练前审查：否"就行，检查脚本会放行。
+- 检查脚本 `.claude/hooks/check_design.sh` 会在 train.py 执行前检查：设计文档在不在、两份审查结论是不是都通过。没通过会直接把命令拦下来。
+
+## 6. 一直往下做（只要用户没说停）
+
+默认的工作节奏是：先把方向定下来（读文献），写好 `design.md`，过两轮独立审查，先小规模快跑一遍，再正式后台训练，用 Monitor 跟着日志看，跑完立刻补好文档（results 和 decisions），然后接着做下一个。
+
+- 每个大步骤开始之前都重新读一遍 `GOAL.md`。它变了就马上按新的来，用户是靠改这个文件来调方向的，不一定会打断你。如果 `GOAL.md` 的主目标被清空、或者写成了"暂停"，就停下来等用户，不要自己找活干。
+- GPU 不要空着：要么排下一个实验，要么补文档、读文献、做消融表。
+- 不要频繁问用户。长期自己往下做、自己拿主意；拿不定的先找子代理或者 codex 讨论再定。只有真正只能用户决定的事（改评测口径、大方向的取舍），才打断用户。
+- 用 Monitor 或者后台的 Bash 等待器来跟日志，不要用 sleep 反复轮询。
+- Claude 的额度紧张时，能独立完成的子任务（独立审查、讨论、探索）多交给 codex，省额度。
+
+## 7. 机器和网络
+
+- 你在 Mac 上跑，能联网（GitHub、pip 镜像、HuggingFace 镜像都通）。
+- 服务器只有国内网，装包用清华源，下模型用 hf-mirror。
+- 三台 GPU（详细连接方式见 `.claude/rules/remote_server.md`，连接信息在 `~/.ssh/config`）：
+  - `hyy-5060ti-double`：恒源云，两块 5060Ti 16G，环境已经配好，`/hy-tmp` 只有 50G。
+  - `lab-3090-d`：实验室的 RTX3090 24G，在一个 docker 容器里，经 `lab-3090` 跳板连；容器一重启就会丢掉 sshd 和 IP。
+  - `lab-4090`：实验室的 RTX4090D 24G，是共享机器，只能用 `afr` 自己的空间，绝对不要碰 `/root`、`/hy-tmp` 和共享的 conda。
+- 磁盘纪律：`/hy-tmp` 只有 50G，每次训练只保留最后一个 epoch 的 checkpoint，中间的和 best_model 都删掉。
+- 训练在服务器后台跑（用 `setsid nohup ... </dev/null &`），Mac 这边通过 ssh 监控、解析日志。
+
+## 8. 代码底子（上游 SOLIDER-REID）
+
+- 上游只带了 Market-1501 和 MSMT17 的配置（Swin 的 Tiny、Small、Base）。要用别的 benchmark（比如 Occluded-Duke、Occluded-ReID），得自己加配置和数据集读取代码。
+- 用 SOLIDER 的预训练权重（从 SOLIDER 仓库的 Google Drive 下载，用 `convert_model.py` 转换 teacher checkpoint）。Mac 能连 Google Drive。
+- `SEMANTIC_WEIGHT` 默认是 0.2。
+- 主干的顺序：先用 Swin-Tiny 快速验证，有信号了再放大到 Small、Base。创新点先在 Tiny 上看有没有效果，确实有效再放大，不要在没效果的点上用大主干硬磨、白白浪费算力。
+
+## 9. 怎么写中文（这一条务必照做）
+
+所有给人看的文字，包括文档、注释、提交信息、以及给用户的回复，都要用平实、完整的中文句子，像正常人说话写字那样。
+
+下面这些不要出现：
+- 不要把判断标准、检查步骤之类的东西生造成"某某门"（比如"创新门""双审门""新颖性门"）。中文不这么说话。要表达就直接说清楚，比如"判断方向值不值得做的标准""训练前的两轮审查"。
+- 不要用箭头（→）把几个词串起来代替句子，过程要一步一步用完整的句子写出来。
+- 不要用破折号（——）来连接或停顿，改用逗号、句号，或者干脆把话说完整。
+- 不要在中文里夹英文当术语（比如 skeptic、smoke、gate、overclaim、free lunch 这种），有对应的中文就用中文。真正的专有名词、命令、文件名、配置字段（train.py、design.md、SOLIDER、Swin、seed、best_model 等）该用原文就用原文。
+- 不要堆砌小标题、加粗、表格来充字数，能用一段话讲清楚就用一段话。
+- 不要用"收口""罗盘""锚点""铺路""掺进去"这类比喻性的简写和网络口头禅。
+
+这一条对你自己想问题的时候同样适用：思考的时候也用完整的中文句子，不要用上面这些写法。
+
+## 10. 详细规则
+
+放在 `.claude/rules/` 里：
+- `result_discipline.md`：数字纪律和三条研究纪律（最重要，先读）。
+- `experiment_protocol.md`：实验怎么命名、`design.md` 的格式、两轮审查的流程。
+- `innovation_and_decisions.md`：决策怎么记录、怎么让两个子代理对着辩论、对创新方向的把关。
+- `documentation.md`：文档结构和数据一致性。
+- `monitoring.md`：怎么用 Monitor 和后台 Bash。
+- `remote_server.md`：三台机器的详细连接方式和磁盘策略。
+
+exec
+/bin/zsh -lc "sed -n '1,220p' ../../../experiments/STATUS.md" in /Users/abdslm/Desktop/reid-paper/experiments/paper_materials/pdfs_by_title
+ succeeded in 0ms:
+# 活动状态（每步更新）
+
+## ★★★ 当前最新（2026-06-14，转"补标准数据+公平对标"执行路线 决策#54，正获取标准LReID数据+搭LSTKC标准协议台子）
+
+**方向转折(决策#54)**: 大方向取舍抛用户后用户表达失望("算了我对你绝望了")。复盘: 我一直在查先例/做归因/把候选判负/再把方向推回用户,优化"别做通用/已有的东西"而非"做出完整的东西",耗算力却没落地。**改打法,自己拿决定不再punt**: 不再"找新机制→判负"循环,直接解决卡脖子的"缺公平对标台子":
+- 用标准 LReID 协议代码库 LSTKC(AAAI2024, 已 clone 到 lreid_lstkc/): 标准5域顺序(market→cuhk_sysu→duke→msmt→cuhk03)+遗忘矩阵+未见域泛化+PTKP/PatchKD/LSTKC强基线全现成,是 C2R/AKT 共用的台子。
+- 补标准数据(已有Market/MSMT;取CUHK03/CUHK-SYSU/Duke[学界通用,论文不展示图]/7个unseen,子代理 a98cae3 正查获取路径)→复现LSTKC/PTKP基线对上其论文数字(纪律2)→在公平台子做方法对标C2R/AKT,三种子出稿。
+- 候选二"多版本混库塌21mAP"作为干净 motivation,标准协议上做成多版本兼容/免全量重建索引的真方法。
+hyy 候选二复现序列(v2 OccDuke)仍在跑,给第二条序列的多版本不兼容佐证。
+
+**执行进展(2026-06-14 晚)**: 子代理给出 link 核验的数据获取计划(无预处理包,各自装;Drive 必须 Mac 下再 rsync;CUHK-SYSU 自裁剪;MSMT 加载器只支持 V2)。已完成:
+- LSTKC 环境在 lab-4090 装好(独立 .venv_lstkc, torch2.x, continual_train.py --help 通过; uv 超时调 UV_HTTP_TIMEOUT=600 才装上)。
+- Mac 下好 3 个训练域: CUHK03 cuhk-03.mat(1.1G)+新协议 mats、DukeMTMC-reID(154M,版图对)、CUHK-SYSU(160M)。脚本在 experiments/exp029_lifelong/{lreid_download_mac,setup_lstkc_env}.sh。
+- **5 训练域数据已全部到手**: ①Market+MSMT17_V1 已符号链接进 PRID/(版图校验OK); ②MSMT 加载器已 patch 支持 V1(VERSION_DICT 加 V1 条目; V1≈V2,仅人脸模糊+目录名不同,身体ReID数字几乎无差); ③CUHK03 cuhk-03.mat(1.1G)+新协议mats 已下; ④Duke 已下(版图对); ⑤CUHK-SYSU **原始** person-search 已下(1.2G tar.gz,18184 SSM图+annotation),排成 cuhk-sysu/CUHK-SYSU/ 加载器自裁剪版图(之前那个160M是预裁剪版,弃用)。
+- 关键发现: 服务器够不到 Google Drive/Google,但能到 Github+hf-mirror;故 Drive 数据(CUHK03/Duke/CUHK-SYSU)Mac 下再 rsync 到 lab-4090。relay4090 跳板不能并发 ssh,传输要串行。
+- 剩(纯工程): rsync CUHK03+Duke(在跑 bfj7oxudl)+CUHK-SYSU raw 到 lab-4090 /mnt1/afrdata/PRID/ → 部署 msmt17.py patch(scp,等 relay 空)→ 跑 continual_train.py 复现 LSTKC 标准5域基线对上其论文数字(纪律2)→ 在公平台子做方法。
+---
+
+**全局裁决(经验,非先验; 详 results.md exp029 + 决策#51/52/53)**: 候选一(跨阶段桥)无效、候选二(多版本陈旧索引)前提判负=经典BCT不兼容悬崖非新结构、候选三(阶段顺序桥选择)前提弱=遗忘在差异极大目标域上高度一致(−20.7~−21.9,无域距离结构,LTCC偏小由数据集大小解释)。task-free无边界(4.5/10)未测且协议风险高。codex两次独立判终身方法稿在现约束下 3-4/10,binding=缺标准数据(Duke/CUHK-SYSU/CUHK03,无法公平对标)+主流子问题全拥挤。机制候选已便宜先导穷尽→剩下的路被用户专属决定主导(补敏感数据/换论文形态/离开终身)→已用 AskUserQuestion 抛大方向。hyy 候选二复现序列仍在跑确认,不空等。
+---
+
+**候选二裁决(主序列, 详 results.md exp029 + 决策#52 执行结果)**: 判负。复现校验过(v0 Market 87.01=训练日志)。Market 陈旧索引: mAP 阶梯非单调(g=v0 51.74>g=v2 50.85,是 v0 作为 Market 专家的质量混淆,非版本年龄递减); 真正大效应是"混版本图库" −21mAP,而同质旧版本单独可用(g=v0 51.74)→ 这是经典 BCT/C2R/Hot-refresh 不兼容悬崖(那条线的立项动机),不是新的可利用版本年龄结构。候选二作为新方法线判负。hyy 独立序列(Market→OccPoseTrack→OccDuke)跑完确认稳健性。
+**已转候选三便宜先导(lab-4090, run_exp029_cand3.sh, 等待器 bn1jz0w7n)**: 从同一 v0 单步 fine-tune 30ep 到 OccDuke/PRCC/LTCC/MSMT,量各目标造成的 Market 遗忘,看是否随目标域/域距离有规律(校正数据规模混淆)。有强顺序效应→候选三(4/10)前提成立可继续; 遗忘与目标域无关→候选三前提弱。
+---
+
+**模块线确证关闭**：公平基线纠正后真训练的 exp028 CCS 在 PRCC 换衣给了真 +2.8 mAP/+2.3 rank1（且压方差），但归因对照判通用——randcloth(乱衣服)45.8≈CCS 45.9，增益是弱基线上辅助投影头+同身份三元组的通用正则,非衣服机制(决策#49)。exp024 部位结构 real 63.3≈random 62.9 也通用。连同 exp019/OSG,3/3 attribution-tested 模块全是通用增益 → "标准单 embedding 加头/分支/损失"方法线在新颖性上确证封顶(决策#50)。
+
+**codex option-B 战略复审**：冻结协议内基本无可撑 CCF-B 的方法贡献；要做方法稿须放松一个约束。**用户拍板：转终身/增量 ReID(工程深度)**——真正不同的问题类(训练过程+数据流上定义新问题),离死线远,中等拥挤但活跃。
+
+**缺口分析已出**(lifelong_reid_gap-codex.md):候选一(跨阶段同身份桥)零训练先导无效(PRCC 换衣太轻,原型检索已 100%,无空间,决策#51);候选二(多版本陈旧索引)其次,且能用手上 Market/MSMT/Occ-Duke 标准不相交身份序列直接做。候选三(阶段顺序敏感桥选择)备选,最接近 AKT/DASA/DKAR 先例压力大。
+
+**exp029 终身最小基建已搭+先导在跑(2026-06-14 08:06)**:
+- 加 MODEL.CONTINUE_FROM 配置 + train.py 注入(顺序微调:加载旧域主干+瓶颈,分类头按域重建) + eval_lifelong_stale.py(多版本陈旧索引评测,复用仓库标准 eval_func,单版本退化即标准评测做复现校验)。本地语法过、lab-4090 烟测过(CONTINUE_FROM 加载 PRCC ckpt 进 Market 训练,分类头重建,loss 9.55→正常,13.4s/epoch)。
+- lab-4090 后台跑顺序微调代理序列(seed 0):v0=Market(120ep,jx_vit 初始化)→v1=+MSMT(60ep,接 v0)→v2=+Occ-Duke(60ep,接 v1)。约 70min,EXP029_SEQ_DONE 标志。这条序列同时产出朴素基线+遗忘矩阵对角。
+- 训练后:先用 v0 在 Market 的训练日志 mAP 校验 eval_lifelong_stale.py(复现校验),再跑候选二探针(陈旧阶梯 g=v0/v1/v2 + 随机混版本)。判负线见 design:混版本掉点<1mAP 或阶梯非单调(悬崖式=通用不兼容非可利用结构)→候选二判负转候选三。
+- 代理序列只做机制先导+工程自检,不冒充标准 SOTA(缺 Duke/CUHK-SYSU/CUHK03);若候选二过线,再补标准数据做公平对标。
+
+**候选二先例核查(codex 3/10, candidate2_vs_c2r-codex.md, 决策#52)**: 免重建索引+持续兼容转移被 C2R(CVPR24)/Bi-C2R(TPAMI26)/URCPD(AAAI26) 占; 新旧兼容+在线部分回填+预算曲线被 BCT 系/Hot-refresh(ICLR22,已做回填比例+预算曲线)/DGR 占。窄空白=多版本原始特征同库+相机/时间非均匀陈旧+预算调度,且增益须可证来自版本年龄结构。前提门=两条独立序列在 Market 上看混版本是否明显掉点+随版本年龄单调(对照各版本 native 自评排"质量阶梯"混淆)。不过→转候选三(阶段顺序敏感桥选择,未撞免重建/BCT 工业线); 过→仍须全套破坏性归因(打乱版本/随机陈旧/全重提/年龄反转吃掉70%增益)+超 C2R 全量转移基线+三种子才算贡献(同杀模块线那道归因门)。
+
+**两条独立先导(都在跑)**: lab-4090=Market→MSMT→OccDuke(主, ~13s/epoch); hyy GPU0=Market→OccPoseTrack→OccDuke(独立复现,不同中间域,防单序列偶然)。两条都在 Market 上做陈旧索引评测(eval_lifelong_stale.py 已用 Occ-Duke ViT-base 53.70 复现校验通过)。完成等待器 b2adeq7sh(lab-4090)/b8pv682at(hyy)。
+GPU 分配: hyy GPU1 + lab-3090-d 暂空——候选二仅 3/10 的前提先导,2 个工作位已足,不在低先验方向上铺满算力; 前提过线再扩种子/破坏性对照/标准数据。
+
+**候选三+拓宽先例核查(codex, candidate3_and_broaden-codex.md)**: 候选三(阶段顺序敏感稀疏旧域桥选择) 4/10,被 AKT/DASA/DKAR/DKP/PKA/LSTKC 从"动态迁移+旧知识过滤"两侧挤,只有当便宜先导证明域距离能预测遗忘/迁移(Spearman≥0.4、近远旧域遗忘差>1mAP)且随机相似度/最远桥/全旧域均匀对照吃掉增益才值得做。拓宽最不坏两条: task-free/无边界终身(按相机时间 shard 漂移触发 micro-domain,4.5/10,协议风险高,最接近 CIPR/CVS) > 候选三收窄版(4/10)。整体判断: 当前数据(缺 Duke/CUHK-SYSU/CUHK03)+算力下终身方法稿 3-4/10,codex 诚实建议若前提都不成立则别硬做、把 exp029 基建当协议分析素材退回更稳形态。**策略: 先用 exp029 一条序列同时验候选二(陈旧阶梯)和候选三(域距离→遗忘)两个前提的经验证据,有强信号再投;两个前提都经验证伪才把"是否离开终身方向"作为有证据的大方向问题抛用户。**
+
+资产:PRCC/LTCC/Market/Occ-Duke 标准 ViT-base 3 种子基线 + 各探针/归因基建。lab-4090 venv=/home/afr/reid-clean/.venv、hyy venv=/hy-tmp/reid-clean/.venv(python 不在 PATH,必须用 venv 全路径)。MSMT 已 symlink MSMT17→MSMT17_V1。jx_vit 两机都在(lab-4090 /home/afr/reid-clean/weights/、hyy /hy-tmp/reid-clean/weights/)。
+
+---
+
+## 旧（2026-06-14，公平基线纠正——已被模块线全关+终身转向取代）
+
+**用户关键纠正（记忆 fair-baseline-not-solider）**：为什么 SOLIDER 强主干成了否决一切的理由？全 B 类语料没人用 SOLIDER/Swin 当基线，我们自定一个全场最强、没人用的基线再否决所有方案，本末倒置、自我否决。两个真错误：(1) 我把"强主干吸收 nuisance"过度泛化成对整个鲁棒性簇的判决；(2) 用便宜探针代替真训练去否决（用户反复说的"别只probe判负、要真训练"）。
+
+**纠正后的操作原则**：门槛=同行用的标准基线（ViT-base，我们手上 PRCC 43.0/Market 86.8/Occ-Duke 53.3/LTCC），公平对标已发表 B 类数字；不再要求打赢 SOLIDER（SOLIDER 只做附加 scale 验证）；验证用真训练三种子，探针只排优先级不一票否决。据此**重开**被基线假象/探针假象误杀的方向。
+
+重判已出（reopen_under_fair_baseline-codex.md）：重开 3 方向（exp024 无姿态结构在标准 ViT-base 已有 +2.2~2.7 rank1 真信号被 SOLIDER 尺子误埋 / PARTIAL_EVIDENCE / 换衣稳定证据）；C 类真死保持（OC4超加性=数据属性、exp022贴图检测器、与CAL/CCIL/instance-wise同质）。
+
+**已落到真训练（exp028 CCS 跨衣稳定证据保全，主注）**：
+- 标准 ViT-base PRCC 3 种子基线已训完：CC mAP 43.0/46.1/40.3（均值 43.1±2.4，方差大，exp028 对比必须按种子配对抵消方差）、rank1 41.2/43.8/41.2。这是公平基线资产。
+- exp028 CCS 插件实现+两轮独立审查通过（Claude opus 子代理 90 行 + codex 均放行）+ 自检 5/5。lab-4090 正训 3 种子（seed0 ~44/120，GPU 92%，损失含 CCS 项在降）。等待器 b026y61ao：训完报 CC，再跑 cc_eval 取 CC+SC 按判负线裁决（CC>+0.4mAP且rank1>+0.5、SC不掉、配对非采样器假象）。
+- hyy: MGPARTS 占位消融因 protos/bank 路径依赖重建复杂、信号弱(flat mAP)已放弃; 改后台把 PRCC(217M)拷到 hyy，为 exp028 出信号后并行消融/LTCC 做前置。lab-3090-d 空闲（PRCC 瓶颈在 lab-4090）。
+
+下一步取决于 exp028: 过判负线则补消融(采样器对照已=基线,需±衣服破坏视图)+LTCC+对标CAL/CCIL; 不过则按"还需再试/判负"处置,转 PARTIAL_EVIDENCE 或 exp024 结构线坐实。
+
+注：仍真死的（机制被证伪或新颖性被占，换基线也救不了）：OC4 超加性是数据属性（决策#47）、exp022 贴图检测器机制错、与 CAL/CCIL/instance-wise invariance 同质的部分。
+
+---
+
+## 旧（2026-06-14 夜，自适应不变性判负——此条"整簇都死"的泛化已被上面的纠正收窄）
+
+自适应不变性方向判负（决策#48）。Level-1+flip噪声地板: PRCC换衣 blur 改善15.5%真异质,但 Market 标准 ViT 仅8%(噪声地板6.8%)、强主干 Swin 7.5%<8.7%。Level-2 冻结选择器: PRCC oracle+6 但选择器预测线索28%≈随机25%,应用-0.94mAP。注:Level-2 是【冻结探针】非真训练,按新原则这属"探针假象"待真训确认。
+
+正在做: 起多路 codex 先例优先搜下一方向(明确禁用鲁棒性/不变性/去偏/线索手术死簇),我用 WebSearch 逐个核实先例。资产复用: PRCC/LTCC/Market 标准 ViT-base 基线 + 三个零训练探针(指纹/oracle/冻结选择器)在 lab-4090/hyy。三机当前空闲(探针类零训练已完成),搜出方向+探针过线再占 GPU。
+
+---
+
+## 旧（2026-06-14，OC4 冲突角度门0 判负）
+
+---
+
+## 旧（exp027 VCR 实现+双审，已被门0 判负取代）
+
+方向曾落到代码：exp027 VCR（可见衣物冲突路由，OC4-ReID 遮挡加换衣联合设定，标准 ViT-base 基线，不用 SOLIDER 强主干）。用户拍板原话"如果强基线成为劣势就别用，写完代码开双 codex 审查"。
+
+进度：
+- VCR 插件已实现（model/vcr.py + make_model/processor/make_dataloader/defaults 接线 + configs/{prcc,ltcc}/vit_base.yml + test_vcr.py + probe_superadd.py），默认关闭逐字节退化，本地 CPU 自检 6/6 过。
+- 第一轮三路独立 codex 审查全部不放行，但都是可修问题：新颖性 5.0/10（窄但开放，命门是门0 超加性和交互项消融）；正确性两处（衣服关系损失 detach 切断路由器、跨衣损失用了 PRCC/LTCC 不可达的异身份同衣对）；协议两处（LTCC 探针把 general 当同衣 SC、合成贴图不能与 OC4 官方数字同台）。
+- 已全部修复并验证：梯度流改进后用梯度检查确认衣服关系损失只训练路由门与关系头、不灌主干；跨衣损失改可达三元组、关系损失改身份内同衣换衣；LTCC 探针改 mode=SC、单位统一个百分点；design 收窄叙事、命名 Synth-Occ、补 CAL 式全局对照与先例核查清单。提交 0adc745、584a5dc。
+- 第二轮 codex 审查：正确性 approve（无实质问题）；协议放行门0 探针与小规模冒烟，门1 三种子论文级裁决暂不放行，要求补一个与完整 VCR 同双前向口径的"只增广"控制臂加显式消融开关（这是公平性要求，不挡门0）。
+- 正在跑（lab-4090，已恢复）：PRCC 标准 ViT-base 基线 seed0（约 20 秒一个 epoch，120 轮约 40 分钟）→ 门0 超加性零训练探针（两个遮挡种子）→ LTCC 基线 → LTCC 探针，远端 orchestrate_oc4.sh 串起来，Mac 侧等门0 结果通知。
+
+下一步取决于门0：超加性 > 0.4 个百分点则方向成立，补公平控制臂与消融开关后三种子训练 VCR；否则问题定义偏弱，判负转向。hyy 两卡、lab-3090-d 空闲（都缺换衣数据，PRCC/LTCC 只在 lab-4090）。
+
+---
+
+## 旧（2026-06-13 20:37，用户拍板"新信息源"，3路codex深读PDF全文中，A路和C路已完成）
+
+部位方向(exp020/024/025/026)与换衣旋钮(决策#45)全判负归档,三机空闲。用户拍板大方向="调查新信息源,仔细看168篇B类论文"。
+3路codex深读全文(experiments/paper_materials/newinfo_*.md):
+- A 语义/VLM teacher: 已完成,见 experiments/paper_materials/newinfo_semantic_teacher-codex.md。结论是遮挡语义 teacher 对 SOLIDER 强主干整体偏负,FLaN-Net/π-VL/AG-ReID/LVLM-ReID/RMPSNet 等发表遮挡成绩多低于或接近现有强基线; 唯一值得先探的是属性 teacher 的可靠性噪声屏蔽,其次是 teacher 只用于属性级样本组织,两者都必须先做零训练探针。
+- B 生成/合成数据: CCUP/InfinitePerson/Identity Diffuser/扩散增广,找适中成本+新颖的生成机制(换衣战场PRCC 49 vs SOTA 55-66,CCUP用百万合成预训练)。
+- C 特权信息蒸馏: 已完成,见 experiments/paper_materials/newinfo_privileged_distill-codex.md。结论是普通pose/parsing/silhouette teacher 已被 PGFL-KD、π-VL、FLAG、AOANet等占住,且 SOLIDER 已含 parsing 能力; 最值得继续探的是 3D体型+dense correspondence 残差蒸馏,其次是有视频数据时的3D skeleton/gait relation,parsing只适合作负控。
+出齐后综合排序+零训练探针,交用户定具体押哪条。纪律不变:探针先行,强主干验证,三种子。
+
+---
+
+## 旧（2026-06-13 15:30，新方向调研收敛：换衣衣服捷径为第一推荐，待零训练探针）
+
+6 路 codex 调研全出（paper_materials/newdir_*.md）。候选清单第一推荐：**基于 SEMANTIC_WEIGHT 的衣服捷径可控蒸馏**。
+- 为什么排第一：换衣是强主干仍明确失败的具体干扰（PRCC 换衣远低于同衣）；我们有独有观察（PRCC 换衣对 w 有约 7 分响应、Occ-Duke/LTCC 不响应）；已发表换衣方法都靠衣服标签/解析/CLIP/生成，"用预训练自带语义旋钮控衣服捷径、无衣服标签、测试单 embedding"是干净区分点。
+- 命门（红队 codex 正在核准）：笔记里"w=0.2 换衣好"与"语义权重升换衣涨"文字自相矛盾，必须从代码核准 w 到底控制什么；w 差异方向若只是通用 detuning 而非衣服捷径，方向即塌。
+- 执行铁律（血换的教训）：先做零训练探针（现有 PRCC/LTCC/Occ-Duke checkpoint 上提不同 w 特征、衣服方向线性探针、闭式衣服方向擦除对随机方向），探针过线才写 design、才开训练。预注册判负线已在候选报告里。
+- 后备候选：换衣状态原型(2)、状态扰动结构保持蒸馏(3)、模型敏感遮挡课程(4)、相机白化(5)。
+
+部位/掩码方向确认种子(exp026 nd_s1/s2)在 hyy 收尾(~15min)、PoseTrack 在 3090 收尾(~1.5h)，纯清账。新方向探针不需要训练 GPU。
+
+---
+
+## 旧（2026-06-13 14:45，方向重置：部位/掩码方向终审判负，回语料找方法级新方向）
+
+用户拍板转向（原话）："回去找新方向，好好看别人怎么发的，主要是别人的思路，作出能发b会的方法级成果，codex任你使用token管够"。决策#44 已记。
+
+**部位/掩码方向终审判负**（exp022-026，约30次训练，账本在 results.md + decisions.md#44）：抗遮挡重加权、构造掩码监督(软/硬)、语言部位分支(含忠实LGPA-D)全部在强主干上不成立。三路codex法医结论：PSG的姿态接地是LGPA-D全部集成选择的承重墙，无姿态版必败。唯一幸存=遮挡物贴图增广(Swin +0.83/+1.10)，但有先例非方法级。exp026确认种子(no-detach s1/s2)在 hyy 跑完即封档，不阻塞选向。
+
+**新方向调研进行中**：4路并行codex（思路解剖/幸存性筛选/相邻领域扫描/强论文结构逆向），写入 paper_materials/newdir_*.md。出齐后第二波（候选生成+新颖性红队），再交用户拍板。重活全交codex，Claude只做全局把控。
+
+**机器**：hyy双卡=exp026确认种子s1/s2(~1h)；3090=PoseTrack对照s2重跑→部位s1链；4090=跳板断，恢复循环守着。新方向定下来前不开新训练。
+
+---
+
+## 旧（部位/掩码方向攻坚期，2026-06-11-13，已判负归档）
+
+## ★★★ 当前最新（2026-06-11 午后 14:10，exp022 判负在途、exp023 形状池审查中）
+
+用户硬要求不变：方法稿、双指标。主线推进到第三层迭代：
+
+**exp021 纯增广（数据轴）：已裁决，确认信号。** 三种子 54.60±0.22 / 61.47±0.33，对无增广对照 +1.33 mAP / +0.80 rank1，双指标过噪声线。第一条 ViT-base 上活下来的训练期增益（results.md）。
+
+**exp022 方块池掩码监督：判负在途，但诊断值钱。** s0 54.1/60.5（-0.3/-0.6 对同种子纯增广）、s1 53.2/59.2（-1.3/-2.2），s2 收尾中，数学上已够不着 +0.8 信号线。诊断（viz_occaware.py）：留出合成遮挡 IoU 0.9628（监督完全可学、跨图泛化），但真实遮挡 query 上头只认"最像贴图补丁"的物体，汽车/行人/雨伞全漏。结论：头学成了**贴图检测器**，根因是方块裁剪池与真实遮挡物分布错配，监督机制本身无罪。归因臂（W_OCC=0）双卡在 hyy 跑（~15:00 完），其 occ_bce 不降反升、α 深负的对照动态已记录。
+
+**exp023 形状遮挡物池（诊断驱动的正路）：实现+自检全过，两轮独立审查进行中。** COCO 实例分割 512 物体库（15 类、每类≤64、种子 20260611，零依赖 pycocotools），alpha 合成贴图，token 掩码升级为形状精确（覆盖率半格规则）。自检七项含"矩形遮挡物下形状路径与矩形路径逐格互证"。新颖性边界已核：FOSENet/OCCNet 用过 COCO 形状做增广（增广本身不是主张），没人做构造副产品的 token 级监督。对照臂 MECH=False（同库只增广不建头）。裁决：方法对 aug-only ≥+0.8 mAP 且 rank1 不降。
+- 审查放行后顺序：lab-4090 跑冒烟 → 方法臂 s0/s1/s2 + aug s2 链；hyy 跑 aug s0/s1（库已在传）。全部今天 ~17:30 出齐。
+- Swin-Small 移植已就绪（827e023，双自检过），exp023 有信号立即上（生死线）。
+
+**锚点收尾**：Swin-Base s2 在 lab-3090-d（~14:30 完）；s0 64.4/72.9、s1 64.5/73.3 已档。
+
+更新（15:00）：exp022 已封档（方法 53.97±0.58/60.50±1.06，对纯增广 -0.63/-0.97，判负；α 轨迹三种子一致、死因=贴图分布错配，诊断三件套进论文）。Swin-Base 锚点封档 63.63±1.15/72.50±0.86。exp023 冒烟过闸、方法 s0 在跑。库 md5 四处字节一致（f9370729…），跨机库混杂顾虑解除。
+
+机器：lab-4090=exp023 六臂链（方法s0→aug s0→…，~18:45 收齐，第一对同种子读数 ~16:20）；hyy=wocc0 双臂收尾（~15:00）→自动接力 Swin-Small 形状库 aug 对照 s0/s1（带冒烟闸门）；lab-3090-d=Swin-Small 形状库 aug 对照 s2（65.6s/epoch，~17:10 完）。
+
+---
+
+## 旧（2026-06-11 午后早些，方法稿主线：exp022 三种子链在跑）
+
+用户两条新硬要求已生效：所有结果同时报 mAP 和 rank1；**要方法稿，不要分析稿**（强主干审计降级为动机/分析章节）。主线重组见 paper_materials/story.md（2026-06-11 版）。
+
+**主线 exp022（构造精确遮挡掩码监督，方法稿核心）**：
+- 机制：贴图增广免费产生的像素级遮挡位置 → token 网格 0/1 掩码 → 线性头在第 8 块后预测、只在合成样本上 BCE 监督 → 零初始化 α 可学重加权喂回主干。测试零外部输入。
+- 两轮独立审查同轮通过（069249a），七项自检两台机器全过，冒烟通过：occ_bce 1.01→0.26（头在学）、α 在动（注意走的是负方向，收敛后符号待看）、评测路径正常。
+- **三种子链在 lab-4090 跑**（4090 速度 15.7 秒/epoch，全链约 2 小时，监视器 biefwf3ui 盯 done 标记）。
+- 裁决：对 exp021 纯增广对照三种子，mAP ≥+0.8 且 rank1 不降算信号；+0.4~0.8 动重试格（W_OCC 1.0 / BLOCK 6）；重试后 ≤+0.4 判死。有信号先跑 W_OCC=0 归因消融。
+- 可视化脚本 viz_occaware.py 已部署（真实遮挡热图 + 合成三联图 + 留出 IoU），s0 一完就出图。
+
+**对照臂 exp021（纯增广数据轴）**：s0 完成 54.4/61.1（对同种子控制 +1.8/+1.2）；s1（第 49 轮）/s2（第 32 轮）在 hyy 双卡，等待器 bncb0fpt4。
+**锚点收尾**：Swin-Base 无 cp，s0 64.4/72.9、s1 64.5/73.3 已档，s2 在 lab-3090-d（第 34 轮，等待器 bv5tdiume；注意容器时钟 UTC+8 才是北京时间）。
+
+机器：lab-4090=exp022 链；hyy 双卡=exp021 s1/s2（完了接 exp022 的 W_OCC=0 归因臂或重试臂）；lab-3090-d=Base s2。
+
+---
+
+## 旧（2026-06-11 清晨，第二夜战役：方法三连测+锚点全家桶）
+
+**方法线（候选 A 的三种形态，全部走完预注册流程）**：
+- exp018 蒸馏损失版：三种子 +0.33（无信号，归档为消融臂）。
+- exp019 OSG 门控版：三种子 +0.20（无信号；门控诊断 g2≈0.001 门没开）；W_SEM 0.3 预注册重试在跑（hyy GPU0）。
+- **exp020 LGP（无姿态语言部位分支，主注）**：保留 LGPA-D 被验证的两个成分（部位级 ID 监督+部位特征进表征）去掉全部姿态依赖；两轮审查同轮通过（裁决程序：对照双杆同报、不用配对差措辞），seed0 在跑（hyy GPU1）。信号线 ≥+0.8 对 53.27/53.63 双对照。
+- 关键认知：探针证明"信息存在"，三连测在证明"哪种注入形态才有用"——弱监督门控不行，强监督部位分支是 PSG 验证过的形态。
+
+**锚点全家桶（全部 w=0.2 发表级配方，数字在 results.md）**：
+- Occ-Duke：Tiny 56.87±0.29（exp018 对照三种子）；Small w=1.0 66.53±0.12 + w=0.2 链（66.9/66.6/s2在跑）；Base 64.4（无cp，seed1/2 排队）；ViT-base 53.27±0.49（exp019 对照三种子）。
+- Occ-PoseTrack：Tiny 76.27±0.09（exp001h，已核实 w=0.2）；Small 77.40±0.08 三种子。
+- Occluded-REID 跨域容量曲线：Tiny 71.0→Small 84.2→Base 86.4 mAP（官方检查点零训练直评；裸 Base 86.4/89.2 超 FED/KPR带提示/BPBreID，距 ProFD 约 2 点）。
+- 换衣：PRCC Tiny w02 三种子 46.17±1.13（w 旋钮效应 +6 mAP 坐实）、Small w02 49.4；LTCC 全档低于发表（seeds 在补）。
+- **两个工程毒点已揪出并落档**：WITH_CP（重入式检查点+AMP）毁训练（41.7→64.4）禁用；SEMANTIC_WEIGHT 默认 1.0 污染（全线统一 0.2 烤进配置）。
+
+**强主干审计三支柱（独立于方法成败的分析主线）**：同域遮挡白送（裸 Small 超全部已发表 B 类）、跨域遮挡近顶（裸 Base 第二梯队）、换衣失灵但有 w 旋钮。加 14 个方法判负的谱系和可靠检索保底稿。
+
+在跑：hyy=OSG重试+LGP s0；lab-3090-d=Duke Small w02 s2；lab-4090=LTCC tiny w02 s1/s2。等待器全挂。
+
+---
+
+## 旧（2026-06-10 凌晨，用户完全放权，夜间自主战役进行中）
+
+用户指令（原话要点）："不要把自己限定在遮挡这个领域，大胆创新，大胆做所有可能让我们稳发 B 类的实验，三台 GPU 全用，不依赖 codex（额度尽，06-11 13:01 恢复），别用 Workflow（会话额度也耗尽过一次），你自己做全部决定，我去睡觉。" 方向部署见决策 #42：锚点先行的双战场，主纲领"强人本主干 + 训练期新信息源/训练组织，测试单 embedding 冻结"。
+
+到 09:10 为止的战果（数字都在 results.md，全部提交）：
+- **★ exp015a 定稿：Occ-Duke Swin-Small 干净基线三种子 66.53±0.12 / 75.73±0.21（batch64）**。单 embedding 无测试期额外输入口径下超过全部已发表 B 类遮挡方法（最高 FLaN-Net 65.5；arXiv 的 DPL-ReID 67.2 要测试期文本）。旧的 batch32"基线"64.4 作废。
+- **exp016 换衣判决（Tiny seed0 两数据集）**：LTCC 换衣 12.3/24.7、PRCC 换衣 40.1/42.4（同衣 98.2/99.5 饱和），全面大幅低于发表水位。结论：SOLIDER 人本预训练放大衣服捷径，换衣降级为分析素材（与遮挡战场形成干净对照）。协议照搬 Simple-CCReID、读取器对账 PASS、两条评测路径数字一致。
+- **exp017 探针放行候选 A**：SOLIDER 特征对 CLIP 遮挡物语义零线性解码（R²=-0.01）、嵌入级超锥零假设解释力仅约 26%、残差与 AP 相关 -0.164（控 s_top1 后 -0.097 贴线）。按预注册中间地带规则的属性级判据放行。
+- **exp018（语义蒸馏 v1）实现完成**：插件式 SEMDISTILL（defaults/make_model/dataloader/processor），自检五项全过（ENABLED=False 字节级退化、标签 15618 全齐、蒸馏在学、eval 前向 max|diff|=0）。CLIP 标签和代码已部署 hyy。等 10:40（Claude 子代理配额）做第一轮审查、13:01（codex 额度）做第二轮，过审即 smoke+三种子。
+- Swin-Base：下载+转换+加载烟雾全过（373 键 All matched）。
+
+正在跑：
+- lab-3090-d：Occ-Duke **Swin-Base seed0**（with_cp，114 秒/epoch，约 4 小时完，首个 Base 遮挡锚点）。
+- hyy 双卡：**Occ-PoseTrack Small seed1/seed2**（Epoch 29/27；注意该配置 EVAL_PERIOD=20 会打中途 mAP，等待器盯 transformer_120.pth）。
+- lab-4090：Small 三连链 **Occ-PoseTrack Small seed0 → PRCC Small seed0 → LTCC Small seed0**（链 pid 1719268；后两个是换衣捷径的容量趋势分析）。
+- 各完成等待器已挂；check_monitor.sh 钩子按用户指示已删（保留 check_design.sh）。
+
+---
+
+## 旧（2026-06-10 早，通读 167 篇 2025/26 CCF-B ReID 论文找新角度，已完成）
+
+用户醒后对可靠检索应用稿的定位有疑虑（它不是"模块带来大提升"的故事，而且最稳的去处 PRCV 是 C 类不是 B 类），下载了 167 篇 2025/2026 年 CCF-B venue 的 ReID 论文（paper_materials/pdfs_by_title/），指令是和 codex 配合全部读完、提炼经验、找出一个能发的角度。用户确信一定有角度。范围约束不变：只做遮挡+普通 ReID。
+
+阅读已完成：167 篇全覆盖。38 篇范围内精读 + 88 篇范围外粗读由 codex 完成（笔记 paper_notes/notes/in_*.md、out_*.md），剩 41 篇因 codex 额度耗尽（2026-06-11 13:01 恢复）由 Claude 摘要级补读（missing_41_skim_by_claude.md）。元分析和候选方向写在 **paper_notes/SYNTHESIS.md**，要点：(1) 在"单 embedding、测试无额外输入"口径下我们的 SOLIDER Swin-Small 纯基线 66.5 已处于已发表 B 类遮挡工作头部（发表水位 57.8-65.5，仅 arXiv 的 DPL-ReID 67.2 和测试期多部件距离的 AOANet 70.6 更高）；(2) 模块类增益=弱基线假象（这批论文内部基线 48-53 起步），反向验证我们 13 个判负；(3) 站得住的增益全部来自训练期新信息源（VLM 语义/外部遮挡物数据/生成数据/分布先验）；(4) 空白=遮挡结构化 VLM 语义当纯训练期监督蒸馏进非 CLIP 强人本主干、测试回纯单 embedding，没人做过。候选 A=该语义蒸馏方向（先零训练探针：冻结 SOLIDER 特征能否线性解码 CLIP 属性/遮挡物标签，解码不出的残差是否关联检索错误）；候选 B=真实遮挡物数据源+分布先验（最便宜，A 的对照轴）；候选 C=干净到遮挡的结构保持蒸馏（中风险排队）；候选 D=可靠检索稿保底投 PRCV。待办：codex 额度恢复后对候选 A 做独立新颖性红队，然后交用户挑方向。未开任何实验。
+
+---
+
+## ★★★ 旧（2026-06-09，转可靠检索应用稿，覆盖以下所有旧状态）★★★
+
+**方向(决策#39，用户拍板)**：选项1 加机制涨标准 mAP 累计判负 13+(MULTIHYP/DONOR/想法2/找新机制三候选[成对匹配/episode soft-AP/框所属者蒸馏]全栽 train→test 泛化/容量律/分割失效)。转**遮挡 ReID label-free 可靠检索应用诊断稿**(非新方法稿，定位见 paper_materials/reliable_retrieval_redteam-codex.md，命中 PRCV 0.5-0.65/ICME ICPR 0.35-0.55)。
+
+codex
+已按项目要求确认当前目标还是“读文献、做差距分析、提出能发 B 类的候选方向”，并且不要开实验。PDF 技能说明里建议用 Poppler；这里按你的要求直接用 `pdftotext -l 3`，只看摘要和引言。
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "pdftotext -l 3 'Internal-External Context Interaction Network for Person Re-Identification.pdf' -" in /Users/abdslm/Desktop/reid-paper/experiments/paper_materials/pdfs_by_title
+ succeeded in 0ms:
+732
+
+IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 36, NO. 1, JANUARY 2026
+
+Internal–External Context Interaction Network for
+Person Re-Identification
+Tongxin Liu , Xiyu Pang , Gangwu Jiang, Xiushan Nie , Senior Member, IEEE, Meifeng Zheng ,
+and Yilong Yin , Member, IEEE
+
+Abstract—Capturing discriminative cues with attention mechanisms is crucial for solving the high inter-class similarity problem
+of person re-identification (Re-ID). Self-attention (SA) learns its
+own contextual information within a single sample using selfaffinity between elements, and some works have demonstrated its
+superiority in person Re-ID. However, SA weakens some subtle
+semantic cues and additional visual cues such as backpacks,
+which makes it difficult to distinguish similar-looking persons. In
+this paper, we propose an internal-external context interaction
+(IEI) attention mechanism, which aims to exploit the interaction
+of inter-sample latent context information and intra-sample
+local context information to enhance the feature representation
+of each element. The mechanism is able to capture subtle
+differences between persons and additional visual cues using
+inter-sample difference information and rich detail information
+within the element neighborhood, improving the ability to distinguish similar persons. Based on this mechanism, we propose
+an internal-external context interaction network (IEINet) for
+extracting discriminative features from multiple dimensions. In
+addition, to capture more discriminative information, we propose
+a region-diverse loss to constrain the network. Many experiments
+validate the effectiveness of our IEINet and demonstrate that our
+approach attains state-of-the-art performance on several largescale person Re-ID datasets.
+Index Terms—Person re-identification, internal-external context interaction, discriminative features, region-diverse loss.
+
+I. I NTRODUCTION
+
+P
+
+ERSON re-identification (Re-ID), as a target retrieval task
+in cross-camera scenarios, has important application value
+in the fields of intelligent security and intelligent transportation, etc. This technology has significant potential for diverse
+
+Received 13 February 2025; revised 19 May 2025; accepted 30 July 2025.
+Date of publication 4 August 2025; date of current version 22 January
+2026. This work was supported in part by the National Natural Science
+Foundation of China under Grant 62176139 and Grant 61876098 and in part
+by the Major Basic Research Project of the Natural Science Foundation of
+Shandong Province under Grant ZR2021ZD15. This article was recommended
+by Associate Editor R. Hong. (Corresponding authors: Xiyu Pang; Yilong Yin.)
+Tongxin Liu, Gangwu Jiang, and Meifeng Zheng are with
+the School of Information Science and Electrical Engineering,
+Shandong Jiaotong University, Jinan 250357, China (e-mail: liutongxin2023@
+163.com; wuge2693080@126.com; fhhh2023@126.com).
+Xiyu Pang is with the School of Information Science and Electrical
+Engineering, Shandong Jiaotong University, Jinan 250357, China, and also
+with the School of Software, Shandong University, Jinan 250101, China
+(e-mail: xiyupang@126.com).
+Xiushan Nie is with the School of Computer Science and Technology, Shandong Jianzhu University, Jinan 250101, China (e-mail: niexsh@hotmail.com).
+Yilong Yin is with the School of Software, Shandong University, Jinan
+250101, China (e-mail: ylyin@sdu.edu.cn).
+Digital Object Identifier 10.1109/TCSVT.2025.3595271
+
+applications in areas like smart security, autonomous supermarkets, and smart transportation. Currently, one of the key
+challenges in person Re-ID is the problem of high inter-class
+similarity, that is, the overall appearances of many persons in
+the same scene look very similar. Intuitively, subtle semantic
+information such as the texture of clothes and extrinsic accessory information such as backpacks are important visual cues
+to address the challenge. To extract subtle discriminative information, some methods [1], [2], [3], [4] have been proposed to
+divide the image feature map into multiple parts and mine
+subtle visual cues from each part, as shown in Figure 1(a).
+Due to the need for strict alignment of targets in images, they
+are difficult to adapt to complex real-world scenes. Another
+stream of approaches [5], [6], [7], [8] aims to accurately
+localize and extract fine-grained discriminative features with
+auxiliary models such as keypoint detection, pose parsing, and
+additional attribute information. However, the generalization
+ability of auxiliary models on the target data constrains their
+performance.
+Without the aid of additional models and labels, the attention mechanism [9], [10] can locate and extract discriminative
+information through adaptive adjustment of weights. Recently,
+many person Re-ID studies [11], [12], [13], [14], [15], [16],
+[17] have introduced a variety of attention mechanisms to
+enhance the performance of deep models. They mainly design
+attention based on feature recalibration and feature reconstruction. Previous work such as [15], [16], and [17] used
+feature recalibration strategies similar to SE [9], CBAM [10]
+to globally augment key channels or spatial locations at
+a low computational cost, but their coarse-grained weight
+assignments made it difficult to capture fine-grained semantic
+cues. With the rise of self-attention (SA) mechanism [18],
+researchers have begun to utilize element-specific context for
+feature reconstruction, thus improving the ability of models to
+capture meaningful information. For example, [19], [20] learn
+robust character feature representations by modeling contextual relationships between patches, while [22] jointly mines
+the interaction dependencies between channels and spatial
+locations to learn more discriminative features. Although SA
+excels in global context modeling, its inherent single-sample
+within-interaction model has obvious limitations: on the one
+hand, feature aggregation and representation refinement based
+on semantic similarity between elements strengthens the
+response in subject areas (e.g., head, torso) but at the same
+time weakens subtle semantic identity cues such as clothing
+texture, accessory details, and so forth (see Figure 1 (b), rows
+
+1051-8215 © 2025 IEEE. All rights reserved, including rights for text and data mining, and training of artificial intelligence and
+similar technologies. Personal use is permitted, but republication/redistribution requires IEEE permission.
+See https://www.ieee.org/publications/rights/index.html for more information.
+Authorized licensed use limited to: TIANJIN UNIVERSITY. Downloaded on June 09,2026 at 09:03:36 UTC from IEEE Xplore. Restrictions apply.
+
+LIU et al.: INTERNAL–EXTERNAL CONTEXT INTERACTION NETWORK FOR PERSON RE-IDENTIFICATION
+
+733
+
+Fig. 1. (a) presents the schematic comparison between frameworks for the proposed IEINet and typical related methods. Splitting-based methods [1], [2]
+learn multiple part features containing subtle visual cues from strips, while attention and splitting-based methods [13], [26] introduce attention modules to
+filter the background and further enhance the discriminative power of part-level features, but the semantics of the parts they extract are usually discontinuous.
+Multidimensional attention-based methods [15], [21], [22], [25] with the single feature space make learning between different dimensions of attention interfere
+with each other. Our IEINet makes it easier to learn multidimensional attention information as well as semantically continuous part features through multiple
+independent feature spaces and the region-diverse constraint. (b) presents the comparison between heatmaps of IEI-S and SA. IEI not only focuses on more
+minor details than SA, but also on additional semantic cues such as backpacks.
+
+1 to 3).On the other hand, potential discriminative features
+with large semantic differences (e.g., backpacks) are prone to
+be misclassified as background and discarded due to their low
+relevance to the subject region (see Figure 1(b), rows 3-4).
+In essence, SA focuses only on isolated interactions of
+elements within a single sample, neglecting both the implicit
+semantic associations across samples (e.g., the variability of
+different individuals carrying similar backpacks) and failing to
+take full advantage of the local contextual information between
+neighboring elements.
+In this paper, we propose an internal-external context interaction (IEI) attention mechanism for person Re-ID, which
+captures the most discriminative identity features to enhance
+the representational capability by interacting the potential
+context (external information) of different samples with the
+internal local context information of a sample. Specifically,
+we compress the feature map of a single sample to obtain
+robust self-context information of the sample, while storing
+potential semantic features between different pedestrian samples through an external learnable memory, which guides the
+network to refer to cross-sample semantic cues during the
+feature aggregation process, thus enhancing the sensitivity to
+identity cues. Meanwhile, we constrain the interaction range
+to the local neighborhood of each element, and use the detail
+information of neighboring positions or channels to optimize
+the weight computation, avoiding the problem of semantic
+over-smoothing caused by global interaction. Based on this
+mechanism, we further design an internal-external context
+interaction network (IEINet), which is a CNN-based threebranch network, where each branch is equipped with an IEI
+module to extract rich discriminative features. Among them,
+a channel IEI (IEI-C) module is added to one branch, and
+
+a spatial IEI (IEI-S) module is added to each of the other
+two branches, which realizes spatial-channel discriminative
+feature decoupling learning through multiple independent feature spaces. In addition, to motivate different IEI-S branches
+to focus on complementary regions, we introduce a regional
+diversity loss function that constrains each branch to mine
+features from different parts of the image, thus increasing
+feature diversity.
+Compared with existing methods, IEINet is innovative in
+two aspects: first, compared with multidimensional attentionbased methods [15], [21], [22], [23], [24], [25] (e.g., hybrid
+learning space and channel attention) that use different attention dimensions to focus on more discriminative features, as
+shown in Figure 1(a), the multi-branch structure of IEINet provides independent optimization space for different dimensional
+features and effectively alleviates inter-dimensional learning
+interference. Second, compared to attention and splitting-based
+approaches [13], [26], [27], [28] introduce attention before
+or after rigid splitting to enhance the robustness of partlevel features, as shown in Figure 1(a), IEINet can learn
+semantically continuous and diverse part features through the
+multi-branch structure and the region-diverse constraint. In
+summary, this paper provides three primary contributions.
+1) We propose to refine the representation of each element
+using the interactions between the latent contextual
+information learned from different samples and the local
+contextual information of each element within a sample.
+The interactions of the difference information between
+samples and the rich detail information in the element
+neighborhood help to mine more clues related to the
+identities of samples for enhancing their feature representations.
+
+Authorized licensed use limited to: TIANJIN UNIVERSITY. Downloaded on June 09,2026 at 09:03:36 UTC from IEEE Xplore. Restrictions apply.
+
+734
+
+IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 36, NO. 1, JANUARY 2026
+
+2) We propose an IEINet. This network contains IEI-S and
+IEI-C modules for mining the discriminative features in
+the spatial and channel dimensions, respectively. In addition, for IEINet to capture the discriminative information
+from more key regions, we propose a region-diverse loss
+to constrain the IEI-S modules in different branches of
+the network.
+3) Extensive experiments are carried out on publicly available person datasets (Market1501 [29], CUHK03 [30],
+MSMT17 [31] and PersonX [32] to confirm the effectiveness of our proposed IEI mechanism and IEINet. The
+experimental results demonstrate that our method attains
+state-of-the-art performance on these datasets.
+
+TABLE I
+C OMPARISON OF O UR M ETHOD W ITH R ELATED W ORKS
+
+II. R ELATED W ORKS
+A. Person Re-Identification
+In recent years, thanks to the development of deep learning
+and the proposal of several large person Re-ID datasets (e.g.,
+Market1501 [29] and CUHK03 [30]), an increasing number of
+studies [1], [5], [6], [25], [33], [34], [35], [36], [37], [38], [39]
+on person Re-ID have emerged. The high inter-class similarity
+problem is one of the key challenges in person Re-ID. In
+response to this challenge, some methods [1], [2], [3], [4],
+[13], [40], [41] use rigid division of feature maps or images
+to learn subtle visual cues. MGN [1] splits the feature map
+into multiple horizon stripes along the height direction to learn
+fine-grained features from each strip. Reference [2] divides the
+feature map into multiple horizontal strips and aligns local
+information between different images with a shortest path
+distance algorithm. Reference [13] applies an attention module
+to each rigid horizontal strip to obtain pure part-level features
+free of background clutter. Reference [4] makes more local
+regions discriminative by regularizing the global logits with
+the discriminative scores of horizontal strips. Although the
+rigid division is simple, it disrupts the semantic continuity
+of parts and requires strict alignment of targets in images or
+complex part alignment algorithms.
+Other approaches [5], [6], [7], [8], [20], [36], [37] use
+auxiliary models such as pose estimation, keypoint detection,
+and additional annotations to localize and extract fine-grained
+discriminative features. PVPM [5] uses a pose-guided attention
+model to learn discriminative part features. Reference [20]
+combines pose information and the transformer architecture
+to disentangle semantic components and learn robust part
+features. Reference [7] joins the pose estimation and person
+Re-ID tasks to learn modality-shared body keypoint features.
+FA-Net [36] reduces the disturbance of background to person
+Re-ID by using the camera information of person images.
+Although auxiliary models are able to localize semantically
+meaningful body parts, they require an additional high computational cost and their accuracies are susceptible to changes in
+data distribution. Compared to the above methods, our IEINet
+can capture subtle visual cues without additional labels and
+models with the help of IEI mechanism.
+B. Attention Mechanisms
+There are many ways to model the attention mechanism,
+which can be roughly summarized into two categories: feature
+
+recalibration-based and feature reconstruction-based strategies.
+References [9], [42], and [43] squeeze the feature map simultaneously or separately in two directions in 2D space and learn
+the channel weights using the global context of channels. Reference [44] restricts channel interactions to a localized range,
+modeling channel attention more efficiently than SE [9], while
+further improving the performance of the network. References
+[10] and [45] squeeze the feature map along the channel and
+spatial dimensions respectively to design spatial attention. For
+person Re-ID, [16], [17], [25] utilize SE-like channel attention
+to focus on meaningful person information and suppress noise
+interference. References [15] and [39] combine channel and
+spatial attention, and utilize multi-scale learning to capture
+more person discriminative information. The above attention
+mechanisms based on feature recalibration strategy directly
+calculate the weights of all elements (positions/channels) to
+recalibrate their importance uniformly, which are simple to
+implement and require less computational cost.
+SA is a typical feature reconstruction strategy-based attention mechanism. It aggregates the features of all elements
+with element-specific attention map computed by pairwise
+self-affinity. Compared to the feature recalibration strategy,
+the feature reconstruction strategy can independently refine
+the feature representation of each element and increase the
+capacity of the model for meaningful information. Recently,
+several works [19], [20], [21], [22] have demonstrated the
+superiority of the SA mechanism originating from the natural
+language processing task [18] for person Re-ID. References
+[19] and [20] use SA to directly model the global context
+between patches to learn robust person feature representations.
+References [21] and [22] design a spatial module and a channel
+module based on the feature reconstruction strategy to model
+the long-range dependencies between locations and channels,
+respectively, for extracting diversity discriminative features.
+As shown in Table I, [19], [20], [22] use the SA mechanism
+and its variants to enhance feature discrimination, but they
+only utilise own contextual information within a single sample
+
+Authorized licensed use limited to: TIANJIN UNIVERSITY. Downloaded on June 09,2026 at 09:03:36 UTC from IEEE Xplore. Restrictions apply.
+
+
+exec
+/bin/zsh -lc "pdftotext -l 3 'Interactive Sketch-Based Person Re-Identification with Text Feedback.pdf' -" in /Users/abdslm/Desktop/reid-paper/experiments/paper_materials/pdfs_by_title
+ succeeded in 0ms:
+Interactive Sketch-based Person Re-Identification
+with Text Feedback
+2025 IEEE International Conference on Multimedia and Expo (ICME) | 979-8-3315-9495-4/25/$31.00 ©2025 IEEE | DOI: 10.1109/ICME59968.2025.11210050
+
+Xinyi Wu1,2 , Cuiqun Chen3 , Hui Zeng1 , Zhiping Cai1 ∗ , Bo Du2 and Mang Ye2 ∗
+1
+
+College of Computer Science and Technology, National University of Defense Technology, Changsha, China
+2
+School of Computer Science, Wuhan University, Wuhan, China
+3
+School of Computer Science and Technology, Anhui University, Hefei, China
+{wuxinyi17, zenghui116, zpcai}@nudt.edu.cn, chencuiqun@ahu.edu.cn, {dubo, yemang}@whu.edu.cn
+
+Abstract—Sketch-based Person Re-identification (Sketch ReID)
+aims to retrieve a person of interest across disjoint cameras using
+hand-drawn sketches as queries. A significant issue is the limited
+structural clues of sketch queries, which fail to convey highlevel semantic retrieval intentions, such as colors and genders.
+Existing works typically combine sketches and texts for multimodal retrieval, which inevitably introduces modality interference and relies heavily on expensive tri-modal datasets. In this
+paper, we propose, for the first time, an interactive and flexible
+sketch-based person retrieval framework that incorporates user
+feedback to refine the sketch person retrieval ranking without
+text training. A lightweight vision-to-text converting network
+is proposed to represent sketches with equivalent pseudo-word
+tokens, which aims to provide context assistance for interactive
+retrieval. Then, the sketch token can be seamlessly integrated
+with text feedback tokens within CLIP’s textual space for
+explicit sketch-text compositionality, thus achieving feedbackguided ranking refinement. Extensive experiments underscore
+the superiority of our InteractReID. Code will be available at
+https://github.com/littlexinyi/InteractReID.
+Index Terms—Sketch-based person ReID, Interactive retrieval
+
+I. I NTRODUCTION
+Person Re-identification (ReID) [1] involves identifying
+target persons from massive cross-camera videos using query
+clues, which has wide applications in intelligent video surveillance, criminal investigation, and other fields. Traditional
+image-to-image ReID methods [2]–[4] use photos of targets
+as query clues. Despite significant progress made, a crucial
+issue that was often overlooked lies with the availability of
+such photo queries — the target’s visual photos are often not
+readily accessible. Therefore, Sketch ReID [5] was introduced
+to match candidate pedestrian photos using sketch queries,
+where sketches play a role as user-provided clues to capture
+intricate visual details with similar structures.
+However, as Figure 1 (a) shows, although sketch and image
+modalities are both visual expressions, the sketch-based query
+lacks high-level semantic information such as color, posture,
+and gender. The bottleneck is that a single sketch query can
+not fully express the user’s all retrieval intentions and capture
+false positive samples with similar structure appearance, thus
+resulting in limited retrieval performance.
+∗ Corresponding authors.
+
+Fig. 1. (a) Sketch query is inherently inadequate in representing high-level
+semantic features (gender, color), which will erroneously retrieve some false
+positive persons with similar structural appearance (clothing type, length).
+(b) Existing works conduct simple combination between sketch and text for
+retrieval enhancement, which may introduce feature interference due to the
+significant modality gap. (c) Our InteractReID achieves flexible interactive
+person retrieval through context assistance and feedback guidance, enabling
+sketch and text to query in synergy within the textual domain.
+
+Given that natural language is a direct medium for users to
+express their intentions, existing works [6], [7] have introduced
+natural language to alleviate the above issue, where they
+combined the two descriptive modalities as a powerful query
+through feature concatenation for multi-modal joint retrieval
+in a supervised manner (Figure 1 (b)). However, the simple
+combination may distort the optimal sketch-text composed
+semantics due to modality interference. Meanwhile, the supervised training paradigm requires labor-intensive tri-modal
+datasets, making the overall framework less flexible.
+In this paper, we for the first time propose InteractReID,
+an interactive and flexible sketch person retrieval framework
+that can integrate the user’s text feedback to refine the sketch
+person retrieval ranking without text training. Figure 1 (c)
+shows a detailed interaction process. Merely using a sketch
+for person retrieval may not produce ideal ranking results due
+to the missing semantic intents. In our framework, users can
+provide text feedback with high-level semantic details based
+on the initial retrieval results. This allows the model to refine
+the ranking and interactively improve retrieval performance.
+Specifically, we achieve interactive and flexible retrieval
+through Context Assistance and Feedback Guidance. Retrieval
+
+Authorized licensed use limited to: TIANJIN UNIVERSITY. Downloaded on June 09,2026 at 08:52:07 UTC from IEEE Xplore. Restrictions apply.
+
+ranking refinement is conducted on CLIP’s excellent imagetext-aligned embedding space [8], where a textual feedbackguided query is provided to retrieve and rank gallery images
+with higher feature similarities. Meanwhile, to simultaneously
+utilize the sketch information for retrieval, inspired by the
+implicit grammatical composition capability of CLIP’s text
+encoder [8], [9], our idea is to represent the sketch as a
+pseudo-word token to provide context assistance for interactive
+retrieval. The sketch token can be seamlessly and flexibly
+integrated with user-guided text feedback through textual token
+concatenation, enabling sketch and text to query in synergy
+within the image-text-aligned embedding space.
+The above explicit sketch-text compositionality can ingeniously avoid modality interference and also achieve optimal composed semantic mining with CLIP’s textual domain.
+Meanwhile, a vision-to-text converting network is trained
+to identify semantic-equivalent tokens for sketch modalities.
+The total training process only involves self-alignment of the
+sketch and retrieval alignment between sketches and images,
+eliminating the need for extensive textual descriptions.
+The main contributions can be summarized as follows:
+• We introduce a novel interactive person retrieval framework for sketch ReID, flexibly integrating the user’s text
+feedback with sketch queries for ranking refinement.
+• InteractReID enables interactive retrieval through context assistance and feedback guidance, which not only
+achieves optimal semantic composition but also reduces
+the training reliance on text modality.
+• Extensive quantitative and qualitative results from both
+sketch-based and interactive person retrieval scenarios
+highlight the superiority of InteractReID.
+II. R ELATED W ORK
+A. Sketch-based Person Re-identification
+Sketch ReID was first introduced in [5] along with the
+proposal of the PKUSketch dataset. Most works [10]–[12] are
+devoted to alleviating the modality gap for feature alignment,
+where a joint embedding space is built through adversarial
+feature learning, semantic consistency building, or auxiliary
+modality generation. Lin et al. [13] focuses on the sketch
+style subjectivity problem with the proposal of the multi-style
+Market-Sketch-1K dataset. Zhai et al. [6] explores the complementary semantics of sketch and text, and conducts descriptive
+query fusion for higher retrieval accuracy. Following this trend,
+Chen et al. [7] proposes a unified person ReID framework
+with descriptive queries, which can effectively handle varying
+multi-modal data.
+However, existing sketch+text composition methods focus
+on modality late-fusion (i.e., simple feature combination),
+which will introduce modality interference and thus distort
+the optimal sketch-text composed semantics. However, our
+InteractReID aims to mine the optimal composed semantics
+through modality early-fusion (i.e., representing sketch as a
+pseudo-word token and conducting token concatenation with
+the text modality), achieving interactive and flexible sketch
+person retrieval with text feedback.
+
+B. Interactive Image Retrieval with user feedback
+Interactive image retrieval seeks to refine the ranking results
+by incorporating user feedback with their intentions, which is
+popular in fashion search and recommendation fields. Existing
+works focused on learning with feedback in various forms,
+such as sketches [14], spatial layouts [15], attributes [16],
+or texts [17]–[21]. Among them, natural language is widely
+utilized. A classic approach is to design an image-text composition module that generates composed queries similar
+to the target image. VAL [18] proposes multiple composition modules to conduct fine-grained fusion. Additionally,
+CosMo [19] considers this task more comprehensively from
+the image’s style and content aspects and proposes a contentstyle modulator for detailed combination. FashionVLP [20]
+firstly proposes a VLP transformer-based model, conducting
+composed retrieval with the help of prior knowledge from large
+corpora. FashionNTM [22] extends the interaction to multiturn retrieval via cascaded memories.
+However, these works are mainly limited to the fashion
+retrieval field and conduct modality late-fusion. Our InteractReID firstly introduces the idea of feedback refinement into
+the sketch person retrieval field. Different from the above
+innovations, we represent sketches as pseudo-word tokens to
+achieve sketch-text synergy during interactive inference, where
+the sketch tokens can be seamlessly integrated with userprovided text feedback tokens with the help of CLIP’s implicit
+grammatical composition capability.
+III. M ETHODOLOGY
+A. Revisiting CLIP
+CLIP [8] is a typical dual-stream vision-language pretrained model with separate modality encoders, trained on
+400 million image-text pairs [8] with a multi-class N -pair
+contrastive loss to learn a modality-aligned joint embedding
+space. In the training process, the cosine similarity of N
+paired image and text embeddings is maximized, while the
+cosine similarity of other N 2 − N unpaired embeddings is
+minimized. The image encoder V empirically adopts Vision
+Transformer (ViT) [23], which firstly conducts patch embedding for an input image I and then passes them into the vision
+transformer to obtain its visual feature iv = V(I) ∈ Rd . The
+text encoder T conducts similar processing on input word
+sequences W . Words in the sequence will be tokenized by byte
+pair encoding (BPE) and then embedded as a high-dimensional
+vector for further feature learning into Transformer [24], which
+produces final textual feature wt = T(W ) ∈ Rd .
+B. Task-oriented Knowledge Adaptation for CLIP
+CLIP [8] has demonstrated powerful cross-modal semantic alignment capabilities, achieving remarkable performance
+across a wide range of downstream cross-modal tasks [25],
+[26]. However, it is unfeasible to directly apply CLIP to
+downstream multi-modal ReID tasks due to the significant
+domain gap. Therefore, we first conduct task-oriented knowledge adaptation for CLIP through parameter fine-tuning on the
+large-scale sketch-image-text tri-modal dataset Tri-PEDES [7],
+
+Authorized licensed use limited to: TIANJIN UNIVERSITY. Downloaded on June 09,2026 at 08:52:07 UTC from IEEE Xplore. Restrictions apply.
+
+CLIP Fine-tuning
+
+Training
+
+Inference
+CLIP Image
+Encoder
+
+CLIP Image
+Patch
+Encoder
+Embedding
+
+CLIP Image
+Patch
+Embedding Encoder
+
+Gallery images
+
+Context
+Assistance
+
+sharing
+
+Equivalent
+Mapping
+
+CLIP Image
+Encoder
+
+Patch
+Embedding
+
+Prompt
+
+Converting
+Network
+
+User
+
+a photo of
+
+(2)
+Interactive
+Retrieval
+
+“ He is wearing a
+black and white
+hooded sweatshirt,
+jeans, and
+Tokenize
+primarily white
+sneakers with Embedding
+black. He is also
+wearing a wrist
+watch on his left
+wrist.”
+
+(1)
+Sketch-based
+Retrieval
+
+Converting
+Network
+
+Initial
+Ranking
+R@1
+
+R@5
+
+Refined
+Ranking
+
+a photo of
+“Similar striped
+
+CLIP Text
+Encoder
+
+Task-oriented Knowledge Adaption
+
+Tokenized
+embeddings
+
+T-Shirts. But the
+target is a man in
+black brown short
+pants, and wearing
+a red shoes not red
+or blue pants”
+
+CLIP Text
+Encoder
+
+Pseudo-word Token Learning for Sketch
+
+CLIP Text
+Encoder
+Feedback
+Guidance
+
+Gallery images
+
+Interactive Sketch Person Retrieval with Text Feedback
+
+Fig. 2. Training and inference of our proposed InteractReID framework. Left: We first fine-tune CLIP on the multi-modal ReID task for downstream knowledge
+adaptation, where the cross-modal matching loss LCM = Lt2i + Li2t + Ls2i + Li2s is used for modality alignment. Based on the knowledge-adapted
+CLIP, we aim to find the sketch’s equivalent mapping in textual space for interactive retrieval, where two contrastive losses LSCC and LALIGN are utilized
+for sketch’s pseudo-word token generation. Right: During inference, basic sketch person retrieval is conducted through similarity calculation. To interactively
+refine the retrieval ranking, users’ text feedback tw can be integrated with the sketch’s pseudo-word token sw through context and feedback guidance.
+
+aiming to further utilize CLIP’s modality-aligned knowledge
+in the downstream multi-modal ReID tasks.
+As Figure 2 shows, given a batch of B sketch-imagetext pairs, we equip with a cross-modal matching loss to
+pull positive pairs together and push negative pairs apart.
+Specifically, different modalities are associated by embedding
+their cosine similarity distributions into the KL divergence.
+Using text-to-image matching as an example, for each
+pair wit , ivj , we model its matching probability through the
+feature’s cosine similarity, which can be calculated by:
+ 
+exp sim wit , ivj /τ
+pi,j = PB
+,
+(1)
+t v
+k=1 exp (sim (wi , ik ) /τ )
+
+(wit )⊤ ivj
+,
+sim wit , ivj =
+∥wit ∥ ivj
+
+(2)
+
+where τ is a temperature parameter that controls the probability distribution peaks. Then the matching loss from text to
+image can be computed by:
+B
+
+B
+
+1 XX
+Lt2i = DKL (q̂i,j ∥pi,j ) = −
+q̂i,j log pi,j ,
+|B| i=1 j=1
+
+(3)
+
+where q̂i,j is the true matching probability, which is the
+PB
+normalized ground-truth labels qi,j / k=1 qi,k . (qi,j = 1
+means a matched pair with the same identity, and qi,j = 0
+indicates the unmatched pair).
+Symmetrically, the matching loss from image to text Li2t ,
+from sketch to image Ls2i , and from image to sketch Li2s can
+also be calculated by modeling matching probability between
+modality pairs. The total cross-modal matching loss for finetuning CLIP to align sketch-image-text can be formulated as:
+min
+
+{V,T}
+
+LCM = Lt2i + Li2t + Ls2i + Li2s .
+
+(4)
+
+C. Pseudo-word Token Learning for Sketch
+To achieve interactive sketch person retrieval with user’s
+text feedback, based on the vision-text joint embedding space
+provided by CLIP, we aim to find a pseudo-word token that can
+accurately capture the sketch semantics for context assistance,
+thus achieving explicit sketch-text compositionality through
+flexible textual token concatenation.
+Concretely, we train a lightweight vision-to-text converting
+network Φv2w with 1-layer MLP on downstream realistic
+sketch retrieval datasets to achieve the equivalent mapping.
+Given an input sketch query S, we first obtain its visual
+embedding through CLIP’s vision encoder: sv = V(S) ∈
+Rd , which will be sent to the converting network Φv2w
+to generate its equivalent pseudo-word token embedding as
+sw = Φv2w (sv ) ∈ Rd . To maintain the semantic integrity
+and compositionality, inspired by the popular prompt learning paradigm [27], we attach sw at the end of a universal
+prompt sentence pw (e.g., “a photo of”, “an image of”) and
+pass it through CLIP’s text encoder to obtain the sketch’s
+final language-equivalent feature st = T({pw ; sw }) ∈ Rd .
+Revisiting our training objective, we aim to bring the sketch
+features in the textual space st as close as possible to those
+in the visual space sv . To achieve this, we propose a selfcycle contrastive loss to impose training constraints on the
+converting network Φv2w , i.e.,
+min
+
+{Φ,V}
+
+LSCC = Lcst (sv , st ) + Lcst (st , sv ),
+
+
+exp (svi )⊤ sti /τ
+1 X
+,
+Lcst (s , s ) = −
+log P
+v ⊤ t
+|B|
+j∈B exp (si ) sj /τ
+i∈B
+
+exp (sti )⊤ svi /τ
+1 X
+t v
+.
+Lcst (s , s ) = −
+log P
+t ⊤ v
+|B|
+j∈B exp (si ) sj /τ
+i∈B
+v
+
+t
+
+Authorized licensed use limited to: TIANJIN UNIVERSITY. Downloaded on June 09,2026 at 08:52:07 UTC from IEEE Xplore. Restrictions apply.
+
+(5)
+(6)
+
+(7)
+
+
+exec
+/bin/zsh -lc "pdftotext -l 3 'Instant pose extraction based on mask transformer for occluded person re-identification.pdf' -" in /Users/abdslm/Desktop/reid-paper/experiments/paper_materials/pdfs_by_title
+ succeeded in 0ms:
+Pattern Recognition 159 (2025) 111082
+
+Contents lists available at ScienceDirect
+
+Pattern Recognition
+journal homepage: www.elsevier.com/locate/pr
+
+Instant pose extraction based on mask transformer for occluded person
+re-identification
+Ting-Ting Yuan 1 , Qing-Ling Shu 1 , Si-Bao Chen 2 , ∗, Li-Li Huang, Bin Luo
+IMIS Lab of Anhui Province, Anhui Provincial Key Lab of Multimodal Cognitive Computation, MOE Key Lab of ICSP, School of Computer Science and Technology,
+Anhui University, Hefei, 230601, China
+
+ARTICLE
+
+INFO
+
+Keywords:
+Transformer
+Person re-identification
+Instant pose extraction
+Mask aware module
+Local prototype
+
+ABSTRACT
+Re-Identification (Re-ID) of obscured pedestrians is a daunting task, primarily due to the frequent occlusion
+caused by various obstacles like buildings, vehicles, and even other pedestrians. To address this challenge,
+we propose a novel approach named Instant Pose Extraction based on Mask Transformer (MTIPE), tailored
+specifically for occluded person Re-ID. MTIPE consists of several new modules: a Mask Aware Module (MAM)
+for alignment between the overall prototype and the occluded image; a Multi-headed Attention Constraint
+Module (MACM) to enrich the feature representation; a Pose Aggregation Module (PAM) to separate useful
+human information from the occlusion noise; a Feature Matching Module (FMM) in matching non-occluded
+parts; introduction of learnable local prototypes in the defined local prototype-based transformer decoder; a
+Pooling Attention Module (PAM) instead of traditional self-attention module to better extract and propagate
+local contextual information; and Pose Key-points Loss to better match non-occluded body parts. Through
+comprehensive experimental evaluations and comparisons, MTIPE demonstrates encouraging performance
+improvements in both occluded and holistic person Re-ID tasks. Its results surpass or at least match those
+of current state-of-the-art methods in various aspects, highlighting its potential advantages and promising
+application prospects.
+
+1. Introduction
+The purpose of person Re-Identification (Re-ID) is to match specific people in different cameras under different scenes, lighting, and
+perspectives, which has a wide range of applications in surveillance
+systems [1]. With the development of deep learning in recent years,
+person Re-ID has made greater progress [2,3]. However, in practical
+application scenarios, the occlusion of people by different obstacles
+(e.g., buildings, cars, and pedestrians) inevitably affects the accuracy
+of retrieving and matching pedestrians, which remains a problem to be
+solved. Therefore, it is necessary to construct a robust network structure
+for the Re-ID of occluded people [4]. Compared with the holistic
+person Re-ID, recognizing occluded people is more challenging. Firstly,
+random occlusions of body parts by different obstacles will change the
+appearance of the human body and degrade the performance of body
+retrieval and matching. Secondly, occluded objects can resemble human features in some scenarios, leading to erroneous feature learning.
+Some existing approaches use an auxiliary model with artificial key
+
+points and parsed information to address the occlusion challenge. Wang
+et al. [4] proposed a graph convolution network (GCN) to generate
+part features using pose guided key-points and apply graph matching to
+align these part features. However, some key-points extracted from the
+image cover parts of the background that are not related to the human
+body, while there is the problem of less coverage. Huang et al. [5]
+proposed the Reasoning and Tuning Graph Attention Network, which
+guides the Graph Convolutional Network (GCN) to fuzzily suppress the
+noise of occluded part features and propagate the missing semantic information from the holistic image to the occluded image. Miao et al. [6]
+proposed a part and pose guided part feature alignment to select useful
+information from the heavily occluded ones. Yet, since these auxiliary
+models are pre-trained in distinct domains with a gap between test
+and training data, performance can vary, making the overall network
+structure redundant, complex, and less effective. Although progress has
+been made using CNN-related methods to solve such problems, CNNs
+process only one local neighborhood at a time and focus on smaller
+domains, resulting in information loss.
+
+∗ Corresponding author.
+
+E-mail address: sbchen@ahu.edu.cn (S.-B. Chen).
+The two authors contribute equally to this work.
+2
+This work was supported in part by the NSFC Key Project of International (Regional) Cooperation and Exchanges under Grant 61860206004, and in part by
+the National Natural Science Foundation of China under Grant 61976004, 62106006.
+1
+
+https://doi.org/10.1016/j.patcog.2024.111082
+Received 5 April 2023; Received in revised form 10 October 2024; Accepted 14 October 2024
+Available online 22 October 2024
+0031-3203/© 2024 Elsevier Ltd. All rights are reserved, including those for text and data mining, AI training, and similar technologies.
+
+Pattern Recognition 159 (2025) 111082
+
+T.-T. Yuan et al.
+
+• A novel network architecture called MTIPE is designed to tackle
+occlusion challenges in person Re-ID, which integrates global
+feature maps with specific pose information to highlight visible
+body parts and effectively captures pose features, ensuring robust
+alignment of occluded human body images by generating a prototype mask. This alignment enhances the accuracy of matching
+even under significant occlusion scenarios.
+• In order to better retrieve and match the masked person, MAM
+is designed to utilize convolutional neural networks and global
+average pooling to generate masks that capture local information,
+while MACM facilitates the integration of nuanced feature representations across the image. The inclusion of local prototypes in
+the transformer decoder allows the model to focus on the most
+recognizable parts of the human body, thus improving identification accuracy. Additionally, we introduce Posture Key-points
+Loss to mitigate noise and irrelevant background interference
+in occluded images, ensuring cleaner and more precise feature
+extraction.
+• To demonstrate the effectiveness of our method, we perform experiments on occluded and holistic Re-ID datasets. Experimental
+results also verify our proposed method reaches a new state of the
+art on public benchmarks.
+2. Related work
+
+Fig. 1. An illustration of the application of using MTIPE method in occluded person
+Re-ID. We segment the image into non-overlapping patches, and since the occluded
+image does not provide a complete representation, under MTIPE, after the transformer
+encoder decoder process will change the alignment problem to find a visible pattern
+subspace from the overall prototype.
+
+Holistic Person Re-Identification. Holistic person Re-ID has been
+extensively studied as a specific pedestrian retrieval problem across
+non-overlapping cameras. Given a person of interest for a query, the
+goal of Re-ID is to determine whether the person appears in another
+location at a different time captured by a different camera, or at a
+different moment captured by the same camera [10]. Recent Re-ID
+work has achieved state-of-the-art overall performance using partial
+features. Li et al. [3] employed Multi-Granularity Convolutional Layers
+(MCL) to explore pedestrian salient features at different granularities.
+Sun et al. [10] uniformly partition the feature map and learn partiallevel features by multiple classifiers. However, these methods are for
+the holistic human image and do not work well for the Re-ID occluded
+people. While our model can adaptive capture the partial features
+of recognized people through the transformer decoder structure and
+obtain better results in both the Re-ID of holistic people and the Re-ID
+occluded people.
+
+To solve the above problems, we propose Instant Pose Extraction based on Mask Transformer (MTIPE) for Occluded Person Re-ID,
+as shown in Fig. 1. During the training process, less masked images are assigned as high-quality images, and their loss scale will
+be lower than that of lower-quality images with more masking, thus
+making the features between occluded and non-occluded features as
+consistent as possible. Specifically, the proposed MTIPE consists of
+a Mask based Transformer Encoder,including a Mask Aware Module
+(MAM) and a Multi-headed Attention Constraint Module (MACM), a
+Local Prototype based Transformer Decoder, including a Pooling Attention Module (PAM) to perform different parts recognition through
+the transformer encoder–decoder architecture, a Pose Feature Aggregation Module (PFAM) and a Feature Matching Module (FMM). One
+of the most important parts of implementing MTIPE is to select the
+appropriate subspace for matching by generating a valid prototype
+mask.
+Firstly, using the pre-trained mask-based transformer block [3,7],
+the MAM extracts local information through a convolutional neural
+network and generates a mask by global average pooling. In order for
+the multi-headed attention module to aggregate more feature representations with nuances throughout the image, we design a MACM to
+solve the above problem. The PFAM then displays visible body parts by
+integrating global feature map information with pose information from
+the target person. In the decoder, we define learnable local prototypes
+to distinguish body parts and introduce FMM to strengthen encoder
+features. In the local prototype based transformer decoder, each local
+prototype corresponds to the most recognizable part of the occluded human image, and generates a prototype mask focused on local features of
+the human body. Most existing attention-based approaches [8,9] tend
+to focus on the most discriminating parts of the images and ignore other
+parts of the images, such as backpacks or other handheld objects. Given
+varying occlusions, our approach captures diverse person appearances,
+offering Re-ID insights. Therefore we propose a new attention module
+to capture more useful information in the image. Finally, in order to
+evaluate the effectiveness of the proposed MTIPE, we conduct a series
+of experiments on both occluded and holistic Re-ID benchmarks. The
+main contributions are as follows:
+
+Occluded Person Re-Identification. Occluded Re-ID is more challenging than holistic Re-ID due to incomplete body information. Given an
+occluded image, the goal of occluded person Re-ID is to find the same
+person with overall or occluded appearance in disjoint cameras. This
+task is more challenging due to incomplete information and spatial
+misalignment. Gao et al. [11] proposed a Pose-guided Visible Part
+Matching (PVPM) method that jointly learns discriminating features
+with pose guided attention and self-mines partial visibility in an endto-end framework. Miao et al. [6] introduced a new method called
+Pose Guided Feature Alignment (PGFA) that uses pose landmarks to
+separate useful information from occlusion noise. Zhao et al. [12]
+proposed a novel Content-Adaptive Auto-Occlusion Network (CAAO),
+which can dynamically select appropriate occlusion regions in an image
+based on the content of the image and the current training state.
+Tan et al. [13] proposed a more intuitive and effective data-driven
+strategy called Saliency-Guided Patch Transfer (SPT). Combined with
+the Vision Transformer (ViT), SPT separates person instances from
+background obstacles through salient patch selection. Wu et al. [14]
+designed an Occlusion Generator (OGor) to automatically generate artificially occluded images from generic surveillance images, minimizing
+the negative impact of occlusion on feature learning and developed a
+novel multi-granularity contrastive consistency alignment framework,
+leveraging intra-/inter-granularity of visual-text representations for semantic alignment of occluded visuals and query texts. Xia et al. [15]
+2
+
+Pattern Recognition 159 (2025) 111082
+
+T.-T. Yuan et al.
+
+Fig. 2. The framework of the proposed MTIPE model which consists of a mask-based transformer encoder, a prototype-based transformer decoder and a feature matching module.
+The mask-based transformer encoder includes a Multi-headed Attention Constraint Module (MACM) and a Mask Aware Module (MAM). For masked human images, the MACM
+aggregates feature modules from different patches in the multi-head attention to avoid similar feature embedding in different heads. The PFAM module displays visible body parts
+by integrating global feature map information and posture information from the target person. For different images MAM generates a dynamic mask that selects subspace from
+the overall prototype for matching. ‘‘Pooling-Attention’’ denotes the Pooling Attention Module (PAM).
+
+introduced an Attention Disturbance Mask (ADM) module that generates interference noise similar to real occluders, serving as a more
+complex form of occlusion. They developed a Dual-Path Constraint
+(DPC) module, which obtains better supervision information from holistic images through dual-path interaction. Although the above methods
+can solve the occlusion problem to some extent, most of them rely
+heavily on off-the-shelf artificial parsing models or pose estimators.
+In summary, holistic person Re-ID methods have achieved notable
+success by focusing on partial features and attention mechanisms to
+extract discriminative representations. However, these methods often
+fail when applied to occluded person Re-ID due to their reliance on
+complete body information. On the other hand, recent approaches to
+occluded Re-ID, including pose estimation and manual parsing, provide
+promising solutions but depend heavily on pre-trained models, which
+can be limiting. Our proposed method stands out by employing a transformer encoder–decoder architecture to effectively extract and align
+human pose information, thus preserving global context and improving
+performance in both holistic and occluded scenarios. This novel approach addresses the limitations of existing methods and demonstrates
+superior performance on public benchmarks.
+
+𝐻 −𝑃 +𝑆
+𝑊 −𝑃 +𝑆
+⌋×⌊
+⌋.
+(1)
+𝑆
+𝑆
+Since the transformer encoder requires sequences as input, 𝐹 is a linear
+projection mapping the patches to 𝐷 dimensions, a learnable class
+token 𝑥𝑐 𝑙𝑎𝑠𝑠 embedding is added to the input sequence to integrate the
+spatial information. These features are easily affected by factors such as
+camera, so according to the TransReID [17] setting, we add the position
+embedding 𝑃𝐸 and camera embedding 𝐶𝑖𝑑 . The input sequence input
+to the transformer layer can be represented as:
+𝐾 =𝑤×ℎ=⌊
+
+𝑧0 = [𝑥0𝑐 𝑙𝑎𝑠𝑠 ; 𝐹 (𝑥01 ); 𝐹 (𝑥02 ); ...; 𝐹 (𝑥0𝐷 ) + 𝑃𝐸 + 𝜆𝐶𝑖𝑑 ],
+
+(2)
+
+where 𝑧0 is the transformer block input, 𝜆 is a hyper-parameter used to
+balance the weight of the camera embedding. The transformer layers
+are used to learn the feature representation. Our proposed MACM is
+used on the query and key vectors of the last transformer block. Also,
+the class-token representations will be used to train an overall prototype for each class. For the masked images, we send the representation
+connections of the different image patches to the MAM, thus generating
+a dynamic prototype mask for each input image.
+Encoder Supervision Loss. In order to learn the finer-grained local
+features, the hidden features input to the last layer are split into 𝐺
+groups, after that 𝐺 feature groups are input to the shared transformer
+layer, which is used to learn 𝐺 groups of local features, denoted as
+𝑓𝑔𝑙 =[𝑓𝑔1𝑙 , 𝑓𝑔2𝑙 , . . . , 𝑓𝑔𝐺𝑙 ]. For the global features of the encoder 𝑓𝑒𝑛 , a part
+of the output will be the encoder global features 𝑓𝑔𝑒 . For 𝑓𝑔𝑒 and 𝑓𝑔𝑙 ,
+we use identity loss 𝐼 𝐷 and triplet loss 𝑇 , the encoder loss function
+can be expressed as:
+
+3. Proposed method
+In this section, we present the proposed Instant Pose Extraction
+based on Mask Transformer (MTIPE) in detail. As shown in Fig. 2, our
+MTIPE consists of four main components, the Mask based Transformer
+Encoder, the Local Prototype based Transformer Decoder, the Pose
+Feature Aggregation Module and a Feature Matching Module.
+
+1 ∑
+ (𝑃 (𝑓𝑔𝑖𝑙 ))
+𝐺 𝑖 𝐼𝐷
+𝐺
+
+𝑒𝑛 = 𝐼 𝐷 (𝑃 (𝑓𝑔𝑒 )) +
+3.1. Mask based transformer encoder
+
+1 ∑
+ (𝑓 𝑖 ) + 𝛼𝑜𝑟𝑡ℎ𝑜 ,
+𝐺 𝑖 𝑇 𝑔𝑙
+𝐺
+
++𝑇 (𝑓𝑔 𝑒 ) +
+
+The original features are extracted using a pure transformer-based
+model [7] to segment the image into non-overlapping blocks, which
+may lose the local neighborhood information of the blocks. Therefore,
+MTIPE uses a shifted window [16] to obtain patches with overlapping
+pixels. Give an image 𝐼 ∈ R𝐻×𝑊 ×𝐶 , where 𝐻 , 𝑊 , 𝐶 denote its height,
+width, and number of channels, respectively. We use a sliding window
+to segment the image into 𝐾 fixed-size (ℎ × 𝑤) patches, denote the step
+size as 𝑆, and the patch size of each image as 𝑃 . Then the number of
+patches 𝐾 can be expressed as:
+
+(3)
+
+where 𝑜𝑟𝑡ℎ𝑜 will be illustrated in Eq. (8).
+3.1.1. Mask Aware Module (MAM)
+We propose MAM with the aim of learning a dynamic mask to cut
+the entire prototype and selecting appropriate subspace for matching,
+which is one of the key ideas of MTIPE. As shown in Fig. 3, MAM
+uses the reshaped image representation as 𝑓𝑟 ∈ R𝐻×𝑊 ×𝐶 , and a
+prototype mask is generated after global average pooling, using the
+3
+
+
+codex
+前三篇已经读完。一个初步信号是：遮挡论文仍在围绕“可见部位对齐”和“别依赖外部姿态模型”打转；普通 ReID 论文开始把跨样本上下文当作注意力来源，这对我们后面构造“跨视角、跨版本、跨模态的结构先验”有借鉴价值。
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "pdftotext -l 3 'Latent Diffusion-Guided Feature Inpainting for Occluded Person Re-Identification With Hybrid Re-Ranking.pdf' -" in /Users/abdslm/Desktop/reid-paper/experiments/paper_materials/pdfs_by_title
+ succeeded in 0ms:
+This article has been accepted for publication in IEEE Transactions on Circuits and Systems for Video Technology. This is the author's version which has not been fully edited and
+content may change prior to final publication. Citation information: DOI 10.1109/TCSVT.2026.3681512
+
+1
+
+Latent Diffusion-Guided Feature Inpainting for Occluded Person
+Re-Identification With Hybrid Re-Ranking
+Pratyay Dutta, Student Member, IEEE, and Bir Bhanu, Life Fellow, IEEE
+
+Abstract—Occlusion remains a persistent challenge in person
+re-identification (ReID). Existing approaches either rely on
+human pose estimation and semantic parsing, or attempt to
+make models resistant to occlusion through real or synthetic
+occlusion augmentations. While these methods suppress the effect
+of occlusion, they do not solve the underlying problem, since
+the corrupted feature representation itself remains occluded. To
+directly address this gap, we formulate occlusion as a feature-level
+distortion and propose a Latent Diffusion guided De-Occluder
+(DDO) that learns to inpaint corrupted feature embeddings
+and reconstruct clean, identity-preserving representations in the
+latent space. By providing the downstream ReID model with
+occlusion-free priors, our method eliminates the need for the
+backbone to model occlusion explicitly, leading to inherently more
+robust retrieval. Furthermore, recognizing that person ReID is
+conventionally a closed-set problem where gallery identities are
+known at test time, we introduce a Hybrid Re-Ranking (HRR)
+scheme. HRR directly addresses the limitations of standard
+re-ranking by leveraging centroid-based identity anchors to
+refine k-reciprocal re-ranking, thus boosting retrieval precision
+while suppressing noise. Extensive experiments on standard and
+occlusion-focused benchmarks confirm that our approach not
+only overcomes the shortcomings of existing occlusion handling
+strategies but also achieves new state-of-the-art performance,
+validating the effectiveness of de-occluding features rather than
+merely resisting occlusion.
+
+representation. Our model operates entirely in feature space,
+requiring neither explicit occlusion masks nor paired cleanoccluded images. By removing occlusion-induced artifacts, the
+resulting embeddings enable more accurate and robust retrieval.
+To achieve our goal of feature inpainting, we introduce a latent
+Diffusion guided De-Occluder (DDO), a generative framework that reconstructs clean identity-preserving embeddings
+from partially occluded inputs. Unlike previous approaches
+that rely on heuristic masking, auxiliary pose/gait/silhouette/3D
+occupancy estimation [5]–[7] our method leverages the
+generative capabilities of latent diffusion models [8] to
+synthesize missing feature content directly in the embedding
+space, enabling occlusion-aware representations to remain
+discriminative under severe visual clutter.
+
+I. I NTRODUCTION
+Person Re-Identification (ReID) is a long-standing and
+challenging problem in computer vision [1]–[4], where the
+goal is to match identities of individuals captured under
+varying viewpoints, lighting conditions, and occlusion across
+disjoint camera views. Despite impressive progress powered by
+transformer-based architectures and metric learning techniques,
+two fundamental limitations remain: (i) the heavy reliance on Fig. 1: Illustration of occlusion-induced distortion in feature
+suppression strategies that make downstream models resistant space. Each colored dot represents a clean feature embedding
+to occluded features, rather than explicitly removing the Fclean , while the corresponding x mark within the dashed radius
+occlusion-induced corruption at the source, and (ii) naïve denotes its occluded counterpart Fo . The distortion is modeled
+(T ) from Fclean to Fo , which our method
+retrieval strategies that underutilize the distribution of the as a transformation
+−1
+seeks
+to
+invert
+(T
+)
+to reconstruct identity-preserving features
+gallery set embeddings.
+(See
+Equation
+1).
+In this work, we address both of these shortcomings through
+two novel innovations. First, we propose a novel method to
+tackle occlusion by reconstructing clean feature embeddings
+Unlike standard Denoising Diffusion Probabilistic Models
+from occluded inputs in the latent space. Treating occlusion (DDPM) [9] and Denoising Score Matching (DSM) [10] that
+as structured noise as illustrated in Figure 1, we formulate the learn denoising in an unsupervised manner, DDO leverages
+problem as a Feature Inpainting task and employ a diffusion- explicit paired supervision between clean and occluded features,
+based reconstruction process to recover an identity-preserving with a reconstruction loss acting as a guidance term analogous
+Pratyay Dutta is with the Department of Computer Science, University to classifier guidance [11]. This supervised paradigm yields
+of California, Riverside, CA 92521. Bir Bhanu is with the Department of
+a deterministic reconstruction operator that recovers specific
+Electrical and Computer Engineering, University of California, Riverside, CA identity-preserving embeddings rather than sampling from
+92521, USA.
+a distribution, making it uniquely suited for feature-space
+E-mail: (pdutt005@ucr.edu and bbhanu@ucr.edu)
+This research was supported by Bourns Endowment funds.
+inpainting in ReID where identity consistency is paramount.
+Authorized licensed use limited to: TIANJIN UNIVERSITY. Downloaded on June 09,2026 at 09:07:05 UTC from IEEE Xplore. Restrictions apply.
+© 2026 IEEE. All rights reserved, including rights for text and data mining and training of artificial intelligence and similar technologies. Personal use is permitted,
+but republication/redistribution requires IEEE permission. See https://www.ieee.org/publications/rights/index.html for more information.
+
+This article has been accepted for publication in IEEE Transactions on Circuits and Systems for Video Technology. This is the author's version which has not been fully edited and
+content may change prior to final publication. Citation information: DOI 10.1109/TCSVT.2026.3681512
+
+2
+
+Notably, DDO is designed as a plug-and-play module that
+can be seamlessly integrated into any person ReID model using
+Vision Transformers (ViT) as the feature extractor.
+Second, we propose a novel Hybrid Re-Ranking scheme
+(HRR) that directly leverages the closed-world nature of the
+person ReID problem. Unlike open-set scenarios such as police
+CCTV surveillance, where probe/query identities are not a
+part of a registered gallery, person ReID is conventionally
+closed-set: the probe/queries are a subset of a registered
+gallery set of known individuals whose identities are available
+at test time. This assumption is realistic in applications
+such as access control in secure facilities, where enrolled
+identities are verified during registration. The closed-world
+setting enables identity-aware retrieval strategies, and recent
+work has shown the empirical strength of centroid-based
+representations [12], [13]. Building on this, HRR computes
+identity-wise centroids in the embedding space and restricts
+re-ranking to centroid-curated candidate sets, thereby reducing
+noise from irrelevant samples. This principled formulation treats
+re-ranking as a centroid-guided refinement over the manifold
+structure of embeddings, yielding a mathematically grounded
+and computationally efficient improvement in retrieval accuracy.
+We integrate both innovations into a unified retrieval pipeline
+and evaluate it on several standard benchmark datasets including Market-1501 [14], CUHK03 [15] and occlusion-focused
+datasets such as Occluded-Duke [16] and Occluded ReID [17]
+and P-ETHZ [18]. Our approach achieves new state-of-theart performance across the board, in terms of both mean
+Average Precision (mAP) and Cumulative Matching Characteristic (CMC) Rank-1 scores, validating the effectiveness and
+generalizability of our approach.
+In summary, our contributions are:
+• We formulate the occlusion problem as a feature-level
+inpainting task, wherein occluded regions in the latent space are reconstructed to recover clean, identitypreserving feature embeddings. These refined features are
+then used for person re-identification, enabling robust
+retrieval under severe occlusion.
+• We introduce the first latent Diffusion guided DeOccluder (DDO) module for person ReID, capable
+of reconstructing semantically complete features from
+occluded inputs in a fully self-supervised manner. DDO
+is designed as a plug-and-play occlusion module that can
+be integrated with any ViT-based ReID architecture.
+• We propose a Hybrid Re-Ranking (HRR) algorithm
+that leverages gallery identity centroids to guide a focused
+re-ranking process, improving retrieval precision and
+efficiency. This unified retrieval framework achieves stateof-the-art results on multiple standard and occluded ReID
+datasets.
+• We obtain state-of-the-art performance on all ReID
+datasets we have trained and tested our model on (Market1501, CUHK-03, MSMT17, Occluded-Reid, Occluded
+Duke, P-DukeMTMC, PETHZ).
+
+spatial discrimination via horizontal stripes, yet fixed partitioning is brittle under pose variation and occlusion. Bak et al. [20]
+modeled local discriminative regions with deformable patches,
+but rigid patch layouts still fail under heavy occlusion.
+Recent occlusion-aware ReID methods mainly suppress or
+reweight corrupted regions within the backbone. Liu et al. [21]
+use adaptive position extraction with occlusion weighting, while
+Dong et al. [22] disentangle identity cues from occlusion noise
+in a transformer. Gao et al. [23] couple semantic parsing
+with hallucination to infer missing parts, and Yan et al. [24]
+enhance visible parts via part-aware residual learning. With
+vision transformers [25], ViT [26] capture global dependencies
+but offers limited inductive bias for dense correspondence, and
+TransReID [27] adds side-information embeddings and patchlevel augmentation yet remains sensitive to misalignment and
+occlusion.
+To address pose variations, works like Pose-Guided
+ReID [48] and SPReID [41] incorporate human pose or semantic parsing to improve alignment. However, these methods
+require accurate pose estimators and may propagate errors
+under poor visibility. HOReID [16] uses high-order attention
+to emphasize visible regions, but lacks an explicit reconstruction
+mechanism for occluded features.
+Generative methods for occlusion handling include GANbased approaches [5], [47] that operate in pixel space to
+augment training data, generating pose-varied or adversarially
+occluded samples to improve robustness. While visually plausible, these methods are prey to mode collapse and vanishing
+gradients [49], [50] and lack strong feature-space guidance
+(the ReID model still processes corrupted features and must
+implicitly learn to handle occlusions), often failing to improve
+downstream matching under severe test-time occlusion. In
+contrast, latent diffusion models [8] offer a principled generative
+framework for feature-space reconstruction, where iterative
+denoising [9] enables fine-grained inpainting of corrupted
+embeddings aligned with the clean feature distribution.
+Post-processing techniques such as k-reciprocal reranking [51], graph-based propagation [52] and soft biometrics
+for re-ranking [53] improve ranking quality by exploiting local
+feature neighborhoods, but suffer from noise amplification
+when gallery sets exhibit high intra-class variance or contain
+outliers. Conversely, centroid-based retrieval methods [13] use
+prototype embeddings for direct instance-to-centroid matching,
+reducing intra-class variance but sacrificing finer feature-level
+discriminability and local manifold structure.
+To systematically position our approach within the broader
+landscape of occlusion handling, Table I categorizes the major
+methodological directions in the literature, contrasting their
+core principles and occlusion treatment strategies with our
+inverse-transform formulation.
+In contrast to these approaches, our method addresses
+occlusion at its source by learning a generative inverse mapping
+that reconstructs clean feature representations before they
+reach the ReID backbone, thereby eliminating the need for
+augmentation, pose estimation, semantic parsing, or featureII. R ELATED W ORK
+level attention mechanisms. We provide explicit feature-space
+Early person ReID methods largely used CNN backbones. guidance through diffusion-based inpainting, not implicit
+Sun et al. [19] formulated ReID as classification and improved robustness through data augmentation. This principled
+Authorized licensed use limited to: TIANJIN UNIVERSITY. Downloaded on June 09,2026 at 09:07:05 UTC from IEEE Xplore. Restrictions apply.
+© 2026 IEEE. All rights reserved, including rights for text and data mining and training of artificial intelligence and similar technologies. Personal use is permitted,
+but republication/redistribution requires IEEE permission. See https://www.ieee.org/publications/rights/index.html for more information.
+
+This article has been accepted for publication in IEEE Transactions on Circuits and Systems for Video Technology. This is the author's version which has not been fully edited and
+content may change prior to final publication. Citation information: DOI 10.1109/TCSVT.2026.3681512
+
+3
+
+TABLE I: Principles of different methods for handling occlusion in person ReID. The Comments column contrasts each approach
+with our latent Diffusion based De-Occluder (DDO) and Hybrid Re-Ranking (HRR) formulation.
+Principle
+
+Work
+
+Datasets
+
+Comments
+
+Mathematical modeling of occlusion
+in feature space
+
+Boshra, Bhanu [28], [29]
+
+MSTAR SAR data
+
+Theoretical framework for occlusion effects but
+no feature reconstruction or deep learning integration.
+
+Global or part-based CNN features
+with fixed/deformable partitions
+
+B˛
+ak,
+Carr
+[20],
+Jonnalagedda et al. [30],
+Sun et al. [31], Wang et
+al. [32], Zheng et al. [33]
+
+Market-1501,
+DukeMTMC
+
+Improve spatial granularity but embeddings remain corrupted under occlusion; no explicit
+inversion.
+
+Motion/spatio-temporal cues to suppress occluded crops
+
+Liu et al. [34], Zhang et
+al. [35]
+
+Video ReID benchmarks
+
+Rely on temporal redundancy; suppress rather
+than reconstruct features.
+
+Transformer self-attention with patchlevel augmentation
+
+Dosovitskiy et al. [26], He
+et al. [27], Li et al. [36],
+Liu et al. [37], Yao et
+al. [38] , Zhao et al. [39]
+
+Market-1501, MSMT17,
+CUHK03
+
+Capture long-range dependencies but remain
+sensitive to occlusion; augmentation improves
+tolerance, not de-occlusion.
+
+Auxiliary cues (pose, gait, attributes)
+for feature learning
+
+Fan et al. [40], Gao et
+al. [23], Kalayeh et al. [41],
+Ke et al. [42], Wang et
+al. [16], Zheng et al. [43]
+
+Market-1501, CUHK03,
+BRIAR, GREW
+
+Require external estimators/hardware; depend on
+external estimator quality. No explicit occlusion
+inversion; improve alignment but do not reconstruct missing content.
+
+Occlusion aware modules - augmentation and attention/masking for robustness
+
+Chen et al. [7], Dong et
+al. [22], Dutta et al. [44],
+Li et al. [45], Liu et
+al. [21], Yan et al. [24],
+Zhang et al. [46],
+
+Market-1501,
+DukeMTMC, CUHK03,
+MSMT17, Occluded-ReID
+
+Train backbones to suppress/reweight occlusion
+via attention/masking; embeddings remain occluded at test time; still operate on corrupted
+features without inverse mapping.
+
+GAN-based pixel-space hallucination
+
+Huang et al. [47], Liu et
+al. [5]
+
+Market-1501, CUHK03
+
+Hallucinate missing parts in pixel space; weak
+feature-space supervision limits matching improvements.
+
+DDO - Explicit de-occlusion in feature
+space. HRR - Centroid based filtering
+for retrieval augmentation (This work)
+
+Dutta, Bhanu (This paper)
+
+Market-1501, CUHK03,
+MSMT17,
+OccludedReID,
+Occluded-Duke,
+P-ETHZ,
+Partial-ReID,
+GRID, PRID
+
+Learns explicit inverse transform to reconstruct clean embeddings from occluded features before ReID. Plug-and-play module; no
+pose/parsing/masks/augmentation during ReID
+training. Novel algorithm to restrict re-ranking
+to centroid-curated subsets.
+
+ViT
+Encoder
+
+DDO
+Feature
+Inpainting
+
+CUHK03,
+
+REID
+Module
+
+HRR
+Distance matrix
+
+Centroid based
+Distance matrix
+re-ranking
+
+Fig. 2: Methodology Overview: Image features Fo are extracted using a ViT encoder and processed through the pretrained
+DDO module to reconstruct clean feature embeddings Fclean . The downstream ReID module utilizes Fclean to compute a
+preliminary distance matrix, which the HRR module subsequently reranks to produce the final distance matrix for retrieval.
+
+formulation enables DDO to function as a plug-and-play
+III. M ETHODOLOGY
+module compatible with any ViT-based ReID architecture.
+Our approach models occluded and unoccluded features as
+Furthermore, unlike prior centroid-based methods [54], [55]
+that use centroids for direct retrieval, HRR formulates a novel distinct but correlated representations in the latent space. Rather
+graph-theoretic framework where centroids perform topology than adapting the ReID model to tolerate occlusion-induced
+pruning to construct high-confidence subgraphs before local k- distortions, we explicitly learn the transformation from clean
+reciprocal re-ranking [51]. This hybrid approach mathematically to corrupted features caused by occlusion. This enables the
+guarantees denser reciprocal neighborhoods with reduced false reconstruction of identity-preserving embeddings by inpainting
+positives (Equations 15–16), addressing the noise amplification the corrupted regions back to their original, informative form.
+Our person re-identification pipeline, schematically explained
+problem inherent in standard re-ranking when gallery sets
+exhibit high intra-class variance. Together, these contributions in Figure 2, directly addresses partial occlusions using a Latent
+yield consistent state-of-the-art performance across all evaluated Diffusion guided De-Occluder (DDO). Given an occluded
+benchmarks, validating the effectiveness of explicitly removing feature embedding Fo extracted by the ViT encoder, the DDO
+occlusion corruption rather than adapting models to tolerate it. module learns a mapping Fclean = DDO(Fo ) where Fclean
+approximates the clean, unoccluded embedding. This mapping
+is optimized via denoising objectives and a reconstruction loss
+Authorized licensed use limited to: TIANJIN UNIVERSITY. Downloaded on June 09,2026 at 09:07:05 UTC from IEEE Xplore. Restrictions apply.
+© 2026 IEEE. All rights reserved, including rights for text and data mining and training of artificial intelligence and similar technologies. Personal use is permitted,
+but republication/redistribution requires IEEE permission. See https://www.ieee.org/publications/rights/index.html for more information.
+
+
+exec
+/bin/zsh -lc "pdftotext -l 3 'Learning From Yourself to Others for Unsupervised Visible-Infrared Re-Identification.pdf' -" in /Users/abdslm/Desktop/reid-paper/experiments/paper_materials/pdfs_by_title
+ succeeded in 0ms:
+IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 35, NO. 10, OCTOBER 2025
+
+9823
+
+Learning From Yourself to Others for Unsupervised
+Visible-Infrared Re-Identification
+Wenhui Ji , Xu Cheng , Member, IEEE, Yan Jiang , Zhaodong Sun , and Guoying Zhao , Fellow, IEEE
+
+Abstract—Unsupervised
+visible-infrared
+person
+reidentification (US-VI-ReID) aims to match unlabeled pedestrian
+images captured under varying lighting conditions. The key
+challenge lies in generating accurate pseudo-labels, alongside
+alleviating the significant modality gap between visible and
+infrared modalities. Existing methods mainly focus on mitigating
+the effects of noisy labels through loss functions during
+backward propagation. However, these noisy labels already
+influence the forward propagation, leading to incorrect crossmodality correspondences. To address this issue, we propose
+a Hierarchical Centrality Collaborative Learning (HCCL)
+framework for US-VI-ReID, which proactively identifies noisy
+labels during the forward propagation. The rationale behind
+HCCL is that intra-modality refinement serves as the foundation
+for establishing cross-modality correspondences, reflecting the
+principle of learning from yourself to others. For intra-modality
+learning, we propose a Closeness Centrality Selection (CCS),
+quantifying sample confidence using closeness centrality to
+identify noisy samples. By discarding the noisy samples during
+forward propagation, CCS mitigates their adverse effects
+and ensures identity-consistent representation learning. For
+cross-modality learning, a Hierarchical Consistency Matching
+(HCM) is proposed to establish local instance-level label
+associations by leveraging bidirectional consistency with the
+most reliable samples identified during intra-modality learning.
+These local associations are then propagated to guide the
+global cluster-level cross-modality correspondences. Extensive
+experiments demonstrate that our HCCL achieves competitive
+performance on mainstream datasets, even surpassing some
+supervised counterparts. Additionally, outstanding results on
+corrupted datasets verify its generalizability and robustness.
+Index Terms—Person re-identification, cross-modality, unsupervised learning, noisy labels.
+Received 15 January 2025; revised 3 April 2025 and 23 April 2025;
+accepted 13 May 2025. Date of publication 22 May 2025; date of current
+version 6 October 2025. This work was supported in part by the Research
+Council of Finland (former Academy of Finland) Academy Professor Project
+EmotionAI under Grant 336116, Grant 345122, and Grant 359854; in part by
+the University of Oulu and Research Council of Finland Profi 7 under Grant
+352788; and in part by the National Natural Science Foundation of China
+under Grant 61802058 and Grant 6191153039. This article was recommended
+by Associate Editor R. Ghosh. (Corresponding author: Xu Cheng.)
+Wenhui Ji and Xu Cheng are with the School of Computer Science,
+Nanjing University of Information Science and Technology, Nanjing 210044,
+China, and also with the State Key Laboratory of Integrated Services Networks, Xidian University, Xi’an 710071, China (e-mail: wenhui@nuist.edu.cn;
+xcheng@nuist.edu.cn).
+Yan Jiang and Zhaodong Sun are with the School of Computer Science,
+Nanjing University of Information Science and Technology, Nanjing 210044,
+China, and also with the Center for Machine Vision and Signal Analysis,
+University of Oulu, 90014 Oulu, Finland (e-mail: jiangyan@nuist.edu.cn;
+zhaodong.sun@nuist.edu.cn).
+Guoying Zhao is with the Center for Machine Vision and Signal Analysis,
+University of Oulu, 90014 Oulu, Finland (e-mail: guoying.zhao@oulu.fi).
+Digital Object Identifier 10.1109/TCSVT.2025.3572697
+
+I. I NTRODUCTION
+ISIBLE-INFRARED person re-identification (VI-ReID)
+aims to match visible and infrared images captured from
+non-overlapping cameras. It has become intensively researched
+recently in light of its importance in 24-hour monitoring [1],
+[2], [3], [4], [5], [6], [7], [8], [9]. One primary challenge of
+VI-ReID lies in the huge cross-modality discrepancy between
+visible and infrared modalities. Meanwhile, it also encounters
+intra-modality variation like traditional ReID (i.e., posture
+variations, viewpoint changes, etc.), resulting in increased
+difficulties.
+Numerous works have been devoted to addressing these
+challenges by constructing auxiliary modalities [10], [11],
+[12], [13], [14] or learning shared representations [15], [16],
+[17], [18], [19], [20] and have achieved encouraging progress.
+However, the success predominantly benefits from supervised
+learning over well-annotated human-labeled data. In reality,
+the collection and annotation of such data are exceedingly
+time-consuming and labor-intensive. Moreover, real-world
+surveillance systems amass vast amounts of data daily, making manual annotation impractical. Therefore, unsupervised
+visible infrared person re-identification (US-VI-ReID) has garnered widespread attention in the community, which directly
+performs cross-modality retrieval without the need for data
+annotations.
+In US-VI-ReID, widely studied works [21], [22], [23],
+[24], [25], [26] focus on establishing cross-modality correspondences through various strategies, e.g., cross-modality
+similarity metrics [22], [24], [26], graph matching algorithm [25], [27], [28], optimal transport strategy [29], [30],
+etc. These methods primarily consider how to mine crossmodality correspondences based on pseudo-labels generated
+through clustering algorithms. In fact, the consistency between
+modalities is positively correlated with the quality of the
+pseudo-labels. However, due to the inherent variations within
+and between modalities, the clustering process inevitably
+introduces noise into the pseudo-labels, i.e., noisy labels,
+making it challenging to establish dependable cross-modality
+correspondences.
+Specifically, 1) from the intra-modality perspective, variations within a modality can lead to individuals with different
+appearances being misidentified as the same person due to
+similar features, such as clothing or body shapes, as illustrated by the noisy labels in Fig. 1 (a). The pedestrian
+features assigned the wrong pseudo-labels are termed noisy
+samples. Existing methods [22], [23], [24] optimize noisy
+
+V
+
+1051-8215 © 2025 IEEE. All rights reserved, including rights for text and data mining, and training of artificial intelligence and
+similar technologies. Personal use is permitted, but republication/redistribution requires IEEE permission.
+See https://www.ieee.org/publications/rights/index.html for more information.
+Authorized licensed use limited to: TIANJIN UNIVERSITY. Downloaded on June 09,2026 at 08:55:27 UTC from IEEE Xplore. Restrictions apply.
+
+9824
+
+IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 35, NO. 10, OCTOBER 2025
+
+Fig. 1. Illustration of our motivation. (a) Existing methods overlook the
+issue of noisy labels caused by intra-modality variation during the clustering
+process, leading to incorrect cross-modality correspondences. (b) In contrast,
+our method proactively identifies noisy labels during forward propagation,
+thereby ensuring the establishment of correct cross-modality correspondences.
+
+samples in the wrong direction during subsequent training.
+This perpetuates a vicious cycle that not only undermines
+the reliability of intra-modality similarity measurements but
+also impedes the learning of consistent representations of
+each individual. 2) From the cross-modality perspective,
+most approaches directly use noisy labels without effective
+handling to establish cross-modality correspondences, leading
+to wrong cross-modality matches, as depicted by the incorrect
+correspondence in Fig. 1 (a). This confusion complicates
+the learning of data distribution and feature representations,
+making robust feature matching exceptionally challenging.
+Although current advanced methods [25], [27], [28] attempt
+to address this issue by designing specific loss functions and
+employing backward propagation, which has shown some
+effectiveness, they overlook a critical flaw: these noisy samples
+are treated as correct during forward propagation and have
+exerted negative impacts in the current iteration, making them
+even harder to detect and rectify later.
+Based on the above observations and analysis, we explore
+whether US-VI-ReID can directly discard noisy samples during intra-modality learning to obtain reliable samples within
+each cluster, subsequently establishing cross-modality correspondences. This stepwise process embodies the principle
+of learning from yourself to others, where intra-modality
+refinement serves as the foundation for robust cross-modality
+matching. Just as the saying goes, forging iron requires one’s
+own hardness. Driven by this motivation, we propose a Hierarchical Centrality Collaborative Learning (HCCL) framework,
+incorporating the Closeness Centrality Selection (CCS) and
+the Hierarchical Consistency Matching (HCM), as shown in
+Fig. 1 (b). Specifically, CCS calculates the closeness centrality score for each sample within a cluster according to
+the sum of inverse shortest path distances. When samples
+show strong associative connections with others in the same
+cluster, as reflected by a high closeness centrality score, they
+
+are regarded as reliable samples. Subsequent computations
+are centered on these samples stored in modality-specific
+memories, while those falling below a predefined positional
+threshold are regarded as noisy samples and subsequently
+discarded. It is critical to highlight that this process occurs
+directly during forward propagation, allowing for immediate
+feature adjustment without any lag.
+To establish dependable cross-modality correspondences,
+the proposed HCM employs a novel local-to-global hierarchical matching paradigm, reinforced by the bidirectional
+consistency local matching and global prototype reliability
+alignment. At the local level, HCM associates cross-modality
+samples based on the following two rationales: 1) images of
+the same identity should show similarity to reliable samples
+identified by CCS, and 2) bidirectional affinity should be
+exhibited between reliable samples that represent the same
+identity across different modalities. Subsequently, these local
+label associations serve as references to guide the establishment of global cross-modality correspondences, thereby
+reducing the cross-modality gap.
+Generally, our contributions can be summarized as follows:
+• We propose a novel Hierarchical Centrality Collaborative Learning (HCCL) framework for US-VI-ReID that
+proactively identifies reliable samples and establishes
+dependable cross-modality correspondences. This framework not only promotes the learning of identity-consistent
+intra-modality representations but also enhances the
+robustness against multiple discrepancies.
+• We design a Closeness Centrality Selection (CCS) to
+quantify and select reliable samples within each cluster
+by using closeness centrality, serving as the reliable
+prototypes. This process occurs directly during forward
+propagation, ensuring immediate adjustment of features.
+• Hierarchical Consistency Matching (HCM) is proposed
+to establish reliable cross-modality correspondences
+in a local-to-global manner, which leverages bidirectional consistency for instance-level local matching, and
+then propagates these correspondences with cluster-level
+affinities to guide the global label associations.
+• Extensive experiments on the SYSU-MM01 and RegDB
+datasets demonstrate the effectiveness of HCCL, which
+achieves competitive performance and even surpasses
+some recently supervised VI-ReID methods. Moreover,
+the outstanding performance on corrupted datasets verifies
+the generalizability and robustness of our HCCL.
+II. R ELATED W ORK
+A. Unsupervised Single Modality Person ReID
+Unsupervised single-modality person re-identification
+(ReID) aims to match identities across non-overlapping
+visible cameras without relying on manually labeled
+training data. Existing works [31], [32], [33], [34], [35],
+[36], [37] primarily utilize clustering algorithms [38] to
+generate pseudo-labels, serving as a transitional step towards
+supervised methodologies. Specifically, Cluster Contrast
+[32] employed centroid representations to describe each
+cluster and designed contrastive loss at the cluster level to
+
+Authorized licensed use limited to: TIANJIN UNIVERSITY. Downloaded on June 09,2026 at 08:55:27 UTC from IEEE Xplore. Restrictions apply.
+
+JI et al.: LEARNING FROM YOURSELF TO OTHERS FOR UNSUPERVISED VISIBLE-INFRARED RE-IDENTIFICATION
+
+alleviate the feature inconsistency problem. Chen et al. [33]
+introduced pairwise similarity scores as soft pseudo labels to
+enhance consistency, alleviating label noise and improving
+model robustness. Cheng et al. [39] proposed a Neighbour
+Consistency guided Pseudo-Label Refinement (NCPLR)
+which utilizes the predictions from neighborhood samples to
+refine labels.
+However, these works are developed for the single modality
+where pedestrian images are captured under well-illumination
+environments, containing abundant color information. In realworld scenarios, the lighting around pedestrians may change
+during the 24-hour retrieval, cameras will capture infrared
+images in the night or low-light scenes. These challenges
+raise important cross-modality ReID problems, such as visibleinfrared person re-identification, which are difficult to address
+with existing single-modality ReID methods due to the large
+discrepancies between visible and infrared modalities.
+B. Supervised Visible-Infrared Person ReID
+Visible-infrared person re-identification (VI-ReID) has
+attracted considerable attention for its capability to identify the same person even in poor illumination conditions.
+Extensive efforts [12], [16], [17], [18], [40], [41], [42], [43]
+have been devoted to addressing the modality discrepancy
+between visible and infrared modalities, which can be broadly
+categorized into two main classes: constructing auxiliary
+modalities [10], [11], [12], [14], [41], [44] and learning
+modality-shared features [15], [16], [17], [18], [19], [20]. For
+the first category, they focus on generating synthetic images
+or features as the intermediate modality. For instance, the
+Modality Unifying Network (MUN) was introduced in [10] by
+constructing a robust auxiliary modality, which encapsulated
+rich semantic information from visible and infrared images.
+In addition, Zhang et al. [41] proposed Adaptive Middlemodality Alignment Learning (AMMA), which employs an
+adaptive middle-modality learning strategy at both image level
+and feature level to mitigate the modality discrepancy. As for
+the second category, mainstream works aim at aligning feature
+distribution by embedding heterogeneous images into a shared
+feature space. Specifically, Zhang and Wang [18] proposed
+the Diverse Embedding Expansion Network (DEEN) to learn
+the multi-scale modality-invariant representation. Semantic
+Alignment and Affinity Inference framework (SAAI) [19] was
+proposed to align semantic part features with the learnable
+prototypes and improve inference with affinity information.
+However, the impressive performance of the above methods
+heavily relies on identity annotations, which are not only
+time-consuming and labor-intensive but also impractical for
+the massive data generated daily by real-world surveillance
+systems. Therefore, unsupervised visible-infrared person reidentification (US-VI-ReID) has been intensively researched
+in recent years.
+C. Unsupervised Visible-Infrared Person ReID
+Unsupervised Visible-Infrared Person Re-Identification
+(US-VI-ReID) has drawn significant attention in recent years
+due to its ability to operate without requiring data annotation,
+
+9825
+
+making it highly applicable in real-world surveillance scenarios. Existing approaches [21], [24], [26], [39], [45], [46],
+[47], [48], [49], [50], [51] generally consist of two primary
+steps: generating pseudo-labels using clustering algorithms
+and establishing cross-modality correspondences through various strategies, such as cross-modality similarity metrics [22],
+[24], [26], [46], graph matching algorithms [25], [27], [28],
+and optimal transport strategies [29], [30]. For instance,
+Yang et al. [22] introduced a novel Augmented DualContrastive Aggregation (ADCA) learning framework that
+aggregates heterogeneous memory with cluster-level similarity, serving as a baseline for unsupervised VI-ReID. PGM
+[25], on the other hand, achieved competitive performance
+through progressive graph matching, mining cross-modality
+correspondences globally. OTLA [29] and DOTLA [30] utilized the optimal transport strategy to effectively associate
+positive cross-modality identities. In addition, MULT [51]
+effectively captured both homogeneous and heterogeneous
+fine-grained instance-level structures, facilitating the establishment of high-quality cross-modality label associations. Shi
+et al. [50] proposed a progressive contrastive learning with
+hard and dynamic prototypes method, focusing on commonality, divergence and variety. GUR [24] adopted a bottom-up
+domain strategy to learn grand unified representation, robustly
+against the hierarchical discrepancy. Yang et al. [26] proposed
+a Shallow-Deep Collaborative Learning (SDCL) framework
+based on the transformer architecture, facilitating the learning
+of robust representation.
+Nevertheless, these methods lack an in-depth exploration
+of noisy labels generated during the clustering process,
+which severely affects the learning of identity-consistent
+intra-modality representations and the establishment of crossmodality correspondences. Furthermore, they rely on specific
+loss functions to address noisy samples during backward propagation, but by that stage, the adverse effects of noisy samples
+have already permeated the entire training, leading to inherent
+delays. In contrast, we propose the HCCL framework, which
+directly discards noisy samples during forward propagation,
+offering new insights to the US-VI-ReID community.
+III. M ETHODOLOGY
+In this section, the proposed Hierarchical Centrality Collaborative Learning (HCCL) is explained in detail. First, we
+present the pipeline of HCCL in Section III-A. Subsequently,
+we introduce the proposed Closeness Centrality Selection
+(CCS) in Section III-B. Finally, we present the Hierarchical
+Consistency Matching (HCM) in Section III-C.
+A. Overview
+Given a VI-ReID dataset D = {X v , X r }, where X v = {xiv |i =
+1, 2, . . . , Nv } and X r = {xir |i = 1, 2, . . . , Nr } denote the visible
+and infrared sets with Nv and Nr images, respectively. The
+purpose of US-VI-ReID is to learn the modality-invariant
+and identity-discriminative representations without using any
+annotated labels.
+The pipeline of the proposed HCCL is shown in Fig. 2,
+we utilize a two-stream encoder to extract pedestrian features
+
+Authorized licensed use limited to: TIANJIN UNIVERSITY. Downloaded on June 09,2026 at 08:55:27 UTC from IEEE Xplore. Restrictions apply.
+
+
+exec
+/bin/zsh -lc "pdftotext -l 3 'Learning multi-granularity representation with transformer for visible-infrared person re-identification.pdf' -" in /Users/abdslm/Desktop/reid-paper/experiments/paper_materials/pdfs_by_title
+ succeeded in 0ms:
+Pattern Recognition 164 (2025) 111510
+
+Contents lists available at ScienceDirect
+
+Pattern Recognition
+journal homepage: www.elsevier.com/locate/pr
+
+Learning multi-granularity representation with transformer for
+visible-infrared person re-identification
+Yujian Feng a , Feng Chen b , Guozi Sun c , Fei Wu d ,∗, Yimu Ji c , Tianliang Liu e ,
+Shangdong Liu c , Xiao-Yuan Jing f,g , Jiebo Luo h
+a
+
+School of Computer Engineering, Jiangsu University of Technology, Changzhou, China
+
+b The University of Adelaide, Adelaide, Australia
+c School of Computer Science and Technology, Nanjing University of Posts and Telecommunications, Nanjing, China
+d College of Automation, Nanjing University of Posts and Telecommunications, Nanjing, China
+e
+
+School of Communication and Information Engineering, Nanjing University of Posts and Telecommunications, Nanjing, China
+School of Computer, Wuhan University, Wuhan, China
+g
+Guangdong Provincial Key Laboratory of Petrochemical Equipment Fault Diagnosis and School of Computer, Guangdong University of Petrochemical
+Technology, Maoming, China
+h
+Department of Computer Science, University of Rochester, Rochester, NY, USA
+f
+
+ARTICLE
+
+INFO
+
+Keywords:
+Visible-infrared person re-identification
+Multi-granularity
+Transformer
+Intra-class clustering
+
+ABSTRACT
+Visible-infrared person re-identification (VI-ReID) aims to match pedestrian images from visible and nearinfrared modalities. The pedestrian images of two modalities contain discriminative features in different sizes
+and positions, e.g., the global color of the cloth, the body’s local pose, and the shoe’s pixel size. However, existing methods mainly capture features at a single granularity, ignoring multi-granularity information contributing
+to pedestrian identification. Therefore, we propose a cross-modality multi-granularity Transformer (CM2 GT)
+framework to solve this issue. CM2 GT learns coarse-to-fine feature representations and integrates discriminative
+information across various granularities, which alleviates problems of the irrelevant matching and ambiguous
+alignment caused by matching single granularity features. Specifically, we first design a multi-granularity
+feature extractor (MGFE) module based on Transformer to capture the global-patch-pixel level features of each
+modality, which can flexibly represent semantic information at multiple scales. Secondly, a multi-granularity
+fusion Transformer (MGFT) module mines the hierarchical relationships between multi-granularity features
+by a saliency-enhanced Transformer, which ensures the identity-wise saliency consistency across different
+granularities and modalities. Furthermore, to further enhance cross-modality intra-class clustering in latent
+space, we design a cross-modality nearest-neighbor clustering (CNC) loss function to minimize the distance
+between the anchor sample and its cross-modality nearest neighbor. Extensive experiments demonstrate that
+our approach outperforms state-of-the-art methods.
+
+1. Introduction
+Person re-identification (ReID) aims to match the same person’s images captured from different cameras. It has achieved increasing attention in intelligent video surveillance applications. Most existing ReID
+methods [1–3] concentrate on single-modality person re-identification
+using visible images, leading to limited performance for pedestrian
+matching in nighttime scenes. Therefore, visible-infrared person reidentification (VI-ReID) [4,5] is designed to retrieve pedestrian images
+captured by both visible and near-infrared (NIR) cameras and promote
+the application in nighttime scenes.
+
+In the homogeneous context of visible-to-visible (VV-ReID) ReID,
+multi-granularity features are extracted exclusively from RGB images,
+typically focusing on features at different granularities, such as local
+details and global structure. In contrast, VI-ReID requires capturing
+both intra-modality and inter-modality multi-granularity features, in
+addition to establishing cross-modality feature mapping relationships
+across multiple granularities for effective feature alignment and fusion.
+For the VI-ReID task, it is critical to extract multi-granularity features. On the one hand, when two pedestrians only have a back
+view, and the height and gender are the same, these multi-granularity
+features (shoes and hairstyle) provide key identity information. Multi-
+
+∗ Corresponding author.
+
+E-mail addresses: fengyujian_904@163.com (Y. Feng), chenfeng1271@gmail.com (F. Chen), wufei_8888@126.com (F. Wu).
+https://doi.org/10.1016/j.patcog.2025.111510
+Received 21 February 2024; Received in revised form 17 August 2024; Accepted 23 February 2025
+Available online 4 March 2025
+0031-3203/© 2025 Elsevier Ltd. All rights are reserved, including those for text and data mining, AI training, and similar technologies.
+
+Pattern Recognition 164 (2025) 111510
+
+Y. Feng et al.
+
+Fig. 1. (a) Global-level based methods capture the most salient region, (b) Part-level based methods consider part features, (c) Our approach combines multi-granularity features
+to avoid irrelevant matching and ambiguous alignment.
+
+granularity features can complement each other to contribute to the
+identification of pedestrians when the features of the single granularity
+are not readily apparent. On the other hand, the distinguishing features
+of pedestrians are multi-level, such as gender, height, clothing, and
+extremities. Multi-granularity features can facilitate the discrimination
+of feature representations. Therefore, better matching results can be
+obtained when features at different granularities are calculated and
+combined.
+However, existing methods heavily rely on single-granularity feature extraction, and may result in irrelevant matching and ambiguous
+alignment. For global-level based methods [6,7], the regions of interest
+in cross-modality images of these methods may be irrelevant, which
+leads to irrelevant matching. As shown in Fig. 1(a-1), in the visible
+and NIR modalities, the regions of interest are the backpack and
+the body, which are inconsistent. We define this inconsistency as an
+irrelevant matching problem. For part-level based methods [8,9], they
+uniformly divide the image into multiple stripes, which cannot flexibly
+divide multiple body parts and results in ambiguous alignment in crossmodality matching. In Fig. 1(b-1), the first stripes of both the NIR
+modality and the visible modality contain head features, but the visible
+modality additionally contains shoulder and arm features. These stripes
+cannot be effectively aligned, which is called an ambiguous alignment
+problem.
+In this paper, we propose utilizing flexible multi-granularity features to solve these problems. First, multi-granularity information
+is extracted for multi-level matching, instead of relying on singlegranularity features which may be semantically different. Second, the
+cross-modality multi-granularity alignment could flexibly align each
+region in hierarchical levels, regardless of the inflexible assignment resulting from uniform division. Generally, as shown in Fig. 1(c), in both
+modalities, we capture global, patch and pixel features (body, head,
+and shoes) to perform accurate cross-modality matching. In this paper,
+we propose the cross-modality multi-granularity Transformer (CM2 GT)
+framework, including the multi-granularity feature extractor (MGFE)
+module and multi-granularity fusion Transformer (MGFT) module.
+To comprehensively capture discriminative information in images
+from two modalities, MGFE simultaneously captures global-level feature by global max pooling, and patch- and pixel-level features by
+Transformer, to adequately obtain multiple granularities. MGFT module mines the hierarchical aggregation relationship between patch-level
+and pixel-level features by interaction with multi-granularity features,
+
+enhancing the discriminative ability of features. Specifically, we design a saliency-enhanced Transformer which preserves the saliency
+consistency across modalities and granularities, alleviating ambiguous
+alignment problems.
+In VI-ReID task, the triplet-based loss functions [4,5] have been
+widely used. When the distances of the intra-class samples are smaller
+than a predefined threshold, these loss functions provide weak constraints, resulting in less effective clustering of cross-modality intraclass samples. In this paper, we design a cross-modality nearestneighbor clustering (CNC) loss function to cluster the intra-class crossmodality samples. Specifically, we obtain the intra-class cross-modality
+nearest-neighbor of the anchor samples by computing the similarity
+within mini-batch samples. Then, intra-class cross-modality samples are
+more compact by reducing the distribution difference between anchor
+sample and nearest-neighbor sample.
+The main contributions can be summarized as follows:
+(1) To the best of our knowledge, it is an early work on combining multi-granularity features based on Transformer structure in the
+VI-ReID.
+(2) We design a cross-modality multi-granularity Transformer
+(CM2 GT) framework to capture multi-granularity features containing
+rich semantic information, which alleviates irrelevant matching and
+ambiguous alignment problems.
+(3) The cross-modality nearest-neighbor clustering (CNC) loss function is proposed to reduce the difference among intra-class crossmodality samples and promote more compactness among them.
+(4) Experimental results on the large-scale public SYSU-MM01 [10]
+and RegDB [11] datasets demonstrate that our approach outperforms
+the state-of-the-art methods.
+2. Related works
+2.1. Person re-identification
+Person re-identification aims to search for target person images
+in a large gallery set using a query image from visible cameras. Lin
+et al. [1] proposed an attribute-person recognition framework to learn a
+discriminative Convolutional Neural Network embedding. Bai et al. [2]
+integrated the contextual information to strengthen the discriminative
+ability of local features to align better with the full person. Zhao
+et al. [3] proposed an incremental generative occlusion adversarial
+2
+
+Pattern Recognition 164 (2025) 111510
+
+Y. Feng et al.
+
+3. Our approach
+
+suppression network to learn a more discriminative and robust feature.
+Sun et al. [9] conducted a uniform partition on the conv-layer for
+learning part-level features. These methods are a single-modality identification task, where only the intra-modality discrepancy is measured.
+However, these methods cannot be applied to nighttime surveillance
+scenarios due to the large difference between visible and near-infrared
+modalities. In this paper, we propose a cross-modality multi-granularity
+Transformer to learn coarse-to-fine feature representation and reduce
+differences between modalities.
+
+In this section, we introduce cross-modality multi-granularity Transformer (CM2 GT) framework for VI-ReID. Firstly, we give a brief
+overview of the network structure. Secondly, we present a multigranularity feature extractor (MGFE) to capture global-, patch-, and
+pixel-level features for each modality. Thirdly, a multi-granularity
+fusion Transformer (MGFT) is introduced to fuse cross-modality information and interact with multi-granularity features. Finally, we
+propose a cross-modality nearest neighbor clustering (CNC) loss function to make the distance between intra-class cross-modality samples
+closer.
+
+2.2. Visible-infrared person re-identification
+Visible-infrared person re-identification attempts to match visible
+images and near-infrared images of a person under disjoint cameras.
+Different from previous visible–visible ReID task, VI-ReID not only
+handles the intra-modality variations caused by changes in the viewing
+angle, but also reduces the inter-modality discrepancy caused by the
+intrinsically different imaging processes of visible and near-infrared
+cameras.
+Existing VI-ReID methods can be broadly classified into two main
+categories, including modality compensation methods and feature
+learning-based methods. In the first category of methods, Li et al. [12]
+introduced an auxiliary modality to reduce the inter-modality discrepancy. Wang et al. [13] proposed model consists of a pixel generator,
+a feature generator and a joint discriminator. In the second category
+of methods, Wei et al. [8] exploited part representations to learn more
+fine-grained information. Ye et al. [4] dynamically learn the structural
+features of the graph between modalities.
+These main methods effectively extracted single granularity features
+by focusing on coarse or fine regions, leading to irrelevant matching and ambiguous alignment. In this paper, we capture multiplegranularity features based on the Transformer structure to solve these
+problems.
+
+3.1. Overview
+The overview of our approach is shown in Fig. 2. Firstly, in the feature extractor, ResNet50 [20] pre-trained on ImageNet [21] is adopted
+as the backbone of the two-stream network. 𝑆0 and 𝑆1 are the stages
+that learn modality-shared features. 𝑆2 , 𝑆3 and 𝑆4 are the stages
+which learn modality-specific features. The visible modality feature
+𝑋 𝑣𝑖𝑠 and near-infrared modality feature 𝑋 𝑛𝑖𝑟 are obtained by a twostream network. Secondly, MGFE module utilizes 𝑋 𝑣𝑖𝑠 and 𝑋 𝑛𝑖𝑟 to
+𝑣𝑖𝑠
+𝑛𝑖𝑟
+capture global-level features 𝑋 𝑔𝑙𝑜𝑏𝑎𝑙 and 𝑋 𝑔𝑙𝑜𝑏𝑎𝑙 , patch-level features
+𝑣𝑖𝑠
+
+𝑛𝑖𝑟
+
+𝑣𝑖𝑠
+
+𝑛𝑖𝑟
+
+𝑋 𝑝𝑎𝑡𝑐 ℎ and 𝑋 𝑝𝑎𝑡𝑐 ℎ , and pixel-level features 𝑋 𝑝𝑖𝑥𝑒𝑙 and 𝑋 𝑝𝑖𝑥𝑒𝑙 . Thirdly,
+𝑣𝑖𝑠
+
+𝑛𝑖𝑟
+
+𝑣𝑖𝑠
+
+𝑛𝑖𝑟
+
+MGFT fuses multi-granularity features (𝑋 𝑝𝑎𝑡𝑐 ℎ , 𝑋 𝑝𝑎𝑡𝑐 ℎ , 𝑋 𝑝𝑖𝑥𝑒𝑙 , 𝑋 𝑝𝑖𝑥𝑒𝑙 )
+across modalities. Finally, features from the global, patch, and pixel
+branches are aggregated together to obtain output feature 𝑋𝑜𝑢𝑡𝑝𝑢𝑡 , and
+are used to calculate the total loss function.
+3.2. Multi-granularity feature extractor
+As shown in Fig. 2, the multi-granularity feature extractor (MGFE)
+includes three branches: global branch, patch branch, and pixel branch.
+The global branch can capture the most salient features of the pedestrian image. The patch branch effectively explores on patch discriminative information and long-range dependency relationships within
+each modality. The pixel branch uses Transformer on each local part
+to capture pixel granularity features, which focuses on finer and richer
+discriminative information and filters out information interference on
+other local parts. These three-level granularity features can complement
+each other to obtain rich feature representation in images.
+The features from the visible and NIR modalities are processed
+by parameter-sharing MGFE. Considering the processing of features
+from both modalities is similar in each branch of MGFE, the
+process of the visible modality is described in detail for simplicity.
+
+2.3. Multi-granularity in computer vision field
+In the field of computer vision, multi-granularity based methods
+have achieved better performance. For example, In terms of multigranularity feature capture, [14] elucidated skeletal dynamics within
+various contexts. Our approach extracts features across the granularity,
+from global to patch to pixel levels, potentially yielding a more detailed
+and comprehensive data feature map. At the multi-granularity feature
+interaction level, [15] introduced a unified perception framework to
+identify behavioral patterns across granularities. Meanwhile, [16] concentrated on enhancing feature learning within and across modalities
+via attention mechanisms. Our approach captures features at multiple granularities and emphasizes their interaction and fusion across
+modalities.
+
+3.2.1. Global branch
+As shown in Fig. 2, given visible modality feature 𝑋 𝑣𝑖𝑠 , we utilize
+global max-pooling (GMP) and Batch Normalization (BN) layers to
+𝑣𝑖𝑠
+capture global granularity features 𝑋 𝑔 𝑙𝑜𝑏𝑎𝑙 , as follows:
+
+2.4. Transformer in VI-ReID
+ViT [17] is the first Transformer-based image classification model
+that promotes the application of Transformers in the field of image classification. In VI-ReID, the Transformer models [18,19] show advantages
+in capturing long-range dependencies and extracting discriminative features. Liang et al. [18] fused with token embeddings to encode modality
+information directly, and proposed a modality-aware enhancement loss
+to enhance representation of modality embeddings. Chen et al. [19]
+unified structure-related appearance learning and part-level interaction
+learning to enhance the semantically.
+These methods demonstrate that Transformers have shown superior
+capability and great potential for different tasks. In our approach, we
+propose a saliency-enhanced Transformer to preserve the saliency consistency across modalities and granularities and perform cross-modality
+cross-granularity features alignment.
+
+𝑣𝑖𝑠
+
+𝑋 𝑔𝑙𝑜𝑏𝑎𝑙 = 𝐵 𝑁(𝐺𝑀 𝑃 (𝑋 𝑣𝑖𝑠 ))
+
+(1)
+
+3.2.2. Patch branch
+To capture long-range dependencies within each modality, we design a patch branch based on the Transformer module to obtain the
+𝑣𝑖𝑠
+patch-level granularity feature 𝑋 𝑝𝑎𝑡𝑐 ℎ .
+𝑣𝑖𝑠
+Firstly, we reshape 𝑋
+∈ R𝐶×𝐻1 ×𝑊1 into a sequence of patches
+𝑣𝑖𝑠
+𝑁1 ×(𝑃ℎ ×𝑃𝑤 ×𝐶) , where 𝐶, 𝐻 , and 𝑊 denote the feature
+𝑋𝑝𝑎𝑡𝑐
+∈
+R
+1
+1
+ℎ
+dimension of the channel, width and height, respectively. 𝑃ℎ × 𝑃𝑤
+represents the resolution of each patch. 𝑁1 = (𝐻1 × 𝑊1 )∕(𝑃ℎ × 𝑃𝑤 )
+denotes the number of patches. Then, the class token [CLS] is added
+to beginning of the sequence to capture the global feature of the
+whole image. Spatial information is incorporated by adding learnable
+3
+
+
+codex
+第二组读完。这里有两个很明显的发稿套路：一是把遮挡从“抗干扰”改写成“特征空间反变换/补全”，二是把无监督跨模态的噪声标签问题前移到前向传播阶段处理。这种“把错误发生的位置提前一层定义清楚”的叙事，比单纯加损失更强。
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "pdftotext -l 3 'Learning Visual-Semantic Embedding for Generalizable Person Re-Identification - A Unified Perspective.pdf' -" in /Users/abdslm/Desktop/reid-paper/experiments/paper_materials/pdfs_by_title
+ succeeded in 0ms:
+Learning Visual-Semantic Embedding for Generalizable
+Person Re-Identification: A Unified Perspective
+SUNCHENG XIANG, School of Biomedical Engineering, Shanghai Jiao Tong University, Shanghai, China
+JINGSHENG GAO, MINGYE XIE, MENGYUAN GUAN, JIACHENG RUAN, and YUZHUO
+FU, School of Electronic Information and Electrical Engineering, Shanghai Jiao Tong University, Shanghai,
+China
+Generalizable person Re-Identification (Re-ID) is a very hot research topic in machine learning and computer
+vision, which plays a significant role in realistic scenarios due to its various applications in public security
+and video surveillance. However, previous methods mainly focus on the visual representation learning, while
+neglect to explore the potential of semantic features during training, which easily leads to poor generalization
+capability when adapted to the new domain. In this article, we present a unified perspective called MMET for
+more robust visual-semantic embedding learning on generalizable Re-ID. To further enhance the robust feature
+learning in the context of transformer, a dynamic masking mechanism called Masked Multimodal Modeling
+(MMM) strategy is introduced to mask both the image patches and the text tokens, which can jointly work on
+multimodal or unimodal data and significantly boost the performance of generalizable person Re-ID. Extensive
+experiments on benchmark datasets demonstrate the competitive performance of our method over previous
+approaches. We hope this method could advance the research towards visual-semantic representation learning.
+Our source code is also publicly available at https://github.com/JeremyXSC/MMET.
+CCS Concepts: • Computing methodologies → Object identification; Feature selection; Image representations;
+Additional Key Words and Phrases: person re-identification, synthetic data, efficient training
+ACM Reference format:
+Suncheng Xiang, Jingsheng Gao, Mingye Xie, Mengyuan Guan, Jiacheng Ruan, and Yuzhuo Fu. 2025. Learning
+Visual-Semantic Embedding for Generalizable Person Re-Identification: A Unified Perspective. ACM Trans.
+Multimedia Comput. Commun. Appl. 21, 10, Article 278 (October 2025), 17 pages.
+https://doi.org/10.1145/3726528
+This work was partially supported by the National Natural Science Foundation of China under Grant No. 62301315, Startup
+Fund for Young Faculty at SJTU (SFYF at SJTU) under Grant No. 23X010501967, Special Fund for “AI + Education” at SJTU
+under Grant No. CTLD24A0059, and Shanghai Municipal Health Commission Health Industry Clinical Research Special
+Project under Grant No. 202340010.
+Authors’ Contact Information: Suncheng Xiang (corresponding author), School of Biomedical Engineering, Shanghai Jiao
+Tong University, Shanghai, China; e-mail: xiangsuncheng17@sjtu.edu.cn; Jingsheng Gao, School of Electronic Information
+and Electrical Engineering, Shanghai Jiao Tong University, Shanghai, China; e-mail: gaojingsheng@sjtu.edu.cn; Mingye
+Xie, School of Electronic Information and Electrical Engineering, Shanghai Jiao Tong University, Shanghai, China; e-mail:
+xiemingye@sjtu.edu.cn; Mengyuan Guan, School of Electronic Information and Electrical Engineering, Shanghai Jiao
+Tong University, Shanghai, China; e-mail: gemini.my@sjtu.edu.cn; Jiacheng Ruan, School of Electronic Information and
+Electrical Engineering, Shanghai Jiao Tong University, Shanghai, China; e-mail: jackchenruan@sjtu.edu.cn; Yuzhuo Fu,
+School of Electronic Information and Electrical Engineering, Shanghai Jiao Tong University, Shanghai, China; e-mail:
+yzfu@sjtu.edu.cn.
+Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee
+provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the
+full citation on the first page. Copyrights for components of this work owned by others than the author(s) must be honored.
+Abstracting with credit is permitted. To copy otherwise, or republish, to post on servers or to redistribute to lists, requires
+prior specific permission and/or a fee. Request permissions from permissions@acm.org.
+© 2025 Copyright held by the owner/author(s). Publication rights licensed to ACM.
+ACM 1551-6865/2025/10-ART278
+https://doi.org/10.1145/3726528
+ACM Trans. Multimedia Comput. Commun. Appl., Vol. 21, No. 10, Article 278. Publication date: October 2025.
+
+278:2
+1
+
+S. Xiang et al.
+
+Introduction
+
+Domain Generalizable Person Re-Identification (DG Re-ID) aims to match a specific person
+in a large gallery with different cameras and locations, which trains a model on source domains
+yet generalizes well on target domains. Now it has been studied intensively due to its practical
+importance in the surveillance system. With the development of deep convolution neural networks,
+person Re-ID methods have achieved remarkable performance in a supervised manner [36, 44],
+where a model is trained and tested on different splits of the same dataset. In practice, however, if
+we consider each dataset as a domain, there are often huge domain gap since different datasets
+are often collected in very different visual scenes (e.g., indoors, shopping malls, traffic airports).
+Consequently, the trained models that are directly applied to new domain without model updating
+are known to suffer from considerable performance degradation [40, 47, 60], thus suggesting model
+overfitting and poor Domain Generalization (DG).
+In general, multimodal learning methods leverage the complementary property from different
+modalities (e.g., images, texts, or audio) for learning to describe a common concept, and a domain
+generalizable Re-ID model has great value for real-world large-scale deployment. Specifically, when
+a customer purchases a Re-ID system for a specific camera network, the system is expected to work
+out-of-the-box, without the need to go through the tedious process of data collection, annotation,
+and model updating. Surprisingly, there is very little prior study of this topic. Existing Re-ID works
+mainly evaluate their models’ cross-dataset generalization, but no specific design is made to make
+the models more generalizable. Recently, Unsupervised Domain Adaptation (UDA) methods for
+Re-ID have been studied to adapt a Re-ID model from source to target domain [46, 53]. However,
+previous UDA models update using unlabeled target domain data, which is infeasible for real-world
+scenarios.
+Beyond domain adaptation, the problem of DG has been investigated in deep learning, with some
+recent few-shot meta-learning approaches also adapted for DG. However, existing DG methods
+[16, 18, 28] assume that the source and target domain have the same label space, whilst existing metalearning models assume a fixed number of classes for target domains and are trained specifically for
+that number using source data. They thus have limited efficacy for generalizable Re-ID, where target
+domains have a different and variable number of identities. Besides, these approaches are hardly
+applicable in practice due to expensive labeling costs and also suffer from severe performance
+degradation on an unseen target domain, which is mainly caused by the domain gap between
+different backgrounds, camera angles, and camera styles, is now becoming the main challenges
+for Re-ID community. In common sense, combining information from different modalities into
+universal architecture holds promise not only because it is similar to how humans make sense of
+the world, but also because it may lead to better sample efficiency and much richer representations
+[10, 48]. Considering this, a new learning paradigm for robust and better visual-semantic embedding
+is urgently needed on generalizable Re-ID event.
+In this article, we focus on multimodal learning with missing modalities in general situations.
+We assume that there are several missing-modality cases, e.g., missing one modality or missing
+more modalities, to represent the more realistic scenario of multimodal learning in the real world.
+Note that, the missing case during training can be also different from the one in testing. To address
+this problem, we provide a new perspective on learning human representations on the basis of
+visual-semantic feature, even in a scenario with incomplete modality (e.g., unimodal vision-only or
+language-only data), and propose a Multi-Modal Equivalent Transformer (MMET) for more
+robust visual-semantic embedding learning for Re-ID event. On the basis of it, a dynamic masking
+mechanism called Masked Multimodal Modeling (MMM) is introduced to mask both the image
+patches and the text tokens, which can jointly work on unimodal visual or textual modality and
+significantly boost the performance of generalizable person Re-ID. As illustrated in Figure 1, the
+ACM Trans. Multimedia Comput. Commun. Appl., Vol. 21, No. 10, Article 278. Publication date: October 2025.
+
+Learning Visual-Semantic Embedding for Generalizable Person Re-identification
+
+278:3
+
+Fig. 1. We present MMET, a language and vision alignment model that learns strong representations from
+image-text pairs and unpaired images/texts under a common Transformer model architecture.
+
+key idea is that our model is trained on a set of source domain based on the unpaired images/texts
+or image-text pairs, and should generalize to any new unseen datasets for effective Re-ID without
+any model updating. To the best of our knowledge, this is the first work aiming at investigating the
+DG with multiple modalities on Re-ID events.
+In essence, the concept of MMM appears to have similar notions explored in recent works [52,
+55]. For example, Yu et al. [52] propose a modified encoder-decoder architecture CoCa, which is
+trained with both contrastive loss and captioning loss from scratch on both Web-scale alt-text
+data and annotated images; Zhao et al. [55] introduce a jointly MMM method named MAMO
+to learn fine-grained multimodal representations, which performs joint masking on image-text
+input and integrates both implicit and explicit targets for the masked signals to recover. However,
+only multimodal data are required as image-text input for CoCa and MAMO method respectively.
+Compared with traditional multimodal feature fusion strategies [17, 43, 52, 55], our MMET is
+different from them in terms of two perspectives: (1) The input of traditional method is unimodal
+vision-only or language-only data, while our MMET method works on a wide range of tasks in the
+vision, language, and vision-and-language domains, sometimes even when one modality or more
+modalities are missing, which allows our model to be more flexible and adaptable in real-world
+scenarios; (2) Prior works mainly investigate the robustness of multimodal transformers to modalityincomplete test data, with the requirement to finetune the entire model using modality-complete
+training data. In contrast, our work studies a more general scenario where various modality-missing
+cases would occur differently not only for each data sample but also learning phases (training,
+testing, or both).
+As a consequence, the major contributions of our work can be summarized into three-fold:
+— We propose a MMET framework for more robust visual-semantic embedding learning.
+— Based on it, a dynamic masking mechanism called MMM is introduced to further boost the
+performance of generalizable person Re-ID.
+— Comprehensive experiments show that our MMET method matches or exceeds the performance of existing methods with a clear margin, which reveals the applicability of visualsemantic based pretraining with new insights.
+In the rest of the article, we first review some related works of person Re-ID methods and
+previous semantic-based methods in Section 2. Then in Section 3, we give more details about
+the learning procedure of the proposed MMET method. Extensive evaluations compared with
+ACM Trans. Multimedia Comput. Commun. Appl., Vol. 21, No. 10, Article 278. Publication date: October 2025.
+
+
+exec
+/bin/zsh -lc "pdftotext -l 3 'Lifelong person re-identification via dynamically knowledge adaptation and retention.pdf' -" in /Users/abdslm/Desktop/reid-paper/experiments/paper_materials/pdfs_by_title
+ succeeded in 0ms:
+Neural Networks 198 (2026) 108566
+
+Contents lists available at ScienceDirect
+
+Neural Networks
+journal homepage: www.elsevier.com/locate/neunet
+
+Full Length Article
+
+Lifelong person re-identiﬁcation via dynamically knowledge adaptation
+and retention ⋆
+Zhiyu Chen
+
+a,1 , Bingliang Jiao
+
+a,1 , Wenxuan Wang
+
+b,a,∗, Peng Wang
+
+a
+
+a Department of Computer Science, Northwestern Polytechnical University, No. 127 Youyi West Road, Beilin District, Xi’an, Shaanxi Province, China
+
+Shenzhen Research Institute of Northwestern Polytechnical University, Sanhang Science&Technology Building, No.45th, Gaoxin South 9th Road, Nanshan District,
+Shenzhen City, Guangdong Province, China
+b
+
+a r t i c l e
+
+i n f o
+
+Keywords:
+Person re-identiﬁcation
+Lifelong learning
+Dynamically knowledge adaptation and
+retention model
+Dynamic adaptation module
+Adaptability retention strategy
+
+a b s t r a c t
+Person re-identiﬁcation aims to match the same individual across non-overlapping camera views. In real-world
+scenarios, ReID models are expected to continuously learn from newly arriving data while mitigating the catastrophic forgetting problem, namely the loss of previously acquired knowledge, which deﬁnes the lifelong ReID
+task. Existing lifelong ReID methods face limitations in balancing performance between old and new domains.
+To address this, we propose a Dynamic Knowledge Adaptation and Retention framework, which achieves a dynamic learning mechanism. During the forward propagation process, input images are ﬁrst fed into a shared
+backbone network to extract basic features. Subsequently, the Dynamic Adaptation module performs instance
+normalization on the features to mitigate inter-domain discrepancies and dynamically generates convolutional
+kernel parameters based on domain-speciﬁc information within the input images, enabling adaptive feature optimization tailored to speciﬁc domains. During the training phase, we adopt an Adaptability Retention strategy to
+restrict model updates. When encountering new incoming data, we utilize the frozen model trained on previous
+domains as a knowledge anchor to constrain parameter updates during ﬁne-tuning on the new data. Speciﬁcally,
+a constraint loss is applied to maintain parameter consistency between the knowledge anchor and the trainable model, enabling an adaptive balance between knowledge retention and adaptation. This design ensures the
+model’s adaptability to new domains while eﬀectively mitigating catastrophic forgetting. Experiments on four
+mainstream person re-identiﬁcation datasets demonstrate that our method achieves outstanding performance in
+the lifelong learning setting, with an average Rank-1 accuracy of 65.7% and an average mAP of 55.4%, signiﬁcantly surpassing existing methods.
+
+1. Introduction
+The person re-identiﬁcation task aims to recognize the same individual from a large-scale database based on a given query image (Liu
+et al., 2023a,b; Wang et al., 2019). This technology is primarily applied
+in intelligent video surveillance systems, where it processes visual person imagery captured by distributed camera networks to enhance public security and monitoring eﬃciency. Recently, many re-identiﬁcation
+models have been trained oﬄine, meaning they are trained and deployed within a ﬁxed scenario. However, in real-world applications, reidentiﬁcation models are often trained online and continually deployed
+in diverse, novel environments. Therefore, the lifelong re-identiﬁcation
+
+(LReID) task (Cui et al., 2024; Pu et al., 2023; Zhang et al., 2023) is proposed, which aims to construct a robust ReID model (Jiao et al., 2023;
+Nguyen et al., 2024) that can ﬁt into online training and adapt to individual training domains.
+In LReID, models are required to undergo iterative training on sequentially provided new training data, with previous training data becoming inaccessible in subsequent iterations. This gives rise to the classic continual learning challenge of catastrophic forgetting, where models tend to overﬁt the current training domain, resulting in signiﬁcant performance degradation on previously learned domains. Existing LReID methods primarily address this issue from two perspectives:
+data replay and knowledge distillation. Among methods based on data
+
+⋆
+This work is supported by the Guangdong Basic and Applied Basic Research Foundation (No.2025A1515011465), the National Natural Science Foundation of
+China (No. 62502387), the China Postdoctoral Science Foundation (No. BX20250486), and the Natural Science Basic Research Program of Shaanxi (No. 2025JCYBQN-861), the National Natural Science Foundation of China (No. U23B2013)
+∗
+Corresponding author.
+E-mail addresses: erichwang1225@mail.nwpu.edu.cn, ggchideaki@gmail.com (Z. Chen), bingliang.jiao@mail.nwpu.edu.cn (B. Jiao), wxwang@nwpu.edu.cn (W.
+Wang), peng.wang@nwpu.edu.cn (P. Wang).
+1
+The ﬁrst two authors contribute equally.
+
+https://doi.org/10.1016/j.neunet.2026.108566
+Received 17 March 2025; Received in revised form 22 December 2025; Accepted 7 January 2026
+Available online 9 January 2026
+0893-6080/© 2026 Elsevier Ltd. All rights are reserved, including those for text and data mining, AI training, and similar technologies.
+
+Neural Networks 198 (2026) 108566
+
+Z. Chen et al.
+
+Fig. 1. In this ﬁgure, the upper part illustrates a static LReID model trained through continual learning, where parameter units are restricted from updating to
+prevent overﬁtting to any single domain, with the goal of enhancing overall performance across all training domains. However, this strategy may result in suboptimal
+performance within speciﬁc domains. The lower part presents our designed dynamic LReID model, which incorporates partially dynamic parameter units capable of
+ﬂexibly adapting to the current distribution based on domain-related information within the input images. This enables the model to ﬂexibly adapt to diverse target
+domains, thereby achieving optimal performance across diﬀerent domains.
+
+replay, iCaRL (Rebuﬃ et al., 2017) eﬀectively mitigates catastrophic
+forgetting by preserving representative exemplars from historical data
+and incorporating a nearest-mean classiﬁcation strategy, although it incurs ongoing storage overhead and potential privacy risks. PTKP (Ge
+et al., 2022) further enhances knowledge retention through prototype
+transfer and knowledge graph construction mechanisms; however, its
+computational complexity increases substantially as the number of tasks
+grows. In the direction of knowledge distillation, LwF (Li & Hoiem,
+2017) employs distillation loss to maintain consistency in model outputs but struggles with continuously arriving tasks exhibiting large domain shifts. UCIR (Hou et al., 2019) preserves historical knowledge by
+maintaining inter-class similarity relationships, yet it faces limitations
+in balancing performance between old and new tasks. Although existing methods have achieved progress in speciﬁc scenarios, methods based
+on data replay generally impose additional storage costs, while methods
+based on knowledge distillation often fail to achieve an optimal balance
+between old and new domains.
+In this work, we propose the DKAR model, a novel ReID model
+designed to address these challenges. As shown in Fig. 1, unlike previous methods that prevent model ﬁtting to novel domains to avoid
+knowledge forgetting, our model generates dynamic parameters to construct customized feature extraction paradigms for each domain. This
+enables our model to readapt to each training domain, ensuring recognition accuracy across all domains. Speciﬁcally, the DKAR model consists of two major components: a Dynamic Adaptation (DyAdap) module
+and an Adaptability Retention (AdRet) strategy. The DyAdap module
+is designed to adapt our model to diverse domains via dynamic convolution operations (Han et al., 2024; Zhang et al., 2020). Considering that feature distribution gaps among diverse domains can hinder
+model adaptation, the DyAdap module ﬁrst employs an instance-level
+normalization layer to eliminate these distributional divergences. The
+normalized features are then fed into a dynamic convolution module,
+where the convolutional parameters are generated based on the input
+features themselves. By leveraging domain- and instance-aware information within the input features, our DyAdap module eﬀectively constructs customized feature extractors for individual domains, helping
+our ReID model achieve optimal adaptation and promising identiﬁcation performance across these domains.
+Furthermore, to prevent our model from losing its ability to adapt to
+previously trained domains when trained on new data, we propose an
+Adaptability Retention (AdRet) strategy. This strategy focuses on train-
+
+ing the DyAdap module’s parameter predictor. By retaining the parameter predictor from the previous stage, it imposes a correlation constraint
+between the outputs of the current and previous stage predictors when
+processing the same image input, encouraging the model to retain its
+adaptability to previously trained domains. Through extensive experiments, the eﬀectiveness of our designed module and training strategy is
+thoroughly evaluated. Additionally, empowered by our designed components, our DKAR model achieves promising performance in the mainstream lifelong re-identiﬁcation setting.
+Our contributions can be summarized as follows.
+•
+
+In this work, we propose a novel approach to tackle the lifelong person re-identiﬁcation task by constructing a dynamic framework that
+enables the model to adapt ﬂexibly to diﬀerent training domains,
+thereby preventing knowledge forgetting caused by overﬁtting.
+• We propose a novel DKAR model for the lifelong ReID task. In our
+model, a dynamic adaptation module is designed to adapt the ReID
+model to diverse domains through dynamic convolution operations.
+Additionally, we introduce an adaptability retention strategy to preserve the model’s ability to adapt to previously seen domains while
+training on novel ones.
+• Through extensive ablation experiments, we thoroughly evaluate the
+eﬀectiveness of our designed module and strategy.
+2. Related work
+In this section, we conducted a survey on the common research approaches and achievements in the ReID and LReID problems. Additionally, our proposed DKAR model not only mitigates the catastrophic forgetting phenomenon of ReID models in the lifelong learning (Zhao et al.,
+2020) process but also enhances the model’s dynamic parameter update capability. Therefore, we also investigated domain generalization
+research in the ReID problem.
+2.1. Person re-identiﬁcation
+The person re-identiﬁcation (ReID) problem aims to retrieve the
+most matching person image from an image sequence based on a speciﬁed query image. Depending on the application scenario, the ReID problem can be divided into single-domain adaptation and cross-domain
+learning problems. In a single-domain learning scenario, the core challenge lies in utilizing eﬃcient feature extraction methods to process
+2
+
+Neural Networks 198 (2026) 108566
+
+Z. Chen et al.
+
+images and performing metric analysis on pedestrian features extracted
+from diﬀerent images to obtain retrieval results. With the continuous advancements in convolutional neural networks and deep learning models
+based on self-attention mechanisms, ReID models in single-domain scenarios have achieved stable and reliable performance. In cross-domain
+learning scenarios, models must perform ReID tasks across multiple domains, including seen and unseen domains. Therefore, in addition to requiring strong feature extraction capabilities, practical applications also
+necessitate Domain Generalizable ReID (DG-ReID) and Lifelong ReID.
+DG-ReID models can eﬀectively extract features of person targets in
+unknown scenarios, mapping image features from all domains into a
+common space to mitigate the negative impact of domain discrepancies
+on feature extraction tasks. Lifelong ReID models leverage information
+from diﬀerent domains to construct a comprehensive feature space when
+training on streaming data. They must also avoid catastrophic forgetting
+and enable knowledge accumulation. Our proposed DKAR model not
+only enhances the lifelong learning capabilities of ReID models but also
+improves the model’s domain generalizability through instance normalization methods (Ulyanov et al., 2016).
+
+Karunakar (2023) introduced a task called Triplet Multi-task Learning,
+which combines ReID, semantic segmentation, and triplet prediction.
+By eﬀectively utilizing the shared and complementary aspects between
+diﬀerent subtasks, the model’s performance on common ReID datasets
+is enhanced.
+2.2.3. Normalization methods
+Data augmentation and data generation fundamentally enhance a
+model’s generalization ability by estimating and simulating diverse domain distributions in real-world scenarios (Long et al., 2024; Qiao et al.,
+2024; Zhao et al., 2024). The process by which the model handles training data is also crucial for improving domain generalization ability. Differences in distribution among various domains can impact the model’s
+ability to learn feature extraction, thereby weakening its capacity to
+adapt to new domains. Standardizing the data input into the model
+within the same batch reduces instability during training (Kim et al.,
+2024), mitigating the impact of domain diﬀerences in the feature extraction process. This helps the model extract more domain-invariant
+features. Common normalization methods include batch normalization,
+layer normalization, and instance normalization. Qi et al. (2022) proposed a hybrid normalization method that combines domain-aware normalization and center normalization. This method eﬀectively alleviates
+model overﬁtting to the source domain in ReID tasks, extracting features
+with lower correlation to the training data and achieving excellent performance on unseen domains. In our proposed DyAdap module, we take
+advantage of instance normalization to help enhance the model’s adaptability to diverse unseen domains.
+
+2.2. Domain generalizable ReID
+The DG-ReID model (Jiao et al., 2022) needs to learn and extract
+domain-invariant features across multiple domains and demonstrate stable and reliable performance on previously unseen domains. The following are three common approaches to expanding the domain generalizable ability of ReID models.
+2.2.1. Data augmentation and generation
+To improve the performance of ReID models on previously unseen
+domains, a common approach is to train the model on a wide variety of data distributions during the training phase. However, collecting
+comprehensive data during training is challenging, leading to the adoption of various data augmentation methods to enhance the diversity of
+samples within the training domain. Techniques such as image segmentation, image rotation, and brightness adjustment are commonly employed for this purpose. These operations can be viewed as simple simulations of complex external shooting conditions. Nevertheless, these
+methods essentially perform linear transformations on the training data
+distribution, which limits the information that the model can extract.
+As a result, relying solely on data augmentation methods is insuﬃcient
+to develop a reliable DG-ReID model. Chen et al. (2020) and colleagues
+proposed a self-supervised data augmentation method to enhance the
+training data for ReID models. Unlike traditional data augmentation
+methods, this approach explores correlations between image instances
+rather than treating each image in isolation. Similarly, Nguyen et al.
+(2023) and colleagues utilized Generative Adversarial Networks (GANs)
+to augment the training data for ReID models, bridging the gap between
+the source and target domains. GAN-based methods simulate the domain distribution states of real or target scenarios, thereby improving
+the adaptability and domain generalizability of ReID models. In our experiments, we also introduced data augmentation methods to simulate
+personal images captured under various conditions.
+
+2.3. Lifelong ReID
+After deployment, ReID models often require continuous input of
+data from new task scenarios to update their parameters and better
+adapt to application environments. Additionally, it is often diﬃcult to simultaneously acquire the diverse data needed for training, necessitating
+the use of streaming data. This training approach carries certain risks,
+as the model tends to adjust its parameter distributions to accommodate
+the new domain, resulting in decreased performance on the old domain,
+a phenomenon known as catastrophic forgetting. This issue is especially
+pronounced when the new and old domains have signiﬁcant distribution
+diﬀerences. To address catastrophic forgetting in streaming data scenarios, the concept of Lifelong ReID has emerged. Lifelong ReID aims
+to enable ReID models to adapt to new domains with streaming data
+while retaining information learned from the old domain, thus preventing catastrophic forgetting. Mainstream Lifelong ReID approaches primarily involve data replay and knowledge distillation (Li et al., 2024b;
+Liu et al., 2022; Qiu et al., 2024).
+2.3.1. Data replay
+The design of Lifelong learning systems (Ahn, 2024; Gharahighehi
+et al., 2024; Li et al., 2024a) typically requires that the model should not
+access data samples from the old domain during training with streaming
+data, and this limitation is the primary cause of catastrophic forgetting.
+However, many researchers have pointed out that in practical application environments, it is feasible to utilize limited caching space to retain a portion of samples from the old domain. Allowing these samples
+to participate in training alongside the current samples can alleviate
+the model’s catastrophic forgetting issue. Zhang et al. (2023) proposed
+retaining data from the old domain for knowledge updating and integration. Due to the involvement of both forward and backward propagation, this method requires preserving more data samples to avoid
+catastrophic forgetting. However, in pursuit of improved overall performance of ReID models, data replay-based methods are gradually increasing the proportion of retained data samples, thereby increasing demands on caching storage capacity. Moreover, certain application scenarios impose strict requirements on data security and privacy, which
+further constrain the use of data replay methods.
+
+2.2.2. Multi-task training
+Whether it is virtual data distributions obtained through methods
+like data augmentation or data collected from multiple domains in realworld scenarios, we need to engage the model in joint training on these
+datasets. By leveraging diverse data distributions and multi-level information, the model can quickly adapt to ReID tasks in various scenarios,
+thereby enhancing domain generalization ability and ﬂexibility. This
+approach is known as multi-task training. Yan et al. (2022) proposed
+a cross-domain and cross-modal ReID task that incorporates visual and
+textual information from multiple datasets, reducing the impact of domain gaps on the model’s generalization to unseen domains and improving the generalization performance of ReID models. Bilakeri and
+3
+
+
+exec
+/bin/zsh -lc "pdftotext -l 3 'Lifelong visible-infrared person re-identification via replay samples domain-modality-mix reconstruction and cross-domain cognitive network.pdf' -" in /Users/abdslm/Desktop/reid-paper/experiments/paper_materials/pdfs_by_title
+ succeeded in 0ms:
+Lifelong visible–infrared person re-identification via replay samples
+domain-modality-mix reconstruction and cross-domain cognitive
+network
+Zhu, X.; Xiao, G.; Lew, M.S.K.; Wu, S.
+
+Citation
+Zhu, X., Xiao, G., Lew, M. S. K., & Wu, S. (2025). Lifelong visible–infrared person reidentification via replay samples domain-modality-mix reconstruction and cross-domain
+cognitive network. Computer Vision And Image Understanding : Cviu, 254.
+doi:10.1016/j.cviu.2025.104328
+Version:
+
+Publisher's Version
+
+License:
+
+Licensed under Article 25fa Copyright Act/Law (Amendment Taverne)
+
+Downloaded from:
+
+https://hdl.handle.net/1887/4284223
+
+Note: To cite this publication please use the final published version (if applicable).
+
+Computer Vision and Image Understanding 254 (2025) 104328
+
+Contents lists available at ScienceDirect
+
+Computer Vision and Image Understanding
+journal homepage: www.elsevier.com/locate/cviu
+
+Lifelong visible–infrared person re-identification via replay samples
+domain-modality-mix reconstruction and cross-domain cognitive network
+Xianyu Zhu a , Guoqiang Xiao b , Michael S. Lew c , Song Wu b,d ,∗
+a Hanhong College, Southwest University, Chongqing, 400715, China
+b
+
+College of Computer and Information Science, Southwest University, Chongqing, 400715, China
+LIACS Media Lab, Leiden University, Leiden, Netherlands
+d
+Yibin Academy of Southwest University, Yibin, Sichuan, 644000, China
+c
+
+ARTICLE
+
+INFO
+
+Keywords:
+Lifelong learning
+Visible–infrared person re-identification
+Graph convolutional network
+
+ABSTRACT
+Adapting statically-trained models to the incessant influx of data streams poses a pivotal research challenge.
+Concurrently, visible and infrared person re-identification (VI-ReID) offers an all-day surveillance mode to
+advance intelligent surveillance and elevate public safety precautions. Hence, we are pioneering a more finegrained exploration of the lifelong VI-ReID task at the camera level, aiming to imbue the learned models with
+the capabilities of lifelong learning and memory within the continuous data streams. This task confronts dual
+challenges of cross-modality and cross-domain variations. Thus, in this paper, we proposed a Domain-ModalityMix (DMM) based replay samples reconstruction strategy and Cross-domain Cognitive Network (CDCN) to
+address those challenges. Firstly, we establish an effective and expandable baseline model based on residual
+neural networks. Secondly, capitalizing on the unexploited potential knowledge of a memory bank that archives
+diverse replay samples, we enhance the anti-forgetting ability of our model by the Domain-Modality-Mix
+strategy, which devising a cross-domain, cross-modal image-level replay sample reconstruction, effectively
+alleviating catastrophic forgetting induced by modality and domain variations. Finally, guided by the Chunking
+Theory in cognitive psychology, we designed a Cross-domain Cognitive Network, which incorporates a
+camera-aware, expandable graph convolutional cognitive network to facilitate adaptive learning of intra-modal
+consistencies and cross-modal similarities within continuous cross-domain data streams. Extensive experiments
+demonstrate that our proposed method has remarkable adaptability and robust resistance to forgetting and
+outperforms multiple state-of-the-art methods in comparative assessments of the performance of LVI-ReID.
+The source code of our designed method is at https://github.com/SWU-CS-MediaLab/DMM-CDCN.
+
+1. Introduction
+The Visible–Infrared Person Re-Identification (VI-ReID) task aims to
+identify the individual with the most matching identity from a database
+composed of images captured under both visible and infrared modalities. Unlike visible ReID tasks, which are confined to daytime applications, the VI-ReID task integrates both the visible and infrared modality,
+enabling all-day intelligent surveillance for security purposes, given its
+significant practical value. Many academic studies have approached
+enhancing the performance of VI-ReID from various perspectives (Wang
+et al., 2019b; Zhang and Wang, 2023; Li et al., 2020).
+However, in practical applications of VI-ReID, there often exists an
+expansion and scalability requirement for the camera-based databases;
+meanwhile, these models trained solely on static datasets are not
+suitable in the real world where data continually pours in. As depicted
+in Figs. 1(c) and 1(d) under the joint learning scenario, if every new
+
+data domain necessitates retraining, it would incur substantial time
+and memory resource expenditures. Moreover, as depicted in Fig.
+1(b), the model attains heightened generalization capability and adaptability through the continuous accrual of knowledge. Consequently,
+the VI-ReID model necessitates the capacity for lifelong learning to
+accommodate the ever-changing data domains.
+To achieve the aforementioned objective, as depicted in Fig. 1(a),
+TTQK (Xing et al., 2024) introduced the Lifelong Visible–Infrared Person Re-Identification (LVI-ReID). This task requires that the model can
+adapt to continuously arriving new data domains encompassing both
+visible and infrared modalities, while also maintaining its identification
+capabilities on previously encountered domains. We refer to these two
+key characteristics as domain adaptability and anti-forgetting ability.
+Addressing the requirements and characteristics of LVI-ReID, we face
+
+∗ Corresponding author at: College of Computer and Information Science, Southwest University, Chongqing, 400715, China.
+
+E-mail address: songwuswu@swu.edu.cn (S. Wu).
+https://doi.org/10.1016/j.cviu.2025.104328
+Received 13 May 2024; Received in revised form 28 January 2025; Accepted 24 February 2025
+Available online 4 March 2025
+1077-3142/© 2025 Elsevier Inc. All rights are reserved, including those for text and data mining, AI training, and similar technologies.
+
+X. Zhu, G. Xiao, M.S. Lew et al.
+
+Computer Vision and Image Understanding 254 (2025) 104328
+
+address in its design. Secondly, as illustrated in Fig. 1(f), addressing the
+dual deterioration in adaptability and anti-forgetting ability caused by
+the domain semantic gap is another pressing challenge. Finally, TTQK
+does not leverage more fine-grained information, so how to fully utilize
+the potential of the learned model within environments characterized
+by dynamic expansion of camera networks and limited storage space is
+also an equally important challenge.
+Prior studies have partly focused on realizing lifelong person reidentification under a single visible modality. For instance, AKA (Pu
+et al., 2021) implemented knowledge accumulation and manipulation
+by deploying the AKA network, while PTKP (Ge et al., 2022) employed pseudo-labeling techniques to mitigate the domain semantic gap
+between continuous learning data domains. However, due to the significant discrepancies across different data modalities and domains, these
+previous researches have not adequately addressed the multifaceted
+challenges inherent in LVI-ReID.
+Thus, we propose an innovative LVI-ReID framework that aims to
+address these challenges from both the image and feature levels. At the
+image level, inspired by the principles of PCB (Sun et al., 2018) and
+CutMix (Yun et al., 2019), coupled with the inherent advantages of
+Memory Banks, we introduce the Domain-Modality-Mix (DMM) based
+replay samples reconstruction strategy. This strategy involves randomly
+mixing and reconstructing stored replay sample images across different
+partitioned regions with a certain probability, crossing domains and
+modalities. Operating the Domain-Modality-Mix strategy within a fixed
+storage space can amplify the diversity of replay samples, thereby
+effectively mitigating catastrophic forgetting caused by cross-domain
+and cross-modality semantic gaps.
+Moreover, at the feature level, drawing inspiration from Chunking
+Theory (Gobet et al., 2001) in cognitive psychology and leveraging the
+robust feature aggregation properties of Graph Convolutional Networks
+(GCNs) (Jiang et al., 2019), we designed a novel Cross-domain Cognitive Network (CDCN) to promote the extraction of cross-modal invariant features. By implementing a camera-aware, dynamically expanding
+GCN framework, the cross-domain cognitive network harmoniously integrates visible and infrared data. This integration not only bridges the
+cross-modal disparity across disparate camera types but also inherently
+consolidates multi-domain information, leading to a substantial boost
+in the LVI-ReID performance of the learned model. Extensive experiments show the effectiveness of our proposed methodology. The main
+contributions of our proposed method can be summarized as follows:
+• Replay Samples Domain-Modality-Mix Reconstruction: During the rehearsal phase in LVI-ReID, we innovatively designed a
+Domain-Modality-Mix (DMM) based replay sample reconstruction
+strategy. The DMM can generate diversified cross-domain and
+cross-modality samples as data augmentation, effectively serving
+as a countermeasure against catastrophic forgetting in LVI-ReID.
+• Cross-domain Cognitive Network: To enhance the domain adaptability of the learned LVI-ReID model for the continuous crossdomain data streams, we designed a Cross-domain Cognitive Network (CDCN) framework, which is based on a camera-extended
+graph convolutional network to fuse cross-modal information and
+integrate cross-domain information at the feature level, having
+the advantages of real-world applications.
+• LVI-ReID Task Performance: We tackle the LVI-ReID task at
+a more fine-grained level and explore a highly extensible baseline for the LVI-ReID task. Extensive experiments demonstrate
+that our proposed DMM strategy and CDCN framework have remarkable domain adaptability and robust resistance to forgetting
+and outperform multiple state-of-the-art methods in comparative
+assessments of the performance of LVI-ReID.
+
+Fig. 1. Motivation of Our Work. To mitigate the substantial computational cost in
+terms of time and memory associated with retraining models at different stages (1(c)
+and 1(d)), we propose the LVI-ReID task (1(a)), endowing models with lifelong learning
+abilities that cumulatively accumulate knowledge for enhanced generalization and
+adaptability (1(b)). During the process of continual learning, we need to simultaneously
+manage the decline in model adaptability and catastrophic forgetting caused by modal
+gaps (1(e)) and domain gaps (1(f)).
+
+multiple challenges: Firstly, we need to tackle the dual decline in model
+adaptability and anti-forgetting ability due to significant cross-modal
+discrepancies (as shown in Fig. 1(e)), which TTQK did not specifically
+2
+
+
+codex
+已按每篇只读前 3 页处理，下面结论只基于摘要和引言，不含全文实验细节。
+
+**逐篇反推**
+1. `MTIPE`
+创新类型：新机制包装，实质偏多模块工程组合。  
+为什么能发：抓住遮挡 ReID 里外部姿态、解析模型有域差且结构复杂的问题，主张用 mask transformer 在网络内部提取可见姿态和局部原型。证据链是遮挡数据集、整体 ReID 数据集、模块消融、可视化。  
+story 套路：不再依赖外部姿态估计器，而是在 transformer 内部即时找到可见人体子空间。
+
+2. `InteractReID`
+创新类型：问题重定义和新设定。  
+为什么能发：把 sketch ReID 从一次性检索改成用户反馈式交互检索，解决 sketch 缺少颜色、性别等语义意图，以及 sketch+text 直接融合干扰、三模态标注贵的问题。  
+story 套路：把 sketch 映射成 CLIP 文本空间里的伪词元，再和用户文本反馈组合。
+
+3. `IEINet`
+创新类型：新机制。  
+为什么能发：指出 self-attention 只在单样本内部聚合，会削弱衣服纹理、背包等细粒度身份线索。它用跨样本外部记忆加样本内部局部上下文来强化细节。  
+story 套路：身份差异不只在图像内部，也存在于样本之间的对比关系里。
+
+4. `DDO + HRR`
+创新类型：问题重定义加新机制。  
+为什么能发：把遮挡从“要抗干扰”改写成“特征空间被遮挡变换污染，需要反变换补全”。扩散模型做特征补全，重排序用图库身份中心点。  
+story 套路：不是让 backbone 忍受遮挡，而是在进入检索前把特征去遮挡。注意 HRR 属于测试后处理，作为主贡献风险较高。
+
+5. `HCCL`
+创新类型：新机制，训练流程位置前移。  
+为什么能发：无监督 VI-ReID 的噪声伪标签不只是反向传播阶段的问题，它在前向传播时已经污染跨模态对应。先在单模态内部找可靠中心样本，再做跨模态匹配。  
+story 套路：先从自己学清楚，再去学别人。
+
+6. `CM2GT`
+创新类型：新机制，但题材较常规。  
+为什么能发：VI-ReID 中全局、部位、像素粒度的有效线索位置不一致，单粒度会造成无关匹配和模糊对齐。证据链是多粒度 transformer、跨模态 saliency 一致性和最近邻聚类损失。  
+story 套路：跨模态匹配不能只对齐一个尺度，要从粗到细共同对齐。
+
+7. `MMET`
+创新类型：问题重定义加新机制。  
+为什么能发：把泛化 ReID 讲成“视觉语义统一表征”和“缺失模态训练”问题，不要求目标域更新。证据链是跨数据集泛化、图文/单模态/缺失模态统一训练。  
+story 套路：真实部署中模态经常不完整，ReID 需要能从视觉和语义的等价表示里泛化。
+
+8. `DKAR`
+创新类型：终身 ReID 新机制。  
+为什么能发：旧方法只想限制更新来防遗忘，容易牺牲新域适应。它强调保留“适应能力”，用动态参数为不同域生成定制特征提取方式。  
+story 套路：终身学习不只是记住旧知识，而是记住如何适应旧域。
+
+9. `LVI-ReID DMM-CDCN`
+创新类型：新设定加新机制。  
+为什么能发：把终身学习推进到 VI-ReID 的连续相机级数据流，同时面对域差和模态差。用跨域跨模态 replay mix 加 camera-aware expandable GCN。  
+story 套路：真实全天候监控是相机网络持续扩展，不是静态 VI-ReID 数据集。
+
+**强候选方向**
+1. Headline：把遮挡和航拍极端视角统一成“人体 3D 可见表面缺失”，用 SMPL 可见表面蒸馏 SOLIDER 特征。  
+挂靠资产：SMPL 3D 几何、pose 热图门控、SOLIDER-Swin。  
+区别：不同于 MTIPE 的 2D mask/局部原型，也不同于 DDO 的通用特征扩散补全。我们的切口是物理可见性和人体表面对应关系，问题定义更硬。  
+cheap kill-switch：冻结 SOLIDER，在 Occluded-Duke 或 AG-ReID 上用 SMPL 投影出可见表面分区，比较普通 token pooling、2D pose pooling、SMPL surface pooling 的同身份相似度和 top-k 纯度。如果 SMPL 可见表面不能明显提高被遮挡或跨视角样本的正样本排序，直接停。
+
+2. Headline：无监督航拍-地面 ReID 先从“几何可靠样本”学自己，再跨视角传播身份。  
+挂靠资产：aerial-ground 跨视角 ReID、SMPL、pose 热图。  
+区别：HCCL 只用特征图中心性处理 VI-ReID 伪标签噪声；我们把可靠性定义为视角、尺度、人体可见面积、2D/3D 投影一致性，专门解决航拍低清和极端俯视下的错配。  
+cheap kill-switch：在 CARGO 或 AG-ReID.v2 上先不用训练，只统计高几何可靠样本对的伪匹配纯度，和普通特征中心性、最近邻置信度比较。如果几何可靠性不能筛出更干净的正对，别继续做无监督方向。
+
+3. Headline：视角扩展型终身 AG-ReID，新 UAV 高度和相机不断加入时，模型按几何视角状态动态适配。  
+挂靠资产：aerial-ground 数据和协议、SOLIDER-Swin、SMPL。  
+区别：DKAR 是普通 LReID 动态适配，DMM-CDCN 是 VI-ReID 相机级终身学习；这里的问题是航拍高度、俯仰角、人体分辨率持续变化导致的跨视角终身 ReID。新设定更贴团队资产。  
+cheap kill-switch：把 AG-ReID 按高度、视角或相机切成连续任务，跑一个顺序微调探针。如果旧视角遗忘和新视角适应冲突不明显，比如 mAP 下降不到 1 点，这个方向不够必要；如果遗忘明显，再试小型几何条件 adapter。
+
+4. Headline：几何自适应多粒度 ReID，粒度不是固定 global/patch/pixel，而由 3D 人体投影后的可辨认表面决定。  
+挂靠资产：SMPL、pose gating、SOLIDER-Swin、aerial-ground。  
+区别：CM2GT 是固定多粒度 transformer，IEINet 是跨样本注意力；我们把“粒度”改成由视角和人体表面可见性决定，尤其适合地面看衣服纹理、航拍看头肩轮廓这种不对称线索。  
+cheap kill-switch：冻结 backbone，做三种聚合：固定横条、2D pose part、SMPL surface bin。只看跨航拍地面检索的同身份最近邻纯度。如果 SMPL surface bin 没有超过固定部位，说明机制不值钱。
+
+我的排序是：1 最值得押，问题和机制都强；2 适合作为无监督版本或辅助实验；3 有新设定价值，但要先确认终身冲突真实存在；4 可以作为 1 的轻量机制分支，单独成稿风险略高。
+tokens used
+76,773
+已按每篇只读前 3 页处理，下面结论只基于摘要和引言，不含全文实验细节。
+
+**逐篇反推**
+1. `MTIPE`
+创新类型：新机制包装，实质偏多模块工程组合。  
+为什么能发：抓住遮挡 ReID 里外部姿态、解析模型有域差且结构复杂的问题，主张用 mask transformer 在网络内部提取可见姿态和局部原型。证据链是遮挡数据集、整体 ReID 数据集、模块消融、可视化。  
+story 套路：不再依赖外部姿态估计器，而是在 transformer 内部即时找到可见人体子空间。
+
+2. `InteractReID`
+创新类型：问题重定义和新设定。  
+为什么能发：把 sketch ReID 从一次性检索改成用户反馈式交互检索，解决 sketch 缺少颜色、性别等语义意图，以及 sketch+text 直接融合干扰、三模态标注贵的问题。  
+story 套路：把 sketch 映射成 CLIP 文本空间里的伪词元，再和用户文本反馈组合。
+
+3. `IEINet`
+创新类型：新机制。  
+为什么能发：指出 self-attention 只在单样本内部聚合，会削弱衣服纹理、背包等细粒度身份线索。它用跨样本外部记忆加样本内部局部上下文来强化细节。  
+story 套路：身份差异不只在图像内部，也存在于样本之间的对比关系里。
+
+4. `DDO + HRR`
+创新类型：问题重定义加新机制。  
+为什么能发：把遮挡从“要抗干扰”改写成“特征空间被遮挡变换污染，需要反变换补全”。扩散模型做特征补全，重排序用图库身份中心点。  
+story 套路：不是让 backbone 忍受遮挡，而是在进入检索前把特征去遮挡。注意 HRR 属于测试后处理，作为主贡献风险较高。
+
+5. `HCCL`
+创新类型：新机制，训练流程位置前移。  
+为什么能发：无监督 VI-ReID 的噪声伪标签不只是反向传播阶段的问题，它在前向传播时已经污染跨模态对应。先在单模态内部找可靠中心样本，再做跨模态匹配。  
+story 套路：先从自己学清楚，再去学别人。
+
+6. `CM2GT`
+创新类型：新机制，但题材较常规。  
+为什么能发：VI-ReID 中全局、部位、像素粒度的有效线索位置不一致，单粒度会造成无关匹配和模糊对齐。证据链是多粒度 transformer、跨模态 saliency 一致性和最近邻聚类损失。  
+story 套路：跨模态匹配不能只对齐一个尺度，要从粗到细共同对齐。
+
+7. `MMET`
+创新类型：问题重定义加新机制。  
+为什么能发：把泛化 ReID 讲成“视觉语义统一表征”和“缺失模态训练”问题，不要求目标域更新。证据链是跨数据集泛化、图文/单模态/缺失模态统一训练。  
+story 套路：真实部署中模态经常不完整，ReID 需要能从视觉和语义的等价表示里泛化。
+
+8. `DKAR`
+创新类型：终身 ReID 新机制。  
+为什么能发：旧方法只想限制更新来防遗忘，容易牺牲新域适应。它强调保留“适应能力”，用动态参数为不同域生成定制特征提取方式。  
+story 套路：终身学习不只是记住旧知识，而是记住如何适应旧域。
+
+9. `LVI-ReID DMM-CDCN`
+创新类型：新设定加新机制。  
+为什么能发：把终身学习推进到 VI-ReID 的连续相机级数据流，同时面对域差和模态差。用跨域跨模态 replay mix 加 camera-aware expandable GCN。  
+story 套路：真实全天候监控是相机网络持续扩展，不是静态 VI-ReID 数据集。
+
+**强候选方向**
+1. Headline：把遮挡和航拍极端视角统一成“人体 3D 可见表面缺失”，用 SMPL 可见表面蒸馏 SOLIDER 特征。  
+挂靠资产：SMPL 3D 几何、pose 热图门控、SOLIDER-Swin。  
+区别：不同于 MTIPE 的 2D mask/局部原型，也不同于 DDO 的通用特征扩散补全。我们的切口是物理可见性和人体表面对应关系，问题定义更硬。  
+cheap kill-switch：冻结 SOLIDER，在 Occluded-Duke 或 AG-ReID 上用 SMPL 投影出可见表面分区，比较普通 token pooling、2D pose pooling、SMPL surface pooling 的同身份相似度和 top-k 纯度。如果 SMPL 可见表面不能明显提高被遮挡或跨视角样本的正样本排序，直接停。
+
+2. Headline：无监督航拍-地面 ReID 先从“几何可靠样本”学自己，再跨视角传播身份。  
+挂靠资产：aerial-ground 跨视角 ReID、SMPL、pose 热图。  
+区别：HCCL 只用特征图中心性处理 VI-ReID 伪标签噪声；我们把可靠性定义为视角、尺度、人体可见面积、2D/3D 投影一致性，专门解决航拍低清和极端俯视下的错配。  
+cheap kill-switch：在 CARGO 或 AG-ReID.v2 上先不用训练，只统计高几何可靠样本对的伪匹配纯度，和普通特征中心性、最近邻置信度比较。如果几何可靠性不能筛出更干净的正对，别继续做无监督方向。
+
+3. Headline：视角扩展型终身 AG-ReID，新 UAV 高度和相机不断加入时，模型按几何视角状态动态适配。  
+挂靠资产：aerial-ground 数据和协议、SOLIDER-Swin、SMPL。  
+区别：DKAR 是普通 LReID 动态适配，DMM-CDCN 是 VI-ReID 相机级终身学习；这里的问题是航拍高度、俯仰角、人体分辨率持续变化导致的跨视角终身 ReID。新设定更贴团队资产。  
+cheap kill-switch：把 AG-ReID 按高度、视角或相机切成连续任务，跑一个顺序微调探针。如果旧视角遗忘和新视角适应冲突不明显，比如 mAP 下降不到 1 点，这个方向不够必要；如果遗忘明显，再试小型几何条件 adapter。
+
+4. Headline：几何自适应多粒度 ReID，粒度不是固定 global/patch/pixel，而由 3D 人体投影后的可辨认表面决定。  
+挂靠资产：SMPL、pose gating、SOLIDER-Swin、aerial-ground。  
+区别：CM2GT 是固定多粒度 transformer，IEINet 是跨样本注意力；我们把“粒度”改成由视角和人体表面可见性决定，尤其适合地面看衣服纹理、航拍看头肩轮廓这种不对称线索。  
+cheap kill-switch：冻结 backbone，做三种聚合：固定横条、2D pose part、SMPL surface bin。只看跨航拍地面检索的同身份最近邻纯度。如果 SMPL surface bin 没有超过固定部位，说明机制不值钱。
+
+我的排序是：1 最值得押，问题和机制都强；2 适合作为无监督版本或辅助实验；3 有新设定价值，但要先确认终身冲突真实存在；4 可以作为 1 的轻量机制分支，单独成稿风险略高。

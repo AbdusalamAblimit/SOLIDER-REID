@@ -1,0 +1,45 @@
+我按你实际列出的 6 篇拆了。题头写“9”，但清单里只有 6 个 PDF。
+
+**CycleTrans**
+1. 触发观察：作者抓到的是“对齐会伤判别性”。VI-ReID 里大家都在缩小可见光和红外的模态差异，但直接做分布对齐会把不同身份也拉近，颜色、纹理等细粒度线索也被洗掉。
+2. 重定义动作：它把旧问题“模态对齐”改成“学习 neutral yet discriminative features”。关键词是 neutral、discriminative、modality-relevant、modality-irrelevant prototypes、cycle construction。核心说法是，跨模态特征不能只中性，还必须能保留身份细节。
+3. 机制怎么长出来：机制和重定义绑得比较紧。KCM 先抽“模态相关但有判别性”的语义，DMM 再用共享原型把它变成中性特征，最后用 cycle reconstruction 逼中性特征恢复原模态和异模态语义。逻辑是，如果中性特征还能重构模态相关信息，就说明它没有把身份细节洗掉。
+4. 证据闭环：关键不是只报 SOTA，而是消融显示 KCM、DMM、cycle 都有贡献。文中说 KCM 和 DMM 分别带来 Rank-1 提升，cycle 相比 DMM 后又明显提升，完整方法比基线高很多。DMM 替代实验说明“直接用原型”“不用 discrepancy”“Transformer 替代”都不如 DMM。t-SNE 证明无 cycle 时中性但边界不清，Grad-CAM 证明 cycle 让模型看更完整的人体细节。
+5. reviewer 为什么买账：买的是视角加机制，不只是模块。它把“对齐和判别冲突”讲成一个明确矛盾，再用 cycle 作为保持判别性的检验器。novelty 真正来自“中性特征必须可逆地保留身份语义”这个问题重定义。
+
+**DATE**
+1. 触发观察：CLIP-ReID 的 learnable prompt 有判别性，但缺少具体人的描述先验。MLLM 生成的描述有人的属性细节，但文本会有噪声。已有多模态 ReID 把 learnable text 和 description text 同步融合，等价于把可靠和不可靠信息同等对待。
+2. 重定义动作：它把问题从“文本能不能帮助 ReID”改成“两类文本嵌入的可靠性和粒度不同，不能对称使用”。关键词是 learnable-based textual embedding、description-based textual embedding、asymmetric fusion、auxiliary clues、cross-granularity training。
+3. 机制怎么长出来：因为 description text 有信息但不够可靠，所以它不让描述文本当决定性监督，而是作为辅助线索注入 visual embedding 和 learnable textual embedding。Textual-to-Visual Adapter 用描述去补视觉，Textual-to-Textual Adapter 用描述去补身份 prompt，再用图像级描述和身份级文本做交叉粒度训练。
+4. 证据闭环：核心消融是融合方式和文本约束。cross-attention 比直接相加好很多，直接相加甚至会明显伤性能，说明“非对称融合”不是装饰。损失消融里，只有 learnable text、只有 description text、二者组合和完整约束逐步提升，说明描述文本确实是辅助增强而不是替代视觉或替代 prompt。
+5. reviewer 为什么买账：买的是“文本空间不等价”的融合视角。真正 novelty 不是 adapter，而是把 MLLM 描述的噪声风险讲清楚，然后给出不让噪声文本主导训练的非对称设计。不过这篇的增益相对克制，更像 ICME 级别的稳健增量，不是特别强的问题重定义范式。
+
+**Deep intelligent technique**
+1. 触发观察：作者说监控图像有噪声、视角、光照、背景、姿态错位等问题，传统智能模型特征选择不足，生物启发优化算法容易因为停止迭代而错过更合适的特征。
+2. 重定义动作：它没有把 ReID 重新定义成一个更深的问题，而是改写成“在噪声监控图像中做最优特征选择和超参数调节”。关键词是 HLGFS、Horned Lizard optimization、GoogLeNet、feature selection、fitness。
+3. 机制怎么长出来：机制主要是把 Horned Lizard 优化和 GoogLeNet 组合。预处理去噪，GoogLeNet 抽特征，Horned Lizard 优化用于选择脸、体型、衣服等特征并调参数。这里逻辑绑定很弱，蜥蜴变色行为和 ReID 视觉机制之间更多是类比，不是从 ReID 失败现象自然推出。
+4. 证据闭环：它报了 CUHK03、Market1501、DukeMTMC 上很高的 accuracy 和 mAP，也做了训练数据比例消融，以及 GN+PS、GN+GW、GN+AC、GN+HO 和 GN+HL 的优化器对比。但这些证据主要证明“这个组合分数高”，没有干净证明问题重定义成立，也缺少标准 ReID 协议下的强基线、模块隔离和可解释分析。
+5. reviewer 为什么买账：如果买账，买的是应用型混合智能系统和高指标，不是 ReID 方法视角。对我们要做 CCF-B 方法稿来说，这篇更像反例：不要靠“某优化器加某网络”当创新，也不要用很泛的噪声、复杂度、特征选择来替代具体观察。
+
+**DFLSG**
+1. 触发观察：无监督 text-to-image ReID 不只是没有身份标签，还没有可靠的图文匹配关系。图像聚类能给伪标签，但文本不一定和图像匹配，MLLM 生成文本也会有幻觉和冗余属性。
+2. 重定义动作：它把旧问题“无监督跨模态学习”改成“训练样本和伪标签的 dependability 问题”。关键词是 dependable text generation、reliable image-text matching relationship、Error Sample Filtering、dependable identity labels。
+3. 机制怎么长出来：既然核心是可靠性，它先用多个 MLLM 生成候选描述，再用已有 TIReID 模型的图文相似度选择更可靠文本。然后只对图像聚类，把伪标签传给匹配文本，再用文本和图像类中心的相似度做 IQR 异常过滤。最后 MTJL 从类中心和实例两个层面收紧跨模态特征。
+4. 证据闭环：消融是比较完整的。单 MLLM 生成文本加聚类最差，加入 MTJL 有明显提升，换 MLLM 会波动，说明文本质量不稳定。dependable text generation 明显提升，ESFM 再提升。IQR 和 Z-score、LOF 对比，聚类方法替换，过滤强度参数分析，都在证明“可靠样本构造”是承重点。
+5. reviewer 为什么买账：买的是问题分解。它没有简单说“大模型生成文本能用”，而是说无监督 TIReID 的难点在两层可靠性：图文关系可靠、伪身份可靠。novelty 来源是数据构造和可靠性过滤的闭环，机制和重定义绑定较紧。
+
+**DIRL**
+1. 触发观察：图像级 VI-ReID 方法处理不了视频里的姿态、运动、遮挡和时序变化。已有 VVI-ReID 多在帧级做模态不变，序列级特征聚合后仍有模态差异，而且 modal-related 信息会继续干扰身份判别。
+2. 重定义动作：它把 VVI-ReID 从“时序聚合加跨模态对齐”改成“序列级模态交互之后，显式学习 ID-related representation”。关键词是 sequence-level modal-invariant features、modality information interaction、feature decoupling、ID-related 和 modal-related。
+3. 机制怎么长出来：先用 TBM 抽帧级特征，第一层分模态，后面共享。CIM 在聚合时序信息时引入跨模态交互，用共享 key 让可见光和红外在序列级产生共同参照。FDM 再学习模态相关分量并从序列特征中减掉，只留下 ID-related 表示。损失里还用第三个“neither modality”类别逼 ID 特征不能被模态分类。
+4. 证据闭环：HITSZ-VCM 消融显示 CIM 单独带来 Rank-1 和 mAP 大提升，FDM 单独也提升，两者组合最好。t-SNE 显示同身份跨模态更聚、不同身份更分开，Rank-5 可视化展示视频检索结果。参数分析说明帧数增加和 FDM 维度变化会影响性能。
+5. reviewer 为什么买账：买的是“序列级”这个落点。feature decoupling 本身不是新概念，但它把解耦从图像帧级挪到视频序列级，并放在跨模态交互之后，形成了和 VVI-ReID 场景绑定的说法。novelty 是问题位置的新，不是基础算子的新。
+
+**Discovering Multi-Frequency Embedding**
+1. 触发观察：已有 VI-ReID 多在空间域做特征，频域方法也常常只做全频段或低高频二分。作者用频率可视化说明，低频更容易含模态风格和照明，高频更保留边缘结构，但身份线索并不只在高频，而是分散在多个频带。
+2. 重定义动作：它把问题从“频域能减少模态差异”改成“身份是 multi-frequency 的，单一频率切分会在保留身份线索和去除模态噪声之间做坏取舍”。关键词是 multi-frequency embedding、frequency-aware diversity、band-specific importance、cross-modality retrieval。
+3. 机制怎么长出来：HiLo-FM 对低频和高频分工处理，低频在频域用可学习复权重做风格调节，高频回到空间域用轻量多尺度卷积抽结构细节，再用空间注意力融合。FADE 把频谱拆成多个频带，对每个频带学注意力，多分支产生多样特征。CMSR 把训练目标改成更贴近跨模态检索，CMRR 用排序不一致约束鼓励分支多样性。
+4. 证据闭环：这篇闭环很完整。Fig. 2 先用可视化证明多频观察。组件消融显示 HiLo-FM、FADE、CMRR、CMSR 都有增益，完整组合最好。ρ 曲线证明低频不能全丢也不能过多依赖，0.2 附近最好。频带数 B 的曲线证明多频拆分优于 DC/others 或简单低高频，但过多频带会退化。方形、圆形、菱形分割对比进一步证明不是随便切。
+5. reviewer 为什么买账：买的是视角加证据。FFT、IN、多尺度卷积都不是新零件，真正 novelty 是“多频身份线索分布”这个观察，以及用参数曲线证明单一频率划分确实不够。机制和重定义绑定很紧，是这批里最值得学的创新构造方式之一。
+
+这批论文共同套路是：先不急着加模块，而是把旧范式的副作用单独命名，比如对齐损判别性、文本有噪声、无监督样本不可靠、序列级仍残留模态信息、单频切分会丢身份线索。然后造一个中间概念承接新问题，比如 neutral feature、dependable pair、ID-related sequence representation、multi-frequency embedding，再让模块围绕这个中间概念服务。真正能让 reviewer 买账的不是模块复杂，而是消融和可视化能证明“这个新问题定义本身是对的”。

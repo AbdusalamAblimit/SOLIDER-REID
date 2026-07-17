@@ -1,0 +1,58 @@
+##########################################################################################
+# HUBNESS VERIFY P0+P4   dataset=occluded_duke   k_main=10   feat=/tmp/hub_oduke_feats.npz
+##########################################################################################
+[data] Nq=2210 Ng=17661 dim=768 #q-pids=519 #g-pids=1110
+[sanity] frozen cosine mAP=73.05 R1=81.72 nq=2210
+[valid] queries with >=1 valid positive = 2210/2210
+
+==========================================================================================
+P0a  LEAVE-ONE-QUERY-OUT  (subtract q's own +1 from every H_k term in its M)
+==========================================================================================
+  rho(AP-err, M_raw)  = +0.6467  [95% CI +0.598,+0.664]  perm-p=0.0005  (n=2210)
+  rho(AP-err, M_loo)  = +0.4821  [95% CI +0.406,+0.483]  perm-p=0.0005
+  delta rho (raw->loo) = -0.1646   (median self-term share of M = 0.0% of the mass)
+  >> P0a: diagnostic WEAKENS/COLLAPSES under LOO de-circularization.
+
+==========================================================================================
+P0b  HELD-OUT SPLIT  (estimate H_k on split A, predict AP-err of split B's M)
+==========================================================================================
+  primary split (seed=42): rho=+0.3383  [95% CI +0.266,+0.386]  perm-p=0.0005  (n=1105)
+  over 20 random splits: rho mean=+0.3294  std=0.0292  min=+0.2951  max=+0.4282
+  >> P0b: held-out (no self-loop possible) rho HOLDS.
+
+==========================================================================================
+P0c  STRONGER CHEAP CONTROLS  (partial rho of M_loo | strong retrieval proxies)
+==========================================================================================
+  marginal rho(AP-err, proxy):
+    #false-in-topk         +0.6567
+    topk-precision         -0.6695
+    first-positive-rank    +0.4503
+    mean-negative-sim      -0.2911
+    top1-correct           -0.4522
+    same-cam-frac          +0.2492
+  --- partial rho(AP-err, M_loo | proxy) [does hub mass add signal beyond it?] ---
+    M_loo | #false-in-topk       = -0.0595
+    M_loo | topk-precision       = +0.2479
+    M_loo | first-positive-rank  = +0.2575
+    M_loo | mean-negative-sim    = +0.3216
+    M_loo | top1-correct         = +0.5421
+    M_loo | same-cam-frac        = +0.4666
+  M_loo | ALL 6 strong proxies = -0.0607  (n=741)
+  >> P0c: M_loo ADDS independent signal beyond strong retrieval proxies.
+
+==========================================================================================
+P4  k-RECIPROCAL REFRAME  (is M(q) what re-ranking repairs?)
+==========================================================================================
+  computing k-reciprocal (k1=20, k2=6, lam=0.3) ...
+  k-reciprocal mAP=84.035 (base 73.055, d+10.981)
+  rho(M_raw, k-recip per-query gain) = +0.2440  [95% CI +0.187,+0.278]  perm-p=0.0005
+  rho(M_loo, k-recip per-query gain) = +0.1907
+  M(q) quintile -> mean k-reciprocal AP gain:
+    Q0 (n= 442, mean M=       0.0): mean gain = +4.791  (frac improved 53.4%)
+    Q1 (n= 442, mean M=       0.0): mean gain = +4.635  (frac improved 60.6%)
+    Q2 (n= 442, mean M=       0.0): mean gain = +6.368  (frac improved 64.0%)
+    Q3 (n= 442, mean M=       1.4): mean gain = +18.442  (frac improved 77.4%)
+    Q4 (n= 442, mean M=       9.0): mean gain = +20.667  (frac improved 71.5%)
+  >> P4: high-M queries are PRECISELY the ones k-reciprocal repairs most (reframe holds).
+
+[done] occluded_duke in 53s

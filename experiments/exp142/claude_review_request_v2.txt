@@ -1,0 +1,79 @@
+请对 `exp142 SKC (Support-Supervised Keypoint Completion)` 做第二轮全面审查。
+
+第一轮审查结论是：
+
+- **代码实现正确，设计合理，可以启动训练**
+
+但指出了 1 个中优先级问题和 2 个低优先级问题。我已经全部修复。第二轮请重点验证这些修复是否正确，而不是重复做基础 smoke test。
+
+## 第一轮指出的问题
+
+1. **[Medium] `applied_ratio` 分母不合理**
+   - 之前是 `applied_count / (B*17)`
+   - 容易把“低置信关键点都被补了”误判成“只补了一小部分”
+2. **[Low] `raw_norm` / `pre_dist` 为纯日志统计却建立了不必要计算图**
+3. **[Low] 缺少 `delta_std`，无法判断 delta 是否塌成常数方向**
+
+## 已完成的修复
+
+1. `skc_stats` 新增：
+   - `applied_in_low`
+   - `delta_std`
+2. `processor.py` 日志新增：
+   - `skc_ail`
+   - `skc_ds`
+3. `raw_norm` / `pre_dist` 已放进 `torch.no_grad()`
+4. `support bank` 的进度日志改成不等 warmup 结束就能看到：
+   - `skc_spr`
+   - `skc_pc`
+   - `skc_pcnt`
+
+## 请重点复核
+
+### 一、修复是否真的生效
+
+1. `applied_in_low` 的定义是否正确
+2. `delta_std` 是否真的反映 delta 范数波动，而不是伪统计
+3. `pre_dist` 是否已彻底脱离计算图
+
+### 二、当前日志是否足够支撑及时止损
+
+请确认现在的日志是否已经足够回答：
+
+1. 模块有没有真正作用在 low-confidence joints 上
+2. 它是在整体跳过，还是在整体强覆盖
+3. delta 是否塌成常数方向
+4. low-confidence tokens 是否真的被拉向 support target
+
+### 三、代码正确性复核
+
+请再顺带确认：
+
+1. 默认 baseline 行为仍然完全不受影响
+2. train/test 对称性仍然成立
+3. support bank 仍只作为训练监督 target，而不进入测试前向
+4. 当前版本没有新的 shape / mask / device / dtype / AMP 风险
+
+## 当前已知自检
+
+1. `py_compile` 已通过
+2. 模型可用 `pose_psg_gcn_skc.yml` 成功构造
+3. 最小前向已出现：
+   - `skc_raw_feats`
+   - `skc_completed_feats`
+   - `skc_scores`
+   - `skc_stats`
+4. `skc_stats` 当前键已包含：
+   - `low_ratio`
+   - `applied_ratio`
+   - `applied_in_low`
+   - `gate_mean`
+   - `gate_std`
+   - `delta_norm`
+   - `delta_std`
+
+如果你认为现在已经没有阻塞项，请明确写：
+
+- **允许启动训练**
+
+如果你认为还应再修，请直接指出阻塞项，不要保守。

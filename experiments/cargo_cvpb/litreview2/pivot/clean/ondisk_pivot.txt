@@ -1,0 +1,37 @@
+**Verdict：最值得押的一条是 RSTPReid 上的“ReID 视觉流形锚定文本检索”，信心 5/10。**  
+不是做新 alignment 模块，而是重定义：**text-to-image ReID 不是把图像拖进语言空间，而是把欠完整文本定位到一个强视觉 ReID 身份流形上。** 这正好用你们的强 Swin/SOLIDER 视觉 ckpt；但只能先跑 kill-switch，过不了就别开训练，转 Hubness analysis short。
+
+**触发观察**  
+在 RSTPReid 上找这种失败：文本描述很泛，例如黑衣、深色裤、背包，标准 text-image 排名把一堆语义相似人排前；但目标图像在 frozen SOLIDER image-image 空间里其实有清晰身份邻域。也就是：失败不是“局部图文没对齐”，而是**文本查询没有落到已有视觉身份流形的正确区域**。
+
+**机制**  
+方法可叫 `RMA-TIReID`：ReID-Manifold Anchored Text-to-Image ReID。
+
+- 冻结或强约束 SOLIDER/Swin image encoder，保住 image ReID manifold。
+- 文本 encoder 不直接和图像一起自由漂移，而是学习预测/匹配 frozen visual ReID feature、ID prototype 或 teacher similarity distribution。
+- 加一个 manifold-preserving loss：训练后的 image embedding 必须保持 frozen SOLIDER 的 gallery-gallery / same-ID topology。
+- 文本侧用 attribute/token 组合去生成“视觉流形查询”，而不是再做 CADA/IRRA 式 patch-word 交互。
+- 测试仍是单 text embedding 查 gallery image embedding，不用 MLLM、不用 re-ranking。
+
+**廉价 kill-switch**  
+不训练 backbone，先做两版：
+
+1. 提取 RSTPReid 全部 image 的 frozen SOLIDER feature。
+2. 用 train captions 建 phrase/token → visual direction/prototype 表：例如颜色、上衣、裤子、包、性别、长短袖等 token 的平均视觉 feature residual。
+3. test text query = IDF 加权 token prototype sum，直接查 gallery SOLIDER features。
+4. 控制组：随机 token-image 配对、color-only、去 color、caption shuffle、feature shuffle；如果有本地 CLIP/BERT cache，再加 CLIP zero-shot/linear probe。
+
+通过门槛：这个零训练/轻训练 text→SOLIDER 查询必须明显强于 color-only 和 shuffle，并且错误主要发生在高文本歧义 query。若它只会认颜色，或接近随机，方向直接死。
+
+**撞车核查**  
+红线很明确：
+
+- IRRA 已做 implicit local relation + global distribution matching，别再做普通图文局部对齐。([arxiv.org](https://arxiv.org/abs/2303.12501))
+- CADA 已做 text-token↔image-patch / image-region↔text-attribute 双向 association。([arxiv.org](https://arxiv.org/abs/2312.01745?utm_source=openai))
+- RDE 已覆盖 noisy correspondence / false-correlated image-text pair。([arxiv.org](https://arxiv.org/abs/2308.09911?utm_source=openai))
+- APTM/UniPT/UP-Person 都走大规模预训练或 CLIP/PETL 路线；无下载约束下别硬碰。([arxiv.org](https://arxiv.org/abs/2306.02898?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2309.01420?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2504.10084?utm_source=openai))
+- CAIBC 已讲 color over-reliance；如果你的结果只是“别只看颜色”，也撞。([arxiv.org](https://arxiv.org/abs/2209.05773?utm_source=openai))
+- DiCo 已做 slot/concept disentanglement；别把贡献写成属性槽分解。([arxiv.org](https://arxiv.org/abs/2601.10053?utm_source=openai))
+- ICL 已用 MLLM test-time query refinement，这条不符合 on-disk/no-download。([arxiv.org](https://arxiv.org/abs/2506.11036?utm_source=openai))
+
+所以最终判断：**text-image 没卷死，但“普通图文方法”全死。唯一有团队资产差异化的是 SOLIDER 视觉身份流形当 teacher/anchor。** 先跑 kill-switch；失败就别再换壳，Hubness 写 analysis short 收尾更干净。

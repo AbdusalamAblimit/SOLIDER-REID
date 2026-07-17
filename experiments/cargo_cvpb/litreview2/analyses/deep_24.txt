@@ -1,0 +1,55 @@
+下面按“怎么把观察构造成创新”拆，不按模块复述。
+
+**1. Shape-centered representation learning for visible-infrared person re-identification**
+
+1. 触发观察：VI-ReID 过去主要学外观共性，但外观正是最受可见光和红外差异影响的东西。作者抓住一个具体现象：人体形状天然跨模态稳定，也有身份信息，但红外图像经人体解析得到的形状会在手臂、腿部等位置出错。
+2. 重定义动作：他们没有接受 SEFL 那种“形状不可靠所以丢掉”的叙事，而是改成“形状不是噪声，红外形状估计错误才是噪声”。关键词是 shape-centered、Infrared Shape Restoration、shape-related appearance。
+3. 机制怎么长出来：机制几乎顺着问题出来。红外形状错，所以做 ISR 从红外外观特征里恢复形状。推理阶段不能依赖解析网络，所以做 SFP 把形状流能力蒸馏到外观流。外观里有背景和模态噪声，所以用 AFE 让形状去筛外观。
+4. 证据闭环：关键不是总表涨点，而是分层消融。SFP、ISR、AFE 逐步把 SYSU all-search 从 70.2/66.9 提到 76.1/72.6。ISR 里空间注意力优于直接相加、只用红外外观、只用形状查询和通道注意力。AFE 里两阶段注意力优于直接拼接和通道注意力。形状单独、外观单独、二者结合的对照也支撑“互补”。
+5. reviewer 为什么买账：这篇卖的是视角，不是注意力模块本身。真正的新意是把“形状不可靠”反转成“形状是跨模态锚点，但要先修红外形状，并用形状约束外观”。
+
+**2. Similarity Regulation and Calibration Alignment for Weakly Supervised Text-Based Person Re-Identification**
+
+1. 触发观察：弱监督文本 ReID 只有图文配对，没有身份标签。传统对比学习把非配对样本全当负样本，但实际存在同身份假负样本和局部相似负样本。
+2. 重定义动作：作者把问题从“缺身份标签”改写成“严格一对一图文约束本身有害”。关键词是 false negatives、partially similar negatives、many-to-many relationship、similarity regulation、calibration alignment。
+3. 机制怎么长出来：SR 用文本语义相似度生成软目标，但把对角线置零，避免正样本支配软目标，再让软目标调节硬目标。CA 则把伪标签分配建模为最优传输，用“类别多、每类样本少、近似均匀”的 ReID 数据先验约束伪标签。
+4. 证据闭环：最关键是 SR 目标对照。只用软目标会崩到 R1 34.19，只用硬目标 72.66，普通软硬结合 73.08，作者的 SR 到 73.23。CA 在组件消融中继续提升 R1 和 mAP。注意力可视化显示模型能对齐 glasses、shirt with dots 等细粒度词。
+5. reviewer 为什么买账：这篇卖的是问题口径。弱监督不是简单“无标签版监督学习”，而是训练目标里有系统性假负样本。机制不复杂，但和这个口径绑定得很紧。
+
+**3. Spatial-Temporal Federated Learning for Lifelong Person Re-Identification on Distributed Edges**
+
+1. 触发观察：真实部署里 ReID 同时遇到两个问题：摄像头环境随时间漂移，原始行人数据又不能集中上传。已有终身 ReID 解决时间漂移但依赖集中训练，已有联邦 ReID 解决隐私但没有持续学习。
+2. 重定义动作：作者把问题定义成“边缘端的联邦终身 ReID”，再进一步说不同位置和时间学到的知识有空间时间相关性。关键词是 federated lifelong person ReID、spatial-temporal knowledge integration、task-relevant knowledge。
+3. 机制怎么长出来：边缘端只训练自适应层，用原型回放抗遗忘。服务器不平均聚合，而是用任务原型均值计算客户端之间的任务相似度，并对历史任务加时间衰减，得到个性化聚合权重。自适应层把本地知识和服务器发来的空间时间知识组合起来。
+4. 证据闭环：最有力的是服务器端消融。去掉空间聚合掉 9.44 mAP，去掉时间聚合掉 7.12 mAP，去掉空间时间联合掉 13.90 mAP。去掉原型回放掉 7.43 mAP。相关性热图还能对应预设的真实边缘相关组。
+5. reviewer 为什么买账：这篇卖的是新设定加系统闭环。它不是单纯套联邦或终身，而是把真实部署中的“空间分布、时间漂移、隐私限制、边缘算力”合成一个新问题。
+
+**4. Spatial-Temporal High-Frequency Learning for Video-based Visible-Infrared Person Re-Identification**
+
+1. 触发观察：VVI-ReID 里已有中间模态方法有三类缺陷：生成假红外成本高，边缘类中间模态丢高频细节，单帧构造忽略时间信息。作者又观察到高频保留边缘、结构和运动变化，低频更多是背景、风格和冗余。
+2. 重定义动作：他们把“构造中间模态”重定义为“构造序列级空间时间高频中间模态”。关键词是 spatial-temporal high-frequency、sequence-level intermediate modality、low-frequency components、high-pass filter。
+3. 机制怎么长出来：ST-HPF 用 3D FFT 和二值高通滤波去掉空间时间低频。浅层有纹理和边缘，所以 SDC 用高频特征补偿局部细节。深层有语义和全局时序，所以 DSR 用高频序列特征引导语义精炼。MP 先去风格，避免跨模态噪声干扰交互。
+4. 证据闭环：消融很对题。SDC、DSR、二者结合分别提升，DSR 贡献更大。插入深度实验显示 SDC 适合浅层，DSR 适合深层。只做空间高通或只做时间高通都不如 ST-HPF。替换为 PHA 和 FRB 也不如 3D ST-HPF。距离分布和 CAM 进一步说明类间间隔更大、关注区域更准。
+5. reviewer 为什么买账：这篇同时卖视角和机制。视角是“跨模态视频 ReID 可以从频域高频重写中间模态”，机制是 3D 频域构造加分层特征利用。
+
+**5. Spatio-temporal Feature-level Augmentation Vision Transformer for video-based person re-identification**
+
+1. 触发观察：视频 ReID transformer 准确率高，但很多方法靠复杂结构和大量参数。作者抓住两个视频 ReID 特性：身份不应随背景改变，视频里可能混入遮挡或其他人的异常帧。
+2. 重定义动作：他们没有继续堆时序模块，而是把问题重写成“用特征级增广教会 ViT 视频 ReID 的不变性和异常帧可靠性”。关键词是 Feature-level Augmentation、Background Token、Altered Background ID Classification、Anomaly Frame Detection。
+3. 机制怎么长出来：先加 background token，把前景身份和背景分开。SFA 随机替换背景 token，要求身份分类不变。TFA 插入其他身份的帧特征，训练 AFD 找异常帧。测试时不做增广，把 AFD 学到的能力转成 frame consistency score 来加权视频表征。
+4. 证据闭环：组件消融显示 BG、空间增广、时间增广、refine 都有贡献。iLIDS-VID 从 91.3 R1 到 95.3，MARS-DL 也稳定提升。跨数据集 MARS-DL 到 iLIDS 从 45.3 到 50.0，说明不是只记住训练集。可视化显示 class token 看人，background token 看背景，consistency score 会压低遮挡和姿态突变帧。
+5. reviewer 为什么买账：这篇卖的是机制设计的简洁性。它把 transformer token 结构和视频 ReID 的真实扰动结合起来，训练期做复杂事，测试期保留轻量模型。
+
+**6. SPCL: Semantic Polymorphism and Commonality Learning for Text-Based Person Retrieval**
+
+1. 触发观察：TBPR 里同一身份的不同图像和文本并不是完全等价，而是相似但互补。不同身份之间又可能共享属性，比如 blue backpack。传统一对一图文对齐和 ID 内属性对齐都会误处理这些关系。
+2. 重定义动作：作者把 TBPR 重写成两个语义现象：同一身份内有 semantic polymorphism，不同身份间有 semantic commonality。关键词是 strong correspondence、weak correspondence、relation-sensitive alignment、ID-free attribute alignment、macro 和 micro。
+3. 机制怎么长出来：RSSPA 在同一 ID 内按相似度建立强弱图文对应，而不是只拉近配对样本。IBSPA 在单模态内聚合同 ID 多种表达。IFAA 去掉 ID 限制，让属性和全批次图像建立关系。APFR 用属性先验指导图文融合并重构属性，强化微观属性感知。
+4. 证据闭环：RSSPA 是主证据，CUHK 上 Rank-1 提升超过 3%，mAP 约 7%，mINP 约 11%。关系敏感对齐比传统单映射多 2.76 Rank-1、6.16 mAP、10.28 mINP。IBSPA、IFAA、APFR 继续带来增益。作者还比较了 RSSPA+IBSPA 和 SDM/CMPM，属性实验显示多粒度属性优于词级属性，属性数量过多反而伤害性能。
+5. reviewer 为什么买账：这篇主要卖视角。它把“一个身份多描述”和“跨身份共享属性”命名成可优化的语义结构，RSSPA 是承重机制，属性模块是支撑这个视角的扩展。
+
+**共同套路**
+
+这批论文共同的做法是：先找到一个被旧训练目标错误处理的关系，比如一对一、全负样本、平均聚合、单帧中间模态、输入级增广，然后给它重新命名成更具体的问题。机制通常不是凭空发明，而是把新问题拆成两到三个障碍，每个障碍对应一个模块，最后用“替代机制消融”证明自己的重定义比普通涨点更可信。  
+
+我主要依据本地 PDF 全文方法和消融页阅读，另外核对了 ScRL 和 FedSTIL 的 arXiv 页面，以及弱监督文本 ReID 相关背景 CPCL 页面：ScRL arXiv([arxiv.org](https://arxiv.org/abs/2310.17952?utm_source=openai))、FedSTIL arXiv([arxiv.org](https://arxiv.org/abs/2207.11759?utm_source=openai))、CPCL arXiv([arxiv.org](https://arxiv.org/abs/2401.10011?utm_source=openai))。

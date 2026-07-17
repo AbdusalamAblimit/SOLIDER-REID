@@ -1,0 +1,49 @@
+你是这个仓库的严格代码审查员。请对 **重构后的 `exp139 Query-Context LPCS`** 做一次**全面审查**，不要做快速扫一眼式 review。
+
+这不是第一次审查。第一次审查已经明确指出两个 blocking：
+1. test-time `cvk_residual` descriptor 仍是 6 维，而训练版 scorer 已变成 11 维
+2. 原版 `query_ctx` 使用了 label-dependent 的 `row_pos_mean / row_neg_mean / row_margin`，训练测试不一致
+
+本轮审查的重点是确认：**这两个 blocking 是否已经被真正修复**，以及新版本是否仍满足单变量原则。
+
+必须完整阅读并审查这些文件：
+- `/root/work/SOLIDER-REID/experiments/exp139/design.md`
+- `/root/work/SOLIDER-REID/experiments/exp139/monitor.md`
+- `/root/work/SOLIDER-REID/configs/occluded_duke/pose_psg_gcn_lpcs_query_ctx.yml`
+- `/root/work/SOLIDER-REID/config/defaults.py`
+- `/root/work/SOLIDER-REID/processor/processor.py`
+- `/root/work/SOLIDER-REID/model/pose_backbone_model.py`
+- `/root/work/SOLIDER-REID/model/modules/pair_adaptive_fusion.py`
+- `/root/work/SOLIDER-REID/utils/metrics.py`
+- `/root/work/SOLIDER-REID/experiments/exp135/design.md`
+- `/root/work/SOLIDER-REID/experiments/decisions.md`
+
+审查目标：
+1. 相对 `exp135` 是否满足单变量原则
+2. 当前 `query_ctx` 是否已经变成 **无标签、train/test 对称** 的 context
+3. 训练和测试两条 `cvk_residual` 路径是否都构造了同一语义的 11 维 descriptor
+4. 默认行为是否保持不变
+5. `lpcs_ctxm` 是否仍足以证明 context 特征真的接入
+6. 是否还存在阻塞性 bug、逻辑错误、指标解释风险或日志不足
+
+输出格式必须是中文，并严格用下面结构：
+
+# Claude 审查结论
+
+## 结论
+- 允许启动 / 不允许启动
+
+## Blocking
+- 没有则写“无”
+
+## Major
+- 没有则写“无”
+
+## Medium
+- 没有则写“无”
+
+## Low
+- 没有则写“无”
+
+## 建议
+- 给出是否可以启动实验，以及启动前是否必须修复某些问题

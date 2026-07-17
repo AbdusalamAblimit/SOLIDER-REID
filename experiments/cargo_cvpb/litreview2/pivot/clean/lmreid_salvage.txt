@@ -1,0 +1,83 @@
+154,275
+**Verdict**
+最强补救是 **(a) 重构**，但要改口径：不要再卖 `L_marg + L_cons`，而是卖：
+
+> Severe LR ReID 中存在 sampling-lattice uncertainty；正确策略不是把 lattice variants 强行压成同一个 embedding，而是用 lattice-aware training 增广判别性，再在检索时对 lattice hidden variable 做 marginalization。
+
+信心：**当前 6/10；补完关键隔离对照后可到 7/10，CCF-B 有条件可行。**  
+核心证据是 `M=3 no-LM-loss` 已经最强：`77.44 single / 79.90 lattice`，而 full LM 反而 `75.71 / 78.04`。这说明“feature consistency/invariance”死了，但“lattice hidden variable + marginalization”没死。
+
+四个选项排序：
+
+| 方向 | 判断 | 信心 |
+|---|---|---|
+| (a) lattice-aware augmentation + test-time lattice marginalization | **主救法**。把 consistency 有害写成诚实消融：过度不变性压掉身份细节 | **7/10 after controls** |
+| (c) 换 training-side 机制 | 可作为第二条线，但必须避开 feature collapse；做 hard-lattice / CVaR / set-wise loss | **5.5/10** |
+| (b) 纯 test-time lattice-marg | 结果真，但像强 TTA。可做 short / appendix / plug-in，不适合作 full 主贡献 | **4.5/10** |
+| (d) 弃 LM-ReID | 现在不该弃。证伪的是 consistency 版 LM，不是 lattice 问题定义 | **2/10** |
+
+**关键风险**
+`M=3 no-LM-loss +3.82` 现在**还不能宣称 lattice-specific**。它可能只是：
+
+1. 每 iter 多看 3 个 LR view；
+2. h 混合训练更充分；
+3. 更强增广；
+4. 训练 compute/样本暴露增加；
+5. 真正 lattice phase/bbox/kernel 有效。
+
+你已经证明了 **test-time lattice marginalization 是 lattice-specific**，因为同 K beat 普通 TTA。  
+但 **training-side M=3 增益** 还没被隔离。
+
+**必须补的对照**
+4090 先跑这几个，按优先级：
+
+1. `M=3 ordinary-aug no-LM`
+   - 同样每图 3 views，同样 h 分布，同样训练步数；
+   - 但 variants 换成普通 random crop / resize jitter / color / flip，不做 sub-pixel phase / bbox lattice / kernel lattice。
+   - 这是生死对照。若也到 `77+`，M=3 主增益就是“更多增广”。
+
+2. `M=1 compute-matched`
+   - M=1 plain 训练 3 倍 epoch，或保持 epoch 但每图重复采样到同等 forward 数。
+   - 隔离“多视图机制” vs “训练更久/看更多样本”。
+
+3. `M=3 resolution-only`
+   - h∈{16,24,32} 混合，但 canonical phase / fixed kernel / fixed bbox。
+   - 隔离“多分辨率训练” vs “lattice uncertainty”。
+
+4. `M=3 phase-only / bbox-only / kernel-only`
+   - 找出真正贡献轴。
+   - 如果 phase-only 占大头，故事最干净：sampling grid phase 是 hidden variable。
+
+5. `lam_marg-only` 和 `lam_cons-only`
+   - full 负了，但要知道谁杀的。
+   - 我预计 `L_cons` 主杀，`L_marg` 可能中性或轻负。
+
+**training-side 转向建议**
+不要再做“拉 variants feature 到均值”。这条已经被 `-1.73 single` 和 HR sanity 掉点判死。换成不压扁表征的机制：
+
+1. **Hard-Lattice ERM / CVaR**
+   - 对每个样本 M 个 lattice variants，优化 worst / top-k hardest CE+Triplet：
+   - 目标是“所有 lattice 都能识别”，不是“所有 lattice embedding 一样”。
+   - 最小实现：`L = mean_l L_id(l) + gamma * logsumexp_l(L_id(l)/tau)`。
+
+2. **Set-wise retrieval training**
+   - 训练时直接用 query lattice set 与 HR gallery feature 做 logsumexp similarity。
+   - 对齐训练目标和 test-time lattice-MaxSim，但不加 feature consistency。
+
+3. **Lattice-conditioned adapter**
+   - 给 phase/bbox/kernel 一个小 token 或 adapter，让模型保留 lattice-conditioned identity evidence；
+   - 推理时 marginalize adapters/views。
+   - 口径是“conditional evidence then marginalize”，不是 invariant collapse。
+
+**文献判断**
+我没查到明确把 **sub-pixel/bbox/kernel sampling lattice** 当作 LR-ReID hidden variable 并做 marginalization 的先例。已有 CR-ReID 主要是 SR、resolution-invariant、resolution-adaptive 或 feature-panning：LRAR 明确讲 SR / resolution-invariant 两大类，并指出纯 invariant 可能丢判别信息；VPFA 是把 resolution gap 建模成 feature direction；PS-HRNet/DIL 也仍是 restoration/invariance 框架。  
+但 aliasing/shift sensitivity 本身不是新发现，BlurPool 已经系统讲过下采样导致 shift variance。ReID 里 flip TTA + flip consistency 也有 FlipReID 先例。所以你的 novelty 不能写成“发现 TTA/consistency/aliasing”，只能写成：
+
+> 在 severe CR-ReID 中，sampling lattice 是一个以前没被显式建模的 hidden nuisance；我们用 rank-level intervention 证明它会造成身份翻转，并表明 decision-level marginalization 比 embedding-level consistency 更适合 ReID。
+
+“consistency 有害”本身**不能单独成 paper insight**，但可以成为强消融卖点。它和表示学习里的老结论一致：不恰当的不变性会损害下游判别，好的 view 必须保留 task-relevant 信息。
+
+**下一步**
+先跑 `M=3 ordinary-aug no-LM`。如果它明显低于 lattice-noLM，比如低 1.0 mAP 以上，LM-ReID 可以改名重投为 **Lattice-Aware Augmentation + Lattice-Marginalized Retrieval**。如果它接近 `77.44`，训练端创新就收缩，转向 pure test-time + protocol，或者上 `Hard-Lattice ERM/CVaR` 抢回 training-side 主贡献。
+
+参考源：LRAR/CR-ReID、VPFA、PS-HRNet/DIL、BlurPool、FlipReID、What Should Not Be Contrastive、Good Views/InfoMin。

@@ -1,0 +1,77 @@
+我按 `pdftotext -f 1 -l 8` 读了方法段。CMAG 的消融跨到第 9 页以后，我补读了后续消融段。下面只拆“怎么把观察构造成创新”，不抄模块。
+
+**1. CLIP-powered modality centering with spiral training**
+
+1. 触发观察：作者抓住的是 CLIP-ReID 两阶段范式在 V-I ReID 里会失效。文本提示先由初始图像特征学出来，之后固定文本提示去训练图像编码器；但可见光和红外本来距离很远，图像特征训练过程中不断移动，文本提示不再同步，语义指导会变成陈旧锚点。
+
+2. 重定义动作：他们没有把问题讲成“再做一个跨模态对齐损失”，而是讲成“四个异质空间没有被同时居中”：可见图像、红外图像、可见文本、红外文本。关键词是 `separable text description`、`modality centering`、`identity-aware`、`modality-aware`、`semantic consistency`。
+
+3. 机制怎么长出来：既然文本里也混了身份信息和模态信息，就把提示拆成身份 token 和模态 token，再用不含模态描述的 partial prompt 做 visible-text 和 infrared-text 居中。既然固定提示会过期，就交替训练文本提示和图像编码器，形成 spiral training。这个机制和重定义绑定较紧，但训练序列靠经验选，稍微削弱了“自然推出”的纯度。
+
+4. 证据闭环：关键不是最终 SOTA，而是 STD、MCL、ST 的组合消融。表 6 到表 8 分别证明可分离文本、模态居中、螺旋训练各有作用；表 7 拆 text-to-text 和 image-to-text centering，说明“居中”不是空话。遗憾是没有更直接画出四个空间距离随训练收敛的轨迹，所以闭环是中等强度。
+
+5. reviewer 为什么买账：这篇卖的是视角多于单个损失。它把 CLIP 在 V-I ReID 里的问题从“加文本辅助”改成“文本、图像、模态、身份四个空间共同演化”。novelty 真正来源是 CLIP-ReID 范式迁移到 V-I 后的失配诊断。
+
+**2. CLNS**
+
+1. 触发观察：作者给了一个很具体的数值观察：SYSU-MM01 上，同一身份跨相机正样本平均距离高达 1.0615，而同一身份同相机正样本只有 0.7795。也就是说，聚类更容易按相机分裂身份，而不是按真实身份聚合。
+
+2. 重定义动作：他们把“伪标签有噪声”重定义成“相机诱导的结构性噪声”。这比随机噪声更好讲，因为它有稳定来源：背景、视角、光照和相机域。关键词是 `camera-induced label noise`、`camera-domain centroid`、`coarse-to-fine purification`、`structural gatekeeper`。
+
+3. 机制怎么长出来：如果噪声来自相机，就不能只在全局聚类结果上修补。CPC 先屏蔽同相机近邻，用跨相机一致性校准原型；OTPM 再同时匹配身份原型和相机域中心；NCL 用相机域中心做软监督压实分布；NMU 按可靠性更新 memory，防止离群点污染中心。机制和问题定义绑定很紧。
+
+4. 证据闭环：它做得比较规范。除了组件消融，还用 ARI、inter-camera distance、跨模态匹配准确率和类内距离来证明“相机噪声真的被压下去了”。例如 CPC 后 ARI 提升，PGM 替换 OTPM 会掉点，去掉 NCL 后类内距离变大，去掉 NMU 后 memory 漂移带来性能下降。这些指标正好对应它重定义的噪声来源。
+
+5. reviewer 为什么买账：这篇卖的是视角加证据。模块本身不算激进，但它把无监督 V-I 的伪标签错误讲成可测量、可分层处理的相机结构噪声，所以比“再加一个伪标签清洗模块”更容易成立。
+
+**3. Cloth-debiasing with Stable Diffusion**
+
+1. 触发观察：作者看到的是换衣 ReID 里模型会误认“不同人穿相似衣服”。热图也显示基线更关注肩部、胸口等衣服区域，而不是脸、颈部、轮廓等更稳定线索。另一个观察是 GAN 换衣质量差，容易保留原衣服或姿态几何不稳定。
+
+2. 重定义动作：它把换衣 ReID 从“需要更多换衣样本”改写成“训练集中衣服是分类捷径”。所以目标不是随机换衣，而是“统一衣服特征空间”，让衣服失去区分身份的能力。关键词是 `cloth-debiasing`、`consistent clothing`、`clothing feature bias`、`clothing-irrelevant features`。
+
+3. 机制怎么长出来：既然要让衣服不能当捷径，就用 Stable Diffusion inpainting 生成同风格长袖长裤，尽量覆盖手臂和腿部，迫使模型看头颈、轮廓等非衣服信息。SCHP 提供衣服 mask，OpenPose 控制姿态，LaDI-VTON 保证换衣几何。再用 ReID 相似度、FID 和人工过滤去掉低质图，最后配合 centroid loss 训练。
+
+4. 证据闭环：PRCC 上 baseline 是 55.2/55.8，单加 CCAL 只涨 0.6/0.7，GFCC+CCAL 到 61.2/60.2，说明主要贡献来自“相似衣服数据”这个去偏干预。更关键的是 Fig. 3 到 Fig. 5：相似衣服误检减少，热图从衣服区域转向脸和颈部。这比单纯涨点更能支撑“衣服捷径被削弱”。
+
+5. reviewer 为什么买账：这篇卖的是数据干预视角，不是网络结构。novelty 在于把生成模型用成反捷径工具：不是扩充外观多样性，而是故意制造衣服相似性，让身份学习从衣服上移开。
+
+**4. CMAG**
+
+1. 触发观察：作者把 US-VI ReID 的失败拆成四个具体来源：模态差异、批训练看不到全局关系、伪标签噪声、相机偏置。其中最有辨识度的观察是：直接相似度会漏掉同一身份的远距离姿态变化，但特征图中的闭环路径可能把正面、侧面、背面串起来。
+
+2. 重定义动作：它把伪标签验证从“点对点相似度”重定义为“高阶图结构一致性”。关键词是 `circular topology structure`、`cycle-aware`、`graph-enhanced memory`、`global feature memory`、`camera-aware consistency`。
+
+3. 机制怎么长出来：CATS 用 kNN 图和矩阵幂找闭环路径，并用 circular consistency loss 约束闭环节点；DCAM-ViT 在多 class token 上做跨模态注意力；GSMEM 用队列 memory 和自适应 kNN 图做跨 batch 传播；CARC 用相机内聚类和全局相似度联合过滤冲突样本。CATS 和“拓扑闭环”绑定较紧，其余模块更像是围绕四个失败来源各补一块。
+
+4. 证据闭环：消融显示 DCAM、CATS、GSMEM、CARC 逐步涨，完整模型在 SYSU-MM01 到 68.52 Rank-1 和 64.0 mAP。更贴近重定义的是三类图：超参 p 证明闭环长度有效，检索可视化说明 partial modules 仍处理不好大姿态差，t-SNE 和距离分布显示跨模态聚合和类间分离逐步改善。但如果严审，“拓扑”本身是否比普通图传播更关键，还需要更强的 cycle-only 对照。
+
+5. reviewer 为什么买账：这篇卖的是机制包装加大组合。它的新意来源是把图记忆、跨模态注意力、相机约束放进“闭环拓扑验证”的叙事里。优点是故事大，风险是模块堆叠感重。
+
+**5. Coarse-to-Fine Cross-Modality Generation**
+
+1. 触发观察：车辆 ReID 真实训练数据受隐私和标注成本限制，3D 引擎数据有域差，GAN 数据细粒度属性不稳定。车辆类内差异很小，前格栅、尾灯、车身类型、颜色错一点，合成数据就会误导训练。
+
+2. 重定义动作：它明确说自己“不追求网络结构”，把问题重定义成“面向 ReID 的高保真合成数据生产”。关键词是 `coarse-to-fine generation`、`prompt processing`、`diffusion fine-tuning`、`semantic filtering`、`high-fidelity synthetic data`。
+
+3. 机制怎么长出来：如果问题是属性一致性和真实域风格，就先建车辆属性 prompt 库；如果通用 diffusion 不贴近目标域，就用 1% 无标签真实图经 BLIP-2 生成 caption，再用 LoRA 方式微调 diffusion；如果生成图会多车、碎车、颜色错，就用 YOLO 裁车、CLIP 做颜色语义过滤；最后用 CE 和 circle loss 训练任意 ReID 模型。
+
+4. 证据闭环：它没有只报 ReID 精度，而是同时报 FID、生成组件消融、数据量消融、有限真实数据曲线和检索可视化。关键结论是“质量比数量重要”：语义过滤后数量减少，但 ReID 更好；真实数据越少，合成数据收益越明显。这正好证明它定义的数据瓶颈是成立的。
+
+5. reviewer 为什么买账：这篇卖的是数据生成 pipeline，不是 ReID backbone。novelty 在于把扩散模型从“好看图像生成”转成“细粒度属性受控、少量无标签目标域适配、自动语义过滤”的 ReID 数据工厂。
+
+**6. ColorSketchNet**
+
+1. 触发观察：现实里嫌疑人检索可能同时有文字描述和素描，但现有方法多按 Text-RGB、Sketch-RGB 成对对齐。作者进一步统计属性覆盖：RGB 信息最全，text 有颜色和粗语义但缺轮廓，sketch 有轮廓和姿态但缺颜色和纹理。直接投到共同空间会造成语义歧义。
+
+2. 重定义动作：它把跨模态 ReID 从“缩小模态差距”重定义为“建立公平属性空间”。也就是说，不同模态不是噪声不同，而是属性缺失不同。关键词是 `attribute fairness`、`auxiliary color sketch`、`attribute compensation`、`modality-agnostic`、`unified collaborative alignment`。
+
+3. 机制怎么长出来：既然 text 和 sketch 都缺属性，就生成一个同时含轮廓、颜色、纹理的 color sketch 作为桥。CSG 先做动态光照修正，再用 DoG 抽轮廓，并在 YUV 空间把轮廓放到亮度通道、颜色放到色度通道。ACRM 用 dissimilarity 找缺失信息并补偿，再用 photo-query dissimilarity 去掉辅助模态引入的噪声。UCA 再用身份保持、内容一致、三向结构约束和类内紧致损失统一对齐。
+
+4. 证据闭环：它的消融正好围绕“属性公平”展开。彩色 sketch 相比黑白 sketch 在 text、sketch、text+sketch 三种任务都涨；AC 单独补属性有效，RF 去噪后继续涨；UCA 的各个损失逐步加入也有增益；t-SNE 显示 color sketch 把 sketch 和 photo 拉近。这些证据不是只证明模块有效，而是在证明“补属性再对齐”比直接对齐更合理。
+
+5. reviewer 为什么买账：这篇卖的是视角。它把统一多模态检索讲成“缺失属性补偿问题”，而不是多个任务共享 backbone。novelty 真正来源是 auxiliary color sketch 这个桥接媒介，以及“先补偿再对齐”的逻辑。
+
+这批论文共同套路很清楚：先抓一个具体失败，不说“模型不够强”，而是把失败命名成结构性变量，例如提示漂移、相机诱导噪声、衣服捷径、闭环关系缺失、合成数据语义不稳、属性空间不公平。然后机制只做一件事：制造一个能直接干预这个变量的桥、中心、过滤器或生成过程。最后证据不能只放 mAP，要有对应诊断量或可视化，证明那个被重新定义的问题确实被改变了。
+
+联网只做轻量先例边界核对，主体判断来自本地 PDF。相关背景包括 [CLIP-ReID](https://arxiv.org/abs/2211.13977)、[LaDI-VTON](https://arxiv.org/abs/2305.13501)、[UNIReID](https://arxiv.org/abs/2307.10348) 和 [Vehicle-Diff](https://arxiv.org/abs/2404.06468)。

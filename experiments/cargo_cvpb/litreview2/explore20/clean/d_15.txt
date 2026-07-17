@@ -1,0 +1,41 @@
+结论先放前面：多模态 ReID 里，**3D 点云/LiDAR 我不建议现在主推**。2023 ReID3D/LReID 已经把“LiDAR 人体几何 ReID”占了第一性叙事，并报到 Rank-1 94.0；这又撞你们已证负的“人体几何无独特信号”。没有自有 LiDAR 数据，cheap kill 也不够近。可保留为诊断，不做主线。([arxiv.org](https://arxiv.org/abs/2312.03033))
+
+**机会 1：Depth 不是天然隐私，问题应改成“可授权 ReID / 不可跨模态链接”的 RGB-D ReID**
+
+触发观察：TVRID 2026 把 top-view RGB-D ReID 做成正式竞赛，含 RGB、Depth、RGB↔Depth 三轨；但榜首 Cross-Modal RGB↔Depth 已到 CMC@1 99.84 / mAP 99.92，Depth 轨也到 98.86 / 99.38。也就是说，大家以为 depth 是 privacy-preserving，实际上在有 RGB 辅助库时几乎可被强链接。论文自己也承认 depth 只是 privacy-enhancing，不是 privacy-guaranteeing。([github.com](https://github.com/RaphaelDel/ICPR-TVRID)) ([arxiv.org](https://arxiv.org/pdf/2605.04977))
+
+重定义：不要再做“Depth ReID 提准确率”。改成 **Authorized Depth ReID with Cross-modal Unlinkability**：系统内部 depth-depth 要能找人；外部 RGB gallery 或 RGB foundation encoder 不能轻易把 depth 身份链接回可见光身份。
+
+机制草案：双目标表示学习。一个 depth utility head 保 depth-depth ReID；一个 adversarial/linkability head 用 frozen SOLIDER/CLIP/RGB-ReID attacker 做 RGB→Depth 检索，训练时通过 gradient reversal 或 confusion loss 抹掉 RGB-linkable cues。再加 camera/elevation adversary 或 floor-normalized depth canonicalization，避免模型吃绝对高度、相机几何、轨迹顺序 shortcut。最终指标不是单 mAP，而是 Pareto：Depth-depth mAP 高，同时 RGB→Depth attacker R1 低。
+
+廉价 kill-switch：
+1. 下载 TVRID extracted 数据和官方 eval code，不训练先做攻击诊断。TVRID 已提供数据、baseline 权重和本地评分脚本。([github.com](https://github.com/RaphaelDel/ICPR-TVRID))
+2. 零训练跑三类 attacker：`SOLIDER/CLIP on RGB vs pseudo-RGB depth`、depth height/silhouette histogram、track-level temporal descriptor。
+3. 若任一 frozen/handcrafted attacker 的 RGB→Depth R1 明显高于随机，并且简单 depth remap / height normalization 能显著降 linkability 而 depth-depth 不崩，这条成立。
+4. 若只有 TVRID 训练模型能链接、零训练完全不行，则降级为小数据过拟合/benchmark 诊断，不值得主推。
+
+撞车核查：近作 PixelFade/PPPR 做的是“把 RGB 图像变成噪声但授权模型还能识别”，关注恢复攻击和视觉隐私，不是 RGB-D depth 的跨模态 linkability 控制。([arxiv.org](https://arxiv.org/abs/2408.05543)) TVRID 方向很新，但准确率轨已被竞赛刷满，所以只能打“隐私威胁模型 + 防链接机制”，不能打普通 SOTA。
+
+Verdict：**可小成本首验，若 kill 过，值得作为 B 类方法稿候选。**  
+信心：6/10。  
+现有数据能否首验：你们现有 Market/MSMT/CARGO 等不能首验 depth；需要下载 TVRID/BIWI/GODPR/TVPR2。现有 SOLIDER/Swin 资产可直接当 RGB attacker。
+
+**机会 2：Sketch 查询不是完整图像匹配，而是“只给正证据、空白不代表否定”的非对称检索**
+
+触发观察：Market-Sketch-1K 已指出 sketch subjectivity：多 witness/artist、style bias，甚至 style 相似性可能大于 identity 相似性；它有 4,763 sketches / 32,668 photos。([arxiv.org](https://arxiv.org/abs/2309.08372)) ReID5o/ORBench 进一步把 sketch 纳入 omni-modal ReID，但单 sketch 仍只有 R1 71.292 / mAP 61.149，而多模态组合大幅上升。([github.com](https://github.com/Zplusdragon/ReID5o_ORBench)) 说明 sketch 单模态的瓶颈不是再堆 alignment，而是“查询本身缺失且不确定”。
+
+重定义：大家以为 sketch ReID 是 domain gap/style gap；实际更像 **positive-evidence retrieval**。Witness 画出来的是“我记得/我确信的证据”，没画出来的颜色、纹理、背包、下装细节不是负证据。现有对称 embedding/cosine 会把缺失当差异，方向错。
+
+机制草案：Evidence-Only Sketch ReID。把 sketch 变成稀疏 stroke/part/attribute evidence token；gallery RGB 用 SOLIDER part tokens + edge/attribute cues 表示。匹配时用 one-sided coverage / partial optimal transport：sketch 高置信 stroke 必须在 gallery 中被解释；gallery 多出来的细节默认不罚，只有和显式证据冲突才罚。多 sketch 时做 witness evidence union/consensus，而不是简单 feature average。
+
+廉价 kill-switch：
+1. 用现有 Market/MSMT/CARGO 直接造 pseudo-sketch：query photo → edge/xDoG/HED line map，再随机擦除 30/50/70% body stripes 或 strokes。
+2. Gallery 保持 RGB，冻结 SOLIDER，比较两种零训练打分：普通对称 cosine vs one-sided part/token coverage。
+3. 若 partial sketch 下 one-sided coverage 比 cosine 稳定高出一截，同时 full edge 不掉太多，再下载 MaSk1K/ORBench 做 real-sketch 验证。
+4. 若 pseudo-sketch 成立但 real-sketch 不成立，说明人画风格/语义偏差压过 missingness，立即停。
+
+撞车核查：MaSk1K/SS-ReID 处理 subjectivity、多 style、多 query 和 attribute alignment；KTCAA 2025 处理 few-shot sketch 的 domain discrepancy/perturbation invariance；ReID5o 处理任意模态组合。它们都接近，但没有把“空白不是负证据”的 asymmetric matching 作为核心问题。([github.com](https://github.com/Lin-Kayla/subjectivity-sketch-reid)) ([arxiv.org](https://arxiv.org/abs/2511.18677)) ([arxiv.org](https://arxiv.org/abs/2506.09385))
+
+Verdict：**比 RGB-D 更贴你们现有资产，适合先做 on-disk cheap kill。**  
+信心：7/10。  
+现有数据能否首验：能，用 Market/MSMT/CARGO 生成 pseudo-sketch 做第一轮；真正论文证据需要下载 MaSk1K 或 ORBench，不需要新采集。

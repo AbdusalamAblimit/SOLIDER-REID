@@ -1,0 +1,34 @@
+结论先放前面：**CLIP/DINO/SAM 直接当 backbone、prompt learner、text anchor、SAM 遮挡增强、LVLM 生成语义 token 这条线基本红了**。2024-2026 已经有 CLIP 语义注入 VI-ReID、CLIP selective prompt tuning、LVLM-ReID、LLaVA/MLLM interactive ReID、SAM occlusion augmentation、KPR promptable ReID 等工作在占位。继续“导入 FM 提精度”不建议碰。参考：CSDN/CLIP-VIReID 已做语义桥接与 prompt learner([arxiv.org](https://arxiv.org/abs/2401.05806))，SCING 做 selective cross-modal prompt tuning([arxiv.org](https://arxiv.org/abs/2507.00506))，LVLM-ReID 做 LVLM semantic token([arxiv.org](https://arxiv.org/abs/2411.18111))，LLaVA-ReID/ICL 已做交互式文本 ReID([arxiv.org](https://arxiv.org/abs/2504.10174))，DPEFormer 已用 SAM 做 realistic occlusion augmentation([arxiv.org](https://arxiv.org/abs/2402.10435))。
+
+**机会 1：Evidence-Sufficient ReID，FM 只当“证据充分性审计器”**
+触发观察：团队的 `exp109` 指向 single-image support incomplete；此前 frozen-image 找 accuracy hidden variable 被 k-reciprocal/camera 碾，说明问题可能不是“特征不够强”，而是**单张 query 有时根本没有足够身份判别证据**。IIR-VLM 2026 也指出 VLM 在 instance-level recognition/person ReID 上明显弱于领域专家模型([arxiv.org](https://arxiv.org/abs/2601.14188))，所以别拿 VLM 当 matcher。
+
+重定义：大家以为 ReID 输入是“一个人图像”，其实应先判断它是不是“证据充分的身份查询”。新问题不是 occlusion/visibility，而是 **observable identity evidence sufficiency**：这张 crop 里有多少可区分、可跨相机复现的局部证据。
+
+机制草案：SAM 只给前景/区域，DINOv2 只给 patch grouping 和局部相似结构，不直接当 ReID 特征。构造 `evidence units`：每个 foreground patch/segment 的 gallery 内 kNN 密度、跨 camera 稀有度、与 top candidates 的 mutual support。训练端再做一个轻量 Evidence-Aware head：SOLIDER token 仍是主特征，FM 只监督“哪些 token 是可用证据”和“query 是否应 defer / ask for another image”。
+
+廉价 kill-switch，零训练：
+1. 用现有 exp030a/SOLIDER 特征跑原始排名。
+2. 用 frozen SAM+DINO 计算每个 query 的 evidence score `S(q)`。
+3. 按 `S(q)` 分五档，看 bottom 20% 是否显著富集 `false-in-topk`、低 AP、跨 camera 错配。
+4. 对同一 ID 的第二张图做 oracle multi-query：如果 bottom 20% 的失败能被“两张图 evidence union”明显救回，说明 single-image support 变量真实存在。
+5. 再做一个 frozen mutual-evidence rerank，只在低 `S(q)` 子集启用；若收益只等价于 baseline score / camera / k-reciprocal，则直接杀。
+
+撞车判断：我没看到 2024-26 直接把 “evidence sufficiency / single-image support insufficiency” 作为 ReID 主问题的工作。相邻的是 TEMP 用 re-id entropy 做 temporal test-time adaptation([arxiv.org](https://arxiv.org/abs/2403.14114))，但不是 FM evidence 审计，也不是单图证据充分性。**verdict：最值得先杀。信心 7/10。**  
+数据：Market/MSMT/Occluded-Duke/CARGO/AG-ReID.v2 都能首验；RSTPReid 暂不需要。最好先用 MSMT+CARGO，因为 camera/domain 复杂，低证据查询更可能出现。
+
+**机会 2：Latent-Target ReID，FM 只当“bbox 内候选目标分解器”**
+触发观察：KPR 2024 已明确指出 multi-person ambiguity：一个 ReID bbox 里可能有多个人，目标身份在像素层面不明确，并用 keypoint prompt 指定目标([arxiv.org](https://arxiv.org/abs/2407.18112))。这说明传统 ReID 的 “bbox = target person” 假设是假的。但 KPR 已经很近，不能直接复刻 keypoint prompt。
+
+重定义：大家以为输入是一张 person crop，其实在拥挤/遮挡/检测误差下输入是 **latent target set**：bbox 内有多个候选人，ID label 只绑定其中一个 latent candidate。
+
+机制草案：SAM/pose/DINO 生成 bbox 内 candidate masks/keypoints；SOLIDER 对每个候选 mask/crop 提特征。训练用 MIL/EM：正样本对选择最一致的 candidate pair，负样本要求所有 candidate 都远；加 center/area/detector prior，但不依赖人工 prompt。推理时普通单人 crop 退化为 baseline，多人 crop 做 set-to-set matching。
+
+廉价 kill-switch，零训练：
+1. 在 Occluded-Duke/CARGO/MSMT 上跑 SAM/pose，统计含 ≥2 person-like candidates 的 crop 比例。
+2. 对 ambiguous crop，把每个 candidate mask/crop 送现有 SOLIDER，做 oracle candidate selection。
+3. 若 baseline false top-k 中有明显比例来自“非目标人 token 混入”，且 oracle candidate selection 在 ambiguous subset 上给出明显 R1/mAP 提升，才值得做。
+4. 若 ambiguous crop <5% 或 oracle gain 很小，直接杀，不要继续训练。
+
+撞车判断：**风险高**。KPR 已经占了“promptable ReID / MPA”核心叙事；DPEFormer 又占了 SAM+occlusion augmentation([arxiv.org](https://arxiv.org/abs/2402.10435))。可争的只剩“无人工 prompt 的 latent-target set ReID”。**verdict：备选强对照，不建议当第一主线。信心 5/10。**  
+数据：CARGO、Occluded-Duke 可首验；Market/MSMT 大概率太干净。若 kill-switch 亮，论文级验证可能需要引入 KPR 的 Occ-PTrack 或自建 crowded bbox split。

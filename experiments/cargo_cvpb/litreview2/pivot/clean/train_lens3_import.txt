@@ -1,0 +1,77 @@
+106,597
+结论：**最值得做 2 个**，但第 1 个优先级明显更高。
+
+**1. LPA：Lattice Posterior Amortization，信心 7.5/10**
+
+把训练端目标改成：**学 `qφ(z|x)`，不是让 `fθ(x_z)` 不变**。
+
+机制：
+
+```text
+z = bbox offset / phase / kernel
+score(q,g)= logsumexp_z [ log qφ(z|q) + cos(fθ(Tz(q)), fθ(g))/τ ]
+```
+
+训练只训练一个很小的 posterior/head，最好先 **freeze ReID backbone**：
+
+- 用 HR train image 合成 LR，采样已知 lattice/bbox offset `z`
+- `qφ` 预测 `z` 或 factorized posterior：`q_bbox(dx,dy) * q_phase * q_kernel`
+- ReID 特征不做 consistency、不做 mean feature、不做 marginal CE
+- 推理时从 uniform marginalization 变成 posterior-weighted marginalization
+- bbox 因子优先，因为你们已测 `bbox +2.84 > phase +1.76 > zoom +1.70`
+
+廉价 kill-switch：
+
+- 冻结 no-LM-loss checkpoint，只训练 `qφ` 1-3 epoch
+- h=12/h=16 上 weighted lattice-marg 必须比 uniform lattice-marg 多 `+0.4 mAP` 以上
+- `q_bbox` 不能塌成 uniform，也不能永远 one-hot；同时 `LATTICE−TTA` 不能下降
+- 若 `qφ` 的 top-1 bbox-offset acc 低于 35-40% 或 weighted 不涨，直接杀
+
+novelty 核查：
+
+- CR-ReID 主流仍是 SR / resolution-invariant / resolution-adaptive：RAIN、MRJL、RFD、LRAR、VPFA 都不把 **sampling lattice / LR bbox crop** 当显式隐变量。
+- TTA 加权/变分 Bayes已有相邻工作，但不是 ReID，也不是 LR bbox lattice。
+- FlipReID 做 flip consistency，反而是你们要避开的 feature-collapse 邻域。
+
+参考：  
+[MRJL](https://arxiv.org/abs/2105.12684), [LRAR](https://arxiv.org/abs/2207.13037), [RFD](https://arxiv.org/abs/2109.07871), [VPFA](https://arxiv.org/abs/2510.00936), [TTA Meets Variational Bayes](https://arxiv.org/abs/2409.12587), [FlipReID](https://arxiv.org/abs/2105.05639)
+
+**2. BLC：BBox-Lattice Canonicalization，信心 6.5/10**
+
+这条不是“jitter 增强”，而是：**模型显式估计 LR bbox offset，并做反向校正/条件化**。
+
+机制：
+
+- 只围绕 bbox latent 做，因为它是最大因子
+- 合成 `dx,dy ∈ {-1,0,1}` LR-pixel crop，训练 offset head 预测 bbox lattice
+- 用预测 offset 做两种轻量实现之一：
+  - feature map inverse shift / STN-style canonicalization
+  - `dx,dy` 条件 adapter / BN / affine correction
+- identity CE/triplet 只作用在校正后特征
+- 不要求不同 crop 特征相等，保留 lattice 可辨性
+
+廉价 kill-switch：
+
+- 先冻结 backbone，只训 offset head
+- 9-class bbox offset acc：h16 至少明显高于随机 11%，最好 >45%；h12 >30%
+- 再训小模型 10 epoch：h16 lattice-marg 比 no-LM-loss baseline 多 `+0.6 mAP`，HR sanity 掉幅 <0.3
+- 如果 offset 可预测但 ReID 不涨，说明 crop offset 信息不能转成判别收益，杀
+
+novelty边界：
+
+- ReID 里 misalignment/part alignment 很拥挤：Part-Aligned、DSAP、PGFL-KD、STNReID 都做过人体/partial/alignment。
+- 但它们没有你们这个证据链：**severe LR 下 ±1 LR-pixel bbox latent 主导，且 test-time marginalization 单调随分辨率衰减**。
+- 所以写法必须窄：不是“首次解决 misalignment”，而是“首次把 LR detector crop lattice 作为可边缘化隐变量建模”。
+
+参考：  
+[Part-Aligned ReID](https://arxiv.org/abs/1804.07094), [DSAP](https://arxiv.org/abs/1812.08967), [PGFL-KD](https://arxiv.org/abs/2108.00139), [STN](https://arxiv.org/abs/1506.02025), [STNReID](https://arxiv.org/abs/1903.07072), [BlurPool](https://arxiv.org/abs/1904.11486)
+
+不建议现在主做：
+
+- **raw Hard-Lattice ERM / CVaR**：太像更狠的 lattice-aug，容易继续压判别性。最多做 cheap ablation。
+- **TTT**：ReID 无标签 query/gallery 很容易自我确认错误，工程成本高，论文解释不如 LPA 干净。
+- **SR auxiliary**：撞车最多，而且会把故事拉回“LR=缺细节”，削弱 sampling-lattice 重新定义。
+- **DEQ**：机制不贴问题，复杂度不换证据。
+- **EM-style latent**：如果更新 backbone，容易复现 marginal-likelihood 有害；只适合退化成第 1 条的 frozen posterior 学习。
+
+我会先做 **LPA**。它最符合“边缘化隐变量”设定，也最避开 invariance-collapse：训练学的是 **怎么加权 marginalization**，不是把 K 个 lattice 特征压成一个点。

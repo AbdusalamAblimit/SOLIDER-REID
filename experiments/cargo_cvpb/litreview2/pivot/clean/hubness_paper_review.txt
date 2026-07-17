@@ -1,0 +1,52 @@
+**Verdict**
+当前稿件：**太单薄，直接投 CCF-B 主会/主刊 analysis short 风险高**。  
+强化后：**可作为 empirical/analysis short 尝试**，但最好定位为“ReID residual failure diagnosis / benchmark audit”，不是方法稿。
+
+我的信心：**6/10**。  
+当前版本若直接投 CCF-B：**4/10**；补完关键验证后：**6/10**；投 ReID/retrieval/robustness workshop：**7/10**。
+
+**联网核查后的 novelty 判断**
+你不能 claim “hubness 新”。Radovanovic JMLR 已经把 hubness 定义为高维 kNN 图里的 k-occurrence / popular nearest neighbors 现象；CSLS 也早就作为跨域检索里的 hubness 缓解被使用。([jmlr.org](https://jmlr.org/papers/v11/radovanovic10a.html)) ([arxiv.org](https://arxiv.org/pdf/1710.04087))
+
+也不能 claim “ReID gallery topology 新”。k-reciprocal re-ranking 明确就是用 ReID 排名列表里的 reciprocal neighbor/Jaccard 拓扑做 test-time 修正，而且不需要额外标注；CA-Jaccard 还进一步把 camera-aware k-reciprocal / local query expansion 做成 CVPR 2024 方法。([arxiv.org](https://arxiv.org/abs/1701.08398)) ([arxiv.org](https://arxiv.org/abs/2311.10605))
+
+HAL 和 NeighborRetr 已经覆盖“hubness-aware training for retrieval”，只是它们主要在 text-image / cross-modal retrieval，不是 person ReID residual failure 诊断。([arxiv.org](https://arxiv.org/abs/1911.10097)) ([arxiv.org](https://arxiv.org/abs/2503.10526))
+
+所以剩下的独立贡献是：**在 person ReID 里，把 label-aware gallery negative in-degree 作为 residual AP error 的主解释变量，并把 hub 机制落到“跨身份的非身份场景吸附”上**。这个点有新意，但属于 **empirical diagnosis novelty**，不是 method-level novelty。
+
+**红队最大问题**
+第一优先级不是多写 related work，而是拆掉 reviewer 会抓的统计漏洞：
+
+1. `M(q)` 不能用包含 query `q` 自己贡献的 `H_k(g)`。必须做 **leave-one-query-out H_k**，最好再做 query split：用一半 query 估计 hubness，用另一半 query 预测 AP error。
+
+2. `M(q)` 使用 `y_g != y_q`，是 label-aware post-hoc 诊断。可以接受，但必须明说它不是部署时指标；同时补一个 label-free proxy，否则“so what”会很强。
+
+3. 需要控制更强的 cheap baselines：`#false in top-k`、top-k precision、first positive rank、mean negative similarity、top-1 correctness、positive count、camera pair、feature norm、margin。现在只控 norm/margin/camera/#pos 还不够。
+
+4. 机制图目前像强 case study。要做因果：背景抹除/灰度化/亮度标准化/segmentation person-only/background-only，对 hub gallery 的 `H_k` 和被吸附 query 排名做 before/after。
+
+**最该补的清单**
+P0：统计闭环  
+做 leave-one-query-out / held-out query hubness；报告 Spearman、partial correlation、bootstrap CI、permutation p；补 `#false top-k` 等强控制。没有这个，CCF-B 基本会被打成 circular analysis。
+
+P1：普适性  
+至少三类 backbone：ResNet50/AGW、ViT/TransReID、Swin/SOLIDER。数据集补 Duke/MSMT/CUHK03 或至少 MSMT。重点不是涨点，而是看 `H_k` 分布、`M(q)` rho、hub-set overlap 是否稳定。
+
+P2：跨模型/跨 seed hub 重叠  
+同一数据集上比较 top-1% hub 的 Jaccard/Rank correlation。若不同 backbone 都吸到相同场景 hub，机制更硬；若不重叠，就改成“model-specific topology diagnosis”。
+
+P3：机制因果  
+对 top hubs 做 person mask/background mask/scene color normalization。目标结论要是：去掉场景因子后 hubness 显著下降，而身份区域保留时下降较小。
+
+P4：和 k-reciprocal 的关系  
+不要说 beat。改成解释：高 `M(q)` queries 是否正是 k-reciprocal 修复最多的区域？如果是，本文价值是解释现成工具为何有效；如果不是，再谈正交性。
+
+P5：轻量 remedy 只作为附录  
+除非能和 k-reciprocal 叠加，否则不要主打。更现实的是做 **failure risk predictor / model audit metric**，而不是 retrieval scorer。
+
+**最诚实判断**
+现在这稿如果直接投，reviewer 很可能说：**hubness 已知，ReID re-ranking 已知，k-reciprocal 已解决，你只是给现象起了个负向 in-degree 名字**。这个拒稿风险真实存在。
+
+但如果补上 LOO/held-out 统计、multi-backbone、多数据集、背景因果干预，它可以变成一篇站得住的 **analysis/empirical short**：贡献不是“提出新检索方法”，而是“解释强 ReID 剩余错误集中在哪里、为什么 k-reciprocal 有效、哪些错误来自非身份场景吸附”。
+
+会场现实性：**workshop / empirical study track > CCF-B 主会 short > 方法型 ReID 主会**。如果必须 CCF-B，建议把目标调成“empirical study / analysis paper”，别包装成 anti-hub method。

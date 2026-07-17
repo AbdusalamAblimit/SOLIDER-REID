@@ -1,0 +1,48 @@
+我按指定方式读了每篇前 8 页的方法部分；SRHCL 的关键消融在后页，所以额外看了第 8 到 12 页来补证据闭环。下面只拆“创新是怎么构造出来的”。
+
+**RMPSNet**
+1. **触发观察**：作者抓住三个具体失败点。遮挡会造成视觉语义缺失，CLIP-ReID 的图文全局对齐在遮挡下会错位，常用随机擦除默认遮挡均匀分布，但真实遮挡更多集中在下半身，尤其腿部。
+2. **重定义动作**：它把遮挡 ReID 从“局部特征缺失”改写成“遮挡分布不匹配加跨模态语义退化加增强特征分布不一致”。关键词是 `occlusion distribution mismatch`、`semantic degradation`、`prompt-distribution synergy`、`region-prioritized erasure`。
+3. **机制怎么长出来**：RPE 从真实遮挡分布自然推出，下半身优先擦除。DMPA 从“语义缺失”推出，在文本 prompt 上做双重 mask，用文本到文本对比让身份文本原型对缺失语义稳定。MDO 从“增强后分布不一致”推出，在特征空间做擦除、噪声、局部替换，再用两步对抗优化逼原始和扰动特征一致。RPE 和重定义绑定最紧，DMPA 次之，MDO 更像通用鲁棒性补强。
+4. **证据闭环**：关键不是只报总成绩，而是三类消融分别对应三类重定义。`Baseline+RPE` 在 Occluded-Duke 上大幅超过普通随机擦除，证明“遮挡分布先验”有用；`Baseline+DMPA` 和去掉 DMPA 的版本证明文本语义稳态不是装饰；MDO 的 only enhancement 和完整 MDO 对比证明两步对抗比普通扰动更有效。
+5. **审稿人为什么买账**：它卖的是“视角加组合机制”。单个模块都不算特别新，但作者把 CLIP 遮挡失败拆成分布、语义、鲁棒性三个可验证子问题，每个子问题都有对应模块和消融，所以看起来不像随便堆模块。真正新意在“真实遮挡分布和 prompt 稳定性一起处理”，不是某个具体操作本身。
+
+**Robust Mixed-Degradation Person Re-identification via Structural Consistency Distillation**
+1. **触发观察**：以往退化 ReID 往往假设单一退化，比如雾、低光、雨。作者指出真实监控里干净图、雨、雪、雾、曝光变化会混在一起，query 和 gallery 还可能是不同退化。
+2. **重定义动作**：它把“退化域偏移”改写成“混合退化下的双重错位”。第一层是多个退化造成多个中心偏移，第二层是同一身份在特征空间里的几何关系被扭曲。关键词是 `mixed degradation`、`heterogeneity gap`、`multiple centroid shifts`、`distorted topology`、`structural consistency`。
+3. **机制怎么长出来**：如果问题是“中心偏移加拓扑扭曲”，那只用 Wasserstein 对齐中心不够，只用 Gromov-Wasserstein 保结构也不够，所以 SCD 用 Fused Gromov-Wasserstein 同时对齐干净和退化特征的全局分布与样本间结构。CFR 用 EWC 保住干净图识别能力，解决混合退化训练导致干净知识遗忘。这里 SCD 和重定义绑定很紧，CFR 是辅助闭环。
+4. **证据闭环**：最关键的消融是 MSE、WD、GWD、WD&GWD 和 FGW 的对比。它不是证明“一个新 loss 涨点”，而是在验证“只对齐分布或只保结构都不够，混合退化必须二者统一建模”。另外 CE、DE、DQ、DG 四种评测设置和长尾退化、替代合成退化实验，也是在证明问题定义不是单一退化过拟合。
+5. **审稿人为什么买账**：这篇主要卖“问题重定义”。机制使用的是已有最优传输工具，但问题被讲得很清楚：真实退化不是单域偏移，而是随机混合造成结构破坏。再加上新 benchmark 和多设置评测，审稿人容易认为它补了一个真实部署缺口。
+
+**See What You Seek: Semantic Contextual Integration**
+1. **触发观察**：换衣 ReID 里，很多方法要么压制衣服，要么引入轮廓、姿态、步态、解析等外部线索。作者的关键观察是：视觉特征里不只有负面的衣服因素，也有正面的稳定身份因素，比如头发、眼镜、包、鞋等，直接“去衣服”会漏掉这部分语义。
+2. **重定义动作**：它把换衣问题从“消除衣服”改写成“分离负语义并显式挖出正语义”。关键词是 `negative factors`、`positive factors`、`semantic contextual integration`、`semantic separation`、`orthogonalized text features`。
+3. **机制怎么长出来**：SSE 用两个 prompt，一个描述 person，一个描述 clothes。先得到身份文本特征和衣服文本特征，再把衣服方向从身份方向里投影并减掉，得到去衣服后的语义特征。SIM 再让这个正交化文本特征通过非局部操作和跨注意力去指导视觉特征。这个设计和“负语义分离、正语义引导”的重定义绑定很紧。
+4. **证据闭环**：它的关键消融是 SSE 单独有效，SIM 单独在 CNN 上甚至会伤性能，SSE 加 SIM 才最好。这证明“文本指导本身不够，必须先把衣服语义分离干净”。t-SNE 更紧凑、prompt 引导热图更关注头肩、下身、鞋，特征相似度分布在正交化后更清晰，这些可视化都在支撑“语义分离是对的”。
+5. **审稿人为什么买账**：这篇卖的是视角。CLIP-ReID 已经有 ID prompt，CAL 已经有衣服对抗，但它把换衣讲成“负因素和正因素同时存在”的语义问题，用文本空间正交化给出可解释动作。新意不是“用了 CLIP”，而是把衣服偏置从语义空间里切出来，再反过来指导视觉。
+
+**Self-Rectification Historical Consistency Learning**
+1. **触发观察**：可见光红外 ReID 的标注噪声有两层。单模态身份标签会错，这是 noisy annotation；两模态按错误标签配对后还会产生 noisy correspondence。已有 DART、LCNL 主要检测并压低噪声样本，结果是数据没被充分利用。
+2. **重定义动作**：它把噪声样本从“需要丢掉的坏样本”改写成“可以被历史预测逐步纠正的潜在有效样本”。同时把训练波动从坏现象改写成信息来源。关键词是 `self-rectification`、`historical consistency`、`early learning`、`momentum-updated memories`、`coupled noisy labels`。
+3. **机制怎么长出来**：先用双网络互评和 GMM 建模 loss，给每个样本算干净置信度。再用动量更新的 logits 和 feature memory 保存历史输出。只有两个网络对历史预测达成一致时，才给噪声样本改标签。训练时一边用置信度重加权身份损失和跨模态对比损失，一边用历史一致性约束防止当前输出剧烈漂移。机制和重定义绑定非常紧。
+4. **证据闭环**：核心消融是 baseline、加跨模态对比、加 early learning regularization、再加 label rectification 的逐步对比。可视化更关键：不同噪声率下标签准确率随 rectification 逐步上升，loss 分布里噪声样本被转成低损失干净样本，和 DART 对比显示它不是单纯抗噪，而是在回收训练数据。
+5. **审稿人为什么买账**：这篇卖的是训练范式，不是网络结构。它抓住“丢噪声样本会浪费数据”这个审稿人容易认可的矛盾，再用历史一致性避免伪标签乱改。新意来源在“历史预测驱动的噪声标签自校正”，尤其适配 VI-ReID 的双模态耦合噪声。
+
+**Semantic Alignment and Hard Sample Retraining**
+1. **触发观察**：作者指出 VI-ReID 里三个常见做法都有盲点。水平分块会造成跨模态语义错位，batch 内 hard mining 看不到全数据的难样本，PK sampler 不能保证视角均衡。
+2. **重定义动作**：它把 VI-ReID 从“模态差异对齐”改写成“语义错位、全局难样本遗漏、视角采样偏置共同造成的不稳训练”。关键词是 `semantic alignment`、`global hard samples`、`viewpoint-balanced sampler`、`recurrent semantic aggregation`。
+3. **机制怎么长出来**：RSA 把特征图切成局部 patch，用 BiLSTM 按人体空间顺序聚合局部语义，再拼全局特征。Lma 在每个时间步对齐可见光和红外的分布，并且越到后面权重越大，因为后期局部上下文更完整。CHSR 用分类置信度在全数据里找容易混淆的身份，重新组成 hard batch 训练。VB sampler 保证不同摄像机视角均衡进入 batch。
+4. **证据闭环**：证据做得比较完整。模块消融显示 RSA、CHSR、VB 逐步增益；RSA 类型对比里 BiLSTM 优于 Transformer encoder、decoder 和单向 LSTM，支撑“人体局部顺序有价值”；Lma 的递增权重优于平均和递减权重，支撑“逐步语义聚合后再强对齐”；Grad-CAM 和 t-SNE 说明注意力更集中、两模态同身份更靠近。
+5. **审稿人为什么买账**：这篇卖的是机制闭环多于视角。三个问题不算同一个根因，但每个问题都有直接干预和消融验证。它适合会议稿，因为贡献清楚、实现不重、每个模块都能解释为什么有效。
+
+**Semantic Consistency And Integrity Network**
+1. **触发观察**：作者注意到现有换衣方法常把衣服遮掉、忽略掉，或依赖姿态、步态、解析等辅助线索，这会损害行人特征的语义完整性。另一个观察是，头部等区域相对稳定，衣服偏置又和身份特征纠缠在一起。
+2. **重定义动作**：它把换衣 ReID 从“去衣服偏置”改写成“在保持语义完整性的前提下，学习语义一致特征并量化衣服偏置”。关键词是 `semantic consistency`、`semantic integrity`、`head soft attention`、`clothing bias`、`causal intervention`。
+3. **机制怎么长出来**：三分支分别承担三件事。头部分支用 SCHP 解析得到头、上身、下身、脚的 mask，再用 body part matching loss 学 head soft attention。SCC 用 raw branch 和 head branch 的 class activation map、saliency map 做一致性，让原图特征学到稳定语义区域。衣服分支提取局部衣服特征，通过 KL 知识转移让 raw branch 感知其中的衣服偏置，再用因果干预损失比较干预前后身份预测，逼模型剥离衣服影响。
+4. **证据闭环**：主要证据是三分支消融。只加头部分支、只加衣服分支都有提升，两者合起来最好，说明“语义一致区域”和“衣服偏置剥离”是互补的。不过它对“语义完整性没有被破坏”的证据相对弱，更多是通过性能和设计叙事间接成立。
+5. **审稿人为什么买账**：这篇卖的是视角包装加可实现机制。真正新意在“不要粗暴遮衣服，而是保持完整语义再做偏置剥离”。但它依赖 human parsing，因果干预也更像可解释的损失设计，严谨性不如前几篇强。能买账主要因为故事完整、模块简单、LTCC 和 PRCC 上有直接收益。
+
+**共同套路**
+这批论文的共同构造方式不是先想模块，而是先抓一个旧假设的漏洞：遮挡不是均匀的，退化不是单一的，换衣不是只去衣服，噪声样本不是只能丢，难样本不是只在 batch 里。然后把漏洞改写成两个或三个可命名的子问题，每个子问题配一个能被消融验证的机制。最值得学的是“重定义动作要能推出机制，证据也要反过来证明这个重定义”，否则就会退化成堆模块。
+
+联网核查主要参考了这些先例：CLIP-ReID 的两阶段 prompt 训练、CAL 的衣服对抗、SCI 的公开版本、CIL-ReID 的退化鲁棒基准、FGW 的结构和特征联合对齐思想。链接分别是 [CLIP-ReID](https://arxiv.org/abs/2211.13977)、[CAL](https://arxiv.org/abs/2204.06890)、[SCI](https://arxiv.org/abs/2412.01345)、[CIL-ReID](https://arxiv.org/abs/2111.00880)、[FGW](https://arxiv.org/abs/1805.09114)。

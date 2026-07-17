@@ -1,0 +1,100 @@
+**结论先行**  
+能做 CCF-B，但必须把题目定义成 **query-side evidence-sufficient ReID / budgeted multi-evidence query retrieval**，而不是“单图失败预测”或“普通 multi-query ReID”。我给这条线 **7/10**。如果第 2 份证据只能靠测试标签 oracle 取同 ID 图，而没有 tracklet / 多帧 query 来源，信心直接降到 **3/10**，那就是 exp109 的 query-side oracle 变体。
+
+**最推荐的方法稿方向**  
+方法名可以先叫：**Fragility-Guided Evidence Union, FGEU**。
+
+核心设定：
+
+给定一个 query packet `Q={q1,...,qm}`，这些图来自同一 camera tracklet / 同一次人工查询 / 同一目标短时跟踪结果。gallery 仍是标准跨相机 gallery。方法不是“凭空补全单图”，而是回答：
+
+> 当前 query 证据是否足够？如果不够，怎样从同一 query tracklet 中选择、校准、融合额外证据，使检索恢复？
+
+具体机制：
+
+1. **lowtail-pos / dispersion 只做问题定义和训练标签，不直接当部署变量**  
+   因为它们依赖跨相机真 positives。论文里应写成：它们定义了 fragile query / evidence insufficiency；部署时预测的是 **marginal evidence gain residual**。
+
+2. **训练/校准目标不要是“失败概率”**  
+   目标应是：
+   ```text
+   residual_gain(q, e)
+   = ΔAP(q ∪ e) - h(margin, #false, hubness, static confidence)
+   ```
+   也就是“加这份 query-side 证据后，扣掉 trivial 排名因素后，还能带来多少恢复”。这正好接住你已有的 partial control 结果。
+
+3. **融合用 evidence union，不用简单平均**  
+   一个稳的公式：
+   ```text
+   S(Q, g) =
+     (1 - α(Q)) * mean_i s(q_i, g)
+     + α(Q) * logsumexp_i( w_i * calibrated_s(q_i, g) / τ )
+   ```
+   `α(Q)` 随 fragility / dispersion / predicted evidence gain 增大。  
+   `w_i` 由 query packet 内一致性、tracklet 质量、rank-list agreement、hubness penalty 决定。  
+   随机异 ID 图必须被 gate 掉或降权，否则方法不成立。
+
+4. **方法输出允许是 action policy**  
+   单图 fragile 时，不要假装能恢复；输出“证据不足，请求同 tracklet 额外帧”。拿到额外帧后再 union。这个比 reliability calibration 强，因为它真的恢复 ranking。
+
+**新问题 / 协议**  
+建议定义：
+
+**Evidence-Sufficient Multi-Query ReID** 或 **Budgeted Query-Evidence ReID**。
+
+协议要避免 oracle 漏洞：
+
+1. query 初始为 1 张图。
+2. 额外证据只能来自同 camera、同 tracklet、同人工查询包，不能从跨相机 gallery 按 ID 抽。
+3. 预算 `B=1,2,4,8`。
+4. 主指标：
+   - standard mAP / R1
+   - fragile subset mAP
+   - `Recovery@B = (AP_B - AP_1) / (AP_oracle - AP_1)`
+   - contamination robustness：插入随机异 ID 帧后 mAP 不应崩
+   - evidence-cost AUC：恢复多少性能花了多少 query 帧
+5. 必做 baseline：
+   - single query
+   - mean fusion / max fusion / logsumexp fusion
+   - best-frame oracle
+   - k-reciprocal / CA-Jaccard re-rank
+   - UFFM/AMC 类 test-time multi-view fusion
+   - set-based quality attention
+   - tracklet average / temporal aggregation
+
+**撞车核查**  
+主要撞车点如下：
+
+- **Set-based ReID 已经存在**。ID-aware Quality for Set-based ReID 明确就是 set matching，并用 feature fusion attention 忽略低质量图像、聚合判别信息。你不能把“用多张图”当 novelty。边界必须是 evidence insufficiency 诊断 + marginal evidence gain + budgeted recovery protocol。来源：arXiv 1911.09143。  
+  https://arxiv.org/abs/1911.09143
+
+- **UFFM/AMC 2024 很危险**。它也是多视角 feature fusion，而且是 inference-time、无需 fine-tuning，还在 Occluded-Duke 等数据上报大增益。区别应写清楚：UFFM 从 embedding 近邻里伪造 multi-view evidence；你的方法只接受 query-side verified evidence，并显式做随机异 ID harm / contamination gate。来源：arXiv 2405.01101。  
+  https://arxiv.org/abs/2405.01101
+
+- **MVI²P 也很近**。它利用同 ID 多图整合 occluded 信息，再蒸馏回单图；但它承认测试阶段没有多张同 ID 图，所以走 single-image distillation。你要反过来：真实部署 query packet 可得时，不蒸馏，不 hallucinate，只做 evidence-conditioned retrieval。来源：arXiv 2311.03828。  
+  https://arxiv.org/abs/2311.03828
+
+- **UMTS / multi-shot KD 更早已做**。multi-shot teacher-student + uncertainty 不是新点。不要写“first to use multiple shots”。  
+  https://arxiv.org/abs/2001.05197
+
+- **TEMP 2024 是 uncertainty/reliability 类邻居**。它用 re-id entropy 做 test-time similarity modification，处理 temporal distribution shift。你的 reliability 分数若只预测“这个 query 靠不靠谱”，会被这类工作压住；必须强调 action: request/select/fuse evidence。  
+  https://arxiv.org/abs/2403.14114
+
+- **k-reciprocal / CA-Jaccard 是 re-ranking 上限对照**。它们只改 gallery-neighborhood context，不能创造新的 query identity evidence。你已有 oracle union 是 k-reciprocal 增益 3.3x，这点很强。  
+  https://arxiv.org/abs/1701.08398  
+  https://arxiv.org/abs/2311.10605
+
+**Verdict**  
+最该做：**evidence-aware multi-query / tracklet query fusion**，但 headline 不能是 multi-query，而是：
+
+> Single-image ReID fails when query evidence is insufficient; query-side verified evidence can recover it, and the key is to predict marginal evidence gain and union evidence without admitting false evidence.
+
+不建议做纯 retrieval reliability calibration。它最多是辅助模块，撑不起方法稿。
+
+CCF-B 可行条件：
+
+1. 在 video/tracklet 或严格 query-packet 协议上复现 oracle headroom。
+2. FGEU 明显超过 mean/max/logsumexp fusion、UFFM/AMC、set-quality attention、k-reciprocal。
+3. random-ID contamination 不崩，最好能自动拒绝。
+4. fragile subset 恢复显著，全量 mAP 也不掉。
+5. 明确承认 image-only Occluded-Duke 的第 2 同 ID 图是 oracle diagnostic，不把它包装成部署方法。

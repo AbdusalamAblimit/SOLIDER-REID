@@ -1,0 +1,37 @@
+结论先说：**普通换衣 ReID 已经偏红海**。2024-2026 已覆盖 parsing/contour 解耦、语义挖掘、same-clothes intermediary、合成预训练、遮挡换衣、低质量、颜色代理、文本语义、发型鲁棒、视频 gait/shape。不能再推“体型/轮廓/步态/脸/衣物无关特征”本身。
+
+**机会 1：Volatile Artifact-Controlled CC-ReID**
+触发观察：换衣 ReID 论文通常把“衣服”当干扰，把“非衣服区域”默认当身份线索。但现实里很多非衣服线索也是易变的：鞋、包、帽子、头发、随身物。它们可能在 PRCC/LTCC/DeepChange 中大量泄漏，模型看似学到身份，其实学到“换衣但没换鞋/包/发型”。
+
+重定义：大家以为 CC-ReID 的核心是“衣服变了还能识别人”，其实 benchmark 里可能混着一个隐藏变量：**volatile artifact carry-over**。真正问题应改成：在衣服变化且鞋/包/头发/随身物也可能变化或碰撞时，身份证据是否还成立。
+
+机制草案：做 `Artifact Volatility-Aware ReID`。用 parsing / open-vocab segmentation 切出 clothing、head/hair、shoes、bag/accessory、limbs；训练时区分 stable biometric cue 和 volatile artifact cue。artifact 不是完全丢弃，而是按“短期可靠、长期不可靠”建模：同一身份跨 outfit 中若 artifact 不稳定就 dropout；不同身份 artifact 相似时做 collision negative；测试时输出 artifact-dependence score，避免把 artifact-only match 当强身份证据。
+
+廉价 kill-switch：零训练可做。
+1. 在 PRCC/LTCC/DeepChange 上用现有 SOLIDER/Swin frozen feature，分别跑 global、clothing-masked、shoes-only、bag/head/hair-only。
+2. 统计 cross-clothes top-k 中，mask 掉鞋/包/发型后 true match 是否大幅掉，或 accessory-only 是否已经有异常高 Rank-1。
+3. 人为构造 artifact collision：给 query 找鞋/包/发型相似但不同 ID 的 gallery，看它们是否系统性挤进 top-k。
+4. 若 accessory-only 几乎无信号，或 masking 后指标不变，立即 kill。
+
+撞车核查：我没搜到 2024-2026 明确以 bag/shoes/accessory volatility 为主问题的 CC-ReID。相邻已撞的是发型鲁棒 MSP-ReID 2026、颜色代理 CSCI 2025、语义/文本 DIFFER 2025、CSSC 2024；但它们没有把“非衣物可变物泄漏”作为 benchmark hidden variable 来定义。来源：MSP-ReID 关注 hair shortcut，CSCI 关注 color proxy，DIFFER 用文本语义解耦，CSSC 做 content/salient semantics。  
+Verdict：**值得首杀，最像 B 类问题稿入口**。信心 7/10。  
+现有数据：Market/MSMT/occluded_duke 只能做“普通 ReID artifact leakage”预实验；真正 CC 结论需要下载 PRCC/LTCC/DeepChange，当前资产不能直接首验。
+
+**机会 2：Matchability-Aware / Abstention CC-ReID**
+触发观察：CC-ReID 统一算 mAP/Rank-1，但不是每张换衣 query 都有足够身份信息。正面脸、清晰头部、稳定肢体、鞋包 carry-over、多视角 support 都会极大改变可匹配性。很多失败不是模型不够强，而是单图证据不足。
+
+重定义：大家以为问题是“学习更衣物无关的特征”，其实一部分是 **unmatchable / low-evidence query 被强制排序**。方法不只给 ranking，还要判断“这个 query 在当前 gallery 下是否有足够证据”。
+
+机制草案：`Biometric Evidence Routing`。为 query-gallery 对构建 cue support：face/head visible、limb visible、body contour quality、artifact volatility、same-clothes support、gallery support density。高证据走对应 cue expert；低证据样本输出低置信或请求 set-query/tracklet/人工复核。训练端可用 evidence-conditioned contrastive：只在共同可见且可靠 cue 上拉近，不对低证据样本过度监督。
+
+廉价 kill-switch：零训练。
+1. 用 face detector / pose / parsing 得到 evidence score。
+2. 对 PRCC/LTCC/DeepChange query 按 evidence 分桶，看低 evidence 桶是否贡献主要 false top-k。
+3. 比较 evidence score、普通 similarity margin、re-id entropy 谁更能预测 top-1/top-5 失败。
+4. 做 selective retrieval：丢弃最低 20% evidence query 后 mAP 是否显著上升；若不能预测失败，kill。
+
+撞车核查：FAIM 2024 已经谈到 clothes-irrelevant cue 不足，并做 same-clothes intermediary feasibility，所以“可靠性”这个词不能直接当创新；OC4-ReID 2024 做了遮挡换衣；TEMP 2024 做普通 ReID uncertainty。可争点只剩：**把 CC-ReID 改成 selective/matchability-aware task，而不是再做一个 reliability module**。  
+Verdict：**可作为第二机会，但撞 FAIM 风险较高**。信心 5/10。  
+现有数据：需要 PRCC/LTCC/DeepChange 首验；occluded_duke 可模拟 evidence-abstention，但不能支撑换衣主 claim。
+
+参考核查：FAIM 2024、OC4-ReID 2024、FRD-ReID 2024、CSSC 2024、CCUP 2024、DIFFER 2025、RLQ 2025、CSCI 2025、TryHarder 2025、MSP-ReID 2026。

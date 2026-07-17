@@ -1,0 +1,31 @@
+**终判：判死。**
+
+在“frozen-feature + 现有 image 数据 + 找隐藏变量”的约束下，已经没有干净 CCF-B 方法稿路线。Hubness 是真观察，但 remedy 被 `k-reciprocal`、camera-aware re-ranking/TTA 这种成熟 test-time 工具压穿，且 hubness-aware training 在跨模态检索已有 HAL / NeighborRetr 近邻先例。你们再写 anti-hub margin，很容易变成“ReID 版 NeighborRetr + 比不过 re-ranking”。
+
+关键证据链：
+
+- `hub-fix +1.51 mAP` vs `k-reciprocal +10.98`：方法贡献被标准后处理吞没。
+- `same-camera 降权 +3.13` 也压过 hub-fix：说明很多拓扑病可被相机偏置解释或缓解。
+- B / GOPL 都证明“独有变量”会退化成廉价代理；Hubness 虽诊断新，但治疗不新、不强。
+- 2024-2026 ReID 方法空间已经转向新信息源/新协议/新数据：KPR 用 keypoint prompt 重新定义多目标遮挡，ProFD/DPL-ReID 用 CLIP/文本/真实遮挡增强，AGPReID 里 VDT、GSAlign、SeCap、ViSA 已经占住 view decoupling / semantic alignment / view-specific expert，AG-VPReID 则直接转视频大数据集。
+
+**该怎么转**
+
+1. Hubness 降级写 observation / analysis / short：
+   “Gallery negative in-degree 是强 ReID 的 failure diagnostic，但现有 re-ranking/camera-aware tools 已基本覆盖其 remedy。”这能诚实、有价值，但不是方法稿主线。
+
+2. 真要 B 类方法稿，换到 **视频 AG-VPReID / AG-VPReID.VIR**，别再做 image-level frozen topology。
+   具体方向：**tracklet-level cross-platform temporal evidence routing**。核心重定义不是“单张图像相似度错”，而是“航拍-地面身份线索在时间上间歇可见，单帧 embedding 丢掉了 tracklet 证据结构”。
+
+廉价 kill-switch：
+
+- 冻结最强 image encoder，提 AG-VPReID frame features。
+- 比较 single-frame / mean-pool / top-quality-pool / set-to-set MaxSim / oracle best-frame。
+- 通过线：
+  - 非 oracle 的 tracklet set matching 至少比单帧或均值高 `+3~5 mAP/R1`；
+  - oracle best-frame 还有明显上界，说明视频真的有未利用信息；
+  - 增益不能被 k-reciprocal、camera-aware、简单质量筛选完全吃掉。
+- 过不了：视频也别做，直接收 Hubness analysis。
+
+参考核查：  
+[k-reciprocal re-ranking](https://arxiv.org/abs/1701.08398), [CA-Jaccard](https://arxiv.org/abs/2311.10605), [DART3](https://arxiv.org/abs/2505.18337), [HAL](https://arxiv.org/abs/1911.10097), [NeighborRetr](https://arxiv.org/abs/2503.10526), [KPR](https://arxiv.org/abs/2407.18112), [ProFD](https://arxiv.org/abs/2409.20081), [VDT](https://arxiv.org/abs/2403.14513), [GSAlign](https://arxiv.org/abs/2510.22268), [ViSA](https://arxiv.org/abs/2605.18192), [AG-VPReID](https://arxiv.org/abs/2503.08121).

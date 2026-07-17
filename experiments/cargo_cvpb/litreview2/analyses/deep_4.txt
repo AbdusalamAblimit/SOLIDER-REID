@@ -1,0 +1,75 @@
+我按清单实际的 6 篇拆。括号里写“4”应该是笔误。
+
+**1. Bidirectional modality information interaction for Visible-Infrared Person Re-identification**
+
+1. 触发观察：作者抓住的不是“可见光和红外差异大”这个老问题，而是现有方法虽然在缩小模态差异，却基本把两个模态当成各自独立的流来处理。生成中间模态、灰度桥、共享特征和私有特征解耦，本质都是绕开模态差异，而不是让两个模态直接交换有用信息。同时他们又补了两个更细的观察：GAP 和 GMP 各有偏好，简单相加会削弱局部显著性；同模态内长得很像的不同人，在普通 triplet 或中心损失里监督不够。
+
+2. 重定义动作：他们把“跨模态差异”重说成“跨模态信息没有双向交互”。这一步很关键，旧问题是对齐，新问题是交互；旧关键词是 modality gap、shared feature，新关键词变成 bidirectional modality information interaction、dynamic aggregation、feature intersection。这样一改，论文不再只是说“我要减少差异”，而是说“两个模态本来有轮廓、姿态等可共享线索，应该互相帮助”。
+
+3. 机制怎么长出来：Dynamic Aggregation 是从这个重定义里比较自然长出来的。既然问题是两个模态不沟通，那就把一个模态当 primary，另一个当 auxiliary，用 auxiliary 动态生成投影权重去重表征 primary，再反向做一次。Feature Intersection 和 Multi-Weight loss 的逻辑绑定弱一些，它们分别来自“全局和局部信息没有正确组合”和“相似负样本监督不足”，更像是围绕主机制补强特征质量和判别边界。
+
+4. 证据闭环：关键证据是三块消融：DA 单独加上能明显提升，说明“模态交互”不是空话；FI 对 GAP、GMP、GAP+GMP 的对比说明交叉式组合确实优于朴素池化；MW 的权重分组实验说明相似负样本需要更强监督。t-SNE 可视化用来证明同身份跨模态距离缩小、模态分裂减弱。它的证据够支撑“机制有效”，但对“交互真的传递了互补语义”证明还不算很硬，如果我们学它，最好再加单向交互、随机辅助模态、错配辅助模态这类破坏性对照。
+
+5. reviewer 为什么买账：这篇主要卖机制，视角有但不算特别深。reviewer 会买，是因为它把老的 VI-ReID 模态差异问题换成了一个容易接受的新动作：不要只对齐，要双向交换。真正 novelty 来自“直接用另一模态生成动态投影权重”，不是 GAP/GMP 或 weighted loss。
+
+**2. Bridging the gap: Learning adaptive knowledge transition for lifelong person re-identification**
+
+1. 触发观察：作者注意到 LReID 里现有知识蒸馏大多是把上一阶段模型冻结成 reference model，然后让当前模型和旧模型输出一致。这个做法能抗遗忘，但很粗暴，因为不同阶段的数据域偏差很大，直接蒸馏会把旧知识硬压到新任务上，反过来抑制新任务泛化。也就是说，问题不是“有没有旧知识”，而是“旧知识怎么过渡到新域”。
+
+2. 重定义动作：他们把 catastrophic forgetting 重定义成 adaptive knowledge transition 问题。旧说法是 preserve previous knowledge，新说法是 control the degree and direction of knowledge distillation。关键词从 distillation、forgetting，换成 transition path、intermediate knowledge、adaptive transfer。这样一来，论文的中心不再是“再加一个蒸馏损失”，而是“旧知识和新知识之间需要一座可学习的桥”。
+
+3. 机制怎么长出来：KTL 很自然。既然直接从旧模型到新模型太硬，就先用 TFE 从 current model 和 reference model 的浅层特征里估计 domain-specific style，再用 KIM 融合成 intermediate feature，作为中间过渡知识。MRD 也顺着这个思路走：不只蒸馏单点 feature，而是蒸馏样本间关系和样本到类中心关系。机制和重定义绑定较紧，尤其是“中间知识”这一步，是论文叙事的骨架。
+
+4. 证据闭环：最关键的消融是 KTL 带来最大 mAP 增益，这直接支撑“transition 比直接蒸馏更好”。另一个很好的证据是 TFE 嵌入位置分析，越靠浅层效果越好，说明他们说的 domain-specific style 不是事后硬编，而是和浅层风格信息对应。CBD/IID 的消融说明样本关系和中心关系都在补足普通 feature distillation。两种训练顺序的结果则证明不是某个 domain order 的偶然。
+
+5. reviewer 为什么买账：这篇卖的是视角加机制。novelty 的核心不是“又一个 lifelong 蒸馏模块”，而是把旧知识保存讲成“知识过渡路径选择”。这个叙事很适合 LReID，因为它正好解释了稳定性和可塑性的矛盾。
+
+**3. Camera-aware graph multi-domain adaptive learning for unsupervised person re-identification**
+
+1. 触发观察：作者抓的是无监督 ReID 里一个很实在的问题：聚类和对比学习生成了伪标签，但训练时忽略了相机之间和相机内部的语义关系。跨相机同身份会因为光照、背景、分辨率产生大域偏移；同相机内不同身份又可能非常相似。过去用相机风格迁移做数据增强，但生成图像和 ReID 判别学习是割裂的，还可能引入噪声。
+
+2. 重定义动作：他们把无监督 ReID 从“伪标签不准”重定义成“多相机子域之间缺少语义传播”。每个 camera 被定义成一个 domain，训练不只是 cluster contrastive learning，而是 camera-aware multi-domain adaptive learning。关键词是 camera-aware graph、multi-domain、semantic propagation、domain-invariant representation。
+
+3. 机制怎么长出来：机制很顺。既然每个相机是一个 domain，就在 mini-batch 里每个相机采样，构建异质图。跨相机同伪身份给正边，同相机不同伪身份给负边，然后用 GCN 把这些关系传播到统一空间。最后用对抗训练把 GCN 学到的“理想域不变表示”迁回普通 feature extractor。这个机制和重定义绑定很紧，图的边定义就是论文问题定义的具体实现。
+
+4. 证据闭环：关键消融是 inter-camera correlation、intra-camera correlation 和完整 CGMAL 的比较。跨相机边单独有效，说明“相机间语义传播”是主收益；同相机负关系也有效，说明“相机内相似身份区分”不是摆设。不同 backbone、GCN/GAT 替换、检索可视化共同证明它不是某个网络结构偶然涨点，而是 camera-aware graph 这个结构在起作用。
+
+5. reviewer 为什么买账：这篇卖的是视角。GCN 不新，memory contrastive 也不新，但“把 camera 当成多个无标签子域，并用图显式传播伪身份关系”是清楚的。reviewer 买账的点在于它把 camera metadata 从普通 nuisance 变成了可用结构。
+
+**4. Camera-Proxy Enhanced Identity-Recalibration Learning for Unsupervised Visible-Infrared Person Re-Identification**
+
+1. 触发观察：作者看到 UVI-ReID 里有两层不稳定：第一，模态差异大，跨模态类别映射容易错；第二，同一模态内部还有 camera domain 差异，导致类内不紧、类间混。直接做跨模态聚类或类别级匹配太早，会在基础还不稳定时引入错误关系。还有一个工程层面的观察：普通 memory momentum update 容易被 easy samples 主导，hard samples 长期没被修正。
+
+2. 重定义动作：他们把问题从“无监督跨模态伪标签噪声”重定义成“identity relationship 需要 camera-proxy 逐级校准”。旧问题是 class-level cross-modal mapping，新问题是先建立模态内 camera proxy，再做 class 和 camera proxy 双层跨模态映射。关键词是 camera-proxy、identity-recalibration、local association、proxy-enhanced cross-modal mapping。
+
+3. 机制怎么长出来：两阶段训练是从重定义自然推出来的。第一阶段只做 camera proxy 级别的模态内对比，用 CDL 在每个相机域内找局部 hard negatives，先把单模态结构稳住。DCMU 更新 memory 时偏向 hard samples，让簇中心不被 easy samples 拖走。第二阶段再用 PCM 通过匈牙利匹配建立可见光和红外之间的 class/proxy 双层对应。GCR 测试时再把 camera 信息放进图重排序，属于对“camera 信息全流程使用”的延伸。
+
+4. 证据闭环：核心消融是 CDL、DCMU、PCM、GCR 分别加入后的提升。PCM 的证据对应“只做类级匹配不够，proxy 级一致性有用”；DCMU 的证据对应“hard samples 主导更新能改善簇”；CDL 的证据对应“camera-local contrastive 比全局乱拉更稳”。可视化部分包括 t-SNE 和检索列表，说明第一阶段让模态内结构更稳，第二阶段和 GCR 改善跨模态身份匹配。这里证据闭环比较工程化，但和每个问题点基本对应。
+
+5. reviewer 为什么买账：这篇卖的是系统化视角，不是单一模块。camera proxy 之前有人用过，跨模态图匹配也有人做过，所以 novelty 不在“第一次使用 camera 信息”，而在“把 camera proxy 作为 UVI-ReID 身份校准的中间层，并做成两阶段流程”。reviewer 买账的前提是每个组件的消融都能说明它解决了一个具体不稳定源。
+
+**5. Categorical Attention: Fine-grained Language-guided Noise Filtering Network for Occluded Person Re-Identification**
+
+1. 触发观察：作者先抓住两个失败现象。传统遮挡 ReID 依赖姿态、人体解析、attention 或遮挡增广，但它们都只看视觉，容易把遮挡物也当成身份特征。CLIP-ReID 引入语言后仍然不够，因为 prompt 是全局粗粒度的，文本主要用于对比监督，并没有直接指导模型区分“人、可见属性、遮挡物”。
+
+2. 重定义动作：他们把遮挡问题重定义成 language-guided noise filtering，而不是简单的 visible part matching。更关键的是，他们把图像内容拆成三个语义类别：主体身份、可见属性、遮挡物。关键词是 categorical attention、fine-grained prompt、occlusion-aware prompt、subject token、attribute token、context token。这个重定义把“遮挡”从一个空间缺失问题变成了一个语义分类和噪声过滤问题。
+
+3. 机制怎么长出来：机制基本是顺着这个重定义长出来的。主体 token S* 来自全局图像特征，表示“这是谁”；属性 token A* 由 learnable queries 从 patch 中提取可见身份属性；上下文 token O* 提取遮挡物特征。三者组成 “A photo of a [S*] person with [A*] partially occluded by [O*]” 这样的细粒度 prompt，再用文本作为 query 对视觉 patch 做 cross-attention，引导图像特征看可见人体区域、压掉遮挡物。动态融合用预测不确定性给 visual、text、cross-attention feature 分配权重，是对可靠性问题的补强。
+
+4. 证据闭环：最强证据是 prompt ablation：从普通 “a person”，到加 S*，再加 A*，最后加 O*，性能逐步提升，直接证明这三个语义类别不是装饰。组件消融 F、C、D 说明细粒度 prompt、cross-attention、动态融合各自有效。attention map 可视化也很关键，PFD 和 CLIP-ReID 仍会看遮挡物，而 FLaN-Net 更集中在可见人体区域。这类可视化正好证明“重定义是对的”，不是只看涨点。
+
+5. reviewer 为什么买账：这篇主要卖视角。CLIP 用在 ReID 已经不是新鲜事，learnable token 也不是新鲜事，但它把遮挡拆成“主体、可见属性、遮挡物”三个语言槽位，这个问题刻画很清楚。reviewer 买账的是“语言不只是全局语义监督，而是细粒度噪声过滤器”。
+
+**6. Causal Clothes-Invariant Feature Learning for Cloth-Changing Person Re-ID**
+
+1. 触发观察：作者抓住的是换衣 ReID 最本质的捷径：训练集中衣服通常属于某个固定身份，衣服几乎不被不同身份共享。模型为了最小化训练损失，会自然学到 clothing shortcut，也就是用衣服认人。现有方法即使用轮廓、解析、3D、gait 等辅助信息，也往往没有完全抛弃 RGB，所以只是稀释衣服捷径，而不是切断它。
+
+2. 重定义动作：这是这批里最强的重定义之一。他们不再说“我们要学 clothes-invariant feature”，而是说普通训练在学 P(Y|X)，这个目标本身会吸收衣服和身份的伪相关；真正应该学的是 P(Y|do(X))，通过 causal intervention 切断 X <- C -> Y 的 backdoor path。关键词是 clothing ownership、clothing shortcut、spurious correlation、causal intervention、backdoor adjustment、confounder dictionary。
+
+3. 机制怎么长出来：机制和重定义绑定非常紧。既然衣服 C 是 confounder，就要建 Confounder Dictionary，存每件衣服的分布和先验 P(c)。既然目标是 P(Y|do(X))，Intervention Module 就按 backdoor adjustment 对所有衣服条件求和，而不是只看当前图像衣服。既然 intervention 依赖“衣服表示必须是衣服而不是身份”，就加 Disentangle Regularization，把 identity feature 和 clothing feature 拉开。这里不是先有模块再找故事，而是每个模块都能对应 causal graph 里的变量。
+
+4. 证据闭环：它的证据设计很完整。首先和其他 causal ReID 方法比较，并用 NCC(C -> X) 这种因果强度指标证明 clothing shortcut 被压低，而不只是 rank1 提升。其次消融 Intervention Module、Confounder Dictionary、Disentangle Regularization，说明不是普通 feature enhancement。再用随机化衣服标签、聚类伪衣服标签测试对 clothing label 质量的鲁棒性。t-SNE 显示身份特征和衣服特征分开，activation map 显示模型不再过度看衣服纹理，检索图显示换衣匹配更稳。这些证据直接围绕“切断衣服捷径”闭环。
+
+5. reviewer 为什么买账：这篇卖的是视角，而且视角强于模块。模块本身是 dictionary、feature injection、disentanglement，不算罕见；真正 novelty 是把 CC-ReID 的失败原因从“衣服变化太大”改写成“训练目标被衣服所有权伪相关污染”。reviewer 会买，因为它解释了为什么很多 clothes-agnostic 方法仍然会失败，并且给了能验证 shortcut 是否减弱的指标和可视化。
+
+最后看这批论文的共同套路：它们不是从“我要加一个模块”开始，而是先抓一个具体失败现象，然后把老问题换成一个更有结构的新问题，例如交互、过渡、语义传播、身份校准、噪声过滤、因果干预。机制好发的关键，是新问题一旦说清楚，模块几乎像是在实现这个新问题里的变量和关系。最值得学的是证据闭环：不要只报涨点，要有能证明“这个新问题定义确实成立”的消融、破坏性对照或可视化。

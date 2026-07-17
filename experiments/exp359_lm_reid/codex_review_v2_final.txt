@@ -1,0 +1,20 @@
+106,599
+**Verdict: approve**
+
+Round-1 fixes are correctly resolved. No new shape/alignment/dtype/runtime bug found in the current `experiments/cargo_cvpb/cvpb_lm_reid_train.py`.
+
+**Confirmations**
+
+- High-1 resolved: [cvpb_lm_reid_train.py:176](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:176), [183](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:183), [336](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:336). `ds.set_epoch(ep)` runs before `iter(loader)` is created each epoch. Since `persistent_workers` is not set on the `DataLoader` at [322](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:322), PyTorch default is `False`; workers are recreated per epoch and see the updated dataset epoch state.
+
+- High-2 resolved: [48](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:48), [109](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:109), [121](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:121), [122](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:122), [150](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:150), [189](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:189). Default `M=3`; training passes `rand_mode=True`; non-canonical variants sample real mode and kernel; axes are returned.
+
+- Medium-3 resolved: [390](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:390), [392](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:392), [397](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:397). This is the standard single-lambda DANN setup: discriminator CE is added once; feature gradients are reversed and scaled once by `adv_lamb`.
+
+- Medium-4 resolved: [358](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:358), [359](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:359), [365](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:365). Triplet is now per lattice slot over `[B,D]` with labels `y`, then averaged over `M`.
+
+- L_adv real-axis alignment correct: [223](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:223), [225](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:225), [344](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:344), [391](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:391). `xb.view(B*M, ...)` and `axb.reshape(B*M)` are both image-major: `[i*M+m]`.
+
+**Findings**
+
+None. Only non-blocking stale comments remain: the doc/comment at [15](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:15) and [308](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/cvpb_lm_reid_train.py:308) still say variant/slot, while the code now correctly predicts real axis.

@@ -1,0 +1,110 @@
+{
+  "dataset": "occluded_duke",
+  "cheap_stage": 1,
+  "ri_k": 20,
+  "cheap_mAP": 0.2341854815159438,
+  "full_mAP": 73.05459974540081,
+  "stage_mAP": {
+    "0": 0.26967981387290885,
+    "1": 0.2341854815159438,
+    "2": 47.6957874045896,
+    "3": 72.7479409798522
+  },
+  "cheap_compute": 0.16666666666666666,
+  "cum_frac": [
+    0.08333333333333333,
+    0.16666666666666666,
+    0.9166666666666666,
+    1.0
+  ],
+  "testA": {
+    "overlap": {
+      "rho": 0.1386506849048745,
+      "p": 0.000999000999000999
+    },
+    "rbo": {
+      "rho": 0.12320146778573893,
+      "p": 0.000999000999000999
+    },
+    "tau": {
+      "rho": 0.13893393263485523,
+      "p": 0.000999000999000999
+    }
+  },
+  "testB_proxy_rhos": {
+    "cheap_margin(neg)": -0.01090546618129326,
+    "cheap_top1_top3_gap(neg)": 0.006783573458255331,
+    "cheap_entropy": 0.0539364526928372,
+    "cheap_density(neg)": 0.013204137720612148,
+    "cheap_rawnorm(neg)": 0.16134679060406718,
+    "full_feat_norm(neg)": 0.03390794498248202,
+    "full_margin(neg)": 0.4026614728392236,
+    "full_entropy": 0.31353953093544223
+  },
+  "testB_best_proxy": "full_margin(neg)",
+  "testB_best_cheap_proxy": "cheap_rawnorm(neg)",
+  "testB_RI_marginal": {
+    "rbo": 0.12320146778573893,
+    "overlap": 0.1386506849048745,
+    "tau": 0.13893393263485523
+  },
+  "testB_partial_all": {
+    "overlap": 0.1595679673579215,
+    "rbo": 0.14002585648125482,
+    "tau": 0.16660340637659396
+  },
+  "testC": {
+    "overlap": {
+      "multi_rho": 0.3681364997734976,
+      "multi_R2": 0.14414017881894214
+    },
+    "rbo": {
+      "multi_rho": 0.45928857718547195,
+      "multi_R2": 0.2590725579520119
+    },
+    "tau": {
+      "multi_rho": 0.40497413789123693,
+      "multi_R2": 0.18475400753204652
+    }
+  },
+  "testD_table": {
+    "0.5": {
+      "ri_oracle": 31.305002326535092,
+      "ri_deploy": 29.152504984706155,
+      "apgap_deploy": 31.47272955383324,
+      "cheapstat": 31.73184519116595,
+      "static_oracle": 33.776315736792775,
+      "random": 29.362607764606544
+    },
+    "0.6": {
+      "ri_oracle": 39.421156613669645,
+      "ri_deploy": 37.92603154079424,
+      "apgap_deploy": 40.091184108350966,
+      "cheapstat": 40.53401516381509,
+      "static_oracle": 43.58077496244324,
+      "random": 38.1275473518323
+    },
+    "0.7": {
+      "ri_oracle": 48.51307518909174,
+      "ri_deploy": 47.09828497537966,
+      "apgap_deploy": 48.774124931289236,
+      "cheapstat": 48.990276875186225,
+      "static_oracle": 52.51920965757579,
+      "random": 46.91819032335606
+    }
+  },
+  "testD_compute99": {
+    "ri_oracle": 1.0,
+    "ri_deploy": 1.0,
+    "apgap_deploy": 1.0,
+    "static_oracle": 1.0,
+    "random": 1.0
+  },
+  "base_full_map": 73.05459974540081,
+  "verdict": {
+    "B_alive": false,
+    "C_alive": true,
+    "D_alive": false,
+    "OVERALL_alive": false
+  }
+}

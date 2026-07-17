@@ -1,0 +1,26 @@
+结论：**存活，但要降调。**  
+`Rank-Instability Adaptive ReID` 没查到“直接用 cheap-vs-full top-k 排名不一致度作为 ReID 推理路由信号”的确切先例；这个切口有独立新意。  
+但它会强烈撞上 **CFPER/DaReNet/HashReID/AcuRank** 的大类叙事：query-adaptive compute / early-exit / uncertain-query extra budget。不能写成“首次发现 ReID query 需要动态算力”，只能写成“首次把动态算力路由从静态难度/置信度改成 cheap-to-full rank preservation / rank regret 的可测信号”。整体信心：**7/10**。
+
+**逐类判定**
+| 类别 | 代表先例 | 是否用了 cheap-vs-full rank disagreement 做路由 | 撞车判断 |
+|---|---|---:|---|
+| (a) CFPER / query-difficulty adaptive ReID | CFPER, ICME 2025，本地 PDF 抽取见 [reviews/deep_5.md](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/litreview2/reviews/deep_5.md:2130)，DOI `10.1109/ICME59968.2025.11209843` | **否**。它用 global-patch 相似度一阶差分估计可见人体区域比例，`easy` 只走 global，`hard` 走 part experts，见 [signal lines](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/litreview2/reviews/deep_5.md:2296) | **高杀伤但不硬撞**。它已占“ReID query difficulty adaptive compute / early exit”主叙事；你的新意必须落在“rank disagreement 不是可见性/置信度/难度分数” |
+| (b) early-exit / dynamic inference / multi-exit ReID | [DaReNet](https://arxiv.org/abs/1805.08805), [HashReID](https://arxiv.org/abs/2308.11900) | **否**。DaReNet 是多分辨率 resource-aware ReID；HashReID 有 ranking regularizer 和 early termination，但不是用 cheap-full 当前 top-k 分歧当路由 | **中高撞**。它们证明 ReID 早退/动态预算不是新问题；HashReID 尤其接近“rank consistency”语义，但用途不同 |
+| (c) cascade / coarse-to-fine / hierarchical ReID | [CtF: Faster Person Re-ID](https://arxiv.org/abs/2008.06826), CFPER | **否**。CtF 是短哈希筛候选、长哈希细排的 cascade；CFPER 是 coarse global 到 fine part | **中撞**。如果你只是 cheap top-k 后 full rerank，会被归到 cascade；必须强调“路由依据是 cheap/full rank regret 的预测或估计” |
+| (d) anytime ReID | [Towards Anytime Retrieval: Anytime Person Re-ID](https://arxiv.org/abs/2509.16635) | **否**。这里的 anytime 更偏跨时间/长期检索基准，不是推理预算 anytime | **低撞**。不要用 “anytime ReID” 命名，容易误导 |
+| (e) hardness / uncertainty-aware ReID | 如 [UMTS](https://arxiv.org/abs/2012.08733) 等 uncertainty ReID | **否**。多数是训练、域泛化、伪标签、特征不确定性，不是按 query 分配推理计算 | **中低撞**。审稿人会说你是 uncertainty/difficulty routing，所以要证明 RI 比 margin、entropy、occlusion、visibility 更预测 cheap-vs-full regret |
+| (f) 通用 retrieval adaptive reranking budget | [AcuRank](https://arxiv.org/abs/2505.18512) | **接近但否**。它按 ranking uncertainty 自适应 rerank computation，不是 ReID，也不是 cheap-full rank disagreement | **中高概念撞**。它会削弱“rank uncertainty 分配预算”的新意；但 ReID 网络早退 + cheap/full rank preservation 仍可存活 |
+
+**关键 verdict**
+不是硬撞 CFPER。CFPER 的隐藏变量是“query difficulty / visible body sufficiency”，路由信号是图像内部 global-patch 相似度结构；你的隐藏变量是“cheap representation 是否会改变检索排序”，是**关系级、检索结果级**变量。这个差别能成立。
+
+但如果实现最后退化成 `cheap score margin / entropy / top1 gap / occlusion score`，那基本会被归类成 **CFPER-style difficulty-adaptive ReID**，新意会很弱。真正能保住切口的是：
+
+1. 定义 oracle `RI@K = distance(rank_cheap, rank_full)`，例如 top-k overlap loss、RBO、Kendall tau、NDCG regret。
+2. 证明 `RI@K` 比静态 difficulty proxy 更能预测 `AP_full - AP_cheap` 或 top-k identity flip。
+3. 推理时不能真的先算 full rank 再决定早退，否则没有效率收益；必须用 cheap-only predictor / cheap-stage surrogate 去预测 RI。
+4. 强对照必须包括 CFPER-style visibility/body-ratio、cheap margin、top1-top2 gap、entropy、occlusion程度、random routing、fixed budget cascade。
+
+最终建议标题不要叫 “difficulty-adaptive”。更硬的写法是：  
+**Rank-Preservation Certified Early Exit for Efficient Person ReID** 或 **Rank-Regret Adaptive ReID**。这样审稿人更难把它直接压成“又一个 CFPER”。

@@ -1,0 +1,16 @@
+{
+  "n_heavy": 989,
+  "n_valid_heavy": 989,
+  "topk": 10,
+  "jaccard_mean": 0.06193729662254957,
+  "p_dino_only": 0.0020222446916076846,
+  "n_dino_only": 2,
+  "n_swin_only": 719,
+  "n_both_r1": 114,
+  "n_neither_r1": 154,
+  "swin_heavy_map": 72.57079023915418,
+  "dino_heavy_map": 8.649968045748542,
+  "oracle_heavy_map": 72.6902775390256,
+  "oracle_gain": 0.11948729987142315,
+  "verdict": "STOP-LOSS: DINO\u2295Swin carries no independent info (P_dino_only=0.20% <2% OR oracle gain +0.12 <+1mAP). Kill the whole 'DINO completes Swin' family."
+}

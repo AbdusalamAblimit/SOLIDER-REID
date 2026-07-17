@@ -1,0 +1,189 @@
+# exp136 监控
+
+## 实验信息
+- 方法: `Corrected Changed-Pair Sparse LPCS`
+- 类型: `exp134` 失效 run 后的共享接线修复重跑
+- 运行位置: 待启动（远程）
+- 当前状态: 已完成设计建档，待 Claude 审查
+- 直接对照:
+  - `exp135 Corrected LPCS`
+
+## 启动记录
+
+### [2026-03-21 08:58] 设计建档
+- 启动原因:
+  1. `exp134` 被确认是失效 run，当前还没有真正测到 sparse `LPCS`
+  2. 在修复共享接线 bug 后，远程应并行验证 corrected sparse `LPCS`
+  3. 这样本地/远程就能形成 clean 的 `full vs sparse` 直接对照
+- 当前判断: 待审查
+- 原因:
+  - 按用户规则，启动前必须再次通过 Claude 审查
+
+### [2026-03-21 09:01] Claude 审查通过
+- 审查文件:
+  - `experiments/exp136/claude_review.md`
+- 审查结论:
+  - **允许启动**
+- 审查确认:
+  1. 共享接线 bug 已真正修复
+  2. 相对 `exp135` 仅新增：
+     - `POSE_LPCS_PAIR_MODE='delta_top'`
+     - `POSE_LPCS_PAIR_TOP_RATIO=0.25`
+  3. `lpcs_psr / lpcs_pf` 足以验证 sparse routing 是否真实生效
+- 当前判断: 允许启动
+- 原因:
+  - 已满足远程 clean rerun 条件，可作为 `exp135` 的直接并行对照
+
+### [2026-03-21 09:03] 远程 exp136 正式启动
+- 远程机器:
+  - 恒源云 `5060 Ti`
+- 同步动作:
+  1. 本地已 push 到 `origin/exp/pose_heatmap`
+  2. 远程已 `git pull origin exp/pose_heatmap`
+- 启动命令:
+  - `python3 train.py --config_file configs/occluded_duke/pose_psg_gcn_lpcs_delta_top_fix.yml OUTPUT_DIR ./log/occluded_duke/exp136_lpcs_delta_top_fix`
+- 远程输出:
+  - `log/occluded_duke/exp136_lpcs_delta_top_fix/remote_nohup.log`
+- 启动确认:
+  1. 日志已确认：
+     - `[LPCS] enabled: ... pair_mode=delta_top, top_ratio=0.25 ...`
+  2. 已真实进入 iteration：
+     - `Epoch[1] Iter[20/227]`
+     - `Epoch[1] Iter[40/227]`
+  3. 这意味着 corrected sparse `LPCS` 已经正式进入训练，不再是 intended config 或失效 run
+- 当前判断: 继续
+- 原因:
+  - 下一次真正有信息量的节点是 `ep10 / ep20` 和 `epoch 21+` 后的 `lpcs_psr / lpcs_pf`
+
+### [2026-03-21 09:38] corrected sparse `LPCS` 已首次给出有效机制信号
+- 日志来源:
+  - 远程 `log/occluded_duke/exp136_lpcs_delta_top_fix/remote_nohup.log`
+- 关键验证点:
+  - `ep10 = 36.4 / 50.1`
+  - `ep20 = 47.9 / 59.5`
+- 关键机制信号:
+  1. `epoch 21+` 后首次稳定出现完整 `lpcs_*`
+  2. `lpcs_psr = 0.254`
+  3. `lpcs_pf = 2.947 ~ 2.977`
+  4. `lpcs_wm = 0.983 ~ 1.000`
+  5. `lpcs_dm / lpcs_ds` 目前几乎为 `0.000`
+- 机制解释:
+  1. 这说明 corrected sparse routing 终于真正接上了，不再是“名义稀疏、实际全开”
+  2. `lpcs_psr ≈ 0.25` 与 `top_ratio=0.25` 高度一致，说明当前实现第一次真正测到了 exact 稀疏 pair 路由
+  3. `lpcs_pf ≈ 3.0` 也符合“被选中 pair 获得明显放大”的设计预期
+- 对照观察:
+  1. 相对 `exp135 ep20 = 46.7 / 58.7`，当前 `exp136 ep20 = 47.9 / 59.5`，表现为 `mAP +1.2 / R1 +0.8`
+  2. 相对 `exp030a ep20 = 46.8 / 60.9`，当前仍是 `mAP +1.1 / R1 -1.4`
+  3. 这更像“排序更积极、R1 仍待观察”的形态，而不是已经明确转强
+- 当前判断: 继续，当前优先级高于 `exp135`
+- 原因:
+  - `exp136` 是第一次真正把 sparse `LPCS` 跑成设计语义
+  - 目前最关键的不是 `ep20` 点数本身，而是 `lpcs_psr / lpcs_pf` 已经证明这条机制线终于可以被认真评估
+  - 下一次真正有信息量的节点是 `ep30`
+
+### [2026-03-21 10:07] `exp136` 到 `ep30`：机制成立，但指标尚未领先
+- 日志来源:
+  - 远程 `log/occluded_duke/exp136_lpcs_delta_top_fix/remote_nohup.log`
+- 新验证点:
+  - `ep30 = 54.5 / 65.7`
+- 对照观察:
+  1. 相对 `exp135 ep30 = 54.5 / 65.8`，当前几乎完全等价
+  2. 相对 `exp030a ep30 = 52.2 / 66.0`，当前是 `mAP +2.3 / R1 -0.3`
+  3. 相对 `exp125 ep30 = 53.4 / 67.1`，当前是 `mAP +1.1 / R1 -1.4`
+- 关键机制信号:
+  1. `lpcs_psr` 持续稳定在 `0.254`
+  2. `lpcs_pf` 持续稳定在 `2.88 ~ 3.05`
+  3. `lpcs_dm / lpcs_ds` 到 `ep30` 约为 `0.029 / 0.011`
+  4. `lpcs_fg` 始终高于 `lpcs_bg`，到 `ep30` 约为 `0.470 > 0.437`
+- 当前判断: 继续，先看到 `ep40`
+- 原因:
+  - 这条线已经完成了最关键的机制验证：真正的 sparse routing 确实在工作
+  - 但到 `ep30` 还没有把机制优势兑现成比 `exp135` 更好的指标
+  - 当前最需要回答的问题已经收紧为：`sparse LPCS` 是只是“更干净但不更强”，还是会像 `exp125` 一样在中后期出现 late gain
+
+### [2026-03-21 11:08] `exp136` 开始出现 late catch-up 信号
+- 日志来源:
+  - 远程 `log/occluded_duke/exp136_lpcs_delta_top_fix/remote_nohup.log`
+- 新验证点:
+  - `ep40 = 56.3 / 67.4`
+  - `ep50 = 57.5 / 68.6`
+  - `ep60 = 58.6 / 69.7`
+- 对照观察:
+  1. 相对 `exp135`：
+     - `ep40 = -0.4 mAP / -0.9 R1`
+     - `ep50 = -0.3 mAP / -0.9 R1`
+     - `ep60 = +0.2 mAP / +0.3 R1`
+  2. 相对 `exp125 ep60 = 58.0 / 70.6`，当前是 `mAP +0.6 / R1 -0.9`
+  3. 这说明 sparse `LPCS` 在中前期落后，但到 `ep60` 已经开始追回 full-pair 版本
+- 关键机制信号:
+  1. `lpcs_psr` 始终稳定在 `0.254`
+  2. `lpcs_pf` 始终稳定在约 `2.94 ~ 3.04`
+  3. `lpcs_dm / lpcs_ds` 到 `ep60` 约为 `0.378 / 0.210`
+  4. `lpcs_fg` 继续显著高于 `lpcs_bg`，到 `ep60` 约为 `1.453 > 0.593`
+- 当前判断: 继续，并上调为当前 `LPCS` 主候选
+- 原因:
+  - sparse 机制已被稳定验证
+  - 到 `ep60` 首次出现从落后到追平再略超 `exp135` 的信号
+  - 现在最值得回答的问题已经变成：这种 late catch-up 是否会在 `ep70/80` 放大成真正优势
+
+### [2026-03-21 19:35] `exp136` 到 `ep70`：真稀疏机制成立，但优势没有继续放大
+- 日志来源:
+  - 远程 `log/occluded_duke/exp136_lpcs_delta_top_fix/remote_nohup.log`
+- 新验证点:
+  - `ep70 = 58.9 / 70.1`
+- 对照观察:
+  1. 相对 `exp135 ep70 = 59.0 / 70.9`，当前是 `mAP -0.1 / R1 -0.8`
+  2. 相对 `exp125 ep70 = 58.3 / 72.1`，当前是 `mAP +0.6 / R1 -2.0`
+  3. 相对 `exp030a ep70 = 58.1 / 70.9`，当前是 `mAP +0.8 / R1 -0.8`
+- 关键机制信号:
+  1. `lpcs_psr` 继续稳定在 `0.254`
+  2. `lpcs_pf` 继续稳定在约 `2.98 ~ 3.06`
+  3. `lpcs_dm / lpcs_ds` 到 `ep70` 约为 `0.408 / 0.214`
+  4. `lpcs_fg` 继续显著高于 `lpcs_bg`，到 `ep70` 约为 `1.54 > 0.62`
+- 当前判断: 保留运行，但不再把 sparse routing 视为当前首要突破口
+- 原因:
+  - 这轮已经第一次真正把 `top_ratio=0.25` 跑成了语义正确的真稀疏 routing
+  - 但到 `ep70` 为止，这个更干净的机制还没有兑现成比 full-pair `LPCS` 更强的指标
+  - 因而当前更合理的下一步不是继续围绕 routing 本身打转，而是把重点转到更 ranking 对齐的 `LPCS` 目标
+
+### [2026-03-21 20:25] `exp136` 到 `ep90`：稀疏机制稳定，但当前更像 supporting 线
+- 日志来源:
+  - 远程 `log/occluded_duke/exp136_lpcs_delta_top_fix/remote_nohup.log`
+- 新验证点:
+  - `ep80 = 60.6 / 71.8`
+  - `ep90 = 60.6 / 71.3`
+- 对照观察:
+  1. 相对 `exp135 ep80 = 60.8 / 71.9`，当前是 `mAP -0.2 / R1 -0.1`
+  2. 相对 `exp135 ep90 = 60.7 / 71.2`，当前是 `mAP -0.1 / R1 +0.1`
+  3. 相对 `exp030a-eq seed1234 = 61.1 / 72.9`，当前 `ep90` 仍是 `mAP -0.5 / R1 -1.6`
+- 关键机制信号:
+  1. `lpcs_psr` 继续稳定在 `0.254`
+  2. `lpcs_pf` 继续稳定在约 `2.98 ~ 3.03`
+  3. `lpcs_dm / lpcs_ds` 已稳定在约 `0.42 / 0.22`
+  4. `lpcs_fg` 长期显著高于 `lpcs_bg`，当前约为 `1.59 > 0.65`
+- 当前判断: 保留收尾，但降为陪跑线
+- 原因:
+  - 这轮已经把“真稀疏 LPCS”测得非常干净，机制价值成立
+  - 但到 `ep90` 为止，它没有显示出足以压过 full-pair `LPCS` 或当前最强 `exp125` 的趋势
+  - 当前更值得优先回答的问题已经转到 `exp137`：R1 的瓶颈是不是 ranking aggregation
+
+### [2026-03-21 21:18] `exp136` 正式收敛：真稀疏 routing 成立，但最终只得到近似等价结果
+- 日志来源:
+  - 远程 `log/occluded_duke/exp136_lpcs_delta_top_fix/remote_nohup.log`
+- 最终验证点:
+  - `ep110 = 61.0 / 72.0`
+  - `ep120 = 60.9 / 72.1`
+- 对照观察:
+  1. 相对 `exp135 ep120 = 61.1 / 72.3`，当前是 `mAP -0.2 / R1 -0.2`
+  2. 相对 `exp030a-eq seed1234 = 61.1 / 72.9`，当前是 `mAP -0.2 / R1 -0.8`
+  3. 相对 `exp125 ep120 = 60.5 / 73.5`，当前是 `mAP +0.4 / R1 -1.4`
+- 收敛期机制信号:
+  1. `lpcs_psr` 始终稳定在 `0.254`
+  2. `lpcs_pf` 始终稳定在约 `2.98 ~ 3.03`
+  3. `lpcs_dm / lpcs_ds` 收敛期稳定在约 `0.425 / 0.217`
+  4. `lpcs_fg` 长期显著高于 `lpcs_bg`，收敛期约为 `1.60 > 0.65`
+- 当前判断: `exp136` 结案，保留为 supporting 线
+- 原因:
+  - 这轮已经把“真稀疏 pair routing”测得足够干净，机制证据完整
+  - 但最终结果只达到与 full-pair `LPCS` 近似等价，不能支撑“sparse routing 是当前主突破口”
+  - 当前更合理的主问题已收紧为：如何让 learned pair correction 更直接服务 top-rank 错误

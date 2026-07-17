@@ -1,0 +1,94 @@
+####################################################################################
+# AMBIGUOUS QUERY-BAG KILL-SWITCH  dataset=market1501  cache=/tmp/hub_market_feats.npz
+#   bag_m(true)=4  contam_rates=[0.0, 0.25, 0.5, 0.75]  topL=50  overlap_thr=0.1  trim=0.25  seed=42
+####################################################################################
+[data] Nq=3368 Ng=15913 dim=1024 #q-pids=750 #g-pids=751
+
+=== contamination target=0%  (m_true=4 c=0 actual=0.0%)  bags=750  [best-consensus mode=medoid thr=0.05 L=100 size=3.99 purity=1.00]  (194s) ===
+  strategy          mAP      R1      R5     R10  nq
+  avg             98.19   99.73  100.00  100.00  750
+  single-best     98.52  100.00  100.00  100.00  750
+  median          97.99   99.73  100.00  100.00  750
+  trimmed         97.49  100.00  100.00  100.00  750
+  consensus       97.46  100.00  100.00  100.00  750
+  k-recip         98.16   99.73   99.87  100.00  750
+  camera          98.32   99.73  100.00  100.00  750  (gamma=0.5)
+
+=== contamination target=25%  (m_true=4 c=1 actual=20.0%)  bags=750  [best-consensus mode=component thr=0.1 L=100 size=4.94 purity=0.81]  (327s) ===
+  strategy          mAP      R1      R5     R10  nq
+  avg             97.36   98.93  100.00  100.00  750
+  single-best     71.46   68.00  100.00  100.00  750
+  median          97.48   99.07  100.00  100.00  750
+  trimmed         97.50   99.20  100.00  100.00  750
+  consensus       97.55   99.20  100.00  100.00  750
+  k-recip         97.66   99.20   99.73   99.87  750
+  camera          97.71   99.33  100.00  100.00  750  (gamma=0.5)
+
+=== contamination target=50%  (m_true=4 c=4 actual=50.0%)  bags=750  [best-consensus mode=component thr=0.3 L=20 size=4.65 purity=0.80]  (449s) ===
+  strategy          mAP      R1      R5     R10  nq
+  avg             83.05   86.93   96.67   98.27  750
+  single-best     43.54   34.40   99.87  100.00  750
+  median          85.61   86.93   93.87   96.93  750
+  trimmed         83.80   84.53   91.87   93.60  750
+  consensus       87.54   86.93   89.60   90.13  750
+  k-recip         89.42   87.87   91.60   93.60  750
+  camera          85.04   88.53   97.60   98.53  750  (gamma=0.5)
+
+=== contamination target=75%  (m_true=4 c=12 actual=75.0%)  bags=750  [best-consensus mode=medoid thr=0.5 L=50 size=7.32 purity=0.36]  (605s) ===
+  strategy          mAP      R1      R5     R10  nq
+  avg             53.22   47.20   62.13   73.73  750
+  single-best     25.97   15.20   64.40   92.93  750
+  median          51.16   43.60   54.13   65.60  750
+  trimmed         41.97   30.13   43.60   55.33  750
+  consensus       41.96   31.87   36.27   40.93  750
+  k-recip         57.87   48.40   52.40   56.40  750
+  camera          56.70   48.53   64.40   76.93  750  (gamma=0.5)
+
+####################################################################################
+# SUMMARY — market1501  (rows = contamination rate, cols = strategy)
+####################################################################################
+
+[mAP]  bag true-count m=4
+  contam            avg  single-best       median      trimmed    consensus      k-recip       camera
+  0%              98.19        98.52        97.99        97.49        97.46        98.16        98.32
+  25%             97.36        71.46        97.48        97.50        97.55        97.66        97.71
+  50%             83.05        43.54        85.61        83.80        87.54        89.42        85.04
+  75%             53.22        25.97        51.16        41.97        41.96        57.87        56.70
+
+[r1]  bag true-count m=4
+  contam            avg  single-best       median      trimmed    consensus      k-recip       camera
+  0%              99.73       100.00        99.73       100.00       100.00        99.73        99.73
+  25%             98.93        68.00        99.07        99.20        99.20        99.20        99.33
+  50%             86.93        34.40        86.93        84.53        86.93        87.87        88.53
+  75%             47.20        15.20        43.60        30.13        31.87        48.40        48.53
+
+####################################################################################
+# VERDICT — market1501
+####################################################################################
+
+  contamination 25%:
+    avg mAP 97.36  (drop from clean 98.19 = -0.83)  <=10  (no big protocol gap)
+    consensus 97.55  recovery vs avg = +0.19  (half-drop bar = 0.42) FAIL
+    single-best 71.46 (cons-sb +26.09)  k-recip 97.66 (cons-kr -0.11)  camera 97.71 (cons-cam -0.16)
+    beats sb&kr&cam by>=2: FAIL   trivial-baseline-already-solved: no
+    => cell NO-GO
+
+  contamination 50%:
+    avg mAP 83.05  (drop from clean 98.19 = -15.14)  >10 OK
+    consensus 87.54  recovery vs avg = +4.50  (half-drop bar = 7.57) FAIL
+    single-best 43.54 (cons-sb +44.01)  k-recip 89.42 (cons-kr -1.87)  camera 85.04 (cons-cam +2.51)
+    beats sb&kr&cam by>=2: FAIL   trivial-baseline-already-solved: no
+    => cell NO-GO
+
+  contamination 75%:
+    avg mAP 53.22  (drop from clean 98.19 = -44.97)  >10 OK
+    consensus 41.96  recovery vs avg = +-11.26  (half-drop bar = 22.48) FAIL
+    single-best 25.97 (cons-sb +15.99)  k-recip 57.87 (cons-kr -15.91)  camera 56.70 (cons-cam -14.74)
+    beats sb&kr&cam by>=2: FAIL   trivial-baseline-already-solved: no
+    => cell NO-GO
+
+  >>> market1501 OVERALL: NO-GO
+      (GO requires: avg drop>10 AND consensus recovers>=half AND consensus beats single-best/k-recip/camera by>=2, none trivially solved)
+
+[done] market1501 query-bag kill-switch complete (605s).
+JSON_DUMP {"dataset": "market1501", "clean_avg_mAP": 98.18884323732901, "results": {"0.0": {"avg": {"mAP": 98.18884323732901, "r1": 99.73333333333333, "r5": 100.0, "r10": 100.0, "nq": 750}, "single-best": {"mAP": 98.52487577327568, "r1": 100.0, "r5": 100.0, "r10": 100.0, "nq": 750}, "median": {"mAP": 97.99282335760344, "r1": 99.73333333333333, "r5": 100.0, "r10": 100.0, "nq": 750}, "trimmed": {"mAP": 97.48949273017351, "r1": 100.0, "r5": 100.0, "r10": 100.0, "nq": 750}, "consensus": {"mAP": 97.45987152598545, "r1": 100.0, "r5": 100.0, "r10": 100.0, "nq": 750}, "k-recip": {"mAP": 98.15887237664643, "r1": 99.73333333333333, "r5": 99.86666666666667, "r10": 100.0, "nq": 750}, "camera": {"g": 0.5, "mAP": 98.32053326254162, "r1": 99.73333333333333, "r5": 100.0, "r10": 100.0, "nq": 750}}, "0.25": {"avg": {"mAP": 97.35865662395427, "r1": 98.93333333333332, "r5": 100.0, "r10": 100.0, "nq": 750}, "single-best": {"mAP": 71.45811728655787, "r1": 68.0, "r5": 100.0, "r10": 100.0, "nq": 750}, "median": {"mAP": 97.48431012505507, "r1": 99.06666666666666, "r5": 100.0, "r10": 100.0, "nq": 750}, "trimmed": {"mAP": 97.50431281371456, "r1": 99.2, "r5": 100.0, "r10": 100.0, "nq": 750}, "consensus": {"mAP": 97.54512493250293, "r1": 99.2, "r5": 100.0, "r10": 100.0, "nq": 750}, "k-recip": {"mAP": 97.65859522454575, "r1": 99.2, "r5": 99.73333333333333, "r10": 99.86666666666667, "nq": 750}, "camera": {"g": 0.5, "mAP": 97.70530951840442, "r1": 99.33333333333333, "r5": 100.0, "r10": 100.0, "nq": 750}}, "0.5": {"avg": {"mAP": 83.04814348083984, "r1": 86.93333333333332, "r5": 96.66666666666667, "r10": 98.26666666666667, "nq": 750}, "single-best": {"mAP": 43.53966970298208, "r1": 34.4, "r5": 99.86666666666667, "r10": 100.0, "nq": 750}, "median": {"mAP": 85.60806613263203, "r1": 86.93333333333332, "r5": 93.86666666666666, "r10": 96.93333333333334, "nq": 750}, "trimmed": {"mAP": 83.80271399905774, "r1": 84.53333333333333, "r5": 91.86666666666666, "r10": 93.60000000000001, "nq": 750}, "consensus": {"mAP": 87.54469220743779, "r1": 86.93333333333332, "r5": 89.60000000000001, "r10": 90.13333333333333, "nq": 750}, "k-recip": {"mAP": 89.41607002407433, "r1": 87.86666666666667, "r5": 91.60000000000001, "r10": 93.60000000000001, "nq": 750}, "camera": {"g": 0.5, "mAP": 85.03628774618576, "r1": 88.53333333333333, "r5": 97.6, "r10": 98.53333333333333, "nq": 750}}, "0.75": {"avg": {"mAP": 53.21927643354256, "r1": 47.199999999999996, "r5": 62.133333333333326, "r10": 73.73333333333333, "nq": 750}, "single-best": {"mAP": 25.968137057359026, "r1": 15.2, "r5": 64.4, "r10": 92.93333333333334, "nq": 750}, "median": {"mAP": 51.15935284121047, "r1": 43.6, "r5": 54.13333333333333, "r10": 65.60000000000001, "nq": 750}, "trimmed": {"mAP": 41.97035893793112, "r1": 30.133333333333333, "r5": 43.6, "r10": 55.333333333333336, "nq": 750}, "consensus": {"mAP": 41.960140346821845, "r1": 31.866666666666667, "r5": 36.266666666666666, "r10": 40.93333333333333, "nq": 750}, "k-recip": {"mAP": 57.872888662154374, "r1": 48.4, "r5": 52.400000000000006, "r10": 56.39999999999999, "nq": 750}, "camera": {"g": 0.5, "mAP": 56.70048355854206, "r1": 48.53333333333333, "r5": 64.4, "r10": 76.93333333333334, "nq": 750}}}, "diags": {"0.0": {"consensus_best_cfg": "mode=medoid thr=0.05 L=100", "consensus_mean_size": 3.986666666666667, "consensus_mean_purity": 1.0, "n_bags": 750}, "0.25": {"consensus_best_cfg": "mode=component thr=0.1 L=100", "consensus_mean_size": 4.94, "consensus_mean_purity": 0.8072666666666666, "n_bags": 750}, "0.5": {"consensus_best_cfg": "mode=component thr=0.3 L=20", "consensus_mean_size": 4.645333333333333, "consensus_mean_purity": 0.7958507936507937, "n_bags": 750}, "0.75": {"consensus_best_cfg": "mode=medoid thr=0.5 L=50", "consensus_mean_size": 7.316, "consensus_mean_purity": 0.3636758167758168, "n_bags": 750}}}

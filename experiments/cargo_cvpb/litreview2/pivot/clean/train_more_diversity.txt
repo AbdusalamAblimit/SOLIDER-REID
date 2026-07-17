@@ -1,0 +1,73 @@
+42,757
+**建议主打：LCRS，Lattice-Complementary Residual Subspaces**
+
+核心不是让 K 个 lattice 变体一致，而是让它们都能识别身份，同时在“残差信息”上尽量不重复。
+
+训练形式：
+
+```text
+x_k = 同一图的第 k 个 lattice 变体
+g_k = frozen/shared backbone(x_k)
+
+z_k = norm(P_shared(g_k) + alpha * P_k(g_k))
+```
+
+其中 `P_shared` 学所有变体共有身份证据，`P_k` 或 factorized `P_phase / P_bbox / P_kernel` 学 lattice-specific 残差子空间。测试仍然用现在已成立的 K=9 decision marginalization，不预测最佳 variant。
+
+loss 只保留安全项：
+
+```text
+L = mean_k [CE(z_k, id) + Triplet(z_k, id)]
+  + lambda_decorr * Decorr(r_i, r_j)
+  + lambda_bound * ||r_k|| bound
+```
+
+`r_k = alpha * P_k(g_k)`。`Decorr` 只作用在 residual 子空间，不作用在完整 feature；并且只在样本已被正确分类或 triplet margin 达标时启用。这样 diversity 是“准确后的分工”，不是把 feature 硬推开。
+
+**为什么不重蹈死法**
+
+- 不做 consistency：没有把 K 个变体拉到均值，所以不会主动压掉判别差异。
+- 不做 `L_marg`：训练目标不是优化 marginal likelihood，marginalization 只保留在 test-time。
+- 不是 lattice augment：普通增强只改变输入分布；这里有 lattice-factor residual heads 和 decorrelation 约束。
+- 不做 query-side 最佳 variant 预测：测试时仍然 union/marginalize，全 K 使用。
+- 不做 Hard-Lattice ERM：没有选一个 hard variant 当主监督，所有 variant 都必须单独有身份判别力。
+
+**为什么不会退化成噪声**
+
+靠三道闸：
+
+1. 每个 `z_k` 都必须过 CE + Triplet，单个 variant 不能靠随机残差混过去。
+2. diversity 只加在 residual，不破坏 shared identity core。
+3. residual 有幅度上限，比如 `||r_k|| / ||P_shared(g_k)|| <= 0.2~0.4`，先小权重启动。
+
+如果 decorrelation 后 individual variant mAP 掉很多，那就是噪声，不继续。
+
+**廉价 kill-switch**
+
+先做 frozen-backbone probe，别直接全量训练。
+
+- 冻结 Swin/backbone，只训 `P_shared + P_k/factor heads + classifier`。
+- 训练 5-10 epoch 或 20% schedule。
+- 对比对象：当前 test-time-only K=9 marginalization。
+- 立即 kill 条件：
+  - h12-32 mean mAP 没有 `+0.4~0.5` 趋势；
+  - individual variant 平均 mAP 比原始 variant 掉 `>0.8`；
+  - K 个 variant 的 distance-error correlation 没下降；
+  - oracle-best 与 mean-marginalization gap 没变大；
+  - HR/正常 Market 掉 `>0.3 mAP`。
+- 只有 probe 过线，才解冻最后一个 Swin stage，小 LR 继续。
+
+**联网 novelty 判断**
+
+查到的边界是：CR-ReID 现有主流仍多围绕 SR、resolution-invariant 或 resolution-adaptive feature。LRR 明确指出 resolution-invariant 可能丢判别信息，这和你们 consistency collapse 的经验一致。([arxiv.org](https://arxiv.org/abs/2207.13037))  但“diversity/orthogonality 在 ReID 里”本身不新，ABD-Net 已经做过 attention/activation/weight orthogonality，D2FEL 也做 diverse feature self-ensemble。([arxiv.org](https://arxiv.org/abs/1908.01114?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2410.08460))  2026 版本 VPFA 是 post-hoc resolution feature alignment，也不是 sampling-lattice marginalization 训练。([arxiv.org](https://arxiv.org/abs/2510.00936))
+
+所以可讲的新意不是“decorrelation loss”，而是：
+
+> 把 LR-ReID 的采样格点不确定性显式建成 latent lattice，并训练 lattice-conditioned complementary evidence，使 test-time decision marginalization 得到更丰富的 union evidence。
+
+**信心**
+
+LCRS：`7/10`。  
+如果 frozen probe 显示 error correlation 明显下降且 K=9 gain 超过 `+0.5 mAP`，可升到 `8/10`。如果只看到 diversity 指标变好但 individual mAP 掉，直接判死。
+
+LC-STN canonicalization 仍可做备线，信心 `6/10`，但它偏“去除 lattice 不确定性”；LCRS 更贴合你现在的 lens：让 K 个变体互补，而不是变一致。

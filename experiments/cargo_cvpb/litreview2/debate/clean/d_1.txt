@@ -1,0 +1,32 @@
+**结论：该投，但只能投一次“小训练判生死”。**  
+我站红队：Gallery Hubness 不是被 D2 杀死，而是被 D2 限定了边界：`cos - λ log(1+H)` 这种 test-time 单调惩罚在 Market mAP 上不够强，但它没有否定“训练端把 embedding 学得少 hub”。尤其你们的 D4 很干净：负向 in-degree 与热门样本正交、partial 后仍解释 AP error、top1% hub 吃大量 false-top1，这已经不是普通 pairwise hard negative。
+
+文献侧支持“训练值得一试”。Hubness 本来就是高维 kNN/检索空间里的结构性问题，HAL 在 text-image matching 中明确用 local/global hub 统计和 memory bank 做训练端 hubness-aware loss，并报告 R@1 大幅提升；这说明“训练时改 embedding 分布”比事后惩罚分数有现实先例。([arxiv.org](https://arxiv.org/abs/1911.10097)) NeighborRetr 也把 cross-modal retrieval 的 hubness 从 post-hoc normalization 推到 training-time balancing，并强调 bad hubs / good hubs 的区分。([github.com](https://github.com/zzezze/NeighborRetr))
+
+这不等于撞车。HAL 是 text-image matching，NeighborRetr 是 cross-modal retrieval；你们的切口是 **same-modality person ReID 的 gallery 负向 in-degree / many-query-to-one false attraction**。ReID 里的经典 k-reciprocal 是 test-time re-ranking：用 reciprocal neighbors 编 Jaccard，再和原距离融合，不产生部署用的单 embedding。([arxiv.org](https://arxiv.org/abs/1701.08398)) Person ReID 文献也长期把“学 embedding”和“再 re-rank”当互补步骤，PSE/ECN 明确同时贡献 learned representation 和 re-ranking。([arxiv.org](https://arxiv.org/abs/1711.10378)) 所以 anti-hub embedding 的价值不是赢过 k-reciprocal 的 mAP，而是得到一个 **不用 re-rank 的更好单向量**，再看能否与 re-rank 叠加。
+
+Market 的 D2 mAP 弱不能过度解读。你们 Market 已经 94.6 mAP，headroom 极低；而 MSMT17 原论文明确设计成更大、更真实、更难，有 15 camera、复杂光照/场景、4101 IDs/126441 boxes。([arxiv.org](https://arxiv.org/abs/1711.08565)) Occluded ReID 又天然有 missing/noisy information。([arxiv.org](https://arxiv.org/abs/2212.04712)) 一个 2025 ReID re-ranking 结果也显示，邻域/拓扑类后处理在 MSMT17、Occluded-DukeMTMC 的 R1 增益远大于 Market。([arxiv.org](https://arxiv.org/abs/2509.04050)) 这正支持“Market 看不出，难集会放大 hub 病”的判断。
+
+**最小训练验证方案**
+
+选 **Occluded-Duke 单 seed 单训练**，不要先上 MSMT。理由：Occluded-Duke 有强 ckpt、未饱和、headroom 大；MSMT 没强 ckpt，会把“anti-hub 是否有效”和“baseline 是否没训好”混在一起。
+
+配置只改一个变量：在现有 Swin-T / CE+Triplet 上加 `ANTI_HUB=True`。
+
+机制做最小版：
+
+1. epoch warmup 后建立/更新 train memory bank。
+2. 每 epoch 计算训练集 cross-ID `H_neg`，排除同 ID；可记录 same-camera 分层但先不引入机制。
+3. 对 batch/bank negative 加权：`w_j = clip(1 + α z(log1p(H_neg_j)), 1, wmax)`。
+4. anti-hub margin：高 `H_neg` 的 negative 需要更大间隔。
+5. inference 完全不变：只输出一个 L2-normalized embedding，不用 re-rank。
+
+判定标准：
+
+- 主通过：no-rerank `mAP >= +0.8` 且 `R1 >= +1.0`，或 R1 明显涨且 false-top1 top1% hub mass 下降 `>=20%`。
+- 强通过：`anti-hub + k-reciprocal` 仍高于 `baseline + k-reciprocal`，证明不是和 re-ranking 抢同一块。
+- 杀死：no-rerank `< +0.5 mAP` 且 `< +0.5 R1`，同时 hub mass / AP-error partial corr 基本不降。
+- 早停：中期 hub mass 不降、H_neg 分布不变、指标无趋势，直接停，不补变体。
+
+信心：**7/10 支持投入第一次训练**。  
+不是 7/10 保证成稿，而是 7/10 认为“这一次训练的信息价值大于成本”。若 Occluded-Duke 单训练同时提升单向量指标并压低 hub mass，这条线就值得进入正式实验；若不行，应直接 kill，不在 Market 小修补。

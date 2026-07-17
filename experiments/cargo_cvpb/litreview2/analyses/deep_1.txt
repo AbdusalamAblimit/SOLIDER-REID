@@ -1,0 +1,79 @@
+已按你指定的 `pdftotext -f 1 -l 8 '文件名' -` 读了每篇的方法/approach 部分，并额外看了对应 ablation、可视化和必要先例。
+
+**1. ‘Knowledge and experience’ for visible-infrared person re-identification**
+
+1. **触发观察**：现有 VI-ReID 主要从输入 RGB/IR 图像里抽取 modality-shared feature，但 RGB 和 IR 真正共享的信息有限，继续只做对齐会碰到上限。作者借人类识别过程说，人不是只看当前图像，还会用过去经验推断没直接出现的属性。
+
+2. **重定义动作**：它把 VI-ReID 从“跨模态特征对齐”改成“当前图像证据 + 训练历史知识推理”。关键词是 `knowledge and experience`、`memory`、`reasoning`、`inferred modality-shared information`。这一步的核心不是记忆库本身，而是把训练集中不同身份之间的关系说成一种可迁移的“经验”。
+
+3. **机制怎么长出来**：先用普通 VI-ReID 子网抽共享特征，再用每个训练身份的特征中心形成 memory；Transformer 建模 identity center 之间的关系，得到 knowledge；测试时用当前图像特征作为 query，从 knowledge 里推断补充特征，最后和原特征相加。逻辑绑定中等偏强，机制自然，但“人类经验”这层叙述有包装成分，本质接近原型记忆和跨原型注意力推理。
+
+4. **证据闭环**：关键不是只看涨点，而是 Fig. 5/6 和 ablation。Venn 图显示 inferred feature 单独能正确匹配一部分身份，其中还有一小部分是原 modality-shared feature 匹配不到的；融合后又多匹配一些身份。这是在证明“推理出来的信息确实有互补性”，不是单纯多加模块涨点。
+
+5. **reviewer 为什么买账**：这篇卖的是视角多于模块。novelty 来自“VI-ReID 缺的不是又一个对齐损失，而是从历史身份关系中推断隐含共享信息”。风险是 reviewer 会把它看成 memory/prototype attention 的变体，所以它必须靠 inferred feature 的独立有效性和互补性来撑住。
+
+**2. 3D-Aided Pedestrian Representation Learning for Video-Based Person Re-Identification**
+
+1. **触发观察**：视频 ReID 近期方法多在做 temporal aggregation，但它们默认 frame-level feature 已经可靠。作者指出真正的坏源头是帧级特征质量差：多帧错位、遮挡、相似外观混淆都会污染后面的时序聚合。
+
+2. **重定义动作**：视频 ReID 被改写成“2D 视频外观不足，需要 3D 几何和 shape 作为稳定身份线索”。关键词是 `frame-level feature quality`、`3D modality`、`geometric information`、`shape cues`、`feature inconsistency`、`appearance confusion`。先例上，3D ReID 已有 OGNet 这类图像级 3D 尝试，但本文把位置卡在 video ReID 和 2D-3D 融合策略上。([arxiv.org](https://arxiv.org/abs/2006.04569?utm_source=openai))
+
+3. **机制怎么长出来**：机制基本是自然推出的。既然 2D 帧被遮挡和错位破坏，就用 SMPL/HMR 生成 3D mesh，转成 point cloud，再用 PointPillars 得到和 2D feature 对齐的 pseudo-image feature；CMF 用 deformable cross-attention 和 2D-3D 映射点做融合；SSTI 用 SMPL shape 参数建 spatial/temporal 两条注意力流，专门处理相似外观混淆。
+
+4. **证据闭环**：它的证据链较完整。组件 ablation 显示 SSTI 对 appearance confusion 有贡献，CMF 对 frame-level feature 贡献更大；fusion strategy 对比证明不是随便 concat 3D 就行；SSTI 和 GRU/self-attention、空间/时间单流等变体对比证明“空间和时间 shape 交互”必要；t-SNE、Grad-CAM、hard occlusion feature map 展示模型确实更关注目标区域。
+
+5. **reviewer 为什么买账**：这篇卖的是“新模态切入视频 ReID”的机制和视角结合。真正 novelty 不是 3D 本身，而是把视频 ReID 的失败拆成三类，再让 CMF/SSTI 各自对应。它也主动承认 3D reconstruction 在拥挤场景会不稳，这反而让论证更可信。
+
+**3. 4SNet - Spatial and Spectrum Self-adaptive Synergy Network**
+
+1. **触发观察**：作者观察到 visible 和 infrared 的频谱分布不同，IR 更集中在低频，visible 有更多中高频细节。现有方法要么做图像生成，要么做特征空间对齐；已有频域 VI-ReID 如 FDNM 已提出频域差异，但大多把频率当成一个统一处理工具。([arxiv.org](https://arxiv.org/abs/2401.02162?utm_source=openai))
+
+2. **重定义动作**：它把“跨模态 gap”拆成两个问题：单模态内部需要自适应频率滤波，跨模态对齐需要按频段协同。关键词是 `role-decoupled frequency modeling`、`input-adaptive filtering`、`low/mid/high frequency synergy`、`identity-shared patterns`、`modality-specific traits`。
+
+3. **机制怎么长出来**：机制和重定义绑定很紧。AFF 放在双 stem 输入端，用空间和通道注意力合成 input-specific frequency filter，解决单模态频率响应不同；SSM 放在共享 backbone 中，把特征频谱分成低、中、高频，用不同分支处理，再注意力融合，解决跨模态对齐。两个模块的职责不重叠，叙事很干净。
+
+4. **证据闭环**：关键证据包括 FFT 可视化、AFF/SSM 单独和联合 ablation、parallel channel-spatial attention 优于顺序结构、SSM 粗三频段优于和 AFF 一样的细分频段、各频段组合实验、t-SNE 和 retrieval 可视化。最重要的是“粗三频段更适合对齐”这个实验，它证明重定义里的“alignment 不该做细粒度频率匹配”是有依据的。
+
+5. **reviewer 为什么买账**：这篇卖的是视角。模块本身都是频域、注意力、分支融合的组合，但它把频率建模分工讲清楚了：AFF 处理模态内，SSM 处理模态间。novelty 的来源是问题拆分，而不是某个算子。
+
+**4. A Semantic-Aware Attention and Visual Shielding Network**
+
+1. **触发观察**：换衣 ReID 的核心失败是模型过度依赖衣服外观。已有方法多做 body shape、contour sketch，但 human semantic information 和换衣前后特征一致性没有被充分利用。
+
+2. **重定义动作**：它把换衣 ReID 从“找更强的外观/形状特征”改成“让衣服线索失效，并强迫模型使用非衣服的人体语义”。关键词是 `visual shielding`、`clothing-irrelevant feature`、`human semantic attention`、`potential consistency`。语义像素替换已有先例，SAVS 的差异是把语义前景注意力和衣服屏蔽一致性联合起来。([arxiv.org](https://arxiv.org/abs/2207.08387?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2107.11522?utm_source=openai))
+
+3. **机制怎么长出来**：机制非常自然。先用 human parsing 得到前景、衣服区域和屏蔽图；HSA 用前景图生成通道权重，去重权原图特征，让模型看人而不是背景；VCS 把衣服区域用 batch 内像素池替换，得到 rendering image，再约束原图特征和屏蔽图特征接近。这样模型要保留身份，只能依赖头、脸、腿、鞋、随身物等非衣服语义。
+
+4. **证据闭环**：它的 ablation 设计很值得学。作者不是只测 `+HSA`、`+VCS`，还测原图、前景、背景、原图加前景注意力、原图加背景注意力，证明“前景本身不够，语义调制原图才有效”。VCS 部分又做 step-by-step，并和 Pixel Sampling 在相同 backbone 下比较。注意力图、同人换衣 similarity map、不同人同衣 similarity map、检索结果共同证明“屏蔽衣服后模型确实不再被衣服主导”。
+
+5. **reviewer 为什么买账**：这篇主要卖视角，但机制也足够贴题。novelty 不在 segmentation，而在“把衣服作为负线索主动破坏，再约束身份一致性”。reviewer 买账的原因是它正面回答了换衣 ReID 的两个硬场景：同人不同衣、不同人同衣。
+
+**5. A Semantic-guided occlusion simulation based local feature semantic expansion network**
+
+1. **触发观察**：遮挡不是随机黑块，真实遮挡物有形状、有语义，而且经常遮住关键身份区域。另一个观察是 CNN 深层局部特征容易盯住单个中心或背景冗余语义，导致局部语义表达不足。
+
+2. **重定义动作**：它把遮挡 ReID 从“增强遮挡鲁棒性”改成两个新问题：遮挡是语义干扰，不是随机缺失；关键局部区域需要邻近语义扩展，不是孤立地看。关键词是 `semantic-guided occlusion simulation`、`semantic differential features`、`local feature semantic expansion`、`semantic relevance`、`semantic continuity`。它和 FED 这类遮挡特征擦除/扩散方法相比，切入点更偏“如何构造更像真实干扰的训练样本”。([arxiv.org](https://arxiv.org/abs/2112.08740?utm_source=openai))
+
+3. **机制怎么长出来**：SGOS 用相邻卷积层的语义差异图找高响应位置，再把非人类 COCO mask 形状和语义 patch 融合成遮挡块，放到语义相关位置。LFSE 用注意力找关键区域和邻近区域，对邻近区域按重要性和差异性筛选，再作为附加语义融合到关键区域。Cross-center offset loss 则把最近的跨类 hard pair 推远。
+
+4. **证据闭环**：组件 ablation 显示 SGOS、LFSE、loss 逐步提升，完整 FOSENet 最好；Occluded-Duke 上 mAP 领先，说明不是只在干净集上有效；五次运行标准差较小，说明结果稳定；t-SNE、注意力热图和检索可视化证明模型从背景/冗余区域转向目标局部语义，尤其在遮挡场景仍能关注目标区域。
+
+5. **reviewer 为什么买账**：它卖的是“真实遮挡语义化”和“局部语义扩展”两个视角。机制略多，有堆模块风险，所以它必须用遮挡数据集、热图和逐组件 ablation 证明每个模块都对应一个具体失败点。
+
+**6. A Survey on 3D Skeleton Based Person Re-Identification**
+
+1. **触发观察**：3D skeleton ReID 已经出现手工特征、序列模型、图模型、监督/自监督/无监督等多条线，但缺少系统综述。传统外观 ReID 依赖 RGB、衣服、人脸，存在隐私、视角、背景和外观变化问题；skeleton 则有轻量、隐私友好、抗背景和视角变化的优势。([arxiv.org](https://arxiv.org/abs/2401.15296?utm_source=openai))
+
+2. **重定义动作**：它把 skeleton ReID 从“ReID 的一个小分支”重新定义成一个独立研究对象 SRID。关键词是 `SRID`、`body/motion feature learning`、`hand-crafted / sequence-based / graph-based modeling`、`supervised / self-supervised / unsupervised paradigms`、`interdisciplinary prospects`。
+
+3. **机制怎么长出来**：综述没有模型机制，它的“方法”是组织机制。先正式定义任务，再做时间线；再按 skeleton modeling 分三类，按 learning paradigm 分三类；然后统一 benchmark、protocol、性能和效率比较；最后提出挑战和跨学科应用。这是典型“领域建构型”论文。
+
+4. **证据闭环**：它用方法表、数据集表、参数量和 Rank-1 对比、benchmark/protocol 汇总、挑战清单和 3DGait 医疗任务 case study 来证明 SRID 不是零散技巧，而是有共同问题、共同评价和外溢应用的方向。
+
+5. **reviewer 为什么买账**：这篇卖的是视角和整理能力。novelty 来自“第一个系统化 SRID 综述 + 清楚 taxonomy + 统一比较 + 未来议程”。对我们做方法稿的启发是：当你能把一堆零散工作重新组织成一个新问题空间时，问题定义本身就有论文价值。
+
+**共同套路**
+
+这批论文都不是先抛模块，而是先把一个旧问题拆出“大家没正面处理的变量”：历史经验、3D 几何、频谱角色、非衣服语义、语义遮挡、骨架模态。然后机制只负责把这个变量强行进入数据流或训练约束。
+
+真正能打动 reviewer 的不是 SOTA 表，而是证明“这个新变量确实按作者说的方式工作”的证据：互补匹配 Venn 图、频谱可视化、相似外观 t-SNE、屏蔽前后 similarity map、遮挡热图、taxonomy 对比。下一步我们做 ReID 方法，也要先找这种能被可视化和消融闭环验证的“重定义变量”。

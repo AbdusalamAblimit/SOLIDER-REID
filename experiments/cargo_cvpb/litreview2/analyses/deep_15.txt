@@ -1,0 +1,45 @@
+你给的名单实际是 6 篇，不是 15 篇。我按这 6 篇读了前 8 页方法部分，并额外用全文关键词补了消融和可视化证据。
+
+**1. HOH-Net**
+1. **触发观察**：作者先抓住 VI-ReID 里两个常见失败：一是大家直接拉近 VIS 和 IR 特征，但忽略了人体局部之间更复杂的高阶关系；二是已有“中间模态”或辅助特征不够可靠，往往只是简单生成、相加或拼接。更细的观察是，普通超图容易把复杂关系学塌，低层到高层的单向特征流也浪费了低层细节和高层语义之间的互动。
+2. **重定义动作**：他们把问题从“跨模态差异太大”改写成“缺少高阶结构建模和分层中间特征代理”。关键词是 `high-order structure`、`reliable middle features`、`hierarchical middle-feature agents`、`modality-range identity-center`。也就是，大家以为 VIS 和 IR 只需要直接对齐，其实可靠公共空间要靠短程、长程、节点级、区域级和层级代理共同支撑。
+3. **机制怎么长出来**：机制基本是顺着重定义推出来的。短程和长程特征先由 SLE 得到，再用白化超图 HSL 建高阶关系，白化是为了解决高阶关系塌成单一连接的问题。随后 FCGA 同时做细粒度节点对齐和粗粒度区域对齐，生成中间特征。HMAL 把中间特征变成每个 stage 的代理，并做低层和高层的双向增强。MRIC 再用身份中心把 VIS、IR 和 middle features 拉到更稳的共同空间。
+4. **证据闭环**：关键不是只看涨点，而是证明“高阶关系和中间代理确实必要”。他们做了 SLE、HSL、FCGA、HMAL、MRIC 的逐项消融；把 HSL 和 GNN、普通 hypergraph、多种白化方式比较；还可视化高阶连接，显示普通 hypergraph 有关系坍缩，而白化后连接更分散。相似度分布、注意力图和检索结果用来证明公共空间更分离，模态差异被压小。
+5. **reviewer 为什么买账**：这篇卖的是“视角加系统化机制”，不是单个模块。真正 novelty 是把中间特征从“辅助生成物”升级成“分层公共空间代理”，再用高阶结构和中心约束把它说圆。风险是模块很多，像堆料，所以它必须靠消融和关系可视化证明每个模块都服务于这个重定义。
+
+**2. HPRNet**
+1. **触发观察**：作者看到 CC-ReID 里很多方法只是在衣服区域做颜色扰动、外观重建或粗粒度人体组件分解，但真实人有身高、体型、纹理结构和局部相关性。直接重建或通道切分容易丢掉原始样本里的身份信息，还会把背景轮廓等非身份噪声当成有用线索。
+2. **重定义动作**：他们把问题从“去掉衣服影响”改写成“粗糙重建缺少真实的人体解析约束和非邻域上下文”。关键词是 `human parsing reconstruction`、`non-local multi-scale perception`、`contextual correlation`、`global receptive field`、`multi-local component generation`。大家以为只要分离衣服相关和无关特征，其实分离过程本身如果没有上下文和解析约束，会制造新的偏差。
+3. **机制怎么长出来**：NWMP 用非局部加权感知建模不同人体区域之间的关系，DPLS 用 2×2 和 4×4 池化做局部到整体的多尺度学习。PRE 则用人体结构把重建分成头部、身体、下肢，并引入 clothing parsing，从通道、位置和颜色角度得到更稳定的人体轮廓和衣服无关特征。整体损失把 ID、衣服分类对抗、重建、解析和多分类损失合在一起。
+4. **证据闭环**：它的闭环主要靠分支消融和可视化。NWMP 和 PRE 单独加都有提升，组合最好，说明“全局上下文”和“局部解析重建”互补。损失消融说明重建、解析和多尺度分类不是装饰项。重建图、t-SNE 聚类、Grad-CAM 热力图和检索结果进一步说明模型更关注人体关键区域，而不是背景轮廓或衣服噪声。
+5. **reviewer 为什么买账**：这篇主要卖“重建方法的诊断视角”。它不是说我又做了一个 reconstruction branch，而是说已有重建因为缺少上下文和解析约束，所以会把身份信息重建坏。机制本身不算特别新，但和这个诊断绑定得比较紧。
+
+**3. Identity-aware Feature Decoupling Learning**
+1. **触发观察**：作者的观察很清楚：人换衣后仍能靠脸、发型、头部轮廓、体型等线索识别，但这些线索分布不均。头部区域比较“纯”，主要是身份相关；身体区域不是纯噪声，而是身份相关信息和衣服信息耦合在一起。已有方法要么只抓一种生物线索，要么粗暴压制衣服，导致身份线索不完整。
+2. **重定义动作**：它把问题从“学习衣服无关特征”改成“在衣服相关区域中解耦身份相关信息”。关键词是 `identity-aware feature decoupling`、`ID-based knowledge transfer`、`clothing bias diminishing`、`clothing contrastive loss`。大家以为衣服区域要被抑制，其实衣服区域里还藏着体型、轮廓等身份线索，关键是别让颜色纹理主导。
+3. **机制怎么长出来**：注意力分支吃 clothing-masked image，保留头部和轮廓，学习身份注意力；主分支吃原图，保留普通 ReID 需要的信息。IKT 把 masked 分支学到的身份空间注意力转移给主分支。CBD 再用人体解析得到衣服区域 mask，从主分支里抽出 clothing feature，用 clothing contrastive loss 降低同一身份不同衣服之间的衣服偏差。采样上也调整为更重视同一身份多外观样本。
+4. **证据闭环**：最关键的是 hard triple 可视化：anchor 和 positive 衣服完全不同，negative 衣服相似。baseline 会被衣服纹理吸走，认为 negative 更像；IFD 则更关注头部和人体轮廓。消融里 IKT、CBD 单独有效，二者合用更强；clothing contrastive loss 明显优于普通 supervised contrastive loss，这正好证明“衣服区域要解耦而不是简单忽略”。
+5. **reviewer 为什么买账**：这篇卖的是视角，机制相对简洁。它把“衣服是干扰”推进到“衣服区域是身份和干扰耦合体”，这个说法比单纯 cloth-agnostic 更有解释力，也更容易设计干净消融。
+
+**4. Identity-aware Infrared Person Image Generation via Controllable Diffusion**
+1. **触发观察**：VI-ReID 数据少，SYSU-MM01 和 RegDB 场景、视角有限，真实采集又受隐私和标注成本限制。直接用 Stable Diffusion 也不行，因为它不理解红外模态，给 “infrared photo” 仍可能出彩色图；同时普通扩散生成不可控，同一文本会生成不同身份，这对 ReID 是致命问题。
+2. **重定义动作**：作者把问题从“做数据增强”改成“生成能训练 ReID 的身份一致跨模态数据”。关键词是 `controllable diffusion`、`infrared modality understanding`、`text adapter alignment`、`identity-aware generation`、`Generated Cross-modal Person Dataset`。大家以为生成更多图片就行，其实 ReID 合成数据必须同时满足红外风格、文本语义、身份一致和跨模态配对。
+3. **机制怎么长出来**：每个机制对应一个失败点。LoRA 用 SYSU-MM01 的可见光和红外图微调 UNet，让扩散模型学会红外概念。BLIP 生成图文对，再加 “RGB photo” 和 “infrared photo” 前缀。Text adapter 用 LLaMA 的语义能力校准原始 CLIP text encoder。生成阶段先用文本生成 RGB reference，再用 IP-Adapter 保持身份生成多视角 RGB，最后用 ControlNet SoftEdge 把 RGB 转成红外。OpenPose 和灰度化等后处理用于清洗低质量样本。
+4. **证据闭环**：他们用生成可视化证明同一文本下身份更一致，比如眼镜等细节能保留。ControlNet 条件比较证明 SoftEdge 比 depth 更适合红外，因为它保留边缘和身份细节。LoRA 和 text adapter 的消融用 CLIP Score 和 FID 证明语义理解更好。GCP 加到 CCLNet、OTPA、RPNR、SDCL 等基线后都有提升，t-SNE 显示同一身份跨模态距离更近。
+5. **reviewer 为什么买账**：这篇卖的是数据构造范式，不是 ReID 网络。novelty 来自“把扩散生成约束成 ReID 可用数据”，尤其是身份一致的 RGB-IR 生成。它的说服力取决于生成数据是否真的改善多个现有基线，而不是只展示好看的图。
+
+**5. EAIBC**
+1. **触发观察**：作者先展示了文本行人检索的典型失败：错误结果排在前面，不是因为整体更像，而是颜色对上了。比如文本写“blue t-shirt”，目标其实是很浅的蓝，模型却召回一堆明显蓝色衣服的人。RGB 和灰度模型的响应图也显示它们关注不同区域。
+2. **重定义动作**：它把问题从“跨模态对齐不够好”改成“颜色过度依赖导致模型忽略纹理、结构和局部物品”。关键词是 `color over-reliance`、`all-round information beyond color`、`grayscale branch`、`high-frequency branch`、`color branch`、`mutual learning`。大家以为颜色是最强线索要强化，其实颜色太强会遮蔽其他可判别线索。
+3. **机制怎么长出来**：机制非常顺。RGB branch 保留常规信息；GRS branch 去掉图像颜色，同时把文本颜色词 mask 掉，强迫模型看非颜色线索；HFQ branch 用高频信息关注纹理和轮廓；CLR branch 又专门保留颜色，防止模型矫枉过正。最后四个分支用 mutual learning 交流，避免各看各的。
+4. **证据闭环**：这篇证据很完整。先用检索失败样例和 RGB/GRS response maps 证明颜色过度依赖存在。消融证明单分支不如多分支，加入 CLR branch 和 mutual learning 后更好。feature response map 显示 RGB 分支看粉色衣服，GRS 分支看自行车、包、箱子等非颜色线索。检索例子说明 EAIBC 能把颜色相似但细节不符的人往后排。
+5. **reviewer 为什么买账**：这篇真正卖的是“偏差诊断”。模块本身不复杂，但问题被讲得非常具体：不是颜色没用，而是颜色太强，需要让非颜色证据有发言权，同时保留颜色分支。这个平衡比“去颜色”更容易让 reviewer 接受。
+
+**6. InfinitePerson**
+1. **触发观察**：真实 ReID 数据难采、难标、涉及隐私；合成数据虽然便宜，但已有合成集有两个明显缺陷。第一，3D 人物像卡通，原因是衣服 UV 纹理和 3D clothing model 不匹配。第二，采集流程单一，缺少真实监控网络里的多视角、背景、光照和遮挡变化，也不容易复现和扩展。
+2. **重定义动作**：它把问题从“合成数据规模不够大”改成“合成数据的泛化能力由纹理真实性和监控采集协议决定”。关键词是 `diffusion-generated UV texture`、`reliable clothing texture`、`sub-monitoring network`、`scalable synthetic pipeline`、`direct transfer`。大家以为扩大身份数和场景数就能提升合成数据，其实 UV 纹理定义和监控网络模拟才是关键瓶颈。
+3. **机制怎么长出来**：MakeHuman 生成不同体型、肤色、发型的人体模型，再加骨架和行走动画。衣服模型本身没有足够纹理，于是用 normal maps 条件训练 ControlNet，引导 Stable Diffusion 生成和衣服表面结构对齐的 UV texture maps，再导入 UE4 材质系统。采集上设计 sub-monitoring network，每个子网络用少量摄像头覆盖局部区域，并让人物沿循环路径移动，控制视角、背景、光照和遮挡。UnrealCV 自动得到实例分割和裁剪。
+4. **证据闭环**：核心证据不是看合成图，而是 direct transfer。模型只在 InfinitePerson 训练，再直接测 CUHK03、Market-1501、MSMT17，泛化优于多个真实和合成数据集。定量分析显示身份数从 1000 增到 4700 时性能持续上升，子监控网络数量从 2 到 12 增加时也持续变好。UV 生成比较里，normal map 控制优于 Canny 和 InstructPix2Pix，说明“纹理要贴合 3D 表面结构”这个重定义是有效的。
+5. **reviewer 为什么买账**：这篇卖的是数据集和管线视角。novelty 不在 ReID 模型，而在指出合成 ReID 的真实瓶颈是“衣服纹理几何一致性”和“监控采集协议”。只要 direct transfer 和参数分析站得住，这类工作容易被当成可复用资源接受。
+
+最后看这批论文，套路很一致：先抓一个可视化、失败样例或数据缺陷，把它命名成一个更高层的问题，再让机制逐项对应这个问题。能发的方法稿通常不是“加了一个模块”，而是“我证明大家一直优化的目标其实漏了一个关键变量，然后我设计机制控制这个变量，并用消融和可视化证明这个变量真的变了”。

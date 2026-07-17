@@ -1,0 +1,71 @@
+################################################################################
+# GALLERY-GROWTH-TAX REMEDY PRECHECK  dataset=occluded_duke
+#   surrogate temps a=20.0 b=20.0  target mult=10.0x
+################################################################################
+[data] /tmp/hub_oduke_feats.npz: Nq=2210 Ng=17661 dim=768 #q-IDs=519 #g-IDs=1110
+[split] #query-IDs=519 core-IDs=104 pool(distractor)-IDs=1006 (incl 591 gallery-only)
+[split] core queries=476 core gallery=832 (cap 8/ID) distractor pool imgs=15584  max-achievable=19.73x
+[split] distractor pool DISJOINT: label-half=7792 visible-half=7792
+
+[label] 1x baseline (core only): mAP=88.306 nq=476 (Ng=832)
+[label] 10.0x (label half, 5 draws avg): mAP=75.397  dmAP=-12.910
+[label] tax-failure: def-ABS(drop>=15.0) n=133/476 (27.9%)   def-QUANT(bottom-30% by RANK, n=143, cutoff dAP~-13.56)
+
+------------------------------------------------------------------------------
+# DIAGNOSTIC: Spearman(margin-risk, trivial-risk) — is margin a duplicate?
+------------------------------------------------------------------------------
+  margin-risk vs       1x-top1-margin: Spearman = +0.7584
+  margin-risk vs     #false(>bestpos): Spearman = +0.5115
+  margin-risk vs            feat-norm: Spearman = +0.0672
+  margin-risk vs                1x-AP: Spearman = +0.7353
+  margin-risk vs       n_extreme-only: Spearman = +0.2245
+  margin-risk vs       p_softmin-only: Spearman = +0.9162
+
+==============================================================================
+# PRECHECK vs tax-failure [ABS drop>=15]  (pos=133 neg=343)
+==============================================================================
+               predictor      AUC            95% CI
+     margin(extreme-neg)   0.8255  [ 0.789, 0.862] <<MARGIN
+          1x-top1-margin   0.8137  [ 0.772, 0.854]
+        #false(>bestpos)   0.6620  [ 0.618, 0.706]
+               feat-norm   0.4997  [ 0.480, 0.521]
+                   1x-AP   0.6260  [ 0.576, 0.680]
+          n_extreme-only   0.6467  [ 0.592, 0.704]
+          p_softmin-only   0.7537  [ 0.706, 0.803]
+
+  -- vs-TRIVIAL incremental (5-fold OOF logistic, HUBNESS §7.6 lesson) --
+     trivials-only (4 proxies)      OOF-AUC = 0.8238
+     trivials + margin              OOF-AUC = 0.8621
+     margin solo                    OOF-AUC = 0.8240
+     >> INCREMENT margin adds on top of trivials = +0.0383
+     >> margin raw AUC - best single trivial      = +0.0118
+     partial Spearman(margin-risk, drop | 4 trivials) = +0.5789  (raw = +0.7727)
+
+==============================================================================
+# PRECHECK vs tax-failure [bottom-30% dAP]  (pos=143 neg=333)
+==============================================================================
+               predictor      AUC            95% CI
+     margin(extreme-neg)   0.8387  [ 0.804, 0.875] <<MARGIN
+          1x-top1-margin   0.8194  [ 0.779, 0.858]
+        #false(>bestpos)   0.6559  [ 0.615, 0.699]
+               feat-norm   0.5005  [ 0.482, 0.521]
+                   1x-AP   0.6460  [ 0.598, 0.697]
+          n_extreme-only   0.6486  [ 0.593, 0.705]
+          p_softmin-only   0.7706  [ 0.726, 0.817]
+
+  -- vs-TRIVIAL incremental (5-fold OOF logistic, HUBNESS §7.6 lesson) --
+     trivials-only (4 proxies)      OOF-AUC = 0.8287
+     trivials + margin              OOF-AUC = 0.8698
+     margin solo                    OOF-AUC = 0.8366
+     >> INCREMENT margin adds on top of trivials = +0.0411
+     >> margin raw AUC - best single trivial      = +0.0193
+     partial Spearman(margin-risk, drop | 4 trivials) = +0.5789  (raw = +0.7727)
+
+################################################################################
+# VERDICT  (occluded_duke)  [4s]
+################################################################################
+[ABS] margin AUC=0.826 (>0.75? True)  margin-best_trivial=+0.012  incr-over-trivials=+0.038  => NO-GO
+[QUANT] margin AUC=0.839 (>0.75? True)  margin-best_trivial=+0.019  incr-over-trivials=+0.041  => NO-GO
+# GO requires BOTH: margin AUC>0.75 AND margin clearly beats trivials (raw>+0.03 AND OOF-incr>+0.02).
+# HUBNESS §7.6: if margin AUC is high but incr-over-trivials ~0, the trivial difficulty already solved it -> remedy has NO unique signal -> honest DEAD.
+[done]

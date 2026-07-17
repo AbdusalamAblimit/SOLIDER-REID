@@ -1,0 +1,45 @@
+你列出的实际是 6 个 PDF，其中 `Cross-Modal Full-Mode...` 的 ACM 版和 arXiv 版是同一篇工作。我两份都读了，不把它们伪装成两个不同创新。
+
+**1. CoRL: Cross-modal Collaborative Representation Learning**
+1. 触发观察：作者抓住两个具体问题。第一，TIPR 过去总在做图文“关联”，但文本本身比图像更干净，身份细节更集中，能补足视觉噪声。第二，同一身份的图文正样本并不等价，单视角对应文本是强正样本，跨视角同身份文本可能有外观差异，是弱正样本。
+2. 重定义动作：他们把问题从“图文对齐”改写成“跨模态互补协作”，再把正样本从一个类别拆成“强正、弱正、负样本”的有界匹配问题。关键词是 `complementarity`、`virtual-text`、`collaboration`、`identity-bounded matching`。
+3. 机制怎么长出来：如果文本有用但推理时图像没有配套文本，就自然推出 `VES`，从图像合成虚拟文本特征；如果虚拟文本要真有用，就要和真实文本特征对齐，再用 `CRCL` 让视觉特征和虚拟文本特征对原型的关系一致。强弱正样本的观察则直接推出 `IBM`，让强正相似度高于上界，弱正落在中间，负样本低于下界。
+4. 证据闭环：关键不是总表涨点，而是 `IBM*` 去掉强弱正区分后掉点，证明“正样本内部有层级”这个重定义有意义；`VES` 的各个对齐损失消融证明虚拟文本不是随便加的噪声；检索可视化展示 CoRL 能把视觉相似但文本语义不同的人区分开。
+5. reviewer 为什么买账：真正卖点不是一个新模块，而是两个视角：TIPR 不只是对齐，还能做模态互补；同身份正样本不是全等。机制和视角绑定比较紧，所以审稿人容易接受它不是“又加了一个 CLIP 分支”。
+
+**2. FMFA ACM 版: Cross-Modal Full-Mode Fine-Grained Alignment**
+1. 触发观察：作者指出两个旧方法盲点。全局匹配损失偏向 hard negative，却忽略“正样本没有排到前面”的 unmatched positive；局部注意力方法只给最终融合结果，无法检查局部词和图像块到底有没有对齐。
+2. 重定义动作：他们把问题从“挖 hard negative”改成“修正 unmatched positive”，又把 fine-grained alignment 从隐式注意力改成“显式可检查的全模式对齐”。关键词是 `full-mode`、`explicit fine-grained alignment`、`unmatched positive pairs`、`verification capability`。
+3. 机制怎么长出来：`A-SDM` 很自然，若真实正样本相似度低于 batch 中最高相似样本，就增大该正样本的拉近权重。`EFA` 也顺着“可检查”长出来，用词 token 和图像 patch 的稀疏相似矩阵显式聚合，再用 hard coding 和排序损失约束 joint embedding。
+4. 证据闭环：表 6 分别消融 `A-SDM` 和 `EFA`，证明两者都不是装饰；参数实验里 `A-SDM` 的拉力过强会掉点，说明它确实在控制 unmatched positive 的拉近；稀疏相似图可视化展示哪些 patch 被保留，回应“显式对齐是否可检查”。
+5. reviewer 为什么买账：它卖的是视角加轻量机制。创新性不在“做局部对齐”本身，而在把已有的 hard negative 叙事反过来，强调 missed positive，并把隐式局部交互改造成可观察的显式过程。
+
+**3. FMFA arXiv 版**
+1. 触发观察：和 ACM 版一致，核心仍是 SDM 关注 hard negative、忽略 unmatched positive，以及隐式局部对齐不可验证。
+2. 重定义动作：同样把 TIPR 讲成“全局正样本修正 + 显式细粒度校验”的问题，而不是单纯再堆 attention。
+3. 机制怎么长出来：`A-SDM`、`EFA`、`IRR`、`ID loss` 的组合与 ACM 版一致。arXiv 版没有提供一个独立的新机制。
+4. 证据闭环：同样依赖三数据集的模块消融、稀疏相似图、top-k 检索展示。它的证据服务于同一个重定义。
+5. reviewer 为什么买账：这份应视为同一工作的预印本，不应在我们调研里算两篇独立先例。对我们有用的是它的构造套路，不是重复计数。
+
+**4. CAP: Cross-modality Average Precision Optimization**
+1. 触发观察：VT-ReID 最终看排序指标，但训练常用 triplet、circle、center 这类局部度量损失，不能直接优化整体排序。Smooth-AP 虽然优化 AP，但在 VT-ReID 中会优先修正同模态高排名样本，反而忽略真正要解决的跨模态排序。
+2. 重定义动作：作者把问题从“学一个跨模态嵌入空间”改成“直接优化跨模态 AP”。关键词是 `Cross-modality Average Precision`、`CAPV`、`CAPT`、`overall ranking order`、`cross-modality discrepancy`。
+3. 机制怎么长出来：如果检索是 visible 查 thermal 和 thermal 查 visible，就自然得到 `CAPV` 和 `CAPT` 两个方向；如果跨模态距离太大影响 CAP，就加 `DMA`，只重点对齐那些距离较近、非模态变化较小的跨模态样本；全局局部特征只是把这个思想放到更强表征上。
+4. 证据闭环：表 6 直接比较 CAP、Smooth-AP、FastAP、Blackbox AP、triplet、circle 等，证明不是“AP 损失都行”，而是跨模态定义更合适；表 4 拆 `CAPV/CAPT`，证明双向互补；表 5 证明 `DMA` 优于普通 KL 或平均权重；t-SNE 和检索图证明跨模态分布确实被拉近。
+5. reviewer 为什么买账：这是典型“目标函数错配”式创新。它卖的主要是视角，不是结构。因为评价指标就是 AP，作者把 AP 改成 VT-ReID 专用的跨模态 AP，逻辑非常直接。
+
+**5. CSGN: CLIP-driven Semantic Guidance Network**
+1. 触发观察：CCReID 里视觉外观被衣服强烈污染，传统方法容易困在视觉瓶颈；但直接用 CLIP 也有问题，因为 CLIP 生成或学习的文本往往偏向衣服颜色，而衣服颜色在换衣场景不稳定。
+2. 重定义动作：作者把 CCReID 从“学习衣服不变视觉特征”改写成“用异质语义描述引导视觉特征摆脱衣服偏置”。关键词是 `semantic guidance`、`visual bottleneck`、`multi-description`、`RGB and gray-scale pseudo-text`、`heterogeneous semantic fusion`。
+3. 机制怎么长出来：既然 RGB 文本偏颜色，灰度图可以弱化颜色并突出体型、姿态，就自然推出 `MDG` 同时生成 RGB 和灰度伪文本；既然两种文本各有偏向，就用 `HSF` 同时约束视觉特征；`VSS` 的 ResNet+ViT 融合是补强视觉编码，和核心重定义的绑定不如 MDG/HSF 紧。
+4. 证据闭环：表 3 显示 `HSF` 从 51.7 提到 63.2，说明真正起作用的是异质语义融合；表 4 比 CoOp、CoCoOp 和带 Meta-Insert 的 MDG，证明不是普通 prompt；表 6 比 RGB-only、gray-only 和 HSF，证明“两种描述互补”这个说法成立。
+5. reviewer 为什么买账：这篇主要卖“语义引导换衣 ReID”的视角，机制有点模块化堆叠，但 `HSF` 的消融很强，能支撑“RGB/灰度语义互补”这个核心故事。
+
+**6. CVAF: CLIP-Based View-Consistent Alignment for AGPReID**
+1. 触发观察：AGPReID 里航拍和地面视角差异极大。属性方法依赖人工或检测属性，但航拍低分辨率下属性不可靠；视角解耦方法看似合理，却可能把身体轮廓、结构过渡这类身份相关但带视角性的线索一起删掉。
+2. 重定义动作：作者把问题从“显式去掉视角因素”改成“保持跨视角一致的身份语义，同时过滤视角噪声”。关键词是 `view-consistent alignment`、`Text Consistency Loss`、`Semantic Filtering Module`、`view-specific noise`。
+3. 机制怎么长出来：如果同一身份的文本 token 应该稳定对齐多个视角图像，就自然推出 `TCL`，约束同一身份多视角图像与文本的相似度方差；如果文本 token 已经学到稳定身份语义，就用 `SFM` 通过文本引导的空间注意力和通道重权重过滤图像 patch。
+4. 证据闭环：表 3、表 4 在 AG-ReID 和 CARGO 上分别消融 `TCL`、`SFM` 和组合，且 ViT/ResNet 都有效；更关键的是他们额外画了图文相似度均值和方差，证明 `TCL` 确实降低同一身份跨视角相似度波动；`SFM` 还做了空间、通道、残差和插入层位置消融。
+5. reviewer 为什么买账：这篇卖的是“别粗暴解耦视角，而是做语义一致性约束”的视角。机制不复杂，但 `TCL` 的方差证据非常对题，能证明作者不是只在 CLIP-ReID 上加模块涨点。
+
+这批论文共同套路很清楚：先找一个旧叙事里的盲区，比如 hard negative 之外的 unmatched positive、强弱正样本差异、视觉瓶颈、视角解耦误伤；再把它命名成一个更具体的新问题；最后设计一个几乎能从这个新问题直接推出的损失或分支。真正值得学的是：好创新不是“模块看起来新”，而是观察、重定义、机制、消融四件事能互相咬住。

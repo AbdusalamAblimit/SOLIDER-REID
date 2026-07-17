@@ -1,0 +1,70 @@
+我只保留 **1 条最后可测方向**：
+
+**Open-set Neural Collapse / Spectral Over-Collapse ReID**
+
+触发观察：Hubness 诊断是真的，但 hub-fix 属于 retrieval topology，已经被 k-reciprocal / camera-aware 压住。换角度：hubness 可能不是“图库拓扑病”的根因，而是 **训练后 embedding 低秩坍缩的症状**。ReID 训练用 seen-ID 分类，但测试是 unseen-ID 检索；如果训练末期把特征过度压到 seen-ID classifier/prototype 几何上，部分身份线索被挤到低能谱尾部，k-reciprocal 只能重排已有距离，恢复不了被训练压没的维度。
+
+**重定义**
+> 大家以为 ReID 训练越把同 ID 压紧越好；其实 open-set ReID 的隐藏变量可能是 **seen-ID neural collapse 过强，导致 unseen-ID 可迁移身份证据低秩化 / 各向异性化**。
+
+这不是再做 hub remedy，而是训练侧表示几何病。
+
+依据边界：
+- Neural Collapse 本身已有清晰定义：训练末期类内方差坍缩、类中心趋向 simplex ETF、classifier 与 class mean 对齐等。见 Papyan et al. [Neural Collapse](https://arxiv.org/abs/2008.08186)。
+- k-reciprocal 明确是测试期邻域/Jaccard 重排，不改训练表征。见 [k-reciprocal ReID](https://arxiv.org/abs/1701.08398)。
+- ProNet 已经撞掉“重新利用 classifier prototype”这条路，它把分类器保留到推理作 prototype projection。见 [ProNet](https://arxiv.org/abs/2308.10717)。
+- VICReg/whitening/decorrelation 是泛化零件，不是新点；新点必须是 **open-set ReID 的过坍缩诊断 + 训练期抗坍缩机制**。见 [VICReg](https://arxiv.org/abs/2105.04906)、ReID group whitening [AMS](https://arxiv.org/abs/2210.10409)。
+
+**机制草案**
+名字可叫 `OSAC: Open-Set Spectral Anti-Collapse`.
+
+训练时不改测试协议，仍输出单 embedding：
+
+1. warmup 后在 BNNeck embedding 上算 batch / memory covariance spectrum。
+2. 加轻量 spectral floor：
+   - 提高 effective rank；
+   - 限制 top-PC energy；
+   - VICReg-style variance floor + covariance decorrelation，但只作为工具。
+3. 加 `Top-PC Dropout`：
+   - 训练时 stop-grad 估计当前 batch/memory 的 top principal directions；
+   - 对一条 loss 分支随机减掉 top-m PCs 后再做 CE/triplet；
+   - 迫使身份信息不能只走 dominant prototype axes。
+4. clean branch 保留原 CE/triplet，避免过度反坍缩伤主干。
+
+**廉价 kill-switch**
+先不训练，直接用现有 checkpoints 做 0-GPU/低 GPU 诊断。
+
+1. 对 exp030a / exp255 / CARGO strong ckpt 的多 epoch checkpoint 提特征。
+2. 计算：
+   - effective rank；
+   - `lambda1 / sum(lambda)`；
+   - NC1: `tr(Sw) / tr(Sb)`；
+   - classifier-feature alignment；
+   - gallery hubness `H_k` 和 query hub mass `M(q)`。
+3. 必须看到：
+   - 训练后期 loss 继续降，但 effective rank 下降 / top-PC energy 上升；
+   - AP error 或 hub mass 与 top-PC/prototype energy 显著相关，控 camera / norm / margin 后仍成立；
+   - 去 top-PC / whitening 作为诊断能降低 hubness，并且 raw mAP 有可见提升。
+4. 关键门槛：
+   - 若 ABTT/whitening 只涨 raw，但 k-reciprocal 后完全没增益，判死；
+   - 若 rank/collapse 指标不能解释 AP residual，判死；
+   - 若随机 PC / bottom-PC removal 也同样涨，判死。
+
+单训练 kill-switch：
+
+- 在强 baseline 上加 OSAC 跑一次。
+- ep30/60 看：
+  - effective rank 至少上升；
+  - top-PC hub correlation 下降；
+  - raw mAP 至少 +0.5 且趋势稳定。
+- 最终成功线：raw +0.8~1.0 mAP，并且 k-reciprocal/camera-aware 后仍有 +0.3 左右残余增益。否则别救。
+
+**撞车判断**
+不直接撞 k-reciprocal；它碰不到训练表示。  
+不应撞 ProNet，前提是不要把 classifier prototype projection 当方法。  
+会被 VICReg / whitening / DG-ReID 质疑，所以论文主贡献不能写“decorrelation loss”，必须写成：
+
+> Open-set ReID 的 seen-ID over-collapse 是可测失败变量；hubness 是它的检索症状；我们用训练期 spectral anti-collapse 保留 unseen-ID 可迁移证据。
+
+**Hubness 能怎么 seed**
+把 hubness 从 remedy 降级为 **readout variable**：高 hub gallery 是否集中在 top-PC/prototype-aligned 方向上。若成立，非 k-reciprocal-owned remedy 就不是 `score -= hub_penalty`，而是在训练期减少 hub-prone spectral geometry。这个切口还能活；别再做 retrieval-side hub-fix。

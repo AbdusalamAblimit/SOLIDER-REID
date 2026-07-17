@@ -1,0 +1,31 @@
+普通 Vehicle ReID leaderboard 不建议硬冲。2024 综述已经把监督/无监督/数据集/挑战铺得很全；近两年 CLIP/TinyCLIP 语义增强、joint detection+ReID、aspect-ratio/ROI、flock/时序上下文都有人在做，直接加模块基本是红海。([arxiv.org](https://arxiv.org/abs/2401.10643)) ([arxiv.org](https://arxiv.org/abs/2502.16815)) ([arxiv.org](https://arxiv.org/abs/2508.04120)) ([arxiv.org](https://arxiv.org/abs/2407.07842)) ([arxiv.org](https://arxiv.org/abs/2407.09966)) ([arxiv.org](https://arxiv.org/abs/2403.07752))
+
+**机会 1：Open-Type Vehicle ReID，打“seen type shortcut”**
+触发观察：2026 新文已经指出，VeRi-776/VERI-Wild 标准划分里 train/test 有大量同 make/model/color 的近似车；SOTA 在 seen types 上接近饱和，但 unseen types mAP 明显掉到约 57-70 区间。([arxiv.org](https://arxiv.org/abs/2606.01981))
+
+重定义：大家以为在学“跨摄像头同一车辆实例”，实际标准协议很可能在奖励“见过车型/颜色/外形族的记忆能力”。真正问题应改成：**未见车型下，模型能否从非语义的实例细节中找证据**。
+
+机制草案：用现有 Swin/SOLIDER 思路做“语义残差化”的 Vehicle ReID。先把 type/color/model 语义成分从 embedding 中估出来，再训练一个 residual-detail 分支，只在同车型/同色 hard negatives 上强化贴纸、轮毂、划痕、局部装饰、车窗边缘等实例证据；同时分 same-view / cross-view，因为 cross-view 下很多细节不可见，应该输出不确定性或候选集，而不是强行单点排序。
+
+廉价 kill-switch：零训练先做三件事。下载 VeRi-776 或 VERI-Wild annotations，用 frozen Swin/CLIP/DINO/已有 ReID checkpoint 跑 seen/unseen type split；统计 top-k false positives 中同 model/color/type 的比例；再做一个 test-time 语义原型惩罚或 subtraction。如果 unseen mAP 没有明显改善，或错误不集中在同车型同色假阳性，直接杀。
+
+撞车核查：诊断和 split 已被 2026 文占了，所以不能把“发现 unseen-type gap”当贡献。可争的是方法：**从 semantic shortcut 转向 transferable instance evidence**。这不是红海，但窗口很窄。
+
+Verdict：可作为 1 号候选，但必须快速复现 2026 gap 后再开训练。  
+信心：6/10。  
+数据：现有 Market/MSMT/occluded_duke/RSTPReid 基本不能首验；CARGO/AG-ReID.v2 只有在含车辆 ID + 车型/颜色/视角时才可做 proxy。实际需要 VeRi-776/VERI-Wild。
+
+**机会 2：Plate-Blind / Privacy-Constrained Vehicle ReID**
+触发观察：车辆 ReID 常被包装成“车牌不可用时的外观检索”，但 VeRi 这类数据又含车牌与时空信息；2024 flock paper 也明确说车牌会因低分辨率、角度、遮挡、光照失败，所以才需要 appearance ReID。([arxiv.org](https://arxiv.org/abs/2403.07752)) 这留下一个很便宜的 hidden-variable 问题：当前模型到底是不是在偷偷吃 plate/text region？
+
+重定义：大家以为 benchmark 在评估外观 ReID，其实可能部分是在评估“允许读取私有唯一文本的 ReID”。新问题：**车牌不可读、被隐私遮挡、或主动匿名化时的 vehicle identity retrieval**。
+
+机制草案：plate-causal consistency。检测 plate 区域后，对原图、plate blur、plate erase、plate replacement 做一致性训练；加一个 plate-attention penalty，禁止最终 embedding 依赖 plate patch；另设 non-plate fine-detail branch 挖车身局部证据。若 plate 被遮后同车型同色车确实不可区分，则方法允许输出候选集/不确定性，而不是假装 rank-1 可解。
+
+廉价 kill-switch：零训练即可。用开源车牌 detector/OCR 在 VeRi-776/VERI-Wild 上生成三套评测：original、plate-masked、plate-only crop。用 frozen ReID/CLIP/DINO/Swin 特征直接算 mAP/R1。若 plate-only 有非随机检索能力，或 plate-masked 让 mAP 掉 3-5 点以上，且 OCR confidence/readability 与检索成功强相关，就值得推进；否则杀。
+
+撞车核查：2024-26 我没看到“plate-blind/privacy-constrained Vehicle ReID”作为主问题被系统做掉。已有的是 CLIP 语义增强、joint vehicle search、aspect/ROI、flock context；车牌识别/车牌 ReID本身是老问题，不能做成 OCR 论文。这里的贡献必须是 **benchmark leakage audit + plate-free ReID mechanism**。
+
+Verdict：比机会 1 更适合作为 cheap-kill 入口，1-2 天能判生死。  
+信心：7/10。  
+数据：需要车辆数据，优先 VeRi-776/VERI-Wild；现有人体 ReID 数据不能首验。若 CARGO 是真实车辆/货车 ReID 且 plate 可见，则可先做内部首验，否则必须新下数据。

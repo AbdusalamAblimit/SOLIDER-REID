@@ -1,0 +1,956 @@
+======================================================================
+CVPB-ReID training (afd_reid baseline + OVP-Mem / OVLI)
+  backbone=swin_small (SOLIDER, in_planes=768) pretrain=/home/afr/SOLIDER-REID/pretrained/swin_small.pth semantic_weight=0.2
+  use_afd=False  ovp=False (lambda=0.5 tau=0.05 mom=0.2)
+  ovli=False (lambda=0.5 tau=0.05 alpha=0.5 dim=256 grid=(8, 4) warmup=10 rerank=False pool=mean topk=8 thresh=0.0 cand=oppview match=maxsim align=free setpool=mean setpool_residual=True)
+  acvp=False (gamma=0.5 wmin=0.3 eta=0.05 margin=0.0 warmup=10) [detached neg-relaxation on OVLI; off => OVLI byte-identical]
+  airl=False (lambda=0.5 min_scale=0.25 consistency=kl tau=4.0 blur=False warmup=5) [resolution-degradation consistency; NO learnable params; train-only; off => baseline byte-identical]
+  airl_dualbranch=False (fuse_w=0.25 lambda=0.5 min_scale=0.25 consistency=kl tau=4.0 blur=False warmup=5) [resolvability branch: 2nd BNNeck head f_rec (own ID-CE + AIRL consistency) + clean f_full, soft-fused cos=w*cos_rec+(1-w)*cos_full; 1 forward 2 features; off => baseline byte-identical]
+  airl_dualbranch_iso=False (iso_stage=3 trunk_recce=True fuse_w=0.25 lambda=0.5 min_scale=0.25 consistency=kl tau=4.0 blur=False warmup=5) [GRADIENT-ISOLATED rescue: f_rec = BNNeck over an independent late Swin stage; the degradation-CONSISTENCY grad NEVER reaches the shared trunk (detached degraded pass). trunk_recce=1 (FIX) also reflows the CLEAN f_rec ID-CE into the trunk (extra identity supervision -> strengthens f_full); trunk_recce=0 = original full-isolation (clean ID-CE also detached). f_rec learns the recover pole; same soft-fusion eval; off => baseline byte-identical]
+  bs=64 (P=16 K=4) lr=0.00035 epochs=60 warmup=10 amp=True
+  out_dir=/home/afr/SOLIDER-REID/log/cargo/baseline_agreidv2_4090
+======================================================================
+=> AG-ReID.v2 loaded (OFFICIAL exp1 A->G + exp4 G->A, CARGO-aligned)
+   A->G = exp1 aerial_to_cctv (2356 q / 6347 g)
+   G->A = exp4 cctv_to_aerial (1811 q / 14362 g)
+  -----------------------------------------------------------
+  subset   | # imgs | # pids | # cams | aerial | ground
+  -----------------------------------------------------------
+  train    |  51530 |    807 |      3 |  21217 |  30313
+  query    |   4167 |    534 |      2 |   2356 |   1811
+  gallery  |  20709 |    534 |      2 |  14362 |   6347
+  -----------------------------------------------------------
+unloaded parameters: <All keys matched successfully>
+  [swin] backbone LR = 3.50e-05 (= base 3.50e-04 x 0.1); heads/BNNeck/OVLI LR = 3.50e-04  [333 backbone tensors, 2 head tensors] -- prevents the epoch-8 Swin collapse
+Epoch[1] Iter[50/786] Loss: 38.559 CE: 6.693 Tri: 31.866 Acc: 0.001 LR: 3.50e-07
+Epoch[1] Iter[100/786] Loss: 31.717 CE: 6.692 Tri: 25.025 Acc: 0.002 LR: 3.50e-07
+Epoch[1] Iter[150/786] Loss: 28.642 CE: 6.690 Tri: 21.952 Acc: 0.002 LR: 3.50e-07
+Epoch[1] Iter[200/786] Loss: 26.615 CE: 6.689 Tri: 19.926 Acc: 0.004 LR: 3.50e-07
+Epoch[1] Iter[250/786] Loss: 25.297 CE: 6.686 Tri: 18.611 Acc: 0.005 LR: 3.50e-07
+Epoch[1] Iter[300/786] Loss: 24.205 CE: 6.684 Tri: 17.521 Acc: 0.008 LR: 3.50e-07
+Epoch[1] Iter[350/786] Loss: 23.287 CE: 6.682 Tri: 16.605 Acc: 0.010 LR: 3.50e-07
+Epoch[1] Iter[400/786] Loss: 22.465 CE: 6.680 Tri: 15.785 Acc: 0.014 LR: 3.50e-07
+Epoch[1] Iter[450/786] Loss: 21.761 CE: 6.677 Tri: 15.084 Acc: 0.020 LR: 3.50e-07
+Epoch[1] Iter[500/786] Loss: 21.109 CE: 6.675 Tri: 14.434 Acc: 0.028 LR: 3.50e-07
+Epoch[1] Iter[550/786] Loss: 20.511 CE: 6.672 Tri: 13.839 Acc: 0.038 LR: 3.50e-07
+Epoch[1] Iter[600/786] Loss: 20.012 CE: 6.669 Tri: 13.343 Acc: 0.049 LR: 3.50e-07
+Epoch[1] Iter[650/786] Loss: 19.529 CE: 6.666 Tri: 12.863 Acc: 0.064 LR: 3.50e-07
+Epoch[1] Iter[700/786] Loss: 19.089 CE: 6.662 Tri: 12.427 Acc: 0.086 LR: 3.50e-07
+Epoch[1] done in 91.5s  Loss=18.756 Acc=0.113
+Epoch[2] Iter[50/786] Loss: 11.898 CE: 6.607 Tri: 5.291 Acc: 0.137 LR: 3.82e-06
+Epoch[2] Iter[100/786] Loss: 11.336 CE: 6.577 Tri: 4.759 Acc: 0.171 LR: 3.82e-06
+Epoch[2] Iter[150/786] Loss: 10.828 CE: 6.543 Tri: 4.285 Acc: 0.207 LR: 3.82e-06
+Epoch[2] Iter[200/786] Loss: 10.525 CE: 6.509 Tri: 4.015 Acc: 0.237 LR: 3.82e-06
+Epoch[2] Iter[250/786] Loss: 10.265 CE: 6.474 Tri: 3.791 Acc: 0.268 LR: 3.82e-06
+Epoch[2] Iter[300/786] Loss: 10.016 CE: 6.440 Tri: 3.576 Acc: 0.293 LR: 3.82e-06
+Epoch[2] Iter[350/786] Loss: 9.828 CE: 6.408 Tri: 3.420 Acc: 0.312 LR: 3.82e-06
+Epoch[2] Iter[400/786] Loss: 9.630 CE: 6.374 Tri: 3.256 Acc: 0.337 LR: 3.82e-06
+Epoch[2] Iter[450/786] Loss: 9.449 CE: 6.339 Tri: 3.109 Acc: 0.357 LR: 3.82e-06
+Epoch[2] Iter[500/786] Loss: 9.298 CE: 6.303 Tri: 2.995 Acc: 0.378 LR: 3.82e-06
+Epoch[2] Iter[550/786] Loss: 9.149 CE: 6.264 Tri: 2.886 Acc: 0.401 LR: 3.82e-06
+Epoch[2] Iter[600/786] Loss: 9.000 CE: 6.222 Tri: 2.778 Acc: 0.423 LR: 3.82e-06
+Epoch[2] Iter[650/786] Loss: 8.868 CE: 6.178 Tri: 2.689 Acc: 0.445 LR: 3.82e-06
+Epoch[2] Iter[700/786] Loss: 8.735 CE: 6.125 Tri: 2.609 Acc: 0.469 LR: 3.82e-06
+Epoch[2] done in 91.2s  Loss=8.616 Acc=0.490
+Epoch[3] Iter[50/786] Loss: 7.078 CE: 5.631 Tri: 1.447 Acc: 0.304 LR: 7.28e-06
+Epoch[3] Iter[100/786] Loss: 6.952 CE: 5.535 Tri: 1.417 Acc: 0.356 LR: 7.28e-06
+Epoch[3] Iter[150/786] Loss: 6.785 CE: 5.449 Tri: 1.336 Acc: 0.391 LR: 7.28e-06
+Epoch[3] Iter[200/786] Loss: 6.652 CE: 5.358 Tri: 1.294 Acc: 0.432 LR: 7.28e-06
+Epoch[3] Iter[250/786] Loss: 6.539 CE: 5.273 Tri: 1.265 Acc: 0.459 LR: 7.28e-06
+Epoch[3] Iter[300/786] Loss: 6.411 CE: 5.192 Tri: 1.219 Acc: 0.481 LR: 7.28e-06
+Epoch[3] Iter[350/786] Loss: 6.294 CE: 5.108 Tri: 1.185 Acc: 0.505 LR: 7.28e-06
+Epoch[3] Iter[400/786] Loss: 6.172 CE: 5.016 Tri: 1.155 Acc: 0.529 LR: 7.28e-06
+Epoch[3] Iter[450/786] Loss: 6.058 CE: 4.929 Tri: 1.129 Acc: 0.549 LR: 7.28e-06
+Epoch[3] Iter[500/786] Loss: 5.933 CE: 4.837 Tri: 1.095 Acc: 0.569 LR: 7.28e-06
+Epoch[3] Iter[550/786] Loss: 5.812 CE: 4.746 Tri: 1.066 Acc: 0.584 LR: 7.28e-06
+Epoch[3] Iter[600/786] Loss: 5.699 CE: 4.649 Tri: 1.049 Acc: 0.601 LR: 7.28e-06
+Epoch[3] Iter[650/786] Loss: 5.568 CE: 4.541 Tri: 1.027 Acc: 0.618 LR: 7.28e-06
+Epoch[3] Iter[700/786] Loss: 5.424 CE: 4.419 Tri: 1.005 Acc: 0.636 LR: 7.28e-06
+Epoch[3] done in 90.6s  Loss=5.292 Acc=0.651
+Epoch[4] Iter[50/786] Loss: 4.542 CE: 3.787 Tri: 0.756 Acc: 0.480 LR: 1.07e-05
+Epoch[4] Iter[100/786] Loss: 4.394 CE: 3.686 Tri: 0.708 Acc: 0.509 LR: 1.07e-05
+Epoch[4] Iter[150/786] Loss: 4.257 CE: 3.562 Tri: 0.695 Acc: 0.553 LR: 1.07e-05
+Epoch[4] Iter[200/786] Loss: 4.128 CE: 3.455 Tri: 0.673 Acc: 0.590 LR: 1.07e-05
+Epoch[4] Iter[250/786] Loss: 3.987 CE: 3.338 Tri: 0.649 Acc: 0.625 LR: 1.07e-05
+Epoch[4] Iter[300/786] Loss: 3.886 CE: 3.247 Tri: 0.639 Acc: 0.650 LR: 1.07e-05
+Epoch[4] Iter[350/786] Loss: 3.787 CE: 3.162 Tri: 0.626 Acc: 0.673 LR: 1.07e-05
+Epoch[4] Iter[400/786] Loss: 3.698 CE: 3.079 Tri: 0.620 Acc: 0.694 LR: 1.07e-05
+Epoch[4] Iter[450/786] Loss: 3.622 CE: 3.005 Tri: 0.617 Acc: 0.711 LR: 1.07e-05
+Epoch[4] Iter[500/786] Loss: 3.533 CE: 2.925 Tri: 0.608 Acc: 0.727 LR: 1.07e-05
+Epoch[4] Iter[550/786] Loss: 3.453 CE: 2.852 Tri: 0.601 Acc: 0.742 LR: 1.07e-05
+Epoch[4] Iter[600/786] Loss: 3.379 CE: 2.782 Tri: 0.596 Acc: 0.755 LR: 1.07e-05
+Epoch[4] Iter[650/786] Loss: 3.303 CE: 2.712 Tri: 0.591 Acc: 0.767 LR: 1.07e-05
+Epoch[4] Iter[700/786] Loss: 3.222 CE: 2.640 Tri: 0.582 Acc: 0.779 LR: 1.07e-05
+Epoch[4] done in 90.8s  Loss=3.152 Acc=0.789
+Epoch[5] Iter[50/786] Loss: 2.885 CE: 2.466 Tri: 0.419 Acc: 0.728 LR: 1.42e-05
+Epoch[5] Iter[100/786] Loss: 2.799 CE: 2.361 Tri: 0.438 Acc: 0.765 LR: 1.42e-05
+Epoch[5] Iter[150/786] Loss: 2.753 CE: 2.292 Tri: 0.460 Acc: 0.790 LR: 1.42e-05
+Epoch[5] Iter[200/786] Loss: 2.664 CE: 2.211 Tri: 0.453 Acc: 0.811 LR: 1.42e-05
+Epoch[5] Iter[250/786] Loss: 2.628 CE: 2.159 Tri: 0.469 Acc: 0.826 LR: 1.42e-05
+Epoch[5] Iter[300/786] Loss: 2.568 CE: 2.106 Tri: 0.462 Acc: 0.839 LR: 1.42e-05
+Epoch[5] Iter[350/786] Loss: 2.508 CE: 2.061 Tri: 0.447 Acc: 0.848 LR: 1.42e-05
+Epoch[5] Iter[400/786] Loss: 2.458 CE: 2.019 Tri: 0.439 Acc: 0.858 LR: 1.42e-05
+Epoch[5] Iter[450/786] Loss: 2.418 CE: 1.985 Tri: 0.433 Acc: 0.864 LR: 1.42e-05
+Epoch[5] Iter[500/786] Loss: 2.385 CE: 1.953 Tri: 0.431 Acc: 0.871 LR: 1.42e-05
+Epoch[5] Iter[550/786] Loss: 2.340 CE: 1.921 Tri: 0.420 Acc: 0.877 LR: 1.42e-05
+Epoch[5] Iter[600/786] Loss: 2.311 CE: 1.892 Tri: 0.419 Acc: 0.882 LR: 1.42e-05
+Epoch[5] Iter[650/786] Loss: 2.276 CE: 1.863 Tri: 0.413 Acc: 0.887 LR: 1.42e-05
+Epoch[5] Iter[700/786] Loss: 2.242 CE: 1.834 Tri: 0.407 Acc: 0.892 LR: 1.42e-05
+Epoch[5] done in 90.9s  Loss=2.212 Acc=0.896
+Epoch[6] Iter[50/786] Loss: 2.193 CE: 1.849 Tri: 0.344 Acc: 0.863 LR: 1.77e-05
+Epoch[6] Iter[100/786] Loss: 2.164 CE: 1.814 Tri: 0.350 Acc: 0.875 LR: 1.77e-05
+Epoch[6] Iter[150/786] Loss: 2.116 CE: 1.771 Tri: 0.345 Acc: 0.886 LR: 1.77e-05
+Epoch[6] Iter[200/786] Loss: 2.088 CE: 1.739 Tri: 0.349 Acc: 0.894 LR: 1.77e-05
+Epoch[6] Iter[250/786] Loss: 2.058 CE: 1.711 Tri: 0.347 Acc: 0.902 LR: 1.77e-05
+Epoch[6] Iter[300/786] Loss: 2.031 CE: 1.689 Tri: 0.342 Acc: 0.907 LR: 1.77e-05
+Epoch[6] Iter[350/786] Loss: 2.002 CE: 1.669 Tri: 0.332 Acc: 0.912 LR: 1.77e-05
+Epoch[6] Iter[400/786] Loss: 1.983 CE: 1.655 Tri: 0.328 Acc: 0.915 LR: 1.77e-05
+Epoch[6] Iter[450/786] Loss: 1.963 CE: 1.639 Tri: 0.324 Acc: 0.919 LR: 1.77e-05
+Epoch[6] Iter[500/786] Loss: 1.948 CE: 1.626 Tri: 0.322 Acc: 0.922 LR: 1.77e-05
+Epoch[6] Iter[550/786] Loss: 1.928 CE: 1.612 Tri: 0.316 Acc: 0.924 LR: 1.77e-05
+Epoch[6] Iter[600/786] Loss: 1.933 CE: 1.603 Tri: 0.330 Acc: 0.926 LR: 1.77e-05
+Epoch[6] Iter[650/786] Loss: 1.942 CE: 1.597 Tri: 0.344 Acc: 0.927 LR: 1.77e-05
+Epoch[6] Iter[700/786] Loss: 1.931 CE: 1.587 Tri: 0.345 Acc: 0.929 LR: 1.77e-05
+Epoch[6] done in 91.8s  Loss=1.912 Acc=0.932
+Epoch[7] Iter[50/786] Loss: 1.960 CE: 1.643 Tri: 0.317 Acc: 0.912 LR: 2.11e-05
+Epoch[7] Iter[100/786] Loss: 1.925 CE: 1.611 Tri: 0.314 Acc: 0.919 LR: 2.11e-05
+Epoch[7] Iter[150/786] Loss: 1.915 CE: 1.598 Tri: 0.316 Acc: 0.923 LR: 2.11e-05
+Epoch[7] Iter[200/786] Loss: 1.886 CE: 1.578 Tri: 0.307 Acc: 0.927 LR: 2.11e-05
+Epoch[7] Iter[250/786] Loss: 1.853 CE: 1.561 Tri: 0.292 Acc: 0.931 LR: 2.11e-05
+Epoch[7] Iter[300/786] Loss: 1.836 CE: 1.551 Tri: 0.286 Acc: 0.932 LR: 2.11e-05
+Epoch[7] Iter[350/786] Loss: 1.812 CE: 1.536 Tri: 0.276 Acc: 0.936 LR: 2.11e-05
+Epoch[7] Iter[400/786] Loss: 1.799 CE: 1.527 Tri: 0.272 Acc: 0.938 LR: 2.11e-05
+Epoch[7] Iter[450/786] Loss: 1.783 CE: 1.517 Tri: 0.266 Acc: 0.940 LR: 2.11e-05
+Epoch[7] Iter[500/786] Loss: 1.773 CE: 1.509 Tri: 0.263 Acc: 0.942 LR: 2.11e-05
+Epoch[7] Iter[550/786] Loss: 1.760 CE: 1.501 Tri: 0.258 Acc: 0.944 LR: 2.11e-05
+Epoch[7] Iter[600/786] Loss: 1.751 CE: 1.493 Tri: 0.258 Acc: 0.945 LR: 2.11e-05
+Epoch[7] Iter[650/786] Loss: 1.740 CE: 1.486 Tri: 0.254 Acc: 0.947 LR: 2.11e-05
+Epoch[7] Iter[700/786] Loss: 1.727 CE: 1.476 Tri: 0.251 Acc: 0.948 LR: 2.11e-05
+Epoch[7] done in 90.7s  Loss=1.714 Acc=0.950
+Epoch[8] Iter[50/786] Loss: 1.836 CE: 1.548 Tri: 0.288 Acc: 0.926 LR: 2.46e-05
+Epoch[8] Iter[100/786] Loss: 1.783 CE: 1.517 Tri: 0.266 Acc: 0.931 LR: 2.46e-05
+Epoch[8] Iter[150/786] Loss: 1.755 CE: 1.498 Tri: 0.258 Acc: 0.935 LR: 2.46e-05
+Epoch[8] Iter[200/786] Loss: 1.742 CE: 1.489 Tri: 0.253 Acc: 0.938 LR: 2.46e-05
+Epoch[8] Iter[250/786] Loss: 1.731 CE: 1.482 Tri: 0.249 Acc: 0.940 LR: 2.46e-05
+Epoch[8] Iter[300/786] Loss: 1.719 CE: 1.476 Tri: 0.242 Acc: 0.942 LR: 2.46e-05
+Epoch[8] Iter[350/786] Loss: 1.710 CE: 1.471 Tri: 0.239 Acc: 0.944 LR: 2.46e-05
+Epoch[8] Iter[400/786] Loss: 1.706 CE: 1.466 Tri: 0.240 Acc: 0.945 LR: 2.46e-05
+Epoch[8] Iter[450/786] Loss: 1.696 CE: 1.460 Tri: 0.235 Acc: 0.946 LR: 2.46e-05
+Epoch[8] Iter[500/786] Loss: 1.690 CE: 1.457 Tri: 0.234 Acc: 0.947 LR: 2.46e-05
+Epoch[8] Iter[550/786] Loss: 1.680 CE: 1.449 Tri: 0.231 Acc: 0.948 LR: 2.46e-05
+Epoch[8] Iter[600/786] Loss: 1.675 CE: 1.445 Tri: 0.230 Acc: 0.949 LR: 2.46e-05
+Epoch[8] Iter[650/786] Loss: 1.668 CE: 1.439 Tri: 0.229 Acc: 0.950 LR: 2.46e-05
+Epoch[8] Iter[700/786] Loss: 1.658 CE: 1.431 Tri: 0.227 Acc: 0.951 LR: 2.46e-05
+Epoch[8] done in 91.7s  Loss=1.643 Acc=0.953
+Epoch[9] Iter[50/786] Loss: 1.798 CE: 1.525 Tri: 0.273 Acc: 0.932 LR: 2.81e-05
+Epoch[9] Iter[100/786] Loss: 1.741 CE: 1.495 Tri: 0.247 Acc: 0.939 LR: 2.81e-05
+Epoch[9] Iter[150/786] Loss: 1.723 CE: 1.485 Tri: 0.239 Acc: 0.940 LR: 2.81e-05
+Epoch[9] Iter[200/786] Loss: 1.705 CE: 1.473 Tri: 0.233 Acc: 0.944 LR: 2.81e-05
+Epoch[9] Iter[250/786] Loss: 1.681 CE: 1.461 Tri: 0.220 Acc: 0.946 LR: 2.81e-05
+Epoch[9] Iter[300/786] Loss: 1.667 CE: 1.452 Tri: 0.215 Acc: 0.948 LR: 2.81e-05
+Epoch[9] Iter[350/786] Loss: 1.649 CE: 1.442 Tri: 0.207 Acc: 0.950 LR: 2.81e-05
+Epoch[9] Iter[400/786] Loss: 1.631 CE: 1.433 Tri: 0.198 Acc: 0.952 LR: 2.81e-05
+Epoch[9] Iter[450/786] Loss: 1.625 CE: 1.428 Tri: 0.197 Acc: 0.953 LR: 2.81e-05
+Epoch[9] Iter[500/786] Loss: 1.624 CE: 1.425 Tri: 0.199 Acc: 0.953 LR: 2.81e-05
+Epoch[9] Iter[550/786] Loss: 1.622 CE: 1.421 Tri: 0.201 Acc: 0.954 LR: 2.81e-05
+Epoch[9] Iter[600/786] Loss: 1.618 CE: 1.416 Tri: 0.202 Acc: 0.955 LR: 2.81e-05
+Epoch[9] Iter[650/786] Loss: 1.611 CE: 1.410 Tri: 0.201 Acc: 0.956 LR: 2.81e-05
+Epoch[9] Iter[700/786] Loss: 1.603 CE: 1.403 Tri: 0.200 Acc: 0.957 LR: 2.81e-05
+Epoch[9] done in 91.5s  Loss=1.588 Acc=0.958
+Epoch[10] Iter[50/786] Loss: 1.724 CE: 1.503 Tri: 0.221 Acc: 0.935 LR: 3.15e-05
+Epoch[10] Iter[100/786] Loss: 1.710 CE: 1.482 Tri: 0.228 Acc: 0.940 LR: 3.15e-05
+Epoch[10] Iter[150/786] Loss: 1.673 CE: 1.459 Tri: 0.215 Acc: 0.944 LR: 3.15e-05
+Epoch[10] Iter[200/786] Loss: 1.666 CE: 1.453 Tri: 0.213 Acc: 0.945 LR: 3.15e-05
+Epoch[10] Iter[250/786] Loss: 1.647 CE: 1.441 Tri: 0.206 Acc: 0.948 LR: 3.15e-05
+Epoch[10] Iter[300/786] Loss: 1.630 CE: 1.432 Tri: 0.199 Acc: 0.950 LR: 3.15e-05
+Epoch[10] Iter[350/786] Loss: 1.626 CE: 1.428 Tri: 0.197 Acc: 0.951 LR: 3.15e-05
+Epoch[10] Iter[400/786] Loss: 1.623 CE: 1.425 Tri: 0.199 Acc: 0.952 LR: 3.15e-05
+Epoch[10] Iter[450/786] Loss: 1.618 CE: 1.419 Tri: 0.199 Acc: 0.953 LR: 3.15e-05
+Epoch[10] Iter[500/786] Loss: 1.613 CE: 1.416 Tri: 0.198 Acc: 0.953 LR: 3.15e-05
+Epoch[10] Iter[550/786] Loss: 1.606 CE: 1.410 Tri: 0.196 Acc: 0.954 LR: 3.15e-05
+Epoch[10] Iter[600/786] Loss: 1.600 CE: 1.406 Tri: 0.194 Acc: 0.954 LR: 3.15e-05
+Epoch[10] Iter[650/786] Loss: 1.595 CE: 1.401 Tri: 0.194 Acc: 0.955 LR: 3.15e-05
+Epoch[10] Iter[700/786] Loss: 1.584 CE: 1.392 Tri: 0.192 Acc: 0.957 LR: 3.15e-05
+Epoch[10] done in 91.1s  Loss=1.571 Acc=0.958
+  ---- A<->G cross-view eval @ epoch 10 ----
+    [A->G] mAP=73.40  R1=82.85  R5=89.26  mINP=44.92
+    [G->A] mAP=72.69  R1=83.43  R5=89.45  mINP=35.03
+    [mean] mAP=73.04  R1=83.14
+    * new best mean mAP=73.04 (epoch 10) saved
+Epoch[11] Iter[50/786] Loss: 1.728 CE: 1.512 Tri: 0.216 Acc: 0.927 LR: 3.50e-05
+Epoch[11] Iter[100/786] Loss: 1.648 CE: 1.468 Tri: 0.179 Acc: 0.942 LR: 3.50e-05
+Epoch[11] Iter[150/786] Loss: 1.617 CE: 1.440 Tri: 0.177 Acc: 0.948 LR: 3.50e-05
+Epoch[11] Iter[200/786] Loss: 1.611 CE: 1.432 Tri: 0.179 Acc: 0.949 LR: 3.50e-05
+Epoch[11] Iter[250/786] Loss: 1.616 CE: 1.431 Tri: 0.185 Acc: 0.949 LR: 3.50e-05
+Epoch[11] Iter[300/786] Loss: 1.606 CE: 1.425 Tri: 0.180 Acc: 0.950 LR: 3.50e-05
+Epoch[11] Iter[350/786] Loss: 1.600 CE: 1.421 Tri: 0.179 Acc: 0.951 LR: 3.50e-05
+Epoch[11] Iter[400/786] Loss: 1.598 CE: 1.416 Tri: 0.182 Acc: 0.952 LR: 3.50e-05
+Epoch[11] Iter[450/786] Loss: 1.589 CE: 1.410 Tri: 0.179 Acc: 0.953 LR: 3.50e-05
+Epoch[11] Iter[500/786] Loss: 1.583 CE: 1.406 Tri: 0.177 Acc: 0.954 LR: 3.50e-05
+Epoch[11] Iter[550/786] Loss: 1.574 CE: 1.400 Tri: 0.174 Acc: 0.955 LR: 3.50e-05
+Epoch[11] Iter[600/786] Loss: 1.569 CE: 1.395 Tri: 0.174 Acc: 0.955 LR: 3.50e-05
+Epoch[11] Iter[650/786] Loss: 1.560 CE: 1.387 Tri: 0.173 Acc: 0.957 LR: 3.50e-05
+Epoch[11] Iter[700/786] Loss: 1.548 CE: 1.379 Tri: 0.169 Acc: 0.958 LR: 3.50e-05
+Epoch[11] done in 91.0s  Loss=1.536 Acc=0.960
+Epoch[12] Iter[50/786] Loss: 1.686 CE: 1.493 Tri: 0.193 Acc: 0.936 LR: 3.50e-05
+Epoch[12] Iter[100/786] Loss: 1.640 CE: 1.458 Tri: 0.183 Acc: 0.942 LR: 3.50e-05
+Epoch[12] Iter[150/786] Loss: 1.619 CE: 1.441 Tri: 0.178 Acc: 0.945 LR: 3.50e-05
+Epoch[12] Iter[200/786] Loss: 1.597 CE: 1.427 Tri: 0.170 Acc: 0.947 LR: 3.50e-05
+Epoch[12] Iter[250/786] Loss: 1.593 CE: 1.420 Tri: 0.173 Acc: 0.950 LR: 3.50e-05
+Epoch[12] Iter[300/786] Loss: 1.581 CE: 1.411 Tri: 0.170 Acc: 0.952 LR: 3.50e-05
+Epoch[12] Iter[350/786] Loss: 1.572 CE: 1.404 Tri: 0.168 Acc: 0.953 LR: 3.50e-05
+Epoch[12] Iter[400/786] Loss: 1.562 CE: 1.397 Tri: 0.165 Acc: 0.955 LR: 3.50e-05
+Epoch[12] Iter[450/786] Loss: 1.554 CE: 1.392 Tri: 0.162 Acc: 0.956 LR: 3.50e-05
+Epoch[12] Iter[500/786] Loss: 1.546 CE: 1.385 Tri: 0.161 Acc: 0.957 LR: 3.50e-05
+Epoch[12] Iter[550/786] Loss: 1.542 CE: 1.380 Tri: 0.161 Acc: 0.958 LR: 3.50e-05
+Epoch[12] Iter[600/786] Loss: 1.538 CE: 1.376 Tri: 0.162 Acc: 0.959 LR: 3.50e-05
+Epoch[12] Iter[650/786] Loss: 1.536 CE: 1.371 Tri: 0.164 Acc: 0.959 LR: 3.50e-05
+Epoch[12] Iter[700/786] Loss: 1.525 CE: 1.363 Tri: 0.162 Acc: 0.961 LR: 3.50e-05
+Epoch[12] done in 91.8s  Loss=1.511 Acc=0.962
+Epoch[13] Iter[50/786] Loss: 1.607 CE: 1.438 Tri: 0.169 Acc: 0.944 LR: 3.49e-05
+Epoch[13] Iter[100/786] Loss: 1.567 CE: 1.412 Tri: 0.155 Acc: 0.950 LR: 3.49e-05
+Epoch[13] Iter[150/786] Loss: 1.550 CE: 1.398 Tri: 0.152 Acc: 0.953 LR: 3.49e-05
+Epoch[13] Iter[200/786] Loss: 1.546 CE: 1.389 Tri: 0.157 Acc: 0.954 LR: 3.49e-05
+Epoch[13] Iter[250/786] Loss: 1.541 CE: 1.384 Tri: 0.156 Acc: 0.955 LR: 3.49e-05
+Epoch[13] Iter[300/786] Loss: 1.531 CE: 1.377 Tri: 0.154 Acc: 0.957 LR: 3.49e-05
+Epoch[13] Iter[350/786] Loss: 1.521 CE: 1.371 Tri: 0.150 Acc: 0.959 LR: 3.49e-05
+Epoch[13] Iter[400/786] Loss: 1.517 CE: 1.367 Tri: 0.150 Acc: 0.959 LR: 3.49e-05
+Epoch[13] Iter[450/786] Loss: 1.507 CE: 1.361 Tri: 0.146 Acc: 0.960 LR: 3.49e-05
+Epoch[13] Iter[500/786] Loss: 1.503 CE: 1.357 Tri: 0.146 Acc: 0.961 LR: 3.49e-05
+Epoch[13] Iter[550/786] Loss: 1.499 CE: 1.354 Tri: 0.145 Acc: 0.961 LR: 3.49e-05
+Epoch[13] Iter[600/786] Loss: 1.493 CE: 1.348 Tri: 0.144 Acc: 0.962 LR: 3.49e-05
+Epoch[13] Iter[650/786] Loss: 1.483 CE: 1.341 Tri: 0.142 Acc: 0.963 LR: 3.49e-05
+Epoch[13] Iter[700/786] Loss: 1.475 CE: 1.335 Tri: 0.140 Acc: 0.964 LR: 3.49e-05
+Epoch[13] done in 90.6s  Loss=1.466 Acc=0.965
+Epoch[14] Iter[50/786] Loss: 1.575 CE: 1.447 Tri: 0.128 Acc: 0.939 LR: 3.47e-05
+Epoch[14] Iter[100/786] Loss: 1.519 CE: 1.402 Tri: 0.117 Acc: 0.950 LR: 3.47e-05
+Epoch[14] Iter[150/786] Loss: 1.507 CE: 1.384 Tri: 0.124 Acc: 0.955 LR: 3.47e-05
+Epoch[14] Iter[200/786] Loss: 1.497 CE: 1.375 Tri: 0.122 Acc: 0.956 LR: 3.47e-05
+Epoch[14] Iter[250/786] Loss: 1.485 CE: 1.365 Tri: 0.120 Acc: 0.958 LR: 3.47e-05
+Epoch[14] Iter[300/786] Loss: 1.474 CE: 1.356 Tri: 0.119 Acc: 0.960 LR: 3.47e-05
+Epoch[14] Iter[350/786] Loss: 1.464 CE: 1.349 Tri: 0.116 Acc: 0.962 LR: 3.47e-05
+Epoch[14] Iter[400/786] Loss: 1.463 CE: 1.345 Tri: 0.118 Acc: 0.963 LR: 3.47e-05
+Epoch[14] Iter[450/786] Loss: 1.460 CE: 1.341 Tri: 0.119 Acc: 0.964 LR: 3.47e-05
+Epoch[14] Iter[500/786] Loss: 1.460 CE: 1.339 Tri: 0.120 Acc: 0.964 LR: 3.47e-05
+Epoch[14] Iter[550/786] Loss: 1.457 CE: 1.335 Tri: 0.121 Acc: 0.964 LR: 3.47e-05
+Epoch[14] Iter[600/786] Loss: 1.450 CE: 1.329 Tri: 0.121 Acc: 0.965 LR: 3.47e-05
+Epoch[14] Iter[650/786] Loss: 1.444 CE: 1.323 Tri: 0.121 Acc: 0.966 LR: 3.47e-05
+Epoch[14] Iter[700/786] Loss: 1.437 CE: 1.316 Tri: 0.120 Acc: 0.967 LR: 3.47e-05
+Epoch[14] done in 91.6s  Loss=1.425 Acc=0.969
+Epoch[15] Iter[50/786] Loss: 1.512 CE: 1.405 Tri: 0.106 Acc: 0.946 LR: 3.45e-05
+Epoch[15] Iter[100/786] Loss: 1.486 CE: 1.374 Tri: 0.111 Acc: 0.954 LR: 3.45e-05
+Epoch[15] Iter[150/786] Loss: 1.474 CE: 1.357 Tri: 0.116 Acc: 0.960 LR: 3.45e-05
+Epoch[15] Iter[200/786] Loss: 1.461 CE: 1.349 Tri: 0.113 Acc: 0.962 LR: 3.45e-05
+Epoch[15] Iter[250/786] Loss: 1.452 CE: 1.340 Tri: 0.112 Acc: 0.963 LR: 3.45e-05
+Epoch[15] Iter[300/786] Loss: 1.449 CE: 1.335 Tri: 0.114 Acc: 0.964 LR: 3.45e-05
+Epoch[15] Iter[350/786] Loss: 1.448 CE: 1.332 Tri: 0.116 Acc: 0.965 LR: 3.45e-05
+Epoch[15] Iter[400/786] Loss: 1.442 CE: 1.327 Tri: 0.115 Acc: 0.966 LR: 3.45e-05
+Epoch[15] Iter[450/786] Loss: 1.435 CE: 1.323 Tri: 0.112 Acc: 0.966 LR: 3.45e-05
+Epoch[15] Iter[500/786] Loss: 1.430 CE: 1.318 Tri: 0.111 Acc: 0.967 LR: 3.45e-05
+Epoch[15] Iter[550/786] Loss: 1.424 CE: 1.314 Tri: 0.110 Acc: 0.968 LR: 3.45e-05
+Epoch[15] Iter[600/786] Loss: 1.422 CE: 1.311 Tri: 0.111 Acc: 0.968 LR: 3.45e-05
+Epoch[15] Iter[650/786] Loss: 1.416 CE: 1.306 Tri: 0.110 Acc: 0.969 LR: 3.45e-05
+Epoch[15] Iter[700/786] Loss: 1.409 CE: 1.300 Tri: 0.109 Acc: 0.970 LR: 3.45e-05
+Epoch[15] done in 91.6s  Loss=1.399 Acc=0.971
+Epoch[16] Iter[50/786] Loss: 1.513 CE: 1.395 Tri: 0.118 Acc: 0.950 LR: 3.41e-05
+Epoch[16] Iter[100/786] Loss: 1.462 CE: 1.355 Tri: 0.106 Acc: 0.959 LR: 3.41e-05
+Epoch[16] Iter[150/786] Loss: 1.444 CE: 1.340 Tri: 0.104 Acc: 0.963 LR: 3.41e-05
+Epoch[16] Iter[200/786] Loss: 1.431 CE: 1.331 Tri: 0.100 Acc: 0.964 LR: 3.41e-05
+Epoch[16] Iter[250/786] Loss: 1.426 CE: 1.322 Tri: 0.104 Acc: 0.966 LR: 3.41e-05
+Epoch[16] Iter[300/786] Loss: 1.420 CE: 1.318 Tri: 0.103 Acc: 0.967 LR: 3.41e-05
+Epoch[16] Iter[350/786] Loss: 1.419 CE: 1.314 Tri: 0.105 Acc: 0.967 LR: 3.41e-05
+Epoch[16] Iter[400/786] Loss: 1.415 CE: 1.311 Tri: 0.105 Acc: 0.968 LR: 3.41e-05
+Epoch[16] Iter[450/786] Loss: 1.414 CE: 1.308 Tri: 0.106 Acc: 0.968 LR: 3.41e-05
+Epoch[16] Iter[500/786] Loss: 1.408 CE: 1.303 Tri: 0.104 Acc: 0.969 LR: 3.41e-05
+Epoch[16] Iter[550/786] Loss: 1.402 CE: 1.299 Tri: 0.104 Acc: 0.970 LR: 3.41e-05
+Epoch[16] Iter[600/786] Loss: 1.397 CE: 1.295 Tri: 0.102 Acc: 0.970 LR: 3.41e-05
+Epoch[16] Iter[650/786] Loss: 1.391 CE: 1.291 Tri: 0.101 Acc: 0.971 LR: 3.41e-05
+Epoch[16] Iter[700/786] Loss: 1.383 CE: 1.285 Tri: 0.099 Acc: 0.972 LR: 3.41e-05
+Epoch[16] done in 91.6s  Loss=1.376 Acc=0.973
+Epoch[17] Iter[50/786] Loss: 1.507 CE: 1.383 Tri: 0.125 Acc: 0.952 LR: 3.38e-05
+Epoch[17] Iter[100/786] Loss: 1.479 CE: 1.356 Tri: 0.124 Acc: 0.960 LR: 3.38e-05
+Epoch[17] Iter[150/786] Loss: 1.451 CE: 1.336 Tri: 0.115 Acc: 0.964 LR: 3.38e-05
+Epoch[17] Iter[200/786] Loss: 1.440 CE: 1.327 Tri: 0.113 Acc: 0.965 LR: 3.38e-05
+Epoch[17] Iter[250/786] Loss: 1.427 CE: 1.318 Tri: 0.109 Acc: 0.967 LR: 3.38e-05
+Epoch[17] Iter[300/786] Loss: 1.418 CE: 1.310 Tri: 0.108 Acc: 0.967 LR: 3.38e-05
+Epoch[17] Iter[350/786] Loss: 1.412 CE: 1.304 Tri: 0.108 Acc: 0.968 LR: 3.38e-05
+Epoch[17] Iter[400/786] Loss: 1.406 CE: 1.300 Tri: 0.107 Acc: 0.969 LR: 3.38e-05
+Epoch[17] Iter[450/786] Loss: 1.403 CE: 1.297 Tri: 0.106 Acc: 0.970 LR: 3.38e-05
+Epoch[17] Iter[500/786] Loss: 1.397 CE: 1.293 Tri: 0.104 Acc: 0.971 LR: 3.38e-05
+Epoch[17] Iter[550/786] Loss: 1.390 CE: 1.288 Tri: 0.102 Acc: 0.971 LR: 3.38e-05
+Epoch[17] Iter[600/786] Loss: 1.384 CE: 1.284 Tri: 0.101 Acc: 0.972 LR: 3.38e-05
+Epoch[17] Iter[650/786] Loss: 1.375 CE: 1.278 Tri: 0.097 Acc: 0.973 LR: 3.38e-05
+Epoch[17] Iter[700/786] Loss: 1.368 CE: 1.272 Tri: 0.096 Acc: 0.974 LR: 3.38e-05
+Epoch[17] done in 91.3s  Loss=1.358 Acc=0.975
+Epoch[18] Iter[50/786] Loss: 1.397 CE: 1.327 Tri: 0.070 Acc: 0.966 LR: 3.33e-05
+Epoch[18] Iter[100/786] Loss: 1.386 CE: 1.309 Tri: 0.077 Acc: 0.968 LR: 3.33e-05
+Epoch[18] Iter[150/786] Loss: 1.372 CE: 1.293 Tri: 0.079 Acc: 0.971 LR: 3.33e-05
+Epoch[18] Iter[200/786] Loss: 1.366 CE: 1.285 Tri: 0.081 Acc: 0.972 LR: 3.33e-05
+Epoch[18] Iter[250/786] Loss: 1.370 CE: 1.284 Tri: 0.086 Acc: 0.972 LR: 3.33e-05
+Epoch[18] Iter[300/786] Loss: 1.371 CE: 1.282 Tri: 0.089 Acc: 0.973 LR: 3.33e-05
+Epoch[18] Iter[350/786] Loss: 1.363 CE: 1.278 Tri: 0.085 Acc: 0.973 LR: 3.33e-05
+Epoch[18] Iter[400/786] Loss: 1.360 CE: 1.274 Tri: 0.086 Acc: 0.974 LR: 3.33e-05
+Epoch[18] Iter[450/786] Loss: 1.359 CE: 1.273 Tri: 0.086 Acc: 0.974 LR: 3.33e-05
+Epoch[18] Iter[500/786] Loss: 1.354 CE: 1.269 Tri: 0.085 Acc: 0.974 LR: 3.33e-05
+Epoch[18] Iter[550/786] Loss: 1.352 CE: 1.267 Tri: 0.085 Acc: 0.975 LR: 3.33e-05
+Epoch[18] Iter[600/786] Loss: 1.346 CE: 1.263 Tri: 0.084 Acc: 0.975 LR: 3.33e-05
+Epoch[18] Iter[650/786] Loss: 1.339 CE: 1.257 Tri: 0.082 Acc: 0.976 LR: 3.33e-05
+Epoch[18] Iter[700/786] Loss: 1.330 CE: 1.251 Tri: 0.079 Acc: 0.977 LR: 3.33e-05
+Epoch[18] done in 91.0s  Loss=1.322 Acc=0.978
+Epoch[19] Iter[50/786] Loss: 1.404 CE: 1.319 Tri: 0.084 Acc: 0.966 LR: 3.28e-05
+Epoch[19] Iter[100/786] Loss: 1.387 CE: 1.298 Tri: 0.089 Acc: 0.971 LR: 3.28e-05
+Epoch[19] Iter[150/786] Loss: 1.377 CE: 1.291 Tri: 0.085 Acc: 0.971 LR: 3.28e-05
+Epoch[19] Iter[200/786] Loss: 1.361 CE: 1.280 Tri: 0.081 Acc: 0.973 LR: 3.28e-05
+Epoch[19] Iter[250/786] Loss: 1.359 CE: 1.276 Tri: 0.083 Acc: 0.973 LR: 3.28e-05
+Epoch[19] Iter[300/786] Loss: 1.352 CE: 1.270 Tri: 0.082 Acc: 0.974 LR: 3.28e-05
+Epoch[19] Iter[350/786] Loss: 1.347 CE: 1.268 Tri: 0.080 Acc: 0.975 LR: 3.28e-05
+Epoch[19] Iter[400/786] Loss: 1.346 CE: 1.266 Tri: 0.080 Acc: 0.975 LR: 3.28e-05
+Epoch[19] Iter[450/786] Loss: 1.343 CE: 1.264 Tri: 0.080 Acc: 0.975 LR: 3.28e-05
+Epoch[19] Iter[500/786] Loss: 1.340 CE: 1.260 Tri: 0.079 Acc: 0.975 LR: 3.28e-05
+Epoch[19] Iter[550/786] Loss: 1.336 CE: 1.257 Tri: 0.079 Acc: 0.976 LR: 3.28e-05
+Epoch[19] Iter[600/786] Loss: 1.333 CE: 1.254 Tri: 0.079 Acc: 0.976 LR: 3.28e-05
+Epoch[19] Iter[650/786] Loss: 1.336 CE: 1.252 Tri: 0.084 Acc: 0.976 LR: 3.28e-05
+Epoch[19] Iter[700/786] Loss: 1.330 CE: 1.248 Tri: 0.082 Acc: 0.977 LR: 3.28e-05
+Epoch[19] done in 91.0s  Loss=1.323 Acc=0.978
+Epoch[20] Iter[50/786] Loss: 1.479 CE: 1.369 Tri: 0.110 Acc: 0.949 LR: 3.23e-05
+Epoch[20] Iter[100/786] Loss: 1.426 CE: 1.320 Tri: 0.106 Acc: 0.962 LR: 3.23e-05
+Epoch[20] Iter[150/786] Loss: 1.412 CE: 1.308 Tri: 0.104 Acc: 0.965 LR: 3.23e-05
+Epoch[20] Iter[200/786] Loss: 1.394 CE: 1.295 Tri: 0.099 Acc: 0.968 LR: 3.23e-05
+Epoch[20] Iter[250/786] Loss: 1.376 CE: 1.285 Tri: 0.092 Acc: 0.970 LR: 3.23e-05
+Epoch[20] Iter[300/786] Loss: 1.369 CE: 1.278 Tri: 0.091 Acc: 0.970 LR: 3.23e-05
+Epoch[20] Iter[350/786] Loss: 1.364 CE: 1.273 Tri: 0.090 Acc: 0.971 LR: 3.23e-05
+Epoch[20] Iter[400/786] Loss: 1.358 CE: 1.268 Tri: 0.090 Acc: 0.972 LR: 3.23e-05
+Epoch[20] Iter[450/786] Loss: 1.352 CE: 1.265 Tri: 0.088 Acc: 0.973 LR: 3.23e-05
+Epoch[20] Iter[500/786] Loss: 1.347 CE: 1.261 Tri: 0.086 Acc: 0.974 LR: 3.23e-05
+Epoch[20] Iter[550/786] Loss: 1.338 CE: 1.255 Tri: 0.083 Acc: 0.974 LR: 3.23e-05
+Epoch[20] Iter[600/786] Loss: 1.330 CE: 1.250 Tri: 0.080 Acc: 0.975 LR: 3.23e-05
+Epoch[20] Iter[650/786] Loss: 1.322 CE: 1.244 Tri: 0.078 Acc: 0.976 LR: 3.23e-05
+Epoch[20] Iter[700/786] Loss: 1.314 CE: 1.238 Tri: 0.075 Acc: 0.977 LR: 3.23e-05
+Epoch[20] done in 91.5s  Loss=1.304 Acc=0.978
+  ---- A<->G cross-view eval @ epoch 20 ----
+    [A->G] mAP=72.37  R1=81.58  R5=89.05  mINP=43.54
+    [G->A] mAP=73.14  R1=82.83  R5=88.85  mINP=36.99
+    [mean] mAP=72.75  R1=82.20
+Epoch[21] Iter[50/786] Loss: 1.379 CE: 1.306 Tri: 0.072 Acc: 0.961 LR: 3.17e-05
+Epoch[21] Iter[100/786] Loss: 1.354 CE: 1.282 Tri: 0.072 Acc: 0.967 LR: 3.17e-05
+Epoch[21] Iter[150/786] Loss: 1.337 CE: 1.266 Tri: 0.071 Acc: 0.970 LR: 3.17e-05
+Epoch[21] Iter[200/786] Loss: 1.324 CE: 1.253 Tri: 0.071 Acc: 0.974 LR: 3.17e-05
+Epoch[21] Iter[250/786] Loss: 1.313 CE: 1.246 Tri: 0.067 Acc: 0.976 LR: 3.17e-05
+Epoch[21] Iter[300/786] Loss: 1.307 CE: 1.240 Tri: 0.067 Acc: 0.977 LR: 3.17e-05
+Epoch[21] Iter[350/786] Loss: 1.303 CE: 1.237 Tri: 0.066 Acc: 0.977 LR: 3.17e-05
+Epoch[21] Iter[400/786] Loss: 1.299 CE: 1.234 Tri: 0.065 Acc: 0.978 LR: 3.17e-05
+Epoch[21] Iter[450/786] Loss: 1.295 CE: 1.231 Tri: 0.064 Acc: 0.979 LR: 3.17e-05
+Epoch[21] Iter[500/786] Loss: 1.293 CE: 1.229 Tri: 0.064 Acc: 0.979 LR: 3.17e-05
+Epoch[21] Iter[550/786] Loss: 1.291 CE: 1.227 Tri: 0.064 Acc: 0.979 LR: 3.17e-05
+Epoch[21] Iter[600/786] Loss: 1.288 CE: 1.225 Tri: 0.063 Acc: 0.980 LR: 3.17e-05
+Epoch[21] Iter[650/786] Loss: 1.283 CE: 1.221 Tri: 0.062 Acc: 0.980 LR: 3.17e-05
+Epoch[21] Iter[700/786] Loss: 1.277 CE: 1.216 Tri: 0.061 Acc: 0.981 LR: 3.17e-05
+Epoch[21] done in 91.2s  Loss=1.271 Acc=0.982
+Epoch[22] Iter[50/786] Loss: 1.395 CE: 1.304 Tri: 0.091 Acc: 0.968 LR: 3.10e-05
+Epoch[22] Iter[100/786] Loss: 1.352 CE: 1.272 Tri: 0.080 Acc: 0.971 LR: 3.10e-05
+Epoch[22] Iter[150/786] Loss: 1.336 CE: 1.261 Tri: 0.075 Acc: 0.972 LR: 3.10e-05
+Epoch[22] Iter[200/786] Loss: 1.331 CE: 1.254 Tri: 0.078 Acc: 0.974 LR: 3.10e-05
+Epoch[22] Iter[250/786] Loss: 1.322 CE: 1.247 Tri: 0.075 Acc: 0.975 LR: 3.10e-05
+Epoch[22] Iter[300/786] Loss: 1.313 CE: 1.241 Tri: 0.072 Acc: 0.976 LR: 3.10e-05
+Epoch[22] Iter[350/786] Loss: 1.304 CE: 1.235 Tri: 0.069 Acc: 0.977 LR: 3.10e-05
+Epoch[22] Iter[400/786] Loss: 1.295 CE: 1.230 Tri: 0.065 Acc: 0.978 LR: 3.10e-05
+Epoch[22] Iter[450/786] Loss: 1.287 CE: 1.224 Tri: 0.063 Acc: 0.979 LR: 3.10e-05
+Epoch[22] Iter[500/786] Loss: 1.282 CE: 1.220 Tri: 0.061 Acc: 0.979 LR: 3.10e-05
+Epoch[22] Iter[550/786] Loss: 1.280 CE: 1.218 Tri: 0.062 Acc: 0.979 LR: 3.10e-05
+Epoch[22] Iter[600/786] Loss: 1.276 CE: 1.216 Tri: 0.061 Acc: 0.980 LR: 3.10e-05
+Epoch[22] Iter[650/786] Loss: 1.271 CE: 1.212 Tri: 0.059 Acc: 0.981 LR: 3.10e-05
+Epoch[22] Iter[700/786] Loss: 1.266 CE: 1.208 Tri: 0.058 Acc: 0.981 LR: 3.10e-05
+Epoch[22] done in 90.7s  Loss=1.260 Acc=0.982
+Epoch[23] Iter[50/786] Loss: 1.327 CE: 1.261 Tri: 0.066 Acc: 0.973 LR: 3.03e-05
+Epoch[23] Iter[100/786] Loss: 1.302 CE: 1.242 Tri: 0.060 Acc: 0.975 LR: 3.03e-05
+Epoch[23] Iter[150/786] Loss: 1.295 CE: 1.235 Tri: 0.061 Acc: 0.976 LR: 3.03e-05
+Epoch[23] Iter[200/786] Loss: 1.289 CE: 1.230 Tri: 0.059 Acc: 0.977 LR: 3.03e-05
+Epoch[23] Iter[250/786] Loss: 1.285 CE: 1.225 Tri: 0.060 Acc: 0.978 LR: 3.03e-05
+Epoch[23] Iter[300/786] Loss: 1.279 CE: 1.221 Tri: 0.058 Acc: 0.979 LR: 3.03e-05
+Epoch[23] Iter[350/786] Loss: 1.274 CE: 1.217 Tri: 0.057 Acc: 0.979 LR: 3.03e-05
+Epoch[23] Iter[400/786] Loss: 1.269 CE: 1.214 Tri: 0.056 Acc: 0.980 LR: 3.03e-05
+Epoch[23] Iter[450/786] Loss: 1.266 CE: 1.212 Tri: 0.054 Acc: 0.980 LR: 3.03e-05
+Epoch[23] Iter[500/786] Loss: 1.263 CE: 1.209 Tri: 0.054 Acc: 0.981 LR: 3.03e-05
+Epoch[23] Iter[550/786] Loss: 1.260 CE: 1.207 Tri: 0.053 Acc: 0.981 LR: 3.03e-05
+Epoch[23] Iter[600/786] Loss: 1.255 CE: 1.203 Tri: 0.052 Acc: 0.982 LR: 3.03e-05
+Epoch[23] Iter[650/786] Loss: 1.253 CE: 1.201 Tri: 0.052 Acc: 0.982 LR: 3.03e-05
+Epoch[23] Iter[700/786] Loss: 1.249 CE: 1.197 Tri: 0.052 Acc: 0.983 LR: 3.03e-05
+Epoch[23] done in 91.6s  Loss=1.243 Acc=0.983
+Epoch[24] Iter[50/786] Loss: 1.324 CE: 1.263 Tri: 0.061 Acc: 0.978 LR: 2.95e-05
+Epoch[24] Iter[100/786] Loss: 1.310 CE: 1.245 Tri: 0.066 Acc: 0.978 LR: 2.95e-05
+Epoch[24] Iter[150/786] Loss: 1.307 CE: 1.238 Tri: 0.069 Acc: 0.978 LR: 2.95e-05
+Epoch[24] Iter[200/786] Loss: 1.289 CE: 1.228 Tri: 0.061 Acc: 0.980 LR: 2.95e-05
+Epoch[24] Iter[250/786] Loss: 1.287 CE: 1.225 Tri: 0.062 Acc: 0.980 LR: 2.95e-05
+Epoch[24] Iter[300/786] Loss: 1.283 CE: 1.222 Tri: 0.062 Acc: 0.981 LR: 2.95e-05
+Epoch[24] Iter[350/786] Loss: 1.279 CE: 1.218 Tri: 0.061 Acc: 0.981 LR: 2.95e-05
+Epoch[24] Iter[400/786] Loss: 1.275 CE: 1.216 Tri: 0.059 Acc: 0.982 LR: 2.95e-05
+Epoch[24] Iter[450/786] Loss: 1.271 CE: 1.213 Tri: 0.058 Acc: 0.982 LR: 2.95e-05
+Epoch[24] Iter[500/786] Loss: 1.268 CE: 1.211 Tri: 0.057 Acc: 0.982 LR: 2.95e-05
+Epoch[24] Iter[550/786] Loss: 1.263 CE: 1.208 Tri: 0.055 Acc: 0.982 LR: 2.95e-05
+Epoch[24] Iter[600/786] Loss: 1.260 CE: 1.205 Tri: 0.055 Acc: 0.982 LR: 2.95e-05
+Epoch[24] Iter[650/786] Loss: 1.255 CE: 1.201 Tri: 0.054 Acc: 0.983 LR: 2.95e-05
+Epoch[24] Iter[700/786] Loss: 1.250 CE: 1.197 Tri: 0.053 Acc: 0.983 LR: 2.95e-05
+Epoch[24] done in 91.3s  Loss=1.243 Acc=0.984
+Epoch[25] Iter[50/786] Loss: 1.310 CE: 1.250 Tri: 0.060 Acc: 0.974 LR: 2.87e-05
+Epoch[25] Iter[100/786] Loss: 1.290 CE: 1.232 Tri: 0.058 Acc: 0.977 LR: 2.87e-05
+Epoch[25] Iter[150/786] Loss: 1.281 CE: 1.223 Tri: 0.058 Acc: 0.979 LR: 2.87e-05
+Epoch[25] Iter[200/786] Loss: 1.269 CE: 1.214 Tri: 0.055 Acc: 0.981 LR: 2.87e-05
+Epoch[25] Iter[250/786] Loss: 1.264 CE: 1.211 Tri: 0.053 Acc: 0.980 LR: 2.87e-05
+Epoch[25] Iter[300/786] Loss: 1.256 CE: 1.206 Tri: 0.050 Acc: 0.981 LR: 2.87e-05
+Epoch[25] Iter[350/786] Loss: 1.253 CE: 1.203 Tri: 0.050 Acc: 0.982 LR: 2.87e-05
+Epoch[25] Iter[400/786] Loss: 1.248 CE: 1.199 Tri: 0.049 Acc: 0.982 LR: 2.87e-05
+Epoch[25] Iter[450/786] Loss: 1.246 CE: 1.197 Tri: 0.049 Acc: 0.983 LR: 2.87e-05
+Epoch[25] Iter[500/786] Loss: 1.242 CE: 1.194 Tri: 0.048 Acc: 0.983 LR: 2.87e-05
+Epoch[25] Iter[550/786] Loss: 1.238 CE: 1.190 Tri: 0.048 Acc: 0.984 LR: 2.87e-05
+Epoch[25] Iter[600/786] Loss: 1.234 CE: 1.187 Tri: 0.047 Acc: 0.984 LR: 2.87e-05
+Epoch[25] Iter[650/786] Loss: 1.229 CE: 1.183 Tri: 0.045 Acc: 0.985 LR: 2.87e-05
+Epoch[25] Iter[700/786] Loss: 1.225 CE: 1.180 Tri: 0.045 Acc: 0.985 LR: 2.87e-05
+Epoch[25] done in 90.9s  Loss=1.219 Acc=0.986
+Epoch[26] Iter[50/786] Loss: 1.287 CE: 1.227 Tri: 0.060 Acc: 0.977 LR: 2.78e-05
+Epoch[26] Iter[100/786] Loss: 1.273 CE: 1.217 Tri: 0.056 Acc: 0.978 LR: 2.78e-05
+Epoch[26] Iter[150/786] Loss: 1.260 CE: 1.206 Tri: 0.053 Acc: 0.981 LR: 2.78e-05
+Epoch[26] Iter[200/786] Loss: 1.247 CE: 1.197 Tri: 0.050 Acc: 0.983 LR: 2.78e-05
+Epoch[26] Iter[250/786] Loss: 1.247 CE: 1.195 Tri: 0.052 Acc: 0.983 LR: 2.78e-05
+Epoch[26] Iter[300/786] Loss: 1.242 CE: 1.191 Tri: 0.050 Acc: 0.984 LR: 2.78e-05
+Epoch[26] Iter[350/786] Loss: 1.239 CE: 1.189 Tri: 0.050 Acc: 0.984 LR: 2.78e-05
+Epoch[26] Iter[400/786] Loss: 1.236 CE: 1.187 Tri: 0.049 Acc: 0.984 LR: 2.78e-05
+Epoch[26] Iter[450/786] Loss: 1.232 CE: 1.185 Tri: 0.047 Acc: 0.984 LR: 2.78e-05
+Epoch[26] Iter[500/786] Loss: 1.228 CE: 1.182 Tri: 0.046 Acc: 0.985 LR: 2.78e-05
+Epoch[26] Iter[550/786] Loss: 1.224 CE: 1.179 Tri: 0.045 Acc: 0.985 LR: 2.78e-05
+Epoch[26] Iter[600/786] Loss: 1.218 CE: 1.175 Tri: 0.043 Acc: 0.986 LR: 2.78e-05
+Epoch[26] Iter[650/786] Loss: 1.214 CE: 1.172 Tri: 0.042 Acc: 0.986 LR: 2.78e-05
+Epoch[26] Iter[700/786] Loss: 1.209 CE: 1.169 Tri: 0.041 Acc: 0.987 LR: 2.78e-05
+Epoch[26] done in 91.4s  Loss=1.203 Acc=0.987
+Epoch[27] Iter[50/786] Loss: 1.275 CE: 1.219 Tri: 0.056 Acc: 0.978 LR: 2.69e-05
+Epoch[27] Iter[100/786] Loss: 1.250 CE: 1.202 Tri: 0.048 Acc: 0.982 LR: 2.69e-05
+Epoch[27] Iter[150/786] Loss: 1.248 CE: 1.197 Tri: 0.051 Acc: 0.983 LR: 2.69e-05
+Epoch[27] Iter[200/786] Loss: 1.238 CE: 1.191 Tri: 0.047 Acc: 0.984 LR: 2.69e-05
+Epoch[27] Iter[250/786] Loss: 1.230 CE: 1.185 Tri: 0.045 Acc: 0.985 LR: 2.69e-05
+Epoch[27] Iter[300/786] Loss: 1.224 CE: 1.181 Tri: 0.043 Acc: 0.986 LR: 2.69e-05
+Epoch[27] Iter[350/786] Loss: 1.219 CE: 1.178 Tri: 0.041 Acc: 0.986 LR: 2.69e-05
+Epoch[27] Iter[400/786] Loss: 1.215 CE: 1.175 Tri: 0.040 Acc: 0.986 LR: 2.69e-05
+Epoch[27] Iter[450/786] Loss: 1.214 CE: 1.173 Tri: 0.041 Acc: 0.986 LR: 2.69e-05
+Epoch[27] Iter[500/786] Loss: 1.214 CE: 1.173 Tri: 0.041 Acc: 0.986 LR: 2.69e-05
+Epoch[27] Iter[550/786] Loss: 1.212 CE: 1.171 Tri: 0.041 Acc: 0.986 LR: 2.69e-05
+Epoch[27] Iter[600/786] Loss: 1.208 CE: 1.169 Tri: 0.040 Acc: 0.986 LR: 2.69e-05
+Epoch[27] Iter[650/786] Loss: 1.203 CE: 1.165 Tri: 0.038 Acc: 0.987 LR: 2.69e-05
+Epoch[27] Iter[700/786] Loss: 1.198 CE: 1.161 Tri: 0.037 Acc: 0.987 LR: 2.69e-05
+Epoch[27] done in 91.1s  Loss=1.192 Acc=0.988
+Epoch[28] Iter[50/786] Loss: 1.245 CE: 1.204 Tri: 0.041 Acc: 0.981 LR: 2.59e-05
+Epoch[28] Iter[100/786] Loss: 1.237 CE: 1.199 Tri: 0.038 Acc: 0.982 LR: 2.59e-05
+Epoch[28] Iter[150/786] Loss: 1.239 CE: 1.196 Tri: 0.042 Acc: 0.981 LR: 2.59e-05
+Epoch[28] Iter[200/786] Loss: 1.241 CE: 1.194 Tri: 0.047 Acc: 0.981 LR: 2.59e-05
+Epoch[28] Iter[250/786] Loss: 1.240 CE: 1.191 Tri: 0.049 Acc: 0.982 LR: 2.59e-05
+Epoch[28] Iter[300/786] Loss: 1.236 CE: 1.187 Tri: 0.048 Acc: 0.983 LR: 2.59e-05
+Epoch[28] Iter[350/786] Loss: 1.233 CE: 1.184 Tri: 0.049 Acc: 0.983 LR: 2.59e-05
+Epoch[28] Iter[400/786] Loss: 1.228 CE: 1.180 Tri: 0.048 Acc: 0.984 LR: 2.59e-05
+Epoch[28] Iter[450/786] Loss: 1.223 CE: 1.176 Tri: 0.046 Acc: 0.985 LR: 2.59e-05
+Epoch[28] Iter[500/786] Loss: 1.219 CE: 1.173 Tri: 0.046 Acc: 0.985 LR: 2.59e-05
+Epoch[28] Iter[550/786] Loss: 1.215 CE: 1.171 Tri: 0.045 Acc: 0.986 LR: 2.59e-05
+Epoch[28] Iter[600/786] Loss: 1.210 CE: 1.167 Tri: 0.043 Acc: 0.986 LR: 2.59e-05
+Epoch[28] Iter[650/786] Loss: 1.207 CE: 1.165 Tri: 0.042 Acc: 0.986 LR: 2.59e-05
+Epoch[28] Iter[700/786] Loss: 1.202 CE: 1.161 Tri: 0.041 Acc: 0.987 LR: 2.59e-05
+Epoch[28] done in 91.6s  Loss=1.196 Acc=0.988
+Epoch[29] Iter[50/786] Loss: 1.254 CE: 1.204 Tri: 0.050 Acc: 0.982 LR: 2.50e-05
+Epoch[29] Iter[100/786] Loss: 1.233 CE: 1.191 Tri: 0.042 Acc: 0.984 LR: 2.50e-05
+Epoch[29] Iter[150/786] Loss: 1.222 CE: 1.182 Tri: 0.041 Acc: 0.985 LR: 2.50e-05
+Epoch[29] Iter[200/786] Loss: 1.216 CE: 1.175 Tri: 0.041 Acc: 0.985 LR: 2.50e-05
+Epoch[29] Iter[250/786] Loss: 1.213 CE: 1.172 Tri: 0.041 Acc: 0.986 LR: 2.50e-05
+Epoch[29] Iter[300/786] Loss: 1.207 CE: 1.168 Tri: 0.039 Acc: 0.987 LR: 2.50e-05
+Epoch[29] Iter[350/786] Loss: 1.203 CE: 1.165 Tri: 0.038 Acc: 0.987 LR: 2.50e-05
+Epoch[29] Iter[400/786] Loss: 1.199 CE: 1.162 Tri: 0.036 Acc: 0.987 LR: 2.50e-05
+Epoch[29] Iter[450/786] Loss: 1.195 CE: 1.159 Tri: 0.036 Acc: 0.987 LR: 2.50e-05
+Epoch[29] Iter[500/786] Loss: 1.193 CE: 1.158 Tri: 0.036 Acc: 0.987 LR: 2.50e-05
+Epoch[29] Iter[550/786] Loss: 1.191 CE: 1.155 Tri: 0.036 Acc: 0.988 LR: 2.50e-05
+Epoch[29] Iter[600/786] Loss: 1.188 CE: 1.153 Tri: 0.035 Acc: 0.988 LR: 2.50e-05
+Epoch[29] Iter[650/786] Loss: 1.186 CE: 1.151 Tri: 0.035 Acc: 0.988 LR: 2.50e-05
+Epoch[29] Iter[700/786] Loss: 1.182 CE: 1.148 Tri: 0.034 Acc: 0.988 LR: 2.50e-05
+Epoch[29] done in 91.5s  Loss=1.177 Acc=0.989
+Epoch[30] Iter[50/786] Loss: 1.219 CE: 1.181 Tri: 0.038 Acc: 0.984 LR: 2.39e-05
+Epoch[30] Iter[100/786] Loss: 1.198 CE: 1.169 Tri: 0.029 Acc: 0.986 LR: 2.39e-05
+Epoch[30] Iter[150/786] Loss: 1.199 CE: 1.163 Tri: 0.036 Acc: 0.986 LR: 2.39e-05
+Epoch[30] Iter[200/786] Loss: 1.199 CE: 1.163 Tri: 0.036 Acc: 0.985 LR: 2.39e-05
+Epoch[30] Iter[250/786] Loss: 1.198 CE: 1.161 Tri: 0.038 Acc: 0.986 LR: 2.39e-05
+Epoch[30] Iter[300/786] Loss: 1.194 CE: 1.157 Tri: 0.036 Acc: 0.986 LR: 2.39e-05
+Epoch[30] Iter[350/786] Loss: 1.191 CE: 1.155 Tri: 0.036 Acc: 0.987 LR: 2.39e-05
+Epoch[30] Iter[400/786] Loss: 1.188 CE: 1.154 Tri: 0.035 Acc: 0.987 LR: 2.39e-05
+Epoch[30] Iter[450/786] Loss: 1.186 CE: 1.152 Tri: 0.034 Acc: 0.987 LR: 2.39e-05
+Epoch[30] Iter[500/786] Loss: 1.184 CE: 1.150 Tri: 0.034 Acc: 0.987 LR: 2.39e-05
+Epoch[30] Iter[550/786] Loss: 1.182 CE: 1.148 Tri: 0.034 Acc: 0.988 LR: 2.39e-05
+Epoch[30] Iter[600/786] Loss: 1.179 CE: 1.146 Tri: 0.033 Acc: 0.988 LR: 2.39e-05
+Epoch[30] Iter[650/786] Loss: 1.176 CE: 1.144 Tri: 0.032 Acc: 0.988 LR: 2.39e-05
+Epoch[30] Iter[700/786] Loss: 1.173 CE: 1.141 Tri: 0.032 Acc: 0.989 LR: 2.39e-05
+Epoch[30] done in 91.4s  Loss=1.167 Acc=0.989
+  ---- A<->G cross-view eval @ epoch 30 ----
+    [A->G] mAP=71.72  R1=80.60  R5=87.90  mINP=43.02
+    [G->A] mAP=73.24  R1=83.16  R5=88.96  mINP=35.74
+    [mean] mAP=72.48  R1=81.88
+Epoch[31] Iter[50/786] Loss: 1.214 CE: 1.184 Tri: 0.031 Acc: 0.983 LR: 2.29e-05
+Epoch[31] Iter[100/786] Loss: 1.198 CE: 1.170 Tri: 0.028 Acc: 0.984 LR: 2.29e-05
+Epoch[31] Iter[150/786] Loss: 1.194 CE: 1.165 Tri: 0.029 Acc: 0.984 LR: 2.29e-05
+Epoch[31] Iter[200/786] Loss: 1.188 CE: 1.160 Tri: 0.027 Acc: 0.985 LR: 2.29e-05
+Epoch[31] Iter[250/786] Loss: 1.186 CE: 1.157 Tri: 0.028 Acc: 0.986 LR: 2.29e-05
+Epoch[31] Iter[300/786] Loss: 1.184 CE: 1.155 Tri: 0.029 Acc: 0.986 LR: 2.29e-05
+Epoch[31] Iter[350/786] Loss: 1.183 CE: 1.153 Tri: 0.030 Acc: 0.986 LR: 2.29e-05
+Epoch[31] Iter[400/786] Loss: 1.179 CE: 1.150 Tri: 0.029 Acc: 0.987 LR: 2.29e-05
+Epoch[31] Iter[450/786] Loss: 1.175 CE: 1.147 Tri: 0.028 Acc: 0.988 LR: 2.29e-05
+Epoch[31] Iter[500/786] Loss: 1.173 CE: 1.145 Tri: 0.027 Acc: 0.988 LR: 2.29e-05
+Epoch[31] Iter[550/786] Loss: 1.170 CE: 1.143 Tri: 0.027 Acc: 0.988 LR: 2.29e-05
+Epoch[31] Iter[600/786] Loss: 1.167 CE: 1.141 Tri: 0.026 Acc: 0.989 LR: 2.29e-05
+Epoch[31] Iter[650/786] Loss: 1.163 CE: 1.138 Tri: 0.026 Acc: 0.989 LR: 2.29e-05
+Epoch[31] Iter[700/786] Loss: 1.160 CE: 1.135 Tri: 0.025 Acc: 0.989 LR: 2.29e-05
+Epoch[31] done in 90.5s  Loss=1.156 Acc=0.990
+Epoch[32] Iter[50/786] Loss: 1.188 CE: 1.161 Tri: 0.027 Acc: 0.985 LR: 2.19e-05
+Epoch[32] Iter[100/786] Loss: 1.178 CE: 1.152 Tri: 0.026 Acc: 0.988 LR: 2.19e-05
+Epoch[32] Iter[150/786] Loss: 1.177 CE: 1.148 Tri: 0.029 Acc: 0.987 LR: 2.19e-05
+Epoch[32] Iter[200/786] Loss: 1.176 CE: 1.145 Tri: 0.030 Acc: 0.988 LR: 2.19e-05
+Epoch[32] Iter[250/786] Loss: 1.171 CE: 1.142 Tri: 0.028 Acc: 0.989 LR: 2.19e-05
+Epoch[32] Iter[300/786] Loss: 1.172 CE: 1.141 Tri: 0.030 Acc: 0.989 LR: 2.19e-05
+Epoch[32] Iter[350/786] Loss: 1.167 CE: 1.139 Tri: 0.028 Acc: 0.989 LR: 2.19e-05
+Epoch[32] Iter[400/786] Loss: 1.165 CE: 1.136 Tri: 0.028 Acc: 0.989 LR: 2.19e-05
+Epoch[32] Iter[450/786] Loss: 1.164 CE: 1.135 Tri: 0.028 Acc: 0.990 LR: 2.19e-05
+Epoch[32] Iter[500/786] Loss: 1.162 CE: 1.134 Tri: 0.028 Acc: 0.990 LR: 2.19e-05
+Epoch[32] Iter[550/786] Loss: 1.160 CE: 1.133 Tri: 0.027 Acc: 0.990 LR: 2.19e-05
+Epoch[32] Iter[600/786] Loss: 1.157 CE: 1.131 Tri: 0.026 Acc: 0.990 LR: 2.19e-05
+Epoch[32] Iter[650/786] Loss: 1.155 CE: 1.129 Tri: 0.026 Acc: 0.990 LR: 2.19e-05
+Epoch[32] Iter[700/786] Loss: 1.151 CE: 1.126 Tri: 0.025 Acc: 0.991 LR: 2.19e-05
+Epoch[32] done in 91.6s  Loss=1.146 Acc=0.991
+Epoch[33] Iter[50/786] Loss: 1.187 CE: 1.160 Tri: 0.028 Acc: 0.986 LR: 2.08e-05
+Epoch[33] Iter[100/786] Loss: 1.172 CE: 1.149 Tri: 0.023 Acc: 0.987 LR: 2.08e-05
+Epoch[33] Iter[150/786] Loss: 1.163 CE: 1.142 Tri: 0.021 Acc: 0.988 LR: 2.08e-05
+Epoch[33] Iter[200/786] Loss: 1.155 CE: 1.136 Tri: 0.019 Acc: 0.989 LR: 2.08e-05
+Epoch[33] Iter[250/786] Loss: 1.157 CE: 1.136 Tri: 0.021 Acc: 0.989 LR: 2.08e-05
+Epoch[33] Iter[300/786] Loss: 1.156 CE: 1.134 Tri: 0.021 Acc: 0.989 LR: 2.08e-05
+Epoch[33] Iter[350/786] Loss: 1.159 CE: 1.134 Tri: 0.025 Acc: 0.989 LR: 2.08e-05
+Epoch[33] Iter[400/786] Loss: 1.156 CE: 1.133 Tri: 0.023 Acc: 0.989 LR: 2.08e-05
+Epoch[33] Iter[450/786] Loss: 1.158 CE: 1.133 Tri: 0.025 Acc: 0.989 LR: 2.08e-05
+Epoch[33] Iter[500/786] Loss: 1.157 CE: 1.132 Tri: 0.025 Acc: 0.989 LR: 2.08e-05
+Epoch[33] Iter[550/786] Loss: 1.156 CE: 1.130 Tri: 0.026 Acc: 0.990 LR: 2.08e-05
+Epoch[33] Iter[600/786] Loss: 1.154 CE: 1.129 Tri: 0.025 Acc: 0.990 LR: 2.08e-05
+Epoch[33] Iter[650/786] Loss: 1.151 CE: 1.127 Tri: 0.025 Acc: 0.990 LR: 2.08e-05
+Epoch[33] Iter[700/786] Loss: 1.148 CE: 1.124 Tri: 0.024 Acc: 0.990 LR: 2.08e-05
+Epoch[33] done in 91.6s  Loss=1.143 Acc=0.991
+Epoch[34] Iter[50/786] Loss: 1.187 CE: 1.160 Tri: 0.027 Acc: 0.986 LR: 1.97e-05
+Epoch[34] Iter[100/786] Loss: 1.172 CE: 1.148 Tri: 0.024 Acc: 0.987 LR: 1.97e-05
+Epoch[34] Iter[150/786] Loss: 1.177 CE: 1.147 Tri: 0.030 Acc: 0.987 LR: 1.97e-05
+Epoch[34] Iter[200/786] Loss: 1.168 CE: 1.141 Tri: 0.026 Acc: 0.988 LR: 1.97e-05
+Epoch[34] Iter[250/786] Loss: 1.161 CE: 1.137 Tri: 0.024 Acc: 0.988 LR: 1.97e-05
+Epoch[34] Iter[300/786] Loss: 1.155 CE: 1.133 Tri: 0.022 Acc: 0.988 LR: 1.97e-05
+Epoch[34] Iter[350/786] Loss: 1.152 CE: 1.130 Tri: 0.022 Acc: 0.989 LR: 1.97e-05
+Epoch[34] Iter[400/786] Loss: 1.150 CE: 1.128 Tri: 0.022 Acc: 0.990 LR: 1.97e-05
+Epoch[34] Iter[450/786] Loss: 1.147 CE: 1.125 Tri: 0.022 Acc: 0.990 LR: 1.97e-05
+Epoch[34] Iter[500/786] Loss: 1.144 CE: 1.123 Tri: 0.021 Acc: 0.990 LR: 1.97e-05
+Epoch[34] Iter[550/786] Loss: 1.143 CE: 1.121 Tri: 0.021 Acc: 0.991 LR: 1.97e-05
+Epoch[34] Iter[600/786] Loss: 1.141 CE: 1.120 Tri: 0.021 Acc: 0.991 LR: 1.97e-05
+Epoch[34] Iter[650/786] Loss: 1.139 CE: 1.118 Tri: 0.021 Acc: 0.991 LR: 1.97e-05
+Epoch[34] Iter[700/786] Loss: 1.136 CE: 1.116 Tri: 0.020 Acc: 0.991 LR: 1.97e-05
+Epoch[34] done in 91.6s  Loss=1.133 Acc=0.992
+Epoch[35] Iter[50/786] Loss: 1.173 CE: 1.149 Tri: 0.023 Acc: 0.986 LR: 1.86e-05
+Epoch[35] Iter[100/786] Loss: 1.162 CE: 1.138 Tri: 0.024 Acc: 0.988 LR: 1.86e-05
+Epoch[35] Iter[150/786] Loss: 1.157 CE: 1.134 Tri: 0.022 Acc: 0.987 LR: 1.86e-05
+Epoch[35] Iter[200/786] Loss: 1.149 CE: 1.129 Tri: 0.019 Acc: 0.988 LR: 1.86e-05
+Epoch[35] Iter[250/786] Loss: 1.144 CE: 1.126 Tri: 0.018 Acc: 0.989 LR: 1.86e-05
+Epoch[35] Iter[300/786] Loss: 1.140 CE: 1.123 Tri: 0.017 Acc: 0.990 LR: 1.86e-05
+Epoch[35] Iter[350/786] Loss: 1.138 CE: 1.120 Tri: 0.017 Acc: 0.990 LR: 1.86e-05
+Epoch[35] Iter[400/786] Loss: 1.136 CE: 1.119 Tri: 0.017 Acc: 0.991 LR: 1.86e-05
+Epoch[35] Iter[450/786] Loss: 1.136 CE: 1.118 Tri: 0.017 Acc: 0.990 LR: 1.86e-05
+Epoch[35] Iter[500/786] Loss: 1.133 CE: 1.116 Tri: 0.017 Acc: 0.991 LR: 1.86e-05
+Epoch[35] Iter[550/786] Loss: 1.131 CE: 1.115 Tri: 0.016 Acc: 0.991 LR: 1.86e-05
+Epoch[35] Iter[600/786] Loss: 1.129 CE: 1.113 Tri: 0.016 Acc: 0.991 LR: 1.86e-05
+Epoch[35] Iter[650/786] Loss: 1.128 CE: 1.111 Tri: 0.017 Acc: 0.991 LR: 1.86e-05
+Epoch[35] Iter[700/786] Loss: 1.126 CE: 1.109 Tri: 0.017 Acc: 0.992 LR: 1.86e-05
+Epoch[35] done in 91.6s  Loss=1.122 Acc=0.992
+Epoch[36] Iter[50/786] Loss: 1.162 CE: 1.141 Tri: 0.020 Acc: 0.989 LR: 1.75e-05
+Epoch[36] Iter[100/786] Loss: 1.156 CE: 1.135 Tri: 0.021 Acc: 0.989 LR: 1.75e-05
+Epoch[36] Iter[150/786] Loss: 1.151 CE: 1.129 Tri: 0.021 Acc: 0.989 LR: 1.75e-05
+Epoch[36] Iter[200/786] Loss: 1.145 CE: 1.125 Tri: 0.020 Acc: 0.990 LR: 1.75e-05
+Epoch[36] Iter[250/786] Loss: 1.142 CE: 1.121 Tri: 0.021 Acc: 0.990 LR: 1.75e-05
+Epoch[36] Iter[300/786] Loss: 1.138 CE: 1.119 Tri: 0.020 Acc: 0.990 LR: 1.75e-05
+Epoch[36] Iter[350/786] Loss: 1.134 CE: 1.116 Tri: 0.018 Acc: 0.991 LR: 1.75e-05
+Epoch[36] Iter[400/786] Loss: 1.130 CE: 1.113 Tri: 0.017 Acc: 0.991 LR: 1.75e-05
+Epoch[36] Iter[450/786] Loss: 1.128 CE: 1.111 Tri: 0.017 Acc: 0.992 LR: 1.75e-05
+Epoch[36] Iter[500/786] Loss: 1.126 CE: 1.110 Tri: 0.017 Acc: 0.992 LR: 1.75e-05
+Epoch[36] Iter[550/786] Loss: 1.124 CE: 1.108 Tri: 0.016 Acc: 0.992 LR: 1.75e-05
+Epoch[36] Iter[600/786] Loss: 1.123 CE: 1.107 Tri: 0.016 Acc: 0.992 LR: 1.75e-05
+Epoch[36] Iter[650/786] Loss: 1.120 CE: 1.105 Tri: 0.016 Acc: 0.992 LR: 1.75e-05
+Epoch[36] Iter[700/786] Loss: 1.119 CE: 1.103 Tri: 0.016 Acc: 0.993 LR: 1.75e-05
+Epoch[36] done in 90.8s  Loss=1.116 Acc=0.993
+Epoch[37] Iter[50/786] Loss: 1.152 CE: 1.129 Tri: 0.023 Acc: 0.990 LR: 1.64e-05
+Epoch[37] Iter[100/786] Loss: 1.141 CE: 1.121 Tri: 0.020 Acc: 0.990 LR: 1.64e-05
+Epoch[37] Iter[150/786] Loss: 1.133 CE: 1.114 Tri: 0.019 Acc: 0.992 LR: 1.64e-05
+Epoch[37] Iter[200/786] Loss: 1.129 CE: 1.111 Tri: 0.018 Acc: 0.992 LR: 1.64e-05
+Epoch[37] Iter[250/786] Loss: 1.126 CE: 1.108 Tri: 0.018 Acc: 0.992 LR: 1.64e-05
+Epoch[37] Iter[300/786] Loss: 1.129 CE: 1.109 Tri: 0.020 Acc: 0.992 LR: 1.64e-05
+Epoch[37] Iter[350/786] Loss: 1.126 CE: 1.108 Tri: 0.019 Acc: 0.992 LR: 1.64e-05
+Epoch[37] Iter[400/786] Loss: 1.124 CE: 1.105 Tri: 0.018 Acc: 0.992 LR: 1.64e-05
+Epoch[37] Iter[450/786] Loss: 1.123 CE: 1.104 Tri: 0.019 Acc: 0.992 LR: 1.64e-05
+Epoch[37] Iter[500/786] Loss: 1.120 CE: 1.103 Tri: 0.018 Acc: 0.992 LR: 1.64e-05
+Epoch[37] Iter[550/786] Loss: 1.119 CE: 1.101 Tri: 0.017 Acc: 0.993 LR: 1.64e-05
+Epoch[37] Iter[600/786] Loss: 1.117 CE: 1.100 Tri: 0.017 Acc: 0.993 LR: 1.64e-05
+Epoch[37] Iter[650/786] Loss: 1.115 CE: 1.098 Tri: 0.017 Acc: 0.993 LR: 1.64e-05
+Epoch[37] Iter[700/786] Loss: 1.112 CE: 1.096 Tri: 0.016 Acc: 0.993 LR: 1.64e-05
+Epoch[37] done in 91.7s  Loss=1.109 Acc=0.993
+Epoch[38] Iter[50/786] Loss: 1.132 CE: 1.117 Tri: 0.015 Acc: 0.991 LR: 1.53e-05
+Epoch[38] Iter[100/786] Loss: 1.133 CE: 1.115 Tri: 0.018 Acc: 0.991 LR: 1.53e-05
+Epoch[38] Iter[150/786] Loss: 1.127 CE: 1.110 Tri: 0.017 Acc: 0.991 LR: 1.53e-05
+Epoch[38] Iter[200/786] Loss: 1.123 CE: 1.107 Tri: 0.016 Acc: 0.992 LR: 1.53e-05
+Epoch[38] Iter[250/786] Loss: 1.119 CE: 1.104 Tri: 0.015 Acc: 0.993 LR: 1.53e-05
+Epoch[38] Iter[300/786] Loss: 1.119 CE: 1.103 Tri: 0.016 Acc: 0.993 LR: 1.53e-05
+Epoch[38] Iter[350/786] Loss: 1.118 CE: 1.102 Tri: 0.016 Acc: 0.993 LR: 1.53e-05
+Epoch[38] Iter[400/786] Loss: 1.117 CE: 1.101 Tri: 0.016 Acc: 0.992 LR: 1.53e-05
+Epoch[38] Iter[450/786] Loss: 1.116 CE: 1.101 Tri: 0.015 Acc: 0.992 LR: 1.53e-05
+Epoch[38] Iter[500/786] Loss: 1.114 CE: 1.099 Tri: 0.015 Acc: 0.993 LR: 1.53e-05
+Epoch[38] Iter[550/786] Loss: 1.112 CE: 1.097 Tri: 0.014 Acc: 0.993 LR: 1.53e-05
+Epoch[38] Iter[600/786] Loss: 1.110 CE: 1.096 Tri: 0.014 Acc: 0.993 LR: 1.53e-05
+Epoch[38] Iter[650/786] Loss: 1.108 CE: 1.094 Tri: 0.014 Acc: 0.993 LR: 1.53e-05
+Epoch[38] Iter[700/786] Loss: 1.106 CE: 1.092 Tri: 0.013 Acc: 0.993 LR: 1.53e-05
+Epoch[38] done in 92.1s  Loss=1.103 Acc=0.994
+Epoch[39] Iter[50/786] Loss: 1.139 CE: 1.125 Tri: 0.015 Acc: 0.989 LR: 1.42e-05
+Epoch[39] Iter[100/786] Loss: 1.136 CE: 1.118 Tri: 0.018 Acc: 0.990 LR: 1.42e-05
+Epoch[39] Iter[150/786] Loss: 1.125 CE: 1.110 Tri: 0.015 Acc: 0.991 LR: 1.42e-05
+Epoch[39] Iter[200/786] Loss: 1.124 CE: 1.107 Tri: 0.017 Acc: 0.992 LR: 1.42e-05
+Epoch[39] Iter[250/786] Loss: 1.122 CE: 1.105 Tri: 0.016 Acc: 0.991 LR: 1.42e-05
+Epoch[39] Iter[300/786] Loss: 1.119 CE: 1.103 Tri: 0.016 Acc: 0.992 LR: 1.42e-05
+Epoch[39] Iter[350/786] Loss: 1.117 CE: 1.101 Tri: 0.016 Acc: 0.992 LR: 1.42e-05
+Epoch[39] Iter[400/786] Loss: 1.116 CE: 1.100 Tri: 0.016 Acc: 0.992 LR: 1.42e-05
+Epoch[39] Iter[450/786] Loss: 1.113 CE: 1.098 Tri: 0.016 Acc: 0.992 LR: 1.42e-05
+Epoch[39] Iter[500/786] Loss: 1.111 CE: 1.096 Tri: 0.015 Acc: 0.993 LR: 1.42e-05
+Epoch[39] Iter[550/786] Loss: 1.109 CE: 1.094 Tri: 0.015 Acc: 0.993 LR: 1.42e-05
+Epoch[39] Iter[600/786] Loss: 1.107 CE: 1.093 Tri: 0.014 Acc: 0.993 LR: 1.42e-05
+Epoch[39] Iter[650/786] Loss: 1.106 CE: 1.091 Tri: 0.014 Acc: 0.993 LR: 1.42e-05
+Epoch[39] Iter[700/786] Loss: 1.104 CE: 1.090 Tri: 0.014 Acc: 0.994 LR: 1.42e-05
+Epoch[39] done in 91.6s  Loss=1.101 Acc=0.994
+Epoch[40] Iter[50/786] Loss: 1.117 CE: 1.106 Tri: 0.011 Acc: 0.990 LR: 1.31e-05
+Epoch[40] Iter[100/786] Loss: 1.120 CE: 1.103 Tri: 0.017 Acc: 0.992 LR: 1.31e-05
+Epoch[40] Iter[150/786] Loss: 1.117 CE: 1.100 Tri: 0.017 Acc: 0.992 LR: 1.31e-05
+Epoch[40] Iter[200/786] Loss: 1.117 CE: 1.099 Tri: 0.018 Acc: 0.992 LR: 1.31e-05
+Epoch[40] Iter[250/786] Loss: 1.115 CE: 1.097 Tri: 0.018 Acc: 0.993 LR: 1.31e-05
+Epoch[40] Iter[300/786] Loss: 1.113 CE: 1.096 Tri: 0.017 Acc: 0.993 LR: 1.31e-05
+Epoch[40] Iter[350/786] Loss: 1.110 CE: 1.094 Tri: 0.016 Acc: 0.993 LR: 1.31e-05
+Epoch[40] Iter[400/786] Loss: 1.107 CE: 1.093 Tri: 0.015 Acc: 0.993 LR: 1.31e-05
+Epoch[40] Iter[450/786] Loss: 1.108 CE: 1.092 Tri: 0.016 Acc: 0.993 LR: 1.31e-05
+Epoch[40] Iter[500/786] Loss: 1.105 CE: 1.091 Tri: 0.015 Acc: 0.993 LR: 1.31e-05
+Epoch[40] Iter[550/786] Loss: 1.103 CE: 1.089 Tri: 0.015 Acc: 0.994 LR: 1.31e-05
+Epoch[40] Iter[600/786] Loss: 1.102 CE: 1.088 Tri: 0.014 Acc: 0.994 LR: 1.31e-05
+Epoch[40] Iter[650/786] Loss: 1.100 CE: 1.086 Tri: 0.014 Acc: 0.994 LR: 1.31e-05
+Epoch[40] Iter[700/786] Loss: 1.099 CE: 1.085 Tri: 0.014 Acc: 0.994 LR: 1.31e-05
+Epoch[40] done in 91.1s  Loss=1.096 Acc=0.994
+  ---- A<->G cross-view eval @ epoch 40 ----
+    [A->G] mAP=76.21  R1=83.83  R5=91.00  mINP=48.95
+    [G->A] mAP=77.13  R1=85.42  R5=91.17  mINP=42.14
+    [mean] mAP=76.67  R1=84.63
+    * new best mean mAP=76.67 (epoch 40) saved
+Epoch[41] Iter[50/786] Loss: 1.131 CE: 1.108 Tri: 0.023 Acc: 0.993 LR: 1.21e-05
+Epoch[41] Iter[100/786] Loss: 1.120 CE: 1.102 Tri: 0.018 Acc: 0.992 LR: 1.21e-05
+Epoch[41] Iter[150/786] Loss: 1.112 CE: 1.097 Tri: 0.015 Acc: 0.993 LR: 1.21e-05
+Epoch[41] Iter[200/786] Loss: 1.110 CE: 1.094 Tri: 0.015 Acc: 0.993 LR: 1.21e-05
+Epoch[41] Iter[250/786] Loss: 1.108 CE: 1.093 Tri: 0.014 Acc: 0.993 LR: 1.21e-05
+Epoch[41] Iter[300/786] Loss: 1.106 CE: 1.091 Tri: 0.014 Acc: 0.993 LR: 1.21e-05
+Epoch[41] Iter[350/786] Loss: 1.104 CE: 1.090 Tri: 0.014 Acc: 0.993 LR: 1.21e-05
+Epoch[41] Iter[400/786] Loss: 1.103 CE: 1.089 Tri: 0.014 Acc: 0.993 LR: 1.21e-05
+Epoch[41] Iter[450/786] Loss: 1.102 CE: 1.087 Tri: 0.014 Acc: 0.994 LR: 1.21e-05
+Epoch[41] Iter[500/786] Loss: 1.099 CE: 1.086 Tri: 0.013 Acc: 0.994 LR: 1.21e-05
+Epoch[41] Iter[550/786] Loss: 1.098 CE: 1.085 Tri: 0.013 Acc: 0.994 LR: 1.21e-05
+Epoch[41] Iter[600/786] Loss: 1.096 CE: 1.083 Tri: 0.013 Acc: 0.994 LR: 1.21e-05
+Epoch[41] Iter[650/786] Loss: 1.095 CE: 1.082 Tri: 0.012 Acc: 0.994 LR: 1.21e-05
+Epoch[41] Iter[700/786] Loss: 1.092 CE: 1.080 Tri: 0.012 Acc: 0.994 LR: 1.21e-05
+Epoch[41] done in 91.9s  Loss=1.089 Acc=0.995
+Epoch[42] Iter[50/786] Loss: 1.101 CE: 1.093 Tri: 0.008 Acc: 0.991 LR: 1.11e-05
+Epoch[42] Iter[100/786] Loss: 1.109 CE: 1.091 Tri: 0.017 Acc: 0.990 LR: 1.11e-05
+Epoch[42] Iter[150/786] Loss: 1.105 CE: 1.090 Tri: 0.015 Acc: 0.991 LR: 1.11e-05
+Epoch[42] Iter[200/786] Loss: 1.102 CE: 1.089 Tri: 0.013 Acc: 0.992 LR: 1.11e-05
+Epoch[42] Iter[250/786] Loss: 1.100 CE: 1.087 Tri: 0.013 Acc: 0.993 LR: 1.11e-05
+Epoch[42] Iter[300/786] Loss: 1.099 CE: 1.086 Tri: 0.013 Acc: 0.993 LR: 1.11e-05
+Epoch[42] Iter[350/786] Loss: 1.098 CE: 1.085 Tri: 0.013 Acc: 0.993 LR: 1.11e-05
+Epoch[42] Iter[400/786] Loss: 1.096 CE: 1.084 Tri: 0.012 Acc: 0.993 LR: 1.11e-05
+Epoch[42] Iter[450/786] Loss: 1.094 CE: 1.083 Tri: 0.012 Acc: 0.993 LR: 1.11e-05
+Epoch[42] Iter[500/786] Loss: 1.093 CE: 1.082 Tri: 0.011 Acc: 0.994 LR: 1.11e-05
+Epoch[42] Iter[550/786] Loss: 1.092 CE: 1.081 Tri: 0.011 Acc: 0.994 LR: 1.11e-05
+Epoch[42] Iter[600/786] Loss: 1.090 CE: 1.079 Tri: 0.011 Acc: 0.994 LR: 1.11e-05
+Epoch[42] Iter[650/786] Loss: 1.088 CE: 1.078 Tri: 0.010 Acc: 0.994 LR: 1.11e-05
+Epoch[42] Iter[700/786] Loss: 1.086 CE: 1.076 Tri: 0.010 Acc: 0.994 LR: 1.11e-05
+Epoch[42] done in 91.0s  Loss=1.084 Acc=0.995
+Epoch[43] Iter[50/786] Loss: 1.100 CE: 1.090 Tri: 0.010 Acc: 0.992 LR: 1.00e-05
+Epoch[43] Iter[100/786] Loss: 1.092 CE: 1.085 Tri: 0.007 Acc: 0.993 LR: 1.00e-05
+Epoch[43] Iter[150/786] Loss: 1.091 CE: 1.084 Tri: 0.008 Acc: 0.994 LR: 1.00e-05
+Epoch[43] Iter[200/786] Loss: 1.091 CE: 1.081 Tri: 0.010 Acc: 0.995 LR: 1.00e-05
+Epoch[43] Iter[250/786] Loss: 1.091 CE: 1.082 Tri: 0.010 Acc: 0.994 LR: 1.00e-05
+Epoch[43] Iter[300/786] Loss: 1.091 CE: 1.081 Tri: 0.010 Acc: 0.994 LR: 1.00e-05
+Epoch[43] Iter[350/786] Loss: 1.089 CE: 1.079 Tri: 0.010 Acc: 0.994 LR: 1.00e-05
+Epoch[43] Iter[400/786] Loss: 1.088 CE: 1.078 Tri: 0.010 Acc: 0.994 LR: 1.00e-05
+Epoch[43] Iter[450/786] Loss: 1.088 CE: 1.078 Tri: 0.010 Acc: 0.994 LR: 1.00e-05
+Epoch[43] Iter[500/786] Loss: 1.088 CE: 1.078 Tri: 0.010 Acc: 0.994 LR: 1.00e-05
+Epoch[43] Iter[550/786] Loss: 1.086 CE: 1.077 Tri: 0.009 Acc: 0.994 LR: 1.00e-05
+Epoch[43] Iter[600/786] Loss: 1.085 CE: 1.076 Tri: 0.009 Acc: 0.994 LR: 1.00e-05
+Epoch[43] Iter[650/786] Loss: 1.083 CE: 1.075 Tri: 0.008 Acc: 0.994 LR: 1.00e-05
+Epoch[43] Iter[700/786] Loss: 1.081 CE: 1.073 Tri: 0.008 Acc: 0.994 LR: 1.00e-05
+Epoch[43] done in 91.2s  Loss=1.079 Acc=0.994
+Epoch[44] Iter[50/786] Loss: 1.096 CE: 1.087 Tri: 0.009 Acc: 0.991 LR: 9.07e-06
+Epoch[44] Iter[100/786] Loss: 1.093 CE: 1.083 Tri: 0.011 Acc: 0.993 LR: 9.07e-06
+Epoch[44] Iter[150/786] Loss: 1.092 CE: 1.082 Tri: 0.010 Acc: 0.993 LR: 9.07e-06
+Epoch[44] Iter[200/786] Loss: 1.093 CE: 1.080 Tri: 0.013 Acc: 0.993 LR: 9.07e-06
+Epoch[44] Iter[250/786] Loss: 1.093 CE: 1.079 Tri: 0.014 Acc: 0.994 LR: 9.07e-06
+Epoch[44] Iter[300/786] Loss: 1.090 CE: 1.078 Tri: 0.013 Acc: 0.994 LR: 9.07e-06
+Epoch[44] Iter[350/786] Loss: 1.089 CE: 1.077 Tri: 0.012 Acc: 0.994 LR: 9.07e-06
+Epoch[44] Iter[400/786] Loss: 1.087 CE: 1.075 Tri: 0.012 Acc: 0.994 LR: 9.07e-06
+Epoch[44] Iter[450/786] Loss: 1.086 CE: 1.074 Tri: 0.012 Acc: 0.994 LR: 9.07e-06
+Epoch[44] Iter[500/786] Loss: 1.085 CE: 1.073 Tri: 0.012 Acc: 0.994 LR: 9.07e-06
+Epoch[44] Iter[550/786] Loss: 1.083 CE: 1.072 Tri: 0.011 Acc: 0.995 LR: 9.07e-06
+Epoch[44] Iter[600/786] Loss: 1.082 CE: 1.071 Tri: 0.011 Acc: 0.995 LR: 9.07e-06
+Epoch[44] Iter[650/786] Loss: 1.080 CE: 1.070 Tri: 0.010 Acc: 0.995 LR: 9.07e-06
+Epoch[44] Iter[700/786] Loss: 1.079 CE: 1.069 Tri: 0.010 Acc: 0.995 LR: 9.07e-06
+Epoch[44] done in 91.2s  Loss=1.077 Acc=0.995
+Epoch[45] Iter[50/786] Loss: 1.101 CE: 1.084 Tri: 0.017 Acc: 0.993 LR: 8.12e-06
+Epoch[45] Iter[100/786] Loss: 1.094 CE: 1.081 Tri: 0.013 Acc: 0.994 LR: 8.12e-06
+Epoch[45] Iter[150/786] Loss: 1.090 CE: 1.079 Tri: 0.012 Acc: 0.993 LR: 8.12e-06
+Epoch[45] Iter[200/786] Loss: 1.086 CE: 1.077 Tri: 0.010 Acc: 0.994 LR: 8.12e-06
+Epoch[45] Iter[250/786] Loss: 1.084 CE: 1.075 Tri: 0.009 Acc: 0.994 LR: 8.12e-06
+Epoch[45] Iter[300/786] Loss: 1.083 CE: 1.074 Tri: 0.009 Acc: 0.994 LR: 8.12e-06
+Epoch[45] Iter[350/786] Loss: 1.080 CE: 1.073 Tri: 0.008 Acc: 0.994 LR: 8.12e-06
+Epoch[45] Iter[400/786] Loss: 1.080 CE: 1.072 Tri: 0.008 Acc: 0.995 LR: 8.12e-06
+Epoch[45] Iter[450/786] Loss: 1.079 CE: 1.071 Tri: 0.008 Acc: 0.995 LR: 8.12e-06
+Epoch[45] Iter[500/786] Loss: 1.077 CE: 1.069 Tri: 0.008 Acc: 0.995 LR: 8.12e-06
+Epoch[45] Iter[550/786] Loss: 1.076 CE: 1.069 Tri: 0.008 Acc: 0.995 LR: 8.12e-06
+Epoch[45] Iter[600/786] Loss: 1.075 CE: 1.068 Tri: 0.008 Acc: 0.996 LR: 8.12e-06
+Epoch[45] Iter[650/786] Loss: 1.074 CE: 1.066 Tri: 0.007 Acc: 0.996 LR: 8.12e-06
+Epoch[45] Iter[700/786] Loss: 1.072 CE: 1.065 Tri: 0.007 Acc: 0.996 LR: 8.12e-06
+Epoch[45] done in 91.6s  Loss=1.070 Acc=0.996
+Epoch[46] Iter[50/786] Loss: 1.086 CE: 1.076 Tri: 0.010 Acc: 0.995 LR: 7.21e-06
+Epoch[46] Iter[100/786] Loss: 1.089 CE: 1.078 Tri: 0.011 Acc: 0.995 LR: 7.21e-06
+Epoch[46] Iter[150/786] Loss: 1.087 CE: 1.077 Tri: 0.010 Acc: 0.994 LR: 7.21e-06
+Epoch[46] Iter[200/786] Loss: 1.083 CE: 1.074 Tri: 0.009 Acc: 0.995 LR: 7.21e-06
+Epoch[46] Iter[250/786] Loss: 1.082 CE: 1.073 Tri: 0.009 Acc: 0.995 LR: 7.21e-06
+Epoch[46] Iter[300/786] Loss: 1.081 CE: 1.072 Tri: 0.009 Acc: 0.995 LR: 7.21e-06
+Epoch[46] Iter[350/786] Loss: 1.078 CE: 1.070 Tri: 0.008 Acc: 0.996 LR: 7.21e-06
+Epoch[46] Iter[400/786] Loss: 1.078 CE: 1.070 Tri: 0.009 Acc: 0.995 LR: 7.21e-06
+Epoch[46] Iter[450/786] Loss: 1.079 CE: 1.069 Tri: 0.009 Acc: 0.995 LR: 7.21e-06
+Epoch[46] Iter[500/786] Loss: 1.078 CE: 1.068 Tri: 0.009 Acc: 0.995 LR: 7.21e-06
+Epoch[46] Iter[550/786] Loss: 1.077 CE: 1.068 Tri: 0.009 Acc: 0.995 LR: 7.21e-06
+Epoch[46] Iter[600/786] Loss: 1.075 CE: 1.067 Tri: 0.009 Acc: 0.995 LR: 7.21e-06
+Epoch[46] Iter[650/786] Loss: 1.074 CE: 1.066 Tri: 0.009 Acc: 0.996 LR: 7.21e-06
+Epoch[46] Iter[700/786] Loss: 1.072 CE: 1.064 Tri: 0.008 Acc: 0.996 LR: 7.21e-06
+Epoch[46] done in 90.8s  Loss=1.070 Acc=0.996
+Epoch[47] Iter[50/786] Loss: 1.082 CE: 1.073 Tri: 0.009 Acc: 0.994 LR: 6.35e-06
+Epoch[47] Iter[100/786] Loss: 1.079 CE: 1.071 Tri: 0.008 Acc: 0.995 LR: 6.35e-06
+Epoch[47] Iter[150/786] Loss: 1.078 CE: 1.070 Tri: 0.007 Acc: 0.995 LR: 6.35e-06
+Epoch[47] Iter[200/786] Loss: 1.076 CE: 1.069 Tri: 0.007 Acc: 0.995 LR: 6.35e-06
+Epoch[47] Iter[250/786] Loss: 1.075 CE: 1.067 Tri: 0.008 Acc: 0.996 LR: 6.35e-06
+Epoch[47] Iter[300/786] Loss: 1.075 CE: 1.067 Tri: 0.008 Acc: 0.995 LR: 6.35e-06
+Epoch[47] Iter[350/786] Loss: 1.075 CE: 1.066 Tri: 0.008 Acc: 0.995 LR: 6.35e-06
+Epoch[47] Iter[400/786] Loss: 1.075 CE: 1.066 Tri: 0.009 Acc: 0.995 LR: 6.35e-06
+Epoch[47] Iter[450/786] Loss: 1.073 CE: 1.065 Tri: 0.008 Acc: 0.995 LR: 6.35e-06
+Epoch[47] Iter[500/786] Loss: 1.073 CE: 1.065 Tri: 0.008 Acc: 0.995 LR: 6.35e-06
+Epoch[47] Iter[550/786] Loss: 1.072 CE: 1.064 Tri: 0.008 Acc: 0.996 LR: 6.35e-06
+Epoch[47] Iter[600/786] Loss: 1.070 CE: 1.063 Tri: 0.008 Acc: 0.996 LR: 6.35e-06
+Epoch[47] Iter[650/786] Loss: 1.069 CE: 1.061 Tri: 0.007 Acc: 0.996 LR: 6.35e-06
+Epoch[47] Iter[700/786] Loss: 1.067 CE: 1.060 Tri: 0.007 Acc: 0.996 LR: 6.35e-06
+Epoch[47] done in 91.2s  Loss=1.065 Acc=0.996
+Epoch[48] Iter[50/786] Loss: 1.079 CE: 1.076 Tri: 0.003 Acc: 0.993 LR: 5.52e-06
+Epoch[48] Iter[100/786] Loss: 1.076 CE: 1.071 Tri: 0.005 Acc: 0.994 LR: 5.52e-06
+Epoch[48] Iter[150/786] Loss: 1.075 CE: 1.069 Tri: 0.006 Acc: 0.994 LR: 5.52e-06
+Epoch[48] Iter[200/786] Loss: 1.073 CE: 1.068 Tri: 0.006 Acc: 0.994 LR: 5.52e-06
+Epoch[48] Iter[250/786] Loss: 1.073 CE: 1.067 Tri: 0.006 Acc: 0.995 LR: 5.52e-06
+Epoch[48] Iter[300/786] Loss: 1.072 CE: 1.066 Tri: 0.007 Acc: 0.995 LR: 5.52e-06
+Epoch[48] Iter[350/786] Loss: 1.071 CE: 1.065 Tri: 0.006 Acc: 0.995 LR: 5.52e-06
+Epoch[48] Iter[400/786] Loss: 1.070 CE: 1.063 Tri: 0.006 Acc: 0.995 LR: 5.52e-06
+Epoch[48] Iter[450/786] Loss: 1.069 CE: 1.063 Tri: 0.006 Acc: 0.995 LR: 5.52e-06
+Epoch[48] Iter[500/786] Loss: 1.068 CE: 1.062 Tri: 0.006 Acc: 0.995 LR: 5.52e-06
+Epoch[48] Iter[550/786] Loss: 1.066 CE: 1.061 Tri: 0.006 Acc: 0.995 LR: 5.52e-06
+Epoch[48] Iter[600/786] Loss: 1.065 CE: 1.060 Tri: 0.005 Acc: 0.996 LR: 5.52e-06
+Epoch[48] Iter[650/786] Loss: 1.064 CE: 1.058 Tri: 0.005 Acc: 0.996 LR: 5.52e-06
+Epoch[48] Iter[700/786] Loss: 1.063 CE: 1.057 Tri: 0.005 Acc: 0.996 LR: 5.52e-06
+Epoch[48] done in 90.9s  Loss=1.061 Acc=0.996
+Epoch[49] Iter[50/786] Loss: 1.083 CE: 1.072 Tri: 0.011 Acc: 0.993 LR: 4.74e-06
+Epoch[49] Iter[100/786] Loss: 1.078 CE: 1.068 Tri: 0.009 Acc: 0.993 LR: 4.74e-06
+Epoch[49] Iter[150/786] Loss: 1.076 CE: 1.066 Tri: 0.010 Acc: 0.994 LR: 4.74e-06
+Epoch[49] Iter[200/786] Loss: 1.073 CE: 1.065 Tri: 0.008 Acc: 0.994 LR: 4.74e-06
+Epoch[49] Iter[250/786] Loss: 1.072 CE: 1.063 Tri: 0.009 Acc: 0.995 LR: 4.74e-06
+Epoch[49] Iter[300/786] Loss: 1.071 CE: 1.062 Tri: 0.008 Acc: 0.995 LR: 4.74e-06
+Epoch[49] Iter[350/786] Loss: 1.070 CE: 1.062 Tri: 0.008 Acc: 0.995 LR: 4.74e-06
+Epoch[49] Iter[400/786] Loss: 1.068 CE: 1.061 Tri: 0.007 Acc: 0.995 LR: 4.74e-06
+Epoch[49] Iter[450/786] Loss: 1.067 CE: 1.060 Tri: 0.007 Acc: 0.996 LR: 4.74e-06
+Epoch[49] Iter[500/786] Loss: 1.066 CE: 1.059 Tri: 0.007 Acc: 0.996 LR: 4.74e-06
+Epoch[49] Iter[550/786] Loss: 1.065 CE: 1.059 Tri: 0.007 Acc: 0.996 LR: 4.74e-06
+Epoch[49] Iter[600/786] Loss: 1.064 CE: 1.058 Tri: 0.006 Acc: 0.996 LR: 4.74e-06
+Epoch[49] Iter[650/786] Loss: 1.063 CE: 1.057 Tri: 0.006 Acc: 0.996 LR: 4.74e-06
+Epoch[49] Iter[700/786] Loss: 1.062 CE: 1.056 Tri: 0.006 Acc: 0.996 LR: 4.74e-06
+Epoch[49] done in 91.5s  Loss=1.060 Acc=0.996
+Epoch[50] Iter[50/786] Loss: 1.064 CE: 1.062 Tri: 0.001 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[100/786] Loss: 1.067 CE: 1.063 Tri: 0.004 Acc: 0.994 LR: 4.02e-06
+Epoch[50] Iter[150/786] Loss: 1.064 CE: 1.060 Tri: 0.004 Acc: 0.995 LR: 4.02e-06
+Epoch[50] Iter[200/786] Loss: 1.065 CE: 1.060 Tri: 0.005 Acc: 0.995 LR: 4.02e-06
+Epoch[50] Iter[250/786] Loss: 1.064 CE: 1.059 Tri: 0.005 Acc: 0.995 LR: 4.02e-06
+Epoch[50] Iter[300/786] Loss: 1.063 CE: 1.058 Tri: 0.005 Acc: 0.995 LR: 4.02e-06
+Epoch[50] Iter[350/786] Loss: 1.061 CE: 1.057 Tri: 0.004 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[400/786] Loss: 1.062 CE: 1.056 Tri: 0.005 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[450/786] Loss: 1.061 CE: 1.056 Tri: 0.005 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[500/786] Loss: 1.060 CE: 1.055 Tri: 0.005 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[550/786] Loss: 1.059 CE: 1.054 Tri: 0.005 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[600/786] Loss: 1.059 CE: 1.054 Tri: 0.005 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[650/786] Loss: 1.058 CE: 1.053 Tri: 0.005 Acc: 0.997 LR: 4.02e-06
+Epoch[50] Iter[700/786] Loss: 1.057 CE: 1.052 Tri: 0.005 Acc: 0.997 LR: 4.02e-06
+Epoch[50] done in 91.5s  Loss=1.056 Acc=0.997
+  ---- A<->G cross-view eval @ epoch 50 ----
+    [A->G] mAP=79.75  R1=86.59  R5=92.44  mINP=55.00
+    [G->A] mAP=80.22  R1=88.51  R5=92.21  mINP=46.92
+    [mean] mAP=79.98  R1=87.55
+    * new best mean mAP=79.98 (epoch 50) saved
+Epoch[51] Iter[50/786] Loss: 1.065 CE: 1.061 Tri: 0.004 Acc: 0.998 LR: 3.34e-06
+Epoch[51] Iter[100/786] Loss: 1.066 CE: 1.061 Tri: 0.005 Acc: 0.995 LR: 3.34e-06
+Epoch[51] Iter[150/786] Loss: 1.067 CE: 1.060 Tri: 0.007 Acc: 0.995 LR: 3.34e-06
+Epoch[51] Iter[200/786] Loss: 1.066 CE: 1.059 Tri: 0.007 Acc: 0.995 LR: 3.34e-06
+Epoch[51] Iter[250/786] Loss: 1.065 CE: 1.058 Tri: 0.006 Acc: 0.996 LR: 3.34e-06
+Epoch[51] Iter[300/786] Loss: 1.064 CE: 1.058 Tri: 0.006 Acc: 0.996 LR: 3.34e-06
+Epoch[51] Iter[350/786] Loss: 1.063 CE: 1.057 Tri: 0.006 Acc: 0.996 LR: 3.34e-06
+Epoch[51] Iter[400/786] Loss: 1.062 CE: 1.056 Tri: 0.006 Acc: 0.996 LR: 3.34e-06
+Epoch[51] Iter[450/786] Loss: 1.061 CE: 1.056 Tri: 0.006 Acc: 0.996 LR: 3.34e-06
+Epoch[51] Iter[500/786] Loss: 1.061 CE: 1.055 Tri: 0.006 Acc: 0.996 LR: 3.34e-06
+Epoch[51] Iter[550/786] Loss: 1.060 CE: 1.055 Tri: 0.006 Acc: 0.996 LR: 3.34e-06
+Epoch[51] Iter[600/786] Loss: 1.059 CE: 1.054 Tri: 0.006 Acc: 0.996 LR: 3.34e-06
+Epoch[51] Iter[650/786] Loss: 1.059 CE: 1.053 Tri: 0.006 Acc: 0.997 LR: 3.34e-06
+Epoch[51] Iter[700/786] Loss: 1.058 CE: 1.052 Tri: 0.005 Acc: 0.997 LR: 3.34e-06
+Epoch[51] done in 91.5s  Loss=1.056 Acc=0.997
+Epoch[52] Iter[50/786] Loss: 1.074 CE: 1.066 Tri: 0.008 Acc: 0.992 LR: 2.72e-06
+Epoch[52] Iter[100/786] Loss: 1.066 CE: 1.060 Tri: 0.006 Acc: 0.995 LR: 2.72e-06
+Epoch[52] Iter[150/786] Loss: 1.063 CE: 1.057 Tri: 0.005 Acc: 0.996 LR: 2.72e-06
+Epoch[52] Iter[200/786] Loss: 1.066 CE: 1.059 Tri: 0.007 Acc: 0.995 LR: 2.72e-06
+Epoch[52] Iter[250/786] Loss: 1.063 CE: 1.057 Tri: 0.006 Acc: 0.995 LR: 2.72e-06
+Epoch[52] Iter[300/786] Loss: 1.062 CE: 1.056 Tri: 0.006 Acc: 0.996 LR: 2.72e-06
+Epoch[52] Iter[350/786] Loss: 1.062 CE: 1.056 Tri: 0.006 Acc: 0.996 LR: 2.72e-06
+Epoch[52] Iter[400/786] Loss: 1.061 CE: 1.055 Tri: 0.006 Acc: 0.996 LR: 2.72e-06
+Epoch[52] Iter[450/786] Loss: 1.060 CE: 1.055 Tri: 0.006 Acc: 0.996 LR: 2.72e-06
+Epoch[52] Iter[500/786] Loss: 1.060 CE: 1.054 Tri: 0.006 Acc: 0.996 LR: 2.72e-06
+Epoch[52] Iter[550/786] Loss: 1.059 CE: 1.053 Tri: 0.006 Acc: 0.996 LR: 2.72e-06
+Epoch[52] Iter[600/786] Loss: 1.058 CE: 1.053 Tri: 0.005 Acc: 0.996 LR: 2.72e-06
+Epoch[52] Iter[650/786] Loss: 1.057 CE: 1.052 Tri: 0.005 Acc: 0.996 LR: 2.72e-06
+Epoch[52] Iter[700/786] Loss: 1.056 CE: 1.051 Tri: 0.005 Acc: 0.996 LR: 2.72e-06
+Epoch[52] done in 91.7s  Loss=1.055 Acc=0.996
+Epoch[53] Iter[50/786] Loss: 1.072 CE: 1.062 Tri: 0.010 Acc: 0.995 LR: 2.16e-06
+Epoch[53] Iter[100/786] Loss: 1.069 CE: 1.060 Tri: 0.009 Acc: 0.994 LR: 2.16e-06
+Epoch[53] Iter[150/786] Loss: 1.067 CE: 1.059 Tri: 0.008 Acc: 0.994 LR: 2.16e-06
+Epoch[53] Iter[200/786] Loss: 1.063 CE: 1.056 Tri: 0.007 Acc: 0.995 LR: 2.16e-06
+Epoch[53] Iter[250/786] Loss: 1.062 CE: 1.055 Tri: 0.006 Acc: 0.996 LR: 2.16e-06
+Epoch[53] Iter[300/786] Loss: 1.061 CE: 1.055 Tri: 0.006 Acc: 0.996 LR: 2.16e-06
+Epoch[53] Iter[350/786] Loss: 1.060 CE: 1.054 Tri: 0.006 Acc: 0.996 LR: 2.16e-06
+Epoch[53] Iter[400/786] Loss: 1.059 CE: 1.054 Tri: 0.006 Acc: 0.996 LR: 2.16e-06
+Epoch[53] Iter[450/786] Loss: 1.058 CE: 1.053 Tri: 0.005 Acc: 0.996 LR: 2.16e-06
+Epoch[53] Iter[500/786] Loss: 1.057 CE: 1.052 Tri: 0.005 Acc: 0.997 LR: 2.16e-06
+Epoch[53] Iter[550/786] Loss: 1.056 CE: 1.051 Tri: 0.005 Acc: 0.997 LR: 2.16e-06
+Epoch[53] Iter[600/786] Loss: 1.055 CE: 1.051 Tri: 0.004 Acc: 0.997 LR: 2.16e-06
+Epoch[53] Iter[650/786] Loss: 1.054 CE: 1.050 Tri: 0.004 Acc: 0.997 LR: 2.16e-06
+Epoch[53] Iter[700/786] Loss: 1.053 CE: 1.049 Tri: 0.004 Acc: 0.997 LR: 2.16e-06
+Epoch[53] done in 91.8s  Loss=1.051 Acc=0.997
+Epoch[54] Iter[50/786] Loss: 1.068 CE: 1.059 Tri: 0.008 Acc: 0.995 LR: 1.67e-06
+Epoch[54] Iter[100/786] Loss: 1.061 CE: 1.056 Tri: 0.005 Acc: 0.996 LR: 1.67e-06
+Epoch[54] Iter[150/786] Loss: 1.061 CE: 1.056 Tri: 0.005 Acc: 0.996 LR: 1.67e-06
+Epoch[54] Iter[200/786] Loss: 1.060 CE: 1.055 Tri: 0.005 Acc: 0.996 LR: 1.67e-06
+Epoch[54] Iter[250/786] Loss: 1.059 CE: 1.054 Tri: 0.004 Acc: 0.996 LR: 1.67e-06
+Epoch[54] Iter[300/786] Loss: 1.058 CE: 1.054 Tri: 0.004 Acc: 0.996 LR: 1.67e-06
+Epoch[54] Iter[350/786] Loss: 1.058 CE: 1.053 Tri: 0.005 Acc: 0.996 LR: 1.67e-06
+Epoch[54] Iter[400/786] Loss: 1.057 CE: 1.052 Tri: 0.005 Acc: 0.997 LR: 1.67e-06
+Epoch[54] Iter[450/786] Loss: 1.056 CE: 1.051 Tri: 0.005 Acc: 0.997 LR: 1.67e-06
+Epoch[54] Iter[500/786] Loss: 1.056 CE: 1.051 Tri: 0.005 Acc: 0.997 LR: 1.67e-06
+Epoch[54] Iter[550/786] Loss: 1.055 CE: 1.050 Tri: 0.005 Acc: 0.997 LR: 1.67e-06
+Epoch[54] Iter[600/786] Loss: 1.054 CE: 1.049 Tri: 0.005 Acc: 0.997 LR: 1.67e-06
+Epoch[54] Iter[650/786] Loss: 1.054 CE: 1.049 Tri: 0.005 Acc: 0.997 LR: 1.67e-06
+Epoch[54] Iter[700/786] Loss: 1.053 CE: 1.048 Tri: 0.004 Acc: 0.997 LR: 1.67e-06
+Epoch[54] done in 91.6s  Loss=1.051 Acc=0.997
+Epoch[55] Iter[50/786] Loss: 1.056 CE: 1.053 Tri: 0.003 Acc: 0.997 LR: 1.23e-06
+Epoch[55] Iter[100/786] Loss: 1.062 CE: 1.057 Tri: 0.005 Acc: 0.995 LR: 1.23e-06
+Epoch[55] Iter[150/786] Loss: 1.060 CE: 1.055 Tri: 0.006 Acc: 0.996 LR: 1.23e-06
+Epoch[55] Iter[200/786] Loss: 1.060 CE: 1.054 Tri: 0.006 Acc: 0.996 LR: 1.23e-06
+Epoch[55] Iter[250/786] Loss: 1.059 CE: 1.054 Tri: 0.006 Acc: 0.996 LR: 1.23e-06
+Epoch[55] Iter[300/786] Loss: 1.058 CE: 1.053 Tri: 0.005 Acc: 0.996 LR: 1.23e-06
+Epoch[55] Iter[350/786] Loss: 1.057 CE: 1.052 Tri: 0.005 Acc: 0.996 LR: 1.23e-06
+Epoch[55] Iter[400/786] Loss: 1.056 CE: 1.051 Tri: 0.005 Acc: 0.996 LR: 1.23e-06
+Epoch[55] Iter[450/786] Loss: 1.055 CE: 1.050 Tri: 0.005 Acc: 0.996 LR: 1.23e-06
+Epoch[55] Iter[500/786] Loss: 1.055 CE: 1.050 Tri: 0.005 Acc: 0.996 LR: 1.23e-06
+Epoch[55] Iter[550/786] Loss: 1.053 CE: 1.049 Tri: 0.005 Acc: 0.997 LR: 1.23e-06
+Epoch[55] Iter[600/786] Loss: 1.053 CE: 1.048 Tri: 0.004 Acc: 0.997 LR: 1.23e-06
+Epoch[55] Iter[650/786] Loss: 1.052 CE: 1.047 Tri: 0.004 Acc: 0.997 LR: 1.23e-06
+Epoch[55] Iter[700/786] Loss: 1.051 CE: 1.047 Tri: 0.004 Acc: 0.997 LR: 1.23e-06
+Epoch[55] done in 91.6s  Loss=1.049 Acc=0.997
+Epoch[56] Iter[50/786] Loss: 1.064 CE: 1.057 Tri: 0.007 Acc: 0.993 LR: 8.57e-07
+Epoch[56] Iter[100/786] Loss: 1.060 CE: 1.055 Tri: 0.005 Acc: 0.995 LR: 8.57e-07
+Epoch[56] Iter[150/786] Loss: 1.057 CE: 1.053 Tri: 0.004 Acc: 0.996 LR: 8.57e-07
+Epoch[56] Iter[200/786] Loss: 1.056 CE: 1.052 Tri: 0.004 Acc: 0.996 LR: 8.57e-07
+Epoch[56] Iter[250/786] Loss: 1.056 CE: 1.051 Tri: 0.004 Acc: 0.996 LR: 8.57e-07
+Epoch[56] Iter[300/786] Loss: 1.054 CE: 1.051 Tri: 0.004 Acc: 0.996 LR: 8.57e-07
+Epoch[56] Iter[350/786] Loss: 1.054 CE: 1.050 Tri: 0.004 Acc: 0.997 LR: 8.57e-07
+Epoch[56] Iter[400/786] Loss: 1.053 CE: 1.049 Tri: 0.004 Acc: 0.997 LR: 8.57e-07
+Epoch[56] Iter[450/786] Loss: 1.052 CE: 1.049 Tri: 0.004 Acc: 0.996 LR: 8.57e-07
+Epoch[56] Iter[500/786] Loss: 1.052 CE: 1.048 Tri: 0.004 Acc: 0.996 LR: 8.57e-07
+Epoch[56] Iter[550/786] Loss: 1.051 CE: 1.048 Tri: 0.003 Acc: 0.997 LR: 8.57e-07
+Epoch[56] Iter[600/786] Loss: 1.051 CE: 1.047 Tri: 0.004 Acc: 0.997 LR: 8.57e-07
+Epoch[56] Iter[650/786] Loss: 1.050 CE: 1.046 Tri: 0.003 Acc: 0.997 LR: 8.57e-07
+Epoch[56] Iter[700/786] Loss: 1.049 CE: 1.045 Tri: 0.003 Acc: 0.997 LR: 8.57e-07
+Epoch[56] done in 92.0s  Loss=1.047 Acc=0.997
+Epoch[57] Iter[50/786] Loss: 1.060 CE: 1.058 Tri: 0.002 Acc: 0.996 LR: 5.50e-07
+Epoch[57] Iter[100/786] Loss: 1.058 CE: 1.054 Tri: 0.003 Acc: 0.996 LR: 5.50e-07
+Epoch[57] Iter[150/786] Loss: 1.056 CE: 1.053 Tri: 0.003 Acc: 0.996 LR: 5.50e-07
+Epoch[57] Iter[200/786] Loss: 1.057 CE: 1.053 Tri: 0.004 Acc: 0.996 LR: 5.50e-07
+Epoch[57] Iter[250/786] Loss: 1.059 CE: 1.054 Tri: 0.005 Acc: 0.996 LR: 5.50e-07
+Epoch[57] Iter[300/786] Loss: 1.059 CE: 1.053 Tri: 0.005 Acc: 0.995 LR: 5.50e-07
+Epoch[57] Iter[350/786] Loss: 1.058 CE: 1.053 Tri: 0.005 Acc: 0.995 LR: 5.50e-07
+Epoch[57] Iter[400/786] Loss: 1.057 CE: 1.052 Tri: 0.005 Acc: 0.996 LR: 5.50e-07
+Epoch[57] Iter[450/786] Loss: 1.055 CE: 1.050 Tri: 0.005 Acc: 0.996 LR: 5.50e-07
+Epoch[57] Iter[500/786] Loss: 1.054 CE: 1.050 Tri: 0.004 Acc: 0.996 LR: 5.50e-07
+Epoch[57] Iter[550/786] Loss: 1.053 CE: 1.049 Tri: 0.004 Acc: 0.996 LR: 5.50e-07
+Epoch[57] Iter[600/786] Loss: 1.053 CE: 1.049 Tri: 0.004 Acc: 0.996 LR: 5.50e-07
+Epoch[57] Iter[650/786] Loss: 1.052 CE: 1.048 Tri: 0.004 Acc: 0.997 LR: 5.50e-07
+Epoch[57] Iter[700/786] Loss: 1.051 CE: 1.047 Tri: 0.004 Acc: 0.997 LR: 5.50e-07
+Epoch[57] done in 91.5s  Loss=1.049 Acc=0.997
+Epoch[58] Iter[50/786] Loss: 1.060 CE: 1.056 Tri: 0.004 Acc: 0.993 LR: 3.10e-07
+Epoch[58] Iter[100/786] Loss: 1.058 CE: 1.054 Tri: 0.004 Acc: 0.994 LR: 3.10e-07
+Epoch[58] Iter[150/786] Loss: 1.058 CE: 1.054 Tri: 0.004 Acc: 0.994 LR: 3.10e-07
+Epoch[58] Iter[200/786] Loss: 1.058 CE: 1.053 Tri: 0.004 Acc: 0.995 LR: 3.10e-07
+Epoch[58] Iter[250/786] Loss: 1.057 CE: 1.053 Tri: 0.004 Acc: 0.995 LR: 3.10e-07
+Epoch[58] Iter[300/786] Loss: 1.057 CE: 1.052 Tri: 0.004 Acc: 0.995 LR: 3.10e-07
+Epoch[58] Iter[350/786] Loss: 1.055 CE: 1.051 Tri: 0.004 Acc: 0.995 LR: 3.10e-07
+Epoch[58] Iter[400/786] Loss: 1.055 CE: 1.050 Tri: 0.005 Acc: 0.996 LR: 3.10e-07
+Epoch[58] Iter[450/786] Loss: 1.054 CE: 1.050 Tri: 0.004 Acc: 0.996 LR: 3.10e-07
+Epoch[58] Iter[500/786] Loss: 1.053 CE: 1.049 Tri: 0.004 Acc: 0.996 LR: 3.10e-07
+Epoch[58] Iter[550/786] Loss: 1.053 CE: 1.048 Tri: 0.004 Acc: 0.996 LR: 3.10e-07
+Epoch[58] Iter[600/786] Loss: 1.052 CE: 1.048 Tri: 0.004 Acc: 0.996 LR: 3.10e-07
+Epoch[58] Iter[650/786] Loss: 1.050 CE: 1.047 Tri: 0.004 Acc: 0.997 LR: 3.10e-07
+Epoch[58] Iter[700/786] Loss: 1.049 CE: 1.046 Tri: 0.004 Acc: 0.997 LR: 3.10e-07
+Epoch[58] done in 91.9s  Loss=1.048 Acc=0.997
+Epoch[59] Iter[50/786] Loss: 1.056 CE: 1.052 Tri: 0.004 Acc: 0.998 LR: 1.38e-07
+Epoch[59] Iter[100/786] Loss: 1.054 CE: 1.051 Tri: 0.003 Acc: 0.998 LR: 1.38e-07
+Epoch[59] Iter[150/786] Loss: 1.054 CE: 1.051 Tri: 0.004 Acc: 0.997 LR: 1.38e-07
+Epoch[59] Iter[200/786] Loss: 1.054 CE: 1.051 Tri: 0.004 Acc: 0.997 LR: 1.38e-07
+Epoch[59] Iter[250/786] Loss: 1.055 CE: 1.051 Tri: 0.004 Acc: 0.996 LR: 1.38e-07
+Epoch[59] Iter[300/786] Loss: 1.055 CE: 1.050 Tri: 0.005 Acc: 0.996 LR: 1.38e-07
+Epoch[59] Iter[350/786] Loss: 1.054 CE: 1.050 Tri: 0.004 Acc: 0.996 LR: 1.38e-07
+Epoch[59] Iter[400/786] Loss: 1.054 CE: 1.049 Tri: 0.004 Acc: 0.996 LR: 1.38e-07
+Epoch[59] Iter[450/786] Loss: 1.053 CE: 1.049 Tri: 0.004 Acc: 0.996 LR: 1.38e-07
+Epoch[59] Iter[500/786] Loss: 1.052 CE: 1.048 Tri: 0.004 Acc: 0.997 LR: 1.38e-07
+Epoch[59] Iter[550/786] Loss: 1.052 CE: 1.047 Tri: 0.004 Acc: 0.997 LR: 1.38e-07
+Epoch[59] Iter[600/786] Loss: 1.051 CE: 1.046 Tri: 0.004 Acc: 0.997 LR: 1.38e-07
+Epoch[59] Iter[650/786] Loss: 1.050 CE: 1.046 Tri: 0.004 Acc: 0.997 LR: 1.38e-07
+Epoch[59] Iter[700/786] Loss: 1.049 CE: 1.045 Tri: 0.004 Acc: 0.997 LR: 1.38e-07
+Epoch[59] done in 91.5s  Loss=1.047 Acc=0.998
+Epoch[60] Iter[50/786] Loss: 1.057 CE: 1.054 Tri: 0.003 Acc: 0.997 LR: 3.45e-08
+Epoch[60] Iter[100/786] Loss: 1.056 CE: 1.053 Tri: 0.003 Acc: 0.996 LR: 3.45e-08
+Epoch[60] Iter[150/786] Loss: 1.055 CE: 1.051 Tri: 0.004 Acc: 0.997 LR: 3.45e-08
+Epoch[60] Iter[200/786] Loss: 1.055 CE: 1.051 Tri: 0.004 Acc: 0.997 LR: 3.45e-08
+Epoch[60] Iter[250/786] Loss: 1.056 CE: 1.051 Tri: 0.004 Acc: 0.996 LR: 3.45e-08
+Epoch[60] Iter[300/786] Loss: 1.055 CE: 1.051 Tri: 0.004 Acc: 0.996 LR: 3.45e-08
+Epoch[60] Iter[350/786] Loss: 1.054 CE: 1.050 Tri: 0.004 Acc: 0.996 LR: 3.45e-08
+Epoch[60] Iter[400/786] Loss: 1.053 CE: 1.049 Tri: 0.004 Acc: 0.996 LR: 3.45e-08
+Epoch[60] Iter[450/786] Loss: 1.052 CE: 1.048 Tri: 0.004 Acc: 0.997 LR: 3.45e-08
+Epoch[60] Iter[500/786] Loss: 1.051 CE: 1.048 Tri: 0.004 Acc: 0.997 LR: 3.45e-08
+Epoch[60] Iter[550/786] Loss: 1.050 CE: 1.047 Tri: 0.003 Acc: 0.997 LR: 3.45e-08
+Epoch[60] Iter[600/786] Loss: 1.049 CE: 1.046 Tri: 0.004 Acc: 0.997 LR: 3.45e-08
+Epoch[60] Iter[650/786] Loss: 1.049 CE: 1.045 Tri: 0.003 Acc: 0.997 LR: 3.45e-08
+Epoch[60] Iter[700/786] Loss: 1.048 CE: 1.045 Tri: 0.003 Acc: 0.997 LR: 3.45e-08
+Epoch[60] done in 91.9s  Loss=1.047 Acc=0.997
+  ---- A<->G cross-view eval @ epoch 60 ----
+    [A->G] mAP=80.73  R1=87.35  R5=93.00  mINP=56.91
+    [G->A] mAP=81.42  R1=89.07  R5=93.21  mINP=48.32
+    [mean] mAP=81.08  R1=88.21
+    * new best mean mAP=81.08 (epoch 60) saved
+======================================================================
+Training finished. Best mean A<->G mAP=81.08 @ epoch 60
+Checkpoints in /home/afr/SOLIDER-REID/log/cargo/baseline_agreidv2_4090
+======================================================================

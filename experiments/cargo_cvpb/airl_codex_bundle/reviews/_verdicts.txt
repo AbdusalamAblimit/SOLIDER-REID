@@ -1,0 +1,397 @@
+========== codex_1.md ==========
+1. **Verdict: needs-attention**
+
+代码层面我没看到 AIRL eval/fuse 的关键实现错误，也没看到 FUSE 使用 query/gallery label 的泄漏。  
+但结果口径需要收紧：AG-ReID.v2 的日志不支持“FUSE 净超 baseline ≈ 融合增益且双数据集一致”；它只支持“同 run 内 FUSE−full 为正”。
+
+2. **Findings**
+
+- **Medium**: [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:2379) / [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:2422)  
+  训练中用 query/gallery eval 结果保存 `model_best`，若论文报告 best 而不是 final，会构成 test-set model selection 泄漏。当前 AG-ReID.v2 4090 主日志 best=final epoch60，所以这次主数未被实际污染。
+
+- **Medium**: [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:153)  
+  `AGReIDV2Combined` 源文件未包含在本 bundle/上级目录，无法审查 official exp1/exp4 的构造实现。日志显示加载了 official split，但 dataset 构造本身本轮不能全量验。
+
+- **Medium**: [logs/agreidv2_baseline_4090_s2.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_baseline_4090_s2.log:896)  
+  baseline seed2 日志停在 epoch57 iter450，没有 final eval，不能当 final seed 证据使用。
+
+- **Low**: [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:1496)  
+  `airl_fuse_w=0.25` 在代码里是固定全局权重，无 per-query/label 调权；但论文口径要明确它是预注册固定 prior，不能由同一 test split sweep 后选择。
+
+3. **对 3 条待验结论的判断**
+
+(1) **反对原表述。**  
+CARGO 文档数：full=61.44，FUSE=63.21，baseline=60.84，FUSE−full=+1.77，net=+2.37。  
+AG-ReID.v2 4090 final 日志：AIRL full=79.90，FUSE=80.98；baseline=81.08。即 FUSE−full=+1.08，但 net=−0.10。见 `agreidv2_airl_4090.log:974-976` 和 `agreidv2_baseline_4090.log:949-951`。  
+所以“双数据集一致”的只能是 FUSE−full 为正，不是 net gain。
+
+(2) **数值同意，归因 log 数据不支持完全证明。**  
+CARGO 文档：full=61.44 vs baseline=60.84，full +0.60。  
+AG-ReID.v2 4090：full=79.90 vs baseline=81.08，full −1.18。  
+这支持“f_full 在 baseline 附近波动”，但“±1.2 是 seed 噪声”还需要同设备同 torch 多 seed；现有日志混有 3090/4090、torch/path 环境差异，seed2 又未完成。
+
+(3) **同意。**  
+CARGO 文档显示方向特化很强：A→G full 强于 rec，G→A rec 强于 full。  
+AG-ReID.v2 final 日志中 rec 两方向都低于 full：A→G rec−full=−0.77，G→A rec−full=−1.95；方向特化至少在 final 消失。第二数据集不支持固定“rec 帮 G→A / full 帮 A→G”的 claim。
+
+4. **本轮 lens 专项结论**
+
+- `AFDModel.forward` 的 train/eval 双分支一致：eval `return_dual=True` 返回 `(f_full, f_rec)`，train clean pass 也走 iso split；degraded consistency 走 `rec_only=True`，只产出 rec 头。
+- FUSE 实现在 distmat 层是对的：`cos = w*cos_rec + (1-w)*cos_full`，再转 `2-2*cos`，排序方向正确。
+- 未发现 FUSE 使用 query/gallery pid 来调权、选头或改分数；pid/camid 只进标准 mAP/CMC 和 same-pid same-cam junk removal。
+- 主要风险不是代码泄漏，而是实验口径：不要报告 test-best；AG-ReID.v2 当前只能 claim “融合互补”，不能 claim “净超 baseline”。
+
+Web novelty 快查：AGPReID 近作主要是视角/语义/几何对齐，如 [VDT/CARGO](https://arxiv.org/abs/2403.14513)、[AG-ReID.v2](https://arxiv.org/abs/2401.02634)、[GSAlign](https://arxiv.org/abs/2510.22268)、[ViSA 2026](https://arxiv.org/abs/2605.18192)。低分辨率/退化鲁棒 ReID 也已有先例，如 [Resolution-invariant ReID](https://arxiv.org/abs/1906.09748)、[RAIN](https://arxiv.org/abs/1907.10843)、[Degradation Invariance Learning](https://arxiv.org/abs/2004.04933)。AIRL 不应把“降质一致性”单独当强 novelty；更可讲的是 AG-ReID 场景里的梯度隔离 clean/recover 双头与固定融合互补，但方向固定 claim 需要降级。
+========== codex_10.md ==========
+1. Verdict: **needs-attention**
+
+没有发现会让全部 AIRL 结果作废的致命实现 bug；`rec_only` 隔离、f_rec 参数进 optimizer、soft-fuse eval、ground-only degradation loss 基本接线正确。问题在于：当前 logs 不支持主控的若干强结论，尤其 AG-ReID.v2 4090 final 并没有 net gain。
+
+2. Findings
+
+- **High | logs/agreidv2_airl_4090.log:976 + logs/agreidv2_baseline_4090.log:951**  
+  AG-ReID.v2 4090 final：AIRL FUSE mean `80.98`，同机 baseline final mean `81.08`，net = `-0.10`，不是 `+1.5`。这直接影响 AIRL cross-dataset headline。
+
+- **High | logs/agreidv2_baseline_4090_s2.log:793**  
+  baseline seed2 只看到 epoch50 eval：mean `79.54`，日志停在 epoch57 中段，没有 epoch60/final。不能用它支持 “final mean / seed noise ±1.2” 的完整判断。
+
+- **Medium | logs/agreidv2_airl_4090.log:9 / code/afd_train.py:1541**  
+  实际 AIRL 主 log 跑的是 `trunk_recce=False`，即 clean f_rec CE 也 detach 的 original full-isolation；而代码默认 `--airl_iso_trunk_recce=1`。如果论文 story 讲 “clean rec CE 回流 trunk 的 fix”，当前主结果不是那条机制。
+
+- **Medium | code/afd_train.py:1071**  
+  融合不是“方向感知融合”。代码是单个全局 `w=args.airl_fuse_w`，A->G/G->A 都同一个 `cos = w*cos_rec + (1-w)*cos_full`。可称 fixed-prior soft fusion，不能称 direction-aware。
+
+- **Medium | logs/**  
+  当前 bundle 只有 AG-ReID.v2 logs，没有 CARGO logs。凡是 “CARGO + AG-ReID.v2 双数据集一致”“CARGO-specific” 之类结论，本轮无法从真实 log 独立核验。
+
+3. 三条待验结论
+
+1. **反对。**  
+   AG-ReID.v2 4090 final 的 FUSE−full = `80.98 - 79.90 = +1.08`，确有融合增益，但不是 `~+1.5`；FUSE vs same-machine baseline = `80.98 - 81.08 = -0.10`，不是正 net gain。CARGO 不在本轮 logs 中，不能核验“双数据集一致”。
+
+2. **部分同意算术，反对解释强度。**  
+   AG-ReID.v2 4090 上，full vs baseline = `79.90 - 81.08 = -1.18`，FUSE vs baseline = `-0.10`，这和你说的 “full 头背运 −1.2 → net≈0” 数字一致。但“这是 seed 噪声”没有被 logs 证明：AIRL 没有第二 seed，baseline seed2 未跑满，3090/4090还混了机器和 torch 版本。
+
+3. **log 数据不支持。**  
+   AG-ReID.v2 final 里 rec 头两个方向都低于 full：A->G `78.70 < 79.47`，G->A `78.38 < 80.33`；FUSE 两个方向都涨。只能说第二数据集上 “rec/full 方向特化最终消失”，不能证明这是 CARGO-specific，因为本轮无 CARGO log。
+
+4. 本轮 lens 专项结论
+
+可信度：代码没有 Critical bug。训练日志也健康：`AIRL_rec` 有效、`n_ground` 正常、`deg_scale_mean≈0.625`、无 NaN/Traceback/OOM。结果可信，但结论要收紧为：“AG-ReID.v2 上 fixed soft fusion 给 AIRL 自身 full 头带来 +1.08 mAP，但同机 final baseline 不落后。”
+
+novelty：AIRL 不能卖“dual branch / low-res fusion / local fusion”本身。ViSA 已经是 AGPReID 的 view-aware framework，包含 ETGM 和 Dual-branch Local Fusion Module，并在 AG-ReID.v2/CARGO/LAGPeR 上验证；MRJL 已经做 cross-resolution HR/LR dual-branch feature fusion；AG-VPReID-Net 也有处理 resolution/appearance/scale 的多流设计；AdvProp 早就提出异分布样本用独立 auxiliary BN 的思路。AIRL 可区分的点只剩：ground-only image-space degradation consistency、f_rec late-stage gradient isolation、fixed cosine soft fusion。这个点可以写成 B 类方法稿的机制贡献候选，但当前证据不足以撑 “net~+1.5 双数据集一致” 的 headline。
+
+参考来源：ViSA arXiv/GitHub、AG-VPReID、MRJL、Resolution-Adaptive ReID、AdvProp。
+========== codex_2.md ==========
+**1. Verdict**
+
+needs-attention。代码主路径基本能解释日志里的 full/rec/FUSE 数字，但主控 3 条结论里至少第 (1) 不能按当前 logs 通过；本轮 lens 也不能 approve 机制归因。
+
+**2. Findings**
+
+- High | [logs/agreidv2_airl_4090.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_airl_4090.log:976) + [logs/agreidv2_baseline_4090.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_baseline_4090.log:951)  
+  AG-ReID.v2 lab-4090 final：AIRL FUSE=80.98，baseline=81.08，net=-0.10，不是正增益。把这组日志说成 “net gain≈+1.5/+2.37” 不成立。
+
+- High | [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:1071)  
+  FUSE 是固定 `w=0.25` 的纯 score blend：`0.25*cos_rec + 0.75*cos_full`。当前 logs 没有 no-AIRL 双头、独立 baseline ensemble、或 w-sweep 对照；所以 `FUSE-full` 只能证明两个头排序有互补，不能证明增益来自 degradation-consistency。
+
+- Medium | [logs/agreidv2_airl_4090.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_airl_4090.log:9) + [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:1541)  
+  AIRL 两份 AG-ReID.v2 日志实际都是 `trunk_recce=False`，而代码注释把 `trunk_recce=0` 定义为 original full-isolation / ablation only。若把这组作为 headline，需要明说它不是 `trunk_recce=1` fix 版本；f_full 变弱也不能只归为 seed 噪声。
+
+- Medium | [logs/agreidv2_baseline_4090_s2.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_baseline_4090_s2.log:887)  
+  baseline seed2 日志不完整，停在 epoch57 训练中，没有 epoch60 eval / `Training finished`。不能纳入 final mean 或 final seed-noise 估计。
+
+- Low | [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:148)  
+  bundle 不是自包含运行包：脚本仍按原仓库相对路径插入 `../afd_reid`。我对比过，bundle 的 `code/afd_train.py` 与原始 `experiments/cargo_cvpb/afd_train.py` 一致，`code/afd_model.py` 与原始 `experiments/afd_reid/afd_model.py` 一致；但单独在 bundle 内直接跑会依赖外部路径。
+
+**3. 对 3 条待验结论的判断**
+
+1. 反对。AG-ReID.v2 4090 final：full=79.90，rec=78.54，FUSE=80.98，`FUSE-full=+1.08`；baseline 4090 final=81.08，所以 net=-0.10。3090 AIRL log 只有到 ep40 eval，FUSE=77.62，不能当 final。bundle 内没有 CARGO log，无法验证“双数据集一致”。
+
+2. 部分同意，但证据不足。AG-ReID.v2 4090 full=79.90 vs baseline=81.08，确实约 -1.18；这符合“背运/seed noise”的幅度说法，但 seed2 final 缺失，不能证明只是噪声。CARGO 的 +0.6 / net +2.37 不在本轮 logs 里，无法核。
+
+3. 基本同意“AG-ReID.v2 没有稳定方向特化”，但不能证明 “CARGO-specific”。AG final rec 比 full 两个方向都差：A->G 78.70 vs 79.47，G->A 78.38 vs 80.33；早期 ep20 rec 在 A->G 强一些，但后期消失。CARGO-specific 需要 CARGO log 支撑。
+
+**4. Lens 结论**
+
+soft-fuse 不是实现 bug，但机制归因目前不够。`w=0.25` 在 AG-ReID.v2 上确实让 FUSE 高于 full：4090 各 eval 的 `FUSE-full` 约 +0.91 到 +1.69，final +1.08；这是真实排序互补信号。但它也完全可能是“两个相关 head 的普通 ensemble 收益”。
+
+文献上，多分支/多特征融合在 ReID 已是常见路线：MGN 明确是 global + local 多分支；EnsembleNet 直接把单网络分成多个端到端分支做 ensemble feature；OSNet 也用多流多尺度动态融合。低分辨/跨分辨 ReID 也已有 resolution degradation / resolution-invariant / feature distillation 先例。参考：[MGN](https://arxiv.org/abs/1804.01438), [Ensemble Feature for ReID](https://arxiv.org/abs/1901.05798), [OSNet](https://arxiv.org/abs/1905.00953), [Cross-Resolution DAL](https://arxiv.org/abs/1810.10221), [RFD](https://arxiv.org/abs/2109.07871), [AG-ReID.v2](https://arxiv.org/abs/2401.02634)。
+
+要把 AIRL 讲成机制贡献，最低还缺：`dualbranch_iso no-degrade`、两独立 baseline score average、固定预注册 w-sweep、head score/rank correlation、以及 per-direction error complementarity。当前只能说 “FUSE 有收益”，不能说 “degradation-consistency 造成了非平凡互补”。
+========== codex_3.md ==========
+1. Verdict: **needs-attention**
+
+代码主路径基本能对上日志，但主控 3 条结果解释有证据缺口，尤其 AG-ReID.v2 上 “AIRL net gain≈融合增益” 不成立。
+
+2. Findings
+
+- **High** – [logs/agreidv2_airl_4090.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_airl_4090.log:974) + [logs/agreidv2_baseline_4090.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_baseline_4090.log:949): AG-ReID.v2 4090 完整 final 下，AIRL FUSE mean=80.98，baseline mean=81.08，net=-0.10；FUSE-full=80.98-79.90=+1.08，不是约 +1.5。把它写成正向 net gain 会误导。
+
+- **Medium** – [logs/agreidv2_baseline_4090_s2.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_baseline_4090_s2.log:896) + [logs/agreidv2_airl_iso.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_airl_iso.log:811): baseline_4090_s2 停在 epoch57 中途，airl_iso 停在 epoch50，无 final。不能用这两条支撑完整 final/seed 结论。
+
+- **Medium** – [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:1148): degradation 采样的是边长比例 `s~U(0.25,1)`，实际像素面积 budget 是 `s^2`，不是注释里的 “s*100% spatial detail”。`min_scale=0.25` 表示最小面积约 6.25%，平均面积约 43.75%。
+
+- **Medium** – [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:2045) + [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:2232): rec 的 degraded 分支只有 clean-rec soft target 一致性，没有 degraded hard CE/triplet。实现没错，但存在“学成普通一致性/弱 ensemble 头”而非 recover expert 的解释风险；final rec 单头也低于 full。
+
+- **Low** – [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:1541) + [logs/agreidv2_airl_4090.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_airl_4090.log:9): parser 默认 `airl_iso_trunk_recce=1`，但 final run 是 `False/0`。用户给定 config 没错，但复现实验必须显式带 `--airl_iso_trunk_recce 0`。
+
+3. 对主控 3 条结论的独立判断
+
+(1) **反对 / log 数据不支持。** AG-ReID.v2 4090 final：FUSE=80.98，full=79.90，baseline=81.08。融合增益是 +1.08，net 是 -0.10。若拿 3090 baseline=79.88 比，net=+1.10，但这是跨机器/torch，不是严格 final baseline 对照。当前 bundle 没有 CARGO raw log，不能核“双数据集一致”。
+
+(2) **部分同意。** AG-ReID.v2 上 full=79.90，4090 baseline=81.08，差 -1.18；3090 baseline=79.88，差 +0.02。说 full 头大致落在 baseline 波动范围内是合理的，但 “seed 噪声” 没法严格证明，因为日志不打印 seed，且 seed2 baseline 未跑完。CARGO 的 +0.6 / net +2.37 在本 bundle 中无法核验。
+
+(3) **部分同意。** AG-ReID.v2 final 没有稳定方向特化：A->G rec 78.70 < full 79.47，G->A rec 78.38 < full 80.33；FUSE 两方向都涨。也就是第二数据集方向特化基本消失。但 “CARGO-specific” 需要 CARGO raw log，本轮日志不支持直接核定。
+
+4. 本轮 lens 专项结论
+
+degradation 实现是：只对 ground 样本做 normalized tensor 空间的 bilinear downsample 再 upsample，`s~U(0.25,1)`，无 blur；日志 `deg_scale_mean≈0.624/0.625` 正常。consistency 是 clean logits detach 作为 teacher，degraded rec logits 做 KL，`tau=4`，乘 `tau^2`，形式上是标准 KD/consistency loss。iso 下 `rec_only=True` 会在 stage-3 fork 处 detach，f_full BNNeck 不跑 degraded 图，未看到明显梯度泄漏。
+
+专项风险是解释层面：这套机制更像“ground 低分辨率增强 + clean/degraded self-distillation + 双头 score fusion”，不是天然证明了 rec 学到非平凡 recover pole。cross-resolution ReID 里分辨率不变表征、超分/双流、低高分辨率互补早有先例；AG-ReID 近年也有 geometry/view synthesis/semantic alignment 路线。AIRL 若写论文，应把 novelty 收紧到“AG-ReID 中 ground-to-aerial pixel-budget degradation consistency + isolated dual-head fixed soft fusion”，不要泛称 resolution-consistency 本身新。参考：Cross-Resolution DAL、RAIN/Resolution-invariant ReID、近期 AG-ReID GIQT/SD-ReID/GSAlign，以及 KD/Mean Teacher 一致性范式。([arxiv.org](https://arxiv.org/abs/1810.10221?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/1907.10843?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/1906.09748?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2601.21405?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2504.09549?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2510.22268?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/1503.02531?utm_source=openai))
+========== codex_4.md ==========
+1. **Verdict: needs-attention**
+
+代码主路径基本可信，尤其 `iso_trunk_recce=0 / rec_only=True` 的梯度隔离没有看到实质性泄漏。但结果解释需要收紧：AG-ReID.v2 final 日志不支持“net gain ≈ +1.5 / 等于融合增益”，部分文档还把 ep50 当成 final，且 seed2 / 3090 AIRL 日志不完整。
+
+2. **Findings**
+
+- **High** — `logs/agreidv2_airl_4090.log:976` + `logs/agreidv2_baseline_4090.log:951`  
+  AG-ReID.v2 同机 final 是 baseline `81.08`，AIRL FUSE `80.98`，净增益 `-0.10`；AIRL `FUSE-full = 80.98-79.90 = +1.08`。所以“FUSE mean vs baseline final mean ≈ FUSE-full ~+1.5”在这个 final 口径下不成立。
+
+- **High** — `logs/agreidv2_baseline_4090_s2.log:896` + `logs/agreidv2_airl_iso.log:811`  
+  `baseline_4090_s2` 停在 epoch57 iter450，没有 epoch60/final eval；`agreidv2_airl_iso.log` 停在 epoch50 done，也没有 epoch50 eval / Training finished。不能把它们当完整 seed/final 证据。
+
+- **Medium** — `../airl_agreidv2_result.md:54-61`  
+  文档写“lab-4090 baseline final 79.98 / AIRL final FUSE 79.90”，但日志里 `79.98` 和 `79.90` 都是 epoch50；真正 epoch60 是 baseline `81.08`、AIRL FUSE `80.98`。这是过期改判残留。
+
+- **Medium** — `code/afd_model.py:313-319`  
+  `full_map.detach()` 的位置足以切断梯度，但它发生在 f_full Swin late stages 和 `layer4` 已经执行之后。也就是说 degraded `rec_only` pass 仍计算了 f_full 激活并消耗随机层 RNG；只是这些结果不进 loss、不更新 f_full BNNeck/权重。这是注释“cheap / no f_full grad graph built”的夸大，不是梯度泄漏。
+
+3. **对 3 条待验结论的独立判断**
+
+- **(1) 反对 / log 不支持。**  
+  AG-ReID.v2 final：AIRL FUSE `80.98` vs same-machine baseline `81.08`，net `-0.10`；FUSE-full 只有 `+1.08`，不是 `~+1.5`。CARGO 的 `+2.37` 来自父级汇总文档，不在本轮 `logs/` 原始日志中，不能说“双数据集原始日志一致”。
+
+- **(2) 部分同意。**  
+  AG-ReID.v2 支持：AIRL full `79.90` vs lab-4090 baseline `81.08` 是 `-1.18`，但 finished baseline 两机本身是 `79.88~81.08`，full 头落在这个波动范围内。CARGO “full +0.6 / net +2.37”只在父级文档里有，本轮日志不能独立复核。
+
+- **(3) 同意弱版。**  
+  AG-ReID.v2 不支持固定方向特化。final 时 rec 比 full 两方向都低：A→G `78.70 vs 79.47`，G→A `78.38 vs 80.33`；早期 ep20/30 又出现 rec 偏 A→G。结论应写成：CARGO 的固定方向解释不能跨数据集推广；第二数据集上方向翻号或消失。
+
+4. **本轮 lens 专项结论**
+
+`iso_trunk_recce=0` 的隔离是正确的：`code/afd_model.py:287-299` 使 clean 和 degraded 的 rec fork 都 detach；`code/afd_train.py:2227-2236` degraded pass 用 `rec_only=True`，loss 只读 `logits_rec/bn_feat_rec`；`code/afd_train.py:1191-1227` 又把 clean target detach。因此 consistency 梯度只到 rec late stage + rec BNNeck/classifier，不回 shared trunk / f_full。
+
+降质 pass 不会更新 f_full BNNeck running stats，因为 `code/afd_model.py:774-779` 在 `rec_only` 下只跑 `_embed_rec`，不跑 `_embed(full_map)`。Swin trunk 是 LayerNorm/DropPath，没有 BN running stats。 caveat 是 f_full Swin late stages仍被前向计算，建议以后优化成 rec_only 时到 fork 点后直接跳过 full late stages。
+
+先例检索：AG-ReID.v2 已明确 aerial-ground 的 viewpoint/pose/resolution 问题；CARGO/VDT 是 view-decoupling 路线；DIL 做 degradation-invariance；RAR 做 resolution-adaptive metric；MRJL 做 multi-resolution dual-branch fusion；GSAlign/ViSA/SD-ReID 覆盖 alignment、view-aware、生成式补全。AIRL 不宜声称“退化一致性”或“双分支”本身新，较稳的新意只能放在“非对称 ground degradation + 梯度隔离 recover head + fixed soft-fuse”的组合证据上。
+
+Sources: [AG-ReID.v2](https://arxiv.org/abs/2401.02634), [VDT/CARGO](https://arxiv.org/abs/2403.14513), [DIL](https://arxiv.org/abs/2004.04933), [RAR](https://arxiv.org/abs/2207.13037), [MRJL](https://arxiv.org/abs/2105.12684), [GSAlign](https://arxiv.org/abs/2510.22268), [ViSA](https://arxiv.org/abs/2605.18192), [SD-ReID](https://arxiv.org/abs/2504.09549).
+========== codex_5.md ==========
+1. Verdict: needs-attention
+
+代码主路径基本可信，BN/Norm 污染 lens 通过；但结果解释需要收紧。AG-ReID.v2 的同机 final log 不支持“AIRL net gain ≈ +1.5”，只支持“同 run FUSE−full 为正”。
+
+2. Findings
+
+- High: [logs/agreidv2_airl_4090.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_airl_4090.log:974) + [logs/agreidv2_baseline_4090.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_baseline_4090.log:949)  
+  AG-ReID.v2 final 同机对照：AIRL FUSE mean=80.98，baseline mean=81.08，net=-0.10；但 FUSE−full=80.98−79.90=+1.08。结论只能写“融合救回 full 头劣势”，不能写“net gain≈融合增益”。
+
+- Medium: [../airl_agreidv2_result.md](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_agreidv2_result.md:54)  
+  文档仍用 ep50 旧数：baseline 79.98 / AIRL FUSE 79.90。当前完整 final log 已到 ep60：baseline 81.08 / AIRL FUSE 80.98。净结论仍≈0，但数字和 epoch 要更新。
+
+- Medium: [logs/agreidv2_airl_iso.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_airl_iso.log:811), [logs/agreidv2_baseline_4090_s2.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_baseline_4090_s2.log:896)  
+  这两份日志不完整：AIRL-3090 停在 ep50 done 后未 eval；baseline-4090-s2 停在 ep57 iter450。不能进入 final mean 或多 seed 统计。
+
+- Low: [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:1256)  
+  有 `--seed` 参数，但日志头没有打印 seed / torch / cuda 版本。现在“±seed 噪声”的归因不能从 log 元数据独立复核。
+
+- Low: [code/afd_model.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_model.py:291)  
+  `rec_only=True` 仍跑完整 shared Swin stages 后才 detach `full_map`。这不会更新 f_full BN，也没有梯度回流，但会执行 train-mode DropPath/消耗 RNG 和计算；“f_full 完全 untouched”措辞应限定为“无梯度、无 BNNeck stats 更新”。
+
+3. 对三条待验结论
+
+- (1) 反对。  
+  CARGO 文档数：baseline 60.84，full 61.44，FUSE 63.21，net +2.37，FUSE−full +1.77。  
+  AG-ReID.v2 final log：baseline 81.08，full 79.90，FUSE 80.98，net -0.10，FUSE−full +1.08。  
+  双数据集一致的是“FUSE−full 为正”，不是“FUSE vs baseline final mean 也为正”。
+
+- (2) 同意数值现象，但 seed-noise 归因未被 log 证明。  
+  CARGO full 比 baseline +0.60；AG-ReID.v2 full 比 baseline -1.18，确实落在约 ±1.2。CARGO net +2.37，AG-ReID.v2 net≈0 也成立。  
+  但当前缺完整同机多 seed，不能严格证明这是 seed 噪声而不是 AIRL 对 f_full 的系统性扰动。
+
+- (3) 同意。  
+  CARGO final：A→G full 63.42 > rec 62.13；G→A rec 64.64 > full 59.45。  
+  AG-ReID.v2 final：A→G rec−full=-0.77；G→A rec−full=-1.95，rec 单头两向都弱；FUSE 只是两向都加分。方向特化在第二数据集翻号/消失，不能写成稳健固定方向机制。
+
+4. BN/Norm lens 专项结论
+
+- Swin trunk 是 LayerNorm 系：本地 `swin_transformer.py` 的 `build_norm_layer` 只返回 `nn.LayerNorm`，SwinBlock/patch/output norm 都走 LN。LayerNorm eval 仍用当前输入统计，无 running stats。PyTorch 文档也明确 LayerNorm 在 train/eval 都用输入统计；BatchNorm 才维护 running mean/var 并在 eval 使用。([docs.pytorch.org](https://docs.pytorch.org/docs/2.12/generated/torch.nn.LayerNorm.html)) ([docs.pytorch.org](https://docs.pytorch.org/docs/2.12/generated/torch.nn.BatchNorm1d.html))
+- AIRL-ISO degraded pass：训练 loop 用 `model(deg_imgs, rec_only=True)`；`AFDModel.forward(rec_only=True)` 只跑 `_embed_rec(rec_map)`，返回 `bn_feat_rec/logits_rec`，不调用 `_embed(full_map)`，所以 `self.bottleneck` 不 forward，不更新 f_full BN running stats。
+- Eval：`airl_dualbranch_eval()` 先 `model.eval()`，因此 BNNeck eval 用 running stats，不用 batch stats。
+- 注意：非 iso 的 `--airl_dualbranch` degraded pass 是整模型 forward，会让 f_full BNNeck 看到 degraded ground；但本次最终配置是 `--airl_dualbranch_iso`，该污染不存在。
+
+Novelty/先例：AG-ReID.v2/VDT/CARGO/GSAlign 等主线多是 aerial-ground view gap、view decoupling、geometry/semantic alignment；CR-ReID/RAR/RAIN 等已有 resolution-adaptive 或 resolution-invariant 先例。未看到“iso late-stage recover branch + clean head + fixed cosine fusion”的精确同构，但单独的低分辨率/退化鲁棒思想不新，AIRL 的 novelty 只能绑在 AG-ReID 场景下的梯度隔离双头互补证据上。([arxiv.org](https://arxiv.org/abs/2401.02634?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2403.14513?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2510.22268?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2207.13037?utm_source=openai))
+========== codex_6.md ==========
+1. Verdict: needs-attention
+
+不是 AIRL 代码主路径明显写错，而是当前结果解读不够可信：AG-ReID.v2 同机 final 没有正 net gain，seed/RNG 控制也不足以把 f_full 的 -1.18 直接归为 seed 噪声。
+
+2. Findings
+
+- Critical - [logs/agreidv2_airl_4090.log:974](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_airl_4090.log:974), [logs/agreidv2_baseline_4090.log:949](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_baseline_4090.log:949): AG-ReID.v2 lab-4090 final 上，AIRL FUSE mean=80.98，baseline seed1 mean=81.08，net=-0.10，不是正增益。FUSE-full=80.98-79.90=+1.08，也不是约 +1.5。
+- High - [code/afd_train.py:1758](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:1758), [code/afd_model.py:660](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_model.py:660), [code/afd_train.py:2220](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:2220): 训练没有显式 `DataLoader(generator=...)` / `worker_init_fn`，AIRL 额外 rec head 初始化、`airl_degrade` 的 `torch.rand`、以及 rec/degraded forward 的 DropPath 都会移动 torch RNG。f_full 不是和 baseline 成对同 RNG 的对照。
+- Medium - [logs/agreidv2_baseline_4090_s2.log:896](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_baseline_4090_s2.log:896): seed2 日志停在 epoch57 中途，没有 epoch60 final eval。能共同比较到 epoch50：seed1 79.98，seed2 79.54，差 0.44；不足以支撑 final ±1.2 的 seed 方差结论。
+- Medium - [logs/agreidv2_airl_iso.log:653](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_airl_iso.log:653), [logs/agreidv2_airl_iso.log:811](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_airl_iso.log:811): lab-3090 AIRL 只完整 eval 到 epoch40，epoch50 只有训练 done，无 eval/finished。不能当 final 结果。
+- Low - [code/afd_train.py:148](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:148): 当前 bundle 依赖 `../afd_reid` 的 `cargo_dataset/afd_train`，但 bundle 内未包含该目录；审查可读上级实现，但这个包本身不可独立复跑。
+
+3. 对主控 3 条结论的判断
+
+- (1) 反对。AG-ReID.v2 4090 同机 final：FUSE 80.98 vs baseline 81.08，net=-0.10；FUSE-full=+1.08。提供的 `logs/` 里没有 CARGO 日志，无法证明“双数据集一致”。
+- (2) log 数据不支持。事实项“AG-ReID.v2 full 比 4090 baseline 低约 -1.18”成立；但“这是 seed 噪声 ±1.2”没有被 seed2 final 支撑。CARGO 的 +0.6 / +2.37 在本 logs 中也无法核。
+- (3) log 数据不支持。AG-ReID.v2 final 里 rec 单头两个方向都低于 full，FUSE 两方向都加分：A->G +1.20，G->A +0.96。只能说第二数据集上方向特化不明显；“CARGO-specific”缺少 CARGO 日志支撑。
+
+4. 本轮 lens 专项结论
+
+- rec stage 的 `copy.deepcopy` 本身不消耗 RNG；`bottleneck_rec` 是 BatchNorm，当前 init 是常数，也不消耗随机数。
+- 真正会移动 torch RNG 的是 `classifier_rec.apply(weights_init_classifier)`，以及训练中 AIRL 的 degradation scale 和额外 rec/degraded forward。
+- f_full 初始化参数顺序基本没被 rec 分支污染：f_full BN/classifier 在 rec head 前初始化。
+- 数据顺序大概率不因 rec init 改变：`RandomIdentitySampler` 用 Python `random`/NumPy，rec head init主要耗 torch RNG。但数据增强/worker seed 很可能改变，因为 DataLoader 没有固定 generator。
+- 注释“rec stages 在 f_full loop 后跑保证 f_full RNG 不变”只在单次 clean forward 内成立；不能推出 AIRL 的 f_full 训练轨迹和 baseline 是同 RNG 对照。
+
+5. Web 先例
+
+快速检索显示，resolution mismatch / resolution-invariant / recover+identify / dual-resolution branch 在 ReID 里已有先例，包括 RAIN、Recover-and-Identify、MRJL；AG-ReID.v2 也明确把 viewpoint/resolution 差异作为核心挑战。AIRL 的新意要收窄到“aerial-ground 场景下 isolated clean/recover dual branch + fixed-prior cosine fusion”的具体机制，不能泛称 degradation consistency/recover branch 是空白。
+
+参考：PyTorch DataLoader randomness docs: https://docs.pytorch.org/docs/2.12/data.html；AG-ReID.v2: https://arxiv.org/abs/2401.02634；RAIN: https://arxiv.org/abs/1907.10843；Recover-and-Identify: https://arxiv.org/abs/1908.06052；MRJL: https://arxiv.org/abs/2105.12684
+========== codex_7.md ==========
+**1. Verdict**
+
+needs-attention。
+
+代码评估主路径没有发现明显 mAP/Rank 方向性错误，`full` 与普通 eval 在日志里逐 epoch 对齐，是强 sanity check。但主控结论 (1) 对 AG-ReID.v2 final 数字有过度解读；另外 pid/camid/eval 核心实现来自 bundle 外部，当前包内不能全量逐行确认。
+
+**2. Findings**
+
+- High | [logs/agreidv2_airl_4090.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_airl_4090.log:973) + [logs/agreidv2_baseline_4090.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_baseline_4090.log:949)  
+  AG-ReID.v2 lab-4090 final 不支持 “AIRL net gain ≈ +1.5”。AIRL FUSE mean=80.98，baseline_4090 mean=81.08，net=-0.10；FUSE-full=80.98-79.90=+1.08，也不是 +1.5。这个结论不能写成双数据集一致。
+
+- Medium | [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:150)  
+  dataset、`filter_by_view`、`run_cross_view_eval`、`eval_market`、`set_seed` 都从 `../afd_reid` 导入，`eval_from_distmat` 从 `maxsim_probe` 导入；这些源码不在当前 bundle 内。pid 解析、camid 过滤、mAP 实现无法在本轮真正逐行验完，只能靠日志一致性间接验。
+
+- Medium | [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:1688)  
+  代码设置了 `args.seed`，但启动日志打印块没有输出 seed。主控想把 full 头差异解释成 seed noise 时，日志证据链不完整，只能从文件名推测 seed，不够严谨。
+
+- Medium | [logs/agreidv2_baseline_4090_s2.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_baseline_4090_s2.log:794)  
+  `baseline_4090_s2` 不是完整 final log：最后一次 eval 是 epoch50 mean=79.54，文件末尾停在 epoch57 iter450，没有 epoch60，也没有 `Training finished`。不能把它当 final seed 纳入 final mean。
+
+- Medium | [code/afd_model.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_model.py:239)  
+  注释称 f_full 的 DropPath RNG 序列与单分支一致，这个说法过强。单次 forward 内 f_full 先跑，rec 后跑；但 rec 分支和 AIRL degrade 会消费随机数，后续 iteration 的 stochastic-depth RNG 状态会偏离 baseline。因此 f_full 不是 byte-identical baseline control，只能做经验对照。
+
+- Low | [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:1470)  
+  文档叙事说 f_rec “serves A->G / protects G->A”，但 AG-ReID.v2 final 里 rec 低于 full：A->G 78.70 vs 79.47，G->A 78.38 vs 80.33。这个方向特化叙事应收紧为 CARGO 观察，不应泛化。
+
+**3. 三条待验结论**
+
+1. 反对。AG-ReID.v2 final 明确不支持。  
+   lab-4090：baseline=81.08，AIRL full=79.90，FUSE=80.98。net=-0.10；fusion gain=+1.08。`agreidv2_airl_iso.log` 只到 epoch40，不能作为 final 第二 AIRL seed。CARGO 日志本 bundle 没有，不能核“双数据集一致”。
+
+2. 同意弱版，但不能把原因定死为 seed noise。  
+   AG-ReID.v2 full=79.90；baseline complete runs 是 81.08 和 79.88，完整 baseline 跨机/seed spread=1.20。full 确实落在这个范围内，所以“不能因 4090 上 full -1.18 判 AIRL 死”是合理的。但由于 seed 未打印、AIRL 分支改变 RNG 消耗，不能证明这就是纯 seed noise。CARGO 的 +0.6 本轮无日志可核。
+
+3. 同意弱版。  
+   AG-ReID.v2 不支持稳定方向特化：final rec 在 A->G/G->A 都低于 full，FUSE 两方向都涨但幅度接近（A->G +1.20，G->A +0.96）。所以“rec/full 哪个头帮哪个方向”至少不是跨数据集稳定规律。CARGO-specific 的 CARGO 侧证据，本 bundle 不可核。
+
+**4. 本轮 lens 专项结论**
+
+- mAP/Rank：包内不能看 `eval_from_distmat` 源码，但 AIRL `full` 由 `eval_from_distmat(2-2cos)` 得出，普通 eval 由 `run_cross_view_eval/print_eval` 得出；两者在 AIRL 每个 eval epoch 对齐到 0.01，说明集成层面没有明显 mAP/Rank 错位。
+
+- cos→dist：`2 - 2*cos` 对 L2-normalized feature 等价于平方欧氏距离，排序与 `-cos` 完全一致。FUSE 的 `2 - 2*(0.25*cos_rec + 0.75*cos_full)` 不是严格几何距离，但对 fused score 单调，mAP/Rank 排序用法没问题。
+
+- A->G / G->A 划分：代码用 `dataset.query`/`dataset.gallery` 分别按 `Aerial`/`Ground` 过滤。日志显示 A->G=2356 q / 6347 g，G->A=1811 q / 14362 g，和 combined query/gallery 的 aerial/ground 计数自洽。
+
+- pid 解析：不能完全 approve，因为解析逻辑不在 bundle。日志显示 query/gallery 都是 534 pids，指标高且两条 eval 路径一致，排除 gross parsing bug；但 folder name vs P-prefix 这种坑必须看外部 dataset 源码才能最终签字。
+
+- camid 过滤：同样不能全量逐行确认。日志显示 query/gallery 各 2 cams，cross-view 过滤后 same-cam positive 被错误全删的概率较低；但 `eval_from_distmat` 的 Market-style remove 逻辑不在包内。
+
+**Novelty / 先例**
+
+Web search 看下来，AIRL 的“大方向”不是空白：AG-ReID.v2 已明确把 aerial-ground 的 viewpoint/pose/resolution 差异作为核心挑战；cross-resolution ReID 里已有 RFD、MRJL、Recover-and-Identify 等 resolution-invariant、dual-branch、recover missing details 的先例。AIRL 若写论文，创新点要收窄到“aerial-ground 非对称 ground degradation + isolated recover head + fixed-prior score fusion”的组合证据，不能泛称 degradation consistency 或 dual-branch recovery 是新东西。
+
+Sources: [AG-ReID](https://arxiv.org/abs/2303.08597), [AG-ReID.v2](https://arxiv.org/abs/2401.02634), [RFD](https://arxiv.org/abs/2109.07871), [MRJL](https://arxiv.org/abs/2105.12684), [Recover and Identify](https://arxiv.org/abs/1908.06052).
+========== codex_8.md ==========
+1. Verdict: needs-attention
+
+代码/AMP/融合实现基本可信；主要问题在结果解释。AG-ReID.v2 4090 final 不支持“AIRL 相对 baseline final 有净增益”，只能支持“FUSE 相对 AIRL full 有融合增益”。
+
+2. Findings
+
+- High - [logs/agreidv2_airl_4090.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_airl_4090.log:973) + [logs/agreidv2_baseline_4090.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_baseline_4090.log:948): AG-ReID.v2 4090 final 是 AIRL FUSE 80.98 vs baseline 81.08，净值为 -0.10，不是正增益。FUSE-full 是 +1.08，这是融合内部收益，不等于相对 baseline 净收益。
+- Medium - [logs/agreidv2_airl_iso.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_airl_iso.log:811) + [logs/agreidv2_baseline_4090_s2.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_baseline_4090_s2.log:896): 两个 log 不完整，分别停在 AIRL epoch 50、baseline_s2 epoch 57 中途，不能作为 final 或完整 seed 统计。
+- Medium - [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:1217): `airl_consistency_loss` 用 `torch.nan_to_num` 把异常标量吞掉；后面的 kill-switch 只能看到处理后的 finite 值。当前 logs 没有 NaN/Inf 证据，但这是潜在诊断盲点。
+- Low - [logs/agreidv2_airl_4090.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_airl_4090.log:9): 这次 headline run 是 `trunk_recce=False`，即原 full-isolation，不是代码注释里默认的 trunk-recce fix。不能把该 run 的 full-head 行为归因于 trunk-recce=1 fix。
+
+3. 三条待验结论
+
+1. “AIRL net gain ≈ 融合增益 FUSE-full ~+1.5，双数据集一致”  
+反对 / log 数据不支持。AG-ReID.v2 4090 final：FUSE-full = 80.98 - 79.90 = +1.08；FUSE-baseline_4090 = 80.98 - 81.08 = -0.10。若只和 3090 baseline final 79.88 比是 +1.10，但这混了机器/seed。bundle 里没有 CARGO log，不能验证“双数据集一致”。
+
+2. “f_full 头 ≈ baseline ± seed 噪声；AG 4090 full 背运 -1.2 → net≈0”  
+基本同意 AG-ReID.v2 这部分，但不能外推 CARGO。AG 4090：AIRL full 79.90 vs baseline_4090 81.08 = -1.18；AG 3090 baseline 79.88 vs AIRL full 79.90 = +0.02。baseline 完整两条 final spread 正好约 1.20，所以“full 头像 baseline、4090 背运”是合理解释。但 AIRL FUSE 对 4090 baseline 不是正净增益，是约 0。
+
+3. “方向特化是 CARGO-specific，第二数据集方向翻号/消失”  
+AG-ReID.v2 支持“方向特化消失”，但 CARGO-specific 需要 CARGO log。AG final 里 rec 比 full 两个方向都低：A->G 78.70 vs 79.47，G->A 78.38 vs 80.33；FUSE 两方向都涨：A->G +1.20，G->A +0.96。没有稳定的 rec/full 方向专门化。
+
+4. 本轮 lens 专项结论
+
+AMP 有：`GradScaler` 和主/degraded forward autocast 都启用，log 里 `amp=True`。consistency loss 在 `autocast(enabled=False)` 下 fp32 计算。
+
+归一化有：iso eval 返回的 `f_full/f_rec` 都 `F.normalize`，dual eval 里又 defensive re-normalize。cos 融合是 CPU numpy 上的 `0.25*s_rec + 0.75*s_full`，`fuse_w` 是 Python float，不存在 device mismatch；CLI 也校验 `[0,1]`。
+
+数值稳定性整体可接受：日志未见 NaN/Inf/KILL，AIRL consistency 从高位回落到 0.0458。唯一需要注意的是 `nan_to_num` 会掩盖异常源，建议后续加显式 `torch.isfinite` 计数/报警。
+
+Novelty/先例：AG-ReID.v2、CARGO/VDT、ViSA 已经覆盖 aerial-ground ReID 的视角/语义/双分支方向；跨分辨率 ReID 也有 Recover-and-Identify、RFD 这类 degradation / recovery / distillation 先例。AIRL 的可讲新意应收窄为“aerial-ground 下的 ground-to-aerial pixel-budget degradation + isolated recover head + fixed-prior score fusion”，不要泛称“分辨率降质一致性”本身是新问题。
+
+参考来源：AG-ReID.v2 https://arxiv.org/abs/2401.02634 ，VDT/CARGO https://arxiv.org/abs/2403.14513 ，ViSA https://arxiv.org/abs/2605.18192 ，Recover-and-Identify https://arxiv.org/abs/1908.06052 ，RFD https://arxiv.org/abs/2109.07871
+========== codex_9.md ==========
+1. Verdict: `needs-attention`
+
+代码里的 AIRL dual-branch eval 和日志打印基本可信，没看到 FUSE 计算造假的实现问题。需要注意的是：主控的结果叙述有几处超过当前 log 证据，尤其是 CARGO +2.37 在本 bundle 里没有原始 log 可核，AG-ReID.v2 final net 也不是正增益。
+
+2. Findings
+
+- High - [logs/agreidv2_airl_4090.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_airl_4090.log:973) + [logs/agreidv2_baseline_4090.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_baseline_4090.log:948)  
+  AG-ReID.v2 lab-4090 final：AIRL FUSE=80.98，baseline=81.08，net=-0.10；不是正 gain。full=79.90，比 baseline -1.18；FUSE-full=+1.08。主控“AG net≈0”吻合，但不能说 AG final 有正净增益。
+
+- High - [logs/agreidv2_airl_iso.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_airl_iso.log:656) + [logs/agreidv2_baseline_4090_s2.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_baseline_4090_s2.log:796)  
+  `agreidv2_airl_iso.log` 只有到 epoch40 的完整 eval，epoch50 只有 done 没有 eval；`baseline_4090_s2.log` 只有到 epoch50 eval，epoch57 中途截断。不能把这两个当 60ep final 或完整 seed 统计。
+
+- Medium - [logs/agreidv2_airl_4090.log](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/logs/agreidv2_airl_4090.log:13)  
+  当前提供的 5 个 log 全部加载 AG-ReID.v2，没有 CARGO 原始日志。CARGO +2.37、CARGO full 比 baseline +0.6、CARGO 方向特化这些结论，本轮原始 log 不支持验证。
+
+- Medium - [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:1688), [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:1758), [code/afd_model.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_model.py:660)  
+  同 seed 下 AIRL 与 baseline 不是严格配对实验：AIRL 额外 head 初始化会消耗 RNG，DataLoader 没显式 generator/worker_init。`full≈baseline ±seed noise` 可以作为解释，但现有 log 不能证明它只是 seed noise。
+
+- Low - [code/afd_train.py](/Users/abdslm/Desktop/SOLIDER-REID/experiments/cargo_cvpb/airl_codex_bundle/code/afd_train.py:1470)  
+  注释中“f_rec serves A->G / f_full protects G->A”的方向叙事过强。AG-ReID.v2 final 里 rec 两个方向都低于 full，FUSE 是两方向都涨，不支持稳定方向特化。
+
+3. 三条待验结论
+
+- (1) 反对/需收紧。  
+  FUSE-full 确实稳定为正：4090 ep10-60 为 +0.91/+1.69/+1.58/+1.35/+1.13/+1.08；3090 ep10-40 为 +1.60/+1.89/+1.40/+1.23。但 AG-ReID.v2 final net vs 同机 baseline 是 -0.10，不是“net gain≈融合增益”。“双数据集一致”缺 CARGO 原始 log。
+
+- (2) 部分同意。  
+  AG-ReID.v2 lab-4090 的 full 头 final 比 baseline 低 -1.18，这条吻合；FUSE 把它补到 net≈0，也吻合。CARGO 的 full +0.6、net +2.37 本 bundle 无法核。seed 噪声解释有可能，但当前只有一个完整 4090 baseline seed 和一个截断 seed2，统计不足。
+
+- (3) 部分同意。  
+  AG-ReID.v2 上方向特化确实消失：final rec 相比 full，A->G 为 78.70 vs 79.47，G->A 为 78.38 vs 80.33；FUSE 两方向都提升。是否“CARGO-specific”不能由当前 log 证明，因为没有 CARGO 原始日志。
+
+4. 本轮 lens 专项结论
+
+AG-ReID.v2 的日志一致性是清楚的：没有看到 FUSE 抄错；也没有看到 AIRL final 被误算。真正的问题是叙述口径。若拿 ep20/30 与 baseline 低谷比较，会显著灌水；按 final same-machine 比较，baseline 末段 surge 后净增益收缩到 -0.10。`FUSE≈+1.5`更准确应写成“中前期约 +1.3~1.7，final 约 +1.1”。
+
+Novelty 方面，外部先例很多：AG-ReID.v2 本身已有三流/高度差异建模；VDT 做 view-decoupled aerial-ground ReID；ViSA 已有 view-aware experts + dual-branch local fusion；cross-resolution ReID 里 RAIN、Recover-and-Identify、MRJL、RFD 都涉及 resolution-invariant / recovery / distillation / dual-branch。AIRL 可讲的点应收窄到“aerial-ground asymmetric degradation-consistency + clean/recover head + fixed-prior cosine fusion”的组合证据，不能声称 degradation consistency、recover branch 或 dual-branch 本身新。
+
+外部来源：  
+[AG-ReID.v2](https://arxiv.org/abs/2401.02634), [VDT-AGPReID](https://arxiv.org/abs/2403.14513), [ViSA](https://arxiv.org/abs/2605.18192), [RAIN](https://arxiv.org/abs/1907.10843), [Recover and Identify](https://arxiv.org/abs/1908.06052), [MRJL](https://arxiv.org/abs/2105.12684), [RFD](https://arxiv.org/abs/2109.07871).

@@ -1,0 +1,88 @@
+我按本地 PDF 的方法段、消融和可视化段整理。没有额外联网，因为这 5 篇内部的相关工作和证据已经足够拆方法论。
+
+**1. UP-Person - Unified Parameter-Efficient Transfer Learning for Text-Based Person Retrieval**
+
+1. **触发观察**  
+作者注意到一个反直觉点：在文本行人检索里，全量微调 CLIP 不一定是最好的。全量微调虽然能适配训练集，但会破坏或遗忘 CLIP 原本的大规模视觉语言知识，而且每个数据集都要存一套大模型。相反，参数高效微调保留 CLIP 主干，可能同时利用“CLIP 里已有的行人相关知识”和“训练集学到的任务知识”。第二个观察更具体：把 Prefix、LoRA、Adapter 直接堆在一起会互相干扰，普通 Prefix 在 TPR 上收敛慢、效果差。
+
+2. **重定义动作**  
+它没有把问题讲成“怎样加一个更强的跨模态模块”，而是改写成“怎样在不破坏 CLIP 原知识的前提下，把全局、局部、任务特定知识一起迁移到 TPR”。关键词是 knowledge retention、TPR-specific knowledge within CLIP、unified PETL、component conflict、global/local/task-specific knowledge。这个重定义把“省参数”从工程优点提升成方法必要性：少调参数不是为了便宜，而是为了保留预训练知识。
+
+3. **机制怎么长出来**  
+机制基本是从重定义推出来的。既然要保留 CLIP，就冻结主干；既然要同时迁移不同层次知识，就把不同 PETL 放到不同位置。LoRA 改 attention 的 key/value 权重，负责细粒度局部关系；S-Prefix 给 attention 加任务提示，并用可学习缩放因子解决 Prefix 梯度小、收敛慢的问题；L-Adapter 放在 LayerNorm 旁边调全局分布，避免和 MHA、MLP 里的 LoRA、Prefix 抢同一优化空间。绑定比较紧，但 LoRA 本身不是新东西，新意主要在“每个组件对应一种知识迁移角色”和“避免组件冲突”。
+
+4. **证据闭环**  
+关键证据不是单纯 SOTA 表，而是组件消融和冲突消融。单独的 LoRA、S-Prefix、L-Adapter 都比 zero-shot CLIP 强，三者组合在 CUHK-PEDES 上达到最高 R@1 和 mAP，说明“全局、局部、任务提示”确实互补。S-Prefix 对 vanilla Prefix 有明显提升，并且缩放因子过大时会梯度爆炸，证明他们不是随便加参数，而是在修 Prefix 梯度问题。L-Adapter 对比 vanilla Adapter、LN-tuning 和混合 Adapter，支持“普通 Adapter 会和其他 PETL 冲突，LayerNorm 旁边更适合调全局分布”的说法。可视化里 UP-Person 比全量微调的 IRRA 更能识别细粒度或少见描述，也服务于“全量微调丢失 CLIP 原知识”的叙事。
+
+5. **reviewer 为什么买账**  
+这篇卖的主要是视角，其次才是机制。机制都是常见 PETL 家族，但作者把“参数高效”讲成了“知识保留和知识迁移结构化分工”，这比“我少调参数还涨点”高级。reviewer 会买账，是因为它把工程约束、过拟合风险、预训练知识保留、组件冲突和消融证据连成了一条线。
+
+**2. Visible-Infrared Person Re-Identification Based on Feature Decoupling and Refinement**
+
+1. **触发观察**  
+作者注意到 VI-ReID 里大家常说“模态差异”，但实际共享特征里混着不止一种干扰。身份信息和相机差异、视角、光照、背景、模态冗余纠缠在一起。已有方法多半只做单阶段解耦或只盯模态差异，不能同时处理相机变化和可见光红外差异。还有一个具体观察是 Instance Normalization 能缓解模态差异，但会丢掉身份信息。
+
+2. **重定义动作**  
+它把旧问题“减小 visible-infrared modality gap”改写成“对共享特征做层级净化”。关键词是 hierarchical feature decoupling、feature purification、camera-modality-identity、camera-irrelated features、identity-related residual、redundant features、cross-modality recombination。这样一来，问题不再是单个模态对齐损失，而是先把相机干扰拿掉，再处理模态冗余，再把被归一化丢掉的身份信息补回来。
+
+3. **机制怎么长出来**  
+机制和重定义绑定得很直接。第一层 CDM 用通道掩码把特征分成 camera-related 和 camera-irrelated，分别用相机标签、身份标签和对抗约束来分开。第二层 MIDM 对 camera-irrelated 特征做 IN，得到模态更稳定的特征，但承认 IN 会丢身份，于是把原特征和 IN 后特征的残差拿出来，再拆成正残差和负残差。正残差和归一化特征重组成身份特征，负残差重组成冗余特征。然后用 adversarial decoupling loss 让身份特征类内更紧、类间更远，让冗余特征相反。最后 FCRS 把同身份不同模态的正残差交叉重组，用中心约束进一步逼模型关注跨模态共享身份信息。
+
+4. **证据闭环**  
+最关键的是 MIDM 单独用时会掉点或不稳，加入 adversarial decoupling loss 后提升，说明“只做掩码或 IN 不够，残差需要被正确分离”。SYSU-MM01 和 RegDB 的消融把 CDM、MIDM、对抗解耦和重组中心损失逐步加上，形成层级收益链。热力图也对准了重定义：IN 后特征激活区域有限，说明确实丢身份；负残差重组后更多激活背景，说明冗余被分出去；身份特征更多聚焦人体区域。t-SNE 从原始特征、AGW 基线、CDM 后特征到 MIDM 后特征逐步更紧、更可分，正好证明“层级净化”不是只在指标上有效。
+
+5. **reviewer 为什么买账**  
+这篇卖的是机制和问题拆分的结合。它没有提出一个全新外部信息源，而是把“模态差异”细分成相机、模态、身份冗余三层污染。reviewer 买账的点在于机制路径清楚，消融和可视化都能对应每一层的作用。但它的新颖性边界也比较窄，因为解耦、IN、GRL、残差重组都不是新概念，真正的 novelty 来自层级组织方式。
+
+**3. Visible-Infrared Person Re-Identification via Mutual Reinforcement of Prompts and Image Encoders**
+
+1. **触发观察**  
+作者抓住的是 CLIP-ReID 类方法里的一个弱点：两阶段生成的 text prompts 往往不关注行人身份细节。原因是原始 CLIP 对 VI-ReID 不熟，直接生成的提示更偏通用语义，不一定关心跨模态行人身份。另一个观察是，如果同时优化 prompts 和 image encoders，二者目标不同，会互相干扰。
+
+2. **重定义动作**  
+它把 prompt 从“给图像编码器用的静态文本辅助”改写成“可学习的中间模态”。关键词是 mutual promotion、mutual reinforcement、person-related prompts、text features as bridge、modality knowledge propagation、modality alignment、alternating training。旧问题是“怎么用文本帮助可见光和红外对齐”，新问题是“提示和图像编码器怎样互相变好”。
+
+3. **机制怎么长出来**  
+机制很自然。既然 prompts 缺少身份信息，就让训练好的图像编码器把身份知识传给 prompts。作者用分类概率分布里的 dark knowledge，通过 KL 让文本特征的类别概率接近图像特征的类别概率。既然高质量 prompts 可以作为模态无关桥梁，就在优化图像编码器时，把可见光和红外图像特征都对齐到文本特征。既然同时优化会互相干扰，就交替训练：偶数 epoch 固定图像编码器训 prompts，奇数 epoch 固定 prompts 训图像编码器。这个设计和“互相强化”的叙事绑定很紧。
+
+4. **证据闭环**  
+它的核心证据是 baseline、two-stage、MPT w/ loss、完整 MPT 的对比。完整 MPT 在 SYSU-MM01 all-search 上比 baseline 提升 5.45% Rank-1 和 5.88% mAP；在相同结构和损失下，交替训练比 two-stage 更好，说明不是“多一个文本分支”就行，而是 co-evolve 的训练方式有效。再加上 L_MPT 优于普通 contrastive loss，证明他们设计的两个损失确实服务于 mutual reinforcement。可视化也围绕重定义展开：t-SNE 里同身份跨模态更聚；距离分布里类间和类内均值差更大；feature map 显示 MPT 更关注人体区域，支持“prompt 更 person-related”。
+
+5. **reviewer 为什么买账**  
+这篇主要卖视角。模块上就是 KL 蒸馏、对齐损失、交替优化，但它把 prompt 的角色从“静态文本”翻成“被图像编码器教育、再反过来教育图像编码器的中间模态”。这比单纯说“引入文本提示”更像一个方法故事。reviewer 买账的原因是机制简单，问题清楚，证据能直接回答“prompt 是否真的更关注身份”。
+
+**4. Visible-Infrared Person Re-Identification With Real-World Label Noise**
+
+1. **触发观察**  
+作者注意到 VI-ReID 真实标注噪声被低估了。已有 DART 讨论过噪声，但主要是随机换标签。真实 VI-ReID 里噪声更复杂：同模态身份相似会标错，红外缺少颜色和纹理导致跨模态难匹配，标注者也会粗心。随机噪声不能代表这些情况，算法合成的 instance-dependent noise 也不能完全模拟真实标注错误。
+
+2. **重定义动作**  
+它把旧问题“VI-ReID 要抗模态差异”改写成“VI-ReID 要抗真实身份标签噪声和检索对应关系噪声”。关键词是 real-world label noise、instance-dependent label noise、SYSU-Real、noisy correspondence、clean subset、indistinguishable noisy subset、obvious noisy subset、Robust Hybrid Loss。最重要的重定义动作是把噪声样本分成三种，而不是把所有低可信样本一刀切。
+
+3. **机制怎么长出来**  
+机制几乎是从三类噪声定义直接长出来的。先用 co-training 和 warm-up 利用 early learning，小损失样本更可能干净。再用 GMM 拟合单样本 CE loss，把样本分成 clean、indistinguishably noisy、obviously noisy。干净样本用 CE，因为标签可信；难分辨噪声用 GCE，降低噪声样本的大损失偏置；明显噪声直接不信原标签，用分类置信度构造软伪标签。检索侧还把样本对按置信度划成 clean/noisy correspondence，修正 triplet 里的正负关系，形成 robust retrieval loss。最后把识别损失和检索损失混成 RHL。
+
+4. **证据闭环**  
+这篇的证据闭环很强，因为它先造了 SYSU-Real，报告真实噪声比例是 23.79%，并且红外内部噪声比例略高，这直接支撑“真实噪声值得研究”。然后它在 random noise、IDN 和 SYSU-Real 三种条件下都测，证明不是只吃某一种噪声。RHL 消融里，加入处理 indistinguishable noisy subset 的 GCE 带来最大提升，完整方法在 SYSU-Real 上比 DART 提升 7.23% Rank-1、6.94% mAP 和 7.48% mINP，正好支持“三类样本要分治”。可视化也服务于重定义：不同噪声类型的退化柱状图说明 IDN 和真实噪声比随机噪声更伤；相似度矩阵差异图显示 RHL 提高类内相似、降低类间相似；t-SNE 显示比 DART 聚类更清楚。
+
+5. **reviewer 为什么买账**  
+这篇卖的第一是问题，第二才是方法。RHL 的零件不稀奇，GMM、小损失原则、GCE、co-training 都有先例。但“真实 VI-ReID 标签噪声”这个问题更接地气，并且作者实际重标了 SYSU-Real，再证明随机噪声和真实噪声不是一回事。reviewer 会买账，是因为它不是只说现实复杂，而是把现实复杂性落实成数据、噪声分类、损失分治和可视化证据。
+
+**5. When Large Vision-Language Models Meet Person Re-Identification**
+
+1. **触发观察**  
+作者注意到 LVLM 很强，但直接用于 ReID 很别扭。让 LVLM 逐个判断 query 和 gallery 是否同人，成本和 token 数都不可接受。让 LVLM 生成 caption 再做 image-text matching 也有问题：高质量文本标注贵，caption 目标和 ReID 目标不一致，推理阶段通常没有真正利用 LVLM 的生成能力。CLIP-ReID 类方法虽然用了文本，但往往训练后丢掉文本编码器。
+
+2. **重定义动作**  
+它把 LVLM 从“生成描述的外部工具”改写成“产生身份语义 token 的特征提取器组成部分”。关键词是 LVLM-ReID、Pedestrian Semantic Token Generation、`<REID>` token、Semantic-Guided Interaction、reinforced semantic token、generative language models assist discriminative visual models。旧问题是“怎么给 ReID 加文本语义”，新问题是“怎样把 LVLM 的生成过程变成 ReID 的身份表示”。
+
+3. **机制怎么长出来**  
+机制也比较自然。为了不逐对比对，就仍然保留 ReID 的特征提取加相似度检索范式。为了用 LVLM 的语义理解能力，就用指令让 Qwen2-VL 针对行人图像生成一个 `<REID>` 语义 token，要求关注年龄、性别、衣着、生物特征。为了让这个 token 不只是孤立文本输出，设计 SGI，把语义 token 和视觉 tokens 拼起来经过 4 层 Transformer 交互，最后用强化后的语义 token 作为身份表示。为了处理相机变化，又加 camera semantic supplementation，最好的是把相机 embedding 加到视觉 patch embedding 上。训练用 ID loss 和 triplet loss，LLM 冻结但允许梯度穿过它更新视觉模型和 SGI。
+
+4. **证据闭环**  
+关键消融是三组。第一，只用 LVLM 的 visual model 做 baseline 效果低，说明单纯视觉 tokens 不够。第二，把 LVLM 生成的 semantic token 换成随机 learnable token 后明显掉点，说明 `<REID>` token 的语义来源有用，不只是多了一个 class token。第三，去掉 SGI 后效果也掉，说明 token 需要和视觉 tokens 交互，而不是直接拿生成 token 检索。CSS 的消融显示把相机语义放到输入 patch embedding 比放到 `<REID>` token 后面更好，说明相机偏移要早处理。检索可视化显示 baseline 容易被颜色、衣服、姿态误导，而语义 token 引导后能抓住图案、配饰和遮挡下的细节。推理时间从 784ms 到 906ms 处理 64 张图，用来缓解“LVLM 太慢”的质疑。
+
+5. **reviewer 为什么买账**  
+这篇卖的是视角，非常明显。它不是一个小模块故事，而是“LVLM 如何进入 ReID 范式”的第一类尝试。真正 novelty 是把生成式 LVLM 压缩成一个可检索的身份语义 token，并且训练和推理都使用它。风险也明显：计算成本高，且“one word/token 能否稳定代表身份”需要更多验证。但作为方法稿，它的视角足够新，reviewer 容易认为这是一个值得建立的 baseline paradigm。
+
+最后总结这批论文的共同套路：它们都不是先从模块出发，而是先把一个常见说法拆开，比如“模态差异”“用 CLIP”“用 prompt”“噪声标签”“用 LVLM”，然后改写成一个更具体的新问题。机制通常只是把这个新问题逐项工程化，最后用消融和可视化证明“新问题的拆法是对的”，而不只是证明模型涨点。

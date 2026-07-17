@@ -1,0 +1,40 @@
+**先给判断**
+
+DG-ReID 标准主线已经偏红海：2025 survey 把现有方法基本归到 normalization、MoE、memory/meta-learning、data-driven、CLIP 等几类；2024-26 又有 BAU 的 alignment/uniformity、UDSE/DEX 的 semantic expansion、DCAC diffusion、DynaMix 大规模伪标签单摄像头数据、MUSE 多模态 reranking。继续做“泛化模块/CLIP/扩散/重排/增强调权”不建议。([arxiv.org](https://arxiv.org/abs/2506.12413)) ([arxiv.org](https://arxiv.org/abs/2411.11471?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2410.08456?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2502.06619?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2511.19067?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2606.16161?utm_source=openai))
+
+**机会 1: Camera-Pair DG-ReID**
+
+触发观察或失败：大家把 DG-ReID 定义成“未见 dataset/domain”，但 ReID 真正出错常发生在特定 query-camera → gallery-camera 对。平均 mAP 可能还行，少数 camera-pair 崩掉。现有 multi-source 训练常把多个 dataset 合并、identity sampler 不显式管 domain/camera balance，这给“dataset-level DG”留下盲区。([arxiv.org](https://arxiv.org/abs/2506.12413))
+
+重定义：不是“学习一个 domain-invariant 单图特征”，而是“学习未见 camera-pair matching risk”。大家以为 X=未见域风格；其实 Y=成对摄像头的 directed style/view/crop mismatch。
+
+机制草案：  
+做 `Camera-Pair Risk Equalization`。训练时把源域 camera-pair 当 episode domain，leave-one-camera-pair-out 做 meta-test；优化 worst camera-pair loss。另加一个轻量 pair-risk predictor，用 source camera-pair 的颜色、亮度、bbox ratio、view proxy、feature centroid distance 估计风险，训练时对高风险 pair 加权或做 pair-style counterfactual augmentation。全程不碰 target，不走 rerank。
+
+廉价 kill-switch：零训练。用现有 frozen SOLIDER/exp030a 特征，在 Market/MSMT/CARGO/AG-ReID.v2 上按 camera-pair 分桶算 AP/R1；同时算 `pair_shift_score = camera style distance + bbox/crop/view distance + source pair coverage distance`。  
+活下来的最低标准：跨至少 3 个 target，per-camera-pair AP 方差显著；`pair_shift_score` 与 pair AP Spearman 绝对值 > 0.5，或 top 20% 高风险 camera-pair 贡献 > 50% false top-1。否则直接杀。
+
+撞车核查：直接搜 `camera-pair domain generalization ReID` 没看到 2024-26 正面撞车。最近邻是 2024 CIMN，它做 single-camera-training 下的 camera-invariant meta-learning，不是多源 DG 的 directed camera-pair 风险建模。([arxiv.org](https://arxiv.org/abs/2406.14797?utm_source=openai))
+
+Verdict：值得先验，优先级最高。  
+信心：7/10。  
+首验数据：现有数据够。Market/MSMT/occluded_duke/CARGO/AG-ReID.v2 只要有 camera id 就能做；RSTPReid 不一定适合首验。
+
+**机会 2: Cross-Source Ambiguous Negatives**
+
+触发观察或失败：DG-ReID 多源训练默认 source identity label spaces disjoint，常用 label offset 合并训练。问题是不同 dataset 里大量“视觉上几乎同款的人”被硬当负样本，模型为了分开它们可能学 dataset/camera/background shortcut。([arxiv.org](https://arxiv.org/abs/2506.12413))
+
+重定义：大家以为 X=源域越多越泛化；其实 Y=异构 label space 里的跨源“伪负样本压力”会逼模型用域线索分人。
+
+机制草案：  
+做 `Ambiguous-Negative Relaxation`。用 frozen strong ReID feature 在源域间预先挖 cross-source ambiguous negatives：不同源、不同 label、但距离小于同源正样本半径分位数。训练时这些 pair 不再用普通 hard negative margin，而进入 gray-negative 区：不强推远，只约束不塌缩；同时保留同源 hard negative 判别力。可配一个 domain-leak audit head，防止 embedding 能轻易预测 source dataset。
+
+廉价 kill-switch：零训练诊断。  
+在源域上算 `ANP = ambiguous negative pressure`：某个 source/target image 的 nearest source neighborhood 内跨源 label 冲突密度。对 held-out target query，用 nearest source neighborhood 给它分配 ANP，再看高 ANP decile 是否显著更高 false-in-topk、更低 AP。  
+活下来的标准：ANP 对失败的解释要超过 feature norm、局部密度、#false-in-topk 这些 trivial proxy；否则杀。
+
+撞车核查：2024-26 没搜到“cross-source false negative / label-space conflict for DG-ReID”的直接工作。近邻是 DynaMix 的动态 relabeling，但它面向大规模伪标签单摄像头数据；CARE 是 noisy-label ReID，不是 DG 多源 label conflict。泛化到 contrastive false negative 领域会有先验，创新风险比机会 1 高。([arxiv.org](https://arxiv.org/abs/2511.19067?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2602.23133?utm_source=openai))
+
+Verdict：可作为第二条便宜并行线，先做诊断，不要直接开训练。  
+信心：6/10。  
+首验数据：现有数据够，Market/MSMT/CARGO/AG-ReID.v2 多源组合即可；不需要新数据。

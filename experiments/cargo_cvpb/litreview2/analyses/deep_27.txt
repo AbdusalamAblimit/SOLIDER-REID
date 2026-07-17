@@ -1,0 +1,51 @@
+说明：我按要求用 `pdftotext -f 1 -l 8` 读了六篇。`Affinity Harmonization` 和 `MCBL` 的方法超过第 8 页，我额外补读了后续方法页，避免机制链条缺失。
+
+**1. Unleashing the potential of traditional person re-ID methods to clothes changed scenario via curriculum learning**
+
+1. 触发观察：作者先发现传统同衣 ReID 方法不是完全不能做换衣。以 CLIP-ReID 为代表的同衣方法直接迁到换衣场景已经有竞争力，真正卡住的是训练初期同一个身份同时出现多套衣服，类内变化太大，模型过早被打乱。
+2. 重定义动作：大家以为换衣 ReID 必须加衣服无关线索、解析、轮廓、骨架或特征解耦；作者改成说，问题其实是训练课程不合理。同衣方法的能力没有被释放，关键词是 `unleash potential`、`clothes-level curriculum`、`gradual cognition`、`intra-ID variation`。
+3. 机制怎么长出来：这个重定义几乎直接推出机制。既然问题是过早暴露高类内变化，就先让每个身份只用一套衣服训练；等 silhouette coefficient 说明该身份已经可分，再加入最不像当前衣服的新衣服；再用衣服级准确率给难衣服更高权重，补样本数量不均衡。
+4. 证据闭环：关键不是只报涨点，而是证明“换衣困难可以由训练顺序缓解”。他们做了数据调度和数据加权消融，比较随机、最小差异、最大差异三种加衣服策略，比较固定周期和 silhouette 自适应调度，还用 t-SNE 和 GradCAM 展示同身份多衣服逐渐聚合、注意力从衣服区域转到头部和轮廓。
+5. reviewer 为什么买账：这篇卖的主要是视角，不是复杂模块。它把“换衣必须改模型”改成“先把训练组织对”，而且不改测试模型、不加额外输入，现实部署友好；这比再堆一个衣服去偏分支更容易讲清楚。
+
+**2. Unsupervised Lifelong Person Re-Identification via Affinity Harmonization**
+
+1. 触发观察：现有终身 ReID 多数靠旧样本回放和旧模型蒸馏来防遗忘，但这种做法偏向稳定性，容易限制新域学习。作者还指出，旧域样本的相机内类内方差会被新知识扰动，导致旧域识别能力下降。
+2. 重定义动作：大家以为终身 ReID 的核心是“保旧知识”；作者改成“协调新旧域的亲和关系”。关键词是 `affinity harmonization`、`plasticity-stability balance`、`old domain expert`、`current domain expert`、`intra-class variance constraint`。
+3. 机制怎么长出来：如果知识以样本间亲和关系存在，那么机制自然变成关系矩阵约束。ODAC 用旧域专家约束旧样本的关系矩阵不要漂；CDAG 训练一个当前域专家，引导主模型学习新域关系；OIVC 再用旧域相机原型约束旧样本类内方差。
+4. 证据闭环：关键消融应当证明三件事：ODAC 保旧域，CDAG 提升新域学习，OIVC 抑制旧域类内方差漂移。它的闭环不是只看最终平均 mAP，而是看 seen domains、unseen domains、不同训练顺序，以及新旧性能是否同时改善。
+5. reviewer 为什么买账：这篇是机制和视角一起卖。亲和关系作为终身 ReID 的知识单位，比普通参数蒸馏更贴合 ReID 的匹配任务；两个临时专家训练后丢弃，也避免了永久扩模型的质疑。
+
+**3. Unsupervised person re-identification via camera-aware multi-level label refinement**
+
+1. 触发观察：作者用两个很具体的现象开局。DBSCAN 的聚类数量在训练中波动并偏离真实身份数；t-SNE 显示同摄像头的不同身份容易聚在一起，而同一身份跨摄像头反而分散。
+2. 重定义动作：大家以为无监督 ReID 的伪标签噪声只是聚类不准；作者改成说，噪声是由摄像头结构驱动的，而且同时存在于 cluster level 和 instance level。关键词是 `camera-aware`、`multi-level label refinement`、`dual-level intra-inter refinement`、`affinity-guided mutual refinement`。
+3. 机制怎么长出来：机制和重定义绑定很紧。全局特征用于找跨摄像头近邻，把可能被摄像头分开的同身份拉近；局部特征不稳定，所以只在同摄像头内找上下半身共同可靠近邻；实例级再找互为 top-k 的跨摄像头 informative nodes，把 one-hot 自正样本改成软亲和正样本。
+4. 证据闭环：真正支撑问题定义的是 Fig.1 的聚类波动和摄像头偏置可视化，再加 DIIR、AGMR、全局和局部分支的消融。尤其是 MSMT17 这种摄像头变化更强的数据上提升更大，能说明它不是普通 label smoothing，而是在处理 camera-induced noise。
+5. reviewer 为什么买账：这篇卖的是结构化修伪标签的视角。单独“用 camera 信息”不新，CAP、ICE、CGMAL 都做过；它的新意在于把 camera bias 拆到全局、局部、实例三个层级，每层的邻居选择规则不同，逻辑比较完整。
+
+**4. Unsupervised Person Re-Identification With Diffusion Model via Semantic-Aware Disentanglement Representation Learning**
+
+1. 触发观察：作者抓了两个失败点。无监督 ReID 的特征把身份相关的人体信息和摄像头背景信息缠在一起，导致同身份跨摄像头距离大；同时，常见 patch 方法会破坏人体语义结构，STN 又缺少语义指导。
+2. 重定义动作：大家以为主要矛盾是伪标签净化或 patch 设计；作者改成“先做语义感知的身份与摄像头解耦，再在身份相关特征上生成语义 patch”。关键词是 `semantic-aware disentanglement`、`identity-related features`、`camera-related features`、`diffusion over spatial transformer parameters`。
+3. 机制怎么长出来：DAM 用人像 mask 做跨摄像头聚合，生成增强视图，把身份和摄像头背景拆开；MSC 约束源视图和增强视图的跨摄像头、同摄像头相似度分布一致；SSDM 不直接扩散整图，而是扩散 STN 的空间变换参数；SDC 用相邻去噪步的 patch 对比保持语义。
+4. 证据闭环：这篇需要靠强消融来成立。DAM、MSC、SSDM、SDC 都要分别拿掉；还要展示距离分布被 MSC 拉齐、SSDM 生成的 patch 确实有语义，而不是随机局部块。参数分析里 patch 数、扩散步数和损失权重也在证明它不是随便堆扩散。
+5. reviewer 为什么买账：这篇更偏机制稿。真正的新意不是“用扩散模型”，而是把扩散对象换成空间变换参数，避开整图生成的高成本，并把它嵌进无监督 ReID 的语义 patch 学习里。风险是模块多，必须靠消融证明不是堆料。
+
+**5. Unsupervised Visible-Infrared Person ReID via Modality-Camera Balance Label Refinement**
+
+1. 触发观察：现有无监督可见光红外 ReID 主要盯着模态差异，但作者指出摄像头差异同样会造成身份拆裂和噪声标签。更具体地说，每个 camera-modality 单元的信息量不同，聚类数和可靠性不平衡，直接跨模态关联会放大错标。
+2. 重定义动作：大家以为 USL-VI-ReID 是跨模态对齐问题；作者改成“层级域内的模态和摄像头平衡问题”。关键词是 `modality-camera balance`、`hierarchical domains`、`bottom-up learning`、`intra-camera`、`inter-camera`、`inter-modality`。
+3. 机制怎么长出来：重定义直接推出三阶段训练。先 intra-camera 建立每个摄像头内的基本判别力，再 inter-camera 做同模态跨摄像头平衡，最后 inter-modality 做跨模态统一。MBLM 用样本到其他摄像头或模态 cluster centroid 的相似度筛掉不可靠标签；UPR 又把这些不可靠样本在同摄像头内重对齐，避免早期丢太多样本；HMCCL 在每个层级同时做实例级和簇级对比学习。
+4. 证据闭环：闭环重点应该是逐阶段和逐模块消融。只做模态对齐、只过滤不重对齐、只 cluster-wise 或只 instance-wise，都要输给完整 MCBL；如果 SYSU-MM01 这种多摄像头数据上收益更明显，就能支撑“camera-modality balance”这个定义。
+5. reviewer 为什么买账：这篇卖的是问题拆分方式。它不是再提出一个跨模态生成或图匹配模块，而是把训练流程改成从摄像头内到模态间的层级标签修正，和无监督场景里的伪标签噪声天然绑定。
+
+**6. Unveiling Local Well-posedness Influence for Cross-modal Person Re-Identification**
+
+1. 触发观察：作者看到图文局部对齐在极端干扰下会失效。雨雪雾、强光、遮挡和相似外观物体会造成 visual hallucination，模型以为某个局部位置有对应文本，实际是伪真实位置，导致局部错配。
+2. 重定义动作：大家以为文本到图像 ReID 要做更细粒度 local alignment；作者改成“先判断局部对齐是否 well-posed”。关键词是 `local well-posedness`、`local misalignment`、`localization bias`、`pseudo-real position`、`mask-based modeling`。
+3. 机制怎么长出来：如果问题是局部信息是否能被另一模态可靠恢复，那么 masked reconstruction 很自然。TEM 遮文本实体词，用图像和上下文重建；TAM 遮属性词，检验颜色、衣物等属性是否被图像支持；IAM 遮图像区域，用文本提示重建外观。三者分别覆盖实体、属性、外观。
+4. 证据闭环：消融 TEM、TAM、IAM 是基本证据，检索可视化说明局部错配减少。但从“well-posedness”这个概念看，最强证据应该是极端天气、强遮挡、颜色污染子集上的鲁棒性分析；论文主要用三数据集和定性图支撑，闭环不算特别强。
+5. reviewer 为什么买账：这篇主要卖视角和命名，机制本身接近图文 masked modeling。ICASSP 这种篇幅下，它把一个常见操作包装成“局部对齐可解性检查”，再给出实体、属性、外观三阶段，故事完整，所以能买账。
+
+总体看，这批论文共同套路很明显：先抓一个具体失败现象，不说“我要加模块”，而说“大家把问题定义错了”。然后把新定义落成一个几乎顺理成章的训练组织、标签修正或关系约束，再用消融和可视化证明“这个定义解释了涨点”。真正值得学的是这个顺序：先重写问题，再让机制像答案一样长出来。

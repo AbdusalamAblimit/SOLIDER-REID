@@ -1,0 +1,24 @@
+**判决：没有。**
+
+在“现有数据 + single-image ReID + SMPL/遮挡/航拍-地面三条资产里挤方法稿”这个约束下，我认为已经没有干净 CCF-B 方法稿真路。不是“还差一个模块”，而是你们能讲成隐藏变量的东西已经被两类证据同时封死：内部 kill-switch 证明独特信号不存在，外部 2024-2026 方法空间证明剩下叙事已被占满。
+
+航拍-地面这块，VDT 已经把 CARGO/AGPReID 定义成 view discrepancy / view decoupling([arxiv.org](https://arxiv.org/abs/2403.14513?utm_source=openai))；DTST 占 token selection([arxiv.org](https://arxiv.org/abs/2412.00433?utm_source=openai))；SeCap 占 prompt + local refinement，还补了新数据([arxiv.org](https://arxiv.org/abs/2503.06965?utm_source=openai))；GSAlign 占几何变形 + semantic/visibility alignment，并在 CARGO 上报大幅提升([arxiv.org](https://arxiv.org/abs/2510.22268?utm_source=openai))；SD-ReID 占 view-specific generative feature([arxiv.org](https://arxiv.org/abs/2504.09549?utm_source=openai))；ViSA 2026 更直接，占了“view-invariant/part alignment 不够，要用 view-aware semantic experts”的位置([arxiv.org](https://arxiv.org/abs/2605.18192?utm_source=openai))。你们的 containment 前提又被杀掉，所以这里没法再靠 re-frame 救。
+
+遮挡这块也不干净。QPM 已经做 pair-wise common non-occluded regions 和 target attention([arxiv.org](https://arxiv.org/abs/2201.00107?utm_source=openai))；DPEFormer 做动态 patch selection + SAM occlusion augmentation([arxiv.org](https://arxiv.org/abs/2402.10435?utm_source=openai))；OGFR 2025 做 occlusion-guided purification / low-quality token erasing([arxiv.org](https://arxiv.org/abs/2507.08520?utm_source=openai))；ETNDNet 已经把 non-target pedestrian / obstacle 当噪声扰动处理([arxiv.org](https://arxiv.org/abs/2307.07187?utm_source=openai))。你们历史上 completion、occluder gate、visibility 都撞墙，GOPL 又证明 SMPL overlap 只是 occlusion-count/view-diff 代理。继续做 donor-ID leakage，最多是最后一枪，不是主线。
+
+SMPL 更不用救。你们自己的结果已经形成稳定 meta-pattern：β≈random、pose+CLIP 死、SMPL-anchor VI-ReID 死、GOPL cov≈廉价代理。结论应写死：**SMPL/人体几何在你们现有 ReID 设置里没有超出遮挡数量和视角差的独特判别信号。**
+
+**该转去 X：video/tracklet-based VPReID / VIR-VPReID。**
+
+具体不是继续 image AGPReID，而是换到 **跨平台视频行人 ReID/tracklet ReID**：用 AG-VPReID / AG-VPReID.VIR 这类数据，主问题改成“single-frame 不可判别时，时间证据如何积累、筛选、校准”。AG-VPReID 已经是 6,632 IDs、32,321 tracklets、9.6M frames 的大规模 aerial-ground video benchmark([arxiv.org](https://arxiv.org/abs/2503.08121?utm_source=openai))，后续还有 VIR 版本([arxiv.org](https://arxiv.org/abs/2507.17995?utm_source=openai))和 2025 challenge([arxiv.org](https://arxiv.org/abs/2506.22843?utm_source=openai))。这至少是换数据、换协议、换隐藏变量，不再在 single-image 的死循环里抠 SMPL/visibility。
+
+进入前先做一个廉价 kill-switch：
+
+冻结你们最强 Swin/SOLIDER frame encoder，在 AG-VPReID 上比较：
+
+1. 单帧最佳/中心帧检索；
+2. 简单 mean/max/top-k tracklet aggregation；
+3. oracle frame subset 或质量筛选上界；
+4. 控制 frame 数、分辨率、视角后，看 temporal complementarity 是否仍解释失败恢复。
+
+通过线要硬：简单 temporal aggregation 或 oracle subset 相比最强单帧有明显 headroom，比如 hardest A-G/VIR bucket 至少 +5 mAP/R1 级别，并且不是 frame-count artifact。过了，才有“single-image evidence is insufficient; temporal evidence selection is the mechanism”的方法稿空间。过不了，就不要再留在 ReID 方法稿里。

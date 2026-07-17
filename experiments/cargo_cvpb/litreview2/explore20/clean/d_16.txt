@@ -1,0 +1,48 @@
+结论：Privacy/Federated ReID 不是全死，但 **“FedDG 提点 / 图片匿名化 / 通用特征加密” 已经偏红海**。2024-26 已有 PixelFade 做恢复攻击下的图片级隐私保护，Fed-Protoid/L2RW 做无图像传输的分布式/联邦适配，2026 又有 FedBPrompt/FedARKS/CO-EVO 继续卷 FedDG 的 prompt、aggregation、style gap。([arxiv.org](https://arxiv.org/abs/2408.05543)) ([arxiv.org](https://arxiv.org/abs/2407.12589)) ([arxiv.org](https://arxiv.org/abs/2503.12232)) ([arxiv.org](https://arxiv.org/abs/2603.12912)) ([arxiv.org](https://arxiv.org/abs/2603.06122)) ([arxiv.org](https://arxiv.org/abs/2604.26363))  
+我建议只看下面两个口子。
+
+**机会 1：Partially-Overlapped Federated ReID，私有标签空间下的跨客户端身份合并**
+
+触发观察：现有 FedReID 默认不同 client 是独立、多域、非共享标签空间，甚至明确按不同城市/地点、non-overlapping ID space 来建模。([arxiv.org](https://arxiv.org/abs/2006.04150)) 但真实跨机构/跨园区 ReID 里，同一个人可能横跨多个 client；如果各 client 只持有本地 ID，FedAvg/FedDG 会把“同一人不同本地标签”当成无关身份，训练目标本身就错了。
+
+重定义：大家以为 federated ReID 的核心是 non-IID/domain gap；这里改成 **identity namespace fragmentation**：隐私约束下，先要解决“哪些本地 ID 实际是同一个全局人”，否则 domain generalization 是在错误监督上优化。
+
+机制草案：  
+`Private Reciprocal Prototype Linking`。每个 client 只上传匿名化/扰动后的本地 ID prototype 或 top-k reciprocal sketch；server 建跨 client reciprocal-neighbor 图，只接受高置信互近邻作为 pseudo same-ID component；训练时对已链接 component 做跨 client prototype contrastive，对高相似但未确认的 pair 做 uncertain-negative suppression，避免把潜在同人硬推开。主模型只动轻量 adapter/prompt，backbone 可先 frozen。
+
+廉价 kill-switch：零训练。  
+用现有 SOLIDER/Swin 特征，在 Market/MSMT/CARGO 按 camera 或 region 切 client，本地标签全部重编号。算三件事：
+
+- reciprocal prototype link precision / coverage：top-1 或 mutual top-k 链接是否真同 ID；
+- component purity：跨 client 合并图是否会炸；
+- poisoned-negative rate：独立标签训练里，top-k hard negatives 有多少其实是真同人。
+
+Go 条件：MSMT 或 CARGO 上 mutual link precision 能到 `80-90%` 且 coverage 不太低，比如 `>20%`；或者 poisoned-negative rate 明显高，说明旧 FedDG 监督确实有错。低于这个直接杀，不开训练。
+
+撞车核查：2024-26 查到的是 DUDA/FedDG/VI-Fed/prototype alignment/prompt/aggregation/style diversification；没看到“partial identity overlap + private namespace resolution”作为主问题。FedUCC 类 unsupervised/federated clustering是邻近风险，但不是这个 cross-client same-person label fragmentation 问题。
+
+Verdict：**最值得首验**。信心 `8/10`。  
+数据：Market/MSMT/CARGO 可首验；AG-ReID.v2 可做跨视角 stress test，但航拍-地面别当主贡献；不需要新数据。
+
+**机会 2：Federated ReID 的 message-linkability，证明“无图像传输”不等于隐私**
+
+触发观察：Fed-Protoid 这类方法会用 source prototypes 做分布对齐，很多 FedDG 也会交换 feature statistics/style/semantic anchors。([arxiv.org](https://arxiv.org/abs/2407.12589)) 但 ReID 的 prototype/feature 本身接近 biometric template；已有旧工作证明 deep ReID features 可泄露属性和重建信息，并建议加密特征。([arxiv.org](https://arxiv.org/abs/2108.07147)) 2024-26 新 FedReID 论文大多把“不传图像”当隐私前提，没有系统报告通信消息是否可被 re-identify。
+
+重定义：大家以为 privacy 是“不上传图片”；这里改成 **federated message linkability budget**：任何上传给 server/其他 client 的 prototype/statistic，都要报告它能否被最近邻检索回具体行人。
+
+机制草案：  
+`Linkability-Bounded Prototype Federation`。不上传单 ID prototype，而上传 k-anonymous mixed/synthetic prototypes：优化目标是保留 client-level distribution/MMD/style statistics，同时最小化任一 synthetic prototype 对真实本地 ID prototype 的最大相似度。训练端用于 Fed-Protoid 式分布对齐或 client weighting；评估端报告 accuracy-privacy curve，而不是只报 mAP/R1。
+
+廉价 kill-switch：几乎零训练。  
+用 frozen SOLIDER 抽每个 client 的 ID prototype，模拟 server 拿到这些消息后的攻击：
+
+- attack-1：prototype → held-out image gallery 最近邻，算 top-1/top-5 identity recovery；
+- attack-2：prototype → public/other-client gallery linkability；
+- defense smoke：k-mix / synthetic prototype 后，identity recovery 是否大幅下降，同时 feature distribution MMD 是否基本保留。
+
+Go 条件：raw prototype top-1 recovery 明显高，同时 k-anonymous synthetic prototype 能把 recovery 打到接近随机、MMD 不崩。若简单随机噪声/随机旋转完全支配你的方案，杀掉。
+
+撞车核查：PixelFade/SecureReID 卷的是图片匿名化和恢复攻击；ShuffleBits/feature encryption 是旧的 generic feature 加密，不是 FedReID 通信协议与 accuracy-linkability 曲线。风险是这个方向容易被 reviewer 说“feature 泄露早知道”，所以必须绑定到 **FedReID message primitive**，不能写成泛泛特征隐私。
+
+Verdict：**可做第二优先级，但需要 smoke test 强**。信心 `6.5/10`。  
+数据：Market/MSMT/CARGO 足够首验；occluded_duke 可做遮挡鲁棒补充，不建议主打；RSTPReid 暂不需要。

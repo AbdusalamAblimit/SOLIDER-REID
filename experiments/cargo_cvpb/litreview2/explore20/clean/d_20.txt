@@ -1,0 +1,36 @@
+按 2026-06-25 联网核查，我不建议再碰 open-world/DG、promptable bbox、航拍-地面、occluded cloth-changing：OWD 2024 已做 open-world benchmark，KPR 2024 已做 multi-person bbox ambiguity，AG-ReID.v2 已占航拍-地面，OC4-ReID 2024 已做遮挡+换衣组合。下面两个更像可构造的新协议。
+
+**机会 1：Ambiguous Query-Bag ReID**
+**触发观察/失败**：标准 ReID 默认 query 是单张正确目标，multi-query 默认多张全是同一 ID。真实部署里更常见的是“用户/检索员给一包候选截图”，其中可能混入跟踪漂移、检测错框、相邻行人、错误截图。大家以为“query support 越多越稳”，其实隐藏变量可能是 **query-bag purity**：多给错图会比单图更坏。
+
+**重定义**：从 single-query ReID 改成 **weak target evidence bag retrieval**：给定 query bag，只有未知比例图片属于目标，系统要检索目标或输出多个候选假设。
+
+**机制草案**：零训练先做 `Target-Consensus Query Aggregation`：每张 query 独立检索 top-L gallery，构建 query-query 的近邻重叠/排名一致性图；选最大共识子集做 trimmed fusion。若图分裂成多个强 component，则输出 multi-hypothesis ranking，而不是硬压成一个 embedding。后续可训练一个 permutation-invariant selector，用合成污染 query bag 做监督。
+
+**廉价 kill-switch**：
+1. 用 Market/MSMT/CARGO 现有 query/gallery 构造 bag：`m` 张真目标 + `c` 张 hard contaminant，contaminant 从 baseline top-20 错误 ID 里采样。
+2. 比较 average multi-query、single-best、median/trimmed fusion、k-reciprocal/re-ranking、camera-aware baseline。
+3. GO：25%-50% hard contamination 下 average fusion 掉 >10 mAP，而 consensus selector 至少追回一半跌幅，并且超过 k-recip/camera baseline ≥2 mAP。
+4. NO-GO：单张 max 或 k-recip 已经解决污染，或者污染不造成明显 protocol gap。
+
+**撞车核查**：老的 set-based ReID 确实处理过低质量/语义噪声图像集，但主要是视频/set 表征质量问题，不是“测试时弱 query bag、未知目标纯度、多假设检索”协议；2019 ID-aware Quality 还明确以 set-to-set 和质量权重为核心。KPR 2024 处理的是同一 bbox 多人歧义，不是跨图片 query-bag 污染。  
+**Verdict**：值得先杀。信心 **7/10**。现有 Market/MSMT/CARGO 足够首验，不需要新数据；若要增强部署说服力，后期再补真实 tracklet/operator 错图样例。
+
+**机会 2：Metric Identity Unlearning for ReID**
+**触发观察/失败**：ReID 部署不是只存 gallery，模型本身也被历史身份训练过。大家以为“删 gallery / 删图片 / 删分类头”就完成隐私删除，但 ReID embedding 可能仍能把被删除身份跨摄像头聚起来。隐藏变量是 **retrieval leakage after deletion**，不是分类 logit。
+
+**重定义**：把 ReID 从 accuracy benchmark 改成 **right-to-be-forgotten metric retrieval protocol**：删除某些训练身份后，模型应接近“从未见过这些身份训练”的状态，同时保持 retain/unseen ID 检索能力。
+
+**机制草案**：`Identity Subspace Scrubbing Adapter`。冻结 backbone，学习或闭式求一个低秩 embedding adapter：对 retain ID 做 ranking distillation，保持原排序；对 forget ID 抹除其 identity direction，使同一 forgotten ID 的跨摄像头相似度不再高于 hard negatives。后续再和通用 machine-unlearning baseline 比，包括 gradient ascent、random label、KL retain distillation、ViT-MUL 类方法。
+
+**廉价 kill-switch**：
+1. 在 Market/MSMT train IDs 中抽 5%-10% forget IDs，按 camera/image 切成 forget-query/forget-gallery。
+2. 先做零训练诊断：只删分类头/原图/index 后，测 forget IDs 的 cross-camera R1/mAP 是否仍显著高于随机。
+3. 做闭式线性 projection：移除 forget prototype 差分子空间，同时最小化 retain feature pairwise distance 变化。
+4. GO：forget R1/mAP 降低 ≥50%，retain validation mAP 损失 ≤1%，并明显强于“删头/加噪/随机投影”。
+5. NO-GO：forget leakage 本来不强，或任何 scrub 都把 retain 检索一起打崩。
+
+**撞车核查**：machine unlearning 是热方向，2024 survey 和 ViT-MUL 都很活跃；2022 L-CODEC 甚至提到 face/person ReID。但我没看到 2024-26 有专门把 **ReID metric embedding 的身份删除泄漏** 做成协议和方法的红海。风险是审稿会要求你和通用 unlearning 方法严肃对比。  
+**Verdict**：可做，但比机会 1 更跨领域。信心 **6/10**。Market/MSMT 可首验；CARGO/AG-ReID.v2 可做外部部署感验证，不需要新数据。
+
+优先级：先做 **机会 1**，因为它最 ReID-native、零训练 kill-switch 最便宜；第二台机器可以并行跑 **机会 2** 的泄漏诊断和闭式 projection。

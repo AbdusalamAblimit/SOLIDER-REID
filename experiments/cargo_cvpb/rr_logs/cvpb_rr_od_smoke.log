@@ -1,0 +1,173 @@
+####################################################################################
+# RANK-REGRET (rank-instability) EFFICIENCY KILL-SWITCH  dataset=occluded_duke
+#   ckpt=log/occluded_duke/exp255_small_gcn512_2stage/transformer_120.pth  cheap_stage=1 (0-idx into 4 stage GAPs)  RI@K=20
+####################################################################################
+/root/miniconda3/envs/solider-reid/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+=> Occluded-DukeMTMC loaded
+Loading ROA occluders from data/VOCdevkit/VOC2012...
+Loaded 1289 occluder patches
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_small_patch4_window7_224 as a backbone
+/root/work/SOLIDER-REID/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[PSG+GCN] Skeleton GCN head enabled: 2 layers, hidden=512, test_feat=global, kp_weight=score
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /root/work/SOLIDER-REID/log/occluded_duke/exp255_small_gcn512_2stage/transformer_120.pth
+[extract] loaded log/occluded_duke/exp255_small_gcn512_2stage/transformer_120.pth; POSE_TEST_FEAT=global NECK_FEAT=after; num_query=2210
+[extract] #stage feature maps = 4; shapes = [(64, 96, 96, 32), (64, 192, 48, 16), (64, 384, 24, 8), (64, 768, 12, 4)]
+  [extract] batch 0/311 (4s)
+  [extract] batch 20/311 (9s)
+  [extract] batch 40/311 (13s)
+  [extract] batch 60/311 (18s)
+  [extract] batch 80/311 (23s)
+  [extract] batch 100/311 (28s)
+  [extract] batch 120/311 (33s)
+  [extract] batch 140/311 (38s)
+  [extract] batch 160/311 (43s)
+  [extract] batch 180/311 (48s)
+  [extract] batch 200/311 (52s)
+  [extract] batch 220/311 (57s)
+  [extract] batch 240/311 (62s)
+  [extract] batch 260/311 (67s)
+  [extract] batch 280/311 (72s)
+  [extract] batch 300/311 (77s)
+[extract] query=2210 gallery=17661 full_dim=768 stage_dims={0: 96, 1: 192, 2: 384, 3: 768} (79s)
+[extract] cached -> /tmp/rr_od_feats.npz
+[SMOKE] capped query -> 300
+[data] Nq=300 Ng=17661  full_dim=768 cheap_dim=192  #q-pids=67 #g-pids=1110
+
+====================================================================================
+STEP 1 — cheap-only vs full mAP (every stage GAP) — need cheap << full
+====================================================================================
+  FULL  (BNNeck embedding)        mAP= 72.46  R1= 82.33  R5= 88.67  R10= 89.67  (nq=300)
+  stage0 GAP (dim=  96)         mAP=  0.17  R1=  0.33  R5=  0.67  R10=  0.67
+  stage1 GAP (dim= 192)         mAP=  0.14  R1=  0.00  R5=  0.00  R10=  0.33  <== PRIMARY cheap
+  stage2 GAP (dim= 384)         mAP= 44.89  R1= 53.67  R5= 69.00  R10= 73.67
+  stage3 GAP (dim= 768)         mAP= 72.06  R1= 81.67  R5= 89.00  R10= 91.33
+
+  >> headroom (full - cheap_stage1) mAP = +72.32  R1 = +82.33  (need clearly POSITIVE — cheap weaker so routing-to-full can help)
+
+  per-query (AP_full - AP_cheap): mean=+0.7232  frac(full>cheap)=1.000  frac(equal)=0.000  (n=300)
+
+====================================================================================
+RI@K  (cheap-vs-full top-20 ranking disagreement; HIGH = cheap re-orders)
+====================================================================================
+  RI(top-k overlap)  mean=0.9220  std=0.0674  [1 - |cap|/k]
+  RI(RBO p=0.9)     mean=0.7143  std=0.1163  [1 - rank-biased-overlap]
+  RI(Kendall-tau)    mean=0.8749  std=0.0816  [1 - tau over union]/2
+  inter-RI spearman: overlap~RBO=+0.887  overlap~tau=+0.969
+
+====================================================================================
+TEST A — RI ~ (AP_full - AP_cheap) per query  (spearman + perm-p)
+====================================================================================
+  [honest caveat] A is PARTLY MECHANICAL: RI=0 (cheap order==full order) forces
+  AP_gap=0 by construction, so a positive A is near-tautological. The REAL test is B
+  (does RI beat STATIC difficulty + survive partialling it) — A is only a sanity floor.
+  rho(RI[overlap], AP_gap) = +0.2353  perm-p=0.0010  (n=300)  [expect POSITIVE: high RI -> full helps more]
+  rho(RI[rbo    ], AP_gap) = +0.2185  perm-p=0.0010  (n=300)  [expect POSITIVE: high RI -> full helps more]
+  rho(RI[tau    ], AP_gap) = +0.2298  perm-p=0.0010  (n=300)  [expect POSITIVE: high RI -> full helps more]
+
+====================================================================================
+TEST B (★CFPER COLLISION) — RI vs static difficulty proxies @ predicting AP_gap
+====================================================================================
+  -- marginal spearman vs AP_gap (each proxy, best-signed) --
+    RI[rbo]                         rho=+0.2185   <== RELATION-LEVEL
+    RI[overlap]                     rho=+0.2353
+    RI[tau]                         rho=+0.2298
+    cheap_margin(neg)               rho=-0.1003   [static difficulty]
+    cheap_top1_top3_gap(neg)        rho=-0.1081   [static difficulty]
+    cheap_entropy                   rho=-0.0693   [static difficulty]
+    cheap_density(neg)              rho=+0.1491   [static difficulty]
+    cheap_rawnorm(neg)              rho=+0.0535   [static difficulty]
+    full_feat_norm(neg)             rho=+0.0372   [static difficulty]
+    full_margin(neg)                rho=+0.4112   [static difficulty]
+    full_entropy                    rho=+0.3030   [static difficulty]
+  -> strongest static proxy: full_margin(neg) (|rho|=0.4112) vs RI[rbo] |rho|=0.2185
+
+  -- PARTIAL spearman: RI controlling static proxies (the ★ decisive test) --
+     (ALL = 8 proxies stacked: ['cheap_margin(neg)', 'cheap_top1_top3_gap(neg)', 'cheap_entropy', 'cheap_density(neg)', 'cheap_rawnorm(neg)', 'full_feat_norm(neg)', 'full_margin(neg)', 'full_entropy'])
+    RI[overlap] | margin       = +0.2685
+    RI[overlap] | entropy      = +0.2490
+    RI[overlap] | density      = +0.2483
+    RI[overlap] | full-margin  = +0.2208
+    RI[overlap] | ALL 8 static = +0.3339  (n=300)  <== must stay clearly !=0 (else CFPER collision)
+    RI[rbo    ] | margin       = +0.2635
+    RI[rbo    ] | entropy      = +0.2359
+    RI[rbo    ] | density      = +0.2237
+    RI[rbo    ] | full-margin  = +0.1602
+    RI[rbo    ] | ALL 8 static = +0.3016  (n=300)  <== must stay clearly !=0 (else CFPER collision)
+    RI[tau    ] | margin       = +0.2672
+    RI[tau    ] | entropy      = +0.2462
+    RI[tau    ] | density      = +0.2401
+    RI[tau    ] | full-margin  = +0.1987
+    RI[tau    ] | ALL 8 static = +0.3226  (n=300)  <== must stay clearly !=0 (else CFPER collision)
+
+  -- reverse: static proxy partialled on RI[rbo] (asymmetry; want proxy to SHRINK) --
+    cheap_margin(neg)      rho -0.1003 -> | RI[rbo] -0.1806
+    cheap_entropy          rho -0.0693 -> | RI[rbo] -0.1142
+    cheap_density(neg)     rho +0.1491 -> | RI[rbo] +0.1568
+
+====================================================================================
+TEST C (feasibility) — cheap-ONLY signals predict RI? (needed to route at inference)
+====================================================================================
+  RI[overlap]:  margin +0.240  entropy +0.149  density -0.066  |  cheap-only MULTI: spearman(pred,RI)=+0.234  rank-R2=+0.081
+  RI[rbo    ]:  margin +0.308  entropy +0.184  density -0.018  |  cheap-only MULTI: spearman(pred,RI)=+0.297  rank-R2=+0.168
+  RI[tau    ]:  margin +0.265  entropy +0.173  density -0.049  |  cheap-only MULTI: spearman(pred,RI)=+0.245  rank-R2=+0.111
+  >> if cheap-only spearman/R2 ~ 0, RI is UNPREDICTABLE at inference -> NO efficiency gain.
+
+====================================================================================
+TEST D — Pareto cascade  (route by RI; compute-fraction vs mAP)
+====================================================================================
+  analytic Swin compute fractions to finish each stage: ['0.083', '0.167', '0.917', '1.000']  (depths=(2, 2, 18, 2), dims=[96, 192, 384, 768])
+  cheap (stage1) compute fraction = 0.167; full = 1.000
+  (NOTE: the FULL forward SUBSUMES the cheap stem — same early stages — so a
+   routed-to-full query pays full=1.0 (NOT cheap+full); a cheap-exit query pays only
+   cheap_compute. avg compute = frac_full*1.0 + (1-frac_full)*cheap_compute.)
+  [identity check] precomputed-AP cascade vs distmat cascade: max|dAP|=0.00e+00, validity-match=True  (must be ~0 / True — confirms the fast path is exact)
+
+  endpoints: ALL-cheap mAP=0.141 (compute 0.167) | ALL-full mAP=72.458 (compute 1.000)
+
+  -- routing by RI[rbo] (ORACLE: route highest-RI queries to full) --
+
+  Pareto table — mAP at avg-compute in [0.5, 0.6, 0.7] (achievable range [0.167, 1.000]).  ORACLE = uses full info; DEPLOY = cheap-only cross-fit:
+     compute | RI-oracle | RIhat-DEPLOY | APgap-DEPLOY |  cheapStat | static-ORACLE |   random
+             | (RI rank) |    (xfit RI) | (xfit APgap) | cheap_dens | full_margin(n |         
+        0.50 |    30.859 |       27.760 |       30.455 |     30.639 |        33.383 |   28.952
+        0.60 |    39.997 |       36.961 |       40.305 |     40.304 |        43.986 |   37.839
+        0.70 |    49.477 |       45.467 |       49.180 |     49.739 |        52.403 |   46.492
+       1.000 |    72.458 |       72.458 |       72.458 |     72.458 |        72.458 |   72.458   (all-full ref)
+
+    KEY: the FAIR deployable fight is RIhat-DEPLOY vs APgap-DEPLOY vs cheapStat (all cheap-only). RI-oracle/static-ORACLE use full info = upper bounds, not deployable.
+
+  compute to reach 99% of full mAP (71.733):
+    RI-oracle = 1.000 | RIhat-DEPLOY = 1.000 | APgap-DEPLOY = 1.000 | static-ORACLE = 1.000 | random = 1.000
+    (efficiency PASS needs RIhat-DEPLOY clearly < random AND < APgap-DEPLOY; all=1.000 means NO router saves compute at 99% mAP)
+
+####################################################################################
+SUMMARY / VERDICT  (occluded_duke)
+####################################################################################
+  cheap(stage1) mAP / full mAP            = 0.14 / 72.46  (headroom +72.32)
+  A  rho(RI[rbo], AP_gap)                  = +0.2185 (perm-p 0.0010); overlap +0.235 tau +0.230
+  B  best static proxy rho                 = +0.4112 (full_margin(neg))
+  B  RI[rbo] rho                           = +0.2185
+  B* RI[rbo] partial | ALL static proxies  = +0.3016  <== CFPER LIFE/DEATH (want clearly !=0)
+  C  cheap-only -> RI[rbo] multi spearman  = +0.297 (rank-R2 +0.168)  <== FEASIBILITY
+  D  @60% compute: RIhat-DEPLOY 36.96 vs APgap-DEPLOY 40.30 vs cheapStat 40.30 vs random 37.84 | RI-oracle 40.00 static-oracle 43.99 (full 72.46)
+  D  compute@99%full: RIhat-DEPLOY 1.000 | APgap-DEPLOY 1.000 | random 1.000 | RI-oracle 1.000
+
+  >> TEST B (CFPER): partial|all=0.302(>=.08:True) keeps>=50%marg:True RI>best_static(0.411):False
+     FAIL — RI <= static difficulty (CFPER collision)
+  >> TEST C (feasible): cheap-only->RI spearman=+0.297  PASS — RI estimable from cheap (router exists)
+  >> TEST D (efficiency): deployable RI router FAIL — no compute saving / does not beat random+cheap-static
+
+  >>> OVERALL: idea is DEAD — B(novelty/CFPER)=FAIL C(feasible)=pass D(efficiency)=FAIL
+
+[done] rank-regret kill-switch complete.

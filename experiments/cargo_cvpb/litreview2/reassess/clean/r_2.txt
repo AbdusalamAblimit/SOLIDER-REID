@@ -1,0 +1,59 @@
+结论：我只推荐 **1 个主线 + 1 个备胎**。不要再救 SMPL / 遮挡 / 航拍-地面；也不要把“相机偏差”当主线，DART³ 已经把 camera bias + distance-aware TTA 写得很近，CA-Jaccard 也占了 camera-aware neighbor/re-ranking 这块。([arxiv.org](https://arxiv.org/abs/2505.18337)) ([arxiv.org](https://arxiv.org/abs/2311.10605))
+
+**方向 1，主推：Gallery Hubness ReID**
+一句话：大家以为强 ReID 失败来自“某个 query 没匹配好”，其实可能是 **少数 gallery 样本变成很多 query 的吸附点**，错误是 many-to-one 的图库拓扑病，不是 pairwise 相似度病。
+
+触发观察：
+用 exp255 / 强 Swin 冻结特征，在 Market/MSMT/CARGO 标准检索上统计每个 gallery 被多少 query 放进 top-k。若 top 1% gallery 贡献了远超比例的 false top-10 / false top-1，这就是新观察。
+
+重定义：
+ReID 不是独立 query-gallery pair matching，而是 **directed kNN graph retrieval**。隐藏变量不是 hard negative distance，而是 gallery 的 **negative in-degree / hub mass**。这和普通 hard negative mining 不一样：hard negative 是“对一个 anchor 很近”，hub 是“对很多不同身份都很近”。旧 triplet/quadruplet 主要还是 per-anchor 或 batch 内 hard sample。([arxiv.org](https://arxiv.org/abs/1704.01719))
+
+机制怎么长：
+训练端做 **Hub-Aware Retrieval Embedding**，不加花模块，只改训练组织：
+- memory bank 维护每个样本的 cross-ID top-k in-degree；
+- 对“吸引很多错误身份”的 gallery 施加 anti-hub margin；
+- 正常 ID loss / triplet 保留，但 negative 权重从“离 anchor 多近”改为“它是否是全局误吸附点”；
+- 测试仍输出单 embedding，避免变成 test-time trick。
+
+廉价 kill-switch：
+1. 冻结强 Swin，提 query/gallery feature。
+2. 计算 `H_k(g)=# {q | g in top-k(q), y_g != y_q}`。
+3. 看 false top-1 是否集中在少数高 `H_k` gallery：top 1% hub 至少吃掉 20-30% false hits 才有戏。
+4. query 级 hub mass `M(q)=sum H_k(g)` 是否比 norm、top1 margin、camera pair、#gallery positives 更能解释 AP/R1 错误。
+5. 零训练干预：`score' = cosine - λ log(1+H_k(g))` 或 CSLS / Mutual Proximity 类 hub 校正。若 mAP/R1 小涨，且收益集中在高 hub-mass query，方向活；若随机打乱 `H_k` 也涨，或只等价于 camera correction，杀掉。
+6. 必须 Market + MSMT 至少双数据成立；occluded_duke 只能当普通 benchmark sanity，不许写遮挡故事。
+
+撞车核查：
+- k-reciprocal re-ranking 已经用 reciprocal neighbor 做 test-time ranking，但它不是把 **gallery in-degree hubness** 定义成强 ReID 的失败变量，也不是训练端 anti-hub。([arxiv.org](https://arxiv.org/abs/1701.08398))
+- Pose2ID / Feature Centralization 已经做 training-free neighbor centralization，还涉及 pose/generation，不能撞成“邻居聚合”。我们的切口必须是 **负向图库吸附点**，不是正样本中心化。([arxiv.org](https://arxiv.org/abs/2503.00938))
+- hubness 在通用高维检索里是成熟概念，甚至已有工作把 hubness 和 CSLS 当核心机制分析；好处是理论可借，风险是必须证明 ReID 里没人把它做成主问题。([arxiv.org](https://arxiv.org/abs/2605.26575))
+
+**方向 2，备胎：Rank-Instability Adaptive ReID**
+一句话：如果强 backbone 已经很强，继续卷 mAP 可能不现实；换问题轴：**不是所有 query 都需要同等计算/同等复杂匹配**。隐藏变量是 rank instability。
+
+触发观察：
+同一冻结 Swin，提多种便宜特征：低分辨率、浅层 stage、CLS/avg、final feature。若多数 query 的 cheap rank 与 full rank 高度一致，少数 query 排名剧烈变化且承包错误，就有新问题。
+
+重定义：
+ReID 当前默认 uniform inference：每个 query 都走同样 backbone、同样检索策略。实际应是 **rank-stability conditioned retrieval**：稳定 query 早退，unstable query 才走 full feature / rerank / expert。
+
+机制怎么长：
+- 多出口 Swin 或低/高分辨率 cascade；
+- 用 cheap-vs-full top-k overlap、rank entropy、margin stability 作为 gating signal；
+- 训练时加 rank-consistency / instability predictor；
+- 目标不是单纯 mAP，而是 mAP-FLOPs Pareto 或 fixed-budget mAP。
+
+零训练 kill-switch：
+1. 冻结现有 ckpt，抽 cheap feature 和 full feature。
+2. 定义 `R(q)=1-Jaccard(topK_cheap, topK_full)` 或 Kendall rank instability。
+3. 分桶看：低 `R(q)` cheap≈full，高 `R(q)` full 明显救回。
+4. oracle cascade：只对 top p% unstable query 用 full feature，其余用 cheap feature。若 40-60% FLOPs 下 mAP 接近 full，方向活。
+5. 破坏对照：随机 p%、只用 final margin、只用 norm。如果 instability 不比这些强，杀掉。
+
+撞车核查：
+- AT-ReID 2025 的 “anytime” 是昼夜/长期/换衣多场景，不是 computational early-exit。([arxiv.org](https://arxiv.org/abs/2509.16635))
+- DART³ 是 camera-bias TTA，不是预算分配。([arxiv.org](https://arxiv.org/abs/2505.18337))
+- 风险：这更像效率/协议稿，不是纯涨点稿。只有 kill-switch 显示 Pareto 很漂亮，才值得推进。
+
+优先级：先测 **Gallery Hubness**。它最像你们现在能做的 B 类方法稿：强 backbone 冻结就能证伪，完全绕开 SMPL/遮挡/航拍，机制也能自然从隐藏变量长出来。方向 2 只在 hubness 不成立时作为新协议备胎。

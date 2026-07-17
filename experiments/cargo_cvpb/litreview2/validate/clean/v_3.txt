@@ -1,0 +1,59 @@
+结论：我不会把 B/C/D 里的任何一个直接立为主线。最该做的是一个比它们更硬的 re-frame：
+
+**航拍-地面 ReID 不是“局部没对齐”，也不首先是“对称度量错了”，而是“航拍观测受像素预算限制，局部证据不可恢复”。**
+
+也就是：**Observation-Limited Identity Recoverability / 观测受限的身份可恢复性**。
+
+`avg > MaxSim` 的真正含义不是“应该用 avg”，而是：MaxSim 假设每个局部 token 都是可独立匹配的身份证据；但在低清俯视航拍图里，很多局部 token 只是欠定噪声，MaxSim 会从 gallery 里捞到偶然高相似的假局部匹配。avg 反而像低通统计量，保住了可恢复的整体身份线索。
+
+**B/C/D 排序**
+
+1. **B 修正版：非对称信息包含**
+   - 原始想法最有论文感，但你们现在的“航拍宽分布 ⊆ 地面窄分布”方向是反的。低清航拍是宽不确定集合，高清地面应是落在这个集合里的窄证据，更像“ground narrow evidence ∈ / ⊆ aerial uncertainty envelope”。
+   - 风险：概率嵌入、方差不确定性、非对称 order embedding 都有先例，比如 PCME、ReID uncertainty modeling、Order-Embeddings。要赢，必须证明这个方向来自航拍成像物理，而不是套高斯/KL。
+
+2. **C：对齐伤判别性**
+   - 最贴 `avg > MaxSim`，但“view-invariant/part alignment 会丢 view-specific discriminative cues”已经被 AGPReID 近作 ViSA 明说了。作为原始 C，撞车偏高。
+   - 如果把它改成“低像素预算导致 MaxSim 假匹配膨胀”，就会变成我上面推荐的新 re-frame。
+
+3. **D：因果**
+   - 最不建议现在押。ReID 里 causal/backdoor 已很多，衣服、域泛化、跨模态都有人做。除非你能先证明 CARGO 中 view 与 identity 存在强伪相关，否则会像套因果模板。
+
+**最该做的 1 个**
+
+做 **观测受限身份可恢复性**，机制自然长成：
+
+- 不再强行对齐航拍和地面局部；
+- 把高清 ground 退化到 aerial 像素预算；
+- 学一个 recoverable-evidence 分支，只保留低预算下仍稳定的身份证据；
+- 最后与 clean evidence 做轻量融合。
+
+它比 B 更物理，比 C 更不撞 ViSA，比 D 更可证伪。
+
+**零训练 kill-switch**
+
+冻结同一个 Swin，完全不训练：
+
+1. 按 aerial query 的原始 bbox area/height 或 SMPL projected body pixels 分 4 桶。
+2. 每桶对同一个 ground gallery 算 A→G mAP。
+3. 同时算 `avg/cosine` 与 `MaxSim` 差值。
+4. 计算 MaxSim 假匹配指标：互为最近邻率、token match entropy、正负 token gap。
+5. 通过标准：
+   - 最小像素桶比最大桶低至少 `5-8 mAP`；
+   - `MaxSim - avg` 的负差主要集中在最小像素桶；
+   - 假匹配指标与 per-query AP 显著负相关。
+
+如果这三条成立，就不是“avg 偶然更好”，而是证明了隐藏变量：**航拍局部证据在低像素预算下不可恢复**。
+
+参考核查来源：VDT/CARGO、AG-ReID.v2、GSAlign、ViSA、SeCap、PCME、ReID uncertainty、causal ReID、CRReID/RAR、MRJL。  
+https://arxiv.org/abs/2403.14513  
+https://arxiv.org/abs/2401.02634  
+https://arxiv.org/abs/2510.22268  
+https://arxiv.org/abs/2605.18192  
+https://arxiv.org/abs/2503.06965  
+https://arxiv.org/abs/2101.05068  
+https://arxiv.org/abs/2007.08785  
+https://arxiv.org/abs/2305.06145  
+https://arxiv.org/abs/2103.15890  
+https://arxiv.org/abs/2207.13037  
+https://arxiv.org/abs/2105.12684

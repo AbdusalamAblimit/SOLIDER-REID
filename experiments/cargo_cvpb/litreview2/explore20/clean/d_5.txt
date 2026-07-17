@@ -1,0 +1,40 @@
+短结论：**TIReID 本体已经很红海**。泛 CLIP/PETL、token/local alignment、part grounding、prototype、negative attribute、MLLM query refinement 都不建议碰。联网核查到的近线包括 [DualFocus 2024](https://arxiv.org/abs/2405.07459)、[Propot 2024](https://arxiv.org/abs/2409.09427)、[ICL/THI 2025](https://arxiv.org/abs/2506.11036)、[Chat-Driven 2025](https://arxiv.org/abs/2509.12662)、[DiCo 2026](https://arxiv.org/abs/2601.10053)、[InterPartAbility 2026](https://arxiv.org/abs/2604.27122)。能试的只剩“换情况”的窄入口。
+
+**机会 1：DCR，Distractor-Conditioned Relative Text ReID**
+触发观察：标准 TIReID 默认文本一次性、绝对、完整。但真实检索常是“先搜错，再说不是这个，是旁边那个更浅裤子/没背包的人”。隐藏变量不是文本质量，而是**query 的判别性依赖 gallery distractor**。
+
+重定义：从 one-shot text-to-image，改成**失败后相对约束检索**：文本不是描述目标本身，而是描述“目标相对当前误检候选的差异”。
+
+机制草案：先用任意 TIReID baseline 取 top-k；对 top false positive 构造/接收一条 relative correction；训练一个 pairwise relative scorer，输入 `(query, candidate, distractor)`，输出 candidate 是否更符合“相对差异”。不要做 MLLM 交互主方法，也不要做 token prototype；核心是 distractor-conditioned scoring + relative triplet training。
+
+廉价 kill-switch：RSTPReid 零训练首验。
+1. 用现有 baseline 找 top-1 false cases。
+2. 用 GT caption 与 false-positive caption 的差异模拟一句用户纠错，例如 “not carrying a bag / pants are lighter / upper clothes are red rather than black”。
+3. 只在 top-20 内做 frozen rerank：`base_score + relative_clause_score - distractor_clause_score`。
+4. 若单轮纠错能救回 >15-20% 原失败样本，有戏；若大多差异只是同义废话或 rerank 不动，立刻杀。
+
+撞车核查：ICL/THI 2025 和 Chat-Driven 2025 已经占了“MLLM 多轮交互/模糊查询”。所以这条必须避开“让 MLLM 帮忙改 query”，只卖**distractor-conditioned relative protocol + 小模型相对判别**。DualFocus 2024 是 negative attribute，不是 pairwise relative retrieval，仍有缝。
+
+Verdict：**可首验，方向相对干净，但必须切得窄。**
+信心：**6.5/10**
+数据：RSTPReid 可首验；正式稿最好补 CUHK-PEDES/ICFG-PEDES。Market/MSMT 可用生成 caption 做压力测试，但不能当主证据。
+
+**机会 2：CAB，Counterfactual Attribute Binding for TIReID**
+触发观察：很多 TIReID 模型可能只会“看见 red、black、bag”，但不真正绑定到 body part。`red shirt + black pants` 改成 `black shirt + red pants`，如果模型还把同一张图排很高，说明当前 benchmark 的高 R1 被 bag-of-attributes 掩盖了。
+
+重定义：TIReID 的细粒度难点不是 token grounding，而是**part-attribute binding under minimal counterfactual text**。大家以为模型学会了细粒度匹配，其实可能只学了属性存在性。
+
+机制草案：从 caption 中解析 `(part, attribute)` 图，自动生成最小反事实文本：上下装颜色交换、包/帽/鞋属性移动、长短袖互换等。训练时加入 image-text counterfactual margin：同一图必须更匹配原 caption，而不是 counterfactual caption；同时对 top-k hard images 做 binding-aware rerank。避免泛 part alignment，卖点是 minimal-pair robustness。
+
+廉价 kill-switch：RSTPReid 零训练。
+1. 选含两个以上绑定属性的 query。
+2. 规则生成 counterfactual caption。
+3. 测 `S(img, true_text) - S(img, cf_text)`；如果大量 margin 接近 0，说明 binding 失败存在。
+4. 再用 frozen part-crop phrase score 做简单 rerank；若 true/cf margin 明显扩大，再进入训练实验。
+5. 若现有模型对 counterfactual 已很敏感，或 part-crop rerank 不改善，杀掉。
+
+撞车核查：这条撞车风险高。[DiCo 2026](https://arxiv.org/abs/2601.10053) 已做 concept/slot disentanglement，[InterPartAbility 2026](https://arxiv.org/abs/2604.27122) 已做 phrase-region grounding，DualFocus 也碰 negative/mismatched attributes。必须把贡献写成**counterfactual binding benchmark + minimal-pair training objective**，不能写成又一个 part alignment。
+
+Verdict：**只能作为 1-2 天 cheap-kill，成功才继续；不宜直接押主线。**
+信心：**5/10**
+数据：RSTPReid 可首验；正式稿需 CUHK-PEDES/ICFG-PEDES。无需新人工数据，规则反事实可先跑。

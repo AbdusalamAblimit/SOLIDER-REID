@@ -1,0 +1,40 @@
+155,387
+结论：**还有路，但别再碰“训练 K 个 lattice 变体的共同 embedding”**。最值得试的是 **token-level side-branch / adapter** 和 **lattice-volatility data sampler**。普通 final-feature adapter、query 预测最佳 variant、bag set-loss 都应停止。
+
+**联网 novelty 边界**
+我查到的相邻工作主要是：CR-ReID 的 SR / resolution-invariant / resolution-adaptive feature，如 [RIFE/FFSR](https://arxiv.org/abs/1906.09748)、[MRJL](https://arxiv.org/abs/2105.12684)、[RFD](https://arxiv.org/abs/2109.07871)；input 对齐已有 [STN](https://arxiv.org/abs/1506.02025)、[STNReID](https://arxiv.org/abs/1903.07072)；learned resize / anti-alias 已有 [Learning to Resize](https://arxiv.org/abs/2103.09950)、[Anti-aliased CNN](https://arxiv.org/abs/1904.11486)；ReID diversity/orthogonality 已有 [ABD-Net](https://arxiv.org/abs/1908.01114)；adapter 也有 [AdalReID](https://arxiv.org/abs/2405.19005)。  
+没看到直接把 **LR-ReID sampling-lattice latent + K 变体 decision marginalization + 训练端 sidecar** 连起来的成熟路线。新意只能落在这个组合，不在“adapter/diversity/STN”本身。
+
+| 优先级 | 机制 | 核心做法 | 为何不重蹈 LSRC | kill-switch | 信心 |
+|---|---|---|---|---|---:|
+| 1 | **LATS: Lattice-Aware Token Sidecar** | 冻结主 backbone，读取 stage2/3 token map，训练小 side-branch 输出 bounded residual：`z_k=norm(z0_k + α r_k)`，test 仍 K9 marginalization | 不改主干，不做 bag set-loss，不拉 K 个特征一致；`α=0` 可退回 no-LM baseline；比 LS-MRT 多了空间 token 信息，不是 final embedding 线性 P | 缓存 token 训 5-10 epoch；若 K9 mAP < +0.3、HR sanity 掉 >0.3、single 掉 >0.5、最优 α≈0，杀 | **6.5/10** |
+| 2 | **TPA: Teacher-Preserved Zero-Init Adapter** | 在最后 1 个 Swin block 插零初始化 adapter/LoRA，只训 adapter；loss 用普通 CE/triplet + pairwise/rank distill 保住 no-LM 排序 | 不是 full fine-tune；不让 set-loss 重塑判别边界；adapter residual 被 norm/rank distill 约束 | ep10 K9 不涨 >0.4 或 HR 88.92 掉到 <88.5，杀；adapter norm 爆或 train acc 很快 1.0 但 val 掉，杀 | **5.5/10** |
+| 3 | **LVAS: Lattice-Volatility-Aware Sampler** | 预计算每图 lattice variance / rank flip / bbox-factor gain；训练只改 sampler：高 volatility 样本/ID 更常出现，batch 内用 antithetic lattice variants | 不改 loss，不强迫 invariance，不优化 hard lattice；只是让标准 ReID loss 多看“格点敏感尾部” | 对比 M3 ordinary；20-30 epoch 若 K9 不涨 >0.3 或 single/HR 掉，杀 | **5/10** |
+| 4 | **Structured residual diversity** | 只对 sidecar residual `r_k` 做低权重 decorrelation，不对完整 `z_k` 做正交；且只在 CE/triplet 正确样本上启用 | 避免把身份主特征推开；diversity 是“准确后的分工”，不是噪声制造 | individual variant mAP 掉 >0.8 或 residual energy 变大但 K9 不涨，杀 | **4.5/10** |
+
+**我会先跑什么**
+
+先跑 **LATS frozen-token probe**，别上来改训练主干。它是唯一同时满足三点的机制：不伤 no-LM backbone、有空间信息、不是 final-feature 重投影。
+
+最小实验：
+
+```text
+A: no-LM checkpoint + K9 marginalization baseline
+B: freeze backbone, train token sidecar residual, α sweep
+C: B + tiny residual decorrelation, only if B 不掉 single
+```
+
+必须同时报：
+
+```text
+single_mean
+single_best
+K9_marg
+HR sanity
+bbox-only factor gain
+oracle-best - marginalization gap
+```
+
+**关键判断**
+
+如果 LATS 也只能 +0.0~0.2，那基本说明：**训练端在当前数据和 backbone 上没有可用 headroom**。这时别继续堆 adapter/diversity，转回把论文写成 test-time lattice marginalization + 训练端失败规律，或者去做 BLC/LC-STN 这种 input support 机制。

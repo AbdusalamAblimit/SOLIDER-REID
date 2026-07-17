@@ -1,0 +1,43 @@
+**Verdict: 存活，但裸想法会被打得很惨。**
+
+我没找到“航拍-地面 ReID 中，低清俯视 query 作为宽分布、高清地面作为窄分布，并用非对称包含距离做身份匹配”的直接先例。  
+但 B 的三个底层零件都已经有强先例：**高斯/概率嵌入、方差表示不确定性、KL/偏序表示包含关系**。所以它不能写成“我们提出 probabilistic Gaussian ReID / asymmetric KL matching”。能活下来的切口只能是任务重定义：
+
+> 在 AGPReID 中，跨视角失败不是几何没对齐，而是两端身份信息量不对等；因此 matching relation 本身应是有方向的信息包含，而不是对称相似度。
+
+**最危险撞车点**
+| 先例 | 已经做了什么 | 对 B 的杀伤 |
+|---|---|---|
+| Word2Gauss | 用 Gaussian density 表示对象，方差表达不确定/泛化，KL 表达非对称包含/entailment。([arxiv.org](https://arxiv.org/abs/1412.6623)) | **直接吃掉“高斯 + KL + 包含”数学新意**。 |
+| Order-Embeddings | 明确批判 cosine/Euclidean 对称相似度不适合 image-language 层级关系，用偏序/集合包含替代。([arxiv.org](https://arxiv.org/abs/1511.06361)) | **吃掉“大家以为相似度，其实是包含/偏序”的通用叙事**。 |
+| HIB | 图像 embedding 作为随机变量；模糊、遮挡等 ambiguous input 用概率分布表达。([arxiv.org](https://arxiv.org/abs/1810.00319)) | **吃掉“单图不确定性概率嵌入”**。 |
+| PFE | 人脸识别里每张图是 Gaussian，均值是最可能特征，方差是特征不确定性；低质量输入会导致确定性 embedding 失败。([arxiv.org](https://arxiv.org/abs/1904.09658)) | 和“低清航拍身份信息欠定”非常近，审稿人很可能会引用。 |
+| PCME | 图文跨模态检索中，每个 image/text 都输出均值和方差，用概率嵌入处理 one-to-many / ambiguity。([arxiv.org](https://arxiv.org/abs/2101.05068)) | **跨模态 retrieval 的概率分布表达已存在**。 |
+| Pr-VIPE | 2D pose 因 3D 投影天然欠定，所以用概率 embedding 做跨视角 pose retrieval。([arxiv.org](https://arxiv.org/abs/1912.01001)) | 这是 B 最狠的相邻先例：**视角投影欠定 -> probabilistic embedding** 已经被讲过。 |
+| LPP-ReID | Person ReID 中学习 sample posterior 和 class prior，均为 Gaussian，用 KL loss 建立联系。([arxiv.org](https://arxiv.org/abs/2007.08785)) | **ReID 里 Gaussian posterior/variance/KL 也不是新**。 |
+| DG-VAE VI-ReID | 可见光-红外 ReID 中用 dual Gaussian / MoG prior 处理跨模态 identity-discriminable 与 ambiguous 信息。([arxiv.org](https://arxiv.org/abs/2008.02520)) | “异质 ReID + Gaussian latent distribution”已有。 |
+
+**OT / distribution matching 也不能作为主卖点**
+Multi-shot ReID 已把 tracklet 当作视觉分布并用 Wasserstein 距离做 set-to-set matching。([arxiv.org](https://arxiv.org/abs/1808.01119))  
+CM-EMD 和 G2DA 在跨模态 ReID 里用 OT/EMD 做分布或结构对齐。([arxiv.org](https://arxiv.org/abs/2203.01675)) ([arxiv.org](https://arxiv.org/abs/2106.07853))  
+这些没有做“低信息 query 被高信息 gallery 非对称包含”，但会杀掉任何“distribution alignment / OT matching”式包装。
+
+**航拍-地面方向目前没被直接杀死**
+VDT 是 view-related / view-unrelated decoupling，不是概率包含。([arxiv.org](https://arxiv.org/abs/2403.14513))  
+GSAlign 是 TPS 几何变形 + visibility-aware semantic masks，正好占了几何/可见性红海，但不是 asymmetric uncertainty containment。([arxiv.org](https://arxiv.org/abs/2510.22268))  
+AG-ReID.v2 是数据集 + explainable attention / altitude appearance adaptation。([arxiv.org](https://arxiv.org/abs/2401.02634))  
+AG-VPReID 是视频 benchmark + multi-stream temporal/appearance/scale。([arxiv.org](https://arxiv.org/abs/2503.08121?utm_source=openai))  
+Cross-resolution ReID 多数走 SR、resolution-invariant feature、pseudo-siamese 或多分辨率融合，不是“低分辨率 query 作为宽 identity posterior”。([arxiv.org](https://arxiv.org/abs/2105.11722?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/1908.06052?utm_source=openai))
+
+**一个必须先修的数学风险**
+如果“航拍=宽分布、地面=窄分布”，包含方向不能写错。  
+通常应是：**匹配的地面窄分布落在航拍宽分布允许的身份区域内**，也就是更像 `D_KL(P_ground || P_aerial)` 小，而不是 `D_KL(P_aerial || P_ground)` 小。后者会强迫宽分布塞进窄分布，等价于惩罚不确定性，和“航拍信息欠定”冲突。
+
+**最终判断**
+B 没有被一篇直接 AGPReID 先例秒杀；但它只剩一个很窄的可活叙事：
+
+1. 不是“概率 ReID”，而是 **AGPReID 的方向性信息不对等重定义**。
+2. 不是“KL/高斯新机制”，而是 **用非对称包含检验 avg>MaxSim 背后的隐藏变量**。
+3. kill-switch 必须证明：冻结 Swin 下，非对称包含距离在 A→G 上解释/改善 cosine，而 symmetric MLS、普通 KL、随机方差、camera-only 方差都解释不了。
+
+如果 kill-switch 过不了，B 基本应降级；如果过了，它还有 CCF-B 方法稿的生存空间。

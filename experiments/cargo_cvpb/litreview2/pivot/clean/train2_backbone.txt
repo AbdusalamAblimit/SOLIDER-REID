@@ -1,0 +1,176 @@
+43,796
+结论先行：我最推荐先做 **LSRC: Lattice-Set Retrieval Contrastive**。它不是 frozen-feature 重投影/重加权，而是直接训练最后一段 backbone 让 `K` 个 lattice 变体形成“可边缘化的证据集合”：正样本有多路可匹配证据，负样本没有任何一路虚假高相似，同时单个 lattice 仍保持 ReID 判别力。
+
+**联网 novelty 快查**
+我查到的公开路线主要是：
+
+- 低分辨率 / 跨分辨率 ReID 多数做 SR、resolution-invariant feature、resolution-adaptive mask / metric，例如 RIFE/FFSR、MRJL、LAR、RFD、VPFA。它们关注 resolution gap，不是把 bbox/phase/kernel sampling lattice 当 test-time latent variable 来训 backbone。参考：  
+  https://arxiv.org/abs/1906.09748  
+  https://arxiv.org/abs/2105.12684  
+  https://arxiv.org/abs/2207.13037  
+  https://arxiv.org/abs/2109.07871  
+  https://arxiv.org/abs/2510.00936
+- TTA 文献有 better aggregation / learned TTA loss，但主要是分类聚合或选增强，不是 ReID retrieval-set feature shaping。参考：  
+  https://arxiv.org/abs/2011.11156  
+  https://arxiv.org/abs/2010.11422
+- invariant + equivariant 表征文献明确支持“只做 invariance 会丢 augmentation 信息”，这和你已观察到 consistency collapse 对得上。参考：  
+  https://arxiv.org/abs/2302.02330  
+  https://arxiv.org/abs/2406.00262
+- STN / probabilistic STN 覆盖“输入 canonicalization / transformation marginalization”这个大类，但未见低分辨率 ReID sampling-lattice latent 的直接版本。参考：  
+  https://arxiv.org/abs/1506.02025  
+  https://arxiv.org/abs/2004.03637
+
+所以：**“low-res ReID = sampling-lattice latent variable，并训练 backbone 让 retrieval-time lattice marginalization 更可用”目前看有 novelty 空间**。不能声称没人做过，但比普通 SR / invariant / TTA aggregation 更像新问题定义。
+
+**机制 1：LSRC，首推，信心 7.5/10**
+核心公式：
+
+给每张图生成 `K=9` 个 lattice 变体：
+
+```text
+h_i,k = normalize(f_theta(T_k(x_i)))
+```
+
+bag-to-bag retrieval score：
+
+```text
+S(i,j) = logsumexp_{k,l}( h_i,k · h_j,l / tau )
+```
+
+训练损失：
+
+```text
+L = L_single + λ1 L_set_supcon + λ2 L_neg_tail + λ3 L_pos_coverage + λ4 L_residual_div
+```
+
+具体含义：
+
+`L_single`：每个 lattice 单独走原 ReID CE / triplet。  
+作用是保住单变体判别力，防止“为了 marginalization 牺牲 single”。
+
+`L_set_supcon`：用 `S(i,j)` 做 supervised contrastive / batch softmax。  
+作用是让训练目标直接对齐 test-time decision marginalization，而不是训完再靠后处理补救。
+
+`L_neg_tail`：对负样本的所有 lattice-pair 最大相似度做惩罚：
+
+```text
+softplus((logsumexp_neg_pair_sim - margin_neg) / tau_h)
+```
+
+作用很关键：marginalization 最怕某个错误 lattice 产生假高分。这个 loss 不是拉近同图多 lattice，而是压低负样本 lattice union 的尾部误匹配。
+
+`L_pos_coverage`：正样本不要只靠一个固定 lattice 赢。  
+可用 top-M positive coverage，比如要求 top-2/top-3 lattice pairs 都有正证据，但不要强迫全部 K pair 一样。
+
+`L_residual_div`：只对 residual 做轻量去冗余：
+
+```text
+r_i,k = h_i,k - stopgrad(mean_k h_i,k)
+```
+
+约束 residual 有最小能量、低相关，但权重要小。  
+目的不是让特征乱分散，而是避免 K 个 lattice 被训成同一个 feature。
+
+它和已死路线的本质区别：
+
+- 不同于 consistency：不要求 `h_i,1...h_i,K` 相同，反而允许 residual 存在。
+- 不同于 `L_marg`：不是只让完整 K-bag 分类正确，而是显式管正样本 coverage 和负样本 tail risk。
+- 不同于 Hard-Lattice ERM：不是把每个 lattice 当独立强样本硬训，而是把 K 个 lattice 当 retrieval evidence set。
+- 不同于 frozen LS-MRT / LPA：梯度回到 last block/backbone，改变 aliasing / bbox-shift 敏感特征本身。
+
+**机制 2：Subbag Marginalization Dropout，信心 6.5/10**
+每次随机取 lattice 子集 `S`，训练：
+
+```text
+S ∈ {1, 3, 5, 9}
+L_subbag = CE / SupCon over marginal score on S
+```
+
+必须包含 `|S|=1`，否则容易牺牲 single。  
+它的价值是：full-K 不能掩盖坏 lattice，模型要学会“任意小集合都有用，完整集合更强”。
+
+和 Hard-Lattice 的区别是它不要求每个 lattice 完全独立最优，而是训练不同大小的 evidence bag。适合作为 LSRC 的低成本版本。
+
+**机制 3：Equivariant Residual ReID，信心 6/10**
+把 feature 分成 common identity part 和 lattice residual：
+
+```text
+c_i = mean_k h_i,k
+r_i,k = h_i,k - stopgrad(c_i)
+```
+
+加两个辅助目标：
+
+```text
+L_res_id: same-ID same-lattice residual contrast
+L_lat_pred: residual 预测 phase / bbox / kernel index
+```
+
+推理时不用 auxiliary head。  
+这个目标的直觉是：LR aliasing 里的相位、bbox 边缘、kernel 信息不是噪声，可能含有 ID 相关纹理残片。训练 residual 可复现，而不是被 invariance loss 抹掉。
+
+风险：如果 residual ID 信号太弱，会变成 lattice 分类玩具。kill-switch 要严。
+
+**机制 4：LC-STN 输入 canonicalization，信心 6/10**
+这是输入路线，不是纯 loss，但你前面已经发现 bbox uncertainty 主导 +2.84，所以值得排第二线。
+
+训练一个小 localization head 预测连续 bbox offset / scale / kernel mixture：
+
+```text
+x'_i = grid_sample(x_i, A_phi(x_i))
+h_i = f_theta(x'_i)
+```
+
+可先用当前 K=9 marginalization 的 posterior 当 teacher：哪个 lattice 对真 ID / hard positive 最有利，就让 STN 学近似 canonical crop。  
+这改变输入采样，不是 frozen feature tweak。
+
+风险：STN 很容易学偏、裁掉身体边缘、或过拟合检测框。必须加 offset 范围、identity loss、grid regularization。
+
+**廉价 unfreeze-last-block 验证方案**
+不要一上来全训。先做 3 个 1-seed 小实验：
+
+```text
+A: unfreeze last Swin block + BNNeck + classifier，原始 ReID loss，K=9 train sampling
+B: A + LSRC without residual_div
+C: A + LSRC full
+```
+
+固定：
+
+```text
+batch size 不变
+OUTPUT_DIR 独立
+eval 用 full K=9 marginalization
+同时报 single_mean / single_best / K9_marg
+```
+
+重点监控 5 个数：
+
+```text
+1. K9_marg mAP 是否超过 A
+2. single_mean mAP 是否掉
+3. K9_marg - single_mean 是否扩大
+4. negative lattice-pair max similarity P95 是否下降
+5. residual energy 是否没有塌到 0
+```
+
+kill-switch：
+
+```text
+epoch 3-5: single_mean 比 A 掉 >0.7 mAP，停
+首次完整 eval: K9_marg 没有比 A 高 >0.3 mAP，停
+negative tail P95 上升，停
+positive coverage 只集中到固定一个 lattice，停
+residual energy 接近 0 或 K 个 feature 平均 cosine 继续升高，停
+```
+
+最务实顺序：
+
+```text
+1. 先做 LSRC without residual_div
+2. 如果 single 不掉但 K9 不涨，再加 pos_coverage
+3. 如果 coverage 仍塌到单 lattice，再加 residual_div
+4. 如果 LSRC 负，再切 LC-STN，不继续堆 frozen probe
+```
+
+我的判断：**当前最值得赌的是“负样本 lattice tail suppression + 正样本 top-M coverage”**。它正好打在 decision marginalization 的数学瓶颈上，也能解释为什么 frozen reweight/projection 已经没空间：旧 feature 的 lattice union 已固定，训练端必须让 backbone 产生更少假高负例、更多可复用正证据。

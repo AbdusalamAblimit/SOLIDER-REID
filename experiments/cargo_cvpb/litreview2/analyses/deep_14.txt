@@ -1,0 +1,45 @@
+你列出来的是 6 篇，我按这 6 篇拆。下面只讲“观察如何被包装成创新”，不讲怎么照搬模块。
+
+**1. GSTNET**
+1. 触发观察：作者抓住一个很具体的反常识点，两个群体外观相似，但如果 5 秒跨 20 公里，物理上不可能是同一群人。旧方法只用群体外观、图关系或静态时间统计，没管“能不能到达”。
+2. 重定义动作：它把群体重识别从“外观加时空先验匹配”重定义为“受地理时间可达性约束的图匹配”。关键词是 `reachability constraint`、`speed limit`、`unreachable connections`、`static time-prior mismatch`。
+3. 机制怎么长出来：机制几乎是自然推出的。既然问题是不可达边，就用距离和时间算速度，用速度上限和松弛边界惩罚图边；既然图传播会放大错边，就加门控图传播，只让可信邻居传播。
+4. 证据闭环：关键不是只报涨点，而是拆开证明两个判断。BRT 上 Graph-MLP 基线 46.49 Rank-1、44.97 mAP，加 GstRM 到 58.60、55.31，说明可达性约束确实过滤了伪边；加 GGM 到 64.71、61.67，说明传播门控也有用；两者合到 71.06、68.81。t-SNE 进一步显示同身份更紧、异身份更分开。
+5. 审稿人为什么买账：这篇卖的主要是视角。它把一个常识性物理约束变成 ReID 图边定义，机制并不复杂，但和问题重定义绑定很紧，审稿人容易相信“这个变量以前确实没被动态建模”。
+
+**2. Harnessing Knowledge From Pretrained VLMs for Unsupervised Person Search**
+1. 触发观察：作者先说无监督 person search 不是“无监督检测加无监督 ReID”的简单拼接。真正卡点是检测出来的伪框有定位噪声和类别噪声，伪框一脏，后面的伪身份聚类就塌。
+2. 重定义动作：它把问题从“没有标注”重定义成“带伪框噪声的伪标签生成”。关键词是 `pseudo-box noise`、`pseudo-ID denoising`、`localization noise`、`classification noise`、`prior knowledge`。
+3. 机制怎么长出来：机制和重定义绑定很紧。SEEM 负责给伪框和 mask，CLIP 用属性文本给伪身份，单图中同一个人不能出现两次作为去冲突先验；定位噪声用 mask 前景特征约束，类别噪声用置信度降权。
+4. 证据闭环：它没有只和监督方法比，而是专门搭 FeatComp+DBSCAN、SEEM+DBSCAN、SEEM+SPCL 这些伪标签基线。FMUPS-S1 在 CUHK-SYSU 比 SEEM+SPCL 高 25.89 mAP，说明不是 SEEM 自己带来的；置信度、先验、CLIP ID labeler 都有单独消融，替换成聚类会明显掉点。
+5. 审稿人为什么买账：这篇卖的是新设定加问题拆解。VLM 本身不是新零件，但作者把 VLM 从“特征提取器”改成“无监督 person search 的伪标签工程师”，再用噪声类型把每个组件解释清楚。
+
+**3. HGTDR**
+1. 触发观察：作者看到两类旧路都有问题。姿态、解析等外部工具贵且有域偏差；条带或固定 part token 又会把背景和遮挡混进来。另一方面，特征恢复方法虽然补遮挡，但没考虑邻近可见区域对恢复的贡献权重。
+2. 重定义动作：它把遮挡 ReID 从“找可见部位”重定义成“生成异质语义 token，并按空间距离恢复缺失 token”。关键词是 `heterogeneous tokens`、`strong-response`、`weak-response`、`distance-aware recovery`。
+3. 机制怎么长出来：SPG 先产生局部语义 patch，AHSTG 用区分性和身份相关性打分，选择不同形状和尺度的异质 token；如果 token 间空间距离大，就认为中间可能缺失，插入 recovery token，并让近邻 token 权重大、远邻权重小。前半段逻辑很顺，DFR 的距离假设更像一个合理启发。
+4. 证据闭环：消融围绕三段重定义做。SPG 比基线涨 2.2 Rank-1、2.1 mAP；AHSTG 单独涨 4.4、3.5；没有 DFR 时是 68.2 Rank-1、58.9 mAP，完整模型到 71.8、62.3。Grad-CAM 显示 SPG 看细粒度语义，AHSTG 看可见强响应人体，DFR 后对遮挡响应下降。
+5. 审稿人为什么买账：这篇卖的是机制组合，不是一个特别新的问题视角。它的可取之处是把“固定部位不可靠”和“恢复要有邻近权重”连成一条完整流水线，审稿人买的是每个模块都对应一个可见失败点。
+
+**4. HFLAT**
+1. 触发观察：作者抓的是 Transformer 遮挡 ReID 的通病，patch 被近似一视同仁处理，没有量化不同 patch 对身份的贡献，也缺少足够强的局部细节抽取能力。
+2. 重定义动作：它把遮挡问题从“遮挡区域要恢复”改写为“patch 要分层、前景背景要分离、局部交互要受限”。关键词是 `relative importance`、`patch-level saliency`、`feature hierarchical fusion`、`local-aware attention`。
+3. 机制怎么长出来：FHFM 根据 class token 注意力和 patch 范数给 patch 排重要性，分四层融合；FSM 用 saliency map 分前景和背景；LFEM 加四个局部 token，并用 mask 限制只在同一人体区域内交互。逻辑能对上观察，但三模块有些“全都要”，绑定程度中等。
+4. 证据闭环：消融比较了 Baseline、单模块、双模块和完整模型。比如 Occluded-DukeMTMC 上 Baseline mAP 48.8，加 FHFM 到 58.6；FSM、LFEM 也分别带来收益，双模块继续涨，三者完整最好。可视化显示 FHFM 关注关键区域，FSM 分离前景背景，LFEM 捕捉局部细节，同时作者也承认遇到行人遮挡行人时模块会被干扰者吸引。
+5. 审稿人为什么买账：这篇主要卖工程完整性。视角不算尖锐，但“重要性分层、前景分离、局部受限交互”三个动作都能被消融和可视化支撑，所以容易作为一篇稳健的模块型遮挡稿成立。
+
+**5. HKGR**
+1. 触发观察：作者发现 TIReID 里直接套 MLM 有问题。随机 mask subword 可能遮到功能词或碎片词，训练目标偏离“图文语义对齐”；而行人描述真正有用的是对象、属性和关系，比如“白色上衣”“站在栅栏前”。
+2. 重定义动作：它把文本图像对齐从“随机词预测”重定义为“由场景图知识引导的层级语义推理”。关键词是 `blind visual-textual alignment`、`hierarchical scene graph knowledge`、`object-level`、`attribute-level`、`relation-level reasoning`。
+3. 机制怎么长出来：机制非常自然。先把文本解析成对象、属性、关系三层场景图，再分别 mask 对象词、属性词、关系词，让图像和剩余文本共同预测被 mask 的语义；再用 MGA 同时做全局句图对齐和局部 token 对齐。
+4. 证据闭环：消融把 KGR、MGA、ID loss 拆开。MGA 带来的收益最大，KGR 在多个组合里有稳定增益；还专门比较 MLM、对象推理、属性推理、关系推理和完整 HKGR，完整模型最好。t-SNE、热图、检索可视化用来证明它不是只涨点，而是图文语义空间更靠近。
+5. 审稿人为什么买账：这篇卖的是视角。它没有说“我又加了一个语言模块”，而是说“随机 MLM 对行人文本是不合适的，文本本身有层级知识”。这个重定义比模块本身更像贡献。
+
+**6. Hierarchical Proxy Learning for Cloth-Changing Person Re-Identification**
+1. 触发观察：作者抓住换衣 ReID 的几何矛盾，同一人换衣导致类内距离大，不同人穿相似衣服导致类间距离小。实例级 triplet 或 contrastive 容易被噪声正负样本带偏；直接用形体、步态等固有特征又会损伤同衣场景。
+2. 重定义动作：它把“去衣服特征”重定义成“建立身份主代理和衣服状态子代理之间的层级几何关系”。关键词是 `main proxy`、`sub proxy`、`sub-to-main proxy`、`automatic sub-proxy mining`、`sample balance and diversity`。
+3. 机制怎么长出来：先按身份构造 main proxy，再在每个身份内部用 DBSCAN 挖 sub-proxy，近似衣服状态但不需要衣服标签；SBS 保证 batch 里身份和子代理均衡；SCT 用解析引导换衣增广补足一个人只有一套衣服的问题；MPL、SPL、S2MPL 分别约束身份间分离、身份内紧凑、子代理向主代理协作。
+4. 证据闭环：组件消融显示 SBS、SCT、HPL 逐步提升，HPL 内部的 SPL、MPL、S2MPL 也分别有效。PRCC 换衣设置达到 74.3 Rank-1，VC-Clothes 换衣设置达到 84.9 Rank-1。特征图显示方法更关注头、脸、手臂等非衣服区域，这正好回应“衣服捷径被压下去”。
+5. 审稿人为什么买账：这篇卖的是机制和几何视角的结合。真正的 novelty 不是衣服迁移，而是把“换衣造成的类内多峰分布”说成主代理和子代理的层级结构，并且不依赖人工衣服标签。
+
+共同套路很清楚：先抓一个具体失败点，不说“模型表达不够”，而是把失败点命名成一个更窄的新问题，例如可达性、伪框噪声、随机 MLM、层级代理。然后机制不是凭空堆模块，而是让每个模块对应一个被重新定义后的子矛盾。最后证据闭环也不是只报 SOTA，而是做“旧假设错在哪里、新定义对应的模块是否单独有效、可视化是否符合新解释”这三件事。

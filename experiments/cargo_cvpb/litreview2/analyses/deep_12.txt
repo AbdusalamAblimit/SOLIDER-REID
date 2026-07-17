@@ -1,0 +1,70 @@
+按你这条消息列出的 6 篇拆完。没有额外联网，PDF 的方法和相关工作已经足够判断它们怎么构造创新。
+
+**1. ESTI**
+**触发观察：** 视频 ReID 里相邻帧变化很小，很多方法仍然对整段相邻帧做完整时空聚合。作者抓住两个后果：一是重复计算，二是相似帧聚合会放大冗余区域，反而稀释关键局部和动态细节。
+
+**重定义动作：** 它没有把问题说成“时序建模不够强”，而是改写成“全帧时空聚合本身有冗余，并导致关键信息丢失”。关键词是 redundant information、redundancy computations、critical spatial and temporal details、efficient spatial-temporal interaction。
+
+**机制怎么长出来：** 如果冗余来自整段都做同一种聚合，那么自然做法就是少处理、分开处理、晚交互。于是它把序列一分为二，一半走空间分支，一半走时间分支，再用 FEM 强化空间局部，用 TIM 建模相邻时序关系，最后用 STIM 做空间时间交互。机制和叙事绑定中等偏紧，真正紧的是“分支减冗余”，FEM/TIM 用 deformable attention 更像工程实现选择。
+
+**证据闭环：** 关键证据是组件消融：空间分支、时间分支、STIM、FA 逐步加上都有收益；再用 RCB、自注意力、交叉注意力对比 FEM/TIM；还有模型大小和 Rank-1 的效率图，说明不是靠堆参数。弱点是它没有特别强地证明“一半帧就足够”这个核心重定义，只是间接由效率和性能成立。
+
+**reviewer 为什么买账：** 这篇主要卖“视频帧冗余下的高效时空交互视角”，不是卖 deformable attention 本身。审稿人买账点在于它把常见的“更强时序模块”换成“避免过度处理相似帧”，且性能和复杂度同时说得过去。
+
+**2. Exploring Part-Informed Visual-Language Learning**
+**触发观察：** CLIP-ReID 的全局图文对齐能让全局特征变强，但作者用 t-SNE 和 parsing 标注发现，像素级或部位级特征仍然混在一起。身份边界可能清楚，但头、身体、鞋等部位的语义不一致，特别是相似身份的局部特征更难分。
+
+**重定义动作：** 它把问题从“ReID 需要语言监督”推进成“全身级语言监督不足以约束局部语义一致性”。关键词是 within-part semantic inconsistency、part-informed visual-language learning、pixel-level text prompts、fine-grained image-text alignment。它还补了一层冲突定义：human parsing 是身份无关的，而 ReID 要身份相关判别，直接用 parsing 会和身份学习冲突。
+
+**机制怎么长出来：** 既然问题是部位语义不一致，就用 parsing 给每个像素部位名，再构造“某身份的头、鞋、包”等身份感知部位文本提示。既然 parsing 有噪声，就用置信度加权。既然低层和高层特征尺度不同，就加轻量辅助头做多尺度融合对齐。这个机制和重定义绑定很紧，每一块都对应一个被定义出来的障碍。
+
+**证据闭环：** 最关键的是 Fig.2 的特征分布可视化，证明全局 CLIP-ReID 下部位语义确实混。消融里从普通 parsing prompt，到 identity-aware part prompt，再到 parsing confidence weighted loss，逐步证明“部位语义”和“身份约束”都必要。不同 parsing 模型的实验也在回答 reviewer 对 parsing 质量敏感性的疑问。
+
+**reviewer 为什么买账：** 这篇卖的是视角多于模块。真正 novelty 是把 CLIP-ReID 从全局图文对齐改写成“部位级、身份感知、训练期语言监督”，不是简单加 parsing。它的强点是概念链完整：发现局部语义不一致，指出 parsing 与 ReID 的监督冲突，再给出对应机制。
+
+**3. False Negatives Consensus Suppression**
+**触发观察：** 文本到图像 ReID 的对比学习默认“非配对样本都是负样本”。作者指出这个假设在 TIReID 里不成立，因为文本描述可能适配多个行人，标注或描述粒度也会造成语义相近的假负样本。把这些样本推远会破坏跨模态对齐。
+
+**重定义动作：** 它把问题从“图文细粒度对齐不够”改写成“负样本集合被污染”。关键词是 false negatives、consensus detection、adaptive suppression、negative may not be true negative。这个改写很聪明，因为它不和一堆局部对齐方法正面撞，而是攻击对比学习的基础假设。
+
+**机制怎么长出来：** 如果假负样本是高相似负样本，就用负样本相似度分布找异常。因为只看全局可能误判，所以同时用 BGR 全局表示和 TSR 局部 token 选择表示，取二者共识。因为早期模型不可靠，不能直接删掉疑似假负样本，所以用 AFNS 按假负概率自适应降权。因为 batch 内负样本少，GMM 拟合不稳，所以加跨模态 momentum queue。机制基本是从问题定义自然推出的。
+
+**证据闭环：** 它有三类证据：组件消融证明 BGR/TSR/CM-MoC 都有贡献；和 FNE、FNA 这类简单删样本或改标签策略比较，证明“自适应抑制”比硬删除稳；可视化显示高概率假负样本确实和文本语义相近。这个闭环比较完整，因为它直接验证“假负样本存在且会伤训练”。
+
+**reviewer 为什么买账：** 这篇卖的是一个训练假设错误，而不是新 backbone。reviewer 容易买账的点是：假负样本问题在 TIReID 里直观存在，而且方法可以作为对比学习插件加到强模型上。novelty 来自“把负样本污染作为核心问题”，不是来自 GMM 或 queue 本身。
+
+**4. FDGReID**
+**触发观察：** 真实 ReID 部署同时有两个矛盾：跨域泛化需要多域信息，但隐私限制不允许直接共享数据；联邦学习能保隐私，但普通 FL 只是聚合本地偏置模型，没有解决域漂移。作者进一步把漂移观察拆成两类：风格差异，比如亮度、色调、纹理；视角差异，比如摄像头角度不同。
+
+**重定义动作：** 它把问题从“联邦 ReID”改写成“联邦域泛化 ReID”。关键词是 federated domain generalization、style information sharing、viewpoint-aware contrastive learning、privacy-preserving domain drift。它的核心话术是：DG 方法不够隐私，FL 方法不够泛化，所以要在 FL 约束内做 DG。
+
+**机制怎么长出来：** 风格漂移对应 SIS：客户端不传图，只传 feature mean/std 这类风格统计，服务器重分发风格描述，客户端用 AdaIN 做跨客户端风格迁移和外推。视角漂移对应 VCL：用 appearance 分支提外观，用 OpenPose 加 RGAT 提姿态结构，再用 viewpoint-aware contrastive loss 学视角不变表征，最后 AFF 融合。机制和重定义的高层绑定清楚，但组件本身偏拼装，AdaIN、pose、graph attention 都不是新东西。
+
+**证据闭环：** 最关键是 ablation：去掉 SIS 和 VCL 性能很差；只加 VCL 的收益明显大于只加 SIS，支撑“视角漂移是重要来源”；去掉 viewpoint-aware contrastive loss 后明显下降，说明不是只靠多分支。它还在 DG 协议和 federated fully supervised 协议下比较，承认不一定打过专门 DG 方法，但在 FL 设定里明显强于 FedReID、FedAvg、FFReID。
+
+**reviewer 为什么买账：** 这篇卖的是场景定义和系统视角。novelty 不在单个模块，而在“隐私约束下把域漂移拆成风格和视角两类再分别处理”。如果 reviewer 接受 federated ReID 是实际部署问题，它就有价值；如果只看纯方法新意，机制会显得常规。
+
+**5. Find Hidden Modality Divergence**
+**触发观察：** 无监督可见光红外 ReID 里，大家用对比学习拉近跨模态同类、推远异类。但作者指出，由于跨模态同类间隔很大，中间常常夹着异类样本。对比学习推远这些异类时，会阻碍真正同类跨模态样本靠近。
+
+**重定义动作：** 它没有泛泛说“modality gap 大”，而是把问题改写成“跨模态优化过程中的 modality divergence”。关键词是 hidden modality divergence、negative optimization、positive optimization、adversarial aware learning。这个重定义把静态差距变成了动态优化冲突：同类聚合和异类分离在某些位置会互相打架。
+
+**机制怎么长出来：** 既然问题是优化方向冲突，就要找出哪些 cluster centroid 正在产生正向或负向优化。ADAL 用当前 memory 和下一步 guide memory 的相似度变化判断某个 centroid 会让实例靠近还是远离。对正向优化继续促进，对负向优化反向惩罚。然后再补一个 instance-level easy-hard positive 约束，让跨模态 hard positive 向 easy positive 收拢。这个机制和重定义绑定很紧，因为它不是一般对齐，而是在处理“错误优化方向”。
+
+**证据闭环：** 论文除了常规 SOTA，还设计了 MDRR 这种 modality divergence reduction rate，试图直接量化“divergence 是否被减少”。消融里分别加 Lp、Ln、Lco，证明促进正向、惩罚负向、easy-hard 收拢都有效。作为插件加到已有无监督 VI-ReID 方法上也能涨，说明它不是依赖某个特定 backbone。
+
+**reviewer 为什么买账：** 这篇的真正 novelty 是视角和机制都相对绑定。它把老问题“跨模态 gap”讲成“对比学习内部的优化冲突”，再用 adversarial aware 的方式处理冲突。reviewer 买的是这个诊断，不只是最终指标。
+
+**6. FLAG**
+**触发观察：** 视频换衣 ReID 中，外观信息被衣服主导，换衣后外观可靠性下降；但视频里还有 gait。现有视频 ReID 方法虽然会建模时空信息，却没有显式把 appearance 和 gait 分开提取。silhouette 不含衣服纹理，天然更适合学 gait。
+
+**重定义动作：** 它把 VCC-ReID 从“视频 ReID 的困难版本”改写成“有限 appearance 信息和 gait 信息如何显式学习的问题”。关键词是 explicit learning based on appearance and gait、multi-modal and multi-granularities、cross-modal knowledge distillation。它还把贡献包装成“把同衣视频 ReID 方法迁移到换衣设定的框架”，而不是单个新网络。
+
+**机制怎么长出来：** 如果 appearance 和 gait 要显式解耦，就用 visible branch 学 appearance，用 silhouette branch 学 gait。因为 gait 既有全局轮廓也有局部身体结构，所以做多粒度 silhouette。因为多模态大模型推理成本高，所以再用 CMKDS 把 MGA teacher 蒸馏到只用 visible 输入的小模型。机制和问题绑定很清楚，尤其是“大模型高性能，小模型可部署”这一层很实用。
+
+**证据闭环：** 它的关键证据不是单一 SOTA，而是泛化和消融：MGA 接到 AP3D、TCLNet 都涨，证明框架不是只适配一个方法；不同 silhouette 粒度显示三粒度最好，粒度过多会引入噪声，支撑“多粒度 gait”而不是越多越好；EPFM、并行融合、预训练冻结、直接加间接蒸馏都有消融；CMKDS 证明不增加推理成本也能涨。
+
+**reviewer 为什么买账：** 这篇卖的是“显式 appearance/gait 分解”的框架视角，加上换衣视频这个明确应用场景。模块未必很新，但叙事强，因为 silhouette/gait 与换衣鲁棒性之间有天然因果关系。真正 novelty 是把视频 ReID 和 gait recognition 接起来，并用蒸馏解决部署问题。
+
+**共同套路**
+这批论文共同不是先发明模块，而是先抓一个旧范式里的错误默认：相邻帧都值得聚合、全局 VLM 足够、所有负样本都真负、FL 聚合自然泛化、对比学习方向总是有益、换衣后还能靠普通外观。然后它们把这个错误默认命名成一个新失败模式，并设计至少一个能直接验证该失败模式的消融、可视化或指标。我们要学的是这个结构：先找“大家以为 X，其实 Y”的可证伪观察，再让机制成为 Y 的自然修正，而不是先堆一个模块再倒找理由。

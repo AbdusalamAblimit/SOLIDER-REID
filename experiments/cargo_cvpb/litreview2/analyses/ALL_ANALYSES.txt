@@ -1,0 +1,1874 @@
+
+########## deep_1 ##########
+已按你指定的 `pdftotext -f 1 -l 8 '文件名' -` 读了每篇的方法/approach 部分，并额外看了对应 ablation、可视化和必要先例。
+
+**1. ‘Knowledge and experience’ for visible-infrared person re-identification**
+
+1. **触发观察**：现有 VI-ReID 主要从输入 RGB/IR 图像里抽取 modality-shared feature，但 RGB 和 IR 真正共享的信息有限，继续只做对齐会碰到上限。作者借人类识别过程说，人不是只看当前图像，还会用过去经验推断没直接出现的属性。
+
+2. **重定义动作**：它把 VI-ReID 从“跨模态特征对齐”改成“当前图像证据 + 训练历史知识推理”。关键词是 `knowledge and experience`、`memory`、`reasoning`、`inferred modality-shared information`。这一步的核心不是记忆库本身，而是把训练集中不同身份之间的关系说成一种可迁移的“经验”。
+
+3. **机制怎么长出来**：先用普通 VI-ReID 子网抽共享特征，再用每个训练身份的特征中心形成 memory；Transformer 建模 identity center 之间的关系，得到 knowledge；测试时用当前图像特征作为 query，从 knowledge 里推断补充特征，最后和原特征相加。逻辑绑定中等偏强，机制自然，但“人类经验”这层叙述有包装成分，本质接近原型记忆和跨原型注意力推理。
+
+4. **证据闭环**：关键不是只看涨点，而是 Fig. 5/6 和 ablation。Venn 图显示 inferred feature 单独能正确匹配一部分身份，其中还有一小部分是原 modality-shared feature 匹配不到的；融合后又多匹配一些身份。这是在证明“推理出来的信息确实有互补性”，不是单纯多加模块涨点。
+
+5. **reviewer 为什么买账**：这篇卖的是视角多于模块。novelty 来自“VI-ReID 缺的不是又一个对齐损失，而是从历史身份关系中推断隐含共享信息”。风险是 reviewer 会把它看成 memory/prototype attention 的变体，所以它必须靠 inferred feature 的独立有效性和互补性来撑住。
+
+**2. 3D-Aided Pedestrian Representation Learning for Video-Based Person Re-Identification**
+
+1. **触发观察**：视频 ReID 近期方法多在做 temporal aggregation，但它们默认 frame-level feature 已经可靠。作者指出真正的坏源头是帧级特征质量差：多帧错位、遮挡、相似外观混淆都会污染后面的时序聚合。
+
+2. **重定义动作**：视频 ReID 被改写成“2D 视频外观不足，需要 3D 几何和 shape 作为稳定身份线索”。关键词是 `frame-level feature quality`、`3D modality`、`geometric information`、`shape cues`、`feature inconsistency`、`appearance confusion`。先例上，3D ReID 已有 OGNet 这类图像级 3D 尝试，但本文把位置卡在 video ReID 和 2D-3D 融合策略上。([arxiv.org](https://arxiv.org/abs/2006.04569?utm_source=openai))
+
+3. **机制怎么长出来**：机制基本是自然推出的。既然 2D 帧被遮挡和错位破坏，就用 SMPL/HMR 生成 3D mesh，转成 point cloud，再用 PointPillars 得到和 2D feature 对齐的 pseudo-image feature；CMF 用 deformable cross-attention 和 2D-3D 映射点做融合；SSTI 用 SMPL shape 参数建 spatial/temporal 两条注意力流，专门处理相似外观混淆。
+
+4. **证据闭环**：它的证据链较完整。组件 ablation 显示 SSTI 对 appearance confusion 有贡献，CMF 对 frame-level feature 贡献更大；fusion strategy 对比证明不是随便 concat 3D 就行；SSTI 和 GRU/self-attention、空间/时间单流等变体对比证明“空间和时间 shape 交互”必要；t-SNE、Grad-CAM、hard occlusion feature map 展示模型确实更关注目标区域。
+
+5. **reviewer 为什么买账**：这篇卖的是“新模态切入视频 ReID”的机制和视角结合。真正 novelty 不是 3D 本身，而是把视频 ReID 的失败拆成三类，再让 CMF/SSTI 各自对应。它也主动承认 3D reconstruction 在拥挤场景会不稳，这反而让论证更可信。
+
+**3. 4SNet - Spatial and Spectrum Self-adaptive Synergy Network**
+
+1. **触发观察**：作者观察到 visible 和 infrared 的频谱分布不同，IR 更集中在低频，visible 有更多中高频细节。现有方法要么做图像生成，要么做特征空间对齐；已有频域 VI-ReID 如 FDNM 已提出频域差异，但大多把频率当成一个统一处理工具。([arxiv.org](https://arxiv.org/abs/2401.02162?utm_source=openai))
+
+2. **重定义动作**：它把“跨模态 gap”拆成两个问题：单模态内部需要自适应频率滤波，跨模态对齐需要按频段协同。关键词是 `role-decoupled frequency modeling`、`input-adaptive filtering`、`low/mid/high frequency synergy`、`identity-shared patterns`、`modality-specific traits`。
+
+3. **机制怎么长出来**：机制和重定义绑定很紧。AFF 放在双 stem 输入端，用空间和通道注意力合成 input-specific frequency filter，解决单模态频率响应不同；SSM 放在共享 backbone 中，把特征频谱分成低、中、高频，用不同分支处理，再注意力融合，解决跨模态对齐。两个模块的职责不重叠，叙事很干净。
+
+4. **证据闭环**：关键证据包括 FFT 可视化、AFF/SSM 单独和联合 ablation、parallel channel-spatial attention 优于顺序结构、SSM 粗三频段优于和 AFF 一样的细分频段、各频段组合实验、t-SNE 和 retrieval 可视化。最重要的是“粗三频段更适合对齐”这个实验，它证明重定义里的“alignment 不该做细粒度频率匹配”是有依据的。
+
+5. **reviewer 为什么买账**：这篇卖的是视角。模块本身都是频域、注意力、分支融合的组合，但它把频率建模分工讲清楚了：AFF 处理模态内，SSM 处理模态间。novelty 的来源是问题拆分，而不是某个算子。
+
+**4. A Semantic-Aware Attention and Visual Shielding Network**
+
+1. **触发观察**：换衣 ReID 的核心失败是模型过度依赖衣服外观。已有方法多做 body shape、contour sketch，但 human semantic information 和换衣前后特征一致性没有被充分利用。
+
+2. **重定义动作**：它把换衣 ReID 从“找更强的外观/形状特征”改成“让衣服线索失效，并强迫模型使用非衣服的人体语义”。关键词是 `visual shielding`、`clothing-irrelevant feature`、`human semantic attention`、`potential consistency`。语义像素替换已有先例，SAVS 的差异是把语义前景注意力和衣服屏蔽一致性联合起来。([arxiv.org](https://arxiv.org/abs/2207.08387?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2107.11522?utm_source=openai))
+
+3. **机制怎么长出来**：机制非常自然。先用 human parsing 得到前景、衣服区域和屏蔽图；HSA 用前景图生成通道权重，去重权原图特征，让模型看人而不是背景；VCS 把衣服区域用 batch 内像素池替换，得到 rendering image，再约束原图特征和屏蔽图特征接近。这样模型要保留身份，只能依赖头、脸、腿、鞋、随身物等非衣服语义。
+
+4. **证据闭环**：它的 ablation 设计很值得学。作者不是只测 `+HSA`、`+VCS`，还测原图、前景、背景、原图加前景注意力、原图加背景注意力，证明“前景本身不够，语义调制原图才有效”。VCS 部分又做 step-by-step，并和 Pixel Sampling 在相同 backbone 下比较。注意力图、同人换衣 similarity map、不同人同衣 similarity map、检索结果共同证明“屏蔽衣服后模型确实不再被衣服主导”。
+
+5. **reviewer 为什么买账**：这篇主要卖视角，但机制也足够贴题。novelty 不在 segmentation，而在“把衣服作为负线索主动破坏，再约束身份一致性”。reviewer 买账的原因是它正面回答了换衣 ReID 的两个硬场景：同人不同衣、不同人同衣。
+
+**5. A Semantic-guided occlusion simulation based local feature semantic expansion network**
+
+1. **触发观察**：遮挡不是随机黑块，真实遮挡物有形状、有语义，而且经常遮住关键身份区域。另一个观察是 CNN 深层局部特征容易盯住单个中心或背景冗余语义，导致局部语义表达不足。
+
+2. **重定义动作**：它把遮挡 ReID 从“增强遮挡鲁棒性”改成两个新问题：遮挡是语义干扰，不是随机缺失；关键局部区域需要邻近语义扩展，不是孤立地看。关键词是 `semantic-guided occlusion simulation`、`semantic differential features`、`local feature semantic expansion`、`semantic relevance`、`semantic continuity`。它和 FED 这类遮挡特征擦除/扩散方法相比，切入点更偏“如何构造更像真实干扰的训练样本”。([arxiv.org](https://arxiv.org/abs/2112.08740?utm_source=openai))
+
+3. **机制怎么长出来**：SGOS 用相邻卷积层的语义差异图找高响应位置，再把非人类 COCO mask 形状和语义 patch 融合成遮挡块，放到语义相关位置。LFSE 用注意力找关键区域和邻近区域，对邻近区域按重要性和差异性筛选，再作为附加语义融合到关键区域。Cross-center offset loss 则把最近的跨类 hard pair 推远。
+
+4. **证据闭环**：组件 ablation 显示 SGOS、LFSE、loss 逐步提升，完整 FOSENet 最好；Occluded-Duke 上 mAP 领先，说明不是只在干净集上有效；五次运行标准差较小，说明结果稳定；t-SNE、注意力热图和检索可视化证明模型从背景/冗余区域转向目标局部语义，尤其在遮挡场景仍能关注目标区域。
+
+5. **reviewer 为什么买账**：它卖的是“真实遮挡语义化”和“局部语义扩展”两个视角。机制略多，有堆模块风险，所以它必须用遮挡数据集、热图和逐组件 ablation 证明每个模块都对应一个具体失败点。
+
+**6. A Survey on 3D Skeleton Based Person Re-Identification**
+
+1. **触发观察**：3D skeleton ReID 已经出现手工特征、序列模型、图模型、监督/自监督/无监督等多条线，但缺少系统综述。传统外观 ReID 依赖 RGB、衣服、人脸，存在隐私、视角、背景和外观变化问题；skeleton 则有轻量、隐私友好、抗背景和视角变化的优势。([arxiv.org](https://arxiv.org/abs/2401.15296?utm_source=openai))
+
+2. **重定义动作**：它把 skeleton ReID 从“ReID 的一个小分支”重新定义成一个独立研究对象 SRID。关键词是 `SRID`、`body/motion feature learning`、`hand-crafted / sequence-based / graph-based modeling`、`supervised / self-supervised / unsupervised paradigms`、`interdisciplinary prospects`。
+
+3. **机制怎么长出来**：综述没有模型机制，它的“方法”是组织机制。先正式定义任务，再做时间线；再按 skeleton modeling 分三类，按 learning paradigm 分三类；然后统一 benchmark、protocol、性能和效率比较；最后提出挑战和跨学科应用。这是典型“领域建构型”论文。
+
+4. **证据闭环**：它用方法表、数据集表、参数量和 Rank-1 对比、benchmark/protocol 汇总、挑战清单和 3DGait 医疗任务 case study 来证明 SRID 不是零散技巧，而是有共同问题、共同评价和外溢应用的方向。
+
+5. **reviewer 为什么买账**：这篇卖的是视角和整理能力。novelty 来自“第一个系统化 SRID 综述 + 清楚 taxonomy + 统一比较 + 未来议程”。对我们做方法稿的启发是：当你能把一堆零散工作重新组织成一个新问题空间时，问题定义本身就有论文价值。
+
+**共同套路**
+
+这批论文都不是先抛模块，而是先把一个旧问题拆出“大家没正面处理的变量”：历史经验、3D 几何、频谱角色、非衣服语义、语义遮挡、骨架模态。然后机制只负责把这个变量强行进入数据流或训练约束。
+
+真正能打动 reviewer 的不是 SOTA 表，而是证明“这个新变量确实按作者说的方式工作”的证据：互补匹配 Venn 图、频谱可视化、相似外观 t-SNE、屏蔽前后 similarity map、遮挡热图、taxonomy 对比。下一步我们做 ReID 方法，也要先找这种能被可视化和消融闭环验证的“重定义变量”。
+
+########## deep_10 ##########
+你列的是 6 篇，不是 10 篇。我按列出的 6 篇逐篇读了方法部分和实验消融。
+
+**1. DMPF，Disentangling Modality and Posture Factors**
+
+1. 触发观察：作者抓住的是可见光-红外 ReID 的类内差异不只是模态差异，还混着姿态差异。已有方法大多只在图像层或批次特征层对齐模态，忽略批次外的训练集整体差异，也忽略姿态变化。
+2. 重定义动作：他们把问题从“跨模态对齐”改写成“身份表征里混入了两个身份无关因子，模态因子和姿态因子”。关键词是 `disentangling modality and posture factors`、`entire training set`、`identity-unrelated factors`。
+3. 机制怎么长出来：模态因子既然跨整个训练集存在，就用类别记忆队列加 memory-attention，再用 OT 让同身份跨模态记忆靠近。姿态因子既然来自人体结构，就用 parsing 和 landmark 生成 skeleton，再用正交分解把 skeleton 里的姿态信息和身份信息拆开。机制和重定义绑定较紧，但模块偏重。
+4. 证据闭环：关键不是总表涨点，而是 MFD、PFD 单独消融，batch-attention 对 memory-attention，OT loss 在 memory-attention 输出上收敛，parsing 与 landmark 组合对照，impure skeleton 对正交 posture feature 对照。t-SNE 还把模态间隔和姿态离群点分别可视化出来。
+5. reviewer 为什么买账：卖的是“VI-ReID 不应只讲模态，还要同时解释姿态污染身份表征”的视角，机制只是顺着两个因子分别长出来。novelty 主要来自问题拆分和证据闭环，不是 attention 或 orthogonal 本身。
+
+**2. DASA，Distribution Aligned Semantics Adaption**
+
+1. 触发观察：直接用预训练权重初始化，在 LReID 中收益有限；旧方法靠 exemplar replay 和 logit distillation，但 ReID 是细粒度开放集，旧分类器和旧样本既不合适也不现实。
+2. 重定义动作：他们把 LReID 从“旧知识怎么蒸馏”改成“预训练得到的人体语义如何在新域中低成本适配”。关键词是 `robust and general human semantics`、`shared knowledge`、`distribution alignment`、`semantics adaption`、`exemplar-free`。
+3. 机制怎么长出来：如果 Conv 里保存通用人体语义，就冻结 Conv；如果新域分布会干扰语义使用，就调 domain-specific BN；如果通用语义还不够区分身份，就加轻量 SA 模块做空间聚合。这个机制和重定义非常紧，几乎没有多余零件。
+4. 证据闭环：它的核心消融是 DA 单独有效、SA 单独有效、DASA 组合最好；核大小 1 会变差，3 或 5 变好，证明 SA 不是随便加卷积，而是需要空间语义聚合；不同预训练数据对照证明“人体预训练语义”确实是上限来源；存储对照证明不用 exemplar 也能长期演化。
+5. reviewer 为什么买账：这篇主要卖范式，不是卖模块。它把“终身 ReID 必须蒸馏旧模型”改成“保存预训练人体语义，再按域适配”，这个视角比一个 SA 模块更值钱。
+
+**3. DRE，Diverse Representations Embedding**
+
+1. 触发观察：CNN 终身 ReID 方法为了多表示要加多分支，分支之间独立且难控制；固定 teacher 又会压制新任务适应。作者看到的是旧方法在实例级表征上太单薄。
+2. 重定义动作：他们把 LReID 的遗忘问题重定义为“实例级表示不够丰富，导致旧知识保存和新知识适应都受限”。关键词是 `diverse representations`、`primary embedding`、`auxiliary embeddings`、`instance-level and task-level layout`。
+3. 机制怎么长出来：Transformer 的多 class token 天然能产生多视角表示，所以引入多个 class token；主表示负责丰富身体信息，辅助表示负责判别性；ACM 对辅助表示做正交分离，再自适应并入主表示；任务级再用 adjustment model 和 learner model 做 KU/KP。
+4. 证据闭环：关键证据是 ResNet 版本明显弱于 transformer 版本，CODA 加 ACM 优于 CODA，DRE-KU 缺 KP 会泛化不足，冻结 adjustment model 的 DRE-KUP 适应性不如完整 DRE。辅助表示数量消融也证明不是“越多越好”，两个辅助表示较合适。
+5. reviewer 为什么买账：这篇卖的是机制多于视角。视角是“实例级多表示帮助终身学习”，但说法不如 DASA 和 DMDL锋利；真正支撑 novelty 的是把纯 transformer、多 class token、ACM、KU/KP 组合成 LReID 框架。
+
+**4. DiverseReID**
+
+1. 触发观察：DG ReID 里，现有风格增强方法用 Beta、Dirichlet 等固定分布采样混合权重，调参麻烦，而且生成风格可能仍贴近已有源域。作者抓的是“训练数据量不是关键，风格多样性才是关键”。
+2. 重定义动作：他们把域泛化从“学域不变特征”改写成“最大化源域风格空间”。关键词是 `style diversity`、`intra-domain diversity`、`inter-domain diversity`、`dynamic style hallucination`、`decoupled domain experts`。
+3. 机制怎么长出来：域内多样性不足，就用 DSH 根据两张图的 style Wasserstein distance 动态决定混合权重；域间多样性不足，就维护每个源域的 memory expert，用 DED 让不同域专家的特征去相关。机制很顺，且参数很少。
+4. 证据闭环：它不只做 DSH 和 DED 消融，还把 DSH 与 MixStyle、pAdaIN、DSU、SagNet 的 style randomization、SHADE 等对比，并在去掉 DED 后单独比较风格生成方式。另有 DSH 插入位置、采样策略、权重计算方式、DED 权重敏感性和 Grad-CAM。
+5. reviewer 为什么买账：这篇卖的是“多样性原则”，不是某个新层。它把两个简单机制分别钉在域内和域间多样性上，且用对比证明自适应风格混合比固定分布更贴合问题。
+
+**5. DCR，Domain Consistency Representation Learning**
+
+1. 触发观察：LReID 有一个矛盾，域内需要更细判别相似身份，域间又需要一致性防遗忘。旧蒸馏方法主要压域间 gap，容易牺牲当前域内判别。
+2. 重定义动作：他们把“保存旧知识和学习新知识”改写成“最大化域内判别和最小化域间 gap 的权衡”。关键词是 `domain consistency representation`、`global and attribute-wise representations`、`bridge`、`intra-domain discrimination`、`inter-domain gaps`。
+3. 机制怎么长出来：全局表征负责整个人，属性表征负责细粒度局部属性。ATG 先用属性识别器生成属性文本，TGA 用 CLIP 融合图文得到全局表征，ACN 得到属性级表征；AF 用属性表征对齐旧新模型，KC 用全局表征做知识转移。
+4. 证据闭环：它用跨五个数据集的 t-SNE 证明域间一致性，用 Market 的身份聚类可视化证明域内判别增强。组件消融显示 PFM、ACN、AF、KC 分别贡献；ATG 用具体属性文本优于泛化的 “a photo of a person”；阈值 0.8 的消融说明属性可靠性被认真控制。
+5. reviewer 为什么买账：这篇卖的是 trade-off 视角。CLIP、属性、蒸馏都不新，但“属性级表征作为域内判别和域间一致性的桥”把这些零件串成了一个可审稿的故事。
+
+**6. DMDL，Dual-level Modality Debiasing Learning**
+
+1. 触发观察：无监督 VI-ReID 的两阶段流程先做单模态学习，再做跨模态学习。作者指出第一阶段学到的模态特异线索会进入第二阶段伪标签，并在训练中继续放大。
+2. 重定义动作：他们把问题从“伪标签不准”或“模态差异大”改写成“模态偏置从数据传播到标签，再传播到特征”。关键词是 `modality bias`、`dual-level debiasing`、`causal intervention`、`bias propagation`、`model level and optimization level`。
+3. 机制怎么长出来：如果模态是混杂变量，就用 CAI 做 backdoor adjustment，优化 `P(Y|do(X))` 而不是普通 `P(Y|X)`；如果偏置还会在训练中传播，就用 CBT 在数据、标签、特征三层拦截，分别是模态特异增广、原图与增广图交换预测做标签细化、原图与增广图特征对齐。
+4. 证据闭环：CAI 替代似然建模有单独增益，CBT 叠加后进一步增益；只用 CBT 不如 CAI+CBT，说明两层互补。随机增广替代模态特异增广会掉点，去掉 prediction exchange 或动态 memory 会掉点，传统跨模态 MMD 对齐也会掉点。最有说服力的是伪标签质量曲线和 t-SNE，直接证明“偏置传播”这件事被缓解了。
+5. reviewer 为什么买账：这篇卖的是视角，而且是很强的视角。它没有只说“我做了去偏”，而是把两阶段 USL-VI-ReID 的失败路径画成因果图，再把机制一一对应到模型层和优化层，证据也直接打在伪标签质量和模态 gap 上。
+
+**共同套路**
+
+这批论文共同做法不是先想一个模块，而是先把旧任务里的模糊失败重新命名成一个更尖锐的隐藏变量，比如模态加姿态、预训练语义适配、实例级多表示、风格多样性、域内域间权衡、偏置传播。然后让机制从这个命名里自然长出来，最后用消融和可视化证明“这个隐藏变量确实被处理了”，而不只是证明模型涨点。
+
+联网核验主要用到 DASA、DRE、DCR、DMDL 的 arXiv 页面；DMPF 和 DiverseReID 主要依据本地 PDF 正文。DASA 的 arXiv 页面也确认其核心说法是 exemplar-free 的预训练语义适配范式([arxiv.org](https://arxiv.org/abs/2405.19695))；DRE 页面确认其主张是 pure transformer 加多表示用于 LReID([arxiv.org](https://arxiv.org/abs/2403.16003))；DCR 页面确认其核心问题是域内判别和域间 gap 的权衡([arxiv.org](https://arxiv.org/abs/2409.19954))；DMDL 页面确认其主张是模型层和优化层双层模态去偏([arxiv.org](https://arxiv.org/abs/2512.03745))。
+
+########## deep_11 ##########
+你这次列出的标题是 6 篇，不是 11 篇。我按这 6 篇拆；长文里方法超过前 8 页的，我补读了后续方法和关键消融页。
+
+**1. Dual-Modality-Shared Learning and Label Refinement for Unsupervised Visible-Infrared Person ReID**
+
+1. 触发观察：无监督 VI-ReID 不是简单缺标签，而是跨模态聚类会产生两类错。一类是同一身份被拆成多个簇，另一类是不同身份被错误合并。已有方法只做跨模态 cluster matching，却默认匹配关系可靠。作者还注意到 memory bank 用簇均值初始化，会被两模态样本数量不均和难样本拖偏。
+
+2. 重定义动作：他们把问题从“怎么匹配可见光和红外簇”改成“跨模态匹配关系本身可以反过来诊断和修正伪标签”。关键词是 modality-shared pseudo labels、cluster relationship-based label refinement、weighted modality-shared memory、hard samples。这里的重点不是又做一个匹配算法，而是把匹配后的 many-to-one 关系解释成伪标签错误的信号。
+
+3. 机制怎么长出来：先用 CSM 做双向 cluster similarity matching，得到跨模态伪标签。然后 CRLR 看哪些簇共同匹配到同一个异模态簇，如果同模态簇之间相似就合并；如果一个异模态簇被多个合并簇匹配，就用 k-means 把它切开。最后 WMM 不直接平均所有样本，而是先平衡两模态中心，再按样本到共享中心的关系给权重，让难样本在 memory 初始化里有更大作用。这个机制和重定义绑定较紧，因为每一步都在处理“伪标签关系不可靠”和“记忆中心不可靠”。
+
+4. 证据闭环：它的关键不是只报涨点。消融里 baseline 到 CSM+MM 有大提升，CRLR 和 WMM 再分别增益；CRLR 还用伪标签质量指标证明 refinement 前后质量提高。t-SNE 显示跨模态簇边界变清，正负跨模态距离分布重叠变小，伪类数量逐渐接近真实类别数，ARI 也更高。这些证据直接服务于“伪标签关系能被修正”这个重定义。
+
+5. reviewer 为什么买账：这篇卖的是“跨模态匹配关系可以用于 label refinement”的视角，加上一个完整训练框架。真正 novelty 不在某个复杂模块，而在把 cross-modality correspondence 从监督信号升级成诊断信号。审稿人会买账，是因为它把动机、机制和伪标签质量证据连起来了。
+
+**2. Dynamic adaptive multi-view contrastive learning for unsupervised person re-identification**
+
+1. 触发观察：作者抓住无监督 ReID memory contrastive learning 的三个内部矛盾。第一，camera variation 会让同相机不同身份比跨相机同身份更近，Jaccard 聚类偏向错误邻居。第二，已有方法用 mean feature 当 cluster proxy，默认簇是球形，但 ReID 特征常是非球形流形，均值可能落在低密度空区。第三，one-hot hard pseudo label 对噪声不稳，会放大错误监督。
+
+2. 重定义动作：他们没有泛泛说“伪标签有噪声”，而是把噪声拆成三个更具体的问题：距离度量不懂相机，代理点不符合 DBSCAN 的局部密度结构，监督目标太硬。关键词是 dynamic adaptive camera Jaccard、manifold、medoid proxy、dynamic adaptive proxies、soft pseudo labels。
+
+3. 机制怎么长出来：DACJ 为每个样本估计跨相机和同相机邻居差异，动态增加跨相机正样本在 k-reciprocal 和 local query expansion 里的比例。DAP 用 medoid 代替 mean proxy，因为 medoid 是真实样本点，更贴合非球形流形；同时用 instance memory 补充簇内细粒度关系，并去掉动量均值更新。DAKD 再用 teacher-student 和 soft label 缓解 hard label 噪声。多视图的上半身、下半身、全局特征是补充判别信息。
+
+4. 证据闭环：它的证据很对题。proxy 对比里 optimal medoid 优于 hardest、easiest、random；momentum update 和 optimal update 对比显示复杂 MSMT17 上差距很大；DOCP 和 DIP 单独作用小，合起来明显更强，证明两个代理层次互补。DACJ 的消融在 MSMT17 上尤其明显，说明相机差异越强越有用。t-SNE 显示同身份跨相机更紧，参数分析也围绕跨相机邻居比例展开。
+
+5. reviewer 为什么买账：这篇卖的是“现有无监督 ReID 管线的几个默认假设错了”的视角。机制本身是多个组件，但每个组件都对应一个被重定义的假设错误。最有价值的是把“均值代理不适合 DBSCAN 发现的非球形簇”讲成了一个方法问题，而不是只说换个 proxy 涨点。
+
+**3. Dynamic Modality-Camera-Invariant Clustering for Unsupervised Visible-Infrared Person Re-Identification**
+
+1. 触发观察：USL-VI-ReID 里，大家主要盯着 visible-infrared modality gap，但作者观察到 clustering 阶段还有 camera discrepancy。可见光图像受相机、光照、视角影响更大，导致同一身份被过度拆裂。已有 graph matching 或 optimal transport 如果建立在拆裂簇上，反而会放大 noisy labels。
+
+2. 重定义动作：它把问题从“跨模态关联不准”改成“聚类过程被模态和相机信息同时污染”。关键词是 modality-camera invariant clustering、identity splitting、clustering-level discrepancy、from discriminability to generalization。这个表述比“减少模态差异”更具体，因为它把失败点锁定在聚类输入和聚类目标上。
+
+3. 机制怎么长出来：MIE 在 k-reciprocal distance encoding 里均衡融合不同相机的信息，让 clustering embedding 不被同相机近邻主导。DNC 动态调 eps 和 k2，早期收缩半径排除噪声，先学可靠簇的判别性；后期扩大半径，把跨相机和跨模态正样本逐渐并进来。HMCL 先 intra-modality 再 inter-modality，用 cluster-level 和 instance-level memory 学模态相机不变表示。逻辑绑定很强，特别是 MIE 和 DNC 都直接服务于 identity splitting。
+
+4. 证据闭环：关键证据是 clustering ablation 和 cluster number visualization。文本说明 MIE 带来约 10 到 15 个点 mAP，DNC 再带来 2 到 5 个点，合起来 14 到 17 个点。可视化里 visible cluster 数量更接近真实类别数，t-SNE 显示 MIE+DNC 后同身份跨模态更紧。objective ablation 里 inter-modality cluster loss 贡献最大，说明改好的跨模态伪标签确实在驱动训练。
+
+5. reviewer 为什么买账：这篇卖的是视角，不只是模块。它把 USL-VI-ReID 的痛点从“模态对齐”推进到“模态和相机共同破坏聚类”。如果 reviewer 接受 identity splitting 是主要失败模式，MIE 和 DNC 就显得自然。它的 novelty 来源是把 camera-aware 思路放到 VI 全局聚类阶段，而不是只做相机代理损失。
+
+**4. Dynamic Token Selective Transformer for Aerial-Ground Person Re-Identification**
+
+1. 触发观察：AGPReID 的难点不只是 aerial 和 ground 视角差异，还包括大范围观测带来的尺度变化、背景冗余和无关区域。已有 VDT 能做 view decoupling，但仍然把大量 token 都送进 transformer，缺少对关键身份区域的动态选择。
+
+2. 重定义动作：它把 aerial-ground ReID 从“视角差异问题”改写成“视角差异下的 token 冗余和关键区域选择问题”。关键词是 dynamic token selection、top-k informative tokens、compact long-range modeling、irrelevant tokens、view-heterogeneous ReID。
+
+3. 机制怎么长出来：在 VDT 框架上保留 meta token 和 view token，用 identity、view classifier 和 orthogonal loss 做 view-related 与 view-unrelated disentanglement。新增 VTS，用轻量 attention 给每个 token 打分，取 top-K token，再用 Gumbel-Softmax 近似使选择可反传。最后选中的 token 和 class token 进入后续聚合。机制和重定义有一定绑定，但更多是把已有 token selection 思路迁移到 AGPReID。
+
+4. 证据闭环：主要证据是消融。加 VTS 后 CARGO 的 A-G 协议 rank1 从 45.00 到 50.63，mAP 从 42.05 到 43.39。head 数、token 数、插入位置的消融说明 token 不是越多越好，2 个 token、2 个 head、最后一层插入最好，这支持“少量关键 token 更有效”的说法。但它缺少更强的 token 可视化或失败案例分析，所以证据闭环比前几篇弱。
+
+5. reviewer 为什么买账：这篇更多卖机制迁移，而不是强视角。AGPReID 是新任务，VDT 是清晰强基线，在这个基线上加动态 token selection 有明确增益，reviewer 容易接受。真正 novelty 是“AGPReID 里显式选择关键 token”，但方法论上它不是最强的创新构造样本。
+
+**5. Efficient Lightweight Multi-Source Domain Adaptation for Person Re-ID via Self-paced Meta-Learning**
+
+1. 触发观察：UDA ReID 常用目标域聚类和伪标签，但源域知识利用不足；DG 学泛化，却不直接适配目标域。现实部署还有边缘设备算力、隐私和低资源限制。另一方面，global-only feature 在遮挡、光照和低清场景下不够细。
+
+2. 重定义动作：它把 UDA 从“目标域伪标签怎么修”改成“先用多源域学一个更好的、轻量的、可泛化初始化，再进入目标域伪标签学习”。关键词是 lightweight multi-source domain adaptation、self-paced meta-learning、style uncertainty augment、whole-part feature、edge deployment。它还把效率从附加指标提升成问题定义的一部分。
+
+3. 机制怎么长出来：WPOSNet 用 OSNet 的轻量深度可分离卷积，做 whole branch 和 part branch，垂直切分人体局部再拼接。SpML 把每个源域看成任务，用 SuA 扰动特征均值和方差形成不同难度，从无扰动、弱扰动到强扰动，模拟由易到难学习源域不变知识。最后用 MMT 在目标域做 hard pseudo label 和 EMA soft pseudo label 互教。逻辑上，SpML 与“多源泛化初始化”绑定较紧，WPOSNet 是另一个实用贡献，MMT 则是成熟框架复用。
+
+4. 证据闭环：它用轻量指标和真实 Railway 数据补强 practical story。消融显示 whole 和 part 单独相近，合起来在 SpML 下 mAP 提升约 3 个点；MMT+SpML 比只用 MMT 高 5.2 个点，说明多源自步学习确实改善目标适配。ResNet50 和 WPOSNet 上都验证 SpML+MMT 有效，证明不是只靠某个骨干。GradCAM 显示 part branch 关注背包等局部，whole branch 补全上下文。
+
+5. reviewer 为什么买账：这篇卖的是实用系统视角，机制新意不如 DMIC 或 MIP 紧。它的优势是把多源、轻量、目标适配和真实场景部署放在同一个问题框架里，并用 Params、FLOPs、Railway 数据支撑。reviewer 买账点是“现实约束下的 UDA ReID”，不是单个模块非常新。
+
+**6. Enhancing Visible-Infrared Person Re-Identification With Modality- and Instance-Aware Adaptation Learning**
+
+1. 触发观察：VI-ReID 里很多方法都试图补齐或消除可见光和红外的信息差，比如生成、对齐、模态不变特征。作者反过来指出，完全桥接信息差很难，而且即使桥接，也不一定能稳定抓到身份判别线索。真正挑战是模型面对不同模态、不同实例、不同 query 时都要能灵活适配。
+
+2. 重定义动作：它把“缩小 modality gap”重定义成“增强模型对 modality、input instance、query instance 的适应能力”。关键词是 model adaptability、flexibility、modality-aware prompts、instance-aware prompts、query-guiding prompts、adaptive feature space。这个转向很重要，因为它避开了“把两种模态硬映射到同一空间”的旧叙事。
+
+3. 机制怎么长出来：MPL 为 visible 和 infrared 各维护一套 layer-wise prompts，让模型按模态适配。SIPG 从当前图像 embedding 生成 instance-aware prompts，解决不能为无限测试实例存独立 prompt 的问题。QIPG 从 query embedding 生成 query-guiding prompts，在额外 transformer 层里让特征提取适配当前匹配任务。CPF 用当前实例特征重加权 modality prompt，再和 instance prompt 融合，避免两类 prompt 冲突。IAEL 防止实例 prompt 退化成无差别提示，CEL 约束 query-guiding prompt 学到同身份相关而不是冗余信息。机制和重定义绑定很强，三类 prompt 分别对应三类适配对象。
+
+4. 证据闭环：这篇的证据最像“方法论完整闭环”。它不只做组件消融，还专门验证普通 visual prompt 是否足够。结果显示 general prompts 只带来约 0.5 个点，而 MPL 和 SIPG 各自带来约 2.3 到 2.6 个点，二者合起来约 4 个点，证明提升不是“prompt tuning 本身”。它还比较 generation-based 和 fusion-based SIPG，t-SNE 显示 generation-based prompt 有更清楚的身份边界。CPF 优于直接拼接和投影，QIPG 加 CEL 进一步提升。CAM 显示 MPL、IPG 让模型更关注身体判别区域并减少无关细节。
+
+5. reviewer 为什么买账：这篇主要卖视角，然后用机制兑现视角。真正 novelty 是把 VI-ReID 从“模态对齐”改写成“模型适配”，并把适配拆成模态、实例、query 三个轴。reviewer 容易买账，是因为它提前防住了几个质疑：普通 prompt 不够，实例 prompt 会退化，模态 prompt 和实例 prompt 会冲突，query prompt 需要约束。
+
+**共同套路**
+
+这批论文共同的构造方式是：先不说“我要加模块”，而是把 baseline 的失败解释成某个旧假设不成立，例如伪标签可靠、均值代理合理、只需模态对齐、token 越多越完整、单源初始化足够。然后把新方法做成这个新解释的直接后果，每个模块都对应一个失败来源。最能打动 reviewer 的不是最终涨点，而是有一组消融、伪标签质量、聚类数量、t-SNE、attention map 或真实场景测试，能证明“我重新定义的问题确实存在，而且我的机制正好在修它”。
+
+########## deep_12 ##########
+按你这条消息列出的 6 篇拆完。没有额外联网，PDF 的方法和相关工作已经足够判断它们怎么构造创新。
+
+**1. ESTI**
+**触发观察：** 视频 ReID 里相邻帧变化很小，很多方法仍然对整段相邻帧做完整时空聚合。作者抓住两个后果：一是重复计算，二是相似帧聚合会放大冗余区域，反而稀释关键局部和动态细节。
+
+**重定义动作：** 它没有把问题说成“时序建模不够强”，而是改写成“全帧时空聚合本身有冗余，并导致关键信息丢失”。关键词是 redundant information、redundancy computations、critical spatial and temporal details、efficient spatial-temporal interaction。
+
+**机制怎么长出来：** 如果冗余来自整段都做同一种聚合，那么自然做法就是少处理、分开处理、晚交互。于是它把序列一分为二，一半走空间分支，一半走时间分支，再用 FEM 强化空间局部，用 TIM 建模相邻时序关系，最后用 STIM 做空间时间交互。机制和叙事绑定中等偏紧，真正紧的是“分支减冗余”，FEM/TIM 用 deformable attention 更像工程实现选择。
+
+**证据闭环：** 关键证据是组件消融：空间分支、时间分支、STIM、FA 逐步加上都有收益；再用 RCB、自注意力、交叉注意力对比 FEM/TIM；还有模型大小和 Rank-1 的效率图，说明不是靠堆参数。弱点是它没有特别强地证明“一半帧就足够”这个核心重定义，只是间接由效率和性能成立。
+
+**reviewer 为什么买账：** 这篇主要卖“视频帧冗余下的高效时空交互视角”，不是卖 deformable attention 本身。审稿人买账点在于它把常见的“更强时序模块”换成“避免过度处理相似帧”，且性能和复杂度同时说得过去。
+
+**2. Exploring Part-Informed Visual-Language Learning**
+**触发观察：** CLIP-ReID 的全局图文对齐能让全局特征变强，但作者用 t-SNE 和 parsing 标注发现，像素级或部位级特征仍然混在一起。身份边界可能清楚，但头、身体、鞋等部位的语义不一致，特别是相似身份的局部特征更难分。
+
+**重定义动作：** 它把问题从“ReID 需要语言监督”推进成“全身级语言监督不足以约束局部语义一致性”。关键词是 within-part semantic inconsistency、part-informed visual-language learning、pixel-level text prompts、fine-grained image-text alignment。它还补了一层冲突定义：human parsing 是身份无关的，而 ReID 要身份相关判别，直接用 parsing 会和身份学习冲突。
+
+**机制怎么长出来：** 既然问题是部位语义不一致，就用 parsing 给每个像素部位名，再构造“某身份的头、鞋、包”等身份感知部位文本提示。既然 parsing 有噪声，就用置信度加权。既然低层和高层特征尺度不同，就加轻量辅助头做多尺度融合对齐。这个机制和重定义绑定很紧，每一块都对应一个被定义出来的障碍。
+
+**证据闭环：** 最关键的是 Fig.2 的特征分布可视化，证明全局 CLIP-ReID 下部位语义确实混。消融里从普通 parsing prompt，到 identity-aware part prompt，再到 parsing confidence weighted loss，逐步证明“部位语义”和“身份约束”都必要。不同 parsing 模型的实验也在回答 reviewer 对 parsing 质量敏感性的疑问。
+
+**reviewer 为什么买账：** 这篇卖的是视角多于模块。真正 novelty 是把 CLIP-ReID 从全局图文对齐改写成“部位级、身份感知、训练期语言监督”，不是简单加 parsing。它的强点是概念链完整：发现局部语义不一致，指出 parsing 与 ReID 的监督冲突，再给出对应机制。
+
+**3. False Negatives Consensus Suppression**
+**触发观察：** 文本到图像 ReID 的对比学习默认“非配对样本都是负样本”。作者指出这个假设在 TIReID 里不成立，因为文本描述可能适配多个行人，标注或描述粒度也会造成语义相近的假负样本。把这些样本推远会破坏跨模态对齐。
+
+**重定义动作：** 它把问题从“图文细粒度对齐不够”改写成“负样本集合被污染”。关键词是 false negatives、consensus detection、adaptive suppression、negative may not be true negative。这个改写很聪明，因为它不和一堆局部对齐方法正面撞，而是攻击对比学习的基础假设。
+
+**机制怎么长出来：** 如果假负样本是高相似负样本，就用负样本相似度分布找异常。因为只看全局可能误判，所以同时用 BGR 全局表示和 TSR 局部 token 选择表示，取二者共识。因为早期模型不可靠，不能直接删掉疑似假负样本，所以用 AFNS 按假负概率自适应降权。因为 batch 内负样本少，GMM 拟合不稳，所以加跨模态 momentum queue。机制基本是从问题定义自然推出的。
+
+**证据闭环：** 它有三类证据：组件消融证明 BGR/TSR/CM-MoC 都有贡献；和 FNE、FNA 这类简单删样本或改标签策略比较，证明“自适应抑制”比硬删除稳；可视化显示高概率假负样本确实和文本语义相近。这个闭环比较完整，因为它直接验证“假负样本存在且会伤训练”。
+
+**reviewer 为什么买账：** 这篇卖的是一个训练假设错误，而不是新 backbone。reviewer 容易买账的点是：假负样本问题在 TIReID 里直观存在，而且方法可以作为对比学习插件加到强模型上。novelty 来自“把负样本污染作为核心问题”，不是来自 GMM 或 queue 本身。
+
+**4. FDGReID**
+**触发观察：** 真实 ReID 部署同时有两个矛盾：跨域泛化需要多域信息，但隐私限制不允许直接共享数据；联邦学习能保隐私，但普通 FL 只是聚合本地偏置模型，没有解决域漂移。作者进一步把漂移观察拆成两类：风格差异，比如亮度、色调、纹理；视角差异，比如摄像头角度不同。
+
+**重定义动作：** 它把问题从“联邦 ReID”改写成“联邦域泛化 ReID”。关键词是 federated domain generalization、style information sharing、viewpoint-aware contrastive learning、privacy-preserving domain drift。它的核心话术是：DG 方法不够隐私，FL 方法不够泛化，所以要在 FL 约束内做 DG。
+
+**机制怎么长出来：** 风格漂移对应 SIS：客户端不传图，只传 feature mean/std 这类风格统计，服务器重分发风格描述，客户端用 AdaIN 做跨客户端风格迁移和外推。视角漂移对应 VCL：用 appearance 分支提外观，用 OpenPose 加 RGAT 提姿态结构，再用 viewpoint-aware contrastive loss 学视角不变表征，最后 AFF 融合。机制和重定义的高层绑定清楚，但组件本身偏拼装，AdaIN、pose、graph attention 都不是新东西。
+
+**证据闭环：** 最关键是 ablation：去掉 SIS 和 VCL 性能很差；只加 VCL 的收益明显大于只加 SIS，支撑“视角漂移是重要来源”；去掉 viewpoint-aware contrastive loss 后明显下降，说明不是只靠多分支。它还在 DG 协议和 federated fully supervised 协议下比较，承认不一定打过专门 DG 方法，但在 FL 设定里明显强于 FedReID、FedAvg、FFReID。
+
+**reviewer 为什么买账：** 这篇卖的是场景定义和系统视角。novelty 不在单个模块，而在“隐私约束下把域漂移拆成风格和视角两类再分别处理”。如果 reviewer 接受 federated ReID 是实际部署问题，它就有价值；如果只看纯方法新意，机制会显得常规。
+
+**5. Find Hidden Modality Divergence**
+**触发观察：** 无监督可见光红外 ReID 里，大家用对比学习拉近跨模态同类、推远异类。但作者指出，由于跨模态同类间隔很大，中间常常夹着异类样本。对比学习推远这些异类时，会阻碍真正同类跨模态样本靠近。
+
+**重定义动作：** 它没有泛泛说“modality gap 大”，而是把问题改写成“跨模态优化过程中的 modality divergence”。关键词是 hidden modality divergence、negative optimization、positive optimization、adversarial aware learning。这个重定义把静态差距变成了动态优化冲突：同类聚合和异类分离在某些位置会互相打架。
+
+**机制怎么长出来：** 既然问题是优化方向冲突，就要找出哪些 cluster centroid 正在产生正向或负向优化。ADAL 用当前 memory 和下一步 guide memory 的相似度变化判断某个 centroid 会让实例靠近还是远离。对正向优化继续促进，对负向优化反向惩罚。然后再补一个 instance-level easy-hard positive 约束，让跨模态 hard positive 向 easy positive 收拢。这个机制和重定义绑定很紧，因为它不是一般对齐，而是在处理“错误优化方向”。
+
+**证据闭环：** 论文除了常规 SOTA，还设计了 MDRR 这种 modality divergence reduction rate，试图直接量化“divergence 是否被减少”。消融里分别加 Lp、Ln、Lco，证明促进正向、惩罚负向、easy-hard 收拢都有效。作为插件加到已有无监督 VI-ReID 方法上也能涨，说明它不是依赖某个特定 backbone。
+
+**reviewer 为什么买账：** 这篇的真正 novelty 是视角和机制都相对绑定。它把老问题“跨模态 gap”讲成“对比学习内部的优化冲突”，再用 adversarial aware 的方式处理冲突。reviewer 买的是这个诊断，不只是最终指标。
+
+**6. FLAG**
+**触发观察：** 视频换衣 ReID 中，外观信息被衣服主导，换衣后外观可靠性下降；但视频里还有 gait。现有视频 ReID 方法虽然会建模时空信息，却没有显式把 appearance 和 gait 分开提取。silhouette 不含衣服纹理，天然更适合学 gait。
+
+**重定义动作：** 它把 VCC-ReID 从“视频 ReID 的困难版本”改写成“有限 appearance 信息和 gait 信息如何显式学习的问题”。关键词是 explicit learning based on appearance and gait、multi-modal and multi-granularities、cross-modal knowledge distillation。它还把贡献包装成“把同衣视频 ReID 方法迁移到换衣设定的框架”，而不是单个新网络。
+
+**机制怎么长出来：** 如果 appearance 和 gait 要显式解耦，就用 visible branch 学 appearance，用 silhouette branch 学 gait。因为 gait 既有全局轮廓也有局部身体结构，所以做多粒度 silhouette。因为多模态大模型推理成本高，所以再用 CMKDS 把 MGA teacher 蒸馏到只用 visible 输入的小模型。机制和问题绑定很清楚，尤其是“大模型高性能，小模型可部署”这一层很实用。
+
+**证据闭环：** 它的关键证据不是单一 SOTA，而是泛化和消融：MGA 接到 AP3D、TCLNet 都涨，证明框架不是只适配一个方法；不同 silhouette 粒度显示三粒度最好，粒度过多会引入噪声，支撑“多粒度 gait”而不是越多越好；EPFM、并行融合、预训练冻结、直接加间接蒸馏都有消融；CMKDS 证明不增加推理成本也能涨。
+
+**reviewer 为什么买账：** 这篇卖的是“显式 appearance/gait 分解”的框架视角，加上换衣视频这个明确应用场景。模块未必很新，但叙事强，因为 silhouette/gait 与换衣鲁棒性之间有天然因果关系。真正 novelty 是把视频 ReID 和 gait recognition 接起来，并用蒸馏解决部署问题。
+
+**共同套路**
+这批论文共同不是先发明模块，而是先抓一个旧范式里的错误默认：相邻帧都值得聚合、全局 VLM 足够、所有负样本都真负、FL 聚合自然泛化、对比学习方向总是有益、换衣后还能靠普通外观。然后它们把这个错误默认命名成一个新失败模式，并设计至少一个能直接验证该失败模式的消融、可视化或指标。我们要学的是这个结构：先找“大家以为 X，其实 Y”的可证伪观察，再让机制成为 Y 的自然修正，而不是先堆一个模块再倒找理由。
+
+########## deep_13 ##########
+你这条消息实际列了 6 篇，我按这 6 篇逐篇拆。
+
+**1. FMCNet+**
+1. **触发观察**：VI-ReID 里大家都在学 modality-shared feature，但这样会丢掉一部分有判别力的 modality-specific 信息。已有补偿方法走图像生成，RGB 和 IR 互转太难，尤其 IR 生成可见光会带来颜色不一致等噪声，所以补偿线反而不如 shared feature 线。
+2. **重定义动作**：作者把问题从“跨模态差异大”改成“缺失的 modality-specific 信息应该补偿，但补偿层级错了”。关键词是 feature-level modality compensation、modality-shared/specific decomposition、discriminative person-related modality-specific features。
+3. **机制怎么长出来**：既然图像级补偿噪声大，就先用 SFD 把单模态特征拆成 shared 和 specific，再用 FMC 从对方 shared feature 生成缺失 specific feature，最后用 SFF 融合 shared、原 specific、生成 specific。逻辑绑定很紧，模块基本是从“特征级补偿比图像级更可控”自然推出的。
+4. **证据闭环**：关键消融是 Base 57.09/53.11，加 SFD 到 63.16/58.83，加 FMC 到 65.50/62.32，加 SFF 到 66.34/62.51。MD loss 的三项逐步提升，FMC 里没有 adversarial loss 时反而掉点，说明不是“随便生成特征”有效，而是要让生成 specific feature 接近真实 specific feature 且保持身份判别。特征分布图也证明 shared/specific 被分开，生成特征贴近真实特征。
+5. **reviewer 为什么买账**：卖的是视角，不只是模块。它把一条表现不佳的旧路线，图像级模态补偿，诊断为“补偿层级错了”，再给出端到端特征级补偿。这比单纯做一个跨模态融合模块更像创新。
+
+**2. Focusing on pedestrians like human**
+1. **触发观察**：换衣 ReID 方法多在网络结构上做身份相关信息、衣服无关信息、局部细节分支，但数据增强几乎没被系统做。衣服占图像大部分，脸、体态、步态等身份线索只在小局部，普通随机裁剪、旋转还可能破坏这些小线索。
+2. **重定义动作**：作者把换衣问题从“去掉衣服干扰”重讲成“训练图像应该像人一样同时关注多个局部身份线索”。关键词是 human focus、ensemble coding hypothesis、image-level local detail learning、central emphasis、component continuity。
+3. **机制怎么长出来**：CES 用 5×5 网格放大 body component 中央区域，CCP 把人体分成头肩、左右上身、左右下身五块，并用共享纵向偏移、左右镜像横向偏移保证连续，再用 smoothing 处理拼接断裂。机制和叙事有绑定，但具体网格、平滑是工程化选择，不如 FMCNet 和 GAReID 那么“公式自然推出”。
+4. **证据闭环**：它和普通增强比较，HFIA 优于 AutoAugment 等，随机裁剪和旋转明显伤害性能，支撑“换衣需要定制增强”。消融里 CES 和 CCP 单独都不如组合，body components、pedestrian-oriented 配置、enlargement grid、smoothing 都分别带来提升。可视化显示 HFIA 更集中在行人和身份相关区域，检索例子也展示它不再被相似衣服强干扰。
+5. **reviewer 为什么买账**：主要卖视角。它不是新 backbone，而是把“局部细节学习”从 feature branch 搬到 image augmentation，并且训练期使用、测试无开销。新意来自“换衣 ReID 的局部细节增强可以在图像层完成”，不是 CES 这个小操作本身。
+
+**3. GAE-Net**
+1. **触发观察**：视频 ReID 虽然有时序建模，但仍强依赖外观，容易被光照、颜色、穿着变化干扰。gait 对外观变化更鲁棒，但单独 gait 缺少外观信息，已有 gait-assisted 方法也没有充分解决 RGB 和 gait 的互补融合。
+2. **重定义动作**：作者把视频 ReID 从“更强时序聚合”重定义为“外观和步态两个互补模态的训练期协同，再蒸馏回单模态部署”。关键词是 gait-assisted enhancement、dynamic two-stream aggregation、privileged multimodal teacher、local perceptual complementary distillation。
+3. **机制怎么长出来**：DTA-Net 用 RGB ReID 分支和 GaitGL 分支形成多模态教师，DFA 用 DAW 和 DWA 动态融合外观与步态。然后 LPCD 把教师知识蒸馏给 RGB-only 学生，并把全局 logit 拆成多尺度局部 logit，区分 consistent 和 complementary knowledge。机制逻辑较紧，因为“训练期有 gait，测试期只用 RGB”自然导向蒸馏。
+4. **证据闭环**：ReID branch 是 84.3 mAP，gait branch 单独只有 10.7，DTA-Net 到 85.8，GAE-Net 经 LPCD 到 87.7，同时参数从 164.1M 降到 24.8M。DAW、DWA、完整 DFA 逐步提升。LPCD 明显优于普通 KD、WSLD、NKD、DIST，多尺度集合 {1,2,4} 最好。检索、t-SNE 和激活图证明 gait 信息帮助压制遮挡和噪声。
+5. **reviewer 为什么买账**：卖的是“特权信息蒸馏”的视角。真正 novelty 不是又加一个 gait 分支，而是让 gait 成为训练期教师，并通过局部互补知识把多模态能力压进单模态模型，部署时不用额外 gait 输入。
+
+**4. GAReID**
+1. **触发观察**：part misalignment 来自拍摄视角、检测误差、遮挡和背景。part-based 方法划分太粗，landmark-based 方法需要检测器和额外代价。作者进一步指出，GAP 后两张图的相似度其实是所有 part pair 相似度的平均，其中 misaligned pair 数量远多于 aligned pair，背景 pair 也会污染平均。
+2. **重定义动作**：它把“人体部位没对齐”重定义为“相似度聚合中，对齐 part 的贡献被大量错配 part 稀释”。关键词是 high-order part similarity、grouped high-order pooling、attentive high-order pooling、landmark-free alignment。
+3. **机制怎么长出来**：如果 aligned part 的相似度天然更高，那么高阶函数会放大高相似 pair 和低相似 pair 的差距。于是 GHOP 用高阶 Kronecker 交互做无 landmark 对齐，再用 group 和 shuffle 压缩维度。背景会污染相似度，所以 AHOP 用基于特征范数的前景 attention 抑制背景。这个逻辑非常紧。
+4. **证据闭环**：最强证据不是单纯涨点，而是 Fig. 6 和 Fig. 7 的相似度可视化。高阶后 aligned landmark pair 更突出，misaligned pair 的高相似减少。n=3 相比 n=1 在 Market mAP 提升 3.57，在 Duke 提升 7.99，n>3 后收益饱和，符合“错位已被大幅缓解”的解释。AHOP 优于 GHOP，说明前景过滤确实补上了背景污染问题。
+5. **reviewer 为什么买账**：这篇卖的是视角加机制。它没有借助姿态或人体解析，却用一个相似度分解公式解释为什么 misalignment 会发生，再让高阶映射成为自然解法。novelty 的核心是问题数学化，而不是高阶池化这个名词。
+
+**5. Generalizable ReID with bi-stream interactive learning**
+1. **触发观察**：ReID 跨数据集泛化差。PK sampler 全局随机，小 batch 内样本关系弱，难以提供有效 hard samples。已有 graph sampler 又慢，数据规模大时不稳定。作者还注意到，采样质量依赖 backbone 特征，而 backbone 又依赖采样到的训练样本。
+2. **重定义动作**：作者把泛化问题从“换一个更强网络或损失”重定义为“metric learning sampling 和 representation learning 之间缺少交互”。关键词是 bi-stream interactive learning、correlation graph sampler、learnable batch sampling、feature reconstruction。
+3. **机制怎么长出来**：CGS 每个 epoch 用 Spherical-LSH 先把相近类别放进 bucket，再用 feature-map adaptive matching 找邻近类别，构造相关 hard batch。GSANet 保持高分辨率流，GRSR 用稀疏全局相关像素重构特征，提升特征质量。特征更好会让下一轮 CGS 更好，CGS 更好又提供更有价值样本。这个“互相增强”的逻辑成立，但模块数量较多，绑定不如 GAReID 干净。
+4. **证据闭环**：采样对比显示 CGS 好于 random、PK、cluster，并且比已有 GS 快很多，Market 上采样 0.1 秒对 4 秒，MSMT(all) 上 1 秒对 40 秒。CGS 相比 Cluster 在 Market 到 CUHK03 上提升约 3.0 Rank-1 和 2.8 mAP，在 Market 到 MSMT17 上提升约 3.9 和 2.9。CGS、GRSR、GSANet 的组合消融显示完整模型最好。采样可视化证明 CGS 找到衣服颜色、局部外观相近的邻近类别。
+5. **reviewer 为什么买账**：卖的是系统机制。单看每个部件都不算特别新，但“采样器和特征网络闭环互动”给了它论文结构。风险是东西较多，reviewer 会要求每个部件隔离清楚，否则容易被看成堆模块。
+
+**6. Global aggregated gradient-guided adversarial attacks**
+1. **触发观察**：ReID 是 open-set ranking，分类攻击不能直接搬。已有 ReID 攻击黑盒迁移差，作者观察到早期迭代里 current gradient 和 global aggregated gradient 一致性很低，更新方向随机震荡，导致迁移性不足。
+2. **重定义动作**：作者把“黑盒攻击迁移差”重定义为“早期攻击阶段的梯度一致性不足”。关键词是 global aggregated gradient、gradient consistency、pre-convergence、weighted gradient。
+3. **机制怎么长出来**：每次外层更新前做 inner loop，沿预收敛路径采样多个梯度并平均成 global aggregated gradient。再计算当前梯度和全局聚合梯度的余弦一致性，低一致时更信任全局梯度，高一致时更信任当前梯度。机制几乎直接从重定义推出。
+4. **证据闭环**：Fig. 3 先证明旧方法早期 gradient consistency 低。update direction 消融比较 current gradient、GAG 和 weighted gradient，weighted gradient 最好。inner iteration 数 m 和噪声边界 beta 的实验展示存在合理区间，不是随便加算力。黑盒、白盒、ensemble、防御模型、跨模态 ReID 都验证有效，检索可视化显示 adversarial query 会让 top-10 全错。
+5. **reviewer 为什么买账**：卖的是可测中间变量。它不是说“我们攻击更强”，而是提出“迁移性差的原因是早期梯度一致性低”，再用一个很直接的算法修这个变量。novelty 的来源是诊断变量，而不是攻击 loss 本身。
+
+这批论文共同套路很明确：先抓一个具体失败点，不是泛泛说任务难，再把失败点命名成一个可操作的新问题。然后机制要尽量从这个新问题自然长出来，最后用消融或可视化证明那个中间问题确实被修了，而不是只报 SOTA 表。对我们做 B 类 ReID 方法稿来说，最值得学的是找“可测的中间变量”，例如补偿层级、错位 pair 占比、采样相关性、梯度一致性，而不是先想一个模块名字。
+
+########## deep_14 ##########
+你列出来的是 6 篇，我按这 6 篇拆。下面只讲“观察如何被包装成创新”，不讲怎么照搬模块。
+
+**1. GSTNET**
+1. 触发观察：作者抓住一个很具体的反常识点，两个群体外观相似，但如果 5 秒跨 20 公里，物理上不可能是同一群人。旧方法只用群体外观、图关系或静态时间统计，没管“能不能到达”。
+2. 重定义动作：它把群体重识别从“外观加时空先验匹配”重定义为“受地理时间可达性约束的图匹配”。关键词是 `reachability constraint`、`speed limit`、`unreachable connections`、`static time-prior mismatch`。
+3. 机制怎么长出来：机制几乎是自然推出的。既然问题是不可达边，就用距离和时间算速度，用速度上限和松弛边界惩罚图边；既然图传播会放大错边，就加门控图传播，只让可信邻居传播。
+4. 证据闭环：关键不是只报涨点，而是拆开证明两个判断。BRT 上 Graph-MLP 基线 46.49 Rank-1、44.97 mAP，加 GstRM 到 58.60、55.31，说明可达性约束确实过滤了伪边；加 GGM 到 64.71、61.67，说明传播门控也有用；两者合到 71.06、68.81。t-SNE 进一步显示同身份更紧、异身份更分开。
+5. 审稿人为什么买账：这篇卖的主要是视角。它把一个常识性物理约束变成 ReID 图边定义，机制并不复杂，但和问题重定义绑定很紧，审稿人容易相信“这个变量以前确实没被动态建模”。
+
+**2. Harnessing Knowledge From Pretrained VLMs for Unsupervised Person Search**
+1. 触发观察：作者先说无监督 person search 不是“无监督检测加无监督 ReID”的简单拼接。真正卡点是检测出来的伪框有定位噪声和类别噪声，伪框一脏，后面的伪身份聚类就塌。
+2. 重定义动作：它把问题从“没有标注”重定义成“带伪框噪声的伪标签生成”。关键词是 `pseudo-box noise`、`pseudo-ID denoising`、`localization noise`、`classification noise`、`prior knowledge`。
+3. 机制怎么长出来：机制和重定义绑定很紧。SEEM 负责给伪框和 mask，CLIP 用属性文本给伪身份，单图中同一个人不能出现两次作为去冲突先验；定位噪声用 mask 前景特征约束，类别噪声用置信度降权。
+4. 证据闭环：它没有只和监督方法比，而是专门搭 FeatComp+DBSCAN、SEEM+DBSCAN、SEEM+SPCL 这些伪标签基线。FMUPS-S1 在 CUHK-SYSU 比 SEEM+SPCL 高 25.89 mAP，说明不是 SEEM 自己带来的；置信度、先验、CLIP ID labeler 都有单独消融，替换成聚类会明显掉点。
+5. 审稿人为什么买账：这篇卖的是新设定加问题拆解。VLM 本身不是新零件，但作者把 VLM 从“特征提取器”改成“无监督 person search 的伪标签工程师”，再用噪声类型把每个组件解释清楚。
+
+**3. HGTDR**
+1. 触发观察：作者看到两类旧路都有问题。姿态、解析等外部工具贵且有域偏差；条带或固定 part token 又会把背景和遮挡混进来。另一方面，特征恢复方法虽然补遮挡，但没考虑邻近可见区域对恢复的贡献权重。
+2. 重定义动作：它把遮挡 ReID 从“找可见部位”重定义成“生成异质语义 token，并按空间距离恢复缺失 token”。关键词是 `heterogeneous tokens`、`strong-response`、`weak-response`、`distance-aware recovery`。
+3. 机制怎么长出来：SPG 先产生局部语义 patch，AHSTG 用区分性和身份相关性打分，选择不同形状和尺度的异质 token；如果 token 间空间距离大，就认为中间可能缺失，插入 recovery token，并让近邻 token 权重大、远邻权重小。前半段逻辑很顺，DFR 的距离假设更像一个合理启发。
+4. 证据闭环：消融围绕三段重定义做。SPG 比基线涨 2.2 Rank-1、2.1 mAP；AHSTG 单独涨 4.4、3.5；没有 DFR 时是 68.2 Rank-1、58.9 mAP，完整模型到 71.8、62.3。Grad-CAM 显示 SPG 看细粒度语义，AHSTG 看可见强响应人体，DFR 后对遮挡响应下降。
+5. 审稿人为什么买账：这篇卖的是机制组合，不是一个特别新的问题视角。它的可取之处是把“固定部位不可靠”和“恢复要有邻近权重”连成一条完整流水线，审稿人买的是每个模块都对应一个可见失败点。
+
+**4. HFLAT**
+1. 触发观察：作者抓的是 Transformer 遮挡 ReID 的通病，patch 被近似一视同仁处理，没有量化不同 patch 对身份的贡献，也缺少足够强的局部细节抽取能力。
+2. 重定义动作：它把遮挡问题从“遮挡区域要恢复”改写为“patch 要分层、前景背景要分离、局部交互要受限”。关键词是 `relative importance`、`patch-level saliency`、`feature hierarchical fusion`、`local-aware attention`。
+3. 机制怎么长出来：FHFM 根据 class token 注意力和 patch 范数给 patch 排重要性，分四层融合；FSM 用 saliency map 分前景和背景；LFEM 加四个局部 token，并用 mask 限制只在同一人体区域内交互。逻辑能对上观察，但三模块有些“全都要”，绑定程度中等。
+4. 证据闭环：消融比较了 Baseline、单模块、双模块和完整模型。比如 Occluded-DukeMTMC 上 Baseline mAP 48.8，加 FHFM 到 58.6；FSM、LFEM 也分别带来收益，双模块继续涨，三者完整最好。可视化显示 FHFM 关注关键区域，FSM 分离前景背景，LFEM 捕捉局部细节，同时作者也承认遇到行人遮挡行人时模块会被干扰者吸引。
+5. 审稿人为什么买账：这篇主要卖工程完整性。视角不算尖锐，但“重要性分层、前景分离、局部受限交互”三个动作都能被消融和可视化支撑，所以容易作为一篇稳健的模块型遮挡稿成立。
+
+**5. HKGR**
+1. 触发观察：作者发现 TIReID 里直接套 MLM 有问题。随机 mask subword 可能遮到功能词或碎片词，训练目标偏离“图文语义对齐”；而行人描述真正有用的是对象、属性和关系，比如“白色上衣”“站在栅栏前”。
+2. 重定义动作：它把文本图像对齐从“随机词预测”重定义为“由场景图知识引导的层级语义推理”。关键词是 `blind visual-textual alignment`、`hierarchical scene graph knowledge`、`object-level`、`attribute-level`、`relation-level reasoning`。
+3. 机制怎么长出来：机制非常自然。先把文本解析成对象、属性、关系三层场景图，再分别 mask 对象词、属性词、关系词，让图像和剩余文本共同预测被 mask 的语义；再用 MGA 同时做全局句图对齐和局部 token 对齐。
+4. 证据闭环：消融把 KGR、MGA、ID loss 拆开。MGA 带来的收益最大，KGR 在多个组合里有稳定增益；还专门比较 MLM、对象推理、属性推理、关系推理和完整 HKGR，完整模型最好。t-SNE、热图、检索可视化用来证明它不是只涨点，而是图文语义空间更靠近。
+5. 审稿人为什么买账：这篇卖的是视角。它没有说“我又加了一个语言模块”，而是说“随机 MLM 对行人文本是不合适的，文本本身有层级知识”。这个重定义比模块本身更像贡献。
+
+**6. Hierarchical Proxy Learning for Cloth-Changing Person Re-Identification**
+1. 触发观察：作者抓住换衣 ReID 的几何矛盾，同一人换衣导致类内距离大，不同人穿相似衣服导致类间距离小。实例级 triplet 或 contrastive 容易被噪声正负样本带偏；直接用形体、步态等固有特征又会损伤同衣场景。
+2. 重定义动作：它把“去衣服特征”重定义成“建立身份主代理和衣服状态子代理之间的层级几何关系”。关键词是 `main proxy`、`sub proxy`、`sub-to-main proxy`、`automatic sub-proxy mining`、`sample balance and diversity`。
+3. 机制怎么长出来：先按身份构造 main proxy，再在每个身份内部用 DBSCAN 挖 sub-proxy，近似衣服状态但不需要衣服标签；SBS 保证 batch 里身份和子代理均衡；SCT 用解析引导换衣增广补足一个人只有一套衣服的问题；MPL、SPL、S2MPL 分别约束身份间分离、身份内紧凑、子代理向主代理协作。
+4. 证据闭环：组件消融显示 SBS、SCT、HPL 逐步提升，HPL 内部的 SPL、MPL、S2MPL 也分别有效。PRCC 换衣设置达到 74.3 Rank-1，VC-Clothes 换衣设置达到 84.9 Rank-1。特征图显示方法更关注头、脸、手臂等非衣服区域，这正好回应“衣服捷径被压下去”。
+5. 审稿人为什么买账：这篇卖的是机制和几何视角的结合。真正的 novelty 不是衣服迁移，而是把“换衣造成的类内多峰分布”说成主代理和子代理的层级结构，并且不依赖人工衣服标签。
+
+共同套路很清楚：先抓一个具体失败点，不说“模型表达不够”，而是把失败点命名成一个更窄的新问题，例如可达性、伪框噪声、随机 MLM、层级代理。然后机制不是凭空堆模块，而是让每个模块对应一个被重新定义后的子矛盾。最后证据闭环也不是只报 SOTA，而是做“旧假设错在哪里、新定义对应的模块是否单独有效、可视化是否符合新解释”这三件事。
+
+########## deep_15 ##########
+你给的名单实际是 6 篇，不是 15 篇。我按这 6 篇读了前 8 页方法部分，并额外用全文关键词补了消融和可视化证据。
+
+**1. HOH-Net**
+1. **触发观察**：作者先抓住 VI-ReID 里两个常见失败：一是大家直接拉近 VIS 和 IR 特征，但忽略了人体局部之间更复杂的高阶关系；二是已有“中间模态”或辅助特征不够可靠，往往只是简单生成、相加或拼接。更细的观察是，普通超图容易把复杂关系学塌，低层到高层的单向特征流也浪费了低层细节和高层语义之间的互动。
+2. **重定义动作**：他们把问题从“跨模态差异太大”改写成“缺少高阶结构建模和分层中间特征代理”。关键词是 `high-order structure`、`reliable middle features`、`hierarchical middle-feature agents`、`modality-range identity-center`。也就是，大家以为 VIS 和 IR 只需要直接对齐，其实可靠公共空间要靠短程、长程、节点级、区域级和层级代理共同支撑。
+3. **机制怎么长出来**：机制基本是顺着重定义推出来的。短程和长程特征先由 SLE 得到，再用白化超图 HSL 建高阶关系，白化是为了解决高阶关系塌成单一连接的问题。随后 FCGA 同时做细粒度节点对齐和粗粒度区域对齐，生成中间特征。HMAL 把中间特征变成每个 stage 的代理，并做低层和高层的双向增强。MRIC 再用身份中心把 VIS、IR 和 middle features 拉到更稳的共同空间。
+4. **证据闭环**：关键不是只看涨点，而是证明“高阶关系和中间代理确实必要”。他们做了 SLE、HSL、FCGA、HMAL、MRIC 的逐项消融；把 HSL 和 GNN、普通 hypergraph、多种白化方式比较；还可视化高阶连接，显示普通 hypergraph 有关系坍缩，而白化后连接更分散。相似度分布、注意力图和检索结果用来证明公共空间更分离，模态差异被压小。
+5. **reviewer 为什么买账**：这篇卖的是“视角加系统化机制”，不是单个模块。真正 novelty 是把中间特征从“辅助生成物”升级成“分层公共空间代理”，再用高阶结构和中心约束把它说圆。风险是模块很多，像堆料，所以它必须靠消融和关系可视化证明每个模块都服务于这个重定义。
+
+**2. HPRNet**
+1. **触发观察**：作者看到 CC-ReID 里很多方法只是在衣服区域做颜色扰动、外观重建或粗粒度人体组件分解，但真实人有身高、体型、纹理结构和局部相关性。直接重建或通道切分容易丢掉原始样本里的身份信息，还会把背景轮廓等非身份噪声当成有用线索。
+2. **重定义动作**：他们把问题从“去掉衣服影响”改写成“粗糙重建缺少真实的人体解析约束和非邻域上下文”。关键词是 `human parsing reconstruction`、`non-local multi-scale perception`、`contextual correlation`、`global receptive field`、`multi-local component generation`。大家以为只要分离衣服相关和无关特征，其实分离过程本身如果没有上下文和解析约束，会制造新的偏差。
+3. **机制怎么长出来**：NWMP 用非局部加权感知建模不同人体区域之间的关系，DPLS 用 2×2 和 4×4 池化做局部到整体的多尺度学习。PRE 则用人体结构把重建分成头部、身体、下肢，并引入 clothing parsing，从通道、位置和颜色角度得到更稳定的人体轮廓和衣服无关特征。整体损失把 ID、衣服分类对抗、重建、解析和多分类损失合在一起。
+4. **证据闭环**：它的闭环主要靠分支消融和可视化。NWMP 和 PRE 单独加都有提升，组合最好，说明“全局上下文”和“局部解析重建”互补。损失消融说明重建、解析和多尺度分类不是装饰项。重建图、t-SNE 聚类、Grad-CAM 热力图和检索结果进一步说明模型更关注人体关键区域，而不是背景轮廓或衣服噪声。
+5. **reviewer 为什么买账**：这篇主要卖“重建方法的诊断视角”。它不是说我又做了一个 reconstruction branch，而是说已有重建因为缺少上下文和解析约束，所以会把身份信息重建坏。机制本身不算特别新，但和这个诊断绑定得比较紧。
+
+**3. Identity-aware Feature Decoupling Learning**
+1. **触发观察**：作者的观察很清楚：人换衣后仍能靠脸、发型、头部轮廓、体型等线索识别，但这些线索分布不均。头部区域比较“纯”，主要是身份相关；身体区域不是纯噪声，而是身份相关信息和衣服信息耦合在一起。已有方法要么只抓一种生物线索，要么粗暴压制衣服，导致身份线索不完整。
+2. **重定义动作**：它把问题从“学习衣服无关特征”改成“在衣服相关区域中解耦身份相关信息”。关键词是 `identity-aware feature decoupling`、`ID-based knowledge transfer`、`clothing bias diminishing`、`clothing contrastive loss`。大家以为衣服区域要被抑制，其实衣服区域里还藏着体型、轮廓等身份线索，关键是别让颜色纹理主导。
+3. **机制怎么长出来**：注意力分支吃 clothing-masked image，保留头部和轮廓，学习身份注意力；主分支吃原图，保留普通 ReID 需要的信息。IKT 把 masked 分支学到的身份空间注意力转移给主分支。CBD 再用人体解析得到衣服区域 mask，从主分支里抽出 clothing feature，用 clothing contrastive loss 降低同一身份不同衣服之间的衣服偏差。采样上也调整为更重视同一身份多外观样本。
+4. **证据闭环**：最关键的是 hard triple 可视化：anchor 和 positive 衣服完全不同，negative 衣服相似。baseline 会被衣服纹理吸走，认为 negative 更像；IFD 则更关注头部和人体轮廓。消融里 IKT、CBD 单独有效，二者合用更强；clothing contrastive loss 明显优于普通 supervised contrastive loss，这正好证明“衣服区域要解耦而不是简单忽略”。
+5. **reviewer 为什么买账**：这篇卖的是视角，机制相对简洁。它把“衣服是干扰”推进到“衣服区域是身份和干扰耦合体”，这个说法比单纯 cloth-agnostic 更有解释力，也更容易设计干净消融。
+
+**4. Identity-aware Infrared Person Image Generation via Controllable Diffusion**
+1. **触发观察**：VI-ReID 数据少，SYSU-MM01 和 RegDB 场景、视角有限，真实采集又受隐私和标注成本限制。直接用 Stable Diffusion 也不行，因为它不理解红外模态，给 “infrared photo” 仍可能出彩色图；同时普通扩散生成不可控，同一文本会生成不同身份，这对 ReID 是致命问题。
+2. **重定义动作**：作者把问题从“做数据增强”改成“生成能训练 ReID 的身份一致跨模态数据”。关键词是 `controllable diffusion`、`infrared modality understanding`、`text adapter alignment`、`identity-aware generation`、`Generated Cross-modal Person Dataset`。大家以为生成更多图片就行，其实 ReID 合成数据必须同时满足红外风格、文本语义、身份一致和跨模态配对。
+3. **机制怎么长出来**：每个机制对应一个失败点。LoRA 用 SYSU-MM01 的可见光和红外图微调 UNet，让扩散模型学会红外概念。BLIP 生成图文对，再加 “RGB photo” 和 “infrared photo” 前缀。Text adapter 用 LLaMA 的语义能力校准原始 CLIP text encoder。生成阶段先用文本生成 RGB reference，再用 IP-Adapter 保持身份生成多视角 RGB，最后用 ControlNet SoftEdge 把 RGB 转成红外。OpenPose 和灰度化等后处理用于清洗低质量样本。
+4. **证据闭环**：他们用生成可视化证明同一文本下身份更一致，比如眼镜等细节能保留。ControlNet 条件比较证明 SoftEdge 比 depth 更适合红外，因为它保留边缘和身份细节。LoRA 和 text adapter 的消融用 CLIP Score 和 FID 证明语义理解更好。GCP 加到 CCLNet、OTPA、RPNR、SDCL 等基线后都有提升，t-SNE 显示同一身份跨模态距离更近。
+5. **reviewer 为什么买账**：这篇卖的是数据构造范式，不是 ReID 网络。novelty 来自“把扩散生成约束成 ReID 可用数据”，尤其是身份一致的 RGB-IR 生成。它的说服力取决于生成数据是否真的改善多个现有基线，而不是只展示好看的图。
+
+**5. EAIBC**
+1. **触发观察**：作者先展示了文本行人检索的典型失败：错误结果排在前面，不是因为整体更像，而是颜色对上了。比如文本写“blue t-shirt”，目标其实是很浅的蓝，模型却召回一堆明显蓝色衣服的人。RGB 和灰度模型的响应图也显示它们关注不同区域。
+2. **重定义动作**：它把问题从“跨模态对齐不够好”改成“颜色过度依赖导致模型忽略纹理、结构和局部物品”。关键词是 `color over-reliance`、`all-round information beyond color`、`grayscale branch`、`high-frequency branch`、`color branch`、`mutual learning`。大家以为颜色是最强线索要强化，其实颜色太强会遮蔽其他可判别线索。
+3. **机制怎么长出来**：机制非常顺。RGB branch 保留常规信息；GRS branch 去掉图像颜色，同时把文本颜色词 mask 掉，强迫模型看非颜色线索；HFQ branch 用高频信息关注纹理和轮廓；CLR branch 又专门保留颜色，防止模型矫枉过正。最后四个分支用 mutual learning 交流，避免各看各的。
+4. **证据闭环**：这篇证据很完整。先用检索失败样例和 RGB/GRS response maps 证明颜色过度依赖存在。消融证明单分支不如多分支，加入 CLR branch 和 mutual learning 后更好。feature response map 显示 RGB 分支看粉色衣服，GRS 分支看自行车、包、箱子等非颜色线索。检索例子说明 EAIBC 能把颜色相似但细节不符的人往后排。
+5. **reviewer 为什么买账**：这篇真正卖的是“偏差诊断”。模块本身不复杂，但问题被讲得非常具体：不是颜色没用，而是颜色太强，需要让非颜色证据有发言权，同时保留颜色分支。这个平衡比“去颜色”更容易让 reviewer 接受。
+
+**6. InfinitePerson**
+1. **触发观察**：真实 ReID 数据难采、难标、涉及隐私；合成数据虽然便宜，但已有合成集有两个明显缺陷。第一，3D 人物像卡通，原因是衣服 UV 纹理和 3D clothing model 不匹配。第二，采集流程单一，缺少真实监控网络里的多视角、背景、光照和遮挡变化，也不容易复现和扩展。
+2. **重定义动作**：它把问题从“合成数据规模不够大”改成“合成数据的泛化能力由纹理真实性和监控采集协议决定”。关键词是 `diffusion-generated UV texture`、`reliable clothing texture`、`sub-monitoring network`、`scalable synthetic pipeline`、`direct transfer`。大家以为扩大身份数和场景数就能提升合成数据，其实 UV 纹理定义和监控网络模拟才是关键瓶颈。
+3. **机制怎么长出来**：MakeHuman 生成不同体型、肤色、发型的人体模型，再加骨架和行走动画。衣服模型本身没有足够纹理，于是用 normal maps 条件训练 ControlNet，引导 Stable Diffusion 生成和衣服表面结构对齐的 UV texture maps，再导入 UE4 材质系统。采集上设计 sub-monitoring network，每个子网络用少量摄像头覆盖局部区域，并让人物沿循环路径移动，控制视角、背景、光照和遮挡。UnrealCV 自动得到实例分割和裁剪。
+4. **证据闭环**：核心证据不是看合成图，而是 direct transfer。模型只在 InfinitePerson 训练，再直接测 CUHK03、Market-1501、MSMT17，泛化优于多个真实和合成数据集。定量分析显示身份数从 1000 增到 4700 时性能持续上升，子监控网络数量从 2 到 12 增加时也持续变好。UV 生成比较里，normal map 控制优于 Canny 和 InstructPix2Pix，说明“纹理要贴合 3D 表面结构”这个重定义是有效的。
+5. **reviewer 为什么买账**：这篇卖的是数据集和管线视角。novelty 不在 ReID 模型，而在指出合成 ReID 的真实瓶颈是“衣服纹理几何一致性”和“监控采集协议”。只要 direct transfer 和参数分析站得住，这类工作容易被当成可复用资源接受。
+
+最后看这批论文，套路很一致：先抓一个可视化、失败样例或数据缺陷，把它命名成一个更高层的问题，再让机制逐项对应这个问题。能发的方法稿通常不是“加了一个模块”，而是“我证明大家一直优化的目标其实漏了一个关键变量，然后我设计机制控制这个变量，并用消融和可视化证明这个变量真的变了”。
+
+########## deep_16 ##########
+我按本地 PDF 提取并读了方法和关键消融。列表里实际是 6 篇，下面逐篇拆。
+
+**1. Instant Pose Extraction Based on Mask Transformer for Occluded Person ReID**
+
+1. 触发观察：遮挡不是简单少了一块图像，而是会让可见人体部位和遮挡噪声混在一起，导致局部匹配错位。作者还观察到 Transformer 越深，patch 特征越相似，动态掩码很难生成有效的部位原型。
+2. 重定义动作：他们把遮挡 ReID 从“抑制遮挡区域”改写成“即时提取可用姿态和可见部位原型”。关键词是 dynamic mask、prototype mask、valid subspace、non-occluded body parts、pose key-points。
+3. 机制怎么长出来：如果问题是“遮挡下可见部位需要被重新定位和匹配”，那么动态掩码、姿态热图、局部原型、非遮挡部位匹配就能顺着长出来。但这篇机制绑定不算特别紧，因为模块较多，MAM、MACM、PAM、FMM 都在承担一部分解释，容易显得是组合拳。
+4. 证据闭环：主要证据是 Occluded-Duke 上分模块消融，MTE 带来约 +5.2 mAP，LPTD 带来约 +6.3 mAP，完整模型约 +9.4 mAP；可视化显示 MAM 和 MACM 能定位遮挡相关部位；局部原型数量在 Occluded-Duke 上更细粒度更好。
+5. reviewer 为什么买账：更买机制完整性和遮挡场景表现，不完全是视角。真正 novelty 来自“用动态原型掩码加姿态聚合做可见部位匹配”的组合，而不是单个模块。对我们有用的教训是，遮挡论文如果只是“加部位模块”，必须有强可视化和分模块消融支撑，否则视角不够硬。
+
+**2. Interactive Sketch-Based Person ReID with Text Feedback**
+
+1. 触发观察：草图能表达轮廓和结构，但表达不了颜色、性别、衣服语义等高层意图。已有 sketch+text 方法把草图和文本简单组合，既有模态干扰，又依赖昂贵的三模态数据。
+2. 重定义动作：他们把 Sketch ReID 从“一次性草图检索”改写成“用户反馈驱动的交互检索”。关键词是 context assistance、feedback guidance、pseudo-word token、explicit sketch-text compositionality、textual token concatenation。
+3. 机制怎么长出来：这个绑定很紧。既然用户反馈是文本，CLIP 文本空间又擅长组合语义，那么自然做法就是把草图映射成一个伪词 token，再和用户反馈 token 拼接，让 CLIP 文本编码器完成组合查询。
+4. 证据闭环：他们不是只报涨点，而是问了三个对故事很关键的问题。任务适配 CLIP 是否必要，视觉到文本转换网络是否必要，伪词 token 是否真的保留草图语义。最关键的是用草图伪词去检索草图库，R@1 达到 95.64%，证明伪词不是随机向量，而确实携带草图语义。
+5. reviewer 为什么买账：主要买视角。它把检索流程从静态查询改成了可交互流程，把草图和文本统一到文本 token 空间，机制很轻但叙事很顺。对我们有用的是，好的创新不一定复杂，关键是把“真实用户流程里的缺口”定义出来。
+
+**3. Internal-External Context Interaction Network for Person ReID**
+
+1. 触发观察：传统注意力主要利用单个样本内部上下文，自注意力只看样本自身的元素关系，容易只盯显著区域，忽略背包、衣服纹理等细微但有身份区分力的外部线索。
+2. 重定义动作：他们把注意力问题从“样本内部哪里重要”改写成“样本内部局部上下文应该和跨样本潜在上下文交互”。关键词是 internal-external context interaction、inter-sample latent context、intra-sample local context、external learnable memory。
+3. 机制怎么长出来：绑定比较紧。既然要引入跨样本上下文，就需要一个外部可学习记忆；既然还要保留样本自身结构，就用局部窗口提取内部上下文；然后把局部 query 投影到外部 key 上生成空间和通道权重。
+4. 证据闭环：最关键消融是 IEI-S 对比普通 self-attention。两者都做位置特征重加权，但 IEI-S 多了跨样本上下文，结果在 Market1501 和 CUHK03 上更好且计算量更低。热图也对应了重定义，普通注意力偏下半身，IEI-S 能同时关注上身、背包、T 恤纹理等身份线索。
+5. reviewer 为什么买账：视角和机制都能买账。它不是泛泛说“注意力更强”，而是明确指出自注意力的参考范围太窄，并用外部记忆修正这个范围。对我们有用的是，如果要做注意力类方法，最好改变“注意力依据什么信息产生”，而不是只换注意力形式。
+
+**4. Latent Diffusion-Guided Feature Inpainting for Occluded Person ReID**
+
+1. 触发观察：很多遮挡方法只是让模型适应遮挡或压低遮挡影响，但最终 embedding 仍然是被遮挡污染过的。标准重排序在大图库里还会被离群样本和噪声邻域放大错误。
+2. 重定义动作：他们把遮挡从“需要鲁棒特征”改写成“特征空间里的结构化污染，需要反变换恢复干净身份表征”。关键词是 feature-level inpainting、inverse transform、clean identity-preserving embedding、de-occlusion、centroid-guided pruning。
+3. 机制怎么长出来：如果接受“遮挡是特征污染”，扩散式去噪补全就很自然。DDO 用冻结 ViT 的干净特征作监督，把遮挡特征恢复成干净特征。HRR 则利用身份中心先筛候选，再做局部重排序。不过 HRR 依赖闭集身份结构，协议风险比 DDO 大。
+4. 证据闭环：证据比较直接。可视化显示 DDO 把注意力从白墙、遮挡物拉回衣服、脸和可见身体；MSE、余弦误差和 SSIM 显示补全后特征更接近干净特征；DDO 插到 TransReID 和 Pass-ViT 也有增益。HRR 的证据更复杂，Occluded-Duke 上 mAP 从 81.8 到 90.6，但 Occluded-ReID 上会从 92.3 降到 90.1，作者也承认图库身份样本少或重遮挡时中心会偏。
+5. reviewer 为什么买账：主要买问题重定义，“不要忍受遮挡，而是恢复被污染的特征”。但这篇也最容易被挑协议和监督来源，尤其是合成遮挡配对、闭集重排序、中心标签使用。对我们有用的是，“特征污染反演”是强视角，但测试期重排序不适合作主贡献。
+
+**5. Learning From Yourself to Others for Unsupervised Visible-Infrared ReID**
+
+1. 触发观察：无监督 VI-ReID 里，伪标签噪声不是只在 loss 反传时造成问题。噪声样本已经在前向传播、聚类原型、跨模态匹配阶段污染了表示。已有方法常用损失函数补救，但补救太晚。
+2. 重定义动作：他们把问题从“如何缩小可见红外模态差异”改写成“先判断哪些伪标签可信，再从单模态可靠样本走向跨模态匹配”。标题里的 yourself to others 就是这个叙事。关键词是 noisy labels、forward propagation、closeness centrality、reliable homogeneous prototype、local-to-global hierarchical matching。
+3. 机制怎么长出来：绑定很紧。既然要先学自己，就在每个单模态 cluster 内用 closeness centrality 找可靠样本，低可靠样本前向阶段直接丢掉。既然再学别人，就用中心锚点做双向一致局部匹配，再把可靠局部匹配送进全局最优传输，最后用异质对比损失学跨模态不变特征。
+4. 证据闭环：消融非常贴问题定义。CCE 在 SYSU-MM01 和 RegDB 上 Rank-1 分别约 +6 和 +7；BCLM 约 +3 Rank-1 和 +3 mAP；GPRA 加 LDRHL 在 SYSU-MM01 上带来约 +17 Rank-1 和 +14 mAP。t-SNE 也不是泛泛展示聚类更好，而是专门显示已有方法虽然模态靠近了，但噪声标签还在，而 HCCL 缓解了这个问题。
+5. reviewer 为什么买账：主要买视角。它抓住“噪声样本必须在前向阶段处理”这个具体观察，再把单模态可靠性和跨模态匹配串成自然流程。对我们最有参考价值的是，它的每个模块都对应一句可检验的话，而不是先有模块再找解释。
+
+**6. Learning Multi-Granularity Representation with Transformer for VI-ReID**
+
+1. 触发观察：可见红外两种模态的有效身份线索大小和位置不一致，可能是全局衣服颜色、局部姿态，也可能是鞋子或脸部这类很小区域。单一全局或单一部位粒度会造成 irrelevant matching 和 ambiguous alignment。
+2. 重定义动作：他们把 VI-ReID 从“模态差异问题”改写成“跨模态、跨粒度的对齐问题”。关键词是 global-patch-pixel、multi-granularity、saliency consistency、cross-granularity alignment、nearest-neighbor clustering。
+3. 机制怎么长出来：机制基本顺着重定义生长。既然单粒度不够，就抽 global、patch、pixel 三个层级；既然不同模态和粒度关注区域不一致，就用 saliency-enhanced Transformer 做同粒度跨模态融合和同模态跨粒度融合；既然同类跨模态距离仍远，就用 CNC 拉近最近邻同类样本。
+4. 证据闭环：MGFE 在 SYSU-MM01 两种模式下 Rank-1 分别约 +6.26 和 +4.47；MGFT 和 CNC 继续提升；三粒度组合明显优于单粒度或两粒度。热图也服务于视角，global 关注大区域，patch 关注轮廓和局部，pixel 捕捉姿态和手臂动作，组合后覆盖更完整语义。
+5. reviewer 为什么买账：买的是“单粒度导致错配”的视角加充分消融，但机制本身偏常规。它的创新来源不是 Transformer 分支，而是把 VI-ReID 的失败解释成粒度不匹配，并用三粒度实验证据把这个解释坐实。
+
+这批论文共同套路很清楚：先抓一个具体失败现象，再把它改写成一个更高层的问题定义，让机制看起来像自然结果。强论文的关键不是模块多，而是有一个消融或可视化能直接证明“这个新问题定义是对的”，例如伪词确实有草图语义、外部上下文确实比自注意力多看身份线索、前向丢噪声确实缓解伪标签污染。对我们做 ReID 方法稿，最该学的是先找一个可被证伪的失败解释，再设计一个如果失败就会推翻叙事的证据闭环。
+
+########## deep_17 ##########
+我按你指定的 `pdftotext -f 1 -l 8` 读了方法段；其中几篇方法跨过第 8 页，我又补读后续页把方法收完整。
+
+## 1. Learning Visual-Semantic Embedding for Generalizable Person Re-Identification
+
+1. 触发观察：普通泛化 ReID 主要还是图像特征学习，视觉语言方法又常要求图文配对完整。现实里可能只有图像、只有文本、或图文都有，现有方法没有统一处理“模态缺失”的能力。
+
+2. 重定义动作：作者把问题从“做更强 DG ReID”改成“学习一个视觉语义统一嵌入”。关键词是 `visual-semantic embedding`、`unimodal or multimodal`、`incomplete modality`、`unified perspective`。这让图像 ReID、文本 ReID、图文 ReID 被讲成同一个问题。
+
+3. 机制怎么长出来：既然要同时处理图像、文本、图文，就自然长出图像编码器、文本编码器、多模态编码器。既然模态会缺失，就用图像掩码、文本掩码、图文联合掩码来预训练。`MMM` 不是单纯随机遮挡，而是强调行人区域，服务于“视觉语义嵌入要关注人本体”的叙事。
+
+4. 证据闭环：关键消融是 ViT 基线、MMET 加随机掩码、MMET 加 MMM。MMM 在 Market 和 MSMT 上明显优于随机掩码。另一个闭环是 MIM、MLM、MMM 的对比，证明图像和文本联合掩码确实比单模态掩码更贴合“统一视觉语义”的定义。
+
+5. 审稿人为什么买账：这篇卖的主要是视角，不是某个新模块。真正的新意是把 ReID 泛化、图文预训练、模态缺失统一到一个训练框架里。机制很多来自视觉语言预训练，但套到 ReID 的“模态不完整泛化”上，有清楚的问题重定义。
+
+## 2. Lifelong person re-identification via dynamically knowledge adaptation and retention
+
+1. 触发观察：终身 ReID 里，很多方法为了不忘旧域，会限制模型适应新域。这样虽然缓解遗忘，但会让模型在每个具体域上都不是最优。作者抓住的反直觉点是：防遗忘不应该等于少适应。
+
+2. 重定义动作：作者把问题从“如何保留旧知识”改成“如何保留模型对旧域的适应能力”。关键词是 `dynamic adaptation`、`adaptability retention`、`readapt to each domain`。这比普通蒸馏更进一步，因为蒸馏对象变成了“动态参数生成能力”。
+
+3. 机制怎么长出来：如果每个域都需要不同适应方式，就用 DyAdap 动态卷积，根据输入特征生成卷积参数；如果动态适应器本身也会忘，就用 AdRet 约束当前模型和旧模型在特征以及动态参数上的一致性；如果批归一化带有域统计，就加 BNF 融合旧新 BN。
+
+4. 证据闭环：关键消融是逐步加入 DyAdap、AdRet、BNF。文中报告 DyAdap 平均带来 15.2 mAP，AdRet 带来 4.9 mAP，同时加入带来 34.7 mAP，BNF 还有小幅增益。这个消融证明“动态适应”和“保留适应能力”是两个不同但互补的轴。
+
+5. 审稿人为什么买账：这篇卖的是“防遗忘不等于冻结适应”的视角。机制不是简单再蒸馏一次，而是把蒸馏落到动态参数生成器上，和重定义绑定比较紧。
+
+## 3. Lifelong visible-infrared person re-identification via DMM and CDCN
+
+1. 触发观察：LVI-ReID 不只是终身学习，也不只是可见光红外 ReID。连续到来的新域同时带来域差异和模态差异，小 memory bank 反复重放还会过拟合旧样本，导致适应性和抗遗忘能力一起下降。
+
+2. 重定义动作：作者把问题拆成两个指标轴：`domain adaptability` 和 `anti-forgetting ability`。再进一步说，二者的下降来自 `domain semantic gap` 和 `modality semantic gap`。这让方法可以自然分成一个管适应、一个管遗忘。
+
+3. 机制怎么长出来：DMM 在图像层面对 memory bank 样本做域和模态混合，增加有限重放样本的多样性，主攻抗遗忘。CDCN 在特征层面建相机认知节点和图卷积，建模同模态一致性、跨模态相似性、跨域共享，主攻适应性。一个在 rehearsal 阶段用，一个在 adaptation 阶段用，逻辑上刚好对应两类退化。
+
+4. 证据闭环：关键不是只报最终涨点，而是分别证明 DMM 和 CDCN 的角色。消融显示 DMM 提升抗遗忘但会牺牲适应性，CDCN 提升适应性并改善记忆，二者组合互相补偿。另一个关键证据是 DMM 只放在重放阶段最好，放在适应阶段会污染相机认知节点。
+
+5. 审稿人为什么买账：这篇卖的是“二维问题拆解”。DMM 和 CDCN 单看都不算特别新，但它们分别对应抗遗忘和适应性，组合后形成闭环，所以贡献来自问题结构化，而不是单个零件。
+
+## 4. Lifelong Visible-Infrared Person Re-Identification with Prompt Pool and Instance-level Prompt Generator
+
+1. 触发观察：终身提示学习里，固定 prompt pool 能记共享知识，但容量和任务数绑定；实例级 prompt 适应性强，但长期共享和连续记忆弱。LVI-ReID 还要求测试时没有任务标签，只能自己判断当前输入该用什么提示和分类器。
+
+2. 重定义动作：作者把 LVI-ReID 从“持续更新模型”改成“任务无关的提示选择和实例级提示生成”。关键词是 `Prompt Pool`、`Instance-level Prompt Generator`、`query-key mechanism`、`task-agnostic inference`、`parameter scalability`。
+
+3. 机制怎么长出来：Prompt Pool 保存跨任务共享和域相关提示，IPG 根据输入 token 和推断出的任务标识生成实例级提示。查询键机制用类 token 选 prompt，用额外 query token 选分类器和任务标识。这样固定池负责连续性，实例生成器负责细粒度适应。
+
+4. 证据闭环：表 2 是核心。IPG 单独用时，后期比基线明显好，说明实例提示抗遗忘有效；Prompt Pool 单独用时，任务越多记忆优势越明显；两者组合最好。图 5 的 key 选择频率从训练前随机变成训练后有结构，证明模型确实学会了无任务标签的路由。
+
+5. 审稿人为什么买账：这篇卖的是 prompt learning 在 LVI-ReID 中的可扩展用法。新意不在 prompt 这个概念，而在把固定池和实例生成做成互补结构，并用 task-agnostic inference 解释现实部署价值。
+
+## 5. Local-Aware Residual Attention Vision Transformer for Visible-Infrared Person Re-Identification
+
+1. 触发观察：CNN 有局部性但缺全局依赖，ViT 有全局建模但越深越全局化，patch 之间越来越相似，浅层颜色、纹理、局部细节被冲淡。作者用 GradCAM 和特征相似矩阵先把这个现象可视化出来。
+
+2. 重定义动作：作者把 VI-ReID 的困难从“模态差异”重说成“Transformer 过度全局化和特征坍缩导致局部低层线索丢失”。关键词是 `over-globalization`、`feature collapse`、`low-level cues`、`Local Residual Attention`。
+
+3. 机制怎么长出来：既然 patch embedding 里有卷积局部感受野，就用 PCR 对 patch 做通道重权重；既然低层局部关系会在深层消失，就用 LAR 把局部区域的注意力关系从浅层残差传到深层；既然 VI-ReID 还有模态差异，就用 CAL 适度拉近可见光和红外中心，而不是过强压缩。
+
+4. 证据闭环：最关键的是图 2 的相似矩阵，它直接支撑“深层 patch 变得过度相似”的重定义。表 4 中基线 62.2/57.5，加入 PCR、LAR、CAL 后逐步提升，完整模型到 76.7/72.9。后续还有局部分区、注意力残差、热力图、t-SNE 和类内类间距离可视化。
+
+5. 审稿人为什么买账：这篇卖的是诊断视角加机制。它不是泛泛地说“加局部特征”，而是先证明 ViT 在 VI-ReID 中会丢失低层局部差异，再让 PCR 和 LAR 顺着这个诊断长出来。
+
+## 6. Mask-Aware Hierarchical Aggregation Transformer for Occluded Person Re-Identification
+
+1. 触发观察：遮挡 ReID 中，Transformer 的多头注意力虽然能看不同部位，但也会被背景和遮挡物吸引。与此同时，patch 级处理会丢掉像素和局部模式之间的细粒度信息。
+
+2. 重定义动作：作者把遮挡问题从“身体部位缺失”改成“注意力被遮挡污染，并且细粒度局部模式没有被保住”。关键词是 `mask-aware`、`non-occluded body parts`、`foreground semantic embeddings`、`hierarchical feature aggregation`。
+
+3. 机制怎么长出来：如果注意力会看错，就用 HRNet 解析出人体前景 mask，把 mask patch 投影成语义嵌入，和图像 patch、位置、相机嵌入一起送入 Transformer。若高层 patch 太平滑，就聚合第 2、4、10、12 层的 patch 表征做 HFA。若遮挡导致全局特征断裂，就用多分支空洞卷积 DFC 补全不同感受野下的全局信息。
+
+4. 证据闭环：图 1 的注意力热图直接证明 TransReID 会看遮挡和背景，而 MAHATMA 更关注未遮挡人体。表 V 中 MIE、HFA、DFC 分别带来明显提升，完整模型在 Occluded-Duke 达到 73.3 rank1 和 62.3 mAP。图 3 的 t-SNE 进一步显示，随着 MIE、HFA、DFC 加入，遮挡造成的离群特征逐步消失。
+
+5. 审稿人为什么买账：这篇更偏机制稿，但它有清楚的观察闭环。MIE 对应注意力定位错误，HFA 对应细粒度信息丢失，DFC 对应遮挡下全局特征不完整，三个部件虽然多，但各自有明确病因。
+
+共同套路：这些论文都不是先说“我加了一个模块”，而是先找一个具体失败现象，再把它升级成一个新问题词汇。能发的方法稿通常让机制看起来像是从这个新问题自然长出来的，然后用一个消融或可视化证明“这个新问题确实存在”，而不是只证明最终涨点。
+
+########## deep_18 ##########
+已按本地 PDF 用 `pdftotext` 读了方法和关键实验分析。你列的是 6 个文件，其中 Mix-Modality 有 arXiv 版和 ACM 正式版，方法基本一致，但我按两篇分别拆。
+
+**1. Memory-augmented shuffled meta learning for visible-infrared person re-identification**
+
+1. **触发观察**：作者抓住的是现有 VI-ReID 度量学习的两个局限。样本级方法只看局部样本对，中心级方法又把类内复杂变化压成中心，都会低估跨模态同身份内部变化。更具体的是，普通 meta learning 只用一组 query-support，样本利用率是 `1/K`，而 ReID 检索本质上每张图都可能当 query，也可能当 gallery。
+2. **重定义动作**：他们把“跨模态距离没学好”重写成“没有学到全局 meta metric”。关键词是 `shuffled meta learning`、`memory meta learning`、`global meta metrics`、`historical information`、`query-support`。旧问题是模态差异，新问题变成了 query-support 组织方式不足和 batch-local 度量不足。
+3. **机制怎么长出来**：机制基本是顺着重定义推出来的。既然 ReID 是 query 查 support，就把每个身份的可见光和红外样本循环拆成 query/support，让每张图都轮流参与。既然单 batch 不够全局，就用 memory bank 存历史特征，把历史样本当扩展 support。SMR 再约束 V2I 和 I2V 的预测一致性。
+4. **证据闭环**：关键不是总表，而是消融。CE 到 CE+CM 后，RegDB V2I Rank-1 从 59.0 到 88.0，SYSU all-search 从 56.5 到 67.1，证明 meta metric 本身有效。加 SMR 后 RegDB 从 88.0 到 94.1，证明双向一致性有用。去掉 shuffling 后 RegDB 只有 89.3，加回后到 94.1，SYSU 从 63.6 到 68.6，说明“全样本轮流 query-support”不是装饰。MM 的收益较小，更多证明 memory 是辅助增强。
+5. **reviewer 为什么买账**：这篇卖的是视角加度量组织，不是 backbone。novelty 来自把 ReID 检索过程解释成 meta query-support 度量学习，并用 shuffling 和 memory 把这个解释落地。模块本身不算惊艳，但逻辑闭合度还可以。
+
+**2. Meta Pairwise Relationship Distillation for Unsupervised Person Re-Identification**
+
+1. **触发观察**：无监督 ReID 常用聚类或分类式伪标签，但聚类要估类别数，且错误伪标签会滚雪球。作者观察到，单看两张图的相似度很脆弱，但看这对样本周围的邻域结构，能更稳地判断它们是不是同一身份。
+2. **重定义动作**：他们把“给图片估伪身份标签”改写成“给样本对估 pairwise relationship”。关键词是 `pairwise pseudo label`、`pairwise neighborhood structure`、`relationship estimation`、`GCN pseudo label generator`。这一步很关键，因为它绕开了聚类类别数这个老难题。
+3. **机制怎么长出来**：机制很自然。CNN 提图像特征并维护 feature memory，针对样本对构建 k 近邻图，GCN 输入这个 pairwise neighborhood structure，输出这对图是不是同身份。CNN 用 GCN 给的 pairwise label 训练，GCN 又用 CNN 的特征更新，两者交替优化。少量 labeled metadata 只用于启动 GCN，不直接训练 CNN。
+4. **证据闭环**：最关键的消融是和 KNN、相似度阈值、MPLP 比。Market 上相似度阈值是 72.8 Rank-1、39.9 mAP，MPRD 到 83.0、51.1。去掉大量无标签数据训练 GCN 的版本只有 75.8、43.1，说明不是 metadata 本身撑起来的。t-SNE 里加 GCN 后同身份更聚、易混身份分开，直接对应“邻域关系比点对相似度更可靠”。
+5. **reviewer 为什么买账**：这篇真正卖的是任务重写。GCN 是载体，核心 novelty 是把无监督 ReID 从聚类伪身份，改成图结构上的样本对关系估计。它的弱点是用了少量标注身份，严格无监督口径会被质疑，但作者用“只训练 GCN，不训练 CNN”来缓解。
+
+**3. Mix-Modality Person Re-Identification，arXiv 版**
+
+1. **触发观察**：现有 VI-ReID 默认是可见光 query 查红外 gallery，或反过来。但真实系统里 query 和 gallery 往往都是混合模态。旧方法一到混合模态场景就出现 `modality confusion`，同模态不同身份可能比跨模态同身份更近。
+2. **重定义动作**：这篇是典型的“改问题定义”。它说大家以为 VI-ReID 只需要处理双模态互查，其实更实际的是 `Mix-Modality ReID`。关键词是 `new practical paradigm`、`mix-modality testing paradigm`、`modality mixing ratio`、`modality confusion`。
+3. **机制怎么长出来**：机制和问题绑定很紧。既然同模态相似性会干扰身份，CIDHL 就用同身份跨模态中心拉近、不同身份中心推远、同模态同身份样本向中心聚合。既然测试时混合 gallery 中存在同模态桥，MBSOS 就把 query-gallery 直连距离改成经过 gallery bridge node 的最短路径问题。
+4. **证据闭环**：核心证据是先构造 mix-modality 测试集，再看 AGW 等旧方法在不同 mixing ratio 下 mAP 和 mINP 普遍下降，说明新问题真实存在。之后在 AGW、HCTL、DEEN 等方法上加 CIDHL 和 MBSOS，大多指标恢复或提升。t-SNE 显示加 CIDHL 后同身份更聚、不同身份更分，支撑“modality confusion 被缓解”。
+5. **reviewer 为什么买账**：主要买的是新范式，不是 CIDHL 或 MBSOS 本身。loss 和路径优化都不复杂，但它们服务于一个清楚的新评测场景。对 reviewer 来说，这篇的 novelty 来源是“旧协议不实用，新协议暴露新失败模式”。
+
+**4. Mix-Modality Person Re-Identification，ACM TOMM 正式版**
+
+1. **触发观察**：正式版进一步把观察说得更工程化，单模态 ReID 和传统 VI-ReID 都没有覆盖“query 集和 gallery 集同时混合可见光与红外”的情况。作者强调 Rank-1 有时会因为同模态易匹配而变好，但 mAP 和 mINP 下降，说明整体检索质量变差。
+2. **重定义动作**：正式版把这个问题固定成 `MM-ReID`，并把混合比例变成可控变量。旧说法是“跨模态差异”，新说法是“同模态自然相似性会污染跨模态身份匹配”。这个措辞比单纯说 domain gap 更具体。
+3. **机制怎么长出来**：CIDHL 对训练分布动手，要求同身份跨模态中心接近，不同身份无论同模态还是跨模态都远离，并控制同模态同身份样本到中心的距离。MBSOS 对测试距离动手，把 gallery 里的相似模态样本作为桥，重新计算 query 到 gallery 的最短路径距离。
+4. **证据闭环**：正式版的证据链更完整。它先用 mixing ratio 展示旧方法在 RegDB、SYSU-MM01、LLCM 上的系统性退化，再用 `+C`、`+M`、`+C+M` 证明两个机制能迁移到多个基线。δ 和 λ 的消融证明两个超参不是任意选的。t-SNE 则证明 CIDHL 后身份结构更清楚。
+5. **reviewer 为什么买账**：这篇正式版买账点仍然是问题定义。它不是说“我有一个更强损失”，而是说“你们一直评错了实际场景”。这类论文能发的关键，是先把协议变化讲成现实需求，再让机制看起来只是对新失败模式的必要修补。
+
+**5. MoDA，Mixture of Domain Adapters for Parameter-efficient Generalizable Person Re-identification**
+
+1. **触发观察**：DG ReID 里 MoE 方法有用，但通常要全量微调整个 backbone 和多个专家，参数量随源域数增长，分类头也随身份数膨胀。换成 CLIP 这类大模型后，全量微调更不现实，还可能破坏预训练泛化能力。
+2. **重定义动作**：作者把“怎么做更强 DG ReID”重写成“怎么做参数高效、可扩展的 DG ReID”。关键词是 `parameter-efficient`、`frozen CLIP`、`domain adapters`、`global adapter`、`block-aware voting network`、`tunable parameters`。
+3. **机制怎么长出来**：机制很顺。参数效率要求冻结 CLIP，只训 adapter。DG 要保留源域互补性，所以每个源域一个 domain-specific adapter，再加一个 global adapter。ViT 的 adapter 在每个 block 里，如果按传统专家投票要多次 forward，于是提出 block-aware voting，在每个 block 用 CLIP 学到的 ID-specific text tokens 作为 domain prototypes 来算权重。
+4. **证据闭环**：关键证据不是单纯 SOTA，而是性能和参数量一起报。Protocol-1 中 MoDA 用 19.1M 可训练参数，和 57M 到 165M 参数量的方法竞争。Table 6 证明只用 global 或只用 expert 都不如组合，去掉 voting network 也变差。Table 7 证明从第 4 层开始 voting 最好。Table 8 说明加 ID 分类头只带来很小收益，却显著增加参数，支撑“不要分类头”的设计。
+5. **reviewer 为什么买账**：这篇卖的是工程约束下的新视角。它不是发现了新的身份线索，而是把 DG ReID 和 PEFT、CLIP、MoE 组合成一个参数效率故事。reviewer 买账的前提是接受“同等或接近性能，少很多可训练参数”本身就是贡献。
+
+**6. MSP-ReID，Hairstyle-Robust Cloth-Changing Person Re-Identification**
+
+1. **触发观察**：CC-ReID 为了去衣服偏差，常把注意力推向 head 区域，但 human parsing 往往把 face 和 hair 合在 head 里。结果模型看似摆脱衣服，其实转而依赖 hairstyle。作者把这叫 `hairstyle shortcut`。同时，粗暴删除衣服区域会把身体结构和空间上下文也删掉。
+2. **重定义动作**：它把“换衣 ReID 的核心是衣服偏差”改成“换衣 ReID 同时有 hairstyle shortcut 和 clothing structure loss”。关键词是 `hairstyle distraction`、`structural preservation`、`same-identity different-hairstyle`、`cloth-preserved random erasing`。
+3. **机制怎么长出来**：机制是三件套。HSOA 用 HairFastGAN 合成同身份不同发型，强迫 embedding 不依赖发型。CPRE 只在衣服区域内按比例擦除，保留部分衣服像素和身体结构，而不是全删。RPA 用 parsing 监督 attention 强调 face 和 limbs，压低 hair。测试时只用 RGB 图像和 ID 分支。
+4. **证据闭环**：它的证据主要是组件消融和可视化。Tab. 4 展示 HSOA、CPRE、RPA 单独和组合都有收益，三者一起最好。定性图显示 baseline 会被相似衣服或发型干扰，MSP 的 attention 呈现“脸和肢体高响应，头发和大衣服区域低响应”。不过从方法论角度看，它最缺的是一个真实 hairstyle-change 分组评测，现有证据更多证明模块涨点和注意力变化。
+5. **reviewer 为什么买账**：如果买账，买的是“hairstyle shortcut”这个被忽略的 nuisance，而不是 HairFastGAN、random erasing、parsing attention 这些零件。它的 novelty 来源是把 CC-ReID 的失败从衣服扩展到发型，并指出旧方法的 head reliance 其实埋了新捷径。
+
+**共同套路**
+
+这批论文共同的套路是：先找一个旧范式没有显式处理的错位点，比如 batch-local 度量、聚类伪标签、纯双模态协议、全量微调成本、head 区域里的发型捷径，再把它命名成一个新问题。机制通常不复杂，但要和新问题强绑定，最后用“旧设定下的失败现象加针对性消融或可视化”证明不是单纯堆模块涨点。
+
+########## deep_19 ##########
+我按每篇前 8 页方法正文读了，并补读了后半部分的关键消融和可视化页。下面拆的是“创新怎么被构造出来”，不是模块复述。
+
+**1. Multi Queue for Unsupervised Person Re-identification**
+
+1. 触发观察：作者盯上的不是聚类本身，而是无监督 ReID 里 memory bank 和 momentum update 的细节。SpCL、Cluster Contrast 这类方法默认用动量方式更新历史特征，但这会把一个伪身份压成较固定的历史表示，负样本矩阵也缺少足够的类内变化。另一个观察是固定温度系数无法随训练阶段和数据难度调整对难样本的关注。
+
+2. 重定义动作：他们把“memory bank 怎么更新”从实现细节抬成了核心问题。旧说法是无监督 ReID 难在伪标签噪声和聚类质量；他们的新说法是，伪标签生成后，历史特征如何被保存、采样、淘汰，会直接决定对比学习看到的负样本分布。关键词是 multi-queue、historical features、resampling、trainable temperature、hard samples。
+
+3. 机制怎么长出来：机制基本顺着重定义出来。既然问题是单一动量特征不足以表示一个伪身份，那就给每个伪身份维护一个队列，按入队出队保留近期多个历史特征，再随机采样构造负样本矩阵。既然不同数据集和训练阶段难度不同，那就把 InfoNCE 的温度变成可训练参数，让模型自己调节难样本敏感度。
+
+4. 证据闭环：关键证据是队列长度消融和可训练温度消融。队列长度实验说明保留一部分旧特征有利于表示能力，但太长会引入过旧噪声。温度实验显示可训练温度在多个数据集上有效，且温度随训练下降，MSMT17 这类更难数据下降更快，作者用它证明模型确实逐步转向难样本。
+
+5. 审稿人为什么买账：这篇卖的主要是机制，不是很强的新视角。它的真实新意在于把 memory bank 的“更新策略”讲成了负样本分布管理问题。对我们有用的地方是：一个小机制也能发，但前提是你要把它和训练信号分布、难样本日程、过拟合风险绑定起来，而不是只说“我换了一个队列”。
+
+**2. Multi-Branch Clothes-Agnostic Feature Learning for Cloth-Changing Person Re-Identification**
+
+1. 触发观察：已有换衣 ReID 往往回避衣服信息，或者用非衣服描述如体型、姿态、轮廓来学习不变特征。但这些非衣服描述经常不精确，CLIP 文本和细粒度图像之间又有语义差距。作者反过来观察到，衣服描述虽然不该成为最终身份特征，但它可以告诉模型“哪些东西应该被压掉”。
+
+2. 重定义动作：旧问题是“如何避免模型依赖衣服”；新问题是“如何准确定位衣服语义并把它从视觉特征中减掉”。这一步很关键，因为作者不是说衣服文本有用来识别人，而是说衣服文本有用来抑制衣服。关键词是 clothing descriptions、coarse-to-fine、semantic-guided、clothes-agnostic、parsing image。
+
+3. 机制怎么长出来：机制和重定义绑定较紧。先用 human parsing 抠出衣服区域，让多个 LVLM 只描述衣服，并用粗粒度和细粒度提示生成多种衣服 caption。再用 CLIP 相似度过滤，保留最可信的两个描述。SGE 分支让图像特征和衣服文本做注意力，然后从视觉特征里减去衣服相关成分。PIE 分支直接遮掉衣服区域训练，让模型被迫使用更稳定的身体、姿态、局部线索。
+
+4. 证据闭环：关键证据不是单纯 SOTA，而是 caption 数量和模块消融。单 caption 有提升，多模型多粒度 caption 更好，但 caption 太多反而引入冲突语义，说明作者讲的“多样性和噪声平衡”成立。特征图显示 baseline 更看衣服和背景，方法更看脸部、姿态、配饰等稳定区域。局部特征优于全局特征也支撑了细粒度抑制衣服的叙事。
+
+5. 审稿人为什么买账：这篇卖的是视角多于模块。真正的新意是把“衣服语义”从要丢弃的干扰项，改造成可用的负向指导信号。这个构造很值得学：不是增加一个 VLM，而是改变 VLM 语义在任务里的角色。
+
+**3. Multi-feature balanced network for clothes-changing person re-identification**
+
+1. 触发观察：作者注意到换衣 ReID 里单一线索都不可靠。RGB 外观会被衣服误导，mask 或 silhouette 丢掉颜色、脸部和配饰等有用线索，身体局部裁剪又会受背景和局部噪声影响。简单拼接多个特征也不够，因为不同特征权重固定，空间语义也未对齐。
+
+2. 重定义动作：旧说法是“找到一种衣服无关特征”；新说法是“不同衣服无关线索各有缺陷，关键是平衡和协同”。关键词是 multi-feature balanced、clothing-unrelated branch、mask branch、knowledge transfer、background constraint、cross fusion。
+
+3. 机制怎么长出来：机制是三分支。global branch 保留完整 RGB 外观，但用 clothing-unrelated branch 的知识通过 KTM 引导它看衣服无关区域。clothing-unrelated branch 按人体比例裁剪头肩、腿部等受衣服影响较小的区域，用 FAM 分出身份前景和背景，并用背景约束让身份特征靠近全局特征、远离背景特征。mask branch 使用 silhouette 学身体形状，再用双向 cross-attention 把 mask 特征和衣服无关局部特征融合。
+
+4. 证据闭环：作者用分支消融证明 global、clothing-unrelated、mask 都有增益，完整三分支最好。还比较了直接拼接、单向注意力和双向 CFM，证明“融合方式”确实比简单堆特征重要。检索可视化展示换衣场景下返回结果更稳定。不过它对“balanced”的证明还不够强，缺少动态权重或各线索可靠性变化的直接证据。
+
+5. 审稿人为什么买账：这篇更偏机制工程。买账点是它把换衣下的多种稳定线索系统化，且每个分支都有消融支撑。对我们来说，它也暴露一个风险：如果主张叫“平衡”，就最好真的证明平衡过程，而不是只证明多个分支相加有效。
+
+**4. Multi-Granularity Attribute Prompt Learning for Cloth-Changing Person Re-Identification**
+
+1. 触发观察：作者看到现有多模态换衣 ReID 没把属性用充分。AD-ViT、MADE 一类用属性标签，但多是一维 one-hot；CCAF、MIPL 一类用文本，但缺少结构化属性信息；很多方法还依赖人工衣服标签。另一个观察是，像素级遮衣服能做低层解耦，但缺少高层语义指导。
+
+2. 重定义动作：旧问题是“属性能不能作为辅助标签”；新问题是“属性文本能不能作为多粒度提示，明确规定哪些语义该保留、哪些该压制”。关键词是 multi-granularity attribute prompt、attribute-level、caption-level、identity-related、clothing-related、pseudo label。
+
+3. 机制怎么长出来：机制很顺。先用 SCHP 生成衣服擦除图，再用 AAPAR 识别 35 类属性。年龄、性别被当作身份相关属性，头饰、上衣、下装、鞋、配饰等被当作衣服相关属性。然后用模板把属性变成文本，在 raw image branch 和 masked image branch 上用 CLIP ViT 加 visual deep prompt 学图像表示。属性解耦部分把图像特征和身份相关文本拼接，用 triplet 促进保留；对衣服相关文本用负向损失或对抗约束进行压制。BNNeck 用来隔开图像调优和文本对齐，避免一个目标破坏另一个目标。
+
+4. 证据闭环：消融很对题。baseline 加 clothing adversarial attribute 后提升，说明压制衣服属性有效；加 identity-relevant attribute 后继续提升，说明保留稳定属性有效；再加 caption-level 约束提升，说明多粒度文本不是摆设；masked branch 的属性解耦去掉后也下降，说明擦衣服后仍有残留衣服语义。检索可视化显示 baseline 受颜色和款式影响更重，MAPL 更能跨衣服找人。
+
+5. 审稿人为什么买账：这篇卖的是视角。它不是“又用了属性”，而是把属性拆成正向身份语义和负向衣服语义，再用文本提示做多粒度解耦。真正新意来自“属性从标签变成 prompt 化的解耦约束”，同时减少人工衣服标签依赖。
+
+**5. Multi-granularity collaborative constraint feature alignment network for unsupervised person re-identification**
+
+1. 触发观察：无监督 ReID 已经有很多 global-local、多粒度和细粒度方法，但大多默认模型会自己学到不同粒度之间的语义一致性。作者指出，在伪标签噪声和局部特征噪声共存时，模型可能学到的是虚假的互补信息，导致 global、part、patch 之间语义错位。
+
+2. 重定义动作：旧问题是“局部细节不够”；新问题是“多粒度特征之间缺少显式语义对齐”。这一步很强，因为它把多粒度从“多加几个特征”提升为“不同粒度之间需要保持同一个身份语义”。关键词是 explicit alignment、semantic consistency、multi-granularity collaborative constraint、center-constrained filtering、within-sample alignment。
+
+3. 机制怎么长出来：机制围绕对齐展开。Transformer 输出 global、part、patch 三种粒度。多粒度 collaborative loss 把 RTMem 式 instance memory 和 cluster memory 扩展到三种粒度，让每种粒度都参与判别学习。constraint loss 不看样本间关系，而是在同一样本内部，用 part 特征和 global 排名选出语义一致的 patch token，把 part、patch、global 拉到同一个语义方向。聚类阶段也用语义一致的细粒度特征和 global 特征融合成距离矩阵。CCF 模块在 memory bank 初始化前，用 global cluster centroid 过滤偏离身份中心的局部特征。
+
+4. 证据闭环：这篇证据闭环比较完整。消融从只用 baseline，到加多粒度判别损失、加约束损失、加约束聚类、加 CCF，逐步证明每一步都服务于对齐。CCF 过滤比例随训练下降，说明早期局部噪声多、后期特征变稳定；MSMT17 上过滤更强，也符合复杂数据更噪的说法。t-SNE、类内类间距离、rank-list、attention heatmap 都围绕“语义更一致、细节更准确”展开。
+
+5. 审稿人为什么买账：这篇卖的是视角，而且机制绑定很紧。它不是泛泛说多粒度有效，而是说多粒度在无监督下会错位，所以要在损失、聚类、memory bank 三个阶段都做显式对齐。这个构造对我们最值得学：一个好问题重定义，会自然长出一组同向机制。
+
+**6. Multi-Granularity Dynamic Hierarchical Graphs for Video-Based Person Re-Identification**
+
+1. 触发观察：视频 ReID 里，很多方法只建模固定长度的全局时间线索。但人的不同身体部位运动和遮挡规律不同，腿部变化大，躯干更稳定，某些部位会在部分帧被遮挡后又出现。已有水平切分图方法虽然能做局部建模，但切分固定、邻居数量固定，容易连接低相关节点。
+
+2. 重定义动作：旧问题是“怎么建模视频时间特征”；新问题是“怎么按身体部位自适应选择不同长度的时间线索”。关键词是 dynamic hierarchical graph、adaptive multi-granularity temporal clues、part-consistent graph、mutual nearest neighbor、similarity weighted inference。
+
+3. 机制怎么长出来：DHGN 先把每帧特征图水平细分，再按特征相似度聚成自适应语义区域，而不是固定条带。每个语义层级跨帧建图，同一身体部位的节点才互连。边用 mutual nearest neighbor 建，避免低相关节点干扰。GC layer 用相似度加权聚合邻居信息，再用注意力在原节点和邻居信息之间重构残差特征。末端 GFC layer 建全局帧图，用 temporal graph pooling 排除干扰帧。SWIM 再用 gallery-gallery 相似度修正 query-gallery 相似度。
+
+4. 证据闭环：消融非常贴合问题定义。GC、GC+attention、GFC、DHGN、SWIM 分别验证局部动态时间建模、注意力重构、全局时间建模和图库关系推理。粒度数、水平划分数、插入层位置、邻居 K1 和 K2 都直接对应“动态多粒度图是否必要”。节点相似度可视化最关键，它显示遮挡时模型会找长程相似帧，无遮挡时更偏短程运动线索。activation map 和 t-SNE 则证明特征更集中、更可分。
+
+5. 审稿人为什么买账：这篇同时卖视角和机制。核心新意是把视频时间建模从固定全局序列，改成部位级、动态邻居、可变时间范围的图建模。SWIM 更像附加推理增强，真正支撑论文的是 DHGN 对“不同部位需要不同时间线索”的机制化落实。
+
+最后看这批论文，共同套路很明确：作者先不急着造模块，而是把一个已有系统里的次级矛盾抬成主问题，比如 memory bank 更新、多粒度错位、衣服语义怎么用、视频时间线索固定。然后机制必须在多个位置反复服务同一句重定义，最后用消融和可视化证明“这个重定义本身是对的”，而不是只证明最终涨点。
+
+########## deep_2 ##########
+下面按“创新怎么构造”拆，不按模块复述。
+
+**1. A training-free framework for text-to-image person re-identification via query-prototype matching**
+
+1. **触发观察**：作者抓住的是 Text-to-Image ReID 的一个错位，查询是文本，检索目标却是“同一个身份的所有图像”。现有方法大多仍用文本和单张图库图像做实例级相似度，作者称之为 instance-identity mismatch。另一个观察是，TI-ReID 里的文本描述很模板化，文本嵌入容易挤成团，而图库图像特征反而有更清楚的身份簇结构。
+
+2. **重定义动作**：大家以为问题主要是“文本和图像对齐不够好”，作者改写成“实例级文本匹配不符合身份级检索目标”。关键词是 identity-level structure、Query-Prototype Similarity、image-side identity anchors、training-free refinement。它不是说再训一个更强对齐模型，而是说图库本身已经有身份结构，应该在推理时被用作先验。
+
+3. **机制怎么长出来**：机制几乎是从重定义自然推出的。既然图像侧身份结构比文本侧稳定，就把图库图像聚类成 prototype；既然单张图像匹配容易被 hard positive 或 hard negative 干扰，就把 Query-Gallery 相似度和 Query-Prototype 相似度融合；既然聚类粒度难固定，就加多阶段 PDE 和 ACE 自动估计 prototype 数。这个机制和问题绑定得很紧，核心不是“聚类新”，而是“推理时用图像身份原型校准跨模态实例分数”。
+
+4. **证据闭环**：最关键的证据不是 SOTA 表，而是作者比较 Text-to-Image 和 Text-to-Prototype 的距离统计。T2P 能降低同身份距离、增大异身份距离，说明 prototype 确实更身份稳定；但 T2P 的 Rank-1 不总是超过 T2I，所以作者用“融合”而不是“替代”，这就把机制选择讲圆了。后续 ACE 的估计值接近手调值、cluster purity 和 ID fragmentation、与 k-reciprocal、RWR、CSLS 的公平比较，以及“Prototype-in-Training 反而掉点”都在证明：原型更适合作推理期身份先验，而不是训练监督。
+
+5. **reviewer 为什么买账**：这篇卖的是视角，不是模块。聚类、原型、重排序都不新，但它把 TI-ReID 的核心矛盾讲成“身份级检索目标和实例级匹配分数不一致”，然后用训练无关的推理校准解决。真正的 novelty 是问题重定义加使用位置，原型从训练期监督转成推理期身份锚点。
+
+**2. A2HA: Attribute-aware hierarchical alignment for text-image person re-identification**
+
+1. **触发观察**：作者观察到两层失败。第一，global image-text matching 太粗，分不开外观相似但细节属性不同的人。第二，以前的 attribute-aware 方法也不彻底，常常只抽文本属性，再和全局图像特征匹配，粒度不对；或者把属性当辅助监督，最后被身份分类和实例对齐压住。
+
+2. **重定义动作**：它把“跨模态对齐”改写成“多语义层级的对齐失衡”。大家以为加属性就够了，作者说不是，属性必须成为核心优化目标，而且要同时处理 instance-level、identity-level、attribute-level。关键词是 hierarchical alignment、coarse-to-fine、dual-dimensional、dual-directional、attribute-level false positive 和 false negative。
+
+3. **机制怎么长出来**：既然问题是属性粒度不匹配，就先用 Grounded SAM 得到图像属性区域，用 ChatGPT 抽文本属性，构造 attribute-enriched datasets。既然属性对齐不能只是文本到图像单向，就把属性样本对分成跨模态和模态内两维，再按相似度阈值分成 12 种情况和 6 类样本对。既然问题样本是属性级 false positive 和 false negative，就用属性级 contrastive、triplet、动态权重去打这些样本。逻辑是完整的，但代价是框架很重。
+
+4. **证据闭环**：最关键的是 Table 3，它把“更好的属性数据”和“层级对齐机制”拆开验证：在 ViTAA 上替换属性集有增益，加入 HA 也有增益，两者组合更高。Table 5 和 Table 6 证明 ALA 各损失、GLA 和 ALA 组合确实有效；Table 7 证明 attribute-level 样本划分优于 instance-level 和 identity-level；Table 10、Table 11 和可视化证明属性标注本身质量可用。这些证据是在证明“属性级对齐是独立有效的”，不是只证明总模块涨点。
+
+5. **reviewer 为什么买账**：这篇卖的是“视角加资源”。视角是把属性从辅助信息抬成核心优化层级，资源是三个 attribute-enriched benchmark。机制本身有堆料感，但它用“属性误匹配类型”把堆料组织成一个新问题，因此比简单加属性分支更容易过审。
+
+**3. ADA framework for unsupervised domain adaptation person re-identification**
+
+1. **触发观察**：作者从 UDA ReID 三类主流方法的痛点切入：特征对齐常要辅助信息，图像风格迁移依赖 GAN 且训练不稳，聚类伪标签会传播错误。另一个观察是，卷积的局部感受野不足以处理跨域干扰，标准 self-attention 又贵且常要改 backbone。
+
+2. **重定义动作**：它把“域适应靠伪标签或分布对齐”改写成“域适应也可以由一个轻量架构原语提供”。关键词是 Sandwich Attention Primitive、SAAB block、sparse self-attention augmented domain adaptation、plug-and-play、deployment flexibility。作者的语言重点不是“我们修伪标签”，而是“我们提供一个能插在不同网络层级的适应原语”。
+
+3. **机制怎么长出来**：机制是把 ResNet bottleneck 里的局部卷积替换成一个“卷积分支加稀疏注意力分支”的 SAP，再用 SAAB block 包起来，插在 backbone 不同 stage 后面。稀疏注意力有五种可替换实现，训练仍然用 DBSCAN 伪标签、分类损失和 triplet loss。这个机制和“跨域需要长程身份线索、抑制背景干扰”有关系，但绑定不算特别紧，更多是把已有 attention augmented convolution 思路迁移到 UDA ReID。
+
+4. **证据闭环**：它的证据主要证明“泛化性”和“插件价值”。五种稀疏注意力在多个数据迁移组合上都能涨；把稀疏注意力换成普通 3×3 卷积会掉；换 IBN-ResNet50 和 ViT 仍有效；不同插入位置有系统比较；复杂度表说明开销可接受；热力图显示注意力更集中在人身区域。这个闭环能证明“ADA 是个通用可插模块”，但对“为什么就是域不变身份特征”证明相对弱。
+
+5. **reviewer 为什么买账**：这篇卖的是机制和工程覆盖面，不是特别强的新视角。它的审稿说服力来自大范围 ablation 和多配置一致性。对我们来说，这类文章提醒一点：如果只是“新 attention 插件”，必须靠非常广的消融和部署灵活性撑住；否则容易被看成架构拼装。
+
+**4. Adaptive Occlusion-Aware Network for Occluded Person Re-Identification**
+
+1. **触发观察**：作者抓住遮挡 ReID 里两种局部特征方案的失败。人工水平切块会因为尺度和姿态导致部位错位；姿态估计能缓解错位，但对噪声敏感，还会忽略包、伞、手提物这类非身体但有身份辨识度的线索，而且引入额外模型复杂度。
+
+2. **重定义动作**：它把“遮挡 ReID 需要姿态对齐”改写成“局部区域应该是自适应且遮挡感知的，姿态只能作为弱监督，不应成为测试期依赖”。关键词是 Adaptive Position Extractor、Occlusion Awareness Module、adaptive body positions、suppress occluded parts、highlight non-occluded parts。
+
+3. **机制怎么长出来**：既然固定切块错位，就用 learnable part catchers 自己找头、上身、大腿、小腿。既然姿态估计有用但不可靠，就用 PifPaf 产生训练标签，但 APE 通过 cross-attention、self-attention 和浅层 FPN 特征学出自己的区域图。既然遮挡区域不该等权比较，就在测试时用 OAM 根据 part map 面积计算可见权重，两张图比较时取对应部位较小权重，压低遮挡部位的距离贡献。
+
+4. **证据闭环**：关键证据很直接。APE 单独带来大幅提升，在 Occluded-Duke 上 mAP 和 Rank-1 分别涨 18.4 和 16.9；OAM 再带来 2.6 和 2.9。部位数实验说明 4 个部位最合理，太多会冗余，6 个会忽略左右区分。最有说服力的是可视化，APE 在姿态标签错误时仍能抽对区域，能避开伞遮住的头部，还能抓住姿态估计忽略的手提包。这是在证明“自适应区域优于姿态输出”，不是只证明最终分数涨。
+
+5. **reviewer 为什么买账**：这篇卖的是机制，也有一个清楚视角：姿态估计不是最终答案，而是带噪 teacher。它的新意不在“用部位”或“用遮挡权重”，而在把部位定位和遮挡权重都从图像本身自适应学出来，并用可视化证明它比姿态标签更贴合 ReID。
+
+**5. Adaptive Pseudo-Label Purification and Debiasing for Unsupervised Visible-Infrared Person Re-Identification**
+
+1. **触发观察**：作者把 USVI-ReID 的伪标签噪声拆成三个具体后果：伪标签初始化的 memory bank 不可靠；错误伪标签会建立错误跨模态对应；对比学习里的负样本可能是假负样本，形成 sampling bias。这个观察比“伪标签有噪声”更细，因为每个后果都能对应一个机制和一组证据。
+
+2. **重定义动作**：它把“过滤或降权噪声伪标签”改写成“伪标签需要 purification and debiasing 的完整流程”。关键词是 calibration-then-division、clean subset、noisy subset、Optimal Transport Prototype Matching、Debiased Memory Hybrid Learning、Neighbor Relation Learning。它不是把所有样本丢进同一个损失，而是把干净标签和噪声标签分流处理。
+
+3. **机制怎么长出来**：既然 cluster 内有可靠和不可靠样本，就用 κ-reciprocal Jaccard 相似度和 similarity counter 找可靠样本建 prototype，再校准伪标签。既然校准后仍有噪声，就用线性 feature-label 模型和稀疏异常项把样本分成 clean 与 noisy。既然跨模态 cluster 数不一致，就用 optimal transport 做 cluster-level many-to-many matching。既然 clean 里仍有假负样本风险，就用 debiased contrastive learning 修正负项。既然 noisy 样本不能浪费，就用 NRL 不依赖伪标签地学邻域关系。
+
+4. **证据闭环**：这篇的证据闭环是六篇里最像“问题分解验证”的。APCD 提升伪标签 ARI，clean subset 的伪标签准确率显著高于全量数据；APCD 还提升跨模态对应准确率。OTPM 用同样 prototype 和 PGM 比，四个聚类指标都更好。DMHL 加 OTPM 相比 baseline 大幅提升，证明跨模态对应和去偏 memory 有效。距离分布、t-SNE 和检索可视化进一步证明同身份跨模态更近、异身份更远。这些证据都对应开头的三个负面后果。
+
+5. **reviewer 为什么买账**：这篇卖的是视角化的问题分解。伪标签校正、OT、memory、邻域学习都不是完全新，但作者把“噪声伪标签伤害模型”的泛泛说法拆成可测的三类机制，再逐个闭环。真正 novelty 来自流程组织和干净、噪声两路学习，而不是某一个单独模块。
+
+**6. Adaptive transformer with Pyramid Fusion for cloth-changing Person Re-Identification**
+
+1. **触发观察**：作者抓住换衣 ReID 的两个常见依赖：一类靠姿态、轮廓、步态等生物线索，遇到遮挡、低光、质量差会不稳；一类做衣服与身份解耦，可能引入额外计算、失真和训练不稳定。另一个关键观察是 ViT 不同层的 attention map 关注内容明显不同，但很多 ReID 模型只用最后一层。
+
+2. **重定义动作**：它把“换衣必须引入外部生物特征或做衣服解耦”改写成“RGB 图像内部的 Transformer 层级和频域结构已经含有身份线索，只是没被充分聚合”。关键词是 auxiliary-free、multi-layer dynamic concentration、local pyramid aggregation、FFT self-attention、frequency-domain structural details。天气数据集 VC-Clothes-W&R 又把问题扩展成更自然的换衣场景。
+
+3. **机制怎么长出来**：既然不同 Transformer 层看不同内容，就用 MLDC 给 12 层动态加权，并用层间相关惩罚减少冗余。既然全局层融合会丢局部，就用 LPAM 选第 3、6、9、12 层做金字塔式局部融合。既然 gait 和结构细节可能体现在频域，就把 FFT 放进 self-attention 里做频域相关。训练上只用 ID loss、triplet loss 和自适应 loss 权重。机制和“多层多尺度”绑定较紧，和“FFT 捕捉步态结构”的绑定稍弱，需要更多专门证据。
+
+4. **证据闭环**：Table 7 证明 MLDC、LPAM、两者组合和 FFT 逐级带来增益，而且在多个换衣数据集上都有趋势。层选择实验说明 3、6、9、12 覆盖低中高层最优；自适应 loss 权重优于手调固定权重；t-SNE 和检索可视化显示同身份聚得更紧。VC-Clothes-W&R 上也有 SOTA 结果，但作者自己承认雨风场景下降幅度不一定比别人小，所以“天气鲁棒”不是最强闭环，“RGB-only 多层多尺度换衣识别”才是主闭环。
+
+5. **reviewer 为什么买账**：这篇卖的是机制和数据集，视角中等。它比普通模块文强的地方是把“外部生物线索依赖”转成“Transformer 内部层级身份线索复用”；弱点是多层融合、金字塔、FFT 都是常见工程语言，需要靠跨数据集消融和新数据集来撑住 novelty。
+
+**共同套路**
+
+这批论文共同套路不是先想一个模块，而是先找一个“任务定义和现有做法之间的错位”：身份级目标却做实例级匹配，属性级差异却只做全局对齐，伪标签噪声却只当成一个整体，遮挡局部却依赖固定切块或姿态输出。然后作者把错位改写成新问题，再让机制像自然后果一样长出来。最能打动 reviewer 的证据也不是总表涨点，而是证明这个重定义本身成立的实验，比如原型距离统计、属性划分对照、伪标签 ARI、APE 超过姿态标签的可视化。
+
+联网辅助核对过的相关先例包括 IRRA、APTM、ViTAA、RPNR、CAL、BPBreID、PGFA、Attention Augmented Convolution 等，主要用于判断这些论文是在复用已有零件，还是改变了问题讲法。参见：IRRA citeturn9search0，APTM citeturn10search2，ViTAA citeturn10search0，RPNR citeturn9search2，CAL citeturn11search0，BPBreID citeturn12search1，PGFA citeturn13search2，Attention Augmented Convolution citeturn12search3。
+
+########## deep_20 ##########
+我没有额外联网，这次判断基于本地 PDF 的方法、相关工作和消融。你当前列了 6 篇，我按这 6 篇逐篇拆。
+
+**1. Multi-Model Synergy Perception for Open-World Person Re-Identification**
+
+1. 触发观察：作者先做了一个探索实验，用普通多源 DG ReID 训练 4 个源域，发现小规模域先收敛，大规模域还没学完时，小规模域和开放测试域已经开始退化。这个观察把问题从“多源数据越多越好”拉回到“多源规模不平衡会导致训练崩塌”。
+
+2. 重定义动作：他们把旧问题“学习域不变特征”改写成“在保持域多样性的同时构造域平衡”。关键词是 biased source domains、domain balance、domain diversity、asynchronous training、divide and conquer、synergy perception。核心话术是，简单重采样会丢掉大域知识，简单联合训练会被规模偏置拖垮，所以需要一种不丢信息的平衡学习范式。
+
+3. 机制怎么长出来：ATP 很自然，大域拆成多个批次，每个批次和小域共享批次组合成平衡子域，再用多个子模型并行学。接着他们说多子模型会带来“各自只看一部分知识”的问题，于是用 SSP 对齐特征关系矩阵，用 CCD 做中心 logit 蒸馏，用 PGD 做部位关系图蒸馏。ATP 和重定义绑定最紧，SSP/SDP 是从“多子模型副作用”推出的补丁，PGD 稍微有堆模块感。
+
+4. 证据闭环：最关键不是 SOTA 表，而是 Fig.1 的训练退化观察、ATP/SSP/CCD/PGD 的逐项消融、极端域不平衡设置下的敏感性实验、和集中训练或简单集成的比较。可视化用 Grad-CAM 和 t-SNE 说明 SDP 后关注区域更完整、域分布更紧。这个闭环在证明“域规模偏置确实存在，平衡子域加协同学习确实对症”。
+
+5. reviewer 为什么买账：这篇卖的主要是视角和训练范式，不是某个单独模块。真正 novelty 来自把开放世界 ReID 的多源训练失败归因到“规模不平衡导致的 collapse risk”，再给出一个能保持大域信息的异步并行范式。
+
+**2. Multi-Scale Dynamic Fusion for Visible-Infrared Person Re-Identification**
+
+1. 触发观察：VI-ReID 中可见光和红外的成像差异导致清晰度、纹理、噪声、背景和姿态都不一致。作者还抓了一个测试期现象，训练时 VIS 和 IR 可以按批次平衡，但测试时一个 query 对多个 gallery，query-gallery 和 gallery-gallery 的信息量不均衡会影响匹配。
+
+2. 重定义动作：他们没有只说“模态差距”，而是把问题拆成复杂动态场景下的局部细节、长程上下文、多尺度空间结构、测试期相似度噪声。关键词是 multi-scale dynamic fusion、dynamic perceptual enhancement、feature reweighting with similarity、local and long-range dependencies、information imbalance。
+
+3. 机制怎么长出来：DFF 用动态卷积分支抓局部，用注意力分支抓长程依赖。DPE 用不同 dilation 的 deformable dilated convolution 生成多尺度 embedding。MHC loss 让跨模态 embedding 拉近，让同模态生成 embedding 保持差异，OGM loss 抑制冗余。FRS 在匹配阶段利用 query-gallery 和 gallery-gallery 的 top-k 相似度增强。机制和问题是一一对应的，但整体更像“把每个痛点配一个模块”，不是从单一观察自然推出。
+
+4. 证据闭环：他们做了 DFF、DPE、FRS 的逐项消融，也做了 MHC 和 OGM 的损失消融。还有模块插入 stage 的实验、DPE 和已有 DEE 模块的对比、DPE 分支数和超参敏感性、t-SNE、类内类间距离、Grad-CAM 和检索结果可视化。闭环重点是证明每个动态因素都能单独贡献，而不是一个模块偶然涨点。
+
+5. reviewer 为什么买账：这篇主要卖机制组合，不是特别锐利的新视角。novelty 来源是“动态、多尺度、局部加全局、训练加匹配”的完整工程闭环。对我们有用的教训是，如果观察不够尖，消融就必须非常密，才能让组合稿显得可信。
+
+**3. Multi-year long-term person re-identification using gait and HAR features**
+
+1. 触发观察：普通 ReID 默认外观短期稳定，但真实长时场景里衣服、光照、地点和年份都会变。作者把场景放到 2020 到 2023 的越野跑视频，外观线索不可靠，步态相对稳定，但单纯步态又缺少行为上下文。
+
+2. 重定义动作：他们把 ReID 从“图像外观匹配”重定义成“跨地点、跨年份的运动生物特征识别”。HAR 也不是作为动作分类任务，而是作为步态身份表示的上下文补充。关键词是 long-term、spatio-temporal ReID、gait、HAR、cross-year、motion-based multimodal representation、context-aware activity cues。
+
+3. 机制怎么长出来：先用检测、跟踪和分割得到 silhouette 序列，再用 gait backbone 提取部位级步态特征。方法里一个细节很关键，他们承认 BiLSTM 处理的是身体水平部位序列，不是真正时间序列，用它建模部位之间的结构关系。HAR 分支用预训练视频 backbone，做 context-constrained crop，最后让 gait 作为 query 去 attend HAR，保证身份主线仍由 gait 主导。机制和重定义绑定比较紧，技术本身不新，但角色分配清楚。
+
+4. 证据闭环：关键证据是新数据集的 same-year 和 cross-year 协议、外观模型、gait-only 和 gait-HAR 的对比、CMC 曲线，以及 cross-attention、cosine fusion、concatenation 的融合策略消融。他们还强调 HAR 在更难的跨年设置里增益更明显，这直接支撑“行为上下文在长时 ReID 中有价值”。
+
+5. reviewer 为什么买账：这篇卖的是问题设定和证据，不是复杂模块。novelty 来源是长时真实数据、跨年评测和“HAR 作为步态上下文”的视角。审稿人买账的前提是，这个场景足够真实，且对照能说明不是普通视频 backbone 更强，而是 HAR 补了长期身份线索。
+
+**4. Mutual Distillation Driven Dual-Space Matching for Visible-Infrared Person Re-Identification**
+
+1. 触发观察：VIS 有颜色和纹理，IR 是灰度、边界模糊、细节少，导致特征空间错位。作者还指出图像级生成方法需要严格配对、成本高；特征级方法更稳定，但常只学到轮廓和粗结构，深层语义还会丢失。
+
+2. 重定义动作：他们把 VI-ReID 的瓶颈重定义成两个问题：低层和高层语义难以跨模态对齐，VIS 和 IR 在无边界 latent space 中存在分布不一致。关键词是 dual-level fusion、modality invariant augmentation、dual-space matching、Euclidean space、Hilbert space、mutual distillation、pixel-level alignment。
+
+3. 机制怎么长出来：DLF 在浅层融合低级细节和高级语义，MIA 用水平和垂直池化、分布 mask、多尺度卷积注意力提取细粒度共享信息。DSM 是主叙事，Hilbert Space Matching 用 HSIC 约束全局统计依赖，Euclidean Space Matching 用 EMA teacher classifier 和双向 KL 做互蒸馏，保局部判别和预测一致性。DSM 和“欧氏不够、希尔伯特补全局”的重定义绑定最紧。
+
+4. 证据闭环：Table III 做 DLF、MIA、HSM、ESM 的组件消融，Table IV 验证 DLF 和 MIA 放在哪些层最合适。还有 α 和 τ 的参数分析、VIS-IR cosine distance 分布、t-SNE、Grad-CAM 和 Rank-10 检索可视化。它的证据闭环是证明双空间不只是换名词，确实让跨模态分布更紧、注意区域更对。
+
+5. reviewer 为什么买账：这篇卖的是视角加机制。真正 novelty 是把常见的“跨模态对齐”包装成“欧氏空间保局部身份差异，希尔伯特空间保全局统计依赖，再用互蒸馏让二者一致”。这比单纯说加一个 alignment loss 更像可审的理论化问题定义。
+
+**5. Nearest Neighbor Sample Constraint and ODE Guided Feature Reconstruction for Unsupervised Person Re-Identification**
+
+1. 触发观察：无监督 ReID 的伪标签错误主要集中在聚类边界。聚类中心对比学习稳定但太粗，不处理实例级边界 hard sample；小批次 hard mining 又只能看局部样本，和全局 memory bank 不匹配。同时，作者认为普通残差连接缺少对特征演化过程的建模。
+
+2. 重定义动作：他们把“伪标签噪声”重定义成“最近邻类别边界样本没有被精细约束”。关键词是 nearest neighbor sample constraint、cluster boundary、hard samples、inter-class balance、pseudo-label quality、ODE guided feature reconstruction。这个重定义比“改进聚类”更具体，因为它指出了错误发生的位置。
+
+3. 机制怎么长出来：NNSC 保留聚类中心 memory 维持稳定，同时在实例 memory 中为每个 query 找最远正样本和最近负样本，专门拉开最近邻类别边界。CB loss 用凹函数和 Jensen 不等式解释，当分类概率接近均匀时说明样本处于混淆区，最小化它就是把 hard sample 推离边界。ODE-FR 用三阶隐式 Adams 公式构造残差模块，插到 ResNet 第三层增强表示。NNSC 和 CB 与重定义绑定很紧，ODE-FR 更像第二条“表示能力不足”的补强线。
+
+4. 证据闭环：最关键的是 CB 前后的 t-SNE 边界样本可视化、NNSC/CB/ODE-FR 的逐项消融、NNSC 和传统 contrastive loss 的对比、CB 和其他 loss 的对比、ODE-FR 插入位置和替代模块对比、正负样本距离分布、Top-8 检索可视化。这个闭环能支撑“边界 hard sample 被更好地区分”，但 ODE 理论本身的证据相对弱一些。
+
+5. reviewer 为什么买账：这篇主要卖机制，但机制有一个明确失败点托住。novelty 不是“又挖 hard sample”，而是“中心稳定约束加全 memory 最近邻实例修正”。ODE-FR 提供额外新鲜感，不过真正承重的是边界样本重定义。
+
+**6. Occluded person Re-Identification with noise injection**
+
+1. 触发观察：遮挡 ReID 里车辆遮挡很常见，论文说 Occluded-Duke query 中 vehicle-induced occlusion 占比超过 40%，但车辆图像通常被当成无关噪声丢掉。作者反过来观察到，车辆图像有真实纹理、颜色、视角和相机偏置，而且很容易从车牌系统收集。
+
+2. 重定义动作：这是最值得学的一篇。它把“车辆是噪声”改写成“车辆是有结构的正向噪声”。关键词是 positive noise、positive-incentive noise、structured cross-domain noise、data-centric perspective、vehicle data as valuable training resource、without manual annotations。旧问题是遮挡建模，新问题是如何用真实跨域干扰物降低遮挡识别的不确定性。
+
+3. 机制怎么长出来：INI 很自然，既然车辆会真实遮挡行人，就把真实车辆块贴到行人下半身，形成更物理合理的遮挡样本。ENI 则在 epoch 级别交替车辆和行人，让模型不只记住人类外观模式。网络本身是双分支全局和局部特征，损失是常规 ID loss 加 triplet。机制简单，但和重定义绑定紧，尤其 INI 几乎是从观察直接推出的。
+
+4. 证据闭环：他们做了 ENI only、INI only、ENI+INI 的组件消融，结果显示 INI 单独贡献最大，说明核心不是周期训练，而是真实车辆遮挡模拟。还和 MixUp、CutMix、Hide-and-Seek、GridMask、color jitter 比较，证明不是普通增广。再加 ENI 间隔、INI 高度比例、车辆分辨率、池化类型和推理速度消融，闭环是在证明“车辆作为结构化遮挡源”比随机遮挡和通用增广更对题。
+
+5. reviewer 为什么买账：这篇卖的是视角，不是模块。机制很朴素，但“把会被丢弃的车辆数据重定义为 positive-incentive noise”有反直觉性，又有现实采集优势和强对照消融，所以审稿人容易接受它是数据中心方法创新，而不是普通 copy-paste。
+
+共同套路可以概括成三句话：能发的方法不是先有模块，而是先把一个具体失败现象改写成更窄、更可验证的新问题。机制最好像是从这个新问题自然长出来的，至少要让每个模块都有明确的失败点对应。证据上不能只给 SOTA 和组件消融，还要有一个能反过来证明“原始观察确实成立”的实验，比如极端场景、替代机制对照、可视化、或同类通用方法对照。
+
+########## deep_21 ##########
+我按每篇的 `method/approach` 和必要的实验消融段读，不按摘要概括。下面只拆“创新是怎么构造出来的”。
+
+**1. Occlusion-aware Cross-modality Completion Network for Occluded Visible-Infrared Person Re-Identification**
+
+1. **触发观察**：已有 VI-ReID 大多默认行人完整可见；已有遮挡 ReID 又多是单模态，做法是定位可见区域、丢掉遮挡区域。作者抓住的现象是：在 VI-ReID 里，遮挡不只是少了一块可见信息，还会让可见光和红外的缺失位置、退化形式不同，导致跨模态对齐更坏。
+
+2. **重定义动作**：他们把问题从“如何关注可见区域”改写成“如何补全缺失身份线索”。关键词是 `completion perspective rather than discarding`、`cross-modality feature completion`、`token-level completion`、`region-level completion`、`multi-distribution consistency`。这一步很关键，它把旧问题里的“遮挡鲁棒特征提取”升级成“遮挡 VI-ReID 的跨模态补全”。
+
+3. **机制怎么长出来**：机制基本顺着重定义推出。既然是缺失补全，就先在单模态内部用语义图引导 token 互相补，再在区域级从另一模态软查询互补信息，最后用 MCA 让 token 补全、region 补全和伪整体分布一致。GFCT、SRCM、MCA 不是孤立模块，逻辑链是“局部缺失、跨模态不一致、多路径补全需一致”。
+
+4. **证据闭环**：关键证据不是单个 SOTA 表，而是模块组合消融。GFCT、SRCM、MCA 单独加都涨，GFCT+SRCM 比单独更好，完整组合最好；MCA 又和直接互相对齐对比，证明“对齐到伪整体参考”比简单两路互拉更合理。另一个闭环是他们构造了语义遮挡数据集，并和随机擦除对比，说明他们讨论的是更真实的遮挡，而不是普通增强。
+
+5. **reviewer 为什么买账**：买账点主要是视角和任务定义，不是图注意力或 KL 本身多新。它把“遮挡 VI-ReID”讲成一个尚未充分处理的交叉问题：缺失身份线索和跨模态错位同时发生。因此模块虽然常见，但被一个清楚的问题链条串住了。
+
+**2. Optimal Illumination Distance Metrics for Person Re-Identification in Complex Lighting Conditions**
+
+1. **触发观察**：传统复杂光照 ReID 要么学光照不变特征，要么把图片统一到标准光照。作者先做了一个很具体的观察：同一图像对在不同光照下距离不同，而且每个图像对都有自己的最小距离光照；最优光照不一定是正常光照。
+
+2. **重定义动作**：他们把光照从“要消除的干扰”改写成“检索距离里的可选择条件”。关键词是 `optimal illumination`、`optimal illumination distance`、`distance replacement`、`each image pair has a unique optimal lighting`。旧问题是做光照归一化，新问题是为每个图像对选择最能表达语义距离的光照状态。
+
+3. **机制怎么长出来**：机制非常直接。先用 GAN 把图库归一到正常光照，再用一组预定义光照生成器产生多种光照版本；对每种光照都提特征并算距离矩阵，最后在距离矩阵通道上取最小值作为最终检索距离。这个方法简单，但和观察绑定很紧：既然每对图像存在最小距离，就枚举光照并取最小距离。
+
+4. **证据闭环**：最关键的是三类对比：随机替换、部分随机替换、固定光照替换，都不如最优光照选择。作者还统计 replacement 和 effective replacement，承认并分析“并非每次替换都有效”，这反而让论证更可信。图像对距离随光照变化的分析图，是支撑重定义的第一证据。
+
+5. **reviewer 为什么买账**：这篇卖的是视角，不是模型复杂度。它的 novelty 来自把“统一光照”反过来讲成“统一光照可能丢失最优语义距离”，然后给出一个可验证的距离替换框架。弱点也明显：枚举预定义光照很粗，但观察足够具体。
+
+**3. Optimal Proxy Mining Contrastive Network for Unsupervised Person Re-Identification**
+
+1. **触发观察**：无监督 ReID 的代理对比学习依赖伪标签和 camera-aware proxy，但正负样本选错会严重伤训练。作者抓住两个反直觉点：对应 proxy 太容易，优化信号弱；所有同簇 proxy 都当正样本又太杂，会让方向不清。另一个观察是，同相机 proxy 往往背景和视角相似，会干扰假负样本挖掘。
+
+2. **重定义动作**：他们把问题从“如何生成更好伪标签”改成“如何选择最有训练价值的 proxy 对”。关键词是 `optimal proxy mining`、`hardest camera proxy`、`false negative proxies mining`、`misaligned contrastive pairs`、`camera-constrained hard negative mining`、`anti-noise ranking`。这让创新点落在训练信号选择，而不是聚类算法本身。
+
+3. **机制怎么长出来**：HCPM 假设当前伪标签基本可信，从同簇里找和 query 最不相似的相机 proxy 当 hardest positive，再从这个 hardest camera 里找 hard negatives，控制背景和视角因素。FNPM 则承认伪标签有噪声，先排除同相机 proxy，再按相似度排序挖潜在假负样本，并用同 proxy 多 query 排名求和做抗噪。PKGC 是额外的特征增强，用多尺度全局上下文让网络看身份相关区域。
+
+4. **证据闭环**：关键消融是正样本选择策略对比：corresponding proxy、all proxies、hardest positive proxy，以及是否使用 CCHNM。FNPM 部分又验证了排除同相机 proxy 和 anti-noise ranking 的作用。可视化包括 t-SNE、Top-10 检索和 Grad-CAM，用来证明不是只涨点，而是类内更紧、类间更开、注意力更落在人身上。
+
+5. **reviewer 为什么买账**：真正买账的是“proxy 不是越多越好，也不是越近越好，而是要按相机和噪声结构选最有信息的对比对象”。PKGC 相对像常规增强，novelty 主要来自 proxy mining 视角。它把无监督 ReID 的噪声问题讲成了“对比对构造错误”的问题。
+
+**4. Part-Based Feature Complementary Denoising for Unsupervised Person Re-Identification**
+
+1. **触发观察**：USL ReID 大多用全局特征聚类生成伪标签，但全局特征会偏向最显眼外观，遇到衣服颜色相似、局部细节不同的人容易混。已有局部特征方法又常把局部特征单独聚类或单独监督，忽略全局和局部的互补。作者还指出一个更细的问题：伪类别内部也有噪声，会把类中心拉偏。
+
+2. **重定义动作**：他们把问题从“伪标签有噪声”改成“伪标签噪声来自全局特征偏置和伪类内部低置信特征”。关键词是 `part-based feature complementary denoising`、`global-local complementarity`、`within pseudo-class noise`、`low-confidence feature denoising`、`modular knowledge distillation`。
+
+3. **机制怎么长出来**：如果全局有偏，就把上半身、下半身局部特征和全局特征加权融合，并把全局、局部 Jaccard 距离融合后再聚类，保证伪标签来自互补视角。若伪类内部有低置信噪声，就用 GMM 根据识别损失估计置信度，再用高置信样本估计高斯先验，对低置信特征做特征级去噪。MKD 则用训练好的 teacher 带 student，缓解早期伪标签不稳。
+
+4. **证据闭环**：它的闭环比较完整。PFCS、GFD、MKD 分别消融，三者组合最好；t-SNE 展示 baseline、去掉 MKD、去掉 GFD、完整模型的聚类紧致度差异；Top-5 检索可视化显示错误匹配减少。阈值 δ 的实验也重要，说明“只去噪低置信样本”这个定义是对的，扩大去噪范围反而会掉。
+
+5. **reviewer 为什么买账**：这篇卖的是机制和训练流程，但背后的视角也清楚：局部特征不是另一个分支，而是提高伪标签质量和去噪可靠性的补充证据。它不是发明一个新零件，而是把“局部互补、类内去噪、教师稳定”包装成一个一致的无监督噪声治理框架。
+
+**5. Pose-Skeleton Guided Cross-Attention Representation Fusion for Occluded Pedestrian Re-Identification**
+
+1. **触发观察**：现有遮挡 ReID 常在 backbone 输出后用姿态或解析模型找可见区域。作者抓住一个更深的失败点：到输出层时感受野已经扩大，遮挡信息已经扩散到原本未遮挡区域，后处理式过滤太晚了。同时，关键点热图只覆盖点附近，关键点之间的身体区域会丢信息。
+
+2. **重定义动作**：他们把问题从“如何在输出特征上找可见区域”改成“如何在中间层阻断遮挡信息扩散，并用骨架区域补足关键点之间的外观”。关键词是 `occlusion information diffusion`、`decouple pedestrian features and occlusion information`、`visible appearance region attention`、`skeletal area modeling`、`skeleton-modulated cross-attention`。
+
+3. **机制怎么长出来**：VARA 插在 ResNet 中间层，用姿态热图做前景通道注意力和空间交叉注意力，让 backbone 早一点学习遮挡和行人的区别。SAM 不直接拿关键点热图当 mask，而是根据两端关键点坐标和置信度，把手臂、腿、躯干等 14 个骨架区域建成软 mask。SMCF 再让骨架局部特征作为 query，与 backbone 特征做受 mask 约束的交叉注意力融合。
+
+4. **证据闭环**：最关键消融是 VARA、SAM、SMCF 分开加。VARA 证明中间层抑制有效，SAM 证明骨架区域比点热图更完整。进一步分析 VARA 插入位置，发现中层最好，这正好支撑“输出层太晚、低层语义不够、高层分辨率太低”的重定义。SAM 的 α、γ、T 可视化和不同遮挡程度可视化，也在证明骨架区域建模确实覆盖可见身体而抑制遮挡。
+
+5. **reviewer 为什么买账**：这篇真正卖的是“遮挡信息扩散”这个视角。姿态、mask、cross-attention 都不新，但“为什么不能只在输出层用姿态过滤”说得清楚，机制也自然落到中间层和骨架区域建模上。它的可视化证据和参数分析让这个视角比较容易被接受。
+
+**6. Privacy preserving person re-identification via anonymizing diffusion model**
+
+1. **触发观察**：公开 ReID 数据集有隐私风险，已有模糊、加噪、加密、对抗扰动方法多是在原图上“隐藏身份”，并没有消除真实身份关联，人或模型仍可能找回原 ID。纯合成数据隐私好，但和真实 ReID 域差距大；只靠噪声生成又难保证同一合成 ID 的一致性。
+
+2. **重定义动作**：他们把隐私保护从“改造真实图片”改成“用新合成 ID 替换真实 ID，同时保留 ReID 训练效用”。关键词是 `new IDs`、`anonymizing diffusion model`、`privacy-compliant benchmarks`、`ID separation degree`、`privacy-utility trade-off`、`eliminate at source`。这一步把任务从图像脱敏变成了数据集替代。
+
+3. **机制怎么长出来**：既然要新 ID 又要可训练，就用文本控制身份属性，用扩散模型生成。Stage 1 在全数据上微调 Stable Diffusion 学 ReID 风格；Stage 2 在小子集上微调，限制属性重叠，让 prompt 更稳定地绑定视觉模式；class embedding 提高同一合成 ID 内一致性；prompt griddle 重组头发、上装、下装属性生成未出现的新 prompt；ADM griddle 过滤每个 ID 的离群样本。ISD 则量化合成 ID 和真实 ID 的分离程度。
+
+4. **证据闭环**：证据不是只看 ReID 准确率，而是同时看 utility 和 privacy。`Tg/Tu` 证明生成数据还能训练和区分，`Tp` 和攻击检索 demo 证明真实 query 难以找回对应生成 ID，ISD 和余弦距离分布证明生成特征远离真实 ID 中心。消融则验证两阶段微调、class embedding、griddle 过滤分别服务于风格、ID 一致性和样本稳定性。
+
+5. **reviewer 为什么买账**：这篇卖的是视角和基准范式，不是 Stable Diffusion 本身。它把隐私 ReID 从“降低可识别性”改成“替换身份实体”，并且提出 ISD 这种能讨论隐私强度的指标。reviewer 买的是问题定义、数据集替代价值和隐私-效用闭环。
+
+**共同套路**
+
+这批论文的共同套路是：先找一个旧范式默认成立的假设，然后证明它在某个更真实场景里不成立。比如“遮挡就看可见区域”“光照应统一”“proxy 越近越正”“全局特征能代表伪类”“输出层再处理遮挡也来得及”“匿名就是改原图”。
+
+能发的关键不是模块堆得多，而是把观察改写成一个新变量：补全路径、最优光照、最优代理、全局-局部互补、遮挡扩散、新 ID 替代。机制只要顺着这个新变量自然长出来，再用一组能直接反驳旧假设的消融或可视化闭环，reviewer 就更容易买账。
+
+########## deep_22 ##########
+下面按“创新怎么被构造出来”拆，不按模块复述。
+
+**1. Probabilistic Distribution Alignment for Text-Based Person Retrieval**
+
+1. **触发观察**：作者抓住了文本行人检索里的非对称性，文本通常是粗粒度描述，图像是具体实例。一个文本本来对应一组可能图像，而不是一个点对一个点。现有点嵌入把强正样本、弱正样本、相似负样本都挤在同一套距离逻辑里，容易把“语义范围”误当成“特征距离”。
+
+2. **重定义动作**：它把问题从“图文相似度对齐”改写成“文本分布应当包含图像分布”。关键词是 probabilistic containment、semantic scope、partial-order relationship、text as probabilistic envelope。厉害的地方是把方差从“噪声余量”重新定义成“语义覆盖范围”。
+
+3. **机制怎么长出来**：重定义之后，机制基本自然推出。图像和文本都建成高斯分布，均值表示语义中心，方差表示不确定性和范围；DRM 负责分布距离，CMC 让文本分布包含图像分布，IMC 让被遮挡或被掩码的样本分布包含完整样本。机制和叙事绑定很紧，因为每个损失都在维护“包含关系”。
+
+4. **证据闭环**：关键不是只报涨点，而是证明“分布和包含”确实在起作用。消融里 DRM 把 CUHK-PEDES Rank-1 从 75.57 提到 76.41，CMC、IMC 单独和组合继续涨，完整 PDA 到 78.07。热力图显示注意力更贴合文本细节，分布可视化显示文本椭圆覆盖正确图像并排除负样本，这直接回应了“文本是语义范围”的主张。
+
+5. **reviewer 为什么买账**：这篇卖的是视角，不只是机制。它不是又加一个对齐头，而是把 TBPR 的匹配关系从点对点改成非对称包含。novelty 来自“方差等于语义范围”这个解释，以及用闭式包含损失把这个解释落成可训练目标。
+
+**2. Prototype-Driven Multi-Feature Generation for Visible-Infrared Person Re-identification**
+
+1. **触发观察**：VI-ReID 里常见做法是水平切分身体做局部对齐，但行人姿态、视角和运动不规则，水平条带经常语义错位。生成式跨模态图像又容易引入噪声，所以作者转向特征层。
+
+2. **重定义动作**：它把“局部对齐”从固定人体条带改成“潜在语义相似局部的挖掘”。关键词是 prototype-driven、latent semantically similar features、diverse yet closely distributed features、instance-level alignment。旧问题是模态差异，新说法是缺少足够多样但分布接近的共享特征，以及缺少跨模态潜在语义局部。
+
+3. **机制怎么长出来**：MFGM 用多分支膨胀卷积、注意力和中心引导 pair mining 生成多样但靠近共享分布的特征；PLM 用可学习原型给像素级特征加权，挖出跨 VIS/IR 语义相似的局部；Lch 保证原型多样，Ldcs 让类内靠近、类间中心分离。机制和重定义有联系，但比 PDA 弱一些，更像把“潜在局部”问题工程化。
+
+4. **证据闭环**：组件消融显示 PLM、MFGM、Lch、Ldcs 都有贡献，原型数量从 6 到 10 性能提升，超过 10 又下降，说明原型不是越多越好。距离分布图给了更关键的证据：PLM 拉大类间距离，MFGM 缩小类内距离，两者结合间隔最大。t-SNE 和注意力图进一步说明模型确实更集中在行人区域和更清晰的身份簇上。
+
+5. **reviewer 为什么买账**：这篇主要卖机制，不是强视角。novelty 来自把“水平部位不可靠”替换成“可学习原型挖潜在语义局部”，再用多特征生成解决模态分布不够的问题。它可学的一点是：先否定一个常用结构先验，再给出一个数据驱动替代物。
+
+**3. Prototype-guided Knowledge Propagation with Adaptive Learning for Lifelong Person Re-identification**
+
+1. **触发观察**：LReID 要持续学习新域又不能忘旧域，存旧图像有隐私和存储风险。已有原型方法多来自类增量分类，主要调分类器，但 ReID 的核心是检索表征，旧身份原型和新特征提取器之间会产生表征偏差。静态融合旧模型和新模型也忽略不同任务的差异。
+
+2. **重定义动作**：它把“灾难性遗忘”重写成“旧身份原型、新任务特征、更新后特征提取器之间的兼容问题”。关键词是 non-exemplar、prototype-guided knowledge propagation、representation bias、adaptive parameter evolution、compatibility。旧问题是保留旧知识，新说法是让旧知识在新表征空间里继续能区分。
+
+3. **机制怎么长出来**：PKP 保存旧身份原型而不是旧图像，训练新任务时抽样旧原型并加高斯噪声，用改造 triplet 把新任务特征和旧原型云推开，同时用普通 triplet 保持新身份区分。APE 只更新对当前任务梯度影响大的参数，再按任务数据规模动态融合新旧模型。这个机制和重定义绑定较紧，因为它直接处理“旧原型和新提取器不兼容”。
+
+4. **证据闭环**：组件消融很对题。baseline 的 Seen-Avg 是 42.8 mAP/57.4 Rank-1，加入 PKP 到 53.4/66.0，加入 APE 到 54.5/67.8，两者一起到 55.4/68.7；Unseen-Avg 也从 50.7/45.0 到 62.3/55.3。t-SNE 显示 PKA 后类内更紧、类间更分开，证明它不是只调分类器，而是在改善检索表征空间。
+
+5. **reviewer 为什么买账**：这篇卖的是“非样本终身 ReID 的问题重定义”加一个够实用的机制。原型、triplet、参数融合都不是孤立新零件，但组合起来服务于一个清楚约束：不存图像，还要让旧身份原型继续在新表征里有效。
+
+**4. Rethinking Joint Optimization in Feature Compression: Insights from Person Re-Identification**
+
+1. **触发观察**：机器视觉压缩领域普遍认为联合优化更好，但很多联合优化管线末端都有语义解析网络。作者怀疑性能提升到底来自联合优化，还是来自尾部语义解析能力。
+
+2. **重定义动作**：它把问题从“怎么做更好的联合压缩”改成“联合优化的收益来源是什么”。关键词是 disentangle、tailed semantics parsing、information capacity constraint、separate optimization、joint optimization。ReID 被选作工具，是因为它的尾部匹配可以只是欧氏距离，不需要可学习语义解析器。
+
+3. **机制怎么长出来**：机制其实是实验设计。Opt S 分别训练 ReID 和压缩器；Opt JA 联合优化全部模块；Opt JH 冻结 backbone，只联合优化聚合层和压缩器。再用不同压缩率观察什么时候联合优化有效，什么时候反而伤害特征提取。
+
+4. **证据闭环**：关键证据很强。CR=256 时联合优化更好，Opt S 是 26.54，Opt JA 是 40.29；但 CR 小于 128 后反过来，CR=16 时 Opt S 是 80.50，Opt JH 是 76.37，Opt JA 是 72.41。更关键的是原始特征性能，Opt JH_O 稳在 80.8 左右，而 Opt JA_O 只有 54 到 62，证明联合压缩约束伤了特征提取。增强 decoder 后 Opt JA 从 40.07 到 41.66，说明尾部语义解析确实是收益来源。
+
+5. **reviewer 为什么买账**：这篇卖的是反常识视角和干净证据，不是新模块。它用 ReID 构造了一个能隔离混杂因素的实验场景，证明“联合优化好”这个共识并不总成立。方法论价值是：如果能拆掉领域里的混淆变量，负结论也能变成贡献。
+
+**5. Richer Semantics, Better Alignment**
+
+1. **触发观察**：VI-ReID 的可见光和红外图像有大模态差异，视觉特征很难直接对齐。已有 CLIP prompt 方法说明语义空间有帮助，但可学习 prompt 语义不透明、太粗、还要两阶段训练。LLaVA 能生成显式细粒度描述，但跨模态描述会有冲突，比如同一衣服在可见光里是蓝色，在红外里像灰色；同一身份不同视角的描述又互补。
+
+2. **重定义动作**：它把 VI-ReID 从“视觉特征对齐到公共空间”改成“视觉特征对齐到显式且丰富的语义空间”。关键词是 explicit semantics、enriched semantics、indirect alignment、cross-view semantics compensation、one-to-many alignment。它不是简单说“用文本监督”，而是拆成显式语义、跨模态语义冲突、多视角语义不完整三个子问题。
+
+3. **机制怎么长出来**：ESFA 用 LLaVA 给可见光和红外图像生成描述，在各自模态内做图文对齐。CSIA 不直接强拉图像和异模态文本，而是约束“模态内图文相似度”和“跨模态文本相似度”一致，绕开颜色冲突。CVSC 用同身份其他视角文本补偿当前文本，把一对一图文匹配扩成一对多语义对齐。机制和重定义绑定非常紧。
+
+4. **证据闭环**：消融正好对应三个子问题。baseline 单次检索是 71.9 Rank-1/67.6 mAP，ESFA 到 76.3/72.6，加入 CSIA 到 77.4/73.2，ESFA+CVSC 到 77.6/73.7，完整模型到 78.4/74.8。进一步讨论里，显式语义强于隐式 prompt，直接跨模态文本对齐会让 ESFA 变差，而间接对齐会提升，这正好证明了“语义冲突必须间接处理”。
+
+5. **reviewer 为什么买账**：这篇卖的是视角和机制都成立。真正 novelty 不是“用了 LLaVA”，而是把外部语义引入 VI-ReID 后可能遇到的三个障碍逐个定义清楚，并且每个障碍都有对应机制和消融。
+
+**6. RMGNet**
+
+1. **触发观察**：TI-ReID 里很多方法已经做局部图文对齐，但作者指出只看局部对象还不够。两个人都可能有灰外套、黑包，差别在“背着包”还是“穿着包”这样的局部关系。另一个观察是 Hc-Tri loss 很早收敛到 0，后期没有有效监督。
+
+2. **重定义动作**：它把“局部特征对齐”改写成“局部特征之间关系的建模和挖掘”。关键词是 relationship-based matching、progressive relationship-mining graph、intra-modal relationship、cross-modal relationship、continuous effective metric supervision。旧问题是找局部，新问题是理解局部之间的语义关系。
+
+3. **机制怎么长出来**：IMRM 在图像局部和文本局部内部建图，用 GNN 聚合关系信息。TCRMG 特别做了正序和倒序文本图，因为倒序能更早看到“carrying bag”和“wearing bag”这种区分短语。CMRM 再用跨模态 KNN 图建图，学习图文局部之间的关系，并做二分类判断是否匹配。C2FL 先用较松的 Hc-Tri，等它收敛后逐步切到更严格的 Acc loss。
+
+4. **证据闭环**：IMRM 相比全局和局部基线都有提升，F&B-TCRMG 好于只用正序或倒序，CMRM 加上 IMRM 最好。训练证据也对题：Hc-Tri 在约第 20 次迭代就收敛到 0，Acc 和 C2FL 能继续提供监督，C2FL 达到 69.16 Rank-1、86.23 Rank-5、64.57 mAP。热力图和检索例子显示，在外观细节高度相似时，模型能利用“包和人的关系”区分身份。
+
+5. **reviewer 为什么买账**：这篇主要卖机制，但视角也足够明确。GNN 本身不是新东西，关键是作者先证明“局部物体一样但关系不同”是 TI-ReID 的真实失败点，再让图网络承担关系建模，而不是为了用图而用图。
+
+最后看这批论文，共同套路是：先抓一个现有范式默认忽略的非对称性或混杂因素，比如点匹配忽略语义范围、局部对齐忽略关系、联合优化混入尾部解析、视觉对齐缺少显式语义。然后把旧任务重命名为一个更具体的新问题，再让机制几乎从这个新问题里长出来。能打动 reviewer 的不是模块复杂，而是消融和可视化能证明“我重新定义的问题确实存在，而且我的机制正好打在这个问题上”。
+
+########## deep_23 ##########
+我按指定方式读了每篇前 8 页的方法部分；SRHCL 的关键消融在后页，所以额外看了第 8 到 12 页来补证据闭环。下面只拆“创新是怎么构造出来的”。
+
+**RMPSNet**
+1. **触发观察**：作者抓住三个具体失败点。遮挡会造成视觉语义缺失，CLIP-ReID 的图文全局对齐在遮挡下会错位，常用随机擦除默认遮挡均匀分布，但真实遮挡更多集中在下半身，尤其腿部。
+2. **重定义动作**：它把遮挡 ReID 从“局部特征缺失”改写成“遮挡分布不匹配加跨模态语义退化加增强特征分布不一致”。关键词是 `occlusion distribution mismatch`、`semantic degradation`、`prompt-distribution synergy`、`region-prioritized erasure`。
+3. **机制怎么长出来**：RPE 从真实遮挡分布自然推出，下半身优先擦除。DMPA 从“语义缺失”推出，在文本 prompt 上做双重 mask，用文本到文本对比让身份文本原型对缺失语义稳定。MDO 从“增强后分布不一致”推出，在特征空间做擦除、噪声、局部替换，再用两步对抗优化逼原始和扰动特征一致。RPE 和重定义绑定最紧，DMPA 次之，MDO 更像通用鲁棒性补强。
+4. **证据闭环**：关键不是只报总成绩，而是三类消融分别对应三类重定义。`Baseline+RPE` 在 Occluded-Duke 上大幅超过普通随机擦除，证明“遮挡分布先验”有用；`Baseline+DMPA` 和去掉 DMPA 的版本证明文本语义稳态不是装饰；MDO 的 only enhancement 和完整 MDO 对比证明两步对抗比普通扰动更有效。
+5. **审稿人为什么买账**：它卖的是“视角加组合机制”。单个模块都不算特别新，但作者把 CLIP 遮挡失败拆成分布、语义、鲁棒性三个可验证子问题，每个子问题都有对应模块和消融，所以看起来不像随便堆模块。真正新意在“真实遮挡分布和 prompt 稳定性一起处理”，不是某个具体操作本身。
+
+**Robust Mixed-Degradation Person Re-identification via Structural Consistency Distillation**
+1. **触发观察**：以往退化 ReID 往往假设单一退化，比如雾、低光、雨。作者指出真实监控里干净图、雨、雪、雾、曝光变化会混在一起，query 和 gallery 还可能是不同退化。
+2. **重定义动作**：它把“退化域偏移”改写成“混合退化下的双重错位”。第一层是多个退化造成多个中心偏移，第二层是同一身份在特征空间里的几何关系被扭曲。关键词是 `mixed degradation`、`heterogeneity gap`、`multiple centroid shifts`、`distorted topology`、`structural consistency`。
+3. **机制怎么长出来**：如果问题是“中心偏移加拓扑扭曲”，那只用 Wasserstein 对齐中心不够，只用 Gromov-Wasserstein 保结构也不够，所以 SCD 用 Fused Gromov-Wasserstein 同时对齐干净和退化特征的全局分布与样本间结构。CFR 用 EWC 保住干净图识别能力，解决混合退化训练导致干净知识遗忘。这里 SCD 和重定义绑定很紧，CFR 是辅助闭环。
+4. **证据闭环**：最关键的消融是 MSE、WD、GWD、WD&GWD 和 FGW 的对比。它不是证明“一个新 loss 涨点”，而是在验证“只对齐分布或只保结构都不够，混合退化必须二者统一建模”。另外 CE、DE、DQ、DG 四种评测设置和长尾退化、替代合成退化实验，也是在证明问题定义不是单一退化过拟合。
+5. **审稿人为什么买账**：这篇主要卖“问题重定义”。机制使用的是已有最优传输工具，但问题被讲得很清楚：真实退化不是单域偏移，而是随机混合造成结构破坏。再加上新 benchmark 和多设置评测，审稿人容易认为它补了一个真实部署缺口。
+
+**See What You Seek: Semantic Contextual Integration**
+1. **触发观察**：换衣 ReID 里，很多方法要么压制衣服，要么引入轮廓、姿态、步态、解析等外部线索。作者的关键观察是：视觉特征里不只有负面的衣服因素，也有正面的稳定身份因素，比如头发、眼镜、包、鞋等，直接“去衣服”会漏掉这部分语义。
+2. **重定义动作**：它把换衣问题从“消除衣服”改写成“分离负语义并显式挖出正语义”。关键词是 `negative factors`、`positive factors`、`semantic contextual integration`、`semantic separation`、`orthogonalized text features`。
+3. **机制怎么长出来**：SSE 用两个 prompt，一个描述 person，一个描述 clothes。先得到身份文本特征和衣服文本特征，再把衣服方向从身份方向里投影并减掉，得到去衣服后的语义特征。SIM 再让这个正交化文本特征通过非局部操作和跨注意力去指导视觉特征。这个设计和“负语义分离、正语义引导”的重定义绑定很紧。
+4. **证据闭环**：它的关键消融是 SSE 单独有效，SIM 单独在 CNN 上甚至会伤性能，SSE 加 SIM 才最好。这证明“文本指导本身不够，必须先把衣服语义分离干净”。t-SNE 更紧凑、prompt 引导热图更关注头肩、下身、鞋，特征相似度分布在正交化后更清晰，这些可视化都在支撑“语义分离是对的”。
+5. **审稿人为什么买账**：这篇卖的是视角。CLIP-ReID 已经有 ID prompt，CAL 已经有衣服对抗，但它把换衣讲成“负因素和正因素同时存在”的语义问题，用文本空间正交化给出可解释动作。新意不是“用了 CLIP”，而是把衣服偏置从语义空间里切出来，再反过来指导视觉。
+
+**Self-Rectification Historical Consistency Learning**
+1. **触发观察**：可见光红外 ReID 的标注噪声有两层。单模态身份标签会错，这是 noisy annotation；两模态按错误标签配对后还会产生 noisy correspondence。已有 DART、LCNL 主要检测并压低噪声样本，结果是数据没被充分利用。
+2. **重定义动作**：它把噪声样本从“需要丢掉的坏样本”改写成“可以被历史预测逐步纠正的潜在有效样本”。同时把训练波动从坏现象改写成信息来源。关键词是 `self-rectification`、`historical consistency`、`early learning`、`momentum-updated memories`、`coupled noisy labels`。
+3. **机制怎么长出来**：先用双网络互评和 GMM 建模 loss，给每个样本算干净置信度。再用动量更新的 logits 和 feature memory 保存历史输出。只有两个网络对历史预测达成一致时，才给噪声样本改标签。训练时一边用置信度重加权身份损失和跨模态对比损失，一边用历史一致性约束防止当前输出剧烈漂移。机制和重定义绑定非常紧。
+4. **证据闭环**：核心消融是 baseline、加跨模态对比、加 early learning regularization、再加 label rectification 的逐步对比。可视化更关键：不同噪声率下标签准确率随 rectification 逐步上升，loss 分布里噪声样本被转成低损失干净样本，和 DART 对比显示它不是单纯抗噪，而是在回收训练数据。
+5. **审稿人为什么买账**：这篇卖的是训练范式，不是网络结构。它抓住“丢噪声样本会浪费数据”这个审稿人容易认可的矛盾，再用历史一致性避免伪标签乱改。新意来源在“历史预测驱动的噪声标签自校正”，尤其适配 VI-ReID 的双模态耦合噪声。
+
+**Semantic Alignment and Hard Sample Retraining**
+1. **触发观察**：作者指出 VI-ReID 里三个常见做法都有盲点。水平分块会造成跨模态语义错位，batch 内 hard mining 看不到全数据的难样本，PK sampler 不能保证视角均衡。
+2. **重定义动作**：它把 VI-ReID 从“模态差异对齐”改写成“语义错位、全局难样本遗漏、视角采样偏置共同造成的不稳训练”。关键词是 `semantic alignment`、`global hard samples`、`viewpoint-balanced sampler`、`recurrent semantic aggregation`。
+3. **机制怎么长出来**：RSA 把特征图切成局部 patch，用 BiLSTM 按人体空间顺序聚合局部语义，再拼全局特征。Lma 在每个时间步对齐可见光和红外的分布，并且越到后面权重越大，因为后期局部上下文更完整。CHSR 用分类置信度在全数据里找容易混淆的身份，重新组成 hard batch 训练。VB sampler 保证不同摄像机视角均衡进入 batch。
+4. **证据闭环**：证据做得比较完整。模块消融显示 RSA、CHSR、VB 逐步增益；RSA 类型对比里 BiLSTM 优于 Transformer encoder、decoder 和单向 LSTM，支撑“人体局部顺序有价值”；Lma 的递增权重优于平均和递减权重，支撑“逐步语义聚合后再强对齐”；Grad-CAM 和 t-SNE 说明注意力更集中、两模态同身份更靠近。
+5. **审稿人为什么买账**：这篇卖的是机制闭环多于视角。三个问题不算同一个根因，但每个问题都有直接干预和消融验证。它适合会议稿，因为贡献清楚、实现不重、每个模块都能解释为什么有效。
+
+**Semantic Consistency And Integrity Network**
+1. **触发观察**：作者注意到现有换衣方法常把衣服遮掉、忽略掉，或依赖姿态、步态、解析等辅助线索，这会损害行人特征的语义完整性。另一个观察是，头部等区域相对稳定，衣服偏置又和身份特征纠缠在一起。
+2. **重定义动作**：它把换衣 ReID 从“去衣服偏置”改写成“在保持语义完整性的前提下，学习语义一致特征并量化衣服偏置”。关键词是 `semantic consistency`、`semantic integrity`、`head soft attention`、`clothing bias`、`causal intervention`。
+3. **机制怎么长出来**：三分支分别承担三件事。头部分支用 SCHP 解析得到头、上身、下身、脚的 mask，再用 body part matching loss 学 head soft attention。SCC 用 raw branch 和 head branch 的 class activation map、saliency map 做一致性，让原图特征学到稳定语义区域。衣服分支提取局部衣服特征，通过 KL 知识转移让 raw branch 感知其中的衣服偏置，再用因果干预损失比较干预前后身份预测，逼模型剥离衣服影响。
+4. **证据闭环**：主要证据是三分支消融。只加头部分支、只加衣服分支都有提升，两者合起来最好，说明“语义一致区域”和“衣服偏置剥离”是互补的。不过它对“语义完整性没有被破坏”的证据相对弱，更多是通过性能和设计叙事间接成立。
+5. **审稿人为什么买账**：这篇卖的是视角包装加可实现机制。真正新意在“不要粗暴遮衣服，而是保持完整语义再做偏置剥离”。但它依赖 human parsing，因果干预也更像可解释的损失设计，严谨性不如前几篇强。能买账主要因为故事完整、模块简单、LTCC 和 PRCC 上有直接收益。
+
+**共同套路**
+这批论文的共同构造方式不是先想模块，而是先抓一个旧假设的漏洞：遮挡不是均匀的，退化不是单一的，换衣不是只去衣服，噪声样本不是只能丢，难样本不是只在 batch 里。然后把漏洞改写成两个或三个可命名的子问题，每个子问题配一个能被消融验证的机制。最值得学的是“重定义动作要能推出机制，证据也要反过来证明这个重定义”，否则就会退化成堆模块。
+
+联网核查主要参考了这些先例：CLIP-ReID 的两阶段 prompt 训练、CAL 的衣服对抗、SCI 的公开版本、CIL-ReID 的退化鲁棒基准、FGW 的结构和特征联合对齐思想。链接分别是 [CLIP-ReID](https://arxiv.org/abs/2211.13977)、[CAL](https://arxiv.org/abs/2204.06890)、[SCI](https://arxiv.org/abs/2412.01345)、[CIL-ReID](https://arxiv.org/abs/2111.00880)、[FGW](https://arxiv.org/abs/1805.09114)。
+
+########## deep_24 ##########
+下面按“怎么把观察构造成创新”拆，不按模块复述。
+
+**1. Shape-centered representation learning for visible-infrared person re-identification**
+
+1. 触发观察：VI-ReID 过去主要学外观共性，但外观正是最受可见光和红外差异影响的东西。作者抓住一个具体现象：人体形状天然跨模态稳定，也有身份信息，但红外图像经人体解析得到的形状会在手臂、腿部等位置出错。
+2. 重定义动作：他们没有接受 SEFL 那种“形状不可靠所以丢掉”的叙事，而是改成“形状不是噪声，红外形状估计错误才是噪声”。关键词是 shape-centered、Infrared Shape Restoration、shape-related appearance。
+3. 机制怎么长出来：机制几乎顺着问题出来。红外形状错，所以做 ISR 从红外外观特征里恢复形状。推理阶段不能依赖解析网络，所以做 SFP 把形状流能力蒸馏到外观流。外观里有背景和模态噪声，所以用 AFE 让形状去筛外观。
+4. 证据闭环：关键不是总表涨点，而是分层消融。SFP、ISR、AFE 逐步把 SYSU all-search 从 70.2/66.9 提到 76.1/72.6。ISR 里空间注意力优于直接相加、只用红外外观、只用形状查询和通道注意力。AFE 里两阶段注意力优于直接拼接和通道注意力。形状单独、外观单独、二者结合的对照也支撑“互补”。
+5. reviewer 为什么买账：这篇卖的是视角，不是注意力模块本身。真正的新意是把“形状不可靠”反转成“形状是跨模态锚点，但要先修红外形状，并用形状约束外观”。
+
+**2. Similarity Regulation and Calibration Alignment for Weakly Supervised Text-Based Person Re-Identification**
+
+1. 触发观察：弱监督文本 ReID 只有图文配对，没有身份标签。传统对比学习把非配对样本全当负样本，但实际存在同身份假负样本和局部相似负样本。
+2. 重定义动作：作者把问题从“缺身份标签”改写成“严格一对一图文约束本身有害”。关键词是 false negatives、partially similar negatives、many-to-many relationship、similarity regulation、calibration alignment。
+3. 机制怎么长出来：SR 用文本语义相似度生成软目标，但把对角线置零，避免正样本支配软目标，再让软目标调节硬目标。CA 则把伪标签分配建模为最优传输，用“类别多、每类样本少、近似均匀”的 ReID 数据先验约束伪标签。
+4. 证据闭环：最关键是 SR 目标对照。只用软目标会崩到 R1 34.19，只用硬目标 72.66，普通软硬结合 73.08，作者的 SR 到 73.23。CA 在组件消融中继续提升 R1 和 mAP。注意力可视化显示模型能对齐 glasses、shirt with dots 等细粒度词。
+5. reviewer 为什么买账：这篇卖的是问题口径。弱监督不是简单“无标签版监督学习”，而是训练目标里有系统性假负样本。机制不复杂，但和这个口径绑定得很紧。
+
+**3. Spatial-Temporal Federated Learning for Lifelong Person Re-Identification on Distributed Edges**
+
+1. 触发观察：真实部署里 ReID 同时遇到两个问题：摄像头环境随时间漂移，原始行人数据又不能集中上传。已有终身 ReID 解决时间漂移但依赖集中训练，已有联邦 ReID 解决隐私但没有持续学习。
+2. 重定义动作：作者把问题定义成“边缘端的联邦终身 ReID”，再进一步说不同位置和时间学到的知识有空间时间相关性。关键词是 federated lifelong person ReID、spatial-temporal knowledge integration、task-relevant knowledge。
+3. 机制怎么长出来：边缘端只训练自适应层，用原型回放抗遗忘。服务器不平均聚合，而是用任务原型均值计算客户端之间的任务相似度，并对历史任务加时间衰减，得到个性化聚合权重。自适应层把本地知识和服务器发来的空间时间知识组合起来。
+4. 证据闭环：最有力的是服务器端消融。去掉空间聚合掉 9.44 mAP，去掉时间聚合掉 7.12 mAP，去掉空间时间联合掉 13.90 mAP。去掉原型回放掉 7.43 mAP。相关性热图还能对应预设的真实边缘相关组。
+5. reviewer 为什么买账：这篇卖的是新设定加系统闭环。它不是单纯套联邦或终身，而是把真实部署中的“空间分布、时间漂移、隐私限制、边缘算力”合成一个新问题。
+
+**4. Spatial-Temporal High-Frequency Learning for Video-based Visible-Infrared Person Re-Identification**
+
+1. 触发观察：VVI-ReID 里已有中间模态方法有三类缺陷：生成假红外成本高，边缘类中间模态丢高频细节，单帧构造忽略时间信息。作者又观察到高频保留边缘、结构和运动变化，低频更多是背景、风格和冗余。
+2. 重定义动作：他们把“构造中间模态”重定义为“构造序列级空间时间高频中间模态”。关键词是 spatial-temporal high-frequency、sequence-level intermediate modality、low-frequency components、high-pass filter。
+3. 机制怎么长出来：ST-HPF 用 3D FFT 和二值高通滤波去掉空间时间低频。浅层有纹理和边缘，所以 SDC 用高频特征补偿局部细节。深层有语义和全局时序，所以 DSR 用高频序列特征引导语义精炼。MP 先去风格，避免跨模态噪声干扰交互。
+4. 证据闭环：消融很对题。SDC、DSR、二者结合分别提升，DSR 贡献更大。插入深度实验显示 SDC 适合浅层，DSR 适合深层。只做空间高通或只做时间高通都不如 ST-HPF。替换为 PHA 和 FRB 也不如 3D ST-HPF。距离分布和 CAM 进一步说明类间间隔更大、关注区域更准。
+5. reviewer 为什么买账：这篇同时卖视角和机制。视角是“跨模态视频 ReID 可以从频域高频重写中间模态”，机制是 3D 频域构造加分层特征利用。
+
+**5. Spatio-temporal Feature-level Augmentation Vision Transformer for video-based person re-identification**
+
+1. 触发观察：视频 ReID transformer 准确率高，但很多方法靠复杂结构和大量参数。作者抓住两个视频 ReID 特性：身份不应随背景改变，视频里可能混入遮挡或其他人的异常帧。
+2. 重定义动作：他们没有继续堆时序模块，而是把问题重写成“用特征级增广教会 ViT 视频 ReID 的不变性和异常帧可靠性”。关键词是 Feature-level Augmentation、Background Token、Altered Background ID Classification、Anomaly Frame Detection。
+3. 机制怎么长出来：先加 background token，把前景身份和背景分开。SFA 随机替换背景 token，要求身份分类不变。TFA 插入其他身份的帧特征，训练 AFD 找异常帧。测试时不做增广，把 AFD 学到的能力转成 frame consistency score 来加权视频表征。
+4. 证据闭环：组件消融显示 BG、空间增广、时间增广、refine 都有贡献。iLIDS-VID 从 91.3 R1 到 95.3，MARS-DL 也稳定提升。跨数据集 MARS-DL 到 iLIDS 从 45.3 到 50.0，说明不是只记住训练集。可视化显示 class token 看人，background token 看背景，consistency score 会压低遮挡和姿态突变帧。
+5. reviewer 为什么买账：这篇卖的是机制设计的简洁性。它把 transformer token 结构和视频 ReID 的真实扰动结合起来，训练期做复杂事，测试期保留轻量模型。
+
+**6. SPCL: Semantic Polymorphism and Commonality Learning for Text-Based Person Retrieval**
+
+1. 触发观察：TBPR 里同一身份的不同图像和文本并不是完全等价，而是相似但互补。不同身份之间又可能共享属性，比如 blue backpack。传统一对一图文对齐和 ID 内属性对齐都会误处理这些关系。
+2. 重定义动作：作者把 TBPR 重写成两个语义现象：同一身份内有 semantic polymorphism，不同身份间有 semantic commonality。关键词是 strong correspondence、weak correspondence、relation-sensitive alignment、ID-free attribute alignment、macro 和 micro。
+3. 机制怎么长出来：RSSPA 在同一 ID 内按相似度建立强弱图文对应，而不是只拉近配对样本。IBSPA 在单模态内聚合同 ID 多种表达。IFAA 去掉 ID 限制，让属性和全批次图像建立关系。APFR 用属性先验指导图文融合并重构属性，强化微观属性感知。
+4. 证据闭环：RSSPA 是主证据，CUHK 上 Rank-1 提升超过 3%，mAP 约 7%，mINP 约 11%。关系敏感对齐比传统单映射多 2.76 Rank-1、6.16 mAP、10.28 mINP。IBSPA、IFAA、APFR 继续带来增益。作者还比较了 RSSPA+IBSPA 和 SDM/CMPM，属性实验显示多粒度属性优于词级属性，属性数量过多反而伤害性能。
+5. reviewer 为什么买账：这篇主要卖视角。它把“一个身份多描述”和“跨身份共享属性”命名成可优化的语义结构，RSSPA 是承重机制，属性模块是支撑这个视角的扩展。
+
+**共同套路**
+
+这批论文共同的做法是：先找到一个被旧训练目标错误处理的关系，比如一对一、全负样本、平均聚合、单帧中间模态、输入级增广，然后给它重新命名成更具体的问题。机制通常不是凭空发明，而是把新问题拆成两到三个障碍，每个障碍对应一个模块，最后用“替代机制消融”证明自己的重定义比普通涨点更可信。  
+
+我主要依据本地 PDF 全文方法和消融页阅读，另外核对了 ScRL 和 FedSTIL 的 arXiv 页面，以及弱监督文本 ReID 相关背景 CPCL 页面：ScRL arXiv([arxiv.org](https://arxiv.org/abs/2310.17952?utm_source=openai))、FedSTIL arXiv([arxiv.org](https://arxiv.org/abs/2207.11759?utm_source=openai))、CPCL arXiv([arxiv.org](https://arxiv.org/abs/2401.10011?utm_source=openai))。
+
+########## deep_25 ##########
+我按 PDF 正文读了方法和关键消融，没额外联网，因为这些论文自己的相关工作、方法和实验已经足够判断它们怎么构造 novelty。
+
+**1. Spectrum-guided feature enhancement network for event person re-identification.pdf**
+
+1. **触发观察**：事件相机有隐私和强光弱光优势，但事件流语义极稀疏、噪声又多。已有 event ReID 更偏隐私保护，忽略了“稀疏事件里怎么提可判别语义”这个核心问题。作者还抓住一个具体物理现象：事件噪声常表现为孤立点，在频域偏高频，但有效事件语义本身也可能是离散孤立点。
+
+2. **重定义动作**：他们没有把问题讲成“把 RGB ReID 迁移到事件数据”，而是讲成“事件 ReID 的核心是 sparse semantic denoising and enhancement”。关键词是 sparse event semantics、event noise、frequency-domain denoising、multi-grain semantic interaction、event contextual semantics。这样一来，旧问题从“缺一个更强 ReID 网络”变成“事件流的语义和噪声强耦合，需要同时去噪和增强上下文”。
+
+3. **机制怎么长出来**：MSAM 很自然地从这个重定义推出：既然噪声集中在高频，就用 Fourier 低通；既然单尺度会误删稀疏有效语义，就用 1×1、3×3、5×5 多尺度；既然频域滤波会过平滑，就接语义交互注意力补上下文。CPDM 则来自第二个观察：模型容易只盯少数局部有效点，所以连续擦掉不同横向 patch，迫使模型从剩余区域也能识别身份。机制和问题定义绑定较紧，但仍是“频域模块加训练正则”的组合型创新。
+
+4. **证据闭环**：关键不是只报 SOTA，而是组件拆开证明重定义。Baseline 在 Event-ReId 上是 36.4 rank-1、21.1 mAP，MSAM 单独到 68.2、42.0，CPDM 单独到 64.8、39.6，完整 SFE-Net 到 75.0、45.0。MSAM 还做了位置、Pre-SA、SIM、Post-SA 的消融，并用特征图可视化说明 SA 让离散语义更连续，SIM 增强上下文。CPDM 和 Dropout、DropBlock、PCB 对比，CPDM 明显更强，支撑“普通 dropout 不适合稀疏事件语义”。
+
+5. **reviewer 为什么买账**：这篇卖的是“事件 ReID 不只是隐私数据版 ReID，而是稀疏噪声语义建模问题”的视角，加上物理上能解释的频谱机制。novelty 主要来自任务特性绑定，不是单个模块多新。风险是 event ReID 数据集小，涨点很大容易被认为是场景窄，但审稿人会接受它的原因是问题定义、机制、可视化和消融能对上。
+
+**2. Stochastic style perturbation modelling for visible-Infrared person re-Identification with severely modality imbalance.pdf**
+
+1. **触发观察**：VI-ReID 默认 RGB 和 IR 训练数据相对均衡，但现实里 IR 采集更贵、更少，夜间行人也少。已有方法主要解决 modality gap，却默认两边数据都够。作者还指出常规 SMOTE 这类少数类过采样在跨模态场景会失效，因为最近邻在强模态差异下会把合成样本推离真实 IR 分布。
+
+2. **重定义动作**：他们把 VI-ReID 从“跨模态差异问题”重定义为“severely modality imbalance 下的 co-modality balance learning”。关键词是 imbalance VI-ReID、minority modality、feature-level oversampling、stochastic style perturbation、balanced representation learning。这个动作很关键，因为它新建了一个更贴近真实部署的协议，而不是继续在平衡 benchmark 上卷模块。
+
+3. **机制怎么长出来**：既然 IR 少，直接复制图像会过拟合，SMOTE 又会偏离分布，那么就不在图像空间生成，而是在深层特征里扰动 IR 的 style statistics。SSP 用 IR 特征的均值和方差估计 style 范围，随机采样新的缩放和平移，生成语义不变但风格变化的 IR-like 特征。随后用 MMD 对齐 RGB、真实 IR、扰动 IR 三个分布，再用 CACS 做类中心层面的 intra-class 和 inter-class 约束。机制和重定义绑定很紧。
+
+4. **证据闭环**：最关键证据是人为构造不同失衡比例。SYSU-MM01 从 2:1 到 4:1、8:1，很多已有方法 rank-1 和 mAP 大幅下滑，而 CMBL 下滑明显小。组件消融也很有说服力：2:1 下 baseline 是 63.79 rank-1、59.87 mAP，完整 CMBL 到 76.36、71.64；8:1 下 baseline 是 40.20、34.39，完整 CMBL 到 70.62、65.72。SSP 插入层位置、MMD 三项、CACS 的 intra/inter 都分别消融。可视化上还对比 SMOTE 和 SSP 的生成分布，并展示分类 logit 更稳定。
+
+5. **reviewer 为什么买账**：这篇真正卖的是新问题设定，而不是 SSP 本身多复杂。SSP 是一个足够自然、低成本的机制，用来支撑“少数模态特征分布应该被扩展而不是被多数模态吞掉”这个视角。reviewer 买账点在于：它先证明原有 VI-ReID 假设不现实，再证明同一批 SOTA 在失衡下掉得厉害，最后用一个针对性机制补上。
+
+**3. Structured Distilled 3D Gait Fields for Clothes-Changing Person Re-Identification in Videos.pdf**
+
+1. **触发观察**：换衣视频 ReID 里外观不可靠，gait 是天然身份线索。问题是已有 2D gait 容易受视角影响，3D skeleton 和 SMPL 参数又太稀疏、低维，既不够判别，也和高维 appearance feature 难对齐。作者抓住的是“3D 信息有用，但现有 3D 表示形态不适合和 ReID 特征融合”。
+
+2. **重定义动作**：他们没有说“再加一个 gait 分支”，而是把问题改成“如何把结构化 3D 身体知识蒸馏成与视频外观时空对齐的稠密 gait field”。关键词是 Structured Distilled 3D Gait Fields、3D-2D distillation、dense correspondence embeddings、spatiotemporal field、appearance-compatible 3D gait。旧问题从“用什么辅助模态”升级成“辅助模态的表示形态是否和 appearance 可交互”。
+
+3. **机制怎么长出来**：机制几乎是从重定义里长出来的。先在 SMPL mesh 上预训练 vertex embeddings，让嵌入距离对应 geodesic distance 和 tangent direction；再用 3D mesh recovery 和相机参数把顶点、采样表面点投影到 2D 图像，训练 U-Net 输出 pixel-level dense correspondence embeddings；视频帧串起来就是 3D gait field。然后用 local similarity learning 建模局部时空邻域，最后用 MRIE 的全局和局部代表 token 让 gait 和 appearance 高效交互。这里不是随便拼模块，主线是“稀疏 3D 先验变成稠密、时空对齐、可融合的 ReID 表示”。
+
+4. **证据闭环**：最强闭环是“换辅助模态”消融。dense correspondence embeddings 全面超过 2D keypoints、silhouettes、part segmentation、3D skeletons、point clouds、SMPL parameters，证明重定义的“稠密对齐表示比稀疏参数更适合”是对的。组件表里，appearance baseline 在 VCCR CC 是 49.7 rank-1、40.2 mAP，完整方法到 59.8、48.6；CCVID 从 80.9、75.3 到 93.9、91.2。MRIE 相比简单融合带来大幅提升，说明不是单纯 gait 分支有效，而是 gait-appearance interaction 有价值。ECS、PCA 可视化、t-SNE 和激活图进一步证明 dense correspondence embedding 稳定，3D gait 比 SMPL 参数更成簇，融合后类间更清楚。
+
+5. **reviewer 为什么买账**：这篇卖的是视角加表示范式。novelty 不在“用 gait”本身，而在“把 3D gait 从稀疏骨架或低维参数，重做成 2D 视频域稠密场”。这是比较像方法稿的创新构造：有明确旧表示缺陷，有自然机制，有替换模态消融和可视化支撑。缺点是工程重、依赖训练期 3D recovery，但作者通过推理期不需要 SMPL 来缓解这个风险。
+
+**4. Text-Guided Cross-Modal Alignment with Attribute and Contour Prototypes for Visible-Infrared Person Re-Identification.pdf**
+
+1. **触发观察**：VI-ReID 里 RGB 和 IR 差异大，生成式方法会有伪影，纯视觉 invariant learning 缺高层语义。CLIP 类方法开始引入语言，但很多只是学几个 token proxy，语义表达不够丰富。另一个观察是：自然语言属性有用，但往往缺 contour、body shape、pose 这类结构信息；而颜色等低层线索在 IR 里又不可靠。
+
+2. **重定义动作**：作者把问题讲成“跨模态对齐缺少显式、模态无关的 semantic anchor”，而不是“再做一个 CLIP prompt”。关键词是 attribute-aware text、contour-aware text prompt、text re-definition、category-level textual prototypes、modality-agnostic semantic anchors。这个重定义把文本从辅助描述变成“RGB 和 IR 共同对齐的类别原型”。
+
+3. **机制怎么长出来**：ATG 用 BLIP 问答和固定模板生成属性文本，并刻意避开颜色，保留 age、gender、action、clothing type、hair、glasses 这些更跨模态的属性。CTP 用 SCHP 人体解析去掉衣服区域，保留 body shape 和 pose 相关区域，再用可学习 prompt 表示 contour-aware class text。TRM 负责把 instance-level attribute text 和 class-level contour prompt 融成 image-aware redefined text，最后做 class-level text prototype，指导 RGB 和 IR visual feature 对齐。机制和“属性语义加结构语义”的问题定义是匹配的，但整体偏组合式。
+
+4. **证据闭环**：核心消融在 SYSU-MM01。baseline 是 72.25 mAP、75.22 rank-1；加 ATG 到 73.28、76.47；加 CTP 到 73.13、76.21；ATG+CTP 到 74.86、77.85；完整 TRM 到 76.21、78.52。这个表刚好证明三个判断：属性文本有用，轮廓文本也有用，两者互补，TRM 不是多余融合。作者还和传统 VI-ReID 以及语言模型方法对比，强调 richer textual prompts 能更好指导视觉编码器提取 modality-invariant feature。
+
+5. **reviewer 为什么买账**：这篇卖的主要是视角，不是模块精巧度。reviewer 买账点是它把“文本提示”拆成两类可解释语义：属性和轮廓，并用 prototype 把文本变成跨模态锚点。novelty 的来源是“显式语义原型替代弱 token proxy”，而不是 BLIP、SCHP、CLIP 或 Transformer decoder 本身。
+
+**5. Text-to-image Person Search based on Semantic Reorganization.pdf**
+
+1. **触发观察**：TBPS 数据少，原因是隐私和文本标注成本高。已有增强要么靠大规模外部数据和 MLLM 预训练，要么靠 diffusion 编辑图像，成本高，还追求视觉真实但不一定提高检索。作者还观察到传统 re-ranking 的 k-reciprocal 假设在文本到图像里不成立，因为文本特征没有稳定的同模态局部邻域，text-image 距离分布也不平衡。
+
+2. **重定义动作**：他们把数据增强从“生成逼真的人图”重定义为“基于行人结构语义单元做组合扩展”。关键词是 semantic reorganization、semantic restructuring-based data augmentation、structural combinatorial enhancement、training enhancement + testing calibration、cross-modal similarity re-ranking。旧问题从“缺真实图片”变成“缺足够多上身、下身、语义组合变化”；从“排序不准”变成“文本 query 需要可靠跨模态邻域来校准”。
+
+3. **机制怎么长出来**：SRDA 很直接：先用 MLLM 判断性别，在同一性别内随机选两个 ID，把一个人的上半身和另一个人的下半身横向拼接，生成新 ID，再用微调 BLIP 为新图生成文本。它不追求自然，而追求结构组合多样性。CSRM 则在测试时为文本 query 找 cross-modal k-reciprocal 图像邻居，用 Jaccard 权重把可靠图像特征融合进文本特征，再检索。训练阶段用 CLIP 双流、ID loss、SDM loss 和 image triplet；不加 text triplet，因为 MLLM 文本有噪声。
+
+4. **证据闭环**：组件消融直接对应两个重定义。CUHK-PEDES baseline 是 70.79 rank-1、64.69 mAP；SRDA 到 74.35、69.63；CSRM 到 72.02、68.13；完整 PSSR 到 75.71、73.34。ICFG-PEDES 从 61.30、37.68 到 65.91、48.11，RSTPReid 从 59.20、46.65 到 62.53、51.77。传统 re-ranking 在 CUHK 上 rank-1 反而从 74.35 降到 68.68，而 CSRM 到 75.71，这很好地证明“同模态 re-ranking 假设不适用于跨模态”。高伪影样本也能涨点，低伪影和高伪影一起最好，支撑“视觉真实不是核心，多样性才是核心”。
+
+5. **reviewer 为什么买账**：这篇卖的是两个务实视角：训练时不迷信 diffusion 真实感，测试时不照搬同模态 re-ranking。机制都很简单，但和观察贴得紧，消融也正好打在 reviewer 会怀疑的点上。novelty 来源不是复杂模型，而是对 TBPS 任务目标的重新理解。
+
+**6. Texture-aware transformer with pose-patch mapping for occluded person re-identification.pdf**
+
+1. **触发观察**：遮挡 ReID 里 pose、human parsing 和 occlusion augmentation 都常见，但作者指出两个更具体的失败场景：极端物体遮挡下，局部 pose 错误会污染全局特征；非目标行人遮挡下，遮挡者也有人体骨架，pose 无法区分目标和遮挡行人。作者还用了一个接近人类识别的观察：行人互相遮挡时，背包、伞、衣服纹理这类 distinctive appearance 往往决定识别。
+
+2. **重定义动作**：他们没有把问题讲成“遮挡区域检测不准”，而是拆成“pose misalignment under extreme occlusion”和“identity confusion caused by non-target pedestrian occlusion”。关键词是 pose-patch mapping、texture-aware decoder、non-target pedestrian occlusion、structure and detail dual constraints。这个拆解让方法天然有两个核心动作：结构上精确映射，细节上用纹理区分目标。
+
+3. **机制怎么长出来**：MFE 先在 ViT patch 上做 intra-patch 和 inter-patch 编码，补足 patch 内外层级信息。PPM 不做 pose-to-global，而是把 pose 和 patch 当成两种模态，用 Mahalanobis distance 加 cosine similarity 建 pose-patch 相似矩阵，只保留高置信关键点对应的 patch，从而降低局部 pose 错误的全局污染。TAD 再用 context extraction layer 和 texture extraction layer，以 PPM 过滤后的 pose 特征为约束，通过 cross-attention 强化可区分纹理。pose loss 还约束人体和非人体映射特征不要太相似。机制和两个失败场景绑定得比较紧。
+
+4. **证据闭环**：消融很干净。Occluded-Duke 上 baseline 是 59.4 rank-1、49.7 mAP；加 MFE 到 62.2、52.4；加 PPM 到 67.3、56.1；MFE+PPM 到 68.9、57.0；完整 TTPM 到 73.4、63.4。Occluded-REID 上从 72.1、67.6 到 86.8、82.2。TAD 还拆 CEL 和 TEL，证明上下文和纹理都贡献。可视化上，PPM 热图在极端遮挡下更集中到目标有效区域；检索图展示非目标行人遮挡时 TAD 能帮忙找回；失败案例也说明当目标和遮挡者纹理高度相似时仍会失败，这反而让机制边界更可信。
+
+5. **reviewer 为什么买账**：这篇卖的是“对遮挡失败类型的细分”加“机制一一对应”。如果只说 pose+texture，novelty 会弱；但作者先指出 pose 方法在极端遮挡和行人遮挡下分别为什么失效，再让 PPM 和 TAD 分别处理，reviewer 就更容易接受。真正 novelty 来自问题拆解，而不是 Transformer、pose 或 attention 本身。
+
+**共同套路**
+
+这批论文共同不是先发明一个模块，而是先把已有任务里的默认说法改窄、改具体：事件 ReID 不是 RGB 迁移，VI-ReID 不只是 modality gap，换衣 ReID 不只是加 gait，遮挡 ReID 不只是找可见部位。它们能成稿的关键是把观察变成一句新的失败机制，然后让方法的每个部件都对应这个失败机制，最后用“替换模态、破坏假设、组件拆分、可视化”证明视角本身是对的。
+
+########## deep_26 ##########
+我基于本地 PDF 的方法和补读页拆解。判断重点放在“观察怎样变成问题”，不是复述模块。
+
+**1. TIENet**
+
+1. 触发观察：多模态 ReID 不是缺一个融合层，而是现有方法大多只在空间域融合，忽略频域差异和模态间关系。作者用傅里叶可视化发现，相位主要保留结构，幅度更能区分模态和身份。
+
+2. 重定义动作：他们把“多模态融合”重定义为“三类交互不足”。关键词是频域和空间域交互、模态间交互、模态内人体结构交互。这样旧问题从“怎么拼 RGB、近红外、热红外”变成“怎么分别保留模态特异性和互补性”。
+
+3. 机制怎么长出来：SFI 用幅度注意力引导相位，再用空间卷积保留局部细节；IMMI 用相似度掩码做自适应模态交互；IMFF 用位置注意力建模身体局部上下文；MAS loss 同时做模态间分离和模态内聚合。SFI 和观察绑定最紧，IMFF 更像补强模块，逻辑稍泛。
+
+4. 证据闭环：关键不是最终涨点，而是频域重构和 t-SNE 先证明幅度、相位确实承载不同信息；GAP 和 GMP 替换证明“幅度全局信息”有用；IMMI 对比 SUM、CIM 和不同交互阶段证明固定融合会引入冲突；MAS removal、距离分布、t-SNE 和检索可视化补足“特异性和互补性同时改善”。
+
+5. reviewer 为什么买账：这篇卖的是“多模态融合不只是拼接，而是频域、模态关系、人体结构三重交互”的视角，加上频域观察让模块堆叠看起来有根。真正的新颖性来自频域解释和三重交互框架，不是单个注意力模块。
+
+**2. Towards Anytime Retrieval**
+
+1. 触发观察：真实系统要求任何时间都能检索，包括白天、夜晚、短期、长期换衣。但传统 ReID、可见红外 ReID、换衣 ReID 被拆成不同任务，数据集也各自只覆盖一部分场景。
+
+2. 重定义动作：作者把 ReID 从单一任务重定义为 Anytime ReID，用“时间点”和“时间间隔”划出六个场景。关键词是 anytime retrieval、multi-scenario retrieval、scenario-specific cues、inter-scenario interference。
+
+3. 机制怎么长出来：既然六个场景依赖的线索不同，一个统一特征会互相伤害，所以 MS-ReID 用六个 CLS token 学不同场景特征；短期用衣服类别监督，长期用身份监督；MoAE 按白天、夜晚、全天、短期、长期这些属性共享专家；HDW 按任务难度动态加权。机制基本是从任务重定义自然推出的。
+
+4. 证据闭环：数据集 AT-USTC 本身证明旧数据集缺口，21 个月、RGB 和红外、多衣服、多季节支撑“anytime”成立。模型证据包括六场景分别评测、跨数据集泛化、MS-ReID、MoAE、HDW 消融，以及和其他 MoE 方法对比，证明不是单纯多头分类。
+
+5. reviewer 为什么买账：这篇主要卖问题和 benchmark，机制是配套证明新任务可做。新颖性核心是把三个割裂子任务合成一个时间驱动的统一任务空间。
+
+**3. TP-LReID**
+
+1. 触发观察：终身 ReID 主要解决旧域遗忘，但现实还要求未来未见域泛化。作者观察到普通 ReID 当前域强，终身 ReID 旧域强，泛化 ReID 未来域强，三者各管一段；同时文本特征比图像特征更跨域一致。
+
+2. 重定义动作：他们把 LReID 从“防止忘记过去”重定义为“过去、现在、未来三类域同时负责”。关键词是 text prompts、domain-consistent features、future-style generation、past-present-future domains。
+
+3. 机制怎么长出来：文本更稳定，所以用文本 prompt 作为跨域语义锚；域按顺序到来，所以 prompt generator 和 image encoder 交替、连续更新；未来域不可见，所以在特征空间用风格对抗扰动模拟未来样本，再让文本和原图、未来风格图一起对齐。逻辑比较紧。
+
+4. 证据闭环：它不只报平均成绩，而是分 past、present、future 比较普通 ReID、终身 ReID、泛化 ReID；消融分别看文本 prompt 和未来扰动；比较 continual prompt 和非 continual prompt；还跑 24 种到达顺序，看第一个旧域遗忘和所有未见域泛化。
+
+5. reviewer 为什么买账：这篇卖的是视角，终身 ReID 不应只防遗忘，还要负责未来域。机制里的 CLIP、prompt、StyleAdv 都不是全新零件，但组合被“过去、现在、未来”这个新定义绑住了。
+
+**4. Two-stage knowledge distillation**
+
+1. 触发观察：可见红外 ReID 的主流做法急着做跨模态对齐，但同模态差异本来比跨模态小很多。直接多对多跨模态对齐既难，又依赖完整标注。
+
+2. 重定义动作：作者把“跨模态 gap 太大”重定义为“对齐顺序错了”。关键词是 simple-to-difficult strategy、intra-modality discrepancy、self-mimic learning、mutual distillation、weak supervision。
+
+3. 机制怎么长出来：先用少量标注训练分类器，给无标注样本生成带置信度的软身份标签；再用 self-mimic 把同一身份在同一模态内拉向模态特定原型；最后用 mutual distillation 做可见和红外的双向分布对齐。先同模态收紧，再跨模态对齐，机制和重定义绑定很紧。
+
+4. 证据闭环：关键消融是 SI、SM、MD 在全监督和弱监督下逐项加入；还比较离线原型、在线原型、center loss 和 self-mimic；可视化同模态距离均值和方差下降；比较红外到可见、可见到红外、双向蒸馏，证明单向对齐会损失信息；伪标签准确率也单独验证。
+
+5. reviewer 为什么买账：这篇卖的是机制加顺序视角。蒸馏本身不新，但“先易后难，把多对多跨模态对齐拆成同模态原型收紧和跨模态分布互蒸馏”是它的真正新意。
+
+**5. UAV-based person re-identification survey**
+
+1. 触发观察：大多数 ReID 研究默认固定地面摄像头，但 UAV 有高空视角、动态背景、运动模糊、低分辨率、续航和算力约束。作者还指出 UAV-ReID 数据集非常少，和普通 ReID 数据集规模不成比例。
+
+2. 重定义动作：这篇不是方法论文，它把 UAV-ReID 从“普通 ReID 的一个数据集变体”重定义成独立问题域。关键词是 aerial perspective、dynamic background、motion blur、resource constraints、aerial-ground gap、privacy concerns。
+
+3. 机制怎么长出来：作为综述，它的“机制”是分类框架。它按数据集、挑战、方法谱系、结果和未来方向组织领域，把 MRP、DRHIT01、P-DESTRE、PRAI-1581、AHU-UAV、UAV-Human、AG-ReID 等串起来，再把方法从 ELF、SVM、triplet loss、CNN、subspace pooling、federated learning、ViT、elevated-view attention 统一归档。
+
+4. 证据闭环：它用数据集表证明资源稀缺，用方法表证明现有技术大多迁移自地面 ReID，用结果表证明不同 UAV 场景难度差异很大。例如 PRAI-1581 的绝对精度仍低，P-DESTRE 短期较稳但长期明显掉，AG-ReID 的 aerial-ground 设置需要专门的 elevated-view attention。
+
+5. reviewer 为什么买账：这篇卖的是领域地图和问题边界，而不是算法。它让 reviewer 相信 UAV-ReID 不是普通 ReID 换相机，而是数据、视角、部署约束和伦理问题共同定义的新应用域。
+
+**6. Uniform Light Transformer**
+
+1. 触发观察：已有复杂光照 ReID 用一对一光照转换器，随着光照种类增加会变得冗余。作者问一个反直觉问题：能不能只用一个统一光照转换器处理任意光照？实验发现视觉上转换还行，但低频信息差异随光照尺度增加而变大，检索效果受损。
+
+2. 重定义动作：他们把问题从“光照归一化不够好”重定义为“统一光照转换器在多光照输入下低频建模能力不足”。关键词是 Unified Lighting Transformer、low-frequency information、discriminative feature spectrum consistency、low-frequency information constraints。
+
+3. 机制怎么长出来：既然问题被定位到低频信息，方法就围绕低频约束展开。DFSC 用谱约束网络把 ReID 特征图映射成真实判别特征，约束生成图的判别频谱；LFCM 把生成图低频和真实图高频拼成虚拟样本，再用预训练 ReID 模型的分类 logits 做蒸馏，让低频差异在身份特征层面被惩罚；总损失是 GAN 生成损失、DFSC、LFCM 三部分。
+
+4. 证据闭环：最关键的是图 1 的频域分析，说明高频差异小且稳定，低频差异随光照尺度增加而扩大。消融里单独 ULT 甚至不如强 ReID baseline，说明“一个转换器”不是自然有效；加入 DFSC、LFCM 都提升，合起来最好，证明重定义的低频瓶颈确实被命中。
+
+5. reviewer 为什么买账：这篇卖的是诊断视角加机制。它不是又做一个 GAN，而是先解释为什么统一光照转换失败，再提出两个专门约束低频的证据化模块。
+
+这批论文共同套路很明显：先抓一个具体失败或缺口，不急着说“我加了模块”，而是把旧问题改写成更尖锐的新问题。然后机制要从新定义里自然长出来，证据也要证明这个新定义成立，而不是只证明最终 mAP 涨了。对我们最有用的是，创新最好从“任务边界、干扰来源、训练顺序、信息载体”里长出来，模块只是这个判断的执行形式。
+
+########## deep_27 ##########
+说明：我按要求用 `pdftotext -f 1 -l 8` 读了六篇。`Affinity Harmonization` 和 `MCBL` 的方法超过第 8 页，我额外补读了后续方法页，避免机制链条缺失。
+
+**1. Unleashing the potential of traditional person re-ID methods to clothes changed scenario via curriculum learning**
+
+1. 触发观察：作者先发现传统同衣 ReID 方法不是完全不能做换衣。以 CLIP-ReID 为代表的同衣方法直接迁到换衣场景已经有竞争力，真正卡住的是训练初期同一个身份同时出现多套衣服，类内变化太大，模型过早被打乱。
+2. 重定义动作：大家以为换衣 ReID 必须加衣服无关线索、解析、轮廓、骨架或特征解耦；作者改成说，问题其实是训练课程不合理。同衣方法的能力没有被释放，关键词是 `unleash potential`、`clothes-level curriculum`、`gradual cognition`、`intra-ID variation`。
+3. 机制怎么长出来：这个重定义几乎直接推出机制。既然问题是过早暴露高类内变化，就先让每个身份只用一套衣服训练；等 silhouette coefficient 说明该身份已经可分，再加入最不像当前衣服的新衣服；再用衣服级准确率给难衣服更高权重，补样本数量不均衡。
+4. 证据闭环：关键不是只报涨点，而是证明“换衣困难可以由训练顺序缓解”。他们做了数据调度和数据加权消融，比较随机、最小差异、最大差异三种加衣服策略，比较固定周期和 silhouette 自适应调度，还用 t-SNE 和 GradCAM 展示同身份多衣服逐渐聚合、注意力从衣服区域转到头部和轮廓。
+5. reviewer 为什么买账：这篇卖的主要是视角，不是复杂模块。它把“换衣必须改模型”改成“先把训练组织对”，而且不改测试模型、不加额外输入，现实部署友好；这比再堆一个衣服去偏分支更容易讲清楚。
+
+**2. Unsupervised Lifelong Person Re-Identification via Affinity Harmonization**
+
+1. 触发观察：现有终身 ReID 多数靠旧样本回放和旧模型蒸馏来防遗忘，但这种做法偏向稳定性，容易限制新域学习。作者还指出，旧域样本的相机内类内方差会被新知识扰动，导致旧域识别能力下降。
+2. 重定义动作：大家以为终身 ReID 的核心是“保旧知识”；作者改成“协调新旧域的亲和关系”。关键词是 `affinity harmonization`、`plasticity-stability balance`、`old domain expert`、`current domain expert`、`intra-class variance constraint`。
+3. 机制怎么长出来：如果知识以样本间亲和关系存在，那么机制自然变成关系矩阵约束。ODAC 用旧域专家约束旧样本的关系矩阵不要漂；CDAG 训练一个当前域专家，引导主模型学习新域关系；OIVC 再用旧域相机原型约束旧样本类内方差。
+4. 证据闭环：关键消融应当证明三件事：ODAC 保旧域，CDAG 提升新域学习，OIVC 抑制旧域类内方差漂移。它的闭环不是只看最终平均 mAP，而是看 seen domains、unseen domains、不同训练顺序，以及新旧性能是否同时改善。
+5. reviewer 为什么买账：这篇是机制和视角一起卖。亲和关系作为终身 ReID 的知识单位，比普通参数蒸馏更贴合 ReID 的匹配任务；两个临时专家训练后丢弃，也避免了永久扩模型的质疑。
+
+**3. Unsupervised person re-identification via camera-aware multi-level label refinement**
+
+1. 触发观察：作者用两个很具体的现象开局。DBSCAN 的聚类数量在训练中波动并偏离真实身份数；t-SNE 显示同摄像头的不同身份容易聚在一起，而同一身份跨摄像头反而分散。
+2. 重定义动作：大家以为无监督 ReID 的伪标签噪声只是聚类不准；作者改成说，噪声是由摄像头结构驱动的，而且同时存在于 cluster level 和 instance level。关键词是 `camera-aware`、`multi-level label refinement`、`dual-level intra-inter refinement`、`affinity-guided mutual refinement`。
+3. 机制怎么长出来：机制和重定义绑定很紧。全局特征用于找跨摄像头近邻，把可能被摄像头分开的同身份拉近；局部特征不稳定，所以只在同摄像头内找上下半身共同可靠近邻；实例级再找互为 top-k 的跨摄像头 informative nodes，把 one-hot 自正样本改成软亲和正样本。
+4. 证据闭环：真正支撑问题定义的是 Fig.1 的聚类波动和摄像头偏置可视化，再加 DIIR、AGMR、全局和局部分支的消融。尤其是 MSMT17 这种摄像头变化更强的数据上提升更大，能说明它不是普通 label smoothing，而是在处理 camera-induced noise。
+5. reviewer 为什么买账：这篇卖的是结构化修伪标签的视角。单独“用 camera 信息”不新，CAP、ICE、CGMAL 都做过；它的新意在于把 camera bias 拆到全局、局部、实例三个层级，每层的邻居选择规则不同，逻辑比较完整。
+
+**4. Unsupervised Person Re-Identification With Diffusion Model via Semantic-Aware Disentanglement Representation Learning**
+
+1. 触发观察：作者抓了两个失败点。无监督 ReID 的特征把身份相关的人体信息和摄像头背景信息缠在一起，导致同身份跨摄像头距离大；同时，常见 patch 方法会破坏人体语义结构，STN 又缺少语义指导。
+2. 重定义动作：大家以为主要矛盾是伪标签净化或 patch 设计；作者改成“先做语义感知的身份与摄像头解耦，再在身份相关特征上生成语义 patch”。关键词是 `semantic-aware disentanglement`、`identity-related features`、`camera-related features`、`diffusion over spatial transformer parameters`。
+3. 机制怎么长出来：DAM 用人像 mask 做跨摄像头聚合，生成增强视图，把身份和摄像头背景拆开；MSC 约束源视图和增强视图的跨摄像头、同摄像头相似度分布一致；SSDM 不直接扩散整图，而是扩散 STN 的空间变换参数；SDC 用相邻去噪步的 patch 对比保持语义。
+4. 证据闭环：这篇需要靠强消融来成立。DAM、MSC、SSDM、SDC 都要分别拿掉；还要展示距离分布被 MSC 拉齐、SSDM 生成的 patch 确实有语义，而不是随机局部块。参数分析里 patch 数、扩散步数和损失权重也在证明它不是随便堆扩散。
+5. reviewer 为什么买账：这篇更偏机制稿。真正的新意不是“用扩散模型”，而是把扩散对象换成空间变换参数，避开整图生成的高成本，并把它嵌进无监督 ReID 的语义 patch 学习里。风险是模块多，必须靠消融证明不是堆料。
+
+**5. Unsupervised Visible-Infrared Person ReID via Modality-Camera Balance Label Refinement**
+
+1. 触发观察：现有无监督可见光红外 ReID 主要盯着模态差异，但作者指出摄像头差异同样会造成身份拆裂和噪声标签。更具体地说，每个 camera-modality 单元的信息量不同，聚类数和可靠性不平衡，直接跨模态关联会放大错标。
+2. 重定义动作：大家以为 USL-VI-ReID 是跨模态对齐问题；作者改成“层级域内的模态和摄像头平衡问题”。关键词是 `modality-camera balance`、`hierarchical domains`、`bottom-up learning`、`intra-camera`、`inter-camera`、`inter-modality`。
+3. 机制怎么长出来：重定义直接推出三阶段训练。先 intra-camera 建立每个摄像头内的基本判别力，再 inter-camera 做同模态跨摄像头平衡，最后 inter-modality 做跨模态统一。MBLM 用样本到其他摄像头或模态 cluster centroid 的相似度筛掉不可靠标签；UPR 又把这些不可靠样本在同摄像头内重对齐，避免早期丢太多样本；HMCCL 在每个层级同时做实例级和簇级对比学习。
+4. 证据闭环：闭环重点应该是逐阶段和逐模块消融。只做模态对齐、只过滤不重对齐、只 cluster-wise 或只 instance-wise，都要输给完整 MCBL；如果 SYSU-MM01 这种多摄像头数据上收益更明显，就能支撑“camera-modality balance”这个定义。
+5. reviewer 为什么买账：这篇卖的是问题拆分方式。它不是再提出一个跨模态生成或图匹配模块，而是把训练流程改成从摄像头内到模态间的层级标签修正，和无监督场景里的伪标签噪声天然绑定。
+
+**6. Unveiling Local Well-posedness Influence for Cross-modal Person Re-Identification**
+
+1. 触发观察：作者看到图文局部对齐在极端干扰下会失效。雨雪雾、强光、遮挡和相似外观物体会造成 visual hallucination，模型以为某个局部位置有对应文本，实际是伪真实位置，导致局部错配。
+2. 重定义动作：大家以为文本到图像 ReID 要做更细粒度 local alignment；作者改成“先判断局部对齐是否 well-posed”。关键词是 `local well-posedness`、`local misalignment`、`localization bias`、`pseudo-real position`、`mask-based modeling`。
+3. 机制怎么长出来：如果问题是局部信息是否能被另一模态可靠恢复，那么 masked reconstruction 很自然。TEM 遮文本实体词，用图像和上下文重建；TAM 遮属性词，检验颜色、衣物等属性是否被图像支持；IAM 遮图像区域，用文本提示重建外观。三者分别覆盖实体、属性、外观。
+4. 证据闭环：消融 TEM、TAM、IAM 是基本证据，检索可视化说明局部错配减少。但从“well-posedness”这个概念看，最强证据应该是极端天气、强遮挡、颜色污染子集上的鲁棒性分析；论文主要用三数据集和定性图支撑，闭环不算特别强。
+5. reviewer 为什么买账：这篇主要卖视角和命名，机制本身接近图文 masked modeling。ICASSP 这种篇幅下，它把一个常见操作包装成“局部对齐可解性检查”，再给出实体、属性、外观三阶段，故事完整，所以能买账。
+
+总体看，这批论文共同套路很明显：先抓一个具体失败现象，不说“我要加模块”，而说“大家把问题定义错了”。然后把新定义落成一个几乎顺理成章的训练组织、标签修正或关系约束，再用消融和可视化证明“这个定义解释了涨点”。真正值得学的是这个顺序：先重写问题，再让机制像答案一样长出来。
+
+########## deep_28 ##########
+我按本地 PDF 的方法段、消融和可视化段整理。没有额外联网，因为这 5 篇内部的相关工作和证据已经足够拆方法论。
+
+**1. UP-Person - Unified Parameter-Efficient Transfer Learning for Text-Based Person Retrieval**
+
+1. **触发观察**  
+作者注意到一个反直觉点：在文本行人检索里，全量微调 CLIP 不一定是最好的。全量微调虽然能适配训练集，但会破坏或遗忘 CLIP 原本的大规模视觉语言知识，而且每个数据集都要存一套大模型。相反，参数高效微调保留 CLIP 主干，可能同时利用“CLIP 里已有的行人相关知识”和“训练集学到的任务知识”。第二个观察更具体：把 Prefix、LoRA、Adapter 直接堆在一起会互相干扰，普通 Prefix 在 TPR 上收敛慢、效果差。
+
+2. **重定义动作**  
+它没有把问题讲成“怎样加一个更强的跨模态模块”，而是改写成“怎样在不破坏 CLIP 原知识的前提下，把全局、局部、任务特定知识一起迁移到 TPR”。关键词是 knowledge retention、TPR-specific knowledge within CLIP、unified PETL、component conflict、global/local/task-specific knowledge。这个重定义把“省参数”从工程优点提升成方法必要性：少调参数不是为了便宜，而是为了保留预训练知识。
+
+3. **机制怎么长出来**  
+机制基本是从重定义推出来的。既然要保留 CLIP，就冻结主干；既然要同时迁移不同层次知识，就把不同 PETL 放到不同位置。LoRA 改 attention 的 key/value 权重，负责细粒度局部关系；S-Prefix 给 attention 加任务提示，并用可学习缩放因子解决 Prefix 梯度小、收敛慢的问题；L-Adapter 放在 LayerNorm 旁边调全局分布，避免和 MHA、MLP 里的 LoRA、Prefix 抢同一优化空间。绑定比较紧，但 LoRA 本身不是新东西，新意主要在“每个组件对应一种知识迁移角色”和“避免组件冲突”。
+
+4. **证据闭环**  
+关键证据不是单纯 SOTA 表，而是组件消融和冲突消融。单独的 LoRA、S-Prefix、L-Adapter 都比 zero-shot CLIP 强，三者组合在 CUHK-PEDES 上达到最高 R@1 和 mAP，说明“全局、局部、任务提示”确实互补。S-Prefix 对 vanilla Prefix 有明显提升，并且缩放因子过大时会梯度爆炸，证明他们不是随便加参数，而是在修 Prefix 梯度问题。L-Adapter 对比 vanilla Adapter、LN-tuning 和混合 Adapter，支持“普通 Adapter 会和其他 PETL 冲突，LayerNorm 旁边更适合调全局分布”的说法。可视化里 UP-Person 比全量微调的 IRRA 更能识别细粒度或少见描述，也服务于“全量微调丢失 CLIP 原知识”的叙事。
+
+5. **reviewer 为什么买账**  
+这篇卖的主要是视角，其次才是机制。机制都是常见 PETL 家族，但作者把“参数高效”讲成了“知识保留和知识迁移结构化分工”，这比“我少调参数还涨点”高级。reviewer 会买账，是因为它把工程约束、过拟合风险、预训练知识保留、组件冲突和消融证据连成了一条线。
+
+**2. Visible-Infrared Person Re-Identification Based on Feature Decoupling and Refinement**
+
+1. **触发观察**  
+作者注意到 VI-ReID 里大家常说“模态差异”，但实际共享特征里混着不止一种干扰。身份信息和相机差异、视角、光照、背景、模态冗余纠缠在一起。已有方法多半只做单阶段解耦或只盯模态差异，不能同时处理相机变化和可见光红外差异。还有一个具体观察是 Instance Normalization 能缓解模态差异，但会丢掉身份信息。
+
+2. **重定义动作**  
+它把旧问题“减小 visible-infrared modality gap”改写成“对共享特征做层级净化”。关键词是 hierarchical feature decoupling、feature purification、camera-modality-identity、camera-irrelated features、identity-related residual、redundant features、cross-modality recombination。这样一来，问题不再是单个模态对齐损失，而是先把相机干扰拿掉，再处理模态冗余，再把被归一化丢掉的身份信息补回来。
+
+3. **机制怎么长出来**  
+机制和重定义绑定得很直接。第一层 CDM 用通道掩码把特征分成 camera-related 和 camera-irrelated，分别用相机标签、身份标签和对抗约束来分开。第二层 MIDM 对 camera-irrelated 特征做 IN，得到模态更稳定的特征，但承认 IN 会丢身份，于是把原特征和 IN 后特征的残差拿出来，再拆成正残差和负残差。正残差和归一化特征重组成身份特征，负残差重组成冗余特征。然后用 adversarial decoupling loss 让身份特征类内更紧、类间更远，让冗余特征相反。最后 FCRS 把同身份不同模态的正残差交叉重组，用中心约束进一步逼模型关注跨模态共享身份信息。
+
+4. **证据闭环**  
+最关键的是 MIDM 单独用时会掉点或不稳，加入 adversarial decoupling loss 后提升，说明“只做掩码或 IN 不够，残差需要被正确分离”。SYSU-MM01 和 RegDB 的消融把 CDM、MIDM、对抗解耦和重组中心损失逐步加上，形成层级收益链。热力图也对准了重定义：IN 后特征激活区域有限，说明确实丢身份；负残差重组后更多激活背景，说明冗余被分出去；身份特征更多聚焦人体区域。t-SNE 从原始特征、AGW 基线、CDM 后特征到 MIDM 后特征逐步更紧、更可分，正好证明“层级净化”不是只在指标上有效。
+
+5. **reviewer 为什么买账**  
+这篇卖的是机制和问题拆分的结合。它没有提出一个全新外部信息源，而是把“模态差异”细分成相机、模态、身份冗余三层污染。reviewer 买账的点在于机制路径清楚，消融和可视化都能对应每一层的作用。但它的新颖性边界也比较窄，因为解耦、IN、GRL、残差重组都不是新概念，真正的 novelty 来自层级组织方式。
+
+**3. Visible-Infrared Person Re-Identification via Mutual Reinforcement of Prompts and Image Encoders**
+
+1. **触发观察**  
+作者抓住的是 CLIP-ReID 类方法里的一个弱点：两阶段生成的 text prompts 往往不关注行人身份细节。原因是原始 CLIP 对 VI-ReID 不熟，直接生成的提示更偏通用语义，不一定关心跨模态行人身份。另一个观察是，如果同时优化 prompts 和 image encoders，二者目标不同，会互相干扰。
+
+2. **重定义动作**  
+它把 prompt 从“给图像编码器用的静态文本辅助”改写成“可学习的中间模态”。关键词是 mutual promotion、mutual reinforcement、person-related prompts、text features as bridge、modality knowledge propagation、modality alignment、alternating training。旧问题是“怎么用文本帮助可见光和红外对齐”，新问题是“提示和图像编码器怎样互相变好”。
+
+3. **机制怎么长出来**  
+机制很自然。既然 prompts 缺少身份信息，就让训练好的图像编码器把身份知识传给 prompts。作者用分类概率分布里的 dark knowledge，通过 KL 让文本特征的类别概率接近图像特征的类别概率。既然高质量 prompts 可以作为模态无关桥梁，就在优化图像编码器时，把可见光和红外图像特征都对齐到文本特征。既然同时优化会互相干扰，就交替训练：偶数 epoch 固定图像编码器训 prompts，奇数 epoch 固定 prompts 训图像编码器。这个设计和“互相强化”的叙事绑定很紧。
+
+4. **证据闭环**  
+它的核心证据是 baseline、two-stage、MPT w/ loss、完整 MPT 的对比。完整 MPT 在 SYSU-MM01 all-search 上比 baseline 提升 5.45% Rank-1 和 5.88% mAP；在相同结构和损失下，交替训练比 two-stage 更好，说明不是“多一个文本分支”就行，而是 co-evolve 的训练方式有效。再加上 L_MPT 优于普通 contrastive loss，证明他们设计的两个损失确实服务于 mutual reinforcement。可视化也围绕重定义展开：t-SNE 里同身份跨模态更聚；距离分布里类间和类内均值差更大；feature map 显示 MPT 更关注人体区域，支持“prompt 更 person-related”。
+
+5. **reviewer 为什么买账**  
+这篇主要卖视角。模块上就是 KL 蒸馏、对齐损失、交替优化，但它把 prompt 的角色从“静态文本”翻成“被图像编码器教育、再反过来教育图像编码器的中间模态”。这比单纯说“引入文本提示”更像一个方法故事。reviewer 买账的原因是机制简单，问题清楚，证据能直接回答“prompt 是否真的更关注身份”。
+
+**4. Visible-Infrared Person Re-Identification With Real-World Label Noise**
+
+1. **触发观察**  
+作者注意到 VI-ReID 真实标注噪声被低估了。已有 DART 讨论过噪声，但主要是随机换标签。真实 VI-ReID 里噪声更复杂：同模态身份相似会标错，红外缺少颜色和纹理导致跨模态难匹配，标注者也会粗心。随机噪声不能代表这些情况，算法合成的 instance-dependent noise 也不能完全模拟真实标注错误。
+
+2. **重定义动作**  
+它把旧问题“VI-ReID 要抗模态差异”改写成“VI-ReID 要抗真实身份标签噪声和检索对应关系噪声”。关键词是 real-world label noise、instance-dependent label noise、SYSU-Real、noisy correspondence、clean subset、indistinguishable noisy subset、obvious noisy subset、Robust Hybrid Loss。最重要的重定义动作是把噪声样本分成三种，而不是把所有低可信样本一刀切。
+
+3. **机制怎么长出来**  
+机制几乎是从三类噪声定义直接长出来的。先用 co-training 和 warm-up 利用 early learning，小损失样本更可能干净。再用 GMM 拟合单样本 CE loss，把样本分成 clean、indistinguishably noisy、obviously noisy。干净样本用 CE，因为标签可信；难分辨噪声用 GCE，降低噪声样本的大损失偏置；明显噪声直接不信原标签，用分类置信度构造软伪标签。检索侧还把样本对按置信度划成 clean/noisy correspondence，修正 triplet 里的正负关系，形成 robust retrieval loss。最后把识别损失和检索损失混成 RHL。
+
+4. **证据闭环**  
+这篇的证据闭环很强，因为它先造了 SYSU-Real，报告真实噪声比例是 23.79%，并且红外内部噪声比例略高，这直接支撑“真实噪声值得研究”。然后它在 random noise、IDN 和 SYSU-Real 三种条件下都测，证明不是只吃某一种噪声。RHL 消融里，加入处理 indistinguishable noisy subset 的 GCE 带来最大提升，完整方法在 SYSU-Real 上比 DART 提升 7.23% Rank-1、6.94% mAP 和 7.48% mINP，正好支持“三类样本要分治”。可视化也服务于重定义：不同噪声类型的退化柱状图说明 IDN 和真实噪声比随机噪声更伤；相似度矩阵差异图显示 RHL 提高类内相似、降低类间相似；t-SNE 显示比 DART 聚类更清楚。
+
+5. **reviewer 为什么买账**  
+这篇卖的第一是问题，第二才是方法。RHL 的零件不稀奇，GMM、小损失原则、GCE、co-training 都有先例。但“真实 VI-ReID 标签噪声”这个问题更接地气，并且作者实际重标了 SYSU-Real，再证明随机噪声和真实噪声不是一回事。reviewer 会买账，是因为它不是只说现实复杂，而是把现实复杂性落实成数据、噪声分类、损失分治和可视化证据。
+
+**5. When Large Vision-Language Models Meet Person Re-Identification**
+
+1. **触发观察**  
+作者注意到 LVLM 很强，但直接用于 ReID 很别扭。让 LVLM 逐个判断 query 和 gallery 是否同人，成本和 token 数都不可接受。让 LVLM 生成 caption 再做 image-text matching 也有问题：高质量文本标注贵，caption 目标和 ReID 目标不一致，推理阶段通常没有真正利用 LVLM 的生成能力。CLIP-ReID 类方法虽然用了文本，但往往训练后丢掉文本编码器。
+
+2. **重定义动作**  
+它把 LVLM 从“生成描述的外部工具”改写成“产生身份语义 token 的特征提取器组成部分”。关键词是 LVLM-ReID、Pedestrian Semantic Token Generation、`<REID>` token、Semantic-Guided Interaction、reinforced semantic token、generative language models assist discriminative visual models。旧问题是“怎么给 ReID 加文本语义”，新问题是“怎样把 LVLM 的生成过程变成 ReID 的身份表示”。
+
+3. **机制怎么长出来**  
+机制也比较自然。为了不逐对比对，就仍然保留 ReID 的特征提取加相似度检索范式。为了用 LVLM 的语义理解能力，就用指令让 Qwen2-VL 针对行人图像生成一个 `<REID>` 语义 token，要求关注年龄、性别、衣着、生物特征。为了让这个 token 不只是孤立文本输出，设计 SGI，把语义 token 和视觉 tokens 拼起来经过 4 层 Transformer 交互，最后用强化后的语义 token 作为身份表示。为了处理相机变化，又加 camera semantic supplementation，最好的是把相机 embedding 加到视觉 patch embedding 上。训练用 ID loss 和 triplet loss，LLM 冻结但允许梯度穿过它更新视觉模型和 SGI。
+
+4. **证据闭环**  
+关键消融是三组。第一，只用 LVLM 的 visual model 做 baseline 效果低，说明单纯视觉 tokens 不够。第二，把 LVLM 生成的 semantic token 换成随机 learnable token 后明显掉点，说明 `<REID>` token 的语义来源有用，不只是多了一个 class token。第三，去掉 SGI 后效果也掉，说明 token 需要和视觉 tokens 交互，而不是直接拿生成 token 检索。CSS 的消融显示把相机语义放到输入 patch embedding 比放到 `<REID>` token 后面更好，说明相机偏移要早处理。检索可视化显示 baseline 容易被颜色、衣服、姿态误导，而语义 token 引导后能抓住图案、配饰和遮挡下的细节。推理时间从 784ms 到 906ms 处理 64 张图，用来缓解“LVLM 太慢”的质疑。
+
+5. **reviewer 为什么买账**  
+这篇卖的是视角，非常明显。它不是一个小模块故事，而是“LVLM 如何进入 ReID 范式”的第一类尝试。真正 novelty 是把生成式 LVLM 压缩成一个可检索的身份语义 token，并且训练和推理都使用它。风险也明显：计算成本高，且“one word/token 能否稳定代表身份”需要更多验证。但作为方法稿，它的视角足够新，reviewer 容易认为这是一个值得建立的 baseline paradigm。
+
+最后总结这批论文的共同套路：它们都不是先从模块出发，而是先把一个常见说法拆开，比如“模态差异”“用 CLIP”“用 prompt”“噪声标签”“用 LVLM”，然后改写成一个更具体的新问题。机制通常只是把这个新问题逐项工程化，最后用消融和可视化证明“新问题的拆法是对的”，而不只是证明模型涨点。
+
+########## deep_3 ##########
+我按你列出的 6 篇拆，不按标题里的“3”处理。方法正文来自本地 PDF 的前 8 页，联网主要核了相近先例和论文来源。
+
+**1. Adversarial flow-based generative models for visible-to-Infrared person Re-Identification**
+
+1. 触发观察：V2I ReID 同时缺数据、跨模态差异大。已有 GAN 翻译主要做“补目标模态”，但红外到可见光是信息少到信息多，天然难；而 SYSU-MM01、RegDB 这类数据又不够大。
+2. 重定义动作：作者没有把问题讲成“再做一个翻译器”，而是讲成“可见光和红外都应该映射到同一个可逆高斯潜空间”。关键词是 shared Gaussian domain、bijective transformation、training sample expansion、cross-modal generation。
+3. 机制怎么长出来：一旦有两个可逆流，可见光和红外都能进同一个潜空间，那么同模态扩增就是在潜空间插值后映回原模态，跨模态生成就是源模态进潜空间再从目标流出来。身份编码器和模态判别器是自然补上的约束，用来保证“像同一个人”和“像目标模态”。
+4. 证据闭环：关键不是只报 SOTA，而是分别验证 training sample expansion 和 cross-modal generation 对多个基线都有效，并做生成图、潜空间插值、非线性层消融、统计检验。它在证明“同一个潜空间确实能同时支撑两种生成任务”。
+5. reviewer 为什么买账：卖的是视角加框架，不是某个小层。真正 novelty 是把“数据少”和“模态缺口”统一成一个可逆潜空间操作。不过现在对我们不能新抄，生成式 VI-ReID、GAN 翻译、flow/latent bridge 这条线已经有明显先例。
+
+**2. Adversarial perturbation and defense for generalizable person re-identification**
+
+1. 触发观察：DG ReID 的常规说法是“源域覆盖不够”或“身份无关特征干扰”。作者抓到更具体的一点：在 hard matching samples 上，身份相关和无关特征纠缠，已有按类内类间距离拆特征的假设，在特征空间还没学好时并不稳。
+2. 重定义动作：把 DG ReID 重讲成“模型要能面对度量关系被故意扰乱的困难样本，并能防御身份无关语义的攻击”。关键词是 metric adversariality、hard matching samples、adversarial perturbation and defense、semantic purification。
+3. 机制怎么长出来：先用 MPG-Net 反过来做 metric learning，让生成样本靠近负样本、远离原样本，同时用浅层内容一致性保持人形和主体外观。再用 SP-Net 学防御，浅层拆出身份相关特征和身份无关特征，把打乱后的身份无关特征加回去攻击身份相关特征，强迫模型仍能分类正确。
+4. 证据闭环：最关键的是 hard testing set 让普通基线出现断崖式下降，说明生成样本真的改变了匹配难度；再通过去掉 metric perturbation loss、生成图可视化、MPG-Net 与 SP-Net 逐步消融，证明不是普通 GAN 增广。
+5. reviewer 为什么买账：卖的是“用反度量困难样本训练泛化能力”的视角。机制有些堆，但 perturbation 到 defense 的逻辑很顺。需要注意，ReID 对抗攻击早有先例，例如 MUAP 这类工作已经证明 ReID 排序容易被扰动攻击，APD 的新意在于把攻击思想转成 DG 训练样本和语义防御。([arxiv.org](https://arxiv.org/abs/1910.14184?utm_source=openai))
+
+**3. Attribute Conditional Diffusion-Augmented Person Re-Identification**
+
+1. 触发观察：ReID 缺标注数据，渲染数据贵且粗糙，GAN 增广容易伪影和模式坍塌；扩散模型图像质量高，但用于 ReID 时最要命的是换姿态后身份一致性不稳。PIDM 这类扩散人像生成是直接先例。([arxiv.org](https://arxiv.org/abs/2211.12500?utm_source=openai))
+2. 重定义动作：作者把“生成更多图”重定义为“给同一身份生成不同姿态、且保持 ReID 身份嵌入一致的训练数据”。关键词是 Identity Diffuser、identity-specific embedding、target pose heatmap、identity consistency、synthetic pretraining。
+3. 机制怎么长出来：先训练一个 ReID 网络提身份 embedding，再用 OpenPose 提目标姿态，把源图、姿态热图、身份 embedding 一起作为扩散条件。生成后的合成集不是直接混训，而是先预训练 ReID，再用真实数据微调。
+4. 证据闭环：它的闭环是三件事：FID 证明生成质量好，和 PIDM/UnrealPerson 比下游 mAP，少真实数据比例下收益更大；再做身份 embedding 来源、训练轮数、不同 backbone 的消融，证明“身份条件”比普通生成更有用。
+5. reviewer 为什么买账：卖的是机制应用，不是扩散模型本身。真正能打动人的点是“生成质量”和“ReID 身份保持”被绑定到下游 mAP，尤其少数据设定下增益大。弱点是创新更像条件设计，容易被问和 PIDM、CCUP、InfinitePerson 这类合成数据线的边界。
+
+**4. Attribute Guidance with Inherent Pseudo-Label for Occluded Person Re-Identification**
+
+1. 触发观察：CLIP-ReID 类方法已经很强，但它依赖整体语义提示，在遮挡和细粒度相似行人上容易只看主特征，漏掉头发、包、衣服细节。CLIP-ReID 与 CoOp 是它的直接技术背景。([arxiv.org](https://arxiv.org/abs/2211.13977?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2109.01134?utm_source=openai))
+2. 重定义动作：作者把遮挡 ReID 的问题从“缺 pose、parsing、人工属性标签”重讲成“预训练 VLM 内部已有细粒度属性语义，只是没有被挖出来”。关键词是 inherent pseudo-label、attribute guidance、fine-grained attribute semantics、dual guidance、noise mask。论文来源显示它就是 ECAI 2025 的 AG-ReID。([arxiv.org](https://arxiv.org/abs/2508.04998))
+3. 机制怎么长出来：第一阶段冻结 CLIP 图文编码器，用 CoOp 学属性 prompt 的可学习 token，把这些 token 当属性伪标签，同时训练 attribute encoder 从图像特征预测这些 token。第二阶段用整体文本特征和属性伪标签双重引导图像编码器，再用 noise-mask 跳过遮挡导致的不可靠属性匹配。
+4. 证据闭环：最关键的消融是 attribute prompt guidance 和 attribute pseudo-label guidance 分别有效、合起来最好；属性模板比默认整体 prompt、长 prompt、随机 prompt 更好；Otsu 阈值的 noise-mask 优于固定阈值；Grad-CAM 看到模型更关注头发、包、衣服。
+5. reviewer 为什么买账：卖的是“无需额外标注，从 CLIP 内部挖属性监督”的视角。模块本身不重，但问题重定义漂亮：不是再接一个属性标注器，而是把可学习 token 变成训练监督。它的风险是 CLIP prompt ReID 已经拥挤，必须靠“遮挡噪声属性对齐”这条证据站住。
+
+**5. Base-Detail Feature Learning Framework for Visible-Infrared Person Re-Identification**
+
+1. 触发观察：VI-ReID 过去常把跨模态差异当作要消除的东西，结果共享对齐会丢掉可见光颜色纹理、红外热特征这些细节；生成式补偿又会引入噪声或依赖辅助模型。BDLF 论文页面也明确把缺口说成“只挖 shared，忽略 modality-specific details”。([arxiv.org](https://arxiv.org/abs/2505.03286))
+2. 重定义动作：作者把“模态差异”从敌人改写成两类知识：shared base 和 modality-specific detail。关键词是 base-detail、modality-shared base knowledge、modality-specific detail knowledge、correlation restriction、independent decomposition。
+3. 机制怎么长出来：如果 base 是跨模态相关的，detail 是跨模态不相关但有辨识度的，那么自然要用相关性约束：拉高 base 的跨模态相关，压低 detail 的跨模态相关。DFE 用可逆网络从中层无损提 detail；BEG 用投影矩阵把综合特征拆成 detail 子空间和 base 子空间，并加正交独立约束。
+4. 证据闭环：消融逐个去掉 DFE、BEG 相关损失、正交约束、SKD；还做 INN block 数量、DFE 接入 ResNet 哪一层的实验。最有说服力的是 stage-3 最好，因为太浅没身份语义，太深 shared 太强不利于 detail，这和他们的 base/detail 定义能对上。
+5. reviewer 为什么买账：卖的是视角和形式化机制。它不是说“我又对齐了一下”，而是说“过度对齐会损失有用细节”。近邻工作里 SGIEL 已经用正交子空间和形状擦除来挖 shared cue，LUPI 也用中间域补信息，所以 BDLF 的边界在“base/detail 相关性分解，而非额外生成或形状特权信息”。([arxiv.org](https://arxiv.org/abs/2304.04205?utm_source=openai)) ([arxiv.org](https://arxiv.org/abs/2209.09348?utm_source=openai))
+
+**6. Beyond geometry: The power of texture in interpretable 3D person ReID**
+
+1. 触发观察：2D ReID 受视角和背景影响大，3D ReID 理应解决，但已有 3D 方法多是把纹理贴到点云上做分类，实际没有充分利用 3D 的视角归一化，也没用好高分辨率纹理。3DInvarReID 等说明 3D 形状线已经存在。([arxiv.org](https://arxiv.org/abs/2308.10658?utm_source=openai))
+2. 重定义动作：标题已经在重定义：“不要只讲 geometry，texture 才是 3D ReID 的关键”。进一步把解释性从事后可视化改成检索信号。关键词是 UVTexture、canonical viewpoint、viewpoint-invariant explanation、Intersection-Alignment Score、explainable re-ranking。
+3. 机制怎么长出来：先用 3D 重建和 Texformer 得到点云与 UVTexture。UVTextureNet 从标准化 UV 纹理中学外观，3DReIDNet 从点云中学几何，两个距离矩阵融合。解释模块把激活图投到 UVTexture 上，再和 visible clothing mask 算 IoU 与 activation alignment，最后用这些分数重排距离。
+4. 证据闭环：它必须证明两件事：UVTexture 的注意力比 2D 图像更对齐、更少受背景和视角影响；IAS 不只是好看，还能提升重排序结果。论文用 2D/UVTexture 激活图对比、双流对比、KNN/属性/解释重排消融和 aerial-ground 数据集结果形成闭环。AG-ReID.v2 这类跨空地数据也说明视角差异是真问题。([arxiv.org](https://arxiv.org/abs/2401.02634?utm_source=openai))
+5. reviewer 为什么买账：卖的是大视角，不是普通双流。它把 3D 的价值从“多一个点云模态”升级成“规范化纹理坐标让外观、解释、匹配都可对齐”。风险也明显：依赖离线重建和重排序，严格方法投稿时要小心被认为是系统工程而不是核心学习机制。
+
+**共同套路**
+
+这批论文共同不是从“我加了一个模块”开始，而是先把已有失败讲成一个更精确的新问题：过度对齐丢细节、整体 CLIP 忽略属性、3D 只用几何没用纹理、生成图像缺身份一致性。然后机制基本从这个新定义里长出来，最后用一个能直接验证新定义的消融或可视化闭环兜住，而不是只报涨点。
+
+########## deep_4 ##########
+我按清单实际的 6 篇拆。括号里写“4”应该是笔误。
+
+**1. Bidirectional modality information interaction for Visible-Infrared Person Re-identification**
+
+1. 触发观察：作者抓住的不是“可见光和红外差异大”这个老问题，而是现有方法虽然在缩小模态差异，却基本把两个模态当成各自独立的流来处理。生成中间模态、灰度桥、共享特征和私有特征解耦，本质都是绕开模态差异，而不是让两个模态直接交换有用信息。同时他们又补了两个更细的观察：GAP 和 GMP 各有偏好，简单相加会削弱局部显著性；同模态内长得很像的不同人，在普通 triplet 或中心损失里监督不够。
+
+2. 重定义动作：他们把“跨模态差异”重说成“跨模态信息没有双向交互”。这一步很关键，旧问题是对齐，新问题是交互；旧关键词是 modality gap、shared feature，新关键词变成 bidirectional modality information interaction、dynamic aggregation、feature intersection。这样一改，论文不再只是说“我要减少差异”，而是说“两个模态本来有轮廓、姿态等可共享线索，应该互相帮助”。
+
+3. 机制怎么长出来：Dynamic Aggregation 是从这个重定义里比较自然长出来的。既然问题是两个模态不沟通，那就把一个模态当 primary，另一个当 auxiliary，用 auxiliary 动态生成投影权重去重表征 primary，再反向做一次。Feature Intersection 和 Multi-Weight loss 的逻辑绑定弱一些，它们分别来自“全局和局部信息没有正确组合”和“相似负样本监督不足”，更像是围绕主机制补强特征质量和判别边界。
+
+4. 证据闭环：关键证据是三块消融：DA 单独加上能明显提升，说明“模态交互”不是空话；FI 对 GAP、GMP、GAP+GMP 的对比说明交叉式组合确实优于朴素池化；MW 的权重分组实验说明相似负样本需要更强监督。t-SNE 可视化用来证明同身份跨模态距离缩小、模态分裂减弱。它的证据够支撑“机制有效”，但对“交互真的传递了互补语义”证明还不算很硬，如果我们学它，最好再加单向交互、随机辅助模态、错配辅助模态这类破坏性对照。
+
+5. reviewer 为什么买账：这篇主要卖机制，视角有但不算特别深。reviewer 会买，是因为它把老的 VI-ReID 模态差异问题换成了一个容易接受的新动作：不要只对齐，要双向交换。真正 novelty 来自“直接用另一模态生成动态投影权重”，不是 GAP/GMP 或 weighted loss。
+
+**2. Bridging the gap: Learning adaptive knowledge transition for lifelong person re-identification**
+
+1. 触发观察：作者注意到 LReID 里现有知识蒸馏大多是把上一阶段模型冻结成 reference model，然后让当前模型和旧模型输出一致。这个做法能抗遗忘，但很粗暴，因为不同阶段的数据域偏差很大，直接蒸馏会把旧知识硬压到新任务上，反过来抑制新任务泛化。也就是说，问题不是“有没有旧知识”，而是“旧知识怎么过渡到新域”。
+
+2. 重定义动作：他们把 catastrophic forgetting 重定义成 adaptive knowledge transition 问题。旧说法是 preserve previous knowledge，新说法是 control the degree and direction of knowledge distillation。关键词从 distillation、forgetting，换成 transition path、intermediate knowledge、adaptive transfer。这样一来，论文的中心不再是“再加一个蒸馏损失”，而是“旧知识和新知识之间需要一座可学习的桥”。
+
+3. 机制怎么长出来：KTL 很自然。既然直接从旧模型到新模型太硬，就先用 TFE 从 current model 和 reference model 的浅层特征里估计 domain-specific style，再用 KIM 融合成 intermediate feature，作为中间过渡知识。MRD 也顺着这个思路走：不只蒸馏单点 feature，而是蒸馏样本间关系和样本到类中心关系。机制和重定义绑定较紧，尤其是“中间知识”这一步，是论文叙事的骨架。
+
+4. 证据闭环：最关键的消融是 KTL 带来最大 mAP 增益，这直接支撑“transition 比直接蒸馏更好”。另一个很好的证据是 TFE 嵌入位置分析，越靠浅层效果越好，说明他们说的 domain-specific style 不是事后硬编，而是和浅层风格信息对应。CBD/IID 的消融说明样本关系和中心关系都在补足普通 feature distillation。两种训练顺序的结果则证明不是某个 domain order 的偶然。
+
+5. reviewer 为什么买账：这篇卖的是视角加机制。novelty 的核心不是“又一个 lifelong 蒸馏模块”，而是把旧知识保存讲成“知识过渡路径选择”。这个叙事很适合 LReID，因为它正好解释了稳定性和可塑性的矛盾。
+
+**3. Camera-aware graph multi-domain adaptive learning for unsupervised person re-identification**
+
+1. 触发观察：作者抓的是无监督 ReID 里一个很实在的问题：聚类和对比学习生成了伪标签，但训练时忽略了相机之间和相机内部的语义关系。跨相机同身份会因为光照、背景、分辨率产生大域偏移；同相机内不同身份又可能非常相似。过去用相机风格迁移做数据增强，但生成图像和 ReID 判别学习是割裂的，还可能引入噪声。
+
+2. 重定义动作：他们把无监督 ReID 从“伪标签不准”重定义成“多相机子域之间缺少语义传播”。每个 camera 被定义成一个 domain，训练不只是 cluster contrastive learning，而是 camera-aware multi-domain adaptive learning。关键词是 camera-aware graph、multi-domain、semantic propagation、domain-invariant representation。
+
+3. 机制怎么长出来：机制很顺。既然每个相机是一个 domain，就在 mini-batch 里每个相机采样，构建异质图。跨相机同伪身份给正边，同相机不同伪身份给负边，然后用 GCN 把这些关系传播到统一空间。最后用对抗训练把 GCN 学到的“理想域不变表示”迁回普通 feature extractor。这个机制和重定义绑定很紧，图的边定义就是论文问题定义的具体实现。
+
+4. 证据闭环：关键消融是 inter-camera correlation、intra-camera correlation 和完整 CGMAL 的比较。跨相机边单独有效，说明“相机间语义传播”是主收益；同相机负关系也有效，说明“相机内相似身份区分”不是摆设。不同 backbone、GCN/GAT 替换、检索可视化共同证明它不是某个网络结构偶然涨点，而是 camera-aware graph 这个结构在起作用。
+
+5. reviewer 为什么买账：这篇卖的是视角。GCN 不新，memory contrastive 也不新，但“把 camera 当成多个无标签子域，并用图显式传播伪身份关系”是清楚的。reviewer 买账的点在于它把 camera metadata 从普通 nuisance 变成了可用结构。
+
+**4. Camera-Proxy Enhanced Identity-Recalibration Learning for Unsupervised Visible-Infrared Person Re-Identification**
+
+1. 触发观察：作者看到 UVI-ReID 里有两层不稳定：第一，模态差异大，跨模态类别映射容易错；第二，同一模态内部还有 camera domain 差异，导致类内不紧、类间混。直接做跨模态聚类或类别级匹配太早，会在基础还不稳定时引入错误关系。还有一个工程层面的观察：普通 memory momentum update 容易被 easy samples 主导，hard samples 长期没被修正。
+
+2. 重定义动作：他们把问题从“无监督跨模态伪标签噪声”重定义成“identity relationship 需要 camera-proxy 逐级校准”。旧问题是 class-level cross-modal mapping，新问题是先建立模态内 camera proxy，再做 class 和 camera proxy 双层跨模态映射。关键词是 camera-proxy、identity-recalibration、local association、proxy-enhanced cross-modal mapping。
+
+3. 机制怎么长出来：两阶段训练是从重定义自然推出来的。第一阶段只做 camera proxy 级别的模态内对比，用 CDL 在每个相机域内找局部 hard negatives，先把单模态结构稳住。DCMU 更新 memory 时偏向 hard samples，让簇中心不被 easy samples 拖走。第二阶段再用 PCM 通过匈牙利匹配建立可见光和红外之间的 class/proxy 双层对应。GCR 测试时再把 camera 信息放进图重排序，属于对“camera 信息全流程使用”的延伸。
+
+4. 证据闭环：核心消融是 CDL、DCMU、PCM、GCR 分别加入后的提升。PCM 的证据对应“只做类级匹配不够，proxy 级一致性有用”；DCMU 的证据对应“hard samples 主导更新能改善簇”；CDL 的证据对应“camera-local contrastive 比全局乱拉更稳”。可视化部分包括 t-SNE 和检索列表，说明第一阶段让模态内结构更稳，第二阶段和 GCR 改善跨模态身份匹配。这里证据闭环比较工程化，但和每个问题点基本对应。
+
+5. reviewer 为什么买账：这篇卖的是系统化视角，不是单一模块。camera proxy 之前有人用过，跨模态图匹配也有人做过，所以 novelty 不在“第一次使用 camera 信息”，而在“把 camera proxy 作为 UVI-ReID 身份校准的中间层，并做成两阶段流程”。reviewer 买账的前提是每个组件的消融都能说明它解决了一个具体不稳定源。
+
+**5. Categorical Attention: Fine-grained Language-guided Noise Filtering Network for Occluded Person Re-Identification**
+
+1. 触发观察：作者先抓住两个失败现象。传统遮挡 ReID 依赖姿态、人体解析、attention 或遮挡增广，但它们都只看视觉，容易把遮挡物也当成身份特征。CLIP-ReID 引入语言后仍然不够，因为 prompt 是全局粗粒度的，文本主要用于对比监督，并没有直接指导模型区分“人、可见属性、遮挡物”。
+
+2. 重定义动作：他们把遮挡问题重定义成 language-guided noise filtering，而不是简单的 visible part matching。更关键的是，他们把图像内容拆成三个语义类别：主体身份、可见属性、遮挡物。关键词是 categorical attention、fine-grained prompt、occlusion-aware prompt、subject token、attribute token、context token。这个重定义把“遮挡”从一个空间缺失问题变成了一个语义分类和噪声过滤问题。
+
+3. 机制怎么长出来：机制基本是顺着这个重定义长出来的。主体 token S* 来自全局图像特征，表示“这是谁”；属性 token A* 由 learnable queries 从 patch 中提取可见身份属性；上下文 token O* 提取遮挡物特征。三者组成 “A photo of a [S*] person with [A*] partially occluded by [O*]” 这样的细粒度 prompt，再用文本作为 query 对视觉 patch 做 cross-attention，引导图像特征看可见人体区域、压掉遮挡物。动态融合用预测不确定性给 visual、text、cross-attention feature 分配权重，是对可靠性问题的补强。
+
+4. 证据闭环：最强证据是 prompt ablation：从普通 “a person”，到加 S*，再加 A*，最后加 O*，性能逐步提升，直接证明这三个语义类别不是装饰。组件消融 F、C、D 说明细粒度 prompt、cross-attention、动态融合各自有效。attention map 可视化也很关键，PFD 和 CLIP-ReID 仍会看遮挡物，而 FLaN-Net 更集中在可见人体区域。这类可视化正好证明“重定义是对的”，不是只看涨点。
+
+5. reviewer 为什么买账：这篇主要卖视角。CLIP 用在 ReID 已经不是新鲜事，learnable token 也不是新鲜事，但它把遮挡拆成“主体、可见属性、遮挡物”三个语言槽位，这个问题刻画很清楚。reviewer 买账的是“语言不只是全局语义监督，而是细粒度噪声过滤器”。
+
+**6. Causal Clothes-Invariant Feature Learning for Cloth-Changing Person Re-ID**
+
+1. 触发观察：作者抓住的是换衣 ReID 最本质的捷径：训练集中衣服通常属于某个固定身份，衣服几乎不被不同身份共享。模型为了最小化训练损失，会自然学到 clothing shortcut，也就是用衣服认人。现有方法即使用轮廓、解析、3D、gait 等辅助信息，也往往没有完全抛弃 RGB，所以只是稀释衣服捷径，而不是切断它。
+
+2. 重定义动作：这是这批里最强的重定义之一。他们不再说“我们要学 clothes-invariant feature”，而是说普通训练在学 P(Y|X)，这个目标本身会吸收衣服和身份的伪相关；真正应该学的是 P(Y|do(X))，通过 causal intervention 切断 X <- C -> Y 的 backdoor path。关键词是 clothing ownership、clothing shortcut、spurious correlation、causal intervention、backdoor adjustment、confounder dictionary。
+
+3. 机制怎么长出来：机制和重定义绑定非常紧。既然衣服 C 是 confounder，就要建 Confounder Dictionary，存每件衣服的分布和先验 P(c)。既然目标是 P(Y|do(X))，Intervention Module 就按 backdoor adjustment 对所有衣服条件求和，而不是只看当前图像衣服。既然 intervention 依赖“衣服表示必须是衣服而不是身份”，就加 Disentangle Regularization，把 identity feature 和 clothing feature 拉开。这里不是先有模块再找故事，而是每个模块都能对应 causal graph 里的变量。
+
+4. 证据闭环：它的证据设计很完整。首先和其他 causal ReID 方法比较，并用 NCC(C -> X) 这种因果强度指标证明 clothing shortcut 被压低，而不只是 rank1 提升。其次消融 Intervention Module、Confounder Dictionary、Disentangle Regularization，说明不是普通 feature enhancement。再用随机化衣服标签、聚类伪衣服标签测试对 clothing label 质量的鲁棒性。t-SNE 显示身份特征和衣服特征分开，activation map 显示模型不再过度看衣服纹理，检索图显示换衣匹配更稳。这些证据直接围绕“切断衣服捷径”闭环。
+
+5. reviewer 为什么买账：这篇卖的是视角，而且视角强于模块。模块本身是 dictionary、feature injection、disentanglement，不算罕见；真正 novelty 是把 CC-ReID 的失败原因从“衣服变化太大”改写成“训练目标被衣服所有权伪相关污染”。reviewer 会买，因为它解释了为什么很多 clothes-agnostic 方法仍然会失败，并且给了能验证 shortcut 是否减弱的指标和可视化。
+
+最后看这批论文的共同套路：它们不是从“我要加一个模块”开始，而是先抓一个具体失败现象，然后把老问题换成一个更有结构的新问题，例如交互、过渡、语义传播、身份校准、噪声过滤、因果干预。机制好发的关键，是新问题一旦说清楚，模块几乎像是在实现这个新问题里的变量和关系。最值得学的是证据闭环：不要只报涨点，要有能证明“这个新问题定义确实成立”的消融、破坏性对照或可视化。
+
+########## deep_5 ##########
+你列的是 6 篇，不是 5 篇。我按 6 篇都拆了。
+
+**CCFL**
+1. 触发观察：作者抓住的不是“联邦 ReID 精度不够”，而是 ReID 的联邦场景天然比普通联邦学习更异质。不同机构的数据来自不同地点、时间、设备和规模，数据非独立同分布很重，而且客户端算力也不同。统一模型、统一训练策略在这种场景下反而不合理。
+
+2. 重定义动作：他们把问题从“怎么在隐私约束下聚合多个 ReID 数据集”改写成“不同客户端应该被允许使用不同训练策略和不同模型结构”。关键词是 customized client、heterogeneous model、interaction model、non-IID、limited server。这个重定义很重要，因为它把 FedAvg 失效从技术限制变成了问题本身。
+
+3. 机制怎么长出来：既然客户端可定制，就不能直接平均本地模型参数，所以自然需要一个结构统一的交互模型作为知识交换媒介。大数据客户端用 DBSCAN 和较大模型，小数据客户端用层次聚类和较小模型，本地模型把知识蒸馏给交互模型，交互模型在服务器聚合后再反向指导本地模型。这个机制和问题定义绑定比较紧，交互模型是异构客户端设定下的自然产物。
+
+4. 证据闭环：关键不是只报 mAP，而是比较统一策略、统一模型、多策略、多模型的差别。它用 8 个 ReID 数据集模拟真实客户端异质性，并和 FedUReID、FedUCC 等联邦 ReID 方法比较。真正支撑重定义的是“多策略、多模型版本优于简化联邦版本”，说明定制客户端确实不是装饰。
+
+5. 审稿人为什么买账：这篇卖的主要是视角，其次才是蒸馏机制。它的真实新意来自“联邦 ReID 不应该默认一个全局同构模型”这个部署假设，而不是某个 ReID 特征提取模块。对我们有用的点是，先把现实约束讲成旧范式不成立，再让机制变成补救这个范式缺口的必然选择。
+
+**CCUP**
+1. 触发观察：作者注意到换衣 ReID 的核心瓶颈不是模型不够复杂，而是真实数据太少，尤其是同一个身份在大量服装变化下的标注样本太少。PRCC、LTCC 等数据集规模和每人服装数都有限，模型很容易过拟合衣服。
+
+2. 重定义动作：他们把“如何设计更好的换衣 ReID 模型”改写成“如何构造足够覆盖身份、服装、相机变化的预训练分布”。关键词是 controllable synthetic data、low-cost、self-annotated、outfits per identity、pretrain-finetune、cloth-irrelevant features。
+
+3. 机制怎么长出来：如果缺的是同一身份多服装数据，那机制自然就是用 3D 人体、服装资产、纹理替换和虚拟相机生成可控数据。裸人体网格定义身份，服装和纹理定义换衣变化，Unreal Engine 模拟监控场景，检测器自动裁框和生成标签。后面的预训练加微调只是让这个大规模合成分布进入普通模型。
+
+4. 证据闭环：最关键的证据是同一模型在 CCUP、UnrealPerson、PersonX、ClonedPerson 等不同合成数据上预训练后的对比。如果只是“多一点数据有用”，通用合成数据也应该同样有效；如果 CCUP 更好，才说明“换衣预训练分布”这个重定义成立。Grad-CAM 可视化进一步说明预训练后模型更关注脸、脖子、肩、手腕、鞋等相对少变的区域，而不是背景或衣服。
+
+5. 审稿人为什么买账：这篇卖的是数据和任务分布视角，不是模型机制。新意来自“换衣 ReID 缺的不是又一个去衣服损失，而是可控的大规模换衣监督”。对我们有用的套路是，发现任务缺少某个关键变化轴，然后自己构造这个轴，并用跨数据集预训练收益证明它不是普通增广。
+
+**CFPER**
+1. 触发观察：作者先做了一个很实用的观察，global feature 加 part feature 在 Market、Duke 这种整体行人数据上只带来很小收益，却增加计算量；但在 Occluded-Duke 上收益明显更大。也就是说，查询样本难度不同，统一走细粒度匹配会浪费简单样本，也会让困难样本得不到足够处理。
+
+2. 重定义动作：它把 ReID 从“所有查询都用同一个特征管线”改写成“检索应该根据查询难度动态分配计算资源”。关键词是 coarse-to-fine retrieval、query difficulty、early exit、easy query、hard query、adaptive resource allocation。
+
+3. 机制怎么长出来：先用 ViT 得到全局特征和 patch 特征，用全局特征与 patch 特征的相似度排序，再用一阶差分估计可见人体区域比例。可见人体足够多就判为简单样本，只用全局特征提前退出；否则进入细阶段，用拓扑监督的 patch-to-part router 和 part experts 提取细粒度部件特征。这个机制和重定义绑定很紧，难度分流直接决定是否启用细粒度计算。
+
+4. 证据闭环：最关键的是三类证据连起来了。第一，global 和 global+part 在不同难度数据集上的收益差异证明观察成立。第二，early-exit 阈值的表格展示了 mAP、rank1 和 FLOPs 的权衡，证明它真在做资源分配。第三，easy/hard 查询可视化和 Top-10 检索结果说明简单样本用全局足够，困难样本确实从部件阶段受益。
+
+5. 审稿人为什么买账：这篇卖的是视角，部件专家只是服务于视角。它把效率从附属指标变成方法的核心问题，这比单纯说“我又做了一个 part module”更容易成立。对我们有用的是，找一个主流评价以外但真实存在的轴，比如计算、更新、标注、部署，再用一个很小的观察表把问题立住。
+
+**Channel-aware feature mining network**
+1. 触发观察：作者的观察是 VI-ReID 中 RGB 和红外不仅有整体模态差异，还有通道层面的不平衡。有些通道包含衣服纹理、轮廓、热分布等身份线索，有些通道贡献很弱甚至引入噪声。现有方法多把通道操作当预处理或数据增强，没有显式挖掘通道关系。
+
+2. 重定义动作：它把 VI-ReID 的模态差距问题改写成“通道级身份信息没有被充分建模”。关键词是 channel-aware、channel-level feature optimization、channel-level feature refinement、channel imbalance、identity-relevant channels。
+
+3. 机制怎么长出来：机制是三段式。CLFO 在早期用深度可分离卷积、归一化、SE 和可学习残差做通道筛选；CLFR 再用通道注意力、非局部融合、空间注意力抑制噪声；MDFO 在高低层特征之间做通道和空间维度的联合优化。这个机制和重定义的绑定中等偏弱，因为一旦说“通道重要”，很多通用注意力堆叠都可以被解释成通道挖掘。
+
+4. 证据闭环：它的闭环主要靠通道激活可视化和模块消融。可视化说明不同通道确实响应不同身份区域；CLFO、CLFR、MDFO 逐步加入带来提升；子模块消融进一步说明各部件有增益。不过它更像“模块有效性证明”，对“通道重定义一定正确”的因果证明不够强，例如缺少更硬的参数匹配注意力对照或随机通道扰动对照。
+
+5. 审稿人为什么买账：这篇主要卖机制和结果，视角相对普通。它的真实新意是把 VI-ReID 里已有的通道增强思路推进到特征学习内部，并用较完整实验支撑 SOTA。对我们来说，这是一个警示样本：如果观察不够尖，机制就容易变成通用模块堆叠，投稿时会更依赖结果强度。
+
+**CLIP-Based Camera-Agnostic Feature Learning**
+1. 触发观察：ICS ReID 只在每个相机内部标身份，不给跨相机身份对应。已有方法先做相机内学习，再用相似度或聚类做跨相机关联，但伪标签容易被视角、背景、光照和相机风格污染。CLIP 可以给语义监督，但直接用于跨相机阶段也会受噪声影响。
+
+2. 重定义动作：它把 ICS ReID 从“低标注 ReID 的伪标签问题”改写成“如何利用相机内标签学习 camera-agnostic 特征”。关键词是 camera-agnostic feature learning、intra-camera discriminative learning、inter-camera adversarial learning、prompt learning、semantic supervision。
+
+3. 机制怎么长出来：第一阶段用 CLIP 和可学习 prompt 给每个相机内身份生成隐式文本描述。第二阶段用相机内混合记忆库存身份中心特征和实例特征，同时拉近同身份中心和困难正样本，推开困难负样本。第三阶段做跨相机关联和原型对比，再用 ICAL 惩罚模型区分同一伪身份在不同相机下的全局 ID。机制和重定义绑定很紧，因为每一步都在回答“相机内标签能提供什么，跨相机噪声怎么压”。
+
+4. 证据闭环：最能支撑重定义的不是最终 mAP，而是 ICDL、ICAL、CLIP prompt 的消融，以及全局分类器概率分布可视化。图里从单峰变多峰的现象说明，同一伪身份在不同相机下被拉到一起，模型的相机可分性被削弱。若伪标签质量或跨相机关联准确率也提升，闭环会更完整。
+
+5. 审稿人为什么买账：这篇卖的是视角加协议适配。它不是简单说“CLIP 用在 ReID”，而是把 CLIP 放进 ICS 的特殊标签结构里，用剩余标签解决缺失标签带来的跨相机偏差。对我们有用的套路是，先精确定义“哪些监督缺失，哪些监督还在”，然后让机制围绕剩余监督自然展开。
+
+**CLIP-driven fine-grained mining**
+1. 触发观察：作者注意到 CLIP 在文本行人检索里全局对齐很强，但难以区分细粒度人物差异。更关键的是，简单加局部对齐并不一定有效，甚至会伤害 CLIP，因为 CLIP 预训练是实例级图文对齐，随机初始化的局部解码器和粗暴切块会破坏预训练空间。
+
+2. 重定义动作：它把问题从“给 CLIP 加 fine-grained alignment”改写成“在不引入外部工具、不破坏 CLIP 预训练空间的前提下挖细粒度关系”。关键词是 pre-training space compatibility、explicit fine-grained mining、attention bias forward、text extraction strategy、visual bridge、momentum distillation。
+
+3. 机制怎么长出来：ABF 不直接切最后层特征，而是在 ViT 中后层复制 CLS 作为局部 token，并用 attention bias 限制每个局部 token 只关注对应 patch 组，同时保留全局路径。FEL 用共享可学习 token 和多模态解码器从文本中聚合细粒度语义。TES 用局部视觉表示监督 FEL，把 CLIP 空间里的余弦关系和欧氏距离关系转移给细粒度文本表示。MoD 和零初始化用于避免随机局部 token 一开始学噪声。这个机制和重定义绑定非常紧。
+
+4. 证据闭环：这篇的消融很有说服力。普通细粒度 baseline 比 global baseline 还差，证明“直接加局部会伤”这个观察成立；加入 ABF 仍不够，加入 TES 和 MoD 后才稳定提升，说明关键不是局部本身，而是和 CLIP 预训练空间兼容。ABF 对 PCB 的对比也证明 ViT 不能照搬 CNN 的水平切块。
+
+5. 审稿人为什么买账：这篇卖的是诊断视角。它不是声称“我有一个更强 local module”，而是先证明常识动作会失败，再提出兼容预训练空间的约束和机制。对我们最有启发的是，好的创新可以来自“旧办法为什么在新基础模型上不再成立”的反直觉证据。
+
+**共同套路**
+这批论文的共同写法是，先找一个具体、可测的失败现象，再把它上升成旧范式的盲点：统一客户端、有限换衣数据、统一查询预算、忽略通道、相机内标签孤岛、粗暴局部 CLIP。真正强的几篇不是模块复杂，而是机制几乎从重定义里自然长出来，并且用消融证明“这个新问题定义是对的”，而不是只证明“加了模块涨点”。
+
+补查来源主要用于核对先例背景：FedUCC/FedReID 相关联邦 ReID 先例见 [Robust Knowledge Adaptation for Federated Unsupervised Person ReID](https://arxiv.org/abs/2301.07320) 和 [FedReID benchmark](https://arxiv.org/abs/2008.11560)；CCUP 与 CCAFL 条目见 [CCUP arXiv](https://arxiv.org/abs/2410.13567) 和 [CCAFL arXiv](https://arxiv.org/abs/2409.19563)。
+
+########## deep_6 ##########
+我按 `pdftotext -f 1 -l 8` 读了方法段。CMAG 的消融跨到第 9 页以后，我补读了后续消融段。下面只拆“怎么把观察构造成创新”，不抄模块。
+
+**1. CLIP-powered modality centering with spiral training**
+
+1. 触发观察：作者抓住的是 CLIP-ReID 两阶段范式在 V-I ReID 里会失效。文本提示先由初始图像特征学出来，之后固定文本提示去训练图像编码器；但可见光和红外本来距离很远，图像特征训练过程中不断移动，文本提示不再同步，语义指导会变成陈旧锚点。
+
+2. 重定义动作：他们没有把问题讲成“再做一个跨模态对齐损失”，而是讲成“四个异质空间没有被同时居中”：可见图像、红外图像、可见文本、红外文本。关键词是 `separable text description`、`modality centering`、`identity-aware`、`modality-aware`、`semantic consistency`。
+
+3. 机制怎么长出来：既然文本里也混了身份信息和模态信息，就把提示拆成身份 token 和模态 token，再用不含模态描述的 partial prompt 做 visible-text 和 infrared-text 居中。既然固定提示会过期，就交替训练文本提示和图像编码器，形成 spiral training。这个机制和重定义绑定较紧，但训练序列靠经验选，稍微削弱了“自然推出”的纯度。
+
+4. 证据闭环：关键不是最终 SOTA，而是 STD、MCL、ST 的组合消融。表 6 到表 8 分别证明可分离文本、模态居中、螺旋训练各有作用；表 7 拆 text-to-text 和 image-to-text centering，说明“居中”不是空话。遗憾是没有更直接画出四个空间距离随训练收敛的轨迹，所以闭环是中等强度。
+
+5. reviewer 为什么买账：这篇卖的是视角多于单个损失。它把 CLIP 在 V-I ReID 里的问题从“加文本辅助”改成“文本、图像、模态、身份四个空间共同演化”。novelty 真正来源是 CLIP-ReID 范式迁移到 V-I 后的失配诊断。
+
+**2. CLNS**
+
+1. 触发观察：作者给了一个很具体的数值观察：SYSU-MM01 上，同一身份跨相机正样本平均距离高达 1.0615，而同一身份同相机正样本只有 0.7795。也就是说，聚类更容易按相机分裂身份，而不是按真实身份聚合。
+
+2. 重定义动作：他们把“伪标签有噪声”重定义成“相机诱导的结构性噪声”。这比随机噪声更好讲，因为它有稳定来源：背景、视角、光照和相机域。关键词是 `camera-induced label noise`、`camera-domain centroid`、`coarse-to-fine purification`、`structural gatekeeper`。
+
+3. 机制怎么长出来：如果噪声来自相机，就不能只在全局聚类结果上修补。CPC 先屏蔽同相机近邻，用跨相机一致性校准原型；OTPM 再同时匹配身份原型和相机域中心；NCL 用相机域中心做软监督压实分布；NMU 按可靠性更新 memory，防止离群点污染中心。机制和问题定义绑定很紧。
+
+4. 证据闭环：它做得比较规范。除了组件消融，还用 ARI、inter-camera distance、跨模态匹配准确率和类内距离来证明“相机噪声真的被压下去了”。例如 CPC 后 ARI 提升，PGM 替换 OTPM 会掉点，去掉 NCL 后类内距离变大，去掉 NMU 后 memory 漂移带来性能下降。这些指标正好对应它重定义的噪声来源。
+
+5. reviewer 为什么买账：这篇卖的是视角加证据。模块本身不算激进，但它把无监督 V-I 的伪标签错误讲成可测量、可分层处理的相机结构噪声，所以比“再加一个伪标签清洗模块”更容易成立。
+
+**3. Cloth-debiasing with Stable Diffusion**
+
+1. 触发观察：作者看到的是换衣 ReID 里模型会误认“不同人穿相似衣服”。热图也显示基线更关注肩部、胸口等衣服区域，而不是脸、颈部、轮廓等更稳定线索。另一个观察是 GAN 换衣质量差，容易保留原衣服或姿态几何不稳定。
+
+2. 重定义动作：它把换衣 ReID 从“需要更多换衣样本”改写成“训练集中衣服是分类捷径”。所以目标不是随机换衣，而是“统一衣服特征空间”，让衣服失去区分身份的能力。关键词是 `cloth-debiasing`、`consistent clothing`、`clothing feature bias`、`clothing-irrelevant features`。
+
+3. 机制怎么长出来：既然要让衣服不能当捷径，就用 Stable Diffusion inpainting 生成同风格长袖长裤，尽量覆盖手臂和腿部，迫使模型看头颈、轮廓等非衣服信息。SCHP 提供衣服 mask，OpenPose 控制姿态，LaDI-VTON 保证换衣几何。再用 ReID 相似度、FID 和人工过滤去掉低质图，最后配合 centroid loss 训练。
+
+4. 证据闭环：PRCC 上 baseline 是 55.2/55.8，单加 CCAL 只涨 0.6/0.7，GFCC+CCAL 到 61.2/60.2，说明主要贡献来自“相似衣服数据”这个去偏干预。更关键的是 Fig. 3 到 Fig. 5：相似衣服误检减少，热图从衣服区域转向脸和颈部。这比单纯涨点更能支撑“衣服捷径被削弱”。
+
+5. reviewer 为什么买账：这篇卖的是数据干预视角，不是网络结构。novelty 在于把生成模型用成反捷径工具：不是扩充外观多样性，而是故意制造衣服相似性，让身份学习从衣服上移开。
+
+**4. CMAG**
+
+1. 触发观察：作者把 US-VI ReID 的失败拆成四个具体来源：模态差异、批训练看不到全局关系、伪标签噪声、相机偏置。其中最有辨识度的观察是：直接相似度会漏掉同一身份的远距离姿态变化，但特征图中的闭环路径可能把正面、侧面、背面串起来。
+
+2. 重定义动作：它把伪标签验证从“点对点相似度”重定义为“高阶图结构一致性”。关键词是 `circular topology structure`、`cycle-aware`、`graph-enhanced memory`、`global feature memory`、`camera-aware consistency`。
+
+3. 机制怎么长出来：CATS 用 kNN 图和矩阵幂找闭环路径，并用 circular consistency loss 约束闭环节点；DCAM-ViT 在多 class token 上做跨模态注意力；GSMEM 用队列 memory 和自适应 kNN 图做跨 batch 传播；CARC 用相机内聚类和全局相似度联合过滤冲突样本。CATS 和“拓扑闭环”绑定较紧，其余模块更像是围绕四个失败来源各补一块。
+
+4. 证据闭环：消融显示 DCAM、CATS、GSMEM、CARC 逐步涨，完整模型在 SYSU-MM01 到 68.52 Rank-1 和 64.0 mAP。更贴近重定义的是三类图：超参 p 证明闭环长度有效，检索可视化说明 partial modules 仍处理不好大姿态差，t-SNE 和距离分布显示跨模态聚合和类间分离逐步改善。但如果严审，“拓扑”本身是否比普通图传播更关键，还需要更强的 cycle-only 对照。
+
+5. reviewer 为什么买账：这篇卖的是机制包装加大组合。它的新意来源是把图记忆、跨模态注意力、相机约束放进“闭环拓扑验证”的叙事里。优点是故事大，风险是模块堆叠感重。
+
+**5. Coarse-to-Fine Cross-Modality Generation**
+
+1. 触发观察：车辆 ReID 真实训练数据受隐私和标注成本限制，3D 引擎数据有域差，GAN 数据细粒度属性不稳定。车辆类内差异很小，前格栅、尾灯、车身类型、颜色错一点，合成数据就会误导训练。
+
+2. 重定义动作：它明确说自己“不追求网络结构”，把问题重定义成“面向 ReID 的高保真合成数据生产”。关键词是 `coarse-to-fine generation`、`prompt processing`、`diffusion fine-tuning`、`semantic filtering`、`high-fidelity synthetic data`。
+
+3. 机制怎么长出来：如果问题是属性一致性和真实域风格，就先建车辆属性 prompt 库；如果通用 diffusion 不贴近目标域，就用 1% 无标签真实图经 BLIP-2 生成 caption，再用 LoRA 方式微调 diffusion；如果生成图会多车、碎车、颜色错，就用 YOLO 裁车、CLIP 做颜色语义过滤；最后用 CE 和 circle loss 训练任意 ReID 模型。
+
+4. 证据闭环：它没有只报 ReID 精度，而是同时报 FID、生成组件消融、数据量消融、有限真实数据曲线和检索可视化。关键结论是“质量比数量重要”：语义过滤后数量减少，但 ReID 更好；真实数据越少，合成数据收益越明显。这正好证明它定义的数据瓶颈是成立的。
+
+5. reviewer 为什么买账：这篇卖的是数据生成 pipeline，不是 ReID backbone。novelty 在于把扩散模型从“好看图像生成”转成“细粒度属性受控、少量无标签目标域适配、自动语义过滤”的 ReID 数据工厂。
+
+**6. ColorSketchNet**
+
+1. 触发观察：现实里嫌疑人检索可能同时有文字描述和素描，但现有方法多按 Text-RGB、Sketch-RGB 成对对齐。作者进一步统计属性覆盖：RGB 信息最全，text 有颜色和粗语义但缺轮廓，sketch 有轮廓和姿态但缺颜色和纹理。直接投到共同空间会造成语义歧义。
+
+2. 重定义动作：它把跨模态 ReID 从“缩小模态差距”重定义为“建立公平属性空间”。也就是说，不同模态不是噪声不同，而是属性缺失不同。关键词是 `attribute fairness`、`auxiliary color sketch`、`attribute compensation`、`modality-agnostic`、`unified collaborative alignment`。
+
+3. 机制怎么长出来：既然 text 和 sketch 都缺属性，就生成一个同时含轮廓、颜色、纹理的 color sketch 作为桥。CSG 先做动态光照修正，再用 DoG 抽轮廓，并在 YUV 空间把轮廓放到亮度通道、颜色放到色度通道。ACRM 用 dissimilarity 找缺失信息并补偿，再用 photo-query dissimilarity 去掉辅助模态引入的噪声。UCA 再用身份保持、内容一致、三向结构约束和类内紧致损失统一对齐。
+
+4. 证据闭环：它的消融正好围绕“属性公平”展开。彩色 sketch 相比黑白 sketch 在 text、sketch、text+sketch 三种任务都涨；AC 单独补属性有效，RF 去噪后继续涨；UCA 的各个损失逐步加入也有增益；t-SNE 显示 color sketch 把 sketch 和 photo 拉近。这些证据不是只证明模块有效，而是在证明“补属性再对齐”比直接对齐更合理。
+
+5. reviewer 为什么买账：这篇卖的是视角。它把统一多模态检索讲成“缺失属性补偿问题”，而不是多个任务共享 backbone。novelty 真正来源是 auxiliary color sketch 这个桥接媒介，以及“先补偿再对齐”的逻辑。
+
+这批论文共同套路很清楚：先抓一个具体失败，不说“模型不够强”，而是把失败命名成结构性变量，例如提示漂移、相机诱导噪声、衣服捷径、闭环关系缺失、合成数据语义不稳、属性空间不公平。然后机制只做一件事：制造一个能直接干预这个变量的桥、中心、过滤器或生成过程。最后证据不能只放 mAP，要有对应诊断量或可视化，证明那个被重新定义的问题确实被改变了。
+
+联网只做轻量先例边界核对，主体判断来自本地 PDF。相关背景包括 [CLIP-ReID](https://arxiv.org/abs/2211.13977)、[LaDI-VTON](https://arxiv.org/abs/2305.13501)、[UNIReID](https://arxiv.org/abs/2307.10348) 和 [Vehicle-Diff](https://arxiv.org/abs/2404.06468)。
+
+########## deep_7 ##########
+我按 `pdftotext -f 1 -l 8 '文件名' -` 读了你列出的论文。你标题里写“7”，但实际清单只有 6 篇；下面按这 6 篇完整拆。
+
+**1. Condense loss**
+
+1. 触发观察：作者先观察训练过程中“特征向量范数”和准确率的关系。随着训练推进，特征范数下降，准确率上升；Market-1501 前 30 个 epoch 里 rank-1 下降时，特征范数反而上升。这个观察把一个很普通的 loss 设计问题，变成了“训练动态里范数压缩不稳定”的问题。
+
+2. 重定义动作：大家通常把 softmax、NormFace、ArcFace 这类 loss 理解为“角度间隔”或“分类边界”问题，作者改说：ReID 训练里被忽略的是 feature magnitude，它不仅不是要被归一化掉的副产品，反而控制梯度行为。关键词是 vector magnitude、negative radial gradient、tangential gradient、monotonically decreasing。
+
+3. 机制怎么长出来：如果目标是稳定压缩范数，并让后期梯度变小，那么内积分类器就不够自然，因为内积既可增大范数也可减小角度。于是作者把分类分数从 `W^T x` 改成负欧氏距离 `-(W-x)^2`，让梯度方向直接指向类中心，同时通过范数影响切向梯度。margin 只是进一步拉大类间距离。机制和重定义绑定较紧。
+
+4. 证据闭环：闭环不是只靠涨点，而是三层证据：Fig.1 显示范数与准确率的反向趋势；Section 3.4 做 Naive/L2/Condense 的梯度分解；Table 1 比 NormFace、CosFace、ArcFace、Naive Softmax，Table 2 再排除“只是 weight decay 或 normalization 起作用”的解释。这个证据链是在证明“范数和梯度动态值得被建模”。
+
+5. reviewer 为什么买账：卖点主要是视角，不是复杂模块。它把“ReID loss 还能怎么改”从常见的角度间隔，转成训练过程中的范数利用和梯度单调性。缺点是“图像内涵就是范数”这个说法有点过，但数学推导和对照实验把它撑住了。
+
+**2. Confidence guided semi-supervised cross-modality person re-identification**
+
+1. 触发观察：监督 VI-ReID 标注贵，纯无监督 VI-ReID 又和监督方法差距大。关键失败点不是模型不够强，而是跨模态伪标签不可靠。作者还指出固定相似度阈值 0.5 会被背景、姿态等因素误导，不同身份也可能超过阈值。
+
+2. 重定义动作：它把问题从“怎么做更强的跨模态特征学习”改成“少量真标签如何作为当前模型可靠性的标尺，指导无标签跨模态伪标签生成”。关键词是 confidence guided、cross-modality matching confidence、clustering confidence、semi-supervised cross-modality discriminant feature learning。
+
+3. 机制怎么长出来：既然核心是可靠性，就自然要有两个置信度：图像对层面的跨模态匹配置信度，用有标注可见光/红外真匹配对动态估计阈值；簇层面的 clustering confidence，用类似轮廓系数的指标决定保留多少跨模态簇对。之后用静态 memory bank 保持模态内结构，用动态 memory bank 拉近可靠跨模态簇。
+
+4. 证据闭环：前 8 页里最像闭环的是动态阈值分析：SYSU-MM01 上比固定阈值多过滤约 20% 不可靠伪标签对，RegDB 约多过滤 1%，且随着模型变好，被过滤数量下降。这证明“阈值应随模型状态变化”这个重定义。另一个证据是和 DPIS 在 10%、25%、50% 标签率下对齐设置比较，说明不是只靠更宽松设定赢。
+
+5. reviewer 为什么买账：这篇卖的是“半监督跨模态”这个实际设定和“置信度校准伪标签”的视角。模块本身偏工程组合，但每个部件都服务于伪标签可靠性，所以叙事成立。它的投稿价值来自实际问题设定，而不是某个单独模块多新。
+
+**3. Content and Salient Semantics Collaboration for Cloth-Changing Person Re-Identification**
+
+1. 触发观察：换衣 ReID 里，普通模型过度依赖衣服；很多方法靠姿态、轮廓、衣服标签等额外信息。作者的具体观察很小：average pooling 更保留整体内容，max pooling 更抓显著区域。这个观察被拿来解释 RGB 图像内部其实已有可用语义。
+
+2. 重定义动作：大家以为换衣 ReID 需要“去衣服”或借助外部模态，作者改说：不需要额外模态，RGB 特征里已经有 identity-related content semantics 和 identity-related salient semantics，只是过去没有把两者分开挖掘和协同。关键词是 content semantics、salient semantics、abundant semantics、without auxiliaries。
+
+3. 机制怎么长出来：average pooling 对应 content semantics，max pooling 对应 salient semantics，这一步很自然。SMR 用全局和局部语义挖掘，再用身份监督保证语义和身份相关，用 refinement 做通道重标定。CSSC 的 cross-parallel collaboration 让 content 先帮助 salient，再让 salient 反过来帮助 content。前半段机制自然，cross-parallel 有一定架构设计味道，但能接住叙事。
+
+4. 证据闭环：Table III 显示去掉 SMR 后 PRCC cloth-changing 从 65.5/63.0 掉到 57.8/55.8，local mining 和 refinement 各自也有贡献。Table IV 证明只用 content、只用 salient、简单串联或简单并联都不如 cross-parallel collaboration。Fig.3 检索可视化说明 baseline 被相似颜色和衣服纹理误导，而 CSSC 能靠身体、局部形状、鞋裤等语义找回。
+
+5. reviewer 为什么买账：这篇卖的是视角加简洁性。创新不在 average/max pooling 本身，而在把两个老操作命名成两类身份语义，并用换衣 ReID 的痛点证明它们互补。对 B 类稿很有参考价值：小观察，只要能重定义成清晰语义，再配干净消融，也能成立。
+
+**4. Context-Aided Semantic-Aware Self-Alignment for Video-Based Person Re-Identification**
+
+1. 触发观察：视频 ReID 的全局特征会混入遮挡、检测框错误、背景；局部 part 特征又有对齐问题。硬条带太粗，外部 pose/parsing 计算重，还会把背包、手提包这类有身份价值的上下文当背景。
+
+2. 重定义动作：它把视频 ReID 从“时间聚合问题”改成“无需外部人体拓扑的语义自对齐问题”。作者强调的不是再做 attention，而是用视频自身上下文学习 pixel-level part-aligned representation 和 semantic-aligned global representation。关键词是 self-alignment、context-aided、semantic-aware、without prior human topology。
+
+3. 机制怎么长出来：先用特征响应强弱分前景/背景，再对同一身份若干视频的前景像素聚类，生成部件伪标签，训练 part classifier。CARE 用整段视频的全局时空上下文增强目标区域、压制噪声。SGFA 根据语义部件置信图给全局特征加权，因为同一部件在不同视频中贡献不同。每个机制都对应一个前面的观察，绑定很紧。
+
+4. 证据闭环：消融很直接。CSSA1 相对硬条带 baseline 在三个数据集上 mAP 分别提升 9.5%、9.8%、4.6%，证明“自语义 part 对齐”比条带强。CARE 在 LS-VID 上相对 CSSA1 提升 5.6% mAP 和 7.1% Rank-1，证明视频上下文能压噪。SGFA 把 LS-VID Rank-1 从 78.6% 提到 83.7%，证明 pair-wise semantic-aligned global feature 有用。可视化也对应检测错误和遮挡。
+
+5. reviewer 为什么买账：这篇卖的是完整视角：外部语义不可靠，视频内部可以自生成语义对齐。模块复杂，但每个模块都解释一个具体失败点，所以不像堆模块。novelty 主要来自“self-alignment without human topology”的问题重定义。
+
+**5. Corruption-Invariant Person Re-Identification via Coarse-to-Fine Feature Alignment**
+
+1. 触发观察：现实部署有噪声、模糊、天气、压缩等 corruption，普通 ReID 干净训练、污染测试会崩。作者关键观察是 t-SNE：不同 corruption 类型会形成各自分布，样本按 corruption 聚在一起。这让 corruption 不再只是数据增强噪声，而像不同模态。
+
+2. 重定义动作：大家以为 CI-ReID 是鲁棒增强或低质量恢复问题，作者改说：CI-ReID 是 clean modality 和 multiple corrupted modalities 之间的语义对齐问题。进一步，严格对齐会丢失模态独有信息，所以要 coarse-to-fine alignment。关键词是 corruption as modality、modality-unified semantic subspace、coarse-to-fine feature alignment、bridge feature generation。
+
+3. 机制怎么长出来：如果 clean 是可靠 exemplar，corrupted 是异质模态，那么 teacher-student 蒸馏很自然：冻结 clean teacher，用 corrupted student 向 clean feature 对齐。严重 corruption 是 hard sample，所以加 weighted contrastive loss。又因为严格对齐会丢信息，所以用 Brownian bridge 生成 clean 与 corrupted 之间的中间特征，填出连续语义结构。机制和重定义绑定很强。
+
+4. 证据闭环：Fig.1 的 corruption t-SNE 是重定义的根证据。四种协议 Clean Eval、Corrupt Eval、Corrupt Query、Corrupt Gallery 证明作者没有只测一种有利场景。Market-1501 的 Corrupt Eval 相对 baseline 有大幅提升，mINP 从 18.48 到 32.96，mAP 从 56.36 到 69.74，Rank-1 从 75.86 到 85.68。Clean Eval 略降反而支撑了作者说法：对齐会牺牲部分干净域特定信息，但换来 corruption-invariant 表征。
+
+5. reviewer 为什么买账：真正 novelty 是“把 corruption 看成模态”以及“严格对齐不够，要桥接中间结构”。BFG 本身是借来的思想，但放在 corruption-as-modality 的框架里就有了合理性。它是典型的现实问题重定义型稿子。
+
+**6. Cross-domain person re-identification via learning Heterogeneous Pseudo Labels**
+
+1. 触发观察：跨域 ReID 依赖目标域伪标签，但现有聚类方法通常只给一种伪标签。目标域有遮挡、光照、视角、姿态，导致类内大、类间小；一种伪标签很难准确描述每个样本。另一个观察是 contrastive learning 选正负样本时会被 noisy labels 误导。
+
+2. 重定义动作：作者把问题从“怎么生成更准的单一伪标签”改成“一个目标域样本需要多个异质伪标签共同描述”。关键词是 Heterogeneous Pseudo Labels、fine-grained label、coarse-grained label、instance label、Pseudo Labels Constraint、Confidence Contrastive Loss。
+
+3. 机制怎么长出来：fine-grained label 用 DBSCAN，捕捉细身份差异；coarse-grained label 用 K-means，减少细分带来的噪声；instance label 来自 memory bank，保留样本级关系和历史特征。既然三种标签描述同一样本，就需要 PLC 把异质标签变换到可比较空间并约束一致。既然 contrastive learning 受噪声影响，就用 CCL 根据置信度重权正负样本相似度。
+
+4. 证据闭环：Table 1 很强。单标签里 F、C、I 各有表现，两两组合普遍强于单标签，HPL 三标签又强于两标签；加 PLC 从 80.3/92.5 提到 82.5/92.9，加 CCL 比普通 CL 更好，最终 Ours 达到 87.2 mAP、95.0 Rank-1。Table 2 还证明 DBSCAN 做 fine、K-means 做 coarse 最优，Table 3 讨论 hard/soft 标签形式。这些消融直接证明“异质标签互补”这个重定义。
+
+5. reviewer 为什么买账：卖点是伪标签视角，不是 DBSCAN 或 K-means。它把已有工具组织成“细粒度、粗粒度、实例级”三种互补描述，再用一致性和置信度把故事闭合。它比单纯“伪标签去噪”更像一个可投稿的问题定义。
+
+**共同套路**
+
+这批论文共同套路是：先抓一个很具体的失败现象或反直觉观察，然后把它改名成一个更高层的问题，比如范数动态、伪标签可靠性、内部语义协同、自语义对齐、corruption 模态、异质标签描述。机制不是凭空堆出来，而是让每个组件对应重定义里的一个词，最后用消融或可视化证明“这个新问题定义是真的”，而不是只证明模型涨点。
+
+外部补查只用于确认 CSSC 背景链接，主要判断来自本地 PDF 前 8 页文本： https://arxiv.org/abs/2405.16597
+
+########## deep_8 ##########
+你列出的实际是 6 个 PDF，其中 `Cross-Modal Full-Mode...` 的 ACM 版和 arXiv 版是同一篇工作。我两份都读了，不把它们伪装成两个不同创新。
+
+**1. CoRL: Cross-modal Collaborative Representation Learning**
+1. 触发观察：作者抓住两个具体问题。第一，TIPR 过去总在做图文“关联”，但文本本身比图像更干净，身份细节更集中，能补足视觉噪声。第二，同一身份的图文正样本并不等价，单视角对应文本是强正样本，跨视角同身份文本可能有外观差异，是弱正样本。
+2. 重定义动作：他们把问题从“图文对齐”改写成“跨模态互补协作”，再把正样本从一个类别拆成“强正、弱正、负样本”的有界匹配问题。关键词是 `complementarity`、`virtual-text`、`collaboration`、`identity-bounded matching`。
+3. 机制怎么长出来：如果文本有用但推理时图像没有配套文本，就自然推出 `VES`，从图像合成虚拟文本特征；如果虚拟文本要真有用，就要和真实文本特征对齐，再用 `CRCL` 让视觉特征和虚拟文本特征对原型的关系一致。强弱正样本的观察则直接推出 `IBM`，让强正相似度高于上界，弱正落在中间，负样本低于下界。
+4. 证据闭环：关键不是总表涨点，而是 `IBM*` 去掉强弱正区分后掉点，证明“正样本内部有层级”这个重定义有意义；`VES` 的各个对齐损失消融证明虚拟文本不是随便加的噪声；检索可视化展示 CoRL 能把视觉相似但文本语义不同的人区分开。
+5. reviewer 为什么买账：真正卖点不是一个新模块，而是两个视角：TIPR 不只是对齐，还能做模态互补；同身份正样本不是全等。机制和视角绑定比较紧，所以审稿人容易接受它不是“又加了一个 CLIP 分支”。
+
+**2. FMFA ACM 版: Cross-Modal Full-Mode Fine-Grained Alignment**
+1. 触发观察：作者指出两个旧方法盲点。全局匹配损失偏向 hard negative，却忽略“正样本没有排到前面”的 unmatched positive；局部注意力方法只给最终融合结果，无法检查局部词和图像块到底有没有对齐。
+2. 重定义动作：他们把问题从“挖 hard negative”改成“修正 unmatched positive”，又把 fine-grained alignment 从隐式注意力改成“显式可检查的全模式对齐”。关键词是 `full-mode`、`explicit fine-grained alignment`、`unmatched positive pairs`、`verification capability`。
+3. 机制怎么长出来：`A-SDM` 很自然，若真实正样本相似度低于 batch 中最高相似样本，就增大该正样本的拉近权重。`EFA` 也顺着“可检查”长出来，用词 token 和图像 patch 的稀疏相似矩阵显式聚合，再用 hard coding 和排序损失约束 joint embedding。
+4. 证据闭环：表 6 分别消融 `A-SDM` 和 `EFA`，证明两者都不是装饰；参数实验里 `A-SDM` 的拉力过强会掉点，说明它确实在控制 unmatched positive 的拉近；稀疏相似图可视化展示哪些 patch 被保留，回应“显式对齐是否可检查”。
+5. reviewer 为什么买账：它卖的是视角加轻量机制。创新性不在“做局部对齐”本身，而在把已有的 hard negative 叙事反过来，强调 missed positive，并把隐式局部交互改造成可观察的显式过程。
+
+**3. FMFA arXiv 版**
+1. 触发观察：和 ACM 版一致，核心仍是 SDM 关注 hard negative、忽略 unmatched positive，以及隐式局部对齐不可验证。
+2. 重定义动作：同样把 TIPR 讲成“全局正样本修正 + 显式细粒度校验”的问题，而不是单纯再堆 attention。
+3. 机制怎么长出来：`A-SDM`、`EFA`、`IRR`、`ID loss` 的组合与 ACM 版一致。arXiv 版没有提供一个独立的新机制。
+4. 证据闭环：同样依赖三数据集的模块消融、稀疏相似图、top-k 检索展示。它的证据服务于同一个重定义。
+5. reviewer 为什么买账：这份应视为同一工作的预印本，不应在我们调研里算两篇独立先例。对我们有用的是它的构造套路，不是重复计数。
+
+**4. CAP: Cross-modality Average Precision Optimization**
+1. 触发观察：VT-ReID 最终看排序指标，但训练常用 triplet、circle、center 这类局部度量损失，不能直接优化整体排序。Smooth-AP 虽然优化 AP，但在 VT-ReID 中会优先修正同模态高排名样本，反而忽略真正要解决的跨模态排序。
+2. 重定义动作：作者把问题从“学一个跨模态嵌入空间”改成“直接优化跨模态 AP”。关键词是 `Cross-modality Average Precision`、`CAPV`、`CAPT`、`overall ranking order`、`cross-modality discrepancy`。
+3. 机制怎么长出来：如果检索是 visible 查 thermal 和 thermal 查 visible，就自然得到 `CAPV` 和 `CAPT` 两个方向；如果跨模态距离太大影响 CAP，就加 `DMA`，只重点对齐那些距离较近、非模态变化较小的跨模态样本；全局局部特征只是把这个思想放到更强表征上。
+4. 证据闭环：表 6 直接比较 CAP、Smooth-AP、FastAP、Blackbox AP、triplet、circle 等，证明不是“AP 损失都行”，而是跨模态定义更合适；表 4 拆 `CAPV/CAPT`，证明双向互补；表 5 证明 `DMA` 优于普通 KL 或平均权重；t-SNE 和检索图证明跨模态分布确实被拉近。
+5. reviewer 为什么买账：这是典型“目标函数错配”式创新。它卖的主要是视角，不是结构。因为评价指标就是 AP，作者把 AP 改成 VT-ReID 专用的跨模态 AP，逻辑非常直接。
+
+**5. CSGN: CLIP-driven Semantic Guidance Network**
+1. 触发观察：CCReID 里视觉外观被衣服强烈污染，传统方法容易困在视觉瓶颈；但直接用 CLIP 也有问题，因为 CLIP 生成或学习的文本往往偏向衣服颜色，而衣服颜色在换衣场景不稳定。
+2. 重定义动作：作者把 CCReID 从“学习衣服不变视觉特征”改写成“用异质语义描述引导视觉特征摆脱衣服偏置”。关键词是 `semantic guidance`、`visual bottleneck`、`multi-description`、`RGB and gray-scale pseudo-text`、`heterogeneous semantic fusion`。
+3. 机制怎么长出来：既然 RGB 文本偏颜色，灰度图可以弱化颜色并突出体型、姿态，就自然推出 `MDG` 同时生成 RGB 和灰度伪文本；既然两种文本各有偏向，就用 `HSF` 同时约束视觉特征；`VSS` 的 ResNet+ViT 融合是补强视觉编码，和核心重定义的绑定不如 MDG/HSF 紧。
+4. 证据闭环：表 3 显示 `HSF` 从 51.7 提到 63.2，说明真正起作用的是异质语义融合；表 4 比 CoOp、CoCoOp 和带 Meta-Insert 的 MDG，证明不是普通 prompt；表 6 比 RGB-only、gray-only 和 HSF，证明“两种描述互补”这个说法成立。
+5. reviewer 为什么买账：这篇主要卖“语义引导换衣 ReID”的视角，机制有点模块化堆叠，但 `HSF` 的消融很强，能支撑“RGB/灰度语义互补”这个核心故事。
+
+**6. CVAF: CLIP-Based View-Consistent Alignment for AGPReID**
+1. 触发观察：AGPReID 里航拍和地面视角差异极大。属性方法依赖人工或检测属性，但航拍低分辨率下属性不可靠；视角解耦方法看似合理，却可能把身体轮廓、结构过渡这类身份相关但带视角性的线索一起删掉。
+2. 重定义动作：作者把问题从“显式去掉视角因素”改成“保持跨视角一致的身份语义，同时过滤视角噪声”。关键词是 `view-consistent alignment`、`Text Consistency Loss`、`Semantic Filtering Module`、`view-specific noise`。
+3. 机制怎么长出来：如果同一身份的文本 token 应该稳定对齐多个视角图像，就自然推出 `TCL`，约束同一身份多视角图像与文本的相似度方差；如果文本 token 已经学到稳定身份语义，就用 `SFM` 通过文本引导的空间注意力和通道重权重过滤图像 patch。
+4. 证据闭环：表 3、表 4 在 AG-ReID 和 CARGO 上分别消融 `TCL`、`SFM` 和组合，且 ViT/ResNet 都有效；更关键的是他们额外画了图文相似度均值和方差，证明 `TCL` 确实降低同一身份跨视角相似度波动；`SFM` 还做了空间、通道、残差和插入层位置消融。
+5. reviewer 为什么买账：这篇卖的是“别粗暴解耦视角，而是做语义一致性约束”的视角。机制不复杂，但 `TCL` 的方差证据非常对题，能证明作者不是只在 CLIP-ReID 上加模块涨点。
+
+这批论文共同套路很清楚：先找一个旧叙事里的盲区，比如 hard negative 之外的 unmatched positive、强弱正样本差异、视觉瓶颈、视角解耦误伤；再把它命名成一个更具体的新问题；最后设计一个几乎能从这个新问题直接推出的损失或分支。真正值得学的是：好创新不是“模块看起来新”，而是观察、重定义、机制、消融四件事能互相咬住。
+
+########## deep_9 ##########
+我按你实际列出的 6 篇拆了。题头写“9”，但清单里只有 6 个 PDF。
+
+**CycleTrans**
+1. 触发观察：作者抓到的是“对齐会伤判别性”。VI-ReID 里大家都在缩小可见光和红外的模态差异，但直接做分布对齐会把不同身份也拉近，颜色、纹理等细粒度线索也被洗掉。
+2. 重定义动作：它把旧问题“模态对齐”改成“学习 neutral yet discriminative features”。关键词是 neutral、discriminative、modality-relevant、modality-irrelevant prototypes、cycle construction。核心说法是，跨模态特征不能只中性，还必须能保留身份细节。
+3. 机制怎么长出来：机制和重定义绑得比较紧。KCM 先抽“模态相关但有判别性”的语义，DMM 再用共享原型把它变成中性特征，最后用 cycle reconstruction 逼中性特征恢复原模态和异模态语义。逻辑是，如果中性特征还能重构模态相关信息，就说明它没有把身份细节洗掉。
+4. 证据闭环：关键不是只报 SOTA，而是消融显示 KCM、DMM、cycle 都有贡献。文中说 KCM 和 DMM 分别带来 Rank-1 提升，cycle 相比 DMM 后又明显提升，完整方法比基线高很多。DMM 替代实验说明“直接用原型”“不用 discrepancy”“Transformer 替代”都不如 DMM。t-SNE 证明无 cycle 时中性但边界不清，Grad-CAM 证明 cycle 让模型看更完整的人体细节。
+5. reviewer 为什么买账：买的是视角加机制，不只是模块。它把“对齐和判别冲突”讲成一个明确矛盾，再用 cycle 作为保持判别性的检验器。novelty 真正来自“中性特征必须可逆地保留身份语义”这个问题重定义。
+
+**DATE**
+1. 触发观察：CLIP-ReID 的 learnable prompt 有判别性，但缺少具体人的描述先验。MLLM 生成的描述有人的属性细节，但文本会有噪声。已有多模态 ReID 把 learnable text 和 description text 同步融合，等价于把可靠和不可靠信息同等对待。
+2. 重定义动作：它把问题从“文本能不能帮助 ReID”改成“两类文本嵌入的可靠性和粒度不同，不能对称使用”。关键词是 learnable-based textual embedding、description-based textual embedding、asymmetric fusion、auxiliary clues、cross-granularity training。
+3. 机制怎么长出来：因为 description text 有信息但不够可靠，所以它不让描述文本当决定性监督，而是作为辅助线索注入 visual embedding 和 learnable textual embedding。Textual-to-Visual Adapter 用描述去补视觉，Textual-to-Textual Adapter 用描述去补身份 prompt，再用图像级描述和身份级文本做交叉粒度训练。
+4. 证据闭环：核心消融是融合方式和文本约束。cross-attention 比直接相加好很多，直接相加甚至会明显伤性能，说明“非对称融合”不是装饰。损失消融里，只有 learnable text、只有 description text、二者组合和完整约束逐步提升，说明描述文本确实是辅助增强而不是替代视觉或替代 prompt。
+5. reviewer 为什么买账：买的是“文本空间不等价”的融合视角。真正 novelty 不是 adapter，而是把 MLLM 描述的噪声风险讲清楚，然后给出不让噪声文本主导训练的非对称设计。不过这篇的增益相对克制，更像 ICME 级别的稳健增量，不是特别强的问题重定义范式。
+
+**Deep intelligent technique**
+1. 触发观察：作者说监控图像有噪声、视角、光照、背景、姿态错位等问题，传统智能模型特征选择不足，生物启发优化算法容易因为停止迭代而错过更合适的特征。
+2. 重定义动作：它没有把 ReID 重新定义成一个更深的问题，而是改写成“在噪声监控图像中做最优特征选择和超参数调节”。关键词是 HLGFS、Horned Lizard optimization、GoogLeNet、feature selection、fitness。
+3. 机制怎么长出来：机制主要是把 Horned Lizard 优化和 GoogLeNet 组合。预处理去噪，GoogLeNet 抽特征，Horned Lizard 优化用于选择脸、体型、衣服等特征并调参数。这里逻辑绑定很弱，蜥蜴变色行为和 ReID 视觉机制之间更多是类比，不是从 ReID 失败现象自然推出。
+4. 证据闭环：它报了 CUHK03、Market1501、DukeMTMC 上很高的 accuracy 和 mAP，也做了训练数据比例消融，以及 GN+PS、GN+GW、GN+AC、GN+HO 和 GN+HL 的优化器对比。但这些证据主要证明“这个组合分数高”，没有干净证明问题重定义成立，也缺少标准 ReID 协议下的强基线、模块隔离和可解释分析。
+5. reviewer 为什么买账：如果买账，买的是应用型混合智能系统和高指标，不是 ReID 方法视角。对我们要做 CCF-B 方法稿来说，这篇更像反例：不要靠“某优化器加某网络”当创新，也不要用很泛的噪声、复杂度、特征选择来替代具体观察。
+
+**DFLSG**
+1. 触发观察：无监督 text-to-image ReID 不只是没有身份标签，还没有可靠的图文匹配关系。图像聚类能给伪标签，但文本不一定和图像匹配，MLLM 生成文本也会有幻觉和冗余属性。
+2. 重定义动作：它把旧问题“无监督跨模态学习”改成“训练样本和伪标签的 dependability 问题”。关键词是 dependable text generation、reliable image-text matching relationship、Error Sample Filtering、dependable identity labels。
+3. 机制怎么长出来：既然核心是可靠性，它先用多个 MLLM 生成候选描述，再用已有 TIReID 模型的图文相似度选择更可靠文本。然后只对图像聚类，把伪标签传给匹配文本，再用文本和图像类中心的相似度做 IQR 异常过滤。最后 MTJL 从类中心和实例两个层面收紧跨模态特征。
+4. 证据闭环：消融是比较完整的。单 MLLM 生成文本加聚类最差，加入 MTJL 有明显提升，换 MLLM 会波动，说明文本质量不稳定。dependable text generation 明显提升，ESFM 再提升。IQR 和 Z-score、LOF 对比，聚类方法替换，过滤强度参数分析，都在证明“可靠样本构造”是承重点。
+5. reviewer 为什么买账：买的是问题分解。它没有简单说“大模型生成文本能用”，而是说无监督 TIReID 的难点在两层可靠性：图文关系可靠、伪身份可靠。novelty 来源是数据构造和可靠性过滤的闭环，机制和重定义绑定较紧。
+
+**DIRL**
+1. 触发观察：图像级 VI-ReID 方法处理不了视频里的姿态、运动、遮挡和时序变化。已有 VVI-ReID 多在帧级做模态不变，序列级特征聚合后仍有模态差异，而且 modal-related 信息会继续干扰身份判别。
+2. 重定义动作：它把 VVI-ReID 从“时序聚合加跨模态对齐”改成“序列级模态交互之后，显式学习 ID-related representation”。关键词是 sequence-level modal-invariant features、modality information interaction、feature decoupling、ID-related 和 modal-related。
+3. 机制怎么长出来：先用 TBM 抽帧级特征，第一层分模态，后面共享。CIM 在聚合时序信息时引入跨模态交互，用共享 key 让可见光和红外在序列级产生共同参照。FDM 再学习模态相关分量并从序列特征中减掉，只留下 ID-related 表示。损失里还用第三个“neither modality”类别逼 ID 特征不能被模态分类。
+4. 证据闭环：HITSZ-VCM 消融显示 CIM 单独带来 Rank-1 和 mAP 大提升，FDM 单独也提升，两者组合最好。t-SNE 显示同身份跨模态更聚、不同身份更分开，Rank-5 可视化展示视频检索结果。参数分析说明帧数增加和 FDM 维度变化会影响性能。
+5. reviewer 为什么买账：买的是“序列级”这个落点。feature decoupling 本身不是新概念，但它把解耦从图像帧级挪到视频序列级，并放在跨模态交互之后，形成了和 VVI-ReID 场景绑定的说法。novelty 是问题位置的新，不是基础算子的新。
+
+**Discovering Multi-Frequency Embedding**
+1. 触发观察：已有 VI-ReID 多在空间域做特征，频域方法也常常只做全频段或低高频二分。作者用频率可视化说明，低频更容易含模态风格和照明，高频更保留边缘结构，但身份线索并不只在高频，而是分散在多个频带。
+2. 重定义动作：它把问题从“频域能减少模态差异”改成“身份是 multi-frequency 的，单一频率切分会在保留身份线索和去除模态噪声之间做坏取舍”。关键词是 multi-frequency embedding、frequency-aware diversity、band-specific importance、cross-modality retrieval。
+3. 机制怎么长出来：HiLo-FM 对低频和高频分工处理，低频在频域用可学习复权重做风格调节，高频回到空间域用轻量多尺度卷积抽结构细节，再用空间注意力融合。FADE 把频谱拆成多个频带，对每个频带学注意力，多分支产生多样特征。CMSR 把训练目标改成更贴近跨模态检索，CMRR 用排序不一致约束鼓励分支多样性。
+4. 证据闭环：这篇闭环很完整。Fig. 2 先用可视化证明多频观察。组件消融显示 HiLo-FM、FADE、CMRR、CMSR 都有增益，完整组合最好。ρ 曲线证明低频不能全丢也不能过多依赖，0.2 附近最好。频带数 B 的曲线证明多频拆分优于 DC/others 或简单低高频，但过多频带会退化。方形、圆形、菱形分割对比进一步证明不是随便切。
+5. reviewer 为什么买账：买的是视角加证据。FFT、IN、多尺度卷积都不是新零件，真正 novelty 是“多频身份线索分布”这个观察，以及用参数曲线证明单一频率划分确实不够。机制和重定义绑定很紧，是这批里最值得学的创新构造方式之一。
+
+这批论文共同套路是：先不急着加模块，而是把旧范式的副作用单独命名，比如对齐损判别性、文本有噪声、无监督样本不可靠、序列级仍残留模态信息、单频切分会丢身份线索。然后造一个中间概念承接新问题，比如 neutral feature、dependable pair、ID-related sequence representation、multi-frequency embedding，再让模块围绕这个中间概念服务。真正能让 reviewer 买账的不是模块复杂，而是消融和可视化能证明“这个新问题定义本身是对的”。

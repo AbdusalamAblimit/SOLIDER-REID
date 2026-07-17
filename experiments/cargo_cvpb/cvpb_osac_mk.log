@@ -1,0 +1,302 @@
+####################################################################################
+# OSAC KILL-SWITCH  dataset=market1501  ckpt_dir=log/market1501/exp260b_base_gcn512_2stage
+# epochs requested=[20, 40, 60, 80, 100, 120]  final_epoch=120  smoke=0
+####################################################################################
+
+====================================================================================
+CORE TEST 1 / D4 — per-epoch spectral OVER-COLLAPSE trajectory
+  (gallery-feature spectrum; NC1/proto on SEEN train ids)
+====================================================================================
+/root/miniconda3/envs/solider-reid/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+=> Market1501 loaded
+  Loaded pose index: data/market1501/pose_data/train/index.json (12936 entries)
+  Loaded pose index: data/market1501/pose_data/train/index.json (12936 entries)
+  Loaded pose index: data/market1501/pose_data/_val_merged/index.json (23100 entries)
+using img_triplet sampler
+using Transformer_type: swin_base_patch4_window7_224 as a backbone
+/root/work/SOLIDER-REID/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[PSG+GCN] Skeleton GCN head enabled: 2 layers, hidden=512, test_feat=global, kp_weight=score
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /root/work/SOLIDER-REID/log/market1501/exp260b_base_gcn512_2stage/transformer_20.pth
+[extract] transformer_20.pth; POSE_TEST_FEAT=global; num_query=3368 num_classes=751
+    [batch 0/302] (3s)
+    [batch 40/302] (17s)
+    [batch 80/302] (30s)
+    [batch 120/302] (43s)
+    [batch 160/302] (57s)
+    [batch 200/302] (70s)
+    [batch 240/302] (83s)
+    [batch 280/302] (97s)
+[extract] query=3368 gallery=15913 dim=1024
+    [batch 0/203] (1s)
+    [batch 40/203] (15s)
+    [batch 80/203] (29s)
+    [batch 120/203] (42s)
+[extract] train(capped)=8000 #train-ids=421
+[extract] classifier prototypes: (751, 1024)
+[cache] ep20 -> /tmp/osac_mk/feat_ep20.npz
+  ep 20: eff_rank=  62.12  stable_rank=  34.69  topPC1= 6.48%  top10=45.22%  NC1=0.1531  proto_align=0.9094  | mAP=91.30 R1=95.58
+=> Market1501 loaded
+  Loaded pose index: data/market1501/pose_data/train/index.json (12936 entries)
+  Loaded pose index: data/market1501/pose_data/train/index.json (12936 entries)
+  Loaded pose index: data/market1501/pose_data/_val_merged/index.json (23100 entries)
+using img_triplet sampler
+using Transformer_type: swin_base_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[PSG+GCN] Skeleton GCN head enabled: 2 layers, hidden=512, test_feat=global, kp_weight=score
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /root/work/SOLIDER-REID/log/market1501/exp260b_base_gcn512_2stage/transformer_40.pth
+[extract] transformer_40.pth; POSE_TEST_FEAT=global; num_query=3368 num_classes=751
+    [batch 0/302] (2s)
+    [batch 40/302] (16s)
+    [batch 80/302] (29s)
+    [batch 120/302] (43s)
+    [batch 160/302] (57s)
+    [batch 200/302] (71s)
+    [batch 240/302] (84s)
+    [batch 280/302] (98s)
+[extract] query=3368 gallery=15913 dim=1024
+    [batch 0/203] (2s)
+    [batch 40/203] (16s)
+    [batch 80/203] (29s)
+    [batch 120/203] (43s)
+[extract] train(capped)=8000 #train-ids=421
+[extract] classifier prototypes: (751, 1024)
+[cache] ep40 -> /tmp/osac_mk/feat_ep40.npz
+  ep 40: eff_rank=  75.35  stable_rank=  45.40  topPC1= 4.87%  top10=36.53%  NC1=0.1351  proto_align=0.9553  | mAP=93.77 R1=97.00
+=> Market1501 loaded
+  Loaded pose index: data/market1501/pose_data/train/index.json (12936 entries)
+  Loaded pose index: data/market1501/pose_data/train/index.json (12936 entries)
+  Loaded pose index: data/market1501/pose_data/_val_merged/index.json (23100 entries)
+using img_triplet sampler
+using Transformer_type: swin_base_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[PSG+GCN] Skeleton GCN head enabled: 2 layers, hidden=512, test_feat=global, kp_weight=score
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /root/work/SOLIDER-REID/log/market1501/exp260b_base_gcn512_2stage/transformer_60.pth
+[extract] transformer_60.pth; POSE_TEST_FEAT=global; num_query=3368 num_classes=751
+    [batch 0/302] (2s)
+    [batch 40/302] (16s)
+    [batch 80/302] (30s)
+    [batch 120/302] (44s)
+    [batch 160/302] (58s)
+    [batch 200/302] (72s)
+    [batch 240/302] (86s)
+    [batch 280/302] (100s)
+[extract] query=3368 gallery=15913 dim=1024
+    [batch 0/203] (2s)
+    [batch 40/203] (16s)
+    [batch 80/203] (30s)
+    [batch 120/203] (44s)
+[extract] train(capped)=8000 #train-ids=421
+[extract] classifier prototypes: (751, 1024)
+[cache] ep60 -> /tmp/osac_mk/feat_ep60.npz
+  ep 60: eff_rank=  80.30  stable_rank=  49.15  topPC1= 4.42%  top10=34.21%  NC1=0.1296  proto_align=0.9532  | mAP=94.27 R1=97.03
+=> Market1501 loaded
+  Loaded pose index: data/market1501/pose_data/train/index.json (12936 entries)
+  Loaded pose index: data/market1501/pose_data/train/index.json (12936 entries)
+  Loaded pose index: data/market1501/pose_data/_val_merged/index.json (23100 entries)
+using img_triplet sampler
+using Transformer_type: swin_base_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[PSG+GCN] Skeleton GCN head enabled: 2 layers, hidden=512, test_feat=global, kp_weight=score
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /root/work/SOLIDER-REID/log/market1501/exp260b_base_gcn512_2stage/transformer_80.pth
+[extract] transformer_80.pth; POSE_TEST_FEAT=global; num_query=3368 num_classes=751
+    [batch 0/302] (2s)
+    [batch 40/302] (16s)
+    [batch 80/302] (30s)
+    [batch 120/302] (44s)
+    [batch 160/302] (58s)
+    [batch 200/302] (72s)
+    [batch 240/302] (87s)
+    [batch 280/302] (101s)
+[extract] query=3368 gallery=15913 dim=1024
+    [batch 0/203] (2s)
+    [batch 40/203] (16s)
+    [batch 80/203] (30s)
+    [batch 120/203] (44s)
+[extract] train(capped)=8000 #train-ids=421
+[extract] classifier prototypes: (751, 1024)
+[cache] ep80 -> /tmp/osac_mk/feat_ep80.npz
+  ep 80: eff_rank=  81.97  stable_rank=  50.38  topPC1= 4.42%  top10=33.46%  NC1=0.1234  proto_align=0.9577  | mAP=94.48 R1=97.03
+=> Market1501 loaded
+  Loaded pose index: data/market1501/pose_data/train/index.json (12936 entries)
+  Loaded pose index: data/market1501/pose_data/train/index.json (12936 entries)
+  Loaded pose index: data/market1501/pose_data/_val_merged/index.json (23100 entries)
+using img_triplet sampler
+using Transformer_type: swin_base_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[PSG+GCN] Skeleton GCN head enabled: 2 layers, hidden=512, test_feat=global, kp_weight=score
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /root/work/SOLIDER-REID/log/market1501/exp260b_base_gcn512_2stage/transformer_100.pth
+[extract] transformer_100.pth; POSE_TEST_FEAT=global; num_query=3368 num_classes=751
+    [batch 0/302] (2s)
+    [batch 40/302] (16s)
+    [batch 80/302] (30s)
+    [batch 120/302] (45s)
+    [batch 160/302] (59s)
+    [batch 200/302] (73s)
+    [batch 240/302] (88s)
+    [batch 280/302] (102s)
+[extract] query=3368 gallery=15913 dim=1024
+    [batch 0/203] (2s)
+    [batch 40/203] (16s)
+    [batch 80/203] (30s)
+    [batch 120/203] (45s)
+[extract] train(capped)=8000 #train-ids=421
+[extract] classifier prototypes: (751, 1024)
+[cache] ep100 -> /tmp/osac_mk/feat_ep100.npz
+  ep100: eff_rank=  82.41  stable_rank=  50.85  topPC1= 4.37%  top10=33.16%  NC1=0.1220  proto_align=0.9594  | mAP=94.58 R1=96.97
+=> Market1501 loaded
+  Loaded pose index: data/market1501/pose_data/train/index.json (12936 entries)
+  Loaded pose index: data/market1501/pose_data/train/index.json (12936 entries)
+  Loaded pose index: data/market1501/pose_data/_val_merged/index.json (23100 entries)
+using img_triplet sampler
+using Transformer_type: swin_base_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[PSG+GCN] Skeleton GCN head enabled: 2 layers, hidden=512, test_feat=global, kp_weight=score
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /root/work/SOLIDER-REID/log/market1501/exp260b_base_gcn512_2stage/transformer_120.pth
+[extract] transformer_120.pth; POSE_TEST_FEAT=global; num_query=3368 num_classes=751
+    [batch 0/302] (2s)
+    [batch 40/302] (16s)
+    [batch 80/302] (31s)
+    [batch 120/302] (45s)
+    [batch 160/302] (60s)
+    [batch 200/302] (74s)
+    [batch 240/302] (88s)
+    [batch 280/302] (103s)
+[extract] query=3368 gallery=15913 dim=1024
+    [batch 0/203] (2s)
+    [batch 40/203] (16s)
+    [batch 80/203] (31s)
+    [batch 120/203] (45s)
+[extract] train(capped)=8000 #train-ids=421
+[extract] classifier prototypes: (751, 1024)
+[cache] ep120 -> /tmp/osac_mk/feat_ep120.npz
+  ep120: eff_rank=  82.73  stable_rank=  51.13  topPC1= 4.25%  top10=33.03%  NC1=0.1218  proto_align=0.9571  | mAP=94.61 R1=97.06
+
+  -- trajectory deltas (late training: does loss-still-dropping coincide with collapse?) --
+    100->120 (last interval): d_eff_rank= +0.317  d_topPC1=-0.117%  d_NC1=-0.00027  d_mAP=+0.025
+    80->120                 : d_eff_rank= +0.760  d_topPC1=-0.163%  d_NC1=-0.00167  d_mAP=+0.132
+    20->120 (full)          : d_eff_rank=+20.610  d_topPC1=-2.223%  d_NC1=-0.03135  d_mAP=+3.308
+    OVER-COLLAPSE signature = eff_rank DOWN, topPC1 UP, NC1 DOWN while mAP flat/down.
+
+====================================================================================
+CROSS-SECTION at ep120  Nq=3368 Ng=15913 D=1024
+[SANITY] frozen cosine (global feat) mAP=94.61 R1=97.06 R5=99.05 R10=99.35 nq=3368
+====================================================================================
+[spectrum @ final] gallery eff_rank=82.73 topPC1=4.25% top10=33.03%  (D=1024)
+
+====================================================================================
+CORE TEST 2 — per-query AP error vs collapse signatures (top-PC energy / proto-align)
+====================================================================================
+  rho(AP-error, query-topPC1-energy)   = +0.0140  (n=3368)
+  rho(AP-error, query-top10PC-energy)  = +0.0165  (perm-p 0.3447)
+  rho(AP-error, proto-align MAX)       = +0.0698
+  rho(AP-error, proto-align MEAN)      = +0.1459
+  -- cheap proxies for comparison --
+  rho(AP-error, feat-norm)             = +0.0321
+  rho(AP-error, -top1-margin)          = -0.1458
+  rho(AP-error, same-cam-frac)         = +0.0972
+
+  [hubness-is-symptom] rho(M(q), query-topPC1-energy)  = -0.0575
+  [hubness-is-symptom] rho(M(q), query-top10PC-energy) = -0.1294
+
+====================================================================================
+D3 — top-PC energy <-> AP-error AFTER controlling camera/norm/margin
+====================================================================================
+  partial rho(AP-err, top10PC-energy | norm)         = +0.0157
+  partial rho(AP-err, top10PC-energy | top1-margin)  = +0.0237
+  partial rho(AP-err, top10PC-energy | same-cam)     = +0.0145
+  partial rho(AP-err, top10PC-energy | norm+margin+cam) = +0.0215  (n=3368)
+  partial rho(AP-err, proto-align MAX | norm+margin+cam) = +0.0782
+  D3 PASS if these stay clearly nonzero (collapse not reducible to cheap difficulty).
+
+====================================================================================
+CORE TEST 3 — de-collapse (ABTT remove top-m gallery PCs / ZCA whitening)
+====================================================================================
+  baseline                : mAP=94.609 R1=97.061  H_neg skew=5.171 max=9
+  ABTT top-1  removed   : mAP=94.587 (d-0.022) R1=97.061  H_neg skew=5.272 (d+0.101) max=10
+  ABTT top-2  removed   : mAP=94.574 (d-0.035) R1=97.031  H_neg skew=5.274 (d+0.103) max=11
+  ABTT top-3  removed   : mAP=94.475 (d-0.134) R1=97.061  H_neg skew=5.291 (d+0.120) max=11
+  ABTT top-5  removed   : mAP=94.346 (d-0.263) R1=96.942  H_neg skew=5.117 (d-0.054) max=9
+  ABTT top-8  removed   : mAP=93.942 (d-0.666) R1=97.001  H_neg skew=5.407 (d+0.236) max=11
+  ABTT top-12 removed   : mAP=93.467 (d-1.142) R1=96.734  H_neg skew=5.268 (d+0.098) max=10
+  ABTT top-16 removed   : mAP=92.846 (d-1.763) R1=96.823  H_neg skew=5.765 (d+0.594) max=11
+  ABTT top-24 removed   : mAP=91.519 (d-3.090) R1=96.586  H_neg skew=5.359 (d+0.188) max=12
+  ABTT top-32 removed   : mAP=90.607 (d-4.001) R1=96.882  H_neg skew=7.244 (d+2.073) max=19
+  -- ZCA whitening (gallery-fit), vary #components kept --
+  whiten keep-64        : mAP=94.112 (d-0.496) R1=97.031  H_neg skew=5.046 max=9
+  whiten keep-128       : mAP=94.275 (d-0.334) R1=97.150  H_neg skew=6.596 max=15
+  whiten keep-256       : mAP=94.158 (d-0.451) R1=97.179  H_neg skew=6.685 max=17
+  whiten keep-512       : mAP=94.112 (d-0.497) R1=97.209  H_neg skew=6.309 max=14
+  whiten keep-1024      : mAP=94.093 (d-0.516) R1=97.209  H_neg skew=6.258 max=13
+
+  >> best ABTT: top-0 removed -> mAP=94.609 (d+0.000)
+  >> best whiten: keep-0 -> mAP=94.609 (d+0.000)
+
+####################################################################################
+DESTRUCTIVE CONTROLS (decide life/death)
+####################################################################################
+
+-- D1: random-PC & bottom-PC removal vs TOP-PC removal --
+  m=8: TOP-PC removal   mAP=93.942 (d-0.666)
+  m=8: BOTTOM-PC removal mAP=94.643 (d+0.035)
+  m=8: RANDOM-PC removal mAP=94.632+-0.011 (d+0.024)
+  >> D1 PASS if TOP-PC removal >> bottom/random (collapse axes are special).
+
+====================================================================================
+D2 (CRITICAL) — DE-COLLAPSE residual AFTER k-reciprocal re-ranking
+====================================================================================
+  baseline (raw)                 mAP=94.609  R1=97.061
+  baseline + k-reciprocal        mAP=95.873  R1=96.942  (RR lift d+1.264)
+  ABTT(top-0) raw           mAP=94.609  (raw lift d+0.000)
+  ABTT(top-0) + k-reciprocal mAP=95.873  R1=96.942
+  whiten(keep-0) + k-recip   mAP=95.873  R1=96.942
+
+  >> RESIDUAL (ABTT+RR) - (baseline+RR)   = +0.0000
+  >> RESIDUAL (whiten+RR) - (baseline+RR) = +0.0000
+  >> D2 VERDICT: OSAC survives ONLY if de-collapse keeps a CLEAR POSITIVE residual
+     AFTER k-reciprocal. If residual ~0 or negative -> re-ranking already
+     recovers everything -> OSAC DIES (same death as Hubness).
+
+####################################################################################
+SUMMARY / VERDICT  (market1501)
+####################################################################################
+  TRAJECTORY ep20->ep120: eff_rank 62.1->82.7 (+20.61), topPC1 6.48%->4.25% (-2.22), NC1 0.1531->0.1218, mAP 91.3->94.6
+  LATE interval ep100->ep120: d_eff_rank=+0.317  d_topPC1=-0.117%  d_NC1=-0.00027  d_mAP=+0.025
+  T2 rho(AP-err, top10PC-energy)    = +0.0165  (perm-p 0.3447)
+  T2 rho(AP-err, proto-align max)   = +0.0698
+  T2 rho(M(q), top10PC-energy)      = -0.1294  [hubness=symptom]
+  D3 partial(AP-err,topPC | n+m+c)  = +0.0215  (want clearly !=0)
+  T3 best ABTT raw gain             = +0.000 (top-0)
+  T3 best whiten raw gain           = +0.000 (keep-0)
+  D1 top vs bottom vs random        = -0.666 / +0.035 / +0.024
+  D2 RESIDUAL after k-recip (ABTT)  = +0.0000   (whiten +0.0000)
+      [baseline+RR=95.873  ABTT+RR=95.873]
+
+[done] OSAC kill-switch complete.
+[json] summary -> /tmp/osac_mk/osac_summary_market1501.json

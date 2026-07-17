@@ -1,0 +1,37 @@
+请对实验 exp149 做一次**广范围、严格、面向科研有效性**的代码与方案审查。
+
+你不是只看 diff 是否能跑通，而是要一起审：
+
+1. 想法层面
+- `SCFA (Symmetry-Conditioned Feature Aggregation)` 是否真的是一个和已有 completion / scorer / attention bias 不同的方向
+- 它相对 `exp030a` 是否保持单变量
+- 它是否只是旧思路换名，还是确实在利用 pose-defined bilateral redundancy
+
+2. 代码正确性
+- 默认行为是否隔离，`POSE_SCFA=False` 时 baseline 是否不受影响
+- `SCFA` 的接线是否只影响 skeleton branch 的 aggregation
+- `scfa_*` 日志是否真实反映模块行为，而不是伪统计
+- 是否存在明显 shape / detach / train-test 不一致 / AMP 风险
+
+3. 证据链
+- 当前日志设计是否足够支持及时止损
+- 如果结果中性或负，是否能回答“为什么失败”
+- 这条线若成功，是否有机会支撑 B 类论文中的一个方法级段落；若不够，请明确指出原因
+
+请至少阅读以下材料：
+- `experiments/exp149/design.md`
+- `experiments/exp149/monitor.md`
+- `configs/occluded_duke/pose_psg_gcn_scfa.yml`
+- `config/defaults.py`
+- `model/modules/skeleton_gcn.py`
+- `model/pose_backbone_model.py`
+- `processor/processor.py`
+- `experiments/results.md`
+- `experiments/decisions.md`
+- `experiments/innovation_brainstorm.md`
+
+请输出：
+1. 审查结论：`通过 / 不通过 / 可继续但有风险`
+2. 若不通过，列出阻塞问题
+3. 若可继续，列出必须写进 monitor 的风险点
+4. 明确评价：这条线是否比过去那些 retrieval-side scorer 小修补更像“大一点的新方向”

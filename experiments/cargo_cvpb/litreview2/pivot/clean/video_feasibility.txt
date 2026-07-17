@@ -1,0 +1,49 @@
+**Verdict: no-go。信心 8/10。**
+
+不建议投入 AG-VPReID 9.6M frames 或完整 video ReID 方法线。最多允许一个 1-2 天、严格封顶的 MARS 小下载 sanity check；但它不应被视为新主线。
+
+理由很硬：
+
+1. **video temporal aggregation 已经不是空地**  
+   近年线索已经覆盖 temporal attention、spatial-temporal graph、distractor/occlusion memory、CLIP memory、multi-granularity temporal modeling。比如 STMN 已明确处理视频中的 partial occlusion / temporal distractors，TF-CLIP 已用 sequence memory + temporal memory diffusion 做视频表征，CTL/GRL/TMT 也都在时空关系、局部线索、跨视图聚合上占过。
+
+2. **AG-VPReID 空间被 dataset paper 自己占得很满**  
+   AG-VPReID 是 CVPR 2025，6,632 IDs / 32,321 tracklets / 9.6M frames，方法已经是三流：Temporal-Spatial、Normalized Appearance、Multi-Scale Attention，显式处理 temporal discontinuity、resolution/viewpoint、altitude scale。官方 repo 也把 altitude 分层性能、A2G/G2A 协议都列出来了。  
+   来源：AG-VPReID paper / repo：6,632 IDs、32,321 tracklets、9.6M frames、三流 AG-VPReID-Net。  
+   https://arxiv.org/html/2503.08121  
+   https://github.com/agvpreid25/AG-VPReID-Net
+
+3. **AG-VPReID.VIR 又把 cross-platform + RGB-IR + memory + temporal 占了一轮**  
+   AG-VPReID.VIR 是 IJCB 2025，1,837 IDs / 4,861 tracklets / 124,855 frames，TCC-VPReID 也是三流：style-robust、memory-based cross-view、intermediary-guided temporal。也就是说“跨平台隐藏变量 + temporal + memory routing”已经非常接近被占。  
+   https://arxiv.org/html/2507.17995  
+   https://github.com/agvpreid25/AG-VPReID.VIR
+
+4. **2026 VReID-XFD 继续压缩“航拍-地面视频新问题”的空间**  
+   VReID-XFD 已经把 extreme far distance、altitude/distance/nadir view、physical metadata 做成 challenge；第一名 SAS-VPReID 用 CLIP memory、多粒度 temporal modeling、shape dynamics。这个方向已经进入 challenge-工程竞争。  
+   https://arxiv.org/abs/2601.01312  
+   https://arxiv.org/abs/2601.05535
+
+5. **你提出的唯一像样 re-frame 会被 reviewer 归类成旧问题**  
+   “tracklet 内身份证据间歇可见性 / temporal evidence routing”听起来比 frame weighting 高一级，但没有额外标注或新协议时，落地会被看成：
+   - temporal attention
+   - quality frame selection
+   - occlusion/distractor-aware memory
+   - multi-granularity temporal modeling  
+   这些都已有强先例。零训练 kill-switch 即使成功，也大概率只能证明“best segment / sparse frame > average pooling”，这不足以撑 B 类方法稿。
+
+**唯一可做的廉价 kill-switch，不建议转主线**
+
+若团队心理上必须最后验一次，只下载 MARS，做 frozen frame feature：
+
+- tracklet mean pooling vs top-k frame pooling vs segment max pooling
+- “oracle best-frame gap”是否显著解释失败 query
+- intermittent evidence score 是否比简单 frame quality / blur / occlusion count / similarity variance 更能解释 AP
+
+kill 条件：如果 improvement 不能明显超过简单 top-k / quality weighting，或相关性不能超过现有 hubness M(q)，立刻终止。不要下载 AG-VPReID 全量。
+
+**建议收尾方向**
+
+把 Hubness 写成 analysis short：  
+核心叙事是“强 ReID 的残差失败不是 pairwise similarity，而是 gallery topology 的 many-to-one 吸附”。主结果放 `M(q)` 解释 AP error，rho +0.60；然后诚实写 remedy 被 k-reciprocal / re-ranking 吞掉，因此这是诊断贡献，不是训练方法贡献。
+
+一句话：**video 不是完全没现象，而是你们能廉价拿到的现象不足以避开成熟 temporal aggregation + AG-VPReID 系列占位。别再撞，收 Hubness analysis 更理性。**

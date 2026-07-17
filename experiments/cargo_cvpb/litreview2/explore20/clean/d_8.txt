@@ -1,0 +1,55 @@
+结论先说：低/跨分辨率 ReID 不是完全空白，但“常规 CR-ReID”已经偏红海。不要做 SR、resolution-invariant/adaptive mask、全局 HR-LR feature offset、CLIP/VLM multi-scenario。2025/2026 的 VPFA 已经把“分辨率是特征空间方向”讲掉了；2024-2026 还有 VersReID、ITKM 这类多场景/CLIP 框架覆盖 low-resolution 场景；更早 LRAR/RFD/MRJL 已覆盖动态 metric、多分辨率 gallery、SR-free/adaptive 表征。可争的机会必须从“图像形成过程”或“LR 下监督定义错误”切进去，而不是再做特征补偿。
+
+**机会 1：低分辨率不是模糊图，而是采样格点不确定性**
+Verdict：值得先杀，优先级最高。信心 7/10。
+
+触发观察/失败：现有 CR-ReID 默认 LR 是 HR crop 经一次确定性 bicubic/downsample 得到，bbox 完美、采样相位固定。但真实低分辨率里，一个人高只有 16-32 px 时，±1 个 LR 像素 bbox 偏移或 0.25/0.5 像素 sub-pixel phase 就会改变衣服条纹、鞋/腿、包带是否被采到。大家以为问题是“分辨率低，细节缺失”；其实可能是“同一个人对应一族 alias/crop-lattice 观测，模型只见过其中一个”。
+
+重定义：Cross-resolution ReID = lattice-uncertain observation problem。隐藏变量不是 resolution ratio，而是采样相位、bbox 量化、downsample kernel、轻微 detector crop error。身份匹配应对这族观测做边缘化，而不是把某个确定性 LR 图当真值。
+
+机制草案：Lattice-Marginalized ReID。
+- 对 LR query 生成 K 个 plausible phase/crop/kernel variants。
+- 冻结或训练 backbone 时，把 query 表示成 feature distribution：均值、方差、worst-case 或 softmax expected similarity。
+- 训练端做 phase-consistency / phase-adversarial augmentation，让同一 HR 图在不同 LR lattice 下保持身份稳定。
+- 推理端可先做零训练版本：K-view feature mean / MaxSim / uncertainty-weighted score，不碰 SR，不走 VPFA 的全局 offset 路线。
+
+廉价 kill-switch：零训练即可。
+1. 用 Market/MSMT query 生成 h=16/24/32/48 的 LR 版本。
+2. 每张 query 生成 9 或 25 个 phase/bbox variants：subpixel shift、±1 LR pixel crop shift/expand、不同 antialias kernel。
+3. 用现有 SOLIDER/Swin 特征抽取，测：
+   - same-image phase feature variance；
+   - top1/top10 rank volatility；
+   - phase variance 是否解释 LR false match；
+   - K-phase feature mean/MaxSim 是否比单一 bicubic LR 提升。
+4. Proceed 条件：h≤32 时 rank volatility 明显，且 phase ensemble 带来 ≥2 mAP 或显著 R1 恢复。Kill 条件：phase variance 很小，或 ensemble 与单图无差别。
+
+撞车核查：我没查到 2024-2026 直接做 “subpixel/crop lattice uncertainty for low-resolution ReID” 的工作。VPFA 是 feature-space resolution direction，不是采样相位；LRAR 是 resolution-adaptive representation/mask；RFD 处理 multi-resolution gallery 与 feature distillation；VersReID/ITKM 是多场景/CLIP 框架。这个点目前不像红海，但要继续查 “aliasing / anti-alias / bbox jitter / sub-pixel ReID”。
+
+数据可行性：Market/MSMT 可首验，不需新数据。CARGO/AG-ReID.v2 有真实尺度差但被航拍-地面红海污染，只适合后验 sanity，不适合主故事。
+
+**机会 2：LR 下不是所有 ID 都可分，监督本身有物理假阳性**
+Verdict：可作为第二条，但比机会 1 更容易撞 LRAR，需要先零训练杀。信心 5/10。
+
+触发观察/失败：现有 CR-ReID 仍把 HR 身份标签原封不动压到 LR 图上。可在 16-24 px 高度下，不同 ID 的衣服颜色块/轮廓可能已经物理不可区分。模型若还被 CE/triplet 强迫分开这些 “LR-equivalent negatives”，只能学相机、背景、detector artifact 或 hallucinated high-frequency cues。
+
+重定义：Low-res ReID 不是“恢复缺失细节后做 ID 分类”，而是“给定分辨率 r，身份标签退化为观测等价类”。高分辨率身份是细粒度标签；低分辨率只能监督 coarse identity evidence。
+
+机制草案：Resolution-Collapsed Supervision。
+- 对训练集在每个 resolution level 构建 LR equivalence graph：不同 ID 若在 downsampled image / low-pass feature / color-layout space 中低于可分阈值，则视作 LR-ambiguous negatives。
+- LR 分支对这些 negatives 降权、mask triplet、或当 semi-positive/soft negative。
+- 约束表示具备嵌套性：低分辨率特征只学所有 resolution 共享信息，高分辨率再细化身份。
+- 推理时对 LR query 只用 stable low-frequency/shared subspace 排序，避免 HR-only 细节把错误 gallery 推上来。
+
+廉价 kill-switch：
+1. Market/MSMT 合成 h=16/24/32 LR。
+2. 计算跨 ID LR collision graph：downsample pixel/color layout/frozen feature 近邻。
+3. 看 false top-k 是否显著集中在 collision graph 内。
+4. 做零训练对照：gallery 也降到 query resolution 后抽特征，或只用低频/模糊版本抽特征，和 HR gallery 原始特征比。
+5. Proceed 条件：LR false matches 被 collision graph 高度解释，且 symmetric low-pass gallery 能提升或稳定排序。Kill 条件：错误主要由 camera/background/k-reciprocal 解释，collision graph 不比 trivial proxy 强。
+
+撞车核查：LRAR 已经有“按 query resolution 比较共享子向量”的相近思想，所以这条不能只讲 shared information；必须讲“监督标签在低分辨率下退化/negative label relaxation”。目前我没看到 2024-2026 直接以 “resolution-induced label collapse / observational equivalence classes” 为主问题的 CR-ReID 方法，但边界比机会 1 更窄。
+
+数据可行性：Market/MSMT 可首验；若要成稿，最好再补标准 CR-ReID synthetic benchmarks 或 CAVIAR/MLR 系列。现有 CARGO/AG 不建议做主证据，因为会被航拍/跨平台因素抢故事。
+
+参考核查：VPFA 2025/2026 做 resolution direction 与 post-hoc feature panning；VersReID 2024 覆盖 multi-scene including low-resolution；ITKM 2026 做 unsupervised multi-scenario + CLIP；LRAR 2022 做 resolution-adaptive representation/masks；RFD 2021 处理 multi-resolution gallery/feature distillation。  
+Sources: arXiv VPFA https://arxiv.org/abs/2510.00936, VersReID https://arxiv.org/abs/2403.11121, ITKM https://arxiv.org/abs/2601.11243, LRAR https://arxiv.org/abs/2207.13037, RFD https://arxiv.org/abs/2109.07871

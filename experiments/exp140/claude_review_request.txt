@@ -1,0 +1,39 @@
+请对 `/root/work/SOLIDER-REID` 中准备启动的 `exp140` 做一次**全面代码审查**，目标是判断它是否允许启动训练。
+
+请重点阅读并审查这些文件：
+
+1. `/root/work/SOLIDER-REID/experiments/exp140/design.md`
+2. `/root/work/SOLIDER-REID/configs/occluded_duke/pose_psg_gcn_lpcs_conf.yml`
+3. `/root/work/SOLIDER-REID/config/defaults.py`
+4. `/root/work/SOLIDER-REID/model/modules/pair_adaptive_fusion.py`
+5. `/root/work/SOLIDER-REID/model/pose_backbone_model.py`
+6. `/root/work/SOLIDER-REID/processor/processor.py`
+7. `/root/work/SOLIDER-REID/utils/metrics.py`
+8. `/root/work/SOLIDER-REID/experiments/exp135/design.md`
+9. `/root/work/SOLIDER-REID/experiments/exp139/design.md`
+
+审查目标：
+
+1. 判断 `exp140` 相对 `exp135` 是否是**单变量实验**
+2. 判断 train / test 路径是否对称
+3. 判断 `residual_conf` 是否真的在测试时生效，而不是只在训练里存在
+4. 判断 `conf_target` 的定义是否会引入隐藏的 label/oracle 泄漏
+5. 判断默认行为是否被破坏
+6. 判断是否存在足以阻止训练启动的实现问题
+
+请输出到：
+
+- `/root/work/SOLIDER-REID/experiments/exp140/claude_review.md`
+
+输出格式要求：
+
+1. 首行必须明确写：
+   - `结论：允许启动`
+   或
+   - `结论：不允许启动`
+2. 然后列出：
+   - blocking 问题
+   - 非阻塞提醒
+   - 你对这个实验是否“真的是单变量”的判断
+
+请不要做训练，不要修改代码，只做审查。

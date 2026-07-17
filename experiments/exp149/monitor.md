@@ -1,0 +1,175 @@
+# exp149 SCFA 监控
+
+## 实验信息
+- 方法: SCFA（Symmetry-Conditioned Feature Aggregation）
+- 类型: skeleton branch 表示重构
+- 主基线: `exp030a-eq`
+- 当前状态: 已通过审查，准备以“快速诊断实验”方式上远程
+
+## 启动前检查清单
+- [ ] 对称 pairs 定义清楚
+- [ ] 默认 config 不受影响
+- [ ] skeleton branch 聚合逻辑与旧逻辑单变量隔离
+- [ ] `scfa_*` 行为日志接好
+- [ ] Claude 广范围审查通过
+
+## 当前判断
+- 这条线不是 completion，不是 scorer，也不是 attention bias
+- 若成立，可把 story 推到“pose-defined bilateral redundancy”
+
+## 启动记录
+
+### [2026-03-22 06:42] 代码接入完成，保持对 `exp030a` 的单变量关系
+- 已修改:
+  - `config/defaults.py`
+  - `model/modules/skeleton_gcn.py`
+  - `model/pose_backbone_model.py`
+  - `processor/processor.py`
+  - `configs/occluded_duke/pose_psg_gcn_scfa.yml`
+- 实现要点:
+  1. 只在 `SkeletonGCNHead` 里重写 bilateral token aggregation
+  2. 不改 backbone、不改损失、不改 test-time trick
+  3. 新表示由 `nose + homologous tokens + asymmetry tokens` 组成
+  4. `scfa_*` 统计已接到 trainer 日志出口
+
+### [2026-03-22 06:45] 自检通过，`scfa_*` 已可真实产生
+- 语法检查:
+  - `python -m py_compile ...` 通过
+- 轻量单元前向:
+  - `feat_shape = (4, 768)`
+  - `cls_shape = (4, 702)`
+  - `scfa_stats` 示例:
+    - `cov = 1.0`
+    - `hm = 0.617`
+    - `hs = 0.222`
+    - `am = 0.343`
+    - `as = 0.261`
+    - `hn = 1.000`
+    - `an = 8.702`
+    - `pg = 0.250`
+    - `eq = 0.219`
+- 额外说明:
+  - 尝试做整模型 GPU probe 时，因为本地主卡正在跑 `exp148`，触发了显存竞争 OOM
+  - 这不是 `SCFA` 本身的错误，因此改用 `SkeletonGCNHead` 级别单元前向验证
+- 当前判断:
+  - 继续
+  - 原因:
+    1. 这次不是纸上设计，表示层与日志链路都已打通
+    2. 下一步应按规则送 Claude 做广范围审查，而不是直接开远程训练
+
+### [2026-03-22 06:48] Claude 广范围审查已启动
+- 审查请求:
+  - `experiments/exp149/claude_review_request.txt`
+- 输出目标:
+  - `experiments/exp149/claude_review.md`
+- 当前判断:
+  - 等待审查
+  - 原因:
+    1. 远程机器现在空闲，但不能越过审查规则抢跑
+    2. 这次要优先确认这条线是不是“真新方向”，而不只是能跑通
+
+### [2026-03-22 06:50] 审查进程重挂为稳定模式
+- 问题:
+  - 第一种 `stdin 重定向 -> 文件` 的调用方式长时间不落内容，无法判断是 Claude 慢还是壳进程异常
+- 处理:
+  - 已中断旧会话
+  - 改为直接把请求文本传给 `claude -p`，并保留运行中的 PTY 会话监控
+- 当前状态:
+  - Claude 进程仍在运行，CPU 正常占用
+- 当前判断:
+  - 等待审查
+  - 原因:
+    1. 现在已经不是“空等空壳”
+    2. 若稍后审查仍无结果，再考虑进一步收紧 prompt 或拆分材料
+
+### [2026-03-22 06:52] Claude 审查完成：可继续但有风险
+- 审查文件:
+  - `experiments/exp149/claude_review.md`
+- 审查结论:
+  - **可继续但有风险**
+- 审查认可的点:
+  1. 默认行为隔离正确
+  2. train/test 对称
+  3. AMP 安全
+  4. `scfa_*` 日志设计基本能支撑止损
+- 审查指出的关键风险:
+  1. **与 GCN 功能重叠**
+     - `SCFA` 很可能只是在重复 GCN 已经能做的左右信息传播
+  2. **asymmetry token 退化**
+     - 若 `scfa_an -> 0`，说明非对称通路已死
+  3. **`scfa_pg` 过低**
+     - 若训练中“一侧低、一侧高”的 bilateral case 很少，这个前提本身就站不住
+  4. **创新门槛偏低**
+     - 更像 branch 内 hand-crafted pooling trick，而不是足够硬的论文主机制
+- 当前判断:
+  - 不作为主线
+  - 但值得作为一个**快速诊断实验**跑掉
+
+### [2026-03-22 06:54] 决策：只给 `SCFA` 一个短止损窗口
+- 执行策略:
+  1. 远程机器启动 `exp149`
+  2. 按审查意见，把它当成快速诊断线，而不是整晚主线
+  3. 重点观察 `ep10/20/30`
+- 明确止损判据:
+  1. 若到 `ep30` 还没有明显超出 `exp030a-eq` 历史最低单 seed 区间（`mAP 60.2`）的迹象，则立即止损
+  2. 若 `scfa_an` 持续接近 `0`，说明 asymmetry token 基本无效，也应提前止损
+  3. 若 `scfa_pg` 很低，说明 bilateral redundancy 前提在这个 benchmark 上不成立
+
+### [2026-03-22 06:58] 远程同步后正式启动
+- 远程机器:
+  - `root@i-2.gpushare.com:29162`
+- 启动说明:
+  1. 第一次远程启动早于代码同步，因缺少 `pose_psg_gcn_scfa.yml` 秒挂
+  2. 已用 `tar | ssh` 同步最新代码与文档
+  3. 第二次启动成功
+- 远程日志确认:
+  - `[SCFA] Symmetry-Conditioned Feature Aggregation enabled: low_thr=0.3, high_thr=0.5`
+  - `[PSG+GCN] Skeleton GCN head enabled`
+  - `start training`
+- 输出目录:
+  - `/root/work/SOLIDER-REID/log/occluded_duke/exp149_scfa`
+- 远程显存:
+  - 启动后约 `5988 MiB`
+- 当前判断:
+  - 继续
+  - 原因:
+    1. 这次已不是空设计，也不是未同步假启动
+    2. 下一关键点就是 `ep10`
+
+### [2026-03-22 15:36] `ep10/20/30` 已足够判负，触发快速止损
+- 验证结果:
+  - `ep10 = 34.9 / 44.3`
+  - `ep20 = 43.6 / 53.8`
+  - `ep30 = 50.7 / 61.3`
+- 对照 `exp030a`:
+  - `ep10 = 38.2 / 51.3`
+  - `ep20 = 46.8 / 60.9`
+  - `ep30 = 52.2 / 66.0`
+- 现阶段差值:
+  - `ep10: -3.3 mAP / -7.0 R1`
+  - `ep20: -3.2 mAP / -7.1 R1`
+  - `ep30: -1.5 mAP / -4.7 R1`
+- 机制侧观察:
+  1. `scfa_cov ≈ 0.90`，说明 bilateral token 几乎总在参与
+  2. `scfa_hm ≈ 0.80`、`scfa_am ≈ 0.65`，不是完全没激活
+  3. `scfa_an ≈ 9.7~10.3`，说明 asymmetry token 也没有塌成 `0`
+  4. 但 `scfa_pg ≈ 0.086~0.093`，明显偏低，真正“一侧低一侧高”的 pair 很少
+- 结论:
+  - 审查前就担心的两件事已经成立:
+    1. `SCFA` 更像 hand-crafted pooling trick，而不是强新机制
+    2. benchmark 上可利用的 bilateral gap case 太少
+- 当前判断:
+  - 终止
+  - 原因:
+    1. 已达到预设 `ep30` 止损点
+    2. 不值得继续占用远程卡
+
+### [2026-03-22 15:48] 已确认远程训练完全停止
+- 远程检查:
+  - `ps -ef | grep pose_psg_gcn_scfa.yml | grep -v grep` 无残留
+  - `nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader` 返回 `0 MiB, 0 %`
+- 当前判断:
+  - 结案
+  - 原因:
+    1. 远程卡已完整释放，可供下一条真正不同的新方向使用
+    2. `SCFA` 当前已具备“快速诊断失败”的完整证据链，无需再补跑

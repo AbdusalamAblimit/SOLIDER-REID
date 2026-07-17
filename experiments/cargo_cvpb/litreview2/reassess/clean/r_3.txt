@@ -1,0 +1,49 @@
+结论：**值得测，但只值得做一次零训练 kill-switch；不值得直接开训练。**  
+先验很低，因为它已经撞到 FED 的 NTP feature contamination、KPR 的 multi-person ambiguity、QPM 的 target-pixel attention、DPEFormer 的 occlusion-free token selection，以及 TTPM 那条 non-target pedestrian occlusion/texture-aware 路线。能活下来的唯一差异是：**不讲“遮挡区域噪声”，只讲“遮挡者身份向量把 target embedding 拉向 donor-ID，并且可被无身份信息的 source separation 压掉后直接涨 ReID”。**
+
+我查到的关键先例：  
+[FED](https://arxiv.org/abs/2112.08740) 已明确把遮挡拆成 NPO 和 NTP，并说 NTP 会 feature contamination。  
+[KPR](https://arxiv.org/abs/2407.18112) 明确处理 multi-person ambiguity，指出多人体 bbox 会 feature mixing 或关注错人。  
+[QPM](https://arxiv.org/abs/2201.00107) 做 target pedestrian identity-aware spatial attention，并按 common non-occluded regions 匹配。  
+[DPEFormer](https://arxiv.org/abs/2402.10435) 做动态 occlusion-free patch token selection。  
+[DPL-ReID](https://arxiv.org/abs/2605.19527) 也已经开始说 occluder semantic information。  
+所以 novelty 只剩很窄的“**donor-ID leakage 可测、可减、减了涨**”。
+
+**最锋利 kill-switch：合成 NTP donor 注入 + 三种压制臂**
+用强 ckpt `exp255` 冻结，sanity 先复现 `~73.05 mAP`。不训练。
+
+构造数据：  
+从 Market/Occluded-Duke 中选高可见 target query `T` 和 donor 行人 `D`，把 donor 的人体 mask 或 bbox 贴到 `T` 上，生成 `M=T⊕D`。gallery 保持原始，里面同时有 target-ID 和 donor-ID。这样 donor 身份、target 身份、遮挡 mask 全部已知，但 eval 仍按 target pid 算。
+
+评估 5 条：
+
+1. `clean`: 原始 `T` 查 gallery。  
+2. `mixed`: 合成 `M` 查 gallery，确认遮挡造成掉点。  
+3. `mask-gate`: 用真实 donor mask 直接去掉/不池化 donor 区域 token。回答“普通 occluder gate 上界”。  
+4. `oracle-donor-sub`: 用 donor 原图特征 `f_D` 做 `normalize(f_M - λ proj_{f_D}(f_M))`，扫 `λ`。这是身份 oracle 上界。  
+5. `region-sub`: 只用 `M` 里 donor mask 区域的 pooled feature `r_occ` 做 `normalize(f_M - λ proj_{r_occ}(f_M))`。这是**无 donor-ID 可实现版上界**。
+
+必须同时报两个指标：
+
+- 泄漏存在性：`cos(f_M, f_D)-cos(f_T, f_D)`、donor pid 进入 top-k 的比例、donor rank 是否显著提前。
+- ReID 真实收益：mAP/R1 是否从 `mixed` 回升，回收 clean→mixed 掉点的百分比。
+
+**死亡判据**
+满足任一条就关遮挡：
+
+- donor leakage 存在，但 `region-sub` 不涨：说明污染可测但不可用，撞 exp109 墙。
+- `oracle-donor-sub` 都不涨 `+1.0 mAP` 或回收不到 `20%` clean→mixed 掉点：source-separation 本体无 headroom。
+- `mask-gate` 涨，`region-sub/oracle-sub` 不比 mask-gate 强：只是旧 occluder-gate/visibility 换名。
+- 随机 donor 向量、随机 mask、object occluder 控制也涨：检索 artifact。
+- 收益只在合成图有，真实 multi-person query 子集无 `+1 mAP`：不可投稿。
+
+**通过判据**
+只有这样才继续：
+
+- `mixed` 明确掉点，比如 `-5 mAP` 量级；
+- donor pid top-k 明显上升，证明真有身份泄漏；
+- `oracle-donor-sub` 至少 `+1.5 mAP`，回收 `>30%` 掉点；
+- `region-sub` 至少 `+0.8~1.0 mAP`，且显著强于 mask-gate/random 控制；
+- 真实 multi-person query 子集也涨，且 clean query 不伤。
+
+我的判断：**可以测，成本低，24 小时内能判生死；但大概率会死在“泄漏存在但压了不涨”或“mask-gate 等价”上。** 如果这个 kill-switch 不过，遮挡这块就应彻底关，不要再用 SMPL、visibility、completion、occluder gate、source separation 换壳。当前环境只读，我没有落盘 design 或启动实验。

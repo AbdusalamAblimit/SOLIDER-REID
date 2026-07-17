@@ -1,0 +1,101 @@
+95,289
+**结论先说**：我不建议主打普通 `heteroscedastic embedding NLL`。更稳的是做 **Lattice Uncertainty Distillation, LUD**：主 ReID embedding 完全按原 baseline 训练；额外训练一个只预测 lattice 风险的头，测试时用它给 K 个 lattice hypothesis 做加权 marginalization。信心：**7/10**。如果想完全用 head 替代 K 次测试，信心降到 **5/10**。
+
+**具体机制**
+
+训练时，对每张 LR 训练图生成同一套 K 个 lattice 变体：
+
+`x_i^1 ... x_i^K = phase / bbox ±1 LR-pixel / antialias`
+
+用当前强 baseline 或 EMA teacher 取特征，但全部 `no_grad`：
+
+```text
+z_k = normalize(f_stopgrad(x_k))
+z_bar = normalize(mean_k z_k)
+```
+
+监督目标不要拉特征，只做风险标签：
+
+```text
+spread_k = ||z_k - z_bar||^2
+margin_k = sim(z_k, class_center_y) - max_neg sim(z_k, class_center_neg)
+risk_k = spread_k + rho * softplus(m - margin_k)
+```
+
+然后让 uncertainty head 预测：
+
+```text
+u_k = U(stopgrad(h_k))
+L_unc = SmoothL1(log softplus(u_k), log(eps + risk_k))
+```
+
+同时加三个 factor head：
+
+```text
+u_bbox, u_phase, u_kernel
+```
+
+用 ANOVA/分组方差监督。你已经知道 bbox crop 不确定性最大，这个 head 正好把 story 讲实：模型不是泛泛估计“图像质量”，而是在估计 sampling-lattice 里的哪类不确定性主导。
+
+测试时，不再 uniform average K 个 lattice score，而是：
+
+```text
+pi_k = (1 - alpha) / K + alpha * softmax(-u_k / T)
+S(q, g) = sum_k pi_k * sim(f(q_k), f(g))
+```
+
+或如果你现在用 log-mean-exp marginalization：
+
+```text
+S(q, g) = log sum_k pi_k * exp(sim(q_k, g) / tau)
+```
+
+注意一个关键点：**query 级 scalar confidence 本身不能改变同一个 query 内的 gallery 排序**，因为它只是给所有 gallery 加同一个惩罚。要真的涨 mAP/R1，必须用：
+
+1. per-variant weight：`pi_k`，最便宜、最推荐；
+2. per-dim/per-part variance：改变不同 gallery 的维度匹配权重；
+3. pair score variance：用 K 个 score 的方差做 pair-specific calibration。
+
+第一版只做 `per-variant uncertainty-weighted marginalization`，风险最低。
+
+**为什么不 collapse**
+
+这版不会重复你前三个训练端负结果的坑：
+
+- 不做 `feature consistency`，不把 K 个变体拉到均值；
+- 不把 lattice variant 当普通训练增强去更新 backbone；
+- 不做 marginal likelihood 去改主 embedding；
+- `L_unc` 的输入和 target 都 stop-grad，只训练小 head；
+- 主 CE/triplet 路径完全不变。
+
+所以最坏结果是 uncertainty head 没用，但不会把 HR sanity 或 single-image feature 搞坏。
+
+**廉价 kill-switch**
+
+配置里保留：
+
+```text
+LM.UNC_HEAD_WEIGHT = 0
+LM.MARG_ALPHA = 0
+```
+
+`alpha=0` 时严格回到你已经成立的 uniform K marginalization，不需要重训。训练后先看两个便宜指标：
+
+- `corr(pred_u, empirical_K_spread)`，同分辨率内 Spearman < 0.15 就杀；
+- weighted K vs uniform K，在 h=12/16 不能至少 +0.2 mAP，就杀。
+
+**Novelty / 怎么不撞 PFE**
+
+查到的近邻主要是：
+
+- PFE 把人脸 embedding 表示成 Gaussian，mean 表示特征，variance 表示不确定性，并用概率式 matching/fusion。([arxiv.org](https://arxiv.org/abs/1904.09658))
+- DUL 进一步指出 PFE 多是固定 mean 后估 variance，而 DUL 同时学习 mean 和 variance。([arxiv.org](https://arxiv.org/abs/2003.11339))
+- ReID 里有 UMTS，用 multi-shot teacher-student 和 heteroscedastic uncertainty 做蒸馏。([arxiv.org](https://arxiv.org/abs/2001.05197))
+- UDA ReID 里也有 uncertainty，但主要是伪标签可靠性/聚类噪声。([arxiv.org](https://arxiv.org/abs/2112.14025?utm_source=openai))
+- 低分辨率 ReID 传统主线多是 SR、伪 HR、多分辨率/退化不变性。([arxiv.org](https://arxiv.org/abs/2105.12684?utm_source=openai))
+
+你这条线不撞 PFE 的关键写法是：
+
+**不是 generic probabilistic embedding，也不是 data-quality uncertainty。是 supervised sampling-lattice uncertainty：不确定性来源是明确定义的 LR sampling lattice latent variable，并且监督来自同一图像 K 个 lattice hypothesis 的 empirical decision spread。**
+
+PFE/DUL 问的是“图像差，所以 embedding 不确定”；LM-ReID 问的是“同一个 LR observation 对应多个可能采样格点，retrieval decision 应该对这些 hypothesis 边缘化”。这个问题定义更窄，但更新，也更贴合你已经证明的 test-time 结果。

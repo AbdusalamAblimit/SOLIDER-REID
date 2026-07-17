@@ -1,0 +1,105 @@
+65,207
+结论：**在你当前证据下，可以说“这条问题的训练端主空间很窄”，但不要写成“训练端根本无空间”。** 更稳的表述是：
+
+> 对 severe LR-ReID 的 sampling-lattice 不确定性，强 no-LM backbone 已经学到较好的 LR-HR 判别表征；进一步把 lattice 变体压成同一 embedding，或在 frozen feature 上重投影/重加权，基本没有 headroom，甚至会损害身份判别性。真正有效的杠杆不在 embedding-level invariance，而在 test-time decision-level marginalization。
+
+这句话比“训练端没空间”强，也更像论文贡献。
+
+**训练端失败可以写成强论点，但前提是把它们组织成“自然但错误的三类解法”，不是罗列失败实验。**
+
+建议写成一节：
+
+**Why Not Learn Lattice Invariance?**
+
+三组反例：
+
+1. **Embedding-level invariance hurts discrimination**
+   - full LM-ReID single 75.71 < no-LM-loss 77.44
+   - HR sanity 86.09 < 88.92
+   - cons-only 76.895，说明 `L_marg` 是主要伤害源
+   - 结论：训练时把 lattice 变体合并到同一分类 posterior，会压掉细粒度身份差异。
+
+2. **Frozen-feature adaptation has no headroom**
+   - LS-MRT linear P +0.028
+   - LPA query weighting +0.075
+   - 结论：在 no-LM backbone 的特征空间里，uniform lattice marginalization 已接近可达上限；只调 retrieval head 或权重学不到新证据。
+
+3. **Backbone robust/set training damages the base representation**
+   - LSRC HR sanity 88.92 → 85.84
+   - LR h16 lattice 79.90 → 77.98
+   - Hard-Lattice ERM 76.9 < 77.44
+   - 训练 acc 1.000 但测试下降
+   - 结论：训练目标能拟合训练集 lattice，但代价是泛化判别力下降。
+
+然后接核心正结果：
+
+- no-LM-loss h16 single 77.44 → lattice 79.90，+2.46
+- bbox factor +2.842，主导收益
+- h12/16/20/24/32 全 beat 普通 TTA，且优势随分辨率升高单调减弱
+- 受损 backbone 上 marginalization 仍 +2.288，说明机制本身独立有效，只是训练把起点拉低
+
+这就不是“训练端没做出来”，而是：
+
+> 我们系统验证了三类看似合理的学习式替代方案，发现它们要么无 headroom，要么牺牲 identity discrimination；因此 sampling-lattice uncertainty 更适合作为 test-time hidden variable 被边缘化，而不是在训练中被消除。
+
+**论文结构建议**
+
+标题可以偏锋利一点：
+
+**Decision Marginalization over Sampling Lattices for Low-Resolution Person Re-Identification**
+
+结构：
+
+1. **Introduction**
+   - LR-ReID 不只是缺细节，也有 sampling-lattice hidden variable。
+   - bbox/crop ±1 LR pixel 会导致 rank-level identity flip。
+   - 主张：不要强行学 invariance，要在 retrieval decision 上 marginalize。
+
+2. **Observation**
+   - 定义 lattice：phase / bbox / zoom-kernel。
+   - rank flip、PRF、LEG、LOTG。
+   - 分辨率越低，lattice uncertainty 越强。
+
+3. **Method**
+   - K=9 lattice variants。
+   - decision score：对 query lattice 变体的相似度做 mean / max / logsumexp marginalization。
+   - 强调不是普通 TTA：同 K、同 backbone、同 compute，对照普通 crop/color/resize TTA。
+
+4. **Why Training-Time Invariance Fails**
+   - 这里放三类训练端失败。
+   - 不写“失败探索”，写“controlled alternatives”。
+
+5. **Experiments**
+   - h=12/16/20/24/32 曲线。
+   - strong TTA 对照。
+   - factor ablation：bbox 最大。
+   - backbone / dataset 泛化，至少再补一个 MLR-Market 或 MLR-CUHK03。
+   - K=1/3/5/9 compute-accuracy 曲线。
+
+6. **Discussion**
+   - 训练端不是永远无空间，input canonicalization / real detector uncertainty 可能还有空间。
+   - 当前结论限定在 severe LR + cropped Market-style setting。
+
+**能不能投 B 类**
+
+务实判断：
+
+- **当前 test-time-only + 训练端反例版本：5.5/10。**  
+  能讲，但容易被审稿人打成“strong TTA / ensemble over crops”。训练端全负能加分，但不能完全替代正方法贡献。
+
+- **如果补齐跨数据集、强 TTA、防 compute、bbox factor、真实 detector jitter 或 MLR benchmark：6.5/10。**  
+  这时它像一个扎实的问题重定义稿，B 类有机会。
+
+- **如果 BLC/input canonicalization 过线，哪怕只 +0.3~0.5 over marginalization 或显著降低 K：7.5/10。**  
+  因为就从 test-time-only 变成“diagnosis + train/input correction + residual marginalization”的完整方法。
+
+我的建议：**不要再执着找 backbone training loss。** 现在证据已经强烈说明这条路会伤判别性。若还想补训练端，只剩两类值得做：
+
+1. **input-level canonicalization/BLC**：因为 bbox 是主因子，改输入比改 embedding 更对症。
+2. **compute reduction/K distillation**：不是提高 mAP，而是用 K=3 接近 K=9，把 test-time 方法变得可用。
+
+论文主叙事不要说“我们训练端失败了”，而说：
+
+> Learning to be invariant is the wrong objective for sampling-lattice uncertainty; marginalizing decisions over plausible observations is the right objective.
+
+这个论点够清楚，也有实验支撑。B 类不是没戏，但当前最好把目标定成“中等偏强机制稿”，不要包装成 SOTA 方法稿。
