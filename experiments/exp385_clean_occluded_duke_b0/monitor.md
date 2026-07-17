@@ -85,3 +85,10 @@ smoke 产物 SHA256：
 - 启动前正式 output 不存在、GPU 空闲、无其他训练、tracked source clean
 
 启动后检查：唯一 main + 8 workers，GPU 约 6.85 GiB；数据统计、teacher exact load 和首 20 iter 正常。正式训练不改代码/config、不续训、不选择中途 best，必须自然运行至 e120。
+
+### e10
+
+- mAP / R1 / R5 / R10：33.2 / 43.2 / 59.0 / 65.2
+- 第一份正式完整评测；仅记录干净 baseline 轨迹，不与旧实现绝对值横比或作早期裁决
+- 评测后自然进入 e11；唯一 main + 8 workers，GPU 约 6.85 GiB
+- exact HEAD/config、tracked source clean，严格异常与 AMP warning 为 0
