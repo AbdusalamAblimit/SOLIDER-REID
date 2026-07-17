@@ -99,3 +99,19 @@ smoke 产物 SHA256：
 - 评测后自然继续，检查时已进入 e23；不以相对 e10 的上涨作中途性能裁决
 - 唯一 main + 8 workers，GPU 约 6.91 GiB
 - exact HEAD/config、tracked source clean，严格异常与 AMP warning 为 0
+
+### e30
+
+- mAP / R1 / R5 / R10：45.4 / 55.0 / 70.5 / 76.2
+- 完整评测后自然继续；只记录轨迹，不选择中途 best
+
+### e40
+
+- mAP / R1 / R5 / R10：49.8 / 61.2 / 76.0 / 81.1
+- 完整评测后自然继续；只记录轨迹，不选择中途 best
+
+### e50
+
+- mAP / R1 / R5 / R10：52.7 / 63.1 / 77.1 / 82.2
+- 检查时已进入 e59；唯一 main + 8 workers，GPU 约 6.91 GiB
+- exact HEAD/config、tracked source clean；无中途 checkpoint，严格异常与 AMP warning 为 0
