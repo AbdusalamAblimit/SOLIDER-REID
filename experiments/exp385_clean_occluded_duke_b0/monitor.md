@@ -92,3 +92,10 @@ smoke 产物 SHA256：
 - 第一份正式完整评测；仅记录干净 baseline 轨迹，不与旧实现绝对值横比或作早期裁决
 - 评测后自然进入 e11；唯一 main + 8 workers，GPU 约 6.85 GiB
 - exact HEAD/config、tracked source clean，严格异常与 AMP warning 为 0
+
+### e20
+
+- mAP / R1 / R5 / R10：39.8 / 51.1 / 66.3 / 72.9
+- 评测后自然继续，检查时已进入 e23；不以相对 e10 的上涨作中途性能裁决
+- 唯一 main + 8 workers，GPU 约 6.91 GiB
+- exact HEAD/config、tracked source clean，严格异常与 AMP warning 为 0
