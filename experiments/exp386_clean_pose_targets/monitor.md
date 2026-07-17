@@ -49,3 +49,19 @@
 - 峰值 allocated 2,540.15 MiB；退出后 GPU 空闲
 
 结论：teacher provenance、API 与提取器 smoke 门禁通过。下一步 fresh 启动全量 15,618 张 train-only 提取；仍不处理 query/gallery，不启动 ReID 训练。
+
+## 全量 train-only 提取启动
+
+- 启动前远端 exact HEAD：`b08c2c27c0527a414369520f537f35ad813fbfe5`
+- tracked source 与 index：clean；GPU：无计算进程
+- final 与 `.incomplete` 输出目录：启动前均不存在
+- main PID：`1005655`
+- runner：`/home/afr/pose-logs/exp386_vitpose_huge_train.runner.log`
+- incomplete：`/mnt1/afrderived/exp386_occluded_duke_vitpose_huge_train.incomplete`
+- final：`/mnt1/afrderived/exp386_occluded_duke_vitpose_huge_train`
+- 输入严格限定为 `bounding_box_train`；expected count=`15618`
+- dataset/config/checkpoint SHA 门禁均启用；shard size=`256`
+- 启动后首检：单一 PID，GPU 约 3,102 MiB、利用率 91%；已处理 200/15,618，约 33.39 image/s
+- 唯一模型加载提示仍为官方已知的 unexpected `backbone.cls_token`；首检无 NaN/Inf/Traceback/RuntimeError/OOM/nonfinite
+
+全量任务保持后台运行；依赖 15 分钟 heartbeat 监控，不阻塞等待，不并行 ReID 训练或第二条 pose 提取。
