@@ -138,3 +138,7 @@ FLOPs 只报告 analyzer 支持的算子；两臂共同未计入的 elementwise/
 启动前 fresh repo 为 detached exact HEAD、tracked clean、正式 output 不存在、GPU `2 MiB/0%`，并在 fresh repo 原生环境复跑 TAPF unit `5/5 PASS`。正式 output 只在训练命令启动后创建。
 
 首次健康检查：唯一 main+8 DataLoader workers，GPU 约 `6,994 MiB`、利用率 `96%`；e1 已到 iter120/227，`Loss=14.477`、`Pose=0.918`、`Student=0`、`Reliability=0.850`、`GateAbs=7.895e-05`，日志中的 NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow 严格命中为 0。继续运行，不作早期效果裁决。
+
+## 官方 Swin 只读审计
+
+训练期间按用户要求只读核查官方 `semantic_weight` 与 `with_cp`，完整证据见 `official_swin_audit.md`，可执行结果为 `EXP387_OFFICIAL_SWIN_AUDIT_PASS`。结论是：`with_cp` block 核心 exact，但官方 defaults/builder 未接线；semantic stage0–2 有效，terminal stage3 对 descriptor 为 dead path；另有硬编码 `.cuda()` 与 backbone `.train()/.eval()` 返回 `None` 的 API 边界。当前 B0/D0 共享这些官方行为，不构成 D0−B0 混淆，也不修改运行中代码/config。
