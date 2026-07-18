@@ -577,10 +577,13 @@ control 24px dilation product均0失败。
 1. **24px non-overlap不可全split实现**：324/15,618图无可平移control，insufficient fraction=
    `0.02075`；其余15,294图normalized-y error mean/P50/P95=`0.24765/0.26110/0.41775`，远超
    `1/8`与`2/8`门槛。arms/torso/legs多数slot×direction组均失败，说明224×75人像内容只有约5个
-   patch宽时，“离target一patch且纵向匹配”的control空间本身不足，而非单个方向偶发问题。
-2. **bbox矩形不是slot-local occluder**：共5,542个level-case违反target intersection严格大于任一
-   non-target intersection。axis-aligned slot bbox会在arms等非凸/双侧解剖区域跨过torso，不能把
-   该矩形解释成纯target support occlusion；不得继续拿它进入CLIP后归因。
+   patch宽时，“离target一patch且纵向匹配”的control空间本身不足，而非单个方向偶发问题。324项
+   全是control translation失败（torso=`234`、arms=`87`、其余三slot各`1`），connected overlap
+   本身没有construction failure；旧gate名`connected_construction_complete`只是不精确的汇总命名。
+2. **bbox矩形不是slot-local occluder**：共5,542个level-case、涉及2,759图，违反target intersection
+   严格大于任一non-target intersection；其中arms占`5,065` cases。axis-aligned slot bbox会在arms等
+   非凸/双侧解剖区域跨过torso，不能把该矩形解释成纯target support occlusion；不得继续拿它进入
+   CLIP后归因。
 3. **geometry-nearest与low-IoU wrong mask互相冲突**：实际增强后wrong-mask IoU overall
    P50/P95=`0.35387/0.73044`；head/torso/arms/upper-leg/lower-leg分别为
    `0.39195/0.80491`、`0.41352/0.71684`、`0.19785/0.55244`、`0.45706/0.74904`、
@@ -591,3 +594,32 @@ control 24px dilation product均0失败。
 不重复运行，也不启动8图CLIP/GPU/训练。该FAIL只否定B2-S当前反事实构造，不否定已通过的PC-MBCLS
 slot-support readout，更不否定CLIP语义校准TAPF。下一步先做独立机制归因并另写B2-Sv2预注册设计；
 新设计必须用不读取CLIP结果的slot-local连通遮挡与可实现强对照，不能把本次FAIL map当正式冻结map。
+
+独立只读归因复核同意上述边界：没有connected overlap实现错误证据；96×32 pixel IoU也不是
+PC-MBCLS 16×16 token-grid（patch size=14px）的充分统计。其建议的新定义是
+`B2-Sv2 slot-evidence deletion`：只在target
+hard support内做方向性嵌套前缀，并用共享完全相同RGB的`base/corrupted × correct/cyclic-wrong mask`
+difference-in-differences验证slot binding；same-slot donor只保留为appearance hard negative。该结论
+支持继续CLIP–TAPF语义校准路线，不授权直接复活v1、8图CLIP、GPU或训练。
+
+### B2-Sv2设计冻结与独立终审
+
+针对“单次FAIL不能否定全部”的边界，B2-Sv2已把旧物理遮挡构造与teacher机制分开：v1只封板
+`connected-bbox + 24px non-overlap + geometry-nearest low-IoU mask`，B2-SI已经通过的PC-MBCLS
+slot-support证据保持成立。v2改测`slot-evidence deletion`，不再声称physical occlusion；wrong mask
+使用同图四个固定nonidentity slot cycles，以共享RGB的2×2 DID直接检验anatomical binding。
+
+独立只读终审对protocol SHA256=
+`9255910a2dccfc202c35959a11f9cc46141e4d30a0afa5044d61f890c8e7db23`裁决PASS，确认：
+
+1. 16×16 pooled coverage、nonzero patch count、matched top-K、coverage排序、patch坐标tie与binary mask
+   定义完整可复现；
+2. cycle固定为`w=(t+k) mod 5, k=1..4`，DID始终固定target support text，只替换spatial mask；
+3. Spearman lower bound、correct-vs-nontarget/global paired差值、natural/top-K DID均使用PID-cluster
+   95% CI，并逐`material × slot × cycle`裁决，不允许macro或另一材质救场；
+4. random texture在384×128每个path/slot/seed只生成一次，固定`sigma=1.5`并跨level按同坐标复用；
+5. Section九状态已更新为`B2-Sv1 SEALED-FAIL / B2-Sv2 DESIGN-FROZEN NO-START`，不会把单次构造
+   FAIL扩张成CLIP–TAPF路线NO-GO。
+
+当前只授权target/augmentation submap提取与official+exp386双源逐字节exact，以及pure synthetic
+static实现和独立审查；full pose-only、8图CLIP、GPU、Phase 0C与训练继续`NO-START`。

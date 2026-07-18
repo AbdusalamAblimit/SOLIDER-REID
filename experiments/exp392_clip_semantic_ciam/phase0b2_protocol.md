@@ -1,6 +1,6 @@
 # exp392 Phase 0B2：CLIP 解剖 slot 条件读出协议
 
-> 状态：`PROTOCOL-FROZEN / STATIC-PASS / OPENCLIP-CPU-PASS / GPU-NO-START`
+> 状态：`B2-Sv1 SEALED-FAIL / B2-Sv2 DESIGN-FROZEN / IMPLEMENTATION-NO-START / GPU-NO-START`
 >
 > 本协议不撤销 Phase 0B 的 `CURRENT_CLIP_TEACHER_NO_GO`。它只定义一个新的 teacher
 > 接口及其零训练证伪顺序；在 CPU/static、独立代码审查和小样本 smoke 全部通过前，不占用 4090。
@@ -404,6 +404,73 @@ B2-S执行定义冻结如下，后续不能按结果改target分配、材质、�
     single-stage Semantic TAPF的实现与preflight，不直接授权120 epoch；任何训练前仍需新design、
     独立代码审查和全部门禁。
 
+#### B2-Sv1封板边界与B2-Sv2重新预注册
+
+B2-Sv1 full pose-only已按上述冻结门禁自然结束并裁决FAIL。该结果只关闭“bbox connected rectangle +
+24px y-matched non-overlap + geometry-nearest low-IoU mask”这一组反事实构造，不关闭B2-SI已经通过的
+PC-MBCLS slot-support readout，也不关闭CLIP校准TAPF。v1不得改阈值、换方向、重复运行或直接进入
+8图CLIP；其FAIL map不得作为正式teacher map复用。
+
+B2-Sv2把任务明确改名为**slot-evidence deletion**，不再声称physical occlusion。它是独立新协议，
+执行前必须完成static与full pose-only feasibility；当前只冻结定义，不授权实现、CLIP、GPU或训练：
+
+1. **只继承正交通过的target/augmentation先验**：从v1 FAIL map中只提取
+   `relative_path/image_sha256/pid/camid/valid/target_slot/augmentation`形成独立submap，并在任何v2
+   实现前记录SHA与15,618 record count。v2必须从official data和exp386 artifact重新生成同一submap并
+   逐字节exact；v1的bbox/control/donor/IoU字段一律不得进入v2。
+2. **support-clipped方向前缀**：对target hard support按原path/slot/seed选定
+   `top/bottom/left/right`。top/bottom以y升/降序、left/right以x升/降序，tie依次用正交坐标与
+   `(y,x)`字典序打破；level `l∈{0.25,0.50,0.75}`固定取前
+   `ceil(l*N)`个384×128 pre-image support pixels，并要求每个target的`N>=4`。三个集合必须严格
+   嵌套、selected始终是target support子集、与全部
+   non-target hard support pixel product严格0、count误差`<=1/N`，全15,618图禁止construction skip。
+   该定义测的是“删除slot内部视觉证据”，不是模拟矩形遮挡。
+3. **材质角色拆分**：CLIP-mean与同一max-level deterministic blurred random texture是support-evidence
+   deletion主臂，继续承担`q_visible`单调下降门禁。random texture对每个
+   `relative_path/target_slot/material-seed`只在384×128坐标生成一次冻结的full/max-level field，固定
+   `sigma=1.5 px`低通；各level必须按第2条冻结的ordered support coordinates读取同一位置的值，不能
+   重新采样、缩放或按level重做统计。lower levels因此严格复用同一texture的冻结前缀。
+   different-PID wrong-slot人体纹理改列semantic-mismatch/binding臂，不要求`q_visible`单调下降，
+   不得用它误判一个仍能看到清晰人体纹理的正确support teacher。若以后加入第三种deletion材质，
+   必须是预先验证的non-person/background texture，并另开单变量协议。
+4. **删除不可实现的背景平移control**：不再要求24px dilation外的同尺寸/y-matched矩形。主定位仍报告
+   target readout相对同图四个non-target readout与official global CLS的下降；所有readout共享完全相同
+   base/corrupted RGB tensor，不能各自重做扰动。
+5. **共享RGB的2×2 DID**：对每个target和四个nonidentity slot cycles同时计算；固定slot编号
+   `0..4`，第`k`个cycle明确定义为`w=(t+k) mod 5, k=1..4`，不允许按结果另选wrong slot。
+   `base/corrupted × correct/cyclic-wrong mask`。令
+   `D=[q_v(base,M_t)-q_v(corrupt,M_t)]-[q_v(base,M_w)-q_v(corrupt,M_w)]`；四个cycle、五slot的
+   PID-cluster 95% CI都必须严格`>0`。这直接检验“正确anatomical binding比错误binding更依赖被删除的
+   target证据”，取代不可实现的背景位置control。wrong mask主定义因此是same-image hard-owner
+   nonidentity cycle；DID始终固定target slot的support text prototypes，只替换spatial mask，禁止把
+   mask与text一起cycle后冒充wrong binding。same-slot donor只作appearance hard negative，高IoU只报告、
+   不再设置low-IoU kill。
+6. **patch-space严格对照**：pixel hard-owner exact0不能代替CLIP patch检查。自然coverage路径逐slot/cycle
+   报16×16 token-grid（patch size=14px）的overlap、mass、nonzero patch count。对任一coverage
+   `c`，先定义`P_c`为mask经`16×16`average pooling后的patch coverage，
+   `K_c=count(P_c>0)`；correct target与cyclic-wrong分别得到`K_t/K_w`，再固定
+   `K=min(K_t,K_w)`。各自按coverage值降序排列，coverage相同按patch坐标`(row,col)`升序打破tie，
+   选中的K个patch置binary 1、其余置0。由此两臂具有相同K与
+   uniform log-prior。只乘coverage标量不能叫mass matching，因为PC-MBCLS的归一化log-prior对全局scale
+   不变。自然coverage DID和top-K DID必须分开报告，不可混合挑优。
+7. **eligibility与不静默跳过**：四cycle分别要求target及wrong slot均valid且patch K>=1；不满足者只在
+   对应cycle记ineligible，逐slot报告images、unique PID及每种skip reason。不得更换target或只保留有利
+   cycle；full pose-only必须逐slot/cycle至少保留`500` images和`100` unique PID，才授权8图CPU
+   CLIP contract。
+8. **support kill-switch**：CLIP-mean与random-texture分别逐slot要求
+   `Spearman(overlap,-q_visible)`的PID-cluster bootstrap 95% CI lower bound `>=0.2`；0→75%
+   correct-mask drop的PID CI严格`>0`，且correct drop减去同图non-target drop、correct drop减去同图
+   official-global drop这两个paired PID CI也都严格`>0`。自然coverage DID与top-K DID都作为主门禁，
+   必须对每个`material × target-slot × cycle(k=1..4)`分别满足PID-cluster 95% CI严格`>0`；两条DID
+   分开报告，不允许互相替代。任一主材质、slot或cycle方向反转即B2-Sv2当前teacher定义NO-GO，
+   不得跨材质/cycle平均救场；但该裁决仍只关闭B2-Sv2这个teacher定义，不扩张成CLIP–TAPF总路线
+   NO-GO。wrong-slot semantic-mismatch只报告feature cosine/JSD与correct binding差，不进入visibility
+   monotonic kill-switch。
+9. **执行顺序**：先冻结target/augmentation submap SHA，再做纯synthetic static exact；随后只做一次
+   全15,618 pose-only feasibility，PASS后才从full map确定覆盖五slot/四cycle的8图CPU CLIP contract。
+   三者全部PASS才可请求唯一4090做full teacher-only审计。任何teacher PASS仍只授权Phase 0C
+   single-stage Semantic TAPF实现/preflight，不直接授权120 epoch或semantic multi-stage。
+
 ## 七、代码与数值门禁
 
 实现前必须独立核对 OpenCLIP 当前版本中：
@@ -420,8 +487,11 @@ B2-S执行定义冻结如下，后续不能按结果改target分配、材质、�
    CPU fp32 max error `<=1e-6`，CUDA AMP误差另行冻结；
 9. 原图尺寸必须与pose artifact记录exact；用可解析synthetic坐标覆盖
    `pose->resize->flip->pad->crop->render->CLIP grid`全链，峰值/质心与解析结果一致；
-10. wrong RGB/mask/text donor均无fixed point、different-PID；wrong mask按实际增强后面积/y/conf重新
-   匹配并报告IoU，median IoU `<=0.30`、P95 `<=0.50`；
+10. B2-Sv1历史路径的wrong RGB/mask/text donor均无fixed point、different-PID；其wrong mask按实际
+   增强后面积/y/conf重新匹配并报告IoU，median IoU `<=0.30`、P95 `<=0.50`。B2-Sv2明确覆盖该旧门禁：
+   wrong mask改为same-image四个hard-owner nonidentity cycles并执行16×16自然coverage/top-K DID；
+   same-slot donor只需different-index/path/PID、same-camera priority与geometry matching exact，IoU只报告，
+   不再要求low-IoU；
 11. artifact、checkpoint、tokenizer、prompt、runtime、脚本和runner SHA完整记录。
 
 CLIP normalization、bicubic/antialias与checkpoint metadata必须从OpenCLIP官方preprocess config显式读取
@@ -460,10 +530,14 @@ CLIP loss只更新anchor/state head；ReID loss通过执行router更新backbone�
 
 ## 九、当前裁决
 
-`PHASE 0B2 B2-SI SEALED-PASS / B2-S FULL-TEACHER PROTOCOL FROZEN / FORMAL TRAINING NO-START`。
+`PHASE 0B2 B2-SI SEALED-PASS / B2-Sv1 SEALED-FAIL / B2-Sv2 DESIGN-FROZEN NO-START /
+FORMAL TRAINING NO-START`。
 
 hard-owner ontology、slot-conditioned support task与PC-MBCLS readout已经分别通过128图CPU门禁；
-这排除了“PC-MBCLS只响应全图扰动”的解释，但尚未证明teacher对真实RGB/mask/text binding和三类
-连通遮挡材质都稳健。下一步只允许完成connected static与全train pose-only feasibility；之后才是
-8图CPU CLIP contract，在三者PASS前4090继续`NO-START`。未来唯一4090全train teacher-only审计
-若PASS，也只授权Phase 0C single-stage机制实现，不直接授权120 epoch训练。
+这排除了“PC-MBCLS只响应全图扰动”的解释，但尚未证明teacher对真实RGB/mask/text binding和
+slot-evidence deletion稳健。B2-Sv1的FAIL只封板其connected-bbox/non-overlap/nearest-low-IoU
+反事实构造，不能覆盖上述已通过证据，也不能否定CLIP语义校准TAPF。下一步只允许提取并双源复算
+target/augmentation submap，然后实现B2-Sv2 pure synthetic static；二者完成独立审查前不得启动
+full pose-only、8图CLIP或4090。未来B2-Sv2 full pose-only PASS后才允许8图CPU CLIP contract，
+其后所有teacher门禁PASS才可请求唯一4090全train teacher-only审计；即使该审计PASS，也只授权
+Phase 0C single-stage机制实现，不直接授权120 epoch训练。
