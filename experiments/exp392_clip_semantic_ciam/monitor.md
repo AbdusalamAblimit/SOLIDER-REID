@@ -810,6 +810,22 @@ Q=`0.692`、Reliability=`0.512`、GateAbs=`6.650e-06`，弱q与小router模式�
 tracked clean、唯一main+8 workers、4090约`8394 MiB`且唯一任务、e120前checkpoint=`0`，严格异常
 扫描命中`0`，状态=`继续自然e120`。
 
+### e110完整评测与e118接手
+
+- e110完整query/gallery评测mAP/R1/R5/R10=`56.7/66.6/80.3/84.7`；
+- 同epoch exp387 clean D0=`57.4/67.4/80.5/84.6`，Semantic C0−D0=
+  `−0.7/−0.8/−0.2/+0.1`；同epoch exp389 HT0=`56.6/65.9/79.5/83.9`，Semantic C0−HT0=
+  `+0.1/+0.7/+0.8/+0.8`；
+- e110末Loss=`0.141`、Pose=`0.751`、Semantic/RegionMask/Presence/Q=
+  `0.292/0.158/0.025/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`6.779e-06`，
+  全部finite；评测后e111--e117自然完成，接手时已进入e118。
+
+e110仍是“优于HT0、未追平D0”的混合轨迹，不是final。e118 iter40的Q=`0.692`、Reliability=
+`0.512`、GateAbs=`6.540e-06`，训练约剩3个自然epoch。exact HEAD/config/tracked clean、唯一main+8
+workers、4090约`8382 MiB`且唯一任务、e120前checkpoint=`0`，严格异常扫描命中`0`。下一次接手
+必须先确认自然e120完成，再做进程/GPU/唯一checkpoint/SHA/strict finite/teacher隔离/参数轨迹与
+counterfactual终审；不得把e110当final。
+
 ### e90完整评测与e91接手
 
 - e90完整query/gallery评测mAP/R1/R5/R10=`56.6/67.1/80.3/85.1`；
