@@ -470,3 +470,13 @@ query/gallery保持RGB-only，不得按任何中间点停止或挑best。
 - exact HEAD/config、tracked source clean、唯一main PID=`1254315`+8 workers保持；GPU只有该main，
   约`6,994 MiB`；runner/train log严格异常与AMP warning扫描命中`0`，无checkpoint；
 - e10只作同seed、同epoch轨迹记录，不用于提前裁决、早停或挑best。
+
+### 2026-07-18 07:08 UTC：e20完整评测
+
+- D0 e20 mAP/R1/R5/R10=`41.9/52.6/66.7/72.8`；同epoch B0-s2025=
+  `38.8/50.0/63.4/69.3`，D0−B0=`+3.1/+2.6/+3.3/+3.5`；
+- 评测后训练自然进入e26，现场e26 iter140/227 Loss=`0.879`、Pose=`0.518`、Acc=`0.939`、
+  Student=`1.00`、Reliability=`0.846`、GateAbs=`2.031e-02`，全部finite；
+- exact HEAD/config、tracked source clean，唯一main PID=`1254315`+8 workers；GPU只有该main，约
+  `7,074 MiB`；严格异常与AMP warning扫描命中`0`，仍无checkpoint；
+- e20较大正差只作中间轨迹，不改变必须自然完成e120的预注册计划，也不用于跨seed结论。
