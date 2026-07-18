@@ -2,11 +2,11 @@
 
 ## 当前状态
 
-- 状态：`NO-START`；
+- 状态：`GO-READY`，全部正式训练前门禁已通过，尚未创建正式 output；
 - 4090：空闲；
 - 正式 output：尚未创建；
 - 直接对照：exp387 clean Occ-Duke D0=`57.6/67.7/80.8/84.6`；
-- 当前阶段：只允许从零实现 early Stage-1 anchor → Stage-2 六个有效 PSG，并完成全部门禁。
+- 当前阶段：从 fresh repo 固化执行提交与 bundle 后，启动唯一的 e120 HT0。
 
 ## 初始设计审计
 
@@ -28,3 +28,41 @@
 - 可执行结论：`EXP389_FULL_MODEL_CUDA_SMOKE_PASS`。
 
 该结果只通过基础实现门禁，不替代 config-off/D0-off exact、真实 paired batch64/24-step、严格 gradient ownership、overflow、strict state、pose-free、逐 consumer path 与效率门禁；状态继续为 `NO-START`。
+
+## 完整正式训练前门禁
+
+### config-off 与 D0-off 精确等价
+
+- pre-TAPF 官方代码与新代码 `TAPF.ENABLED=False` 的三步完整输出、梯度、state 与 optimizer 指纹逐项 exact，fingerprint=`e12e187da94e2b599fe3c986d38dee76310742526f9498a0d6c6fb8aa8c39d77`；
+- exp387 D0 与新代码 `TAPF.ENABLED=True,HIERARCHICAL=False` 的三步完整指纹 exact，fingerprint=`3e0415c796b2cd2fa908b1fb4cfeafe5a9c0a2cdcb093c992e197d8ce0764b3e`；
+- 另用独立脚本 `preflight_d0_exact.py` 做默认 GradScaler 十步受控复测。旧 exp387 commit=`0d1822a07dda8daac0210b68916035b1886d5d99` 与新代码 commit=`04f1086ed3daddce9c3c4c83fe26550d96d1a206` 使用同一固定 RGB、pose、seed、loss 和 step RNG，两个完整 JSON 逐字节 exact，JSON SHA256=`b2f19d3f97e4d2d6c4d60241364876be0562605680058031779897d3e4499d16`；
+- 十步受控复测 state tensor=`223`、momentum buffer=`185`，scale 轨迹=`32768/16384/8192/4096/2048/1024/512/512/512/512`，initial/final/momentum SHA256 分别为 `017e9870bbbba1f2d460d62ea1fd81ba2cfdb13f92cf1dd5a02efa90a35777ad`、`134c34beb9422298e2ad61a9b07a68531103ff08872c0614e2e88c44e5ef5f47`、`3c453e997e74aa63e36157079bcbbfd16b5575a6064ddb6de48d15d346d253ca`；
+- 可复现脚本 SHA256=`7882a631559b8d8b6c4c751fa79edb8201e329a275ebcc407d3f66929434f01b`。此前一次临时检查因两次独立进程没有共享固定输入而给出不同聚合指纹，不构成代码差异；受控逐字节比较取代该无效临时结果。
+
+### 构造、参数与优化器边界
+
+- full-model common state=`223`，HT0 extra state=`20`；D0/HT0 参数量=`28,179,484/28,287,102`，唯一新增=`107,618`；
+- common optimizer parameters=`191`、extra optimizer parameters=`20`，公共 state、构造后 CPU/CUDA RNG、公共 optimizer 成员/顺序/超参数全部 exact；
+- HT0 先构造完整 D0 late path，再追加 early anchor 和六个独立 PSG，D0 公共参数名、初始化值与随机数消耗不变。
+
+### 真实数据 CUDA/AMP、路由与梯度
+
+- exp386 strict paired loader、batch64、8 workers 连续 24 step 原生 CUDA/AMP PASS；默认 GradScaler 从 `65536` 回退至 `1024` 后连续有限更新，共 18 次真实 optimizer update；
+- 参数更新覆盖 early anchor=`8/8`、early PSG=`12/12`、late anchor=`8/8`、late PSG=`4/4`、Swin=`171/193`、head=`2/3`，optimizer state tensor=`205`；peak allocated/reserved=`7,018,148,352/7,488,929,792 B`；
+- e1/e6/e10/e11 两层 student fraction 均为 `0/0.2/1/1`，每次 forward early/late consumer route=`6/2`；
+- pose supervision ownership：early pose loss 只进入 early anchor `8/8`，late pose loss 只进入 late anchor `8/8`；ReID loss 进入 early 六个 PSG、late 两个 PSG、Swin 与 head，两个 anchor 均无 ReID 梯度。零初始化 output projection 在首步仍保留预期的下游梯度边界；
+- 真实 overflow 门禁：scale=`1→0.5`，model state=`243`、optimizer state=`205` 在 nonfinite 整步前后逐张量 exact，证明 GradScaler 确实整步跳过。
+
+### strict state、pose-free 与 consumer 可达性
+
+- strict save/load state tensor=`243`；correct/shuffle/None/exploding 四种外部 pose 输入的 descriptor、early/late student field 与八个 gate delta 全部 exact，exploding pose access=`0`；
+- 八个 consumer 逐一旁路均使最终 descriptor 产生有限非零变化，max absolute delta 依次为 `0.0245/0.0444/0.0648/0.1450/0.2691/0.3392/0.3721/0.3834`；六个 early 与两个 late consumer 全部存在到最终 GAP descriptor 的真实下游路径，无 terminal dead consumer。
+
+### matched 效率
+
+- 参数增量=`107,618`，相对 D0 为 `+0.381902%`；
+- analyzer 支持算子口径 FLOPs=`5,548,787,520→5,588,139,072`，增量=`39,351,552 / +0.709192%`；不将 analyzer 未支持算子包装成完整 FLOPs；
+- train batch64 latency=`100.061→105.356 ms`，peak allocated=`6,080,495,104→6,621,345,792 B`；
+- eval batch256 latency=`228.036→243.524 ms`，peak allocated=`4,843,570,176→4,844,131,328 B`。
+
+以上 unit、config-off、D0-off、state/RNG/optimizer、真实 paired CUDA/AMP、route、gradient、overflow、strict state、pose-free、八 consumer 路径与效率门禁均 PASS。正式变量只剩新增 early hierarchy，允许进入 fresh e120 HT0；不得并行、续训、提前停止或修改运行中的代码/config。
