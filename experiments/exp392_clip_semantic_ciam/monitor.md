@@ -235,3 +235,69 @@ CLS当前最高`44.7%`，但每图五次完整CLIP forward不适合直接作为1
 接口：`pose-conditioned multi-block CLS readout`（共享早期trunk）与`region-crop global CLS`的可缓存/
 成本边界；同时重构arms/upper-leg的互斥ontology。历史exp354的MaskCLIP value-only在另一归属任务上
 已有小样本负证据，不能未经clean body-part门禁直接复活。
+
+## 2026-07-18 Phase 0B2 问题重构开始
+
+用户明确要求继续深度耦合CLIP与TAPF，不把Phase 0B当前teacher的NO-GO扩张为整个方向失败。已新增
+`phase0b2_protocol.md`，当前保持`READ-ONLY / GPU NO-START`。
+
+本轮纠偏不是换prompt救场，而是修正teacher职责：pose已经给出不可置换的anatomical slot identity，
+CLIP不再重复猜五类body-part name；frozen image encoder只读取该slot当前RGB的视觉证据，frozen text
+encoder把它投影到slot内visual-support/occlusion与appearance轴。未来这些量必须进入TAPF的
+semantic expert gather-transform-scatter执行路径，禁止terminal auxiliary head或final descriptor KD。
+
+新协议冻结两个readout：主候选为共享前20层、后4层pose-conditioned CLS的`PC-MBCLS`，理论block
+计算量为单CLIP的`1.67x`；region-crop global CLS只作约`5x`成本的受监督路径参考。按
+`ontology-only -> readout-only -> semantic-object-only`拆开，避免把接口变化、ontology变化和teacher
+目标变化混为一个实验。
+
+已启动三路独立只读审查：OpenCLIP后段attention实现、MaskCLIP/SCLIP/ClearCLIP/DenseCLIP近邻代码、
+以及Phase 0B2反事实与kill-switch。审查完成前不实现脚本、不占4090；正式训练继续`NO-START`。
+
+## 2026-07-18 Phase 0B2 三路独立审查闭合
+
+三路审查均支持继续CLIP–TAPF深耦合，但要求先修teacher readout和审计边界。已据此修订
+`phase0b2_protocol.md`：
+
+1. 五个region不能在同一token sequence追加五个CLS；必须把block20输出沿batch复制为五个彼此独立、
+   各只有一个官方CLS的sequence，再分别跑后4个block，否则region会互相attention且all-one parity
+   不可能成立；
+2. 原逐patch `eps=0.05`会使稀疏region的背景总先验质量接近前景，现改为总leak budget
+   `rho=0.01`，并增加单patchquery/key方向测试；all-one本身不足以排除float mask方向错误；
+3. 审计拆为`B2-O ontology-only -> B2-I readout-only -> B2-S semantic-object-only`；support首版从四级
+   改为visible-vs-occluded二分类，只有三种合成遮挡均出现方向正确的单调响应才允许再拆等级；
+4. appearance晚于support，并把dominant color与texture拆成两个分布；增加完整pose→增强→mask峰值、
+   增强后donor matching、四个cycle、PID-cluster bootstrap、raw cosine margin、PID-disjoint cluster与
+   cache geometry key门禁；
+5. region-crop global CLS不是同信息条件下的理论上界，也不授权作为`5x` online teacher。
+
+公开近邻复核显示MaskCLIP取最后attention的V、SCLIP使用QQ/KK self-self attention、ClearCLIP去除末层
+residual/FFN干扰、DenseCLIP训练context decoder；它们支持“普通CLIP patch residual不是可靠局部文本
+轴”，也说明dense CLIP readout本身已拥挤，不能作为创新主张。可争对象仍只能是pose固定slot
+identity、CLIP提供slot内实例support/appearance、该state真实控制TAPF semantic expert，以及最终
+descriptor上的反事实可辨识证据。
+
+独立反事实审查曾报告现有`spherical_kmeans()`可能只做初始化；主agent逐行复核后确认其确实执行
+20轮assignment和center update，因此不采纳该条错误报告。保留的真实问题是fit/eval使用同一全集，
+B2将改为PID-disjoint fit/eval。正式训练继续`NO-START`，4090空闲。
+
+## 2026-07-18 Phase 0B2 CPU/static 门禁
+
+新增两个不读取ReID数据、不构建optimizer、不占GPU的契约脚本：
+
+1. `phase0b2_static_audit.py`：本地uv环境CPU PASS，脚本SHA256=
+   `afcfcc055d91b4d83bcc695357ffc42904383f293fd4d2b5d007257f9b247587`。五region partition非空
+   像素sum误差`1.79e-7`，总背景leak=`0.009527<=0.01`，all-one prior严格0，zero严格invalid/NULL，
+   attention mask只改CLS-query/patch-key，非CLS行exact，B×5 branch展开还原exact；完整synthetic
+   resize/flip/pad/crop链中pose与RGB marker误差`0.5 px`，96×32 grid误差`0.0601`；
+2. `phase0b2_openclip_contract.py`：在远端正式`open_clip=2.32.0/torch=1.13.1`、同一
+   ViT-L/14 checkpoint上以`CUDA_VISIBLE_DEVICES=""`纯CPU PASS。官方24-block与手动20+4路径
+   max error=`0`；五个独立all-one branch相对官方CLS max error=`1.34e-7`；sparse五region最小descriptor
+   change=`0.05557`，repeat exact，zero mask严格invalid且输出全0，全部finite。脚本SHA256=
+   `7206dc13bf69b5666b54169ae3333f838c48b16d0c963512e7c67d906354c2c7`，runner SHA256=
+   `db1bc3a43953aef4363424ffc28899aa560805f26394180514ba001b9ead2f82`；耗时`4.84s`，CPU
+   maxRSS=`3,654,036 KiB`。
+
+CPU运行前后远端4090均为`2 MiB/0%`，无训练或审计计算进程。该结果只证明PC-MBCLS执行数学与
+OpenCLIP官方路径兼容，不证明teacher语义有效；下一步仍先做B2-O互斥ontology/crop-reference小样本
+CPU smoke，正式训练和GPU teacher-only全量均保持`NO-START`。
