@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 状态：`PREFLIGHT PASS / GO`；首个正式 arm 仍未启动；
-- GPU：空闲；
+- 状态：`RUNNING`；当前且唯一 arm=`B0-s4321`；
+- GPU：main PID=`1133345`，约 `6,846 MiB`；
 - 已有 seed1234 pair：B0=`57.4/67.4/80.6/85.2`，D0=`57.6/67.7/80.8/84.6`，
   D0−B0=`+0.2/+0.3/+0.2/−0.6`；
 - 预注册新增顺序：B0-s4321→D0-s4321→B0-s2025→D0-s2025；
@@ -85,3 +85,19 @@ checkpoint、输出仅位于 audit 目录：所有周期日志 loss finite，严
 截至本记录：preflight repo tracked source clean，GPU=`2 MiB/0%`，无训练/preflight 进程；四个正式
 output 与首臂 runner 均不存在。门禁由 `NO-START` 更新为 `GO`，下一步只能从上述 exact bundle
 建立 fresh formal repo，并按预注册顺序首次启动 B0-s4321。
+
+## B0-s4321 正式启动
+
+- fresh formal repo=`/home/afr/SOLIDER-REID-exp390-b0s4321-de604a6`；
+- exact detached HEAD=`de604a643b9aaa0c0d885d42a41142c7065670b0`；
+- bundle SHA256=`beb37224bdc7d6cb4dd7880468afab03fc9b563f1f1f405d6f144eb9aee9cd1f`；
+- config SHA256=`8fd054b528608b524212170962f30274b3185c3ee22304720f305f81816a9cfa`；
+- output=`log/occluded_duke/exp390_clean_swin_tiny_b0_s4321`；
+- runner=`/home/afr/train-logs/exp390_clean_b0_s4321.runner.log`；
+- main PID=`1133345`，python=`/usr/local/anaconda3/envs/mmpose-abu/bin/python`；
+- 启动前 exact HEAD/config/bundle/teacher SHA、tracked source clean、output/runner 不存在、无其它训练、
+  GPU=`2 MiB/0%` 全部 PASS；这是该 arm 的首次且唯一正式启动。
+
+首次健康检查：e1/e2 自然完成并进入 e3；唯一 main+8 workers，GPU 约 `6,846 MiB`，训练 loss
+持续 finite，runner 严格异常 `0`，e120 前无 checkpoint。必须继续自然跑满 e120，不因任何中间
+eval 或阈值停止。
