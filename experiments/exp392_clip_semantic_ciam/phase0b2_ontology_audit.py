@@ -47,6 +47,13 @@ REGION_PHRASES = (
     "upper legs and thighs",
     "lower legs and feet",
 )
+DISJOINT_REGION_PHRASES = (
+    "head, face, and hair",
+    "chest, abdomen, waist, and torso",
+    "upper limbs, arms, elbows, forearms, wrists, and hands",
+    "thighs between the hips and knees",
+    "lower legs below the knees, including shins, calves, ankles, and feet",
+)
 PROMPT_TEMPLATES = (
     "a photo of the {} of a person",
     "the {} region of a pedestrian",
@@ -385,11 +392,17 @@ def collate_recipient(items):
 
 
 class FrozenCropTeacher:
-    def __init__(self, checkpoint, device, clip_batch):
+    def __init__(self, checkpoint, device, clip_batch, prompt_bank):
         import open_clip
 
         self.device = device
         self.clip_batch = int(clip_batch)
+        if prompt_bank == "original":
+            region_phrases = REGION_PHRASES
+        elif prompt_bank == "disjoint-anatomy":
+            region_phrases = DISJOINT_REGION_PHRASES
+        else:
+            raise ValueError("Unknown prompt bank: %s" % prompt_bank)
         self.model, _, preprocess = open_clip.create_model_and_transforms(
             "ViT-L-14", pretrained=str(checkpoint)
         )
@@ -398,7 +411,7 @@ class FrozenCropTeacher:
             parameter.requires_grad_(False)
         prompts = [
             template.format(phrase)
-            for phrase in REGION_PHRASES
+            for phrase in region_phrases
             for template in PROMPT_TEMPLATES
         ]
         tokenizer = open_clip.get_tokenizer("ViT-L-14")
@@ -410,9 +423,10 @@ class FrozenCropTeacher:
         self.text = F.normalize(text.mean(1), dim=-1)
         self.prompt_payload = {
             "region_names": list(REGION_NAMES),
-            "region_phrases": list(REGION_PHRASES),
+            "region_phrases": list(region_phrases),
             "templates": list(PROMPT_TEMPLATES),
             "prompts": prompts,
+            "prompt_bank": prompt_bank,
         }
         self.preprocess_repr = repr(preprocess)
         normalizers = [
@@ -651,6 +665,11 @@ def parse_args():
         choices=("soft", "hard-owner"),
         default="soft",
     )
+    parser.add_argument(
+        "--prompt-bank",
+        choices=("original", "disjoint-anatomy"),
+        default="original",
+    )
     return parser.parse_args()
 
 
@@ -714,7 +733,12 @@ def main():
         drop_last=False,
     )
     device = torch.device(args.device)
-    teacher = FrozenCropTeacher(clip_checkpoint, device, args.clip_batch)
+    teacher = FrozenCropTeacher(
+        clip_checkpoint,
+        device,
+        args.clip_batch,
+        args.prompt_bank,
+    )
     logits_all = []
     valid_all = []
     original_valid_all = []
@@ -798,6 +822,7 @@ def main():
     )
     overlap_max = float(overlaps.max()) if overlap_available else None
     hard_owner_mode = args.partition_mode == "hard-owner"
+    disjoint_prompt_mode = args.prompt_bank == "disjoint-anatomy"
     gates = {
         "macro_top1_lower_ge_035": lower_gt(summary["macro_top1"], 0.35 - 1e-12),
         "all_class_top1_lower_gt_020": all(
@@ -820,6 +845,20 @@ def main():
         "every_class_has_samples": bool(valid.any(dim=0).all()),
         "coverage_exact": bool(torch.equal(valid, original_valid)),
         "finite": bool(torch.isfinite(logits).all()),
+        "prompt_macro_point_ge_035": (
+            summary["macro_top1"]["mean"] is not None
+            and summary["macro_top1"]["mean"] >= 0.35
+        ),
+        "all_class_top1_point_gt_020": all(
+            item["top1"]["mean"] is not None
+            and item["top1"]["mean"] > 0.20
+            for item in summary["per_class"]
+        ),
+        "all_class_raw_margin_point_gt_0": all(
+            item["raw_cosine_margin"]["mean"] is not None
+            and item["raw_cosine_margin"]["mean"] > 0.0
+            for item in summary["per_class"]
+        ),
     }
     common_full_gate_names = (
         "macro_top1_lower_ge_035",
@@ -833,8 +872,26 @@ def main():
     )
     common_full_pass = all(gates[name] for name in common_full_gate_names)
     hard_owner_full_pass = common_full_pass and gates["overlap_exact_zero"]
+    prompt_smoke_pass = (
+        hard_owner_mode
+        and gates["every_class_has_samples"]
+        and gates["coverage_exact"]
+        and gates["finite"]
+        and gates["overlap_exact_zero"]
+        and gates["prompt_macro_point_ge_035"]
+        and gates["all_class_top1_point_gt_020"]
+        and gates["all_class_raw_margin_point_gt_0"]
+    )
     verdict = (
-        "B2_O2_SMOKE_PASS"
+        "B2_P_SMOKE_PASS"
+        if disjoint_prompt_mode and not full_audit and prompt_smoke_pass
+        else "B2_P_GATE_PASS"
+        if disjoint_prompt_mode and full_audit and hard_owner_full_pass
+        else "B2_P_GATE_FAIL"
+        if disjoint_prompt_mode and full_audit
+        else "B2_P_SMOKE_FAIL"
+        if disjoint_prompt_mode
+        else "B2_O2_SMOKE_PASS"
         if hard_owner_mode
         and not full_audit
         and gates["every_class_has_samples"]
@@ -869,7 +926,7 @@ def main():
             full_audit
             and (
                 hard_owner_full_pass
-                if hard_owner_mode
+                if hard_owner_mode or disjoint_prompt_mode
                 else common_full_pass
             )
         ),
@@ -896,6 +953,7 @@ def main():
             "seed": args.seed,
             "sample_manifest_sha256": manifest_digest.hexdigest(),
             "partition_mode": args.partition_mode,
+            "prompt_bank": args.prompt_bank,
         },
         "ontology": {
             "regions": list(REGION_NAMES),
@@ -945,6 +1003,8 @@ def main():
             "B2_O_GATE_PASS",
             "B2_O2_SMOKE_PASS",
             "B2_O2_GATE_PASS",
+            "B2_P_SMOKE_PASS",
+            "B2_P_GATE_PASS",
         )
         else 1
     )
