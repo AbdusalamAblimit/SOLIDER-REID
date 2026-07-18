@@ -209,11 +209,17 @@ config或训练，不读取external pose。顺序固定为full→early六bank全
 
 结论：early层不是dead path，但冻结checkpoint上的独立mAP贡献只有约`+0.07`、R1为`0`；late层仍
 提供约`+1.36 mAP`。旁路early不能把HT0恢复到exp387 D0=`57.6`，所以exp389相对D0的主要退化
-不是推理时early gate本身直接减分，而是在联合训练中已经改变backbone/late路径。一个明确的设计
-风险是exp389把early+late pose loss直接求和后再乘`0.1`，相对D0把辅助目标总强度翻倍；这不是
-路由bug，但使“新增层级”同时带入更强pose约束。因而本诊断收紧原裁决为：**clean exp389这套
-独立双anchor+六/二consumer+pose-loss求和方案NO-GO，不等于所有loss-normalized direct-anchor
-hierarchy永久NO-GO。**
+不是推理时early gate本身直接减分，而是训练期early六个PSG已通过ReID路径改写Stage-2/backbone/
+late输入的联合轨迹。
+
+独立复核同时收紧了一个容易过度归因的点：exp389把early+late pose loss求和后乘`0.1`，确实令
+日志中的总辅助标量相对D0增加，但两个source均detach，pose loss只更新各自anchor；late anchor仍
+保持与D0相同的`0.1`系数，Swin/PSG/head不接收pose梯度。因此不能直接写“pose总强度翻倍干扰
+backbone/late”，明确的全局耦合只剩GradScaler overflow/整步skip，而当前没有生产skip差异能作
+因果证据。更强的结构差异是early同一field连续经过六个独立Stage-2 PSG，late只有两个，新增层级
+同时带入sites、容量与累计调制。因而本诊断收紧原裁决为：**clean exp389这套独立双anchor+
+六/二consumer+pose-loss求和方案NO-GO，不等于所有consumer-balanced或loss-budget变体永久
+NO-GO；但mean loss只应作为单变量敏感性诊断，不能预设为天然更公平。**
 
 - 脚本：`frozen_level_ablation.py`，SHA256=
   `71fea0c3781eff2449c6c7cd3460a2fb6e80ebe9a416a3e7ee1f20db9b6d0cb8`；
