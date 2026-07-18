@@ -1,11 +1,11 @@
 # exp392 Phase 0 零训练协议：内部语义诊断与 CLIP teacher 可辨识性
 
-> 状态：**PROTOCOL-FROZEN / NO-EXECUTION / NO-START**
+> 状态：**PROTOCOL-FROZEN / PHASE 0A EXECUTING / NO FORMAL TRAINING**
 >
 > 日期：2026-07-18
 >
-> 本文只冻结审计对象、干预 seam、对照和裁决规则。当前不实现脚本、不创建训练 config，
-> 不读取封板 checkpoint 跑指标，也不占用 GPU。
+> 本文冻结审计对象、干预 seam、对照和裁决规则。用户于2026-07-18明确授权开始后，Phase 0A
+> 只读封板 checkpoint 审计进入执行；仍不创建训练 config、不修改封板实现、不启动正式训练。
 
 ## 一、Phase 0 要回答的两个问题
 
@@ -285,8 +285,8 @@ semantic single-stage；semantic multi-stage继续保持 `NO-START`。
 
 ## 六、当前裁决
 
-- Phase 0协议已冻结为文档，但尚未执行；
-- 当前不创建审计脚本、训练config、output或runner；
-- 当前不占用4090；
-- 下一只读任务是对公开近邻的实际 forward/loss 继续做差分审查，并检查五类 ontology 与 prompt bank
-  是否会把 teacher退化成已知region标签的常量分类器。
+- Phase 0协议已冻结；Phase 0A只读审计已获用户授权并开始执行；
+- 0A脚本必须位于exp392目录、从外部导入exp387 exact repo，不写封板repo；
+- 0A运行期间只允许该一条4090任务，结束后必须恢复GPU空闲；
+- Phase 0B仍未执行；0A完成并封板后才开始teacher-only实现与门禁；
+- 当前仍不创建训练config/output/runner，不启动120-epoch正式训练。
