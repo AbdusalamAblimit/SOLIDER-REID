@@ -164,6 +164,11 @@ semantic multi-stage。
 `2,402 MiB/99%`、唯一compute PID显存=`2,394 MiB`，异常关键词计数=`0`。继续自然运行，不作中间
 统计裁决。
 
+后续heartbeat复核：PID=`884504`仍由PID 1接管且唯一，第一遍推进到
+`correct-pass 9,632/15,618`；partition已自然落盘（约6.4 KiB），result/codebook尚未出现，符合两遍
+执行顺序。GPU=`2,402 MiB/53%`、唯一compute PID显存=`2,394 MiB`，脚本SHA、execution HEAD与tracked
+clean保持exact，异常关键词计数=`0`。继续自然运行，不作中间裁决。
+
 ## 2026-07-19 Phase 0E-FULL正式teacher-only启动
 
 0E-FULL已在唯一4090上fresh启动，main PID=`884504`，runner=
