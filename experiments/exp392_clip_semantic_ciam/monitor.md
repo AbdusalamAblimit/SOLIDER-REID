@@ -18,6 +18,32 @@
 4. 可争对象必须是counterfactually identifiable executable anatomical mediator，而不是“首次CLIP+pose”；
 5. exp391只封板无语义校准的纯结构链；semantic single-stage通过后允许重新验证semantic multi-stage。
 
+## 2026-07-18 Phase 0 协议冻结
+
+新增 `phase0_protocol.md`，当前仍为文档审查，不执行脚本、不占GPU。已冻结：
+
+1. **Phase 0A clean D0 内部field seam**：clean runtime不是旧TAPF tuple；干预点必须是
+   `model.base.tapf.anchor`输出dict中的`field`（或等价的`prepare()`返回dict），确保替换发生在
+   student field形成后、两个PSG消费前。预注册channel-cycle、left/right channel swap、
+   confidence permutation、matched-wrong、spatial-constant、zero与逐consumer/all bypass；外部
+   correct/shuffle/None/exploding仍需exact。
+2. **Phase 0B 双编码teacher门禁**：teacher RGB必须与student复用同一次resize/flip/pad/crop，主teacher
+   读取RandomErasing前RGB，并用post-erasing作为clean-view KD混淆控制。square-stretch与
+   aspect-letterbox只做预注册teacher-only比较，mask必须使用完全相同的RGB→CLIP grid变换。
+3. **五类coarse ontology**：head/torso/arms/upper-legs/lower-legs；固定incidence、limb segments与
+   prompt ensemble。主teacher用pose-region池化frozen CLIP patch tokens，再与全部frozen text
+   prototypes形成sample-specific分布；不允许text-only常量冒充双编码teacher。
+4. **强反事实与kill-switch**：wrong RGB/mask/text、channel shuffle、uniform/fixed bands、
+   text-only、image-only cluster、flip equivariance、样本方差/JSD/effective-rank和遮挡分组均为
+   必报项。任何关键输入不敏感、分布近常量或双编码不优于单编码控制时，当前teacher定义NO-GO。
+5. **历史exp356边界**：已只读定位其ViT-L/14末层patch hook、强制eval、224方形拉伸和固定
+   top-5/mid-6/bottom-5池化。历史pose-mask 57.1、random-mask 57.3只封板“固定水平条带completion
+   + pose选mask”，没有实现pose-mask池化CLIP tokens或可执行语义中介，不能等价否定exp392。
+
+协议同时记录未来Phase 0C的NULL identity、梯度所有权、config-off exact、semantic mismatch和
+generic adapter强控制；Phase 0A/0B通过也只授权0C，不直接授权120-epoch训练。
+
 ## 下一步
 
-继续只读复核Phase 0A/0B指标、公开近邻与当前代码接口；所有门禁冻结前保持`NO-START`。
+继续只读审查公开近邻的实际forward/loss与五类ontology/prompt是否会退化为固定region分类器；
+Phase 0协议尚未执行，保持`NO-START`。
