@@ -398,3 +398,12 @@ B0-s2025必须自然跑满e120；不得按中间点停止或挑best。终审PASS
   main，约`6,930 MiB`；output仍只有train log，e120前无checkpoint；
 - runner/train log的严格数值异常、Traceback/RuntimeError/OOM与AMP warning边界扫描命中`0`。
   两个中间点只记录seed2025轨迹，不用于早停、挑best或提前判断TAPF跨seed效应。
+
+### 2026-07-18 05:23 UTC：e30完整评测
+
+- e30 mAP/R1/R5/R10=`48.0/58.8/74.0/79.2`；评测后自然进入e35，现场e35 iter20/227
+  loss=`0.461`、Acc=`0.977`，finite；
+- exact HEAD=`ec46d50486d645da0872d5549e1071f2a8072b24`、config SHA256=
+  `53a7c895c39174fc288655bbb35206597c6d681c2f9bc89adb1a283e82521605`，tracked source clean；
+- 唯一main PID=`1220240`与8 workers，GPU只有该main，约`6,942 MiB`；output仍无checkpoint；
+- 严格异常与AMP warning扫描保持`0`。e30只记录轨迹，继续自然跑满e120。
