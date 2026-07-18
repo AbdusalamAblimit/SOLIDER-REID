@@ -3447,3 +3447,26 @@ sequence memory，跨帧pose reliability、motion continuity或occlusion recover
 exp383由此不是新模块探索，而是论文主张的高信息量证据实验。若Market域内与Occluded-ReID跨域
 均不支持D0，三骨干同一数据集正差只能保留为Occluded-Duke特定证据；若两域方向支持，才有理由
 把原子方法从“跨backbone”推进到“跨训练域/遮挡target”的描述性结论。
+
+## 2026-07-18：官方干净重启把创新判断从“跨骨干强信号”收紧为“小效应待稳健性验证”
+
+官方最后代码上的 fresh 复现改变了效应量判断。clean Occluded-Duke D0−B0 只有
+`+0.2/+0.3/+0.2/−0.6`，clean Market D0−B0 为 `+0.4/+0.2/+0.1/+0.1`。这两个结果方向上
+支持训练期 pose target→内部 anchor→后继 PSG→测试期 RGB-only 的完整链路可迁移到第二训练域，
+但幅度不足以继续沿用“跨三骨干明确增益”的强语气。旧 runtime 的结果仍是探索资产，不能替代
+当前 clean implementation 的稳健性证据。
+
+计算开销不是当前主要问题：D0 参数约 `+0.375%`、supported-op FLOPs `+0.242%`、train/eval
+step 约 `+1.96%/+1.64%`。真正缺口是效应是否超过 seed 方差，以及该小增益是否足以在
+PAFormer、PGFL-KD、TSD、KPR 等强先例旁形成方法级贡献。不能用轻量本身补偿证据强度不足。
+
+clean hierarchical 已给出明确反证：新增早期 anchor 和六个真实可达 PSG 后，HT0−D0=
+`−0.7/−1.8/−0.8/−0.5`。所有模块都更新、所有 consumer 都能改变 final descriptor，所以失败
+不能归因于 terminal dead path。由此继续增加 stage、共享/独立 decoder、loss 权重或 gate 数量，
+都只会回到模块堆叠，不再满足创新门槛。
+
+当前仍可争取的窄机制差分是：**结构 target 不是仅蒸馏最终 feature/logit，而是训练一个位于
+backbone 内部、其输出直接控制后继视觉更新的 RGB 内生 anchor；部署时外部 pose 路径完全删除。**
+但这只能在 matched 多 seed 确认小正效应后写成论文中心。下一阶段的研究问题不再是“怎样让
+hierarchical 涨点”，而是“clean 原子增益是否可重复”。若答案为否，应主动更换问题对象，不能
+再用 Video、更多层或旧跨骨干数字包装当前方法。

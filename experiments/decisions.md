@@ -5017,3 +5017,32 @@ B0/D0，并同时报告Market域内与Occluded-ReID跨域final。Occluded-ReID�
 第二训练集。该两臂同时补第二训练域、独立遮挡target和TAPF效率审计，信息量高于立即在原
 Occluded-Duke重复seed。只有design、evaluator真正pose-free、CUDA/AMP/overflow/state-RNG-
 optimizer/route/gradient/parity全部通过后才允许串行启动；当前保持GPU空闲。
+
+### [2026-07-18] 决策：官方干净 D0 弱 GO，clean hierarchical NO-GO，下一步补 matched 多 seed
+
+**执行口径重置**：用户要求提交旧状态后退回 SOLIDER 官方最后代码，只保留原始数据集与官方
+代码；旧 runtime、旧 pose cache 和路径映射全部禁止复用。exp384/385 已分别完成 Market 与
+Occluded-Duke official B0，exp386/388 从原始 train RGB 用 ViTPose-H fresh 提取 pose，
+query/gallery 不提取。Market B0=`91.6/96.3/98.7/99.2`，其中 mAP 精确复现官方报告。
+
+**clean 原子结果**：Occluded-Duke D0=`57.6/67.7/80.8/84.6`，matched B0=
+`57.4/67.4/80.6/85.2`，D0−B0=`+0.2/+0.3/+0.2/−0.6`；Market D0=
+`92.0/96.5/98.8/99.3`，matched B0=`91.6/96.3/98.7/99.2`，D0−B0=
+`+0.4/+0.2/+0.1/+0.1`。两臂均通过 strict finite、参数轨迹与 correct/shuffle/None/exploding
+pose-free exact 终审。D0 额外参数约 `0.375%`，supported-op FLOPs 约 `+0.242%`。
+
+**clean 层级结果**：exp389 HT0=`56.9/65.9/80.0/84.1`，相对 clean D0=
+`−0.7/−1.8/−0.8/−0.5`，相对 official B0=`−0.5/−1.5/−0.6/−1.1`。early/late anchors、
+六个 early 和两个 late PSG 均离开初始化；八个 consumer 对 final descriptor 都有非零可执行路径，
+严格异常为 0。因此这是机制有效运行后的负结果，不补层数、宽度、loss、decoder 或中途 best 救场。
+
+**决策**：原子 `anchor+PSG` 在 clean 口径下仅作**弱描述性 GO**：两个训练域 mAP 均为正，
+但幅度只有 `+0.2/+0.4`，Occluded-Duke R10 为负，且都只有一个 seed。hierarchical 在 clean
+官方实现上正式 `NO-GO`，继续只保留为历史 backbone-conditional 扩展，不进 headline。旧 runtime
+的 Swin/ResNet/ViT 正差不得与 clean 主表混为同一实现证据。
+
+**下一算力决策**：优先建立官方干净 Occ-Duke matched B0/D0 多 seed，而不是 Video、HT0 或新
+模块。新增 seed 必须逐 seed 先跑 fresh B0 再跑 fresh D0，保持 batch64/120 epoch/数据/teacher/
+增强/optimizer 完全一致；报告逐 seed 差值、mean/std，不以某个正 seed 或 best checkpoint裁决。
+若多 seed 不支持正均值，当前 MMAsia headline 必须降级或转向新的问题对象；若支持，再决定是否
+补 clean 跨骨干，而不是直接恢复旧 runtime 结果。

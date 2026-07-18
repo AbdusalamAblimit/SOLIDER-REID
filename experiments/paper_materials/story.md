@@ -1790,3 +1790,38 @@ Occluded-ReID没有训练split，因此只能写独立遮挡target，不能写�
 
 如果exp383两域方向支持，再对最终论文主骨干补必要seed；如果跨域非正，则不能用继续重复
 Occluded-Duke seed掩盖数据集泛化缺口。Hierarchical和Video都不再消耗主实验预算。
+
+## 2026-07-18：官方干净重启后的论文故事——原子方法小幅成立，层级版删除
+
+用户要求从 SOLIDER 官方最后提交重新开始，旧 runtime 与旧 pose cache 不再作为论文主实现。
+这轮 clean execution 先在 Market 复现 official B0=`91.6/96.3/98.7/99.2`，再建立
+Occluded-Duke official B0=`57.4/67.4/80.6/85.2`。两个数据集的 pose 都只从 train RGB 用
+ViTPose-H fresh 提取；query/gallery 从未建立 pose target。
+
+当前可进入 clean 主表的结果是：
+
+| 数据集 | B0 | D0 | D0−B0（mAP/R1/R5/R10） |
+|---|---|---|---|
+| Market-1501 | 91.6/96.3/98.7/99.2 | 92.0/96.5/98.8/99.3 | `+0.4/+0.2/+0.1/+0.1` |
+| Occluded-Duke | 57.4/67.4/80.6/85.2 | 57.6/67.7/80.8/84.6 | `+0.2/+0.3/+0.2/−0.6` |
+
+D0 是不可强拆的完整 `anchor+PSG`：训练期 anchor 接受 pose target，student field 在 handoff 后由
+RGB feature 内生，两个后继 PSG 改变仍有最终 descriptor 下游路径的视觉特征；测试期不读取
+external pose。correct/shuffle/None/exploding 输入的 descriptor/field/gate 逐元素 exact，说明
+“pose-free inference”是执行事实。参数约 `+0.375%`，supported-op FLOPs 约 `+0.242%`。
+
+这组证据只能支撑克制表述：**同一轻量原子模块在两个训练域得到小幅 mAP 正差，并在部署时完全
+删除姿态模型。** 它不能支撑“稳定四项提升”“统计显著”“精确关节语义具有独立检索因果作用”，
+也不能继续把旧 runtime 的三骨干 `+1.1/+3.1/+2.0 mAP`直接并入 clean 主表。旧结果可在研究历程
+或补充材料中说明，但当前论文数字应以官方干净实现为主。
+
+clean hierarchical HT0=`56.9/65.9/80.0/84.1`，相对 D0=
+`−0.7/−1.8/−0.8/−0.5`。六个 early 与两个 late PSG 全部学习且都能独立改变 final descriptor，
+所以层级失败不是 dead consumer。`Hierarchical/Progressive`必须从标题、贡献和主方法中删除，只能
+作为负消融说明更多层不自动受益。
+
+MMAsia 当前最诚实的候选标题方向是：**Training-time pose targets for lightweight internal
+modulation in pose-free person ReID**。但在效应只有 `+0.2/+0.4 mAP`且单 seed 的情况下，标题仍是
+候选而非定稿。下一项必须是 clean Occ-Duke matched B0/D0 多 seed，报告逐 seed差值和 mean/std。
+只有均值方向与方差支持，才继续补 clean 跨骨干和强先例差分；若不支持，就应降级当前 headline，
+而不是复活 Video、hierarchical 或挑选中途 best。

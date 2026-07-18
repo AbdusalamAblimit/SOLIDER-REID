@@ -2111,3 +2111,43 @@ Video TAPF只保留为未来跨任务应用扩展，不能写成论文headline�
 Swin-T recipe训练，并用同一个e120 checkpoint同时报告Market域内与Occluded-ReID跨域结果。
 Occluded-ReID没有train split，只能称为独立遮挡target，不能伪装成第二训练数据集。exp383当前仅
 完成设计和数据门禁，尚未实现或启动。
+
+## exp384–exp389：官方最后代码上的干净重启与层级终判（2026-07-18）
+
+> 用户要求退回 SOLIDER 官方最后提交，从原始 RGB 重新建立数据路径与 pose target，禁止复用旧
+> runtime、旧 `pose_data/cache/path mapping`。以下均为 Swin-T / batch64 / seed1234 / 120 epoch
+> 的 fresh final；只比较同数据集、同 recipe 的 matched arm。
+
+| 数据集 | arm | mAP | R1 | R5 | R10 | 测试期外部 pose |
+|---|---|---:|---:|---:|---:|---|
+| Market-1501 | official B0 | 91.6 | 96.3 | 98.7 | 99.2 | 否 |
+| Market-1501 | clean D0 | **92.0** | **96.5** | **98.8** | **99.3** | 否 |
+| Occluded-Duke | official B0 | 57.4 | 67.4 | 80.6 | **85.2** | 否 |
+| Occluded-Duke | clean D0 | **57.6** | **67.7** | **80.8** | 84.6 | 否 |
+| Occluded-Duke | clean HT0 | 56.9 | 65.9 | 80.0 | 84.1 | 否 |
+
+固定 e120 差值（mAP/R1/R5/R10）：
+
+- Market D0−B0=`+0.4/+0.2/+0.1/+0.1`；
+- Occluded-Duke D0−B0=`+0.2/+0.3/+0.2/−0.6`；
+- Occluded-Duke HT0−D0=`−0.7/−1.8/−0.8/−0.5`；
+- Occluded-Duke HT0−B0=`−0.5/−1.5/−0.6/−1.1`。
+
+Market official B0 的 mAP 精确复现官方报告，R1 高 `0.2`。Occluded-Duke pose target 由
+ViTPose-H 从 15,618 张 train RGB fresh 离线提取，manifest SHA256=
+`cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8`；query/gallery 没有 pose。
+Market 的 12,936 张 train RGB 也独立 fresh 提取，query/gallery 同样为 RGB-only。
+
+clean D0 只增加完整 Stage-2 anchor→Stage-3 两个独立 PSG：Occluded-Duke 参数 `+105,442 /
+0.375585%`、supported-op FLOPs `+0.242424%`、train batch64 step `+1.96%`、eval batch256 step
+`+1.64%`；FLOPs 不含 analyzer 未支持算子。两个数据集 final correct/shuffle/None/exploding
+external pose 的 descriptor、field、gate 均逐元素 exact。
+
+exp389 从零新增 Stage-1 anchor→Stage-2 六个独立 PSG，并保留完整 D0 late path。全部八个 bank
+均真实更新且逐 consumer 旁路会有限改变最终 descriptor，排除 dead consumer 或未训练解释；但
+e120 四项均低于 D0。因此 clean 证据只支持原子 D0 在两个训练域上的**小幅描述性 mAP 正差**，
+不支持层级增量，也不支持“稳定四项提升”或统计显著主张。此前旧 runtime 的三骨干结果保留为
+历史探索证据，不能与本轮官方干净主表混合成同一实现口径。
+
+下一必要验证改为官方干净 Occ-Duke matched B0/D0 多 seed；效应仅 `+0.2 mAP`，在补 seed 前
+不得把原子方法写成稳定普适提升。Video 与 hierarchical 都不再作为下一算力优先级。
