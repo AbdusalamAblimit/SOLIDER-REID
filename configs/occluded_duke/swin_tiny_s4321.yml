@@ -6,6 +6,8 @@ MODEL:
   NAME: 'transformer'
   NO_MARGIN: True
   DEVICE_ID: ('0')
+  PRETRAIN_CHOICE: 'self'
+  PRETRAIN_PATH: '/home/afr/reid-clean/weights/solider_swin_tiny_tea.pth'
   TRANSFORMER_TYPE: 'swin_tiny_patch4_window7_224'
   STRIDE_SIZE: [16, 16]
   SEMANTIC_WEIGHT: 0.2

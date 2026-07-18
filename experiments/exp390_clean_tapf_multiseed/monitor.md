@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 状态：`INVALID EXECUTION / STOP REQUIRED`；首次 B0-s4321 启动不计入正式 arm；
-- GPU：main PID=`1133345`，约 `6,846 MiB`；
+- 状态：`CONFIG FIXED / RE-PREFLIGHT`；无有效正式 arm 在跑；
+- GPU：空闲；
 - 已有 seed1234 pair：B0=`57.4/67.4/80.6/85.2`，D0=`57.6/67.7/80.8/84.6`，
   D0−B0=`+0.2/+0.3/+0.2/−0.6`；
 - 预注册新增顺序：B0-s4321→D0-s4321→B0-s2025→D0-s2025；
@@ -19,13 +19,14 @@
 
 ## Config 静态门禁
 
-- B0-s4321 SHA256=`8fd054b528608b524212170962f30274b3185c3ee22304720f305f81816a9cfa`；
+- B0-s4321 SHA256=`71d43aa3be8657f8afddb2211f9de2430fa7963dab3793555e2a175bc1a0d8cb`；
 - D0-s4321 SHA256=`979c897da79327bd8ecc04fcc4b370f0f5ad6b318170fe3afec5594a5c769711`；
-- B0-s2025 SHA256=`30c2000dff8e9fa1d554a2873cf16c98a5d8e7d62182c2f95501e4fb8be20a33`；
+- B0-s2025 SHA256=`53a7c895c39174fc288655bbb35206597c6d681c2f9bc89adb1a283e82521605`；
 - D0-s2025 SHA256=`56b2a30fd1856d2dc1077df013cc5d4bab9312be5488f25e1fe7dfa882263116`；
-- 四个 config 相对各自 seed1234 canonical 文件的文本 diff 均严格只有 `SOLVER.SEED` 与
-  `OUTPUT_DIR`；dataset、teacher、pose artifact、batch、epoch、optimizer、LR、增强、sampler、
-  eval/checkpoint 周期均未改变；
+- D0 config 相对 seed1234 canonical 的文本 diff 严格只有 `SOLVER.SEED` 与 `OUTPUT_DIR`；B0
+  config 将 exp385 正式命令中的固定 teacher choice/path 收进自包含 YAML，归一化这两个既有
+  official 覆盖后也只改 seed/output。dataset、teacher、pose artifact、batch、epoch、optimizer、
+  LR、增强、sampler、eval/checkpoint 周期均未改变；
 - 四个 output 名称唯一且互不重叠。静态门禁完成时均未创建，并保持 `NO-START`，等待远端继承
   门禁与 fresh execution 审计；其后的状态更新见下文。
 
@@ -130,3 +131,11 @@ load；这与 design 中“同一 official Swin-T teacher”直接冲突。
 审计、B0/D0 common state/RNG/optimizer 与带 e1 eval/checkpoint 的 B0 smoke，确认 teacher exact load
 及指标回到 official-clean 合理量级，全部 PASS 后才能以新 output/runner fresh 首次有效启动
 B0-s4321。
+
+无效 main PID=`1133345` 已单独终止；8 个 workers 自然退出，GPU 回到 `2 MiB/0%`，无 checkpoint。
+终止时进度为 e50 iter80。无效 runner/train SHA256 分别为
+`03145bbbc8997be57a9f24f97993bb16ce7a2c3dabea5ba84d17e51cf55dbd18` 与
+`82460328e213c0ec250d2bba862196f9e735b27e09dd2cb9ab50374df6f5ffea`；output/runner 已原样移入
+`/home/afr/reid-clean/quarantine/exp390_b0_s4321_invalid_no_teacher_de604a6/`。原 formal output 与
+runner 路径重新为空，但必须使用新 execution commit/bundle 与新的唯一命名，不能覆盖或续用旧
+路径。

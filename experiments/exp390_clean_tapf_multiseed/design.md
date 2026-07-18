@@ -39,11 +39,16 @@ headline 必须降级；不得挑选正 seed、best checkpoint 或中途 epoch�
 - B0 与 D0 在同 seed 内使用完全相同的 seed、数据、增强、sampler、optimizer 与训练长度；
 - D0 保持 exp387 的单层 Stage-2 anchor→Stage-3 两个独立 PSG，`HIERARCHICAL=False`。
 
-四个新增 config 相对各自 seed1234 canonical config 只允许修改 `SOLVER.SEED` 与 `OUTPUT_DIR`。
+D0 新增 config 相对 seed1234 canonical config 只允许修改 `SOLVER.SEED` 与 `OUTPUT_DIR`。B0 的
+official-clean 有效启动边界不是 YAML 单文件：exp385 正式执行在 canonical YAML 之外还通过 CLI
+固定 `MODEL.PRETRAIN_CHOICE=self` 与 official teacher path。exp390 的 B0 config 必须把这两个既有
+固定覆盖显式收进 YAML，形成自包含配置；将这两个 official 覆盖归一化后，B0 相对 seed1234 的
+唯一变化仍只能是 seed/output。
 
 ## 启动前门禁
 
-1. 四 config 的结构化 diff 仅含 seed/output，SHA 固化；
+1. D0 config 的结构化 diff 仅含 seed/output；B0 config 相对“canonical YAML + exp385 official
+   teacher CLI 覆盖”的有效配置仅含 seed/output，四个 SHA 均固化；
 2. exact execution commit、full-history bundle、teacher/data/pose manifest 不变；
 3. clean TAPF unit 6/6、pose data unit 5/5；
 4. B0 config-off 与 official clean 路径保持 exact；D0 `HIERARCHICAL=False` 与 exp387 路径 exact；
