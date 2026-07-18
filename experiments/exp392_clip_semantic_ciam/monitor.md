@@ -557,3 +557,37 @@ exp386 manifest、三个输出路径不存在、无同类进程与GPU=`2 MiB/0%`
 `/home/afr/reid-clean/audits/exp392_phase0b2/b2s_full_pose_map_a25a9d9.json`、
 `b2s_full_pose_result_a25a9d9.json`、`b2s_full_pose_a25a9d9.runner.log`。启动后python约119% CPU，
 CUDA_VISIBLE_DEVICES为空，GPU仍`2 MiB/0%`，result尚不存在且runner为0字节，符合计算阶段预期。
+
+### Full pose-only feasibility 封板结果
+
+唯一CPU任务自然结束，wall=`9:38.99`、maxRSS=`886,708 KiB`、exit=`2`；parent/python均退出，
+GPU=`2 MiB/0%`，严格异常扫描0。result/map/runner SHA256分别为
+`8ab726a15bfdc4ae36500e8208a6f56cf973579cbf16bf992ff829cf2911be09`/
+`0c57660ddb6158721b9379094933e416612e2db94771d1113d271ea727ac3026`/
+`1c9d2fc73790e32938481a2145f31b438418a5143f7193095c54c518e72729a4`。map含完整15,618 records，
+status=`EXP392_PHASE0B2_FULL_POSE_MAP_FAILED_NOT_FROZEN`，没有把FAIL伪装为可复用冻结映射。
+
+通过项说明实现与基础几何并未失效：balanced target counts=`3124/3124/3123/3124/3123`；五slot
+valid counts=`15604/15618/15618/15607/15508`；hard-owner product严格0；donor完整、different
+PID/path、无fixed point、same-camera priority violation=0；connected overshoot/nesting/realized和
+control 24px dilation product均0失败。
+
+裁决=`B2_S_FULL_POSE_CONSTRUCTION_FAIL`，失败来自三组定义冲突：
+
+1. **24px non-overlap不可全split实现**：324/15,618图无可平移control，insufficient fraction=
+   `0.02075`；其余15,294图normalized-y error mean/P50/P95=`0.24765/0.26110/0.41775`，远超
+   `1/8`与`2/8`门槛。arms/torso/legs多数slot×direction组均失败，说明224×75人像内容只有约5个
+   patch宽时，“离target一patch且纵向匹配”的control空间本身不足，而非单个方向偶发问题。
+2. **bbox矩形不是slot-local occluder**：共5,542个level-case违反target intersection严格大于任一
+   non-target intersection。axis-aligned slot bbox会在arms等非凸/双侧解剖区域跨过torso，不能把
+   该矩形解释成纯target support occlusion；不得继续拿它进入CLIP后归因。
+3. **geometry-nearest与low-IoU wrong mask互相冲突**：实际增强后wrong-mask IoU overall
+   P50/P95=`0.35387/0.73044`；head/torso/arms/upper-leg/lower-leg分别为
+   `0.39195/0.80491`、`0.41352/0.71684`、`0.19785/0.55244`、`0.45706/0.74904`、
+   `0.32957/0.68398`。最近的同slot area/y/conf donor自然也有相似空间mask，不能同时被预设成
+   low-IoU反事实。
+
+因此当前connected-bbox/non-overlap/nearest-low-IoU组合按预注册门禁封板，不改阈值、不换方向、
+不重复运行，也不启动8图CLIP/GPU/训练。该FAIL只否定B2-S当前反事实构造，不否定已通过的PC-MBCLS
+slot-support readout，更不否定CLIP语义校准TAPF。下一步先做独立机制归因并另写B2-Sv2预注册设计；
+新设计必须用不读取CLIP结果的slot-local连通遮挡与可实现强对照，不能把本次FAIL map当正式冻结map。
