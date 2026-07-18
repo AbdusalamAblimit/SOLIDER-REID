@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 状态：`B0-s4321-valid SEALED`；下一 arm=`D0-s4321`；
-- GPU：B0 终审时 `2 MiB/0%`，main/workers 已退出；
+- 状态：`RUNNING`；当前且唯一 arm=`D0-s4321`，B0-s4321-valid 已封板；
+- GPU：D0 main PID=`1183898`，约 `6,994 MiB`；
 - 已有 seed1234 pair：B0=`57.4/67.4/80.6/85.2`，D0=`57.6/67.7/80.8/84.6`，
   D0−B0=`+0.2/+0.3/+0.2/−0.6`；
 - 预注册新增顺序：B0-s4321→D0-s4321→B0-s2025→D0-s2025；
@@ -257,3 +257,25 @@ quarantine，不能与本运行合并、续接或作数值比较。
   B0 后 `strict=True` load 的 missing/unexpected=`0/0`，model state 仍全量 finite；
 - runner/train log 的严格异常与 AMP 警告终审命中 `0`。B0-s4321-valid 正式封板，禁止重启、
   续训或重复；下一步只能 fresh 启动预注册的 D0-s4321。
+
+## D0-s4321 正式启动
+
+- fresh formal repo=`/home/afr/SOLIDER-REID-exp390-d0s4321-ec46d50`；
+- exact detached HEAD=`ec46d50486d645da0872d5549e1071f2a8072b24`；
+- full-history bundle=`/home/afr/reid-clean/bundles/exp390_multiseed_ec46d50.bundle`，SHA256=
+  `a1c5329b52a3119fef3d070eb0430f02b21b02fe891d8add16849888db97bfb7`；
+- config=`configs/occluded_duke/swin_tiny_tapf_d0_s4321.yml`，SHA256=
+  `979c897da79327bd8ecc04fcc4b370f0f5ad6b318170fe3afec5594a5c769711`；
+- output=`log/occluded_duke/exp390_clean_swin_tiny_d0_s4321`；runner=
+  `/home/afr/train-logs/exp390_clean_d0_s4321.runner.log`；
+- main PID=`1183898`，python=`/usr/local/anaconda3/envs/mmpose-abu/bin/python`；
+- 启动前 repo/output/runner fresh，exact HEAD/config/bundle、official teacher SHA256=
+  `8bf35b39e6042929383782e0190884ef69fa68abae8437c78c885ade584b404b`、exp386 manifest SHA256=
+  `cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8`、tracked clean、GPU=
+  `2 MiB/0%`、无其它任务全部 PASS；
+- stdout 显示 `HIERARCHICAL=False`、official teacher `All keys matched successfully`。e1 自然完成并
+  进入 e2；唯一 main+8 workers，GPU 约 `6,994 MiB`，Loss/Pose/Reliability/GateAbs 均 finite，
+  Student=`0` 符合 e1--5 teacher route；严格异常与 AMP 警告扫描命中 `0`，无 checkpoint。
+
+这是 D0-s4321 的首次且唯一正式启动。必须自然跑满 e120，query/gallery 继续严格 RGB-only；不得
+从 B0 或任何 D0 checkpoint 续训，也不得按中间性能停止。
