@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-- 状态：`CONFIG FIXED / RE-PREFLIGHT`；无有效正式 arm 在跑；
+- 状态：`RE-PREFLIGHT PASS / READY FOR FRESH VALID LAUNCH`；无有效正式 arm 在跑；
 - GPU：空闲；
 - 已有 seed1234 pair：B0=`57.4/67.4/80.6/85.2`，D0=`57.6/67.7/80.8/84.6`，
   D0−B0=`+0.2/+0.3/+0.2/−0.6`；
@@ -139,3 +139,36 @@ B0-s4321。
 `/home/afr/reid-clean/quarantine/exp390_b0_s4321_invalid_no_teacher_de604a6/`。原 formal output 与
 runner 路径重新为空，但必须使用新 execution commit/bundle 与新的唯一命名，不能覆盖或续用旧
 路径。
+
+## B0 teacher 修复后的重新门禁
+
+- 新 remote execution HEAD=`6fc558f44ecdd4cc4bd2352349855dbc6b3288eb`；
+- 新 full-history bundle=`/home/afr/reid-clean/bundles/exp390_multiseed_6fc558f.bundle`，SHA256=
+  `3295f49ee21fabaa528d1f23b556dc67569c0cf7ff4c220d1f02d3389e85b8ec`，bundle HEAD exact；
+- 相对失效 execution `de604a6`，运行边界只改变两个 B0 config 中的 official teacher choice/path；
+  D0 config、模型、数据、loss、processor、optimizer、增强与测试路径均未改变；
+- 修正后 B0-s4321/B0-s2025 config SHA256 分别为
+  `71d43aa3be8657f8afddb2211f9de2430fa7963dab3793555e2a175bc1a0d8cb` 与
+  `53a7c895c39174fc288655bbb35206597c6d681c2f9bc89adb1a283e82521605`；
+- B0-s4321 相对 pre-TAPF `d4fa227` 的同 seed 10-step CUDA/AMP JSON 再次逐字节 exact，双侧
+  SHA256=`44033069cd094961f5c3082864d66b47d5130dc317808a7bf09152a15f5c3467`；
+- B0/D0 common state=`211`、state SHA=`c2ccfdd2...`、构造 RNG、179 个公共 optimizer parameter
+  与超参数再次 exact，12 个 TAPF parameter 全部纳入 optimizer；
+- unit、D0 parity/paired CUDA/full semantics 可由代码与 D0 config 零变化严格继承；未以失效 B0
+  运行的任何 state、log 或数值作为门禁输入。
+
+补强后的 B0-s4321 e1 全链路 smoke 使用自包含 config，stdout 明确记录
+`PRETRAIN_CHOICE=self`、official teacher path 与 `All keys matched successfully`。完整 227-step
+train + e1 eval + checkpoint 自然结束：
+
+- e1 mAP/R1/R5/R10=`10.0/17.4/28.5/33.7`，与 exp385 seed1234 smoke
+  `9.2/15.1/25.7/31.1` 同量级，排除无 teacher 时的近随机轨迹；
+- train log 严格异常=`0`，SHA256=
+  `8cfbd0bed57922d2c87574436520b2c07e0b7ed8f6412b4ba44b80e34c8d76dc`；
+- checkpoint=`211` tensors、全 finite，SHA256=
+  `6fcfdfae731f697b1bd7f9f9af884426686c0de2060570be22e9f21fc390bcd9`；
+- smoke PID/workers 自然退出，GPU=`2 MiB/0%`。
+
+重新门禁全部 PASS。下一步必须从新 bundle 建立全新 formal repo，使用与 quarantine 不同的新
+output/runner 名称；启动前再次核对 exact HEAD/config/teacher、tracked source、GPU 与路径不存在。
+这才计作 B0-s4321 的首次有效正式启动。
