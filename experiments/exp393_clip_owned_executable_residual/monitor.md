@@ -143,3 +143,19 @@ script/result/codebook/runner SHA256分别为
 `e8f35143a8599bfec3f3e0354b872bc71090d48420a6408fa9d517d3f46c01a3`。严格异常/AMP warning=
 `0`，execution HEAD/tracked clean，进程退出，GPU=`2 MiB/0%`。仅授权0E-FULL teacher-only审计；
 Phase A/B正式训练与semantic multi-stage仍NO-START。
+
+## 2026-07-19 Phase 0E-FULL实现与启动前检查
+
+已实现official 15,618 train的两遍流式teacher-only审计脚本
+`phase0e_rich_evidence_full.py`，SHA256=
+`54a1a899e634fa317eacf0caa5acf788434b4d3cc55f4d8a9a9173b557e17deb`。第一遍只缓存correct raw
+evidence/valid，fit侧用分块协方差/eigh拟合shared PCA-16；第二遍仅对held-out PID编码四类
+counterfactual。不会构建ReID model/optimizer/config/output/checkpoint，也不会把15,618图RGB驻留
+内存。
+
+本地和远端`/home/afr/par2606/.venv`的streaming-fit synthetic contract均PASS：center mean max=
+`2.050e-16`、orthogonal max=`1.998e-15`、相对direct SVD subspace max分别为
+`7.216e-16/5.933e-16`，finite及partition checks全PASS。远端脚本复制后SHA exact，`py_compile`
+PASS；execution repo HEAD=`ed5783416528be4284adce11fa192fe119e344f4`且tracked clean，启动前无
+训练/审计进程，GPU=`2 MiB/0%`。当前状态`0E-FULL READY / NO-RESULT`，不授权Phase A/B训练或
+semantic multi-stage。

@@ -109,6 +109,25 @@ runner SHA256分别为
 
 full PASS只授权Phase B使用该teacher code；不授权semantic multi-stage，也不替代Phase A final裁决。
 
+### 0E-FULL流式执行冻结
+
+full脚本固定为`phase0e_rich_evidence_full.py`，覆盖official train全部15,618图，不抽样。为避免把
+全部RGB或反事实张量一次性放入内存，执行采用两遍流式协议：
+
+1. 第一遍按official record order流式编码correct RGB/mask，只把`[N,5,768]` raw residual与valid
+   写入专用memmap cache；
+2. fit PID侧分块累计五slot mean，再分块累计共享`768×768`协方差，以double precision `eigh`
+   得到canonical PCA-16；synthetic contract要求该子空间与direct SVD误差`<=1e-10`；
+3. 第二遍仅对held-out PID流式编码flip、different-PID donor+donor mask、donor+recipient mask和
+   same-RGB slot-cycle wrong mask；不保留RGB，只在CPU汇总raw/code与PID-cluster统计；
+4. fit/audit partition、codebook、result与runner分别落盘并记录SHA；cache路径必须不存在或为空，禁止
+   覆盖既有审计资产。
+
+脚本SHA256=`54a1a899e634fa317eacf0caa5acf788434b4d3cc55f4d8a9a9173b557e17deb`。
+本地与远端synthetic streaming-fit contract均PASS：13 fit images/65 rows，center mean max=
+`2.050e-16`，basis orthogonal max=`1.998e-15`，covariance/eigh相对direct SVD subspace max分别为
+`7.216e-16/5.933e-16`。该contract只验证full新增的流式PCA实现，不替代真实teacher裁决。
+
 ## 失败解释
 
 - rank失败：当前region-global residual仍被CLIP各向异性或slot prior主导，只封板该code；
