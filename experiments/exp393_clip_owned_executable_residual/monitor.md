@@ -160,6 +160,10 @@ PASS；execution repo HEAD=`ed5783416528be4284adce11fa192fe119e344f4`且tracked 
 训练/审计进程，GPU=`2 MiB/0%`。当前状态`0E-FULL READY / NO-RESULT`，不授权Phase A/B训练或
 semantic multi-stage。
 
+首次启动后复核：PID=`884504`持续唯一运行，第一遍已推进到`correct-pass 5,632/15,618`；GPU=
+`2,402 MiB/99%`、唯一compute PID显存=`2,394 MiB`，异常关键词计数=`0`。继续自然运行，不作中间
+统计裁决。
+
 ## 2026-07-19 Phase 0E-FULL正式teacher-only启动
 
 0E-FULL已在唯一4090上fresh启动，main PID=`884504`，runner=
