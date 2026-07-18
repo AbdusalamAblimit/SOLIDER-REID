@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import math
 import random
 import time
 from pathlib import Path
@@ -197,7 +198,9 @@ def main():
     scheduler = create_scheduler(cfg, optimizer)
     del scheduler
     initial_lrs = sorted(set(float(group["lr"]) for group in optimizer.param_groups))
-    if initial_lrs != [8.0e-06]:
+    if len(initial_lrs) != 1 or not math.isclose(
+        initial_lrs[0], 8.0e-06, rel_tol=0.0, abs_tol=1.0e-15
+    ):
         raise RuntimeError("Unexpected formal initial LR: {}".format(initial_lrs))
     scaler = amp.GradScaler()
     probes = select_probes(model)
