@@ -78,3 +78,35 @@
 - e1 teacher route：StudentEarly/StudentLate=`0/0`，PoseEarly/PoseLate=`0.939/0.915`（epoch 末累计），GateEarlyAbs/GateLateAbs=`9.436e-05/1.092e-04`，两层均已产生有限非零 gate；截至 e3 iter100，NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow=`0`。
 
 当前只允许继续自然训练；每次 e10 eval 现场相对 exp387 D0 同 epoch计算 mAP/R1/R5/R10，禁止依据中间单点提前停止。
+
+## e10–e40 完整评测轨迹
+
+### e10
+
+- HT0 mAP / R1 / R5 / R10=`34.2 / 44.4 / 59.7 / 65.8`；
+- 同 epoch exp387 D0=`33.4 / 42.7 / 59.8 / 65.2`；
+- HT0−D0=`+0.8 / +1.7 / −0.1 / +0.6`；
+- e10 末尾 PoseEarly/PoseLate=`0.785/0.786`、StudentEarly/StudentLate=`1/1`、ReliabilityEarly/ReliabilityLate=`0.852/0.852`、GateEarlyAbs/GateLateAbs=`3.823e-03/6.206e-03`。
+
+### e20
+
+- HT0 mAP / R1 / R5 / R10=`42.8 / 53.1 / 68.9 / 74.4`；
+- 同 epoch exp387 D0=`42.2 / 52.4 / 67.6 / 74.0`；
+- HT0−D0=`+0.6 / +0.7 / +1.3 / +0.4`；
+- e20 末尾 PoseEarly/PoseLate=`0.546/0.564`、StudentEarly/StudentLate=`1/1`、ReliabilityEarly/ReliabilityLate=`0.839/0.839`、GateEarlyAbs/GateLateAbs=`1.007e-02/1.762e-02`。
+
+### e30
+
+- HT0 mAP / R1 / R5 / R10=`47.7 / 58.3 / 72.0 / 77.1`；
+- 同 epoch exp387 D0=`46.6 / 56.2 / 71.3 / 76.4`；
+- HT0−D0=`+1.1 / +2.1 / +0.7 / +0.7`；
+- e30 末尾 PoseEarly/PoseLate=`0.474/0.492`、StudentEarly/StudentLate=`1/1`、ReliabilityEarly/ReliabilityLate=`0.836/0.836`、GateEarlyAbs/GateLateAbs=`1.477e-02/2.194e-02`。
+
+### e40
+
+- HT0 mAP / R1 / R5 / R10=`49.0 / 59.3 / 74.0 / 79.0`；
+- 同 epoch exp387 D0=`50.0 / 60.7 / 76.2 / 81.0`；
+- HT0−D0=`−1.0 / −1.4 / −2.2 / −2.0`；
+- e40 末尾 PoseEarly/PoseLate=`0.455/0.473`、StudentEarly/StudentLate=`1/1`、ReliabilityEarly/ReliabilityLate=`0.833/0.833`、GateEarlyAbs/GateLateAbs=`1.659e-02/2.262e-02`。
+
+四次 eval 均为完整 query/gallery 评测。e10–e30 的正差与 e40 的负差共同说明中间轨迹存在波动，不能选择局部节点或用单一 epoch 裁决。评测后训练自然进入 e41；exact HEAD/config/tracked source clean、唯一 main+8 workers、GPU 约 `13.34 GiB`、checkpoint 尚未生成，NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow=`0`，继续运行至 e120。
