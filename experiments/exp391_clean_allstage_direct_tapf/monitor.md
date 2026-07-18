@@ -2,10 +2,10 @@
 
 ## 当前状态
 
-- 状态：`PREFLIGHT / NO-START`；exp390已封板，当前只进入Phase A=`H2-M`实现与门禁；
+- 状态：`PHASE-A H2-M FORMAL RUNNING`；全部preflight与fresh启动边界已PASS，e1自然完成并进入e2；
 - H2-M唯一变量：在保持exp389两个direct anchor、early/late=`6/2` consumer和全部recipe不变时，
   将总pose objective从`0.1×sum(L_early,L_late)`改为`0.1×mean(L_early,L_late)`；
-- 正式output=`log/occluded_duke/exp391_clean_swin_tiny_h2m_s1234`，门禁完成前不得创建或启动；
+- 正式output=`log/occluded_duke/exp391_clean_swin_tiny_h2m_s1234`；必须自然跑满e120，不挑best；
 - Phase B/C继续保持`NO-START`，只有前一阶段按design.md通过才允许实现或训练。
 
 ## 不变量
@@ -106,10 +106,36 @@
 - reserved memory受allocator缓存顺序影响，尤其eval出现负差，不作为容量收益解释；报告matched
   allocated与latency原始值，不把测量噪声包装成方法优势。
 
-## Phase A preflight当前裁决
+## Phase A preflight最终裁决
 
 - unit、config-off/D0-off/legacy-sum exact、state/init/RNG/optimizer、route/loss/gradient、overflow、
   strict state、pose-free、八consumer路径、真实paired CUDA/AMP与matched效率门禁均PASS；
-- 目前仍为`NO-START`：必须先把最终审计文件同步进exact execution repo，重建full-history bundle，
-  再用fresh formal repo复核HEAD/config/bundle/teacher/exp386 manifest、tracked source clean、正式
-  output与runner不存在及GPU空闲。上述边界全部PASS后才允许首次启动H2-M。
+- 最终审计文件已逐SHA同步并显式提交到execution repo，fresh formal repo的HEAD/config/bundle/
+  teacher/exp386 manifest、tracked source clean、正式output/runner不存在及GPU空闲全部PASS；Phase A
+  preflight至此关闭，允许且只允许下述首次正式启动。
+
+## Phase A H2-M正式启动
+
+### 2026-07-18 08:46 UTC：fresh execution与首次健康检查
+
+- fresh formal repo=`/home/afr/SOLIDER-REID-exp391-h2m-0b976f5`，exact detached HEAD=
+  `0b976f53496ae4b0fa195f2f30ddc91539c0c8e9`；
+- full-history bundle=`/home/afr/reid-clean/bundles/exp391_h2m_0b976f5.bundle`，SHA256=
+  `590449a1ee57f640df3f5d96152b5d92e950af9271265e5a4a9a53602c293145`，bundle verify为完整历史且
+  HEAD exact；
+- config=`configs/occluded_duke/swin_tiny_tapf_h2m.yml`，SHA256=
+  `3d172a70b1ea926ed040dc467a6e14d67a27b4cf5c8f0aa4d10674f0e83bc21a`；official teacher SHA256=
+  `8bf35b39e6042929383782e0190884ef69fa68abae8437c78c885ade584b404b`；exp386 manifest SHA256=
+  `cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8`；
+- output=`log/occluded_duke/exp391_clean_swin_tiny_h2m_s1234`，runner=
+  `/home/afr/train-logs/exp391_clean_h2m_s1234.runner.log`；启动前两者不存在，tracked/staged source
+  clean、GPU无计算进程；
+- 首次且唯一main PID=`1293570`，python=`/usr/local/anaconda3/envs/mmpose-abu/bin/python`；stdout
+  明确记录`HIERARCHICAL=True`、`POSE_LOSS_REDUCTION=mean`、official teacher
+  `All keys matched successfully`；
+- e1自然完成并进入e2：e1 time=`25.705 s`、speed=`522.8 samples/s`；唯一main+8 workers，GPU=
+  `7512 MiB`，e1的PoseEarly/PoseLate、ReliabilityEarly/Late、GateEarly/Late全部finite，
+  StudentEarly/StudentLate=`0/0`符合teacher-only route；严格异常、AMP warning与checkpoint均为`0`。
+
+这是H2-M的首次且唯一正式启动。必须自然跑满e120，不续训、不重复、不按任何中间epoch/best/阈值
+停止，不修改运行中代码/config；Phase B/C继续`NO-START`。
