@@ -154,3 +154,18 @@
   GPU约`7764 MiB`，严格异常与AMP warning=`0`，e120前checkpoint=`0`。
 
 e10相对两个参考的正负混合只记录为轨迹，不作Phase A裁决，不用于早停或挑best；继续自然运行至e120。
+
+## e20完整评测轨迹
+
+- H2-M mAP / R1 / R5 / R10=`42.8 / 53.4 / 70.4 / 75.7`；
+- 同epoch exp387 D0=`42.2 / 52.4 / 67.6 / 74.0`，H2-M−D0=
+  `+0.6 / +1.0 / +2.8 / +1.7`；
+- 同epoch exp389 HT0=`42.8 / 53.1 / 68.9 / 74.4`，H2-M−HT0=
+  `+0.0 / +0.3 / +1.5 / +1.3`；
+- e20末尾PoseEarly/PoseLate=`0.676/0.682`、StudentEarly/StudentLate=`1/1`、
+  ReliabilityEarly/ReliabilityLate=`0.839/0.839`、GateEarlyAbs/GateLateAbs=
+  `1.019e-02/1.818e-02`，全部finite；
+- 完整query/gallery评测后自然进入e21；exact HEAD/config/tracked source clean，唯一main+8 workers，
+  GPU约`7624 MiB`，严格异常与AMP warning=`0`，e120前checkpoint=`0`。
+
+e20的局部正差不替代final，也不用于阈值裁决或选择中途节点；继续自然运行至e120。
