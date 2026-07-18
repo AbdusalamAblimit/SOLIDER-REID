@@ -809,3 +809,19 @@ e40相对D0全面偏低、相对HT0近零混合，仍只是中间轨迹。e48 it
 `0.512`、GateAbs=`1.025e-05`，语义q与router幅度继续偏弱但finite，禁止据此修改运行或提前裁决。
 exact HEAD/config/tracked clean、唯一main+8 workers、4090约`8288 MiB`且唯一任务、e120前
 checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
+
+### e50完整评测与e56接手
+
+- e50完整query/gallery评测mAP/R1/R5/R10=`52.5/63.4/77.9/82.5`；
+- 同epoch exp387 clean D0=`52.1/62.8/77.0/81.9`，Semantic C0−D0=
+  `+0.4/+0.6/+0.9/+0.6`；同epoch exp389 HT0=`52.7/62.1/76.4/81.7`，Semantic C0−HT0=
+  `−0.2/+1.3/+1.5/+0.8`；
+- e50末Loss=`0.259`、Pose=`0.763`、Semantic/RegionMask/Presence/Q=
+  `0.298/0.163/0.039/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`9.160e-06`，
+  全部finite；评测后e51--e55自然完成，接手时已进入e56。
+
+e50相对D0四项为正，但只是单个中间epoch，不能取代final或反转此前混合轨迹。e56 iter140的
+Semantic/RegionMask/Presence/Q=`0.296/0.161/0.035/0.692`、GateAbs=`8.745e-06`，进一步表明
+当前可执行state主要由mask/presence获得明显监督，q仍接近弱动态先验；此观察留待final后的
+pose-only/static-q/generic-router拆因。exact HEAD/config/tracked clean、唯一main+8 workers、4090约
+`8386 MiB`且唯一任务、e120前checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
