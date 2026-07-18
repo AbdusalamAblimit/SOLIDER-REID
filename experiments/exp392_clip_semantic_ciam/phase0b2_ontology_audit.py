@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Phase 0B2-O ontology-only audit with frozen crop-global CLIP.
+"""Phase 0B2-O/O2 ontology-only audit with frozen crop-global CLIP.
 
 This audit changes the five-region ontology while keeping the diagnostic task
 as five body-part names.  It never builds a ReID model or optimizer.
@@ -95,8 +95,11 @@ def load_phase0b_module(path):
 
 
 class ExclusiveRegionRenderer:
-    def __init__(self, base_module):
+    def __init__(self, base_module, partition_mode="soft"):
+        if partition_mode not in ("soft", "hard-owner"):
+            raise ValueError("Unknown partition mode: %s" % partition_mode)
         self.base = base_module.RegionRenderer(height=96, width=32, sigma=1.5)
+        self.partition_mode = partition_mode
 
     def _segment_map(self, keypoints, reliability, segments, interior):
         if not segments:
@@ -159,7 +162,12 @@ class ExclusiveRegionRenderer:
             region_valid.append(values.max() > 0)
         raw = torch.stack(raw, dim=0)
         total = raw.sum(dim=0, keepdim=True)
-        masks = raw / total.clamp_min(1.0)
+        amplitude = total.clamp(max=1.0)
+        if self.partition_mode == "soft":
+            masks = raw / total.clamp_min(1.0)
+        else:
+            owner = raw.argmax(dim=0, keepdim=True)
+            masks = torch.zeros_like(raw).scatter_(0, owner, amplitude)
         return (
             masks,
             torch.stack(confidence, dim=0),
@@ -167,8 +175,8 @@ class ExclusiveRegionRenderer:
         )
 
 
-def ontology_static_contract(base_module):
-    renderer = ExclusiveRegionRenderer(base_module)
+def ontology_static_contract(base_module, partition_mode):
+    renderer = ExclusiveRegionRenderer(base_module, partition_mode)
     keypoints = torch.tensor([
         [64, 40], [58, 36], [70, 36], [52, 40], [76, 40],
         [44, 100], [84, 100], [30, 160], [98, 160], [20, 220], [108, 220],
@@ -264,6 +272,16 @@ def ontology_static_contract(base_module):
             (flipped_masks - masks.flip(-1)).abs().max()
         ),
         "sum_region_support_max": float(masks.sum(0).max()),
+        "pairwise_product_max": float(
+            max(
+                (
+                    masks[left].mul(masks[right]).max()
+                    for left in range(REGIONS)
+                    for right in range(left + 1, REGIONS)
+                ),
+                default=torch.tensor(0.0),
+            )
+        ),
         "boundary_owner_dominance": bool(all(boundary_checks)),
         "segment_path_nonempty": bool(all(segment_path_nonempty)),
         "segment_path_finite": bool(all(segment_path_finite)),
@@ -281,6 +299,11 @@ def ontology_static_contract(base_module):
             checks["flip_valid_exact"] and checks["flip_mask_max_abs"] <= 1e-6
         ),
         "bounded_partition": checks["sum_region_support_max"] <= 1.0 + 1e-6,
+        "hard_owner_exact": (
+            checks["pairwise_product_max"] == 0.0
+            if partition_mode == "hard-owner"
+            else True
+        ),
         "boundary_owner": checks["boundary_owner_dominance"],
         "segment_path": (
             checks["segment_path_nonempty"]
@@ -295,13 +318,14 @@ def ontology_static_contract(base_module):
         "checks": checks,
         "gates": gates,
         "segment_interior_fraction": SEGMENT_INTERIOR_FRACTION,
+        "partition_mode": partition_mode,
     }
 
 
 class OntologyTransform:
-    def __init__(self, base_module, seed):
+    def __init__(self, base_module, seed, partition_mode):
         self.base = base_module.AuditTransform(seed=seed)
-        self.base.renderer = ExclusiveRegionRenderer(base_module)
+        self.base.renderer = ExclusiveRegionRenderer(base_module, partition_mode)
 
     def __call__(self, image, pose):
         if tuple(image.size) != tuple(pose.image_size):
@@ -310,11 +334,19 @@ class OntologyTransform:
 
 
 class RecipientDataset(torch.utils.data.Dataset):
-    def __init__(self, base_module, records, pose_store, seed, verify_sha):
+    def __init__(
+        self,
+        base_module,
+        records,
+        pose_store,
+        seed,
+        verify_sha,
+        partition_mode,
+    ):
         self.base_module = base_module
         self.records = list(records)
         self.pose_store = pose_store
-        self.transform = OntologyTransform(base_module, seed)
+        self.transform = OntologyTransform(base_module, seed, partition_mode)
         self.verify_sha = bool(verify_sha)
 
     def __len__(self):
@@ -614,6 +646,11 @@ def parse_args():
     parser.add_argument("--max-samples", type=int, default=8)
     parser.add_argument("--bootstrap-repeats", type=int, default=1000)
     parser.add_argument("--seed", type=int, default=20260718)
+    parser.add_argument(
+        "--partition-mode",
+        choices=("soft", "hard-owner"),
+        default="soft",
+    )
     return parser.parse_args()
 
 
@@ -628,7 +665,7 @@ def main():
     if sha256_file(phase0b_script) != EXPECTED_PHASE0B_SCRIPT_SHA256:
         raise RuntimeError("Phase 0B audit script SHA mismatch")
     base = load_phase0b_module(phase0b_script)
-    ontology_contract = ontology_static_contract(base)
+    ontology_contract = ontology_static_contract(base, args.partition_mode)
     if ontology_contract["status"] != "PASS":
         raise RuntimeError(
             "Exclusive ontology static contract failed: %s"
@@ -660,7 +697,12 @@ def main():
         pose_artifact, base.EXPECTED_POSE_MANIFEST_SHA256
     )
     audit_dataset = RecipientDataset(
-        base, records, pose_store, args.seed, verify_sha=True
+        base,
+        records,
+        pose_store,
+        args.seed,
+        verify_sha=True,
+        partition_mode=args.partition_mode,
     )
     loader = torch.utils.data.DataLoader(
         audit_dataset,
@@ -755,6 +797,7 @@ def main():
         float(torch.quantile(overlaps, 0.95)) if overlap_available else None
     )
     overlap_max = float(overlaps.max()) if overlap_available else None
+    hard_owner_mode = args.partition_mode == "hard-owner"
     gates = {
         "macro_top1_lower_ge_035": lower_gt(summary["macro_top1"], 0.35 - 1e-12),
         "all_class_top1_lower_gt_020": all(
@@ -768,12 +811,43 @@ def main():
             overlap_available and overlap_median < 0.10
         ),
         "overlap_p95_lt_025": overlap_available and overlap_p95 < 0.25,
+        "overlap_exact_zero": (
+            overlap_available
+            and overlap_median == 0.0
+            and overlap_p95 == 0.0
+            and overlap_max == 0.0
+        ),
         "every_class_has_samples": bool(valid.any(dim=0).all()),
         "coverage_exact": bool(torch.equal(valid, original_valid)),
         "finite": bool(torch.isfinite(logits).all()),
     }
+    common_full_gate_names = (
+        "macro_top1_lower_ge_035",
+        "all_class_top1_lower_gt_020",
+        "all_class_raw_margin_lower_gt_0",
+        "overlap_median_lt_010",
+        "overlap_p95_lt_025",
+        "every_class_has_samples",
+        "coverage_exact",
+        "finite",
+    )
+    common_full_pass = all(gates[name] for name in common_full_gate_names)
+    hard_owner_full_pass = common_full_pass and gates["overlap_exact_zero"]
     verdict = (
-        "B2_O_SMOKE_PASS"
+        "B2_O2_SMOKE_PASS"
+        if hard_owner_mode
+        and not full_audit
+        and gates["every_class_has_samples"]
+        and gates["coverage_exact"]
+        and gates["finite"]
+        and gates["overlap_exact_zero"]
+        else "B2_O2_GATE_PASS"
+        if hard_owner_mode and full_audit and hard_owner_full_pass
+        else "B2_O2_GATE_FAIL"
+        if hard_owner_mode and full_audit
+        else "B2_O2_SMOKE_FAIL"
+        if hard_owner_mode
+        else "B2_O_SMOKE_PASS"
         if not full_audit
         and gates["every_class_has_samples"]
         and gates["coverage_exact"]
@@ -781,7 +855,7 @@ def main():
         and gates["overlap_median_lt_010"]
         and gates["overlap_p95_lt_025"]
         else "B2_O_GATE_PASS"
-        if full_audit and all(gates.values())
+        if full_audit and common_full_pass
         else "B2_O_GATE_FAIL"
         if full_audit
         else "B2_O_SMOKE_FAIL"
@@ -791,7 +865,14 @@ def main():
         "scope": "full" if full_audit else "smoke",
         "verdict": verdict,
         "formal_training_authorized": False,
-        "phase0b2_i_authorized": full_audit and all(gates.values()),
+        "phase0b2_i_authorized": (
+            full_audit
+            and (
+                hard_owner_full_pass
+                if hard_owner_mode
+                else common_full_pass
+            )
+        ),
         "execution": {
             "repo_root": str(repo_root),
             "source_commit": args.source_commit,
@@ -814,6 +895,7 @@ def main():
             "workers": args.workers,
             "seed": args.seed,
             "sample_manifest_sha256": manifest_digest.hexdigest(),
+            "partition_mode": args.partition_mode,
         },
         "ontology": {
             "regions": list(REGION_NAMES),
@@ -823,7 +905,8 @@ def main():
             ],
             "renderer": (
                 "raw Gaussian/tube supports, unique joint owners, trimmed limb "
-                "segments, amplitude-preserving cross-region partition"
+                "segments, amplitude-preserving %s partition"
+                % args.partition_mode
             ),
             "static_contract": ontology_contract,
             "segment_interior_fraction": SEGMENT_INTERIOR_FRACTION,
@@ -855,7 +938,16 @@ def main():
         "mask_overlap": result["mask_overlap"],
         "output_sha256": sha256_file(args.output),
     }, indent=2, sort_keys=True))
-    raise SystemExit(0 if verdict in ("B2_O_SMOKE_PASS", "B2_O_GATE_PASS") else 1)
+    raise SystemExit(
+        0
+        if verdict in (
+            "B2_O_SMOKE_PASS",
+            "B2_O_GATE_PASS",
+            "B2_O2_SMOKE_PASS",
+            "B2_O2_GATE_PASS",
+        )
+        else 1
+    )
 
 
 if __name__ == "__main__":
