@@ -208,3 +208,15 @@ quarantine，不能与本运行合并、续接或作数值比较。
   `NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow/GradScaler/autocast` 严格扫描命中 `0`；
 - e120 前无 checkpoint，继续自然训练。该中间评测只记录轨迹，不作早停、best 选择或跨 seed
   结论。
+
+### 2026-07-18 03:23 UTC：e20/e30/e40 完整评测
+
+- e20 mAP/R1/R5/R10=`38.5/48.1/64.6/69.8`；
+- e30 mAP/R1/R5/R10=`48.3/59.8/75.1/80.6`；
+- e40 mAP/R1/R5/R10=`50.9/62.9/76.7/81.0`；
+- e40 评测后自然进入 e41，现场 e41 iter160/227 loss=`0.268`、Acc=`0.986`，finite；
+- exact HEAD/config SHA 与上次记录一致，tracked source clean；仍为唯一 main PID=`1149542` 与
+  8 workers。完整 eval 时 GPU 短暂约 `13,748 MiB`，返回训练后约 `6,940 MiB`，无第二个 GPU
+  进程；
+- runner/train log 严格异常与 AMP 警告扫描命中 `0`，仍无 checkpoint；继续自然跑满 e120，
+  不按上述中间性能选择或停止。
