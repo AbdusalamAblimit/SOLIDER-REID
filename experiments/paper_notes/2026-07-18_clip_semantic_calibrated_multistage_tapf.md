@@ -5,7 +5,7 @@
 > 日期：2026-07-18
 >
 > 边界：本文只做公开文献、公开代码和当前 TAPF 机制的只读审查；不修改正式训练代码/config，
-> 不创建实验 output，不启动训练，不占用正在运行的 4090。任何未公开内部方法均不作为公开
+> 不创建实验 output，不启动训练，不占用 4090。任何未公开内部方法均不作为公开
 > prior art、related work 或 novelty 冲突来源。
 
 ## 一、审查结论
@@ -52,10 +52,12 @@ anchor field -> pool stage feature -> projector -> CLIP KD
 |---|---:|---:|---:|
 | Occluded-Duke / 1234 | `57.4/67.4/80.6/85.2` | `57.6/67.7/80.8/84.6` | `+0.2/+0.3/+0.2/−0.6` |
 | Occluded-Duke / 4321 | `56.0/66.2/79.4/83.8` | `56.8/66.5/79.9/84.3` | `+0.8/+0.3/+0.5/+0.5` |
+| Occluded-Duke / 2025 | `57.5/67.9/81.1/85.7` | `57.9/67.0/80.4/85.2` | `+0.4/−0.9/−0.7/−0.5` |
 | Market-1501 / 1234 | `91.6/96.3/98.7/99.2` | `92.0/96.5/98.8/99.3` | `+0.4/+0.2/+0.1/+0.1` |
 
-seed 2025 的 matched pair 尚未封板，所以当前不能给出三 seed mean±std，也不能把小正差写成稳定
-普适提升。
+Occluded-Duke 三 seed paired mean±sample std为
+`+0.47±0.31/−0.10±0.69/+0.00±0.62/−0.20±0.61`，mAP方向`3/3`为正，rank方向混合。因此当前
+只能写“小而可重复的mAP正差”，不能写稳定四项提升、统计显著或跨架构普适。
 
 ### 2.2 语义层面的证据仍未成立
 
@@ -112,12 +114,14 @@ exp389 final=`56.9/65.9/80.0/84.1`，相对 clean D0=`−0.7/−1.8/−0.8/−0.
 
 1. exp389 只有两个 anchor，没有覆盖所有合理 stage interface；
 2. early/late consumer 数为 `6/2`，容量、累计调制次数和训练轨迹不平衡；
-3. frozen level bypass 显示 early 六 bank 在固定 checkpoint 上只贡献约 `+0.07 mAP`，late 两 bank约
-   `+1.36 mAP`；相对 D0 的主要退化来自联合训练轨迹，而不是 early gate 在推理时直接减分；
+3. exp391把pose objective从sum改为mean后，frozen level bypass显示early六bank贡献
+   `+0.141 mAP`、late两bank贡献`+1.546 mAP`；early并非dead，但仍明显弱于late；
 4. exp389 没有 CLIP 语义校准、跨层语义一致性或 consumer 语义约束。
 
-所以，“每个 stage 一个 direct anchor、每个 state 一个 consumer、consumer-balanced”的方案尚未被
-验证。但它只能在语义门禁通过后作为强对照，不能因为拓扑看起来更完整就直接重启多阶段训练。
+exp391 H2-M natural final=`57.2/67.3/80.2/84.5`，相对单层D0=
+`−0.4/−0.4/−0.6/−0.1`，触发预注册NO-GO；这封板的是无语义校准的纯结构链，不是永久否定
+多阶段。语义门禁通过后，“每个stage一个direct anchor、每个state一个consumer、consumer-balanced”
+仍应作为新的semantic multi-stage对照，但不能因为拓扑看起来更完整就直接重启exp391。
 
 ## 四、公开最近邻与 novelty 边界
 
@@ -363,7 +367,7 @@ joint/region confidence --fixed reduction--> uncertainty/reliability
 
 ## 九、最小实验顺序（仅预案，不授权启动）
 
-1. 完成当前 exp390 全部预注册 arm，不插队；
+1. exp390/391均已封板，不重启、不续训；
 2. 做 clean D0 frozen internal-field audit；
 3. 做 CLIP teacher-only audit；
 4. 先在单层 D0 上加入 semantic calibration，隔离 CLIP 是否修复语义；
@@ -372,7 +376,7 @@ joint/region confidence --fixed reduction--> uncertainty/reliability
    - PSG bypass仍有贡献；
    - projector-only/static control不能复现；
    - 推理严格 RGB-only；
-6. 单层语义因果通过后，才比较：
+6. 单层语义因果通过后，才以它为新基线比较：
    - consumer-balanced independent 17-joint anchors；
    - hierarchical granularity；
    - 各自 matched no-CLIP control；
@@ -407,8 +411,9 @@ absorption control、consumer reachability、multi-seed/multi-dataset final 都�
 最终 verdict：
 
 > **方向保留，状态 RESEARCH-ONLY / NO-START。优先做语义因果与 teacher-only 两个零训练门禁；
-> 首选 hierarchical granularity，但先在单层修复 consumer semantics。不得直接把 CLIP KD 叠到
-> exp389 多阶段结构上抢跑。**
+> 先在单层修复 consumer semantics，再重新比较 semantic single-stage 与 semantic multi-stage。
+> 不得直接把 CLIP KD 叠到 exp389/391 多阶段结构上抢跑，但也不得把 exp391 的纯结构NO-GO扩大成
+> 对CLIP语义校准多阶段TAPF的永久否定。**
 
 ## 参考来源
 

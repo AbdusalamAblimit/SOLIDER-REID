@@ -4,7 +4,7 @@
 >
 > 日期：2026-07-18
 >
-> 约束：当前正式训练不停止、不修改；本方案不创建 config、不实现代码、不启动 GPU 实验。
+> 约束：exp391已自然结束并封板；本方案不创建 config、不实现代码、不启动 GPU 实验。
 
 ## 零、独立反向审查后的收敛裁决
 
@@ -74,6 +74,11 @@ feature' = feature * (1 + bounded(delta))
 
 CLIP 只给 anchor 增加 KD，并不会自动解除以上三个上限。要追求超过当前 `+0.2～+0.8 mAP` 的
 效应，应替换 consumer 的数学对象，而不是继续给同一个 PSG 增加监督或复制更多 bank。
+
+exp391进一步排除了“只因两层pose loss预算过大”的单一解释：把sum改为mean后，H2-M恢复到
+`57.2/67.3/80.2/84.5`，early-bypass显示early route有`+0.141 mAP`独立贡献，但完整模型仍比D0低
+`0.4 mAP`。因此纯结构Phase B/C封板；CIAM不是其续训，而是先重写consumer的数学对象和语义绑定，
+随后才允许重新评估semantic multi-stage。
 
 ## 三、完整上界候选：Semantic Anatomical Slot Router（SASR）
 
@@ -368,7 +373,7 @@ unordered slots、Hungarian matching和soft `q` 只属于optional SASR，不作�
 
 ## 八、实验顺序与单变量归因
 
-当前 exp390 全部结束后，固定顺序建议为：
+exp390/391全部封板后，固定顺序建议为：
 
 1. clean D0 internal-field frozen audit；
 2. coarse-region CLIP teacher-only audit；
@@ -436,4 +441,6 @@ pose one-hot首先定义 semantic identity；CLIP 的作用不是提供额外 pa
 5. 为什么它不是普通 part feature或语言检索方法。
 
 当前裁决：`CIAM-core = PRIMARY DESIGN CANDIDATE / DESIGN-ONLY / NO-START`；
-`unordered SASR = OPTIONAL EXTENSION / NO-START`。
+`semantic balanced multi-stage = CONDITIONAL NEXT STAGE / NO-START`，只有single-stage语义门禁通过后
+才能启动；`unordered SASR = OPTIONAL EXTENSION / NO-START`。exp391的NO-GO不永久否定这一新机制，
+但禁止把它伪装成exp391 Phase B/C的恢复或续跑。
