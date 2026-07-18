@@ -46,21 +46,21 @@ centered rich evidence code若具有足够within-slot variance、wrong-RGB/mask�
 
 ```text
 Phase 0E  teacher-only rich evidence audit
-    |
-    +-- FAIL: 重构teacher code，不启动训练
-    |
-    +-- PASS
-          |
+    +-- FAIL: 只封板当前teacher code，阻断Phase B，不替代Phase A的route诊断
+    +-- PASS: rich-code接口具备进入Phase B的teacher资格
+
 Phase A   RZ-C0：只修router初始化/scale，保留Semantic C0的M/presence/q与loss
-          |
-          +-- route仍retrieval-inert：封板RZ接口，Phase B不使用该接口
-          |
-          +-- route alive
-                |
-Phase B   COER：以RZ-C0为直接对照，只把scalar q执行变量换成rich CLIP evidence code
-                |
-                +-- single-stage语义因果与final性能成立后，才另开semantic multi-stage
+    +-- route仍retrieval-inert：封板RZ接口，Phase B不使用该接口
+    +-- route alive: executable route接口具备进入Phase B的资格
+
+Phase B   仅在Phase 0E与Phase A都通过后启动；以RZ-C0为直接对照，只把scalar q执行变量
+          换成rich CLIP evidence code
+    +-- single-stage语义因果与final性能成立后，才另开semantic multi-stage
 ```
+
+执行顺序仍严格串行，Phase 0E与Phase A却是两个逻辑上独立的门禁：teacher code失败不能证明
+ReZero route无效，route失败也不能证明rich CLIP evidence不存在。这样一个FAIL只关闭它实际检验的
+接口，不再把整条CLIP–TAPF路线一票否决。
 
 ## Phase 0E：rich CLIP evidence teacher-only审计
 
@@ -76,9 +76,9 @@ e_centered  = e_raw - mu_r
 e_teacher   = normalize(P_frozen(e_centered))
 ```
 
-- `mu_r`只由official train预审集合按slot估计并冻结；
-- `P_frozen`首版使用teacher-only训练集协方差的top-K PCA basis，`K=16`，只在teacher侧离线拟合，
-  不进入student optimizer；
+- official train按PID做deterministic disjoint fit/audit划分；`mu_r`只在fit partition按slot估计；
+- `P_frozen`使用fit partition经slot中心化后的共享协方差top-K PCA basis，`K=16`，不按slot另拟合坐标系，
+  不进入student optimizer；全部teacher门禁只在held-out PID audit partition裁决；
 - 不使用batch covariance，不用query/gallery拟合，不用identity label拟合PCA；
 - text encoder只用于已有slot ontology/审计，不把part-name分类准确率当code目标；
 - teacher仍`eval + no_grad + requires_grad=False`。
@@ -91,7 +91,9 @@ PCA不是创新点，只防止把768维CLIP各向异性直接灌入小router。�
 先做synthetic exact、8图contract，再做128图，最后才允许official train全量teacher-only审计。至少报告：
 
 1. 每slot centered code的逐维std、effective rank、top singular value占比；
-2. correct vs wrong RGB、wrong mask、same-mask different-PID、slot-cycle的cosine/InfoNCE margin；
+2. 以同图水平翻转并同步翻转mask得到的code为matched positive，分别以different-PID同slot RGB、
+   同RGB low-IoU wrong mask和slot-cycle binding为negative，报告
+   `cos(correct, positive)-cos(correct, negative)`的paired margin；
 3. 同图target region相对non-target region的局部遮挡响应；
 4. horizontal flip在arms/legs合并ontology下的一致性；
 5. text-only、slot-mean、random orthogonal、raw uncentered code强对照；
@@ -99,7 +101,8 @@ PCA不是创新点，只防止把768维CLIP各向异性直接灌入小router。�
 
 预注册最低门禁：五slot都必须具有非零within-slot variance；macro centered effective rank至少`8/16`；
 correct相对wrong RGB与wrong mask的paired margin逐slot PID-cluster CI均大于0；slot-mean不能解释主要
-variance。任一失败先归因并封板当前teacher code，不启动Phase A/B训练。
+variance。任一失败先归因并封板当前teacher code，不启动Phase B；它不阻断逻辑独立、且已通过自身
+preflight的Phase A route activation control。
 
 ## Phase A：RZ-C0 route activation control
 
@@ -179,12 +182,16 @@ loss训练并直接参与router hidden，不存在terminal projector。`evidence
 ```text
 L_evidence = 1 - cosine(e_student, e_teacher)
 L_relation = KL(softmax(sim(e_student)/tau_s), softmax(sim(e_teacher)/tau_t))
-L_exec     = 1 - cosine(normalize(c_r + evidence_projection(e_student)),
-                        stopgrad(e_teacher))
+
+b_r        = MaskPool(tanh(region_delta_r))
+L_exec     = KL(softmax(sim(b_r)/tau_b), softmax(stopgrad(sim(e_teacher))/tau_t))
 ```
 
-`L_exec`只更新router的context/evidence projections和ReZero branch，不更新backbone、final descriptor或
-teacher。若维度不同，只允许使用同一个推理保留的evidence projection，禁止另接可删除projector吸收loss。
+这里`b_r`是生产router在乘ReZero alpha前的真实branch proposal，不是另接的terminal projector。
+`L_exec`使用同一组生产token/context/evidence projection与expert，再用一份`tokens.detach()`的共享权重
+重算阻断到backbone的alignment分支；它更新四类router branch参数，但不更新backbone、evidence head、
+final descriptor或teacher。ReZero alpha只由ReID loss打开，不能靠alignment伪造route contribution。
+relation loss不要求teacher code与768维consumer feature同维，因此禁止添加训练后可删除的维度适配头。
 
 三项loss权重必须在design冻结后通过尺度等价而非性能搜索确定；首个正式arm只用一个预注册组合，
 不得在训练中调权。若static/CPU/CUDA梯度所有权无法做到严格隔离，Phase B不启动。
@@ -211,7 +218,8 @@ correct相对wrong/static/generic必须在内部descriptor和完整检索上均�
 - CLIP image/text encoder、PCA basis、teacher code：永久frozen/no-grad；
 - anchor输入：`stopgrad(F_source)`；pose/mask/presence/evidence loss不回流backbone；
 - `e_student`由evidence loss更新，进入router前detach；
-- `L_exec`只更新推理保留的router context/evidence projections与branch；
+- `L_exec`通过共享权重、detached-token重算只更新推理保留的router token/context/evidence projections
+  与expert；ReZero alpha只由ReID loss更新；
 - ReID loss更新backbone、router、BNNeck/classifier，但不更新anchor/e_student head；
 - final descriptor不接受CLIP feature KD、text KD或part descriptor supervision；
 - 分loss backward记录anchor/router/backbone/head的梯度范数和余弦。

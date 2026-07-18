@@ -3629,3 +3629,23 @@ token/context projection因乘到zero expert而拿不到有效梯度，只有exp
 
 这个修复仍然是CLIP与TAPF深耦合，但耦合对象从弱q门控改成**CLIP-owned executable local residual**。
 它不需要恢复多stage；先在single-stage证明route有燃料和语义反事实，再讨论balanced multi-stage。
+
+## 2026-07-19：COER把“CLIP-owned”从接线关系改成可审计的梯度与执行所有权
+
+exp393的核心不是把768维CLIP feature换个名字塞进adapter，而是把两个互相独立的问题拆开：
+
+1. **执行通路能否离开identity**：nonzero branch加zero ReZero scalar保持初始descriptor exact，却让
+   alpha首步从ReID loss得到梯度；final all-bypass差决定route是否真正参与排序。
+2. **CLIP证据是否拥有执行变量**：region CLS减同图global、再按slot中心化和共享PCA，保留局部视觉
+   方向；student evidence既被CLIP relation监督，又成为生产router hidden的必经输入。
+
+代码seam审查暴露了一个重要方法学边界：若alignment只写在`context+evidence`这个pre-expert latent，
+它无法更新expert或ReZero branch，仍会重演“拓扑深耦合、优化浅耦合”。因此COER改为直接对生产
+expert生成的pre-alpha branch proposal做关系蒸馏，并用相同权重在detached tokens上重算，让CLIP梯度
+到达真实执行参数但不回流backbone。ReZero alpha仍只接受ReID loss，避免alignment自己放大残差后
+伪装成retrieval contribution。
+
+这也给“一个FAIL不否定全部”建立了形式化边界：Phase 0E只检验teacher code，Phase A只检验route
+parameterization；两者逻辑独立而算力串行，只有Phase B需要二者同时通过。若最终correct evidence
+不能同时拉开wrong/static控制和all-bypass，就只能称为local CLIP KD或generic adapter，不能成为论文
+主贡献。

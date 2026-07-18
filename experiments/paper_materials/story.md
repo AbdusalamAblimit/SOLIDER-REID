@@ -1955,3 +1955,17 @@ loss学习，并以zero expert启动。结果是CLIP语义在输入端存在，�
 router latent/delta，同时保持不直接蒸馏final descriptor和推理RGB-only。新的正面证据至少要同时
 包括correct-vs-wrong evidence差、all-router-bypass final贡献和clean D0提升；否则exp392只保留为
 诚实的失败诊断，不进入方法贡献。
+
+## 2026-07-19：exp393是候选修复，不提前写成正面贡献
+
+下一候选COER把证据链拆为两个独立问题。RZ-C0先不改变现有teacher、mask或q，只用nonzero branch与
+zero ReZero scalar验证identity-safe route能否在final检索中留下`all-bypass`可见贡献。rich evidence
+再把PC-MBCLS region CLS相对同图global与slot prior中心化为16维code，以RZ-C0为直接对照进入同一
+router。teacher code失败只关闭该code，RZ route失败只关闭该route接口；不再用单一门禁否定整条
+CLIP–TAPF方向。
+
+“深耦合”的论文定义也被收紧：CLIP evidence不能只停在anchor head或pre-expert latent，它必须控制
+推理保留的生产branch，并让internal relation loss的梯度实际到达token/context/evidence projection与
+expert；另一方面ReZero alpha只由ReID loss打开，防止辅助loss制造大残差却不改善检索。只有final
+同时满足clean D0提升、correct-vs-wrong/static差和all-router-bypass贡献，COER才有资格进入正面方法
+故事。在此之前，论文主证据仍是exp390原子TAPF的三seed mAP-only弱GO，exp393只记录为预注册候选。

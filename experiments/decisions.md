@@ -5175,3 +5175,20 @@ BCE权重、prompt、mask细化或更多stage；这些变量都建立在“route
 gradient finite外，必须预注册真实训练早期all-router-bypass descriptor/retrieval surrogate gap，final
 仍以完整all-bypass mAP贡献为门禁。先写独立设计和强对照，再决定是否启动新训练；semantic
 multi-stage继续NO-START。
+
+### [2026-07-19] 决策：exp393拆成独立route激活与rich evidence两门，任一FAIL只关闭对应接口
+
+**设计依据**：Phase 0D说明当前失败同时包含两个可能独立的断点：zero-expert使router长期近identity，
+而scalar q又丢失CLIP局部视觉方向。若一次同时改初始化、teacher target、student head和internal loss，
+即使结果变化也无法判断来自route可执行性还是CLIP信息增量。
+
+**决策**：exp393先用RZ-C0只把zero expert替换为small-nonzero branch加zero ReZero scalar，保持初始化
+descriptor严格identity并用final all-bypass验证route是否真的参与检索；rich-code COER则以sealed
+RZ-C0为直接对照，只把scalar q换为`K=16` centered CLIP local evidence。Phase 0E teacher审计与
+Phase A route control逻辑独立、执行仍串行：teacher FAIL只阻断Phase B，不能替代Phase A裁决；route
+FAIL只关闭当前ReZero接口，不能证明rich CLIP evidence不存在。Phase B只有两门都通过才获授权。
+
+**梯度边界修正**：内部alignment必须作用于生产expert生成的pre-alpha branch proposal，并用共享权重、
+detached-token重算阻断backbone梯度。它更新token/context/evidence projection与expert；ReZero alpha只由
+ReID loss打开。禁止把只监督pre-expert latent的loss误写成“更新执行残差”，也禁止增加训练后删除的
+projector吸收CLIP loss。semantic multi-stage继续NO-START。
