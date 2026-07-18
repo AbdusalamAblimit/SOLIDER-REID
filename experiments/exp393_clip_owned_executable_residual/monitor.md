@@ -39,3 +39,16 @@ exact HEAD=`ed5783416528be4284adce11fa192fe119e344f4`且tracked clean，唯一ch
 ReZero branch。冻结后的修正版改为对真实pre-alpha branch proposal做teacher relation alignment，使用
 共享生产参数和detached-token重算，使梯度实际到达token/context/evidence projection与expert；alpha
 仍只由ReID loss打开。Phase 0E失败现在只阻断Phase B，不再无关地否决Phase A的route activation诊断。
+
+## 2026-07-19 Phase 0E-S synthetic exact封板
+
+新增`phase0e_static_contract.py`并在远端`CUDA_VISIBLE_DEVICES=`纯CPU执行，未加载CLIP、ReID数据、
+model或optimizer。结果`SEALED-PASS`：PID fit/audit严格disjoint且repeat exact；fit/audit image=
+`26/54`；五slot中心化误差最大`4.2701e-17`，shared PCA basis正交误差最大`1.9984e-15`；invalid
+code exact zero，valid unit-norm误差最大`2.2204e-16`，hard-owner pairwise product与slot-cycle IoU
+均exact zero；synthetic correct-positive相对wrong RGB/wrong mask margin=`+0.72342/+0.86266`，finite。
+
+远端冻结路径：`/home/afr/reid-clean/audits/exp393_phase0e/`。script SHA256=
+`6c1b370912f5f668ce117d4320d62b68a032549ff06821f5bee1ae020acb3dab`，result SHA256=
+`120085ddffdea2d18adfd73a856426229bfb132218e79fef6e0dc318d49c23ac`。执行后无残留进程，4090=
+`2 MiB/0%`。该PASS只授权0E-C8真实8图contract，不裁决teacher统计有效性，不授权训练或Phase B。
