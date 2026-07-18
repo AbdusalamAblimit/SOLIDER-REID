@@ -2,7 +2,7 @@
 
 ## 状态
 
-`PROTOCOL FROZEN / 0E-S SYNTHETIC SEALED-PASS / 0E-C8 8-IMAGE NO-START /
+`PROTOCOL FROZEN / 0E-S SYNTHETIC SEALED-PASS / 0E-C8 8-IMAGE SEALED-PASS /
 0E-128/FULL NO-START`。
 
 本阶段不构建ReID model、optimizer、训练config、output或checkpoint。teacher-only审计与Phase A的
@@ -69,6 +69,16 @@ donor RGB+recipient mask、同RGB low-IoU slot-cycle mask。必须验证：
 3. teacher、PCA、counterfactual均无optimizer/grad，CUDA peak与吞吐落盘；
 4. donor不同PID、无fixed point，wrong-mask target IoU为0；
 5. 8图只裁决contract，不裁决统计性能，不因单slot小样本margin关闭路线。
+
+冻结结果：`PASS`。固定8个不同PID、fit/audit=`5/3`；official global-tail parity max-abs=`0`，
+repeat/NULL exact，hard-owner pairwise product与wrong-mask slot-cycle IoU均为`0`；global/region/code
+shape=`[8,768]/[8,5,768]/[8,5,16]`，全部finite、teacher参数frozen且输出无grad。五slot
+correct-flip相对donor+donor-mask margin=`0.806/0.778/0.898/0.647/0.917`，相对same-RGB wrong-mask
+margin=`0.621/0.173/0.627/0.203/0.756`，仅作描述性contract证据。PC-MBCLS五组arm累计forward
+`1.049s`，peak allocation=`1,712,272,384 bytes`。script/result/runner SHA256分别为
+`ab36357174fbf2f2181bcfbaefb71d5a47d0b55de901603c3d2e475a2bd32569`、
+`9a2cdd2ec69707ce325fd3bd22d47b82fe2bc869116263e5595faa16579222df`、
+`4233a7c856a7c9085522f015c8c0887eb601214cbb64fa4007462bb853710d83`。该PASS只授权0E-128。
 
 ### 0E-128与0E-FULL
 

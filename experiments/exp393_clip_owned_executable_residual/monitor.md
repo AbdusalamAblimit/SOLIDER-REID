@@ -52,3 +52,48 @@ code exact zero，valid unit-norm误差最大`2.2204e-16`，hard-owner pairwise 
 `6c1b370912f5f668ce117d4320d62b68a032549ff06821f5bee1ae020acb3dab`，result SHA256=
 `120085ddffdea2d18adfd73a856426229bfb132218e79fef6e0dc318d49c23ac`。执行后无残留进程，4090=
 `2 MiB/0%`。该PASS只授权0E-C8真实8图contract，不裁决teacher统计有效性，不授权训练或Phase B。
+
+## 2026-07-19 Phase 0E-C8启动前兼容性退出
+
+首版C8脚本在进入OpenCLIP构造/forward前调用`torch.cuda.reset_peak_memory_stats(torch.device("cuda:0"))`，
+远端PyTorch 2.6立即报`RuntimeError: Invalid device argument`并退出；result不存在、GPU全程
+`2 MiB/0%`、无残留进程。该退出没有产生任何teacher观测，不能裁决Phase 0E。旧script SHA256=
+`aeaedb9cc698ac9e5afc685e17f314c1b30bf16fc8ae2adfcc8e5ed39efe5276`，runner SHA256=
+`7139124e9bcbf483ee69e976b48a5a8e09b6bbf8ebea7a8d547f214c77cf1497`。
+
+归因是CUDA memory API在该runtime要求整数device index。修复仅把reset/max-memory/synchronize参数
+规范为显式整数索引，不改变样本、teacher、mask、PCA、counterfactual或任何门禁；静态编译与SHA
+复核后允许一次真实C8执行。这不是训练重跑或性能重复。
+
+整数索引版仍在context初始化前的同一行退出，第二个runner SHA256=
+`b1ae33b5c1450d62405bc75bf747aa6919e02924f6f8a249025740d97922f5b0`，仍无result或teacher观测。
+随后最小runtime probe确认CUDA available、device count=`1`、current=`0`、设备为RTX 4090 D；显式
+`torch.cuda.init()`后，无参`reset_peak_memory_stats()`与`max_memory_allocated()`均正常且peak=`0`。
+最终兼容修正固定为先`set_device+init`，再使用当前device的无参memory/synchronize API；其余执行
+图与门禁不变。
+
+切换到实际含OpenCLIP的已存在uv环境前，`/home/afr/reid-clean/.venv`在teacher构造入口因
+`ModuleNotFoundError: open_clip`退出；runner SHA256=
+`bcb288e69038cd7989f38ac80a08471da430aa24b644d8a3329d990fdf84663a`，仍无模型forward/result。
+只读环境审计找到`/home/afr/par2606/.venv`，版本为torch `2.6.0+cu124`、open_clip `3.3.0`，没有
+安装或修改任何包。后续C8固定使用该已验证环境。
+
+## 2026-07-19 Phase 0E-C8真实8图contract封板
+
+0E-C8在唯一4090上自然完成并`SEALED-PASS`。固定8图来自8个不同PID，fit/audit=`5/3`；official
+global tail parity max-abs=`0`，repeat、NULL output/valid exact；hard-owner pixel product和
+slot-cycle wrong-mask IoU均为`0`。global/region/code shape分别为`[8,768]`、`[8,5,768]`、
+`[8,5,16]`，全部finite，teacher所有参数frozen且输出无grad。donor全部不同PID且无fixed point。
+
+描述性五slot `correct↔flip`相对donor+donor-mask margin=
+`0.806/0.778/0.898/0.647/0.917`；相对donor RGB+recipient mask=
+`0.847/0.886/1.047/0.718/0.889`；相对same-RGB wrong-mask=
+`0.621/0.173/0.627/0.203/0.756`。这些8图值不做统计裁决，只说明real-data contract方向未立即反转。
+五组PC-MBCLS累计forward=`1.049s`，peak allocation=`1,712,272,384 bytes`。
+
+script/result/runner SHA256分别为
+`ab36357174fbf2f2181bcfbaefb71d5a47d0b55de901603c3d2e475a2bd32569`、
+`9a2cdd2ec69707ce325fd3bd22d47b82fe2bc869116263e5595faa16579222df`、
+`4233a7c856a7c9085522f015c8c0887eb601214cbb64fa4007462bb853710d83`。严格异常/NaN/Inf/AMP
+warning/OOM=`0`，execution repo exact HEAD与tracked clean，进程退出，GPU回到`2 MiB/0%`。只授权
+0E-128稳定性审计；正式训练、Phase B和semantic multi-stage仍NO-START。
