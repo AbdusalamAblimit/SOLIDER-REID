@@ -5064,3 +5064,23 @@ exp389 clean HT0相对D0为`−0.7/−1.8/−0.8/−0.5`，仍保持NO-GO；不�
 只有两道门禁均通过，才运行参数/loss/AMP matched的H3-OFF/H3-ON全stage direct pair。三个anchor
 必须参数独立、都直接预测absolute field、不读取prior或offset，2/2/2 consumer全部通向final
 descriptor，并使用物理sigma归一`6.0/3.0/1.5`。任一阶段失败即停止后续层级扩张，不用调参救场。
+
+### [2026-07-18] 决策：exp391 Phase A恢复HT0但仍低于D0，封板并禁止Phase B/C
+
+**结果**：H2-M保持exp389两个独立direct anchor、early/late=`6/2` consumer和全部训练recipe，
+唯一变量为pose objective从`0.1×sum`改为`0.1×mean`。自然e120 final=
+`57.2/67.3/80.2/84.5`；相对exp387 D0为`−0.4/−0.4/−0.6/−0.1`，相对exp389 HT0为
+`+0.3/+1.4/+0.2/+0.4`。不得用中途best替代final。
+
+**机制审计**：冻结early-bypass后full的独立差值为
+`+0.141111/+0.497735/+0.316739/−0.135750`，early mAP贡献超过预注册`+0.1`门槛；late独立差值为
+`+1.546086/+2.036196/+1.447964/+1.583707`。early/late anchor、八个PSG和八条consumer均真实
+更新且可影响final descriptor，推理期对external pose严格无访问，因此失败不是dead path或执行错误。
+
+**决策**：预注册规则规定H2-M final mAP低于D0超过`0.2`即Phase A NO-GO；实际为`−0.4`，故
+exp391=`SEALED / NO-GO`，Phase B的consumer balance与Phase C的三anchor H3-OFF/ON均禁止实现、
+训练、续训或换seed救场。mean loss只说明旧sum存在预算惩罚并能恢复HT0，不足以证明多stage优于
+单层D0。该决定不永久否定多阶段机制：下一阶段转入论文证据闭合与“CLIP语义校准多阶段TAPF”
+的只读文献/代码/机制审查；后者必须独立设计解决joint-channel语义不可辨识，不能作为普通CLIP KD
+直接抢跑正式训练。若语义门禁成立，应另开新实验重新比较semantic single-stage与semantic
+multi-stage，而不是恢复或续跑exp391 Phase B/C。

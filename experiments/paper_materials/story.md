@@ -1846,3 +1846,24 @@ consumer balance和Stage-0 route后才有解释价值；因此exp391按H2-M→H2
 如果前两阶段失败，论文保留单层D0并把“更多stage不自动更好”写入消融；如果matched H3-ON真正
 超过H3-OFF且至少两个stage有独立下游贡献，才重新讨论多阶段主方法。CLIP语义校准不与这轮结构
 验证混跑，避免把语义teacher收益误归到stage topology。
+
+## 2026-07-18：exp391封板——loss归一恢复层级路线，但不足以改写主方法
+
+exp391 Phase A只把exp389的两层pose objective从sum改为mean，H2-M final=
+`57.2/67.3/80.2/84.5`。它相对HT0为`+0.3/+1.4/+0.2/+0.4`，说明原sum确有额外优化惩罚；但
+相对单层D0仍为`−0.4/−0.4/−0.6/−0.1`，触发预注册NO-GO。因此Phase B/C不进入实现或训练，
+正文也不展示中途best来替代唯一final。
+
+冻结层级消融补上了必要的机制边界：full−early-bypass的mAP为`+0.141`，early route不是dead；
+full−late-bypass为`+1.546 mAP`，late仍是主要贡献。八个consumer逐一旁路都能改变descriptor，
+全部参数轨迹与pose-free终审通过。所以最准确的论文表述是：**多阶段内部状态可以被真实执行，
+loss预算归一可恢复性能，但当前6/2 topology仍未超过更简洁的单层D0。** 这是一项负消融，不是
+progressive headline。
+
+论文主证据仍是exp390三seed的原子TAPF mAP-only弱GO：`+0.47±0.31 mAP`、三个seed同向，rank
+均值不正。下一创新候选转向joint-channel语义不可辨识，而不是继续增加stage。CLIP语义校准若要
+进入新设计，必须由冻结image+text双编码器构造实例级局部语义teacher，只监督各stage内部anchor，
+不直接蒸馏final descriptor，并在推理时完全移除CLIP、文本和external pose。它首先是只读查新与
+机制审查对象；在能证明correct、channel-shuffle和wrong-field真正可分之前，不写入论文贡献或
+启动正式实验。这不永久否定多阶段：语义门禁若成立，应以semantic single-stage为新基线，再独立
+验证semantic multi-stage是否带来额外收益；不得把该新机制误记为exp391 Phase B/C续跑。

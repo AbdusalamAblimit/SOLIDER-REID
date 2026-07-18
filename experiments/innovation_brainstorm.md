@@ -3496,3 +3496,28 @@ Gaussian sigma设为`6.0/3.0/1.5`以匹配约24px物理尺度，否则“stage�
 CLIP语义校准仍保留为后续PRIMARY DESIGN CANDIDATE，而不是现在并入exp391。它要解决的是joint
 channel语义不可辨识；exp391先回答多stage route本身是否有燃料。两者同时加入会混淆“层级结构”
 与“语义teacher”，也违反单变量原则。
+
+## 2026-07-18：exp391后创新判断——多阶段route可执行，但topology本身没有性能燃料
+
+H2-M把exp389两层pose loss从sum改为mean后，final从HT0的`56.9/65.9/80.0/84.1`恢复到
+`57.2/67.3/80.2/84.5`。冻结early-bypass给出`+0.141 mAP`独立贡献，八个consumer也都能改变
+final descriptor，因此“浅层完全是dead consumer”不成立。这里得到的是一个有价值的负归因：
+loss budget确实影响多层优化，但即使修正预算，完整H2-M仍比单层D0低`0.4 mAP`。
+
+这关闭的是按`loss mean→consumer balance→更多direct anchor`继续堆纯结构的理由。exp391 Phase
+B/C不再执行，也不能用early的局部正贡献包装“多阶段有效”；但不永久否定语义校准后的多阶段
+TAPF。更强的方法改造必须先改变当前真正未解决的问题对象：17个joint channel对检索近似可置换，
+anchor可能只学到一般条件扰动，而不是可辨识的解剖语义。
+
+后续CLIP候选只有在以下定义下才值得继续只读审查：frozen CLIP image encoder先从与学生几何对齐的
+RGB patch token中，经训练期pose heatmap池化得到实例级joint/part视觉teacher；frozen text encoder
+只提供全部body-part原型，视觉局部特征与全部原型相似度形成sample-specific分布；各stage anchor
+池化本层ReID feature并蒸馏该分布，且必须通过PSG真实影响final descriptor。CLIP不能直接蒸馏最终
+ReID descriptor，推理期必须删除双encoder、文本与external pose。核心强对照应是joint-channel
+shuffle、wrong field、text-only prototype、image-only local teacher和matched non-semantic teacher。
+
+该方向的潜在新意不在“CLIP+pose+multi-stage”组合，而在**以实例级视觉—文本双编码器teacher
+打破内部解剖状态的通道置换对称性，再验证这种可辨识状态是否成为检索因果变量**。在近邻查新、
+代码路径审计、单变量设计和上述语义门禁完成前，不实现、不占用4090，也不承诺它会带来更大涨点。
+若这些门禁通过，后续应先建立semantic single-stage，再以其为直接对照测试semantic multi-stage；
+这将是新的机制实验，而不是对已封板exp391的重启。

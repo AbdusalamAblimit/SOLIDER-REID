@@ -2170,3 +2170,25 @@ paired方向计数（正/零/负）：mAP=`3/0/0`、R1=`2/0/1`、R5=`2/0/1`、R1
 `ce06c380dddbec6149ee57aad12f1ebff0d310183b26886e6194adc41ca243f4`，223-state strict finite、
 anchor/两PSG轨迹、pose-free exact与两个consumer下游路径终审全部PASS，排除dead branch或外部pose
 泄漏解释。
+
+## exp391：H2-M 多阶段 loss-budget 诊断终判（2026-07-18）
+
+> Swin-T / Occluded-Duke / seed1234 / batch64 / 120 epochs / final-only。相对exp389只把两层
+> pose objective从`0.1×sum`改为`0.1×mean`；early/late anchor、`6/2` consumer和其余recipe不变。
+
+| arm | mAP | R1 | R5 | R10 | 相对exp387 D0 | 相对exp389 HT0 |
+|---|---:|---:|---:|---:|---:|---:|
+| exp391 H2-M | 57.2 | 67.3 | 80.2 | 84.5 | `−0.4/−0.4/−0.6/−0.1` | `+0.3/+1.4/+0.2/+0.4` |
+
+H2-M恢复并略超过旧HT0，但final mAP仍比单层D0低`0.4`，超过预注册允许下降`0.2`，因此
+Phase A=`SEALED / NO-GO`，Phase B/C禁止实现或启动。冻结层级消融显示full−early-bypass=
+`+0.141111/+0.497735/+0.316739/−0.135750`，early route达到`+0.1 mAP`独立贡献门槛；
+full−late-bypass=`+1.546086/+2.036196/+1.447964/+1.583707`。这排除了early terminal-dead解释，
+但不能把条件性局部贡献替代最终D0比较。
+
+正式checkpoint SHA256=`914b9d321a72a6af9045743f9c0456b38c5641acf812928602c76d2558a14206`。
+243-state strict finite、early/late anchor与八个PSG参数轨迹、correct/shuffle/None/exploding pose-free
+exact、八consumer最终descriptor可达性和严格异常终审全部PASS。结论是mean loss修复了部分优化
+预算问题，却没有证明`6/2`多阶段topology具有优于单层D0的最终检索价值。该NO-GO只封板exp391
+的纯结构链，不永久否定多阶段TAPF；若后续CLIP双编码器teacher先通过joint-channel语义可辨识门禁，
+可在新的独立实验中重新比较语义校准后的单阶段与多阶段版本。
