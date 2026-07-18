@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 状态：`RUNNING`；当前且唯一有效 arm=`B0-s4321-valid`；
-- GPU：main PID=`1149542`，约 `6,846 MiB`；
+- 状态：`B0-s4321-valid SEALED`；下一 arm=`D0-s4321`；
+- GPU：B0 终审时 `2 MiB/0%`，main/workers 已退出；
 - 已有 seed1234 pair：B0=`57.4/67.4/80.6/85.2`，D0=`57.6/67.7/80.8/84.6`，
   D0−B0=`+0.2/+0.3/+0.2/−0.6`；
 - 预注册新增顺序：B0-s4321→D0-s4321→B0-s2025→D0-s2025；
@@ -243,3 +243,17 @@ quarantine，不能与本运行合并、续接或作数值比较。
   `6,950 MiB`；
 - runner/train log 严格异常与 AMP 警告扫描命中 `0`，e120 前仍无 checkpoint。下一检查必须读取
   final e120，并完成 PID/workers、GPU、唯一 checkpoint、SHA 与 strict finite 终审。
+
+### 2026-07-18 03:58 UTC：B0-s4321-valid e120 封板
+
+- final mAP/R1/R5/R10=`56.0/66.2/79.4/83.8`；这是自然 e120 final，不是 best；
+- main PID=`1149542` 与全部 workers 自然退出，GPU=`2 MiB/0%`，无其它训练、pose 或 preflight
+  进程；
+- output 中唯一 checkpoint=`transformer_120.pth`，size=`112,619,971` bytes；
+- runner SHA256=`44612bc74f88f926db65040222fdfa75afdfc523429a38b020134d50dcc98023`；
+- train log SHA256=`2033287441ea75ee4937868f9fcaecc63d57769f971c0dd1bd4442f6c951b186`；
+- checkpoint SHA256=`b86a337679f44f6da790b952bfbe2aa895f495861b18a525052620650235dae2`；
+- exact HEAD/config/tracked clean 终审 PASS；checkpoint 共 `211` tensors，全量 finite，构造 official
+  B0 后 `strict=True` load 的 missing/unexpected=`0/0`，model state 仍全量 finite；
+- runner/train log 的严格异常与 AMP 警告终审命中 `0`。B0-s4321-valid 正式封板，禁止重启、
+  续训或重复；下一步只能 fresh 启动预注册的 D0-s4321。
