@@ -231,3 +231,15 @@ quarantine，不能与本运行合并、续接或作数值比较。
   main，训练现场约 `7,018 MiB`；
 - runner/train log 严格异常与 AMP 警告扫描继续命中 `0`，e120 前仍无 checkpoint。所有中间点
   只作轨迹证据，继续完整 e120。
+
+### 2026-07-18 03:54 UTC：e80/e90/e100/e110 完整评测
+
+- e80 mAP/R1/R5/R10=`55.5/66.2/79.4/83.5`；
+- e90 mAP/R1/R5/R10=`55.3/65.4/78.5/83.3`；
+- e100 mAP/R1/R5/R10=`55.9/66.1/79.5/83.8`；
+- e110 mAP/R1/R5/R10=`56.0/66.2/79.5/83.8`；
+- e110 评测后自然进入 e111，现场 e111 iter120/227 loss=`0.080`、Acc=`0.997`，finite；
+- exact HEAD/config、tracked clean、唯一 main PID=`1149542`+8 workers 继续 PASS，训练 GPU 约
+  `6,950 MiB`；
+- runner/train log 严格异常与 AMP 警告扫描命中 `0`，e120 前仍无 checkpoint。下一检查必须读取
+  final e120，并完成 PID/workers、GPU、唯一 checkpoint、SHA 与 strict finite 终审。
