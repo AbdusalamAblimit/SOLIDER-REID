@@ -413,10 +413,31 @@ verdict=`B2_SI_SMOKE_PASS`，result/runner SHA256=
 `2 MiB/0%`。该结果首次同时支持slot内support语义与target-localized readout，但仍只有1 PID，
 不作最终裁决。
 
-当前同一代码的128图CPU复核正在运行：parent PID=`1352541`，output=
-`/home/afr/reid-clean/audits/exp392_phase0b2/b2si_pcmbcls_smoke128_result.json`，runner=
-`/home/afr/reid-clean/audits/exp392_phase0b2/b2si_pcmbcls_smoke128.runner.log`。
-`CUDA_VISIBLE_DEVICES`为空，正式训练与GPU teacher-only全量保持`NO-START`。
+同一冻结代码的128图CPU复核已自然完成：128图、639个valid target slots、2,556个full-image
+variants，wall=`18:08.44`、maxRSS=`3,705,508 KiB`，全部12项预注册gate继续PASS。macro target
+`q_visible`在0/25/50/75%遮挡下为
+`0.51104/0.48925/0.47765/0.46990`，三档相邻下降=
+`0.02178/0.01160/0.00775`，均严格为正。head/torso/arms/upper-leg/lower-leg分别得到：
+
+- target Spearman=`0.685/0.482/0.641/0.665/0.678`；
+- target 0→75%下降=`0.07253/0.02985/0.04758/0.03238/0.03000`，五类PID-cluster
+  95% CI均不跨0；
+- target−non-target下降=`+0.06919/+0.02273/+0.04528/+0.03202/+0.02879`，五类CI均严格为正；
+- target−global下降=`+0.05849/+0.02485/+0.04043/+0.02768/+0.02705`，五类CI均严格为正，
+  macro=`+0.03570`。
+
+hard-owner pixel product max=`0`，NULL/repeat/finite/target-valid和level误差全部exact。result/runner
+SHA256分别为
+`63223862e87ba2d73919bca03fb019c90706b8d31ec1c7225decd71248bb9108`/
+`22d154e82938acdf33cb4320759e17e7e0d0527fa2981684f8a1f981d07a76b0`；脚本SHA仍为
+`c95dbed6c569a324c781d4ff382922179d81365f2fbe40b479027f4a8f345b29`。parent/child自然退出，
+exit status=`0`，严格异常扫描0，4090=`2 MiB/0%`。
+
+裁决=`B2_SI_PCMBCLS_SUPPORT_READOUT_PASS`。这证明PC-MBCLS不是只读取全图扰动，而能把特定
+anatomical slot内的support变化局部化到对应readout；它只授权完整B2-S teacher-only反事实审计，
+不授权Phase 0C、训练config或120-epoch正式训练。下一步先冻结三材质overlap/non-overlap、
+wrong RGB/mask/text、flip、PID-cluster bootstrap及GPU效率协议，再通过static/CPU small smoke后才允许
+唯一4090执行全train teacher审计。
 
 ## 2026-07-18 Phase 0B2-O2 hard-owner CPU smoke
 

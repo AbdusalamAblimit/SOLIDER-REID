@@ -321,6 +321,66 @@ patch coverage。这样跨slot混合只可能来自同一patch覆盖多个解剖
 任一核心输入不敏感、support对合成遮挡方向相反，或text-only/static强对照复现sample binding，
 当前B2 teacher即`NO-GO`。不得把只通过appearance同PID指标当作语义门禁通过。
 
+#### B2-SI 128图封板与B2-S全量审计冻结
+
+B2-SI的128图CPU复核已在同一冻结代码上完成：639个valid target slots、2,556个full-image variants，
+全部12项gate PASS。macro target `q_visible`在0/25/50/75%遮挡下为
+`0.51104/0.48925/0.47765/0.46990`；五slot target Spearman均为正且最低为torso的`0.482`。
+五slot的target 0→75%下降、target−non-target下降、target−global下降均逐类为正且PID-cluster
+95% CI不跨0，macro target−global=`+0.03570`。因此当前PC-MBCLS读出通过小样本语义局部化门禁，
+授权B2-S teacher-only审计，但不授权训练。
+
+B2-S执行定义冻结如下，后续不能按结果改target分配、材质、阈值或donor规则：
+
+1. **数据与target分配**：使用official Occ-Duke全部15,618张train图；先按
+   `SHA256(relative_path || seed)`对图像排序，再依次从该图valid hard-owner slots中选择当前全局计数
+   最小者，tie由hash对应的cyclic slot order打破，从而得到确定性且近似均衡的唯一target。分配只读取
+   路径和pose valid，不读取CLIP输出、PID外观或实验结果。全部五slot的未干预base feature仍由同一次
+   PC-MBCLS前向产出；高成本反事实只作用于该图唯一target。
+2. **共同嵌套support集合**：每个target按固定hash permutation选取25/50/75% support pixels，三个
+   level严格嵌套；0%只计算一次并在三材质、overlap/non-overlap间共享。non-overlap从target一patch
+   dilation外、content box内的像素中按八个y-bin匹配同样数量，缺额时只放宽y-bin、不放宽零交集，
+   要求target IoU和pixel product严格为0、cardinality误差不超过1 pixel。
+3. **三种冻结遮挡材质**：`CLIP-mean`使用反归一化前固定RGB mean；`random-texture`使用由
+   `path/slot/level`固定seed生成、按被替换区域逐通道mean/std匹配并以固定`sigma=1.5 px`低通的
+   彩色噪声；`different-PID CutMix`使用不同PID、同slot valid donor，把donor slot bbox保持宽高比
+   resize到recipient target bbox后按同一嵌套集合写入。三材质必须共享support集合，不能各自抽取
+   有利像素。
+4. **donor冻结**：donor优先同camera，按增强后slot area ratio、normalized y-center和pose confidence
+   的L1距离选择最近者；同camera无候选时才跨camera。必须different-PID、不同path、无fixed point；
+   tie按relative path打破。matching只用pose/geometry统计，禁止用CLIP或ReID feature。
+5. **wrong RGB/mask/text**：wrong RGB包含`donor RGB+donor mask`与`donor RGB+recipient mask`两臂；
+   wrong mask固定recipient RGB，使用different-PID且area/y/conf matched的donor mask，要求增强后IoU
+   median`<=0.30`、P95`<=0.50`；wrong text同时包含slot phrase cycle与visible/occluded state-order
+   inversion。另保留四个非identity slot cycles、同步置换mask/slot/text后的inverse-map equivariance、
+   text-only constant、mass-matched uniform/fixed bands及PID-disjoint image-only cluster强对照。
+6. **配对视图与flip**：base以aspect-letterbox为主几何；同图轻视图只使用冻结的brightness/contrast
+   扰动，不改变pose geometry。flip单独做RGB水平翻转、mask空间反映射和slot固定映射；left/right
+   已在coarse slot内合并。所有paired view seed由path固定，禁止重复抽样挑结果。
+7. **统计单位**：所有均值同时报告image-level point estimate和PID-cluster bootstrap 95% CI，主裁决
+   只用PID-cluster CI；bootstrap固定seed=`20260718`、repeats=`1000`。每slot单独报告，不允许macro
+   掩盖单slot失败。centered effective rank明确计算归一化PC-MBCLS visual feature `v_c`，不对总和为1
+   的二分类`q`误算rank；`q`另报variance、JSD、entropy与margin。
+8. **support kill-switch**：三材质都必须逐slot满足overlap Spearman lower bound`>=0.2`，且0→75%
+   target下降相对non-overlap的paired PID-bootstrap CI严格`>0`；target下降还必须逐slot高于同图
+   non-target及official global CLS。任一材质或任一slot方向反转即当前B2-S `NO-GO`，不得用另外两种
+   材质平均救场。
+9. **binding门禁**：same-image/same-slot的raw feature cosine必须显著高于different-PID/same-slot和
+   same-image/wrong-slot，两个paired PID-bootstrap CI均`>0`且标准化效应`>=0.2`；correct-view q-JSD
+   必须显著低于RGB-mask mismatch与low-IoU wrong-mask。wrong slot/text不能与correct近似等价，
+   text-only/static不能复现遮挡响应。
+10. **equivariance与非退化**：valid slot flip feature cosine`>=0.95`、median q-JSD`<=0.02`；仅在
+    base `abs(q_visible-0.5)>=0.10`的样本上要求support-state consistency`>=95%`。每slot visual
+    feature centered effective rank`>=2`，并报告q跨样本方差，防止常量teacher过门。
+11. **GPU效率边界**：只在static与8图CPU contract全部PASS后启用唯一4090。official CLIP与
+    PC-MBCLS使用同一FP16/no-grad/common microbatch，20次warmup后计100次并同步；报告images/s、
+    相对吞吐、峰值allocated/reserved显存和CLIP常驻权重。PC-MBCLS吞吐必须`>=50%` official CLIP；
+    以已测clean D0峰值加CLIP常驻权重和2 GiB安全余量核算sequential teacher→student预算，超过
+    24 GiB或发生OOM即效率NO-GO，不通过改batch64救场。
+12. **执行边界**：先做synthetic material/donor/geometry static exact，再做8图CPU contract；两者
+    通过后才首次启动全train teacher-only GPU审计。全量PASS仍只授权Phase 0C single-stage Semantic
+    TAPF的实现与preflight，不直接授权120 epoch；任何训练前仍需新design、独立代码审查和全部门禁。
+
 ## 七、代码与数值门禁
 
 实现前必须独立核对 OpenCLIP 当前版本中：
@@ -377,8 +437,10 @@ CLIP loss只更新anchor/state head；ReID loss通过执行router更新backbone�
 
 ## 九、当前裁决
 
-`PHASE 0B2 PROTOCOL FROZEN / STATIC-PASS / OPENCLIP-CPU-PASS / GPU NO-START`。
+`PHASE 0B2 B2-SI SEALED-PASS / B2-S FULL-TEACHER PROTOCOL FROZEN / FORMAL TRAINING NO-START`。
 
-三路独立审查和两层CPU契约已经通过。下一步顺序固定为：B2-O ontology/reference小样本CPU smoke →
-B2-I readout小样本smoke → 若全部通过才允许唯一4090执行teacher-only全量门禁。任何teacher-only
-通过都只授权Phase 0C，不直接授权120 epoch训练。
+hard-owner ontology、slot-conditioned support task与PC-MBCLS readout已经分别通过128图CPU门禁；
+这排除了“PC-MBCLS只响应全图扰动”的解释，但尚未证明teacher对真实RGB/mask/text binding和三类
+遮挡材质都稳健。下一步只允许实现上述B2-S审计并完成static/8图CPU contract；在其PASS前4090继续
+`NO-START`。未来唯一4090全train teacher-only审计若PASS，也只授权Phase 0C single-stage机制实现，
+不直接授权120 epoch训练。
