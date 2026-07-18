@@ -5084,3 +5084,23 @@ exp391=`SEALED / NO-GO`，Phase B的consumer balance与Phase C的三anchor H3-OF
 的只读文献/代码/机制审查；后者必须独立设计解决joint-channel语义不可辨识，不能作为普通CLIP KD
 直接抢跑正式训练。若语义门禁成立，应另开新实验重新比较semantic single-stage与semantic
 multi-stage，而不是恢复或续跑exp391 Phase B/C。
+
+### [2026-07-18] 决策：Phase 0A确认现有TAPF是有效但语义不可辨识的调制器，进入CLIP teacher门禁
+
+**证据**：在exp387 sealed D0 final上，all-PSG bypass导致
+`−1.3586/−1.6742/−1.7195/−1.2670`，PSG0/PSG1各自旁路mAP分别`−0.6756/−0.7149`，所以
+consumer不是dead path。与此同时，channel-cycle只改变
+`+0.0240/+0.0452/−0.0452/+0.0452`，matched-wrong field只改变
+`−0.0049/+0.1357/−0.0452/0`；均远低于预注册`0.3 mAP`语义门槛。把每个field通道压成空间常量
+反而提升`+0.3463/+0.4977/+0.4977/+0.4977`。
+
+**决策**：Phase 0A=`SEALED / CONSUMER_EFFECTIVE_JOINT_SEMANTICS_NOT_IDENTIFIED`。现有D0保留
+exp390三seed mAP-only弱GO，不因本审计被全盘否定；但论文不得把17个channel解释成已学会的具体
+关节语义，也不得把精确空间field称为已验证的检索因果来源。冻结bypass测到的是已训练D0内部依赖，
+不能包装成相对B0的训练增益。
+
+**下一步**：授权Phase 0B双编码CLIP teacher-only门禁，不授权正式训练。0B必须证明teacher同时依赖
+正确RGB、pose mask与text bank，并优于text-only常量、image-only cluster、fixed bands和wrong
+RGB/mask/text；否则只否定当前teacher定义或粒度，不永久否定换粒度后的CLIP方向。即使0B通过，
+仍需Phase 0C证明NULL identity、semantic mismatch、梯度所有权和generic-router强对照，才允许
+semantic single-stage；多阶段继续以后者为直接基线，不能续跑exp391。

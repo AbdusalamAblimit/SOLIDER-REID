@@ -2,11 +2,11 @@
 
 ## 当前状态
 
-- `DESIGN-ONLY / RESEARCH-ONLY / NO-START`；
+- `PHASE 0A SEALED / PHASE 0B AUTHORIZED / FORMAL TRAINING NO-START`；
 - exp390与exp391均已封板，禁止重启、续训或把本实验记为exp391 Phase B/C；
-- 当前GPU训练任务：无；
-- 当前仅完成文献、公开代码、当前TAPF执行路径与机制审查；
-- 未创建config、output、runner、checkpoint，未启动任何GPU任务。
+- 当前GPU任务：无，Phase 0A结束后GPU=`2 MiB / 0%`；
+- 已完成文献、公开代码、当前TAPF执行路径、机制审查与Phase 0A frozen audit；
+- 未创建训练config/output/checkpoint，未启动任何正式训练。
 
 ## 已确认边界
 
@@ -70,7 +70,49 @@ generic adapter强控制；Phase 0A/0B通过也只授权0C，不直接授权120-
 4. 所有预注册内部干预均非dead，hook seam与NULL identity可进入全验证集审计；
 5. smoke只验证执行路径，不用于mAP裁决。
 
+## 2026-07-18 Phase 0A 全验证集封板
+
+唯一main PID=`1330438`自然退出，父shell同时退出；GPU恢复`2 MiB / 0%`，封板exp387 repo tracked
+source保持clean。审计覆盖official Occ-Duke query+gallery共19,871图、query=2,210；correct复现
+`57.558776/67.692308/80.769231/84.570136`。
+
+| arm | mAP/R1/R5/R10 | 相对correct |
+|---|---|---|
+| channel-cycle | `57.582812/67.737557/80.723982/84.615385` | `+0.024036/+0.045249/−0.045249/+0.045249` |
+| left/right channel swap | `57.541479/67.692308/80.723982/84.524887` | `−0.017296/+0.000000/−0.045249/−0.045249` |
+| confidence permutation | `57.535337/67.692308/80.723982/84.434389` | `−0.023439/+0.000000/−0.045249/−0.135747` |
+| matched-wrong field | `57.553827/67.828054/80.723982/84.570136` | `−0.004949/+0.135747/−0.045249/+0.000000` |
+| spatial-constant | `57.905057/68.190045/81.266968/85.067873` | `+0.346281/+0.497738/+0.497738/+0.497738` |
+| zero-field | `56.200175/66.018100/79.049774/83.303167` | `−1.358601/−1.674208/−1.719457/−1.266968` |
+| PSG0 bypass | `56.883217/67.013575/79.909502/83.936652` | `−0.675558/−0.678733/−0.859729/−0.633484` |
+| PSG1 bypass | `56.843903/66.696833/79.547511/83.891403` | `−0.714872/−0.995475/−1.221719/−0.678733` |
+| all-PSG bypass | `56.200175/66.018100/79.049774/83.303167` | `−1.358601/−1.674208/−1.719457/−1.266968` |
+
+paired bootstrap mAP 95% CI：channel-cycle=`[+0.0101,+0.0386]`、left/right=
+`[−0.0306,−0.0049]`、matched-wrong=`[−0.0276,+0.0192]`、spatial-constant=
+`[+0.2873,+0.4121]`、PSG0 bypass=`[−0.7620,−0.5943]`、PSG1 bypass=
+`[−0.8097,−0.6254]`、all bypass=`[−1.5141,−1.2081]`。
+
+终审：
+
+1. correct start/end、external correct/shuffle/None/exploding逐元素exact；
+2. zero-field与all-bypass descriptor逐元素exact；
+3. 223-state SHA前后均为
+   `c75e9d2e26f83255ae122a6c84b1717bc9474493453c7e04d95163da3cea96a3`；
+4. 所有anchor/PSG hooks均移除，两个单bypass arm各调用78次，全bypass两个bank各调用78次；
+5. donor map覆盖19,871图，same-camera=100%、different-PID=100%、无fixed point、不跨split；
+6. runner严格NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow命中为0；
+7. result/donor/runner SHA256分别为
+   `e1a8ab0f3ab93939c9f7acbd05cf634cff47998c36f85719cea38545828b6511`、
+   `17dfed2db93997f576120d680a671eafd2e73a88b8223affce13fc2b41d1b501`、
+   `cd397826b020c3e7b59127dc014a6519c1b7957a63113e9204ae8f6235cd235a`。
+
+裁决=`CONSUMER_EFFECTIVE_JOINT_SEMANTICS_NOT_IDENTIFIED`。all-bypass下降`1.359 mAP`证明PSG路径
+确实有用；但channel-cycle与matched-wrong都远低于`0.3 mAP`语义门槛，且空间常量更高，说明当前
+consumer主要利用低频/全局条件调制，而不是正确joint identity或精确geometry。这是exp392语义校准
+问题成立的直接证据，不是对CLIP后新机制的否定。
+
 ## 下一步
 
-完成Phase 0A全验证集frozen audit、donor-map SHA、四项指标与paired bootstrap；随后再进入Phase 0B
-teacher-only实现。正式训练保持`NO-START`。
+进入Phase 0B coarse-region CLIP双编码teacher-only实现与门禁；保持同一时间一条4090任务，正式
+训练继续`NO-START`。

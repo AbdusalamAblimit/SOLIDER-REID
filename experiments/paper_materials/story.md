@@ -1867,3 +1867,24 @@ progressive headline。
 机制审查对象；在能证明correct、channel-shuffle和wrong-field真正可分之前，不写入论文贡献或
 启动正式实验。这不永久否定多阶段：语义门禁若成立，应以semantic single-stage为新基线，再独立
 验证semantic multi-stage是否带来额外收益；不得把该新机制误记为exp391 Phase B/C续跑。
+
+## 2026-07-18：Phase 0A给出新的论文问题证据——有效调制不等于解剖语义
+
+exp392对clean D0 final做了不训练参数的内部field反事实。all-PSG bypass使mAP从`57.559`降到
+`56.200`，两个PSG分别旁路也各降约`0.68/0.71 mAP`，所以内部调制路径是真实且有条件性价值的。
+但是把17个joint channels循环置换后mAP为`57.583`，换成同camera、不同PID且field统计匹配的
+wrong field后仍为`57.554`；两者都与correct近乎相同。更进一步，保留每通道均值、删除所有空间
+geometry的constant field达到`57.905`，比correct高`0.346 mAP`。
+
+因此clean论文不能再暗示“17个internal channels已经对应17个具体人体关节并据此改善检索”。现有
+证据支持的是更弱但准确的说法：训练期pose target学习出一个有效的RGB内生条件调制器；它的mAP在
+三seed上小幅可重复，但内部anatomical semantics尚不可辨识。冻结bypass的`−1.359`也不能替代
+D0−B0的matched训练差，只解释已训练模型内部依赖。
+
+这使下一方法贡献有了明确问题对象：**counterfactually identifiable executable anatomical
+mediator**。候选方法必须让正确geometry-semantic binding优于channel shuffle、matched wrong、
+spatial constant与generic adapter；CLIP只作为训练期双编码teacher校准内部state，不直接蒸馏global
+descriptor。Phase 0B先判断该teacher是否真依赖当前RGB、pose mask和text，而不是固定part label。
+若teacher失败，保留原子TAPF的克制mAP-only故事；若teacher与后续router都通过，才把论文中心升级
+为“从generic pose-conditioned modulation到可辨识anatomical mediation”，并重新评估balanced
+semantic multi-stage。

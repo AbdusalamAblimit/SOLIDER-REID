@@ -189,7 +189,24 @@ Phase 0完成前不得实现正式训练config。
 5. single-stage成立、多stage不增益：保留单层主方法，多阶段进入负消融；
 6. multi-stage在CLIP后成立：这是新semantic mechanism的证据，不回写成exp391成功。
 
+## Phase 0A frozen结果（2026-07-18）
+
+封板exp387 D0 final的内部field反事实审计已完成：
+
+- correct=`57.5588/67.6923/80.7692/84.5701`；
+- channel-cycle相对correct=`+0.0240/+0.0452/−0.0452/+0.0452`；
+- left/right channel swap=`−0.0173/+0.0000/−0.0452/−0.0452`；
+- matched-wrong field=`−0.0049/+0.1357/−0.0452/+0.0000`；
+- spatial-constant=`+0.3463/+0.4977/+0.4977/+0.4977`；
+- all-PSG bypass/zero-field=`−1.3586/−1.6742/−1.7195/−1.2670`；
+- PSG0/PSG1分别bypass的mAP差为`−0.6756/−0.7149`，两个consumer都有效。
+
+Phase 0A裁决为`CONSUMER_EFFECTIVE_JOINT_SEMANTICS_NOT_IDENTIFIED`：现有PSG对final descriptor
+有强条件性贡献，但正确joint-channel binding和matched正确field没有可辨检索优势；空间常量控制
+甚至更高。该结果证明exp392的问题对象真实，也说明只给原PSG增加CLIP loss不足以建立语义因果，
+必须保留semantic router、static-state与generic-adapter强对照。
+
 ## 当前裁决
 
-`exp392 = DESIGN-ONLY / RESEARCH-ONLY / NO-START`。当前只允许继续文献、公开代码和机制审查；
-不得创建训练config/output或占用4090。下一可执行动作是Phase 0A/0B的审计设计复核，而不是正式训练。
+`exp392 = PHASE 0A SEALED / PHASE 0B AUTHORIZED / FORMAL TRAINING NO-START`。下一步执行
+coarse-region CLIP双编码teacher-only门禁；Phase 0B通过也只授权Phase 0C，不直接启动正式训练。

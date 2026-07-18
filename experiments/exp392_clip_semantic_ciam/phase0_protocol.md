@@ -1,6 +1,6 @@
 # exp392 Phase 0 零训练协议：内部语义诊断与 CLIP teacher 可辨识性
 
-> 状态：**PROTOCOL-FROZEN / PHASE 0A EXECUTING / NO FORMAL TRAINING**
+> 状态：**PHASE 0A SEALED / PHASE 0B AUTHORIZED / NO FORMAL TRAINING**
 >
 > 日期：2026-07-18
 >
@@ -285,8 +285,11 @@ semantic single-stage；semantic multi-stage继续保持 `NO-START`。
 
 ## 六、当前裁决
 
-- Phase 0协议已冻结；Phase 0A只读审计已获用户授权并开始执行；
-- 0A脚本必须位于exp392目录、从外部导入exp387 exact repo，不写封板repo；
-- 0A运行期间只允许该一条4090任务，结束后必须恢复GPU空闲；
-- Phase 0B仍未执行；0A完成并封板后才开始teacher-only实现与门禁；
-- 当前仍不创建训练config/output/runner，不启动120-epoch正式训练。
+- Phase 0A已完成并封板，裁决为
+  `CONSUMER_EFFECTIVE_JOINT_SEMANTICS_NOT_IDENTIFIED`；
+- channel-cycle相对correct为`+0.024 mAP`，matched-wrong为`−0.005 mAP`，均远小于`0.3`门槛；
+- all-PSG bypass为`−1.359 mAP`，证明consumer有效；spatial-constant反而`+0.346 mAP`，精确空间
+  geometry不是当前收益来源；
+- zero-field与all-bypass逐元素exact，external pose四臂与correct repeat逐元素exact，state SHA前后
+  一致；运行结束GPU恢复`2 MiB / 0%`；
+- Phase 0B teacher-only实现与执行获授权；当前仍不创建训练config，不启动120-epoch正式训练。

@@ -2192,3 +2192,31 @@ exact、八consumer最终descriptor可达性和严格异常终审全部PASS。�
 预算问题，却没有证明`6/2`多阶段topology具有优于单层D0的最终检索价值。该NO-GO只封板exp391
 的纯结构链，不永久否定多阶段TAPF；若后续CLIP双编码器teacher先通过joint-channel语义可辨识门禁，
 可在新的独立实验中重新比较语义校准后的单阶段与多阶段版本。
+
+## exp392 Phase 0A：clean D0内部field语义审计（2026-07-18）
+
+> 使用exp387 sealed D0-s1234 e120 checkpoint，全模型`eval+no_grad`，query/gallery RGB-only；
+> 所有counterfactual在anchor输出field与两个PSG的真实production seam临时注入，不训练参数。
+
+| arm | mAP | R1 | R5 | R10 | 相对correct |
+|---|---:|---:|---:|---:|---:|
+| correct | 57.5588 | 67.6923 | 80.7692 | 84.5701 | `0/0/0/0` |
+| channel-cycle | 57.5828 | 67.7376 | 80.7240 | 84.6154 | `+0.0240/+0.0452/−0.0452/+0.0452` |
+| left/right swap | 57.5415 | 67.6923 | 80.7240 | 84.5249 | `−0.0173/0/−0.0452/−0.0452` |
+| confidence permutation | 57.5353 | 67.6923 | 80.7240 | 84.4344 | `−0.0234/0/−0.0452/−0.1357` |
+| matched-wrong field | 57.5538 | 67.8281 | 80.7240 | 84.5701 | `−0.0049/+0.1357/−0.0452/0` |
+| spatial-constant | **57.9051** | **68.1900** | **81.2670** | **85.0679** | `+0.3463/+0.4977/+0.4977/+0.4977` |
+| PSG0 bypass | 56.8832 | 67.0136 | 79.9095 | 83.9367 | `−0.6756/−0.6787/−0.8597/−0.6335` |
+| PSG1 bypass | 56.8439 | 66.6968 | 79.5475 | 83.8914 | `−0.7149/−0.9955/−1.2217/−0.6787` |
+| zero/all-bypass | 56.2002 | 66.0181 | 79.0498 | 83.3032 | `−1.3586/−1.6742/−1.7195/−1.2670` |
+
+paired bootstrap mAP 95% CI分别为channel-cycle`[+0.0101,+0.0386]`、matched-wrong
+`[−0.0276,+0.0192]`、spatial-constant`[+0.2873,+0.4121]`、all-bypass
+`[−1.5141,−1.2081]`。correct start/end和四个external-pose变体descriptor exact；zero与all-bypass
+exact；两个PSG分别旁路均显著下降；model state SHA前后exact。
+
+裁决：`CONSUMER_EFFECTIVE_JOINT_SEMANTICS_NOT_IDENTIFIED`。PSG consumer对已训练D0 checkpoint
+有强条件性贡献，但正确joint-channel binding相对循环置换或matched-wrong field没有可辨优势；
+空间常量控制反而全面更高。该`−1.359 mAP` bypass值是D0 checkpoint内的冻结路径贡献，不可替代
+matched D0−B0训练增益`+0.2`。结果证明exp392的问题对象真实，但不证明CLIP teacher有效；下一步
+必须通过Phase 0B teacher-only门禁。

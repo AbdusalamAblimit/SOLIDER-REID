@@ -3521,3 +3521,28 @@ shuffle、wrong field、text-only prototype、image-only local teacher和matched
 代码路径审计、单变量设计和上述语义门禁完成前，不实现、不占用4090，也不承诺它会带来更大涨点。
 若这些门禁通过，后续应先建立semantic single-stage，再以其为直接对照测试semantic multi-stage；
 这将是新的机制实验，而不是对已封板exp391的重启。
+
+## 2026-07-18：Phase 0A把“语义不可辨识”从怀疑变成可执行证据
+
+clean D0的冻结反事实给出了一个比继续堆stage更有价值的事实：两个PSG都对final descriptor有显著
+作用，但它们几乎不在乎17个通道究竟代表哪个关节。channel-cycle和matched-wrong field的mAP变化
+分别只有`+0.024`与`−0.005`，all-bypass却下降`1.359`；更关键的是，删除所有空间结构、只保留
+每通道均值的spatial-constant控制反而提升`0.346 mAP`。
+
+这把创新问题重新写清楚了：当前TAPF不是“pose没有用”，而是**pose field被自由PSG吸收成了有效的
+低频条件调制，anatomical channel identity与精确geometry没有成为可辨识的执行变量**。因此真正的
+方法空间不是再加pose loss、复制anchor或加普通CLIP KD，而是让`geometry × semantic identity ×
+local visual evidence`必须共同决定一个可干预的router update。
+
+由此新增三条不可删除的强控制：
+
+1. `spatial-constant/static-state`：因为它已在旧D0上超过correct，任何新方法必须胜过这个低频解释；
+2. `generic low-rank adapter/expert-mean`：排除收益只是更强feature transform；
+3. `correct vs channel-shuffle vs matched-wrong binding`：只有correct至少拉开`0.3 mAP`，才称为
+   anatomical mediator。
+
+CLIP的角色也更精确：它不是给final descriptor提供第二套表征，而是训练期为内部coarse anatomical
+state提供sample-specific visual support。Phase 0B若证明双编码teacher退化为固定region one-hot，
+则CLIP对当前问题没有新增信息；若通过，再由semantic expert gather-transform-scatter router把该状态
+变成不可被自由channel mixing消解的执行对象。只有semantic single-stage同时超过D0、static和generic
+controls，多阶段才值得重新进入。
