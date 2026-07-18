@@ -738,3 +738,20 @@ checkpoint数=`0`。e3末记录为Loss=`7.961`、Pose=`1.597`、Semantic=`0.686`
 `7.761e-08`，全部finite。Mask/Presence已从初始化附近下降而Q仍接近随机BCE，这与预检中q动态范围弱的
 已知风险一致，只记录观察，不据此早停、调权或裁决。runner/train log未见AMP warning、NaN/Inf、
 Traceback、RuntimeError、OOM、nonfinite或overflow，状态=`继续自然e120`。
+
+### 首次e10完整评测与e12接手
+
+- e10完整query/gallery评测mAP/R1/R5/R10=`32.3/42.0/57.4/63.0`；
+- 同epoch exp387 clean D0=`33.4/42.7/59.8/65.2`，Semantic C0−D0=
+  `−1.1/−0.7/−2.4/−2.2`；同epoch exp389 HT0=`34.2/44.4/59.7/65.8`，Semantic C0−HT0=
+  `−1.9/−2.4/−2.3/−2.8`；
+- e6--e10 Student依次=`0.2/0.4/0.6/0.8/1.0`，e11+保持`1.0`，完整handoff符合冻结设计；
+- e10末Pose=`1.373`、Semantic/RegionMask/Presence/Q=`0.589/0.549/0.526/0.693`、Reliability=
+  `0.502`、GateAbs=`1.707e-05`，全部finite；接手时已自然完成e11并进入e12，e12 iter140的
+  Pose=`1.284`、Semantic/RegionMask/Presence/Q=`0.548/0.492/0.459/0.693`、Reliability=`0.503`、
+  GateAbs=`2.728e-05`。
+
+首次中间评测低于两个参考，且Q分量仍在日志三位精度下保持`0.693`；前者不用于早停或final裁决，
+后者继续作为“teacher q弱动态范围/可能只学slot prior”的预注册拆因风险。不得在当前运行中修改温度、
+loss权重、代码或config。实时边界仍为exact HEAD/config/tracked clean、唯一main+8 workers、4090约
+`8270 MiB`且唯一任务、e120前checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
