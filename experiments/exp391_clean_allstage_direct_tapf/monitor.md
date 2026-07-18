@@ -243,3 +243,40 @@ main+8 workers，GPU约`7780 MiB`，严格异常与AMP warning=`0`，e120前chec
 三次均为完整query/gallery评测；训练已自然进入e82，exact HEAD/config/tracked source clean，唯一
 main+8 workers，GPU约`7760 MiB`，严格异常与AMP warning=`0`，e120前checkpoint=`0`。e60–e80
 的中后段负差同样只属于轨迹，不能据此提前停止或宣告mean失败；继续自然运行至e120 final。
+
+## e90–e110完整评测轨迹
+
+### e90
+
+- H2-M mAP / R1 / R5 / R10=`56.9 / 67.4 / 80.5 / 84.4`；
+- 同epoch exp387 D0=`57.5 / 67.9 / 81.2 / 85.3`，H2-M−D0=
+  `−0.6 / −0.5 / −0.7 / −0.9`；
+- 同epoch exp389 HT0=`56.5 / 66.1 / 79.8 / 84.4`，H2-M−HT0=
+  `+0.4 / +1.3 / +0.7 / +0.0`；
+- e90末尾PoseEarly/PoseLate=`0.457/0.476`、ReliabilityEarly/ReliabilityLate=`0.831/0.831`、
+  GateEarlyAbs/GateLateAbs=`1.985e-02/2.505e-02`。
+
+### e100
+
+- H2-M mAP / R1 / R5 / R10=`56.7 / 66.5 / 79.4 / 84.0`；
+- 同epoch exp387 D0=`56.9 / 67.1 / 79.6 / 83.8`，H2-M−D0=
+  `−0.2 / −0.6 / −0.2 / +0.2`；
+- 同epoch exp389 HT0=`56.4 / 65.9 / 79.2 / 84.3`，H2-M−HT0=
+  `+0.3 / +0.6 / +0.2 / −0.3`；
+- e100末尾PoseEarly/PoseLate=`0.456/0.475`、ReliabilityEarly/ReliabilityLate=`0.851/0.851`、
+  GateEarlyAbs/GateLateAbs=`1.990e-02/2.504e-02`。
+
+### e110
+
+- H2-M mAP / R1 / R5 / R10=`56.9 / 66.9 / 79.8 / 84.3`；
+- 同epoch exp387 D0=`57.4 / 67.4 / 80.5 / 84.6`，H2-M−D0=
+  `−0.5 / −0.5 / −0.7 / −0.3`；
+- 同epoch exp389 HT0=`56.6 / 65.9 / 79.5 / 83.9`，H2-M−HT0=
+  `+0.3 / +1.0 / +0.3 / +0.4`；
+- e110末尾PoseEarly/PoseLate=`0.455/0.473`、StudentEarly/StudentLate=`1/1`、
+  ReliabilityEarly/ReliabilityLate=`0.857/0.857`、GateEarlyAbs/GateLateAbs=
+  `1.993e-02/2.515e-02`，全部finite。
+
+三次均为完整query/gallery评测；训练已自然进入e116，exact HEAD/config/tracked source clean，唯一
+main+8 workers，GPU约`7626 MiB`，严格异常与AMP warning=`0`，e120前checkpoint=`0`。中间轨迹
+相对D0与HT0方向不同，仍不得用来裁决Phase A；等待唯一自然e120 final与终审。
