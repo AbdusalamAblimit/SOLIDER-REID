@@ -159,3 +159,16 @@ counterfactual。不会构建ReID model/optimizer/config/output/checkpoint，也
 PASS；execution repo HEAD=`ed5783416528be4284adce11fa192fe119e344f4`且tracked clean，启动前无
 训练/审计进程，GPU=`2 MiB/0%`。当前状态`0E-FULL READY / NO-RESULT`，不授权Phase A/B训练或
 semantic multi-stage。
+
+## 2026-07-19 Phase 0E-FULL正式teacher-only启动
+
+0E-FULL已在唯一4090上fresh启动，main PID=`884504`，runner=
+`/home/afr/reid-clean/audits/exp393_phase0e/phase0e_full.runner.log`，result/partition/codebook/cache均为
+独立新路径。启动后main由PID 1接管且唯一；首个完整chunk已到`correct-pass 32/15,618`，GPU=
+`2,402 MiB/98%`、唯一compute PID=`884504`，无异常。execution repo exact HEAD=
+`ed5783416528be4284adce11fa192fe119e344f4`且tracked clean；本地设计/实现提交HEAD=
+`8beff997990d98babbecf2c3807aab14cd830a55`。
+
+当前状态`0E-FULL FORMAL TEACHER AUDIT RUNNING`。不得修改运行中脚本、依赖、partition或阈值；必须
+自然完成两遍流式处理后再按全部五slot门禁裁决。它不是训练，不授权并行GPU任务、Phase A/B或
+semantic multi-stage。
