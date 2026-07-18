@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 状态：`RUNNING`；B0-s4321-valid 与 D0-s4321 均已封板，当前且唯一 arm=`B0-s2025`；
-- GPU：B0-s2025 main PID=`1220240`，约 `6,846 MiB`；
+- 状态：`RUNNING`；B0/D0-s4321 与 B0-s2025 均已封板，当前且唯一 arm=`D0-s2025`；
+- GPU：D0-s2025 main PID=`1254315`，约 `6,994 MiB`；
 - 已有 seed1234 pair：B0=`57.4/67.4/80.6/85.2`，D0=`57.6/67.7/80.8/84.6`，
   D0−B0=`+0.2/+0.3/+0.2/−0.6`；
 - 预注册新增顺序：B0-s4321→D0-s4321→B0-s2025→D0-s2025；
@@ -407,3 +407,55 @@ B0-s2025必须自然跑满e120；不得按中间点停止或挑best。终审PASS
   `53a7c895c39174fc288655bbb35206597c6d681c2f9bc89adb1a283e82521605`，tracked source clean；
 - 唯一main PID=`1220240`与8 workers，GPU只有该main，约`6,942 MiB`；output仍无checkpoint；
 - 严格异常与AMP warning扫描保持`0`。e30只记录轨迹，继续自然跑满e120。
+
+### 2026-07-18 06:01 UTC：e40--e120 与 B0-s2025 封板
+
+| epoch | B0-s2025 mAP/R1/R5/R10 |
+|---:|---:|
+| 40 | `48.5/59.8/73.4/78.8` |
+| 50 | `52.9/63.1/77.8/82.9` |
+| 60 | `53.4/64.5/78.8/83.3` |
+| 70 | `55.6/66.3/79.8/84.8` |
+| 80 | `55.9/66.4/79.1/83.9` |
+| 90 | `57.0/67.3/80.5/85.2` |
+| 100 | `57.2/67.5/80.8/85.6` |
+| 110 | `57.4/67.8/80.8/85.5` |
+| 120 | `57.5/67.9/81.1/85.7` |
+
+- e120自然完成，未挑best；main PID=`1220240`和8 workers自然退出，GPU=`2 MiB/0%`，无其它
+  python训练或GPU进程；
+- output中唯一checkpoint=`transformer_120.pth`，size=`112,619,971` bytes；runner/train/checkpoint
+  SHA256分别为`42e983abe8759625b55f2ad6feda056cb6be4e6ed20ffc8a39452abb4a31c8a2`/
+  `7736b3d8a91ff14a879e09d9f32e5e33bee30b256a9e55bf3b76501fe390afb0`/
+  `97560b039fb1a7adade514c301e8f5fb46aa1d43efbf067729ba6dd6f6881afe`；
+- exact HEAD=`ec46d50486d645da0872d5549e1071f2a8072b24`、config SHA256=
+  `53a7c895c39174fc288655bbb35206597c6d681c2f9bc89adb1a283e82521605`、tracked source clean；
+- 原生构造official B0后checkpoint共`211` state tensors/`198` floating tensors，全量finite，
+  `strict=True` missing/unexpected=`0/0`，load后model state仍全量finite；normal-train/validation均为
+  无pose store的`ImageDataset`；
+- runner/train log的AMP warning、NaN、Inf数值、Traceback、RuntimeError、OOM、nonfinite、overflow
+  严格终审命中`0`。B0-s2025正式封板，禁止重启、续训或重复。
+
+## D0-s2025 首次正式启动
+
+### 2026-07-18 06:57 UTC：fresh execution 与首次健康检查
+
+- fresh repo=`/home/afr/SOLIDER-REID-exp390-d0s2025-ec46d50`，exact detached HEAD=
+  `ec46d50486d645da0872d5549e1071f2a8072b24`；full-history bundle=
+  `/home/afr/reid-clean/bundles/exp390_multiseed_ec46d50.bundle`，SHA256=
+  `a1c5329b52a3119fef3d070eb0430f02b21b02fe891d8add16849888db97bfb7`，bundle verify为完整历史且
+  HEAD exact；
+- config=`configs/occluded_duke/swin_tiny_tapf_d0_s2025.yml`，SHA256=
+  `56b2a30fd1856d2dc1077df013cc5d4bab9312be5488f25e1fe7dfa882263116`；official teacher SHA256=
+  `8bf35b39e6042929383782e0190884ef69fa68abae8437c78c885ade584b404b`；exp386 manifest SHA256=
+  `cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8`；
+- output=`log/occluded_duke/exp390_clean_swin_tiny_d0_s2025`，runner=
+  `/home/afr/train-logs/exp390_clean_d0_s2025.runner.log`；启动前repo/output/runner fresh，HEAD/config/
+  bundle/teacher/manifest exact，tracked source clean，GPU=`2 MiB/0%`且无其它python/GPU任务，全PASS；
+- 首次且唯一main PID=`1254315`，python=`/usr/local/anaconda3/envs/mmpose-abu/bin/python`；stdout
+  明确记录TAPF enabled、`HIERARCHICAL=False`、official teacher `All keys matched successfully`；
+- e1自然完成并进入e2；唯一main+8 workers，GPU约`6,994 MiB`，Loss/Pose/Reliability/GateAbs全部
+  finite，Student=`0`符合e1--5 teacher route，严格异常与AMP warning扫描命中`0`，无checkpoint。
+
+这是D0-s2025首次且唯一正式启动。必须自然跑满e120；D0只在训练期读取exp386 artifact，
+query/gallery保持RGB-only，不得按任何中间点停止或挑best。
