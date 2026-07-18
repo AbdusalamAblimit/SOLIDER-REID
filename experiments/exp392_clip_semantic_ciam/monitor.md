@@ -840,3 +840,18 @@ e50相对D0的四项正差未在e60保持，进一步确认不能选择中途节
 Semantic/RegionMask/Presence/Q=`0.294/0.159/0.030/0.692`、GateAbs=`7.605e-06`，q与router
 幅度持续弱，但训练、consumer执行与数值均正常。exact HEAD/config/tracked clean、唯一main+8 workers、
 4090约`8238 MiB`且唯一任务、e120前checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
+
+### e70完整评测与e74接手
+
+- e70完整query/gallery评测mAP/R1/R5/R10=`55.4/66.0/79.4/84.6`；
+- 同epoch exp387 clean D0=`55.4/65.2/79.5/83.6`，Semantic C0−D0=
+  `+0.0/+0.8/−0.1/+1.0`；同epoch exp389 HT0=`55.1/64.6/78.8/83.1`，Semantic C0−HT0=
+  `+0.3/+1.4/+0.6/+1.5`；
+- e70末Loss=`0.176`、Pose=`0.755`、Semantic/RegionMask/Presence/Q=
+  `0.294/0.159/0.029/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`7.980e-06`，
+  全部finite；评测后e71--e73自然完成，接手时已进入e74。
+
+e70相对D0再次呈近零mAP与Rank混合正差，和e60回落共同证明中途波动仍大，不作final替代或机制
+claim。e74 iter40的Q=`0.692`、Reliability=`0.512`、GateAbs=`7.764e-06`，弱q/小router幅度模式
+未改变。exact HEAD/config/tracked clean、唯一main+8 workers、4090约`8364 MiB`且唯一任务、
+e120前checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
