@@ -786,6 +786,15 @@ Reliability=`0.512`、GateAbs=`7.236e-06`，弱q与小router幅度持续稳定�
 HEAD/config/tracked clean、唯一main+8 workers、4090约`8262 MiB`且唯一任务、e120前
 checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
 
+### 15分钟接手：e100训练中，尚无完整e100评测
+
+e91--e99已自然完成，接手时位于e100 iter60/227，尚未产生e100完整query/gallery评测，本轮不写
+半成品指标。现场Loss=`0.156`、Pose=`0.751`、Semantic/RegionMask/Presence/Q=
+`0.292/0.158/0.026/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`6.781e-06`，全部
+finite。exact HEAD/config/tracked clean、唯一main+8 workers、4090约`8264 MiB/96%`且唯一任务、
+e120前checkpoint=`0`，严格异常扫描命中`0`。继续自然训练，下次只从正式日志读取完整e100及后续
+新增评测。
+
 ### e90完整评测与e91接手
 
 - e90完整query/gallery评测mAP/R1/R5/R10=`56.6/67.1/80.3/85.1`；
