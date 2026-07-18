@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 状态：`RUNNING`；B0-s4321-valid 与 D0-s4321 均已封板，下一 arm=`B0-s2025` 尚未启动；
-- GPU：`2 MiB/0%`，当前空闲；
+- 状态：`RUNNING`；B0-s4321-valid 与 D0-s4321 均已封板，当前且唯一 arm=`B0-s2025`；
+- GPU：B0-s2025 main PID=`1220240`，约 `6,846 MiB`；
 - 已有 seed1234 pair：B0=`57.4/67.4/80.6/85.2`，D0=`57.6/67.7/80.8/84.6`，
   D0−B0=`+0.2/+0.3/+0.2/−0.6`；
 - 预注册新增顺序：B0-s4321→D0-s4321→B0-s2025→D0-s2025；
@@ -366,3 +366,25 @@ quarantine，不能与本运行合并、续接或作数值比较。
 等待期间另完成 `old_new_implementation_audit.md`，并由只读独立子 agent 交叉复核；它不使用 GPU、
 不修改训练代码/config，也不影响本 arm。主结论是旧 exp378 的较大相对增量建立在更弱 B0、不同
 RE/loader/TTA protocol与约2倍 PSG consumer容量上，不能解释为旧 D0 绝对更强或更会利用正确姿态。
+
+## B0-s2025 首次正式启动
+
+### 2026-07-18 05:08 UTC：fresh execution 与首次健康检查
+
+- fresh repo=`/home/afr/SOLIDER-REID-exp390-b0s2025-ec46d50`，exact detached HEAD=
+  `ec46d50486d645da0872d5549e1071f2a8072b24`；
+- full-history bundle=`/home/afr/reid-clean/bundles/exp390_multiseed_ec46d50.bundle`，SHA256=
+  `a1c5329b52a3119fef3d070eb0430f02b21b02fe891d8add16849888db97bfb7`，bundle verify完整历史且
+  HEAD exact；
+- config=`configs/occluded_duke/swin_tiny_s2025.yml`，SHA256=
+  `53a7c895c39174fc288655bbb35206597c6d681c2f9bc89adb1a283e82521605`；official teacher SHA256=
+  `8bf35b39e6042929383782e0190884ef69fa68abae8437c78c885ade584b404b`；
+- output=`log/occluded_duke/exp390_clean_swin_tiny_b0_s2025`，runner=
+  `/home/afr/train-logs/exp390_clean_b0_s2025.runner.log`，启动前两者均不存在；exact HEAD/config/
+  bundle/teacher、tracked source clean、GPU=`2 MiB/0%`、无其它train/pose/preflight进程全PASS；
+- 首次且唯一main PID=`1220240`，python=`/usr/local/anaconda3/envs/mmpose-abu/bin/python`；stdout
+  明确记录TAPF disabled、official teacher `All keys matched successfully`；
+- e1/e2自然完成并进入e3/e4；唯一main+8 workers，GPU约`6,846 MiB`，loss/accuracy finite，严格
+  异常与AMP warning为`0`，e120前无checkpoint。
+
+B0-s2025必须自然跑满e120；不得按中间点停止或挑best。终审PASS后才能fresh启动D0-s2025。
