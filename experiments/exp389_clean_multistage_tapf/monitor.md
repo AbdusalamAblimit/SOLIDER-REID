@@ -160,3 +160,35 @@
 - e100 末尾 PoseEarly/PoseLate=`0.443/0.462`、ReliabilityEarly/ReliabilityLate=`0.851/0.851`、GateEarlyAbs/GateLateAbs=`1.934e-02/2.315e-02`。
 
 三次均为完整 query/gallery 评测；e80–e100 大部分指标低于同 epoch D0，但 R10 在 e100 为正，仍不得以中间节点裁决。训练已自然进入 e107；两层 Student=`1/1`、pose supervision 与八个 PSG 持续 finite/active，exact HEAD/config/tracked source clean、唯一 main+8 workers、GPU 约 `7.33 GiB`、e120 前无 checkpoint、严格异常=`0`，继续至 e120。
+
+## e110 与 e120 final
+
+### e110
+
+- HT0 mAP / R1 / R5 / R10=`56.6 / 65.9 / 79.5 / 83.9`；
+- 同 epoch exp387 D0=`57.4 / 67.4 / 80.5 / 84.6`；
+- HT0−D0=`−0.8 / −1.5 / −1.0 / −0.7`；
+- e110 末尾 PoseEarly/PoseLate=`0.442/0.461`、ReliabilityEarly/ReliabilityLate=`0.857/0.857`、GateEarlyAbs/GateLateAbs=`1.939e-02/2.335e-02`。
+
+### e120 final
+
+- HT0 mAP / R1 / R5 / R10=`56.9 / 65.9 / 80.0 / 84.1`；
+- exp387 D0 e120=`57.6 / 67.7 / 80.8 / 84.6`；
+- **HT0−D0=`−0.7 / −1.8 / −0.8 / −0.5`**；
+- exp385 official B0 e120=`57.4 / 67.4 / 80.6 / 85.2`，HT0−B0=`−0.5 / −1.5 / −0.6 / −1.1`；
+- e120 末尾 PoseEarly/PoseLate=`0.443/0.462`、StudentEarly/StudentLate=`1/1`、ReliabilityEarly/ReliabilityLate=`0.828/0.828`、GateEarlyAbs/GateLateAbs=`1.938e-02/2.302e-02`；
+- 全程自然运行至 e120，报告唯一 final checkpoint；没有挑选 e30 等局部正节点，也没有按阈值或单点提前停止。
+
+## e120 终审
+
+- 原 main PID=`1091044` 与全部 8 workers 自然退出，GPU 空闲；output 仅 `train_log.txt` 和唯一 `transformer_120.pth`；
+- checkpoint SHA256=`b78e4a62258cd16d5181b6e224880fb521e53af893f7eaa522f07dde9ac15d61`，runner SHA256=`19e5dd625a33c56114491e10173bfe7ef5ad7941f8dbd887abe265f71c6c96b0`，train log SHA256=`6806702b9f740dfeb9af6ec52c39ab7ba772b393f1dd0780e0d197b02b8c6095`；
+- exact HEAD/config 与 tracked/staged source clean；runner/train log 的严格边界词 NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow 命中=`0`；
+- checkpoint state tensor=`243`，其中浮点或复数 tensor=`230`，全部有限；strict load missing/unexpected=`0/0`；
+- 相对同 seed、同 dataloader→model 构造顺序的 fresh 初始化，early anchor=`8/8`、early PSG=`12/12`、late anchor=`8/8`、late PSG=`4/4`、Swin=`171/193`、head=`2/3` 参数 tensor changed；六个 early 与两个 late bank 均各自 `2/2 changed`，组内任意 bank pair 均不相等；
+- final checkpoint 上 correct/shuffle/None/exploding external pose 的 descriptor、early/late field 与八个 gate delta 逐元素 exact，exploding pose access=`0`；normal-train evaluator 与 query/gallery 均为无 pose store 的 `ImageDataset`；
+- final 逐 consumer 旁路的 descriptor max absolute delta：early0–5=`0.1450/0.0679/0.0767/0.1382/0.2606/0.6103`，late0–1=`1.0834/2.1360`；八个 learned consumer 均保持到最终 descriptor 的有限非零下游路径，无 terminal dead consumer；
+- final audit 脚本 SHA256=`80f9c8234849a5dbd2ee495ff1c6aa2b499dc09bac3bbbb2e61964b05418122a`，canonical JSON SHA256=`2546fbdbcbb420b2555ccc9277af3aef6ebdb6f29a53be628e6f42ab6baa6cc8`；
+- 可执行终审结论：`EXP389_FINAL_AUDIT_PASS`。
+
+最终结论边界：在官方最后代码、fresh ViTPose-H train-only target、同一 seed/batch/120-epoch recipe 下，新增 clean early hierarchy 相对单层 D0 的 final 四项全部下降，且低于 official B0。实现、参数学习、RGB-only 推理与八条 consumer 路径均已排除失效，因此这是有效负结果。exp389 至此封板，禁止重启、续训、重复或用中途 best 替代 e120；hierarchical 继续只作为 backbone-conditional 历史扩展，不进入 clean 方法 headline。
