@@ -779,3 +779,18 @@ e21--e29已自然完成，接手时位于e30 iter100/227，尚未产生e30完整
 finite。exact HEAD/config/tracked clean、唯一main+8 workers、4090约`8406 MiB/99%`且唯一任务、
 e120前checkpoint=`0`，严格异常扫描命中`0`。Q仍处弱动态区间但非新增故障，继续自然训练；下次接手
 只从正式日志读取完整e30及之后的新增评测。
+
+### e30完整评测与e39接手
+
+- e30完整query/gallery评测mAP/R1/R5/R10=`45.5/55.8/71.5/77.6`；
+- 同epoch exp387 clean D0=`46.6/56.2/71.3/76.4`，Semantic C0−D0=
+  `−1.1/−0.4/+0.2/+1.2`；同epoch exp389 HT0=`47.7/58.3/72.0/77.1`，Semantic C0−HT0=
+  `−2.2/−2.5/−0.5/+0.5`；
+- e30末Loss=`0.639`、Pose=`0.803`、Semantic/RegionMask/Presence/Q=
+  `0.320/0.188/0.079/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`1.637e-05`，
+  全部finite；评测后e31--e38自然完成，接手时已进入e39。
+
+e30相对D0/HT0仍为正负混合且mAP偏弱的中间轨迹，不用于早停、best选择或路线裁决。e39 iter40
+现场Semantic/RegionMask/Presence/Q=`0.305/0.170/0.052/0.692`、GateAbs=`1.133e-05`，Q继续弱
+动态，mask/presence继续下降。exact HEAD/config/tracked clean、唯一main+8 workers、4090约
+`8392 MiB`且唯一任务、e120前checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
