@@ -494,3 +494,39 @@ result/runner SHA256分别为
 `B2-SC crop-support feasibility -> B2-SI support-readout`重新对齐真实语义对象：先保持crop-global
 readout，只测三档嵌套局部遮挡是否让每slot的`q_visible`单调下降；通过后才把readout换成PC-MBCLS。
 正式训练和GPU teacher-only全量继续`NO-START`。
+
+## 2026-07-18 Phase 0B2-S connected-occluder static contract
+
+B2-SI 128图PASS后，最初B2-S static草案虽通过数值契约，但独立反事实审查指出三个阻塞，故未运行
+8图CLIP：
+
+1. different-PID **同slot可见内容**不应被要求使`q_visible`下降，否则正确的support teacher也可能
+   被假判负；它已移到appearance/binding，对support的第三材质改为different-PID wrong-slot occluder；
+2. hash-randperm散点替换只证明local corruption sensitivity，不能证明occlusion；正式定义改为从
+   target bbox固定一侧连续增长的25/50/75%连通矩形；
+3. non-overlap必须在384×128 pre-image坐标排除target的24-pixel dilation，且8图target/donor不能在
+   子集重算，必须先由全部15,618图pose-only map冻结。
+
+据此重写`phase0b2_full_teacher_static_audit.py`。首轮独立终审又发现两处代码级门禁偏差与一处协议
+歧义：overshoot误用了上一目标level而非立即前一strip、random texture按hard support而非协议冻结的
+target bbox统计、前文仍残留未限定wrong-slot的CutMix措辞。三项均在运行8图前修正；同时预注册
+矩形与五slot的几何泄漏报告，并要求逐样本逐level的target交集严格大于任一单个non-target交集。
+
+修订后本地uv纯CPU static再次PASS，脚本SHA256=
+`a9fc32a68a0dc13645e8e45a43fe84f0a5174bc7eb997c658a5b06c709cb1e1f`，result SHA256=
+`43984cff1f428c9ba1959cf65635f2c56f871a1602222084dd3359b1e27ff767`。全部29项gate PASS，包括：
+
+- connected overlap rectangles严格嵌套、repeat exact，realized=`0.26/0.50/0.76`，overshoot不超过
+  新增最后一条strip；
+- non-overlap control rectangles严格嵌套、repeat exact、与24px dilation交集严格0，normalized-y
+  error=`0`；
+- CLIP-mean/random-texture/wrong-slot CutMix三材质在全部level均target/control tensor exact、低level
+  已写像素在高level保持exact、框外RGB exact、finite；
+- random texture跨level共享同一场、repeat exact、换seed非exact，mean/std max error=`0/0`；
+- same-slot与wrong-slot donor均different-PID/path、same-camera优先、无fixed point；固定visual feature
+  后替换text bank的slot-cycle/state inversion exact。
+
+独立复审对上述script/protocol SHA终审通过，明确只授权下一步full-train pose-only feasibility，
+不授权8图CLIP、4090或正式训练。下一步必须对15,618图生成并封板target map、same-slot/wrong-slot/
+wrong-mask donor map、连通矩形non-overlap可行率、24px dilation exact、y-error与target/non-target
+几何泄漏分布；只有全门禁PASS后才从full map抽取覆盖五slot的8图CPU contract。

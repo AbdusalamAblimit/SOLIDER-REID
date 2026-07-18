@@ -237,8 +237,9 @@ B2-SC使用原始crop bbox固定几何，不因遮挡重算bbox；在每个有�
 - 每slot `mean(q_visible@0 - q_visible@75) > 0`；
 - 至少三档相邻宏平均响应严格单调。
 
-通过只授权B2-SI；完整B2-S仍需CLIP-mean、随机纹理和different-PID CutMix三类遮挡、non-overlap
-control、wrong RGB/mask/text、flip与PID-cluster bootstrap全部门禁。B2-SC失败才是当前
+通过只授权B2-SI；完整B2-S仍需CLIP-mean、随机纹理和different-PID wrong-slot occluder三类
+遮挡、non-overlap control、wrong RGB/mask/text、flip与PID-cluster bootstrap全部门禁。同slot
+donor只用于appearance/binding对照，永不进入visibility下降kill-switch。B2-SC失败才是当前
 slot-support语义对象的直接NO-GO，不得用appearance任务救场。
 
 #### B2-SI：同一 support 任务的 PC-MBCLS readout
@@ -308,9 +309,10 @@ patch coverage。这样跨slot混合只可能来自同一patch覆盖多个解剖
 - same-image same-slot的相似度显著高于不同PID同slot及同图wrong-slot，PID-cluster paired bootstrap
   95% CI均不跨0，标准化效应期望`>=0.2`；
 - same-image same-slot的q-JSD显著小于RGB-mask mismatch与低IoU wrong-mask；
-- region-overlap erasing分别使用CLIP mean、随机纹理和different-PID CutMix，`q_visible`随overlap
-  单调下降的Spearman lower bound `>=0.2`，且效应显著强于non-overlap erasing；本任务明确声称
-  support，因此该项是kill-switch；
+- region-overlap erasing分别使用CLIP mean、随机纹理和different-PID wrong-slot occluder，
+  `q_visible`随overlap单调下降的Spearman lower bound `>=0.2`，且效应显著强于non-overlap
+  erasing；本任务明确声称support，因此该项是kill-switch；different-PID same-slot donor只进入
+  appearance/binding对照，不进入该门禁；
 - wrong text显著改变support分布，而text-only constant不能复现图像/遮挡分组；
 - wrong mask/channel cycle不能与correct近似等价；
 - valid region的flip raw feature cosine `>=0.95`、median q-JSD `<=0.02`；support-state top-1 consistency
@@ -332,54 +334,75 @@ B2-SI的128图CPU复核已在同一冻结代码上完成：639个valid target sl
 
 B2-S执行定义冻结如下，后续不能按结果改target分配、材质、阈值或donor规则：
 
-1. **数据与target分配**：使用official Occ-Duke全部15,618张train图；先按
+1. **数据、target与donor先验封板**：使用official Occ-Duke全部15,618张train图；先按
    `SHA256(relative_path || seed)`对图像排序，再依次从该图valid hard-owner slots中选择当前全局计数
-   最小者，tie由hash对应的cyclic slot order打破，从而得到确定性且近似均衡的唯一target。分配只读取
-   路径和pose valid，不读取CLIP输出、PID外观或实验结果。全部五slot的未干预base feature仍由同一次
-   PC-MBCLS前向产出；高成本反事实只作用于该图唯一target。
-2. **共同嵌套support集合**：每个target按固定hash permutation选取25/50/75% support pixels，三个
-   level严格嵌套；0%只计算一次并在三材质、overlap/non-overlap间共享。non-overlap从target一patch
-   dilation外、content box内的像素中按八个y-bin匹配同样数量，缺额时只放宽y-bin、不放宽零交集，
-   要求target IoU和pixel product严格为0、cardinality误差不超过1 pixel。
-3. **三种冻结遮挡材质**：`CLIP-mean`使用反归一化前固定RGB mean；`random-texture`使用由
-   `path/slot/level`固定seed生成、按被替换区域逐通道mean/std匹配并以固定`sigma=1.5 px`低通的
-   彩色噪声；`different-PID CutMix`使用不同PID、同slot valid donor，把donor slot bbox保持宽高比
-   resize到recipient target bbox后按同一嵌套集合写入。三材质必须共享support集合，不能各自抽取
-   有利像素。
-4. **donor冻结**：donor优先同camera，按增强后slot area ratio、normalized y-center和pose confidence
-   的L1距离选择最近者；同camera无候选时才跨camera。必须different-PID、不同path、无fixed point；
-   tie按relative path打破。matching只用pose/geometry统计，禁止用CLIP或ReID feature。
-5. **wrong RGB/mask/text**：wrong RGB包含`donor RGB+donor mask`与`donor RGB+recipient mask`两臂；
+   最小者，tie由hash对应的cyclic slot order打破。该full-split target map必须在任何8图smoke之前
+   生成并记录SHA；8图只能从该map中选覆盖五slot的样本，禁止在8图子集上重算target。分配只读取
+   path与pose valid，不读取CLIP、ReID或结果。全部五slot的base feature仍由同一次PC-MBCLS前向产出，
+   高成本反事实只作用于唯一target。
+2. **连通嵌套遮挡几何**：禁止hash-randperm散点腐蚀。所有坐标定义在aspect-letterbox前的384×128
+   RGB/mask上；以target hard support bbox为范围，由`SHA256(path || slot || seed)`一次性选择
+   `top/bottom/left/right` sweep方向，使用与bbox同宽或同高的轴对齐矩形从该侧连续增长。25/50/75%
+   cut position按矩形与target support的实际交集首次达到对应比例确定，三个矩形严格嵌套；realized
+   overlap误差上限为新增最后一行/列所含support比例，不再声称one-pixel exact。该定义测的是连通
+   occlusion，而不是salt-and-pepper corruption。
+   full pose-only阶段还必须逐图逐level计算矩形与target及其余四slot hard support的交集，并报告
+   `target-support covered / rectangle area`。每个样本、每个level都必须满足target交集严格大于任一
+   单个non-target slot交集；否则记为occluder localization construction failure，不得进入CLIP审计。
+   上述交集比例按slot和sweep方向分别报告P50/P95，禁止用macro掩盖arms bbox跨torso等几何泄漏。
+3. **non-overlap位置控制**：一个14×14 CLIP patch反映射为
+   `ceil(14*384/224)=ceil(14*128/75)=24`个pre-image像素；对最大75%遮挡矩形，穷举content box内
+   可平移位置，要求与target的24-pixel dilation pixel product严格0，优先选择normalized y-center
+   最接近者，tie按坐标字典序。较低level保持同一anchor和sweep方向，只改变矩形长边，因而control也
+   严格嵌套。overlap/control使用完全相同的矩形尺寸与材质tensor，只改变粘贴位置；必须报告可行率、
+   mean/P95 normalized-y error，正式门槛为insufficient fraction=`0`、mean`<=1/8`、P95`<=2/8`。
+4. **三种冻结occluder材质**：`CLIP-mean`使用反归一化前固定RGB mean；`random-texture`只由
+   `path/slot/material-seed`生成一次覆盖最大矩形的随机场，三个level读取该同一tensor的嵌套crop，
+   按target bbox逐通道mean/std匹配并以固定`sigma=1.5 px`低通；`different-PID wrong-slot CutMix`
+   使用不同PID、与target不同且valid的固定cyclic donor slot，将其bbox保持宽高比letterbox到最大
+   occluder矩形。不同PID同slot可见内容不能作为support kill-switch，它只保留在sample-specific
+   appearance/binding对照。
+5. **donor冻结**：appearance/binding的same-slot donor与support的wrong-slot occluder donor分别建图。
+   二者均优先同camera，并按增强后area ratio、normalized y-center、pose confidence的L1距离选最近者；
+   wrong-slot donor依固定cyclic slot顺序选择第一个valid非target slot。必须different-PID、不同path、
+   无fixed point，tie按relative path；matching只用pose/geometry，不用CLIP/ReID。full target/donor map、
+   area/y/conf差及增强后mask IoU必须在8图前pose-only封板并记录SHA。
+6. **wrong RGB/mask/text**：wrong RGB包含`donor RGB+donor mask`与`donor RGB+recipient mask`两臂；
    wrong mask固定recipient RGB，使用different-PID且area/y/conf matched的donor mask，要求增强后IoU
    median`<=0.30`、P95`<=0.50`；wrong text同时包含slot phrase cycle与visible/occluded state-order
-   inversion。另保留四个非identity slot cycles、同步置换mask/slot/text后的inverse-map equivariance、
-   text-only constant、mass-matched uniform/fixed bands及PID-disjoint image-only cluster强对照。
-6. **配对视图与flip**：base以aspect-letterbox为主几何；同图轻视图只使用冻结的brightness/contrast
+   inversion；两者都必须固定PC-MBCLS visual feature后重新与替换后的text prototype计算logits，禁止
+   roll已有`[slot,state]` logits冒充wrong text。另保留四个非identity slot cycles、同步置换
+   mask/slot/text后的inverse-map equivariance、text-only constant、mass-matched uniform/fixed bands及
+   PID-disjoint image-only cluster强对照。
+7. **配对视图与flip**：base以aspect-letterbox为主几何；同图轻视图只使用冻结的brightness/contrast
    扰动，不改变pose geometry。flip单独做RGB水平翻转、mask空间反映射和slot固定映射；left/right
    已在coarse slot内合并。所有paired view seed由path固定，禁止重复抽样挑结果。
-7. **统计单位**：所有均值同时报告image-level point estimate和PID-cluster bootstrap 95% CI，主裁决
+8. **统计单位**：所有均值同时报告image-level point estimate和PID-cluster bootstrap 95% CI，主裁决
    只用PID-cluster CI；bootstrap固定seed=`20260718`、repeats=`1000`。每slot单独报告，不允许macro
    掩盖单slot失败。centered effective rank明确计算归一化PC-MBCLS visual feature `v_c`，不对总和为1
    的二分类`q`误算rank；`q`另报variance、JSD、entropy与margin。
-8. **support kill-switch**：三材质都必须逐slot满足overlap Spearman lower bound`>=0.2`，且0→75%
+9. **support kill-switch**：三种真正occluder材质都必须逐slot满足overlap Spearman lower bound`>=0.2`，且0→75%
    target下降相对non-overlap的paired PID-bootstrap CI严格`>0`；target下降还必须逐slot高于同图
    non-target及official global CLS。任一材质或任一slot方向反转即当前B2-S `NO-GO`，不得用另外两种
-   材质平均救场。
-9. **binding门禁**：same-image/same-slot的raw feature cosine必须显著高于different-PID/same-slot和
+   材质平均救场。same-slot donor不要求`q_visible`下降，只进入下一条sample binding比较。
+10. **binding门禁**：same-image/same-slot的raw feature cosine必须显著高于different-PID/same-slot和
    same-image/wrong-slot，两个paired PID-bootstrap CI均`>0`且标准化效应`>=0.2`；correct-view q-JSD
    必须显著低于RGB-mask mismatch与low-IoU wrong-mask。wrong slot/text不能与correct近似等价，
    text-only/static不能复现遮挡响应。
-10. **equivariance与非退化**：valid slot flip feature cosine`>=0.95`、median q-JSD`<=0.02`；仅在
+11. **equivariance与非退化**：valid slot flip feature cosine`>=0.95`、median q-JSD`<=0.02`；仅在
     base `abs(q_visible-0.5)>=0.10`的样本上要求support-state consistency`>=95%`。每slot visual
     feature centered effective rank`>=2`，并报告q跨样本方差，防止常量teacher过门。
-11. **GPU效率边界**：只在static与8图CPU contract全部PASS后启用唯一4090。official CLIP与
+12. **GPU效率边界**：只在static、full pose-only feasibility与8图CPU contract全部PASS后启用唯一
+    4090。official CLIP与
     PC-MBCLS使用同一FP16/no-grad/common microbatch，20次warmup后计100次并同步；报告images/s、
     相对吞吐、峰值allocated/reserved显存和CLIP常驻权重。PC-MBCLS吞吐必须`>=50%` official CLIP；
     以已测clean D0峰值加CLIP常驻权重和2 GiB安全余量核算sequential teacher→student预算，超过
     24 GiB或发生OOM即效率NO-GO，不通过改batch64救场。
-12. **执行边界**：先做synthetic material/donor/geometry static exact，再做8图CPU contract；两者
-    通过后才首次启动全train teacher-only GPU审计。全量PASS仍只授权Phase 0C single-stage Semantic
-    TAPF的实现与preflight，不直接授权120 epoch；任何训练前仍需新design、独立代码审查和全部门禁。
+13. **执行边界**：先做connected-rectangle/material/donor static exact；再对全部15,618张图做纯
+    pose-only target/donor/non-overlap feasibility并冻结map SHA；两者PASS后才从full map取8图CPU
+    CLIP contract。三步全部PASS后才首次启动全train teacher-only GPU审计。全量PASS仍只授权Phase 0C
+    single-stage Semantic TAPF的实现与preflight，不直接授权120 epoch；任何训练前仍需新design、
+    独立代码审查和全部门禁。
 
 ## 七、代码与数值门禁
 
@@ -441,6 +464,6 @@ CLIP loss只更新anchor/state head；ReID loss通过执行router更新backbone�
 
 hard-owner ontology、slot-conditioned support task与PC-MBCLS readout已经分别通过128图CPU门禁；
 这排除了“PC-MBCLS只响应全图扰动”的解释，但尚未证明teacher对真实RGB/mask/text binding和三类
-遮挡材质都稳健。下一步只允许实现上述B2-S审计并完成static/8图CPU contract；在其PASS前4090继续
-`NO-START`。未来唯一4090全train teacher-only审计若PASS，也只授权Phase 0C single-stage机制实现，
-不直接授权120 epoch训练。
+连通遮挡材质都稳健。下一步只允许完成connected static与全train pose-only feasibility；之后才是
+8图CPU CLIP contract，在三者PASS前4090继续`NO-START`。未来唯一4090全train teacher-only审计
+若PASS，也只授权Phase 0C single-stage机制实现，不直接授权120 epoch训练。
