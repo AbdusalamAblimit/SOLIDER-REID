@@ -728,3 +728,13 @@ clean，无NaN/Inf/Traceback/RuntimeError/OOM/overflow异常，无checkpoint。e
 下降，Semantic/RegionMask/Presence/Q约`0.693`，Student=`0`符合e1-5 teacher handoff，Reliability约
 `0.51`，GateAbs从`5.965e-11`增长到`7.723e-09`且finite。当前状态为`FORMAL RUNNING`，此前
 teacher反事实审计的单次FAIL只作为机制风险，不再是一票否决训练或整条CLIP–TAPF路线的理由。
+
+### 15分钟接手：e3自然完成
+
+远端实时复核确认e1-e3均自然完成，当前训练继续：exact HEAD与config SHA保持不变，tracked source
+clean；唯一main PID=`1375252`加8 workers，4090约`8186 MiB/99%`且无第二项计算任务，e120前
+checkpoint数=`0`。e3末记录为Loss=`7.961`、Pose=`1.597`、Semantic=`0.686`、RegionMask=
+`0.684`、Presence=`0.682`、Q=`0.693`、Student=`0`、Reliability=`0.508`、GateAbs=
+`7.761e-08`，全部finite。Mask/Presence已从初始化附近下降而Q仍接近随机BCE，这与预检中q动态范围弱的
+已知风险一致，只记录观察，不据此早停、调权或裁决。runner/train log未见AMP warning、NaN/Inf、
+Traceback、RuntimeError、OOM、nonfinite或overflow，状态=`继续自然e120`。
