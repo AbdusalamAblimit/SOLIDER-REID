@@ -206,3 +206,40 @@ e20的局部正差不替代final，也不用于阈值裁决或选择中途节点
 三次均为完整query/gallery评测；训练已自然进入e51，exact HEAD/config/tracked source clean，唯一
 main+8 workers，GPU约`7780 MiB`，严格异常与AMP warning=`0`，e120前checkpoint=`0`。e30–e50
 相对两个参考均有正负波动，不作Phase A裁决，不用于早停或挑best；继续自然运行至e120。
+
+## e60–e80完整评测轨迹
+
+### e60
+
+- H2-M mAP / R1 / R5 / R10=`54.2 / 64.5 / 78.1 / 83.2`；
+- 同epoch exp387 D0=`55.1 / 66.1 / 79.0 / 83.3`，H2-M−D0=
+  `−0.9 / −1.6 / −0.9 / −0.1`；
+- 同epoch exp389 HT0=`54.5 / 64.8 / 78.6 / 83.9`，H2-M−HT0=
+  `−0.3 / −0.3 / −0.5 / −0.7`；
+- e60末尾PoseEarly/PoseLate=`0.468/0.487`、ReliabilityEarly/ReliabilityLate=`0.847/0.847`、
+  GateEarlyAbs/GateLateAbs=`1.892e-02/2.490e-02`。
+
+### e70
+
+- H2-M mAP / R1 / R5 / R10=`55.1 / 64.6 / 78.6 / 83.3`；
+- 同epoch exp387 D0=`55.4 / 65.2 / 79.5 / 83.6`，H2-M−D0=
+  `−0.3 / −0.6 / −0.9 / −0.3`；
+- 同epoch exp389 HT0=`55.1 / 64.6 / 78.8 / 83.1`，H2-M−HT0=
+  `+0.0 / +0.0 / −0.2 / +0.2`；
+- e70末尾PoseEarly/PoseLate=`0.462/0.480`、ReliabilityEarly/ReliabilityLate=`0.855/0.855`、
+  GateEarlyAbs/GateLateAbs=`1.929e-02/2.488e-02`。
+
+### e80
+
+- H2-M mAP / R1 / R5 / R10=`55.3 / 65.2 / 79.4 / 83.9`；
+- 同epoch exp387 D0=`56.1 / 66.3 / 79.5 / 84.0`，H2-M−D0=
+  `−0.8 / −1.1 / −0.1 / −0.1`；
+- 同epoch exp389 HT0=`55.4 / 65.4 / 78.9 / 82.9`，H2-M−HT0=
+  `−0.1 / −0.2 / +0.5 / +1.0`；
+- e80末尾PoseEarly/PoseLate=`0.457/0.476`、StudentEarly/StudentLate=`1/1`、
+  ReliabilityEarly/ReliabilityLate=`0.833/0.833`、GateEarlyAbs/GateLateAbs=
+  `1.965e-02/2.488e-02`，全部finite。
+
+三次均为完整query/gallery评测；训练已自然进入e82，exact HEAD/config/tracked source clean，唯一
+main+8 workers，GPU约`7760 MiB`，严格异常与AMP warning=`0`，e120前checkpoint=`0`。e60–e80
+的中后段负差同样只属于轨迹，不能据此提前停止或宣告mean失败；继续自然运行至e120 final。
