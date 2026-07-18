@@ -969,3 +969,10 @@ PC-MBCLS teacher、弱动态q readout与双router组合没有超过clean D0，�
 也不授权balanced semantic multi-stage。该结论只关闭当前组合，不否定CLIP–TAPF；下一步必须做
 必要的单变量拆因/机制修复（优先验证static-q/pose-only与真正扩大sample-specific support动态范围），
 不得重跑、换seed或用中途best救场。
+
+## 2026-07-19 Phase 0D冻结拆因设计
+
+已新增`phase0d_protocol.md`，当前状态=`DESIGN FROZEN / AUDIT NO-START`。本阶段不训练，只在Semantic
+C0唯一final checkpoint上依次评测correct、static-slot-q、q-one、spatial-constant mask、slot-cycle、
+expert-mean、router0/1/all bypass。预注册`0.1 mAP`只用于单checkpoint近零归因，不作为论文显著性
+阈值；correct start/end descriptor与state SHA必须exact。当前远端无进程，GPU=`2 MiB/0%`。
