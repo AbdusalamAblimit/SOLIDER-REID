@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-- `PHASE 0A SEALED / PHASE 0B AUTHORIZED / FORMAL TRAINING NO-START`；
+- `PHASE 0A SEALED / PHASE 0B SMOKE PASS / FULL AUDIT AUTHORIZED / FORMAL TRAINING NO-START`；
 - exp390与exp391均已封板，禁止重启、续训或把本实验记为exp391 Phase B/C；
 - 当前GPU任务：无，Phase 0A结束后GPU=`2 MiB / 0%`；
 - 已完成文献、公开代码、当前TAPF执行路径、机制审查与Phase 0A frozen audit；
@@ -116,3 +116,39 @@ consumer主要利用低频/全局条件调制，而不是正确joint identity或
 
 进入Phase 0B coarse-region CLIP双编码teacher-only实现与门禁；保持同一时间一条4090任务，正式
 训练继续`NO-START`。
+
+## 2026-07-18 Phase 0B 实现与 smoke
+
+Phase 0B 使用独立teacher-only脚本，不构建ReID模型、loss或optimizer。为避免误用远端旧且脏的
+`/home/afr/SOLIDER-REID`，执行时只加载由本地当前树导出的三文件最小runtime，逐文件SHA固定为：
+
+- `datasets/bases.py`：`03d231558f46264e4cff0c251b9b728ab4971232ed6c4bb7324ce1964f139c2c`；
+- `datasets/occluded_duke.py`：`f0e7b25e75251643430b699d9c9969fae207c0a85c48855cd0404d61a4228f8e`；
+- `datasets/pose_targets.py`：`42f6e35eff2ad572445143cb3ecc5b6a22d856facc4453b989411300dec22624`。
+
+脚本另外把RGB donor与matched-mask donor分开：两者均为same-camera、different-PID、无fixed point；
+mask donor使用五region的mask面积、纵向中心与pose confidence做最近邻匹配。15,618条matched map的
+平均绝对差为area=`0.00757`、vertical center=`0.01440`、confidence=`0.01951`，避免把明显几何
+分布差异误记成CLIP语义敏感性。
+
+首次64图smoke在进入CLIP前被维度门禁拦截：384×128 RandomErasing mask尚未下采样到96×32
+anatomical mask grid。失败runner与donor JSON原样保留，无GPU计算、无result JSON。修复只把
+erasing mask用4×4 average pooling对齐到96×32；commit=`5277254bae1f9d18f1368ad4202aca7c9d223cc8`，
+脚本SHA=`03b8f707bc6f189dd3de34505af82e63f7ee71bd23d70b6e9663aee318afcd70`。
+
+第二次64图smoke=`CLIP_TEACHER_SMOKE_PASS`：
+
+1. 两种geometry的RGB/mask synthetic alignment逐元素exact；
+2. frozen ViT-L/14 hook contract均为raw `64×257×1024`、projected patch `64×256×768`；
+3. 同一batched input重复forward逐元素exact，所有arms finite；
+4. square-stretch / aspect-letterbox有效patch均非空，padding mask mass严格为0；
+5. 进程与8 workers退出，GPU恢复`2 MiB / 0%`，严格异常扫描PASS；
+6. result/donor/runner SHA分别为
+   `24c2551db53a77f451f49692d58a2a02e33b957ba0de6913c995ed3c7c60d77d`、
+   `27f31fa69ec223c4506218ce468b01a540882da70380ad85cd8449333c9d5a74`、
+   `7d006d1254ee0b17984f4b8b2ff1b254900689d66ad3e4efdf99ddd84ce359b7`。
+
+smoke中的correct macro top-1仅square=`4.38%`、letterbox=`3.44%`且margin为负，提示当前dense
+CLIP patch teacher可能无法直接绑定五类ontology；但64图smoke预注册只裁结构契约，不以其挑版本或
+下GO/NO-GO。下一步仍按协议跑完整15,618图teacher-only audit，以bootstrap、per-class confusion、
+wrong RGB/mask/text、flip、confidence与erasing全门禁封板；无论结果如何都不直接授权正式训练。
