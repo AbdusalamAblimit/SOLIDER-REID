@@ -795,6 +795,21 @@ finite。exact HEAD/config/tracked clean、唯一main+8 workers、4090约`8264 M
 e120前checkpoint=`0`，严格异常扫描命中`0`。继续自然训练，下次只从正式日志读取完整e100及后续
 新增评测。
 
+### e100完整评测与e109接手
+
+- e100完整query/gallery评测mAP/R1/R5/R10=`56.5/66.7/80.3/84.3`；
+- 同epoch exp387 clean D0=`56.9/67.1/79.6/83.8`，Semantic C0−D0=
+  `−0.4/−0.4/+0.7/+0.5`；同epoch exp389 HT0=`56.4/65.9/79.2/84.3`，Semantic C0−HT0=
+  `+0.1/+0.8/+1.1/+0.0`；
+- e100末Loss=`0.148`、Pose=`0.752`、Semantic/RegionMask/Presence/Q=
+  `0.292/0.158/0.026/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`6.604e-06`，
+  全部finite；评测后e101--e108自然完成，接手时已进入e109。
+
+e100继续呈mAP/R1略低于D0、R5/R10略高的混合模式，不能包装为全面提升。e109 iter40的
+Q=`0.692`、Reliability=`0.512`、GateAbs=`6.650e-06`，弱q与小router模式保持。exact HEAD/config/
+tracked clean、唯一main+8 workers、4090约`8394 MiB`且唯一任务、e120前checkpoint=`0`，严格异常
+扫描命中`0`，状态=`继续自然e120`。
+
 ### e90完整评测与e91接手
 
 - e90完整query/gallery评测mAP/R1/R5/R10=`56.6/67.1/80.3/85.1`；
