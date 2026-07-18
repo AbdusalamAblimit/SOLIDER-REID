@@ -294,6 +294,8 @@ class CleanTapfHt0(CleanTapfD0):
 
     def combine_states(self, early_state, late_state):
         combined = late_state
+        combined["early_consumer_field"] = early_state["consumer_field"]
+        combined["late_consumer_field"] = late_state["consumer_field"]
         combined["early_student_field"] = early_state["student_field"]
         combined["late_student_field"] = late_state["student_field"]
         combined["early_teacher_field"] = early_state["teacher_field"]

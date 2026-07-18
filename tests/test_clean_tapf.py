@@ -218,6 +218,16 @@ class CleanTapfUnitTest(unittest.TestCase):
         )
         self.assertEqual(combined["early_student_fraction"], 0.2)
         self.assertEqual(combined["late_student_fraction"], 0.2)
+        torch.testing.assert_close(
+            combined["early_consumer_field"],
+            0.8 * combined["early_teacher_field"]
+            + 0.2 * combined["early_student_field"],
+        )
+        torch.testing.assert_close(
+            combined["late_consumer_field"],
+            0.8 * combined["late_teacher_field"]
+            + 0.2 * combined["late_student_field"],
+        )
 
         early_parameter_ids = {
             id(parameter)
