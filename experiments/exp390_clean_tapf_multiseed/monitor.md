@@ -388,3 +388,13 @@ RE/loader/TTA protocol与约2倍 PSG consumer容量上，不能解释为旧 D0 �
   异常与AMP warning为`0`，e120前无checkpoint。
 
 B0-s2025必须自然跑满e120；不得按中间点停止或挑best。终审PASS后才能fresh启动D0-s2025。
+
+### 2026-07-18 05:19 UTC：e10/e20完整评测
+
+- e10 mAP/R1/R5/R10=`34.7/44.6/59.6/65.8`；
+- e20 mAP/R1/R5/R10=`38.8/50.0/63.4/69.3`；
+- e20评测后自然进入e21，现场e21 iter200/227 loss=`1.543`、Acc=`0.863`，finite；
+- exact HEAD/config SHA保持，tracked source clean；唯一main PID=`1220240`与8 workers，GPU只有该
+  main，约`6,930 MiB`；output仍只有train log，e120前无checkpoint；
+- runner/train log的严格数值异常、Traceback/RuntimeError/OOM与AMP warning边界扫描命中`0`。
+  两个中间点只记录seed2025轨迹，不用于早停、挑best或提前判断TAPF跨seed效应。
