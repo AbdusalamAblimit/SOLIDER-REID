@@ -3,7 +3,7 @@
 ## 当前状态
 
 - `PHASE 0A SEALED / PHASE 0B NAIVE TEACHER SEALED-NO-GO / B2-SI SEALED-PASS /
-  PHASE 0C SEMANTIC C0 SEALED-NO-GO`；
+  PHASE 0C SEMANTIC C0 SEALED-NO-GO / PHASE 0D FROZEN ATTRIBUTION SEALED`；
 - exp390与exp391均已封板，禁止重启、续训或把本实验记为exp391 Phase B/C；
 - 当前GPU任务：无；Semantic C0已自然跑满e120并完成只读终审，GPU=`2 MiB / 0%`；
 - final=`56.9/67.1/80.6/85.0`，相对clean D0=`−0.7/−0.6/−0.2/+0.4`，因此当前
@@ -954,8 +954,9 @@ state key中无CLIP/teacher/text prototype。相对同seed、同预训练初始�
 consumer0/1的L2轨迹分别为`1.86247/0.020724/0.030388/0.033860`，两router expert也均离开零初始化。
 RGB-only correct/shuffle/None/exploding descriptor逐tensor exact；两个consumer单独置零时final descriptor
 L2分别改变`0.001131/0.002968`；两router的zero-mask与zero-q输出均为逐tensorexact identity。
-8图state的support mean/std/min/max=`0.51172/0.01686/0.48159/0.53281`，两consumer gate-delta
-abs-mean=`3.606e-06/1.040e-05`，说明路径可达但执行信号弱。
+8图state把五slot混合统计时support mean/std/min/max=`0.51172/0.01686/0.48159/0.53281`，两consumer
+gate-delta abs-mean=`3.606e-06/1.040e-05`，说明路径可达但执行信号弱；该pooled std不能区分
+between-slot prior与同slot跨图动态，后者由Phase 0D单独审计。
 
 审计v1曾因把`context_projection`内的字符串`text`误报为text encoder而返回FAIL；这是审计器键名
 规则错误，不是checkpoint失败，v1证据保留且未改训练。修正为明确组件名后v2全部门禁PASS。v2
@@ -972,7 +973,41 @@ PC-MBCLS teacher、弱动态q readout与双router组合没有超过clean D0，�
 
 ## 2026-07-19 Phase 0D冻结拆因设计
 
-已新增`phase0d_protocol.md`，当前状态=`DESIGN FROZEN / AUDIT NO-START`。本阶段不训练，只在Semantic
-C0唯一final checkpoint上依次评测correct、static-slot-q、q-one、spatial-constant mask、slot-cycle、
-expert-mean、router0/1/all bypass。预注册`0.1 mAP`只用于单checkpoint近零归因，不作为论文显著性
-阈值；correct start/end descriptor与state SHA必须exact。当前远端无进程，GPU=`2 MiB/0%`。
+已新增`phase0d_protocol.md`。本阶段不训练，只在Semantic C0唯一final checkpoint上依次评测correct、
+static-slot-q、q-one、spatial-constant mask、slot-cycle、expert-mean、router0/1/all bypass。预注册
+`0.1 mAP`只用于单checkpoint近零归因，不作为论文显著性阈值；correct start/end descriptor与state
+SHA必须exact。
+
+## 2026-07-19 Phase 0D全验证集冻结拆因封板
+
+唯一只读进程自然完成全部10个pass，每个pass覆盖query+gallery共19,871图。correct-start/end均为
+`56.920063/67.058825/80.588233/85.022622`，descriptor逐tensor exact，模型state SHA前后均为
+`8ce9a1a0da07e33d4a8936b9726071de0653dca7656409ed14000c68468dd284`。全部arm相对correct：
+
+| arm | ΔmAP | ΔR1 | ΔR5 | ΔR10 |
+|---|---:|---:|---:|---:|
+| static-slot-q | `+0.000056` | `0` | `0` | `0` |
+| q-one | `−0.000060` | `0` | `0` | `0` |
+| spatial-constant-mask | `+0.000654` | `0` | `0` | `0` |
+| slot-cycle | `+0.000009` | `0` | `0` | `0` |
+| expert-mean | `−0.000092` | `0` | `0` | `0` |
+| router-0-bypass | `−0.000067` | `0` | `0` | `0` |
+| router-1-bypass | `−0.000029` | `0` | `0` | `0` |
+| all-router-bypass | `−0.000077` | `0` | `0` | `0` |
+
+五slot q全验证集均值为`0.532707/0.481671/0.509869/0.513475/0.521318`，同slot跨图std仅
+`0.000293/0.000163/0.000090/0.000121/0.000191`。因此此前8图pooled std=`0.01686`几乎全部来自
+固定slot均值差，不是sample-specific动态。所有干预远低于预注册`0.1 mAP`近零线，且rank排序完全
+不变。checkpoint审计中“单consumer置零会产生非零descriptor L2”只证明数值可达；本次完整检索审计
+证明该差异小到不能改变任何报告rank，all-router-bypass也近乎exact retrieval parity。
+
+script/result/runner SHA256分别为
+`fa58f0f59a6d84c415aca9479f076df71308d628a82d6b1cca526d5c6f9fe2ab`、
+`6c9eba824ca7d779d45c93e3761253fa17b049d82ab164766c539970323899c9`、
+`521bf90ab495523bb95b562086929ff02e22dd2cb52ec48c70442cd9f22f2942`。全部descriptor finite、
+correct start/end exact、state SHA exact、异常0，进程自然退出，GPU=`2 MiB/0%`。
+
+裁决：`PHASE 0D = SEALED / CURRENT SEMANTIC ROUTE RETRIEVAL-INERT`。当前失败不只是q较弱，而是
+整条semantic route在e120检索排序上近似失活；mask geometry、sample-specific q、slot binding与
+slot-specific expert均无可辨识边际贡献。下一机制不能只调q温度或复制stage，必须让语义路由从训练
+早期就获得有量级约束的可执行残差，并以all-router-bypass的final差值作为预注册门禁。

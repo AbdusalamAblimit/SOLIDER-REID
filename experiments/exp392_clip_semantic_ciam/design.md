@@ -228,7 +228,8 @@ tight-crop global CLS后macro top-1升到`44.688%`，image-only patch cluster达
 
 `exp392 = PHASE 0A SEALED / PHASE 0B NAIVE DENSE TEACHER SEALED-NO-GO /
 B2-SI PC-MBCLS SEALED-PASS / B2-Sv1 COUNTERFACTUAL CONSTRUCTION SEALED-FAIL /
-PHASE 0C SEMANTIC C0 SEALED-NO-GO`。B2-Sv1只失败在不可同时满足的connected-bbox/non-overlap/
+PHASE 0C SEMANTIC C0 SEALED-NO-GO / PHASE 0D RETRIEVAL-INERT SEALED`。B2-Sv1只失败在不可同时
+满足的connected-bbox/non-overlap/
 low-IoU构造，不能覆盖B2-SI五slot局部响应证据，也不能扩张成“CLIP或语义校准永久无效”。
 
 Semantic C0已按下述冻结设计自然跑满e120，final=`56.9/67.1/80.6/85.0`，相对clean D0=

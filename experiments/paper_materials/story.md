@@ -1921,8 +1921,8 @@ sample-specific单调响应。随后首次single-stage Semantic TAPF按完整e12
 
 这次失败的机制证据比单个分数更重要。checkpoint严格有限且完全不含teacher；两个semantic router
 都能改变final descriptor，NULL identity与RGB-only exact成立，所以不是实现没接上。真正的弱点是
-CLIP support经过标量q readout后只剩mean约`0.512`、std约`0.0169`的窄动态，q loss维持`0.692`，
-router更新也只有`10^-6–10^-5`量级。当前模型实际主要学到了coarse mask/presence，而不是足以区别
+CLIP support经过标量q readout后只剩mean约`0.512`、混合五slot pooled std约`0.0169`，q loss维持
+`0.692`，router更新也只有`10^-6–10^-5`量级。当前模型实际主要学到了coarse mask/presence，而不是足以区别
 static prior的强sample-specific语义证据。
 
 因此论文当前仍以exp390原子TAPF的三seed mAP-only弱GO为正面边界，不新增“CLIP语义提升”贡献。
@@ -1937,3 +1937,21 @@ exp392可作为方法动机和负归因链：
 和wrong binding拆清当前checkpoint；只有新的single-stage correct arm同时超过这些强对照与clean D0，
 才重写主故事并重新授权semantic multi-stage。当前Semantic C0的NO-GO只关闭本组合，不是对
 CLIP–TAPF的永久否定。
+
+## 2026-07-19：Phase 0D证明当前semantic route是“数值可达、检索失活”
+
+冻结全验证集反事实给出了比final负差更精确的解释。五slot同slot跨图q std实际只有
+`0.00009–0.00029`；把q换成slot均值或全1、把mask变成空间常量、循环错配slot、把五expert取均值，
+乃至旁路全部router，mAP变化绝对值都小于`0.0007`，R1/R5/R10完全不变。correct start/end descriptor
+与state SHA exact，排除了评测漂移。
+
+这要求论文区分两种“有效”：final checkpoint里两个consumer置零会产生非零descriptor L2，说明代码
+路径和参数不是dead；但这种差异不足以改变检索排序，因此不能称为有检索贡献。当前Semantic C0的
+route对final几乎是identity，D0差值也不能归因于CLIP语义执行。
+
+实现层面的关键断点是：CLIP loss监督anchor state，而state在router前detach；router只从global ReID
+loss学习，并以zero expert启动。结果是CLIP语义在输入端存在，却没有直接拥有执行残差的梯度，形成
+“拓扑深耦合、优化浅耦合”。后续故事若要升级，必须让centered CLIP局部视觉residual监督内部
+router latent/delta，同时保持不直接蒸馏final descriptor和推理RGB-only。新的正面证据至少要同时
+包括correct-vs-wrong evidence差、all-router-bypass final贡献和clean D0提升；否则exp392只保留为
+诚实的失败诊断，不进入方法贡献。

@@ -5138,9 +5138,9 @@ PC-MBCLS在128图五slot上通过局部support反事实，证明CLIP受监督CLS
 router均离开初始化，两个consumer都能改变final descriptor，RGB-only与NULL identity全部PASS；
 因此该负差不是训练崩溃、dead route、外部pose泄漏或checkpoint错误。
 
-**机制归因边界**：mask/presence loss分别降到`0.158/0.026`，但q loss停在`0.692`；终审support
-std仅`0.01686`，两个router gate-delta abs-mean仅`3.606e-06/1.040e-05`。当前student主要学到
-coarse mask/presence，而CLIP sample-specific support没有形成足够强的可执行动态。由于这是
+**机制归因边界**：mask/presence loss分别降到`0.158/0.026`，但q loss停在`0.692`；终审混合五slot
+的support pooled std=`0.01686`，两个router gate-delta abs-mean仅`3.606e-06/1.040e-05`。当前
+student主要学到coarse mask/presence，而CLIP sample-specific support没有形成足够强的可执行动态。由于这是
 teacher+readout+router bundled arm，不能把失败单独归因给CLIP，也不能用优于HT0证明CLIP增量。
 
 **决策**：`exp392 Phase 0C Semantic C0 = SEALED / CURRENT BUNDLED COMBINATION NO-GO`。
@@ -5153,3 +5153,25 @@ support teacher、弱动态q head与双router组合，不永久否定CLIP–TAPF
 五slot geometry、几乎常量的support，还是generic low-rank transform；随后只针对被证实的瓶颈设计
 扩大sample-specific support动态范围的teacher/readout。只有新single-stage同时建立correct相对
 static/wrong/generic control的因果差并超过clean D0，才授权semantic multi-stage。
+
+### [2026-07-19] 决策：Phase 0D确认整条semantic route在final检索上近似失活，停止调q小变体
+
+**冻结证据**：在同一Semantic C0 e120 checkpoint上，correct start/end全19,871图descriptor exact。
+static-slot-q、q-one、spatial-constant mask、slot-cycle、expert-mean、router0/1/all bypass的mAP变化
+绝对值全部小于`0.0007`，R1/R5/R10全部严格不变。尤其all-router-bypass仅`−0.000077 mAP`，说明
+checkpoint终审中的非零descriptor L2只是数值可达，不构成检索排序贡献。
+
+**q归因修正**：五slot均值不同，但同slot跨图std只有`0.00009–0.00029`；此前pooled std=`0.01686`
+主要测到between-slot prior，不能作为sample-specific CLIP信息证据。把q替换为slot常量或全1均不改变
+rank，精确mask geometry、state↔expert绑定和slot-specific expert也同样不可辨识。
+
+**决策**：`Phase 0D = SEALED / CURRENT SEMANTIC ROUTE RETRIEVAL-INERT`。禁止把下一步缩成temperature、
+BCE权重、prompt、mask细化或更多stage；这些变量都建立在“route已有检索燃料”的错误前提上。
+也不因此永久否定CLIP–TAPF：B2-SI仍证明CLIP CLS readout含局部响应，失败发生在把该响应转成训练期
+可执行残差的接口。
+
+**下一机制约束**：新single-stage必须显式防止zero-init router长期停在近identity，例如使用有界但
+非零的identity-safe residual scale、相对化CLIP target和route-contribution objective；preflight除
+gradient finite外，必须预注册真实训练早期all-router-bypass descriptor/retrieval surrogate gap，final
+仍以完整all-bypass mAP贡献为门禁。先写独立设计和强对照，再决定是否启动新训练；semantic
+multi-stage继续NO-START。

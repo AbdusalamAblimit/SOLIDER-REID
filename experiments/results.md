@@ -2276,9 +2276,9 @@ fresh运行自然e120 final如下：
 | Semantic C0 | 56.9 | 67.1 | 80.6 | 85.0 | `−0.7/−0.6/−0.2/+0.4` | `+0.0/+1.2/+0.6/+0.9` |
 
 相对official B0=`57.4/67.4/80.6/85.2`为`−0.5/−0.3/+0.0/−0.2`。e120末
-Semantic/RegionMask/Presence/Q=`0.292/0.158/0.026/0.692`，support在8图终审中的
+Semantic/RegionMask/Presence/Q=`0.292/0.158/0.026/0.692`，support在8图终审中混合五slot后的
 mean/std/min/max=`0.51172/0.01686/0.48159/0.53281`，两router gate-delta abs-mean仅
-`3.606e-06/1.040e-05`。这说明mask/presence学到了明显信号，但q仍是弱动态、router执行幅度很小。
+`3.606e-06/1.040e-05`。该pooled std包含固定slot均值差，不能直接当作同slot跨图动态。
 
 唯一checkpoint SHA256=`8f8e4a8af1280f17f736053a3068dfae0384ac54915f9c68fb0c779350c3638e`。
 231-state strict finite、teacher/CLIP不在state、anchor/q-head/两个consumer轨迹、RGB-only
@@ -2289,3 +2289,17 @@ correct/shuffle/None/exploding exact、两consumer final-descriptor可达和zero
 不能证明CLIP语义有效，因为对更直接的clean D0仍低`0.7 mAP`，且CLIP相关q动态范围不足。该结论只
 关闭当前PC-MBCLS teacher/readout/router组合，不否定CLIP–TAPF。下一步做必要的单变量拆因与机制
 修复；在single-stage语义因果未成立前，不启动balanced semantic multi-stage，不重跑或换seed救场。
+
+### Phase 0D：Semantic C0 final checkpoint冻结拆因
+
+全query+gallery 19,871图上，correct start/end exact=`56.920063/67.058825/80.588233/85.022622`。
+相对correct，static-slot-q、q-one、spatial-constant-mask、slot-cycle、expert-mean、router0/1/all-bypass
+的ΔmAP依次为`+0.000056/−0.000060/+0.000654/+0.000009/−0.000092/−0.000067/−0.000029/
+−0.000077`，所有ΔR1/R5/R10均严格为0。五slot同slot跨图q std仅
+`0.000293/0.000163/0.000090/0.000121/0.000191`；此前pooled std=`0.01686`主要由固定slot均值差
+构成，而非sample-specific CLIP动态。
+
+correct start/end descriptor exact、state SHA exact、全部descriptor finite、异常0。结果把归因进一步
+收紧：两个consumer在数值上可达final descriptor，但整条semantic route对e120检索排序近似失活；
+q、精确mask geometry、slot binding和slot-specific expert均无`0.1 mAP`级别的边际贡献。下一机制
+不能只调q或增加stage，必须先让semantic route本身形成有量级且经all-bypass验证的检索残差。

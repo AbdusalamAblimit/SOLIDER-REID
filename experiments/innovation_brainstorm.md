@@ -3574,8 +3574,9 @@ slot identity，CLIP提供每个slot的实例属性/支持度，而不是用一�
 ## 2026-07-19：Semantic C0负结果把瓶颈收紧到“窄动态support无法成为可执行语义变量”
 
 PC-MBCLS小样本反事实证明五slot readout会随局部遮挡单调变化，因此它不是完全错误的CLIP接口；但
-正式Semantic C0 final仍比clean D0低`0.7 mAP`。终审给出关键内部量：support均值约`0.512`、std仅
-`0.0169`，q loss停在`0.692`，两个router的gate-delta abs-mean只有`3.6e-06/1.0e-05`。与此同时
+正式Semantic C0 final仍比clean D0低`0.7 mAP`。终审给出关键内部量：support均值约`0.512`、混合
+五slot的pooled std=`0.0169`，q loss停在`0.692`，两个router的gate-delta abs-mean只有
+`3.6e-06/1.0e-05`。与此同时
 mask/presence确实学会、两个consumer也真实到达final descriptor。负结果因此不是“路径没跑”或
 “CLIP完全无局部信息”，而是**sample-specific CLIP信息在窄动态q标量中被压成近常量先验，随后又
 被小幅router稀释，难以相对D0提供新增可执行变量**。
@@ -3598,3 +3599,33 @@ mask/presence确实学会、两个consumer也真实到达final descriptor。负�
 因此CLIP–TAPF仍值得继续，但研究对象已从“给TAPF加CLIP teacher”进一步收紧为：**怎样让冻结
 视觉—语言模型的局部相对证据以非退化动态进入可反事实验证的ReID路由**。这比换prompt、调温度或
 复制更多stage更接近真正的机制贡献。
+
+## 2026-07-19：Phase 0D发现更深的耦合断点——CLIP监督停在anchor，router只靠ReID梯度近零启动
+
+全验证集拆因修正了前述统计解释：五slot各自跨图std只有`0.00009–0.00029`，`0.0169`几乎全是
+固定slot均值差。更关键的是，即便把q设为1、删除mask geometry、合并expert或直接旁路全部router，
+四项检索几乎完全不变；all-bypass只有`−0.000077 mAP`。所以当前问题不只是“q动态窄”，而是整条
+semantic route在final retrieval上近似identity。
+
+回看实现，原因具有结构性：CLIP的mask/presence/q loss只监督anchor；state在进入router前detach，
+这是为了避免ID loss把anchor改写成身份码。但router本身没有任何CLIP/局部语义objective，只能从
+global ReID loss间接得到梯度。与此同时每个router的slot expert从exact zero初始化；初始时
+token/context projection因乘到zero expert而拿不到有效梯度，只有expert先缓慢离零。最终虽然三组参数
+都“changed”，expert L2仍只有`0.012/0.019`，路由残差停在`10^-6–10^-5`。这是一种**拓扑上接入、
+梯度所有权上断开的伪深耦合**：CLIP决定输入state，却不直接约束执行该state的更新。
+
+因此下一版不能只扩大q动态。更合理的机制是把rich、centered的CLIP局部视觉证据直接监督router的
+内部slot latent/delta，而不是直接蒸馏final ReID descriptor：
+
+1. teacher输出每slot相对局部视觉residual（减去同图global或slot prior），保留方向和幅度，不压成
+   0.5附近单标量；
+2. student anchor预测对应低维evidence code，router的gathered context与该code共同生成slot delta；
+3. 对router latent/delta增加训练期internal alignment或ranking objective，让CLIP梯度真正拥有
+   executable mediator，同时仍对backbone/ID descriptor保持隔离；
+4. 用ReZero式非零branch+零标量，或极小非零residual scale替代zero-expert冷启动，并在preflight验证
+   token/context/expert从首个finite step都有梯度；
+5. final必须同时通过correct-vs-wrong evidence和all-router-bypass贡献，防止再次出现“参数更新但
+   retrieval-inert”。
+
+这个修复仍然是CLIP与TAPF深耦合，但耦合对象从弱q门控改成**CLIP-owned executable local residual**。
+它不需要恢复多stage；先在single-stage证明route有燃料和语义反事实，再讨论balanced multi-stage。
