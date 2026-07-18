@@ -54,4 +54,4 @@ TEST:
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-OUTPUT_DIR: './log/occluded_duke/exp390_clean_swin_tiny_b0_s4321'
+OUTPUT_DIR: './log/occluded_duke/exp390_clean_swin_tiny_b0_s4321_valid'

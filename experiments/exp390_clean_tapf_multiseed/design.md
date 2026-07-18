@@ -22,7 +22,7 @@ headline 必须降级；不得挑选正 seed、best checkpoint 或中途 epoch�
 
 | 顺序 | arm | seed | output |
 |---|---|---:|---|
-| 1 | official B0 | 4321 | `log/occluded_duke/exp390_clean_swin_tiny_b0_s4321` |
+| 1 | official B0 | 4321 | `log/occluded_duke/exp390_clean_swin_tiny_b0_s4321_valid` |
 | 2 | clean D0 | 4321 | `log/occluded_duke/exp390_clean_swin_tiny_d0_s4321` |
 | 3 | official B0 | 2025 | `log/occluded_duke/exp390_clean_swin_tiny_b0_s2025` |
 | 4 | clean D0 | 2025 | `log/occluded_duke/exp390_clean_swin_tiny_d0_s2025` |

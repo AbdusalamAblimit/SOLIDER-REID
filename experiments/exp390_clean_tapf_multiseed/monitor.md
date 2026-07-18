@@ -19,7 +19,7 @@
 
 ## Config 静态门禁
 
-- B0-s4321 SHA256=`71d43aa3be8657f8afddb2211f9de2430fa7963dab3793555e2a175bc1a0d8cb`；
+- B0-s4321 SHA256=`5cbf30f2129c4b55a9677f5025d96c2bddb75dffffd7d2d9ff3802097fc282ab`；
 - D0-s4321 SHA256=`979c897da79327bd8ecc04fcc4b370f0f5ad6b318170fe3afec5594a5c769711`；
 - B0-s2025 SHA256=`53a7c895c39174fc288655bbb35206597c6d681c2f9bc89adb1a283e82521605`；
 - D0-s2025 SHA256=`56b2a30fd1856d2dc1077df013cc5d4bab9312be5488f25e1fe7dfa882263116`；
@@ -147,8 +147,8 @@ runner 路径重新为空，但必须使用新 execution commit/bundle 与新的
   `3295f49ee21fabaa528d1f23b556dc67569c0cf7ff4c220d1f02d3389e85b8ec`，bundle HEAD exact；
 - 相对失效 execution `de604a6`，运行边界只改变两个 B0 config 中的 official teacher choice/path；
   D0 config、模型、数据、loss、processor、optimizer、增强与测试路径均未改变；
-- 修正后 B0-s4321/B0-s2025 config SHA256 分别为
-  `71d43aa3be8657f8afddb2211f9de2430fa7963dab3793555e2a175bc1a0d8cb` 与
+- 修正并为有效重启分配独立 output 后，B0-s4321/B0-s2025 config SHA256 分别为
+  `5cbf30f2129c4b55a9677f5025d96c2bddb75dffffd7d2d9ff3802097fc282ab` 与
   `53a7c895c39174fc288655bbb35206597c6d681c2f9bc89adb1a283e82521605`；
 - B0-s4321 相对 pre-TAPF `d4fa227` 的同 seed 10-step CUDA/AMP JSON 再次逐字节 exact，双侧
   SHA256=`44033069cd094961f5c3082864d66b47d5130dc317808a7bf09152a15f5c3467`；
@@ -172,3 +172,7 @@ train + e1 eval + checkpoint 自然结束：
 重新门禁全部 PASS。下一步必须从新 bundle 建立全新 formal repo，使用与 quarantine 不同的新
 output/runner 名称；启动前再次核对 exact HEAD/config/teacher、tracked source、GPU 与路径不存在。
 这才计作 B0-s4321 的首次有效正式启动。
+
+为保证无效 quarantine 与有效运行路径永不重叠，B0-s4321 的自包含 config output 已进一步固定为
+`log/occluded_duke/exp390_clean_swin_tiny_b0_s4321_valid`；此处只改 output 名称，不改变上述已通过
+smoke 的任何训练/eval 字段。必须以包含该最终 config 的新 execution commit/bundle 启动。
