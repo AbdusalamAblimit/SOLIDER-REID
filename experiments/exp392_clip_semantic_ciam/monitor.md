@@ -794,3 +794,18 @@ e30相对D0/HT0仍为正负混合且mAP偏弱的中间轨迹，不用于早停�
 现场Semantic/RegionMask/Presence/Q=`0.305/0.170/0.052/0.692`、GateAbs=`1.133e-05`，Q继续弱
 动态，mask/presence继续下降。exact HEAD/config/tracked clean、唯一main+8 workers、4090约
 `8392 MiB`且唯一任务、e120前checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
+
+### e40完整评测与e48接手
+
+- e40完整query/gallery评测mAP/R1/R5/R10=`49.4/59.2/74.4/79.3`；
+- 同epoch exp387 clean D0=`50.0/60.7/76.2/81.0`，Semantic C0−D0=
+  `−0.6/−1.5/−1.8/−1.7`；同epoch exp389 HT0=`49.0/59.3/74.0/79.0`，Semantic C0−HT0=
+  `+0.4/−0.1/+0.4/+0.3`；
+- e40末Loss=`0.358`、Pose=`0.772`、Semantic/RegionMask/Presence/Q=
+  `0.304/0.169/0.049/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`1.138e-05`，
+  全部finite；评测后e41--e47自然完成，接手时已进入e48。
+
+e40相对D0全面偏低、相对HT0近零混合，仍只是中间轨迹。e48 iter20的Q=`0.692`、Reliability=
+`0.512`、GateAbs=`1.025e-05`，语义q与router幅度继续偏弱但finite，禁止据此修改运行或提前裁决。
+exact HEAD/config/tracked clean、唯一main+8 workers、4090约`8288 MiB`且唯一任务、e120前
+checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
