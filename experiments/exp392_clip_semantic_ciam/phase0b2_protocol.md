@@ -212,6 +212,35 @@ coverage exact、finite、macro top-1 point `>=35%`、五类top-1 point均`>20%`
 margin point均`>0`；通过只授权B2-I CPU readout比较。未来全train teacher-only仍使用原PID-cluster
 lower-bound门禁，不能用128图点估计替代。
 
+#### B2-P 失败后的实际语义对象审计：B2-SC -> B2-SI
+
+B2-P的128图结果显示disjoint phrase能把upper-leg从约`18%`提高到`30%`，但arms仍严格`0%`，
+因此五类part-name诊断不能作为全slot readout gate继续使用，也不得再试第二组同义词。该失败不授权
+忽略arms，也不否定原始teacher假设：pose已经固定slot identity，最终teacher需要回答的是该slot当前
+是否有可执行视觉证据，而不是再次猜slot name。
+
+因此后续顺序改为两个仍然单变量的零训练审计：
+
+1. `B2-SC crop-support feasibility`：固定B2-O2 hard-owner、region-crop global CLS、RGB、
+   geometry、CLIP和每slot crop，只把五类part-name目标替换为原第五节预注册的slot-conditioned
+   visible/occluded二分类；readout不变；
+2. `B2-SI support-readout`：只有B2-SC通过后，固定同一support任务、RGB、mask和文本，唯一把
+   crop-global readout替换为PC-MBCLS，并保留crop结果为reference。
+
+B2-SC使用原始crop bbox固定几何，不因遮挡重算bbox；在每个有效slot support内以固定坐标顺序构造
+`25%/50%/75%`三档嵌套遮挡，首验只用CLIP mean replacement，避免把材质变量一起带入。128图前先做
+8图CPU contract。smoke必须满足：
+
+- 0/25/50/75四档coverage exact、finite、repeat exact；
+- 每slot实际support overlap严格递增，目标误差`<=1/support_pixels`；
+- macro以及每slot的`Spearman(overlap, -q_visible) > 0`；
+- 每slot `mean(q_visible@0 - q_visible@75) > 0`；
+- 至少三档相邻宏平均响应严格单调。
+
+通过只授权B2-SI；完整B2-S仍需CLIP-mean、随机纹理和different-PID CutMix三类遮挡、non-overlap
+control、wrong RGB/mask/text、flip与PID-cluster bootstrap全部门禁。B2-SC失败才是当前
+slot-support语义对象的直接NO-GO，不得用appearance任务救场。
+
 ### B2-I：只改 readout 接口
 
 固定B2-O ontology、RGB、五个part-name prototypes、geometry和指标，只比较：

@@ -360,3 +360,32 @@ prompt语义混淆与ontology是独立问题。result/runner SHA256分别为
 裁决=`B2_O2_ONTOLOGY_SMOKE_PASS`，hard-owner ontology冻结。下一步只做一次`B2-P prompt-only`：
 删除跨slot umbrella term并使用预注册互斥解剖词表；mask/crop/readout/CLIP均不动。正式训练与GPU
 teacher-only全量仍为`NO-START`。
+
+## 2026-07-18 Phase 0B2-P prompt-only 封板
+
+B2-P实现commit=`ed2f9ce`，脚本SHA256=
+`b0d5ce6a53e94d09fa5d15c338392ea31437eee036299256c424ed30489028ca`，prompt payload SHA256=
+`a2db3121860210f8abc2184eabc8c501f87fd6a98d5b0759e32c92b795d7dbb2`。B2-O2 hard-owner、
+crop、RGB、CLIP、四template与样本全不变，只把五个region phrase替换为预注册的互斥解剖词表。
+
+8图CPU smoke完成40 crops，coverage/finite/exact-zero ontology均PASS，macro top-1=`57.5%`，
+但arms=`0%`、upper-leg=`25%`且二者margin为负，verdict=`B2_P_SMOKE_FAIL`。未按1个PID提前裁决，
+继续自然完成预注册128图。8图result/runner SHA256分别为
+`e20fff30bad439cfb94c4935c6c3cdf341ce3425155bac4b898bea8aa616e73e`/
+`55b8fc6fa0055752843d4c3f6f263178e74f510719c40333db9b38ba08978f2b`。
+
+128图CPU结果：639 crops、wall=`2:30.14`、maxRSS=`3,708,888 KiB`，overlap继续
+`0/0/0`、coverage exact、finite；macro top-1=`51.57% [47.30,55.83]`。分项为
+head/torso/arms/upper-leg/lower-leg=`93.08/56.38/0.00/30.17/78.21%`，raw cosine margin=
+`+0.02710/+0.00043/-0.02603/-0.00375/+0.01060`。upper-leg相对原prompt改善，证明prompt变量
+真实生效；arms仍严格0且负margin，不能通过同义词消歧。verdict=`B2_P_SMOKE_FAIL`，
+result/runner SHA256分别为
+`8e18d141ffff182851e468b0b3aa16d9730dcd5bafd80d44d7c2e4367212d3fc`/
+`60fc74c9ba96f9279b09e7028fb77065ec48df69d3bbe75cc10c504cc28ed319`。运行前后4090=
+`2 MiB/0%`，无残留进程。
+
+裁决=`B2_P_PART_NAME_DIAGNOSTIC_NO_GO`，禁止继续prompt搜索，也不把arms删除或合并。该裁决只
+关闭“五类part-name作为readout gate”，不关闭原设计的slot-conditioned support teacher。下一步按
+`B2-SC crop-support feasibility -> B2-SI support-readout`重新对齐真实语义对象：先保持crop-global
+readout，只测三档嵌套局部遮挡是否让每slot的`q_visible`单调下降；通过后才把readout换成PC-MBCLS。
+正式训练和GPU teacher-only全量继续`NO-START`。
