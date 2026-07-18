@@ -530,3 +530,16 @@ target bbox统计、前文仍残留未限定wrong-slot的CutMix措辞。三项�
 不授权8图CLIP、4090或正式训练。下一步必须对15,618图生成并封板target map、same-slot/wrong-slot/
 wrong-mask donor map、连通矩形non-overlap可行率、24px dilation exact、y-error与target/non-target
 几何泄漏分布；只有全门禁PASS后才从full map抽取覆盖五slot的8图CPU contract。
+
+### Full pose-only feasibility 启动前审查
+
+新增`phase0b2_full_pose_feasibility.py`，只复现B2-SI的path-hash geometry与hard-owner support，读取
+official train list和exp386 strict pose artifact；不加载RGB tensor、CLIP、ReID、optimizer或CUDA。
+它在全15,618图上一次生成balanced target、same-slot appearance/wrong-mask donor、wrong-slot
+occluder donor及connected overlap/control map，并把逐record实际增强后wrong-mask IoU写入冻结map。
+
+本地uv已通过py_compile、40样本balanced donor synthetic和20样本connected/control synthetic；
+独立只读代码终审先后拦截并修正了output碰撞、FAIL map伪FROZEN、逐条IoU缺失三项阻塞。最终脚本
+SHA256=`eff0293fc572169343e2e0ec0dd150c944465c6291745cd4e485e8817ffb558c`，终审裁决只授权首次
+全15,618图CPU-only pose feasibility。8图CLIP、4090、Phase 0C和训练继续`NO-START`；full运行后还须
+终审进程退出、result/map/runner SHA、15,618 records、PASS与map SHA绑定及执行repo tracked clean。
