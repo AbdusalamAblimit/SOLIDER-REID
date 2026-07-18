@@ -5104,3 +5104,23 @@ exp390三seed mAP-only弱GO，不因本审计被全盘否定；但论文不得�
 RGB/mask/text；否则只否定当前teacher定义或粒度，不永久否定换粒度后的CLIP方向。即使0B通过，
 仍需Phase 0C证明NULL identity、semantic mismatch、梯度所有权和generic-router强对照，才允许
 semantic single-stage；多阶段继续以后者为直接基线，不能续跑exp391。
+
+### [2026-07-18] 决策：Phase 0B否决naive patch-text teacher，先重构CLIP局部读出而非启动训练
+
+**结果**：全15,618图上，square/aspect-letterbox的correct macro top-1仅`2.692%/4.637%`，
+expected margin=`−0.11349/−0.11099`。channel-shuffle top-1=`16.107%/15.511%`，wrong-text=
+`29.996%/33.546%`；correct相对matched wrong mask、shuffle和wrong text的paired margin在两种
+geometry下全部显著为负。confidence、synthetic-erasing与flip top-1门禁也失败。
+
+**实现归因**：该结果不是pose坐标、hook、投影、label order或resize插值bug。末block hook经官方
+`ln_post+proj`后与OpenCLIP `output_tokens`逐元素exact；pose region y顺序正确；bilinear→bicubic
+几乎不变。同一mask与prompt改用tight-crop global CLS后，小样本macro top-1从`3–5%`升至
+`44.688%`；image-only patch cluster在全量达到`52.8–60.0%`。因此真正错误是把CLIP未直接受
+contrastive text监督的raw local patch方向当成了可命名body-part teacher。它含局部结构，但不在
+正确text坐标系。
+
+**决策**：Phase 0B=`SEALED / CURRENT_CLIP_TEACHER_NO_GO`，Phase 0C与所有正式训练保持
+`NO-START`。不得靠改温度、挑prompt、挑geometry或用wrong-text更高结果救场；也不得把它写成
+“CLIP无效”或永久否定CLIP后的多阶段。下一步只授权新的teacher接口研究：优先比较共享早期trunk、
+用pose约束多个后段block的CLS readout，与可缓存的region-crop global CLS；arms/upper-leg ontology
+必须先消除重叠。新定义需独立设计和全teacher-only反事实，不能覆盖或重复当前封板结果。

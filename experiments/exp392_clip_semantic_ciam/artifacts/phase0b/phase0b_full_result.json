@@ -1,0 +1,3366 @@
+{
+  "audit_scope": "full",
+  "donor_summary": {
+    "matched_mask": {
+      "absolute_delta_mean_by_feature": {
+        "mask_area": 0.0075695578285738686,
+        "pose_confidence": 0.019505944705875595,
+        "vertical_center": 0.01440261880350339
+      },
+      "count": 15618,
+      "different_pid_fraction": 1.0,
+      "matching_features": [
+        "mask_area",
+        "vertical_center",
+        "pose_confidence"
+      ],
+      "no_fixed_points": true,
+      "same_camera_fraction": 1.0,
+      "standardized_distance_mean": 2.167775193512262,
+      "standardized_distance_median": 1.7817807334256388,
+      "standardized_distance_p95": 4.440249701435585
+    },
+    "rgb": {
+      "count": 15618,
+      "different_pid_fraction": 1.0,
+      "no_fixed_points": true,
+      "same_camera_fraction": 1.0
+    }
+  },
+  "execution": {
+    "audit_script_sha256": "03b8f707bc6f189dd3de34505af82e63f7ee71bd23d70b6e9663aee318afcd70",
+    "batch_size": 32,
+    "clip_checkpoint": "/home/afr/SOLIDER-REID/clip_l14_openclip.safetensors",
+    "clip_checkpoint_sha256": "9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e",
+    "data_root": "/mnt1/afrdata",
+    "donor_map_sha256": "27f31fa69ec223c4506218ce468b01a540882da70380ad85cd8449333c9d5a74",
+    "open_clip_version": "2.32.0",
+    "pose_artifact": "/mnt1/afrderived/exp386_occluded_duke_vitpose_huge_train",
+    "pose_manifest_sha256": "cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8",
+    "repo_root": "/home/afr/SOLIDER-REID-exp392-phase0b-5277254",
+    "runtime_sha256": {
+      "datasets/bases.py": "03d231558f46264e4cff0c251b9b728ab4971232ed6c4bb7324ce1964f139c2c",
+      "datasets/occluded_duke.py": "f0e7b25e75251643430b699d9c9969fae207c0a85c48855cd0404d61a4228f8e",
+      "datasets/pose_targets.py": "42f6e35eff2ad572445143cb3ecc5b6a22d856facc4453b989411300dec22624"
+    },
+    "sample_manifest_sha256": "93a120d3c23cf547481a91de83dff58e7c38cdd37f97de4f3d8fefc75b98bfac",
+    "samples": 15618,
+    "seed": 20260718,
+    "source_commit": "5277254bae1f9d18f1368ad4202aca7c9d223cc8",
+    "torch_version": "1.13.1",
+    "workers": 8
+  },
+  "formal_training_authorized": false,
+  "geometries": {
+    "aspect_letterbox": {
+      "arms": {
+        "channel_shuffle_mask": {
+          "confusion": [
+            [
+              5066,
+              0,
+              0,
+              9412,
+              1127
+            ],
+            [
+              5253,
+              1,
+              0,
+              9234,
+              1130
+            ],
+            [
+              15361,
+              4,
+              5,
+              242,
+              6
+            ],
+            [
+              15574,
+              6,
+              2,
+              35,
+              0
+            ],
+            [
+              3392,
+              1379,
+              251,
+              3590,
+              7005
+            ]
+          ],
+          "entropy_mean": 1.5764096277016362,
+          "expected_margin": {
+            "ci95_high": -0.08313015488715006,
+            "ci95_low": -0.08371307943319656,
+            "count": 15618,
+            "mean": -0.08342113080304703,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.15703915354078626,
+            "ci95_low": 0.1531949780168182,
+            "count": 15618,
+            "mean": 0.15511482477483243,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.5846295175457144,
+              "margin": -0.01592414826154709,
+              "region": "head_face",
+              "top1": 0.32463952898979187
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5842553588654222,
+              "margin": -0.10060397535562515,
+              "region": "torso",
+              "top1": 6.402868166333064e-05
+            },
+            {
+              "count": 15618,
+              "entropy": 1.575214802836466,
+              "margin": -0.1190200224518776,
+              "region": "arms_hands",
+              "top1": 0.00032014341559261084
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5373237682464818,
+              "margin": -0.17721927165985107,
+              "region": "upper_legs",
+              "top1": 0.0022411474492400885
+            },
+            {
+              "count": 15617,
+              "entropy": 1.600630581247293,
+              "margin": -0.0042935144156217575,
+              "region": "lower_legs_feet",
+              "top1": 0.44854965806007385
+            }
+          ]
+        },
+        "correct": {
+          "confusion": [
+            [
+              3379,
+              1379,
+              251,
+              3590,
+              7006
+            ],
+            [
+              5078,
+              0,
+              0,
+              9413,
+              1127
+            ],
+            [
+              5253,
+              1,
+              0,
+              9234,
+              1130
+            ],
+            [
+              15360,
+              4,
+              5,
+              242,
+              6
+            ],
+            [
+              15574,
+              6,
+              2,
+              35,
+              0
+            ]
+          ],
+          "entropy_mean": 1.5764062189386598,
+          "expected_margin": {
+            "ci95_high": -0.11062971810469137,
+            "ci95_low": -0.11136786706743836,
+            "count": 15618,
+            "mean": -0.11099272928553164,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.047765398898706624,
+            "ci95_low": 0.04507619413497247,
+            "count": 15618,
+            "mean": 0.0463695735689589,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.6006230488369013,
+              "margin": -0.027247892692685127,
+              "region": "head_face",
+              "top1": 0.21653316915035248
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5846338859195874,
+              "margin": -0.10327867418527603,
+              "region": "torso",
+              "top1": 0.0
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5842553588654222,
+              "margin": -0.1027272567152977,
+              "region": "arms_hands",
+              "top1": 0.0
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5752126114348732,
+              "margin": -0.1035352423787117,
+              "region": "upper_legs",
+              "top1": 0.015495933592319489
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5373237682464818,
+              "margin": -0.21811771392822266,
+              "region": "lower_legs_feet",
+              "top1": 0.0
+            }
+          ]
+        },
+        "fixed_bands": {
+          "confusion": [
+            [
+              8852,
+              0,
+              0,
+              6753,
+              0
+            ],
+            [
+              6568,
+              0,
+              0,
+              9048,
+              2
+            ],
+            [
+              14215,
+              0,
+              0,
+              1403,
+              0
+            ],
+            [
+              15615,
+              0,
+              0,
+              2,
+              0
+            ],
+            [
+              15541,
+              0,
+              0,
+              76,
+              0
+            ]
+          ],
+          "entropy_mean": 1.591461032061165,
+          "expected_margin": {
+            "ci95_high": -0.06789065926077667,
+            "ci95_low": -0.06808081871160744,
+            "count": 15618,
+            "mean": -0.06798622072967124,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.11504247236095103,
+            "ci95_low": 0.11179376360609551,
+            "count": 15618,
+            "mean": 0.11339053229180004,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.5943825710235737,
+              "margin": 0.0018790459726005793,
+              "region": "head_face",
+              "top1": 0.5672540664672852
+            },
+            {
+              "count": 15618,
+              "entropy": 1.586807712859389,
+              "margin": -0.09709162265062332,
+              "region": "torso",
+              "top1": 0.0
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5889151959044192,
+              "margin": -0.10043511539697647,
+              "region": "arms_hands",
+              "top1": 0.0
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5919687414250783,
+              "margin": -0.05096409469842911,
+              "region": "upper_legs",
+              "top1": 0.0001280655706068501
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5952336449666382,
+              "margin": -0.09325198084115982,
+              "region": "lower_legs_feet",
+              "top1": 0.0
+            }
+          ]
+        },
+        "horizontal_flip": {
+          "confusion": [
+            [
+              3357,
+              1414,
+              250,
+              3589,
+              6995
+            ],
+            [
+              5066,
+              0,
+              1,
+              9408,
+              1143
+            ],
+            [
+              5251,
+              2,
+              1,
+              9272,
+              1092
+            ],
+            [
+              15382,
+              5,
+              7,
+              222,
+              1
+            ],
+            [
+              15568,
+              8,
+              2,
+              39,
+              0
+            ]
+          ],
+          "entropy_mean": 1.5762575125693234,
+          "expected_margin": {
+            "ci95_high": -0.1109627262187781,
+            "ci95_low": -0.1116930102648645,
+            "count": 15618,
+            "mean": -0.11131121410102984,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.04721944764587869,
+            "ci95_low": 0.04448691680539549,
+            "count": 15618,
+            "mean": 0.045853075511162335,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.6006186696016351,
+              "margin": -0.027279647067189217,
+              "region": "head_face",
+              "top1": 0.21512335538864136
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5845591221551898,
+              "margin": -0.10343222320079803,
+              "region": "torso",
+              "top1": 0.0
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5841394709114505,
+              "margin": -0.10303632915019989,
+              "region": "arms_hands",
+              "top1": 6.402868166333064e-05
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5750284378957702,
+              "margin": -0.10400789976119995,
+              "region": "upper_legs",
+              "top1": 0.014215278439223766
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5369595449563553,
+              "margin": -0.2187349796295166,
+              "region": "lower_legs_feet",
+              "top1": 0.0
+            }
+          ]
+        },
+        "post_erasing": {
+          "confusion": [
+            [
+              3413,
+              1277,
+              231,
+              4724,
+              5960
+            ],
+            [
+              5727,
+              1,
+              0,
+              9176,
+              714
+            ],
+            [
+              5731,
+              2,
+              0,
+              9153,
+              732
+            ],
+            [
+              15119,
+              2,
+              4,
+              486,
+              6
+            ],
+            [
+              15511,
+              9,
+              3,
+              94,
+              0
+            ]
+          ],
+          "entropy_mean": 1.578565500727184,
+          "expected_margin": {
+            "ci95_high": -0.10514949395486688,
+            "ci95_low": -0.10591961316943369,
+            "count": 15618,
+            "mean": -0.10552925420862608,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.05144128569599181,
+            "ci95_low": 0.04846907414521706,
+            "count": 15618,
+            "mean": 0.049942374183634265,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.5996936799450228,
+              "margin": -0.02718360349535942,
+              "region": "head_face",
+              "top1": 0.2187119573354721
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5856239585771041,
+              "margin": -0.10143247246742249,
+              "region": "torso",
+              "top1": 6.402868166333064e-05
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5851072480094692,
+              "margin": -0.10210081934928894,
+              "region": "arms_hands",
+              "top1": 0.0
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5774763089572115,
+              "margin": -0.09349208325147629,
+              "region": "upper_legs",
+              "top1": 0.03111993335187435
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5449416720419378,
+              "margin": -0.2033829540014267,
+              "region": "lower_legs_feet",
+              "top1": 0.0
+            }
+          ]
+        },
+        "text_only_onehot": {
+          "confusion": [
+            [
+              15605,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              15618,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              15618,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              15617,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              15617
+            ]
+          ],
+          "entropy_mean": 1.1052408446371425e-10,
+          "expected_margin": {
+            "ci95_high": 1.0,
+            "ci95_low": 1.0,
+            "count": 15618,
+            "mean": 1.0,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 1.0,
+            "ci95_low": 1.0,
+            "count": 15618,
+            "mean": 1.0,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.1052408446371421e-10,
+              "margin": 1.0,
+              "region": "head_face",
+              "top1": 1.0
+            },
+            {
+              "count": 15618,
+              "entropy": 1.1052408446371422e-10,
+              "margin": 1.0,
+              "region": "torso",
+              "top1": 1.0
+            },
+            {
+              "count": 15618,
+              "entropy": 1.1052408446371422e-10,
+              "margin": 1.0,
+              "region": "arms_hands",
+              "top1": 1.0
+            },
+            {
+              "count": 15617,
+              "entropy": 1.1052408446371421e-10,
+              "margin": 1.0,
+              "region": "upper_legs",
+              "top1": 1.0
+            },
+            {
+              "count": 15617,
+              "entropy": 1.1052408446371421e-10,
+              "margin": 1.0,
+              "region": "lower_legs_feet",
+              "top1": 1.0
+            }
+          ]
+        },
+        "text_only_prototype": {
+          "confusion": [
+            [
+              15605,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              15618,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              15618,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              15617,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              15617
+            ]
+          ],
+          "entropy_mean": 0.8529380537807751,
+          "expected_margin": {
+            "ci95_high": 0.6128779716501582,
+            "ci95_low": 0.6128338887539527,
+            "count": 15618,
+            "mean": 0.6128536985699314,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 1.0,
+            "ci95_low": 1.0,
+            "count": 15618,
+            "mean": 1.0,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 0.7748067096487431,
+              "margin": 0.7366006970405579,
+              "region": "head_face",
+              "top1": 1.0
+            },
+            {
+              "count": 15618,
+              "entropy": 0.8098376552341601,
+              "margin": 0.7252582311630249,
+              "region": "torso",
+              "top1": 1.0
+            },
+            {
+              "count": 15618,
+              "entropy": 0.7358936784893775,
+              "margin": 0.7558518052101135,
+              "region": "arms_hands",
+              "top1": 1.0
+            },
+            {
+              "count": 15617,
+              "entropy": 0.9599339229815043,
+              "margin": 0.4254179298877716,
+              "region": "upper_legs",
+              "top1": 1.0
+            },
+            {
+              "count": 15617,
+              "entropy": 0.984168521455402,
+              "margin": 0.42122790217399597,
+              "region": "lower_legs_feet",
+              "top1": 1.0
+            }
+          ]
+        },
+        "uniform_mask": {
+          "confusion": [
+            [
+              15374,
+              0,
+              0,
+              230,
+              1
+            ],
+            [
+              15386,
+              0,
+              0,
+              231,
+              1
+            ],
+            [
+              15386,
+              0,
+              0,
+              231,
+              1
+            ],
+            [
+              15385,
+              0,
+              0,
+              231,
+              1
+            ],
+            [
+              15385,
+              0,
+              0,
+              231,
+              1
+            ]
+          ],
+          "entropy_mean": 1.5893690091397359,
+          "expected_margin": {
+            "ci95_high": -0.0587620755540716,
+            "ci95_low": -0.0591567523507979,
+            "count": 15618,
+            "mean": -0.05896201003346842,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.19994770990737187,
+            "ci95_low": 0.19976520147692833,
+            "count": 15618,
+            "mean": 0.19985806974858075,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.589372437157568,
+              "margin": 0.0613289438188076,
+              "region": "head_face",
+              "top1": 0.9851970672607422
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5893680526166232,
+              "margin": -0.10400337725877762,
+              "region": "torso",
+              "top1": 0.0
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5893680526166232,
+              "margin": -0.10003171861171722,
+              "region": "arms_hands",
+              "top1": 0.0
+            },
+            {
+              "count": 15617,
+              "entropy": 1.589368253032215,
+              "margin": -0.06209874898195267,
+              "region": "upper_legs",
+              "top1": 0.014791573397815228
+            },
+            {
+              "count": 15617,
+              "entropy": 1.589368253032215,
+              "margin": -0.0898713693022728,
+              "region": "lower_legs_feet",
+              "top1": 6.403278530342504e-05
+            }
+          ]
+        },
+        "wrong_mask": {
+          "confusion": [
+            [
+              4520,
+              910,
+              151,
+              5335,
+              4689
+            ],
+            [
+              5379,
+              4,
+              0,
+              9320,
+              915
+            ],
+            [
+              5032,
+              6,
+              0,
+              9692,
+              888
+            ],
+            [
+              15109,
+              4,
+              4,
+              485,
+              15
+            ],
+            [
+              15501,
+              14,
+              4,
+              97,
+              1
+            ]
+          ],
+          "entropy_mean": 1.5825116491597742,
+          "expected_margin": {
+            "ci95_high": -0.09586735993969478,
+            "ci95_low": -0.0966172132190276,
+            "count": 15618,
+            "mean": -0.0962586280898754,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.06577890895121016,
+            "ci95_low": 0.06264555854356084,
+            "count": 15618,
+            "mean": 0.0641652793784949,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.5985054991461645,
+              "margin": -0.02114577405154705,
+              "region": "head_face",
+              "top1": 0.28965073823928833
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5859926320739826,
+              "margin": -0.09897888451814651,
+              "region": "torso",
+              "top1": 0.0002561147266533226
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5867999058408218,
+              "margin": -0.09839554876089096,
+              "region": "arms_hands",
+              "top1": 0.0
+            },
+            {
+              "count": 15617,
+              "entropy": 1.579861093408799,
+              "margin": -0.0882270485162735,
+              "region": "upper_legs",
+              "top1": 0.03105590119957924
+            },
+            {
+              "count": 15617,
+              "entropy": 1.561410907412105,
+              "margin": -0.17449237406253815,
+              "region": "lower_legs_feet",
+              "top1": 6.403278530342504e-05
+            }
+          ]
+        },
+        "wrong_rgb": {
+          "confusion": [
+            [
+              5394,
+              729,
+              78,
+              5275,
+              4129
+            ],
+            [
+              6873,
+              3,
+              0,
+              8031,
+              711
+            ],
+            [
+              6132,
+              7,
+              1,
+              8733,
+              745
+            ],
+            [
+              14787,
+              6,
+              1,
+              796,
+              27
+            ],
+            [
+              15436,
+              26,
+              5,
+              148,
+              2
+            ]
+          ],
+          "entropy_mean": 1.5849457290112474,
+          "expected_margin": {
+            "ci95_high": -0.0881856906987646,
+            "ci95_low": -0.08895258653851523,
+            "count": 15618,
+            "mean": -0.08858110737503173,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.08097131514918683,
+            "ci95_low": 0.0776924061979767,
+            "count": 15618,
+            "mean": 0.07934434626712766,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.5977992653709325,
+              "margin": -0.015684617683291435,
+              "region": "head_face",
+              "top1": 0.34565845131874084
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5872610793184527,
+              "margin": -0.09487491101026535,
+              "region": "torso",
+              "top1": 0.00019208605226594955
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5881767452528925,
+              "margin": -0.09631559252738953,
+              "region": "arms_hands",
+              "top1": 6.402868166333064e-05
+            },
+            {
+              "count": 15617,
+              "entropy": 1.581925568626145,
+              "margin": -0.07789131253957748,
+              "region": "upper_legs",
+              "top1": 0.05097009614109993
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5695755079112486,
+              "margin": -0.15808354318141937,
+              "region": "lower_legs_feet",
+              "top1": 0.0001280655706068501
+            }
+          ]
+        },
+        "wrong_text": {
+          "confusion": [
+            [
+              1379,
+              251,
+              3590,
+              7006,
+              3379
+            ],
+            [
+              0,
+              0,
+              9413,
+              1127,
+              5078
+            ],
+            [
+              1,
+              0,
+              9234,
+              1130,
+              5253
+            ],
+            [
+              4,
+              5,
+              242,
+              6,
+              15360
+            ],
+            [
+              6,
+              2,
+              35,
+              0,
+              15574
+            ]
+          ],
+          "entropy_mean": 1.5764062187988879,
+          "expected_margin": {
+            "ci95_high": -0.028328889160599773,
+            "ci95_low": -0.02872520137533804,
+            "count": 15618,
+            "mean": -0.028522106808415347,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.3371788961454732,
+            "ci95_low": 0.3337109425022411,
+            "count": 15618,
+            "mean": 0.33546228710462295,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.6006230485675421,
+              "margin": -0.04282320663332939,
+              "region": "head_face",
+              "top1": 0.08836911618709564
+            },
+            {
+              "count": 15618,
+              "entropy": 1.584633885527663,
+              "margin": -0.09872164577245712,
+              "region": "torso",
+              "top1": 0.0
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5842553588416277,
+              "margin": 0.002858108142390847,
+              "region": "arms_hands",
+              "top1": 0.5912408828735352
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5752126117585021,
+              "margin": -0.1230899766087532,
+              "region": "upper_legs",
+              "top1": 0.00038419669726863503
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5373237679089817,
+              "margin": 0.11917001754045486,
+              "region": "lower_legs_feet",
+              "top1": 0.9972465634346008
+            }
+          ]
+        }
+      },
+      "confidence_groups": {
+        "high": {
+          "count": 71657,
+          "entropy": 1.5767706198074163,
+          "margin": -0.11029011011123657
+        },
+        "invalid": {
+          "count": 15,
+          "entropy": 1.6094379215154329,
+          "margin": 0.0
+        },
+        "low": {
+          "count": 307,
+          "entropy": 1.586837428476832,
+          "margin": -0.060881923884153366
+        },
+        "spearman_conf_margin": 0.0360368167401452,
+        "spearman_conf_negative_entropy": -0.04103685067587592
+      },
+      "coverage": {
+        "effective_patch_count_mean": 12.160935401916504,
+        "effective_patch_count_median": 13.0,
+        "empty_region_fraction": 0.0,
+        "flip_mask_iou_mean": 0.9019652605056763,
+        "flip_mask_iou_median": 0.9045134782791138,
+        "flip_mask_iou_min": 0.805554211139679,
+        "mask_grid_mass_mean": 3.7374184131622314,
+        "padding_mask_mass_fraction_max": 0.0,
+        "padding_mask_mass_fraction_mean": 0.0
+      },
+      "erasing": {
+        "erased_images": 7905,
+        "post_minus_pre_entropy": {
+          "ci95_high": 0.011814335724253234,
+          "ci95_low": 0.010913308816978797,
+          "count": 7401,
+          "mean": 0.011371566964589047,
+          "repeats": 1000
+        },
+        "pre_minus_post_margin": {
+          "ci95_high": -0.025965365373469895,
+          "ci95_low": -0.027869868991237626,
+          "count": 7401,
+          "mean": -0.026920847105683546,
+          "repeats": 1000
+        },
+        "q_jsd": {
+          "ci95_high": 0.002520470022171331,
+          "ci95_low": 0.002389880113020587,
+          "count": 7401,
+          "mean": 0.0024572549086648026,
+          "repeats": 1000
+        },
+        "regions_with_ge_10pct_mask_mass_erased": 17750
+      },
+      "flip": {
+        "q_jsd": {
+          "ci95_high": 0.0005057814090395305,
+          "ci95_low": 0.0004965341212375927,
+          "count": 15618,
+          "mean": 0.000501083837863851,
+          "repeats": 1000
+        },
+        "top1_consistency": {
+          "ci95_high": 0.8473396881803049,
+          "ci95_low": 0.8417914692448885,
+          "count": 15618,
+          "mean": 0.8443409314039357,
+          "repeats": 1000
+        }
+      },
+      "gates": {
+        "confidence_direction": false,
+        "correct_beats_channel_shuffle_margin": false,
+        "correct_beats_wrong_mask_margin": false,
+        "correct_beats_wrong_text_margin": false,
+        "correct_margin_positive": false,
+        "correct_top1_lower_gt_chance": false,
+        "distribution_not_constant": true,
+        "flip_jsd_le_002": true,
+        "flip_top1_ge_095": false,
+        "nonempty_regions": true,
+        "repeat_exact": true,
+        "synthetic_erasing_direction": false,
+        "wrong_rgb_sample_sensitive": true
+      },
+      "image_only_cluster": {
+        "accuracy_after_best_permutation": 0.5276849183477426,
+        "cluster_to_region": [
+          4,
+          3,
+          0,
+          2,
+          1
+        ],
+        "confusion_cluster_by_region": [
+          [
+            47,
+            75,
+            41,
+            12108,
+            15324
+          ],
+          [
+            167,
+            2,
+            10,
+            1,
+            1
+          ],
+          [
+            10208,
+            0,
+            0,
+            4,
+            1
+          ],
+          [
+            5084,
+            58,
+            183,
+            22,
+            16
+          ],
+          [
+            99,
+            15483,
+            15384,
+            3482,
+            275
+          ]
+        ],
+        "iterations": 20,
+        "samples": 78075
+      },
+      "paired": {
+        "channel_shuffle_mask": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -0.027354941519490358,
+            "ci95_low": -0.027806446539228074,
+            "count": 15618,
+            "mean": -0.027571598476473752,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.10613816323046056,
+            "ci95_low": -0.11138824860204037,
+            "count": 15618,
+            "mean": -0.10874525120587356,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.008924069527645835,
+            "ci95_low": 0.008801867920368588,
+            "count": 15618,
+            "mean": 0.00886082450324623,
+            "repeats": 1000
+          }
+        },
+        "fixed_bands": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -0.04267268275249614,
+            "ci95_low": -0.04335225998838272,
+            "count": 15618,
+            "mean": -0.04300650855834105,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.0652834336449396,
+            "ci95_low": -0.06886530498996885,
+            "count": 15618,
+            "mean": -0.06702095872284115,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.0035640813803345154,
+            "ci95_low": 0.003508198507668884,
+            "count": 15618,
+            "mean": 0.0035359277377659385,
+            "repeats": 1000
+          }
+        },
+        "horizontal_flip": {
+          "correct_minus_arm_margin": {
+            "ci95_high": 0.0005026501828485227,
+            "ci95_low": 0.00011611656266422322,
+            "count": 15618,
+            "mean": 0.00031848481549821096,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": 0.0018099842062577367,
+            "ci95_low": -0.0008668416784052589,
+            "count": 15618,
+            "mean": 0.0005164980577965596,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.0005057814090395305,
+            "ci95_low": 0.0004965341212375927,
+            "count": 15618,
+            "mean": 0.000501083837863851,
+            "repeats": 1000
+          }
+        },
+        "post_erasing": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -0.005215011937778697,
+            "ci95_low": -0.005714600564276768,
+            "count": 15618,
+            "mean": -0.005463475076523919,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.002458381354846972,
+            "ci95_low": -0.004674093994109361,
+            "count": 15618,
+            "mean": -0.0035728006146753745,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.0007491557845389048,
+            "ci95_low": 0.0007127167263806067,
+            "count": 15618,
+            "mean": 0.0007307378378111708,
+            "repeats": 1000
+          }
+        },
+        "text_only_onehot": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -1.1106297178958782,
+            "ci95_low": -1.111367867006394,
+            "count": 15618,
+            "mean": -1.1109927291734405,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.9522346011012935,
+            "ci95_low": -0.9549238058650276,
+            "count": 15618,
+            "mean": -0.9536304264310411,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.46079565652805626,
+            "ci95_low": 0.4604495063196698,
+            "count": 15618,
+            "mean": 0.46062273824137356,
+            "repeats": 1000
+          }
+        },
+        "text_only_prototype": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -0.7234859445341574,
+            "ci95_low": -0.7242245490652759,
+            "count": 15618,
+            "mean": -0.7238464278453657,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.9522346011012935,
+            "ci95_low": -0.9549238058650276,
+            "count": 15618,
+            "mean": -0.9536304264310411,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.21705588941937387,
+            "ci95_low": 0.21671269926094688,
+            "count": 15618,
+            "mean": 0.2168811028541897,
+            "repeats": 1000
+          }
+        },
+        "uniform_mask": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -0.051719040188884874,
+            "ci95_low": -0.05233720573438077,
+            "count": 15618,
+            "mean": -0.052030719253208124,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.152089255986682,
+            "ci95_low": -0.15478614419259829,
+            "count": 15618,
+            "mean": -0.15348849617962182,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.005024476395458323,
+            "ci95_low": 0.00495397570512308,
+            "count": 15618,
+            "mean": 0.004987337782228897,
+            "repeats": 1000
+          }
+        },
+        "wrong_mask": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -0.01447997849454571,
+            "ci95_low": -0.014986553463827096,
+            "count": 15618,
+            "mean": -0.014734101196228706,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.016212063004225896,
+            "ci95_low": -0.019405280232210696,
+            "count": 15618,
+            "mean": -0.017795705809536006,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.001034074300701396,
+            "ci95_low": 0.0010036389803817843,
+            "count": 15618,
+            "mean": 0.001018208264523704,
+            "repeats": 1000
+          }
+        },
+        "wrong_rgb": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -0.021894429455104468,
+            "ci95_low": -0.022942180537619133,
+            "count": 15618,
+            "mean": -0.022411621911835645,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.03093834037648867,
+            "ci95_low": -0.03502465104366757,
+            "count": 15618,
+            "mean": -0.03297477269816878,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.0032111882918150155,
+            "ci95_low": 0.003157297134195816,
+            "count": 15618,
+            "mean": 0.003182069002221111,
+            "repeats": 1000
+          }
+        },
+        "wrong_text": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -0.08208254678292566,
+            "ci95_low": -0.08286229734573901,
+            "count": 15618,
+            "mean": -0.08247062247272742,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.2867267735945704,
+            "ci95_low": -0.2915226021257523,
+            "count": 15618,
+            "mean": -0.28909271353566407,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.01909806886736635,
+            "ci95_low": 0.018931009964003185,
+            "count": 15618,
+            "mean": 0.019014561348546233,
+            "repeats": 1000
+          }
+        }
+      },
+      "pass": false,
+      "repeat_exact": {
+        "all": true,
+        "checks": 1,
+        "token_shapes": [
+          {
+            "patch_only": [
+              64,
+              256,
+              768
+            ],
+            "raw_with_cls": [
+              64,
+              257,
+              1024
+            ]
+          }
+        ]
+      },
+      "sample_specificity": [
+        {
+          "centered_effective_rank": 3.6382072895022572,
+          "count": 15605,
+          "q_variance_mean": 0.0004450492483409802,
+          "region": "head_face",
+          "sampled_pairwise_jsd_mean": 0.002750453528329479
+        },
+        {
+          "centered_effective_rank": 3.3378253528890776,
+          "count": 15618,
+          "q_variance_mean": 0.0003426791077422083,
+          "region": "torso",
+          "sampled_pairwise_jsd_mean": 0.0021466483225276453
+        },
+        {
+          "centered_effective_rank": 3.3984183798476804,
+          "count": 15618,
+          "q_variance_mean": 0.00033814290559926327,
+          "region": "arms_hands",
+          "sampled_pairwise_jsd_mean": 0.002146996882660116
+        },
+        {
+          "centered_effective_rank": 2.787262111511726,
+          "count": 15617,
+          "q_variance_mean": 0.0005443082892091976,
+          "region": "upper_legs",
+          "sampled_pairwise_jsd_mean": 0.0031761257995131333
+        },
+        {
+          "centered_effective_rank": 2.584400170316384,
+          "count": 15617,
+          "q_variance_mean": 0.000650267408676228,
+          "region": "lower_legs_feet",
+          "sampled_pairwise_jsd_mean": 0.004195274826843884
+        }
+      ],
+      "text_only_sample_specificity": {
+        "text_only_onehot": [
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15605,
+            "q_variance_mean": 0.0,
+            "region": "head_face",
+            "sampled_pairwise_jsd_mean": 0.0
+          },
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15618,
+            "q_variance_mean": 0.0,
+            "region": "torso",
+            "sampled_pairwise_jsd_mean": 0.0
+          },
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15618,
+            "q_variance_mean": 0.0,
+            "region": "arms_hands",
+            "sampled_pairwise_jsd_mean": 0.0
+          },
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15617,
+            "q_variance_mean": 0.0,
+            "region": "upper_legs",
+            "sampled_pairwise_jsd_mean": 0.0
+          },
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15617,
+            "q_variance_mean": 0.0,
+            "region": "lower_legs_feet",
+            "sampled_pairwise_jsd_mean": 0.0
+          }
+        ],
+        "text_only_prototype": [
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15605,
+            "q_variance_mean": 0.0,
+            "region": "head_face",
+            "sampled_pairwise_jsd_mean": 0.0
+          },
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15618,
+            "q_variance_mean": 0.0,
+            "region": "torso",
+            "sampled_pairwise_jsd_mean": 0.0
+          },
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15618,
+            "q_variance_mean": 0.0,
+            "region": "arms_hands",
+            "sampled_pairwise_jsd_mean": 0.0
+          },
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15617,
+            "q_variance_mean": 0.0,
+            "region": "upper_legs",
+            "sampled_pairwise_jsd_mean": 0.0
+          },
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15617,
+            "q_variance_mean": 0.0,
+            "region": "lower_legs_feet",
+            "sampled_pairwise_jsd_mean": 0.0
+          }
+        ]
+      },
+      "wrong_text_reverse": {
+        "expected_inverse_bank_index": [
+          4,
+          0,
+          1,
+          2,
+          3
+        ],
+        "prototype_bank_index_to_original_label": [
+          1,
+          2,
+          3,
+          4,
+          0
+        ],
+        "top1_after_inverse_label_mapping": {
+          "ci95_high": 0.047765398898706624,
+          "ci95_low": 0.04507619413497247,
+          "count": 15618,
+          "mean": 0.0463695735689589,
+          "repeats": 1000
+        }
+      }
+    },
+    "square_stretch": {
+      "arms": {
+        "channel_shuffle_mask": {
+          "confusion": [
+            [
+              2658,
+              0,
+              2,
+              7432,
+              5513
+            ],
+            [
+              2914,
+              0,
+              0,
+              7143,
+              5561
+            ],
+            [
+              14946,
+              0,
+              0,
+              484,
+              188
+            ],
+            [
+              15553,
+              2,
+              2,
+              59,
+              1
+            ],
+            [
+              1630,
+              534,
+              68,
+              3524,
+              9861
+            ]
+          ],
+          "entropy_mean": 1.5741035426535146,
+          "expected_margin": {
+            "ci95_high": -0.08191309059045675,
+            "ci95_low": -0.08248094575542994,
+            "count": 15618,
+            "mean": -0.08219532953973512,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.16258163657318478,
+            "ci95_low": 0.1594298245614035,
+            "count": 15618,
+            "mean": 0.16107055961070563,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.5711921397249866,
+              "margin": -0.03844964876770973,
+              "region": "head_face",
+              "top1": 0.1703300178050995
+            },
+            {
+              "count": 15618,
+              "entropy": 1.569039351083328,
+              "margin": -0.12428054958581924,
+              "region": "torso",
+              "top1": 0.0
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5775665888132813,
+              "margin": -0.11927933990955353,
+              "region": "arms_hands",
+              "top1": 0.0
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5585931021109476,
+              "margin": -0.13758009672164917,
+              "region": "upper_legs",
+              "top1": 0.0037779342383146286
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5941243969579835,
+              "margin": 0.008636214770376682,
+              "region": "lower_legs_feet",
+              "top1": 0.6314272880554199
+            }
+          ]
+        },
+        "correct": {
+          "confusion": [
+            [
+              1617,
+              534,
+              69,
+              3524,
+              9861
+            ],
+            [
+              2667,
+              0,
+              2,
+              7435,
+              5514
+            ],
+            [
+              2914,
+              0,
+              0,
+              7143,
+              5561
+            ],
+            [
+              14945,
+              0,
+              0,
+              484,
+              188
+            ],
+            [
+              15553,
+              2,
+              2,
+              59,
+              1
+            ]
+          ],
+          "entropy_mean": 1.5740996617976264,
+          "expected_margin": {
+            "ci95_high": -0.11311760282133457,
+            "ci95_low": -0.11382818369766132,
+            "count": 15618,
+            "mean": -0.11348660369827639,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.028006146753745676,
+            "ci95_low": 0.02582917146881803,
+            "count": 15618,
+            "mean": 0.026917659111281852,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.5941122130539926,
+              "margin": -0.04874478653073311,
+              "region": "head_face",
+              "top1": 0.10362063348293304
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5712049816296414,
+              "margin": -0.12556566298007965,
+              "region": "torso",
+              "top1": 0.0
+            },
+            {
+              "count": 15618,
+              "entropy": 1.569039351083328,
+              "margin": -0.12918077409267426,
+              "region": "arms_hands",
+              "top1": 0.0
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5775645480030935,
+              "margin": -0.08064990490674973,
+              "region": "upper_legs",
+              "top1": 0.030991867184638977
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5585931021109476,
+              "margin": -0.18325594067573547,
+              "region": "lower_legs_feet",
+              "top1": 6.403278530342504e-05
+            }
+          ]
+        },
+        "fixed_bands": {
+          "confusion": [
+            [
+              2604,
+              48,
+              0,
+              6893,
+              6060
+            ],
+            [
+              2068,
+              0,
+              0,
+              8122,
+              5428
+            ],
+            [
+              7293,
+              0,
+              0,
+              5234,
+              3091
+            ],
+            [
+              15313,
+              3,
+              0,
+              272,
+              29
+            ],
+            [
+              14518,
+              43,
+              2,
+              1054,
+              0
+            ]
+          ],
+          "entropy_mean": 1.5850245007701331,
+          "expected_margin": {
+            "ci95_high": -0.08352619394491757,
+            "ci95_low": -0.08400176223352583,
+            "count": 15618,
+            "mean": -0.08377952462776782,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.03797546634225467,
+            "ci95_low": 0.035590931403935634,
+            "count": 15618,
+            "mean": 0.036841038118410385,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.5864186585413482,
+              "margin": -0.03252095356583595,
+              "region": "head_face",
+              "top1": 0.16686959564685822
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5767615152229952,
+              "margin": -0.11201586574316025,
+              "region": "torso",
+              "top1": 0.0
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5820278140551916,
+              "margin": -0.10558442771434784,
+              "region": "arms_hands",
+              "top1": 0.0
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5893087047040657,
+              "margin": -0.061220183968544006,
+              "region": "upper_legs",
+              "top1": 0.01741691678762436
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5906076035768886,
+              "margin": -0.10752108693122864,
+              "region": "lower_legs_feet",
+              "top1": 0.0
+            }
+          ]
+        },
+        "horizontal_flip": {
+          "confusion": [
+            [
+              1645,
+              542,
+              79,
+              3520,
+              9819
+            ],
+            [
+              2669,
+              0,
+              3,
+              7470,
+              5476
+            ],
+            [
+              2889,
+              1,
+              0,
+              7197,
+              5531
+            ],
+            [
+              14963,
+              0,
+              1,
+              431,
+              222
+            ],
+            [
+              15556,
+              2,
+              4,
+              53,
+              2
+            ]
+          ],
+          "entropy_mean": 1.5740702841729013,
+          "expected_margin": {
+            "ci95_high": -0.1130848418612282,
+            "ci95_low": -0.11383508609689749,
+            "count": 15618,
+            "mean": -0.11347828460381415,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.02762229478806506,
+            "ci95_low": 0.025509028044563963,
+            "count": 15618,
+            "mean": 0.026610321423997954,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.5940911247481329,
+              "margin": -0.04862324893474579,
+              "region": "head_face",
+              "top1": 0.10541493445634842
+            },
+            {
+              "count": 15618,
+              "entropy": 1.571151855945413,
+              "margin": -0.12558330595493317,
+              "region": "torso",
+              "top1": 0.0
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5689805711247344,
+              "margin": -0.12924320995807648,
+              "region": "arms_hands",
+              "top1": 0.0
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5775558878336788,
+              "margin": -0.0806305855512619,
+              "region": "upper_legs",
+              "top1": 0.027598129585385323
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5585878778782436,
+              "margin": -0.183275043964386,
+              "region": "lower_legs_feet",
+              "top1": 0.0001280655706068501
+            }
+          ]
+        },
+        "post_erasing": {
+          "confusion": [
+            [
+              3100,
+              933,
+              48,
+              3751,
+              7773
+            ],
+            [
+              5044,
+              0,
+              2,
+              6515,
+              4057
+            ],
+            [
+              5078,
+              0,
+              0,
+              6397,
+              4143
+            ],
+            [
+              14914,
+              1,
+              0,
+              485,
+              217
+            ],
+            [
+              15488,
+              4,
+              1,
+              117,
+              7
+            ]
+          ],
+          "entropy_mean": 1.5757801788621548,
+          "expected_margin": {
+            "ci95_high": -0.10688905777137833,
+            "ci95_low": -0.10764354098800356,
+            "count": 15618,
+            "mean": -0.10726886244000414,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.047381226789601744,
+            "ci95_low": 0.04461454731719811,
+            "count": 15618,
+            "mean": 0.045998207196824174,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.5936657536411043,
+              "margin": -0.035329580307006836,
+              "region": "head_face",
+              "top1": 0.19865427911281586
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5748369337424202,
+              "margin": -0.11853129416704178,
+              "region": "torso",
+              "top1": 0.0
+            },
+            {
+              "count": 15618,
+              "entropy": 1.572884297955504,
+              "margin": -0.12469781935214996,
+              "region": "arms_hands",
+              "top1": 0.0
+            },
+            {
+              "count": 15617,
+              "entropy": 1.577772549263865,
+              "margin": -0.0806877389550209,
+              "region": "upper_legs",
+              "top1": 0.03105590119957924
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5597553486957383,
+              "margin": -0.1770528256893158,
+              "region": "lower_legs_feet",
+              "top1": 0.0004482294898480177
+            }
+          ]
+        },
+        "text_only_onehot": {
+          "confusion": [
+            [
+              15605,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              15618,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              15618,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              15617,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              15617
+            ]
+          ],
+          "entropy_mean": 1.1052408446371425e-10,
+          "expected_margin": {
+            "ci95_high": 1.0,
+            "ci95_low": 1.0,
+            "count": 15618,
+            "mean": 1.0,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 1.0,
+            "ci95_low": 1.0,
+            "count": 15618,
+            "mean": 1.0,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.1052408446371421e-10,
+              "margin": 1.0,
+              "region": "head_face",
+              "top1": 1.0
+            },
+            {
+              "count": 15618,
+              "entropy": 1.1052408446371422e-10,
+              "margin": 1.0,
+              "region": "torso",
+              "top1": 1.0
+            },
+            {
+              "count": 15618,
+              "entropy": 1.1052408446371422e-10,
+              "margin": 1.0,
+              "region": "arms_hands",
+              "top1": 1.0
+            },
+            {
+              "count": 15617,
+              "entropy": 1.1052408446371421e-10,
+              "margin": 1.0,
+              "region": "upper_legs",
+              "top1": 1.0
+            },
+            {
+              "count": 15617,
+              "entropy": 1.1052408446371421e-10,
+              "margin": 1.0,
+              "region": "lower_legs_feet",
+              "top1": 1.0
+            }
+          ]
+        },
+        "text_only_prototype": {
+          "confusion": [
+            [
+              15605,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              15618,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              15618,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              15617,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              15617
+            ]
+          ],
+          "entropy_mean": 0.8529380537807751,
+          "expected_margin": {
+            "ci95_high": 0.6128779716501582,
+            "ci95_low": 0.6128338887539527,
+            "count": 15618,
+            "mean": 0.6128536985699314,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 1.0,
+            "ci95_low": 1.0,
+            "count": 15618,
+            "mean": 1.0,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 0.7748067096487431,
+              "margin": 0.7366006970405579,
+              "region": "head_face",
+              "top1": 1.0
+            },
+            {
+              "count": 15618,
+              "entropy": 0.8098376552341601,
+              "margin": 0.7252582311630249,
+              "region": "torso",
+              "top1": 1.0
+            },
+            {
+              "count": 15618,
+              "entropy": 0.7358936784893775,
+              "margin": 0.7558518052101135,
+              "region": "arms_hands",
+              "top1": 1.0
+            },
+            {
+              "count": 15617,
+              "entropy": 0.9599339229815043,
+              "margin": 0.4254179298877716,
+              "region": "upper_legs",
+              "top1": 1.0
+            },
+            {
+              "count": 15617,
+              "entropy": 0.984168521455402,
+              "margin": 0.42122790217399597,
+              "region": "lower_legs_feet",
+              "top1": 1.0
+            }
+          ]
+        },
+        "uniform_mask": {
+          "confusion": [
+            [
+              13770,
+              0,
+              0,
+              1540,
+              295
+            ],
+            [
+              13782,
+              0,
+              0,
+              1541,
+              295
+            ],
+            [
+              13782,
+              0,
+              0,
+              1541,
+              295
+            ],
+            [
+              13781,
+              0,
+              0,
+              1541,
+              295
+            ],
+            [
+              13781,
+              0,
+              0,
+              1541,
+              295
+            ]
+          ],
+          "entropy_mean": 1.5864098600223937,
+          "expected_margin": {
+            "ci95_high": -0.052867249542096,
+            "ci95_low": -0.05318555281922033,
+            "count": 15618,
+            "mean": -0.053032266733310116,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.19994770990737187,
+            "ci95_low": 0.19976520147692833,
+            "count": 15618,
+            "mean": 0.19985806974858075,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.5864091294881872,
+              "margin": 0.03255794197320938,
+              "region": "head_face",
+              "top1": 0.8824095129966736
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5864099629165007,
+              "margin": -0.10625122487545013,
+              "region": "torso",
+              "top1": 0.0
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5864099629165007,
+              "margin": -0.10296856611967087,
+              "region": "arms_hands",
+              "top1": 0.0
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5864101221081328,
+              "margin": -0.034019023180007935,
+              "region": "upper_legs",
+              "top1": 0.09867452085018158
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5864101221081328,
+              "margin": -0.05437824875116348,
+              "region": "lower_legs_feet",
+              "top1": 0.018889671191573143
+            }
+          ]
+        },
+        "wrong_mask": {
+          "confusion": [
+            [
+              2256,
+              260,
+              29,
+              5200,
+              7860
+            ],
+            [
+              2894,
+              2,
+              0,
+              7402,
+              5320
+            ],
+            [
+              2669,
+              0,
+              0,
+              7743,
+              5206
+            ],
+            [
+              14214,
+              0,
+              0,
+              932,
+              471
+            ],
+            [
+              15047,
+              6,
+              3,
+              528,
+              33
+            ]
+          ],
+          "entropy_mean": 1.578865819936936,
+          "expected_margin": {
+            "ci95_high": -0.0965932706795525,
+            "ci95_low": -0.09731718921613187,
+            "count": 15618,
+            "mean": -0.09697423783811257,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.04263061851709567,
+            "ci95_low": 0.0398898706620566,
+            "count": 15618,
+            "mean": 0.04127289025483417,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.5896782420091993,
+              "margin": -0.04255366697907448,
+              "region": "head_face",
+              "top1": 0.1445690542459488
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5730954684208482,
+              "margin": -0.12082520127296448,
+              "region": "torso",
+              "top1": 0.0001280573633266613
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5732571580837844,
+              "margin": -0.12190311402082443,
+              "region": "arms_hands",
+              "top1": 0.0
+            },
+            {
+              "count": 15617,
+              "entropy": 1.580550512698454,
+              "margin": -0.06675826013088226,
+              "region": "upper_legs",
+              "top1": 0.05967855453491211
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5777567552962566,
+              "margin": -0.1328086107969284,
+              "region": "lower_legs_feet",
+              "top1": 0.002113081980496645
+            }
+          ]
+        },
+        "wrong_rgb": {
+          "confusion": [
+            [
+              2676,
+              214,
+              21,
+              5958,
+              6736
+            ],
+            [
+              3577,
+              1,
+              0,
+              7788,
+              4252
+            ],
+            [
+              3121,
+              2,
+              0,
+              8061,
+              4434
+            ],
+            [
+              13671,
+              0,
+              1,
+              1523,
+              422
+            ],
+            [
+              14609,
+              2,
+              0,
+              964,
+              42
+            ]
+          ],
+          "entropy_mean": 1.5814927695662058,
+          "expected_margin": {
+            "ci95_high": -0.08888802691502695,
+            "ci95_low": -0.0895894757060415,
+            "count": 15618,
+            "mean": -0.08925593249980347,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.05583309322576514,
+            "ci95_low": 0.052762757715456535,
+            "count": 15618,
+            "mean": 0.054325137661672435,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.589138613575805,
+              "margin": -0.03818256035447121,
+              "region": "head_face",
+              "top1": 0.17148350179195404
+            },
+            {
+              "count": 15618,
+              "entropy": 1.576208463058735,
+              "margin": -0.1156054213643074,
+              "region": "torso",
+              "top1": 6.402868166333064e-05
+            },
+            {
+              "count": 15618,
+              "entropy": 1.576696046660854,
+              "margin": -0.11661998182535172,
+              "region": "arms_hands",
+              "top1": 0.0
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5827202138554428,
+              "margin": -0.05771057307720184,
+              "region": "upper_legs",
+              "top1": 0.09752193093299866
+            },
+            {
+              "count": 15617,
+              "entropy": 1.5827070312127876,
+              "margin": -0.11812282353639603,
+              "region": "lower_legs_feet",
+              "top1": 0.002689376939088106
+            }
+          ]
+        },
+        "wrong_text": {
+          "confusion": [
+            [
+              534,
+              69,
+              3524,
+              9861,
+              1617
+            ],
+            [
+              0,
+              2,
+              7435,
+              5514,
+              2667
+            ],
+            [
+              0,
+              0,
+              7143,
+              5561,
+              2914
+            ],
+            [
+              0,
+              0,
+              484,
+              188,
+              14945
+            ],
+            [
+              2,
+              2,
+              59,
+              1,
+              15553
+            ]
+          ],
+          "entropy_mean": 1.5740996620043004,
+          "expected_margin": {
+            "ci95_high": -0.034275125966792934,
+            "ci95_low": -0.0346598058913613,
+            "count": 15618,
+            "mean": -0.03447670575614386,
+            "repeats": 1000
+          },
+          "macro_top1": {
+            "ci95_high": 0.30159135292611094,
+            "ci95_low": 0.29823272826226155,
+            "count": 15618,
+            "mean": 0.29995838135484704,
+            "repeats": 1000
+          },
+          "per_class": [
+            {
+              "count": 15605,
+              "entropy": 1.5941122132817471,
+              "margin": -0.06817655265331268,
+              "region": "head_face",
+              "top1": 0.03421980142593384
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5712049815582168,
+              "margin": -0.12091704457998276,
+              "region": "torso",
+              "top1": 0.0001280573633266613
+            },
+            {
+              "count": 15618,
+              "entropy": 1.5690393511202587,
+              "margin": -0.004148851148784161,
+              "region": "arms_hands",
+              "top1": 0.45735689997673035
+            },
+            {
+              "count": 15617,
+              "entropy": 1.577564548385113,
+              "margin": -0.09191630035638809,
+              "region": "upper_legs",
+              "top1": 0.012038163840770721
+            },
+            {
+              "count": 15617,
+              "entropy": 1.55859310256908,
+              "margin": 0.11275549232959747,
+              "region": "lower_legs_feet",
+              "top1": 0.995901882648468
+            }
+          ]
+        }
+      },
+      "confidence_groups": {
+        "high": {
+          "count": 71657,
+          "entropy": 1.5738691559764655,
+          "margin": -0.11361631751060486
+        },
+        "invalid": {
+          "count": 15,
+          "entropy": 1.6094379215154329,
+          "margin": 0.0
+        },
+        "low": {
+          "count": 307,
+          "entropy": 1.5858591132499273,
+          "margin": -0.06894148141145706
+        },
+        "spearman_conf_margin": 0.002892608065334054,
+        "spearman_conf_negative_entropy": -0.026500183127482767
+      },
+      "coverage": {
+        "effective_patch_count_mean": 30.29179573059082,
+        "effective_patch_count_median": 32.0,
+        "empty_region_fraction": 0.0,
+        "flip_mask_iou_mean": 0.9999994039535522,
+        "flip_mask_iou_median": 0.999999463558197,
+        "flip_mask_iou_min": 0.9999990463256836,
+        "mask_grid_mass_mean": 11.162470817565918,
+        "padding_mask_mass_fraction_max": 0.0,
+        "padding_mask_mass_fraction_mean": 0.0
+      },
+      "erasing": {
+        "erased_images": 7905,
+        "post_minus_pre_entropy": {
+          "ci95_high": 0.007898700445008866,
+          "ci95_low": 0.0072887829641375265,
+          "count": 7401,
+          "mean": 0.007588617323765267,
+          "repeats": 1000
+        },
+        "pre_minus_post_margin": {
+          "ci95_high": -0.024788571014369147,
+          "ci95_low": -0.026394360663796895,
+          "count": 7401,
+          "mean": -0.025574893832800007,
+          "repeats": 1000
+        },
+        "q_jsd": {
+          "ci95_high": 0.002132075651209957,
+          "ci95_low": 0.0020271627514747937,
+          "count": 7401,
+          "mean": 0.0020791373162747143,
+          "repeats": 1000
+        },
+        "regions_with_ge_10pct_mask_mass_erased": 17750
+      },
+      "flip": {
+        "q_jsd": {
+          "ci95_high": 0.00025908169475967935,
+          "ci95_low": 0.0002538448802105082,
+          "count": 15618,
+          "mean": 0.0002565586659662513,
+          "repeats": 1000
+        },
+        "top1_consistency": {
+          "ci95_high": 0.8930727899432278,
+          "ci95_low": 0.8883337601912323,
+          "count": 15618,
+          "mean": 0.8906336705510737,
+          "repeats": 1000
+        }
+      },
+      "gates": {
+        "confidence_direction": false,
+        "correct_beats_channel_shuffle_margin": false,
+        "correct_beats_wrong_mask_margin": false,
+        "correct_beats_wrong_text_margin": false,
+        "correct_margin_positive": false,
+        "correct_top1_lower_gt_chance": false,
+        "distribution_not_constant": true,
+        "flip_jsd_le_002": true,
+        "flip_top1_ge_095": false,
+        "nonempty_regions": true,
+        "repeat_exact": true,
+        "synthetic_erasing_direction": false,
+        "wrong_rgb_sample_sensitive": true
+      },
+      "image_only_cluster": {
+        "accuracy_after_best_permutation": 0.5999231508165226,
+        "cluster_to_region": [
+          2,
+          4,
+          3,
+          0,
+          1
+        ],
+        "confusion_cluster_by_region": [
+          [
+            316,
+            13218,
+            13708,
+            302,
+            30
+          ],
+          [
+            22,
+            6,
+            9,
+            3894,
+            7193
+          ],
+          [
+            666,
+            2391,
+            1876,
+            11337,
+            1846
+          ],
+          [
+            14601,
+            3,
+            25,
+            8,
+            4
+          ],
+          [
+            0,
+            0,
+            0,
+            76,
+            6544
+          ]
+        ],
+        "iterations": 20,
+        "samples": 78075
+      },
+      "paired": {
+        "channel_shuffle_mask": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -0.031077550270942864,
+            "ci95_low": -0.031481459490958374,
+            "count": 15618,
+            "mean": -0.03129127415806423,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.1320258675886797,
+            "ci95_low": -0.13627897297989497,
+            "count": 15618,
+            "mean": -0.13415290049942377,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.007848861459870422,
+            "ci95_low": 0.007739151017505935,
+            "count": 15618,
+            "mean": 0.0077958107677740494,
+            "repeats": 1000
+          }
+        },
+        "fixed_bands": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -0.029455631679773036,
+            "ci95_low": -0.029951584271814064,
+            "count": 15618,
+            "mean": -0.029707079070890208,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.00871630490459726,
+            "ci95_low": -0.01114347227557946,
+            "count": 15618,
+            "mean": -0.009923379007128528,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.0019635891780779065,
+            "ci95_low": 0.0019282298245754854,
+            "count": 15618,
+            "mean": 0.0019463544144587674,
+            "repeats": 1000
+          }
+        },
+        "horizontal_flip": {
+          "correct_minus_arm_margin": {
+            "ci95_high": 0.00012636616337438072,
+            "ci95_low": -0.00014510944270752947,
+            "count": 15618,
+            "mean": -8.319094462253657e-06,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": 0.0012296708925598667,
+            "ci95_low": -0.0005765783070815725,
+            "count": 15618,
+            "mean": 0.00030733768728390327,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.00025908169475967935,
+            "ci95_low": 0.0002538448802105082,
+            "count": 15618,
+            "mean": 0.0002565586659662513,
+            "repeats": 1000
+          }
+        },
+        "post_erasing": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -0.005962629441479821,
+            "ci95_low": -0.006464605184892735,
+            "count": 15618,
+            "mean": -0.006217741258367664,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.01790210014086311,
+            "ci95_low": -0.020258675886797285,
+            "count": 15618,
+            "mean": -0.019080548085542322,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.000793693059223488,
+            "ci95_low": 0.0007545282265119205,
+            "count": 15618,
+            "mean": 0.000773928768443634,
+            "repeats": 1000
+          }
+        },
+        "text_only_onehot": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -1.1131176030122878,
+            "ci95_low": -1.113828183938364,
+            "count": 15618,
+            "mean": -1.1134866037457112,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.9719938532462544,
+            "ci95_low": -0.974170828531182,
+            "count": 15618,
+            "mean": -0.9730823408887183,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.46108469894982734,
+            "ci95_low": 0.46075228741140023,
+            "count": 15618,
+            "mean": 0.4609232624928192,
+            "repeats": 1000
+          }
+        },
+        "text_only_prototype": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -0.7259735901943669,
+            "ci95_low": -0.7266894793380988,
+            "count": 15618,
+            "mean": -0.7263403022631034,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.9719938532462544,
+            "ci95_low": -0.974170828531182,
+            "count": 15618,
+            "mean": -0.9730823408887183,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.21533485464338012,
+            "ci95_low": 0.2150172872208267,
+            "count": 15618,
+            "mean": 0.2151773629635719,
+            "repeats": 1000
+          }
+        },
+        "uniform_mask": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -0.06011695837160031,
+            "ci95_low": -0.0608006400662368,
+            "count": 15618,
+            "mean": -0.06045433696639743,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.17185715200409785,
+            "ci95_low": -0.17402900499423743,
+            "count": 15618,
+            "mean": -0.17294041063729887,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.0044580798050033905,
+            "ci95_low": 0.004394680696338839,
+            "count": 15618,
+            "mean": 0.004426859532582782,
+            "repeats": 1000
+          }
+        },
+        "wrong_mask": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -0.01624959224040788,
+            "ci95_low": -0.016776709973324082,
+            "count": 15618,
+            "mean": -0.016512365859972993,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.013100268920476376,
+            "ci95_low": -0.01573857087975413,
+            "count": 15618,
+            "mean": -0.014355231143552312,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.0010956450489180815,
+            "ci95_low": 0.0010622689290853502,
+            "count": 15618,
+            "mean": 0.0010789840034281092,
+            "repeats": 1000
+          }
+        },
+        "wrong_rgb": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -0.023731197066894184,
+            "ci95_low": -0.02473437408827046,
+            "count": 15618,
+            "mean": -0.024230671198854564,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.025575697912664876,
+            "ci95_low": -0.029341625048021513,
+            "count": 15618,
+            "mean": -0.027407478550390572,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.0033172492347826837,
+            "ci95_low": 0.0032608048398412486,
+            "count": 15618,
+            "mean": 0.0032893852706587733,
+            "repeats": 1000
+          }
+        },
+        "wrong_text": {
+          "correct_minus_arm_margin": {
+            "ci95_high": -0.07865185156218896,
+            "ci95_low": -0.07935239317948337,
+            "count": 15618,
+            "mean": -0.07900989793726662,
+            "repeats": 1000
+          },
+          "correct_minus_arm_top1": {
+            "ci95_high": -0.270927375464208,
+            "ci95_low": -0.27494437508003583,
+            "count": 15618,
+            "mean": -0.2730407222435651,
+            "repeats": 1000
+          },
+          "q_jsd": {
+            "ci95_high": 0.01870985042511376,
+            "ci95_low": 0.018560072592794623,
+            "count": 15618,
+            "mean": 0.018637100463177597,
+            "repeats": 1000
+          }
+        }
+      },
+      "pass": false,
+      "repeat_exact": {
+        "all": true,
+        "checks": 1,
+        "token_shapes": [
+          {
+            "patch_only": [
+              64,
+              256,
+              768
+            ],
+            "raw_with_cls": [
+              64,
+              257,
+              1024
+            ]
+          }
+        ]
+      },
+      "sample_specificity": [
+        {
+          "centered_effective_rank": 3.3556851318634755,
+          "count": 15605,
+          "q_variance_mean": 0.0004981005667095308,
+          "region": "head_face",
+          "sampled_pairwise_jsd_mean": 0.00306681781567028
+        },
+        {
+          "centered_effective_rank": 2.7691814198749163,
+          "count": 15618,
+          "q_variance_mean": 0.00043941106525488706,
+          "region": "torso",
+          "sampled_pairwise_jsd_mean": 0.0027159996992896962
+        },
+        {
+          "centered_effective_rank": 2.7989655635085615,
+          "count": 15618,
+          "q_variance_mean": 0.00046794724890339206,
+          "region": "arms_hands",
+          "sampled_pairwise_jsd_mean": 0.00292382391921935
+        },
+        {
+          "centered_effective_rank": 2.7859021467079312,
+          "count": 15617,
+          "q_variance_mean": 0.00047241685329384067,
+          "region": "upper_legs",
+          "sampled_pairwise_jsd_mean": 0.002828636348272685
+        },
+        {
+          "centered_effective_rank": 2.625440663876299,
+          "count": 15617,
+          "q_variance_mean": 0.0005728196500428938,
+          "region": "lower_legs_feet",
+          "sampled_pairwise_jsd_mean": 0.0036458075924419085
+        }
+      ],
+      "text_only_sample_specificity": {
+        "text_only_onehot": [
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15605,
+            "q_variance_mean": 0.0,
+            "region": "head_face",
+            "sampled_pairwise_jsd_mean": 0.0
+          },
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15618,
+            "q_variance_mean": 0.0,
+            "region": "torso",
+            "sampled_pairwise_jsd_mean": 0.0
+          },
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15618,
+            "q_variance_mean": 0.0,
+            "region": "arms_hands",
+            "sampled_pairwise_jsd_mean": 0.0
+          },
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15617,
+            "q_variance_mean": 0.0,
+            "region": "upper_legs",
+            "sampled_pairwise_jsd_mean": 0.0
+          },
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15617,
+            "q_variance_mean": 0.0,
+            "region": "lower_legs_feet",
+            "sampled_pairwise_jsd_mean": 0.0
+          }
+        ],
+        "text_only_prototype": [
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15605,
+            "q_variance_mean": 0.0,
+            "region": "head_face",
+            "sampled_pairwise_jsd_mean": 0.0
+          },
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15618,
+            "q_variance_mean": 0.0,
+            "region": "torso",
+            "sampled_pairwise_jsd_mean": 0.0
+          },
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15618,
+            "q_variance_mean": 0.0,
+            "region": "arms_hands",
+            "sampled_pairwise_jsd_mean": 0.0
+          },
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15617,
+            "q_variance_mean": 0.0,
+            "region": "upper_legs",
+            "sampled_pairwise_jsd_mean": 0.0
+          },
+          {
+            "centered_effective_rank": 1.0,
+            "count": 15617,
+            "q_variance_mean": 0.0,
+            "region": "lower_legs_feet",
+            "sampled_pairwise_jsd_mean": 0.0
+          }
+        ]
+      },
+      "wrong_text_reverse": {
+        "expected_inverse_bank_index": [
+          4,
+          0,
+          1,
+          2,
+          3
+        ],
+        "prototype_bank_index_to_original_label": [
+          1,
+          2,
+          3,
+          4,
+          0
+        ],
+        "top1_after_inverse_label_mapping": {
+          "ci95_high": 0.028006146753745676,
+          "ci95_low": 0.02582917146881803,
+          "count": 15618,
+          "mean": 0.026917659111281852,
+          "repeats": 1000
+        }
+      }
+    }
+  },
+  "geometry_alignment": {
+    "aspect_letterbox": {
+      "kind": "aspect_letterbox",
+      "mask_grid_shape": [
+        16,
+        16
+      ],
+      "pass": true,
+      "rgb_mask_signal_max_abs": 0.0,
+      "transform": {
+        "content_box_xyxy": [
+          74,
+          0,
+          149,
+          224
+        ],
+        "edge_coordinate_matrix": [
+          [
+            0.5859375,
+            0.0,
+            74.0
+          ],
+          [
+            0.0,
+            0.5833333333333334,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "padding_left_right": [
+          74,
+          75
+        ]
+      }
+    },
+    "square_stretch": {
+      "kind": "square_stretch",
+      "mask_grid_shape": [
+        16,
+        16
+      ],
+      "pass": true,
+      "rgb_mask_signal_max_abs": 0.0,
+      "transform": {
+        "content_box_xyxy": [
+          0,
+          0,
+          224,
+          224
+        ],
+        "edge_coordinate_matrix": [
+          [
+            1.75,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.5833333333333334,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      }
+    }
+  },
+  "phase0c_authorized": false,
+  "selected_geometry": null,
+  "smoke_invariants": null,
+  "status": "EXP392_PHASE0B_COMPLETE",
+  "teacher": {
+    "architecture": "ViT-L-14",
+    "mask_grid": [
+      96,
+      32
+    ],
+    "pre_erasing_primary": true,
+    "prompt_payload": {
+      "prompts": [
+        "a photo of the head and face of a person",
+        "the head and face region of a pedestrian",
+        "a close view of a person's head and face",
+        "human head and face",
+        "a photo of the torso and upper body of a person",
+        "the torso and upper body region of a pedestrian",
+        "a close view of a person's torso and upper body",
+        "human torso and upper body",
+        "a photo of the arms and hands of a person",
+        "the arms and hands region of a pedestrian",
+        "a close view of a person's arms and hands",
+        "human arms and hands",
+        "a photo of the upper legs and thighs of a person",
+        "the upper legs and thighs region of a pedestrian",
+        "a close view of a person's upper legs and thighs",
+        "human upper legs and thighs",
+        "a photo of the lower legs and feet of a person",
+        "the lower legs and feet region of a pedestrian",
+        "a close view of a person's lower legs and feet",
+        "human lower legs and feet"
+      ],
+      "region_names": [
+        "head_face",
+        "torso",
+        "arms_hands",
+        "upper_legs",
+        "lower_legs_feet"
+      ],
+      "region_phrases": [
+        "head and face",
+        "torso and upper body",
+        "arms and hands",
+        "upper legs and thighs",
+        "lower legs and feet"
+      ],
+      "templates": [
+        "a photo of the {} of a person",
+        "the {} region of a pedestrian",
+        "a close view of a person's {}",
+        "human {}"
+      ]
+    },
+    "prompt_sha256": "ae5db4cc4cd28a1aee2e88dcaf02702a26f412803081fbf3c212fd191e0fb07b",
+    "region_joints": [
+      [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      [
+        5,
+        6,
+        11,
+        12
+      ],
+      [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      [
+        11,
+        12,
+        13,
+        14
+      ],
+      [
+        13,
+        14,
+        15,
+        16
+      ]
+    ],
+    "region_segments": [
+      [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      [
+        [
+          5,
+          6
+        ],
+        [
+          5,
+          11
+        ],
+        [
+          6,
+          12
+        ],
+        [
+          11,
+          12
+        ]
+      ],
+      [
+        [
+          5,
+          7
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          6,
+          8
+        ],
+        [
+          8,
+          10
+        ]
+      ],
+      [
+        [
+          11,
+          13
+        ],
+        [
+          12,
+          14
+        ],
+        [
+          11,
+          12
+        ]
+      ],
+      [
+        [
+          13,
+          15
+        ],
+        [
+          14,
+          16
+        ]
+      ]
+    ],
+    "regions": [
+      "head_face",
+      "torso",
+      "arms_hands",
+      "upper_legs",
+      "lower_legs_feet"
+    ],
+    "sigma": 1.5,
+    "temperature": 0.07
+  },
+  "verdict": "CURRENT_CLIP_TEACHER_NO_GO"
+}

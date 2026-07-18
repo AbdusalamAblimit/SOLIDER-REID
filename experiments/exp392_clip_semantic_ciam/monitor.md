@@ -2,9 +2,9 @@
 
 ## 当前状态
 
-- `PHASE 0A SEALED / PHASE 0B SMOKE PASS / FULL AUDIT AUTHORIZED / FORMAL TRAINING NO-START`；
+- `PHASE 0A SEALED / PHASE 0B SEALED-CURRENT-TEACHER-NO-GO / FORMAL TRAINING NO-START`；
 - exp390与exp391均已封板，禁止重启、续训或把本实验记为exp391 Phase B/C；
-- 当前GPU任务：无，Phase 0A结束后GPU=`2 MiB / 0%`；
+- 当前GPU任务：无，Phase 0B结束后GPU=`2 MiB / 0%`；
 - 已完成文献、公开代码、当前TAPF执行路径、机制审查与Phase 0A frozen audit；
 - 未创建训练config/output/checkpoint，未启动任何正式训练。
 
@@ -152,3 +152,86 @@ smoke中的correct macro top-1仅square=`4.38%`、letterbox=`3.44%`且margin为�
 CLIP patch teacher可能无法直接绑定五类ontology；但64图smoke预注册只裁结构契约，不以其挑版本或
 下GO/NO-GO。下一步仍按协议跑完整15,618图teacher-only audit，以bootstrap、per-class confusion、
 wrong RGB/mask/text、flip、confidence与erasing全门禁封板；无论结果如何都不直接授权正式训练。
+
+## 2026-07-18 Phase 0B 全15,618图封板
+
+唯一main PID=`1338776`携带8 workers自然退出；运行期GPU约`3496 MiB / 100%`，结束恢复
+`2 MiB / 0%`。冻结ViT-L/14、text bank、pose artifact、isolated runtime与脚本SHA全程不变，
+`open_clip=2.32.0 / torch=1.13.1`。两种geometry均通过RGB/mask synthetic exact、raw
+`64×257×1024`→patch `64×256×768` token contract、repeat exact、finite、nonempty和padding
+mass=`0`边界。
+
+主语义门禁明确失败：
+
+| geometry | correct macro top-1（bootstrap 95% CI） | expected margin（95% CI） | shuffle top-1 | wrong-text top-1 |
+|---|---:|---:|---:|---:|
+| square-stretch | `2.692% [2.583,2.801]` | `−0.11349 [−0.11383,−0.11312]` | `16.107%` | `29.996%` |
+| aspect-letterbox | `4.637% [4.508,4.777]` | `−0.11099 [−0.11137,−0.11063]` | `15.511%` | `33.546%` |
+
+20%随机水平下，correct不仅显著低于chance，而且两个geometry的correct-minus-counterfactual均为负：
+
+- square：wrong RGB=`−2.741 top-1 / −0.02423 margin`、matched wrong mask=
+  `−1.436 / −0.01651`、channel shuffle=`−13.415 / −0.03129`、wrong text=
+  `−27.304 / −0.07901`个百分点/绝对margin；
+- letterbox：wrong RGB=`−3.297 / −0.02241`、matched wrong mask=`−1.780 / −0.01473`、
+  channel shuffle=`−10.875 / −0.02757`、wrong text=`−28.909 / −0.08247`。
+
+失败不是常量或数值问题：五region centered effective rank约`2.58–3.64`，wrong-RGB q-JSD约
+`0.0032–0.0033`，说明local feature确实随图像变化；但变化没有与预定义body-part text identity
+对齐。更强的归因是image-only spherical K-means在同一local visual feature上达到square=`59.99%`、
+letterbox=`52.77%` best-permutation region accuracy，远高于双编码correct top-1。这说明当前末层
+dense patch feature含有明显解剖/位置结构，失败集中在**局部visual token与global text space的
+cross-modal binding接口**，不是“CLIP图像特征完全没有人体结构”。
+
+其余门禁同样不支持当前teacher：flip q-JSD虽低至`0.00026/0.00050`，top-1 consistency仅
+`89.06%/84.43%`，低于95%；low-confidence entropy更高，但margin反而比high-confidence更不负，
+confidence direction失败；synthetic erasing使entropy升高但expected margin反而改善，方向失败。
+两种geometry均只通过`distribution_not_constant / wrong_rgb_sample_sensitive / flip_jsd / nonempty /
+repeat_exact`，不通过top-1、positive margin、correct-vs-mask/shuffle/text、confidence、erasing和
+flip top-1门禁。
+
+裁决=`CURRENT_CLIP_TEACHER_NO_GO`，`phase0c_authorized=false`，禁止创建训练config或启动正式
+semantic single-stage。该裁决只封板当前`naive last-block dense patch pooling + 5 coarse regions +
+current prompt bank`，不永久否定CLIP语义校准或其后的balanced multi-stage。下一步先做只读代码与
+机制归因，比较能恢复local-text alignment的冻结dense extraction（如MaskCLIP/SCLIP/ClearCLIP类
+表示）与region-crop global embedding；另写单变量teacher-only协议后才可执行新审计。
+
+全量result/donor/runner SHA256分别为：
+
+- `af8e654565396f338a9a1b1f8ce5fe4d8178d551ec2767c500d230d477d7e6f8`；
+- `27f31fa69ec223c4506218ce468b01a540882da70380ad85cd8449333c9d5a74`；
+- `bcb588175a54ecb175d4c6a60efd71bfd0e8aa5a5bec032117abbed18cb28b02`。
+
+sample manifest=`93a120d3c23cf547481a91de83dff58e7c38cdd37f97de4f3d8fefc75b98bfac`，
+prompt SHA=`ae5db4cc4cd28a1aee2e88dcaf02702a26f412803081fbf3c212fd191e0fb07b`，
+严格`NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow`扫描为0。
+
+## 2026-07-18 Phase 0B 失败源只读诊断
+
+用户要求先排除“简单任务结果差是实现写错”。当前完成四层parity：
+
+1. **pose坐标无上下/xy错误**：抽查原图后，head→torso/arms→upper legs→lower legs的mean-y严格
+   单调向下；同一mask生成的tight crop能恢复明显语义，进一步排除mask整体错位；
+2. **OpenCLIP hook无偏差**：脚本hook末block的raw token，经官方`ln_post + visual.proj + L2Norm`
+   后，与`VisionTransformer(output_tokens=True)`返回token走同一路径逐元素exact，最大绝对差`0`；
+3. **预处理插值不是根因**：同一128图square路径，bilinear/bicubic correct top-1仅
+   `5.469%→5.625%`，confusion结构基本不变；
+4. **prompt/label顺序未循环写错**：保持同一prompt bank，把同一pose region改为tight crop并走CLIP
+   真正受对比学习监督的global CLS，64/128图诊断macro top-1升至`44.688%`；head/torso/lower-leg
+   分别`78.9%/54.7%/72.7%`。因此label bank与至少三类文本原型可正常对齐；arms仅`0.8%`、
+   upper-leg`16.4%`说明ontology/prompt重叠仍是次要问题，但解释不了dense路径仅`3–5%`。
+
+结论是**实现数学上复现了OpenCLIP官方patch tokens，但teacher选择了未被CLIP对比目标直接校准的
+局部读出**。CLIP只监督final global CLS↔text；last-block patch token虽然包含位置/人体结构（image-only
+cluster可达`52.8–60.0%`），其方向不等于body-part text轴，导致head/legs近似反向confusion。
+这属于teacher接口设计错误，而不是tensor维度、hook、坐标或label index bug。
+
+另做共享前23层、只在最后block让CLS按region mask重读patch的诊断：全1 mask与原CLIP CLS逐元素
+exact；soft/hard region mask分别得到`20.0%/32.5%` top-1，证明沿受监督CLS readout可恢复部分
+语义，但单个末block仍受既有global CLS residual支配，尚不足以过门禁。region tight-crop global
+CLS当前最高`44.7%`，但每图五次完整CLIP forward不适合直接作为120-epoch online teacher。
+
+因此下一步不是修补当前脚本后重跑同一定义，也不是直接训练。先把候选收敛到两类单变量teacher
+接口：`pose-conditioned multi-block CLS readout`（共享早期trunk）与`region-crop global CLS`的可缓存/
+成本边界；同时重构arms/upper-leg的互斥ontology。历史exp354的MaskCLIP value-only在另一归属任务上
+已有小样本负证据，不能未经clean body-part门禁直接复活。

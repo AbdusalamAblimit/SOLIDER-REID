@@ -1,6 +1,6 @@
 # exp392 Phase 0 零训练协议：内部语义诊断与 CLIP teacher 可辨识性
 
-> 状态：**PHASE 0A SEALED / PHASE 0B AUTHORIZED / NO FORMAL TRAINING**
+> 状态：**PHASE 0A SEALED / PHASE 0B CURRENT TEACHER SEALED-NO-GO / NO FORMAL TRAINING**
 >
 > 日期：2026-07-18
 >
@@ -292,4 +292,14 @@ semantic single-stage；semantic multi-stage继续保持 `NO-START`。
   geometry不是当前收益来源；
 - zero-field与all-bypass逐元素exact，external pose四臂与correct repeat逐元素exact，state SHA前后
   一致；运行结束GPU恢复`2 MiB / 0%`；
-- Phase 0B teacher-only实现与执行获授权；当前仍不创建训练config，不启动120-epoch正式训练。
+- Phase 0B全15,618图teacher-only已完成：square/aspect correct macro top-1=
+  `2.692%/4.637%`，expected margin=`−0.11349/−0.11099`；shuffle与wrong-text均显著优于correct，
+  两种geometry都触发kill-switch；
+- hook token与OpenCLIP官方`output_tokens`经`ln_post+proj`后逐元素exact，pose y顺序正确，
+  bicubic不能修复；同一mask的tight-crop global CLS达到`44.688%`，image-only patch cluster达到
+  `52.8–60.0%`，将失败定位到naive local-token↔text接口而非tensor实现；
+- Phase 0B裁决=`CURRENT_CLIP_TEACHER_NO_GO`，Phase 0C不获授权；当前不创建训练config，不启动
+  120-epoch正式训练；
+- 该裁决只封板`last-block dense patch pooling + 当前五region/prompt`。若提出共享trunk的
+  pose-conditioned CLS readout或region-crop global CLS等新定义，必须另写teacher-only单变量协议并
+  重新过本章全部反事实门禁，不得视为对本次NO-GO的重复或挑版本。

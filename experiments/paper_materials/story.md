@@ -1888,3 +1888,25 @@ descriptor。Phase 0B先判断该teacher是否真依赖当前RGB、pose mask和t
 若teacher失败，保留原子TAPF的克制mAP-only故事；若teacher与后续router都通过，才把论文中心升级
 为“从generic pose-conditioned modulation到可辨识anatomical mediation”，并重新评估balanced
 semantic multi-stage。
+
+## 2026-07-18：Phase 0B封板——问题不在CLIP是否“强”，而在局部读出是否真的text-aligned
+
+预注册的naive teacher把pose mask池化的ViT-L/14末层patch token直接与五类body-part text prototype
+比较。全15,618图correct top-1只有square=`2.692%`、letterbox=`4.637%`，显著低于20% chance；
+shuffle与wrong-text反而达到`15–34%`。因此该teacher不能进入任何训练，更不能用CLIP名称为当前
+TAPF语义故事背书。
+
+终审没有停在“CLIP不适合”。hook与OpenCLIP官方token输出逐元素exact，pose mask上下顺序正确，
+bicubic也不能修复。关键对照是：同一pose region若改成tight crop、重新走CLIP真正受全局对比目标
+监督的CLS，macro top-1升到`44.688%`；而原patch feature做image-only cluster也有`52.8–60.0%`
+region结构。这说明patch含人体局部信息，却没有被命名到正确text轴。
+
+论文叙事因此暂时停在诊断而非方法结果：**有效的局部视觉结构不等于text-aligned局部语义，正如
+有效的TAPF调制不等于可辨识joint semantics。** 两个失败具有同一逻辑：不能根据模块名称解释内部
+变量，必须用反事实证明绑定。
+
+下一候选不再直接pool raw patch token，而是让pose region通过CLIP受监督CLS readout生成teacher：
+共享早期trunk，在后段若干block限制CLS读取对应region，或研究可缓存的region-crop global CLS。
+同时把固定anatomical slot identity（pose给出）与slot内appearance/support distribution（CLIP给出）
+拆开。只有新的teacher-only门禁先证明correct优于shuffle/wrong RGB/wrong mask/wrong text，才恢复
+Phase 0C和semantic single-stage；多阶段仍排在单阶段因果成立之后。

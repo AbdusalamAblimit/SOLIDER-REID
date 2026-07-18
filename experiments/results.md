@@ -2220,3 +2220,39 @@ exact；两个PSG分别旁路均显著下降；model state SHA前后exact。
 空间常量控制反而全面更高。该`−1.359 mAP` bypass值是D0 checkpoint内的冻结路径贡献，不可替代
 matched D0−B0训练增益`+0.2`。结果证明exp392的问题对象真实，但不证明CLIP teacher有效；下一步
 必须通过Phase 0B teacher-only门禁。
+
+## exp392 Phase 0B：naive dense CLIP teacher-only审计（2026-07-18）
+
+> official Occ-Duke train共15,618图；frozen OpenCLIP ViT-L/14 image+text encoder；pose只用于
+> 训练域region mask，未构建ReID模型/optimizer。两种CLIP geometry、全部反事实和bootstrap均为
+> 预注册零训练审计。
+
+| geometry | correct top-1（95% CI） | correct margin（95% CI） | shuffle top-1 | wrong-text top-1 | image-only cluster |
+|---|---:|---:|---:|---:|---:|
+| square-stretch | `2.692% [2.583,2.801]` | `−0.11349 [−0.11383,−0.11312]` | `16.107%` | `29.996%` | `59.99%` |
+| aspect-letterbox | `4.637% [4.508,4.777]` | `−0.11099 [−0.11137,−0.11063]` | `15.511%` | `33.546%` | `52.77%` |
+
+correct相对wrong RGB/matched wrong mask/channel shuffle/wrong text的paired expected-margin差分别为：
+
+- square=`−0.02423/−0.01651/−0.03129/−0.07901`；
+- letterbox=`−0.02241/−0.01473/−0.02757/−0.08247`。
+
+两种geometry均显著低于20% chance，且语义错配不是让teacher变差而是让top-1/margin变好。
+wrong-RGB q-JSD约`0.0032–0.0033`、centered effective rank约`2.58–3.64`，说明分布并非数值常量；
+但它的sample variation没有绑定到正确body-part text identity。flip q-JSD很低，却只有
+`89.06%/84.43%` top-1 consistency；confidence与synthetic-erasing方向也未过门禁。
+
+实现归因进一步排除低层bug：pose head→legs y顺序正确；hook token与OpenCLIP官方
+`output_tokens`经同一`ln_post+proj`逐元素exact；bicubic相对bilinear仅把128图top-1从
+`5.469%`变为`5.625%`。保持同一mask/prompt，把region改走受CLIP对比目标直接监督的tight-crop
+global CLS后，128图macro top-1升至`44.688%`；最后block pose-conditioned hard-CLS readout为
+`32.5%`。因此裁决是`CURRENT_CLIP_TEACHER_NO_GO`：失败点为naive last-block patch token没有
+被校准到text轴，而不是pose/mask/hook/label实现错误。
+
+Phase 0C与正式训练均不获授权。该结果只否定当前dense readout，不永久否定CLIP语义校准；下一步
+需对共享trunk的multi-block CLS readout或region-crop global CLS另做成本与teacher-only门禁。
+全量result/donor/runner SHA256分别为
+`af8e654565396f338a9a1b1f8ce5fe4d8178d551ec2767c500d230d477d7e6f8`、
+`27f31fa69ec223c4506218ce468b01a540882da70380ad85cd8449333c9d5a74`、
+`bcb588175a54ecb175d4c6a60efd71bfd0e8aa5a5bec032117abbed18cb28b02`；进程/worker自然退出，
+GPU恢复`2 MiB / 0%`，严格异常为0。

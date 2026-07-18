@@ -206,7 +206,25 @@ Phase 0A裁决为`CONSUMER_EFFECTIVE_JOINT_SEMANTICS_NOT_IDENTIFIED`：现有PSG
 甚至更高。该结果证明exp392的问题对象真实，也说明只给原PSG增加CLIP loss不足以建立语义因果，
 必须保留semantic router、static-state与generic-adapter强对照。
 
+## Phase 0B frozen teacher结果（2026-07-18）
+
+全15,618张train-only审计中，naive last-block dense patch teacher在square/aspect-letterbox上的
+correct macro top-1分别只有`2.692%/4.637%`，bootstrap上界仍远低于20% chance；expected margin为
+`−0.11349/−0.11099`。channel-shuffle top-1反而达到`16.107%/15.511%`，wrong-text达到
+`29.996%/33.546%`；correct相对matched wrong mask、shuffle和wrong text的paired margin全部显著为负。
+两种geometry均未通过主语义、confidence、erasing与flip top-1门禁，裁决=
+`CURRENT_CLIP_TEACHER_NO_GO`。
+
+失败源parity排除了pose坐标、hook、token投影、label顺序和bilinear/bicubic差异。hook输出与OpenCLIP
+官方`output_tokens`经同一`ln_post+proj`后逐元素exact；同一mask改走tight-crop global CLS后macro
+top-1升到`44.688%`。image-only patch cluster也达到`52.8–60.0%`。因此当前问题是CLIP只直接监督
+global CLS↔text，而naive patch token轴未被校准到局部body-part text；这是teacher读出接口设计错误，
+不是底层tensor实现错误。
+
 ## 当前裁决
 
-`exp392 = PHASE 0A SEALED / PHASE 0B AUTHORIZED / FORMAL TRAINING NO-START`。下一步执行
-coarse-region CLIP双编码teacher-only门禁；Phase 0B通过也只授权Phase 0C，不直接启动正式训练。
+`exp392 = PHASE 0A SEALED / PHASE 0B CURRENT-TEACHER SEALED-NO-GO / PHASE 0C NO-START /
+FORMAL TRAINING NO-START`。不得用当前dense teacher创建训练config，也不得把该结果扩张成“CLIP或
+语义校准永久无效”。下一步先只读设计新的单变量teacher接口，优先比较共享trunk的
+pose-conditioned multi-block CLS readout与region-crop global CLS成本/缓存边界；任一新定义仍需
+独立teacher-only全门禁，只有通过后才重新授权Phase 0C。

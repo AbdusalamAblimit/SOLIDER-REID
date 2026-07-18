@@ -3546,3 +3546,27 @@ state提供sample-specific visual support。Phase 0B若证明双编码teacher退
 则CLIP对当前问题没有新增信息；若通过，再由semantic expert gather-transform-scatter router把该状态
 变成不可被自由channel mixing消解的执行对象。只有semantic single-stage同时超过D0、static和generic
 controls，多阶段才值得重新进入。
+
+## 2026-07-18：Phase 0B揭示“CLIP局部语义”必须经过受监督readout，不能直接命名patch token
+
+全量审计给出一个反直觉但清楚的分解：last-block patch feature不是常量，也确实含人体结构——同一
+feature做无文本K-means可达到`52.8–60.0%`五region best-permutation accuracy；但直接与body-part
+text prototype相似度分类时，correct只有`2.7–4.6%`，shuffle/wrong-text反而更高。OpenCLIP官方
+token parity、pose坐标和label顺序均已排除，说明失败不在“没取到token”，而在**把未经局部
+contrastive calibration的token方向误当成text-aligned semantic axis**。
+
+同一region改成tight crop后重新走完整CLIP global CLS，macro top-1立刻升到`44.7%`；只在最后block
+加入pose-conditioned CLS attention则恢复到`32.5%`。这给出比“换prompt再试”更强的下一机制：
+
+1. 共享frozen CLIP早期trunk，避免每region五次完整encoder；
+2. 在多个后段block引入只作用于teacher CLS query的pose mask readout，让region state沿CLIP真正受
+   text监督的CLS→projection路径形成；
+3. anatomy slot identity仍由固定pose ontology给出，CLIP负责slot内sample-specific appearance/support，
+   不再让CLIP重复猜“这个mask本来就是哪一类body part”；
+4. student只蒸馏可执行state，router与NULL/counterfactual门禁不变，推理删除teacher。
+
+这里更大的方法机会是把“anatomical identity”和“appearance evidence”解耦：pose提供不可置换的
+slot identity，CLIP提供每个slot的实例属性/支持度，而不是用一个五类body-part softmax同时承担两者。
+这有望避免当前teacher的语义自指（mask已知region，却再让CLIP猜region）并增加真正与ReID相关的
+衣着属性信息。但它与ALADIN/ProFD/RegionCLIP的局部attribute teacher存在novelty近邻，论文差分仍
+必须落在executable mediator、NULL identity和反事实可辨识证据，不能把attribute KD本身当贡献。
