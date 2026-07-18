@@ -220,3 +220,14 @@ quarantine，不能与本运行合并、续接或作数值比较。
   进程；
 - runner/train log 严格异常与 AMP 警告扫描命中 `0`，仍无 checkpoint；继续自然跑满 e120，
   不按上述中间性能选择或停止。
+
+### 2026-07-18 03:38 UTC：e50/e60/e70 完整评测
+
+- e50 mAP/R1/R5/R10=`50.4/61.7/74.6/80.5`；
+- e60 mAP/R1/R5/R10=`53.2/64.0/77.3/82.0`；
+- e70 mAP/R1/R5/R10=`55.0/66.6/79.0/83.7`；
+- 训练自然进入 e75，现场 e75 iter100/227 loss=`0.108`、Acc=`0.997`，finite；
+- exact HEAD/config SHA、tracked clean、唯一 main PID=`1149542`+8 workers 均保持；GPU 只有该
+  main，训练现场约 `7,018 MiB`；
+- runner/train log 严格异常与 AMP 警告扫描继续命中 `0`，e120 前仍无 checkpoint。所有中间点
+  只作轨迹证据，继续完整 e120。
