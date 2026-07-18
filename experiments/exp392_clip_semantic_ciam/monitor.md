@@ -755,3 +755,18 @@ Traceback、RuntimeError、OOM、nonfinite或overflow，状态=`继续自然e120
 后者继续作为“teacher q弱动态范围/可能只学slot prior”的预注册拆因风险。不得在当前运行中修改温度、
 loss权重、代码或config。实时边界仍为exact HEAD/config/tracked clean、唯一main+8 workers、4090约
 `8270 MiB`且唯一任务、e120前checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
+
+### e20完整评测与e21接手
+
+- e20完整query/gallery评测mAP/R1/R5/R10=`41.8/53.9/69.6/75.0`；
+- 同epoch exp387 clean D0=`42.2/52.4/67.6/74.0`，Semantic C0−D0=
+  `−0.4/+1.5/+2.0/+1.0`；同epoch exp389 HT0=`42.8/53.1/68.9/74.4`，Semantic C0−HT0=
+  `−1.0/+0.8/+0.7/+0.6`；
+- e20末Pose=`0.933`、Semantic/RegionMask/Presence/Q=`0.383/0.269/0.188/0.692`、Student=`1.0`、
+  Reliability=`0.509`、GateAbs=`2.928e-05`，全部finite；评测后自然进入e21，接手时e21 iter120
+  Loss=`1.934`、Pose=`0.910`、Semantic/RegionMask/Presence/Q=`0.372/0.255/0.170/0.692`。
+
+相对参考的mAP负差与Rank正差只构成中间混合轨迹，不作GO/NO-GO、早停或best选择。Q从三位精度
+`0.693`轻微降至`0.692`，表明不是完全零更新，但其变化仍显著弱于mask/presence，继续保留为final后
+拆因风险。exact HEAD/config/tracked clean、唯一main+8 workers、4090约`8404 MiB`且唯一任务、
+e120前checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
