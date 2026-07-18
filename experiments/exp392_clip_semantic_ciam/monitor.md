@@ -301,3 +301,35 @@ B2将改为PID-disjoint fit/eval。正式训练继续`NO-START`，4090空闲。
 CPU运行前后远端4090均为`2 MiB/0%`，无训练或审计计算进程。该结果只证明PC-MBCLS执行数学与
 OpenCLIP官方路径兼容，不证明teacher语义有效；下一步仍先做B2-O互斥ontology/crop-reference小样本
 CPU smoke，正式训练和GPU teacher-only全量均保持`NO-START`。
+
+## 2026-07-18 Phase 0B2-O ontology-only CPU smoke 封板
+
+B2-O保持Phase 0B原始五类part-name prompt、region-crop global CLS、RGB、geometry与CLIP不变，
+只把原重叠region renderer替换为唯一joint owner、limb segment两端trim `15%`且保留幅度的
+soft partition。审计脚本SHA256=
+`8c482ea5ece56cea02122ad005481810b8caab4a82010fd06a5c1c4ce9d18f2f`。
+
+首次8图CPU运行已完成40个crop和CLIP前向，只在`os.chdir(repo_root)`后解析相对
+`__file__`时收尾失败；无result JSON、无GPU占用，失败runner保留且SHA256=
+`12ae662de38543460788f8cb39c80c7f9fe4597539945e92de85d9907d893025`。修复仅在改变cwd前保存
+absolute script path。
+
+修正后8图v2完成：40 crops、coverage exact、finite、static contract全PASS，macro top-1=
+`60.0%`；但overlap median/P95/max=`0.000658/0.270802/0.556638`，P95略超预注册`0.25`，
+因此verdict=`B2_O_SMOKE_FAIL`。result/runner SHA256分别为
+`96c4fdfe4ab1b7c185dc98e63aac2bd0bc8af7734e1eaa93cb2b2e852d66aba2`/
+`bb31b19b3324bd8ea0ae4e95cf5d5805f858c65738eb57860c05b7dda6682ea9`。
+
+按协议继续同一冻结定义128图CPU smoke，639 crops、wall=`2:30.60`、maxRSS=`3,702,624 KiB`；
+coverage exact、finite、macro top-1=`52.93% [50.74,56.14]`，但overlap median/P95/max=
+`0.000322/0.438040/0.997638`，明确不是8图随机波动。分类结果同时定位了独立的文本
+混淆：head=`88.98%`、torso=`79.58%`、lower-leg=`75.94%`，而arms=`0.93%`、upper-leg=
+`19.23%`；原`torso and upper body`与arms语义重叠不能与ontology修正绑定。result/runner SHA256
+分别为`acd8e36821929623a96ed29f77c5d621f718513e54c6a17f86b1fb4fc1f6da2a`/
+`7de7c5c52b1b2fc9086e68c6004eb9ac4fb17e33e5d3c29d42d3af026ea9340a`。远程4090始终为
+`2 MiB/0%`，进程退出后无训练或审计进程。
+
+裁决=`B2_O_SOFT_PARTITION_NO_GO`。不改overlap阈值、trim或sigma。下一步另开单变量`B2-O2`：
+raw anatomy、证据幅度与其余teacher全不变，只以固定tie-break hard owner代替soft composition，使
+teacher slot在像素级真正互斥。B2-O2通过后再独立做`B2-P prompt-only`；两者不同步修。
+正式训练和GPU teacher-only全量继续`NO-START`。

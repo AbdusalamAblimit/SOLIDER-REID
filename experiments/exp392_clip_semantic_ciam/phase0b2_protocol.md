@@ -61,10 +61,15 @@ binding、router 和单一 global descriptor。
 在多个 region 中以完整强度重复出现。
 
 1. 先按 COCO-17 joints/limb segments渲染五个 nonnegative raw supports；shoulder/hip/knee边界joint
-   各有唯一owner，limb region使用segment interior，torso只覆盖central chest/abdomen/waist；
-2. 对每个像素做跨 region 归一化，`M_c = raw_c / (sum_c raw_c + eps)`；
-3. 所有 raw support 为零的像素保持全零，不分给任一 slot；
-4. soft partition 作为主定义，hard argmax 只用于 crop bbox与可视化；
+   各有唯一owner，arms/upper-leg/lower-leg的segment两端各trim `15%`，torso保留完整central
+   chest/abdomen/waist segments；
+2. 对每个像素先得到composition `P_c=raw_c/(sum_c raw_c+eps)`，再保留总证据幅度
+   `a=min(sum_c raw_c,1)`，最终`M_c=a*P_c=raw_c/max(sum_c raw_c,1)`；不能把低置信微弱tail重新
+   放大成sum为1的强support；
+3. 所有 raw support 为零的像素保持全零，不分给任一 slot，且始终`sum_c M_c<=1`；
+4. amplitude-preserving soft partition作为主定义；crop bbox用hard argmax owner后的`M_c`，再按该slot
+   自身max的5%取support域，避免Gaussian非零tail扩张到整图；5%只影响参考crop bbox，不影响slot
+   valid、teacher loss coverage或student target；
 5. left/right 在本阶段合并，避免把 CLIP 不可靠的细粒度左右语义提前引入；
 6. slot channel 顺序由固定 incidence table定义，不允许学习 permutation 或 Hungarian matching。
 
@@ -156,7 +161,8 @@ slot executor `z_exec_c`，不能另建训练后删除的 projector。该变量�
 
 ### B2-O：只修 ontology
 
-固定region-crop global CLS、Phase 0B五个part-name prototypes、geometry和指标，只把旧重叠mask替换为
+固定region-crop global CLS、Phase 0B原始五个part-name prototypes/prompt、geometry和指标，只把旧
+重叠mask替换为
 第三节互斥ontology。该步不得引入PC-MBCLS或support/appearance bank。使用PID-cluster bootstrap，要求：
 
 - macro top-1 lower bound `>=35%`；
@@ -164,8 +170,29 @@ slot executor `z_exec_c`，不能另建训练后删除的 projector。该变量�
 - 每类raw expected cosine margin lower bound均`>0`；
 - post-transform pairwise mask overlap满足第三节门槛。
 
-若难类失败，只能在看到结果前预注册一次ontology修订；冻结后失败即停止当前ontology，不得删除
-arms/upper-leg或按结果反复改prompt。
+若mask ontology通过overlap/static却仍因原`torso and upper body`文本与arms混淆，必须另开`B2-P`
+prompt-only步骤；不得把prompt修改塞回B2-O、删除arms/upper-leg或按结果同时改mask与prompt。
+
+#### B2-O 封板边界与 B2-O2 预注册
+
+128图CPU smoke显示，上述amplitude-preserving **soft** partition的median overlap虽仅
+`0.000322`，但P95=`0.438040`、max=`0.997638`，未过`P95<0.25`。这不是阈值边缘：
+soft composition仍允许多个slot在同一像素上共存，因而不能实现本阶段要求的像素级不可置换
+identity。B2-O因ontology gate失败封板，不改阈值、trim比例或Gaussian sigma救场。
+
+`B2-O2`只修正这一个定义错误：保持raw joint/segment support、唯一joint owner、
+`15%`segment trim、证据幅度`a=min(sum raw,1)`、crop、RGB、CLIP、prompt、geometry和指标全部
+不变，用固定region顺序打破tie，定义
+
+~~~text
+owner(p) = argmax_c raw_c(p)
+M_c(p) = min(sum_j raw_j(p), 1) * 1[owner(p)=c]
+~~~
+
+zero-support仍全零；这是teacher ontology的离线渲染，不向pose回传，因此不需要用soft
+overlap交换可微性。B2-O2必须首先达到overlap的median/P95/max严格`0`、coverage exact与全数值
+finite。该步仍使用Phase 0B原prompt，所以arms/upper-leg文本分类失败只用来触发后续
+`B2-P prompt-only`，不得与B2-O2同时修。
 
 ### B2-I：只改 readout 接口
 
