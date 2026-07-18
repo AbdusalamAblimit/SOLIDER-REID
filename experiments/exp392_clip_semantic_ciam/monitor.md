@@ -825,3 +825,18 @@ Semantic/RegionMask/Presence/Q=`0.296/0.161/0.035/0.692`、GateAbs=`8.745e-06`�
 当前可执行state主要由mask/presence获得明显监督，q仍接近弱动态先验；此观察留待final后的
 pose-only/static-q/generic-router拆因。exact HEAD/config/tracked clean、唯一main+8 workers、4090约
 `8386 MiB`且唯一任务、e120前checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
+
+### e60完整评测与e65接手
+
+- e60完整query/gallery评测mAP/R1/R5/R10=`53.9/64.4/78.2/83.1`；
+- 同epoch exp387 clean D0=`55.1/66.1/79.0/83.3`，Semantic C0−D0=
+  `−1.2/−1.7/−0.8/−0.2`；同epoch exp389 HT0=`54.5/64.8/78.6/83.9`，Semantic C0−HT0=
+  `−0.6/−0.4/−0.4/−0.8`；
+- e60末Loss=`0.203`、Pose=`0.759`、Semantic/RegionMask/Presence/Q=
+  `0.295/0.160/0.033/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`8.583e-06`，
+  全部finite；评测后e61--e64自然完成，接手时已进入e65。
+
+e50相对D0的四项正差未在e60保持，进一步确认不能选择中途节点。e65 iter100的
+Semantic/RegionMask/Presence/Q=`0.294/0.159/0.030/0.692`、GateAbs=`7.605e-06`，q与router
+幅度持续弱，但训练、consumer执行与数值均正常。exact HEAD/config/tracked clean、唯一main+8 workers、
+4090约`8238 MiB`且唯一任务、e120前checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
