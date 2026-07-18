@@ -2,11 +2,11 @@
 
 ## 当前状态
 
-- 状态：`GO-READY`，全部正式训练前门禁已通过，尚未创建正式 output；
-- 4090：空闲；
-- 正式 output：尚未创建；
+- 状态：`RUNNING`，fresh e120 HT0 已正式启动；
+- 4090：唯一训练进程占用；
+- 正式 output：`log/occluded_duke/exp389_clean_swin_tiny_ht0_s1234`；
 - 直接对照：exp387 clean Occ-Duke D0=`57.6/67.7/80.8/84.6`；
-- 当前阶段：从 fresh repo 固化执行提交与 bundle 后，启动唯一的 e120 HT0。
+- 当前阶段：只读监控唯一的 e120 HT0，自然跑满后做 final 终审。
 
 ## 初始设计审计
 
@@ -66,3 +66,15 @@
 - eval batch256 latency=`228.036→243.524 ms`，peak allocated=`4,843,570,176→4,844,131,328 B`。
 
 以上 unit、config-off、D0-off、state/RNG/optimizer、真实 paired CUDA/AMP、route、gradient、overflow、strict state、pose-free、八 consumer 路径与效率门禁均 PASS。正式变量只剩新增 early hierarchy，允许进入 fresh e120 HT0；不得并行、续训、提前停止或修改运行中的代码/config。
+
+## 正式启动
+
+- fresh formal repo=`/home/afr/SOLIDER-REID-exp389-ht0-0d8436b`，detached exact HEAD=`0d8436b7271cb4f0cce44f3b655f821abc867d92`，tracked 与 staged source clean；
+- full-history bundle=`/home/afr/reid-clean/bundles/exp389_ht0_0d8436b.bundle`，`git bundle verify` 确认记录完整历史，SHA256=`44f818dec9f50bf87bda046925f351fab48321b5f827cc645af723330eac978d`；
+- formal config SHA256=`f4b6cfde243de97634eef9320a7a96e2d58f6cd0fc747ee4a747997da455675b`；output 与 runner 启动前均不存在，GPU 空闲，fresh repo unit=`6/6 PASS`；
+- 启动时间=`2026-07-18 00:47:47`，main PID=`1091044`，runner=`/home/afr/train-logs/exp389_clean_ht0_s1234.runner.log`，环境=`/usr/local/anaconda3/envs/mmpose-abu/bin/python`；
+- recipe 与 exp387 D0 matched：Occluded-Duke、batch64、seed1234、120 epoch、SGD、lr=`0.0008`、semantic weight=`0.2`、eval10、唯一 e120 checkpoint；唯一变量为 early hierarchy；
+- 初检唯一 main+8 workers，GPU=`7.35–7.53 GiB`，e1/e2 自然完成并进入 e3；e1 time=`25.733 s`、speed=`522.3 samples/s`，e2 time=`25.281 s`、speed=`536.7 samples/s`；
+- e1 teacher route：StudentEarly/StudentLate=`0/0`，PoseEarly/PoseLate=`0.939/0.915`（epoch 末累计），GateEarlyAbs/GateLateAbs=`9.436e-05/1.092e-04`，两层均已产生有限非零 gate；截至 e3 iter100，NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow=`0`。
+
+当前只允许继续自然训练；每次 e10 eval 现场相对 exp387 D0 同 epoch计算 mAP/R1/R5/R10，禁止依据中间单点提前停止。
