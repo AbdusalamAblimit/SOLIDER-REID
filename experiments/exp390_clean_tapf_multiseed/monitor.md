@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-- 状态：`RUNNING`；当前且唯一 arm=`B0-s4321`；
+- 状态：`INVALID EXECUTION / STOP REQUIRED`；首次 B0-s4321 启动不计入正式 arm；
 - GPU：main PID=`1133345`，约 `6,846 MiB`；
 - 已有 seed1234 pair：B0=`57.4/67.4/80.6/85.2`，D0=`57.6/67.7/80.8/84.6`，
   D0−B0=`+0.2/+0.3/+0.2/−0.6`；
@@ -101,3 +101,32 @@ output 与首臂 runner 均不存在。门禁由 `NO-START` 更新为 `GO`，下
 首次健康检查：e1/e2 自然完成并进入 e3；唯一 main+8 workers，GPU 约 `6,846 MiB`，训练 loss
 持续 finite，runner 严格异常 `0`，e120 前无 checkpoint。必须继续自然跑满 e120，不因任何中间
 eval 或阈值停止。
+
+## B0-s4321 首次启动失效：遗漏官方 teacher 启动覆盖
+
+e10/e20/e30/e40 现场结果分别为：
+
+- e10=`0.6/0.9/2.4/3.7`；
+- e20=`1.4/2.3/5.9/8.6`；
+- e30=`3.3/5.9/13.0/16.2`；
+- e40=`5.0/8.3/16.7/20.8`。
+
+这些数值只触发配置审计，不用于性能早停。审计确认：exp385 已封板 official B0 的 YAML
+SHA256 虽同为 `90d715...`，但正式启动通过 CLI 额外固定
+`MODEL.PRETRAIN_CHOICE=self` 与
+`MODEL.PRETRAIN_PATH=/home/afr/reid-clean/weights/solider_swin_tiny_tea.pth`；其正式 train log 明确
+记录这两个有效值并 exact 加载 teacher。exp390 新 B0 config 只复制了 YAML、没有复制这两个启动
+覆盖，当前运行日志因此为 `PRETRAIN_CHOICE=imagenet`、`PRETRAIN_PATH=''`，也没有 teacher exact
+load；这与 design 中“同一 official Swin-T teacher”直接冲突。
+
+先前 B0 config-off parity/model-invariant 脚本会在脚本内部强制 teacher，因此掩盖了正式 config
+自包含性缺口；不带 eval 的 e1 smoke 只验证 finite，无法发现表征起点错误。这两点均须在重启前
+补强。当前 PID=`1133345` 的执行被判定为变量边界无效，不属于按指标/阈值早停；必须只终止该
+主 PID、确认 workers/GPU 退出，并将 output/runner 移入独立 invalid quarantine。无效轨迹不得写入
+结果表、不得计作 B0-s4321、不得从其续训。
+
+修复边界：只在 exp390 的两个 B0 config 中显式加入 exp385 正式启动使用的 teacher choice/path，
+其余 recipe 不变；更新 design/config SHA，重建 exact execution bundle。随后必须重跑自包含 config
+审计、B0/D0 common state/RNG/optimizer 与带 e1 eval/checkpoint 的 B0 smoke，确认 teacher exact load
+及指标回到 official-clean 合理量级，全部 PASS 后才能以新 output/runner fresh 首次有效启动
+B0-s4321。
