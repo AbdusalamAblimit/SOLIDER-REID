@@ -2151,3 +2151,22 @@ e120 四项均低于 D0。因此 clean 证据只支持原子 D0 在两个训练�
 
 下一必要验证改为官方干净 Occ-Duke matched B0/D0 多 seed；效应仅 `+0.2 mAP`，在补 seed 前
 不得把原子方法写成稳定普适提升。Video 与 hierarchical 都不再作为下一算力优先级。
+
+## exp390：official clean TAPF 的 Occ-Duke 三seed paired终判（2026-07-18）
+
+> Swin-T / Occluded-Duke / batch64 / 120 epochs / final-only。seed1234沿用已封板canonical pair，
+> seed4321与2025各自fresh串行训练matched B0/D0；所有数字均来自正式train log。
+
+| seed | B0 mAP/R1/R5/R10 | D0 mAP/R1/R5/R10 | D0−B0 |
+|---:|---:|---:|---:|
+| 1234 | `57.4/67.4/80.6/85.2` | `57.6/67.7/80.8/84.6` | `+0.2/+0.3/+0.2/−0.6` |
+| 4321 | `56.0/66.2/79.4/83.8` | `56.8/66.5/79.9/84.3` | `+0.8/+0.3/+0.5/+0.5` |
+| 2025 | `57.5/67.9/81.1/85.7` | `57.9/67.0/80.4/85.2` | `+0.4/−0.9/−0.7/−0.5` |
+| mean±sample std | `56.97±0.84/67.17±0.87/80.37±0.87/84.90±0.98` | `57.43±0.57/67.07±0.60/80.37±0.45/84.70±0.46` | `+0.47±0.31/−0.10±0.69/+0.00±0.62/−0.20±0.61` |
+
+paired方向计数（正/零/负）：mAP=`3/0/0`、R1=`2/0/1`、R5=`2/0/1`、R10=`1/0/2`。结论是
+完整`anchor+PSG`在official clean Occ-Duke上提供了**小而可重复的mAP正差**，但没有形成rank
+指标的稳定增益；不得写成“四项全面提升”或跨架构headline。D0-s2025 final checkpoint SHA256=
+`ce06c380dddbec6149ee57aad12f1ebff0d310183b26886e6194adc41ca243f4`，223-state strict finite、
+anchor/两PSG轨迹、pose-free exact与两个consumer下游路径终审全部PASS，排除dead branch或外部pose
+泄漏解释。

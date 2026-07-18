@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 状态：`RUNNING`；B0/D0-s4321 与 B0-s2025 均已封板，当前且唯一 arm=`D0-s2025`；
-- GPU：D0-s2025 main PID=`1254315`，约 `7,098 MiB`；已完成 e100 并自然进入 e101；
+- 状态：`SEALED`；四个新增 arm 均已自然 e120、终审并禁止重启/续训/重复；
+- GPU：D0-s2025 main PID=`1254315` 与 8 workers 已自然退出，GPU=`2 MiB/0%`；
 - 已有 seed1234 pair：B0=`57.4/67.4/80.6/85.2`，D0=`57.6/67.7/80.8/84.6`，
   D0−B0=`+0.2/+0.3/+0.2/−0.6`；
 - 预注册新增顺序：B0-s4321→D0-s4321→B0-s2025→D0-s2025；
@@ -512,3 +512,44 @@ query/gallery保持RGB-only，不得按任何中间点停止或挑best。
   main PID=`1254315`+8 workers，GPU只有该main，约`7,098 MiB`；
 - runner/train log的严格异常与AMP warning扫描命中`0`，e120前仍无checkpoint。e70--e100的
   正负波动均只作同epoch轨迹；继续自然跑满e120，不作早停、best选择或提前裁决。
+
+### 2026-07-18 07:54 UTC：e110/e120 与 D0-s2025 封板
+
+| epoch | D0 mAP/R1/R5/R10 | B0-s2025 同epoch | D0−B0 |
+|---:|---:|---:|---:|
+| 110 | `57.8/67.1/80.2/84.9` | `57.4/67.8/80.8/85.5` | `+0.4/−0.7/−0.6/−0.6` |
+| 120 | `57.9/67.0/80.4/85.2` | `57.5/67.9/81.1/85.7` | `+0.4/−0.9/−0.7/−0.5` |
+
+- e120自然完成，未挑best；main PID=`1254315`与8 workers自然退出，GPU=`2 MiB/0%`，无其它
+  python训练或GPU进程；output中唯一checkpoint=`transformer_120.pth`，size=`113,046,667` bytes；
+- runner/train/checkpoint SHA256分别为
+  `49921ba7ceb3cb4a626d589df344456acb60371bd4e960c27a89dd85d7e4c20e`/
+  `c0b5fa509380fe19b9635c64262f9c1ac1ff2cdd9e05b7f1c03fe56ff1f71357`/
+  `ce06c380dddbec6149ee57aad12f1ebff0d310183b26886e6194adc41ca243f4`；exact HEAD/config/tracked
+  source clean保持；runner/train严格异常与AMP warning终审命中`0`；
+- 原生`exp390_final_audit_d0.py`终审=`EXP390_D0_FINAL_AUDIT_PASS`：checkpoint=`223` state/
+  `210` floating tensors全量finite，strict missing/unexpected=`0/0`；anchor=`8/8`、两PSG=`4/4`
+  参数相对fresh初始化改变，每个bank=`2/2`且两bank不相同；
+- correct/shuffle/None/exploding external pose的`4×768` descriptor、`4×17×24×8` field与两个
+  `4×48×768` gate逐元素exact，exploding accesses=`0`；normal-train/validation均为无pose store的
+  `ImageDataset`；分别旁路bank0/bank1使最终descriptor最大绝对变化=`1.5691879/2.2534995`，两个
+  consumer均有真实下游路径；
+- audit脚本/JSON SHA256分别为
+  `a45a32718cc9467d441fd561579443bbb59e9c31252e64b7f0c1fdd84bb4d7ce`/
+  `81530054611243c6954a29ea693a9119a14148a4105ee9aec713b0d8d054ac94`。脚本首次从`/tmp`直接调用时
+  因未设置formal repo的Python import path而在模型构造前退出；未修改脚本、运行代码或config，
+  显式设置`PYTHONPATH`后同一原生脚本完整PASS。D0-s2025正式封板，禁止重启、续训或重复。
+
+## exp390 三seed最终汇总
+
+| seed | B0 mAP/R1/R5/R10 | D0 mAP/R1/R5/R10 | D0−B0 |
+|---:|---:|---:|---:|
+| 1234 | `57.4/67.4/80.6/85.2` | `57.6/67.7/80.8/84.6` | `+0.2/+0.3/+0.2/−0.6` |
+| 4321 | `56.0/66.2/79.4/83.8` | `56.8/66.5/79.9/84.3` | `+0.8/+0.3/+0.5/+0.5` |
+| 2025 | `57.5/67.9/81.1/85.7` | `57.9/67.0/80.4/85.2` | `+0.4/−0.9/−0.7/−0.5` |
+| 3-seed mean±sample std | `56.97±0.84/67.17±0.87/80.37±0.87/84.90±0.98` | `57.43±0.57/67.07±0.60/80.37±0.45/84.70±0.46` | `+0.47±0.31/−0.10±0.69/+0.00±0.62/−0.20±0.61` |
+
+方向计数（正/零/负）为：mAP=`3/0/0`、R1=`2/0/1`、R5=`2/0/1`、R10=`1/0/2`。因此exp390
+支持完整clean D0带来小而可重复的mAP正差，但不支持四项全面提升：rank指标均值为中性或微负，且
+单seed幅度小。该结论只适用于official clean Swin-T/Occluded-Duke matched三seed，不包装为跨架构
+headline；四个新增arm与seed1234 canonical pair至此共同封板。

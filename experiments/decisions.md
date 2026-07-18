@@ -5046,3 +5046,21 @@ pose-free exact 终审。D0 额外参数约 `0.375%`，supported-op FLOPs 约 `+
 增强/optimizer 完全一致；报告逐 seed 差值、mean/std，不以某个正 seed 或 best checkpoint裁决。
 若多 seed 不支持正均值，当前 MMAsia headline 必须降级或转向新的问题对象；若支持，再决定是否
 补 clean 跨骨干，而不是直接恢复旧 runtime 结果。
+
+### [2026-07-18] 决策：exp390确认TAPF小幅mAP可重复，但rank收益不成立；转入受控全stage直预测诊断
+
+**结果**：三seed paired D0−B0（mAP/R1/R5/R10）分别为seed1234
+`+0.2/+0.3/+0.2/−0.6`、seed4321 `+0.8/+0.3/+0.5/+0.5`、seed2025
+`+0.4/−0.9/−0.7/−0.5`。paired mean±sample std=
+`+0.47±0.31/−0.10±0.69/+0.00±0.62/−0.20±0.61`；mAP三seed均正，rank指标方向混合。
+
+**决策**：official clean原子TAPF保留为**mAP-only弱GO**。它已超过“单seed偶然正差”的最低
+证据线，但效应小、R1/R5/R10均值不正，不能包装为全面提升、统计显著或跨架构普适headline。
+exp389 clean HT0相对D0为`−0.7/−1.8/−0.8/−0.5`，仍保持NO-GO；不复活原层级实现，也不依据
+旧runtime结果改写clean结论。
+
+**下一算力决策**：允许进入已预注册的exp391，但它不是直接抢跑“三anchor大模型”，而是严格
+按A→B→C单变量链推进：先验证exp389 sum→mean pose objective，再验证6/2→2/2 consumer平衡；
+只有两道门禁均通过，才运行参数/loss/AMP matched的H3-OFF/H3-ON全stage direct pair。三个anchor
+必须参数独立、都直接预测absolute field、不读取prior或offset，2/2/2 consumer全部通向final
+descriptor，并使用物理sigma归一`6.0/3.0/1.5`。任一阶段失败即停止后续层级扩张，不用调参救场。

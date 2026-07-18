@@ -3470,3 +3470,29 @@ backbone 内部、其输出直接控制后继视觉更新的 RGB 内生 anchor�
 但这只能在 matched 多 seed 确认小正效应后写成论文中心。下一阶段的研究问题不再是“怎样让
 hierarchical 涨点”，而是“clean 原子增益是否可重复”。若答案为否，应主动更换问题对象，不能
 再用 Video、更多层或旧跨骨干数字包装当前方法。
+
+## 2026-07-18：exp390后创新判断——TAPF有小mAP燃料，但“多stage”必须重构为可归因问题
+
+exp390把原子TAPF的clean证据从单seed推进到paired三seed：mAP差为`+0.2/+0.8/+0.4`，
+mean±sample std=`+0.47±0.31`，方向`3/3`为正。这说明TAPF不是完全无效；训练期pose target经
+RGB内生anchor和后继PSG形成了一个小而可重复的mAP regularization/modulation效应。与此同时，
+R1/R5/R10的paired均值为`−0.10/+0.00/−0.20`，所以现版本没有“整体检索更强”的燃料，也仍未
+解决correct/shuffle/wrong field近似不可辨识的问题。
+
+因此创新任务不能只是“把TAPF放到每个stage，看起来更大”。真正可争的机制问题应拆成三层：
+
+1. 多anchor是否因为pose-loss总预算或AMP skip耦合而改变优化轨迹；
+2. early field是否被6个consumer过度重复消费，而late field只有2个consumer，造成结构不平衡；
+3. 在前两项闭合后，新增Stage-0 direct anchor的route本身是否相对参数完全matched的route-off
+   control提供增益。
+
+这正是exp391的A→B→C顺序。最终三anchor定义采用用户提出的“所有anchor都直接算”：A0/A1/A2
+分别从自身stage feature独立预测同一套17-joint absolute field，不共享decoder、不读取上一field、
+不预测offset；每层只写入紧邻的下一stage，consumer为`2/2/2`。三层native grid不同，必须把
+Gaussian sigma设为`6.0/3.0/1.5`以匹配约24px物理尺度，否则“stage差异”会被target sharpness
+混淆。只有H3-ON相对matched H3-OFF有增益，且至少两个stage冻结旁路各有非零贡献，才能把
+“全stage可执行解剖状态”升级为方法贡献。
+
+CLIP语义校准仍保留为后续PRIMARY DESIGN CANDIDATE，而不是现在并入exp391。它要解决的是joint
+channel语义不可辨识；exp391先回答多stage route本身是否有燃料。两者同时加入会混淆“层级结构”
+与“语义teacher”，也违反单变量原则。

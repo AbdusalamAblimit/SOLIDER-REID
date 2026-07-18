@@ -1825,3 +1825,24 @@ modulation in pose-free person ReID**。但在效应只有 `+0.2/+0.4 mAP`且单
 候选而非定稿。下一项必须是 clean Occ-Duke matched B0/D0 多 seed，报告逐 seed差值和 mean/std。
 只有均值方向与方差支持，才继续补 clean 跨骨干和强先例差分；若不支持，就应降级当前 headline，
 而不是复活 Video、hierarchical 或挑选中途 best。
+
+## 2026-07-18：exp390三seed闭合——原子TAPF保留为克制的mAP-only证据
+
+official clean Occluded-Duke三seed paired结果如下：
+
+| seed | B0 | D0 | D0−B0（mAP/R1/R5/R10） |
+|---:|---|---|---|
+| 1234 | `57.4/67.4/80.6/85.2` | `57.6/67.7/80.8/84.6` | `+0.2/+0.3/+0.2/−0.6` |
+| 4321 | `56.0/66.2/79.4/83.8` | `56.8/66.5/79.9/84.3` | `+0.8/+0.3/+0.5/+0.5` |
+| 2025 | `57.5/67.9/81.1/85.7` | `57.9/67.0/80.4/85.2` | `+0.4/−0.9/−0.7/−0.5` |
+
+paired mean±sample std为`+0.47±0.31/−0.10±0.69/+0.00±0.62/−0.20±0.61`。这允许正文写：
+**TAPF在三个matched seed上都提高mAP，平均约+0.47；推理期仍为严格RGB-only。** 但正文必须紧接
+着说明：rank指标没有稳定提升，效应幅度小，当前证据不等于统计显著、跨架构普适或精确关节语义
+因果。最诚实的定位是“training-time pose targets带来的轻量内部调制，在mAP上小幅可重复”。
+
+exp389层级版继续是负消融，而不是被新seed结果推翻。后续全stage探索只有在严格分解loss budget、
+consumer balance和Stage-0 route后才有解释价值；因此exp391按H2-M→H2-B→H3-OFF/ON推进。
+如果前两阶段失败，论文保留单层D0并把“更多stage不自动更好”写入消融；如果matched H3-ON真正
+超过H3-OFF且至少两个stage有独立下游贡献，才重新讨论多阶段主方法。CLIP语义校准不与这轮结构
+验证混跑，避免把语义teacher收益误归到stage topology。
