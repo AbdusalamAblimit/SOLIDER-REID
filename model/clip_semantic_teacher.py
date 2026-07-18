@@ -77,8 +77,12 @@ def render_hard_owner_regions(
     field_height, field_width = field_hw
     reliability = valid.bool().float() * scores.float().clamp(0.0, 1.0)
     points = keypoints.float().clone()
-    points[..., 0] *= (field_width - 1) / float(max(image_width - 1, 1))
-    points[..., 1] *= (field_height - 1) / float(max(image_height - 1, 1))
+    points[..., 0] = (
+        points[..., 0] * (field_width - 1) / float(max(image_width - 1, 1))
+    )
+    points[..., 1] = (
+        points[..., 1] * (field_height - 1) / float(max(image_height - 1, 1))
+    )
     grid_y = torch.arange(
         field_height, device=points.device, dtype=torch.float32
     ).view(1, 1, field_height, 1)

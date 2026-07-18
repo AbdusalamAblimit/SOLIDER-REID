@@ -671,3 +671,15 @@ result/formal output均未创建、没有optimizer step或正式训练数据。�
 而不是错误地要求第一个step永不skip。现已按既有clean D0协议修正：显式`unscale_`读取found-inf，
 逐step核对q-head、两个consumer、backbone与head probe的exact skip/update，记录overflow count与scale
 history，并保留24步内至少8个连续finite更新。该更正只修审计判据，不修改模型、loss、config或recipe。
+
+第三次preflight自然完成24步：19次成功更新、前5步为默认GradScaler exact skip、随后连续19步finite；
+q-head与两个consumer每个finite step均有非零梯度和参数更新，teacher隔离、checkpoint strict load、
+RGB-only eval、state finite和batch64/8-worker全部PASS。峰值allocated/reserved=`7.55/8.02 GB`，吞吐=
+`145.03 samples/s`。唯一FAIL是封板scalar renderer与新vector renderer的mask max-abs=
+`2.6822e-6`超过脚本临时设定的`1e-6`，但PC-MBCLS q逐tensor exact、valid exact。
+
+没有放宽阈值。根因定位为浮点运算顺序：vector版先在Python计算`31/127`与`95/383`再单次乘法，
+封板renderer按tensor先乘整数再除分母。把vector坐标缩放改为完全相同的`tensor * integer / denominator`
+两步后，远端正式runtime同4图mask逐tensor `torch.equal=True`、max-abs=`0`、valid exact，同时保留batch
+vectorization。该修复不改变ontology、sigma、prompt、temperature、mask partition、loss或recipe；须以新
+exact commit重跑一次完整preflight，不能复用FAIL JSON裁决正式启动。
