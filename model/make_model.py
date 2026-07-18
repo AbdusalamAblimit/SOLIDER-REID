@@ -243,6 +243,7 @@ class build_transformer(nn.Module):
                     "early_anchor_channels": self.base.num_features[1],
                     "early_consumer_channels": self.base.num_features[2],
                     "early_consumer_count": len(self.base.stages[2].blocks),
+                    "pose_loss_reduction": cfg.MODEL.TAPF.POSE_LOSS_REDUCTION,
                 }
             self.base.enable_tapf(
                 tapf_class(

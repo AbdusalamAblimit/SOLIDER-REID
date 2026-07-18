@@ -1,7 +1,7 @@
 # 实验 exp391：官方 clean 全阶段独立直预测 TAPF
 
-> 状态：DESIGN-ONLY。必须等待 exp390 四臂全部自然 e120、终审和多 seed 汇总完成后再进入实现；
-> 当前不得创建正式 output、启动训练或占用正在运行的4090。
+> 状态：PHASE-A PREFLIGHT / NO-START。exp390 四臂已全部自然 e120、终审并完成多 seed 汇总；
+> 当前只允许实现和审计 H2-M，全部门禁通过前不得创建正式 output 或启动训练。
 
 ## 动机
 
@@ -152,4 +152,5 @@ RGB feature，external correct/shuffle/None/exploding均不得被访问。
 本设计由主审与只读独立子agent交叉检查；禁止Claude。独立审查指出exp389已经是两层direct、sum
 loss不能直接归因为backbone干扰、6/2 consumer不平衡是更强结构差异，并进一步发现native-grid
 固定sigma会混淆跨stage监督尺度，因此采用上述A→B→C顺序，并在H3固定物理尺度归一。
-exp390未封板前，本实验只保留设计，不实现、不建config、不启动训练。
+exp390已封板；当前按预注册顺序进入Phase A H2-M实现与全套门禁。Phase B/C继续保持NO-START，
+只有前一阶段自然e120与终审满足design阈值后才允许推进。

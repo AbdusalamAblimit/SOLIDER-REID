@@ -92,6 +92,7 @@ _C.MODEL.TAPF.GATE_RELEASE = 0.5
 _C.MODEL.TAPF.TEACHER_EPOCHS = 5
 _C.MODEL.TAPF.HANDOFF_EPOCHS = 5
 _C.MODEL.TAPF.POSE_LOSS_WEIGHT = 0.1
+_C.MODEL.TAPF.POSE_LOSS_REDUCTION = "sum"
 
 # -----------------------------------------------------------------------------
 # INPUT

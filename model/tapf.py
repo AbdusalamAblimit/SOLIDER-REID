@@ -248,6 +248,7 @@ class CleanTapfHt0(CleanTapfD0):
         early_anchor_channels=192,
         early_consumer_channels=384,
         early_consumer_count=6,
+        pose_loss_reduction="sum",
     ):
         # Construct the complete D0 path first. This preserves every common
         # parameter value and initialization draw before adding early modules.
@@ -263,6 +264,9 @@ class CleanTapfHt0(CleanTapfD0):
         )
         if early_consumer_count <= 0:
             raise ValueError("early_consumer_count must be positive")
+        if pose_loss_reduction not in ("sum", "mean"):
+            raise ValueError("pose_loss_reduction must be 'sum' or 'mean'")
+        self.pose_loss_reduction = pose_loss_reduction
         self.early_anchor = PoseAnchor(early_anchor_channels, anchor_hidden)
         self.early_psg_bank = nn.ModuleList(
             [
@@ -309,9 +313,9 @@ class CleanTapfHt0(CleanTapfD0):
         if early_state["pose_loss"] is None:
             combined["pose_loss"] = None
         else:
-            combined["pose_loss"] = (
-                early_state["pose_loss"] + late_state["pose_loss"]
-            )
+            combined["pose_loss"] = early_state["pose_loss"] + late_state["pose_loss"]
+            if self.pose_loss_reduction == "mean":
+                combined["pose_loss"] = combined["pose_loss"] * 0.5
         combined["early_gate_deltas"] = early_state["gate_deltas"]
         combined["late_gate_deltas"] = []
         combined["gate_deltas"] = list(early_state["gate_deltas"])

@@ -264,6 +264,56 @@ class CleanTapfUnitTest(unittest.TestCase):
         self.assertEqual(eval_combined["early_student_fraction"], 1.0)
         self.assertEqual(eval_combined["late_student_fraction"], 1.0)
 
+    def test_ht0_pose_loss_reduction_is_an_explicit_single_variable(self):
+        torch.manual_seed(391)
+        summed = self.make_ht0()
+        torch.manual_seed(391)
+        averaged = CleanTapfHt0(
+            anchor_channels=8,
+            anchor_hidden=16,
+            consumer_channels=12,
+            psg_hidden=8,
+            gaussian_sigma=1.5,
+            gate_release=0.5,
+            teacher_epochs=5,
+            handoff_epochs=5,
+            early_anchor_channels=4,
+            early_consumer_channels=8,
+            early_consumer_count=3,
+            pose_loss_reduction="mean",
+        )
+        for name, value in summed.state_dict().items():
+            self.assertTrue(torch.equal(value, averaged.state_dict()[name]), name)
+
+        pose_batch = self.make_pose_batch()
+        early_source = torch.randn(2, 4, 4, 2)
+        late_source = torch.randn(2, 8, 4, 2)
+        sum_state = summed.combine_states(
+            summed.prepare_early(
+                early_source, pose_batch, image_hw=(8, 4), epoch=6, training=True
+            ),
+            summed.prepare(
+                late_source, pose_batch, image_hw=(8, 4), epoch=6, training=True
+            ),
+        )
+        mean_state = averaged.combine_states(
+            averaged.prepare_early(
+                early_source, pose_batch, image_hw=(8, 4), epoch=6, training=True
+            ),
+            averaged.prepare(
+                late_source, pose_batch, image_hw=(8, 4), epoch=6, training=True
+            ),
+        )
+        torch.testing.assert_close(mean_state["pose_loss"] * 2.0, sum_state["pose_loss"])
+        torch.testing.assert_close(
+            mean_state["early_pose_loss"], sum_state["early_pose_loss"]
+        )
+        torch.testing.assert_close(
+            mean_state["late_pose_loss"], sum_state["late_pose_loss"]
+        )
+        with self.assertRaisesRegex(ValueError, "pose_loss_reduction"):
+            CleanTapfHt0(pose_loss_reduction="invalid")
+
 
 if __name__ == "__main__":
     unittest.main()
