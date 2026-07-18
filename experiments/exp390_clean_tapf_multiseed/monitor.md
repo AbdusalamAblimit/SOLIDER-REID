@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 状态：`RUNNING`；当前且唯一 arm=`D0-s4321`，B0-s4321-valid 已封板；
-- GPU：D0 main PID=`1183898`，约 `6,994 MiB`；
+- 状态：`RUNNING`；B0-s4321-valid 与 D0-s4321 均已封板，下一 arm=`B0-s2025` 尚未启动；
+- GPU：`2 MiB/0%`，当前空闲；
 - 已有 seed1234 pair：B0=`57.4/67.4/80.6/85.2`，D0=`57.6/67.7/80.8/84.6`，
   D0−B0=`+0.2/+0.3/+0.2/−0.6`；
 - 预注册新增顺序：B0-s4321→D0-s4321→B0-s2025→D0-s2025；
@@ -335,3 +335,34 @@ quarantine，不能与本运行合并、续接或作数值比较。
   main，约 `7,058 MiB`；
 - runner/train log 未出现 AMP warning、NaN、Inf 数值、Traceback、RuntimeError、OOM、nonfinite 或
   overflow，e120 前仍无 checkpoint。e90/e100 均只作同 epoch 轨迹，不用于早停或挑选 best。
+
+### 2026-07-18 04:55 UTC：e110/e120 与 D0-s4321 封板
+
+| epoch | D0 mAP/R1/R5/R10 | B0-s4321 同 epoch | D0−B0 |
+|---:|---:|---:|---:|
+| 110 | `56.8/66.5/79.9/84.3` | `56.0/66.2/79.5/83.8` | `+0.8/+0.3/+0.4/+0.5` |
+| 120 | `56.8/66.5/79.9/84.3` | `56.0/66.2/79.4/83.8` | `+0.8/+0.3/+0.5/+0.5` |
+
+- e120 自然完成，未挑 best；main PID=`1183898`与8 workers自然退出，GPU=`2 MiB/0%`，无其它
+  train/pose/preflight 进程；
+- output 中唯一 checkpoint=`transformer_120.pth`，SHA256=
+  `c8bd663c8a03022b649e4c38970f5b19017f921c588ac413daed471c11630678`；runner/train log SHA256=
+  `c9324c20e50132dfb83d213cbbcd6a8f2b421b86edb4c964d329c2bba0702ccc`/
+  `6b2335c0597b5d4ac41e4bee2e1c2ce399c77558408d3dac3f32f2f230e5c2a0`；
+- exact detached HEAD=`ec46d50486d645da0872d5549e1071f2a8072b24`，config SHA256=
+  `979c897da79327bd8ecc04fcc4b370f0f5ad6b318170fe3afec5594a5c769711`，tracked source clean；
+- `final_audit_d0.py` 原生终审 `EXP390_D0_FINAL_AUDIT_PASS`：checkpoint `223` state tensors/
+  `210` floating tensors 全部 finite，strict missing/unexpected=`0/0`；anchor=`8/8`、两 PSG=
+  `4/4` 参数相对 fresh 初始化改变，每个独立 bank=`2/2`，两 bank 不相同；
+- correct/shuffle/None/exploding external pose 的 descriptor、`17×24×8` student field和两个
+  `48×768` gate逐元素 exact，exploding accesses=`0`；normal-train/validation均为无pose store的
+  `ImageDataset`；
+- 分别旁路 PSG bank0/bank1，最终 descriptor 最大绝对变化=`1.3385458/1.9894147`，两个 consumer
+  均有真实下游路径；final audit JSON SHA256=
+  `a426c315977406cc15153ccaadb2a36f59aeacb7cc14912ffca22a3c45d8b32f`；
+- runner/train log 的 AMP warning、NaN、Inf 数值、Traceback、RuntimeError、OOM、nonfinite、
+  overflow严格边界扫描均命中 `0`。D0-s4321 正式封板，禁止重启、续训或重复。
+
+等待期间另完成 `old_new_implementation_audit.md`，并由只读独立子 agent 交叉复核；它不使用 GPU、
+不修改训练代码/config，也不影响本 arm。主结论是旧 exp378 的较大相对增量建立在更弱 B0、不同
+RE/loader/TTA protocol与约2倍 PSG consumer容量上，不能解释为旧 D0 绝对更强或更会利用正确姿态。

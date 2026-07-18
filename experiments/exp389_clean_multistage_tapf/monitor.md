@@ -192,3 +192,30 @@
 - 可执行终审结论：`EXP389_FINAL_AUDIT_PASS`。
 
 最终结论边界：在官方最后代码、fresh ViTPose-H train-only target、同一 seed/batch/120-epoch recipe 下，新增 clean early hierarchy 相对单层 D0 的 final 四项全部下降，且低于 official B0。实现、参数学习、RGB-only 推理与八条 consumer 路径均已排除失效，因此这是有效负结果。exp389 至此封板，禁止重启、续训、重复或用中途 best 替代 e120；hierarchical 继续只作为 backbone-conditional 历史扩展，不进入 clean 方法 headline。
+
+## 2026-07-18 冻结层级旁路诊断
+
+用户追问多阶段是否可能因实现方式不理想而失败。为区分“early consumer在推理时直接有害”和
+“新增层级在训练期干扰late/backbone优化”，对封板 e120 checkpoint 做只读冻结评测；不修改权重、
+config或训练，不读取external pose。顺序固定为full→early六bank全旁路→late两bank全旁路→八bank
+全旁路→full-repeat，最后一次full逐位复现首轮结果，排除hook恢复漂移。
+
+| arm | mAP/R1/R5/R10 | 相对full |
+|---|---:|---:|
+| full | `56.8605/65.9276/79.9547/84.1176` | `0/0/0/0` |
+| early-bypass | `56.7882/65.9276/79.4118/83.8914` | `−0.0723/+0.0000/−0.5430/−0.2262` |
+| late-bypass | `55.5040/64.0271/78.2353/82.5339` | `−1.3565/−1.9005/−1.7195/−1.5837` |
+| all-bypass | `55.4369/64.1629/77.5113/82.5339` | `−1.4236/−1.7647/−2.4434/−1.5837` |
+
+结论：early层不是dead path，但冻结checkpoint上的独立mAP贡献只有约`+0.07`、R1为`0`；late层仍
+提供约`+1.36 mAP`。旁路early不能把HT0恢复到exp387 D0=`57.6`，所以exp389相对D0的主要退化
+不是推理时early gate本身直接减分，而是在联合训练中已经改变backbone/late路径。一个明确的设计
+风险是exp389把early+late pose loss直接求和后再乘`0.1`，相对D0把辅助目标总强度翻倍；这不是
+路由bug，但使“新增层级”同时带入更强pose约束。因而本诊断收紧原裁决为：**clean exp389这套
+独立双anchor+六/二consumer+pose-loss求和方案NO-GO，不等于所有loss-normalized direct-anchor
+hierarchy永久NO-GO。**
+
+- 脚本：`frozen_level_ablation.py`，SHA256=
+  `71fea0c3781eff2449c6c7cd3460a2fb6e80ebe9a416a3e7ee1f20db9b6d0cb8`；
+- JSON SHA256=`dcb65d23fbbfb54780b1fd522439348864e2389fb4e319919f62b8fc2fb05b7a`；
+- 状态=`EXP389_FROZEN_LEVEL_ABLATION_PASS`，运行后GPU=`2 MiB/0%`。
