@@ -376,6 +376,48 @@ arms当前visual support。result/runner SHA256=
 要求target slot响应强于non-target slots与official global CLS；通过后才授权完整三材质反事实teacher
 审计。正式训练继续`NO-START`。
 
+## 2026-07-18 Phase 0B2-SI PC-MBCLS support readout
+
+B2-SI实现commit=`b2df230`，脚本SHA256=
+`c95dbed6c569a324c781d4ff382922179d81365f2fbe40b479027f4a8f345b29`；依赖的ontology/support/
+PC-MBCLS contract脚本SHA256分别为
+`b0d5ce6a53e94d09fa5d15c338392ea31437eee036299256c424ed30489028ca`/
+`692a3662d0de9613a6a1c573d2d86bfd7f40b3082f215d005aa4f8857869496a`/
+`7206dc13bf69b5666b54169ae3333f838c48b16d0c963512e7c67d906354c2c7`。support prompt SHA仍为
+`a88a1405b629402b647b6075325b2821362bbcf89372466a27f9d4cfcee3af12`，没有改prompt、遮挡level、
+CLIP或温度。full RGB使用aspect-letterbox，hard-owner mask nearest映射后再14x14 average pool；
+target slot同时与同图non-target slots及official global CLS比较。
+
+1图运行期contract完成20 full-image variants，NULL/repeat/finite/hard-mask/target-valid均PASS，五类
+target下降均为正且macro target−global=`+0.04824`；仅lower-leg target−non-target=
+`−0.00235`，故按预注册记`B2_SI_SMOKE_FAIL`，不改阈值且不按单图裁决。result/runner SHA256=
+`77f43d03763bd9900d0085c4ba9dc4b40ab3ed8579f32c93f0e502df60fc596c`/
+`15127af4fb8fa285e4a175346881dd2ba2107da0199d2204cb754765fa292327`。
+
+同一冻结代码的8图CPU smoke完成40 valid targets/160 variants，wall=`1:16.24`、maxRSS=
+`3,706,968 KiB`，全部12项gate PASS：
+
+- macro target `q_visible`=`0.51943/0.49182/0.47904/0.47270`，三档相邻下降全正；
+- head/torso/arms/upper-leg/lower-leg target 0→75下降=
+  `0.08492/0.03081/0.04840/0.03799/0.03157`；
+- 五类target−non-target下降=
+  `+0.08474/+0.02363/+0.04630/+0.03736/+0.03094`；
+- 五类target−global下降=
+  `+0.07074/+0.02565/+0.04416/+0.03289/+0.02841`，macro=`+0.04037`；
+- 五类Spearman=`0.808/0.521/0.666/0.536/0.621`；
+- pixel product max=`0`、NULL/repeat/finite/target-valid exact。
+
+verdict=`B2_SI_SMOKE_PASS`，result/runner SHA256=
+`825248b8573ebacf7f3c46c7ef7325c3fd1c66329c1a2e9f01bc61204b734cf6`/
+`6fd6c81ef8fcb3a6ef7a389eaef3ef70579dd8fc66a8cb3504d6b0c04cb3b21c`，严格异常0，4090=
+`2 MiB/0%`。该结果首次同时支持slot内support语义与target-localized readout，但仍只有1 PID，
+不作最终裁决。
+
+当前同一代码的128图CPU复核正在运行：parent PID=`1352541`，output=
+`/home/afr/reid-clean/audits/exp392_phase0b2/b2si_pcmbcls_smoke128_result.json`，runner=
+`/home/afr/reid-clean/audits/exp392_phase0b2/b2si_pcmbcls_smoke128.runner.log`。
+`CUDA_VISIBLE_DEVICES`为空，正式训练与GPU teacher-only全量保持`NO-START`。
+
 ## 2026-07-18 Phase 0B2-O2 hard-owner CPU smoke
 
 B2-O2实现commit=`11a3303e7088acc9e62d259a741f058116732b92`，审计脚本SHA256=
