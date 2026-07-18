@@ -1969,3 +1969,12 @@ CLIP–TAPF方向。
 expert；另一方面ReZero alpha只由ReID loss打开，防止辅助loss制造大残差却不改善检索。只有final
 同时满足clean D0提升、correct-vs-wrong/static差和all-router-bypass贡献，COER才有资格进入正面方法
 故事。在此之前，论文主证据仍是exp390原子TAPF的三seed mAP-only弱GO，exp393只记录为预注册候选。
+
+0E-S/C8/128已经提供了teacher侧的首段正证据：centered rich local residual在64个held-out PID上五slot
+macro effective rank=`11.050/16`，且correct↔flip相对wrong RGB和same-RGB wrong mask的逐slot
+PID-cluster CI均严格为正。slot-mean/global-only exact zero、raw uncentered较弱，说明中心化后的局部
+残差不是exp392那种几乎固定的slot prior。
+
+这仍不能进入正面方法表。fixed random orthogonal也保留强信号，故PCA只是压缩器；更关键的是teacher
+richness没有证明生产route会改变检索。只有0E-FULL复核、独立RZ-C0 route activation与最终COER三段
+证据连续成立，才能把故事从“失败归因与候选修复”升级为“CLIP-owned executable residual”。

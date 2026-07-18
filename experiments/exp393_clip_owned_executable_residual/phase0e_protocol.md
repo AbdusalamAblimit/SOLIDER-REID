@@ -3,7 +3,7 @@
 ## 状态
 
 `PROTOCOL FROZEN / 0E-S SYNTHETIC SEALED-PASS / 0E-C8 8-IMAGE SEALED-PASS /
-0E-128/FULL NO-START`。
+0E-128 SEALED-PASS / 0E-FULL NO-START`。
 
 本阶段不构建ReID model、optimizer、训练config、output或checkpoint。teacher-only审计与Phase A的
 route activation逻辑独立；Phase 0E失败只关闭当前rich evidence code并阻断Phase B，不取消已通过
@@ -91,6 +91,21 @@ margin=`0.621/0.173/0.627/0.203/0.756`，仅作描述性contract证据。PC-MBCL
    都大于0；
 4. slot-zero/static mean、raw uncentered、fixed random orthogonal、global-only为强对照；
 5. result、runner、script、fit-partition、PCA mean/basis分别记录SHA，异常/NaN/Inf/AMP warning为0。
+
+0E-128冻结结果：`PASS`。128个不同PID按hash严格分成64 fit/64 held-out；五slot的16个code维度
+held-out std全部非零，各slot最小std=`0.1649/0.1480/0.1802/0.1219/0.1371`；entropy effective
+rank=`10.764/10.756/11.843/10.788/11.101`，macro=`11.050/16`。wrong RGB margin逐slot均值=
+`0.808/0.735/0.781/0.742/0.821`，CI下界=`0.709/0.639/0.709/0.655/0.733`；same-RGB wrong-mask
+均值=`0.614/0.179/0.413/0.165/0.645`，CI下界=`0.531/0.097/0.341/0.103/0.575`，全部严格正。
+
+static slot-mean与global-only code exact zero；raw uncentered的wrong-RGB/wrong-mask margin明显更小，
+说明中心化有作用。fixed random orthogonal仍保留强margin且macro rank=`13.458`，说明信息存在于rich
+CLIP residual本身而非PCA挑出的偶然轴；PCA继续只作压缩器，不能写成创新。script/result/codebook/
+runner SHA256分别为
+`deae5c9308650f9f9344ab19e0e78fa78b193a53244e41ccc24d9274fbd1526a`、
+`47a27631756c42bfa696f9751b604532fa9033489d67ef107126fcaa254b19dc`、
+`4a671a70e0744edad88f911ce628d421650cb09453eb511a61e8d01c239269ef`、
+`e8f35143a8599bfec3f3e0354b872bc71090d48420a6408fa9d517d3f46c01a3`。该PASS只授权0E-FULL。
 
 full PASS只授权Phase B使用该teacher code；不授权semantic multi-stage，也不替代Phase A final裁决。
 

@@ -5192,3 +5192,16 @@ FAIL只关闭当前ReZero接口，不能证明rich CLIP evidence不存在。Phas
 detached-token重算阻断backbone梯度。它更新token/context/evidence projection与expert；ReZero alpha只由
 ReID loss打开。禁止把只监督pre-expert latent的loss误写成“更新执行残差”，也禁止增加训练后删除的
 projector吸收CLIP loss。semantic multi-stage继续NO-START。
+
+### [2026-07-19] 决策：0E-128通过rich evidence稳定性门，只授权full teacher审计
+
+**证据**：128个不同PID严格拆为64 fit/64 held-out。五slot 16维code的macro effective rank=
+`11.050/16`，每一维held-out std均非零；correct↔flip相对different-PID wrong RGB与same-RGB
+low-IoU wrong mask的逐slot PID-cluster CI下界全部严格大于0。slot-mean/global-only exact zero，raw
+uncentered明显更弱；fixed random orthogonal仍保留强信号，说明信息属于centered rich local residual，
+而不是PCA偶然挑轴。
+
+**决策**：`Phase 0E-128 = SEALED-PASS`。下一步仅允许按冻结协议执行official 15,618 train的
+0E-FULL teacher-only PID-disjoint审计，并采用流式/两遍实现避免把全部RGB一次性放入内存。PCA仍是
+压缩器而非方法贡献。full PASS也只授权Phase B teacher接口，不授权训练或multi-stage；full FAIL只
+关闭当前rich code并阻断Phase B，不能取消独立Phase A RZ-C0的实现与preflight。

@@ -3649,3 +3649,15 @@ expert生成的pre-alpha branch proposal做关系蒸馏，并用相同权重在d
 parameterization；两者逻辑独立而算力串行，只有Phase B需要二者同时通过。若最终correct evidence
 不能同时拉开wrong/static控制和all-bypass，就只能称为local CLIP KD或generic adapter，不能成为论文
 主贡献。
+
+### 0E-128带来的创新边界修正
+
+0E-128支持的是一个更窄但重要的事实：经过同图global与slot prior中心化后，CLIP局部视觉残差在
+held-out PID上同时保留较高维变化和可反事实定位的局部binding。五slot macro effective rank达到
+`11.050/16`，wrong RGB与same-RGB wrong mask的逐slot置信区间均为正；这比exp392的scalar-q只保留
+between-slot prior前进了一步。
+
+但fixed random orthogonal同样保留强margin，说明PCA本身既非必要语义轴，也不能作为贡献。真正可争的
+对象仍是：rich residual如何通过生产expert成为counterfactually executable mediator，并在final
+all-bypass中留下检索贡献。0E-128只是证明“有燃料”，没有证明router会使用它；因此下一证据必须保持
+teacher richness与route activation两门分立，不能再次把teacher审计成功包装成ReID方法成功。

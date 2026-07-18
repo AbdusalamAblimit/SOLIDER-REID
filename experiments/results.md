@@ -2303,3 +2303,35 @@ correct start/end descriptor exact、state SHA exact、全部descriptor finite�
 收紧：两个consumer在数值上可达final descriptor，但整条semantic route对e120检索排序近似失活；
 q、精确mask geometry、slot binding和slot-specific expert均无`0.1 mAP`级别的边际贡献。下一机制
 不能只调q或增加stage，必须先让semantic route本身形成有量级且经all-bypass验证的检索残差。
+
+## exp393 Phase 0E：centered rich CLIP local evidence审计（2026-07-19）
+
+exp393把“route能否离开identity”和“CLIP局部证据是否足够丰富”拆成逻辑独立的两门。Phase 0E只
+审计后者，不构建ReID model、optimizer或checkpoint，也不以teacher PASS直接授权训练。
+
+0E-S synthetic exact与0E-C8真实8图contract均`SEALED-PASS`。0E-C8验证official global parity、
+repeat/NULL exact、hard-owner/wrong-mask IoU=`0`、输出`[8,5,16]`及teacher frozen/no-grad；五slot的
+donor和wrong-mask描述性margin均为正，但未用8图作统计裁决。
+
+0E-128在128个不同PID上按hash严格拆成64 fit/64 held-out，全部正式门`PASS`。五slot的16维
+held-out code每维std均非零，各slot最小std=`0.1649/0.1480/0.1802/0.1219/0.1371`；effective rank=
+`10.764/10.756/11.843/10.788/11.101`，macro=`11.050/16`。correct↔flip相对different-PID wrong
+RGB的margin均值=`0.808/0.735/0.781/0.742/0.821`，95% PID-cluster CI下界=
+`0.709/0.639/0.709/0.655/0.733`；相对same-RGB low-IoU wrong-mask的margin均值=
+`0.614/0.179/0.413/0.165/0.645`，CI下界=`0.531/0.097/0.341/0.103/0.575`，五slot均严格正。
+
+slot-mean/global-only code exact zero；raw uncentered的wrong-RGB/wrong-mask margin明显更弱。
+fixed random orthogonal仍保留强信号且macro rank=`13.458`，说明可用信息来自rich local residual，
+不依赖PCA偶然选轴；PCA只作固定压缩器，不能当作创新点。累计PC-MBCLS forward=`12.505s`，峰值
+allocation=`1,712,272,384 bytes`，strict finite与异常/AMP warning检查PASS，进程自然退出且GPU恢复
+`2 MiB/0%`。
+
+0E-128 script/result/codebook/runner SHA256分别为
+`deae5c9308650f9f9344ab19e0e78fa78b193a53244e41ccc24d9274fbd1526a`、
+`47a27631756c42bfa696f9751b604532fa9033489d67ef107126fcaa254b19dc`、
+`4a671a70e0744edad88f911ce628d421650cb09453eb511a61e8d01c239269ef`、
+`e8f35143a8599bfec3f3e0354b872bc71090d48420a6408fa9d517d3f46c01a3`。
+
+**当前判定**：`Phase 0E-S/C8/128 = SEALED-PASS`，只授权official 15,618 train的0E-FULL
+teacher-only held-out PID审计。Phase A、Phase B正式训练与semantic multi-stage仍`NO-START`；即使
+0E-FULL失败，也只关闭当前rich evidence code，不替代逻辑独立的Phase A route-activation裁决。

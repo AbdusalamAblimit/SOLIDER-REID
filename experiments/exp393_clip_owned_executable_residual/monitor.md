@@ -114,3 +114,32 @@ fixed random orthogonal和donor-recipient只报告为强对照，不根据128图
 `deae5c9308650f9f9344ab19e0e78fa78b193a53244e41ccc24d9274fbd1526a`；在已验证
 `/home/afr/par2606/.venv`完成静态编译，execution repo exact HEAD/tracked clean，启动前GPU=
 `2 MiB/0%`且无训练/审计进程。当前状态`0E-128 READY / NO-RESULT`，不授权训练或Phase B。
+
+## 2026-07-19 Phase 0E-128稳定性审计封板
+
+0E-128在唯一4090自然完成并`SEALED-PASS`。128个不同PID按同一hash严格分成64 fit/64 held-out；
+official parity=`0`、repeat/NULL exact、hard-owner/wrong-mask IoU=`0`、donor不同PID且无fixed point、
+teacher frozen/no-grad、全部feature/code finite。五slot各16维held-out std全`>1e-8`，实际最小std=
+`0.1649/0.1480/0.1802/0.1219/0.1371`；effective rank=
+`10.764/10.756/11.843/10.788/11.101`，macro=`11.050`。
+
+五slot correct↔flip相对wrong RGB margin均值=
+`0.808/0.735/0.781/0.742/0.821`，95% CI下界=
+`0.709/0.639/0.709/0.655/0.733`；相对same-RGB wrong-mask均值=
+`0.614/0.179/0.413/0.165/0.645`，CI下界=
+`0.531/0.097/0.341/0.103/0.575`，五slot均严格正。donor RGB+recipient mask与slot-cycle binding的
+五slot CI也均严格正，但不是正式门。
+
+强对照显示slot-mean/global-only code exact zero。raw uncentered macro rank=`10.216`，但wrong-RGB
+margin仅`0.211–0.261`、wrong-mask仅`0.047–0.280`，低于centered code；fixed random orthogonal
+macro rank=`13.458`且同样保留强margin，说明信号属于rich local residual，不依赖PCA偶然挑轴。PCA只
+作为固定压缩器，不能包装成贡献。五组arm累计PC-MBCLS forward=`12.505s`，peak allocation=
+`1,712,272,384 bytes`。
+
+script/result/codebook/runner SHA256分别为
+`deae5c9308650f9f9344ab19e0e78fa78b193a53244e41ccc24d9274fbd1526a`、
+`47a27631756c42bfa696f9751b604532fa9033489d67ef107126fcaa254b19dc`、
+`4a671a70e0744edad88f911ce628d421650cb09453eb511a61e8d01c239269ef`、
+`e8f35143a8599bfec3f3e0354b872bc71090d48420a6408fa9d517d3f46c01a3`。严格异常/AMP warning=
+`0`，execution HEAD/tracked clean，进程退出，GPU=`2 MiB/0%`。仅授权0E-FULL teacher-only审计；
+Phase A/B正式训练与semantic multi-stage仍NO-START。
