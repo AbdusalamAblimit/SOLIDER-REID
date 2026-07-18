@@ -97,3 +97,20 @@ script/result/runner SHA256分别为
 `4233a7c856a7c9085522f015c8c0887eb601214cbb64fa4007462bb853710d83`。严格异常/NaN/Inf/AMP
 warning/OOM=`0`，execution repo exact HEAD与tracked clean，进程退出，GPU回到`2 MiB/0%`。只授权
 0E-128稳定性审计；正式训练、Phase B和semantic multi-stage仍NO-START。
+
+## 2026-07-19 Phase 0E-128实现与启动前冻结
+
+新增独立`phase0e_rich_evidence_128.py`，不修改已封板C8脚本。样本固定为128个不同PID且全部五slot
+valid，按同一PID hash选择64 fit/64 held-out audit；slot mean与shared PCA-16只在fit侧拟合，basis、
+partition和paths单独写入codebook JSON并记录SHA。五组teacher arm固定为correct、同步flip、
+different-PID donor RGB+donor mask、donor RGB+recipient mask、same-RGB low-IoU slot-cycle mask。
+
+正式门禁只包括：held-out每slot 16维std都`>1e-8`、macro entropy effective rank `>=8/16`、
+wrong-RGB与wrong-mask paired margin逐slot PID-cluster bootstrap 95% CI下界都`>0`，以及contract/
+NULL/repeat/hard-owner/static-global exact、frozen/no-grad/finite。slot-cycle binding、raw uncentered、
+fixed random orthogonal和donor-recipient只报告为强对照，不根据128图结果调门槛或换projection。
+
+本地/远端script SHA256均为
+`deae5c9308650f9f9344ab19e0e78fa78b193a53244e41ccc24d9274fbd1526a`；在已验证
+`/home/afr/par2606/.venv`完成静态编译，execution repo exact HEAD/tracked clean，启动前GPU=
+`2 MiB/0%`且无训练/审计进程。当前状态`0E-128 READY / NO-RESULT`，不授权训练或Phase B。
