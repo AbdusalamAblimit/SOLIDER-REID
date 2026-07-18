@@ -139,3 +139,18 @@
 
 这是H2-M的首次且唯一正式启动。必须自然跑满e120，不续训、不重复、不按任何中间epoch/best/阈值
 停止，不修改运行中代码/config；Phase B/C继续`NO-START`。
+
+## e10完整评测轨迹
+
+- H2-M mAP / R1 / R5 / R10=`34.7 / 43.9 / 60.0 / 65.9`；
+- 同epoch exp387 D0=`33.4 / 42.7 / 59.8 / 65.2`，H2-M−D0=
+  `+1.3 / +1.2 / +0.2 / +0.7`；
+- 同epoch exp389 HT0=`34.2 / 44.4 / 59.7 / 65.8`，H2-M−HT0=
+  `+0.5 / −0.5 / +0.3 / +0.1`；
+- e10末尾PoseEarly/PoseLate=`0.856/0.850`、StudentEarly/StudentLate=`1/1`、
+  ReliabilityEarly/ReliabilityLate=`0.852/0.852`、GateEarlyAbs/GateLateAbs=
+  `3.938e-03/6.378e-03`，全部finite；
+- 完整query/gallery评测后自然进入e11；exact HEAD/config/tracked source clean，唯一main+8 workers，
+  GPU约`7764 MiB`，严格异常与AMP warning=`0`，e120前checkpoint=`0`。
+
+e10相对两个参考的正负混合只记录为轨迹，不作Phase A裁决，不用于早停或挑best；继续自然运行至e120。
