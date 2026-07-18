@@ -459,3 +459,14 @@ B0-s2025必须自然跑满e120；不得按中间点停止或挑best。终审PASS
 
 这是D0-s2025首次且唯一正式启动。必须自然跑满e120；D0只在训练期读取exp386 artifact，
 query/gallery保持RGB-only，不得按任何中间点停止或挑best。
+
+### 2026-07-18 07:02 UTC：e10完整评测
+
+- D0 e10 mAP/R1/R5/R10=`35.0/44.7/60.4/66.3`；同epoch B0-s2025=
+  `34.7/44.6/59.6/65.8`，D0−B0=`+0.3/+0.1/+0.8/+0.5`；
+- e1--5 Student=`0`，e6/e7/e8/e9/e10依次=`0.2/0.4/0.6/0.8/1.0`，handoff路由完整；
+  评测后自然进入e11，现场e11 iter200/227 Loss=`4.879`、Pose=`0.783`、Acc=`0.309`、
+  Student=`1.00`、Reliability=`0.848`、GateAbs=`7.055e-03`，全部finite；
+- exact HEAD/config、tracked source clean、唯一main PID=`1254315`+8 workers保持；GPU只有该main，
+  约`6,994 MiB`；runner/train log严格异常与AMP warning扫描命中`0`，无checkpoint；
+- e10只作同seed、同epoch轨迹记录，不用于提前裁决、早停或挑best。
