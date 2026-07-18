@@ -138,7 +138,7 @@ pose artifact 数据门禁已封板。下一步只允许把现有 clean strict l
 
 该 arm 必须自然跑满 e120，不改运行中代码/config，不续训、不重复；每次完整 eval 相对 exp384 Market B0 同 epoch 显式计算 mAP/R1/R5/R10 四项差值，只更新并提交本 monitor。
 
-## 正式训练阶段评测（e10–e80）
+## 正式训练阶段评测（e10–e120）
 
 | Epoch | exp388 D0 mAP / R1 / R5 / R10 | exp384 B0 同 epoch | D0−B0 |
 |---:|---:|---:|---:|
@@ -150,6 +150,10 @@ pose artifact 数据门禁已封板。下一步只允许把现有 clean strict l
 | 60 | 90.7 / 95.9 / 98.5 / 99.2 | 90.2 / 95.8 / 98.7 / 99.2 | +0.5 / +0.1 / −0.2 / +0.0 |
 | 70 | 91.2 / 96.2 / 98.7 / 99.3 | 90.8 / 96.1 / 98.6 / 99.2 | +0.4 / +0.1 / +0.1 / +0.1 |
 | 80 | 91.7 / 96.5 / 98.8 / 99.3 | 91.3 / 96.1 / 98.8 / 99.2 | +0.4 / +0.4 / +0.0 / +0.1 |
+| 90 | 91.7 / 96.4 / 98.7 / 99.3 | 91.4 / 96.3 / 98.7 / 99.2 | +0.3 / +0.1 / +0.0 / +0.1 |
+| 100 | 91.9 / 96.6 / 98.8 / 99.3 | 91.4 / 96.3 / 98.7 / 99.3 | +0.5 / +0.3 / +0.1 / +0.0 |
+| 110 | 92.0 / 96.6 / 98.8 / 99.3 | 91.6 / 96.4 / 98.7 / 99.2 | +0.4 / +0.2 / +0.1 / +0.1 |
+| 120 | 92.0 / 96.5 / 98.8 / 99.3 | 91.6 / 96.3 / 98.7 / 99.2 | +0.4 / +0.2 / +0.1 / +0.1 |
 
 - e10 末：`Pose=0.784`、`Student=1.00`、`GateAbs=5.300e-03`；
 - e20 末：`Pose=0.602`、`Student=1.00`、`GateAbs=1.516e-02`；
@@ -158,6 +162,26 @@ pose artifact 数据门禁已封板。下一步只允许把现有 clean strict l
 - e50 末：`Pose=0.490`、`Student=1.00`、`Reliability=0.854`、`GateAbs=2.332e-02`；
 - e60 末：`Pose=0.486`、`Student=1.00`、`Reliability=0.855`、`GateAbs=2.378e-02`；
 - e70 末：`Pose=0.484`、`Student=1.00`、`Reliability=0.836`、`GateAbs=2.402e-02`；
-- e80 末：`Pose=0.484`、`Student=1.00`、`Reliability=0.835`、`GateAbs=2.420e-02`。
+- e80 末：`Pose=0.484`、`Student=1.00`、`Reliability=0.835`、`GateAbs=2.420e-02`；
+- e90 末：`Pose=0.482`、`Student=1.00`、`Reliability=0.824`、`GateAbs=2.430e-02`；
+- e100 末：`Pose=0.483`、`Student=1.00`、`Reliability=0.838`、`GateAbs=2.435e-02`；
+- e110 末：`Pose=0.482`、`Student=1.00`、`Reliability=0.857`、`GateAbs=2.440e-02`；
+- e120 末：`Pose=0.483`、`Student=1.00`、`Reliability=0.837`、`GateAbs=2.435e-02`。
 
-截至 e80，八次完整评测均正常完成；e60/e70/e80 的同 epoch mAP 差值依次为 `+0.5/+0.4/+0.4`，e80 的 R1/R5/R10 差值为 `+0.4/+0.0/+0.1`。这些仅是中途轨迹，不作单点裁决，正式 arm 继续自然运行到 e120。期间 exact HEAD/config 保持不变，唯一 main+8 workers，未生成早期 checkpoint，AMP/NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow 严格异常命中为 0。
+全部十二次完整评测均正常完成；正式 arm 自然运行到 e120，未选择局部 best 或以单点/阈值提前裁决。final 相对 Market official B0 的 mAP/R1/R5/R10 差值为 `+0.4/+0.2/+0.1/+0.1`。
+
+## e120 终审
+
+- 原 main PID=`1051663` 及全部 workers 自然退出，GPU=`2 MiB / 0%`；
+- output 只有 `train_log.txt` 与唯一 `transformer_120.pth`，不存在中途 checkpoint；
+- checkpoint SHA256=`6b0fee5ecb0c4c79d698a6e6ba719b9a64d12d49ea3734ac25424d403a04e97f`；
+- runner SHA256=`d77433de2f9658916eba7be3219d63665f22557df0aa648348f5b72317e413d5`；
+- train log SHA256=`ee3aa5c40f4359c53b78dac25d06417843c8c65879b3bb2cd98021884f810321`；
+- exact HEAD/config 与 tracked source clean；runner/train log 的边界词严格异常命中为 0；
+- checkpoint 共 `223` 个 state tensor，其中 `210` 个浮点或复数 tensor 全部有限，strict load missing/unexpected=`0/0`；
+- 相对同 seed、同数据构造顺序的 fresh 初始化参数轨迹：anchor `8/8`、PSG bank0 `2/2`、PSG bank1 `2/2`、Swin `171/193`、head `2/3` changed；两个 PSG bank 的两组对应参数均不相等，保持独立且均真实学习；
+- final checkpoint 上 correct pose、batch-shuffle pose、`None` 与零访问 exploding pose 的 descriptor、student field、两个 gate delta 均逐元素 exact；descriptor/field/gate 全部有限，query/gallery 继续严格 RGB-only；
+- 终审 canonical JSON SHA256=`599a90355be99b7f9c78586beb3fc0c1626feaf9c97cf3588a9dfee8189b3880`；
+- 可执行终审结论：`EXP388_FINAL_AUDIT_PASS`。
+
+最终结论边界：在官方干净代码、fresh ViTPose-H train-only target、单 seed matched Market recipe 下，完整 anchor+PSG 相对 B0 得到小幅一致的四项 final 正差值；结合 exp387 Occ-Duke 的 `+0.2/+0.3/+0.2/−0.6`，该证据支持方法可跨数据集迁移，但单 seed 与较小效应仍不足以宣称稳定普适增益。exp388 至此封板，禁止重启、续训或重复。
