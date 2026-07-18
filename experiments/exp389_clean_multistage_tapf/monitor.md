@@ -135,3 +135,28 @@
 - e70 末尾 PoseEarly/PoseLate=`0.445/0.463`、ReliabilityEarly/ReliabilityLate=`0.855/0.855`、GateEarlyAbs/GateLateAbs=`1.876e-02/2.288e-02`。
 
 三次 eval 均为完整 query/gallery 评测。两层 StudentEarly/StudentLate 持续为 `1/1`，pose supervision 与 early/late PSG 均保持有限 active；e50–e70 仍是混合正负波动，不改变自然跑满协议。评测后训练已进入 e73；exact HEAD/config/tracked source clean、唯一 main+8 workers、GPU 约 `7.44 GiB`、checkpoint 尚未生成，严格异常=`0`。
+
+## e80–e100 完整评测轨迹
+
+### e80
+
+- HT0 mAP / R1 / R5 / R10=`55.4 / 65.4 / 78.9 / 82.9`；
+- 同 epoch exp387 D0=`56.1 / 66.3 / 79.5 / 84.0`；
+- HT0−D0=`−0.7 / −0.9 / −0.6 / −1.1`；
+- e80 末尾 PoseEarly/PoseLate=`0.442/0.462`、ReliabilityEarly/ReliabilityLate=`0.833/0.833`、GateEarlyAbs/GateLateAbs=`1.913e-02/2.282e-02`。
+
+### e90
+
+- HT0 mAP / R1 / R5 / R10=`56.5 / 66.1 / 79.8 / 84.4`；
+- 同 epoch exp387 D0=`57.5 / 67.9 / 81.2 / 85.3`；
+- HT0−D0=`−1.0 / −1.8 / −1.4 / −0.9`；
+- e90 末尾 PoseEarly/PoseLate=`0.443/0.463`、ReliabilityEarly/ReliabilityLate=`0.831/0.831`、GateEarlyAbs/GateLateAbs=`1.934e-02/2.318e-02`。
+
+### e100
+
+- HT0 mAP / R1 / R5 / R10=`56.4 / 65.9 / 79.2 / 84.3`；
+- 同 epoch exp387 D0=`56.9 / 67.1 / 79.6 / 83.8`；
+- HT0−D0=`−0.5 / −1.2 / −0.4 / +0.5`；
+- e100 末尾 PoseEarly/PoseLate=`0.443/0.462`、ReliabilityEarly/ReliabilityLate=`0.851/0.851`、GateEarlyAbs/GateLateAbs=`1.934e-02/2.315e-02`。
+
+三次均为完整 query/gallery 评测；e80–e100 大部分指标低于同 epoch D0，但 R10 在 e100 为正，仍不得以中间节点裁决。训练已自然进入 e107；两层 Student=`1/1`、pose supervision 与八个 PSG 持续 finite/active，exact HEAD/config/tracked source clean、唯一 main+8 workers、GPU 约 `7.33 GiB`、e120 前无 checkpoint、严格异常=`0`，继续至 e120。
