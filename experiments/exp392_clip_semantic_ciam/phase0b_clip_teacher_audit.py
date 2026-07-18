@@ -29,6 +29,17 @@ EXPECTED_POSE_MANIFEST_SHA256 = (
 EXPECTED_CLIP_SHA256 = (
     "9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e"
 )
+EXPECTED_RUNTIME_SHA256 = {
+    "datasets/bases.py": (
+        "03d231558f46264e4cff0c251b9b728ab4971232ed6c4bb7324ce1964f139c2c"
+    ),
+    "datasets/occluded_duke.py": (
+        "f0e7b25e75251643430b699d9c9969fae207c0a85c48855cd0404d61a4228f8e"
+    ),
+    "datasets/pose_targets.py": (
+        "42f6e35eff2ad572445143cb3ecc5b6a22d856facc4453b989411300dec22624"
+    ),
+}
 COCO17_FLIP = (0, 2, 1, 4, 3, 6, 5, 8, 7, 10, 9,
                12, 11, 14, 13, 16, 15)
 REGION_NAMES = (
@@ -1112,6 +1123,7 @@ def finalize_geometry(
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", required=True)
+    parser.add_argument("--source-commit", required=True)
     parser.add_argument("--data-root", required=True)
     parser.add_argument("--pose-artifact", required=True)
     parser.add_argument("--clip-checkpoint", required=True)
@@ -1132,6 +1144,12 @@ def main():
         raise RuntimeError("Pose manifest SHA mismatch")
     if sha256_file(clip_checkpoint) != EXPECTED_CLIP_SHA256:
         raise RuntimeError("CLIP checkpoint SHA mismatch")
+    runtime_sha = {
+        relative: sha256_file(repo_root / relative)
+        for relative in EXPECTED_RUNTIME_SHA256
+    }
+    if runtime_sha != EXPECTED_RUNTIME_SHA256:
+        raise RuntimeError("Phase 0B minimal runtime SHA mismatch")
     os.chdir(str(repo_root))
     sys.path.insert(0, str(repo_root))
     from datasets.occluded_duke import OccludedDuke
@@ -1420,6 +1438,9 @@ def main():
         "smoke_invariants": smoke_invariants,
         "execution": {
             "repo_root": str(repo_root),
+            "source_commit": args.source_commit,
+            "audit_script_sha256": sha256_file(Path(__file__).resolve()),
+            "runtime_sha256": runtime_sha,
             "data_root": str(data_root),
             "pose_artifact": str(pose_artifact),
             "pose_manifest_sha256": EXPECTED_POSE_MANIFEST_SHA256,
