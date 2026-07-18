@@ -194,3 +194,17 @@ smoke 的任何训练/eval 字段。必须以包含该最终 config 的新 execu
 
 这是 B0-s4321 唯一计入 exp390 的正式运行。必须自然跑满 e120；无效 de604a6 运行继续保持
 quarantine，不能与本运行合并、续接或作数值比较。
+
+## B0-s4321-valid 运行监控
+
+### 2026-07-18 03:10 UTC：e10 完整评测
+
+- e1--e10 自然完成，e10 mAP/R1/R5/R10=`36.1/46.8/63.0/69.4`；评测后自然进入 e11，
+  现场 e11 iter40/227 loss=`5.400`，finite；
+- exact detached HEAD=`ec46d50486d645da0872d5549e1071f2a8072b24`，config SHA256=
+  `5cbf30f2129c4b55a9677f5025d96c2bddb75dffffd7d2d9ff3802097fc282ab`，tracked source clean；
+- 唯一 main PID=`1149542` 与 8 个 DataLoader workers；GPU 只有该 main，约 `6,944 MiB`；
+- stdout 中 official teacher 仍为 `All keys matched successfully`；runner/train log 的
+  `NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow/GradScaler/autocast` 严格扫描命中 `0`；
+- e120 前无 checkpoint，继续自然训练。该中间评测只记录轨迹，不作早停、best 选择或跨 seed
+  结论。
