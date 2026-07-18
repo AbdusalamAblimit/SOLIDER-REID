@@ -6,7 +6,7 @@ from .backbones.vit_pytorch import vit_base_patch16_224_TransReID, vit_small_pat
 from .backbones.swin_transformer import swin_base_patch4_window7_224, swin_small_patch4_window7_224, swin_tiny_patch4_window7_224
 from loss.metric_learning import Arcface, Cosface, AMSoftmax, CircleLoss
 from .backbones.resnet_ibn_a import resnet50_ibn_a,resnet101_ibn_a
-from .tapf import CleanTapfD0, CleanTapfHt0
+from .tapf import CleanSemanticTapfC0, CleanTapfD0, CleanTapfHt0
 
 def shuffle_unit(features, shift, group, begin=1):
 
@@ -232,11 +232,16 @@ class build_transformer(nn.Module):
             cuda_rng_state = (
                 torch.cuda.get_rng_state_all() if torch.cuda.is_initialized() else None
             )
-            tapf_class = (
-                CleanTapfHt0
-                if cfg.MODEL.TAPF.HIERARCHICAL
-                else CleanTapfD0
-            )
+            if cfg.MODEL.TAPF.SEMANTIC_ENABLED:
+                if cfg.MODEL.TAPF.HIERARCHICAL:
+                    raise ValueError("Semantic fast-track is single-stage only")
+                tapf_class = CleanSemanticTapfC0
+            else:
+                tapf_class = (
+                    CleanTapfHt0
+                    if cfg.MODEL.TAPF.HIERARCHICAL
+                    else CleanTapfD0
+                )
             tapf_kwargs = {}
             if cfg.MODEL.TAPF.HIERARCHICAL:
                 tapf_kwargs = {
@@ -245,10 +250,17 @@ class build_transformer(nn.Module):
                     "early_consumer_count": len(self.base.stages[2].blocks),
                     "pose_loss_reduction": cfg.MODEL.TAPF.POSE_LOSS_REDUCTION,
                 }
+            elif cfg.MODEL.TAPF.SEMANTIC_ENABLED:
+                tapf_kwargs = {
+                    "router_rank": cfg.MODEL.TAPF.SEMANTIC_ROUTER_RANK,
+                }
+            else:
+                tapf_kwargs["psg_hidden"] = cfg.MODEL.TAPF.PSG_HIDDEN
+            if cfg.MODEL.TAPF.HIERARCHICAL:
+                tapf_kwargs["psg_hidden"] = cfg.MODEL.TAPF.PSG_HIDDEN
             self.base.enable_tapf(
                 tapf_class(
                     anchor_hidden=cfg.MODEL.TAPF.ANCHOR_HIDDEN,
-                    psg_hidden=cfg.MODEL.TAPF.PSG_HIDDEN,
                     gaussian_sigma=cfg.MODEL.TAPF.GAUSSIAN_SIGMA,
                     gate_release=cfg.MODEL.TAPF.GATE_RELEASE,
                     teacher_epochs=cfg.MODEL.TAPF.TEACHER_EPOCHS,

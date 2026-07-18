@@ -35,6 +35,13 @@ def pose_train_collate_fn(batch):
         "scores": torch.stack([item.scores for item in poses], dim=0),
         "valid": torch.stack([item.valid for item in poses], dim=0),
     }
+    teacher_flags = [item.teacher_rgb is not None for item in poses]
+    if any(teacher_flags) and not all(teacher_flags):
+        raise RuntimeError("Mixed teacher-RGB availability in one batch")
+    if all(teacher_flags):
+        pose_batch["teacher_rgb"] = torch.stack(
+            [item.teacher_rgb for item in poses], dim=0
+        )
     return (
         torch.stack(images, dim=0),
         torch.tensor(pids, dtype=torch.int64),

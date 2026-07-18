@@ -26,6 +26,7 @@ class AugmentedPoseTarget:
     valid: torch.Tensor
     flipped: bool
     crop_offset: tuple
+    teacher_rgb: torch.Tensor = None
 
 
 def _padding_left_top(padding):
@@ -52,10 +53,12 @@ class PairedPoseTransform:
         pixel_mean,
         pixel_std,
         erasing_probability,
+        return_teacher_rgb=False,
     ):
         self.size_train = tuple(size_train)
         self.flip_probability = float(flip_probability)
         self.erasing_probability = float(erasing_probability)
+        self.return_teacher_rgb = bool(return_teacher_rgb)
         if len(self.size_train) != 2 or min(self.size_train) <= 0:
             raise ValueError("size_train must contain two positive values")
         if not 0.0 <= self.flip_probability <= 1.0:
@@ -126,6 +129,7 @@ class PairedPoseTransform:
             )
 
         image = self.to_tensor(image)
+        teacher_rgb = image.clone() if self.return_teacher_rgb else None
         image = self.normalize(image)
         image = self.random_erasing(image)
 
@@ -140,4 +144,5 @@ class PairedPoseTransform:
             valid=valid,
             flipped=flipped,
             crop_offset=(crop_left, crop_top),
+            teacher_rgb=teacher_rgb,
         )

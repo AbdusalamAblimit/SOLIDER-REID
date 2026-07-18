@@ -1,9 +1,10 @@
 # 实验 exp392：CLIP 语义校准的可辨识解剖中介路由
 
-> 状态：`DESIGN-ONLY / RESEARCH-ONLY / NO-START`
+> 状态：`PHASE 0A/0B/B2-SI SEALED / PHASE 0C FAST-TRACK IMPLEMENTATION / TRAINING NO-START`
 >
-> 当前不实现代码、不创建config/output、不启动GPU任务。exp391的纯结构NO-GO继续封板，但不永久
-> 否定本实验中语义校准后的多阶段版本。
+> 用户已明确要求不能因B2-Sv1的反事实构造FAIL否定或无限期阻塞CLIP–TAPF训练。当前允许实现一个
+> fresh单阶段fast-track探索臂；只有实现、NULL/梯度/teacher隔离和显存门禁通过后才首次启动GPU。
+> exp391的纯结构NO-GO继续封板，但不永久否定本实验中语义校准后的多阶段版本。
 
 ## 动机
 
@@ -48,11 +49,12 @@ q_j = softmax(cos(v_j, all T) / tau)
 每个stage anchor直接预测绝对状态，不读取上一field、不预测offset：
 
 ```text
-A_s = {M_s,c, r_s,c}, c in coarse anatomical regions
+A_s = {M_s,c, q_s,c, p_s,c}, c in coarse anatomical regions
 ```
 
 - `M`是空间support，`pi=Normalize(M)`只用于gather；
-- `r`是单独的visual-support/reliability amplitude；
+- `q`是CLIP校准的visual-support amplitude；
+- `p`是slot presence/NULL，student用straight-through hard gate保证推理执行严格为0/1；
 - fixed pose incidence matrix定义17 joints到coarse regions的语义映射；
 - CLIP只校准sample-specific support/reliability，不重复声称发现已知part name；
 - `M=0,r=0`时consumer必须逐元素identity。
@@ -79,9 +81,10 @@ F'(p)     = F(p) + alpha * tanh(DeltaF(p))
 首版优先使用：
 
 ```text
-q_teacher = text_logits(pool(pose_region_mask, frozen_CLIP_patch_tokens))
-q_anchor  = text_logits(pool(predicted_region_mask, frozen_CLIP_patch_tokens))
-L_sem     = KL(q_teacher || q_anchor)
+M_teacher = hard_owner_pose_region_mask
+q_teacher = PC_MBCLS(frozen_CLIP, aligned_RGB, M_teacher, text_prototypes)
+p_teacher = valid(M_teacher, q_teacher)
+L_sem     = mean(BCE(M_anchor,M_teacher), BCE(p_anchor,p_teacher), BCE(q_anchor,q_teacher))
 ```
 
 梯度只能通过predicted mask回到anchor。若后续增加stage ReID feature projector，必须作为独立变量，
@@ -223,9 +226,36 @@ tight-crop global CLS后macro top-1升到`44.688%`，image-only patch cluster达
 
 ## 当前裁决
 
-`exp392 = PHASE 0A SEALED / PHASE 0B CURRENT-TEACHER SEALED-NO-GO / PHASE 0C NO-START /
-FORMAL TRAINING NO-START`。不得用当前dense teacher创建训练config，也不得把该结果扩张成“CLIP或
-语义校准永久无效”。下一步先只读设计新的单变量teacher接口，优先比较共享trunk的
-pose-conditioned multi-block CLS readout与region-crop global CLS成本/缓存边界；任一新定义仍需
-独立teacher-only全门禁，只有通过后才重新授权Phase 0C。B2进一步把pose固定为不可置换slot
-identity，CLIP只校准slot内visual support/appearance，不再重复猜pose已经给出的part name。
+`exp392 = PHASE 0A SEALED / PHASE 0B NAIVE DENSE TEACHER SEALED-NO-GO /
+B2-SI PC-MBCLS SEALED-PASS / B2-Sv1 COUNTERFACTUAL CONSTRUCTION SEALED-FAIL /
+PHASE 0C FAST-TRACK IMPLEMENTATION`。B2-Sv1只失败在不可同时满足的connected-bbox/non-overlap/
+low-IoU构造，不能覆盖B2-SI五slot局部响应证据，也不能扩张成“CLIP或语义校准永久无效”。
+
+### 用户授权的fast-track探索臂
+
+为避免把teacher审计变成无限前置证明，B2-Sv2继续独立承担机制证据，但不再阻塞首次训练尝试。
+首个训练臂固定为single-stage bundled feasibility：
+
+1. 保留clean D0的backbone、ID head、两个late consumer位置、batch64、120 epoch和全部recipe；
+2. anchor保留17-joint heatmap/confidence辅助头，同时直接预测五个不可置换coarse slot mask、五个
+   `q_clean_support`和五个presence；router只消费直接五slot状态，不再把17-joint `amax`当成另一套
+   执行几何；
+3. teacher读取与student同几何、RandomErasing前RGB，因此这是training-privileged clean-view
+   support distillation；必须另报post-RE teacher诊断，不能偷写成“当前可见度真值”；
+4. 五slot state进入两个推理保留的feature-dependent low-rank semantic routers，state在router前
+   detach；ReID loss仍正常更新clean backbone/ID head和router，只阻断其把anchor改写成ID code；
+5. teacher在模型外，永久eval/no-grad，不进optimizer、state_dict、eval/query/gallery；推理RGB-only；
+6. frozen teacher一次前向同时返回`(M,q,valid)`；`M`由96×32固定4×4 average pooling到anchor的
+   24×8，禁止另画Gaussian或换renderer。handoff用同一系数成对混合`(M,q,presence)`：e1-5 teacher，
+   e6-10为0.2/0.4/0.6/0.8/1.0，e11后student；
+   CLIP q loss全120 epoch持续，不随handoff关闭；
+7. 17-joint旧loss继续保留，新增loss固定为`mean(region-mask BCE, presence BCE, q BCE)`，不按中途
+   曲线改权；invalid slot不计算q loss、presence target严格为0。执行状态显式乘presence，NULL必须
+   满足`M=0`、`q=0`或`presence=0`时逐元素identity，不用五类softmax强制全图归属人体；两个
+   consumer都必须独立可达final descriptor。
+
+该臂同时改变slot化state、consumer数学和CLIP监督，因此只能标作bundled exploration，不能单独
+归因为CLIP因果或single-variable正式消融。启动前只保留真正的正确性阻塞：config-off exact、teacher
+隔离、prompt/checkpoint parity、NULL identity、梯度所有权、成对handoff、两consumer可达、CUDA/AMP
+finite以及batch64峰值不超过24 GiB。通过即fresh自然e120；最终无论正负都继续补Generic-LR、
+pose-only coarse和semantic counterfactual拆因，而不因一个结果否定整条CLIP–TAPF路线。

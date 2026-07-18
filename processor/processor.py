@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 import cv2
 import numpy as np
 import time
@@ -36,9 +37,37 @@ def do_train(cfg,
             logger.info('Using {} GPUs for training'.format(torch.cuda.device_count()))
             model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[local_rank], find_unused_parameters=True)
 
+    semantic_teacher = None
+    semantic_teacher_diagnostic_done = False
+    if cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.SEMANTIC_ENABLED:
+        from model.clip_semantic_teacher import FrozenClipSlotTeacher
+
+        cpu_rng_state = torch.get_rng_state()
+        cuda_rng_state = torch.cuda.get_rng_state_all()
+        numpy_rng_state = np.random.get_state()
+        python_rng_state = random.getstate()
+        semantic_teacher = FrozenClipSlotTeacher(
+            checkpoint=cfg.MODEL.TAPF.CLIP_CHECKPOINT,
+            checkpoint_sha256=cfg.MODEL.TAPF.CLIP_CHECKPOINT_SHA256,
+            device=torch.device("cuda", local_rank),
+            microbatch=cfg.MODEL.TAPF.CLIP_MICROBATCH,
+        )
+        torch.set_rng_state(cpu_rng_state)
+        torch.cuda.set_rng_state_all(cuda_rng_state)
+        np.random.set_state(numpy_rng_state)
+        random.setstate(python_rng_state)
+        logger.info(
+            "Frozen PC-MBCLS teacher loaded outside model/optimizer, SHA: %s",
+            semantic_teacher.checkpoint_sha256,
+        )
+
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
     pose_loss_meter = AverageMeter()
+    semantic_loss_meter = AverageMeter()
+    region_mask_loss_meter = AverageMeter()
+    presence_loss_meter = AverageMeter()
+    q_loss_meter = AverageMeter()
     early_pose_loss_meter = AverageMeter()
     late_pose_loss_meter = AverageMeter()
 
@@ -50,6 +79,10 @@ def do_train(cfg,
         loss_meter.reset()
         acc_meter.reset()
         pose_loss_meter.reset()
+        semantic_loss_meter.reset()
+        region_mask_loss_meter.reset()
+        presence_loss_meter.reset()
+        q_loss_meter.reset()
         early_pose_loss_meter.reset()
         late_pose_loss_meter.reset()
         evaluator.reset()
@@ -61,6 +94,11 @@ def do_train(cfg,
                     "keypoints": pose_batch["keypoints"].to(device),
                     "scores": pose_batch["scores"].to(device),
                     "valid": pose_batch["valid"].to(device),
+                    **(
+                        {"teacher_rgb": pose_batch["teacher_rgb"].to(device)}
+                        if "teacher_rgb" in pose_batch
+                        else {}
+                    ),
                 }
             else:
                 img, vid, target_cam, target_view = batch
@@ -71,6 +109,98 @@ def do_train(cfg,
             target = vid.to(device)
             target_cam = target_cam.to(device)
             target_view = target_view.to(device)
+            if semantic_teacher is not None:
+                if "teacher_rgb" not in pose_batch:
+                    raise RuntimeError("Semantic TAPF batch is missing pre-RE RGB")
+                with torch.no_grad(), amp.autocast(enabled=True):
+                    semantic_targets = semantic_teacher(
+                        pose_batch["teacher_rgb"],
+                        pose_batch["keypoints"],
+                        pose_batch["scores"],
+                        pose_batch["valid"],
+                    )
+                pose_batch["semantic_q_visible"] = semantic_targets[
+                    "q_visible"
+                ].detach().clone()
+                pose_batch["semantic_valid"] = semantic_targets[
+                    "valid"
+                ].detach().clone()
+                pose_batch["semantic_teacher_mask"] = semantic_targets[
+                    "region_masks"
+                ].detach().clone()
+                if not semantic_teacher_diagnostic_done:
+                    q_values = semantic_targets["q_visible"].float()
+                    q_valid = semantic_targets["valid"].bool()
+                    q_mean = []
+                    q_std = []
+                    q_entropy = []
+                    q_constant_gap = []
+                    for slot in range(q_values.shape[1]):
+                        slot_values = q_values[:, slot][q_valid[:, slot]]
+                        if slot_values.numel() == 0:
+                            q_mean.append(None)
+                            q_std.append(None)
+                            q_entropy.append(None)
+                            q_constant_gap.append(None)
+                            continue
+                        clipped = slot_values.clamp(1e-6, 1.0 - 1e-6)
+                        mean_value = clipped.mean()
+                        sample_entropy = -(
+                            clipped * clipped.log()
+                            + (1.0 - clipped) * (1.0 - clipped).log()
+                        ).mean()
+                        constant_entropy = -(
+                            mean_value * mean_value.log()
+                            + (1.0 - mean_value)
+                            * (1.0 - mean_value).log()
+                        )
+                        q_mean.append(mean_value.item())
+                        q_std.append(
+                            clipped.std(unbiased=False).item()
+                        )
+                        q_entropy.append(sample_entropy.item())
+                        q_constant_gap.append(
+                            (constant_entropy - sample_entropy).item()
+                        )
+                    logger.info(
+                        "Semantic q first-batch slots: mean=%s std=%s entropy=%s constant-prior-gap=%s",
+                        [None if value is None else round(value, 6) for value in q_mean],
+                        [None if value is None else round(value, 6) for value in q_std],
+                        [None if value is None else round(value, 6) for value in q_entropy],
+                        [None if value is None else round(value, 6) for value in q_constant_gap],
+                    )
+                    mean = torch.as_tensor(
+                        cfg.INPUT.PIXEL_MEAN, device=img.device
+                    ).view(1, 3, 1, 1)
+                    std = torch.as_tensor(
+                        cfg.INPUT.PIXEL_STD, device=img.device
+                    ).view(1, 3, 1, 1)
+                    post_erasing_rgb = (img.float() * std + mean).clamp(0.0, 1.0)
+                    with torch.no_grad(), amp.autocast(enabled=True):
+                        post_targets = semantic_teacher(
+                            post_erasing_rgb,
+                            pose_batch["keypoints"],
+                            pose_batch["scores"],
+                            pose_batch["valid"],
+                        )
+                    keep = semantic_targets["valid"] & post_targets["valid"]
+                    valid_count = int(keep.sum().item())
+                    if valid_count > 0:
+                        logger.info(
+                            "Semantic teacher boundary: valid=%d, preRE-q %.6f, postRE-q %.6f, paired-abs-diff %.6f",
+                            valid_count,
+                            semantic_targets["q_visible"][keep].mean().item(),
+                            post_targets["q_visible"][keep].mean().item(),
+                            (
+                                semantic_targets["q_visible"][keep]
+                                - post_targets["q_visible"][keep]
+                            ).abs().mean().item(),
+                        )
+                    else:
+                        logger.warning(
+                            "Semantic teacher boundary: valid=0; pre/post-RE q diagnostic skipped"
+                        )
+                    semantic_teacher_diagnostic_done = True
             with amp.autocast(enabled=True):
                 model_output = model(
                     img,
@@ -109,6 +239,19 @@ def do_train(cfg,
             acc_meter.update(acc, 1)
             if cfg.MODEL.TAPF.ENABLED:
                 pose_loss_meter.update(tapf_aux["pose_loss"].item(), img.shape[0])
+                if tapf_aux.get("semantic_loss") is not None:
+                    semantic_loss_meter.update(
+                        tapf_aux["semantic_loss"].item(), img.shape[0]
+                    )
+                    region_mask_loss_meter.update(
+                        tapf_aux["region_mask_loss"].item(), img.shape[0]
+                    )
+                    presence_loss_meter.update(
+                        tapf_aux["presence_loss"].item(), img.shape[0]
+                    )
+                    q_loss_meter.update(
+                        tapf_aux["q_loss"].item(), img.shape[0]
+                    )
                 if cfg.MODEL.TAPF.HIERARCHICAL:
                     early_pose_loss_meter.update(
                         tapf_aux["early_pose_loss"].item(), img.shape[0]
@@ -171,21 +314,42 @@ def do_train(cfg,
                             gate_abs = torch.stack(
                                 [delta.detach().float().abs().mean() for delta in tapf_aux["gate_deltas"]]
                             ).mean().item()
-                            logger.info(
-                                "Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Pose: {:.3f}, Acc: {:.3f}, Student: {:.2f}, Reliability: {:.3f}, GateAbs: {:.3e}, Base Lr: {:.2e}"
-                                .format(
-                                    epoch,
-                                    (n_iter + 1),
-                                    len(train_loader),
-                                    loss_meter.avg,
-                                    pose_loss_meter.avg,
-                                    acc_meter.avg,
-                                    tapf_aux["student_fraction"],
-                                    tapf_aux["reliability"].detach().float().mean().item(),
-                                    gate_abs,
-                                    base_lr,
+                            if cfg.MODEL.TAPF.SEMANTIC_ENABLED:
+                                logger.info(
+                                    "Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Pose: {:.3f}, Semantic: {:.3f}, RegionMask: {:.3f}, Presence: {:.3f}, Q: {:.3f}, Acc: {:.3f}, Student: {:.2f}, Reliability: {:.3f}, GateAbs: {:.3e}, Base Lr: {:.2e}"
+                                    .format(
+                                        epoch,
+                                        (n_iter + 1),
+                                        len(train_loader),
+                                        loss_meter.avg,
+                                        pose_loss_meter.avg,
+                                        semantic_loss_meter.avg,
+                                        region_mask_loss_meter.avg,
+                                        presence_loss_meter.avg,
+                                        q_loss_meter.avg,
+                                        acc_meter.avg,
+                                        tapf_aux["student_fraction"],
+                                        tapf_aux["reliability"].detach().float().mean().item(),
+                                        gate_abs,
+                                        base_lr,
+                                    )
                                 )
-                            )
+                            else:
+                                logger.info(
+                                    "Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Pose: {:.3f}, Acc: {:.3f}, Student: {:.2f}, Reliability: {:.3f}, GateAbs: {:.3e}, Base Lr: {:.2e}"
+                                    .format(
+                                        epoch,
+                                        (n_iter + 1),
+                                        len(train_loader),
+                                        loss_meter.avg,
+                                        pose_loss_meter.avg,
+                                        acc_meter.avg,
+                                        tapf_aux["student_fraction"],
+                                        tapf_aux["reliability"].detach().float().mean().item(),
+                                        gate_abs,
+                                        base_lr,
+                                    )
+                                )
                     else:
                         logger.info("Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Base Lr: {:.2e}"
                                     .format(epoch, (n_iter + 1), len(train_loader), loss_meter.avg, acc_meter.avg, base_lr))

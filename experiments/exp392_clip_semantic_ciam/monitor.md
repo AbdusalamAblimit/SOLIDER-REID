@@ -623,3 +623,37 @@ slot-support证据保持成立。v2改测`slot-evidence deletion`，不再声称
 
 当前只授权target/augmentation submap提取与official+exp386双源逐字节exact，以及pure synthetic
 static实现和独立审查；full pose-only、8图CLIP、GPU、Phase 0C与训练继续`NO-START`。
+
+## 2026-07-19 Phase 0C single-stage fast-track实现与独立复核
+
+用户明确要求不能让B2-Sv1一次反事实构造FAIL无限期阻塞训练，因此更正旧边界：B2-Sv2继续作为
+独立机制证据，但不再是首次single-stage训练的绝对前置。首个训练臂固定为bundled feasibility，
+正确性与真实运行时门禁通过后即fresh启动e120；成功后必须补pose-only/static-q/generic-router拆因，
+失败也只封板当前teacher/readout/router组合，不扩张为CLIP–TAPF永久NO-GO。
+
+当前实现已经完成：
+
+1. frozen PC-MBCLS在processor外部模型路径创建，同一次forward返回96×32 hard-owner `M`、五slot
+   `q`与`valid`；三者同步detach/clone，teacher不注册进student、optimizer、checkpoint或eval；
+2. teacher `M`只通过固定4×4 average pooling进入24×8 anchor尺度，不再用17-joint Gaussian/amax
+   另画consumer几何；
+3. student保留旧17-joint辅助头，同时直接预测五slot mask、q与presence；presence用straight-through
+   hard gate，forward严格0/1，invalid teacher presence target=0；
+4. 执行mask显式乘presence，router再乘q，因此`M=0`、`q=0`或`presence=0`均为逐元素identity；
+5. loss冻结为旧`heatmap+confidence`加`mean(region-mask BCE,presence BCE,q BCE)`，不按中间性能调权；
+6. e1-5/e6-10/e11+用同一fraction完整handoff `(M,q,presence)`，router前统一detach，ReID梯度只更新
+   backbone/ID head/router，semantic梯度只更新anchor；
+7. 训练日志分开记录mask/presence/q loss，并在首batch记录五slot q mean/std/entropy/constant-prior gap。
+
+本地新增5项semantic unit contract全部PASS：teacher单源与4×pool、invalid/all-NULL exact、完整handoff、
+anchor/router梯度所有权、M=0/q=0 identity。legacy D0相对当前HEAD的state与prepare关键tensor逐字节
+exact，py_compile与`git diff --check` PASS。
+
+独立子agent第二轮只读终审确认两个旧P0（q/M不同源、student无真实NULL）均已关闭，未发现阻止
+进入正式CUDA/AMP preflight的新P0。其保留的P1风险是B2-SI q靠近0.5、q BCE只占semantic mean的
+1/3且整体再乘0.1，可能只学到slot prior；本臂不偷调温度或权重，远端preflight必须原样报告q动态
+范围、constant-prior gap、q-head梯度及稀疏mask的foreground/background预测质量。
+
+下一步只做一次真实Torch1.13.1/OpenCLIP2.32 CUDA/AMP preflight：old/new PC-MBCLS parity、teacher/
+checkpoint隔离、batch64/8-worker/micro4连续24步finite与GradScaler、两个consumer梯度、峰值<24GiB、
+RGB-only eval和strict checkpoint reload。全部PASS后立即启动fresh e120，不再等待B2-Sv2全量审计。

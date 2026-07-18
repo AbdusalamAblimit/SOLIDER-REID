@@ -75,6 +75,7 @@ def make_dataloader(cfg):
             pixel_mean=cfg.INPUT.PIXEL_MEAN,
             pixel_std=cfg.INPUT.PIXEL_STD,
             erasing_probability=cfg.INPUT.RE_PROB,
+            return_teacher_rgb=cfg.MODEL.TAPF.SEMANTIC_ENABLED,
         )
         train_set = PoseImageDataset(
             dataset.train,
