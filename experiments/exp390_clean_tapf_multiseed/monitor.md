@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 状态：`RE-PREFLIGHT PASS / READY FOR FRESH VALID LAUNCH`；无有效正式 arm 在跑；
-- GPU：空闲；
+- 状态：`RUNNING`；当前且唯一有效 arm=`B0-s4321-valid`；
+- GPU：main PID=`1149542`，约 `6,846 MiB`；
 - 已有 seed1234 pair：B0=`57.4/67.4/80.6/85.2`，D0=`57.6/67.7/80.8/84.6`，
   D0−B0=`+0.2/+0.3/+0.2/−0.6`；
 - 预注册新增顺序：B0-s4321→D0-s4321→B0-s2025→D0-s2025；
@@ -176,3 +176,21 @@ output/runner 名称；启动前再次核对 exact HEAD/config/teacher、tracked
 为保证无效 quarantine 与有效运行路径永不重叠，B0-s4321 的自包含 config output 已进一步固定为
 `log/occluded_duke/exp390_clean_swin_tiny_b0_s4321_valid`；此处只改 output 名称，不改变上述已通过
 smoke 的任何训练/eval 字段。必须以包含该最终 config 的新 execution commit/bundle 启动。
+
+## B0-s4321 首次有效正式启动
+
+- fresh formal repo=`/home/afr/SOLIDER-REID-exp390-b0s4321-valid-ec46d50`；
+- exact detached HEAD=`ec46d50486d645da0872d5549e1071f2a8072b24`；
+- full-history bundle=`/home/afr/reid-clean/bundles/exp390_multiseed_ec46d50.bundle`，SHA256=
+  `a1c5329b52a3119fef3d070eb0430f02b21b02fe891d8add16849888db97bfb7`；
+- config SHA256=`5cbf30f2129c4b55a9677f5025d96c2bddb75dffffd7d2d9ff3802097fc282ab`；
+- output=`log/occluded_duke/exp390_clean_swin_tiny_b0_s4321_valid`；
+- runner=`/home/afr/train-logs/exp390_clean_b0_s4321_valid.runner.log`；
+- main PID=`1149542`，python=`/usr/local/anaconda3/envs/mmpose-abu/bin/python`；
+- 启动前 exact HEAD/config/bundle/teacher SHA、tracked source clean、独立 output/runner 不存在、无其它
+  GPU 任务、GPU=`2 MiB/0%` 全部 PASS；
+- stdout 明确记录 official teacher `All keys matched successfully`，首次检查 e1 iter160/227，唯一
+  main+8 workers，GPU 约 `6,846 MiB`，loss finite，严格异常 `0`，无 checkpoint。
+
+这是 B0-s4321 唯一计入 exp390 的正式运行。必须自然跑满 e120；无效 de604a6 运行继续保持
+quarantine，不能与本运行合并、续接或作数值比较。
