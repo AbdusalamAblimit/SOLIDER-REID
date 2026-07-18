@@ -543,3 +543,17 @@ occluder donor及connected overlap/control map，并把逐record实际增强后w
 SHA256=`eff0293fc572169343e2e0ec0dd150c944465c6291745cd4e485e8817ffb558c`，终审裁决只授权首次
 全15,618图CPU-only pose feasibility。8图CLIP、4090、Phase 0C和训练继续`NO-START`；full运行后还须
 终审进程退出、result/map/runner SHA、15,618 records、PASS与map SHA绑定及执行repo tracked clean。
+
+首次full CPU运行已启动。因当前本地历史包含与exp392无关的1.9GB wildlife模型blob，完整bundle经
+SSH relay传输停滞后立即终止，255KiB残片移入远端quarantine，未作为执行源。正式执行改用Git
+partial/sparse exact-HEAD snapshot：真实detached HEAD=
+`a25a9d91cf93e9607a41faadf682ef04d78e444e`，只物化`datasets/`与
+`experiments/exp392_clip_semantic_ciam/`所需tracked blob；archive SHA256=
+`ac2a11691b669f529888d5b85802ccd724243184e3a2228bbb5aeb3b2b4f1c74`。远端fresh repo=
+`/home/afr/SOLIDER-REID-exp392-b2s-pose-a25a9d9`，execution HEAD、四依赖script SHA、tracked clean、
+exp386 manifest、三个输出路径不存在、无同类进程与GPU=`2 MiB/0%`均在启动前复核PASS。
+
+唯一CPU任务的`time` PID=`1354894`、python PID=`1354895`；map/result/runner分别为
+`/home/afr/reid-clean/audits/exp392_phase0b2/b2s_full_pose_map_a25a9d9.json`、
+`b2s_full_pose_result_a25a9d9.json`、`b2s_full_pose_a25a9d9.runner.log`。启动后python约119% CPU，
+CUDA_VISIBLE_DEVICES为空，GPU仍`2 MiB/0%`，result尚不存在且runner为0字节，符合计算阶段预期。
