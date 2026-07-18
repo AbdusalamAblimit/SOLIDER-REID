@@ -248,8 +248,11 @@ class AuditTransform:
         masks, confidence, region_valid = self.renderer(
             keypoints, scores, valid
         )
+        erase_mask_grid = F.avg_pool2d(
+            erase_mask.view(1, 1, 384, 128), kernel_size=4, stride=4
+        ).view(96, 32)
         mask_mass = masks.flatten(1).sum(1)
-        erased_mass = (masks * erase_mask[None]).flatten(1).sum(1)
+        erased_mass = (masks * erase_mask_grid[None]).flatten(1).sum(1)
         erase_overlap = erased_mass / mask_mass.clamp_min(1e-12)
         erase_overlap = torch.where(
             mask_mass > 0, erase_overlap, torch.zeros_like(erase_overlap)
