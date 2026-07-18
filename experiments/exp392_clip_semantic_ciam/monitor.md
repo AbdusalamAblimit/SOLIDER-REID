@@ -683,3 +683,14 @@ RGB-only eval、state finite和batch64/8-worker全部PASS。峰值allocated/rese
 两步后，远端正式runtime同4图mask逐tensor `torch.equal=True`、max-abs=`0`、valid exact，同时保留batch
 vectorization。该修复不改变ontology、sigma、prompt、temperature、mask partition、loss或recipe；须以新
 exact commit重跑一次完整preflight，不能复用FAIL JSON裁决正式启动。
+
+新exact commit的完整preflight再次得到19/24成功更新、连续19步finite、约`8.02 GB`峰值、两个
+consumer/q-head/隔离/checkpoint/eval全PASS；parity仍唯一FAIL，mask max-abs=`2.6226e-6`、q逐tensor
+exact、valid exact。此时同一vector renderer在CPU已与封板scalar逐tensor exact，剩余差异确定来自
+CPU与CUDA的`exp`舍入，而不是公式或运算顺序。
+
+仍不放宽阈值：正式teacher改为在CPU以冻结vector renderer生成96×32 hard-owner mask/valid，再把
+结果传到CLIP device；CLIP image/readout和student仍在GPU。真实batch64计时显示CPU vector render约
+`63 ms/batch`，相对完整teacher+ReID preflight约增加12%而非不可接受的scalar loop开销。这样M与
+B2-SI封板teacher在相同设备、相同算术、相同renderer下逐tensor同源；改动不涉及训练语义、loss或
+阈值。须以新exact commit完成最终preflight后才启动正式e120。

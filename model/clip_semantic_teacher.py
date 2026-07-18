@@ -269,14 +269,18 @@ class FrozenClipSlotTeacher:
     def __call__(self, teacher_rgb, keypoints, scores, valid):
         if teacher_rgb.ndim != 4 or teacher_rgb.shape[1:] != (3, 384, 128):
             raise ValueError("teacher_rgb must have shape [B,3,384,128]")
-        masks, region_valid = render_hard_owner_regions(
-            keypoints,
-            scores,
-            valid,
+        if teacher_rgb.device != self.device:
+            raise ValueError("teacher_rgb must be on the frozen CLIP device")
+        cpu_masks, cpu_region_valid = render_hard_owner_regions(
+            keypoints.detach().cpu(),
+            scores.detach().cpu(),
+            valid.detach().cpu(),
             image_hw=(384, 128),
             field_hw=(96, 32),
             sigma=1.5,
         )
+        masks = cpu_masks.to(self.device)
+        region_valid = cpu_region_valid.to(self.device)
         q_parts = []
         valid_parts = []
         for start in range(0, len(teacher_rgb), self.microbatch):
