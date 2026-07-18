@@ -1112,6 +1112,7 @@ def finalize_geometry(
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", required=True)
+    parser.add_argument("--data-root", required=True)
     parser.add_argument("--pose-artifact", required=True)
     parser.add_argument("--clip-checkpoint", required=True)
     parser.add_argument("--output", required=True)
@@ -1124,6 +1125,7 @@ def main():
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
+    data_root = Path(args.data_root).resolve()
     pose_artifact = Path(args.pose_artifact).resolve()
     clip_checkpoint = Path(args.clip_checkpoint).resolve()
     if sha256_file(pose_artifact / "manifest.json") != EXPECTED_POSE_MANIFEST_SHA256:
@@ -1136,7 +1138,7 @@ def main():
     from datasets.pose_targets import PoseTargetStore
 
     set_seed(args.seed)
-    dataset = OccludedDuke(root="data", verbose=False)
+    dataset = OccludedDuke(root=str(data_root), verbose=False)
     records = list(dataset.train)
     if len(records) != 15618:
         raise RuntimeError("Unexpected official train size: %d" % len(records))
@@ -1418,6 +1420,7 @@ def main():
         "smoke_invariants": smoke_invariants,
         "execution": {
             "repo_root": str(repo_root),
+            "data_root": str(data_root),
             "pose_artifact": str(pose_artifact),
             "pose_manifest_sha256": EXPECTED_POSE_MANIFEST_SHA256,
             "clip_checkpoint": str(clip_checkpoint),
