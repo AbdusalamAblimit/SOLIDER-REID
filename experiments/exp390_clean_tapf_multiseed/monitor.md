@@ -279,3 +279,16 @@ quarantine，不能与本运行合并、续接或作数值比较。
 
 这是 D0-s4321 的首次且唯一正式启动。必须自然跑满 e120，query/gallery 继续严格 RGB-only；不得
 从 B0 或任何 D0 checkpoint 续训，也不得按中间性能停止。
+
+## D0-s4321 运行监控
+
+### 2026-07-18 04:08 UTC：e10 完整评测
+
+- D0 e10 mAP/R1/R5/R10=`37.9/48.6/64.2/70.5`；同 epoch B0-s4321=
+  `36.1/46.8/63.0/69.4`，D0−B0=`+1.8/+1.8/+1.2/+1.1`；
+- 评测后自然进入 e15，现场 e15 iter160/227 Loss=`3.543`、Pose=`0.650`、Acc=`0.535`、
+  Student=`1.00`、Reliability=`0.844`、GateAbs=`1.205e-02`，全部 finite；
+- exact HEAD/config、tracked clean、唯一 main PID=`1183898`+8 workers 继续 PASS；GPU 只有该
+  main，约 `7,070 MiB`；
+- runner/train log 严格异常与 AMP 警告扫描命中 `0`，e120 前无 checkpoint。e10 差值只作同
+  epoch 轨迹，不用于早停、best 选择或最终 paired 判断。
