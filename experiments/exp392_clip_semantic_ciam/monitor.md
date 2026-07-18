@@ -333,3 +333,30 @@ coverage exact、finite、macro top-1=`52.93% [50.74,56.14]`，但overlap median
 raw anatomy、证据幅度与其余teacher全不变，只以固定tie-break hard owner代替soft composition，使
 teacher slot在像素级真正互斥。B2-O2通过后再独立做`B2-P prompt-only`；两者不同步修。
 正式训练和GPU teacher-only全量继续`NO-START`。
+
+## 2026-07-18 Phase 0B2-O2 hard-owner CPU smoke
+
+B2-O2实现commit=`11a3303e7088acc9e62d259a741f058116732b92`，审计脚本SHA256=
+`86d7349fc23c2fc3adb8c2727f42013582578c82156b63631efafed42fbda00e`。默认`soft`路径保留；
+本臂显式`--partition-mode hard-owner`，唯一变化是
+`M_c=min(sum raw,1)*1[c=argmax raw]`。远端OpenCLIP/PyTorch正式环境中的soft/hard双静态契约均
+PASS；hard的pairwise product max严格`0`、sum support max=`1`、flip max error=
+`8.34e-7`。
+
+8图CPU smoke完成40 crops，overlap median/P95/max=`0/0/0`、macro top-1=`57.5%`、
+coverage exact、finite，verdict=`B2_O2_SMOKE_PASS`；result/runner SHA256分别为
+`7ee442dc603bff1696dfd9e2146ac3e023477254bcba1e26ede180bb2bcd77ea`/
+`6c85be3a6cd98ef022cfde5fe640efa188c6c0a89677c964364452a950f246e8`。
+
+同一冻结定义的128图CPU复核完成639 crops，wall=`2:24.77`、maxRSS=`3,700,532 KiB`；
+overlap median/P95/max继续严格`0/0/0`，macro top-1=`51.56% [48.92,55.18]`，
+coverage exact、finite，verdict=`B2_O2_SMOKE_PASS`。head/torso/lower-leg top-1=
+`88.98/75.07/74.80%`，arms/upper-leg=`0.93/18.04%`；后二者没有随hard-owner改善，确认
+prompt语义混淆与ontology是独立问题。result/runner SHA256分别为
+`ce6d80f65f31749a227429ef6eda4efa9e0dcfcb6bfc4946d79b3262e3a4b8a9`/
+`6eae2d981312e6fff2029b46500100c4ae038b817acf76e483ba37c50709ee98`。运行前后4090均为
+`2 MiB/0%`，无残留进程。
+
+裁决=`B2_O2_ONTOLOGY_SMOKE_PASS`，hard-owner ontology冻结。下一步只做一次`B2-P prompt-only`：
+删除跨slot umbrella term并使用预注册互斥解剖词表；mask/crop/readout/CLIP均不动。正式训练与GPU
+teacher-only全量仍为`NO-START`。

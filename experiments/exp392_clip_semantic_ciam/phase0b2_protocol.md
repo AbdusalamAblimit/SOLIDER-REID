@@ -194,6 +194,24 @@ overlap交换可微性。B2-O2必须首先达到overlap的median/P95/max严格`0
 finite。该步仍使用Phase 0B原prompt，所以arms/upper-leg文本分类失败只用来触发后续
 `B2-P prompt-only`，不得与B2-O2同时修。
 
+#### B2-P：一次性 prompt-only 消歧
+
+B2-O2的128图结果在exact-zero ontology下仍为head/torso/lower-leg强、arms/upper-leg弱，证明
+mask修正与文本消歧是两个变量。B2-P固定B2-O2 hard-owner、region crop、RGB、CLIP、四个template、
+geometry、样本与指标，只把五个region phrase一次性冻结为：
+
+1. `head, face, and hair`；
+2. `chest, abdomen, waist, and torso`；
+3. `upper limbs, arms, elbows, forearms, wrists, and hands`；
+4. `thighs between the hips and knees`；
+5. `lower legs below the knees, including shins, calves, ankles, and feet`。
+
+该词表不用否定词，不用`upper body`或`upper legs`这类跨slot umbrella term，不增加template、
+可学习prompt、同义词搜索或按类别单独调参。128图CPU smoke要求ontology overlap exact-zero、
+coverage exact、finite、macro top-1 point `>=35%`、五类top-1 point均`>20%`、五类raw cosine
+margin point均`>0`；通过只授权B2-I CPU readout比较。未来全train teacher-only仍使用原PID-cluster
+lower-bound门禁，不能用128图点估计替代。
+
 ### B2-I：只改 readout 接口
 
 固定B2-O ontology、RGB、五个part-name prototypes、geometry和指标，只比较：
