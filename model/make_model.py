@@ -6,7 +6,7 @@ from .backbones.vit_pytorch import vit_base_patch16_224_TransReID, vit_small_pat
 from .backbones.swin_transformer import swin_base_patch4_window7_224, swin_small_patch4_window7_224, swin_tiny_patch4_window7_224
 from loss.metric_learning import Arcface, Cosface, AMSoftmax, CircleLoss
 from .backbones.resnet_ibn_a import resnet50_ibn_a,resnet101_ibn_a
-from .tapf import CleanTapfD0
+from .tapf import CleanTapfD0, CleanTapfHt0
 
 def shuffle_unit(features, shift, group, begin=1):
 
@@ -232,14 +232,27 @@ class build_transformer(nn.Module):
             cuda_rng_state = (
                 torch.cuda.get_rng_state_all() if torch.cuda.is_initialized() else None
             )
+            tapf_class = (
+                CleanTapfHt0
+                if cfg.MODEL.TAPF.HIERARCHICAL
+                else CleanTapfD0
+            )
+            tapf_kwargs = {}
+            if cfg.MODEL.TAPF.HIERARCHICAL:
+                tapf_kwargs = {
+                    "early_anchor_channels": self.base.num_features[1],
+                    "early_consumer_channels": self.base.num_features[2],
+                    "early_consumer_count": len(self.base.stages[2].blocks),
+                }
             self.base.enable_tapf(
-                CleanTapfD0(
+                tapf_class(
                     anchor_hidden=cfg.MODEL.TAPF.ANCHOR_HIDDEN,
                     psg_hidden=cfg.MODEL.TAPF.PSG_HIDDEN,
                     gaussian_sigma=cfg.MODEL.TAPF.GAUSSIAN_SIGMA,
                     gate_release=cfg.MODEL.TAPF.GATE_RELEASE,
                     teacher_epochs=cfg.MODEL.TAPF.TEACHER_EPOCHS,
                     handoff_epochs=cfg.MODEL.TAPF.HANDOFF_EPOCHS,
+                    **tapf_kwargs,
                 )
             )
             torch.set_rng_state(cpu_rng_state)

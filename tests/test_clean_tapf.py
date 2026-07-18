@@ -2,7 +2,12 @@ import unittest
 
 import torch
 
-from model.tapf import CleanTapfD0, PoseSpatialGate, render_pose_field
+from model.tapf import (
+    CleanTapfD0,
+    CleanTapfHt0,
+    PoseSpatialGate,
+    render_pose_field,
+)
 
 
 class ExplodingPose:
@@ -29,6 +34,21 @@ class CleanTapfUnitTest(unittest.TestCase):
             gate_release=0.5,
             teacher_epochs=5,
             handoff_epochs=5,
+        )
+
+    def make_ht0(self):
+        return CleanTapfHt0(
+            anchor_channels=8,
+            anchor_hidden=16,
+            consumer_channels=12,
+            psg_hidden=8,
+            gaussian_sigma=1.5,
+            gate_release=0.5,
+            teacher_epochs=5,
+            handoff_epochs=5,
+            early_anchor_channels=4,
+            early_consumer_channels=8,
+            early_consumer_count=3,
         )
 
     def test_renderer_coordinate_reliability_and_empty_valid(self):
@@ -148,6 +168,91 @@ class CleanTapfUnitTest(unittest.TestCase):
         first_ids = {id(parameter) for parameter in tapf.psg_bank[0].parameters()}
         second_ids = {id(parameter) for parameter in tapf.psg_bank[1].parameters()}
         self.assertTrue(first_ids.isdisjoint(second_ids))
+
+    def test_ht0_preserves_d0_and_routes_independent_early_hierarchy(self):
+        torch.manual_seed(389)
+        d0 = self.make_tapf()
+        torch.manual_seed(389)
+        ht0 = self.make_ht0()
+        d0_state = d0.state_dict()
+        ht0_state = ht0.state_dict()
+        for name, value in d0_state.items():
+            self.assertTrue(torch.equal(value, ht0_state[name]), name)
+
+        pose_batch = self.make_pose_batch()
+        early_state = ht0.prepare_early(
+            torch.randn(2, 4, 4, 2),
+            pose_batch,
+            image_hw=(8, 4),
+            epoch=6,
+            training=True,
+        )
+        early_tokens = torch.randn(2, 8, 8, requires_grad=True)
+        for bank_index in range(3):
+            early_tokens = ht0.apply_early_gate(
+                bank_index, early_tokens, (4, 2), early_state
+            )
+        self.assertEqual(len(early_state["gate_deltas"]), 3)
+
+        late_state = ht0.prepare(
+            torch.randn(2, 8, 4, 2),
+            pose_batch,
+            image_hw=(8, 4),
+            epoch=6,
+            training=True,
+        )
+        combined = ht0.combine_states(early_state, late_state)
+        late_tokens = torch.randn(2, 6, 12, requires_grad=True)
+        for bank_index in range(2):
+            late_tokens = ht0.apply_gate(
+                bank_index, late_tokens, (3, 2), combined
+            )
+        self.assertEqual(len(combined["early_gate_deltas"]), 3)
+        self.assertEqual(len(combined["late_gate_deltas"]), 2)
+        self.assertEqual(len(combined["gate_deltas"]), 5)
+        self.assertTrue(
+            torch.equal(
+                combined["pose_loss"],
+                combined["early_pose_loss"] + combined["late_pose_loss"],
+            )
+        )
+        self.assertEqual(combined["early_student_fraction"], 0.2)
+        self.assertEqual(combined["late_student_fraction"], 0.2)
+
+        early_parameter_ids = {
+            id(parameter)
+            for gate in ht0.early_psg_bank
+            for parameter in gate.parameters()
+        }
+        late_parameter_ids = {
+            id(parameter)
+            for gate in ht0.psg_bank
+            for parameter in gate.parameters()
+        }
+        self.assertTrue(early_parameter_ids.isdisjoint(late_parameter_ids))
+        self.assertEqual(
+            len(early_parameter_ids),
+            sum(len(list(gate.parameters())) for gate in ht0.early_psg_bank),
+        )
+
+        eval_early = ht0.prepare_early(
+            torch.randn(1, 4, 4, 2),
+            ExplodingPose(),
+            image_hw=(8, 4),
+            epoch=None,
+            training=False,
+        )
+        eval_late = ht0.prepare(
+            torch.randn(1, 8, 4, 2),
+            ExplodingPose(),
+            image_hw=(8, 4),
+            epoch=None,
+            training=False,
+        )
+        eval_combined = ht0.combine_states(eval_early, eval_late)
+        self.assertIsNone(eval_combined["pose_loss"])
+        self.assertEqual(eval_combined["early_student_fraction"], 1.0)
+        self.assertEqual(eval_combined["late_student_fraction"], 1.0)
 
 
 if __name__ == "__main__":

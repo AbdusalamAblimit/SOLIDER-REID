@@ -158,8 +158,10 @@ class CleanTapfD0(nn.Module):
         fraction = (epoch - self.teacher_epochs) / float(self.handoff_epochs)
         return max(0.0, min(1.0, fraction))
 
-    def prepare(self, source_feature, pose_batch, image_hw, epoch, training):
-        prediction = self.anchor(source_feature.detach())
+    def _prepare_with_anchor(
+        self, anchor, source_feature, pose_batch, image_hw, epoch, training
+    ):
+        prediction = anchor(source_feature.detach())
         student_field = prediction["field"]
         if not training:
             return {
@@ -210,9 +212,113 @@ class CleanTapfD0(nn.Module):
             "gate_deltas": [],
         }
 
+    def prepare(self, source_feature, pose_batch, image_hw, epoch, training):
+        return self._prepare_with_anchor(
+            self.anchor,
+            source_feature,
+            pose_batch=pose_batch,
+            image_hw=image_hw,
+            epoch=epoch,
+            training=training,
+        )
+
     def apply_gate(self, bank_index, tokens, hw_shape, state):
         gated, delta = self.psg_bank[bank_index](
             tokens, hw_shape, state["consumer_field"]
         )
+        state["gate_deltas"].append(delta)
+        return gated
+
+
+class CleanTapfHt0(CleanTapfD0):
+    """D0-preserving late TAPF plus one independent earlier hierarchy."""
+
+    hierarchical = True
+
+    def __init__(
+        self,
+        anchor_channels=384,
+        anchor_hidden=128,
+        consumer_channels=768,
+        psg_hidden=32,
+        gaussian_sigma=1.5,
+        gate_release=0.5,
+        teacher_epochs=5,
+        handoff_epochs=5,
+        early_anchor_channels=192,
+        early_consumer_channels=384,
+        early_consumer_count=6,
+    ):
+        # Construct the complete D0 path first. This preserves every common
+        # parameter value and initialization draw before adding early modules.
+        super().__init__(
+            anchor_channels=anchor_channels,
+            anchor_hidden=anchor_hidden,
+            consumer_channels=consumer_channels,
+            psg_hidden=psg_hidden,
+            gaussian_sigma=gaussian_sigma,
+            gate_release=gate_release,
+            teacher_epochs=teacher_epochs,
+            handoff_epochs=handoff_epochs,
+        )
+        if early_consumer_count <= 0:
+            raise ValueError("early_consumer_count must be positive")
+        self.early_anchor = PoseAnchor(early_anchor_channels, anchor_hidden)
+        self.early_psg_bank = nn.ModuleList(
+            [
+                PoseSpatialGate(
+                    feature_channels=early_consumer_channels,
+                    hidden_channels=psg_hidden,
+                    release=gate_release,
+                )
+                for _ in range(early_consumer_count)
+            ]
+        )
+
+    def prepare_early(self, source_feature, pose_batch, image_hw, epoch, training):
+        return super()._prepare_with_anchor(
+            self.early_anchor,
+            source_feature,
+            pose_batch=pose_batch,
+            image_hw=image_hw,
+            epoch=epoch,
+            training=training,
+        )
+
+    def apply_early_gate(self, bank_index, tokens, hw_shape, state):
+        gated, delta = self.early_psg_bank[bank_index](
+            tokens, hw_shape, state["consumer_field"]
+        )
+        state["gate_deltas"].append(delta)
+        return gated
+
+    def combine_states(self, early_state, late_state):
+        combined = late_state
+        combined["early_student_field"] = early_state["student_field"]
+        combined["late_student_field"] = late_state["student_field"]
+        combined["early_teacher_field"] = early_state["teacher_field"]
+        combined["late_teacher_field"] = late_state["teacher_field"]
+        combined["early_reliability"] = early_state["reliability"]
+        combined["late_reliability"] = late_state["reliability"]
+        combined["early_student_fraction"] = early_state["student_fraction"]
+        combined["late_student_fraction"] = late_state["student_fraction"]
+        combined["early_pose_loss"] = early_state["pose_loss"]
+        combined["late_pose_loss"] = late_state["pose_loss"]
+        if early_state["pose_loss"] is None:
+            combined["pose_loss"] = None
+        else:
+            combined["pose_loss"] = (
+                early_state["pose_loss"] + late_state["pose_loss"]
+            )
+        combined["early_gate_deltas"] = early_state["gate_deltas"]
+        combined["late_gate_deltas"] = []
+        combined["gate_deltas"] = list(early_state["gate_deltas"])
+        return combined
+
+    def apply_gate(self, bank_index, tokens, hw_shape, state):
+        gated, delta = self.psg_bank[bank_index](
+            tokens, hw_shape, state["consumer_field"]
+        )
+        state["late_gate_deltas"].append(delta)
         state["gate_deltas"].append(delta)
         return gated

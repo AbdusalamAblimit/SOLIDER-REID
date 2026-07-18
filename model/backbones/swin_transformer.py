@@ -1384,8 +1384,25 @@ class SwinTransformer(BaseModule):
 
         outs = []
         tapf_state = None
+        early_tapf_state = None
+        hierarchical_tapf = tapf is not None and getattr(
+            tapf, "hierarchical", False
+        )
         for i, stage in enumerate(self.stages):
-            if tapf is not None and i == 3:
+            if hierarchical_tapf and i == 2:
+                if stage.downsample is None:
+                    raise RuntimeError("Hierarchical TAPF requires Stage-2 downsample")
+                if len(stage.blocks) != len(tapf.early_psg_bank):
+                    raise RuntimeError("Early PSG bank must match Stage-2 depth")
+                out_hw_shape = hw_shape
+                for bank_index, block in enumerate(stage.blocks):
+                    x = block(x, hw_shape)
+                    x = tapf.apply_early_gate(
+                        bank_index, x, hw_shape, early_tapf_state
+                    )
+                out = x
+                x, hw_shape = stage.downsample(x, out_hw_shape)
+            elif tapf is not None and i == 3:
                 if stage.downsample is not None or len(stage.blocks) != 2:
                     raise RuntimeError("Clean TAPF expects two final Swin blocks")
                 out_hw_shape = hw_shape
@@ -1395,6 +1412,18 @@ class SwinTransformer(BaseModule):
                 out = x
             else:
                 x, hw_shape, out, out_hw_shape = stage(x, hw_shape)
+            if hierarchical_tapf and i == 1:
+                early_source = getattr(self, "norm1")(out)
+                early_source = early_source.view(
+                    -1, *out_hw_shape, self.num_features[1]
+                ).permute(0, 3, 1, 2).contiguous()
+                early_tapf_state = tapf.prepare_early(
+                    early_source,
+                    pose_batch=pose_batch,
+                    image_hw=input_hw,
+                    epoch=tapf_epoch,
+                    training=self.training,
+                )
             if tapf is not None and i == 2:
                 source = getattr(self, "norm2")(out)
                 source = source.view(
@@ -1407,6 +1436,10 @@ class SwinTransformer(BaseModule):
                     epoch=tapf_epoch,
                     training=self.training,
                 )
+                if hierarchical_tapf:
+                    tapf_state = tapf.combine_states(
+                        early_tapf_state, tapf_state
+                    )
             if self.semantic_weight >= 0:
                 sw = self.semantic_embed_w[i](semantic_weight).unsqueeze(1)
                 sb = self.semantic_embed_b[i](semantic_weight).unsqueeze(1)

@@ -39,6 +39,8 @@ def do_train(cfg,
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
     pose_loss_meter = AverageMeter()
+    early_pose_loss_meter = AverageMeter()
+    late_pose_loss_meter = AverageMeter()
 
     evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM)
     scaler = amp.GradScaler()
@@ -48,6 +50,8 @@ def do_train(cfg,
         loss_meter.reset()
         acc_meter.reset()
         pose_loss_meter.reset()
+        early_pose_loss_meter.reset()
+        late_pose_loss_meter.reset()
         evaluator.reset()
         model.train()
         for n_iter, batch in enumerate(train_loader):
@@ -105,6 +109,13 @@ def do_train(cfg,
             acc_meter.update(acc, 1)
             if cfg.MODEL.TAPF.ENABLED:
                 pose_loss_meter.update(tapf_aux["pose_loss"].item(), img.shape[0])
+                if cfg.MODEL.TAPF.HIERARCHICAL:
+                    early_pose_loss_meter.update(
+                        tapf_aux["early_pose_loss"].item(), img.shape[0]
+                    )
+                    late_pose_loss_meter.update(
+                        tapf_aux["late_pose_loss"].item(), img.shape[0]
+                    )
 
             torch.cuda.synchronize()
             if cfg.MODEL.DIST_TRAIN:
@@ -123,24 +134,58 @@ def do_train(cfg,
                 if (n_iter + 1) % log_period == 0:
                     base_lr = scheduler._get_lr(epoch)[0] if cfg.SOLVER.WARMUP_METHOD == 'cosine' else scheduler.get_lr()[0]
                     if cfg.MODEL.TAPF.ENABLED:
-                        gate_abs = torch.stack(
-                            [delta.detach().float().abs().mean() for delta in tapf_aux["gate_deltas"]]
-                        ).mean().item()
-                        logger.info(
-                            "Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Pose: {:.3f}, Acc: {:.3f}, Student: {:.2f}, Reliability: {:.3f}, GateAbs: {:.3e}, Base Lr: {:.2e}"
-                            .format(
-                                epoch,
-                                (n_iter + 1),
-                                len(train_loader),
-                                loss_meter.avg,
-                                pose_loss_meter.avg,
-                                acc_meter.avg,
-                                tapf_aux["student_fraction"],
-                                tapf_aux["reliability"].detach().float().mean().item(),
-                                gate_abs,
-                                base_lr,
+                        if cfg.MODEL.TAPF.HIERARCHICAL:
+                            early_gate_abs = torch.stack(
+                                [
+                                    delta.detach().float().abs().mean()
+                                    for delta in tapf_aux["early_gate_deltas"]
+                                ]
+                            ).mean().item()
+                            late_gate_abs = torch.stack(
+                                [
+                                    delta.detach().float().abs().mean()
+                                    for delta in tapf_aux["late_gate_deltas"]
+                                ]
+                            ).mean().item()
+                            logger.info(
+                                "Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Pose: {:.3f}, PoseEarly: {:.3f}, PoseLate: {:.3f}, Acc: {:.3f}, StudentEarly: {:.2f}, StudentLate: {:.2f}, ReliabilityEarly: {:.3f}, ReliabilityLate: {:.3f}, GateEarlyAbs: {:.3e}, GateLateAbs: {:.3e}, Base Lr: {:.2e}"
+                                .format(
+                                    epoch,
+                                    (n_iter + 1),
+                                    len(train_loader),
+                                    loss_meter.avg,
+                                    pose_loss_meter.avg,
+                                    early_pose_loss_meter.avg,
+                                    late_pose_loss_meter.avg,
+                                    acc_meter.avg,
+                                    tapf_aux["early_student_fraction"],
+                                    tapf_aux["late_student_fraction"],
+                                    tapf_aux["early_reliability"].detach().float().mean().item(),
+                                    tapf_aux["late_reliability"].detach().float().mean().item(),
+                                    early_gate_abs,
+                                    late_gate_abs,
+                                    base_lr,
+                                )
                             )
-                        )
+                        else:
+                            gate_abs = torch.stack(
+                                [delta.detach().float().abs().mean() for delta in tapf_aux["gate_deltas"]]
+                            ).mean().item()
+                            logger.info(
+                                "Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Pose: {:.3f}, Acc: {:.3f}, Student: {:.2f}, Reliability: {:.3f}, GateAbs: {:.3e}, Base Lr: {:.2e}"
+                                .format(
+                                    epoch,
+                                    (n_iter + 1),
+                                    len(train_loader),
+                                    loss_meter.avg,
+                                    pose_loss_meter.avg,
+                                    acc_meter.avg,
+                                    tapf_aux["student_fraction"],
+                                    tapf_aux["reliability"].detach().float().mean().item(),
+                                    gate_abs,
+                                    base_lr,
+                                )
+                            )
                     else:
                         logger.info("Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Base Lr: {:.2e}"
                                     .format(epoch, (n_iter + 1), len(train_loader), loss_meter.avg, acc_meter.avg, base_lr))
