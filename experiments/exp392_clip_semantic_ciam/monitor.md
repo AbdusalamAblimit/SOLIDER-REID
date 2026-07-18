@@ -786,6 +786,21 @@ Reliability=`0.512`、GateAbs=`7.236e-06`，弱q与小router幅度持续稳定�
 HEAD/config/tracked clean、唯一main+8 workers、4090约`8262 MiB`且唯一任务、e120前
 checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
 
+### e90完整评测与e91接手
+
+- e90完整query/gallery评测mAP/R1/R5/R10=`56.6/67.1/80.3/85.1`；
+- 同epoch exp387 clean D0=`57.5/67.9/81.2/85.3`，Semantic C0−D0=
+  `−0.9/−0.8/−0.9/−0.2`；同epoch exp389 HT0=`56.5/66.1/79.8/84.4`，Semantic C0−HT0=
+  `+0.1/+1.0/+0.5/+0.7`；
+- e90末Loss=`0.153`、Pose=`0.753`、Semantic/RegionMask/Presence/Q=
+  `0.292/0.158/0.027/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`7.041e-06`，
+  全部finite；评测后自然进入e91。
+
+e90轨迹支持“当前优于纯结构HT0、仍未追平clean D0”的暂时描述，但不能上升为final结论。e91
+iter120的Q=`0.692`、Reliability=`0.512`、GateAbs=`6.156e-06`，弱q/小router模式保持稳定。
+exact HEAD/config/tracked clean、唯一main+8 workers、4090约`8264 MiB`且唯一任务、e120前
+checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
+
 ### 15分钟接手：e30训练中，尚无完整e30评测
 
 e21--e29已自然完成，接手时位于e30 iter100/227，尚未产生e30完整query/gallery评测，因此本轮不写
