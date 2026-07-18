@@ -228,8 +228,13 @@ tight-crop global CLS后macro top-1升到`44.688%`，image-only patch cluster达
 
 `exp392 = PHASE 0A SEALED / PHASE 0B NAIVE DENSE TEACHER SEALED-NO-GO /
 B2-SI PC-MBCLS SEALED-PASS / B2-Sv1 COUNTERFACTUAL CONSTRUCTION SEALED-FAIL /
-PHASE 0C FAST-TRACK IMPLEMENTATION`。B2-Sv1只失败在不可同时满足的connected-bbox/non-overlap/
+PHASE 0C SEMANTIC C0 SEALED-NO-GO`。B2-Sv1只失败在不可同时满足的connected-bbox/non-overlap/
 low-IoU构造，不能覆盖B2-SI五slot局部响应证据，也不能扩张成“CLIP或语义校准永久无效”。
+
+Semantic C0已按下述冻结设计自然跑满e120，final=`56.9/67.1/80.6/85.0`，相对clean D0=
+`−0.7/−0.6/−0.2/+0.4`。终审排除dead route、teacher泄漏、非finite与RGB-only失败；当前NO-GO
+只关闭PC-MBCLS support、弱动态q readout与双router的bundled组合。后续仍允许CLIP–TAPF的
+单变量拆因与新机制，但在single-stage超过clean D0前不授权semantic multi-stage。
 
 ### 用户授权的fast-track探索臂
 

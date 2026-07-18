@@ -2,11 +2,14 @@
 
 ## 当前状态
 
-- `PHASE 0A SEALED / PHASE 0B SEALED-CURRENT-TEACHER-NO-GO / FORMAL TRAINING NO-START`；
+- `PHASE 0A SEALED / PHASE 0B NAIVE TEACHER SEALED-NO-GO / B2-SI SEALED-PASS /
+  PHASE 0C SEMANTIC C0 SEALED-NO-GO`；
 - exp390与exp391均已封板，禁止重启、续训或把本实验记为exp391 Phase B/C；
-- 当前GPU任务：无，Phase 0B结束后GPU=`2 MiB / 0%`；
-- 已完成文献、公开代码、当前TAPF执行路径、机制审查与Phase 0A frozen audit；
-- 未创建训练config/output/checkpoint，未启动任何正式训练。
+- 当前GPU任务：无；Semantic C0已自然跑满e120并完成只读终审，GPU=`2 MiB / 0%`；
+- final=`56.9/67.1/80.6/85.0`，相对clean D0=`−0.7/−0.6/−0.2/+0.4`，因此当前
+  teacher/readout/router bundled组合未超过D0；
+- 唯一checkpoint、strict finite、teacher隔离、RGB-only exact、两consumer可达与NULL identity均PASS；
+  该结果不永久否定CLIP–TAPF，也不授权semantic multi-stage。
 
 ## 已确认边界
 
@@ -771,76 +774,6 @@ loss权重、代码或config。实时边界仍为exact HEAD/config/tracked clean
 拆因风险。exact HEAD/config/tracked clean、唯一main+8 workers、4090约`8404 MiB`且唯一任务、
 e120前checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
 
-### e80完整评测与e82接手
-
-- e80完整query/gallery评测mAP/R1/R5/R10=`55.8/66.4/79.6/84.4`；
-- 同epoch exp387 clean D0=`56.1/66.3/79.5/84.0`，Semantic C0−D0=
-  `−0.3/+0.1/+0.1/+0.4`；同epoch exp389 HT0=`55.4/65.4/78.9/82.9`，Semantic C0−HT0=
-  `+0.4/+1.0/+0.7/+1.5`；
-- e80末Loss=`0.162`、Pose=`0.752`、Semantic/RegionMask/Presence/Q=
-  `0.293/0.158/0.028/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`7.470e-06`，
-  全部finite；评测后e81自然完成，接手时已进入e82。
-
-e80继续呈相对D0的mAP略负、三项Rank略正，不能包装为全面提升。e82 iter200的Q=`0.692`、
-Reliability=`0.512`、GateAbs=`7.236e-06`，弱q与小router幅度持续稳定而无数值退化。exact
-HEAD/config/tracked clean、唯一main+8 workers、4090约`8262 MiB`且唯一任务、e120前
-checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
-
-### 15分钟接手：e100训练中，尚无完整e100评测
-
-e91--e99已自然完成，接手时位于e100 iter60/227，尚未产生e100完整query/gallery评测，本轮不写
-半成品指标。现场Loss=`0.156`、Pose=`0.751`、Semantic/RegionMask/Presence/Q=
-`0.292/0.158/0.026/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`6.781e-06`，全部
-finite。exact HEAD/config/tracked clean、唯一main+8 workers、4090约`8264 MiB/96%`且唯一任务、
-e120前checkpoint=`0`，严格异常扫描命中`0`。继续自然训练，下次只从正式日志读取完整e100及后续
-新增评测。
-
-### e100完整评测与e109接手
-
-- e100完整query/gallery评测mAP/R1/R5/R10=`56.5/66.7/80.3/84.3`；
-- 同epoch exp387 clean D0=`56.9/67.1/79.6/83.8`，Semantic C0−D0=
-  `−0.4/−0.4/+0.7/+0.5`；同epoch exp389 HT0=`56.4/65.9/79.2/84.3`，Semantic C0−HT0=
-  `+0.1/+0.8/+1.1/+0.0`；
-- e100末Loss=`0.148`、Pose=`0.752`、Semantic/RegionMask/Presence/Q=
-  `0.292/0.158/0.026/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`6.604e-06`，
-  全部finite；评测后e101--e108自然完成，接手时已进入e109。
-
-e100继续呈mAP/R1略低于D0、R5/R10略高的混合模式，不能包装为全面提升。e109 iter40的
-Q=`0.692`、Reliability=`0.512`、GateAbs=`6.650e-06`，弱q与小router模式保持。exact HEAD/config/
-tracked clean、唯一main+8 workers、4090约`8394 MiB`且唯一任务、e120前checkpoint=`0`，严格异常
-扫描命中`0`，状态=`继续自然e120`。
-
-### e110完整评测与e118接手
-
-- e110完整query/gallery评测mAP/R1/R5/R10=`56.7/66.6/80.3/84.7`；
-- 同epoch exp387 clean D0=`57.4/67.4/80.5/84.6`，Semantic C0−D0=
-  `−0.7/−0.8/−0.2/+0.1`；同epoch exp389 HT0=`56.6/65.9/79.5/83.9`，Semantic C0−HT0=
-  `+0.1/+0.7/+0.8/+0.8`；
-- e110末Loss=`0.141`、Pose=`0.751`、Semantic/RegionMask/Presence/Q=
-  `0.292/0.158/0.025/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`6.779e-06`，
-  全部finite；评测后e111--e117自然完成，接手时已进入e118。
-
-e110仍是“优于HT0、未追平D0”的混合轨迹，不是final。e118 iter40的Q=`0.692`、Reliability=
-`0.512`、GateAbs=`6.540e-06`，训练约剩3个自然epoch。exact HEAD/config/tracked clean、唯一main+8
-workers、4090约`8382 MiB`且唯一任务、e120前checkpoint=`0`，严格异常扫描命中`0`。下一次接手
-必须先确认自然e120完成，再做进程/GPU/唯一checkpoint/SHA/strict finite/teacher隔离/参数轨迹与
-counterfactual终审；不得把e110当final。
-
-### e90完整评测与e91接手
-
-- e90完整query/gallery评测mAP/R1/R5/R10=`56.6/67.1/80.3/85.1`；
-- 同epoch exp387 clean D0=`57.5/67.9/81.2/85.3`，Semantic C0−D0=
-  `−0.9/−0.8/−0.9/−0.2`；同epoch exp389 HT0=`56.5/66.1/79.8/84.4`，Semantic C0−HT0=
-  `+0.1/+1.0/+0.5/+0.7`；
-- e90末Loss=`0.153`、Pose=`0.753`、Semantic/RegionMask/Presence/Q=
-  `0.292/0.158/0.027/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`7.041e-06`，
-  全部finite；评测后自然进入e91。
-
-e90轨迹支持“当前优于纯结构HT0、仍未追平clean D0”的暂时描述，但不能上升为final结论。e91
-iter120的Q=`0.692`、Reliability=`0.512`、GateAbs=`6.156e-06`，弱q/小router模式保持稳定。
-exact HEAD/config/tracked clean、唯一main+8 workers、4090约`8264 MiB`且唯一任务、e120前
-checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
-
 ### 15分钟接手：e30训练中，尚无完整e30评测
 
 e21--e29已自然完成，接手时位于e30 iter100/227，尚未产生e30完整query/gallery评测，因此本轮不写
@@ -925,3 +858,114 @@ e70相对D0再次呈近零mAP与Rank混合正差，和e60回落共同证明中�
 claim。e74 iter40的Q=`0.692`、Reliability=`0.512`、GateAbs=`7.764e-06`，弱q/小router幅度模式
 未改变。exact HEAD/config/tracked clean、唯一main+8 workers、4090约`8364 MiB`且唯一任务、
 e120前checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
+
+### e80完整评测与e82接手
+
+- e80完整query/gallery评测mAP/R1/R5/R10=`55.8/66.4/79.6/84.4`；
+- 同epoch exp387 clean D0=`56.1/66.3/79.5/84.0`，Semantic C0−D0=
+  `−0.3/+0.1/+0.1/+0.4`；同epoch exp389 HT0=`55.4/65.4/78.9/82.9`，Semantic C0−HT0=
+  `+0.4/+1.0/+0.7/+1.5`；
+- e80末Loss=`0.162`、Pose=`0.752`、Semantic/RegionMask/Presence/Q=
+  `0.293/0.158/0.028/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`7.470e-06`，
+  全部finite；评测后e81自然完成，接手时已进入e82。
+
+e80继续呈相对D0的mAP略负、三项Rank略正，不能包装为全面提升。e82 iter200的Q=`0.692`、
+Reliability=`0.512`、GateAbs=`7.236e-06`，弱q与小router幅度持续稳定而无数值退化。exact
+HEAD/config/tracked clean、唯一main+8 workers、4090约`8262 MiB`且唯一任务、e120前
+checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
+
+### e90完整评测与e91接手
+
+- e90完整query/gallery评测mAP/R1/R5/R10=`56.6/67.1/80.3/85.1`；
+- 同epoch exp387 clean D0=`57.5/67.9/81.2/85.3`，Semantic C0−D0=
+  `−0.9/−0.8/−0.9/−0.2`；同epoch exp389 HT0=`56.5/66.1/79.8/84.4`，Semantic C0−HT0=
+  `+0.1/+1.0/+0.5/+0.7`；
+- e90末Loss=`0.153`、Pose=`0.753`、Semantic/RegionMask/Presence/Q=
+  `0.292/0.158/0.027/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`7.041e-06`，
+  全部finite；评测后自然进入e91。
+
+e90轨迹支持“当前优于纯结构HT0、仍未追平clean D0”的暂时描述，但不能上升为final结论。e91
+iter120的Q=`0.692`、Reliability=`0.512`、GateAbs=`6.156e-06`，弱q/小router模式保持稳定。
+exact HEAD/config/tracked clean、唯一main+8 workers、4090约`8264 MiB`且唯一任务、e120前
+checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
+
+### 15分钟接手：e100训练中，尚无完整e100评测
+
+e91--e99已自然完成，接手时位于e100 iter60/227，尚未产生e100完整query/gallery评测，本轮不写
+半成品指标。现场Loss=`0.156`、Pose=`0.751`、Semantic/RegionMask/Presence/Q=
+`0.292/0.158/0.026/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`6.781e-06`，全部
+finite。exact HEAD/config/tracked clean、唯一main+8 workers、4090约`8264 MiB/96%`且唯一任务、
+e120前checkpoint=`0`，严格异常扫描命中`0`。继续自然训练，下次只从正式日志读取完整e100及后续
+新增评测。
+
+### e100完整评测与e109接手
+
+- e100完整query/gallery评测mAP/R1/R5/R10=`56.5/66.7/80.3/84.3`；
+- 同epoch exp387 clean D0=`56.9/67.1/79.6/83.8`，Semantic C0−D0=
+  `−0.4/−0.4/+0.7/+0.5`；同epoch exp389 HT0=`56.4/65.9/79.2/84.3`，Semantic C0−HT0=
+  `+0.1/+0.8/+1.1/+0.0`；
+- e100末Loss=`0.148`、Pose=`0.752`、Semantic/RegionMask/Presence/Q=
+  `0.292/0.158/0.026/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`6.604e-06`，
+  全部finite；评测后e101--e108自然完成，接手时已进入e109。
+
+e100继续呈mAP/R1略低于D0、R5/R10略高的混合模式，不能包装为全面提升。e109 iter40的
+Q=`0.692`、Reliability=`0.512`、GateAbs=`6.650e-06`，弱q与小router模式保持。exact HEAD/config/
+tracked clean、唯一main+8 workers、4090约`8394 MiB`且唯一任务、e120前checkpoint=`0`，严格异常
+扫描命中`0`，状态=`继续自然e120`。
+
+### e110完整评测与e118接手
+
+- e110完整query/gallery评测mAP/R1/R5/R10=`56.7/66.6/80.3/84.7`；
+- 同epoch exp387 clean D0=`57.4/67.4/80.5/84.6`，Semantic C0−D0=
+  `−0.7/−0.8/−0.2/+0.1`；同epoch exp389 HT0=`56.6/65.9/79.5/83.9`，Semantic C0−HT0=
+  `+0.1/+0.7/+0.8/+0.8`；
+- e110末Loss=`0.141`、Pose=`0.751`、Semantic/RegionMask/Presence/Q=
+  `0.292/0.158/0.025/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`6.779e-06`，
+  全部finite；评测后e111--e117自然完成，接手时已进入e118。
+
+e110仍是“优于HT0、未追平D0”的混合轨迹，不是final。e118 iter40的Q=`0.692`、Reliability=
+`0.512`、GateAbs=`6.540e-06`，训练约剩3个自然epoch。exact HEAD/config/tracked clean、唯一main+8
+workers、4090约`8382 MiB`且唯一任务、e120前checkpoint=`0`，严格异常扫描命中`0`。下一次接手
+必须先确认自然e120完成，再做进程/GPU/唯一checkpoint/SHA/strict finite/teacher隔离/参数轨迹与
+counterfactual终审；不得把e110当final。
+
+## 2026-07-19 Phase 0C Semantic C0自然e120与终审封板
+
+正式运行自然完成全部120个epoch及12次固定间隔评测，未早停、未续训、未选择中途best。final
+mAP/R1/R5/R10=`56.9/67.1/80.6/85.0`：
+
+- 相对exp387 clean D0=`57.6/67.7/80.8/84.6`为`−0.7/−0.6/−0.2/+0.4`；
+- 相对official B0=`57.4/67.4/80.6/85.2`为`−0.5/−0.3/+0.0/−0.2`；
+- 相对exp389 HT0=`56.9/65.9/80.0/84.1`为`+0.0/+1.2/+0.6/+0.9`。
+
+e120末Pose=`0.752`，Semantic/RegionMask/Presence/Q=`0.292/0.158/0.026/0.692`，Student=`1.0`，
+Reliability=`0.512`，GateAbs=`6.981e-06`，全部finite。mask与presence相对初始化获得明显监督，
+但q仍接近弱动态先验，router执行幅度也很小；优于纯结构HT0不足以把该bundled差值归因给CLIP语义。
+
+运行边界终审：main PID=`1375252`及8 workers自然退出；GPU恢复`2 MiB/0%`；output仅含
+`train_log.txt`和唯一`transformer_120.pth`。checkpoint size=`113544187`，checkpoint/train-log/
+runner SHA256分别为`8f8e4a8af1280f17f736053a3068dfae0384ac54915f9c68fb0c779350c3638e`、
+`7d2640208f86c11a256b2ea27b1b1ec17cde2fe1fcbc0a72a49c6f12e21f46bd`、
+`57e9eecae14bf741aa8ab2e29439458687f235f87bfc9bc8804e30552c1ba9ef`。exact HEAD/config/tracked
+source保持不变，严格AMP warning/NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow扫描命中0。
+
+独立只读checkpoint终审v2=`PASS`：231个state tensor strict load，全部floating state finite，且
+state key中无CLIP/teacher/text prototype。相对同seed、同预训练初始化，anchor、q-support head、
+consumer0/1的L2轨迹分别为`1.86247/0.020724/0.030388/0.033860`，两router expert也均离开零初始化。
+RGB-only correct/shuffle/None/exploding descriptor逐tensor exact；两个consumer单独置零时final descriptor
+L2分别改变`0.001131/0.002968`；两router的zero-mask与zero-q输出均为逐tensorexact identity。
+8图state的support mean/std/min/max=`0.51172/0.01686/0.48159/0.53281`，两consumer gate-delta
+abs-mean=`3.606e-06/1.040e-05`，说明路径可达但执行信号弱。
+
+审计v1曾因把`context_projection`内的字符串`text`误报为text encoder而返回FAIL；这是审计器键名
+规则错误，不是checkpoint失败，v1证据保留且未改训练。修正为明确组件名后v2全部门禁PASS。v2
+script/result/runner SHA256分别为
+`00131e54a603edf59fee81085ea7ba32ecd5e40520dd272aa338129d45e4ef93`、
+`1712d2ecc774cb5c76792fbc526d9cab29dcdcc7dfc46d547cd8564898471f53`、
+`f1adc39db8896fb11f5454ab8d4c85c8aa26f64bd1218fc7b99776ba6504f5e2`。
+
+裁决：`PHASE 0C SEMANTIC C0 = SEALED / CURRENT BUNDLED COMBINATION NO-GO`。当前
+PC-MBCLS teacher、弱动态q readout与双router组合没有超过clean D0，不能声称CLIP语义增量成立，
+也不授权balanced semantic multi-stage。该结论只关闭当前组合，不否定CLIP–TAPF；下一步必须做
+必要的单变量拆因/机制修复（优先验证static-q/pose-only与真正扩大sample-specific support动态范围），
+不得重跑、换seed或用中途best救场。

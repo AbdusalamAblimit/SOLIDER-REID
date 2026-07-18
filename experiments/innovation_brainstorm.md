@@ -3570,3 +3570,31 @@ slot identity，CLIP提供每个slot的实例属性/支持度，而不是用一�
 这有望避免当前teacher的语义自指（mask已知region，却再让CLIP猜region）并增加真正与ReID相关的
 衣着属性信息。但它与ALADIN/ProFD/RegionCLIP的局部attribute teacher存在novelty近邻，论文差分仍
 必须落在executable mediator、NULL identity和反事实可辨识证据，不能把attribute KD本身当贡献。
+
+## 2026-07-19：Semantic C0负结果把瓶颈收紧到“窄动态support无法成为可执行语义变量”
+
+PC-MBCLS小样本反事实证明五slot readout会随局部遮挡单调变化，因此它不是完全错误的CLIP接口；但
+正式Semantic C0 final仍比clean D0低`0.7 mAP`。终审给出关键内部量：support均值约`0.512`、std仅
+`0.0169`，q loss停在`0.692`，两个router的gate-delta abs-mean只有`3.6e-06/1.0e-05`。与此同时
+mask/presence确实学会、两个consumer也真实到达final descriptor。负结果因此不是“路径没跑”或
+“CLIP完全无局部信息”，而是**sample-specific CLIP信息在窄动态q标量中被压成近常量先验，随后又
+被小幅router稀释，难以相对D0提供新增可执行变量**。
+
+这否定了一个隐含假设：只要teacher q对遮挡方向敏感，逐slot BCE就会自动把它变成有检索价值的
+内部state。当前teacher target集中在0.5附近，BCE最容易学到slot-level均值；presence又几乎全为1，
+于是router主要看到coarse mask乘近常量support。CLIP在计算图中“深度耦合”不等于CLIP信息在统计上
+拥有足够动态范围，也不等于它对final descriptor有可辨识增量。
+
+下一创新候选应从“标量可见度蒸馏”升级为**相对化的局部视觉证据中介**，但先以单变量证据决定：
+
+1. 在封板模型上做learned-q/static-q/pose-only/router-bypass冻结拆因，量化q本身的边际贡献；
+2. 若q边际近零，teacher端不再输出集中于0.5的绝对概率，而应保留slot内相对证据，例如以同图
+   non-target、同slot跨图基线或遮挡前后差形成centered residual/ranking target；
+3. student端必须报告每slot target variance、跨图rank保持与wrong-RGB/wrong-mask敏感性，不能只看
+   BCE下降；router端则以counterfactual descriptor差证明该动态被执行；
+4. generic low-rank、static support和pose-only仍是强对照。只有correct CLIP residual同时超过这些
+   控制并提高clean D0，才能称为semantic mediator，再谈balanced multi-stage。
+
+因此CLIP–TAPF仍值得继续，但研究对象已从“给TAPF加CLIP teacher”进一步收紧为：**怎样让冻结
+视觉—语言模型的局部相对证据以非退化动态进入可反事实验证的ReID路由**。这比换prompt、调温度或
+复制更多stage更接近真正的机制贡献。

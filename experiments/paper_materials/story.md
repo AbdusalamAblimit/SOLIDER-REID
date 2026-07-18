@@ -1910,3 +1910,30 @@ region结构。这说明patch含人体局部信息，却没有被命名到正确
 同时把固定anatomical slot identity（pose给出）与slot内appearance/support distribution（CLIP给出）
 拆开。只有新的teacher-only门禁先证明correct优于shuffle/wrong RGB/wrong mask/wrong text，才恢复
 Phase 0C和semantic single-stage；多阶段仍排在单阶段因果成立之后。
+
+## 2026-07-19：Semantic C0不进入正面方法结果，但保留为CLIP耦合的关键负归因
+
+Phase 0B2修复了naive raw-patch teacher最明显的接口错误：hard-owner固定解剖slot identity，
+PC-MBCLS沿CLIP受监督CLS路径读取每slot局部support，并在128图遮挡反事实中表现出稳定的
+sample-specific单调响应。随后首次single-stage Semantic TAPF按完整e120运行，final=
+`56.9/67.1/80.6/85.0`，相对clean D0=`−0.7/−0.6/−0.2/+0.4`。因此它不能进入主表作为正增益，
+也不能把相对HT0的rank优势包装成CLIP有效。
+
+这次失败的机制证据比单个分数更重要。checkpoint严格有限且完全不含teacher；两个semantic router
+都能改变final descriptor，NULL identity与RGB-only exact成立，所以不是实现没接上。真正的弱点是
+CLIP support经过标量q readout后只剩mean约`0.512`、std约`0.0169`的窄动态，q loss维持`0.692`，
+router更新也只有`10^-6–10^-5`量级。当前模型实际主要学到了coarse mask/presence，而不是足以区别
+static prior的强sample-specific语义证据。
+
+因此论文当前仍以exp390原子TAPF的三seed mAP-only弱GO为正面边界，不新增“CLIP语义提升”贡献。
+exp392可作为方法动机和负归因链：
+
+1. 原D0 consumer有效，但joint identity/geometry不可辨识；
+2. raw CLIP patch含局部结构，却未对齐text轴；
+3. CLS路径能恢复局部响应，但绝对support标量动态过窄，尚未改善ReID final。
+
+若后续继续CLIP深耦合，正文可争的升级点不是普通KD，而是把局部视觉—语言证据改造成**相对化、
+非退化、可执行且可反事实验证的anatomical mediator**。下一步先用static-q、pose-only、generic-router
+和wrong binding拆清当前checkpoint；只有新的single-stage correct arm同时超过这些强对照与clean D0，
+才重写主故事并重新授权semantic multi-stage。当前Semantic C0的NO-GO只关闭本组合，不是对
+CLIP–TAPF的永久否定。

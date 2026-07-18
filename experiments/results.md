@@ -2256,3 +2256,36 @@ Phase 0C与正式训练均不获授权。该结果只否定当前dense readout�
 `27f31fa69ec223c4506218ce468b01a540882da70380ad85cd8449333c9d5a74`、
 `bcb588175a54ecb175d4c6a60efd71bfd0e8aa5a5bec032117abbed18cb28b02`；进程/worker自然退出，
 GPU恢复`2 MiB / 0%`，严格异常为0。
+
+## exp392 Phase 0B2/0C：PC-MBCLS support readout与single-stage Semantic TAPF（2026-07-19）
+
+Phase 0B2没有用一个失败否定整条路线。soft ontology因region overlap失败，hard-owner把五slot重叠
+精确降到0；part-name prompt因arms top-1=`0%`只关闭“让CLIP重猜part name”。随后PC-MBCLS
+pose-conditioned support readout在128图、639个valid target上通过全部12个局部门禁：macro target
+q-visible随support遮挡0/25/50/75从`0.51104/0.48925/0.47765/0.46990`单调下降；五slot
+target−non-target下降=`+0.06919/+0.02273/+0.04528/+0.03202/+0.02879`，逐slot PID-cluster
+CI均大于0。该结果证明五slot存在局部sample-specific视觉响应，但不等价证明它能改善ReID final。
+
+用户明确授权首次single-stage bundled feasibility后，Semantic C0保持clean D0的backbone、两处late
+consumer和完整120-epoch recipe；唯一机制组合是五slot mask/presence/q student加两个
+feature-dependent low-rank router，训练期teacher在模型外，推理删除CLIP、文本和external pose。
+fresh运行自然e120 final如下：
+
+| 方法 | mAP | R1 | R5 | R10 | 相对D0 | 相对HT0 |
+|---|---:|---:|---:|---:|---:|---:|
+| Semantic C0 | 56.9 | 67.1 | 80.6 | 85.0 | `−0.7/−0.6/−0.2/+0.4` | `+0.0/+1.2/+0.6/+0.9` |
+
+相对official B0=`57.4/67.4/80.6/85.2`为`−0.5/−0.3/+0.0/−0.2`。e120末
+Semantic/RegionMask/Presence/Q=`0.292/0.158/0.026/0.692`，support在8图终审中的
+mean/std/min/max=`0.51172/0.01686/0.48159/0.53281`，两router gate-delta abs-mean仅
+`3.606e-06/1.040e-05`。这说明mask/presence学到了明显信号，但q仍是弱动态、router执行幅度很小。
+
+唯一checkpoint SHA256=`8f8e4a8af1280f17f736053a3068dfae0384ac54915f9c68fb0c779350c3638e`。
+231-state strict finite、teacher/CLIP不在state、anchor/q-head/两个consumer轨迹、RGB-only
+correct/shuffle/None/exploding exact、两consumer final-descriptor可达和zero-mask/zero-q exact identity
+终审全部PASS。训练与审计进程均自然退出，GPU恢复`2 MiB/0%`，严格异常为0。
+
+**最终判定**：`Semantic C0 = SEALED / CURRENT BUNDLED COMBINATION NO-GO`。它优于HT0的rank差
+不能证明CLIP语义有效，因为对更直接的clean D0仍低`0.7 mAP`，且CLIP相关q动态范围不足。该结论只
+关闭当前PC-MBCLS teacher/readout/router组合，不否定CLIP–TAPF。下一步做必要的单变量拆因与机制
+修复；在single-stage语义因果未成立前，不启动balanced semantic multi-stage，不重跑或换seed救场。

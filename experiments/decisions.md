@@ -5124,3 +5124,32 @@ contrastive text监督的raw local patch方向当成了可命名body-part teache
 “CLIP无效”或永久否定CLIP后的多阶段。下一步只授权新的teacher接口研究：优先比较共享早期trunk、
 用pose约束多个后段block的CLS readout，与可缓存的region-crop global CLS；arms/upper-leg ontology
 必须先消除重叠。新定义需独立设计和全teacher-only反事实，不能覆盖或重复当前封板结果。
+
+### [2026-07-19] 决策：Semantic C0未超过clean D0，只关闭当前组合并继续CLIP–TAPF机制修复
+
+**授权边界变化**：Phase 0B2把失败拆到了具体接口。hard-owner ontology获得exact-zero overlap；
+PC-MBCLS在128图五slot上通过局部support反事实，证明CLIP受监督CLS路径能提供sample-specific局部
+响应。B2-Sv1的connected-occluder构造失败只关闭该反事实构造，不再作为训练的一票否决。用户明确
+要求尝试训练后，首次single-stage bundled arm按fresh、串行、自然e120执行；这不是exp391续训。
+
+**结果**：Semantic C0 final=`56.9/67.1/80.6/85.0`。相对clean D0为
+`−0.7/−0.6/−0.2/+0.4`，相对official B0为`−0.5/−0.3/+0.0/−0.2`，相对pure-structure HT0为
+`+0.0/+1.2/+0.6/+0.9`。checkpoint严格有限、teacher完全不在student state，anchor/q-head/两个
+router均离开初始化，两个consumer都能改变final descriptor，RGB-only与NULL identity全部PASS；
+因此该负差不是训练崩溃、dead route、外部pose泄漏或checkpoint错误。
+
+**机制归因边界**：mask/presence loss分别降到`0.158/0.026`，但q loss停在`0.692`；终审support
+std仅`0.01686`，两个router gate-delta abs-mean仅`3.606e-06/1.040e-05`。当前student主要学到
+coarse mask/presence，而CLIP sample-specific support没有形成足够强的可执行动态。由于这是
+teacher+readout+router bundled arm，不能把失败单独归因给CLIP，也不能用优于HT0证明CLIP增量。
+
+**决策**：`exp392 Phase 0C Semantic C0 = SEALED / CURRENT BUNDLED COMBINATION NO-GO`。
+禁止重跑、续训、换seed、挑e50/e70等中途节点或在封板臂内调温度/loss。balanced semantic
+multi-stage继续`NO-START`，因为single-stage语义因果尚未成立。该NO-GO只关闭当前PC-MBCLS
+support teacher、弱动态q head与双router组合，不永久否定CLIP–TAPF。
+
+**下一步**：先做最小必要单变量拆因，而不是再开一个bundled 120-epoch臂：用封板checkpoint和同一
+执行seam比较learned-q、static-q、pose-only mask/presence与router bypass，确认final依赖究竟来自
+五slot geometry、几乎常量的support，还是generic low-rank transform；随后只针对被证实的瓶颈设计
+扩大sample-specific support动态范围的teacher/readout。只有新single-stage同时建立correct相对
+static/wrong/generic control的因果差并超过clean D0，才授权semantic multi-stage。
