@@ -770,3 +770,12 @@ loss权重、代码或config。实时边界仍为exact HEAD/config/tracked clean
 `0.693`轻微降至`0.692`，表明不是完全零更新，但其变化仍显著弱于mask/presence，继续保留为final后
 拆因风险。exact HEAD/config/tracked clean、唯一main+8 workers、4090约`8404 MiB`且唯一任务、
 e120前checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
+
+### 15分钟接手：e30训练中，尚无完整e30评测
+
+e21--e29已自然完成，接手时位于e30 iter100/227，尚未产生e30完整query/gallery评测，因此本轮不写
+半成品指标。现场Loss=`0.709`、Pose=`0.801`、Semantic/RegionMask/Presence/Q=
+`0.320/0.188/0.080/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`1.527e-05`，全部
+finite。exact HEAD/config/tracked clean、唯一main+8 workers、4090约`8406 MiB/99%`且唯一任务、
+e120前checkpoint=`0`，严格异常扫描命中`0`。Q仍处弱动态区间但非新增故障，继续自然训练；下次接手
+只从正式日志读取完整e30及之后的新增评测。
