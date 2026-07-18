@@ -321,3 +321,17 @@ quarantine，不能与本运行合并、续接或作数值比较。
 - exact HEAD/config、tracked clean、唯一 main PID=`1183898`+8 workers 继续 PASS；训练 GPU 约
   `7,092 MiB`；
 - 严格异常与 AMP 警告扫描命中 `0`，e120 前仍无 checkpoint；继续自然完成剩余 epochs。
+
+### 2026-07-18 04:46 UTC：e90/e100 完整评测
+
+| epoch | D0 mAP/R1/R5/R10 | B0-s4321 同 epoch | D0−B0 |
+|---:|---:|---:|---:|
+| 90 | `56.8/66.6/80.2/85.0` | `55.3/65.4/78.5/83.3` | `+1.5/+1.2/+1.7/+1.7` |
+| 100 | `56.5/66.5/79.8/83.8` | `55.9/66.1/79.5/83.8` | `+0.6/+0.4/+0.3/+0.0` |
+
+- e100 评测后自然进入 e101，现场 e101 iter60/227 Loss=`0.127`、Pose=`0.461`、Acc=`0.999`、
+  Student=`1.00`、Reliability=`0.858`、GateAbs=`2.340e-02`，全部 finite；
+- exact HEAD/config SHA、tracked source clean、唯一 main PID=`1183898`+8 workers 保持；GPU 只有该
+  main，约 `7,058 MiB`；
+- runner/train log 未出现 AMP warning、NaN、Inf 数值、Traceback、RuntimeError、OOM、nonfinite 或
+  overflow，e120 前仍无 checkpoint。e90/e100 均只作同 epoch 轨迹，不用于早停或挑选 best。
