@@ -771,6 +771,21 @@ loss权重、代码或config。实时边界仍为exact HEAD/config/tracked clean
 拆因风险。exact HEAD/config/tracked clean、唯一main+8 workers、4090约`8404 MiB`且唯一任务、
 e120前checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
 
+### e80完整评测与e82接手
+
+- e80完整query/gallery评测mAP/R1/R5/R10=`55.8/66.4/79.6/84.4`；
+- 同epoch exp387 clean D0=`56.1/66.3/79.5/84.0`，Semantic C0−D0=
+  `−0.3/+0.1/+0.1/+0.4`；同epoch exp389 HT0=`55.4/65.4/78.9/82.9`，Semantic C0−HT0=
+  `+0.4/+1.0/+0.7/+1.5`；
+- e80末Loss=`0.162`、Pose=`0.752`、Semantic/RegionMask/Presence/Q=
+  `0.293/0.158/0.028/0.692`、Student=`1.0`、Reliability=`0.512`、GateAbs=`7.470e-06`，
+  全部finite；评测后e81自然完成，接手时已进入e82。
+
+e80继续呈相对D0的mAP略负、三项Rank略正，不能包装为全面提升。e82 iter200的Q=`0.692`、
+Reliability=`0.512`、GateAbs=`7.236e-06`，弱q与小router幅度持续稳定而无数值退化。exact
+HEAD/config/tracked clean、唯一main+8 workers、4090约`8262 MiB`且唯一任务、e120前
+checkpoint=`0`，严格异常扫描命中`0`，状态=`继续自然e120`。
+
 ### 15分钟接手：e30训练中，尚无完整e30评测
 
 e21--e29已自然完成，接手时位于e30 iter100/227，尚未产生e30完整query/gallery评测，因此本轮不写
