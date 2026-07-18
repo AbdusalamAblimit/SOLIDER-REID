@@ -334,6 +334,48 @@ raw anatomy、证据幅度与其余teacher全不变，只以固定tie-break hard
 teacher slot在像素级真正互斥。B2-O2通过后再独立做`B2-P prompt-only`；两者不同步修。
 正式训练和GPU teacher-only全量继续`NO-START`。
 
+## 2026-07-18 Phase 0B2-SC crop-support feasibility
+
+B2-SC实现commit=`f32b7c9dc3d611cfc7b6ab41db1836ed6ac4d151`，脚本SHA256=
+`692a3662d0de9613a6a1c573d2d86bfd7f40b3082f215d005aa4f8857869496a`，support prompt SHA256=
+`a88a1405b629402b647b6075325b2821362bbcf89372466a27f9d4cfcee3af12`。hard-owner ontology、
+crop-global CLS、RGB、geometry与CLIP固定，只把part-name目标换成每slot visible/occluded二分类；
+原crop bbox固定，按row-major support pixels构造0/25/50/75三档嵌套CLIP-mean遮挡。
+
+首次外层启动前HEAD检查发现隔离runtime不含`.git`后退出；脚本未启动、无runner/result/CLIP前向。
+正式边界恢复为source commit记录加三个runtime文件逐SHA，与Phase 0B/B2-O一致。
+
+8图CPU smoke完成40 valid-slot crops/160 variants，wall=`42.64s`、maxRSS=`3,703,436 KiB`；
+coverage、finite、repeat exact、overlap level误差与严格递增全PASS。macro `q_visible`=
+`0.50458/0.49077/0.48675/0.48448`，三档相邻差值全正；五slot的
+`Spearman(overlap,-q_visible)`=`0.756/0.695/0.629/0.615/0.703`，0→75%下降=
+`0.0263/0.0154/0.0175/0.0212/0.0201`，verdict=`B2_SC_SMOKE_PASS`。result/runner SHA256=
+`783fa561ed0a37d14e14b9918ba8af44da063bbe34739291dab7990cc9fc2619`/
+`ac3328430fe3ef0496e1bca1c9a9a3831e9f58956ca326c56b12b32c0068bd25`。
+
+128图CPU复核完成639 valid-slot crops/2,556 variants，wall=`9:13.56`、maxRSS=
+`3,706,396 KiB`；全部八项gate继续PASS。macro `q_visible`=
+`0.49671/0.48281/0.48116/0.47970`，相邻下降=
+`0.01390/0.00165/0.00146`。head/torso/arms/upper-leg/lower-leg的相关性=
+`0.346/0.520/0.450/0.601/0.495`，0→75%下降PID-cluster mean及95% CI分别为：
+
+- head `0.01433 [0.00814,0.02052]`；
+- torso `0.01347 [0.01068,0.01602]`；
+- arms `0.02376 [0.01911,0.02840]`；
+- upper-leg `0.01642 [0.01462,0.01855]`；
+- lower-leg `0.01865 [0.01680,0.02061]`。
+
+每类CI均不跨0；arms是响应最强的slot，证明其B2-P失败来自part-name互斥任务，而不是CLIP不能读取
+arms当前visual support。result/runner SHA256=
+`d77b9b8ffd9b69401ccdcf341d39f317b094ca17b21991eb173dfebccb473734`/
+`f2ddbf10bfa243e2f2a5da0fcbba17397cfee7f485d634184ffe1711e2a8b08c`。严格异常扫描0，进程退出，
+4090全程`2 MiB/0%`。
+
+裁决=`B2_SC_CROP_SUPPORT_SMOKE_PASS`。结果仍是CLIP-mean单一合成遮挡、128图/4 PID的零训练证据，
+不能包装为完整teacher或训练增益。下一步B2-SI固定同一support任务，只把readout换成PC-MBCLS，并
+要求target slot响应强于non-target slots与official global CLS；通过后才授权完整三材质反事实teacher
+审计。正式训练继续`NO-START`。
+
 ## 2026-07-18 Phase 0B2-O2 hard-owner CPU smoke
 
 B2-O2实现commit=`11a3303e7088acc9e62d259a741f058116732b92`，审计脚本SHA256=

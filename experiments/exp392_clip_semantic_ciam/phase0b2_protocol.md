@@ -241,6 +241,35 @@ B2-SC使用原始crop bbox固定几何，不因遮挡重算bbox；在每个有�
 control、wrong RGB/mask/text、flip与PID-cluster bootstrap全部门禁。B2-SC失败才是当前
 slot-support语义对象的直接NO-GO，不得用appearance任务救场。
 
+#### B2-SI：同一 support 任务的 PC-MBCLS readout
+
+B2-SC的128图结果通过后，B2-SI固定hard-owner ontology、support二分类prompt、0/25/50/75嵌套
+CLIP-mean遮挡、样本、CLIP checkpoint和温度。唯一主候选变化是把crop-global CLS换成PC-MBCLS。
+为避免crop缩放差异混进主比较，B2-SI在384x128 full RGB上先施加同一target-slot遮挡，再固定使用
+aspect-letterbox到224；hard owner像素mask用nearest映射到content box，随后14x14 average pooling为
+patch coverage。这样跨slot混合只可能来自同一patch覆盖多个解剖区域，不会由bilinear在同一像素
+重新制造soft identity overlap。
+
+每个target-slot/level的full image只共享运行前20个CLIP blocks一次；同一个shared token同时得到：
+
+1. PC-MBCLS五个slot feature；
+2. 同图official global CLS control；
+3. target slot的`q_visible`；
+4. 四个non-target slot各自support bank的`q_visible`。
+
+8图CPU contract先要求既有OpenCLIP parity继续PASS，并冻结以下smoke门禁：
+
+- target slot五类`Spearman(overlap,-q_visible)>0`且0→75%下降均为正；
+- target response的macro三档相邻差值均为正；
+- 每个target class的0→75%下降大于同图四个non-target slot平均下降；
+- macro target下降大于official global CLS对同一target文本的下降；
+- repeat exact、finite、hard mask映射后像素级互斥、level overlap误差不超过一个support pixel；
+- PC-MBCLS每个valid target均执行，zero/invalid仍显式NULL。
+
+8图通过后才跑128图；128图通过只授权完整B2-S teacher-only反事实审计，不授权训练。若PC-MBCLS只
+对全图遮挡敏感而不能优于non-target/global control，则当前readout `NO-GO`，不得用crop-global
+`5x` teacher直接进入120-epoch训练。
+
 ### B2-I：只改 readout 接口
 
 固定B2-O ontology、RGB、五个part-name prototypes、geometry和指标，只比较：
