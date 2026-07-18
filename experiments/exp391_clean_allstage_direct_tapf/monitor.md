@@ -29,3 +29,14 @@
 - 本地`uv`环境的四个修改Python文件`py_compile` PASS；该环境未安装`cv2/torchvision`，因此首次
   unittest在导入阶段退出、未执行任何case。它不计作单元测试结果；必须在远端canonical
   `mmpose-abu`环境完整重跑后才可继续门禁。
+
+## Phase A canonical单元门禁
+
+- 从已验证exp390 full-history bundle建立fresh preflight repo；七个目标文件的本地/远端SHA256
+  逐文件exact；
+- 远端canonical `mmpose-abu`环境、显式formal repo `PYTHONPATH`下：clean TAPF unit=`7/7 PASS`，
+  clean pose data unit=`5/5 PASS`；新增case确认sum/mean两模型state逐项exact、mean总loss严格为
+  sum的`0.5×`、early/late单项loss不变，非法reduction严格异常；
+- 最初两种未显式设置repo import path的调用均在test discovery/import阶段退出，未执行case、未
+  构造模型或占用GPU；它们不计作测试结果，也未修改任何代码/config。后续canonical门禁统一显式
+  使用fresh formal repo作为`PYTHONPATH`。
