@@ -694,3 +694,37 @@ CPU与CUDA的`exp`舍入，而不是公式或运算顺序。
 `63 ms/batch`，相对完整teacher+ReID preflight约增加12%而非不可接受的scalar loop开销。这样M与
 B2-SI封板teacher在相同设备、相同算术、相同renderer下逐tensor同源；改动不涉及训练语义、loss或
 阈值。须以新exact commit完成最终preflight后才启动正式e120。
+
+## 2026-07-19 Phase 0C 最终预检 PASS 与正式训练启动
+
+最终exact commit=`ed5783416528be4284adce11fa192fe119e344f4`的完整CUDA/AMP预检已PASS：
+
+- PC-MBCLS parity：mask/q max-abs=`0/0`，valid逐tensor exact；
+- 24步AMP共19次成功更新，前5步为默认GradScaler exact skip，随后连续19步finite；
+- q-head、两个feature-dependent consumer、backbone与ID head均有非零梯度和参数更新；
+- frozen teacher不进入student/optimizer/checkpoint/eval，RGB-only eval、strict checkpoint reload与state
+  finite全部PASS；
+- peak allocated/reserved=`7.56/8.00 GB`，吞吐=`130.45 samples/s`；
+- result=`/home/afr/reid-clean/audits/exp392_phase0c/semantic_c0_ed57834_preflight.json`，SHA256=
+  `dea9c8093be1559db8debbf2d59efcd2b72d4f046508ad65861473753b26cd7b`；runner SHA256=
+  `73f7bd4251e5fdda82a9ffde5b810f2bc4443ff0ccf55e27746f41808925a64b`。
+
+已知但不阻塞本臂的风险是teacher q动态范围较弱：五slot std约`0.011–0.024`，constant-prior gap很小。
+这要求final后补pose-only、static-q与generic-router拆因，但不得在当前臂内偷调温度、loss权重或挑中间点。
+
+全部预注册门禁通过后，已fresh启动single-stage Semantic TAPF bundled feasibility正式训练：
+
+- repo=`/home/afr/SOLIDER-REID-exp392-semantic-c0-ed57834`，exact detached HEAD=
+  `ed5783416528be4284adce11fa192fe119e344f4`；
+- config=`configs/occluded_duke/swin_tiny_tapf_semantic_c0.yml`，SHA256=
+  `ecf3403c3e3d61af575f49420f21247f93029785364d32a23711eab66458d39c`；
+- output=`log/occluded_duke/exp392_clean_swin_tiny_semantic_c0_s1234`；runner=
+  `/home/afr/train-logs/exp392_semantic_c0_s1234.runner.log`；main PID=`1375252`；
+- recipe=`120 epoch / batch64 / seed1234 / SGD / lr0.0008 / eval10 / checkpoint120`，fresh且不续训、
+  不挑best，必须自然跑满e120。
+
+实时复核时已自然完成e1并进入e2：唯一main+8 workers，4090约`8184 MiB`；HEAD/config/tracked source
+clean，无NaN/Inf/Traceback/RuntimeError/OOM/overflow异常，无checkpoint。e1末Loss从首个记录点`18.983`
+下降，Semantic/RegionMask/Presence/Q约`0.693`，Student=`0`符合e1-5 teacher handoff，Reliability约
+`0.51`，GateAbs从`5.965e-11`增长到`7.723e-09`且finite。当前状态为`FORMAL RUNNING`，此前
+teacher反事实审计的单次FAIL只作为机制风险，不再是一票否决训练或整条CLIP–TAPF路线的理由。
