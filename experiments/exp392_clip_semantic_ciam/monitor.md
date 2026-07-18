@@ -663,3 +663,11 @@ RGB-only eval和strict checkpoint reload。全部PASS后立即启动fresh e120�
 tensor。traceback=`AttributeError: FrozenClipSlotTeacher has no attribute model`，GPU回到`2 MiB/0%`、
 result/formal output均未创建、没有optimizer step或正式训练数据。该失败不涉及teacher前向、TAPF实现或
 性能；隔离检查已改为遍历实际保留的`teacher.visual.parameters()`，须以新exact commit重新preflight。
+
+第二次preflight已通过teacher/student构造、PC-MBCLS真实前向与batch64首个forward/backward，随后
+审计脚本因默认GradScaler首步scale回退而主动退出；result/formal output仍未创建，GPU恢复空闲。
+对照已封板exp387/exp391 CUDA门禁后确认，官方D0同样允许默认`65536`初始scale产生若干exact skip，
+其正确门禁是overflow时model/optimizer严格不更新、scale下降，随后至少一次成功更新且连续8步finite，
+而不是错误地要求第一个step永不skip。现已按既有clean D0协议修正：显式`unscale_`读取found-inf，
+逐step核对q-head、两个consumer、backbone与head probe的exact skip/update，记录overflow count与scale
+history，并保留24步内至少8个连续finite更新。该更正只修审计判据，不修改模型、loss、config或recipe。

@@ -270,6 +270,10 @@ def main():
     consumer_grad = [[], []]
     scale_history = []
     loss_history = []
+    step_records = []
+    successful_updates = 0
+    consecutive_updates = 0
+    longest_consecutive_updates = 0
     parity = None
     last_aux = None
     torch.cuda.empty_cache()
@@ -295,6 +299,17 @@ def main():
         optimizer.zero_grad(set_to_none=True)
         epoch = epoch_schedule[(step * len(epoch_schedule)) // args.steps]
         scale_before = float(scaler.get_scale())
+        probes = {
+            "q_head": model.base.tapf.anchor.support_head.weight,
+            "consumer_0": model.base.tapf.psg_bank[0].expert,
+            "consumer_1": model.base.tapf.psg_bank[1].expert,
+            "backbone": model.base.patch_embed.projection.weight,
+            "head": model.classifier.weight,
+        }
+        probe_before = {
+            name: parameter.detach().clone()
+            for name, parameter in probes.items()
+        }
         with amp.autocast(enabled=True):
             score, feat, _, aux = model(
                 img,
@@ -309,20 +324,68 @@ def main():
         if not bool(torch.isfinite(loss)):
             raise RuntimeError("Non-finite loss at step %d" % step)
         scaler.scale(loss).backward()
+        scaler.unscale_(optimizer)
+        found_inf = float(sum(
+            value.detach().float().item()
+            for value in scaler._per_optimizer_states[id(optimizer)][
+                "found_inf_per_device"
+            ].values()
+        ))
         q_parameter = model.base.tapf.anchor.support_head.weight
-        q_head_grad.append(float(q_parameter.grad.detach().float().norm().item()))
+        current_q_grad = float(q_parameter.grad.detach().float().norm().item())
+        current_consumer_grad = []
         for index in range(2):
             gradient = model.base.tapf.psg_bank[index].expert.grad
-            consumer_grad[index].append(
+            current_consumer_grad.append(
                 0.0 if gradient is None else float(gradient.detach().float().norm().item())
             )
         scaler.step(optimizer)
         scaler.update()
         scale_after = float(scaler.get_scale())
-        if scale_after < scale_before:
-            raise RuntimeError("GradScaler skipped a step at index %d" % step)
+        updated = {
+            name: not torch.equal(parameter.detach(), probe_before[name])
+            for name, parameter in probes.items()
+        }
+        if found_inf > 0.0:
+            if scale_after >= scale_before or any(updated.values()):
+                raise RuntimeError(
+                    "Overflow step did not perform an exact skip at index %d" % step
+                )
+            consecutive_updates = 0
+        else:
+            if scale_after != scale_before or not all(updated.values()):
+                raise RuntimeError(
+                    "Finite step failed to update all probes at index %d: %s"
+                    % (step, updated)
+                )
+            if not np.isfinite(current_q_grad) or current_q_grad <= 0.0:
+                raise RuntimeError("Finite step has invalid q-head gradient")
+            if any(
+                not np.isfinite(value) or value <= 0.0
+                for value in current_consumer_grad
+            ):
+                raise RuntimeError("Finite step missed a semantic consumer")
+            q_head_grad.append(current_q_grad)
+            for index, value in enumerate(current_consumer_grad):
+                consumer_grad[index].append(value)
+            successful_updates += 1
+            consecutive_updates += 1
+            longest_consecutive_updates = max(
+                longest_consecutive_updates, consecutive_updates
+            )
         scale_history.append(scale_after)
         loss_history.append(float(loss.detach().item()))
+        step_records.append({
+            "step": step + 1,
+            "epoch_route": epoch,
+            "loss": float(loss.detach().item()),
+            "scale_before": scale_before,
+            "scale_after": scale_after,
+            "found_inf": found_inf,
+            "updated": updated,
+            "q_head_gradient_norm": current_q_grad,
+            "consumer_gradient_norm": current_consumer_grad,
+        })
         last_aux = aux
     torch.cuda.synchronize()
     elapsed = time.perf_counter() - began
@@ -331,6 +394,10 @@ def main():
 
     if last_aux is None:
         raise RuntimeError("No training steps executed")
+    if successful_updates < 1:
+        raise RuntimeError("Default GradScaler never reached a finite update")
+    if longest_consecutive_updates < 8:
+        raise RuntimeError("Fewer than eight consecutive finite updates")
     teacher_mask = last_aux["teacher_mask"].detach().float()
     student_mask = last_aux["student_mask"].detach().float()
     maximum = teacher_mask.flatten(2).amax(dim=-1)[..., None, None]
@@ -381,10 +448,12 @@ def main():
         ),
         "pcmbcls_parity": bool(parity["pass"]),
         "teacher_isolated": teacher_isolated and teacher_absent_from_state,
-        "finite_no_skip": (
+        "finite_recovery": (
             all(np.isfinite(loss_history))
             and all(np.isfinite(scale_history))
             and state_finite
+            and successful_updates >= 1
+            and longest_consecutive_updates >= 8
         ),
         "q_head_gradient": min(q_head_grad) > 0.0,
         "two_consumers": all(min(values) > 0.0 for values in consumer_grad),
@@ -409,6 +478,10 @@ def main():
         ],
         "mask_diagnostic": mask_diagnostic,
         "steps": args.steps,
+        "successful_updates": successful_updates,
+        "overflow_steps": args.steps - successful_updates,
+        "longest_consecutive_updates": longest_consecutive_updates,
+        "step_records": step_records,
         "batch_size": train_loader.batch_size,
         "workers": train_loader.num_workers,
         "elapsed_seconds": elapsed,
