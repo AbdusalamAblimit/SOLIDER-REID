@@ -218,6 +218,7 @@ class SemanticSpatialRouter(nn.Module):
         region_count=5,
         rank=16,
         release=0.5,
+        rezero=False,
     ):
         super().__init__()
         if feature_channels <= 0 or region_count <= 0 or rank <= 0:
@@ -228,11 +229,20 @@ class SemanticSpatialRouter(nn.Module):
         self.region_count = int(region_count)
         self.rank = int(rank)
         self.release = float(release)
+        self.rezero = bool(rezero)
         self.token_projection = nn.Linear(feature_channels, rank, bias=False)
         self.context_projection = nn.Linear(feature_channels, rank, bias=False)
-        self.expert = nn.Parameter(
-            torch.zeros(region_count, rank, feature_channels)
-        )
+        if self.rezero:
+            self.expert = nn.Parameter(
+                torch.empty(region_count, rank, feature_channels)
+            )
+            nn.init.normal_(self.expert, mean=0.0, std=0.02)
+            self.alpha_logit = nn.Parameter(torch.zeros(()))
+        else:
+            self.expert = nn.Parameter(
+                torch.zeros(region_count, rank, feature_channels)
+            )
+            self.register_parameter("alpha_logit", None)
 
     def forward(self, tokens, hw_shape, mask, support):
         height, width = hw_shape
@@ -262,6 +272,10 @@ class SemanticSpatialRouter(nn.Module):
         region_delta = torch.einsum("brnk,rkc->brnc", hidden, self.expert)
         scatter = resized * support[..., None]
         delta = torch.einsum("brn,brnc->bnc", scatter, region_delta)
+        if self.rezero:
+            applied_delta = torch.tanh(self.alpha_logit) * torch.tanh(delta)
+            routed = tokens + self.release * applied_delta
+            return routed, applied_delta
         routed = tokens + self.release * torch.tanh(delta)
         return routed, delta
 
@@ -387,6 +401,7 @@ class CleanSemanticTapfC0(nn.Module):
         anchor_hidden=128,
         consumer_channels=768,
         router_rank=16,
+        router_rezero=False,
         gate_release=0.5,
         gaussian_sigma=1.5,
         teacher_epochs=5,
@@ -405,6 +420,7 @@ class CleanSemanticTapfC0(nn.Module):
                     feature_channels=consumer_channels,
                     rank=router_rank,
                     release=gate_release,
+                    rezero=router_rezero,
                 )
                 for _ in range(2)
             ]

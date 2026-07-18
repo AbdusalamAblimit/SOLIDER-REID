@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-`DESIGN-ONLY / PHASE 0 TEACHER AUDIT NO-START / FORMAL TRAINING NO-START`。
+`PHASE 0E SEALED-PASS / PHASE A IMPLEMENTING-PREFLIGHT / FORMAL TRAINING NO-START`。
 
 exp393不是exp392续训，也不是exp391 semantic multi-stage。它使用fresh repo、fresh optimizer、唯一final
 checkpoint和完整120-epoch recipe；任何正式arm一旦启动必须自然跑满，不挑best、不续训、不换seed
@@ -119,6 +119,11 @@ new: expert ~ small nonzero variance
      alpha_logit = 0
      F' = F + 0.5 * tanh(alpha_logit) * tanh(delta(expert, token, context))
 ```
+
+Phase A冻结`expert ~ Normal(0, 0.02)`，每个router各增加一个无shape广播歧义的scalar
+`alpha_logit`。config开关为`SEMANTIC_REZERO`且默认`False`；关闭时保持Semantic C0的zero expert、
+state keys和forward数学不变。开启时监控量记录乘alpha后的实际`applied_delta`，避免把尚未执行的
+pre-alpha branch误报成route贡献。
 
 初始化仍严格`F'=F`，NULL mask/q仍严格identity；但首个finite step应有非零`alpha_logit`梯度。alpha打开
 后，token projection、context projection和expert都必须获得finite非零梯度。禁止同时加入rich code、

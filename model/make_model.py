@@ -253,6 +253,7 @@ class build_transformer(nn.Module):
             elif cfg.MODEL.TAPF.SEMANTIC_ENABLED:
                 tapf_kwargs = {
                     "router_rank": cfg.MODEL.TAPF.SEMANTIC_ROUTER_RANK,
+                    "router_rezero": cfg.MODEL.TAPF.SEMANTIC_REZERO,
                 }
             else:
                 tapf_kwargs["psg_hidden"] = cfg.MODEL.TAPF.PSG_HIDDEN
