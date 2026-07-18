@@ -657,3 +657,9 @@ exact，py_compile与`git diff --check` PASS。
 下一步只做一次真实Torch1.13.1/OpenCLIP2.32 CUDA/AMP preflight：old/new PC-MBCLS parity、teacher/
 checkpoint隔离、batch64/8-worker/micro4连续24步finite与GradScaler、两个consumer梯度、峰值<24GiB、
 RGB-only eval和strict checkpoint reload。全部PASS后立即启动fresh e120，不再等待B2-Sv2全量审计。
+
+首次preflight在构造完teacher/student、进入第一个训练step前因审计脚本自身属性名错误退出：隔离检查
+读取了已在teacher初始化末尾删除的临时`model`外壳，而正式teacher按设计只保留`visual`与缓存text
+tensor。traceback=`AttributeError: FrozenClipSlotTeacher has no attribute model`，GPU回到`2 MiB/0%`、
+result/formal output均未创建、没有optimizer step或正式训练数据。该失败不涉及teacher前向、TAPF实现或
+性能；隔离检查已改为遍历实际保留的`teacher.visual.parameters()`，须以新exact commit重新preflight。

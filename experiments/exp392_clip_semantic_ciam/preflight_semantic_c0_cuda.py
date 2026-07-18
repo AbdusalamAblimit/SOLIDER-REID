@@ -242,7 +242,7 @@ def main():
     optimizer, _ = make_optimizer(cfg, model, center_criterion)
     model_parameter_ids = {id(parameter) for parameter in model.parameters()}
     teacher_parameter_ids = {
-        id(parameter) for parameter in teacher.model.parameters()
+        id(parameter) for parameter in teacher.visual.parameters()
     }
     optimizer_parameter_ids = {
         id(parameter)
