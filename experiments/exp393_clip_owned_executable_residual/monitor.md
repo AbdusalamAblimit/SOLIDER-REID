@@ -164,6 +164,30 @@ semantic multi-stage。
 `2,402 MiB/99%`、唯一compute PID显存=`2,394 MiB`，异常关键词计数=`0`。继续自然运行，不作中间
 统计裁决。
 
+## 2026-07-19 Phase 0E-FULL自然完成与封板
+
+PID=`884504`自然退出，GPU恢复`2 MiB/0%`，execution HEAD/tracked与脚本SHA保持exact，严格异常/
+AMP warning计数=`0`。result verdict=`PHASE0E_FULL_PASS`，13项正式gate全部PASS。official
+15,618图全部流式覆盖；fit/audit=`7,860/7,758`图、`361/341`个PID且strict disjoint。
+
+五slot effective rank=`12.332/12.289/12.950/12.278/11.828`，macro=`12.335/16`；逐slot最小std=
+`0.1800/0.1631/0.1684/0.1687/0.1739`且全部16维非零。wrong RGB margin mean=
+`0.774/0.765/0.750/0.790/0.785`、CI low=`0.756/0.748/0.733/0.773/0.766`；same-RGB
+wrong-mask mean=`0.650/0.170/0.497/0.201/0.646`、CI low=
+`0.632/0.160/0.480/0.189/0.633`。donor-recipient与slot-cycle五slot CI也全正，但非正式门。
+
+raw uncentered明显更弱；fixed random orthogonal macro rank=`14.725`且保留强margin，说明证据属于
+rich residual而非PCA偶然轴。slot-mean/global-only exact zero。correct/counterfactual forward=
+`305.211/610.067s`，peak=`1,712,272,384 bytes`。script/result/partition/codebook/runner SHA依次为
+`54a1a899e634fa317eacf0caa5acf788434b4d3cc55f4d8a9a9173b557e17deb`、
+`f2f9d2b0d03eb46091978f5c52b849eaa6b2fd5411947d959153f6d81df8828e`、
+`5aed0bc67c5998d79a7ed9ccbeb8481815921728e0af57c33182939d8478da67`、
+`fb87da370ea945d526f499bef78093a6b07203d87c6d84efe06b5eb6594f954a`、
+`53b31edcbd5e3779782429468a41b38c57c05c763cdf4ebfa1a3ce3dce403cb7`。
+
+裁决：`Phase 0E = SEALED-PASS`，只授权Phase B使用该teacher接口；不直接授权任何正式训练或
+semantic multi-stage。下一步转入逻辑独立的Phase A RZ-C0实现/preflight。
+
 后续heartbeat复核：PID=`884504`仍由PID 1接管且唯一，第一遍推进到
 `correct-pass 9,632/15,618`；partition已自然落盘（约6.4 KiB），result/codebook尚未出现，符合两遍
 执行顺序。GPU=`2,402 MiB/53%`、唯一compute PID显存=`2,394 MiB`，脚本SHA、execution HEAD与tracked

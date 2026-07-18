@@ -1978,3 +1978,11 @@ PID-cluster CI均严格为正。slot-mean/global-only exact zero、raw uncentere
 这仍不能进入正面方法表。fixed random orthogonal也保留强信号，故PCA只是压缩器；更关键的是teacher
 richness没有证明生产route会改变检索。只有0E-FULL复核、独立RZ-C0 route activation与最终COER三段
 证据连续成立，才能把故事从“失败归因与候选修复”升级为“CLIP-owned executable residual”。
+
+0E-FULL已完成teacher侧全量封板：official 15,618图按PID严格fit/audit，341个held-out PID上的五slot
+macro effective rank=`12.335/16`，wrong RGB与wrong mask的逐slot置信区间均严格为正。由此，论文
+可以把“rich centered CLIP local residual真实存在”写成机制开发证据，而不再只依赖128图smoke。
+
+但它仍不进入方法主结果，因为没有任何ReID训练或检索提升。故事下一段必须由Phase A证明
+identity-safe route可被ReID loss打开，再由Phase B证明correct evidence相对wrong/static控制和
+all-bypass final贡献同时成立；少任一段，COER仍只是被充分审计的候选机制。

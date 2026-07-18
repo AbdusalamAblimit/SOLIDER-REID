@@ -2335,3 +2335,15 @@ allocation=`1,712,272,384 bytes`，strict finite与异常/AMP warning检查PASS�
 **当前判定**：`Phase 0E-S/C8/128 = SEALED-PASS`，只授权official 15,618 train的0E-FULL
 teacher-only held-out PID审计。Phase A、Phase B正式训练与semantic multi-stage仍`NO-START`；即使
 0E-FULL失败，也只关闭当前rich evidence code，不替代逻辑独立的Phase A route-activation裁决。
+
+### Phase 0E-FULL official train裁决
+
+full审计覆盖official 15,618图，fit/audit=`7,860/7,758`图、`361/341`个PID且无泄漏。五slot
+effective rank=`12.332/12.289/12.950/12.278/11.828`，macro=`12.335/16`；wrong RGB margin的
+PID-cluster CI下界=`0.756/0.748/0.733/0.773/0.766`，same-RGB wrong-mask CI下界=
+`0.632/0.160/0.480/0.189/0.633`，全部正式门PASS。raw uncentered显著更弱，random orthogonal仍
+保留强信号，说明rich residual有效而PCA不是贡献。
+
+**最终判定**：`Phase 0E = SEALED-PASS`。它证明centered rich CLIP local evidence在全train
+held-out PID上稳定存在，但不证明ReID route会使用它；只授权Phase B teacher接口，正式训练仍需
+独立Phase A route-activation通过。

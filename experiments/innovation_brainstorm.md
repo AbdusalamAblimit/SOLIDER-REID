@@ -3661,3 +3661,13 @@ between-slot prior前进了一步。
 对象仍是：rich residual如何通过生产expert成为counterfactually executable mediator，并在final
 all-bypass中留下检索贡献。0E-128只是证明“有燃料”，没有证明router会使用它；因此下一证据必须保持
 teacher richness与route activation两门分立，不能再次把teacher审计成功包装成ReID方法成功。
+
+### 0E-FULL把“teacher有燃料”从小样本证据升级为全量证据
+
+full审计在341个held-out PID、7,758图上把macro effective rank推到`12.335/16`，并使wrong RGB与
+wrong mask的五slot置信区间全部稳定为正。这排除了0E-128只是抽样偶然的解释，也确认exp392失败并
+非CLIP局部视觉完全无信号，而是scalar化和执行接口丢失了信号。
+
+创新边界仍不变：random orthogonal比PCA拥有更高rank且保留强margin，所以不能叙述“PCA发现语义
+方向”。可争贡献只能是rich residual对生产branch的梯度/执行所有权，以及final可反事实检索贡献。
+下一步Phase A必须先证明route parameterization本身能离开identity，防止把teacher侧GO误当方法GO。

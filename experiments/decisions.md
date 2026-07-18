@@ -5205,3 +5205,14 @@ uncentered明显更弱；fixed random orthogonal仍保留强信号，说明信�
 0E-FULL teacher-only PID-disjoint审计，并采用流式/两遍实现避免把全部RGB一次性放入内存。PCA仍是
 压缩器而非方法贡献。full PASS也只授权Phase B teacher接口，不授权训练或multi-stage；full FAIL只
 关闭当前rich code并阻断Phase B，不能取消独立Phase A RZ-C0的实现与preflight。
+
+### [2026-07-19] 决策：0E-FULL通过，teacher richness门封板为GO但训练仍NO-START
+
+**证据**：official 15,618图、702个PID完整覆盖并按PID严格拆成`7,860/7,758`图和`361/341` PID。
+五slot macro effective rank=`12.335/16`；wrong RGB与same-RGB wrong mask的逐slot 95% CI下界全部
+严格大于0，13项正式gate全PASS。进程自然退出、GPU空闲、异常0，全部资产SHA冻结。
+
+**决策**：`Phase 0E teacher richness = GO / SEALED-PASS`。该GO只说明rich CLIP local evidence可供
+执行，不说明现有或候选router会使用它，不授权直接训练Phase B。严格转入逻辑独立Phase A RZ-C0：
+先验证identity-safe nonzero branch能否被ReID loss打开；只有Phase A自身通过，Phase B才同时具备
+teacher与route两项授权。semantic multi-stage继续NO-START。

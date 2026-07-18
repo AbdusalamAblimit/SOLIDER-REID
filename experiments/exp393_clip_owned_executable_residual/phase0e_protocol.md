@@ -3,7 +3,7 @@
 ## 状态
 
 `PROTOCOL FROZEN / 0E-S SYNTHETIC SEALED-PASS / 0E-C8 8-IMAGE SEALED-PASS /
-0E-128 SEALED-PASS / 0E-FULL NO-START`。
+0E-128 SEALED-PASS / 0E-FULL SEALED-PASS`。
 
 本阶段不构建ReID model、optimizer、训练config、output或checkpoint。teacher-only审计与Phase A的
 route activation逻辑独立；Phase 0E失败只关闭当前rich evidence code并阻断Phase B，不取消已通过
@@ -127,6 +127,25 @@ full脚本固定为`phase0e_rich_evidence_full.py`，覆盖official train全部1
 本地与远端synthetic streaming-fit contract均PASS：13 fit images/65 rows，center mean max=
 `2.050e-16`，basis orthogonal max=`1.998e-15`，covariance/eigh相对direct SVD subspace max分别为
 `7.216e-16/5.933e-16`。该contract只验证full新增的流式PCA实现，不替代真实teacher裁决。
+
+0E-FULL冻结结果：`PASS`。official 15,618图全部覆盖，fit/audit=`7,860/7,758`图、
+`361/341`个PID且strict disjoint。五slot effective rank=
+`12.332/12.289/12.950/12.278/11.828`，macro=`12.335/16`；16维std全部非零，逐slot最小std=
+`0.1800/0.1631/0.1684/0.1687/0.1739`。wrong RGB margin CI下界=
+`0.756/0.748/0.733/0.773/0.766`，same-RGB wrong-mask CI下界=
+`0.632/0.160/0.480/0.189/0.633`，所有正式门PASS。
+
+raw uncentered的wrong-RGB/wrong-mask均明显更弱；fixed random orthogonal仍保留强信号且macro rank=
+`14.725`，继续证明PCA仅为压缩器。slot-mean/global-only exact zero；official parity、repeat/NULL、
+hard-owner、donor、finite/frozen/no-grad与streaming codebook contract全部PASS。correct/counterfactual
+forward=`305.211/610.067s`，peak allocation=`1,712,272,384 bytes`，严格异常=0。script/result/
+partition/codebook/runner SHA256分别为
+`54a1a899e634fa317eacf0caa5acf788434b4d3cc55f4d8a9a9173b557e17deb`、
+`f2f9d2b0d03eb46091978f5c52b849eaa6b2fd5411947d959153f6d81df8828e`、
+`5aed0bc67c5998d79a7ed9ccbeb8481815921728e0af57c33182939d8478da67`、
+`fb87da370ea945d526f499bef78093a6b07203d87c6d84efe06b5eb6594f954a`、
+`53b31edcbd5e3779782429468a41b38c57c05c763cdf4ebfa1a3ce3dce403cb7`。该PASS只授权Phase B
+teacher接口；Phase A/B正式训练与semantic multi-stage仍NO-START。
 
 ## 失败解释
 
