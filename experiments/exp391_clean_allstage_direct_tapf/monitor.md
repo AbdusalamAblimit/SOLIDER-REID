@@ -2,10 +2,10 @@
 
 ## 当前状态
 
-- 状态：`PHASE-A H2-M FORMAL RUNNING`；全部preflight与fresh启动边界已PASS，e1自然完成并进入e2；
+- 状态：`PHASE-A SEALED / NO-GO`；H2-M已自然e120并通过完整终审，Phase B/C禁止启动；
 - H2-M唯一变量：在保持exp389两个direct anchor、early/late=`6/2` consumer和全部recipe不变时，
   将总pose objective从`0.1×sum(L_early,L_late)`改为`0.1×mean(L_early,L_late)`；
-- 正式output=`log/occluded_duke/exp391_clean_swin_tiny_h2m_s1234`；必须自然跑满e120，不挑best；
+- 正式output=`log/occluded_duke/exp391_clean_swin_tiny_h2m_s1234`；唯一e120 final已封板，禁止重启；
 - Phase B/C继续保持`NO-START`，只有前一阶段按design.md通过才允许实现或训练。
 
 ## 不变量
@@ -280,3 +280,58 @@ main+8 workers，GPU约`7760 MiB`，严格异常与AMP warning=`0`，e120前chec
 三次均为完整query/gallery评测；训练已自然进入e116，exact HEAD/config/tracked source clean，唯一
 main+8 workers，GPU约`7626 MiB`，严格异常与AMP warning=`0`，e120前checkpoint=`0`。中间轨迹
 相对D0与HT0方向不同，仍不得用来裁决Phase A；等待唯一自然e120 final与终审。
+
+## e120 final与Phase A终审
+
+### 唯一自然final
+
+- H2-M mAP / R1 / R5 / R10=`57.2 / 67.3 / 80.2 / 84.5`；未挑best；
+- exp387 D0 final=`57.6 / 67.7 / 80.8 / 84.6`，H2-M−D0=
+  `−0.4 / −0.4 / −0.6 / −0.1`；
+- exp389 HT0 final=`56.9 / 65.9 / 80.0 / 84.1`，H2-M−HT0=
+  `+0.3 / +1.4 / +0.2 / +0.4`；
+- 精确冻结full复测=`57.235699/67.285067/80.226243/84.479636`，与训练日志四舍五入口径一致，
+  full repeat逐项exact；
+- e120末尾PoseEarly/PoseLate=`0.455/0.474`、StudentEarly/StudentLate=`1/1`、
+  ReliabilityEarly/ReliabilityLate=`0.828/0.828`、GateEarlyAbs/GateLateAbs=
+  `1.993e-02/2.498e-02`，全部finite。
+
+### 进程、文件与严格异常边界
+
+- main PID=`1293570`及8 workers自然退出，GPU空闲；唯一checkpoint=`transformer_120.pth`；
+- checkpoint SHA256=`914b9d321a72a6af9045743f9c0456b38c5641acf812928602c76d2558a14206`，
+  runner SHA256=`edf955d9b128a5b75ecaeda3c33dfc7c5537110b9acc2a44aeca45b1fcb3fb58`，
+  train log SHA256=`d41ee2c7c7280d805935a2bd8ae1ef86b9a5bbdb2d9f13d05f239ed857114252`；
+- exact execution HEAD/config/tracked source保持不变；runner/train log的NaN/Inf/Traceback/RuntimeError/
+  OOM/nonfinite/overflow与AMP warning严格命中均为`0`。
+
+### strict finite、参数轨迹与pose-free consumer终审
+
+- final audit JSON=`/home/afr/reid-clean/audits/exp391/h2m_final_audit.json`，SHA256=
+  `a39a67fb50bb4e5c6c939ef56604370e38fa22fba132bf3d2201344d46f10433`；
+- checkpoint state=`243` tensors，其中floating/complex=`230`，全部finite；strict missing/unexpected均为空；
+- 相对同seed fresh初始化，early anchor=`8/8`、early PSG=`12/12`、late anchor=`8/8`、late PSG=
+  `4/4`、Swin=`171/193`、head=`2/3` parameter tensors changed；每个PSG bank均`2/2` changed，
+  组内任意bank pair均不相等；
+- correct/shuffle/None/exploding四种pose下descriptor、两field与八gate逐元素exact，exploding access=`0`；
+  normal train与validation dataset均无pose store，query=`2210`；
+- 八consumer逐一旁路的descriptor max delta：early0–5=
+  `0.103787/0.060112/0.102470/0.160465/0.243306/0.837449`，late0–1=
+  `1.540365/2.379124`，全部有限非零，无terminal dead consumer。
+
+### 冻结层级消融与裁决
+
+- frozen ablation JSON=`/home/afr/reid-clean/audits/exp391/h2m_frozen_level_ablation.json`，SHA256=
+  `5b993a65c73087b9344a1eb2ea260698df7456a9cddc8aebbbc56e74c5bd5dc1`；
+- early-bypass=`57.094588/66.787332/79.909503/84.615386`；full−early-bypass=
+  `+0.141111/+0.497735/+0.316739/−0.135750`，early mAP独立贡献超过预注册`+0.1`门槛；
+- late-bypass=`55.689613/65.248871/78.778278/82.895929`；full−late-bypass=
+  `+1.546086/+2.036196/+1.447964/+1.583707`；
+- all-bypass=`55.498334/64.886880/77.963799/82.760179`；full−all-bypass=
+  `+1.737366/+2.398187/+2.262443/+1.719457`；
+- 虽然early consumer不再低于独立贡献门槛，H2-M final mAP仍比D0低`0.4`，超过预注册允许的
+  `0.2`下降，单独触发Phase A NO-GO。Phase B/C禁止实现、启动、续训或用中途best替代final。
+
+最终解释：把两层pose loss从sum改为mean能恢复旧HT0相对表现，并使early层出现小但可测的独立贡献，
+但没有达到单层D0。当前瓶颈不是简单loss budget，而是6/2多层topology仍未提供优于D0的最终检索
+价值；exp391 Phase A至此SEALED，禁止重启、重复或继续预注册Phase B/C。

@@ -1,7 +1,7 @@
 # 实验 exp391：官方 clean 全阶段独立直预测 TAPF
 
-> 状态：PHASE-A PREFLIGHT / NO-START。exp390 四臂已全部自然 e120、终审并完成多 seed 汇总；
-> 当前只允许实现和审计 H2-M，全部门禁通过前不得创建正式 output 或启动训练。
+> 状态：PHASE-A SEALED / NO-GO。H2-M已自然e120并通过完整终审，但final相对D0为`−0.4 mAP`，
+> 触发预注册停止条件；Phase B/C禁止实现或启动。
 
 ## 动机
 
