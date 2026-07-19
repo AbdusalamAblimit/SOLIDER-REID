@@ -131,3 +131,23 @@ source与checkpoint SHA保持不变。script/result/runner SHA256分别为
 裁决=`PHASE0R_128 SEALED-PASS / RHO FROZEN / PRODUCTION NO-START / FORMAL NO-START`。该结果只
 证明D0能量基准可复现并冻结，不证明exp394 route或CLIP方向有效。下一步仅允许production实现前的
 static设计/代码seam审查；不得直接启动CUDA训练preflight、正式训练或semantic multi-stage。
+
+## 2026-07-19 Phase 0P static source-seam封板
+
+已冻结`production_protocol.md`，明确rich teacher code、student/production detach边界、同权重
+`L_exec`重算、relation loss、两个独立consumer、RMS normalization、`rho` schedule、默认off和十项
+同checkpoint反事实。特别将generic arm收紧为同checkpoint `generic-context-only` evidence ablation；
+真正matched generic adapter只能在候选PASS后另做fresh训练，不能用当前反事实冒充。
+
+随后独立`phase0p_source_contract.py`在本地uv CPU连续两次输出逐SHA exact，19项全部PASS。它确认八个
+local source/config blob与远端RZ-C0 sealed repo exact，Stage-3两个consumer、external teacher、
+no-grad target、model-only checkpoint、RGB-only eval、source/state detach和默认off seam均成立；同时
+确认exp394 production flag/config当前不存在，避免把source可行性误写成实现完成。
+
+script/result/runner SHA256分别为
+`27859a2ae0b5a1020b9a68cda5777ad332e05701c372940d584728eb5d60fae1`、
+`496630c3e7ba1d76d4e49b6347f8741f6d799b56ca5321283792bda92fd4cb8d`、
+`0e5070db2ec733e76139d7b41bd55cba724cf4cafba9dc5e23845e7c85be5eb5`。
+
+裁决=`PHASE0P_SOURCE_PASS / FRESH IMPLEMENTATION GO / CUDA NO-START / FORMAL NO-START`。下一步
+只允许从`09340f7`创建fresh独立repo实现冻结协议并先做static/CPU exact；不得直接占用GPU或训练。

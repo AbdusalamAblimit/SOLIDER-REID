@@ -1,0 +1,39 @@
+{
+  "authorization": "PASS authorizes only a fresh-repo production implementation; CUDA and formal training remain NO-START",
+  "checks": {
+    "checkpoint_saves_model_state_only": true,
+    "current_router_has_no_rho_budget": true,
+    "eval_has_no_pose_or_teacher_construction": true,
+    "existing_semantic_selection_isolated": true,
+    "pose_dataset_provides_pre_re_teacher_rgb": true,
+    "production_config_absent_before_implementation": true,
+    "production_flag_absent_before_implementation": true,
+    "router_has_token_context_expert": true,
+    "router_production_signature_exact": true,
+    "sealed_source_sha_exact": true,
+    "semantic_anchor_source_detached": true,
+    "semantic_default_off": true,
+    "semantic_state_detached_before_router": true,
+    "semantic_two_independent_routers": true,
+    "swin_two_live_stage3_consumers": true,
+    "tapf_default_off": true,
+    "teacher_constructed_only_in_train": true,
+    "teacher_is_frozen_visual_only_seam": true,
+    "teacher_targets_no_grad_detached": true
+  },
+  "expected_execution_head": "09340f76f84502f9018bee3c8eec005961b0a8cb",
+  "production_absent": true,
+  "scope": "EXP394_PHASE0P_STATIC_SOURCE_SEAM",
+  "script_sha256": "27859a2ae0b5a1020b9a68cda5777ad332e05701c372940d584728eb5d60fae1",
+  "source_sha256": {
+    "config/defaults.py": "b67365bd7f238a3263abf165e863386dcde0766cfa38c7f89e885eb856f63005",
+    "configs/occluded_duke/swin_tiny_tapf_semantic_rz_c0.yml": "f409cc069b6f3500e009e6d40681e8baf9547bb77b864e9f35a7ea02ca11d1a6",
+    "datasets/pose_dataset.py": "d04e74908d18eaf8105f9b85c66287cac6980ddf5ffe8132e855c7d5a9f61bbc",
+    "model/backbones/swin_transformer.py": "b389b7243e204d851ed365c986c8c4077d7fa86ce79e6cbb0be6fc4a1ba58eef",
+    "model/clip_semantic_teacher.py": "50c2607394f81573788ade6c1337f173753763cd35d69925a4645dbee695de79",
+    "model/make_model.py": "87603a7eb2f26d599d0d3e755fe9997ae168197351b2823bd5eff0b823e9f4b0",
+    "model/tapf.py": "559b75f1aad9973828f7298789f50d6b8e7fd536d648423d3468ee5903f0f1ba",
+    "processor/processor.py": "5b0886cb16ec0e9020d39ed14bc119e8e35c88661148b7af8b1208c9edda4904"
+  },
+  "verdict": "PHASE0P_SOURCE_PASS"
+}
