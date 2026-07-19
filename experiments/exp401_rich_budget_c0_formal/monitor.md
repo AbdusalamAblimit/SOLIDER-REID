@@ -69,3 +69,13 @@ FORMAL RUNNING`
   Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Exec=
   `5.816/1.303/0.515/0.518/0.510/0.991/0.294/0.262`，全部finite；
 - e10完整eval尚未发生；当前判断=`继续`，中间训练值不裁决。
+
+## 2026-07-19 e10评测 / e17进行中
+
+- e10完整评测mAP/R1/R5/R10=`34.4/43.3/59.7/65.7`，只记录不裁决；
+- 已完成e16并进入e17；e16 Iter200 Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Exec=
+  `3.050/1.063/0.444/0.358/0.311/0.994/0.283/0.272`，Acc=`0.648`，Student=`1.00`，
+  Reliability=`1.000`，rho=`0.080755450`，BudgetAbs=`3.858e-02`，全部finite；
+- exact HEAD/config/source tracked clean；main PID=`404782`、8 workers、唯一GPU process，约
+  `8,602 MiB`；checkpoint=`0`，异常与AMP数值warning扫描均=`0`；
+- 当前判断=`继续`；原因：完整e10轨迹已记录，正式裁决仍只在e120 final进行。
