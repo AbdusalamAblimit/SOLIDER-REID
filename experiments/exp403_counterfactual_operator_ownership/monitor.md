@@ -248,3 +248,13 @@ warning=`0/0`，checkpoint=`0`。判断：继续自然运行，不按e100或训�
 RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`1.130e-04`，finite。
 remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
 warning=`0/0`，checkpoint=`0`。e110正式eval尚未产生；余约10 epoch，继续自然跑满，不作中间裁决。
+
+## 2026-07-20 formal heartbeat：e110 eval / e117
+
+完整正式评测e110 mAP/R1/R5/R10=`56.7/66.6/79.5/83.8`，仅记录、不裁决。当前e117 Iter160：
+Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
+`0.141/0.732/0.273/0.166/0.041/0.984/0.296/0.100/0.050`；Compat C/W/G/N=
+`0.9256/0.9256/0.0350/-1.0000`，eligible=`0.969`，CoeffStd=`1.454e-01`，EffRank=`15.682`，
+RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`1.109e-04`，finite。
+remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
+warning=`0/0`，checkpoint=`0`。余约3 epoch，继续自然跑满；结束前不启动反事实评测。
