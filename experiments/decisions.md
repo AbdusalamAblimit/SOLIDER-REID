@@ -5386,3 +5386,13 @@ non-finite，11个rich组finite/active/state-changed全部PASS。这回答了exp
 **决策**：`BASELINE_RELATIVE_STEADY_STATE_PASS / PRODUCTION PREFLIGHT GO`。下一步新编号只补strict
 reload、teacher-free state、RGB-only、rho/full-bypass/双consumer、finite与final source/asset终审；全过
 后才授权唯一fresh e120。当前formal仍`NO-START`。
+
+### [2026-07-19] 决策：exp400 terminal contract static通过，直接执行唯一actual
+
+exp400不改变exp399的32-step、default GradScaler、batch64、loss、rho或schedule，只把strict reload、
+teacher-free/finite state、RGB-only、rho0 identity、双consumer独立bypass和diagnostic恢复加入同一终审。
+static连续两遍`48/48 PASS`且byte-exact，toy真实验证两个consumer并阻断patch/state泄漏。
+
+**决策**：`STATIC-CPU SEALED-PASS / CUDA FRESH-EXECUTION GO / FORMAL NO-START`。按持续授权直接建立
+fresh exp400 execution/assets并运行唯一actual，不等待确认；任一trajectory/validity/terminal FAIL均停止
+该编号且不得补跑。只有result显式`formal_training_authorized=true`才直接启动fresh e120。

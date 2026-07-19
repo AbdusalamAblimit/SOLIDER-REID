@@ -3787,3 +3787,13 @@ CUDA证据说明production rich graph在native scaler稳态上不劣于D0，而�
 这仍只是可训练性基础设施，不是方法贡献。下一final preflight必须证明内存更新后的production state可
 strict reload、teacher-free、RGB-only，并让两个consumer在nonzero rho下产生有限且非零的bypass差；
 之后仍需e120 retrieval和semantic counterfactual决定论文故事。
+
+### exp400把“能更新”收紧为可部署的四重接口契约
+
+exp399只回答native scaler稳态，仍可能存在四类未闭合风险：训练state携带teacher资产、strict reload
+不完整、eval意外读取pose、或两个consumer中只有一个真正进入descriptor。exp400因此把生产门定义为
+state接口、RGB-only接口、rho schedule接口和双consumer反事实接口四者同时成立，而不是再增加loss或调参。
+
+这个门仍属于方法开发纪律，但它避免把“参数更新过”误写成“可训练且可部署”。尤其是单独bypass0/
+bypass1必须各自产生严格非零差，能提前排除一条router名义存在却没有执行影响的假阳性；真正的方法贡献
+仍只能由后续e120 retrieval和final all-router-bypass差决定。

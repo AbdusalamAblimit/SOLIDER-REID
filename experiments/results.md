@@ -2575,3 +2575,19 @@ memory=`7,901,594,112 bytes`。result/runner/manifest SHA=
 
 **最终判定**：`BASELINE_RELATIVE_STEADY_STATE_PASS / PRODUCTION PREFLIGHT GO / FORMAL NO-START`。
 它不重判exp397，只授权新编号final production preflight。
+
+## exp400 final production preflight static/CPU门（2026-07-19）
+
+exp400逐字保留exp399的32-step matched动态门，只新增terminal production contract：final state finite与
+teacher-free、fresh strict reload、eval RGB-only、epoch1 rho=0 full/all-bypass exact、epoch6 full相对
+all-bypass和两个单consumer bypass均有限非零，以及diagnostic state/RNG/patch、source/assets终审。
+
+static/CPU连续两遍`48/48 PASS`且result/runner逐字节一致；toy双router覆盖rho0 identity、两个consumer
+独立非零、strict reload、ExplodingPose零访问和patch/state恢复，CUDA初始化前后均为`false`。CUDA脚本/
+static脚本/result SHA256=
+`1f069614fd789f7c3a6ca1d5666239d7ce91769a502087cc379769bd1cceb797`/
+`e4019edf3df23a675c9ee0b1c2da1006f28bf184a97db036b88cb2d67888b33e`/
+`501b12b4a926e8bc0b9de88995a939beca465ea05fef8b8d96410ef9074c3f02`。
+
+**当前判定**：`STATIC-CPU SEALED-PASS / CUDA FRESH-EXECUTION GO / FORMAL NO-START`。static只授权
+唯一fresh actual；只有actual trajectory、validity、terminal全PASS才允许`formal_training_authorized=true`。

@@ -2093,3 +2093,12 @@ exp394的绝对首步FAIL不能再叙述为rich graph数值不可训练。
 
 这仍不进入正面方法表：当前只通过动态稳态门，尚无strict reload/RGB-only/bypass终审或检索结果。故事
 下一步是final production preflight，之后才可能启动唯一fresh e120。
+
+## 2026-07-19：exp400 static只封住最终生产证据的测量边界
+
+exp400的static/CPU门已覆盖strict reload、teacher-free/finite state、eval RGB-only、rho0 identity与两个
+consumer独立bypass，并以toy router证明这些裁决器会实际区分身份映射和单consumer执行影响。但static
+没有official CUDA更新、checkpoint或检索结果，因此不进入论文正面结果表。
+
+论文故事只有在唯一actual同时复现exp399稳态并通过全部terminal门后，才可从“生产接口候选”推进到
+fresh e120；最终仍需full与all-router-bypass的retrieval差来证明route alive。
