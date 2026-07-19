@@ -3755,3 +3755,15 @@ auxiliary均finite。这意味着exp394的首步失败不是CLIP-owned mediator�
 scale出发，记录自然skip/update与scale轨迹，要求rich不增加skip、不延迟首个成功update，并证明
 rich-specific head/router在成功step中finite。若两者轨迹相同，exp394只能说明旧门设计过严；若rich
 后续额外失败，才能把问题重新归到production graph。这个定义仍是机制开发纪律，不是论文贡献本身。
+
+### exp397说明“relative parity”与“绝对生产力门”必须拆开
+
+exp397中D0与rich的12步scale/skip轨迹逐项相同，rich-specific 11组也从未产生non-finite；但两臂都要
+经过e1五次native backoff才首次更新，e6切换又出现一次shared-backbone skip，所以按预注册的
+`>=10/12`和首个成功`<=3`仍必须FAIL。这个结果不能被改写成rich PASS，却清楚说明失败来自把matched
+relative hypothesis与一个未经canonical D0校准的绝对吞吐阈值绑在同一门里。
+
+后续若继续，新的测量对象应是production-shaped阶段内的baseline-relative适应与稳态，而不是事后把
+exp397阈值降到刚好能过。必须保持default scaler自然backoff、同batch/RNG、rich-specific finite和
+零手工scale；再以更长的预注册窗口分别检验e1收敛、e6迁移和稳态连续更新。该诊断仍不是论文贡献，
+最终贡献门依然是formal checkpoint的retrieval与semantic counterfactual。

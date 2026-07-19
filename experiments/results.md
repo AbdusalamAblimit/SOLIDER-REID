@@ -2502,3 +2502,20 @@ implementation/static/result SHA256=
 `82d52315d1472e996fc50f330d332853c2e025ecf1c333651aca6cd7385f06eb`。
 
 **当前判定**：`STATIC_CPU_SEALED_PASS / CUDA NATIVE-PARITY FRESH-EXECUTION GO / FORMAL NO-START`。
+
+### exp397 CUDA native GradScaler actual
+
+唯一fresh actual完成D0/rich各12行。两臂scale/skip轨迹exact：e1 attempts 1–5从`65,536`连续
+backoff并skip，attempt 6在`2,048`首次成功；e6 attempt 7再次matched skip到`1,024`，attempts 8–12
+成功。两臂均只有`6/12`次update、首个成功为attempt 6，未满足冻结的`>=10/12`、`<=3`、首次成功后
+全finite和e6六步全success门。
+
+所有non-finite仅在两臂相同attempt的shared backbone；rich-specific 11组全程finite，source/runtime/
+assets、common init、RNG、teacher/codebook、scratch与checkpoint终审均PASS。elapsed=
+`20.892324913293123 s`，peak memory=`7,907,269,120 bytes`，checkpoint=`0`。result/runner/manifest SHA=
+`eef02328fb4026459fa28a7095d8d5c7b5703834e25ba950a78d9a3f1978faa2`/
+`eef02328fb4026459fa28a7095d8d5c7b5703834e25ba950a78d9a3f1978faa2`/
+`a9c2acd912f57a7020e129c59c4b24b615d1e4065f0bf482f71ad631eb7b3c51`。
+
+**最终判定**：`CUDA NATIVE-PARITY SEALED-FAIL / NATIVE_GRADSCALER_PARITY_FAIL / FORMAL NO-START`。
+该FAIL不能改判或补跑；它只否定exp397的绝对生产力门，不能归因于rich-specific图。

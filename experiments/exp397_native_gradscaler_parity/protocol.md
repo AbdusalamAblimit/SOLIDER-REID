@@ -3,7 +3,8 @@
 ## 状态
 
 `PROTOCOL-FROZEN / STATIC-CPU SEALED-PASS /
-CUDA NATIVE-PARITY FRESH-EXECUTION GO / FORMAL NO-START`。
+CUDA NATIVE-PARITY SEALED-FAIL / NATIVE_GRADSCALER_PARITY_FAIL /
+FORMAL NO-START`。
 
 ## 冻结上游结论
 
@@ -75,3 +76,14 @@ FAIL只关闭当前rich production dynamic parity。任何结果都不修改exp3
 `99ad9a0d34db4bcbc0816ecd05c62d361322f47d214bca21c9927f92738269dd`/
 `82d52315d1472e996fc50f330d332853c2e025ecf1c333651aca6cd7385f06eb`。该PASS只授权唯一fresh CUDA
 native parity执行。
+
+## actual封板记录
+
+唯一actual自然完成。D0/rich的12步scale/skip轨迹逐项exact，rich-specific 11组全程finite；但两臂均
+只有`6/12`次成功update，首个成功均为attempt 6，且e6首步再次shared-backbone skip。因此冻结门中的
+minimum success、early first success、post-first-success finite与handoff all-success四项FAIL，协议
+裁决固定为`NATIVE_GRADSCALER_PARITY_FAIL`。result/runner/manifest SHA=
+`eef02328fb4026459fa28a7095d8d5c7b5703834e25ba950a78d9a3f1978faa2`/
+`eef02328fb4026459fa28a7095d8d5c7b5703834e25ba950a78d9a3f1978faa2`/
+`a9c2acd912f57a7020e129c59c4b24b615d1e4065f0bf482f71ad631eb7b3c51`。禁止以matched轨迹为由改判
+exp397，也禁止补跑；formal训练不获授权。

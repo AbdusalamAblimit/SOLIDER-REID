@@ -5340,3 +5340,13 @@ RNG进入脚本，且四类关键负反例都会阻断。该门允许native skip
 
 **决策**：`STATIC_CPU_SEALED_PASS / CUDA NATIVE-PARITY FRESH-EXECUTION GO`。按持续授权直接建立fresh
 execution/assets并执行唯一actual；PASS也只授权下一production preflight设计，不直接启动e120。
+
+### [2026-07-19] 决策：exp397按冻结绝对门SEALED-FAIL，不改判也不补跑
+
+actual中D0/rich轨迹完全一致且rich-specific组始终finite，但两臂均经历e1五次backoff、到attempt 6才
+首次成功，并在e6首步再次matched skip；最终各只有`6/12`次update。这违反预注册的`>=10/12`、首个
+成功`<=3`与e6全success门。
+
+**决策**：保持`CUDA NATIVE-PARITY SEALED-FAIL / FORMAL NO-START`，禁止放宽exp397或重跑。matched
+结果只允许把解释限制为shared backbone/default-scale适应，而不允许宣称rich已通过；下一步必须新编号
+预注册production-shaped、baseline-relative门，不能修改initial scale、loss、batch或复活exp394–397。

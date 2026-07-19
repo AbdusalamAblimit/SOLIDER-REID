@@ -2064,3 +2064,14 @@ CLIP teacher或rich route新增梯度的特有失败。
 结果。但故事中的负结论需要修正为“绝对首步finite门未经D0校准”。下一证据必须让D0与rich都使用
 canonical GradScaler默认初值和自然skip/update，比较动态scale轨迹；不能手工降scale，也不能把D0同样
 发生的overflow包装成rich方法缺陷。正面方法边界仍停留在exp390 mAP-only弱GO。
+
+## 2026-07-19：exp397没有证明rich production可训练，但排除了rich-specific动态劣化
+
+在default GradScaler、相同12个batch和matched RNG下，D0与rich得到完全相同的skip/scale轨迹，且
+rich新增的11个参数组全程finite；因此不能再把首步overflow叙述为CLIP-owned graph特有问题。但两臂
+都到attempt 6才首次更新，e6首步又skip，最终仅`6/12`次update，明确违反exp397预注册的绝对门。
+
+论文正文仍不能声称production已通过，也不能因matched而事后改判。当前正面边界不变；exp397只把方法
+开发问题进一步拆成shared backbone的default-scale适应与rich graph的相对稳定性。任何后续新门都必须
+在新编号下预注册更长production-shaped窗口，并最终回到正式检索反事实，而不是把阈值调整本身写成
+贡献。

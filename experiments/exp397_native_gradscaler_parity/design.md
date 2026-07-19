@@ -3,7 +3,8 @@
 ## 当前状态
 
 `DESIGN-FROZEN / PROTOCOL-FROZEN / STATIC-CPU SEALED-PASS /
-CUDA NATIVE-PARITY FRESH-EXECUTION GO / FORMAL NO-START`。
+CUDA NATIVE-PARITY SEALED-FAIL / NATIVE_GRADSCALER_PARITY_FAIL /
+FORMAL NO-START`。
 
 ## 动机
 
@@ -110,3 +111,17 @@ implementation/static/result SHA256=
 
 裁决=`STATIC_CPU_SEALED_PASS / CUDA NATIVE-PARITY FRESH-EXECUTION GO`。提交后按用户持续授权直接执行
 唯一actual；formal训练仍`NO-START`。
+
+## actual封板
+
+唯一fresh CUDA actual完成全部D0/rich各12行。两臂轨迹exact：e1前五步从默认`65,536`连续backoff，
+attempt 6在`2,048`首次成功；切到e6后attempt 7再次matched skip到`1,024`，其余五步成功。两臂均仅
+`6/12`次update、首个成功为attempt 6，违反预注册的`>=10/12`、`<=3`和e6全success门；因此status=
+`FAIL`。rich-specific 11组始终finite，所有non-finite均为shared backbone且发生在相同attempt，这只
+限制失败解释，不能推翻冻结裁决。
+
+result/runner/manifest SHA256=
+`eef02328fb4026459fa28a7095d8d5c7b5703834e25ba950a78d9a3f1978faa2`/
+`eef02328fb4026459fa28a7095d8d5c7b5703834e25ba950a78d9a3f1978faa2`/
+`a9c2acd912f57a7020e129c59c4b24b615d1e4065f0bf482f71ad631eb7b3c51`。最终裁决=
+`CUDA NATIVE-PARITY SEALED-FAIL / FORMAL NO-START`；禁止重跑、补步或调整exp397门。
