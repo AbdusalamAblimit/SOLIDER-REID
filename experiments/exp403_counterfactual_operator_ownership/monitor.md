@@ -95,3 +95,11 @@ e1 Iter60：Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
 `16.972/1.424/0.506/0.658/0.735/0.990/0.320/0.285/0.050`；eligible=`1.000`，CoeffStd=
 `1.555e-01`，EffRank=`15.690`，RNGExact=`1`，Student=`0`，Reliability=`0.997`，rho=`0`，
 BudgetAbs=`0`，finite。当前判定：`FORMAL RUNNING`；只按冻结协议监控，不早停、不续训、不改 recipe。
+
+## 2026-07-20 formal heartbeat：e2
+
+已进入e2 Iter160。Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
+`9.534/1.404/0.489/0.647/0.705/0.993/0.319/0.220/0.050`；eligible=`0.953`，CoeffStd=
+`1.535e-01`，EffRank=`15.605`，RNGExact=`1`，Student=`0`，Reliability=`0.997`，rho=`0`，
+BudgetAbs=`0`，finite。remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、
+GPU唯一任务，fatal/AMP数值warning=`0/0`，checkpoint=`0`。判断：继续自然运行，不作中间裁决。
