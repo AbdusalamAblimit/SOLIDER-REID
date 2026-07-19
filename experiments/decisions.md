@@ -5368,3 +5368,11 @@ rich稳定或不稳定。
 **决策**：exp398=`CUDA EXECUTION SEALED-INVALID`，禁止修补/重跑。下一步若继续必须新编号，仅修正
 state hasher对`(name, parameter)`的exact支持，并新增真实container CPU contract；scale/loss/batch与32步
 稳态公式保持不变。
+
+### [2026-07-19] 决策：exp399真实named-parameter contract通过，直接重测科学门
+
+exp399只修reporter tuple支持，正式static两遍35/35 PASS且byte-exact；真实15组coverage与name/order/
+value绑定均已进入contract。exp398保持INVALID，不被覆盖。
+
+**决策**：`STATIC_CPU_SEALED_PASS / CUDA FRESH-EXECUTION GO`。按持续授权直接运行唯一fresh actual；
+32-step、tail8、default scale、loss和batch全部不变。

@@ -1,0 +1,474 @@
+{
+  "checkpoint_count": 0,
+  "cuda_initialized_after": false,
+  "cuda_initialized_before": false,
+  "cuda_script_sha256": "b9da4346b0d74d13b537bd7fa3f5eff1e65b0b6e512014026800506807723907",
+  "extra_skip_evaluation": {
+    "d0_first_success": 6,
+    "d0_successful_updates": 26,
+    "extra_rich_skip_attempts": [
+      10
+    ],
+    "gates": {
+      "native_step_semantics_exact": true,
+      "no_rich_extra_skip_on_d0_success": false,
+      "rich_nonfinite_groups_shared_subset": false,
+      "rich_specific_group_state_updated": true,
+      "rich_specific_groups_always_finite": true,
+      "rich_specific_groups_e6_active": true,
+      "rich_success_not_below_d0": false,
+      "row_counts_and_schedule_exact": true,
+      "stage_tail_steady_state": false
+    },
+    "rich_first_success": 6,
+    "rich_nonfinite_not_shared": {
+      "10": [
+        "backbone"
+      ]
+    },
+    "rich_specific_active": {
+      "evidence_head": true,
+      "mask_head": true,
+      "presence_head": true,
+      "router0_context_projection": true,
+      "router0_evidence_projection": true,
+      "router0_experts": true,
+      "router0_token_projection": true,
+      "router1_context_projection": true,
+      "router1_evidence_projection": true,
+      "router1_experts": true,
+      "router1_token_projection": true
+    },
+    "rich_specific_updated": {
+      "evidence_head": true,
+      "mask_head": true,
+      "presence_head": true,
+      "router0_context_projection": true,
+      "router0_evidence_projection": true,
+      "router0_experts": true,
+      "router0_token_projection": true,
+      "router1_context_projection": true,
+      "router1_evidence_projection": true,
+      "router1_experts": true,
+      "router1_token_projection": true
+    },
+    "rich_successful_updates": 25,
+    "stage_tail_gates": {
+      "d0_e1_tail8": true,
+      "d0_e6_tail8": true,
+      "rich_e1_tail8": false,
+      "rich_e6_tail8": true
+    },
+    "status": "FAIL"
+  },
+  "gates": {
+    "attempts_and_schedule_exact": true,
+    "bare_parameter_rejected": true,
+    "baseline_relative_evaluator_present": true,
+    "cuda_never_initialized": true,
+    "duplicate_name_rejected": true,
+    "empty_group_stable": true,
+    "empty_name_rejected": true,
+    "formal_training_not_authorized": true,
+    "fresh_default_scaler_only": true,
+    "group_state_capture_present": true,
+    "matched_rng_states_present": true,
+    "matched_synthetic_pass": true,
+    "name_order_value_binding_exact": true,
+    "native_step_and_update_once_in_loop": true,
+    "no_checkpoint_load_or_save": true,
+    "no_scheduler_step": true,
+    "nonparameter_value_rejected": true,
+    "persistent_tail_failure_fails": true,
+    "production_preflight_only_gated": true,
+    "real_container_named_tuple_exact": true,
+    "real_container_repeat_sha_exact": true,
+    "real_container_single_group_change_exact": true,
+    "real_parameter_groups_coverage_exact": true,
+    "reporter_dependency_sha_exact": true,
+    "rich_better_than_d0_passes": true,
+    "rich_extra_skip_fails": true,
+    "rich_specific_group_count_exact": true,
+    "rich_specific_inactive_fails": true,
+    "rich_specific_nonfinite_fails": true,
+    "sealed_boundaries_present": true,
+    "single_materialized_loader_for_both_arms": true,
+    "source_commit_exists": true,
+    "source_sha_exact": true,
+    "unscale_and_report_before_step": true,
+    "wrong_tuple_length_rejected": true
+  },
+  "git_head": "e31200ccdf9a0ae3eae583af992649fc0e896c48",
+  "matched_evaluation": {
+    "d0_first_success": 6,
+    "d0_successful_updates": 26,
+    "extra_rich_skip_attempts": [],
+    "gates": {
+      "native_step_semantics_exact": true,
+      "no_rich_extra_skip_on_d0_success": true,
+      "rich_nonfinite_groups_shared_subset": true,
+      "rich_specific_group_state_updated": true,
+      "rich_specific_groups_always_finite": true,
+      "rich_specific_groups_e6_active": true,
+      "rich_success_not_below_d0": true,
+      "row_counts_and_schedule_exact": true,
+      "stage_tail_steady_state": true
+    },
+    "rich_first_success": 6,
+    "rich_nonfinite_not_shared": {},
+    "rich_specific_active": {
+      "evidence_head": true,
+      "mask_head": true,
+      "presence_head": true,
+      "router0_context_projection": true,
+      "router0_evidence_projection": true,
+      "router0_experts": true,
+      "router0_token_projection": true,
+      "router1_context_projection": true,
+      "router1_evidence_projection": true,
+      "router1_experts": true,
+      "router1_token_projection": true
+    },
+    "rich_specific_updated": {
+      "evidence_head": true,
+      "mask_head": true,
+      "presence_head": true,
+      "router0_context_projection": true,
+      "router0_evidence_projection": true,
+      "router0_experts": true,
+      "router0_token_projection": true,
+      "router1_context_projection": true,
+      "router1_evidence_projection": true,
+      "router1_experts": true,
+      "router1_token_projection": true
+    },
+    "rich_successful_updates": 26,
+    "stage_tail_gates": {
+      "d0_e1_tail8": true,
+      "d0_e6_tail8": true,
+      "rich_e1_tail8": true,
+      "rich_e6_tail8": true
+    },
+    "status": "PASS"
+  },
+  "persistent_tail_evaluation": {
+    "d0_first_success": 6,
+    "d0_successful_updates": 24,
+    "extra_rich_skip_attempts": [],
+    "gates": {
+      "native_step_semantics_exact": true,
+      "no_rich_extra_skip_on_d0_success": true,
+      "rich_nonfinite_groups_shared_subset": true,
+      "rich_specific_group_state_updated": true,
+      "rich_specific_groups_always_finite": true,
+      "rich_specific_groups_e6_active": true,
+      "rich_success_not_below_d0": true,
+      "row_counts_and_schedule_exact": true,
+      "stage_tail_steady_state": false
+    },
+    "rich_first_success": 6,
+    "rich_nonfinite_not_shared": {},
+    "rich_specific_active": {
+      "evidence_head": true,
+      "mask_head": true,
+      "presence_head": true,
+      "router0_context_projection": true,
+      "router0_evidence_projection": true,
+      "router0_experts": true,
+      "router0_token_projection": true,
+      "router1_context_projection": true,
+      "router1_evidence_projection": true,
+      "router1_experts": true,
+      "router1_token_projection": true
+    },
+    "rich_specific_updated": {
+      "evidence_head": true,
+      "mask_head": true,
+      "presence_head": true,
+      "router0_context_projection": true,
+      "router0_evidence_projection": true,
+      "router0_experts": true,
+      "router0_token_projection": true,
+      "router1_context_projection": true,
+      "router1_evidence_projection": true,
+      "router1_experts": true,
+      "router1_token_projection": true
+    },
+    "rich_successful_updates": 24,
+    "stage_tail_gates": {
+      "d0_e1_tail8": false,
+      "d0_e6_tail8": false,
+      "rich_e1_tail8": false,
+      "rich_e6_tail8": false
+    },
+    "status": "FAIL"
+  },
+  "real_parameter_group_changed": [
+    "evidence_head"
+  ],
+  "real_parameter_group_coverage": {
+    "duplicate_names": [],
+    "exact": true,
+    "grouped_not_optimizer_names": [],
+    "grouped_parameter_count": 15,
+    "optimizer_parameter_count": 15,
+    "uncovered_names": []
+  },
+  "real_parameter_group_names": {
+    "anchor_trunk": [
+      "base.tapf.anchor.project.weight"
+    ],
+    "backbone": [
+      "base.backbone_weight"
+    ],
+    "evidence_head": [
+      "base.tapf.anchor.evidence_head.weight"
+    ],
+    "id_head": [
+      "classifier.weight"
+    ],
+    "mask_head": [
+      "base.tapf.anchor.region_mask_head.weight"
+    ],
+    "pose_head": [
+      "base.tapf.anchor.pose_head.weight"
+    ],
+    "presence_head": [
+      "base.tapf.anchor.presence_head.weight"
+    ],
+    "router0_context_projection": [
+      "base.tapf.psg_bank.0.context_projection.weight"
+    ],
+    "router0_evidence_projection": [
+      "base.tapf.psg_bank.0.evidence_projection.weight"
+    ],
+    "router0_experts": [
+      "base.tapf.psg_bank.0.experts.weight"
+    ],
+    "router0_token_projection": [
+      "base.tapf.psg_bank.0.token_projection.weight"
+    ],
+    "router1_context_projection": [
+      "base.tapf.psg_bank.1.context_projection.weight"
+    ],
+    "router1_evidence_projection": [
+      "base.tapf.psg_bank.1.evidence_projection.weight"
+    ],
+    "router1_experts": [
+      "base.tapf.psg_bank.1.experts.weight"
+    ],
+    "router1_token_projection": [
+      "base.tapf.psg_bank.1.token_projection.weight"
+    ]
+  },
+  "real_parameter_group_state_after": {
+    "anchor_trunk": "31e51ca44f6e250304fe37ff699141d917175a2265c4e9c5a7acba9d87828b58",
+    "backbone": "8acb96316ffcc1e2ecec28234ebd614e8bde3c7352dea488225745b8efa6bc6e",
+    "evidence_head": "d47832c829665d9615b8eb6f49bb49716e4af2f1e78ee741bc788a89293eaafc",
+    "id_head": "f9cf51146f37b93ae51bdd0a24bd9c9d8c8e56c19fc268c17b6ce20cedbc47f3",
+    "mask_head": "d251391912acfa4801ca7b78411e6a003e22009609994c1d4e714cf56f39748e",
+    "pose_head": "d98f4f5a807f89f239e247eb7855ec1c3eaa5a541c7363267d637a96a7d4fe38",
+    "presence_head": "ce704a569514d438ca7e3349f263e113dd4f4dda18da1b05bc1c9a4a42c1a52d",
+    "router0_context_projection": "6cff3bae7f303ddf033134d87133dd0597dfdff7911874572e28805570a995e8",
+    "router0_evidence_projection": "cbf70d119d72b6d07214d3e567f59981234030bb19a1947e0947f88fdf125700",
+    "router0_experts": "bd6758d02bec698adc1f03691be0ab38b3d4d4a0302a5deab0cf2cba0e97a300",
+    "router0_token_projection": "507e995f29f209c72f4fd26d0536ee43bf5410ce8b3662cb29e6ecb974a1b0f5",
+    "router1_context_projection": "f96645ad2fd67e150e07a671dd67d92b1206746bfb523c8391807a352db8177f",
+    "router1_evidence_projection": "1d595df18fb0dc40b792bdb4c298973fa684b25cd6cbe83cc74918047e919def",
+    "router1_experts": "15d4b686bce2394d9d9d91c977219c4da410e41aa7820cb6aa75a033c2e0e5dd",
+    "router1_token_projection": "d2d2d6d825b8f202e63def21c12b927c22a539ce0643d2952bf70dadc37b7c97"
+  },
+  "real_parameter_group_state_before": {
+    "anchor_trunk": "31e51ca44f6e250304fe37ff699141d917175a2265c4e9c5a7acba9d87828b58",
+    "backbone": "8acb96316ffcc1e2ecec28234ebd614e8bde3c7352dea488225745b8efa6bc6e",
+    "evidence_head": "fa0b3f737614a27296b21f7367ee7464cc0d40686e1d31d2cae5941eb3923beb",
+    "id_head": "f9cf51146f37b93ae51bdd0a24bd9c9d8c8e56c19fc268c17b6ce20cedbc47f3",
+    "mask_head": "d251391912acfa4801ca7b78411e6a003e22009609994c1d4e714cf56f39748e",
+    "pose_head": "d98f4f5a807f89f239e247eb7855ec1c3eaa5a541c7363267d637a96a7d4fe38",
+    "presence_head": "ce704a569514d438ca7e3349f263e113dd4f4dda18da1b05bc1c9a4a42c1a52d",
+    "router0_context_projection": "6cff3bae7f303ddf033134d87133dd0597dfdff7911874572e28805570a995e8",
+    "router0_evidence_projection": "cbf70d119d72b6d07214d3e567f59981234030bb19a1947e0947f88fdf125700",
+    "router0_experts": "bd6758d02bec698adc1f03691be0ab38b3d4d4a0302a5deab0cf2cba0e97a300",
+    "router0_token_projection": "507e995f29f209c72f4fd26d0536ee43bf5410ce8b3662cb29e6ecb974a1b0f5",
+    "router1_context_projection": "f96645ad2fd67e150e07a671dd67d92b1206746bfb523c8391807a352db8177f",
+    "router1_evidence_projection": "1d595df18fb0dc40b792bdb4c298973fa684b25cd6cbe83cc74918047e919def",
+    "router1_experts": "15d4b686bce2394d9d9d91c977219c4da410e41aa7820cb6aa75a033c2e0e5dd",
+    "router1_token_projection": "d2d2d6d825b8f202e63def21c12b927c22a539ce0643d2952bf70dadc37b7c97"
+  },
+  "reporter_dependency_sha256": "6e8b2b67efcda7cfaca8527fb0ae1dd4c6aedcebef3fec6ded2e5ba6ddab8164",
+  "rich_better_evaluation": {
+    "d0_first_success": 6,
+    "d0_successful_updates": 26,
+    "extra_rich_skip_attempts": [],
+    "gates": {
+      "native_step_semantics_exact": true,
+      "no_rich_extra_skip_on_d0_success": true,
+      "rich_nonfinite_groups_shared_subset": true,
+      "rich_specific_group_state_updated": true,
+      "rich_specific_groups_always_finite": true,
+      "rich_specific_groups_e6_active": true,
+      "rich_success_not_below_d0": true,
+      "row_counts_and_schedule_exact": true,
+      "stage_tail_steady_state": true
+    },
+    "rich_first_success": 5,
+    "rich_nonfinite_not_shared": {},
+    "rich_specific_active": {
+      "evidence_head": true,
+      "mask_head": true,
+      "presence_head": true,
+      "router0_context_projection": true,
+      "router0_evidence_projection": true,
+      "router0_experts": true,
+      "router0_token_projection": true,
+      "router1_context_projection": true,
+      "router1_evidence_projection": true,
+      "router1_experts": true,
+      "router1_token_projection": true
+    },
+    "rich_specific_updated": {
+      "evidence_head": true,
+      "mask_head": true,
+      "presence_head": true,
+      "router0_context_projection": true,
+      "router0_evidence_projection": true,
+      "router0_experts": true,
+      "router0_token_projection": true,
+      "router1_context_projection": true,
+      "router1_evidence_projection": true,
+      "router1_experts": true,
+      "router1_token_projection": true
+    },
+    "rich_successful_updates": 27,
+    "stage_tail_gates": {
+      "d0_e1_tail8": true,
+      "d0_e6_tail8": true,
+      "rich_e1_tail8": true,
+      "rich_e6_tail8": true
+    },
+    "status": "PASS"
+  },
+  "rich_specific_failure_evaluation": {
+    "d0_first_success": 6,
+    "d0_successful_updates": 26,
+    "extra_rich_skip_attempts": [
+      18
+    ],
+    "gates": {
+      "native_step_semantics_exact": true,
+      "no_rich_extra_skip_on_d0_success": false,
+      "rich_nonfinite_groups_shared_subset": false,
+      "rich_specific_group_state_updated": true,
+      "rich_specific_groups_always_finite": false,
+      "rich_specific_groups_e6_active": true,
+      "rich_success_not_below_d0": false,
+      "row_counts_and_schedule_exact": true,
+      "stage_tail_steady_state": true
+    },
+    "rich_first_success": 6,
+    "rich_nonfinite_not_shared": {
+      "18": [
+        "evidence_head"
+      ]
+    },
+    "rich_specific_active": {
+      "evidence_head": true,
+      "mask_head": true,
+      "presence_head": true,
+      "router0_context_projection": true,
+      "router0_evidence_projection": true,
+      "router0_experts": true,
+      "router0_token_projection": true,
+      "router1_context_projection": true,
+      "router1_evidence_projection": true,
+      "router1_experts": true,
+      "router1_token_projection": true
+    },
+    "rich_specific_updated": {
+      "evidence_head": true,
+      "mask_head": true,
+      "presence_head": true,
+      "router0_context_projection": true,
+      "router0_evidence_projection": true,
+      "router0_experts": true,
+      "router0_token_projection": true,
+      "router1_context_projection": true,
+      "router1_evidence_projection": true,
+      "router1_experts": true,
+      "router1_token_projection": true
+    },
+    "rich_successful_updates": 25,
+    "stage_tail_gates": {
+      "d0_e1_tail8": true,
+      "d0_e6_tail8": true,
+      "rich_e1_tail8": true,
+      "rich_e6_tail8": true
+    },
+    "status": "FAIL"
+  },
+  "rich_specific_inactive_evaluation": {
+    "d0_first_success": 6,
+    "d0_successful_updates": 26,
+    "extra_rich_skip_attempts": [],
+    "gates": {
+      "native_step_semantics_exact": true,
+      "no_rich_extra_skip_on_d0_success": true,
+      "rich_nonfinite_groups_shared_subset": true,
+      "rich_specific_group_state_updated": false,
+      "rich_specific_groups_always_finite": true,
+      "rich_specific_groups_e6_active": false,
+      "rich_success_not_below_d0": true,
+      "row_counts_and_schedule_exact": true,
+      "stage_tail_steady_state": true
+    },
+    "rich_first_success": 6,
+    "rich_nonfinite_not_shared": {},
+    "rich_specific_active": {
+      "evidence_head": false,
+      "mask_head": true,
+      "presence_head": true,
+      "router0_context_projection": true,
+      "router0_evidence_projection": true,
+      "router0_experts": true,
+      "router0_token_projection": true,
+      "router1_context_projection": true,
+      "router1_evidence_projection": true,
+      "router1_experts": true,
+      "router1_token_projection": true
+    },
+    "rich_specific_updated": {
+      "evidence_head": false,
+      "mask_head": true,
+      "presence_head": true,
+      "router0_context_projection": true,
+      "router0_evidence_projection": true,
+      "router0_experts": true,
+      "router0_token_projection": true,
+      "router1_context_projection": true,
+      "router1_evidence_projection": true,
+      "router1_experts": true,
+      "router1_token_projection": true
+    },
+    "rich_successful_updates": 26,
+    "stage_tail_gates": {
+      "d0_e1_tail8": true,
+      "d0_e6_tail8": true,
+      "rich_e1_tail8": true,
+      "rich_e6_tail8": true
+    },
+    "status": "FAIL"
+  },
+  "source_sha256": {
+    "config/defaults.py": "a13e5f6df0e8c770c254c115d6d55208baac7938cffbec6f208ba9caa24dd7c5",
+    "configs/occluded_duke/swin_tiny_tapf_d0.yml": "510f52604cbb455a6f61139d266705c3292e1bb431b2f603e5e750f56edd2c8b",
+    "configs/occluded_duke/swin_tiny_tapf_rich_budget_c0.yml": "e0413a497976ad6dbf4c74cf13b55c86c169d659bab6d967455e87c592e47f4e",
+    "datasets/pose_dataset.py": "d04e74908d18eaf8105f9b85c66287cac6980ddf5ffe8132e855c7d5a9f61bbc",
+    "model/backbones/swin_transformer.py": "b389b7243e204d851ed365c986c8c4077d7fa86ce79e6cbb0be6fc4a1ba58eef",
+    "model/clip_semantic_teacher.py": "c648fa768b178d153258c46eee69679cbc0b90a11db918800323ab5c5c6054d5",
+    "model/make_model.py": "6bc7d9c83a2f4d12b78dd2c09335d366ce568107ddce5dded3abfe7ca8538f03",
+    "model/tapf.py": "95c5d0ff80bf9e4529589a5f31819e7aad5db644b88e2a33d6af07c9ffc42886",
+    "processor/processor.py": "be1c19ea5af19534e3855eb2a5914e0dc9a5643c63a39cfa508c81f89660eac1"
+  },
+  "static_script_sha256": "7948845f1600141302285cee12c025cbf0ba50faa1af01d1fb298bd3aa558810",
+  "status": "PASS"
+}

@@ -2547,3 +2547,16 @@ result/runner/manifest SHA=
 
 **最终判定**：`CUDA EXECUTION SEALED-INVALID / GROUP_STATE_REPORTER_RUNTIME_FAIL / FORMAL NO-START`。
 它不回答baseline-relative AMP稳态，exp398不得修补或重跑。
+
+## exp399 named-parameter state contract static/CPU门（2026-07-19）
+
+exp399保持exp398科学门不变，只把group-state SHA改为严格的有序`(name, parameter)`记录，并用真实
+exp396 `parameter_groups()` synthetic model覆盖15组container。初次逻辑PASS但tiny model seed遗漏导致
+两遍byte-exact FAIL，证据保留；固定static seed后正式两遍35/35 PASS且逐字节一致。
+
+implementation/static/result SHA=
+`b9da4346b0d74d13b537bd7fa3f5eff1e65b0b6e512014026800506807723907`/
+`7948845f1600141302285cee12c025cbf0ba50faa1af01d1fb298bd3aa558810`/
+`32adc18d2b6dc06c0d3ea37ca6003d749a2ff2540efefdbca0e35e1fba2f0d98`。
+
+**当前判定**：`STATIC_CPU_SEALED_PASS / CUDA FRESH-EXECUTION GO / FORMAL NO-START`。
