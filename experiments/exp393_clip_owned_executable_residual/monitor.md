@@ -254,3 +254,8 @@ e3 Iter 200=`2.779e-13`；这只表明ReZero gate开始数值打开，不作rout
 
 严格异常、NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow/AMP warning=`0`；e120前
 checkpoint数=`0`。状态保持`FORMAL RUNNING`，禁止修改、重启、续训或按当前GateAbs/中间性能早停。
+
+后续轻量复核时e4已自然完成并进入e5。e4 Iter 200的Loss/Pose/Semantic/RegionMask/Presence/Q=
+`7.497/1.582/0.679/0.674/0.671/0.693`，Acc=`0.216`，Reliability=`0.507`；e5 Iter 100的
+`GateAbs=3.088e-09`。GateAbs相对e2–e3的`1e-14–1e-11`继续缓慢增大，只记录为ReZero轨迹，
+不作中间裁决。exact HEAD/config、main+8 workers、唯一GPU任务保持不变，严格异常=`0`、checkpoint=`0`。
