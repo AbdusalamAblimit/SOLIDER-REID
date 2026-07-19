@@ -41,3 +41,17 @@ loss矩阵、15组、batch64、seed1234、default GradScaler、source/runtime/as
 
 裁决：`PHASE0Q_STATIC_CPU_SEALED_PASS / CUDA ATTRIBUTION FRESH-EXECUTION GO`。用户持续授权已写入
 heartbeat，提交后直接推进fresh actual；formal训练继续`NO-START`。
+
+## 2026-07-19 canonical runtime CPU-only复核
+
+- 在远端canonical Python 3.10 / Torch 2.6.0+cu124 / NumPy 2.2.6下隐藏CUDA执行；
+- production script SHA保持
+  `6e8b2b67efcda7cfaca8527fb0ae1dd4c6aedcebef3fec6ded2e5ba6ddab8164`；
+- 同一`16,777,217`元素case的P50/P95/P99再次得到
+  `8,388,608 / 15,938,355.2 / 16,609,443.84`，6/6 gate PASS；
+- per-cell与root scratch均为空，CUDA initialized before/after=`false/false`；
+- canonical smoke script SHA=
+  `2081b3c755aaa8175a63d491de584348670600fdbf4969b6c84ae3fa4f3e75c9`。
+
+该复核不读取official batch、不占用4090，只排除exp395曾出现的目标runtime大输入统计限制；CUDA
+actual GO不变。
