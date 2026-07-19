@@ -2,7 +2,8 @@
 
 ## 状态与目的
 
-`PROTOCOL-FROZEN / AUDIT NO-START / FORMAL NO-START`。
+`PROTOCOL-FROZEN / AUDIT SEALED-PASS / rho_star=0.08075544983148575 /
+PRODUCTION NO-START / FORMAL NO-START`。
 
 本阶段只测exp387 clean D0两个已训练活跃consumer在固定train RGB上的真实production applied delta，
 为exp394的无grad预算冻结唯一`rho_star`。它不实现exp394 production model，不训练、不构建optimizer，
@@ -76,3 +77,25 @@ rho_star = median(concat(r_0.flatten(), r_1.flatten()))
 任一FAIL先保留result/runner并归因，只阻断当前预算接口，不修改阈值或换样本。PASS只冻结
 `rho_star`并授权下一步production实现前的static设计审查；不直接授权production model/config、
 CUDA训练preflight、正式训练或semantic multi-stage。
+
+## 封板结果
+
+正式审计严格覆盖official train=`15,618`与sealed 128图/128 PID，fit/audit=`64/64`。两个bank
+各覆盖`6,144=128×48`个token，全部RMS非零且finite：
+
+| bank | median | P95 | mean | min | max |
+|---|---:|---:|---:|---:|---:|
+| 0 | `0.0376448072` | `0.1426717915` | `0.0480008594` | `0.0031023663` | `0.1795158237` |
+| 1 | `0.1204396486` | `0.3115715981` | `0.1398641857` | `0.0117391217` | `0.3967587054` |
+| pooled | `0.0807554498` | `0.2651471898` | `0.0939325225` | `0.0031023663` | `0.3967587054` |
+
+按冻结公式得到唯一`rho_star=0.08075544983148575`。None/exploding-pose两遍descriptor和两个bank
+applied delta逐tensor exact，exploding pose访问数=`0`；223-state SHA前后均为
+`c75e9d2e26f83255ae122a6c84b1717bc9474493453c7e04d95163da3cea96a3`，checkpoint SHA前后exact，
+16项gate全部PASS。script/result/runner SHA256分别为
+`628ce2f88a868ccb2a14f5c0a3204099332253e392bf8c271dd53301057222a3`、
+`4f20bef4539129d0e2a9250262b7a09ee7feee03a80fbd2c5491e3450e0d1715`、
+`7142cdb1cfd194262ef7daf6c4e3e9823bf561080ec8227143e55408d464887d`。
+
+裁决：`PHASE0R_128_PASS / RHO FROZEN`。该PASS只授权production实现前的static设计审查，不把固定
+预算本身写成贡献，也不授权CUDA训练preflight、正式训练或semantic multi-stage。

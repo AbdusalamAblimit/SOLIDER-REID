@@ -1,0 +1,131 @@
+{
+  "assets": {
+    "checkpoint_sha256": "59017755d61370754aa2e852a487d8e242fcee8814685f77f5388ba3a430e069",
+    "codebook_sha256": "4a671a70e0744edad88f911ce628d421650cb09453eb511a61e8d01c239269ef",
+    "config_sha256": "510f52604cbb455a6f61139d266705c3292e1bb431b2f603e5e750f56edd2c8b",
+    "execution_head": "0d1822a07dda8daac0210b68916035b1886d5d99",
+    "input_tensor_sha256": "f0e793478c65e1e30ff999560f4081f6e34b4ffa39f20bd583b1593f967235b2",
+    "rgb_manifest_sha256": "e7416534abe4489d256eacefec050379bfab443acabdd49c77ce457d0aaec5e7",
+    "script_sha256": "628ce2f88a868ccb2a14f5c0a3204099332253e392bf8c271dd53301057222a3",
+    "selection_sha256": "7f3f7626c84553416f39c72be0c15ab430458aa7b201c4bf64461990bbdf15e3"
+  },
+  "bank_distributions": [
+    {
+      "bank": 0,
+      "count": 6144,
+      "delta_sha256": "6c3c35644321288faef732a7fd43d87d5dee59727b008aa14256ca09db1e7de7",
+      "delta_shape": [
+        128,
+        48,
+        768
+      ],
+      "max": 0.17951582372188568,
+      "mean": 0.04800085937498958,
+      "median": 0.03764480724930763,
+      "min": 0.0031023663468658924,
+      "nonzero_fraction": 1.0,
+      "p25": 0.024174607824534178,
+      "p75": 0.05394900031387806,
+      "p95": 0.1426717914640902,
+      "rms_sha256": "789242843f370321e17415d93a3292c5d1ee48efb75c115f89156bb655579a1c",
+      "std": 0.03695431657119963
+    },
+    {
+      "bank": 1,
+      "count": 6144,
+      "delta_sha256": "aa7d460f58590231ccc978a62bf38f87a3bfb4b3f0c4f3b1ba9d7352721384eb",
+      "delta_shape": [
+        128,
+        48,
+        768
+      ],
+      "max": 0.39675870537757874,
+      "mean": 0.13986418571630566,
+      "median": 0.12043964862823486,
+      "min": 0.011739121749997139,
+      "nonzero_fraction": 1.0,
+      "p25": 0.09666749276220798,
+      "p75": 0.15648383274674416,
+      "p95": 0.3115715980529784,
+      "rms_sha256": "dabc3c3b722a2ec95399dac01c49f9471388a2fe6aa18ec6d70a93820c3085d7",
+      "std": 0.07137274383552923
+    }
+  ],
+  "coverage": {
+    "audit_images": 64,
+    "batches": 4,
+    "fit_images": 64,
+    "official_train_images": 15618,
+    "pooled_tokens": 12288,
+    "selected_images": 128,
+    "selected_unique_pids": 128,
+    "tokens_per_bank": 6144
+  },
+  "gates": {
+    "all_bank_rms_finite_nonzero": true,
+    "both_consumers_called_exact": true,
+    "checkpoint_sha_before_after_exact": true,
+    "config_checkpoint_codebook_sha_exact": true,
+    "delta_repeat_pose_free_exact": true,
+    "descriptor_repeat_pose_free_exact": true,
+    "execution_head_exact": true,
+    "exploding_pose_unaccessed": true,
+    "hooks_removed": true,
+    "no_optimizer_constructed": true,
+    "official_train_exact": true,
+    "rho_star_finite_positive": true,
+    "selection_exact": true,
+    "state_sha_before_after_exact": true,
+    "strict_state_finite": true,
+    "tracked_source_clean": true
+  },
+  "pooled_distribution": {
+    "count": 12288,
+    "max": 0.39675870537757874,
+    "mean": 0.09393252254564761,
+    "median": 0.08075544983148575,
+    "min": 0.0031023663468658924,
+    "nonzero_fraction": 1.0,
+    "p25": 0.03684608731418848,
+    "p75": 0.12951656058430672,
+    "p95": 0.26514718979597085,
+    "std": 0.07307231157935981
+  },
+  "repeat": {
+    "calls_first": [
+      4,
+      4
+    ],
+    "calls_second": [
+      4,
+      4
+    ],
+    "delta_exact_by_bank": [
+      true,
+      true
+    ],
+    "descriptor_exact": true,
+    "descriptor_sha256": "63605b81a10ea3419956afc973cf6ed7ebd477410178ea23bfaf69398fb6304b",
+    "exploding_pose_accesses": 0
+  },
+  "rho_formula": "median(concat(bank0_per_token_channel_rms,bank1_per_token_channel_rms))",
+  "rho_star": 0.08075544983148575,
+  "runtime": {
+    "first_images_per_second": 407.0893318608498,
+    "first_seconds": 0.31442730128765106,
+    "peak_memory_bytes": 770461184,
+    "second_images_per_second": 1069.655456030732,
+    "second_seconds": 0.11966470070183277,
+    "torch_version": "2.6.0+cu124"
+  },
+  "scope": "EXP394_PHASE0R_128_TRAIN_ONLY_BUDGET",
+  "state": {
+    "checkpoint_sha256_after": "59017755d61370754aa2e852a487d8e242fcee8814685f77f5388ba3a430e069",
+    "checkpoint_sha256_before": "59017755d61370754aa2e852a487d8e242fcee8814685f77f5388ba3a430e069",
+    "sha256_after": "c75e9d2e26f83255ae122a6c84b1717bc9474493453c7e04d95163da3cea96a3",
+    "sha256_before": "c75e9d2e26f83255ae122a6c84b1717bc9474493453c7e04d95163da3cea96a3",
+    "tensors": 223,
+    "tracked_status_after": ""
+  },
+  "verdict": "PHASE0R_128_PASS"
+}

@@ -103,3 +103,31 @@ eval transform冻结CPU input，strict load后只以`eval+no_grad`注册两个�
 只读环境核查确认exp387原生clean runtime为`/home/afr/reid-clean/.venv`，Python/Torch/CUDA/OpenCV/
 timm=`3.10.12/2.6.0+cu124/4.13.0/1.0.27`，依赖import PASS。禁止向错误runtime补装包；下一次只允许
 在该原生环境重做同一冻结script的一次完整审计。
+
+## 2026-07-19 Phase 0R-128预算冻结审计封板
+
+同一script在exp387原生clean runtime自然完成，verdict=`PHASE0R_128_PASS`。official train=
+`15,618`、固定selected=`128`图/`128` PID、fit/audit=`64/64`、4 batch；两个consumer各覆盖
+`6,144=128×48`个token，pooled=`12,288`。bank0/bank1/pooled的median分别为
+`0.0376448072/0.1204396486/0.0807554498`，P95分别为
+`0.1426717915/0.3115715981/0.2651471898`，nonzero fraction均=`1.0`。按预注册pooled median公式
+冻结唯一`rho_star=0.08075544983148575`，没有按性能、bank或样本筛选。
+
+16项gate全部PASS：exact HEAD/tracked/config/checkpoint/codebook/selection、official覆盖、strict
+223-state finite、两个consumer每遍4次调用、hook removed、None/exploding-pose两遍descriptor与
+两个bank applied delta逐tensor exact、exploding pose访问0、rho finite positive、无optimizer、
+state/checkpoint SHA前后exact。state SHA前后均为
+`c75e9d2e26f83255ae122a6c84b1717bc9474493453c7e04d95163da3cea96a3`；RGB manifest/input tensor
+SHA分别为`e7416534abe4489d256eacefec050379bfab443acabdd49c77ce457d0aaec5e7`/
+`f0e793478c65e1e30ff999560f4081f6e34b4ffa39f20bd583b1593f967235b2`。
+
+两遍model-only吞吐=`407.09/1069.66 img/s`，耗时=`0.3144/0.1197s`，peak allocated=
+`770,461,184 bytes`。进程自然退出，4090恢复`2 MiB/0%`，runner严格异常词命中0，exp387 tracked
+source与checkpoint SHA保持不变。script/result/runner SHA256分别为
+`628ce2f88a868ccb2a14f5c0a3204099332253e392bf8c271dd53301057222a3`、
+`4f20bef4539129d0e2a9250262b7a09ee7feee03a80fbd2c5491e3450e0d1715`、
+`7142cdb1cfd194262ef7daf6c4e3e9823bf561080ec8227143e55408d464887d`。
+
+裁决=`PHASE0R_128 SEALED-PASS / RHO FROZEN / PRODUCTION NO-START / FORMAL NO-START`。该结果只
+证明D0能量基准可复现并冻结，不证明exp394 route或CLIP方向有效。下一步仅允许production实现前的
+static设计/代码seam审查；不得直接启动CUDA训练preflight、正式训练或semantic multi-stage。
