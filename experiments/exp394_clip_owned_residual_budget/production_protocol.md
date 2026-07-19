@@ -3,10 +3,11 @@
 ## 当前状态
 
 `STATIC PROTOCOL FROZEN / PHASE 0P SOURCE CONTRACT PASS / PRODUCTION STATIC-CPU PASS /
-CUDA PREFLIGHT DESIGN GO / CUDA NO-START / FORMAL NO-START`。
+CUDA PROTOCOL FROZEN / PREFLIGHT IMPLEMENTATION NO-START / CUDA NO-START / FORMAL NO-START`。
 
-本协议只冻结未来fresh repo中的实现对象和反事实。它不修改exp393 sealed repo，不授权production代码、
-config、CUDA或训练。Phase 0R-S与0R-128 PASS只说明代数/梯度接口和预算来源可执行，不证明本方法有效。
+本协议冻结fresh implementation对象和反事实；production static/CPU现已封板，但未修改exp393 sealed
+repo，也不授权CUDA或训练。Phase 0R-S与0R-128 PASS只说明代数/梯度接口和预算来源可执行，不证明
+本方法有效。
 
 ## 冻结基线seam
 

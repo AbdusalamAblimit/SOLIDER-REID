@@ -195,3 +195,15 @@ canonical资产复制，不得直接启动CUDA、正式训练或semantic multi-s
 SHA256=`fb87da370ea945d526f499bef78093a6b07203d87c6d84efe06b5eb6594f954a`。config所写路径/SHA与实体
 exact。复制未加载模型或初始化CUDA；sealed RZ-C0 repo仍为exact `09340f7`且tracked clean，4090=
 `2 MiB/0%`、无compute PID。
+
+## 2026-07-19 CUDA/AMP preflight协议冻结
+
+在production static/CPU commit `11d7a35`之后新增独立CUDA协议，尚未实现或执行脚本。协议冻结24个
+official actual batch64更新：step1–12只用epoch1验证rho=0 exact identity但`L_exec`真实更新branch；
+step13–24只用epoch6的`rho_star/5`验证handoff非零descriptor路径。禁止用epoch10放大gap、补跑overflow
+step、换batch或按loss筛样本。
+
+协议同时冻结actual-batch四次隔离backward、correct/wrong/static proposal可分、NULL exact、两个
+consumer、strict reload、teacher/optimizer/checkpoint/eval隔离、RGB-only四变体、显存`<22 GiB`与
+异常词0。当前裁决=`CUDA_PROTOCOL_FROZEN / IMPLEMENTATION NO-START / CUDA NO-START / FORMAL
+NO-START`；等待后续heartbeat明确授权后才可实现外置preflight脚本，当前仍不得启动4090。

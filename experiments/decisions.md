@@ -5254,3 +5254,8 @@ NULL identity、两consumer、strict reload、teacher隔离与四类梯度所有
 e120，不证明CLIP route有效，也不授权semantic multi-stage。后续CUDA门必须至少24步覆盖teacher阶段
 identity但branch更新、handoff descriptor gap、correct/wrong/static、两consumer、strict reload、
 teacher/optimizer/checkpoint/eval隔离、RGB-only与峰值显存；任一FAIL先归因，不降低门槛。
+
+CUDA/AMP协议随后已冻结为24个official actual batch64更新：12步epoch1 exact-zero预算，接12步epoch6
+`rho_star/5` handoff，并包含actual-batch四类分loss梯度所有权与完整reload/RGB-only/NULL/显存终审。
+当前只完成协议文档，`PREFLIGHT IMPLEMENTATION/CUDA/FORMAL`均`NO-START`；不得把协议冻结误写为
+真实AMP门已通过。
