@@ -59,3 +59,9 @@ exact；student evidence与12组共享生产参数梯度均finite/nonzero；stri
 free state和generic资产SHA/metadata正反校验全部通过。CUDA未初始化。
 
 result=`production_cpu_result.json`，当前判定：`PRODUCTION CPU PASS / FRESH ASSET + CUDA PREFLIGHT GO / FORMAL NO-START`。
+
+## 2026-07-20 generic asset-v1 运行入口无效
+
+fresh asset-v1在导入阶段因子目录启动未注入repo root而`ModuleNotFoundError: datasets`；GPU始终
+`2 MiB/0%`，official数据访问0，generic输出0。该记录封板为`ASSET-V1 INVALID`，不代表机制失败；只允许
+asset-v2修正模块入口，资产内容、teacher、数据与聚合合同保持不变。

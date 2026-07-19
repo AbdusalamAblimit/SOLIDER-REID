@@ -7,10 +7,15 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 import torch
 from torch.cuda import amp
 from torch.utils.data import DataLoader
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from datasets.occluded_duke import OccludedDuke
 from datasets.paired_pose_transform import PairedPoseTransform
