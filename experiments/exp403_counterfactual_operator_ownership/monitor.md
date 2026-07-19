@@ -258,3 +258,14 @@ Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
 RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`1.109e-04`，finite。
 remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
 warning=`0/0`，checkpoint=`0`。余约3 epoch，继续自然跑满；结束前不启动反事实评测。
+
+### final frozen counterfactual执行器就绪
+
+复用exp402已封板的全量检索骨架，冻结exp403七臂为correct、same-split/same-camera different-PID wrong-RGB、
+generic、NULL、slot-cycle、wrong-mask与all-router-bypass；不新增control。终审额外锁定ELO shared projections、
+无static experts、checkpoint strict/finite/teacher-free、RGB-only、逐臂完整覆盖与state/RNG/patch恢复，并按
+D0 mAP/R1 floor、correct-max(wrong/generic/NULL)和correct-all-bypass三个正式门裁决。
+
+执行器已部署到fresh只读目录`/home/afr/reid-clean/audits/exp403_elo_cur_final_v1`，7个源文件语法、shell与
+动态base patch contract均PASS；generic 5x16常量与fresh asset逐值exact。contract/result/runner/manifest均
+尚未创建，GPU评测未启动。训练自然结束和退出终审PASS后才允许启动该once-only执行。
