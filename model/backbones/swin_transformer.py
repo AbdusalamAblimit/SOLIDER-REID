@@ -19,6 +19,28 @@ from torch.nn import Linear
 from torch import Tensor
 from itertools import repeat
 import collections.abc
+
+
+def _capture_tapf_replay_rng(reference):
+    state = {"cpu": torch.get_rng_state()}
+    if reference.is_cuda:
+        state["cuda"] = torch.cuda.get_rng_state(reference.device)
+    return state
+
+
+def _restore_tapf_replay_rng(state, reference):
+    torch.set_rng_state(state["cpu"])
+    if reference.is_cuda:
+        torch.cuda.set_rng_state(state["cuda"], reference.device)
+
+
+def _tapf_replay_rng_equal(left, right):
+    return all(
+        key in right and torch.equal(value, right[key])
+        for key, value in left.items()
+    ) and set(left) == set(right)
+
+
 def _ntuple(n):
 
     def parse(x):
@@ -1406,10 +1428,61 @@ class SwinTransformer(BaseModule):
                 if stage.downsample is not None or len(stage.blocks) != 2:
                     raise RuntimeError("Clean TAPF expects two final Swin blocks")
                 out_hw_shape = hw_shape
+                counterfactual_replay = bool(
+                    self.training
+                    and getattr(tapf, "counterfactual_operator", False)
+                )
+                if counterfactual_replay:
+                    replay_input = x
+                    replay_rng_start = _capture_tapf_replay_rng(x)
                 for bank_index, block in enumerate(stage.blocks):
                     x = block(x, hw_shape)
                     x = tapf.apply_gate(bank_index, x, hw_shape, tapf_state)
                 out = x
+                if counterfactual_replay:
+                    correct_rng_after = _capture_tapf_replay_rng(x)
+                    replay_rng_exact = []
+                    try:
+                        for arm_name in tapf.reference_arm_names:
+                            _restore_tapf_replay_rng(replay_rng_start, replay_input)
+                            with torch.no_grad():
+                                reference_x = replay_input.detach()
+                                for bank_index, block in enumerate(stage.blocks):
+                                    reference_x = block(reference_x, hw_shape)
+                                    reference_x = tapf.apply_reference_gate(
+                                        bank_index,
+                                        reference_x,
+                                        hw_shape,
+                                        tapf_state,
+                                        arm_name,
+                                    )
+                                reference_out = getattr(self, "norm3")(
+                                    reference_x
+                                )
+                                reference_out = reference_out.view(
+                                    -1,
+                                    *out_hw_shape,
+                                    self.num_features[3],
+                                ).permute(0, 3, 1, 2).contiguous()
+                                reference_descriptor = torch.flatten(
+                                    self.avgpool(reference_out), 1
+                                )
+                                tapf.record_reference_descriptor(
+                                    tapf_state,
+                                    arm_name,
+                                    reference_descriptor,
+                                )
+                            reference_rng_after = _capture_tapf_replay_rng(
+                                reference_x
+                            )
+                            replay_rng_exact.append(
+                                _tapf_replay_rng_equal(
+                                    reference_rng_after, correct_rng_after
+                                )
+                            )
+                    finally:
+                        _restore_tapf_replay_rng(correct_rng_after, replay_input)
+                    tapf_state["reference_rng_exact"] = all(replay_rng_exact)
             else:
                 x, hw_shape, out, out_hw_shape = stage(x, hw_shape)
             if hierarchical_tapf and i == 1:
@@ -1453,6 +1526,12 @@ class SwinTransformer(BaseModule):
                 outs.append(out)
         x = self.avgpool(outs[-1])
         x = torch.flatten(x, 1)
+        if (
+            tapf is not None
+            and self.training
+            and getattr(tapf, "counterfactual_operator", False)
+        ):
+            tapf.finalize_counterfactual(x, tapf_state)
         if tapf is not None:
             return x, outs, tapf_state
         return x, outs

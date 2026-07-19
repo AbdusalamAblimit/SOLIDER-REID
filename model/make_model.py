@@ -7,6 +7,7 @@ from .backbones.swin_transformer import swin_base_patch4_window7_224, swin_small
 from loss.metric_learning import Arcface, Cosface, AMSoftmax, CircleLoss
 from .backbones.resnet_ibn_a import resnet50_ibn_a,resnet101_ibn_a
 from .tapf import (
+    CleanEvidenceOperatorTapf,
     CleanRichEvidenceBudgetTapf,
     CleanSemanticTapfC0,
     CleanTapfD0,
@@ -234,6 +235,13 @@ class build_transformer(nn.Module):
         self.tapf_enabled = cfg.MODEL.TAPF.ENABLED
         if self.tapf_enabled:
             if (
+                cfg.MODEL.TAPF.ELO_CUR_ENABLED
+                and not cfg.MODEL.TAPF.RICH_EVIDENCE_ENABLED
+            ):
+                raise ValueError(
+                    "ELO-CUR requires rich evidence TAPF"
+                )
+            if (
                 cfg.MODEL.TAPF.RICH_EVIDENCE_ENABLED
                 and not cfg.MODEL.TAPF.SEMANTIC_ENABLED
             ):
@@ -248,9 +256,13 @@ class build_transformer(nn.Module):
                 if cfg.MODEL.TAPF.HIERARCHICAL:
                     raise ValueError("Semantic fast-track is single-stage only")
                 tapf_class = (
-                    CleanRichEvidenceBudgetTapf
-                    if cfg.MODEL.TAPF.RICH_EVIDENCE_ENABLED
-                    else CleanSemanticTapfC0
+                    CleanEvidenceOperatorTapf
+                    if cfg.MODEL.TAPF.ELO_CUR_ENABLED
+                    else (
+                        CleanRichEvidenceBudgetTapf
+                        if cfg.MODEL.TAPF.RICH_EVIDENCE_ENABLED
+                        else CleanSemanticTapfC0
+                    )
                 )
             else:
                 tapf_class = (

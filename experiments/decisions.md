@@ -5471,3 +5471,7 @@ reference零梯度和三个mutant均通过；CUDA未初始化。
 **决策**：`PRODUCTION IMPLEMENTATION GO / CUDA NO-START`。下一步允许在新config开关下实现ELO-CUR，
 但不得把standalone PASS当formal授权；必须先通过default-off parity、source/state/optimizer contract与真实
 batch64 CUDA/AMP preflight。任何失败不调rho、outer loss、batch、stage或删除control救同一execution。
+
+生产CPU/source必要门已`34/34 PASS`。按用户最新指令停止增加重复CPU矩阵，决策升级为
+`FRESH GENERIC ASSET + ACTUAL BATCH64 CUDA/AMP PREFLIGHT GO`；preflight全过后直接启动fresh once-only
+e120，不再插入非必要诊断。formal在preflight result显式授权前仍为`NO-START`。

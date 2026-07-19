@@ -1,6 +1,10 @@
 import logging
 import os
 import random
+import hashlib
+import json
+import stat
+from pathlib import Path
 import cv2
 import numpy as np
 import time
@@ -10,6 +14,64 @@ from utils.meter import AverageMeter
 from utils.metrics import R1_mAP_eval
 from torch.cuda import amp
 import torch.distributed as dist
+
+
+def _sha256_file(path):
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _load_elo_generic_evidence(
+    path_value,
+    expected_sha256,
+    dataset_name,
+    clip_checkpoint_sha256,
+    codebook_sha256,
+    pose_manifest_sha256,
+    device,
+):
+    configured = Path(path_value)
+    if not configured.is_absolute():
+        raise ValueError("ELO generic evidence path must be absolute")
+    resolved = configured.resolve(strict=True)
+    if resolved != configured:
+        raise RuntimeError("ELO generic evidence must use a canonical path")
+    metadata = resolved.stat()
+    if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
+        raise RuntimeError("ELO generic evidence must be a unique regular file")
+    actual_sha256 = _sha256_file(resolved)
+    if actual_sha256 != expected_sha256:
+        raise RuntimeError("ELO generic evidence SHA mismatch")
+    payload = json.loads(resolved.read_text(encoding="utf-8"))
+    if payload.get("experiment") != "exp403_counterfactual_operator_ownership":
+        raise RuntimeError("ELO generic evidence experiment tag mismatch")
+    expected_metadata = {
+        "format": "elo_generic_evidence_v1",
+        "dataset": str(dataset_name),
+        "split": "train",
+        "clip_checkpoint_sha256": str(clip_checkpoint_sha256),
+        "codebook_sha256": str(codebook_sha256),
+        "pose_manifest_sha256": str(pose_manifest_sha256),
+    }
+    for key, expected in expected_metadata.items():
+        if payload.get(key) != expected:
+            raise RuntimeError("ELO generic evidence metadata mismatch: " + key)
+    count_by_slot = payload.get("count_by_slot")
+    if (
+        not isinstance(count_by_slot, list)
+        or len(count_by_slot) != 5
+        or any(not isinstance(value, int) or value <= 0 for value in count_by_slot)
+    ):
+        raise RuntimeError("ELO generic evidence count_by_slot is invalid")
+    evidence = torch.as_tensor(payload.get("evidence"), dtype=torch.float32)
+    if evidence.shape != (5, 16):
+        raise RuntimeError("ELO generic evidence must have shape [5,16]")
+    if not bool(torch.isfinite(evidence).all()):
+        raise RuntimeError("ELO generic evidence is non-finite")
+    return evidence.to(device=device), actual_sha256
 
 def do_train(cfg,
              model,
@@ -44,6 +106,10 @@ def do_train(cfg,
         and cfg.MODEL.TAPF.SEMANTIC_ENABLED
         and cfg.MODEL.TAPF.RICH_EVIDENCE_ENABLED
     )
+    elo_cur_enabled = bool(
+        rich_evidence_enabled and cfg.MODEL.TAPF.ELO_CUR_ENABLED
+    )
+    generic_evidence = None
     if cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.SEMANTIC_ENABLED:
         from model.clip_semantic_teacher import (
             FrozenClipSlotTeacher,
@@ -85,6 +151,20 @@ def do_train(cfg,
                 "Frozen PC-MBCLS teacher loaded outside model/optimizer, SHA: %s",
                 semantic_teacher.checkpoint_sha256,
             )
+    if elo_cur_enabled:
+        generic_evidence, generic_sha256 = _load_elo_generic_evidence(
+            cfg.MODEL.TAPF.ELO_GENERIC_EVIDENCE,
+            cfg.MODEL.TAPF.ELO_GENERIC_EVIDENCE_SHA256,
+            cfg.DATASETS.NAMES,
+            cfg.MODEL.TAPF.CLIP_CHECKPOINT_SHA256,
+            cfg.MODEL.TAPF.RICH_CODEBOOK_SHA256,
+            cfg.MODEL.TAPF.MANIFEST_SHA256,
+            torch.device("cuda", local_rank),
+        )
+        logger.info(
+            "Frozen train-split ELO generic evidence loaded outside model/state, SHA: %s",
+            generic_sha256,
+        )
 
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
@@ -96,6 +176,8 @@ def do_train(cfg,
     evidence_cos_loss_meter = AverageMeter()
     evidence_relation_loss_meter = AverageMeter()
     exec_loss_meter = AverageMeter()
+    compatibility_loss_meter = AverageMeter()
+    cur_loss_meter = AverageMeter()
     early_pose_loss_meter = AverageMeter()
     late_pose_loss_meter = AverageMeter()
 
@@ -114,6 +196,8 @@ def do_train(cfg,
         evidence_cos_loss_meter.reset()
         evidence_relation_loss_meter.reset()
         exec_loss_meter.reset()
+        compatibility_loss_meter.reset()
+        cur_loss_meter.reset()
         early_pose_loss_meter.reset()
         late_pose_loss_meter.reset()
         evaluator.reset()
@@ -140,6 +224,10 @@ def do_train(cfg,
             target = vid.to(device)
             target_cam = target_cam.to(device)
             target_view = target_view.to(device)
+            if elo_cur_enabled:
+                pose_batch["identity"] = target
+                pose_batch["camera"] = target_cam
+                pose_batch["generic_evidence"] = generic_evidence
             if semantic_teacher is not None:
                 if "teacher_rgb" not in pose_batch:
                     raise RuntimeError("Semantic TAPF batch is missing pre-RE RGB")
@@ -312,9 +400,18 @@ def do_train(cfg,
                         evidence_relation_loss_meter.update(
                             tapf_aux["evidence_relation_loss"].item(), img.shape[0]
                         )
-                        exec_loss_meter.update(
-                            tapf_aux["exec_loss"].item(), img.shape[0]
-                        )
+                        if elo_cur_enabled:
+                            compatibility_loss_meter.update(
+                                tapf_aux["compatibility_loss"].item(),
+                                img.shape[0],
+                            )
+                            cur_loss_meter.update(
+                                tapf_aux["cur_loss"].item(), img.shape[0]
+                            )
+                        else:
+                            exec_loss_meter.update(
+                                tapf_aux["exec_loss"].item(), img.shape[0]
+                            )
                 if cfg.MODEL.TAPF.HIERARCHICAL:
                     early_pose_loss_meter.update(
                         tapf_aux["early_pose_loss"].item(), img.shape[0]
@@ -378,11 +475,23 @@ def do_train(cfg,
                                 [delta.detach().float().abs().mean() for delta in tapf_aux["gate_deltas"]]
                             ).mean().item()
                             if rich_evidence_enabled:
-                                logger.info(
-                                    "Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Pose: {:.3f}, Semantic: {:.3f}, RegionMask: {:.3f}, Presence: {:.3f}, EvidenceCos: {:.3f}, EvidenceRel: {:.3f}, Exec: {:.3f}, Acc: {:.3f}, Student: {:.2f}, Reliability: {:.3f}, Rho: {:.9f}, BudgetAbs: {:.3e}, Base Lr: {:.2e}"
-                                    .format(
+                                if elo_cur_enabled:
+                                    compatibility = tapf_aux[
+                                        "compatibility_means"
+                                    ]
+                                    diagnostic_gaps = tapf_aux[
+                                        "compatibility_diagnostic_gaps"
+                                    ]
+                                    cur_components = tapf_aux[
+                                        "cur_component_losses"
+                                    ]
+                                    reference_utility = tapf_aux[
+                                        "reference_utility_means"
+                                    ]
+                                    logger.info(
+                                        "Epoch[%d] Iter[%d/%d] Loss: %.3f, Pose: %.3f, Semantic: %.3f, RegionMask: %.3f, Presence: %.3f, EvidenceCos: %.3f, EvidenceRel: %.3f, Compat: %.3f, CUR: %.3f, CompatC/W/G/N: %.4f/%.4f/%.4f/%.4f, RefGapWG/GN: %.4f/%.4f, CURW/G/N: %.4f/%.4f/%.4f, UtilityC/W/G/N: %.4f/%.4f/%.4f/%.4f, Eligible: %.3f, CoeffStd: %.3e, EffRank: %.3f, RNGExact: %d, Acc: %.3f, Student: %.2f, Reliability: %.3f, Rho: %.9f, BudgetAbs: %.3e, Base Lr: %.2e",
                                         epoch,
-                                        (n_iter + 1),
+                                        n_iter + 1,
                                         len(train_loader),
                                         loss_meter.avg,
                                         pose_loss_meter.avg,
@@ -391,7 +500,25 @@ def do_train(cfg,
                                         presence_loss_meter.avg,
                                         evidence_cos_loss_meter.avg,
                                         evidence_relation_loss_meter.avg,
-                                        exec_loss_meter.avg,
+                                        compatibility_loss_meter.avg,
+                                        cur_loss_meter.avg,
+                                        compatibility["correct"].item(),
+                                        compatibility["wrong"].item(),
+                                        compatibility["generic"].item(),
+                                        compatibility["null"].item(),
+                                        diagnostic_gaps["wrong_minus_generic"].item(),
+                                        diagnostic_gaps["generic_minus_null"].item(),
+                                        cur_components["wrong"].item(),
+                                        cur_components["generic"].item(),
+                                        cur_components["null"].item(),
+                                        tapf_aux["correct_utility_mean"].item(),
+                                        reference_utility["wrong"].item(),
+                                        reference_utility["generic"].item(),
+                                        reference_utility["null"].item(),
+                                        tapf_aux["donor_eligible"].float().mean().item(),
+                                        tapf_aux["coefficient_std"].item(),
+                                        tapf_aux["coefficient_effective_rank"].item(),
+                                        int(tapf_aux["reference_rng_exact"]),
                                         acc_meter.avg,
                                         tapf_aux["student_fraction"],
                                         tapf_aux["reliability"].detach().float().mean().item(),
@@ -399,7 +526,29 @@ def do_train(cfg,
                                         gate_abs,
                                         base_lr,
                                     )
-                                )
+                                else:
+                                    logger.info(
+                                        "Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Pose: {:.3f}, Semantic: {:.3f}, RegionMask: {:.3f}, Presence: {:.3f}, EvidenceCos: {:.3f}, EvidenceRel: {:.3f}, Exec: {:.3f}, Acc: {:.3f}, Student: {:.2f}, Reliability: {:.3f}, Rho: {:.9f}, BudgetAbs: {:.3e}, Base Lr: {:.2e}"
+                                        .format(
+                                            epoch,
+                                            (n_iter + 1),
+                                            len(train_loader),
+                                            loss_meter.avg,
+                                            pose_loss_meter.avg,
+                                            semantic_loss_meter.avg,
+                                            region_mask_loss_meter.avg,
+                                            presence_loss_meter.avg,
+                                            evidence_cos_loss_meter.avg,
+                                            evidence_relation_loss_meter.avg,
+                                            exec_loss_meter.avg,
+                                            acc_meter.avg,
+                                            tapf_aux["student_fraction"],
+                                            tapf_aux["reliability"].detach().float().mean().item(),
+                                            tapf_aux["rho"],
+                                            gate_abs,
+                                            base_lr,
+                                        )
+                                    )
                             elif cfg.MODEL.TAPF.SEMANTIC_ENABLED:
                                 logger.info(
                                     "Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Pose: {:.3f}, Semantic: {:.3f}, RegionMask: {:.3f}, Presence: {:.3f}, Q: {:.3f}, Acc: {:.3f}, Student: {:.2f}, Reliability: {:.3f}, GateAbs: {:.3e}, Base Lr: {:.2e}"

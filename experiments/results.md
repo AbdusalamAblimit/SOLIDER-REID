@@ -2703,3 +2703,8 @@ reference-not-detached三个negative mutant全部被抓住，CUDA未初始化。
 **当前判定**：`STANDALONE STATIC-CPU PASS / PRODUCTION IMPLEMENTATION GO / CUDA NO-START`。该结果不
 是性能证据，也不授权formal；必须先完成生产图、默认off-parity、真实batch64 CUDA/AMP与reference RNG/
 no-grad contract。
+
+exp403生产实现随后通过一次必要CPU/source合同`34/34 PASS`：D0/C0默认关闭相对实现前commit的state、
+RNG、输出exact，NULL identity、shared/no-expert、完整reference replay、RNG恢复、reference no-grad、correct
+evidence与全部生产参数梯度、strict reload、optimizer/state/资产校验全过。遵照用户要求不堆重复CPU审计；
+下一步直接生成fresh train-split generic资产并做真实batch64 CUDA/AMP preflight。当前仍`FORMAL NO-START`。

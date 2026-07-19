@@ -59,6 +59,24 @@ def aggregate_joint_field_to_regions(field):
     )
 
 
+def build_matched_training_donor_map(identities, cameras):
+    """Select the first cyclic same-camera, different-identity batch donor."""
+    if identities.ndim != 1 or cameras.shape != identities.shape:
+        raise ValueError("identities/cameras must be aligned one-dimensional tensors")
+    count = identities.numel()
+    if count < 2:
+        return torch.full_like(identities, -1, dtype=torch.long)
+    row = torch.arange(count, device=identities.device)
+    offsets = torch.arange(1, count, device=identities.device)
+    candidates = (row[:, None] + offsets[None, :]) % count
+    matches = cameras[candidates].eq(cameras[:, None])
+    matches = matches & identities[candidates].ne(identities[:, None])
+    eligible = matches.any(dim=1)
+    first_offset = matches.to(torch.int64).argmax(dim=1)
+    selected = candidates.gather(1, first_offset[:, None]).squeeze(1)
+    return torch.where(eligible, selected, torch.full_like(selected, -1))
+
+
 class PoseAnchor(nn.Module):
     def __init__(self, in_channels=384, hidden_channels=128, joint_count=17):
         super().__init__()
@@ -820,6 +838,112 @@ class EvidenceBudgetRouter(nn.Module):
         return tokens + applied_delta, applied_delta, branch
 
 
+class EvidenceOwnedLowRankRouter(nn.Module):
+    """Shared low-rank production operator with evidence-owned coefficients."""
+
+    def __init__(
+        self,
+        feature_channels=768,
+        region_count=5,
+        rank=16,
+        evidence_dim=16,
+    ):
+        super().__init__()
+        if min(feature_channels, region_count, rank, evidence_dim) <= 0:
+            raise ValueError("Router dimensions must be positive")
+        self.feature_channels = int(feature_channels)
+        self.region_count = int(region_count)
+        self.rank = int(rank)
+        self.evidence_dim = int(evidence_dim)
+        self.down_projection = nn.Linear(feature_channels, rank, bias=False)
+        self.context_projection = nn.Linear(feature_channels, rank, bias=False)
+        self.evidence_projection = nn.Linear(evidence_dim, rank, bias=False)
+        self.up_projection = nn.Linear(rank, feature_channels, bias=False)
+        self.context_query = nn.Linear(feature_channels, evidence_dim, bias=False)
+        self.evidence_key = nn.Linear(evidence_dim, evidence_dim, bias=False)
+
+    def branch(self, tokens, hw_shape, mask, presence, evidence):
+        height, width = hw_shape
+        if tokens.ndim != 3 or tokens.shape[1] != height * width:
+            raise ValueError("Token shape does not match hw_shape")
+        if tokens.shape[2] != self.feature_channels:
+            raise ValueError("Unexpected token channel count")
+        if mask.ndim != 4 or mask.shape[1] != self.region_count:
+            raise ValueError("mask must have shape [B,R,H,W]")
+        if presence.shape != mask.shape[:2]:
+            raise ValueError("presence must have shape [B,R]")
+        if evidence.shape != (
+            tokens.shape[0], self.region_count, self.evidence_dim
+        ):
+            raise ValueError("evidence must have shape [B,R,D]")
+
+        resized = F.interpolate(
+            mask.detach().float(),
+            size=(height, width),
+            mode="bilinear",
+            align_corners=False,
+        ).flatten(2)
+        presence = presence.detach().float().clamp(0.0, 1.0)
+        mass = resized.sum(dim=-1, keepdim=True)
+        normalized_mask = resized / mass.clamp_min(1e-6)
+        normalized_mask = torch.where(
+            mass > 0, normalized_mask, torch.zeros_like(normalized_mask)
+        )
+        context = torch.einsum(
+            "brn,bnc->brc", normalized_mask.to(tokens.dtype), tokens
+        )
+
+        token_hidden = self.down_projection(tokens)[:, None]
+        context_hidden = self.context_projection(context)[:, :, None]
+        coefficients = self.evidence_projection(evidence)
+        query = F.normalize(self.context_query(context).float(), dim=-1)
+        key_raw = self.evidence_key(evidence).float()
+        key_norm = key_raw.norm(dim=-1)
+        key = F.normalize(key_raw, dim=-1)
+        similarity = (query * key).sum(dim=-1)
+        compatibility = torch.where(
+            key_norm > 0,
+            similarity,
+            torch.full_like(similarity, -1.0),
+        )
+        gate = torch.where(
+            key_norm > 0,
+            torch.sigmoid(compatibility),
+            torch.zeros_like(compatibility),
+        )
+
+        hidden = (token_hidden + context_hidden) * coefficients[:, :, None]
+        proposal = self.up_projection(F.gelu(hidden))
+        proposal = proposal * gate[:, :, None, None].to(proposal.dtype)
+        slot_valid = (mass.squeeze(-1) > 0) & (presence > 0)
+        proposal = torch.where(
+            slot_valid[:, :, None, None],
+            proposal,
+            torch.zeros_like(proposal),
+        )
+        scatter = resized[:, :, :, None] * presence[:, :, None, None]
+        unit_delta = (scatter.to(proposal.dtype) * proposal).sum(dim=1)
+        if not bool(torch.isfinite(unit_delta).all()):
+            raise RuntimeError("Non-finite evidence-owned router output")
+        return {
+            "proposal": proposal,
+            "unit_delta": unit_delta,
+            "coefficients": coefficients,
+            "compatibility": compatibility,
+            "gate": gate,
+            "context": context,
+            "mask": resized,
+            "normalized_mask": normalized_mask,
+            "mass": mass,
+            "slot_valid": slot_valid,
+        }
+
+    def forward(self, tokens, hw_shape, mask, presence, evidence, rho):
+        branch = self.branch(tokens, hw_shape, mask, presence, evidence)
+        applied_delta = float(rho) * branch["unit_delta"]
+        return tokens + applied_delta, applied_delta, branch
+
+
 class CleanRichEvidenceBudgetTapf(nn.Module):
     """Single-stage rich-evidence TAPF with two independently budgeted routers."""
 
@@ -837,6 +961,7 @@ class CleanRichEvidenceBudgetTapf(nn.Module):
         teacher_epochs=5,
         handoff_epochs=5,
         rho_star=0.08075544983148575,
+        router_class=EvidenceBudgetRouter,
     ):
         super().__init__()
         if teacher_epochs < 0 or handoff_epochs <= 0:
@@ -854,7 +979,7 @@ class CleanRichEvidenceBudgetTapf(nn.Module):
         )
         self.psg_bank = nn.ModuleList(
             [
-                EvidenceBudgetRouter(
+                router_class(
                     feature_channels=consumer_channels,
                     rank=router_rank,
                     evidence_dim=16,
@@ -1085,6 +1210,290 @@ class CleanRichEvidenceBudgetTapf(nn.Module):
                 + state["semantic_loss"]
             )
         return routed
+
+
+class CleanEvidenceOperatorTapf(CleanRichEvidenceBudgetTapf):
+    """ELO-CUR: evidence-owned operators with no-gradient reference replays."""
+
+    counterfactual_operator = True
+    reference_arm_names = ("wrong", "generic", "null")
+    compatibility_margin = 0.10
+    utility_margin = 0.05
+
+    def __init__(self, *args, **kwargs):
+        kwargs["router_class"] = EvidenceOwnedLowRankRouter
+        super().__init__(*args, **kwargs)
+
+    @staticmethod
+    def _masked_mean(values, valid):
+        valid = valid.to(device=values.device, dtype=torch.bool)
+        if valid.shape != values.shape:
+            raise ValueError("Masked mean received incompatible shapes")
+        weight = valid.to(values.dtype)
+        return (values * weight).sum() / weight.sum().clamp_min(1.0)
+
+    def prepare(self, source_feature, pose_batch, image_hw, epoch, training):
+        state = super().prepare(
+            source_feature,
+            pose_batch=pose_batch,
+            image_hw=image_hw,
+            epoch=epoch,
+            training=training,
+        )
+        state.update(
+            {
+                "compatibility_loss": None,
+                "cur_loss": None,
+                "cur_component_losses": None,
+                "compatibility_means": None,
+                "compatibility_diagnostic_gaps": None,
+                "correct_utility_mean": None,
+                "reference_utility_means": None,
+                "coefficient_std": None,
+                "coefficient_effective_rank": None,
+                "reference_descriptors": {},
+                "reference_router_branches": {
+                    name: [] for name in self.reference_arm_names
+                },
+                "reference_rng_exact": None,
+                "counterfactual_finalized": False,
+            }
+        )
+        if not training:
+            state["donor_eligible"] = None
+            state["donor_index"] = None
+            state["reference_evidence"] = {}
+            return state
+
+        required = {"identity", "camera", "generic_evidence"}
+        missing = sorted(required.difference(pose_batch))
+        if missing:
+            raise ValueError(
+                "Training ELO-CUR is missing ownership inputs: "
+                + ", ".join(missing)
+            )
+        identities = pose_batch["identity"].long()
+        cameras = pose_batch["camera"].long()
+        if identities.shape != (source_feature.shape[0],):
+            raise ValueError("ELO-CUR identity shape mismatch")
+        if cameras.shape != identities.shape:
+            raise ValueError("ELO-CUR camera shape mismatch")
+
+        donor = build_matched_training_donor_map(identities, cameras)
+        donor_eligible = donor >= 0
+        safe_donor = donor.clamp_min(0)
+        student_evidence = state["student_evidence"]
+        wrong = student_evidence[safe_donor].detach()
+        wrong = torch.where(
+            donor_eligible[:, None, None], wrong, torch.zeros_like(wrong)
+        )
+        generic = pose_batch["generic_evidence"].float()
+        if generic.ndim == 2:
+            generic = generic.unsqueeze(0)
+        if generic.shape not in (
+            (1, student_evidence.shape[1], student_evidence.shape[2]),
+            student_evidence.shape,
+        ):
+            raise ValueError("Frozen generic evidence shape mismatch")
+        generic = generic.to(student_evidence.device).expand_as(student_evidence)
+        if not bool(torch.isfinite(generic).all()):
+            raise RuntimeError("Frozen generic evidence is non-finite")
+        generic = generic.detach()
+        null = torch.zeros_like(student_evidence).detach()
+
+        semantic_valid = state["semantic_valid"]
+        donor_valid = semantic_valid[safe_donor]
+        ownership_valid = semantic_valid & donor_valid
+        ownership_valid = ownership_valid & donor_eligible[:, None]
+        state["consumer_evidence"] = student_evidence
+        state["identity"] = identities
+        state["camera"] = cameras
+        state["donor_index"] = donor
+        state["donor_eligible"] = donor_eligible
+        state["ownership_valid"] = ownership_valid
+        state["reference_evidence"] = {
+            "wrong": wrong,
+            "generic": generic,
+            "null": null,
+        }
+        return state
+
+    def apply_gate(self, bank_index, tokens, hw_shape, state):
+        router = self.psg_bank[bank_index]
+        routed, applied_delta, branch = router(
+            tokens,
+            hw_shape,
+            state["consumer_mask"],
+            state["consumer_presence"],
+            state["consumer_evidence"],
+            state["rho"],
+        )
+        state["gate_deltas"].append(applied_delta)
+        state["router_branches"].append(branch)
+        return routed
+
+    def apply_reference_gate(
+        self, bank_index, tokens, hw_shape, state, arm_name
+    ):
+        if arm_name not in self.reference_arm_names:
+            raise ValueError("Unknown ELO-CUR reference arm")
+        router = self.psg_bank[bank_index]
+        routed, _, branch = router(
+            tokens,
+            hw_shape,
+            state["consumer_mask"],
+            state["consumer_presence"],
+            state["reference_evidence"][arm_name],
+            state["rho"],
+        )
+        state["reference_router_branches"][arm_name].append(branch)
+        return routed
+
+    def record_reference_descriptor(self, state, arm_name, descriptor):
+        if descriptor.requires_grad:
+            raise RuntimeError("ELO-CUR reference descriptor retained autograd")
+        state["reference_descriptors"][arm_name] = descriptor.detach()
+
+    def finalize_counterfactual(self, correct_descriptor, state):
+        if not self.training:
+            raise RuntimeError("ELO-CUR finalization is training-only")
+        if len(state["router_branches"]) != len(self.psg_bank):
+            raise RuntimeError("Incomplete ELO-CUR correct execution")
+        if set(state["reference_descriptors"]) != set(self.reference_arm_names):
+            raise RuntimeError("Incomplete ELO-CUR reference execution")
+        for name in self.reference_arm_names:
+            if len(state["reference_router_branches"][name]) != len(self.psg_bank):
+                raise RuntimeError("Incomplete ELO-CUR reference router execution")
+
+        compatibility_losses = []
+        compatibility_values = {
+            name: [] for name in ("correct", *self.reference_arm_names)
+        }
+        wrong_generic_gaps = []
+        generic_null_gaps = []
+        for bank_index, correct_branch in enumerate(state["router_branches"]):
+            reference = {
+                name: state["reference_router_branches"][name][bank_index]
+                for name in self.reference_arm_names
+            }
+            valid = state["ownership_valid"] & correct_branch["slot_valid"]
+            correct = correct_branch["compatibility"].float()
+            detached_reference = torch.stack(
+                [reference[name]["compatibility"].float().detach()
+                 for name in self.reference_arm_names],
+                dim=0,
+            )
+            maximum_reference = detached_reference.max(dim=0).values
+            compatibility_losses.append(
+                self._masked_mean(
+                    F.relu(
+                        self.compatibility_margin
+                        + maximum_reference
+                        - correct
+                    ),
+                    valid,
+                )
+            )
+            compatibility_values["correct"].append(
+                self._masked_mean(correct.detach(), valid)
+            )
+            for arm_index, name in enumerate(self.reference_arm_names):
+                compatibility_values[name].append(
+                    self._masked_mean(detached_reference[arm_index], valid)
+                )
+            wrong_generic_gaps.append(
+                self._masked_mean(
+                    detached_reference[0] - detached_reference[1], valid
+                )
+            )
+            generic_null_gaps.append(
+                self._masked_mean(
+                    detached_reference[1] - detached_reference[2], valid
+                )
+            )
+        compatibility_loss = torch.stack(compatibility_losses).mean()
+
+        identities = state["identity"]
+        count = correct_descriptor.shape[0]
+        same_identity = identities[:, None].eq(identities[None, :])
+        same_identity.fill_diagonal_(False)
+        positive_count = same_identity.sum(dim=1)
+        positive_prototype = torch.matmul(
+            same_identity.to(correct_descriptor.dtype), correct_descriptor
+        )
+        positive_prototype = positive_prototype / positive_count.clamp_min(1)[:, None]
+        positive_prototype = positive_prototype.detach()
+        sample_valid = state["donor_eligible"] & (positive_count > 0)
+        sample_valid = sample_valid & state["ownership_valid"].any(dim=1)
+        correct_utility = F.cosine_similarity(
+            correct_descriptor.float(), positive_prototype.float(), dim=-1
+        )
+        cur_component_losses = {}
+        reference_utility = {}
+        for name in self.reference_arm_names:
+            value = F.cosine_similarity(
+                state["reference_descriptors"][name].float(),
+                positive_prototype.float(),
+                dim=-1,
+            ).detach()
+            reference_utility[name] = value
+            cur_component_losses[name] = self._masked_mean(
+                F.relu(self.utility_margin + value - correct_utility),
+                sample_valid,
+            )
+        cur_loss = torch.stack(list(cur_component_losses.values())).mean()
+
+        state["compatibility_loss"] = compatibility_loss
+        state["cur_loss"] = cur_loss
+        state["cur_component_losses"] = cur_component_losses
+        state["compatibility_means"] = {
+            name: torch.stack(values).mean()
+            for name, values in compatibility_values.items()
+        }
+        state["compatibility_diagnostic_gaps"] = {
+            "wrong_minus_generic": torch.stack(wrong_generic_gaps).mean(),
+            "generic_minus_null": torch.stack(generic_null_gaps).mean(),
+        }
+        state["correct_utility_mean"] = self._masked_mean(
+            correct_utility.detach(), sample_valid
+        )
+        state["reference_utility_means"] = {
+            name: self._masked_mean(value, sample_valid)
+            for name, value in reference_utility.items()
+        }
+        coefficients = torch.cat(
+            [
+                branch["coefficients"].detach().float().reshape(
+                    -1, branch["coefficients"].shape[-1]
+                )
+                for branch in state["router_branches"]
+            ],
+            dim=0,
+        )
+        state["coefficient_std"] = coefficients.std(unbiased=False)
+        rank_mass = coefficients.abs().mean(dim=0)
+        rank_probability = rank_mass / rank_mass.sum().clamp_min(1e-12)
+        rank_entropy = -(
+            rank_probability
+            * rank_probability.clamp_min(1e-12).log()
+        ).sum()
+        state["coefficient_effective_rank"] = rank_entropy.exp()
+        state["semantic_loss"] = torch.stack(
+            [
+                state["region_mask_loss"],
+                state["presence_loss"],
+                state["evidence_cos_loss"],
+                state["evidence_relation_loss"],
+                compatibility_loss,
+                cur_loss,
+            ]
+        ).mean()
+        state["pose_loss"] = (
+            state["heatmap_loss"]
+            + state["confidence_loss"]
+            + state["semantic_loss"]
+        )
+        state["counterfactual_finalized"] = True
 
 
 class CleanTapfHt0(CleanTapfD0):

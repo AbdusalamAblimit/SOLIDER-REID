@@ -49,3 +49,13 @@ source CPU contract；未通过前不启动4090。
 改变standalone的26项结果、final retrieval门或ELO结构，只消除一个无梯度伪目标。
 
 判断：允许继续生产实现；GPU仍为`NO-START`。
+
+## 2026-07-20 生产 CPU/source 门
+
+按用户要求不再扩张重复 CPU 矩阵，只执行一次必要生产合同。结果`34/34 PASS`：默认关闭时 D0/C0相对
+实现前commit=`0722176`的state、初始化RNG与输出逐tensor exact；ELO无slot expert、六组linear无bias、
+NULL exact identity；mini-Swin三个Stage-3 reference完整no-grad重放，correct输出和全局RNG相对correct-only
+exact；student evidence与12组共享生产参数梯度均finite/nonzero；strict reload、optimizer覆盖、teacher/generic-
+free state和generic资产SHA/metadata正反校验全部通过。CUDA未初始化。
+
+result=`production_cpu_result.json`，当前判定：`PRODUCTION CPU PASS / FRESH ASSET + CUDA PREFLIGHT GO / FORMAL NO-START`。
