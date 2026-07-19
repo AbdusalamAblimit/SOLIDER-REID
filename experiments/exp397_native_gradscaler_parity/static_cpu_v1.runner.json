@@ -1,0 +1,129 @@
+{
+  "checkpoint_count": 0,
+  "cuda_initialized_after": false,
+  "cuda_initialized_before": false,
+  "cuda_script_sha256": "4ad2c40a8d679e8dd52619d9216016aaecdc0fd6530d7ca679e0bb16b7cfa9ba",
+  "extra_skip_evaluation": {
+    "d0_first_success": 2,
+    "d0_successful_updates": 11,
+    "gates": {
+      "after_first_success_all_finite": true,
+      "first_success_matched_and_early": false,
+      "handoff_all_success_and_finite": true,
+      "matched_scale_skip_trajectory": false,
+      "minimum_successful_updates": true,
+      "native_step_semantics_exact": true,
+      "rich_specific_groups_always_finite": true,
+      "row_counts_exact": true
+    },
+    "rich_first_success": 3,
+    "rich_successful_updates": 10,
+    "status": "FAIL"
+  },
+  "gates": {
+    "attempts_and_schedule_exact": true,
+    "cuda_never_initialized": true,
+    "formal_training_not_authorized": true,
+    "fresh_default_scaler_only": true,
+    "handoff_failure_fails": true,
+    "late_success_fails": true,
+    "matched_rng_states_present": true,
+    "matched_synthetic_pass": true,
+    "minimum_success_threshold_exact": true,
+    "native_step_and_update_once_in_loop": true,
+    "no_checkpoint_load_or_save": true,
+    "no_scheduler_step": true,
+    "reporter_dependency_sha_exact": true,
+    "rich_extra_skip_fails": true,
+    "rich_specific_group_count_exact": true,
+    "rich_specific_nonfinite_fails": true,
+    "sealed_boundaries_present": true,
+    "single_materialized_loader_for_both_arms": true,
+    "source_commit_exists": true,
+    "source_sha_exact": true,
+    "unscale_and_report_before_step": true
+  },
+  "git_head": "d5fede40576a625a879d776a88160bbb495ab1fd",
+  "handoff_failure_evaluation": {
+    "d0_first_success": 2,
+    "d0_successful_updates": 10,
+    "gates": {
+      "after_first_success_all_finite": false,
+      "first_success_matched_and_early": true,
+      "handoff_all_success_and_finite": false,
+      "matched_scale_skip_trajectory": true,
+      "minimum_successful_updates": true,
+      "native_step_semantics_exact": true,
+      "rich_specific_groups_always_finite": true,
+      "row_counts_exact": true
+    },
+    "rich_first_success": 2,
+    "rich_successful_updates": 10,
+    "status": "FAIL"
+  },
+  "late_success_evaluation": {
+    "d0_first_success": 5,
+    "d0_successful_updates": 8,
+    "gates": {
+      "after_first_success_all_finite": true,
+      "first_success_matched_and_early": false,
+      "handoff_all_success_and_finite": true,
+      "matched_scale_skip_trajectory": true,
+      "minimum_successful_updates": false,
+      "native_step_semantics_exact": true,
+      "rich_specific_groups_always_finite": true,
+      "row_counts_exact": true
+    },
+    "rich_first_success": 5,
+    "rich_successful_updates": 8,
+    "status": "FAIL"
+  },
+  "matched_evaluation": {
+    "d0_first_success": 2,
+    "d0_successful_updates": 11,
+    "gates": {
+      "after_first_success_all_finite": true,
+      "first_success_matched_and_early": true,
+      "handoff_all_success_and_finite": true,
+      "matched_scale_skip_trajectory": true,
+      "minimum_successful_updates": true,
+      "native_step_semantics_exact": true,
+      "rich_specific_groups_always_finite": true,
+      "row_counts_exact": true
+    },
+    "rich_first_success": 2,
+    "rich_successful_updates": 11,
+    "status": "PASS"
+  },
+  "reporter_dependency_sha256": "6e8b2b67efcda7cfaca8527fb0ae1dd4c6aedcebef3fec6ded2e5ba6ddab8164",
+  "rich_specific_failure_evaluation": {
+    "d0_first_success": 2,
+    "d0_successful_updates": 11,
+    "gates": {
+      "after_first_success_all_finite": true,
+      "first_success_matched_and_early": true,
+      "handoff_all_success_and_finite": true,
+      "matched_scale_skip_trajectory": true,
+      "minimum_successful_updates": true,
+      "native_step_semantics_exact": true,
+      "rich_specific_groups_always_finite": false,
+      "row_counts_exact": true
+    },
+    "rich_first_success": 2,
+    "rich_successful_updates": 11,
+    "status": "FAIL"
+  },
+  "source_sha256": {
+    "config/defaults.py": "a13e5f6df0e8c770c254c115d6d55208baac7938cffbec6f208ba9caa24dd7c5",
+    "configs/occluded_duke/swin_tiny_tapf_d0.yml": "510f52604cbb455a6f61139d266705c3292e1bb431b2f603e5e750f56edd2c8b",
+    "configs/occluded_duke/swin_tiny_tapf_rich_budget_c0.yml": "e0413a497976ad6dbf4c74cf13b55c86c169d659bab6d967455e87c592e47f4e",
+    "datasets/pose_dataset.py": "d04e74908d18eaf8105f9b85c66287cac6980ddf5ffe8132e855c7d5a9f61bbc",
+    "model/backbones/swin_transformer.py": "b389b7243e204d851ed365c986c8c4077d7fa86ce79e6cbb0be6fc4a1ba58eef",
+    "model/clip_semantic_teacher.py": "c648fa768b178d153258c46eee69679cbc0b90a11db918800323ab5c5c6054d5",
+    "model/make_model.py": "6bc7d9c83a2f4d12b78dd2c09335d366ce568107ddce5dded3abfe7ca8538f03",
+    "model/tapf.py": "95c5d0ff80bf9e4529589a5f31819e7aad5db644b88e2a33d6af07c9ffc42886",
+    "processor/processor.py": "be1c19ea5af19534e3855eb2a5914e0dc9a5643c63a39cfa508c81f89660eac1"
+  },
+  "static_script_sha256": "99ad9a0d34db4bcbc0816ecd05c62d361322f47d214bca21c9927f92738269dd",
+  "status": "PASS"
+}

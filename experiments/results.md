@@ -2488,3 +2488,17 @@ scratch=`0`。script/result/runner/manifest SHA256=
 **最终判定**：`CUDA_ATTRIBUTION_SEALED_PASS / SHARED_D0_OR_RUNTIME_NONFINITE`。exp394仍按原绝对
 首步finite门保持FAIL，但该现象不能再称为rich-specific；matched clean D0也以相同方式失败。下一步只
 授权新的matched native GradScaler dynamics门，正式训练仍`NO-START`。
+
+## exp397 matched native GradScaler static/CPU门（2026-07-19）
+
+新门冻结同一12个official batch的D0/rich原生动态scale轨迹：e1六步→e6六步、default initial scale、
+每attempt一次`step/update`，不手调scale、不补step。连续两遍21/21 static PASS且逐字节一致；matched
+synthetic通过，extra skip/late success/handoff/rich-specific non-finite四类反例均正确失败，CUDA未
+初始化。
+
+implementation/static/result SHA256=
+`4ad2c40a8d679e8dd52619d9216016aaecdc0fd6530d7ca679e0bb16b7cfa9ba`/
+`99ad9a0d34db4bcbc0816ecd05c62d361322f47d214bca21c9927f92738269dd`/
+`82d52315d1472e996fc50f330d332853c2e025ecf1c333651aca6cd7385f06eb`。
+
+**当前判定**：`STATIC_CPU_SEALED_PASS / CUDA NATIVE-PARITY FRESH-EXECUTION GO / FORMAL NO-START`。

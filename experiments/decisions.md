@@ -5332,3 +5332,11 @@ exp394仍满足自身预注册FAIL，不能事后改判；但其绝对首步fini
 canonical GradScaler自然执行skip/`update()`，串行比较D0与rich的scale、skip、首个/累计成功update、
 finite和state轨迹。只有rich不劣于D0且rich-specific parameter在成功update中有限，才可重新讨论正式
 production preflight；当前formal训练仍`NO-START`。
+
+### [2026-07-19] 决策：exp397 native GradScaler static通过，直接执行matched actual
+
+static连续两遍21/21 PASS，确认default scaler未覆写、12步e1→e6 schedule、单一batch序列与matched
+RNG进入脚本，且四类关键负反例都会阻断。该门允许native skip/update，但禁止手工scale和checkpoint。
+
+**决策**：`STATIC_CPU_SEALED_PASS / CUDA NATIVE-PARITY FRESH-EXECUTION GO`。按持续授权直接建立fresh
+execution/assets并执行唯一actual；PASS也只授权下一production preflight设计，不直接启动e120。
