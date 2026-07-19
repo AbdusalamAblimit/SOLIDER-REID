@@ -225,3 +225,32 @@ consumer反事实、strict reload、RGB-only、teacher/state/asset/hook隔离和
 裁决=`CUDA_PREFLIGHT_IMPLEMENTATION_STATIC_PASS / ONE EXACT CUDA PREFLIGHT GO / FORMAL NO-START`。
 下一步只能从implementation commit建立fresh execution repo并执行这一次冻结preflight；不得启动e120、
 semantic multi-stage或任何并行GPU任务。
+
+## 2026-07-19 fresh execution repo与runtime入口归因
+
+远端fresh sparse execution repo已建立为
+`/home/afr/SOLIDER-REID-exp394-rich-budget-c0-11d7a35`，detached HEAD exact=
+`11d7a35788c4645c355d96d76a2a4ff20a9801ac`、tracked clean；sparse只排除与执行无关且包含1.9 GB模型的
+`experiments/`目录，不改变commit/tree。六项production SHA与两个保护blob均和协议exact。首次直接传
+完整bundle因两条历史不共祖膨胀到1.7 GB，发现后终止未完成传输并保留`.partial.failed`归因；随后用
+commit/tree pack、runtime blob pack与sparse checkout得到相同exact HEAD，没有修改source。
+
+首次CUDA入口误用`/home/afr/reid-clean/.venv`，在model/optimizer构建后、teacher import时因
+`ModuleNotFoundError: open_clip`退出，成功optimizer update=`0/24`，未读取actual batch、未产生
+checkpoint，GPU恢复`2 MiB/0%`。失败script/result/runner SHA256=
+`bae2210bc606048371b4750f85919595c0b8fdbd1e11681abac59fe9727ea4f0`/
+`7bf30f836c063c37035c51f44156daf407ed62cc3c9765fd6cb383ca488006af`/
+`a61677899013df3cb4822a33f262e328dc0afce7e6d16e3dae6cafc1f4e6b898`。该FAIL只关闭缺OpenCLIP的
+runtime入口，不修改script/source/rho/loss/batch/门槛。
+
+只读环境审计确认Phase0E runtime有OpenCLIP但缺OpenCV，clean ReID runtime有OpenCV但缺OpenCLIP；
+禁止用`PYTHONPATH`混合二者。于是建立独立canonical实体runtime=
+`/home/afr/reid-clean/runtimes/exp394-openclip-reid-py310`：复制clean ReID环境后只安装公开精确版本
+`open-clip-torch==3.3.0`，没有指回旧环境的symlink。CPU-only依赖与repo import PASS，版本
+Torch/OpenCLIP/OpenCV/timm=`2.6.0+cu124/3.3.0/4.13.0/1.0.27`；完整freeze SHA256=
+`3d38c99c7f06502d8b40467d2674c966723e5c913d2edf962c5a7088ec60cddb`。构建与import全程GPU=
+`2 MiB/0%`且无compute PID。
+
+裁决=`WRONG-RUNTIME-ENTRY SEALED-FAIL / CANONICAL-RUNTIME STATIC-PASS / ACTUAL 24-STEP
+PREFLIGHT STILL NO-START / ONE EXACT ACTUAL PREFLIGHT GO / FORMAL NO-START`。只有因为成功更新exact 0，
+才允许同一冻结script从step 0进入实际24-step门；实际更新开始后不得重跑或补步。

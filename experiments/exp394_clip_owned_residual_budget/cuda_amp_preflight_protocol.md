@@ -24,6 +24,19 @@
   口径一致；禁止旧runtime、旧pose/cache/path mapping；
 - 4090启动前必须`2 MiB/0%`且无compute PID；全程只允许该单一preflight进程及其8个DataLoader worker。
 
+## 冻结CUDA runtime
+
+- 初始误用`/home/afr/reid-clean/.venv`在任何optimizer step前因缺`open_clip`退出；该FAIL只关闭该
+  runtime入口，result/runner必须保留，不得向原环境补包；
+- 唯一production runtime固定为
+  `/home/afr/reid-clean/runtimes/exp394-openclip-reid-py310`：以clean ReID runtime的新实体副本为基础，
+  只安装公开精确版本`open-clip-torch==3.3.0`，禁止`PYTHONPATH`拼接、旧runtime、symlink回链或现场再装包；
+- 完整freeze为`cuda_runtime.freeze.txt`，SHA256=
+  `3d38c99c7f06502d8b40467d2674c966723e5c913d2edf962c5a7088ec60cddb`；CPU-only import必须同时确认
+  Torch/OpenCLIP/OpenCV/timm=`2.6.0+cu124/3.3.0/4.13.0/1.0.27`及production repo import PASS；
+- 因初始入口完成的成功更新数exact 0，冻结24-step actual-batch preflight尚未开始，允许从step 0用上述
+  canonical runtime执行一次；该边界不允许在实际更新开始后重跑或补第25步。
+
 ## 冻结样本与步数
 
 使用official Occluded-Duke train loader、seed1234、batch64、原sampler与增强。只从fresh iterator读取
