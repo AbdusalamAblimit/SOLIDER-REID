@@ -57,3 +57,15 @@ FORMAL RUNNING`
   Reliability=`1.000`，rho=`0`，BudgetAbs=`0`；
 - e2自然完成，time=`127.106 s`；已进入e3 Iter40，Loss=`8.238`，所有记录finite；
 - 当前判断=`继续`；原因：进程、数值、schedule与零checkpoint边界全部正常，中间结果不裁决。
+
+## 2026-07-19 e9完成 / e10进行中
+
+- exact HEAD/config/source tracked clean；main PID=`404782`、8 workers，唯一GPU process，约
+  `8,492 MiB`，checkpoint=`0`；异常与AMP数值warning扫描均=`0`；
+- e9 Iter200 Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Exec=
+  `5.797/1.328/0.523/0.531/0.530/0.995/0.297/0.259`，Student=`0.80`，Reliability=`0.998`，
+  rho=`0.064604360`，BudgetAbs=`3.669e-02`；e9自然完成；
+- 已进入e10 Iter60，Student=`1.00`，rho达到冻结上限`0.080755450`，BudgetAbs=`5.618e-02`；
+  Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Exec=
+  `5.816/1.303/0.515/0.518/0.510/0.991/0.294/0.262`，全部finite；
+- e10完整eval尚未发生；当前判断=`继续`，中间训练值不裁决。
