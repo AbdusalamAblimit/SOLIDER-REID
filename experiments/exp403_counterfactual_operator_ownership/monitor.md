@@ -112,3 +112,13 @@ GPU唯一任务，fatal/AMP数值warning=`0/0`，checkpoint=`0`。判断：继�
 RNGExact=`1`，Student=`0.80`，Reliability=`0.999`，rho=`0.064604360`，BudgetAbs=`3.232e-04`，finite。
 remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
 warning=`0/0`，checkpoint=`0`。e10正式eval尚未产生；继续自然运行，不按训练期compatibility作科学裁决。
+
+## 2026-07-20 formal heartbeat：e10 eval / e16
+
+首个完整正式评测e10 mAP/R1/R5/R10=`34.4/44.0/60.2/67.0`，仅记录、不裁决。当前e16 Iter140：
+Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
+`3.305/1.002/0.371/0.393/0.354/0.993/0.338/0.100/0.050`；Compat C/W/G/N=
+`0.7302/0.7305/-0.1047/-1.0000`，eligible=`0.984`，CoeffStd=`1.522e-01`，EffRank=`15.565`，
+RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`5.681e-04`，finite。
+remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
+warning=`0/0`，checkpoint=`0`。判断：继续自然运行，不按e10或训练期compatibility早停。
