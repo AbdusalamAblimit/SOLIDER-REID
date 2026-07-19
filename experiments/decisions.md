@@ -5350,3 +5350,11 @@ actual中D0/rich轨迹完全一致且rich-specific组始终finite，但两臂均
 **决策**：保持`CUDA NATIVE-PARITY SEALED-FAIL / FORMAL NO-START`，禁止放宽exp397或重跑。matched
 结果只允许把解释限制为shared backbone/default-scale适应，而不允许宣称rich已通过；下一步必须新编号
 预注册production-shaped、baseline-relative门，不能修改initial scale、loss、batch或复活exp394–397。
+
+### [2026-07-19] 决策：exp398 static通过，执行更长baseline-relative actual
+
+exp398不放宽exp397门，而冻结了不同问题：e1/e6各16步的最后8步必须连续稳态，rich不得相对D0新增
+skip/non-finite，并且11个rich组必须在e6真实更新。static连续两遍24/24 PASS且正反例裁决exact。
+
+**决策**：`STATIC_CPU_SEALED_PASS / CUDA BASELINE-RELATIVE FRESH-EXECUTION GO`。直接建立fresh repo/
+assets执行唯一actual；PASS只授权新编号final production preflight，不直接授权e120。

@@ -2519,3 +2519,17 @@ assets、common init、RNG、teacher/codebook、scratch与checkpoint终审均PAS
 
 **最终判定**：`CUDA NATIVE-PARITY SEALED-FAIL / NATIVE_GRADSCALER_PARITY_FAIL / FORMAL NO-START`。
 该FAIL不能改判或补跑；它只否定exp397的绝对生产力门，不能归因于rich-specific图。
+
+## exp398 baseline-relative AMP稳态static/CPU门（2026-07-19）
+
+新门固定32步、e1/e6各16步与每阶段最后8步连续稳态，保持default GradScaler、batch64、loss和source
+不变；rich不得在D0成功处extra skip，non-finite只能是同attempt D0 shared group，11个rich-specific组
+还必须在e6有非零梯度和state变化。
+
+连续两遍24/24 static PASS且逐字节一致；matched shared warm-up与rich-better正例PASS，extra skip、
+persistent tail、rich-only non-finite与inactive组反例均正确FAIL。implementation/static/result SHA=
+`8bc599e94264eb3fb89b3cdc94810c483f4c4a037ebe86311c30a741011aeac9`/
+`b137fadaf0463ae51eb2e552945cf87923a2c788582dbf0a4aaf00e296829414`/
+`d7efa6894411f7b7433c8819422e14c2495110484544d86b9b21083d0bb24317`。
+
+**当前判定**：`STATIC_CPU_SEALED_PASS / CUDA BASELINE-RELATIVE FRESH-EXECUTION GO / FORMAL NO-START`。
