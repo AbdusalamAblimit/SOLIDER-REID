@@ -259,3 +259,18 @@ checkpoint数=`0`。状态保持`FORMAL RUNNING`，禁止修改、重启、续�
 `7.497/1.582/0.679/0.674/0.671/0.693`，Acc=`0.216`，Reliability=`0.507`；e5 Iter 100的
 `GateAbs=3.088e-09`。GateAbs相对e2–e3的`1e-14–1e-11`继续缓慢增大，只记录为ReZero轨迹，
 不作中间裁决。exact HEAD/config、main+8 workers、唯一GPU任务保持不变，严格异常=`0`、checkpoint=`0`。
+
+## 2026-07-19 Phase A RZ-C0首次e10评测
+
+e10自然完成后的首次正式评测为mAP/R1/R5/R10=`33.8/43.6/59.6/65.5`。该值只作为冻结recipe的
+轨迹记录，不与final门槛比较，也不授权按中间性能修改、重启或早停。评测后训练自然继续，heartbeat
+复核时已完成e13并进入e14。
+
+handoff后`Student=1.00`；e11–e13的`GateAbs`已稳定进入约`1.9e-07–3.6e-07`，相对e4–e5的
+`1e-09`量级继续打开，说明当前route不再数值冻结，但是否形成有意义的retrieval贡献仍只能由e120
+full与all-router-bypass终审决定。e13 Iter 200的Loss/Pose/Semantic/RegionMask/Presence/Q=
+`4.162/1.230/0.523/0.457/0.418/0.693`，Acc=`0.431`，Reliability=`0.504`，GateAbs=
+`1.871e-07`。
+
+execution HEAD/config/tracked保持exact，main PID=`888440`及8 workers唯一；4090仅该main占用
+`8,254 MiB`，严格异常=`0`，e120前checkpoint=`0`。状态保持`FORMAL RUNNING`。
