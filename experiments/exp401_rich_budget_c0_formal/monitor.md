@@ -117,3 +117,16 @@ FORMAL RUNNING`
 - exact HEAD/config/source tracked及all status clean；main PID=`404782`、8 workers、唯一GPU process，约
   `8,642 MiB`；checkpoint=`0`，异常与AMP数值warning扫描均=`0`；
 - 当前判断=`继续`；原因：e40评测完整，训练、数值及所有冻结执行边界正常，中间性能不用于裁决。
+
+## 2026-07-19 e50评测 / e52进行中
+
+- e50完整评测mAP/R1/R5/R10=`53.5/65.0/77.7/83.1`，只记录不裁决；
+- e50 Iter200 Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Exec=
+  `0.265/0.808/0.343/0.173/0.055/0.981/0.279/0.228`，Acc=`0.991`，Student=`1.00`，
+  Reliability=`1.000`，rho=`0.080755450`，BudgetAbs=`1.165e-02`，全部finite；e50自然完成；
+- e51自然完成并已进入e52 Iter40；当前Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Exec=
+  `0.294/0.804/0.342/0.172/0.056/0.980/0.277/0.225`，Student=`1.00`，
+  Reliability=`1.000`，rho保持冻结上限，BudgetAbs=`1.154e-02`；
+- exact HEAD/config/source tracked及all status clean；main PID=`404782`、8 workers、唯一GPU process，约
+  `8,608 MiB`；checkpoint=`0`，异常与AMP数值warning扫描均=`0`；
+- 当前判断=`继续`；原因：e50评测完整，训练、数值及冻结执行边界正常，中间性能不用于裁决。
