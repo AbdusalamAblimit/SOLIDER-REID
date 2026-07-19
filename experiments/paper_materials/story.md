@@ -2052,3 +2052,15 @@ auxiliary已被定位”。
 覆盖真实参数规模。optimizer update与checkpoint均为0，不存在训练或检索结果。若继续，只能由独立
 exp396先证明大张量reporter可执行，再在zero-update门内获得实际支持矩阵；任何后续机制结论仍需另立
 实验，不能把诊断器工程修正当成方法贡献。
+
+## 2026-07-19：exp396排除了“rich auxiliary导致首步AMP失败”的叙事
+
+chunk-safe reporter完成了matched D0与rich的全矩阵。两者ReID loss相同，且`reid/total`只在backbone
+出现完全相同的368 NaN、3,753 `+Inf`和4,183 `-Inf`；D0 pose与rich的mask、presence、evidence、
+两个exec consumer及pose全部finite。这把exp394的宽泛失败收紧为shared ReID backbone现象，而不是
+CLIP teacher或rich route新增梯度的特有失败。
+
+论文仍不能写“production已经可训练”：exp394按原门确实FAIL，exp396也没有optimizer update或检索
+结果。但故事中的负结论需要修正为“绝对首步finite门未经D0校准”。下一证据必须让D0与rich都使用
+canonical GradScaler默认初值和自然skip/update，比较动态scale轨迹；不能手工降scale，也不能把D0同样
+发生的overflow包装成rich方法缺陷。正面方法边界仍停留在exp390 mAP-only弱GO。

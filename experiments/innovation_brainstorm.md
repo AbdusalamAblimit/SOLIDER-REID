@@ -3743,3 +3743,15 @@ percentile算法写进先验契约。否则“完整梯度矩阵”仍可能只�
 必须采用可证明与线性插值定义一致的chunk-safe exact selection/sort方案，并在小张量上逐字节对齐
 `torch.quantile`、在超过原限制的synthetic规模上完成。即使exp396最终得到矩阵，这仍是诊断基础设施，
 不能包装成CLIP–TAPF贡献；方法主张仍需后续AMP-stable机制与retrieval反事实支持。
+
+### exp396把“AMP-stable”从绝对首步finite改成matched baseline-relative轨迹
+
+完整矩阵显示D0与rich的ReID loss、backbone non-finite支持和NaN/±Inf计数逐项相同，而所有rich
+auxiliary均finite。这意味着exp394的首步失败不是CLIP-owned mediator新增损失特有的数值问题；更可能
+是default GradScaler初始scale下shared ReID backbone的正常overflow候选。GradScaler本来就通过skip与
+动态降scale处理这种事件，因此“第一步必须绝对finite”不是一个经过D0校准的可训练性定义。
+
+下一门的创新价值不在调小scale，而在把数值可执行性重新定义为matched dynamics：D0与rich从同一默认
+scale出发，记录自然skip/update与scale轨迹，要求rich不增加skip、不延迟首个成功update，并证明
+rich-specific head/router在成功step中finite。若两者轨迹相同，exp394只能说明旧门设计过严；若rich
+后续额外失败，才能把问题重新归到production graph。这个定义仍是机制开发纪律，不是论文贡献本身。

@@ -2467,3 +2467,24 @@ implementation/static/result SHA256=
 
 **当前判定**：`PHASE0Q_STATIC_CPU_SEALED_PASS / CUDA ATTRIBUTION FRESH-EXECUTION GO / FORMAL
 NO-START`。尚无actual gradient归因结果。
+
+### exp396 CUDA actual：完整矩阵定位到shared ReID backbone
+
+唯一actual完整执行D0 5行、rich 11行、15组scaled/unscaled，status=`PASS`，所有state/RNG/teacher/
+asset/scratch/zero-update gate通过。预注册outcome=`SHARED_D0_OR_RUNTIME_NONFINITE`。
+
+D0与rich的`reid` scalar均为`20.846956253051758`。两arm的`reid/total`只在backbone非有限，每格
+NaN/`+Inf`/`-Inf`=`368/3,753/4,183`，scaled与unscaled一致；其余D0 pose项及rich mask/presence/
+evidence/两个exec consumer/pose全部finite。D0与rich的non-finite支持、计数和finite range完全相同，
+且common initial state 211 tensors exact。
+
+内部矩阵耗时=`7.281521141529083 s`，peak memory=`7,631,537,152 bytes`；update=`0`、checkpoint=`0`、
+scratch=`0`。script/result/runner/manifest SHA256=
+`6e8b2b67efcda7cfaca8527fb0ae1dd4c6aedcebef3fec6ded2e5ba6ddab8164`/
+`58ae4beb56c9dabbff7fd77202d87b53f3ccecc9edec725051f04ed3c60ed96c`/
+`58ae4beb56c9dabbff7fd77202d87b53f3ccecc9edec725051f04ed3c60ed96c`/
+`3a0ef5d98dd6387b330958bbfb1e9d893e60745e8857237bbbbe375778886c64`。
+
+**最终判定**：`CUDA_ATTRIBUTION_SEALED_PASS / SHARED_D0_OR_RUNTIME_NONFINITE`。exp394仍按原绝对
+首步finite门保持FAIL，但该现象不能再称为rich-specific；matched clean D0也以相同方式失败。下一步只
+授权新的matched native GradScaler dynamics门，正式训练仍`NO-START`。

@@ -3,7 +3,8 @@
 ## 状态
 
 `DESIGN-FROZEN / PROTOCOL-FROZEN / PHASE 0Q STATIC-CPU SEALED-PASS /
-CUDA ATTRIBUTION FRESH-EXECUTION GO / FORMAL NO-START`
+CUDA ATTRIBUTION SEALED-PASS / SHARED_D0_OR_RUNTIME_NONFINITE /
+FORMAL NO-START`
 
 ## 2026-07-19 接手
 
@@ -55,3 +56,35 @@ heartbeat，提交后直接推进fresh actual；formal训练继续`NO-START`。
 
 该复核不读取official batch、不占用4090，只排除exp395曾出现的目标runtime大输入统计限制；CUDA
 actual GO不变。
+
+## 2026-07-19 唯一CUDA attribution actual
+
+- fresh execution repo=`/home/afr/SOLIDER-REID-exp396-amp-attribution-fresh-11d7a35`，HEAD=
+  `11d7a35788c4645c355d96d76a2a4ff20a9801ac`且tracked clean；
+- exp396 regular CLIP/codebook、runtime freeze、九个source/config保护SHA全部exact；启动前GPU=
+  `2 MiB/0%`且无compute process；
+- D0 5行、rich 11行、15组scaled/unscaled全部完成，status=`PASS`，outcome=
+  `SHARED_D0_OR_RUNTIME_NONFINITE`；
+- D0/rich `reid` loss exact同为`20.846956253051758`；两arm的`reid/total`仅backbone非有限，
+  每格NaN/`+Inf`/`-Inf`=`368/3,753/4,183`，scaled/unscaled完全一致；
+- D0 heatmap/confidence/pose全部finite；rich八个individual auxiliary与pose全部finite；
+- 13项validity、D0 7项arm gate、rich 7项arm gate全部PASS；common init 211 tensors exact；
+- D0 model/optimizer SHA before=after=
+  `1f694e42cafedde703c931543bf239f8200de0a4436456fd1a42ee322279cf51`/
+  `a91eb03815698cc7c2140665bb044ebe067e036552228f531fe43e71506ab76e`；
+- rich model/optimizer SHA before=after=
+  `7fc704cd5242ba191db8be68ecb9baaaca9998ff21ed6dea1990599b724554f5`/
+  `43850cc40c353f7cdd4caf64985ddd7579f01c058c810bc322fba2a4d570160a`；
+- teacher/codebook/RNG before=after exact；valid slots=`320`；scratch=`0`、optimizer/scaler update=`0`、
+  checkpoint=`0`；
+- elapsed=`7.281521141529083 s`，peak memory=`7,631,537,152 bytes`；
+- result/runner/manifest SHA=
+  `58ae4beb56c9dabbff7fd77202d87b53f3ccecc9edec725051f04ed3c60ed96c`/
+  `58ae4beb56c9dabbff7fd77202d87b53f3ccecc9edec725051f04ed3c60ed96c`/
+  `3a0ef5d98dd6387b330958bbfb1e9d893e60745e8857237bbbbe375778886c64`；
+- 进程自然退出，4090恢复`2 MiB/0%`、compute process=`0`；exp394/395/396 execution均exact且tracked
+  clean；异常扫描仅包含矩阵内预期8个non-finite cell，无Traceback/RuntimeError/OOM/overflow/AMP warning。
+
+裁决：`CUDA_ATTRIBUTION_SEALED_PASS / SHARED_D0_OR_RUNTIME_NONFINITE`。不能称rich-specific，也不能
+定位backbone内单一parameter/op。下一步exp397改用matched D0 native GradScaler skip/scale trajectory门；
+formal训练继续`NO-START`。

@@ -5318,3 +5318,17 @@ CUDA从未初始化。
 **决策**：`PHASE0Q_STATIC_CPU_SEALED_PASS`。根据用户已记录的持续自主授权，完成显式提交后直接建立
 fresh exp396 execution与regular资产并执行唯一一次CUDA matrix，不再等待逐次确认。该GO只针对
 zero-update归因门；exp394/exp395继续sealed，formal训练仍`NO-START`。
+
+### [2026-07-19] 决策：exp396矩阵证明首步non-finite来自shared ReID backbone门
+
+完整D0/rich逐loss矩阵通过全部有效性审计。D0与rich `reid` loss、common初始state及backbone
+non-finite计数完全相同；`reid/total`之外的D0 pose和rich全部auxiliary均finite。证据足以排除rich
+teacher、evidence/exec loss或aggregate是该现象的必要条件，但十五组粒度不足以指定backbone内某个
+parameter或算子。
+
+**决策**：封板exp396为`CUDA_ATTRIBUTION_SEALED_PASS / SHARED_D0_OR_RUNTIME_NONFINITE`，不得重跑。
+exp394仍满足自身预注册FAIL，不能事后改判；但其绝对首步finite门被证明缺少matched D0校准，不能用于
+声称rich production额外不稳定。下一步另立exp397：保持default initial scale，不手工调scale，让
+canonical GradScaler自然执行skip/`update()`，串行比较D0与rich的scale、skip、首个/累计成功update、
+finite和state轨迹。只有rich不劣于D0且rich-specific parameter在成功update中有限，才可重新讨论正式
+production preflight；当前formal训练仍`NO-START`。

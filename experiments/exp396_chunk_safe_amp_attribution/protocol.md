@@ -3,7 +3,8 @@
 ## 状态
 
 `PROTOCOL-FROZEN / PHASE 0Q STATIC-CPU SEALED-PASS /
-CUDA ATTRIBUTION FRESH-EXECUTION GO / FORMAL NO-START`。
+CUDA ATTRIBUTION SEALED-PASS / SHARED_D0_OR_RUNTIME_NONFINITE /
+FORMAL NO-START`。
 
 ## 冻结上游
 
@@ -88,3 +89,18 @@ SHA256：
   `e5d68df7731042a98f440f43acc45c9cf11b70aa7df25e09397ff6375f355394`。
 
 该PASS只授权一次fresh exp396 CUDA归因，不授权训练或修改exp394/exp395。
+
+## CUDA actual结果与协议裁决
+
+actual完整满足本协议全部有效性门，result=`PASS`。D0与rich `reid/total`的唯一non-finite组均为
+`backbone`，NaN/±Inf计数、finite范围及scaled/unscaled支持逐项相同；所有pose/semantic/exec
+auxiliary行均finite。故按冻结规则裁决为`SHARED_D0_OR_RUNTIME_NONFINITE`，不得归因到rich teacher、
+evidence head、router或loss聚合。
+
+状态/隔离终审全部exact：D0/rich model与optimizer、teacher、codebook、RNG、source/assets、scratch、
+update和checkpoint门均PASS。result/runner逐字节相同，SHA=
+`58ae4beb56c9dabbff7fd77202d87b53f3ccecc9edec725051f04ed3c60ed96c`；manifest SHA=
+`3a0ef5d98dd6387b330958bbfb1e9d893e60745e8857237bbbbe375778886c64`。
+
+exp396至此封板，不得再次执行。后续新实验只能把D0作为matched数值基线，保持default initial scale并
+观察canonical GradScaler自身skip/update轨迹；不得手工降低initial scale来改写本结果。
