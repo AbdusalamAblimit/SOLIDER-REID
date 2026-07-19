@@ -2626,3 +2626,10 @@ static/config/result SHA=
 
 **当前判定**：`STATIC-CPU SEALED-PASS / FORMAL FRESH-EXECUTION GO`。直接启动唯一fresh seed1234 e120；
 中间eval只记录，e120 final full与all-router-bypass才裁决route alive。
+
+### exp401 formal启动
+
+fresh source/config/assets审计全PASS后，唯一seed1234 e120已启动。main PID=`404782`并有8个DataLoader
+workers，首批teacher evidence与e1 Iter20所有loss有限，rho/BudgetAbs按冻结schedule均为0，checkpoint=0。
+
+**当前判定**：`FORMAL RUNNING`。中间eval只记录，不裁决、不早停。

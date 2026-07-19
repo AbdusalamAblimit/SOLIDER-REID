@@ -3,7 +3,7 @@
 ## 当前状态
 
 `DESIGN-FROZEN / PROTOCOL-FROZEN / STATIC-CPU SEALED-PASS /
-FORMAL FRESH-EXECUTION GO`
+FORMAL RUNNING`
 
 ## 2026-07-19 接手
 
@@ -26,3 +26,24 @@ FORMAL FRESH-EXECUTION GO`
 
 裁决：`STATIC-CPU SEALED-PASS / FORMAL FRESH-EXECUTION GO`；直接建立fresh远端repo/assets/config并
 启动唯一e120，不等待确认。
+
+## 2026-07-19 formal启动
+
+- repo=`/home/afr/SOLIDER-REID-exp401-rich-budget-c0-formal-11d7a35`，exact HEAD=
+  `11d7a35788c4645c355d96d76a2a4ff20a9801ac`，tracked/all status clean、无alternate；
+- formal config SHA=`c2992bdf4321f906b19eb22dc7ec69a5678498ea0f93bf55a45a15a2e47cea84`；
+  source八项SHA exact；fresh CLIP/codebook均regular、非symlink、新inode且SHA exact；
+- output=`/home/afr/SOLIDER-REID-exp401-rich-budget-c0-formal-11d7a35/log/occluded_duke/exp401_clean_swin_tiny_rich_budget_c0_s1234`；
+  runner=`/home/afr/train-logs/exp401_rich_budget_c0_s1234.runner.log`；
+- main PID=`404782`，parent=`1`，8 workers；唯一GPU compute PID=`404782`；启动后约
+  `8,492 MiB`，无并行任务；
+- official数据统计train/query/gallery=`15,618/2,210/17,661`；Frozen rich teacher checkpoint/codebook
+  SHA在日志中exact；首批valid=`320`，evidence norm mean/min/max=`1/1/1`，basis orthogonal max-abs=
+  `2.554e-15`；
+- e1 Iter20 Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Exec=
+  `20.215/1.496/0.580/0.657/0.734/0.989/0.324/0.196`，Student=`0.00`，Reliability=`1.000`，
+  rho=`0`，BudgetAbs=`0`，finite；
+- 仅有已知PyTorch AMP API deprecation FutureWarning，无NaN/Inf/Traceback/RuntimeError/OOM/nonfinite；
+  checkpoint=`0`。
+
+当前裁决=`FORMAL RUNNING`；自然跑满e120，不按中间指标或GateAbs早停。
