@@ -341,3 +341,13 @@ e80自然完成后的评测为mAP/R1/R5/R10=`55.8/66.6/78.9/83.2`，四项均高
 e82–e84的`GateAbs`约`7.8e-08–8.9e-08`，保持finite、非零；Student=`1.00`，Q=`0.692`，
 Reliability=`0.512`。execution HEAD/config/tracked exact，main PID=`888440`与8 workers唯一，4090
 仅该main占用`8,254 MiB`；严格异常=`0`、e120前checkpoint=`0`，继续自然运行。
+
+## 2026-07-19 Phase A RZ-C0 e90评测
+
+e90自然完成后的评测为mAP/R1/R5/R10=`56.8/66.9/79.4/83.9`，四项均高于e80轨迹
+`55.8/66.6/78.9/83.2`；距离e120仍有30个epoch，不与封板final提前比较或裁决。复核时已自然
+完成e92并进入e93。
+
+e91–e93的`GateAbs`约`7.9e-08–8.5e-08`，保持finite、非零；Student=`1.00`，Q=`0.692`，
+Reliability=`0.512`。execution HEAD/config/tracked exact，main PID=`888440`与8 workers唯一，4090
+仅该main占用`8,254 MiB`；严格异常=`0`、e120前checkpoint=`0`，继续自然运行。
