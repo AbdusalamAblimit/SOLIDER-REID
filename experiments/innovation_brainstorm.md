@@ -3767,3 +3767,13 @@ relative hypothesis与一个未经canonical D0校准的绝对吞吐阈值绑在�
 exp397阈值降到刚好能过。必须保持default scaler自然backoff、同batch/RNG、rich-specific finite和
 零手工scale；再以更长的预注册窗口分别检验e1收敛、e6迁移和稳态连续更新。该诊断仍不是论文贡献，
 最终贡献门依然是formal checkpoint的retrieval与semantic counterfactual。
+
+### exp398再次暴露“synthetic row正确”不等于真实parameter容器正确
+
+exp398的轨迹裁决器在synthetic row上覆盖了extra skip、尾窗、shared subset和group inactive，但新增state
+hasher没有用真实reporter返回的`(name, parameter)`容器做contract，actual因此在首个forward前失败。
+这不是AMP或方法证据，却补充了诊断器纪律：涉及parameter ownership/state的工具必须对真实容器类型、
+顺序、重名和空组做exact测试，不能只对标量化的synthetic结果做AST审计。
+
+下一编号若修复，只能把这一点视为测量器必要条件；32步baseline-relative问题、rich production稳定性和
+论文贡献都仍未被回答。不能因为update为0就把失败解释成模型安全，也不能把reporter修复包装成方法创新。

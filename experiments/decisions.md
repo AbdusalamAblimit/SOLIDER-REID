@@ -5358,3 +5358,13 @@ skip/non-finite，并且11个rich组必须在e6真实更新。static连续两遍
 
 **决策**：`STATIC_CPU_SEALED_PASS / CUDA BASELINE-RELATIVE FRESH-EXECUTION GO`。直接建立fresh repo/
 assets执行唯一actual；PASS只授权新编号final production preflight，不直接授权e120。
+
+### [2026-07-19] 决策：exp398 reporter runtime INVALID，稳态问题仍未回答
+
+actual在任何forward/update前因named-parameter tuple未被state hasher支持而退出。static synthetic没有
+覆盖真实`parameter_groups()`容器形状，因此不能用24/24 static PASS替代actual，也不能从零轨迹推测
+rich稳定或不稳定。
+
+**决策**：exp398=`CUDA EXECUTION SEALED-INVALID`，禁止修补/重跑。下一步若继续必须新编号，仅修正
+state hasher对`(name, parameter)`的exact支持，并新增真实container CPU contract；scale/loss/batch与32步
+稳态公式保持不变。

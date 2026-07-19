@@ -2,8 +2,9 @@
 
 ## 当前状态
 
-`DESIGN-FROZEN / PROTOCOL-FROZEN / IMPLEMENTATION STATIC SEALED-PASS /
-STATIC-CPU SEALED-PASS / CUDA FRESH-EXECUTION GO / FORMAL NO-START`
+`DESIGN-FROZEN / PROTOCOL-FROZEN / STATIC-CPU SEALED-PASS /
+CUDA EXECUTION SEALED-INVALID / GROUP_STATE_REPORTER_RUNTIME_FAIL /
+FORMAL NO-START`
 
 ## 动机
 
@@ -76,3 +77,18 @@ implementation/static/result SHA256=
 `b137fadaf0463ae51eb2e552945cf87923a2c788582dbf0a4aaf00e296829414`/
 `d7efa6894411f7b7433c8819422e14c2495110484544d86b9b21083d0bb24317`；四份result/runner同SHA。
 裁决=`STATIC_CPU_SEALED_PASS / CUDA BASELINE-RELATIVE FRESH-EXECUTION GO`。
+
+## actual封板
+
+唯一fresh actual通过source/runtime/assets、official 32-batch materialize与teacher target前置阶段，但在
+D0 arm进入首个forward前，新增`parameter_group_state()`把reporter返回的`(name, parameter)`元组当成
+tensor调用`.detach()`，触发`AttributeError`。异常发生在任何backward/scaler.step之前，optimizer
+update=`0`、checkpoint=`0`、scratch=`0`；没有产生D0/rich轨迹，不能回答稳态假设。
+
+result/runner/manifest/stdout SHA=
+`71a943e6a233999549f69c1ece2ce1c2c3e507c69d9e99364272442d9b6ac998`/
+`71a943e6a233999549f69c1ece2ce1c2c3e507c69d9e99364272442d9b6ac998`/
+`b719b3acdec3746dae8f602fc526564a08047ae5ad1a9e2c3a3865a973c2b12e`/
+`745ca9f364324f091100eab01d76ccff8d1f44fa276fe554dbee079ef92ba43a`。裁决=
+`CUDA EXECUTION SEALED-INVALID / GROUP_STATE_REPORTER_RUNTIME_FAIL / FORMAL NO-START`；禁止修补或重跑
+exp398。

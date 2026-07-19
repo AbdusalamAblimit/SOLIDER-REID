@@ -2533,3 +2533,17 @@ persistent tail、rich-only non-finite与inactive组反例均正确FAIL。implem
 `d7efa6894411f7b7433c8819422e14c2495110484544d86b9b21083d0bb24317`。
 
 **当前判定**：`STATIC_CPU_SEALED_PASS / CUDA BASELINE-RELATIVE FRESH-EXECUTION GO / FORMAL NO-START`。
+
+### exp398 CUDA actual：group-state reporter运行时失效
+
+唯一fresh actual完成source/runtime/assets、32-batch与teacher target前置门，但D0首个forward前的
+initial group-state统计把`(name, parameter)`元组当tensor调用`.detach()`，触发`AttributeError`。没有
+backward、optimizer update或D0/rich轨迹；checkpoint=`0`、scratch=`0`，GPU已恢复空闲。
+
+result/runner/manifest SHA=
+`71a943e6a233999549f69c1ece2ce1c2c3e507c69d9e99364272442d9b6ac998`/
+`71a943e6a233999549f69c1ece2ce1c2c3e507c69d9e99364272442d9b6ac998`/
+`b719b3acdec3746dae8f602fc526564a08047ae5ad1a9e2c3a3865a973c2b12e`。
+
+**最终判定**：`CUDA EXECUTION SEALED-INVALID / GROUP_STATE_REPORTER_RUNTIME_FAIL / FORMAL NO-START`。
+它不回答baseline-relative AMP稳态，exp398不得修补或重跑。

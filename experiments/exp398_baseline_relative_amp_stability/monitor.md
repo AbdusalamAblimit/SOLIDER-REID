@@ -2,8 +2,9 @@
 
 ## 状态
 
-`DESIGN-FROZEN / PROTOCOL-FROZEN / IMPLEMENTATION STATIC SEALED-PASS /
-STATIC-CPU SEALED-PASS / CUDA FRESH-EXECUTION GO / FORMAL NO-START`
+`DESIGN-FROZEN / PROTOCOL-FROZEN / STATIC-CPU SEALED-PASS /
+CUDA EXECUTION SEALED-INVALID / GROUP_STATE_REPORTER_RUNTIME_FAIL /
+FORMAL NO-START`
 
 ## 2026-07-19 接手
 
@@ -28,3 +29,23 @@ STATIC-CPU SEALED-PASS / CUDA FRESH-EXECUTION GO / FORMAL NO-START`
 `d7efa6894411f7b7433c8819422e14c2495110484544d86b9b21083d0bb24317`。
 
 裁决：`STATIC_CPU_SEALED_PASS / CUDA BASELINE-RELATIVE FRESH-EXECUTION GO`；按持续授权直接推进actual。
+
+## 2026-07-19 唯一CUDA actual
+
+- fresh repo=`/home/afr/SOLIDER-REID-exp398-baseline-relative-fresh-11d7a35`，HEAD exact且tracked clean；
+- production/reporter/CLIP/codebook/runtime SHA exact，启动前GPU=`2 MiB/0%`；
+- official 32 batches与teacher targets完成前置物化；
+- D0 `run_dynamic_arm`在首个forward前计算initial group state时，parameter列表元素实际为
+  `(parameter_name, parameter)`，新增hasher直接调用tuple的`.detach()`而失败；
+- exception=`AttributeError: 'tuple' object has no attribute 'detach'`；没有backward、scaler.step或
+  optimizer update，checkpoint=`0`、scratch=`0`；
+- result/runner/manifest/stdout SHA=
+  `71a943e6a233999549f69c1ece2ce1c2c3e507c69d9e99364272442d9b6ac998`/
+  `71a943e6a233999549f69c1ece2ce1c2c3e507c69d9e99364272442d9b6ac998`/
+  `b719b3acdec3746dae8f602fc526564a08047ae5ad1a9e2c3a3865a973c2b12e`/
+  `745ca9f364324f091100eab01d76ccff8d1f44fa276fe554dbee079ef92ba43a`；
+- 进程自然退出，GPU恢复`2 MiB/0%`且无compute process。
+
+裁决：`CUDA EXECUTION SEALED-INVALID / GROUP_STATE_REPORTER_RUNTIME_FAIL / FORMAL NO-START`。这只否定
+exp398测量器的真实parameter container契约，不提供AMP稳态或rich相对D0证据。禁止修补/重跑；若继续
+只能另立新编号，并在static/CPU中加入named-parameter tuple exact测试。

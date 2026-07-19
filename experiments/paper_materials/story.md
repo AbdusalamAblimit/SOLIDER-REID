@@ -2075,3 +2075,12 @@ rich新增的11个参数组全程finite；因此不能再把首步overflow叙述
 开发问题进一步拆成shared backbone的default-scale适应与rich graph的相对稳定性。任何后续新门都必须
 在新编号下预注册更长production-shaped窗口，并最终回到正式检索反事实，而不是把阈值调整本身写成
 贡献。
+
+## 2026-07-19：exp398没有进入AMP稳态测试
+
+exp398在materialize数据和teacher target之后、首个D0 forward之前，因group-state reporter不支持真实
+`(name, parameter)`tuple而退出。没有backward、optimizer update或D0/rich轨迹，所以论文故事不能新增
+“更长窗口通过/失败”的任何结论。
+
+该结果只属于测量基础设施负证据：static synthetic必须覆盖真实parameter container。正面方法边界、
+exp397 SEALED-FAIL和formal NO-START均保持不变。

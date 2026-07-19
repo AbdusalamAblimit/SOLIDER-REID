@@ -2,8 +2,9 @@
 
 ## 状态
 
-`PROTOCOL-FROZEN / IMPLEMENTATION STATIC SEALED-PASS / STATIC-CPU SEALED-PASS /
-CUDA FRESH-EXECUTION GO / FORMAL NO-START`
+`PROTOCOL-FROZEN / STATIC-CPU SEALED-PASS /
+CUDA EXECUTION SEALED-INVALID / GROUP_STATE_REPORTER_RUNTIME_FAIL /
+FORMAL NO-START`
 
 ## 上游封板
 
@@ -77,3 +78,13 @@ PASS只授权另立final production preflight，不授权e120；FAIL只关闭当
 `b137fadaf0463ae51eb2e552945cf87923a2c788582dbf0a4aaf00e296829414`/
 `d7efa6894411f7b7433c8819422e14c2495110484544d86b9b21083d0bb24317`。该PASS只授权唯一fresh CUDA
 baseline-relative执行，formal训练仍`NO-START`。
+
+## actual封板记录
+
+唯一actual在首个arm forward前因group-state reporter错误解释named-parameter tuple而抛
+`AttributeError: 'tuple' object has no attribute 'detach'`。没有任何optimizer update、gradient matrix或
+稳态轨迹；result/runner/manifest SHA=
+`71a943e6a233999549f69c1ece2ce1c2c3e507c69d9e99364272442d9b6ac998`/
+`71a943e6a233999549f69c1ece2ce1c2c3e507c69d9e99364272442d9b6ac998`/
+`b719b3acdec3746dae8f602fc526564a08047ae5ad1a9e2c3a3865a973c2b12e`。exp398固定为
+`SEALED-INVALID`，不得修补或重跑。
