@@ -2036,3 +2036,7 @@ NaN/±Inf和动态范围的统计正确，但没有读取official batch或运行
 弱GO；Phase0E rich evidence、exp393 route FAIL、exp394 AMP FAIL组成机制开发证据链。只有未来独立
 actual归因门先给出可复核支持子图，再由新的AMP-stable机制通过训练与检索反事实，才可能把这条链升级
 为方法贡献。
+
+归因脚本的静态门现已通过，但它仍是“测量工具已就绪”，不是“AMP根因已找到”。论文正文不报告
+static gate为方法结果，也不据此恢复exp394训练。只有独立actual matrix在零更新条件下完成并通过
+state/RNG/asset终审，才允许把数值失败从宽泛production图进一步收紧；在那之前正面story完全不变。

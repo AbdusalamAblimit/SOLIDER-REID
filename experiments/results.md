@@ -2416,3 +2416,17 @@ script/result/runner SHA256=
 **当前判定**：`PHASE0S_STATIC_CPU_SEALED_PASS / CUDA NO-START / FORMAL NO-START`。它只证明归因器
 数学和静态seam可信，没有读取official batch/teacher资产，也没有给出任何实际AMP根因；exp394 sealed
 FAIL与semantic multi-stage NO-START边界均不变。
+
+### exp395 CUDA attribution implementation static
+
+零更新CUDA归因脚本现已实现但未执行。CPU-only AST contract连续两遍29/29 PASS，确认D0 5行、rich
+11行、15组、默认scale、scaled→unscale→unscaled顺序、fresh asset/runtime门与post-exit审计全部进入
+源码；同时不存在optimizer/scaler/scheduler step/update、checkpoint load或训练授权路径。
+
+implementation/static/result SHA256=
+`64840b710db587720aa8807571212b246af3eabb54306bd5aa1bbf692f5ea08b`/
+`345d26309043dd8d14119316a7ca186e1cf9faea2e666bd01d652ded50663c1b`/
+`30b7b7ae06ff2bd3153208fe4384e11e06a097608c6ce876d6c254c079f2e314`。
+
+裁决=`CUDA_ATTRIBUTION_IMPLEMENTATION_STATIC_SEALED_PASS / CUDA EXECUTION NO-START`；它不包含actual
+batch或gradient结果，不改变exp394 sealed FAIL和formal NO-START。

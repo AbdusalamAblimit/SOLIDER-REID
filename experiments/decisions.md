@@ -5287,3 +5287,10 @@ batch或AMP信息。
 **决策**：`PHASE0S_STATIC_CPU_SEALED_PASS`只授权下一步设计独立CUDA attribution implementation；
 没有新的明确CUDA授权前，不复制fresh远端资产、不占用4090。exp394禁止重跑/修补，formal e120和
 semantic multi-stage继续`NO-START`。
+
+CUDA attribution implementation随后已完成并通过连续两遍29/29 CPU-only AST gate：loss/group顺序、
+zero-update、默认scale、双时点capture、fresh assets、runtime和状态终审均已写死。静态PASS只表示脚本
+符合协议，不表示已运行或已定位根因。
+
+**后续边界**：`CUDA_ATTRIBUTION_IMPLEMENTATION_STATIC_SEALED_PASS / CUDA EXECUTION NO-START`。没有
+新的明确授权前，不把脚本或资产送入4090执行；exp394、e120与semantic multi-stage边界不变。

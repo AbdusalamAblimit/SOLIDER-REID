@@ -3,7 +3,8 @@
 ## 状态
 
 `DESIGN-FROZEN / PROTOCOL-FROZEN / PHASE 0S STATIC-CPU SEALED-PASS /
-CUDA NO-START / FORMAL NO-START`
+CUDA ATTRIBUTION IMPLEMENTATION STATIC SEALED-PASS / CUDA EXECUTION NO-START /
+FORMAL NO-START`
 
 ## 2026-07-19 接手与边界冻结
 
@@ -41,14 +42,6 @@ CUDA NO-START / FORMAL NO-START`
 裁决：`PHASE0S_STATIC_CPU_SEALED_PASS`。只证明归因器数学与静态seam成立，不提供exp394 AMP根因，
 不授权CUDA或正式训练。
 
-## 下一步
-
-1. 仅设计独立CUDA attribution implementation；
-2. 实现必须覆盖D0 baseline 5行、rich 11行、15组完整覆盖与scaled/unscaled报告；
-3. 保持zero optimizer/scaler update与fresh asset边界；
-4. 没有新的明确CUDA授权前不复制远端资产、不占用4090；
-5. exp394、formal e120与semantic multi-stage继续`NO-START`。
-
 ## 2026-07-19 封板后环境终审
 
 - 本地提交=`7b4541d`，提交后tracked clean；
@@ -58,3 +51,35 @@ CUDA NO-START / FORMAL NO-START`
   `95c5d0ff80bf9e4529589a5f31819e7aad5db644b88e2a33d6af07c9ffc42886`/
   `e0413a497976ad6dbf4c74cf13b55c86c169d659bab6d967455e87c592e47f4e`；
 - 4090=`2 MiB / 0%`，compute process=`0`；本轮未复制资产、未启动CUDA任务。
+
+## 2026-07-19 CUDA attribution implementation静态封板
+
+- 已实现`cuda_amp_attribution.py`，未执行；
+- D0 baseline=`reid/heatmap/confidence/pose/total`五行；rich为冻结11行；
+- 每行只执行fresh forward、scaled backward、scaled capture、unscale、unscaled capture和清理；源码中
+  optimizer/scaler/scheduler step/update计数与调用均为0；
+- 15组parameter名称覆盖在backward前检查，D0旧PSG只进入对应baseline expert bucket，rich-only组
+  `not_applicable`；
+- fresh exp395 regular CLIP/codebook实体名、原SHA、canonical runtime版本、唯一4090、结果路径不存在均为
+  前置门；
+- CPU-only AST/static contract连续两遍29/29 PASS，result/runner逐字节exact；
+- 隐藏CUDA后的module import PASS，loss/group计数=`5/11/15`，CUDA仍未初始化；
+- CUDA initialized before/after=`false/false`，本轮仍未复制资产或占用GPU。
+
+冻结SHA256：
+
+- CUDA implementation：`64840b710db587720aa8807571212b246af3eabb54306bd5aa1bbf692f5ea08b`；
+- static contract：`345d26309043dd8d14119316a7ca186e1cf9faea2e666bd01d652ded50663c1b`；
+- static result/runner与repeat：
+  `30b7b7ae06ff2bd3153208fe4384e11e06a097608c6ce876d6c254c079f2e314`。
+
+裁决：`CUDA_ATTRIBUTION_IMPLEMENTATION_STATIC_SEALED_PASS / CUDA EXECUTION NO-START`。没有actual
+gradient归属结果，不得推测exp394根因；formal训练继续`NO-START`。
+
+## 执行前边界
+
+1. 没有新的明确CUDA授权前不复制远端资产、不占用4090；
+2. 若获授权，先在新的exp395 execution路径复制regular CLIP/codebook并逐SHA复核；
+3. actual诊断只能运行一次，必须保持zero optimizer/scaler update、checkpoint 0；
+4. 进程退出后另做GPU空闲、result/runner/manifest SHA和异常终审；
+5. 无论归因结果如何，exp394、formal e120与semantic multi-stage继续`NO-START`。

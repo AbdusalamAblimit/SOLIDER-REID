@@ -2,7 +2,8 @@
 
 ## 当前状态
 
-`DESIGN-FROZEN / PHASE 0S STATIC-CPU SEALED-PASS / CUDA NO-START /
+`DESIGN-FROZEN / PHASE 0S STATIC-CPU SEALED-PASS /
+CUDA ATTRIBUTION IMPLEMENTATION STATIC SEALED-PASS / CUDA EXECUTION NO-START /
 FORMAL NO-START`。
 
 本实验是独立的数值归因门，不是 exp394 修补或重跑。exp394 保持
@@ -183,3 +184,20 @@ script/result/runner SHA256=
 裁决只冻结归因器数学与protocol seam；没有读取official batch、CLIP或pose资产，也没有产生任何AMP
 根因证据。下一步只允许设计独立CUDA attribution implementation；没有新的明确授权前，4090继续
 `NO-START`，exp394、formal e120与semantic multi-stage边界不变。
+
+## CUDA attribution implementation静态封板
+
+独立`cuda_amp_attribution.py`已经按本设计实现但从未执行。它固定D0 baseline 5行、rich 11行、15组
+完整覆盖、每行fresh GradScaler默认`65536`、scaled capture→unscale→unscaled capture、state/buffer/
+RNG恢复、fresh asset SHA、canonical runtime版本和post-exit GPU审计。源码没有optimizer/scaler/
+scheduler step/update、checkpoint load、retain_graph或训练授权路径。
+
+CPU-only AST/static contract连续两遍29/29 PASS且result/runner逐字节一致。CUDA implementation/static
+script/result SHA256=
+`64840b710db587720aa8807571212b246af3eabb54306bd5aa1bbf692f5ea08b`/
+`345d26309043dd8d14119316a7ca186e1cf9faea2e666bd01d652ded50663c1b`/
+`30b7b7ae06ff2bd3153208fe4384e11e06a097608c6ce876d6c254c079f2e314`。
+
+该PASS只说明**未执行脚本**满足冻结静态协议；没有复制fresh远端资产、没有初始化CUDA、没有产生
+actual loss/gradient matrix。CUDA execution仍需新的明确授权，formal训练与semantic multi-stage继续
+`NO-START`。

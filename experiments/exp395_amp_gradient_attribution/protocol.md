@@ -2,7 +2,8 @@
 
 ## 当前状态
 
-`PROTOCOL-FROZEN / PHASE 0S STATIC-CPU SEALED-PASS / CUDA NO-START /
+`PROTOCOL-FROZEN / PHASE 0S STATIC-CPU SEALED-PASS /
+CUDA ATTRIBUTION IMPLEMENTATION STATIC SEALED-PASS / CUDA EXECUTION NO-START /
 FORMAL NO-START`。
 
 本协议只定义只读归因门。它不修改、不重跑 exp394，不调用 optimizer update，也不产生训练 checkpoint。
@@ -139,6 +140,12 @@ router{0,1}_experts
 
 optimizer 中全部 requires-grad parameter 必须恰好落入一个组。`uncovered/duplicate` 名称必须完整写入
 result；任一非空立即停止 backward。D0 不存在的 rich-only 组写 `not_applicable`，不得伪装成 zero grad。
+D0的每个旧PSG没有T/C/E分解，因此其完整`input_projection/norm/output_projection`只映射到对应
+`router{k}_experts` baseline bucket；三个projection bucket保持`not_applicable`。该映射只用于覆盖D0
+optimizer与判断shared finite，不与rich router做逐参数幅值配对。
+
+parameter name list在每个arm顶层只保存一次，loss行引用同一冻结group schema，避免在16行中重复写入
+大段名称；每行仍完整保存15组统计。
 
 ## gradient 统计 schema
 
@@ -229,3 +236,26 @@ script/result/runner SHA256=
 
 裁决=`PHASE0S_STATIC_CPU_SEALED_PASS`。该PASS不包含actual AMP、official batch或根因归属；只允许
 下一步实现独立CUDA attribution script，且仍需新的明确CUDA授权。
+
+## CUDA attribution implementation static封板
+
+实现文件=`cuda_amp_attribution.py`，只读静态审计文件=`cuda_attribution_static_contract.py`。静态
+contract连续两遍29/29 PASS，确认：
+
+- D0 baseline 5行与rich 11行顺序exact，15组顺序exact；
+- parameter覆盖检查发生在任何backward之前；
+- 每行fresh默认GradScaler，不允许`init_scale`覆盖；
+- scaled统计在`unscale_`之前、unscaled统计在之后，并保存非有限计数一致性和range比例误差；
+- 两个consumer `L_exec`独立暴露；D0旧PSG映射与rich-only `not_applicable`语义明确；
+- canonical Torch/OpenCLIP/OpenCV/timm版本、fresh exp395 regular asset名称与SHA均为执行前硬门；
+- source不存在optimizer/scaler/scheduler step/update、retain_graph、checkpoint load或formal training GO；
+- output只允许result/runner/manifest，且明确要求进程退出后的GPU空闲外部审计。
+
+CUDA implementation/static script/result/runner SHA256=
+`64840b710db587720aa8807571212b246af3eabb54306bd5aa1bbf692f5ea08b`/
+`345d26309043dd8d14119316a7ca186e1cf9faea2e666bd01d652ded50663c1b`/
+`30b7b7ae06ff2bd3153208fe4384e11e06a097608c6ce876d6c254c079f2e314`/
+`30b7b7ae06ff2bd3153208fe4384e11e06a097608c6ce876d6c254c079f2e314`；repeat SHA相同。
+
+裁决=`CUDA_ATTRIBUTION_IMPLEMENTATION_STATIC_SEALED_PASS / CUDA EXECUTION NO-START`。该封板未读取
+official数据或teacher资产、未复制fresh远端文件、未初始化CUDA；执行仍需新的明确授权。

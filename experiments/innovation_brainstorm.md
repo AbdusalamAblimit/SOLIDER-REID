@@ -3726,3 +3726,8 @@ Phase0S只在CPU synthetic图上证明reporter本身可信：11个loss、15组�
 zero-update均exact。它不产生新的方法贡献，也不暗示根因已经定位。真正可争的机制要求仍是：rich
 evidence拥有production方向、固定预算可执行、actual AMP首步有限，并最终由wrong/static/generic与
 all-bypass检索反事实证明语义因果。归因工具只是把后续设计从事后猜测变成先验可否证。
+
+CUDA归因实现的静态封板进一步消除了一个执行偏差：两个consumer不能再被均值掩盖，D0 baseline与
+rich ReID-only也不能被省略；任何actual结果都必须在同一first batch上同时呈现scaled和unscaled支持
+集合。此处仍没有科学结果，只有可复核测量仪器。若未来actual matrix定位到具体子图，后续稳定机制仍需
+另立实验并解释为何数值处理是机制必要条件，而不是为通过AMP门临时调出来的工程参数。
