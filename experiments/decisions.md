@@ -5456,3 +5456,18 @@ NO-START`，禁止重跑、补跑、删掉wrong/zero control或调rho/loss/batch
 保留；该NO-GO只关闭当前student-evidence/expert语义解释，不永久否定Phase0E、Phase0R或CLIP–TAPF。
 后续若继续，只能重新定义训练对象/结构对象，使sample-specific evidence相对wrong/zero先建立可辨识因果差；
 不得把generic expert prior或router0单臂贡献改写成CLIP语义贡献。
+
+### [2026-07-20] 决策：exp403改写为evidence-owned operator，先过standalone contract
+
+targeted文献与公开代码审计表明，CAL已覆盖随机/全一attention counterfactual prediction effect，AIM已覆盖
+双分支分类差的衣物去偏，UCT已覆盖feature-conditioned prototype intervention；dynamic filter、hypernetwork
+和low-rank parameterization也均非新原子。因此exp403不以“counterfactual”“dynamic”或“low-rank”单独
+声称创新，而把对象限定为：sample evidence拥有生产operator系数、matched complete execution提供
+stop-gradient utility reference、最终冻结retrieval同时证明semantic margin与route mediation。
+
+standalone正反contract连续两遍`26/26 PASS`且byte-exact。NULL identity、兼容性序、donor、生产梯度覆盖、
+reference零梯度和三个mutant均通过；CUDA未初始化。
+
+**决策**：`PRODUCTION IMPLEMENTATION GO / CUDA NO-START`。下一步允许在新config开关下实现ELO-CUR，
+但不得把standalone PASS当formal授权；必须先通过default-off parity、source/state/optimizer contract与真实
+batch64 CUDA/AMP preflight。任何失败不调rho、outer loss、batch、stage或删除control救同一execution。

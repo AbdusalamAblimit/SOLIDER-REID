@@ -219,3 +219,35 @@
 1. `TDPC`
 2. 若 `TDPC` 单 seed 2-3 天内无正信号，再回退到 retrieval-time `common-support recovery`
 3. 不再继续开新的 PAA 小变体
+
+---
+
+## 2026-07-20 新增候选：ELO-CUR（exp403）
+
+**状态**：`PRIMARY PRODUCTION-IMPLEMENTATION CANDIDATE / STATIC CPU PASS / CUDA NO-START`
+
+### 问题定义
+
+exp401 route alive但exp402 wrong-RGB/zero不劣于correct，说明当前static expert route没有sample evidence
+所有权。ELO-CUR不再增加普通attention/loss，而是要求evidence生成共享低秩production operator系数，
+并用matched complete-execution utility训练correct相对control的优势。
+
+### 单变量机制
+
+- 删除slot-specific static experts；
+- 保持rank16/rho/batch/seed/epoch不变；
+- `H(e)`拥有逐rank operator coefficients，NULL exact identity；
+- compatibility直接进入production delta；
+- wrong/generic/NULL只作stop-gradient reference；
+- final仍为RGB-only single global descriptor。
+
+### 创新与风险
+
+- 问题/机制/证据门槛=`3/3`；
+- CAL/AIM/UCT与dynamic filter/hypernetwork/LoRA是明确近邻；
+- novelty风险=`6/10`，不能把dynamic/low-rank/counterfactual原子当贡献；
+- 只有full超过clean D0且同时通过semantic margin与all-bypass门，才升级为论文候选。
+
+### 当前证据
+
+standalone CPU正反contract两遍`26/26 PASS`、byte-exact；只授权生产实现，不授权GPU/formal。

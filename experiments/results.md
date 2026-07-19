@@ -2684,3 +2684,22 @@ active，说明干预真实触达接口，却没有形成correct-specific检索�
 
 **最终判定**：`FORMAL VALIDITY PASS / CURRENT_SEMANTIC_INTERFACE_NO-GO`。exp401 route alive保持，
 但当前C0贡献不能归因于图像特定student rich evidence；Phase-B formal mechanism design不授权。
+
+## exp403 ELO-CUR 机制对象重置与 standalone contract（2026-07-20）
+
+exp403没有重跑或修改exp401/402，而是针对后者暴露的bypass重写机制对象：删除slot-specific static
+experts，让16维sample evidence生成共享低秩算子的逐rank系数，并以same-camera different-PID donor、
+generic、NULL完整执行作为stop-gradient reference。targeted公开审计确认CAL、AIM、UCT、PGMAN/CIFT、
+SGFNet与通用dynamic-network/LoRA都构成强近邻；因此不声称原子首创，只把可争点限定为
+`evidence-owned operator + matched execution utility + frozen retrieval controls`闭环。
+
+standalone CPU/static连续两遍`26/26 PASS`且byte-exact，result/source SHA256=
+`041cd6d26f1e3469478c902d443f0f211fd329e9f6a89ffc2e85fcef818b4df5`/
+`b0f40b015150942f12b099e54de406faf63baf787e2fd74cc80cca4706a8eefe`。NULL exact identity；正确/错误/
+generic arms均active；compatibility correct/wrong/generic/NULL=`0.9877629876/0.5/0/−1`；correct evidence与
+六个共享生产组梯度finite/nonzero，三个reference evidence梯度均为0。evidence-ignored、aux-only和
+reference-not-detached三个negative mutant全部被抓住，CUDA未初始化。
+
+**当前判定**：`STANDALONE STATIC-CPU PASS / PRODUCTION IMPLEMENTATION GO / CUDA NO-START`。该结果不
+是性能证据，也不授权formal；必须先完成生产图、默认off-parity、真实batch64 CUDA/AMP与reference RNG/
+no-grad contract。

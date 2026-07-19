@@ -3837,3 +3837,25 @@ rho、增加stage、调loss权重或继续装饰现有evidence head都不再具�
 这也收紧论文边界：exp401可作为fixed-budget route非identity的弱接口证据，exp402则是有效负消融，
 明确阻止把该route宣传为CLIP-owned semantic mediator。Phase0E证明teacher evidence存在、Phase0R证明
 某些readout可分，并不等于当前C0 student接口在检索中使用了这些信息；后续主张必须重新闭合这一断点。
+
+### exp403：Evidence-owned Low-rank Operator + Counterfactual Utility Ranking
+
+exp402之后，值得保留的不是static expert前继续增加evidence loss，而是把evidence从activation bias升级为
+operator coefficient。ELO使用跨五个slot共享的`U/V/C/H/Q/K`：`H(e)`生成逐rank系数，local
+feature/evidence compatibility直接乘生产delta；没有slot-specific expert prior，`e=0`严格identity。
+
+CUR在同一Stage-3 input上重放wrong-RGB、generic和NULL完整执行，但reference全部stop-gradient；loss只能
+提高correct execution相对同ID positive prototype的utility，不能靠主动破坏control制造margin。同时兼容性
+预注册`correct>wrong>generic>NULL`，把“有效人类evidence”和“属于当前RGB的evidence”拆开。
+
+它满足三项创新门槛，但风险仍为`6/10`：审稿人可把它概括成dynamic adapter + CAL loss。只有以下证据
+同时成立才有方法级价值：
+
+1. NULL exact identity与shared-operator source contract；
+2. reference无梯度、correct生产组有梯度；
+3. full不低于sealed clean D0；
+4. correct相对wrong/generic/NULL至少`+0.1 mAP`；
+5. correct相对all-bypass至少`+0.1 mAP`。
+
+standalone contract已两遍`26/26 PASS`，只授权生产实现。compatibility proxy若成功而final retrieval失败，
+仍必须判mechanism NO-GO，不能继续调margin/rho/loss。

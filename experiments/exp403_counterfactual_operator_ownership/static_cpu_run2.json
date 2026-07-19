@@ -1,0 +1,82 @@
+{
+  "experiment": "exp403_counterfactual_operator_ownership",
+  "formal_training_authorized": false,
+  "gate_count": 26,
+  "gate_pass_count": 26,
+  "gates": {
+    "all_linear_no_bias": true,
+    "all_operator_groups_receive_grad": true,
+    "compat_correct_wrong_margin": true,
+    "compat_generic_null_margin": true,
+    "compat_wrong_generic_margin": true,
+    "correct_evidence_receives_grad": true,
+    "counterfactual_descriptors_distinct": true,
+    "cuda_not_initialized": true,
+    "cur_loss_finite_nonzero": true,
+    "donor_all_eligible": true,
+    "donor_different_pid": true,
+    "donor_repeat_exact": true,
+    "donor_same_camera": true,
+    "explicit_evidence_coefficients": true,
+    "explicit_null_gate": true,
+    "mutant_aux_only_caught": true,
+    "mutant_ignore_evidence_caught": true,
+    "mutant_nondetach_caught": true,
+    "no_expert_parameter": true,
+    "no_slot_expert_modulelist": true,
+    "non_null_arms_active": true,
+    "null_exact_identity": true,
+    "ordinal_hinge_zero": true,
+    "outputs_finite": true,
+    "reference_detach_present": true,
+    "references_receive_no_grad": true
+  },
+  "gpu_authorized": false,
+  "measurements": {
+    "compatibility": {
+      "correct": 0.987762987613678,
+      "generic": 0.0,
+      "null": -1.0,
+      "wrong": 0.5
+    },
+    "correct_evidence_grad_norm": 0.018288789317011833,
+    "correct_utility_mean": 0.19538438320159912,
+    "cur_loss": 0.49814000725746155,
+    "donor_map": [
+      2,
+      2,
+      0,
+      0,
+      6,
+      6,
+      4,
+      4
+    ],
+    "ordinal_loss": 0.0,
+    "ordinal_values": {
+      "correct_minus_wrong": 0.487762987613678,
+      "generic_minus_null": 1.0,
+      "wrong_minus_generic": 0.5
+    },
+    "parameter_grad_norm": {
+      "context_projection.weight": 0.004157851915806532,
+      "context_query.weight": 0.052091971039772034,
+      "down_projection.weight": 0.004157851915806532,
+      "evidence_key.weight": 0.052091971039772034,
+      "evidence_projection.weight": 0.005600744858384132,
+      "up_projection.weight": 0.007108383812010288
+    },
+    "reference_evidence_grad_norm": {
+      "generic": 0.0,
+      "null": 0.0,
+      "wrong": 0.0
+    },
+    "reference_utility_mean": [
+      0.1947232484817505,
+      0.19294117391109467,
+      0.19290880858898163
+    ]
+  },
+  "source_sha256": "b0f40b015150942f12b099e54de406faf63baf787e2fd74cc80cca4706a8eefe",
+  "status": "STATIC_CPU_PASS"
+}

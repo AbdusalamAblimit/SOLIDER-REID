@@ -2141,3 +2141,22 @@ router组合会影响排序”，不能支持“模型按图像身份使用了ri
 route-alive弱接口证据；exp402作为负消融写清楚为何Phase-B不进入formal mechanism design。若未来重启
 CLIP–TAPF，必须重新定义能对wrong/zero evidence产生稳定因果顺序的训练或结构对象，不能通过调rho、loss、
 batch、增加stage或删除不利control来延续当前C0叙事。
+
+## 2026-07-20：exp403把下一对象定义为evidence-owned operator
+
+针对exp402，下一候选不再让evidence作为static expert前的加性hidden。ELO-CUR删除slot-specific static
+expert prior，让student evidence生成跨slot共享低秩operator的逐rank系数，并让local feature/evidence
+compatibility直接控制生产delta。训练期从同一Stage-3 input重放same-camera different-PID wrong-RGB、
+generic和NULL，但所有reference只提供stop-gradient utility comparator；这样margin不能靠主动破坏不利control
+获得。NULL evidence必须逐元素identity，推理仍只有RGB-only correct branch与单一global descriptor。
+
+公开查新已经明确收紧claim：CAL、AIM、UCT、PGMAN/CIFT、SGFNet以及dynamic filter/hypernetwork/LoRA
+分别覆盖了反事实prediction effect、双分支去偏、prototype intervention、counterfactual ReID、sample-specific
+semantic refinement和动态低秩原子。因此若该方向成立，贡献只能写成“route alive与evidence ownership的
+问题分离 + evidence-owned production operator + matched完整执行证据闭环”，不能声称发明反事实或动态
+adapter。
+
+standalone正反contract连续两遍`26/26 PASS`且byte-exact：NULL identity、compatibility
+`correct>wrong>generic>NULL`、matched donor、correct生产梯度与reference零梯度均成立，三个伪实现mutant
+全部被抓住。它目前只是生产实现授权，不是论文结果。正面story仍需fresh e120同时超过sealed clean D0、
+correct相对wrong/generic/NULL `+0.1 mAP`和all-bypass `+0.1 mAP`；任一失败都关闭ELO-CUR主张。
