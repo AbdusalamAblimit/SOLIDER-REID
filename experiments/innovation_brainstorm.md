@@ -3797,3 +3797,12 @@ state接口、RGB-only接口、rho schedule接口和双consumer反事实接口�
 这个门仍属于方法开发纪律，但它避免把“参数更新过”误写成“可训练且可部署”。尤其是单独bypass0/
 bypass1必须各自产生严格非零差，能提前排除一条router名义存在却没有执行影响的假阳性；真正的方法贡献
 仍只能由后续e120 retrieval和final all-router-bypass差决定。
+
+### exp400 actual闭合了接口证据，但仍不替代检索反事实
+
+actual中两个consumer的单独bypass差分别达到max-abs `0.07276`与`0.08659`，all-bypass mean L2为
+`0.42050`；这比只看极小GateAbs更直接地证明两个执行接口都进入descriptor计算。与此同时RGB-only和
+teacher-free strict state全过，说明teacher仅是训练监督源，不是部署依赖。
+
+不过这些差仍来自32-step内存state，不能推断e120后的mAP贡献。下一步的创新证据单位必须回到正式
+checkpoint上的`full - all-router-bypass`检索差，并与Semantic C0性能底线共同裁决route alive。

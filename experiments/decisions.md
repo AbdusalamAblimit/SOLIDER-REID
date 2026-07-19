@@ -5396,3 +5396,13 @@ static连续两遍`48/48 PASS`且byte-exact，toy真实验证两个consumer并�
 **决策**：`STATIC-CPU SEALED-PASS / CUDA FRESH-EXECUTION GO / FORMAL NO-START`。按持续授权直接建立
 fresh exp400 execution/assets并运行唯一actual，不等待确认；任一trajectory/validity/terminal FAIL均停止
 该编号且不得补跑。只有result显式`formal_training_authorized=true`才直接启动fresh e120。
+
+### [2026-07-19] 决策：exp400 final production全PASS，正式e120直接启动
+
+actual同时复现baseline-relative稳态并通过全部31项terminal gate。D0/rich各`27/32`更新且前期skip exact；
+rich没有新增non-finite，11个新增组均active/updated。state strict reload、teacher-free/finite、eval RGB-only、
+rho0 identity与两个consumer独立非零执行差均成立，result显式`formal_training_authorized=true`。
+
+**决策**：封板exp400为`FINAL_PRODUCTION_PREFLIGHT_PASS / FORMAL E120 GO`，禁止重跑。按持续授权立即
+启动唯一fresh rich-budget C0 seed1234 e120；不得续训、换seed、挑best、按中间指标早停或并行占用GPU。
+正式结果仍需final full与all-router-bypass门裁决route alive，preflight PASS本身不进入主结果表。

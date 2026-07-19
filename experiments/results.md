@@ -2591,3 +2591,24 @@ static脚本/result SHA256=
 
 **当前判定**：`STATIC-CPU SEALED-PASS / CUDA FRESH-EXECUTION GO / FORMAL NO-START`。static只授权
 唯一fresh actual；只有actual trajectory、validity、terminal全PASS才允许`formal_training_authorized=true`。
+
+### exp400 CUDA final production actual
+
+唯一actual完整运行D0/rich各32行。两臂skip均仅attempts 1–5、first success=6、各`27/32`更新，rich
+extra skip=0且没有rich-only non-finite；e1/e6四个tail8全部连续success/finite，11个rich-specific组
+全程finite、e6 active且state全部改变。
+
+31项terminal gate全PASS：241项final state全部finite/teacher-free，fresh strict reload和descriptor exact；
+eval correct/shuffle/None/ExplodingPose逐元素exact且访问数0；epoch1 rho=0 full/all-bypass exact；epoch6
+all-bypass mean L2=`0.4205047190`，bypass0/bypass1 max-abs=`0.0727601051/0.0865910053`。diagnostic
+state/RNG/patch、teacher/codebook/source/assets/tracked、checkpoint=0和scratch=0全部PASS。
+
+elapsed=`58.02608146890998 s`，peak memory=`7,901,594,112 bytes`。result/runner/manifest/stdout SHA=
+`3935eb6df97ae832770316eff27cbfc757e4d2bd305b789d0b9b97835659a02f`/
+`3935eb6df97ae832770316eff27cbfc757e4d2bd305b789d0b9b97835659a02f`/
+`b719b3acdec3746dae8f602fc526564a08047ae5ad1a9e2c3a3865a973c2b12e`/
+`e91ffd6c4732387b90fe4f49dc31b41eb1c35ca831ac65c30975048979d4e620`。进程自然退出，GPU恢复
+`2 MiB/0%`且无compute process。
+
+**最终判定**：`FINAL_PRODUCTION_PREFLIGHT_PASS / FORMAL E120 GO`。result显式
+`formal_training_authorized=true`；直接启动唯一fresh rich-budget C0 seed1234 e120，exp400不得重跑。

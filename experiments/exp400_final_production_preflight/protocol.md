@@ -2,8 +2,8 @@
 
 ## 状态
 
-`PROTOCOL-FROZEN / STATIC-CPU SEALED-PASS / CUDA FRESH-EXECUTION GO /
-FORMAL NO-START`
+`PROTOCOL-FROZEN / STATIC-CPU SEALED-PASS /
+CUDA FINAL-PRODUCTION SEALED-PASS / FORMAL E120 GO`
 
 ## 上游封板
 
@@ -41,3 +41,14 @@ rho0 identity、两个consumer非零、selective bypass恢复和strict reload。
 
 只有actual trajectory、validity、terminal三组门全部PASS，result内`formal_training_authorized=true`，才
 直接启动唯一fresh e120。static PASS或partial actual PASS均不授权。
+
+## actual封板
+
+唯一actual的trajectory、validity和31项terminal gate全部PASS，result显式
+`formal_training_authorized=true`。D0/rich各`27/32`成功、skip均仅attempts 1–5，四个tail8连续稳定；
+epoch6 all-bypass mean L2=`0.4205047190`，bypass0/bypass1 max-abs=`0.0727601051`/
+`0.0865910053`。result/runner/manifest SHA=
+`3935eb6df97ae832770316eff27cbfc757e4d2bd305b789d0b9b97835659a02f`/
+`3935eb6df97ae832770316eff27cbfc757e4d2bd305b789d0b9b97835659a02f`/
+`b719b3acdec3746dae8f602fc526564a08047ae5ad1a9e2c3a3865a973c2b12e`。据冻结协议直接授权
+唯一fresh rich-budget C0 seed1234 e120。

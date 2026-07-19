@@ -2102,3 +2102,12 @@ consumer独立bypass，并以toy router证明这些裁决器会实际区分身�
 
 论文故事只有在唯一actual同时复现exp399稳态并通过全部terminal门后，才可从“生产接口候选”推进到
 fresh e120；最终仍需full与all-router-bypass的retrieval差来证明route alive。
+
+## 2026-07-19：exp400允许rich-budget进入唯一正式训练
+
+final preflight中D0/rich动态轨迹匹配且各`27/32`更新；strict reload、teacher-free/finite state、eval
+RGB-only和两个consumer独立bypass全部通过。由此可以严谨地说当前production接口“可训练且可部署”，
+但还不能说方法对检索有效。
+
+故事下一步进入唯一fresh e120。只有final checkpoint上full相对all-router-bypass达到预注册mAP差，并且
+full不跌破Semantic C0底线，rich CLIP teacher证据链才与ReID route形成闭环。
