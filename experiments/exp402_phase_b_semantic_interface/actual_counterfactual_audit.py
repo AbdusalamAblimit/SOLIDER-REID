@@ -840,45 +840,55 @@ def run(args):
         runtime = {"indices": None}
         donor_warmup = None
         if preflight:
+            selected_set = set(selected_indices)
             donor_indices = sorted(
                 set(int(donor_map[index]) for index in selected_indices)
+                - selected_set
             )
-            donor_loader = build_loader(
-                base_dataset,
-                donor_indices,
-                min(int(cfg.TEST.IMS_PER_BATCH), len(donor_indices)),
-                0,
-                loader_generator,
-            )
-            loader_generator.set_state(loader_generator_state)
-            with patch_prepare(
-                tapf,
-                "correct",
-                runtime,
-                core,
-                evidence_cache,
-                evidence_seen,
-                donor_map,
-                orthogonal,
-                capture=True,
-            ) as donor_prepare:
-                donor_output = collect_descriptors(
-                    model,
-                    donor_loader,
-                    num_query,
-                    cfg,
-                    device,
-                    runtime,
-                    records,
-                    False,
+            if donor_indices:
+                donor_loader = build_loader(
+                    base_dataset,
+                    donor_indices,
+                    min(int(cfg.TEST.IMS_PER_BATCH), len(donor_indices)),
+                    0,
+                    loader_generator,
                 )
-            loader_generator.set_state(loader_generator_state)
-            donor_warmup = {
-                "indices": donor_indices,
-                "rows": len(donor_output["indices"]),
-                "path_sha256": donor_output["path_sha256"],
-                "prepare": dict(donor_prepare),
-            }
+                loader_generator.set_state(loader_generator_state)
+                with patch_prepare(
+                    tapf,
+                    "correct",
+                    runtime,
+                    core,
+                    evidence_cache,
+                    evidence_seen,
+                    donor_map,
+                    orthogonal,
+                    capture=True,
+                ) as donor_prepare:
+                    donor_output = collect_descriptors(
+                        model,
+                        donor_loader,
+                        num_query,
+                        cfg,
+                        device,
+                        runtime,
+                        records,
+                        False,
+                    )
+                loader_generator.set_state(loader_generator_state)
+                donor_warmup = {
+                    "indices": donor_indices,
+                    "rows": len(donor_output["indices"]),
+                    "path_sha256": donor_output["path_sha256"],
+                    "prepare": dict(donor_prepare),
+                }
+            else:
+                donor_warmup = {
+                    "indices": [],
+                    "rows": 0,
+                    "path_sha256": canonical_path_sha256([], []),
+                    "prepare": {"restored_exact": True},
+                }
 
         metrics = {}
         descriptors = {}

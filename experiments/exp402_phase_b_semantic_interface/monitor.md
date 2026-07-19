@@ -73,3 +73,17 @@
   literal；两遍CUDA initialized before/after=`false/false`，退出后GPU=`2 MiB/0%`且无compute process；
 - 当前判定=`ACTUAL_AUDIT_STATIC_CPU_SEALED_PASS / CUDA PREFLIGHT GO / FORMAL GPU NO-START`。
   下一步只允许fresh小批CUDA preflight；其终审全部通过后，才允许唯一一次exp402 formal full执行。
+
+## CUDA preflight run1：SEALED-INVALID
+
+- run1使用32个recipient及其global donor进入只读CUDA preflight；model strict load、RGB-only前置路径均已
+  通过，但donor warmup与recipient集合存在少量索引重叠；同一RGB在不同batch形状下重算evidence产生
+  非逐元素相等的浮点差，触发`Repeated evidence capture changed`并退出；
+- run1未进入10臂完整preflight，更未进入formal full；result/runner SHA256=
+  `f63514b5dde9dc5ec84028b8c8c881c5330a987a8558b78229ceaad0d877c55d`/
+  `675fcfe7980f649d09916582eb62f0acde0cb1338816d7c890a8d467a57e52bb`；退出后GPU=
+  `2 MiB/0%`且无compute process；
+- 判定=`CUDA_PREFLIGHT_RUN1_SEALED_INVALID / DUPLICATE_CACHE_REPORTER_TOO_STRICT`。该错误不回答
+  semantic-interface科学问题；run1永久保留、不覆盖。修复只让warmup排除recipient集合内donor，这些donor
+  改由correct recipient pass一次性缓存；global donor定义、arm、模型、checkpoint与门槛全部不变。修正版
+  必须先用fresh source和两遍static/AST重新授权，再执行fresh CUDA preflight run2。
