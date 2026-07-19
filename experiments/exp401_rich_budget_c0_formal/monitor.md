@@ -79,3 +79,15 @@ FORMAL RUNNING`
 - exact HEAD/config/source tracked clean；main PID=`404782`、8 workers、唯一GPU process，约
   `8,602 MiB`；checkpoint=`0`，异常与AMP数值warning扫描均=`0`；
 - 当前判断=`继续`；原因：完整e10轨迹已记录，正式裁决仍只在e120 final进行。
+
+## 2026-07-19 e20评测 / e24进行中
+
+- e20完整评测mAP/R1/R5/R10=`42.4/54.7/69.1/75.4`，只记录不裁决；
+- e23 Iter200 Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Exec=
+  `1.332/0.905/0.392/0.251/0.169/0.991/0.278/0.268`，Acc=`0.897`，Student=`1.00`，
+  Reliability=`1.000`，rho=`0.080755450`，BudgetAbs=`2.538e-02`，全部finite；e23自然完成；
+- 已进入e24 Iter20，Loss=`1.437`，Student=`1.00`，Reliability=`1.000`，rho保持冻结上限，
+  BudgetAbs=`2.530e-02`；
+- exact HEAD/config/source tracked clean；main PID=`404782`、8 workers、唯一GPU process，约
+  `8,608 MiB`、util约`99%`；checkpoint=`0`，异常与AMP数值warning扫描均=`0`；
+- 当前判断=`继续`；原因：训练轨迹、rich route schedule、数值与执行边界正常，中间评测不触发裁决。
