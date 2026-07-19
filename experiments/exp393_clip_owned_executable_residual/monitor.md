@@ -274,3 +274,14 @@ full与all-router-bypass终审决定。e13 Iter 200的Loss/Pose/Semantic/RegionM
 
 execution HEAD/config/tracked保持exact，main PID=`888440`及8 workers唯一；4090仅该main占用
 `8,254 MiB`，严格异常=`0`，e120前checkpoint=`0`。状态保持`FORMAL RUNNING`。
+
+## 2026-07-19 Phase A RZ-C0 e20评测
+
+e20自然完成后的评测为mAP/R1/R5/R10=`40.9/53.2/68.0/73.7`，相对e10轨迹
+`33.8/43.6/59.6/65.5`正常上升，但仍不作为final裁决或任何调参、重启、早停依据。复核时训练已
+自然完成e21并进入e22。
+
+e20 Iter 200的Loss/Pose/Semantic/RegionMask/Presence/Q=
+`1.926/0.935/0.384/0.269/0.189/0.692`，Acc=`0.827`，Student=`1.00`，Reliability=
+`0.509`，GateAbs=`2.567e-07`；e21–e22仍约`1.9e-07–2.5e-07`，保持finite且非零。execution
+HEAD/config/tracked exact，main+8 workers与唯一4090任务正常，严格异常=`0`、e120前checkpoint=`0`。
