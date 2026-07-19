@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/home/afr/reid-clean/audits/exp394_phase0r/phase0r_128_budget_audit.py", line 592, in main
+    result = audit(args)
+  File "/home/afr/reid-clean/audits/exp394_phase0r/phase0r_128_budget_audit.py", line 396, in audit
+    from model import make_model
+  File "/home/afr/SOLIDER-REID-exp387-d0-0d1822a/model/__init__.py", line 1, in <module>
+    from .make_model import make_model
+  File "/home/afr/SOLIDER-REID-exp387-d0-0d1822a/model/make_model.py", line 6, in <module>
+    from .backbones.swin_transformer import swin_base_patch4_window7_224, swin_small_patch4_window7_224, swin_tiny_patch4_window7_224
+  File "/home/afr/SOLIDER-REID-exp387-d0-0d1822a/model/backbones/swin_transformer.py", line 13, in <module>
+    import cv2
+ModuleNotFoundError: No module named 'cv2'
+output_sha256=d25126a76f575b51fff91102e914417fd3323b12f89e30ee310494f4f6dbc937

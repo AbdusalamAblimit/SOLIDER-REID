@@ -92,3 +92,14 @@ eval transform冻结CPU input，strict load后只以`eval+no_grad`注册两个�
 `/home/afr/reid-clean/audits/exp394_phase0r/`，未修改exp387 sealed repo；启动前4090=`2 MiB/0%`、
 无compute PID。当前状态`PHASE0R-128 READY / NO-RESULT / FORMAL NO-START`。下一步只允许一次正式
 只读审计，不得并行启动其它GPU任务。
+
+首次正式入口使用`/home/afr/par2606/.venv`，在import sealed model时即因
+`ModuleNotFoundError: cv2`退出；尚未构建model、加载checkpoint或初始化CUDA，GPU始终
+`2 MiB/0%`。该FAIL归因为选错runtime，不是数据、checkpoint或预算门失败，不修改script/protocol。
+失败result/runner SHA256分别为
+`d25126a76f575b51fff91102e914417fd3323b12f89e30ee310494f4f6dbc937`、
+`cc91a4084ab48c4d179d05958d34e0f433f5cf3460282aba53edfa1011d32195`，本地与远端原样保留。
+
+只读环境核查确认exp387原生clean runtime为`/home/afr/reid-clean/.venv`，Python/Torch/CUDA/OpenCV/
+timm=`3.10.12/2.6.0+cu124/4.13.0/1.0.27`，依赖import PASS。禁止向错误runtime补装包；下一次只允许
+在该原生环境重做同一冻结script的一次完整审计。

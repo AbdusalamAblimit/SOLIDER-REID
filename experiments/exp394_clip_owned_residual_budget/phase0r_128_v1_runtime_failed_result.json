@@ -1,0 +1,7 @@
+{
+  "error": "No module named 'cv2'",
+  "error_type": "ModuleNotFoundError",
+  "scope": "EXP394_PHASE0R_128_TRAIN_ONLY_BUDGET",
+  "script_sha256": "628ce2f88a868ccb2a14f5c0a3204099332253e392bf8c271dd53301057222a3",
+  "verdict": "PHASE0R_128_FAIL"
+}
