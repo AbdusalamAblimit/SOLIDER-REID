@@ -161,3 +161,13 @@ warning=`0/0`，checkpoint=`0`。判断：继续自然运行，不按e40或训�
 RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`1.658e-04`，finite。
 remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
 warning=`0/0`，checkpoint=`0`。e50正式eval尚未产生；继续自然运行，不作中间裁决。
+
+## 2026-07-20 formal heartbeat：e50 eval / e55
+
+完整正式评测e50 mAP/R1/R5/R10=`52.6/63.2/76.2/81.3`，仅记录、不裁决。当前e55 Iter40：
+Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
+`0.250/0.738/0.277/0.176/0.059/0.978/0.301/0.100/0.050`；Compat C/W/G/N=
+`0.9049/0.9048/0.0021/-1.0000`，eligible=`0.984`，CoeffStd=`1.449e-01`，EffRank=`15.641`，
+RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`1.480e-04`，finite。
+remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
+warning=`0/0`，checkpoint=`0`。判断：继续自然运行，不按e50或训练期compatibility早停。
