@@ -2708,3 +2708,12 @@ exp403生产实现随后通过一次必要CPU/source合同`34/34 PASS`：D0/C0�
 RNG、输出exact，NULL identity、shared/no-expert、完整reference replay、RNG恢复、reference no-grad、correct
 evidence与全部生产参数梯度、strict reload、optimizer/state/资产校验全过。遵照用户要求不堆重复CPU审计；
 下一步直接生成fresh train-split generic资产并做真实batch64 CUDA/AMP preflight。当前仍`FORMAL NO-START`。
+
+fresh generic asset-v3完整覆盖official train=`15,618`图并PASS，资产SHA256=
+`dc2dfe9e1fd00b6a8b374eb4f6894f1dc6c7680df6d00540cbea37e9b5ae431d`。真实batch64 CUDA/AMP
+preflight随后`16/16 PASS`且显式授权formal：reference no-grad/RNG exact、12组共享参数及correct evidence梯度
+finite/nonzero，第5次default GradScaler自然backoff后成功更新，checkpoint=`0`。
+
+**当前判定**：`CUDA_AMP_PREFLIGHT_PASS / FORMAL RUNNING`。启动前HEAD/config/fresh output/GPU独占全过，
+唯一fresh seed1234 e120主进程PID=`423319`；e1 Iter60各项有限，8 workers、唯一GPU任务、checkpoint=`0`。
+不再追加CPU验证，不按中间性能裁决。

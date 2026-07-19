@@ -2160,3 +2160,7 @@ standalone正反contract连续两遍`26/26 PASS`且byte-exact：NULL identity、
 `correct>wrong>generic>NULL`、matched donor、correct生产梯度与reference零梯度均成立，三个伪实现mutant
 全部被抓住。它目前只是生产实现授权，不是论文结果。正面story仍需fresh e120同时超过sealed clean D0、
 correct相对wrong/generic/NULL `+0.1 mAP`和all-bypass `+0.1 mAP`；任一失败都关闭ELO-CUR主张。
+
+生产CPU/source与真实batch64 CUDA/AMP门现已全部通过，唯一fresh e120已启动。这只把story从“候选机制可实现”
+推进到“正式证据生成中”，尚不构成性能或语义所有权结果。中间loss、compatibility和每10 epoch eval只记录；
+论文主张仍冻结等待最终full、wrong/generic/NULL及all-bypass全量检索门。

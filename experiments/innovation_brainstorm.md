@@ -3859,3 +3859,8 @@ CUR在同一Stage-3 input上重放wrong-RGB、generic和NULL完整执行，但re
 
 standalone contract已两遍`26/26 PASS`，只授权生产实现。compatibility proxy若成功而final retrieval失败，
 仍必须判mechanism NO-GO，不能继续调margin/rho/loss。
+
+生产合同与真实batch64 CUDA/AMP门现已分别`34/34`、`16/16 PASS`，证明ELO-CUR在完整生产图中具备预期的
+参数所有权、reference隔离和AMP可更新性；formal已经启动。这里不新增创新主张：这些仍只是机制可执行证据，
+最终是否形成“图像特定evidence ownership”只能由e120后correct相对wrong/generic/NULL与all-bypass的全量检索
+反事实决定，不能用训练期compatibility或CUR曲线替代。

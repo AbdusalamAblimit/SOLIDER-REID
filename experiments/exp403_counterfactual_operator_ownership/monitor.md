@@ -78,3 +78,20 @@ asset-v3自然覆盖official train=`15,618`图后PASS，五slot valid count=
 `a21b1c2e3f06b687c0940f10180d72ca9a4f39b9b2c8b097340160fe669faaad`。
 
 判断：`FRESH GENERIC ASSET PASS / ACTUAL BATCH64 CUDA/AMP PREFLIGHT GO / FORMAL NO-START`。
+
+## 2026-07-20 CUDA/AMP preflight 与 formal 启动
+
+真实 batch64 CUDA/AMP preflight 已自然退出，`16/16 PASS`，result 明确
+`formal_training_authorized=true`。默认 GradScaler 前四次只发生自然 scale backoff，第5次成功更新；12组共享
+生产参数梯度、correct evidence 梯度均 finite/nonzero，reference no-grad、RNG exact、eligible ratio=`1.0`，
+rho@e6=`0.0161510899663`，CUR=`0.0499977395`，checkpoint=`0`。遵照用户要求，不再增加 CPU 或诊断矩阵。
+
+启动前最后核对：remote HEAD=`fe854ea0808d86d37566100e59ea629e8b409d38`且 tracked clean，config SHA256=
+`06a80c9d7589fe539b4d8f5820df307f08868c2005517ae6fce3226ed8a470ba`，formal output为空、runner不存在、
+GPU无compute process。随后直接启动唯一 fresh seed1234/batch64/e120，main PID=`423319`、parent=`1`、
+8 workers，GPU唯一PID且约`8968 MiB`，checkpoint=`0`。
+
+e1 Iter60：Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
+`16.972/1.424/0.506/0.658/0.735/0.990/0.320/0.285/0.050`；eligible=`1.000`，CoeffStd=
+`1.555e-01`，EffRank=`15.690`，RNGExact=`1`，Student=`0`，Reliability=`0.997`，rho=`0`，
+BudgetAbs=`0`，finite。当前判定：`FORMAL RUNNING`；只按冻结协议监控，不早停、不续训、不改 recipe。

@@ -5475,3 +5475,13 @@ batch64 CUDA/AMP preflight。任何失败不调rho、outer loss、batch、stage�
 生产CPU/source必要门已`34/34 PASS`。按用户最新指令停止增加重复CPU矩阵，决策升级为
 `FRESH GENERIC ASSET + ACTUAL BATCH64 CUDA/AMP PREFLIGHT GO`；preflight全过后直接启动fresh once-only
 e120，不再插入非必要诊断。formal在preflight result显式授权前仍为`NO-START`。
+
+### [2026-07-20] 决策：exp403 preflight全过，直接启动唯一formal
+
+fresh generic asset-v3完成official train全覆盖；真实batch64 CUDA/AMP preflight为`16/16 PASS`并显式
+`formal_training_authorized=true`。共享生产参数、correct evidence梯度、reference no-grad/RNG、NULL/teacher-free
+state与checkpoint门均通过，GPU退出后空闲。未增加额外CPU矩阵。
+
+**决策**：立即启动唯一fresh seed1234/batch64/e120，当前`FORMAL RUNNING`，main PID=`423319`。禁止续训、
+换seed、调rho/loss/batch/stage、按中间指标早停或删除不利control；e120前checkpoint必须为0，最终只按冻结的
+full绝对门、correct-vs-controls和correct-vs-all-bypass三门裁决。
