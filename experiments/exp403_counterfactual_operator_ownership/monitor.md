@@ -142,3 +142,13 @@ Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
 RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`2.307e-04`，finite。
 remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
 warning=`0/0`，checkpoint=`0`。判断：继续自然运行，不按e30或训练期compatibility早停。
+
+## 2026-07-20 formal heartbeat：e40 eval / e41
+
+完整正式评测e40 mAP/R1/R5/R10=`49.5/59.8/74.6/80.8`，仅记录、不裁决。当前e41 Iter80：
+Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
+`0.393/0.755/0.286/0.191/0.082/0.983/0.311/0.100/0.050`；Compat C/W/G/N=
+`0.8882/0.8875/-0.0379/-1.0000`，eligible=`1.000`，CoeffStd=`1.454e-01`，EffRank=`15.623`，
+RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`1.947e-04`，finite。
+remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
+warning=`0/0`，checkpoint=`0`。判断：继续自然运行，不按e40或训练期compatibility早停。
