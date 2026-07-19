@@ -269,3 +269,22 @@ D0 mAP/R1 floor、correct-max(wrong/generic/NULL)和correct-all-bypass三个正�
 执行器已部署到fresh只读目录`/home/afr/reid-clean/audits/exp403_elo_cur_final_v1`，7个源文件语法、shell与
 动态base patch contract均PASS；generic 5x16常量与fresh asset逐值exact。contract/result/runner/manifest均
 尚未创建，GPU评测未启动。训练自然结束和退出终审PASS后才允许启动该once-only执行。
+
+## 2026-07-20 formal e120自然完成与final audit启动
+
+唯一fresh seed1234训练自然跑满e120；main PID=`423319`及8 workers均自然退出，GPU恢复`2 MiB/0%`。
+e120 Iter200 Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
+`0.135/0.734/0.274/0.166/0.042/0.988/0.296/0.100/0.050`；Compat C/W/G/N=
+`0.9243/0.9247/0.0259/-1.0000`，eligible=`0.969`，CoeffStd=`1.456e-01`，EffRank=`15.679`，
+RNGExact=`1`，Student/Reliability=`1/1`，rho=`0.080755450`，BudgetAbs=`1.118e-04`，finite。
+e120训练内正式评测mAP/R1/R5/R10=`57.0/67.4/79.7/84.1`，仍只记录，raw由final audit裁决。
+
+唯一checkpoint=`transformer_120.pth`，SHA256=
+`c5593cd73b06cde4ec3306b3458617d8835fa529b77c545923e874e7e780cc71`。冻结checkpoint contract
+`15/15 PASS`：state count=`237`、state SHA256=
+`ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9`，全部tensor finite、teacher-free，
+证据头和两个ELO router完整、static experts缺失，source/config/repo exact，训练进程与GPU compute均为0。
+
+随后串行启动唯一7臂全量RGB-only final audit；wrapper PID=`430930`，唯一GPU audit PID=`430932`，初始显存
+约`7924 MiB`，strict model load成功。当前判定：`FORMAL TRAINING COMPLETE / CHECKPOINT CONTRACT PASS /
+FINAL COUNTERFACTUAL RUNNING`。
