@@ -160,6 +160,20 @@ PASS；execution repo HEAD=`ed5783416528be4284adce11fa192fe119e344f4`且tracked 
 训练/审计进程，GPU=`2 MiB/0%`。当前状态`0E-FULL READY / NO-RESULT`，不授权Phase A/B训练或
 semantic multi-stage。
 
+## 2026-07-19 Phase A首次完整CUDA预检：实现审计FAIL并定位
+
+首次正确official runtime的24步CUDA/AMP预检自然完成，19次finite更新、前5步GradScaler exact skip；
+initial full/bypass exact，首个finite step两alpha梯度非零且六类branch梯度exact zero，随后18次finite
+更新两router的token/context/expert梯度与参数更新全部非零；final full/bypass max-abs=
+`2.522e-4`、mean L2=`6.101e-4`。NULL、teacher parity/isolation、strict reload、RGB-only、state finite、
+约8.01 GB峰值等其余12项门全部PASS。
+
+唯一FAIL是single-variable state：router-1的token/context projection与Semantic C0初始化不再exact。
+根因不是route数学或训练不稳定，而是router-0新增expert random draw推进了全局CPU RNG，导致随后
+router-1 projection取到不同随机数。该审计正确阻止了形式上的单变量混淆。修复冻结为expert init前后
+保存/恢复CPU RNG state，使新增random expert不移位任何非目标参数；必须用新exact source与新结果
+完整重做preflight，不能把当前FAIL JSON改写为PASS。
+
 首次启动后复核：PID=`884504`持续唯一运行，第一遍已推进到`correct-pass 5,632/15,618`；GPU=
 `2,402 MiB/99%`、唯一compute PID显存=`2,394 MiB`，异常关键词计数=`0`。继续自然运行，不作中间
 统计裁决。

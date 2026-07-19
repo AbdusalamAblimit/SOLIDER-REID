@@ -236,7 +236,9 @@ class SemanticSpatialRouter(nn.Module):
             self.expert = nn.Parameter(
                 torch.empty(region_count, rank, feature_channels)
             )
+            cpu_rng_state = torch.get_rng_state()
             nn.init.normal_(self.expert, mean=0.0, std=0.02)
+            torch.set_rng_state(cpu_rng_state)
             self.alpha_logit = nn.Parameter(torch.zeros(()))
         else:
             self.expert = nn.Parameter(

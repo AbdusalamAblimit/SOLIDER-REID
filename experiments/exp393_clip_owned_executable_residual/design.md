@@ -123,7 +123,8 @@ new: expert ~ small nonzero variance
 Phase A冻结`expert ~ Normal(0, 0.02)`，每个router各增加一个无shape广播歧义的scalar
 `alpha_logit`。config开关为`SEMANTIC_REZERO`且默认`False`；关闭时保持Semantic C0的zero expert、
 state keys和forward数学不变。开启时监控量记录乘alpha后的实际`applied_delta`，避免把尚未执行的
-pre-alpha branch误报成route贡献。
+pre-alpha branch误报成route贡献。expert随机初始化在保存/恢复CPU RNG state的局部区间完成，确保
+router-0的新随机draw不会移位router-1 projection或任何非目标参数的初始化。
 
 初始化仍严格`F'=F`，NULL mask/q仍严格identity；但首个finite step应有非零`alpha_logit`梯度。alpha打开
 后，token projection、context projection和expert都必须获得finite非零梯度。禁止同时加入rich code、
