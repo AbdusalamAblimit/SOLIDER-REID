@@ -219,3 +219,13 @@ warning=`0/0`，checkpoint=`0`。判断：继续自然运行，不按e80或训�
 RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`1.128e-04`，finite。
 remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
 warning=`0/0`，checkpoint=`0`。e90正式eval尚未产生；继续自然运行，不作中间裁决。
+
+## 2026-07-20 formal heartbeat：e90 eval / e96
+
+完整正式评测e90 mAP/R1/R5/R10=`56.5/66.9/80.0/84.6`，仅记录、不裁决。当前e96 Iter160：
+Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
+`0.146/0.732/0.273/0.166/0.043/0.985/0.295/0.100/0.050`；Compat C/W/G/N=
+`0.9225/0.9226/0.0278/-1.0000`，eligible=`0.969`，CoeffStd=`1.457e-01`，EffRank=`15.686`，
+RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`1.168e-04`，finite。
+remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
+warning=`0/0`，checkpoint=`0`。判断：继续自然运行，不按e90或训练期compatibility早停。
