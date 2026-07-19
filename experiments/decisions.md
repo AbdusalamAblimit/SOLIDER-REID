@@ -5227,3 +5227,17 @@ teacher与route两项授权。semantic multi-stage继续NO-START。
 **决策**：`Phase A CUDA preflight = PASS`，只授权RZ-C0 single-stage fresh seed1234完整120 epoch，必须
 final-only、自然跑满且做all-bypass终审。不提前授权Phase B；只有e120 full−all-bypass `>=+0.1 mAP`
 且full不比Semantic C0低超过`0.2 mAP`，RZ route才称alive并与已PASS的teacher门共同授权Phase B。
+
+## 2026-07-19：exp393 Phase A封板为ROUTE-ALIVE-FAIL，原Phase B不启动
+
+RZ-C0 e120 final=`56.8/66.8/79.6/83.9`；full mAP floor通过，但all-router-bypass四项完全相同，
+raw full−bypass=`-0.000249709 mAP point`，未达到预注册`+0.1`。checkpoint strict finite、teacher
+隔离、NULL identity、RGB-only和router参数轨迹全部通过，排除了“代码没接上”或“状态没保存”。
+
+**决策**：封板当前`random nonzero expert + ReID-owned free ReZero scalar`接口，禁止重跑、换seed、
+调alpha、改门槛或把e90/e110中间值当final。由于Phase A门未过，原Phase B不得实现或训练；Phase 0E
+teacher PASS保持有效且逻辑独立，因此不得把该FAIL扩大为CLIP–TAPF总体否定。
+
+下一步只授权新的route-ownership只读设计与CPU/static preflight：执行幅度不能再由一个可静默塌回零的
+自由标量独占，同时必须保留wrong evidence、static、generic normalized route与all-bypass，防止用
+“强迫route非零”伪造CLIP语义贡献。所有新门冻结前正式训练`NO-START`。

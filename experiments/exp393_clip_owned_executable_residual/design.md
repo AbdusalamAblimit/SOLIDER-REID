@@ -277,3 +277,14 @@ descriptor。删除CLIP image/text encoder、PCA、pose、teacher targets、teac
 
 该差分仍需与RegionCLIP、ALADIN、π-VL、PAFormer、ProFD的真实代码路径持续核对；若最终只能归纳为
 普通local CLIP KD加adapter，则不能作为主创新。
+
+## Phase A冻结结果（2026-07-19）
+
+RZ-C0自然e120 final=`56.8/66.8/79.6/83.9`，通过相对Semantic C0不低超过`0.2 mAP`的floor；
+但all-router-bypass的四项完全相同，raw full−bypass=`-0.000249709 mAP point`，未通过`+0.1`
+门槛。两个alpha、token/context projection与expert均更新且finite，synthetic descriptor也非exact，说明
+ReZero解决了梯度可达性，却没有让ReID目标选择有检索意义的执行幅度。
+
+因此Phase A按预注册规则`SEALED-NO-GO`，原Phase B保持`NO-START`。该结果只关闭当前RZ
+parameterization，不取消Phase 0E rich teacher证据，也不永久否定CLIP-owned route。下一设计必须显式
+回答执行幅度所有权，并用wrong/static/generic与all-bypass防止把“强制非零”误判成语义贡献。

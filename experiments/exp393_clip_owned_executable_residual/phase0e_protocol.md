@@ -154,3 +154,14 @@ teacher接口；Phase A/B正式训练与semantic multi-stage仍NO-START。
 - wrong mask失败：code没有绑定到正确局部support；
 - flip失败而其他门通过：先审查几何/ontology一致性，不能调阈值救场；
 - static或random control解释主要差异：不能称为CLIP-owned evidence，Phase B不启动。
+
+## Phase A接口终审对Phase 0E边界的修正
+
+Phase A RZ-C0 e120 final=`56.8/66.8/79.6/83.9`。同checkpoint的all-router-bypass为相同的一位
+小数四项，raw full−bypass=`-0.000249709 mAP point`，触发`ROUTE-ALIVE-FAIL`。strict finite、
+teacher隔离、NULL identity、RGB-only与两router参数轨迹均PASS，因此失败不是checkpoint或旁路实现错误，
+而是ReID-owned ReZero alpha只到`1e-4`量级，使实际residual不足以改变排序。
+
+该FAIL不回写或取消本协议的0E-FULL `SEALED-PASS`：rich centered CLIP local evidence仍在全量
+held-out PID上成立。它只阻断以RZ-C0为直接对照的原Phase B。后续若继续CLIP深耦合，必须另立route
+ownership设计与新门禁；不得重跑0E、降低`+0.1 mAP`门槛或把teacher PASS包装成ReID方法PASS。

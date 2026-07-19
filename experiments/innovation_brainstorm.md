@@ -3671,3 +3671,20 @@ wrong mask的五slot置信区间全部稳定为正。这排除了0E-128只是抽
 创新边界仍不变：random orthogonal比PCA拥有更高rank且保留强margin，所以不能叙述“PCA发现语义
 方向”。可争贡献只能是rich residual对生产branch的梯度/执行所有权，以及final可反事实检索贡献。
 下一步Phase A必须先证明route parameterization本身能离开identity，防止把teacher侧GO误当方法GO。
+
+## 2026-07-19：RZ-C0证明“梯度可达”仍不等于“执行幅度被任务拥有”
+
+Phase A把zero-expert冷启动修成random nonzero expert加zero ReZero scalar，CUDA preflight也确实观察到
+alpha首步梯度以及后续token/context/expert连续更新。但e120两个alpha只到
+`-1.843e-4/-1.363e-4`，synthetic descriptor gap仅`2.861e-6`，full与all-bypass的raw mAP差为
+`-0.000249709 point`。所以ReZero解决的是局部Jacobian和梯度拓扑，不会自动让global ReID objective
+为一个缺乏语义燃料的branch分配足够执行预算。
+
+这使“CLIP-owned executable mediator”的机制边界进一步收紧：下一接口不能再让一个只受ReID loss的
+自由scalar决定整条语义路径是否存在。候选应让rich evidence控制production branch方向，并用预注册、
+与D0残差能量匹配的有界执行预算避免静默塌零；但固定/强制预算本身绝不能算贡献，必须由correct相对
+wrong/static/generic和all-bypass的检索差共同证明CLIP ownership。CLIP仍不得直接蒸馏final descriptor，
+推理仍删除teacher/text/pose。
+
+Phase 0E全量PASS继续说明“有燃料”；Phase A FAIL说明“当前发动机拒绝点火”。下一研究对象是执行预算
+与证据方向的因果绑定，而不是重跑RZ、调一个更大的alpha初值或回到普通local CLIP KD。

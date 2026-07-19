@@ -371,3 +371,34 @@ final。
 e118–e119的`GateAbs`约`7.7e-08–8.5e-08`，保持finite、非零；Student=`1.00`，Q=`0.692`，
 Reliability=`0.512`。execution HEAD/config/tracked exact，main PID=`888440`与8 workers唯一，4090
 仅该main占用`8,236 MiB`；严格异常=`0`、e120前checkpoint=`0`，继续自然运行，不提前启动bypass。
+
+## 2026-07-19 Phase A RZ-C0 e120终审与all-router-bypass封板
+
+正式训练自然完成并退出，GPU恢复`2 MiB/0%`。唯一checkpoint为`transformer_120.pth`，SHA256=
+`0a605c535b703724a8a233a02b6f0bef8bf36ec5482af4ff192df83d285e0e90`；train log/runner SHA256=
+`408b56739f615ff184b15fff63c3f33dc56833f7e96405a9dc8b5f49f4304c62`/
+`9f09b53894781357c28ed0d6c88803998f3b4780c3992d674dbd030d8e6839d5`。e120 final
+mAP/R1/R5/R10=`56.8/66.8/79.6/83.9`，相对Semantic C0=`-0.1/-0.3/-1.0/-1.1`；mAP
+non-degradation floor通过，但这不等价route alive。
+
+独立终审用与preflight相同的两个router身份旁路，在同一checkpoint、RGB-only validation和指标实现上
+串行重算full与all-bypass。full raw mAP=`0.5681836464802273`，bypass raw mAP=
+`0.5681861435739023`，即full−bypass=`-0.000249709 mAP point`；四项一位小数均完全相同
+`56.8/66.8/79.6/83.9`，R1/R5/R10 raw也完全相同。该值远低于预注册`+0.1 mAP`门槛。
+
+终审同时PASS：233个state tensor严格load（missing/unexpected均空）、220个floating tensor全部finite、
+teacher-side key=`[]`、train/validation dataset均无pose store、两个NULL identity exact、两个router不相同、
+anchor与两router的token/context/expert/alpha参数轨迹全部changed。两个alpha最终为
+`-1.84316e-4/-1.36302e-4`；synthetic full-bypass descriptor虽非exact，但max-abs仅
+`2.8610e-6`、mean L2=`1.5980e-5`。这证明参数与descriptor数值可达，却仍不足以改变检索排序。
+
+审计script/result/runner SHA256=
+`56803bd76b337fc2914223505a3ecaeaf7aa238683b9c3add2ac11eb9f91d6c3`/
+`4422645417c34f66252cd4469e4e7a408bfead4b7dab68c1fc5c7b6229ad6eb6`/
+`4197f913654cef1272cf136a95a97155cea9eb8f8e7e7f2d14660875b7bbcced`，严格异常=`0`，进程自然
+退出，GPU恢复空闲。
+
+裁决：`Phase A RZ-C0 = SEALED-NO-GO / ROUTE-ALIVE-FAIL`。它只关闭“random nonzero expert +
+ReID-owned free ReZero scalar”接口；Phase 0E rich teacher证据仍保持独立`SEALED-PASS`，不否定
+CLIP–TAPF。按预注册规则Phase B不得启动，下一步转为只读设计新的route ownership；禁止重跑、换seed、
+调alpha或降低门槛。

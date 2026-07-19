@@ -2347,3 +2347,20 @@ PID-cluster CI下界=`0.756/0.748/0.733/0.773/0.766`，same-RGB wrong-mask CI下
 **最终判定**：`Phase 0E = SEALED-PASS`。它证明centered rich CLIP local evidence在全train
 held-out PID上稳定存在，但不证明ReID route会使用它；只授权Phase B teacher接口，正式训练仍需
 独立Phase A route-activation通过。
+
+## exp393 Phase A：RZ-C0 route activation终审（2026-07-19）
+
+RZ-C0 fresh seed1234自然跑满e120，final mAP/R1/R5/R10=`56.8/66.8/79.6/83.9`。相对
+Semantic C0=`-0.1/-0.3/-1.0/-1.1`，相对clean D0 seed1234=`-0.8/-0.9/-1.2/-0.7`。
+
+| frozen eval | mAP | R1 | R5 | R10 |
+|---|---:|---:|---:|---:|
+| RZ-C0 full | `56.8` | `66.8` | `79.6` | `83.9` |
+| all-router-bypass | `56.8` | `66.8` | `79.6` | `83.9` |
+
+raw full−bypass=`-0.000249709 mAP point`；R1/R5/R10 raw完全相同。checkpoint strict finite、
+teacher-free、RGB-only、NULL identity、两router独立和全部目标参数轨迹PASS；最终alpha仅
+`-1.843e-4/-1.363e-4`，synthetic descriptor max-abs gap=`2.861e-6`。
+
+**最终判定**：`Phase A RZ-C0 = SEALED-NO-GO / ROUTE-ALIVE-FAIL`。只关闭当前ReZero route
+接口；Phase 0E rich teacher仍为独立PASS。原Phase B不获授权，不重跑、不换seed、不降低门槛。

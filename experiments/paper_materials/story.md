@@ -1986,3 +1986,17 @@ macro effective rank=`12.335/16`，wrong RGB与wrong mask的逐slot置信区间�
 但它仍不进入方法主结果，因为没有任何ReID训练或检索提升。故事下一段必须由Phase A证明
 identity-safe route可被ReID loss打开，再由Phase B证明correct evidence相对wrong/static控制和
 all-bypass final贡献同时成立；少任一段，COER仍只是被充分审计的候选机制。
+
+## 2026-07-19：Phase A负结果把COER故事从ReZero修复推进到执行所有权
+
+RZ-C0自然e120 final=`56.8/66.8/79.6/83.9`，并通过strict finite、teacher-free、RGB-only、NULL
+identity及全部router参数轨迹审计；但all-router-bypass得到完全相同的一位小数四项，raw
+full−bypass只有`-0.000249709 mAP point`。因此不能把“alpha和expert更新过”写成route对检索有贡献。
+
+这项负结果与Phase 0E全量正证据并不矛盾：CLIP rich local residual真实存在，但当前执行幅度仍由只受
+ReID loss的自由ReZero scalar控制，最终被压到`1e-4`，使production residual对排序近似identity。
+论文主结果仍停留在exp390原子TAPF的mAP-only弱GO；exp393只作为机制诊断链，不进入正面方法表。
+
+若继续CLIP深耦合，下一故事必须证明三件事同时成立：rich evidence控制推理保留branch的方向；执行预算
+不会静默塌零；correct evidence相对wrong/static/generic与all-bypass产生可辨识检索差并不低于clean
+D0。任何“固定非零scale”只能是接口条件，不能自身充当创新或成功证据。
