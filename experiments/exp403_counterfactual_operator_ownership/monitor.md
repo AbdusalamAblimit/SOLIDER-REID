@@ -210,3 +210,12 @@ Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
 RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`1.210e-04`，finite。
 remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
 warning=`0/0`，checkpoint=`0`。判断：继续自然运行，不按e80或训练期compatibility早停。
+
+## 2026-07-20 formal heartbeat：e89
+
+当前e89 Iter200。Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
+`0.153/0.734/0.274/0.167/0.044/0.988/0.296/0.100/0.050`；Compat C/W/G/N=
+`0.9226/0.9223/0.0263/-1.0000`，eligible=`1.000`，CoeffStd=`1.454e-01`，EffRank=`15.676`，
+RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`1.128e-04`，finite。
+remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
+warning=`0/0`，checkpoint=`0`。e90正式eval尚未产生；继续自然运行，不作中间裁决。
