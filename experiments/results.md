@@ -2560,3 +2560,18 @@ implementation/static/result SHA=
 `32adc18d2b6dc06c0d3ea37ca6003d749a2ff2540efefdbca0e35e1fba2f0d98`。
 
 **当前判定**：`STATIC_CPU_SEALED_PASS / CUDA FRESH-EXECUTION GO / FORMAL NO-START`。
+
+### exp399 CUDA baseline-relative actual
+
+唯一fresh actual完成D0/rich各32行。两臂在attempts 1–5和7发生完全相同的shared-backbone native skip，
+scale自然降到`1,024`；attempts 8–32连续成功。两臂均`26/32` update，rich extra skip=`0`，e1/e6四个
+tail8全部success/finite。rich-specific 11组全程finite、e6均有非零梯度且state全部改变。
+
+全部validity、teacher/codebook、scratch/checkpoint与退出审计PASS。elapsed=`57.138093701563776 s`，peak
+memory=`7,901,594,112 bytes`。result/runner/manifest SHA=
+`d5255fced4553c6d4669ce11a1644e1495340a590ee76e54f22139f547cb9cca`/
+`d5255fced4553c6d4669ce11a1644e1495340a590ee76e54f22139f547cb9cca`/
+`b719b3acdec3746dae8f602fc526564a08047ae5ad1a9e2c3a3865a973c2b12e`。
+
+**最终判定**：`BASELINE_RELATIVE_STEADY_STATE_PASS / PRODUCTION PREFLIGHT GO / FORMAL NO-START`。
+它不重判exp397，只授权新编号final production preflight。

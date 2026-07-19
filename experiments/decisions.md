@@ -5376,3 +5376,13 @@ value绑定均已进入contract。exp398保持INVALID，不被覆盖。
 
 **决策**：`STATIC_CPU_SEALED_PASS / CUDA FRESH-EXECUTION GO`。按持续授权直接运行唯一fresh actual；
 32-step、tail8、default scale、loss和batch全部不变。
+
+### [2026-07-19] 决策：exp399 baseline-relative稳态PASS，推进final production preflight
+
+actual中D0/rich轨迹exact、各`26/32` update，attempts 8–32连续成功；rich没有extra skip或独有
+non-finite，11个rich组finite/active/state-changed全部PASS。这回答了exp398未进入的科学问题，同时不
+修改exp397原FAIL。
+
+**决策**：`BASELINE_RELATIVE_STEADY_STATE_PASS / PRODUCTION PREFLIGHT GO`。下一步新编号只补strict
+reload、teacher-free state、RGB-only、rho/full-bypass/双consumer、finite与final source/asset终审；全过
+后才授权唯一fresh e120。当前formal仍`NO-START`。

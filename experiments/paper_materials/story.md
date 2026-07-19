@@ -2084,3 +2084,12 @@ exp398在materialize数据和teacher target之后、首个D0 forward之前，因
 
 该结果只属于测量基础设施负证据：static synthetic必须覆盖真实parameter container。正面方法边界、
 exp397 SEALED-FAIL和formal NO-START均保持不变。
+
+## 2026-07-19：exp399证明rich AMP稳态不劣于matched D0
+
+在32个matched batch的default GradScaler轨迹中，D0/rich前期shared skip完全相同，scale自然降至
+`1,024`后连续25步成功；rich没有extra skip/独有non-finite，11个production组也在e6真实更新。因此
+exp394的绝对首步FAIL不能再叙述为rich graph数值不可训练。
+
+这仍不进入正面方法表：当前只通过动态稳态门，尚无strict reload/RGB-only/bypass终审或检索结果。故事
+下一步是final production preflight，之后才可能启动唯一fresh e120。

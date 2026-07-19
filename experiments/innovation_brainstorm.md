@@ -3777,3 +3777,13 @@ hasher没有用真实reporter返回的`(name, parameter)`容器做contract，act
 
 下一编号若修复，只能把这一点视为测量器必要条件；32步baseline-relative问题、rich production稳定性和
 论文贡献都仍未被回答。不能因为update为0就把失败解释成模型安全，也不能把reporter修复包装成方法创新。
+
+### exp399把shared scale适应与rich生产稳定性真正分开
+
+32步actual显示两臂前期六次skip完全同源于shared backbone，随后在scale=`1,024`连续25步成功；rich既
+没有额外skip，也没有任何独有non-finite，同时11个新增组在e6有非零梯度并真实改state。这是首个真实
+CUDA证据说明production rich graph在native scaler稳态上不劣于D0，而不是靠手工降低scale过门。
+
+这仍只是可训练性基础设施，不是方法贡献。下一final preflight必须证明内存更新后的production state可
+strict reload、teacher-free、RGB-only，并让两个consumer在nonzero rho下产生有限且非零的bypass差；
+之后仍需e120 retrieval和semantic counterfactual决定论文故事。

@@ -2,7 +2,8 @@
 
 ## 状态
 
-`PROTOCOL-FROZEN / STATIC-CPU SEALED-PASS / CUDA FRESH-EXECUTION GO /
+`PROTOCOL-FROZEN / STATIC-CPU SEALED-PASS /
+CUDA BASELINE-RELATIVE SEALED-PASS / PRODUCTION PREFLIGHT GO /
 FORMAL NO-START`
 
 ## 上游边界
@@ -31,3 +32,13 @@ production preflight，formal仍`NO-START`。
 `7948845f1600141302285cee12c025cbf0ba50faa1af01d1fb298bd3aa558810`/
 `32adc18d2b6dc06c0d3ea37ca6003d749a2ff2540efefdbca0e35e1fba2f0d98`。该PASS授权唯一fresh CUDA
 actual；不授权formal。
+
+## actual封板
+
+D0/rich各32行完整、skip/scale轨迹exact，各`26/32`成功；最后25步连续success，e1/e6四个tail8全部
+success/finite。rich extra skip=0，rich-only non-finite=0，11个rich-specific组finite/active/updated
+全部PASS。result/runner/manifest SHA=
+`d5255fced4553c6d4669ce11a1644e1495340a590ee76e54f22139f547cb9cca`/
+`d5255fced4553c6d4669ce11a1644e1495340a590ee76e54f22139f547cb9cca`/
+`b719b3acdec3746dae8f602fc526564a08047ae5ad1a9e2c3a3865a973c2b12e`。PASS只授权另立final
+production preflight；formal仍`NO-START`。

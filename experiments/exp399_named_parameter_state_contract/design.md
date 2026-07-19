@@ -2,8 +2,9 @@
 
 ## 当前状态
 
-`DESIGN-FROZEN / PROTOCOL-FROZEN / IMPLEMENTATION STATIC SEALED-PASS /
-STATIC-CPU SEALED-PASS / CUDA FRESH-EXECUTION GO / FORMAL NO-START`
+`DESIGN-FROZEN / PROTOCOL-FROZEN / STATIC-CPU SEALED-PASS /
+CUDA BASELINE-RELATIVE SEALED-PASS / PRODUCTION PREFLIGHT GO /
+FORMAL NO-START`
 
 ## 动机与唯一变量
 
@@ -38,3 +39,16 @@ implementation/static/result SHA=
 `7948845f1600141302285cee12c025cbf0ba50faa1af01d1fb298bd3aa558810`/
 `32adc18d2b6dc06c0d3ea37ca6003d749a2ff2540efefdbca0e35e1fba2f0d98`。裁决=
 `STATIC_CPU_SEALED_PASS / CUDA FRESH-EXECUTION GO`。
+
+## actual封板
+
+唯一fresh actual完成D0/rich各32行并PASS。两臂轨迹exact：attempts 1–5 shared backbone skip使scale
+`65,536→2,048`，attempt 6成功，attempt 7再次shared skip到`1,024`，attempts 8–32连续成功；两臂均
+`26/32` update、first success=6、rich extra skip=0。e1/e6四个tail8全部success/finite，rich-specific
+11组全程finite、e6均有非零梯度且initial/final state全部改变。
+
+全部validity gate、teacher/codebook、scratch/checkpoint与退出审计PASS。result/runner/manifest SHA=
+`d5255fced4553c6d4669ce11a1644e1495340a590ee76e54f22139f547cb9cca`/
+`d5255fced4553c6d4669ce11a1644e1495340a590ee76e54f22139f547cb9cca`/
+`b719b3acdec3746dae8f602fc526564a08047ae5ad1a9e2c3a3865a973c2b12e`。裁决=
+`BASELINE_RELATIVE_STEADY_STATE_PASS / PRODUCTION PREFLIGHT GO / FORMAL NO-START`。

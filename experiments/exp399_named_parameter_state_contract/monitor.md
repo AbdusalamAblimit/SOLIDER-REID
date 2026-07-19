@@ -2,8 +2,9 @@
 
 ## 状态
 
-`DESIGN-FROZEN / PROTOCOL-FROZEN / IMPLEMENTATION STATIC SEALED-PASS /
-STATIC-CPU SEALED-PASS / CUDA FRESH-EXECUTION GO / FORMAL NO-START`
+`DESIGN-FROZEN / PROTOCOL-FROZEN / STATIC-CPU SEALED-PASS /
+CUDA BASELINE-RELATIVE SEALED-PASS / PRODUCTION PREFLIGHT GO /
+FORMAL NO-START`
 
 ## 2026-07-19 接手
 
@@ -31,3 +32,26 @@ SHA：implementation=
 `32adc18d2b6dc06c0d3ea37ca6003d749a2ff2540efefdbca0e35e1fba2f0d98`。
 
 裁决：`STATIC_CPU_SEALED_PASS / CUDA FRESH-EXECUTION GO`；直接推进唯一actual。
+
+## 唯一CUDA actual
+
+- fresh repo=`/home/afr/SOLIDER-REID-exp399-named-state-fresh-11d7a35`，HEAD exact、tracked clean、无
+  alternate；production/reporter/CLIP/codebook/runtime SHA exact；
+- D0/rich各32行完整，status=`PASS`，outcome=`BASELINE_RELATIVE_STEADY_STATE_PASS`；
+- attempts 1–5与7仅shared backbone skip，两臂scale轨迹exact；attempts 8–32连续success；
+- D0/rich均`26/32` update、first success=6；extra rich skip=`0`、rich-only non-finite=`0`；
+- `d0/rich × e1/e6`四个tail8均success/finite；
+- rich-specific 11组全程finite、e6 nonzero active、initial/final state changed全部PASS；
+- source/runtime/assets、common init、coverage、target、matched RNG、teacher/codebook state/version、scratch、
+  checkpoint全部PASS；
+- elapsed=`57.138093701563776 s`，peak memory=`7,901,594,112 bytes`，checkpoint=`0`、scratch=`0`；
+- result/runner/manifest/stdout SHA=
+  `d5255fced4553c6d4669ce11a1644e1495340a590ee76e54f22139f547cb9cca`/
+  `d5255fced4553c6d4669ce11a1644e1495340a590ee76e54f22139f547cb9cca`/
+  `b719b3acdec3746dae8f602fc526564a08047ae5ad1a9e2c3a3865a973c2b12e`/
+  `8a0f6e13433382f61bf0f1f510a636b3ae9f2f0c9bbe26d67698e1b26644e6c8`；
+- 进程自然退出，GPU=`2 MiB/0%`、compute process=`0`，异常扫描无Traceback/RuntimeError/OOM/AMP
+  warning。
+
+裁决：`CUDA BASELINE-RELATIVE SEALED-PASS / PRODUCTION PREFLIGHT GO / FORMAL NO-START`。它证明default
+GradScaler自然适应后rich不劣于D0且生产组真实更新；尚未完成strict reload、RGB-only、bypass或检索门。
