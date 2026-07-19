@@ -2,7 +2,8 @@
 
 ## 状态
 
-`PROTOCOL-FROZEN / STATIC-CPU SEALED-PASS / FORMAL RUNNING`
+`PROTOCOL-FROZEN / FORMAL SEALED-PASS / RICH_BUDGET_ROUTE_ALIVE /
+PHASE-B INTERFACE GO`
 
 ## static封板
 
@@ -45,3 +46,10 @@ Traceback/RuntimeError/OOM/nonfinite/overflow/AMP warning。每个完整e10 eval
 训练自然退出后验证PID/workers退出、GPU空闲、唯一checkpoint与SHA、strict finite、teacher不在state、
 两个router/evidence head retained、RGB-only。随后在同一checkpoint上串行执行full与all-router-bypass exact
 retrieval，不改state、不保存新checkpoint。route alive门=`full-bypass >= +0.1 mAP`且`full >=56.7 mAP`。
+
+## final封板
+
+e120 full raw mAP=`57.1230075595`，all-router-bypass raw mAP=`57.0035860757`，差值=
+`+0.1194214838 point`；两项预注册门均PASS。终审41项gate全PASS，执行前后checkpoint/config/source/
+model state exact，两个router各在78个validation batch全部旁路并精确恢复。协议最终状态=
+`RICH_BUDGET_ROUTE_ALIVE / PHASE-B INTERFACE GO`；当前编号禁止重跑、补跑、续训或换seed。

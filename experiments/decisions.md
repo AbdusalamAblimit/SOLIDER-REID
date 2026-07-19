@@ -5414,3 +5414,16 @@ config差异严格限定为三个fresh路径项；exp400授权、source、recipe
 
 **决策**：`STATIC-CPU SEALED-PASS / FORMAL FRESH-EXECUTION GO`。直接启动唯一fresh e120；任何中间
 mAP、loss或GateAbs不得裁决或早停，e120前checkpoint必须为0。
+
+### [2026-07-19] 决策：exp401通过final route门，授权Phase-B interface
+
+唯一fresh seed1234自然完成e120，final full=`57.1/67.3/80.3/84.8`；241项checkpoint state finite且
+teacher-free，strict reload、RGB-only、两个router/evidence head、source/config/checkpoint恢复与退出审计
+全部PASS。冻结all-router-bypass raw mAP=`57.0035860757`，full raw mAP=`57.1230075595`，差=
+`+0.1194214838 point`；绝对full门`56.7`与差值门`+0.1`均通过。两个router各在78个batch完整旁路，
+不是抽样descriptor差或GateAbs替代检索。
+
+**决策**：封板exp401为`RICH_BUDGET_ROUTE_ALIVE / PHASE-B INTERFACE GO`，禁止重跑、补跑、续训、换seed
+或降低后续门槛。该PASS比差值门只高`0.0194214838 point`，R1差为`−0.0904977322 point`，因此只授权
+以exp401冻结production graph为接口基线进入Phase-B correct-vs-wrong/static/generic强反事实；不得把单seed
+窄幅route贡献直接写成论文主结论，也不得通过调rho/loss/batch放大同一C0臂。

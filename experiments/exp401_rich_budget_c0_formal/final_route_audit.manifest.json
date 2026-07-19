@@ -1,0 +1,81 @@
+{
+  "anomaly_scan": {
+    "amp_numeric_warning_count": 0,
+    "nan_inf_count": 0,
+    "nonfinite_overflow_count": 0,
+    "oom_count": 0,
+    "runtime_error_count": 0,
+    "traceback_count": 0
+  },
+  "audit": {
+    "bypass_calls": [
+      78,
+      78
+    ],
+    "failed_gates": [],
+    "gate_count": 41,
+    "rgb_only": true,
+    "strict_reload": true
+  },
+  "completed_at": "2026-07-19T16:08:30Z",
+  "decision": "RICH_BUDGET_ROUTE_ALIVE",
+  "experiment": "exp401_rich_budget_c0_formal",
+  "metrics": {
+    "all_router_bypass": {
+      "mAP": 0.5700358607568072,
+      "rank1": 0.6737556457519531,
+      "rank10": 0.8461538553237915,
+      "rank5": 0.800452470779419
+    },
+    "full": {
+      "mAP": 0.5712300755952,
+      "rank1": 0.6728506684303284,
+      "rank10": 0.8475112915039062,
+      "rank5": 0.8027149438858032
+    },
+    "full_minus_all_bypass_mAP": 0.0011942148383927709
+  },
+  "phase_b_interface_authorized": true,
+  "post_run_audit": {
+    "audit_pid": 412676,
+    "audit_process_exited": true,
+    "checkpoint_count": 1,
+    "checkpoint_unique": true,
+    "gpu_compute_process_count": 0,
+    "gpu_memory_mib": 2,
+    "gpu_utilization_percent": 0,
+    "remote_repo_clean": true,
+    "training_main_and_workers_exited": true,
+    "verified_at": "2026-07-19T16:11:20Z"
+  },
+  "remote_paths": {
+    "checkpoint": "/home/afr/SOLIDER-REID-exp401-rich-budget-c0-formal-11d7a35/log/occluded_duke/exp401_clean_swin_tiny_rich_budget_c0_s1234/transformer_120.pth",
+    "config": "/home/afr/reid-clean/formal/exp401_rich_budget_c0/swin_tiny_tapf_rich_budget_c0_formal.yml",
+    "result": "/home/afr/reid-clean/formal/exp401_rich_budget_c0/final_route_audit.result.json",
+    "runner": "/home/afr/train-logs/exp401_final_route_audit.runner.log",
+    "script": "/home/afr/reid-clean/formal/exp401_rich_budget_c0/final_route_audit.py"
+  },
+  "sha256": {
+    "checkpoint": "fe00d08a9a0f651c2c0852c0661e720995a65292459aec9797a359895aa52efc",
+    "checkpoint_state": "3c2af267a4d15cc7f199c6b55fefcbb30c05f0c8f47940de13769e555c4d4035",
+    "config": "c2992bdf4321f906b19eb22dc7ec69a5678498ea0f93bf55a45a15a2e47cea84",
+    "result": "30e61f3dabd6dfed534e7d234b27ddeb77c6278b08f8dbed66acc7cf23f49ba3",
+    "runner": "e01253fb39a4b8048bfb9197b518a17036b078a7595ebd742185af8d0005bc92",
+    "script": "95aa6b8668ce0ec7f0cdaf7a7a25c6f0e0b9d1e2a9d615762b13e5e818f82259"
+  },
+  "source": {
+    "local_audit_script_commit": "567ba009548b3a4c763276435c3f1f24801268a0",
+    "remote_execution_commit": "11d7a35788c4645c355d96d76a2a4ff20a9801ac"
+  },
+  "state": {
+    "checkpoint_tensor_count": 241,
+    "evidence_head_retained": true,
+    "teacher_free": true,
+    "two_router_heads_retained": true
+  },
+  "status": "PASS",
+  "thresholds": {
+    "minimum_full_mAP": 0.567,
+    "minimum_full_minus_all_bypass_mAP": 0.001
+  }
+}

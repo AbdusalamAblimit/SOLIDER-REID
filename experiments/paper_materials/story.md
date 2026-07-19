@@ -2111,3 +2111,18 @@ RGB-only和两个consumer独立bypass全部通过。由此可以严谨地说当�
 
 故事下一步进入唯一fresh e120。只有final checkpoint上full相对all-router-bypass达到预注册mAP差，并且
 full不跌破Semantic C0底线，rich CLIP teacher证据链才与ReID route形成闭环。
+
+## 2026-07-19：exp401闭合了route-alive链，但论文主张仍需Phase-B语义反事实
+
+唯一fresh rich-budget C0自然跑满e120，full=`57.1/67.3/80.3/84.8`。在同一checkpoint上逐批关闭两个
+router后，all-bypass=`57.0/67.4/80.0/84.6`；raw mAP差=`+0.1194214838 point`，full raw mAP=
+`57.1230075595`，同时越过预注册`+0.1` route门和`56.7`性能底线。checkpoint的241项state finite/
+teacher-free，strict reload、RGB-only与两个consumer完整旁路均通过，所以这不是训练期teacher泄漏、
+checkpoint缺项或抽样descriptor差。
+
+因此可以严谨地说：当前fixed-budget rich route在正式检索上“存活”，Phase-B interface获得授权。但它
+还不是论文主贡献：mAP余量只有`0.0194214838 point`，R1反而相对bypass低`0.0904977322 point`，且只有
+一个seed。正文候选故事的下一必要证据是保持该production graph和预算不变，让correct rich evidence与
+wrong RGB、wrong mask、static、random-orthogonal、generic expert-mean及all-bypass形成强反事实闭环。
+只有correct-specific优势和route贡献同时成立，才能把当前结果升级为CLIP-owned semantic mediator；
+否则应把exp401保留为接口级弱正证据，而不是放大为最终方法结论。

@@ -2633,3 +2633,26 @@ fresh source/config/assets审计全PASS后，唯一seed1234 e120已启动。main
 workers，首批teacher evidence与e1 Iter20所有loss有限，rho/BudgetAbs按冻结schedule均为0，checkpoint=0。
 
 **当前判定**：`FORMAL RUNNING`。中间eval只记录，不裁决、不早停。
+
+### exp401 formal e120与final route counterfactual
+
+唯一fresh seed1234自然跑满e120，final full mAP/R1/R5/R10=`57.1/67.3/80.3/84.8`。e120 Iter200
+Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Exec=
+`0.142/0.794/0.334/0.163/0.036/0.973/0.280/0.218`，Student=`1`，Reliability=`1`，rho=
+`0.080755450`，BudgetAbs=`8.818e-03`，finite。main与8 workers自然退出；唯一checkpoint SHA256=
+`fe00d08a9a0f651c2c0852c0661e720995a65292459aec9797a359895aa52efc`。
+
+同一checkpoint的冻结终审41项gate全PASS：241项state finite/teacher-free、strict reload、evidence head/
+两个router保留、RGB-only ExplodingPose零访问、两个router各78个batch exact identity bypass、patch/state/
+checkpoint/config/source恢复exact。raw full=`57.1230075595/67.2850668430/80.2714943886/84.7511291504`，
+all-router-bypass=`57.0035860757/67.3755645752/80.0452470779/84.6153855324`，full−bypass=
+`+0.1194214838/−0.0904977322/+0.2262473106/+0.1357436180 point`。
+
+full mAP通过`56.7`绝对门，mAP差通过`+0.1`反事实门。result/runner/manifest SHA256=
+`30e61f3dabd6dfed534e7d234b27ddeb77c6278b08f8dbed66acc7cf23f49ba3`/
+`e01253fb39a4b8048bfb9197b518a17036b078a7595ebd742185af8d0005bc92`/
+`c5b1b1fbe0506fc7622e775418805b523a713f107765ecfca09c4d8bba3829f3`。训练与审计异常均为0，进程退出，
+GPU=`2 MiB/0%`。
+
+**最终判定**：`RICH_BUDGET_ROUTE_ALIVE / PHASE-B INTERFACE GO`。这是刚越过预注册差值门的单seed
+interface PASS；它不支持夸大effect size或声称R1提升，也不自动构成多seed论文结果。

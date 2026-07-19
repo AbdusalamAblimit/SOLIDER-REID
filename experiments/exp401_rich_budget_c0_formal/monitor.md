@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-`DESIGN-FROZEN / PROTOCOL-FROZEN / STATIC-CPU SEALED-PASS /
-FORMAL RUNNING`
+`DESIGN-FROZEN / PROTOCOL-FROZEN / FORMAL SEALED-PASS /
+RICH_BUDGET_ROUTE_ALIVE / PHASE-B INTERFACE GO`
 
 ## 2026-07-19 接手
 
@@ -208,3 +208,42 @@ FORMAL RUNNING`
 - exact HEAD/config/source tracked及all status clean；main PID=`404782`、8 workers、唯一GPU process，约
   `8,626 MiB`；checkpoint=`0`，异常与AMP数值warning扫描均=`0`；
 - 当前判断=`继续`；原因：e110评测完整，余约3个epoch；训练、数值及冻结执行边界正常，不提前裁决。
+
+## 2026-07-19 e120自然完成与训练终审
+
+- 唯一fresh训练自然完成e120；final full mAP/R1/R5/R10=`57.1/67.3/80.3/84.8`，未续训、未早停、
+  未换seed或挑best；
+- e120 Iter200 Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Exec=
+  `0.142/0.794/0.334/0.163/0.036/0.973/0.280/0.218`，Student=`1.00`，Reliability=`1.000`，
+  rho=`0.080755450`，BudgetAbs=`8.818e-03`，全部finite；
+- main PID=`404782`与8个workers自然退出，GPU恢复`2 MiB/0%`且无compute process；训练log的
+  NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow/AMP数值warning均=`0`；
+- e120前checkpoint始终为0；结束后唯一checkpoint=`transformer_120.pth`，SHA256=
+  `fe00d08a9a0f651c2c0852c0661e720995a65292459aec9797a359895aa52efc`；remote exact HEAD/config/source
+  与tracked/all clean保持不变。
+
+## 2026-07-19 final full→all-router-bypass终审
+
+- 正式执行前先以冻结runtime对真实241项checkpoint做CPU检查，并修正未执行脚本中对0维
+  `num_batches_tracked`的byte-view contract；修正后script SHA256=
+  `95aa6b8668ce0ec7f0cdaf7a7a25c6f0e0b9d1e2a9d615762b13e5e818f82259`，syntax/`--help`均未初始化
+  CUDA；该检查没有产生formal retrieval结果或占用GPU；
+- 唯一final audit PID=`412676`串行完成full后，临时把两个`apply_gate` consumer改为exact identity；
+  两个router各在78个validation batch全部旁路，finally精确恢复，未启动并行GPU任务；
+- 41项gate全PASS：checkpoint唯一、241项state finite/teacher-free、evidence head与两个router保留、
+  strict reload exact、rho为非parameter/nonbuffer Python float、fresh CLIP/codebook regular且SHA exact、
+  `None`与ExplodingPose descriptor逐元素exact且pose访问0、model/checkpoint/config/source执行前后exact；
+- full raw mAP/R1/R5/R10=
+  `57.1230075595/67.2850668430/80.2714943886/84.7511291504`；all-router-bypass=
+  `57.0035860757/67.3755645752/80.0452470779/84.6153855324`；full−bypass=
+  `+0.1194214838/−0.0904977322/+0.2262473106/+0.1357436180 point`；
+- full raw mAP通过`56.7`绝对门，mAP差通过`+0.1`反事实门；差值仅比门槛高`0.0194214838 point`，
+  因此严格判PASS但不夸大effect size，R1也未形成正差；
+- audit与训练进程均退出，GPU=`2 MiB/0%`，唯一checkpoint及SHA不变，异常扫描=`0`；
+  result/runner/manifest SHA256=
+  `30e61f3dabd6dfed534e7d234b27ddeb77c6278b08f8dbed66acc7cf23f49ba3`/
+  `e01253fb39a4b8048bfb9197b518a17036b078a7595ebd742185af8d0005bc92`/
+  `c5b1b1fbe0506fc7622e775418805b523a713f107765ecfca09c4d8bba3829f3`。
+
+最终裁决=`RICH_BUDGET_ROUTE_ALIVE / PHASE-B INTERFACE GO`。exp401正式封板且禁止重跑、补跑、续训；
+该单seed窄幅PASS只授权下一阶段interface/strong-counterfactual设计，不自动成为论文主结果或多seed结论。

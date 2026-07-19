@@ -3806,3 +3806,17 @@ teacher-free strict state全过，说明teacher仅是训练监督源，不是部
 
 不过这些差仍来自32-step内存state，不能推断e120后的mAP贡献。下一步的创新证据单位必须回到正式
 checkpoint上的`full - all-router-bypass`检索差，并与Semantic C0性能底线共同裁决route alive。
+
+### exp401证明fixed-budget route存活，但信号仍处在接口级而非贡献级
+
+exp401首次在自然e120 checkpoint上同时满足full mAP floor与all-router-bypass差：full raw mAP=
+`57.1230075595`，bypass=`57.0035860757`，差=`+0.1194214838 point`。这意味着owned fixed budget没有像
+free ReZero scalar那样静默塌成retrieval identity，Phase0E rich evidence、AMP稳态和正式执行route终于
+在同一链条上闭合。
+
+但这个PASS只比预注册门高`0.0194214838 point`，而R1差为`−0.0904977322 point`；更准确的解释是当前
+route对整体排序有小而可测的重分配，不是已经形成强top-1优势。下一创新对象因此不能是继续调rho、loss、
+batch或route scale，而应是Phase-B语义接口：在保持exp401执行预算与production graph冻结的前提下，
+验证correct evidence是否稳定优于wrong RGB、wrong mask、slot-static/random-orthogonal与generic expert-mean，
+同时保留all-bypass。只有correct-specific差与route差共同扩大，才能把“活的执行接口”升级为
+“CLIP-owned semantic mediator”；否则exp401仍只是一个严谨但弱效的接口证据。
