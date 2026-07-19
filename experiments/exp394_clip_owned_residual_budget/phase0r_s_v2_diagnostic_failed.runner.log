@@ -1,0 +1,180 @@
+{
+  "checks": {
+    "all_gradient_ownership_exact": true,
+    "all_gradient_reports_finite": true,
+    "correct_wrong_branch_distinct": true,
+    "normalization_finite": true,
+    "null_mask_applied_exact_zero": true,
+    "null_mask_identity_exact": true,
+    "null_presence_applied_exact_zero": true,
+    "null_presence_identity_exact": true,
+    "rho_not_parameter_or_buffer": true,
+    "rho_zero_applied_finite": true,
+    "rho_zero_full_bypass_exact": true,
+    "schedule_fixed_after_handoff": true,
+    "schedule_handoff_monotonic": true,
+    "schedule_repeat_exact": true,
+    "schedule_teacher_exact_zero": true,
+    "static_branch_finite": true,
+    "static_code_no_sample_variation": false,
+    "zero_mass_slot_exact_zero": true
+  },
+  "gradient_gates": {
+    "exec_blocks_anchor": true,
+    "exec_blocks_backbone": true,
+    "exec_blocks_id_head": true,
+    "exec_updates_evidence_head": true,
+    "exec_updates_router": true,
+    "reid_blocks_anchor": true,
+    "reid_blocks_evidence_head": true,
+    "reid_updates_backbone": true,
+    "reid_updates_id_head": true,
+    "reid_updates_router": true,
+    "teacher_blocks_backbone": true,
+    "teacher_blocks_id_head": true,
+    "teacher_blocks_router": true,
+    "teacher_updates_anchor": true,
+    "teacher_updates_evidence_head": true
+  },
+  "gradients": {
+    "exec": {
+      "anchor": {
+        "grad_abs_max": 0.0,
+        "grad_nonzero": 0,
+        "grad_present": 0,
+        "parameters": 1
+      },
+      "backbone": {
+        "grad_abs_max": 0.0,
+        "grad_nonzero": 0,
+        "grad_present": 0,
+        "parameters": 1
+      },
+      "evidence_head": {
+        "grad_abs_max": 0.0008686294895596802,
+        "grad_nonzero": 1,
+        "grad_present": 1,
+        "parameters": 1
+      },
+      "id_head": {
+        "grad_abs_max": 0.0,
+        "grad_nonzero": 0,
+        "grad_present": 0,
+        "parameters": 1
+      },
+      "router_experts": {
+        "grad_abs_max": 0.010645341128110886,
+        "grad_nonzero": 5,
+        "grad_present": 5,
+        "parameters": 5
+      },
+      "router_token_context_evidence": {
+        "grad_abs_max": 0.014088996686041355,
+        "grad_nonzero": 3,
+        "grad_present": 3,
+        "parameters": 3
+      }
+    },
+    "reid": {
+      "anchor": {
+        "grad_abs_max": 0.0,
+        "grad_nonzero": 0,
+        "grad_present": 0,
+        "parameters": 1
+      },
+      "backbone": {
+        "grad_abs_max": 0.09233386814594269,
+        "grad_nonzero": 1,
+        "grad_present": 1,
+        "parameters": 1
+      },
+      "evidence_head": {
+        "grad_abs_max": 0.0,
+        "grad_nonzero": 0,
+        "grad_present": 0,
+        "parameters": 1
+      },
+      "id_head": {
+        "grad_abs_max": 0.12705105543136597,
+        "grad_nonzero": 1,
+        "grad_present": 1,
+        "parameters": 1
+      },
+      "router_experts": {
+        "grad_abs_max": 0.017457371577620506,
+        "grad_nonzero": 5,
+        "grad_present": 5,
+        "parameters": 5
+      },
+      "router_token_context_evidence": {
+        "grad_abs_max": 0.023287806659936905,
+        "grad_nonzero": 3,
+        "grad_present": 3,
+        "parameters": 3
+      }
+    },
+    "teacher": {
+      "anchor": {
+        "grad_abs_max": 0.07098511606454849,
+        "grad_nonzero": 1,
+        "grad_present": 1,
+        "parameters": 1
+      },
+      "backbone": {
+        "grad_abs_max": 0.0,
+        "grad_nonzero": 0,
+        "grad_present": 0,
+        "parameters": 1
+      },
+      "evidence_head": {
+        "grad_abs_max": 0.018568512052297592,
+        "grad_nonzero": 1,
+        "grad_present": 1,
+        "parameters": 1
+      },
+      "id_head": {
+        "grad_abs_max": 0.0,
+        "grad_nonzero": 0,
+        "grad_present": 0,
+        "parameters": 1
+      },
+      "router_experts": {
+        "grad_abs_max": 0.0,
+        "grad_nonzero": 0,
+        "grad_present": 0,
+        "parameters": 5
+      },
+      "router_token_context_evidence": {
+        "grad_abs_max": 0.0,
+        "grad_nonzero": 0,
+        "grad_present": 0,
+        "parameters": 3
+      }
+    }
+  },
+  "measurements": {
+    "applied_abs_max": 2.43721604347229,
+    "correct_wrong_proposal_max_abs": 0.06450289487838745,
+    "normalized_abs_max": 2.484922409057617,
+    "static_input_evidence_max_abs": 0.0,
+    "static_input_mask_max_abs": 0.0,
+    "static_input_token_max_abs": 0.0,
+    "static_sample_proposal_max_abs": 7.450580596923828e-08
+  },
+  "schedule": [
+    0.0,
+    0.0,
+    0.0,
+    0.041666666666666664,
+    0.08333333333333333,
+    0.125,
+    0.125,
+    0.125
+  ],
+  "scope": "EXP394_PHASE0R_SYNTHETIC_CPU_CONTRACT",
+  "script_sha256": "ce261eb1918555baa6a0a55dc20d37815892b98df520d3fc4ee7f20cb161bffc",
+  "seed": 20260719,
+  "torch_version": "2.13.0",
+  "verdict": "PHASE0R_S_FAIL"
+}
+output_sha256=48a21f40af1c84d6b020d34236bc40df31b40d17e57ea28223421fd50cfe4967
