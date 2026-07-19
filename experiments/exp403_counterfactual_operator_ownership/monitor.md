@@ -171,3 +171,13 @@ Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
 RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`1.480e-04`，finite。
 remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
 warning=`0/0`，checkpoint=`0`。判断：继续自然运行，不按e50或训练期compatibility早停。
+
+## 2026-07-20 formal heartbeat：e60 eval / e62
+
+完整正式评测e60 mAP/R1/R5/R10=`53.0/63.0/76.9/82.4`，仅记录、不裁决。当前e62 Iter20：
+Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
+`0.195/0.745/0.279/0.172/0.057/0.993/0.301/0.100/0.050`；Compat C/W/G/N=
+`0.9105/0.9101/0.0057/-1.0000`，eligible=`0.969`，CoeffStd=`1.452e-01`，EffRank=`15.662`，
+RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`1.259e-04`，finite。
+remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
+warning=`0/0`，checkpoint=`0`。判断：继续自然运行，不按e60或训练期compatibility早停。
