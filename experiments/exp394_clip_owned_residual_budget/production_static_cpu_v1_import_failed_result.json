@@ -1,0 +1,12 @@
+{
+  "status": "FAIL",
+  "stage": "entry-import",
+  "cause": "script directory was on sys.path but repository root was absent",
+  "model_constructed": false,
+  "contract_executed": false,
+  "cuda_initialized": false,
+  "production_formula_changed": false,
+  "threshold_changed": false,
+  "script_sha256": "a6997a60e138f83e749a6976bd1fd75eaeea4950571b09a7059d0eb722c3fae1",
+  "runner_sha256": "7055832de3b539b5a86848b2564bd4879136a424292594828afd08e424d983b3"
+}

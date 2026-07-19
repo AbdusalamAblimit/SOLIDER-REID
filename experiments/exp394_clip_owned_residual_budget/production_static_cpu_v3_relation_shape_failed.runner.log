@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "/Users/abdslm/Desktop/SOLIDER-REID/experiments/exp394_clip_owned_residual_budget/production_static_cpu_contract.py", line 723, in <module>
+    main()
+  File "/Users/abdslm/Desktop/SOLIDER-REID/experiments/exp394_clip_owned_residual_budget/production_static_cpu_contract.py", line 686, in main
+    production, diagnostics = production_contract(current)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/abdslm/Desktop/SOLIDER-REID/experiments/exp394_clip_owned_residual_budget/production_static_cpu_contract.py", line 320, in production_contract
+    zero_output, zero_state, zero_tokens = forward(1)
+                                           ^^^^^^^^^^
+  File "/Users/abdslm/Desktop/SOLIDER-REID/experiments/exp394_clip_owned_residual_budget/production_static_cpu_contract.py", line 317, in forward
+    output = model.apply_gate(bank, output, (2, 2), state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/abdslm/Desktop/SOLIDER-REID/model/tapf.py", line 1070, in apply_gate
+    exec_loss = relation_gram_loss(
+                ^^^^^^^^^^^^^^^^^^^
+  File "/Users/abdslm/Desktop/SOLIDER-REID/model/tapf.py", line 613, in relation_gram_loss
+    raise ValueError("student/teacher evidence must share shape [B,R,D]")
+ValueError: student/teacher evidence must share shape [B,R,D]

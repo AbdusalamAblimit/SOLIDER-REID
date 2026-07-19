@@ -2364,3 +2364,18 @@ teacher-free、RGB-only、NULL identity、两router独立和全部目标参数�
 
 **最终判定**：`Phase A RZ-C0 = SEALED-NO-GO / ROUTE-ALIVE-FAIL`。只关闭当前ReZero route
 接口；Phase 0E rich teacher仍为独立PASS。原Phase B不获授权，不重跑、不换seed、不降低门槛。
+
+## exp394 Production static/CPU：证据预算化rich residual实现门禁（2026-07-19）
+
+在exp393 exact source seam上完成默认关闭的fresh production实现。独立CPU contract相对实现前commit
+逐state/forward复核D0、HT0、Semantic C0、RZ-C0全部exact；新route的e1–e5 rho=0 full/bypass exact、
+NULL mask/presence identity、e6–e9线性schedule、e10+/eval固定预算、两个consumer、strict reload、
+relation loss与teacher-free state全部PASS。evidence、mask/presence、`L_exec`、ReID四类loss的梯度
+所有权逐组符合冻结协议。
+
+最终两遍result与runner逐SHA一致，script/result/runner SHA256=
+`5be2980eb6a666f791ba5e3cd87bbabb7a0b9934bb44724e091cbbb7e4545cd1`/
+`658ac1fd261ec09db618e9d658ae00fa3f0f7d7887b87e8716c601adbc8b0636`/
+`658ac1fd261ec09db618e9d658ae00fa3f0f7d7887b87e8716c601adbc8b0636`。该结果只封板CPU实现契约，
+不含真实CLIP吞吐、AMP更新或检索结果；裁决为`PRODUCTION_STATIC_CPU_SEALED_PASS / CUDA NO-START /
+FORMAL NO-START`。

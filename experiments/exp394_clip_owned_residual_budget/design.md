@@ -3,8 +3,8 @@
 ## 当前状态
 
 `DESIGN-FROZEN / PHASE 0R-S SEALED-PASS / PHASE 0R-128 SEALED-PASS /
-rho_star=0.08075544983148575 / PHASE 0P SOURCE PASS / FRESH IMPLEMENTATION GO /
-CUDA NO-START / FORMAL NO-START`。本实验不是exp393 Phase B续跑，不复用其训练checkpoint，也不
+rho_star=0.08075544983148575 / PHASE 0P SOURCE PASS / PRODUCTION STATIC-CPU PASS /
+CUDA PREFLIGHT DESIGN GO / CUDA NO-START / FORMAL NO-START`。本实验不是exp393 Phase B续跑，不复用其训练checkpoint，也不
 降低Phase A门槛。只复用已封板的Phase 0E rich teacher定义与codebook SHA。
 
 ## 动机
@@ -134,3 +134,14 @@ eval10、checkpoint120；fresh、单变量bundle、唯一4090、final-only、自
 不能把固定预算、RMSNorm、PCA或local CLIP KD声称为贡献。只有当rich evidence对推理保留branch拥有
 可反事实识别的方向控制，并同时改变final retrieval，才可争“counterfactually executable mediator”。
 仍需与RegionCLIP、ALADIN、π-VL、PAFormer、ProFD的真实执行路径核对。
+
+## Production static/CPU实现封板
+
+fresh production实现已按冻结seam完成，并由独立CPU contract连续两次逐SHA复现PASS。新接口只在
+`RICH_EVIDENCE_ENABLED=True`时选择；默认off。D0、HT0、Semantic C0与RZ-C0相对实现前exact commit
+的state与forward逐tensor exact，保护的Swin backbone与pose dataset blob未变。
+
+该PASS只说明production代数、loss公式、梯度所有权、NULL identity、rho schedule、strict reload与
+teacher隔离在CPU上成立；不证明真实batch64 AMP稳定、teacher吞吐或检索收益。下一步仅授权冻结
+CUDA/AMP preflight设计和资产复制协议，4090运行仍`NO-START`，正式e120与semantic multi-stage仍
+`NO-START`。

@@ -3688,3 +3688,16 @@ wrong/static/generic和all-bypass的检索差共同证明CLIP ownership。CLIP�
 
 Phase 0E全量PASS继续说明“有燃料”；Phase A FAIL说明“当前发动机拒绝点火”。下一研究对象是执行预算
 与证据方向的因果绑定，而不是重跑RZ、调一个更大的alpha初值或回到普通local CLIP KD。
+
+## 2026-07-19：exp394 CPU实现把“所有权”落实为四条互斥梯度路径
+
+static/CPU contract带来的价值不是又得到一个能forward的adapter，而是把“CLIP-owned”拆成可否证的
+四条所有权：evidence loss只拥有evidence head；mask/presence拥有anchor；`L_exec`拥有evidence head与
+真实生产T/C/E/Expert；ReID拥有backbone、生产router与ID head。任何一条越界，都会把rich code改写成
+identity code、把teacher梯度泄到final descriptor，或让expert再次只受弱global信号。
+
+relation helper最初把768维proposal与16维code的维度差当错误，CPU FAIL反而澄清了关键机制：需要
+对齐的是跨样本/slot的关系矩阵，不是直接特征坐标。这保留了CLIP对production direction的所有权，
+又避免训练后删除一个768↔16 projector。固定rho与RMS仍只是防塌缩基础设施，不能写成创新；只有后续
+真实checkpoint中correct相对wrong/static/generic和all-bypass同时改变检索，才有资格称为
+counterfactually executable mediator。

@@ -1,0 +1,13 @@
+{
+  "status": "FAIL",
+  "stage": "production-l_exec",
+  "cause": "relation helper incorrectly required equal feature dimensions although L_exec compares a proposal cosine Gram with a 16-D teacher-code cosine Gram",
+  "model_constructed": true,
+  "contract_executed": true,
+  "cuda_initialized": false,
+  "production_formula_changed": false,
+  "threshold_changed": false,
+  "tapf_sha256": "a0c78733e6573c0ae871352331d0b7297aa6ac1e7207a50eac48104ce580eac5",
+  "script_sha256": "d30c8034d26ea2ea8a52960b9d19f19ee262b32a4f2082bdd741f25a9cb6d049",
+  "runner_sha256": "33f68a11d723d4d3755fe35c0c0fb53435148eb941aa85b63d0d2c96d9ecac68"
+}

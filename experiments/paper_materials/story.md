@@ -2000,3 +2000,15 @@ ReID loss的自由ReZero scalar控制，最终被压到`1e-4`，使production re
 若继续CLIP深耦合，下一故事必须证明三件事同时成立：rich evidence控制推理保留branch的方向；执行预算
 不会静默塌零；correct evidence相对wrong/static/generic与all-bypass产生可辨识检索差并不低于clean
 D0。任何“固定非零scale”只能是接口条件，不能自身充当创新或成功证据。
+
+## 2026-07-19：exp394目前只闭合“可执行实现”，尚未产生方法结果
+
+证据预算化rich residual已通过独立CPU exact contract：旧四类TAPF默认路径不变，新接口在rho=0时
+exact identity，NULL slot exact zero，evidence/mask/`L_exec`/ReID的梯度所有权互不越界，且teacher、
+CLIP、codebook不进入checkpoint state。这说明“rich evidence拥有生产expert方向、固定预算只负责防
+静默塌零”的实现可以被严格落地，而不是概念草图。
+
+论文叙事仍不能把它写成正面贡献，因为目前没有真实AMP训练、final retrieval或wrong/static/generic
+反事实结果。固定rho、RMS normalization、PCA-16和local CLIP distillation都只是接口部件。下一证据
+必须先通过真实batch64 CUDA preflight，再由唯一fresh e120同时满足clean D0、all-bypass与semantic
+counterfactual门槛；在此之前，主结果仍是exp390的mAP-only弱GO，exp394只属于候选机制开发链。

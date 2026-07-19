@@ -607,6 +607,486 @@ class CleanSemanticTapfC0(nn.Module):
         return routed
 
 
+def relation_gram_loss(student, teacher, valid):
+    """MSE between complete valid-slot cosine relations, excluding diagonal."""
+    if student.ndim != 3 or teacher.ndim != 3:
+        raise ValueError("student/teacher evidence must have shape [B,R,D]")
+    if student.shape[:2] != teacher.shape[:2]:
+        raise ValueError("student/teacher evidence must share [B,R]")
+    if valid.shape != student.shape[:2]:
+        raise ValueError("evidence validity must have shape [B,R]")
+    student = student.reshape(-1, student.shape[-1])
+    teacher = teacher.reshape(-1, teacher.shape[-1])
+    valid = valid.reshape(-1).bool()
+    if int(valid.sum()) < 2:
+        return student.sum() * 0.0
+    student = F.normalize(student[valid].float(), dim=-1)
+    teacher = F.normalize(teacher[valid].float(), dim=-1)
+    student_relation = student @ student.transpose(0, 1)
+    teacher_relation = teacher @ teacher.transpose(0, 1)
+    off_diagonal = ~torch.eye(
+        student_relation.shape[0],
+        device=student_relation.device,
+        dtype=torch.bool,
+    )
+    return F.mse_loss(
+        student_relation[off_diagonal], teacher_relation[off_diagonal]
+    )
+
+
+class RichEvidencePoseAnchor(nn.Module):
+    """Pose/mask/presence anchor with an independently owned evidence head."""
+
+    def __init__(
+        self,
+        in_channels=384,
+        hidden_channels=128,
+        region_count=5,
+        evidence_dim=16,
+    ):
+        super().__init__()
+        if hidden_channels % 16 != 0:
+            raise ValueError("hidden_channels must be divisible by 16")
+        if region_count <= 0 or evidence_dim <= 0:
+            raise ValueError("region/evidence dimensions must be positive")
+        self.region_count = int(region_count)
+        self.evidence_dim = int(evidence_dim)
+        self.project = nn.Conv2d(in_channels, hidden_channels, 1)
+        self.depthwise = nn.Conv2d(
+            hidden_channels,
+            hidden_channels,
+            kernel_size=3,
+            padding=1,
+            groups=hidden_channels,
+        )
+        self.norm = nn.GroupNorm(16, hidden_channels)
+        self.activation = nn.GELU()
+        self.pose_head = nn.Conv2d(hidden_channels, 34, 1)
+        self.region_mask_head = nn.Conv2d(hidden_channels, region_count, 1)
+        self.presence_head = nn.Conv2d(hidden_channels, region_count, 1)
+        self.evidence_head = nn.Linear(
+            hidden_channels, region_count * evidence_dim
+        )
+
+    def forward(self, feature):
+        hidden = self.activation(self.norm(self.depthwise(self.project(feature))))
+        pose_output = self.pose_head(hidden)
+        heatmap_logits = pose_output[:, :17]
+        confidence_logits = F.adaptive_avg_pool2d(
+            pose_output[:, 17:], output_size=1
+        ).flatten(1)
+        region_mask_logits = self.region_mask_head(hidden)
+        presence_logits = F.adaptive_avg_pool2d(
+            self.presence_head(hidden), output_size=1
+        ).flatten(1)
+        evidence = self.evidence_head(
+            F.adaptive_avg_pool2d(hidden.detach(), output_size=1).flatten(1)
+        ).view(-1, self.region_count, self.evidence_dim)
+        evidence = F.normalize(evidence.float(), dim=-1)
+
+        heatmaps = torch.sigmoid(heatmap_logits.float())
+        confidence = torch.sigmoid(confidence_logits.float())
+        joint_field = heatmaps * confidence[..., None, None]
+        region_mask = torch.sigmoid(region_mask_logits.float())
+        presence_probability = torch.sigmoid(presence_logits.float())
+        presence_hard = (presence_probability > 0.5).float()
+        presence = presence_hard.detach() - presence_probability.detach()
+        presence = presence + presence_probability
+        field = region_mask * presence[..., None, None]
+        return {
+            "heatmap_logits": heatmap_logits,
+            "confidence_logits": confidence_logits,
+            "heatmaps": heatmaps,
+            "confidence": confidence,
+            "joint_field": joint_field,
+            "region_mask_logits": region_mask_logits,
+            "region_mask": region_mask,
+            "presence_logits": presence_logits,
+            "presence_probability": presence_probability,
+            "presence": presence,
+            "evidence": evidence,
+            "field": field,
+        }
+
+
+class EvidenceBudgetRouter(nn.Module):
+    """One inference-retained evidence router with a fixed residual budget."""
+
+    def __init__(
+        self,
+        feature_channels=768,
+        region_count=5,
+        rank=16,
+        evidence_dim=16,
+    ):
+        super().__init__()
+        if min(feature_channels, region_count, rank, evidence_dim) <= 0:
+            raise ValueError("Router dimensions must be positive")
+        self.feature_channels = int(feature_channels)
+        self.region_count = int(region_count)
+        self.rank = int(rank)
+        self.evidence_dim = int(evidence_dim)
+        self.token_projection = nn.Linear(feature_channels, rank, bias=False)
+        self.context_projection = nn.Linear(feature_channels, rank, bias=False)
+        self.evidence_projection = nn.Linear(evidence_dim, rank, bias=False)
+        self.experts = nn.ModuleList(
+            [
+                nn.Linear(rank, feature_channels, bias=False)
+                for _ in range(region_count)
+            ]
+        )
+        cpu_rng_state = torch.get_rng_state()
+        for expert in self.experts:
+            nn.init.normal_(expert.weight, mean=0.0, std=0.02)
+        torch.set_rng_state(cpu_rng_state)
+
+    def branch(self, tokens, hw_shape, mask, presence, evidence):
+        height, width = hw_shape
+        if tokens.ndim != 3 or tokens.shape[1] != height * width:
+            raise ValueError("Token shape does not match hw_shape")
+        if tokens.shape[2] != self.feature_channels:
+            raise ValueError("Unexpected token channel count")
+        if mask.ndim != 4 or mask.shape[1] != self.region_count:
+            raise ValueError("mask must have shape [B,R,H,W]")
+        if presence.shape != mask.shape[:2]:
+            raise ValueError("presence must have shape [B,R]")
+        if evidence.shape != (
+            tokens.shape[0], self.region_count, self.evidence_dim
+        ):
+            raise ValueError("evidence must have shape [B,R,D]")
+
+        resized = F.interpolate(
+            mask.detach().float(),
+            size=(height, width),
+            mode="bilinear",
+            align_corners=False,
+        ).flatten(2)
+        presence = presence.detach().float().clamp(0.0, 1.0)
+        mass = resized.sum(dim=-1, keepdim=True)
+        normalized_mask = resized / mass.clamp_min(1e-6)
+        normalized_mask = torch.where(
+            mass > 0, normalized_mask, torch.zeros_like(normalized_mask)
+        )
+        context = torch.einsum(
+            "brn,bnc->brc", normalized_mask.to(tokens.dtype), tokens
+        )
+        token_hidden = self.token_projection(tokens)
+        context_hidden = self.context_projection(context)
+        evidence_hidden = self.evidence_projection(evidence)
+
+        proposals = []
+        normalized_proposals = []
+        slot_valid = (mass.squeeze(-1) > 0) & (presence > 0)
+        for slot, expert in enumerate(self.experts):
+            hidden = token_hidden
+            hidden = hidden + context_hidden[:, slot, None]
+            hidden = hidden + evidence_hidden[:, slot, None]
+            proposal = expert(F.gelu(hidden))
+            proposal_float = proposal.float()
+            denominator = (
+                proposal_float.square().mean(dim=-1, keepdim=True).sqrt().detach()
+                + 1e-6
+            )
+            normalized = (proposal_float / denominator).to(tokens.dtype)
+            normalized = torch.where(
+                slot_valid[:, slot, None, None],
+                normalized,
+                torch.zeros_like(normalized),
+            )
+            proposals.append(proposal)
+            normalized_proposals.append(normalized)
+
+        proposal = torch.stack(proposals, dim=1)
+        normalized_proposal = torch.stack(normalized_proposals, dim=1)
+        scatter = resized[:, :, :, None] * presence[:, :, None, None]
+        unit_delta = (
+            scatter.to(normalized_proposal.dtype) * normalized_proposal
+        ).sum(dim=1)
+        if not bool(torch.isfinite(unit_delta).all()):
+            raise RuntimeError("Non-finite evidence-budget router output")
+        return {
+            "proposal": proposal,
+            "normalized_proposal": normalized_proposal,
+            "unit_delta": unit_delta,
+            "mask": resized,
+            "normalized_mask": normalized_mask,
+            "mass": mass,
+            "slot_valid": slot_valid,
+        }
+
+    def forward(self, tokens, hw_shape, mask, presence, evidence, rho):
+        branch = self.branch(tokens, hw_shape, mask, presence, evidence)
+        applied_delta = float(rho) * branch["unit_delta"]
+        return tokens + applied_delta, applied_delta, branch
+
+
+class CleanRichEvidenceBudgetTapf(nn.Module):
+    """Single-stage rich-evidence TAPF with two independently budgeted routers."""
+
+    semantic = True
+    rich_evidence = True
+
+    def __init__(
+        self,
+        anchor_channels=384,
+        anchor_hidden=128,
+        consumer_channels=768,
+        router_rank=16,
+        gate_release=0.5,
+        gaussian_sigma=1.5,
+        teacher_epochs=5,
+        handoff_epochs=5,
+        rho_star=0.08075544983148575,
+    ):
+        super().__init__()
+        if teacher_epochs < 0 or handoff_epochs <= 0:
+            raise ValueError("Invalid TAPF handoff schedule")
+        if rho_star < 0 or not torch.isfinite(torch.tensor(float(rho_star))):
+            raise ValueError("Residual budget must be finite and nonnegative")
+        if not 0.0 < gate_release <= 1.0:
+            raise ValueError("gate_release must remain a valid legacy config value")
+        self.gaussian_sigma = float(gaussian_sigma)
+        self.teacher_epochs = int(teacher_epochs)
+        self.handoff_epochs = int(handoff_epochs)
+        self.rho_star = float(rho_star)
+        self.anchor = RichEvidencePoseAnchor(
+            anchor_channels, anchor_hidden, evidence_dim=16
+        )
+        self.psg_bank = nn.ModuleList(
+            [
+                EvidenceBudgetRouter(
+                    feature_channels=consumer_channels,
+                    rank=router_rank,
+                    evidence_dim=16,
+                )
+                for _ in range(2)
+            ]
+        )
+
+    def student_fraction(self, epoch):
+        if epoch is None:
+            raise ValueError("Training TAPF requires an epoch")
+        if epoch <= self.teacher_epochs:
+            return 0.0
+        fraction = (epoch - self.teacher_epochs) / float(self.handoff_epochs)
+        return max(0.0, min(1.0, fraction))
+
+    def rho_at_epoch(self, epoch, training):
+        if not training:
+            return self.rho_star
+        if epoch is None or epoch < 0:
+            raise ValueError("Training evidence-budget TAPF requires an epoch")
+        if epoch <= self.teacher_epochs:
+            return 0.0
+        if epoch >= self.teacher_epochs + self.handoff_epochs:
+            return self.rho_star
+        progress = (epoch - self.teacher_epochs) / float(self.handoff_epochs)
+        return self.rho_star * progress
+
+    def prepare(self, source_feature, pose_batch, image_hw, epoch, training):
+        prediction = self.anchor(source_feature.detach())
+        student_mask = prediction["region_mask"]
+        student_presence = prediction["presence"]
+        student_evidence = prediction["evidence"]
+        rho = self.rho_at_epoch(epoch, training)
+        if not training:
+            consumer_mask = student_mask.detach()
+            consumer_presence = student_presence.detach()
+            return {
+                "consumer_mask": consumer_mask,
+                "consumer_presence": consumer_presence,
+                "consumer_evidence": student_evidence.detach(),
+                "student_mask": student_mask,
+                "student_presence": student_presence,
+                "student_evidence": student_evidence,
+                "consumer_field": consumer_mask
+                * consumer_presence[..., None, None],
+                "pose_loss": None,
+                "semantic_loss": None,
+                "region_mask_loss": None,
+                "presence_loss": None,
+                "evidence_cos_loss": None,
+                "evidence_relation_loss": None,
+                "exec_loss": None,
+                "q_loss": None,
+                "student_fraction": 1.0,
+                "teacher_field": None,
+                "reliability": consumer_presence,
+                "rho": rho,
+                "gate_deltas": [],
+                "router_branches": [],
+                "exec_losses": [],
+            }
+        if pose_batch is None:
+            raise ValueError("Training rich-evidence TAPF requires paired targets")
+        required = {
+            "semantic_teacher_evidence",
+            "semantic_valid",
+            "semantic_teacher_mask",
+        }
+        missing = sorted(required.difference(pose_batch))
+        if missing:
+            raise ValueError(
+                "Training rich-evidence TAPF is missing frozen targets: "
+                + ", ".join(missing)
+            )
+
+        gaussian, _, reliability = render_pose_field(
+            pose_batch["keypoints"],
+            pose_batch["scores"],
+            pose_batch["valid"],
+            image_hw=image_hw,
+            field_hw=student_mask.shape[-2:],
+            sigma=self.gaussian_sigma,
+        )
+        heatmap_weight = reliability[..., None, None]
+        heatmap_denominator = (
+            heatmap_weight.sum() * gaussian.shape[-2] * gaussian.shape[-1]
+        ).clamp_min(1.0)
+        heatmap_loss = (
+            (prediction["heatmaps"] - gaussian).square() * heatmap_weight
+        ).sum() / heatmap_denominator
+        confidence_loss = F.binary_cross_entropy_with_logits(
+            prediction["confidence_logits"].float(), reliability
+        )
+
+        semantic_valid = pose_batch["semantic_valid"].bool()
+        teacher_evidence = pose_batch["semantic_teacher_evidence"].float()
+        if teacher_evidence.shape != student_evidence.shape:
+            raise ValueError("Frozen rich evidence shape mismatch")
+        if semantic_valid.shape != student_evidence.shape[:2]:
+            raise ValueError("Frozen rich evidence validity shape mismatch")
+        high_resolution_teacher_mask = pose_batch["semantic_teacher_mask"].float()
+        expected_high_resolution = tuple(
+            dimension * 4 for dimension in student_mask.shape[-2:]
+        )
+        if high_resolution_teacher_mask.shape[:2] != student_mask.shape[:2]:
+            raise ValueError("Frozen rich mask batch/slot shape mismatch")
+        if high_resolution_teacher_mask.shape[-2:] != expected_high_resolution:
+            raise ValueError(
+                "Frozen rich mask must be exactly 4x the anchor resolution"
+            )
+        teacher_mask = F.avg_pool2d(
+            high_resolution_teacher_mask, kernel_size=4, stride=4
+        )
+        if teacher_mask.shape != student_mask.shape:
+            raise RuntimeError("Frozen rich mask downsampling contract failed")
+        teacher_presence = semantic_valid.float()
+        region_mask_loss = F.binary_cross_entropy_with_logits(
+            prediction["region_mask_logits"].float(), teacher_mask
+        )
+        presence_loss = F.binary_cross_entropy_with_logits(
+            prediction["presence_logits"].float(), teacher_presence
+        )
+        cosine = 1.0 - F.cosine_similarity(
+            student_evidence.float(), teacher_evidence, dim=-1
+        )
+        evidence_cos_loss = (
+            cosine * semantic_valid.float()
+        ).sum() / semantic_valid.float().sum().clamp_min(1.0)
+        evidence_relation_loss = relation_gram_loss(
+            student_evidence, teacher_evidence, semantic_valid
+        )
+
+        fraction = self.student_fraction(epoch)
+        consumer_mask = (
+            (1.0 - fraction) * teacher_mask + fraction * student_mask
+        ).detach()
+        consumer_presence = (
+            (1.0 - fraction) * teacher_presence
+            + fraction * student_presence
+        ).detach()
+        semantic_loss_without_exec = torch.stack(
+            [
+                region_mask_loss,
+                presence_loss,
+                evidence_cos_loss,
+                evidence_relation_loss,
+            ]
+        ).mean()
+        pose_loss = heatmap_loss + confidence_loss + semantic_loss_without_exec
+        return {
+            "consumer_mask": consumer_mask,
+            "consumer_presence": consumer_presence,
+            "consumer_evidence": student_evidence.detach(),
+            "student_mask": student_mask,
+            "student_presence": student_presence,
+            "student_evidence": student_evidence,
+            "consumer_field": consumer_mask
+            * consumer_presence[..., None, None],
+            "pose_loss": pose_loss,
+            "heatmap_loss": heatmap_loss,
+            "confidence_loss": confidence_loss,
+            "semantic_loss": semantic_loss_without_exec,
+            "region_mask_loss": region_mask_loss,
+            "presence_loss": presence_loss,
+            "evidence_cos_loss": evidence_cos_loss,
+            "evidence_relation_loss": evidence_relation_loss,
+            "exec_loss": None,
+            "q_loss": None,
+            "student_fraction": fraction,
+            "teacher_field": teacher_mask * teacher_presence[..., None, None],
+            "teacher_mask": teacher_mask,
+            "teacher_presence": teacher_presence,
+            "teacher_evidence": teacher_evidence.detach(),
+            "semantic_valid": semantic_valid,
+            "reliability": consumer_presence,
+            "rho": rho,
+            "gate_deltas": [],
+            "router_branches": [],
+            "exec_losses": [],
+        }
+
+    def apply_gate(self, bank_index, tokens, hw_shape, state):
+        router = self.psg_bank[bank_index]
+        routed, applied_delta, branch = router(
+            tokens,
+            hw_shape,
+            state["consumer_mask"],
+            state["consumer_presence"],
+            state["consumer_evidence"],
+            state["rho"],
+        )
+        state["gate_deltas"].append(applied_delta)
+        state["router_branches"].append(branch)
+        if state["pose_loss"] is not None:
+            exec_branch = router.branch(
+                tokens.detach(),
+                hw_shape,
+                state["consumer_mask"].detach(),
+                state["consumer_presence"].detach(),
+                state["student_evidence"],
+            )
+            pooled_proposal = torch.einsum(
+                "brn,brnc->brc",
+                exec_branch["normalized_mask"],
+                exec_branch["proposal"].float(),
+            )
+            exec_valid = state["semantic_valid"] & (
+                exec_branch["mass"].squeeze(-1) > 0
+            )
+            exec_loss = relation_gram_loss(
+                pooled_proposal, state["teacher_evidence"], exec_valid
+            )
+            state["exec_losses"].append(exec_loss)
+            state["exec_loss"] = torch.stack(state["exec_losses"]).mean()
+            state["semantic_loss"] = torch.stack(
+                [
+                    state["region_mask_loss"],
+                    state["presence_loss"],
+                    state["evidence_cos_loss"],
+                    state["evidence_relation_loss"],
+                    state["exec_loss"],
+                ]
+            ).mean()
+            state["pose_loss"] = (
+                state["heatmap_loss"]
+                + state["confidence_loss"]
+                + state["semantic_loss"]
+            )
+        return routed
+
+
 class CleanTapfHt0(CleanTapfD0):
     """D0-preserving late TAPF plus one independent earlier hierarchy."""
 

@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/Users/abdslm/Desktop/SOLIDER-REID/experiments/exp394_clip_owned_residual_budget/production_static_cpu_contract.py", line 712, in <module>
+    main()
+  File "/Users/abdslm/Desktop/SOLIDER-REID/experiments/exp394_clip_owned_residual_budget/production_static_cpu_contract.py", line 672, in main
+    from model import tapf as current
+ModuleNotFoundError: No module named 'model'

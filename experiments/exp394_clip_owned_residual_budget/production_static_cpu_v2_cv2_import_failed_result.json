@@ -1,0 +1,12 @@
+{
+  "status": "FAIL",
+  "stage": "package-import",
+  "cause": "importing the model package pulled the unrelated Swin OpenCV dependency into the isolated TAPF CPU contract",
+  "model_constructed": false,
+  "contract_executed": false,
+  "cuda_initialized": false,
+  "production_formula_changed": false,
+  "threshold_changed": false,
+  "script_sha256": "876ec21c456ecec8372874b759de92e231871b71bae83db501e010ecf60e7fcd",
+  "runner_sha256": "9b0ac239e89c890b362cd6e0ae3b0b4613df8c7f98e9695ff37b1c0a026f9a04"
+}

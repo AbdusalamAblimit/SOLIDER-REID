@@ -39,27 +39,52 @@ def do_train(cfg,
 
     semantic_teacher = None
     semantic_teacher_diagnostic_done = False
+    rich_evidence_enabled = bool(
+        cfg.MODEL.TAPF.ENABLED
+        and cfg.MODEL.TAPF.SEMANTIC_ENABLED
+        and cfg.MODEL.TAPF.RICH_EVIDENCE_ENABLED
+    )
     if cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.SEMANTIC_ENABLED:
-        from model.clip_semantic_teacher import FrozenClipSlotTeacher
+        from model.clip_semantic_teacher import (
+            FrozenClipSlotTeacher,
+            FrozenRichClipEvidenceTeacher,
+        )
 
         cpu_rng_state = torch.get_rng_state()
         cuda_rng_state = torch.cuda.get_rng_state_all()
         numpy_rng_state = np.random.get_state()
         python_rng_state = random.getstate()
-        semantic_teacher = FrozenClipSlotTeacher(
-            checkpoint=cfg.MODEL.TAPF.CLIP_CHECKPOINT,
-            checkpoint_sha256=cfg.MODEL.TAPF.CLIP_CHECKPOINT_SHA256,
-            device=torch.device("cuda", local_rank),
-            microbatch=cfg.MODEL.TAPF.CLIP_MICROBATCH,
-        )
+        if rich_evidence_enabled:
+            semantic_teacher = FrozenRichClipEvidenceTeacher(
+                checkpoint=cfg.MODEL.TAPF.CLIP_CHECKPOINT,
+                checkpoint_sha256=cfg.MODEL.TAPF.CLIP_CHECKPOINT_SHA256,
+                codebook=cfg.MODEL.TAPF.RICH_CODEBOOK,
+                codebook_sha256=cfg.MODEL.TAPF.RICH_CODEBOOK_SHA256,
+                device=torch.device("cuda", local_rank),
+                microbatch=cfg.MODEL.TAPF.CLIP_MICROBATCH,
+            )
+        else:
+            semantic_teacher = FrozenClipSlotTeacher(
+                checkpoint=cfg.MODEL.TAPF.CLIP_CHECKPOINT,
+                checkpoint_sha256=cfg.MODEL.TAPF.CLIP_CHECKPOINT_SHA256,
+                device=torch.device("cuda", local_rank),
+                microbatch=cfg.MODEL.TAPF.CLIP_MICROBATCH,
+            )
         torch.set_rng_state(cpu_rng_state)
         torch.cuda.set_rng_state_all(cuda_rng_state)
         np.random.set_state(numpy_rng_state)
         random.setstate(python_rng_state)
-        logger.info(
-            "Frozen PC-MBCLS teacher loaded outside model/optimizer, SHA: %s",
-            semantic_teacher.checkpoint_sha256,
-        )
+        if rich_evidence_enabled:
+            logger.info(
+                "Frozen rich PC-MBCLS teacher loaded outside model/optimizer, checkpoint SHA: %s, codebook SHA: %s",
+                semantic_teacher.checkpoint_sha256,
+                semantic_teacher.codebook_sha256,
+            )
+        else:
+            logger.info(
+                "Frozen PC-MBCLS teacher loaded outside model/optimizer, SHA: %s",
+                semantic_teacher.checkpoint_sha256,
+            )
 
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
@@ -68,6 +93,9 @@ def do_train(cfg,
     region_mask_loss_meter = AverageMeter()
     presence_loss_meter = AverageMeter()
     q_loss_meter = AverageMeter()
+    evidence_cos_loss_meter = AverageMeter()
+    evidence_relation_loss_meter = AverageMeter()
+    exec_loss_meter = AverageMeter()
     early_pose_loss_meter = AverageMeter()
     late_pose_loss_meter = AverageMeter()
 
@@ -83,6 +111,9 @@ def do_train(cfg,
         region_mask_loss_meter.reset()
         presence_loss_meter.reset()
         q_loss_meter.reset()
+        evidence_cos_loss_meter.reset()
+        evidence_relation_loss_meter.reset()
+        exec_loss_meter.reset()
         early_pose_loss_meter.reset()
         late_pose_loss_meter.reset()
         evaluator.reset()
@@ -119,15 +150,36 @@ def do_train(cfg,
                         pose_batch["scores"],
                         pose_batch["valid"],
                     )
-                pose_batch["semantic_q_visible"] = semantic_targets[
-                    "q_visible"
-                ].detach().clone()
                 pose_batch["semantic_valid"] = semantic_targets[
                     "valid"
                 ].detach().clone()
                 pose_batch["semantic_teacher_mask"] = semantic_targets[
                     "region_masks"
                 ].detach().clone()
+                if rich_evidence_enabled:
+                    pose_batch["semantic_teacher_evidence"] = semantic_targets[
+                        "evidence_code"
+                    ].detach().clone()
+                else:
+                    pose_batch["semantic_q_visible"] = semantic_targets[
+                        "q_visible"
+                    ].detach().clone()
+                if (
+                    not semantic_teacher_diagnostic_done
+                    and rich_evidence_enabled
+                ):
+                    evidence = semantic_targets["evidence_code"].float()
+                    evidence_valid = semantic_targets["valid"].bool()
+                    valid_norm = evidence.norm(dim=-1)[evidence_valid]
+                    logger.info(
+                        "Rich evidence first batch: valid=%d, norm-mean=%.6f, norm-min=%.6f, norm-max=%.6f, basis-orthogonal-max-abs=%.3e",
+                        int(evidence_valid.sum()),
+                        valid_norm.mean().item() if valid_norm.numel() else 0.0,
+                        valid_norm.min().item() if valid_norm.numel() else 0.0,
+                        valid_norm.max().item() if valid_norm.numel() else 0.0,
+                        semantic_teacher.basis_orthogonal_max_abs,
+                    )
+                    semantic_teacher_diagnostic_done = True
                 if not semantic_teacher_diagnostic_done:
                     q_values = semantic_targets["q_visible"].float()
                     q_valid = semantic_targets["valid"].bool()
@@ -249,9 +301,20 @@ def do_train(cfg,
                     presence_loss_meter.update(
                         tapf_aux["presence_loss"].item(), img.shape[0]
                     )
-                    q_loss_meter.update(
-                        tapf_aux["q_loss"].item(), img.shape[0]
-                    )
+                    if tapf_aux.get("q_loss") is not None:
+                        q_loss_meter.update(
+                            tapf_aux["q_loss"].item(), img.shape[0]
+                        )
+                    if tapf_aux.get("evidence_cos_loss") is not None:
+                        evidence_cos_loss_meter.update(
+                            tapf_aux["evidence_cos_loss"].item(), img.shape[0]
+                        )
+                        evidence_relation_loss_meter.update(
+                            tapf_aux["evidence_relation_loss"].item(), img.shape[0]
+                        )
+                        exec_loss_meter.update(
+                            tapf_aux["exec_loss"].item(), img.shape[0]
+                        )
                 if cfg.MODEL.TAPF.HIERARCHICAL:
                     early_pose_loss_meter.update(
                         tapf_aux["early_pose_loss"].item(), img.shape[0]
@@ -314,7 +377,30 @@ def do_train(cfg,
                             gate_abs = torch.stack(
                                 [delta.detach().float().abs().mean() for delta in tapf_aux["gate_deltas"]]
                             ).mean().item()
-                            if cfg.MODEL.TAPF.SEMANTIC_ENABLED:
+                            if rich_evidence_enabled:
+                                logger.info(
+                                    "Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Pose: {:.3f}, Semantic: {:.3f}, RegionMask: {:.3f}, Presence: {:.3f}, EvidenceCos: {:.3f}, EvidenceRel: {:.3f}, Exec: {:.3f}, Acc: {:.3f}, Student: {:.2f}, Reliability: {:.3f}, Rho: {:.9f}, BudgetAbs: {:.3e}, Base Lr: {:.2e}"
+                                    .format(
+                                        epoch,
+                                        (n_iter + 1),
+                                        len(train_loader),
+                                        loss_meter.avg,
+                                        pose_loss_meter.avg,
+                                        semantic_loss_meter.avg,
+                                        region_mask_loss_meter.avg,
+                                        presence_loss_meter.avg,
+                                        evidence_cos_loss_meter.avg,
+                                        evidence_relation_loss_meter.avg,
+                                        exec_loss_meter.avg,
+                                        acc_meter.avg,
+                                        tapf_aux["student_fraction"],
+                                        tapf_aux["reliability"].detach().float().mean().item(),
+                                        tapf_aux["rho"],
+                                        gate_abs,
+                                        base_lr,
+                                    )
+                                )
+                            elif cfg.MODEL.TAPF.SEMANTIC_ENABLED:
                                 logger.info(
                                     "Epoch[{}] Iter[{}/{}] Loss: {:.3f}, Pose: {:.3f}, Semantic: {:.3f}, RegionMask: {:.3f}, Presence: {:.3f}, Q: {:.3f}, Acc: {:.3f}, Student: {:.2f}, Reliability: {:.3f}, GateAbs: {:.3e}, Base Lr: {:.2e}"
                                     .format(

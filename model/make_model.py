@@ -6,7 +6,12 @@ from .backbones.vit_pytorch import vit_base_patch16_224_TransReID, vit_small_pat
 from .backbones.swin_transformer import swin_base_patch4_window7_224, swin_small_patch4_window7_224, swin_tiny_patch4_window7_224
 from loss.metric_learning import Arcface, Cosface, AMSoftmax, CircleLoss
 from .backbones.resnet_ibn_a import resnet50_ibn_a,resnet101_ibn_a
-from .tapf import CleanSemanticTapfC0, CleanTapfD0, CleanTapfHt0
+from .tapf import (
+    CleanRichEvidenceBudgetTapf,
+    CleanSemanticTapfC0,
+    CleanTapfD0,
+    CleanTapfHt0,
+)
 
 def shuffle_unit(features, shift, group, begin=1):
 
@@ -228,6 +233,13 @@ class build_transformer(nn.Module):
 
         self.tapf_enabled = cfg.MODEL.TAPF.ENABLED
         if self.tapf_enabled:
+            if (
+                cfg.MODEL.TAPF.RICH_EVIDENCE_ENABLED
+                and not cfg.MODEL.TAPF.SEMANTIC_ENABLED
+            ):
+                raise ValueError(
+                    "Rich evidence TAPF requires SEMANTIC_ENABLED"
+                )
             cpu_rng_state = torch.get_rng_state()
             cuda_rng_state = (
                 torch.cuda.get_rng_state_all() if torch.cuda.is_initialized() else None
@@ -235,7 +247,11 @@ class build_transformer(nn.Module):
             if cfg.MODEL.TAPF.SEMANTIC_ENABLED:
                 if cfg.MODEL.TAPF.HIERARCHICAL:
                     raise ValueError("Semantic fast-track is single-stage only")
-                tapf_class = CleanSemanticTapfC0
+                tapf_class = (
+                    CleanRichEvidenceBudgetTapf
+                    if cfg.MODEL.TAPF.RICH_EVIDENCE_ENABLED
+                    else CleanSemanticTapfC0
+                )
             else:
                 tapf_class = (
                     CleanTapfHt0
@@ -255,6 +271,9 @@ class build_transformer(nn.Module):
                     "router_rank": cfg.MODEL.TAPF.SEMANTIC_ROUTER_RANK,
                     "router_rezero": cfg.MODEL.TAPF.SEMANTIC_REZERO,
                 }
+                if cfg.MODEL.TAPF.RICH_EVIDENCE_ENABLED:
+                    tapf_kwargs.pop("router_rezero")
+                    tapf_kwargs["rho_star"] = cfg.MODEL.TAPF.RESIDUAL_RHO
             else:
                 tapf_kwargs["psg_hidden"] = cfg.MODEL.TAPF.PSG_HIDDEN
             if cfg.MODEL.TAPF.HIERARCHICAL:

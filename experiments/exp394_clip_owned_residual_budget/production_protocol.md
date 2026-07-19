@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-`STATIC PROTOCOL FROZEN / PHASE 0P SOURCE CONTRACT PASS / FRESH IMPLEMENTATION GO /
-CUDA NO-START / FORMAL NO-START`。
+`STATIC PROTOCOL FROZEN / PHASE 0P SOURCE CONTRACT PASS / PRODUCTION STATIC-CPU PASS /
+CUDA PREFLIGHT DESIGN GO / CUDA NO-START / FORMAL NO-START`。
 
 本协议只冻结未来fresh repo中的实现对象和反事实。它不修改exp393 sealed repo，不授权production代码、
 config、CUDA或训练。Phase 0R-S与0R-128 PASS只说明代数/梯度接口和预算来源可执行，不证明本方法有效。
@@ -181,3 +181,32 @@ script/result/runner SHA256分别为
 
 裁决：`PHASE0P_SOURCE_PASS`，只授权从`09340f7`建立fresh独立implementation repo并实现本协议；
 不得修改sealed repo，不授权CUDA/AMP preflight、正式训练或semantic multi-stage。
+
+## Production static/CPU实现封板
+
+实现严格只修改五个已授权source、新增exp394 config与独立CPU contract；
+`swin_transformer.py`和`pose_dataset.py` SHA保持
+`b389b7243e204d851ed365c986c8c4077d7fa86ce79e6cbb0be6fc4a1ba58eef`/
+`d04e74908d18eaf8105f9b85c66287cac6980ddf5ffe8132e855c7d5a9f61bbc`。
+
+CPU contract确认：e1–e5 rho exact zero，e6–e9按冻结公式线性打开，e10+/eval固定
+`0.08075544983148575`；NULL mask/presence的normalized proposal、delta与descriptor均exact zero/
+identity；两个consumer独立；FP32 channel RMS finite；correct/wrong/static evidence改变pre-budget
+proposal；strict reload逐forward exact；teacher/CLIP/codebook/text不在model state。
+
+四类分loss梯度所有权全部PASS：evidence cosine/relation只更新evidence head；mask/presence更新anchor
+trunk与对应heads；`L_exec`更新evidence head和两个router的T/C/E/Expert而阻断backbone/anchor/ID；
+ReID更新token backbone、两个router与ID head而阻断source anchor/evidence head。最终semantic loss逐
+tensor等于五项无权重mean，总loss仍只通过原`POSE_LOSS_WEIGHT=0.1`接入。
+
+最终script/result/runner SHA256分别为
+`5be2980eb6a666f791ba5e3cd87bbabb7a0b9934bb44724e091cbbb7e4545cd1`、
+`658ac1fd261ec09db618e9d658ae00fa3f0f7d7887b87e8716c601adbc8b0636`、
+`658ac1fd261ec09db618e9d658ae00fa3f0f7d7887b87e8716c601adbc8b0636`；第二遍result/runner SHA完全一致。
+裁决=`PRODUCTION_STATIC_CPU_SEALED_PASS / CUDA PREFLIGHT DESIGN GO / CUDA NO-START /
+FORMAL NO-START`。
+
+clean canonical CLIP实体已在CPU-only资产步骤落盘为
+`/home/afr/reid-clean/weights/exp394_clip_l14_openclip_9ce2e8a8.safetensors`，确认regular file、非
+symlink且SHA=`9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e`；full codebook SHA仍为
+`fb87da370ea945d526f499bef78093a6b07203d87c6d84efe06b5eb6594f954a`。该资产就绪不等于CUDA门通过。

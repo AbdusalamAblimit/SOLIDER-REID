@@ -151,3 +151,47 @@ script/result/runner SHA256分别为
 
 裁决=`PHASE0P_SOURCE_PASS / FRESH IMPLEMENTATION GO / CUDA NO-START / FORMAL NO-START`。下一步
 只允许从`09340f7`创建fresh独立repo实现冻结协议并先做static/CPU exact；不得直接占用GPU或训练。
+
+## 2026-07-19 fresh production实现与CPU contract封板
+
+按冻结范围新增rich image-only PC-MBCLS teacher、从`hidden.detach()`产生的`[B,5,16]` evidence head、
+两个独立T/C/E/Expert router、FP32 per-token channel RMS与Python-float rho schedule；训练processor只在
+rich开关打开时构建外置teacher，checkpoint/eval仍只接model与RGB。新config把CLIP checkpoint改为
+待复制的新clean canonical实体路径，未引用旧`/home/afr/SOLIDER-REID`；full codebook与两个SHA固定。
+
+CPU contract依次保留四类非最终入口：v1缺repo-root import、v2包级import触发本地缺`cv2`、v3错误
+要求proposal 768维与teacher code 16维相同、v4暴露新anchor零初始化使独立mask/presence loss首步不回
+trunk；均未初始化CUDA。v3按冻结定义修正为“只共享`[B,5]`、分别形成cosine Gram”；v4移除新anchor
+不必要的mask/presence零初始化，因为e1–e5 identity已由rho exact zero保证。v5已全PASS但runner含一条
+诊断转标量warning，只对诊断读数detach后重做；随后又增加rich-on/semantic-off非法组合显式FAIL保护。
+
+最终contract连续两次逐SHA一致，三组总gate及全部production子项PASS。D0/HT0/Semantic C0/RZ-C0
+相对`f5de340`的state/forward exact；rho schedule、NULL identity、relation loss、两个consumer、strict
+reload、teacher-free state、config-off与四类梯度所有权全部PASS。handoff/fixed synthetic descriptor
+max-abs gap=`0.0405087/0.132013`；correct−wrong/static proposal max-abs=`0.0304661/0.0193796`；RMS距1
+最大`0.000876129`，全部finite。runner异常词中除JSON键`teacher_inference_mode`的字面`inf`外无
+warning/NaN/Traceback/RuntimeError/OOM/nonfinite/overflow。
+
+最终source SHA256：tapf/teacher/make_model/processor/defaults/config=
+`95c5d0ff80bf9e4529589a5f31819e7aad5db644b88e2a33d6af07c9ffc42886`/
+`c648fa768b178d153258c46eee69679cbc0b90a11db918800323ab5c5c6054d5`/
+`6bc7d9c83a2f4d12b78dd2c09335d366ce568107ddce5dded3abfe7ca8538f03`/
+`be1c19ea5af19534e3855eb2a5914e0dc9a5643c63a39cfa508c81f89660eac1`/
+`a13e5f6df0e8c770c254c115d6d55208baac7938cffbec6f208ba9caa24dd7c5`/
+`e0413a497976ad6dbf4c74cf13b55c86c169d659bab6d967455e87c592e47f4e`。
+contract/result/runner SHA256=`5be2980eb6a666f791ba5e3cd87bbabb7a0b9934bb44724e091cbbb7e4545cd1`/
+`658ac1fd261ec09db618e9d658ae00fa3f0f7d7887b87e8716c601adbc8b0636`/
+`658ac1fd261ec09db618e9d658ae00fa3f0f7d7887b87e8716c601adbc8b0636`。
+
+裁决=`PRODUCTION_STATIC_CPU_SEALED_PASS / CUDA PREFLIGHT DESIGN GO / CUDA NO-START /
+FORMAL NO-START`。本轮未占用4090；下一步只能设计并冻结至少24步真实batch64 CUDA/AMP门禁和clean
+canonical资产复制，不得直接启动CUDA、正式训练或semantic multi-stage。
+
+## 2026-07-19 clean canonical teacher资产落盘
+
+本地production与CPU contract完成后，才从已封板源复制CLIP checkpoint到新clean canonical实体：
+`/home/afr/reid-clean/weights/exp394_clip_l14_openclip_9ce2e8a8.safetensors`。远端复核为regular file、
+非symlink，SHA256=`9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e`；full codebook
+SHA256=`fb87da370ea945d526f499bef78093a6b07203d87c6d84efe06b5eb6594f954a`。config所写路径/SHA与实体
+exact。复制未加载模型或初始化CUDA；sealed RZ-C0 repo仍为exact `09340f7`且tracked clean，4090=
+`2 MiB/0%`、无compute PID。

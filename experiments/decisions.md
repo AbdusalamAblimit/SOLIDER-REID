@@ -5241,3 +5241,16 @@ teacher PASS保持有效且逻辑独立，因此不得把该FAIL扩大为CLIP–
 下一步只授权新的route-ownership只读设计与CPU/static preflight：执行幅度不能再由一个可静默塌回零的
 自由标量独占，同时必须保留wrong evidence、static、generic normalized route与all-bypass，防止用
 “强迫route非零”伪造CLIP语义贡献。所有新门冻结前正式训练`NO-START`。
+
+### [2026-07-19] 决策：exp394 production static/CPU通过，只授权CUDA预检设计
+
+fresh实现已证明旧D0/HT0/Semantic C0/RZ-C0默认路径state/forward exact，新rich接口的rho schedule、
+NULL identity、两consumer、strict reload、teacher隔离与四类梯度所有权在CPU上全部成立。首次实现中
+发现并修正两项真实接线问题：relation helper不应要求proposal与teacher code同维；新anchor不应沿用
+会阻断首步mask/presence→trunk梯度的零初始化。失败资产均保留，未改预算公式、loss权重或门槛。
+
+**决策**：`PRODUCTION_STATIC_CPU_SEALED_PASS`。只授权下一步先写并冻结CUDA/AMP preflight协议、复制
+并验证新的canonical CLIP实体与full codebook接线；当前4090运行仍`NO-START`。CPU PASS不授权正式
+e120，不证明CLIP route有效，也不授权semantic multi-stage。后续CUDA门必须至少24步覆盖teacher阶段
+identity但branch更新、handoff descriptor gap、correct/wrong/static、两consumer、strict reload、
+teacher/optimizer/checkpoint/eval隔离、RGB-only与峰值显存；任一FAIL先归因，不降低门槛。

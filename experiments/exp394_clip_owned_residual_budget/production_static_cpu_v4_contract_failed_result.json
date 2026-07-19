@@ -1,0 +1,325 @@
+{
+  "baseline_commit": "f5de34027a7b33a3a19c8f2b0707658bf13e6410",
+  "contract_sha256": "6350ad1c2927d126984dfdb27c95f843876c9df61e0595247e65ebc4773bcd0c",
+  "diagnostics": {
+    "correct_static_proposal_max_abs": 0.0193796306848526,
+    "correct_wrong_proposal_max_abs": 0.030466128140687943,
+    "fixed_gap_max_abs": 0.0,
+    "gradient_reports": {
+      "evidence": {
+        "anchor_targets": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 6
+        },
+        "anchor_trunk": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 6
+        },
+        "evidence_head": {
+          "grad_abs_max": 0.09190520644187927,
+          "grad_nonzero": 2,
+          "grad_present": 2,
+          "parameters": 2
+        },
+        "id_head": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 1
+        },
+        "router_experts": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 10
+        },
+        "router_projections": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 6
+        },
+        "source_backbone": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 1
+        },
+        "token_backbone": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 1
+        }
+      },
+      "exec": {
+        "anchor_targets": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 6
+        },
+        "anchor_trunk": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 6
+        },
+        "evidence_head": {
+          "grad_abs_max": 0.01696782559156418,
+          "grad_nonzero": 2,
+          "grad_present": 2,
+          "parameters": 2
+        },
+        "id_head": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 1
+        },
+        "router_experts": {
+          "grad_abs_max": 0.24579967558383942,
+          "grad_nonzero": 10,
+          "grad_present": 10,
+          "parameters": 10
+        },
+        "router_projections": {
+          "grad_abs_max": 0.03103797510266304,
+          "grad_nonzero": 6,
+          "grad_present": 6,
+          "parameters": 6
+        },
+        "source_backbone": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 1
+        },
+        "token_backbone": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 1
+        }
+      },
+      "mask_presence": {
+        "anchor_targets": {
+          "grad_abs_max": 0.10000000149011612,
+          "grad_nonzero": 4,
+          "grad_present": 4,
+          "parameters": 6
+        },
+        "anchor_trunk": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 6,
+          "parameters": 6
+        },
+        "evidence_head": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 2
+        },
+        "id_head": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 1
+        },
+        "router_experts": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 10
+        },
+        "router_projections": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 6
+        },
+        "source_backbone": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 1
+        },
+        "token_backbone": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 1
+        }
+      },
+      "reid": {
+        "anchor_targets": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 6
+        },
+        "anchor_trunk": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 6
+        },
+        "evidence_head": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 2
+        },
+        "id_head": {
+          "grad_abs_max": 0.11178573966026306,
+          "grad_nonzero": 1,
+          "grad_present": 1,
+          "parameters": 1
+        },
+        "router_experts": {
+          "grad_abs_max": 0.02240273728966713,
+          "grad_nonzero": 10,
+          "grad_present": 10,
+          "parameters": 10
+        },
+        "router_projections": {
+          "grad_abs_max": 0.002218767534941435,
+          "grad_nonzero": 6,
+          "grad_present": 6,
+          "parameters": 6
+        },
+        "source_backbone": {
+          "grad_abs_max": 0.0,
+          "grad_nonzero": 0,
+          "grad_present": 0,
+          "parameters": 1
+        },
+        "token_backbone": {
+          "grad_abs_max": 0.09980520606040955,
+          "grad_nonzero": 1,
+          "grad_present": 1,
+          "parameters": 1
+        }
+      }
+    },
+    "handoff_gap_max_abs": 0.038955509662628174,
+    "rms_max_abs_from_one": 0.0008761286735534668,
+    "state_keys": 30
+  },
+  "gates": {
+    "legacy_state_forward_parity": true,
+    "production_exact": false,
+    "source_static": true
+  },
+  "legacy": {
+    "d0": {
+      "forward_exact": true,
+      "state_exact": true,
+      "state_keys": 12
+    },
+    "ht0": {
+      "forward_exact": true,
+      "state_exact": true,
+      "state_keys": 24
+    },
+    "rz_c0": {
+      "forward_exact": true,
+      "state_exact": true,
+      "state_keys": 22
+    },
+    "semantic_c0": {
+      "forward_exact": true,
+      "state_exact": true,
+      "state_keys": 20
+    }
+  },
+  "production": {
+    "all_finite": true,
+    "consumer_inputs_detached": true,
+    "eval_rho_fixed": true,
+    "evidence_head_retained": true,
+    "evidence_loss_blocks_anchor_trunk": true,
+    "evidence_loss_blocks_backbones_router_id": true,
+    "evidence_loss_updates_evidence_head": true,
+    "exec_blocks_backbones_anchor_id": true,
+    "exec_updates_evidence_and_both_routers": true,
+    "fixed_nonzero": false,
+    "handoff_nonzero": true,
+    "mask_presence_blocks_evidence_router_backbones_id": true,
+    "mask_presence_updates_anchor": false,
+    "null_mask_delta_zero": true,
+    "null_mask_identity": true,
+    "null_mask_normalized_zero": true,
+    "null_presence_delta_zero": true,
+    "null_presence_identity": true,
+    "null_presence_normalized_zero": true,
+    "pose_formula_exact": true,
+    "reid_blocks_source_anchor_evidence": true,
+    "reid_updates_token_backbone_routers_id": true,
+    "rho_not_parameter_or_buffer": true,
+    "rho_zero_full_bypass_exact": true,
+    "rms_finite": true,
+    "rms_near_one": true,
+    "schedule": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.01615108996629715,
+      0.0323021799325943,
+      0.04845326989889145,
+      0.0646043598651886,
+      0.08075544983148575,
+      0.08075544983148575
+    ],
+    "schedule_fixed": true,
+    "schedule_handoff_exact": true,
+    "schedule_repeat_exact": true,
+    "schedule_teacher_zero": true,
+    "semantic_formula_exact": true,
+    "static_changes_sample_signal": true,
+    "strict_reload_clean": true,
+    "strict_reload_forward_exact": true,
+    "teacher_absent_from_state": false,
+    "two_evidence_routers_retained": true,
+    "two_independent_consumers": true,
+    "wrong_changes_proposal": true
+  },
+  "protected_sha256": {
+    "datasets/pose_dataset.py": "d04e74908d18eaf8105f9b85c66287cac6980ddf5ffe8132e855c7d5a9f61bbc",
+    "model/backbones/swin_transformer.py": "b389b7243e204d851ed365c986c8c4077d7fa86ce79e6cbb0be6fc4a1ba58eef"
+  },
+  "rho_star": 0.08075544983148575,
+  "script_sha256": "d30c8034d26ea2ea8a52960b9d19f19ee262b32a4f2082bdd741f25a9cb6d049",
+  "source": {
+    "checkpoint_model_only": true,
+    "checkpoint_sha_frozen": true,
+    "codebook_sha_frozen": true,
+    "new_checkpoint_not_old_repo": true,
+    "new_config_on": true,
+    "new_default_off": true,
+    "new_model_selection_guarded": true,
+    "no_new_loss_weights": true,
+    "protected_blobs_exact": true,
+    "rho_frozen_in_config": true,
+    "teacher_external_train_only": true,
+    "teacher_image_only_state": true,
+    "teacher_inference_mode": true
+  },
+  "status": "FAIL",
+  "target_sha256": {
+    "config/defaults.py": "a13e5f6df0e8c770c254c115d6d55208baac7938cffbec6f208ba9caa24dd7c5",
+    "configs/occluded_duke/swin_tiny_tapf_rich_budget_c0.yml": "e0413a497976ad6dbf4c74cf13b55c86c169d659bab6d967455e87c592e47f4e",
+    "model/clip_semantic_teacher.py": "c648fa768b178d153258c46eee69679cbc0b90a11db918800323ab5c5c6054d5",
+    "model/make_model.py": "0f4c0e6f4dff0cb4b35c1316b3f46476113032a90601549915936341add2dfa8",
+    "model/tapf.py": "d05b2c5221d76dffcd516d2fe08e68a39603dcc597ade0a913befa2c3997f0dd",
+    "processor/processor.py": "be1c19ea5af19534e3855eb2a5914e0dc9a5643c63a39cfa508c81f89660eac1"
+  },
+  "torch_version": "2.13.0"
+}
