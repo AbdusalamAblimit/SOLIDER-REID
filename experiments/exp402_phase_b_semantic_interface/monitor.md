@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-`DESIGN-FROZEN / PROTOCOL-FROZEN / CORE STATIC-CPU SEALED-PASS / ACTUAL-AUDIT STATIC NO-START / GPU NO-START`
+`DESIGN-FROZEN / PROTOCOL-FROZEN / ACTUAL-AUDIT STATIC-CPU SEALED-PASS / CUDA PREFLIGHT NO-START / FORMAL GPU NO-START`
 
 ## 2026-07-20 接手与设计冻结
 
@@ -50,3 +50,26 @@
 - 退出后GPU=`2 MiB/0%`且无compute process。当前判定=
   `CORE_STATIC_CPU_SEALED_PASS / ACTUAL_AUDIT_IMPLEMENTATION_AND_STATIC_REQUIRED / GPU NO-START`；
   core PASS不授权正式GPU执行，下一步必须实现actual只读脚本，并把该脚本纳入两遍static/AST contract。
+
+## actual audit实现与两遍static/AST封板
+
+- actual脚本只用`OccludedDuke + ImageDataset + val transforms`构造query+gallery loader，不调用训练
+  dataloader，不构造pose target；correct全局缓存按absolute index/path绑定，wrong-RGB严格使用冻结的
+  same-split/same-camera/different-PID donor map；
+- 10个arm严格串行；五个state干预patch `prepare`，generic arm临时求两个router各自五expert均值，三个
+  bypass按bank exact identity；每臂均检查两个router call count、prepare/apply-gate patch恢复、模型state
+  SHA、global与loader RNG、full index/path覆盖；
+- teacher/pose读取guard覆盖正式model构造与eval，拒绝derived pose、safetensors和codebook读取；正式脚本
+  无训练、更新、保存checkpoint或旧path mapping路径；correct与all-bypass还必须以`5e-8`绝对误差复现
+  exp401 raw reference；
+- actual/core/static SHA256=
+  `dcde68ecf7f25a6d802bd34c0950524af4834023e73c53d24df13e9c2ca7104d`/
+  `6e9ac9cfc03d70606ee34f77af39accc6b66c89ee9974fee48ded1d6951dfb54`/
+  `039f0b9cf3ed45b7416772be0acaafbc6c7ecb8bbbcb8be59d8f7d75e1963778`；
+- 纳入actual AST后的fresh run5/run6均为`38/38 PASS`，每次result/runner逐字节一致，两遍result也
+  逐字节一致，统一SHA256=
+  `2c7f19b81b618245e0a1e2d148836e7a3099d076ffc2c7b293e90f3313d15b78`；
+- AST确认无backward、parameter update、checkpoint write、train loader/pose target、derived/teacher/codebook
+  literal；两遍CUDA initialized before/after=`false/false`，退出后GPU=`2 MiB/0%`且无compute process；
+- 当前判定=`ACTUAL_AUDIT_STATIC_CPU_SEALED_PASS / CUDA PREFLIGHT GO / FORMAL GPU NO-START`。
+  下一步只允许fresh小批CUDA preflight；其终审全部通过后，才允许唯一一次exp402 formal full执行。
