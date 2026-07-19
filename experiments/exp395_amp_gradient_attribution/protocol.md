@@ -3,7 +3,8 @@
 ## 当前状态
 
 `PROTOCOL-FROZEN / PHASE 0S STATIC-CPU SEALED-PASS /
-CUDA ATTRIBUTION IMPLEMENTATION STATIC SEALED-PASS / CUDA EXECUTION NO-START /
+CUDA ATTRIBUTION IMPLEMENTATION STATIC SEALED-PASS /
+CUDA ATTRIBUTION EXECUTION SEALED-INVALID / REPORTER RUNTIME FAIL /
 FORMAL NO-START`。
 
 本协议只定义只读归因门。它不修改、不重跑 exp394，不调用 optimizer update，也不产生训练 checkpoint。
@@ -259,3 +260,25 @@ CUDA implementation/static script/result/runner SHA256=
 
 裁决=`CUDA_ATTRIBUTION_IMPLEMENTATION_STATIC_SEALED_PASS / CUDA EXECUTION NO-START`。该封板未读取
 official数据或teacher资产、未复制fresh远端文件、未初始化CUDA；执行仍需新的明确授权。
+
+## CUDA actual执行与停止门落地
+
+唯一actual在fresh source/regular assets/canonical runtime/GPU空闲门通过后启动。official batch64与
+teacher target已经越过前置门；第一行D0 `reid`完成scaled backward后，scaled reporter在调用
+`torch.quantile`处理backbone组全量元素时触发`RuntimeError: quantile() input tensor is too large`。
+异常发生在`scaler.unscale_`之前，故D0五行、rich十一行与十五组双时点矩阵均不完整。
+
+依照本协议“未捕获RuntimeError立即停止整个诊断”，本次执行只可封板为`INVALID`：不得重跑exp395，
+不得把已执行的backward误写成finite/non-finite证据，也不得修改reporter后沿用同一实验编号。外部终审
+确认optimizer/scaler update=`0`、checkpoint=`0`、进程退出、GPU空闲、两端source tracked clean；
+进程在中途退出，因而完整model/optimizer/teacher/RNG after-exact gate没有产出，必须明确记为未证明，
+不能由控制流推断替代。
+
+封板SHA256：
+
+- actual script：`64840b710db587720aa8807571212b246af3eabb54306bd5aa1bbf692f5ea08b`；
+- result/runner：`cdffff60b1b6e04e6bb0b13bb54e12518380421675c59c2f2c785f1b7a5adb75`；
+- manifest：`3a0ef5d98dd6387b330958bbfb1e9d893e60745e8857237bbbbe375778886c64`。
+
+裁决=`CUDA_ATTRIBUTION_EXECUTION_SEALED_INVALID / REPORTER_RUNTIME_FAIL`。只允许另立新的reporter协议；
+exp394与正式训练边界不变。

@@ -2430,3 +2430,21 @@ implementation/static/result SHA256=
 
 裁决=`CUDA_ATTRIBUTION_IMPLEMENTATION_STATIC_SEALED_PASS / CUDA EXECUTION NO-START`；它不包含actual
 batch或gradient结果，不改变exp394 sealed FAIL和formal NO-START。
+
+### exp395 CUDA attribution actual：reporter运行时失效
+
+唯一actual在fresh source、exp395 regular CLIP/codebook、canonical runtime和GPU空闲门通过后执行。
+official batch64与teacher target前置控制流通过；第一行D0 `reid`完成scaled backward后，scaled
+reporter对backbone组调用`torch.quantile`时触发`RuntimeError: quantile() input tensor is too large`，
+并在`scaler.unscale_`前按协议退出。
+
+因此没有完成D0 5行、rich 11行或15组scaled/unscaled矩阵，也没有新的gradient finite/non-finite归属。
+optimizer/scaler update=`0`、checkpoint=`0`，进程退出后GPU=`2 MiB/0%`且无compute process。
+result/runner/manifest SHA256=
+`cdffff60b1b6e04e6bb0b13bb54e12518380421675c59c2f2c785f1b7a5adb75`/
+`cdffff60b1b6e04e6bb0b13bb54e12518380421675c59c2f2c785f1b7a5adb75`/
+`3a0ef5d98dd6387b330958bbfb1e9d893e60745e8857237bbbbe375778886c64`。
+
+**最终判定**：`CUDA_ATTRIBUTION_EXECUTION_SEALED_INVALID / REPORTER_RUNTIME_FAIL`。它只否定exp395
+测量器对真实大组梯度的可执行性，不支持任何exp394根因判断；exp395不得重跑，正式训练继续
+`NO-START`。

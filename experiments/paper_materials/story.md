@@ -2040,3 +2040,15 @@ actual归因门先给出可复核支持子图，再由新的AMP-stable机制通�
 归因脚本的静态门现已通过，但它仍是“测量工具已就绪”，不是“AMP根因已找到”。论文正文不报告
 static gate为方法结果，也不据此恢复exp394训练。只有独立actual matrix在零更新条件下完成并通过
 state/RNG/asset终审，才允许把数值失败从宽泛production图进一步收紧；在那之前正面story完全不变。
+
+## 2026-07-19：exp395 actual没有给出AMP根因，只封板了reporter规模失败
+
+唯一actual越过了fresh source、canonical runtime、official batch64与teacher target前置阶段，但在第一
+行D0 `reid`的scaled梯度统计中，backbone组触发canonical `torch.quantile`大输入限制。异常发生在
+unscale之前，D0与rich矩阵均未完成；因此不能把这次失败写成“shared D0不稳定”、也不能写成“rich
+auxiliary已被定位”。
+
+论文结果边界完全不变：exp394仍只证明当前production AMP接口首步失败，exp395只证明第一版测量器没有
+覆盖真实参数规模。optimizer update与checkpoint均为0，不存在训练或检索结果。若继续，只能由独立
+exp396先证明大张量reporter可执行，再在zero-update门内获得实际支持矩阵；任何后续机制结论仍需另立
+实验，不能把诊断器工程修正当成方法贡献。

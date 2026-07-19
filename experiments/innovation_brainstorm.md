@@ -3731,3 +3731,15 @@ CUDA归因实现的静态封板进一步消除了一个执行偏差：两个cons
 rich ReID-only也不能被省略；任何actual结果都必须在同一first batch上同时呈现scaled和unscaled支持
 集合。此处仍没有科学结果，只有可复核测量仪器。若未来actual matrix定位到具体子图，后续稳定机制仍需
 另立实验并解释为何数值处理是机制必要条件，而不是为通过AMP门临时调出来的工程参数。
+
+### exp395 actual暴露“synthetic-correct”之外的测量规模契约
+
+exp395的CPU synthetic reporter在小张量上13/13 PASS，但真实backbone组的元素规模超过canonical
+`torch.quantile`支持上限，导致actual在第一行scaled capture中止。这个失败不是模型机制证据，却修正了
+诊断方法的创新边界：逐loss归因器不仅要在数学上正确，还必须把统计复杂度、内存上界和超大组的exact
+percentile算法写进先验契约。否则“完整梯度矩阵”仍可能只是小样本仪器幻觉。
+
+下一版只能把reporter作为独立测量对象：count、NaN/±Inf、abs-max与L2应单遍chunk归约；P50/P95/P99
+必须采用可证明与线性插值定义一致的chunk-safe exact selection/sort方案，并在小张量上逐字节对齐
+`torch.quantile`、在超过原限制的synthetic规模上完成。即使exp396最终得到矩阵，这仍是诊断基础设施，
+不能包装成CLIP–TAPF贡献；方法主张仍需后续AMP-stable机制与retrieval反事实支持。

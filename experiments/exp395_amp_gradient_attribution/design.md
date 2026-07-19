@@ -3,7 +3,8 @@
 ## 当前状态
 
 `DESIGN-FROZEN / PHASE 0S STATIC-CPU SEALED-PASS /
-CUDA ATTRIBUTION IMPLEMENTATION STATIC SEALED-PASS / CUDA EXECUTION NO-START /
+CUDA ATTRIBUTION IMPLEMENTATION STATIC SEALED-PASS /
+CUDA ATTRIBUTION EXECUTION SEALED-INVALID / REPORTER RUNTIME FAIL /
 FORMAL NO-START`。
 
 本实验是独立的数值归因门，不是 exp394 修补或重跑。exp394 保持
@@ -201,3 +202,26 @@ script/result SHA256=
 该PASS只说明**未执行脚本**满足冻结静态协议；没有复制fresh远端资产、没有初始化CUDA、没有产生
 actual loss/gradient matrix。CUDA execution仍需新的明确授权，formal训练与semantic multi-stage继续
 `NO-START`。
+
+## CUDA attribution actual封板
+
+用户随后给出持续自主CUDA授权。唯一actual使用fresh execution repo
+`/home/afr/SOLIDER-REID-exp395-amp-attribution-fresh-11d7a35`、exp395命名的regular CLIP/codebook实体与
+canonical runtime启动；source HEAD、九个保护blob、runtime及资产SHA均通过，official first batch64、
+manifest与teacher target前置控制流也均通过。
+
+执行在第一行D0 `reid`的scaled backward之后、`scaler.unscale_`之前进入`gradient_report`。对backbone
+组的全量有限元素计算P50/P95/P99时，canonical Torch的`torch.quantile`抛出
+`RuntimeError: quantile() input tensor is too large`。因此没有形成任何完整loss×parameter-group行，
+也没有unscaled capture或rich arm数据。该异常只证明exp395 reporter未覆盖真实backbone级超大张量，
+不能支持D0或rich gradient finite/non-finite判断，更不能收紧exp394根因。
+
+脚本按冻结RuntimeError边界退出，未重跑、未改scale/loss/rho/batch；optimizer/scaler update=`0`，
+checkpoint=`0`，进程退出后4090=`2 MiB/0%`且compute process=`0`。result/runner/manifest SHA256=
+`cdffff60b1b6e04e6bb0b13bb54e12518380421675c59c2f2c785f1b7a5adb75`/
+`cdffff60b1b6e04e6bb0b13bb54e12518380421675c59c2f2c785f1b7a5adb75`/
+`3a0ef5d98dd6387b330958bbfb1e9d893e60745e8857237bbbbe375778886c64`。
+
+最终裁决=`CUDA_ATTRIBUTION_EXECUTION_SEALED_INVALID / REPORTER_RUNTIME_FAIL`。exp395不得补跑或修补；
+下一步只能另立exp396，在不改变冻结loss/group/scale/batch的前提下先验验证chunk-safe exact reporter。
+exp394、formal e120与semantic multi-stage继续`NO-START`。

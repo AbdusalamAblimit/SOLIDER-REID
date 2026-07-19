@@ -3,7 +3,8 @@
 ## 状态
 
 `DESIGN-FROZEN / PROTOCOL-FROZEN / PHASE 0S STATIC-CPU SEALED-PASS /
-CUDA ATTRIBUTION IMPLEMENTATION STATIC SEALED-PASS / CUDA EXECUTION NO-START /
+CUDA ATTRIBUTION IMPLEMENTATION STATIC SEALED-PASS /
+CUDA ATTRIBUTION EXECUTION SEALED-INVALID / REPORTER RUNTIME FAIL /
 FORMAL NO-START`
 
 ## 2026-07-19 接手与边界冻结
@@ -90,3 +91,37 @@ gradient归属结果，不得推测exp394根因；formal训练继续`NO-START`�
 - 远端sealed exp394 repo HEAD仍为`11d7a35788c4645c355d96d76a2a4ff20a9801ac`且tracked clean；
 - 4090=`2 MiB / 0%`，compute process=`0`；
 - 本轮只完成本地实现与CPU静态审计，未传输脚本、未复制fresh asset、未执行CUDA。
+
+## 2026-07-19 用户持续授权与actual准备
+
+- 用户明确授权后续在本机与远端`afr/afrdata`范围内自主推进，不再设置逐次CUDA确认门；
+- 首次尝试从sealed exp394做普通fresh clone时，checkout因上游仓库缺少大量无关历史blob失败；该失败
+  副本保留在`/home/afr/SOLIDER-REID-exp395-amp-attribution-11d7a35`，未复制资产、未初始化CUDA；
+- 随后对已实际运行exp394的canonical sparse工作树做无reflink、无object alternate的独立物理副本，
+  execution repo=`/home/afr/SOLIDER-REID-exp395-amp-attribution-fresh-11d7a35`；
+- execution HEAD=`11d7a35788c4645c355d96d76a2a4ff20a9801ac`，tracked clean，九个保护blob逐SHA exact；
+- fresh regular CLIP/codebook SHA=
+  `9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e`/
+  `fb87da370ea945d526f499bef78093a6b07203d87c6d84efe06b5eb6594f954a`；
+- runtime freeze SHA=`3d38c99c7f06502d8b40467d2674c966723e5c913d2edf962c5a7088ec60cddb`，
+  script SHA=`64840b710db587720aa8807571212b246af3eabb54306bd5aa1bbf692f5ea08b`；
+- 启动前4090=`2 MiB/0%`、compute process=`0`，result/runner/manifest路径均不存在。
+
+## 2026-07-19 唯一CUDA attribution actual
+
+- official first batch64 manifest已写出；控制流已通过source/runtime/asset/config、teacher target与parameter
+  coverage前置阶段；
+- 第一行D0 `reid`完成scaled backward，随后scaled `gradient_report`在backbone组分位数统计调用
+  `torch.quantile`时抛出`RuntimeError: quantile() input tensor is too large`；
+- 异常发生在`scaler.unscale_`之前，D0 5行、rich 11行、15组双时点矩阵均未完成；
+- 不存在可用finite/non-finite归属证据，exp394根因仍未知；
+- 按协议立即停止，未重跑、未改initial scale/loss/rho/batch，optimizer/scaler update=`0`，checkpoint=`0`；
+- result与runner逐字节exact，SHA=
+  `cdffff60b1b6e04e6bb0b13bb54e12518380421675c59c2f2c785f1b7a5adb75`；manifest SHA=
+  `3a0ef5d98dd6387b330958bbfb1e9d893e60745e8857237bbbbe375778886c64`；
+- 进程退出后4090=`2 MiB/0%`、compute process=`0`；sealed exp394与fresh exp395 execution均保持
+  exact HEAD且tracked clean；
+- 由于异常中途退出，完整state/RNG/teacher after-exact gate没有产出，明确记为未证明。
+
+裁决：`CUDA_ATTRIBUTION_EXECUTION_SEALED_INVALID / REPORTER_RUNTIME_FAIL`。exp395禁止补跑；下一步
+另立exp396 chunk-safe exact reporter，formal训练与semantic multi-stage继续`NO-START`。

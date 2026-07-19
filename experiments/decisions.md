@@ -5294,3 +5294,16 @@ zero-update、默认scale、双时点capture、fresh assets、runtime和状态�
 
 **后续边界**：`CUDA_ATTRIBUTION_IMPLEMENTATION_STATIC_SEALED_PASS / CUDA EXECUTION NO-START`。没有
 新的明确授权前，不把脚本或资产送入4090执行；exp394、e120与semantic multi-stage边界不变。
+
+### [2026-07-19] 决策：exp395 actual因大张量quantile reporter失效而封板INVALID
+
+用户给出持续自主CUDA授权后，唯一actual按冻结source/runtime/assets/batch执行。source、资产、official
+batch64与teacher target前置控制流通过；但第一行D0 `reid`的scaled backward之后，reporter对backbone
+组全量元素调用`torch.quantile`，触发`input tensor is too large` RuntimeError，并在unscale前退出。
+没有完整loss×group矩阵，故不能判断D0或rich图的finite支持，更不能对exp394作loss/head归因。
+
+**决策**：`CUDA_ATTRIBUTION_EXECUTION_SEALED_INVALID / REPORTER_RUNTIME_FAIL`。遵守预注册停止门，
+禁止修改reporter后重跑exp395；optimizer/scaler update与checkpoint均为0，exp394继续sealed。下一步只
+允许另立exp396，在CPU/static阶段先覆盖真实backbone量级的chunk-safe exact分位数与动态范围统计，
+再执行独立CUDA归因。用户的持续授权取消了“再次等待确认”，但不取消static先行、fresh once-only、
+零更新与失败即停边界。formal e120及semantic multi-stage仍`NO-START`。
