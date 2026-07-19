@@ -361,3 +361,13 @@ epoch。
 e100–e101的`GateAbs`约`7.8e-08–8.4e-08`，保持finite、非零；Student=`1.00`，Q=`0.692`，
 Reliability=`0.512`。execution HEAD/config/tracked exact，main PID=`888440`与8 workers唯一，4090
 仅该main占用`8,244 MiB`；严格异常=`0`、e120前checkpoint=`0`，继续自然运行。
+
+## 2026-07-19 Phase A RZ-C0 e110评测
+
+e110自然完成后的评测为mAP/R1/R5/R10=`56.7/66.7/79.5/83.9`。相对e100为
+`+0.1/-0.4/+0.3/+0.4`，仍只作中间轨迹。复核时已自然完成e118并进入e119，下一完整节点为e120
+final。
+
+e118–e119的`GateAbs`约`7.7e-08–8.5e-08`，保持finite、非零；Student=`1.00`，Q=`0.692`，
+Reliability=`0.512`。execution HEAD/config/tracked exact，main PID=`888440`与8 workers唯一，4090
+仅该main占用`8,236 MiB`；严格异常=`0`、e120前checkpoint=`0`，继续自然运行，不提前启动bypass。
