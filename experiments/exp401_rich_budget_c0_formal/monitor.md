@@ -47,3 +47,13 @@ FORMAL RUNNING`
   checkpoint=`0`。
 
 当前裁决=`FORMAL RUNNING`；自然跑满e120，不按中间指标或GateAbs早停。
+
+## 2026-07-19 e2完成 / e3进行中
+
+- exact HEAD/config/source tracked clean；main PID=`404782`、8 workers，唯一GPU process，约
+  `8,492 MiB`、util约`99%`；checkpoint=`0`、异常扫描=`0`；
+- e2 Iter200 Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Exec=
+  `9.289/1.492/0.577/0.653/0.709/0.994/0.319/0.207`，Acc=`0.020`，Student=`0`，
+  Reliability=`1.000`，rho=`0`，BudgetAbs=`0`；
+- e2自然完成，time=`127.106 s`；已进入e3 Iter40，Loss=`8.238`，所有记录finite；
+- 当前判断=`继续`；原因：进程、数值、schedule与零checkpoint边界全部正常，中间结果不裁决。
