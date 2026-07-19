@@ -254,3 +254,28 @@ Torch/OpenCLIP/OpenCV/timm=`2.6.0+cu124/3.3.0/4.13.0/1.0.27`；完整freeze SHA2
 裁决=`WRONG-RUNTIME-ENTRY SEALED-FAIL / CANONICAL-RUNTIME STATIC-PASS / ACTUAL 24-STEP
 PREFLIGHT STILL NO-START / ONE EXACT ACTUAL PREFLIGHT GO / FORMAL NO-START`。只有因为成功更新exact 0，
 才允许同一冻结script从step 0进入实际24-step门；实际更新开始后不得重跑或补步。
+
+## 2026-07-19 actual-batch CUDA/AMP终局
+
+同一冻结script在canonical exp394 runtime从step 0进入唯一actual门。official batch64与rich teacher
+target前置shape/finite/invalid-zero门通过，model完成首个forward、scaled backward与unscale；随后在
+扫描model gradients时命中non-finite，按协议在`scaler.step(optimizer)`之前立即退出。因此成功
+optimizer update exact=`0/24`，没有第2步、没有补步、没有checkpoint，也没有进入handoff或任何终审
+反事实。该证据只能说明当前production CUDA/AMP执行接口未通过首步finite门；result没有保存具体
+non-finite parameter组，不能把FAIL单独归到evidence、router、ReID或某个loss。
+
+main PID=`396560`自然退出，worker全部退出，4090恢复`2 MiB/0%`且无compute PID。fresh execution
+repo保持HEAD=`11d7a35788c4645c355d96d76a2a4ff20a9801ac`、tracked clean；checkpoint=`0`；canonical
+CLIP/codebook/runtime freeze SHA前后分别保持
+`9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e`/
+`fb87da370ea945d526f499bef78093a6b07203d87c6d84efe06b5eb6594f954a`/
+`3d38c99c7f06502d8b40467d2674c966723e5c913d2edf962c5a7088ec60cddb`。正式actual
+script/result/runner SHA256=
+`bae2210bc606048371b4750f85919595c0b8fdbd1e11681abac59fe9727ea4f0`/
+`3897d76fd6b6aeb0d9ed2a27e527053874f6cdf32b56cc80d5bc2f12e584b152`/
+`c76e9285a41f65f0e9333dda2ef10a75bd1a17bf85538019ac3871d000b0c879`。
+
+裁决=`CUDA_AMP_PREFLIGHT_SEALED_FAIL / CURRENT PRODUCTION AMP INTERFACE CLOSED / EXP394 FORMAL
+NO-START / SEMANTIC MULTI-STAGE NO-START`。禁止重跑、改initial scale、改loss/rho/batch、补第25步或
+以CPU PASS覆盖真实CUDA FAIL。Phase0E rich teacher与Phase0R预算代数仍是独立PASS；本FAIL不永久
+否定CLIP–TAPF，只否定当前实现满足正式训练前finite门。

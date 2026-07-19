@@ -2,10 +2,10 @@
 
 ## 当前状态
 
-`PROTOCOL-FROZEN / IMPLEMENTATION STATIC-PASS / CUDA PREFLIGHT EXECUTION GO / FORMAL NO-START`。
+`PROTOCOL-FROZEN / CUDA AMP PREFLIGHT SEALED-FAIL / FORMAL NO-START`。
 
-该协议只定义production static/CPU封板后的下一道真实运行门；用户后续指令现已授权按本协议执行唯一一次
-冻结preflight。预检不是正式实验，
+该协议定义的唯一actual-batch门已在step 1、`scaler.step`之前因non-finite gradient正式FAIL，不得
+重跑、补步或修改门槛。预检不是正式实验，
 不得据其mAP、loss趋势或descriptor gap调rho、loss、teacher、样本或阈值；不得产生可续训checkpoint。
 
 ## 冻结source与资产
@@ -34,8 +34,8 @@
 - 完整freeze为`cuda_runtime.freeze.txt`，SHA256=
   `3d38c99c7f06502d8b40467d2674c966723e5c913d2edf962c5a7088ec60cddb`；CPU-only import必须同时确认
   Torch/OpenCLIP/OpenCV/timm=`2.6.0+cu124/3.3.0/4.13.0/1.0.27`及production repo import PASS；
-- 因初始入口完成的成功更新数exact 0，冻结24-step actual-batch preflight尚未开始，允许从step 0用上述
-  canonical runtime执行一次；该边界不允许在实际更新开始后重跑或补第25步。
+- 初始缺包入口成功更新数exact 0，因此当时允许canonical runtime从step 0执行一次；该唯一actual入口
+  随后已在step 1 gradient finite门FAIL，不再构成任何重跑或补步授权。
 
 ## 冻结样本与步数
 
@@ -124,4 +124,8 @@ result中区分。isolated backward不计入24次optimizer更新。
 e120启动清单，不自动授权训练；不得直接从preflight权重续训。任一FAIL先封存script/result/runner并
 归因；只关闭失败的implementation/runtime接口，不改变rho、loss、样本、门槛或Phase 0E结论。
 
-formal e120与semantic multi-stage始终`NO-START`，直到用户后续heartbeat边界明确改变。
+本次实际结果=`CUDA_AMP_PREFLIGHT_SEALED_FAIL`：teacher target shape/finite前置门已过，但step 1
+unscale后的model gradient集合含non-finite，成功optimizer update exact `0/24`。当前result未保存具体
+parameter归属，因此不得把FAIL过度归到某一个loss/head；它只关闭本production CUDA/AMP接口。
+
+formal e120与semantic multi-stage保持`NO-START`。

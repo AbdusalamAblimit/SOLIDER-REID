@@ -4,8 +4,8 @@
 
 `DESIGN-FROZEN / PHASE 0R-S SEALED-PASS / PHASE 0R-128 SEALED-PASS /
 rho_star=0.08075544983148575 / PHASE 0P SOURCE PASS / PRODUCTION STATIC-CPU PASS /
-CUDA PROTOCOL FROZEN / PREFLIGHT IMPLEMENTATION NO-START / CUDA NO-START / FORMAL NO-START`。本实验不是exp393 Phase B续跑，不复用其训练checkpoint，也不
-降低Phase A门槛。只复用已封板的Phase 0E rich teacher定义与codebook SHA。
+CUDA AMP PREFLIGHT SEALED-FAIL / FORMAL NO-START`。本实验不是exp393 Phase B续跑，不复用其训练
+checkpoint，也不降低Phase A门槛。只复用已封板的Phase 0E rich teacher定义与codebook SHA。
 
 ## 动机
 

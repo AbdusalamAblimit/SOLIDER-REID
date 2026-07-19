@@ -5257,5 +5257,18 @@ teacher/optimizer/checkpoint/eval隔离、RGB-only与峰值显存；任一FAIL�
 
 CUDA/AMP协议随后已冻结为24个official actual batch64更新：12步epoch1 exact-zero预算，接12步epoch6
 `rho_star/5` handoff，并包含actual-batch四类分loss梯度所有权与完整reload/RGB-only/NULL/显存终审。
-当前只完成协议文档，`PREFLIGHT IMPLEMENTATION/CUDA/FORMAL`均`NO-START`；不得把协议冻结误写为
+该阶段只完成协议文档，`PREFLIGHT IMPLEMENTATION/CUDA/FORMAL`均`NO-START`；不得把协议冻结误写为
 真实AMP门已通过。
+
+### [2026-07-19] 决策：exp394首步AMP gradient non-finite，正式臂不启动
+
+canonical runtime解决了OpenCLIP/OpenCV依赖分裂，且official batch64 teacher target前置门通过；但
+唯一actual preflight在step 1 unscale后发现model gradient non-finite，并在optimizer step前退出。
+成功更新exact `0/24`、checkpoint `0`，source/assets/tracked保持exact。result没有保存具体parameter组，
+所以证据不足以把FAIL单独归因到某个head、router或loss。
+
+**决策**：`CUDA_AMP_PREFLIGHT_SEALED_FAIL`，exp394 e120与semantic multi-stage均`NO-START`。禁止以
+CPU PASS覆盖、重跑同一script、修改GradScaler initial scale、loss/rho/batch或补步。该决定只关闭当前
+production AMP实现接口；Phase0E teacher richness与Phase0R固定预算仍独立成立，也不永久否定
+CLIP–TAPF。后续若继续，只能另立新的、先验冻结的AMP稳定机制/诊断对象，不能把本臂修补后冒充同一
+实验。

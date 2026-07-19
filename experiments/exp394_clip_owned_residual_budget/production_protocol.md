@@ -3,12 +3,12 @@
 ## 当前状态
 
 `STATIC PROTOCOL FROZEN / PHASE 0P SOURCE CONTRACT PASS / PRODUCTION STATIC-CPU PASS /
-CUDA PROTOCOL FROZEN / PREFLIGHT IMPLEMENTATION STATIC-PASS / CUDA PREFLIGHT EXECUTION GO /
-FORMAL NO-START`。
+CUDA AMP PREFLIGHT SEALED-FAIL / FORMAL NO-START`。
 
 本协议冻结fresh implementation对象和反事实；production static/CPU现已封板，且未修改exp393 sealed
-repo。后续指令现只授权一次冻结CUDA preflight，仍不授权正式训练。Phase 0R-S与0R-128 PASS只说明
-代数/梯度接口和预算来源可执行，不证明本方法有效。
+repo。唯一冻结CUDA preflight已在step 1 backward后、optimizer step前因non-finite gradient失败，
+不授权重跑或正式训练。Phase 0R-S与0R-128 PASS只说明代数/梯度接口和预算来源可执行，不证明本方法
+有效。
 
 ## 冻结基线seam
 

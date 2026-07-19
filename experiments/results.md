@@ -2379,3 +2379,20 @@ relation loss与teacher-free state全部PASS。evidence、mask/presence、`L_exe
 `658ac1fd261ec09db618e9d658ae00fa3f0f7d7887b87e8716c601adbc8b0636`。该结果只封板CPU实现契约，
 不含真实CLIP吞吐、AMP更新或检索结果；裁决为`PRODUCTION_STATIC_CPU_SEALED_PASS / CUDA NO-START /
 FORMAL NO-START`。
+
+## exp394 Production CUDA/AMP preflight（2026-07-19）
+
+唯一冻结actual-batch门在canonical Torch/OpenCLIP/OpenCV runtime上执行。official batch64与rich
+teacher target前置contract通过，但首个scaled backward在unscale后出现non-finite model gradient，
+脚本在`scaler.step`前退出；成功optimizer update=`0/24`。因此没有handoff、reload、RGB-only或
+counterfactual终审数据，也没有checkpoint或可续训权重。
+
+script/result/runner SHA256=
+`bae2210bc606048371b4750f85919595c0b8fdbd1e11681abac59fe9727ea4f0`/
+`3897d76fd6b6aeb0d9ed2a27e527053874f6cdf32b56cc80d5bc2f12e584b152`/
+`c76e9285a41f65f0e9333dda2ef10a75bd1a17bf85538019ac3871d000b0c879`。进程自然退出，GPU恢复
+`2 MiB/0%`，execution HEAD/tracked/source/asset SHA保持exact，checkpoint=`0`。
+
+**最终判定**：`CUDA_AMP_PREFLIGHT_SEALED_FAIL / EXP394 FORMAL NO-START`。该FAIL只关闭当前
+production AMP接口，不推翻Phase0E rich evidence、Phase0R预算代数或CLIP–TAPF总体；但CPU contract
+不能替代真实CUDA finite门，禁止重跑、调initial scale、补步或启动e120。

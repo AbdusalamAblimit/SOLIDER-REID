@@ -3701,3 +3701,16 @@ relation helper最初把768维proposal与16维code的维度差当错误，CPU FA
 又避免训练后删除一个768↔16 projector。固定rho与RMS仍只是防塌缩基础设施，不能写成创新；只有后续
 真实checkpoint中correct相对wrong/static/generic和all-bypass同时改变检索，才有资格称为
 counterfactually executable mediator。
+
+## 2026-07-19：exp394揭示CPU梯度所有权正确仍不等于AMP数值可执行
+
+exp394的CPU exact contract证明了四条梯度路径在拓扑上互斥，但actual batch64的首个scaled backward
+在unscale后产生non-finite gradient。这增加了一条不能被CPU contract替代的创新约束：所谓
+“executable mediator”不仅要让CLIP梯度到达production expert，还必须在正式AMP尺度下首步finite；
+否则梯度所有权只是符号图正确，尚未成为可训练机制。
+
+当前result未记录具体爆溢parameter组，不能事后声称relation loss、evidence normalization或某个router
+就是根因，也不能通过降低GradScaler初值把同一臂救活。若未来另立机制，必须在协议冻结前把逐loss、
+逐parameter-group的scaled/unscaled gradient range作为首步诊断输出，并把数值稳定性处理写成机制的
+必要实现，而不是观察FAIL后调出来的超参。Phase0E仍说明rich evidence“有信息”，本次FAIL说明当前
+production图还没有把它变成AMP-stable executable signal。

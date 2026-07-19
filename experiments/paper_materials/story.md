@@ -2012,3 +2012,16 @@ CLIP、codebook不进入checkpoint state。这说明“rich evidence拥有生产
 反事实结果。固定rho、RMS normalization、PCA-16和local CLIP distillation都只是接口部件。下一证据
 必须先通过真实batch64 CUDA preflight，再由唯一fresh e120同时满足clean D0、all-bypass与semantic
 counterfactual门槛；在此之前，主结果仍是exp390的mAP-only弱GO，exp394只属于候选机制开发链。
+
+## 2026-07-19：exp394止于真实AMP首步，不进入训练或方法结果
+
+production CPU contract曾证明rho schedule、NULL identity和四类梯度所有权都能按设计成立；但唯一
+actual batch64 CUDA/AMP门在step 1 unscale后检出non-finite model gradient，并在optimizer update前
+退出。成功更新为`0/24`，没有checkpoint、handoff、retrieval或counterfactual结果。因此论文不能把
+exp394写成“已训练但效果未知”，更不能用CPU PASS暗示它具备真实可训练性。
+
+这条负证据把故事边界进一步收紧：rich CLIP evidence全量稳定存在，固定预算代数也可执行，但当前
+production computation graph尚未通过AMP finite门。由于失败资产没有定位具体parameter组，正文只应
+写成当前接口的数值执行失败，不应猜测某个loss是唯一原因。论文正面边界仍是exp390 mAP-only弱GO；
+exp394作为机制开发负证据，说明“梯度可达、预算非零、CPU exact”三者仍不足以构成可训练的
+CLIP-owned mediator。
