@@ -203,10 +203,10 @@ def apply_state_intervention(
         if matrix.shape != (evidence.shape[-1], evidence.shape[-1]):
             raise ValueError("Orthogonal matrix shape mismatch")
         rotated = torch.matmul(
-            evidence.float(),
-            matrix.to(device=evidence.device, dtype=torch.float32),
+            evidence,
+            matrix.to(device=evidence.device, dtype=evidence.dtype),
         )
-        updated["consumer_evidence"] = rotated.to(evidence.dtype)
+        updated["consumer_evidence"] = rotated
     elif arm == "evidence_slot_cycle":
         updated["consumer_evidence"] = evidence.roll(shifts=-1, dims=1)
     elif arm == "wrong_mask_binding":
