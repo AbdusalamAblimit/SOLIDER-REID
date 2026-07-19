@@ -48,3 +48,13 @@ CUDA NO-START / FORMAL NO-START`
 3. 保持zero optimizer/scaler update与fresh asset边界；
 4. 没有新的明确CUDA授权前不复制远端资产、不占用4090；
 5. exp394、formal e120与semantic multi-stage继续`NO-START`。
+
+## 2026-07-19 封板后环境终审
+
+- 本地提交=`7b4541d`，提交后tracked clean；
+- 远端sealed exp394 repo HEAD仍为
+  `11d7a35788c4645c355d96d76a2a4ff20a9801ac`且tracked clean；
+- 远端`model/tapf.py`与rich config SHA仍为
+  `95c5d0ff80bf9e4529589a5f31819e7aad5db644b88e2a33d6af07c9ffc42886`/
+  `e0413a497976ad6dbf4c74cf13b55c86c169d659bab6d967455e87c592e47f4e`；
+- 4090=`2 MiB / 0%`，compute process=`0`；本轮未复制资产、未启动CUDA任务。
