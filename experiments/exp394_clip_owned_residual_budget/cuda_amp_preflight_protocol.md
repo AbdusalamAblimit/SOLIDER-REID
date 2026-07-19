@@ -2,9 +2,10 @@
 
 ## 当前状态
 
-`PROTOCOL-FROZEN / IMPLEMENTATION NO-START / CUDA NO-START / FORMAL NO-START`。
+`PROTOCOL-FROZEN / IMPLEMENTATION STATIC-PASS / CUDA PREFLIGHT EXECUTION GO / FORMAL NO-START`。
 
-该协议只定义production static/CPU封板后的下一道真实运行门，不授权当前启动GPU。预检不是正式实验，
+该协议只定义production static/CPU封板后的下一道真实运行门；用户后续指令现已授权按本协议执行唯一一次
+冻结preflight。预检不是正式实验，
 不得据其mAP、loss趋势或descriptor gap调rho、loss、teacher、样本或阈值；不得产生可续训checkpoint。
 
 ## 冻结source与资产

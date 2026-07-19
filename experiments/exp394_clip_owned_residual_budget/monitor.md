@@ -205,5 +205,23 @@ step、换batch或按loss筛样本。
 
 协议同时冻结actual-batch四次隔离backward、correct/wrong/static proposal可分、NULL exact、两个
 consumer、strict reload、teacher/optimizer/checkpoint/eval隔离、RGB-only四变体、显存`<22 GiB`与
-异常词0。当前裁决=`CUDA_PROTOCOL_FROZEN / IMPLEMENTATION NO-START / CUDA NO-START / FORMAL
-NO-START`；等待后续heartbeat明确授权后才可实现外置preflight脚本，当前仍不得启动4090。
+异常词0。该阶段裁决=`CUDA_PROTOCOL_FROZEN / IMPLEMENTATION NO-START / CUDA NO-START / FORMAL
+NO-START`；等待后续heartbeat明确授权后才可实现外置preflight脚本，当时未启动4090。
+
+## 2026-07-19 CUDA/AMP preflight实现与静态门
+
+用户后续指令已解除preflight实现/执行的过时等待边界，但没有授权正式e120。新增独立外置
+`cuda_amp_preflight.py`，只读取exact implementation commit `11d7a35788c4645c355d96d76a2a4ff20a9801ac`、
+official train与两份canonical teacher资产；脚本不保存model/optimizer/scaler/checkpoint，也不修改
+production repo或config。它冻结24次actual batch64 AMP update、四类actual-batch隔离backward、两个
+consumer反事实、strict reload、RGB-only、teacher/state/asset/hook隔离和`<22 GiB`门。
+
+本地uv与远端clean runtime的`py_compile`/`--help`均PASS；远端static入口使用
+`CUDA_VISIBLE_DEVICES=`，4090全程保持`2 MiB/0%`且无compute PID。远端外置script位于
+`/home/afr/reid-clean/audits/exp394_cuda_amp_preflight/cuda_amp_preflight.py`，本地/远端SHA256 exact=
+`bae2210bc606048371b4750f85919595c0b8fdbd1e11681abac59fe9727ea4f0`。sealed RZ-C0 repo保持exact
+`09340f7`与tracked clean；canonical CLIP/codebook存在。
+
+裁决=`CUDA_PREFLIGHT_IMPLEMENTATION_STATIC_PASS / ONE EXACT CUDA PREFLIGHT GO / FORMAL NO-START`。
+下一步只能从implementation commit建立fresh execution repo并执行这一次冻结preflight；不得启动e120、
+semantic multi-stage或任何并行GPU任务。
