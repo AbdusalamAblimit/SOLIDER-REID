@@ -285,3 +285,14 @@ e20 Iter 200的Loss/Pose/Semantic/RegionMask/Presence/Q=
 `1.926/0.935/0.384/0.269/0.189/0.692`，Acc=`0.827`，Student=`1.00`，Reliability=
 `0.509`，GateAbs=`2.567e-07`；e21–e22仍约`1.9e-07–2.5e-07`，保持finite且非零。execution
 HEAD/config/tracked exact，main+8 workers与唯一4090任务正常，严格异常=`0`、e120前checkpoint=`0`。
+
+## 2026-07-19 Phase A RZ-C0 e30评测
+
+e30自然完成后的评测为mAP/R1/R5/R10=`43.6/52.6/68.8/74.1`。mAP相对e20的`40.9`继续
+上升，R1由`53.2`波动至`52.6`；两者都只作轨迹，不按中间单项变化裁决。评测后已自然进入e31。
+
+e30 Iter 200的Loss/Pose/Semantic/RegionMask/Presence/Q=
+`0.624/0.803/0.320/0.187/0.080/0.692`，Acc=`0.970`，Student=`1.00`，Reliability=
+`0.512`，GateAbs=`1.617e-07`；e29–e31约`1.4e-07–1.8e-07`，仍finite且非零。execution
+HEAD/config/tracked exact，main PID=`888440`与8 workers唯一；4090仅该main占用`8,374 MiB`，
+严格异常=`0`、e120前checkpoint=`0`，继续自然运行。
