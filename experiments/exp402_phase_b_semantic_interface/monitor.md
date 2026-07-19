@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-`DESIGN-FROZEN / PROTOCOL-FROZEN / CUDA PREFLIGHT SEALED-PASS / FORMAL FULL RUNNING`
+`SEALED / FORMAL VALIDITY PASS / CURRENT_SEMANTIC_INTERFACE_NO-GO`
 
 ## 2026-07-20 接手与设计冻结
 
@@ -126,3 +126,44 @@
   overflow=`0`；
 - 当前状态=`FORMAL FULL RUNNING`。不得修改source/config/checkpoint，不得重跑或提前按中间arm裁决；自然
   结束后由wrapper自动生成post-exit manifest，再按冻结的六semantic-control最大值与route门一次性裁决。
+
+## formal full自然结束与终审封板
+
+- 唯一formal依冻结顺序完成10/10个全validation arm，每臂`78`个batch、`19,871`行、unique index=
+  `19,871`；correct缓存evidence `19,871/19,871`且无duplicate；两个router每臂各调用78次，single/all
+  bypass覆盖分别为`[78,0]/[0,78]/[78,78]`；
+- 20项validity全部PASS：correct与all-bypass四项对exp401 reference absolute error=`0`，所有metrics/
+  descriptor finite，九臂descriptor mean L2均非零且exact-equal rows=`0`；逐臂prepare/apply-gate、
+  generic weights、model state、global/loader RNG全部恢复，official path/donor全覆盖；external teacher/pose/
+  codebook访问0，RGB None/ExplodingPose exact且pose访问0；
+- full arm raw mAP/R1/R5/R10：correct=`57.1230075595/67.2850668430/80.2714943886/
+  84.7511291504`；wrong-RGB=`57.1296975953/67.2398209572/80.3167402744/84.7963809967`；
+  zero=`57.1237039863/67.3303186893/80.0904989243/84.8416268826`；orthogonal=
+  `57.0932184448/67.3303186893/80.0452470779/84.8416268826`；slot-cycle=
+  `57.0596836822/67.3755645752/80.0452470779/84.5701336861`；wrong-mask=
+  `57.1094812717/67.3303186893/80.3619921207/84.7963809967`；generic-mean=
+  `56.9989891041/67.0135736465/80.2714943886/84.7511291504`；
+- bypass0/1/all raw=
+  `56.9922507039/67.4660623074/80.0904989243/84.5248878002`、
+  `57.1390635559/67.4208164215/80.4524898529/84.7058832645`、
+  `57.0035860757/67.3755645752/80.0452470779/84.6153855324`；correct−arm mAP point分别为
+  `+0.1307568556/−0.0160559964/+0.1194214838`；router0有正贡献，router1单独旁路反而略升；
+- semantic controls的correct−arm mAP point：wrong-RGB=`−0.0066900358`、zero=`−0.0006964267`、
+  orthogonal=`+0.0297891147`、slot-cycle=`+0.0633238773`、wrong-mask=`+0.0135262878`、
+  generic-mean=`+0.1240184555`。只有generic-mean跨过`+0.1`；最高control是wrong-RGB，冻结semantic
+  margin=`−0.0066900358 point`，因此`semantic_all_controls_margin=false`；
+- route gap=`+0.1194214838 point`、correct floor=`57.1230075595>=56.7`均复现；九臂descriptor mean L2=
+  wrong-RGB/zero/orthogonal/slot/wrong-mask/generic/bypass0/1/all=
+  `0.0992314/1.7037808/2.1863244/2.2443638/0.9062496/3.0557334/1.9942849/2.1490941/
+  2.7376952`，证明干预触达接口但不构成semantic retrieval优势；
+- actual PID=`418044`自然退出，wrapper退出；postflight 5/5 gate PASS，GPU=`2 MiB/0%`且无compute
+  process；NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow/AMP数值warning全部0。repo exact HEAD=
+  `11d7a35788c4645c355d96d76a2a4ff20a9801ac`且clean；唯一checkpoint/config SHA执行前后exact；
+- formal result/runner/manifest SHA256=
+  `e52af8971f11a950e082bd0e5233e9a9679321fce8865f7e5999c52082642c4e`/
+  `68df35d43a322815c759756c6f158353304abcfbcb1b36fbda209e0b774a37af`/
+  `bcb8fe1a62cc90b5469ac3a09dac7b91acf8307d53b3b5c8a9ffa319289e03d7`；
+- 最终判定=`CURRENT_SEMANTIC_INTERFACE_NO-GO / PHASE-B FORMAL MECHANISM DESIGN NO-START`。
+  exp401的`RICH_BUDGET_ROUTE_ALIVE`保留，但不能把其弱mAP贡献归因给图像特定、slot特定的student rich
+  evidence。exp402禁止重跑、补跑、删control或调rho/loss/batch；该NO-GO只关闭当前C0 student-evidence/
+  expert语义解释，不永久否定Phase0E、Phase0R或CLIP–TAPF。

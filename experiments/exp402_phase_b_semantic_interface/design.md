@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-`DESIGN-FROZEN / PROTOCOL-FROZEN / STATIC-CPU NO-START / GPU NO-START`
+`SEALED / VALIDITY PASS / CURRENT_SEMANTIC_INTERFACE_NO-GO`
 
 ## 动机
 
@@ -110,3 +110,15 @@ generic_expert_mean`。只有同时满足：
 PASS也只是同一checkpoint的干预可辨识性，不是多seed或新训练结果；它只授权下一编号formal mechanism
 design/preflight。FAIL说明exp401的弱route贡献尚不能归到CLIP-owned semantic mediator。无论结果如何，
 NFC、re-ranking或其他test-time trick均不得进入裁决。
+
+## 封板结果
+
+唯一formal full的全部validity门通过，correct与all-bypass逐项精确复现exp401 reference，10臂均完整覆盖
+19,871张图且descriptor finite/active，所有patch/state/RNG/source/config/checkpoint恢复exact。route gap仍为
+`+0.1194214838 mAP point`且correct=`57.1230075595 mAP`，因此exp401 route-alive结论保留。
+
+但semantic kill-switch失败：六个control中最高的是wrong-RGB evidence=`57.1296975953 mAP`，比correct
+高`0.0066900358 point`；zero evidence也高`0.0006964267 point`。预注册semantic margin实际为
+`−0.0066900358 point`，远低于要求的`+0.1`。最终判定=
+`CURRENT_SEMANTIC_INTERFACE_NO-GO / PHASE-B FORMAL MECHANISM DESIGN NO-START`。该结论只关闭当前
+student-evidence/expert语义解释，不改写exp401 route alive，也不永久否定Phase0E、Phase0R或CLIP–TAPF。

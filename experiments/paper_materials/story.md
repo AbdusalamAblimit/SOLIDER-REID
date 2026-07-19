@@ -2126,3 +2126,18 @@ checkpoint缺项或抽样descriptor差。
 wrong RGB、wrong mask、static、random-orthogonal、generic expert-mean及all-bypass形成强反事实闭环。
 只有correct-specific优势和route贡献同时成立，才能把当前结果升级为CLIP-owned semantic mediator；
 否则应把exp401保留为接口级弱正证据，而不是放大为最终方法结论。
+
+## 2026-07-20：exp402否定当前C0的semantic-mediator解释
+
+exp402在同一sealed checkpoint上完成了10个全量RGB-only反事实。correct与all-router-bypass精确复现
+exp401，后者仍低`0.1194214838 mAP point`，所以“fixed-budget route不是检索identity”这一接口结论成立。
+但wrong-RGB evidence比correct高`0.0066900358 point`，zero evidence也不低于correct；六个预注册semantic
+control的最坏margin为`−0.0066900358 point`，没有达到`+0.1`。所有arm descriptor都显著改变，说明这不是
+无效patch，而是sample-specific evidence变化未转化为正确检索优势。
+
+论文因此不能把exp401 route gap解释为CLIP-owned semantic mediator。generic expert mean与router0 bypass
+分别损失`0.1240184555/0.1307568556 point`，而router1 bypass略升，最多支持“expert heterogeneity与
+router组合会影响排序”，不能支持“模型按图像身份使用了rich evidence”。当前正面story必须停在
+route-alive弱接口证据；exp402作为负消融写清楚为何Phase-B不进入formal mechanism design。若未来重启
+CLIP–TAPF，必须重新定义能对wrong/zero evidence产生稳定因果顺序的训练或结构对象，不能通过调rho、loss、
+batch、增加stage或删除不利control来延续当前C0叙事。

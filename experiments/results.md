@@ -2656,3 +2656,31 @@ GPU=`2 MiB/0%`。
 
 **最终判定**：`RICH_BUDGET_ROUTE_ALIVE / PHASE-B INTERFACE GO`。这是刚越过预注册差值门的单seed
 interface PASS；它不支持夸大effect size或声称R1提升，也不自动构成多seed论文结果。
+
+## exp402 Phase-B RGB-only semantic-interface counterfactual（2026-07-20）
+
+同一exp401 sealed checkpoint上，唯一formal full完成10个串行RGB-only arm；20项validity与post-exit
+5项gate全部PASS。各arm raw mAP/R1/R5/R10如下：
+
+| arm | mAP | R1 | R5 | R10 | correct−arm mAP point |
+|---|---:|---:|---:|---:|---:|
+| correct | 57.123008 | 67.285067 | 80.271494 | 84.751129 | 0 |
+| wrong RGB evidence | 57.129698 | 67.239821 | 80.316740 | 84.796381 | −0.006690 |
+| static zero evidence | 57.123704 | 67.330319 | 80.090499 | 84.841627 | −0.000696 |
+| orthogonal evidence | 57.093218 | 67.330319 | 80.045247 | 84.841627 | +0.029789 |
+| evidence slot cycle | 57.059684 | 67.375565 | 80.045247 | 84.570134 | +0.063324 |
+| wrong mask binding | 57.109481 | 67.330319 | 80.361992 | 84.796381 | +0.013526 |
+| generic expert mean | 56.998989 | 67.013574 | 80.271494 | 84.751129 | +0.124018 |
+| bypass router0 | 56.992251 | 67.466062 | 80.090499 | 84.524888 | +0.130757 |
+| bypass router1 | 57.139064 | 67.420816 | 80.452490 | 84.705883 | −0.016056 |
+| all-router-bypass | 57.003586 | 67.375565 | 80.045247 | 84.615386 | +0.119421 |
+
+all-bypass route gap与`56.7` floor均复现，但六semantic controls中最高的是wrong-RGB，semantic margin=
+`−0.0066900358 point`而非要求的`+0.1`；zero evidence也不低于correct。所有九臂descriptor差均finite/
+active，说明干预真实触达接口，却没有形成correct-specific检索优势。result/runner/manifest SHA256=
+`e52af8971f11a950e082bd0e5233e9a9679321fce8865f7e5999c52082642c4e`/
+`68df35d43a322815c759756c6f158353304abcfbcb1b36fbda209e0b774a37af`/
+`bcb8fe1a62cc90b5469ac3a09dac7b91acf8307d53b3b5c8a9ffa319289e03d7`。
+
+**最终判定**：`FORMAL VALIDITY PASS / CURRENT_SEMANTIC_INTERFACE_NO-GO`。exp401 route alive保持，
+但当前C0贡献不能归因于图像特定student rich evidence；Phase-B formal mechanism design不授权。

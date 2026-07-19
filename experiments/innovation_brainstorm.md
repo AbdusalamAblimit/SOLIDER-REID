@@ -3820,3 +3820,20 @@ batch或route scale，而应是Phase-B语义接口：在保持exp401执行预算
 验证correct evidence是否稳定优于wrong RGB、wrong mask、slot-static/random-orthogonal与generic expert-mean，
 同时保留all-bypass。只有correct-specific差与route差共同扩大，才能把“活的执行接口”升级为
 “CLIP-owned semantic mediator”；否则exp401仍只是一个严谨但弱效的接口证据。
+
+### exp402把“route alive”与“semantic mediator”正式拆开
+
+exp402给出了关键的反事实分离：关闭两个router时mAP下降`0.1194214838 point`，所以exp401的执行route
+确实存活；但把每张图的evidence换成同camera不同PID donor或全零，并不会降低检索，wrong-RGB甚至高
+`0.0066900358 point`。因此“route有贡献”不能再被当成“route使用了图像特定CLIP语义”的替代证据。
+
+所有干预都产生大于零的descriptor差，排除了patch没有触达的解释。generic expert mean下降
+`0.1240184555 point`，router0 bypass下降`0.1307568556 point`，而router1 bypass反而略升；这更像是
+slot-specific expert参数先验与两个router的非对称组合在重排检索，而16维sample-specific evidence没有
+形成正确身份条件。下一创新对象若仍保留CLIP–TAPF，必须在训练目标中直接建立
+`correct > wrong RGB > zero/generic`的可辨识顺序，或重新定义能被错误身份证据破坏的结构接口；仅扩大
+rho、增加stage、调loss权重或继续装饰现有evidence head都不再具备机制依据。
+
+这也收紧论文边界：exp401可作为fixed-budget route非identity的弱接口证据，exp402则是有效负消融，
+明确阻止把该route宣传为CLIP-owned semantic mediator。Phase0E证明teacher evidence存在、Phase0R证明
+某些readout可分，并不等于当前C0 student接口在检索中使用了这些信息；后续主张必须重新闭合这一断点。

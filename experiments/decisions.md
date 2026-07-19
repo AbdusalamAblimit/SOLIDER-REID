@@ -5438,3 +5438,21 @@ residual。exp402因此冻结为同checkpoint只读诊断：correct与same-split
 **决策**：先实现CPU/static正反contract，正式GPU仍`NO-START`。只有所有六个semantic controls都比
 correct至少低`0.1 mAP`、route gap复现且descriptor intervention active，才授权下一编号Phase-B formal
 mechanism design。FAIL只关闭当前student-evidence/expert解释；不得调rho/loss/batch或删除不利control。
+
+### [2026-07-20] 决策：exp402 validity PASS但semantic kill-switch NO-GO
+
+唯一formal在19,871图、10个串行arm上完整执行，correct与all-bypass逐项精确复现exp401；全部descriptor
+active，两个router均有独立执行影响，state/RNG/patch/source/config/checkpoint及RGB-only/teacher-free/
+post-exit门全部PASS。因此这是有效科学负结果，不是测量器INVALID。
+
+route gap仍为`+0.1194214838 point`，correct floor也通过；但wrong-RGB mAP比correct高
+`0.0066900358 point`，zero evidence也高`0.0006964267 point`。六control最高值使semantic margin=
+`−0.0066900358 point`，明显未达到`+0.1`。generic expert mean单独下降`0.1240184555 point`，同时
+router0 bypass下降`0.1307568556`、router1 bypass却上升`0.0160559964 point`；最稳妥的解释是当前route
+依赖expert heterogeneity与混合router残差，但没有证明sample-specific RGB evidence是有效语义中介。
+
+**决策**：exp402封板为`CURRENT_SEMANTIC_INTERFACE_NO-GO / PHASE-B FORMAL MECHANISM DESIGN
+NO-START`，禁止重跑、补跑、删掉wrong/zero control或调rho/loss/batch救活。exp401的route-alive接口证据
+保留；该NO-GO只关闭当前student-evidence/expert语义解释，不永久否定Phase0E、Phase0R或CLIP–TAPF。
+后续若继续，只能重新定义训练对象/结构对象，使sample-specific evidence相对wrong/zero先建立可辨识因果差；
+不得把generic expert prior或router0单臂贡献改写成CLIP语义贡献。
