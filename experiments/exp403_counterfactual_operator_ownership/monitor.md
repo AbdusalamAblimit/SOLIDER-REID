@@ -65,3 +65,16 @@ result=`production_cpu_result.json`，当前判定：`PRODUCTION CPU PASS / FRES
 fresh asset-v1在导入阶段因子目录启动未注入repo root而`ModuleNotFoundError: datasets`；GPU始终
 `2 MiB/0%`，official数据访问0，generic输出0。该记录封板为`ASSET-V1 INVALID`，不代表机制失败；只允许
 asset-v2修正模块入口，资产内容、teacher、数据与聚合合同保持不变。
+
+asset-v2在错误的Phase0E Python环境导入`model`时因缺OpenCV退出；同样未初始化GPU、未访问数据且输出0，
+封板为`ASSET-V2 INVALID`。随后不改脚本，改用exp394–exp401冻结链的canonical OpenCLIP+ReID runtime
+执行fresh asset-v3。
+
+asset-v3自然覆盖official train=`15,618`图后PASS，五slot valid count=
+`15,615/15,618/15,618/15,617/15,578`，generic mean norm=
+`0.0900701/0.0885263/0.0812544/0.0593401/0.0758309`，均finite/nonzero；peak CUDA=
+`1,712,272,384 bytes`，异常0，进程退出且GPU恢复`2 MiB/0%`。generic/result runner SHA256=
+`dc2dfe9e1fd00b6a8b374eb4f6894f1dc6c7680df6d00540cbea37e9b5ae431d`/
+`a21b1c2e3f06b687c0940f10180d72ca9a4f39b9b2c8b097340160fe669faaad`。
+
+判断：`FRESH GENERIC ASSET PASS / ACTUAL BATCH64 CUDA/AMP PREFLIGHT GO / FORMAL NO-START`。
