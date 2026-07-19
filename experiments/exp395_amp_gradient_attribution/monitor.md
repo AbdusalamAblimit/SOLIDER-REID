@@ -83,3 +83,10 @@ gradient归属结果，不得推测exp394根因；formal训练继续`NO-START`�
 3. actual诊断只能运行一次，必须保持zero optimizer/scaler update、checkpoint 0；
 4. 进程退出后另做GPU空闲、result/runner/manifest SHA和异常终审；
 5. 无论归因结果如何，exp394、formal e120与semantic multi-stage继续`NO-START`。
+
+## 2026-07-19 implementation提交后终审
+
+- 本地提交=`a215f72`且tracked clean；
+- 远端sealed exp394 repo HEAD仍为`11d7a35788c4645c355d96d76a2a4ff20a9801ac`且tracked clean；
+- 4090=`2 MiB / 0%`，compute process=`0`；
+- 本轮只完成本地实现与CPU静态审计，未传输脚本、未复制fresh asset、未执行CUDA。
