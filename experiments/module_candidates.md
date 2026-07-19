@@ -224,7 +224,7 @@
 
 ## 2026-07-20 新增候选：ELO-CUR（exp403）
 
-**状态**：`PRIMARY PRODUCTION-IMPLEMENTATION CANDIDATE / STATIC CPU PASS / CUDA NO-START`
+**状态**：`SEALED / VALIDITY PASS / SCIENTIFIC ELO_CUR_MECHANISM_NO_GO`
 
 ### 问题定义
 
@@ -250,4 +250,11 @@ exp401 route alive但exp402 wrong-RGB/zero不劣于correct，说明当前static 
 
 ### 当前证据
 
-standalone CPU正反contract两遍`26/26 PASS`、byte-exact；只授权生产实现，不授权GPU/formal。
+standalone CPU正反contract两遍`26/26 PASS`、生产合同`34/34 PASS`、真实batch64 CUDA/AMP
+preflight=`16/16 PASS`，唯一fresh e120与七臂全量RGB-only终审也自然完成。测量有效，但correct raw
+mAP=`0.569929559315091`低于clean D0；wrong/generic/NULL/all-bypass均不低于correct，semantic与route margin
+同为`−7.745354277944e-06` raw mAP，七臂R1/R5/R10完全相同。训练期compatibility/CUR没有转化为final
+retrieval ownership。
+
+**裁决**：关闭当前ELO-CUR对象，禁止重跑、补跑、续训或通过调rho/loss/batch/stage、mask及删除control
+救活。下一候选必须重新定义最终检索对象或结构所有权，不能把ELO-CUR换名继续。
