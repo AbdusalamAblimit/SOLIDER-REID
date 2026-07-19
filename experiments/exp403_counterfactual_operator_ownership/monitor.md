@@ -103,3 +103,12 @@ BudgetAbs=`0`，finite。当前判定：`FORMAL RUNNING`；只按冻结协议监
 `1.535e-01`，EffRank=`15.605`，RNGExact=`1`，Student=`0`，Reliability=`0.997`，rho=`0`，
 BudgetAbs=`0`，finite。remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、
 GPU唯一任务，fatal/AMP数值warning=`0/0`，checkpoint=`0`。判断：继续自然运行，不作中间裁决。
+
+## 2026-07-20 formal heartbeat：e9
+
+已进入e9 Iter180。Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
+`5.900/1.231/0.425/0.547/0.558/0.994/0.296/0.102/0.050`；Compat C/W/G/N=
+`0.4998/0.5015/-0.0404/-1.0000`，eligible=`1.000`，CoeffStd=`1.512e-01`，EffRank=`15.641`，
+RNGExact=`1`，Student=`0.80`，Reliability=`0.999`，rho=`0.064604360`，BudgetAbs=`3.232e-04`，finite。
+remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
+warning=`0/0`，checkpoint=`0`。e10正式eval尚未产生；继续自然运行，不按训练期compatibility作科学裁决。
