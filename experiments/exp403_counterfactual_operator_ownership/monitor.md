@@ -288,3 +288,48 @@ e120训练内正式评测mAP/R1/R5/R10=`57.0/67.4/79.7/84.1`，仍只记录，ra
 随后串行启动唯一7臂全量RGB-only final audit；wrapper PID=`430930`，唯一GPU audit PID=`430932`，初始显存
 约`7924 MiB`，strict model load成功。当前判定：`FORMAL TRAINING COMPLETE / CHECKPOINT CONTRACT PASS /
 FINAL COUNTERFACTUAL RUNNING`。
+
+## 2026-07-20 final counterfactual自然完成与封板
+
+唯一7臂全量RGB-only审计自然退出，每臂完整覆盖`19,871`图/`78` batches。七臂raw结果为：
+
+| arm | mAP | R1 | R5 | R10 | correct−arm mAP point | descriptor mean L2 / max-abs |
+|---|---:|---:|---:|---:|---:|---:|
+| correct | 56.992955931509 | 67.420816421509 | 79.728507995605 | 84.072399139404 | 0 | reference |
+| wrong RGB evidence | 56.993435832959 | 67.420816421509 | 79.728507995605 | 84.072399139404 | −0.000479901450 | 0.001668183133 / 0.000701904297 |
+| generic evidence | 56.993713150692 | 67.420816421509 | 79.728507995605 | 84.072399139404 | −0.000757219183 | 0.035066194832 / 0.008772373199 |
+| NULL zero evidence | 56.993730466937 | 67.420816421509 | 79.728507995605 | 84.072399139404 | −0.000774535428 | 0.035825069994 / 0.008928775787 |
+| evidence slot cycle | 56.991975523448 | 67.420816421509 | 79.728507995605 | 84.072399139404 | +0.000980408061 | 0.006056237034 / 0.001584291458 |
+| wrong mask binding | 56.992356510393 | 67.420816421509 | 79.728507995605 | 84.072399139404 | +0.000599421116 | 0.005656813271 / 0.001407384872 |
+| all-router-bypass | 56.993730466937 | 67.420816421509 | 79.728507995605 | 84.072399139404 | −0.000774535428 | 0.035825069994 / 0.008928775787 |
+
+wrong-RGB donor严格满足same-split/same-camera/different-PID=`1/1/1`且无fixed point。所有六个干预臂
+`exact_equal_rows=0`，descriptor均finite/active；两个router在每臂各执行`78` batches，逐臂state、RNG、
+loader RNG、prepare patch与router patch恢复exact。strict reload、237项finite/teacher-free state、
+ELO shared projections、无static experts、RGB-only、source/config/checkpoint before-after exact、
+teacher/pose forbidden access=`0`均PASS。runner异常计数全部为0，audit exit=`0`，进程退出，GPU回到
+`2 MiB/0%`。postflight `7/7 PASS`，所以这是有效测量，不是runtime或patch INVALID。
+
+四个正式科学门全部失败：correct raw mAP/R1=`0.569929559315091/0.674208164215088`，低于冻结D0门
+`0.575587756578/0.676923076923`；correct相对`max(wrong,generic,NULL)`的raw mAP margin为
+`−7.745354277944e-06`（`−0.000774535428 point`），相对all-bypass亦为同值，均未达到
+`+0.001` raw mAP（`+0.1 point`）。尤其NULL与all-bypass的raw metrics逐项完全相同，七臂R1/R5/R10也
+逐项完全相同。
+
+训练期compatibility/CUR proxy虽持续有限且活跃，却没有转化为final retrieval ownership。
+descriptor干预活跃但排名近乎不变，说明当前ELO-CUR学到的是可执行的shortcut/proxy，而不是“正确图像
+evidence拥有检索算子”的身份条件。
+
+唯一checkpoint SHA256=`c5593cd73b06cde4ec3306b3458617d8835fa529b77c545923e874e7e780cc71`，
+state SHA256=`ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9`。
+result/runner/checkpoint-contract/manifest SHA256=
+`baf4a016d008f4a86ac26d9ff78524ecc30d46071392dad8a8d151aaf05063cb`/
+`af1872d65d8dabc9d51f317465a3d60d4f141a6c79db84c2751d43cc964b26eb`/
+`7af4b3bcf49d3cf33f683a385dd94fdb145b971bed7d245c7d089867cffbf217`/
+`891588308683ce99a363613c0f94c724b367323579fc55ad7b922994a46d329a`。
+
+**最终判定**：`SEALED / VALIDITY PASS / SCIENTIFIC ELO_CUR_MECHANISM_NO_GO`，
+`phase_b_formal_mechanism_design_authorized=false`。exp403禁止重跑、补跑、续训、换seed或通过调
+rho/loss/batch/stage、mask及删除不利control救活。exp401的route-alive窄幅边界保持；exp402关闭旧C0
+student-evidence/expert semantic解释，exp403进一步关闭当前evidence-owned low-rank operator + CUR对象。
+下一候选必须重新定义问题或结构对象并重新通过创新门槛，不得围绕ELO-CUR做尺度或损失变体。

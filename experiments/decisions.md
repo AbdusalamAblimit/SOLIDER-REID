@@ -5485,3 +5485,23 @@ state与checkpoint门均通过，GPU退出后空闲。未增加额外CPU矩阵�
 **决策**：立即启动唯一fresh seed1234/batch64/e120，当前`FORMAL RUNNING`，main PID=`423319`。禁止续训、
 换seed、调rho/loss/batch/stage、按中间指标早停或删除不利control；e120前checkpoint必须为0，最终只按冻结的
 full绝对门、correct-vs-controls和correct-vs-all-bypass三门裁决。
+
+### [2026-07-20] 决策：exp403测量有效，但ELO-CUR没有形成检索所有权
+
+唯一fresh e120自然完成；七臂final audit每臂全量覆盖`19,871`图/`78` batches。strict checkpoint、
+teacher-free/RGB-only、shared ELO/no-static-expert、donor、两个router调用、descriptor active、state/RNG/patch/
+source/config/checkpoint恢复与退出postflight全部通过，measurement status=`PASS`。这不是runner错误或无效干预。
+
+correct raw mAP/R1=`0.569929559315091/0.674208164215088`，低于sealed D0门
+`0.575587756578/0.676923076923`。wrong/generic/NULL raw mAP分别为
+`0.569934358329593/0.569937131506918/0.569937304669369`，all-bypass也为
+`0.569937304669369`；correct相对最高control及all-bypass的margin均为
+`−7.745354277944e-06`，未达到`+0.001`。七臂R1/R5/R10完全相同。虽然每个descriptor干预都active，
+它们没有改变身份排序；训练期compatibility/CUR因此只能解释为shortcut/proxy，不能解释成retrieval
+operator ownership。
+
+**决策**：exp403封板为`VALIDITY PASS / SCIENTIFIC ELO_CUR_MECHANISM_NO_GO`，
+`phase_b_formal_mechanism_design_authorized=false`。禁止同编号重跑、补跑、续训、换seed，禁止调
+rho/loss/batch/stage、mask或删除wrong/generic/NULL/all-bypass control救活。exp401只保留窄幅route-alive
+接口边界；exp402关闭当前C0 student-evidence/expert semantic解释；exp403关闭当前ELO-CUR对象。下一候选
+必须重新定义问题或结构对象并至少满足创新门槛两项，不能继续围绕ELO-CUR调尺度或loss。

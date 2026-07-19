@@ -2717,3 +2717,41 @@ finite/nonzero，第5次default GradScaler自然backoff后成功更新，checkpo
 **当前判定**：`CUDA_AMP_PREFLIGHT_PASS / FORMAL RUNNING`。启动前HEAD/config/fresh output/GPU独占全过，
 唯一fresh seed1234 e120主进程PID=`423319`；e1 Iter60各项有限，8 workers、唯一GPU任务、checkpoint=`0`。
 不再追加CPU验证，不按中间性能裁决。
+
+### exp403 formal e120与七臂final counterfactual
+
+唯一fresh seed1234自然跑满e120并只生成一个checkpoint；训练内rounded final为
+`57.0/67.4/79.7/84.1`。随后同一checkpoint的七臂全量RGB-only审计自然完成，每臂覆盖
+`19,871`图/`78` batches，raw指标如下：
+
+| arm | mAP | R1 | R5 | R10 | correct−arm mAP point |
+|---|---:|---:|---:|---:|---:|
+| correct | 56.992956 | 67.420816 | 79.728508 | 84.072399 | 0 |
+| wrong RGB evidence | 56.993436 | 67.420816 | 79.728508 | 84.072399 | −0.000480 |
+| generic evidence | 56.993713 | 67.420816 | 79.728508 | 84.072399 | −0.000757 |
+| NULL zero evidence | 56.993730 | 67.420816 | 79.728508 | 84.072399 | −0.000775 |
+| evidence slot cycle | 56.991976 | 67.420816 | 79.728508 | 84.072399 | +0.000980 |
+| wrong mask binding | 56.992357 | 67.420816 | 79.728508 | 84.072399 | +0.000599 |
+| all-router-bypass | 56.993730 | 67.420816 | 79.728508 | 84.072399 | −0.000775 |
+
+全部descriptor干预finite/active且每臂`exact_equal_rows=0`，wrong-RGB donor满足同split、同camera、不同PID；
+strict reload、RGB-only、teacher-free、两个router覆盖、state/RNG/patch/source/config/checkpoint恢复、异常与
+退出后GPU门全部PASS。measurement/postflight=`PASS/7-of-7 PASS`，因此不是无效测量。
+
+四个正式科学门全部失败：correct mAP/R1低于sealed D0 raw门
+`0.575587756578/0.676923076923`；correct相对wrong/generic/NULL最高臂与all-bypass的raw mAP margin均为
+`−7.745354277944e-06`，而非要求的`+0.001`。NULL与all-bypass指标完全相同，七臂R1/R5/R10也完全相同。
+训练期compatibility/CUR只形成了proxy/shortcut，没有建立final retrieval ownership。
+
+checkpoint/state SHA256=
+`c5593cd73b06cde4ec3306b3458617d8835fa529b77c545923e874e7e780cc71`/
+`ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9`；
+result/runner/contract/manifest SHA256=
+`baf4a016d008f4a86ac26d9ff78524ecc30d46071392dad8a8d151aaf05063cb`/
+`af1872d65d8dabc9d51f317465a3d60d4f141a6c79db84c2751d43cc964b26eb`/
+`7af4b3bcf49d3cf33f683a385dd94fdb145b971bed7d245c7d089867cffbf217`/
+`891588308683ce99a363613c0f94c724b367323579fc55ad7b922994a46d329a`。
+
+**最终判定**：`SEALED / VALIDITY PASS / SCIENTIFIC ELO_CUR_MECHANISM_NO_GO`，后续formal mechanism
+design不授权。禁止重跑、补跑、续训或以调rho/loss/batch/stage、mask和删除control救活exp403；下一对象
+必须重新定义问题或结构机制。

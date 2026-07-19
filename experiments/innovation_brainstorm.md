@@ -3864,3 +3864,22 @@ standalone contract已两遍`26/26 PASS`，只授权生产实现。compatibility
 参数所有权、reference隔离和AMP可更新性；formal已经启动。这里不新增创新主张：这些仍只是机制可执行证据，
 最终是否形成“图像特定evidence ownership”只能由e120后correct相对wrong/generic/NULL与all-bypass的全量检索
 反事实决定，不能用训练期compatibility或CUR曲线替代。
+
+### exp403封板：operator可执行不等于retrieval ownership
+
+唯一fresh e120及七臂正式反事实已经给出明确否证。correct raw mAP=`0.569929559315091`，低于clean D0；
+wrong-RGB、generic、NULL和all-bypass分别为`0.569934358329593/0.569937131506918/
+0.569937304669369/0.569937304669369`。correct相对semantic-control最大值和all-bypass的margin均为
+`−7.745354277944e-06` raw mAP，四个性能/所有权门全部失败。七臂R1/R5/R10逐项相同。
+
+这个负结果不是“算子没动”：所有干预臂`exact_equal_rows=0`，其中NULL/all-bypass descriptor mean L2均为
+`0.03582507`，generic为`0.03506619`。因此可排除patch未触达或route数值死亡；真正失败的是这些明显的
+descriptor变化没有形成identity ranking ownership。训练期compatibility约`0.92`且CUR持续提供有限信号，反而
+暴露了一个重要shortcut：局部feature/evidence兼容性与batch prototype utility可以被优化，却不保证最终
+全局检索按正确图像evidence排序。
+
+由此关闭当前`dynamic low-rank operator + stop-gradient CUR`组合，不能用更大rho、loss重权、额外stage、
+batch变化或删control继续包装。下一轮机制学习应优先寻找一种**最终检索对象本身不可绕过的所有权约束**，
+或重新定义比“evidence调制descriptor”更强的结构对象；候选仍须同时回答问题/机制/证据至少两项，先保留
+wrong/generic/NULL/all-bypass强反事实，再决定是否值得进入新编号。exp401 route-alive仍是边界事实，但不能
+为任何后继机制代替semantic ownership证明。

@@ -2164,3 +2164,21 @@ correct相对wrong/generic/NULL `+0.1 mAP`和all-bypass `+0.1 mAP`；任一失�
 生产CPU/source与真实batch64 CUDA/AMP门现已全部通过，唯一fresh e120已启动。这只把story从“候选机制可实现”
 推进到“正式证据生成中”，尚不构成性能或语义所有权结果。中间loss、compatibility和每10 epoch eval只记录；
 论文主张仍冻结等待最终full、wrong/generic/NULL及all-bypass全量检索门。
+
+## 2026-07-20：exp403进一步否定“可执行operator即被检索拥有”
+
+唯一fresh ELO-CUR自然跑满e120，七臂全量RGB-only终审也完整通过有效性门。correct raw
+mAP/R1/R5/R10=`56.992956/67.420816/79.728508/84.072399`，低于sealed clean D0的mAP与R1；wrong-RGB、
+generic、NULL和all-bypass mAP均不低于correct。correct相对最高semantic control与all-bypass的差都只有
+`−0.000774535428 mAP point`，而预注册门为`+0.1 point`。七臂R1/R5/R10完全相同。
+
+这次失败具有清楚的机制含义。NULL/all-bypass相对correct的descriptor mean L2约`0.03583`，所有干预臂都
+没有exact-equal row，所以shared low-rank operator与两个router确实进入了生产descriptor；但这些变化没有
+产生检索排序所有权。训练期correct/wrong compatibility接近`0.924`、CUR报告保持有限，只能证明代理目标可被
+满足，不能证明正确图像evidence成为最终身份判别变量。
+
+因此ELO-CUR不进入论文正面方法结果，封板为`VALIDITY PASS / SCIENTIFIC ELO_CUR_MECHANISM_NO_GO`。现有故事保留
+exp401“route数值存活”的窄幅边界和exp402“旧C0不是sample-specific semantic mediator”的有效负归因；
+exp403又排除了“把evidence升级成动态低秩算子并加入CUR即可获得ownership”的解释。下一主线若继续，必须
+让最终检索对象本身对正确/错误/NULL evidence形成不可绕过的因果顺序，或重新定义结构对象；不能通过调
+rho/loss/batch、增加stage或删掉不利control延续这条叙事。
