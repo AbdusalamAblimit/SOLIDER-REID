@@ -200,3 +200,13 @@ Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
 RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`1.205e-04`，finite。
 remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
 warning=`0/0`，checkpoint=`0`。判断：继续自然运行，不按e70或训练期compatibility早停。
+
+## 2026-07-20 formal heartbeat：e80 eval / e82
+
+完整正式评测e80 mAP/R1/R5/R10=`55.5/65.6/78.8/84.1`，仅记录、不裁决。当前e82 Iter200：
+Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
+`0.155/0.735/0.275/0.168/0.046/0.988/0.296/0.100/0.050`；Compat C/W/G/N=
+`0.9203/0.9205/0.0171/-1.0000`，eligible=`1.000`，CoeffStd=`1.454e-01`，EffRank=`15.676`，
+RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`1.210e-04`，finite。
+remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
+warning=`0/0`，checkpoint=`0`。判断：继续自然运行，不按e80或训练期compatibility早停。
