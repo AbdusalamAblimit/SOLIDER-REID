@@ -239,3 +239,18 @@ clean保持exact，异常关键词计数=`0`。继续自然运行，不作中间
 当前状态`0E-FULL FORMAL TEACHER AUDIT RUNNING`。不得修改运行中脚本、依赖、partition或阈值；必须
 自然完成两遍流式处理后再按全部五slot门禁裁决。它不是训练，不授权并行GPU任务、Phase A/B或
 semantic multi-stage。
+
+## 2026-07-19 Phase A RZ-C0正式训练e3复核
+
+heartbeat已从过时的0E-FULL状态更新到当前RZ-C0正式训练，仍保持`ACTIVE`且每15分钟触发。远端
+execution HEAD=`09340f76f84502f9018bee3c8eec005961b0a8cb`、tracked source clean，config SHA256=
+`f409cc069b6f3500e009e6d40681e8baf9547bb77b864e9f35a7ea02ca11d1a6`，均与启动冻结值exact。
+
+main PID=`888440`、parent shell=`888439`，8个DataLoader worker；4090仅该main占用
+`8,286 MiB`，总显存/利用率=`8,294 MiB/85%`。训练已自然完成e3，e3 Iter 200的Loss/Pose/
+Semantic/RegionMask/Presence/Q=`8.010/1.597/0.687/0.684/0.683/0.693`，Acc=`0.147`，
+Student=`0.00`，Reliability=`0.508`。e2起`GateAbs`由exact zero变为约`1e-14–1e-11`的极小非零值，
+e3 Iter 200=`2.779e-13`；这只表明ReZero gate开始数值打开，不作route有效性或性能裁决。
+
+严格异常、NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/overflow/AMP warning=`0`；e120前
+checkpoint数=`0`。状态保持`FORMAL RUNNING`，禁止修改、重启、续训或按当前GateAbs/中间性能早停。
