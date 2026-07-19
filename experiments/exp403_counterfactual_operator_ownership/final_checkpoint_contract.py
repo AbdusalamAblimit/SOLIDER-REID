@@ -156,6 +156,7 @@ def main():
             "checkpoint": sha256_file(checkpoint),
             "config": sha256_file(config),
             "runner": sha256_file(runner),
+            "checkpoint_contract_script": sha256_file(Path(__file__).resolve()),
             "source": source_sha,
             **{name: sha256_file(path) for name, path in paths.items()},
         },
