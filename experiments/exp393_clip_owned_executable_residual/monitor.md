@@ -160,6 +160,26 @@ PASS；execution repo HEAD=`ed5783416528be4284adce11fa192fe119e344f4`且tracked 
 训练/审计进程，GPU=`2 MiB/0%`。当前状态`0E-FULL READY / NO-RESULT`，不授权Phase A/B训练或
 semantic multi-stage。
 
+## 2026-07-19 Phase A RNG-neutral完整CUDA预检PASS
+
+以新execution slice HEAD=`09340f76f84502f9018bee3c8eec005961b0a8cb`完整重做24步official
+Torch1.13.1/OpenCLIP2.32 CUDA/AMP预检，13项gate全部PASS。candidate相对Semantic C0仅config
+`SEMANTIC_REZERO False→True`与独立OUTPUT_DIR不同；非目标state mismatch=`[]`，参数只增加两个
+alpha scalar，两个expert std=`0.019981/0.020003`。
+
+初始化full/all-bypass逐tensor exact，initial与final NULL exact。前5步GradScaler exact skip；第6步为
+首个finite update，两alpha grad=`1.126e-3/6.647e-4`，六类branch grad exact zero；此后连续18步
+token/context/expert均有finite非零梯度与参数更新。full/bypass gap由0增长至max-abs=
+`1.473e-4`、mean L2=`6.167e-4`。teacher parity/isolation、RGB-only、strict reload、state finite均PASS；
+peak allocated/reserved=`7.57/8.01 GB`，吞吐=`131.16 samples/s`。
+
+result/runner SHA256=
+`6cbe7367848cf289b80793d897f27b4e37ad7dae8432c5734e01c595a7a9c08c`/
+`67bb82541160227e608c5893e3bf71384dd78944673cd2bbb7c531e8bbfb2462`；config/script SHA256=
+`f409cc069b6f3500e009e6d40681e8baf9547bb77b864e9f35a7ea02ca11d1a6`/
+`c0b223bf83a5fd7ef8bd75539c1db4be6808588fd4bcd62d67475fd159e4148e`。GPU恢复`2 MiB/0%`。
+Phase A RZ-C0 fresh e120由此获得正式启动授权；Phase B和semantic multi-stage仍NO-START。
+
 ## 2026-07-19 Phase A首次完整CUDA预检：实现审计FAIL并定位
 
 首次正确official runtime的24步CUDA/AMP预检自然完成，19次finite更新、前5步GradScaler exact skip；

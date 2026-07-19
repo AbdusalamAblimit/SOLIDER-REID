@@ -5216,3 +5216,14 @@ uncentered明显更弱；fixed random orthogonal仍保留强信号，说明信�
 执行，不说明现有或候选router会使用它，不授权直接训练Phase B。严格转入逻辑独立Phase A RZ-C0：
 先验证identity-safe nonzero branch能否被ReID loss打开；只有Phase A自身通过，Phase B才同时具备
 teacher与route两项授权。semantic multi-stage继续NO-START。
+
+### [2026-07-19] 决策：RZ-C0通过单变量与route-activation预检，授权fresh e120
+
+首次完整预检发现random expert推进CPU RNG并改变router-1 projection，正确判FAIL；修复为局部
+保存/恢复RNG后，以新exact source完整重做，非目标state mismatch清零。新预检证明初始化identity、
+首个finite alpha-only梯度、后续18步branch更新、24步内full/bypass gap增长、NULL/teacher/strict/RGB-only
+与finite全部成立。
+
+**决策**：`Phase A CUDA preflight = PASS`，只授权RZ-C0 single-stage fresh seed1234完整120 epoch，必须
+final-only、自然跑满且做all-bypass终审。不提前授权Phase B；只有e120 full−all-bypass `>=+0.1 mAP`
+且full不比Semantic C0低超过`0.2 mAP`，RZ route才称alive并与已PASS的teacher门共同授权Phase B。

@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-`PHASE 0E SEALED-PASS / PHASE A IMPLEMENTING-PREFLIGHT / FORMAL TRAINING NO-START`。
+`PHASE 0E SEALED-PASS / PHASE A CUDA-PREFLIGHT PASS / FORMAL RZ-C0 AUTHORIZED-NOT-STARTED`。
 
 exp393不是exp392续训，也不是exp391 semantic multi-stage。它使用fresh repo、fresh optimizer、唯一final
 checkpoint和完整120-epoch recipe；任何正式arm一旦启动必须自然跑满，不挑best、不续训、不换seed
