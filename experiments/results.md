@@ -2448,3 +2448,22 @@ result/runner/manifest SHA256=
 **最终判定**：`CUDA_ATTRIBUTION_EXECUTION_SEALED_INVALID / REPORTER_RUNTIME_FAIL`。它只否定exp395
 测量器对真实大组梯度的可执行性，不支持任何exp394根因判断；exp395不得重跑，正式训练继续
 `NO-START`。
+
+## exp396 Phase 0Q：chunk-safe exact reporter static/CPU门（2026-07-19）
+
+exp396只替换exp395失败的统计器，冻结D0/rich loss、15组、batch64、default scale与zero-update不变。
+production reporter以`1,048,576`元素chunk双遍扫描，finite absolute values进入temporary FP64 memmap
+exact sort，不再调用大输入`torch.quantile`。
+
+独立contract连续两遍33/33 PASS且逐字节一致。小张量和multi-chunk与reference一致；固定
+`16,777,217`元素case完整完成，P50/P95/P99=
+`8,388,608 / 15,938,355.2 / 16,609,443.84`并与解析order statistic exact。输入不变、success/exception
+scratch清零、CUDA initialized=`false/false`、update=`0`、checkpoint=`0`。
+
+implementation/static/result SHA256=
+`6e8b2b67efcda7cfaca8527fb0ae1dd4c6aedcebef3fec6ded2e5ba6ddab8164`/
+`f3a2ee3ccafa4caa1606b92b93b86177cc0b5ef6cfe7ac2b6f0d31fa195c415b`/
+`e5d68df7731042a98f440f43acc45c9cf11b70aa7df25e09397ff6375f355394`。
+
+**当前判定**：`PHASE0Q_STATIC_CPU_SEALED_PASS / CUDA ATTRIBUTION FRESH-EXECUTION GO / FORMAL
+NO-START`。尚无actual gradient归因结果。

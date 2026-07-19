@@ -5307,3 +5307,14 @@ batch64与teacher target前置控制流通过；但第一行D0 `reid`的scaled b
 允许另立exp396，在CPU/static阶段先覆盖真实backbone量级的chunk-safe exact分位数与动态范围统计，
 再执行独立CUDA归因。用户的持续授权取消了“再次等待确认”，但不取消static先行、fresh once-only、
 零更新与失败即停边界。formal e120及semantic multi-stage仍`NO-START`。
+
+### [2026-07-19] 决策：exp396大张量reporter static通过，直接授权fresh CUDA归因
+
+exp396保持原D0/rich loss矩阵、15组、batch、scale与update边界，只把失败的全量Torch quantile替换为
+chunk双遍扫描和temporary memmap exact sort。连续两遍static在`16,777,217`元素上完成解析exact
+P50/P95/P99，并通过小张量reference、non-finite分类、输入不变及success/exception scratch清零；
+CUDA从未初始化。
+
+**决策**：`PHASE0Q_STATIC_CPU_SEALED_PASS`。根据用户已记录的持续自主授权，完成显式提交后直接建立
+fresh exp396 execution与regular资产并执行唯一一次CUDA matrix，不再等待逐次确认。该GO只针对
+zero-update归因门；exp394/exp395继续sealed，formal训练仍`NO-START`。
