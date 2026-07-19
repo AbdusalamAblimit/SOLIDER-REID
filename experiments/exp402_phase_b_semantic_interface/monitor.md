@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-`DESIGN-FROZEN / PROTOCOL-FROZEN / ACTUAL-AUDIT STATIC-CPU SEALED-PASS / CUDA PREFLIGHT NO-START / FORMAL GPU NO-START`
+`DESIGN-FROZEN / PROTOCOL-FROZEN / CUDA PREFLIGHT SEALED-PASS / FORMAL FULL RUNNING`
 
 ## 2026-07-20 接手与设计冻结
 
@@ -109,3 +109,20 @@
   进程退出后GPU=`2 MiB/0%`且无compute process；
 - 判定=`CUDA_PREFLIGHT_SEALED_PASS / FORMAL_FULL ONE-TIME GO`。这只授权唯一一次full执行，不包含任何
   retrieval科学结果；formal仍必须fresh result/runner/manifest，严格串行，不得同编号补跑。
+
+## formal full唯一执行启动
+
+- postflight manifest脚本SHA256=
+  `b1e9e68602768e6cc1708c0d7be8b1454729eb8d310a431b9c94f9e7caf4aa92`；纳入AST后的fresh
+  static run9/run10均为`38/38 PASS`且result/runner/跨遍逐字节一致，统一SHA256=
+  `ed4f1f3b1c8f30960779311130086e5454f8df88bb834c0dbea90103018207d8`；
+- once-only wrapper SHA256=
+  `6b8c8cfc77e4a0bd1a3a3969632aba4ab2f533ad49a44f0c6a7adeb104eb1e98`，bash static syntax
+  PASS；fresh formal result/runner/manifest/launcher路径启动前均不存在；
+- 唯一formal full已后台启动：wrapper PID=`418043`，actual main PID=`418044`；初检main唯一占用GPU，
+  显存约`7,926 MiB`、利用率`93%`，无并行GPU任务；
+- runner已出现两次完整distance-matrix计算，说明前两个串行arm已完成；目前仅有backbone `pretrained`
+  与`addmm_` API deprecation warning，不是AMP或数值异常；NaN/Inf/Traceback/RuntimeError/OOM/nonfinite/
+  overflow=`0`；
+- 当前状态=`FORMAL FULL RUNNING`。不得修改source/config/checkpoint，不得重跑或提前按中间arm裁决；自然
+  结束后由wrapper自动生成post-exit manifest，再按冻结的六semantic-control最大值与route门一次性裁决。
