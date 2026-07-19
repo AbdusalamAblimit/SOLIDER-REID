@@ -67,3 +67,14 @@ token/context/evidence/expert，且不回流backbone、anchor或ID head；ReID�
 `0fe10057d84da52ee3c8735fdb2789de0462922da745a5ccbcc430a1bf6dbc6f`。该PASS只授权下一步实现并执行
 Phase 0R-128 train-only只读预算冻结审计；远端production model/config、CUDA preflight、正式训练与
 semantic multi-stage仍`NO-START`。
+
+## 2026-07-19 Phase 0R-128协议冻结
+
+新增`phase0r_128_protocol.md`并在读取delta结果前冻结production seam与唯一预算公式。审计只hook
+exp387 D0两个Stage-3 `PoseSpatialGate`的真实input/output，定义
+`a_k=y_k-x_k`、`r_k=sqrt(mean_channel(a_k^2))`；`rho_star`固定为两个bank全部
+`2×128×48` token RMS的pooled median，包含零值且不按图/PID/bank截尾。协议同时冻结两遍
+None/exploding-pose逐tensor exact、state/checkpoint SHA、strict finite、吞吐/显存和异常门。
+
+当前为`PROTOCOL-FROZEN / AUDIT NO-START / FORMAL NO-START`。下一步只允许实现独立只读脚本；
+不得在看到分布后改公式、重选128图或启动production/CUDA训练preflight。
