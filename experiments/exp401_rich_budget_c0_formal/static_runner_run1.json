@@ -1,0 +1,46 @@
+{
+  "baseline_config_sha256": "e0413a497976ad6dbf4c74cf13b55c86c169d659bab6d967455e87c592e47f4e",
+  "candidate_config_sha256": "c2992bdf4321f906b19eb22dc7ec69a5678498ea0f93bf55a45a15a2e47cea84",
+  "changed_paths": [
+    "MODEL.TAPF.CLIP_CHECKPOINT",
+    "MODEL.TAPF.RICH_CODEBOOK",
+    "OUTPUT_DIR"
+  ],
+  "checkpoint_count": 0,
+  "cuda_initialized_after": false,
+  "cuda_initialized_before": false,
+  "gates": {
+    "cuda_never_initialized": true,
+    "final_only_checkpoint": true,
+    "formal_recipe_exact": true,
+    "fresh_clip_contract": true,
+    "fresh_codebook_contract": true,
+    "fresh_output_contract": true,
+    "loss_weight_exact": true,
+    "no_resume_or_test_weight": true,
+    "official_data_read_only_paths": false,
+    "only_fresh_paths_and_output_changed": true,
+    "optimizer_schedule_exact": true,
+    "preflight_formal_authorized": true,
+    "preflight_result_sha_exact": true,
+    "rho_schedule_exact": true,
+    "rich_route_exact": true,
+    "source_backbone_fixed": true,
+    "source_commit_exists": true,
+    "source_sha_exact": true
+  },
+  "git_head": "ee28fe1eb50398a078e73abfa390b488c5264989",
+  "preflight_result_sha256": "3935eb6df97ae832770316eff27cbfc757e4d2bd305b789d0b9b97835659a02f",
+  "source_sha256": {
+    "config/defaults.py": "a13e5f6df0e8c770c254c115d6d55208baac7938cffbec6f208ba9caa24dd7c5",
+    "configs/occluded_duke/swin_tiny_tapf_rich_budget_c0.yml": "e0413a497976ad6dbf4c74cf13b55c86c169d659bab6d967455e87c592e47f4e",
+    "datasets/pose_dataset.py": "d04e74908d18eaf8105f9b85c66287cac6980ddf5ffe8132e855c7d5a9f61bbc",
+    "model/backbones/swin_transformer.py": "b389b7243e204d851ed365c986c8c4077d7fa86ce79e6cbb0be6fc4a1ba58eef",
+    "model/clip_semantic_teacher.py": "c648fa768b178d153258c46eee69679cbc0b90a11db918800323ab5c5c6054d5",
+    "model/make_model.py": "6bc7d9c83a2f4d12b78dd2c09335d366ce568107ddce5dded3abfe7ca8538f03",
+    "model/tapf.py": "95c5d0ff80bf9e4529589a5f31819e7aad5db644b88e2a33d6af07c9ffc42886",
+    "processor/processor.py": "be1c19ea5af19534e3855eb2a5914e0dc9a5643c63a39cfa508c81f89660eac1"
+  },
+  "static_script_sha256": "5ce4afab4b743a70cfad75770c57d114bcae1c5f0c32042f5bdb5343ef447bb1",
+  "status": "FAIL"
+}

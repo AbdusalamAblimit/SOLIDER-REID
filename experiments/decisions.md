@@ -5406,3 +5406,11 @@ rho0 identity与两个consumer独立非零执行差均成立，result显式`form
 **决策**：封板exp400为`FINAL_PRODUCTION_PREFLIGHT_PASS / FORMAL E120 GO`，禁止重跑。按持续授权立即
 启动唯一fresh rich-budget C0 seed1234 e120；不得续训、换seed、挑best、按中间指标早停或并行占用GPU。
 正式结果仍需final full与all-router-bypass门裁决route alive，preflight PASS本身不进入主结果表。
+
+### [2026-07-19] 决策：exp401 formal launch static通过，立即启动e120
+
+config差异严格限定为三个fresh路径项；exp400授权、source、recipe、rho、optimizer、loss、checkpoint和
+无resume门全部通过。初始路径reporter误判已保留，正式两遍18/18 PASS且byte-exact。
+
+**决策**：`STATIC-CPU SEALED-PASS / FORMAL FRESH-EXECUTION GO`。直接启动唯一fresh e120；任何中间
+mAP、loss或GateAbs不得裁决或早停，e120前checkpoint必须为0。

@@ -2612,3 +2612,17 @@ elapsed=`58.02608146890998 s`，peak memory=`7,901,594,112 bytes`。result/runne
 
 **最终判定**：`FINAL_PRODUCTION_PREFLIGHT_PASS / FORMAL E120 GO`。result显式
 `formal_training_authorized=true`；直接启动唯一fresh rich-budget C0 seed1234 e120，exp400不得重跑。
+
+## exp401 rich-budget C0 formal launch static门（2026-07-19）
+
+formal config相对冻结rich-budget C0只改变fresh CLIP、fresh codebook和OUTPUT_DIR。初次17项科学门仅因
+YAML保留`('/mnt1/afrdata')`字面括号导致路径reporter误判，config未改且失败结果保留；修正static判定后
+正式两遍18/18 PASS、result/runner逐字节一致，CUDA未初始化。
+
+static/config/result SHA=
+`90c95b4ac1be32a8d4917882be1c407d17945511205446ede7ddaefb847f319d`/
+`c2992bdf4321f906b19eb22dc7ec69a5678498ea0f93bf55a45a15a2e47cea84`/
+`85cab0e0a8391b3470f0e11acbd634d3dce2fee638432679a2ef9dc49cae020d`。
+
+**当前判定**：`STATIC-CPU SEALED-PASS / FORMAL FRESH-EXECUTION GO`。直接启动唯一fresh seed1234 e120；
+中间eval只记录，e120 final full与all-router-bypass才裁决route alive。
