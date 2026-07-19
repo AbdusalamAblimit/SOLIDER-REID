@@ -46,13 +46,25 @@ ownership loss mask 掉，不允许跨 camera 回退。四个 evidence arm 为�
 3. training-split frozen generic mean；
 4. all-zero NULL。
 
-兼容性头不是 auxiliary classifier：其 `g_k` 直接乘生产 delta。预注册 ordinal constraint 为：
+兼容性头不是 auxiliary classifier：其 `g_k` 直接乘生产 delta。四臂预注册诊断顺序为：
 
 ```text
 s(correct) >= s(wrong)   + 0.10
 s(wrong)   >= s(generic) + 0.10
 s(generic) >= s(NULL)    + 0.10
 ```
+
+其中只有以下单边 ownership hinge 进入反向传播：
+
+```text
+L_compat = relu(0.10 + max(stopgrad(s(wrong)),
+                              stopgrad(s(generic)),
+                              stopgrad(s(NULL))) - s(correct))
+```
+
+`wrong>generic>NULL` 两个下游间隔只作冻结诊断，不伪装成可训练 loss。因为三个 reference 均
+stop-gradient，若把 reference-reference hinge 加进目标，它们在数学上没有可用梯度；若开放 reference 梯度，
+又会允许模型主动压低 control。该单边写法与最终 `correct-max(control)` 检索门严格同构。
 
 完整执行 utility 使用 batch 内同 PID、排除自身的 correct descriptor prototype：
 
@@ -77,7 +89,7 @@ branch 不保留 autograd graph。最终推理只执行 correct branch，仍为 
 - mask/presence/evidence teacher loss：沿用 exp401 边界；
 - ELO-CUR semantic components 与已有 mask/presence/evidence components做等权 mean，再由冻结外层
   `POSE_LOSS_WEIGHT=0.1`进入总 loss；不新增可调 loss scale；
-- `L_CUR` 只更新 correct execution 上的 student evidence、compatibility 与 shared operator；
+- `L_compat/L_CUR` 只更新 correct execution 上的 student evidence、compatibility 与 shared operator；
 - wrong/generic/NULL reference 不接收梯度；
 - ReID loss只作用 correct descriptor；reference 不增加 CE/triplet 分支。
 

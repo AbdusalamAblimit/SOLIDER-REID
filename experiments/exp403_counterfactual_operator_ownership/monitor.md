@@ -40,3 +40,12 @@ dynamic-filter/hypernetwork/LoRA先例。结论不是原子首创，而是当前
 判断：`STANDALONE STATIC-CPU PASS / PRODUCTION IMPLEMENTATION GO / CUDA NO-START`。这只证明数学和
 autograd contract可执行，不证明真实 Swin/AMP/检索有效。下一步先在新 config开关下实现生产图及 off-parity/
 source CPU contract；未通过前不启动4090。
+
+## 2026-07-20 生产实现前的梯度合同澄清
+
+复核发现，三个reference全部stop-gradient时，`wrong>generic>NULL`两个reference-reference hinge不可能提供
+训练梯度；若开放它们的梯度，又会违反“不靠破坏control制造margin”。因此生产目标冻结为
+`correct-max(stopgrad(wrong,generic,NULL))`单边compatibility hinge，后两段顺序只记录为诊断。该修订不
+改变standalone的26项结果、final retrieval门或ELO结构，只消除一个无梯度伪目标。
+
+判断：允许继续生产实现；GPU仍为`NO-START`。

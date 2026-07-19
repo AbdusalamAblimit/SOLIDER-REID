@@ -36,7 +36,8 @@ batch-local roll 冒充 matched donor。每次日志记录 eligible count、same
 1. CUDA 未初始化；
 2. router 无 slot-specific expert、所有 linear 无 bias；
 3. evidence 为逐 rank 系数，zero evidence逐元素 exact identity；
-4. correct/wrong/generic/NULL compatibility 按冻结 margin排序；
+4. correct/wrong/generic/NULL compatibility 按冻结诊断 margin排序；生产训练只允许
+   `correct-max(stopgrad(reference))`单边 hinge，禁止无梯度的reference-reference hinge或reference sabotage；
 5. 四个 production descriptor finite且干预 active；
 6. donor same-camera/different-PID/重复 exact；
 7. CUR reference 在 autograd 中 detach；
@@ -73,8 +74,9 @@ batch-local roll 冒充 matched donor。每次日志记录 eligible count、same
 preflight result必须显式 `formal_training_authorized=true`。随后唯一 fresh seed1234 e120自然跑满；每10 epoch
 eval只记录，不裁决。e120前checkpoint=0，结束后唯一checkpoint。
 
-训练日志额外记录：eligible donor ratio、compat correct/wrong/generic/NULL、三个 ordinal hinge、CUR wrong/
-generic/NULL、correct/ref utility、operator coefficient std/effective rank、BudgetAbs、NaN/Inf/AMP warning。
+训练日志额外记录：eligible donor ratio、compat correct/wrong/generic/NULL、correct-max ownership hinge、两个
+reference-reference诊断 gap、CUR wrong/generic/NULL、correct/ref utility、operator coefficient
+std/effective rank、BudgetAbs、NaN/Inf/AMP warning。
 
 ## 6. final frozen counterfactual
 
