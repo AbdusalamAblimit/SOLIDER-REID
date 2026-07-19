@@ -78,3 +78,17 @@ None/exploding-pose逐tensor exact、state/checkpoint SHA、strict finite、吞�
 
 当前为`PROTOCOL-FROZEN / AUDIT NO-START / FORMAL NO-START`。下一步只允许实现独立只读脚本；
 不得在看到分布后改公式、重选128图或启动production/CUDA训练preflight。
+
+## 2026-07-19 Phase 0R-128实现与启动前冻结
+
+新增外置只读`phase0r_128_budget_audit.py`，script SHA256=
+`628ce2f88a868ccb2a14f5c0a3204099332253e392bf8c271dd53301057222a3`。脚本不构建optimizer，先验
+校验HEAD/tracked/config/checkpoint/codebook/selection与128条official train映射；用原生RGB-only
+eval transform冻结CPU input，strict load后只以`eval+no_grad`注册两个短生命周期consumer hook，
+两遍分别传`None`和exploding pose并要求descriptor/applied delta exact。
+
+本地uv Python静态编译PASS；远端`/home/afr/par2606/.venv` Python 3.10静态编译与`--help` PASS，
+本地/远端script SHA exact。远端脚本仅落在
+`/home/afr/reid-clean/audits/exp394_phase0r/`，未修改exp387 sealed repo；启动前4090=`2 MiB/0%`、
+无compute PID。当前状态`PHASE0R-128 READY / NO-RESULT / FORMAL NO-START`。下一步只允许一次正式
+只读审计，不得并行启动其它GPU任务。
