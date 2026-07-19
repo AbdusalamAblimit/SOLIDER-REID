@@ -2396,3 +2396,23 @@ script/result/runner SHA256=
 **最终判定**：`CUDA_AMP_PREFLIGHT_SEALED_FAIL / EXP394 FORMAL NO-START`。该FAIL只关闭当前
 production AMP接口，不推翻Phase0E rich evidence、Phase0R预算代数或CLIP–TAPF总体；但CPU contract
 不能替代真实CUDA finite门，禁止重跑、调initial scale、补步或启动e120。
+
+## exp395 Phase 0S：AMP梯度归因器static/CPU门（2026-07-19）
+
+exp395没有修改或重跑exp394，而是先验冻结了独立只读归因对象：D0 baseline 5个loss、rich 11个loss，
+以及backbone、anchor/head和两个router T/C/E/Expert共15个参数组；每格同时记录scaled/unscaled的
+present/nonzero、finite/NaN/±Inf计数与abs-max/L2/P50/P95/P99。执行协议禁止
+`optimizer.step/scaler.step/scaler.update`，要求state/RNG/source/asset前后exact。
+
+独立CPU contract连续两遍逐字节复现，13/13 gate PASS：11-loss×15-group synthetic ownership、
+固定`65536` scale比例、两个consumer loss与aggregate公式、NaN/±Inf sentinel分类、source seam、
+state/RNG zero-drift全部exact；CUDA initialized=`false/false`，optimizer update=`0`、checkpoint=`0`。
+
+script/result/runner SHA256=
+`d4c6d67b082e4e4f68ff215de3e7cf1f2a2ac1c4c59e17ceb265353b8810083a`/
+`89afc893409957ee5ad356e0e2d5789683b36bcce449076d26a7dec3d3bed91c`/
+`89afc893409957ee5ad356e0e2d5789683b36bcce449076d26a7dec3d3bed91c`。
+
+**当前判定**：`PHASE0S_STATIC_CPU_SEALED_PASS / CUDA NO-START / FORMAL NO-START`。它只证明归因器
+数学和静态seam可信，没有读取official batch/teacher资产，也没有给出任何实际AMP根因；exp394 sealed
+FAIL与semantic multi-stage NO-START边界均不变。

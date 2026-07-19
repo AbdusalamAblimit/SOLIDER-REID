@@ -2025,3 +2025,14 @@ production computation graph尚未通过AMP finite门。由于失败资产没有
 写成当前接口的数值执行失败，不应猜测某个loss是唯一原因。论文正面边界仍是exp390 mAP-only弱GO；
 exp394作为机制开发负证据，说明“梯度可达、预算非零、CPU exact”三者仍不足以构成可训练的
 CLIP-owned mediator。
+
+## 2026-07-19：exp395目前只建立AMP归因方法，不改变论文结果边界
+
+为避免把exp394首步FAIL事后归到一个方便的loss，exp395预先冻结D0 baseline与rich图的逐loss、逐参数组
+scaled/unscaled归因矩阵，并禁止任何optimizer update。CPU contract已证明reporter对11个loss、15组、
+NaN/±Inf和动态范围的统计正确，但没有读取official batch或运行CUDA。
+
+因此论文故事不新增“已找到AMP根因”或“已修复rich route”的内容。正面结果仍只有exp390的mAP-only
+弱GO；Phase0E rich evidence、exp393 route FAIL、exp394 AMP FAIL组成机制开发证据链。只有未来独立
+actual归因门先给出可复核支持子图，再由新的AMP-stable机制通过训练与检索反事实，才可能把这条链升级
+为方法贡献。

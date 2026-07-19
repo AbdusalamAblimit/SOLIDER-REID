@@ -5272,3 +5272,18 @@ CPU PASS覆盖、重跑同一script、修改GradScaler initial scale、loss/rho/
 production AMP实现接口；Phase0E teacher richness与Phase0R固定预算仍独立成立，也不永久否定
 CLIP–TAPF。后续若继续，只能另立新的、先验冻结的AMP稳定机制/诊断对象，不能把本臂修补后冒充同一
 实验。
+
+### [2026-07-19] 决策：exp395只读归因协议与CPU reporter封板，CUDA仍不启动
+
+exp395将exp394未保存的归属信息定义为独立问题，而不是回头修改sealed preflight。协议冻结D0 baseline
+与rich graph、11个逐loss backward、15个互斥parameter group、scaled/unscaled双时点范围统计，且
+任何行都不得调用optimizer/scaler update。隔离loss只定位支持子图；即使某行非有限，也不能声称它是
+唯一根因。baseline、rich ReID、individual auxiliary和pose/total的分层规则已经先验写死。
+
+static/CPU contract连续两遍13/13 PASS并逐SHA一致，证明reporter能精确分类NaN/±Inf、复现固定scale
+比例、验证所有权和aggregate公式，同时保持state/RNG exact、CUDA未初始化、更新0。该PASS没有actual
+batch或AMP信息。
+
+**决策**：`PHASE0S_STATIC_CPU_SEALED_PASS`只授权下一步设计独立CUDA attribution implementation；
+没有新的明确CUDA授权前，不复制fresh远端资产、不占用4090。exp394禁止重跑/修补，formal e120和
+semantic multi-stage继续`NO-START`。

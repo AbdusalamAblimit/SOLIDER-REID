@@ -3714,3 +3714,15 @@ exp394的CPU exact contract证明了四条梯度路径在拓扑上互斥，但ac
 逐parameter-group的scaled/unscaled gradient range作为首步诊断输出，并把数值稳定性处理写成机制的
 必要实现，而不是观察FAIL后调出来的超参。Phase0E仍说明rich evidence“有信息”，本次FAIL说明当前
 production图还没有把它变成AMP-stable executable signal。
+
+## 2026-07-19：exp395把AMP稳定性从“一个finite布尔值”改成可否证的归属矩阵
+
+exp394只知道total backward后某处non-finite；这不足以指导机制创新，因为同一现象可能来自shared
+ReID图、某个rich auxiliary子图，或多个有限loss聚合后的尺度交互。exp395先把证据单位冻结为
+`loss × parameter-group × scaled/unscaled`矩阵，并保留D0 baseline、rich ReID-only、逐auxiliary、
+pose和total四层比较。这样未来的数值稳定设计必须回应具体支持子图，而不是盲目降低scale或loss。
+
+Phase0S只在CPU synthetic图上证明reporter本身可信：11个loss、15组、NaN/±Inf分类、动态范围和
+zero-update均exact。它不产生新的方法贡献，也不暗示根因已经定位。真正可争的机制要求仍是：rich
+evidence拥有production方向、固定预算可执行、actual AMP首步有限，并最终由wrong/static/generic与
+all-bypass检索反事实证明语义因果。归因工具只是把后续设计从事后猜测变成先验可否证。
