@@ -190,3 +190,13 @@ warning=`0/0`，checkpoint=`0`。判断：继续自然运行，不按e60或训�
 RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`1.234e-04`，finite。
 remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
 warning=`0/0`，checkpoint=`0`。e70正式eval尚未产生；继续自然运行，不作中间裁决。
+
+## 2026-07-20 formal heartbeat：e70 eval / e76
+
+完整正式评测e70 mAP/R1/R5/R10=`54.5/64.7/78.1/83.4`，仅记录、不裁决。当前e76 Iter20：
+Loss/Pose/Semantic/Mask/Presence/EvidenceCos/EvidenceRel/Compat/CUR=
+`0.180/0.729/0.273/0.168/0.046/0.979/0.296/0.100/0.050`；Compat C/W/G/N=
+`0.9191/0.9189/0.0164/-1.0000`，eligible=`1.000`，CoeffStd=`1.455e-01`，EffRank=`15.668`，
+RNGExact=`1`，Student=`1`，Reliability=`1`，rho=`0.080755450`，BudgetAbs=`1.205e-04`，finite。
+remote HEAD/config SHA/tracked-clean均exact；唯一main PID=`423319`、8 workers、GPU唯一任务，fatal/AMP数值
+warning=`0/0`，checkpoint=`0`。判断：继续自然运行，不按e70或训练期compatibility早停。
