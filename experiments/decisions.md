@@ -5427,3 +5427,14 @@ teacher-free，strict reload、RGB-only、两个router/evidence head、source/co
 或降低后续门槛。该PASS比差值门只高`0.0194214838 point`，R1差为`−0.0904977322 point`，因此只授权
 以exp401冻结production graph为接口基线进入Phase-B correct-vs-wrong/static/generic强反事实；不得把单seed
 窄幅route贡献直接写成论文主结论，也不得通过调rho/loss/batch放大同一C0臂。
+
+### [2026-07-20] 决策：exp402先做RGB-only语义接口kill-switch，不直接开新训练
+
+exp401已经回答route alive，但其`+0.1194214838 mAP`贡献不足以区分rich evidence、mask/context或generic
+residual。exp402因此冻结为同checkpoint只读诊断：correct与same-split/same-camera不同PID donor、zero、
+正交旋转、evidence slot-cycle、wrong mask binding、generic expert-mean及router0/1/all bypass在同一进程
+串行完整检索。wrong RGB映射按absolute dataset index定义，禁止batch-local roll；eval不读取pose或CLIP。
+
+**决策**：先实现CPU/static正反contract，正式GPU仍`NO-START`。只有所有六个semantic controls都比
+correct至少低`0.1 mAP`、route gap复现且descriptor intervention active，才授权下一编号Phase-B formal
+mechanism design。FAIL只关闭当前student-evidence/expert解释；不得调rho/loss/batch或删除不利control。
