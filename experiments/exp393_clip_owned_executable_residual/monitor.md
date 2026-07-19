@@ -305,3 +305,12 @@ e40自然完成后的评测为mAP/R1/R5/R10=`48.4/58.5/72.7/78.3`，四项均高
 e47–e49的`GateAbs`约`1.1e-07–1.2e-07`，保持finite、非零；Student=`1.00`，Q=`0.692`，
 Reliability=`0.512`。execution HEAD/config/tracked exact，main PID=`888440`与8 workers唯一，4090
 仅该main占用`8,364 MiB`；严格异常=`0`、e120前checkpoint=`0`，继续自然运行。
+
+## 2026-07-19 Phase A RZ-C0 e50评测
+
+e50自然完成后的评测为mAP/R1/R5/R10=`52.6/62.6/76.9/82.0`，四项均高于e40轨迹
+`48.4/58.5/72.7/78.3`；仍不作中间裁决。复核时已自然完成e57并进入e58。
+
+e56–e58的`GateAbs`约`9.5e-08–1.1e-07`，保持finite、非零；Student=`1.00`，Q=`0.692`，
+Reliability=`0.512`。execution HEAD/config/tracked exact，main PID=`888440`与8 workers唯一，4090
+仅该main占用`8,238 MiB`；严格异常=`0`、e120前checkpoint=`0`，继续自然运行。
