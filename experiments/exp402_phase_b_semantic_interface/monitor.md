@@ -87,3 +87,25 @@
   semantic-interface科学问题；run1永久保留、不覆盖。修复只让warmup排除recipient集合内donor，这些donor
   改由correct recipient pass一次性缓存；global donor定义、arm、模型、checkpoint与门槛全部不变。修正版
   必须先用fresh source和两遍static/AST重新授权，再执行fresh CUDA preflight run2。
+
+## 修正版static与CUDA preflight run2：SEALED-PASS
+
+- 修正版actual source SHA256=
+  `f450c5e3801a61d20a7ba831d6cefb1ab1d9d5f5549824fc2fa55943059cc479`；fresh static
+  run7/run8均为`38/38 PASS`，每次result/runner与跨遍result逐字节一致，统一SHA256=
+  `1f556f036dca8064fad1ffabeffd565417c24e72119a565b04e21c0bca8176f6`；CUDA未初始化；
+- fresh CUDA preflight run2使用32个recipient与6个recipient集合外donor，status=
+  `EXP402_CUDA_PREFLIGHT_PASS`；17项validity全部PASS：strict reload、RGB None/ExplodingPose exact且访问0、
+  external teacher/pose/codebook访问0、全局19,871条donor same-split/same-camera/different-PID、10臂完整覆盖、
+  每臂state/RNG/loader RNG/prepare/apply-gate恢复、checkpoint/config/source/core/repo终审全部exact；
+- 九个破坏臂相对correct的descriptor mean L2全部有限非零：wrong-RGB=`0.0942934`、zero=
+  `1.7235049`、orthogonal=`2.1975737`、slot-cycle=`2.2633276`、wrong-binding=`0.9477000`、
+  generic-mean=`3.1618040`、bypass0/1/all=`2.0468879/2.2085962/2.8598566`；每臂32行
+  exact-equal=`0`，两个router各调用1次，single bypass均有独立影响；
+- preflight result/runner SHA256=
+  `7bd25af541d55d1bc5619fe5932c27215893b26fec9c11d03c8c16b25b54a52b`/
+  `3500ad54d6318c9830e4d706edf563ac2ce544508e0cd1a440dad8a375d955ed`；异常扫描0，
+  checkpoint SHA执行前后均=`fe00d08a9a0f651c2c0852c0661e720995a65292459aec9797a359895aa52efc`；
+  进程退出后GPU=`2 MiB/0%`且无compute process；
+- 判定=`CUDA_PREFLIGHT_SEALED_PASS / FORMAL_FULL ONE-TIME GO`。这只授权唯一一次full执行，不包含任何
+  retrieval科学结果；formal仍必须fresh result/runner/manifest，严格串行，不得同编号补跑。
