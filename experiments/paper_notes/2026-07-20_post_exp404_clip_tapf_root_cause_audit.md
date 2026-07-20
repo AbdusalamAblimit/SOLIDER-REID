@@ -104,7 +104,31 @@ anchor field -> pool corresponding stage ReID feature -> slot projection -> teac
 所以 channel shuffle、wrong field 或局部内容变化不一定改变 evidence；head 可以只学习全图相关性和五组
 固定输出先验。
 
-## 5. teacher 与 student 的可观测 RGB 不一致
+## 5. `semantic_valid` 被错误地当成 visibility/presence
+
+pose artifact 的 `valid` 只检查 keypoint/score finite 且坐标仍在图内，没有 score threshold，也不表示该
+关节真实可见。ViTPose 对遮挡点仍会回归一个图内坐标和正 score。region renderer 随后用
+“该region任一joint的 `valid * score > 0`”定义 `region_valid`，rich TAPF 又直接执行：
+
+```text
+teacher_presence = semantic_valid.float()
+```
+
+因此这里的 presence 实际是 **geometry coordinate exists**，不是 semantic visibility/support。正式检查中
+五槽 hard presence 近乎全1并非偶然，而是该定义的直接结果；wrong-mask exact no-op也与此吻合。
+
+对 exp386 全 15,618 条 train-only artifact 的只读统计进一步确认：五个region的最大score `>0` 比例均为
+`100%`；即使阈值取 `0.7`，五槽比例仍为
+`98.56/98.26/98.26/96.12/94.31%`，macro=`97.10%`。因此当前
+`region_valid = any(score > 0)` 几乎必然产生全presence，不能承担遮挡可靠性标签。
+
+下一版必须拆开：
+
+- `geometry_valid`：只决定pose field/slot坐标能否构造；
+- `semantic_support`：由实际student-view RGB上的局部CLIP视觉证据或明确遮挡操作连续估计；
+- `consumer_presence`：不得直接复用in-bounds keypoint flag。
+
+## 6. teacher 与 student 的可观测 RGB 不一致
 
 paired transform 在随机擦除前保存 `teacher_rgb`，随后对 student RGB 以 `RE_PROB=0.5` 执行 Random
 Erasing。训练 teacher 始终读取擦除前 RGB，student anchor 则读取擦除后 backbone feature。
@@ -114,7 +138,7 @@ Erasing。训练 teacher 始终读取擦除前 RGB，student anchor 则读取擦
 student view 相反；若任务是 completion，则必须显式定义 donor/original-view target和可实现的恢复目标，
 不能把不可观测残差当普通逐图回归。
 
-## 6. SPK 在代数上再次压掉槽身份
+## 7. SPK 在代数上再次压掉槽身份
 
 SPK 先做：
 
@@ -128,7 +152,7 @@ factor = 16 * softmax(pooled)
 也没有 pose-defined gather/scatter。正式九臂 correct 与 wrong-RGB 只差约 `0.0019 mAP`，NULL/bypass
 反而高约 `0.1809 mAP`，正是该压缩路径伤害排序的最终证据。
 
-## 7. 实现错误与机制错误的区分
+## 8. 实现错误与机制错误的区分
 
 ### 已排除的机械错误
 
@@ -148,9 +172,10 @@ factor = 16 * softmax(pooled)
 5. SPK 先对槽求均值，数学上消除 channel identity；
 6. arbitrary PCA axis 与 arbitrary descriptor group 被直接一一绑定；
 7. rich code 的逐槽 L2 normalization 删除可能承载support/occlusion的幅值；
-8. PC-MBCLS只在最后4层做CLS局部重读，旧crop参考又混入bbox内非目标像素。
+8. PC-MBCLS只在最后4层做CLS局部重读，旧crop参考又混入bbox内非目标像素；
+9. in-bounds keypoint `valid` 被直接当成semantic presence，导致五槽近乎全1。
 
-## 8. 下一机制的冻结要求
+## 9. 下一机制的冻结要求
 
 下一条不能叫“修 exp404”，也不能只删除一个 detach 后直接 e120。它至少必须满足：
 
