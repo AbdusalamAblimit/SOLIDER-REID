@@ -2868,3 +2868,18 @@ NO-START`。没有性能结果，exp401–403封板不变。
 
 **当前判定**：`RANDOM SOURCE-KEY FALSE OWNERSHIP DEMONSTRATED / COUNTERFACTUAL SUFFICIENCY FAIL /
 NO EXP404 / GPU NO-START`。以后强门必须增加semantic-blind random-key control；exp401–403封板不变。
+
+## exp403后frequency-matched random-cluster CPU诊断（2026-07-20）
+
+这是独立、无official数据/模型/GPU访问的once-only诊断，检验“跨样本重复”能否由PID无关随机类别伪造。
+原始8簇与一次频率保持label permutation的correct/wrong/generic/NULL mAP分别为
+`1.000000000000/0.750006477921/0.040268546661/0.033666906739`与
+`1.000000000000/0.719609964287/0.040268546661/0.033666906739`；evidence-ignored mutant四臂均为
+`0.611317106870`并被抓住。
+
+但原始assignment的`cluster_7`只覆盖38个PID，未达到冻结的`>=40`门，故original
+`all_gates_pass=false`。唯一执行没有runtime错误，按科学门以exit code `1`退出；不得降低门槛、换seed、补跑或
+建立v2。result SHA=`84df7233bbd09e59ac1d1eb27c7ad6c73866c1bbcb6567ac4209636f5c570b17`。
+
+**当前判定**：`DIAGNOSTIC_INCONCLUSIVE / NO EXP404 / GPU NO-START`。上述数值顺序不形成“random-cluster
+假语义已证明”的科学结果，exp401–403封板不变。

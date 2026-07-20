@@ -405,3 +405,16 @@ NeurIPS 2024 canonicalization官方commit `f9738f64`与TARGET-VAE commit `d98b08
 `1.000000/0.608134/0.039243/0.030195`；置换全部key后仍PASS，constant-quota mutant被抓。故原强顺序可由
 source checksum制造，不足以证明语义。latent gauge、conditional flow和key-unbinding不创建exp404；未来候选
 必须额外击败semantic-blind random-key control。
+
+### exp403后第十一轮候选裁决：identity-shared semantic state / attribute prototype
+
+**状态**：`PRIOR SATURATION / TARGET COLLAPSE / NO EXP404`
+
+MVI²P官方commit `4efd9fc9`已覆盖同ID多视图综合、CAM可靠性加权及full-feature向单图传播；AG-ReID
+（arXiv `2508.04998`）已覆盖identity-majority细粒度attribute pseudo-label、CoOp属性token和Otsu噪声屏蔽。
+因此跨样本重复、identity prototype或多数属性聚合不能作为新机制。
+
+一次冻结random-cluster CPU诊断的原始与频率保持置换都观察到强arm顺序，mutant也被抓，但原始
+`cluster_7`只有38个PID，低于预注册`>=40`，正式封板为`DIAGNOSTIC_INCONCLUSIVE`。不降低门槛、不补跑、
+不建立v2。聚合当前sample-specific evidence会丢失原support/appearance target；保留它则仍受random-key
+假所有权约束。该候选不进入exp404或GPU。

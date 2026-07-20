@@ -1,0 +1,233 @@
+{
+  "counts": {
+    "gallery": 256,
+    "identities": 128,
+    "queries": 128
+  },
+  "cuda_visible_devices": "",
+  "diagnostic": "post_exp403_random_cluster_shortcut",
+  "dimensions": {
+    "clusters": 8,
+    "identity": 64,
+    "nuisance": 128
+  },
+  "evidence_ignored_mutant": {
+    "all_gates_pass": false,
+    "arms": {
+      "correct": {
+        "R1": 0.640625,
+        "mAP": 0.6113171068701687
+      },
+      "generic": {
+        "R1": 0.640625,
+        "mAP": 0.6113171068701687
+      },
+      "null": {
+        "R1": 0.640625,
+        "mAP": 0.6113171068701687
+      },
+      "wrong": {
+        "R1": 0.640625,
+        "mAP": 0.6113171068701687
+      }
+    },
+    "cluster_collision_gap_abs": 0.0078125,
+    "cluster_contract": {
+      "camera_coverage": {
+        "cluster_0": 2,
+        "cluster_1": 2,
+        "cluster_2": 2,
+        "cluster_3": 2,
+        "cluster_4": 2,
+        "cluster_5": 2,
+        "cluster_6": 2,
+        "cluster_7": 2
+      },
+      "counts": {
+        "cluster_0": 48,
+        "cluster_1": 48,
+        "cluster_2": 48,
+        "cluster_3": 48,
+        "cluster_4": 48,
+        "cluster_5": 48,
+        "cluster_6": 48,
+        "cluster_7": 48
+      },
+      "pid_coverage": {
+        "cluster_0": 41,
+        "cluster_1": 45,
+        "cluster_2": 45,
+        "cluster_3": 43,
+        "cluster_4": 41,
+        "cluster_5": 43,
+        "cluster_6": 46,
+        "cluster_7": 38
+      }
+    },
+    "correct_minus_wrong_map": 0.0,
+    "different_pid_donor_cluster_collision_rate": 0.109375,
+    "gates": {
+      "balanced_cluster_counts": true,
+      "cluster_camera_coverage": true,
+      "cluster_pid_coverage": false,
+      "correct_map": false,
+      "correct_minus_wrong": false,
+      "donor_contract": true,
+      "random_cluster_no_pid_match": true,
+      "unit_norm": true,
+      "wrong_minus_low": false
+    },
+    "max_descriptor_norm_error": 6.661338147750939e-16,
+    "same_pid_cluster_collision_rate": 0.1015625,
+    "wrong_minus_max_generic_null_map": 0.0
+  },
+  "exp404_authorized": false,
+  "frequency_matched_label_permutation": {
+    "all_gates_pass": true,
+    "arms": {
+      "correct": {
+        "R1": 1.0,
+        "mAP": 1.0
+      },
+      "generic": {
+        "R1": 0.0078125,
+        "mAP": 0.04026854666054432
+      },
+      "null": {
+        "R1": 0.0078125,
+        "mAP": 0.03366690673916809
+      },
+      "wrong": {
+        "R1": 0.8046875,
+        "mAP": 0.7196099642873214
+      }
+    },
+    "cluster_collision_gap_abs": 0.0546875,
+    "cluster_contract": {
+      "camera_coverage": {
+        "cluster_0": 2,
+        "cluster_1": 2,
+        "cluster_2": 2,
+        "cluster_3": 2,
+        "cluster_4": 2,
+        "cluster_5": 2,
+        "cluster_6": 2,
+        "cluster_7": 2
+      },
+      "counts": {
+        "cluster_0": 48,
+        "cluster_1": 48,
+        "cluster_2": 48,
+        "cluster_3": 48,
+        "cluster_4": 48,
+        "cluster_5": 48,
+        "cluster_6": 48,
+        "cluster_7": 48
+      },
+      "pid_coverage": {
+        "cluster_0": 43,
+        "cluster_1": 44,
+        "cluster_2": 42,
+        "cluster_3": 43,
+        "cluster_4": 44,
+        "cluster_5": 44,
+        "cluster_6": 41,
+        "cluster_7": 44
+      }
+    },
+    "correct_minus_wrong_map": 0.2803900357126786,
+    "different_pid_donor_cluster_collision_rate": 0.1484375,
+    "gates": {
+      "balanced_cluster_counts": true,
+      "cluster_camera_coverage": true,
+      "cluster_pid_coverage": true,
+      "correct_map": true,
+      "correct_minus_wrong": true,
+      "donor_contract": true,
+      "random_cluster_no_pid_match": true,
+      "unit_norm": true,
+      "wrong_minus_low": true
+    },
+    "max_descriptor_norm_error": 6.661338147750939e-16,
+    "same_pid_cluster_collision_rate": 0.09375,
+    "wrong_minus_max_generic_null_map": 0.679341417626777
+  },
+  "gpu_accesses": 0,
+  "gpu_start_authorized": false,
+  "mutant_caught": true,
+  "official_data_accesses": 0,
+  "original": {
+    "all_gates_pass": false,
+    "arms": {
+      "correct": {
+        "R1": 1.0,
+        "mAP": 1.0
+      },
+      "generic": {
+        "R1": 0.0078125,
+        "mAP": 0.04026854666054432
+      },
+      "null": {
+        "R1": 0.0078125,
+        "mAP": 0.03366690673916809
+      },
+      "wrong": {
+        "R1": 0.8359375,
+        "mAP": 0.7500064779210392
+      }
+    },
+    "cluster_collision_gap_abs": 0.0078125,
+    "cluster_contract": {
+      "camera_coverage": {
+        "cluster_0": 2,
+        "cluster_1": 2,
+        "cluster_2": 2,
+        "cluster_3": 2,
+        "cluster_4": 2,
+        "cluster_5": 2,
+        "cluster_6": 2,
+        "cluster_7": 2
+      },
+      "counts": {
+        "cluster_0": 48,
+        "cluster_1": 48,
+        "cluster_2": 48,
+        "cluster_3": 48,
+        "cluster_4": 48,
+        "cluster_5": 48,
+        "cluster_6": 48,
+        "cluster_7": 48
+      },
+      "pid_coverage": {
+        "cluster_0": 41,
+        "cluster_1": 45,
+        "cluster_2": 45,
+        "cluster_3": 43,
+        "cluster_4": 41,
+        "cluster_5": 43,
+        "cluster_6": 46,
+        "cluster_7": 38
+      }
+    },
+    "correct_minus_wrong_map": 0.24999352207896075,
+    "different_pid_donor_cluster_collision_rate": 0.109375,
+    "gates": {
+      "balanced_cluster_counts": true,
+      "cluster_camera_coverage": true,
+      "cluster_pid_coverage": false,
+      "correct_map": true,
+      "correct_minus_wrong": true,
+      "donor_contract": true,
+      "random_cluster_no_pid_match": true,
+      "unit_norm": true,
+      "wrong_minus_low": true
+    },
+    "max_descriptor_norm_error": 6.661338147750939e-16,
+    "same_pid_cluster_collision_rate": 0.1015625,
+    "wrong_minus_max_generic_null_map": 0.7097379312604949
+  },
+  "pose_cache_checkpoint_accesses": 0,
+  "seed": 20260720,
+  "torch_imported": false,
+  "verdict": "DIAGNOSTIC_INCONCLUSIVE"
+}

@@ -4060,3 +4060,18 @@ symmetry和translation/rotation group，不能为任意16维code提供语义许�
 mAP=`1.000000/0.608134/0.039243/0.030195`，随机置换key后仍通过两级margin，mutant则失败。因此
 `correct > wrong > generic/NULL`只能保留为必要门。未来机制还必须证明semantic evidence优于random-key/
 null-semantic source checksum；否则只证明authentication，不证明CLIP语义所有权。
+
+### exp403后第十一轮：跨样本重复不等于语义
+
+**状态**：`SEMANTIC REPLICATION PRIOR SATURATION / DIAGNOSTIC INCONCLUSIVE / NO EXP404`
+
+用identity-level共享类别替代unique sample key，看似能切断逐样本checksum；但MVI²P已覆盖同ID多视图综合、
+CAM可靠性加权与full-feature传播，AG-ReID已覆盖identity-majority属性伪标签、属性token和噪声屏蔽。普通
+prototype、跨样本状态重复或多视图语义复制不是新的机制对象。
+
+频率保持random-cluster诊断也不能提供正面许可：原始与label-permutation观察都出现
+`correct > wrong > generic/NULL`，mutant被抓，但原始一簇只有38个PID，未过冻结`>=40`门，正式裁决只能是
+`DIAGNOSTIC_INCONCLUSIVE`。不得把这次观察升级成“随机共享类别已经证明可伪造语义”，也不得重跑救门。
+
+下一候选必须同时击败unique random-key与frequency-matched semantic-blind null，并保持sample-specific正确
+语义的可验证target；把当前region-global code做identity-majority聚合会改变原问题，不能建立exp404。

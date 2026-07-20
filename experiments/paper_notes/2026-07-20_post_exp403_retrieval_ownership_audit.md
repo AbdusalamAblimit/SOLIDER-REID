@@ -757,3 +757,46 @@ key没有稳定PID几何；constant-quota mutant被抓住。torch/CUDA/data/pose
 
 第十轮裁决为`COUNTERFACTUAL SUFFICIENCY FAIL / RANDOM SOURCE-KEY FALSE OWNERSHIP DEMONSTRATED /
 NO EXP404 / GPU NO-START`。latent gauge、conditional flow或orthogonal key-unbinding均不形成候选。
+
+## 23. 第十一轮：语义复制的先例饱和与random-cluster不确定诊断
+
+### 23.1 MVI²P已覆盖同ID多视图语义传播
+
+- 论文/代码：*MVI²P: Multi-View Information Integration and Propagation for Occluded Person
+  Re-Identification*；官方仓库：<https://github.com/nengdong96/MVIIP>；审计commit：
+  `4efd9fc920d2b3b5a8e9329059d81a6573f19b13`；
+- 方法在同身份多视图间综合互补信息，用CAM估计局部可靠性，并把full-feature信息传播到单图表示；
+- 因此“由identity共享状态解决single-image support incomplete”已有直接强近邻。它没有当前random-key与
+  wrong/generic/NULL/all-bypass所有权终审，但足以排除普通多视图共享或identity prototype作为新机制。
+
+### 23.2 AG-ReID已覆盖identity-majority属性target
+
+ECAI 2025 AG-ReID（arXiv：<https://arxiv.org/abs/2508.04998>）为每个身份聚合细粒度attribute pseudo-label，
+以majority结果构造identity-level属性目标，使用CoOp属性token，并以Otsu规则屏蔽噪声标签。该工作已经占用
+“跨同ID样本投票得到稳定语义，再以属性引导训练”的核心对象。
+
+当前region-global CLIP residual若改成identity-majority属性，会丢失原本逐图support/appearance含义并进入上述
+先例；若继续保留逐样本状态，则第十轮random-key假所有权边界仍完整存在。两者之间不能靠简单聚合得到新的
+path-complete semantic target。
+
+### 23.3 frequency-matched random-cluster唯一执行
+
+为检验“重复本身”是否足以排除source key，建立无编号CPU诊断
+`experiments/diagnostics/post_exp403_random_cluster_shortcut/`。384个toy sample被严格平衡分到8个与PID/camera
+无关的随机cluster；另执行一次频率保持label permutation，并用evidence-ignored mutant作反合同。
+
+原始与置换的correct/wrong/generic/NULL mAP分别为
+`1.000000000000/0.750006477921/0.040268546661/0.033666906739`与
+`1.000000000000/0.719609964287/0.040268546661/0.033666906739`；mutant四臂均为`0.611317106870`。然而原始
+assignment的`cluster_7`只覆盖38个PID，未达到预注册`>=40`，所以original正合同失败。唯一执行按科学门退出，
+无runtime错误；result SHA=`84df7233bbd09e59ac1d1eb27c7ad6c73866c1bbcb6567ac4209636f5c570b17`。
+
+该执行严格封板为`DIAGNOSTIC_INCONCLUSIVE`。不得降低门槛、换seed、补跑、建立v2，也不得依据观察到的arm
+顺序声称frequency-matched random cluster已经证明假语义。它只保留一个未决设计要求：未来共享类别候选仍应
+预注册frequency-matched semantic-blind null，同时必须继续击败unique random-key。
+
+### 23.4 第十一轮裁决
+
+文献层面为`SEMANTIC REPLICATION PRIOR SATURATION / TARGET COLLAPSE`；CPU执行层面为
+`DIAGNOSTIC_INCONCLUSIVE`。两者都不授权exp404。当前仍只有source-specific open-set retrieval ownership的
+问题/证据缺口，机制门为空；状态维持`NO EXP404 / GPU NO-START`。

@@ -2278,3 +2278,13 @@ mAP=`1.000000/0.608134/0.039243/0.030195`，置换key assignment后仍通过，�
 这不改判exp402/403，却收紧以后story：wrong/generic/NULL/all-bypass必须保留，同时新增semantic-blind
 random-key control；只有correct semantic evidence相对该control仍有独立收益，才允许写ownership。当前latent
 gauge/conditional flow只是source authentication，不建立exp404，GPU继续NO-START。
+
+第十一轮进一步关闭“把状态做成跨样本共享即可恢复语义”的回退。MVI²P已实现同ID多视图综合、CAM可靠性
+加权和full-feature传播，AG-ReID已实现identity-majority属性伪标签、属性token与噪声屏蔽；普通共享prototype
+或多数属性聚合既有直接先例，也会把当前sample-specific support/appearance对象压成identity-level target。
+
+frequency-matched random-cluster CPU诊断中，原始与label-permutation都观察到强数值顺序，mutant也被抓；但
+原始`cluster_7`仅覆盖38个PID，未过冻结`>=40`门，所以唯一合法结论是`DIAGNOSTIC_INCONCLUSIVE`，不能写成
+随机共享类别假语义已被证明，也不能重跑救门。story继续保持`POST-EXP403 OWNERSHIP AUDIT / NO EXP404 /
+GPU NO-START`：后继对象必须同时击败unique random-key和frequency-matched semantic-blind null，且不以
+identity-majority聚合改变原semantic target。

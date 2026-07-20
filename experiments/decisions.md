@@ -5630,3 +5630,19 @@ GPU。状态为`SET-VALUED TARGET SELECTION GAP / DEPLOYMENT CONTRACT FAIL / GPU
 semantic-blind random-key或等价null-semantic control。latent gauge、conditional flow、orthogonal unbinding
 排除，不创建exp404、不做CUDA/GPU。状态为`RANDOM SOURCE-KEY FALSE OWNERSHIP DEMONSTRATED / GPU
 NO-START`，exp401–403封板不变。
+
+### [2026-07-20] 决策：共享重复不自动构成语义，不以random-cluster不确定执行建立exp404
+
+MVI²P官方代码commit `4efd9fc920d2b3b5a8e9329059d81a6573f19b13`已经覆盖同身份多视图综合、CAM可靠性
+加权及full-feature向单图传播；ECAI 2025 AG-ReID（arXiv `2508.04998`）已经覆盖identity-majority细粒度
+attribute pseudo-label、CoOp属性token与Otsu噪声屏蔽。故“让状态跨样本重复”“identity-level attribute
+prototype”或“多视图共享语义”都不能单独通过机制创新门。
+
+frequency-matched random-cluster CPU诊断虽在原始与label-permutation观察中都出现强数值顺序，且mutant被抓，
+但原始`cluster_7`只有38个PID，未过预注册`>=40`覆盖门。唯一执行封板为`DIAGNOSTIC_INCONCLUSIVE`，不允许
+降低门槛、换seed、补跑或建立v2，也不能据此声称random-cluster假语义成立。
+
+**决策**：当前sample-specific region-global residual若聚合为identity-majority属性，会丢失原support/appearance
+对象并进入已有先例；若保留sample-specific状态，则仍须击败random-key control。状态为
+`SEMANTIC REPLICATION PRIOR SATURATION / TARGET COLLAPSE / NO EXP404 / GPU NO-START`，继续文献/代码与
+CPU诊断，不做CUDA/GPU。
