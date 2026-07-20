@@ -270,3 +270,23 @@ minimality/IB；SupCBM、MM-CBM和Caption Bottleneck Models又分别覆盖hard l
 **裁决**：`terminal concept-only subspace + minimality + intervention-aware loss`是已有原子的组合，不满足
 机制创新门；direct-sum/fixed norm也只能强迫数值扰动，不能证明正确语义所有权。继续查source-attributed
 representation与interventional path completeness；没有新的结构原理前不编号、不做CPU/CUDA实验。
+
+### exp403后候选审计：multimodal modality-laziness机制
+
+**状态**：`LITERATURE/CODE AUDIT ONLY / ALL SCREENED OUT / NO EXP404`
+
+本轮把exp403现象与多模态学习中的“强模态可完成任务、弱模态route虽存在却未被使用”对齐，完成以下边界审计：
+
+- UniCat：各模态独立ReID训练，测试时固定concat；不能迁移为当前RGB-only evidence ownership；
+- MCR（commit `0da29d0`）：batch latent permutation + JSD/MI + game regularizer，最终仍是加性fusion；
+- Data Remixing（commit `80898aa`）：warm-up后按unimodal KL拆样本、置零另一模态并分阶段训练；
+- ResTacVLA（项目commit `76250e5`，未放方法源码）：视觉预测触觉后取residual、VQ并按不确定性gate；测试仍需触觉；
+- SCOPE：matched/mismatched similarity、batch semantic graph、topology alignment与diffusion residual fusion；
+- RCL：逐channel suppression得到reliance profile，再匹配旧/新模型依赖；
+- VIGIL：用attention-masked blind path直接优化`seeing > blind`；
+- MiMIC/VLM2Rec：分别以single-modality mixin/dropout/ANCE和弱模态负项加权/topology KL缓解retrieval collapse。
+
+**裁决**：独立目标、permutation/MI、数据重混、predictive residual、topology preservation、reliance matching和
+full-vs-bypass loss都已有直接近邻。共同缺口是matched wrong donor没有保持自己的正目标，故这些方法不能证明
+`correct > wrong > generic/NULL`的source ownership。只有同时闭合“correct对current ID为正、wrong对donor ID
+也为正、两者经过同一最终descriptor路径”的新结构对象，才值得新增编号；当前继续查新，不写config、不占GPU。

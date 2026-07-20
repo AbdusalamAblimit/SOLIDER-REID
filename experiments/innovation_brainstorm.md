@@ -3902,3 +3902,27 @@ leakage-free by construction。PDiscoNet的无监督part slot也只是结构化p
 **问题/证据缺口**可能成立：open-set instance retrieval尚缺matched donor、generic、NULL和all-bypass共同
 构成的path-complete ownership检验。机制缺口尚未找到，继续查source attribution、interventional path
 completeness与conditional metric；在至少满足问题/机制/证据两项之前不编号、不占GPU。
+
+### exp403后第二轮查新：modality laziness与evidence-use已高度拥挤
+
+**状态**：`AUDIT ACTIVE / MECHANISM GATE STILL EMPTY / NO EXP404`
+
+本轮把exp403的“route active但ranking不拥有correct evidence”映射到modality laziness，代码/公式级审计了
+UniCat、MCR、Data Remixing、ResTacVLA、SCOPE、RCL、VIGIL、MiMIC与VLM2Rec。最重要的新边界不是一个可开跑
+模块，而是若干已被占用的机制空间：
+
+1. UniCat已经在multimodal ReID中证明独立单模态loss、测试concat可胜过joint fusion；
+2. MCR已经用latent permutation、预测JSD/MI surrogate和game梯度平衡模态贡献；
+3. ResTacVLA已经把弱模态写成“实际触觉减视觉可预测触觉”的residual，再经VQ与uncertainty gate注入；
+4. SCOPE/VLM2Rec已经用matched-mismatched关系和跨模态rank/topology一致性保护弱模态几何；
+5. RCL已经把counterfactual channel suppression变成instance reliance profile并做teacher/student matching；
+6. VIGIL已经直接优化seeing相对attention-masked blind的output likelihood gap；
+7. Data Remixing/MiMIC已经覆盖样本拆分、单模态mixin/dropout和额外hard-negative stage。
+
+这些工作与当前缺口仍有一个本质差异：它们的wrong/masked modality要么只被删除、置零、置换或推远，要么仅
+作为弱模态统计量；matched donor没有保留“对donor identity必须正确”的独立正目标。于是模型仍可通过破坏
+counterfactual branch或维持强模态路径取得margin，不能建立source-specific ownership。
+
+因此下一机制检索被进一步冻结为三方合同：同一构图同时使correct execution服务current ID、matched wrong
+execution服务donor ID，并让二者经过相同最终欧氏descriptor路径；generic/NULL/all-bypass继续作为终审。
+`full > blind`、MI/topology、固定concat、predictive residual、dropout/remix或loss重权均不得单独建立exp404。

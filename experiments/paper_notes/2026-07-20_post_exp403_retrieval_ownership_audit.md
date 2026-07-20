@@ -199,3 +199,154 @@ loss或拼成direct-sum descriptor就升级为新机制。
 在open-set instance retrieval中，用matched donor、generic、NULL和all-bypass同时验证sample evidence的路径
 所有权。机制层仍为空，必须继续审计source-attributed representation、interventional path completeness与
 conditional metric公开实现，确认不是普通CBM/IB/ranking/concat后，才能决定是否形成新编号。
+
+## 11. 同型问题审计：multimodal modality laziness
+
+exp403的“生产route active，但正确evidence没有最终ranking ownership”与多模态学习中的modality laziness
+高度同型。为避免把已有的模态平衡方法换成ReID术语，本轮进一步审计了独立训练、latent permutation、
+data remix、residual sensing、cue preservation以及直接面向evidence-use的近期工作。
+
+### 11.1 UniCat（arXiv 2023）
+
+- 论文：*UniCat: Crafting a Stronger Fusion Baseline for Multimodal Re-Identification*
+  （<https://arxiv.org/abs/2310.18812>）；
+- 截至本轮审计，论文与作者页面没有给出可核验的官方代码仓库，故只按论文v1方法定义裁决。
+
+方法事实：
+
+- 每个模态使用不共享backbone `f_i`，分别输出`z_i`；
+- ordinary fusion-concat/avg在融合后的`z_fuse`上联合计算triplet与CE，而UniCat为每个`z_i`独立计算完整
+  ReID loss；
+- 训练完成后才把各模态embedding拼成最终检索descriptor，且测试时需要所有模态。
+
+裁决：UniCat准确指出joint objective会让单模态目标松弛，并给出了multimodal ReID中的直接证据。但其解法是
+“独立训练后固定拼接”，不是训练期privileged evidence、测试期单RGB的路径所有权。若把当前evidence分支做成
+固定direct-sum block，仍只是在数值上保证一个子空间存在，不能保证correct优于wrong/generic/NULL；该方向已被
+本轮terminal bottleneck审计和exp403结果共同限制。
+
+### 11.2 MCR（NeurIPS 2025 Spotlight）
+
+- 论文：*Balancing Multimodal Training Through Game-Theoretic Regularization*
+  （<https://arxiv.org/abs/2411.07335>）；
+- 官方代码：<https://github.com/kkontras/MCR>；审计commit：
+  `0da29d0343e1f4b0b6b90425ff9ff2f71d873b54`。
+
+代码事实：
+
+- `MCR_Linear`的最终分类logit仍是`fc_0(a)+fc_1(v)+bias`；
+- 训练时对batch内`a/v`做多次随机置换，并构造另一模态detach或双方可训练的组合；
+- regularizer用置换前后预测分布的JSD近似MI分解，再以`greedy/ind/collaborative`三种game组合梯度；
+- release config同时保留combined与两个unimodal CE；standalone实现还可叠加contrastive和reconstruction项。
+
+裁决：MCR已经覆盖“latent permutation + MI surrogate + game-theoretic modality contribution regularizer”。
+但置换donor只作为扰动，不保留其自身正目标；最终仍是可由任一分支主导的加性分类logit，没有标准检索descriptor
+上的matched wrong/generic/NULL/all-bypass终审。因此它是重要问题近邻，却不能提供当前缺失的path-complete
+ownership机制；把CUR换成MCR/JSD只是换loss。
+
+### 11.3 Data Remixing（ICML 2025）
+
+- 论文：*Improving Multimodal Learning Balance and Sufficiency through Data Remixing*
+  （<https://arxiv.org/abs/2506.11550>）；
+- 官方代码：<https://github.com/MatthewMaxy/Remix_ICML2025>；审计commit：
+  `80898aa0ad8077af535e7ade4b4583525592956f`。
+
+代码事实：先warm-up联合训练，再根据两个unimodal posterior到均匀分布的KL大小，把样本写入audio/video子集；
+后续分别加载子集，在`AVClassifier.forward`中把非目标模态feature原地置零，只优化fused CE与当前模态CE。
+
+裁决：这是明确的数据拆分、batch重组和分阶段优化，不是新的最终检索对象。它也主动置零另一模态，不执行
+matched wrong donor的独立正目标；当前规则又明确禁止用增加stage或数据重混救旧臂，故排除。
+
+### 11.4 ResTacVLA（arXiv 2026-07）
+
+- 论文：*Feeling the Unexpected: ResTacVLA for Contact-Rich Manipulation via Residual Tactile Representation*
+  （<https://arxiv.org/abs/2607.03387>）；
+- 项目仓库：<https://github.com/Awilekong/ResTacVLA>；审计commit：
+  `76250e58bdf8a0d927f68a818cd7ba9ca95a4b3a`。仓库当前只有论文、网页和展示资产，没有方法源码。
+
+论文事实：
+
+- Cross-Modal Predictor从wrist RGB预测触觉latent均值与不确定性，实际触觉编码为`z_t`，机制对象是
+  `r_t=z_t-z_hat_t`；
+- residual经event encoder和VQ形成contact primitive，同时通过重建、NLL与commitment loss预训练；
+- 冻结CMP后，`g_t=sigmoid(MLP(sigma_t))`把primitive与learnable no-contact token插值，再将该token拼入
+  action expert；
+- 测试时仍需要真实触觉，且低不确定阶段明确允许路径收敛到no-contact token。
+
+裁决：`cross-modal prediction residual`是本轮最接近“只保留强模态无法解释的证据”的结构原子，但其两阶段
+训练、测试时额外传感器、VQ/gate和动作策略目标均不满足当前RGB-only single-descriptor合同。论文也没有
+matched wrong tactile及donor-owned正目标。直接把CLIP evidence减去student prior会成为已有predictive-coding
+原子的迁移，并不能解决teacher在测试时被移除后的ownership。
+
+### 11.5 SCOPE（Findings of ACL 2026）
+
+- 论文：*SCOPE: Preserving Modality-Specific Cues to Mitigate Modality Laziness in Multimodal Learning*
+  （<https://aclanthology.org/2026.findings-acl.1453/>）；
+- Anthology与论文未给官方源码，按正式论文公式审计。
+
+方法事实：SCOPE以matched cross-modal cosine趋近1、cross-sample cosine趋近0实现MI surrogate；再为各模态
+构造batch内kNN语义图，以图矩阵Frobenius差做结构对齐；最终feature是模态权重和，并经过graph-masked
+attention与`h <- h + A_tilde h`扩散残差，联合classification loss训练。
+
+裁决：它明确覆盖“matched/mismatched similarity + modality-specific cue preservation + relational topology +
+balanced residual fusion”。但mismatched sample只是被压到正交，不承担自身身份正目标；最终加权和与残差路径
+也不排除强模态shortcut。将这些loss或batch图搬到TAPF仍是辅助正则/融合模块，而非所有权机制。
+
+## 12. 更直接的evidence-use与retrieval近邻
+
+### 12.1 RCL：答案保持但证据依赖漂移（arXiv 2026-07）
+
+*Hidden Forgetting in Continual Multimodal Learning: When Accuracy Survives but Grounding Fails*
+（<https://arxiv.org/abs/2607.02020>）直接提出“答案未忘、evidence-use已漂移”。RCL冻结上一checkpoint，
+逐一mask visual/text/OCR等channel，用full与masked输出KL及答案loss增量构成sample-level reliance vector；
+再以JSD匹配teacher/student reliance profile，并联合task loss与prediction distillation。论文当前未提供官方源码。
+
+裁决：这篇工作直接占用了“counterfactual channel suppression -> reliance profile -> teacher/student reliance
+matching”的机制空间，也进一步证明仅看最终准确率不够。但RCL只保留旧模型已有的依赖分布，不知道该依赖是否
+语义正确；干预仅删除channel，没有matched wrong donor，更没有donor自身正目标。把exp402/403的bypass差改成
+可训练reliance loss因此既不新，也不足以建立`correct > wrong > NULL`。
+
+### 12.2 VIGIL：seeing相对blind的视觉信息增益（ECCV 2026）
+
+*Staying VIGILant: Mitigating Visual Laziness via Counterfactual Visual Alignment in MLLMs*
+（<https://arxiv.org/abs/2606.26387>）定义
+`VIG=log p(y|vision,text)-log p(y|blind,text)`；blind path保持输入tensor不变，只在所有层mask text-query到
+visual-key/value的attention。CVD以DPO形式提高seeing相对blind的preferred-response likelihood，并用当前
+seeing-blind gap动态衰减该正则。项目页标注`Code coming soon`。
+
+裁决：VIGIL已系统覆盖“full与all-bypass成对执行、直接最大化输出依赖差”的二元机制。它仍只要求去掉视觉后
+变差，并通过降低blind preferred-response confidence获得margin；没有wrong evidence的独立正目标，也不能辨别
+模型是否使用了正确sample的视觉。因此，单纯把exp401 route gap写进训练目标不构成exp404。
+
+### 12.3 MiMIC与VLM2Rec：retrieval中的modality collapse
+
+- MiMIC（<https://arxiv.org/abs/2604.21326>）用分离encoder、T5 decoder cross-attention生成retrieval
+  embedding；训练期随机把visual-only/text-only embedding混入fused embedding、主动drop caption，并再做
+  ANCE hard-negative第二阶段。它本质上是fusion architecture + data dropout/mixin + extra stage；
+- VLM2Rec（<https://arxiv.org/abs/2603.17450>）直接在推荐retrieval中定义每用户text/vision margin，冻结强
+  模态margin、放大fused InfoNCE负项以补弱模态，再用两个模态对in-batch候选的soft rank distribution做双向
+  KL topology alignment。最终表示仍是`z_text+z_vision`。
+
+裁决：两者证明retrieval领域已经存在针对modality collapse的结构和目标设计。MiMIC违反当前禁止data remix/
+caption dropout/额外stage的边界；VLM2Rec是动态负项加权与topology regularization，最终加性descriptor仍可
+bypass，且没有matched wrong/generic/NULL合同。它们排除了把普通modality-balance retrieval loss写成新机制。
+
+## 13. 本轮结论与下一检索对象
+
+本轮没有发现可以建立exp404的机制。新增文献把边界收紧为：
+
+1. `independent unimodal objective + test concat`已有UniCat；
+2. `permutation/MI/game regularizer`已有MCR；
+3. `data split/remix、modality dropout、extra stage`已有Data Remixing与MiMIC；
+4. `predictive residual + uncertainty gate`已有ResTacVLA；
+5. `matched/mismatched similarity + topology alignment`已有SCOPE与VLM2Rec；
+6. `counterfactual suppression reliance matching`与`seeing > blind`分别已有RCL和VIGIL。
+
+这些近邻使当前**问题/证据创新门更可信**：最终性能可以保持而evidence-use失败，且open-set retrieval确实需要
+比full-vs-bypass更强的source-specific终审。但机制门仍为空。下一轮只继续寻找一种三方闭合对象：
+
+- correct execution对当前identity有正目标；
+- matched wrong execution对donor identity仍有独立正目标，不能仅被推远或降置信；
+- 两者共享同一最终标准欧氏descriptor构造，并保留generic/NULL/all-bypass终审。
+
+若公开方法只做full-vs-mask、modality balance、MI/topology、fixed concat、dropout/remix或额外stage，即直接排除。
+当前状态维持`AUDIT ACTIVE / NO EXP404 / GPU NO-START`。

@@ -2755,3 +2755,13 @@ result/runner/contract/manifest SHA256=
 **最终判定**：`SEALED / VALIDITY PASS / SCIENTIFIC ELO_CUR_MECHANISM_NO_GO`，后续formal mechanism
 design不授权。禁止重跑、补跑、续训或以调rho/loss/batch/stage、mask和删除control救活exp403；下一对象
 必须重新定义问题或结构机制。
+
+## exp403后modality-laziness / evidence-use查新（2026-07-20）
+
+本轮没有启动实验或GPU。UniCat、MCR、Data Remixing、ResTacVLA、SCOPE、RCL、VIGIL、MiMIC与VLM2Rec的
+代码/正式公式审计均未找到满足当前source-specific ownership合同的机制。现有近邻已覆盖独立训练后concat、
+permutation/MI、数据重混、predictive residual、topology alignment、counterfactual reliance profile和
+`seeing > blind`，但matched wrong donor均没有保留其自身identity正目标。
+
+**当前判定**：`LITERATURE/CODE AUDIT ACTIVE / INNOVATION GATE FAIL / NO EXP404 / GPU NO-START`。
+这不是新的性能结果，也不改变exp401–403封板结论；它只收紧下一候选的准入条件。

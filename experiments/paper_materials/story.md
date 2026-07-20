@@ -2190,3 +2190,15 @@ concept-only相似度和严格隔离语义通道。当前可保留的研究缺�
 中的matched donor/generic/NULL/all-bypass路径完整性；机制层尚无通过创新门的对象。因此故事保持
 `POST-EXP403 OWNERSHIP AUDIT / NO EXP404 / GPU NO-START`，不把IB、hard bottleneck、direct-sum或part slot
 拼接包装成新贡献。
+
+第二轮modality-laziness查新进一步收紧了这一结论。UniCat已覆盖独立单模态ReID训练后拼接，MCR已覆盖
+latent permutation与game/MI regularization，ResTacVLA已覆盖cross-modal predictive residual，SCOPE与
+VLM2Rec已覆盖matched关系及跨模态topology preservation，RCL/VIGIL则分别把counterfactual channel
+suppression用于reliance matching和`seeing > blind`输出约束；MiMIC/Data Remixing还覆盖了single-modality
+mixin、dropout、样本拆分和额外stage。
+
+这些强近邻都没有闭合当前最难的一环：matched wrong evidence在经过同一最终descriptor路径时，还必须对其
+donor identity承担正目标，而不是只被删除、置零、推远或降置信。由此，论文可争的新意更明确地落在
+**source-specific open-set retrieval ownership**的问题/证据定义上，但机制贡献仍不存在。下一候选只有同时让
+correct服务current ID、wrong服务donor ID，并保留generic/NULL/all-bypass终审，才允许进入编号；在此之前
+story继续维持`NO EXP404 / GPU NO-START`。

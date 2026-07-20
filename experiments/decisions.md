@@ -5505,3 +5505,17 @@ operator ownership。
 rho/loss/batch/stage、mask或删除wrong/generic/NULL/all-bypass control救活。exp401只保留窄幅route-alive
 接口边界；exp402关闭当前C0 student-evidence/expert semantic解释；exp403关闭当前ELO-CUR对象。下一候选
 必须重新定义问题或结构对象并至少满足创新门槛两项，不能继续围绕ELO-CUR调尺度或loss。
+
+### [2026-07-20] 决策：modality-laziness近邻未提供source ownership机制，exp404继续NO-START
+
+代码/公式级查新覆盖UniCat、MCR、Data Remixing、ResTacVLA、SCOPE、RCL、VIGIL、MiMIC与VLM2Rec。
+独立单模态训练后拼接、latent permutation/MI/game regularizer、data remix/dropout、predictive residual、
+跨模态topology preservation、counterfactual reliance matching及`seeing > blind`目标均已有直接先例。
+
+这些方法共同没有满足当前最强合同：matched wrong evidence经过与correct相同的最终descriptor路径时，还要对
+donor identity保持独立正目标；现有方法通常只把wrong/masked模态删除、置零、推远或降置信，无法排除通过
+破坏counterfactual branch制造margin。
+
+**决策**：创新门仍只有问题/证据缺口，机制门为空；不创建exp404、不写config、不做CPU/CUDA preflight、
+不占GPU。下一轮仅审计能同时闭合`correct -> current ID`、`wrong -> donor ID`和同一路径欧氏检索的结构对象，
+并继续保留generic/NULL/all-bypass；普通full-vs-mask、MI/topology、固定concat、dropout/remix直接排除。
