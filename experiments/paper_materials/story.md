@@ -2231,3 +2231,15 @@ query-conditioned token scorer。最新DiCE-CIR虽用target caption作proxy，�
 因此不能通过一个新的composition loss凭空定义semantic ownership；合成/标注target或测试时增加semantic query
 又分别进入已有强近邻或违反部署合同。论文故事仍只有问题/证据缺口，机制和实验编号均为空，保持
 `POST-EXP403 OWNERSHIP AUDIT / NO EXP404 / GPU NO-START`。
+
+第六轮先确认了一个重要证据边界：exp402/403的逐样本evidence和descriptor只在正式审计进程内存中存在，落盘
+JSON只有汇总量；Phase0E codebook也只是shared PCA basis与slot mean。因而当前没有合法离线资产可以证明16维
+evidence身份可分或不受camera混淆，且不能补跑封板编号取得它们。
+
+canonicalization也没有补上机制缺口。3D-VAN依靠3D重建后四视角渲染并保留原RGB拼接；CSCL依靠DP3D人工密集
+2D–3D correspondence和SMPL surface；VPFA依靠成对LR/HR图与显式resolution suffix训练post-hoc残差MLP。
+这些工作的target成立，是因为action/target被额外观测，不是因为canonical结构天然拥有identity ranking。
+
+当前数据若用wrong donor pose/code去warp host，只能证明错误warp会破坏图像，不能证明source semantics；若融合
+原RGB则又保留bypass。因此story仍只能陈述可识别性缺口，不能把canonical warp、dense surface或resolution
+direction升级为贡献，状态保持`POST-EXP403 OWNERSHIP AUDIT / NO EXP404 / GPU NO-START`。

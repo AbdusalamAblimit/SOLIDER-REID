@@ -5560,3 +5560,18 @@ evidence target仍未定义其对final identity ranking的唯一作用。
 **决策**：不以affine/flip consistency、augmentation invariance、normalizing flow、invertible coupling或
 part-weighted scorer建立exp404。继续`NO EXP404 / GPU NO-START`，下一对象必须给当前evidence一个可验证的
 semantic action并直接定义固定最终metric。
+
+### [2026-07-20] 决策：封板资产不足以做identity/camera诊断，canonical action不构成exp404
+
+只读资产检查确认，exp402/403 formal result虽报告correct臂`captured_rows=19,871`，但逐样本evidence、PID、
+camera和各臂descriptor从未落盘；两个result最长数组都只有2。Phase0E codebook也仅含shared PCA basis、slot
+mean和计数，generic evidence只是`5x16`常量。故不能从封板资产计算identity separability/camera confounding，
+也不得通过重跑、补跑或新导出冒充离线分析。
+
+随后审计3D-VAN、CSCL和VPFA。前两者的canonical target分别依赖3D重建或DP3D密集2D–3D/SMPL标注；VPFA
+官方commit `13de109d`依赖同图LR/HR pair、MSE feature residual和测试文件名resolution suffix。它们不能为当前
+16维semantic evidence提供可观测action；wrong donor warp只会形成破坏性负例，原RGB fusion则保留bypass。
+
+**决策**：不创建exp404，不做CPU contract、CUDA preflight或GPU执行；canonical warp、dense-surface alignment、
+resolution-vector residual均排除。状态为`ARTIFACT/IDENTIFIABILITY/MECHANISM GATE FAIL / GPU NO-START`，
+exp401–403封板结论不变。

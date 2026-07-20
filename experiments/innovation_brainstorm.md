@@ -3985,3 +3985,22 @@ teacher code监督，但它只定义student复现code，不定义code对final ra
 
 故`equivariance + invertibility`没有通过机制门，不建立exp404。下一对象必须显式给出当前evidence的可验证
 semantic action，并让该action本身成为最终固定identity metric的一部分。
+
+### exp403后第六轮：封板资产不足，canonicalization不是现成ownership机制
+
+**状态**：`AUDIT ACTIVE / ARTIFACT AND MECHANISM FAIL / NO EXP404`
+
+只读检查发现exp402/403的19,871行evidence与各臂descriptor仅存在于formal audit内存。最终JSON最长数组为2，
+远端目录没有逐样本tensor；Phase0E codebook只保留`5x768` slot mean、`16x768` PCA basis与计数，generic asset
+只是`5x16`常量。因此无法在不补跑封板编号的前提下计算identity separability或camera confounding，后续叙事
+不得把这两点当已验证事实。
+
+针对“让evidence直接执行canonical action”的查新也给出三条边界：
+
+1. 3D-VAN已经使用3D人体重建和四视角canonical rendering，测试仍拼接原RGB feature；
+2. CSCL用人工密集2D–3D correspondence监督pixel-to-SMPL-vertex，依赖当前official资产不存在的SMPL/DP3D变量；
+3. VPFA用同图LR/HR exact pair训练冻结descriptor后的MSE residual，测试以文件名resolution suffix选择MLP。
+
+这说明可识别canonical target来自额外观测action，不是结构名称本身。把wrong donor的pose/code用于host warp只会
+构成damage control，不能定义wrong source的正目标；保留RGB旁路又复现modality laziness。故本轮只增加了
+artifact与近邻边界，没有满足机制创新门，不建立exp404。

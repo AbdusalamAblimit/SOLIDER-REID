@@ -530,3 +530,64 @@ preservation，但不能提供factor attribution。两者组合仍是DiP式equiv
 状态保持`IDENTIFIABILITY/MECHANISM GATE FAIL / NO EXP404 / GPU NO-START`。下一检索只考虑能为当前evidence
 给出**可观测或解析的semantic action**，且该action直接定义最终固定identity metric；普通affine consistency、
 augmentation invariance、invertible flow或part-weighted pair scorer直接排除。
+
+## 17. 封板资产的只读CPU前提诊断
+
+本轮没有重跑、补跑或修改exp402/403，只检查已封板落盘资产是否足以回答“16维evidence是否身份充分、是否受
+camera混淆”这一前提问题。远端GPU compute process保持为0。
+
+资产与执行器事实如下：
+
+1. exp402与exp403的formal result都记录correct臂在运行时`captured_rows=19,871`，但两个JSON中的最长数组
+   长度均只有2；没有逐样本index/path、PID、camera、evidence或descriptor数组；
+2. 审计代码在进程内建立`evidence_cache[len(records),5,16]`和各臂descriptor tensor，只把metrics、
+   descriptor delta统计、hash与恢复门写入result，进程退出后没有tensor落盘；
+3. 两个远端audit目录只有脚本、JSON、日志与manifest；训练output只有`train_log.txt`和唯一checkpoint，
+   不存在`.npy/.npz/.pt`逐样本导出；
+4. Phase0E codebook也不是逐样本缓存。它只有`covariance_rows=39,249`、五个slot计数、`5x768` slot mean、
+   `16x768` shared PCA basis与eigenvalue等聚合量，没有path/PID/camera/evidence/descriptor；exp403 generic
+   asset则只是一个`5x16`全局常量。
+
+因此现有封板产物不足以计算同身份/跨身份evidence距离、camera条件分类或evidence-to-descriptor互信息。为得到
+这些量重新执行exp402/403会构成禁止的补跑；仅从checkpoint新导出也会产生一个新的、未预注册测量执行，不能
+伪装成封板结果的离线分析。
+
+本轮裁决为`SEALED ARTIFACT SUFFICIENCY FAIL / DIAGNOSTIC UNANSWERABLE WITHOUT NEW EXECUTION`。这不改变
+exp402/403的VALIDITY PASS或科学NO-GO，只明确限制：不能据现有资产声称16维code“身份可分”或“camera无混淆”。
+
+## 18. 第六轮：canonical action有真实target，但不闭合当前ownership
+
+### 18.1 3D-VAN与CSCL：canonical target依赖额外可观测几何
+
+3D-VAN（*Generalizable Person Re-Identification via Viewpoint Alignment and Fusion*，arXiv:2212.02398）用
+RSC-Net、Texformer与SMPL把单图重建成3D人体，再渲染前/后/左/右四个canonical view。正式测试把原图feature与
+四个canonical-view feature拼接。它证明canonical view是可执行对象，但并未移除原RGB旁路，而且“正确/错误
+canonicalizer”的差只能归因于几何重建是否破坏图像，不能证明当前16维appearance evidence的source ownership。
+
+CSCL（ACM MM 2023，官方CSE代码commit
+`924d5c2b661ff2decd08450d6f42532e9437360e`）更直接地把2D pixel映射到canonical SMPL vertex。其代码读取
+DP3D/CSE JSON中的`dp_x/dp_y/dp_I/dp_U/dp_V`，依赖SMPL UV、27,554个vertex geodesic matrix与surface
+annotation；DP3D每图还人工标注约80–125个2D–3D correspondence。公开仓库只给CSE模块而非完整ReID fusion。
+这些变量在当前official Occluded-Duke RGB与冻结pose资产中不存在，不能通过普通2D keypoint等价替代。
+
+### 18.2 VPFA：已知nuisance action仍只是成对残差映射
+
+最新VPFA（*Resolution as a Direction*，arXiv:2510.00936v2；官方代码commit
+`13de109d72ee3a2228c959dd42046332d0b17b24`）提供另一个可观察action：同一文件的HR图与2x/3x/4x降采样图形成
+exact pair，冻结ReID backbone后用MSE训练`LR feature + MLP(LR feature) -> HR feature`。官方inference代码还
+从文件名suffix读取分辨率倍率，再选择对应的三套MLP。
+
+所以VPFA的target合法，是因为resolution label与paired HR target都可观测；但其机制本质是post-hoc feature
+residual completion，并使用测试时nuisance oracle。它既不定义wrong-RGB semantic target，也落入本项目已反复
+否决且当前明确排除的feature-level residual completion类别。
+
+### 18.3 第六轮裁决
+
+canonicalization只有在action本身可观测时才可识别：3D-VAN/CSCL需要外部3D/密集对应，VPFA需要paired
+degradation与resolution label。当前official RGB中没有等价的semantic action。若直接拿wrong donor的pose/code
+去warp host，`correct > wrong/zero`最多证明“错误warp更具破坏性”，仍不是realized semantic target；保留原RGB
+fusion又重新开放bypass。
+
+因此canonical warp、dense-surface alignment或resolution-vector residual均不形成exp404。状态保持
+`ARTIFACT/IDENTIFIABILITY/MECHANISM GATE FAIL / NO EXP404 / GPU NO-START`；下一对象必须在现有official
+RGB与固定欧氏descriptor内同时给出可观测action和不靠破坏control制造的source-positive target。

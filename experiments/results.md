@@ -2802,3 +2802,18 @@ Invertible/bijective表示只能保证信息保留，不能唯一确定semantic 
 
 **当前判定**：`EQUIVARIANCE/INVERTIBILITY MECHANISM FAIL / NO EXP404 / GPU NO-START`。没有性能结果，
 exp401–403封板保持不变。
+
+## exp403后封板资产与canonical-action审计（2026-07-20）
+
+本轮没有启动实验或GPU。只读检查确认exp402/403运行时曾捕获19,871行evidence/descriptor，但最终JSON只保存
+汇总统计，最长数组均为2；远端audit/output没有逐样本tensor。Phase0E codebook也只有shared PCA basis、slot
+mean与计数，没有path/PID/camera/evidence/descriptor。因此无法从现有封板产物计算identity separability或
+camera confounding，且没有为此补跑封板编号。
+
+论文/代码审计进一步覆盖3D-VAN、CSCL（官方CSE commit `924d5c2b`）与VPFA（官方commit `13de109d`）。
+3D-VAN/CSCL的canonical action依赖额外3D重建或密集2D–3D/SMPL标注；VPFA依赖paired LR/HR target、MSE
+feature residual及测试时resolution suffix。wrong donor warp只构成破坏control，不能定义当前semantic source的
+正目标；原RGB fusion仍可bypass。
+
+**当前判定**：`SEALED ARTIFACT SUFFICIENCY FAIL / CANONICAL-ACTION MECHANISM FAIL / NO EXP404 / GPU
+NO-START`。这不是新性能结果，不改变exp401–403任何封板结论。

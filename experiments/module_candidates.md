@@ -337,3 +337,19 @@ Normalizing flow/invertible coupling只保证信息可恢复，不保证latent f
 
 因此affine consistency、augmentation invariance、invertible flow和part-weighted scorer均不进入exp404。只有
 同时定义当前evidence的可验证semantic action与固定最终metric的结构才保留，当前GPU NO-START。
+
+### exp403后第六轮候选裁决：canonical action / dense surface / resolution vector
+
+**状态**：`READ-ONLY ASSET + PAPER/CODE AUDIT / NO EXP404`
+
+封板资产先决诊断确认：exp402/403虽在进程内捕获19,871行evidence与descriptor，但落盘JSON最长数组仅2，
+Phase0E codebook也只有shared PCA basis/slot mean等聚合量；没有逐样本PID/camera/evidence/descriptor。故现有
+资产不能回答身份充分性或camera混淆，且禁止为此补跑封板编号。
+
+canonical-action近邻也未形成候选：3D-VAN需要RSC-Net/Texformer/SMPL并在测试拼接原图与四个canonical view；
+CSCL官方commit `924d5c2b`需要DP3D密集2D–3D标注和SMPL geodesic；VPFA官方commit `13de109d`用exact
+LR/HR pair、MSE残差MLP，并按测试文件名suffix选择分辨率模型。
+
+这些方法的target只因额外几何/分辨率action可观测而成立。当前wrong-RGB pose/code warp只能制造破坏，不能给出
+source-positive semantic target；原RGB融合还允许bypass。canonical warp、dense surface和resolution residual
+均不进入exp404，GPU继续NO-START。
