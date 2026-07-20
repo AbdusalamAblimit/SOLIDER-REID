@@ -5864,3 +5864,12 @@ fresh preflight，不再增加本地合同或低风险建议。
 三路聚焦复审均`0B/0H`，远端MMPOSE-ABU两次static与本地byte-exact，fresh资产、隔离HEAD、输入SHA、GPU
 独占和once-only路径全部通过。因此授权并启动唯一`exp406-p0b-preflight-v1`。该授权只覆盖机械preflight；
 COMPLETE PASS前formal和student继续NO-START，运行中不改代码、协议或参数。
+
+### [2026-07-21] 决策：exp406因cache自检runtime失败封板，转exp407
+
+exp406已完成全部真实teacher计算，但在result/COMPLETE前被Torch 1.13的`weights_only=True`限制阻断。临时cache
+用`weights_only=False`可读，只能证明根因，不授权补写结果或重跑。
+
+**决策**：永久封板exp406为`SEALED-FAIL / SCIENCE NOT EVALUATED`；建立fresh exp407，仅把本进程刚写出的受信任
+cache回读自检改为`weights_only=False`，其余teacher、donor、controls、阈值和数据路径不变。先做一个针对性
+MMPOSE-ABU roundtrip合同与代码盲审，通过后立即启动fresh preflight，不继续扩张static。

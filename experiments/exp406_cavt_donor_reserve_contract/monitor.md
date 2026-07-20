@@ -2,7 +2,7 @@
 
 > 当前：`EXP405 SEALED-FAIL PRESERVED / STATIC V1 BLIND-REVIEW BLOCKED /
 > LOCAL+REMOTE STATIC V3 19/19 PASS BYTE-EXACT / FOCUSED V3 BLIND REVIEW 0B/0H /
-> UNIQUE PREFLIGHT RUNNING / FORMAL NO-START / STUDENT NO-START`
+> UNIQUE PREFLIGHT SEALED-FAIL / SCIENCE NOT EVALUATED / FORMAL NO-START / STUDENT NO-START`
 
 ## 2026-07-21：建立新编号
 
@@ -111,3 +111,23 @@ static均`19/19 PASS`、CUDA false，结果byte-exact SHA=
 全部通过。随后以batch2、CLIP microbatch1、workers4启动唯一`exp406-p0b-preflight-v1`，主PID=`458479`。
 immutable started seal和started.json已写入；首轮观测已完成original batch100，GPU=`2362 MiB / 96%`，无
 failure/complete。当前=`CONTINUE`：只监控自然完成，不修改运行中源码、协议或参数。formal/student仍NO-START。
+
+## 2026-07-21：唯一preflight自然终止并永久封板
+
+唯一进程完成全部15,618图original编码（batch 7800）和20对diagnostic后，在`write_cache_once`把临时cache写完、
+fsync并立刻用Torch 1.13的`weights_only=True`自检时抛出`_pickle.UnpicklingError: Unsupported operand 71`。
+result/complete均不存在，权威failure receipt已写入，GPU自然释放至`2 MiB / 0% / 0 compute PID`。
+
+权威SHA：failure=`f32872a6bacd20dd200ecee769b8e03287eb91f20318f59cd13b3b591fce1d98`，started=
+`467fe6b824378ebcbcdd3c52b14c0769905a11a18e90d49f2ad7ada4e4608db0`，started seal=
+`402c1bec5beab2e305596eecddf4713d09ab3cfb896ab67138301efd0487e166`，console=
+`58f478c2440d701790723776e18f56e4a0738fe6091f3def55076341b0186ae0`，临时cache=
+`44a5bce72df9ac69b5633472384b26696ca2d46b345e8dd4f7733fba77b1064c`。
+
+只读诊断在同一MMPOSE-ABU中用`weights_only=False`可完整读回该临时cache：schema=
+`exp406-p0b-preflight-cache-v1`、39个字段、内部decision=`PREFLIGHT_ONLY_PASS`。这只定位为受信任自写cache的
+Torch 1.13 weights-only兼容问题；由于result/COMPLETE不存在，内部decision不得当作正式PASS或科学结果。
+
+最终裁决：`EXP406 PREFLIGHT V1 SEALED-FAIL / TRUSTED CACHE SELF-CHECK RUNTIME FAILURE /
+SCIENCE NOT EVALUATED / FORMAL NO-START / STUDENT NO-START`。同编号禁止重跑、补跑或改判；最小修复进入fresh
+exp407，且不得读取exp406临时cache作为输入。

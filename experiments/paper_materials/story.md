@@ -2390,3 +2390,6 @@ exp406 static v1的`13/13 PASS`同样不进入论文结果表；它只授权新�
 static v1随后被三路盲审否决，v2两次`17/17 PASS`也仍不进入论文表。它们只保证后续teacher measurement不会
 因为runtime、输入或donor receipt问题失真。论文主张仍需formal teacher科学结果和后续student相对clean D0的
 同epoch mAP/R1；若没有涨点，exp406基础设施本身不构成贡献。
+
+exp406最终因Torch 1.13 cache自检兼容问题SEALED-FAIL，未发布result/COMPLETE，不能进入论文表或支持机制结论。
+exp407若修复该测量器，只恢复科学问题的可测性，不构成论文贡献。

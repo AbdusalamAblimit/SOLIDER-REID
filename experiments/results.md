@@ -3185,3 +3185,11 @@ v3三路聚焦复审全部`0B/0H`。远端全新隔离HEAD=`4eb71c47bc16ed5e61ac
 MMPOSE-ABU两次static也为`19/19 PASS`，byte-exact SHA与本地同为
 `0c00a78c0babb21993325a4b031a8470e546ef10ebf656a24efc97f890263d44`。唯一preflight已启动并取得started
 seal，当前处于15,618图original编码，尚无COMPLETE、科学结果或ReID mAP/R1。
+
+唯一exp406 preflight完成全15,618图original与20对diagnostic后，在受信任自写cache的Torch 1.13
+`weights_only=True`回读自检处失败。failure SHA=
+`f32872a6bacd20dd200ecee769b8e03287eb91f20318f59cd13b3b591fce1d98`，result/COMPLETE不存在，GPU已释放。
+同环境`weights_only=False`只读诊断可完整读回临时cache，但其内部`PREFLIGHT_ONLY_PASS`不得作为结果。
+
+**最终判定**：`EXP406 SEALED-FAIL / CACHE SELF-CHECK RUNTIME FAILURE / SCIENCE NOT EVALUATED`。这不是CAVT
+科学NO-GO，也没有ReID mAP/R1；修复只能进入fresh exp407。

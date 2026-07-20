@@ -4182,3 +4182,6 @@ CAVT机制新颖性或论文证据。
 v1盲审否决与v2合同修复仍只属于测量基础设施，不计创新。为避免合同工程吞噬主线，v2只闭合已知B/H并做一次
 最终复审；之后若CAVT teacher formal NO-GO，立即停止该对象，回到新的pose+CLIP训练机制设计。目标为可支撑
 C类会议的清晰机制与实际涨点，但仍保留clean D0、同epoch mAP/R1和关键pose/CLIP反事实。
+
+exp406的cache自检runtime失败不改变CAVT创新判断；它发生在结果发布层，不是teacher机制证据。exp407只做受信任
+cache roundtrip兼容修复，同样不计创新。若exp407机械PASS，应立即推进formal科学裁决，避免继续在基础设施停留。
