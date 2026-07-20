@@ -147,6 +147,12 @@ def runtime_fingerprint() -> dict:
         "torchvision": "torchvision",
         "numpy": "numpy",
     }
+    conda_names_by_distribution = {
+        "torch": ("pytorch", "torch"),
+        "open_clip_torch": ("open-clip-torch", "open_clip_torch"),
+        "torchvision": ("torchvision",),
+        "numpy": ("numpy",),
+    }
     for distribution, module_name in module_by_distribution.items():
         try:
             metadata = importlib.metadata.distribution(distribution)
@@ -157,15 +163,39 @@ def runtime_fingerprint() -> dict:
                 if module_spec is not None and module_spec.origin is not None
                 else None
             )
-            if module_origin is None or not module_origin.is_file() or record is None:
+            manifest_kind = "wheel-record"
+            manifest_path = None
+            if record is not None:
+                manifest_sha256 = hashlib.sha256(record.encode("utf-8")).hexdigest()
+            else:
+                conda_meta = Path(sys.prefix).resolve() / "conda-meta"
+                candidates = []
+                for conda_name in conda_names_by_distribution[distribution]:
+                    candidates.extend(
+                        conda_meta.glob("%s-%s-*.json" % (conda_name, metadata.version))
+                    )
+                candidates = sorted({path.resolve() for path in candidates})
+                if len(candidates) != 1 or not candidates[0].is_file():
+                    raise RuntimeError(
+                        "runtime package lacks one frozen wheel/conda manifest: %s"
+                        % distribution
+                    )
+                manifest_kind = "conda-meta"
+                manifest_path = candidates[0]
+                manifest_sha256 = sha256_file(manifest_path)
+            if module_origin is None or not module_origin.is_file():
                 raise RuntimeError(
-                    "runtime package lacks frozen origin/RECORD bytes: %s" % distribution
+                    "runtime package lacks frozen module origin bytes: %s" % distribution
                 )
             package_artifacts[distribution] = {
                 "version": metadata.version,
                 "module_origin": str(module_origin) if module_origin is not None else None,
                 "module_origin_sha256": sha256_file(module_origin),
-                "record_sha256": hashlib.sha256(record.encode("utf-8")).hexdigest(),
+                "package_manifest_kind": manifest_kind,
+                "package_manifest": (
+                    str(manifest_path) if manifest_path is not None else "RECORD"
+                ),
+                "package_manifest_sha256": manifest_sha256,
             }
         except importlib.metadata.PackageNotFoundError as error:
             raise RuntimeError(
@@ -1973,10 +2003,11 @@ def main():
                     "traceback": traceback.format_exc(),
                 })
         except BaseException as receipt_error:
-            error.add_note(
-                "failure receipt publication also failed: %s"
-                % type(receipt_error).__name__
-            )
+            if hasattr(error, "add_note"):
+                error.add_note(
+                    "failure receipt publication also failed: %s"
+                    % type(receipt_error).__name__
+                )
         raise
     print(json.dumps({
         "status": result["status"],

@@ -3110,3 +3110,13 @@ SHA分别为`f489a6679c57387be49cac4b088d8db49bdb145000e80b2be22aa64dff965981`�
 **当前判定**：`REAL-TEACHER STATIC V8 PASS / 512-IMAGE CUDA PREFLIGHT AUTHORIZED / FORMAL P0B
 NO-START / STUDENT NO-START`。这不是CLIP科学结果，不含mAP/R1，也不改变exp404的负结论。未来若进入正式
 student训练，仍须逐10 epoch记录方法与clean D0同epoch的mAP、R1及差值，唯一正式裁决只看自然e120。
+
+## exp405 MMPOSE-ABU兼容静态合同v9（2026-07-20）
+
+用户指定的Conda MMPOSE-ABU环境只读探针通过，OpenCLIP 2.32的region-isolated所需接口齐全且CUDA未初始化。
+v9仅增加Conda package manifest的fail-closed字节绑定和Python3.8异常兼容；科学统计与匹配未改。两次fresh
+`8/8 PASS`结果byte-exact，SHA256均为
+`a2e66de37bc4cfbe9ed37dabd9d45761b9590fc5441f08d07877c440fb32f4f4`；三路固定快照复审均为`0B/0H`。
+
+**当前判定**：`REAL-TEACHER STATIC V9 PASS / MMPOSE-ABU FROZEN / 512-IMAGE CUDA PREFLIGHT AUTHORIZED /
+FORMAL P0B NO-START / STUDENT NO-START`。无新增mAP/R1或科学GO。

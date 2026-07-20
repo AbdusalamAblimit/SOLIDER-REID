@@ -4161,3 +4161,5 @@ recipient/donor、caliper内完整一对一匹配，non-torso CI以跨槽共同P
 创新状态仍是`BROAD NOVELTY NO-GO / NARROW PROBLEM+EVIDENCE CONDITIONAL GO`。只有full-train P0B未来证明
 真实双编码slot state具有正确语义、删除单调性和non-torso稳定性，才继续transport；若P0B NO-GO，则关闭当前
 readout对象，不通过调prompt、temperature、mask、loss或batch补救。
+
+v9的MMPOSE-ABU兼容只属于复现边界，不构成问题、机制或证据创新；它没有改变CAVT创新评分与kill-switch。

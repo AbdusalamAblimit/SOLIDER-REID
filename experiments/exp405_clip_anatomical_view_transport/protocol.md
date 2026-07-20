@@ -79,6 +79,11 @@ formal有效性门预注册：无可用target图像比例不得超过`1%`，具�
 三路固定快照盲审均为`0 BLOCKER / 0 HIGH`。这只闭合本地门1--4，下一步仍是门5的远端环境/资产/独占GPU
 检查和唯一512图CUDA preflight；formal P0B与任何student训练继续NO-START。
 
+用户随后明确指定使用Conda `MMPOSE-ABU`。v9只把runtime package manifest从“wheel RECORD only”扩展为
+“wheel RECORD或当前Conda prefix内同包同版本唯一conda-meta JSON”，两者均绑定manifest与module origin
+字节SHA；缺失或多重匹配仍在seal前fail closed。v9两次`8/8 PASS`且byte-exact，三路复审均`0B/0H`。
+CUDA preflight固定使用`/usr/local/anaconda3/envs/mmpose-abu/bin/python`，不得回退到旧exp394/404 runtime。
+
 ## 机械有效性
 
 必须记录RGB/pose同步变换、左右翻转、mask mass/centroid/index/hash、CLIP normalization、16x16 patch布局、

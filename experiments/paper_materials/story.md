@@ -2369,3 +2369,5 @@ Phase 0 static v14已通过两次byte-exact `56/56`合同和最终`0B/0H/0M/0L`�
 若后续P0B和donor-free门均通过并最终创建student，主性能表必须把每个10-epoch评测点的方法mAP/R1与clean D0
 同epoch并排记录，同时给出差值；中间点只解释训练轨迹，不能早停或挑点，最终贡献判断只使用自然e120以及
 冻结的identity轴 x slot轴强反事实。
+
+按用户指定改用MMPOSE-ABU只改变runtime清单格式；v9无科学逻辑变化，不能写入论文贡献或结果表。

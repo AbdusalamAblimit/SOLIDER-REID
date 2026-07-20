@@ -5797,3 +5797,12 @@ byte-exact，SHA=`45413c3323f7af7636e1e2f9e581b4a9c5fe15c44d4b0a6e47aa987c0ef9f8
 成立，才允许唯一full-train P0B measurement。formal P0B、transport、student config、训练与e120继续
 NO-START。若以后进入student，方法与clean D0必须在相同epoch逐点记录mAP/R1和差值，最终不按中间表现早停，
 只用自然e120裁决。
+
+### [2026-07-20] 决策：按用户指定改用MMPOSE-ABU，v9复审通过
+
+MMPOSE-ABU的OpenCLIP/Torch接口探针通过；v8拒绝它的原因只是Conda torch/torchvision没有wheel RECORD，
+不是模型或CUDA不兼容。v9以唯一conda-meta JSON替代缺失RECORD并继续绑定实际module origin，缺失/多重匹配
+仍fail closed；两次`8/8 PASS`且三路复审`0B/0H`。
+
+**决策**：停止并清理未完成的新venv，唯一512图preflight固定使用MMPOSE-ABU。该环境选择不改变P0B科学门、
+formal/student NO-START或同epoch clean D0 mAP/R1合同。

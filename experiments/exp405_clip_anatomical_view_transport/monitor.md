@@ -1,7 +1,7 @@
 # exp405 CAVT 监控记录
 
-> 当前：`BROAD NOVELTY NO-GO / NARROW PHASE-0 CONDITIONAL GO / REAL-TEACHER STATIC V8 PASS /
-> THREE-WAY BLIND REVIEW PASS / CUDA PREFLIGHT NEXT / FORMAL P0B NO-START / GPU IDLE`
+> 当前：`BROAD NOVELTY NO-GO / NARROW PHASE-0 CONDITIONAL GO / REAL-TEACHER STATIC V9 PASS /
+> MMPOSE-ABU FROZEN / THREE-WAY BLIND REVIEW PASS / CUDA PREFLIGHT NEXT / FORMAL P0B NO-START / GPU IDLE`
 
 ## 2026-07-20：exp404后根因边界
 
@@ -87,3 +87,18 @@ core=`29ddd00ce03ed73b6d1c7ab722de88490e2490638bc83b192e215c6ab4bb0f8b`。
 同一固定v8快照的代码、once-only/repro、统计/matching三路只读盲审分别为`0B/0H`、`0B/0H`、
 `0B/0H/0M`。该门只授权提交、同步并运行唯一512图CUDA preflight；不授权formal P0B、transport、student、
 config或e120。preflight必须自然完成，且只产生机械PASS/FAIL，不得产生scientific GO。
+
+## 2026-07-20：按用户指定冻结MMPOSE-ABU与static v9
+
+用户明确指定远端Conda `MMPOSE-ABU`。只读探针确认其为Python `3.8.20`、Torch `1.13.1+cu117`、
+torchvision `0.14.1`、OpenCLIP `2.32.0`、CUDA available且探针后`cuda_initialized=false`；
+`VisionTransformer._embeds/_pool`与block `attn_mask`接口存在。v8最初只接受wheel `RECORD`，会拒绝Conda安装的
+torch/torchvision；v9只扩展runtime字节绑定：无RECORD时必须在当前`sys.prefix/conda-meta`按包名和精确版本
+唯一命中JSON，并同时绑定manifest路径/SHA和实际module origin路径/SHA。Python3.8无`BaseException.add_note`
+时也保持主异常优先。matching、bootstrap、scientific gate和once-only语义均未改变。
+
+fresh v9 CPU合同连续两次`8/8 PASS`且byte-exact，结果SHA256均为
+`a2e66de37bc4cfbe9ed37dabd9d45761b9590fc5441f08d07877c440fb32f4f4`；measurement/contract SHA=
+`52ee00f1eaf817877807ffbd691c09aafdd89288b5c87b56747f99f8695a2648`/
+`5422fb34dce954c809c3c28daefa7bb62e4aeafbe71c7e5b7c7ec6bd4242d4ca`。三路只读复审均为`0B/0H`。
+此前新建但未完成、未使用的exp405 venv安装已停止并清理；CUDA preflight将只使用用户指定MMPOSE-ABU。

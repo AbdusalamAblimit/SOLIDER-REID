@@ -492,19 +492,21 @@ def source_contract(measurement_path: Path, teacher_path: Path) -> dict:
         "runtime_artifact_bytes_are_bound": (
             '"executable_sha256"' in measurement
             and '"module_origin_sha256"' in measurement
-            and '"record_sha256"' in measurement
+            and '"package_manifest_sha256"' in measurement
+            and '"package_manifest_kind"' in measurement
             and '"cuda_visible_devices"' in measurement
         ),
         "runtime_binding_fails_closed": (
             "required runtime package is not installed" in measurement
-            and "runtime package lacks frozen origin/RECORD bytes" in measurement
+            and "runtime package lacks one frozen wheel/conda manifest" in measurement
+            and "runtime package lacks frozen module origin bytes" in measurement
         ),
         "complete_terminal_is_immutable": (
             'if (output_dir / "complete.json").is_file()' in measurement
         ),
         "failure_publication_preserves_primary_error": (
             "except BaseException as receipt_error" in measurement
-            and "failure receipt publication also failed" in measurement
+            and 'if hasattr(error, "add_note")' in measurement
         ),
         "wrong_mask_metadata_is_selected_only": (
             "np.lexsort" in measurement
