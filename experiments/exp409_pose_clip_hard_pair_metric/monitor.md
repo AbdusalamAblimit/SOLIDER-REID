@@ -79,3 +79,17 @@ scale=`4096`取得第一且唯一成功update；所有skip均参数未更新，�
 真实batch correct相对D0 positive/negative edge change=`0.578125/0.984375`，相对pose-shuffle/CLIP-only任一边
 change=`0.90625/0.859375`；positive pose-distance/CLIP-sim=`0.08732325/0.86174387`，negative=
 `0.04163792/0.87145722`。最终=`REAL-BATCH V2 PASS / STUDENT FRESH E120 AUTHORIZED`；不再增加preflight。
+
+## 唯一 fresh student 启动
+
+启动前 remote repo clean，GPU=`2 MiB / 0% / 0 compute PID`，output/runner均不存在；MMPOSE-ABU=
+Torch `1.13.1` 且 CUDA available。唯一fresh seed1234/e120已从remote HEAD=
+`fed42ae5f80cd8a5f2b93ca9fb83f5d9e2d6092f`启动，config SHA=
+`324c5807783bf6b78f7a4e2fc059cc38048b4699491f34f684db009e59f718e7`，主PID=`503498`，output=
+`/home/afr/reid-clean/logs/exp409-pchm-s1234-v1`，runner=
+`/home/afr/reid-clean/train-logs/exp409-pchm-s1234-v1.runner.log`。
+
+首batch pos-pose/pos-clip/neg-pose/neg-clip=`0.088710/0.860858/0.041464/0.872058`，相对D0正/负边改变=
+`0.6406/0.9688`，wrong-RGB/generic/zero/pose-shuffle/CLIP-only control改变=
+`0.9375/0.984375/0.90625/0.921875/0.90625`。首次观测主进程正常、GPU约`7.0 GiB/89%`，已进入e1且
+无Traceback/RuntimeError/OOM/NaN/Inf。运行中冻结源码、config和参数，只自然监控至e120。
