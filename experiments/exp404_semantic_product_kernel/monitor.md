@@ -218,3 +218,12 @@ epoch30冻结中间eval=`47.0 mAP / 57.4 R1 / 71.6 R5 / 77.3 R10`；该数值不
 科学裁决。日志异常扫描无Traceback、RuntimeError、OOM、NaN或Inf。
 
 判定：`CONTINUE TO E120 / INTERMEDIATE EVAL NON-DECISIVE / NO EARLY STOP`。
+
+## 2026-07-20T06:11Z：formal健康检查
+
+main PID=`436043`为唯一compute PID，GPU=`8,104 MiB/99%`。epoch37自然完成，单epoch=`124.982 s`、
+`108.0 samples/s`；检查时为epoch38 iter60/227。当前loss=`0.415`、所有分项finite，SPK factor
+mean/std/min/max=`1.0000/0.1097/0.8184/1.2422`，descriptor delta abs=`1.049e-01`，干预active。
+无新增eval；日志异常扫描继续无Traceback、RuntimeError、OOM、NaN或Inf。
+
+判定：`CONTINUE / EXECUTION HEALTHY / NO PERFORMANCE JUDGMENT`。
