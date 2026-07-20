@@ -1,6 +1,6 @@
 # exp408 PICRD 监控
 
-> 当前：`DESIGN FROZEN / LITERATURE CONDITIONAL PASS / IMPLEMENTING / GPU NO-START`
+> 当前：`DESIGN/CODE/CACHE FROZEN / BLIND REVIEW 0B/0H / STUDENT START AUTHORIZED`
 
 ## 2026-07-21：从 CAVT 切到直接训练对象
 
@@ -42,3 +42,10 @@ cache/config改用fresh `exp408-picrd-cache-v2`；等待同一独立审查者聚
 asset/output=`/home/afr/reid-clean/assets/exp408-picrd-cache-v2`，主PID=`465720`。首次有效观测已从
 `8/15,618`推进到`1,000/15,618`，GPU=`2,186 MiB/99%`，无异常。当前只监控自然完成，不修改运行中源码；
 cache发布并核验SHA后立即写入config并启动student。
+
+cache-v2已自然完成并通过固定loader核验：official train `15,618`张路径完整唯一覆盖，embedding为
+`[15618,5,768]` FP16且finite；五槽valid计数=`[15616,15618,15618,15618,15586]`。冻结64图diagnostic由
+`16 PID x 4`连续排列组成，offset `4`全部为different-PID，四臂共同valid五槽均为`64/64`。cache SHA256=
+`80db6448a38745a7846bbb1ffb63d868b4efcda8851bc069cd8166dc311cebee`，diagnostic manifest SHA256=
+`8ef842f98a1172d7c8c197828cb3d4fda2006ced52062c9608569da5be62cff8`；核验后GPU=`2 MiB/0%/0 compute PID`。
+因此不再追加preflight，冻结config SHA并授权唯一fresh seed1234 student自然运行至e120。
