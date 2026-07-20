@@ -25,7 +25,7 @@ MODEL:
     POSE_LOSS_WEIGHT: 0.1
     PICRD_ENABLED: True
     PICRD_CACHE: '/home/afr/reid-clean/assets/exp408-picrd-cache-v2/picrd_cache.npz'
-    PICRD_CACHE_SHA256: 'TO_BE_FROZEN_AFTER_FRESH_BUILD'
+    PICRD_CACHE_SHA256: '80db6448a38745a7846bbb1ffb63d868b4efcda8851bc069cd8166dc311cebee'
 
 INPUT:
   SIZE_TRAIN: [384, 128]

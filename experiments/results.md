@@ -3235,3 +3235,9 @@ different-PID wrong-RGB、generic与zero直接纳入排序目标。推理完全�
 实现后的固定MMPOSE-ABU batch64 CUDA/AMP检查已PASS：PICRD loss为FP32，Stage0--2有142个非零梯度张量，
 默认GradScaler一次真实更新。首次cache-v1调用在import阶段因repo root未进入`sys.path`退出，未读数据或初始化
 CUDA且没有cache/diagnostic；该目录冻结，修复入口后只允许fresh cache-v2。这不是mAP/R1或科学结果。
+
+fresh cache-v2已自然完成15,618图并通过loader/official覆盖/diagnostic核验。五槽valid计数=
+`[15616,15618,15618,15618,15586]`；cache SHA256=
+`80db6448a38745a7846bbb1ffb63d868b4efcda8851bc069cd8166dc311cebee`，64图diagnostic manifest SHA256=
+`8ef842f98a1172d7c8c197828cb3d4fda2006ced52062c9608569da5be62cff8`，其中offset 4均为different-PID且五槽
+共同valid全为64。该结果只证明冻结teacher输入有效，不是ReID性能；唯一fresh seed1234 student现获启动授权。

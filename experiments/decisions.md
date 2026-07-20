@@ -5911,3 +5911,8 @@ formal manifest自验证PASS且独立盲审`0B/0H`，因此唯一formal启动门
 correct-vs-wrong/generic/zero无temperature排序、未detach Stage-2直传。只做必要实现检查和一次智能体盲审，
 0B/0H后立即fresh cache与e120；不再增加donor/matcher/static供应链。自然e120必须同时超过clean D0 mAP/R1，
 否则封板并换新的训练/结构对象，不调旧臂。
+
+实现盲审已闭环`0B/0H`，固定MMPOSE-ABU真实batch64 CUDA/AMP梯度更新PASS，fresh cache-v2全15,618图及
+64图强诊断也已完整核验并冻结SHA。**更新决策**：不再做额外CPU/static或小样本preflight，立即启动唯一fresh
+seed1234/e120 student；运行中不改代码/config、不续训、不按中间性能早停，e10/20/.../120只与sealed clean D0
+同epoch并排记录。
