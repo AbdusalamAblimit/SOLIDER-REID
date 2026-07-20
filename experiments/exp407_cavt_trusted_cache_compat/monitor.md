@@ -1,6 +1,6 @@
 # exp407 CAVT cache兼容监控
 
-> 当前：`DESIGN FROZEN / TARGETED MMPOSE ROUNDTRIP PASS BYTE-EXACT / BLIND REVIEW 0B/0H / UNIQUE PREFLIGHT RUNNING / FORMAL NO-START / STUDENT NO-START`
+> 当前：`UNIQUE PREFLIGHT COMPLETE PASS / VALIDITY 8/8 PASS / SCIENCE NOT EVALUATED / FORMAL MANIFEST PENDING / STUDENT NO-START`
 
 ## 2026-07-21：建立fresh编号
 
@@ -51,3 +51,16 @@ fresh once-only路径、数据/pose/asset SHA和GPU独占全部通过，随后�
 
 heartbeat观测到original batch 2700，主进程仍运行，GPU=`2362 MiB / 95%`，无failure/result/complete。吞吐持续、
 显存稳定，判断=`CONTINUE`；不修改运行中源码、协议或参数。
+
+## 2026-07-21：唯一preflight自然完成
+
+主进程自然退出，完成全15,618图original与20对diagnostic并发布result/COMPLETE；控制台最终为
+`PREFLIGHT_PASS / PREFLIGHT_ONLY_PASS`。八项validity全部PASS：official train exact、coverage exact once、finite、
+每槽geometry、每个pose-valid槽有patch、deletion count exact、wrong-mask matching strict、donor reserve strict。
+`scientific_evaluated=false`，没有teacher科学结论或ReID mAP/R1。
+
+SHA：result=`9ec2f9042a891ed6e0414bdad50760c543ffd2b625cbc63d0161faae478c39c0`，COMPLETE=
+`68ef5f8f8429c6f98c21509b98146ae40c4a075d1c858e6812dad1d3b998cffb`，cache=
+`f3ef8c1db0475baadfca2ece9945e58929edf6cef0e6cf0c758e1258b185b634`。COMPLETE绑定started、seal、五个源码
+SHA与runtime SHA，`formal_measurement_authorized=true`、`transport_oracle_authorized=false`。运行耗时
+612.7001秒；GPU已回到`2 MiB / 0% / 0 compute PID`。按协议立即冻结fresh formal manifest并做一次聚焦盲审。

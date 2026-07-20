@@ -2396,3 +2396,6 @@ exp407若修复该测量器，只恢复科学问题的可测性，不构成论�
 
 exp407启动前的MMPOSE-ABU roundtrip PASS和盲审0B/0H仍不得进入论文结果表。只有formal teacher强反事实与后续
 student相对clean D0的mAP/R1才可能支持CAVT叙事。
+
+exp407 preflight已机械PASS，但`scientific_evaluated=false`，因此仍不进入论文表。它仅清除了运行时和测量有效性
+障碍；CAVT叙事的第一份可用证据必须来自formal teacher强反事实。

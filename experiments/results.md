@@ -3205,3 +3205,10 @@ Torch 1.13.1两次mixed tensor/metadata roundtrip均PASS且byte-exact SHA=
 远端fresh HEAD=`938b786d19a25b0e76b78797970c2609a108e716`、asset/input SHA、once-only路径和GPU独占通过后，唯一
 `exp407-p0b-preflight-v1`已启动并取得started seal；首轮观测到original batch 200，无异常。formal/student仍
 NO-START，当前没有teacher科学结果或ReID mAP/R1。
+
+唯一preflight已自然完成全15,618图和20对diagnostic，八项validity全部PASS，最终=
+`PREFLIGHT_PASS / PREFLIGHT_ONLY_PASS / SCIENCE NOT EVALUATED`。result/COMPLETE/cache SHA分别为
+`9ec2f9042a891ed6e0414bdad50760c543ffd2b625cbc63d0161faae478c39c0`、
+`68ef5f8f8429c6f98c21509b98146ae40c4a075d1c858e6812dad1d3b998cffb`、
+`f3ef8c1db0475baadfca2ece9945e58929edf6cef0e6cf0c758e1258b185b634`。这只授权formal测量，不是teacher
+科学GO，也没有ReID mAP/R1。

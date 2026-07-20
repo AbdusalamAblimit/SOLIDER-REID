@@ -5882,3 +5882,9 @@ MMPOSE-ABU roundtrip合同与代码盲审，通过后立即启动fresh preflight
 
 远端所有fresh门已通过，唯一preflight已按授权启动并取得started seal。运行中只监控自然完成，不改源码、协议、
 batch或阈值；只有COMPLETE PASS才进入formal manifest冻结，任何runtime/validity失败均如实封板exp407执行。
+
+### [2026-07-21] 决策：exp407 preflight PASS，授权冻结formal manifest
+
+唯一preflight自然完成，八项validity与COMPLETE provenance全部PASS，且无failure共存。因此授权建立fresh
+`exp407-p0b-iso-teacher-v1` manifest并做一次聚焦盲审；0B/0H且formal once-only/GPU门通过后立即启动formal。
+该授权不允许读取preflight cache/scale/pair作为formal输入，也不授权student。

@@ -4188,3 +4188,6 @@ cache roundtrip兼容修复，同样不计创新。若exp407机械PASS，应立�
 
 exp407 targeted roundtrip与盲审0B/0H仅恢复可测性，不满足创新门槛。后续创新判断只看formal是否建立pose-region
 CLIP evidence的强反事实顺序，以及student相对clean D0是否自然e120涨点；任一失败即换下一训练对象。
+
+exp407 preflight八项validity PASS仍不提高CAVT创新评价，只说明formal可被可信执行。下一步不再增加基础设施实验，
+直接让formal回答correct region是否稳定胜wrong-mask/deletion/generic controls。
