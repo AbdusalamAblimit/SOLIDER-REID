@@ -2928,3 +2928,21 @@ SPK开、ELO关，不含resume或性能早停路径。config/preflight/contract/
 
 **当前判定**：`CUDA PREFLIGHT STATIC PASS / CUDA EXECUTION AUTHORIZED / FORMAL TRAINING NO-START /
 GPU NO-START`。尚无性能结果。
+
+## exp404 CUDA preflight v1封板与production v3（2026-07-20）
+
+actual batch64 v1在首个forward暴露接线错误：D0 gate要求17通道joint field，SPK子类却传入5-slot region field。
+正式训练未启动，GPU退出后`2 MiB/0%/0 PID`；v1封板为`SEALED_INVALID_RUNTIME`，记录SHA=
+`9958ec661fcaaea20499be04e0450085d76ec3ec5094e8df03179ccff426b498`。
+
+修复恢复原D0 joint-field handoff而不改变5-slot rich evidence。production v3连续两次`49/49 PASS`且byte-exact，
+train/eval 17通道gate实际执行并抓住5通道mutant；v2 CUDA static连续两次`11/11 PASS`。v3 contract/result与v2
+wrapper/contract/result SHA=
+`ce85da278b551a66cacaddd14b3fda79bff356fcee4f7aeff717a927710534ef`/
+`56dc8a29957674034c9fb53b0894e686dfbc861c6c7668c3bffda2feed274603`/
+`2f581913753cc2fc91f02308316433cbe061b16718be1323f8800b744d151b51`/
+`224303abf880b670cf8cd694b214d14cdd085b826fdb1443dbedf6249f060fcc`/
+`d32a0df0ccbec3c303937c7d4057a542ac0d3adc2b50258d0bc18a600f92a17c`。
+
+**当前判定**：`V1 SEALED-INVALID / PRODUCTION V3 PASS / CUDA PREFLIGHT V2 AUTHORIZED / FORMAL
+TRAINING NO-START`。没有性能结果。

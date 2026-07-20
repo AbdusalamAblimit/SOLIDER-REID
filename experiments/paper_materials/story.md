@@ -2308,3 +2308,7 @@ random-cluster和all-bypass。
 
 CUDA preflight的config/source静态门现已两次byte-exact通过，冻结真实batch64、默认AMP和16组梯度合同。这一步
 只授权硬件可执行性检查，不构成论文实验结果；story仍停在“结构已实现”，等待actual CUDA与唯一formal证据。
+
+第一次actual CUDA preflight在首个forward即抓到5-slot region field误接17通道D0 gate，正式训练未开始。该次按
+runtime错误封板，不形成方法负结果。修复恢复D0 joint-field handoff，production v3和v2 static门均通过；story
+仍只允许写“结构已实现并通过CPU合同”，不能把修复或preflight包装成贡献。

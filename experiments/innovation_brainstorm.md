@@ -4099,3 +4099,7 @@ ownership或性能贡献。
 
 CUDA preflight静态合同连续两次`33/33 PASS`只说明该机制能按冻结recipe进入真实硬件验证，不提高创新主张。
 C类候选边界继续保持“适度结构 + 强证据”，formal前状态仍不是有效方法。
+
+actual CUDA v1暴露的5/17通道错误进一步说明SPK的适度机制必须与D0 pose对象严格分离：5-slot rich region state
+服务semantic supervision/SPK，17-joint field服务原D0 spatial gate。修复属于设计一致性，不是新创新点；v3合同
+通过也不提高论文claim。

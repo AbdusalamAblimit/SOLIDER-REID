@@ -6,6 +6,9 @@ standalone、production CPU/source与CUDA preflight静态门均已通过。当�
 一次必要CUDA/AMP preflight；preflight自然退出且postflight全部通过前，formal仍为`NO-START`。现在
 `GPU NO-START`。
 
+v1已因5-slot region field误接17通道D0 gate封板`SEALED-INVALID`，禁止重跑。修复后production v3与v2 static
+门已通过；后续actual preflight必须使用`cuda_amp_preflight_v2.py`及fresh v2 output。
+
 ## 1. 不变量
 
 - backbone=`Swin-Tiny`，batch=`64`，seed=`1234`，epoch=`120`，workers=`8`；

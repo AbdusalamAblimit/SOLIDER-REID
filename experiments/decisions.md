@@ -5679,3 +5679,13 @@ NULL/random-key数值干预、RGB-only eval与独占4090门；无resume或性能
 
 **决策**：授权部署fresh repo/runtime/assets并执行一次CUDA/AMP preflight。formal training仍未授权；任何CUDA门
 失败先封板该preflight记录，不得直接启动e120。
+
+### [2026-07-20] 决策：CUDA preflight v1封板，joint-field修复后授权v2
+
+v1在首个真实forward发现5通道region field误接17通道D0 gate，未进入optimizer step，更未启动formal。按runtime
+测量纪律封板`SEALED_INVALID_RUNTIME`，禁止同编号重跑。
+
+修复只把SPK空间consumer恢复为设计已冻结的D0 joint field及原handoff，不调SPK、loss、rho、batch或stage。
+production v3两次`49/49 PASS`，v2 static两次`11/11 PASS`。
+
+**决策**：授权fresh execution id的CUDA preflight v2；formal继续NO-START。v2失败仍不得直接启动e120。
