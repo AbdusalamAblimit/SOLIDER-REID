@@ -4106,3 +4106,6 @@ actual CUDA v1暴露的5/17通道错误进一步说明SPK的适度机制必须�
 
 CUDA v2的默认scaler backoff是数值执行边界，不是机制创新或性能证据。v3沿用既有native-scaler稳态合同，不改变
 SPK主张；无论v3结果如何，都不能把AMP稳定性写成论文贡献。
+
+v3 actual与formal prelaunch均已通过，说明SPK可以进入唯一正式验证；它仍不增加创新性。C类贡献是否成立只看
+最终strong-control retrieval证据，而不是preflight数值。

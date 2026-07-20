@@ -2960,3 +2960,17 @@ result SHA=`d49e9421052675193eacb91828918033cbeefcd60a6702d2b31aad82c3a20c29`，
 `10709e126d5187b3331b0b96a3738173e4778936952b5e506e66b8ee4275c245`。
 
 **当前判定**：`V2 SEALED-FAIL / DEFAULT-GRADSCALER V3 AUTHORIZED / FORMAL TRAINING NO-START`。
+
+## exp404 CUDA v3与formal prelaunch（2026-07-20）
+
+v3第5次default GradScaler attempt在scale=`4096`发生真实更新，actual结果`26/26 PASS`。SPK factor active，
+correct-vs-NULL/random descriptor active，NULL/bypass exact，16组feature/factor梯度均finite/nonzero，RGB-only、
+teacher-free state、rho0、no-checkpoint与独占4090门全部PASS。result SHA=
+`70566973f0387d0b335040ff20fe2c1f091563cc18f4a65370b25aac303d58bf`。
+
+formal once-only prelaunch连续两次`15/15 PASS`且byte-exact；wrapper/contract/result SHA=
+`5e500fcd67a1ed408141b112d480a5fec2cffe3df5bd545122902f3e53597d86`/
+`512dacb626b50d64b80ba7b6e02c15891d1a5f02d96e507bf58330e9048d1750`/
+`e2ded956ff1f741b2a4f51bf38bca31234a716f67a21b464f7729d2570ff26c4`。
+
+**当前判定**：`CUDA V3 PASS / UNIQUE FRESH SEED1234 E120 AUTHORIZED / NOT YET STARTED`。仍无性能结果。

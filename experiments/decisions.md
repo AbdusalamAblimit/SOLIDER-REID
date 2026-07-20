@@ -5697,3 +5697,11 @@ v2四次attempt均有目标梯度，但默认GradScaler连续backoff且没有opt
 
 **决策**：不设置或调低初始scale，不改loss/rho/batch/model；fresh v3只把默认scaler自然观察窗口冻结为8次，
 仍须实际更新与原26项门全部PASS。formal继续NO-START。
+
+### [2026-07-20] 决策：CUDA v3全过，授权唯一formal e120
+
+v3在第5次default GradScaler attempt成功更新并通过全部26门；formal once-only prelaunch又连续两次
+`15/15 PASS`。没有手调scale、loss、rho或batch。
+
+**决策**：授权唯一fresh seed1234/e120，通过冻结wrapper启动并自然跑满。中间指标只记录，不早停、不续训、
+不改运行中代码/config；最终仍按correct对全部强control和D0两级门裁决。

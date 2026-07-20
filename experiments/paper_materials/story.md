@@ -2315,3 +2315,6 @@ runtime错误封板，不形成方法负结果。修复恢复D0 joint-field hand
 
 第二次actual preflight在4次默认GradScaler backoff内未发生optimizer update，故封板FAIL；目标梯度本身每次均
 finite/nonzero。v3仅沿用既有native-scaler自然稳态观察，不改变模型或论文story。正式方法叙事仍未开始。
+
+v3在默认scaler第5次attempt通过全部CUDA门，formal once-only启动合同也已通过。story因此仅获得“可以生成正式
+证据”的许可；在e120与全部随机/语义control完成前，仍不能声称SPK有效。

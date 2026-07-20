@@ -2,15 +2,18 @@
 
 ## 0. 当前边界
 
-standalone、production CPU/source与CUDA preflight静态门均已通过。当前只允许部署fresh repo/runtime/assets并执行
-一次必要CUDA/AMP preflight；preflight自然退出且postflight全部通过前，formal仍为`NO-START`。现在
-`GPU NO-START`。
+standalone、production CPU/source、actual CUDA v3与formal prelaunch门均已通过。当前只允许通过冻结的
+`formal_once_wrapper.sh`启动唯一fresh seed1234/e120；启动后自然跑满，不按中间性能早停、不续训、不修改
+运行中代码/config。
 
 v1已因5-slot region field误接17通道D0 gate封板`SEALED-INVALID`，禁止重跑。修复后production v3与v2 static
-门已通过；后续actual preflight必须使用`cuda_amp_preflight_v2.py`及fresh v2 output。
+门通过；actual CUDA v2使用`cuda_amp_preflight_v2.py`和fresh v2 output完成并封板。
 
 v2已因4次窗口内默认GradScaler持续backoff、无optimizer update封板`CUDA_AMP_PREFLIGHT_FAIL`，禁止重跑。
 v3只能使用`cuda_amp_preflight_v3.py`：初始scale保持默认，最多8次自然backoff，仍须实际更新及全部原门通过。
+
+v3已在第5次自然attempt通过全部26门。formal只能通过`formal_once_wrapper.sh`的fresh v1锁启动；不得手工绕过
+output/runner/launch/lock、remote clean、source/config/runtime/preflight SHA与独占GPU检查。
 
 ## 1. 不变量
 
