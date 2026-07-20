@@ -1,6 +1,6 @@
 # exp404 SPK 监控记录
 
-> 当前：`CUDA PREFLIGHT V1 SEALED-INVALID / PRODUCTION V3 PASS / V2 EXECUTION AUTHORIZED`
+> 当前：`CUDA V1 INVALID / V2 FAIL / DEFAULT-GRADSCALER V3 EXECUTION AUTHORIZED`
 
 ## 2026-07-20：目标降为C类后的机制准入
 
@@ -123,3 +123,24 @@ byte-exact。wrapper/contract/result SHA=
 
 判定：`V1 SEALED-INVALID / PRODUCTION V3 PASS / CUDA PREFLIGHT V2 EXECUTION AUTHORIZED / FORMAL
 TRAINING NO-START / GPU IDLE`。
+
+## 2026-07-20：actual CUDA v2封板与default-GradScaler v3合同
+
+actual v2完整执行4次AMP attempt，scale按默认GradScaler自然序列
+`65536 -> 32768 -> 16384 -> 8192 -> 4096`下降；四次的student evidence、16组bound feature与16组factor
+梯度全部finite/nonzero，但每次均有其他参数overflow，optimizer step被跳过，所以`all_evidence_head_updated=false`。
+结果`15/26 PASS / CUDA_AMP_PREFLIGHT_FAIL / formal_training_authorized=false`，GPU postflight=`2 MiB/0%/0 PID`。
+v2 result SHA=`d49e9421052675193eacb91828918033cbeefcd60a6702d2b31aad82c3a20c29`；禁止同编号重跑。
+
+该序列与sealed exp403 preflight记录一致：默认GradScaler前4次backoff，第5次首次成功更新。因此v3不设置
+`init_scale`，不改loss/rho/batch/model/config，也不放宽“必须实际更新”门；只把fresh执行的自然观察窗口冻结为
+最多8次，并禁止CLI覆盖。
+
+v3 wrapper/static contract连续两次`14/14 PASS`且byte-exact；同时冻结v2完整FAIL记录、四次scale序列、每次目标
+梯度finite/nonzero、production v3 `49/49 PASS`与default `amp.GradScaler()`源码。wrapper/contract/result SHA=
+`f4175e3552b06c875144769989fead232dcfd823fd8157bdd4e07561a0a40c87`/
+`7930ffeaf4758b0fc677176e71a4663a796a1ad70940ddbd501e1769d8cd3361`/
+`10709e126d5187b3331b0b96a3738173e4778936952b5e506e66b8ee4275c245`。
+
+判定：`V2 SEALED-FAIL / DEFAULT-GRADSCALER V3 EXECUTION AUTHORIZED / FORMAL TRAINING NO-START /
+GPU IDLE`。

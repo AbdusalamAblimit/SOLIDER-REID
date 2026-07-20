@@ -1,0 +1,34 @@
+{
+  "cuda_execution_authorized": true,
+  "execution": "exp404_cuda_amp_preflight_v3",
+  "experiment": "exp404_semantic_product_kernel",
+  "formal_training_authorized": false,
+  "gate_count": 14,
+  "gate_pass_count": 14,
+  "gates": {
+    "core_uses_default_gradscaler": true,
+    "cuda_not_initialized": true,
+    "frozen_sources_exact": true,
+    "no_v3_actual_result_local": true,
+    "production_v3_still_pass": true,
+    "v2_all_target_grads_each_attempt": true,
+    "v2_complete_fail_record": true,
+    "v2_native_scale_sequence_exact": true,
+    "v3_attempts_frozen8": true,
+    "v3_delegates_unchanged_core": true,
+    "v3_execution_tag": true,
+    "v3_natural_backoff_tag": true,
+    "v3_rejects_cli_attempt_override": true,
+    "v3_wrapper_ast_valid": true
+  },
+  "source_sha256": {
+    "config": "2bd191ef96da0158a57f917831ea70627f1fef163397219ce1168e3e30bb297d",
+    "contract": "7930ffeaf4758b0fc677176e71a4663a796a1ad70940ddbd501e1769d8cd3361",
+    "production_v3_result": "56dc8a29957674034c9fb53b0894e686dfbc861c6c7668c3bffda2feed274603",
+    "tapf": "72ff5a609c7a080d848e96a2c12239795388441cc13b85519ef2cbf42f04bf2a",
+    "v1_core": "fb0a21168bef619a561bb77da0a2e5fe9216fde114ea7c34705c3fec544b7fe7",
+    "v2_result": "d49e9421052675193eacb91828918033cbeefcd60a6702d2b31aad82c3a20c29",
+    "v3_wrapper": "f4175e3552b06c875144769989fead232dcfd823fd8157bdd4e07561a0a40c87"
+  },
+  "status": "CUDA_PREFLIGHT_V3_STATIC_PASS"
+}

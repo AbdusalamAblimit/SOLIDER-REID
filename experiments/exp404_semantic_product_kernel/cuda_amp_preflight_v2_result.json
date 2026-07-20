@@ -1,0 +1,90 @@
+{
+  "attempts": [
+    {
+      "all_evidence_head_updated": false,
+      "attempt": 1,
+      "evidence_grad_finite_nonzero": true,
+      "factor_16_group_grad_finite_nonzero": true,
+      "feature_16_group_grad_finite_nonzero": true,
+      "loss": 20.334871292114258,
+      "scale_after": 32768.0,
+      "scale_before": 65536.0
+    },
+    {
+      "all_evidence_head_updated": false,
+      "attempt": 2,
+      "evidence_grad_finite_nonzero": true,
+      "factor_16_group_grad_finite_nonzero": true,
+      "feature_16_group_grad_finite_nonzero": true,
+      "loss": 20.13849639892578,
+      "scale_after": 16384.0,
+      "scale_before": 32768.0
+    },
+    {
+      "all_evidence_head_updated": false,
+      "attempt": 3,
+      "evidence_grad_finite_nonzero": true,
+      "factor_16_group_grad_finite_nonzero": true,
+      "feature_16_group_grad_finite_nonzero": true,
+      "loss": 20.540117263793945,
+      "scale_after": 8192.0,
+      "scale_before": 16384.0
+    },
+    {
+      "all_evidence_head_updated": false,
+      "attempt": 4,
+      "evidence_grad_finite_nonzero": true,
+      "factor_16_group_grad_finite_nonzero": true,
+      "feature_16_group_grad_finite_nonzero": true,
+      "loss": 20.189912796020508,
+      "scale_after": 4096.0,
+      "scale_before": 8192.0
+    }
+  ],
+  "config_sha256": "2bd191ef96da0158a57f917831ea70627f1fef163397219ce1168e3e30bb297d",
+  "device": "NVIDIA GeForce RTX 4090 D",
+  "execution": "exp404_cuda_amp_preflight_v2",
+  "experiment": "exp404_semantic_product_kernel",
+  "formal_training_authorized": false,
+  "gate_count": 26,
+  "gate_pass_count": 15,
+  "gates": {
+    "actual_batch64": true,
+    "actual_rtx4090": true,
+    "all_evidence_head_updated": false,
+    "correct_null_intervention_active": false,
+    "correct_random_intervention_active": false,
+    "exclusive_gpu_after": true,
+    "exclusive_gpu_before": true,
+    "factor_16_group_grad_finite_nonzero": false,
+    "factor_finite_positive_active": false,
+    "feature_16_group_grad_finite_nonzero": false,
+    "frozen_pose_read_only_path": true,
+    "no_c0_elo_router_modules": true,
+    "no_c0_elo_router_state": true,
+    "no_checkpoint": true,
+    "none_exploding_pose_exact": true,
+    "null_bypass_exact_raw": false,
+    "null_factor_exact_one": false,
+    "official_data_read_only_path": true,
+    "rgb_only_eval_finite": true,
+    "rho_exact_zero": false,
+    "spk_zero_parameters": true,
+    "student_evidence_grad_finite_nonzero": false,
+    "successful_amp_update": false,
+    "teacher_free_state": true,
+    "teacher_valid_nonzero": true,
+    "two_d0_spatial_gates": true
+  },
+  "model_state_key_count": 229,
+  "peak_memory_bytes": 6237267456,
+  "production_contract": "joint_field_v3",
+  "runtime": {
+    "cuda": "12.4",
+    "python": "/home/afr/reid-clean/runtimes/exp404-spk-py310/bin/python",
+    "torch": "2.6.0+cu124"
+  },
+  "script_sha256": "2f581913753cc2fc91f02308316433cbe061b16718be1323f8800b744d151b51",
+  "status": "CUDA_AMP_PREFLIGHT_FAIL",
+  "success": {}
+}
