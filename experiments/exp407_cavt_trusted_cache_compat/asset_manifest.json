@@ -1,0 +1,5 @@
+{
+  "clip_checkpoint": "clip_l14_openclip_9ce2e8a8.safetensors",
+  "clip_checkpoint_sha256": "9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e",
+  "schema": "exp407-p0b-assets-v1"
+}
