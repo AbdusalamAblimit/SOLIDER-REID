@@ -54,6 +54,7 @@ static PASS后另行实现并冻结：
 - SPK correct/NULL/random-key在rho无关条件下finite/active；
 - evidence与16个feature group均有finite梯度，新增参数仅来自student evidence head；
 - eval teacher/pose/codebook访问0，checkpoint=0，输出fresh；
+- runtime必须由`runtime_requirements.txt`在fresh exp404 uv venv中构建，不得调用旧实验runtime；
 - preflight自然退出并postflight全部PASS后才可授权唯一formal。
 
 ## 5. formal once-only与终审
