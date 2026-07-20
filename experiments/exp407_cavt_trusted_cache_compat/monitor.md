@@ -1,6 +1,6 @@
 # exp407 CAVT cache兼容监控
 
-> 当前：`UNIQUE PREFLIGHT COMPLETE PASS / VALIDITY 8/8 PASS / SCIENCE NOT EVALUATED / FORMAL MANIFEST PENDING / STUDENT NO-START`
+> 当前：`UNIQUE PREFLIGHT COMPLETE PASS / FORMAL MANIFEST VALIDATION PASS / FORMAL BLIND REVIEW 0B/0H / FORMAL LAUNCH AUTHORIZED / STUDENT NO-START`
 
 ## 2026-07-21：建立fresh编号
 
@@ -64,3 +64,11 @@ SHA：result=`9ec2f9042a891ed6e0414bdad50760c543ffd2b625cbc63d0161faae478c39c0`�
 `f3ef8c1db0475baadfca2ece9945e58929edf6cef0e6cf0c758e1258b185b634`。COMPLETE绑定started、seal、五个源码
 SHA与runtime SHA，`formal_measurement_authorized=true`、`transport_oracle_authorized=false`。运行耗时
 612.7001秒；GPU已回到`2 MiB / 0% / 0 compute PID`。按协议立即冻结fresh formal manifest并做一次聚焦盲审。
+
+## 2026-07-21：formal manifest与盲审通过
+
+按远端真实MMPOSE runtime生成formal manifest，schema=`exp407-p0b-formal-manifest-v1`，SHA=
+`3932125980989a634df87cb71904e8d2a4772e9bae98ea1dcfb8def35ca70571`。runner自身
+`load_and_validate_formal_manifest`只读验证PASS。独立聚焦盲审为`0 BLOCKER / 0 HIGH`，确认formal会fresh重编码
+全train并重算2,000对diagnostic/尺度/配对，不复用preflight cache/scale/pair；科学controls和门未漂移。授权立即
+启动唯一fresh formal。

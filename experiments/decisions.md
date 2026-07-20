@@ -5888,3 +5888,6 @@ batch或阈值；只有COMPLETE PASS才进入formal manifest冻结，任何runti
 唯一preflight自然完成，八项validity与COMPLETE provenance全部PASS，且无failure共存。因此授权建立fresh
 `exp407-p0b-iso-teacher-v1` manifest并做一次聚焦盲审；0B/0H且formal once-only/GPU门通过后立即启动formal。
 该授权不允许读取preflight cache/scale/pair作为formal输入，也不授权student。
+
+formal manifest自验证PASS且独立盲审`0B/0H`，因此唯一formal启动门已满足。GPU/fresh路径最终核对通过后立即运行，
+自然完成前不按中间方向停止；只有formal COMPLETE科学GO才授权student。

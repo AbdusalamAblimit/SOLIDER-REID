@@ -1,0 +1,101 @@
+{
+  "arguments": {
+    "batch_size": 2,
+    "clip_microbatch": 1,
+    "data_root": "/mnt1/afrdata",
+    "output_dir": "/home/afr/reid-clean/audits/exp407-p0b-iso-teacher-v1",
+    "workers": 4
+  },
+  "execution": "exp407-p0b-iso-teacher-v1",
+  "files": {
+    "core": "29ddd00ce03ed73b6d1c7ab722de88490e2490638bc83b192e215c6ab4bb0f8b",
+    "donor_reserve": "b1ef0148ef5c39b06d8d8e41cb81e63bfd5eb81f497d4e26054bef1f4b069f4f",
+    "protocol": "6b24ba65be78488d945aa53f06f9cd938021994a50eff4e94273a2f5d2b21636",
+    "runner": "0037c855f53014d579c6f60b4da2aa80b449c6128cebbe4a328b8092e901d764",
+    "teacher": "af255cbbb6eafca2024f7882023deda50445f9a01c1df0b28422a24e23cc35a0"
+  },
+  "inputs": {
+    "asset_manifest": "/home/afr/reid-clean/assets/exp407-p0b-preflight-v1/manifest.json",
+    "asset_manifest_sha256": "d78d02790b8e268d169ac41f26af5e52a7213e8dbe76526bc0bda7f1b16fd4ee",
+    "clip_checkpoint": "/home/afr/reid-clean/assets/exp407-p0b-preflight-v1/clip_l14_openclip_9ce2e8a8.safetensors",
+    "clip_checkpoint_sha256": "9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e",
+    "official_train_manifest_sha256": "87adfe809f8e2abd6f78973bb63c9e6843a16e41fd29062f79eb1a6633de5836",
+    "pose_artifact": "/mnt1/afrderived/exp386_occluded_duke_vitpose_huge_train",
+    "pose_manifest_sha256": "cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8",
+    "preflight_complete_sha256": "68ef5f8f8429c6f98c21509b98146ae40c4a075d1c858e6812dad1d3b998cffb",
+    "source_commit": "938b786d19a25b0e76b78797970c2609a108e716"
+  },
+  "runtime": {
+    "environment": {
+      "cuda_visible_devices": null
+    },
+    "gpu": [
+      "NVIDIA GeForce RTX 4090 D, 550.144.03, GPU-48baa99b-8a10-b348-caf2-8a456a7d8d81"
+    ],
+    "numerics": {
+      "cuda_matmul_allow_tf32": false,
+      "cudnn_allow_tf32": true,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": false,
+      "deterministic_algorithms": false
+    },
+    "packages": {
+      "numpy": {
+        "module_origin": "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/numpy/__init__.py",
+        "module_origin_sha256": "edd18feff93348beb02f392959e80b9fda1875a842d7f9760847f32386fdfd48",
+        "package_manifest": "RECORD",
+        "package_manifest_kind": "wheel-record",
+        "package_manifest_sha256": "3e355d4889007864efb3707188e0b05fea4eafc4d8d8e5e4d35648957505e2ea",
+        "version": "1.24.4"
+      },
+      "open_clip_torch": {
+        "module_origin": "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/open_clip/__init__.py",
+        "module_origin_sha256": "f77b4681172075f93bb28c28ab0167b0cf1096cd29a4eefcaa00b79d41270805",
+        "package_manifest": "RECORD",
+        "package_manifest_kind": "wheel-record",
+        "package_manifest_sha256": "a9025bb31ce63ce19330d4cc722017425d28919041a22e2fafe8fe2199ba49d5",
+        "version": "2.32.0"
+      },
+      "torch": {
+        "module_origin": "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torch/__init__.py",
+        "module_origin_sha256": "54bb8bbcb339d76fa47f3d002de80656a1399c7a07324f8b95b106a5ad65f0cf",
+        "package_manifest": "/usr/local/anaconda3/envs/mmpose-abu/conda-meta/pytorch-1.13.1-py3.8_cuda11.7_cudnn8.5.0_0.json",
+        "package_manifest_kind": "conda-meta",
+        "package_manifest_sha256": "7bccab91475c009d89853dbfc41202b9fb2979f79e83bdf59dd415ea9409f806",
+        "version": "1.13.1"
+      },
+      "torchvision": {
+        "module_origin": "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torchvision/__init__.py",
+        "module_origin_sha256": "0f62ff4b5f7ab15ff25b895bb2843b8f48de05d7c761b467403732d4a1d777c9",
+        "package_manifest": "/usr/local/anaconda3/envs/mmpose-abu/conda-meta/torchvision-0.14.1-py38_cu117.json",
+        "package_manifest_kind": "conda-meta",
+        "package_manifest_sha256": "bad1889b5261d44a040906df9829f929bd855cdbae96ac6c973a0cfa80a54aba",
+        "version": "0.14.1"
+      }
+    },
+    "python": {
+      "build": [
+        "default",
+        "Sep 30 2024 17:52:49"
+      ],
+      "executable": "/usr/local/anaconda3/envs/mmpose-abu/bin/python3.8",
+      "executable_sha256": "3eeff94d51f050198a4726c3b9dbb99913723ff38be151e5768b2e039f6ec8d7",
+      "version": "3.8.20 | packaged by conda-forge | (default, Sep 30 2024, 17:52:49) \n[GCC 13.3.0]"
+    },
+    "torch": {
+      "config": "PyTorch built with:\n  - GCC 9.3\n  - C++ Version: 201402\n  - Intel(R) oneAPI Math Kernel Library Version 2022.1-Product Build 20220311 for Intel(R) 64 architecture applications\n  - Intel(R) MKL-DNN v2.6.0 (Git Hash 52b5f107dd9cf10910aaa19cb47f3abf9b349815)\n  - OpenMP 201511 (a.k.a. OpenMP 4.5)\n  - LAPACK is enabled (usually provided by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX2\n  - CUDA Runtime 11.7\n  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_61,code=sm_61;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_37,code=compute_37\n  - CuDNN 8.5\n  - Magma 2.6.1\n  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.7, CUDNN_VERSION=8.5.0, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -fabi-version=11 -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wunused-local-typedefs -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Werror=cast-function-type -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.13.1, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, \n",
+      "cuda_toolkit": "11.7",
+      "cudnn": 8500,
+      "git_version": "49444c3e546bf240bed24a101e747422d1f8a0ee",
+      "version": "1.13.1"
+    }
+  },
+  "runtime_sha256": "5a8aa901fac21e1a9d961790b78f78ce66e27a89f4c4db4ba4a9182aec3dee11",
+  "schema": "exp407-p0b-formal-manifest-v1",
+  "thresholds": {
+    "match_preference_limit": 64,
+    "match_primary_caliper": 8.0,
+    "max_no_target_fraction": 0.01,
+    "min_target_pid_fraction": 0.99
+  }
+}
