@@ -2270,3 +2270,11 @@ multi-vector不等于multi-identity。
 真实official query仍只有一个指定PID。保留所有identity component会改变评测语义，选择host需要当前部署外的
 prompt/instance assignment或heuristic gate，再聚合则回到global chimera。故set descriptor没有补上最终target
 selection，不能进入story或exp404；GPU继续NO-START。
+
+第十轮发现原计划的强反事实本身仍有假阳性：没有已知group action时，latent canonicalizer可以把任意sample code
+当作解锁identity descriptor的密钥。纯CPU诊断中，与PID和语义独立的随机key已产生correct/wrong/generic/NULL
+mAP=`1.000000/0.608134/0.039243/0.030195`，置换key assignment后仍通过，说明顺序不等于semantic use。
+
+这不改判exp402/403，却收紧以后story：wrong/generic/NULL/all-bypass必须保留，同时新增semantic-blind
+random-key control；只有correct semantic evidence相对该control仍有独立收益，才允许写ownership。当前latent
+gauge/conditional flow只是source authentication，不建立exp404，GPU继续NO-START。

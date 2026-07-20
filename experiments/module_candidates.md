@@ -393,3 +393,15 @@ part distance检索；多人crop的target由正/负keypoint prompt指定。它�
 全部component会把任务改成multi-label retrieval；选host需要prompt/instance assignment或heuristic gate；重新
 聚合又回到无单一PID的chimera。multi-PID token set、set-to-gallery max和promptless host selector均不建立
 exp404，不做CPU/CUDA/GPU。
+
+### exp403后第十轮候选裁决：latent gauge / source-key unbinding
+
+**状态**：`CPU POSITIVE/NEGATIVE DIAGNOSTIC / FALSE OWNERSHIP / NO EXP404`
+
+NeurIPS 2024 canonicalization官方commit `f9738f64`与TARGET-VAE commit `d98b0873`都依赖已知group action；
+当前16维evidence没有可观测群作用。任意learned inverse因此可能把evidence当source key。
+
+冻结CPU v2用完全随机、PID无关key仍得到correct/wrong/generic/NULL mAP=
+`1.000000/0.608134/0.039243/0.030195`；置换全部key后仍PASS，constant-quota mutant被抓。故原强顺序可由
+source checksum制造，不足以证明语义。latent gauge、conditional flow和key-unbinding不创建exp404；未来候选
+必须额外击败semantic-blind random-key control。

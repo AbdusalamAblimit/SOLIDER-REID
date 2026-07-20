@@ -1,0 +1,128 @@
+{
+  "constant_quota_mutant": {
+    "all_gates_pass": false,
+    "arms": {
+      "correct": {
+        "R1": 0.765625,
+        "mAP": 0.6700779146035117
+      },
+      "generic": {
+        "R1": 0.6953125,
+        "mAP": 0.6640777979034005
+      },
+      "null": {
+        "R1": 0.7578125,
+        "mAP": 0.6616366889968003
+      },
+      "wrong": {
+        "R1": 0.6640625,
+        "mAP": 0.6081344490110067
+      }
+    },
+    "correct_minus_wrong_map": 0.061943465592505076,
+    "gates": {
+      "correct_map": false,
+      "correct_minus_wrong": true,
+      "donor_contract": true,
+      "random_key_no_pid_geometry": true,
+      "unit_norm": true,
+      "wrong_minus_low": false
+    },
+    "generic_key_norm": 0.049389410858213745,
+    "key_different_pid_cosine_mean": 0.03980803368160083,
+    "key_geometry_gap_abs": 0.04950214523156936,
+    "key_same_pid_cosine_mean": -0.009694111549968527,
+    "max_descriptor_norm_error": 7.771561172376096e-16,
+    "wrong_minus_max_generic_null_map": -0.05594334889239383
+  },
+  "counts": {
+    "gallery": 256,
+    "identities": 128,
+    "queries": 128
+  },
+  "cuda_visible_devices": "",
+  "diagnostic": "post_exp403_source_key_shortcut",
+  "dimensions": {
+    "identity": 64,
+    "key": 16,
+    "nuisance": 128
+  },
+  "exp404_authorized": false,
+  "gpu_start_authorized": false,
+  "mutant_caught": true,
+  "original": {
+    "all_gates_pass": true,
+    "arms": {
+      "correct": {
+        "R1": 1.0,
+        "mAP": 1.0
+      },
+      "generic": {
+        "R1": 0.0234375,
+        "mAP": 0.03924254601463095
+      },
+      "null": {
+        "R1": 0.0,
+        "mAP": 0.030194547250330103
+      },
+      "wrong": {
+        "R1": 0.6640625,
+        "mAP": 0.6081344490110067
+      }
+    },
+    "correct_minus_wrong_map": 0.39186555098899334,
+    "gates": {
+      "correct_map": true,
+      "correct_minus_wrong": true,
+      "donor_contract": true,
+      "random_key_no_pid_geometry": true,
+      "unit_norm": true,
+      "wrong_minus_low": true
+    },
+    "generic_key_norm": 0.049389410858213745,
+    "key_different_pid_cosine_mean": 0.03980803368160083,
+    "key_geometry_gap_abs": 0.04950214523156936,
+    "key_same_pid_cosine_mean": -0.009694111549968527,
+    "max_descriptor_norm_error": 7.771561172376096e-16,
+    "wrong_minus_max_generic_null_map": 0.5688919029963757
+  },
+  "seed": 20260720,
+  "semantic_blind_key_permutation": {
+    "all_gates_pass": true,
+    "arms": {
+      "correct": {
+        "R1": 1.0,
+        "mAP": 1.0
+      },
+      "generic": {
+        "R1": 0.0,
+        "mAP": 0.021800154059868973
+      },
+      "null": {
+        "R1": 0.015625,
+        "mAP": 0.0282835623384197
+      },
+      "wrong": {
+        "R1": 0.6328125,
+        "mAP": 0.5929766956460121
+      }
+    },
+    "correct_minus_wrong_map": 0.4070233043539879,
+    "gates": {
+      "correct_map": true,
+      "correct_minus_wrong": true,
+      "donor_contract": true,
+      "random_key_no_pid_geometry": true,
+      "unit_norm": true,
+      "wrong_minus_low": true
+    },
+    "generic_key_norm": 0.04938941085821374,
+    "key_different_pid_cosine_mean": -0.004101216110868026,
+    "key_geometry_gap_abs": 0.003959186182130545,
+    "key_same_pid_cosine_mean": -0.008060402292998571,
+    "max_descriptor_norm_error": 7.771561172376096e-16,
+    "wrong_minus_max_generic_null_map": 0.5646931333075924
+  },
+  "torch_imported": false,
+  "verdict": "RANDOM_SOURCE_KEY_FALSE_OWNERSHIP_DEMONSTRATED"
+}

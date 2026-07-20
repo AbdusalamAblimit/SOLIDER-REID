@@ -5616,3 +5616,17 @@ heuristic gate；聚合又回到无单一PID的global chimera。
 **决策**：不以multi-PID token set、set-to-gallery max或promptless host selector建立exp404，不做CPU/CUDA/
 GPU。状态为`SET-VALUED TARGET SELECTION GAP / DEPLOYMENT CONTRACT FAIL / GPU NO-START`，exp401–403
 封板不变。
+
+### [2026-07-20] 决策：将random-key control加入后继ownership必要门
+
+合法canonicalization公开实现依赖已知group action；当前16维evidence没有解析群作用。无编号纯CPU诊断的v1
+在metric前runtime失败并封板INVALID，fresh v2只修donor slot后有效完成。
+
+完全随机、PID无关key得到correct/wrong/generic/NULL mAP=
+`1.000000/0.608134/0.039243/0.030195`；semantic-blind key置换后仍为
+`1.000000/0.592977/0.021800/0.028284`，两次强顺序都PASS，constant-quota mutant被抓。
+
+**决策**：原`correct > wrong > generic/NULL`改为必要非充分门；不删除任何旧control，并为所有后继候选新增
+semantic-blind random-key或等价null-semantic control。latent gauge、conditional flow、orthogonal unbinding
+排除，不创建exp404、不做CUDA/GPU。状态为`RANDOM SOURCE-KEY FALSE OWNERSHIP DEMONSTRATED / GPU
+NO-START`，exp401–403封板不变。

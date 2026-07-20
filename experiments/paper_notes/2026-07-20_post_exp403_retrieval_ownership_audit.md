@@ -717,3 +717,43 @@ TokenMatcher等multi-token方法也仍检索一个target identity；person searc
 因此source-separated local supervision只在合成样本中可识别，不能迁移成当前部署合同下的最终target identity。
 第九轮裁决为`SET-VALUED TARGET SELECTION GAP / DEPLOYMENT CONTRACT FAIL / NO EXP404 / GPU
 NO-START`。不以multi-PID token set、set-to-gallery max或promptless host selector建立新实验。
+
+## 22. 第十轮：latent canonicalization暴露random-key假所有权
+
+一个更强的结构设想是让evidence定义可逆latent gauge：encoder先把identity feature变到evidence-specific frame，
+最后只有对应evidence能逆变换回canonical descriptor。wrong evidence对其donor frame仍是合法inverse，因此看似
+同时满足source-positive与path-complete。
+
+### 22.1 合法canonicalization依赖已知group action
+
+NeurIPS 2024 *A Canonicalization Perspective on Invariant and Equivariant Learning*官方commit
+`f9738f645cf02a76ff913c12e03e55b04d9b7014`处理graph Laplacian eigenvector的已知sign/basis symmetry；
+TARGET-VAE（NeurIPS 2022）官方commit `d98b0873679153da998562ab6e4d66da0ebe7288`显式使用translation、
+rotation与离散`P8` group。两者的canonical inverse都由可观测变换群定义，不是任意sample code。
+
+当前16维support/appearance evidence没有已知group、composition law或对host feature的解析action。若直接学习
+`R(e)^{-1}`，模型可以把e当作source key：RGB路径预测同一key frame，correct解锁，wrong不能解锁；这只证明
+source authentication，不证明support/appearance语义。
+
+### 22.2 冻结CPU正反合同
+
+为检验该假阳性，建立无编号纯CPU诊断
+`experiments/diagnostics/post_exp403_source_key_shortcut/`。v1因query slot解析错误在任何metric前
+`SEALED-INVALID`；fresh v2只修正donor slot后完整执行。128个identity的每个sample获得与PID/camera/语义独立
+的16维随机key，identity预算只读`exact host-key match`与`real sample-key validity`。
+
+v2原始随机key得到correct/wrong/generic/NULL mAP=
+`1.000000000000/0.608134449011/0.039242546015/0.030194547250`；semantic-blind置换全部key assignment后仍为
+`1.000000000000/0.592976695646/0.021800154060/0.028283562338`。两次都通过correct−wrong与
+wrong−max(generic,NULL)冻结门。same/different-PID key cosine gap分别为`0.049502145232/0.003959186182`，
+key没有稳定PID几何；constant-quota mutant被抓住。torch/CUDA/data/pose/cache/checkpoint访问均为0。
+
+### 22.3 门槛修正
+
+该结果不说明exp402/403真实使用了key shortcut，而是证明原强反事实是必要非充分条件。任何后继机制即使达到
+`correct > wrong > generic/NULL`，若semantic-blind random key或source checksum也能达到同样顺序，仍不能
+宣称semantic ownership。未来正式门必须新增random-key/null-semantic control，且正确semantic evidence必须
+相对它有独立收益；不得删除原wrong/generic/NULL/all-bypass。
+
+第十轮裁决为`COUNTERFACTUAL SUFFICIENCY FAIL / RANDOM SOURCE-KEY FALSE OWNERSHIP DEMONSTRATED /
+NO EXP404 / GPU NO-START`。latent gauge、conditional flow或orthogonal key-unbinding均不形成候选。

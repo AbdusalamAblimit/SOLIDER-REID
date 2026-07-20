@@ -4047,3 +4047,16 @@ keypoint prompt指出目标。现有part/multi-token方法的多个vector也仍�
 真实official query没有多PID token ownership标注。保留所有component会改变为multi-label任务，选择host需要
 额外prompt/instance assignment或heuristic gate，聚合则恢复无单一PID的chimera。因此“输出一个set”不是闭合
 ownership的新机制，不建立exp404。
+
+### exp403后第十轮：强反事实仍可能是random-key假阳性
+
+**状态**：`COUNTERFACTUAL NECESSARY-BUT-NOT-SUFFICIENT / NO EXP404`
+
+learned canonicalizer看似能让correct evidence解锁canonical identity、wrong evidence只对donor有效，但没有
+已知group action时，这等价于把evidence当密钥。NeurIPS 2024 canonicalization与TARGET-VAE分别依赖已知graph
+symmetry和translation/rotation group，不能为任意16维code提供语义许可。
+
+纯CPU正反合同进一步给出existential counterexample：随机、PID无关key也形成correct/wrong/generic/NULL
+mAP=`1.000000/0.608134/0.039243/0.030195`，随机置换key后仍通过两级margin，mutant则失败。因此
+`correct > wrong > generic/NULL`只能保留为必要门。未来机制还必须证明semantic evidence优于random-key/
+null-semantic source checksum；否则只证明authentication，不证明CLIP语义所有权。

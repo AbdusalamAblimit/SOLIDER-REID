@@ -1,0 +1,18 @@
+{
+  "cuda_visible_devices": "",
+  "diagnostic": "post_exp403_source_key_shortcut",
+  "execution": "v1",
+  "failure": {
+    "exception": "KeyError",
+    "message": "(0, 1, '0')",
+    "phase": "donor_map_before_descriptor_or_metric",
+    "root_cause": "query pid suffix was incorrectly parsed as a replica slot"
+  },
+  "gpu_accesses": 0,
+  "official_data_accesses": 0,
+  "pose_cache_checkpoint_accesses": 0,
+  "scientific_result": null,
+  "status": "SEALED_INVALID",
+  "timestamp_utc": "2026-07-20T02:12:14Z",
+  "torch_imported": false
+}

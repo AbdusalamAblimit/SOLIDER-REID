@@ -2854,3 +2854,17 @@ NO-START`。没有性能结果，exp401–403封板不变。
 
 **当前判定**：`SET-VALUED TARGET SELECTION GAP / DEPLOYMENT CONTRACT FAIL / NO EXP404 / GPU
 NO-START`。没有性能结果，exp401–403封板不变。
+
+## exp403后random source-key CPU诊断（2026-07-20）
+
+这是无official数据、无模型、无GPU的existential diagnostic，不是ReID性能实验。v1在metric前因donor slot解析
+错误封板`SEALED-INVALID`；fresh v2只修正该contract后有效完成。
+
+随机PID无关key的correct/wrong/generic/NULL mAP=
+`1.000000000000/0.608134449011/0.039242546015/0.030194547250`，R1=
+`1.000000/0.664062/0.023438/0.000000`；随机置换key后mAP仍为
+`1.000000000000/0.592976695646/0.021800154060/0.028283562338`。两遍正合同PASS，constant-quota mutant
+被抓，torch/CUDA/data/pose/cache/checkpoint访问0。
+
+**当前判定**：`RANDOM SOURCE-KEY FALSE OWNERSHIP DEMONSTRATED / COUNTERFACTUAL SUFFICIENCY FAIL /
+NO EXP404 / GPU NO-START`。以后强门必须增加semantic-blind random-key control；exp401–403封板不变。
