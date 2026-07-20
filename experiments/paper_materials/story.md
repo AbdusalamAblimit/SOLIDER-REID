@@ -2214,6 +2214,14 @@ identity ranking。因此论文当前只能把贡献缺口写成：需要一个�
 共享不可绕过对象的机制，同时保留correct/wrong/generic/NULL/all-bypass证据。该机制尚未找到，故事继续保持
 `POST-EXP403 OWNERSHIP AUDIT / NO EXP404 / GPU NO-START`。
 
+第五轮进一步排除了“从已知增强或可逆结构自动得到ownership”。DiP已经用仿射矩阵为implicit position构造
+解析equivariance target，但测试时位置被丢弃，最终使用pair-specific part weighting。当前16维semantic code又
+没有translation/flip/occlusion下的已知action，所以不能照搬这一监督。
+
+Invertible mapping只保证信息可恢复，并不决定latent factor归属；teacher code监督也只保证复现该code，不能
+唯一绑定identity ranking，exp402/403已给出直接负证据。因此论文故事仍不能把equivariance、flow或固定子空间
+写成机制贡献，继续保持`NO EXP404 / GPU NO-START`。
+
 第四轮查新把缺口从“给semantic donor什么标签”进一步收紧到“是否存在可观测target”。NeurIPS 2025的
 Composed Person Retrieval以`reference image + relative caption -> same-ID target image`建立合法的语义检索
 正目标；FAFA直接对齐这一真实target，但训练数据依赖LLM/Flux/MLLM构造的115万triplet，测试也需要caption与

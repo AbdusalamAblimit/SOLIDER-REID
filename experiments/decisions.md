@@ -5547,3 +5547,16 @@ exp402/403的different-PID wrong evidence不是host A的relative edit，official
 **决策**：不把composition/contrastive loss当作exp404；不引入外部annotation、生成stage或测试时第二输入来
 填补target。创新门保持失败，不写design/config/contract、不做CPU/CUDA/GPU。下一轮只审计能从official RGB
 内部构造可验证realized semantic target、且保持单固定descriptor部署的结构对象。
+
+### [2026-07-20] 决策：equivariance/invertibility不构成exp404
+
+DiP公式审计确认：已知affine矩阵可以为part position构造解析target `Kp`，但测试时该位置不参与检索，最终是
+pair-specific DiP weighting。当前16维evidence没有已知semantic action，wrong donor也不是host的已知变换，
+所以augmentation consistency不能生成所需semantic target。
+
+理论可识别性审计同时确认，invertible/bijective map只保证信息可恢复，不能指定latent factor归属；teacher
+evidence target仍未定义其对final identity ranking的唯一作用。
+
+**决策**：不以affine/flip consistency、augmentation invariance、normalizing flow、invertible coupling或
+part-weighted scorer建立exp404。继续`NO EXP404 / GPU NO-START`，下一对象必须给当前evidence一个可验证的
+semantic action并直接定义固定最终metric。

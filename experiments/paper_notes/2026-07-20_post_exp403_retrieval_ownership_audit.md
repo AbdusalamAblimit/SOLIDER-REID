@@ -484,3 +484,49 @@ target-caption/attribute annotation。把teacher code自身当target只会回到
 annotation/generation或测试时第二输入，却能从official RGB本身构造**可验证的realized semantic target**，并让
 该target与最终固定欧氏identity descriptor共享不可绕过路径。没有这样的结构与正反contract前，不进行CPU或
 CUDA实验。
+
+## 16. 第五轮：已知变换的equivariance可验证，但不能替代semantic target
+
+第四轮要求从official RGB内部构造realized target。一个自然候选是对同一图像施加已知变换，再用equivariance
+提供解析target；另一个候选是用invertible map保证所有信息进入终端表示。本轮分别核对其ReID先例与可识别性。
+
+### 16.1 DiP：几何target来自已知affine action
+
+- 论文：*DiP: Learning Discriminative Implicit Parts for Person Re-Identification*
+  （<https://arxiv.org/abs/2212.13906v2>）；论文未提供官方代码链接，本轮仓库检索也未找到可归属作者的实现，
+  故按正式公式审计；
+- DiP用part token与patch feature的相关性加权坐标得到implicit position `p`，再施加已知translation/scale/
+  horizontal flip矩阵`K`生成变换图`X'`和解析target `p'=Kp`；
+- 原图与变换图都保留同一ID label，position-equivariance loss只回归`p'`；
+- 最终推理丢弃predicted position，仅以两图各自预测的DiP weight做pair-specific part distance。
+
+裁决：这是official RGB内部realized target的合法例子，但target只对**已知几何群作用**可定义。DiP已经占用了
+“仿射图像 + 解析位置equivariance + part retrieval weighting”的机制空间，而且其位置监督不进入固定欧氏
+descriptor。把相同loss移到当前router/evidence上只能证明几何proxy，不会证明correct semantic evidence拥有
+身份排序。
+
+更根本地，当前16维support/appearance evidence没有预先定义的群表示`R(K)`。颜色、遮挡、局部支持和CLIP
+appearance在translation/flip后应保持、置换还是变化，不能从一个仿射矩阵唯一推出；different-PID wrong donor
+更不是由host图像的已知变换生成。故不能像`p'=Kp`那样构造其解析target。
+
+### 16.2 invertibility不等于factor ownership
+
+针对“让descriptor与evidence双射即可防bypass”的候选，本轮没有在person ReID公开实现中找到满足当前合同的
+直接结构；理论上它也不够。Locatello等人的ICML 2019工作
+*Challenging Common Assumptions in the Unsupervised Learning of Disentangled Representations*
+（<https://arxiv.org/abs/1811.12359v4>）证明，在缺少数据/模型归纳偏置时，存在无穷多个同分布但因子完全混合的
+bijective latent reparameterization。双射只保证信息可恢复，不指定哪部分latent对应哪个真实因子。
+
+当前设置并非完全无监督：teacher提供了16维evidence target。但这份监督只定义“student能复现teacher code”，
+没有定义该code如何唯一作用于final identity ranking；exp402/403正是其反例。因此将终端层改成normalizing flow、
+invertible coupling或固定direct-sum，只能强迫数值信息存在，仍允许身份排序对其不敏感或以混合坐标解释它。
+
+### 16.3 第五轮裁决
+
+已知变换可以产生geometry target，但当前semantic evidence没有已知action；可逆性可以保证information
+preservation，但不能提供factor attribution。两者组合仍是DiP式equivariance与普通invertible/disentanglement
+原子的拼装，并不能直接建立`correct > wrong > generic/NULL`。
+
+状态保持`IDENTIFIABILITY/MECHANISM GATE FAIL / NO EXP404 / GPU NO-START`。下一检索只考虑能为当前evidence
+给出**可观测或解析的semantic action**，且该action直接定义最终固定identity metric；普通affine consistency、
+augmentation invariance、invertible flow或part-weighted pair scorer直接排除。

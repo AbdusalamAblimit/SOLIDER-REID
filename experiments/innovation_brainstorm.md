@@ -3967,3 +3967,21 @@ conditional query则分别落入已有CPR/DG-Net或违反单RGB固定descriptor�
 
 因此下一问题被收紧为“如何从official RGB内部得到可验证的realized semantic target”，而不是再加composition/
 contrastive loss。当前只增加了可识别性负边界，没有机制创新，exp404与GPU继续NO-START。
+
+### exp403后第五轮查新：解析equivariance只适用于已知action
+
+**状态**：`AUDIT ACTIVE / IDENTIFIABILITY AND MECHANISM FAIL / NO EXP404`
+
+DiP给出一个可比较的RGB内部target：对原图施加已知affine矩阵`K`，其implicit part position可解析变换为`Kp`，
+所以position-equivariance有真实监督。但该位置在测试时被丢弃，最终仍是pair-specific part-weight distance；
+它既不是固定descriptor ownership，也不处理外部sample evidence。
+
+当前support/appearance code没有已知semantic action `R(K)`：translation/flip/occlusion对这16维量应保持、置换
+还是改变并无解析定义，different-PID donor也不是由已知变换生成。因此仿射一致性只能添加已有几何proxy，不能
+得到wrong/generic/NULL的合法排序。
+
+可逆网络同样不解决归属。经典不可识别性结果表明，bijective latent仍可做无穷多因子混合重参数化；这里虽有
+teacher code监督，但它只定义student复现code，不定义code对final ranking的唯一作用，恰好与exp402/403观察一致。
+
+故`equivariance + invertibility`没有通过机制门，不建立exp404。下一对象必须显式给出当前evidence的可验证
+semantic action，并让该action本身成为最终固定identity metric的一部分。

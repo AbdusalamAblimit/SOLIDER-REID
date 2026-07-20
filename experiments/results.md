@@ -2790,3 +2790,15 @@ relative edit，故composition loss在official数据上不可识别。
 
 **当前判定**：`REALIZED SEMANTIC TARGET ABSENT / INNOVATION GATE FAIL / NO EXP404 / GPU NO-START`。
 没有新增性能结果，exp401–403封板不变。
+
+## exp403后equivariance/invertibility查新（2026-07-20）
+
+本轮没有启动实验或GPU。DiP用已知affine矩阵为implicit position构造解析equivariance target，但最终检索不使用
+该position，而采用pair-specific part-weight distance。当前16维evidence没有已知变换action，wrong donor也不是
+host的可解析变换。
+
+Invertible/bijective表示只能保证信息保留，不能唯一确定semantic factor或其final-ranking作用；teacher code
+复现监督不能弥补这一点。
+
+**当前判定**：`EQUIVARIANCE/INVERTIBILITY MECHANISM FAIL / NO EXP404 / GPU NO-START`。没有性能结果，
+exp401–403封板保持不变。

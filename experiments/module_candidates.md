@@ -323,3 +323,17 @@ relative annotation、identity-consistent生成器或测试时semantic query时�
 
 下一候选只有在official RGB内部构造出可验证的realized semantic target，并让它与最终固定descriptor共享路径，
 才可重新过创新门；当前不创建exp404、不做CPU/CUDA/GPU。
+
+### exp403后第五轮候选裁决：equivariance/invertibility仍不闭合
+
+**状态**：`LITERATURE/FORMULA AUDIT ONLY / NO EXP404`
+
+DiP已用已知affine矩阵把原图位置`p`变成解析target `Kp`，再做position-equivariance；最终却丢弃位置预测，
+使用pair-specific DiP weight distance。当前16维semantic evidence没有已知群作用，different-PID wrong donor也
+不是host的已知变换，故无法构造同类解析target。
+
+Normalizing flow/invertible coupling只保证信息可恢复，不保证latent factor归属；即使teacher监督evidence code，
+也没有把该code与final identity ranking唯一绑定。exp402/403已实证这种proxy/final gap。
+
+因此affine consistency、augmentation invariance、invertible flow和part-weighted scorer均不进入exp404。只有
+同时定义当前evidence的可验证semantic action与固定最终metric的结构才保留，当前GPU NO-START。
