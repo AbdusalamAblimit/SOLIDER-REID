@@ -416,3 +416,33 @@ core/contract/audit/postflight/wrapper SHA=
 `8d7f95c9ba080c2d7f4f126eeba6a7365fd8d677d135040511aa1443d5ffb029`。
 
 判定：`COUNTERFACTUAL STATIC PASS / FRESH CUDA WIRING PREFLIGHT AUTHORIZED / FORMAL FULL NO-START`。
+
+## 2026-07-20T10:00Z：CUDA wiring preflight v1封板与reporter合同修正
+
+fresh v1完成256张train RGB generic采集和九臂各128张actual checkpoint前向；strict load、RGB-only、teacher/
+pose/codebook零访问、state/RNG/patch/source/config/checkpoint恢复、random合同与NULL=bypass全部PASS。六个主control
+均active：相对correct descriptor mean-L2为wrong=`0.2020`、generic=`0.1708`、NULL/bypass=`4.4826`、
+random-key=`6.5247`、random-cluster=`6.6222`。
+
+唯一失败是v1 reporter把两个补充归因control也要求active。actual hard presence在128图上均为五槽全1，故
+wrong-mask循环输入changed rows=`0/128`且descriptor exact；slot-cycle在uniform presence的平均聚合下理论置换
+不变，仅出现mean-L2=`9.00e-7`的浮点求和顺序差。这是预运行合同与SPK定义冲突，不是CUDA、模型或主科学门
+失败。v1 result/runner SHA=
+`856f8853b6cb51aea1e99bcbcca68e4d5fb83041395cb31adaf4b11c8af5adcd`/
+`cacfe437cd27496d14cc841d53cbd73544274e518946a7de19905c23c4836191`，GPU postflight=`2 MiB/0%/0 PID`。
+
+v1封板`SEALED-INVALID_CONTRACT / NO-RERUN`。fresh v2只把validity active门限定为六个主control；九臂全部保留并
+仍须finite，主mAP/NULL=bypass/random分布门完全不变。
+
+判定：`PREFLIGHT V1 SEALED-INVALID-CONTRACT / V2 REPORTER CORRECTION AUTHORIZED / FORMAL FULL NO-START`。
+
+## 2026-07-20T10:08Z：preflight v2 static reporter合同
+
+v2只将descriptor-active集合冻结为六个主control，所有九臂仍须finite且完整执行。更新后的正反合同连续两次
+仍为`32/32 PASS`且byte-exact，result SHA=
+`185fd3b2e79b728a43a77c5920294657d1a110c1eccfeec3030445c3ebddd617`。core/contract/audit SHA=
+`4f8c5a19751e5380cffb3be8272cc738e7ff4510a912a681b2106b1fb05ee3b7`/
+`3139f13c9e75f4af2f05f53543d5fd890ca7feecf85b643dc09c67c704bef3b8`/
+`a226097b937b3980cd79c8acb4a80d32d6bf4fcf318b541e9dc97e2056976fe9`。
+
+判定：`V2 STATIC PASS / FRESH V2 CUDA PREFLIGHT AUTHORIZED / FORMAL FULL NO-START`。

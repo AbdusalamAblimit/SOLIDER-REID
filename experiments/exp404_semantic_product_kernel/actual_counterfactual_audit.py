@@ -1069,11 +1069,15 @@ def run(args):
         and report["path_sha256"] == expected_path_sha
         for report in arm_reports.values()
     )
-    all_descriptor_active = all(
+    all_descriptors_finite = all(
+        report["finite"] for report in descriptor_deltas.values()
+    )
+    primary_descriptors_active = all(
         report["finite"]
         and float(report["mean_l2"]) > 0.0
         and float(report["max_abs"]) > 0.0
-        for report in descriptor_deltas.values()
+        for arm, report in descriptor_deltas.items()
+        if arm in core.PRIMARY_ACTIVE_CONTROLS
     )
     if preflight:
         correct_evidence_coverage = all(
@@ -1113,7 +1117,8 @@ def run(args):
         "donor_warmup_valid": donor_warmup_valid,
         "all_arm_restore_exact": all_arm_restore,
         "all_arm_full_coverage": all_arm_coverage,
-        "all_descriptors_finite_active": all_descriptor_active,
+        "all_descriptors_finite": all_descriptors_finite,
+        "primary_descriptors_active": primary_descriptors_active,
         "correct_evidence_coverage": correct_evidence_coverage,
         "null_bypass_descriptor_exact": null_bypass_descriptor_exact,
         "random_key_abs_multiset_exact": arm_reports["random_key"]["spk"]["random_abs_multiset_exact"],

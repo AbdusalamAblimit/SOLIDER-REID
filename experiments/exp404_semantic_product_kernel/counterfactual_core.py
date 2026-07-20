@@ -27,11 +27,15 @@ PRIMARY_NULL_CONTROLS = (
     "random_key",
     "random_cluster",
 )
-ACTIVE_CONTROLS = (
+PRIMARY_ACTIVE_CONTROLS = (
     "wrong_rgb",
     "generic_mean",
+    "null_zero",
+    "all_product_bypass",
     "random_key",
     "random_cluster",
+)
+SUPPLEMENTAL_ATTRIBUTION_CONTROLS = (
     "wrong_mask",
     "slot_cycle",
 )
@@ -396,7 +400,7 @@ def adjudicate(metrics, descriptor_deltas, validity_flags):
         bool(descriptor_deltas[arm]["finite"])
         and float(descriptor_deltas[arm]["mean_l2"]) > 0.0
         and float(descriptor_deltas[arm]["max_abs"]) > 0.0
-        for arm in ACTIVE_CONTROLS
+        for arm in PRIMARY_ACTIVE_CONTROLS
     )
     gates = {
         "validity_all_pass": all(bool(value) for value in validity_flags.values()),

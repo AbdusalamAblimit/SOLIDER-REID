@@ -84,9 +84,10 @@ FAIL不调temperature/loss/batch、不中途删control、不以新seed补跑。
 8. `wrong_mask`：只循环SPK presence；
 9. `slot_cycle`：只循环evidence。
 
-NULL与all-product-bypass的最终descriptor和四项metric必须逐元素/逐值exact。除该预期相等对外，wrong、generic、
-random-key、random-cluster、wrong-mask与slot-cycle都必须finite且相对correct active。random-key须保持逐样本每槽
-范数和绝对值多重集；random-cluster须满足8簇、count最大差1、每簇PID覆盖`>=40`且camera覆盖等于验证集全集。
+NULL与all-product-bypass的最终descriptor和四项metric必须逐元素/逐值exact。所有九臂必须finite；wrong、
+generic、NULL、bypass、random-key与random-cluster六个主control必须相对correct active。wrong-mask与slot-cycle
+保留为补充归因并完整报告，在uniform hard presence下允许按SPK定义不变。random-key须保持逐样本每槽范数和
+绝对值多重集；random-cluster须满足8簇、count最大差1、每簇PID覆盖`>=40`且camera覆盖等于验证集全集。
 
 ### 5.2 执行资产和启动门
 
@@ -98,3 +99,11 @@ random-key、random-cluster、wrong-mask与slot-cycle都必须finite且相对cor
 - runtime固定为fresh exp404 runtime；
 - 先连续两次CPU/static byte-exact，再做fresh小样本CUDA wiring preflight；
 - 正式result/runner/manifest/lock任何一个预先存在都禁止启动；GPU必须无compute PID。
+
+### 5.3 CUDA wiring preflight执行编号
+
+- `preflight-v1`已封板`SEALED-INVALID_CONTRACT`：九臂、资产恢复和主control均正常，但reporter错误要求
+  wrong-mask/slot-cycle active；result/runner不得覆盖或重跑；
+- `preflight-v2`是fresh执行，只允许将active门限定回六个主control；九臂顺序、输入、数据、checkpoint、
+  random资产、主mAP门与formal once-only资产全部不变；
+- v2全部validity PASS后才授权formal full；v2 scientific/main-control失败不得继续。
