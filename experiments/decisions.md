@@ -5879,3 +5879,6 @@ MMPOSE-ABU roundtrip合同与代码盲审，通过后立即启动fresh preflight
 固定MMPOSE-ABU targeted roundtrip两次byte-exact PASS；盲审发现并修复donor salt漂移后闭环`0B/0H`。因此不再
 追加static，进入fresh远端隔离仓库、asset/input SHA、once-only路径与GPU独占核对；全部通过即启动唯一
 `exp407-p0b-preflight-v1`。该授权不等于formal或student授权，preflight PASS后必须先发布完整receipt。
+
+远端所有fresh门已通过，唯一preflight已按授权启动并取得started seal。运行中只监控自然完成，不改源码、协议、
+batch或阈值；只有COMPLETE PASS才进入formal manifest冻结，任何runtime/validity失败均如实封板exp407执行。

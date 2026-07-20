@@ -3201,3 +3201,7 @@ schema、output和asset。core/teacher与exp406 byte-exact；donor保留历史�
 Torch 1.13.1两次mixed tensor/metadata roundtrip均PASS且byte-exact SHA=
 `f24577f8f8d31f7824cab15fc3c3ccddf27ca6c5c11c3de37346250fd105e326`。聚焦盲审首轮1B/0H，修复donor salt
 漂移后闭环`0B/0H`。当前只有运行授权，没有teacher科学结果或ReID mAP/R1。
+
+远端fresh HEAD=`938b786d19a25b0e76b78797970c2609a108e716`、asset/input SHA、once-only路径和GPU独占通过后，唯一
+`exp407-p0b-preflight-v1`已启动并取得started seal；首轮观测到original batch 200，无异常。formal/student仍
+NO-START，当前没有teacher科学结果或ReID mAP/R1。
