@@ -31,3 +31,10 @@ image SHA拒绝。当前=`IMPLEMENTED / BLIND REVIEW 0B/0H / REMOTE MMPOSE CONTR
 default loss/gradient bit-exact，错误positive与cache image-SHA mutant均被拒；correct相对control的pair change rate=
 wrong-RGB `0.9375`、generic `0.96875`、zero/CLIP-only `0.875`、pose-shuffle `0.90625`。这证明联合miner与
 五个control均active，不是D0路径漂移；下一步直接构建唯一fresh exp409 cache。
+
+唯一fresh cache-v1已启动：remote repo=`/home/afr/SOLIDER-REID-exp409-pchm-d2cc18f-v1`，source HEAD=
+`07170a22f1a6fbef2f0f140106e7350c223deb29`，asset=
+`/home/afr/reid-clean/assets/exp409-pchm-cache-v1`，runner=
+`/home/afr/reid-clean/train-logs/exp409-pchm-cache-v1.runner.log`，主PID=`501962`。启动前GPU无compute PID、
+asset/runner均fresh；首次观测`encoded 8/15618`，GPU约`2.2 GiB/94%`且只有该任务，无异常。运行中只监控
+自然完成，不改builder/source/参数；完成后核验覆盖、norm、metadata、SHA并把真实cache SHA写入config。
