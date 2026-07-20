@@ -3135,3 +3135,9 @@ FORMAL P0B NO-START / STUDENT NO-START`。无新增mAP/R1或科学GO。
 REMOTE V10 RECHECK PENDING / CUDA PREFLIGHT NO-START / FORMAL P0B NO-START / STUDENT NO-START`。Phase 0
 preflight本身没有epoch，因此此处没有mAP/R1；未来student仍按e10/20/.../120与clean D0同epoch并排记录
 `mAP/R1/差值`，最终只用自然e120。
+
+远端随后在固定MMPOSE-ABU中两次执行v10 static，均`8/8 PASS`且byte-exact，SHA256均为
+`07eeb98692e6d8f54f7bc25dee3fc21803434f4d83ee8e9d33a01a44101123ce`；provenance为Python `3.8.20`、Torch
+`1.13.1`，CUDA前后均未初始化。4090复核为`2 MiB / 0% / 0 compute PID`，preflight output/seal/FAILED均
+fresh。**更新判定**：`V10 REMOTE MMPOSE-ABU STATIC PASS / 512-IMAGE CUDA PREFLIGHT AUTHORIZED /
+FORMAL P0B NO-START / STUDENT NO-START`。

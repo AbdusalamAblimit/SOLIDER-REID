@@ -5816,3 +5816,7 @@ CUDA或启动GPU。该错误属于合同兼容性，不是MMPOSE-ABU、MMPose、
 **决策**：不再建立或恢复新venv，继续固定`/usr/local/anaconda3/envs/mmpose-abu/bin/python`。由于远端SSH
 当前banner超时，先保持CUDA preflight NO-START；网络恢复后先完成两次远端v10 static、byte-exact、CUDA未
 初始化与独占4090复核，全部通过才启动唯一512图preflight。formal P0B和student仍NO-START。
+
+远端连接恢复后，v10已在MMPOSE-ABU中连续两次`8/8 PASS`且byte-exact，CUDA未初始化、GPU独占、fresh输出门
+全部通过。**更新决策**：授权立即启动唯一512图CUDA preflight；只裁决机械有效性，formal P0B和student仍
+NO-START。

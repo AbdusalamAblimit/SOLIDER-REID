@@ -1,7 +1,7 @@
 # exp405 CAVT 监控记录
 
-> 当前：`BROAD NOVELTY NO-GO / NARROW PHASE-0 CONDITIONAL GO / REAL-TEACHER STATIC V10 LOCAL PASS /
-> MMPOSE-ABU FROZEN / THREE-WAY BLIND REVIEW PASS / REMOTE V10 RECHECK PENDING / CUDA PREFLIGHT NO-START /
+> 当前：`BROAD NOVELTY NO-GO / NARROW PHASE-0 CONDITIONAL GO / REAL-TEACHER STATIC V10 REMOTE PASS /
+> MMPOSE-ABU FROZEN / THREE-WAY BLIND REVIEW PASS / CUDA PREFLIGHT AUTHORIZED /
 > FORMAL P0B NO-START / GPU IDLE`
 
 ## 2026-07-20：exp404后根因边界
@@ -119,6 +119,13 @@ matching、bootstrap、scientific gate与运行环境均未改变。源码SHA为
 byte-exact，SHA256均为`15ae43641d2e13afd487978033b61b8f83d1702fbfc74972d95a3f733230723c`；代码、复现与
 终审三路固定快照均为`0B/0H`。
 
-当前远端SSH在banner阶段连续超时，因此尚未把本地v10 PASS误写成远端PASS，也未启动CUDA/GPU。网络恢复后
+当时远端SSH在banner阶段连续超时，因此没有把本地v10 PASS误写成远端PASS，也未启动CUDA/GPU。网络恢复后
 必须先用`/usr/local/anaconda3/envs/mmpose-abu/bin/python`完成两次远端v10 static并核对byte-exact、CUDA未
 初始化、GPU独占和fresh output；全部通过后才允许唯一512图preflight。
+
+网络恢复后已在远端固定MMPOSE-ABU中完成两次v10 static，均为`8/8 PASS`且byte-exact，SHA256均为
+`07eeb98692e6d8f54f7bc25dee3fc21803434f4d83ee8e9d33a01a44101123ce`。provenance明确记录Python `3.8.20`、
+Torch `1.13.1`和四份冻结源码SHA；两次结果前后`cuda_initialized=false`。复核时4090为`2 MiB / 0% / 0
+compute PID`，fixed preflight output、started seal与failed receipt均不存在，远端tracked worktree clean。
+
+该结果把门5闭合并授权唯一512图CUDA preflight；它仍不是科学GO，不含mAP/R1，也不授权formal P0B或student。

@@ -4166,3 +4166,6 @@ v9的MMPOSE-ABU兼容只属于复现边界，不构成问题、机制或证据�
 
 v10只修复MMPOSE-ABU Python 3.8下的AST合同兼容，三路盲审无B/H。该修复既不是新机制，也不增加科学证据；
 真实信息增益仍只能来自region-isolated teacher的二维反事实与后继donor-free可预测性。
+
+远端MMPOSE-ABU v10 static通过只关闭运行时歧义，不提高CAVT创新评分。512图preflight仍只测机械接线；只有
+后继full-train P0B的真实二维反事实才可能产生科学信息增益。

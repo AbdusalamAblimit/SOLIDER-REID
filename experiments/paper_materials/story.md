@@ -2374,3 +2374,6 @@ Phase 0 static v14已通过两次byte-exact `56/56`合同和最终`0B/0H/0M/0L`�
 
 远端v9 static暴露的`ast.unparse`错误与v10 Python 3.8兼容修复同样只属于测量合同工程，不是方法失败或论文
 证据。MMPOSE-ABU继续作为唯一运行环境；在远端v10复核和512图机械preflight通过前，story仍停在条件候选。
+
+远端v10已在MMPOSE-ABU中两次byte-exact通过，因而只授权512图机械preflight。该运行时结果不进入论文性能表，
+也不改变story的条件候选状态；formal P0B未开始。

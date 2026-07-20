@@ -89,6 +89,10 @@ CUDA preflight固定使用`/usr/local/anaconda3/envs/mmpose-abu/bin/python`，�
 与执行参数均不变。本地v10两次`8/8 PASS`、byte-exact且三路盲审`0B/0H`；远端v10必须在网络恢复后用同一
 MMPOSE-ABU完成两次static并通过CUDA未初始化与GPU独占复核，才可进入512图preflight。
 
+远端v10现已在MMPOSE-ABU中连续两次`8/8 PASS`且byte-exact，SHA256均为
+`07eeb98692e6d8f54f7bc25dee3fc21803434f4d83ee8e9d33a01a44101123ce`；CUDA前后均未初始化，4090独占且
+fixed preflight output/seal/FAILED全fresh。因此串行门5通过，只授权按本protocol启动唯一512图preflight。
+
 ## 机械有效性
 
 必须记录RGB/pose同步变换、左右翻转、mask mass/centroid/index/hash、CLIP normalization、16x16 patch布局、
