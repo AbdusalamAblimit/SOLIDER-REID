@@ -38,3 +38,10 @@ wrong-RGB `0.9375`、generic `0.96875`、zero/CLIP-only `0.875`、pose-shuffle `
 `/home/afr/reid-clean/train-logs/exp409-pchm-cache-v1.runner.log`，主PID=`501962`。启动前GPU无compute PID、
 asset/runner均fresh；首次观测`encoded 8/15618`，GPU约`2.2 GiB/94%`且只有该任务，无异常。运行中只监控
 自然完成，不改builder/source/参数；完成后核验覆盖、norm、metadata、SHA并把真实cache SHA写入config。
+
+等待cache期间只在本地准备一次性real-batch执行器。独立盲审首轮`1B/0H`：Stage-3参数筛选误用
+`layers.3`而实际注册为`base.stages.3.*`，会造成假失败；已在任何执行前精确修正，等待聚焦复审。cache运行
+source与参数未修改。
+
+real-batch执行器聚焦复审最终`0B/0H`。cache最新自然推进至`11000/15618`，主PID=`501962`，GPU约2.2GiB且
+无异常；仍只监控完成，不同步或修改运行中的远端repo。

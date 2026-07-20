@@ -36,3 +36,11 @@ manifest、preprocess及源码，违反协议中的输入绑定。
 - 未发现必现runtime、AMP或训练接线B/H。
 
 最终结论：`0B/0H / FRESH CACHE AND ONE REAL BATCH CUDA-AMP AUTHORIZED`。
+
+## real-batch执行器追加盲审
+
+首轮发现`1 BLOCKER / 0 HIGH`：脚本用`layers.3`筛Stage-3梯度，但当前Swin参数注册为
+`base.stages.3.*`，会把正常梯度误报为空。已在执行前改为精确`name.startswith("base.stages.3.")`；其余
+config merge、center CUDA0、GradScaler、pair/data SHA、forward/loss与真实optimizer update检查未见B/H。
+同一审查者聚焦复审确认修复精确匹配且语法PASS，未引入新问题。real-batch执行器最终=
+`0 BLOCKER / 0 HIGH`。
