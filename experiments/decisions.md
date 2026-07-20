@@ -5589,3 +5589,17 @@ positive。任何`correct > wrong`都只能靠上下文不变性、实际换人�
 
 **决策**：不以SPT/TokenMix/part classifier组合建立exp404，不调patch mask、mix ratio或mixed-label权重。
 保持`SOURCE-PROVENANCE TARGET TRILEMMA / NO EXP404 / GPU NO-START`，exp401–403封板不变。
+
+### [2026-07-20] 决策：不以conditional uncertainty metric建立exp404
+
+PFE官方commit `23191e9b`已让样本级对角方差通过mutual likelihood直接进入最终匹配；Bayesian Metric
+Learning commit `e0188f4d`和ReID中的part/local/spatial-channel uncertainty、QPM、probabilistic matching
+又覆盖posterior校准与质量感知度量。
+
+当前16维evidence没有正确covariance/projector标签。same-ID likelihood可由RGB均值满足，固定rank/trace/
+log-det只强迫删除；wrong donor可能与host具有相同nuisance，generic与NULL也没有天然概率顺序。强制
+`correct > wrong > generic/NULL`仍会退化为破坏control。
+
+**决策**：conditional covariance、Gaussian descriptor、orthogonal nuisance projector均排除，不创建exp404，
+不做CPU contract、CUDA或GPU。状态为`UNCERTAINTY-METRIC PRIOR SATURATION / ORDER IDENTIFIABILITY FAIL /
+GPU NO-START`，exp401–403封板不变。

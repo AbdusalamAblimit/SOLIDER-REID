@@ -641,3 +641,48 @@ SPT、TokenMix/Token Labeling、part descriptor和swap loss组合起来不满足
 第七轮裁决为`SOURCE-PROVENANCE TARGET TRILEMMA / MECHANISM GATE FAIL / NO EXP404 / GPU NO-START`。
 下一对象必须避免“context donor无身份、full donor问题退化、partial donor无全局target”三者之一，而不能仅换一种
 patch mask或mixed-label权重。
+
+## 20. 第八轮：evidence-owned uncertainty metric仍无可识别顺序
+
+本轮把最终检索对象从单点embedding改写为样本条件概率描述符或受约束Mahalanobis metric：RGB主干给均值，
+evidence只拥有方差、低秩不确定子空间或删除投影。希望correct evidence删除当前样本的nuisance方向，而wrong、
+generic与NULL不能得到同样的同身份稳定性。
+
+### 20.1 样本级不确定性进入最终metric已有直接先例
+
+Probabilistic Face Embeddings（ICCV 2019，官方commit
+`23191e9b068dbf495a37daa071a1383f12f2799b`）冻结原始均值embedding，另训练逐样本逐维对角方差，并用
+positive-pair mutual likelihood score：
+
+```text
+D(i,j) = sum_d [(mu_i-mu_j)^2 / (sigma_i^2+sigma_j^2)
+                + log(sigma_i^2+sigma_j^2)]
+```
+
+正式测试代码同时报告Euclidean与MLS，template fusion还按方差聚合。因此“样本条件方差直接改变最终身份度量”
+不是空白原子。NeurIPS 2023 Bayesian Metric Learning官方commit
+`e0188f4d0854cc9dd134d6ba7e31b7473a659ccc`进一步用contrastive-loss Laplace posterior估计网络权重不确定性；
+它的ranking仍用均值cosine，说明不确定性可作校准而不必拥有排序。
+
+ReID直接近邻也已经覆盖多个尺度：ICIP 2021 Part Uncertainty Estimation CNN
+（DOI `10.1109/ICIP42928.2021.9506308`）、Neurocomputing 2022 spatial/channel feature uncertainty
+（DOI `10.1016/j.neucom.2021.11.038`）、TMM 2023 QPM（DOI `10.1109/TMM.2022.3156282`）、
+ESWA 2024 self-similarity guided probabilistic embedding matching
+（DOI `10.1016/j.eswa.2023.121504`）以及IJCNN 2024 local uncertainty estimation
+（DOI `10.1109/IJCNN60899.2024.10650459`）。本轮没有找到能把“evidence-conditioned covariance”
+本身提升为机制贡献的未占空间。
+
+### 20.2 方差target与wrong顺序仍不可识别
+
+PFE的方差由same-ID positive likelihood间接学习，并没有“正确方差矩阵”标签。把当前16维support/appearance
+evidence映射成方差或固定秩投影后，同身份loss仍可主要由RGB均值满足；固定trace、rank或log-det只能强迫删除
+某些方向，不能说明删掉的是当前样本nuisance。
+
+wrong donor还没有天然的概率顺序。different-PID donor可能恰好有相同遮挡/质量状态，generic均值可能是良好
+校准先验，NULL究竟代表零方差、无限方差还是identity metric也必须人为指定。于是
+`correct > wrong > generic/NULL`不能从概率语义推出，只能靠对wrong施加破坏性margin。若把测试改为MLS或
+pair-specific covariance score，又直接落入PFE/QPM/概率ReID近邻，并仍不保证该顺序。
+
+第八轮裁决为`UNCERTAINTY-METRIC PRIOR SATURATION / ORDER IDENTIFIABILITY FAIL / NO EXP404 / GPU
+NO-START`。不以conditional covariance、orthogonal nuisance projector、fixed-rank deletion或Gaussian
+descriptor建立新实验。

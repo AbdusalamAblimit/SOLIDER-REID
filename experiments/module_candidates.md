@@ -368,3 +368,16 @@ content-weighted mixed target。
 evidence的`correct/wrong/generic/NULL`固定检索合同。
 
 该方向只是SPT/DG-Net/TokenMix/part classifier的组合，不创建exp404，不调mask/mix ratio，不做CPU/CUDA/GPU。
+
+### exp403后第八轮候选裁决：evidence-conditioned uncertainty metric
+
+**状态**：`PAPER/OFFICIAL-CODE AUDIT / PRIOR SATURATION + IDENTIFIABILITY FAIL / NO EXP404`
+
+PFE官方commit `23191e9b`已让逐样本逐维Gaussian方差通过mutual likelihood score直接进入最终匹配；
+Bayesian Metric Learning官方commit `e0188f4d`覆盖contrastive posterior uncertainty。ReID内部又已有part、
+spatial/channel、local uncertainty、QPM和probabilistic embedding matching。
+
+当前evidence没有可观测的正确covariance/projector标签。same-ID likelihood仍可被RGB均值满足，固定rank/trace/
+log-det只强迫度量变化；different-PID wrong donor也可能与host有相同质量状态，generic或NULL没有天然的概率次序。
+所以conditional covariance、nuisance projector和Gaussian descriptor都不能建立预注册强反事实顺序，不创建
+exp404，不做CPU/CUDA/GPU。

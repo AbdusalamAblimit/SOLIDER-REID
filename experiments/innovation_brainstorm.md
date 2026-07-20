@@ -4022,3 +4022,16 @@ Token Labeling和TokenMix已分别覆盖dense token class supervision、teacher 
 
 因此source mask只能解决“patch从哪来”，不能回答“组合后的固定descriptor应检索谁”。继续加part CE、mix ratio、
 mask规则或global soft label只会落入现有augmentation原子，不建立exp404。
+
+### exp403后第八轮：uncertainty-owned metric不是新的可识别对象
+
+**状态**：`UNCERTAINTY PRIOR SATURATION / ORDER UNIDENTIFIABLE / NO EXP404`
+
+PFE已经冻结mean embedding、为每张图预测逐维variance，并用pairwise mutual likelihood作为正式metric；QPM、
+part uncertainty、spatial/channel uncertainty、local uncertainty和probabilistic ReID又把质量/方差对象带进了
+遮挡ReID。Bayesian Metric Learning则说明posterior uncertainty也可只服务校准而不改变均值ranking。
+
+让16维evidence生成fixed-rank covariance或orthogonal deletion projector只能改写这些已有原子。它还缺少正确
+subspace标签：same-ID positive可由RGB mean绕过，固定谱预算只保证“删了东西”；wrong donor可能与host具有相同
+nuisance，generic prior也可能优于sample estimate，NULL语义取决于人为定义。故无法从概率结构推出
+`correct > wrong > generic/NULL`，不建立exp404。

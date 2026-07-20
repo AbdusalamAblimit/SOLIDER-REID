@@ -2830,3 +2830,16 @@ semantic evidence的final retrieval ownership。
 
 **当前判定**：`SOURCE-PROVENANCE TARGET TRILEMMA / MECHANISM GATE FAIL / NO EXP404 / GPU NO-START`。
 没有性能结果，exp401–403封板不变。
+
+## exp403后uncertainty-metric审计（2026-07-20）
+
+本轮没有启动实验或GPU。PFE官方commit `23191e9b`已经以逐样本逐维方差和mutual likelihood改变最终匹配；
+Bayesian Metric Learning commit `e0188f4d`覆盖posterior uncertainty，ReID又已有part/local/spatial-channel
+uncertainty、QPM和probabilistic embedding matching。
+
+当前evidence没有可观测的正确covariance或nuisance projector target。same-ID目标可被RGB mean满足，固定谱预算
+只保证数值变化；wrong donor不必有错误的质量状态，generic与NULL也没有天然概率次序。因此概率描述符不能直接
+建立强反事实顺序。
+
+**当前判定**：`UNCERTAINTY-METRIC PRIOR SATURATION / ORDER IDENTIFIABILITY FAIL / NO EXP404 / GPU
+NO-START`。没有性能结果，exp401–403封板不变。

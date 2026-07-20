@@ -2253,3 +2253,12 @@ content-aware mixed label。
 payload；partial-part donor有局部标签但没有单一gallery positive。于是patch provenance不能为当前非身份16维
 semantic code补出全局检索ownership，论文不能把SPT、dense token CE和part concat的组合写成新贡献。状态仍为
 `POST-EXP403 OWNERSHIP AUDIT / NO EXP404 / GPU NO-START`。
+
+第八轮尝试把evidence从身份内容改成样本条件不确定性，但PFE已经以逐样本Gaussian方差和mutual likelihood
+直接定义最终metric，ReID也已有part/local/spatial-channel uncertainty、QPM与probabilistic matching。当前16维
+evidence没有正确covariance或nuisance subspace标签；same-ID目标可被RGB mean满足，固定rank/trace只会强制
+数值删除。
+
+wrong donor又不必拥有错误的质量状态，generic prior甚至可能比单样本估计更稳，NULL的概率含义也需人为指定。
+因此概率描述符不能自然产生预注册顺序，story不能把conditional covariance或orthogonal projector写成新贡献。
+状态保持`POST-EXP403 OWNERSHIP AUDIT / NO EXP404 / GPU NO-START`。
