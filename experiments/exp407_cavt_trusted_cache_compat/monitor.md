@@ -48,3 +48,6 @@ fresh once-only路径、数据/pose/asset SHA和GPU独占全部通过，随后�
 `2362 MiB / 96%`，无failure/result/complete。当前`CONTINUE`，自然完成前不改运行中源码、协议或参数。
 
 后续观测到original batch 1500，主进程仍运行，GPU=`2362 MiB / 96%`，无failure/result/complete。判断继续不变。
+
+heartbeat观测到original batch 2700，主进程仍运行，GPU=`2362 MiB / 95%`，无failure/result/complete。吞吐持续、
+显存稳定，判断=`CONTINUE`；不修改运行中源码、协议或参数。
