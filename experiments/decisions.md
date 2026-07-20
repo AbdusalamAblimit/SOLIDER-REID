@@ -5926,3 +5926,13 @@ seed1234/e120 student；运行中不改代码/config、不续训、不按中间�
 **决策**：永久封板exp408为`SEALED NO-GO / MECHANISM ORDER PASS / PERFORMANCE FAIL`。这不是代码未接通或
 pose--CLIP关系不可学习，而是当前逐槽batch relation没有改善最终identity retrieval geometry。禁止通过调loss、
 scale、batch、rho、增加stage或删除control补救；下一编号必须改变训练/结构对象，并保留clean D0与强反事实裁决。
+
+### [2026-07-21] 决策：exp409选择PCHM直接改变final-metric训练边
+
+独立机制、文献和代码映射审计比较了PCOIR、PCHM、PCSIC与PSRD。PCHM最直接回应exp408错位：不再给中层特征
+增加CLIP目标，而是以增强后pose coverage与五槽CLIP appearance的离散rank-sum，替换final descriptor原triplet
+实际使用的positive/negative index。原soft-margin、loss weight、CE、D0 pose loss和推理保持不变。
+
+**决策**：冻结exp409 PCHM，不与PCOIR组合。PCOIR因pose-guided CutMix近邻、稀疏区域贴片质量和异PID
+partial-chimera标签污染暂不执行。PCHM只做必要shape/index/default-exact/CUDA-AMP检查和一次独立盲审；0B/0H后
+立即fresh cache与唯一e120。若退化成distance/loss加权或性能双门FAIL，直接封板，不调旧miner。

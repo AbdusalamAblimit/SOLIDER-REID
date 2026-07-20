@@ -3251,3 +3251,14 @@ clean D0 raw `57.5587756578`，性能双门FAIL。checkpoint SHA256=
 `0.0075383754/0.0084765423/0.0266254693/0.7184363604`，common-valid=`1.0`且两遍bit-exact，机制顺序PASS；
 result SHA256=`b0cf31ad8206d5e0e6e8921f793d788fa7e79dd10fa524de0070b5920c985530`。最终=
 `EXP408 SEALED NO-GO / MECHANISM ORDER PASS / PERFORMANCE FAIL`：关系binding可学，但没有转化为ReID涨点。
+
+## exp409 PCHM设计冻结（2026-07-21）
+
+exp409当前只有设计、文献/代码审计，没有cache、GPU执行或mAP/R1。对象冻结为Pose×CLIP Hard-Pair Metric：
+增强后五槽pose coverage与fresh五槽region-isolated CLIP appearance通过无权ordinal rank-sum直接选择final
+descriptor原soft-margin triplet的正负index；不改margin、loss weight、CE、D0 pose loss、backbone或eval路径。
+
+三路审计中两路独立推荐PCHM，代码根因也定位为exp408 Stage-2局部relation与Stage-3→GAP最终检索几何错位。
+PCOIR因pose-CutMix近邻、patch质量和partial-chimera标签噪声暂不执行。当前判定=
+`DESIGN FROZEN / IMPLEMENTING / GPU NO-START`；性能仍以sealed clean D0 raw
+`57.5587756578 mAP / 67.6923076923 R1`为双门。

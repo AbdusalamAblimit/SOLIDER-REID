@@ -2419,3 +2419,12 @@ exp408现已完成并退出正面story。冻结64图diagnostic中correct关系�
 pose-indexed CLIP binding确实进入了Stage-2；但自然e120=`57.1/67.7`，未超过clean D0=`57.6/67.7`，因此
 性能前置门FAIL。该组合只能作为“语义关系可学但与identity retrieval不等价”的负向机制证据，不能包装成C类
 论文主方法。下一story必须把pose+CLIP作用到身份判别对象，而不是继续更换局部relation蒸馏形式。
+
+## 2026-07-21：exp409候选PCHM直接作用final identity metric
+
+exp409不继承PICRD的正面资格，只使用其失败诊断确定新对象：增强后pose coverage与fresh五槽CLIP appearance
+共同选择final descriptor原triplet的真实训练边。CLIP不再是teacher target，网络、CE、pose auxiliary、原
+soft-margin形式和推理路径均保持D0。
+
+当前story仅为条件候选：若唯一fresh e120不能同时严格超过clean D0 raw mAP/R1，PCHM退出正面story；若通过，
+还必须由pose-shuffle与CLIP-only matched control证明联合选边而非普通hard mining带来收益，才可写成C类主方法。

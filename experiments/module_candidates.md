@@ -429,3 +429,12 @@ projection、constant concat、additive bypass、C0 expert或ELO operator。
 
 该候选必须保持NULL/bypass exact，并在最终全量检索同时击败wrong/generic、unique random-key和
 frequency-matched random-cluster。当前只授权static CPU，不因C类目标而删除反例或直接启动GPU。
+
+### exp409候选：Pose×CLIP Hard-Pair Metric（PCHM）
+
+**状态**：`C-TRACK DESIGN FROZEN / IMPLEMENTING / GPU NO-START`
+
+exp408已证明局部pose--CLIP relation可学但不涨点，PCHM因此不再添加teacher loss，而是以增强后五槽pose
+coverage与fresh五槽CLIP appearance的无权ordinal rank直接选择final descriptor原triplet正负index。它不改
+margin、loss weight、欧氏距离、backbone或eval。问题/证据门PASS，机制门仅在“确实离散替换训练边”时
+conditional PASS；若退化为distance weighting或普通top-k调参则取消。自然e120不过clean D0 mAP/R1双门即封板。

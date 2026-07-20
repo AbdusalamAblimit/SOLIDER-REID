@@ -4222,3 +4222,22 @@ identity-discriminative retrieval geometry。因而“relation KD本身就是贡
 下一候选不能再换一种relation/cosine/KL或在同一路径上调权。它必须让pose+CLIP直接参与身份判别对象的构造，
 例如改变正负样本、身份原型或可见证据一致性，而非只约束中层相似矩阵；同时仍需wrong-RGB/generic/zero等强
 反事实证明收益来自正确绑定。问题/机制/证据创新门重新评估，不继承PICRD的C类资格。
+
+## 2026-07-21：exp409 PCHM——从语义关系监督改为身份训练边
+
+### 新对象
+
+PCHM不再要求student复现CLIP feature或relation。它把增强后五槽pose coverage与fresh五槽region-isolated CLIP
+appearance变成无权ordinal rank，在真实PK batch内直接选择final global descriptor原soft-margin triplet的边：
+同ID选择pose互补且CLIP一致的正对，异ID选择pose匹配且CLIP相似的负对。pose/CLIP不参与梯度尺度，eval完全
+回到D0 RGB descriptor。
+
+### 创新门
+
+- 问题门：PASS——batch-hard没有显式区分跨遮挡互补正支持与同姿态同外观异ID混淆；
+- 机制门：CONDITIONAL PASS——必须离散替换pair index；一旦变成loss/distance加权、margin或top-k调参即FAIL；
+- 证据门：PASS——D0、pose-shuffle、CLIP-only及wrong-RGB/generic/zero可在共享候选支持上直接归因。
+
+普通hard mining、pose-aware sampling和CLIP negative本身不是新意；PCHM只按C类窄候选推进。PCOIR暂不选，因为
+其foreign-part copy容易被归入pose-CutMix并制造partial-chimera标签噪声。若PCHM自然e120不过clean D0 mAP/R1
+双门，立即关闭该对象，不调rank fusion或cache。
