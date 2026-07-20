@@ -2984,3 +2984,20 @@ formal once-only prelaunch连续两次`15/15 PASS`且byte-exact；wrapper/contra
 `8,134 MiB/99%/1 compute PID`，训练进入epoch1且SPK active，无异常。
 
 **当前判定**：`FORMAL RUNNING / NO PERFORMANCE RESULT / NATURAL E120 REQUIRED`。早期loss与factor只作健康监控。
+
+## exp404 formal中间eval轨迹（2026-07-20）
+
+所有数字直接读取同一唯一formal runner log；`ΔD0`使用sealed clean D0=
+`57.5587756578 mAP / 67.6923076923 R1`：
+
+| epoch | mAP | R1 | R5 | R10 | ΔD0 mAP | ΔD0 R1 |
+|---:|---:|---:|---:|---:|---:|---:|
+| 10 | 32.9 | 42.3 | 57.3 | 64.1 | -24.7 | -25.4 |
+| 20 | 44.9 | 55.8 | 71.4 | 78.0 | -12.7 | -11.9 |
+| 30 | 47.0 | 57.4 | 71.6 | 77.3 | -10.6 | -10.3 |
+| 40 | 50.0 | 61.1 | 74.4 | 80.1 | -7.6 | -6.6 |
+
+epoch40相对sealed exp401 full=`57.1230075595/67.2850668430`约为`-7.1 mAP/-6.2 R1`。
+
+**当前判定**：最新中间eval=`50.0 mAP / 61.1 R1`，相对clean D0约`-7.6/-6.6`；仅作运行轨迹记录，
+唯一正式裁决仍须自然e120及全量correct/wrong/generic/NULL/random/all-bypass反事实。
