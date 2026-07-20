@@ -30,6 +30,9 @@ from model import make_model
 from solver import make_optimizer
 
 
+MAX_NATIVE_ATTEMPTS = 8
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
@@ -46,17 +49,18 @@ def set_seed(seed):
     torch.backends.cudnn.benchmark = True
 
 
-def nonzero_finite_gradients(named_parameters, predicate):
+def gradient_report(named_parameters, predicate):
     active = []
+    nonfinite = []
     for name, parameter in named_parameters:
         if not predicate(name) or parameter.grad is None:
             continue
         gradient = parameter.grad.detach()
         if not bool(torch.isfinite(gradient).all()):
-            raise RuntimeError("non-finite gradient: " + name)
-        if bool((gradient != 0).any()):
+            nonfinite.append(name)
+        elif bool((gradient != 0).any()):
             active.append((name, parameter))
-    return active
+    return active, nonfinite
 
 
 def main():
@@ -152,90 +156,153 @@ def main():
     loss_fn, center_criterion = make_loss(cfg, num_classes=num_classes)
     optimizer, _ = make_optimizer(cfg, model, center_criterion)
     model.train()
-    optimizer.zero_grad()
     scaler = amp.GradScaler()
-    with amp.autocast(enabled=True):
-        score, feature, _, tapf_aux = model(
-            image,
-            label=identity,
-            cam_label=camera,
-            view_label=view,
-            pose_batch=pose_batch,
-            tapf_epoch=1,
-        )
-        if isinstance(feature, list):
-            raise RuntimeError("PCHM requires one final global descriptor")
-        feature.retain_grad()
-        reid_loss = loss_fn(
-            score,
-            feature,
-            identity,
-            camera,
-            pair_indices=pair_indices,
-        )
-        loss = reid_loss + (
-            cfg.MODEL.TAPF.POSE_LOSS_WEIGHT * tapf_aux["pose_loss"]
-        )
-    if not bool(torch.isfinite(loss)):
-        raise RuntimeError("real-batch PCHM loss is non-finite")
-    scaler.scale(loss).backward()
-    if feature.grad is None or not bool(torch.isfinite(feature.grad).all()) or not bool(
-        (feature.grad != 0).any()
-    ):
-        raise RuntimeError("final descriptor gradient is inactive or non-finite")
-
     named_parameters = list(model.named_parameters())
-    stage3 = nonzero_finite_gradients(
-        named_parameters, lambda name: name.startswith("base.stages.3.")
-    )
-    backbone = nonzero_finite_gradients(
-        named_parameters, lambda name: name.startswith("base.")
-    )
-    if not stage3 or not backbone:
-        raise RuntimeError("Stage-3/backbone gradient contract failed")
-    update_name, update_parameter = stage3[0]
-    before_update = update_parameter.detach().clone()
-
-    with torch.no_grad(), amp.autocast(enabled=False):
-        d0_positive, d0_negative = batch_hard_pair_indices(
-            feature.detach().float(),
-            identity,
-            normalize_feature=cfg.SOLVER.TRP_L2,
-        )
-        d0_positive_change = (
-            d0_positive != correct["positive_indices"]
-        ).float().mean()
-        d0_negative_change = (
-            d0_negative != correct["negative_indices"]
-        ).float().mean()
-        control_change = {}
-        for mode in ("pose_shuffle", "clip_only"):
-            changed = (
-                states[mode]["positive_indices"]
-                != correct["positive_indices"]
-            ) | (
-                states[mode]["negative_indices"]
-                != correct["negative_indices"]
+    stage3_parameters = [
+        (name, parameter)
+        for name, parameter in named_parameters
+        if name.startswith("base.stages.3.")
+    ]
+    if not stage3_parameters:
+        raise RuntimeError("could not identify Stage-3 parameters")
+    attempts = []
+    success = None
+    d0_positive_change = d0_negative_change = None
+    control_change = None
+    for attempt in range(1, MAX_NATIVE_ATTEMPTS + 1):
+        optimizer.zero_grad(set_to_none=True)
+        scale_before = float(scaler.get_scale())
+        with amp.autocast(enabled=True):
+            score, feature, _, tapf_aux = model(
+                image,
+                label=identity,
+                cam_label=camera,
+                view_label=view,
+                pose_batch=pose_batch,
+                tapf_epoch=1,
             )
-            control_change[mode] = float(changed.float().mean().item())
-    if not bool(d0_positive_change > 0) or not bool(d0_negative_change > 0):
-        raise RuntimeError("PCHM real-batch edges equal legacy batch-hard")
-    if any(value <= 0 for value in control_change.values()):
-        raise RuntimeError("PCHM real-batch pose or CLIP axis is inactive")
+            if isinstance(feature, list):
+                raise RuntimeError("PCHM requires one final global descriptor")
+            reid_loss = loss_fn(
+                score,
+                feature,
+                identity,
+                camera,
+                pair_indices=pair_indices,
+            )
+            loss = reid_loss + (
+                cfg.MODEL.TAPF.POSE_LOSS_WEIGHT * tapf_aux["pose_loss"]
+            )
+        if not bool(torch.isfinite(loss)):
+            raise RuntimeError("real-batch PCHM loss is non-finite")
+        descriptor_gradient = torch.autograd.grad(
+            loss, feature, retain_graph=True
+        )[0]
+        if not bool(torch.isfinite(descriptor_gradient).all()) or not bool(
+            (descriptor_gradient != 0).any()
+        ):
+            raise RuntimeError(
+                "unscaled final descriptor gradient is inactive or non-finite"
+            )
+        if attempt == 1:
+            with torch.no_grad(), amp.autocast(enabled=False):
+                d0_positive, d0_negative = batch_hard_pair_indices(
+                    feature.detach().float(),
+                    identity,
+                    normalize_feature=cfg.SOLVER.TRP_L2,
+                )
+                d0_positive_change = (
+                    d0_positive != correct["positive_indices"]
+                ).float().mean()
+                d0_negative_change = (
+                    d0_negative != correct["negative_indices"]
+                ).float().mean()
+                control_change = {}
+                for mode in ("pose_shuffle", "clip_only"):
+                    changed = (
+                        states[mode]["positive_indices"]
+                        != correct["positive_indices"]
+                    ) | (
+                        states[mode]["negative_indices"]
+                        != correct["negative_indices"]
+                    )
+                    control_change[mode] = float(
+                        changed.float().mean().item()
+                    )
+            if not bool(d0_positive_change > 0) or not bool(
+                d0_negative_change > 0
+            ):
+                raise RuntimeError("PCHM real-batch edges equal legacy batch-hard")
+            if any(value <= 0 for value in control_change.values()):
+                raise RuntimeError("PCHM real-batch pose or CLIP axis is inactive")
 
-    scaler.step(optimizer)
-    scaler.update()
-    if torch.equal(before_update, update_parameter.detach()):
-        raise RuntimeError("real-batch optimizer did not update Stage-3")
+        scaler.scale(loss).backward()
+        scaler.unscale_(optimizer)
+        stage3, _ = gradient_report(
+            named_parameters, lambda name: name.startswith("base.stages.3.")
+        )
+        backbone, _ = gradient_report(
+            named_parameters, lambda name: name.startswith("base.")
+        )
+        _, all_nonfinite = gradient_report(
+            named_parameters, lambda name: True
+        )
+        nonfinite = sorted(set(all_nonfinite))
+        update_name, update_parameter = (
+            max(
+                stage3,
+                key=lambda item: float(item[1].grad.detach().abs().max().item()),
+            )
+            if stage3
+            else stage3_parameters[0]
+        )
+        before_update = update_parameter.detach().clone()
+        scaler.step(optimizer)
+        scaler.update()
+        scale_after = float(scaler.get_scale())
+        updated = not torch.equal(before_update, update_parameter.detach())
+        overflow = scale_after < scale_before
+        attempts.append(
+            {
+                "attempt": attempt,
+                "scale_before": scale_before,
+                "scale_after": scale_after,
+                "nonfinite_gradient_tensors": len(nonfinite),
+                "native_overflow": overflow,
+                "updated": updated,
+            }
+        )
+        if overflow:
+            if updated:
+                raise RuntimeError("native GradScaler overflow semantics failed")
+            continue
+        if nonfinite:
+            raise RuntimeError("non-finite gradients did not trigger native backoff")
+        if not stage3 or not backbone:
+            raise RuntimeError("Stage-3/backbone gradient contract failed")
+        if not updated:
+            raise RuntimeError("finite real-batch optimizer step did not update Stage-3")
+        success = {
+            "attempt": attempt,
+            "stage3": stage3,
+            "backbone": backbone,
+            "updated_parameter": update_name,
+            "loss": loss,
+            "reid_loss": reid_loss,
+            "pose_loss": tapf_aux["pose_loss"],
+        }
+        break
+    if success is None:
+        raise RuntimeError("default GradScaler did not reach one native update")
     result = {
-        "schema": "exp409-pchm-real-batch-v1",
+        "schema": "exp409-pchm-real-batch-v2",
         "status": "PASS",
         "batch": 64,
         "identities": 16,
         "instances_per_identity": 4,
-        "loss": float(loss.detach().item()),
-        "reid_loss": float(reid_loss.detach().item()),
-        "pose_loss": float(tapf_aux["pose_loss"].detach().item()),
+        "loss": float(success["loss"].detach().item()),
+        "reid_loss": float(success["reid_loss"].detach().item()),
+        "pose_loss": float(success["pose_loss"].detach().item()),
         "positive_pose_distance": float(
             correct["positive_pose_distance"].mean().item()
         ),
@@ -251,9 +318,11 @@ def main():
         "d0_positive_index_change": float(d0_positive_change.item()),
         "d0_negative_index_change": float(d0_negative_change.item()),
         "control_index_change": control_change,
-        "stage3_nonzero_grad_tensors": len(stage3),
-        "backbone_nonzero_grad_tensors": len(backbone),
-        "updated_parameter": update_name,
+        "native_attempts": attempts,
+        "first_successful_update": success["attempt"],
+        "stage3_nonzero_grad_tensors": len(success["stage3"]),
+        "backbone_nonzero_grad_tensors": len(success["backbone"]),
+        "updated_parameter": success["updated_parameter"],
         "cache_sha256": cache.sha256,
         "cache_source_head": cache.source_head,
     }

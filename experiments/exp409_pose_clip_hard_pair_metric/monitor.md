@@ -54,3 +54,18 @@ snapshot SHA=`2c34567396c057d65cc5cb40bc18e7001c2069b55cf2793ed0eaf5f74675bbf8`�
 source SHA=`8fe06de77f5f8256f31a572c577c473ed699303c9b3dee2e2e4a507e6df74e59`/
 `fbd3e137a729f44d3179864f9978bd8846b22e8627a3c311747b0a2541092864`。真实cache SHA现已冻结进config；
 下一步同步已审real-batch执行器并执行唯一检查。
+
+real-batch v1完成真实loader/model/forward/loss后，在reporter于`unscale_`前检查scaled Stage-3梯度处抛错；没有
+调用`scaler.step/update`，optimizer update为0，GPU已释放。该次冻结为
+`REAL-BATCH V1 INVALID CHECKER / MODEL SCIENCE NOT EVALUATED`，不重跑。根因是reporter违背native AMP语义，
+不能据此声称PCHM或D0数值失败。
+
+fresh v2只把测量改为：未缩放descriptor gradient、`unscale_`后参数report、default GradScaler自然skip/backoff，
+固定同一真实batch最多8 attempts，第一且唯一成功update后停止。禁止覆盖scaler初值或改loss/batch/pair；当前等待
+独立聚焦盲审，GPU空闲。
+
+v2首轮盲审发现`1B/0H`：最初只统计base nonfinite，而GradScaler扫描完整optimizer，可能把classifier-only
+overflow的正确skip误报为finite failure。已在执行前改成全model nonfinite并以scale下降作为native overflow
+权威判据；等待聚焦闭环。
+
+v2聚焦复审最终`0B/0H`，只授权一个fresh v2 execution；不得重跑v1。GPU空闲，立即同步固定源码并执行。
