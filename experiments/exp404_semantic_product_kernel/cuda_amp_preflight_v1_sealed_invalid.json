@@ -1,0 +1,24 @@
+{
+  "config_sha256": "2bd191ef96da0158a57f917831ea70627f1fef163397219ce1168e3e30bb297d",
+  "error": {
+    "observed_input_channels": 5,
+    "required_input_channels": 17,
+    "stage": "first production forward / first D0 PoseSpatialGate",
+    "type": "RuntimeError"
+  },
+  "execution": "exp404_cuda_amp_preflight_v1",
+  "experiment": "exp404_semantic_product_kernel",
+  "formal_training_authorized": false,
+  "formal_training_started": false,
+  "gpu_postflight": {
+    "compute_pid_count": 0,
+    "memory_used_mib": 2,
+    "utilization_percent": 0
+  },
+  "preflight_result_created": false,
+  "preflight_sha256": "fb0a21168bef619a561bb77da0a2e5fe9216fde114ea7c34705c3fec544b7fe7",
+  "remote_execution_commit": "6dc3a034d4eb93b45d7d5fd77ae5574bdb40a359",
+  "runtime_freeze_sha256": "3d38c99c7f06502d8b40467d2674c966723e5c913d2edf962c5a7088ec60cddb",
+  "status": "SEALED_INVALID_RUNTIME",
+  "verdict": "V1_NO-RERUN / FIX_PRODUCTION_CONTRACT_UNDER_NEW_EXECUTION_ID"
+}

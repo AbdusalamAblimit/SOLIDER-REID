@@ -1,6 +1,6 @@
 # exp404 SPK 监控记录
 
-> 当前：`C-TRACK CUDA PREFLIGHT STATIC PASS / CUDA EXECUTION AUTHORIZED / GPU NO-START`
+> 当前：`CUDA PREFLIGHT V1 SEALED-INVALID / PRODUCTION V3 PASS / V2 EXECUTION AUTHORIZED`
 
 ## 2026-07-20：目标降为C类后的机制准入
 
@@ -91,3 +91,35 @@ config/preflight/contract/result SHA=
 
 远端只读探测显示RTX 4090显存`2 MiB`、利用率`0%`且无compute PID。判定：
 `CUDA PREFLIGHT STATIC PASS / CUDA EXECUTION AUTHORIZED / FORMAL TRAINING NO-START / GPU NO-START`。
+
+## 2026-07-20：actual CUDA preflight v1封板与joint-field修复
+
+fresh远端repo commit=`6dc3a034d4eb93b45d7d5fd77ae5574bdb40a359`，关键source/config SHA与本地冻结值
+exact；pretrain/CLIP/codebook均复制为fresh link-count=1、mode444资产。fresh uv Python路径为
+`/home/afr/reid-clean/runtimes/exp404-spk-py310/bin/python`，56包freeze与
+`runtime_requirements.txt` byte-exact，SHA=`3d38c99c7f06502d8b40467d2674c966723e5c913d2edf962c5a7088ec60cddb`。
+
+actual batch64 preflight v1在首个production forward、第一处D0 `PoseSpatialGate`自然失败：gate权重要求17通道，
+实际`consumer_field`为5-slot region mask。这是production接线缺陷，不是AMP或数据失败；正式e120未启动，结果文件
+未生成，GPU postflight=`2 MiB/0%/0 compute PID`。v1封板记录SHA=
+`9958ec661fcaaea20499be04e0450085d76ec3ec5094e8df03179ccff426b498`，判定
+`SEALED_INVALID_RUNTIME / V1 NO-RERUN`。
+
+修复只恢复设计中冻结的D0 pose对象：rich anchor同时保留17通道`student_joint_field`，训练期按原D0 handoff混合
+teacher/student joint field；SPK子类只把该`consumer_joint_field`送入两个D0 gate，5-slot region mask/evidence仍
+用于原监督与最终SPK。
+
+production v3合同连续两次`49/49 PASS`且byte-exact：train/eval joint field shape=`[4,17,4,2]`，region/evidence
+仍为`[4,5,4,2]/[4,5,16]`，两个gate真实执行，5通道mutant被抓；旧D0/C0 off-parity及v2全部门保持PASS。
+v3 contract/result SHA=
+`ce85da278b551a66cacaddd14b3fda79bff356fcee4f7aeff717a927710534ef`/
+`56dc8a29957674034c9fb53b0894e686dfbc861c6c7668c3bffda2feed274603`。
+
+fresh CUDA preflight v2 wrapper只委托冻结v1 core并标记新execution；其静态合同连续两次`11/11 PASS`且
+byte-exact。wrapper/contract/result SHA=
+`2f581913753cc2fc91f02308316433cbe061b16718be1323f8800b744d151b51`/
+`224303abf880b670cf8cd694b214d14cdd085b826fdb1443dbedf6249f060fcc`/
+`d32a0df0ccbec3c303937c7d4057a542ac0d3adc2b50258d0bc18a600f92a17c`。
+
+判定：`V1 SEALED-INVALID / PRODUCTION V3 PASS / CUDA PREFLIGHT V2 EXECUTION AUTHORIZED / FORMAL
+TRAINING NO-START / GPU IDLE`。

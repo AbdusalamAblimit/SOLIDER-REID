@@ -1,0 +1,32 @@
+{
+  "cuda_execution_authorized": true,
+  "execution": "exp404_cuda_amp_preflight_v2",
+  "experiment": "exp404_semantic_product_kernel",
+  "formal_training_authorized": false,
+  "gate_count": 11,
+  "gate_pass_count": 11,
+  "gates": {
+    "cuda_not_initialized": true,
+    "five_slot_mutant_caught": true,
+    "frozen_sources_exact": true,
+    "joint_field_shape_gate_present": true,
+    "no_preflight_output_local": true,
+    "production_v3_all_pass": true,
+    "v1_sealed_invalid": true,
+    "v2_contract_tag": true,
+    "v2_delegates_frozen_core": true,
+    "v2_execution_tag": true,
+    "v2_wrapper_ast_valid": true
+  },
+  "source_sha256": {
+    "config": "2bd191ef96da0158a57f917831ea70627f1fef163397219ce1168e3e30bb297d",
+    "contract": "224303abf880b670cf8cd694b214d14cdd085b826fdb1443dbedf6249f060fcc",
+    "production_v3_contract": "ce85da278b551a66cacaddd14b3fda79bff356fcee4f7aeff717a927710534ef",
+    "production_v3_result": "56dc8a29957674034c9fb53b0894e686dfbc861c6c7668c3bffda2feed274603",
+    "tapf": "72ff5a609c7a080d848e96a2c12239795388441cc13b85519ef2cbf42f04bf2a",
+    "v1_core": "fb0a21168bef619a561bb77da0a2e5fe9216fde114ea7c34705c3fec544b7fe7",
+    "v1_invalid": "9958ec661fcaaea20499be04e0450085d76ec3ec5094e8df03179ccff426b498",
+    "v2_wrapper": "2f581913753cc2fc91f02308316433cbe061b16718be1323f8800b744d151b51"
+  },
+  "status": "CUDA_PREFLIGHT_V2_STATIC_PASS"
+}

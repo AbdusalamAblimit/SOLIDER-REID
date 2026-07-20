@@ -1052,6 +1052,7 @@ class CleanRichEvidenceBudgetTapf(nn.Module):
         student_mask = prediction["region_mask"]
         student_presence = prediction["presence"]
         student_evidence = prediction["evidence"]
+        student_joint_field = prediction["joint_field"]
         rho = self.rho_at_epoch(epoch, training)
         if not training:
             consumer_mask = student_mask.detach()
@@ -1063,6 +1064,8 @@ class CleanRichEvidenceBudgetTapf(nn.Module):
                 "student_mask": student_mask,
                 "student_presence": student_presence,
                 "student_evidence": student_evidence,
+                "student_joint_field": student_joint_field,
+                "consumer_joint_field": student_joint_field.detach(),
                 "consumer_field": consumer_mask
                 * consumer_presence[..., None, None],
                 "pose_loss": None,
@@ -1075,6 +1078,7 @@ class CleanRichEvidenceBudgetTapf(nn.Module):
                 "q_loss": None,
                 "student_fraction": 1.0,
                 "teacher_field": None,
+                "teacher_joint_field": None,
                 "reliability": consumer_presence,
                 "rho": rho,
                 "gate_deltas": [],
@@ -1095,7 +1099,7 @@ class CleanRichEvidenceBudgetTapf(nn.Module):
                 + ", ".join(missing)
             )
 
-        gaussian, _, reliability = render_pose_field(
+        gaussian, teacher_joint_field, reliability = render_pose_field(
             pose_batch["keypoints"],
             pose_batch["scores"],
             pose_batch["valid"],
@@ -1160,6 +1164,10 @@ class CleanRichEvidenceBudgetTapf(nn.Module):
             (1.0 - fraction) * teacher_presence
             + fraction * student_presence
         ).detach()
+        consumer_joint_field = (
+            (1.0 - fraction) * teacher_joint_field
+            + fraction * student_joint_field
+        ).detach()
         semantic_loss_without_exec = torch.stack(
             [
                 region_mask_loss,
@@ -1176,6 +1184,8 @@ class CleanRichEvidenceBudgetTapf(nn.Module):
             "student_mask": student_mask,
             "student_presence": student_presence,
             "student_evidence": student_evidence,
+            "student_joint_field": student_joint_field,
+            "consumer_joint_field": consumer_joint_field,
             "consumer_field": consumer_mask
             * consumer_presence[..., None, None],
             "pose_loss": pose_loss,
@@ -1190,6 +1200,7 @@ class CleanRichEvidenceBudgetTapf(nn.Module):
             "q_loss": None,
             "student_fraction": fraction,
             "teacher_field": teacher_mask * teacher_presence[..., None, None],
+            "teacher_joint_field": teacher_joint_field,
             "teacher_mask": teacher_mask,
             "teacher_presence": teacher_presence,
             "teacher_evidence": teacher_evidence.detach(),
@@ -1288,6 +1299,17 @@ class CleanSemanticProductTapf(CleanRichEvidenceBudgetTapf):
                 for _ in range(2)
             ]
         )
+
+    def prepare(self, source_feature, pose_batch, image_hw, epoch, training):
+        state = super().prepare(
+            source_feature,
+            pose_batch,
+            image_hw=image_hw,
+            epoch=epoch,
+            training=training,
+        )
+        state["consumer_field"] = state["consumer_joint_field"]
+        return state
 
     def apply_gate(self, bank_index, tokens, hw_shape, state):
         routed, delta = self.psg_bank[bank_index](
