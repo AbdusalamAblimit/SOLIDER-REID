@@ -190,3 +190,12 @@ SPK factor mean/std/min/max=`1.0000/0.0998/0.7807/1.2410`，descriptor delta abs
 日志异常扫描无Traceback、RuntimeError、OOM、NaN或Inf；尚无正式eval/performance结果。
 
 判定：`CONTINUE / EXECUTION HEALTHY / NO PERFORMANCE JUDGMENT`。
+
+## 2026-07-20T05:26Z：formal健康检查
+
+main PID=`436043`仍是唯一compute PID，GPU=`8,104 MiB/99%`。epoch16自然完成，单epoch=`124.440 s`、
+`108.0 samples/s`；检查时进入epoch17 iter20/227。当前loss=`3.100`、所有分项finite，SPK factor
+mean/std/min/max=`1.0000/0.1003/0.8054/1.2406`，descriptor delta abs=`9.862e-02`，干预保持active。
+日志异常扫描继续无Traceback、RuntimeError、OOM、NaN或Inf；尚无正式eval/performance结果。
+
+判定：`CONTINUE / EXECUTION HEALTHY / NO PERFORMANCE JUDGMENT`。
