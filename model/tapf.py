@@ -4,6 +4,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from .pose_clip_relation import (
+    mass_normalized_slot_pool,
+    pose_clip_counterfactual_relation_loss,
+    render_pose_indexed_regions,
+)
+
 
 ANATOMICAL_REGION_JOINTS = (
     (0, 1, 2, 3, 4),
@@ -408,6 +414,82 @@ class CleanTapfD0(nn.Module):
         )
         state["gate_deltas"].append(delta)
         return gated
+
+
+class PoseIndexedClipRelationalTapf(CleanTapfD0):
+    """Clean D0 plus training-only relation supervision on live Stage-2 state."""
+
+    picrd = True
+
+    def prepare(self, source_feature, pose_batch, image_hw, epoch, training):
+        state = super().prepare(
+            source_feature,
+            pose_batch=pose_batch,
+            image_hw=image_hw,
+            epoch=epoch,
+            training=training,
+        )
+        state.update(
+            {
+                "picrd_loss": None,
+                "picrd_correct": None,
+                "picrd_wrong_rgb": None,
+                "picrd_generic": None,
+                "picrd_zero": None,
+                "picrd_ranking": None,
+                "picrd_wrong_shift": None,
+                "picrd_common_valid_fraction": None,
+            }
+        )
+        if not training:
+            return state
+        required = {
+            "clip_slot_features",
+            "clip_slot_valid",
+            "identity",
+        }
+        missing = sorted(required.difference(pose_batch))
+        if missing:
+            raise ValueError(
+                "Training PICRD is missing targets: " + ", ".join(missing)
+            )
+        teacher = pose_batch["clip_slot_features"]
+        teacher_valid = pose_batch["clip_slot_valid"].bool()
+        if teacher.shape[:2] != (source_feature.shape[0], 5):
+            raise ValueError("PICRD teacher must have shape [B,5,D]")
+        if teacher_valid.shape != teacher.shape[:2]:
+            raise ValueError("PICRD teacher validity shape mismatch")
+        with torch.cuda.amp.autocast(enabled=False):
+            masks, geometry_valid = render_pose_indexed_regions(
+                pose_batch["keypoints"],
+                pose_batch["valid"],
+                image_hw=image_hw,
+                field_hw=source_feature.shape[-2:],
+                sigma=self.gaussian_sigma,
+            )
+            student, mask_valid = mass_normalized_slot_pool(
+                source_feature.float(), masks
+            )
+            student_valid = geometry_valid & mask_valid
+            relation = pose_clip_counterfactual_relation_loss(
+                student,
+                teacher.float(),
+                student_valid,
+                teacher_valid,
+                pose_batch["identity"],
+            )
+        state["picrd_loss"] = relation["loss"]
+        state["picrd_correct"] = relation["correct"]
+        state["picrd_wrong_rgb"] = relation["wrong_rgb"]
+        state["picrd_generic"] = relation["generic"]
+        state["picrd_zero"] = relation["zero"]
+        state["picrd_ranking"] = relation["ranking"]
+        state["picrd_wrong_shift"] = relation["wrong_shift"]
+        state["picrd_common_valid_fraction"] = relation[
+            "common_valid"
+        ].float().mean()
+        state["pose_loss"] = state["pose_loss"] + relation["loss"]
+        return state
 
 
 class CleanSemanticTapfC0(nn.Module):

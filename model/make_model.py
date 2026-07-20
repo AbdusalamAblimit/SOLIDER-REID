@@ -13,6 +13,7 @@ from .tapf import (
     CleanSemanticTapfC0,
     CleanTapfD0,
     CleanTapfHt0,
+    PoseIndexedClipRelationalTapf,
     SemanticProductKernel,
 )
 
@@ -249,6 +250,15 @@ class build_transformer(nn.Module):
 
         self.tapf_enabled = cfg.MODEL.TAPF.ENABLED
         if self.tapf_enabled:
+            if cfg.MODEL.TAPF.PICRD_ENABLED and (
+                cfg.MODEL.TAPF.SEMANTIC_ENABLED
+                or cfg.MODEL.TAPF.HIERARCHICAL
+                or cfg.MODEL.TAPF.SPK_ENABLED
+                or cfg.MODEL.TAPF.ELO_CUR_ENABLED
+            ):
+                raise ValueError(
+                    "PICRD requires the single-stage non-semantic clean D0 path"
+                )
             if cfg.MODEL.TAPF.SPK_ENABLED and cfg.MODEL.TAPF.ELO_CUR_ENABLED:
                 raise ValueError("SPK and ELO-CUR are mutually exclusive")
             if (
@@ -274,7 +284,9 @@ class build_transformer(nn.Module):
             cuda_rng_state = (
                 torch.cuda.get_rng_state_all() if torch.cuda.is_initialized() else None
             )
-            if cfg.MODEL.TAPF.SEMANTIC_ENABLED:
+            if cfg.MODEL.TAPF.PICRD_ENABLED:
+                tapf_class = PoseIndexedClipRelationalTapf
+            elif cfg.MODEL.TAPF.SEMANTIC_ENABLED:
                 if cfg.MODEL.TAPF.HIERARCHICAL:
                     raise ValueError("Semantic fast-track is single-stage only")
                 if cfg.MODEL.TAPF.SPK_ENABLED:
