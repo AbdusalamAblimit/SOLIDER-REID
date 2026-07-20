@@ -3,8 +3,8 @@
 ## 0. 当前边界
 
 standalone、production CPU/source、actual CUDA v3、formal prelaunch及唯一fresh seed1234/e120均已完成。
-训练封板后不得重跑、续训或修改训练代码/config。当前唯一活动是sealed e120 checkpoint的
-`exp404-spk-counterfactual-v1`九臂终审。
+训练与`exp404-spk-counterfactual-v1`九臂终审均已完成封板。validity PASS但科学裁决为
+`SPK_MECHANISM_NO_GO`；不得重跑、续训、补seed或修改代码/config改判。
 
 v1已因5-slot region field误接17通道D0 gate封板`SEALED-INVALID`，禁止重跑。修复后production v3与v2 static
 门通过；actual CUDA v2使用`cuda_amp_preflight_v2.py`和fresh v2 output完成并封板。

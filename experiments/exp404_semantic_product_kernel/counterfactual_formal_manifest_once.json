@@ -1,0 +1,46 @@
+{
+  "anomaly_counts": {
+    "nan_or_inf": 0,
+    "nonfinite": 0,
+    "oom": 0,
+    "overflow": 0,
+    "runtime_error": 0,
+    "traceback": 0
+  },
+  "audit_exit_code": 0,
+  "audit_pid": 449077,
+  "decision": "SPK_MECHANISM_NO_GO",
+  "gates": {
+    "audit_exit_zero": true,
+    "audit_process_exited": true,
+    "formal_mode_exact": true,
+    "gpu_compute_processes_zero": true,
+    "nine_arm_reports_present": true,
+    "nine_metrics_present": true,
+    "result_status_pass": true,
+    "runner_anomalies_zero": true
+  },
+  "gpu": {
+    "compute_pids": [],
+    "rows_memory_mib_utilization_percent": [
+      "2, 16"
+    ]
+  },
+  "mode": "FORMAL_FULL",
+  "paths": {
+    "audit_script": "/home/afr/SOLIDER-REID-exp404-spk-formal-v1/experiments/exp404_semantic_product_kernel/actual_counterfactual_audit.py",
+    "core": "/home/afr/SOLIDER-REID-exp404-spk-formal-v1/experiments/exp404_semantic_product_kernel/counterfactual_core.py",
+    "result": "/home/afr/reid-clean/audits/exp404-spk-counterfactual-v1/formal_result_once.json",
+    "runner": "/home/afr/reid-clean/audits/exp404-spk-counterfactual-v1/formal_runner_once.log",
+    "wrapper": "/home/afr/SOLIDER-REID-exp404-spk-formal-v1/experiments/exp404_semantic_product_kernel/counterfactual_once_wrapper.sh"
+  },
+  "sha256": {
+    "audit_script": "a226097b937b3980cd79c8acb4a80d32d6bf4fcf318b541e9dc97e2056976fe9",
+    "core": "4f8c5a19751e5380cffb3be8272cc738e7ff4510a912a681b2106b1fb05ee3b7",
+    "postflight_script": "46f1adb172eee74c9ed20f944014e6494c057b42945bf4c52f3d88d1fd68d4f8",
+    "result": "62226742ad5895526929f4c854064386ffbd4525aebf22fee501b52873d784bb",
+    "runner": "58fcbc2980745e052854ee4a959a2623c61933e914da78546ed29c8c4a8f6780",
+    "wrapper": "e9ab124ebd0458854ea31b4d5c3d2aadc395b0fabd822a0f5b0152a0d8795a77"
+  },
+  "status": "PASS"
+}

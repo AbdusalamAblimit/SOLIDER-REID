@@ -1,6 +1,6 @@
 # exp404 SPK 监控记录
 
-> 当前：`FORMAL E120 COMPLETE / TRAINING SEALED / COUNTERFACTUAL AUDIT PREPARING`
+> 当前：`FORMAL E120 SEALED / COUNTERFACTUAL VALIDITY PASS / SPK MECHANISM SEALED-NO-GO`
 
 ## 2026-07-20：目标降为C类后的机制准入
 
@@ -472,3 +472,35 @@ wrapper已冻结preflight v2 result SHA/授权字段、runtime executable与free
 `e9ab124ebd0458854ea31b4d5c3d2aadc395b0fabd822a0f5b0152a0d8795a77`。
 
 判定：`V2 PREFLIGHT PASS / FORMAL FULL ONCE-ONLY AUTHORIZED / PENDING EXPLICIT COMMIT AND FINAL GPU GATE`。
+
+## 2026-07-20T10:22Z：formal full九臂终审自然完成与封板
+
+唯一wrapper PID=`449057`自然退出。train generic完整覆盖15,618图；九臂各覆盖query/gallery 19,871图。全部
+validity与postflight 8项门PASS：strict reload、RGB-only、teacher/pose/codebook访问0、donor/cluster/random合同、
+逐臂state/RNG/patch/source/config/checkpoint恢复、NULL=bypass descriptor/metric exact、进程退出、GPU无compute
+PID、runner异常0。
+
+| arm | mAP | R1 | R5 | R10 | 相对correct mAP point |
+|---|---:|---:|---:|---:|---:|
+| correct | 57.42795952 | 67.46606231 | 79.68325615 | 84.97737646 | 0 |
+| wrong-RGB | 57.42609724 | 67.46606231 | 79.81900573 | 84.88687873 | -0.00186228 |
+| generic-mean | 57.43779749 | 67.46606231 | 79.81900573 | 84.84162688 | +0.00983797 |
+| NULL zero | 57.60890435 | 68.05430055 | 80.27149439 | 84.84162688 | +0.18094484 |
+| all-product-bypass | 57.60890435 | 68.05430055 | 80.27149439 | 84.84162688 | +0.18094484 |
+| random-key | 57.32280501 | 67.28506684 | 80.13574481 | 85.06787419 | -0.10515451 |
+| random-cluster | 57.16757129 | 67.37556458 | 80.31674027 | 85.24886966 | -0.26038823 |
+| wrong-mask | 57.42795952 | 67.46606231 | 79.68325615 | 84.97737646 | 0 |
+| slot-cycle | 57.42796086 | 67.46606231 | 79.68325615 | 84.97737646 | +0.00000134 |
+
+correct通过`56.7`绝对门且六个主control descriptor active，但primary max为NULL/bypass；semantic margin与
+product-bypass gap均=`-0.18094484 point`，要求的`+0.1`双门失败。correct相对clean D0精确差=
+`-0.13081614 mAP/-0.22624538 R1/-1.08597462 R5/+0.40724071 R10 point`，paper门也失败。
+
+result/runner/manifest SHA=
+`62226742ad5895526929f4c854064386ffbd4525aebf22fee501b52873d784bb`/
+`58fcbc2980745e052854ee4a959a2623c61933e914da78546ed29c8c4a8f6780`/
+`3adf0db7dcc62ebf5a9497a95179467ede941ca8979a2763574ed630aa596f64`；GPU postflight=
+`2 MiB/0 compute PID`。
+
+最终判定：`COUNTERFACTUAL VALIDITY PASS / SPK MECHANISM NO-GO / EXP404 SEALED`。下一步按用户要求换机制，
+先做近期pose+CLIP论文/开源代码学习与独立智能体审计；不得调SPK旧臂或直接占用GPU。
