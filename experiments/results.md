@@ -3049,3 +3049,27 @@ fresh v2 actual结果为`PASS / EXP404_COUNTERFACTUAL_PREFLIGHT_PASS / formal_fu
 once-only wrapper完成后static连续两次`33/33 PASS`且byte-exact，result SHA=
 `80b80afd4100bedf5bcfe3303c3f475f7f272fc20530f98f8341bf4fc7bece55`。显式提交和最终GPU/freshness门通过后，
 授权唯一formal full九臂串行终审。
+
+## exp404 SPK formal九臂终审（2026-07-20）
+
+正式终审完整覆盖train generic 15,618图及九臂各19,871验证图，全部validity与postflight PASS。mAP/R1：
+
+| arm | mAP | R1 | 相对correct mAP point |
+|---|---:|---:|---:|
+| correct | 57.42795952 | 67.46606231 | 0 |
+| wrong-RGB | 57.42609724 | 67.46606231 | -0.00186228 |
+| generic-mean | 57.43779749 | 67.46606231 | +0.00983797 |
+| NULL / all-product-bypass | 57.60890435 | 68.05430055 | +0.18094484 |
+| random-key | 57.32280501 | 67.28506684 | -0.10515451 |
+| random-cluster | 57.16757129 | 67.37556458 | -0.26038823 |
+| wrong-mask | 57.42795952 | 67.46606231 | 0 |
+| slot-cycle | 57.42796086 | 67.46606231 | +0.00000134 |
+
+correct相对clean D0精确差=`-0.13081614 mAP/-0.22624538 R1`。primary control max与bypass均为
+`57.60890435`，故semantic margin与product-bypass gap均=`-0.18094484 point`，不是要求的`+0.1`。
+result/manifest SHA=
+`62226742ad5895526929f4c854064386ffbd4525aebf22fee501b52873d784bb`/
+`3adf0db7dcc62ebf5a9497a95179467ede941ca8979a2763574ed630aa596f64`。
+
+**最终判定**：`VALIDITY PASS / SPK MECHANISM NO-GO / EXP404 SEALED`。NULL去掉乘积后反而提高mAP/R1，说明
+当前final-factor绑定伤害排序；禁止调旧臂，下一步转入新pose+CLIP机制的文献/代码审计。

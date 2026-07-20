@@ -5748,3 +5748,13 @@ once-only wrapper，连续两次static PASS并显式提交后，才可在GPU空�
 
 wrapper refreeze后的static已连续两次`33/33 PASS`且byte-exact。**决策**：显式提交、远端同步并复核GPU与
 formal result/runner/manifest/lock全fresh后，立即通过once-only wrapper启动唯一formal full。
+
+### [2026-07-20] 决策：exp404 validity PASS但机制NO-GO，封板并切换设计对象
+
+九臂formal与postflight全过，排除测量器、资产、teacher泄漏和inactive主control。correct=`57.42796/67.46606`，
+wrong近乎相同，generic略高，NULL=bypass=`57.60890/68.05430`显著更高；semantic与bypass gap均
+`-0.18094484 mAP point`。
+
+**决策**：exp404判`SPK_MECHANISM_NO_GO`并永久封板，不调temperature/loss/scale/presence、不补seed。接受用户
+“换一种设计方法”的指令，下一编号先做pose+CLIP近期论文与开源实现审计、独立机制智能体和后续代码盲审；
+未形成新的训练/结构对象并通过创新门前GPU NO-START。

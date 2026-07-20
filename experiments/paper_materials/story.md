@@ -2333,3 +2333,8 @@ paper性能FAIL、mechanism未裁决，直到同一e120 checkpoint完成全量mA
 小样本CUDA wiring进一步显示student hard presence五槽全1，wrong-mask循环无效；slot-cycle在均值SPK下也按定义
 置换不变。因此正面story明确不再包含slot ordering或mask sensitivity。preflight v1因reporter错误要求这两个
 补充control active而封板无效；v2只修测量作用域，主ownership门和九臂证据不变。
+
+正式九臂终审validity全部通过，但SPK机制明确NO-GO：correct=`57.42796/67.46606`，wrong几乎相同，generic略高，
+NULL与bypass exact达到`57.60890/68.05430`，比correct高`0.18094 mAP / 0.58824 R1 point`。因此“final
+descriptor语义乘积绑定”不能进入正面story；random controls较低只表明强随机破坏有害，不构成semantic
+ownership。下一story从新pose+CLIP训练/结构对象重新建立，且必须先证明相对clean D0实际涨点。

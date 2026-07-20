@@ -1,6 +1,6 @@
 # 实验 exp404：SPK 固定语义乘积核描述子
 
-> 当前状态：`FORMAL E120 SEALED / PAPER PERFORMANCE PREREQUISITE FAIL / COUNTERFACTUAL AUDIT V1 FROZEN`
+> 当前状态：`FORMAL E120 SEALED / COUNTERFACTUAL VALIDITY PASS / SPK MECHANISM SEALED-NO-GO`
 
 ## 目标调整
 
@@ -143,3 +143,13 @@ CUDA wiring preflight v1暴露reporter合同错误：SPK对五槽做加权平均
 v1错误地要求两个补充归因control都active，故该preflight封板`SEALED-INVALID_CONTRACT`，不产生机制判定。
 fresh preflight v2只修正validity reporter：所有九臂仍执行且finite，六个主control仍必须active，主mAP门、
 NULL=bypass与任何control均不删除或放宽。
+
+## 最终裁决
+
+正式九臂全量终审validity与postflight全部PASS。correct精确mAP/R1=`57.42795952/67.46606231`；
+wrong-RGB=`57.42609724/67.46606231`，generic=`57.43779749/67.46606231`，NULL与bypass exact为
+`57.60890435/68.05430055`。因此semantic margin和product-bypass gap均为`-0.18094484 mAP point`，两个主门
+失败；random-key/random-cluster虽更低，也不能抵消NULL/generic反证。
+
+最终判`SPK_MECHANISM_NO_GO`。exp404所有训练、preflight与终审执行均封板，禁止重跑、补seed、续训或以
+temperature/loss/scale/presence处理救旧臂。下一机制必须重新定义pose+CLIP训练/结构对象。

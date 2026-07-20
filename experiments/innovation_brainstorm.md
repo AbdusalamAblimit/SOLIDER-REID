@@ -4124,3 +4124,8 @@ exp404 e120未超过clean D0的mAP/R1，因此它不具备“更强主干性能�
 CUDA preflight还给出一个负向结构事实：actual student hard presence在抽样中五槽全1，使presence循环无作用；
 slot-cycle又因SPK均值聚合而置换不变。这不影响wrong/random等主ownership null，但说明不能把槽位顺序或mask
 敏感性写进贡献。v2修正的是reporter作用域，不是增强机制，创新上限反而进一步收紧。
+
+formal终审最终否定SPK：correct与wrong几乎相同，generic略优，NULL/bypass更高`0.18094 mAP point`。两类random
+更低只说明任意强扰动会伤害descriptor，不能证明正确语义拥有排序。由此关闭“把单图CLIP/student evidence作为
+final feature乘法因子”的创新解释；下一pose+CLIP候选必须改变训练或跨图结构对象，并且目标应直接带来D0增益，
+不能再把sample evidence注入位置换名重试。
