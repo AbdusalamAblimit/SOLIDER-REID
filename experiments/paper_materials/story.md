@@ -2296,3 +2296,12 @@ identity-majority聚合改变原semantic target。
 768维标准欧氏descriptor。NULL对应全1 factor并与bypass exact。论文主张上限是“final descriptor路径绑定 +
 random-key/random-cluster证据协议”，不声称张量积或InfoNCE首创。当前仅到design/static CPU授权；正式story
 只有在correct同时优于wrong/generic/NULL与两类semantic-blind control后才可转正。
+
+生产实现现已通过两次byte-exact CPU/source合同：默认关闭路径对D0/C0无影响；SPK本身零参数，NULL逐元素回到
+原global feature；训练的classification/triplet和测试的BNNeck前后descriptor都读取绑定对象，且evidence/global
+梯度均非零。旧C0 expert和ELO-CUR operator不在生产state中。
+
+因此C类story可以暂时从“设计直觉”推进到“结构已实现且不可由auxiliary-only伪造”，但仍不能推进到有效方法。
+v1的`40/41 FAIL`只暴露reporter作用域错误并已保留；v2的`41/41 PASS`仅授权CUDA preflight。最终是否进入论文
+正面方法，仍完全取决于唯一fresh模型能否同时击败wrong/generic/NULL、unique random-key、frequency-matched
+random-cluster和all-bypass。

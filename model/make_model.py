@@ -9,9 +9,11 @@ from .backbones.resnet_ibn_a import resnet50_ibn_a,resnet101_ibn_a
 from .tapf import (
     CleanEvidenceOperatorTapf,
     CleanRichEvidenceBudgetTapf,
+    CleanSemanticProductTapf,
     CleanSemanticTapfC0,
     CleanTapfD0,
     CleanTapfHt0,
+    SemanticProductKernel,
 )
 
 def shuffle_unit(features, shift, group, begin=1):
@@ -232,8 +234,28 @@ class build_transformer(nn.Module):
 
         self.dropout = nn.Dropout(self.dropout_rate)
 
+        self.spk_enabled = bool(
+            cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.SPK_ENABLED
+        )
+        if self.spk_enabled:
+            if int(cfg.MODEL.TAPF.SPK_GROUPS) != 16:
+                raise ValueError(
+                    "SPK_GROUPS must match the frozen 16-D rich evidence"
+                )
+            self.semantic_product_kernel = SemanticProductKernel(
+                feature_dim=self.in_planes,
+                groups=cfg.MODEL.TAPF.SPK_GROUPS,
+            )
+
         self.tapf_enabled = cfg.MODEL.TAPF.ENABLED
         if self.tapf_enabled:
+            if cfg.MODEL.TAPF.SPK_ENABLED and cfg.MODEL.TAPF.ELO_CUR_ENABLED:
+                raise ValueError("SPK and ELO-CUR are mutually exclusive")
+            if (
+                cfg.MODEL.TAPF.SPK_ENABLED
+                and not cfg.MODEL.TAPF.RICH_EVIDENCE_ENABLED
+            ):
+                raise ValueError("SPK requires rich evidence TAPF")
             if (
                 cfg.MODEL.TAPF.ELO_CUR_ENABLED
                 and not cfg.MODEL.TAPF.RICH_EVIDENCE_ENABLED
@@ -255,15 +277,14 @@ class build_transformer(nn.Module):
             if cfg.MODEL.TAPF.SEMANTIC_ENABLED:
                 if cfg.MODEL.TAPF.HIERARCHICAL:
                     raise ValueError("Semantic fast-track is single-stage only")
-                tapf_class = (
-                    CleanEvidenceOperatorTapf
-                    if cfg.MODEL.TAPF.ELO_CUR_ENABLED
-                    else (
-                        CleanRichEvidenceBudgetTapf
-                        if cfg.MODEL.TAPF.RICH_EVIDENCE_ENABLED
-                        else CleanSemanticTapfC0
-                    )
-                )
+                if cfg.MODEL.TAPF.SPK_ENABLED:
+                    tapf_class = CleanSemanticProductTapf
+                elif cfg.MODEL.TAPF.ELO_CUR_ENABLED:
+                    tapf_class = CleanEvidenceOperatorTapf
+                elif cfg.MODEL.TAPF.RICH_EVIDENCE_ENABLED:
+                    tapf_class = CleanRichEvidenceBudgetTapf
+                else:
+                    tapf_class = CleanSemanticTapfC0
             else:
                 tapf_class = (
                     CleanTapfHt0
@@ -277,6 +298,10 @@ class build_transformer(nn.Module):
                     "early_consumer_channels": self.base.num_features[2],
                     "early_consumer_count": len(self.base.stages[2].blocks),
                     "pose_loss_reduction": cfg.MODEL.TAPF.POSE_LOSS_REDUCTION,
+                }
+            elif cfg.MODEL.TAPF.SPK_ENABLED:
+                tapf_kwargs = {
+                    "psg_hidden": cfg.MODEL.TAPF.PSG_HIDDEN,
                 }
             elif cfg.MODEL.TAPF.SEMANTIC_ENABLED:
                 tapf_kwargs = {
@@ -325,6 +350,17 @@ class build_transformer(nn.Module):
             global_feat, featmaps = base_output
         if self.reduce_feat_dim:
             global_feat = self.fcneck(global_feat)
+        if self.spk_enabled:
+            unbound_global_feat = global_feat
+            global_feat, product_factor = self.semantic_product_kernel(
+                global_feat,
+                tapf_aux["student_evidence"],
+                tapf_aux["student_presence"],
+            )
+            tapf_aux["semantic_product_factor"] = product_factor
+            tapf_aux["semantic_product_delta"] = (
+                global_feat - unbound_global_feat
+            )
         feat = self.bottleneck(global_feat)
         feat_cls = self.dropout(feat)
 

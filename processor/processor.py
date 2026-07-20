@@ -109,6 +109,9 @@ def do_train(cfg,
     elo_cur_enabled = bool(
         rich_evidence_enabled and cfg.MODEL.TAPF.ELO_CUR_ENABLED
     )
+    spk_enabled = bool(
+        rich_evidence_enabled and cfg.MODEL.TAPF.SPK_ENABLED
+    )
     generic_evidence = None
     if cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.SEMANTIC_ENABLED:
         from model.clip_semantic_teacher import (
@@ -408,7 +411,7 @@ def do_train(cfg,
                             cur_loss_meter.update(
                                 tapf_aux["cur_loss"].item(), img.shape[0]
                             )
-                        else:
+                        elif tapf_aux.get("exec_loss") is not None:
                             exec_loss_meter.update(
                                 tapf_aux["exec_loss"].item(), img.shape[0]
                             )
@@ -475,7 +478,37 @@ def do_train(cfg,
                                 [delta.detach().float().abs().mean() for delta in tapf_aux["gate_deltas"]]
                             ).mean().item()
                             if rich_evidence_enabled:
-                                if elo_cur_enabled:
+                                if spk_enabled:
+                                    product_factor = tapf_aux[
+                                        "semantic_product_factor"
+                                    ].detach().float()
+                                    product_delta = tapf_aux[
+                                        "semantic_product_delta"
+                                    ].detach().float()
+                                    logger.info(
+                                        "Epoch[%d] Iter[%d/%d] Loss: %.3f, Pose: %.3f, Semantic: %.3f, RegionMask: %.3f, Presence: %.3f, EvidenceCos: %.3f, EvidenceRel: %.3f, Acc: %.3f, Student: %.2f, Reliability: %.3f, SPKMean/Std/Min/Max: %.4f/%.4f/%.4f/%.4f, SPKDeltaAbs: %.3e, GateAbs: %.3e, Base Lr: %.2e",
+                                        epoch,
+                                        n_iter + 1,
+                                        len(train_loader),
+                                        loss_meter.avg,
+                                        pose_loss_meter.avg,
+                                        semantic_loss_meter.avg,
+                                        region_mask_loss_meter.avg,
+                                        presence_loss_meter.avg,
+                                        evidence_cos_loss_meter.avg,
+                                        evidence_relation_loss_meter.avg,
+                                        acc_meter.avg,
+                                        tapf_aux["student_fraction"],
+                                        tapf_aux["reliability"].detach().float().mean().item(),
+                                        product_factor.mean().item(),
+                                        product_factor.std(unbiased=False).item(),
+                                        product_factor.min().item(),
+                                        product_factor.max().item(),
+                                        product_delta.abs().mean().item(),
+                                        gate_abs,
+                                        base_lr,
+                                    )
+                                elif elo_cur_enabled:
                                     compatibility = tapf_aux[
                                         "compatibility_means"
                                     ]

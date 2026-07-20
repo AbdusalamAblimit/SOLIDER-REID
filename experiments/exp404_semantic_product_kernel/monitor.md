@@ -1,6 +1,6 @@
 # exp404 SPK 监控记录
 
-> 当前：`C-TRACK DESIGN / STATIC CPU PENDING / GPU NO-START`
+> 当前：`C-TRACK PRODUCTION CPU PASS / CUDA PREFLIGHT AUTHORIZED / GPU NO-START`
 
 ## 2026-07-20：目标降为C类后的机制准入
 
@@ -40,3 +40,35 @@ uv环境、`CUDA_VISIBLE_DEVICES=''`连续执行两次。两次均exit `0`，std
 result SHA=`6b2ca7d88669238cc9f7bebd04ff21567fe5b7f61a0a3f1dbfa549a909b19a64`。判定：
 `STATIC CPU PASS / PRODUCTION IMPLEMENTATION AUTHORIZED / CUDA NO-START / GPU NO-START`。toy utility不作为
 ReID性能或semantic ownership结果。
+
+## 2026-07-20：production实现与CPU/source正反合同
+
+生产实现只修改默认关闭的四个目标文件：config增加`SPK_ENABLED=False/SPK_GROUPS=16`；TAPF图使用rich RGB
+student evidence与原D0 `PoseSpatialGate`，不含C0 static expert或ELO-CUR router；无参数SPK在BNNeck、
+classifier、triplet返回与eval descriptor之前绑定final global feature。构建期新增`SPK_GROUPS==16`显式门，
+SPK与ELO-CUR互斥。
+
+production CPU v1真实动态路径及40项门均通过，但源码顺序reporter用全文件`string.index`，误命中构造函数中更早
+出现的BNNeck文本，得到`40/41`与`PRODUCTION_CPU_FAIL`。这不是模型失败，但按测量纪律保留v1记录，不覆盖：
+
+- v1 contract SHA=`0716dd5db1521d0b4ecf2ea072c7970aa4e3bb89d06344fa8ce43e053a59a26c`；
+- v1 result SHA=`086b627d89052ff21e68878f3636e2fc8c1f96fc0b0d051df605e08365ea1f0c`。
+
+fresh v2仅把该reporter改为AST限定`build_transformer.forward`；绑定行`355`严格早于BNNeck行`364`。连续两次
+均为`41/41 PASS`且result byte-exact：
+
+- D0/C0相对preimplementation commit=`07ca01c`的state、初始化RNG、output逐tensor exact；
+- SPK参数/缓存数=`0/0`，NULL factor全1且float16 descriptor逐元素identity；
+- train classifier、triplet返回、eval before/after BNNeck全部读取同一个bound descriptor；
+- direct global/evidence梯度范数=`0.1973796189/0.1360884756`，真实forward shell为
+  `0.4505997896/0.2918346226`，均finite/nonzero；
+- 两个consumer均为D0 `PoseSpatialGate`，旧C0/ELO router type与state key为0；
+- strict reload、optimizer覆盖、teacher/generic-free state与evidence-ignored/aux-only/additive-bypass mutant全部PASS；
+- CUDA前后均未初始化。
+
+v2 contract/result SHA=
+`766ef5ad65e0ee8cbc2643e320fb5c1f4b247664ce459a2ea834a818a3fe78dd`/
+`829fcaad9b9aa88f596b4b3ca51180e6e42ce50d488542ae0f8ebdcc27a4f6c8`。
+
+判定：`PRODUCTION CPU PASS / CUDA PREFLIGHT AUTHORIZED / FORMAL TRAINING NO-START / GPU NO-START`。下一步只
+允许创建fresh config与必要CUDA/AMP preflight；尚无ReID性能或semantic ownership结论。

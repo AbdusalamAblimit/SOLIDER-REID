@@ -5659,3 +5659,15 @@ single-RGB open-set ReID中final fixed descriptor的semantic ownership与random-
 **决策**：建立exp404 `Semantic Product Kernel`设计，把16维student evidence作为固定、无参数乘积因子直接绑定
 到最终768维descriptor；不使用C0 expert、ELO-CUR operator或新增ownership loss。按问题/适度机制/证据三项
 通过C-track准入，当前仅允许static CPU；在正反contract完成前`GPU NO-START`。
+
+### [2026-07-20] 决策：exp404 production CPU通过，授权必要CUDA preflight
+
+生产实现与v2 CPU/source合同连续两次`41/41 PASS`且byte-exact。默认关闭路径相对preimplementation commit
+`07ca01c`保持D0/C0 state、初始化RNG与output exact；SPK无参数、NULL exact identity，且classification、triplet、
+BNNeck前后eval都读取同一个绑定descriptor。旧C0/ELO router不在图或state中，global/evidence梯度finite/nonzero。
+
+v1唯一失败是reporter跨函数误命中BNNeck字符串，保留`40/41 FAIL`记录；v2仅修AST测量范围，没有修改模型或降低
+科学门。
+
+**决策**：允许创建fresh config和一次必要CUDA/AMP preflight；formal training仍未授权，GPU当前仍NO-START。
+C类目标只降低创新包装门槛，不降低correct-vs-wrong/generic/NULL/random-key/random-cluster与all-bypass终审门。

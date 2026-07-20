@@ -2897,3 +2897,22 @@ source/result SHA=
 
 **当前判定**：`STATIC CPU PASS / PRODUCTION IMPLEMENTATION AUTHORIZED / CUDA NO-START / GPU NO-START`。
 这不是ReID性能或semantic ownership结果；exp394–403封板不变。
+
+## exp404 SPK production CPU/source合同（2026-07-20）
+
+生产图已完成：无参数SPK位于BNNeck/classifier/triplet/eval共同final descriptor路径；rich evidence固定16维，
+consumer恢复为两个D0 `PoseSpatialGate`，state中无C0/ELO router。默认`SPK_ENABLED=False`。
+
+v1因源码顺序reporter越过函数边界误命中构造函数BNNeck文本而记为`40/41 FAIL`，保留不覆盖；动态路径本身已过。
+v2只修reporter为AST函数内定位，连续两次`41/41 PASS`且result byte-exact。D0/C0相对commit `07ca01c`的
+state/RNG/output exact；NULL identity、train/eval bound descriptor、global/evidence梯度、strict reload、optimizer、
+teacher-free state及三个mutant门全部PASS，CUDA未初始化。
+
+v1 contract/result SHA=
+`0716dd5db1521d0b4ecf2ea072c7970aa4e3bb89d06344fa8ce43e053a59a26c`/
+`086b627d89052ff21e68878f3636e2fc8c1f96fc0b0d051df605e08365ea1f0c`；v2 contract/result SHA=
+`766ef5ad65e0ee8cbc2643e320fb5c1f4b247664ce459a2ea834a818a3fe78dd`/
+`829fcaad9b9aa88f596b4b3ca51180e6e42ce50d488542ae0f8ebdcc27a4f6c8`。
+
+**当前判定**：`PRODUCTION CPU PASS / CUDA PREFLIGHT AUTHORIZED / FORMAL TRAINING NO-START / GPU
+NO-START`。没有新增ReID性能数字，exp394–403封板不变。

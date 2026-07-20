@@ -944,6 +944,45 @@ class EvidenceOwnedLowRankRouter(nn.Module):
         return tokens + applied_delta, applied_delta, branch
 
 
+class SemanticProductKernel(nn.Module):
+    """Parameter-free semantic binding for one fixed Euclidean descriptor."""
+
+    def __init__(self, feature_dim=768, groups=16):
+        super().__init__()
+        if feature_dim <= 0 or groups <= 0 or feature_dim % groups:
+            raise ValueError(
+                "Semantic product feature_dim must be divisible by groups"
+            )
+        self.feature_dim = int(feature_dim)
+        self.groups = int(groups)
+        self.group_width = self.feature_dim // self.groups
+
+    def forward(self, global_feature, evidence, presence):
+        if global_feature.ndim != 2 or global_feature.shape[1] != self.feature_dim:
+            raise ValueError("Unexpected semantic product global feature shape")
+        if evidence.ndim != 3 or evidence.shape[2] != self.groups:
+            raise ValueError("Evidence must have shape [B,R,SPK_GROUPS]")
+        if presence.shape != evidence.shape[:2]:
+            raise ValueError("Presence must have shape [B,R]")
+        if evidence.shape[0] != global_feature.shape[0]:
+            raise ValueError("Semantic product batch mismatch")
+
+        presence_float = presence.detach().float().clamp(0.0, 1.0)
+        mass = presence_float.sum(dim=1, keepdim=True)
+        pooled = (evidence.float() * presence_float[..., None]).sum(dim=1)
+        pooled = pooled / mass.clamp_min(1.0)
+        pooled = torch.where(mass > 0, pooled, torch.zeros_like(pooled))
+        factor_float = self.groups * torch.softmax(pooled, dim=-1)
+        factor = factor_float.to(dtype=global_feature.dtype)
+        grouped = global_feature.reshape(
+            global_feature.shape[0], self.groups, self.group_width
+        )
+        descriptor = (factor[..., None] * grouped).reshape_as(global_feature)
+        if not bool(torch.isfinite(descriptor).all()):
+            raise RuntimeError("Non-finite semantic product descriptor")
+        return descriptor, factor_float
+
+
 class CleanRichEvidenceBudgetTapf(nn.Module):
     """Single-stage rich-evidence TAPF with two independently budgeted routers."""
 
@@ -1209,6 +1248,54 @@ class CleanRichEvidenceBudgetTapf(nn.Module):
                 + state["confidence_loss"]
                 + state["semantic_loss"]
             )
+        return routed
+
+
+class CleanSemanticProductTapf(CleanRichEvidenceBudgetTapf):
+    """Rich RGB student evidence with the original D0 spatial consumers."""
+
+    semantic_product = True
+
+    def __init__(
+        self,
+        anchor_channels=384,
+        anchor_hidden=128,
+        consumer_channels=768,
+        psg_hidden=32,
+        gate_release=0.5,
+        gaussian_sigma=1.5,
+        teacher_epochs=5,
+        handoff_epochs=5,
+    ):
+        super().__init__(
+            anchor_channels=anchor_channels,
+            anchor_hidden=anchor_hidden,
+            consumer_channels=consumer_channels,
+            router_rank=16,
+            gate_release=gate_release,
+            gaussian_sigma=gaussian_sigma,
+            teacher_epochs=teacher_epochs,
+            handoff_epochs=handoff_epochs,
+            rho_star=0.0,
+        )
+        self.psg_bank = nn.ModuleList(
+            [
+                PoseSpatialGate(
+                    feature_channels=consumer_channels,
+                    hidden_channels=psg_hidden,
+                    release=gate_release,
+                )
+                for _ in range(2)
+            ]
+        )
+
+    def apply_gate(self, bank_index, tokens, hw_shape, state):
+        routed, delta = self.psg_bank[bank_index](
+            tokens,
+            hw_shape,
+            state["consumer_field"],
+        )
+        state["gate_deltas"].append(delta)
         return routed
 
 

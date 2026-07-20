@@ -2,8 +2,8 @@
 
 ## 0. 当前边界
 
-当前只允许design、targeted literature/code audit与standalone CPU/static正反contract。CPU门通过后才允许生产实现；
-生产source/CPU门通过后才设计一次必要CUDA/AMP preflight。现在`GPU NO-START`。
+standalone与production CPU/source门均已通过。当前只允许创建fresh formal config及一次必要CUDA/AMP preflight；
+preflight自然退出且postflight全部通过前，formal仍为`NO-START`。现在`GPU NO-START`。
 
 ## 1. 不变量
 
