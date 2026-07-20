@@ -3180,3 +3180,8 @@ v2最终盲审计数为`0B/0H`、`1B/1H`、`1B/0H`；剩余项均为static forma
 证明缺口，production科学路径未发现漂移。聚焦v3补齐后两次fresh均`19/19 PASS`且byte-exact，SHA=
 `0c00a78c0babb21993325a4b031a8470e546ef10ebf656a24efc97f890263d44`。当前等待v3差异复审，仍无GPU、
 teacher科学结果或ReID mAP/R1。
+
+v3三路聚焦复审全部`0B/0H`。远端全新隔离HEAD=`4eb71c47bc16ed5e61ac645ba57378aaaadf81a9`，
+MMPOSE-ABU两次static也为`19/19 PASS`，byte-exact SHA与本地同为
+`0c00a78c0babb21993325a4b031a8470e546ef10ebf656a24efc97f890263d44`。唯一preflight已启动并取得started
+seal，当前处于15,618图original编码，尚无COMPLETE、科学结果或ReID mAP/R1。

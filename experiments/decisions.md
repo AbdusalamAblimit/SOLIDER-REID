@@ -5858,3 +5858,9 @@ formal仍全train独立重算MAD和原全部科学门。当前只授权CPU/stati
 v2三路中一条已`0B/0H`，其余意见可合并为formal/caliper/preference/witness同一static证明缺口。v3只实现这些
 明确反例并取得两次byte-exact `19/19 PASS`。下一轮只做差异复审；若`0B/0H`立即转远端MMPOSE-ABU并启动
 fresh preflight，不再增加本地合同或低风险建议。
+
+### [2026-07-21] 决策：exp406 v3授权并启动唯一preflight
+
+三路聚焦复审均`0B/0H`，远端MMPOSE-ABU两次static与本地byte-exact，fresh资产、隔离HEAD、输入SHA、GPU
+独占和once-only路径全部通过。因此授权并启动唯一`exp406-p0b-preflight-v1`。该授权只覆盖机械preflight；
+COMPLETE PASS前formal和student继续NO-START，运行中不改代码、协议或参数。

@@ -1,8 +1,8 @@
 # exp406 donor-reserve合同监控
 
 > 当前：`EXP405 SEALED-FAIL PRESERVED / STATIC V1 BLIND-REVIEW BLOCKED /
-> LOCAL STATIC V3 19/19 PASS BYTE-EXACT / FOCUSED V3 BLIND REVIEW PENDING /
-> GPU NO-START / FORMAL NO-START / STUDENT NO-START`
+> LOCAL+REMOTE STATIC V3 19/19 PASS BYTE-EXACT / FOCUSED V3 BLIND REVIEW 0B/0H /
+> UNIQUE PREFLIGHT RUNNING / FORMAL NO-START / STUDENT NO-START`
 
 ## 2026-07-21：建立新编号
 
@@ -94,3 +94,20 @@ SHA=`0c00a78c0babb21993325a4b031a8470e546ef10ebf656a24efc97f890263d44`，CUDA前
 `b6c1c2468568bd12820eb6f368cf09f0519a2a11ae6c6343d9e08c2f59c0a04a`，contract SHA=
 `a1e9e1dfaffcae5491c3e9c4bb9021973f4aa5d5c2c6874588071cb66c6b5fe8`。当前只做一次针对这些diff的聚焦盲审；
 若`0B/0H`立即进入远端MMPOSE-ABU，不再增加本地合同。
+
+## 2026-07-21：v3三路通过、远端static与唯一preflight启动
+
+固定commit `cf7b5ad7131f1866139fdf7ed73bc9d01a15ba2b`的三路聚焦复审均为`0B/0H`，只授权远端
+MMPOSE-ABU static。远端全新隔离仓库=`/home/afr/SOLIDER-REID-exp406-p0b-preflight-cf7b5ad`，HEAD=
+`4eb71c47bc16ed5e61ac645ba57378aaaadf81a9`，tracked clean；runner/donor/contract/protocol SHA与本地一致。
+
+fresh asset目录=`/home/afr/reid-clean/assets/exp406-p0b-preflight-v1`，CLIP SHA=
+`9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e`，asset manifest SHA=
+`fc64734b3bae5eab8d1559f1b6435f2e8fbc087f8ffe50db81fa2c0d94ba5ea4`。远端固定MMPOSE-ABU两次
+static均`19/19 PASS`、CUDA false，结果byte-exact SHA=
+`0c00a78c0babb21993325a4b031a8470e546ef10ebf656a24efc97f890263d44`，与本地最终结果完全一致。
+
+启动前GPU=`2 MiB / 0% / 0 compute PID`，fixed output/started/FAILED/console均fresh，pose/source/asset SHA
+全部通过。随后以batch2、CLIP microbatch1、workers4启动唯一`exp406-p0b-preflight-v1`，主PID=`458479`。
+immutable started seal和started.json已写入；首轮观测已完成original batch100，GPU=`2362 MiB / 96%`，无
+failure/complete。当前=`CONTINUE`：只监控自然完成，不修改运行中源码、协议或参数。formal/student仍NO-START。
