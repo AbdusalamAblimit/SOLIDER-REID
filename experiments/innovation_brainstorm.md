@@ -4152,3 +4152,12 @@ static v14的`56/56 PASS`及`0B/0H/0M/0L`盲审只说明二维干预和donor-fre
 CAVT的新颖性分数，也不是teacher有效证据。创新判断的下一信息增益只来自真实train-only数据：correct是否在
 identity轴与slot轴上同时拥有顺序、CLIP是否独立胜过pose-only，以及held-out PID transition是否可预测。
 因此不再投资静态启动器变体。
+
+真实teacher static v8进一步关闭了“测量器本身可能制造顺序”的主要出口：correct/wrong-mask使用全局隔离的
+recipient/donor、caliper内完整一对一匹配，non-torso CI以跨槽共同PID抽样，preflight与formal科学裁决彻底
+分开；紧凑匹配实现也避免在得到科学结果前因metadata OOM消耗once-only。两次`8/8 PASS`与三路无B/H盲审
+只说明下一次512图CUDA preflight值得运行，不提高机制创新分数。
+
+创新状态仍是`BROAD NOVELTY NO-GO / NARROW PROBLEM+EVIDENCE CONDITIONAL GO`。只有full-train P0B未来证明
+真实双编码slot state具有正确语义、删除单调性和non-torso稳定性，才继续transport；若P0B NO-GO，则关闭当前
+readout对象，不通过调prompt、temperature、mask、loss或batch补救。

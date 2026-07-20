@@ -1,0 +1,98 @@
+{
+  "attention": {
+    "isolated": true,
+    "mask_shape": [
+      8,
+      257,
+      257
+    ],
+    "selected_output_max_abs_after_non_target_mutation": 0.0,
+    "unmasked_mutant_caught": true,
+    "unmasked_mutant_max_abs": 0.33953821659088135
+  },
+  "contract": "real_teacher_v1",
+  "cuda_initialized_after": false,
+  "cuda_initialized_before": false,
+  "experiment": "exp405",
+  "gates": {
+    "attention_isolation": true,
+    "attention_negative_control": true,
+    "cuda_not_initialized": true,
+    "geometry": true,
+    "measurement_statistics": true,
+    "selected_input": true,
+    "semantic": true,
+    "source": true
+  },
+  "geometry": {
+    "all_confidence_positive": true,
+    "all_regions_have_mass": true,
+    "all_regions_valid": true,
+    "deterministic_geometry_repeat": true,
+    "empty_exact_zero": true,
+    "empty_invalid": true,
+    "hard_owner_sum_at_most_one": true,
+    "path_owns_geometry": true,
+    "shape_exact": true,
+    "zero_score_confidence_is_zero": true,
+    "zero_score_keeps_geometry": true
+  },
+  "measurement_statistics": {
+    "all_invalid_target_is_minus_one": true,
+    "augmenting_match_repairs_greedy_conflict": true,
+    "deletion_counts_exact": true,
+    "deletion_plus_one_mutant_caught": true,
+    "formal_adjudication_four_quadrants": true,
+    "incomplete_non_torso_still_equal_weight": true,
+    "matcher_expands_beyond_top64": true,
+    "non_torso_bootstrap_clusters_global_pid": true,
+    "non_torso_macro_equal_weight": true,
+    "pid_sign_counts_exact": true,
+    "postseal_failure_is_scoped": true,
+    "preflight_ignores_scientific_fail": true,
+    "preflight_selection_permutation_invariant": true,
+    "preseal_failure_is_read_only": true,
+    "torso_only_pid_is_inert_for_non_torso_ci": true,
+    "two_way_bootstrap_deterministic": true,
+    "validity_axes_separate": true,
+    "wrong_mask_strict_and_unique": true
+  },
+  "provenance": {
+    "contract_sha256": "96879e6d3827ad970eaa25e9ec92eeecd01075979dfc559e22cbc93ad00033be",
+    "core_sha256": "29ddd00ce03ed73b6d1c7ab722de88490e2490638bc83b192e215c6ab4bb0f8b",
+    "measurement_sha256": "ac9f0383e3dd2a04379d52f981961ff0064da579b4002996a75aa5851c9f4f7e",
+    "python": "3.11.15 (main, May  4 2026, 21:04:48) [Clang 22.1.3 ]",
+    "teacher_sha256": "af255cbbb6eafca2024f7882023deda50445f9a01c1df0b28422a24e23cc35a0",
+    "torch": "2.13.0"
+  },
+  "selected_input": {
+    "selected_nonfinite_caught": true,
+    "selected_range_caught": true,
+    "selected_valid_input_passes": true
+  },
+  "semantic": {
+    "correct_text_top1": true,
+    "geometry_not_reused_as_support": true,
+    "support_high": true
+  },
+  "source": {
+    "all_blocks_receive_isolation_mask": true,
+    "complete_receipt_is_authoritative": true,
+    "forbidden_calls": [],
+    "formal_manifest_required": true,
+    "formal_mode_is_explicit": true,
+    "frozen_taxonomy_exact": true,
+    "native_logit_scale_used": true,
+    "no_optimizer_or_training_calls": true,
+    "no_resume_argument": true,
+    "official_roots_literal": true,
+    "preflight_sample_count_frozen": true,
+    "preseal_failure_handler_is_guarded": true,
+    "result_embeds_four_source_hashes": true,
+    "rgb_sha_verification_enabled": true,
+    "runtime_artifact_bytes_are_bound": true,
+    "target_coverage_thresholds_frozen": true,
+    "token_pooling_is_pinned": true
+  },
+  "status": "PASS"
+}

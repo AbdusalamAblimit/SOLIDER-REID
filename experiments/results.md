@@ -3092,3 +3092,21 @@ Phase 0 static最终以v14封口。两次fresh CPU执行均`56/56 PASS`，canoni
 `6d073b72894c65236a53ee52d8e1d868e8492c60cc69ade139d57d0560130ee3`；最终七文件盲审为
 `0 BLOCKER / 0 HIGH / 0 MEDIUM / 0 LOW`。v11--v13只保留为历史不授权产物。该结果不是CLIP、mAP/R1或
 涨点证据，只授权实现真实teacher measurement；GPU、正式config和训练仍未启动。
+
+## exp405真实region-isolated teacher静态合同v8（2026-07-20）
+
+真实teacher runner、CLIP/pose primitive与CPU正反合同已实现，但尚未读取official数据或pose，未初始化CUDA，
+未启动GPU。v1--v2仅覆盖早期`5/5`门；v3明确`7/8 FAIL`并保留；v4--v7虽通过当时合同，但被后续盲审发现的
+统计、匹配、内存或once-only问题取代，全部为历史不授权结果。
+
+最终fresh v8连续两次`8/8 PASS`且byte-exact，结果SHA256均为
+`45413c3323f7af7636e1e2f9e581b4a9c5fe15c44d4b0a6e47aa987c0ef9f8ca`。measurement/teacher/contract/core
+SHA分别为`f489a6679c57387be49cac4b088d8db49bdb145000e80b2be22aa64dff965981`、
+`af255cbbb6eafca2024f7882023deda50445f9a01c1df0b28422a24e23cc35a0`、
+`1146c1e5bf49bbfb040c0467a86173cbb7ec8d1936e122278d997c0c43bcfb19`、
+`29ddd00ce03ed73b6d1c7ab722de88490e2490638bc83b192e215c6ab4bb0f8b`。代码、复现/once-only与统计/matching
+三路固定快照盲审分别为`0B/0H`、`0B/0H`、`0B/0H/0M`。
+
+**当前判定**：`REAL-TEACHER STATIC V8 PASS / 512-IMAGE CUDA PREFLIGHT AUTHORIZED / FORMAL P0B
+NO-START / STUDENT NO-START`。这不是CLIP科学结果，不含mAP/R1，也不改变exp404的负结论。未来若进入正式
+student训练，仍须逐10 epoch记录方法与clean D0同epoch的mAP、R1及差值，唯一正式裁决只看自然e120。

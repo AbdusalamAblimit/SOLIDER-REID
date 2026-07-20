@@ -1,7 +1,7 @@
 # exp405 CAVT 监控记录
 
-> 当前：`BROAD NOVELTY NO-GO / NARROW PHASE-0 CONDITIONAL GO / STATIC V14 PASS /
-> REAL TEACHER MEASUREMENT IMPLEMENTING / GPU IDLE`
+> 当前：`BROAD NOVELTY NO-GO / NARROW PHASE-0 CONDITIONAL GO / REAL-TEACHER STATIC V8 PASS /
+> THREE-WAY BLIND REVIEW PASS / CUDA PREFLIGHT NEXT / FORMAL P0B NO-START / GPU IDLE`
 
 ## 2026-07-20：exp404后根因边界
 
@@ -62,3 +62,28 @@ feature/mask设备一致性、sample/pixel/slot/seed联合avalanche删除以及c
 最终独立七文件盲审结论为`BLOCKER=0 / HIGH=0 / MEDIUM=0 / LOW=0`。这只授权立即实现真实
 region-isolated frozen image+text teacher measurement；不授权直接运行、CUDA、正式训练或e120。静态启动器与
 供应链威胁模型到此封口，不再扩审；下一次盲审只针对真实CLIP/pose/data/metric实现是否污染科学结论。
+
+## 2026-07-20：真实teacher measurement v1--v8与最终盲审
+
+真实measurement实现期间没有访问official图像、pose资产、CUDA或GPU。v1/v2的早期`5/5 PASS`尚未覆盖统计与
+once-only状态；v3以`7/8 FAIL`抓到旧签名/统计合同错误并永久保留；v4--v7虽分别通过当时合同，但后续盲审继续
+发现geometry/readout混淆、recipient被复用为donor、non-torso PID universe污染、top64假FAIL、全候选metadata
+内存膨胀和终态窄窗口，故全部只作历史、不授权，不覆盖、不删除。
+
+v8冻结修复为：pose geometry/readout/analysis三轴；从block 1开始的CLIP region isolation与token pooling；固定
+512图preflight和每槽4个recipient；所有recipient从donor reserve全局排除；same-camera/different-PID、MAD
+caliper与一对一增广匹配按`64 -> 128 -> 256 -> full`扩展；排序持久化为紧凑`int32`且只为最终donor生成
+metadata；non-torso在槽`{0,3,4}`上按全局PID共同bootstrap；preflight仅裁决机械有效性；formal以validity x
+science四象限裁决；seal前拒绝只读，seal后错误FAILED，COMPLETE不可逆；runtime缺失必要origin/RECORD时
+fail closed。
+
+fresh v8 CPU合同连续两次`8/8 PASS`且byte-exact，结果SHA256均为
+`45413c3323f7af7636e1e2f9e581b4a9c5fe15c44d4b0a6e47aa987c0ef9f8ca`。源码SHA为
+measurement=`f489a6679c57387be49cac4b088d8db49bdb145000e80b2be22aa64dff965981`、
+teacher=`af255cbbb6eafca2024f7882023deda50445f9a01c1df0b28422a24e23cc35a0`、
+contract=`1146c1e5bf49bbfb040c0467a86173cbb7ec8d1936e122278d997c0c43bcfb19`、
+core=`29ddd00ce03ed73b6d1c7ab722de88490e2490638bc83b192e215c6ab4bb0f8b`。
+
+同一固定v8快照的代码、once-only/repro、统计/matching三路只读盲审分别为`0B/0H`、`0B/0H`、
+`0B/0H/0M`。该门只授权提交、同步并运行唯一512图CUDA preflight；不授权formal P0B、transport、student、
+config或e120。preflight必须自然完成，且只产生机械PASS/FAIL，不得产生scientific GO。

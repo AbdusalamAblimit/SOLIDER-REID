@@ -5783,3 +5783,17 @@ v14两次fresh CPU execution均`56/56 PASS`且payload byte-exact；最终独立�
 
 **决策**：立即实现最小真实region-isolated CLIP image+text teacher measurement。实现完成后只做一次聚焦真实
 数据路径、pose同步、encoder/readout、反事实和指标的独立代码盲审；通过前不得运行真实数据、CUDA或占用4090。
+
+### [2026-07-20] 决策：exp405真实teacher static v8通过，只授权512图CUDA preflight
+
+v3的`7/8 FAIL`以及v4--v7均保留为历史、不授权且不得覆盖。多轮代码盲审实际发现并修复了会改变结论或浪费
+once-only的缺陷：geometry与readout混淆、recipient/donor重叠、non-torso CI混入torso-only PID、top64匹配
+假FAIL、全候选Python metadata潜在OOM，以及seal/COMPLETE异常窗口。最终v8两次fresh `8/8 PASS`且
+byte-exact，SHA=`45413c3323f7af7636e1e2f9e581b4a9c5fe15c44d4b0a6e47aa987c0ef9f8ca`；三路固定快照
+盲审均无BLOCKER/HIGH。
+
+**决策**：授权显式提交、远端同步、只读资产/独占4090复核和唯一固定512图CUDA preflight。preflight只裁决
+机械接线，不计算PID CI、non-torso macro或scientific GO；只有其COMPLETE PASS与fresh formal manifest同时
+成立，才允许唯一full-train P0B measurement。formal P0B、transport、student config、训练与e120继续
+NO-START。若以后进入student，方法与clean D0必须在相同epoch逐点记录mAP/R1和差值，最终不按中间表现早停，
+只用自然e120裁决。

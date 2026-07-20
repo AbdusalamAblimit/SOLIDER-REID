@@ -1,0 +1,74 @@
+{
+  "attention": {
+    "isolated": true,
+    "mask_shape": [
+      8,
+      257,
+      257
+    ],
+    "selected_output_max_abs_after_non_target_mutation": 0.0,
+    "unmasked_mutant_caught": true,
+    "unmasked_mutant_max_abs": 0.33953821659088135
+  },
+  "contract": "real_teacher_v1",
+  "cuda_initialized_after": false,
+  "cuda_initialized_before": false,
+  "experiment": "exp405",
+  "gates": {
+    "attention_isolation": true,
+    "attention_negative_control": true,
+    "cuda_not_initialized": true,
+    "geometry": true,
+    "measurement_statistics": true,
+    "selected_input": true,
+    "semantic": true,
+    "source": true
+  },
+  "geometry": {
+    "all_confidence_positive": true,
+    "all_regions_have_mass": true,
+    "all_regions_valid": true,
+    "deterministic_geometry_repeat": true,
+    "empty_exact_zero": true,
+    "empty_invalid": true,
+    "hard_owner_sum_at_most_one": true,
+    "path_owns_geometry": true,
+    "shape_exact": true,
+    "zero_score_confidence_is_zero": true,
+    "zero_score_keeps_geometry": true
+  },
+  "measurement_statistics": {
+    "all_invalid_target_is_minus_one": true,
+    "deletion_counts_exact": true,
+    "deletion_plus_one_mutant_caught": true,
+    "non_torso_macro_equal_weight": true,
+    "pid_sign_counts_exact": true,
+    "two_way_bootstrap_deterministic": true,
+    "validity_axes_separate": true,
+    "wrong_mask_strict_and_unique": true
+  },
+  "selected_input": {
+    "selected_nonfinite_caught": true,
+    "selected_range_caught": true,
+    "selected_valid_input_passes": true
+  },
+  "semantic": {
+    "correct_text_top1": true,
+    "geometry_not_reused_as_support": true,
+    "support_high": true
+  },
+  "source": {
+    "all_blocks_receive_isolation_mask": true,
+    "forbidden_calls": [],
+    "formal_manifest_required": true,
+    "formal_mode_is_explicit": true,
+    "frozen_taxonomy_exact": true,
+    "native_logit_scale_used": true,
+    "no_optimizer_or_training_calls": true,
+    "no_resume_argument": true,
+    "official_roots_literal": true,
+    "rgb_sha_verification_enabled": true,
+    "token_pooling_is_pinned": true
+  },
+  "status": "PASS"
+}

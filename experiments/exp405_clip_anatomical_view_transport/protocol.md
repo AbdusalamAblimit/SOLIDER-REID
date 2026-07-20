@@ -17,15 +17,46 @@ NO-START`。
 - ReID对象：sealed clean D0 seed1234/e120 checkpoint只读，remaining blocks真实重算。
 - 目录：本机只写本仓库；远端只写`/home/afr`；official数据和pose资产始终只读。
 
+五槽的COCO-17绑定在真实执行前固定为：`head=(0..4)`；`upper torso+arms=(5..10)`；
+`lower torso=(11,12)`并使用左右shoulder-to-hip与hip-to-hip段；`upper legs=(11,13)/(12,14)`；
+`lower legs+feet=(13,15)/(14,16)`。重叠响应使用hard-owner分配，任何像素不得同时属于两个槽；CLIP
+16x16 patch只要具有正mask mass即属于该槽。该taxonomy、prompt或patch选择规则不得按结果更换。
+
+真实teacher测量按信息增益串行：先完成`exp405-p0b-iso-teacher-v1`，全train缓存original五槽与global
+image/text state，并在按PID/槽分层冻结的2,000图上测25/50/75%删除和wrong-mask；只有P0B通过才创建
+`exp405-p0c-transport-oracle-v1`。这两个execution id各自once-only，前者失败不得用后者补救。RGB删除位置
+由v14联合hash固定，填充值为逐通道CLIP mean；50%是唯一primary。
+
 ## Fresh与once-only
 
-唯一Phase 0 execution id为`exp405-p0-iso-oracle-v1`，fresh远端根计划为
-`/home/afr/reid-clean/audits/exp405-p0-iso-oracle-v1`。不得读取旧cache/path mapping作为运行输入；需要的
-checkpoint必须复制到fresh asset目录并记录SHA。
+P0B CUDA wiring preflight id固定为`exp405-p0b-preflight-v1`，唯一输出根为
+`/home/afr/reid-clean/audits/exp405-p0b-preflight-v1`；P0B formal id固定为
+`exp405-p0b-iso-teacher-v1`，唯一输出根为
+`/home/afr/reid-clean/audits/exp405-p0b-iso-teacher-v1`。两者使用显式互斥的`preflight/formal`模式，默认不进入
+formal；formal必须验证固定preflight PASS receipt、冻结manifest及其SHA。每个execution在输出根外使用排他
+STARTED seal，异常也写FAILED receipt并永久封板同一id。P0C只有在P0B scientific GO后才允许创建独立的
+`exp405-p0c-transport-oracle-v1`根，不得与P0B共用cache或execution id。
 
-若runtime/measurement contract错误，本execution仍封板；修正必须使用新实验编号，不得在exp405下v2重跑。
-执行前manifest必须绑定repo HEAD、core、runner、wrapper、postflight、config、CLIP checkpoint、D0 checkpoint、
-pose artifact和runtime freeze的SHA256。
+preflight样本数固定`512`，由全train的`PID/camera/path`联合hash分层冻结；每槽只取4个recipient，其余样本作为
+donor reserve。preflight只裁决shape/finite、region readout、精确删除、same-camera/different-PID wrong-mask接线
+与状态恢复，不计算PID CI、non-torso macro或科学GO，结果必须写`scientific_evaluated=false`。formal与P0C只认
+最终`complete.json`；单独存在的result/cache或同时存在FAILED receipt均无授权语义。
+
+不得读取旧cache/path mapping作为运行输入；需要的checkpoint必须复制到fresh asset目录并记录SHA。
+
+只有成功取得本次fixed execution seal才算execution开始；在此之前的参数、旧终态、receipt、manifest、source、runtime
+或数据合同拒绝均保持目标目录只读，不产生FAILED，也不消耗once-only execution。取得seal后的任何runtime/measurement错误
+都必须写FAILED并封板；修正必须使用新实验编号，不得在exp405下v2重跑。
+formal执行前manifest必须绑定repo HEAD、core、runner、protocol、运行参数、CLIP checkpoint、pose artifact、
+有序official train manifest、preflight receipt和runtime freeze的SHA256；执行前后都要复核绑定不变。P0C未来
+另行绑定D0 checkpoint、stage replay adapter、wrapper/postflight与正式counterfactual config。
+
+formal有效性门预注册：无可用target图像比例不得超过`1%`，具有至少一个可用target的PID比例不得低于`99%`；
+每槽仍须冻结足400个诊断样本。wrong-mask硬约束same-camera/different-PID/analysis-valid/图像不复用，四个主匹配量
+为log mask mass、y-centroid、pose confidence与CLIP support；按每槽全候选MAD标准化，主距离caliper固定`8.0`，
+先取每个recipient排序前64个候选并用确定性增广匹配求一对一解；若Hall约束下无完整解，按
+`64 -> 128 -> 256 -> 全部caliper内候选`扩展，只有完整caliper图仍无解才判validity FAIL。全部诊断recipient
+都从donor集合中排除，donor之间也不得复用；任一槽balance、caliper或完整一对一匹配失败均为validity FAIL。
 
 ## 串行门
 
@@ -42,6 +73,11 @@ pose artifact和runtime freeze的SHA256。
 截至2026-07-20，串行门1--4已经完成：v14两次fresh CPU结果byte-exact、`56/56 PASS`，最终独立盲审
 `0B/0H/0M/0L`。当前只进入真实teacher measurement实现；门5--7仍未通过，GPU与真实执行保持NO-START。
 静态启动器不再扩展新的供应链/receipt威胁模型；后续阻塞项必须能直接改变真实科学结论。
+
+真实teacher measurement的最终v8已两次fresh `8/8 PASS`且byte-exact，固定结果SHA256为
+`45413c3323f7af7636e1e2f9e581b4a9c5fe15c44d4b0a6e47aa987c0ef9f8ca`；代码、复现/once-only、统计/matching
+三路固定快照盲审均为`0 BLOCKER / 0 HIGH`。这只闭合本地门1--4，下一步仍是门5的远端环境/资产/独占GPU
+检查和唯一512图CUDA preflight；formal P0B与任何student训练继续NO-START。
 
 ## 机械有效性
 

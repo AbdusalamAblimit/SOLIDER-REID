@@ -2360,3 +2360,12 @@ pose-only、held-out PID residual可预测且single-stage在同epoch/e120同时�
 Phase 0 static v14已通过两次byte-exact `56/56`合同和最终`0B/0H/0M/0L`代码盲审。这只是测量器实现门，
 不能进入性能表或贡献叙事。story当前仍为条件候选；下一步必须由真实frozen image+text teacher在train-only
 二维反事实、CLIP-vs-pose-only和donor-free held-out PID三处提供证据，否则直接关闭CAVT而不启动student。
+
+真实teacher static v8又通过两次fresh `8/8 PASS`与代码、once-only、统计三路固定快照盲审；它修复了donor
+重叠、non-torso抽样污染、top64假失败、全候选metadata OOM和终态窗口。这仍不是论文结果：没有读取official
+图像，没有CLIP/pose数值，没有mAP/R1，更没有涨点。story只能前进到“允许做512图机械CUDA preflight”，
+不能前进到“teacher有效”。
+
+若后续P0B和donor-free门均通过并最终创建student，主性能表必须把每个10-epoch评测点的方法mAP/R1与clean D0
+同epoch并排记录，同时给出差值；中间点只解释训练轨迹，不能早停或挑点，最终贡献判断只使用自然e120以及
+冻结的identity轴 x slot轴强反事实。
