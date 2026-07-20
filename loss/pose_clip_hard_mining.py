@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from pathlib import Path
 
 import numpy as np
@@ -30,7 +31,13 @@ def _sha256_file(path):
 class PoseClipMiningCache:
     """Strict loader for one fresh exp409 region-isolated CLIP cache."""
 
-    def __init__(self, path, expected_sha256):
+    def __init__(
+        self,
+        path,
+        expected_sha256,
+        expected_clip_checkpoint_sha256,
+        expected_pose_manifest_sha256,
+    ):
         configured = Path(path).expanduser()
         if not configured.is_absolute():
             raise ValueError("PCHM cache path must be absolute")
@@ -43,13 +50,36 @@ class PoseClipMiningCache:
         if self.sha256 != expected_sha256:
             raise RuntimeError("PCHM cache SHA256 mismatch")
         with np.load(str(resolved), allow_pickle=False) as payload:
-            required = {"schema", "relative_paths", "features", "valid"}
+            required = {
+                "schema",
+                "relative_paths",
+                "image_sha256",
+                "features",
+                "valid",
+                "preprocessing",
+                "pose_manifest_sha256",
+                "clip_checkpoint_sha256",
+                "source_head",
+                "builder_sha256",
+                "teacher_source_sha256",
+            }
             if set(payload.files) != required:
                 raise RuntimeError("unexpected PCHM cache fields")
             schema = str(payload["schema"].item())
             path_array = payload["relative_paths"]
+            image_sha256 = payload["image_sha256"]
             feature_array = payload["features"]
             valid_array = payload["valid"]
+            preprocessing = str(payload["preprocessing"].item())
+            pose_manifest_sha256 = str(payload["pose_manifest_sha256"].item())
+            clip_checkpoint_sha256 = str(
+                payload["clip_checkpoint_sha256"].item()
+            )
+            source_head = str(payload["source_head"].item())
+            builder_sha256 = str(payload["builder_sha256"].item())
+            teacher_source_sha256 = str(
+                payload["teacher_source_sha256"].item()
+            )
             if path_array.ndim != 1 or path_array.dtype.kind != "U":
                 raise RuntimeError("PCHM paths must be a unicode vector")
             if feature_array.shape != (len(path_array), 5, 768):
@@ -60,6 +90,23 @@ class PoseClipMiningCache:
                 raise RuntimeError("PCHM validity shape mismatch")
             if valid_array.dtype != np.bool_:
                 raise RuntimeError("PCHM validity must be boolean")
+            if image_sha256.shape != path_array.shape or image_sha256.dtype.kind != "U":
+                raise RuntimeError("PCHM image SHA vector mismatch")
+            hex64 = re.compile(r"[0-9a-f]{64}")
+            if any(hex64.fullmatch(str(value)) is None for value in image_sha256):
+                raise RuntimeError("PCHM image SHA vector is invalid")
+            if preprocessing != "raw-rgb-pose-resize-384x128-no-augmentation":
+                raise RuntimeError("PCHM preprocessing provenance mismatch")
+            if pose_manifest_sha256 != expected_pose_manifest_sha256:
+                raise RuntimeError("PCHM pose manifest provenance mismatch")
+            if clip_checkpoint_sha256 != expected_clip_checkpoint_sha256:
+                raise RuntimeError("PCHM CLIP checkpoint provenance mismatch")
+            if re.fullmatch(r"[0-9a-f]{40}", source_head) is None:
+                raise RuntimeError("PCHM source HEAD provenance is invalid")
+            if hex64.fullmatch(builder_sha256) is None or hex64.fullmatch(
+                teacher_source_sha256
+            ) is None:
+                raise RuntimeError("PCHM source SHA provenance is invalid")
             paths = tuple(str(item) for item in path_array.tolist())
             features = torch.from_numpy(feature_array.copy())
             valid = torch.from_numpy(valid_array.copy())
@@ -87,15 +134,27 @@ class PoseClipMiningCache:
         self._features = features
         self._valid = valid
         self._index = {path: index for index, path in enumerate(paths)}
+        self.image_sha256 = tuple(str(value) for value in image_sha256.tolist())
+        self.preprocessing = preprocessing
+        self.pose_manifest_sha256 = pose_manifest_sha256
+        self.clip_checkpoint_sha256 = clip_checkpoint_sha256
+        self.source_head = source_head
+        self.builder_sha256 = builder_sha256
+        self.teacher_source_sha256 = teacher_source_sha256
 
     def __len__(self):
         return len(self.paths)
 
-    def lookup(self, relative_paths):
+    def lookup(self, relative_paths, image_sha256=None):
         try:
             indices = [self._index[str(path)] for path in relative_paths]
         except KeyError as error:
             raise RuntimeError("PCHM batch path is absent from cache") from error
+        if image_sha256 is None or len(image_sha256) != len(indices):
+            raise RuntimeError("PCHM batch image SHA binding is required")
+        expected = [self.image_sha256[index] for index in indices]
+        if tuple(str(value) for value in image_sha256) != tuple(expected):
+            raise RuntimeError("PCHM batch image SHA binding mismatch")
         index = torch.as_tensor(indices, dtype=torch.long)
         return self._features[index], self._valid[index]
 

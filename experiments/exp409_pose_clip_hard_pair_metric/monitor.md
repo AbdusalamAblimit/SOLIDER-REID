@@ -17,3 +17,7 @@ normalize/随机擦除，pose hard-owner是稀疏Gaussian区域，异PID part co
 
 状态：`DESIGN FROZEN / IMPLEMENTATION NO-START / GPU IDLE`。下一步只做必要实现检查与一次独立代码盲审；
 `0B/0H` 后立即构建 fresh exp409 cache并运行，不进行无穷 preflight。
+
+首轮实现盲审发现`0B/1H`：cache整体SHA已绑定，但NPZ未内嵌逐图RGB SHA、CLIP checkpoint、pose manifest、
+preprocess和source provenance，且builder未验证实际RGB SHA。已在任何cache/GPU执行前补为逐图image SHA验证、
+完整metadata写入和loader严格校验；等待同一盲审者聚焦闭环。

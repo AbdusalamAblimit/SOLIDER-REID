@@ -4,9 +4,12 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import sys
+import tempfile
 from pathlib import Path
 
+import numpy as np
 import torch
 import torch.nn.functional as F
 
@@ -15,6 +18,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from loss.pose_clip_hard_mining import (
+    PoseClipMiningCache,
     batch_hard_pair_indices,
     pose_visibility_signature,
     select_pose_clip_pairs,
@@ -37,7 +41,58 @@ def synthetic_batch(device):
     return labels, visibility, appearance, clip_valid
 
 
+def cache_roundtrip_contract():
+    with tempfile.TemporaryDirectory(dir=str(Path(__file__).resolve().parent)) as root:
+        path = Path(root) / "synthetic_cache.npz"
+        relative_paths = np.asarray(
+            ["train/sample_{:02d}.jpg".format(index) for index in range(8)]
+        )
+        image_sha256 = np.asarray(
+            [hashlib.sha256(value.encode("utf-8")).hexdigest() for value in relative_paths]
+        )
+        generator = torch.Generator().manual_seed(411)
+        features = F.normalize(
+            torch.randn(8, 5, 768, generator=generator), dim=-1
+        ).half().numpy()
+        valid = np.ones((8, 5), dtype=np.bool_)
+        with path.open("wb") as handle:
+            np.savez(
+                handle,
+                schema=np.asarray("exp409-pchm-cache-v1"),
+                relative_paths=relative_paths,
+                image_sha256=image_sha256,
+                features=features,
+                valid=valid,
+                preprocessing=np.asarray(
+                    "raw-rgb-pose-resize-384x128-no-augmentation"
+                ),
+                pose_manifest_sha256=np.asarray("1" * 64),
+                clip_checkpoint_sha256=np.asarray("2" * 64),
+                source_head=np.asarray("3" * 40),
+                builder_sha256=np.asarray("4" * 64),
+                teacher_source_sha256=np.asarray("5" * 64),
+            )
+        cache_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+        cache = PoseClipMiningCache(
+            path,
+            cache_sha256,
+            "2" * 64,
+            "1" * 64,
+        )
+        cache.lookup(relative_paths[:2], image_sha256[:2])
+        try:
+            cache.lookup(relative_paths[:2], ("0" * 64, image_sha256[1]))
+        except RuntimeError:
+            mismatch_rejected = True
+        else:
+            mismatch_rejected = False
+        if not mismatch_rejected:
+            raise RuntimeError("cache image SHA mismatch mutant was not rejected")
+    return True
+
+
 def main():
+    cache_roundtrip_contract()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     labels, visibility, appearance, clip_valid = synthetic_batch(device)
     states = {
@@ -117,6 +172,7 @@ def main():
         "default_loss_exact": True,
         "default_gradient_exact": True,
         "invalid_positive_rejected": True,
+        "cache_provenance_roundtrip": True,
         "status": "PASS",
     }
     print(json.dumps(result, sort_keys=True))

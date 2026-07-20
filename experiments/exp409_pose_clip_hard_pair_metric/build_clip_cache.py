@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import subprocess
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -123,6 +124,17 @@ def main():
         raise RuntimeError("official train paths are not unique")
     if set(relative_paths) != set(pose_store._records):
         raise RuntimeError("official train and pose artifact coverage differ")
+    source_head = subprocess.check_output(
+        ("git", "rev-parse", "HEAD"), cwd=str(REPO_ROOT), text=True
+    ).strip()
+    if len(source_head) != 40:
+        raise RuntimeError("could not freeze exp409 source HEAD")
+    if subprocess.call(("git", "diff", "--quiet"), cwd=str(REPO_ROOT)) != 0:
+        raise RuntimeError("exp409 cache builder requires a clean source tree")
+    builder_sha256 = sha256_file(Path(__file__).resolve())
+    teacher_source_sha256 = sha256_file(
+        REPO_ROOT / "model" / "pose_clip_relation.py"
+    )
 
     device = torch.device("cuda", 0)
     teacher = RegionIsolatedClipVisualTeacher(
@@ -133,17 +145,19 @@ def main():
     )
     features = torch.empty(EXPECTED_SAMPLES, 5, 768, dtype=torch.float16)
     validity = torch.empty(EXPECTED_SAMPLES, 5, dtype=torch.bool)
+    image_sha256 = []
     for start in range(0, EXPECTED_SAMPLES, args.batch_size):
         stop = min(start + args.batch_size, EXPECTED_SAMPLES)
         rgb_rows = []
         point_rows = []
         valid_rows = []
         for path, _, _, _ in records[start:stop]:
-            pose = pose_store.get(path, verify_image_sha=False)
+            pose = pose_store.get(path, verify_image_sha=True)
             rgb, points, active = resize_rgb_and_pose(path, pose)
             rgb_rows.append(rgb)
             point_rows.append(points)
             valid_rows.append(active)
+            image_sha256.append(pose.image_sha256)
         rgb = torch.stack(rgb_rows).to(device)
         points = torch.stack(point_rows).to(device)
         active = torch.stack(valid_rows).to(device)
@@ -183,8 +197,17 @@ def main():
             handle,
             schema=np.asarray("exp409-pchm-cache-v1"),
             relative_paths=np.asarray(relative_paths, dtype=np.str_),
+            image_sha256=np.asarray(image_sha256, dtype=np.str_),
             features=features.numpy(),
             valid=validity.numpy(),
+            preprocessing=np.asarray(
+                "raw-rgb-pose-resize-384x128-no-augmentation"
+            ),
+            pose_manifest_sha256=np.asarray(args.pose_manifest_sha256),
+            clip_checkpoint_sha256=np.asarray(args.clip_checkpoint_sha256),
+            source_head=np.asarray(source_head),
+            builder_sha256=np.asarray(builder_sha256),
+            teacher_source_sha256=np.asarray(teacher_source_sha256),
         )
         handle.flush()
         os.fsync(handle.fileno())
@@ -196,6 +219,11 @@ def main():
         "preprocessing": "raw-rgb-pose-resize-384x128-no-augmentation",
         "wrong_rgb_cyclic_offset": 4,
         "cache_sha256": cache_sha256,
+        "pose_manifest_sha256": args.pose_manifest_sha256,
+        "clip_checkpoint_sha256": args.clip_checkpoint_sha256,
+        "source_head": source_head,
+        "builder_sha256": builder_sha256,
+        "teacher_source_sha256": teacher_source_sha256,
         "rows": snapshot_rows(records, relative_paths),
     }
     snapshot.write_text(

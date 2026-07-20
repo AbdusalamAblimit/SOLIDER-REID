@@ -127,6 +127,8 @@ def do_train(cfg,
         pchm_cache = PoseClipMiningCache(
             cfg.MODEL.TAPF.PCHM_CACHE,
             cfg.MODEL.TAPF.PCHM_CACHE_SHA256,
+            cfg.MODEL.TAPF.PCHM_CLIP_CHECKPOINT_SHA256,
+            cfg.MODEL.TAPF.MANIFEST_SHA256,
         )
         if len(pchm_cache) != len(train_loader.dataset):
             raise RuntimeError(
@@ -147,9 +149,10 @@ def do_train(cfg,
                 "PCHM cache path set does not match the training dataset"
             )
         logger.info(
-            "PCHM cache loaded: samples=%d SHA=%s",
+            "PCHM cache loaded: samples=%d SHA=%s source=%s",
             len(pchm_cache),
             pchm_cache.sha256,
+            pchm_cache.source_head,
         )
     picrd_cache = None
     if picrd_enabled:
@@ -279,6 +282,7 @@ def do_train(cfg,
             if cfg.MODEL.TAPF.ENABLED:
                 img, vid, target_cam, target_view, pose_batch = batch
                 relative_paths = pose_batch.get("relative_paths")
+                image_sha256 = pose_batch.get("image_sha256")
                 pose_batch = {
                     "keypoints": pose_batch["keypoints"].to(device),
                     "scores": pose_batch["scores"].to(device),
@@ -309,7 +313,9 @@ def do_train(cfg,
                     select_pose_clip_pairs,
                 )
 
-                clip_features, clip_valid = pchm_cache.lookup(relative_paths)
+                clip_features, clip_valid = pchm_cache.lookup(
+                    relative_paths, image_sha256
+                )
                 clip_features = clip_features.to(
                     device=device, non_blocking=True
                 )

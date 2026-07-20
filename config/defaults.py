@@ -114,6 +114,7 @@ _C.MODEL.TAPF.PICRD_CACHE_SHA256 = ""
 _C.MODEL.TAPF.PCHM_ENABLED = False
 _C.MODEL.TAPF.PCHM_CACHE = ""
 _C.MODEL.TAPF.PCHM_CACHE_SHA256 = ""
+_C.MODEL.TAPF.PCHM_CLIP_CHECKPOINT_SHA256 = ""
 
 # -----------------------------------------------------------------------------
 # INPUT

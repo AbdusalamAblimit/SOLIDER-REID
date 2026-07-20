@@ -35,7 +35,8 @@
 - 单独 exp409 asset 路径；
 - official train 15,618 图完整、唯一、无遗漏覆盖；
 - 每项为五槽 finite、非零、L2-normalized frozen CLIP region-isolated visual descriptor及validity；
-- 写入 schema、relative path、image SHA、feature、checkpoint/preprocess provenance；
+- 写入 schema、relative path、逐图 image SHA、feature、CLIP checkpoint/pose manifest/preprocess/source HEAD/
+  builder/teacher source provenance；loader必须逐项验证；
 - 发布前验证文件 SHA，config 硬绑定该 SHA；失败目录冻结，新编号/新路径修复。
 
 ## 阶段 D：唯一 student
