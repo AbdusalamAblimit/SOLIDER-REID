@@ -208,3 +208,13 @@ mean/std/min/max=`1.0000/0.1036/0.8207/1.2126`，descriptor delta abs=`9.483e-02
 日志异常扫描无Traceback、RuntimeError、OOM、NaN或Inf；正式性能仍未产生。
 
 判定：`CONTINUE / EXECUTION HEALTHY / NO PERFORMANCE JUDGMENT`。
+
+## 2026-07-20T05:56Z：formal健康检查
+
+main PID=`436043`仍为唯一compute PID，GPU=`8,102 MiB/98%`。epoch30自然完成，单epoch=`125.380 s`、
+`108.2 samples/s`；检查时进入epoch31 iter20/227。当前loss=`0.677`、所有分项finite，SPK factor
+mean/std/min/max=`1.0000/0.1062/0.8094/1.2329`，descriptor delta abs=`9.861e-02`，干预继续active。
+epoch30冻结中间eval=`47.0 mAP / 57.4 R1 / 71.6 R5 / 77.3 R10`；该数值不用于早停、best-pick或正式
+科学裁决。日志异常扫描无Traceback、RuntimeError、OOM、NaN或Inf。
+
+判定：`CONTINUE TO E120 / INTERMEDIATE EVAL NON-DECISIVE / NO EARLY STOP`。
