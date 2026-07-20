@@ -230,19 +230,19 @@ mean/std/min/max=`1.0000/0.1097/0.8184/1.2422`，descriptor delta abs=`1.049e-01
 
 ## 2026-07-20T06:24Z：中间eval显式汇总与健康检查
 
-以下数字均逐项读取formal runner log；`ΔD0`使用sealed clean D0=`57.5588 mAP / 67.6923 R1`。后续每个
-heartbeat固定报告最新一次mAP/R1及对照差值：
+以下数字逐项读取formal runner log、sealed exp387 clean D0 monitor与sealed exp401 monitor。三者均为
+seed1234/e120并在相同epoch评测；差值严格按同epoch计算，后续heartbeat固定报告最新同epoch mAP/R1对比：
 
-| epoch | mAP | R1 | R5 | R10 | ΔD0 mAP | ΔD0 R1 |
-|---:|---:|---:|---:|---:|---:|---:|
-| 10 | 32.9 | 42.3 | 57.3 | 64.1 | -24.7 | -25.4 |
-| 20 | 44.9 | 55.8 | 71.4 | 78.0 | -12.7 | -11.9 |
-| 30 | 47.0 | 57.4 | 71.6 | 77.3 | -10.6 | -10.3 |
-| 40 | 50.0 | 61.1 | 74.4 | 80.1 | -7.6 | -6.6 |
+| epoch | exp404 mAP/R1 | clean D0同epoch | exp404-D0 | exp401同epoch | exp404-exp401 |
+|---:|---:|---:|---:|---:|---:|
+| 10 | 32.9/42.3 | 33.4/42.7 | -0.5/-0.4 | 34.4/43.3 | -1.5/-1.0 |
+| 20 | 44.9/55.8 | 42.2/52.4 | +2.7/+3.4 | 42.4/54.7 | +2.5/+1.1 |
+| 30 | 47.0/57.4 | 46.6/56.2 | +0.4/+1.2 | 45.6/55.9 | +1.4/+1.5 |
+| 40 | 50.0/61.1 | 50.0/60.7 | 0.0/+0.4 | 48.6/59.2 | +1.4/+1.9 |
 
 检查时main PID=`436043`仍是唯一compute PID，GPU显存=`8,106 MiB`；训练到epoch44 iter60/227，
 loss=`0.360`、SPK factor std=`0.1071`、descriptor delta abs=`1.054e-01`，均finite/active。最新正式中间
-eval为epoch40的`50.0 mAP / 61.1 R1`，相对sealed clean D0约`-7.6/-6.6`，相对sealed exp401 full
-`57.1230/67.2851`约`-7.1/-6.2`；只记录趋势，不用于早停、best-pick或最终裁决。
+eval为epoch40的`50.0 mAP / 61.1 R1`；同epoch相对clean D0为`0.0/+0.4`，相对exp401为
+`+1.4/+1.9`。只记录趋势，不用于早停、best-pick或最终裁决。
 
-判定：`CONTINUE TO E120 / LATEST 50.0 mAP 61.1 R1 / VS D0 -7.6 -6.6 / NO EARLY STOP`。
+判定：`CONTINUE TO E120 / E40 VS D0 0.0 mAP +0.4 R1 / NO EARLY STOP`。
