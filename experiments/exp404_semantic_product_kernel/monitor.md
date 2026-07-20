@@ -1,6 +1,6 @@
 # exp404 SPK 监控记录
 
-> 当前：`CUDA V3 PASS / FORMAL PRELAUNCH PASS / UNIQUE E120 AUTHORIZED`
+> 当前：`FORMAL E120 RUNNING / MAIN PID 436043 / NO EARLY STOP`
 
 ## 2026-07-20：目标降为C类后的机制准入
 
@@ -163,3 +163,21 @@ SHA及no-resume。prelaunch static连续两次`15/15 PASS`且byte-exact；wrappe
 `e2ded956ff1f741b2a4f51bf38bca31234a716f67a21b464f7729d2570ff26c4`。
 
 判定：`CUDA V3 PASS / FORMAL PRELAUNCH PASS / UNIQUE FRESH SEED1234 E120 AUTHORIZED / GPU IDLE`。
+
+## 2026-07-20：唯一formal e120已启动
+
+远端fresh repo提交为`1e40e9a9d1717139b06d09f55821c7f0e68143c7`，启动前repo clean，正式
+output/runner/launch/lock均不存在，GPU=`2 MiB/0%/0 compute PID`。远端fresh static结果再次
+`15/15 PASS`且与本地两次结果byte-exact，SHA=
+`e2ded956ff1f741b2a4f51bf38bca31234a716f67a21b464f7729d2570ff26c4`。
+
+冻结wrapper于`2026-07-20T04:52:15Z`启动唯一fresh seed1234/e120，main PID=`436043`；launch/wrapper SHA=
+`78b49f6971c42d73e8bdf4ee5dc0394a9d05090f1213e571b9cad10eea3758e4`/
+`5e500fcd67a1ed408141b112d480a5fec2cffe3df5bd545122902f3e53597d86`。启动快照runner SHA=
+`723e612b259e3692160a7991cfde97c5ac979eab299374c940dd5531e8d64f8f`；该文件后续持续增长，只作为启动快照。
+
+首次健康检查：唯一compute PID=`436043`，GPU=`8,134 MiB/99%`；训练已到epoch1 iter20/227，loss finite，
+SPK factor mean/std/min/max=`1.0000/0.2041/0.5980/1.5249`，descriptor delta abs=`2.868e-01`，无异常。
+这里只证明执行健康与SPK active，不作性能判断。
+
+判定：`FORMAL E120 RUNNING / GPU EXCLUSIVE / CONTINUE NATURALLY / NO EARLY STOP`。

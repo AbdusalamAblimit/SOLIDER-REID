@@ -2318,3 +2318,6 @@ finite/nonzero。v3仅沿用既有native-scaler自然稳态观察，不改变模
 
 v3在默认scaler第5次attempt通过全部CUDA门，formal once-only启动合同也已通过。story因此仅获得“可以生成正式
 证据”的许可；在e120与全部随机/语义control完成前，仍不能声称SPK有效。
+
+唯一fresh seed1234/e120已在全部启动门通过后运行。当前story仍停留在“C类候选机制进入正式验证”，启动本身、
+训练健康与SPK factor active均不作为正面结果；必须等待自然e120和全量强反事实裁决。

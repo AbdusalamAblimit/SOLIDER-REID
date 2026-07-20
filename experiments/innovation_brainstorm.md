@@ -4109,3 +4109,6 @@ SPK主张；无论v3结果如何，都不能把AMP稳定性写成论文贡献。
 
 v3 actual与formal prelaunch均已通过，说明SPK可以进入唯一正式验证；它仍不增加创新性。C类贡献是否成立只看
 最终strong-control retrieval证据，而不是preflight数值。
+
+唯一formal已启动不改变创新判断。C类门槛保持为“固定final-descriptor语义绑定 + random null强证据”；在e120
+与全量反事实结束前，训练健康、factor active或中间精度都不能升级为贡献结论。

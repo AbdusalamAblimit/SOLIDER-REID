@@ -5705,3 +5705,11 @@ v3在第5次default GradScaler attempt成功更新并通过全部26门；formal 
 
 **决策**：授权唯一fresh seed1234/e120，通过冻结wrapper启动并自然跑满。中间指标只记录，不早停、不续训、
 不改运行中代码/config；最终仍按correct对全部强control和D0两级门裁决。
+
+### [2026-07-20] 决策：exp404唯一formal已启动
+
+远端fresh static第三次`15/15 PASS`，启动前repo/output/runner/launch/lock与GPU独占门全部通过。唯一formal已于
+`2026-07-20T04:52:15Z`启动，main PID=`436043`，远端HEAD=
+`1e40e9a9d1717139b06d09f55821c7f0e68143c7`。
+
+**决策**：保持单4090任务，自然训练至e120；中间性能无论好坏均不早停，不修改运行中代码/config，不续训。

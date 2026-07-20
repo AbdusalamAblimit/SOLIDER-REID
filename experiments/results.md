@@ -2974,3 +2974,13 @@ formal once-only prelaunch连续两次`15/15 PASS`且byte-exact；wrapper/contra
 `e2ded956ff1f741b2a4f51bf38bca31234a716f67a21b464f7729d2570ff26c4`。
 
 **当前判定**：`CUDA V3 PASS / UNIQUE FRESH SEED1234 E120 AUTHORIZED / NOT YET STARTED`。仍无性能结果。
+
+## exp404唯一formal启动（2026-07-20）
+
+远端fresh static第三次`15/15 PASS`且与本地结果byte-exact；远端HEAD=
+`1e40e9a9d1717139b06d09f55821c7f0e68143c7`。唯一fresh seed1234/e120已于
+`2026-07-20T04:52:15Z`启动，main PID=`436043`，launch SHA=
+`78b49f6971c42d73e8bdf4ee5dc0394a9d05090f1213e571b9cad10eea3758e4`。首次检查GPU为
+`8,134 MiB/99%/1 compute PID`，训练进入epoch1且SPK active，无异常。
+
+**当前判定**：`FORMAL RUNNING / NO PERFORMANCE RESULT / NATURAL E120 REQUIRED`。早期loss与factor只作健康监控。
