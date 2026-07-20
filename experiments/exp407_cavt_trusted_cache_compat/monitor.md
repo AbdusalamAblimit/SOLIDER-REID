@@ -46,3 +46,5 @@ fresh once-only路径、数据/pose/asset SHA和GPU独占全部通过，随后�
 `460864`。started SHA=`936d8777952564fdf1da8699f1612973a922634822bc58ada691c4d9fa0cbc7d`，started seal SHA=
 `c0370e6edf113018a0d82b1e9f2c1f046b5603ea8351cbab3055a30e6109125d`。首次观测到original batch 200，GPU=
 `2362 MiB / 96%`，无failure/result/complete。当前`CONTINUE`，自然完成前不改运行中源码、协议或参数。
+
+后续观测到original batch 1500，主进程仍运行，GPU=`2362 MiB / 96%`，无failure/result/complete。判断继续不变。
