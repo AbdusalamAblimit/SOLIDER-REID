@@ -3161,3 +3161,11 @@ exp406只修复preflight候选池：原512 core、20 recipients、四变量core 
 
 **当前判定**：`DESIGN ACCEPTED / STATIC NOT IMPLEMENTED / GPU NO-START / FORMAL NO-START / STUDENT
 NO-START`。三路根因审查的剩余blocker是新代码、static正反合同与fresh边界尚未闭合。
+
+exp406本地production/static v1随后连续两次`13/13 PASS`、byte-exact，SHA256均为
+`5b3d7fd6d3ac5ff99302807b85e5753077b2eb30dff4837047d9ccc03348ad3a`。core/teacher与exp405冻结字节exact，
+formal科学函数/常量投影exact；subset-only、caliper放宽、preference改变、Hall无解、近零MAD与cache/namespace
+泄漏mutant均通过反合同。
+
+**更新判定**：`LOCAL STATIC V1 PASS / NEW-CODE BLIND REVIEW PENDING / GPU NO-START / FORMAL NO-START /
+STUDENT NO-START`。这不是科学或性能结果。

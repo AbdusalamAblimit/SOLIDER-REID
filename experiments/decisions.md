@@ -5840,3 +5840,6 @@ same-camera/different-PID donor；权威failure receipt已写入，GPU回到空�
 recipient排除和donor唯一，只按冻结camera-round-robin/hash顺序把donor-only pool从512单调扩至full train。
 formal仍全train独立重算MAD和原全部科学门。当前只授权CPU/static实现；两次byte-exact与三路新代码`0B/0H`
 前不得创建远端资产或GPU execution。
+
+本地static v1现已两次`13/13 PASS`且byte-exact。**更新决策**：只授权显式提交runner/module/contract/results并
+启动三路固定快照代码盲审；盲审`0B/0H`、远端MMPOSE static和fresh asset门未完成前，GPU继续NO-START。

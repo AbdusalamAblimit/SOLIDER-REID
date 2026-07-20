@@ -1,0 +1,44 @@
+{
+  "cuda_initialized_after": false,
+  "cuda_initialized_before": false,
+  "experiment": "exp406",
+  "gates": {
+    "assignment_identity_camera_caliper_strict": true,
+    "caliper_and_preference_mutants_caught": true,
+    "core_teacher_exact_sealed_projection": true,
+    "cuda_not_initialized": true,
+    "donor_plan_deterministic_and_complete": true,
+    "failure_diagnostics_complete": true,
+    "fixed_core_scale_progressive_positive": true,
+    "formal_scientific_projection_exact": true,
+    "fresh_namespace_and_receipt_binding": true,
+    "hall_assignment_mutant_caught": true,
+    "preflight_formal_cache_and_science_separated": true,
+    "source_hashes_bound": true,
+    "subset_only_mutant_caught": true
+  },
+  "mutants": {
+    "caliper_relaxation": true,
+    "hall_failure": true,
+    "preference_change": true,
+    "subset_only": true
+  },
+  "positive": {
+    "assigned_donor_count": 20,
+    "recipient_count": 20,
+    "selected_pool_total": 1024,
+    "summary_sha256": "c305fe7e9c55d6798cfa30d22e36b84e9a92c64ef2979410fca597727ff35f49"
+  },
+  "provenance": {
+    "core_sha256": "29ddd00ce03ed73b6d1c7ab722de88490e2490638bc83b192e215c6ab4bb0f8b",
+    "module_sha256": "d2a2425303ec1bd56d9ffa67c39afa612263ea0ffa52ef6b261ce557ae99129d",
+    "protocol_sha256": "da36aa9a94fe03a4f6a4bdbb2a967c45e942c0d69bc1f5d6f1d7062df8dcfd06",
+    "runner_sha256": "ba0a49b5ad17906511525761b68c1828691b67f20b5ed1a54e16f4e85a312700",
+    "sealed_core_sha256": "29ddd00ce03ed73b6d1c7ab722de88490e2490638bc83b192e215c6ab4bb0f8b",
+    "sealed_runner_sha256": "52ee00f1eaf817877807ffbd691c09aafdd89288b5c87b56747f99f8695a2648",
+    "sealed_teacher_sha256": "af255cbbb6eafca2024f7882023deda50445f9a01c1df0b28422a24e23cc35a0",
+    "teacher_sha256": "af255cbbb6eafca2024f7882023deda50445f9a01c1df0b28422a24e23cc35a0"
+  },
+  "schema": "exp406-donor-reserve-static-v1",
+  "status": "PASS"
+}

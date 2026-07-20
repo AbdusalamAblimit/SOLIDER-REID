@@ -31,8 +31,8 @@ MAD、caliper `8.0`在所有扩池阶段恒定。
 
 排除core后，按camera分组；组内按
 `SHA256("exp406-donor" || camera || PID || relative_path)`升序，camera升序round-robin合并。累积pool总规模严格为
-`512 / 1024 / 2048 / 4096 / 8192 / 15618`。扩展图只作为donor，每图最多编码一次，不进入recipient、MAD、
-semantic summary或科学统计。
+`512 / 1024 / 2048 / 4096 / 8192 / 15618`。preflight先按official顺序一次性original编码全train，每图恰好
+一次，再在内存中按上述前缀显现donor；扩展图不进入recipient、core MAD、semantic summary或科学统计。
 
 每阶段保持：same-camera、different-PID、analysis-valid、全recipient排除、donor唯一、四变量固定MAD、caliper
 `8.0`、`64 -> 128 -> 256 -> full-caliper`一对一增广匹配。完整匹配后不再扩池；full train仍失败则本execution

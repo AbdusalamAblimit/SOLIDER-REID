@@ -56,8 +56,9 @@ core外的official train样本只作为donor。先按camera分组；每组用
 
 `512 -> 1024 -> 2048 -> 4096 -> 8192 -> 15618(full train)`。
 
-每个新增样本最多做一次original pose/CLIP编码，结果只留在本次preflight内；不得写成formal可复用cache。每个阶段
-都从当前累积pool重新执行完整匹配，且必须同时满足：
+为减少动态DataLoader状态和中途cache成为新的once-only故障面，preflight按official顺序一次性original编码全
+15,618图，每图恰好一次；随后只在内存中按冻结前缀逐阶段显现donor edge。结果只留在本次preflight内，不得写成
+formal可复用cache。每个阶段从当前逻辑pool执行完整匹配，且必须同时满足：
 
 - target slot `analysis-valid`；
 - same-camera；
@@ -114,7 +115,8 @@ MAD，五槽各400 recipient，caliper固定`8.0`，`64 -> 128 -> 256 -> full`�
 - 正常路径：在有限前缀内取得完整匹配，512 core与20 recipients不变，20对wrong-mask机械接线全部finite/active，
   `scientific_evaluated=false`，生成唯一COMPLETE PASS。
 - 最坏路径：增量编码full train后仍无完整匹配，写权威failure receipt并永久FAIL。
-- 成本上界：original编码15,618图，约为exp405 512图的`30.5x`；diagnostic仍仅20对，不执行formal 2,000对科学测量。
+- 成本固定上界：original编码15,618图，约为exp405 512图的`30.5x`；diagnostic仍仅20对，不执行formal 2,000对
+  科学测量。全量original是预注册的机械donor metadata构建，不是formal科学测量。
 
 preflight PASS只授权创建fresh formal manifest，不直接授权formal执行。formal必须另行复核源码/runtime/assets/GPU、
 COMPLETE provenance和全部fresh门。

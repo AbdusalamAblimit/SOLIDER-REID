@@ -2384,3 +2384,5 @@ student均未开始。
 
 exp406仅把preflight donor universe改为冻结的单调扩池，同时保留recipient、四变量MAD、caliper `8.0`和全部
 匹配门；它是测量合同修复，不是论文方法或消融。当前尚无新科学结果，paper story不因exp406设计而改变。
+
+exp406 static v1的`13/13 PASS`同样不进入论文结果表；它只授权新代码盲审，formal P0B仍未开始。
