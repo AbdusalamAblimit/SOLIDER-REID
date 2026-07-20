@@ -93,3 +93,13 @@ Torch `1.13.1` 且 CUDA available。唯一fresh seed1234/e120已从remote HEAD=
 `0.6406/0.9688`，wrong-RGB/generic/zero/pose-shuffle/CLIP-only control改变=
 `0.9375/0.984375/0.90625/0.921875/0.90625`。首次观测主进程正常、GPU约`7.0 GiB/89%`，已进入e1且
 无Traceback/RuntimeError/OOM/NaN/Inf。运行中冻结源码、config和参数，只自然监控至e120。
+
+## e10 同epoch里程碑
+
+| epoch | PCHM mAP/R1 | sealed clean D0 mAP/R1 | ΔmAP/ΔR1 |
+|---:|---:|---:|---:|
+| 10 | 24.2/33.4 | 33.4/42.7 | -9.2/-9.3 |
+
+e10完整R5/R10=`49.0/56.1`。评测后已自然进入e11；主PID仍唯一，GPU约`7.1 GiB/93%`，
+Traceback/RuntimeError/OOM/NaN/Inf均为`0`。该点明显落后但只作为中间轨迹，按冻结协议不早停、不改运行中
+源码/config/参数，继续自然训练至e120。
