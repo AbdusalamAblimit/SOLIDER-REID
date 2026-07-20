@@ -2288,3 +2288,11 @@ frequency-matched random-cluster CPU诊断中，原始与label-permutation都观
 随机共享类别假语义已被证明，也不能重跑救门。story继续保持`POST-EXP403 OWNERSHIP AUDIT / NO EXP404 /
 GPU NO-START`：后继对象必须同时击败unique random-key和frequency-matched semantic-blind null，且不以
 identity-majority聚合改变原semantic target。
+
+用户随后把投稿目标明确调整为C类会议，因此机制筛选从“B类主贡献级原子首创”降为“问题/证据清楚、结构适度
+新且可执行”。这不改变sealed实验、不利control、once-only和GPU安全门。
+
+据此建立exp404 SPK设计：不用C0 expert或ELO-CUR，把student evidence变成无参数乘积factor，直接作用在最终
+768维标准欧氏descriptor。NULL对应全1 factor并与bypass exact。论文主张上限是“final descriptor路径绑定 +
+random-key/random-cluster证据协议”，不声称张量积或InfoNCE首创。当前仅到design/static CPU授权；正式story
+只有在correct同时优于wrong/generic/NULL与两类semantic-blind control后才可转正。

@@ -418,3 +418,14 @@ MVI²P官方commit `4efd9fc9`已覆盖同ID多视图综合、CAM可靠性加权�
 `cluster_7`只有38个PID，低于预注册`>=40`，正式封板为`DIAGNOSTIC_INCONCLUSIVE`。不降低门槛、不补跑、
 不建立v2。聚合当前sample-specific evidence会丢失原support/appearance target；保留它则仍受random-key
 假所有权约束。该候选不进入exp404或GPU。
+
+### exp404候选：Semantic Product Kernel（SPK）
+
+**状态**：`C-TRACK DESIGN / STATIC CPU PENDING / GPU NO-START`
+
+在用户将目标调整为C类会议后，SPK以适度结构贡献准入：将final 768维global feature固定reshape为`16 x 48`，
+由五slot student evidence确定无参数、均值为1的16维乘积factor，再还原为单一descriptor。没有learned
+projection、constant concat、additive bypass、C0 expert或ELO operator。
+
+该候选必须保持NULL/bypass exact，并在最终全量检索同时击败wrong/generic、unique random-key和
+frequency-matched random-cluster。当前只授权static CPU，不因C类目标而删除反例或直接启动GPU。

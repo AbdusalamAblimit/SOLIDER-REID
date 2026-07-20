@@ -2883,3 +2883,17 @@ NO EXP404 / GPU NO-START`。以后强门必须增加semantic-blind random-key co
 
 **当前判定**：`DIAGNOSTIC_INCONCLUSIVE / NO EXP404 / GPU NO-START`。上述数值顺序不形成“random-cluster
 假语义已证明”的科学结果，exp401–403封板不变。
+
+## exp404 SPK static CPU合同（2026-07-20）
+
+用户将目标调整为C类会议后，exp404只以适度结构贡献进入design/static阶段。无official数据、无模型资产、
+无GPU的standalone SPK合同连续两次`17/17 PASS`且byte-exact：NULL exact identity、correct对五类control的
+toy utility最小margin=`0.7641115299`、global/evidence梯度finite/nonzero、三个bypass mutant全部被抓。
+random-key保持norm/绝对值多重集；8个random-cluster各48 sample、48 PID并覆盖双camera。
+
+source/result SHA=
+`9739ad1d8388b45922f2ccdb3fec91ffa77c12d6a2e333e75e43c144c10e9e05`/
+`6b2ca7d88669238cc9f7bebd04ff21567fe5b7f61a0a3f1dbfa549a909b19a64`。
+
+**当前判定**：`STATIC CPU PASS / PRODUCTION IMPLEMENTATION AUTHORIZED / CUDA NO-START / GPU NO-START`。
+这不是ReID性能或semantic ownership结果；exp394–403封板不变。

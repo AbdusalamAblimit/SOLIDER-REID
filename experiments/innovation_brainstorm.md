@@ -4075,3 +4075,16 @@ prototype、跨样本状态重复或多视图语义复制不是新的机制对�
 
 下一候选必须同时击败unique random-key与frequency-matched semantic-blind null，并保持sample-specific正确
 语义的可验证target；把当前region-global code做identity-majority聚合会改变原问题，不能建立exp404。
+
+### exp404 C-track：Semantic Product Kernel final descriptor
+
+**状态**：`C-CLASS CANDIDATE / DESIGN / STATIC CPU PENDING`
+
+目标降为C类后，可接受“已有基础原子 + 新问题对象 + 强证据协议”的适度组合创新。SPK不再把evidence送入可被
+global trunk绕过的hidden residual，而把`16 x 48`分组后的final feature与无参数
+`16*softmax(aggregate(evidence))`逐组相乘。NULL产生全1 factor，故bypass exact；训练/测试始终读取同一个
+768维固定descriptor。
+
+亮点不在张量积首创，而在：标准欧氏单descriptor中把semantic path变成结构必经项，并同时用matched wrong、
+generic、NULL、unique random-key与frequency-matched random-cluster终审。若只过wrong/NULL而不过random
+controls，则仍判source authentication，不写semantic ownership。

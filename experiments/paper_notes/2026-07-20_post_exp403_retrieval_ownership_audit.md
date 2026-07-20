@@ -800,3 +800,36 @@ assignment的`cluster_7`只覆盖38个PID，未达到预注册`>=40`，所以ori
 文献层面为`SEMANTIC REPLICATION PRIOR SATURATION / TARGET COLLAPSE`；CPU执行层面为
 `DIAGNOSTIC_INCONCLUSIVE`。两者都不授权exp404。当前仍只有source-specific open-set retrieval ownership的
 问题/证据缺口，机制门为空；状态维持`NO EXP404 / GPU NO-START`。
+
+## 24. C类目标调整后的适度机制准入
+
+用户明确将投稿目标调整为C类会议，故后续不再要求结构原子本身达到B类主贡献级首创；仍要求问题、机制、证据
+三者至少两项清楚，且不删除random-key等不利control。
+
+### 24.1 multimodal contrastive identifiability的可借用边界
+
+ICLR 2023 *Identifiability Results for Multimodal Contrastive Learning*官方仓库
+<https://github.com/imantdaunhawer/multimodal-contrastive-learning>，审计commit=
+`c1b361f277deeff645c15aa3c3002de8d275003c`。`main_imgtxt.py`使用image/text独立encoder，在exact paired
+样本上计算双向对称InfoNCE；数值模拟又显式生成共享content、可变style和modality-specific factors，并用线性/
+非线性预测检验表示恢复。
+
+它为“跨view一致部分可作为训练对象”提供直接先例，也意味着普通RGB/evidence contrastive alignment不能作为
+新贡献。更重要的是，它没有当前的single-RGB部署、open-set identity descriptor、matched wrong/generic/NULL、
+random-key或frequency-matched null，因此这些仍可构成C类问题与证据贡献。
+
+### 24.2 CITRIS说明不能把paired loss写成因果定理
+
+CITRIS/iCITRIS官方仓库<https://github.com/phlippe/CITRIS>，审计commit=
+`95f6c90b9ff769ef0250d3a5434b9352853f4302`。README明确要求temporal image sequence和observed/known
+intervention targets；`TargetClassifier`直接接收intervention target tensor，VAE transition prior也以该target
+计算时序NLL。实验数据是可生成并可观测真实causal factors的synthetic sequences。
+
+official ReID没有这些干预标签、时间转移或真实causal target。因此exp404不能声称semantic factor可识别，只能
+把paired teacher/student alignment当工程训练信号，并交由semantic-blind controls做经验裁决。
+
+### 24.3 C-track裁决
+
+在降低投稿门槛但保留证据门后，固定Semantic Product Kernel可作为适度结构候选：它让student evidence以无参数
+乘积factor直接绑定最终固定descriptor，并用random-key/random-cluster测试该绑定是否真有语义。问题/机制/
+证据=`PASS/PASS-moderate/PASS`，故允许创建exp404 design与static CPU；当前仍`GPU NO-START`。

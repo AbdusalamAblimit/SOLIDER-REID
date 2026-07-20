@@ -5646,3 +5646,16 @@ frequency-matched random-cluster CPU诊断虽在原始与label-permutation观察
 对象并进入已有先例；若保留sample-specific状态，则仍须击败random-key control。状态为
 `SEMANTIC REPLICATION PRIOR SATURATION / TARGET COLLAPSE / NO EXP404 / GPU NO-START`，继续文献/代码与
 CPU诊断，不做CUDA/GPU。
+
+### [2026-07-20] 决策：按C类投稿目标建立exp404 SPK设计
+
+用户明确要求降低创新筛选强度，目标改为C类会议。sealed纪律、强反事实和数据/GPU边界不变，但不再以“每个
+原子都必须达到B类主贡献级首创”阻止适度结构创新。
+
+ICLR 2023 multimodal contrastive identifiability代码已覆盖paired modality共享factor的双向InfoNCE；CITRIS/
+iCITRIS则要求temporal sequence与已知intervention target。它们限制exp404不能声称理论可识别，但没有覆盖
+single-RGB open-set ReID中final fixed descriptor的semantic ownership与random-key终审。
+
+**决策**：建立exp404 `Semantic Product Kernel`设计，把16维student evidence作为固定、无参数乘积因子直接绑定
+到最终768维descriptor；不使用C0 expert、ELO-CUR operator或新增ownership loss。按问题/适度机制/证据三项
+通过C-track准入，当前仅允许static CPU；在正反contract完成前`GPU NO-START`。
