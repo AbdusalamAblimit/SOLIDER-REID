@@ -5894,3 +5894,10 @@ formal manifest自验证PASS且独立盲审`0B/0H`，因此唯一formal启动门
 
 唯一formal已启动并取得started seal。运行中只监控自然完成；若科学NO-GO则停止CAVT并立即设计下一种pose+CLIP
 训练对象，若GO则先完整记录强反事实证据，再冻结student与clean D0方案。
+
+### [2026-07-21] 决策：exp407 formal validity失败，停止CAVT测量器修补
+
+唯一formal在全量编码后因wrong-mask balance caliper无donor而失败，科学门未执行。exp407永久封板，禁止调caliper、
+换recipient、删control或新编号补跑同一formal。严格说这不证明CAVT科学NO-GO；但exp405/406/407已连续消耗三次
+执行在测量合同而非涨点验证上，继续修补不符合当前C类会议与快速训练目标。因此下一编号必须是新的pose+CLIP训练
+对象，直接以clean D0和自然ReID mAP/R1裁决，不再是CAVT donor/matcher修复。

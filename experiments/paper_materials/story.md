@@ -2399,3 +2399,7 @@ student相对clean D0的mAP/R1才可能支持CAVT叙事。
 
 exp407 preflight已机械PASS，但`scientific_evaluated=false`，因此仍不进入论文表。它仅清除了运行时和测量有效性
 障碍；CAVT叙事的第一份可用证据必须来自formal teacher强反事实。
+
+exp407 formal在wrong-mask caliper匹配处VALIDITY FAIL，未产生result/COMPLETE，故CAVT没有形成任何可进入论文表的
+科学证据或ReID结果。当前论文story不采用CAVT；后续必须回到直接训练并以clean D0、pose反事实和自然e120涨点建立
+贡献。

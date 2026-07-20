@@ -1,6 +1,6 @@
 # exp407 CAVT cache兼容监控
 
-> 当前：`UNIQUE PREFLIGHT COMPLETE PASS / FORMAL BLIND REVIEW 0B/0H / UNIQUE FORMAL RUNNING / STUDENT NO-START`
+> 当前：`PREFLIGHT COMPLETE PASS / UNIQUE FORMAL SEALED-FAIL / WRONG-MASK CALIPER VALIDITY FAILURE / SCIENCE NOT EVALUATED / STUDENT NO-START`
 
 ## 2026-07-21：建立fresh编号
 
@@ -84,3 +84,16 @@ SHA与runtime SHA，`formal_measurement_authorized=true`、`transport_oracle_aut
 
 heartbeat观测到formal original batch 4800，主进程仍运行，GPU=`2362 MiB / 96%`，无failure/result/complete。
 吞吐和显存稳定，判断=`CONTINUE`；不改运行中任何冻结对象。
+
+## 2026-07-21：唯一formal机械失败并封板
+
+唯一formal完成全15,618图original编码后，在构造2,000对formal wrong-mask control时，冻结
+`choose_wrong_masks`找不到满足balance caliper的donor并抛出
+`RuntimeError: no wrong-mask donor satisfies the frozen balance caliper`。failure receipt SHA=
+`4d0daea8fe17e15ce3c31955ce89c014e8fddbfbb74e0bb86a9e7d91b12198e7`，console SHA=
+`69d07cc27d8828ff220c92a69d01718ef7c0d0ea30f26418743f60a336c105cf`。result、COMPLETE和teacher cache均
+不存在，GPU已回到`2 MiB / 0% / 0 compute PID`。
+
+最终裁决：`EXP407 FORMAL SEALED-FAIL / WRONG-MASK CALIPER VALIDITY FAILURE / SCIENCE NOT EVALUATED /
+STUDENT NO-START`。同编号禁止重跑、补结果、调caliper或修改control。该结果不等价于CAVT科学NO-GO；但在
+exp405/406/407连续三次测量合同阻断后，不再用新编号修CAVT donor/caliper测量器，立即转向新的pose+CLIP训练对象。

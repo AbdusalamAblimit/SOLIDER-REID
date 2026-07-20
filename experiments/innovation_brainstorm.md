@@ -4191,3 +4191,7 @@ CLIP evidence的强反事实顺序，以及student相对clean D0是否自然e120
 
 exp407 preflight八项validity PASS仍不提高CAVT创新评价，只说明formal可被可信执行。下一步不再增加基础设施实验，
 直接让formal回答correct region是否稳定胜wrong-mask/deletion/generic controls。
+
+exp407 formal最终被wrong-mask caliper有效性阻断，未回答CAVT科学问题。连续三次测量器失败说明这条路线的证据成本
+已经超过当前C类会议目标可接受范围。CAVT不作科学否定，但从活动主线移除；下一机制必须直接改变训练对象并通过
+clean D0、wrong-pose/zero-pose反事实和ReID mAP/R1形成证据，禁止再设计donor匹配测量器。

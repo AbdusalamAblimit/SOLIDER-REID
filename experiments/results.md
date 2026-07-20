@@ -3215,3 +3215,8 @@ NO-START，当前没有teacher科学结果或ReID mAP/R1。
 
 formal manifest SHA=`3932125980989a634df87cb71904e8d2a4772e9bae98ea1dcfb8def35ca70571`经runner自验证与独立盲审
 `0B/0H`后，唯一formal已启动并取得started seal。当前仍无formal科学结果或ReID mAP/R1。
+
+唯一formal完成全15,618图编码后，在2,000对wrong-mask control的冻结balance caliper匹配处失败。failure SHA=
+`4d0daea8fe17e15ce3c31955ce89c014e8fddbfbb74e0bb86a9e7d91b12198e7`；result/COMPLETE/cache均不存在，GPU已
+释放。最终=`EXP407 FORMAL SEALED-FAIL / VALIDITY FAILURE / SCIENCE NOT EVALUATED / STUDENT NO-START`。
+preflight PASS保留，但不能授权重跑formal或推断CAVT科学方向，也没有ReID mAP/R1。
