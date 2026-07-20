@@ -7,12 +7,17 @@ import argparse
 import hashlib
 import json
 import os
+import sys
 from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
 import torch
 from PIL import Image
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from datasets.bases import read_image
 from datasets.occluded_duke import OccludedDuke

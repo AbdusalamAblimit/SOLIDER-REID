@@ -27,3 +27,12 @@ PICRD mask/pooling/relation整个块显式置于`autocast(enabled=False)`并把s
 同一独立审查者已闭环为`0 BLOCKER / 0 HIGH`。本地语法/config merge、逐槽shape、共同valid、构造正例四臂顺序
 和source非零有限梯度均PASS；没有启动GPU。下一步只做一次固定MMPOSE-ABU真实model CUDA/AMP update，然后立即
 fresh生成cache并冻结SHA，不追加其它static。
+
+固定MMPOSE-ABU真实batch64 CUDA/AMP检查PASS：PICRD块为FP32，`stage_grad_tensors=142`，首个
+`base.patch_embed.projection.weight`梯度绝对和=`49.140007`，默认GradScaler=`65536`且一次optimizer真实更新。
+四臂初值correct/wrong/generic/zero=`0.727728/0.727611/0.037120/0.725649`，generic明显更近，说明control
+不是装饰性弱臂；训练必须实际扭转顺序。检查后GPU=`2 MiB/0%`。
+
+首次cache-v1后台调用在顶层`from datasets...`立即因repo根未进入`sys.path`退出；log仅237 bytes，未读official/
+pose、未初始化CUDA、未创建cache/diagnostic。v1目录冻结不复用。修复只在import前加入脚本解析出的repo root，
+cache/config改用fresh `exp408-picrd-cache-v2`；等待同一独立审查者聚焦闭环后立即执行。
