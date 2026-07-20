@@ -12,6 +12,7 @@ import json
 import math
 import sys
 import tempfile
+import types
 from pathlib import Path
 
 import torch
@@ -247,7 +248,9 @@ def eligibility_contract(module, base_rows):
         set_slot_descriptor(rows, invalid, slot)
         rows["valid"][invalid, slot] = False
         set_slot_descriptor(rows, over_caliper, slot, mass_log=8.1e-6)
-        set_slot_descriptor(rows, correct, slot, mass_log=1.0e-6)
+        set_slot_descriptor(rows, correct, slot, mass_log=7.9e-6)
+        rows["global_feature"][over_caliper] = torch.tensor([1.0, 0.0])
+        rows["global_feature"][correct] = torch.tensor([-1.0, 0.0])
     donors, records, summary = call_match(module, rows)
     return bool(
         set(map(int, donors)) == set(groups[-1])
@@ -256,6 +259,94 @@ def eligibility_contract(module, base_rows):
         and all(record["recipient_pid"] != record["donor_pid"] for record in records)
         and all(record["primary_distance"] <= 8.0 for record in records)
     )
+
+
+class CaliperFilterMutator(ast.NodeTransformer):
+    def __init__(self):
+        self.in_target = False
+        self.mutation_count = 0
+
+    def visit_FunctionDef(self, node):
+        previous = self.in_target
+        self.in_target = node.name == "_stage_preferences"
+        node = self.generic_visit(node)
+        self.in_target = previous
+        return node
+
+    def visit_Compare(self, node):
+        node = self.generic_visit(node)
+        if (
+            self.in_target
+            and isinstance(node.left, ast.Name)
+            and node.left.id == "primary_distance"
+            and len(node.ops) == 1
+            and isinstance(node.ops[0], ast.LtE)
+        ):
+            node.comparators = [ast.Constant(value=1e300)]
+            self.mutation_count += 1
+        return node
+
+
+def load_mutated_module(tree, name: str):
+    module = types.ModuleType(name)
+    module.__file__ = "<%s>" % name
+    module.__package__ = ""
+    sys.modules[name] = module
+    exec(compile(ast.fix_missing_locations(tree), module.__file__, "exec"), module.__dict__)
+    return module
+
+
+def caliper_delete_mutant_contract(module_source: str, base_rows) -> dict:
+    tree = ast.parse(module_source)
+    transformer = CaliperFilterMutator()
+    mutant_tree = transformer.visit(tree)
+    mutant = load_mutated_module(mutant_tree, "exp406_caliper_delete_mutant")
+    try:
+        mutant_passed = eligibility_contract(mutant, base_rows)
+    except (RuntimeError, ValueError, mutant.DonorReserveError):
+        mutant_passed = False
+    return {
+        "mutation_site_count_exact": transformer.mutation_count == 1,
+        "mutant_caught": not mutant_passed,
+    }
+
+
+def preference_order_contract(module, base_rows) -> bool:
+    rows = clone_rows(base_rows)
+    recipient = rows["recipients"][0]
+    slot = rows["slots"][0]
+    donors = list(map(int, rows["plan"]["donor_order"][:4]))
+    rows["mass"].fill_(math.e)
+    rows["centroid"].fill_(1.0)
+    rows["confidence"].fill_(1.0)
+    rows["support"].fill_(1.0)
+    set_slot_descriptor(rows, recipient, slot)
+    specifications = (
+        (donors[0], 2.0e-6, 0.0, 40),
+        (donors[1], 1.0e-6, 2.0, 30),
+        (donors[2], 2.0e-6, 0.0, 20),
+        (donors[3], 2.0e-6, 0.0, 10),
+    )
+    for donor, primary, cosine_gap, key in specifications:
+        set_slot_descriptor(rows, donor, slot, mass_log=primary)
+        rows["global_feature"][donor] = torch.tensor(
+            [-1.0, 0.0] if cosine_gap == 2.0 else [1.0, 0.0]
+        )
+        rows["keys"][donor] = key
+    values = module._descriptor_values(
+        rows["mass"], rows["centroid"], rows["confidence"], rows["support"]
+    )
+    scales, _ = module._frozen_scale_summary(rows["valid"], values, rows["core"])
+    forbidden = torch.zeros(EXPECTED_SAMPLES, dtype=torch.bool)
+    forbidden[torch.tensor(rows["recipients"], dtype=torch.long)] = True
+    preferences, _, _ = module._stage_preferences(
+        [recipient], [slot], rows["valid"], values, scales,
+        rows["global_feature"], rows["pids"], rows["camids"], rows["keys"],
+        forbidden, rows["plan"]["stages"][1]["pool_indices"], 8.0,
+    )
+    observed = [int(value) for value in preferences[0] if int(value) in donors]
+    expected = [donors[3], donors[2], donors[0], donors[1]]
+    return observed == expected
 
 
 def fixed_core_scale_contract(module, base_rows):
@@ -411,6 +502,23 @@ def hall_failure_contract(module, base_rows):
         lambda: module.validate_failure_diagnostics(mutant),
         ValueError,
         "failure diagnostics",
+    ))
+    mutant = copy.deepcopy(diagnostics)
+    del mutant["stages"][-1]["assignment_attempts"][-1]["witness"][
+        "reachable_donors"
+    ]
+    required_deletions.append(expect_error(
+        lambda: module.validate_failure_diagnostics(mutant),
+        ValueError,
+        "HALL_FAIL",
+    ))
+    mutant = copy.deepcopy(diagnostics)
+    witness = mutant["stages"][-1]["assignment_attempts"][-1]["witness"]
+    witness["reachable_donor_count"] = witness["reachable_recipient_count"]
+    required_deletions.append(expect_error(
+        lambda: module.validate_failure_diagnostics(mutant),
+        ValueError,
+        "HALL_FAIL",
     ))
     return bool(complete and all(required_deletions)), diagnostics
 
@@ -581,6 +689,211 @@ def receipt_binding_contract(runner, scratch_parent: Path) -> dict:
         return cases
 
 
+def _run_node(tree):
+    matches = [
+        node for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "run"
+    ]
+    if len(matches) != 1:
+        raise RuntimeError("run projection is not unique")
+    return matches[0]
+
+
+def _assignment(run_node, target_name: str):
+    matches = []
+    for node in ast.walk(run_node):
+        if isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == target_name
+            for target in node.targets
+        ):
+            matches.append(node)
+    if len(matches) != 1:
+        raise RuntimeError("assignment projection is not unique: %s" % target_name)
+    return matches[0]
+
+
+def _call_leaf(call):
+    if isinstance(call.func, ast.Name):
+        return call.func.id
+    if isinstance(call.func, ast.Attribute):
+        return call.func.attr
+    return None
+
+
+def _formal_if_with_call(run_node, call_name: str, receiver: str | None = None):
+    matches = []
+    for node in ast.walk(run_node):
+        if not isinstance(node, ast.If) or not (
+            isinstance(node.test, ast.Name) and node.test.id == "formal"
+        ):
+            continue
+        body_calls = [
+            child for child in ast.walk(ast.Module(body=node.body, type_ignores=[]))
+            if isinstance(child, ast.Call) and _call_leaf(child) == call_name
+            and (
+                receiver is None
+                or (
+                    isinstance(child.func, ast.Attribute)
+                    and isinstance(child.func.value, ast.Name)
+                    and child.func.value.id == receiver
+                )
+            )
+        ]
+        if body_calls:
+            matches.append((node, body_calls))
+    if len(matches) != 1:
+        raise RuntimeError("formal call projection is not unique: %s" % call_name)
+    return matches[0]
+
+
+def formal_tree_contract(tree, sealed_tree) -> bool:
+    try:
+        run_node = _run_node(tree)
+        sealed_run = _run_node(sealed_tree)
+        execution_if = [
+            node for node in ast.walk(run_node)
+            if isinstance(node, ast.If)
+            and isinstance(node.test, ast.Name) and node.test.id == "formal"
+            and any(
+                isinstance(child, ast.Assign)
+                and any(
+                    isinstance(target, ast.Name) and target.id == "execution_indices"
+                    for target in child.targets
+                )
+                for child in node.body + node.orelse
+            )
+        ]
+        if len(execution_if) != 1:
+            return False
+        expected_range = ast.dump(
+            ast.parse("execution_indices = list(range(EXPECTED_SAMPLES))").body[0].value,
+            annotate_fields=True,
+            include_attributes=False,
+        )
+        execution_values = [
+            child.value for child in execution_if[0].body + execution_if[0].orelse
+            if isinstance(child, ast.Assign)
+            and any(
+                isinstance(target, ast.Name) and target.id == "execution_indices"
+                for target in child.targets
+            )
+        ]
+        if len(execution_values) != 2 or any(
+            ast.dump(value, annotate_fields=True, include_attributes=False)
+            != expected_range
+            for value in execution_values
+        ):
+            return False
+
+        semantic_if, semantic_calls = _formal_if_with_call(
+            run_node, "full_semantic_summary"
+        )
+        diagnostic_if, diagnostic_calls = _formal_if_with_call(
+            run_node, "choose_diagnostic_subset"
+        )
+        matcher_if, matcher_calls = _formal_if_with_call(
+            run_node, "choose_wrong_masks"
+        )
+        if len(semantic_calls) != 1 or len(diagnostic_calls) != 1:
+            return False
+        semantic_args = [
+            arg.id if isinstance(arg, ast.Name) else None
+            for arg in semantic_calls[0].args
+        ]
+        diagnostic_args = [
+            arg.id if isinstance(arg, ast.Name) else ast.dump(
+                arg, annotate_fields=True, include_attributes=False
+            )
+            for arg in diagnostic_calls[0].args
+        ]
+        matcher_args = [
+            arg.id if isinstance(arg, ast.Name) else None
+            for arg in matcher_calls[0].args
+        ]
+        if semantic_args != ["distribution", "support", "analysis_valid", "pids"]:
+            return False
+        if diagnostic_args != [
+            "targets", "analysis_valid",
+            "Call(func=Attribute(value=Name(id='pids', ctx=Load()), attr='tolist', ctx=Load()), args=[], keywords=[])",
+            "Attribute(value=Name(id='base_dataset', ctx=Load()), attr='relative_paths', ctx=Load())",
+        ]:
+            return False
+        if matcher_args != [
+            "diagnostic_indices", "diagnostic_slots", "analysis_valid", "mass",
+            "centroid_y", "pose_confidence", "support", "global_feature", "pids",
+            "camids", "sample_keys", "diagnostic_indices",
+        ]:
+            return False
+        progressive_calls = [
+            child for child in ast.walk(ast.Module(body=matcher_if.orelse, type_ignores=[]))
+            if isinstance(child, ast.Call)
+            and _call_leaf(child) == "choose_wrong_masks_progressive"
+        ]
+        if len(progressive_calls) != 1:
+            return False
+        if any(
+            isinstance(child, ast.Call)
+            and isinstance(child.func, ast.Attribute)
+            and isinstance(child.func.value, ast.Name)
+            and child.func.value.id == "torch"
+            and child.func.attr == "load"
+            for child in ast.walk(run_node)
+        ):
+            return False
+
+        current_gates = _assignment(run_node, "gates")
+        sealed_gates = _assignment(sealed_run, "gates")
+        if ast.dump(current_gates, annotate_fields=True, include_attributes=False) != ast.dump(
+            sealed_gates, annotate_fields=True, include_attributes=False
+        ):
+            return False
+        current_formal_gates, _ = _formal_if_with_call(run_node, "update", "gates")
+        sealed_formal_gates, _ = _formal_if_with_call(sealed_run, "update", "gates")
+        if ast.dump(
+            ast.Module(body=current_formal_gates.body, type_ignores=[]),
+            annotate_fields=True,
+            include_attributes=False,
+        ) != ast.dump(
+            ast.Module(body=sealed_formal_gates.body, type_ignores=[]),
+            annotate_fields=True,
+            include_attributes=False,
+        ):
+            return False
+        for target in (
+            "validity_keys", "validity_pass", "scientific_keys",
+            "scientific_pass", "adjudication",
+        ):
+            if ast.dump(
+                _assignment(run_node, target),
+                annotate_fields=True,
+                include_attributes=False,
+            ) != ast.dump(
+                _assignment(sealed_run, target),
+                annotate_fields=True,
+                include_attributes=False,
+            ):
+                return False
+        formal_validity_if, _ = _formal_if_with_call(
+            run_node, "extend", "validity_keys"
+        )
+        sealed_validity_if, _ = _formal_if_with_call(
+            sealed_run, "extend", "validity_keys"
+        )
+        if ast.dump(
+            ast.Module(body=formal_validity_if.body, type_ignores=[]),
+            annotate_fields=True,
+            include_attributes=False,
+        ) != ast.dump(
+            ast.Module(body=sealed_validity_if.body, type_ignores=[]),
+            annotate_fields=True,
+            include_attributes=False,
+        ):
+            return False
+        return bool(semantic_if and diagnostic_if)
+    except (RuntimeError, AttributeError, IndexError):
+        return False
+
+
 def formal_branch_contract(runner_source: str, sealed_source: str) -> bool:
     formal_functions = (
         "choose_targets",
@@ -610,58 +923,76 @@ def formal_branch_contract(runner_source: str, sealed_source: str) -> bool:
         constant_value(runner_source, name) == constant_value(sealed_source, name)
         for name in formal_constants
     )
-    tree = ast.parse(runner_source)
-    run_nodes = [
-        node for node in tree.body
-        if isinstance(node, ast.FunctionDef) and node.name == "run"
-    ]
-    if len(run_nodes) != 1:
-        return False
-    matching = []
-    def call_leaf(call):
-        if isinstance(call.func, ast.Name):
-            return call.func.id
-        if isinstance(call.func, ast.Attribute):
-            return call.func.attr
-        return None
-    for node in ast.walk(run_nodes[0]):
-        if not isinstance(node, ast.If) or not (
-            isinstance(node.test, ast.Name) and node.test.id == "formal"
-        ):
-            continue
-        body_calls = [
-            call_leaf(child)
-            for child in ast.walk(ast.Module(body=node.body, type_ignores=[]))
-            if isinstance(child, ast.Call)
-            and call_leaf(child) in {"choose_wrong_masks", "choose_wrong_masks_progressive"}
-        ]
-        else_calls = [
-            call_leaf(child)
-            for child in ast.walk(ast.Module(body=node.orelse, type_ignores=[]))
-            if isinstance(child, ast.Call)
-            and call_leaf(child) in {"choose_wrong_masks", "choose_wrong_masks_progressive"}
-        ]
-        if body_calls or else_calls:
-            matching.append((body_calls, else_calls, node))
-    if len(matching) != 1:
-        return False
-    body_calls, else_calls, node = matching[0]
-    formal_loads_cache = any(
-        isinstance(child, ast.Call)
-        and isinstance(child.func, ast.Attribute)
-        and isinstance(child.func.value, ast.Name)
-        and child.func.value.id == "torch"
-        and child.func.attr == "load"
-        for child in ast.walk(ast.Module(body=node.body, type_ignores=[]))
-    )
     return bool(
         projection_exact
-        and body_calls == ["choose_wrong_masks"]
-        and else_calls == ["choose_wrong_masks_progressive"]
-        and not formal_loads_cache
+        and constant_value(runner_source, "PREFLIGHT_EXECUTION_SAMPLES")
+        == ("ast", "Name(id='EXPECTED_SAMPLES', ctx=Load())")
+        and formal_tree_contract(ast.parse(runner_source), ast.parse(sealed_source))
         and 'if hasattr(error, "diagnostics")' in runner_source
         and 'failure_payload["diagnostics"] = error.diagnostics' in runner_source
     )
+
+
+def formal_control_mutants(runner_source: str, sealed_source: str) -> dict:
+    sealed_tree = ast.parse(sealed_source)
+    base_tree = ast.parse(runner_source)
+    cases = {}
+
+    tree = copy.deepcopy(base_tree)
+    run_node = _run_node(tree)
+    count = 0
+    for node in ast.walk(run_node):
+        if isinstance(node, ast.If) and isinstance(node.test, ast.Name) \
+                and node.test.id == "formal":
+            for child in node.orelse:
+                if isinstance(child, ast.Assign) and any(
+                    isinstance(target, ast.Name) and target.id == "execution_indices"
+                    for target in child.targets
+                ):
+                    child.value = ast.parse(
+                        "list(range(PREFLIGHT_SAMPLES))", mode="eval"
+                    ).body
+                    count += 1
+    cases["preflight_subset_regression"] = bool(
+        count == 1 and not formal_tree_contract(tree, sealed_tree)
+    )
+
+    tree = copy.deepcopy(base_tree)
+    run_node = _run_node(tree)
+    _, calls = _formal_if_with_call(run_node, "choose_wrong_masks")
+    calls[0].args[2] = ast.Name(id="preflight_result", ctx=ast.Load())
+    cases["formal_matcher_cache_argument"] = not formal_tree_contract(
+        tree, sealed_tree
+    )
+
+    tree = copy.deepcopy(base_tree)
+    run_node = _run_node(tree)
+    run_node.body.insert(0, ast.Expr(value=ast.Call(
+        func=ast.Attribute(
+            value=ast.Name(id="torch", ctx=ast.Load()),
+            attr="load",
+            ctx=ast.Load(),
+        ),
+        args=[ast.Constant(value="preflight_cache.pt")],
+        keywords=[],
+    )))
+    cases["formal_cache_load"] = not formal_tree_contract(tree, sealed_tree)
+
+    tree = copy.deepcopy(base_tree)
+    run_node = _run_node(tree)
+    formal_gates, _ = _formal_if_with_call(run_node, "update", "gates")
+    count = 0
+    for node in ast.walk(ast.Module(body=formal_gates.body, type_ignores=[])):
+        if isinstance(node, ast.Compare) and any(
+            isinstance(operator, ast.Gt) for operator in node.ops
+        ):
+            node.comparators[-1] = ast.Constant(value=-1.0)
+            count += 1
+            break
+    cases["formal_scientific_gate_weakened"] = bool(
+        count == 1 and not formal_tree_contract(tree, sealed_tree)
+    )
+    return cases
 
 
 def main():
@@ -712,9 +1043,12 @@ def main():
     invocation_mutants = invocation_binding_contract(runner, paths)
     receipt_mutants = receipt_binding_contract(runner, output.parent)
     hall_complete, hall_diagnostics = hall_failure_contract(module, rows)
+    module_source = paths["module"].read_text(encoding="utf-8")
     runner_source = paths["runner"].read_text(encoding="utf-8")
     sealed_runner_source = paths["sealed_runner"].read_text(encoding="utf-8")
     protocol_source = paths["protocol"].read_text(encoding="utf-8")
+    caliper_delete_mutant = caliper_delete_mutant_contract(module_source, rows)
+    formal_mutants = formal_control_mutants(runner_source, sealed_runner_source)
 
     scalar_mutants = {
         "caliper_relaxation": expect_error(
@@ -752,7 +1086,7 @@ def main():
         ),
         "formal_science_and_cache_branch_exact": formal_branch_contract(
             runner_source, sealed_runner_source
-        ),
+        ) and all(formal_mutants.values()),
         "fresh_namespace_and_mmpose_binding": namespace_exact,
         "preseal_clip_pose_byte_validation": preseal_asset_order,
         "invocation_path_runtime_mutants_caught": all(invocation_mutants.values()),
@@ -768,6 +1102,12 @@ def main():
         "core_only_recipient_selector": selector_core_only_contract(module, rows),
         "fixed_core_mad_and_floor_behavior": fixed_core_scale_contract(module, rows),
         "eligibility_camera_pid_valid_caliper_behavior": eligibility_contract(
+            module, rows
+        ),
+        "caliper_filter_delete_mutant_caught": all(
+            caliper_delete_mutant.values()
+        ),
+        "preference_cosine_key_order_oracle": preference_order_contract(
             module, rows
         ),
         "progressive_positive_identity_unique": bool(
@@ -792,7 +1132,7 @@ def main():
     gates["source_start_end_exact"] = start_hashes == end_hashes
     result = {
         "experiment": "exp406",
-        "schema": "exp406-donor-reserve-static-v2",
+        "schema": "exp406-donor-reserve-static-v3",
         "status": "PASS" if all(gates.values()) else "FAIL",
         "gates": gates,
         "positive": {
@@ -806,6 +1146,8 @@ def main():
             "invocation": invocation_mutants,
             "receipt": receipt_mutants,
             "scalars": scalar_mutants,
+            "caliper_delete": caliper_delete_mutant,
+            "formal_control": formal_mutants,
             "hall_stage_statuses": [
                 stage["status"] for stage in hall_diagnostics["stages"]
             ] if hall_diagnostics is not None else [],

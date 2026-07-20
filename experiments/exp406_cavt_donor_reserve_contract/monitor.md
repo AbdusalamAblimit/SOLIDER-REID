@@ -1,7 +1,7 @@
 # exp406 donor-reserve合同监控
 
 > 当前：`EXP405 SEALED-FAIL PRESERVED / STATIC V1 BLIND-REVIEW BLOCKED /
-> LOCAL STATIC V2 17/17 PASS BYTE-EXACT / FINAL V2 BLIND REVIEW PENDING /
+> LOCAL STATIC V3 19/19 PASS BYTE-EXACT / FOCUSED V3 BLIND REVIEW PENDING /
 > GPU NO-START / FORMAL NO-START / STUDENT NO-START`
 
 ## 2026-07-21：建立新编号
@@ -77,3 +77,20 @@ v2源码SHA：runner=`545e07bbb05c763f6ae70be39a92da08e57a35c157c25e5df88d3e7cea
 `59edc1248031d24098c6eebb03f9c7fe1bc235fa19f9751536727ca05ef7a5b1`，contract=
 `50ec0010273bf63669aee47104158cedb82f1eaae38e96ee0223d294408a305d`；core/teacher仍与exp405冻结版本
 byte-exact。当前只授权固定提交和一次最终三路盲审；0B/0H前仍不创建远端execution/assets，不占用GPU。
+
+## 2026-07-21：v2最终盲审与聚焦v3闭合
+
+固定commit `c2eeefb64e6e1b01d9c1001fb136b57fdff2c107`的复现盲审为`0B/0H`，另两路分别为
+`1B/1H`和`1B/0H`。未闭合项只集中在static证明力：formal控制流/参数来源/scientific gate/cache注入未完整投影，
+caliper feasible过滤删除可能漏检，preference排序缺少非同质oracle，以及Hall witness只验truthy而未验严格deficit。
+production formal当前实际路径仍未发现科学漂移。
+
+v3只补上述具体项：formal full-count、semantic/diagnostic/matcher参数、完整run内`torch.load`拒绝、formal gate及
+validity/scientific/adjudication相对exp405 AST投影；四个内存formal mutant；caliper-filter删除mutant；
+cosine/key非同质排序oracle；Hall witness字段、计数、唯一性和`donor_count < recipient_count`强校验及篡改反例。
+
+首个通过输出保留为attempt4（`19/19 PASS`）；冻结schema为v3后两次fresh最终输出均`19/19 PASS`、byte-exact，
+SHA=`0c00a78c0babb21993325a4b031a8470e546ef10ebf656a24efc97f890263d44`，CUDA前后未初始化。donor SHA=
+`b6c1c2468568bd12820eb6f368cf09f0519a2a11ae6c6343d9e08c2f59c0a04a`，contract SHA=
+`a1e9e1dfaffcae5491c3e9c4bb9021973f4aa5d5c2c6874588071cb66c6b5fe8`。当前只做一次针对这些diff的聚焦盲审；
+若`0B/0H`立即进入远端MMPOSE-ABU，不再增加本地合同。

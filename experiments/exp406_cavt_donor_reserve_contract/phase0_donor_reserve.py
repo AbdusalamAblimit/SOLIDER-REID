@@ -512,6 +512,11 @@ def validate_failure_diagnostics(diagnostics: dict) -> None:
                 raise ValueError("ZERO_EDGE diagnostics are inconsistent")
         elif stage["status"] == "HALL_FAIL":
             attempts = stage["assignment_attempts"]
+            witness_fields = {
+                "root_recipient_position", "reachable_recipient_positions",
+                "reachable_donors", "reachable_recipient_count",
+                "reachable_donor_count",
+            }
             if (
                 int(stage["zero_edge_count"]) != 0
                 or not attempts
@@ -527,6 +532,25 @@ def validate_failure_diagnostics(diagnostics: dict) -> None:
                 != int(attempts[-1]["limit"])
             ):
                 raise ValueError("HALL_FAIL diagnostics are incomplete")
+            for attempt in attempts:
+                witness = attempt["witness"]
+                if (
+                    not isinstance(witness, dict)
+                    or not witness_fields.issubset(witness)
+                    or int(witness["reachable_recipient_count"])
+                    != len(witness["reachable_recipient_positions"])
+                    or int(witness["reachable_donor_count"])
+                    != len(witness["reachable_donors"])
+                    or len(set(witness["reachable_recipient_positions"]))
+                    != len(witness["reachable_recipient_positions"])
+                    or len(set(witness["reachable_donors"]))
+                    != len(witness["reachable_donors"])
+                    or int(witness["root_recipient_position"])
+                    not in witness["reachable_recipient_positions"]
+                    or int(witness["reachable_donor_count"])
+                    >= int(witness["reachable_recipient_count"])
+                ):
+                    raise ValueError("HALL_FAIL witness is not a strict Hall deficit")
         else:
             raise ValueError("failure diagnostics contain a non-failure stage")
 

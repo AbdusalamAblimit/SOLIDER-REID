@@ -53,3 +53,9 @@ formal缺少started provenance；代码审查抓到static未绑定自身字节�
 
 上述项已由static v2最小修复；第一次`15/17 FAIL`与随后两次byte-exact `17/17 PASS`均保留。当前等待对新固定
 commit的一次最终三路盲审；旧v1审查不能授权v2。
+
+## 固定commit c2eeefb的v2最终盲审
+
+复现/once-only=`0B/0H`；代码=`1B/1H`；合并=`1B/0H`。共同剩余BLOCKER是formal控制流与caliper-delete
+mutant不充分；代码路另将Hall witness schema列为HIGH，并要求非同质preference-order oracle。v3已逐项闭合并取得
+两次byte-exact `19/19 PASS`。下一次审查只复核这些差异，不新增非阻塞要求。

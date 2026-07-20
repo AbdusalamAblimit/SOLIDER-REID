@@ -3175,3 +3175,8 @@ MMPOSE-ABU/源码/pose硬绑定、preseal资产检查和started provenance不完
 `15/17 FAIL`并保留，修正测试构造及绑定最终protocol后两次fresh均`17/17 PASS`且byte-exact，最终结果SHA=
 `9c3286e4ec911c25f09c5797806f8d4ba5ed01a3def81162846612e1473d4061`。当前等待v2最终盲审，仍无GPU、teacher
 科学结果或ReID mAP/R1。
+
+v2最终盲审计数为`0B/0H`、`1B/1H`、`1B/0H`；剩余项均为static formal/caliper/preference/Hall-witness
+证明缺口，production科学路径未发现漂移。聚焦v3补齐后两次fresh均`19/19 PASS`且byte-exact，SHA=
+`0c00a78c0babb21993325a4b031a8470e546ef10ebf656a24efc97f890263d44`。当前等待v3差异复审，仍无GPU、
+teacher科学结果或ReID mAP/R1。

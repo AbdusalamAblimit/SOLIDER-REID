@@ -1,0 +1,101 @@
+{
+  "cuda_initialized_after": false,
+  "cuda_initialized_before": false,
+  "experiment": "exp406",
+  "gates": {
+    "caliper_filter_delete_mutant_caught": true,
+    "core_only_recipient_selector": true,
+    "core_teacher_exact_sealed_projection": true,
+    "cuda_not_initialized": true,
+    "donor_plan_deterministic_and_complete": true,
+    "eligibility_camera_pid_valid_caliper_behavior": true,
+    "fixed_core_mad_and_floor_behavior": true,
+    "formal_science_and_cache_branch_exact": true,
+    "fresh_namespace_and_mmpose_binding": true,
+    "hall_failure_attempts_and_field_mutants": true,
+    "invocation_path_runtime_mutants_caught": true,
+    "preference_cosine_key_order_oracle": true,
+    "preseal_clip_pose_byte_validation": true,
+    "progressive_positive_identity_unique": true,
+    "scalar_threshold_mutants_caught": true,
+    "source_hashes_bound_including_contract": true,
+    "source_start_end_exact": true,
+    "started_complete_receipt_mutants_caught": true,
+    "tampered_stage_plan_mutants_caught": true
+  },
+  "mutants": {
+    "caliper_delete": {
+      "mutant_caught": true,
+      "mutation_site_count_exact": true
+    },
+    "formal_control": {
+      "formal_cache_load": true,
+      "formal_matcher_cache_argument": true,
+      "formal_scientific_gate_weakened": true,
+      "preflight_subset_regression": true
+    },
+    "hall_stage_statuses": [
+      "ZERO_EDGE",
+      "HALL_FAIL",
+      "HALL_FAIL",
+      "HALL_FAIL",
+      "HALL_FAIL",
+      "HALL_FAIL"
+    ],
+    "invocation": {
+      "exp405_core": true,
+      "wrong_data": true,
+      "wrong_pose": true,
+      "wrong_runtime": true
+    },
+    "plan": {
+      "dynamic_stage": true,
+      "nonprefix_substitution": true,
+      "stage_hash_drift": true,
+      "stage_reorder": true,
+      "subset_only": true
+    },
+    "receipt": {
+      "cache_digest_mismatch": true,
+      "complete_exp406": true,
+      "exp405_execution": true,
+      "failure_coexists": true,
+      "missing_started_seal": true,
+      "scientific_result_rejected": true
+    },
+    "scalars": {
+      "caliper_relaxation": true,
+      "preference_change": true
+    }
+  },
+  "positive": {
+    "assigned_donor_count": 20,
+    "recipient_count": 20,
+    "selected_pool_total": 1024,
+    "summary_sha256": "88ca955062694031166f6b639392b34c64a8d351aea43ab4abe657d845af028f"
+  },
+  "provenance_end": {
+    "contract_sha256": "d26de0ccfbc9bb30b60232dfe69fb0250c15edc0078c9714fd2f08db819e70e2",
+    "core_sha256": "29ddd00ce03ed73b6d1c7ab722de88490e2490638bc83b192e215c6ab4bb0f8b",
+    "module_sha256": "b6c1c2468568bd12820eb6f368cf09f0519a2a11ae6c6343d9e08c2f59c0a04a",
+    "protocol_sha256": "ca8b2955057a4e45a42b64cbb88ec35c2b4c55a85080b07e02306c0c2ed94a79",
+    "runner_sha256": "545e07bbb05c763f6ae70be39a92da08e57a35c157c25e5df88d3e7cea5e3f80",
+    "sealed_core_sha256": "29ddd00ce03ed73b6d1c7ab722de88490e2490638bc83b192e215c6ab4bb0f8b",
+    "sealed_runner_sha256": "52ee00f1eaf817877807ffbd691c09aafdd89288b5c87b56747f99f8695a2648",
+    "sealed_teacher_sha256": "af255cbbb6eafca2024f7882023deda50445f9a01c1df0b28422a24e23cc35a0",
+    "teacher_sha256": "af255cbbb6eafca2024f7882023deda50445f9a01c1df0b28422a24e23cc35a0"
+  },
+  "provenance_start": {
+    "contract_sha256": "d26de0ccfbc9bb30b60232dfe69fb0250c15edc0078c9714fd2f08db819e70e2",
+    "core_sha256": "29ddd00ce03ed73b6d1c7ab722de88490e2490638bc83b192e215c6ab4bb0f8b",
+    "module_sha256": "b6c1c2468568bd12820eb6f368cf09f0519a2a11ae6c6343d9e08c2f59c0a04a",
+    "protocol_sha256": "ca8b2955057a4e45a42b64cbb88ec35c2b4c55a85080b07e02306c0c2ed94a79",
+    "runner_sha256": "545e07bbb05c763f6ae70be39a92da08e57a35c157c25e5df88d3e7cea5e3f80",
+    "sealed_core_sha256": "29ddd00ce03ed73b6d1c7ab722de88490e2490638bc83b192e215c6ab4bb0f8b",
+    "sealed_runner_sha256": "52ee00f1eaf817877807ffbd691c09aafdd89288b5c87b56747f99f8695a2648",
+    "sealed_teacher_sha256": "af255cbbb6eafca2024f7882023deda50445f9a01c1df0b28422a24e23cc35a0",
+    "teacher_sha256": "af255cbbb6eafca2024f7882023deda50445f9a01c1df0b28422a24e23cc35a0"
+  },
+  "schema": "exp406-donor-reserve-static-v2",
+  "status": "PASS"
+}
