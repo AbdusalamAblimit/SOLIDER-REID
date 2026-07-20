@@ -5671,3 +5671,11 @@ v1唯一失败是reporter跨函数误命中BNNeck字符串，保留`40/41 FAIL`�
 
 **决策**：允许创建fresh config和一次必要CUDA/AMP preflight；formal training仍未授权，GPU当前仍NO-START。
 C类目标只降低创新包装门槛，不降低correct-vs-wrong/generic/NULL/random-key/random-cluster与all-bypass终审门。
+
+### [2026-07-20] 决策：exp404 CUDA preflight静态门通过
+
+fresh config/source静态合同连续两次`33/33 PASS`且byte-exact，冻结真实batch64、默认GradScaler、16组梯度、
+NULL/random-key数值干预、RGB-only eval与独占4090门；无resume或性能早停路径。
+
+**决策**：授权部署fresh repo/runtime/assets并执行一次CUDA/AMP preflight。formal training仍未授权；任何CUDA门
+失败先封板该preflight记录，不得直接启动e120。

@@ -2916,3 +2916,15 @@ v1 contract/result SHA=
 
 **当前判定**：`PRODUCTION CPU PASS / CUDA PREFLIGHT AUTHORIZED / FORMAL TRAINING NO-START / GPU
 NO-START`。没有新增ReID性能数字，exp394–403封板不变。
+
+## exp404 CUDA preflight静态门（2026-07-20）
+
+fresh config与preflight source连续两次`33/33 PASS`且byte-exact；固定seed1234/e120/batch64与默认GradScaler，
+SPK开、ELO关，不含resume或性能早停路径。config/preflight/contract/result SHA=
+`2bd191ef96da0158a57f917831ea70627f1fef163397219ce1168e3e30bb297d`/
+`fb0a21168bef619a561bb77da0a2e5fe9216fde114ea7c34705c3fec544b7fe7`/
+`7d8c95896d3c97068060f7bc7795b7b8bc70bf2627d8915a5bafdc996c67e46a`/
+`65d8caf2b8e64c7fa6608eaf5842407b67f06ba3872bbccdbcfcfb135631df46`。
+
+**当前判定**：`CUDA PREFLIGHT STATIC PASS / CUDA EXECUTION AUTHORIZED / FORMAL TRAINING NO-START /
+GPU NO-START`。尚无性能结果。

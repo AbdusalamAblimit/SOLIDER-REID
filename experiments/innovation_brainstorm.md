@@ -4096,3 +4096,6 @@ triplet返回和两种eval neck路径之前执行同一SPK，CPU动态合同中�
 这只把exp404从概念候选推进为可执行C类结构候选，不增加理论新颖性。贡献边界仍冻结为：final descriptor
 必经绑定 + random semantic null证据协议。CUDA preflight可以开始，但在formal强反事实前不能写semantic
 ownership或性能贡献。
+
+CUDA preflight静态合同连续两次`33/33 PASS`只说明该机制能按冻结recipe进入真实硬件验证，不提高创新主张。
+C类候选边界继续保持“适度结构 + 强证据”，formal前状态仍不是有效方法。

@@ -2305,3 +2305,6 @@ random-key/random-cluster证据协议”，不声称张量积或InfoNCE首创。
 v1的`40/41 FAIL`只暴露reporter作用域错误并已保留；v2的`41/41 PASS`仅授权CUDA preflight。最终是否进入论文
 正面方法，仍完全取决于唯一fresh模型能否同时击败wrong/generic/NULL、unique random-key、frequency-matched
 random-cluster和all-bypass。
+
+CUDA preflight的config/source静态门现已两次byte-exact通过，冻结真实batch64、默认AMP和16组梯度合同。这一步
+只授权硬件可执行性检查，不构成论文实验结果；story仍停在“结构已实现”，等待actual CUDA与唯一formal证据。

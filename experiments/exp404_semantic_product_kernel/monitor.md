@@ -1,6 +1,6 @@
 # exp404 SPK 监控记录
 
-> 当前：`C-TRACK PRODUCTION CPU PASS / CUDA PREFLIGHT AUTHORIZED / GPU NO-START`
+> 当前：`C-TRACK CUDA PREFLIGHT STATIC PASS / CUDA EXECUTION AUTHORIZED / GPU NO-START`
 
 ## 2026-07-20：目标降为C类后的机制准入
 
@@ -72,3 +72,22 @@ v2 contract/result SHA=
 
 判定：`PRODUCTION CPU PASS / CUDA PREFLIGHT AUTHORIZED / FORMAL TRAINING NO-START / GPU NO-START`。下一步只
 允许创建fresh config与必要CUDA/AMP preflight；尚无ReID性能或semantic ownership结论。
+
+## 2026-07-20：CUDA/AMP preflight静态冻结门
+
+fresh formal config固定Swin-Tiny、seed1234、e120、batch64、workers8与原optimizer/pose监督；只启用
+`SPK_ENABLED=True/SPK_GROUPS=16`并关闭ELO-CUR，pretrain/CLIP/codebook均指向fresh exp404 asset目录，
+official数据与pose仍分别只读`/mnt1/afrdata`和`/mnt1/afrderived`。
+
+静态contract连续两次`33/33 PASS`且byte-exact：默认GradScaler、独占4090、真实batch64、16组feature/factor
+梯度、NULL/random intervention、RGB-only eval、fresh output、no-resume/no-mAP-early-stop等源码门全部通过，
+CUDA前后未初始化。
+
+config/preflight/contract/result SHA=
+`2bd191ef96da0158a57f917831ea70627f1fef163397219ce1168e3e30bb297d`/
+`fb0a21168bef619a561bb77da0a2e5fe9216fde114ea7c34705c3fec544b7fe7`/
+`7d8c95896d3c97068060f7bc7795b7b8bc70bf2627d8915a5bafdc996c67e46a`/
+`65d8caf2b8e64c7fa6608eaf5842407b67f06ba3872bbccdbcfcfb135631df46`。
+
+远端只读探测显示RTX 4090显存`2 MiB`、利用率`0%`且无compute PID。判定：
+`CUDA PREFLIGHT STATIC PASS / CUDA EXECUTION AUTHORIZED / FORMAL TRAINING NO-START / GPU NO-START`。

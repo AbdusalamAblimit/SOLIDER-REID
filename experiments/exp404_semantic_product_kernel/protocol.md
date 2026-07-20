@@ -2,8 +2,9 @@
 
 ## 0. 当前边界
 
-standalone与production CPU/source门均已通过。当前只允许创建fresh formal config及一次必要CUDA/AMP preflight；
-preflight自然退出且postflight全部通过前，formal仍为`NO-START`。现在`GPU NO-START`。
+standalone、production CPU/source与CUDA preflight静态门均已通过。当前只允许部署fresh repo/runtime/assets并执行
+一次必要CUDA/AMP preflight；preflight自然退出且postflight全部通过前，formal仍为`NO-START`。现在
+`GPU NO-START`。
 
 ## 1. 不变量
 
