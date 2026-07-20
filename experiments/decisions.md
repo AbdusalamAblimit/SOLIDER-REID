@@ -5843,3 +5843,12 @@ formal仍全train独立重算MAD和原全部科学门。当前只授权CPU/stati
 
 本地static v1现已两次`13/13 PASS`且byte-exact。**更新决策**：只授权显式提交runner/module/contract/results并
 启动三路固定快照代码盲审；盲审`0B/0H`、远端MMPOSE static和fresh asset门未完成前，GPU继续NO-START。
+
+### [2026-07-21] 决策：拒绝exp406 static v1授权，采用最小v2后立即复审
+
+**原因**：固定commit `afe9d490`的三路盲审发现v1可在错误runtime/输入或不完整failure receipt下虚假PASS，且
+`13/13`没有实际覆盖协议中的关键反合同。
+
+**决策**：不启动v1；只修复已指出的B/H，不扩张新科学变量。v2两次fresh `17/17 PASS`且byte-exact后，进行
+一次最终三路盲审。若`0B/0H`，立即进入远端MMPOSE-ABU隔离static/fresh资产和唯一preflight；若仍有B/H，只修
+对应项。该决定不改变exp405封板结论，也不改变CAVT科学门。

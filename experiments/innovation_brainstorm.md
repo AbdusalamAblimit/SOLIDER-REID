@@ -4178,3 +4178,7 @@ exp406采用固定尺度的单调donor扩池，严格属于测量合同修复，
 
 exp406 static两次PASS只证明“不降门的full donor universe”可被无歧义实现；它仍是测量基础设施，不增加
 CAVT机制新颖性或论文证据。
+
+v1盲审否决与v2合同修复仍只属于测量基础设施，不计创新。为避免合同工程吞噬主线，v2只闭合已知B/H并做一次
+最终复审；之后若CAVT teacher formal NO-GO，立即停止该对象，回到新的pose+CLIP训练机制设计。目标为可支撑
+C类会议的清晰机制与实际涨点，但仍保留clean D0、同epoch mAP/R1和关键pose/CLIP反事实。

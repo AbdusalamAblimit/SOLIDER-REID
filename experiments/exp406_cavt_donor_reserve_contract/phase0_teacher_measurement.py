@@ -47,6 +47,23 @@ PREFLIGHT_COMPLETE_PATH = PREFLIGHT_OUTPUT_ROOT / "complete.json"
 FORMAL_MANIFEST_SCHEMA = "exp406-p0b-formal-manifest-v1"
 FRESH_ASSET_ROOT = Path("/home/afr/reid-clean/assets/exp406-p0b-preflight-v1")
 ASSET_MANIFEST_PATH = FRESH_ASSET_ROOT / "manifest.json"
+EXPECTED_RUNTIME_PYTHON = Path("/usr/local/anaconda3/envs/mmpose-abu/bin/python")
+EXPECTED_CLIP_SHA256 = (
+    "9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e"
+)
+EXPECTED_POSE_MANIFEST_SHA256 = (
+    "cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8"
+)
+FROZEN_POSE_ARTIFACT = Path(
+    "/mnt1/afrderived/exp386_occluded_duke_vitpose_huge_train"
+)
+EXPERIMENT_RELATIVE_ROOT = Path(
+    "experiments/exp406_cavt_donor_reserve_contract"
+)
+PREFLIGHT_STARTED_PATH = PREFLIGHT_OUTPUT_ROOT / "started.json"
+PREFLIGHT_STARTED_SEAL = (
+    PREFLIGHT_OUTPUT_ROOT.parent / (PREFLIGHT_EXECUTION + ".started")
+)
 
 
 def sha256_file(path: str | Path) -> str:
@@ -63,6 +80,37 @@ def canonical_sha256(payload: object) -> str:
         allow_nan=False,
     ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def validate_frozen_invocation_paths(
+    *,
+    repo_root: Path,
+    runner_path: Path,
+    data_root: Path,
+    pose_artifact: Path,
+    core_path: Path,
+    teacher_path: Path,
+    python_executable: Path,
+) -> None:
+    experiment_root = (repo_root / EXPERIMENT_RELATIVE_ROOT).resolve()
+    expected = {
+        "runner": (experiment_root / "phase0_teacher_measurement.py").resolve(),
+        "core": (experiment_root / "phase0_core.py").resolve(),
+        "teacher": (experiment_root / "phase0_real_teacher.py").resolve(),
+    }
+    actual = {
+        "runner": runner_path.resolve(),
+        "core": core_path.resolve(),
+        "teacher": teacher_path.resolve(),
+    }
+    if actual != expected:
+        raise RuntimeError("exp406 source paths must use the fixed repository files")
+    if data_root.resolve() != Path("/mnt1/afrdata"):
+        raise RuntimeError("official data root must be /mnt1/afrdata")
+    if pose_artifact.resolve() != FROZEN_POSE_ARTIFACT:
+        raise RuntimeError("pose artifact must use the frozen exp386 artifact")
+    if python_executable.resolve() != EXPECTED_RUNTIME_PYTHON.resolve():
+        raise RuntimeError("exp406 requires the fixed MMPOSE-ABU Python runtime")
 
 
 def fsync_directory(path: Path) -> None:
@@ -410,6 +458,24 @@ def validate_preflight_receipt(path: Path) -> tuple[dict, dict]:
         or receipt.get("transport_oracle_authorized") is not False
     ):
         raise RuntimeError("preflight receipt does not authorize formal measurement")
+    if (
+        not PREFLIGHT_STARTED_SEAL.is_file()
+        or PREFLIGHT_STARTED_SEAL.is_symlink()
+        or PREFLIGHT_STARTED_SEAL.read_bytes()
+        != (PREFLIGHT_EXECUTION + "\n").encode("utf-8")
+    ):
+        raise RuntimeError("preflight started seal is missing or invalid")
+    if not PREFLIGHT_STARTED_PATH.is_file() or PREFLIGHT_STARTED_PATH.is_symlink():
+        raise RuntimeError("preflight started receipt is missing or invalid")
+    started = json.loads(PREFLIGHT_STARTED_PATH.read_text(encoding="utf-8"))
+    if (
+        started.get("execution") != PREFLIGHT_EXECUTION
+        or started.get("formal") is not False
+        or started.get("execution_manifest_sha256") is not None
+        or receipt.get("started_sha256") != sha256_file(PREFLIGHT_STARTED_PATH)
+        or receipt.get("started_seal_sha256") != sha256_file(PREFLIGHT_STARTED_SEAL)
+    ):
+        raise RuntimeError("preflight COMPLETE/start provenance mismatch")
     result_path = PREFLIGHT_OUTPUT_ROOT / "result.json"
     cache_path = PREFLIGHT_OUTPUT_ROOT / "preflight_cache.pt"
     if sha256_file(result_path) != receipt.get("result_sha256"):
@@ -423,6 +489,21 @@ def validate_preflight_receipt(path: Path) -> tuple[dict, dict]:
         or result.get("scientific_evaluated") is not False
     ):
         raise RuntimeError("preflight result is not a mechanical-only PASS")
+    provenance = result.get("provenance", {})
+    if (
+        started.get("source_commit") != provenance.get("source_commit")
+        or started.get("ordered_official_train_manifest_sha256")
+        != provenance.get("official_train_manifest_sha256")
+        or started.get("source_files") != receipt.get("source_files")
+        or started.get("runtime_sha256") != receipt.get("runtime_sha256")
+        or started.get("asset_manifest_sha256")
+        != provenance.get("asset_manifest_sha256")
+        or started.get("clip_checkpoint_sha256")
+        != provenance.get("clip_checkpoint_sha256")
+        or started.get("pose_manifest_sha256")
+        != provenance.get("pose_manifest_sha256")
+    ):
+        raise RuntimeError("preflight started/result provenance mismatch")
     return receipt, result
 
 
@@ -1212,22 +1293,37 @@ def run(args) -> dict:
     repo_root = Path(args.repo_root).resolve()
     data_root = Path(args.data_root).resolve()
     pose_artifact = Path(args.pose_artifact).resolve()
-    clip_checkpoint = Path(args.clip_checkpoint).resolve()
-    asset_manifest_path = Path(args.asset_manifest).resolve()
+    unresolved_clip_checkpoint = Path(args.clip_checkpoint).expanduser()
+    unresolved_asset_manifest = Path(args.asset_manifest).expanduser()
+    clip_checkpoint = unresolved_clip_checkpoint.resolve()
+    asset_manifest_path = unresolved_asset_manifest.resolve()
     core_path = Path(args.core).resolve()
     teacher_path = Path(args.teacher).resolve()
     output_dir = Path(args.output_dir).resolve()
     expected_output_dir = FORMAL_OUTPUT_ROOT if formal else PREFLIGHT_OUTPUT_ROOT
     seal_path = expected_output_dir.parent / (execution + ".started")
     sibling_failure_path = expected_output_dir.parent / (execution + ".failed.json")
-    if data_root != Path("/mnt1/afrdata"):
-        raise RuntimeError("official data root must be /mnt1/afrdata")
-    if Path("/mnt1/afrderived") not in pose_artifact.parents:
-        raise RuntimeError("pose artifact must remain under /mnt1/afrderived")
+    validate_frozen_invocation_paths(
+        repo_root=repo_root,
+        runner_path=Path(__file__),
+        data_root=data_root,
+        pose_artifact=pose_artifact,
+        core_path=core_path,
+        teacher_path=teacher_path,
+        python_executable=Path(sys.executable),
+    )
     if clip_checkpoint.parent != FRESH_ASSET_ROOT:
         raise RuntimeError("CLIP checkpoint must use the fresh exp406 asset root")
     if asset_manifest_path != ASSET_MANIFEST_PATH:
         raise RuntimeError("unexpected exp406 asset manifest path")
+    if unresolved_asset_manifest.is_symlink() or not asset_manifest_path.is_file():
+        raise RuntimeError("fresh asset manifest must be a regular non-symlink file")
+    if unresolved_clip_checkpoint.is_symlink() or not clip_checkpoint.is_file():
+        raise RuntimeError("CLIP checkpoint must be a regular non-symlink file")
+    if args.clip_sha256 != EXPECTED_CLIP_SHA256:
+        raise RuntimeError("CLIP checkpoint SHA256 argument is not the frozen digest")
+    if args.pose_manifest_sha256 != EXPECTED_POSE_MANIFEST_SHA256:
+        raise RuntimeError("pose manifest SHA256 argument is not the frozen digest")
     if sha256_file(asset_manifest_path) != args.asset_manifest_sha256:
         raise RuntimeError("fresh asset manifest SHA256 mismatch")
     asset_manifest = json.loads(asset_manifest_path.read_text(encoding="utf-8"))
@@ -1238,6 +1334,13 @@ def run(args) -> dict:
     }
     if asset_manifest != expected_asset_manifest:
         raise RuntimeError("fresh asset manifest content mismatch")
+    if sha256_file(clip_checkpoint) != args.clip_sha256:
+        raise RuntimeError("CLIP checkpoint SHA256 mismatch before execution seal")
+    pose_manifest_path = pose_artifact / "manifest.json"
+    if not pose_manifest_path.is_file() or pose_manifest_path.is_symlink():
+        raise RuntimeError("frozen pose manifest must be a regular non-symlink file")
+    if sha256_file(pose_manifest_path) != args.pose_manifest_sha256:
+        raise RuntimeError("pose manifest SHA256 mismatch before execution seal")
     if output_dir != expected_output_dir:
         raise RuntimeError("execution output must use its fixed once-only root")
     if output_dir.exists() or seal_path.exists() or sibling_failure_path.exists():
@@ -1389,6 +1492,11 @@ def run(args) -> dict:
         "source_commit": source_commit,
         "ordered_official_train_manifest_sha256": ordered_manifest_sha,
         "execution_manifest_sha256": execution_manifest_sha,
+        "source_files": start_files,
+        "runtime_sha256": canonical_sha256(start_runtime),
+        "asset_manifest_sha256": args.asset_manifest_sha256,
+        "clip_checkpoint_sha256": args.clip_sha256,
+        "pose_manifest_sha256": args.pose_manifest_sha256,
     })
     result_path = output_dir / "result.json"
     cache_path = output_dir / ("teacher_cache.pt" if formal else "preflight_cache.pt")
@@ -2083,6 +2191,8 @@ def run(args) -> dict:
         "execution_manifest_sha256": execution_manifest_sha,
         "source_files": postflight_files,
         "runtime_sha256": canonical_sha256(start_runtime),
+        "started_sha256": sha256_file(output_dir / "started.json"),
+        "started_seal_sha256": sha256_file(seal_path),
         "formal_measurement_authorized": bool(validity_pass and not formal),
         "transport_oracle_authorized": transport_authorization_candidate,
     })

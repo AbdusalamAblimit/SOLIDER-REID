@@ -21,6 +21,11 @@ pose/CLIP语义、删除比例、反事实臂、统计阈值或后继student。e
 所有execution/output/started/FAILED/COMPLETE/cache/asset manifest与exp405完全不相交。exp406不得接收任何
 exp405 receipt、cache、pair map、MAD或path mapping作为输入。
 
+runner、core、teacher必须是当前exp406隔离仓库中本目录的固定文件；pose路径和manifest SHA、CLIP SHA及
+MMPOSE-ABU解释器路径均在runner中硬绑定。CLIP/pose regular-file与字节SHA必须在取得started seal和初始化CUDA
+之前通过。COMPLETE必须绑定started.json与排他started seal，formal必须复核该完整provenance，不能仅凭
+result/cache/COMPLETE三件套授权。
+
 ## Core与尺度
 
 按exp405冻结hash从official有序manifest重新得到512 core；五槽各4 recipient。四变量`mass_log / centroid_y /
@@ -40,6 +45,10 @@ FAIL。禁止阈值fallback、改序、重算尺度或结果驱动增加新阶�
 
 每阶段必须持久化四轴median/MAD、candidate/caliper degree、零边recipient、最近primary distance、匹配失败
 类别、pool规模和preference扩展层级；这些字段只用于复现和失败归因，不参与后续阶段选择。
+
+若进入Hall失败，每一层`64/128/256/full-caliper`必须记录status与冲突见证；failure diagnostics缺任一全局、
+尺度、stage或recipient必需字段即fail closed。public matcher必须自行验证donor plan的stage、prefix、hash和full
+universe，不能只信调用方先验。
 
 ## Preflight裁决
 

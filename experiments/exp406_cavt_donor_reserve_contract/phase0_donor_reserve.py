@@ -25,6 +25,22 @@ class DonorReserveError(RuntimeError):
         self.diagnostics = diagnostics
 
 
+class AssignmentError(RuntimeError):
+    """Hall-style assignment failure with a compact conflict witness."""
+
+    def __init__(self, message: str, diagnostics: dict):
+        super().__init__(message)
+        self.diagnostics = diagnostics
+
+
+class AssignmentExpansionError(RuntimeError):
+    """Exhausted all frozen preference expansions without a full matching."""
+
+    def __init__(self, message: str, attempts: list[dict]):
+        super().__init__(message)
+        self.attempts = attempts
+
+
 def _index_sha256(indices) -> str:
     array = np.asarray(list(map(int, indices)), dtype=np.int64)
     return hashlib.sha256(array.tobytes()).hexdigest()
@@ -139,6 +155,50 @@ def build_donor_plan(
     return plan
 
 
+def _validate_donor_plan(donor_plan, core_indices, universe_size: int) -> None:
+    core = list(map(int, core_indices))
+    if donor_plan.get("schema") != "exp406-donor-plan-v1":
+        raise ValueError("unsupported donor plan")
+    if (
+        int(donor_plan.get("expected_samples", -1)) != int(universe_size)
+        or int(donor_plan.get("core_samples", -1)) != len(core)
+        or donor_plan.get("core_indices") != core
+        or donor_plan.get("core_indices_sha256") != _index_sha256(core)
+    ):
+        raise ValueError("donor plan core binding mismatch")
+    donor_order = list(map(int, donor_plan.get("donor_order", [])))
+    core_set = set(core)
+    if (
+        len(donor_order) != int(universe_size) - len(core)
+        or len(set(donor_order)) != len(donor_order)
+        or core_set.intersection(donor_order)
+        or core_set.union(donor_order) != set(range(int(universe_size)))
+        or donor_plan.get("donor_order_sha256") != _index_sha256(donor_order)
+    ):
+        raise ValueError("donor plan order is not a full disjoint universe")
+    expected_totals = list(map(int, POOL_TOTALS))
+    if donor_plan.get("pool_totals") != expected_totals:
+        raise ValueError("donor plan pool totals changed")
+    stages = donor_plan.get("stages")
+    if not isinstance(stages, list) or len(stages) != len(expected_totals):
+        raise ValueError("donor plan stages changed")
+    for stage, total in zip(stages, expected_totals):
+        donor_count = int(total) - len(core)
+        expected_pool = core + donor_order[:donor_count]
+        if (
+            int(stage.get("pool_total", -1)) != int(total)
+            or int(stage.get("donor_prefix_count", -1)) != donor_count
+            or stage.get("pool_indices") != expected_pool
+            or stage.get("pool_indices_sha256") != _index_sha256(expected_pool)
+        ):
+            raise ValueError("donor plan stage is not the frozen monotone prefix")
+    expected_plan_sha = _canonical_sha256({
+        key: value for key, value in donor_plan.items() if key != "plan_sha256"
+    })
+    if donor_plan.get("plan_sha256") != expected_plan_sha:
+        raise ValueError("donor plan self-digest mismatch")
+
+
 def choose_diagnostic_subset_from_core(
     targets,
     valid,
@@ -224,7 +284,16 @@ def _maximum_unique_assignment(preferences) -> list[int]:
                     )
                     queue.append(next_recipient)
         if free_donor is None:
-            raise RuntimeError("no one-to-one assignment exists within preferences")
+            raise AssignmentError(
+                "no one-to-one assignment exists within preferences",
+                {
+                    "root_recipient_position": int(root),
+                    "reachable_recipient_positions": sorted(map(int, seen_recipients)),
+                    "reachable_donors": sorted(map(int, seen_donors)),
+                    "reachable_recipient_count": int(len(seen_recipients)),
+                    "reachable_donor_count": int(len(seen_donors)),
+                },
+            )
         current_recipient = terminal_recipient
         current_donor = free_donor
         while True:
@@ -251,12 +320,27 @@ def _assignment_with_expansion(preferences, initial_limit: int):
     limits.append(maximum)
     errors = []
     for limit in limits:
+        scope = "full-caliper" if int(limit) == int(maximum) else "top-%d" % int(limit)
         try:
             donors = _maximum_unique_assignment([row[:limit] for row in preferences])
+            errors.append({
+                "limit": int(limit),
+                "scope": scope,
+                "status": "MATCHED",
+            })
             return donors, int(limit), errors
         except RuntimeError as error:
-            errors.append({"limit": int(limit), "error": str(error)})
-    raise RuntimeError("no full-caliper one-to-one assignment exists")
+            errors.append({
+                "limit": int(limit),
+                "scope": scope,
+                "status": "HALL_FAIL",
+                "error": str(error),
+                "witness": getattr(error, "diagnostics", None),
+            })
+    raise AssignmentExpansionError(
+        "no full-caliper one-to-one assignment exists",
+        errors,
+    )
 
 
 def _descriptor_values(mass, centroid_y, confidence, support):
@@ -379,6 +463,74 @@ def _stage_preferences(
     return preferences, rows, all_have_edges
 
 
+def validate_failure_diagnostics(diagnostics: dict) -> None:
+    required_global = (
+        "schema", "core_count", "execution_count", "recipient_count",
+        "core_indices_sha256", "donor_order_sha256", "plan_sha256",
+        "pool_totals", "scale_source", "scale_floor", "scales",
+        "primary_caliper", "preference_limit", "forbidden_recipient_count",
+        "stages", "contract_strict",
+    )
+    if any(key not in diagnostics for key in required_global):
+        raise ValueError("failure diagnostics lack a required global field")
+    if diagnostics["contract_strict"] is not False:
+        raise ValueError("failure diagnostics must be explicitly non-strict")
+    if diagnostics["scale_source"] != "frozen-core-512-analysis-valid":
+        raise ValueError("failure diagnostics scale source changed")
+    scales = diagnostics["scales"]
+    if set(scales) != {"0", "1", "2", "3", "4"}:
+        raise ValueError("failure diagnostics do not cover all slots")
+    scale_fields = {
+        "median", "raw_mad", "scale", "scale_floor_applied", "active_count"
+    }
+    for slot in scales.values():
+        if set(slot) != set(DESCRIPTOR_NAMES):
+            raise ValueError("failure diagnostics do not cover all descriptors")
+        if any(not scale_fields.issubset(values) for values in slot.values()):
+            raise ValueError("failure diagnostics lack scale fields")
+    stages = diagnostics["stages"]
+    if not isinstance(stages, list) or not stages:
+        raise ValueError("failure diagnostics require at least one stage")
+    stage_fields = {
+        "pool_total", "donor_prefix_count", "pool_indices_sha256",
+        "all_recipients_have_caliper_edge", "zero_edge_count",
+        "recipient_rows", "status", "assignment_attempts",
+    }
+    recipient_fields = {
+        "position", "recipient", "slot", "camera", "recipient_pid",
+        "candidate_count", "caliper_degree", "nearest_primary_distance",
+    }
+    for stage in stages:
+        if not stage_fields.issubset(stage):
+            raise ValueError("failure diagnostics lack stage fields")
+        if len(stage["recipient_rows"]) != int(diagnostics["recipient_count"]):
+            raise ValueError("failure diagnostics recipient row count changed")
+        if any(not recipient_fields.issubset(row) for row in stage["recipient_rows"]):
+            raise ValueError("failure diagnostics lack recipient fields")
+        if stage["status"] == "ZERO_EDGE":
+            if int(stage["zero_edge_count"]) <= 0 or stage["assignment_attempts"]:
+                raise ValueError("ZERO_EDGE diagnostics are inconsistent")
+        elif stage["status"] == "HALL_FAIL":
+            attempts = stage["assignment_attempts"]
+            if (
+                int(stage["zero_edge_count"]) != 0
+                or not attempts
+                or any(
+                    not {"limit", "scope", "status", "error", "witness"}.issubset(
+                        attempt
+                    )
+                    for attempt in attempts
+                )
+                or any(attempt["status"] != "HALL_FAIL" for attempt in attempts)
+                or attempts[-1]["scope"] != "full-caliper"
+                or int(stage.get("preference_limit_used", -1))
+                != int(attempts[-1]["limit"])
+            ):
+                raise ValueError("HALL_FAIL diagnostics are incomplete")
+        else:
+            raise ValueError("failure diagnostics contain a non-failure stage")
+
+
 def choose_wrong_masks_progressive(
     indices,
     slots,
@@ -411,8 +563,7 @@ def choose_wrong_masks_progressive(
     core = list(map(int, core_indices))
     if not set(recipients).issubset(set(core)):
         raise ValueError("recipient escaped frozen core")
-    if donor_plan.get("schema") != "exp406-donor-plan-v1":
-        raise ValueError("unsupported donor plan")
+    _validate_donor_plan(donor_plan, core, len(valid))
 
     descriptor_values = _descriptor_values(mass, centroid_y, confidence, support)
     scales, scale_summary = _frozen_scale_summary(
@@ -469,6 +620,13 @@ def choose_wrong_masks_progressive(
             except RuntimeError as error:
                 stage_summary["status"] = "HALL_FAIL"
                 stage_summary["assignment_error"] = str(error)
+                stage_summary["assignment_attempts"] = list(
+                    getattr(error, "attempts", [])
+                )
+                if stage_summary["assignment_attempts"]:
+                    stage_summary["preference_limit_used"] = int(
+                        stage_summary["assignment_attempts"][-1]["limit"]
+                    )
         stage_summaries.append(stage_summary)
         if selected is not None:
             break
@@ -492,6 +650,7 @@ def choose_wrong_masks_progressive(
     }
     if selected is None:
         diagnostic_base["contract_strict"] = False
+        validate_failure_diagnostics(diagnostic_base)
         raise DonorReserveError(
             "no frozen donor prefix yields a full caliper assignment",
             diagnostic_base,

@@ -3169,3 +3169,9 @@ formal科学函数/常量投影exact；subset-only、caliper放宽、preference�
 
 **更新判定**：`LOCAL STATIC V1 PASS / NEW-CODE BLIND REVIEW PENDING / GPU NO-START / FORMAL NO-START /
 STUDENT NO-START`。这不是科学或性能结果。
+
+固定commit `afe9d490`的三路盲审否决了v1的GPU授权，主要因强反合同覆盖不足、Hall failure诊断、
+MMPOSE-ABU/源码/pose硬绑定、preseal资产检查和started provenance不完整。v2完成这些最小修复；第一次static为
+`15/17 FAIL`并保留，修正测试构造及绑定最终protocol后两次fresh均`17/17 PASS`且byte-exact，最终结果SHA=
+`9c3286e4ec911c25f09c5797806f8d4ba5ed01a3def81162846612e1473d4061`。当前等待v2最终盲审，仍无GPU、teacher
+科学结果或ReID mAP/R1。

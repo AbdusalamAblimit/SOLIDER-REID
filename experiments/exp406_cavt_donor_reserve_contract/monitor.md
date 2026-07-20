@@ -1,7 +1,8 @@
 # exp406 donor-reserve合同监控
 
-> 当前：`DESIGN/PROTOCOL FROZEN / EXP405 SEALED-FAIL PRESERVED / LOCAL STATIC V1 PASS /
-> NEW-CODE BLIND REVIEW PENDING / GPU NO-START / FORMAL NO-START / STUDENT NO-START`
+> 当前：`EXP405 SEALED-FAIL PRESERVED / STATIC V1 BLIND-REVIEW BLOCKED /
+> LOCAL STATIC V2 17/17 PASS BYTE-EXACT / FINAL V2 BLIND REVIEW PENDING /
+> GPU NO-START / FORMAL NO-START / STUDENT NO-START`
 
 ## 2026-07-21：建立新编号
 
@@ -43,3 +44,36 @@ failure诊断与CUDA未初始化全部PASS。
 `af255cbbb6eafca2024f7882023deda50445f9a01c1df0b28422a24e23cc35a0`。
 
 当前只授权提交固定快照并开始三路新代码盲审；fresh远端仓库/assets/MMPOSE static和GPU execution仍NO-START。
+
+## 2026-07-21：v1三路盲审阻塞与v2最小修复
+
+固定commit `afe9d490deb56e7c6014d1eed8c70cd95b893419`的三路只读盲审没有授权GPU。合并后的已知
+BLOCKER/HIGH为：旧`13/13`合同只实际构造四类mutant；Hall全caliper失败丢失逐层attempt和冲突见证；runner
+没有硬绑定MMPOSE-ABU解释器、exp406 core/teacher和冻结pose；CLIP实际字节在started seal与CUDA之后才校验；
+formal receipt没有绑定started seal/started.json；static结果未绑定contract自身字节。
+
+v2只修这些已知问题，没有修改teacher科学函数、formal matcher、caliper、MAD、controls或阈值：
+
+- 固定解释器`/usr/local/anaconda3/envs/mmpose-abu/bin/python`；
+- core/teacher必须来自当前exp406目录，pose固定为
+  `/mnt1/afrderived/exp386_occluded_duke_vitpose_huge_train`；
+- pose manifest SHA固定
+  `cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8`，CLIP SHA固定
+  `9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e`；
+- CLIP/pose regular-file与SHA检查前移到seal/CUDA之前；
+- COMPLETE绑定started.json和started seal，formal validator验证整条provenance；
+- donor plan在public matcher内验证完整单调prefix、stage/hash和full universe；
+- Hall失败记录每层limit/status/witness，并由production validator检查真实failure diagnostics；
+- static绑定contract自身及全部start/end source SHA，并增加invocation、receipt、plan、core-recipient、固定MAD、
+  eligibility与真实public Hall failure场景。
+
+static v2第一次fresh输出真实为`15/17 FAIL`，SHA=
+`f5e1be6d8cbb75b6eb22182691f9c0e58e68f43c6c9ba8ec1fdeb6c06f0cb0b2`；失败来自测试构造：same-PID decoy
+可被同槽其他PID使用，以及formal AST verifier未识别attribute call。该次不删除、不改判。修正测试合同后两次fresh
+输出均为`17/17 PASS`；随后把v2边界补入protocol后重新执行两次最终source-bound合同，仍为`17/17 PASS`，
+byte-exact SHA=`9c3286e4ec911c25f09c5797806f8d4ba5ed01a3def81162846612e1473d4061`，CUDA前后均未初始化。
+
+v2源码SHA：runner=`545e07bbb05c763f6ae70be39a92da08e57a35c157c25e5df88d3e7cea5e3f80`，donor=
+`59edc1248031d24098c6eebb03f9c7fe1bc235fa19f9751536727ca05ef7a5b1`，contract=
+`50ec0010273bf63669aee47104158cedb82f1eaae38e96ee0223d294408a305d`；core/teacher仍与exp405冻结版本
+byte-exact。当前只授权固定提交和一次最终三路盲审；0B/0H前仍不创建远端execution/assets，不占用GPU。

@@ -43,3 +43,13 @@ exp405终态计数=`0 BLOCKER / 0 HIGH`：started seal、started.json、failure.
 
 当前允许实现exp406 CPU/static代码；不允许创建远端execution/output/assets或占用GPU。只有两次fresh static
 byte-exact且三路新代码复审均`0B/0H`，才可进入远端MMPOSE-ABU static与fresh资产准备。
+
+## 固定commit afe9d490的新代码盲审
+
+三路最终计数分别为`1B/2H`、`2B/3H`、`1B/1H`，共同裁决`GPU NO-START`。共同问题是static覆盖不足和Hall
+失败attempts丢失；复现审查另外抓到MMPOSE-ABU与exp406源码/冻结pose未硬绑定、CLIP字节检查晚于seal/CUDA、
+formal缺少started provenance；代码审查抓到static未绑定自身字节。production formal科学投影与原matching门未发现
+降低。
+
+上述项已由static v2最小修复；第一次`15/17 FAIL`与随后两次byte-exact `17/17 PASS`均保留。当前等待对新固定
+commit的一次最终三路盲审；旧v1审查不能授权v2。

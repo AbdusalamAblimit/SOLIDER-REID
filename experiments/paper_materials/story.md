@@ -2386,3 +2386,7 @@ exp406仅把preflight donor universe改为冻结的单调扩池，同时保留re
 匹配门；它是测量合同修复，不是论文方法或消融。当前尚无新科学结果，paper story不因exp406设计而改变。
 
 exp406 static v1的`13/13 PASS`同样不进入论文结果表；它只授权新代码盲审，formal P0B仍未开始。
+
+static v1随后被三路盲审否决，v2两次`17/17 PASS`也仍不进入论文表。它们只保证后续teacher measurement不会
+因为runtime、输入或donor receipt问题失真。论文主张仍需formal teacher科学结果和后续student相对clean D0的
+同epoch mAP/R1；若没有涨点，exp406基础设施本身不构成贡献。
