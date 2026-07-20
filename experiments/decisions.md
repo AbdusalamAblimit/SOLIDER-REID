@@ -5945,3 +5945,13 @@ fresh cache完整覆盖15,618图且全部来源、norm、SHA门PASS。real-batch
 
 **决策**：不再追加static/preflight，立即以固定source/config/cache启动唯一fresh seed1234/e120。中间轨迹只记录
 不早停；自然e120必须同时严格超过clean D0 raw mAP/R1双门，否则封板PCHM并换对象。
+
+### [2026-07-21] 决策：exp409只提升Rank-1而mAP失败，封板并重置对象
+
+唯一fresh student自然e120=`57.0/68.6/80.9/84.6`，相对clean D0 rounded=
+`-0.6/+0.9/+0.1/0.0`。进程正常退出、异常计数为0，PCHM pair选择和Stage-3梯度在训练前已证明active；因此
+不能把mAP失败归因于代码未接通。当前证据表明联合hard pair更容易改善首位命中，却没有改善完整检索排序。
+
+**决策**：永久封板exp409为`SEALED NO-GO / RANK-1 PASS / mAP FAIL`。禁止重跑、续训、调rank fusion/
+margin/loss、或补pose-shuffle/CLIP-only controls；这些controls只在性能GO后有归因价值。exp410必须改变训练或
+结构对象，直接针对全排序质量，而不是继续修改hard-pair miner。

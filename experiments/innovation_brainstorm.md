@@ -4245,3 +4245,10 @@ appearance变成无权ordinal rank，在真实PK batch内直接选择final globa
 PCHM现已通过fresh cache与真实batch门：正确联合miner相对D0更换绝大多数negative edge并更换过半positive
 edge，pose-shuffle与CLIP-only也都显著改变选择；梯度直接进入Stage-3/final backbone。这只证明机制active，尚不
 证明涨点或创新成立。下一份有效证据只能来自自然e120相对clean D0的mAP/R1及GO后的matched controls。
+
+### exp409 封板后的创新结论
+
+PCHM自然e120=`57.0 mAP/68.6 R1`，相对D0形成“mAP下降、R1上升”。这否定了把联合pose×CLIP hard mining
+作为主创新的条件资格：它能改变真实训练边并优化最难首位混淆，却没有改善AP所要求的整条正样本排序。下一对象
+必须让pose与CLIP作用于多正样本分布、身份表示结构或全排序一致性，而不是继续选择单个hard positive/negative；
+仍须保留D0与错误绑定反事实，且不能退化为loss/temperature/margin调参。

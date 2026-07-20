@@ -3269,3 +3269,11 @@ fresh cache现已完整覆盖15,618图并通过逐图SHA/provenance/norm核验�
 误判而`INVALID CHECKER / SCIENCE NOT EVALUATED`；修正后的fresh v2经盲审`0B/0H`，default GradScaler在第5个
 native attempt获得唯一成功update，Stage-3/backbone梯度=`26/181` tensor，PCHM相对D0正/负边改变率=
 `0.578125/0.984375`。当前=`IMPLEMENTATION PASS / STUDENT E120 AUTHORIZED`，尚无新增ReID mAP/R1。
+
+唯一fresh student已自然完成e120并正常退出。e120 rounded mAP/R1/R5/R10=
+`57.0/68.6/80.9/84.6`，相对clean D0 rounded=`-0.6/+0.9/+0.1/0.0`；mAP舍入区间无歧义低于
+clean D0 raw `57.5587756578`，R1舍入区间无歧义高于raw `67.6923076923`，故性能双门FAIL。checkpoint/
+runner/train-log SHA256=`406990c42829d21a0d3dc424ef781b6527d1e64aab754874fcf69cb967f5c143`/
+`257264af74e65608e9b4a214b35f0b8d33dc89f15ff587c41c2aac5ee907af84`/
+`0f964240991240ac23715c4d8c541117bb8bf56685ac82ab3838f4e7f1faf244`。最终=
+`EXP409 SEALED NO-GO / RANK-1 PASS / mAP FAIL`；不执行matched controls，不调旧miner。

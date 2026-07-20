@@ -134,3 +134,23 @@ compute PID，GPU约`7.1 GiB/93%`，异常计数全为`0`；不干预并继续�
 e80/90/100完整R5/R10分别为`81.1/84.9`、`80.5/84.7`、`80.6/84.6`。e80曾双领先，但e90/e100均表现为
 R1领先而mAP落后，当前更像首位命中改善而非整体排序稳定增益，仍不能判GO。检查时已进入e104，主PID唯一，
 GPU约`7.1 GiB/90%`，异常计数全为`0`；继续等待自然e110/e120，不作任何运行中调整。
+
+## 自然 e120 封板
+
+| epoch | PCHM mAP/R1 | sealed clean D0 mAP/R1 | ΔmAP/ΔR1 |
+|---:|---:|---:|---:|
+| 110 | 56.9/68.2 | 57.4/67.4 | -0.5/+0.8 |
+| 120 | 57.0/68.6 | 57.6/67.7 | -0.6/+0.9 |
+
+唯一fresh student已自然完成120 epoch并正常退出，e120完整rounded mAP/R1/R5/R10=
+`57.0/68.6/80.9/84.6`，runner中Traceback/RuntimeError/OOM/NaN/Inf均为`0`，GPU恢复
+`2 MiB/0%/0 compute PID`。虽然runner只打印一位小数，但`57.0`的舍入区间仍无歧义低于clean D0 raw mAP
+`57.5587756578`，而`68.6`的舍入区间无歧义高于clean D0 raw R1 `67.6923076923`；因此双指标严格超过门
+确定FAIL。
+
+checkpoint/runner/train-log SHA256=
+`406990c42829d21a0d3dc424ef781b6527d1e64aab754874fcf69cb967f5c143`/
+`257264af74e65608e9b4a214b35f0b8d33dc89f15ff587c41c2aac5ee907af84`/
+`0f964240991240ac23715c4d8c541117bb8bf56685ac82ab3838f4e7f1faf244`。最终判定=
+`SEALED NO-GO / RANK-1 PASS / mAP FAIL`。禁止重跑、续训、调miner或补pose-shuffle/CLIP-only matched
+controls；PCHM只保留为“联合hard pair改善首位命中但未改善整体排序”的负机制证据，下一编号必须更换训练或结构对象。

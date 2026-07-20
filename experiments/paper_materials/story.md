@@ -2432,3 +2432,8 @@ soft-margin形式和推理路径均保持D0。
 实现证据已排除“PCHM等价原batch-hard”与“pose或CLIP单轴inactive”：真实batch中正/负edge相对D0改变率为
 `0.578/0.984`，pose-shuffle/CLIP-only也分别改变`0.906/0.859`样本的至少一条边，且Stage-3/backbone获得
 非零梯度与真实更新。该证据仍不进入性能表；当前正面story继续以唯一fresh e120涨点为前置门。
+
+exp409现已退出正面story。唯一fresh e120=`57.0 mAP/68.6 R1`，相对clean D0表现为mAP下降而R1上升；这与
+实现证据合并后说明PCHM不是未接通，而是把final metric推向更强的首位难例判别，却没有改善完整检索列表。该结果
+可作为“单边hard mining不足以承载pose+CLIP互补性”的负证据，不能包装为C类主方法。下一story需改变身份表示或
+多正样本/全排序训练对象，并让错误RGB绑定、generic或pose-shuffle能直接证伪机制归因。
