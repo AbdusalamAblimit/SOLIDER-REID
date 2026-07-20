@@ -382,3 +382,37 @@ runner/train-log/checkpoint SHA=
 未过。机制GO/NO-GO尚不能由correct单臂决定，必须完成冻结强反事实。
 
 判定：`FORMAL TRAINING SEALED / PAPER PERFORMANCE PREREQUISITE FAIL / COUNTERFACTUAL AUDIT GO`。
+
+## 2026-07-20T09:28Z：反事实终审v1协议冻结
+
+终审执行编号冻结为`exp404-spk-counterfactual-v1`，只读使用sealed e120 checkpoint，不修改或重跑训练。
+九臂固定为correct、matched wrong-RGB、train generic mean、NULL、all-product-bypass、unique random-key、
+balanced 8-cluster random null、wrong-mask、slot-cycle。SPK输入缝明确使用`student_evidence/student_presence`；
+wrong-RGB替换两者，wrong-mask只循环presence，slot-cycle只循环evidence，避免机械复用exp402的
+`consumer_evidence`旧接口。
+
+主门保持：correct `>=56.7 mAP`；correct相对wrong/generic/NULL/random-key/random-cluster最大值至少
+`+0.1 mAP point`；correct相对all-product-bypass至少`+0.1`；NULL与bypass exact；九臂逐臂state/RNG/
+patch/source/config/checkpoint恢复exact，eval teacher/pose/codebook访问0。wrong-mask与slot-cycle只作归因补充，
+不替代主门。先实现并连续两次通过CPU/static正反合同，再允许fresh小样本CUDA wiring preflight；当前GPU不启动。
+
+判定：`COUNTERFACTUAL V1 PROTOCOL FROZEN / STATIC IMPLEMENTATION IN PROGRESS / GPU NO-START`。
+
+## 2026-07-20T09:43Z：终审v1 static CPU正反合同
+
+终审资产已实现：干预直接包裹`model.semantic_product_kernel.forward`，不修改sealed TAPF/model源码，也不触碰
+旧`consumer_evidence`接口。两次`CUDA_VISIBLE_DEVICES=''`执行均为`32/32 PASS`，输出byte-exact，result SHA=
+`6b7f9e566c3953c6f64c287fd9fb4d77f67ea4a0180361d3c0accac81a5ca038`。
+
+正合同覆盖wrong-RGB evidence+presence donor、train generic对象、NULL=bypass、unique random-key绝对值多重集、
+balanced 8-cluster及wrong-mask/slot-cycle作用缝；random-key范数按浮点容差保持，未伪称求和顺序bit-exact。
+负合同确认wrong control反超、bypass gap不足和validity失败都分别裁决为`SPK_MECHANISM_NO-GO`。
+
+core/contract/audit/postflight/wrapper SHA=
+`e35be3d32163f227661cdb3dad544055fb0e0317aa4e0d1139e0c546482bd4dc`/
+`32fb34f5a24c7a29519278ef4e33c7323590a595221e2938511ebca1a9c5c413`/
+`2e355c2db243c46f9094a778d36a1b5685a1527491801af2e84b34dbadd37e65`/
+`46f1adb172eee74c9ed20f944014e6494c057b42945bf4c52f3d88d1fd68d4f8`/
+`8d7f95c9ba080c2d7f4f126eeba6a7365fd8d677d135040511aa1443d5ffb029`。
+
+判定：`COUNTERFACTUAL STATIC PASS / FRESH CUDA WIRING PREFLIGHT AUTHORIZED / FORMAL FULL NO-START`。

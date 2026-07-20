@@ -2325,3 +2325,7 @@ v3在默认scaler第5次attempt通过全部CUDA门，formal once-only启动合�
 唯一训练已自然完成，e120 rounded=`57.4/67.5/79.7/85.0`，没有超过clean D0的mAP/R1，因此paper性能线
 前置FAIL。story只保留“最终描述子不可绕过的语义绑定能否建立ownership”这一C类机制问题；它必须由全量
 wrong/random/NULL/all-bypass终审回答，不能用单臂绝对精度替代。
+
+九臂终审的CPU正反合同现已两次byte-exact通过，确认审计直接作用于SPK读取的student evidence/presence，
+并能抓住wrong反超、bypass gap不足与validity错误。该结果只是测量器授权，不是方法证据；story仍保持
+paper性能FAIL、mechanism未裁决，直到同一e120 checkpoint完成全量mAP/R1反事实。

@@ -5721,3 +5721,12 @@ v3在第5次default GradScaler attempt成功更新并通过全部26门；formal 
 
 **决策**：paper性能前置门判FAIL，不声称超过D0；correct mAP通过`56.7`机制绝对门，因此继续冻结的
 correct/wrong/generic/NULL/random/all-bypass全量终审。终审前不得把单臂性能写成SPK有效。
+
+### [2026-07-20] 决策：exp404终审v1 static通过，只授权fresh CUDA wiring preflight
+
+九臂protocol已明确SPK实际输入对象：wrong-RGB替换student evidence与presence，wrong-mask只循环presence，
+slot-cycle只循环evidence；NULL与product bypass必须exact。两次CPU正反合同均`32/32 PASS`且byte-exact，
+三类科学失败mutant均被裁决抓住。
+
+**决策**：授权一个fresh小样本CUDA wiring preflight，仍不授权formal full。preflight必须验证真实checkpoint、
+train-generic采集、九臂patch恢复、RGB-only和teacher/pose/codebook零访问；任何失败按执行性质封板，不降低门。

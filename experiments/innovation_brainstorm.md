@@ -4116,3 +4116,7 @@ v3 actual与formal prelaunch均已通过，说明SPK可以进入唯一正式验�
 exp404 e120未超过clean D0的mAP/R1，因此它不具备“更强主干性能”贡献。C类候选只剩机制证据路径：若correct
 能同时击败wrong/generic/NULL、unique random-key、frequency-matched random-cluster与all-bypass，仍可形成
 适度结构加严格ownership证据；任一主门失败则不再包装为正面方法。
+
+终审v1 static两次`32/32 PASS`只确认强证据协议能在真实`student_evidence/student_presence -> SPK`输入缝执行，
+且wrong/random/bypass/validity失败不会被reporter漏掉。它不增加机制新颖性，也不恢复已失败的D0性能主张；
+创新判断继续只等待全验证集correct相对五个主null和product bypass的冻结mAP门。

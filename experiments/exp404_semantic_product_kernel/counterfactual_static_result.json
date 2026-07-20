@@ -1,0 +1,199 @@
+{
+  "adjudication": {
+    "bypass_gap_mutant": {
+      "decision": "SPK_MECHANISM_NO_GO",
+      "gates": {
+        "correct_floor": true,
+        "primary_all_controls_margin": true,
+        "product_bypass_gap": false,
+        "required_controls_active": true,
+        "validity_all_pass": true
+      },
+      "mechanism_go": false,
+      "primary_control_max_mAP": 0.57,
+      "product_bypass_gap_mAP": 0.0004999999999999449,
+      "semantic_margin_mAP": 0.0040000000000000036,
+      "status": "PASS"
+    },
+    "positive": {
+      "decision": "SPK_MECHANISM_GO",
+      "gates": {
+        "correct_floor": true,
+        "primary_all_controls_margin": true,
+        "product_bypass_gap": true,
+        "required_controls_active": true,
+        "validity_all_pass": true
+      },
+      "mechanism_go": true,
+      "primary_control_max_mAP": 0.57,
+      "product_bypass_gap_mAP": 0.0040000000000000036,
+      "semantic_margin_mAP": 0.0040000000000000036,
+      "status": "PASS"
+    },
+    "validity_mutant": {
+      "decision": "SPK_MECHANISM_NO_GO",
+      "gates": {
+        "correct_floor": true,
+        "primary_all_controls_margin": true,
+        "product_bypass_gap": true,
+        "required_controls_active": true,
+        "validity_all_pass": false
+      },
+      "mechanism_go": false,
+      "primary_control_max_mAP": 0.57,
+      "product_bypass_gap_mAP": 0.0040000000000000036,
+      "semantic_margin_mAP": 0.0040000000000000036,
+      "status": "FAIL"
+    },
+    "wrong_control_mutant": {
+      "decision": "SPK_MECHANISM_NO_GO",
+      "gates": {
+        "correct_floor": true,
+        "primary_all_controls_margin": false,
+        "product_bypass_gap": true,
+        "required_controls_active": true,
+        "validity_all_pass": true
+      },
+      "mechanism_go": false,
+      "primary_control_max_mAP": 0.575,
+      "product_bypass_gap_mAP": 0.0040000000000000036,
+      "semantic_margin_mAP": -0.0010000000000000009,
+      "status": "PASS"
+    }
+  },
+  "cluster": {
+    "all_cameras_exact": true,
+    "camera_coverage": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "camera_sets": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "clusters": 8,
+    "count_max_minus_min": 0,
+    "counts": [
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48,
+      48
+    ],
+    "expected_cameras": [
+      0,
+      1
+    ],
+    "pid_coverage": [
+      42,
+      43,
+      42,
+      41,
+      41,
+      41,
+      41,
+      40
+    ],
+    "pid_coverage_min": 40
+  },
+  "cuda_initialized_after": false,
+  "cuda_initialized_before": false,
+  "cuda_visible_devices": "",
+  "diagnostic": "exp404_spk_counterfactual_static_contract",
+  "donor": {
+    "count": 384,
+    "different_pid_fraction": 1.0,
+    "no_fixed_points": true,
+    "same_camera_fraction": 1.0,
+    "same_split_fraction": 1.0
+  },
+  "formal_cuda_preflight_authorized": true,
+  "formal_full_authorized": false,
+  "gate_count": 32,
+  "gates": {
+    "arm_order_exact": true,
+    "audit_guards_teacher_pose_codebook": true,
+    "audit_has_null_bypass_exact_gate": true,
+    "audit_has_train_generic_and_nine_arm_loop": true,
+    "audit_patches_spk_not_prepare": true,
+    "bypass_gap_mutant_caught": true,
+    "core_does_not_target_old_consumer_evidence": true,
+    "cuda_uninitialized": true,
+    "donor_contract": true,
+    "generic_mean_fixed_exact": true,
+    "null_descriptor_exact_bypass": true,
+    "null_evidence_exact_zero": true,
+    "null_factor_exact_one": true,
+    "official_data_not_accessed": true,
+    "positive_adjudication_go": true,
+    "postflight_requires_nine_arms": true,
+    "production_spk_parameter_free": true,
+    "production_spk_uses_student_inputs": true,
+    "random_cluster_balanced": true,
+    "random_cluster_camera_coverage": true,
+    "random_cluster_eight_prototypes": true,
+    "random_cluster_pid_coverage": true,
+    "random_key_abs_multiset_exact": true,
+    "random_key_norm_preserved": true,
+    "random_key_unique_contract": true,
+    "required_controls_active": true,
+    "slot_cycle_evidence_only": true,
+    "validity_mutant_caught": true,
+    "wrapper_once_only_paths": true,
+    "wrong_control_mutant_caught": true,
+    "wrong_mask_presence_only": true,
+    "wrong_rgb_pair_exact": true
+  },
+  "hashes": {
+    "audit": "2e355c2db243c46f9094a778d36a1b5685a1527491801af2e84b34dbadd37e65",
+    "contract": "32fb34f5a24c7a29519278ef4e33c7323590a595221e2938511ebca1a9c5c413",
+    "core": "e35be3d32163f227661cdb3dad544055fb0e0317aa4e0d1139e0c546482bd4dc",
+    "make_model": "44de28f34b675366606e4ae4734567f50c6ede755fd85280073c514543d61f76",
+    "postflight": "46f1adb172eee74c9ed20f944014e6494c057b42945bf4c52f3d88d1fd68d4f8",
+    "random_assets": "470d8cd4f252c389aa68baf4b140c22add926a11a19f19e4234c894d5a0e0432",
+    "tapf": "72ff5a609c7a080d848e96a2c12239795388441cc13b85519ef2cbf42f04bf2a",
+    "wrapper": "8d7f95c9ba080c2d7f4f126eeba6a7365fd8d677d135040511aa1443d5ffb029"
+  },
+  "python": "3.11.15",
+  "status": "PASS",
+  "torch": "2.13.0"
+}

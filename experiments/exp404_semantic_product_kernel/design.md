@@ -1,6 +1,6 @@
 # 实验 exp404：SPK 固定语义乘积核描述子
 
-> 当前状态：`CUDA V3 PASS / FORMAL PRELAUNCH PASS / UNIQUE E120 AUTHORIZED`
+> 当前状态：`FORMAL E120 SEALED / PAPER PERFORMANCE PREREQUISITE FAIL / COUNTERFACTUAL AUDIT V1 FROZEN`
 
 ## 目标调整
 
@@ -70,18 +70,24 @@ triplet、BNNeck和正式测试均只读取`D(e)`；不保留`global_feat + D(e)
 
 ### 4. 强反事实
 
-同一最终checkpoint串行执行：
+同一最终checkpoint串行执行九臂：
 
 1. correct student evidence；
-2. same-split/same-camera/different-PID wrong-RGB evidence；
-3. train-split frozen generic mean；
+2. same-split/same-camera/different-PID wrong-RGB evidence与presence；
+3. train-split frozen generic pooled-evidence mean；
 4. NULL zero；
 5. all-product-bypass（必须与NULL exact）；
 6. unique random-key：每个sample使用hash确定的signed permutation，保持自身evidence范数与绝对值多重集；
 7. frequency-matched random-cluster：8个semantic-blind共享类别，严格频率平衡并预注册PID/camera覆盖门；
-8. wrong-mask与slot-cycle仅作归因补充，不替代上述主门。
+8. wrong-mask：只循环SPK实际读取的student presence，不改evidence；
+9. slot-cycle：只循环五槽evidence，不改presence。
 
 random controls只在正式终审替换supplied factor，不参与训练，也不得因结果不利而删除。
+
+generic mean先用同一sealed checkpoint对official train split做RGB-only前向，将每图按presence聚合后的16维
+student evidence取全局均值；正式arm把该单一向量广播给全部验证图。random-cluster使用该generic向量的8个
+hash冻结signed-permutation原型，并以全验证集absolute index的hash排序轮转分配，簇大小最大差为1。它不读取
+PID/camera来生成分配；PID/camera只用于事后覆盖有效性门。
 
 ## 对照组
 
@@ -118,3 +124,14 @@ random controls只在正式终审替换supplied factor，不参与训练，也�
 4. **语义与同ID变化冲突**：逐图appearance状态可能降低同ID跨视角相似度；不得用temperature/scale救场。
 5. **random-cluster validity**：任何覆盖门未过只封板该执行，不降低门槛或同编号补跑。
 6. **性能不足**：不按中间eval早停；最终未过两级门即如实封板。
+
+## e120训练事实与终审执行冻结
+
+唯一fresh seed1234已自然跑满e120。exp404=`57.4/67.5/79.7/85.0`，同epoch clean D0=
+`57.6/67.7/80.8/84.6`，差值=`-0.2/-0.2/-1.1/+0.4`；因此paper性能前置门已FAIL，但correct
+超过`56.7 mAP`，允许继续机制终审。e70/e90的中间正差只作轨迹证据，禁止best-pick。
+
+终审唯一执行编号冻结为`exp404-spk-counterfactual-v1`，九臂按上述顺序串行、每臂完整覆盖query/gallery。
+预运行只允许CPU/static合同和一个fresh小样本CUDA wiring preflight；它们不得产生正式mAP裁决。若v1发生
+测量器runtime错误，封板v1记录并用新执行编号修正contract；若v1有效但科学门失败，直接判
+`SPK MECHANISM NO-GO`，不得同编号或新seed补跑。

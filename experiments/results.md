@@ -3016,3 +3016,14 @@ e90=`80.9/85.2`、e100=`80.1/84.5`、e110=`79.5/84.6`、e120=`79.7/85.0`。
 
 **当前判定**：e120相对clean D0=`-0.2 mAP/-0.2 R1/-1.1 R5/+0.4 R10`，paper性能前置门未过；
 correct绝对mAP过`56.7`门，故继续全量反事实终审，机制结论尚未产生。
+
+## exp404 SPK反事实终审v1 static合同（2026-07-20）
+
+九臂终审已冻结并实现于真实SPK输入缝，使用`student_evidence/student_presence`而非exp402旧
+`consumer_evidence`。两次CPU-only正反合同均为`32/32 PASS`且byte-exact，result SHA=
+`6b7f9e566c3953c6f64c287fd9fb4d77f67ea4a0180361d3c0accac81a5ca038`。合同验证NULL descriptor与
+all-product-bypass exact、matched donor同时替换evidence/presence、random-key绝对值多重集保持、8-cluster
+count最大差1且每簇PID/camera覆盖过门；wrong-control反超、bypass gap不足和validity错误三个mutant均被抓。
+
+**当前判定**：`STATIC PASS / CUDA WIRING PREFLIGHT GO / FORMAL FULL NO-START`。这不是mAP/R1结果；正式仍需同一
+e120 checkpoint九臂全验证集串行终审。
