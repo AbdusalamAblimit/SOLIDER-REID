@@ -294,3 +294,19 @@ compute PID，GPU=`8,102 MiB/98%`；loss=`0.177`，SPK factor std=`0.1083`、des
 `1.078e-01`，均finite/active。异常扫描无Traceback、RuntimeError、OOM、NaN或Inf。
 
 判定：`CONTINUE TO E120 / E70 VS D0 +0.8 mAP +1.8 R1 / VS EXP401 +1.0 +0.9 / NO BEST-PICK`。
+
+## 2026-07-20T07:44Z：e80同epoch对照与健康检查
+
+三条对照均为总计120 epoch并在e80评测：
+
+| arm@e80 | mAP | R1 | 相对exp404 |
+|---|---:|---:|---:|
+| exp404 SPK | 56.2 | 66.5 | 0.0/0.0 |
+| sealed clean D0（exp387） | 56.1 | 66.3 | exp404-D0=`+0.1/+0.2` |
+| sealed rich route（exp401） | 56.0 | 66.8 | exp404-exp401=`+0.2/-0.3` |
+
+exp404 e80完整R5/R10=`79.2/83.9`。检查时训练到epoch81 iter200/227，main PID=`436043`仍为唯一
+compute PID，显存=`8,108 MiB`；loss=`0.166`，SPK factor std=`0.1078`、descriptor delta abs=
+`1.092e-01`，均finite/active。异常扫描无Traceback、RuntimeError、OOM、NaN或Inf。
+
+判定：`CONTINUE TO E120 / E80 VS D0 +0.1 mAP +0.2 R1 / VS EXP401 +0.2 -0.3 / NO BEST-PICK`。
