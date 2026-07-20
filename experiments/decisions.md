@@ -5742,3 +5742,9 @@ NULL=bypass门均不变，formal继续NO-START。
 
 v2 static已连续两次`32/32 PASS`且byte-exact。**决策**：授权fresh v2 actual preflight；通过前formal full仍
 NO-START。
+
+v2 actual现已25项validity全过并授权formal full。**决策**：先把v2 result SHA与fresh runtime freeze固化到
+once-only wrapper，连续两次static PASS并显式提交后，才可在GPU空闲和formal资产全fresh时启动唯一full。
+
+wrapper refreeze后的static已连续两次`33/33 PASS`且byte-exact。**决策**：显式提交、远端同步并复核GPU与
+formal result/runner/manifest/lock全fresh后，立即通过once-only wrapper启动唯一formal full。

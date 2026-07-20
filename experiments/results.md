@@ -3041,3 +3041,11 @@ hard presence均为五槽全1，wrong-mask循环必然no-op；slot-cycle在unifo
 
 v2修正后的CPU正反合同再次连续两次`32/32 PASS`且byte-exact，result SHA=
 `185fd3b2e79b728a43a77c5920294657d1a110c1eccfeec3030445c3ebddd617`。只授权fresh v2 CUDA preflight。
+
+fresh v2 actual结果为`PASS / EXP404_COUNTERFACTUAL_PREFLIGHT_PASS / formal_full_authorized=true`，25项validity
+全部通过，result SHA=`cf7cfc5afbf1a865a95f60dd785964ae9288ad9965ad6e3bc9cdb424e8057f8c`，GPU postflight
+`2 MiB/0%/0 PID`。尚待把该SHA与fresh runtime freeze写入once-only wrapper并重过static门。
+
+once-only wrapper完成后static连续两次`33/33 PASS`且byte-exact，result SHA=
+`80b80afd4100bedf5bcfe3303c3f475f7f272fc20530f98f8341bf4fc7bece55`。显式提交和最终GPU/freshness门通过后，
+授权唯一formal full九臂串行终审。
