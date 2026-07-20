@@ -5891,3 +5891,6 @@ batch或阈值；只有COMPLETE PASS才进入formal manifest冻结，任何runti
 
 formal manifest自验证PASS且独立盲审`0B/0H`，因此唯一formal启动门已满足。GPU/fresh路径最终核对通过后立即运行，
 自然完成前不按中间方向停止；只有formal COMPLETE科学GO才授权student。
+
+唯一formal已启动并取得started seal。运行中只监控自然完成；若科学NO-GO则停止CAVT并立即设计下一种pose+CLIP
+训练对象，若GO则先完整记录强反事实证据，再冻结student与clean D0方案。

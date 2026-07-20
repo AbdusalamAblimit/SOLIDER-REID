@@ -3212,3 +3212,6 @@ NO-START，当前没有teacher科学结果或ReID mAP/R1。
 `68ef5f8f8429c6f98c21509b98146ae40c4a075d1c858e6812dad1d3b998cffb`、
 `f3ef8c1db0475baadfca2ece9945e58929edf6cef0e6cf0c758e1258b185b634`。这只授权formal测量，不是teacher
 科学GO，也没有ReID mAP/R1。
+
+formal manifest SHA=`3932125980989a634df87cb71904e8d2a4772e9bae98ea1dcfb8def35ca70571`经runner自验证与独立盲审
+`0B/0H`后，唯一formal已启动并取得started seal。当前仍无formal科学结果或ReID mAP/R1。

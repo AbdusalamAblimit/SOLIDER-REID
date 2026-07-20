@@ -1,6 +1,6 @@
 # exp407 CAVT cache兼容监控
 
-> 当前：`UNIQUE PREFLIGHT COMPLETE PASS / FORMAL MANIFEST VALIDATION PASS / FORMAL BLIND REVIEW 0B/0H / FORMAL LAUNCH AUTHORIZED / STUDENT NO-START`
+> 当前：`UNIQUE PREFLIGHT COMPLETE PASS / FORMAL BLIND REVIEW 0B/0H / UNIQUE FORMAL RUNNING / STUDENT NO-START`
 
 ## 2026-07-21：建立fresh编号
 
@@ -72,3 +72,12 @@ SHA与runtime SHA，`formal_measurement_authorized=true`、`transport_oracle_aut
 `load_and_validate_formal_manifest`只读验证PASS。独立聚焦盲审为`0 BLOCKER / 0 HIGH`，确认formal会fresh重编码
 全train并重算2,000对diagnostic/尺度/配对，不复用preflight cache/scale/pair；科学controls和门未漂移。授权立即
 启动唯一fresh formal。
+
+## 2026-07-21：唯一formal启动
+
+最终fresh路径、manifest SHA、tracked source clean和GPU独占门通过后启动唯一
+`exp407-p0b-iso-teacher-v1`，主PID=`462056`。started SHA=
+`488f162df4d7e94c70c010bbdc0493a2756e19f5752e607994cd67310f6a3659`，started seal SHA=
+`1ae687d2b0bf6c66cd3a4b221e5a50362506787c44a390c87dd0f52f81c2e776`。首轮观测original batch 100，GPU=
+`2362 MiB / 95%`，无failure/result/complete。当前=`CONTINUE`：自然完成前不修改源码、manifest、协议或参数，
+不按中间方向早停；student保持NO-START。
