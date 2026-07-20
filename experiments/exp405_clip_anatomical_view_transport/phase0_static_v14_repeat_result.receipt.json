@@ -1,0 +1,10 @@
+{
+  "bootstrap_sha256": "1b9cacf010fc1c1d694925635b6f72f2f141aebf22e042292b16316792c617da",
+  "canonical_payload_sha256": "6d073b72894c65236a53ee52d8e1d868e8492c60cc69ade139d57d0560130ee3",
+  "contract_sha256": "13aff524a64c3341ee3d51a5d998bd29e08c3ba2131e1739c63695ed02f92f60",
+  "core_sha256": "29ddd00ce03ed73b6d1c7ab722de88490e2490638bc83b192e215c6ab4bb0f8b",
+  "execution_receipt_sha256": "98bb662657e4b3ea96b8ae87e5f9beb3cf6a4b457193308e31c1c47c8f73f681",
+  "output_name": "phase0_static_v14_repeat_result.json",
+  "site_tree_sha256": "b3428d0e161d8bb6b2f98cc75301cf7ef4f67dac2cb3b5fea348b91b15faccf2",
+  "status": "PASS"
+}

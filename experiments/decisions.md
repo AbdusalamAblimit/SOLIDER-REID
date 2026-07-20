@@ -5758,3 +5758,28 @@ wrong近乎相同，generic略高，NULL=bypass=`57.60890/68.05430`显著更高�
 **决策**：exp404判`SPK_MECHANISM_NO_GO`并永久封板，不调temperature/loss/scale/presence、不补seed。接受用户
 “换一种设计方法”的指令，下一编号先做pose+CLIP近期论文与开源实现审计、独立机制智能体和后续代码盲审；
 未形成新的训练/结构对象并通过创新门前GPU NO-START。
+
+### [2026-07-20] 决策：建立exp405 CAVT设计，但只授权Phase 0合同准备
+
+exp404后根因审计证明旧实现没有完成用户原始双编码、pose-defined slot pooling和中间stage可执行路径；e120
+student rich evidence平均cosine仅约`0.027`，且slot mean与近乎全1的伪presence消除了可辨识性。因此旧失败不能
+被扩大为CLIP–TAPF总否定。
+
+新对象冻结为CAVT：train-only original/deleted/same-ID cross-camera donor构成可观察target；frozen CLIP
+image+text共同定义sample-specific slot distribution/support/content；donor-free student在同一TAPF
+gather-transform-scatter路径预测状态转移，推理删除CLIP、text、pose和donor。
+
+**决策**：公开近邻审计后宽CAVT创新门失败，只授权最小Phase 0 protocol和synthetic/CPU正反合同。exp392
+raw patch teacher已封板，exp405唯一readout冻结为从首层开始的region-isolated五槽双编码teacher，50% deletion
+为唯一primary。当前不得创建formal config、output或runner，不得占用4090。teacher oracle必须同时击败两个
+单轴破坏、pose/image/text单轴、伪语义control与matched近邻，并在held-out PID上证明donor-free可预测性；
+任一失败即不实现student、不跑e120。
+
+### [2026-07-20] 决策：exp405 static v14封口，停止扩审并转真实teacher实现
+
+v14两次fresh CPU execution均`56/56 PASS`且payload byte-exact；最终独立盲审为`0B/0H/0M/0L`。v11--v13
+仍是历史不授权记录，禁止覆盖或改判。此前启动器/依赖/receipt审计已足够，继续扩展外围威胁模型只会延迟科学
+证伪，因此到v14永久停止。
+
+**决策**：立即实现最小真实region-isolated CLIP image+text teacher measurement。实现完成后只做一次聚焦真实
+数据路径、pose同步、encoder/readout、反事实和指标的独立代码盲审；通过前不得运行真实数据、CUDA或占用4090。

@@ -2338,3 +2338,25 @@ paper性能FAIL、mechanism未裁决，直到同一e120 checkpoint完成全量mA
 NULL与bypass exact达到`57.60890/68.05430`，比correct高`0.18094 mAP / 0.58824 R1 point`。因此“final
 descriptor语义乘积绑定”不能进入正面story；random controls较低只表明强随机破坏有害，不构成semantic
 ownership。下一story从新pose+CLIP训练/结构对象重新建立，且必须先证明相对clean D0实际涨点。
+
+## 2026-07-20：CLIP–TAPF story改为可观察的二维反事实中介
+
+根因审计显示，exp401–404的rich teacher已退化为image-only PCA residual，student五槽由full-map GAP一次预测，
+CLIP loss又被`hidden.detach()`限制在最后线性层；e120 evidence平均cosine仅约`0.027`。同时in-bounds pose被
+误当presence、PC-MBCLS保留前20层全局CLS残差、SPK在执行前求slot mean。旧线因此没有真正检验用户提出的
+双编码、slot-local、可执行CLIP–TAPF。
+
+新候选exp405不把CLIP直接蒸馏final descriptor，而用train-only original / controlled slot deletion /
+same-ID cross-camera donor构造可观察target。frozen image encoder提供实例局部视觉状态，frozen text encoder
+固定全body-part原型，二者共同定义sample-specific `p/q/v`；TAPF anchor在中间stage用同一field完成定位、
+gather与scatter，部署student只看单RGB并删除全部privileged输入。
+
+这条story目前仍是设计，不是正面结果。近期近邻使宽CAVT机制主张失效：pose槽、局部CLIP、多视图teacher、
+inference-free语言指导和patch transfer都已有直接先例。现在只保留“可观察二维反事实 + donor-free同路径
+可预测性”的问题/证据候选。只有teacher和student两级都出现identity轴 x slot轴偏序、CLIP独立优于
+pose-only、held-out PID residual可预测且single-stage在同epoch/e120同时超过clean D0 mAP/R1，才允许进入方法
+主张；随后才重新验证semantic all-stage。
+
+Phase 0 static v14已通过两次byte-exact `56/56`合同和最终`0B/0H/0M/0L`代码盲审。这只是测量器实现门，
+不能进入性能表或贡献叙事。story当前仍为条件候选；下一步必须由真实frozen image+text teacher在train-only
+二维反事实、CLIP-vs-pose-only和donor-free held-out PID三处提供证据，否则直接关闭CAVT而不启动student。

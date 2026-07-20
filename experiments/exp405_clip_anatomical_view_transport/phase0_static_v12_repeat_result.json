@@ -1,0 +1,302 @@
+{
+  "allowed_private_probe": {
+    "cosine": -0.0030768654561624488,
+    "r2": -0.09201939590939867
+  },
+  "clip_batch_ownership": {
+    "batch_permutation": true,
+    "single_sample_numerically_exact": true,
+    "single_sample_perturbation_local": true
+  },
+  "clip_budget_locality_changed_gaps": {
+    "donor_distribution": 0.7499701976776123,
+    "donor_support": 0.5996880531311035,
+    "recipient_distribution": 0.737199068069458
+  },
+  "clip_budget_locality_gates": {
+    "donor_distribution": true,
+    "donor_support": true,
+    "recipient_distribution": true
+  },
+  "clip_budget_mean": 0.1424085795879364,
+  "clip_budget_mutant_mean_abs_gaps": {
+    "donor_distribution": 0.28759223222732544,
+    "donor_support": 0.14688751101493835,
+    "ignore_distribution_agreement": 0.4825814366340637,
+    "recipient_distribution": 0.2701117992401123,
+    "recipient_support_instead_of_donor": 0.007057886105030775,
+    "wrong_rgb_same_slot": 0.47611919045448303
+  },
+  "clip_budget_std": 0.26383888721466064,
+  "cluster_counts": [
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5
+  ],
+  "donor_free_probe": {
+    "cosine": 0.9999980697697047,
+    "r2": 0.999998482541176
+  },
+  "donor_free_probe_per_target_slot": {
+    "0": {
+      "cosine": 0.9999952068980753,
+      "r2": 0.9999982623875358
+    },
+    "1": {
+      "cosine": 0.9999988621886395,
+      "r2": 0.9999987017179695
+    },
+    "2": {
+      "cosine": 0.999998402904263,
+      "r2": 0.9999984742312769
+    },
+    "3": {
+      "cosine": 0.9999988125708614,
+      "r2": 0.9999979538125858
+    },
+    "4": {
+      "cosine": 0.9999990642866855,
+      "r2": 0.9999980759476487
+    }
+  },
+  "donor_free_probe_target_generation": "independent identity latent with target-slot-specific map; not probe_x @ W",
+  "experiment": "exp405",
+  "formula_mutant_utility": {
+    "donor_slot_only": -0.06481663984362412,
+    "no_context_subtraction": -0.07460183608764288,
+    "no_recipient_context_addition": -0.07655795025501073,
+    "wrong_recipient_context": -0.13855902765916148
+  },
+  "gates": {
+    "all_geometry_valid": true,
+    "clip_budget_axes_independently_owned": true,
+    "clip_budget_sample_slot_local_ownership": true,
+    "clip_budget_sample_specific": true,
+    "clip_state_batch_sample_ownership": true,
+    "context_formula_mutants_caught": true,
+    "correct_beats_all_semantic_controls": true,
+    "correct_transport_exact_on_additive_fixture": true,
+    "cpu_only": true,
+    "deletion_values_all_channels_exact": true,
+    "deterministic_runtime_contract_active": true,
+    "donor_free_probe_beats_zero_cosine": true,
+    "donor_free_probe_positive_r2": true,
+    "donor_free_probe_positive_r2_per_target_slot": true,
+    "empty_selected_mask_delete_budget_scatter_identity": true,
+    "erase_mask_is_subset_of_selected_slot": true,
+    "erase_only_scatter_preserves_observed_pixels": true,
+    "five_slot_pool_shape": true,
+    "frozen_provenance_chain_validated_before_execution": true,
+    "full_slot_scatter_mutant_changes_observed_pixels": true,
+    "generic_and_generic_transport_are_distinct": true,
+    "geometry_not_reused_as_support": true,
+    "global_gap_pool_mutant_caught": true,
+    "hashed_deletion_batch_permutation_invariant": true,
+    "hashed_deletion_same_seed_bitwise_exact": true,
+    "hashed_deletion_seed_changes_pixels_not_budget": true,
+    "hashed_deletion_split_merge_invariant": true,
+    "input_validation_mutants_caught": true,
+    "invalid_geometry_budget_exact_zero": true,
+    "invalid_geometry_scatter_exact_identity": true,
+    "metric_exact_ties_use_stable_sample_key": true,
+    "metric_multi_query_multi_positive_exact": true,
+    "metric_positive_r1_minimal_exact": true,
+    "metric_reports_map_r1_and_valid_query_count": true,
+    "naive_reporter_mutant_caught": true,
+    "nonzero_fill_all_channels_exact": true,
+    "null_exact_identity": true,
+    "pid_disjoint_split_blocks_row_level_leakage": true,
+    "pid_split_complete": true,
+    "pid_split_disjoint": true,
+    "pool_to_budget_empty_geometry_end_to_end": true,
+    "primary_deletion_exact_50pct": true,
+    "random_cluster_frequency_balanced": true,
+    "random_key_different_pid_no_fixed_point": true,
+    "random_key_norm_multiset_preserved": true,
+    "random_key_preserves_anatomical_slot": true,
+    "random_residual_probe_mutant_caught": true,
+    "recipient_only_not_k_probe_schema": true,
+    "reciprocal_rank_map_mutant_caught": true,
+    "sample_key_owns_deletion_support_and_swaps_exactly": true,
+    "self_restore_exact_on_constant_slot_fixture": true,
+    "slot_masses_positive": true,
+    "slot_permutation_equivariant": true,
+    "soft_budget_scatter_matches_elementwise_oracle": true
+  },
+  "input_guard_mutants": {
+    "boolean_clip_logit_scale": true,
+    "boolean_delete_fraction": true,
+    "boolean_pid_split_seed": true,
+    "boolean_pool_min_mass": true,
+    "boolean_ridge": true,
+    "control_character_sample_path": true,
+    "duplicate_gallery_sample_key": true,
+    "duplicate_sample_path": true,
+    "empty_context_width": true,
+    "empty_regression_width": true,
+    "empty_reid_width": true,
+    "empty_ridge_target_width": true,
+    "empty_semantic_batch": true,
+    "float32_clip_overflow": true,
+    "integer_clip_input": true,
+    "integer_context_input": true,
+    "integer_delete_feature": true,
+    "integer_regression_input": true,
+    "integer_reid_descriptor": true,
+    "integer_ridge_input": true,
+    "integer_semantic_input": true,
+    "invalid_distribution_simplex": true,
+    "invalid_fit_fraction": true,
+    "invalid_logit_scale": true,
+    "invalid_min_mass": true,
+    "invalid_sample_path": true,
+    "invalid_scatter_mask": true,
+    "invalid_support_range": true,
+    "non_binary_delete_mask": true,
+    "non_finite_delete_fill": true,
+    "non_finite_scatter_budget": true,
+    "non_integer_delete_seed": true,
+    "non_integer_pid": true,
+    "non_integer_reid_metadata": true,
+    "non_nfc_sample_path": true,
+    "out_of_range_slot": true,
+    "pool_dtype_mismatch": true,
+    "scatter_budget_device_mismatch": true,
+    "scatter_budget_dtype_mismatch": true,
+    "scatter_budget_not_vector": true,
+    "scatter_dtype_mismatch": true,
+    "single_pid_split": true,
+    "string_pid_fit_fraction": true,
+    "zero_norm_reid_descriptor": true,
+    "zero_visual_rejected_when_geometry_valid": true
+  },
+  "invalid_geometry_budget": {
+    "donor_invalid": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "empty": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "recipient_invalid": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "minimum_correct_margin": 0.02121181992807987,
+  "minimum_formula_mutant_margin": 0.06481663984362394,
+  "naive_reporter_mutant": {
+    "R1": 100.0,
+    "mAP": 66.66666666666667
+  },
+  "ordering_utility": {
+    "NULL": -0.08902823409513619,
+    "correct": -1.8452904135268789e-16,
+    "generic": -0.07896420316789933,
+    "generic_transport": -0.021211819928080054,
+    "random_cluster": -0.16960460715285533,
+    "random_key": -0.17341493807602934,
+    "same_id_wrong_slot": -0.07094864979747939,
+    "self_restore": -0.0,
+    "wrong_id_same_slot": -0.04836744536419527
+  },
+  "passed": 54,
+  "pid_disjoint_leakage_probe": {
+    "cosine": 0.17248207293644352,
+    "r2": -0.19953248406421742
+  },
+  "positive_r1_retrieval": {
+    "R1": 100.0,
+    "mAP": 100.0,
+    "valid_queries": 1
+  },
+  "privileged_column_mutant_probe": {
+    "cosine": 0.9999999999999065,
+    "r2": 0.9999999999986122
+  },
+  "provenance": {
+    "bootstrap_sha256": "14f7dcfaab3103ce2d431b2346c8e652530350583d59e4a1bc8234e24abec129",
+    "contract_sha256": "d19ad6bb52b5d956b168037c748ee73aa8f4ce11fb3bcfc159bf6a82aace2b9b",
+    "core_sha256": "576480aa49e4e98635f3b848e7faecbccf507da0d2f995e2c2d2d400800474a7",
+    "deterministic_algorithms": true,
+    "launcher_mode": "same-source-reexec-v2",
+    "mkl_num_threads": "1",
+    "omp_num_threads": "1",
+    "python_version": "3.11.15",
+    "pythonhashseed": "0",
+    "torch_num_interop_threads": 1,
+    "torch_num_threads": 1,
+    "torch_version": "2.13.0"
+  },
+  "random_target_probe": {
+    "cosine": -0.14074283261501508,
+    "r2": -1.4452501142699048
+  },
+  "recipient_only_probe_schema": {
+    "all_target_slots_fit_and_audited": true,
+    "explicit_privileged_column_mutant_detectable": true,
+    "fixed_anatomical_column_ownership": true,
+    "non_target_slot_retained": true,
+    "shape_exact": true,
+    "target_slot_excluded_bitwise": true
+  },
+  "reciprocal_rank_map_mutant": 75.0,
+  "row_level_leakage_probe": {
+    "cosine": 0.9999999999812971,
+    "r2": 0.9999999995997457
+  },
+  "scope": "synthetic CPU/static contract only; no scientific evidence",
+  "seed": 20260720,
+  "slot_permutation_float32_atol": 5e-07,
+  "slot_permutation_max_abs": {
+    "budget": 1.7881393432617188e-07,
+    "distribution": 1.1920928955078125e-07,
+    "support": 0.0,
+    "visual": 0.0
+  },
+  "status": "PASS",
+  "tied_permuted_retrieval": {
+    "R1": 100.0,
+    "mAP": 100.0,
+    "valid_queries": 1
+  },
+  "tied_retrieval": {
+    "R1": 100.0,
+    "mAP": 100.0,
+    "valid_queries": 1
+  },
+  "total": 54,
+  "toy_retrieval": {
+    "R1": 50.0,
+    "mAP": 66.66666666666666,
+    "valid_queries": 2
+  },
+  "zero_probe": {
+    "cosine": 0.0,
+    "r2": -0.02050716855388668
+  }
+}

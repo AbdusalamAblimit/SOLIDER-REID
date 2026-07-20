@@ -1,0 +1,186 @@
+{
+  "clip_budget_locality_gates": {
+    "donor_distribution": true,
+    "donor_support": true,
+    "recipient_distribution": false
+  },
+  "clip_budget_mean": 0.1424085795879364,
+  "clip_budget_mutant_mean_abs_gaps": {
+    "donor_distribution": 0.28759223222732544,
+    "donor_support": 0.14688751101493835,
+    "ignore_distribution_agreement": 0.4825814366340637,
+    "recipient_distribution": 0.2701117992401123,
+    "recipient_support_instead_of_donor": 0.007057886105030775,
+    "wrong_rgb_same_slot": 0.47611919045448303
+  },
+  "clip_budget_std": 0.26383888721466064,
+  "cluster_counts": [
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5
+  ],
+  "contract_sha256": "1c58d7bcdedbf85274ad24da3d8ef7f73b8e7cbab9e89b0d88dce84bab1dffda",
+  "core_sha256": "e1d074286648027766a8e706e6726e4b52677625a2f6a92607fece25cc20f2bc",
+  "core_source_audit": {
+    "passed": true,
+    "violations": []
+  },
+  "donor_free_probe": {
+    "cosine": 0.9999998245208209,
+    "r2": 0.9999998135041546
+  },
+  "experiment": "exp405",
+  "formula_mutant_utility": {
+    "donor_slot_only": -0.06481663984362412,
+    "no_context_subtraction": -0.07460183608764288,
+    "no_recipient_context_addition": -0.07655795025501073,
+    "wrong_recipient_context": -0.13855902765916148
+  },
+  "gates": {
+    "all_geometry_valid": true,
+    "canonical_core_preimport_ast_allowlist": true,
+    "clip_budget_axes_independently_owned": true,
+    "clip_budget_sample_slot_local_ownership": false,
+    "clip_budget_sample_specific": true,
+    "context_formula_mutants_caught": true,
+    "correct_beats_all_semantic_controls": true,
+    "correct_transport_exact_on_additive_fixture": true,
+    "cpu_only": true,
+    "donor_free_probe_beats_zero_cosine": true,
+    "donor_free_probe_positive_r2": true,
+    "erase_mask_is_subset_of_selected_slot": true,
+    "erase_only_scatter_preserves_observed_pixels": true,
+    "expected_core_digest_authenticated_before_import": true,
+    "five_slot_pool_shape": true,
+    "full_slot_scatter_mutant_changes_observed_pixels": true,
+    "generic_and_generic_transport_are_distinct": true,
+    "geometry_not_reused_as_support": true,
+    "global_gap_pool_mutant_caught": true,
+    "hashed_deletion_same_seed_bitwise_exact": true,
+    "hashed_deletion_seed_changes_pixels_not_budget": true,
+    "input_validation_mutants_caught": true,
+    "invalid_geometry_budget_exact_zero": true,
+    "invalid_geometry_scatter_exact_identity": true,
+    "metric_multi_query_multi_positive_exact": true,
+    "metric_reports_map_r1_and_valid_query_count": true,
+    "naive_reporter_mutant_caught": true,
+    "null_exact_identity": true,
+    "pid_disjoint_split_blocks_row_level_leakage": true,
+    "pid_split_complete": true,
+    "pid_split_disjoint": true,
+    "primary_deletion_exact_50pct": true,
+    "random_cluster_frequency_balanced": true,
+    "random_key_different_pid_no_fixed_point": true,
+    "random_key_norm_multiset_preserved": true,
+    "random_key_preserves_anatomical_slot": true,
+    "random_residual_probe_mutant_caught": true,
+    "reciprocal_rank_map_mutant_caught": true,
+    "self_restore_exact_on_constant_slot_fixture": true,
+    "slot_masses_positive": true,
+    "slot_permutation_equivariant": true
+  },
+  "input_guard_mutants": {
+    "float32_clip_overflow": true,
+    "invalid_distribution_simplex": true,
+    "invalid_fit_fraction": true,
+    "invalid_logit_scale": true,
+    "invalid_min_mass": true,
+    "invalid_scatter_mask": true,
+    "invalid_support_range": true,
+    "non_binary_delete_mask": true,
+    "non_finite_delete_fill": true,
+    "non_finite_scatter_budget": true,
+    "non_integer_pid": true,
+    "out_of_range_slot": true,
+    "single_pid_split": true,
+    "zero_norm_reid_descriptor": true
+  },
+  "invalid_geometry_budget": {
+    "donor_invalid": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "empty": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "recipient_invalid": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "minimum_correct_margin": 0.02121181992807987,
+  "minimum_formula_mutant_margin": 0.06481663984362394,
+  "naive_reporter_mutant": {
+    "R1": 100.0,
+    "mAP": 66.66666666666667
+  },
+  "ordering_utility": {
+    "NULL": -0.08902823409513617,
+    "correct": -1.8452904135268789e-16,
+    "generic": -0.07896420316789933,
+    "generic_transport": -0.021211819928080054,
+    "random_cluster": -0.16960460715285536,
+    "random_key": -0.1734149380760293,
+    "same_id_wrong_slot": -0.07094864979747938,
+    "self_restore": -0.0,
+    "wrong_id_same_slot": -0.04836744536419527
+  },
+  "passed": 40,
+  "pid_disjoint_leakage_probe": {
+    "cosine": -0.126744379533154,
+    "r2": -0.19848574917513417
+  },
+  "random_target_probe": {
+    "cosine": 0.04151024830558316,
+    "r2": -0.8860493197331596
+  },
+  "reciprocal_rank_map_mutant": 50.0,
+  "row_level_leakage_probe": {
+    "cosine": 0.9999999999965115,
+    "r2": 0.9999999988891156
+  },
+  "scope": "synthetic CPU/static contract only; no scientific evidence",
+  "seed": 20260720,
+  "slot_permutation_float32_atol": 5e-07,
+  "slot_permutation_max_abs": {
+    "budget": 1.7881393432617188e-07,
+    "distribution": 1.1920928955078125e-07,
+    "support": 0.0,
+    "visual": 0.0
+  },
+  "status": "FAIL",
+  "total": 41,
+  "toy_retrieval": {
+    "R1": 0.0,
+    "mAP": 54.166666666666664,
+    "valid_queries": 2
+  },
+  "zero_probe": {
+    "cosine": 0.0,
+    "r2": -0.02531866578074049
+  }
+}

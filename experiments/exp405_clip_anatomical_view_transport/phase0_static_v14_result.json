@@ -1,0 +1,337 @@
+{
+  "allowed_private_probe": {
+    "cosine": 0.032552043710697275,
+    "r2": -0.15469170101106222
+  },
+  "clip_batch_ownership": {
+    "batch_permutation": true,
+    "single_sample_numerically_exact": true,
+    "single_sample_perturbation_local": true
+  },
+  "clip_budget_locality_changed_gaps": {
+    "donor_distribution": 0.7499701976776123,
+    "donor_support": 0.5996880531311035,
+    "recipient_distribution": 0.737199068069458
+  },
+  "clip_budget_locality_gates": {
+    "donor_distribution": true,
+    "donor_support": true,
+    "recipient_distribution": true
+  },
+  "clip_budget_mean": 0.1424086093902588,
+  "clip_budget_mutant_mean_abs_gaps": {
+    "donor_distribution": 0.2875922620296478,
+    "donor_support": 0.14688754081726074,
+    "ignore_distribution_agreement": 0.48258137702941895,
+    "recipient_distribution": 0.2701118588447571,
+    "recipient_support_instead_of_donor": 0.007057886570692062,
+    "wrong_rgb_same_slot": 0.47611916065216064
+  },
+  "clip_budget_std": 0.2638389766216278,
+  "cluster_counts": [
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5
+  ],
+  "donor_free_probe": {
+    "cosine": 0.9999992195578621,
+    "r2": 0.9999990203672112
+  },
+  "donor_free_probe_per_target_slot": {
+    "0": {
+      "cosine": 0.9999979566001522,
+      "r2": 0.9999973634156349
+    },
+    "1": {
+      "cosine": 0.9999996707064529,
+      "r2": 0.9999993923297766
+    },
+    "2": {
+      "cosine": 0.999999591134074,
+      "r2": 0.9999992739812038
+    },
+    "3": {
+      "cosine": 0.9999994158721129,
+      "r2": 0.9999992657803856
+    },
+    "4": {
+      "cosine": 0.9999994634765186,
+      "r2": 0.9999985708211899
+    }
+  },
+  "donor_free_probe_target_generation": "independent latent per target-slot/PID with target-specific map; not probe_x @ W",
+  "experiment": "exp405",
+  "finite_extreme_regression": {
+    "cosine": 0.9999999999999998,
+    "r2": 1.0
+  },
+  "finite_extreme_retrieval": {
+    "R1": 100.0,
+    "mAP": 100.0,
+    "valid_queries": 1
+  },
+  "finite_tiny_retrieval": {
+    "R1": 100.0,
+    "mAP": 100.0,
+    "valid_queries": 1
+  },
+  "formula_mutant_utility": {
+    "donor_slot_only": -0.06481663984362412,
+    "no_context_subtraction": -0.07460183608764287,
+    "no_recipient_context_addition": -0.07655795025501075,
+    "wrong_recipient_context": -0.13855902765916148
+  },
+  "gates": {
+    "all_geometry_valid": true,
+    "clip_budget_axes_independently_owned": true,
+    "clip_budget_sample_slot_local_ownership": true,
+    "clip_budget_sample_specific": true,
+    "clip_state_batch_sample_ownership": true,
+    "context_formula_mutants_caught": true,
+    "correct_beats_all_semantic_controls": true,
+    "correct_transport_exact_on_additive_fixture": true,
+    "cpu_only": true,
+    "deletion_values_all_channels_exact": true,
+    "deterministic_runtime_contract_active": true,
+    "donor_free_probe_beats_zero_cosine": true,
+    "donor_free_probe_positive_r2": true,
+    "donor_free_probe_positive_r2_per_target_slot": true,
+    "empty_selected_mask_delete_budget_scatter_identity": true,
+    "erase_mask_is_subset_of_selected_slot": true,
+    "erase_only_scatter_preserves_observed_pixels": true,
+    "finite_extreme_normalization_and_scores_remain_valid": true,
+    "five_slot_pool_shape": true,
+    "frozen_provenance_chain_validated_before_execution": true,
+    "full_slot_scatter_mutant_changes_observed_pixels": true,
+    "generic_and_generic_transport_are_distinct": true,
+    "geometry_not_reused_as_support": true,
+    "global_gap_pool_mutant_caught": true,
+    "hashed_deletion_batch_permutation_invariant": true,
+    "hashed_deletion_same_seed_bitwise_exact": true,
+    "hashed_deletion_seed_changes_pixels_not_budget": true,
+    "hashed_deletion_split_merge_invariant": true,
+    "input_validation_mutants_caught": true,
+    "invalid_geometry_budget_exact_zero": true,
+    "invalid_geometry_scatter_exact_identity": true,
+    "joint_hash_avalanche_and_modulus_alias_mutants_caught": true,
+    "metric_exact_ties_use_stable_sample_key": true,
+    "metric_multi_query_multi_positive_exact": true,
+    "metric_positive_r1_minimal_exact": true,
+    "metric_reports_map_r1_and_valid_query_count": true,
+    "naive_reporter_mutant_caught": true,
+    "nonzero_fill_all_channels_exact": true,
+    "null_exact_identity": true,
+    "pid_disjoint_split_blocks_row_level_leakage": true,
+    "pid_split_complete": true,
+    "pid_split_disjoint": true,
+    "pool_to_budget_empty_geometry_end_to_end": true,
+    "primary_deletion_exact_50pct": true,
+    "random_cluster_frequency_balanced": true,
+    "random_key_different_pid_no_fixed_point": true,
+    "random_key_norm_multiset_preserved": true,
+    "random_key_preserves_anatomical_slot": true,
+    "random_residual_probe_mutant_caught": true,
+    "recipient_only_not_k_probe_schema": true,
+    "reciprocal_rank_map_mutant_caught": true,
+    "sample_key_owns_deletion_support_and_swaps_exactly": true,
+    "self_restore_exact_on_constant_slot_fixture": true,
+    "slot_masses_positive": true,
+    "slot_permutation_equivariant": true,
+    "soft_budget_scatter_matches_elementwise_oracle": true
+  },
+  "input_guard_mutants": {
+    "boolean_clip_logit_scale": true,
+    "boolean_delete_fraction": true,
+    "boolean_pid_split_seed": true,
+    "boolean_pool_min_mass": true,
+    "boolean_ridge": true,
+    "control_character_sample_path": true,
+    "delete_mask_device_mismatch": true,
+    "duplicate_gallery_sample_key": true,
+    "duplicate_sample_path": true,
+    "empty_context_width": true,
+    "empty_regression_width": true,
+    "empty_reid_width": true,
+    "empty_ridge_target_width": true,
+    "empty_semantic_batch": true,
+    "float32_clip_overflow": true,
+    "integer_clip_input": true,
+    "integer_context_input": true,
+    "integer_delete_feature": true,
+    "integer_regression_input": true,
+    "integer_reid_descriptor": true,
+    "integer_ridge_input": true,
+    "integer_semantic_input": true,
+    "invalid_distribution_simplex": true,
+    "invalid_fit_fraction": true,
+    "invalid_logit_scale": true,
+    "invalid_min_mass": true,
+    "invalid_sample_path": true,
+    "invalid_scatter_mask": true,
+    "invalid_support_range": true,
+    "non_binary_delete_mask": true,
+    "non_finite_delete_fill": true,
+    "non_finite_scatter_budget": true,
+    "non_integer_delete_seed": true,
+    "non_integer_pid": true,
+    "non_integer_reid_metadata": true,
+    "non_nfc_sample_path": true,
+    "out_of_range_slot": true,
+    "pool_dtype_mismatch": true,
+    "scatter_budget_device_mismatch": true,
+    "scatter_budget_dtype_mismatch": true,
+    "scatter_budget_not_vector": true,
+    "scatter_dtype_mismatch": true,
+    "single_pid_split": true,
+    "string_pid_fit_fraction": true,
+    "zero_norm_reid_descriptor": true,
+    "zero_visual_rejected_when_geometry_valid": true
+  },
+  "invalid_geometry_budget": {
+    "donor_invalid": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "empty": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "recipient_invalid": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "minimum_correct_margin": 0.02121181992807987,
+  "minimum_formula_mutant_margin": 0.06481663984362394,
+  "naive_reporter_mutant": {
+    "R1": 100.0,
+    "mAP": 66.66666666666667
+  },
+  "ordering_utility": {
+    "NULL": -0.08902823409513617,
+    "correct": -1.8452904135268789e-16,
+    "generic": -0.0789642031678993,
+    "generic_transport": -0.021211819928080054,
+    "random_cluster": -0.16960460715285536,
+    "random_key": -0.1734149380760293,
+    "same_id_wrong_slot": -0.07094864979747939,
+    "self_restore": -0.0,
+    "wrong_id_same_slot": -0.04836744536419527
+  },
+  "passed": 56,
+  "pid_disjoint_leakage_probe": {
+    "cosine": -0.05491387939617763,
+    "r2": -0.20684004274144674
+  },
+  "positive_r1_retrieval": {
+    "R1": 100.0,
+    "mAP": 100.0,
+    "valid_queries": 1
+  },
+  "privileged_column_mutant_probe": {
+    "cosine": 0.9999999999999114,
+    "r2": 0.9999999999988185
+  },
+  "provenance": {
+    "bootstrap_sha256": "1b9cacf010fc1c1d694925635b6f72f2f141aebf22e042292b16316792c617da",
+    "contract_sha256": "13aff524a64c3341ee3d51a5d998bd29e08c3ba2131e1739c63695ed02f92f60",
+    "core_sha256": "29ddd00ce03ed73b6d1c7ab722de88490e2490638bc83b192e215c6ab4bb0f8b",
+    "dependency_artifact_sha256": {
+      "libtorch_cpu_sha256": "f1584a65a2a09b5ddbe90a4e195ba824087b430a9f21cb1df9b8894177b99987",
+      "libtorch_python_sha256": "eb3f31be95527c2d9ff816ddce5f282f2031f71586628d008855a315c5683bb1",
+      "pyvenv": "39fe3064980027fed1216d0b9ced4da9e270652270d84f2bcfb74d694711cf48",
+      "torch_c_sha256": "06b303bc0e60a65552970fa2e2ca395a6f32a70ea167e3dbba7be82d2d6cbc4f",
+      "torch_init_sha256": "cf40c075c95864036e835795756d69b8cccfafa76f3bcde5eba9d06065ccd3d1",
+      "torch_record_sha256": "b5e76f2212a8b17cac6bf771887c4d8a647502d3e33bf7e61d720bbab1f89367"
+    },
+    "deterministic_algorithms": true,
+    "launcher_mode": "same-source-reexec-v4",
+    "mkl_num_threads": "1",
+    "omp_num_threads": "1",
+    "python_dont_write_bytecode": true,
+    "python_isolated": true,
+    "python_no_site": true,
+    "python_no_user_site": true,
+    "python_safe_path": true,
+    "python_version": "3.11.15",
+    "site_packages_tree_byte_count": 585021614,
+    "site_packages_tree_file_count": 18763,
+    "site_packages_tree_sha256": "b3428d0e161d8bb6b2f98cc75301cf7ef4f67dac2cb3b5fea348b91b15faccf2",
+    "torch_config_sha256": "1943041ad11240ec18f123ae0f5aa98ed16a9ebf53b479bb4f0c11ea4c6f12f1",
+    "torch_git_version": "cf30153c4c131c8164ee7798e5022d810682e2cb",
+    "torch_num_interop_threads": 1,
+    "torch_num_threads": 1,
+    "torch_record_verified_files": 12713,
+    "torch_version": "2.13.0"
+  },
+  "random_target_probe": {
+    "cosine": 0.009325991765100013,
+    "r2": -0.9509809557954749
+  },
+  "recipient_only_probe_schema": {
+    "all_target_slots_fit_and_audited": true,
+    "explicit_privileged_column_mutant_detectable": true,
+    "fixed_anatomical_column_ownership": true,
+    "non_target_slot_retained": true,
+    "shape_exact": true,
+    "target_slot_excluded_bitwise": true
+  },
+  "reciprocal_rank_map_mutant": 75.0,
+  "row_level_leakage_probe": {
+    "cosine": 0.9999999999961172,
+    "r2": 0.9999999996001248
+  },
+  "scope": "synthetic CPU/static contract only; no scientific evidence",
+  "seed": 20260720,
+  "slot_permutation_float32_atol": 5e-07,
+  "slot_permutation_max_abs": {
+    "budget": 8.940696716308594e-08,
+    "distribution": 1.7881393432617188e-07,
+    "support": 0.0,
+    "visual": 0.0
+  },
+  "status": "PASS",
+  "tied_permuted_retrieval": {
+    "R1": 100.0,
+    "mAP": 100.0,
+    "valid_queries": 1
+  },
+  "tied_retrieval": {
+    "R1": 100.0,
+    "mAP": 100.0,
+    "valid_queries": 1
+  },
+  "total": 56,
+  "toy_retrieval": {
+    "R1": 50.0,
+    "mAP": 66.66666666666666,
+    "valid_queries": 2
+  },
+  "zero_probe": {
+    "cosine": 0.0,
+    "r2": -0.011833340706207007
+  }
+}

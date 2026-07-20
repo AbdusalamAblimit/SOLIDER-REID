@@ -1,0 +1,70 @@
+{
+  "clip_budget_mean": 0.6249899864196777,
+  "clip_budget_std": 0.4826357364654541,
+  "clip_cycle_budget_mean": 0.13236936926841736,
+  "contract_sha256": "da0f6cd1defdb4743c2be20ce2199c612210a3605f1e8960afcd3d35480ebc69",
+  "core_sha256": "ec716a660158b302cf5e3622fdaa60b79767ddd8f81f73f31e14d28edeccaf65",
+  "donor_free_probe": {
+    "cosine": 0.9999999007463837,
+    "r2": 0.9999998811913766
+  },
+  "experiment": "exp405",
+  "forbidden_access": {
+    "checkpoint": 0,
+    "clip": 0,
+    "cuda": 0,
+    "official_data": 0,
+    "pose": 0
+  },
+  "gates": {
+    "all_geometry_valid": true,
+    "clip_budget_sample_specific": true,
+    "clip_cycle_changes_budget": true,
+    "correct_beats_all_semantic_controls": true,
+    "cpu_only": true,
+    "donor_free_probe_beats_zero_cosine": true,
+    "donor_free_probe_positive_r2": true,
+    "five_slot_pool_shape": true,
+    "geometry_not_reused_as_support": true,
+    "global_gap_pool_mutant_caught": true,
+    "metric_reports_map_and_r1": true,
+    "metric_toy_exact": true,
+    "null_exact_identity": true,
+    "pid_split_complete": true,
+    "pid_split_disjoint": true,
+    "primary_deletion_exact_50pct": true,
+    "random_residual_probe_mutant_caught": true,
+    "self_restore_exact_on_constant_slot_fixture": true,
+    "slot_masses_positive": true,
+    "slot_permutation_equivariant": true
+  },
+  "minimum_correct_margin": 0.05428987020857448,
+  "ordering_utility": {
+    "NULL": -0.05976543582012657,
+    "correct": -0.005475565611552092,
+    "generic": -0.10239627633758158,
+    "random_cluster": -0.09557095623705088,
+    "random_key": -0.20175200363751286,
+    "same_id_wrong_slot": -0.11602848791259975,
+    "self_restore": -0.0,
+    "wrong_id_same_slot": -0.07872071966454532
+  },
+  "passed": 20,
+  "random_target_probe": {
+    "cosine": 0.08640118451424376,
+    "r2": -0.9331221723673042
+  },
+  "scope": "synthetic CPU/static contract only; no scientific evidence",
+  "seed": 20260720,
+  "slot_permutation_max_abs": 0.0,
+  "status": "PASS",
+  "total": 20,
+  "toy_retrieval": {
+    "R1": 100.0,
+    "mAP": 100.0
+  },
+  "zero_probe": {
+    "cosine": 0.0,
+    "r2": -0.04848594775837278
+  }
+}

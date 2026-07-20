@@ -4129,3 +4129,26 @@ formal终审最终否定SPK：correct与wrong几乎相同，generic略优，NULL
 更低只说明任意强扰动会伤害descriptor，不能证明正确语义拥有排序。由此关闭“把单图CLIP/student evidence作为
 final feature乘法因子”的创新解释；下一pose+CLIP候选必须改变训练或跨图结构对象，并且目标应直接带来D0增益，
 不能再把sample evidence注入位置换名重试。
+
+### exp405候选：CAVT二维反事实解剖视图运输
+
+**状态**：`BROAD NOVELTY NO-GO / NARROW PROBLEM+EVIDENCE CONDITIONAL GO / STUDENT NO-START`
+
+“CLIP选槽 + 同ID donor + token搬运”本身分别落入pose-aware part ReID、multi-view LUPI/KD、masked feature
+recovery与TokenMix/SPT近邻，不能直接包装创新。当前可争差分被收紧为一个完整对象：在单RGB固定descriptor
+ReID中，以original/deleted/donor提供可观察target，让同一pose-defined anchor同时负责slot定位、局部读取与
+中间stage回写，并用identity轴 x slot轴二维反事实证明CLIP双编码状态拥有可执行转移，而非普通条件扰动。
+
+最低成立门不是涨点，而是teacher端和donor-free student端都满足same-ID/same-slot分别高于
+same-ID/wrong-slot与wrong-ID/same-slot，并击败pose-only、image-only、text-only、generic、NULL、random-key
+和frequency-matched random-cluster。CLIP若只提高donor筛选、不控制residual地址/预算/内容，降级为普通
+multi-view completion；多stage若不超过semantic single-stage，只能判层级增益不成立。
+
+第二轮近邻审计确认，机制项目前仍不成立。最小Phase 0还必须加入MVI²P-full、pose-part、
+attribute-relation与generic-transport对照，并证明teacher residual在held-out PID上可由单图`not-k`状态预测。
+只有这些门全部成立后才允许重新设计production operator；不能把oracle闭式公式直接包装成方法。
+
+static v14的`56/56 PASS`及`0B/0H/0M/0L`盲审只说明二维干预和donor-free门可以被无歧义实现，不增加
+CAVT的新颖性分数，也不是teacher有效证据。创新判断的下一信息增益只来自真实train-only数据：correct是否在
+identity轴与slot轴上同时拥有顺序、CLIP是否独立胜过pose-only，以及held-out PID transition是否可预测。
+因此不再投资静态启动器变体。

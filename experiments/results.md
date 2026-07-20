@@ -3073,3 +3073,22 @@ result/manifest SHA=
 
 **最终判定**：`VALIDITY PASS / SPK MECHANISM NO-GO / EXP404 SEALED`。NULL去掉乘积后反而提高mAP/R1，说明
 当前final-factor绑定伤害排序；禁止调旧臂，下一步转入新pose+CLIP机制的文献/代码审计。
+
+## exp405 CAVT设计与train-only可行性边界（2026-07-20）
+
+exp405当前只有设计与只读统计，没有新增性能结果。official train split共`15,618`图、`702`个PID；
+`702/702` PID具有跨camera样本，`15,618/15,618`图都可找到same-ID/different-camera donor，`510`个PID覆盖
+至少3个camera。该覆盖不等于逐slot高语义support。
+
+新对象以original / slot-deleted recipient / real cross-camera donor构造可观察target，冻结双编码CLIP只校准
+内部slot state，TAPF在中间stage执行gather-transform-scatter；推理仍为单RGB固定descriptor。Phase 0预注册
+identity轴 x slot轴二维反事实、pose/image/text单轴、generic/NULL/random-key/random-cluster与self-restore上界。
+
+**当前判定**：`BROAD NOVELTY NO-GO / NARROW PHASE-0 CONDITIONAL GO / STATIC IMPLEMENTING /
+FORMAL NO-START / GPU IDLE`。旧raw patch、PC-MBCLS、image-only PCA与SPK负结果均不被改写。exp405只验证
+region-isolated五槽teacher、二维反事实和donor-free可预测性，不创建训练config。
+
+Phase 0 static最终以v14封口。两次fresh CPU执行均`56/56 PASS`，canonical payload byte-exact，SHA256=
+`6d073b72894c65236a53ee52d8e1d868e8492c60cc69ade139d57d0560130ee3`；最终七文件盲审为
+`0 BLOCKER / 0 HIGH / 0 MEDIUM / 0 LOW`。v11--v13只保留为历史不授权产物。该结果不是CLIP、mAP/R1或
+涨点证据，只授权实现真实teacher measurement；GPU、正式config和训练仍未启动。
