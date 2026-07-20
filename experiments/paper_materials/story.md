@@ -2393,3 +2393,6 @@ static v1随后被三路盲审否决，v2两次`17/17 PASS`也仍不进入论文
 
 exp406最终因Torch 1.13 cache自检兼容问题SEALED-FAIL，未发布result/COMPLETE，不能进入论文表或支持机制结论。
 exp407若修复该测量器，只恢复科学问题的可测性，不构成论文贡献。
+
+exp407启动前的MMPOSE-ABU roundtrip PASS和盲审0B/0H仍不得进入论文结果表。只有formal teacher强反事实与后续
+student相对clean D0的mAP/R1才可能支持CAVT叙事。

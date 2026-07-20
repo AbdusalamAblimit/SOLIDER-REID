@@ -4185,3 +4185,6 @@ C类会议的清晰机制与实际涨点，但仍保留clean D0、同epoch mAP/R
 
 exp406的cache自检runtime失败不改变CAVT创新判断；它发生在结果发布层，不是teacher机制证据。exp407只做受信任
 cache roundtrip兼容修复，同样不计创新。若exp407机械PASS，应立即推进formal科学裁决，避免继续在基础设施停留。
+
+exp407 targeted roundtrip与盲审0B/0H仅恢复可测性，不满足创新门槛。后续创新判断只看formal是否建立pose-region
+CLIP evidence的强反事实顺序，以及student相对clean D0是否自然e120涨点；任一失败即换下一训练对象。

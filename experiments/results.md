@@ -3193,3 +3193,11 @@ seal，当前处于15,618图original编码，尚无COMPLETE、科学结果或ReI
 
 **最终判定**：`EXP406 SEALED-FAIL / CACHE SELF-CHECK RUNTIME FAILURE / SCIENCE NOT EVALUATED`。这不是CAVT
 科学NO-GO，也没有ReID mAP/R1；修复只能进入fresh exp407。
+
+### exp407：受信任cache回读兼容（启动前）
+
+exp407只把同进程刚写出、rename发布前的受信任临时cache回读改为`weights_only=False`，fresh迁移所有execution、
+schema、output和asset。core/teacher与exp406 byte-exact；donor保留历史冻结salt，科学排序不漂移。固定MMPOSE-ABU
+Torch 1.13.1两次mixed tensor/metadata roundtrip均PASS且byte-exact SHA=
+`f24577f8f8d31f7824cab15fc3c3ccddf27ca6c5c11c3de37346250fd105e326`。聚焦盲审首轮1B/0H，修复donor salt
+漂移后闭环`0B/0H`。当前只有运行授权，没有teacher科学结果或ReID mAP/R1。

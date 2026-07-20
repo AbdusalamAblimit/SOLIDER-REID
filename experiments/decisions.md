@@ -5873,3 +5873,9 @@ exp406已完成全部真实teacher计算，但在result/COMPLETE前被Torch 1.13
 **决策**：永久封板exp406为`SEALED-FAIL / SCIENCE NOT EVALUATED`；建立fresh exp407，仅把本进程刚写出的受信任
 cache回读自检改为`weights_only=False`，其余teacher、donor、controls、阈值和数据路径不变。先做一个针对性
 MMPOSE-ABU roundtrip合同与代码盲审，通过后立即启动fresh preflight，不继续扩张static。
+
+### [2026-07-21] 决策：授权exp407唯一fresh preflight
+
+固定MMPOSE-ABU targeted roundtrip两次byte-exact PASS；盲审发现并修复donor salt漂移后闭环`0B/0H`。因此不再
+追加static，进入fresh远端隔离仓库、asset/input SHA、once-only路径与GPU独占核对；全部通过即启动唯一
+`exp407-p0b-preflight-v1`。该授权不等于formal或student授权，preflight PASS后必须先发布完整receipt。
