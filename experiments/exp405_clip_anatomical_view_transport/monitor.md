@@ -1,8 +1,7 @@
 # exp405 CAVT 监控记录
 
 > 当前：`BROAD NOVELTY NO-GO / NARROW PHASE-0 CONDITIONAL GO / REAL-TEACHER STATIC V10 REMOTE PASS /
-> MMPOSE-ABU FROZEN / THREE-WAY BLIND REVIEW PASS / CUDA PREFLIGHT AUTHORIZED /
-> FORMAL P0B NO-START / GPU IDLE`
+> MMPOSE-ABU FROZEN / EXP405 PREFLIGHT V1 SEALED-FAIL / FORMAL P0B NO-START / GPU IDLE`
 
 ## 2026-07-20：exp404后根因边界
 
@@ -140,3 +139,18 @@ workers4启动唯一`exp405-p0b-preflight-v1`。
 进程PID=`455109`，已取得immutable started seal并写入`started.json`；首个original batch已进入，GPU观测为
 `2362 MiB / 94%`，FAILED receipt不存在。当前判断=`CONTINUE`：只监控自然完成，不修改远端运行中源码、
 protocol或参数，不按中间结果早停。该preflight只裁决机械有效性，不计算科学GO或mAP/R1。
+
+## 2026-07-21：exp405 preflight v1自然失败并永久封板
+
+唯一进程完成512图original编码后，在选择same-camera/different-PID wrong-mask donor时抛出
+`RuntimeError: no wrong-mask donor satisfies the frozen balance caliper`，未产生result/complete。权威
+`failure.json`已存在，SHA256=`cdfb223d7a226e7b800a556a5827c91e8feaad39dd6e18684a49a6bdd35abc38`；
+started/result console SHA分别为`abc784e2ced01724563ae620bb5640a0fc5746b794187d2963ba46f14c06051b`/
+`011bf7f0556453d33733a097852db7a4c6bd23040d37c4e9c972cb46b83186f7`，immutable started seal SHA=
+`4efe282d045f8b0fcce3823345665fc8faad1916b4aa1da4b1721d6e8a6ec4de`。远端HEAD仍`ded9ebd`且tracked clean，
+GPU已回到`2 MiB / 0% / 0 compute PID`。
+
+判定=`EXP405 PREFLIGHT V1 SEALED-FAIL / MEASUREMENT CANDIDATE-POOL CONTRACT FAILURE / SCIENCE NOT
+EVALUATED`。MMPOSE-ABU与CLIP original编码已真实工作，不能把本次写成环境失败或CAVT科学NO-GO；同一execution
+禁止重跑、补跑或改判。只允许在独立新实验编号下先冻结候选池修正、CPU/static正反合同与盲审，再决定是否
+创建fresh preflight；formal P0B、transport和student继续NO-START。

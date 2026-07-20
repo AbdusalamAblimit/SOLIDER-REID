@@ -3141,3 +3141,14 @@ preflight本身没有epoch，因此此处没有mAP/R1；未来student仍按e10/2
 `1.13.1`，CUDA前后均未初始化。4090复核为`2 MiB / 0% / 0 compute PID`，preflight output/seal/FAILED均
 fresh。**更新判定**：`V10 REMOTE MMPOSE-ABU STATIC PASS / 512-IMAGE CUDA PREFLIGHT AUTHORIZED /
 FORMAL P0B NO-START / STUDENT NO-START`。
+
+## exp405 MMPOSE-ABU 512图CUDA preflight v1（2026-07-21）
+
+唯一execution已取得started seal并完成512图original region-isolated CLIP编码，证明MMPOSE-ABU、真实CLIP资产、
+official RGB/pose同步路径和CUDA主路径可以工作；随后wrong-mask配对在冻结`8.0` balance caliper下找不到合格
+same-camera/different-PID donor，抛出runtime错误。`failure.json` SHA256=
+`cdfb223d7a226e7b800a556a5827c91e8feaad39dd6e18684a49a6bdd35abc38`，result/complete均不存在，GPU自然释放。
+
+**最终判定**：`EXP405 PREFLIGHT V1 SEALED-FAIL / SCIENCE NOT EVALUATED / FORMAL P0B NO-START /
+STUDENT NO-START`。该失败既不是MMPOSE-ABU不兼容，也不是CAVT科学NO-GO；它只封板当前512图候选池合同。
+同编号禁止重跑或补跑，修正只能进入独立新实验编号。

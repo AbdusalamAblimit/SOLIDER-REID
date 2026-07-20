@@ -4169,3 +4169,6 @@ v10只修复MMPOSE-ABU Python 3.8下的AST合同兼容，三路盲审无B/H。�
 
 远端MMPOSE-ABU v10 static通过只关闭运行时歧义，不提高CAVT创新评分。512图preflight仍只测机械接线；只有
 后继full-train P0B的真实二维反事实才可能产生科学信息增益。
+
+exp405 preflight v1只暴露512图子集内wrong-mask候选池不足，未计算任何科学指标，因此不改变CAVT的创新评分，
+也不能被当作机制负证据。后继若修正，只能扩大/重构机械候选池合同，不能放宽正式caliper或删减强反事实。

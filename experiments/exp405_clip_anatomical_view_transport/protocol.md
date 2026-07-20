@@ -93,6 +93,11 @@ MMPOSE-ABU完成两次static并通过CUDA未初始化与GPU独占复核，才可
 `07eeb98692e6d8f54f7bc25dee3fc21803434f4d83ee8e9d33a01a44101123ce`；CUDA前后均未初始化，4090独占且
 fixed preflight output/seal/FAILED全fresh。因此串行门5通过，只授权按本protocol启动唯一512图preflight。
 
+唯一`exp405-p0b-preflight-v1`随后在started seal之后因512图执行子集内没有满足冻结balance caliper的wrong-mask
+donor而失败，权威`failure.json`已落盘。该execution永久封板，禁止同编号重跑、补跑、改变caliper或改判；
+formal P0B不获授权。任何候选池合同修正必须使用独立新实验编号、fresh execution/output/assets，并重新经过
+design、static/CPU正反合同和代码盲审。
+
 ## 机械有效性
 
 必须记录RGB/pose同步变换、左右翻转、mask mass/centroid/index/hash、CLIP normalization、16x16 patch布局、

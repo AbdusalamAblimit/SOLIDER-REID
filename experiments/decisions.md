@@ -5820,3 +5820,13 @@ CUDA或启动GPU。该错误属于合同兼容性，不是MMPOSE-ABU、MMPose、
 远端连接恢复后，v10已在MMPOSE-ABU中连续两次`8/8 PASS`且byte-exact，CUDA未初始化、GPU独占、fresh输出门
 全部通过。**更新决策**：授权立即启动唯一512图CUDA preflight；只裁决机械有效性，formal P0B和student仍
 NO-START。
+
+### [2026-07-21] 决策：exp405 preflight v1候选池合同失败，SEALED且不重跑
+
+唯一preflight完成512图original编码后，冻结wrong-mask matcher在该执行子集内找不到满足`8.0` caliper的
+same-camera/different-PID donor；权威failure receipt已写入，GPU回到空闲。该失败发生在科学指标之前，不能
+解释为MMPOSE-ABU、CLIP或CAVT机制失败。
+
+**决策**：永久封板`exp405-p0b-preflight-v1`为`SEALED-FAIL / SCIENCE NOT EVALUATED`，不重跑、不补跑、不
+放宽caliper或删除control。formal P0B、transport和student继续NO-START。只有独立新编号先冻结不改变正式科学门
+的候选池合同修正，并通过CPU/static、fresh资产和三路代码盲审，才可授权新的preflight。

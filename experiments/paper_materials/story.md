@@ -2377,3 +2377,7 @@ Phase 0 static v14已通过两次byte-exact `56/56`合同和最终`0B/0H/0M/0L`�
 
 远端v10已在MMPOSE-ABU中两次byte-exact通过，因而只授权512图机械preflight。该运行时结果不进入论文性能表，
 也不改变story的条件候选状态；formal P0B未开始。
+
+唯一exp405 preflight v1在完成512图original编码后因wrong-mask候选池不足而SEALED-FAIL，尚未计算二维反事实、
+科学GO或mAP/R1。该记录不进入论文结果表，也不支持CAVT正面或负面叙事；story继续停在条件候选，formal与
+student均未开始。
