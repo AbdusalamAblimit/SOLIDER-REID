@@ -258,3 +258,15 @@ retrieval ownership。
 
 **裁决**：关闭当前ELO-CUR对象，禁止重跑、补跑、续训或通过调rho/loss/batch/stage、mask及删除control
 救活。下一候选必须重新定义最终检索对象或结构所有权，不能把ELO-CUR换名继续。
+
+### exp403后候选审计：terminal concept-only / minimal bottleneck
+
+**状态**：`LITERATURE/CODE AUDIT ONLY / INNOVATION GATE FAIL / NO EXP404`
+
+CHAIR已覆盖concept edit后的归一化retrieval；IntCEM已覆盖干预轨迹与干预后task loss；MCBM已覆盖逐概念
+minimality/IB；SupCBM、MM-CBM和Caption Bottleneck Models又分别覆盖hard leakage control、concept-only
+相似度和严格隔离语义通道。PDiscoNet的无监督part slot也不能提供external evidence ownership。
+
+**裁决**：`terminal concept-only subspace + minimality + intervention-aware loss`是已有原子的组合，不满足
+机制创新门；direct-sum/fixed norm也只能强迫数值扰动，不能证明正确语义所有权。继续查source-attributed
+representation与interventional path completeness；没有新的结构原理前不编号、不做CPU/CUDA实验。

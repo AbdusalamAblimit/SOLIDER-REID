@@ -53,18 +53,149 @@ augmentation或stage既不回应exp403，也违反当前“不增加stage救旧�
 让语义槽本身进入检索距离，比在global descriptor内部做小残差更难被绕过。但直接复刻会落入已有part-based
 ReID与retrieval-side visibility融合，并需要当前冻结边界外的解析资产；不足以作为新贡献。
 
-## 4. 当前筛选结论
+## 4. 近邻代码审计三：CHAIR（IJCAI 2024）
 
-本轮新增排除两类看似相关但不合格的方向：
+- 论文：*Are They the Same Picture? Adapting Concept Bottleneck Models for Human-AI Collaboration in Image Retrieval*
+- arXiv：<https://arxiv.org/abs/2407.08908>
+- 官方代码：<https://github.com/realize-lab/CHAIR>
+- 审计commit：`8efe5a6e3f1369e558481e488645c0afbe9fb341`
+
+代码事实：
+
+- `FuseCBM.get_fused_embedding`先从backbone embedding预测concept，再执行
+  `fused = x + fuse_layer(concepts)`；这与已失败路线一样，允许原始visual embedding绕过concept edit；
+- `get_fused_embedding_with_intervention`用人工修正的concept重算同一加法edit；
+- `chair_retrieval.py`和`intervene.py`都对fused embedding做`F.normalize(..., dim=1)`，直接以它执行
+  Recall@1/5/10；概念干预确实落在最终归一化检索向量，而不是只用于解释分类头。
+
+裁决：`concept correction -> additive embedding edit -> normalized retrieval`已有直接强先例。CHAIR没有
+matched wrong-RGB/generic/NULL/all-bypass合同，也没有切断原始embedding的bypass；但它足以排除“把概念
+修正直接加到最终检索向量”作为新机制。这个结构与exp402/403暴露的shortcut同型，不能再换名重开。
+
+## 5. 近邻代码审计四：Minimal Concept Bottleneck Models（ICLR 2026）
+
+- 论文：*There Was Never a Bottleneck in Concept Bottleneck Models*
+- arXiv：<https://arxiv.org/abs/2506.04877v3>
+- 官方代码：<https://github.com/antonioalmudevar/minimal_cbm>
+- 审计commit：`9ba535c8d8e4a5b54e801a31d9db3d819d0910ab`
+
+论文与代码事实：
+
+- 论文精确指出：`z_j`能预测`c_j`不等于`z_j`只编码`c_j`，传统CBM/CEM可保留nuisance并使概念干预失真；
+- MCBM以每个概念表示的minimal sufficient statistic为目标，通过variational information-bottleneck
+  regularization压缩`I(Z_j; X | C_j)`；
+- 当前公开`src/models/mcbm.py`将该约束具体化为每个`z_j`向仅由`c_j`确定的固定logit目标回归，
+  `total = task + beta * concept + gamma * representation`，实现中representation项是逐概念MSE；
+- 论文也明确承认：概念不完备且任务需要nuisance时，清除这些信息必然降低任务性能。
+
+裁决：exp402/403的“proxy active但final ownership失败”与该信息泄漏诊断高度一致。然而，单独给当前
+evidence code增加IB/MSE/minimality loss，只是把公开MCBM移植到ReID，而且很可能牺牲身份充分性；它最多
+满足问题/证据门，机制门不足。`terminal subspace + minimality`目前只能作为待审原子，不能据此建立exp404。
+
+## 6. 近邻代码审计五：IntCEM（NeurIPS 2023）
+
+- 论文：*Intervention-aware Concept Embedding Models*
+- arXiv：<https://arxiv.org/abs/2309.16928>
+- 官方代码：<https://github.com/mateoespinosa/cem>
+- 审计commit：`d67716cf8435961b41087ec884f92c74e475d890`
+
+代码事实：
+
+- `IntAwareConceptBottleneckModel`在训练中采样多步intervention trajectory，并逐步更新已干预concept mask；
+- 对每个候选concept，它用干预后的task logit为当前真实label计算oracle target，再训练
+  `concept_rank_model`预测下一次应干预哪个concept；
+- 轨迹内部显式重算intervention后的task loss；代码注释还专门覆盖“用户此前提供的干预可能错误”的情形；
+- 最终总目标同时包含concept loss、intervention-policy imitation loss和intervention后的task loss。
+
+裁决：训练期暴露于干预、学习干预策略、用干预后task loss优化可干预性均已有完整先例。因此
+“把wrong/NULL分支放进训练”或“在干预后再算ID loss”不能单独构成创新。IntCEM仍以分类/人类干预为对象，
+没有标准欧氏instance retrieval、matched donor正目标或all-bypass终审；这些是尚存问题边界，不是现成机制。
+
+## 7. 近邻代码审计六：PDiscoNet（ICCV 2023）
+
+- 论文：*PDiscoNet: Semantically Consistent Part Discovery for Fine-grained Recognition*
+- 官方代码：<https://github.com/robertdvdk/part_detection>
+- 审计commit：`eec53f2f40602113f74c6c1f60a2034823b0fcaf`
+
+代码事实：
+
+- `IndividualLandmarkNet`从ResNet layer3/4拼接feature，通过prototype-distance map得到`K+1`个softmax
+  part maps，再按map加权池化每个part feature；
+- 分类logit来自每个part的线性头并在part维求均值；训练联合classification、concentration、presence、
+  equivariance和orthogonality五项loss；
+- 它学习无关键点监督的语义一致part，但没有外部sample evidence、概念干预或检索ownership目标。
+
+裁决：unsupervised part discovery可以生成更结构化的终端槽，但不能解决“正确外部evidence是否拥有最终排序”。
+把PDisco part slot接到当前route仍是常见part module拼接，且不会自动阻断shared visual trunk的shortcut，排除。
+
+## 8. 最新硬/终端瓶颈边界：SupCBM、MM-CBM与CaBM
+
+### 8.1 SupCBM（2024）
+
+*Eliminating Information Leakage in Hard Concept Bottleneck Models with Supervised, Hierarchical Concept Learning*
+（<https://arxiv.org/abs/2402.05945>）已经说明二值hard concept仍会借无关concept携带类别信息。其SupCBM
+用层级concept set、label-supervised concept prediction和稀疏intervention matrix取代普通label predictor。
+所以“硬化/离散化concept即可无泄漏”不成立，hard bottleneck本身也不是新机制。
+
+### 8.2 MM-CBM（2026-06）
+
+- 论文：*Multimodal Concept Bottleneck Models*（<https://arxiv.org/abs/2606.19882>）
+- 官方代码：<https://github.com/Trustworthy-ML-Lab/Multi-Modal-CBM>
+- 审计commit：`7add51b96c99f7bb8e7d55c3bfbbc2c8137122b8`
+
+MM-CBM使用image/text双Concept Bottleneck Layer，把两种CLIP embedding投到同一个非负concept space；
+`cbm_MM.py`在归一化后的concept response上直接计算top-k elementwise product similarity和contrastive/class
+loss。论文明确主张预测“solely on concept responses”，并给出image-text retrieval case study。这是
+`terminal concept-only metric`的最新直接先例；其任务不是image-image person ReID，也没有matched wrong
+evidence，但已足够排除“最终距离只看concept vector”本身的新颖性。
+
+### 8.3 Caption Bottleneck Models（2026-07）
+
+*Caption Bottleneck Models*（<https://arxiv.org/abs/2607.00578>，代码：
+<https://github.com/bariscagliyan/CaptionBottleneckModels>）让冻结LMM先生成attribute-centric captions，
+下游分类器只读离散文本且不看pixel，作者据此称为leakage-free by construction。它进一步占用了“通过严格
+隔离上下游、让终端任务只读语义通道来阻断bypass”的结构叙事。但它依赖测试时LMM/caption，不满足当前
+teacher-free RGB-only部署合同，也不解决标准欧氏instance retrieval。
+
+裁决：`hard/terminal bottleneck`、`concept-only metric`、`strictly isolated semantic channel`均已有近期
+强先例。把它们与MCBM minimality或IntCEM intervention loss简单组合，仍是CBM原子的工程拼装，不满足当前
+机制创新门。
+
+## 9. 辅助近邻与边界
+
+- DSANet/FDL（<https://arxiv.org/abs/2212.09498>）交换identity/camera factor做辅助分类，测试只取identity
+  factor；它研究factor disentanglement，不建立sample evidence ownership；
+- ISR（<https://arxiv.org/abs/2308.08887>）用可靠性引导正样本匹配，不执行外部evidence intervention；
+- TokenMatcher（AAAI 2025，<https://doi.org/10.1609/aaai.v39i8.32855>）做multi-token matching与cluster
+  memory，不证明correct/wrong/NULL evidence的因果顺序。
+
+这些工作没有给出当前问题的同构答案，但也不能被当作“加一个disentanglement、reliability或token匹配模块”
+的创新许可。
+
+## 10. 当前筛选结论
+
+本轮累计排除以下看似相关但不合格的方向：
 
 1. `saliency mask + patch transfer + extra stage`：问题对象仍是增强，不是ownership；
 2. `part decoder + visibility-weighted pairwise distance`：已有强先例，且回到被长期探索的retrieval-side路线。
+3. `concept correction + additive final embedding edit`：CHAIR已直接覆盖，且保留原始embedding bypass；
+4. `training-time intervention + post-intervention task loss`：IntCEM已系统覆盖；
+5. `IB/minimality regularizer`：MCBM已精确定义并开源，单独移植没有机制新意；
+6. `hard/terminal concept-only bottleneck`：SupCBM、MM-CBM和CaBM已覆盖三种强形式；
+7. `unsupervised part slot + existing route`：PDiscoNet只提供part discovery，不提供ownership。
 
-目前没有候选通过创新门槛，故不建立exp404、不写formal config、不运行CPU/CUDA/GPU。下一轮查新收紧到：
+目前没有候选通过创新门槛，故不建立exp404、不写formal config、不运行CPU/CUDA/GPU。特别地，
+`terminal concept-only subspace + minimality + intervention-aware loss`只是三项公开原子的组合，不能因为更换
+loss或拼成direct-sum descriptor就升级为新机制。
+
+下一轮查新继续收紧到：
 
 - 对wrong evidence存在独立正目标、而非单纯被推远的counterfactual transport/equivariance；
-- ownership loss只允许更新evidence-dependent终端子空间，shared identity trunk对该loss严格stop-gradient；
-- 训练与最终标准欧氏检索使用同一个归一化对象，不引入pair-specific test-time scorer。
+- 结构上能证明最终标准欧氏identity descriptor对evidence path-complete，而不是靠固定norm quota宣称ownership；
+- wrong donor既不能被主动破坏，也不能被当作current identity negative后丢失其自身正目标；
+- student推理仍为单RGB、单descriptor、无teacher/text/pose和pair-specific scorer。
 
-这些只是检索条件，不是已授权机制。必须继续查阅相邻领域的conditional metric、equivariant intervention与
-identifiable bottleneck公开实现，确认不是普通conditional embedding/ranking loss后，才能决定是否形成新编号。
+这些只是检索条件，不是已授权机制。现阶段最多确认了一个尚未被上述工作直接回答的**问题/证据缺口**：
+在open-set instance retrieval中，用matched donor、generic、NULL和all-bypass同时验证sample evidence的路径
+所有权。机制层仍为空，必须继续审计source-attributed representation、interventional path completeness与
+conditional metric公开实现，确认不是普通CBM/IB/ranking/concat后，才能决定是否形成新编号。

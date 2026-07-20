@@ -3883,3 +3883,22 @@ batch变化或删control继续包装。下一轮机制学习应优先寻找一�
 或重新定义比“evidence调制descriptor”更强的结构对象；候选仍须同时回答问题/机制/证据至少两项，先保留
 wrong/generic/NULL/all-bypass强反事实，再决定是否值得进入新编号。exp401 route-alive仍是边界事实，但不能
 为任何后继机制代替semantic ownership证明。
+
+### exp403后查新：终端概念瓶颈不是现成的新机制
+
+CHAIR已经把人工修正concept经线性edit加到最终embedding，并在归一化后直接做retrieval；IntCEM已经用
+多步intervention trajectory、干预后task loss和干预策略imitation训练可干预性；MCBM则精确指出“能预测
+concept不等于latent只含concept”，并用每概念minimality/IB约束降低信息泄漏。三者分别封住了additive
+concept edit、intervention-aware training和普通minimality loss的创新空间。
+
+更强的结构替代也已有近期直接先例。SupCBM说明hard/binary concept仍会泄漏，并用层级concept与稀疏
+intervention matrix约束决策；MM-CBM让image/text双分支只在非负concept response空间计算最终相似度；
+2026-07的Caption Bottleneck Models让下游分类器严格只读冻结LMM生成的文本，以stage isolation声称
+leakage-free by construction。PDiscoNet的无监督part slot也只是结构化part discovery，不提供外部evidence
+对检索排序的所有权。
+
+因此`terminal concept-only subspace + minimality + intervention-aware loss`不能作为exp404：它是公开CBM
+原子的组合，而且fixed direct-sum/norm quota仍可能只是在数值上强迫扰动，不证明语义所有权。目前仅有
+**问题/证据缺口**可能成立：open-set instance retrieval尚缺matched donor、generic、NULL和all-bypass共同
+构成的path-complete ownership检验。机制缺口尚未找到，继续查source attribution、interventional path
+completeness与conditional metric；在至少满足问题/机制/证据两项之前不编号、不占GPU。

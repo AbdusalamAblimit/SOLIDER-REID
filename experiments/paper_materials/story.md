@@ -2182,3 +2182,11 @@ exp401“route数值存活”的窄幅边界和exp402“旧C0不是sample-specif
 exp403又排除了“把evidence升级成动态低秩算子并加入CUR即可获得ownership”的解释。下一主线若继续，必须
 让最终检索对象本身对正确/错误/NULL evidence形成不可绕过的因果顺序，或重新定义结构对象；不能通过调
 rho/loss/batch、增加stage或删掉不利control延续这条叙事。
+
+exp403后的近期查新进一步关闭了一个直觉回退：不能把最终descriptor改成concept-only/part-only bottleneck
+就宣称解决了ownership。CHAIR已做concept edit后的归一化retrieval，IntCEM已做intervention-aware task
+training，MCBM/SupCBM已系统处理soft/hard concept leakage，MM-CBM与Caption Bottleneck Models又分别覆盖
+concept-only相似度和严格隔离语义通道。当前可保留的研究缺口只在问题与证据层：open-set instance retrieval
+中的matched donor/generic/NULL/all-bypass路径完整性；机制层尚无通过创新门的对象。因此故事保持
+`POST-EXP403 OWNERSHIP AUDIT / NO EXP404 / GPU NO-START`，不把IB、hard bottleneck、direct-sum或part slot
+拼接包装成新贡献。
