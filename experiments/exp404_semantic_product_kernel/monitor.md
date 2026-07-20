@@ -246,3 +246,19 @@ eval为epoch40的`50.0 mAP / 61.1 R1`；同epoch相对clean D0为`0.0/+0.4`，�
 `+1.4/+1.9`。只记录趋势，不用于早停、best-pick或最终裁决。
 
 判定：`CONTINUE TO E120 / E40 VS D0 0.0 mAP +0.4 R1 / NO EARLY STOP`。
+
+## 2026-07-20T06:44Z：e50同epoch对照与健康检查
+
+三条对照均使用总计120 epoch并在e50评测，不以其他epoch替代：
+
+| arm@e50 | mAP | R1 | 相对exp404 |
+|---|---:|---:|---:|
+| exp404 SPK | 52.5 | 62.5 | 0.0/0.0 |
+| sealed clean D0（exp387） | 52.1 | 62.8 | exp404-D0=`+0.4/-0.3` |
+| sealed rich route（exp401） | 53.5 | 65.0 | exp404-exp401=`-1.0/-2.5` |
+
+exp404 e50完整R5/R10=`75.9/80.9`。检查时main PID=`436043`仍为唯一compute PID，GPU=
+`8,106 MiB/82%`；训练到epoch53 iter160/227，loss=`0.246`，SPK factor std=`0.1068`、descriptor
+delta abs=`1.072e-01`，均finite/active。异常扫描无Traceback、RuntimeError、OOM、NaN或Inf。
+
+判定：`CONTINUE TO E120 / E50 VS D0 +0.4 mAP -0.3 R1 / VS EXP401 -1.0 -2.5 / NO EARLY STOP`。
