@@ -81,3 +81,6 @@ SHA与runtime SHA，`formal_measurement_authorized=true`、`transport_oracle_aut
 `1ae687d2b0bf6c66cd3a4b221e5a50362506787c44a390c87dd0f52f81c2e776`。首轮观测original batch 100，GPU=
 `2362 MiB / 95%`，无failure/result/complete。当前=`CONTINUE`：自然完成前不修改源码、manifest、协议或参数，
 不按中间方向早停；student保持NO-START。
+
+heartbeat观测到formal original batch 4800，主进程仍运行，GPU=`2362 MiB / 96%`，无failure/result/complete。
+吞吐和显存稳定，判断=`CONTINUE`；不改运行中任何冻结对象。
