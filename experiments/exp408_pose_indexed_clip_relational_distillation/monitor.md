@@ -36,3 +36,9 @@ fresh生成cache并冻结SHA，不追加其它static。
 首次cache-v1后台调用在顶层`from datasets...`立即因repo根未进入`sys.path`退出；log仅237 bytes，未读official/
 pose、未初始化CUDA、未创建cache/diagnostic。v1目录冻结不复用。修复只在import前加入脚本解析出的repo root，
 cache/config改用fresh `exp408-picrd-cache-v2`；等待同一独立审查者聚焦闭环后立即执行。
+
+入口修复聚焦复审=`0B/0H`。fresh cache-v2现已启动，运行仓库=
+`/home/afr/SOLIDER-REID-exp408-picrd-0700703-v3`，远端HEAD=`021aa359e7a28dd7d814382e9fd4ca1386b91558`，
+asset/output=`/home/afr/reid-clean/assets/exp408-picrd-cache-v2`，主PID=`465720`。首次有效观测已从
+`8/15,618`推进到`1,000/15,618`，GPU=`2,186 MiB/99%`，无异常。当前只监控自然完成，不修改运行中源码；
+cache发布并核验SHA后立即写入config并启动student。
