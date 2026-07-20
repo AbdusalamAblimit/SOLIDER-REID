@@ -1,6 +1,6 @@
 # exp408 PICRD 监控
 
-> 当前：`STUDENT RUNNING / FRESH SEED1234 E120 / DO NOT MODIFY OR EARLY-STOP`
+> 当前：`SEALED NO-GO / MECHANISM ORDER PASS / PERFORMANCE FAIL`
 
 ## 2026-07-21：从 CAVT 切到直接训练对象
 
@@ -100,3 +100,24 @@ e50/60/70完整R5/R10分别为`76.8/81.5`、`77.5/82.0`、`79.5/84.0`。e60出�
 e80/90/100完整R5/R10分别为`79.6/84.0`、`80.6/84.7`、`80.8/84.6`。晚段三个点没有保持e20--e50
 的稳定双领先，当前不能称为性能GO。检查时训练已进入e108，主PID仍唯一，GPU约`7,094 MiB/91%`，异常计数
 为0；继续等待自然e120，不作任何干预。
+
+## 2026-07-21：自然e120与冻结diagnostic封板
+
+| epoch | PICRD mAP/R1 | sealed clean D0同epoch | PICRD-D0 |
+|---:|---:|---:|---:|
+| 110 | 56.9/67.4 | 57.4/67.4 | -0.5/0.0 |
+| 120 | 57.1/67.7 | 57.6/67.7 | -0.5/0.0 |
+
+唯一训练自然完成120 epoch并正常退出，e120完整rounded=`57.1/67.7/80.7/84.9`，runner异常计数为0，GPU回到
+`2 MiB/0%`。checkpoint SHA256=`6e6f9f4cdc64b54d9cbf8c2d6013f8303ae6b84c9b4a0d79ab4d1106d8f6d321`。
+虽然R1 reporter精度不足以判断相对raw门的细小差值，但mAP `57.1`已无歧义低于clean D0 raw
+`57.5587756578`，故“mAP与R1同时严格超过”性能门确定FAIL。
+
+冻结64图diagnostic执行器首审`2B/1H`，硬绑定e120 checkpoint/config/cache/manifest/source后复审`0B/0H`。
+唯一fresh诊断两遍bit-exact、common-valid=`1.0`，结果为correct=`0.0075383754`、wrong-RGB=`0.0084765423`、
+generic=`0.0266254693`、zero=`0.7184363604`，因此correct为严格最小，机制顺序PASS。diagnostic result SHA256=
+`b0cf31ad8206d5e0e6e8921f793d788fa7e79dd10fa524de0070b5920c985530`，执行后GPU仍空闲。
+
+最终判定：`EXP408 SEALED NO-GO / MECHANISM ORDER PASS / PERFORMANCE FAIL`。PICRD确实把正确pose--CLIP局部关系
+写入了Stage-2，但这种关系约束未改善最终identity retrieval；按预注册失败解释3关闭该对象，不调loss/scale/batch、
+不删control、不重跑。下一编号必须更换训练或结构对象。

@@ -2414,3 +2414,8 @@ backbone。
 跨batch关系，并把correct、wrong-RGB、generic、zero直接纳入排序。测试期仍是clean D0的单RGB global
 descriptor。文献审计认为它没有完整同构实现，但只够C类定位；只有自然e120同时超过clean D0 mAP/R1且correct
 关系稳定优于三个强control，才允许进入正面story。当前仍为设计/实现阶段，没有新性能结果。
+
+exp408现已完成并退出正面story。冻结64图diagnostic中correct关系距离严格低于wrong-RGB/generic/zero，证明
+pose-indexed CLIP binding确实进入了Stage-2；但自然e120=`57.1/67.7`，未超过clean D0=`57.6/67.7`，因此
+性能前置门FAIL。该组合只能作为“语义关系可学但与identity retrieval不等价”的负向机制证据，不能包装成C类
+论文主方法。下一story必须把pose+CLIP作用到身份判别对象，而不是继续更换局部relation蒸馏形式。

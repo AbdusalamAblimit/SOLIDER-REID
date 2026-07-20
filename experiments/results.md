@@ -3241,3 +3241,13 @@ fresh cache-v2已自然完成15,618图并通过loader/official覆盖/diagnostic�
 `80db6448a38745a7846bbb1ffb63d868b4efcda8851bc069cd8166dc311cebee`，64图diagnostic manifest SHA256=
 `8ef842f98a1172d7c8c197828cb3d4fda2006ced52062c9608569da5be62cff8`，其中offset 4均为different-PID且五槽
 共同valid全为64。该结果只证明冻结teacher输入有效，不是ReID性能；唯一fresh seed1234 student现获启动授权。
+
+唯一fresh student已自然完成e120并正常退出。完整rounded轨迹终点=`57.1 mAP / 67.7 R1 / 80.7 R5 / 84.9 R10`，
+clean D0同epochrounded=`57.6/67.7/80.8/84.6`；PICRD-D0=`-0.5/0.0/-0.1/+0.3`。由于mAP无歧义低于
+clean D0 raw `57.5587756578`，性能双门FAIL。checkpoint SHA256=
+`6e6f9f4cdc64b54d9cbf8c2d6013f8303ae6b84c9b4a0d79ab4d1106d8f6d321`。
+
+冻结64图e120 diagnostic在执行器盲审闭环`0B/0H`后唯一执行：correct/wrong-RGB/generic/zero=
+`0.0075383754/0.0084765423/0.0266254693/0.7184363604`，common-valid=`1.0`且两遍bit-exact，机制顺序PASS；
+result SHA256=`b0cf31ad8206d5e0e6e8921f793d788fa7e79dd10fa524de0070b5920c985530`。最终=
+`EXP408 SEALED NO-GO / MECHANISM ORDER PASS / PERFORMANCE FAIL`：关系binding可学，但没有转化为ReID涨点。

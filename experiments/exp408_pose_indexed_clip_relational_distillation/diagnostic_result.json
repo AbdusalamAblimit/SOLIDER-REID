@@ -1,0 +1,36 @@
+{
+  "cache_sha256": "80db6448a38745a7846bbb1ffb63d868b4efcda8851bc069cd8166dc311cebee",
+  "checkpoint": "/home/afr/reid-clean/logs/exp408-picrd-s1234-v1/transformer_120.pth",
+  "checkpoint_sha256": "6e6f9f4cdc64b54d9cbf8c2d6013f8303ae6b84c9b4a0d79ab4d1106d8f6d321",
+  "common_valid_fraction": 1.0,
+  "config": "/home/afr/SOLIDER-REID-exp408-picrd-0700703-v3/configs/occluded_duke/swin_tiny_tapf_picrd_exp408.yml",
+  "config_sha256": "798b806f04f63627ee2e5db4f67ec6c56a91d8447ee8c41f521307c634846433",
+  "controls": {
+    "generic": 0.02662546932697296,
+    "wrong_rgb": 0.008476542308926582,
+    "zero": 0.7184363603591919
+  },
+  "correct": 0.007538375444710255,
+  "correct_is_strict_minimum": true,
+  "diagnostic_manifest": "/home/afr/reid-clean/assets/exp408-picrd-cache-v2/diagnostic_manifest.json",
+  "diagnostic_manifest_sha256": "8ef842f98a1172d7c8c197828cb3d4fda2006ced52062c9608569da5be62cff8",
+  "evaluator_sha256": "86f390865fdee5784bcc0fafe7f6f4a8d601678eed489232d8b44c0d8fa65ec0",
+  "experiment": "exp408_pose_indexed_clip_relational_distillation",
+  "identities": 16,
+  "loss": 0.5995085835456848,
+  "mechanism_order_pass": true,
+  "ranking": 0.5919702053070068,
+  "repeat_exact": true,
+  "runner_log": "/home/afr/reid-clean/train-logs/exp408-picrd-s1234-v1.runner.log",
+  "runner_log_sha256": "edcd1bf7ddbe4155a0e5a977b90a92afc7de55b67ca0d9b2d7a8878a62c174b1",
+  "samples": 64,
+  "schema": "exp408-picrd-diagnostic-result-v1",
+  "source_head": "86496f0062d7553062567e7d2bbcb371a24ef500",
+  "source_sha256": {
+    "model/backbones/swin_transformer.py": "45e020d20e42db3695a27b123ec9ad76c7c6d4498255c340537a75d6c3665036",
+    "model/make_model.py": "b68d5a0e1d85edf4411cb69c86646d40d11223b506eaccd8a42ad57335950487",
+    "model/pose_clip_relation.py": "fbd3e137a729f44d3179864f9978bd8846b22e8627a3c311747b0a2541092864",
+    "model/tapf.py": "79b12d764c2c72be76ae3a2a3f19b2168f07ad15ac470b517415bba7dd0dea37"
+  },
+  "wrong_rgb_shift": 4
+}

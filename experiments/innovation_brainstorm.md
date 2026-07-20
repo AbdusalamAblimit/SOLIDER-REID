@@ -4212,3 +4212,13 @@ clean D0、wrong-pose/zero-pose反事实和ReID mAP/R1形成证据，禁止再�
 
 该组合未发现公开同构实现，但π-VL、ProFD、PAFormer、KPR、MUVA和CVPR26 Composite-Attribute ReID覆盖了
 大部分原子，因此定位为C类候选。若退化为per-slot cosine/KL或feature add，立即失去机制新意。
+
+### exp408封板后的创新判断
+
+PICRD的证据门只通过一半：冻结diagnostic证明实例级正确binding可学，排除了“CLIP局部target完全无信息”和
+“实现未反传”两种解释；但自然e120 mAP低于clean D0，说明仅让Stage-2复现逐槽跨图关系，并不会自动增强
+identity-discriminative retrieval geometry。因而“relation KD本身就是贡献”的叙事关闭。
+
+下一候选不能再换一种relation/cosine/KL或在同一路径上调权。它必须让pose+CLIP直接参与身份判别对象的构造，
+例如改变正负样本、身份原型或可见证据一致性，而非只约束中层相似矩阵；同时仍需wrong-RGB/generic/zero等强
+反事实证明收益来自正确绑定。问题/机制/证据创新门重新评估，不继承PICRD的C类资格。

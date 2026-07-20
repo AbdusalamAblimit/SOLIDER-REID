@@ -5916,3 +5916,13 @@ correct-vs-wrong/generic/zero无temperature排序、未detach Stage-2直传。�
 64图强诊断也已完整核验并冻结SHA。**更新决策**：不再做额外CPU/static或小样本preflight，立即启动唯一fresh
 seed1234/e120 student；运行中不改代码/config、不续训、不按中间性能早停，e10/20/.../120只与sealed clean D0
 同epoch并排记录。
+
+### [2026-07-21] 决策：exp408机制顺序成立但性能失败，封板并换对象
+
+唯一fresh训练自然e120=`57.1/67.7/80.7/84.9`，mAP低于clean D0 raw `57.5587756578`，性能双门FAIL。
+冻结64图diagnostic则建立correct=`0.0075383754`严格低于wrong/generic/zero=
+`0.0084765423/0.0266254693/0.7184363604`，机制顺序PASS。
+
+**决策**：永久封板exp408为`SEALED NO-GO / MECHANISM ORDER PASS / PERFORMANCE FAIL`。这不是代码未接通或
+pose--CLIP关系不可学习，而是当前逐槽batch relation没有改善最终identity retrieval geometry。禁止通过调loss、
+scale、batch、rho、增加stage或删除control补救；下一编号必须改变训练/结构对象，并保留clean D0与强反事实裁决。
