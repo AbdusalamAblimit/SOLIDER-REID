@@ -118,11 +118,35 @@ class TripletLoss(object):
         else:
             self.ranking_loss = nn.SoftMarginLoss()
 
-    def __call__(self, global_feat, labels, normalize_feature=False):
+    def __call__(
+        self,
+        global_feat,
+        labels,
+        normalize_feature=False,
+        pair_indices=None,
+    ):
         if normalize_feature:
             global_feat = normalize(global_feat, axis=-1)
         dist_mat = euclidean_dist(global_feat, global_feat)
-        dist_ap, dist_an = hard_example_mining(dist_mat, labels)
+        if pair_indices is None:
+            dist_ap, dist_an = hard_example_mining(dist_mat, labels)
+        else:
+            if not isinstance(pair_indices, (tuple, list)) or len(pair_indices) != 2:
+                raise ValueError("pair_indices must contain positive and negative indices")
+            positive, negative = pair_indices
+            if positive.shape != labels.shape or negative.shape != labels.shape:
+                raise ValueError("pair indices must match labels")
+            positive = positive.to(device=labels.device, dtype=torch.long)
+            negative = negative.to(device=labels.device, dtype=torch.long)
+            anchor = torch.arange(labels.numel(), device=labels.device)
+            if bool((positive == anchor).any()) or not bool(
+                (labels[positive] == labels).all()
+            ):
+                raise RuntimeError("invalid external positive indices")
+            if not bool((labels[negative] != labels).all()):
+                raise RuntimeError("invalid external negative indices")
+            dist_ap = dist_mat[anchor, positive]
+            dist_an = dist_mat[anchor, negative]
 
         #  dist_ap *= (1.0 + self.hard_factor)
         #  dist_an *= (1.0 - self.hard_factor)
@@ -133,5 +157,4 @@ class TripletLoss(object):
         else:
             loss = self.ranking_loss(dist_an - dist_ap, y)
         return loss, dist_ap, dist_an
-
 

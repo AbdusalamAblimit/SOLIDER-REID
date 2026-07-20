@@ -115,6 +115,42 @@ def do_train(cfg,
     picrd_enabled = bool(
         cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.PICRD_ENABLED
     )
+    pchm_enabled = bool(
+        cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.PCHM_ENABLED
+    )
+    if picrd_enabled and pchm_enabled:
+        raise RuntimeError("PICRD and PCHM cannot be enabled together")
+    pchm_cache = None
+    if pchm_enabled:
+        from loss.pose_clip_hard_mining import PoseClipMiningCache
+
+        pchm_cache = PoseClipMiningCache(
+            cfg.MODEL.TAPF.PCHM_CACHE,
+            cfg.MODEL.TAPF.PCHM_CACHE_SHA256,
+        )
+        if len(pchm_cache) != len(train_loader.dataset):
+            raise RuntimeError(
+                "PCHM cache does not exactly cover the training dataset"
+            )
+        expected_pchm_paths = tuple(
+            Path(record[0])
+            .resolve()
+            .relative_to(train_loader.dataset.pose_store.dataset_root)
+            .as_posix()
+            for record in train_loader.dataset.dataset
+        )
+        if (
+            len(set(expected_pchm_paths)) != len(expected_pchm_paths)
+            or set(expected_pchm_paths) != set(pchm_cache.paths)
+        ):
+            raise RuntimeError(
+                "PCHM cache path set does not match the training dataset"
+            )
+        logger.info(
+            "PCHM cache loaded: samples=%d SHA=%s",
+            len(pchm_cache),
+            pchm_cache.sha256,
+        )
     picrd_cache = None
     if picrd_enabled:
         from model.pose_clip_relation import PoseClipRelationCache
@@ -262,6 +298,63 @@ def do_train(cfg,
             target = vid.to(device)
             target_cam = target_cam.to(device)
             target_view = target_view.to(device)
+            pair_indices = None
+            pchm_state = None
+            pchm_control_changes = None
+            if pchm_enabled:
+                if relative_paths is None:
+                    raise RuntimeError("PCHM batch is missing relative paths")
+                from loss.pose_clip_hard_mining import (
+                    pose_visibility_signature,
+                    select_pose_clip_pairs,
+                )
+
+                clip_features, clip_valid = pchm_cache.lookup(relative_paths)
+                clip_features = clip_features.to(
+                    device=device, non_blocking=True
+                )
+                clip_valid = clip_valid.to(device=device, non_blocking=True)
+                with torch.no_grad(), amp.autocast(enabled=False):
+                    visibility = pose_visibility_signature(
+                        pose_batch["scores"], pose_batch["valid"]
+                    )
+                    pchm_state = select_pose_clip_pairs(
+                        target,
+                        visibility,
+                        clip_features,
+                        clip_valid,
+                        mode="correct",
+                    )
+                    pair_indices = (
+                        pchm_state["positive_indices"],
+                        pchm_state["negative_indices"],
+                    )
+                    if epoch == 1 and n_iter == 0:
+                        pchm_control_changes = {}
+                        for control in (
+                            "wrong_rgb",
+                            "generic",
+                            "zero",
+                            "pose_shuffle",
+                            "clip_only",
+                        ):
+                            control_state = select_pose_clip_pairs(
+                                target,
+                                visibility,
+                                clip_features,
+                                clip_valid,
+                                mode=control,
+                            )
+                            changed = (
+                                control_state["positive_indices"]
+                                != pchm_state["positive_indices"]
+                            ) | (
+                                control_state["negative_indices"]
+                                != pchm_state["negative_indices"]
+                            )
+                            pchm_control_changes[control] = float(
+                                changed.float().mean().item()
+                            )
             if picrd_enabled:
                 if relative_paths is None:
                     raise RuntimeError("PICRD batch is missing relative paths")
@@ -401,13 +494,50 @@ def do_train(cfg,
                 )
                 if cfg.MODEL.TAPF.ENABLED:
                     score, feat, _, tapf_aux = model_output
-                    reid_loss = loss_fn(score, feat, target, target_cam)
+                    reid_loss = loss_fn(
+                        score,
+                        feat,
+                        target,
+                        target_cam,
+                        pair_indices=pair_indices,
+                    )
                     loss = reid_loss + (
                         cfg.MODEL.TAPF.POSE_LOSS_WEIGHT * tapf_aux["pose_loss"]
                     )
                 else:
                     score, feat, _ = model_output
                     loss = loss_fn(score, feat, target, target_cam)
+
+            if pchm_enabled and n_iter == 0:
+                from loss.pose_clip_hard_mining import batch_hard_pair_indices
+
+                if isinstance(feat, list):
+                    raise RuntimeError(
+                        "PCHM exp409 requires one final global descriptor"
+                    )
+                with torch.no_grad(), amp.autocast(enabled=False):
+                    d0_positive, d0_negative = batch_hard_pair_indices(
+                        feat.detach().float(),
+                        target,
+                        normalize_feature=cfg.SOLVER.TRP_L2,
+                    )
+                    positive_change = (
+                        d0_positive != pchm_state["positive_indices"]
+                    ).float().mean().item()
+                    negative_change = (
+                        d0_negative != pchm_state["negative_indices"]
+                    ).float().mean().item()
+                logger.info(
+                    "PCHM epoch=%d first-batch pos-pose/pos-clip/neg-pose/neg-clip=%.6f/%.6f/%.6f/%.6f D0-index-change=%.4f/%.4f controls=%s",
+                    epoch,
+                    pchm_state["positive_pose_distance"].mean().item(),
+                    pchm_state["positive_clip_similarity"].mean().item(),
+                    pchm_state["negative_pose_distance"].mean().item(),
+                    pchm_state["negative_clip_similarity"].mean().item(),
+                    positive_change,
+                    negative_change,
+                    pchm_control_changes,
+                )
 
             scaler.scale(loss).backward()
 
