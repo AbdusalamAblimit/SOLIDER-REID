@@ -5936,3 +5936,12 @@ scale、batch、rho、增加stage或删除control补救；下一编号必须改�
 **决策**：冻结exp409 PCHM，不与PCOIR组合。PCOIR因pose-guided CutMix近邻、稀疏区域贴片质量和异PID
 partial-chimera标签污染暂不执行。PCHM只做必要shape/index/default-exact/CUDA-AMP检查和一次独立盲审；0B/0H后
 立即fresh cache与唯一e120。若退化成distance/loss加权或性能双门FAIL，直接封板，不调旧miner。
+
+### [2026-07-21] 决策：exp409 cache与真实batch门通过，立即启动student
+
+fresh cache完整覆盖15,618图且全部来源、norm、SHA门PASS。real-batch v1只暴露unscale前reporter错误并永久
+冻结；fresh v2保留default GradScaler自然backoff，在第5个attempt获得第一且唯一成功update，Stage-3/backbone
+梯度与pose/CLIP两个选边轴均active，独立复审`0B/0H`。
+
+**决策**：不再追加static/preflight，立即以固定source/config/cache启动唯一fresh seed1234/e120。中间轨迹只记录
+不早停；自然e120必须同时严格超过clean D0 raw mAP/R1双门，否则封板PCHM并换对象。

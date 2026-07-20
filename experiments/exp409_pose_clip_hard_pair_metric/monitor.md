@@ -69,3 +69,13 @@ overflow的正确skip误报为finite failure。已在执行前改成全model non
 权威判据；等待聚焦闭环。
 
 v2聚焦复审最终`0B/0H`，只授权一个fresh v2 execution；不得重跑v1。GPU空闲，立即同步固定源码并执行。
+
+fresh real-batch v2已在remote HEAD=`fed42ae5f80cd8a5f2b93ca9fb83f5d9e2d6092f`通过。default GradScaler
+未覆盖初值，前四个attempt原生overflow/skip/backoff=`65536→32768→16384→8192→4096`，第五个attempt在
+scale=`4096`取得第一且唯一成功update；所有skip均参数未更新，成功步全model nonfinite=`0`。loss/reid/pose=
+`8.01028919/7.92177773/0.88511312`，Stage-3/backbone非零梯度tensor=`26/181`，实际更新参数=
+`base.stages.3.blocks.1.attn.w_msa.qkv.weight`。
+
+真实batch correct相对D0 positive/negative edge change=`0.578125/0.984375`，相对pose-shuffle/CLIP-only任一边
+change=`0.90625/0.859375`；positive pose-distance/CLIP-sim=`0.08732325/0.86174387`，negative=
+`0.04163792/0.87145722`。最终=`REAL-BATCH V2 PASS / STUDENT FRESH E120 AUTHORIZED`；不再增加preflight。

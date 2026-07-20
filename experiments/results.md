@@ -3262,3 +3262,10 @@ descriptor原soft-margin triplet的正负index；不改margin、loss weight、CE
 PCOIR因pose-CutMix近邻、patch质量和partial-chimera标签噪声暂不执行。当前判定=
 `DESIGN FROZEN / IMPLEMENTING / GPU NO-START`；性能仍以sealed clean D0 raw
 `57.5587756578 mAP / 67.6923076923 R1`为双门。
+
+fresh cache现已完整覆盖15,618图并通过逐图SHA/provenance/norm核验，cache/snapshot SHA=
+`d502a0f03fe556284fd01259ed81143dcfb171855b9b2aebaa29e3b7a682fd36`/
+`2c34567396c057d65cc5cb40bc18e7001c2069b55cf2793ed0eaf5f74675bbf8`。real-batch v1因unscale前reporter
+误判而`INVALID CHECKER / SCIENCE NOT EVALUATED`；修正后的fresh v2经盲审`0B/0H`，default GradScaler在第5个
+native attempt获得唯一成功update，Stage-3/backbone梯度=`26/181` tensor，PCHM相对D0正/负边改变率=
+`0.578125/0.984375`。当前=`IMPLEMENTATION PASS / STUDENT E120 AUTHORIZED`，尚无新增ReID mAP/R1。

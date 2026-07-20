@@ -4241,3 +4241,7 @@ appearance变成无权ordinal rank，在真实PK batch内直接选择final globa
 普通hard mining、pose-aware sampling和CLIP negative本身不是新意；PCHM只按C类窄候选推进。PCOIR暂不选，因为
 其foreign-part copy容易被归入pose-CutMix并制造partial-chimera标签噪声。若PCHM自然e120不过clean D0 mAP/R1
 双门，立即关闭该对象，不调rank fusion或cache。
+
+PCHM现已通过fresh cache与真实batch门：正确联合miner相对D0更换绝大多数negative edge并更换过半positive
+edge，pose-shuffle与CLIP-only也都显著改变选择；梯度直接进入Stage-3/final backbone。这只证明机制active，尚不
+证明涨点或创新成立。下一份有效证据只能来自自然e120相对clean D0的mAP/R1及GO后的matched controls。
