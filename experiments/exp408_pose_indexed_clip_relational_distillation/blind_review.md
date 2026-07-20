@@ -22,3 +22,14 @@
 审查确认：四臂共同valid/pair支持、control stop-gradient、offset4 different-PID、cache ontology/完整路径、
 eval forward不读cache、config-off D0 exact以及Stage-2到Stage0--2的梯度路径均闭合。授权进入既定最小
 CUDA-AMP检查，随后fresh cache builder与训练。
+
+## e120冻结diagnostic执行器复审
+
+首轮=`2 BLOCKER / 1 HIGH`：执行器允许任意strict-compatible checkpoint冒充e120，config/manifest/cache可由
+调用者共同替换，source HEAD仅原样写入而未验证。修复后CLI只保留fresh output；硬绑定并实际核验训练HEAD、
+四个关键源码SHA、config路径/SHA、e120 checkpoint路径/SHA、runner终态receipt、cache路径/SHA、64图manifest
+路径/SHA及其preprocessing/cache字段。模型先递归eval，只临时设置`base.training=True`进入PICRD计算，所有真实
+children继续eval，finally恢复；两遍全部科学标量须bit-exact。
+
+同一独立审查者复审结论：前述`2B/1H`全部闭环，未引入新问题，最终=`0 BLOCKER / 0 HIGH`；授权唯一fresh
+64图diagnostic。
