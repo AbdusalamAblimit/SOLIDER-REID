@@ -3947,3 +3947,23 @@ encoder；其标准测试descriptor直接由原图ID encoder产生，交换生�
 semantic state负责，但该正目标还必须与最终identity descriptor共享不可绕过结构，并在correct/wrong/
 generic/NULL/all-bypass终审中产生因果顺序。当前没有公开或自洽机制同时闭合这些条件，创新门仍只有问题/证据
 缺口，exp404继续NO-START、GPU继续NO-START。
+
+### exp403后第四轮查新：semantic ownership缺的是realized target，不是composition loss
+
+**状态**：`AUDIT ACTIVE / IDENTIFIABILITY GATE FAIL / NO EXP404`
+
+Composed Person Retrieval把问题写成`(reference image, relative caption, same-ID target image)`，FAFA公开代码
+直接用融合query对齐真实target的多token视觉表示。这是semantic modification拥有检索正目标的合法形式，因为
+target已经在数据中实现该修改。其代价也很明确：115万SynCPR triplet依赖LLM、Flux成对生成与MLLM过滤；
+ITCPR需要人工relative caption；测试继续输入caption并使用query-conditioned top-k token similarity。
+
+DiCE-CIR虽以LLM生成target caption代替真实target image，仍保留显式edit与target-semantic proxy，并在测试时
+输入edit text。两者共同说明，单纯写`Phi(image,evidence)`并不能创造正目标；必须观测到修改、target或其可信
+semantic proxy。
+
+当前wrong-RGB来自不同PID，其16维evidence不是对host A的relative edit，也不存在已知的同身份
+`target(A,e_B)`。把same-ID多图硬配成target仍可由identity trunk绕过evidence；把target合成、标注或改成测试时
+conditional query则分别落入已有CPR/DG-Net或违反单RGB固定descriptor边界。
+
+因此下一问题被收紧为“如何从official RGB内部得到可验证的realized semantic target”，而不是再加composition/
+contrastive loss。当前只增加了可识别性负边界，没有机制创新，exp404与GPU继续NO-START。

@@ -2213,3 +2213,13 @@ appearance/ID code时才让生成图跟随该code的身份；Hi-CMD交换非身�
 identity ranking。因此论文当前只能把贡献缺口写成：需要一个让semantic source target与最终标准descriptor
 共享不可绕过对象的机制，同时保留correct/wrong/generic/NULL/all-bypass证据。该机制尚未找到，故事继续保持
 `POST-EXP403 OWNERSHIP AUDIT / NO EXP404 / GPU NO-START`。
+
+第四轮查新把缺口从“给semantic donor什么标签”进一步收紧到“是否存在可观测target”。NeurIPS 2025的
+Composed Person Retrieval以`reference image + relative caption -> same-ID target image`建立合法的语义检索
+正目标；FAFA直接对齐这一真实target，但训练数据依赖LLM/Flux/MLLM构造的115万triplet，测试也需要caption与
+query-conditioned token scorer。最新DiCE-CIR虽用target caption作proxy，仍需要显式edit语义。
+
+当前different-PID wrong evidence不是host图像的relative edit，official数据也没有已实现该组合的同身份target。
+因此不能通过一个新的composition loss凭空定义semantic ownership；合成/标注target或测试时增加semantic query
+又分别进入已有强近邻或违反部署合同。论文故事仍只有问题/证据缺口，机制和实验编号均为空，保持
+`POST-EXP403 OWNERSHIP AUDIT / NO EXP404 / GPU NO-START`。

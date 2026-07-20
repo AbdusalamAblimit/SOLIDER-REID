@@ -307,3 +307,19 @@ reconstruction又退化为已有swap/cycle auxiliary loss，不能保证final re
 
 后续候选必须同时给semantic donor一个不泄漏身份的正目标，并让该目标与最终identity descriptor共享不可绕过
 结构；在找到这种对象前，innovation gate仍失败，不创建exp404、不占GPU。
+
+### exp403后第四轮候选裁决：缺少realized semantic target
+
+**状态**：`LITERATURE/CODE AUDIT ONLY / IDENTIFIABILITY FAIL / NO EXP404`
+
+NeurIPS 2025 Composed Person Retrieval（FAFA，commit `0cc16936`）给出了合法semantic正目标：reference image与
+relative caption组成query，直接检索已经实现该修改的同身份target image。其115万SynCPR训练triplet依赖
+LLM、Flux identity-consistent image-pair生成和MLLM过滤；正式测试仍需caption，并使用query-to-gallery token
+top-k scorer。2026-07的DiCE-CIR也仍需显式edit text与target-caption proxy。
+
+当前different-PID wrong evidence不是对host A的relative edit，official数据里也没有`target(A,e_B)`。在没有
+relative annotation、identity-consistent生成器或测试时semantic query时，composition loss的正目标不可识别；
+普通same-ID配对又可被ID trunk忽略。三种补法均已有强近邻或违反当前部署边界，故不形成候选模块。
+
+下一候选只有在official RGB内部构造出可验证的realized semantic target，并让它与最终固定descriptor共享路径，
+才可重新过创新门；当前不创建exp404、不做CPU/CUDA/GPU。

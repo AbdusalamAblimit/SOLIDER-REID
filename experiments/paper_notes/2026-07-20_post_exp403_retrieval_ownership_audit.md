@@ -424,3 +424,63 @@ correct evidence。故它不能单独通过机制门。
 不是新机制。第三轮只使问题定义更准确，没有找到结构对象；创新门仍为
 `PROBLEM/EVIDENCE GAP ONLY / MECHANISM FAIL`。不创建exp404、不写formal config/contract、不做CPU/CUDA或GPU
 执行，继续查找能让semantic source target与最终identity ranking共享不可绕过对象、同时不要求身份泄漏的机制。
+
+## 15. 第四轮：composed retrieval揭示“语义正目标”必须可观测
+
+第三轮确认semantic donor不能无条件继承donor identity。下一问题是：公开检索工作如何让“主体 + 语义修改”
+获得合法正目标。本轮重点审计了与人检索最接近的Composed Person Retrieval，并用最新direct-composition CIR
+核对其一般性。
+
+### 15.1 Composed Person Retrieval / FAFA（NeurIPS 2025）
+
+- 论文：*Automatic Synthetic Data and Fine-grained Adaptive Feature Alignment for Composed Person Retrieval*
+  （<https://arxiv.org/abs/2311.16515v4>）；
+- 官方代码：<https://github.com/Delong-liu-bupt/Composed_Person_Retrieval>；审计commit：
+  `0cc16936f031f7ad166be4cce1be33d0b44b728e`。
+
+任务与代码事实：
+
+1. 一个监督单元是`(I_q,T_q,I_t)`：reference person image、描述从reference到target变化的relative caption、
+   以及**同一身份**的真实target image。语义修改的正目标不是caption donor的身份，而是已经实现该修改的`I_t`；
+2. ITCPR人工标注2,225个此类triplet。SynCPR则用Qwen生成文本quadruple、微调Flux同时合成identity-consistent
+   image pair，再用Qwen-VL按图像质量、身份一致、图文对齐和triplet可推断性过滤，保留约115万triplet；
+3. FAFA将reference image与relative caption经Q-Former融合成query feature，target image经视觉分支产生32个
+   token feature；主FDA目标用batch内exact ID/GID软标签直接对齐query与target；
+4. 公开代码的正式推理仍需要reference image和caption，并对每个gallery的token集合计算top-k平均相似度。
+   因而它不是单RGB、单固定descriptor，而是带测试时文本的query-conditioned token scorer。
+
+裁决：CPR给出了科学上正确的semantic ownership模板：`主体 + 修改 -> 已实现该修改的真实同身份target`。
+但它也暴露当前合同缺少的变量。exp402/403的wrong donor B是same-camera、different-PID样本；`e_B`不是“把A
+变成某状态”的相对描述，official数据中也没有一个已知的`I_t(A,e_B)`。所以既不能把组合贴成ID B，也不能
+声称存在一个对ID A唯一正确的counterfactual target。
+
+### 15.2 DiCE-CIR（arXiv 2026-07）
+
+*DiCE-CIR: Direct Composition Learning for Efficient Zero-Shot Composed Image Retrieval*
+（<https://arxiv.org/abs/2607.04665>）进一步说明真实target image不是唯一实现方式，但**target semantics仍必须
+显式存在**。它从reference caption生成edit text与target caption，以冻结CLIP把
+`Phi(reference image, edit text)`直接对齐target-caption embedding、edit residual方向和batch contrastive目标；
+测试仍输入reference image与edit text，再对gallery image embedding检索。
+
+裁决：target caption可以作为图像target的语义proxy，但当前16维evidence既不是relative edit，也没有对应的
+target-caption/attribute annotation。把teacher code自身当target只会回到exp402/403已经失败的proxy-active
+叙事；引入LLM生成描述、外部caption或合成target则改变数据与部署对象，而且其基本triplet/composition机制已
+被CIR/CPR直接覆盖。
+
+### 15.3 对exp404的可识别性门
+
+现有official ReID训练集中的same-ID多图不能自动补上这个缺口。把A与同身份图A'配对，只给出“身份相同”，
+没有证明16维`e(A')`精确描述从A到A'的修改；普通ID/metric目标又可以完全忽略该evidence。要让semantic target
+可识别，至少需要以下之一：
+
+- 已标注的relative state与实现该state的同身份target；
+- 可审计、identity-consistent的counterfactual生成器；
+- 测试时显式semantic query与conditional scorer。
+
+前两项分别进入CPR的数据生成/标注与DG-Net/Hi-CMD的生成式近邻，第三项违反当前单RGB、单descriptor部署合同。
+因此“在当前official数据上直接增加composition loss”不是新机制，也没有科学确定的正目标。
+
+第四轮裁决保持`INNOVATION GATE FAIL / NO EXP404 / GPU NO-START`。下一检索对象进一步收紧为：不引入外部
+annotation/generation或测试时第二输入，却能从official RGB本身构造**可验证的realized semantic target**，并让
+该target与最终固定欧氏identity descriptor共享不可绕过路径。没有这样的结构与正反contract前，不进行CPU或
+CUDA实验。

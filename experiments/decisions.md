@@ -5533,3 +5533,17 @@ identity，会诱导身份泄漏或给不对应真实人的组合贴任意身份
 **决策**：上一轮三方donor-ID合同只作为已否决的候选，不再作为普适准入条件。新的合法对象必须让目标跟随
 信息承载者，并使semantic正目标与最终identity descriptor共享不可绕过结构；当前机制门仍为空。不创建
 exp404、不写design/config/contract、不做CPU/CUDA/GPU执行，继续文献与代码学习。exp401–403封板结论不变。
+
+### [2026-07-20] 决策：当前数据没有realized semantic target，composition路线不启动
+
+NeurIPS 2025 Composed Person Retrieval / FAFA（官方commit `0cc16936`）证明，semantic modification可以拥有
+直接检索正目标，但前提是存在`reference image + relative caption + same-ID target image`三元组。其SynCPR
+依赖LLM、Flux成对生成和MLLM过滤，ITCPR依赖人工caption，正式推理还需要caption与query-conditioned token
+scorer。DiCE-CIR用target caption作proxy，也没有消除显式edit/target semantics。
+
+exp402/403的different-PID wrong evidence不是host A的relative edit，official数据没有已知`target(A,e_B)`。
+普通same-ID配对只提供身份相同，不能证明16维evidence描述了相对状态，且ID trunk可继续绕过它。
+
+**决策**：不把composition/contrastive loss当作exp404；不引入外部annotation、生成stage或测试时第二输入来
+填补target。创新门保持失败，不写design/config/contract、不做CPU/CUDA/GPU。下一轮只审计能从official RGB
+内部构造可验证realized semantic target、且保持单固定descriptor部署的结构对象。

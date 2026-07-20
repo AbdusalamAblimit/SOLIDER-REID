@@ -2777,3 +2777,16 @@ reconstruction虽可定义，却是已有swap/cycle辅助目标，无法建立fi
 
 **当前判定**：`PROVISIONAL DONOR-ID CONTRACT REJECTED / MECHANISM GATE FAIL / NO EXP404 / GPU NO-START`。
 这只修正下一机制的科学定义，不新增性能数字，也不改变exp401–403任何封板结果。
+
+## exp403后composed-retrieval查新（2026-07-20）
+
+本轮没有启动实验或GPU。Composed Person Retrieval / FAFA（NeurIPS 2025，commit `0cc16936`）使用
+`reference image + relative caption + same-ID target image`为semantic modification提供真实检索正目标；其训练
+依赖115万合成triplet，测试仍输入caption并计算query-conditioned token similarity。DiCE-CIR用target caption
+作proxy，但同样保留显式edit与target semantics。
+
+当前different-PID wrong evidence没有对应的同身份realized target，普通same-ID配对又不能证明16维evidence是
+relative edit，故composition loss在official数据上不可识别。
+
+**当前判定**：`REALIZED SEMANTIC TARGET ABSENT / INNOVATION GATE FAIL / NO EXP404 / GPU NO-START`。
+没有新增性能结果，exp401–403封板不变。
