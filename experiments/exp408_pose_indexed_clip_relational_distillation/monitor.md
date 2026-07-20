@@ -57,3 +57,8 @@ PID、output/runner均fresh；固定MMPOSE-ABU实际加载15,618样本cache及�
 loss/correct/wrong/generic/zero/rank=`0.615141/0.022584/0.023626/0.042036/0.727439/0.592558`，
 shift=`4`，common-valid=`1.0000`，均finite；首观测GPU约`7,000 MiB/89%`且只有该主PID。epoch 1自然完成，
 无异常并进入epoch 2；当前只监控自然e120和e10/20/...评测，不修改运行中源码/config，不按中间性能早停。
+
+首个正式中间评测已自然完成：e10 PICRD=`32.0 mAP / 42.8 R1 / 57.7 R5 / 63.9 R10`；sealed clean D0
+同epoch=`33.4/42.7` mAP/R1，因此rounded差=`-1.4 mAP / +0.1 R1`。检查时主PID仍唯一、GPU约
+`7,002 MiB/92%`，runner中Traceback/RuntimeError/OOM/NaN/Inf计数为0，训练已继续进入e11。该点只记录
+轨迹，不作早停或机制裁决；最终仍只看自然e120双门与冻结diagnostic顺序。
