@@ -129,3 +129,14 @@ Torch `1.13.1`和四份冻结源码SHA；两次结果前后`cuda_initialized=fal
 compute PID`，fixed preflight output、started seal与failed receipt均不存在，远端tracked worktree clean。
 
 该结果把门5闭合并授权唯一512图CUDA preflight；它仍不是科学GO，不含mAP/R1，也不授权formal P0B或student。
+
+## 2026-07-21：唯一512图MMPOSE-ABU CUDA preflight启动
+
+远端冻结HEAD=`ded9ebde1378e9b82e70f5639b7d6df9c731a507`，prelaunch再次确认runner/core/teacher/protocol、
+CLIP checkpoint、pose manifest哈希一致，tracked clean，唯一4090空闲且fixed output/seal/FAILED全fresh。随后
+使用`/usr/local/anaconda3/envs/mmpose-abu/bin/python`、`CUDA_VISIBLE_DEVICES=0`、batch2、CLIP microbatch1、
+workers4启动唯一`exp405-p0b-preflight-v1`。
+
+进程PID=`455109`，已取得immutable started seal并写入`started.json`；首个original batch已进入，GPU观测为
+`2362 MiB / 94%`，FAILED receipt不存在。当前判断=`CONTINUE`：只监控自然完成，不修改远端运行中源码、
+protocol或参数，不按中间结果早停。该preflight只裁决机械有效性，不计算科学GO或mAP/R1。
