@@ -3923,6 +3923,27 @@ UniCat、MCR、Data Remixing、ResTacVLA、SCOPE、RCL、VIGIL、MiMIC与VLM2Rec
 作为弱模态统计量；matched donor没有保留“对donor identity必须正确”的独立正目标。于是模型仍可通过破坏
 counterfactual branch或维持强模态路径取得margin，不能建立source-specific ownership。
 
-因此下一机制检索被进一步冻结为三方合同：同一构图同时使correct execution服务current ID、matched wrong
-execution服务donor ID，并让二者经过相同最终欧氏descriptor路径；generic/NULL/all-bypass继续作为终审。
+本轮末曾把下一机制暂定为三方合同：同一构图同时使correct execution服务current ID、matched wrong
+execution服务donor ID，并让二者经过相同最终欧氏descriptor路径。第三轮已确认其中`wrong -> donor ID`只对
+身份充分组件成立，不能无条件用于当前semantic evidence，修正见下。generic/NULL/all-bypass仍保留为终审；
 `full > blind`、MI/topology、固定concat、predictive residual、dropout/remix或loss重权均不得单独建立exp404。
+
+### exp403后第三轮查新：身份标签必须跟随身份充分组件
+
+**状态**：`AUDIT ACTIVE / PROVISIONAL DONOR-ID CONTRACT REJECTED / NO EXP404`
+
+DG-Net代码中的`x_ba=decode(s_b,f_a)`之所以按A身份监督，是因为`f_a`本身来自完整图像的ReID appearance/ID
+encoder；其标准测试descriptor直接由原图ID encoder产生，交换生成路径并不进入部署。Hi-CMD提供了更关键的
+反例：`(c_b_recon,s_a_recon)`的标签为B，`(c_a_recon,s_b_recon)`的标签为A，身份跟随prototype/content，
+而不跟随被交换的style donor。CIFT则只以高斯反事实输入替换affinity，最大化当前身份下正确/反事实topology
+的输出差，没有donor identity，且正式测试是query-gallery graph。
+
+这使上一轮“三方合同”必须修正。当前16维evidence表达support/appearance语义，不是identity-sufficient code；
+要求`feature_A + evidence_B -> ID_B`会迫使evidence泄漏身份，或给现实中不存在的组合任意贴B标签。若只要求
+重建B的semantic state，目标虽可定义，却回到DG-Net/Hi-CMD已经覆盖的swap/re-encode/cycle辅助目标，并不能
+保证最终欧氏身份排序拥有该语义。
+
+因此`wrong -> donor ID`不再作为普适准入门。新的必要条件是：正目标随信息承载者分配；semantic donor只对
+semantic state负责，但该正目标还必须与最终identity descriptor共享不可绕过结构，并在correct/wrong/
+generic/NULL/all-bypass终审中产生因果顺序。当前没有公开或自洽机制同时闭合这些条件，创新门仍只有问题/证据
+缺口，exp404继续NO-START、GPU继续NO-START。

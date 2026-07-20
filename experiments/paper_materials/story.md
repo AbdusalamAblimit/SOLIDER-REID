@@ -2197,8 +2197,19 @@ VLM2Rec已覆盖matched关系及跨模态topology preservation，RCL/VIGIL则分
 suppression用于reliance matching和`seeing > blind`输出约束；MiMIC/Data Remixing还覆盖了single-modality
 mixin、dropout、样本拆分和额外stage。
 
-这些强近邻都没有闭合当前最难的一环：matched wrong evidence在经过同一最终descriptor路径时，还必须对其
-donor identity承担正目标，而不是只被删除、置零、推远或降置信。由此，论文可争的新意更明确地落在
-**source-specific open-set retrieval ownership**的问题/证据定义上，但机制贡献仍不存在。下一候选只有同时让
-correct服务current ID、wrong服务donor ID，并保留generic/NULL/all-bypass终审，才允许进入编号；在此之前
-story继续维持`NO EXP404 / GPU NO-START`。
+这些强近邻都没有闭合当前最难的一环：matched wrong evidence不能只被删除、置零、推远或降置信，还需要与其
+信息内容相匹配的独立正目标。第二轮曾暂定该目标为donor identity；第三轮已确认它只适用于身份充分组件，
+不能直接用于当前semantic evidence，修正如下。论文可争的新意仍落在
+**source-specific open-set retrieval ownership**的问题/证据定义上，但机制贡献不存在；在此之前story维持
+`NO EXP404 / GPU NO-START`。
+
+第三轮swap/cross-reconstruction审计修正了上述最后一句的过强合同。DG-Net只有在交换完整图像学出的
+appearance/ID code时才让生成图跟随该code的身份；Hi-CMD交换非身份充分的style/extrinsic code时，身份标签
+明确跟随prototype/content来源；CIFT的反事实也只是替换graph affinity并保持当前身份目标。它们共同说明
+“source ownership”不能被简化为任意wrong evidence都应检索到donor ID。
+
+当前16维evidence只承载support/appearance语义。把`feature_A+evidence_B`强制指向ID B会把预期语义通道变成
+身份泄漏通道；改为donor semantic reconstruction虽然可定义，却只是已有swap/cycle辅助目标，仍不拥有最终
+identity ranking。因此论文当前只能把贡献缺口写成：需要一个让semantic source target与最终标准descriptor
+共享不可绕过对象的机制，同时保留correct/wrong/generic/NULL/all-bypass证据。该机制尚未找到，故事继续保持
+`POST-EXP403 OWNERSHIP AUDIT / NO EXP404 / GPU NO-START`。

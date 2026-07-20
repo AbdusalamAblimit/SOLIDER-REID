@@ -350,3 +350,77 @@ bypass，且没有matched wrong/generic/NULL合同。它们排除了把普通mod
 
 若公开方法只做full-vs-mask、modality balance、MI/topology、fixed concat、dropout/remix或额外stage，即直接排除。
 当前状态维持`AUDIT ACTIVE / NO EXP404 / GPU NO-START`。
+
+## 14. 第三轮：swap/cross-reconstruction与donor-ID合同的可定义性
+
+上一轮暂时把下一机制冻结为`correct -> current ID`、`wrong -> donor ID`、两者共享同一最终descriptor路径。
+本轮对真正执行component swap并显式分配身份标签的方法做代码级核对，结果表明这个合同不能不区分组件语义而
+直接套到当前16维evidence上。
+
+### 14.1 DG-Net：donor-ID成立的前提是交换对象本身承载身份
+
+- 论文/代码：*Joint Discriminative and Generative Learning for Person Re-identification*；
+  <https://github.com/NVlabs/DG-Net>；审计commit：
+  `9855f08711df1d7ebdf976885b0fddec8e7d4a37`。
+- `trainer.py`先从图像A/B得到structure code `s_a/s_b`和由ReID encoder得到的appearance/ID code
+  `f_a/f_b`，再构造`x_ba=decode(s_b,f_a)`、`x_ab=decode(s_a,f_b)`；
+- 交换图重新编码后的appearance预测分别以`l_a/l_b`监督，并同时使用image/feature/cycle reconstruction、
+  GAN、VGG和可选teacher目标；在AB双头设置里，另一个头还显式接收structure来源标签；
+- 标准测试脚本不执行交换生成路径，而是直接对原始query/gallery图像运行ID encoder并拼接其两个输出特征。
+
+裁决：DG-Net并不是“任意donor signal都应检索到donor ID”。`f_a`本来就是由完整图像训练出的身份承载码，
+所以`decode(s_b,f_a)`按A的身份监督有科学含义。它依赖生成、重建、GAN/teacher等复杂对象，且swap路径不是
+最终标准检索路径。把当前低维support/appearance evidence类比成`f_a`会偷换信息充分性。
+
+### 14.2 Hi-CMD：style donor不拥有身份标签，identity prototype才拥有
+
+- 论文/代码：*Hi-CMD: Hierarchical Cross-Modality Disentanglement for Visible-Infrared Person
+  Re-Identification*；<https://github.com/bismex/HiCMD>；审计commit：
+  `48a96edafa16612725ac48b3d925a3cf00eda52f`；
+- 代码把图像分为prototype code `c`与attribute/style code `s`，交换style/extrinsic索引后生成cross/cycle图，
+  再做图像与attribute-code reconstruction、GAN以及ID CE/triplet；
+- 关键标签规则不是“跟随被交换的style donor”：`x_ba`重新编码为`(c_b_recon,s_a_recon)`时标签为B，
+  `x_ab`的`(c_a_recon,s_b_recon)`标签为A；更多组合也让标签跟随prototype/content来源；
+- 测试时从原图提取prototype与identity-style块，归一化拼接后得到检索特征，不执行cross-generation路径。
+
+裁决：Hi-CMD给出直接反例。若交换的是姿态、光照、style等非身份充分成分，donor只有该语义状态的所有权，
+身份正目标仍跟随identity prototype。其生成式分解、重编码和多目标训练也已经占用了普通swap/cycle原子，
+不能作为当前teacher-free、RGB-only、单descriptor机制的新意。
+
+### 14.3 CIFT：反事实对象是graph affinity，不存在donor身份转移
+
+- 论文：*Counterfactual Intervention Feature Transfer for Visible-Infrared Person Re-identification*
+  （ECCV 2022，arXiv v4：<https://arxiv.org/abs/2208.00967v4>）；论文未给代码链接，本轮未找到可归属
+  作者的官方实现，故按v4正式公式裁决；
+- H2FT把单query与异模态gallery重组为不平衡图，分别执行heterogeneous/homogeneous message passing；
+- CRI保持输入特征`X`不变，只用高斯重参数化的`X*`替换affinity得到
+  `Y_TIE=Y_{X,A_X}-E[Y_{X,A_{X*}}]`，再对当前真实身份计算CE；
+- 正式CIFT测试使用query-gallery graph feature，`CIFT†`则完全退回backbone feature。
+
+裁决：CIFT训练的是“正确topology相对高斯反事实topology的分类效应”，反事实项没有donor实例，也没有
+donor正标签。正式推理又是pair/set-dependent graph，而非当前要求的单图固定欧氏descriptor。它不能补上
+source-specific ownership合同。
+
+### 14.4 对当前16维evidence的可定义性裁决
+
+当前evidence只描述局部support/appearance语义，并未被定义或验证为identity-sufficient code。不同身份可以
+共享相同support、姿态、颜色或局部外观状态。因此要求`descriptor(x_A,e_B)`对身份B为正，等价于要求16维
+`e_B`在保留A的visual trunk时仍足以唯一指定B。可行的优化解只能是让evidence泄漏身份、让shared trunk学习
+新的shortcut，或把不对应任何真实人的A/B组合硬贴成B；三者都不是预期的semantic ownership。
+
+把wrong分支改为重建B的semantic state是可定义的，但它只给auxiliary decoder正目标。DG-Net/Hi-CMD已经覆盖
+swap、re-encode和semantic/style reconstruction原子，而且这种目标仍不能证明最终身份descriptor必须使用
+correct evidence。故它不能单独通过机制门。
+
+**修正后的合同**是“目标必须跟随信息承载者”，而不是无条件`wrong -> donor ID`：
+
+1. 身份充分组件可以对其source identity为正；
+2. 语义/非身份组件只能对其source semantic state为正；
+3. 若主张最终identity retrieval ownership，仍须在同一部署descriptor上预注册
+   `correct > matched wrong > generic/NULL`与all-bypass，但wrong不能只被训练成负例；
+4. 在当前evidence没有独立且path-complete的最终检索正目标前，这四项无法同时闭合。
+
+因此撤回上一轮把`wrong -> donor ID`作为普适准入条件的过强表述。它是一次有用但科学上不完备的候选合同，
+不是新机制。第三轮只使问题定义更准确，没有找到结构对象；创新门仍为
+`PROBLEM/EVIDENCE GAP ONLY / MECHANISM FAIL`。不创建exp404、不写formal config/contract、不做CPU/CUDA或GPU
+执行，继续查找能让semantic source target与最终identity ranking共享不可绕过对象、同时不要求身份泄漏的机制。

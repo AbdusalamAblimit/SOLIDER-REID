@@ -2765,3 +2765,15 @@ permutation/MI、数据重混、predictive residual、topology alignment、count
 
 **当前判定**：`LITERATURE/CODE AUDIT ACTIVE / INNOVATION GATE FAIL / NO EXP404 / GPU NO-START`。
 这不是新的性能结果，也不改变exp401–403封板结论；它只收紧下一候选的准入条件。
+
+## exp403后swap/source-attribution查新（2026-07-20）
+
+本轮没有启动实验或GPU。DG-Net（commit `9855f087`）、Hi-CMD（commit `48a96eda`）与CIFT v4的代码/公式
+审计显示，身份正目标只在交换对象本身身份充分时才跟随donor：DG-Net的appearance/ID code满足此前提；
+Hi-CMD交换style时标签跟随prototype/content；CIFT只替换affinity并保持当前身份目标。
+
+因此当前16维semantic evidence不适合被强制赋予donor identity，否则会诱导identity leakage。donor semantic
+reconstruction虽可定义，却是已有swap/cycle辅助目标，无法建立final retrieval ownership。
+
+**当前判定**：`PROVISIONAL DONOR-ID CONTRACT REJECTED / MECHANISM GATE FAIL / NO EXP404 / GPU NO-START`。
+这只修正下一机制的科学定义，不新增性能数字，也不改变exp401–403任何封板结果。

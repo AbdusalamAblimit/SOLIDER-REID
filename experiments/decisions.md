@@ -5519,3 +5519,17 @@ donor identity保持独立正目标；现有方法通常只把wrong/masked模态
 **决策**：创新门仍只有问题/证据缺口，机制门为空；不创建exp404、不写config、不做CPU/CUDA preflight、
 不占GPU。下一轮仅审计能同时闭合`correct -> current ID`、`wrong -> donor ID`和同一路径欧氏检索的结构对象，
 并继续保留generic/NULL/all-bypass；普通full-vs-mask、MI/topology、固定concat、dropout/remix直接排除。
+
+### [2026-07-20] 决策：撤回无条件`wrong -> donor ID`合同，exp404仍NO-START
+
+DG-Net、Hi-CMD与CIFT的代码/正式公式审计完成。DG-Net中被交换的appearance code本身由完整图像的ReID
+encoder产生，因此生成分支可跟随该code的身份；Hi-CMD对style/extrinsic交换的身份标签明确跟随
+prototype/content来源而非style donor；CIFT只干预graph affinity，对当前身份优化TIE，没有donor标签。
+
+当前16维evidence仅定义support/appearance语义，不具备identity sufficiency。若强制wrong evidence指向donor
+identity，会诱导身份泄漏或给不对应真实人的组合贴任意身份；若只增加donor semantic reconstruction，则落回
+已有swap/cycle辅助目标，仍不能证明最终检索ownership。
+
+**决策**：上一轮三方donor-ID合同只作为已否决的候选，不再作为普适准入条件。新的合法对象必须让目标跟随
+信息承载者，并使semantic正目标与最终identity descriptor共享不可绕过结构；当前机制门仍为空。不创建
+exp404、不写design/config/contract、不做CPU/CUDA/GPU执行，继续文献与代码学习。exp401–403封板结论不变。

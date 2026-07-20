@@ -288,5 +288,22 @@ representation与interventional path completeness；没有新的结构原理前�
 
 **裁决**：独立目标、permutation/MI、数据重混、predictive residual、topology preservation、reliance matching和
 full-vs-bypass loss都已有直接近邻。共同缺口是matched wrong donor没有保持自己的正目标，故这些方法不能证明
-`correct > wrong > generic/NULL`的source ownership。只有同时闭合“correct对current ID为正、wrong对donor ID
-也为正、两者经过同一最终descriptor路径”的新结构对象，才值得新增编号；当前继续查新，不写config、不占GPU。
+`correct > wrong > generic/NULL`的source ownership。本轮末曾暂定“correct对current ID为正、wrong对donor ID
+也为正、两者经过同一最终descriptor路径”的三方合同；第三轮已确认它只适用于身份充分组件，不能作为当前
+semantic evidence的普适准入门，修正见下。当前继续查新，不写config、不占GPU。
+
+### exp403后第三轮候选裁决：无条件donor-ID合同不成立
+
+**状态**：`LITERATURE/CODE AUDIT ONLY / CONTRACT REFINED / NO EXP404`
+
+DG-Net、Hi-CMD与CIFT的公式/代码审计表明，交换分支的身份标签必须跟随身份充分组件：DG-Net交换的是由完整
+图像训练出的appearance/ID code，所以生成图可跟随该code的identity；Hi-CMD交换style/extrinsic code时，
+身份标签明确跟随prototype/content而非style donor；CIFT只替换graph affinity并保持当前身份目标，不存在
+donor身份转移。三者的swap/graph路径也都不是当前teacher-free单图固定descriptor的同构实现。
+
+当前16维evidence只定义support/appearance语义，不具备identity sufficiency。强制`wrong -> donor ID`会诱导
+身份泄漏或给不存在的A视觉/B语义组合强贴身份，故撤回它作为普适机制准入条件。可定义的donor semantic
+reconstruction又退化为已有swap/cycle auxiliary loss，不能保证final retrieval ownership。
+
+后续候选必须同时给semantic donor一个不泄漏身份的正目标，并让该目标与最终identity descriptor共享不可绕过
+结构；在找到这种对象前，innovation gate仍失败，不创建exp404、不占GPU。
