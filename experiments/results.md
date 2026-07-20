@@ -3152,3 +3152,12 @@ same-camera/different-PID donor，抛出runtime错误。`failure.json` SHA256=
 **最终判定**：`EXP405 PREFLIGHT V1 SEALED-FAIL / SCIENCE NOT EVALUATED / FORMAL P0B NO-START /
 STUDENT NO-START`。该失败既不是MMPOSE-ABU不兼容，也不是CAVT科学NO-GO；它只封板当前512图候选池合同。
 同编号禁止重跑或补跑，修正只能进入独立新实验编号。
+
+## exp406 donor-reserve合同设计（2026-07-21）
+
+exp406只修复preflight候选池：原512 core、20 recipients、四变量core MAD、caliper `8.0`和全部身份/相机/唯一性
+门保持不变，donor-only pool按冻结顺序单调扩展至`1024/2048/4096/8192/full train`。该设计没有性能结果，
+未创建远端资产或GPU execution。
+
+**当前判定**：`DESIGN ACCEPTED / STATIC NOT IMPLEMENTED / GPU NO-START / FORMAL NO-START / STUDENT
+NO-START`。三路根因审查的剩余blocker是新代码、static正反合同与fresh边界尚未闭合。

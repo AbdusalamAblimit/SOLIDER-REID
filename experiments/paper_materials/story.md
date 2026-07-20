@@ -2381,3 +2381,6 @@ Phase 0 static v14已通过两次byte-exact `56/56`合同和最终`0B/0H/0M/0L`�
 唯一exp405 preflight v1在完成512图original编码后因wrong-mask候选池不足而SEALED-FAIL，尚未计算二维反事实、
 科学GO或mAP/R1。该记录不进入论文结果表，也不支持CAVT正面或负面叙事；story继续停在条件候选，formal与
 student均未开始。
+
+exp406仅把preflight donor universe改为冻结的单调扩池，同时保留recipient、四变量MAD、caliper `8.0`和全部
+匹配门；它是测量合同修复，不是论文方法或消融。当前尚无新科学结果，paper story不因exp406设计而改变。

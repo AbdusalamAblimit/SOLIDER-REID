@@ -5830,3 +5830,13 @@ same-camera/different-PID donor；权威failure receipt已写入，GPU回到空�
 **决策**：永久封板`exp405-p0b-preflight-v1`为`SEALED-FAIL / SCIENCE NOT EVALUATED`，不重跑、不补跑、不
 放宽caliper或删除control。formal P0B、transport和student继续NO-START。只有独立新编号先冻结不改变正式科学门
 的候选池合同修正，并通过CPU/static、fresh资产和三路代码盲审，才可授权新的preflight。
+
+### [2026-07-21] 决策：建立exp406固定尺度单调donor扩池合同
+
+三路只读审查确认exp405失败发生在caliper edge构建，尚未进入top64/Hall/assignment；无法从receipt判断具体
+主导轴。删除preflight MAD/caliper或先看edge再挑recipient都可能降低既有门或改变冻结recipient，因此拒绝。
+
+**决策**：exp406保持原512 core、20 recipients、core四变量MAD、caliper `8.0`、same-camera/different-PID、
+recipient排除和donor唯一，只按冻结camera-round-robin/hash顺序把donor-only pool从512单调扩至full train。
+formal仍全train独立重算MAD和原全部科学门。当前只授权CPU/static实现；两次byte-exact与三路新代码`0B/0H`
+前不得创建远端资产或GPU execution。
