@@ -45,3 +45,12 @@ source与参数未修改。
 
 real-batch执行器聚焦复审最终`0B/0H`。cache最新自然推进至`11000/15618`，主PID=`501962`，GPU约2.2GiB且
 无异常；仍只监控完成，不同步或修改运行中的远端repo。
+
+唯一fresh cache-v1已自然完成并退出，GPU恢复`2 MiB/0%/0 compute PID`。完整核验PASS：15,618图完整唯一
+覆盖，shape=`[15618,5,768]` FP16，五槽valid=`[15616,15618,15618,15618,15586]`，所有feature finite，
+valid feature L2 norm在冻结容差内；逐图image SHA、pose/CLIP/preprocess/source/builder/teacher provenance及
+64图snapshot均通过。cache SHA=`d502a0f03fe556284fd01259ed81143dcfb171855b9b2aebaa29e3b7a682fd36`，
+snapshot SHA=`2c34567396c057d65cc5cb40bc18e7001c2069b55cf2793ed0eaf5f74675bbf8`，builder/teacher
+source SHA=`8fe06de77f5f8256f31a572c577c473ed699303c9b3dee2e2e4a507e6df74e59`/
+`fbd3e137a729f44d3179864f9978bd8846b22e8627a3c311747b0a2541092864`。真实cache SHA现已冻结进config；
+下一步同步已审real-batch执行器并执行唯一检查。
