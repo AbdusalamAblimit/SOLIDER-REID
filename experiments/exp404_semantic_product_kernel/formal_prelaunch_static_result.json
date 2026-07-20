@@ -1,0 +1,31 @@
+{
+  "execution": "exp404_formal_train_v1",
+  "experiment": "exp404_semantic_product_kernel",
+  "formal_launch_authorized": true,
+  "gate_count": 15,
+  "gate_pass_count": 15,
+  "gates": {
+    "background_runner": true,
+    "config_sha_exact": true,
+    "cuda_not_initialized": true,
+    "exclusive_gpu_guard": true,
+    "formal_recipe_frozen": true,
+    "fresh_once_only_guards": true,
+    "fresh_runtime_guard": true,
+    "no_local_launch_artifacts": true,
+    "no_resume": true,
+    "preflight_26_of_26_pass": true,
+    "preflight_authorizes_formal": true,
+    "preflight_execution_v3": true,
+    "preflight_sha_exact": true,
+    "remote_clean_guard": true,
+    "source_hash_guards": true
+  },
+  "source_sha256": {
+    "config": "2bd191ef96da0158a57f917831ea70627f1fef163397219ce1168e3e30bb297d",
+    "contract": "512dacb626b50d64b80ba7b6e02c15891d1a5f02d96e507bf58330e9048d1750",
+    "preflight": "70566973f0387d0b335040ff20fe2c1f091563cc18f4a65370b25aac303d58bf",
+    "wrapper": "5e500fcd67a1ed408141b112d480a5fec2cffe3df5bd545122902f3e53597d86"
+  },
+  "status": "FORMAL_PRELAUNCH_STATIC_PASS"
+}

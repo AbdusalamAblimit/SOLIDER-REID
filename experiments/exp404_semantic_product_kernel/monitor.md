@@ -1,6 +1,6 @@
 # exp404 SPK 监控记录
 
-> 当前：`CUDA V1 INVALID / V2 FAIL / DEFAULT-GRADSCALER V3 EXECUTION AUTHORIZED`
+> 当前：`CUDA V3 PASS / FORMAL PRELAUNCH PASS / UNIQUE E120 AUTHORIZED`
 
 ## 2026-07-20：目标降为C类后的机制准入
 
@@ -144,3 +144,22 @@ v3 wrapper/static contract连续两次`14/14 PASS`且byte-exact；同时冻结v2
 
 判定：`V2 SEALED-FAIL / DEFAULT-GRADSCALER V3 EXECUTION AUTHORIZED / FORMAL TRAINING NO-START /
 GPU IDLE`。
+
+## 2026-07-20：actual CUDA v3与formal prelaunch
+
+fresh v3在第5次attempt成功：前4次scale自然backoff，attempt5保持`4096 -> 4096`并发生evidence-head weight/bias
+真实更新。actual结果`26/26 PASS / formal_training_authorized=true`，峰值显存=`6,237,267,456 bytes`。
+
+关键测量：SPK factor mean/std/min/max=`1.0/0.1424809247/0.7198756337/1.3562411070`；correct-vs-NULL/random
+descriptor mean-abs=`0.2054978013/0.2366053164`；student evidence/bound feature/factor梯度范数=
+`2113.571533/1211.839111/7530.110840`；16个feature/factor group梯度均finite/nonzero；NULL factor全1且
+descriptor exact raw，rho exact 0，RGB-only/none-vs-exploding pose exact，state teacher-free，无checkpoint。
+result SHA=`70566973f0387d0b335040ff20fe2c1f091563cc18f4a65370b25aac303d58bf`。
+
+formal once-only wrapper冻结fresh output/runner/launch/lock、独占GPU、remote clean、source/config/runtime/preflight
+SHA及no-resume。prelaunch static连续两次`15/15 PASS`且byte-exact；wrapper/contract/result SHA=
+`5e500fcd67a1ed408141b112d480a5fec2cffe3df5bd545122902f3e53597d86`/
+`512dacb626b50d64b80ba7b6e02c15891d1a5f02d96e507bf58330e9048d1750`/
+`e2ded956ff1f741b2a4f51bf38bca31234a716f67a21b464f7729d2570ff26c4`。
+
+判定：`CUDA V3 PASS / FORMAL PRELAUNCH PASS / UNIQUE FRESH SEED1234 E120 AUTHORIZED / GPU IDLE`。
