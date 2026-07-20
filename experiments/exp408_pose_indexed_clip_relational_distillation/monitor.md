@@ -62,3 +62,17 @@ shift=`4`，common-valid=`1.0000`，均finite；首观测GPU约`7,000 MiB/89%`�
 同epoch=`33.4/42.7` mAP/R1，因此rounded差=`-1.4 mAP / +0.1 R1`。检查时主PID仍唯一、GPU约
 `7,002 MiB/92%`，runner中Traceback/RuntimeError/OOM/NaN/Inf计数为0，训练已继续进入e11。该点只记录
 轨迹，不作早停或机制裁决；最终仍只看自然e120双门与冻结diagnostic顺序。
+
+## 2026-07-21：e20--e40同epoch轨迹
+
+| epoch | PICRD mAP/R1 | sealed clean D0同epoch | PICRD-D0 |
+|---:|---:|---:|---:|
+| 10 | 32.0/42.8 | 33.4/42.7 | -1.4/+0.1 |
+| 20 | 44.0/55.1 | 42.2/52.4 | +1.8/+2.7 |
+| 30 | 47.3/57.4 | 46.6/56.2 | +0.7/+1.2 |
+| 40 | 50.6/61.8 | 50.0/60.7 | +0.6/+1.1 |
+
+e20/30/40完整R5/R10分别为`70.7/76.7`、`71.9/76.9`、`76.4/81.4`。检查时训练已进入e42，主PID
+`466984`仍为唯一compute PID，GPU约`7,112 MiB/88%`，异常计数仍为0。首batch逐epoch的correct距离通常略低于
+wrong-RGB，但差值仍小，generic/zero明显更远；只记为objective active，不把中间顺序或性能写成科学GO。
+继续自然运行至e120，不修改源码/config或按当前领先早停。
