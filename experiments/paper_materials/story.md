@@ -2312,3 +2312,6 @@ CUDA preflight的config/source静态门现已两次byte-exact通过，冻结真�
 第一次actual CUDA preflight在首个forward即抓到5-slot region field误接17通道D0 gate，正式训练未开始。该次按
 runtime错误封板，不形成方法负结果。修复恢复D0 joint-field handoff，production v3和v2 static门均通过；story
 仍只允许写“结构已实现并通过CPU合同”，不能把修复或preflight包装成贡献。
+
+第二次actual preflight在4次默认GradScaler backoff内未发生optimizer update，故封板FAIL；目标梯度本身每次均
+finite/nonzero。v3仅沿用既有native-scaler自然稳态观察，不改变模型或论文story。正式方法叙事仍未开始。

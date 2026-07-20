@@ -4103,3 +4103,6 @@ C类候选边界继续保持“适度结构 + 强证据”，formal前状态仍�
 actual CUDA v1暴露的5/17通道错误进一步说明SPK的适度机制必须与D0 pose对象严格分离：5-slot rich region state
 服务semantic supervision/SPK，17-joint field服务原D0 spatial gate。修复属于设计一致性，不是新创新点；v3合同
 通过也不提高论文claim。
+
+CUDA v2的默认scaler backoff是数值执行边界，不是机制创新或性能证据。v3沿用既有native-scaler稳态合同，不改变
+SPK主张；无论v3结果如何，都不能把AMP稳定性写成论文贡献。

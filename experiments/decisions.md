@@ -5689,3 +5689,11 @@ v1在首个真实forward发现5通道region field误接17通道D0 gate，未进�
 production v3两次`49/49 PASS`，v2 static两次`11/11 PASS`。
 
 **决策**：授权fresh execution id的CUDA preflight v2；formal继续NO-START。v2失败仍不得直接启动e120。
+
+### [2026-07-20] 决策：CUDA v2无更新封板，沿用既有native-scaler稳态纪律授权v3
+
+v2四次attempt均有目标梯度，但默认GradScaler连续backoff且没有optimizer update，完整门判FAIL并禁止重跑。
+该四步序列与exp403“前4次backoff、第5次更新”的sealed记录一致。
+
+**决策**：不设置或调低初始scale，不改loss/rho/batch/model；fresh v3只把默认scaler自然观察窗口冻结为8次，
+仍须实际更新与原26项门全部PASS。formal继续NO-START。

@@ -2946,3 +2946,17 @@ wrapper/contract/result SHA=
 
 **当前判定**：`V1 SEALED-INVALID / PRODUCTION V3 PASS / CUDA PREFLIGHT V2 AUTHORIZED / FORMAL
 TRAINING NO-START`。没有性能结果。
+
+## exp404 CUDA preflight v2与v3静态门（2026-07-20）
+
+v2四次默认GradScaler attempt的scale依次从`65536`降到`4096`，每次evidence、16组feature/factor梯度均
+finite/nonzero，但optimizer step均因overflow跳过，故完整结果为`15/26 PASS / CUDA_AMP_PREFLIGHT_FAIL`。
+result SHA=`d49e9421052675193eacb91828918033cbeefcd60a6702d2b31aad82c3a20c29`，formal未启动。
+
+既有exp403记录同样在前4次backoff、第5次更新。v3保持default GradScaler与全部更新门，只把自然观察窗口冻结为
+8次；静态合同连续两次`14/14 PASS`。wrapper/contract/result SHA=
+`f4175e3552b06c875144769989fead232dcfd823fd8157bdd4e07561a0a40c87`/
+`7930ffeaf4758b0fc677176e71a4663a796a1ad70940ddbd501e1769d8cd3361`/
+`10709e126d5187b3331b0b96a3738173e4778936952b5e506e66b8ee4275c245`。
+
+**当前判定**：`V2 SEALED-FAIL / DEFAULT-GRADSCALER V3 AUTHORIZED / FORMAL TRAINING NO-START`。
