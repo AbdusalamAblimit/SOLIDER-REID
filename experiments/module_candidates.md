@@ -353,3 +353,18 @@ LR/HR pair、MSE残差MLP，并按测试文件名suffix选择分辨率模型。
 这些方法的target只因额外几何/分辨率action可观测而成立。当前wrong-RGB pose/code warp只能制造破坏，不能给出
 source-positive semantic target；原RGB融合还允许bypass。canonical warp、dense surface和resolution residual
 均不进入exp404，GPU继续NO-START。
+
+### exp403后第七轮候选裁决：source-provenance patch composition
+
+**状态**：`PAPER/OFFICIAL-CODE AUDIT / TRILEMMA / NO EXP404`
+
+SPT官方commit `ef1e71a9`已经按saliency mask在不同身份之间重组identity/occlusion token，并以标准global
+descriptor训练；它保留target ID，同时从softmax/triplet忽略candidate class，明确承认candidate残余局部身份不足以
+构成第二个全局PID。Token Labeling `9dbfd59a`与TokenMix `0e17d5dd`又分别覆盖逐token dense label和
+content-weighted mixed target。
+
+由此得到三难：换背景只有host正目标；换完整foreground虽可用donor ID，却把evidence退化成完整身份payload；
+换部分body part虽有局部provenance，却没有单一global gallery positive。三者都不能建立当前非身份semantic
+evidence的`correct/wrong/generic/NULL`固定检索合同。
+
+该方向只是SPT/DG-Net/TokenMix/part classifier的组合，不创建exp404，不调mask/mix ratio，不做CPU/CUDA/GPU。

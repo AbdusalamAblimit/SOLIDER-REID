@@ -4004,3 +4004,21 @@ semantic action，并让该action本身成为最终固定identity metric的一�
 这说明可识别canonical target来自额外观测action，不是结构名称本身。把wrong donor的pose/code用于host warp只会
 构成damage control，不能定义wrong source的正目标；保留RGB旁路又复现modality laziness。故本轮只增加了
 artifact与近邻边界，没有满足机制创新门，不建立exp404。
+
+### exp403后第七轮：已知patch source仍缺global identity target
+
+**状态**：`SOURCE-PROVENANCE TRILEMMA / INNOVATION GATE FAIL / NO EXP404`
+
+SPT公开代码表明，official RGB内部确实能构造source-exact token composition：saliency mask保留target identity
+token，并从另一身份搬入真实背景/遮挡。SPT最终仍训练标准global descriptor，但论文必须忽略candidate class，
+而不是把candidate残余身体区域当第二个identity target。
+
+Token Labeling和TokenMix已分别覆盖dense token class supervision、teacher activation加权的mixed target，所以
+“给每个source patch贴标签”本身也不是新机制。对当前目标有三种可能：
+
+- context-only donor：host target合法但无donor ownership；
+- full-identity donor：donor target合法但evidence退化为完整身份像素，变成已知foreground transfer/swap；
+- partial semantic donor：局部source label合法但global chimera没有单一PID正样本。
+
+因此source mask只能解决“patch从哪来”，不能回答“组合后的固定descriptor应检索谁”。继续加part CE、mix ratio、
+mask规则或global soft label只会落入现有augmentation原子，不建立exp404。

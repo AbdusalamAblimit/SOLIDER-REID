@@ -2243,3 +2243,13 @@ canonicalization也没有补上机制缺口。3D-VAN依靠3D重建后四视角�
 当前数据若用wrong donor pose/code去warp host，只能证明错误warp会破坏图像，不能证明source semantics；若融合
 原RGB则又保留bypass。因此story仍只能陈述可识别性缺口，不能把canonical warp、dense surface或resolution
 direction升级为贡献，状态保持`POST-EXP403 OWNERSHIP AUDIT / NO EXP404 / GPU NO-START`。
+
+第七轮把“从RGB内部实现语义组合”落实到source-exact patch transfer。SPT已经在ReID中用saliency mask重组不同
+身份的identity/occlusion token，并在最终global descriptor上训练；但它必须保留host标签并忽略candidate类别，
+因为candidate残留part不构成第二个全局身份。Token Labeling/TokenMix也已覆盖逐token source target与
+content-aware mixed label。
+
+这形成一个无法回避的三难：背景donor没有身份target；完整person donor虽有target，却把evidence退化为真实身份
+payload；partial-part donor有局部标签但没有单一gallery positive。于是patch provenance不能为当前非身份16维
+semantic code补出全局检索ownership，论文不能把SPT、dense token CE和part concat的组合写成新贡献。状态仍为
+`POST-EXP403 OWNERSHIP AUDIT / NO EXP404 / GPU NO-START`。

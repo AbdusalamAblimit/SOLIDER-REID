@@ -591,3 +591,53 @@ fusion又重新开放bypass。
 因此canonical warp、dense-surface alignment或resolution-vector residual均不形成exp404。状态保持
 `ARTIFACT/IDENTIFIABILITY/MECHANISM GATE FAIL / NO EXP404 / GPU NO-START`；下一对象必须在现有official
 RGB与固定欧氏descriptor内同时给出可观测action和不靠破坏control制造的source-positive target。
+
+## 19. 第七轮：source-provenance patch composition的三难
+
+canonical action失败后，本轮考察一个更直接的RGB内部realization：把两张official图的patch/token按已知mask组合，
+使每个输出区域的source可观测，再为source设置正目标。
+
+### 19.1 SPT已经实现ReID中的跨身份source transfer
+
+AAAI 2024的Saliency-Guided Patch Transfer（SPT，官方代码commit
+`ef1e71a99bc658790d5dbbc9ab133588e849e814`）并非普通随机擦除。它训练SPS mask把token划为identity set与
+occlusion set，再按OIoU/mask rolling选择batch donor。正式公式与代码都执行：
+
+```text
+Z_i' = M_j * Z_i + (1 - M_j) * Z_j
+```
+
+即保留target `i`在candidate `j`显著mask对应位置的token，用`j`的其余token提供真实背景/遮挡。最终仍用标准
+global Euclidean ReID descriptor，测试时不需要SPT。
+
+关键是SPT没有把candidate残留身份当正目标。论文明确把新样本标为target ID `i`，并从softmax分母和triplet
+negative中忽略candidate class `j`，因为hard mask下candidate可能残留局部身体信息，却不足以让合成图拥有第二个
+合法全局身份。官方源码的`RandomMix`逐token保存相同source mask，论文的class-ignoring目标正好说明
+“source已知”不等于“每个source都拥有一个全局PID target”。
+
+### 19.2 dense provenance label也不是新原子
+
+Token Labeling（NeurIPS 2021，官方commit `9dbfd59aedecfe83f6f3253db4e99b82359d48ac`）已经为每个patch token
+建立location-specific dense class target，同时联合class-token与token CE。TokenMix（ECCV 2022，官方commit
+`0e17d5dda10fa4afe654aee4ca87373620b9ee2d`）进一步按teacher activation map为两个source计算content-based
+mixed target，避免只按像素面积混标签。ReID自身还有Ped-Mix、Strip-Cutmix和Cutmix Dual Branch等题名直接近邻；
+后3篇没有公开代码且全文受限，本轮不对其未核实细节作推断，但它们已经使“person patch mix”不能被无条件声称
+为空白机制空间。
+
+### 19.3 三种composition均不能闭合当前合同
+
+1. **只换背景/遮挡**：SPT的host ID target合法，但donor不拥有身份正目标；它训练的是context invariance，不是
+   semantic evidence ownership；
+2. **换完整identity set**：把B的全部身份承载patch移到A背景后，target B合法，但evidence已变成身份充分的
+   B像素/token payload。wrong臂检索B只是“实际把人换成B”，退化为SPT foreground transfer加DG-Net式
+   appearance swap，不再回答当前16维support/appearance code如何作用；
+3. **只换一个或若干semantic part**：每个patch的A/B provenance可以监督，但合成person没有单一PID。逐token
+   source CE是合法辅助目标，最终global descriptor却没有对应的真实gallery positive；强制它远离A只会重新变成
+   destructive wrong control。
+
+因此已知source mask解决了局部标签观测，却没有同时解决非身份semantic evidence与全局identity target。将
+SPT、TokenMix/Token Labeling、part descriptor和swap loss组合起来不满足新机制门。
+
+第七轮裁决为`SOURCE-PROVENANCE TARGET TRILEMMA / MECHANISM GATE FAIL / NO EXP404 / GPU NO-START`。
+下一对象必须避免“context donor无身份、full donor问题退化、partial donor无全局target”三者之一，而不能仅换一种
+patch mask或mixed-label权重。

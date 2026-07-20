@@ -2817,3 +2817,16 @@ feature residual及测试时resolution suffix。wrong donor warp只构成破坏c
 
 **当前判定**：`SEALED ARTIFACT SUFFICIENCY FAIL / CANONICAL-ACTION MECHANISM FAIL / NO EXP404 / GPU
 NO-START`。这不是新性能结果，不改变exp401–403任何封板结论。
+
+## exp403后source-provenance patch composition审计（2026-07-20）
+
+本轮没有启动实验或GPU。SPT论文与官方commit `ef1e71a9`显示，ReID已有按显著mask进行跨身份token重组、
+OIoU/mask rolling选择和标准global descriptor训练；其合法目标是host ID，并显式忽略candidate class。Token
+Labeling `9dbfd59a`与TokenMix `0e17d5dd`也已覆盖dense token label和content-aware mixed target。
+
+source-exact composition仍有三难：context donor没有身份target；full-person donor使target合法但把evidence退化
+为完整身份payload；partial-part donor有局部source label却没有单一global PID positive。因此它不能直接建立当前
+semantic evidence的final retrieval ownership。
+
+**当前判定**：`SOURCE-PROVENANCE TARGET TRILEMMA / MECHANISM GATE FAIL / NO EXP404 / GPU NO-START`。
+没有性能结果，exp401–403封板不变。

@@ -5575,3 +5575,17 @@ mean和计数，generic evidence只是`5x16`常量。故不能从封板资产计
 **决策**：不创建exp404，不做CPU contract、CUDA preflight或GPU执行；canonical warp、dense-surface alignment、
 resolution-vector residual均排除。状态为`ARTIFACT/IDENTIFIABILITY/MECHANISM GATE FAIL / GPU NO-START`，
 exp401–403封板结论不变。
+
+### [2026-07-20] 决策：source-provenance patch mix仍没有global正目标
+
+AAAI 2024 SPT的论文与官方commit `ef1e71a9`确认，ReID中已存在不同身份之间的source-exact token transfer。
+SPT保留target identity token、搬入candidate背景/遮挡，并用标准global descriptor训练；同时从softmax/triplet
+忽略candidate class，因为残余candidate part不能获得第二个全局PID。Token Labeling/TokenMix又已覆盖逐token
+dense label和content-weighted mixed target。
+
+若只搬背景，donor无身份target；若搬完整person，donor ID虽合法但evidence已成为完整身份payload，退化为已有
+foreground transfer/appearance swap；若只搬部分body slot，局部provenance合法但global chimera没有单一gallery
+positive。任何`correct > wrong`都只能靠上下文不变性、实际换人或破坏partial chimera得到。
+
+**决策**：不以SPT/TokenMix/part classifier组合建立exp404，不调patch mask、mix ratio或mixed-label权重。
+保持`SOURCE-PROVENANCE TARGET TRILEMMA / NO EXP404 / GPU NO-START`，exp401–403封板不变。
