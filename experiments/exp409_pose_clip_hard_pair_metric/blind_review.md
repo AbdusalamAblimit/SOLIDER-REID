@@ -1,0 +1,38 @@
+# exp409 PCHM 独立代码盲审
+
+## 审查范围
+
+- `design.md / protocol.md`；
+- exp409 config、cache builder、contract；
+- `loss/pose_clip_hard_mining.py`、`loss/triplet_loss.py`、`loss/make_loss.py`；
+- `processor/processor.py`与default-off路径。
+
+审查者未参与实现，只读检查联合选边、rank方向、候选mask、tie-break、pair index梯度、cache来源、fresh边界、
+训练/AMP接线和default-off exact。
+
+## 首轮：0 BLOCKER / 1 HIGH
+
+HIGH：最初cache只有整体文件SHA及`schema/relative_paths/features/valid`，builder使用
+`verify_image_sha=False`。这只能证明训练读取同一份字节，不能证明它来自冻结RGB、CLIP checkpoint、pose
+manifest、preprocess及源码，违反协议中的输入绑定。
+
+启动任何cache/GPU前完成最小修复：
+
+1. builder逐图`verify_image_sha=True`；
+2. NPZ写入逐图image SHA、pose manifest SHA、CLIP checkpoint SHA、preprocess ID、source HEAD、builder SHA、
+   teacher source SHA；
+3. loader严格验证字段集合、shape/dtype/hex、expected pose+CLIP SHA；
+4. processor保留每个训练batch的image SHA，并与cache path对应SHA逐项比对；
+5. contract增加cache provenance roundtrip和错误image SHA拒绝mutant。
+
+## 聚焦复审：0 BLOCKER / 0 HIGH
+
+原HIGH完整闭环。其余检查结论：
+
+- positive/negative rank方向、候选mask和Borda/tie-break与设计一致；
+- positive同PID且非self，negative严格异PID；
+- 外部pair index只选择distance matrix元素，不截断被选final descriptor梯度；
+- legacy batch-hard index显式传入时，loss与gradient bit-exact；default-off保留原路径；
+- 未发现必现runtime、AMP或训练接线B/H。
+
+最终结论：`0B/0H / FRESH CACHE AND ONE REAL BATCH CUDA-AMP AUTHORIZED`。

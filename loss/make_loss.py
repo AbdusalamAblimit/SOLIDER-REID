@@ -30,12 +30,12 @@ def make_loss(cfg, num_classes):    # modified by gu
         print("label smooth on, numclasses:", num_classes)
 
     if sampler in ['softmax', 'id']:
-        def loss_func(score, feat, target,target_cam):
+        def loss_func(score, feat, target,target_cam, pair_indices=None):
             return F.cross_entropy(score, target)
 
     #  elif cfg.DATALOADER.SAMPLER in ['softmax_triplet', 'id_triplet', 'img_triplet']:
     elif 'triplet' in sampler:
-        def loss_func(score, feat, target, target_cam):
+        def loss_func(score, feat, target, target_cam, pair_indices=None):
             if cfg.MODEL.METRIC_LOSS_TYPE == 'triplet':
                 if cfg.MODEL.IF_LABELSMOOTH == 'on':
                     if isinstance(score, list):
@@ -46,11 +46,11 @@ def make_loss(cfg, num_classes):    # modified by gu
                         ID_LOSS = xent(score, target)
 
                     if isinstance(feat, list):
-                            TRI_LOSS = [triplet(feats, target)[0] for feats in feat[1:]]
+                            TRI_LOSS = [triplet(feats, target, pair_indices=pair_indices)[0] for feats in feat[1:]]
                             TRI_LOSS = sum(TRI_LOSS) / len(TRI_LOSS)
-                            TRI_LOSS = 0.5 * TRI_LOSS + 0.5 * triplet(feat[0], target)[0]
+                            TRI_LOSS = 0.5 * TRI_LOSS + 0.5 * triplet(feat[0], target, pair_indices=pair_indices)[0]
                     else:
-                            TRI_LOSS = triplet(feat, target, normalize_feature=cfg.SOLVER.TRP_L2)[0]
+                            TRI_LOSS = triplet(feat, target, normalize_feature=cfg.SOLVER.TRP_L2, pair_indices=pair_indices)[0]
 
                     return cfg.MODEL.ID_LOSS_WEIGHT * ID_LOSS + \
                                cfg.MODEL.TRIPLET_LOSS_WEIGHT * TRI_LOSS
@@ -63,11 +63,11 @@ def make_loss(cfg, num_classes):    # modified by gu
                         ID_LOSS = F.cross_entropy(score, target)
 
                     if isinstance(feat, list):
-                            TRI_LOSS = [triplet(feats, target)[0] for feats in feat[1:]]
+                            TRI_LOSS = [triplet(feats, target, pair_indices=pair_indices)[0] for feats in feat[1:]]
                             TRI_LOSS = sum(TRI_LOSS) / len(TRI_LOSS)
-                            TRI_LOSS = 0.5 * TRI_LOSS + 0.5 * triplet(feat[0], target)[0]
+                            TRI_LOSS = 0.5 * TRI_LOSS + 0.5 * triplet(feat[0], target, pair_indices=pair_indices)[0]
                     else:
-                            TRI_LOSS = triplet(feat, target, normalize_feature=cfg.SOLVER.TRP_L2)[0]
+                            TRI_LOSS = triplet(feat, target, normalize_feature=cfg.SOLVER.TRP_L2, pair_indices=pair_indices)[0]
 
                     return cfg.MODEL.ID_LOSS_WEIGHT * ID_LOSS + \
                                cfg.MODEL.TRIPLET_LOSS_WEIGHT * TRI_LOSS
@@ -79,5 +79,4 @@ def make_loss(cfg, num_classes):    # modified by gu
         print('expected sampler should be softmax, triplet, softmax_triplet or softmax_triplet_center'
               'but got {}'.format(cfg.DATALOADER.SAMPLER))
     return loss_func, center_criterion
-
 
