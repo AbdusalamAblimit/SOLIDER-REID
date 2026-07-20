@@ -109,7 +109,9 @@ PID/camera来生成分配；PID/camera只用于事后覆盖有效性门。
 2. correct mAP `>=56.7`；
 3. `correct - max(wrong-RGB,generic,NULL,random-key,random-cluster) >= +0.1 mAP point`；
 4. `correct - all-product-bypass >= +0.1 mAP point`；
-5. 所有arm finite/active，NULL与all-product-bypass exact，random controls分布合同PASS。
+5. 所有arm finite；wrong/generic/NULL/bypass/random-key/random-cluster六个主control相对correct active；
+   NULL与all-product-bypass exact，random controls分布合同PASS。wrong-mask/slot-cycle为补充归因，不以
+   descriptor active替代或阻塞上述主门。
 
 ### C-track paper GO
 
@@ -131,7 +133,13 @@ PID/camera来生成分配；PID/camera只用于事后覆盖有效性门。
 `57.6/67.7/80.8/84.6`，差值=`-0.2/-0.2/-1.1/+0.4`；因此paper性能前置门已FAIL，但correct
 超过`56.7 mAP`，允许继续机制终审。e70/e90的中间正差只作轨迹证据，禁止best-pick。
 
-终审唯一执行编号冻结为`exp404-spk-counterfactual-v1`，九臂按上述顺序串行、每臂完整覆盖query/gallery。
+终审正式唯一执行编号冻结为`exp404-spk-counterfactual-v1`，九臂按上述顺序串行、每臂完整覆盖query/gallery。
 预运行只允许CPU/static合同和一个fresh小样本CUDA wiring preflight；它们不得产生正式mAP裁决。若v1发生
 测量器runtime错误，封板v1记录并用新执行编号修正contract；若v1有效但科学门失败，直接判
 `SPK MECHANISM NO-GO`，不得同编号或新seed补跑。
+
+CUDA wiring preflight v1暴露reporter合同错误：SPK对五槽做加权平均，slot-cycle在uniform presence下按定义
+置换不变；actual checkpoint前128图的hard presence又全部为五槽全1，所以wrong-mask循环也是合法no-op。
+v1错误地要求两个补充归因control都active，故该preflight封板`SEALED-INVALID_CONTRACT`，不产生机制判定。
+fresh preflight v2只修正validity reporter：所有九臂仍执行且finite，六个主control仍必须active，主mAP门、
+NULL=bypass与任何control均不删除或放宽。

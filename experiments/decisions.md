@@ -5730,3 +5730,15 @@ slot-cycle只循环evidence；NULL与product bypass必须exact。两次CPU正反
 
 **决策**：授权一个fresh小样本CUDA wiring preflight，仍不授权formal full。preflight必须验证真实checkpoint、
 train-generic采集、九臂patch恢复、RGB-only和teacher/pose/codebook零访问；任何失败按执行性质封板，不降低门。
+
+### [2026-07-20] 决策：preflight v1合同无效，fresh v2只修reporter作用域
+
+v1主control与全部执行门通过；FAIL只因wrong-mask/slot-cycle在uniform five-slot presence下按SPK平均定义不变，
+而reporter误把补充归因也列入active硬门。该门与预注册SPK公式冲突，不能把数学不变性伪报成模型runtime失败。
+
+**决策**：v1封板`SEALED-INVALID-CONTRACT`且不重跑。授权fresh v2把active硬门限定为wrong/generic/NULL/
+bypass/random-key/random-cluster；wrong-mask和slot-cycle仍完整执行、finite并记录。九臂、主mAP阈值、random合同与
+NULL=bypass门均不变，formal继续NO-START。
+
+v2 static已连续两次`32/32 PASS`且byte-exact。**决策**：授权fresh v2 actual preflight；通过前formal full仍
+NO-START。

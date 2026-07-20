@@ -66,8 +66,8 @@ def metric_fixture(core, wrong_map=0.5700, bypass_map=0.5700):
     deltas = {
         arm: {
             "finite": True,
-            "mean_l2": 0.0 if arm == "all_product_bypass" else 1.0,
-            "max_abs": 0.0 if arm == "all_product_bypass" else 1.0,
+            "mean_l2": 1.0,
+            "max_abs": 1.0,
             "exact_equal_rows": 0,
             "rows": 32,
         }
@@ -239,7 +239,7 @@ def main() -> int:
         ) and torch.equal(arm_inputs["slot_cycle"][1], presence),
         "required_controls_active": all(
             not torch.equal(descriptors[arm], descriptors["correct"])
-            for arm in core.ACTIVE_CONTROLS
+            for arm in core.PRIMARY_ACTIVE_CONTROLS
         ),
         "positive_adjudication_go": good["decision"] == "SPK_MECHANISM_GO",
         "wrong_control_mutant_caught": wrong_fail["decision"]

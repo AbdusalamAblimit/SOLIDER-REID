@@ -3027,3 +3027,17 @@ count最大差1且每簇PID/camera覆盖过门；wrong-control反超、bypass ga
 
 **当前判定**：`STATIC PASS / CUDA WIRING PREFLIGHT GO / FORMAL FULL NO-START`。这不是mAP/R1结果；正式仍需同一
 e120 checkpoint九臂全验证集串行终审。
+
+## exp404反事实CUDA wiring preflight v1（2026-07-20）
+
+v1以sealed checkpoint完成train generic 256图及九臂各128图前向。全部执行/资产恢复与六个主control active
+均通过；NULL和bypass逐元素exact。v1唯一FAIL来自reporter错误地要求补充wrong-mask/slot-cycle也active：前128图
+hard presence均为五槽全1，wrong-mask循环必然no-op；slot-cycle在uniform presence平均下置换不变，仅有
+`9.00e-7` mean-L2浮点差。result SHA=
+`856f8853b6cb51aea1e99bcbcca68e4d5fb83041395cb31adaf4b11c8af5adcd`。
+
+**当前判定**：`V1 SEALED-INVALID-CONTRACT / V2 REPORTER FIX GO / FORMAL FULL NO-START`。v2不删除九臂、不改
+主mAP门，只让补充归因control有限执行并报告，不再错误要求其违背SPK置换不变定义。
+
+v2修正后的CPU正反合同再次连续两次`32/32 PASS`且byte-exact，result SHA=
+`185fd3b2e79b728a43a77c5920294657d1a110c1eccfeec3030445c3ebddd617`。只授权fresh v2 CUDA preflight。

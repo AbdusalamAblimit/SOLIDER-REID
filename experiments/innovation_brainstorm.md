@@ -4120,3 +4120,7 @@ exp404 e120未超过clean D0的mAP/R1，因此它不具备“更强主干性能�
 终审v1 static两次`32/32 PASS`只确认强证据协议能在真实`student_evidence/student_presence -> SPK`输入缝执行，
 且wrong/random/bypass/validity失败不会被reporter漏掉。它不增加机制新颖性，也不恢复已失败的D0性能主张；
 创新判断继续只等待全验证集correct相对五个主null和product bypass的冻结mAP门。
+
+CUDA preflight还给出一个负向结构事实：actual student hard presence在抽样中五槽全1，使presence循环无作用；
+slot-cycle又因SPK均值聚合而置换不变。这不影响wrong/random等主ownership null，但说明不能把槽位顺序或mask
+敏感性写进贡献。v2修正的是reporter作用域，不是增强机制，创新上限反而进一步收紧。

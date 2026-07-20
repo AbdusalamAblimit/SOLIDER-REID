@@ -2329,3 +2329,7 @@ wrong/random/NULL/all-bypass终审回答，不能用单臂绝对精度替代。
 九臂终审的CPU正反合同现已两次byte-exact通过，确认审计直接作用于SPK读取的student evidence/presence，
 并能抓住wrong反超、bypass gap不足与validity错误。该结果只是测量器授权，不是方法证据；story仍保持
 paper性能FAIL、mechanism未裁决，直到同一e120 checkpoint完成全量mAP/R1反事实。
+
+小样本CUDA wiring进一步显示student hard presence五槽全1，wrong-mask循环无效；slot-cycle在均值SPK下也按定义
+置换不变。因此正面story明确不再包含slot ordering或mask sensitivity。preflight v1因reporter错误要求这两个
+补充control active而封板无效；v2只修测量作用域，主ownership门和九臂证据不变。
