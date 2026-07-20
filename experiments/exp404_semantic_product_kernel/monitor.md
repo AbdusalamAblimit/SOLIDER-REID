@@ -343,3 +343,20 @@ compute PID，GPU=`8,120 MiB/91%`；loss=`0.153`，SPK factor std=`0.1080`、des
 只作为反对best-pick的轨迹证据，不改变e120协议。
 
 判定：`CONTINUE TO E120 / E100 VS D0 +0.2 mAP +0.2 R1 / VS EXP401 +0.3 +0.2 / NO BEST-PICK`。
+
+## 2026-07-20T08:59Z：e110同epoch对照与健康检查
+
+三条对照均为总计120 epoch并在e110评测：
+
+| arm@e110 | mAP | R1 | 相对exp404 |
+|---|---:|---:|---:|
+| exp404 SPK | 57.3 | 67.4 | 0.0/0.0 |
+| sealed clean D0（exp387） | 57.4 | 67.4 | exp404-D0=`-0.1/0.0` |
+| sealed rich route（exp401） | 56.9 | 66.7 | exp404-exp401=`+0.4/+0.7` |
+
+exp404 e110完整R5/R10=`79.5/84.6`。检查时训练到epoch117 iter60/227，main PID=`436043`仍为唯一
+compute PID，GPU=`8,118 MiB/80%`；loss=`0.152`，SPK factor std=`0.1084`、descriptor delta abs=
+`1.099e-01`，均finite/active。异常扫描无Traceback、RuntimeError、OOM、NaN或Inf，output仍只有
+train log、无中途checkpoint。
+
+判定：`CONTINUE NATURALLY TO E120 / E110 VS D0 -0.1 mAP 0.0 R1 / VS EXP401 +0.4 +0.7`。
