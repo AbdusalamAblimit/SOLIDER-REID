@@ -1,0 +1,136 @@
+{
+  "all_gates_pass": true,
+  "correct_min_control_margin": 0.7641115298526204,
+  "cuda_initialized_after": false,
+  "cuda_initialized_before": false,
+  "cuda_preflight_authorized": false,
+  "cuda_visible_devices": "",
+  "diagnostic": "exp404_spk_static_cpu_contract",
+  "dimensions": {
+    "feature": 12,
+    "group_width": 3,
+    "groups": 4
+  },
+  "donor": {
+    "different_pid": true,
+    "mapping_sha256": "6421d0b0f93f91ff80eba33762180c98dffeaa9165561dee27fe32c0d659feec",
+    "no_fixed_point": true,
+    "same_camera": true
+  },
+  "factor_rows": {
+    "correct": [
+      1.9014675456746868,
+      0.6995108181084377,
+      0.6995108181084377,
+      0.6995108181084377
+    ],
+    "generic": [
+      1.1546056206296094,
+      1.0447303686203024,
+      0.9453111292861507,
+      0.8553528814639377
+    ],
+    "null": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "random_cluster": [
+      0.6995108181084377,
+      0.6995108181084377,
+      0.6995108181084377,
+      1.9014675456746868
+    ],
+    "random_key": [
+      0.6995108181084377,
+      0.6995108181084377,
+      1.9014675456746868,
+      0.6995108181084377
+    ],
+    "wrong": [
+      0.6995108181084377,
+      1.9014675456746868,
+      0.6995108181084377,
+      0.6995108181084377
+    ]
+  },
+  "gates": {
+    "correct_evidence_grad_finite_nonzero": true,
+    "cuda_not_initialized": true,
+    "donor_contract": true,
+    "factor_finite_nonnegative_mean_one": true,
+    "feature_group_mapping_exact": true,
+    "global_feature_grad_finite_nonzero": true,
+    "interventions_active": true,
+    "module_parameter_free": true,
+    "mutant_additive_bypass_caught": true,
+    "mutant_auxiliary_only_caught": true,
+    "mutant_evidence_ignored_caught": true,
+    "null_factor_exact_one": true,
+    "null_output_exact_input": true,
+    "random_cluster_contract": true,
+    "random_key_distribution_preserved": true,
+    "semantic_positive_margin": true,
+    "source_no_learned_projection_or_concat": true
+  },
+  "gpu_start_authorized": false,
+  "gradient_norms": {
+    "correct_evidence": 0.4743046689023562,
+    "global_feature": 0.6707680954585925
+  },
+  "mutants": {
+    "additive_null_equals_input": false,
+    "auxiliary_only_correct_equals_input": true,
+    "evidence_ignored_correct_equals_null": true
+  },
+  "production_implementation_authorized": true,
+  "python": "3.11.15",
+  "random_cluster": {
+    "balanced": true,
+    "camera_coverage": {
+      "0": 2,
+      "1": 2,
+      "2": 2,
+      "3": 2,
+      "4": 2,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "camera_coverage_pass": true,
+    "counts": {
+      "0": 48,
+      "1": 48,
+      "2": 48,
+      "3": 48,
+      "4": 48,
+      "5": 48,
+      "6": 48,
+      "7": 48
+    },
+    "pid_coverage": {
+      "0": 48,
+      "1": 48,
+      "2": 48,
+      "3": 48,
+      "4": 48,
+      "5": 48,
+      "6": 48,
+      "7": 48
+    },
+    "pid_coverage_pass": true
+  },
+  "seed": 20260720,
+  "source_sha256": "9739ad1d8388b45922f2ccdb3fec91ffa77c12d6a2e333e75e43c144c10e9e05",
+  "torch": "2.13.0",
+  "utilities": {
+    "correct": 0.4224691884551877,
+    "generic": -0.34164234139743277,
+    "null": -0.5,
+    "random_cluster": -0.8074897294850627,
+    "random_key": -0.8074897294850627,
+    "wrong": -0.8074897294850627
+  },
+  "verdict": "STATIC_CPU_PASS"
+}
