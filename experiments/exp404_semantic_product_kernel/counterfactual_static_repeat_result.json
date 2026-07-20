@@ -148,7 +148,7 @@
   },
   "formal_cuda_preflight_authorized": true,
   "formal_full_authorized": false,
-  "gate_count": 32,
+  "gate_count": 33,
   "gates": {
     "arm_order_exact": true,
     "audit_guards_teacher_pose_codebook": true,
@@ -178,6 +178,7 @@
     "required_controls_active": true,
     "slot_cycle_evidence_only": true,
     "validity_mutant_caught": true,
+    "wrapper_freezes_v2_preflight_and_runtime": true,
     "wrapper_once_only_paths": true,
     "wrong_control_mutant_caught": true,
     "wrong_mask_presence_only": true,
@@ -185,13 +186,13 @@
   },
   "hashes": {
     "audit": "a226097b937b3980cd79c8acb4a80d32d6bf4fcf318b541e9dc97e2056976fe9",
-    "contract": "3139f13c9e75f4af2f05f53543d5fd890ca7feecf85b643dc09c67c704bef3b8",
+    "contract": "667bee575b4654d58483b1f47df690376956ec1c745e2e8e1a90976e7a9e8428",
     "core": "4f8c5a19751e5380cffb3be8272cc738e7ff4510a912a681b2106b1fb05ee3b7",
     "make_model": "44de28f34b675366606e4ae4734567f50c6ede755fd85280073c514543d61f76",
     "postflight": "46f1adb172eee74c9ed20f944014e6494c057b42945bf4c52f3d88d1fd68d4f8",
     "random_assets": "470d8cd4f252c389aa68baf4b140c22add926a11a19f19e4234c894d5a0e0432",
     "tapf": "72ff5a609c7a080d848e96a2c12239795388441cc13b85519ef2cbf42f04bf2a",
-    "wrapper": "8d7f95c9ba080c2d7f4f126eeba6a7365fd8d677d135040511aa1443d5ffb029"
+    "wrapper": "e9ab124ebd0458854ea31b4d5c3d2aadc395b0fabd822a0f5b0152a0d8795a77"
   },
   "python": "3.11.15",
   "status": "PASS",

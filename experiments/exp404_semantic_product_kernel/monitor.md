@@ -446,3 +446,29 @@ v2只将descriptor-active集合冻结为六个主control，所有九臂仍须fin
 `a226097b937b3980cd79c8acb4a80d32d6bf4fcf318b541e9dc97e2056976fe9`。
 
 判定：`V2 STATIC PASS / FRESH V2 CUDA PREFLIGHT AUTHORIZED / FORMAL FULL NO-START`。
+
+## 2026-07-20T10:13Z：CUDA wiring preflight v2 PASS
+
+fresh v2再次执行256张train generic与九臂各128张actual checkpoint前向。25项validity全部PASS：六个主control
+active、两个补充归因finite、NULL=bypass exact、random分布/簇覆盖、strict reload、RGB-only、teacher/pose/
+codebook零访问及逐臂state/RNG/patch/source/config/checkpoint恢复均通过。decision=
+`EXP404_COUNTERFACTUAL_PREFLIGHT_PASS`，`formal_full_authorized=true`。
+
+result/runner SHA=
+`cf7cfc5afbf1a865a95f60dd785964ae9288ad9965ad6e3bc9cdb424e8057f8c`/
+`43aebead9cbda9e5858a80b33198e2aeca7503f340fb0020d52f2db4caef855d`；进程自然退出，GPU=
+`2 MiB/0%/0 compute PID`。once-only wrapper新增v2 result SHA、授权字段与fresh runtime freeze SHA硬门；更新后仍需
+两次static byte-exact并提交，才可启动formal full。
+
+判定：`V2 PREFLIGHT PASS / WRAPPER REFREEZE IN PROGRESS / FORMAL FULL NO-START`。
+
+## 2026-07-20T10:16Z：formal full once-only启动门完成
+
+wrapper已冻结preflight v2 result SHA/授权字段、runtime executable与freeze SHA、checkpoint/config、tracked tree、
+唯一untracked formal log、GPU独占及formal result/runner/manifest/lock freshness。更新后的static连续两次
+`33/33 PASS`且byte-exact，result SHA=
+`80b80afd4100bedf5bcfe3303c3f475f7f272fc20530f98f8341bf4fc7bece55`。contract/wrapper SHA=
+`667bee575b4654d58483b1f47df690376956ec1c745e2e8e1a90976e7a9e8428`/
+`e9ab124ebd0458854ea31b4d5c3d2aadc395b0fabd822a0f5b0152a0d8795a77`。
+
+判定：`V2 PREFLIGHT PASS / FORMAL FULL ONCE-ONLY AUTHORIZED / PENDING EXPLICIT COMMIT AND FINAL GPU GATE`。

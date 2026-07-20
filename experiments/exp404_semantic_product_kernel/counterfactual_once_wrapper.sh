@@ -9,6 +9,7 @@ CONFIG=${ASSET_DIR}/swin_tiny_spk_formal.yml
 OUTPUT=${REPO}/log/occluded_duke/exp404_spk_s1234
 CHECKPOINT=${OUTPUT}/transformer_120.pth
 PYTHON=/home/afr/reid-clean/runtimes/exp404-spk-py310/bin/python
+RUNTIME_FREEZE=/home/afr/reid-clean/formal/exp404_spk/runtime_freeze.txt
 AUDIT=${ASSET_DIR}/actual_counterfactual_audit.py
 CORE=${ASSET_DIR}/counterfactual_core.py
 POSTFLIGHT=${ASSET_DIR}/counterfactual_postflight.py
@@ -17,6 +18,7 @@ RESULT=${AUDIT_ROOT}/formal_result_once.json
 RUNNER=${AUDIT_ROOT}/formal_runner_once.log
 MANIFEST=${AUDIT_ROOT}/formal_manifest_once.json
 LOCK=${AUDIT_ROOT}/formal_once.lock
+PREFLIGHT=${AUDIT_ROOT}/preflight_result_v2.json
 
 mkdir -p "${AUDIT_ROOT}"
 for path in "${RESULT}" "${RUNNER}" "${MANIFEST}" "${LOCK}" "${RESULT}.tmp" "${MANIFEST}.tmp"; do
@@ -40,6 +42,23 @@ fi
 if [[ "$(sha256sum "${CONFIG}" | awk '{print $1}')" != "2bd191ef96da0158a57f917831ea70627f1fef163397219ce1168e3e30bb297d" ]]; then
   echo "config SHA gate failed"
   exit 23
+fi
+if [[ ! -x "${PYTHON}" ]]; then
+  echo "fresh runtime executable gate failed"
+  exit 26
+fi
+if [[ "$(sha256sum "${RUNTIME_FREEZE}" | awk '{print $1}')" != "3d38c99c7f06502d8b40467d2674c966723e5c913d2edf962c5a7088ec60cddb" ]]; then
+  echo "fresh runtime freeze gate failed"
+  exit 27
+fi
+if [[ "$(sha256sum "${PREFLIGHT}" | awk '{print $1}')" != "cf7cfc5afbf1a865a95f60dd785964ae9288ad9965ad6e3bc9cdb424e8057f8c" ]]; then
+  echo "counterfactual preflight SHA gate failed"
+  exit 28
+fi
+preflight_gate=$("${PYTHON}" -c 'import json,sys; p=json.load(open(sys.argv[1])); print(p.get("status"),p.get("decision"),p.get("formal_full_authorized"))' "${PREFLIGHT}")
+if [[ "${preflight_gate}" != "PASS EXP404_COUNTERFACTUAL_PREFLIGHT_PASS True" ]]; then
+  echo "counterfactual preflight authorization gate failed"
+  exit 29
 fi
 if [[ -n "$(nvidia-smi --query-compute-apps=pid --format=csv,noheader,nounits)" ]]; then
   echo "GPU exclusivity gate failed"

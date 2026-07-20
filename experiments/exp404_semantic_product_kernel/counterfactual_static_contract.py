@@ -272,6 +272,12 @@ def main() -> int:
         "wrapper_once_only_paths": "formal_result_once.json" in wrapper_source
         and "formal_once.lock" in wrapper_source
         and "set -C" in wrapper_source,
+        "wrapper_freezes_v2_preflight_and_runtime": "preflight_result_v2.json"
+        in wrapper_source
+        and "cf7cfc5afbf1a865a95f60dd785964ae9288ad9965ad6e3bc9cdb424e8057f8c"
+        in wrapper_source
+        and "3d38c99c7f06502d8b40467d2674c966723e5c913d2edf962c5a7088ec60cddb"
+        in wrapper_source,
         "official_data_not_accessed": True,
     }
     passed = all(gates.values())
