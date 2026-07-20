@@ -278,3 +278,19 @@ exp404 e60完整R5/R10=`78.3/83.0`。评测后已自然进入epoch61 iter20/227�
 `1.098e-01`，均finite/active。异常扫描无Traceback、RuntimeError、OOM、NaN或Inf。
 
 判定：`CONTINUE TO E120 / E60 VS D0 -0.6 mAP -1.8 R1 / VS EXP401 +1.0 -0.5 / NO EARLY STOP`。
+
+## 2026-07-20T07:29Z：e70同epoch对照与健康检查
+
+三条对照均为总计120 epoch并在e70评测：
+
+| arm@e70 | mAP | R1 | 相对exp404 |
+|---|---:|---:|---:|
+| exp404 SPK | 56.2 | 67.0 | 0.0/0.0 |
+| sealed clean D0（exp387） | 55.4 | 65.2 | exp404-D0=`+0.8/+1.8` |
+| sealed rich route（exp401） | 55.2 | 66.1 | exp404-exp401=`+1.0/+0.9` |
+
+exp404 e70完整R5/R10=`79.4/84.3`。检查时训练到epoch74 iter200/227，main PID=`436043`仍为唯一
+compute PID，GPU=`8,102 MiB/98%`；loss=`0.177`，SPK factor std=`0.1083`、descriptor delta abs=
+`1.078e-01`，均finite/active。异常扫描无Traceback、RuntimeError、OOM、NaN或Inf。
+
+判定：`CONTINUE TO E120 / E70 VS D0 +0.8 mAP +1.8 R1 / VS EXP401 +1.0 +0.9 / NO BEST-PICK`。
