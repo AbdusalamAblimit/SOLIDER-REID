@@ -3120,3 +3120,18 @@ v9仅增加Conda package manifest的fail-closed字节绑定和Python3.8异常兼
 
 **当前判定**：`REAL-TEACHER STATIC V9 PASS / MMPOSE-ABU FROZEN / 512-IMAGE CUDA PREFLIGHT AUTHORIZED /
 FORMAL P0B NO-START / STUDENT NO-START`。无新增mAP/R1或科学GO。
+
+## exp405 MMPOSE-ABU Python3.8兼容静态合同v10（2026-07-20）
+
+远端v9 static在seal前因`ast.unparse`不存在而失败；未读取official图像/pose、未初始化CUDA、未占用GPU，也未
+消耗once-only preflight。v10只修复合同的Python 3.8 AST兼容，不改measurement或科学门。本地两次fresh
+`8/8 PASS`且byte-exact，结果SHA256均为
+`15ae43641d2e13afd487978033b61b8f83d1702fbfc74972d95a3f733230723c`；contract/measurement/teacher SHA分别为
+`5d15dd73d56714b2dbe725e88a157f889d5f22866126c1076a7fc59a5e351399`、
+`52ee00f1eaf817877807ffbd691c09aafdd89288b5c87b56747f99f8695a2648`、
+`af255cbbb6eafca2024f7882023deda50445f9a01c1df0b28422a24e23cc35a0`。三路固定快照盲审均为`0B/0H`。
+
+**当前判定**：`V9 REMOTE STATIC FAIL (PRE-SEAL) / V10 LOCAL STATIC PASS / MMPOSE-ABU FROZEN /
+REMOTE V10 RECHECK PENDING / CUDA PREFLIGHT NO-START / FORMAL P0B NO-START / STUDENT NO-START`。Phase 0
+preflight本身没有epoch，因此此处没有mAP/R1；未来student仍按e10/20/.../120与clean D0同epoch并排记录
+`mAP/R1/差值`，最终只用自然e120。

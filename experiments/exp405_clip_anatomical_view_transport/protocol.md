@@ -84,6 +84,11 @@ formal有效性门预注册：无可用target图像比例不得超过`1%`，具�
 字节SHA；缺失或多重匹配仍在seal前fail closed。v9两次`8/8 PASS`且byte-exact，三路复审均`0B/0H`。
 CUDA preflight固定使用`/usr/local/anaconda3/envs/mmpose-abu/bin/python`，不得回退到旧exp394/404 runtime。
 
+远端首次v9 CPU static因Python 3.8没有`ast.unparse`而在fixed execution seal之前失败；该记录不隐藏、不改判，
+也不消耗once-only preflight。v10只用`ast.Attribute.attr / ast.Name.id`替代该Python 3.9 API，科学、匹配、统计
+与执行参数均不变。本地v10两次`8/8 PASS`、byte-exact且三路盲审`0B/0H`；远端v10必须在网络恢复后用同一
+MMPOSE-ABU完成两次static并通过CUDA未初始化与GPU独占复核，才可进入512图preflight。
+
 ## 机械有效性
 
 必须记录RGB/pose同步变换、左右翻转、mask mass/centroid/index/hash、CLIP normalization、16x16 patch布局、

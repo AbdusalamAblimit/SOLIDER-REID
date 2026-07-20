@@ -1,7 +1,8 @@
 # exp405 CAVT 监控记录
 
-> 当前：`BROAD NOVELTY NO-GO / NARROW PHASE-0 CONDITIONAL GO / REAL-TEACHER STATIC V9 PASS /
-> MMPOSE-ABU FROZEN / THREE-WAY BLIND REVIEW PASS / CUDA PREFLIGHT NEXT / FORMAL P0B NO-START / GPU IDLE`
+> 当前：`BROAD NOVELTY NO-GO / NARROW PHASE-0 CONDITIONAL GO / REAL-TEACHER STATIC V10 LOCAL PASS /
+> MMPOSE-ABU FROZEN / THREE-WAY BLIND REVIEW PASS / REMOTE V10 RECHECK PENDING / CUDA PREFLIGHT NO-START /
+> FORMAL P0B NO-START / GPU IDLE`
 
 ## 2026-07-20：exp404后根因边界
 
@@ -102,3 +103,22 @@ fresh v9 CPU合同连续两次`8/8 PASS`且byte-exact，结果SHA256均为
 `52ee00f1eaf817877807ffbd691c09aafdd89288b5c87b56747f99f8695a2648`/
 `5422fb34dce954c809c3c28daefa7bb62e4aeafbe71c7e5b7c7ec6bd4242d4ca`。三路只读复审均为`0B/0H`。
 此前新建但未完成、未使用的exp405 venv安装已停止并清理；CUDA preflight将只使用用户指定MMPOSE-ABU。
+
+## 2026-07-20：MMPOSE-ABU远端v9兼容失败与v10修复
+
+远端MMPOSE-ABU首次CPU static在取得fixed preflight seal、读取official图像/pose或初始化CUDA之前，以
+`AttributeError: module 'ast' has no attribute 'unparse'`退出。根因是合同脚本用了Python 3.9才提供的
+`ast.unparse`，而MMPOSE-ABU固定为Python 3.8.20；这不是MMPose、Torch、OpenCLIP或CUDA不兼容，也不消耗
+once-only preflight。该次v9远端static如实保留为FAIL。
+
+v10只把禁止训练调用的AST读取改为Python 3.8可用的`ast.Attribute.attr / ast.Name.id`，measurement、teacher、
+matching、bootstrap、scientific gate与运行环境均未改变。源码SHA为contract=
+`5d15dd73d56714b2dbe725e88a157f889d5f22866126c1076a7fc59a5e351399`、measurement=
+`52ee00f1eaf817877807ffbd691c09aafdd89288b5c87b56747f99f8695a2648`、teacher=
+`af255cbbb6eafca2024f7882023deda50445f9a01c1df0b28422a24e23cc35a0`。本地两次fresh结果均`8/8 PASS`且
+byte-exact，SHA256均为`15ae43641d2e13afd487978033b61b8f83d1702fbfc74972d95a3f733230723c`；代码、复现与
+终审三路固定快照均为`0B/0H`。
+
+当前远端SSH在banner阶段连续超时，因此尚未把本地v10 PASS误写成远端PASS，也未启动CUDA/GPU。网络恢复后
+必须先用`/usr/local/anaconda3/envs/mmpose-abu/bin/python`完成两次远端v10 static并核对byte-exact、CUDA未
+初始化、GPU独占和fresh output；全部通过后才允许唯一512图preflight。

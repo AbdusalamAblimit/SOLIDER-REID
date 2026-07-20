@@ -4163,3 +4163,6 @@ recipient/donor、caliper内完整一对一匹配，non-torso CI以跨槽共同P
 readout对象，不通过调prompt、temperature、mask、loss或batch补救。
 
 v9的MMPOSE-ABU兼容只属于复现边界，不构成问题、机制或证据创新；它没有改变CAVT创新评分与kill-switch。
+
+v10只修复MMPOSE-ABU Python 3.8下的AST合同兼容，三路盲审无B/H。该修复既不是新机制，也不增加科学证据；
+真实信息增益仍只能来自region-isolated teacher的二维反事实与后继donor-free可预测性。

@@ -67,3 +67,13 @@ avalanche删除；camera-aware mAP/R1和稳定sample-key tie。两份payload均`
 **裁决**：授权真实teacher measurement代码实现；尚不授权真实数据执行、GPU或训练。后续代码盲审必须聚焦
 真实image/text encoder、pose同步、region isolation、donor配对、反事实臂和mAP/R1，不再把启动器外围强化扩展
 成阻塞项。
+
+## 真实teacher v10 Python3.8兼容修复三路盲审
+
+审查材料固定为v10 contract、未改变的measurement/teacher/core及两份canonical结果。三路分别检查代码、
+复现/once-only和最终统计/裁决，结论均为`BLOCKER=0 / HIGH=0`。唯一源码差分是把Python 3.9的
+`ast.unparse()`换为Python 3.8可用的`ast.Attribute.attr / ast.Name.id`；对`backward / step / zero_grad`的
+禁止调用检测语义不变。两份结果均`8/8 PASS`且byte-exact，SHA256=
+`15ae43641d2e13afd487978033b61b8f83d1702fbfc74972d95a3f733230723c`，provenance与源码一致。
+
+**裁决**：v10代码可用于用户指定的MMPOSE-ABU远端static复核；复核完成前不授权CUDA preflight或formal。

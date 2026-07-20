@@ -463,8 +463,13 @@ def source_contract(measurement_path: Path, teacher_path: Path) -> dict:
     forbidden_calls = []
     for node in ast.walk(measurement_ast):
         if isinstance(node, ast.Call):
-            rendered = ast.unparse(node.func)
-            if rendered.endswith(("backward", "step", "zero_grad")):
+            if isinstance(node.func, ast.Attribute):
+                rendered = node.func.attr
+            elif isinstance(node.func, ast.Name):
+                rendered = node.func.id
+            else:
+                rendered = ""
+            if rendered in ("backward", "step", "zero_grad"):
                 forbidden_calls.append(rendered)
     return {
         "no_optimizer_or_training_calls": not forbidden_calls,

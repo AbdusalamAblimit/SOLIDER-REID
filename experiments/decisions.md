@@ -5806,3 +5806,13 @@ MMPOSE-ABU的OpenCLIP/Torch接口探针通过；v8拒绝它的原因只是Conda 
 
 **决策**：停止并清理未完成的新venv，唯一512图preflight固定使用MMPOSE-ABU。该环境选择不改变P0B科学门、
 formal/student NO-START或同epoch clean D0 mAP/R1合同。
+
+### [2026-07-20] 决策：v9远端Python3.8 static失败，v10兼容修复后仍固定MMPOSE-ABU
+
+远端v9 CPU static在seal前因`ast.unparse`仅存在于Python 3.9+而失败；没有读取official数据/pose，没有初始化
+CUDA或启动GPU。该错误属于合同兼容性，不是MMPOSE-ABU、MMPose、Torch或OpenCLIP不兼容。v10只把该AST
+调用替换为Python 3.8可用的节点属性读取，本地两次`8/8 PASS`、byte-exact，三路盲审`0B/0H`。
+
+**决策**：不再建立或恢复新venv，继续固定`/usr/local/anaconda3/envs/mmpose-abu/bin/python`。由于远端SSH
+当前banner超时，先保持CUDA preflight NO-START；网络恢复后先完成两次远端v10 static、byte-exact、CUDA未
+初始化与独占4090复核，全部通过才启动唯一512图preflight。formal P0B和student仍NO-START。

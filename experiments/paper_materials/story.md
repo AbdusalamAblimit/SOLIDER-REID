@@ -2371,3 +2371,6 @@ Phase 0 static v14已通过两次byte-exact `56/56`合同和最终`0B/0H/0M/0L`�
 冻结的identity轴 x slot轴强反事实。
 
 按用户指定改用MMPOSE-ABU只改变runtime清单格式；v9无科学逻辑变化，不能写入论文贡献或结果表。
+
+远端v9 static暴露的`ast.unparse`错误与v10 Python 3.8兼容修复同样只属于测量合同工程，不是方法失败或论文
+证据。MMPOSE-ABU继续作为唯一运行环境；在远端v10复核和512图机械preflight通过前，story仍停在条件候选。
