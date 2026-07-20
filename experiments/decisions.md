@@ -5603,3 +5603,16 @@ log-det只强迫删除；wrong donor可能与host具有相同nuisance，generic�
 **决策**：conditional covariance、Gaussian descriptor、orthogonal nuisance projector均排除，不创建exp404，
 不做CPU contract、CUDA或GPU。状态为`UNCERTAINTY-METRIC PRIOR SATURATION / ORDER IDENTIFIABILITY FAIL /
 GPU NO-START`，exp401–403封板不变。
+
+### [2026-07-20] 决策：set-valued identity不进入exp404
+
+KPR官方commit `e3e6ee2f`已在SOLIDER/Swin上输出part embedding与visibility，并通过正/负keypoint prompt处理
+多人crop的target ambiguity；多个part仍共享一个target PID。人工A+B composition虽可对两个source局部监督，
+真实official query却没有多PID token ownership标注。
+
+保留全部component会把标准ReID改成multi-label retrieval；选择host需要prompt、instance assignment或
+heuristic gate；聚合又回到无单一PID的global chimera。
+
+**决策**：不以multi-PID token set、set-to-gallery max或promptless host selector建立exp404，不做CPU/CUDA/
+GPU。状态为`SET-VALUED TARGET SELECTION GAP / DEPLOYMENT CONTRACT FAIL / GPU NO-START`，exp401–403
+封板不变。

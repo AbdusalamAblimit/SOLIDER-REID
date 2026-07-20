@@ -686,3 +686,34 @@ pair-specific covariance score，又直接落入PFE/QPM/概率ReID近邻，并�
 第八轮裁决为`UNCERTAINTY-METRIC PRIOR SATURATION / ORDER IDENTIFIABILITY FAIL / NO EXP404 / GPU
 NO-START`。不以conditional covariance、orthogonal nuisance projector、fixed-rank deletion或Gaussian
 descriptor建立新实验。
+
+## 21. 第九轮：source-separated set descriptor仍缺target selection
+
+第七轮partial chimera没有单一global PID，一个看似直接的出口是把最终对象改成集合：对A/B source分别输出
+identity vector，以source mask给两个局部向量各自的PID正目标；真实单人图则希望集合退化为同一身份的多个
+part vector。
+
+### 21.1 KPR已覆盖“一人多向量”，但目标仍需外部指定
+
+KPR（ECCV 2024，官方commit `e3e6ee2ffb74fd86a39518ce9a25ff91fbd973fa`）已在SOLIDER/Swin上输出
+每个body part的embedding与visibility，并以query/gallery mutually-visible part平均距离检索。它还把
+Multi-Person Ambiguity写成明确问题：同一crop里出现多人时，正/负keypoint prompt指定target与non-target；
+prompt可选只意味着非歧义图可省略，不意味着模型返回多个独立PID。
+
+所以multi-vector本身并没有解决source ownership。KPR/BPBreID/ProFD的多个part都受同一个sample PID监督，
+TokenMatcher等multi-token方法也仍检索一个target identity；person search则先靠detector box把多个实例空间分开。
+
+### 21.2 set-valued identity的三个测试出口都不闭合
+
+对人工A+B composition，source mask确实能产生两个局部PID target；但official真实query只有一个benchmark PID，
+没有“这个token属于crop内哪个已知gallery identity”的标注。测试只能三选一：
+
+1. 保留全部component并对gallery取max/min-set score：occluder component检索到occluder也会被计为query错误，
+   实际把标准single-target ReID改成multi-label retrieval；
+2. 选择host component：需要keypoint prompt、detector/segmentation instance assignment或中心/面积heuristic，前两者
+   超出当前student单RGB无额外输入，后者回到已拥挤的target-selection gate且没有source-positive保证；
+3. 聚合所有component为单descriptor：A/B又合成没有单一PID的global chimera，回到第七轮三难。
+
+因此source-separated local supervision只在合成样本中可识别，不能迁移成当前部署合同下的最终target identity。
+第九轮裁决为`SET-VALUED TARGET SELECTION GAP / DEPLOYMENT CONTRACT FAIL / NO EXP404 / GPU
+NO-START`。不以multi-PID token set、set-to-gallery max或promptless host selector建立新实验。

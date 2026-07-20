@@ -2843,3 +2843,14 @@ uncertainty、QPM和probabilistic embedding matching。
 
 **当前判定**：`UNCERTAINTY-METRIC PRIOR SATURATION / ORDER IDENTIFIABILITY FAIL / NO EXP404 / GPU
 NO-START`。没有性能结果，exp401–403封板不变。
+
+## exp403后set-valued identity审计（2026-07-20）
+
+本轮没有启动实验或GPU。KPR官方commit `e3e6ee2f`已经在SOLIDER/Swin上输出多part embedding与visibility，
+并用正/负keypoint prompt指定多人crop中的target；其多个vector仍属于同一个PID。
+
+合成A+B虽能给source-separated token两个局部PID target，但真实official query只有一个benchmark identity。
+保留全部component改变任务语义，选host需要额外target信号或heuristic gate，聚合则恢复global chimera。
+
+**当前判定**：`SET-VALUED TARGET SELECTION GAP / DEPLOYMENT CONTRACT FAIL / NO EXP404 / GPU
+NO-START`。没有性能结果，exp401–403封板不变。

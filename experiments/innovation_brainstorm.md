@@ -4035,3 +4035,15 @@ part uncertainty、spatial/channel uncertainty、local uncertainty和probabilist
 subspace标签：same-ID positive可由RGB mean绕过，固定谱预算只保证“删了东西”；wrong donor可能与host具有相同
 nuisance，generic prior也可能优于sample estimate，NULL语义取决于人为定义。故无法从概率结构推出
 `correct > wrong > generic/NULL`，不建立exp404。
+
+### exp403后第九轮：set-valued identity只把缺口推给target selector
+
+**状态**：`SET TARGET SELECTION GAP / NO EXP404`
+
+source-separated multi-vector可在合成A+B图中为两组token提供各自PID，看似绕开partial chimera的global label。
+但KPR已经覆盖SOLIDER/Swin的一人多part embedding、visibility与multi-person ambiguity；遇到多人时，它需要正负
+keypoint prompt指出目标。现有part/multi-token方法的多个vector也仍共享一个sample identity。
+
+真实official query没有多PID token ownership标注。保留所有component会改变为multi-label任务，选择host需要
+额外prompt/instance assignment或heuristic gate，聚合则恢复无单一PID的chimera。因此“输出一个set”不是闭合
+ownership的新机制，不建立exp404。

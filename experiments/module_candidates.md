@@ -381,3 +381,15 @@ spatial/channel、local uncertainty、QPM和probabilistic embedding matching。
 log-det只强迫度量变化；different-PID wrong donor也可能与host有相同质量状态，generic或NULL没有天然的概率次序。
 所以conditional covariance、nuisance projector和Gaussian descriptor都不能建立预注册强反事实顺序，不创建
 exp404，不做CPU/CUDA/GPU。
+
+### exp403后第九轮候选裁决：source-separated set descriptor
+
+**状态**：`STRUCTURE AUDIT / TARGET-SELECTION GAP / NO EXP404`
+
+KPR官方commit `e3e6ee2f`已在SOLIDER/Swin上输出一人多part embedding与visibility，并用mutually-visible
+part distance检索；多人crop的target由正/负keypoint prompt指定。它没有让一个crop同时拥有多个独立PID。
+
+人工A+B patch composition虽能给两个source token各自PID，但真实official query只有一个benchmark target：保留
+全部component会把任务改成multi-label retrieval；选host需要prompt/instance assignment或heuristic gate；重新
+聚合又回到无单一PID的chimera。multi-PID token set、set-to-gallery max和promptless host selector均不建立
+exp404，不做CPU/CUDA/GPU。

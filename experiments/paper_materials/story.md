@@ -2262,3 +2262,11 @@ evidence没有正确covariance或nuisance subspace标签；same-ID目标可被RG
 wrong donor又不必拥有错误的质量状态，generic prior甚至可能比单样本估计更稳，NULL的概率含义也需人为指定。
 因此概率描述符不能自然产生预注册顺序，story不能把conditional covariance或orthogonal projector写成新贡献。
 状态保持`POST-EXP403 OWNERSHIP AUDIT / NO EXP404 / GPU NO-START`。
+
+第九轮把partial chimera改写成source-separated identity set。合成A+B时两个局部向量确有各自PID，但KPR已经在
+SOLIDER/Swin上实现一人多part向量与可见性匹配，并明确用正/负keypoint prompt解决多人crop的target ambiguity；
+multi-vector不等于multi-identity。
+
+真实official query仍只有一个指定PID。保留所有identity component会改变评测语义，选择host需要当前部署外的
+prompt/instance assignment或heuristic gate，再聚合则回到global chimera。故set descriptor没有补上最终target
+selection，不能进入story或exp404；GPU继续NO-START。
