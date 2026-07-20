@@ -2,9 +2,9 @@
 
 ## 0. 当前边界
 
-standalone、production CPU/source、actual CUDA v3与formal prelaunch门均已通过。当前只允许通过冻结的
-`formal_once_wrapper.sh`启动唯一fresh seed1234/e120；启动后自然跑满，不按中间性能早停、不续训、不修改
-运行中代码/config。
+standalone、production CPU/source、actual CUDA v3、formal prelaunch及唯一fresh seed1234/e120均已完成。
+训练封板后不得重跑、续训或修改训练代码/config。当前唯一活动是sealed e120 checkpoint的
+`exp404-spk-counterfactual-v1`九臂终审。
 
 v1已因5-slot region field误接17通道D0 gate封板`SEALED-INVALID`，禁止重跑。修复后production v3与v2 static
 门通过；actual CUDA v2使用`cuda_amp_preflight_v2.py`和fresh v2 output完成并封板。
@@ -68,6 +68,33 @@ static PASS后另行实现并冻结：
 
 ## 5. formal once-only与终审
 
-唯一fresh e120自然跑满。最终八类arm必须逐臂全量覆盖query/gallery，state/RNG/patch/source/config/checkpoint
+唯一fresh e120已自然跑满。最终九臂必须逐臂全量覆盖query/gallery，state/RNG/patch/source/config/checkpoint
 逐臂恢复exact；正式按design.md两级门裁决。runtime测量器错误只封板该执行记录，新编号修contract；scientific
 FAIL不调temperature/loss/batch、不中途删control、不以新seed补跑。
+
+### 5.1 v1冻结顺序
+
+1. `correct`；
+2. `wrong_rgb`：same split/same camera/different PID donor的evidence与presence；
+3. `generic_mean`：train-split RGB-only frozen pooled-evidence mean；
+4. `null_zero`；
+5. `all_product_bypass`；
+6. `random_key`：absolute-index hash确定的逐样本signed permutation；
+7. `random_cluster`：8个generic signed-permutation原型、hash平衡分配；
+8. `wrong_mask`：只循环SPK presence；
+9. `slot_cycle`：只循环evidence。
+
+NULL与all-product-bypass的最终descriptor和四项metric必须逐元素/逐值exact。除该预期相等对外，wrong、generic、
+random-key、random-cluster、wrong-mask与slot-cycle都必须finite且相对correct active。random-key须保持逐样本每槽
+范数和绝对值多重集；random-cluster须满足8簇、count最大差1、每簇PID覆盖`>=40`且camera覆盖等于验证集全集。
+
+### 5.2 执行资产和启动门
+
+- 本地资产：`counterfactual_core.py`、`actual_counterfactual_audit.py`、
+  `counterfactual_static_contract.py`、`counterfactual_postflight.py`、
+  `counterfactual_once_wrapper.sh`；
+- 远端fresh审计根：`/home/afr/reid-clean/audits/exp404-spk-counterfactual-v1`；
+- 只读checkpoint：formal output中的唯一`transformer_120.pth`；
+- runtime固定为fresh exp404 runtime；
+- 先连续两次CPU/static byte-exact，再做fresh小样本CUDA wiring preflight；
+- 正式result/runner/manifest/lock任何一个预先存在都禁止启动；GPU必须无compute PID。

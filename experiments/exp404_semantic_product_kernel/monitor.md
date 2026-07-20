@@ -1,6 +1,6 @@
 # exp404 SPK 监控记录
 
-> 当前：`CUDA V3 PASS / FORMAL PRELAUNCH PASS / UNIQUE E120 AUTHORIZED`
+> 当前：`FORMAL E120 COMPLETE / TRAINING SEALED / COUNTERFACTUAL AUDIT PREPARING`
 
 ## 2026-07-20：目标降为C类后的机制准入
 
@@ -163,3 +163,256 @@ SHA及no-resume。prelaunch static连续两次`15/15 PASS`且byte-exact；wrappe
 `e2ded956ff1f741b2a4f51bf38bca31234a716f67a21b464f7729d2570ff26c4`。
 
 判定：`CUDA V3 PASS / FORMAL PRELAUNCH PASS / UNIQUE FRESH SEED1234 E120 AUTHORIZED / GPU IDLE`。
+
+## 2026-07-20：唯一formal e120已启动
+
+远端fresh repo提交为`1e40e9a9d1717139b06d09f55821c7f0e68143c7`，启动前repo clean，正式
+output/runner/launch/lock均不存在，GPU=`2 MiB/0%/0 compute PID`。远端fresh static结果再次
+`15/15 PASS`且与本地两次结果byte-exact，SHA=
+`e2ded956ff1f741b2a4f51bf38bca31234a716f67a21b464f7729d2570ff26c4`。
+
+冻结wrapper于`2026-07-20T04:52:15Z`启动唯一fresh seed1234/e120，main PID=`436043`；launch/wrapper SHA=
+`78b49f6971c42d73e8bdf4ee5dc0394a9d05090f1213e571b9cad10eea3758e4`/
+`5e500fcd67a1ed408141b112d480a5fec2cffe3df5bd545122902f3e53597d86`。启动快照runner SHA=
+`723e612b259e3692160a7991cfde97c5ac979eab299374c940dd5531e8d64f8f`；该文件后续持续增长，只作为启动快照。
+
+首次健康检查：唯一compute PID=`436043`，GPU=`8,134 MiB/99%`；训练已到epoch1 iter20/227，loss finite，
+SPK factor mean/std/min/max=`1.0000/0.2041/0.5980/1.5249`，descriptor delta abs=`2.868e-01`，无异常。
+这里只证明执行健康与SPK active，不作性能判断。
+
+判定：`FORMAL E120 RUNNING / GPU EXCLUSIVE / CONTINUE NATURALLY / NO EARLY STOP`。
+
+## 2026-07-20T05:11Z：formal健康检查
+
+main PID=`436043`存活且仍是唯一compute PID，GPU=`8,134 MiB/98%`。epoch9已自然完成，单epoch约
+`125.215 s`、`107.8 samples/s`；检查时进入epoch10 iter20/227。当前loss=`5.804`、所有分项finite，
+SPK factor mean/std/min/max=`1.0000/0.0998/0.7807/1.2410`，descriptor delta abs=`1.080e-01`，干预仍active。
+日志异常扫描无Traceback、RuntimeError、OOM、NaN或Inf；尚无正式eval/performance结果。
+
+判定：`CONTINUE / EXECUTION HEALTHY / NO PERFORMANCE JUDGMENT`。
+
+## 2026-07-20T05:26Z：formal健康检查
+
+main PID=`436043`仍是唯一compute PID，GPU=`8,104 MiB/99%`。epoch16自然完成，单epoch=`124.440 s`、
+`108.0 samples/s`；检查时进入epoch17 iter20/227。当前loss=`3.100`、所有分项finite，SPK factor
+mean/std/min/max=`1.0000/0.1003/0.8054/1.2406`，descriptor delta abs=`9.862e-02`，干预保持active。
+日志异常扫描继续无Traceback、RuntimeError、OOM、NaN或Inf；尚无正式eval/performance结果。
+
+判定：`CONTINUE / EXECUTION HEALTHY / NO PERFORMANCE JUDGMENT`。
+
+## 2026-07-20T05:41Z：formal健康检查
+
+main PID=`436043`继续独占GPU，显存/利用率=`8,116 MiB/99%`。epoch23自然完成，单epoch=`124.927 s`、
+`108.1 samples/s`；检查时进入epoch24 iter20/227。当前loss=`1.339`、所有分项finite，SPK factor
+mean/std/min/max=`1.0000/0.1036/0.8207/1.2126`，descriptor delta abs=`9.483e-02`，干预仍active。
+日志异常扫描无Traceback、RuntimeError、OOM、NaN或Inf；正式性能仍未产生。
+
+判定：`CONTINUE / EXECUTION HEALTHY / NO PERFORMANCE JUDGMENT`。
+
+## 2026-07-20T05:56Z：formal健康检查
+
+main PID=`436043`仍为唯一compute PID，GPU=`8,102 MiB/98%`。epoch30自然完成，单epoch=`125.380 s`、
+`108.2 samples/s`；检查时进入epoch31 iter20/227。当前loss=`0.677`、所有分项finite，SPK factor
+mean/std/min/max=`1.0000/0.1062/0.8094/1.2329`，descriptor delta abs=`9.861e-02`，干预继续active。
+epoch30冻结中间eval=`47.0 mAP / 57.4 R1 / 71.6 R5 / 77.3 R10`；该数值不用于早停、best-pick或正式
+科学裁决。日志异常扫描无Traceback、RuntimeError、OOM、NaN或Inf。
+
+判定：`CONTINUE TO E120 / INTERMEDIATE EVAL NON-DECISIVE / NO EARLY STOP`。
+
+## 2026-07-20T06:11Z：formal健康检查
+
+main PID=`436043`为唯一compute PID，GPU=`8,104 MiB/99%`。epoch37自然完成，单epoch=`124.982 s`、
+`108.0 samples/s`；检查时为epoch38 iter60/227。当前loss=`0.415`、所有分项finite，SPK factor
+mean/std/min/max=`1.0000/0.1097/0.8184/1.2422`，descriptor delta abs=`1.049e-01`，干预active。
+无新增eval；日志异常扫描继续无Traceback、RuntimeError、OOM、NaN或Inf。
+
+判定：`CONTINUE / EXECUTION HEALTHY / NO PERFORMANCE JUDGMENT`。
+
+## 2026-07-20T06:24Z：中间eval显式汇总与健康检查
+
+以下数字逐项读取formal runner log、sealed exp387 clean D0 monitor与sealed exp401 monitor。三者均为
+seed1234/e120并在相同epoch评测；差值严格按同epoch计算，后续heartbeat固定报告最新同epoch mAP/R1对比：
+
+| epoch | exp404 mAP/R1 | clean D0同epoch | exp404-D0 | exp401同epoch | exp404-exp401 |
+|---:|---:|---:|---:|---:|---:|
+| 10 | 32.9/42.3 | 33.4/42.7 | -0.5/-0.4 | 34.4/43.3 | -1.5/-1.0 |
+| 20 | 44.9/55.8 | 42.2/52.4 | +2.7/+3.4 | 42.4/54.7 | +2.5/+1.1 |
+| 30 | 47.0/57.4 | 46.6/56.2 | +0.4/+1.2 | 45.6/55.9 | +1.4/+1.5 |
+| 40 | 50.0/61.1 | 50.0/60.7 | 0.0/+0.4 | 48.6/59.2 | +1.4/+1.9 |
+
+检查时main PID=`436043`仍是唯一compute PID，GPU显存=`8,106 MiB`；训练到epoch44 iter60/227，
+loss=`0.360`、SPK factor std=`0.1071`、descriptor delta abs=`1.054e-01`，均finite/active。最新正式中间
+eval为epoch40的`50.0 mAP / 61.1 R1`；同epoch相对clean D0为`0.0/+0.4`，相对exp401为
+`+1.4/+1.9`。只记录趋势，不用于早停、best-pick或最终裁决。
+
+判定：`CONTINUE TO E120 / E40 VS D0 0.0 mAP +0.4 R1 / NO EARLY STOP`。
+
+## 2026-07-20T06:44Z：e50同epoch对照与健康检查
+
+三条对照均使用总计120 epoch并在e50评测，不以其他epoch替代：
+
+| arm@e50 | mAP | R1 | 相对exp404 |
+|---|---:|---:|---:|
+| exp404 SPK | 52.5 | 62.5 | 0.0/0.0 |
+| sealed clean D0（exp387） | 52.1 | 62.8 | exp404-D0=`+0.4/-0.3` |
+| sealed rich route（exp401） | 53.5 | 65.0 | exp404-exp401=`-1.0/-2.5` |
+
+exp404 e50完整R5/R10=`75.9/80.9`。检查时main PID=`436043`仍为唯一compute PID，GPU=
+`8,106 MiB/82%`；训练到epoch53 iter160/227，loss=`0.246`，SPK factor std=`0.1068`、descriptor
+delta abs=`1.072e-01`，均finite/active。异常扫描无Traceback、RuntimeError、OOM、NaN或Inf。
+
+判定：`CONTINUE TO E120 / E50 VS D0 +0.4 mAP -0.3 R1 / VS EXP401 -1.0 -2.5 / NO EARLY STOP`。
+
+## 2026-07-20T07:00Z：e60同epoch对照与健康检查
+
+三条对照均为总计120 epoch并在e60评测：
+
+| arm@e60 | mAP | R1 | 相对exp404 |
+|---|---:|---:|---:|
+| exp404 SPK | 54.5 | 64.3 | 0.0/0.0 |
+| sealed clean D0（exp387） | 55.1 | 66.1 | exp404-D0=`-0.6/-1.8` |
+| sealed rich route（exp401） | 53.5 | 64.8 | exp404-exp401=`+1.0/-0.5` |
+
+exp404 e60完整R5/R10=`78.3/83.0`。评测后已自然进入epoch61 iter20/227，main PID=`436043`仍为
+唯一compute PID，显存=`8,126 MiB`；loss=`0.228`，SPK factor std=`0.1074`、descriptor delta abs=
+`1.098e-01`，均finite/active。异常扫描无Traceback、RuntimeError、OOM、NaN或Inf。
+
+判定：`CONTINUE TO E120 / E60 VS D0 -0.6 mAP -1.8 R1 / VS EXP401 +1.0 -0.5 / NO EARLY STOP`。
+
+## 2026-07-20T07:29Z：e70同epoch对照与健康检查
+
+三条对照均为总计120 epoch并在e70评测：
+
+| arm@e70 | mAP | R1 | 相对exp404 |
+|---|---:|---:|---:|
+| exp404 SPK | 56.2 | 67.0 | 0.0/0.0 |
+| sealed clean D0（exp387） | 55.4 | 65.2 | exp404-D0=`+0.8/+1.8` |
+| sealed rich route（exp401） | 55.2 | 66.1 | exp404-exp401=`+1.0/+0.9` |
+
+exp404 e70完整R5/R10=`79.4/84.3`。检查时训练到epoch74 iter200/227，main PID=`436043`仍为唯一
+compute PID，GPU=`8,102 MiB/98%`；loss=`0.177`，SPK factor std=`0.1083`、descriptor delta abs=
+`1.078e-01`，均finite/active。异常扫描无Traceback、RuntimeError、OOM、NaN或Inf。
+
+判定：`CONTINUE TO E120 / E70 VS D0 +0.8 mAP +1.8 R1 / VS EXP401 +1.0 +0.9 / NO BEST-PICK`。
+
+## 2026-07-20T07:44Z：e80同epoch对照与健康检查
+
+三条对照均为总计120 epoch并在e80评测：
+
+| arm@e80 | mAP | R1 | 相对exp404 |
+|---|---:|---:|---:|
+| exp404 SPK | 56.2 | 66.5 | 0.0/0.0 |
+| sealed clean D0（exp387） | 56.1 | 66.3 | exp404-D0=`+0.1/+0.2` |
+| sealed rich route（exp401） | 56.0 | 66.8 | exp404-exp401=`+0.2/-0.3` |
+
+exp404 e80完整R5/R10=`79.2/83.9`。检查时训练到epoch81 iter200/227，main PID=`436043`仍为唯一
+compute PID，显存=`8,108 MiB`；loss=`0.166`，SPK factor std=`0.1078`、descriptor delta abs=
+`1.092e-01`，均finite/active。异常扫描无Traceback、RuntimeError、OOM、NaN或Inf。
+
+判定：`CONTINUE TO E120 / E80 VS D0 +0.1 mAP +0.2 R1 / VS EXP401 +0.2 -0.3 / NO BEST-PICK`。
+
+## 2026-07-20T08:14Z：e90同epoch对照与健康检查
+
+三条对照均为总计120 epoch并在e90评测：
+
+| arm@e90 | mAP | R1 | 相对exp404 |
+|---|---:|---:|---:|
+| exp404 SPK | 57.6 | 68.0 | 0.0/0.0 |
+| sealed clean D0（exp387） | 57.5 | 67.9 | exp404-D0=`+0.1/+0.1` |
+| sealed rich route（exp401） | 56.5 | 66.8 | exp404-exp401=`+1.1/+1.2` |
+
+exp404 e90完整R5/R10=`80.9/85.2`。检查时训练到epoch96 iter20/227，main PID=`436043`仍为唯一
+compute PID，GPU=`8,100 MiB/99%`；loss=`0.178`，SPK factor std=`0.1083`、descriptor delta abs=
+`1.100e-01`，均finite/active。异常扫描无Traceback、RuntimeError、OOM、NaN或Inf。
+
+判定：`CONTINUE TO E120 / E90 VS D0 +0.1 mAP +0.1 R1 / VS EXP401 +1.1 +1.2 / NO BEST-PICK`。
+
+## 2026-07-20T08:29Z：e100同epoch对照与健康检查
+
+三条对照均为总计120 epoch并在e100评测：
+
+| arm@e100 | mAP | R1 | 相对exp404 |
+|---|---:|---:|---:|
+| exp404 SPK | 57.1 | 67.3 | 0.0/0.0 |
+| sealed clean D0（exp387） | 56.9 | 67.1 | exp404-D0=`+0.2/+0.2` |
+| sealed rich route（exp401） | 56.8 | 67.1 | exp404-exp401=`+0.3/+0.2` |
+
+exp404 e100完整R5/R10=`80.1/84.5`。检查时训练到epoch103 iter20/227，main PID=`436043`仍为唯一
+compute PID，GPU=`8,120 MiB/91%`；loss=`0.153`，SPK factor std=`0.1080`、descriptor delta abs=
+`1.093e-01`，均finite/active。异常扫描无Traceback、RuntimeError、OOM、NaN或Inf。e100相对e90回落，
+只作为反对best-pick的轨迹证据，不改变e120协议。
+
+判定：`CONTINUE TO E120 / E100 VS D0 +0.2 mAP +0.2 R1 / VS EXP401 +0.3 +0.2 / NO BEST-PICK`。
+
+## 2026-07-20T08:59Z：e110同epoch对照与健康检查
+
+三条对照均为总计120 epoch并在e110评测：
+
+| arm@e110 | mAP | R1 | 相对exp404 |
+|---|---:|---:|---:|
+| exp404 SPK | 57.3 | 67.4 | 0.0/0.0 |
+| sealed clean D0（exp387） | 57.4 | 67.4 | exp404-D0=`-0.1/0.0` |
+| sealed rich route（exp401） | 56.9 | 66.7 | exp404-exp401=`+0.4/+0.7` |
+
+exp404 e110完整R5/R10=`79.5/84.6`。检查时训练到epoch117 iter60/227，main PID=`436043`仍为唯一
+compute PID，GPU=`8,118 MiB/80%`；loss=`0.152`，SPK factor std=`0.1084`、descriptor delta abs=
+`1.099e-01`，均finite/active。异常扫描无Traceback、RuntimeError、OOM、NaN或Inf，output仍只有
+train log、无中途checkpoint。
+
+判定：`CONTINUE NATURALLY TO E120 / E110 VS D0 -0.1 mAP 0.0 R1 / VS EXP401 +0.4 +0.7`。
+
+## 2026-07-20T09:14Z：e120自然完成与训练封板
+
+唯一main PID=`436043`及workers自然退出，GPU恢复`2 MiB/0%/0 compute PID`；output只有train log与唯一
+`transformer_120.pth`，无中途checkpoint。e120日志结果：
+
+| arm@e120 | mAP | R1 | R5 | R10 | exp404相对值 |
+|---|---:|---:|---:|---:|---:|
+| exp404 SPK | 57.4 | 67.5 | 79.7 | 85.0 | 0/0/0/0 |
+| sealed clean D0（exp387） | 57.6 | 67.7 | 80.8 | 84.6 | -0.2/-0.2/-1.1/+0.4 |
+| sealed rich route（exp401） | 57.1 | 67.3 | 80.3 | 84.8 | +0.3/+0.2/-0.6/+0.2 |
+
+runner/train-log/checkpoint SHA=
+`098f8e756c03502503860de4d956741f63738d3038fdf4a82f3021d8b8b98111`/
+`78d173b77cb536a36d721311dffd529e0fd3a3c94940d433e979f34e953bc18a`/
+`03dbebb341e9d085e3d697505b8793cca217fca4a3b8f2a1f28fc512336e7d23`。remote HEAD仍为
+`1e40e9a9d1717139b06d09f55821c7f0e68143c7`，异常扫描无Traceback、RuntimeError、OOM、NaN或Inf。
+
+性能上correct超过`56.7`绝对门并授权终审；rounded e120 mAP/R1低于clean D0，故C-track paper性能前置门
+未过。机制GO/NO-GO尚不能由correct单臂决定，必须完成冻结强反事实。
+
+判定：`FORMAL TRAINING SEALED / PAPER PERFORMANCE PREREQUISITE FAIL / COUNTERFACTUAL AUDIT GO`。
+
+## 2026-07-20T09:28Z：反事实终审v1协议冻结
+
+终审执行编号冻结为`exp404-spk-counterfactual-v1`，只读使用sealed e120 checkpoint，不修改或重跑训练。
+九臂固定为correct、matched wrong-RGB、train generic mean、NULL、all-product-bypass、unique random-key、
+balanced 8-cluster random null、wrong-mask、slot-cycle。SPK输入缝明确使用`student_evidence/student_presence`；
+wrong-RGB替换两者，wrong-mask只循环presence，slot-cycle只循环evidence，避免机械复用exp402的
+`consumer_evidence`旧接口。
+
+主门保持：correct `>=56.7 mAP`；correct相对wrong/generic/NULL/random-key/random-cluster最大值至少
+`+0.1 mAP point`；correct相对all-product-bypass至少`+0.1`；NULL与bypass exact；九臂逐臂state/RNG/
+patch/source/config/checkpoint恢复exact，eval teacher/pose/codebook访问0。wrong-mask与slot-cycle只作归因补充，
+不替代主门。先实现并连续两次通过CPU/static正反合同，再允许fresh小样本CUDA wiring preflight；当前GPU不启动。
+
+判定：`COUNTERFACTUAL V1 PROTOCOL FROZEN / STATIC IMPLEMENTATION IN PROGRESS / GPU NO-START`。
+
+## 2026-07-20T09:43Z：终审v1 static CPU正反合同
+
+终审资产已实现：干预直接包裹`model.semantic_product_kernel.forward`，不修改sealed TAPF/model源码，也不触碰
+旧`consumer_evidence`接口。两次`CUDA_VISIBLE_DEVICES=''`执行均为`32/32 PASS`，输出byte-exact，result SHA=
+`6b7f9e566c3953c6f64c287fd9fb4d77f67ea4a0180361d3c0accac81a5ca038`。
+
+正合同覆盖wrong-RGB evidence+presence donor、train generic对象、NULL=bypass、unique random-key绝对值多重集、
+balanced 8-cluster及wrong-mask/slot-cycle作用缝；random-key范数按浮点容差保持，未伪称求和顺序bit-exact。
+负合同确认wrong control反超、bypass gap不足和validity失败都分别裁决为`SPK_MECHANISM_NO-GO`。
+
+core/contract/audit/postflight/wrapper SHA=
+`e35be3d32163f227661cdb3dad544055fb0e0317aa4e0d1139e0c546482bd4dc`/
+`32fb34f5a24c7a29519278ef4e33c7323590a595221e2938511ebca1a9c5c413`/
+`2e355c2db243c46f9094a778d36a1b5685a1527491801af2e84b34dbadd37e65`/
+`46f1adb172eee74c9ed20f944014e6494c057b42945bf4c52f3d88d1fd68d4f8`/
+`8d7f95c9ba080c2d7f4f126eeba6a7365fd8d677d135040511aa1443d5ffb029`。
+
+判定：`COUNTERFACTUAL STATIC PASS / FRESH CUDA WIRING PREFLIGHT AUTHORIZED / FORMAL FULL NO-START`。
