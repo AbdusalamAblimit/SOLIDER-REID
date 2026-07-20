@@ -25,3 +25,9 @@ preprocess和source provenance，且builder未验证实际RGB SHA。已在任何
 同一独立审查者聚焦复审确认原HIGH闭环，最终=`0 BLOCKER / 0 HIGH`。rank方向、候选mask、Borda/tie-break、
 pair gather梯度、default-off exact及AMP接线均未发现B/H；紧凑contract还覆盖cache provenance roundtrip和错误
 image SHA拒绝。当前=`IMPLEMENTED / BLIND REVIEW 0B/0H / REMOTE MMPOSE CONTRACT NEXT / GPU IDLE`。
+
+远端fresh隔离repo=`/home/afr/SOLIDER-REID-exp409-pchm-d2cc18f-v1`，固定source HEAD=
+`07170a22f1a6fbef2f0f140106e7350c223deb29`且clean。MMPOSE-ABU contract在CUDA上PASS：batch64，
+default loss/gradient bit-exact，错误positive与cache image-SHA mutant均被拒；correct相对control的pair change rate=
+wrong-RGB `0.9375`、generic `0.96875`、zero/CLIP-only `0.875`、pose-shuffle `0.90625`。这证明联合miner与
+五个control均active，不是D0路径漂移；下一步直接构建唯一fresh exp409 cache。
