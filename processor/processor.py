@@ -112,6 +112,40 @@ def do_train(cfg,
     spk_enabled = bool(
         rich_evidence_enabled and cfg.MODEL.TAPF.SPK_ENABLED
     )
+    picrd_enabled = bool(
+        cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.PICRD_ENABLED
+    )
+    picrd_cache = None
+    if picrd_enabled:
+        from model.pose_clip_relation import PoseClipRelationCache
+
+        picrd_cache = PoseClipRelationCache(
+            cfg.MODEL.TAPF.PICRD_CACHE,
+            cfg.MODEL.TAPF.PICRD_CACHE_SHA256,
+        )
+        if len(picrd_cache) != len(train_loader.dataset):
+            raise RuntimeError(
+                "PICRD cache does not exactly cover the training dataset"
+            )
+        expected_picrd_paths = tuple(
+            Path(record[0])
+            .resolve()
+            .relative_to(train_loader.dataset.pose_store.dataset_root)
+            .as_posix()
+            for record in train_loader.dataset.dataset
+        )
+        if (
+            len(set(expected_picrd_paths)) != len(expected_picrd_paths)
+            or set(expected_picrd_paths) != set(picrd_cache.paths)
+        ):
+            raise RuntimeError(
+                "PICRD cache path set does not match the training dataset"
+            )
+        logger.info(
+            "PICRD cache loaded: samples=%d SHA=%s",
+            len(picrd_cache),
+            picrd_cache.sha256,
+        )
     generic_evidence = None
     if cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.SEMANTIC_ENABLED:
         from model.clip_semantic_teacher import (
@@ -208,6 +242,7 @@ def do_train(cfg,
         for n_iter, batch in enumerate(train_loader):
             if cfg.MODEL.TAPF.ENABLED:
                 img, vid, target_cam, target_view, pose_batch = batch
+                relative_paths = pose_batch.get("relative_paths")
                 pose_batch = {
                     "keypoints": pose_batch["keypoints"].to(device),
                     "scores": pose_batch["scores"].to(device),
@@ -227,6 +262,17 @@ def do_train(cfg,
             target = vid.to(device)
             target_cam = target_cam.to(device)
             target_view = target_view.to(device)
+            if picrd_enabled:
+                if relative_paths is None:
+                    raise RuntimeError("PICRD batch is missing relative paths")
+                clip_features, clip_valid = picrd_cache.lookup(relative_paths)
+                pose_batch["clip_slot_features"] = clip_features.to(
+                    device=device, non_blocking=True
+                )
+                pose_batch["clip_slot_valid"] = clip_valid.to(
+                    device=device, non_blocking=True
+                )
+                pose_batch["identity"] = target
             if elo_cur_enabled:
                 pose_batch["identity"] = target
                 pose_batch["camera"] = target_cam
@@ -382,6 +428,19 @@ def do_train(cfg,
             acc_meter.update(acc, 1)
             if cfg.MODEL.TAPF.ENABLED:
                 pose_loss_meter.update(tapf_aux["pose_loss"].item(), img.shape[0])
+                if picrd_enabled and n_iter == 0:
+                    logger.info(
+                        "PICRD epoch=%d first-batch loss/correct/wrong/generic/zero/rank=%.6f/%.6f/%.6f/%.6f/%.6f/%.6f shift=%d common-valid=%.4f",
+                        epoch,
+                        tapf_aux["picrd_loss"].item(),
+                        tapf_aux["picrd_correct"].item(),
+                        tapf_aux["picrd_wrong_rgb"].item(),
+                        tapf_aux["picrd_generic"].item(),
+                        tapf_aux["picrd_zero"].item(),
+                        tapf_aux["picrd_ranking"].item(),
+                        tapf_aux["picrd_wrong_shift"],
+                        tapf_aux["picrd_common_valid_fraction"].item(),
+                    )
                 if tapf_aux.get("semantic_loss") is not None:
                     semantic_loss_meter.update(
                         tapf_aux["semantic_loss"].item(), img.shape[0]
@@ -477,7 +536,27 @@ def do_train(cfg,
                             gate_abs = torch.stack(
                                 [delta.detach().float().abs().mean() for delta in tapf_aux["gate_deltas"]]
                             ).mean().item()
-                            if rich_evidence_enabled:
+                            if picrd_enabled:
+                                logger.info(
+                                    "Epoch[%d] Iter[%d/%d] Loss: %.3f, Pose: %.3f, PICRD: %.4f, RelC/W/G/Z: %.4f/%.4f/%.4f/%.4f, Rank: %.4f, CommonValid: %.3f, Acc: %.3f, Student: %.2f, GateAbs: %.3e, Base Lr: %.2e",
+                                    epoch,
+                                    n_iter + 1,
+                                    len(train_loader),
+                                    loss_meter.avg,
+                                    pose_loss_meter.avg,
+                                    tapf_aux["picrd_loss"].item(),
+                                    tapf_aux["picrd_correct"].item(),
+                                    tapf_aux["picrd_wrong_rgb"].item(),
+                                    tapf_aux["picrd_generic"].item(),
+                                    tapf_aux["picrd_zero"].item(),
+                                    tapf_aux["picrd_ranking"].item(),
+                                    tapf_aux["picrd_common_valid_fraction"].item(),
+                                    acc_meter.avg,
+                                    tapf_aux["student_fraction"],
+                                    gate_abs,
+                                    base_lr,
+                                )
+                            elif rich_evidence_enabled:
                                 if spk_enabled:
                                     product_factor = tapf_aux[
                                         "semantic_product_factor"

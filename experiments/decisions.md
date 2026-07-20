@@ -5901,3 +5901,13 @@ formal manifest自验证PASS且独立盲审`0B/0H`，因此唯一formal启动门
 换recipient、删control或新编号补跑同一formal。严格说这不证明CAVT科学NO-GO；但exp405/406/407已连续消耗三次
 执行在测量合同而非涨点验证上，继续修补不符合当前C类会议与快速训练目标。因此下一编号必须是新的pose+CLIP训练
 对象，直接以clean D0和自然ReID mAP/R1裁决，不再是CAVT donor/matcher修复。
+
+### [2026-07-21] 决策：exp408冻结PICRD，不再推进PICAG或CAVT测量器
+
+文献查重表明pose+CLIP与part distillation原子已高度拥挤；PICAG需要新增agreement head与推理门控，容易重现
+旧C0 support/router问题。代码根因则明确指向旧rich relation被双detach阻断、且证据来自全图GAP。
+
+**决策**：exp408选择更小且可直接裁决的PICRD：五槽region-isolated CLIP target、逐槽跨batch relation、
+correct-vs-wrong/generic/zero无temperature排序、未detach Stage-2直传。只做必要实现检查和一次智能体盲审，
+0B/0H后立即fresh cache与e120；不再增加donor/matcher/static供应链。自然e120必须同时超过clean D0 mAP/R1，
+否则封板并换新的训练/结构对象，不调旧臂。

@@ -108,6 +108,9 @@ _C.MODEL.TAPF.ELO_GENERIC_EVIDENCE = ""
 _C.MODEL.TAPF.ELO_GENERIC_EVIDENCE_SHA256 = ""
 _C.MODEL.TAPF.SPK_ENABLED = False
 _C.MODEL.TAPF.SPK_GROUPS = 16
+_C.MODEL.TAPF.PICRD_ENABLED = False
+_C.MODEL.TAPF.PICRD_CACHE = ""
+_C.MODEL.TAPF.PICRD_CACHE_SHA256 = ""
 
 # -----------------------------------------------------------------------------
 # INPUT

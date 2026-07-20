@@ -2403,3 +2403,14 @@ exp407 preflight已机械PASS，但`scientific_evaluated=false`，因此仍不�
 exp407 formal在wrong-mask caliper匹配处VALIDITY FAIL，未产生result/COMPLETE，故CAVT没有形成任何可进入论文表的
 科学证据或ReID结果。当前论文story不采用CAVT；后续必须回到直接训练并以clean D0、pose反事实和自然e120涨点建立
 贡献。
+
+## 2026-07-21：exp408切到PICRD直接训练对象
+
+CAVT在exp405--407连续被执行/测量合同阻断，未得到科学结论，也不再作为当前story。exp408从代码根因出发：
+旧rich relation既读取全图GAP，又被Stage-2 source与evidence hidden双detach，事实上没有把局部CLIP关系训练进
+backbone。
+
+新候选PICRD用pose固定五个解剖槽，以fresh region-isolated CLIP visual target监督未detach Stage-2的逐槽
+跨batch关系，并把correct、wrong-RGB、generic、zero直接纳入排序。测试期仍是clean D0的单RGB global
+descriptor。文献审计认为它没有完整同构实现，但只够C类定位；只有自然e120同时超过clean D0 mAP/R1且correct
+关系稳定优于三个强control，才允许进入正面story。当前仍为设计/实现阶段，没有新性能结果。

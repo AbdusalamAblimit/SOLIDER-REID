@@ -4195,3 +4195,20 @@ exp407 preflight八项validity PASS仍不提高CAVT创新评价，只说明forma
 exp407 formal最终被wrong-mask caliper有效性阻断，未回答CAVT科学问题。连续三次测量器失败说明这条路线的证据成本
 已经超过当前C类会议目标可接受范围。CAVT不作科学否定，但从活动主线移除；下一机制必须直接改变训练对象并通过
 clean D0、wrong-pose/zero-pose反事实和ReID mAP/R1形成证据，禁止再设计donor匹配测量器。
+
+## 2026-07-21：exp408 PICRD——从语义路由改为pose-indexed关系训练
+
+### 新对象
+
+旧路线问“CLIP evidence如何驱动router”；PICRD改问“pose定义的局部CLIP关系能否直接改变形成global descriptor
+的中层表示”。每槽分别在batch维构造关系矩阵，避免head-vs-leg固定语义主导跨槽Gram；correct target为唯一
+正绑定，wrong-RGB、generic和zero进入训练内排序。学生没有投影头，loss直接回传未detach Stage-2。
+
+### 创新门
+
+- 问题门：PASS——标准单图ReID中的实例pose-CLIP binding可辨识性；
+- 机制门：CONDITIONAL PASS——只有“逐槽relation+强反事实排序+Stage-2直传”整体成立；
+- 证据门：PASS——四臂距离、backbone梯度、clean D0同epoch和自然e120双门可以直接裁决。
+
+该组合未发现公开同构实现，但π-VL、ProFD、PAFormer、KPR、MUVA和CVPR26 Composite-Attribute ReID覆盖了
+大部分原子，因此定位为C类候选。若退化为per-slot cosine/KL或feature add，立即失去机制新意。

@@ -3220,3 +3220,14 @@ formal manifest SHA=`3932125980989a634df87cb71904e8d2a4772e9bae98ea1dcfb8def35ca
 `4d0daea8fe17e15ce3c31955ce89c014e8fddbfbb74e0bb86a9e7d91b12198e7`；result/COMPLETE/cache均不存在，GPU已
 释放。最终=`EXP407 FORMAL SEALED-FAIL / VALIDITY FAILURE / SCIENCE NOT EVALUATED / STUDENT NO-START`。
 preflight PASS保留，但不能授权重跑formal或推断CAVT科学方向，也没有ReID mAP/R1。
+
+## exp408 PICRD设计冻结（2026-07-21）
+
+exp408当前只有设计、文献与代码审计，没有cache、GPU执行或mAP/R1。对象已冻结为Pose-Indexed CLIP
+Relational Distillation：fresh生成15,618图五槽region-isolated CLIP visual target；训练时从未detach的Swin
+Stage-2按同一五槽pose mask局部池化；逐槽在batch维比较off-diagonal cosine relation，并把correct、
+different-PID wrong-RGB、generic与zero直接纳入排序目标。推理完全沿clean D0 RGB descriptor路径。
+
+文献结论=`C-CLASS CONDITIONAL NOVELTY PASS`：没有完整同构实现，但普通part KD已高度拥挤；逐槽relation、
+强反事实排序和Stage-2直传任一删除都失去机制差分。当前判定=`DESIGN FROZEN / IMPLEMENTING / GPU NO-START`。
+性能仍以sealed clean D0 e120 raw=`57.5587756578/67.6923076923` mAP/R1为双门。
