@@ -24,7 +24,7 @@ MODEL:
     HANDOFF_EPOCHS: 5
     POSE_LOSS_WEIGHT: 0.1
     PICRD_ENABLED: True
-    PICRD_CACHE: '/home/afr/reid-clean/assets/exp408-picrd-cache-v1/picrd_cache.npz'
+    PICRD_CACHE: '/home/afr/reid-clean/assets/exp408-picrd-cache-v2/picrd_cache.npz'
     PICRD_CACHE_SHA256: 'TO_BE_FROZEN_AFTER_FRESH_BUILD'
 
 INPUT:

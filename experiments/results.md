@@ -3231,3 +3231,7 @@ different-PID wrong-RGB、generic与zero直接纳入排序目标。推理完全�
 文献结论=`C-CLASS CONDITIONAL NOVELTY PASS`：没有完整同构实现，但普通part KD已高度拥挤；逐槽relation、
 强反事实排序和Stage-2直传任一删除都失去机制差分。当前判定=`DESIGN FROZEN / IMPLEMENTING / GPU NO-START`。
 性能仍以sealed clean D0 e120 raw=`57.5587756578/67.6923076923` mAP/R1为双门。
+
+实现后的固定MMPOSE-ABU batch64 CUDA/AMP检查已PASS：PICRD loss为FP32，Stage0--2有142个非零梯度张量，
+默认GradScaler一次真实更新。首次cache-v1调用在import阶段因repo root未进入`sys.path`退出，未读数据或初始化
+CUDA且没有cache/diagnostic；该目录冻结，修复入口后只允许fresh cache-v2。这不是mAP/R1或科学结果。
