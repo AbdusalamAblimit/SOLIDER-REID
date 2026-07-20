@@ -181,3 +181,12 @@ SPK factor mean/std/min/max=`1.0000/0.2041/0.5980/1.5249`，descriptor delta abs
 这里只证明执行健康与SPK active，不作性能判断。
 
 判定：`FORMAL E120 RUNNING / GPU EXCLUSIVE / CONTINUE NATURALLY / NO EARLY STOP`。
+
+## 2026-07-20T05:11Z：formal健康检查
+
+main PID=`436043`存活且仍是唯一compute PID，GPU=`8,134 MiB/98%`。epoch9已自然完成，单epoch约
+`125.215 s`、`107.8 samples/s`；检查时进入epoch10 iter20/227。当前loss=`5.804`、所有分项finite，
+SPK factor mean/std/min/max=`1.0000/0.0998/0.7807/1.2410`，descriptor delta abs=`1.080e-01`，干预仍active。
+日志异常扫描无Traceback、RuntimeError、OOM、NaN或Inf；尚无正式eval/performance结果。
+
+判定：`CONTINUE / EXECUTION HEALTHY / NO PERFORMANCE JUDGMENT`。
