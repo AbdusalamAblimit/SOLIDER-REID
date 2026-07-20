@@ -1,6 +1,6 @@
 # exp408 PICRD 监控
 
-> 当前：`DESIGN/CODE/CACHE FROZEN / BLIND REVIEW 0B/0H / STUDENT START AUTHORIZED`
+> 当前：`STUDENT RUNNING / FRESH SEED1234 E120 / DO NOT MODIFY OR EARLY-STOP`
 
 ## 2026-07-21：从 CAVT 切到直接训练对象
 
@@ -49,3 +49,11 @@ cache-v2已自然完成并通过固定loader核验：official train `15,618`张�
 `80db6448a38745a7846bbb1ffb63d868b4efcda8851bc069cd8166dc311cebee`，diagnostic manifest SHA256=
 `8ef842f98a1172d7c8c197828cb3d4fda2006ced52062c9608569da5be62cff8`；核验后GPU=`2 MiB/0%/0 compute PID`。
 因此不再追加preflight，冻结config SHA并授权唯一fresh seed1234 student自然运行至e120。
+
+唯一student已于远端fresh output启动：repo=`/home/afr/SOLIDER-REID-exp408-picrd-0700703-v3`，source HEAD=
+`86496f0062d7553062567e7d2bbcb371a24ef500`，output=`/home/afr/reid-clean/logs/exp408-picrd-s1234-v1`，
+runner log=`/home/afr/reid-clean/train-logs/exp408-picrd-s1234-v1.runner.log`，主PID=`466984`。启动前GPU无compute
+PID、output/runner均fresh；固定MMPOSE-ABU实际加载15,618样本cache及冻结SHA，batch=`64`。首batch
+loss/correct/wrong/generic/zero/rank=`0.615141/0.022584/0.023626/0.042036/0.727439/0.592558`，
+shift=`4`，common-valid=`1.0000`，均finite；首观测GPU约`7,000 MiB/89%`且只有该主PID。epoch 1自然完成，
+无异常并进入epoch 2；当前只监控自然e120和e10/20/...评测，不修改运行中源码/config，不按中间性能早停。
