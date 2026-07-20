@@ -28,6 +28,10 @@
 6. MMPOSE-ABU batch64 CUDA/AMP 一次真实 backward/optimizer step，梯度 finite/nonzero；
 7. 一名未参与实现的智能体盲审 design/config/diff/tests，修复全部 BLOCKER/HIGH 至 `0B/0H`。
 
+AMP reporter若在`unscale_`前误判scaled gradient，只封板该执行为invalid checker。修复执行必须进入fresh v2，
+保持default GradScaler初值不覆盖；允许其在同一固定batch上自然skip/backoff，最多8 attempts，仅第一且唯一成功
+optimizer update计为PASS。不得把手调scale伪装成修复。
+
 除修复 BLOCKER/HIGH 外不展开无穷 static/CPU 合同；`0B/0H` 后立即进入 fresh cache/full run。
 
 ## 阶段 C：fresh cache

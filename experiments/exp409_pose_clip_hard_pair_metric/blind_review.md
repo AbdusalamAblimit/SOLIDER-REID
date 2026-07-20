@@ -44,3 +44,18 @@ manifest、preprocess及源码，违反协议中的输入绑定。
 config merge、center CUDA0、GradScaler、pair/data SHA、forward/loss与真实optimizer update检查未见B/H。
 同一审查者聚焦复审确认修复精确匹配且语法PASS，未引入新问题。real-batch执行器最终=
 `0 BLOCKER / 0 HIGH`。
+
+real-batch v1实际执行随后暴露新的reporter问题：脚本在`GradScaler.unscale_`之前把scaled参数梯度的非有限值
+直接当失败，既没有让原生scaler执行skip/backoff，也没有产生optimizer update。本次v1冻结为
+`INVALID CHECKER / MODEL SCIENCE NOT EVALUATED`，禁止重跑。
+
+v2只修AMP测量语义：final descriptor用未缩放`autograd.grad`检查；参数梯度在`unscale_`后报告；默认
+GradScaler不覆盖初值，最多8个固定batch native attempts，只允许overflow skip/backoff，得到第一且唯一成功
+optimizer update即停止。没有手调scale、loss、batch、pair或模型；等待追加盲审后才能fresh执行v2。
+
+v2首轮盲审发现`1 BLOCKER / 0 HIGH`：reporter只汇总base参数的nonfinite，但GradScaler扫描完整optimizer；若
+classifier/bottleneck单独overflow，会把正确native skip误报成“finite未更新”。已改为对全部model参数汇总
+nonfinite，并以`scale_after < scale_before`作为native overflow权威判据；等待聚焦复审。
+
+同一审查者聚焦复审确认全model nonfinite覆盖完整optimizer，native overflow、skip、finite update与梯度门顺序
+正确。fresh real-batch v2最终=`0 BLOCKER / 0 HIGH / EXECUTION AUTHORIZED`。
