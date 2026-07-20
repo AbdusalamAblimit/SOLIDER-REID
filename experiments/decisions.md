@@ -5713,3 +5713,11 @@ v3在第5次default GradScaler attempt成功更新并通过全部26门；formal 
 `1e40e9a9d1717139b06d09f55821c7f0e68143c7`。
 
 **决策**：保持单4090任务，自然训练至e120；中间性能无论好坏均不早停，不修改运行中代码/config，不续训。
+
+### [2026-07-20] 决策：exp404训练封板，授权全量反事实终审
+
+唯一fresh训练自然完成e120并退出，final rounded=`57.4/67.5/79.7/85.0`，相对clean D0=
+`-0.2/-0.2/-1.1/+0.4`，相对exp401=`+0.3/+0.2/-0.6/+0.2`。GPU恢复空闲、唯一checkpoint、异常0。
+
+**决策**：paper性能前置门判FAIL，不声称超过D0；correct mAP通过`56.7`机制绝对门，因此继续冻结的
+correct/wrong/generic/NULL/random/all-bypass全量终审。终审前不得把单臂性能写成SPK有效。

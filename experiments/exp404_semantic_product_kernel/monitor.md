@@ -1,6 +1,6 @@
 # exp404 SPK 监控记录
 
-> 当前：`FORMAL E120 RUNNING / MAIN PID 436043 / NO EARLY STOP`
+> 当前：`FORMAL E120 COMPLETE / TRAINING SEALED / COUNTERFACTUAL AUDIT PREPARING`
 
 ## 2026-07-20：目标降为C类后的机制准入
 
@@ -360,3 +360,25 @@ compute PID，GPU=`8,118 MiB/80%`；loss=`0.152`，SPK factor std=`0.1084`、des
 train log、无中途checkpoint。
 
 判定：`CONTINUE NATURALLY TO E120 / E110 VS D0 -0.1 mAP 0.0 R1 / VS EXP401 +0.4 +0.7`。
+
+## 2026-07-20T09:14Z：e120自然完成与训练封板
+
+唯一main PID=`436043`及workers自然退出，GPU恢复`2 MiB/0%/0 compute PID`；output只有train log与唯一
+`transformer_120.pth`，无中途checkpoint。e120日志结果：
+
+| arm@e120 | mAP | R1 | R5 | R10 | exp404相对值 |
+|---|---:|---:|---:|---:|---:|
+| exp404 SPK | 57.4 | 67.5 | 79.7 | 85.0 | 0/0/0/0 |
+| sealed clean D0（exp387） | 57.6 | 67.7 | 80.8 | 84.6 | -0.2/-0.2/-1.1/+0.4 |
+| sealed rich route（exp401） | 57.1 | 67.3 | 80.3 | 84.8 | +0.3/+0.2/-0.6/+0.2 |
+
+runner/train-log/checkpoint SHA=
+`098f8e756c03502503860de4d956741f63738d3038fdf4a82f3021d8b8b98111`/
+`78d173b77cb536a36d721311dffd529e0fd3a3c94940d433e979f34e953bc18a`/
+`03dbebb341e9d085e3d697505b8793cca217fca4a3b8f2a1f28fc512336e7d23`。remote HEAD仍为
+`1e40e9a9d1717139b06d09f55821c7f0e68143c7`，异常扫描无Traceback、RuntimeError、OOM、NaN或Inf。
+
+性能上correct超过`56.7`绝对门并授权终审；rounded e120 mAP/R1低于clean D0，故C-track paper性能前置门
+未过。机制GO/NO-GO尚不能由correct单臂决定，必须完成冻结强反事实。
+
+判定：`FORMAL TRAINING SEALED / PAPER PERFORMANCE PREREQUISITE FAIL / COUNTERFACTUAL AUDIT GO`。

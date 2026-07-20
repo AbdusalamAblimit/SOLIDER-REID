@@ -4112,3 +4112,7 @@ v3 actual与formal prelaunch均已通过，说明SPK可以进入唯一正式验�
 
 唯一formal已启动不改变创新判断。C类门槛保持为“固定final-descriptor语义绑定 + random null强证据”；在e120
 与全量反事实结束前，训练健康、factor active或中间精度都不能升级为贡献结论。
+
+exp404 e120未超过clean D0的mAP/R1，因此它不具备“更强主干性能”贡献。C类候选只剩机制证据路径：若correct
+能同时击败wrong/generic/NULL、unique random-key、frequency-matched random-cluster与all-bypass，仍可形成
+适度结构加严格ownership证据；任一主门失败则不再包装为正面方法。
