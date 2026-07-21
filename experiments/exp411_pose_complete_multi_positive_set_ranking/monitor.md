@@ -27,3 +27,16 @@ learned CE、D0 pose loss、student坐标与eval保持不变。该对象同时�
 同时检查D0-vs-default-off四类RNG/state/forward/loss exact、isolated PCMPSR descriptor/Stage-3/backbone梯度及
 combined native AMP update。当前状态=`IMPLEMENTATION REVIEW 0B/0H / FRESH CACHE NEXT / GPU IDLE`；真实CUDA
 合同仍待cache后一次执行，尚无exp411性能结果。
+
+## 2026-07-21：fresh cache已启动
+
+relay恢复后，从exp410 formal clean基底建立fresh远端repo=
+`/home/afr/SOLIDER-REID-exp411-pcmpsr-feb56c1-v1`，显式传输目标文件并提交；运行source HEAD=
+`ebf60f2b4a5c943958f7077779d8500c2855874a`，关键loss/builder/real-batch/config SHA与本地byte-exact。启动前repo
+tracked/untracked均clean、CLIP checkpoint SHA=`9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e`、
+GPU=`2 MiB/0%/0 compute PID`，asset与runner路径均fresh。
+
+唯一cache主PID=`574498`，asset=`/home/afr/reid-clean/assets/exp411-pcmpsr-cache-v1`，runner=
+`/home/afr/reid-clean/train-logs/exp411-pcmpsr-cache-v1.runner.log`。首次观测已编码`8/15618`，GPU约
+`2186 MiB/94%`且只有该compute PID，无异常。当前=`FRESH CACHE RUNNING / SOURCE+PARAMETERS FROZEN`；只监控
+自然完成，不修改builder/source/参数，不复用exp408/409/410 cache。
