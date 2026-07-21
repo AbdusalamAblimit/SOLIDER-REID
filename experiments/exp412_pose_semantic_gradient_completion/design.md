@@ -7,9 +7,9 @@ exp411 correct 相对 clean D0 自然上涨，但 zero-owner 的 e120 mAP/R1 反
 修改 owner 公式，也不把 CLIP feature 当 identity prototype、局部蒸馏 target 或 hard-pair scorer。
 
 zero-owner 仍暴露一个训练对象缺口：PK batch 中同一 PID 的四张图共享身份监督，但某个身体部位在部分图中缺失、
-低置信或被背景污染时，四张图仍平均承担该部位的反向梯度。PSGC 将“单图补 feature”改写为“同 PID 内补监督
+低置信或被背景污染时，四张图仍平均承担该部位的反向路由系数。PSGC 将“单图补 feature”改写为“同 PID 内补监督
 机会”：pose 定位当前增强视图的五个身体槽，CLIP 只给每槽一个身份无关的 visible-vs-occluded 语义标量，二者共同
-决定每个 PID×槽的固定总梯度预算应由哪些图承担。
+决定每个 PID×槽的固定路由系数预算应由哪些图承担。
 
 ## 核心假设
 
@@ -39,12 +39,12 @@ exp405 已冻结的五槽短语与四组 visible/occluded 模板，经同一 Ope
 该差值只表达“对应身体槽更像可见还是遮挡”，不进入 student feature 空间，不参与分类 logits，也不携带 PID
 prototype。文本、模板、checkpoint 与 asset SHA 在首个正式臂前冻结，禁止结果后调 prompt、temperature 或 scale。
 
-### 3. 同 PID×槽的 Pareto 梯度预算
+### 3. 同 PID×槽的 Pareto 路由系数预算
 
 增强后 COCO-17 scores/valid 生成五槽 visibility `v[i,r]`。对 batch 内每个 PID 的四图和每个槽，候选图若不存在
 另一图同时满足 `v[j,r] >= v[i,r]`、`q[j,r] >= q[i,r]` 且至少一项严格更高，则属于 Pareto front `F[p,r]`。
 
-槽梯度权重冻结为：
+槽路由权重冻结为：
 
 - `w[i,r] = 4 / |F[p,r]|`，若图 `i` 位于 front；
 - dominated 或 CLIP-invalid 图为 `0`；
@@ -60,12 +60,16 @@ prototype。文本、模板、checkpoint 与 asset SHA 在首个正式臂前冻�
 
 `G[i,h,w] = 1 - sum_r M[i,r,h,w] + sum_r M[i,r,h,w] * w[i,r]`。
 
-最终池化前仅在训练期执行：
+接点固定为 `norm3` 后的 `outs[-1]`、`avgpool` 前，并且只作用 descriptor 分支；Stage-2 TAPF pose-loss 分支不
+经过 router。最终池化前仅在训练期执行：
 
-`X_route = X.detach() + G * (X - X.detach())`。
+`G_cast = G.detach().to(device=X.device, dtype=X.dtype)`，
+
+`X_route = X.detach() + G_cast * (X - X.detach())`。
 
 其 forward 值与 `X` exact 相同，但 backward 对身体 token 乘 `G`；pose field 之外保持倍率 1。router 不新增参数、
-buffer、随机数或 loss。eval 强制禁用且不读取 CLIP、text asset 或 external pose。
+buffer、随机数或 loss。`sum_i w=4`只表示同 PID×槽的路由系数预算守恒；不同图的 pose field 面积和上游梯度
+本来就不同，因此不声称真实梯度向量或范数守恒。eval 强制禁用且不读取 CLIP、text asset 或 external pose。
 
 ### 5. 强反事实
 
@@ -73,12 +77,13 @@ buffer、随机数或 loss。eval 强制禁用且不读取 CLIP、text asset 或
 
 - `correct`：对应槽的 visible-vs-occluded CLIP 文本差值；
 - `pose-only`：所有 `q` 置常量，只由 visibility 决定 front；
+- `q-only`：front 比较中的 visibility 置常量，只由正确 CLIP 标量决定 front；空间路由仍使用相同 pose field；
 - `text-shuffle`：五组文本轴固定循环错位一槽，保留 visual cache、文本集合、计算量和标量分布来源；
 - `zero-owner`：sealed exp411 zero-owner，无 PSGC；
 - `clean D0`：sealed 原 batch-hard 基线。
 
 首轮只训练 correct。只有 correct 自然 e120 同时严格胜 sealed zero-owner 与 clean D0 的 raw mAP/R1，才串行训练
-pose-only 与 text-shuffle；correct 还须同时严格胜两者，才记为 `POSE+CLIP SCIENTIFIC GO`。
+pose-only、q-only 与 text-shuffle；correct 还须同时严格胜三者，才记为 `POSE+CLIP SCIENTIFIC GO`。
 
 ## 对照组
 
@@ -94,7 +99,8 @@ pose-only 与 text-shuffle；correct 还须同时严格胜两者，才记为 `PO
 1. text asset checkpoint/template/shape/norm/SHA 完整，五槽 `q` finite、非恒定，correct 与循环错位至少改变一个
    真实 PK64 front membership；
 2. 每个 PID×槽的权重和严格为 4，无有效候选时 exact 回退全 1；
-3. correct 的 router forward、descriptor、CE、set loss、pose loss与 PSGC-off exact，梯度非 exact 且 finite；
+3. correct 的 router dtype不变且`torch.equal(X_route,X)`，descriptor、score、CE、set loss、pose loss与
+   PSGC-off exact，梯度非 exact 且 finite；
 4. 默认关闭不增加 state，不改变四类 RNG；固定 MMPOSE-ABU 的真实 PK64 CUDA/AMP 取得一次真实 update；
 5. GPU 空闲、fresh output 不存在、唯一正式 config 与 asset SHA 冻结。
 

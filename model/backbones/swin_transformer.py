@@ -1524,6 +1524,30 @@ class SwinTransformer(BaseModule):
                                self.num_features[i]).permute(0, 3, 1,
                                                              2).contiguous()
                 outs.append(out)
+        if (
+            self.training
+            and pose_batch is not None
+            and "psgc_slot_weights" in pose_batch
+        ):
+            if tapf_state is None:
+                raise RuntimeError("PSGC requires an active clean TAPF state")
+            from model.pose_semantic_gradient_completion import (
+                route_pose_semantic_gradient,
+            )
+
+            routed, psgc_route = route_pose_semantic_gradient(
+                outs[-1], pose_batch, image_hw=input_hw
+            )
+            if psgc_route is None:
+                raise RuntimeError("PSGC gradient route is missing")
+            outs[-1] = routed
+            tapf_state["psgc_gradient_min"] = psgc_route["gradient_min"]
+            tapf_state["psgc_gradient_max"] = psgc_route["gradient_max"]
+            tapf_state["psgc_gradient_mean"] = psgc_route["gradient_mean"]
+            tapf_state["psgc_body_fraction"] = psgc_route["body_fraction"]
+            tapf_state["psgc_region_valid_fraction"] = psgc_route[
+                "region_valid_fraction"
+            ]
         x = self.avgpool(outs[-1])
         x = torch.flatten(x, 1)
         if (

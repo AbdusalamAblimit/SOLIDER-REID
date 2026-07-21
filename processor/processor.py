@@ -124,8 +124,14 @@ def do_train(cfg,
     pcmpsr_enabled = bool(
         cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.PCMPSR_ENABLED
     )
+    psgc_enabled = bool(
+        cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.PSGC_ENABLED
+    )
     pcmpsr_control_mode = str(
         cfg.MODEL.TAPF.PCMPSR_CONTROL_MODE
+    ).lower()
+    psgc_control_mode = str(
+        cfg.MODEL.TAPF.PSGC_CONTROL_MODE
     ).lower()
     if pcmpsr_enabled and pcmpsr_control_mode not in {
         "correct",
@@ -137,6 +143,17 @@ def do_train(cfg,
         raise RuntimeError(
             "PICRD, PCHM, PC2P, and PCMPSR are mutually exclusive"
         )
+    if psgc_enabled and (
+        not pcmpsr_enabled or pcmpsr_control_mode != "zero_owner"
+    ):
+        raise RuntimeError("PSGC requires the PCMPSR zero-owner host")
+    if psgc_enabled and psgc_control_mode not in {
+        "correct",
+        "pose_only",
+        "q_only",
+        "text_shuffle",
+    }:
+        raise RuntimeError("unsupported PSGC formal control mode")
     if pc2p_enabled and (
         cfg.MODEL.TAPF.SEMANTIC_ENABLED
         or cfg.MODEL.TAPF.HIERARCHICAL
@@ -237,6 +254,27 @@ def do_train(cfg,
             pcmpsr_cache.sha256,
             pcmpsr_cache.source_head,
             pcmpsr_control_mode,
+        )
+    psgc_text_prototypes = None
+    if psgc_enabled:
+        from model.pose_semantic_gradient_completion import (
+            PoseSemanticTextAxes,
+        )
+
+        psgc_text_asset = PoseSemanticTextAxes(
+            cfg.MODEL.TAPF.PSGC_TEXT_AXES,
+            cfg.MODEL.TAPF.PSGC_TEXT_AXES_SHA256,
+            cfg.MODEL.TAPF.PCMPSR_CLIP_CHECKPOINT_SHA256,
+        )
+        psgc_text_prototypes = psgc_text_asset.to(
+            torch.device("cuda", local_rank)
+        )
+        logger.info(
+            "PSGC frozen text axes loaded outside model/state: SHA=%s prompt=%s source=%s control=%s",
+            psgc_text_asset.sha256,
+            psgc_text_asset.prompt_spec_sha256,
+            psgc_text_asset.source_head,
+            psgc_control_mode,
         )
     picrd_cache = None
     if picrd_enabled:
@@ -391,6 +429,8 @@ def do_train(cfg,
             pchm_control_changes = None
             pcmpsr_state = None
             pcmpsr_control_changes = None
+            psgc_diag = None
+            psgc_control_changes = None
             if pchm_enabled:
                 if relative_paths is None:
                     raise RuntimeError("PCHM batch is missing relative paths")
@@ -474,6 +514,55 @@ def do_train(cfg,
                         clip_valid,
                         control_mode=pcmpsr_control_mode,
                     )
+                    if psgc_enabled:
+                        from model.pose_semantic_gradient_completion import (
+                            build_psgc_slot_weights,
+                        )
+
+                        psgc_slot_weights, psgc_diag = (
+                            build_psgc_slot_weights(
+                                target,
+                                visibility,
+                                clip_features,
+                                clip_valid,
+                                psgc_text_prototypes,
+                                mode=psgc_control_mode,
+                            )
+                        )
+                        pose_batch["psgc_slot_weights"] = psgc_slot_weights
+                        if epoch == 1 and n_iter == 0:
+                            psgc_control_changes = {}
+                            correct_weights = (
+                                psgc_slot_weights
+                                if psgc_control_mode == "correct"
+                                else build_psgc_slot_weights(
+                                    target,
+                                    visibility,
+                                    clip_features,
+                                    clip_valid,
+                                    psgc_text_prototypes,
+                                    mode="correct",
+                                )[0]
+                            )
+                            for control in (
+                                "pose_only",
+                                "q_only",
+                                "text_shuffle",
+                            ):
+                                control_weights = build_psgc_slot_weights(
+                                    target,
+                                    visibility,
+                                    clip_features,
+                                    clip_valid,
+                                    psgc_text_prototypes,
+                                    mode=control,
+                                )[0]
+                                psgc_control_changes[control] = float(
+                                    control_weights.ne(correct_weights)
+                                    .float()
+                                    .mean()
+                                    .item()
+                                )
                     if epoch == 1 and n_iter == 0:
                         pcmpsr_control_changes = {}
                         correct_state = (
@@ -739,6 +828,28 @@ def do_train(cfg,
                     pcmpsr_state["owner_unique_mean"].item(),
                     pcmpsr_state["owner_fallback_fraction"].item(),
                     pcmpsr_control_changes,
+                )
+
+            if psgc_enabled and n_iter == 0:
+                if psgc_diag is None:
+                    raise RuntimeError("PSGC diagnostics are missing")
+                logger.info(
+                    "PSGC epoch=%d control=%s first-batch front-size/front/fallback/weight-min/max/q-mean/std=%.4f/%.4f/%.4f/%.4f/%.4f/%.6f/%.6f gradient-min/max/mean/body/valid=%.4f/%.4f/%.4f/%.4f/%.4f controls=%s",
+                    epoch,
+                    psgc_control_mode,
+                    psgc_diag["front_size_mean"].item(),
+                    psgc_diag["front_fraction"].item(),
+                    psgc_diag["fallback_fraction"].item(),
+                    psgc_diag["weight_min"].item(),
+                    psgc_diag["weight_max"].item(),
+                    psgc_diag["semantic_mean"].item(),
+                    psgc_diag["semantic_std"].item(),
+                    tapf_aux["psgc_gradient_min"].item(),
+                    tapf_aux["psgc_gradient_max"].item(),
+                    tapf_aux["psgc_gradient_mean"].item(),
+                    tapf_aux["psgc_body_fraction"].item(),
+                    tapf_aux["psgc_region_valid_fraction"].item(),
+                    psgc_control_changes,
                 )
 
             scaler.scale(loss).backward()

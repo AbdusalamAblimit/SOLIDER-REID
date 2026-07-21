@@ -258,7 +258,30 @@ class build_transformer(nn.Module):
             )
 
         self.tapf_enabled = cfg.MODEL.TAPF.ENABLED
+        if cfg.MODEL.TAPF.PSGC_ENABLED and not self.tapf_enabled:
+            raise ValueError("PSGC requires clean TAPF")
         if self.tapf_enabled:
+            if cfg.MODEL.TAPF.PSGC_ENABLED and (
+                not cfg.MODEL.TAPF.PCMPSR_ENABLED
+                or str(cfg.MODEL.TAPF.PCMPSR_CONTROL_MODE).lower()
+                != "zero_owner"
+                or cfg.MODEL.TAPF.SEMANTIC_ENABLED
+                or cfg.MODEL.TAPF.HIERARCHICAL
+                or cfg.MODEL.TAPF.SPK_ENABLED
+                or cfg.MODEL.TAPF.ELO_CUR_ENABLED
+            ):
+                raise ValueError(
+                    "PSGC requires the single-stage PCMPSR zero-owner host"
+                )
+            if cfg.MODEL.TAPF.PSGC_ENABLED and str(
+                cfg.MODEL.TAPF.PSGC_CONTROL_MODE
+            ).lower() not in {
+                "correct",
+                "pose_only",
+                "q_only",
+                "text_shuffle",
+            }:
+                raise ValueError("unsupported PSGC formal control mode")
             if cfg.MODEL.TAPF.PC2P_ENABLED and (
                 cfg.MODEL.TAPF.PICRD_ENABLED
                 or cfg.MODEL.TAPF.PCHM_ENABLED
