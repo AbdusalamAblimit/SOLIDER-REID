@@ -31,7 +31,7 @@ MODEL:
     PSGC_ENABLED: True
     PSGC_CONTROL_MODE: 'correct'
     PSGC_TEXT_AXES: '/home/afr/reid-clean/assets/exp412-psgc-text-v1/text_axes.npz'
-    PSGC_TEXT_AXES_SHA256: '__FREEZE_AFTER_ONCE_ONLY_ASSET_BUILD__'
+    PSGC_TEXT_AXES_SHA256: '3b5fd399350a522459cef090bff72d76c97ff483921d84aae4990eda16727bf3'
 
 INPUT:
   SIZE_TRAIN: [384, 128]
