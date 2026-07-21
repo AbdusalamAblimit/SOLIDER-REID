@@ -108,3 +108,17 @@ PID，无异常。
 
 当前=`UNIQUE FRESH E120 RUNNING / SOURCE+CONFIG+CACHE FROZEN`。运行中只监控自然完成，在e10/20/.../120记录与
 sealed clean D0同epochmAP/R1，不修改formal repo、config、cache或参数，不按中间点早停。
+
+## 2026-07-21：e10首次正式评测
+
+唯一fresh训练自然完成e10评测：PCMPSR=`27.7 mAP / 36.9 R1 / 52.8 R5 / 59.6 R10`；sealed clean D0
+同epoch=`33.4 mAP / 42.7 R1`，因此rounded `ΔmAP/ΔR1=-5.7/-5.8`。读取结果时训练已自然进入e12，
+主PID=`576005`仍为唯一compute PID，GPU约`7072 MiB/65%`，runner中
+Traceback/RuntimeError/OOM/NaN/Inf计数为0。
+
+| epoch | PCMPSR mAP/R1 | PCMPSR R5/R10 | sealed clean D0 mAP/R1 | rounded ΔmAP/ΔR1 |
+|---:|---:|---:|---:|---:|
+| 10 | 27.7/36.9 | 52.8/59.6 | 33.4/42.7 | -5.7/-5.8 |
+
+e10为明显不利的warmup中间点，但不改变冻结协议、不早停也不修改运行中source/config/cache；继续自然训练至e120，
+最终仍只按raw mAP/R1双门裁决。
