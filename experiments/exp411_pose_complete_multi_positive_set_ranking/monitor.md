@@ -687,3 +687,19 @@ mAP/R1/R5高`0.2/0.5/0.6`，仅R10低`0.2`。这是第五个wrong-RGB在预注�
 不早停、不改参、不续训。读取时训练已进入e103，主PID=`678912`仍为唯一compute PID，GPU约
 `7,080 MiB/62%`，formal HEAD=`f98ab2daafa294dd0db004e10519363025a45488`且tracked source未变化，
 runner/train log严格异常计数均为0。继续冻结运行至e110/e120。
+
+## 2026-07-22：wrong-RGB e110正式评测
+
+wrong-RGB自然完成e110=`59.0 mAP / 70.5 R1 / 82.9 R5 / 86.2 R10`；同epoch sealed correct=
+`58.6/69.9/82.2/85.7`，sealed zero-owner=`58.8/70.4/81.8/86.1`，sealed clean D0=
+`57.4/67.4/80.5/84.6`。四臂差值为：
+
+| epoch | wrong-RGB mAP/R1/R5/R10 | correct同epoch | zero-owner同epoch | clean D0同epoch | wrong−correct | wrong−zero | wrong−D0 |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 110 | 59.0/70.5/82.9/86.2 | 58.6/69.9/82.2/85.7 | 58.8/70.4/81.8/86.1 | 57.4/67.4/80.5/84.6 | +0.4/+0.6/+0.7/+0.5 | +0.2/+0.1/+1.1/+0.1 | +1.6/+3.1/+2.4/+1.6 |
+
+e110时wrong-RGB四项同时高于correct与zero-owner，预注册mAP/R1相对correct高`0.4/0.6`、相对zero-owner高
+`0.2/0.1`；e80/e90/e100/e110已连续四个后半程点在mAP/R1上同时胜correct。该轨迹强烈不支持正确owner
+RGB/PID绑定是PCMPSR增益来源，但不以e110替代最终点；训练继续自然到e120，不早停、不补跑、不改参。
+读取时已进入e111，主PID=`678912`仍为唯一compute PID，GPU约`7,072 MiB/41%`，formal HEAD=
+`f98ab2daafa294dd0db004e10519363025a45488`且tracked source未变化，runner/train log严格异常计数均为0。
