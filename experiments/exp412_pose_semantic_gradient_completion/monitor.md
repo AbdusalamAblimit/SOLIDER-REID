@@ -64,3 +64,17 @@ P×K=`16×4`、seed1234、max epoch120、fresh output、不续训；PCMPSR宿主
 首个20 iterations自然完成，loss=`8.250`、pose=`0.916`、无异常。formal HEAD=
 `98039e0a1a69541ca7a593cbf90abdc2225bb091`且tracked source未变化；主PID为唯一compute PID，GPU约
 `6,980 MiB/42%`。运行中冻结source/config/cache/text asset/参数，e10/20/.../120只记录不早停。
+
+## 2026-07-22：PSGC e10正式评测
+
+PSGC自然完成e10=`24.0 mAP / 33.5 R1 / 47.8 R5 / 54.1 R10`；同epoch sealed zero-owner=
+`28.4/38.1/53.9/60.8`，sealed clean D0=`33.4/42.7/59.8/65.2`。差值为：
+
+| epoch | PSGC mAP/R1/R5/R10 | zero-owner同epoch | clean D0同epoch | PSGC−zero | PSGC−D0 |
+|---:|---:|---:|---:|---:|---:|
+| 10 | 24.0/33.5/47.8/54.1 | 28.4/38.1/53.9/60.8 | 33.4/42.7/59.8/65.2 | -4.4/-4.6/-6.1/-6.7 | -9.4/-9.2/-12.0/-11.1 |
+
+首个预注册点四项均明显低于zero-owner与clean D0，是不利的早期优化证据；但PSGC只改变backward路由，早期轨迹
+可能不同，不能用e10替代自然e120裁决。继续冻结运行，不早停、不改prompt/front/budget/loss或scale。读取时已
+进入e12，主PID=`717837`仍为唯一compute PID，GPU约`7,080 MiB/57%`，formal HEAD及tracked source未变化，
+runner严格异常计数0。
