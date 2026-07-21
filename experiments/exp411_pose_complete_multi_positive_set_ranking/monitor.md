@@ -602,3 +602,20 @@ RGB/PID绑定不会立即破坏性能，这进一步削弱正确owner绑定的�
 读取时训练已进入e51，主PID=`678912`仍为唯一compute PID，GPU约`7,086 MiB/41%`，formal HEAD=
 `f98ab2daafa294dd0db004e10519363025a45488`且tracked source未变化，config/loss/processor SHA保持冻结值，
 runner/train log严格异常计数均为0。继续冻结运行，不早停、不续训、不改参。
+
+## 2026-07-21：wrong-RGB e60正式评测
+
+wrong-RGB自然完成e60=`57.4 mAP / 69.6 R1 / 81.1 R5 / 85.7 R10`；同epoch sealed correct=
+`57.2/69.6/81.5/84.8`，sealed zero-owner=`57.6/70.3/81.0/85.2`，sealed clean D0=
+`55.1/66.1/79.0/83.3`。四臂差值为：
+
+| epoch | wrong-RGB mAP/R1/R5/R10 | correct同epoch | zero-owner同epoch | clean D0同epoch | wrong−correct | wrong−zero | wrong−D0 |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 60 | 57.4/69.6/81.1/85.7 | 57.2/69.6/81.5/84.8 | 57.6/70.3/81.0/85.2 | 55.1/66.1/79.0/83.3 | +0.2/0.0/-0.4/+0.9 | -0.2/-0.7/+0.1/+0.5 | +2.3/+3.5/+2.1/+2.4 |
+
+e60时wrong-RGB相对correct的mAP高`0.2`、R1持平，R5低`0.4`、R10高`0.9`；相对zero-owner的mAP/R1低
+`0.2/0.7`，R5/R10高`0.1/0.5`，继续呈混合顺序。到当前为止，correct尚未在wrong-RGB的预注册mAP/R1上
+形成稳定双指标优势；但wrong-RGB自然e120前不得据此作终局外推。读取时训练已进入e61，主PID=`678912`仍为
+唯一compute PID，GPU约`7,068 MiB/41%`，formal HEAD=`f98ab2daafa294dd0db004e10519363025a45488`且
+tracked source未变化，config/loss/processor SHA保持冻结值，runner/train log严格异常计数均为0。继续冻结运行，
+不早停、不续训、不改参。
