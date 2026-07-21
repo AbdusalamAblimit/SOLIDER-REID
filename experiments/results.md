@@ -3325,3 +3325,9 @@ real-batch合同v1在读取远端缺失的sealed D0 config时、CUDA/model/cache
 `0469410c044cbc15b9dacb1620670577ea3ac0943cd121b36803585b57443550`；最终=
 `V1 SEALED RUNTIME FAILURE / SCIENCE NOT EVALUATED`，没有mAP/R1、owner、梯度或update结果。只允许补传byte-exact
 D0 config并使用fresh v2 runner，PCMPSR机制与门槛不变。
+
+fresh real-batch v2全部门PASS：default-off state/forward/loss与Python/NumPy/Torch CPU/all-CUDA RNG exact；correct
+相对wrong-RGB/generic/pose-only owner change=`0.284375/0.175/0.209375`，owner unique=`2.3125`、fallback=`0`；
+isolated PCMPSR Stage-3/backbone梯度tensor=`26/173`；combined native GradScaler第5次取得真实Stage-3 update。
+runner SHA=`c60afabde025ed00c9e66ad0ef0d0a5dbb4331ed309dd402c5455d8b3c2cc3ef`。当前授权唯一fresh e120，仍无
+exp411 ReID mAP/R1。

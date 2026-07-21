@@ -4295,3 +4295,7 @@ owner活动性、isolated set-loss梯度以及自然e120相对clean D0的双门�
 
 real-batch v1缺文件退出发生在科学路径前，不改变PCMPSR创新评分，也不能支持正负机制解释。补齐sealed D0 config
 仅恢复default-off可测性；创新状态继续为C类CONDITIONAL，等待fresh v2真实合同与后续性能。
+
+fresh v2将“机制未接通”从后续失败解释中排除：correct对三种强control的owner改变率均非零，五槽owner平均覆盖
+2.3125张支持图，isolated set loss独立更新Stage-3/backbone。它只支持PCMPSR机制active与证据门可执行，尚不支持
+性能或论文主张；C类CONDITIONAL资格下一步只由自然e120双门与GO后的matched controls决定。

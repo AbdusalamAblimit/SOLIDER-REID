@@ -72,3 +72,22 @@ forward、梯度、update或科学指标。
 最终记录=`REAL-PK64-V1 SEALED RUNTIME FAILURE / SCIENCE NOT EVALUATED`，禁止覆盖或重跑v1。修正只把本地sealed
 D0 config byte-exact传入远端fresh repo，不改PCMPSR core、cache、manifest、method config、contract逻辑或门槛；
 随后使用fresh `exp411-pcmpsr-real-batch-v2.runner.log`执行同一合同。
+
+## 2026-07-21：唯一有效real-batch v2合同PASS
+
+fresh v2在固定MMPOSE-ABU中自然完成并正常退出，runner SHA=
+`c60afabde025ed00c9e66ad0ef0d0a5dbb4331ed309dd402c5455d8b3c2cc3ef`，GPU恢复`2 MiB/0%/0 compute PID`。
+全部冻结门PASS：
+
+- D0与PCMPSR-default-off的同seed model state、真实forward、combined loss，以及构造/forward前后Python、NumPy、
+  Torch CPU、全部CUDA RNG exact；default-off loss=`20.3135318756`；
+- PK64=`16 PID×4`，correct owner unique mean=`2.3125`、fallback=`0.0`；correct相对wrong-RGB/generic/pose-only
+  owner change=`0.284375/0.175/0.209375`，三轴均active；
+- set loss=`1.6809189320`，positive/negative set distance=`57.9002265930/67.9471282959`，均finite；
+- isolated PCMPSR对Stage-3/backbone产生`26/173`个finite nonzero梯度tensor，排除CE/pose代偿；
+- combined loss/reid/pose=`8.0442008972/7.9523572922/0.9184324741`；default GradScaler前四次native overflow
+  从65536回退到4096，第5次无nonfinite并真实更新
+  `base.stages.3.blocks.1.attn.w_msa.qkv.weight`；combined Stage-3/backbone非零梯度=`26/181`。
+
+当前=`IMPLEMENTATION/CACHE/REAL-PK64 PASS / UNIQUE FRESH E120 AUTHORIZED / GPU IDLE`。不再追加测试；清理本次
+生成的untracked Python3.8 cache后，从fresh formal clone启动唯一correct seed1234/e120，运行中冻结source/config/cache。

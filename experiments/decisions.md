@@ -6010,3 +6010,12 @@ MMPOSE-ABU真实PK64 CUDA/AMP合同。只有default-off exact、correct controls
 real-batch v1因fresh远端基底缺少sealed D0 config，在任何CUDA/forward前运行时退出。**决策**：冻结v1且科学不
 评估；补传本地已有、byte-exact的D0 config属于恢复对照输入，不改变方法或合同。使用fresh v2 runner继续原唯一
 真实PK64门；不得覆盖v1、删减default-off对照或把该runtime失败写成机制证据。
+
+### [2026-07-21] 决策：exp411真实PK64门PASS，立即启动唯一student
+
+fresh v2证明default-off完整exact、三种反事实均改变owner、owner不坍缩且无fallback、isolated set loss独立把梯度
+送入Stage-3/backbone，并在生产combined AMP路径获得真实update。v1缺文件失败保持封板，不与v2混合。
+
+**决策**：实现与输入门已全部完成，不再追加static/CPU/CUDA检查；清理untracked runtime cache并建立fresh formal
+clone后立即启动唯一correct seed1234/e120。中间评测只记录不早停；自然e120必须同时严格超过clean D0 raw双门，
+FAIL直接封板PCMPSR，GO后才补zero-owner与wrong-RGB matched controls。

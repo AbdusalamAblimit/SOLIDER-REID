@@ -2470,3 +2470,7 @@ exp411 fresh cache的15,618图覆盖与provenance已通过，但这是训练输�
 
 real-batch v1因远端缺少D0 config而在模型/CUDA前退出，不进入论文表或story证据。fresh v2只修复对照输入可读性；
 在真实owner、isolated梯度与e120涨点出现前，正面story状态不变。
+
+fresh v2已确认correct pose×CLIP owner相对wrong/generic/pose-only均active，并且set loss在不借助CE/pose时可独立
+更新最终Stage-3/backbone。这允许story从“输入合同”前进到“机制已接通”，但仍不进入性能表或正面贡献；唯一
+fresh e120相对clean D0的双门仍是必要前置证据。
