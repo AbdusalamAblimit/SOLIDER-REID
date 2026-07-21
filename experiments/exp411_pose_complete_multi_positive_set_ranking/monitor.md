@@ -193,3 +193,11 @@ clean D0=`57.6/67.7/80.8/84.6`，rounded四项差=`+1.2/+2.4/+1.3/+1.2`。runner
 当前封板=`CORRECT ARM SEALED / PERFORMANCE GO / ATTRIBUTION PENDING`。不得重跑correct、续训或调owner/loss；
 下一步只按冻结协议串行执行zero-owner与wrong-RGB matched controls。只有correct严格胜二者，才升级为pose+CLIP
 科学GO与正面story。
+
+## 2026-07-21：matched-control单变量与顺序冻结
+
+新增`matched_controls.md`明确归因执行图。`zero_owner`只从集合距离删除五个slot-owner multiplicity，保留同一三图
+support与全身份set ranking；`wrong_rgb`只把owner所用CLIP槽按固定4行different-PID shift轮换，support PID不变。
+新增配置必须默认`correct`，PCMPSR关闭时D0 exact；两臂仍加载同一cache与pose并使用fresh output、seed1234、自然
+e120。执行顺序固定为`zero_owner`先、`wrong_rgb`后，禁止并行或提前用中间结果裁决。当前=
+`CONTROL DESIGN FROZEN / IMPLEMENTATION+CONTRACT NEXT / GPU IDLE`。

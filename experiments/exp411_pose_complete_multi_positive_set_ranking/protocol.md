@@ -34,3 +34,11 @@
 - 性能门：自然e120 raw mAP `>57.5587756578`且R1 `>67.6923076923`；
 - 归因门：correct严格胜zero-owner与wrong-RGB matched e120；
 - 任一runtime/validity失败只封板该fresh执行路径，不伪造结果、不续训；科学FAIL不得修改旧机制救臂。
+
+## correct性能GO后的matched-control执行
+
+correct已自然e120=`58.8/70.1/82.1/85.8`并永久封板。归因阶段以
+`matched_controls.md`为冻结合同：先fresh `zero_owner`，其唯一变量是从集合距离删除五个owner multiplicity；
+自然封板后再fresh `wrong_rgb`，其唯一变量是owner选择所用CLIP槽按固定different-PID shift=4轮换。两臂均共享
+三图support、全身份set ranking、cache、pose、student配置和自然e120协议。correct必须在mAP与R1上严格胜二者，
+才允许形成pose+CLIP归因。
