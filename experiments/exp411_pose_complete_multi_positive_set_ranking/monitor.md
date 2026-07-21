@@ -569,3 +569,19 @@ e10与e20顺序混合，e30则wrong-RGB四项均高于correct、zero-owner与cle
 替代自然e120裁决，也不得据此早停、改参或重跑。读取时已进入e39，主PID=`678912`仍为唯一compute PID，GPU约
 `7,086 MiB/57%`，formal HEAD及tracked source未变化，runner/train log严格异常计数均为0。继续冻结运行；
 `POSE+CLIP SCIENTIFIC GO`因zero-owner最终门失败已不可能恢复，wrong-RGB只用于完成绑定归因证据链。
+
+## 2026-07-21：wrong-RGB e40正式评测
+
+wrong-RGB自然完成e40=`54.3 mAP / 65.6 R1 / 80.1 R5 / 84.6 R10`；同epoch sealed correct=
+`54.7/66.6/80.0/84.2`，sealed zero-owner=`55.0/66.2/79.8/84.4`，sealed clean D0=
+`50.0/60.7/76.2/81.0`。四臂差值为：
+
+| epoch | wrong-RGB mAP/R1/R5/R10 | correct同epoch | zero-owner同epoch | clean D0同epoch | wrong−correct | wrong−zero | wrong−D0 |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 40 | 54.3/65.6/80.1/84.6 | 54.7/66.6/80.0/84.2 | 55.0/66.2/79.8/84.4 | 50.0/60.7/76.2/81.0 | -0.4/-1.0/+0.1/+0.4 | -0.7/-0.6/+0.3/+0.2 | +4.3/+4.9/+3.9/+3.6 |
+
+e40时wrong-RGB相对correct与zero-owner的mAP/R1均更低，但R5/R10略高，形成与e30相反的混合中间顺序；
+wrong-RGB仍全面领先clean D0。该点既不能恢复已失败的owner必要性门，也不能单独确定正确RGB/PID绑定的最终作用，
+仍只按自然e120完整轨迹解释。读取时训练已进入e43，主PID=`678912`仍为唯一compute PID，GPU约
+`7,070 MiB/54%`，formal HEAD=`f98ab2daafa294dd0db004e10519363025a45488`且tracked source未变化，
+config/loss/processor SHA保持冻结值，runner/train log严格异常计数均为0。继续冻结运行，不早停、不续训、不改参。
