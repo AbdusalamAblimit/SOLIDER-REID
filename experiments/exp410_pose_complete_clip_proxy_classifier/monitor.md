@@ -82,3 +82,13 @@ loss=`13.530`，GPU=`6964 MiB/94%`且只有该compute PID，无Traceback/Runtime
 
 当前状态=`UNIQUE FRESH E120 RUNNING / SOURCE+CONFIG+BANK FROZEN`。运行中不修改formal repo、config、bank或参数；
 只在e10/20/.../120记录与sealed clean D0的同epochmAP/R1，不按中间点早停。
+
+## 正式同epoch轨迹
+
+| Epoch | PC²P mAP/R1 | sealed clean D0 mAP/R1 | rounded ΔmAP/ΔR1 |
+|---:|---:|---:|---:|
+| 10 | 31.7/42.0 | 33.4/42.7 | -1.7/-0.7 |
+
+e10训练自然完成后评测得到R5/R10=`57.1/63.1`；进程随后自然进入e11。此时主PID仍为`539255`，GPU只有该
+compute PID，runner无Traceback/RuntimeError/OOM/NaN/Inf。e10双指标落后只是中间轨迹，不触发早停、续训或
+任何运行中修改。
