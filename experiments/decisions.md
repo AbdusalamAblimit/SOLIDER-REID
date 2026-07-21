@@ -5966,3 +5966,14 @@ margin/loss、或补pose-shuffle/CLIP-only controls；这些controls只在性能
 **决策**：冻结无Q/无projection的PC²P；不改triplet、pose loss、temperature、scale或eval descriptor。
 先做fresh bank与必要梯度/AMP合同，一次独立智能体盲审0B/0H后立即唯一fresh e120。首臂双门
 FAIL就封板；GO后才补wrong-RGB与generic证明PID绑定与pose completion。
+
+### [2026-07-21] 决策：exp410 bank与真实batch合同通过，立即启动student
+
+生产接线独立盲审`0B/0H`；唯一fresh bank覆盖15,618图/702 PID且每个PID五槽均有支持，严格loader完成
+official路径、逐图RGB SHA、PID行顺序、source cache/pose/CLIP/builder/loader provenance闭环。真实PK batch64中
+proxy logits为FP32 `[64,702]`，原classifier无梯度，CE-only梯度进入BNNeck、norm3与Stage-3；combined
+CE+原triplet+D0 pose经default GradScaler自然backoff后取得Stage-3真实更新，无bank eval返回原768维descriptor。
+
+**决策**：必要门已全部通过，不再增加static/CPU或小样本测试；立即从fresh clean repo启动唯一seed1234/e120
+`correct` arm。运行中冻结source/config/bank，不续训、不按中间结果早停。自然e120必须同时严格超过clean D0 raw
+`57.5587756578 mAP / 67.6923076923 R1`；FAIL直接封板，GO后才执行wrong-RGB与generic matched controls。

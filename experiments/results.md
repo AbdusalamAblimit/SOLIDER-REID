@@ -3285,5 +3285,12 @@ exp410对象重置为Pose-Complete CLIP Proxy Classifier：按PID逐槽聚合五
 原batch-hard triplet、D0 pose loss和eval global descriptor不变；无Q/projection/temperature/新loss/测试分支。
 
 独立审计删除了可学习Q退化任意classifier的科学HIGH，并把创新定位收窄为C类条件候选：问题门/证据门PASS、
-机制门CONDITIONAL PASS。当前=`DESIGN/PROTOCOL FROZEN / IMPLEMENTATION NO-START / GPU IDLE`，尚无exp410
-bank、训练或mAP/R1。
+机制门CONDITIONAL PASS。生产实现及一次独立代码盲审已完成，结论`0B/0H`。唯一fresh bank完整覆盖15,618图/
+702 PID，五槽每PID支持最小计数均为6，bank/manifest SHA=
+`8f435036d56b2a5a1a8e63466b383314f07d706a7465a499aef88a5f7435dc8c`/
+`d31b0c1e4b1ee211979f6dda05ff4977925149719eafebf788a99578891a829b`。
+
+固定MMPOSE-ABU真实PK batch64合同PASS：proxy logits=`[64,702]` FP32且非恒定；CE-only对BNNeck、norm3、Stage-3
+分别有`1/2/26`个非零梯度tensor；combined CE+原triplet+D0 pose在default GradScaler第6个native attempt取得
+真实更新，Stage-3/backbone非零梯度=`26/181`，原classifier梯度为None，eval无bank返回`[64,768]`。当前=
+`IMPLEMENTATION/BANK/CUDA-AMP PASS / STUDENT E120 AUTHORIZED`，尚无exp410 mAP/R1。

@@ -48,3 +48,21 @@ repo构建唯一bank；写回真实SHA后只执行一次真实PK batch64 CUDA/AM
   `56d53771bf0fbb4978ee51d118f921c61763ce4d2aeede7611740ec705c630d4`。
 
 真实bank SHA已写回冻结config。当前状态=`FRESH BANK PASS / REAL PK64 CUDA-AMP NEXT / GPU IDLE`。
+
+## 2026-07-21：唯一真实PK batch64 CUDA/AMP合同通过
+
+固定MMPOSE-ABU合同自然完成并正常退出，runner SHA=
+`51ee59d9f9bf701daad94b1af9b93e4bcaa653464fea509ab4d3506cdb481d1c`。结果为：
+
+- default-off state/RNG/同RNG真实forward和combined loss exact；
+- logits=`[64,702]` FP32，mean/std/abs-max=`1.69e-08/1.0203568/2.7546368`，BN norm=`27.4120655`；
+- CE-only对BNNeck/norm3/Stage-3的非零梯度tensor=`1/2/26`；
+- 原classifier梯度为None，bank不进model state/optimizer且无梯度；
+- combined loss/reid/pose=`19.3192997/19.2277889/0.9151036`；default GradScaler由65536自然backoff，
+  第6个native attempt在scale 2048取得真实update；Stage-3/backbone非零梯度tensor=`26/181`；
+- 无bank/CLIP/外部pose的eval返回finite `[64,768]`原global descriptor；
+- 合同退出后GPU=`2 MiB/0%/0 compute PID`。
+
+config SHA=`f099b7f778e376f9ff12787d1bd6bb21de3ea37be50cfac7866f155f77ad6cba`。当前状态=
+`IMPLEMENTATION/BANK/REAL-PK64 PASS / E120 AUTHORIZED / GPU IDLE`。不再追加测试，下一步从fresh clean repo启动
+唯一seed1234/e120 correct arm。
