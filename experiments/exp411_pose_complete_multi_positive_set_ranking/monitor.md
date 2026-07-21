@@ -585,3 +585,20 @@ wrong-RGB仍全面领先clean D0。该点既不能恢复已失败的owner必要�
 仍只按自然e120完整轨迹解释。读取时训练已进入e43，主PID=`678912`仍为唯一compute PID，GPU约
 `7,070 MiB/54%`，formal HEAD=`f98ab2daafa294dd0db004e10519363025a45488`且tracked source未变化，
 config/loss/processor SHA保持冻结值，runner/train log严格异常计数均为0。继续冻结运行，不早停、不续训、不改参。
+
+## 2026-07-21：wrong-RGB e50正式评测
+
+wrong-RGB自然完成e50=`55.6 mAP / 66.9 R1 / 79.5 R5 / 83.9 R10`；同epoch sealed correct=
+`54.9/66.1/79.1/83.6`，sealed zero-owner=`55.1/66.1/80.0/83.7`，sealed clean D0=
+`52.1/62.8/77.0/81.9`。四臂差值为：
+
+| epoch | wrong-RGB mAP/R1/R5/R10 | correct同epoch | zero-owner同epoch | clean D0同epoch | wrong−correct | wrong−zero | wrong−D0 |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 50 | 55.6/66.9/79.5/83.9 | 54.9/66.1/79.1/83.6 | 55.1/66.1/80.0/83.7 | 52.1/62.8/77.0/81.9 | +0.7/+0.8/+0.4/+0.3 | +0.5/+0.8/-0.5/+0.2 | +3.5/+4.1/+2.5/+2.0 |
+
+e50时wrong-RGB相对correct与zero-owner的mAP/R1均更高，其中相对correct高`0.7/0.8`、相对zero-owner高
+`0.5/0.8`；除相对zero-owner的R5低`0.5`外，其余排序指标也更高。e30与e50两个中间点均显示打乱owner
+RGB/PID绑定不会立即破坏性能，这进一步削弱正确owner绑定的可辨识归因，但中间点仍不能代替自然e120完整裁决。
+读取时训练已进入e51，主PID=`678912`仍为唯一compute PID，GPU约`7,086 MiB/41%`，formal HEAD=
+`f98ab2daafa294dd0db004e10519363025a45488`且tracked source未变化，config/loss/processor SHA保持冻结值，
+runner/train log严格异常计数均为0。继续冻结运行，不早停、不续训、不改参。
