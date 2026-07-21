@@ -16,6 +16,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from loss.pose_clip_multi_positive_set import (
     build_pose_clip_identity_sets,
+    build_pose_clip_training_state,
     pose_clip_identity_set_ranking_loss,
 )
 from loss.triplet_loss import TripletLoss
@@ -40,6 +41,39 @@ def main():
         for mode in ("correct", "wrong_rgb", "generic", "pose_only")
     }
     correct = states["correct"]
+    formal_states = {
+        mode: build_pose_clip_training_state(
+            labels,
+            visibility,
+            clip,
+            valid,
+            control_mode=mode,
+        )
+        for mode in ("correct", "zero_owner", "wrong_rgb")
+    }
+    for mode, state in formal_states.items():
+        if not torch.equal(
+            state["support_indices"], correct["support_indices"]
+        ):
+            raise RuntimeError(
+                "{} changed the frozen support set".format(mode)
+            )
+    if not torch.equal(
+        formal_states["wrong_rgb"]["owner_indices"],
+        states["wrong_rgb"]["owner_indices"],
+    ):
+        raise RuntimeError("formal wrong-RGB is not the direct wrong owner")
+    if torch.equal(
+        formal_states["wrong_rgb"]["owner_indices"],
+        correct["owner_indices"],
+    ):
+        raise RuntimeError("formal wrong-RGB owner collapsed to correct")
+    for mode in ("correct", "zero_owner"):
+        if not torch.equal(
+            formal_states[mode]["owner_indices"],
+            correct["owner_indices"],
+        ):
+            raise RuntimeError("{} changed correct owners".format(mode))
     if correct["support_indices"].shape != (64, 16, 3):
         raise RuntimeError("support shape contract failed")
     if correct["owner_indices"].shape != (64, 16, 5):
@@ -73,15 +107,53 @@ def main():
                             "PCMPSR selected a pose-invisible owner"
                         )
 
-    feature = torch.randn(64, 48, requires_grad=True)
-    set_loss, diagnostic = pose_clip_identity_set_ranking_loss(
-        feature, labels, correct
+    feature_value = torch.randn(64, 48)
+    legacy_loss, legacy_diag = pose_clip_identity_set_ranking_loss(
+        feature_value, labels, correct
     )
-    set_loss.backward()
-    if feature.grad is None or not bool(torch.isfinite(feature.grad).all()):
-        raise RuntimeError("PCMPSR gradient is missing or non-finite")
-    if float(feature.grad.abs().sum()) <= 0.0:
-        raise RuntimeError("PCMPSR gradient is zero")
+    explicit_loss, explicit_diag = pose_clip_identity_set_ranking_loss(
+        feature_value, labels, formal_states["correct"]
+    )
+    if not torch.equal(legacy_loss, explicit_loss) or not torch.equal(
+        legacy_diag["set_distance"], explicit_diag["set_distance"]
+    ):
+        raise RuntimeError("explicit correct mode changed frozen behavior")
+    zero_loss, zero_diag = pose_clip_identity_set_ranking_loss(
+        feature_value, labels, formal_states["zero_owner"]
+    )
+    from loss.triplet_loss import euclidean_dist
+
+    distance = euclidean_dist(feature_value.float(), feature_value.float())
+    support = correct["support_indices"]
+    manual_zero_distance = distance.gather(
+        1, support.reshape(64, -1)
+    ).view(64, 16, 3).mean(dim=-1)
+    if not torch.equal(zero_diag["set_distance"], manual_zero_distance):
+        raise RuntimeError("zero-owner is not the exact support-only mean")
+    if zero_diag["owner_term_count"] != 0:
+        raise RuntimeError("zero-owner retained owner multiplicity")
+
+    formal_losses = {}
+    gradient_l1 = {}
+    for mode, state in formal_states.items():
+        feature = feature_value.clone().requires_grad_(True)
+        set_loss, diagnostic = pose_clip_identity_set_ranking_loss(
+            feature, labels, state
+        )
+        set_loss.backward()
+        if feature.grad is None or not bool(torch.isfinite(feature.grad).all()):
+            raise RuntimeError(
+                "{} gradient is missing or non-finite".format(mode)
+            )
+        if float(feature.grad.abs().sum()) <= 0.0:
+            raise RuntimeError("{} gradient is zero".format(mode))
+        formal_losses[mode] = float(set_loss.detach())
+        gradient_l1[mode] = float(feature.grad.abs().sum())
+        expected_terms = 0 if mode == "zero_owner" else 5
+        if diagnostic["owner_term_count"] != expected_terms:
+            raise RuntimeError(
+                "{} owner term count is not {}".format(mode, expected_terms)
+            )
 
     probe = torch.randn(64, 48)
     rng_before = torch.get_rng_state().clone()
@@ -104,14 +176,16 @@ def main():
                     correct["owner_fallback_fraction"]
                 ),
                 "control_owner_change": owner_changes,
-                "listwise_loss": float(set_loss.detach()),
+                "formal_listwise_loss": formal_losses,
                 "positive_distance": float(
-                    diagnostic["positive_distance"].mean()
+                    explicit_diag["positive_distance"].mean()
                 ),
                 "negative_distance": float(
-                    diagnostic["negative_distance"].mean()
+                    explicit_diag["negative_distance"].mean()
                 ),
-                "gradient_l1": float(feature.grad.abs().sum()),
+                "formal_gradient_l1": gradient_l1,
+                "correct_default_exact": True,
+                "zero_owner_manual_distance_exact": True,
                 "default_triplet_exact": True,
             },
             sort_keys=True,

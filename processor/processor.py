@@ -124,6 +124,15 @@ def do_train(cfg,
     pcmpsr_enabled = bool(
         cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.PCMPSR_ENABLED
     )
+    pcmpsr_control_mode = str(
+        cfg.MODEL.TAPF.PCMPSR_CONTROL_MODE
+    ).lower()
+    if pcmpsr_enabled and pcmpsr_control_mode not in {
+        "correct",
+        "zero_owner",
+        "wrong_rgb",
+    }:
+        raise RuntimeError("unsupported PCMPSR formal control mode")
     if sum((picrd_enabled, pchm_enabled, pc2p_enabled, pcmpsr_enabled)) > 1:
         raise RuntimeError(
             "PICRD, PCHM, PC2P, and PCMPSR are mutually exclusive"
@@ -223,10 +232,11 @@ def do_train(cfg,
                 "PCMPSR cache path set does not match the training dataset"
             )
         logger.info(
-            "PCMPSR cache loaded: samples=%d SHA=%s source=%s",
+            "PCMPSR cache loaded: samples=%d SHA=%s source=%s control=%s",
             len(pcmpsr_cache),
             pcmpsr_cache.sha256,
             pcmpsr_cache.source_head,
+            pcmpsr_control_mode,
         )
     picrd_cache = None
     if picrd_enabled:
@@ -442,6 +452,7 @@ def do_train(cfg,
                     raise RuntimeError("PCMPSR batch is missing relative paths")
                 from loss.pose_clip_multi_positive_set import (
                     build_pose_clip_identity_sets,
+                    build_pose_clip_training_state,
                     pose_visibility_signature,
                 )
 
@@ -456,16 +467,27 @@ def do_train(cfg,
                     visibility = pose_visibility_signature(
                         pose_batch["scores"], pose_batch["valid"]
                     )
-                    pcmpsr_state = build_pose_clip_identity_sets(
+                    pcmpsr_state = build_pose_clip_training_state(
                         target,
                         visibility,
                         clip_features,
                         clip_valid,
-                        mode="correct",
+                        control_mode=pcmpsr_control_mode,
                     )
                     if epoch == 1 and n_iter == 0:
                         pcmpsr_control_changes = {}
-                        correct_owner = pcmpsr_state["owner_indices"]
+                        correct_state = (
+                            pcmpsr_state
+                            if pcmpsr_control_mode in {"correct", "zero_owner"}
+                            else build_pose_clip_identity_sets(
+                                target,
+                                visibility,
+                                clip_features,
+                                clip_valid,
+                                mode="correct",
+                            )
+                        )
+                        correct_owner = correct_state["owner_indices"]
                         for control in ("wrong_rgb", "generic", "pose_only"):
                             control_state = build_pose_clip_identity_sets(
                                 target,
@@ -481,6 +503,13 @@ def do_train(cfg,
                                 .mean()
                                 .item()
                             )
+                        pcmpsr_control_changes["formal_vs_correct"] = float(
+                            pcmpsr_state["owner_indices"]
+                            .ne(correct_owner)
+                            .float()
+                            .mean()
+                            .item()
+                        )
             if picrd_enabled:
                 if relative_paths is None:
                     raise RuntimeError("PICRD batch is missing relative paths")
@@ -700,11 +729,13 @@ def do_train(cfg,
                         normalize_feature=cfg.SOLVER.TRP_L2,
                     )
                 logger.info(
-                    "PCMPSR epoch=%d first-batch loss/positive/negative/owner-unique/fallback=%.6f/%.6f/%.6f/%.4f/%.6f controls=%s",
+                    "PCMPSR epoch=%d control=%s first-batch loss/positive/negative/owner-terms/owner-unique/fallback=%.6f/%.6f/%.6f/%d/%.4f/%.6f controls=%s",
                     epoch,
+                    pcmpsr_control_mode,
                     pcmpsr_diag["loss"].item(),
                     pcmpsr_diag["positive_distance"].mean().item(),
                     pcmpsr_diag["negative_distance"].mean().item(),
+                    pcmpsr_diag["owner_term_count"],
                     pcmpsr_state["owner_unique_mean"].item(),
                     pcmpsr_state["owner_fallback_fraction"].item(),
                     pcmpsr_control_changes,

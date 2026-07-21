@@ -350,6 +350,32 @@ def build_pose_clip_identity_sets(
     }
 
 
+def build_pose_clip_training_state(
+    labels,
+    visibility,
+    clip_features,
+    clip_valid,
+    *,
+    control_mode="correct",
+    wrong_shift=4,
+):
+    """Build one frozen formal arm without changing its shared supports."""
+    if control_mode not in {"correct", "zero_owner", "wrong_rgb"}:
+        raise ValueError("unsupported PCMPSR formal control mode")
+    owner_mode = "wrong_rgb" if control_mode == "wrong_rgb" else "correct"
+    state = build_pose_clip_identity_sets(
+        labels,
+        visibility,
+        clip_features,
+        clip_valid,
+        mode=owner_mode,
+        wrong_shift=wrong_shift,
+    )
+    state["control_mode"] = control_mode
+    state["use_owner_multiplicity"] = control_mode != "zero_owner"
+    return state
+
+
 def pose_clip_identity_set_ranking_loss(
     global_feat,
     labels,
@@ -376,12 +402,20 @@ def pose_clip_identity_set_ranking_loss(
     support_distance = distance.gather(1, support.reshape(batch, -1)).view(
         batch, classes, support_count
     )
-    owner_distance = distance.gather(1, owners.reshape(batch, -1)).view(
-        batch, classes, owners.shape[-1]
+    use_owner_multiplicity = bool(
+        set_state.get("use_owner_multiplicity", True)
     )
-    set_distance = (
-        support_distance.sum(dim=-1) + owner_distance.sum(dim=-1)
-    ) / float(support_count + owners.shape[-1])
+    if use_owner_multiplicity:
+        owner_distance = distance.gather(1, owners.reshape(batch, -1)).view(
+            batch, classes, owners.shape[-1]
+        )
+        set_distance = (
+            support_distance.sum(dim=-1) + owner_distance.sum(dim=-1)
+        ) / float(support_count + owners.shape[-1])
+        owner_term_count = owners.shape[-1]
+    else:
+        set_distance = support_distance.mean(dim=-1)
+        owner_term_count = 0
     anchor = torch.arange(batch, device=labels.device)
     positive_distance = set_distance[anchor, positive_class]
     negative_mask = class_labels[None, :].ne(labels[:, None])
@@ -398,4 +432,5 @@ def pose_clip_identity_set_ranking_loss(
         "negative_distance": negative_distance.detach(),
         "set_distance": set_distance.detach(),
         "loss": loss.detach(),
+        "owner_term_count": owner_term_count,
     }

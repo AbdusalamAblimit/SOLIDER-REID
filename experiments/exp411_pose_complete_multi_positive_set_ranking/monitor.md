@@ -201,3 +201,16 @@ support与全身份set ranking；`wrong_rgb`只把owner所用CLIP槽按固定4�
 新增配置必须默认`correct`，PCMPSR关闭时D0 exact；两臂仍加载同一cache与pose并使用fresh output、seed1234、自然
 e120。执行顺序固定为`zero_owner`先、`wrong_rgb`后，禁止并行或提前用中间结果裁决。当前=
 `CONTROL DESIGN FROZEN / IMPLEMENTATION+CONTRACT NEXT / GPU IDLE`。
+
+## 2026-07-21：control实现与synthetic/盲审闭环
+
+已新增默认`correct`的显式`PCMPSR_CONTROL_MODE`，formal helper只允许`correct/zero_owner/wrong_rgb`；zero-owner在
+loss内严格使用三support均值且owner term=`0`，wrong-RGB复用固定shift=4，processor按config选择正式state。两份
+matched config相对sealed correct只改变mode与fresh output。
+
+本地uv synthetic合同PASS：correct旧state与显式correct loss/set distance逐位exact，zero-owner逐项等于手工三support
+均值，formal wrong owner exact等于direct wrong且非correct；correct/zero/wrong loss分别=
+`0.8500004411/0.8254277110/0.8496659398`，descriptor梯度L1分别=
+`2.6877369881/2.4881243706/2.6964554787`，均finite/nonzero。独立盲审首轮`0B/1H`指出formal wrong helper可能未被
+合同硬绑定；只补负向合同后复审=`0B/0H`。远端4090实测空闲，correct formal tracked仍未变化。当前=
+`IMPLEMENTATION/SYNTHETIC/REVIEW PASS / REAL-PK64 CONTROL CONTRACT NEXT / GPU IDLE`。

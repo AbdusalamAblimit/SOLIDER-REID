@@ -24,6 +24,7 @@ from loss import make_loss
 from loss.pose_clip_multi_positive_set import (
     PoseClipSetCache,
     build_pose_clip_identity_sets,
+    build_pose_clip_training_state,
     pose_clip_identity_set_ranking_loss,
     pose_visibility_signature,
 )
@@ -104,6 +105,7 @@ def load_configs(method_path, d0_path):
     disabled = method.clone()
     disabled.defrost()
     disabled.MODEL.TAPF.PCMPSR_ENABLED = False
+    disabled.MODEL.TAPF.PCMPSR_CONTROL_MODE = "correct"
     disabled.MODEL.TAPF.PCMPSR_CACHE = ""
     disabled.MODEL.TAPF.PCMPSR_CACHE_SHA256 = ""
     disabled.MODEL.TAPF.PCMPSR_CLIP_CHECKPOINT_SHA256 = ""
@@ -265,6 +267,9 @@ def main():
         and method_cfg.MODEL.TAPF.PCMPSR_ENABLED
     ):
         raise RuntimeError("real-batch check requires PCMPSR")
+    control_mode = str(method_cfg.MODEL.TAPF.PCMPSR_CONTROL_MODE).lower()
+    if control_mode not in {"correct", "zero_owner", "wrong_rgb"}:
+        raise RuntimeError("real-batch formal control mode is invalid")
     if method_cfg.SOLVER.IMS_PER_BATCH != 64 or method_cfg.DATALOADER.NUM_INSTANCE != 4:
         raise RuntimeError("real-batch check requires frozen PK64/K4")
     set_seed(method_cfg.SOLVER.SEED)
@@ -334,6 +339,33 @@ def main():
             for mode in ("correct", "wrong_rgb", "generic", "pose_only")
         }
     correct = states["correct"]
+    training_state = build_pose_clip_training_state(
+        identity,
+        visibility,
+        clip_features,
+        clip_valid,
+        control_mode=control_mode,
+    )
+    if not torch.equal(
+        training_state["support_indices"], correct["support_indices"]
+    ):
+        raise RuntimeError("formal control changed the frozen support set")
+    if control_mode == "wrong_rgb":
+        if not torch.equal(
+            training_state["owner_indices"],
+            states["wrong_rgb"]["owner_indices"],
+        ):
+            raise RuntimeError(
+                "formal wrong-RGB is not the direct wrong owner"
+            )
+        if torch.equal(
+            training_state["owner_indices"], correct["owner_indices"]
+        ):
+            raise RuntimeError("formal wrong-RGB owner collapsed to correct")
+    elif not torch.equal(
+        training_state["owner_indices"], correct["owner_indices"]
+    ):
+        raise RuntimeError("correct/zero-owner changed correct owners")
     control_change = {
         mode: float(
             states[mode]["owner_indices"]
@@ -403,7 +435,7 @@ def main():
                 feature,
                 identity,
                 camera,
-                pcmpsr_state=correct,
+                pcmpsr_state=training_state,
             )
             loss = reid_loss + (
                 method_cfg.MODEL.TAPF.POSE_LOSS_WEIGHT
@@ -414,7 +446,7 @@ def main():
         isolated_set_loss, _ = pose_clip_identity_set_ranking_loss(
             feature,
             identity,
-            correct,
+            training_state,
             normalize_feature=method_cfg.SOLVER.TRP_L2,
         )
         descriptor_gradient = torch.autograd.grad(
@@ -465,7 +497,7 @@ def main():
                 _, set_diag = pose_clip_identity_set_ranking_loss(
                     feature.detach().float(),
                     identity,
-                    correct,
+                    training_state,
                     normalize_feature=method_cfg.SOLVER.TRP_L2,
                 )
 
@@ -522,9 +554,15 @@ def main():
         break
     if success is None:
         raise RuntimeError("default GradScaler did not reach one native update")
+    expected_owner_terms = 0 if control_mode == "zero_owner" else 5
+    if set_diag["owner_term_count"] != expected_owner_terms:
+        raise RuntimeError(
+            "formal owner term count is not {}".format(expected_owner_terms)
+        )
     result = {
         "schema": "exp411-pcmpsr-real-batch-v1",
         "status": "PASS",
+        "control_mode": control_mode,
         "batch": 64,
         "identities": 16,
         "instances_per_identity": 4,
@@ -542,8 +580,9 @@ def main():
         ),
         "owner_unique_mean": float(correct["owner_unique_mean"].item()),
         "owner_fallback_fraction": float(
-            correct["owner_fallback_fraction"].item()
+            training_state["owner_fallback_fraction"].item()
         ),
+        "owner_term_count": set_diag["owner_term_count"],
         "control_owner_change": control_change,
         "native_attempts": attempts,
         "first_successful_update": success["attempt"],
