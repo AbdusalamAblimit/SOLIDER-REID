@@ -6049,3 +6049,19 @@ fresh formal clone的HEAD与preflight冻结提交一致，config/loss/processor/
 
 **决策**：主PID=`642339`作为唯一4090任务自然运行至e120，source/config/cache全程冻结；e10/20/.../120只记录
 同epoch指标，不早停、不续训。zero-owner自然完成并封板前不得创建或启动wrong-RGB formal训练。
+
+### [2026-07-22] 决策：exp411 matched controls完成，永久关闭owner归因
+
+zero-owner e120=`58.9/70.3/81.9/86.2`，wrong-RGB e120=`59.1/70.7/82.8/86.3`，均在mAP/R1上高于
+correct=`58.8/70.1/82.1/85.8`；三臂均自然完成、12点评测完整、source/config/cache冻结且异常0。
+
+**决策**：exp411最终封板为`PERFORMANCE GO / OWNER ATTRIBUTION FAILED`。相对clean D0的集合排序涨点可以保留，
+但不得宣称五槽pose×CLIP owner、正确RGB/PID绑定或owner multiplicity是增益来源；三臂禁止重跑、续训或调旧机制。
+
+### [2026-07-22] 决策：执行exp412 PSGC唯一真实PK64合同
+
+PSGC永久沿用zero-owner集合排序，不恢复失败owner；只让pose visibility与identity-free CLIP遮挡语义共同重分配
+同PID×槽的backward路由系数预算。设计与实现盲审已闭环，fresh formal/text asset已冻结，wrong-RGB封板后GPU空闲。
+
+**决策**：不追加重复preflight，只执行一次固定MMPOSE-ABU真实PK64 CUDA/AMP合同；PASS立即启动唯一fresh
+seed1234/e120，FAIL只修致命实现bug。正式性能FAIL后不调prompt、front、budget、loss或scale救臂。

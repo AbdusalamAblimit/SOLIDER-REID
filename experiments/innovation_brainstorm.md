@@ -4305,3 +4305,22 @@ correct自然e120=`58.8/70.1`，相对clean D0=`+1.2/+2.4`，首次使“保留s
 机制已有正证据，但创新不能提前归因给pose×CLIP owner。zero-owner若同样上涨，贡献更接近普通all-identity set
 ranking；wrong-RGB若不降，则CLIP语义组织不成立。只有correct严格胜两个matched control，C类pose+CLIP候选才
 升级为科学GO。
+
+最终zero-owner与wrong-RGB的e120 mAP/R1均高于correct，且wrong-RGB三臂最高。因此PCMPSR的可保留创新信息只剩
+“等支持的全身份集合排序能改善遮挡ReID”，不能把pose×CLIP owner写成贡献。这个失败进一步表明：外部CLIP不应通过
+PID绑定、prototype或support multiplicity决定身份几何；新机制必须把CLIP约束收缩为identity-free语义，并让pose
+控制它作用于哪些身体token或监督机会。
+
+## 2026-07-22：exp412 PSGC——pose语义梯度补全
+
+PSGC把single-image support incomplete改写为“同PID内身体槽监督机会分配不完整”：pose给增强后五槽visibility，
+CLIP只提供visible-vs-occluded文本轴上的身份无关标量；二维Pareto front决定同PID×槽固定预算由哪些视图承担。
+forward、loss与测试descriptor不变，仅改变最终身体token的反向路由。
+
+- 问题门PASS：对象从补feature改为补监督机会，直接对应单图部位缺失；
+- 机制门CONDITIONAL PASS：Pareto/sample reweighting并非新原子，但同PID×槽预算、pose×identity-free CLIP front与
+  forward-exact token router的整体可形成C类差分；
+- 证据门PASS：zero-owner、pose-only、q-only、text-shuffle共享宿主与计算量，可分别检验pose、CLIP及正确文本绑定。
+
+首轮只训练correct。它必须自然e120严格胜sealed zero-owner与clean D0的mAP/R1才保留性能资格；随后还须严格胜三条
+matched control才能宣称pose+CLIP联合路由有效。失败即封板并转向下一结构对象，不做prompt或scale微调。

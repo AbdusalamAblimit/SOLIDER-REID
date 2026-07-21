@@ -703,3 +703,29 @@ e110时wrong-RGB四项同时高于correct与zero-owner，预注册mAP/R1相对co
 RGB/PID绑定是PCMPSR增益来源，但不以e110替代最终点；训练继续自然到e120，不早停、不补跑、不改参。
 读取时已进入e111，主PID=`678912`仍为唯一compute PID，GPU约`7,072 MiB/41%`，formal HEAD=
 `f98ab2daafa294dd0db004e10519363025a45488`且tracked source未变化，runner/train log严格异常计数均为0。
+
+## 2026-07-22：wrong-RGB自然e120完成并永久封板
+
+wrong-RGB唯一fresh arm自然完成e120=`59.1 mAP / 70.7 R1 / 82.8 R5 / 86.3 R10`；同epoch sealed correct=
+`58.8/70.1/82.1/85.8`，sealed zero-owner=`58.9/70.3/81.9/86.2`，sealed clean D0=
+`57.6/67.7/80.8/84.6`。最终差值为：
+
+| epoch | wrong-RGB mAP/R1/R5/R10 | correct同epoch | zero-owner同epoch | clean D0同epoch | wrong−correct | wrong−zero | wrong−D0 |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 120 | 59.1/70.7/82.8/86.3 | 58.8/70.1/82.1/85.8 | 58.9/70.3/81.9/86.2 | 57.6/67.7/80.8/84.6 | +0.3/+0.6/+0.7/+0.5 | +0.2/+0.4/+0.9/+0.1 | +1.5/+3.0/+2.0/+1.7 |
+
+wrong-RGB的mAP/R1最终同时高于correct与zero-owner；因此正确owner RGB/PID绑定不但没有可辨识必要性，打乱绑定的
+control还取得三臂最高终点。exp411只保留“全身份集合排序相对clean D0涨点”的性能事实，五槽pose×CLIP owner
+机制永久判为`ATTRIBUTION FAILED`，不得包装成pose+CLIP贡献，也不得重跑、补跑或调旧机制。
+
+主PID=`678912`及workers自然消失，GPU=`2 MiB/0%/0 compute PID`；runner包含e10至e120共12个预注册评测点，
+output仅有`train_log.txt`与唯一`transformer_120.pth`，runner/train log严格异常计数均为0。formal HEAD仍为
+`f98ab2daafa294dd0db004e10519363025a45488`且tracked source未变化，config/loss/processor/cache SHA保持冻结值。
+封板产物SHA为：
+
+- checkpoint=`a16711c91ead16cdc8d7388b4f60dc178f69e6a6ea5261e4132d1a99fe112a1d`；
+- train log=`eb35b59dce8142eaa3f57654da2ad03b0abe71884005f86490acbb9e2113c4f4`；
+- runner=`c50b35d8f1931aecb1df32f6b347307efa34dde8fbb2918dc6a98517f4052a10`。
+
+最终=`EXP411 PCMPSR PERFORMANCE GO / OWNER ATTRIBUTION FAILED / CORRECT+ZERO+WRONG SEALED`。GPU已空闲，
+下一步只执行exp412 PSGC的一次固定MMPOSE-ABU真实PK64合同，PASS即启动唯一fresh正式臂。

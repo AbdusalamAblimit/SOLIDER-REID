@@ -2480,3 +2480,18 @@ correct arm现已自然完成并通过性能门：e120=`58.8/70.1/82.1/85.8`，�
 `ATTRIBUTION PENDING`，不能写成pose×CLIP已被证明。接下来的zero-owner与wrong-RGB matched controls分别检验
 收益是否只来自普通set ranking、以及CLIP槽共识是否提供正确语义组织。只有correct严格胜二者，才把PCMPSR升级为
 C类pose+CLIP主方法候选；否则收缩为非pose或非CLIP的集合训练发现。
+
+matched controls已给出最终否定：zero-owner e120=`58.9/70.3/81.9/86.2`、wrong-RGB=
+`59.1/70.7/82.8/86.3`，二者mAP/R1均高于correct=`58.8/70.1/82.1/85.8`。因此论文素材只保留
+“全身份集合排序相对clean D0有效”的性能观察；pose×CLIP owner、owner multiplicity与正确RGB/PID绑定全部退出正面
+story。不能使用correct的涨点表而隐去两个更强control。
+
+## 2026-07-22：exp412条件story——从身份owner转向监督机会路由
+
+PSGC不再让CLIP决定身份支持或student坐标，而只用identity-free visible-vs-occluded文本轴描述身体槽可靠性；pose
+visibility与该标量共同选择同PID×槽的Pareto front，并在固定系数预算下把反向监督机会路由到非支配视图。forward、
+descriptor、score、loss及测试路径保持宿主exact，因此正面叙事是“pose定位缺失部位，CLIP语义帮助分配训练期身体
+token梯度”，而不是外部身份蒸馏。
+
+该story目前仍为C类条件候选。correct必须先自然e120严格胜zero-owner与clean D0，再通过pose-only、q-only和
+text-shuffle归因；任一主门失败都只能作为下一轮机制设计的负证据，不能包装成pose+CLIP主贡献。

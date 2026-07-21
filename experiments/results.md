@@ -3347,3 +3347,18 @@ Stage-3/backbone非零梯度tensor=`26/173`，combined native GradScaler第5次�
 `1.5925421715/57.8170280457/67.6581573486`。runner SHA=
 `28731e86899bac6f7a9444bef7f4a896822b942c51d73d9672ca833bd6d3b3ba`。当前只授权fresh zero-owner e120，尚无该
 control的ReID结果，wrong-RGB仍`NO-START`。
+
+zero-owner与wrong-RGB随后均按冻结协议自然完成并封板。e120 rounded mAP/R1/R5/R10依次为：correct=
+`58.8/70.1/82.1/85.8`，zero-owner=`58.9/70.3/81.9/86.2`，wrong-RGB=`59.1/70.7/82.8/86.3`，clean D0=
+`57.6/67.7/80.8/84.6`。zero-owner与wrong-RGB的mAP/R1均严格高于correct，故PCMPSR只保留相对D0的
+`PERFORMANCE GO`，五槽pose×CLIP owner归因最终为`ATTRIBUTION FAILED`。wrong-RGB checkpoint/train-log/runner
+SHA=`a16711c91ead16cdc8d7388b4f60dc178f69e6a6ea5261e4132d1a99fe112a1d`/
+`eb35b59dce8142eaa3f57654da2ad03b0abe71884005f86490acbb9e2113c4f4`/
+`c50b35d8f1931aecb1df32f6b347307efa34dde8fbb2918dc6a98517f4052a10`；12个评测点完整、自然退出、异常0、GPU空闲。
+
+## exp412 PSGC启动前状态（2026-07-22）
+
+新机制PSGC以sealed zero-owner为宿主，用pose visibility与身份无关CLIP visible-vs-occluded文本差值构造同PID×槽
+Pareto front，只重分配和为4的路由系数预算；`norm3`后、avgpool前的backward-only router保持forward、descriptor、
+score与loss数值exact，eval不读取CLIP。设计问题闭环后的实现盲审为`0B/0H`；fresh formal与一次性text asset已冻结。
+当前只执行一次固定MMPOSE-ABU真实PK64合同，PASS即启动唯一fresh correct e120；尚无exp412性能结果。
