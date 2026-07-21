@@ -2437,3 +2437,13 @@ exp409现已退出正面story。唯一fresh e120=`57.0 mAP/68.6 R1`，相对clea
 实现证据合并后说明PCHM不是未接通，而是把final metric推向更强的首位难例判别，却没有改善完整检索列表。该结果
 可作为“单边hard mining不足以承载pose+CLIP互补性”的负证据，不能包装为C类主方法。下一story需改变身份表示或
 多正样本/全排序训练对象，并让错误RGB绑定、generic或pose-shuffle能直接证伪机制归因。
+
+## 2026-07-21：exp410条件story——从单图classifier到pose-complete identity support
+
+PC²P尝试把论文问题改写为：遮挡ReID的分类几何不应只由单图训练梯度隐式形成，而应由同一
+身份跨视角、跨部位的完整支持集定义。五槽pose决定支持分解，region CLIP提供每槽外观，逐槽
+中心等权合成的冻结proxy直接替换learned classifier；没有projection、新loss或测试分支。
+
+该story当前只是C类条件候选。性能双门GO只是第一关；之后correct必须胜固定PID错绑的
+wrong-RGB和无pose分槽的generic full-image CLIP proxy，否则只能写成固定classifier/普通CLIP原型收益，
+不能进入pose+CLIP正面叙事。

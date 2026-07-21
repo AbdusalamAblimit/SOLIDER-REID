@@ -4252,3 +4252,14 @@ PCHM自然e120=`57.0 mAP/68.6 R1`，相对D0形成“mAP下降、R1上升”。�
 作为主创新的条件资格：它能改变真实训练边并优化最难首位混淆，却没有改善AP所要求的整条正样本排序。下一对象
 必须让pose与CLIP作用于多正样本分布、身份表示结构或全排序一致性，而不是继续选择单个hard positive/negative；
 仍须保留D0与错误绑定反事实，且不能退化为loss/temperature/margin调参。
+
+## 2026-07-21：exp410 PC²P——pose-complete visual identity classifier
+
+PC²P不给单图加局部teacher loss，也不选pair；它把同PID多图的五槽CLIP支持先逐槽聚合、归一化，
+再等槽合成冻结identity proxy，直接替换learned classifier。无Q/projection使监督不能被auxiliary
+head吸收；原global feature同时被proxy CE、triplet与eval共用。
+
+创新只能窄定位：CLIP-ReID已有frozen identity text logits，ProFD已有part prompt/memory，因此“固定
+CLIP classifier”不新。可争的是pose逐槽跨图补全visual identity set并无adapter接管全分类几何。
+问题/证据门PASS，机制门CONDITIONAL PASS；必须后续胜wrong-RGB、generic和random-code才能排除任意
+source-key与普通CLIP prototype解释。

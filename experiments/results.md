@@ -3277,3 +3277,13 @@ runner/train-log SHA256=`406990c42829d21a0d3dc424ef781b6527d1e64aab754874fcf69cb
 `257264af74e65608e9b4a214b35f0b8d33dc89f15ff587c41c2aac5ee907af84`/
 `0f964240991240ac23715c4d8c541117bb8bf56685ac82ab3838f4e7f1faf244`。最终=
 `EXP409 SEALED NO-GO / RANK-1 PASS / mAP FAIL`；不执行matched controls，不调旧miner。
+
+## exp410 PC²P设计冻结（2026-07-21）
+
+exp410对象重置为Pose-Complete CLIP Proxy Classifier：按PID逐槽聚合五槽region-isolated CLIP visual feature，
+逐槽归一化后等权合成702个冻结identity proxy；训练时以`BN(global_feat) @ proxy.T`直接替换learned classifier。
+原batch-hard triplet、D0 pose loss和eval global descriptor不变；无Q/projection/temperature/新loss/测试分支。
+
+独立审计删除了可学习Q退化任意classifier的科学HIGH，并把创新定位收窄为C类条件候选：问题门/证据门PASS、
+机制门CONDITIONAL PASS。当前=`DESIGN/PROTOCOL FROZEN / IMPLEMENTATION NO-START / GPU IDLE`，尚无exp410
+bank、训练或mAP/R1。

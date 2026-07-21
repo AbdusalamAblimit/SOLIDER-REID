@@ -5955,3 +5955,14 @@ fresh cache完整覆盖15,618图且全部来源、norm、SHA门PASS。real-batch
 **决策**：永久封板exp409为`SEALED NO-GO / RANK-1 PASS / mAP FAIL`。禁止重跑、续训、调rank fusion/
 margin/loss、或补pose-shuffle/CLIP-only controls；这些controls只在性能GO后有归因价值。exp410必须改变训练或
 结构对象，直接针对全排序质量，而不是继续修改hard-pair miner。
+
+### [2026-07-21] 决策：exp410选择PC²P重定义全部身份分类几何
+
+三路审计比较了语义缺失协方差与pose-complete classifier。PC²P以同PID五槽CLIP visual support构造
+702个冻结proxy，直接替换learned classifier，使每张图同时面对全部身份几何；这比exp409只改
+一条正负边更直接对应mAP。初稿可学`Q`因702<768可使`P@Q`退化任意classifier，已在设计阶段
+删除。
+
+**决策**：冻结无Q/无projection的PC²P；不改triplet、pose loss、temperature、scale或eval descriptor。
+先做fresh bank与必要梯度/AMP合同，一次独立智能体盲审0B/0H后立即唯一fresh e120。首臂双门
+FAIL就封板；GO后才补wrong-RGB与generic证明PID绑定与pose completion。
