@@ -91,3 +91,20 @@ fresh v2在固定MMPOSE-ABU中自然完成并正常退出，runner SHA=
 
 当前=`IMPLEMENTATION/CACHE/REAL-PK64 PASS / UNIQUE FRESH E120 AUTHORIZED / GPU IDLE`。不再追加测试；清理本次
 生成的untracked Python3.8 cache后，从fresh formal clone启动唯一correct seed1234/e120，运行中冻结source/config/cache。
+
+## 2026-07-21：唯一fresh correct student已启动
+
+真实合同后生成的untracked Python3.8 cache已清理且tracked runtime文件保持exact；fresh formal clone=
+`/home/afr/SOLIDER-REID-exp411-pcmpsr-formal-v1`，运行source HEAD=
+`0db28ecec911cf4776dcbabaf4ce0cda018dcf90`，config SHA=
+`01c060d676b4f2b267d0c2c60366d70b1d244a44609c95a7b12fc38b759b4651`。启动前formal repo clean、cache SHA exact、
+GPU空闲，output/runner均fresh。
+
+唯一训练主PID=`576005`，output=`/home/afr/reid-clean/logs/exp411-pcmpsr-s1234-v1`，runner=
+`/home/afr/reid-clean/train-logs/exp411-pcmpsr-s1234-v1.runner.log`。首batch set loss/positive/negative distance=
+`2.204848/58.077400/66.888412`，owner unique/fallback=`2.2969/0.0`，correct相对wrong-RGB/generic/pose-only
+owner change=`0.284375/0.171875/0.20625`，全部finite/active。首次观测GPU约`6990 MiB/69%`且只有该compute
+PID，无异常。
+
+当前=`UNIQUE FRESH E120 RUNNING / SOURCE+CONFIG+CACHE FROZEN`。运行中只监控自然完成，在e10/20/.../120记录与
+sealed clean D0同epochmAP/R1，不修改formal repo、config、cache或参数，不按中间点早停。
