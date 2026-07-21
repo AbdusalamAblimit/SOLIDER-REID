@@ -115,6 +115,9 @@ _C.MODEL.TAPF.PCHM_ENABLED = False
 _C.MODEL.TAPF.PCHM_CACHE = ""
 _C.MODEL.TAPF.PCHM_CACHE_SHA256 = ""
 _C.MODEL.TAPF.PCHM_CLIP_CHECKPOINT_SHA256 = ""
+_C.MODEL.TAPF.PC2P_ENABLED = False
+_C.MODEL.TAPF.PC2P_BANK = ""
+_C.MODEL.TAPF.PC2P_BANK_SHA256 = ""
 
 # -----------------------------------------------------------------------------
 # INPUT

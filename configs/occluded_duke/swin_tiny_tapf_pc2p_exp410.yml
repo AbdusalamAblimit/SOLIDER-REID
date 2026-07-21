@@ -1,0 +1,72 @@
+MODEL:
+  PRETRAIN_HW_RATIO: 2
+  METRIC_LOSS_TYPE: 'triplet'
+  IF_LABELSMOOTH: 'off'
+  IF_WITH_CENTER: 'no'
+  NAME: 'transformer'
+  NO_MARGIN: True
+  DEVICE_ID: ('0')
+  PRETRAIN_CHOICE: 'self'
+  PRETRAIN_PATH: '/home/afr/reid-clean/weights/solider_swin_tiny_tea.pth'
+  TRANSFORMER_TYPE: 'swin_tiny_patch4_window7_224'
+  STRIDE_SIZE: [16, 16]
+  SEMANTIC_WEIGHT: 0.2
+  TAPF:
+    ENABLED: True
+    ARTIFACT_DIR: '/mnt1/afrderived/exp386_occluded_duke_vitpose_huge_train'
+    MANIFEST_SHA256: 'cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8'
+    VERIFY_IMAGE_SHA: False
+    ANCHOR_HIDDEN: 128
+    PSG_HIDDEN: 32
+    GAUSSIAN_SIGMA: 1.5
+    GATE_RELEASE: 0.5
+    TEACHER_EPOCHS: 5
+    HANDOFF_EPOCHS: 5
+    POSE_LOSS_WEIGHT: 0.1
+    PC2P_ENABLED: True
+    PC2P_BANK: '/home/afr/reid-clean/assets/exp410-pc2p-bank-v1/proxy_bank.npz'
+    PC2P_BANK_SHA256: ''
+
+INPUT:
+  SIZE_TRAIN: [384, 128]
+  SIZE_TEST: [384, 128]
+  PROB: 0.5
+  RE_PROB: 0.5
+  PADDING: 10
+  PIXEL_MEAN: [0.5, 0.5, 0.5]
+  PIXEL_STD: [0.5, 0.5, 0.5]
+
+DATASETS:
+  NAMES: ('occluded_duke')
+  ROOT_DIR: ('/mnt1/afrdata')
+
+DATALOADER:
+  SAMPLER: 'softmax_triplet'
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+
+SOLVER:
+  OPTIMIZER_NAME: 'SGD'
+  MAX_EPOCHS: 120
+  BASE_LR: 0.0008
+  WARMUP_EPOCHS: 20
+  IMS_PER_BATCH: 64
+  WARMUP_METHOD: 'cosine'
+  LARGE_FC_LR: False
+  CHECKPOINT_PERIOD: 120
+  LOG_PERIOD: 20
+  EVAL_PERIOD: 10
+  WEIGHT_DECAY: 1e-4
+  WEIGHT_DECAY_BIAS: 1e-4
+  BIAS_LR_FACTOR: 2
+  SEED: 1234
+
+TEST:
+  EVAL: True
+  IMS_PER_BATCH: 256
+  RE_RANKING: False
+  WEIGHT: ''
+  NECK_FEAT: 'before'
+  FEAT_NORM: 'yes'
+
+OUTPUT_DIR: '/home/afr/reid-clean/logs/exp410-pc2p-s1234-v1'

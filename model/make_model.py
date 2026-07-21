@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from .backbones.resnet import ResNet, Bottleneck
 import copy
 from .backbones.vit_pytorch import vit_base_patch16_224_TransReID, vit_small_patch16_224_TransReID
@@ -235,6 +236,14 @@ class build_transformer(nn.Module):
 
         self.dropout = nn.Dropout(self.dropout_rate)
 
+        self.pc2p_enabled = bool(
+            cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.PC2P_ENABLED
+        )
+        if cfg.MODEL.TAPF.PC2P_ENABLED and not cfg.MODEL.TAPF.ENABLED:
+            raise ValueError("PC2P requires clean TAPF D0")
+        if self.pc2p_enabled and self.ID_LOSS_TYPE != "softmax":
+            raise ValueError("PC2P requires the plain softmax classifier path")
+
         self.spk_enabled = bool(
             cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.SPK_ENABLED
         )
@@ -250,6 +259,17 @@ class build_transformer(nn.Module):
 
         self.tapf_enabled = cfg.MODEL.TAPF.ENABLED
         if self.tapf_enabled:
+            if cfg.MODEL.TAPF.PC2P_ENABLED and (
+                cfg.MODEL.TAPF.PICRD_ENABLED
+                or cfg.MODEL.TAPF.PCHM_ENABLED
+                or cfg.MODEL.TAPF.SEMANTIC_ENABLED
+                or cfg.MODEL.TAPF.HIERARCHICAL
+                or cfg.MODEL.TAPF.SPK_ENABLED
+                or cfg.MODEL.TAPF.ELO_CUR_ENABLED
+            ):
+                raise ValueError(
+                    "PC2P requires the single-stage non-semantic clean D0 path"
+                )
             if cfg.MODEL.TAPF.PICRD_ENABLED and (
                 cfg.MODEL.TAPF.SEMANTIC_ENABLED
                 or cfg.MODEL.TAPF.HIERARCHICAL
@@ -352,6 +372,7 @@ class build_transformer(nn.Module):
         view_label=None,
         pose_batch=None,
         tapf_epoch=None,
+        identity_proxy_bank=None,
     ):
         base_output = self.base(
             x, pose_batch=pose_batch, tapf_epoch=tapf_epoch
@@ -377,7 +398,30 @@ class build_transformer(nn.Module):
         feat_cls = self.dropout(feat)
 
         if self.training:
-            if self.ID_LOSS_TYPE in ('arcface', 'cosface', 'amsoftmax', 'circle'):
+            if self.pc2p_enabled:
+                if identity_proxy_bank is None:
+                    raise RuntimeError("PC2P training requires an identity proxy bank")
+                if identity_proxy_bank.requires_grad:
+                    raise RuntimeError("PC2P identity proxy bank must be frozen")
+                if identity_proxy_bank.ndim != 2 or tuple(
+                    identity_proxy_bank.shape
+                ) != (self.num_classes, self.in_planes):
+                    raise RuntimeError("PC2P identity proxy bank shape mismatch")
+                if identity_proxy_bank.device != feat_cls.device:
+                    raise RuntimeError("PC2P identity proxy bank device mismatch")
+                with torch.cuda.amp.autocast(enabled=False):
+                    cls_score = F.linear(
+                        feat_cls.float(), identity_proxy_bank.float()
+                    )
+                tapf_aux["pc2p_bn_norm"] = feat_cls.detach().float().norm(
+                    dim=-1
+                ).mean()
+                tapf_aux["pc2p_logit_mean"] = cls_score.detach().mean()
+                tapf_aux["pc2p_logit_std"] = cls_score.detach().std(
+                    unbiased=False
+                )
+                tapf_aux["pc2p_logit_abs_max"] = cls_score.detach().abs().max()
+            elif self.ID_LOSS_TYPE in ('arcface', 'cosface', 'amsoftmax', 'circle'):
                 cls_score = self.classifier(feat_cls, label)
             else:
                 cls_score = self.classifier(feat_cls)

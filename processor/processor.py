@@ -118,8 +118,43 @@ def do_train(cfg,
     pchm_enabled = bool(
         cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.PCHM_ENABLED
     )
-    if picrd_enabled and pchm_enabled:
-        raise RuntimeError("PICRD and PCHM cannot be enabled together")
+    pc2p_enabled = bool(
+        cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.PC2P_ENABLED
+    )
+    if sum((picrd_enabled, pchm_enabled, pc2p_enabled)) > 1:
+        raise RuntimeError("PICRD, PCHM, and PC2P are mutually exclusive")
+    if pc2p_enabled and (
+        cfg.MODEL.TAPF.SEMANTIC_ENABLED
+        or cfg.MODEL.TAPF.HIERARCHICAL
+        or cfg.MODEL.TAPF.SPK_ENABLED
+        or cfg.MODEL.TAPF.ELO_CUR_ENABLED
+    ):
+        raise RuntimeError("PC2P requires the non-semantic clean D0 path")
+    identity_proxy_bank = None
+    if pc2p_enabled:
+        from model.pose_complete_clip_proxy import PoseCompleteClipProxyBank
+
+        model_core = model.module if hasattr(model, "module") else model
+        pc2p_asset = PoseCompleteClipProxyBank(
+            cfg.MODEL.TAPF.PC2P_BANK,
+            cfg.MODEL.TAPF.PC2P_BANK_SHA256,
+            cfg.MODEL.TAPF.MANIFEST_SHA256,
+            model_core.num_classes,
+        )
+        pc2p_asset.validate_dataset(
+            train_loader.dataset.dataset,
+            train_loader.dataset.pose_store,
+        )
+        identity_proxy_bank = pc2p_asset.to(
+            torch.device("cuda", local_rank)
+        )
+        logger.info(
+            "PC2P bank loaded outside model/state: rows=%d SHA=%s source=%s slot-count-min=%s",
+            identity_proxy_bank.shape[0],
+            pc2p_asset.sha256,
+            pc2p_asset.source_head,
+            pc2p_asset.slot_counts.min(dim=0).values.tolist(),
+        )
     pchm_cache = None
     if pchm_enabled:
         from loss.pose_clip_hard_mining import PoseClipMiningCache
@@ -490,6 +525,11 @@ def do_train(cfg,
                         )
                     semantic_teacher_diagnostic_done = True
             with amp.autocast(enabled=True):
+                pc2p_forward = (
+                    {"identity_proxy_bank": identity_proxy_bank}
+                    if pc2p_enabled
+                    else {}
+                )
                 model_output = model(
                     img,
                     label=target,
@@ -497,6 +537,7 @@ def do_train(cfg,
                     view_label=target_view,
                     pose_batch=pose_batch,
                     tapf_epoch=epoch,
+                    **pc2p_forward,
                 )
                 if cfg.MODEL.TAPF.ENABLED:
                     score, feat, _, tapf_aux = model_output
@@ -543,6 +584,17 @@ def do_train(cfg,
                     positive_change,
                     negative_change,
                     pchm_control_changes,
+                )
+
+            if pc2p_enabled and n_iter == 0:
+                logger.info(
+                    "PC2P epoch=%d first-batch BN-norm/logit-mean/std/abs-max=%.6f/%.6f/%.6f/%.6f CE-pred-unique=%d",
+                    epoch,
+                    tapf_aux["pc2p_bn_norm"].item(),
+                    tapf_aux["pc2p_logit_mean"].item(),
+                    tapf_aux["pc2p_logit_std"].item(),
+                    tapf_aux["pc2p_logit_abs_max"].item(),
+                    int(score.detach().argmax(dim=1).unique().numel()),
                 )
 
             scaler.scale(loss).backward()
