@@ -636,3 +636,20 @@ mAP/R1；但所有归因解释继续等待自然e120，不选择性使用中间�
 唯一compute PID，GPU约`7,084 MiB/41%`，formal HEAD=`f98ab2daafa294dd0db004e10519363025a45488`且
 tracked source未变化，config/loss/processor SHA保持冻结值，runner/train log严格异常计数均为0。继续冻结运行，
 不早停、不续训、不改参。
+
+## 2026-07-21：wrong-RGB e80正式评测
+
+wrong-RGB自然完成e80=`58.6 mAP / 70.9 R1 / 82.5 R5 / 86.3 R10`；同epoch sealed correct=
+`58.2/70.4/81.9/86.1`，sealed zero-owner=`58.6/71.6/82.4/86.3`，sealed clean D0=
+`56.1/66.3/79.5/84.0`。四臂差值为：
+
+| epoch | wrong-RGB mAP/R1/R5/R10 | correct同epoch | zero-owner同epoch | clean D0同epoch | wrong−correct | wrong−zero | wrong−D0 |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 80 | 58.6/70.9/82.5/86.3 | 58.2/70.4/81.9/86.1 | 58.6/71.6/82.4/86.3 | 56.1/66.3/79.5/84.0 | +0.4/+0.5/+0.6/+0.2 | 0.0/-0.7/+0.1/0.0 | +2.5/+4.6/+3.0/+2.3 |
+
+e80时wrong-RGB四项均高于correct，其中预注册主指标mAP/R1高`0.4/0.5`；相对zero-owner的mAP/R10持平，
+R1低`0.7`、R5高`0.1`。这是继e30、e50后第三个wrong-RGB的mAP/R1同时高于correct的预注册点，且发生在
+后半程，进一步不支持“正确owner RGB/PID绑定是当前性能来源”的解释；但仍不使用中间点代替自然e120。读取时
+训练已进入e81，主PID=`678912`仍为唯一compute PID，GPU约`7,056 MiB/42%`，formal HEAD=
+`f98ab2daafa294dd0db004e10519363025a45488`且tracked source未变化，config/loss/processor SHA保持冻结值，
+runner/train log严格异常计数均为0。继续冻结运行，不早停、不续训、不改参。
