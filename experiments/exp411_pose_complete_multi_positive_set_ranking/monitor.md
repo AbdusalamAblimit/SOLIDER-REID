@@ -534,3 +534,38 @@ contract runner SHA=`19aac4efa5e95a2c456ec55c9c2f4c793ec2df39872cd3995fc030be708
 自然消失，GPU=`2 MiB/0%/0 compute PID`，formal tracked source未变化，正式output与runner仍fresh。当前=
 `WRONG-RGB REAL-PK64 PASS / UNIQUE FRESH E120 AUTHORIZED / GPU IDLE`。下一步只启动该wrong-RGB formal的唯一
 fresh seed1234/e120，运行中冻结source/config/cache/参数。
+
+## 2026-07-21：wrong-RGB唯一fresh正式臂启动
+
+合同通过且GPU空闲后，已从上述冻结formal自然启动唯一wrong-RGB fresh seed1234/e120；主PID=`678912`，解释器固定为
+`/usr/local/anaconda3/envs/mmpose-abu/bin/python`，config=
+`configs/occluded_duke/swin_tiny_tapf_pcmpsr_exp411_wrong_rgb.yml`，output=
+`/home/afr/reid-clean/logs/exp411-pcmpsr-wrong-rgb-s1234-v1`，runner=
+`/home/afr/reid-clean/train-logs/exp411-pcmpsr-wrong-rgb-s1234-v1.runner.log`。实际运行参数再次打印确认
+`Swin-Tiny / batch64 / P×K=16×4 / seed1234 / max epoch120 / fresh output / 不续训`。
+
+首批set loss/positive/negative=`2.047600/57.861977/66.674866`，owner term=`5`，owner unique/fallback=
+`2.2812/0`；wrong-RGB/generic/pose-only/formal-vs-correct owner change=
+`0.284375/0.171875/0.206250/0.284375`，确认正式训练确实走预注册wrong-RGB路径。formal HEAD=
+`f98ab2daafa294dd0db004e10519363025a45488`，config/loss/processor/cache SHA仍分别为
+`a767d6dfdce08e503e70fc64aba27a30bf13e696dbbe7c099602a446d9b1b311`/
+`a17518f8e986d7f4a1bb6b1c75d5eb71672e6e1d61a8f30f72d3c848d18f03fb`/
+`b3d47788ab1f4836111df6ed85e90e062024f5e13a6ace76c93fc6bf86ac0baa`/
+`b07576130a0c50b89194f2c59467defcf39293d96ca886616865eb198e7965d1`。当前唯一4090 compute PID与主PID一致，
+运行中冻结tracked source/config/cache/参数；运行时生成的未跟踪`__pycache__`不属于tracked source变化。
+
+## 2026-07-21：wrong-RGB e10/e20/e30正式评测
+
+wrong-RGB已自然完成前三个预注册评测点；四臂同epoch rounded轨迹与差值如下：
+
+| epoch | wrong-RGB mAP/R1/R5/R10 | correct同epoch | zero-owner同epoch | clean D0同epoch | wrong−correct | wrong−zero | wrong−D0 |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 10 | 27.8/37.4/52.6/58.9 | 27.7/36.9/52.8/59.6 | 28.4/38.1/53.9/60.8 | 33.4/42.7/59.8/65.2 | +0.1/+0.5/-0.2/-0.7 | -0.6/-0.7/-1.3/-1.9 | -5.6/-5.3/-7.2/-6.3 |
+| 20 | 45.4/55.3/70.0/76.2 | 45.5/55.8/70.0/76.4 | 45.6/55.0/70.6/75.8 | 42.2/52.4/67.6/74.0 | -0.1/-0.5/0.0/-0.2 | -0.2/+0.3/-0.6/+0.4 | +3.2/+2.9/+2.4/+2.2 |
+| 30 | 51.3/63.0/75.7/80.5 | 50.2/61.8/75.6/80.1 | 49.2/60.3/75.0/80.0 | 46.6/56.2/71.3/76.4 | +1.1/+1.2/+0.1/+0.4 | +2.1/+2.7/+0.7/+0.5 | +4.7/+6.8/+4.4/+4.1 |
+
+e10与e20顺序混合，e30则wrong-RGB四项均高于correct、zero-owner与clean D0，其中相对correct的mAP/R1高
+`1.1/1.2`。这是进一步不支持“正确owner RGB/PID绑定在当前机制中具有可辨识必要性”的中间证据，但不能用e30
+替代自然e120裁决，也不得据此早停、改参或重跑。读取时已进入e39，主PID=`678912`仍为唯一compute PID，GPU约
+`7,086 MiB/57%`，formal HEAD及tracked source未变化，runner/train log严格异常计数均为0。继续冻结运行；
+`POSE+CLIP SCIENTIFIC GO`因zero-owner最终门失败已不可能恢复，wrong-RGB只用于完成绑定归因证据链。
