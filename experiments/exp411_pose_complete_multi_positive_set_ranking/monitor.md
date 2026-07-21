@@ -253,3 +253,17 @@ owner change=`0`，wrong-RGB/generic/pose-only change=`0.284375/0.171875/0.20625
 
 当前=`UNIQUE ZERO-OWNER E120 RUNNING / SOURCE+CONFIG+CACHE FROZEN / WRONG-RGB NO-START`。只在e10/20/.../120
 记录zero-owner、correct与sealed clean D0同epoch轨迹；不按中间结果早停，不修改formal或补跑correct。
+
+## 2026-07-21：zero-owner e10首次正式评测
+
+zero-owner自然完成e10=`28.4 mAP / 38.1 R1 / 53.9 R5 / 60.8 R10`；同epoch sealed correct=
+`27.7/36.9/52.8/59.6`，sealed clean D0=`33.4/42.7/59.8/65.2`。rounded四项差为：
+
+| epoch | zero-owner mAP/R1/R5/R10 | correct同epoch | clean D0同epoch | zero−correct | zero−D0 |
+|---:|---:|---:|---:|---:|---:|
+| 10 | 28.4/38.1/53.9/60.8 | 27.7/36.9/52.8/59.6 | 33.4/42.7/59.8/65.2 | +0.7/+1.2/+1.1/+1.2 | -5.0/-4.6/-5.9/-4.4 |
+
+e10时zero-owner四项均高于correct，却仍全面低于D0；这对owner必要性是暂时不利的warmup证据，但不能代替自然e120
+归因裁决。读取时训练已自然进入e11，主PID=`642339`仍为唯一compute PID，GPU约`7,070 MiB/41%`，formal HEAD
+仍为`f98ab2daafa294dd0db004e10519363025a45488`且tracked source未变化，严格异常计数0。继续冻结运行，不早停或
+修改任何运行内容，wrong-RGB继续`NO-START`。
