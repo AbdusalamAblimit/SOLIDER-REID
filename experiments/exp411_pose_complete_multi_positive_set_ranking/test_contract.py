@@ -57,6 +57,21 @@ def main():
         raise RuntimeError("one or more PCMPSR controls are inactive")
     if float(correct["owner_unique_mean"]) <= 1.0:
         raise RuntimeError("PCMPSR owners collapsed to one view")
+    supports = correct["support_indices"]
+    owners = correct["owner_indices"]
+    for anchor in range(64):
+        for identity in range(16):
+            for slot in range(5):
+                row = supports[anchor, identity]
+                candidates = valid[row, slot] & (visibility[row, slot] > 0)
+                if bool(candidates.any()):
+                    selected = owners[anchor, identity, slot]
+                    if not bool(valid[selected, slot]) or not bool(
+                        visibility[selected, slot] > 0
+                    ):
+                        raise RuntimeError(
+                            "PCMPSR selected a pose-invisible owner"
+                        )
 
     feature = torch.randn(64, 48, requires_grad=True)
     set_loss, diagnostic = pose_clip_identity_set_ranking_loss(
@@ -85,6 +100,9 @@ def main():
                 "support_shape": list(correct["support_indices"].shape),
                 "owner_shape": list(correct["owner_indices"].shape),
                 "owner_unique_mean": float(correct["owner_unique_mean"]),
+                "owner_fallback_fraction": float(
+                    correct["owner_fallback_fraction"]
+                ),
                 "control_owner_change": owner_changes,
                 "listwise_loss": float(set_loss.detach()),
                 "positive_distance": float(

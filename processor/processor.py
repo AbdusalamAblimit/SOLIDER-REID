@@ -700,12 +700,13 @@ def do_train(cfg,
                         normalize_feature=cfg.SOLVER.TRP_L2,
                     )
                 logger.info(
-                    "PCMPSR epoch=%d first-batch loss/positive/negative/owner-unique=%.6f/%.6f/%.6f/%.4f controls=%s",
+                    "PCMPSR epoch=%d first-batch loss/positive/negative/owner-unique/fallback=%.6f/%.6f/%.6f/%.4f/%.6f controls=%s",
                     epoch,
                     pcmpsr_diag["loss"].item(),
                     pcmpsr_diag["positive_distance"].mean().item(),
                     pcmpsr_diag["negative_distance"].mean().item(),
                     pcmpsr_state["owner_unique_mean"].item(),
+                    pcmpsr_state["owner_fallback_fraction"].item(),
                     pcmpsr_control_changes,
                 )
 

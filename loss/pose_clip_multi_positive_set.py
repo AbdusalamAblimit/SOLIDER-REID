@@ -261,6 +261,9 @@ def build_pose_clip_identity_sets(
     owner_indices = torch.empty(
         batch, classes, 5, dtype=torch.long, device=labels.device
     )
+    owner_fallback = torch.empty(
+        batch, classes, 5, dtype=torch.bool, device=labels.device
+    )
     positive_class = torch.empty(
         batch, dtype=torch.long, device=labels.device
     )
@@ -282,8 +285,21 @@ def build_pose_clip_identity_sets(
             support_visibility = visibility[support]
             for slot in range(5):
                 valid_slot = support_valid[:, slot]
-                if mode == "pose_only" or not bool(valid_slot.any()):
+                visible_slot = support_visibility[:, slot] > 0
+                candidate = visible_slot & (
+                    valid_slot if mode != "pose_only" else True
+                )
+                fallback = not bool(candidate.any())
+                owner_fallback[anchor, class_index, slot] = fallback
+                if fallback:
+                    # No valid pose+CLIP owner exists. Preserve the frozen
+                    # eight-term set cardinality with a deterministic
+                    # pose-first fallback, then the smallest support index.
                     score = support_visibility[:, slot]
+                elif mode == "pose_only":
+                    score = support_visibility[:, slot].masked_fill(
+                        ~candidate, float("-inf")
+                    )
                 else:
                     feature = support_features[:, slot]
                     consensus = F.normalize(
@@ -291,7 +307,7 @@ def build_pose_clip_identity_sets(
                     )
                     similarity = torch.mv(feature, consensus)
                     score = support_visibility[:, slot] * similarity
-                    score = score.masked_fill(~valid_slot, float("-inf"))
+                    score = score.masked_fill(~candidate, float("-inf"))
                 best = torch.nonzero(
                     score == score.max(), as_tuple=False
                 ).flatten()
@@ -329,6 +345,7 @@ def build_pose_clip_identity_sets(
         "class_labels": class_labels,
         "positive_class_indices": positive_class,
         "owner_unique_mean": owner_unique_mean,
+        "owner_fallback_fraction": owner_fallback.float().mean(),
         "mode": mode,
     }
 
