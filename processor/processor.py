@@ -121,8 +121,13 @@ def do_train(cfg,
     pc2p_enabled = bool(
         cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.PC2P_ENABLED
     )
-    if sum((picrd_enabled, pchm_enabled, pc2p_enabled)) > 1:
-        raise RuntimeError("PICRD, PCHM, and PC2P are mutually exclusive")
+    pcmpsr_enabled = bool(
+        cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.PCMPSR_ENABLED
+    )
+    if sum((picrd_enabled, pchm_enabled, pc2p_enabled, pcmpsr_enabled)) > 1:
+        raise RuntimeError(
+            "PICRD, PCHM, PC2P, and PCMPSR are mutually exclusive"
+        )
     if pc2p_enabled and (
         cfg.MODEL.TAPF.SEMANTIC_ENABLED
         or cfg.MODEL.TAPF.HIERARCHICAL
@@ -188,6 +193,40 @@ def do_train(cfg,
             len(pchm_cache),
             pchm_cache.sha256,
             pchm_cache.source_head,
+        )
+    pcmpsr_cache = None
+    if pcmpsr_enabled:
+        from loss.pose_clip_multi_positive_set import PoseClipSetCache
+
+        pcmpsr_cache = PoseClipSetCache(
+            cfg.MODEL.TAPF.PCMPSR_CACHE,
+            cfg.MODEL.TAPF.PCMPSR_CACHE_SHA256,
+            cfg.MODEL.TAPF.PCMPSR_CLIP_CHECKPOINT_SHA256,
+            cfg.MODEL.TAPF.MANIFEST_SHA256,
+        )
+        if len(pcmpsr_cache) != len(train_loader.dataset):
+            raise RuntimeError(
+                "PCMPSR cache does not exactly cover the training dataset"
+            )
+        expected_pcmpsr_paths = tuple(
+            Path(record[0])
+            .resolve()
+            .relative_to(train_loader.dataset.pose_store.dataset_root)
+            .as_posix()
+            for record in train_loader.dataset.dataset
+        )
+        if (
+            len(set(expected_pcmpsr_paths)) != len(expected_pcmpsr_paths)
+            or set(expected_pcmpsr_paths) != set(pcmpsr_cache.paths)
+        ):
+            raise RuntimeError(
+                "PCMPSR cache path set does not match the training dataset"
+            )
+        logger.info(
+            "PCMPSR cache loaded: samples=%d SHA=%s source=%s",
+            len(pcmpsr_cache),
+            pcmpsr_cache.sha256,
+            pcmpsr_cache.source_head,
         )
     picrd_cache = None
     if picrd_enabled:
@@ -340,6 +379,8 @@ def do_train(cfg,
             pair_indices = None
             pchm_state = None
             pchm_control_changes = None
+            pcmpsr_state = None
+            pcmpsr_control_changes = None
             if pchm_enabled:
                 if relative_paths is None:
                     raise RuntimeError("PCHM batch is missing relative paths")
@@ -395,6 +436,50 @@ def do_train(cfg,
                             )
                             pchm_control_changes[control] = float(
                                 changed.float().mean().item()
+                            )
+            if pcmpsr_enabled:
+                if relative_paths is None:
+                    raise RuntimeError("PCMPSR batch is missing relative paths")
+                from loss.pose_clip_multi_positive_set import (
+                    build_pose_clip_identity_sets,
+                    pose_visibility_signature,
+                )
+
+                clip_features, clip_valid = pcmpsr_cache.lookup(
+                    relative_paths, image_sha256
+                )
+                clip_features = clip_features.to(
+                    device=device, non_blocking=True
+                )
+                clip_valid = clip_valid.to(device=device, non_blocking=True)
+                with torch.no_grad(), amp.autocast(enabled=False):
+                    visibility = pose_visibility_signature(
+                        pose_batch["scores"], pose_batch["valid"]
+                    )
+                    pcmpsr_state = build_pose_clip_identity_sets(
+                        target,
+                        visibility,
+                        clip_features,
+                        clip_valid,
+                        mode="correct",
+                    )
+                    if epoch == 1 and n_iter == 0:
+                        pcmpsr_control_changes = {}
+                        correct_owner = pcmpsr_state["owner_indices"]
+                        for control in ("wrong_rgb", "generic", "pose_only"):
+                            control_state = build_pose_clip_identity_sets(
+                                target,
+                                visibility,
+                                clip_features,
+                                clip_valid,
+                                mode=control,
+                            )
+                            pcmpsr_control_changes[control] = float(
+                                control_state["owner_indices"]
+                                .ne(correct_owner)
+                                .float()
+                                .mean()
+                                .item()
                             )
             if picrd_enabled:
                 if relative_paths is None:
@@ -547,6 +632,7 @@ def do_train(cfg,
                         target,
                         target_cam,
                         pair_indices=pair_indices,
+                        pcmpsr_state=pcmpsr_state,
                     )
                     loss = reid_loss + (
                         cfg.MODEL.TAPF.POSE_LOSS_WEIGHT * tapf_aux["pose_loss"]
@@ -595,6 +681,32 @@ def do_train(cfg,
                     tapf_aux["pc2p_logit_std"].item(),
                     tapf_aux["pc2p_logit_abs_max"].item(),
                     int(score.detach().argmax(dim=1).unique().numel()),
+                )
+
+            if pcmpsr_enabled and n_iter == 0:
+                from loss.pose_clip_multi_positive_set import (
+                    pose_clip_identity_set_ranking_loss,
+                )
+
+                if isinstance(feat, list):
+                    raise RuntimeError(
+                        "PCMPSR exp411 requires one final global descriptor"
+                    )
+                with torch.no_grad(), amp.autocast(enabled=False):
+                    _, pcmpsr_diag = pose_clip_identity_set_ranking_loss(
+                        feat.detach().float(),
+                        target,
+                        pcmpsr_state,
+                        normalize_feature=cfg.SOLVER.TRP_L2,
+                    )
+                logger.info(
+                    "PCMPSR epoch=%d first-batch loss/positive/negative/owner-unique=%.6f/%.6f/%.6f/%.4f controls=%s",
+                    epoch,
+                    pcmpsr_diag["loss"].item(),
+                    pcmpsr_diag["positive_distance"].mean().item(),
+                    pcmpsr_diag["negative_distance"].mean().item(),
+                    pcmpsr_state["owner_unique_mean"].item(),
+                    pcmpsr_control_changes,
                 )
 
             scaler.scale(loss).backward()

@@ -262,6 +262,7 @@ class build_transformer(nn.Module):
             if cfg.MODEL.TAPF.PC2P_ENABLED and (
                 cfg.MODEL.TAPF.PICRD_ENABLED
                 or cfg.MODEL.TAPF.PCHM_ENABLED
+                or cfg.MODEL.TAPF.PCMPSR_ENABLED
                 or cfg.MODEL.TAPF.SEMANTIC_ENABLED
                 or cfg.MODEL.TAPF.HIERARCHICAL
                 or cfg.MODEL.TAPF.SPK_ENABLED
@@ -271,13 +272,23 @@ class build_transformer(nn.Module):
                     "PC2P requires the single-stage non-semantic clean D0 path"
                 )
             if cfg.MODEL.TAPF.PICRD_ENABLED and (
-                cfg.MODEL.TAPF.SEMANTIC_ENABLED
+                cfg.MODEL.TAPF.PCMPSR_ENABLED
+                or cfg.MODEL.TAPF.SEMANTIC_ENABLED
                 or cfg.MODEL.TAPF.HIERARCHICAL
                 or cfg.MODEL.TAPF.SPK_ENABLED
                 or cfg.MODEL.TAPF.ELO_CUR_ENABLED
             ):
                 raise ValueError(
                     "PICRD requires the single-stage non-semantic clean D0 path"
+                )
+            if cfg.MODEL.TAPF.PCMPSR_ENABLED and (
+                cfg.MODEL.TAPF.SEMANTIC_ENABLED
+                or cfg.MODEL.TAPF.HIERARCHICAL
+                or cfg.MODEL.TAPF.SPK_ENABLED
+                or cfg.MODEL.TAPF.ELO_CUR_ENABLED
+            ):
+                raise ValueError(
+                    "PCMPSR requires the single-stage non-semantic clean D0 path"
                 )
             if cfg.MODEL.TAPF.SPK_ENABLED and cfg.MODEL.TAPF.ELO_CUR_ENABLED:
                 raise ValueError("SPK and ELO-CUR are mutually exclusive")

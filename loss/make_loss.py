@@ -30,12 +30,26 @@ def make_loss(cfg, num_classes):    # modified by gu
         print("label smooth on, numclasses:", num_classes)
 
     if sampler in ['softmax', 'id']:
-        def loss_func(score, feat, target,target_cam, pair_indices=None):
+        def loss_func(
+            score,
+            feat,
+            target,
+            target_cam,
+            pair_indices=None,
+            pcmpsr_state=None,
+        ):
             return F.cross_entropy(score, target)
 
     #  elif cfg.DATALOADER.SAMPLER in ['softmax_triplet', 'id_triplet', 'img_triplet']:
     elif 'triplet' in sampler:
-        def loss_func(score, feat, target, target_cam, pair_indices=None):
+        def loss_func(
+            score,
+            feat,
+            target,
+            target_cam,
+            pair_indices=None,
+            pcmpsr_state=None,
+        ):
             if cfg.MODEL.METRIC_LOSS_TYPE == 'triplet':
                 if cfg.MODEL.IF_LABELSMOOTH == 'on':
                     if isinstance(score, list):
@@ -45,7 +59,21 @@ def make_loss(cfg, num_classes):    # modified by gu
                     else:
                         ID_LOSS = xent(score, target)
 
-                    if isinstance(feat, list):
+                    if pcmpsr_state is not None:
+                            if isinstance(feat, list):
+                                raise RuntimeError(
+                                    "PCMPSR requires one final global descriptor"
+                                )
+                            from .pose_clip_multi_positive_set import (
+                                pose_clip_identity_set_ranking_loss,
+                            )
+                            TRI_LOSS = pose_clip_identity_set_ranking_loss(
+                                feat,
+                                target,
+                                pcmpsr_state,
+                                normalize_feature=cfg.SOLVER.TRP_L2,
+                            )[0]
+                    elif isinstance(feat, list):
                             TRI_LOSS = [triplet(feats, target, pair_indices=pair_indices)[0] for feats in feat[1:]]
                             TRI_LOSS = sum(TRI_LOSS) / len(TRI_LOSS)
                             TRI_LOSS = 0.5 * TRI_LOSS + 0.5 * triplet(feat[0], target, pair_indices=pair_indices)[0]
@@ -62,7 +90,21 @@ def make_loss(cfg, num_classes):    # modified by gu
                     else:
                         ID_LOSS = F.cross_entropy(score, target)
 
-                    if isinstance(feat, list):
+                    if pcmpsr_state is not None:
+                            if isinstance(feat, list):
+                                raise RuntimeError(
+                                    "PCMPSR requires one final global descriptor"
+                                )
+                            from .pose_clip_multi_positive_set import (
+                                pose_clip_identity_set_ranking_loss,
+                            )
+                            TRI_LOSS = pose_clip_identity_set_ranking_loss(
+                                feat,
+                                target,
+                                pcmpsr_state,
+                                normalize_feature=cfg.SOLVER.TRP_L2,
+                            )[0]
+                    elif isinstance(feat, list):
                             TRI_LOSS = [triplet(feats, target, pair_indices=pair_indices)[0] for feats in feat[1:]]
                             TRI_LOSS = sum(TRI_LOSS) / len(TRI_LOSS)
                             TRI_LOSS = 0.5 * TRI_LOSS + 0.5 * triplet(feat[0], target, pair_indices=pair_indices)[0]
@@ -79,4 +121,3 @@ def make_loss(cfg, num_classes):    # modified by gu
         print('expected sampler should be softmax, triplet, softmax_triplet or softmax_triplet_center'
               'but got {}'.format(cfg.DATALOADER.SAMPLER))
     return loss_func, center_criterion
-
