@@ -509,3 +509,28 @@ pose×CLIP owner不能解释该增益，`POSE+CLIP SCIENTIFIC GO`已不可能成
 当前=`ZERO-OWNER SEALED / OWNER NECESSITY FAIL / PERFORMANCE FACT RETAINED / WRONG-RGB CONTRACT NEXT`。
 zero-owner不得重跑、续训、修改或补点；GPU已空闲，下一步只从同一冻结control source建立fresh wrong-RGB formal并
 先通过固定MMPOSE-ABU真实PK64合同。
+
+## 2026-07-21：wrong-RGB fresh formal与真实PK64合同PASS
+
+从冻结control source HEAD=`f98ab2daafa294dd0db004e10519363025a45488`建立fresh formal=
+`/home/afr/SOLIDER-REID-exp411-pcmpsr-wrong-rgb-formal-v1`；clone后tracked/untracked均clean。wrong-RGB config相对
+zero-owner config的diff仅有两处预注册变化：`PCMPSR_CONTROL_MODE: zero_owner→wrong_rgb`与fresh `OUTPUT_DIR`。
+wrong-RGB config/loss/processor/cache SHA分别为：
+
+- `a767d6dfdce08e503e70fc64aba27a30bf13e696dbbe7c099602a446d9b1b311`；
+- `a17518f8e986d7f4a1bb6b1c75d5eb71672e6e1d61a8f30f72d3c848d18f03fb`；
+- `b3d47788ab1f4836111df6ed85e90e062024f5e13a6ace76c93fc6bf86ac0baa`；
+- `b07576130a0c50b89194f2c59467defcf39293d96ca886616865eb198e7965d1`。
+
+唯一fixed-MMPOSE-ABU真实PK64 CUDA/AMP合同自然完成并退出，结果=`PASS`：control mode=`wrong_rgb`，
+owner term=`5`，correct owner unique/fallback=`2.3125/0`，wrong-RGB/generic/pose-only owner change=
+`0.284375/0.175/0.209375`；default-off state/forward/combined loss及Python/NumPy/Torch CPU/all-CUDA RNG exact；
+wrong-RGB set loss/positive/negative distance=`1.6716001034/57.3096199036/67.6920013428`；isolated set loss对
+Stage-3/backbone产生`26/173`个finite nonzero梯度tensor；combined loss/reid/pose=
+`8.2129116058/8.1211185455/0.9179269671`，default GradScaler第4次取得真实Stage-3 update，combined
+Stage-3/backbone非零梯度=`26/181`。
+
+contract runner SHA=`19aac4efa5e95a2c456ec55c9c2f4c793ec2df39872cd3995fc030be70850392`，严格异常计数0；合同PID已
+自然消失，GPU=`2 MiB/0%/0 compute PID`，formal tracked source未变化，正式output与runner仍fresh。当前=
+`WRONG-RGB REAL-PK64 PASS / UNIQUE FRESH E120 AUTHORIZED / GPU IDLE`。下一步只启动该wrong-RGB formal的唯一
+fresh seed1234/e120，运行中冻结source/config/cache/参数。
