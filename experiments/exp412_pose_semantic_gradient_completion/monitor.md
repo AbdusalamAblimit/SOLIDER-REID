@@ -24,3 +24,27 @@ loader 均无致命问题。
 `2daf7b25a1814100c02525adbc1333aa19c8e072575ec9ec1465a17890ae0bb2`，绑定 CLIP checkpoint SHA=
 `9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e`。builder 自然退出，期间4090仍只有
 wrong-RGB PID；当前 PSGC 继续 GPU NO-START，等 exp411 自然封板后只跑一次真实 PK64 合同。
+
+## 2026-07-22：唯一真实PK64合同PASS
+
+exp411 wrong-RGB自然e120封板且GPU空闲后，只执行了一次固定MMPOSE-ABU真实PK64 CUDA/AMP合同。fresh formal=
+`/home/afr/SOLIDER-REID-exp412-psgc-formal-v1`，最终HEAD=
+`98039e0a1a69541ca7a593cbf90abdc2225bb091`且tracked source clean；正式output/runner均fresh。
+
+合同结果=`PASS`：batch64=`16 PID×4图`，PCMPSR owner term=`0`；default-off state/forward/loss/四类RNG exact，
+route forward与dtype exact；correct相对pose-only/q-only/text-shuffle的权重改变率分别为
+`0.546875/0.546875/0.3875000179`。correct front size均值=`2.3`、front fraction=`0.575`、fallback=`0`，
+semantic std=`0.007139748`；路由场min/mean/max=`0/1.0097028/4`。PSGC-on与off共有28个可比较Stage-3梯度tensor，
+28个全部改变；combined AMP第5个native attempt取得真实update，Stage-3非零梯度tensor=`26`，更新参数为
+`base.stages.3.blocks.0.ffn.layers.0.0.weight`。loss/reid/pose=`7.8512554/7.7594123/0.9184325`。
+
+contract runner SHA=`67035cccf8e3da487d77065ddbe91946cf39c64d3da570ca95da11b4f47e2bb9`；
+config/router/backbone/model/processor SHA分别为
+`e9b4fae1329aab695cfe32d18b44ef77c692fd1f24b3e37741f29802d1036aaf`/
+`ad6415589abe4ad056a4d093edaa36ba33c16cc89addb6e3636e265e8cb791c1`/
+`0720298d7d26094cfdd1653082bc388da3de2ac79896f1eaae9fc9cc4f8808e2`/
+`7a874b0aefad31dfae159246bf7f713e566947fcdd05193d85d8b64489cd8b0b`/
+`28b5776bf8670c8ea6ce3585e021081fba1d92435e33d2afa6a908f8a76796f4`。text axes/cache SHA保持冻结值。
+
+当前=`REAL-PK64 PASS / UNIQUE FRESH E120 AUTHORIZED`。不追加preflight；下一步立即启动唯一correct seed1234/e120，
+运行中冻结formal source/config/cache/text asset与参数。
