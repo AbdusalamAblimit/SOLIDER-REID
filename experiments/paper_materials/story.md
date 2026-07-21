@@ -2463,3 +2463,7 @@ CLIP只为五个解剖槽离散选择owner multiplicity，不向student提供坐
 该story当前仅为C类条件候选。自然e120必须先同时超过clean D0 mAP/R1；随后correct还须严格胜zero-owner与
 wrong-RGB，才能说明收益来自pose-complete CLIP-organized support，而不是普通set loss。任一门失败，PCMPSR只作为
 “保留student空间仍不足”的负证据，不进入论文主方法。
+
+exp411 fresh cache的15,618图覆盖与provenance已通过，但这是训练输入合同，不进入论文性能表或正面贡献。当前story
+仍停在条件候选；只有真实PK64证明pose×CLIP owner与isolated final-ranking梯度active，并且后续自然e120涨点，
+才允许把“student身份集合排序”升级为方法证据。

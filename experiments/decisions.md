@@ -5999,3 +5999,10 @@ PCHM单pair和PC²P外部坐标轴。
 **决策**：冻结`3 support + 5 slot-owner multiplicity + logmeanexp all-identity ranking`，保持learned CE、D0 pose
 loss、backbone和eval不变。只做必要实现/真实PK64合同和一次独立智能体盲审，0B/0H即fresh cache与唯一e120。
 性能FAIL直接封板，不调owner/loss；GO后才补zero-owner与wrong-RGB matched controls。
+
+### [2026-07-21] 决策：exp411 fresh cache PASS，执行唯一真实PK64合同
+
+fresh cache完整覆盖15,618图，五槽valid、finite、norm、逐图path/RGB SHA及pose/CLIP/builder/source provenance
+全部通过strict loader与SHA门；运行自然退出且GPU空闲。**决策**：不增加其它static/preflight，只执行冻结的唯一
+MMPOSE-ABU真实PK64 CUDA/AMP合同。只有default-off exact、correct controls active、isolated PCMPSR Stage-3/backbone
+梯度和combined真实update同时PASS，才授权fresh e120；任一失败按事实封板该执行路径，不提前启动student。

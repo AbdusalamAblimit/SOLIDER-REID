@@ -40,3 +40,24 @@ GPU=`2 MiB/0%/0 compute PID`，asset与runner路径均fresh。
 `/home/afr/reid-clean/train-logs/exp411-pcmpsr-cache-v1.runner.log`。首次观测已编码`8/15618`，GPU约
 `2186 MiB/94%`且只有该compute PID，无异常。当前=`FRESH CACHE RUNNING / SOURCE+PARAMETERS FROZEN`；只监控
 自然完成，不修改builder/source/参数，不复用exp408/409/410 cache。
+
+## 2026-07-21：fresh cache完成并核验PASS
+
+唯一cache自然完成全15,618图并正常退出，runner异常计数0，GPU恢复`2 MiB/0%/0 compute PID`。独立strict loader
+核验：samples/unique paths=`15618/15618`，shape=`[15618,5,768]` FP16，五槽valid=
+`[15616,15618,15618,15618,15586]`，全finite；有效feature L2 norm min/max=
+`0.9996981621/1.0002959967`。
+
+- cache SHA=`b07576130a0c50b89194f2c59467defcf39293d96ca886616865eb198e7965d1`；
+- manifest SHA=`2ea8410f27737aaf3ba12547049e9013a24b86be1d5753509c9abbff0e7194a4`；
+- runner SHA=`272f8507279aeb47f4a9e086c7f8ce6e0af4635a002344384ad64b0e4b228c6c`；
+- path/RGB-SHA-vector/PID-vector SHA=
+  `e53ef9189f12737d6621ae152979cf2d12f8bb24cc823466a6ef11928bd99f4e`/
+  `c9398b6d8fa81062e37968783ccea76252d9c4401ba36d50b8f8a1ae83bdbbf1`/
+  `4d0181ec8795fcffc0d3e63785db92fc15b6f9eed232bf81e54a0d49cdc419ce`。
+
+source HEAD=`ebf60f2b4a5c943958f7077779d8500c2855874a`，builder/teacher source SHA=
+`58e47b65dc34ff5642a0f683b38f631294d14442b62b598024daa5b08bb2203c`/
+`fbd3e137a729f44d3179864f9978bd8846b22e8627a3c311747b0a2541092864`。真实cache SHA已写回config。
+当前=`FRESH CACHE PASS / UNIQUE REAL-PK64 CONTRACT AUTHORIZED / GPU IDLE`；该cache结果只证明输入有效，不是
+ReID性能或机制GO。

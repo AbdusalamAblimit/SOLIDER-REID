@@ -3314,3 +3314,9 @@ coverage×同PID region-CLIP共识只离散选择slot owner；final student desc
 近邻审计确认普通SupCon/listwise/AP surrogate、episodic set loss、pose sampling与CLIP-ReID/ProFD均覆盖原子但未
 发现完整同构；当前=`DESIGN/PROTOCOL FROZEN / C-CLASS CONDITIONAL / IMPLEMENTATION NEXT / GPU IDLE`。尚无
 exp411性能结果，双门仍为sealed clean D0 raw `57.5587756578/67.6923076923`。
+
+fresh exp411 cache已自然完成并通过strict loader：15,618图完整唯一覆盖，shape=`[15618,5,768]` FP16，五槽
+valid=`[15616,15618,15618,15618,15586]`，全finite且有效向量单位范数。cache/manifest SHA=
+`b07576130a0c50b89194f2c59467defcf39293d96ca886616865eb198e7965d1`/
+`2ea8410f27737aaf3ba12547049e9013a24b86be1d5753509c9abbff0e7194a4`。当前只授权唯一真实PK64合同，仍无
+exp411 mAP/R1或科学GO。

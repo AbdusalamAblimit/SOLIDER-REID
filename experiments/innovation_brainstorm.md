@@ -4288,3 +4288,7 @@ pose coverage×同PID CLIP共识再离散选择owner并以multiplicity强调相�
 
 该方向的关键科学边界是“外部证据只组织support multiplicity，不规定student轴”。若owner坍缩或controls不改变集合
 距离，机械门直接NO-START；若自然e120双门FAIL，说明全身份集合对象仍不足，不得改owner公式或loss聚合救臂。
+
+fresh cache PASS只确认PCMPSR所需的五槽CLIP support可被完整、有限且可追溯地提供，不增加问题/机制创新评分，也
+不是pose×CLIP有效证据。创新状态仍为C类CONDITIONAL；下一份有效信息只能来自真实batch中correct-vs-controls的
+owner活动性、isolated set-loss梯度以及自然e120相对clean D0的双门。

@@ -25,7 +25,7 @@ MODEL:
     POSE_LOSS_WEIGHT: 0.1
     PCMPSR_ENABLED: True
     PCMPSR_CACHE: '/home/afr/reid-clean/assets/exp411-pcmpsr-cache-v1/pcmpsr_cache.npz'
-    PCMPSR_CACHE_SHA256: ''
+    PCMPSR_CACHE_SHA256: 'b07576130a0c50b89194f2c59467defcf39293d96ca886616865eb198e7965d1'
     PCMPSR_CLIP_CHECKPOINT_SHA256: '9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e'
 
 INPUT:
