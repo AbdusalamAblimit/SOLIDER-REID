@@ -6029,3 +6029,14 @@ FAIL直接封板PCMPSR，GO后才补zero-owner与wrong-RGB matched controls。
 能涨点，但尚不能把增益归因于pose×CLIP owner。下一步严格串行运行zero-owner与wrong-RGB matched controls；除
 control变量外共享source、student配置、batch、seed、cache与自然e120协议。correct必须严格胜两个control，才判
 `POSE+CLIP SCIENTIFIC GO`；否则保留性能事实但关闭pose+CLIP主张。
+
+### [2026-07-21] 决策：zero-owner合同PASS，启动首个matched control
+
+新增formal control mode保持correct默认exact；zero-owner手工三support均值、wrong-RGB formal owner绑定及三mode
+isolated梯度均通过synthetic合同。独立盲审首轮`0B/1H`只发现wrong helper可能伪PASS的合同缺口，补硬断言后最终
+`0B/0H`。固定MMPOSE-ABU真实PK64 zero-owner合同进一步证明owner term严格为0、default-off完整exact、isolated
+Stage-3/backbone梯度active且combined AMP取得真实update。
+
+**决策**：机械门全部PASS，不再追加static/CPU/CUDA测试；从已提交preflight HEAD建立fresh zero-owner formal，使用
+固定Swin-Tiny/batch64/16×4/seed1234自然训练到e120。中间评测只记录，不早停、不改source/config/cache。zero-owner
+自然封板前wrong-RGB仍`NO-START`；correct arm继续永久只读。

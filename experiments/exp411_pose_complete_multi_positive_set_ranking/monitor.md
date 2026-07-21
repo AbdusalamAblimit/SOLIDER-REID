@@ -214,3 +214,23 @@ matched config相对sealed correct只改变mode与fresh output。
 `2.6877369881/2.4881243706/2.6964554787`，均finite/nonzero。独立盲审首轮`0B/1H`指出formal wrong helper可能未被
 合同硬绑定；只补负向合同后复审=`0B/0H`。远端4090实测空闲，correct formal tracked仍未变化。当前=
 `IMPLEMENTATION/SYNTHETIC/REVIEW PASS / REAL-PK64 CONTROL CONTRACT NEXT / GPU IDLE`。
+
+## 2026-07-21：zero-owner唯一真实PK64合同PASS
+
+独立远端preflight repo=`/home/afr/SOLIDER-REID-exp411-pcmpsr-controls-preflight-v1`，source HEAD=
+`f98ab2daafa294dd0db004e10519363025a45488`；七个关键文件与本地SHA byte-exact，zero-owner config SHA=
+`f418b0433c13208e9f844a249be3089fac3bc38c06ea173471f39ce41774f6c5`。固定MMPOSE-ABU synthetic复现PASS后，
+唯一fresh真实PK64合同自然完成并退出：
+
+- control mode=`zero_owner`，owner term=`0`，correct owner unique/fallback=`2.3125/0`；
+- wrong-RGB/generic/pose-only owner change=`0.284375/0.175/0.209375`；
+- default-off state/forward/combined loss及Python/NumPy/Torch CPU/all-CUDA RNG exact；
+- zero-owner set loss/positive/negative distance=`1.5925421715/57.8170280457/67.6581573486`；
+- isolated set loss对Stage-3/backbone产生`26/173`个finite nonzero梯度tensor；
+- combined loss/reid/pose=`7.8512554169/7.7594122887/0.9184324741`，default GradScaler第5次取得真实
+  Stage-3 update，combined Stage-3/backbone非零梯度=`26/181`。
+
+runner SHA=`28731e86899bac6f7a9444bef7f4a896822b942c51d73d9672ca833bd6d3b3ba`，异常计数0；运行后GPU=
+`2 MiB/0%/0 compute PID`，preflight tracked clean，sealed correct formal HEAD/tracked仍未变化。当前=
+`ZERO-OWNER REAL-PK64 PASS / FRESH FORMAL E120 AUTHORIZED / GPU IDLE`。不追加测试；只从已提交preflight
+HEAD建立fresh zero-owner formal并自然运行到e120。

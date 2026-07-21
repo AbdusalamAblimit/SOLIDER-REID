@@ -3340,3 +3340,10 @@ exp411 ReID mAP/R1。
 `76be6ba38c877dda7617db8bfb637283e7396a1b6b61cd45139dc26326536d5d`。correct arm永久封板，当前仍为
 `ATTRIBUTION PENDING`；须串行完成zero-owner与wrong-RGB matched controls且correct严格胜二者，才能记为
 pose+CLIP科学GO。
+
+matched-control实现经独立盲审从`0B/1H`闭环为`0B/0H`；HIGH只补强formal wrong owner与direct wrong/correct的
+负向绑定合同，不改机制。zero-owner唯一真实PK64合同PASS：owner term=`0`，default-off完整exact，isolated
+Stage-3/backbone非零梯度tensor=`26/173`，combined native GradScaler第5次真实更新；set loss/正/负集合距离=
+`1.5925421715/57.8170280457/67.6581573486`。runner SHA=
+`28731e86899bac6f7a9444bef7f4a896822b942c51d73d9672ca833bd6d3b3ba`。当前只授权fresh zero-owner e120，尚无该
+control的ReID结果，wrong-RGB仍`NO-START`。
