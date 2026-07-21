@@ -66,3 +66,19 @@ repo构建唯一bank；写回真实SHA后只执行一次真实PK batch64 CUDA/AM
 config SHA=`f099b7f778e376f9ff12787d1bd6bb21de3ea37be50cfac7866f155f77ad6cba`。当前状态=
 `IMPLEMENTATION/BANK/REAL-PK64 PASS / E120 AUTHORIZED / GPU IDLE`。不再追加测试，下一步从fresh clean repo启动
 唯一seed1234/e120 correct arm。
+
+## 2026-07-21：唯一fresh correct student已启动
+
+formal fresh gates全部PASS：repo=`/home/afr/SOLIDER-REID-exp410-pc2p-formal-d38a3d4-v1`，source HEAD=
+`d38a3d415fa97e2ada5ba9157dfb5600adcb75e9`；config/bank SHA分别为
+`f099b7f778e376f9ff12787d1bd6bb21de3ea37be50cfac7866f155f77ad6cba`/
+`8f435036d56b2a5a1a8e63466b383314f07d706a7465a499aef88a5f7435dc8c`。启动前repo clean、GPU无compute
+PID，output和runner均fresh。
+
+唯一训练主PID=`539255`，output=`/home/afr/reid-clean/logs/exp410-pc2p-s1234-v1`，runner=
+`/home/afr/reid-clean/train-logs/exp410-pc2p-s1234-v1.runner.log`。首batch BN norm/logit mean/std/abs-max=
+`27.435509/-0.000000/0.961771/3.391294`，预测类别unique=`48`，全部finite。首次观测e1 iter160/227，
+loss=`13.530`，GPU=`6964 MiB/94%`且只有该compute PID，无Traceback/RuntimeError/OOM/NaN/Inf。
+
+当前状态=`UNIQUE FRESH E120 RUNNING / SOURCE+CONFIG+BANK FROZEN`。运行中不修改formal repo、config、bank或参数；
+只在e10/20/.../120记录与sealed clean D0的同epochmAP/R1，不按中间点早停。
