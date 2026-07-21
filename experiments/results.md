@@ -3320,3 +3320,8 @@ valid=`[15616,15618,15618,15618,15586]`，全finite且有效向量单位范数�
 `b07576130a0c50b89194f2c59467defcf39293d96ca886616865eb198e7965d1`/
 `2ea8410f27737aaf3ba12547049e9013a24b86be1d5753509c9abbff0e7194a4`。当前只授权唯一真实PK64合同，仍无
 exp411 mAP/R1或科学GO。
+
+real-batch合同v1在读取远端缺失的sealed D0 config时、CUDA/model/cache执行前退出，runner SHA=
+`0469410c044cbc15b9dacb1620670577ea3ac0943cd121b36803585b57443550`；最终=
+`V1 SEALED RUNTIME FAILURE / SCIENCE NOT EVALUATED`，没有mAP/R1、owner、梯度或update结果。只允许补传byte-exact
+D0 config并使用fresh v2 runner，PCMPSR机制与门槛不变。

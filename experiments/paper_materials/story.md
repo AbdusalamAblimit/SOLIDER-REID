@@ -2467,3 +2467,6 @@ wrong-RGB，才能说明收益来自pose-complete CLIP-organized support，而�
 exp411 fresh cache的15,618图覆盖与provenance已通过，但这是训练输入合同，不进入论文性能表或正面贡献。当前story
 仍停在条件候选；只有真实PK64证明pose×CLIP owner与isolated final-ranking梯度active，并且后续自然e120涨点，
 才允许把“student身份集合排序”升级为方法证据。
+
+real-batch v1因远端缺少D0 config而在模型/CUDA前退出，不进入论文表或story证据。fresh v2只修复对照输入可读性；
+在真实owner、isolated梯度与e120涨点出现前，正面story状态不变。

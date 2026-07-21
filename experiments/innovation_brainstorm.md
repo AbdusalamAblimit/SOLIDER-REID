@@ -4292,3 +4292,6 @@ pose coverage×同PID CLIP共识再离散选择owner并以multiplicity强调相�
 fresh cache PASS只确认PCMPSR所需的五槽CLIP support可被完整、有限且可追溯地提供，不增加问题/机制创新评分，也
 不是pose×CLIP有效证据。创新状态仍为C类CONDITIONAL；下一份有效信息只能来自真实batch中correct-vs-controls的
 owner活动性、isolated set-loss梯度以及自然e120相对clean D0的双门。
+
+real-batch v1缺文件退出发生在科学路径前，不改变PCMPSR创新评分，也不能支持正负机制解释。补齐sealed D0 config
+仅恢复default-off可测性；创新状态继续为C类CONDITIONAL，等待fresh v2真实合同与后续性能。

@@ -61,3 +61,14 @@ source HEAD=`ebf60f2b4a5c943958f7077779d8500c2855874a`，builder/teacher source 
 `fbd3e137a729f44d3179864f9978bd8846b22e8627a3c311747b0a2541092864`。真实cache SHA已写回config。
 当前=`FRESH CACHE PASS / UNIQUE REAL-PK64 CONTRACT AUTHORIZED / GPU IDLE`；该cache结果只证明输入有效，不是
 ReID性能或机制GO。
+
+## 2026-07-21：real-batch v1运行时退出，科学未评估
+
+唯一v1 runner在CUDA/model/cache合同开始前退出：fresh远端repo由exp410 formal基底克隆，该基底未包含
+`configs/occluded_duke/swin_tiny_tapf_d0.yml`，default-off对照读取时报`FileNotFoundError`。v1 runner SHA=
+`0469410c044cbc15b9dacb1620670577ea3ac0943cd121b36803585b57443550`；GPU始终`2 MiB/0%/0 compute PID`，没有
+forward、梯度、update或科学指标。
+
+最终记录=`REAL-PK64-V1 SEALED RUNTIME FAILURE / SCIENCE NOT EVALUATED`，禁止覆盖或重跑v1。修正只把本地sealed
+D0 config byte-exact传入远端fresh repo，不改PCMPSR core、cache、manifest、method config、contract逻辑或门槛；
+随后使用fresh `exp411-pcmpsr-real-batch-v2.runner.log`执行同一合同。

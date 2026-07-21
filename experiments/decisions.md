@@ -6006,3 +6006,7 @@ fresh cache完整覆盖15,618图，五槽valid、finite、norm、逐图path/RGB 
 全部通过strict loader与SHA门；运行自然退出且GPU空闲。**决策**：不增加其它static/preflight，只执行冻结的唯一
 MMPOSE-ABU真实PK64 CUDA/AMP合同。只有default-off exact、correct controls active、isolated PCMPSR Stage-3/backbone
 梯度和combined真实update同时PASS，才授权fresh e120；任一失败按事实封板该执行路径，不提前启动student。
+
+real-batch v1因fresh远端基底缺少sealed D0 config，在任何CUDA/forward前运行时退出。**决策**：冻结v1且科学不
+评估；补传本地已有、byte-exact的D0 config属于恢复对照输入，不改变方法或合同。使用fresh v2 runner继续原唯一
+真实PK64门；不得覆盖v1、删减default-off对照或把该runtime失败写成机制证据。
