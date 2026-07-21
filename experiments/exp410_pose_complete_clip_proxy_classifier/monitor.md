@@ -30,3 +30,21 @@ FP32 logits/梯度路线和无bank eval合同完整。
 
 当前状态=`IMPLEMENTATION REVIEW 0B/0H / FRESH BANK NEXT / GPU IDLE`。下一步显式提交目标文件并在fresh clean远端
 repo构建唯一bank；写回真实SHA后只执行一次真实PK batch64 CUDA/AMP合同，通过即启动e120。
+
+## 2026-07-21：fresh proxy bank完成
+
+在fresh clean远端repo `/home/afr/SOLIDER-REID-exp410-pc2p-cb3486b-v2`（build source HEAD
+`a3be68f7ae368ba3700767b88a11e8cf3f61c36a`）以固定MMPOSE-ABU完成唯一fresh bank构建；过程为CPU聚合，GPU
+未被占用。bank覆盖15,618图/702 PID，shape=`[702,768]` FP32，每行单位范数且无重复；五槽每PID支持最小计数
+均为6，最大计数=`[425,426,426,426,425]`。
+
+- bank SHA=`8f435036d56b2a5a1a8e63466b383314f07d706a7465a499aef88a5f7435dc8c`；
+- manifest SHA=`d31b0c1e4b1ee211979f6dda05ff4977925149719eafebf788a99578891a829b`；
+- builder SHA=`71a41fe85a76f919b5d987c9f960250d4a49779093199f7d60ba42ac6b155a69`；
+- loader SHA=`f6fe1930f81e44fd7eaf624ae6808f56e891ebbd3ed74866a192b628b6048b72`；
+- official path/RGB/PID mapping SHA分别为
+  `e53ef9189f12737d6621ae152979cf2d12f8bb24cc823466a6ef11928bd99f4e`、
+  `10176dd5dd3e54f7139a43abca61fdf147766c06e5f58c04b8cf28795fb9ea5a`、
+  `56d53771bf0fbb4978ee51d118f921c61763ce4d2aeede7611740ec705c630d4`。
+
+真实bank SHA已写回冻结config。当前状态=`FRESH BANK PASS / REAL PK64 CUDA-AMP NEXT / GPU IDLE`。

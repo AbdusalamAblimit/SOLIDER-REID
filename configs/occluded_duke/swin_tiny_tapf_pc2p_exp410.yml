@@ -25,7 +25,7 @@ MODEL:
     POSE_LOSS_WEIGHT: 0.1
     PC2P_ENABLED: True
     PC2P_BANK: '/home/afr/reid-clean/assets/exp410-pc2p-bank-v1/proxy_bank.npz'
-    PC2P_BANK_SHA256: ''
+    PC2P_BANK_SHA256: '8f435036d56b2a5a1a8e63466b383314f07d706a7465a499aef88a5f7435dc8c'
 
 INPUT:
   SIZE_TRAIN: [384, 128]
