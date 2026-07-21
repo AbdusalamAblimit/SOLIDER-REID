@@ -6019,3 +6019,13 @@ fresh v2证明default-off完整exact、三种反事实均改变owner、owner不�
 **决策**：实现与输入门已全部完成，不再追加static/CPU/CUDA检查；清理untracked runtime cache并建立fresh formal
 clone后立即启动唯一correct seed1234/e120。中间评测只记录不早停；自然e120必须同时严格超过clean D0 raw双门，
 FAIL直接封板PCMPSR，GO后才补zero-owner与wrong-RGB matched controls。
+
+### [2026-07-21] 决策：exp411 correct性能GO，进入冻结matched controls
+
+唯一fresh correct arm自然e120=`58.8/70.1/82.1/85.8`，相对clean D0=`+1.2/+2.4/+1.3/+1.2`；mAP/R1
+舍入区间均严格高于raw双门，且进程自然退出、GPU空闲、异常计数0、source/config/cache SHA保持冻结。
+
+**决策**：永久封板correct arm为`PERFORMANCE GO`，禁止重跑、续训或调owner/loss。该结果先证明PCMPSR整体训练对象
+能涨点，但尚不能把增益归因于pose×CLIP owner。下一步严格串行运行zero-owner与wrong-RGB matched controls；除
+control变量外共享source、student配置、batch、seed、cache与自然e120协议。correct必须严格胜两个control，才判
+`POSE+CLIP SCIENTIFIC GO`；否则保留性能事实但关闭pose+CLIP主张。

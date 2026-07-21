@@ -2474,3 +2474,9 @@ real-batch v1因远端缺少D0 config而在模型/CUDA前退出，不进入论�
 fresh v2已确认correct pose×CLIP owner相对wrong/generic/pose-only均active，并且set loss在不借助CE/pose时可独立
 更新最终Stage-3/backbone。这允许story从“输入合同”前进到“机制已接通”，但仍不进入性能表或正面贡献；唯一
 fresh e120相对clean D0的双门仍是必要前置证据。
+
+correct arm现已自然完成并通过性能门：e120=`58.8/70.1/82.1/85.8`，相对clean D0=
+`+1.2/+2.4/+1.3/+1.2`。因此“student身份集合排序能够改善遮挡ReID”可作为实验证据保留；但当前story仍标记
+`ATTRIBUTION PENDING`，不能写成pose×CLIP已被证明。接下来的zero-owner与wrong-RGB matched controls分别检验
+收益是否只来自普通set ranking、以及CLIP槽共识是否提供正确语义组织。只有correct严格胜二者，才把PCMPSR升级为
+C类pose+CLIP主方法候选；否则收缩为非pose或非CLIP的集合训练发现。

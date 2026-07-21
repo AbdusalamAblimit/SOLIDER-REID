@@ -4299,3 +4299,9 @@ real-batch v1缺文件退出发生在科学路径前，不改变PCMPSR创新评�
 fresh v2将“机制未接通”从后续失败解释中排除：correct对三种强control的owner改变率均非零，五槽owner平均覆盖
 2.3125张支持图，isolated set loss独立更新Stage-3/backbone。它只支持PCMPSR机制active与证据门可执行，尚不支持
 性能或论文主张；C类CONDITIONAL资格下一步只由自然e120双门与GO后的matched controls决定。
+
+correct自然e120=`58.8/70.1`，相对clean D0=`+1.2/+2.4`，首次使“保留student空间、改成pose-complete身份集合
+排序”通过性能门。这把PCMPSR从纯条件想法推进为`PERFORMANCE GO / ATTRIBUTION PENDING`：问题对象与整体训练
+机制已有正证据，但创新不能提前归因给pose×CLIP owner。zero-owner若同样上涨，贡献更接近普通all-identity set
+ranking；wrong-RGB若不降，则CLIP语义组织不成立。只有correct严格胜两个matched control，C类pose+CLIP候选才
+升级为科学GO。

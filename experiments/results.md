@@ -3331,3 +3331,12 @@ fresh real-batch v2全部门PASS：default-off state/forward/loss与Python/NumPy
 isolated PCMPSR Stage-3/backbone梯度tensor=`26/173`；combined native GradScaler第5次取得真实Stage-3 update。
 runner SHA=`c60afabde025ed00c9e66ad0ef0d0a5dbb4331ed309dd402c5455d8b3c2cc3ef`。当前授权唯一fresh e120，仍无
 exp411 ReID mAP/R1。
+
+唯一fresh correct student已自然完成：e120=`58.8/70.1/82.1/85.8`，相对sealed clean D0
+`57.6/67.7/80.8/84.6`的rounded差=`+1.2/+2.4/+1.3/+1.2`。mAP/R1打印值的舍入区间均无歧义严格高于
+预注册raw门`57.5587756578/67.6923076923`，故=`PERFORMANCE GO`。checkpoint/train-log/runner SHA=
+`8bd928f39bd895ddf3733ede4ff5449dff90190e5f2cddac30d186d05a92c01e`/
+`55ecc3686195671f155c5df5baf9bfadaf1cdbe82f3af1fc984af509acf426f6`/
+`76be6ba38c877dda7617db8bfb637283e7396a1b6b61cd45139dc26326536d5d`。correct arm永久封板，当前仍为
+`ATTRIBUTION PENDING`；须串行完成zero-owner与wrong-RGB matched controls且correct严格胜二者，才能记为
+pose+CLIP科学GO。

@@ -129,6 +129,7 @@ Traceback/RuntimeError/OOM/NaN/Inf计数为0。
 | 90 | 58.8/70.7 | 83.0/86.3 | 57.5/67.9 | +1.3/+2.8 |
 | 100 | 58.5/70.1 | 82.4/85.8 | 56.9/67.1 | +1.6/+3.0 |
 | 110 | 58.6/69.9 | 82.2/85.7 | 57.4/67.4 | +1.2/+2.5 |
+| 120 | 58.8/70.1 | 82.1/85.8 | 57.6/67.7 | +1.2/+2.4 |
 
 e10为明显不利的warmup中间点，但不改变冻结协议、不早停也不修改运行中source/config/cache；继续自然训练至e120，
 最终仍只按raw mAP/R1双门裁决。
@@ -172,3 +173,23 @@ e100 PCMPSR=`58.5/70.1/82.4/85.8`，相对sealed clean D0同epoch mAP/R1=`56.9/6
 e110 PCMPSR=`58.6/69.9/82.2/85.7`，相对sealed clean D0同epoch mAP/R1=`57.4/67.4`为
 `+1.2/+2.5`，仍双领先，但相对e100自身mAP仅升`0.1`、R1再降`0.2`。读取时已进入e115，唯一compute PID，
 GPU约`7080 MiB/41%`，异常计数0。最后裁决只剩自然e120，继续冻结运行。
+
+## 2026-07-21：自然e120完成，correct性能GO
+
+唯一fresh correct arm自然完成e120并正常退出，最终=`58.8 mAP / 70.1 R1 / 82.1 R5 / 85.8 R10`；sealed
+clean D0=`57.6/67.7/80.8/84.6`，rounded四项差=`+1.2/+2.4/+1.3/+1.2`。runner只打印一位小数，但
+`58.8`与`70.1`各自的舍入区间下界仍严格高于预注册raw门`57.5587756578/67.6923076923`，所以性能双门
+无歧义PASS。
+
+主PID=`576005`已自然消失，GPU=`2 MiB/0%/0 compute PID`，runner异常计数0；formal HEAD仍为
+`0db28ecec911cf4776dcbabaf4ce0cda018dcf90`，tracked文件无变化，config/cache SHA仍为
+`01c060d676b4f2b267d0c2c60366d70b1d244a44609c95a7b12fc38b759b4651`/
+`b07576130a0c50b89194f2c59467defcf39293d96ca886616865eb198e7965d1`。产物SHA：
+
+- checkpoint=`8bd928f39bd895ddf3733ede4ff5449dff90190e5f2cddac30d186d05a92c01e`；
+- train log=`55ecc3686195671f155c5df5baf9bfadaf1cdbe82f3af1fc984af509acf426f6`；
+- runner=`76be6ba38c877dda7617db8bfb637283e7396a1b6b61cd45139dc26326536d5d`。
+
+当前封板=`CORRECT ARM SEALED / PERFORMANCE GO / ATTRIBUTION PENDING`。不得重跑correct、续训或调owner/loss；
+下一步只按冻结协议串行执行zero-owner与wrong-RGB matched controls。只有correct严格胜二者，才升级为pose+CLIP
+科学GO与正面story。
