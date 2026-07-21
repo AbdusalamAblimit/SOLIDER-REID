@@ -619,3 +619,20 @@ e60时wrong-RGB相对correct的mAP高`0.2`、R1持平，R5低`0.4`、R10高`0.9`
 唯一compute PID，GPU约`7,068 MiB/41%`，formal HEAD=`f98ab2daafa294dd0db004e10519363025a45488`且
 tracked source未变化，config/loss/processor SHA保持冻结值，runner/train log严格异常计数均为0。继续冻结运行，
 不早停、不续训、不改参。
+
+## 2026-07-21：wrong-RGB e70正式评测
+
+wrong-RGB自然完成e70=`57.6 mAP / 70.1 R1 / 81.9 R5 / 85.7 R10`；同epoch sealed correct=
+`57.4/70.2/81.5/84.9`，sealed zero-owner=`57.8/70.2/81.7/85.5`，sealed clean D0=
+`55.4/65.2/79.5/83.6`。四臂差值为：
+
+| epoch | wrong-RGB mAP/R1/R5/R10 | correct同epoch | zero-owner同epoch | clean D0同epoch | wrong−correct | wrong−zero | wrong−D0 |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 70 | 57.6/70.1/81.9/85.7 | 57.4/70.2/81.5/84.9 | 57.8/70.2/81.7/85.5 | 55.4/65.2/79.5/83.6 | +0.2/-0.1/+0.4/+0.8 | -0.2/-0.1/+0.2/+0.2 | +2.2/+4.9/+2.4/+2.1 |
+
+e70时wrong-RGB相对correct的mAP高`0.2`、R1低`0.1`，R5/R10高`0.4/0.8`；相对zero-owner的
+mAP/R1低`0.2/0.1`，R5/R10高`0.2/0.2`，继续呈混合顺序。correct在此点仍未同时严格胜wrong-RGB的
+mAP/R1；但所有归因解释继续等待自然e120，不选择性使用中间排序。读取时训练已进入e71，主PID=`678912`仍为
+唯一compute PID，GPU约`7,084 MiB/41%`，formal HEAD=`f98ab2daafa294dd0db004e10519363025a45488`且
+tracked source未变化，config/loss/processor SHA保持冻结值，runner/train log严格异常计数均为0。继续冻结运行，
+不早停、不续训、不改参。
