@@ -48,3 +48,19 @@ config/router/backbone/model/processor SHA分别为
 
 当前=`REAL-PK64 PASS / UNIQUE FRESH E120 AUTHORIZED`。不追加preflight；下一步立即启动唯一correct seed1234/e120，
 运行中冻结formal source/config/cache/text asset与参数。
+
+## 2026-07-22：唯一fresh正式臂启动
+
+合同自然退出且GPU重新空闲后，已启动唯一PSGC correct seed1234/e120；主PID=`717837`，解释器固定为
+`/usr/local/anaconda3/envs/mmpose-abu/bin/python`，config=
+`configs/occluded_duke/swin_tiny_tapf_psgc_exp412.yml`，output=
+`/home/afr/reid-clean/logs/exp412-psgc-s1234-v1`，runner=
+`/home/afr/reid-clean/train-logs/exp412-psgc-s1234-v1.runner.log`。实际参数再次确认为Swin-Tiny、batch64、
+P×K=`16×4`、seed1234、max epoch120、fresh output、不续训；PCMPSR宿主=`zero_owner`，PSGC mode=`correct`。
+
+首批PCMPSR set loss/正/负=`1.970790/58.300308/66.560944`且owner term=`0`；PSGC front size/front/fallback=
+`2.3000/0.5750/0`，weight min/max=`0/4`，q mean/std=`-0.005111/0.007140`，gradient min/max/mean=
+`0/4/0.9841`。pose-only/q-only/text-shuffle权重改变率=`0.54375/0.54375/0.384375`，确认正式训练走correct路径。
+首个20 iterations自然完成，loss=`8.250`、pose=`0.916`、无异常。formal HEAD=
+`98039e0a1a69541ca7a593cbf90abdc2225bb091`且tracked source未变化；主PID为唯一compute PID，GPU约
+`6,980 MiB/42%`。运行中冻结source/config/cache/text asset/参数，e10/20/.../120只记录不早停。

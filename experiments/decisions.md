@@ -6065,3 +6065,11 @@ PSGC永久沿用zero-owner集合排序，不恢复失败owner；只让pose visib
 
 **决策**：不追加重复preflight，只执行一次固定MMPOSE-ABU真实PK64 CUDA/AMP合同；PASS立即启动唯一fresh
 seed1234/e120，FAIL只修致命实现bug。正式性能FAIL后不调prompt、front、budget、loss或scale救臂。
+
+### [2026-07-22] 决策：exp412真实PK64 PASS，正式臂已启动
+
+唯一合同确认default-off exact、三control active、28/28 Stage-3梯度改变及第5次GradScaler真实update；合同进程
+自然退出后GPU空闲，fresh output/runner与formal HEAD再次核验通过。
+
+**决策**：主PID=`717837`作为唯一4090任务自然运行到e120；source/config/cache/text asset全程冻结，逐10 epoch
+记录PSGC、sealed zero-owner与clean D0同epoch指标。中间点不早停，e120 mAP或R1任一不严格胜zero-owner即封板。

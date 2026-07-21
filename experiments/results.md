@@ -3362,3 +3362,7 @@ SHA=`a16711c91ead16cdc8d7388b4f60dc178f69e6a6ea5261e4132d1a99fe112a1d`/
 Pareto front，只重分配和为4的路由系数预算；`norm3`后、avgpool前的backward-only router保持forward、descriptor、
 score与loss数值exact，eval不读取CLIP。设计问题闭环后的实现盲审为`0B/0H`；fresh formal与一次性text asset已冻结。
 当前只执行一次固定MMPOSE-ABU真实PK64合同，PASS即启动唯一fresh correct e120；尚无exp412性能结果。
+
+唯一真实PK64合同现已PASS：default-off完整exact，三种control均改变路由权重，PSGC-on/off共有28个可比较
+Stage-3梯度tensor且全部改变，combined AMP第5次取得真实update。随后已立即启动唯一fresh correct seed1234/e120，
+主PID=`717837`为唯一4090 compute任务；首批路由与control诊断active且异常0。当前尚无exp412 mAP/R1。
