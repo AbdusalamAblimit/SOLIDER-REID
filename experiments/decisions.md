@@ -5988,3 +5988,14 @@ ReID student的可学习分类空间严重失配，且这种失配会压制原tr
 **决策**：永久封板exp410为`SEALED NO-GO / PERFORMANCE FAIL`。性能前置门未过，因此wrong-RGB、generic和
 random-code归因臂均`NO-START`；禁止重跑、续训或以scale/temperature/projection/adapter/loss调节救旧proxy。
 exp411必须放弃固定外部classifier轴，转向保留student自组织身份空间的多正样本、全排序或跨视图补全结构对象。
+
+### [2026-07-21] 决策：exp411选择PCMPSR全身份集合排序
+
+独立候选审计比较了graded all-positive relevance与pose-complete set ranking。最终选择PCMPSR：每个anchor为batch
+内每个身份排除同一类内位置，形成严格等大小的三图支持集；pose coverage与同PID CLIP槽共识只离散选择五个slot
+owner，身份集合距离仍完全由student global descriptor计算。这样保留全部支持与全部负身份集合梯度，同时避免
+PCHM单pair和PC²P外部坐标轴。
+
+**决策**：冻结`3 support + 5 slot-owner multiplicity + logmeanexp all-identity ranking`，保持learned CE、D0 pose
+loss、backbone和eval不变。只做必要实现/真实PK64合同和一次独立智能体盲审，0B/0H即fresh cache与唯一e120。
+性能FAIL直接封板，不调owner/loss；GO后才补zero-owner与wrong-RGB matched controls。

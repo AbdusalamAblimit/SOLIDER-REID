@@ -2453,3 +2453,13 @@ exp410现已退出正面story。唯一fresh e120=`45.0/56.4/71.3/76.7`，相对c
 空间的结构性错配，而不是未接通。由于性能前置门FAIL，wrong-RGB/generic归因臂不再执行，PC²P不能包装成
 C类主方法。下一story必须保留student自组织身份几何，只用pose×CLIP组织多正支持、跨视图补全或全排序关系，
 而不能继续让外部CLIP坐标直接接管classifier。
+
+## 2026-07-21：exp411条件story——从外部身份轴转向student身份集合
+
+PCMPSR把正面问题改为：遮挡query需要相对完整的同ID多视图支持和全部负身份集合形成排序，而非依赖单hard pair或
+冻结外部prototype。每个PK身份都以同样的三图leave-one-position-out支持进入student global距离；pose与region
+CLIP只为五个解剖槽离散选择owner multiplicity，不向student提供坐标、target feature或测试分支。
+
+该story当前仅为C类条件候选。自然e120必须先同时超过clean D0 mAP/R1；随后correct还须严格胜zero-owner与
+wrong-RGB，才能说明收益来自pose-complete CLIP-organized support，而不是普通set loss。任一门失败，PCMPSR只作为
+“保留student空间仍不足”的负证据，不进入论文主方法。

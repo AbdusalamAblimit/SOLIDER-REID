@@ -4275,3 +4275,16 @@ PC²P唯一fresh e120=`45.0 mAP/56.4 R1`，相对clean D0大幅下降`12.6/11.3 
 PCHM单边hard mining。更合理的对象是：保留learned classifier与student度量空间，只让pose×CLIP定义同PID多正
 支持的集合结构、跨视图补全关系或listwise排序约束；这样外部语义只决定“哪些支持应互补/一致”，不规定student
 最终坐标轴。新机制仍需wrong-RGB/pose-shuffle/CLIP-only强反事实与自然e120双门，至少满足问题和证据创新门。
+
+## 2026-07-21：exp411 PCMPSR——pose-complete多正身份集合排序
+
+PCMPSR保留student learned classifier与global坐标，只改变triplet所假设的训练对象：每个anchor面对16个等大小
+leave-one-position-out身份支持集，而不是一个hard positive/negative。每个集合的三张支持图全部进入距离，五槽
+pose coverage×同PID CLIP共识再离散选择owner并以multiplicity强调相应视图；所有距离仍在student空间计算。
+
+- 问题门PASS：遮挡ReID的AP要求完整正支持相对所有负身份集合排序，单pair与固定proxy都不是同一问题；
+- 机制门CONDITIONAL PASS：单独的listwise、set loss、pose owner或CLIP共识均不新，只保留三者加等支持排除的整体；
+- 证据门PASS：zero-owner、generic、wrong-RGB、pose-only与D0共享支持，可区分集合收益和pose×CLIP归因。
+
+该方向的关键科学边界是“外部证据只组织support multiplicity，不规定student轴”。若owner坍缩或controls不改变集合
+距离，机械门直接NO-START；若自然e120双门FAIL，说明全身份集合对象仍不足，不得改owner公式或loss聚合救臂。

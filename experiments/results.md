@@ -3303,3 +3303,14 @@ exp410对象重置为Pose-Complete CLIP Proxy Classifier：按PID逐槽聚合五
 `3b01acd672f2a642a2a65210b6558dca37281abf17aedba627dddd9c0c56c082`。最终=
 `EXP410 SEALED NO-GO / PERFORMANCE FAIL / ATTRIBUTION CONTROLS NO-START`；冻结外部CLIP identity axes与
 ReID student几何严重失配，不执行wrong-RGB/generic，不调旧proxy。
+
+## exp411 PCMPSR设计冻结（2026-07-21）
+
+exp411当前只有design/protocol与近期论文/代码审计，没有cache、GPU执行或mAP/R1。新对象为Pose-Complete
+Multi-Positive Set Ranking：PK batch内对每个身份构造等大小leave-one-position-out三图支持集，五槽pose
+coverage×同PID region-CLIP共识只离散选择slot owner；final student descriptor对全部16个身份集合做listwise
+排序。learned CE、D0 pose loss、student坐标与eval保持不变。
+
+近邻审计确认普通SupCon/listwise/AP surrogate、episodic set loss、pose sampling与CLIP-ReID/ProFD均覆盖原子但未
+发现完整同构；当前=`DESIGN/PROTOCOL FROZEN / C-CLASS CONDITIONAL / IMPLEMENTATION NEXT / GPU IDLE`。尚无
+exp411性能结果，双门仍为sealed clean D0 raw `57.5587756578/67.6923076923`。
