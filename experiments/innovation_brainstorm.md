@@ -4263,3 +4263,15 @@ head吸收；原global feature同时被proxy CE、triplet与eval共用。
 CLIP classifier”不新。可争的是pose逐槽跨图补全visual identity set并无adapter接管全分类几何。
 问题/证据门PASS，机制门CONDITIONAL PASS；必须后续胜wrong-RGB、generic和random-code才能排除任意
 source-key与普通CLIP prototype解释。
+
+### exp410封板后的创新结论
+
+PC²P唯一fresh e120=`45.0 mAP/56.4 R1`，相对clean D0大幅下降`12.6/11.3 point`。训练前合同已证明冻结proxy
+真实替换classifier且梯度进入Stage-3/backbone，因此该结果否定的不是接线，而是“用冻结CLIP visual identity axes
+接管ReID全部分类几何”这一机制对象。跨图pose补全没有消除CLIP与student空间错配，反而使分类目标长期约束在
+不适配的外部坐标系中。
+
+下一候选不得用projection、adapter、temperature或scale把PC²P软化后换名重试，也不得退回PICRD局部relation或
+PCHM单边hard mining。更合理的对象是：保留learned classifier与student度量空间，只让pose×CLIP定义同PID多正
+支持的集合结构、跨视图补全关系或listwise排序约束；这样外部语义只决定“哪些支持应互补/一致”，不规定student
+最终坐标轴。新机制仍需wrong-RGB/pose-shuffle/CLIP-only强反事实与自然e120双门，至少满足问题和证据创新门。

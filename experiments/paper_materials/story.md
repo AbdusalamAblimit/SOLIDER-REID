@@ -2447,3 +2447,9 @@ PC²P尝试把论文问题改写为：遮挡ReID的分类几何不应只由单�
 该story当前只是C类条件候选。性能双门GO只是第一关；之后correct必须胜固定PID错绑的
 wrong-RGB和无pose分槽的generic full-image CLIP proxy，否则只能写成固定classifier/普通CLIP原型收益，
 不能进入pose+CLIP正面叙事。
+
+exp410现已退出正面story。唯一fresh e120=`45.0/56.4/71.3/76.7`，相对clean D0四项均大幅下降；实现合同已
+确认proxy logits、CE梯度和backbone更新真实active，所以失败指向冻结CLIP visual identity axes与ReID student
+空间的结构性错配，而不是未接通。由于性能前置门FAIL，wrong-RGB/generic归因臂不再执行，PC²P不能包装成
+C类主方法。下一story必须保留student自组织身份几何，只用pose×CLIP组织多正支持、跨视图补全或全排序关系，
+而不能继续让外部CLIP坐标直接接管classifier。

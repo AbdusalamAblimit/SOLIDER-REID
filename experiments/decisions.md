@@ -5977,3 +5977,14 @@ CE+原triplet+D0 pose经default GradScaler自然backoff后取得Stage-3真实更
 **决策**：必要门已全部通过，不再增加static/CPU或小样本测试；立即从fresh clean repo启动唯一seed1234/e120
 `correct` arm。运行中冻结source/config/bank，不续训、不按中间结果早停。自然e120必须同时严格超过clean D0 raw
 `57.5587756578 mAP / 67.6923076923 R1`；FAIL直接封板，GO后才执行wrong-RGB与generic matched controls。
+
+### [2026-07-21] 决策：exp410固定CLIP proxy大幅退化，永久封板
+
+唯一fresh correct student自然e120=`45.0/56.4/71.3/76.7`，相对sealed clean D0 rounded=
+`-12.6/-11.3/-9.5/-7.9`；进程正常退出、异常计数0，训练前又已证明proxy logits、CE梯度与backbone更新均active，
+故不能把失败解释为实现未接通。结果表明即使proxy由同PID五槽跨图支持补全，冻结CLIP visual identity axes仍与
+ReID student的可学习分类空间严重失配，且这种失配会压制原triplet与pose辅助目标。
+
+**决策**：永久封板exp410为`SEALED NO-GO / PERFORMANCE FAIL`。性能前置门未过，因此wrong-RGB、generic和
+random-code归因臂均`NO-START`；禁止重跑、续训或以scale/temperature/projection/adapter/loss调节救旧proxy。
+exp411必须放弃固定外部classifier轴，转向保留student自组织身份空间的多正样本、全排序或跨视图补全结构对象。

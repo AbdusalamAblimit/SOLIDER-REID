@@ -98,6 +98,7 @@ loss=`13.530`，GPU=`6964 MiB/94%`且只有该compute PID，无Traceback/Runtime
 | 90 | 45.3/57.2 | 57.5/67.9 | -12.2/-10.7 |
 | 100 | 44.3/55.4 | 56.9/67.1 | -12.6/-11.7 |
 | 110 | 44.8/55.9 | 57.4/67.4 | -12.6/-11.5 |
+| 120 | 45.0/56.4 | 57.6/67.7 | -12.6/-11.3 |
 
 e10训练自然完成后评测得到R5/R10=`57.1/63.1`；进程随后自然进入e11。此时主PID仍为`539255`，GPU只有该
 compute PID，runner无Traceback/RuntimeError/OOM/NaN/Inf。e10双指标落后只是中间轨迹，不触发早停、续训或
@@ -116,3 +117,18 @@ e80完整R5/R10=`70.5/76.2`，双门差距仍为约`-11 point`；评测后自然
 
 e90/100/110完整R5/R10依次为`71.6/76.9`、`70.5/75.6`、`71.0/76.3`。PC²P后段已稳定在比D0低约
 `11--13 point`的区域，e110仍无恢复。最新已进入e113，主PID/GPU独占与异常门正常；继续等待唯一自然e120。
+
+## 2026-07-21：自然e120完成并封板
+
+唯一fresh correct student已自然完成120个epoch并正常退出；runner中`Traceback/RuntimeError/OOM/NaN/Inf`
+计数均为0，退出后GPU=`2 MiB/0%/0 compute PID`。e120最终rounded mAP/R1/R5/R10=
+`45.0/56.4/71.3/76.7`，sealed clean D0=`57.6/67.7/80.8/84.6`，rounded差值=
+`-12.6/-11.3/-9.5/-7.9`。mAP与R1均无歧义低于预注册raw双门
+`57.5587756578/67.6923076923`，因此性能门FAIL。
+
+checkpoint/runner/train-log SHA256分别为
+`749813f01d9f400bb7df7f6e3c3f7bf5fa8e9d8a41ec8f8b92dc91682eb05ed6`、
+`84bdbb90d0f8ab7ff5ba6b93e7eb11b2a2d5b1e3cc1604a239d60afb0772b7ec`、
+`3b01acd672f2a642a2a65210b6558dca37281abf17aedba627dddd9c0c56c082`。最终状态=
+`EXP410 SEALED NO-GO / PERFORMANCE FAIL / ATTRIBUTION CONTROLS NO-START`。冻结proxy与ReID student的
+分类空间严重失配；按协议不执行wrong-RGB/generic，不调proxy、scale、temperature或loss，不续训、不重跑。

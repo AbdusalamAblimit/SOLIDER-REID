@@ -3294,3 +3294,12 @@ exp410对象重置为Pose-Complete CLIP Proxy Classifier：按PID逐槽聚合五
 分别有`1/2/26`个非零梯度tensor；combined CE+原triplet+D0 pose在default GradScaler第6个native attempt取得
 真实更新，Stage-3/backbone非零梯度=`26/181`，原classifier梯度为None，eval无bank返回`[64,768]`。当前=
 `IMPLEMENTATION/BANK/CUDA-AMP PASS / STUDENT E120 AUTHORIZED`，尚无exp410 mAP/R1。
+
+唯一fresh correct student已自然完成e120并正常退出。最终rounded mAP/R1/R5/R10=
+`45.0/56.4/71.3/76.7`，相对sealed clean D0 `57.6/67.7/80.8/84.6`为
+`-12.6/-11.3/-9.5/-7.9`；mAP与R1均明确未过预注册raw双门。checkpoint/runner/train-log SHA256=
+`749813f01d9f400bb7df7f6e3c3f7bf5fa8e9d8a41ec8f8b92dc91682eb05ed6`/
+`84bdbb90d0f8ab7ff5ba6b93e7eb11b2a2d5b1e3cc1604a239d60afb0772b7ec`/
+`3b01acd672f2a642a2a65210b6558dca37281abf17aedba627dddd9c0c56c082`。最终=
+`EXP410 SEALED NO-GO / PERFORMANCE FAIL / ATTRIBUTION CONTROLS NO-START`；冻结外部CLIP identity axes与
+ReID student几何严重失配，不执行wrong-RGB/generic，不调旧proxy。
