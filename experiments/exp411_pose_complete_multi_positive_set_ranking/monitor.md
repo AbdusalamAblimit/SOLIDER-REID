@@ -234,3 +234,22 @@ runner SHA=`28731e86899bac6f7a9444bef7f4a896822b942c51d73d9672ca833bd6d3b3ba`，
 `2 MiB/0%/0 compute PID`，preflight tracked clean，sealed correct formal HEAD/tracked仍未变化。当前=
 `ZERO-OWNER REAL-PK64 PASS / FRESH FORMAL E120 AUTHORIZED / GPU IDLE`。不追加测试；只从已提交preflight
 HEAD建立fresh zero-owner formal并自然运行到e120。
+
+## 2026-07-21：唯一fresh zero-owner student已启动
+
+从已提交preflight HEAD建立fresh formal=
+`/home/afr/SOLIDER-REID-exp411-pcmpsr-zero-owner-formal-v1`，source HEAD=
+`f98ab2daafa294dd0db004e10519363025a45488`，clone后tracked/untracked均clean。zero-owner config/loss/processor/cache
+SHA分别为`f418b0433c13208e9f844a249be3089fac3bc38c06ea173471f39ce41774f6c5`/
+`a17518f8e986d7f4a1bb6b1c75d5eb71672e6e1d61a8f30f72d3c848d18f03fb`/
+`b3d47788ab1f4836111df6ed85e90e062024f5e13a6ace76c93fc6bf86ac0baa`/
+`b07576130a0c50b89194f2c59467defcf39293d96ca886616865eb198e7965d1`；output/runner启动前均不存在。
+
+唯一训练主PID=`642339`，output=`/home/afr/reid-clean/logs/exp411-pcmpsr-zero-owner-s1234-v1`，runner=
+`/home/afr/reid-clean/train-logs/exp411-pcmpsr-zero-owner-s1234-v1.runner.log`。首batch set
+loss/positive/negative=`1.970790/58.300308/66.560944`，owner term/unique/fallback=`0/2.2969/0`，formal-vs-correct
+owner change=`0`，wrong-RGB/generic/pose-only change=`0.284375/0.171875/0.20625`；与冻结zero-owner合同一致。
+首次稳定观测已到e1 iter60，loss finite，GPU约`7000 MiB/41%`且只有该compute PID，严格异常模式计数0。
+
+当前=`UNIQUE ZERO-OWNER E120 RUNNING / SOURCE+CONFIG+CACHE FROZEN / WRONG-RGB NO-START`。只在e10/20/.../120
+记录zero-owner、correct与sealed clean D0同epoch轨迹；不按中间结果早停，不修改formal或补跑correct。

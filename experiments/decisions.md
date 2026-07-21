@@ -6040,3 +6040,12 @@ Stage-3/backbone梯度active且combined AMP取得真实update。
 **决策**：机械门全部PASS，不再追加static/CPU/CUDA测试；从已提交preflight HEAD建立fresh zero-owner formal，使用
 固定Swin-Tiny/batch64/16×4/seed1234自然训练到e120。中间评测只记录，不早停、不改source/config/cache。zero-owner
 自然封板前wrong-RGB仍`NO-START`；correct arm继续永久只读。
+
+### [2026-07-21] 决策：唯一zero-owner e120已启动
+
+fresh formal clone的HEAD与preflight冻结提交一致，config/loss/processor/cache SHA核验通过，output/runner均为fresh，
+启动前GPU空闲。首batch明确记录owner term=`0`、formal-vs-correct owner change=`0`，同时三种owner诊断仍active；
+说明当前正式臂确实删除owner multiplicity而没有改变support或误启wrong-RGB。
+
+**决策**：主PID=`642339`作为唯一4090任务自然运行至e120，source/config/cache全程冻结；e10/20/.../120只记录
+同epoch指标，不早停、不续训。zero-owner自然完成并封板前不得创建或启动wrong-RGB formal训练。
