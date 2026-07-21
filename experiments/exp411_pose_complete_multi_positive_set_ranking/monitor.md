@@ -670,3 +670,20 @@ R1/R10低`0.2/0.2`，R5高`1.1`。这是继e30、e50、e80后第四个wrong-RGB�
 主PID=`678912`仍为唯一compute PID，GPU约`7,080 MiB/67%`，formal HEAD=
 `f98ab2daafa294dd0db004e10519363025a45488`且tracked source未变化，config/loss/processor SHA保持冻结值，
 runner/train log严格异常计数均为0。继续冻结运行，不早停、不续训、不改参。
+
+## 2026-07-22：wrong-RGB e100正式评测
+
+wrong-RGB自然完成e100=`59.0 mAP / 71.0 R1 / 82.8 R5 / 85.9 R10`；同epoch sealed correct=
+`58.5/70.1/82.4/85.8`，sealed zero-owner=`58.8/70.5/82.2/86.1`，sealed clean D0=
+`56.9/67.1/79.6/83.8`。四臂差值为：
+
+| epoch | wrong-RGB mAP/R1/R5/R10 | correct同epoch | zero-owner同epoch | clean D0同epoch | wrong−correct | wrong−zero | wrong−D0 |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 100 | 59.0/71.0/82.8/85.9 | 58.5/70.1/82.4/85.8 | 58.8/70.5/82.2/86.1 | 56.9/67.1/79.6/83.8 | +0.5/+0.9/+0.4/+0.1 | +0.2/+0.5/+0.6/-0.2 | +2.1/+3.9/+3.2/+2.1 |
+
+e100时wrong-RGB的mAP/R1再次同时高于correct，分别高`0.5/0.9`，四项也全部高于correct；相对zero-owner的
+mAP/R1/R5高`0.2/0.5/0.6`，仅R10低`0.2`。这是第五个wrong-RGB在预注册mAP/R1上同时高于correct的评测点，
+且e80/e90/e100已形成连续三个后半程点；正确owner RGB/PID绑定的归因证据继续变弱，但最终仍只看自然e120，
+不早停、不改参、不续训。读取时训练已进入e103，主PID=`678912`仍为唯一compute PID，GPU约
+`7,080 MiB/62%`，formal HEAD=`f98ab2daafa294dd0db004e10519363025a45488`且tracked source未变化，
+runner/train log严格异常计数均为0。继续冻结运行至e110/e120。
