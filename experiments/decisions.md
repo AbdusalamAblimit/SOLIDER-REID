@@ -6171,3 +6171,11 @@ v1只有56个完整epoch与e10--e50五个评测点，不满足预注册e120合�
 **决策**：v1永久记为`INFRASTRUCTURE INTERRUPTED / E120 VOID / NO RESUME`，保留日志、SHA和全部中间不利/有利
 结果，禁止checkpoint续训。由于代码、config参数、cache、text asset、seed和formal HEAD均未改变，且唯一真实PK64
 合同此前已PASS，不重跑合同或审查；只在全新v2 OUTPUT_DIR从epoch 1启动同一正式臂，重新自然完成完整e120。
+
+### [2026-07-22] 决策：exp413 v2已从epoch 1 fresh启动
+
+v2使用同一冻结formal HEAD、seed1234和全部机制参数，仅将OUTPUT_DIR切换到不存在的fresh v2路径；命令不含
+checkpoint恢复。首批loss、prefix、coverage与三control链改变率均与v1一致，主PID=`2316`为唯一compute，异常0。
+
+**决策**：v2作为新的完整正式尝试自然运行到e120；v1继续封存且不得续训/覆盖。v2每10 epoch独立记录，禁止以v1
+评测填补；性能与matched-control门完全不变。

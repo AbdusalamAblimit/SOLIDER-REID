@@ -3421,3 +3421,7 @@ exp413性能裁决；已有轨迹不删除。train-log/runner SHA256=
 `a39e3355bd678d6662d6f820087998d8014f8fb469dc12342588aede8e4b8376`/
 `acb170024d55860e3d5454c7f1de77fd0eda19e1b09406fe15ac9e9f76c286cb`。同冻结HEAD与seed1234将从全新v2
 OUTPUT_DIR由epoch 1重跑，不续训、不重跑合同。
+
+v2已从epoch 1 fresh启动，主PID=`2316`，新output/runner分别为`exp413-psccr-s1234-v2`与对应runner；没有
+checkpoint恢复。首批zero-owner及PSCCR prefix/coverage/control诊断与v1完全一致，formal tracked 0/0、严格异常0。
+v2尚无正式评测点；后续e10--e120必须重新完整记录，禁止用v1轨迹补点。

@@ -150,3 +150,17 @@ PASS且机制/参数/资产未变，故不重跑合同或盲审。GPU恢复空�
 `/home/afr/reid-clean/logs/exp413-psccr-s1234-v2`与runner=
 `/home/afr/reid-clean/train-logs/exp413-psccr-s1234-v2.runner.log`均确认不存在。下一步只允许从epoch 1、seed1234
 在该全新OUTPUT_DIR重启完整正式臂；这不是续训，v1不得覆盖或删除。
+
+## 2026-07-22：v2 fresh正式臂从epoch 1启动
+
+同一冻结formal与seed1234通过命令行仅覆盖输出路径，fresh output=
+`/home/afr/reid-clean/logs/exp413-psccr-s1234-v2`，runner=
+`/home/afr/reid-clean/train-logs/exp413-psccr-s1234-v2.runner.log`；没有checkpoint参数或旧权重恢复，主PID=`2316`。
+
+v2首批诊断与v1完全一致：zero-owner loss=`1.970790`；PSCCR prefix1/2/3=
+`4.396325/2.489964/1.970790`；coverage=`4.156250/5.796875/6.234375`；correct相对pose-only/q-only/
+text-shuffle链改变率=`0.703125/0.687500/0.468750`。启动后PID为唯一compute，GPU约`7,000 MiB/48%`，
+formal HEAD=`add6adae4d192da4c44bf44120dd571f0dfe14e1`且tracked worktree/index=`0/0`，严格异常0。
+
+当前=`V2 FRESH FORMAL RUNNING / CONTINUE`。v1保持封存，禁止续训或覆盖；v2自然运行到e120，e10/20/.../120
+重新记录完整指标，不能用v1中间点填补v2。
