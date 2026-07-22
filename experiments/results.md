@@ -3394,3 +3394,7 @@ prefix分别做all-identity set ranking；prefix3必须与zero-owner distance/lo
 唯一fresh correct已从formal HEAD=`add6adae4d192da4c44bf44120dd571f0dfe14e1`启动，主PID=`754511`。首批
 prefix1/2/3 loss=`4.396325/2.489964/1.970790`，第三项与zero-owner宿主loss exact；三control链改变率均非零。
 当前运行中，尚无e10评测或正式mAP/R1。
+
+首个正式点e10 PSCCR=`29.9/39.8/55.1/60.9`，同epoch sealed zero-owner=`28.4/38.1/53.9/60.8`、
+clean D0=`33.4/42.7/59.8/65.2`；PSCCR相对二者分别为`+1.5/+1.7/+1.2/+0.1`与
+`-3.5/-2.9/-4.7/-4.3`。四项早期胜宿主但仍低于D0，只记为轨迹事实；正式臂继续冻结运行到e120。

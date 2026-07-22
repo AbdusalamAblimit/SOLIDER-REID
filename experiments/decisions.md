@@ -6122,3 +6122,11 @@ zero-owner exact，coverage单调且三control链改变率非零；e1 iter20仍�
 
 **决策**：自然运行到e120，禁止续训或修改运行中source/config/cache/text asset。中间点只记录；e120 mAP或R1任一
 不严格胜sealed zero-owner即`PERFORMANCE NO-GO`且matched controls不启动。
+
+### [2026-07-22] 决策：exp413 e10早期胜宿主但不作选择
+
+PSCCR e10=`29.9/39.8/55.1/60.9`，相对同epoch sealed zero-owner四项为
+`+1.5/+1.7/+1.2/+0.1`，相对clean D0为`-3.5/-2.9/-4.7/-4.3`。当前formal与唯一compute健康，严格异常0。
+
+**决策**：只记录首点相对宿主有利、相对D0不利的双向事实，不做早停、正向选择或pose×CLIP归因；source/config/
+cache/text asset保持冻结，继续自然运行并在e20再次做同epoch比较，最终只按e120预注册门裁决。

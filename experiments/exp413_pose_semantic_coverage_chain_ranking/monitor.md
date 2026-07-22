@@ -53,3 +53,17 @@ pose-only/q-only/text-shuffle链改变率=`0.703125/0.687500/0.468750`。已进�
 
 当前=`FORMAL RUNNING / CONTINUE`。source/config/cache/text asset冻结，不续训；e10/20/.../120记录PSCCR、sealed
 zero-owner与clean D0同epoch mAP/R1/R5/R10及差值，中间点不早停。
+
+## 2026-07-22：PSCCR e10正式评测
+
+PSCCR自然完成e10=`29.9 mAP / 39.8 R1 / 55.1 R5 / 60.9 R10`；同epoch sealed zero-owner=
+`28.4/38.1/53.9/60.8`，sealed clean D0=`33.4/42.7/59.8/65.2`。当前轨迹为：
+
+| epoch | PSCCR mAP/R1/R5/R10 | zero-owner同epoch | clean D0同epoch | PSCCR−zero | PSCCR−D0 |
+|---:|---:|---:|---:|---:|---:|
+| 10 | 29.9/39.8/55.1/60.9 | 28.4/38.1/53.9/60.8 | 33.4/42.7/59.8/65.2 | +1.5/+1.7/+1.2/+0.1 | -3.5/-2.9/-4.7/-4.3 |
+
+首个预注册点四项均严格高于关键宿主zero-owner，但四项均低于clean D0，说明早期相对宿主轨迹有利、绝对优化仍慢。
+单个早期点不能代替e120性能门，也不能据此宣称pose×CLIP归因；继续冻结运行，不早停、不改机制。读取时已进入e13，
+主PID=`754511`仍为唯一compute PID，GPU约`7,072 MiB/43%`，formal HEAD与tracked worktree/index保持不变，
+runner/train严格异常计数0。
