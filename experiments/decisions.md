@@ -6207,3 +6207,12 @@ v3 e10 PSCCR=`29.9/39.2/55.0/60.7`，相对同epoch sealed zero-owner=
 
 **决策**：保留核心三项胜宿主、R10略低及四项低于D0的完整双向证据，不做早停、正向选择或pose×CLIP联合
 归因。source/config/cache/text asset保持冻结，v3继续自然运行到e120；下一正式记录点为e20。
+
+### [2026-07-22] 决策：exp413 v3 e20四项胜宿主与D0
+
+v3 e20 PSCCR=`46.1/56.0/71.3/76.6`，相对同epoch sealed zero-owner=
+`+0.5/+1.0/+0.7/+0.8`，相对clean D0=`+3.9/+3.6/+3.7/+2.6`。e20四项均为正差，但e10仍保留
+R10略低宿主且四项低D0的证据。
+
+**决策**：该点提高最终性能GO的关注度，但不改变预注册流程。中间不早停、不调参、不启动controls、不宣称
+pose×CLIP科学归因；source/config/cache/text asset继续冻结，v3自然运行到e120并在e30继续记录。

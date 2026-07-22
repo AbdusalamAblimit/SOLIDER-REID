@@ -207,3 +207,13 @@ PSCCR−zero-owner=`+1.5/+1.1/+1.1/-0.1`，PSCCR−D0=`-3.5/-3.5/-4.8/-4.5`。
 与作废v1完全相同；后续裁决只使用v3自身12点评测，不引用v1补点或选择性替换。读取时主PID=`3668`仍为唯一
 CUDA compute，运行至e18 iter140，GPU约`7,072 MiB / 42%`，runner/train严格异常=`0/0`，formal HEAD与
 tracked worktree/index保持不变。继续冻结运行，不早停、不启动controls、不作pose×CLIP归因。
+
+## 2026-07-22：v3 e20正式评测
+
+v3原始train log读取结果：PSCCR=`46.1/56.0/71.3/76.6`。同epoch sealed zero-owner=
+`45.6/55.0/70.6/75.8`，sealed clean D0=`42.2/52.4/67.6/74.0`；因此PSCCR−zero-owner=
+`+0.5/+1.0/+0.7/+0.8`，PSCCR−D0=`+3.9/+3.6/+3.7/+2.6`。
+
+e20四项同时严格胜宿主与D0，和e10的混合排序相比转为全项正差；仍只是第二个中间点，不能替代e120门或支持
+pose×CLIP归因。读取时已进入e23，主PID=`3668`仍为唯一CUDA compute，GPU约`7,078 MiB / 47%`，
+runner/train严格异常=`0/0`，formal HEAD与tracked worktree/index不变。继续冻结运行，不早停、不启动controls。
