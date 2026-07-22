@@ -3499,3 +3499,7 @@ ATTRIBUTION PENDING`，q-only与text-shuffle仍`NO-START`。
 pose-only e10=`29.9/39.7/54.5/60.9`；相对同epoch v3 correct=`+0.0/+0.5/-0.5/+0.2`，相对zero-owner=
 `+1.5/+1.6/+0.6/+0.1`，相对clean D0=`-3.5/-3.0/-5.3/-4.3`。早期mAP持平且R1/R10高于correct，属于
 暂时不利于联合归因的混合证据；pose-only继续自然到e120，不作中途裁决。
+
+pose-only e20=`46.2/55.7/70.8/77.1`；相对同epoch v3 correct=`+0.1/-0.3/-0.5/+0.5`，相对zero-owner=
+`+0.6/+0.7/+0.2/+1.3`，相对clean D0=`+4.0/+3.3/+3.2/+3.1`。mAP/R10高于correct、R1/R5低于correct，
+完整保留混合关系并继续到e120。

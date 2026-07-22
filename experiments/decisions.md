@@ -6326,3 +6326,12 @@ pose-only e10=`29.9/39.7/54.5/60.9`，相对同epoch sealed v3 correct=
 
 **决策**：完整保留这项对联合归因暂时不利的早期结果，不早停pose-only、不修改机制或参数，也不提前启动后续
 controls。唯一科学门仍只看三control各自自然e120后，correct是否在mAP/R1同时严格胜全部三者。
+
+### [2026-07-22] 决策：exp413 pose-only e20与correct继续混合排序
+
+pose-only e20=`46.2/55.7/70.8/77.1`，相对同epoch sealed v3 correct=
+`+0.1/-0.3/-0.5/+0.5`，相对zero-owner=`+0.6/+0.7/+0.2/+1.3`，相对clean D0=
+`+4.0/+3.3/+3.2/+3.1`。pose-only在mAP/R10领先correct，而correct在R1/R5领先pose-only，不能选取单项作归因。
+
+**决策**：e20不改变预注册流程；保留e10/e20所有方向，pose-only冻结运行至e120，不早停、不调参，q-only与
+text-shuffle继续`NO-START`。最终科学裁决仍只使用各臂自然e120的mAP/R1双严格比较。
