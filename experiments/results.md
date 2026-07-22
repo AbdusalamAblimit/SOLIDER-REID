@@ -3507,3 +3507,7 @@ pose-only e20=`46.2/55.7/70.8/77.1`；相对同epoch v3 correct=`+0.1/-0.3/-0.5/
 pose-only e30=`51.0/61.8/75.2/80.8`；相对同epoch v3 correct=`-0.1/+0.1/+0.3/+0.4`，相对zero-owner=
 `+1.8/+1.5/+0.2/+0.8`，相对clean D0=`+4.4/+5.6/+3.9/+4.4`。correct仅mAP略高，pose-only其余三项
 更高；继续记录，不提前作联合归因裁决。
+
+pose-only e40=`54.9/66.4/79.7/83.4`；相对同epoch v3 correct=`-0.7/-0.3/-0.5/-0.9`，相对zero-owner=
+`-0.1/+0.2/-0.1/-1.0`，相对clean D0=`+4.9/+5.7/+3.5/+2.4`。correct首次在中间点同时严格领先
+pose-only的mAP/R1并四项领先；pose-only仍在R1略胜zero-owner。该点只记轨迹，继续自然到e120。

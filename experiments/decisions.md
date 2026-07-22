@@ -6344,3 +6344,13 @@ pose-only e30=`51.0/61.8/75.2/80.8`，相对同epoch sealed v3 correct=
 
 **决策**：提高联合归因失败风险但不提前裁决；pose-only必须自然到e120，禁止调参、救臂、选择性删点或提前启动
 q-only/text-shuffle。最终只用自然e120的mAP/R1双严格关系。
+
+### [2026-07-22] 决策：exp413 pose-only e40首次被correct双核心同时领先
+
+pose-only e40=`54.9/66.4/79.7/83.4`，相对同epoch sealed v3 correct=
+`-0.7/-0.3/-0.5/-0.9`，相对zero-owner=`-0.1/+0.2/-0.1/-1.0`，相对clean D0=
+`+4.9/+5.7/+3.5/+2.4`。correct首次在正式中间点同时严格领先pose-only的mAP/R1，且四项均领先；但
+pose-only的R1仍比zero-owner高`0.2`，不能选择性省略。
+
+**决策**：e40缓解前三点的联合归因失败风险，但不构成最终科学GO。pose-only继续冻结运行到自然e120，不早停、
+不调参、不启动q-only或text-shuffle；最终仍只按correct与三control自然e120的mAP/R1双严格关系裁决。
