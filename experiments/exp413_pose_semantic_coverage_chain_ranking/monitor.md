@@ -196,3 +196,14 @@ e1 iter60。
 
 当前=`V3 FRESH FORMAL RUNNING / CONTINUE`。v1/v2均保持封存且禁止续训或覆盖；v3须自然运行到e120，独立记录
 e10/20/.../120全部12个正式评测点，禁止使用v1轨迹或v2日志补点。
+
+## 2026-07-22：v3 e10正式评测
+
+v3原始train log读取结果：PSCCR=`29.9/39.2/55.0/60.7`（mAP/R1/R5/R10）。同epoch sealed
+zero-owner=`28.4/38.1/53.9/60.8`，sealed clean D0=`33.4/42.7/59.8/65.2`；因此
+PSCCR−zero-owner=`+1.5/+1.1/+1.1/-0.1`，PSCCR−D0=`-3.5/-3.5/-4.8/-4.5`。
+
+该点核心mAP/R1及R5严格胜宿主，但R10低`0.1`，且四项均低于D0。v3首批诊断虽与v1 exact，e10排序指标并不
+与作废v1完全相同；后续裁决只使用v3自身12点评测，不引用v1补点或选择性替换。读取时主PID=`3668`仍为唯一
+CUDA compute，运行至e18 iter140，GPU约`7,072 MiB / 42%`，runner/train严格异常=`0/0`，formal HEAD与
+tracked worktree/index保持不变。继续冻结运行，不早停、不启动controls、不作pose×CLIP归因。

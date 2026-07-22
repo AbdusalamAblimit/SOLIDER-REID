@@ -3436,3 +3436,8 @@ v3现已从epoch 1 fresh启动，主PID=`3668`，output/runner分别为`exp413-p
 checkpoint恢复。首批zero-owner loss、PSCCR prefix1/2/3、coverage及三control链改变率与v1/v2完全一致，
 formal tracked状态0/0、runner/train严格异常0/0，且主PID为唯一CUDA compute。v3尚无正式评测点；后续必须
 独立记录e10--e120，禁止用已作废臂补点。
+
+v3首个正式点e10 PSCCR=`29.9/39.2/55.0/60.7`，同epoch sealed zero-owner=
+`28.4/38.1/53.9/60.8`、clean D0=`33.4/42.7/59.8/65.2`；PSCCR相对二者分别为
+`+1.5/+1.1/+1.1/-0.1`与`-3.5/-3.5/-4.8/-4.5`。核心mAP/R1及R5早期胜宿主，但R10略低且四项均低
+D0；只记v3轨迹事实，继续自然运行到e120。
