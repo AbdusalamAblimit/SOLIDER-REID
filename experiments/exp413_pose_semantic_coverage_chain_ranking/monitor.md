@@ -38,3 +38,18 @@ fresh formal=`/home/afr/SOLIDER-REID-exp413-psccr-formal-v1`，HEAD=
 
 最终=`UNIQUE REAL PK64 PASS / FORMAL E120 AUTHORIZED`。不得重跑合同或追加preflight；下一步只允许fresh
 correct seed1234自然训练到e120。
+
+## 2026-07-22：唯一fresh correct e120已启动
+
+从冻结contract formal建立fresh训练formal=`/home/afr/SOLIDER-REID-exp413-psccr-train-v1`，HEAD仍为
+`add6adae4d192da4c44bf44120dd571f0dfe14e1`且tracked worktree/index diff均为0。fresh output=
+`/home/afr/reid-clean/logs/exp413-psccr-s1234-v1`，runner=
+`/home/afr/reid-clean/train-logs/exp413-psccr-s1234-v1.runner.log`，主PID=`754511`。
+
+首批真实训练诊断：zero-owner宿主set loss=`1.970790`；PSCCR总set loss=`2.952360`，prefix1/2/3=
+`4.396325/2.489964/1.970790`；coverage=`4.156250/5.796875/6.234375`；correct相对
+pose-only/q-only/text-shuffle链改变率=`0.703125/0.687500/0.468750`。已进入e1 iter20/227，GPU约
+`7,000 MiB/43%`，修正后的严格异常计数0。
+
+当前=`FORMAL RUNNING / CONTINUE`。source/config/cache/text asset冻结，不续训；e10/20/.../120记录PSCCR、sealed
+zero-owner与clean D0同epoch mAP/R1/R5/R10及差值，中间点不早停。

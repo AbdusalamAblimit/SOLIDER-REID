@@ -6114,3 +6114,11 @@ coverage单调、prefix3与zero-owner exact、28/28个Stage-3可比梯度改变�
 **决策**：不重跑合同、不追加preflight；从冻结formal HEAD=`add6adae4d192da4c44bf44120dd571f0dfe14e1`建立fresh
 训练formal/output，立即启动唯一correct seed1234/e120。source/config/cache/text asset全程冻结，逐10 epoch记录并
 与sealed zero-owner、clean D0同epoch比较；中间不早停。
+
+### [2026-07-22] 决策：exp413唯一correct正式臂已启动
+
+fresh formal/output/runner核验通过后启动主PID=`754511`，为当前唯一4090 compute任务。首批prefix3 loss与
+zero-owner exact，coverage单调且三control链改变率非零；e1 iter20仍正常、严格异常0。
+
+**决策**：自然运行到e120，禁止续训或修改运行中source/config/cache/text asset。中间点只记录；e120 mAP或R1任一
+不严格胜sealed zero-owner即`PERFORMANCE NO-GO`且matched controls不启动。

@@ -3390,3 +3390,7 @@ prefix分别做all-identity set ranking；prefix3必须与zero-owner distance/lo
 `0.750000/0.656250/0.468750`，coverage均值=`4.078125/5.765625/6.203125`，prefix3与zero-owner exact；
 28/28个Stage-3可比梯度tensor改变，combined native GradScaler第5次真实update。runner SHA=
 `24a64a1a9db5dec24ee8c7a3765a51d05945a253df2cd64a85133953c9180623`。当前正式e120已授权，尚无mAP/R1。
+
+唯一fresh correct已从formal HEAD=`add6adae4d192da4c44bf44120dd571f0dfe14e1`启动，主PID=`754511`。首批
+prefix1/2/3 loss=`4.396325/2.489964/1.970790`，第三项与zero-owner宿主loss exact；三control链改变率均非零。
+当前运行中，尚无e10评测或正式mAP/R1。
