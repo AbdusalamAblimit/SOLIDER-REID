@@ -6130,3 +6130,11 @@ PSCCR e10=`29.9/39.8/55.1/60.9`，相对同epoch sealed zero-owner四项为
 
 **决策**：只记录首点相对宿主有利、相对D0不利的双向事实，不做早停、正向选择或pose×CLIP归因；source/config/
 cache/text asset保持冻结，继续自然运行并在e20再次做同epoch比较，最终只按e120预注册门裁决。
+
+### [2026-07-22] 决策：exp413 e20继续胜宿主并翻过D0
+
+PSCCR e20=`46.8/56.7/71.4/77.6`，相对同epoch sealed zero-owner=
+`+1.2/+1.7/+0.8/+1.8`，相对clean D0=`+4.6/+4.3/+3.8/+3.6`。e10/e20连续两点四项胜宿主，e20也四项胜D0。
+
+**决策**：该轨迹提高对最终性能GO的关注度，但不改变预注册流程；中间不早停、不启动controls、不宣称pose×CLIP
+科学归因，source/config/cache/text asset继续冻结，自然训练到e120并逐10 epoch完整记录。

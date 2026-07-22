@@ -67,3 +67,18 @@ PSCCR自然完成e10=`29.9 mAP / 39.8 R1 / 55.1 R5 / 60.9 R10`；同epoch sealed
 单个早期点不能代替e120性能门，也不能据此宣称pose×CLIP归因；继续冻结运行，不早停、不改机制。读取时已进入e13，
 主PID=`754511`仍为唯一compute PID，GPU约`7,072 MiB/43%`，formal HEAD与tracked worktree/index保持不变，
 runner/train严格异常计数0。
+
+## 2026-07-22：PSCCR e20正式评测
+
+PSCCR自然完成e20=`46.8 mAP / 56.7 R1 / 71.4 R5 / 77.6 R10`；同epoch sealed zero-owner=
+`45.6/55.0/70.6/75.8`，sealed clean D0=`42.2/52.4/67.6/74.0`。截至当前轨迹为：
+
+| epoch | PSCCR mAP/R1/R5/R10 | zero-owner同epoch | clean D0同epoch | PSCCR−zero | PSCCR−D0 |
+|---:|---:|---:|---:|---:|---:|
+| 10 | 29.9/39.8/55.1/60.9 | 28.4/38.1/53.9/60.8 | 33.4/42.7/59.8/65.2 | +1.5/+1.7/+1.2/+0.1 | -3.5/-2.9/-4.7/-4.3 |
+| 20 | 46.8/56.7/71.4/77.6 | 45.6/55.0/70.6/75.8 | 42.2/52.4/67.6/74.0 | +1.2/+1.7/+0.8/+1.8 | +4.6/+4.3/+3.8/+3.6 |
+
+连续两个预注册点四项均严格高于zero-owner，且e20四项也已高于clean D0；这是有利的早期优化轨迹，但不能替代
+e120性能门，也不能在未运行matched controls前归因于pose×CLIP联合排序。继续冻结运行，不早停、不改机制。
+读取时已进入e23，主PID=`754511`仍为唯一compute PID，GPU约`7,078 MiB/47%`，formal HEAD与tracked
+worktree/index保持不变，runner/train严格异常计数0。
