@@ -309,3 +309,23 @@ e110相对宿主核心mAP/R1与R5严格为正，但R10低`0.3`；四项仍胜D0�
 替代e120预注册裁决或触发controls。读取时已进入e111 iter160，主PID=`3668`仍为唯一CUDA compute，GPU约
 `7,088 MiB / 42%`，runner/train严格异常=`0/0`，formal tracked worktree/index保持`0/0`。继续冻结运行至
 自然e120，不改参、不续训、不提前归因。
+
+## 2026-07-22：v3 correct自然e120完成，性能GO
+
+v3原始train log最终结果：PSCCR=`59.3/70.8/82.6/86.0`。sealed zero-owner e120=
+`58.9/70.3/81.9/86.2`，sealed clean D0 e120=`57.6/67.7/80.8/84.6`；因此PSCCR−zero-owner=
+`+0.4/+0.5/+0.7/-0.2`，PSCCR−D0=`+1.7/+3.1/+1.8/+1.4`。mAP与R1同时严格胜预注册宿主，故判定
+`EXP413 PERFORMANCE GO / ATTRIBUTION PENDING`；R10低宿主`0.2`仍完整保留。
+
+训练自然完成全部120 epoch与`[10,20,...,120]`共12个正式评测点后主PID=`3668`消失，目标训练进程为0，GPU=
+`2 MiB / 0% / 0 compute`，runner/train严格异常=`0/0`，formal HEAD=
+`add6adae4d192da4c44bf44120dd571f0dfe14e1`且tracked worktree/index=`0/0`。唯一checkpoint、train log、runner
+SHA256依次为：
+
+- `b49ae00246d07bf014e43eaeb5c0c76d6c95071f52d6034a3fcc7b6f687c4af4`；
+- `6cec0de7bba41277f400ed86fa8f30268be5a549ba250c164b38b5a92f4f0b30`；
+- `d156614f836131051bca99d167d68998953b698173df32a9b6f7ec7bbd839a60`。
+
+correct臂现永久封存，禁止重跑、续训或修改产物。按预注册顺序只授权同一冻结formal、recipe与seed1234上的fresh
+`pose-only` matched control；q-only与text-shuffle继续`NO-START`。只有correct在mAP/R1同时严格胜全部三control，
+才能判`POSE+CLIP SCIENTIFIC GO`。

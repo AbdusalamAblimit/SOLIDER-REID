@@ -3481,3 +3481,12 @@ mAP与R10微胜宿主，R1低`0.1`且R5持平，四项胜D0；e90恢复后再次
 v3 e110 PSCCR=`59.1/70.5/82.3/85.8`，同epoch zero-owner=`58.8/70.4/81.8/86.1`、clean D0=
 `57.4/67.4/80.5/84.6`；相对二者分别为`+0.3/+0.1/+0.5/-0.3`与`+1.7/+3.1/+1.8/+1.2`。
 核心mAP/R1及R5胜宿主但R10低`0.3`，四项胜D0；最终仍只按自然e120双核心门裁决。
+
+v3 correct自然e120=`59.3/70.8/82.6/86.0`，相对sealed zero-owner=`58.9/70.3/81.9/86.2`为
+`+0.4/+0.5/+0.7/-0.2`，相对clean D0=`57.6/67.7/80.8/84.6`为`+1.7/+3.1/+1.8/+1.4`。
+mAP/R1同时严格胜宿主，故判`EXP413 PERFORMANCE GO / ATTRIBUTION PENDING`；R10负差不遗漏。v3包含完整12个
+评测点并自然退出，GPU空闲、严格异常0、formal tracked 0/0。checkpoint/train-log/runner SHA256=
+`b49ae00246d07bf014e43eaeb5c0c76d6c95071f52d6034a3fcc7b6f687c4af4`/
+`6cec0de7bba41277f400ed86fa8f30268be5a549ba250c164b38b5a92f4f0b30`/
+`d156614f836131051bca99d167d68998953b698173df32a9b6f7ec7bbd839a60`。correct永久封存，现按预注册顺序只启动
+fresh pose-only matched control；q-only与text-shuffle仍未启动。

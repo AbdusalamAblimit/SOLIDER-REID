@@ -6297,3 +6297,14 @@ v3 e110 PSCCR=`59.1/70.5/82.3/85.8`，相对同epoch sealed zero-owner=
 
 **决策**：不把e110双核心正差提前解释为性能GO，也不遗漏R10负差。source/config/cache/text asset保持冻结，
 不启动controls；v3继续自然完成e120，并只按预注册最终双核心门裁决。
+
+### [2026-07-22] 决策：exp413 v3 correct性能GO，串行启动pose-only
+
+v3 correct自然e120=`59.3/70.8/82.6/86.0`，相对sealed zero-owner=
+`+0.4/+0.5/+0.7/-0.2`，相对clean D0=`+1.7/+3.1/+1.8/+1.4`。mAP与R1同时严格胜预注册宿主，完整12个
+评测点、自然退出、GPU空闲、严格异常0、formal tracked 0/0及checkpoint/train-log/runner SHA均已核验；同时保留
+R10低宿主`0.2`的不利事实。
+
+**决策**：判`EXP413 PERFORMANCE GO / ATTRIBUTION PENDING`并永久封存correct，不重跑、不续训、不修改产物。
+依预注册顺序只在同一冻结formal、recipe、资产与seed1234上从fresh OUTPUT_DIR启动pose-only；q-only与
+text-shuffle保持`NO-START`。correct最终还须在mAP/R1同时严格胜三control，才允许`POSE+CLIP SCIENTIFIC GO`。
