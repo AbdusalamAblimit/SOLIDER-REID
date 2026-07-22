@@ -248,6 +248,16 @@ e60相对宿主mAP/R5/R10为正，但核心R1仍低`0.3`；四项继续胜D0。�
 裁决。读取时已进入e62，主PID=`3668`仍为唯一CUDA compute，GPU约`7,066 MiB / 42%`，runner/train严格
 异常=`0/0`，formal HEAD与tracked worktree/index保持不变。继续冻结运行，不早停、不启动controls。
 
+## 2026-07-22：v3 e70正式评测
+
+v3原始train log读取结果：PSCCR=`58.1/69.5/82.2/85.7`。从sealed exp411原始记录读取同epoch
+zero-owner=`57.8/70.2/81.7/85.5`，clean D0=`55.4/65.2/79.5/83.6`；因此PSCCR−zero-owner=
+`+0.3/-0.7/+0.5/+0.2`，PSCCR−D0=`+2.7/+4.3/+2.7/+2.1`。
+
+e70相对宿主mAP/R5/R10仍为正，但核心R1负差由e60的`0.3`扩大到`0.7`；四项仍胜D0。该点进一步增加
+最终双核心门风险，但中间点不得早停或启动controls。读取时已进入e73 iter140，主PID=`3668`仍为唯一CUDA
+compute，GPU约`7,088 MiB / 47%`，runner/train严格异常=`0/0`，formal状态保持冻结。继续自然运行。
+
 ## 2026-07-22：v3 e40正式评测
 
 v3原始train log读取结果：PSCCR=`55.6/66.7/80.2/84.3`。同epoch sealed zero-owner=
