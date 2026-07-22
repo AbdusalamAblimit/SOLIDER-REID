@@ -181,3 +181,18 @@ v2完整性封存：train-log SHA256=
 `add6adae4d192da4c44bf44120dd571f0dfe14e1`且tracked worktree/index=`0/0`，fresh v3 output/runner均不存在。
 下一步仅允许使用相同代码、config、资产与seed1234，在全新v3 OUTPUT_DIR从epoch 1启动；不重跑唯一PK64合同或
 盲审，不覆盖v1/v2。
+
+## 2026-07-22：v3 fresh正式臂从epoch 1启动
+
+同一冻结formal与seed1234仅通过命令行覆盖fresh output=
+`/home/afr/reid-clean/logs/exp413-psccr-s1234-v3`，runner=
+`/home/afr/reid-clean/train-logs/exp413-psccr-s1234-v3.runner.log`；启动命令不含checkpoint参数，主PID=`3668`。
+
+v3首批诊断再次与v1/v2完全一致：zero-owner loss=`1.970790`；PSCCR prefix1/2/3=
+`4.396325/2.489964/1.970790`；coverage=`4.156250/5.796875/6.234375`；correct相对pose-only/q-only/
+text-shuffle链改变率=`0.703125/0.687500/0.468750`。主PID是唯一CUDA compute，GPU约
+`7,000 MiB / 42%`，formal tracked worktree/index=`0/0`，runner/train严格异常计数=`0/0`；读取时已到
+e1 iter60。
+
+当前=`V3 FRESH FORMAL RUNNING / CONTINUE`。v1/v2均保持封存且禁止续训或覆盖；v3须自然运行到e120，独立记录
+e10/20/.../120全部12个正式评测点，禁止使用v1轨迹或v2日志补点。

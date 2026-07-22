@@ -6189,3 +6189,12 @@ checkpoint恢复。首批loss、prefix、coverage与三control链改变率均与
 **决策**：v2永久记为`USER STOPPED / E120 VOID / NO RESUME`，保留日志与SHA，禁止续训、覆盖或与v1拼接。用户
 现已明确恢复；因冻结formal HEAD、config、资产、seed与唯一PK64合同均未改变，只在不存在的v3 OUTPUT_DIR从
 epoch 1 fresh启动同一正式臂，不重跑合同或盲审。e120性能门及性能GO后才启动三matched controls的规则不变。
+
+### [2026-07-22] 决策：exp413 v3已从epoch 1 fresh启动
+
+v3使用同一冻结formal HEAD、seed1234与全部机制参数，只把OUTPUT_DIR切换到此前不存在的v3路径；命令不含
+checkpoint恢复。首批loss、prefix、coverage与三control链改变率再次和v1/v2 exact，主PID=`3668`为唯一CUDA
+compute，formal tracked状态0/0、严格异常0/0。
+
+**决策**：v3作为当前唯一正式臂自然运行到e120；v1/v2继续封存，禁止续训、覆盖或跨臂拼点。v3每10 epoch独立
+记录，最终性能门与matched-control门不变，中间不早停、不调机制、不提前运行controls。

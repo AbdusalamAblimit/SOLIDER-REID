@@ -3431,3 +3431,8 @@ v2随后按用户明确指令在e2 iter200人工终止：仅完成1个完整epoc
 runner SHA256分别为`ee53e0adff01a8ee332c4bb9c7e986b13b49b017f8ab84eec5fbdb8ce4fe83f9`和
 `04a9e08c113aa6b099f7a0bd46fef4eca686c93a24175aefcbd2df9a341726c1`。用户恢复后只允许在全新v3路径从
 epoch 1 fresh重跑同一正式臂，v1/v2均不得续训、覆盖或拼接。
+
+v3现已从epoch 1 fresh启动，主PID=`3668`，output/runner分别为`exp413-psccr-s1234-v3`与对应runner；无
+checkpoint恢复。首批zero-owner loss、PSCCR prefix1/2/3、coverage及三control链改变率与v1/v2完全一致，
+formal tracked状态0/0、runner/train严格异常0/0，且主PID为唯一CUDA compute。v3尚无正式评测点；后续必须
+独立记录e10--e120，禁止用已作废臂补点。
