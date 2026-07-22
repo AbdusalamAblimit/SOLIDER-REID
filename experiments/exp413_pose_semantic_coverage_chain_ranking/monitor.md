@@ -287,3 +287,14 @@ v3原始train log读取结果：PSCCR=`55.6/66.7/80.2/84.3`。同epoch sealed ze
 e40核心mAP/R1及R5胜宿主，但R10低`0.1`；四项均胜D0。该点仍是混合宿主证据，不能表述为全项胜或提前触发
 controls。读取时已进入e44 iter80，主PID=`3668`为唯一CUDA compute，GPU约`7,076 MiB / 46%`，
 runner/train严格异常=`0/0`，formal HEAD与tracked worktree/index保持不变。继续冻结运行至e120。
+
+## 2026-07-22：v3 e100正式评测
+
+v3原始train log读取结果：PSCCR=`59.2/70.4/82.2/86.2`。从sealed exp411原始记录读取同epoch
+zero-owner=`58.8/70.5/82.2/86.1`，clean D0=`56.9/67.1/79.6/83.8`；因此PSCCR−zero-owner=
+`+0.4/-0.1/+0.0/+0.1`，PSCCR−D0=`+2.3/+3.3/+2.6/+2.4`。
+
+e100相对宿主仅mAP和R10微正，核心R1低`0.1`、R5持平；四项仍胜D0。该点使e90的四项正差再次转为混合
+证据，必须保留但不能提前判NO-GO。读取时已进入e103 iter140，主PID=`3668`仍为唯一CUDA compute，GPU约
+`7,076 MiB / 42%`，runner/train严格异常=`0/0`，formal tracked worktree/index保持`0/0`。继续冻结运行至
+e120，不启动controls；下一正式记录点为e110。

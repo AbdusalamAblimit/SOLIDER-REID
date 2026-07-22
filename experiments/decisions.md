@@ -6279,3 +6279,12 @@ v3 e90 PSCCR=`59.6/71.4/83.1/87.0`，相对同epoch sealed zero-owner=
 
 **决策**：该点提高最终性能GO可能性，但不对此前不利轨迹作选择性删除，也不提前启动controls。最终仍只看e120
 mAP/R1双严格胜门；source/config/cache/text asset保持冻结，下一正式记录点为e100。
+
+### [2026-07-22] 决策：exp413 v3 e100核心R1再次略低宿主
+
+v3 e100 PSCCR=`59.2/70.4/82.2/86.2`，相对同epoch sealed zero-owner=
+`+0.4/-0.1/+0.0/+0.1`，相对clean D0=`+2.3/+3.3/+2.6/+2.4`。mAP和R10微胜宿主，但核心R1低
+`0.1`、R5持平；四项均胜D0。e90的四项正差没有连续保持。
+
+**决策**：完整保留这次反转，不用e90作正向选择，也不以e100提前判NO-GO。最终仍只按e120 mAP/R1双严格胜门；
+source/config/cache/text asset保持冻结，不启动controls，下一正式记录点为e110。
