@@ -20,3 +20,21 @@ invariance。同一审查者复核=`0B/0H`，当前=`DESIGN REVIEW PASS / IMPLEM
 
 默认关闭实现、formal config与唯一合同runner已完成静态AST/config exact检查；独立代码盲审=`0B/0H`，确认生产接线与
 合同无致命bug/变量混淆。当前只授权把冻结提交传到fresh remote formal并执行一次真实PK64合同；尚未传输、未使用GPU。
+
+## 2026-07-22：唯一真实PK64合同PASS
+
+fresh formal=`/home/afr/SOLIDER-REID-exp413-psccr-formal-v1`，HEAD=
+`add6adae4d192da4c44bf44120dd571f0dfe14e1`。唯一runner自然退出，GPU回到`0% / 2 MiB`且无compute进程，严格
+异常计数0，runner SHA256=`24a64a1a9db5dec24ee8c7a3765a51d05945a253df2cd64a85133953c9180623`。
+
+合同结果：
+
+- 手算correct/pose-only/q-only/text-shuffle链=`[8,4,1]/[1,8,4]/[8,4,1]/[1,4,8]`；
+- default-off state/forward/loss/gradient/RNG exact；excluded-image mutation invariant；三support严格排列；
+- correct相对pose-only/q-only/text-shuffle的真实链改变率=`0.750000/0.656250/0.468750`；
+- prefix coverage均值=`4.078125/5.765625/6.203125`，单调不降；prefix3 distance/loss与zero-owner exact；
+- Stage-3可比梯度tensor=`28`，改变=`28`；combined AMP第5次native attempt取得真实update，Stage-3非零梯度
+  tensor=`26`，更新参数=`base.stages.3.blocks.0.ffn.layers.1.weight`。
+
+最终=`UNIQUE REAL PK64 PASS / FORMAL E120 AUTHORIZED`。不得重跑合同或追加preflight；下一步只允许fresh
+correct seed1234自然训练到e120。

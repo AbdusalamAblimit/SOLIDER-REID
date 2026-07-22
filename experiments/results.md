@@ -3385,3 +3385,8 @@ prefix分别做all-identity set ranking；prefix3必须与zero-owner distance/lo
 
 默认关闭实现与唯一runner现已完成，静态AST及formal-vs-zero-owner default-off config exact通过；独立代码盲审=
 `0B/0H`。当前=`IMPLEMENTATION REVIEW PASS / UNIQUE REAL PK64 AUTHORIZED / GPU IDLE`，仍无合同PASS或性能结果。
+
+唯一真实PK64合同已自然PASS：micro-oracle与excluded mutation通过，correct相对pose-only/q-only/text-shuffle链改变率=
+`0.750000/0.656250/0.468750`，coverage均值=`4.078125/5.765625/6.203125`，prefix3与zero-owner exact；
+28/28个Stage-3可比梯度tensor改变，combined native GradScaler第5次真实update。runner SHA=
+`24a64a1a9db5dec24ee8c7a3765a51d05945a253df2cd64a85133953c9180623`。当前正式e120已授权，尚无mAP/R1。

@@ -6104,3 +6104,13 @@ config dump对sealed zero-owner exact均通过，尚未运行CUDA。
 **决策**：从显式提交建立fresh remote formal，只执行一个runner；runner前半手算rank/invalid/tie/mutation oracle，
 后半唯一真实PK64验证prefix3 exact、三control active、Stage-3差异梯度与native GradScaler update。PASS立即正式
 fresh e120，FAIL只修致命实现bug，不追加第二次preflight。
+
+### [2026-07-22] 决策：exp413唯一真实PK64合同PASS，立即正式e120
+
+唯一runner自然PASS并退出：default-off完整exact、excluded mutation invariant、三control真实链改变率均非零、
+coverage单调、prefix3与zero-owner exact、28/28个Stage-3可比梯度改变，第5次native GradScaler真实update；
+严格异常0且GPU空闲。
+
+**决策**：不重跑合同、不追加preflight；从冻结formal HEAD=`add6adae4d192da4c44bf44120dd571f0dfe14e1`建立fresh
+训练formal/output，立即启动唯一correct seed1234/e120。source/config/cache/text asset全程冻结，逐10 epoch记录并
+与sealed zero-owner、clean D0同epoch比较；中间不早停。
