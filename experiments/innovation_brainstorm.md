@@ -4335,3 +4335,18 @@ PSGC自然e120=`56.9/69.7/82.5/86.1`，核心mAP/R1相对zero-owner低`2.0/0.6`�
 单图中哪些身体槽缺证据，让identity-free CLIP只确定缺失的语义类型，但由student自己的同PID多视图token提供
 补全内容；训练时应保留被遮挡图作为接收者，而不是把它的梯度转走。必须用无跨图补全、pose错位与文本错位反事实
 区分普通多视图一致性、pose定位和CLIP语义的作用。
+
+## 2026-07-22：exp413 PSCCR——无丢弃互补support prefix
+
+exp413不继续exp412的梯度路由，也不回到CAVT/PC-MSC/PSC-JEPA的feature completion。它把exp411已证有效的
+zero-owner集合对象拆成嵌套训练条件：pose visibility与identity-free CLIP遮挡margin只在同PID内形成严格序数，
+`min(rank_v,rank_q)`定义五槽可靠度，贪心最大覆盖增益给原三support一个确定性顺序；三图最终全部使用。student
+分别优化长度1/2/3 prefix相对全部身份集合的排序，第三项与zero-owner exact。
+
+- 问题门PASS：从“完整三图平均后排序”推进到“部分但互补支持到达时也能排序”，且不牺牲难图query梯度；
+- 机制门CONDITIONAL PASS：ordinal、greedy coverage、prefix curriculum和listwise都不新，只保留四者与宿主exact
+  的整体窄差分；
+- 证据门PASS：zero-owner、pose-only、q-only、text-shuffle共享support、loss、recipe和计算规模。
+
+当前只能标记`C-CLASS CONDITIONAL`。在线检索超时使本轮不能做绝对新颖性声明；correct若不过zero-owner的e120
+mAP/R1双门，直接证明新增prefix对象不值得继续，禁止调prefix权重、序数或coverage公式救臂。

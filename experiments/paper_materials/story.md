@@ -2500,3 +2500,14 @@ exp412现已退出正面story。唯一fresh e120=`56.9/69.7/82.5/86.1`，核心m
 `2.0/0.6`，mAP相对clean D0也低`0.7`；真实PK64合同已经确认router active，因此不能解释为接线失败。该证据表明
 “将同PID身体槽梯度预算转给更可靠视图”会丢失难图自身的恢复学习机会，不能作为pose+CLIP主贡献。下一story应让
 遮挡图保留为补全接收者，由student同PID可见token提供内容，pose与identity-free CLIP只定义缺失槽及语义关系。
+
+## 2026-07-22：exp413条件story——从完整集合均值到互补证据前缀
+
+PSCCR保留sealed zero-owner的student空间、三support全集、learned CE与测试descriptor，不再给视图加owner权重或
+路由梯度。pose visibility与identity-free CLIP遮挡margin只负责把三support排成无丢弃coverage chain；长度1/2/3
+prefix分别面对全部身份集合排序，长度3与zero-owner exact。正面问题因此收窄为：遮挡query能否在只获得部分但
+身体槽互补的同ID证据时仍保持完整检索排序。
+
+该story目前只有设计资格。greedy coverage、prefix curriculum、multi-positive和listwise均不能写成贡献，且在线
+查新因网络超时仍需投稿前补齐。correct必须先自然e120在mAP/R1同时严格胜zero-owner，再同时严格胜pose-only、
+q-only与text-shuffle，才允许把“pose×CLIP互补support ordering”进入C类正面story；否则只记录负结果。

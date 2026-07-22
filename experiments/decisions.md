@@ -6083,3 +6083,14 @@ seed1234/e120，FAIL只修致命实现bug。正式性能FAIL后不调prompt、fr
 **决策**：永久封板为`EXP412 PERFORMANCE NO-GO / MATCHED CONTROLS NO-START`。不运行pose-only、q-only或
 text-shuffle，不调prompt、Pareto front、预算、loss、batch或scale，不重跑/续训correct。该结果否定当前“同PID×槽
 固定预算下将身体token梯度集中到pose×CLIP非支配视图”的方法资格；下一机制必须更换结构对象，而不是救PSGC。
+
+### [2026-07-22] 决策：exp413选择PSCCR互补覆盖链排序
+
+查新比较了multi-positive/listwise/AP surrogate、episodic set、curriculum、greedy coverage及2024--2026
+pose/CLIP ReID近邻；generic原子均已存在，且当前网络超时不支持绝对首次声明。exp413只保留窄差分：同PID内pose
+visibility与identity-free CLIP遮挡margin先转为严格序数，以`min(rank_v,rank_q)`和五槽最大覆盖增益排列原三support，
+三图不丢弃、不重复；student在长度1/2/3 prefix上分别做all-identity ranking，prefix3显式与sealed zero-owner exact。
+
+**决策**：冻结PSCCR为`C-CLASS CONDITIONAL`，不做feature completion、owner multiplicity、gradient routing或外部
+identity target。先独立盲审，再实现默认关闭路径并只运行一次真实PK64合同。correct e120须在mAP/R1同时严格胜
+zero-owner `58.9/70.3`；FAIL直接封板且不跑controls，GO后才依次运行pose-only、q-only、text-shuffle。
