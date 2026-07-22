@@ -393,3 +393,15 @@ e40是首个correct在核心mAP/R1上同时严格领先pose-only的正式点，�
 zero-owner高`0.2`，其余三项低于宿主，证据仍须按完整轨迹解释。读取时已进入e42 iter140，主PID=`40519`
 仍为唯一CUDA compute，GPU约`7,076 MiB / 48%`，runner/train严格异常=`0/0`，formal tracked
 worktree/index=`0/0`。该中间点不触发科学GO或早停，继续冻结运行至自然e120。
+
+## 2026-07-22：pose-only e50正式评测
+
+pose-only原始runner读取结果=`55.6/66.1/79.2/83.8`。同epoch sealed v3 correct=
+`55.2/65.4/78.9/83.7`，sealed zero-owner=`55.1/66.1/80.0/83.7`，sealed clean D0=
+`52.1/62.8/77.0/81.9`；因此pose-only−correct=`+0.4/+0.7/+0.3/+0.1`，pose-only−zero-owner=
+`+0.5/+0.0/-0.8/+0.1`，pose-only−D0=`+3.5/+3.3/+2.2/+1.9`。
+
+e50时pose-only四项均严格高于correct，mAP/R1双核心关系从e40的correct领先再次反转，是当前最明确的不利联合
+归因中间证据；相对zero-owner则mAP/R10为正、R1持平、R5为负。读取时已进入e53 iter60，主PID=`40519`
+仍为唯一CUDA compute，GPU约`7,072 MiB / 45%`，runner/train严格异常=`0/0`，formal tracked
+worktree/index=`0/0`。不得据此早停或删点，继续冻结运行至自然e120。

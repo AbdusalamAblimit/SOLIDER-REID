@@ -6354,3 +6354,13 @@ pose-only的R1仍比zero-owner高`0.2`，不能选择性省略。
 
 **决策**：e40缓解前三点的联合归因失败风险，但不构成最终科学GO。pose-only继续冻结运行到自然e120，不早停、
 不调参、不启动q-only或text-shuffle；最终仍只按correct与三control自然e120的mAP/R1双严格关系裁决。
+
+### [2026-07-22] 决策：exp413 pose-only e50四项反超correct
+
+pose-only e50=`55.6/66.1/79.2/83.8`，相对同epoch sealed v3 correct=
+`+0.4/+0.7/+0.3/+0.1`，相对zero-owner=`+0.5/+0.0/-0.8/+0.1`，相对clean D0=
+`+3.5/+3.3/+2.2/+1.9`。pose-only四项均严格高于correct，e40时correct的双核心优势未能保持；相对宿主则
+mAP/R10略高、R1持平、R5低`0.8`，仍须保留完整混合关系。
+
+**决策**：e50显著提高联合归因失败风险，但预注册科学门只使用自然e120结果。禁止早停pose-only、修改机制或参数、
+删除不利点，q-only与text-shuffle继续`NO-START`；pose-only保持冻结并自然运行至e120。
