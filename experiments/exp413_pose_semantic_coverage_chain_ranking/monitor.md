@@ -268,6 +268,16 @@ e80相对宿主仅mAP微正，核心R1负差扩大至`0.9`，R5略负、R10持�
 宿主的正式点，必须保留但不能提前判NO-GO。读取时已进入e84 iter40，主PID=`3668`仍为唯一CUDA compute，
 GPU约`7,070 MiB / 42%`，runner/train严格异常=`0/0`，formal状态保持冻结。继续自然运行至e120。
 
+## 2026-07-22：v3 e90正式评测
+
+v3原始train log读取结果：PSCCR=`59.6/71.4/83.1/87.0`。从sealed exp411原始记录读取同epoch
+zero-owner=`59.1/71.2/82.6/86.8`，clean D0=`57.5/67.9/81.2/85.3`；因此PSCCR−zero-owner=
+`+0.5/+0.2/+0.5/+0.2`，PSCCR−D0=`+2.1/+3.5/+1.9/+1.7`。
+
+e90四项重新同时严格胜宿主与D0，核心R1从e60--e80连续负差恢复为`+0.2`。该恢复点不能删除此前不利证据，
+也不能提前触发性能GO或controls。读取时已进入e91 iter80，主PID=`3668`仍为唯一CUDA compute，GPU约
+`7,066 MiB / 42%`，runner/train严格异常=`0/0`，formal状态保持冻结。继续自然运行至e120。
+
 ## 2026-07-22：v3 e40正式评测
 
 v3原始train log读取结果：PSCCR=`55.6/66.7/80.2/84.3`。同epoch sealed zero-owner=
