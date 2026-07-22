@@ -17,3 +17,6 @@ greedy coverage、prefix curriculum、listwise与multi-positive均不得作为�
 首轮独立盲审=`1B/2H`，已在实现前全部修正文档：序数改为每个LOO三support内重算，禁止被排除图/anchor evidence
 泄漏；invalid与三control规则改为严格单变量；同一个唯一runner加入手算micro-oracle与excluded-image mutation
 invariance。同一审查者复核=`0B/0H`，当前=`DESIGN REVIEW PASS / IMPLEMENTATION AUTHORIZED / CUDA NO-START`。
+
+默认关闭实现、formal config与唯一合同runner已完成静态AST/config exact检查；独立代码盲审=`0B/0H`，确认生产接线与
+合同无致命bug/变量混淆。当前只授权把冻结提交传到fresh remote formal并执行一次真实PK64合同；尚未传输、未使用GPU。

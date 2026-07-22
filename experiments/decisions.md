@@ -6095,3 +6095,12 @@ sealed zero-owner exact。首轮盲审发现的K=4被排除图泄漏已在实现
 **决策**：冻结PSCCR为`C-CLASS CONDITIONAL`，不做feature completion、owner multiplicity、gradient routing或外部
 identity target。先独立盲审，再实现默认关闭路径并只运行一次真实PK64合同。correct e120须在mAP/R1同时严格胜
 zero-owner `58.9/70.3`；FAIL直接封板且不跑controls，GO后才依次运行pose-only、q-only、text-shuffle。
+
+### [2026-07-22] 决策：exp413实现盲审通过，授权唯一真实PK64合同
+
+设计首轮`1B/2H`已在实现前修正并复核`0B/0H`；生产实现再经独立代码盲审`0B/0H`。静态AST与禁用PSCCR后的
+config dump对sealed zero-owner exact均通过，尚未运行CUDA。
+
+**决策**：从显式提交建立fresh remote formal，只执行一个runner；runner前半手算rank/invalid/tie/mutation oracle，
+后半唯一真实PK64验证prefix3 exact、三control active、Stage-3差异梯度与native GradScaler update。PASS立即正式
+fresh e120，FAIL只修致命实现bug，不追加第二次preflight。

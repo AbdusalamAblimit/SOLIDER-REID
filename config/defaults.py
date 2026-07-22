@@ -127,6 +127,10 @@ _C.MODEL.TAPF.PSGC_ENABLED = False
 _C.MODEL.TAPF.PSGC_CONTROL_MODE = "correct"
 _C.MODEL.TAPF.PSGC_TEXT_AXES = ""
 _C.MODEL.TAPF.PSGC_TEXT_AXES_SHA256 = ""
+_C.MODEL.TAPF.PSCCR_ENABLED = False
+_C.MODEL.TAPF.PSCCR_CONTROL_MODE = "correct"
+_C.MODEL.TAPF.PSCCR_TEXT_AXES = ""
+_C.MODEL.TAPF.PSCCR_TEXT_AXES_SHA256 = ""
 
 # -----------------------------------------------------------------------------
 # INPUT

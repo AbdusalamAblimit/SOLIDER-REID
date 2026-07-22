@@ -37,6 +37,7 @@ def make_loss(cfg, num_classes):    # modified by gu
             target_cam,
             pair_indices=None,
             pcmpsr_state=None,
+            psccr_state=None,
         ):
             return F.cross_entropy(score, target)
 
@@ -49,6 +50,7 @@ def make_loss(cfg, num_classes):    # modified by gu
             target_cam,
             pair_indices=None,
             pcmpsr_state=None,
+            psccr_state=None,
         ):
             if cfg.MODEL.METRIC_LOSS_TYPE == 'triplet':
                 if cfg.MODEL.IF_LABELSMOOTH == 'on':
@@ -59,7 +61,25 @@ def make_loss(cfg, num_classes):    # modified by gu
                     else:
                         ID_LOSS = xent(score, target)
 
-                    if pcmpsr_state is not None:
+                    if pcmpsr_state is not None and psccr_state is not None:
+                            raise RuntimeError(
+                                "PCMPSR and PSCCR loss states are mutually exclusive"
+                            )
+                    if psccr_state is not None:
+                            if isinstance(feat, list):
+                                raise RuntimeError(
+                                    "PSCCR requires one final global descriptor"
+                                )
+                            from .pose_semantic_coverage_chain import (
+                                pose_semantic_coverage_chain_ranking_loss,
+                            )
+                            TRI_LOSS = pose_semantic_coverage_chain_ranking_loss(
+                                feat,
+                                target,
+                                psccr_state,
+                                normalize_feature=cfg.SOLVER.TRP_L2,
+                            )[0]
+                    elif pcmpsr_state is not None:
                             if isinstance(feat, list):
                                 raise RuntimeError(
                                     "PCMPSR requires one final global descriptor"
@@ -90,7 +110,25 @@ def make_loss(cfg, num_classes):    # modified by gu
                     else:
                         ID_LOSS = F.cross_entropy(score, target)
 
-                    if pcmpsr_state is not None:
+                    if pcmpsr_state is not None and psccr_state is not None:
+                            raise RuntimeError(
+                                "PCMPSR and PSCCR loss states are mutually exclusive"
+                            )
+                    if psccr_state is not None:
+                            if isinstance(feat, list):
+                                raise RuntimeError(
+                                    "PSCCR requires one final global descriptor"
+                                )
+                            from .pose_semantic_coverage_chain import (
+                                pose_semantic_coverage_chain_ranking_loss,
+                            )
+                            TRI_LOSS = pose_semantic_coverage_chain_ranking_loss(
+                                feat,
+                                target,
+                                psccr_state,
+                                normalize_feature=cfg.SOLVER.TRP_L2,
+                            )[0]
+                    elif pcmpsr_state is not None:
                             if isinstance(feat, list):
                                 raise RuntimeError(
                                     "PCMPSR requires one final global descriptor"

@@ -3382,3 +3382,6 @@ LOO三support内部用pose visibility与identity-free CLIP遮挡margin的严格�
 prefix分别做all-identity set ranking；prefix3必须与zero-owner distance/loss exact。当前=
 `C-CLASS CONDITIONAL / DESIGN REVIEW 0B0H / IMPLEMENTATION NEXT / GPU IDLE`。correct e120性能门固定为同时严格胜zero-owner
 `58.9 mAP / 70.3 R1`，GO后才运行pose-only/q-only/text-shuffle。
+
+默认关闭实现与唯一runner现已完成，静态AST及formal-vs-zero-owner default-off config exact通过；独立代码盲审=
+`0B/0H`。当前=`IMPLEMENTATION REVIEW PASS / UNIQUE REAL PK64 AUTHORIZED / GPU IDLE`，仍无合同PASS或性能结果。

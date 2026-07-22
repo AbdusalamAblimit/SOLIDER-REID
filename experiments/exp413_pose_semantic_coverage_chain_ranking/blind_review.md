@@ -25,3 +25,17 @@ bit-exact；修正后四臂具备归因能力。当前等待同一独立审查�
 
 最终=`0 BLOCKER / 0 HIGH / IMPLEMENTATION AUTHORIZED`。该结论只授权默认关闭的最小实现和一次性合同，不是性能或
 创新GO。
+
+## 2026-07-22：实现盲审 0B/0H
+
+独立代码审查完整核对新loss/state、defaults、make_loss、processor、formal config及唯一runner，结论=
+`0 BLOCKER / 0 HIGH`：
+
+- 生产路径先读取sealed zero-owner `support_indices`完成LOO，再只在三support内部计算rank；
+- q-valid语义、四control证据轴、边际coverage与绝对batch-index tie均与设计一致；
+- prefix3直接调用未改zero-owner原support/mean/loss路径，processor不叠加两种set loss；
+- default-off与eval不加载PSCCR asset；
+- runner的micro-oracle、excluded mutation、真实16×4、control活性、Stage-3差异梯度与原生GradScaler update不存在
+  HIGH级伪PASS。
+
+最终=`IMPLEMENTATION REVIEW PASS / UNIQUE REAL PK64 CONTRACT AUTHORIZED`，仍无CUDA或性能结果。

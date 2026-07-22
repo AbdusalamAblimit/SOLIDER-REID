@@ -127,11 +127,17 @@ def do_train(cfg,
     psgc_enabled = bool(
         cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.PSGC_ENABLED
     )
+    psccr_enabled = bool(
+        cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.PSCCR_ENABLED
+    )
     pcmpsr_control_mode = str(
         cfg.MODEL.TAPF.PCMPSR_CONTROL_MODE
     ).lower()
     psgc_control_mode = str(
         cfg.MODEL.TAPF.PSGC_CONTROL_MODE
+    ).lower()
+    psccr_control_mode = str(
+        cfg.MODEL.TAPF.PSCCR_CONTROL_MODE
     ).lower()
     if pcmpsr_enabled and pcmpsr_control_mode not in {
         "correct",
@@ -154,6 +160,19 @@ def do_train(cfg,
         "text_shuffle",
     }:
         raise RuntimeError("unsupported PSGC formal control mode")
+    if psccr_enabled and (
+        not pcmpsr_enabled or pcmpsr_control_mode != "zero_owner"
+    ):
+        raise RuntimeError("PSCCR requires the PCMPSR zero-owner host")
+    if psccr_enabled and psgc_enabled:
+        raise RuntimeError("PSCCR and PSGC are mutually exclusive")
+    if psccr_enabled and psccr_control_mode not in {
+        "correct",
+        "pose_only",
+        "q_only",
+        "text_shuffle",
+    }:
+        raise RuntimeError("unsupported PSCCR formal control mode")
     if pc2p_enabled and (
         cfg.MODEL.TAPF.SEMANTIC_ENABLED
         or cfg.MODEL.TAPF.HIERARCHICAL
@@ -275,6 +294,27 @@ def do_train(cfg,
             psgc_text_asset.prompt_spec_sha256,
             psgc_text_asset.source_head,
             psgc_control_mode,
+        )
+    psccr_text_prototypes = None
+    if psccr_enabled:
+        from model.pose_semantic_gradient_completion import (
+            PoseSemanticTextAxes,
+        )
+
+        psccr_text_asset = PoseSemanticTextAxes(
+            cfg.MODEL.TAPF.PSCCR_TEXT_AXES,
+            cfg.MODEL.TAPF.PSCCR_TEXT_AXES_SHA256,
+            cfg.MODEL.TAPF.PCMPSR_CLIP_CHECKPOINT_SHA256,
+        )
+        psccr_text_prototypes = psccr_text_asset.to(
+            torch.device("cuda", local_rank)
+        )
+        logger.info(
+            "PSCCR frozen text axes loaded outside model/state: SHA=%s prompt=%s source=%s control=%s",
+            psccr_text_asset.sha256,
+            psccr_text_asset.prompt_spec_sha256,
+            psccr_text_asset.source_head,
+            psccr_control_mode,
         )
     picrd_cache = None
     if picrd_enabled:
@@ -431,6 +471,8 @@ def do_train(cfg,
             pcmpsr_control_changes = None
             psgc_diag = None
             psgc_control_changes = None
+            psccr_state = None
+            psccr_control_changes = None
             if pchm_enabled:
                 if relative_paths is None:
                     raise RuntimeError("PCHM batch is missing relative paths")
@@ -514,6 +556,56 @@ def do_train(cfg,
                         clip_valid,
                         control_mode=pcmpsr_control_mode,
                     )
+                    if psccr_enabled:
+                        from loss.pose_semantic_coverage_chain import (
+                            build_pose_semantic_coverage_chain,
+                        )
+
+                        psccr_state = build_pose_semantic_coverage_chain(
+                            target,
+                            visibility,
+                            clip_features,
+                            clip_valid,
+                            psccr_text_prototypes,
+                            pcmpsr_state,
+                            mode=psccr_control_mode,
+                        )
+                        if epoch == 1 and n_iter == 0:
+                            psccr_control_changes = {}
+                            correct_chain = (
+                                psccr_state["chain_indices"]
+                                if psccr_control_mode == "correct"
+                                else build_pose_semantic_coverage_chain(
+                                    target,
+                                    visibility,
+                                    clip_features,
+                                    clip_valid,
+                                    psccr_text_prototypes,
+                                    pcmpsr_state,
+                                    mode="correct",
+                                )["chain_indices"]
+                            )
+                            for control in (
+                                "pose_only",
+                                "q_only",
+                                "text_shuffle",
+                            ):
+                                control_chain = build_pose_semantic_coverage_chain(
+                                    target,
+                                    visibility,
+                                    clip_features,
+                                    clip_valid,
+                                    psccr_text_prototypes,
+                                    pcmpsr_state,
+                                    mode=control,
+                                )["chain_indices"]
+                                psccr_control_changes[control] = float(
+                                    control_chain.ne(correct_chain)
+                                    .any(dim=-1)
+                                    .float()
+                                    .mean()
+                                    .item()
+                                )
                     if psgc_enabled:
                         from model.pose_semantic_gradient_completion import (
                             build_psgc_slot_weights,
@@ -750,7 +842,10 @@ def do_train(cfg,
                         target,
                         target_cam,
                         pair_indices=pair_indices,
-                        pcmpsr_state=pcmpsr_state,
+                        pcmpsr_state=(
+                            None if psccr_enabled else pcmpsr_state
+                        ),
+                        psccr_state=psccr_state,
                     )
                     loss = reid_loss + (
                         cfg.MODEL.TAPF.POSE_LOSS_WEIGHT * tapf_aux["pose_loss"]
@@ -850,6 +945,32 @@ def do_train(cfg,
                     tapf_aux["psgc_body_fraction"].item(),
                     tapf_aux["psgc_region_valid_fraction"].item(),
                     psgc_control_changes,
+                )
+
+            if psccr_enabled and n_iter == 0:
+                if psccr_state is None:
+                    raise RuntimeError("PSCCR state is missing")
+                from loss.pose_semantic_coverage_chain import (
+                    pose_semantic_coverage_chain_ranking_loss,
+                )
+
+                with torch.no_grad(), amp.autocast(enabled=False):
+                    _, psccr_diag = pose_semantic_coverage_chain_ranking_loss(
+                        feat.detach().float(),
+                        target,
+                        psccr_state,
+                        normalize_feature=cfg.SOLVER.TRP_L2,
+                    )
+                logger.info(
+                    "PSCCR epoch=%d control=%s first-batch loss/prefix-loss/positive/negative/coverage=%0.6f/%s/%s/%s/%s controls=%s",
+                    epoch,
+                    psccr_control_mode,
+                    psccr_diag["loss"].item(),
+                    [round(value, 6) for value in psccr_diag["prefix_losses"].tolist()],
+                    [round(value, 6) for value in psccr_diag["positive_distance_mean"].tolist()],
+                    [round(value, 6) for value in psccr_diag["negative_distance_mean"].tolist()],
+                    [round(value, 6) for value in psccr_state["coverage"].float().mean(dim=(0, 1)).tolist()],
+                    psccr_control_changes,
                 )
 
             scaler.scale(loss).backward()
