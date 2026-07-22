@@ -298,3 +298,14 @@ e100相对宿主仅mAP和R10微正，核心R1低`0.1`、R5持平；四项仍胜D
 证据，必须保留但不能提前判NO-GO。读取时已进入e103 iter140，主PID=`3668`仍为唯一CUDA compute，GPU约
 `7,076 MiB / 42%`，runner/train严格异常=`0/0`，formal tracked worktree/index保持`0/0`。继续冻结运行至
 e120，不启动controls；下一正式记录点为e110。
+
+## 2026-07-22：v3 e110正式评测
+
+v3原始train log读取结果：PSCCR=`59.1/70.5/82.3/85.8`。从sealed exp411原始记录读取同epoch
+zero-owner=`58.8/70.4/81.8/86.1`，clean D0=`57.4/67.4/80.5/84.6`；因此PSCCR−zero-owner=
+`+0.3/+0.1/+0.5/-0.3`，PSCCR−D0=`+1.7/+3.1/+1.8/+1.2`。
+
+e110相对宿主核心mAP/R1与R5严格为正，但R10低`0.3`；四项仍胜D0。该点重新满足中间双核心正差，但不能
+替代e120预注册裁决或触发controls。读取时已进入e111 iter160，主PID=`3668`仍为唯一CUDA compute，GPU约
+`7,088 MiB / 42%`，runner/train严格异常=`0/0`，formal tracked worktree/index保持`0/0`。继续冻结运行至
+自然e120，不改参、不续训、不提前归因。
