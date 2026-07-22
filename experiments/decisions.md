@@ -6335,3 +6335,12 @@ pose-only e20=`46.2/55.7/70.8/77.1`，相对同epoch sealed v3 correct=
 
 **决策**：e20不改变预注册流程；保留e10/e20所有方向，pose-only冻结运行至e120，不早停、不调参，q-only与
 text-shuffle继续`NO-START`。最终科学裁决仍只使用各臂自然e120的mAP/R1双严格比较。
+
+### [2026-07-22] 决策：exp413 pose-only e30 R1再次略高correct
+
+pose-only e30=`51.0/61.8/75.2/80.8`，相对同epoch sealed v3 correct=
+`-0.1/+0.1/+0.3/+0.4`，相对zero-owner=`+1.8/+1.5/+0.2/+0.8`，相对clean D0=
+`+4.4/+5.6/+3.9/+4.4`。correct只在mAP高`0.1`，pose-only在R1/R5/R10均略高，前三点尚无双核心归因优势。
+
+**决策**：提高联合归因失败风险但不提前裁决；pose-only必须自然到e120，禁止调参、救臂、选择性删点或提前启动
+q-only/text-shuffle。最终只用自然e120的mAP/R1双严格关系。

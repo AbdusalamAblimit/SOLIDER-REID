@@ -369,3 +369,15 @@ e20时pose-only的mAP/R10高于correct，R1/R5低于correct；相较e10，R1关�
 mAP由持平转为pose-only领先`0.1`，仍是混合归因证据。读取时已进入e21 iter120，主PID=`40519`仍为唯一CUDA
 compute，GPU约`7,078 MiB / 48%`，runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`。继续
 自然训练，不早停，不提前运行q-only或text-shuffle。
+
+## 2026-07-22：pose-only e30正式评测
+
+pose-only原始train log读取结果=`51.0/61.8/75.2/80.8`。同epoch sealed v3 correct=
+`51.1/61.7/74.9/80.4`，sealed zero-owner=`49.2/60.3/75.0/80.0`，sealed clean D0=
+`46.6/56.2/71.3/76.4`；因此pose-only−correct=`-0.1/+0.1/+0.3/+0.4`，pose-only−zero-owner=
+`+1.8/+1.5/+0.2/+0.8`，pose-only−D0=`+4.4/+5.6/+3.9/+4.4`。
+
+e30时correct仅mAP高pose-only `0.1`，而pose-only的R1/R5/R10分别高`0.1/0.3/0.4`；前三个中间点均未形成
+correct双核心同时严格领先，当前联合归因风险持续。读取时已进入e32 iter20，主PID=`40519`仍为唯一CUDA
+compute，GPU约`7,078 MiB / 47%`，runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`。该轨迹
+不能替代e120裁决，继续冻结运行。
