@@ -3490,3 +3490,8 @@ mAP/R1同时严格胜宿主，故判`EXP413 PERFORMANCE GO / ATTRIBUTION PENDING
 `6cec0de7bba41277f400ed86fa8f30268be5a549ba250c164b38b5a92f4f0b30`/
 `d156614f836131051bca99d167d68998953b698173df32a9b6f7ec7bbd839a60`。correct永久封存，现按预注册顺序只启动
 fresh pose-only matched control；q-only与text-shuffle仍未启动。
+
+fresh pose-only已从同一冻结formal HEAD与seed1234启动，output=`exp413-psccr-pose-only-s1234-v1`，主PID=
+`40519`，不含checkpoint恢复。首批PSCCR loss/prefix=`2.682307/[3.459568,2.616564,1.970790]`，prefix3与
+zero-owner exact；e1 iter20正常、唯一CUDA、严格异常0、formal tracked 0/0。当前=`POSE-ONLY RUNNING /
+ATTRIBUTION PENDING`，q-only与text-shuffle仍`NO-START`。

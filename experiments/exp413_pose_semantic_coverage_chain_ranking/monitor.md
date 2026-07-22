@@ -329,3 +329,19 @@ SHA256依次为：
 correct臂现永久封存，禁止重跑、续训或修改产物。按预注册顺序只授权同一冻结formal、recipe与seed1234上的fresh
 `pose-only` matched control；q-only与text-shuffle继续`NO-START`。只有correct在mAP/R1同时严格胜全部三control，
 才能判`POSE+CLIP SCIENTIFIC GO`。
+
+## 2026-07-22：fresh pose-only matched control启动
+
+GPU空闲、correct封存和formal tracked 0/0核验后，以同一formal HEAD、config、cache、text asset、student、batch64、
+`P×K=16×4`、seed1234及e120 recipe启动唯一pose-only；命令行只覆盖
+`MODEL.TAPF.PSCCR_CONTROL_MODE=pose_only`与fresh OUTPUT_DIR。output/runner为：
+
+- `/home/afr/reid-clean/logs/exp413-psccr-pose-only-s1234-v1`；
+- `/home/afr/reid-clean/train-logs/exp413-psccr-pose-only-s1234-v1.runner.log`。
+
+命令不含checkpoint恢复，主PID=`40519`。config dump确认control=`pose_only`、seed=`1234`、batch=`64`、epochs=`120`；
+首批zero-owner宿主loss=`1.970790`，PSCCR pose-only loss/prefix1/2/3=
+`2.682307/[3.459568,2.616564,1.970790]`，prefix3继续与zero-owner exact，coverage=
+`7.812500/9.593750/10.000000`。e1 iter20已正常，主PID为唯一CUDA compute，GPU约`7,000 MiB / 57%`，
+runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`。q-only与text-shuffle保持`NO-START`；pose-only
+自然运行到e120并逐10 epoch完整记录，不以中间点早停。

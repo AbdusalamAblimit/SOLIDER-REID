@@ -6308,3 +6308,12 @@ R10低宿主`0.2`的不利事实。
 **决策**：判`EXP413 PERFORMANCE GO / ATTRIBUTION PENDING`并永久封存correct，不重跑、不续训、不修改产物。
 依预注册顺序只在同一冻结formal、recipe、资产与seed1234上从fresh OUTPUT_DIR启动pose-only；q-only与
 text-shuffle保持`NO-START`。correct最终还须在mAP/R1同时严格胜三control，才允许`POSE+CLIP SCIENTIFIC GO`。
+
+### [2026-07-22] 决策：exp413 pose-only matched control已fresh启动
+
+同一冻结formal HEAD与recipe只切换`PSCCR_CONTROL_MODE=pose_only`并使用fresh output，未加载checkpoint；主PID=
+`40519`。config dump与首批诊断确认pose-only真实生效、prefix3仍与zero-owner exact，e1 iter20正常，唯一CUDA、
+严格异常0、formal tracked 0/0。
+
+**决策**：pose-only自然训练到e120并保留全部12个评测点，不按中间性能早停；q-only与text-shuffle继续
+`NO-START`。pose-only自然封板后才串行启动q-only，不并行占用4090。
