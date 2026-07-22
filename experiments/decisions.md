@@ -6073,3 +6073,13 @@ seed1234/e120，FAIL只修致命实现bug。正式性能FAIL后不调prompt、fr
 
 **决策**：主PID=`717837`作为唯一4090任务自然运行到e120；source/config/cache/text asset全程冻结，逐10 epoch
 记录PSGC、sealed zero-owner与clean D0同epoch指标。中间点不早停，e120 mAP或R1任一不严格胜zero-owner即封板。
+
+### [2026-07-22] 决策：exp412性能NO-GO，关闭监督机会路由
+
+唯一fresh correct自然e120=`56.9/69.7/82.5/86.1`，相对sealed zero-owner=
+`-2.0/-0.6/+0.6/-0.1`，相对clean D0=`-0.7/+2.0/+1.7/+1.5`。完整12点评测、120个epoch、自然退出、
+异常0、GPU空闲与冻结formal均已核验；一次性真实PK64合同此前也已证明router确实改变Stage-3梯度。
+
+**决策**：永久封板为`EXP412 PERFORMANCE NO-GO / MATCHED CONTROLS NO-START`。不运行pose-only、q-only或
+text-shuffle，不调prompt、Pareto front、预算、loss、batch或scale，不重跑/续训correct。该结果否定当前“同PID×槽
+固定预算下将身体token梯度集中到pose×CLIP非支配视图”的方法资格；下一机制必须更换结构对象，而不是救PSGC。

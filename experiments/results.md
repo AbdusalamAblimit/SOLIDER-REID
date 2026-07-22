@@ -3366,3 +3366,11 @@ score与loss数值exact，eval不读取CLIP。设计问题闭环后的实现盲�
 唯一真实PK64合同现已PASS：default-off完整exact，三种control均改变路由权重，PSGC-on/off共有28个可比较
 Stage-3梯度tensor且全部改变，combined AMP第5次取得真实update。随后已立即启动唯一fresh correct seed1234/e120，
 主PID=`717837`为唯一4090 compute任务；首批路由与control诊断active且异常0。当前尚无exp412 mAP/R1。
+
+唯一fresh PSGC correct已自然完成并永久封板：e120=`56.9/69.7/82.5/86.1`，相对sealed zero-owner
+`58.9/70.3/81.9/86.2`为`-2.0/-0.6/+0.6/-0.1`，相对sealed clean D0=`-0.7/+2.0/+1.7/+1.5`。
+预注册核心mAP/R1均未严格胜zero-owner，故最终=`EXP412 PERFORMANCE NO-GO / MATCHED CONTROLS NO-START`；
+pose-only、q-only、text-shuffle均不执行。12个评测点与120个epoch完整、进程自然退出、异常0、GPU空闲、formal
+tracked状态未变。checkpoint/train-log/runner SHA256=`6e0342170d3e73eff1c430f911e1477f28c42d185ee3d55bd31125fab6c95d9d`/
+`f23b9f55abe8d4ac092991b13298b5f9c6c5324678814c450189c80556865eb8`/
+`bec1a8f880aee30110ef236e34432ab5459b8ece229fb886e562ca2daf2146f3`。

@@ -2495,3 +2495,8 @@ token梯度”，而不是外部身份蒸馏。
 
 该story目前仍为C类条件候选。correct必须先自然e120严格胜zero-owner与clean D0，再通过pose-only、q-only和
 text-shuffle归因；任一主门失败都只能作为下一轮机制设计的负证据，不能包装成pose+CLIP主贡献。
+
+exp412现已退出正面story。唯一fresh e120=`56.9/69.7/82.5/86.1`，核心mAP/R1相对zero-owner低
+`2.0/0.6`，mAP相对clean D0也低`0.7`；真实PK64合同已经确认router active，因此不能解释为接线失败。该证据表明
+“将同PID身体槽梯度预算转给更可靠视图”会丢失难图自身的恢复学习机会，不能作为pose+CLIP主贡献。下一story应让
+遮挡图保留为补全接收者，由student同PID可见token提供内容，pose与identity-free CLIP只定义缺失槽及语义关系。

@@ -4324,3 +4324,14 @@ forward、loss与测试descriptor不变，仅改变最终身体token的反向路
 
 首轮只训练correct。它必须自然e120严格胜sealed zero-owner与clean D0的mAP/R1才保留性能资格；随后还须严格胜三条
 matched control才能宣称pose+CLIP联合路由有效。失败即封板并转向下一结构对象，不做prompt或scale微调。
+
+### exp412封板后的创新结论
+
+PSGC自然e120=`56.9/69.7/82.5/86.1`，核心mAP/R1相对zero-owner低`2.0/0.6`，相对clean D0的mAP也低`0.7`。
+合同已证明forward exact且28/28 Stage-3梯度tensor被路由改变，所以失败不是机制未接通，而是“把监督机会集中给
+当前二维可靠视图”本身没有改善完整检索排序。它可能过度训练易见区域，并让被遮挡图失去学习恢复线索。
+
+下一候选不得重调front、budget、文本或scale，也不能继续做梯度/样本权重变体。应重新定义结构对象：让pose确定
+单图中哪些身体槽缺证据，让identity-free CLIP只确定缺失的语义类型，但由student自己的同PID多视图token提供
+补全内容；训练时应保留被遮挡图作为接收者，而不是把它的梯度转走。必须用无跨图补全、pose错位与文本错位反事实
+区分普通多视图一致性、pose定位和CLIP语义的作用。
