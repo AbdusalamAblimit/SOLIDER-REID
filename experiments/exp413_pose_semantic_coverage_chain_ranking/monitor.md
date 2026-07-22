@@ -82,3 +82,19 @@ PSCCR自然完成e20=`46.8 mAP / 56.7 R1 / 71.4 R5 / 77.6 R10`；同epoch sealed
 e120性能门，也不能在未运行matched controls前归因于pose×CLIP联合排序。继续冻结运行，不早停、不改机制。
 读取时已进入e23，主PID=`754511`仍为唯一compute PID，GPU约`7,078 MiB/47%`，formal HEAD与tracked
 worktree/index保持不变，runner/train严格异常计数0。
+
+## 2026-07-22：PSCCR e30正式评测
+
+PSCCR自然完成e30=`52.0 mAP / 64.2 R1 / 76.9 R5 / 81.5 R10`；同epoch sealed zero-owner=
+`49.2/60.3/75.0/80.0`，sealed clean D0=`46.6/56.2/71.3/76.4`。截至当前轨迹为：
+
+| epoch | PSCCR mAP/R1/R5/R10 | zero-owner同epoch | clean D0同epoch | PSCCR−zero | PSCCR−D0 |
+|---:|---:|---:|---:|---:|---:|
+| 10 | 29.9/39.8/55.1/60.9 | 28.4/38.1/53.9/60.8 | 33.4/42.7/59.8/65.2 | +1.5/+1.7/+1.2/+0.1 | -3.5/-2.9/-4.7/-4.3 |
+| 20 | 46.8/56.7/71.4/77.6 | 45.6/55.0/70.6/75.8 | 42.2/52.4/67.6/74.0 | +1.2/+1.7/+0.8/+1.8 | +4.6/+4.3/+3.8/+3.6 |
+| 30 | 52.0/64.2/76.9/81.5 | 49.2/60.3/75.0/80.0 | 46.6/56.2/71.3/76.4 | +2.8/+3.9/+1.9/+1.5 | +5.4/+8.0/+5.6/+5.1 |
+
+e30相对zero-owner的四项优势扩大，且继续全面高于clean D0；三点轨迹支持coverage-prefix训练对象值得保留关注，
+但不改变e120性能门，也不能替代pose-only/q-only/text-shuffle归因。继续冻结运行，不早停、不改机制。读取时已进入
+e34，主PID=`754511`仍为唯一compute PID，GPU约`7,078 MiB/42%`，formal HEAD与tracked worktree/index保持
+不变，runner/train严格异常计数0。
