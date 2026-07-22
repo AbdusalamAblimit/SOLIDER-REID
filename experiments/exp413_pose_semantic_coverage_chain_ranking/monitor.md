@@ -345,3 +345,15 @@ GPU空闲、correct封存和formal tracked 0/0核验后，以同一formal HEAD�
 `7.812500/9.593750/10.000000`。e1 iter20已正常，主PID为唯一CUDA compute，GPU约`7,000 MiB / 57%`，
 runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`。q-only与text-shuffle保持`NO-START`；pose-only
 自然运行到e120并逐10 epoch完整记录，不以中间点早停。
+
+## 2026-07-22：pose-only e10正式评测
+
+pose-only原始train log读取结果=`29.9/39.7/54.5/60.9`。同epoch sealed v3 correct=
+`29.9/39.2/55.0/60.7`，sealed zero-owner=`28.4/38.1/53.9/60.8`，sealed clean D0=
+`33.4/42.7/59.8/65.2`；因此pose-only−correct=`+0.0/+0.5/-0.5/+0.2`，pose-only−zero-owner=
+`+1.5/+1.6/+0.6/+0.1`，pose-only−D0=`-3.5/-3.0/-5.3/-4.3`。
+
+e10时pose-only与correct mAP持平，R1/R10分别高`0.5/0.2`，R5低`0.5`；这对correct最终严格胜pose-only的联合
+归因门是暂时不利的早期证据，但不能替代e120裁决。读取时已进入e11 iter20，主PID=`40519`仍为唯一CUDA
+compute，GPU约`7,072 MiB / 72%`，runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`。继续
+冻结运行，不早停、不修改，q-only与text-shuffle保持`NO-START`。

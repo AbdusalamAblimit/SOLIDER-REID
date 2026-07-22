@@ -6317,3 +6317,12 @@ text-shuffle保持`NO-START`。correct最终还须在mAP/R1同时严格胜三con
 
 **决策**：pose-only自然训练到e120并保留全部12个评测点，不按中间性能早停；q-only与text-shuffle继续
 `NO-START`。pose-only自然封板后才串行启动q-only，不并行占用4090。
+
+### [2026-07-22] 决策：exp413 pose-only e10早期R1高于correct
+
+pose-only e10=`29.9/39.7/54.5/60.9`，相对同epoch sealed v3 correct=
+`+0.0/+0.5/-0.5/+0.2`，相对zero-owner=`+1.5/+1.6/+0.6/+0.1`，相对clean D0=
+`-3.5/-3.0/-5.3/-4.3`。mAP持平而R1/R10高于correct，R5低于correct，当前不是单向归因证据。
+
+**决策**：完整保留这项对联合归因暂时不利的早期结果，不早停pose-only、不修改机制或参数，也不提前启动后续
+controls。唯一科学门仍只看三control各自自然e120后，correct是否在mAP/R1同时严格胜全部三者。

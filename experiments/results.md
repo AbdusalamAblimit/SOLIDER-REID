@@ -3495,3 +3495,7 @@ fresh pose-only已从同一冻结formal HEAD与seed1234启动，output=`exp413-p
 `40519`，不含checkpoint恢复。首批PSCCR loss/prefix=`2.682307/[3.459568,2.616564,1.970790]`，prefix3与
 zero-owner exact；e1 iter20正常、唯一CUDA、严格异常0、formal tracked 0/0。当前=`POSE-ONLY RUNNING /
 ATTRIBUTION PENDING`，q-only与text-shuffle仍`NO-START`。
+
+pose-only e10=`29.9/39.7/54.5/60.9`；相对同epoch v3 correct=`+0.0/+0.5/-0.5/+0.2`，相对zero-owner=
+`+1.5/+1.6/+0.6/+0.1`，相对clean D0=`-3.5/-3.0/-5.3/-4.3`。早期mAP持平且R1/R10高于correct，属于
+暂时不利于联合归因的混合证据；pose-only继续自然到e120，不作中途裁决。
