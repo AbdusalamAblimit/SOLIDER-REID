@@ -6179,3 +6179,13 @@ checkpoint恢复。首批loss、prefix、coverage与三control链改变率均与
 
 **决策**：v2作为新的完整正式尝试自然运行到e120；v1继续封存且不得续训/覆盖。v2每10 epoch独立记录，禁止以v1
 评测填补；性能与matched-control门完全不变。
+
+### [2026-07-22] 决策：exp413 v2按用户指令终止，恢复时改走fresh v3
+
+用户先暂停自动推进，随后明确要求训练也停止。v2主PID及同命令DataLoader子进程已被终止，日志停在e2 iter200；
+仅1个完整epoch、0个正式评测点且无checkpoint，GPU已释放。runner/train严格异常均为0，故该事件归类为用户授权
+人工终止，而非性能NO-GO、代码异常或基础设施故障。
+
+**决策**：v2永久记为`USER STOPPED / E120 VOID / NO RESUME`，保留日志与SHA，禁止续训、覆盖或与v1拼接。用户
+现已明确恢复；因冻结formal HEAD、config、资产、seed与唯一PK64合同均未改变，只在不存在的v3 OUTPUT_DIR从
+epoch 1 fresh启动同一正式臂，不重跑合同或盲审。e120性能门及性能GO后才启动三matched controls的规则不变。

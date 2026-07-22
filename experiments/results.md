@@ -3425,3 +3425,9 @@ OUTPUT_DIR由epoch 1重跑，不续训、不重跑合同。
 v2已从epoch 1 fresh启动，主PID=`2316`，新output/runner分别为`exp413-psccr-s1234-v2`与对应runner；没有
 checkpoint恢复。首批zero-owner及PSCCR prefix/coverage/control诊断与v1完全一致，formal tracked 0/0、严格异常0。
 v2尚无正式评测点；后续e10--e120必须重新完整记录，禁止用v1轨迹补点。
+
+v2随后按用户明确指令在e2 iter200人工终止：仅完成1个完整epoch、0个正式评测点、没有checkpoint，终止后目标
+进程为0且GPU空闲。v2状态=`USER STOPPED / E120 VOID / NO RESUME`，runner/train严格异常均为0；train-log与
+runner SHA256分别为`ee53e0adff01a8ee332c4bb9c7e986b13b49b017f8ab84eec5fbdb8ce4fe83f9`和
+`04a9e08c113aa6b099f7a0bd46fef4eca686c93a24175aefcbd2df9a341726c1`。用户恢复后只允许在全新v3路径从
+epoch 1 fresh重跑同一正式臂，v1/v2均不得续训、覆盖或拼接。

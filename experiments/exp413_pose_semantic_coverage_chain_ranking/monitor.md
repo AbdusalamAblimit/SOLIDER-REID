@@ -164,3 +164,20 @@ formal HEAD=`add6adae4d192da4c44bf44120dd571f0dfe14e1`且tracked worktree/index=
 
 当前=`V2 FRESH FORMAL RUNNING / CONTINUE`。v1保持封存，禁止续训或覆盖；v2自然运行到e120，e10/20/.../120
 重新记录完整指标，不能用v1中间点填补v2。
+
+## 2026-07-22：v2按用户指令人工终止，禁止续训
+
+用户先暂停自动推进，随后明确要求训练也停止。远端仅终止v2主PID=`2316`及其同命令DataLoader子进程；终止后
+目标进程=`0`，GPU=`2 MiB / 0%`。日志最后一行为e2 iter200，完整epoch数=`1`，正式评测点数=`0`，输出目录
+仅有`train_log.txt`且没有checkpoint。runner/train严格异常计数均为`0`，说明这是用户授权的人工终止，不是训练
+代码异常或基础设施中断。
+
+v2完整性封存：train-log SHA256=
+`ee53e0adff01a8ee332c4bb9c7e986b13b49b017f8ab84eec5fbdb8ce4fe83f9`，runner SHA256=
+`04a9e08c113aa6b099f7a0bd46fef4eca686c93a24175aefcbd2df9a341726c1`。v2状态=
+`USER STOPPED / E120 VOID / NO RESUME`；不得从该目录或任何状态续训，也不得把v1评测点补入v2。
+
+用户现已明确恢复。恢复前核验唯一4090 compute为空、GPU=`2 MiB / 0%`，冻结formal HEAD仍为
+`add6adae4d192da4c44bf44120dd571f0dfe14e1`且tracked worktree/index=`0/0`，fresh v3 output/runner均不存在。
+下一步仅允许使用相同代码、config、资产与seed1234，在全新v3 OUTPUT_DIR从epoch 1启动；不重跑唯一PK64合同或
+盲审，不覆盖v1/v2。
