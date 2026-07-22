@@ -238,6 +238,16 @@ e50相对宿主仅mAP微正，R1与R5转负，R10持平；四项仍胜D0。该�
 必须保留且不得早停或救臂。读取时已进入e53 iter100，主PID=`3668`仍为唯一CUDA compute，GPU约
 `7,090 MiB / 42%`，runner/train严格异常=`0/0`，formal HEAD与tracked worktree/index保持不变。继续冻结运行。
 
+## 2026-07-22：v3 e60正式评测
+
+v3原始train log读取结果：PSCCR=`58.2/70.0/82.4/85.8`。从sealed exp411原始记录读取同epoch
+zero-owner=`57.6/70.3/81.0/85.2`，clean D0=`55.1/66.1/79.0/83.3`；因此PSCCR−zero-owner=
+`+0.6/-0.3/+1.4/+0.6`，PSCCR−D0=`+3.1/+3.9/+3.4/+2.5`。
+
+e60相对宿主mAP/R5/R10为正，但核心R1仍低`0.3`；四项继续胜D0。该点不能满足最终双核心门，也不能替代e120
+裁决。读取时已进入e62，主PID=`3668`仍为唯一CUDA compute，GPU约`7,066 MiB / 42%`，runner/train严格
+异常=`0/0`，formal HEAD与tracked worktree/index保持不变。继续冻结运行，不早停、不启动controls。
+
 ## 2026-07-22：v3 e40正式评测
 
 v3原始train log读取结果：PSCCR=`55.6/66.7/80.2/84.3`。同epoch sealed zero-owner=
