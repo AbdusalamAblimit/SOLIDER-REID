@@ -132,3 +132,21 @@ e50核心mAP/R1及R10重新严格高于zero-owner，但R5仍低`0.5`；四项均
 单调恶化，却仍不能替代e120核心门或matched-control归因。继续冻结运行，不早停、不改机制。读取时已进入e52，
 主PID=`754511`仍为唯一compute PID，GPU约`7,072 MiB/43%`，formal HEAD与tracked worktree/index保持不变，
 runner/train严格异常计数0。
+
+## 2026-07-22：v1因主机硬重启中断，禁止续训
+
+08:11心跳经中继连续两次SSH banner超时；08:26恢复后确认主PID=`754511`已消失、GPU=`0% / 2 MiB`，日志停在
+e56完整结束后的e57首批诊断。主机`uptime -s=2026-07-22 08:16:54`，`last -x`只有08:16 reboot而没有对应
+shutdown记录，说明训练被外部主机硬重启终止，不是自然e120完成，也不是训练代码异常。runner/train严格异常计数仍为0。
+
+v1完整性封存：完整epoch数=`56`，正式评测点数=`5`（e10--e50）；train-log SHA256=
+`a39e3355bd678d6662d6f820087998d8014f8fb469dc12342588aede8e4b8376`，runner SHA256=
+`acb170024d55860e3d5454c7f1de77fd0eda19e1b09406fe15ac9e9f76c286cb`。v1状态=
+`INFRASTRUCTURE INTERRUPTED / E120 VOID / NO RESUME`：已有五点轨迹全部保留，但不能代替e120性能裁决，禁止从
+checkpoint续训。
+
+同一冻结formal HEAD仍为`add6adae4d192da4c44bf44120dd571f0dfe14e1`，tracked worktree/index=`0/0`；合同已
+PASS且机制/参数/资产未变，故不重跑合同或盲审。GPU恢复空闲，新fresh路径=
+`/home/afr/reid-clean/logs/exp413-psccr-s1234-v2`与runner=
+`/home/afr/reid-clean/train-logs/exp413-psccr-s1234-v2.runner.log`均确认不存在。下一步只允许从epoch 1、seed1234
+在该全新OUTPUT_DIR重启完整正式臂；这不是续训，v1不得覆盖或删除。

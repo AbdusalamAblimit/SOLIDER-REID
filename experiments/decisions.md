@@ -6162,3 +6162,12 @@ PSCCR e50=`55.5/66.6/79.5/84.1`，相对同epoch sealed zero-owner=
 
 **决策**：不把恢复点解释成最终GO，也不遗漏R5负差；正式臂、source/config/cache/text asset继续冻结，按预注册
 节奏自然运行。只有e120 mAP/R1双胜宿主才启动controls，当前不做任何补救或归因结论。
+
+### [2026-07-22] 决策：exp413 v1因主机硬重启作废，禁止续训
+
+主机在无正常shutdown记录下于08:16重启，v1日志停在e56完成后的e57首批诊断；训练严格异常0，重启后GPU空闲。
+v1只有56个完整epoch与e10--e50五个评测点，不满足预注册e120合同，因此不能判GO或NO-GO。
+
+**决策**：v1永久记为`INFRASTRUCTURE INTERRUPTED / E120 VOID / NO RESUME`，保留日志、SHA和全部中间不利/有利
+结果，禁止checkpoint续训。由于代码、config参数、cache、text asset、seed和formal HEAD均未改变，且唯一真实PK64
+合同此前已PASS，不重跑合同或审查；只在全新v2 OUTPUT_DIR从epoch 1启动同一正式臂，重新自然完成完整e120。

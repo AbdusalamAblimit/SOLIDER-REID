@@ -3414,3 +3414,10 @@ e40 PSCCR=`54.4/65.5/79.0/83.2`，同epoch zero-owner=`55.0/66.2/79.8/84.4`、cl
 e50 PSCCR=`55.5/66.6/79.5/84.1`，同epoch zero-owner=`55.1/66.1/80.0/83.7`、clean D0=
 `52.1/62.8/77.0/81.9`；相对二者分别为`+0.4/+0.5/-0.5/+0.4`与`+3.4/+3.8/+2.5/+2.2`。
 核心mAP/R1在e40落后后重新翻正，但R5仍低宿主；继续记录完整轨迹，不作最终性能或联合归因裁决。
+
+v1随后因外部主机硬重启在e56完整结束后中断：系统08:16重新boot且无对应shutdown记录，日志没有训练异常，GPU重启后
+空闲。v1只有5个评测点与56个完整epoch，故状态=`INFRASTRUCTURE INTERRUPTED / E120 VOID / NO RESUME`，不能作
+exp413性能裁决；已有轨迹不删除。train-log/runner SHA256=
+`a39e3355bd678d6662d6f820087998d8014f8fb469dc12342588aede8e4b8376`/
+`acb170024d55860e3d5454c7f1de77fd0eda19e1b09406fe15ac9e9f76c286cb`。同冻结HEAD与seed1234将从全新v2
+OUTPUT_DIR由epoch 1重跑，不续训、不重跑合同。
