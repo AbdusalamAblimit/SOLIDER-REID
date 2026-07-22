@@ -227,3 +227,13 @@ v3原始train log读取结果：PSCCR=`51.1/61.7/74.9/80.4`。同epoch sealed ze
 e30核心mAP/R1及R10胜宿主，但R5低`0.1`；四项均继续胜D0。必须保留该混合证据，不能用作提前GO或选择性
 忽略R5。读取时已进入e32 iter40，主PID=`3668`仍为唯一CUDA compute，GPU约`7,076 MiB / 42%`，
 runner/train严格异常=`0/0`，formal HEAD与tracked worktree/index保持不变。继续冻结运行至e120。
+
+## 2026-07-22：v3 e40正式评测
+
+v3原始train log读取结果：PSCCR=`55.6/66.7/80.2/84.3`。同epoch sealed zero-owner=
+`55.0/66.2/79.8/84.4`，sealed clean D0=`50.0/60.7/76.2/81.0`；因此PSCCR−zero-owner=
+`+0.6/+0.5/+0.4/-0.1`，PSCCR−D0=`+5.6/+6.0/+4.0/+3.3`。
+
+e40核心mAP/R1及R5胜宿主，但R10低`0.1`；四项均胜D0。该点仍是混合宿主证据，不能表述为全项胜或提前触发
+controls。读取时已进入e44 iter80，主PID=`3668`为唯一CUDA compute，GPU约`7,076 MiB / 46%`，
+runner/train严格异常=`0/0`，formal HEAD与tracked worktree/index保持不变。继续冻结运行至e120。
