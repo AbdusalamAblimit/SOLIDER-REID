@@ -2504,7 +2504,8 @@ exp412现已退出正面story。唯一fresh e120=`56.9/69.7/82.5/86.1`，核心m
 ## 2026-07-22：exp413条件story——从完整集合均值到互补证据前缀
 
 PSCCR保留sealed zero-owner的student空间、三support全集、learned CE与测试descriptor，不再给视图加owner权重或
-路由梯度。pose visibility与identity-free CLIP遮挡margin只负责把三support排成无丢弃coverage chain；长度1/2/3
+路由梯度。先完成LOO，再由三support内部的pose visibility与identity-free CLIP遮挡margin把它们排成无丢弃coverage
+chain；长度1/2/3
 prefix分别面对全部身份集合排序，长度3与zero-owner exact。正面问题因此收窄为：遮挡query能否在只获得部分但
 身体槽互补的同ID证据时仍保持完整检索排序。
 

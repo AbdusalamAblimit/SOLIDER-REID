@@ -49,9 +49,10 @@ coverage或首次pose+CLIP。当前本地已审计语料只支持“未发现完
 all-identity公式，另建coverage-chain state/loss；processor只负责在`torch.no_grad()`中生成离散链，model与eval不改。
 长度3显式调用原support顺序计算，从而保证distance/loss与sealed zero-owner exact，而不是依赖浮点加法换序后的近似。
 
-一次真实PK64合同必须同时证明：三support是严格排列、coverage单调、correct与pose-only/q-only/text-shuffle的链改变率
-非零、prefix3 exact、isolated Stage-3/backbone梯度active且相对zero-owner改变、native GradScaler真实更新。性能GO后
-再跑三条matched control，可区分pose、CLIP和正确文本绑定；任何一条不被correct在mAP/R1同时严格超过，联合归因失败。
+一次真实PK64合同必须同时证明：先LOO再在三support内排名且被排除图mutation不影响链、invalid/tie/rank方向通过手算
+micro-oracle、三support是严格排列、coverage单调、correct与pose-only/q-only/text-shuffle的真实链改变率非零、
+prefix3 exact、isolated Stage-3/backbone梯度active且相对zero-owner改变、native GradScaler真实更新。性能GO后再跑
+三条matched control，可区分pose、CLIP和正确文本绑定；任何一条不被correct在mAP/R1同时严格超过，联合归因失败。
 
 ## 创新裁决
 

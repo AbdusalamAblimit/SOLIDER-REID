@@ -28,26 +28,32 @@ pose与CLIP共同定义的coverage chain有独立价值。
 - 复用只读exp411 region-CLIP cache与exp412 text-axis asset，禁止重建、改prompt或改cache；
 - PSGC关闭，不修改model forward、descriptor、score、CE、pose auxiliary或测试路径。
 
-### 2. pose与身份无关CLIP的严格序数
+### 2. leave-one-position-out之后的严格序数
 
-对当前增强PK batch中每个PID的四图`i`和五槽`r`，沿用exp411的增强后pose visibility `v[i,r]`，并由exp412冻结
-文本轴计算：
+先沿用zero-owner的occurrence位置：对每个batch query anchor `a`，每个身份`p`都排除与`a`相同类内位置的图，得到
+三图support `S[p,a]`。所有序数必须在这个三图support内部重新计算，禁止先用K=4排名再排除；因此被排除图（正类时
+即anchor）的pose/CLIP/valid不可能影响链。沿用exp411的增强后pose visibility `v[i,r]`，并由exp412冻结文本轴计算：
 
 `q[i,r] = <c[i,r], t_visible[r]> - <c[i,r], t_occluded[r]>`。
 
-只在同一PID×槽的K=4内计算严格序数：
+对每个`(p,a,r)`，只在`S[p,a]`三图内部计算严格序数：
 
-`rank_v[i,r] = sum_j 1[v[i,r] > v[j,r]]`，
+`rank_v[i,r] = sum_{j in S[p,a]} 1[v[i,r] > v[j,r]]`，
 
-`rank_q[i,r] = sum_j 1[q[i,r] > q[j,r]]`。
+对依赖q的correct/q-only/text-shuffle臂：
 
-correct可靠度固定为`u[i,r] = min(rank_v[i,r], rank_q[i,r])`。序数仅取`0..3`，不设阈值、温度、连续权重、
-top-k或可调scale。CLIP-invalid槽的`rank_q`与`u`固定为0，但对应support仍在第三步进入链；并列自然获得相同序数。
+`rank_q[i,r] = sum_{j in S[p,a], clip_valid[j,r]} 1[q[i,r] > q[j,r]]`。
+
+若`clip_valid[i,r]=False`，则该图的`rank_q[i,r]`与所有q-dependent `u[i,r]`固定为0；valid图只与valid peer比较，
+不把invalid的伪q值纳入序数。correct可靠度为`u=min(rank_v,rank_q)`；pose-only完全忽略`clip_valid/q`并令
+`u=rank_v`；q-only完全忽略visibility并令`u=rank_q`。序数仅取`0..2`，不设阈值、温度、连续权重、top-k或
+可调scale；并列自然获得相同序数。即使某槽全部CLIP-invalid，三support仍会按其他槽覆盖与最终batch-index并列规则
+全部进入链，不设置可调fallback。
 
 ### 3. 无丢弃互补覆盖链
 
-沿用zero-owner的occurrence位置：对每个batch query anchor `a`，每个身份`p`都排除与`a`相同类内位置的图，得到三图
-support `S[p,a]`。排除只保证各身份等支持；真正loss query始终是anchor `a`的student global descriptor。
+排除同位置图既保证各身份等支持，也构成严格的support-only边界；真正loss query始终是anchor `a`的student global
+descriptor。对任意被排除图修改`v/q/valid`，`S[p,a]`的序数与chain必须完全不变。
 
 对任意已选prefix `A`定义五槽覆盖：
 
@@ -100,15 +106,18 @@ correct自然e120必须在mAP与R1同时严格胜sealed zero-owner，才记`EXP4
 2. 每个chain是原三support的严格排列，无重复、无跨PID、无anchor self；
 3. coverage对prefix单调不降，确定性并列规则成立；
 4. prefix3的set distance与loss对sealed zero-owner bit-exact；
-5. correct相对pose-only、q-only、text-shuffle的真实链改变率均非零；
-6. isolated PSCCR梯度finite且进入Stage-3/backbone，并与zero-owner梯度不同；
-7. production combined loss使用原生GradScaler取得一次真实参数update。
+5. 同一runner前半用手算micro-oracle逐元素核对三图strict rank方向、负q、tie、部分/全部invalid、greedy
+   batch-index并列，以及correct/pose-only/q-only/text-shuffle的预期链；
+6. 任意修改被排除图的`v/q/valid`，对应support的rank、coverage与chain bit-exact不变；
+7. runner后半真实PK64中，correct相对pose-only、q-only、text-shuffle的链改变率均非零；
+8. isolated PSCCR梯度finite且进入Stage-3/backbone，并与zero-owner梯度不同；
+9. production combined loss使用原生GradScaler取得一次真实参数update。
 
 任一机械门FAIL只修致命实现bug/变量混淆；PASS后不追加preflight，立即建立fresh formal/output并正式e120。
 
 ## 风险与失败解释
 
-1. strict ordinal在K=4内分辨率只有四级，链可能大量并列；若control改变率为0，机制直接NO-START。
+1. strict ordinal在LOO三support内分辨率只有三级，链可能大量并列；若control改变率为0，机制直接NO-START。
 2. greedy prefix可能优先选择易图而非真正互补图；pose-only或q-only不低于correct即联合语义归因失败。
 3. 长度1/2集合对负身份也使用同样排序，可能放大单图噪声；correct不胜zero-owner即说明部分支持约束伤害完整排序。
 4. prefix3虽保留zero-owner项，但三prefix等权平均会改变总体优化对象；这正是唯一核心变量，不能通过调prefix权重救臂。

@@ -3377,8 +3377,8 @@ tracked状态未变。checkpoint/train-log/runner SHA256=`6e0342170d3e73eff1c430
 
 ## exp413 PSCCR设计状态（2026-07-22）
 
-PSCCR当前只有聚焦查新、设计与预注册合同，没有实现、CUDA执行或mAP/R1。它以sealed zero-owner为宿主，用同PID内
-pose visibility与identity-free CLIP遮挡margin的严格序数构造无丢弃三support coverage chain，并对长度1/2/3
+PSCCR当前只有聚焦查新、设计与预注册合同，没有实现、CUDA执行或mAP/R1。它以sealed zero-owner为宿主，在每个
+LOO三support内部用pose visibility与identity-free CLIP遮挡margin的严格序数构造无丢弃coverage chain，并对长度1/2/3
 prefix分别做all-identity set ranking；prefix3必须与zero-owner distance/loss exact。当前=
-`C-CLASS CONDITIONAL / DESIGN REVIEW NEXT / GPU IDLE`。correct e120性能门固定为同时严格胜zero-owner
+`C-CLASS CONDITIONAL / DESIGN REVIEW 0B0H / IMPLEMENTATION NEXT / GPU IDLE`。correct e120性能门固定为同时严格胜zero-owner
 `58.9 mAP / 70.3 R1`，GO后才运行pose-only/q-only/text-shuffle。

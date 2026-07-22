@@ -4339,8 +4339,9 @@ PSGC自然e120=`56.9/69.7/82.5/86.1`，核心mAP/R1相对zero-owner低`2.0/0.6`�
 ## 2026-07-22：exp413 PSCCR——无丢弃互补support prefix
 
 exp413不继续exp412的梯度路由，也不回到CAVT/PC-MSC/PSC-JEPA的feature completion。它把exp411已证有效的
-zero-owner集合对象拆成嵌套训练条件：pose visibility与identity-free CLIP遮挡margin只在同PID内形成严格序数，
-`min(rank_v,rank_q)`定义五槽可靠度，贪心最大覆盖增益给原三support一个确定性顺序；三图最终全部使用。student
+zero-owner集合对象拆成嵌套训练条件：先完成leave-one-position-out，再让pose visibility与identity-free CLIP
+遮挡margin只在剩余三support内形成严格序数；`min(rank_v,rank_q)`定义五槽可靠度，贪心最大覆盖增益给原三support
+一个确定性顺序；三图最终全部使用。student
 分别优化长度1/2/3 prefix相对全部身份集合的排序，第三项与zero-owner exact。
 
 - 问题门PASS：从“完整三图平均后排序”推进到“部分但互补支持到达时也能排序”，且不牺牲难图query梯度；

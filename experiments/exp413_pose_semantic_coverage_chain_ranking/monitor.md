@@ -13,3 +13,7 @@ greedy coverage、prefix curriculum、listwise与multi-positive均不得作为�
 冻结执行顺序：独立盲审只拦截致命bug/变量混淆；随后实现默认关闭机制并做静态检查；只执行一次真实PK64 CUDA/AMP
 合同。合同PASS后立即启动唯一fresh correct seed1234/e120，中间点只记录不早停。当前判断=`CONTINUE DESIGN REVIEW`，
 原因是GPU空闲且新对象尚未越过一次性机械门。
+
+首轮独立盲审=`1B/2H`，已在实现前全部修正文档：序数改为每个LOO三support内重算，禁止被排除图/anchor evidence
+泄漏；invalid与三control规则改为严格单变量；同一个唯一runner加入手算micro-oracle与excluded-image mutation
+invariance。同一审查者复核=`0B/0H`，当前=`DESIGN REVIEW PASS / IMPLEMENTATION AUTHORIZED / CUDA NO-START`。
