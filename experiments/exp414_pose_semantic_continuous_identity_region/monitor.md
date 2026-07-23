@@ -458,3 +458,18 @@ correct产物永久封存，禁止修改、覆盖、续训或重跑。下一步�
 - wrapper/训练主PID存活，唯一CUDA compute约`6994 MiB / 42%`，runner/train严格异常=`0`，formal
   tracked worktree/index=`0/0`；
 - 尚未到e10正式点，当前=`CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：pose-only e10首个正式评测
+
+pose-only自然完成e10=`28.2 mAP / 38.1 R1 / 52.5 R5 / 59.0 R10`；同epoch sealed correct=
+`28.6/38.1/53.7/60.7`，sealed zero-owner=`28.4/38.1/53.9/60.8`，sealed clean D0=
+`33.4/42.7/59.8/65.2`。rounded四项差为：
+
+| epoch | pose-only | correct | zero-owner | clean D0 | Δcorrect | Δzero-owner | ΔD0 |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 10 | 28.2/38.1/52.5/59.0 | 28.6/38.1/53.7/60.7 | 28.4/38.1/53.9/60.8 | 33.4/42.7/59.8/65.2 | -0.4/+0.0/-1.2/-1.7 | -0.2/+0.0/-1.4/-1.8 | -5.2/-4.6/-7.3/-6.2 |
+
+e10时pose-only的mAP/R5/R10低于correct，R1持平；这只是支持correct的早期方向性证据，不能据此提前作联合
+归因或停止matched control。读取时最新=`e11 iter40/227`，wrapper/训练主PID存活，唯一CUDA compute约
+`7074 MiB`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
+`CONTINUE TO NATURAL E120`。
