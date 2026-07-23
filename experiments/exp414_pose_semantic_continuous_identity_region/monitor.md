@@ -113,4 +113,6 @@ OUTPUT_DIR启动correct正式e120；只有correct性能GO后才串行启动match
   edge-weight=`[8.890625,8.796875,9.0]`；
 - 首批control topology-change=`pose-only 0.390625 / q-only 0.375 / text-shuffle 0.328125 /
   all-edges 1.0`，证明正式路径读取correct状态且controls非同构；
-- 最新=`e1 iter80/227`，runner/train严格异常=`0`。当前判断=`CONTINUE TO NATURAL E120`，不因中间点早停。
+- heartbeat复核最新=`e2 iter160/227`，loss=`6.979`；wrapper/训练主PID存活，唯一CUDA compute约
+  `6994 MiB / 42%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`。当前判断=
+  `CONTINUE TO NATURAL E120`，不因中间点早停。
