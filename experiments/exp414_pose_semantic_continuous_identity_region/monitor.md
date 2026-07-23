@@ -520,3 +520,10 @@ e30时pose-only相对correct为mAP/R5/R10领先、R1微低，核心关系继续�
 同时严格胜pose-only，联合归因仍未获得支持。读取时最新=`e31 iter40/227`，wrapper/训练主PID存活，唯一
 CUDA compute约`7060 MiB`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：pose-only e35健康检查
+
+- e35已自然完成，末次记录=`iter200/227`、loss=`0.324`、pose=`0.476`、acc=`0.983`，e36首批已开始；
+- wrapper/训练主PID存活，唯一CUDA compute约`7060 MiB / 72%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e30，当前=`CONTINUE TO NATURAL E120`。
