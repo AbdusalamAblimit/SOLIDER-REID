@@ -315,3 +315,10 @@ e80相对zero-owner仅mAP/R5微正，R1/R10为负；相对D0四项仍为正。�
 成立，性能GO风险持续。读取时最新=`e83 iter100/227`，wrapper/训练主PID存活，唯一CUDA compute约
 `7050 MiB / 42%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`。当前=
 `CONTINUE TO NATURAL E120 / NO EARLY STOP`。
+
+## 2026-07-23：e88健康检查
+
+- 最新=`e88 iter140/227`，loss=`0.114`、pose=`0.462`、acc=`0.997`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7050 MiB / 42%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 尚未到e90正式点，当前=`CONTINUE TO NATURAL E120`。
