@@ -6655,3 +6655,12 @@ worktree/index=`0/0`。checkpoint/train-log/runner SHA256=
 `POSE AXIS ATTRIBUTION FAILED / JOINT ATTRIBUTION FAILED`。pose-only永久封存，禁止重跑、续训、覆盖或
 删除不利点。按照本实验预注册，余下q-only、text-shuffle、all-edges仍严格串行自然跑满e120以补全反事实证据；
 下一步只以同一formal/seed/recipe、fresh OUTPUT_DIR、无恢复启动q-only。
+
+### [2026-07-23] 决策：exp414 q-only已fresh启动
+
+q-only已从同一frozen formal、seed1234、recipe与资产，以fresh OUTPUT_DIR、无恢复启动；唯一变化为
+`PSCIR_CONTROL_MODE=q_only`。首批`loss/zero/region=2.320966/1.970790/2.671141`，zero-owner首批与correct、
+pose-only exact，正式路径和topology-change诊断均符合冻结合同；当前唯一CUDA训练正常、严格异常0。
+
+**决策**：q-only必须自然训练到e120并保留全部12个评测点，不因pose-only已阻断联合归因而省略证据或早停；
+text-shuffle与all-edges继续`NO-START`，禁止并行、调参或修改冻结资产。

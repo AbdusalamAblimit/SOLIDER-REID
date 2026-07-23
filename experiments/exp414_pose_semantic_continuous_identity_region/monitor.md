@@ -786,3 +786,19 @@ pose-only完整性核验：
 
 pose-only产物永久封存，禁止修改、覆盖、续训或重跑。下一步只允许同一formal/seed/recipe、fresh OUTPUT_DIR、
 无恢复串行启动q-only。
+
+## 2026-07-23：q-only matched control fresh启动
+
+- output=`/home/afr/reid-clean/logs/exp414-pscir-q-only-s1234-v1`，runner=
+  `/home/afr/reid-clean/train-logs/exp414-pscir-q-only-s1234-v1.runner.log`，启动前均不存在；
+- 同一frozen formal、seed1234、recipe与资产，无checkpoint恢复；命令行只切换
+  `MODEL.TAPF.PSCIR_CONTROL_MODE q_only`并使用fresh OUTPUT_DIR；
+- wrapper PID=`180965`，训练主PID=`180971`，当前唯一CUDA compute约`6994 MiB / 45%`；
+- 首批PSCIR `loss/zero/region=2.320966/1.970790/2.671141`，zero-owner首批与correct、pose-only exact；
+- 正式路径打印`control=q_only`，四control topology-change仍为
+  `pose-only 0.390625 / q-only 0.375 / text-shuffle 0.328125 / all-edges 1.0`；
+- 最新=`e1 iter40/227`，loss=`8.102`、pose=`0.916`、acc=`0.002`；runner/train严格异常=`0`，formal
+  HEAD=`c6739b402a9e9a16f2427324536251e5ed059598`，tracked worktree/index=`0/0`。
+
+当前=`Q-ONLY RUNNING / NATURAL E120 / NO INTERMEDIATE STOP`；text-shuffle与all-edges继续
+`NO-START`。

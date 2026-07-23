@@ -3700,3 +3700,7 @@ worktree/index=`0/0`；checkpoint/train-log/runner SHA256=
 `af3d8c082abd13d578e332cb0a5fba3b1e3ed6d2b0513250e201c58ffdc5f0ab`/
 `38693d1d83639ea6b0b0c973121d8ccf15a74b74fca8293d70c15922e826c31d`。pose-only永久封存；余下
 q-only、text-shuffle、all-edges仍按预注册顺序自然e120补全证据，下一步只启动fresh q-only。
+
+q-only现已从同一frozen formal与fresh OUTPUT_DIR无恢复启动；首批
+`loss/zero/region=2.320966/1.970790/2.671141`，zero-owner首批与correct、pose-only exact。当前唯一CUDA
+任务、严格异常0，状态=`Q-ONLY RUNNING / NATURAL E120`；text-shuffle、all-edges均`NO-START`。
