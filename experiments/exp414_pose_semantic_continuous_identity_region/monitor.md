@@ -98,3 +98,19 @@ GPU IDLE`。尚无exp414合同或性能数字。
 
 结论：唯一真实PK64合同已消费且`PASS`，不得重跑或追加preflight。冻结上述formal HEAD，下一步从fresh
 OUTPUT_DIR启动correct正式e120；只有correct性能GO后才串行启动matched controls。
+
+## 2026-07-23：correct正式训练fresh启动
+
+- frozen formal=`/home/afr/SOLIDER-REID-exp414-pscir-formal-v1`，HEAD=
+  `c6739b402a9e9a16f2427324536251e5ed059598`，tracked worktree/index=`0/0`；
+- output=`/home/afr/reid-clean/logs/exp414-pscir-s1234-v1`，runner=
+  `/home/afr/reid-clean/train-logs/exp414-pscir-s1234-v1.runner.log`，启动前二者均不存在；
+- 固定解释器、Swin-Tiny、batch64、16×4、seed1234、correct模式、fresh启动且无checkpoint恢复；
+- wrapper主PID=`108593`，训练主PID=`108598`；8个同命令子进程均为DataLoader worker，唯一CUDA compute为
+  训练主PID，首检GPU约=`6992 MiB / 73%`；
+- 首批zero-owner loss=`1.970790`；PSCIR
+  `loss/zero/region/positive/negative/segment=2.313745/1.970790/2.656701/47.542694/57.520821/58.427376`，
+  edge-weight=`[8.890625,8.796875,9.0]`；
+- 首批control topology-change=`pose-only 0.390625 / q-only 0.375 / text-shuffle 0.328125 /
+  all-edges 1.0`，证明正式路径读取correct状态且controls非同构；
+- 最新=`e1 iter80/227`，runner/train严格异常=`0`。当前判断=`CONTINUE TO NATURAL E120`，不因中间点早停。

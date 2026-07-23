@@ -6579,3 +6579,7 @@ Stage-3/norm3梯度`28/28` finite nonzero、第5次原生GradScaler真实更新�
 **决策**：合同已经消费，禁止重跑或追加preflight；冻结formal HEAD=
 `c6739b402a9e9a16f2427324536251e5ed059598`，直接以fixed recipe、seed1234、fresh OUTPUT_DIR启动correct并自然
 训练到e120。只有correct在mAP/R1同时严格胜sealed zero-owner与clean D0，才启动四个matched controls。
+
+该启动决策已执行：correct从fresh OUTPUT_DIR无恢复启动，首批zero-owner/region路径与四control改变均符合合同，
+当前唯一CUDA训练正常。**运行裁决不变**：必须自然到e120并保留e10/20/.../120全部四项指标，不以任何中间点
+提前停止或改配方。

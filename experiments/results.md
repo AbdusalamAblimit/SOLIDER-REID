@@ -3625,3 +3625,8 @@ region distance，strict MST覆盖、mutation/unused-candidate/default-off/zero-
 `c6739b402a9e9a16f2427324536251e5ed059598`。
 
 当前=`CONTRACT PASS / FORMAL FROZEN / CORRECT E120 NEXT / C-CLASS CONDITIONAL`，仍无性能数字；合同不得重跑。
+
+correct已按冻结formal、seed1234与fresh OUTPUT_DIR正式启动，无checkpoint恢复；首批PSCIR
+`loss/zero/region=2.313745/1.970790/2.656701`，四个control在正式路径仍真实改变topology。最新
+`e1 iter80/227`，唯一CUDA compute、严格异常0。状态更新为
+`CORRECT RUNNING / E120 REQUIRED / NO INTERMEDIATE EARLY STOP`。
