@@ -496,3 +496,10 @@ e20时pose-only相对correct为mAP微负、R1/R10微正、R5持平，形成混�
 同时严格胜pose-only，不能提前支持联合归因。读取时最新=`e21 iter20/227`，wrapper/训练主PID存活，唯一
 CUDA compute约`7054 MiB`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：pose-only e25健康检查
+
+- 最新=`e25 iter100/227`，loss=`0.931`、pose=`0.501`、acc=`0.920`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7054 MiB / 43%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e20，当前=`CONTINUE TO NATURAL E120`。
