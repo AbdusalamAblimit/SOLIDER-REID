@@ -6502,3 +6502,13 @@ q-only e50=`55.5/67.0/79.7/84.0`，相对同epoch sealed v3 correct=
 **决策**：e50进一步表明中间轨迹高度混合，且是不利于联合归因的真实点，必须完整保留。pose-only e120已使
 最终科学GO失败的结论不变；q-only仍继续冻结至自然e120，不早停、不调参、不删点，text-shuffle保持
 `NO-START`。
+
+### [2026-07-23] 决策：exp413 q-only e60再次四项低于correct
+
+q-only e60=`57.1/69.1/81.2/84.8`，相对同epoch sealed v3 correct=
+`-1.1/-0.9/-1.2/-1.0`，相对sealed pose-only=`-0.6/+0.0/+0.0/+0.1`，相对zero-owner=
+`-0.5/-1.2/+0.2/-0.4`，相对clean D0=`+2.0/+3.0/+2.2/+1.5`。q-only四项再次低于correct，
+e50四项领先的关系未连续保持；相对pose-only与zero-owner也均为混合排序。
+
+**决策**：完整保留e50到e60的反向变化，不用任一中间点选择性支持或反驳CLIP归因。最终科学GO失败的裁决
+不变；q-only继续冻结自然运行至e120，不早停、不调参、不删点，text-shuffle保持`NO-START`。

@@ -590,3 +590,18 @@ e50时q-only四项严格反超correct，e40的四项落后在下一正式点完�
 唯一CUDA compute，GPU约`7,072 MiB / 46%`，runner/train严格异常=`0/0`，formal tracked
 worktree/index=`0/0`；36个运行生成的未跟踪pyc保持不动。q-only继续冻结自然运行，text-shuffle保持
 `NO-START`。
+
+## 2026-07-23：q-only e60正式评测
+
+q-only原始runner读取结果=`57.1/69.1/81.2/84.8`。同epoch sealed v3 correct=
+`58.2/70.0/82.4/85.8`，sealed pose-only=`57.7/69.1/81.2/84.7`，sealed zero-owner=
+`57.6/70.3/81.0/85.2`，sealed clean D0=`55.1/66.1/79.0/83.3`；因此q-only−correct=
+`-1.1/-0.9/-1.2/-1.0`，q-only−pose-only=`-0.6/+0.0/+0.0/+0.1`，q-only−zero-owner=
+`-0.5/-1.2/+0.2/-0.4`，q-only−D0=`+2.0/+3.0/+2.2/+1.5`。
+
+e60时q-only四项再次严格低于correct，e50的四项领先没有保持；相对pose-only为mAP低、R1/R5持平、
+R10高`0.1`，相对zero-owner仅R5为正，同时仍四项高于D0。该反转进一步证明中间轨迹不能代替e120裁决，
+不得选择性删除e50或e60。首次SSH读取又出现无输出瞬断，重连确认PID和GPU连续，并分开核验日志、formal与
+严格异常，不能误记为训练中断。读取时已进入e63 iter80，主PID=`77649`仍为唯一CUDA compute，GPU约
+`7,082 MiB / 42%`，runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`；36个
+运行生成的未跟踪pyc保持不动。q-only继续冻结自然运行，text-shuffle保持`NO-START`。
