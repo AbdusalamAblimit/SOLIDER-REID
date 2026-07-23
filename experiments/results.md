@@ -3588,3 +3588,15 @@ q-only e70=`57.9/69.8/81.9/85.7`；相对同epoch v3 correct=`-0.2/+0.3/-0.3/+0.
 pose-only=`+0.4/+1.7/+0.7/+0.7`，相对zero-owner=`+0.1/-0.4/+0.2/+0.2`，相对clean D0=
 `+2.5/+4.6/+2.4/+2.1`。相对correct为两负一正一平，四项胜pose-only，相对宿主三正一负；
 e60四项负差未连续保持。保留混合关系并继续自然到e120。
+
+q-only在用户明确要求立即切换期间自然完成e80=`58.1/70.5/81.8/85.7`；相对同epoch v3 correct=
+`-0.7/-0.2/-0.4/-0.6`，相对sealed pose-only=`-0.5/+0.0/-0.2/-0.3`，相对zero-owner=
+`-0.5/-1.1/-0.6/-0.6`，相对clean D0=`+2.0/+4.2/+2.3/+1.7`。四项低于correct与宿主，
+相对pose-only仅R1持平，四项仍胜D0。
+
+随后q-only按用户明确资源优先级终止并永久封存：`80/120`完整epoch、`8/12`正式点、无checkpoint、
+GPU空闲、异常0、formal tracked 0/0；train-log/runner SHA256=
+`54b55ba423db444958a0550f22667c60f9261401529b8832496325e0e06bc3b3`/
+`ae57c702b1e0b0c67859c7916fd1963e1536594dd05643063e76bac90ae6b606`。状态=
+`USER-DIRECTED STOP / E120 VOID / NO RESUME`，已有轨迹不作e120裁决或跨臂拼点；text-shuffle=
+`NO-START BY USER PRIORITY`。exp413最终=`PERFORMANCE GO / JOINT ATTRIBUTION FAILED`，不再救旧机制。

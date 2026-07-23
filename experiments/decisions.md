@@ -6533,3 +6533,20 @@ text-shuffle无论结果如何都不能改变该最终科学裁决，只能补�
 NO RESUME`，保留已有7个正式点及全部日志但禁止续训、补跑、覆盖或跨臂拼点；text-shuffle记为
 `NO-START BY USER PRIORITY`。exp413最终保持`PERFORMANCE GO / JOINT ATTRIBUTION FAILED`，随后直接
 进入下一创新点，不再救PSCCR。
+
+### [2026-07-23] 决策：exp413 q-only已用户终止，PSCCR联合归因封板
+
+终止理由提交期间q-only自然完成e80=`58.1/70.5/81.8/85.7`，相对correct=
+`-0.7/-0.2/-0.4/-0.6`，相对pose-only=`-0.5/+0.0/-0.2/-0.3`，相对zero-owner=
+`-0.5/-1.1/-0.6/-0.6`，相对D0=`+2.0/+4.2/+2.3/+1.7`。该完整点纳入描述性轨迹，不能因
+终止决定而遗漏。
+
+q-only最终为`80/120`完整epoch、`8/12`正式评测、无checkpoint、GPU空闲、严格异常0、formal tracked
+0/0；train-log/runner SHA256=
+`54b55ba423db444958a0550f22667c60f9261401529b8832496325e0e06bc3b3`/
+`ae57c702b1e0b0c67859c7916fd1963e1536594dd05643063e76bac90ae6b606`。主PID退出后遗留的5个孤儿
+DataLoader worker经精确PPID/命令核验后清理，CUDA最终为空。
+
+**决策**：q-only永久封板为`USER-DIRECTED STOP / E120 VOID / NO RESUME`，text-shuffle永久记为
+`NO-START BY USER PRIORITY`。exp413最终判`PERFORMANCE GO / JOINT ATTRIBUTION FAILED`：性能增益事实
+保留，但pose+CLIP联合机制归因未成立且不再补证。停止PSCCR路线，GPU转交下一创新点。

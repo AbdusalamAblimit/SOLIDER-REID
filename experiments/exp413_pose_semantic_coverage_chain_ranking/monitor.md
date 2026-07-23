@@ -632,3 +632,28 @@ e10--e70共`7`个正式评测点，当前进入e80 iter160；output中无checkpo
 formal tracked worktree/index=`0/0`。终止后必须记为`USER-DIRECTED STOP / E120 VOID / NO RESUME`，
 保留e10--e70全部描述性轨迹但不得作为e120裁决或与其他臂拼点；text-shuffle改记为
 `NO-START BY USER PRIORITY`。
+
+## 2026-07-23：q-only e80完成后按用户指令终止并封存
+
+终止理由落盘与提交期间，q-only自然完成了e80剩余训练及正式评测；该点在主PID收到TERM前已经完整写入
+runner，因此必须保留。q-only e80=`58.1/70.5/81.8/85.7`。同epoch sealed v3 correct=
+`58.8/70.7/82.2/86.3`，sealed pose-only=`58.6/70.5/82.0/86.0`，sealed zero-owner=
+`58.6/71.6/82.4/86.3`，sealed clean D0=`56.1/66.3/79.5/84.0`；因此q-only−correct=
+`-0.7/-0.2/-0.4/-0.6`，q-only−pose-only=`-0.5/+0.0/-0.2/-0.3`，q-only−zero-owner=
+`-0.5/-1.1/-0.6/-0.6`，q-only−D0=`+2.0/+4.2/+2.3/+1.7`。q-only四项低于correct与
+zero-owner；相对pose-only仅R1持平、其余三项为负；四项仍高于D0。
+
+主PID=`77649`在命令匹配核验后收到TERM并于2秒内退出。主进程退出后遗留5个PPID=`1`的孤儿DataLoader
+worker，旧CUDA上下文持续占用约`7,060 MiB`；逐一核验其PPID和完整q-only命令后仅对这5个孤儿发送TERM，
+2秒内全部退出。最终无q-only匹配训练进程、无CUDA compute，GPU=`2 MiB / 0%`。
+
+最终完整性为`80/120`个完整epoch、e10--e80共`8/12`个正式评测点、无checkpoint，runner/train严格
+异常=`0/0`，formal HEAD=`add6adae4d192da4c44bf44120dd571f0dfe14e1`且tracked
+worktree/index=`0/0`。train-log/runner SHA256依次为：
+
+- `54b55ba423db444958a0550f22667c60f9261401529b8832496325e0e06bc3b3`；
+- `ae57c702b1e0b0c67859c7916fd1963e1536594dd05643063e76bac90ae6b606`。
+
+q-only永久封存为`USER-DIRECTED STOP / E120 VOID / NO RESUME`；e10--e80仅是完整保留的描述性轨迹，
+不得作e120裁决、续训、补跑、覆盖或跨臂拼点。text-shuffle永久记为`NO-START BY USER PRIORITY`。
+exp413最终状态=`PERFORMANCE GO / JOINT ATTRIBUTION FAILED`，停止PSCCR路线并切换下一创新点。
