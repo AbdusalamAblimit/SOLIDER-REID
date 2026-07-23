@@ -138,3 +138,11 @@ correct自然完成e10=`28.6 mAP / 38.1 R1 / 53.7 R5 / 60.7 R10`；同epoch seal
 e10仅mAP微高宿主、R1持平，R5/R10微低，且四项低于D0；这是早期正式点，不能据此作e120性能或机制裁决。
 最新已进入e13，wrapper/训练主PID存活，唯一CUDA compute约`7064 MiB / 42%`，runner/train严格异常=`0`，
 formal tracked worktree/index=`0/0`。当前=`CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：e18健康检查
+
+- e17自然完成，最新=`e18 iter80/227`，loss=`2.470`、pose=`0.578`、acc=`0.654`；
+- e18首批PSCIR `loss/zero/region=0.021884/0.020508/0.023261`，正负距离保持分离；
+- wrapper/训练主PID存活，唯一CUDA compute约`7066 MiB / 43%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 尚未到e20正式点，当前=`CONTINUE TO NATURAL E120`。
