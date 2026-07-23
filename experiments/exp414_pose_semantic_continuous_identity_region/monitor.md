@@ -626,3 +626,10 @@ e70时pose-only相对correct为mAP微正、R1/R5/R10微负；核心mAP/R1继续�
 pose-only。读取时最新=`e72 iter140/227`，wrapper/训练主PID存活，唯一CUDA compute约
 `7064 MiB / 42%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：pose-only e77健康检查
+
+- 最新=`e77 iter200/227`，loss=`0.113`、pose=`0.463`、acc=`0.997`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7064 MiB / 42%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e70，当前=`CONTINUE TO NATURAL E120`。
