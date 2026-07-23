@@ -284,3 +284,10 @@ e70相对zero-owner的mAP微正、R1仍负，R5/R10为正；相对D0四项持续
 不能用高阶CMC优势替代。读取时最新=`e72 iter180/227`，wrapper/训练主PID存活，唯一CUDA compute约
 `7078 MiB / 73%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`。当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：e78健康检查
+
+- e77自然完成，最新=`e78 iter40/227`，loss=`0.125`、pose=`0.462`、acc=`0.997`；
+- e78首批zero/region均打印为`0.000000`，但epoch累计loss有限且严格异常正则未命中；
+- wrapper/训练主PID存活，唯一CUDA compute约`7078 MiB / 42%`，formal tracked worktree/index=`0/0`；
+- 尚未到e80正式点，当前=`CONTINUE TO NATURAL E120`。
