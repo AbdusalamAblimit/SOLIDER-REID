@@ -545,3 +545,18 @@ R5低`0.1`，且四项高于D0。该点继续补全control轨迹，不改变pose
 早停。读取时已进入e21 iter140，主PID=`77649`仍为唯一CUDA compute，GPU约`7,078 MiB / 55%`，
 runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`；formal另有运行生成的36个未跟踪
 `__pycache__/*.pyc`，不涉及跟踪代码或索引。q-only继续冻结运行，text-shuffle保持`NO-START`。
+
+## 2026-07-23：q-only e30正式评测
+
+q-only原始runner读取结果=`51.1/61.8/75.5/80.2`。同epoch sealed v3 correct=
+`51.1/61.7/74.9/80.4`，sealed pose-only=`51.0/61.8/75.2/80.8`，sealed zero-owner=
+`49.2/60.3/75.0/80.0`，sealed clean D0=`46.6/56.2/71.3/76.4`；因此q-only−correct=
+`+0.0/+0.1/+0.6/-0.2`，q-only−pose-only=`+0.1/+0.0/+0.3/-0.6`，q-only−zero-owner=
+`+1.9/+1.5/+0.5/+0.2`，q-only−D0=`+4.5/+5.6/+4.2/+3.8`。
+
+e30时q-only与correct的mAP持平，R1/R5略高而R10低`0.2`；相对pose-only则mAP/R5略高、R1持平、R10
+低`0.6`，并四项严格胜zero-owner与D0。该混合点不得选择性解释为CLIP独立贡献，也不改变pose-only已经
+阻断最终科学GO的事实。首次SSH读取有一次无输出瞬断，重连后确认主机和PID均连续存活，不能误记为训练中断。
+读取时e31已完成，主PID=`77649`仍为唯一CUDA compute，GPU约`7,078 MiB / 46%`，runner/train严格
+异常=`0/0`，formal tracked worktree/index=`0/0`；36个运行生成的未跟踪pyc保持不动。q-only继续冻结
+自然运行，text-shuffle保持`NO-START`。
