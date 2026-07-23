@@ -125,3 +125,16 @@ OUTPUT_DIR启动correct正式e120；只有correct性能GO后才串行启动match
 - wrapper/训练主PID存活，唯一CUDA compute约`6994 MiB / 43%`，runner/train严格异常=`0`，formal
   HEAD保持`c6739b402a9e9a16f2427324536251e5ed059598`且tracked worktree/index=`0/0`；
 - 尚未到首个正式评测点，不作性能判断。当前=`CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：correct e10首个正式评测
+
+correct自然完成e10=`28.6 mAP / 38.1 R1 / 53.7 R5 / 60.7 R10`；同epoch sealed zero-owner=
+`28.4/38.1/53.9/60.8`，sealed clean D0=`33.4/42.7/59.8/65.2`。rounded四项差为：
+
+| epoch | PSCIR correct | zero-owner | clean D0 | Δzero-owner | ΔD0 |
+|---|---|---|---|---|---|
+| 10 | 28.6/38.1/53.7/60.7 | 28.4/38.1/53.9/60.8 | 33.4/42.7/59.8/65.2 | +0.2/+0.0/-0.2/-0.1 | -4.8/-4.6/-6.1/-4.5 |
+
+e10仅mAP微高宿主、R1持平，R5/R10微低，且四项低于D0；这是早期正式点，不能据此作e120性能或机制裁决。
+最新已进入e13，wrapper/训练主PID存活，唯一CUDA compute约`7064 MiB / 42%`，runner/train严格异常=`0`，
+formal tracked worktree/index=`0/0`。当前=`CONTINUE TO NATURAL E120`。

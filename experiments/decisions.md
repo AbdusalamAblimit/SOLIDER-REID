@@ -6583,3 +6583,7 @@ Stage-3/norm3梯度`28/28` finite nonzero、第5次原生GradScaler真实更新�
 该启动决策已执行：correct从fresh OUTPUT_DIR无恢复启动，首批zero-owner/region路径与四control改变均符合合同，
 当前唯一CUDA训练正常。**运行裁决不变**：必须自然到e120并保留e10/20/.../120全部四项指标，不以任何中间点
 提前停止或改配方。
+
+e10首个正式点=`28.6/38.1/53.7/60.7`，相对zero-owner=`+0.2/+0.0/-0.2/-0.1`，相对clean D0=
+`-4.8/-4.6/-6.1/-4.5`。当前既未形成对宿主的四项优势，也明显落后D0；但预注册唯一裁决点仍是自然e120，
+因此**决策**=`CONTINUE / NO EARLY STOP / NO RECIPE CHANGE`。

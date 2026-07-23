@@ -3630,3 +3630,8 @@ correct已按冻结formal、seed1234与fresh OUTPUT_DIR正式启动，无checkpo
 `loss/zero/region=2.313745/1.970790/2.656701`，四个control在正式路径仍真实改变topology。最新
 `e1 iter80/227`，唯一CUDA compute、严格异常0。状态更新为
 `CORRECT RUNNING / E120 REQUIRED / NO INTERMEDIATE EARLY STOP`。
+
+首个正式点e10 PSCIR correct=`28.6/38.1/53.7/60.7`；同epoch sealed zero-owner=
+`28.4/38.1/53.9/60.8`、clean D0=`33.4/42.7/59.8/65.2`，对应差值分别为
+`+0.2/+0.0/-0.2/-0.1`与`-4.8/-4.6/-6.1/-4.5`。e10只保留为早期轨迹，不触发早停或性能裁决；
+训练已继续进入e13。
