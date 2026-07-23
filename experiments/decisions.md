@@ -6637,3 +6637,21 @@ correct自然e120=`59.2/70.7/82.7/86.3`，相对zero-owner=`+0.3/+0.4/+0.8/+0.1`
 
 fresh pose-only启动决策已执行，正式路径打印`control=pose_only`且首批zero-owner exact；**运行决策**=
 `NATURAL E120 / NO INTERMEDIATE STOP / NO PARALLEL CONTROL`。
+
+### [2026-07-23] 决策：exp414 pose-only自然封板，联合归因必要条件失败
+
+pose-only自然e120=`59.2/70.8/82.5/86.4`，相对同epoch sealed correct=
+`+0.0/+0.1/-0.2/+0.1`，相对zero-owner=`+0.3/+0.5/+0.6/+0.2`，相对clean D0=
+`+1.6/+3.1/+1.7/+1.8`。correct的mAP仅与pose-only持平，R1还低`0.1`，因此“correct在mAP/R1同时
+严格胜全部matched controls”的预注册必要条件已经不可恢复。
+
+pose-only自然`120/120`、评测`12/12`、严格异常0、`TRAIN_EXIT=0`，退出后GPU空闲，formal tracked
+worktree/index=`0/0`。checkpoint/train-log/runner SHA256=
+`a494c06f630d79cc0588a3d29937a195e98ab17c8ad7d3ca8489cf39d5914a21`/
+`af3d8c082abd13d578e332cb0a5fba3b1e3ed6d2b0513250e201c58ffdc5f0ab`/
+`38693d1d83639ea6b0b0c973121d8ccf15a74b74fca8293d70c15922e826c31d`。
+
+**决策**：exp414保留`PERFORMANCE GO`，联合归因更新为
+`POSE AXIS ATTRIBUTION FAILED / JOINT ATTRIBUTION FAILED`。pose-only永久封存，禁止重跑、续训、覆盖或
+删除不利点。按照本实验预注册，余下q-only、text-shuffle、all-edges仍严格串行自然跑满e120以补全反事实证据；
+下一步只以同一formal/seed/recipe、fresh OUTPUT_DIR、无恢复启动q-only。

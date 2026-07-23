@@ -3687,3 +3687,16 @@ correct自然e120=`59.2/70.7/82.7/86.3`；相对sealed zero-owner=`+0.3/+0.4/+0.
 pose-only现已从同一frozen formal与fresh OUTPUT_DIR无恢复启动；首批
 `loss/zero/region=2.269678/1.970790/2.568565`，zero-owner首批与correct臂exact。当前唯一CUDA任务、严格异常0，
 状态=`POSE-ONLY RUNNING / ATTRIBUTION PENDING`。
+
+pose-only已自然e120=`59.2/70.8/82.5/86.4`；相对sealed correct=
+`+0.0/+0.1/-0.2/+0.1`，相对zero-owner=`+0.3/+0.5/+0.6/+0.2`，相对clean D0=
+`+1.6/+3.1/+1.7/+1.8`。correct的mAP与pose-only持平且R1低`0.1`，没有满足“mAP/R1同时严格胜每个
+matched control”的预注册必要条件；exp414因此保留`PERFORMANCE GO`，但
+`POSE AXIS ATTRIBUTION FAILED / JOINT ATTRIBUTION FAILED`。
+
+pose-only运行自然退出，`120/120`、评测`12/12`、严格异常0、`TRAIN_EXIT=0`、GPU空闲、formal tracked
+worktree/index=`0/0`；checkpoint/train-log/runner SHA256=
+`a494c06f630d79cc0588a3d29937a195e98ab17c8ad7d3ca8489cf39d5914a21`/
+`af3d8c082abd13d578e332cb0a5fba3b1e3ed6d2b0513250e201c58ffdc5f0ab`/
+`38693d1d83639ea6b0b0c973121d8ccf15a74b74fca8293d70c15922e826c31d`。pose-only永久封存；余下
+q-only、text-shuffle、all-edges仍按预注册顺序自然e120补全证据，下一步只启动fresh q-only。
