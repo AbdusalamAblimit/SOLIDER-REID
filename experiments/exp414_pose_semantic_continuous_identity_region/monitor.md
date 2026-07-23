@@ -428,3 +428,18 @@ correct自然完成e120=`59.2 mAP / 70.7 R1 / 82.7 R5 / 86.3 R10`；同epoch sea
 
 correct产物永久封存，禁止修改、覆盖、续训或重跑。下一步按预注册以同一formal/seed/recipe和fresh OUTPUT_DIR
 串行启动`pose_only`；在其运行期间不启动其他CUDA任务。
+
+## 2026-07-23：pose-only matched control fresh启动
+
+- output=`/home/afr/reid-clean/logs/exp414-pscir-pose-only-s1234-v1`，runner=
+  `/home/afr/reid-clean/train-logs/exp414-pscir-pose-only-s1234-v1.runner.log`，启动前均不存在；
+- frozen formal、config、seed1234与recipe不变，只命令行切换
+  `MODEL.TAPF.PSCIR_CONTROL_MODE=pose_only`并覆盖fresh OUTPUT_DIR，无checkpoint恢复；
+- wrapper主PID=`144432`，训练主PID=`144437`；唯一CUDA compute约`6992 MiB / 42%`，8个同命令子进程为
+  DataLoader workers；
+- 首批PSCIR `loss/zero/region=2.269678/1.970790/2.568565`，
+  `positive/negative/segment=47.240055/57.413406/58.243492`，edge-weight=
+  `[6.546875,6.765625,6.6875]`；zero-owner首批与correct臂exact；
+- 最新=`e1 iter20/227`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`。
+
+当前=`POSE-ONLY RUNNING / NATURAL E120 REQUIRED`；不得并行启动q-only或修改任何运行内容。

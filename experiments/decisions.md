@@ -6634,3 +6634,6 @@ correct自然e120=`59.2/70.7/82.7/86.3`，相对zero-owner=`+0.3/+0.4/+0.8/+0.1`
 **决策**：exp414进入`PERFORMANCE GO / ATTRIBUTION PENDING`，永久封存correct，禁止重跑/续训/覆盖；按原顺序
 严格串行启动`pose_only→q_only→text_shuffle→all_edges`。当前只授权fresh pose-only，后续controls不得并行，
 不得重跑合同或修改MST、temperature、edge公式、loss比例、seed或recipe。
+
+fresh pose-only启动决策已执行，正式路径打印`control=pose_only`且首批zero-owner exact；**运行决策**=
+`NATURAL E120 / NO INTERMEDIATE STOP / NO PARALLEL CONTROL`。

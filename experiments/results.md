@@ -3683,3 +3683,7 @@ correct自然e120=`59.2/70.7/82.7/86.3`；相对sealed zero-owner=`+0.3/+0.4/+0.
 `46e6290a0883fe6bf7e5d005da7ffea5f4e058f9cf36b95d7f62ac0a4a7e8513`/
 `328febda29a1061b30829b6d3b89478707773a5c3ddedef348bdd8152d1d1e1c`/
 `4a18ca28b8c565fafa2c3874f2098c53cd935c22fb07a9c5580000454524abfb`。下一步只串行启动pose-only。
+
+pose-only现已从同一frozen formal与fresh OUTPUT_DIR无恢复启动；首批
+`loss/zero/region=2.269678/1.970790/2.568565`，zero-owner首批与correct臂exact。当前唯一CUDA任务、严格异常0，
+状态=`POSE-ONLY RUNNING / ATTRIBUTION PENDING`。
