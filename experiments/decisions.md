@@ -6404,3 +6404,13 @@ pose-only e90=`59.5/70.7/82.8/87.1`，相对同epoch sealed v3 correct=
 
 **决策**：中后期双核心证据继续有利于correct，但不得选择性省略R10反向、e50四项反向或提前判科学GO。
 pose-only继续冻结运行到自然e120；q-only与text-shuffle保持`NO-START`，最终仍只按e120双核心关系。
+
+### [2026-07-23] 决策：exp413 pose-only e100双核心连续第五点低于correct
+
+pose-only e100=`59.1/70.0/81.8/85.7`，相对同epoch sealed v3 correct=
+`-0.1/-0.4/-0.4/-0.5`，相对zero-owner=`+0.3/-0.5/-0.4/-0.4`，相对clean D0=
+`+2.2/+2.9/+2.2/+1.9`。correct重新四项领先pose-only，且从e60到e100的五个正式点均同时严格领先mAP/R1；
+pose-only相对zero-owner仍只有mAP正差。
+
+**决策**：当前中后期轨迹持续支持correct相对pose-only，但不得覆盖e50反向证据或将连续中间点替代e120裁决。
+pose-only继续冻结运行，不早停、不调参、不删点；q-only与text-shuffle保持`NO-START`。
