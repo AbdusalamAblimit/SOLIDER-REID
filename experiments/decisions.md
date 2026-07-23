@@ -6364,3 +6364,13 @@ mAP/R10略高、R1持平、R5低`0.8`，仍须保留完整混合关系。
 
 **决策**：e50显著提高联合归因失败风险，但预注册科学门只使用自然e120结果。禁止早停pose-only、修改机制或参数、
 删除不利点，q-only与text-shuffle继续`NO-START`；pose-only保持冻结并自然运行至e120。
+
+### [2026-07-23] 决策：exp413 pose-only e60再次四项低于correct
+
+pose-only e60=`57.7/69.1/81.2/84.7`，相对同epoch sealed v3 correct=
+`-0.5/-0.9/-1.2/-1.1`，相对zero-owner=`+0.1/-1.2/+0.2/-0.5`，相对clean D0=
+`+2.6/+3.0/+2.2/+1.4`。correct重新在四项严格领先pose-only，e50的pose-only四项优势没有延续；但pose-only
+相对zero-owner仍有mAP/R5微正，完整证据不是单向关系。
+
+**决策**：e60恢复有利联合归因方向，但不覆盖e10--e50混合与反向轨迹，也不触发提前科学GO。pose-only继续冻结
+运行至自然e120，禁止早停、调参或删点；q-only与text-shuffle保持`NO-START`。

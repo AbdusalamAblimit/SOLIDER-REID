@@ -405,3 +405,15 @@ e50时pose-only四项均严格高于correct，mAP/R1双核心关系从e40的corr
 归因中间证据；相对zero-owner则mAP/R10为正、R1持平、R5为负。读取时已进入e53 iter60，主PID=`40519`
 仍为唯一CUDA compute，GPU约`7,072 MiB / 45%`，runner/train严格异常=`0/0`，formal tracked
 worktree/index=`0/0`。不得据此早停或删点，继续冻结运行至自然e120。
+
+## 2026-07-23：pose-only e60正式评测
+
+pose-only原始runner读取结果=`57.7/69.1/81.2/84.7`。同epoch sealed v3 correct=
+`58.2/70.0/82.4/85.8`，sealed zero-owner=`57.6/70.3/81.0/85.2`，sealed clean D0=
+`55.1/66.1/79.0/83.3`；因此pose-only−correct=`-0.5/-0.9/-1.2/-1.1`，pose-only−zero-owner=
+`+0.1/-1.2/+0.2/-0.5`，pose-only−D0=`+2.6/+3.0/+2.2/+1.4`。
+
+e60时correct再次在mAP/R1/R5/R10四项严格领先pose-only，e50的四项反超没有连续保持；但pose-only相对宿主仍
+呈mAP/R5略正、R1/R10为负的混合关系，且e50不利点不得删除。读取时已进入e64 iter20，主PID=`40519`仍为
+唯一CUDA compute，GPU约`7,084 MiB / 42%`，runner/train严格异常=`0/0`，formal tracked
+worktree/index=`0/0`。继续冻结运行，不提前裁决或启动后续controls。
