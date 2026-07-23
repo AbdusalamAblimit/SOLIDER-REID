@@ -655,3 +655,10 @@ e80时pose-only相对correct四项均领先，是继e40后第二个明确不利�
 中途裁决或早停。读取时e82已自然完成且e83首批已开始，wrapper/训练主PID存活，唯一CUDA compute约
 `7050 MiB / 42%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：pose-only e88健康检查
+
+- 最新=`e88 iter60/227`，loss=`0.122`、pose=`0.461`、acc=`0.997`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7050 MiB / 73%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e80，当前=`CONTINUE TO NATURAL E120`。
