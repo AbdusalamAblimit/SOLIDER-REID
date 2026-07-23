@@ -6481,3 +6481,13 @@ R1/R5略高但R10略低；相对pose-only为mAP/R5正、R1平、R10负，不能�
 
 **决策**：完整保留e30的双向关系，不把R1/R5正差解释为独立科学证据，也不以mAP持平或R10负差早停。pose-only
 已使最终科学GO必要条件失败的裁决不变；q-only仍须自然完成e120，text-shuffle继续`NO-START`。
+
+### [2026-07-23] 决策：exp413 q-only e40四项低于correct与宿主
+
+q-only e40=`53.9/65.7/78.6/83.7`，相对同epoch sealed v3 correct=
+`-1.7/-1.0/-1.6/-0.6`，相对sealed pose-only=`-1.0/-0.7/-1.1/+0.3`，相对zero-owner=
+`-1.1/-0.5/-1.2/-0.7`，相对clean D0=`+3.9/+5.0/+2.4/+2.7`。q-only四项低于correct与宿主，
+相对pose-only仅R10为正；e30的mAP持平、R1/R5略高correct关系未连续保持。
+
+**决策**：e40是不利于q-only的真实反转，必须保留，但不能用单个中间点提前裁决或省略后续轨迹。q-only继续
+冻结自然运行至e120，不早停、不调参、不删点；text-shuffle保持`NO-START`。

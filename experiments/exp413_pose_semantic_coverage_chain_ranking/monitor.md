@@ -560,3 +560,17 @@ e30时q-only与correct的mAP持平，R1/R5略高而R10低`0.2`；相对pose-only
 读取时e31已完成，主PID=`77649`仍为唯一CUDA compute，GPU约`7,078 MiB / 46%`，runner/train严格
 异常=`0/0`，formal tracked worktree/index=`0/0`；36个运行生成的未跟踪pyc保持不动。q-only继续冻结
 自然运行，text-shuffle保持`NO-START`。
+
+## 2026-07-23：q-only e40正式评测
+
+q-only原始runner读取结果=`53.9/65.7/78.6/83.7`。同epoch sealed v3 correct=
+`55.6/66.7/80.2/84.3`，sealed pose-only=`54.9/66.4/79.7/83.4`，sealed zero-owner=
+`55.0/66.2/79.8/84.4`，sealed clean D0=`50.0/60.7/76.2/81.0`；因此q-only−correct=
+`-1.7/-1.0/-1.6/-0.6`，q-only−pose-only=`-1.0/-0.7/-1.1/+0.3`，q-only−zero-owner=
+`-1.1/-0.5/-1.2/-0.7`，q-only−D0=`+3.9/+5.0/+2.4/+2.7`。
+
+e40时q-only四项严格低于correct与zero-owner；相对pose-only仅R10高`0.3`，其余三项为负；同时仍四项
+高于D0。e30时q-only相对correct的mAP持平、R1/R5略高关系并未保持，该反转必须完整保留，但中间点不触发
+早停。读取时已进入e42 iter80，主PID=`77649`仍为唯一CUDA compute，GPU约`7,076 MiB / 47%`，
+runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`；36个运行生成的未跟踪pyc保持不动。
+q-only继续冻结自然运行，text-shuffle保持`NO-START`。
