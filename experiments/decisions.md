@@ -6491,3 +6491,14 @@ q-only e40=`53.9/65.7/78.6/83.7`，相对同epoch sealed v3 correct=
 
 **决策**：e40是不利于q-only的真实反转，必须保留，但不能用单个中间点提前裁决或省略后续轨迹。q-only继续
 冻结自然运行至e120，不早停、不调参、不删点；text-shuffle保持`NO-START`。
+
+### [2026-07-23] 决策：exp413 q-only e50四项反超correct
+
+q-only e50=`55.5/67.0/79.7/84.0`，相对同epoch sealed v3 correct=
+`+0.3/+1.6/+0.8/+0.3`，相对sealed pose-only=`-0.1/+0.9/+0.5/+0.2`，相对zero-owner=
+`+0.4/+0.9/-0.3/+0.3`，相对clean D0=`+3.4/+4.2/+2.7/+2.1`。q-only四项反超correct，e40
+四项落后的关系在e50完全逆转；相对pose-only仅mAP略低，其余三项更高。
+
+**决策**：e50进一步表明中间轨迹高度混合，且是不利于联合归因的真实点，必须完整保留。pose-only e120已使
+最终科学GO失败的结论不变；q-only仍继续冻结至自然e120，不早停、不调参、不删点，text-shuffle保持
+`NO-START`。

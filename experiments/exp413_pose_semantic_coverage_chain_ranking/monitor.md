@@ -574,3 +574,19 @@ e40时q-only四项严格低于correct与zero-owner；相对pose-only仅R10高`0.
 早停。读取时已进入e42 iter80，主PID=`77649`仍为唯一CUDA compute，GPU约`7,076 MiB / 47%`，
 runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`；36个运行生成的未跟踪pyc保持不动。
 q-only继续冻结自然运行，text-shuffle保持`NO-START`。
+
+## 2026-07-23：q-only e50正式评测
+
+q-only原始runner读取结果=`55.5/67.0/79.7/84.0`。同epoch sealed v3 correct=
+`55.2/65.4/78.9/83.7`，sealed pose-only=`55.6/66.1/79.2/83.8`，sealed zero-owner=
+`55.1/66.1/80.0/83.7`，sealed clean D0=`52.1/62.8/77.0/81.9`；因此q-only−correct=
+`+0.3/+1.6/+0.8/+0.3`，q-only−pose-only=`-0.1/+0.9/+0.5/+0.2`，q-only−zero-owner=
+`+0.4/+0.9/-0.3/+0.3`，q-only−D0=`+3.4/+4.2/+2.7/+2.1`。
+
+e50时q-only四项严格反超correct，e40的四项落后在下一正式点完全反转；相对pose-only仅mAP低`0.1`，
+其余三项为正；相对zero-owner则mAP/R1/R10为正、R5低`0.3`，并四项高于D0。这是不利于联合归因的中间
+证据，但最终科学GO此前已由pose-only的e120 mAP持平阻断，当前仍不得选择性删点或早停。首次SSH读取再次
+无输出，重连确认主机与PID连续存活，不能误记为训练中断。读取时已进入e52 iter200，主PID=`77649`仍为
+唯一CUDA compute，GPU约`7,072 MiB / 46%`，runner/train严格异常=`0/0`，formal tracked
+worktree/index=`0/0`；36个运行生成的未跟踪pyc保持不动。q-only继续冻结自然运行，text-shuffle保持
+`NO-START`。
