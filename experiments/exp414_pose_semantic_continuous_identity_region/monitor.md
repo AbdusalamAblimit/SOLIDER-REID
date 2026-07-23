@@ -451,3 +451,10 @@ correct产物永久封存，禁止修改、覆盖、续训或重跑。下一步�
 - wrapper/训练主PID存活，唯一CUDA compute约`6994 MiB / 42%`，runner/train严格异常=`0`，formal
   tracked worktree/index=`0/0`；
 - 尚未到e10正式点，当前=`CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：pose-only e9健康检查
+
+- 最新=`e9 iter140/227`，loss=`5.512`、pose=`0.793`、acc=`0.134`；
+- wrapper/训练主PID存活，唯一CUDA compute约`6994 MiB / 42%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 尚未到e10正式点，当前=`CONTINUE TO NATURAL E120`。
