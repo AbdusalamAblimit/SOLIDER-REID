@@ -116,3 +116,12 @@ OUTPUT_DIR启动correct正式e120；只有correct性能GO后才串行启动match
 - heartbeat复核最新=`e2 iter160/227`，loss=`6.979`；wrapper/训练主PID存活，唯一CUDA compute约
   `6994 MiB / 42%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`。当前判断=
   `CONTINUE TO NATURAL E120`，不因中间点早停。
+
+## 2026-07-23：e7完成 / e8启动健康检查
+
+- e7自然完成，time=`169.978s`、speed=`79.4 samples/s`；最新为e8首批；
+- e8首批PSCIR `loss/zero/region=0.074353/0.053594/0.095112`，
+  `positive/negative/segment=23.412945/42.908546/42.031464`；
+- wrapper/训练主PID存活，唯一CUDA compute约`6994 MiB / 43%`，runner/train严格异常=`0`，formal
+  HEAD保持`c6739b402a9e9a16f2427324536251e5ed059598`且tracked worktree/index=`0/0`；
+- 尚未到首个正式评测点，不作性能判断。当前=`CONTINUE TO NATURAL E120`。
