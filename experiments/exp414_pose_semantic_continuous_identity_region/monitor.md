@@ -160,3 +160,10 @@ correct自然完成e20=`47.1 mAP / 56.7 R1 / 71.4 R5 / 76.9 R10`；同epoch seal
 e20相对两个关键对照均四项领先，扭转e10的混合/落后关系；该点是积极中间证据，但不能提前确认性能GO或机制
 归因。读取时最新=`e23 iter120/227`，wrapper/训练主PID存活，唯一CUDA compute约`7074 MiB / 58%`，
 runner/train严格异常=`0`，formal tracked worktree/index=`0/0`。当前=`CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：e28健康检查
+
+- 最新=`e28 iter180/227`，loss=`0.587`、pose=`0.490`、acc=`0.962`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7074 MiB / 62%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 尚未到e30正式点，不作新增性能判断。当前=`CONTINUE TO NATURAL E120`。
