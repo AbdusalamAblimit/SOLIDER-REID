@@ -6587,3 +6587,7 @@ Stage-3/norm3梯度`28/28` finite nonzero、第5次原生GradScaler真实更新�
 e10首个正式点=`28.6/38.1/53.7/60.7`，相对zero-owner=`+0.2/+0.0/-0.2/-0.1`，相对clean D0=
 `-4.8/-4.6/-6.1/-4.5`。当前既未形成对宿主的四项优势，也明显落后D0；但预注册唯一裁决点仍是自然e120，
 因此**决策**=`CONTINUE / NO EARLY STOP / NO RECIPE CHANGE`。
+
+e20=`47.1/56.7/71.4/76.9`，相对zero-owner=`+1.5/+1.7/+0.8/+1.1`，相对clean D0=
+`+4.9/+4.3/+3.8/+2.9`，两组比较均四项为正。该反转提高性能GO可能性，但中间点不能改变预注册门；
+**决策保持**=`CONTINUE / NO EARLY GO / NO RECIPE CHANGE`。

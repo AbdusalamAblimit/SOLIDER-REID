@@ -146,3 +146,17 @@ formal tracked worktree/index=`0/0`。当前=`CONTINUE TO NATURAL E120`。
 - wrapper/训练主PID存活，唯一CUDA compute约`7066 MiB / 43%`，runner/train严格异常=`0`，formal
   tracked worktree/index=`0/0`；
 - 尚未到e20正式点，当前=`CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：correct e20正式评测
+
+correct自然完成e20=`47.1 mAP / 56.7 R1 / 71.4 R5 / 76.9 R10`；同epoch sealed zero-owner=
+`45.6/55.0/70.6/75.8`，sealed clean D0=`42.2/52.4/67.6/74.0`。完整rounded轨迹更新为：
+
+| epoch | PSCIR correct | zero-owner | clean D0 | Δzero-owner | ΔD0 |
+|---|---|---|---|---|---|
+| 10 | 28.6/38.1/53.7/60.7 | 28.4/38.1/53.9/60.8 | 33.4/42.7/59.8/65.2 | +0.2/+0.0/-0.2/-0.1 | -4.8/-4.6/-6.1/-4.5 |
+| 20 | 47.1/56.7/71.4/76.9 | 45.6/55.0/70.6/75.8 | 42.2/52.4/67.6/74.0 | +1.5/+1.7/+0.8/+1.1 | +4.9/+4.3/+3.8/+2.9 |
+
+e20相对两个关键对照均四项领先，扭转e10的混合/落后关系；该点是积极中间证据，但不能提前确认性能GO或机制
+归因。读取时最新=`e23 iter120/227`，wrapper/训练主PID存活，唯一CUDA compute约`7074 MiB / 58%`，
+runner/train严格异常=`0`，formal tracked worktree/index=`0/0`。当前=`CONTINUE TO NATURAL E120`。
