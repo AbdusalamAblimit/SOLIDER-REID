@@ -6512,3 +6512,13 @@ e50四项领先的关系未连续保持；相对pose-only与zero-owner也均为�
 
 **决策**：完整保留e50到e60的反向变化，不用任一中间点选择性支持或反驳CLIP归因。最终科学GO失败的裁决
 不变；q-only继续冻结自然运行至e120，不早停、不调参、不删点，text-shuffle保持`NO-START`。
+
+### [2026-07-23] 决策：exp413 q-only e70相对correct再次混合
+
+q-only e70=`57.9/69.8/81.9/85.7`，相对同epoch sealed v3 correct=
+`-0.2/+0.3/-0.3/+0.0`，相对sealed pose-only=`+0.4/+1.7/+0.7/+0.7`，相对zero-owner=
+`+0.1/-0.4/+0.2/+0.2`，相对clean D0=`+2.5/+4.6/+2.4/+2.1`。q-only相对correct为mAP/R5负、
+R1正、R10平，同时四项胜pose-only；e60的四项负差未延续。
+
+**决策**：不把e70的R1正差选择性解释为q-only优势，也不把mAP/R5负差提前裁决为最终关系。完整保留连续
+反转，q-only继续冻结自然运行至e120，不早停、不调参、不删点；text-shuffle保持`NO-START`。

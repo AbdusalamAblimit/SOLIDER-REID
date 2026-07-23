@@ -605,3 +605,18 @@ R10高`0.1`，相对zero-owner仅R5为正，同时仍四项高于D0。该反转�
 严格异常，不能误记为训练中断。读取时已进入e63 iter80，主PID=`77649`仍为唯一CUDA compute，GPU约
 `7,082 MiB / 42%`，runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`；36个
 运行生成的未跟踪pyc保持不动。q-only继续冻结自然运行，text-shuffle保持`NO-START`。
+
+## 2026-07-23：q-only e70正式评测
+
+q-only原始runner读取结果=`57.9/69.8/81.9/85.7`。同epoch sealed v3 correct=
+`58.1/69.5/82.2/85.7`，sealed pose-only=`57.5/68.1/81.2/85.0`，sealed zero-owner=
+`57.8/70.2/81.7/85.5`，sealed clean D0=`55.4/65.2/79.5/83.6`；因此q-only−correct=
+`-0.2/+0.3/-0.3/+0.0`，q-only−pose-only=`+0.4/+1.7/+0.7/+0.7`，q-only−zero-owner=
+`+0.1/-0.4/+0.2/+0.2`，q-only−D0=`+2.5/+4.6/+2.4/+2.1`。
+
+e70时q-only相对correct为mAP/R5负、R1正、R10持平的混合关系，e60的四项负差未连续保持；q-only此点
+四项严格胜pose-only，相对zero-owner为三正一负，并四项胜D0。不得选择性用R1正差或mAP负差作联合归因
+裁决。读取命令因SSH响应慢在30秒先返回后台会话，随后同一会话正常完成，PID与日志连续，不能误记为中断。
+读取时已进入e73 iter160，主PID=`77649`仍为唯一CUDA compute，GPU约`7,086 MiB / 59%`，
+runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`；36个运行生成的未跟踪pyc保持不动。
+q-only继续冻结自然运行，text-shuffle保持`NO-START`。
