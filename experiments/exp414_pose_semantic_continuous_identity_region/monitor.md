@@ -167,3 +167,19 @@ runner/train严格异常=`0`，formal tracked worktree/index=`0/0`。当前=`CON
 - wrapper/训练主PID存活，唯一CUDA compute约`7074 MiB / 62%`，runner/train严格异常=`0`，formal
   tracked worktree/index=`0/0`；
 - 尚未到e30正式点，不作新增性能判断。当前=`CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：correct e30正式评测
+
+correct自然完成e30=`50.5 mAP / 62.0 R1 / 74.9 R5 / 79.9 R10`；同epoch sealed zero-owner=
+`49.2/60.3/75.0/80.0`，sealed clean D0=`46.6/56.2/71.3/76.4`。完整rounded轨迹更新为：
+
+| epoch | PSCIR correct | zero-owner | clean D0 | Δzero-owner | ΔD0 |
+|---|---|---|---|---|---|
+| 10 | 28.6/38.1/53.7/60.7 | 28.4/38.1/53.9/60.8 | 33.4/42.7/59.8/65.2 | +0.2/+0.0/-0.2/-0.1 | -4.8/-4.6/-6.1/-4.5 |
+| 20 | 47.1/56.7/71.4/76.9 | 45.6/55.0/70.6/75.8 | 42.2/52.4/67.6/74.0 | +1.5/+1.7/+0.8/+1.1 | +4.9/+4.3/+3.8/+2.9 |
+| 30 | 50.5/62.0/74.9/79.9 | 49.2/60.3/75.0/80.0 | 46.6/56.2/71.3/76.4 | +1.3/+1.7/-0.1/-0.1 | +3.9/+5.8/+3.6/+3.5 |
+
+e30相对zero-owner继续保持预注册核心mAP/R1优势，但R5/R10各低`0.1`；相对D0仍四项领先。完整保留混合
+结果，不把核心门扩写成四项全胜。读取时最新=`e33 iter200/227`，wrapper/训练主PID存活，唯一CUDA compute约
+`7078 MiB / 45%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`。当前=
+`CONTINUE TO NATURAL E120`。
