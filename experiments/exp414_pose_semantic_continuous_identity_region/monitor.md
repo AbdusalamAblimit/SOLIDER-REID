@@ -52,3 +52,14 @@ Stage-3/norm3 finite nonzero。复审=`PASS / 0B / 0H`。
 
 当前状态=`IMPLEMENTED / STATIC CHECK PASS / IMPLEMENTATION REVIEW PASS / UNIQUE PK64 CONTRACT NEXT /
 GPU IDLE`。尚无exp414合同或性能数字。
+
+## 2026-07-23：唯一runner首次启动在CUDA前micro退出
+
+- formal首冻HEAD=`f0bc9fec5feeca0819040f26f2d838b73e6be764`；
+- runner SHA256=`b1f0e807ba3691cf0d891952d7ab0bd0cf511e1a7051ff584a126fc933c0e34d`；
+- runner在`micro_oracle()`覆盖检查处退出，错误为远端旧版PyTorch不支持`Tensor.any(dim=(2,3))`；
+- 退出发生在dataloader、model与`torch.device("cuda",0)`执行前，GPU始终=`2 MiB / 0%`，因此没有真实PK64
+  batch、CUDA forward/backward或GradScaler update，分类=`PRE-CUDA MICRO FAIL / REAL PK64 NOT CONSUMED`。
+
+按合同规则只修致命兼容bug：等价改为连续两次`.any(dim=3).any(dim=2)`，不改公式、topology、control、loss或
+合同门。修复后更新formal HEAD与runner SHA，再启动唯一真实PK64；不把本次前置micro失败计作CUDA合同结果。

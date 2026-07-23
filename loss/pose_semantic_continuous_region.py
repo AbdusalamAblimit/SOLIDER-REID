@@ -168,7 +168,7 @@ def build_continuous_region_from_signals(
         covered = (
             selected_local[..., None]
             == torch.arange(3, device=labels.device).view(1, 1, 1, 1, 3)
-        ).any(dim=(2, 3))
+        ).any(dim=3).any(dim=2)
         if not bool(covered.all()):
             raise RuntimeError("PSCIR MST failed to cover three supports")
     anchor = torch.arange(batch, device=labels.device)
