@@ -2512,3 +2512,19 @@ prefix分别面对全部身份集合排序，长度3与zero-owner exact。正面
 该story目前只有设计资格。greedy coverage、prefix curriculum、multi-positive和listwise均不能写成贡献，且在线
 查新因网络超时仍需投稿前补齐。correct必须先自然e120在mAP/R1同时严格胜zero-owner，再同时严格胜pose-only、
 q-only与text-shuffle，才允许把“pose×CLIP互补support ordering”进入C类正面story；否则只记录负结果。
+
+exp413现已退出正面story。correct自然e120=`59.3/70.8/82.6/86.0`保留为相对zero-owner与clean D0的性能正事实；
+但pose-only e120=`59.3/70.1/82.1/86.2`与correct mAP持平，预注册联合归因门失败。q-only按用户指令在
+80/120终止，text-shuffle不启动；最终=`PERFORMANCE GO / JOINT ATTRIBUTION FAILED`。论文不得只展示correct而
+隐去pose-only持平，也不得把未完成control跨臂拼成e120结论。
+
+## 2026-07-23：exp414条件story——从“补一个点”转向连续身份区域
+
+PSCIR把PSC-JEPA/PC-MSC/CASD/CAVT共同暴露的不可识别性作为新问题：遮挡图缺失的具体身份纹理不能从单图唯一
+恢复，因此同ID多视图不再被压成一个teacher point、prototype或支持均值。严格LOO三support的student descriptor
+作为三个真实端点；pose与identity-free CLIP只决定两条合法跨视图插值边，anchor对由此形成的连续identity region
+进行全身份排序。推理仍为原RGB global descriptor，不读取pose、CLIP、support或新head。
+
+该story当前只是`C-CLASS CONDITIONAL`。连续set metric、image-set convex hull、概率embedding与MVI²P都构成强
+近邻，不能把线段/MST原子写成贡献；只有correct自然e120严格胜zero-owner和D0，并进一步胜pose-only、q-only、
+text-shuffle与all-edges，才允许把“pose×CLIP限定可识别身份区域拓扑”纳入正面论文故事。

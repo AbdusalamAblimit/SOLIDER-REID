@@ -6550,3 +6550,19 @@ DataLoader worker经精确PPID/命令核验后清理，CUDA最终为空。
 **决策**：q-only永久封板为`USER-DIRECTED STOP / E120 VOID / NO RESUME`，text-shuffle永久记为
 `NO-START BY USER PRIORITY`。exp413最终判`PERFORMANCE GO / JOINT ATTRIBUTION FAILED`：性能增益事实
 保留，但pose+CLIP联合机制归因未成立且不再补证。停止PSCCR路线，GPU转交下一创新点。
+
+### [2026-07-23] 决策：exp414选择PSCIR连续身份区域，不再预测缺失点
+
+历史去重覆盖了PCVT、SKC/PSC-JEPA/PC-MSC、CASD/CAVT与exp408--413。结论是“pose定位缺失槽、CLIP描述
+语义、同PID donor/token补出一个目标点”已经充分重合且多次失败；PSCCR的联合归因失败又说明继续调整support
+排序/权重不值得占用GPU。
+
+exp414选择PSCIR：复用sealed zero-owner的严格LOO三support与student空间，把三个真实descriptor连接为两段连续
+identity region。pose visibility与identity-free CLIP只定义三条边的joint状态差及maximum-spanning topology；
+不提供feature内容、不改classifier/forward/eval、不加projection或temperature。原zero-owner loss与continuous
+region loss固定等权，保持已证有效宿主。
+
+**决策**：当前只授权设计独立盲审，状态=`C-CLASS CONDITIONAL / IMPLEMENTATION NO-START / GPU IDLE`。
+盲审只拦截致命bug、变量混淆与旧机制同构；`0B/0H`后立即实现并只做一次真实PK64合同。correct自然e120若不在
+mAP/R1同时严格胜zero-owner与D0，则封板且matched controls不启动；若性能GO，再串行运行pose-only、q-only、
+text-shuffle与all-edges完成联合归因。

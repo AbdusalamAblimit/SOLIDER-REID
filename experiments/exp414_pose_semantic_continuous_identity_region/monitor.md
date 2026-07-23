@@ -1,0 +1,31 @@
+# exp414 PSCIR 监控记录
+
+## 2026-07-23：切换与设计冻结前状态
+
+- 用户明确要求停止exp413余下controls并立即进入下一创新点。
+- exp413已永久封板为`PERFORMANCE GO / JOINT ATTRIBUTION FAILED`；q-only为
+  `USER-DIRECTED STOP / E120 VOID / NO RESUME`，text-shuffle为`NO-START BY USER PRIORITY`。
+- 远端核验无训练/CUDA compute，GPU=`2 MiB / 0%`；exp413 formal tracked worktree/index=`0/0`。
+- 本地分支=`codex/solider-official-tapf-clean`，切换时HEAD=`34d241e8`；唯一未跟踪项为受保护用户文件
+  `experiments/exp411_pose_complete_multi_positive_set_ranking/创新性判断.md`，保持不动。
+
+## 历史去重结论
+
+已核对exp148 PCVT、exp109--142 feature completion、exp356 PC-MSC、exp361 PSC-JEPA、exp371 CASD、
+exp405 CAVT及exp408--413：
+
+1. “pose定位缺失槽 + CLIP定义语义 + 同PID donor/token补一个目标点”已被多条旧路线覆盖；
+2. PSC-JEPA明确暴露不可观测身份细节的point prediction会推动表征平滑并伤害ReID；
+3. 因此exp414不得做feature transport、point KD、prefix排序、owner加权或gradient routing。
+
+当前新对象为PSCIR：真实student support端点之间的连续identity region；pose×identity-free CLIP只决定合法
+连边拓扑。状态=`DESIGN WRITTEN / C-CLASS CONDITIONAL / INDEPENDENT REVIEW NEXT / GPU IDLE`。
+
+## 查新边界
+
+- arXiv精确查询`person re-identification + set-valued + occlusion`无直接结果；
+- GitHub窄检索`person re-identification + box/set embedding + occlusion`无直接仓库；
+- 检出的P2LR为UDA概率伪标签精炼，不是pose×CLIP LOO连续identity region；
+- 但概率embedding、image-set convex hull、MVI²P与set metric均为强近邻，不能据此声称首次。
+
+下一步只做独立设计盲审；盲审仅拦截致命bug、变量混淆或旧机制同构。`0B/0H`后才实现，GPU继续空闲。

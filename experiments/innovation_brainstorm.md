@@ -4351,3 +4351,31 @@ zero-owner集合对象拆成嵌套训练条件：先完成leave-one-position-out
 
 当前只能标记`C-CLASS CONDITIONAL`。在线检索超时使本轮不能做绝对新颖性声明；correct若不过zero-owner的e120
 mAP/R1双门，直接证明新增prefix对象不值得继续，禁止调prefix权重、序数或coverage公式救臂。
+
+### exp413封板后的创新结论
+
+correct自然e120=`59.3/70.8`虽然同时胜sealed zero-owner与clean D0，但pose-only自然e120=
+`59.3/70.1`，mAP与correct持平，联合归因必要门失败。q-only按用户资源优先级在80/120终止，
+text-shuffle不启动；exp413最终=`PERFORMANCE GO / JOINT ATTRIBUTION FAILED`。因此不能把correct的性能事实
+写成pose×CLIP贡献，也不能通过重调prefix、front、prompt、budget或补旧control救回。
+
+这个结果进一步否定“外部语义只要更精细地排序/加权同PID support就能获得所有权”。下一对象必须改变身份表示
+本身，同时避免回到已经失败的point completion：被遮挡图缺少的具体衣物纹理不可从单图唯一预测，合理目标不是
+猜一个完整点，而是表达多个真实同ID观察共同限定的兼容身份区域。
+
+## 2026-07-23：exp414 PSCIR——pose语义连续身份区域排序
+
+PSCIR固定sealed zero-owner的LOO三support与student身份空间，但把每个身份从“三个离散距离的均值”改成一条由
+三个真实student descriptor构成的两段连续region。pose visibility与identity-free CLIP遮挡margin只在三support
+内部给三条边定义联合状态差，maximum-spanning tree选择两条合法插值边；feature端点、线段投影与全部梯度均来自
+student，不搬运CLIP或donor feature。
+
+- 问题门PASS：partial observation不应被强迫恢复一个不可识别的完整身份点；
+- 机制门CONDITIONAL PASS：连续set metric、MST与pose/CLIP原子均不新，只保留
+  `strict LOO + joint semantic topology + student-space continuous region + all-identity ranking`整体；
+- 证据门PASS：zero-owner、pose-only、q-only、text-shuffle与all-edges可分别检验新增region、两个证据轴、
+  文本槽绑定与任意插值解释。
+
+PSCIR与PCVT、SKC/PSC-JEPA/PC-MSC、CASD/CAVT、PCHM、PCMPSR owner及PSCCR prefix均不等价，但经典
+convex-hull/image-set metric、概率embedding与MVI²P是明确近邻，只按`C-CLASS CONDITIONAL`推进。correct必须先在
+自然e120严格胜zero-owner的mAP/R1；否则不运行controls、不调MST、temperature、edge公式或loss比例。

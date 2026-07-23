@@ -3600,3 +3600,15 @@ GPU空闲、异常0、formal tracked 0/0；train-log/runner SHA256=
 `ae57c702b1e0b0c67859c7916fd1963e1536594dd05643063e76bac90ae6b606`。状态=
 `USER-DIRECTED STOP / E120 VOID / NO RESUME`，已有轨迹不作e120裁决或跨臂拼点；text-shuffle=
 `NO-START BY USER PRIORITY`。exp413最终=`PERFORMANCE GO / JOINT ATTRIBUTION FAILED`，不再救旧机制。
+
+## exp414：PSCIR设计状态（2026-07-23）
+
+exp414当前只有设计、历史去重与窄查新，没有代码、合同、GPU执行或mAP/R1。对象冻结候选为
+Pose-Semantic Continuous Identity-Region Ranking：严格复用exp411 zero-owner的LOO三support，pose visibility与
+identity-free CLIP遮挡margin只定义三support maximum-spanning topology；student global descriptor作为真实端点，
+anchor以到两段连续region的距离进行all-identity ranking，并与sealed zero-owner loss等权保底。
+
+该对象不做feature completion、donor运输、owner加权、gradient routing或prefix curriculum；测试仍为原RGB global
+descriptor。当前=`DESIGN WRITTEN / C-CLASS CONDITIONAL / INDEPENDENT REVIEW NEXT / IMPLEMENTATION
+NO-START / GPU IDLE`。性能门仍为自然e120同时严格胜sealed zero-owner=`58.9/70.3`与clean D0=`57.6/67.7`
+的mAP/R1；当前没有exp414性能数字。
