@@ -443,3 +443,11 @@ correct产物永久封存，禁止修改、覆盖、续训或重跑。下一步�
 - 最新=`e1 iter20/227`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`。
 
 当前=`POSE-ONLY RUNNING / NATURAL E120 REQUIRED`；不得并行启动q-only或修改任何运行内容。
+
+## 2026-07-23：pose-only e4健康检查
+
+- e3自然完成，最新=`e4 iter60/227`，loss=`6.659`、pose=`0.905`、acc=`0.130`；
+- e4首批PSCIR `loss/zero/region=0.101798/0.146454/0.057143`，均有限；
+- wrapper/训练主PID存活，唯一CUDA compute约`6994 MiB / 42%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 尚未到e10正式点，当前=`CONTINUE TO NATURAL E120`。
