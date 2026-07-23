@@ -63,3 +63,13 @@ GPU IDLE`。尚无exp414合同或性能数字。
 
 按合同规则只修致命兼容bug：等价改为连续两次`.any(dim=3).any(dim=2)`，不改公式、topology、control、loss或
 合同门。修复后更新formal HEAD与runner SHA，再启动唯一真实PK64；不把本次前置micro失败计作CUDA合同结果。
+
+## 2026-07-23：兼容修复后首次调用缺少必填config参数
+
+- 兼容修复已在远端formal提交为`4739285d40c514ae41ab0f16d292af135d4dd51a`，固定解释器静态编译通过；
+- 新日志`exp414-pscir-contract-v1-attempt2.runner.log`因调用命令遗漏runner必填的`--config`参数，在
+  `argparse`阶段立即以`CONTRACT_EXIT=2`退出；
+- GPU全程=`2 MiB / 0%`，没有执行micro oracle、dataloader、真实PK64 batch、CUDA forward/backward或
+  GradScaler update；
+- 分类=`PRE-ARGPARSE INVOCATION FAIL / REAL PK64 NOT CONSUMED`。保留该日志，不覆盖、不伪装成合同结果；
+  下一次只补入预注册formal config路径，不改runner、机制、合同门或任何训练变量。
