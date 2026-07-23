@@ -480,3 +480,19 @@ e10时pose-only的mAP/R5/R10低于correct，R1持平；这只是支持correct的
 - wrapper/训练主PID存活，唯一CUDA compute约`7074 MiB / 58%`，runner/train严格异常=`0`，formal
   tracked worktree/index=`0/0`；
 - 最近正式点仍为已登记e10，当前=`CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：pose-only e20正式评测
+
+pose-only自然完成e20=`46.9 mAP / 57.0 R1 / 71.4 R5 / 77.2 R10`；同epoch sealed correct=
+`47.1/56.7/71.4/76.9`，sealed zero-owner=`45.6/55.0/70.6/75.8`，sealed clean D0=
+`42.2/52.4/67.6/74.0`。完整rounded轨迹更新为：
+
+| epoch | pose-only | correct | zero-owner | clean D0 | Δcorrect | Δzero-owner | ΔD0 |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 10 | 28.2/38.1/52.5/59.0 | 28.6/38.1/53.7/60.7 | 28.4/38.1/53.9/60.8 | 33.4/42.7/59.8/65.2 | -0.4/+0.0/-1.2/-1.7 | -0.2/+0.0/-1.4/-1.8 | -5.2/-4.6/-7.3/-6.2 |
+| 20 | 46.9/57.0/71.4/77.2 | 47.1/56.7/71.4/76.9 | 45.6/55.0/70.6/75.8 | 42.2/52.4/67.6/74.0 | -0.2/+0.3/+0.0/+0.3 | +1.3/+2.0/+0.8/+1.4 | +4.7/+4.6/+3.8/+3.2 |
+
+e20时pose-only相对correct为mAP微负、R1/R10微正、R5持平，形成混合关系；correct尚未在预注册核心mAP/R1
+同时严格胜pose-only，不能提前支持联合归因。读取时最新=`e21 iter20/227`，wrapper/训练主PID存活，唯一
+CUDA compute约`7054 MiB`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
+`CONTINUE TO NATURAL E120`。
