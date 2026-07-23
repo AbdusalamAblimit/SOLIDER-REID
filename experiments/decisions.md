@@ -6394,3 +6394,13 @@ pose-only相对zero-owner仅mAP持平，其余三项为负。
 
 **决策**：连续有利点提高correct最终双核心胜pose-only的可能性，但差距较小且e50反向证据仍在，禁止提前裁决。
 pose-only继续冻结运行到自然e120，不早停、不调参、不删点；q-only与text-shuffle保持`NO-START`。
+
+### [2026-07-23] 决策：exp413 pose-only e90双核心继续低于correct但R10略高
+
+pose-only e90=`59.5/70.7/82.8/87.1`，相对同epoch sealed v3 correct=
+`-0.1/-0.7/-0.3/+0.1`，相对zero-owner=`+0.4/-0.5/+0.2/+0.3`，相对clean D0=
+`+2.0/+2.8/+1.6/+1.8`。correct在e60--e90连续四个正式点同时严格领先pose-only的mAP/R1，R5也领先，
+但e90的R10低`0.1`；pose-only相对zero-owner仍为三正一负。
+
+**决策**：中后期双核心证据继续有利于correct，但不得选择性省略R10反向、e50四项反向或提前判科学GO。
+pose-only继续冻结运行到自然e120；q-only与text-shuffle保持`NO-START`，最终仍只按e120双核心关系。
