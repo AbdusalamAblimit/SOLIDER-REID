@@ -503,3 +503,20 @@ CUDA compute约`7054 MiB`，runner/train严格异常=`0`，formal tracked worktr
 - wrapper/训练主PID存活，唯一CUDA compute约`7054 MiB / 43%`，runner/train严格异常=`0`，formal
   tracked worktree/index=`0/0`；
 - 最近正式点仍为已登记e20，当前=`CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：pose-only e30正式评测
+
+pose-only自然完成e30=`51.0 mAP / 61.9 R1 / 75.6 R5 / 80.6 R10`；同epoch sealed correct=
+`50.5/62.0/74.9/79.9`，sealed zero-owner=`49.2/60.3/75.0/80.0`，sealed clean D0=
+`46.6/56.2/71.3/76.4`。完整rounded轨迹更新为：
+
+| epoch | pose-only | correct | zero-owner | clean D0 | Δcorrect | Δzero-owner | ΔD0 |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 10 | 28.2/38.1/52.5/59.0 | 28.6/38.1/53.7/60.7 | 28.4/38.1/53.9/60.8 | 33.4/42.7/59.8/65.2 | -0.4/+0.0/-1.2/-1.7 | -0.2/+0.0/-1.4/-1.8 | -5.2/-4.6/-7.3/-6.2 |
+| 20 | 46.9/57.0/71.4/77.2 | 47.1/56.7/71.4/76.9 | 45.6/55.0/70.6/75.8 | 42.2/52.4/67.6/74.0 | -0.2/+0.3/+0.0/+0.3 | +1.3/+2.0/+0.8/+1.4 | +4.7/+4.6/+3.8/+3.2 |
+| 30 | 51.0/61.9/75.6/80.6 | 50.5/62.0/74.9/79.9 | 49.2/60.3/75.0/80.0 | 46.6/56.2/71.3/76.4 | +0.5/-0.1/+0.7/+0.7 | +1.8/+1.6/+0.6/+0.6 | +4.4/+5.7/+4.3/+4.2 |
+
+e30时pose-only相对correct为mAP/R5/R10领先、R1微低，核心关系继续混合；correct尚未在预注册核心mAP/R1
+同时严格胜pose-only，联合归因仍未获得支持。读取时最新=`e31 iter40/227`，wrapper/训练主PID存活，唯一
+CUDA compute约`7060 MiB`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
+`CONTINUE TO NATURAL E120`。
