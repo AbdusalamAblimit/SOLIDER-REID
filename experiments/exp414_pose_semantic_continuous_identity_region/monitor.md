@@ -802,3 +802,10 @@ pose-only产物永久封存，禁止修改、覆盖、续训或重跑。下一�
 
 当前=`Q-ONLY RUNNING / NATURAL E120 / NO INTERMEDIATE STOP`；text-shuffle与all-edges继续
 `NO-START`。
+
+## 2026-07-23：q-only e3健康检查
+
+- 最新=`e3 iter160/227`，loss=`6.766`、pose=`0.909`、acc=`0.086`；
+- wrapper/训练主PID存活，唯一CUDA compute约`6994 MiB / 41%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 尚未到e10正式点，当前=`CONTINUE TO NATURAL E120`。
