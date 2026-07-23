@@ -373,3 +373,10 @@ e100相对zero-owner的mAP/R5/R10为正、R1微负`0.1`；相对D0四项继续�
 连续保持，最终性能门仍高度边缘。读取时最新=`e104 iter100/227`，wrapper/训练主PID存活，唯一CUDA compute约
 `7072 MiB / 42%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`。当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：e109健康检查
+
+- 最新=`e109 iter160/227`，loss=`0.105`、pose=`0.460`、acc=`0.998`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7072 MiB / 71%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 尚未到e110正式点，当前=`CONTINUE TO NATURAL E120`。
