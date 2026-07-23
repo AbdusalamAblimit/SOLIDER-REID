@@ -230,3 +230,11 @@ correct自然完成e50=`55.9 mAP / 67.9 R1 / 80.1 R5 / 84.8 R10`；同epoch seal
 e50继续对两个关键对照四项领先；相对宿主的R5仅`+0.1`，仍不能夸大为稳定宽裕优势。读取时最新=
 `e54 iter160/227`，wrapper/训练主PID存活，唯一CUDA compute约`7080 MiB / 73%`，runner/train严格异常=`0`，
 formal tracked worktree/index=`0/0`。当前=`CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：e60启动健康检查
+
+- e59自然完成，最新为e60首批；PSCIR
+  `loss/zero/region=0.000028/0.000039/0.000016`，均有限；
+- wrapper/训练主PID存活，唯一CUDA compute约`7080 MiB / 42%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- e60评测尚未产生，当前=`CONTINUE / WAIT E60 EVAL / NATURAL E120`。
