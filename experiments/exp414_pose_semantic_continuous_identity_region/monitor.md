@@ -206,3 +206,10 @@ correct自然完成e40=`55.2 mAP / 67.1 R1 / 79.9 R5 / 84.5 R10`；同epoch seal
 e40相对zero-owner恢复四项微幅领先，相对D0保持清晰四项优势；宿主差值较小，不能夸大稳定性。读取时最新=
 `e44 iter80/227`，wrapper/训练主PID存活，唯一CUDA compute约`7062 MiB / 66%`，runner/train严格异常=`0`，
 formal tracked worktree/index=`0/0`。当前=`CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：e49健康检查
+
+- 最新=`e49 iter120/227`，loss=`0.191`、pose=`0.466`、acc=`0.994`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7062 MiB / 73%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 尚未到e50正式点，当前=`CONTINUE TO NATURAL E120`。
