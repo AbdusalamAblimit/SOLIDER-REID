@@ -465,3 +465,16 @@ e100时correct再次四项严格领先pose-only，mAP/R1双核心已从e60到e10
 zero-owner仍仅mAP为正，其余三项为负，且四项高于D0。读取时已进入e102 iter120，主PID=`40519`仍为
 唯一CUDA compute，GPU约`7,078 MiB / 47%`，runner/train严格异常=`0/0`，formal tracked
 worktree/index=`0/0`。保留e50反向点并继续冻结运行，下一正式点为e110。
+
+## 2026-07-23：pose-only e110正式评测
+
+pose-only原始runner读取结果=`59.1/70.1/82.1/85.8`。同epoch sealed v3 correct=
+`59.1/70.5/82.3/85.8`，sealed zero-owner=`58.8/70.4/81.8/86.1`，sealed clean D0=
+`57.4/67.4/80.5/84.6`；因此pose-only−correct=`+0.0/-0.4/-0.2/+0.0`，pose-only−zero-owner=
+`+0.3/-0.3/+0.3/-0.3`，pose-only−D0=`+1.7/+2.7/+1.6/+1.2`。
+
+e110时pose-only与correct的mAP/R10持平，correct仅在R1/R5分别领先`0.4/0.2`；因此e60--e100连续五点的
+correct双核心严格领先在e110因mAP持平而中断，不能写成连续第六点。pose-only相对zero-owner仍为mAP/R5正、
+R1/R10负的混合关系，且四项高于D0。读取时已进入e113 iter40，主PID=`40519`仍为唯一CUDA compute，
+GPU约`7,076 MiB / 69%`，runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`。继续冻结
+运行并保留全部反转，只在自然e120作最终双核心裁决。

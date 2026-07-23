@@ -6414,3 +6414,13 @@ pose-only相对zero-owner仍只有mAP正差。
 
 **决策**：当前中后期轨迹持续支持correct相对pose-only，但不得覆盖e50反向证据或将连续中间点替代e120裁决。
 pose-only继续冻结运行，不早停、不调参、不删点；q-only与text-shuffle保持`NO-START`。
+
+### [2026-07-23] 决策：exp413 pose-only e110 mAP与correct持平
+
+pose-only e110=`59.1/70.1/82.1/85.8`，相对同epoch sealed v3 correct=
+`+0.0/-0.4/-0.2/+0.0`，相对zero-owner=`+0.3/-0.3/+0.3/-0.3`，相对clean D0=
+`+1.7/+2.7/+1.6/+1.2`。pose-only与correct的mAP/R10持平，correct仅在R1/R5领先；因此e60--e100
+连续五个正式点的mAP/R1双严格领先在e110因mAP持平而中断，不能选择性延长该连续性。
+
+**决策**：e110提高最终联合归因不通过的风险，但预注册裁决仍只使用自然e120，不据中间持平早停或启动下一臂。
+pose-only继续冻结到e120，q-only与text-shuffle保持`NO-START`；禁止调参、删点或修改运行中资产。
