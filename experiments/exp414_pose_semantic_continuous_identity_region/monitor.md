@@ -257,3 +257,10 @@ e60相对zero-owner的预注册核心mAP/R1转负，R5/R10仍为正；相对D0�
 核心正差轨迹，必须完整保留，不能用高阶CMC掩盖核心门风险。读取时最新=`e62 iter100/227`，wrapper/训练主PID
 存活，唯一CUDA compute约`7062 MiB / 73%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`。
 当前=`CONTINUE TO NATURAL E120 / NO EARLY STOP`。
+
+## 2026-07-23：e67健康检查
+
+- 最新=`e67 iter160/227`，loss=`0.132`、pose=`0.462`、acc=`0.996`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7062 MiB / 41%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 尚未到e70正式点，当前=`CONTINUE TO NATURAL E120`。
