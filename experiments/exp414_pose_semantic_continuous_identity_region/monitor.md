@@ -183,3 +183,10 @@ e30相对zero-owner继续保持预注册核心mAP/R1优势，但R5/R10各低`0.1
 结果，不把核心门扩写成四项全胜。读取时最新=`e33 iter200/227`，wrapper/训练主PID存活，唯一CUDA compute约
 `7078 MiB / 45%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`。当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：e39健康检查
+
+- e38自然完成，最新=`e39 iter60/227`，loss=`0.302`、pose=`0.469`、acc=`0.986`；
+- e39首批PSCIR `loss/zero/region=0.000002/0.000003/0.000001`，均为有限非负值，严格异常正则未命中；
+- wrapper/训练主PID存活，唯一CUDA compute约`7078 MiB / 42%`，formal tracked worktree/index=`0/0`；
+- 尚未到e40正式点，当前=`CONTINUE TO NATURAL E120`。
