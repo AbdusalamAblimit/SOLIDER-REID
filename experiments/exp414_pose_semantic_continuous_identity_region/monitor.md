@@ -545,3 +545,10 @@ e40时pose-only相对correct四项均领先，是明确不利于pose×CLIP联合
 e120作归因裁决，禁止据此早停。读取时最新=`e41 iter60/227`，wrapper/训练主PID存活，唯一CUDA compute
 约`7054 MiB / 57%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：pose-only e46健康检查
+
+- 最新=`e46 iter140/227`，loss=`0.209`、pose=`0.467`、acc=`0.991`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7054 MiB / 41%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e40，当前=`CONTINUE TO NATURAL E120`。
