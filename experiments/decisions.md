@@ -6450,3 +6450,13 @@ text-shuffle；不调prompt、front、budget、loss、batch或scale。
 
 **决策**：q-only自然训练到e120并保留全部12个评测点，不因pose-only已经阻断最终科学GO而省略证据或早停；
 text-shuffle继续`NO-START`。q-only自然封存后才串行启动text-shuffle，不并行占用4090。
+
+### [2026-07-23] 决策：exp413 q-only e10三项低于correct且四项低于pose-only
+
+q-only e10=`29.3/38.7/54.0/60.7`，相对同epoch sealed v3 correct=
+`-0.6/-0.5/-1.0/+0.0`，相对sealed pose-only=`-0.6/-1.0/-0.5/-0.2`，相对zero-owner=
+`+0.9/+0.6/+0.1/-0.1`，相对clean D0=`-4.1/-4.0/-5.8/-4.5`。correct在mAP/R1/R5严格领先q-only、
+R10持平；q-only四项均低于pose-only，相对zero-owner为三正一负。
+
+**决策**：该早期点不改变pose-only已阻断科学GO的事实，也不替代q-only自身自然e120证据。q-only继续冻结
+运行，不早停、不调参、不删点；text-shuffle保持`NO-START`。

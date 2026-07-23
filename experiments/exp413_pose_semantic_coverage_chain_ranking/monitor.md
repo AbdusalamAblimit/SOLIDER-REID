@@ -517,3 +517,17 @@ epochs=`120`；首批zero-owner宿主loss=`1.970790`，PSCCR q-only loss/prefix1
 `6.781250/9.421875/10.000000`。e1 iter20已正常，主PID为唯一CUDA compute，GPU约`7,000 MiB / 66%`，
 runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`。text-shuffle保持`NO-START`；q-only
 自然运行到e120并逐10 epoch完整记录，不以中间点早停。
+
+## 2026-07-23：q-only e10正式评测
+
+q-only原始runner读取结果=`29.3/38.7/54.0/60.7`。同epoch sealed v3 correct=
+`29.9/39.2/55.0/60.7`，sealed pose-only=`29.9/39.7/54.5/60.9`，sealed zero-owner=
+`28.4/38.1/53.9/60.8`，sealed clean D0=`33.4/42.7/59.8/65.2`；因此q-only−correct=
+`-0.6/-0.5/-1.0/+0.0`，q-only−pose-only=`-0.6/-1.0/-0.5/-0.2`，q-only−zero-owner=
+`+0.9/+0.6/+0.1/-0.1`，q-only−D0=`-4.1/-4.0/-5.8/-4.5`。
+
+e10时correct在mAP/R1/R5严格领先q-only、R10持平；q-only四项均低于pose-only，相对zero-owner则
+mAP/R1/R5为正而R10低`0.1`，并四项低于D0。该早期点只补全控制轨迹，不改变pose-only已确定的联合归因
+必要条件失败，也不能用于早停。读取时已进入e11 iter20，主PID=`77649`仍为唯一CUDA compute，GPU约
+`7,070 MiB / 46%`，runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`。继续冻结运行，
+text-shuffle保持`NO-START`。

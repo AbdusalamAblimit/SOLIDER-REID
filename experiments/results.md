@@ -3553,3 +3553,8 @@ fresh q-only已从同一冻结formal HEAD与seed1234启动，output=`exp413-pscc
 `77649`，不含checkpoint恢复。首批PSCCR loss/prefix=`3.266681/[4.886121,2.943134,1.970790]`，prefix3
 与zero-owner exact；e1 iter20正常、唯一CUDA、严格异常0、formal tracked 0/0。当前=`Q-ONLY RUNNING /
 JOINT ATTRIBUTION FAILED-PENDING COMPLETE CONTROLS`，text-shuffle仍`NO-START`。
+
+q-only e10=`29.3/38.7/54.0/60.7`；相对同epoch v3 correct=`-0.6/-0.5/-1.0/+0.0`，相对sealed
+pose-only=`-0.6/-1.0/-0.5/-0.2`，相对zero-owner=`+0.9/+0.6/+0.1/-0.1`，相对clean D0=
+`-4.1/-4.0/-5.8/-4.5`。correct在mAP/R1/R5领先且R10持平，q-only四项低于pose-only；保留完整早期
+关系并继续自然到e120。
