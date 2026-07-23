@@ -571,3 +571,10 @@ e50时pose-only相对correct为mAP/R5微正、R1/R10为负，核心mAP/R1再次�
 pose-only，联合归因尚无支持。读取时最新=`e51 iter160/227`，wrapper/训练主PID存活，唯一CUDA compute
 约`7090 MiB / 66%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：pose-only e57健康检查
+
+- 最新=`e57 iter20/227`，loss=`0.175`、pose=`0.466`、acc=`0.995`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7090 MiB / 52%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e50，当前=`CONTINUE TO NATURAL E120`。
