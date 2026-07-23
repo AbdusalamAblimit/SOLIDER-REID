@@ -29,3 +29,26 @@ exp405 CAVT及exp408--413：
 - 但概率embedding、image-set convex hull、MVI²P与set metric均为强近邻，不能据此声称首次。
 
 下一步只做独立设计盲审；盲审仅拦截致命bug、变量混淆或旧机制同构。`0B/0H`后才实现，GPU继续空闲。
+
+## 2026-07-23：独立子agent设计盲审PASS
+
+Claude CLI未认证后，用户明确要求停止使用Claude并改由独立子agent完成盲审。审查者只读核对设计与历史路线，
+未编辑文件、未连接远端或使用GPU；结论=`PASS / 0B / 0H`。
+
+非阻塞NOTE已冻结进实现边界：合同中的未选第三边扰动必须固定MST索引，不能伪称可独立修改共享端点；`q_only`
+只表述为无在线pose visibility轴；归一化descriptor上的线段解释为欧氏弦。状态更新为
+`DESIGN REVIEW PASS / IMPLEMENTATION ACTIVE / GPU IDLE`。
+
+## 2026-07-23：实现完成与独立实现盲审
+
+已完成默认关闭的PSCIR配置、连续region loss、zero-owner等权组合、processor资产/状态/日志接线、formal config与唯一
+PK64 runner。正式config关闭PSCIR并清空其四个配置字段后，与sealed exp411 zero-owner config dump exact；本地
+`py_compile`、config exact与CPU几何oracle通过。本地轻量环境未安装`torchvision`，因此完整runner只允许在固定
+MMPOSE-ABU远端解释器中执行，不创建第二合同。
+
+实现盲审首轮发现`0B/3H`：近零距离被epsilon抬高、上端clamp漏测、combined梯度差不足以证明纯region路径。
+现已分别改为精确vector norm并加入线上零距离反向、加入`t>1`上端oracle、对纯region loss独立backward并检查
+Stage-3/norm3 finite nonzero。复审=`PASS / 0B / 0H`。
+
+当前状态=`IMPLEMENTED / STATIC CHECK PASS / IMPLEMENTATION REVIEW PASS / UNIQUE PK64 CONTRACT NEXT /
+GPU IDLE`。尚无exp414合同或性能数字。

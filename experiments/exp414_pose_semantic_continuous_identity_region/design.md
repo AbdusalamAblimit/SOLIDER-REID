@@ -67,7 +67,8 @@ q-only完全忽略visibility。text-shuffle将五槽文本轴循环错位一槽�
 连续权重或loss scale。控制臂为：
 
 - `pose_only`：`w=sum_r |Δrank_v|`；
-- `q_only`：`w=sum_r |Δrank_q|`；
+- `q_only`：`w=sum_r |Δrank_q|`，只移除在线pose visibility轴；因q来自pose-defined region-isolated
+  cache，不表述为完全pose-free；
 - `text_shuffle`：错位文本轴后使用correct公式；
 - `all_edges`：不做pose/CLIP拓扑选择，三条边全部进入连续region。
 
@@ -148,7 +149,8 @@ CLIP与pose至此停止：它们不能进入student feature、线段插值系数
 5. 线段距离手算覆盖内部投影、两个端点clamp、零长度边与finite backward；
 6. `L_zero_owner`与sealed宿主bit-exact；
 7. correct相对pose-only/q-only/text-shuffle/all-edges的拓扑与region distance改变率均非零；
-8. 任意改变正确MST未包含的第三边不得改变correct region distance；
+8. 固定正确MST索引，只篡改未选候选边记录或其边权并保证仍未入选时，correct region distance不变；不把共享
+   端点伪装成可独立修改的第三边几何；
 9. isolated PSCIR loss finite，并使Stage-3/backbone梯度相对zero-owner发生非零改变；
 10. production combined loss在原生GradScaler下取得一次真实Stage-3参数update。
 

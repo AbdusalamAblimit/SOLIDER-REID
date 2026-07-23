@@ -130,6 +130,9 @@ def do_train(cfg,
     psccr_enabled = bool(
         cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.PSCCR_ENABLED
     )
+    pscir_enabled = bool(
+        cfg.MODEL.TAPF.ENABLED and cfg.MODEL.TAPF.PSCIR_ENABLED
+    )
     pcmpsr_control_mode = str(
         cfg.MODEL.TAPF.PCMPSR_CONTROL_MODE
     ).lower()
@@ -138,6 +141,9 @@ def do_train(cfg,
     ).lower()
     psccr_control_mode = str(
         cfg.MODEL.TAPF.PSCCR_CONTROL_MODE
+    ).lower()
+    pscir_control_mode = str(
+        cfg.MODEL.TAPF.PSCIR_CONTROL_MODE
     ).lower()
     if pcmpsr_enabled and pcmpsr_control_mode not in {
         "correct",
@@ -173,6 +179,20 @@ def do_train(cfg,
         "text_shuffle",
     }:
         raise RuntimeError("unsupported PSCCR formal control mode")
+    if pscir_enabled and (
+        not pcmpsr_enabled or pcmpsr_control_mode != "zero_owner"
+    ):
+        raise RuntimeError("PSCIR requires the PCMPSR zero-owner host")
+    if pscir_enabled and (psgc_enabled or psccr_enabled):
+        raise RuntimeError("PSCIR, PSCCR, and PSGC are mutually exclusive")
+    if pscir_enabled and pscir_control_mode not in {
+        "correct",
+        "pose_only",
+        "q_only",
+        "text_shuffle",
+        "all_edges",
+    }:
+        raise RuntimeError("unsupported PSCIR formal control mode")
     if pc2p_enabled and (
         cfg.MODEL.TAPF.SEMANTIC_ENABLED
         or cfg.MODEL.TAPF.HIERARCHICAL
@@ -315,6 +335,27 @@ def do_train(cfg,
             psccr_text_asset.prompt_spec_sha256,
             psccr_text_asset.source_head,
             psccr_control_mode,
+        )
+    pscir_text_prototypes = None
+    if pscir_enabled:
+        from model.pose_semantic_gradient_completion import (
+            PoseSemanticTextAxes,
+        )
+
+        pscir_text_asset = PoseSemanticTextAxes(
+            cfg.MODEL.TAPF.PSCIR_TEXT_AXES,
+            cfg.MODEL.TAPF.PSCIR_TEXT_AXES_SHA256,
+            cfg.MODEL.TAPF.PCMPSR_CLIP_CHECKPOINT_SHA256,
+        )
+        pscir_text_prototypes = pscir_text_asset.to(
+            torch.device("cuda", local_rank)
+        )
+        logger.info(
+            "PSCIR frozen text axes loaded outside model/state: SHA=%s prompt=%s source=%s control=%s",
+            pscir_text_asset.sha256,
+            pscir_text_asset.prompt_spec_sha256,
+            pscir_text_asset.source_head,
+            pscir_control_mode,
         )
     picrd_cache = None
     if picrd_enabled:
@@ -473,6 +514,8 @@ def do_train(cfg,
             psgc_control_changes = None
             psccr_state = None
             psccr_control_changes = None
+            pscir_state = None
+            pscir_control_changes = None
             if pchm_enabled:
                 if relative_paths is None:
                     raise RuntimeError("PCHM batch is missing relative paths")
@@ -606,6 +649,61 @@ def do_train(cfg,
                                     .mean()
                                     .item()
                                 )
+                    if pscir_enabled:
+                        from loss.pose_semantic_continuous_region import (
+                            build_pose_semantic_continuous_region,
+                        )
+
+                        pscir_state = build_pose_semantic_continuous_region(
+                            target,
+                            visibility,
+                            clip_features,
+                            clip_valid,
+                            pscir_text_prototypes,
+                            pcmpsr_state,
+                            mode=pscir_control_mode,
+                        )
+                        if epoch == 1 and n_iter == 0:
+                            pscir_control_changes = {}
+                            correct_edges = (
+                                pscir_state["selected_edge_ids"]
+                                if pscir_control_mode == "correct"
+                                else build_pose_semantic_continuous_region(
+                                    target,
+                                    visibility,
+                                    clip_features,
+                                    clip_valid,
+                                    pscir_text_prototypes,
+                                    pcmpsr_state,
+                                    mode="correct",
+                                )["selected_edge_ids"]
+                            )
+                            for control in (
+                                "pose_only",
+                                "q_only",
+                                "text_shuffle",
+                            ):
+                                control_edges = (
+                                    build_pose_semantic_continuous_region(
+                                        target,
+                                        visibility,
+                                        clip_features,
+                                        clip_valid,
+                                        pscir_text_prototypes,
+                                        pcmpsr_state,
+                                        mode=control,
+                                    )["selected_edge_ids"]
+                                )
+                                pscir_control_changes[control] = float(
+                                    torch.sort(
+                                        control_edges, dim=-1
+                                    ).values.ne(
+                                        torch.sort(
+                                            correct_edges, dim=-1
+                                        ).values
+                                    ).any(dim=-1).float().mean().item()
+                                )
+                            pscir_control_changes["all_edges"] = 1.0
                     if psgc_enabled:
                         from model.pose_semantic_gradient_completion import (
                             build_psgc_slot_weights,
@@ -843,9 +941,12 @@ def do_train(cfg,
                         target_cam,
                         pair_indices=pair_indices,
                         pcmpsr_state=(
-                            None if psccr_enabled else pcmpsr_state
+                            None
+                            if (psccr_enabled or pscir_enabled)
+                            else pcmpsr_state
                         ),
                         psccr_state=psccr_state,
+                        pscir_state=pscir_state,
                     )
                     loss = reid_loss + (
                         cfg.MODEL.TAPF.POSE_LOSS_WEIGHT * tapf_aux["pose_loss"]
@@ -971,6 +1072,42 @@ def do_train(cfg,
                     [round(value, 6) for value in psccr_diag["negative_distance_mean"].tolist()],
                     [round(value, 6) for value in psccr_state["coverage"].float().mean(dim=(0, 1)).tolist()],
                     psccr_control_changes,
+                )
+
+            if pscir_enabled and n_iter == 0:
+                if pscir_state is None:
+                    raise RuntimeError("PSCIR state is missing")
+                from loss.pose_semantic_continuous_region import (
+                    pose_semantic_continuous_region_ranking_loss,
+                )
+
+                with torch.no_grad(), amp.autocast(enabled=False):
+                    _, pscir_diag = (
+                        pose_semantic_continuous_region_ranking_loss(
+                            feat.detach().float(),
+                            target,
+                            pscir_state,
+                            normalize_feature=cfg.SOLVER.TRP_L2,
+                        )
+                    )
+                logger.info(
+                    "PSCIR epoch=%d control=%s first-batch loss/zero/region/positive/negative/segment=%0.6f/%0.6f/%0.6f/%0.6f/%0.6f/%0.6f edge-weight=%s controls=%s",
+                    epoch,
+                    pscir_control_mode,
+                    pscir_diag["loss"].item(),
+                    pscir_diag["zero_owner_loss"].item(),
+                    pscir_diag["region_loss"].item(),
+                    pscir_diag["positive_distance"].mean().item(),
+                    pscir_diag["negative_distance"].mean().item(),
+                    pscir_diag["segment_distance"].mean().item(),
+                    [
+                        round(value, 6)
+                        for value in pscir_state["edge_weight"]
+                        .float()
+                        .mean(dim=(0, 1))
+                        .tolist()
+                    ],
+                    pscir_control_changes,
                 )
 
             scaler.scale(loss).backward()

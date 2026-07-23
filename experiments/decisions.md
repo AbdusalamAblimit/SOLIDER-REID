@@ -6566,3 +6566,7 @@ region loss固定等权，保持已证有效宿主。
 盲审只拦截致命bug、变量混淆与旧机制同构；`0B/0H`后立即实现并只做一次真实PK64合同。correct自然e120若不在
 mAP/R1同时严格胜zero-owner与D0，则封板且matched controls不启动；若性能GO，再串行运行pose-only、q-only、
 text-shuffle与all-edges完成联合归因。
+
+用户明确要求不使用当前不可用的Claude，改由独立子agent盲审。设计审查=`0B/0H`；实现首审`0B/3H`指出零距离
+epsilon、上端clamp漏测与纯region梯度证据不足，均最小修复后复审=`0B/0H`。**决策**：授权进入唯一真实PK64
+合同；合同前只做静态传输/解释器/GPU空闲核验，不追加第二preflight。

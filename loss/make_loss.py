@@ -38,6 +38,7 @@ def make_loss(cfg, num_classes):    # modified by gu
             pair_indices=None,
             pcmpsr_state=None,
             psccr_state=None,
+            pscir_state=None,
         ):
             return F.cross_entropy(score, target)
 
@@ -51,6 +52,7 @@ def make_loss(cfg, num_classes):    # modified by gu
             pair_indices=None,
             pcmpsr_state=None,
             psccr_state=None,
+            pscir_state=None,
         ):
             if cfg.MODEL.METRIC_LOSS_TYPE == 'triplet':
                 if cfg.MODEL.IF_LABELSMOOTH == 'on':
@@ -61,11 +63,28 @@ def make_loss(cfg, num_classes):    # modified by gu
                     else:
                         ID_LOSS = xent(score, target)
 
-                    if pcmpsr_state is not None and psccr_state is not None:
+                    if sum(
+                        state is not None
+                        for state in (pcmpsr_state, psccr_state, pscir_state)
+                    ) > 1:
                             raise RuntimeError(
-                                "PCMPSR and PSCCR loss states are mutually exclusive"
+                                "PCMPSR, PSCCR, and PSCIR loss states are mutually exclusive"
                             )
-                    if psccr_state is not None:
+                    if pscir_state is not None:
+                            if isinstance(feat, list):
+                                raise RuntimeError(
+                                    "PSCIR requires one final global descriptor"
+                                )
+                            from .pose_semantic_continuous_region import (
+                                pose_semantic_continuous_region_ranking_loss,
+                            )
+                            TRI_LOSS = pose_semantic_continuous_region_ranking_loss(
+                                feat,
+                                target,
+                                pscir_state,
+                                normalize_feature=cfg.SOLVER.TRP_L2,
+                            )[0]
+                    elif psccr_state is not None:
                             if isinstance(feat, list):
                                 raise RuntimeError(
                                     "PSCCR requires one final global descriptor"
@@ -110,11 +129,28 @@ def make_loss(cfg, num_classes):    # modified by gu
                     else:
                         ID_LOSS = F.cross_entropy(score, target)
 
-                    if pcmpsr_state is not None and psccr_state is not None:
+                    if sum(
+                        state is not None
+                        for state in (pcmpsr_state, psccr_state, pscir_state)
+                    ) > 1:
                             raise RuntimeError(
-                                "PCMPSR and PSCCR loss states are mutually exclusive"
+                                "PCMPSR, PSCCR, and PSCIR loss states are mutually exclusive"
                             )
-                    if psccr_state is not None:
+                    if pscir_state is not None:
+                            if isinstance(feat, list):
+                                raise RuntimeError(
+                                    "PSCIR requires one final global descriptor"
+                                )
+                            from .pose_semantic_continuous_region import (
+                                pose_semantic_continuous_region_ranking_loss,
+                            )
+                            TRI_LOSS = pose_semantic_continuous_region_ranking_loss(
+                                feat,
+                                target,
+                                pscir_state,
+                                normalize_feature=cfg.SOLVER.TRP_L2,
+                            )[0]
+                    elif psccr_state is not None:
                             if isinstance(feat, list):
                                 raise RuntimeError(
                                     "PSCCR requires one final global descriptor"
