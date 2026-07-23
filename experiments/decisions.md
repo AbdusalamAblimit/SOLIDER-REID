@@ -6374,3 +6374,13 @@ pose-only e60=`57.7/69.1/81.2/84.7`，相对同epoch sealed v3 correct=
 
 **决策**：e60恢复有利联合归因方向，但不覆盖e10--e50混合与反向轨迹，也不触发提前科学GO。pose-only继续冻结
 运行至自然e120，禁止早停、调参或删点；q-only与text-shuffle保持`NO-START`。
+
+### [2026-07-23] 决策：exp413 pose-only e70连续低于correct且四项低于宿主
+
+pose-only e70=`57.5/68.1/81.2/85.0`，相对同epoch sealed v3 correct=
+`-0.6/-1.4/-1.0/-0.7`，相对zero-owner=`-0.3/-2.1/-0.5/-0.5`，相对clean D0=
+`+2.1/+2.9/+1.7/+1.4`。correct在e60/e70连续四项严格领先pose-only；pose-only e70也四项低于zero-owner，
+只保持相对D0的四项正差。
+
+**决策**：当前中期证据转向支持correct相对pose-only，但不得覆盖e50四项反超或提前判科学GO。pose-only继续冻结
+运行到自然e120，不早停、不调参、不删点；q-only与text-shuffle继续`NO-START`。
