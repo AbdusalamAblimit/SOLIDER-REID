@@ -6460,3 +6460,14 @@ R10持平；q-only四项均低于pose-only，相对zero-owner为三正一负。
 
 **决策**：该早期点不改变pose-only已阻断科学GO的事实，也不替代q-only自身自然e120证据。q-only继续冻结
 运行，不早停、不调参、不删点；text-shuffle保持`NO-START`。
+
+### [2026-07-23] 决策：exp413 q-only e20四项低于correct
+
+q-only e20=`46.0/55.7/70.5/76.1`，相对同epoch sealed v3 correct=
+`-0.1/-0.3/-0.8/-0.5`，相对sealed pose-only=`-0.2/+0.0/-0.3/-1.0`，相对zero-owner=
+`+0.4/+0.7/-0.1/+0.3`，相对clean D0=`+3.8/+3.3/+2.9/+2.1`。correct四项严格领先q-only；
+pose-only除R1持平外其余三项领先q-only；q-only相对zero-owner为三正一负，相对D0则四项为正。
+
+**决策**：e20仍只作为完整matched-control轨迹，不改变pose-only已使最终`POSE+CLIP SCIENTIFIC GO`失败的
+裁决，也不允许据此省略q-only后续证据。q-only继续冻结自然运行至e120，不早停、不调参、不删点；
+text-shuffle保持`NO-START`。

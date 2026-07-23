@@ -531,3 +531,17 @@ mAP/R1/R5为正而R10低`0.1`，并四项低于D0。该早期点只补全控制�
 必要条件失败，也不能用于早停。读取时已进入e11 iter20，主PID=`77649`仍为唯一CUDA compute，GPU约
 `7,070 MiB / 46%`，runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`。继续冻结运行，
 text-shuffle保持`NO-START`。
+
+## 2026-07-23：q-only e20正式评测
+
+q-only原始runner读取结果=`46.0/55.7/70.5/76.1`。同epoch sealed v3 correct=
+`46.1/56.0/71.3/76.6`，sealed pose-only=`46.2/55.7/70.8/77.1`，sealed zero-owner=
+`45.6/55.0/70.6/75.8`，sealed clean D0=`42.2/52.4/67.6/74.0`；因此q-only−correct=
+`-0.1/-0.3/-0.8/-0.5`，q-only−pose-only=`-0.2/+0.0/-0.3/-1.0`，q-only−zero-owner=
+`+0.4/+0.7/-0.1/+0.3`，q-only−D0=`+3.8/+3.3/+2.9/+2.1`。
+
+e20时q-only四项均低于correct；相对pose-only仅R1持平，其余三项为负；相对zero-owner则mAP/R1/R10为正、
+R5低`0.1`，且四项高于D0。该点继续补全control轨迹，不改变pose-only已阻断最终科学GO的事实，也不触发
+早停。读取时已进入e21 iter140，主PID=`77649`仍为唯一CUDA compute，GPU约`7,078 MiB / 55%`，
+runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`；formal另有运行生成的36个未跟踪
+`__pycache__/*.pyc`，不涉及跟踪代码或索引。q-only继续冻结运行，text-shuffle保持`NO-START`。
