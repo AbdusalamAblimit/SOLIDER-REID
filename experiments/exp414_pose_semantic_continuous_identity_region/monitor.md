@@ -715,3 +715,10 @@ e100时pose-only相对correct为mAP持平、R1领先、R5/R10落后；correct仍
 pose-only。读取时最新=`e104 iter20/227`，wrapper/训练主PID存活，唯一CUDA compute约
 `7070 MiB / 41%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：pose-only e109健康检查
+
+- 最新=`e109 iter60/227`，loss=`0.109`、pose=`0.458`、acc=`0.999`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7070 MiB / 42%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e100，当前=`CONTINUE TO NATURAL E120`。
