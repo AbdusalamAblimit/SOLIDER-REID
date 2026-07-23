@@ -473,3 +473,10 @@ e10时pose-only的mAP/R5/R10低于correct，R1持平；这只是支持correct的
 归因或停止matched control。读取时最新=`e11 iter40/227`，wrapper/训练主PID存活，唯一CUDA compute约
 `7074 MiB`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：pose-only e14健康检查
+
+- 最新=`e14 iter180/227`，loss=`3.524`、pose=`0.652`、acc=`0.454`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7074 MiB / 58%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e10，当前=`CONTINUE TO NATURAL E120`。
