@@ -6384,3 +6384,13 @@ pose-only e70=`57.5/68.1/81.2/85.0`，相对同epoch sealed v3 correct=
 
 **决策**：当前中期证据转向支持correct相对pose-only，但不得覆盖e50四项反超或提前判科学GO。pose-only继续冻结
 运行到自然e120，不早停、不调参、不删点；q-only与text-shuffle继续`NO-START`。
+
+### [2026-07-23] 决策：exp413 pose-only e80连续第三点四项低于correct
+
+pose-only e80=`58.6/70.5/82.0/86.0`，相对同epoch sealed v3 correct=
+`-0.2/-0.2/-0.2/-0.3`，相对zero-owner=`+0.0/-1.1/-0.4/-0.3`，相对clean D0=
+`+2.5/+4.2/+2.5/+2.0`。correct在e60/e70/e80连续四项严格领先pose-only，但e80差距收窄至`0.2--0.3`；
+pose-only相对zero-owner仅mAP持平，其余三项为负。
+
+**决策**：连续有利点提高correct最终双核心胜pose-only的可能性，但差距较小且e50反向证据仍在，禁止提前裁决。
+pose-only继续冻结运行到自然e120，不早停、不调参、不删点；q-only与text-shuffle保持`NO-START`。
