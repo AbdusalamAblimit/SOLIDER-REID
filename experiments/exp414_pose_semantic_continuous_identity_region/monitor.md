@@ -343,3 +343,10 @@ correct自然完成e90=`59.4 mAP / 71.4 R1 / 83.0 R5 / 86.9 R10`；同epoch seal
 e90相对两个关键对照重新四项为正，核心mAP/R1门在当前点恢复，但相对宿主仅`+0.3/+0.2`，不能提前GO。
 读取时最新=`e93 iter180/227`，wrapper/训练主PID存活，唯一CUDA compute约`7074 MiB / 72%`，runner/train
 严格异常=`0`，formal tracked worktree/index=`0/0`。当前=`CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：e99健康检查
+
+- e98自然完成，最新=`e99 iter80/227`，loss=`0.113`、pose=`0.459`、acc=`0.997`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7074 MiB / 42%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 尚未到e100正式点，当前=`CONTINUE TO NATURAL E120`。
