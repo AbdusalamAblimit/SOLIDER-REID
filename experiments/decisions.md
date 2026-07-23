@@ -6570,3 +6570,12 @@ text-shuffle与all-edges完成联合归因。
 用户明确要求不使用当前不可用的Claude，改由独立子agent盲审。设计审查=`0B/0H`；实现首审`0B/3H`指出零距离
 epsilon、上端clamp漏测与纯region梯度证据不足，均最小修复后复审=`0B/0H`。**决策**：授权进入唯一真实PK64
 合同；合同前只做静态传输/解释器/GPU空闲核验，不追加第二preflight。
+
+唯一真实PK64合同现已`PASS`并自然退出：真实batch64/16×4、四control真实改变、zero-owner exact、纯region
+Stage-3/norm3梯度`28/28` finite nonzero、第5次原生GradScaler真实更新，严格异常0且退出后GPU空闲。前两次分别
+为CUDA前旧版PyTorch micro兼容退出与argparse缺参退出，均有独立日志且未构造真实batch，不能伪装为合同结果，
+也不构成第二CUDA合同。
+
+**决策**：合同已经消费，禁止重跑或追加preflight；冻结formal HEAD=
+`c6739b402a9e9a16f2427324536251e5ed059598`，直接以fixed recipe、seed1234、fresh OUTPUT_DIR启动correct并自然
+训练到e120。只有correct在mAP/R1同时严格胜sealed zero-owner与clean D0，才启动四个matched controls。

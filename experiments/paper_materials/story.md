@@ -2528,3 +2528,7 @@ PSCIR把PSC-JEPA/PC-MSC/CASD/CAVT共同暴露的不可识别性作为新问题�
 该story当前只是`C-CLASS CONDITIONAL`。连续set metric、image-set convex hull、概率embedding与MVI²P都构成强
 近邻，不能把线段/MST原子写成贡献；只有correct自然e120严格胜zero-owner和D0，并进一步胜pose-only、q-only、
 text-shuffle与all-edges，才允许把“pose×CLIP限定可识别身份区域拓扑”纳入正面论文故事。
+
+唯一真实PK64合同已PASS：四个matched control均改变预期的topology与region distance，zero-owner/default-off
+exact、纯region Stage-3梯度与原生GradScaler真实更新均得到验证。因此当前只通过“实现可证伪且梯度真实”的
+工程门，尚未通过任何性能或论文主张门；correct仍须自然e120后按预注册阈值裁决。

@@ -73,3 +73,28 @@ GPU IDLE`。尚无exp414合同或性能数字。
   GradScaler update；
 - 分类=`PRE-ARGPARSE INVOCATION FAIL / REAL PK64 NOT CONSUMED`。保留该日志，不覆盖、不伪装成合同结果；
   下一次只补入预注册formal config路径，不改runner、机制、合同门或任何训练变量。
+
+## 2026-07-23：唯一真实PK64合同PASS并自然退出
+
+- 合同执行formal HEAD=`c6739b402a9e9a16f2427324536251e5ed059598`，仅在attempt2命令中补入预注册
+  `configs/occluded_duke/swin_tiny_tapf_pscir_exp414.yml`，runner与机制均未修改；
+- 真实batch=`64`、身份数=`16`、每身份实例数=`4`，状态=`PASS`，`CONTRACT_EXIT=0`；
+- 四个control均真实改变topology与region distance：
+  `pose_only=0.375/0.375`、`q_only=0.390625/0.390625`、
+  `text_shuffle=0.359375/0.359375`、`all_edges=1.0/1.0`；
+- strict MST两边覆盖三support、excluded-image mutation invariant、unused-candidate-record invariant、
+  default-off forward/loss/gradient/RNG exact与zero-owner loss/distance exact均为`true`；
+- isolated region loss=`1.9516464472`，纯region独立反向使Stage-3/norm3 `28/28`个可比梯度tensor
+  finite nonzero；combined路径有`26`个Stage-3非零梯度tensor；
+- 原生GradScaler前4次overflow退火，第5次真实更新
+  `base.stages.3.blocks.0.ffn.layers.1.weight`，scale=`4096→4096`；
+- runner/test/config/region-loss SHA256分别为
+  `88fd7c858c7f4fc2a5d0ef4bc5afc5b2e54f969b8904c724ac74bbb5d0a4ba17`/
+  `b1f0e807ba3691cf0d891952d7ab0bd0cf511e1a7051ff584a126fc933c0e34d`/
+  `f887222e371642556009f99a5e1d165e5ae10fea9a97c773a2b4486e032c7b8b`/
+  `05562df2e79e45d5a95cf6a2760ca4d86803173e748e5228e1599aa11106e85a`；
+- runner严格异常=`0`，进程自然退出后GPU=`2 MiB / 0%`且CUDA compute=`0`，formal tracked
+  worktree/index=`0/0`；运行生成的未跟踪pyc保持不动。
+
+结论：唯一真实PK64合同已消费且`PASS`，不得重跑或追加preflight。冻结上述formal HEAD，下一步从fresh
+OUTPUT_DIR启动correct正式e120；只有correct性能GO后才串行启动matched controls。

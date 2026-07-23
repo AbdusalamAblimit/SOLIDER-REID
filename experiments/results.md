@@ -3614,4 +3614,14 @@ NO-START / GPU IDLE`。性能门仍为自然e120同时严格胜sealed zero-owner
 的mAP/R1；当前没有exp414性能数字。
 
 独立设计盲审与修复后的实现复审均为`PASS / 0B / 0H`；default-off config exact、静态编译与CPU几何oracle已过。
-当前更新为`IMPLEMENTED / UNIQUE REAL PK64 CONTRACT NEXT / GPU IDLE`，仍无合同PASS或性能数字。
+首次runner因旧PyTorch不支持tuple-dim `any`在CUDA前退出，兼容修复后一次调用又因漏传必填config在argparse
+退出；两次GPU均始终`2 MiB / 0%`，没有构造真实PK64或执行CUDA，完整留痕且不计合同消费。
+
+补齐预注册config后的唯一真实PK64合同已`PASS`并自然退出：batch64、16×4，四个control均真实改变topology与
+region distance，strict MST覆盖、mutation/unused-candidate/default-off/zero-owner exact均PASS，纯region独立
+反向使Stage-3/norm3 `28/28`个可比梯度tensor finite nonzero，第5次原生GradScaler真实更新。runner严格异常0，
+退出后GPU空闲、formal tracked 0/0；runner SHA256=
+`88fd7c858c7f4fc2a5d0ef4bc5afc5b2e54f969b8904c724ac74bbb5d0a4ba17`，合同执行与冻结formal HEAD=
+`c6739b402a9e9a16f2427324536251e5ed059598`。
+
+当前=`CONTRACT PASS / FORMAL FROZEN / CORRECT E120 NEXT / C-CLASS CONDITIONAL`，仍无性能数字；合同不得重跑。
