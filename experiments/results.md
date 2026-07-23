@@ -3548,3 +3548,8 @@ zero-owner=`+0.4/-0.2/+0.2/+0.0`，相对clean D0=`+1.7/+2.4/+1.3/+1.6`。correc
 `369cfcfe867ddc5873cc2626fb415cdb34fa77b273bc00abbcc329f20f54a508`/
 `72d11b142d64e89d28cc1f15182bd9eaedbaecdf5e78da0a9d6e86f0125ec82b`。仍按预注册顺序继续fresh q-only，
 其后再运行text-shuffle，以完整封板联合归因。
+
+fresh q-only已从同一冻结formal HEAD与seed1234启动，output=`exp413-psccr-q-only-s1234-v1`，主PID=
+`77649`，不含checkpoint恢复。首批PSCCR loss/prefix=`3.266681/[4.886121,2.943134,1.970790]`，prefix3
+与zero-owner exact；e1 iter20正常、唯一CUDA、严格异常0、formal tracked 0/0。当前=`Q-ONLY RUNNING /
+JOINT ATTRIBUTION FAILED-PENDING COMPLETE CONTROLS`，text-shuffle仍`NO-START`。

@@ -6441,3 +6441,12 @@ checkpoint/train-log/runner SHA256=
 **决策**：pose-only永久封存且禁止重跑、续训或覆盖。最终`POSE+CLIP SCIENTIFIC GO`已不可能满足，但为避免
 选择性缺失控制证据，仍按预注册顺序在同一冻结formal/recipe/seed1234上运行fresh q-only，封存后再运行
 text-shuffle；不调prompt、front、budget、loss、batch或scale。
+
+### [2026-07-23] 决策：exp413 q-only matched control已fresh启动
+
+同一冻结formal HEAD与recipe只切换`PSCCR_CONTROL_MODE=q_only`并使用fresh output，未加载checkpoint；主PID=
+`77649`。config dump与首批诊断确认q-only真实生效、prefix3仍与zero-owner exact，e1 iter20正常，唯一CUDA、
+严格异常0、formal tracked 0/0。
+
+**决策**：q-only自然训练到e120并保留全部12个评测点，不因pose-only已经阻断最终科学GO而省略证据或早停；
+text-shuffle继续`NO-START`。q-only自然封存后才串行启动text-shuffle，不并行占用4090。
