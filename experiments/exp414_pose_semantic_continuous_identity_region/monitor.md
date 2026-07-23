@@ -684,3 +684,10 @@ pose-only自然完成e90=`59.4 mAP / 71.1 R1 / 83.1 R5 / 86.6 R10`；同epoch se
 e90时pose-only相对correct为mAP持平、R1/R10落后、R5微正；correct仍未在核心mAP/R1同时严格胜pose-only。
 读取时最新=`e93 iter100/227`，wrapper/训练主PID存活，唯一CUDA compute约`7060 MiB / 57%`，
 runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=`CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：pose-only e98健康检查
+
+- 最新=`e98 iter180/227`，loss=`0.106`、pose=`0.461`、acc=`0.997`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7060 MiB / 42%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e90，当前=`CONTINUE TO NATURAL E120`。
