@@ -6522,3 +6522,14 @@ R1正、R10平，同时四项胜pose-only；e60的四项负差未延续。
 
 **决策**：不把e70的R1正差选择性解释为q-only优势，也不把mAP/R5负差提前裁决为最终关系。完整保留连续
 反转，q-only继续冻结自然运行至e120，不早停、不调参、不删点；text-shuffle保持`NO-START`。
+
+### [2026-07-23] 决策：用户明确要求停止余下controls并切换下一创新点
+
+pose-only自然e120的mAP与correct持平已经使预注册`POSE+CLIP SCIENTIFIC GO`必要条件不可恢复；q-only与
+text-shuffle无论结果如何都不能改变该最终科学裁决，只能补全控制表。用户在知悉这一后果后明确回复“现在切换”，
+覆盖此前要求余下controls完整跑完的资源优先级。
+
+**决策**：先记录终止理由，再终止当前q-only主PID。q-only永久记为`USER-DIRECTED STOP / E120 VOID /
+NO RESUME`，保留已有7个正式点及全部日志但禁止续训、补跑、覆盖或跨臂拼点；text-shuffle记为
+`NO-START BY USER PRIORITY`。exp413最终保持`PERFORMANCE GO / JOINT ATTRIBUTION FAILED`，随后直接
+进入下一创新点，不再救PSCCR。

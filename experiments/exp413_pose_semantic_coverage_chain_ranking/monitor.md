@@ -620,3 +620,15 @@ e70时q-only相对correct为mAP/R5负、R1正、R10持平的混合关系，e60�
 读取时已进入e73 iter160，主PID=`77649`仍为唯一CUDA compute，GPU约`7,086 MiB / 59%`，
 runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`；36个运行生成的未跟踪pyc保持不动。
 q-only继续冻结自然运行，text-shuffle保持`NO-START`。
+
+## 2026-07-23：用户明确要求立即切换下一创新点（终止前记录）
+
+用户在获知pose-only自然e120已使最终`POSE+CLIP SCIENTIFIC GO`必要条件不可恢复后，明确回复“现在切换”。
+因此停止此前“q-only与text-shuffle仍完整跑完”的资源优先级，授权立即终止当前q-only并转入下一创新点。
+该决定不是性能早停规则的自动触发，而是用户对研究资源优先级的显式覆盖。
+
+执行终止前的真实快照：q-only主PID=`77649`仍存活且为唯一CUDA compute，已完成`79`个完整epoch与
+e10--e70共`7`个正式评测点，当前进入e80 iter160；output中无checkpoint，runner/train严格异常=`0/0`，
+formal tracked worktree/index=`0/0`。终止后必须记为`USER-DIRECTED STOP / E120 VOID / NO RESUME`，
+保留e10--e70全部描述性轨迹但不得作为e120裁决或与其他臂拼点；text-shuffle改记为
+`NO-START BY USER PRIORITY`。
