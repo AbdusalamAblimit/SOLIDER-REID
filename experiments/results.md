@@ -3675,3 +3675,11 @@ e100 PSCIR correct=`59.0/70.4/82.4/86.3`；同epoch zero-owner=`58.8/70.5/82.2/8
 e110 PSCIR correct=`59.1/70.6/82.6/86.2`；同epoch zero-owner=`58.8/70.4/81.8/86.1`、clean D0=
 `57.4/67.4/80.5/84.6`，对应差值为`+0.3/+0.2/+0.8/+0.1`与`+1.7/+3.2/+2.1/+1.6`。核心双门
 再次为正但裕量仅`0.2--0.3`；只剩e120最终点。
+
+correct自然e120=`59.2/70.7/82.7/86.3`；相对sealed zero-owner=`+0.3/+0.4/+0.8/+0.1`，相对clean D0=
+`+1.6/+3.0/+1.9/+1.7`。mAP/R1同时严格胜两个预注册关键对照，故裁决=
+`PERFORMANCE GO / ATTRIBUTION PENDING`。运行`120/120`、评测`12/12`、严格异常0、`TRAIN_EXIT=0`、GPU
+空闲、formal tracked 0/0；checkpoint/train-log/runner SHA256=
+`46e6290a0883fe6bf7e5d005da7ffea5f4e058f9cf36b95d7f62ac0a4a7e8513`/
+`328febda29a1061b30829b6d3b89478707773a5c3ddedef348bdd8152d1d1e1c`/
+`4a18ca28b8c565fafa2c3874f2098c53cd935c22fb07a9c5580000454524abfb`。下一步只串行启动pose-only。

@@ -403,3 +403,28 @@ correct自然完成e110=`59.1 mAP / 70.6 R1 / 82.6 R5 / 86.2 R10`；同epoch sea
 e110相对两个关键对照再次四项为正，但核心mAP/R1宿主裕量仍仅`+0.3/+0.2`，不能覆盖前序反转或提前GO。
 读取时最新=`e114 iter180/227`，wrapper/训练主PID存活，唯一CUDA compute约`7066 MiB / 48%`，runner/train
 严格异常=`0`，formal tracked worktree/index=`0/0`。当前=`CONTINUE TO NATURAL E120 / FINAL POINT NEXT`。
+
+## 2026-07-23：correct自然e120完成并封存
+
+correct自然完成e120=`59.2 mAP / 70.7 R1 / 82.7 R5 / 86.3 R10`；同epoch sealed zero-owner=
+`58.9/70.3/81.9/86.2`，sealed clean D0=`57.6/67.7/80.8/84.6`。最终一行：
+
+| epoch | PSCIR correct | zero-owner | clean D0 | Δzero-owner | ΔD0 |
+|---|---|---|---|---|---|
+| 120 | 59.2/70.7/82.7/86.3 | 58.9/70.3/81.9/86.2 | 57.6/67.7/80.8/84.6 | +0.3/+0.4/+0.8/+0.1 | +1.6/+3.0/+1.9/+1.7 |
+
+预注册性能门要求mAP/R1同时严格胜zero-owner与D0；e120四个核心差值均严格为正，因此correct裁决=
+`PERFORMANCE GO / ATTRIBUTION PENDING`。这只授权matched controls，不证明pose×CLIP联合归因。
+
+封存核验：
+
+- `120/120`完整epoch、`12/12`正式评测，`TRAIN_EXIT=0`，主进程自然退出；
+- runner/train严格异常=`0`，GPU=`2 MiB / 0%`且CUDA compute=`0`；
+- formal HEAD=`c6739b402a9e9a16f2427324536251e5ed059598`，tracked worktree/index=`0/0`；
+- checkpoint/train-log/runner SHA256=
+  `46e6290a0883fe6bf7e5d005da7ffea5f4e058f9cf36b95d7f62ac0a4a7e8513`/
+  `328febda29a1061b30829b6d3b89478707773a5c3ddedef348bdd8152d1d1e1c`/
+  `4a18ca28b8c565fafa2c3874f2098c53cd935c22fb07a9c5580000454524abfb`。
+
+correct产物永久封存，禁止修改、覆盖、续训或重跑。下一步按预注册以同一formal/seed/recipe和fresh OUTPUT_DIR
+串行启动`pose_only`；在其运行期间不启动其他CUDA任务。

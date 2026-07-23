@@ -6627,3 +6627,10 @@ e100=`59.0/70.4/82.4/86.3`，相对zero-owner=`+0.2/-0.1/+0.2/+0.2`，相对clea
 e110=`59.1/70.6/82.6/86.2`，相对zero-owner=`+0.3/+0.2/+0.8/+0.1`，相对clean D0=
 `+1.7/+3.2/+2.1/+1.6`。核心双门恢复但仍高度边缘；**决策保持**=
 `CONTINUE / E120 FINAL GATE / NO CONTROL START BEFORE FINAL`。
+
+correct自然e120=`59.2/70.7/82.7/86.3`，相对zero-owner=`+0.3/+0.4/+0.8/+0.1`，相对clean D0=
+`+1.6/+3.0/+1.9/+1.7`，预注册mAP/R1性能门通过。运行自然退出且完整性、异常、哈希与formal洁净性均已核验。
+
+**决策**：exp414进入`PERFORMANCE GO / ATTRIBUTION PENDING`，永久封存correct，禁止重跑/续训/覆盖；按原顺序
+严格串行启动`pose_only→q_only→text_shuffle→all_edges`。当前只授权fresh pose-only，后续controls不得并行，
+不得重跑合同或修改MST、temperature、edge公式、loss比例、seed或recipe。

@@ -4379,3 +4379,7 @@ student，不搬运CLIP或donor feature。
 PSCIR与PCVT、SKC/PSC-JEPA/PC-MSC、CASD/CAVT、PCHM、PCMPSR owner及PSCCR prefix均不等价，但经典
 convex-hull/image-set metric、概率embedding与MVI²P是明确近邻，只按`C-CLASS CONDITIONAL`推进。correct必须先在
 自然e120严格胜zero-owner的mAP/R1；否则不运行controls、不调MST、temperature、edge公式或loss比例。
+
+correct自然e120=`59.2/70.7/82.7/86.3`，相对zero-owner与clean D0的mAP/R1均严格为正，故性能门通过。
+创新状态从“仅有设计资格”更新为`PERFORMANCE GO / ATTRIBUTION PENDING`：连续identity-region对象已有性能
+证据，但pose、CLIP、文本绑定与MST拓扑必要性必须由四个matched controls逐一成立后才能进入正面贡献。

@@ -2532,3 +2532,8 @@ text-shuffle与all-edges，才允许把“pose×CLIP限定可识别身份区域�
 唯一真实PK64合同已PASS：四个matched control均改变预期的topology与region distance，zero-owner/default-off
 exact、纯region Stage-3梯度与原生GradScaler真实更新均得到验证。因此当前只通过“实现可证伪且梯度真实”的
 工程门，尚未通过任何性能或论文主张门；correct仍须自然e120后按预注册阈值裁决。
+
+correct现已自然完成e120=`59.2/70.7/82.7/86.3`，相对zero-owner=`+0.3/+0.4/+0.8/+0.1`，相对clean D0=
+`+1.6/+3.0/+1.9/+1.7`，因此性能门通过。story状态更新为`PERFORMANCE GO / ATTRIBUTION PENDING`；在
+pose-only、q-only、text-shuffle与all-edges全部完成前，只能写“连续region训练获得性能正结果”，不能写成
+pose×CLIP限定拓扑的联合贡献。
