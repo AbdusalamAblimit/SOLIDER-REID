@@ -598,3 +598,10 @@ e60时pose-only相对correct为mAP持平、R1领先、R5/R10落后；correct仍�
 pose-only自身的核心mAP/R1也低于zero-owner，保留全部不利点且不作中途裁决。读取时最新=
 `e62 iter40/227`，wrapper/训练主PID存活，唯一CUDA compute约`7088 MiB / 42%`，runner/train严格异常=
 `0`，formal tracked worktree/index=`0/0`；当前=`CONTINUE TO NATURAL E120`。
+
+## 2026-07-23：pose-only e67健康检查
+
+- 最新=`e67 iter140/227`，loss=`0.134`、pose=`0.462`、acc=`0.996`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7088 MiB / 42%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e60，当前=`CONTINUE TO NATURAL E120`。
