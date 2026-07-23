@@ -6424,3 +6424,20 @@ pose-only e110=`59.1/70.1/82.1/85.8`，相对同epoch sealed v3 correct=
 
 **决策**：e110提高最终联合归因不通过的风险，但预注册裁决仍只使用自然e120，不据中间持平早停或启动下一臂。
 pose-only继续冻结到e120，q-only与text-shuffle保持`NO-START`；禁止调参、删点或修改运行中资产。
+
+### [2026-07-23] 决策：exp413 pose-only自然完成，mAP严格归因门失败
+
+pose-only自然e120=`59.3/70.1/82.1/86.2`，相对同epoch sealed v3 correct=
+`+0.0/-0.7/-0.5/+0.2`，相对zero-owner=`+0.4/-0.2/+0.2/+0.0`，相对clean D0=
+`+1.7/+2.4/+1.3/+1.6`。correct虽在R1/R5分别高`0.7/0.5`，但mAP与pose-only持平且R10低`0.2`；
+因此correct在mAP/R1同时严格胜pose-only的预注册必要条件已经失败。
+
+完整性核验为`120/120` epoch、`12/12`评测点、自然退出、GPU空闲、严格异常0、formal tracked 0/0；
+checkpoint/train-log/runner SHA256=
+`993277d15cdcf3342f2f2e0f505f335ed12df6e38507dc75ef455559af769396`/
+`369cfcfe867ddc5873cc2626fb415cdb34fa77b273bc00abbcc329f20f54a508`/
+`72d11b142d64e89d28cc1f15182bd9eaedbaecdf5e78da0a9d6e86f0125ec82b`。
+
+**决策**：pose-only永久封存且禁止重跑、续训或覆盖。最终`POSE+CLIP SCIENTIFIC GO`已不可能满足，但为避免
+选择性缺失控制证据，仍按预注册顺序在同一冻结formal/recipe/seed1234上运行fresh q-only，封存后再运行
+text-shuffle；不调prompt、front、budget、loss、batch或scale。

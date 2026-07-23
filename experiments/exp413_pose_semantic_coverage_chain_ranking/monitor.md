@@ -478,3 +478,26 @@ correct双核心严格领先在e110因mAP持平而中断，不能写成连续第
 R1/R10负的混合关系，且四项高于D0。读取时已进入e113 iter40，主PID=`40519`仍为唯一CUDA compute，
 GPU约`7,076 MiB / 69%`，runner/train严格异常=`0/0`，formal tracked worktree/index=`0/0`。继续冻结
 运行并保留全部反转，只在自然e120作最终双核心裁决。
+
+## 2026-07-23：pose-only自然e120完成并封存
+
+pose-only原始runner最终结果=`59.3/70.1/82.1/86.2`。同epoch sealed v3 correct=
+`59.3/70.8/82.6/86.0`，sealed zero-owner=`58.9/70.3/81.9/86.2`，sealed clean D0=
+`57.6/67.7/80.8/84.6`；因此pose-only−correct=`+0.0/-0.7/-0.5/+0.2`，pose-only−zero-owner=
+`+0.4/-0.2/+0.2/+0.0`，pose-only−D0=`+1.7/+2.4/+1.3/+1.6`。
+
+e120时correct仅R1/R5严格领先pose-only，mAP持平且R10低`0.2`。由于预注册科学门要求correct的mAP/R1
+同时严格胜每个control，pose-only的mAP持平已经使最终`POSE+CLIP SCIENTIFIC GO`必要条件不成立；但仍按
+预注册顺序完整运行q-only与text-shuffle，不提前删减对照。
+
+主PID=`40519`已消失，runner含`Epoch 120 done`与完整e120评测，GPU为`2 MiB / 0%`且无CUDA compute。
+共核验`120/120`个epoch完成、`12/12`个e10--e120评测点、runner/train严格异常=`0/0`、formal HEAD=
+`add6adae4d192da4c44bf44120dd571f0dfe14e1`且tracked worktree/index=`0/0`。checkpoint/train-log/runner
+SHA256依次为：
+
+- `993277d15cdcf3342f2f2e0f505f335ed12df6e38507dc75ef455559af769396`；
+- `369cfcfe867ddc5873cc2626fb415cdb34fa77b273bc00abbcc329f20f54a508`；
+- `72d11b142d64e89d28cc1f15182bd9eaedbaecdf5e78da0a9d6e86f0125ec82b`。
+
+pose-only现永久封存，禁止重跑、续训、覆盖或修改产物。下一步仅授权同一冻结formal、recipe、资产和seed1234
+上的fresh q-only；text-shuffle继续`NO-START`直到q-only自然封存。

@@ -3539,3 +3539,12 @@ pose-only e100=`59.1/70.0/81.8/85.7`；相对同epoch v3 correct=`-0.1/-0.4/-0.4
 pose-only e110=`59.1/70.1/82.1/85.8`；相对同epoch v3 correct=`+0.0/-0.4/-0.2/+0.0`，相对zero-owner=
 `+0.3/-0.3/+0.3/-0.3`，相对clean D0=`+1.7/+2.7/+1.6/+1.2`。mAP/R10与correct持平、R1/R5低于
 correct，故e60--e100连续五点的双核心严格领先在e110中断；完整保留该关系并继续自然到e120。
+
+pose-only自然e120=`59.3/70.1/82.1/86.2`；相对同epoch v3 correct=`+0.0/-0.7/-0.5/+0.2`，相对
+zero-owner=`+0.4/-0.2/+0.2/+0.0`，相对clean D0=`+1.7/+2.4/+1.3/+1.6`。correct的R1/R5领先，
+但mAP持平且R10低`0.2`，故correct严格胜pose-only的mAP/R1必要条件已失败。pose-only已自然退出并永久封存：
+`120/120` epoch、`12/12`评测、GPU空闲、异常0、formal tracked 0/0；checkpoint/train-log/runner SHA256=
+`993277d15cdcf3342f2f2e0f505f335ed12df6e38507dc75ef455559af769396`/
+`369cfcfe867ddc5873cc2626fb415cdb34fa77b273bc00abbcc329f20f54a508`/
+`72d11b142d64e89d28cc1f15182bd9eaedbaecdf5e78da0a9d6e86f0125ec82b`。仍按预注册顺序继续fresh q-only，
+其后再运行text-shuffle，以完整封板联合归因。
