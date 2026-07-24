@@ -6793,7 +6793,8 @@ selector与独立blind颜色事实agreement仅`1/512`；raw-color和D0-hard强�
 
 ### [2026-07-24] 决策：下一唯一首选为PC-NEC，但只授权无训练fuel audit设计
 
-三路复盘把下一逻辑从“补全同一身份”改为“排除错误身份”。PC-NEC只问共同真实可见槽是否存在可靠语义矛盾：
+三路复盘把下一逻辑从“补全同一身份”改为“排除错误身份”。PC-NEC只问pose-estimated共同可用槽是否存在
+可靠语义矛盾：
 pose建立解剖对应，CLIP给矛盾/未决证据，未来student对全部跨PID候选学习存在性负证据证书；推理仍只用global
 RGB descriptor。它不选择hard pair、不改变candidate bank、不搬运feature、不生成pixel edit，也不回到
 owner/prefix/MST/proxy/router。
@@ -6801,7 +6802,8 @@ owner/prefix/MST/proxy/router。
 **当前授权边界**：
 
 1. 只建立exp416设计、候选bank/metric合同与子agent致命bug/变量混淆/旧同构复审；
-2. bank必须在读取pose/CLIP前由sealed D0冻结，所有arm共享全部跨相机真匹配与top-20跨ID impostor；
+2. bank必须在读取pose/CLIP前由sealed D0冻结，所有arm共享全部跨相机真匹配与按genuine
+   candidate-camera频数分层匹配的top-20跨ID impostor；
 3. fuel audit只读、不更新optimizer、不写checkpoint；诊断重排不得进入正式方法；
 4. correct的AUROC/AUPRC须相对最强control各`+0.03`，同bank诊断mAP/R1相对D0至少`+1.0/+1.0`、
    相对最强control至少`+0.5/+0.5`，PID-bootstrap下界大于0且覆盖至少80%；
@@ -6819,3 +6821,56 @@ relation KD或test-time part matching。
 **决策**：只授权实现无optimizer/checkpoint的fuel runner与CPU/static合同，并在真实执行前再次做三路实现复审。
 当前不授权创建训练config、真实PK64或e120；任何实现若改变candidate bank、主指标、control或future数学对象，
 必须先回到design审查。
+
+### [2026-07-24] 决策：exp416在formal前修正统计/梯度合同，仍只授权fuel
+
+新一轮三路复盘收紧了旧结论：exp409不能归入同PID交换对称性；exp413 q-only未自然e120；exp414 q-only仍使用
+pose-defined region cache；CAVT只能记科学未评估、工程路线关闭。PC-NEC仍是唯一先做kill-switch的候选，
+PS-ODM/APCO/MH-PSO只保留条件备选。
+
+实现复审的`2B/3H`已修复：geometry gate在D0/CLIP加载前重算并阻断，audit在任何asset读取前创建
+`started.json`，fuel内嵌bank/geometry SHA，四阶段逐级校验HEAD/receipt/manifest/source，异常永久
+`resume_allowed=false`，成功/失败均0444/0555封存。非D0置信门改为每个PID-bootstrap replicate内七control
+paired差的最小值。
+
+future原式`softplus(m+LSE_C-LSE_U)`会主动提高未决负身份相似度，故旧future数学合同废止。新条件合同必须：
+
+- `U`只作stop-gradient reference；
+- `C/U`使用normalized logmeanexp；
+- certificate descriptor与离线证书观察同一deterministic official RGB view；
+- fuel GO后、PK64前另过held-out-PID threshold-feasibility门。
+
+**决策**：这些修正发生在任何formal结果前，不构成事后调门。当前仍只授权唯一无训练fuel audit；final只读
+回归未清零或远端状态无法真实核验时，不创建任何formal namespace，更不授权PK64/e120。
+
+### [2026-07-24] 决策：PC-NEC补齐camera与identity-level证书门，不扩大主张
+
+最终实现回归发现原bank的genuine只来自跨相机，而任意top-20 impostor可能让标签与candidate camera分布混淆。
+现按每个query的genuine candidate-camera频数分层：每个出现的camera至少1个impostor，剩余quota用
+largest-remainder分配，并只在对应camera stratum内按D0距离选跨PID候选；任一quota不足在pose/CLIP前INVALID。
+
+同时明确当前不使用OpenCLIP text encoder，科学对象只叫`OpenCLIP image encoder region visual evidence`。
+即使连续fuel GO，仍须raw-PID五折cross-fitting冻结阈值，并同时满足identity-level genuine误证`<=1%`、
+负身份PID-macro coverage `>=30%`、`C/U`同时非空anchor `>=80%`。
+
+**决策**：第一名最终只读回归=`PASS / 0B / 0H`；第二名机制终审完成前保持formal NO-START。该修复不提高
+PC-NEC的预期性能承诺，只消除变量混淆并把训练前否决门变得可判定。
+
+### [2026-07-24] 决策：D0 signal不能外推zero-owner收益，exp416 formal继续硬阻断
+
+最终两名效能红队给出`2B/2H`。第一，现有fuel只问OpenCLIP evidence能否改善sealed D0候选内排序，而future
+宿主是zero-owner；历史最稳定证据正是zero-owner吞掉新增语义残差。第二，top-20 image bank没有定义随机PK64
+全部负身份pair，原threshold coverage中的`P`不可执行。
+
+四个候选中只保留修订PC-NEC进入下一次无训练否决门：
+
+- 在sealed zero-owner上检验证书是否富集真正残余误排序身份，而非排斥已容易负身份；
+- 冻结确定性`16×4` batch，全部`64×64` pair从按图pose/OpenCLIP cache动态得到证书，禁止missing/fallback；
+- 明确`P=16`、15个负身份，并保持identity误证`<=1%`、coverage`>=30%`、`C/U`非空`>=80%`；
+- exact `L_cert`无更新backward须与独立zero-owner全排序梯度正向对齐，correct相对每个control的
+  PID-bootstrap下界均`>0`。
+
+PS-ODM与APCO不自动递补：前者难以把普通真实遮挡增强收益归因给CLIP，后者与adversarial erasing近乎同构。
+
+**决策**：当前不运行已实现的D0 formal；`static_contract.py --formal`硬阻断。只有consumer-aligned gate
+实现、复审和本地合同全部通过，才重新讨论一次无训练正式执行；仍不授权任何optimizer/PK64训练/e120。

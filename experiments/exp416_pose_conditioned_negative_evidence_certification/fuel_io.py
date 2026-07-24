@@ -6,6 +6,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import stat
 import subprocess
 from pathlib import Path
 
@@ -226,6 +227,27 @@ def assert_no_cuda_compute_processes() -> None:
             "exp416 requires an idle CUDA device: "
             + json.dumps(processes, sort_keys=True)
         )
+
+
+def seal_directory(directory) -> None:
+    """Physically seal one flat artifact namespace as files=0444, dir=0555."""
+    root = Path(directory)
+    if not root.is_dir():
+        raise NotADirectoryError(root)
+    for path in sorted(root.iterdir()):
+        if not path.is_file():
+            raise RuntimeError(
+                "artifact namespace must be flat before sealing: " + str(path)
+            )
+        path.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+    root.chmod(
+        stat.S_IRUSR
+        | stat.S_IXUSR
+        | stat.S_IRGRP
+        | stat.S_IXGRP
+        | stat.S_IROTH
+        | stat.S_IXOTH
+    )
 
 
 def run_self_test() -> None:

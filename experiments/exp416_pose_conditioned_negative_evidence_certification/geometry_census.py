@@ -12,6 +12,8 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -28,7 +30,22 @@ import fuel_io
 
 
 SCHEMA = "exp416-pcnec-geometry-v1"
-BANK_SCHEMA = "exp416-pcnec-bank-v1"
+BANK_SCHEMA = "exp416-pcnec-candidate-bank-v1"
+STARTED_SCHEMA = "exp416-pcnec-geometry-started-v1"
+FAILURE_SCHEMA = "exp416-pcnec-geometry-failure-v1"
+MANIFEST_SCHEMA = "exp416-pcnec-geometry-manifest-v1"
+EXPECTED_INTERPRETER = Path("/usr/local/anaconda3/envs/mmpose-abu/bin/python")
+FIXED_REPOSITORY_ROOT = Path("/home/afr/SOLIDER-REID-exp416-pcnec-formal-v1")
+FIXED_BANK = Path(
+    "/home/afr/reid-clean/assets/exp416-pcnec-candidate-bank-v1/"
+    "candidate_bank.npz"
+)
+FIXED_POSE_ARTIFACT = Path(
+    "/mnt1/afrderived/exp386_occluded_duke_vitpose_huge_train"
+)
+FIXED_OUTPUT_DIR = Path(
+    "/home/afr/reid-clean/assets/exp416-pcnec-geometry-v1"
+)
 EXPECTED_TRAIN_COUNT = 15618
 EXPECTED_POSE_MANIFEST_SHA256 = (
     "cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8"
@@ -49,9 +66,20 @@ SLOT_JOINTS = (
     (11, 12, 13, 14),
     (13, 14, 15, 16),
 )
+# Rectangle support follows the endpoints of the frozen REGION_SEGMENTS.
+# In particular, lower_torso is not a pelvis stripe: its box spans the
+# shoulder-to-hip segments while its mechanical availability still requires
+# the two lower-torso owner joints (left/right hip).
+SLOT_GEOMETRY_JOINTS = (
+    (0, 1, 2, 3, 4),
+    (5, 6, 7, 8, 9, 10),
+    (5, 6, 11, 12),
+    (11, 12, 13, 14),
+    (13, 14, 15, 16),
+)
 
-# Frozen before the census.  A slot is "real visible" only if at least two of
-# its ontology joints are geometrically valid and have ViTPose score >= 0.30.
+# Frozen before the census.  A slot is pose-estimated available only if at
+# least two ontology joints are geometrically valid with ViTPose score >= 0.30.
 JOINT_SCORE_MIN = 0.30
 MIN_VISIBLE_JOINTS = 2
 
@@ -130,7 +158,15 @@ def slot_geometry(keypoints, scores, valid, image_size):
         selected = active[indices] & (confidence[indices] >= JOINT_SCORE_MIN)
         if int(selected.sum()) < MIN_VISIBLE_JOINTS:
             continue
-        values = normalized[indices[selected]]
+        geometry_indices = np.asarray(
+            SLOT_GEOMETRY_JOINTS[slot], dtype=np.int64
+        )
+        geometry_selected = active[geometry_indices] & (
+            confidence[geometry_indices] >= JOINT_SCORE_MIN
+        )
+        values = normalized[geometry_indices[geometry_selected]]
+        if len(values) < MIN_VISIBLE_JOINTS:
+            raise RuntimeError("available slot lacks rectangle support")
         centers[slot] = values.mean(axis=0)
         spans[slot] = values.max(axis=0) - values.min(axis=0)
         slot_confidence[slot] = confidence[indices[selected]].mean()
@@ -342,6 +378,25 @@ def build_census(bank_path, bank_sha256, pose_artifact, pose_manifest_sha256):
         "canonical_centers_xy": canonical_centers.astype(np.float32),
         "canonical_rectangles": canonical_rectangles,
         "crop_hw": crop_hw,
+        "geometry_gate_pass": np.asarray(
+            [
+                bool(
+                    coverage["query_coverage_gate"]
+                    and all(coverage["slot_pair_gates"])
+                    and all(coverage["slot_pid_gates"])
+                )
+            ],
+            dtype=np.bool_,
+        ),
+        "query_coverage": np.asarray(
+            [coverage["query_coverage"]], dtype=np.float64
+        ),
+        "common_pair_count_by_slot": np.asarray(
+            coverage["common_pair_count_by_slot"], dtype=np.int64
+        ),
+        "query_pid_count_by_slot": np.asarray(
+            coverage["query_pid_count_by_slot"], dtype=np.int64
+        ),
     }
     summary = {
         "schema": SCHEMA,
@@ -412,14 +467,127 @@ def run_self_test():
     print("EXP416_GEOMETRY_SELF_TEST=PASS")
 
 
+def _git_file_is_tracked(repository, path):
+    result = subprocess.run(
+        (
+            "git",
+            "-C",
+            str(repository),
+            "ls-files",
+            "--error-unmatch",
+            str(Path(path).resolve().relative_to(Path(repository).resolve())),
+        ),
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return result.returncode == 0
+
+
+def validate_formal(args):
+    if not args.formal:
+        raise RuntimeError("non-self-test geometry requires --formal")
+    if os.environ.get("PYTHONDONTWRITEBYTECODE") != "1":
+        raise RuntimeError("formal geometry requires PYTHONDONTWRITEBYTECODE=1")
+    if os.environ.get("PYTHONHASHSEED") != "0":
+        raise RuntimeError("formal geometry requires PYTHONHASHSEED=0")
+    if Path(sys.executable).resolve() != EXPECTED_INTERPRETER.resolve(strict=True):
+        raise RuntimeError("formal geometry interpreter mismatch")
+    if REPOSITORY_ROOT.resolve(strict=True) != FIXED_REPOSITORY_ROOT:
+        raise RuntimeError("formal geometry repository path mismatch")
+    exact_paths = {
+        "bank": FIXED_BANK,
+        "pose_artifact": FIXED_POSE_ARTIFACT,
+        "output_dir": FIXED_OUTPUT_DIR,
+    }
+    for name, expected in exact_paths.items():
+        observed = Path(getattr(args, name)).expanduser()
+        if observed != expected:
+            raise RuntimeError("formal geometry fixed path mismatch: " + name)
+    if FIXED_OUTPUT_DIR.exists():
+        raise FileExistsError("formal geometry output must be fresh")
+    if not FIXED_OUTPUT_DIR.parent.is_dir():
+        raise NotADirectoryError(FIXED_OUTPUT_DIR.parent)
+    for path in (FIXED_BANK, FIXED_POSE_ARTIFACT):
+        path.resolve(strict=True)
+    head = fuel_io.git_head(REPOSITORY_ROOT)
+    if not args.expected_head or str(args.expected_head) != head:
+        raise RuntimeError("formal geometry HEAD mismatch")
+    if fuel_io.git_tracked_status(REPOSITORY_ROOT):
+        raise RuntimeError("formal geometry tracked worktree is dirty")
+    if fuel_io.git_index_status(REPOSITORY_ROOT):
+        raise RuntimeError("formal geometry index is dirty")
+    expected_sources = {
+        "geometry_census.py": str(args.expected_geometry_sha256),
+        "fuel_io.py": str(args.expected_fuel_io_sha256),
+    }
+    for filename, expected in expected_sources.items():
+        path = SCRIPT_DIR / filename
+        if not expected or fuel_io.sha256_file(path) != expected:
+            raise RuntimeError("formal geometry source SHA mismatch: " + filename)
+        if not _git_file_is_tracked(REPOSITORY_ROOT, path):
+            raise RuntimeError("formal geometry source is untracked: " + filename)
+    bank_receipt_path = FIXED_BANK.parent / "receipt.json"
+    bank_manifest_path = FIXED_BANK.parent / "manifest.json"
+    bank_receipt = fuel_io.readback_json(bank_receipt_path)
+    bank_manifest = fuel_io.readback_json(bank_manifest_path)
+    if (
+        bank_receipt.get("schema")
+        != "exp416-pcnec-candidate-bank-receipt-v1"
+        or bank_manifest.get("schema")
+        != "exp416-pcnec-candidate-bank-manifest-v1"
+        or bank_manifest.get("files", {})
+        .get("candidate_bank.npz", {})
+        .get("sha256")
+        != str(args.bank_sha256)
+        or bank_manifest.get("files", {}).get("receipt.json", {}).get("sha256")
+        != fuel_io.sha256_file(bank_receipt_path)
+        or bank_receipt.get("provenance", {}).get("formal_head") != head
+    ):
+        raise RuntimeError("candidate artifact provenance binding mismatch")
+    fuel_io.assert_no_cuda_compute_processes()
+    _require_no_clip_import()
+    return {
+        "head": head,
+        "source_sha256": {
+            filename: fuel_io.sha256_file(SCRIPT_DIR / filename)
+            for filename in expected_sources
+        },
+        "bank_receipt_sha256": fuel_io.sha256_file(bank_receipt_path),
+        "bank_manifest_sha256": fuel_io.sha256_file(bank_manifest_path),
+    }
+
+
+def _write_failure(output_dir, *, stage, error, validated):
+    failure = {
+        "schema": FAILURE_SCHEMA,
+        "status": "FAILED",
+        "stage": str(stage),
+        "error_type": type(error).__name__,
+        "error_message": str(error),
+        "resume_allowed": False,
+        "formal_head": validated["head"],
+        "source_sha256": validated["source_sha256"],
+        "bank_receipt_sha256": validated["bank_receipt_sha256"],
+    }
+    path = output_dir / "failure.json"
+    if not path.exists() and not path.with_name(path.name + ".tmp").exists():
+        fuel_io.atomic_json(path, failure)
+        fuel_io.readback_json(path, failure)
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument("--formal", action="store_true")
     parser.add_argument("--bank")
     parser.add_argument("--bank-sha256")
     parser.add_argument("--pose-artifact")
     parser.add_argument("--pose-manifest-sha256")
     parser.add_argument("--output-dir")
+    parser.add_argument("--expected-head")
+    parser.add_argument("--expected-geometry-sha256")
+    parser.add_argument("--expected-fuel-io-sha256")
     return parser.parse_args()
 
 
@@ -434,44 +602,102 @@ def main():
         "pose_artifact",
         "pose_manifest_sha256",
         "output_dir",
+        "expected_head",
+        "expected_geometry_sha256",
+        "expected_fuel_io_sha256",
     )
     missing = [name for name in required if not getattr(args, name)]
     if missing:
         raise ValueError("missing formal arguments: " + ",".join(missing))
+    validated = validate_formal(args)
     output_dir = Path(args.output_dir).expanduser()
     if not output_dir.is_absolute() or output_dir.exists():
         raise FileExistsError("geometry output directory must be fresh and absolute")
     if output_dir.parent.resolve() != output_dir.resolve().parent:
         raise RuntimeError("geometry output parent is not canonical")
     output_dir.mkdir(mode=0o755, parents=False)
-    arrays, summary = build_census(
-        args.bank,
-        args.bank_sha256,
-        args.pose_artifact,
-        args.pose_manifest_sha256,
-    )
-    cache_path = output_dir / "geometry.npz"
-    summary_path = output_dir / "summary.json"
-    fuel_io.atomic_npz(cache_path, arrays)
-    fuel_io.readback_npz(cache_path, arrays)
-    summary["geometry_npz"] = str(cache_path)
-    summary["geometry_npz_sha256"] = fuel_io.sha256_file(cache_path)
-    fuel_io.atomic_json(summary_path, summary)
-    fuel_io.readback_json(summary_path, summary)
-    manifest = {
-        "schema": SCHEMA,
-        "geometry_npz": str(cache_path),
-        "geometry_npz_sha256": fuel_io.sha256_file(cache_path),
-        "summary_json": str(summary_path),
-        "summary_json_sha256": fuel_io.sha256_file(summary_path),
-        "source_files": {
-            "geometry_census.py": fuel_io.sha256_file(Path(__file__).resolve()),
-            "fuel_io.py": fuel_io.sha256_file(SCRIPT_DIR / "fuel_io.py"),
-        },
+    started = {
+        "schema": STARTED_SCHEMA,
+        "status": "STARTED",
+        "resume_allowed": False,
+        "formal_head": validated["head"],
+        "source_sha256": validated["source_sha256"],
+        "bank": str(args.bank),
+        "bank_sha256": str(args.bank_sha256),
+        "bank_receipt_sha256": validated["bank_receipt_sha256"],
+        "bank_manifest_sha256": validated["bank_manifest_sha256"],
+        "pose_artifact": str(args.pose_artifact),
+        "pose_manifest_sha256": str(args.pose_manifest_sha256),
     }
-    manifest_path = output_dir / "manifest.json"
-    fuel_io.atomic_json(manifest_path, manifest)
-    fuel_io.readback_json(manifest_path, manifest)
+    stage = "started_write"
+    try:
+        started_path = output_dir / "started.json"
+        fuel_io.atomic_json(started_path, started)
+        fuel_io.readback_json(started_path, started)
+        stage = "geometry_census"
+        arrays, summary = build_census(
+            args.bank,
+            args.bank_sha256,
+            args.pose_artifact,
+            args.pose_manifest_sha256,
+        )
+        cache_path = output_dir / "geometry.npz"
+        summary_path = output_dir / "summary.json"
+        fuel_io.atomic_npz(cache_path, arrays)
+        fuel_io.readback_npz(cache_path, arrays)
+        summary.update(
+            {
+                "formal_head": validated["head"],
+                "source_sha256": validated["source_sha256"],
+                "bank_receipt_sha256": validated["bank_receipt_sha256"],
+                "bank_manifest_sha256": validated[
+                    "bank_manifest_sha256"
+                ],
+                "geometry_npz": str(cache_path),
+                "geometry_npz_sha256": fuel_io.sha256_file(cache_path),
+            }
+        )
+        fuel_io.atomic_json(summary_path, summary)
+        fuel_io.readback_json(summary_path, summary)
+        stage = "manifest_write"
+        manifest = {
+            "schema": MANIFEST_SCHEMA,
+            "formal_head": validated["head"],
+            "source_sha256": validated["source_sha256"],
+            "bank_sha256": str(args.bank_sha256),
+            "geometry_npz": str(cache_path),
+            "geometry_npz_sha256": fuel_io.sha256_file(cache_path),
+            "summary_json": str(summary_path),
+            "summary_json_sha256": fuel_io.sha256_file(summary_path),
+            "files": {
+                name: {
+                    "bytes": int((output_dir / name).stat().st_size),
+                    "sha256": fuel_io.sha256_file(output_dir / name),
+                }
+                for name in (
+                    "started.json",
+                    "geometry.npz",
+                    "summary.json",
+                )
+            },
+            "resume_allowed": False,
+        }
+        manifest_path = output_dir / "manifest.json"
+        fuel_io.atomic_json(manifest_path, manifest)
+        fuel_io.readback_json(manifest_path, manifest)
+        fuel_io.seal_directory(output_dir)
+    except BaseException as error:
+        try:
+            _write_failure(
+                output_dir,
+                stage=stage,
+                error=error,
+                validated=validated,
+            )
+            fuel_io.seal_directory(output_dir)
+        except BaseException:
+            pass
+        raise
     print(json.dumps(manifest, ensure_ascii=False, sort_keys=True), flush=True)
 
 

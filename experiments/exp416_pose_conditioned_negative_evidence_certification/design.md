@@ -2,10 +2,13 @@
 
 ## 当前阶段
 
-`DESIGN ONLY / FUEL AUDIT NO-START / TRAINING NO-START`
+`D0 SIGNAL DIAGNOSTIC IMPLEMENTATION PASS / EFFECTIVENESS RED TEAM BLOCKED 2B/2H /
+CONSUMER-ALIGNED GATE DESIGN NEXT / REMOTE FORMAL NO-START / TRAINING NO-START`
 
-本实验首先只设计一次无训练fuel audit。设计通过子agent致命bug、变量混淆与旧机制同构复审前，不实现正式runner、
-不连接远端GPU。fuel audit任一主门失败即停止PC-NEC并记`NO CANDIDATE`，不进入PK64或e120。
+现有runner只实现“sealed D0固定bank上是否存在OpenCLIP region增量”的无训练signal diagnostic。
+代码/统计实现回归未发现致命bug，但独立效能红队发现两个训练因果BLOCKER：future宿主是zero-owner而非D0，
+且top-20 image bank没有覆盖future PK64全部负身份pair。consumer-aligned residual gate与全PK64 pair域
+闭合之前，不创建formal asset、不运行真实fuel、不进入PK64或e120。
 
 ## 动机
 
@@ -16,9 +19,9 @@ exp395--415已经排除两类反复失败的对象：
 
 single-image support incomplete并不只意味着“需要补全”。它还给出一个不对称事实：
 
-> 部分观测通常不足以证明同一身份，但双方共同真实可见的解剖槽中，一个可靠语义矛盾可以排除错误身份。
+> 部分观测通常不足以证明同一身份，但双方被pose估计为共同可用的解剖槽中，一个可靠语义矛盾可能排除错误身份。
 
-PC-NEC因此不预测缺失区域、不生成完整feature，也不让CLIP定义identity。它只研究pose对齐的真实可见槽中，
+PC-NEC因此不预测缺失区域、不生成完整feature，也不让CLIP定义identity。它只研究pose对齐的共同可用槽中，
 CLIP是否相对raw pixel与student part baseline提供不可替代的跨身份负证据。
 
 ## 核心假设
@@ -30,7 +33,12 @@ CLIP是否相对raw pixel与student part baseline提供不可替代的跨身份�
 3. 其收益不能由canonical-location crop、raw color、student part、slot shuffle或wrong RGB解释；
 4. 覆盖大多数query，而不是依靠稀疏post-hoc caliper。
 
-只有该假设先成立，才有理由把它变成训练期negative-evidence certificate。
+该假设只构成必要的signal kill-switch。即使全部成立，也不能直接说明zero-owner宿主还存在可利用残差，
+更不能授权训练期negative-evidence certificate。
+
+本审计中的“CLIP”严格指冻结OpenCLIP image encoder的region visual representation；不读取text encoder、
+prompt或语言相似度。正结果只能支持`OpenCLIP visual region evidence`相对当前matched controls具有增量，
+不能声称语言对齐语义不可替代，也不能外推为胜过所有非语言visual foundation encoder。
 
 ## 与旧机制的边界
 
@@ -44,7 +52,7 @@ CLIP是否相对raw pixel与student part baseline提供不可替代的跨身份�
 
 KPR/BPBreID共同可见part matching、PAT-CSL跨ID视觉邻居、Instruct-ReID语义margin和普通part-aware metric
 learning是强近邻。当前只能主张
-`fixed full candidate bank + real common-visible slots + train-only existential negative certificate +
+`fixed full candidate bank + pose-estimated common-available slots + train-only existential negative certificate +
 global-only retrieval`的整体窄差分。
 
 ## Fuel audit技术方案
@@ -57,8 +65,8 @@ global-only retrieval`的整体窄差分。
 - 折只用于cross-fitting诊断组合系数与PID-bootstrap，不能改变candidate bank或arm分数。
 
 sealed D0已经在official train上训练，因此本审计只声称“冻结CLIP变量在固定hard bank中的相对燃料”，不把D0
-候选内绝对指标写成未见PID泛化或论文性能结果。若需要论文级泛化证据，必须在fuel GO后另立不接触测试集的
-held-out训练协议，不能把本审计放大。
+候选内绝对指标写成未见PID泛化或论文性能结果。若需要论文级泛化证据，必须先通过consumer-aligned残差门，
+再另立不接触测试集的held-out训练协议，不能把本审计放大。
 
 ### 2. 先冻结共同candidate bank
 
@@ -66,12 +74,14 @@ held-out训练协议，不能把本审计放大。
 
 1. 用sealed D0 global RGB descriptor计算距离；
 2. 每个query保留全部跨相机同PID真匹配；
-3. 再保留D0最近的top-20跨PID impostor；
+3. 按真匹配candidate camera频数，先给每个出现的camera stratum预留至少1个impostor，再对剩余
+   `20-|camera support|`用largest-remainder分配quota；每个stratum内只保留D0最近的quota个跨PID impostor；
 4. 写入有序`query/candidate/PID/camera/D0 distance` manifest与SHA；
 5. 所有arm逐pair读取同一manifest；不允许semantic score改变候选、完整率或分母。
 
-若query缺真匹配或不足20个跨PID候选，必须在读取pose/CLIP前按统一固定规则处理并计入receipt；禁止arm-specific
-drop。
+若query缺真匹配或任一camera quota没有足够跨PID候选，必须在读取pose/CLIP前使bank INVALID；禁止arm-specific
+drop或退回camera-confounded候选。由此每个query内genuine/impostor的candidate-camera分布按预注册quota匹配，
+不能把camera-pair shortcut解释成身份负证据。
 
 ### 3. 共同可见槽
 
@@ -119,8 +129,9 @@ fuel audit不训练certificate head；它只检验该固定分数是否在真匹
 2. `pose-only/student-part`：相同槽，固定使用sealed D0 eval输出的最后一个Swin normalized feature map
    `featmaps[-1]`；把同一输入像素slot rectangle以area interpolation缩到feature-map尺寸，按fractional
    mask作加权均值并L2 normalize，槽矛盾固定为`1-cosine`。禁止选择其他stage、hook、BN feature或层组合；
-3. `CLIP-only`：准确命名为`canonical-location CLIP`；共享correct的slot availability与固定crop高宽，
-   但crop函数不读instance pose坐标，只使用五个frozen canonical center和同一CLIP距离；
+3. `canonical-location CLIP`：它不是严格pose-free/CLIP-only，因为仍共享correct的pose-estimated
+   slot availability；它只消融instance pose center。crop函数不读instance pose坐标，只使用五个
+   frozen canonical center、相同固定crop高宽和同一CLIP距离；
 4. `neither`：与`canonical-location CLIP`共享同一availability bitmap、逐槽固定高宽和frozen canonical
    center，只把CLIP距离替换为raw-color距离；不得退回不同面积的horizontal stripe；
 5. `slot-shuffle`：保持region与分数分布，固定循环错配槽索引；
@@ -164,8 +175,9 @@ held-out折。最终只汇总五个held-out折的out-of-fold预测；禁止为co
 D0-only固定`lambda=0`，不参与选择。
 
 “最强control”按每个主指标分别在完整out-of-fold输出上取数值最大的非D0 control；并列时按第5节control顺序
-取最前者。AUROC、AUPRC、mAP、R1可对应不同最强control，必须分别记录arm名称。gate 1和gate 3等价于要求
-correct超过每一个非D0 control的相应门，而不是事后挑一个较弱control。
+取最前者。AUROC、AUPRC、mAP、R1可对应不同最强control，必须分别记录arm名称。point-estimate gate 1和
+gate 3等价于要求correct超过每一个非D0 control的相应门，而不是事后挑一个较弱control。bootstrap不把这个
+sample-selected arm固定后冒充同时推断，而在每个replicate上取correct对全部七个control paired差的最小值。
 
 ### 7. PID-bootstrap唯一合同
 
@@ -180,15 +192,16 @@ correct超过每一个非D0 control的相应门，而不是事后挑一个较弱
 - one-sided 95% lower固定为10,000个paired delta的线性经验5%分位数；
 - 不按fold、camera、slot或arm complete率分层，不丢`UNDECIDED`；
 - 六个核心下界分别对应：
-  1. correct AUROC减完整输出上预先确定的AUROC最强control；
-  2. correct AUPRC减AUPRC最强control；
+  1. 每个bootstrap replicate内，correct AUROC减七个非D0 control AUROC paired差的最小值；
+  2. 每个replicate内，correct AUPRC减七个非D0 control AUPRC paired差的最小值；
   3. correct combined mAP减D0-only；
   4. correct combined R1减D0-only；
-  5. correct combined mAP减mAP最强control；
-  6. correct combined R1减R1最强control。
+  5. 每个replicate内，correct combined mAP减七个非D0 control mAP paired差的最小值；
+  6. 每个replicate内，correct combined R1减七个非D0 control R1 paired差的最小值。
 
-每个bootstrap replicate都从同一抽样PID occurrence计算correct与指定control的paired差；arm完整率或metric
-不可用必须使整个audit INVALID，不能改为complete-case。
+每个bootstrap replicate都从同一抽样PID occurrence计算全部paired差；四个非D0下界使用
+`min_k(M_correct-M_control_k)`，两个D0下界使用单独paired差。arm完整率或metric不可用必须使整个audit
+INVALID，不能改为complete-case。
 
 ## 预注册GO门
 
@@ -201,7 +214,7 @@ correct超过每一个非D0 control的相应门，而不是事后挑一个较弱
 5. 至少80%的固定query存在可用共同可见槽；
 6. 五个槽各自均达到预注册的最小pair/PID覆盖；具体绝对门必须由不读取CLIP分数的CPU geometry census先冻结；
 7. correct的PID-macro AUROC、AUPRC、combined mAP与combined R1分别严格胜
-   pose-only/raw-color、pose-only/student-part、CLIP-only、neither、slot-shuffle、wrong-RGB与
+   pose-only/raw-color、pose-only/student-part、canonical-location CLIP、neither、slot-shuffle、wrong-RGB与
    global-CLIP的对应主指标；
 8. candidate manifest SHA、row order、pair count和每个arm完整率exact。
 
@@ -211,47 +224,116 @@ correct超过每一个非D0 control的相应门，而不是事后挑一个较弱
 
 禁止调slot、crop、visibility、CLIP layer、聚合式、系数、top-K或门限重跑。
 
-## Fuel GO后的条件训练对象
+## D0 signal GO后的consumer-aligned残差否决门
 
-本节不构成当前授权。只有fuel GO后才允许另立实现与真实PK64合同：
+本节尚未实现，不构成当前formal或训练授权。现有D0 signal fuel即使GO，也只能允许实现并复审下面这一个
+consumer-aligned无训练门；不能直接进入threshold、PK64或e120。
 
-fuel GO只授权下面这一个最小数学对象进入下一轮实现复审，不能替换成triplet调margin、pair mining或relation KD。
+### 1. 消费者必须与future宿主一致
 
-对PK batch中的anchor `q`及每个身份`j`，令`G_j`为该身份全部K个图，student global相似度为：
+固定读取sealed zero-owner checkpoint的global RGB descriptor；D0只继续定义原candidate bank，不再代理
+future consumer。所有correct/control共享同一bank、同一zero-owner descriptor和同一分母。
 
-`z_qj = logmeanexp_{g in G_j}(cosine(f(q), f(g)) / tau)`。
+在同一bank中，对每个anchor与candidate identity计算zero-owner身份聚合相似度，并以负身份是否违反
+genuine identity的全排序约束定义zero-owner residual error。correct certificate对这些真实残余误排序身份的
+富集必须严格胜全部七个matched controls，且raw-PID cluster bootstrap单侧95%下界均`>0`。否则说明证书只在
+排斥zero-owner已经容易区分的负身份，直接`PC-NEC TRAINING NO-START / NO CANDIDATE`。
+
+### 2. 全PK64 pair域必须闭合
+
+预先冻结与正式recipe一致的确定性`P×K=16×4` batch序列，但不更新optimizer、不写checkpoint。对batch内全部
+`64×64`有序图对，都必须能从同一份按图冻结的pose availability与OpenCLIP region embedding动态计算`E/v`；
+不允许只查top-20 bank、missing、fallback、重新选pair或改变batch。
+
+此处`P`唯一指batch内16个身份，每个anchor恰有15个负身份。raw-PID五折cross-fitting冻结`theta`后，完整OOF
+必须同时满足：
+
+1. genuine identity被任一same-PID support误证的anchor-level family-wise比例不超过`1%`；
+2. batch内负身份coverage `|C_q|/15`的PID-macro mean至少`30%`；
+3. `C_q`和`U_q`同时非空的anchor比例至少`80%`；
+4. 全部实际pair证书来源完整率`100%`，fallback/missing为`0`。
+
+任一失败即`THRESHOLD NO-GO / PK64 NO-START / NO CANDIDATE`。原top-20 bank上的coverage不得冒充该门。
+
+### 3. exact future梯度必须与独立全排序下降方向一致
+
+在sealed zero-owner descriptor上实例化下文唯一`L_cert`，只做一次无更新backward。令`g_cert`为其对global
+descriptor的梯度，`g_rank`为独立zero-owner全身份排序目标对同一descriptor的梯度，预注册归一化对齐：
+
+`A = <g_rank, g_cert> / (||g_rank|| ||g_cert||)`。
+
+correct相对每个certificate control的PID-bootstrap单侧95%下界都必须`>0`，并保留所有不利anchor/PID。
+禁止扫描epsilon、loss权重、temperature、margin或threshold。梯度nonzero本身不算通过；只有残差富集、
+identity安全、全pair覆盖和梯度对齐同时通过，才允许再次复审真实训练合同。
+
+## consumer-aligned门通过后的条件训练对象
+
+本节不构成当前授权。只有consumer-aligned门全部通过后才允许另立实现与真实训练合同：
+
+只有D0 signal、zero-owner残差富集、全PK64 pair coverage、identity安全与梯度对齐全部通过，才允许下面这一个
+最小数学对象进入下一轮实现复审；不能替换成triplet调margin、pair mining或relation KD。
+
+连续AUROC/AUPRC通过不自动证明存在可训练的二值certificate阈值。consumer-aligned门必须冻结`theta`并同时
+检查同PID false-certificate、真实PK64负身份certificate coverage及`C/U`非空率；未过门仍为
+`TRAINING NO-START`。
+
+该门必须以raw PID五折cross-fitting运行：每个held-out折的`theta`只在其余四折选择，固定选择满足
+anchor-level genuine-identity family-wise误证率`P(V_q,y_q=1)<=1%`的最低阈值，再无改动应用到held-out折。
+完整OOF必须同时满足：
+
+1. genuine identity被任一same-PID support误证的anchor比例不超过`1%`；
+2. 每anchor被证实的batch内负身份比例`|C_q|/15`的PID-macro mean至少`30%`；
+3. `C_q`和`U_q`同时非空的anchor比例至少`80%`。
+
+任一失败即`THRESHOLD NO-GO / PK64 NO-START`，禁止把pair-level false-certificate冒充identity-level安全性。
+
+对PK batch中的anchor `q`及每个身份`j`，令`G_j`为该身份全部K个图。为避免重现exp411--414的pixel-view
+混淆，certificate loss的student descriptor必须来自与离线`v_qg`相同的deterministic official RGB view；
+宿主可继续使用随机增强view，但二者共享student参数且certificate branch不得读取另一套像素。student global
+身份集合分数为归一化logmeanexp：
+
+`z_qj = tau_g * logmeanexp_{g in G_j}(cosine(f(x_q), f(x_g)) / tau_g)`。
 
 pose/CLIP cache只产生detached pair证书：
 
-`v_qg = 1[E(q,g) >= theta and common_visible(q,g)]`。
+`v_qg = 1[E(q,g) >= theta and common_available(q,g)]`。
 
-其中`E`就是fuel audit已冻结的存在性region CLIP矛盾；`theta`只能由fuel GO后的独立训练协议在不接触正式结果的
-校准折冻结。对每个负身份：
+其中`E`就是D0 signal audit已冻结的存在性region CLIP矛盾；`theta`只能由consumer-aligned raw-PID OOF协议
+在不接触正式结果的校准折冻结。对每个负身份：
 
 `V_qj = max_{g in G_j} v_qg`。
 
 全部负身份无删除地分成`C_q={j != y_q: V_qj=1}`与
-`U_q={j != y_q: V_qj=0}`。最小certificate loss唯一为：
+`U_q={j != y_q: V_qj=0}`。对两个集合使用归一化logmeanexp：
 
-`L_cert(q) = softplus(m + LSE_{j in C_q}(z_qj) - LSE_{j in U_q}(z_qj))`。
+`a_q = tau_c * logmeanexp_{j in C_q}(z_qj / tau_c)`，
 
-若`C_q`或`U_q`为空，`L_cert(q)=0`并计入coverage，不重新选pair/identity。它要求被真实可见矛盾证实的整个负身份
-集合，其global相似度低于仍未决的负身份集合；不指定identity prototype、局部target feature或单个hard pair。
+`b_q = stopgrad[tau_c * logmeanexp_{j in U_q}(z_qj / tau_c)]`。
+
+最小certificate loss唯一为：
+
+`L_cert(q) = softplus((m + a_q - b_q) / tau_l)`。
+
+若`C_q`或`U_q`为空，`L_cert(q)=0`并计入coverage，不重新选pair/identity。`b_q`完全detach，因而该损失只直接
+降低被pose-estimated共同可用槽矛盾证实的整个负身份集合相似度，不会主动吸引未决负身份。它不指定identity
+prototype、局部target feature或单个hard pair。
 
 genuine身份`y_q`永不进入`C_q/U_q`，始终只由共同宿主的原CE/positive/listwise项吸引；同PID上的`v_qg`
 只统计false-certificate rate，禁止产生排斥梯度。`v/V`、pose、CLIP与所有cache都stop-gradient且无trainable
-certificate head。`L_cert`的梯度只通过`z_qj`进入anchor和全部负身份support的student global descriptor；
+certificate head。`L_cert`的梯度只通过`a_q`进入anchor和certified-wrong负身份support的student global descriptor；
 不进入slot feature、pose/CLIP或候选选择。
 
 未来冻结总损失只能是：
 
 `L_total = L_zero_owner_host + lambda_cert * mean_q L_cert(q)`，
 
-其中`tau/m/lambda_cert/theta`必须在下一设计的static/PK64前一次冻结。所有负身份仍在宿主与`C/U`并集中，
+其中`tau_g/tau_c/tau_l/m/lambda_cert/theta`必须在下一设计的static/PK64前一次冻结。所有负身份仍在宿主与
+`C/U`并集中，
 不得删pair、只取top-k、Borda选边、调triplet margin或把CLIP距离蒸馏为student pair distance。eval删除
 pose/CLIP/cache与certificate loss，仍为原Swin-T global descriptor。
 
-正式训练是否具有C类贡献，仍须自然e120、实际效应门、完整controls与3 seed证明；fuel GO本身不进入论文性能表。
+正式训练是否具有C类贡献，仍须自然e120、实际效应门、完整controls与3 seed证明；D0 signal或
+consumer-aligned门本身都不进入论文性能表。
 
 ## 风险与失败解释
 
@@ -262,13 +344,16 @@ pose/CLIP/cache与certificate loss，仍为原Swin-T global descriptor。
 5. D0已见official train，候选内绝对重排不是泛化证据；
 6. PC-NEC可能与共同可见part matching同构，只有global-only训练证书整体能保留窄差分；
 7. 若coverage不足，再放宽visibility会复现exp415的事后门修补，必须直接NO-GO。
+8. 当前availability来自pose估计而非遮挡ground truth；fuel最多证明固定bank上的判别增量，不能直接声称逻辑
+   意义上的错误身份证书或真实可见性。
 
 ## 对照组
 
-当前阶段只有上述只读fuel controls，没有训练臂。fuel GO前禁止创建formal OUTPUT_DIR、optimizer、checkpoint或
-e120 config。
+当前阶段只有已实现的D0 signal controls与未实现的consumer-aligned gate，没有训练臂。后者完成实现、复审与
+本地合同前，禁止创建任何formal namespace、OUTPUT_DIR、optimizer、checkpoint或e120 config。
 
 ## 预期结果
 
-唯一可接受的正结果是correct在高覆盖共同bank中同时胜全部controls，并且增量不仅来自raw color、student part、
-global CLIP、pose slot或错误候选选择。任何较弱结果都不足以建立pose×CLIP训练方法。
+唯一可接受的正结果必须同时包含：correct在高覆盖共同bank中胜全部controls、在zero-owner上富集残余误排序、
+全PK64 pair证书域闭合、identity安全且梯度与独立全排序下降方向一致。任何较弱结果都不足以建立
+pose×CLIP训练方法。

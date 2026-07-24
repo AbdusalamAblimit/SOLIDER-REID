@@ -1,8 +1,16 @@
 # exp416 PC-NEC fuel audit执行协议
 
+> 当前状态：`D0 SIGNAL IMPLEMENTATION PASS / CONSUMER-ALIGNED CAUSALITY BLOCKED /
+> FORMAL NO-START / TRAINING NO-START`。
+>
+> 下述四阶段只实现D0 signal diagnostic。zero-owner残差富集、确定性PK64全部`64×64` pair证书覆盖与
+> exact future梯度对齐尚未实现/复审，因此当前禁止创建任何formal或asset namespace。D0 signal即使GO，
+> 也不能直接授权threshold、PK64或训练。
+
 ## 1. 当前授权边界
 
-当前只允许一次无训练fuel audit。禁止创建optimizer、正式训练`OUTPUT_DIR`、PK64合同、checkpoint或e120进程。
+当前只允许本地self-test与只读审查；真实fuel formal保持NO-START。禁止创建optimizer、正式训练
+`OUTPUT_DIR`、PK64合同、checkpoint或e120进程。
 fuel任一主门失败即永久记：
 
 `PC-NEC FUEL NO-GO / TRAINING NO-START / NO CANDIDATE`
@@ -38,18 +46,19 @@ fuel任一主门失败即永久记：
 脚本：`build_candidate_manifest.py`。
 
 fresh namespace：
-`/home/afr/reid-clean/assets/exp416-pcnec-bank-v1`。
+`/home/afr/reid-clean/assets/exp416-pcnec-candidate-bank-v1`。
 
 该进程手工枚举`bounding_box_train/*.jpg`，不得实例化会同时检查或读取query/gallery的`OccludedDuke`。在输出
 bank前不得导入`PoseTargetStore`或`open_clip`。固定流程：
 
 1. 按official train相对路径升序建立raw PID、连续train PID和zero-based camera；
-2. sealed D0只读推理全部15,618张canonical `384×128` RGB；
+2. 按official eval的PIL `Resize(384×128, BILINEAR)→ToTensor` exact路径，sealed D0只读推理全部15,618张；
 3. query按固定salt path hash排序；
 4. 仅保留至少一个跨相机同PID真的query；
-5. 每query保留全部跨相机同PID真匹配和D0最近20个跨PID impostor；
+5. 每query保留全部跨相机同PID真匹配；每个出现的candidate camera stratum先预留至少1个跨PID impostor，
+   再按其频数用largest-remainder分配剩余quota，并在每个stratum内取D0最近者；
 6. query内按`D0 distance → candidate relative path`排序；
-7. 原子写出路径、PID、camera、RGB SHA、D0 global、pair row、offset、label与distance。
+7. 原子写出路径、PID、camera、RGB SHA、D0 global、pair row、offset、label、distance与camera quota receipt。
 
 任何pose/CLIP导入、路径逃逸、重复图、非15,618样本、D0 strict-load失败、非有限feature、候选重构不exact都使
 stage INVALID。
@@ -66,7 +75,9 @@ fresh namespace：
 - 五槽沿用`head / upper_torso_arms / lower_torso / upper_legs / lower_legs_feet`；
 - joint必须坐标有效且ViTPose score `>=0.30`；
 - 一个槽至少有2个这样的joint才`available`；
-- instance center为该槽有效joint的归一化坐标算术均值；
+- instance center/span为冻结region segment全部可用端点的归一化坐标算术均值/范围；其中
+  `lower_torso`明确使用`(left/right shoulder, left/right hip)`覆盖肩髋段，而不是仅髋点pelvis窄条，
+  但availability仍要求其两个owner hip joint通过机械门；
 - 每槽crop高宽为全train有效样本的归一化joint span
   `q90 + 上下/左右各5% canvas padding`；
 - pixel高宽向上取整，至少`16×16`，最大不超过`384×128`；
@@ -118,7 +129,10 @@ fresh namespace：
 - AUROC/AUPRC中impostor为positive；
 - 每主指标分别按预注册control顺序确定最强control；
 - PID cluster PCG64、base seed=`4161234`、10,000次、线性5%单侧下界；
-- bootstrap前冻结OOF score、lambda、最强control与每query metric。
+- bootstrap前冻结OOF score、lambda与每query metric；
+- 四个非D0置信门在每个replicate中计算
+  `min_k(M_correct-M_control_k)`，避免固定sample-selected最强arm造成选择后偏差；
+- mAP/R1相对D0的两个置信门继续使用单独paired差。
 
 ## 4. 唯一GO门
 
@@ -132,13 +146,19 @@ fresh namespace：
 6. correct四项主指标分别严格胜七个非D0 control；
 7. bank row、pair count、offset、SHA与各臂完整率exact。
 
-fuel GO只允许另立future certificate设计与真实PK64复审，不自动授权训练。
+D0 signal GO只允许继续实现/复审consumer-aligned residual gate，不自动授权threshold、PK64或训练。
 
 ## 5. 一次性与异常分类
 
 - 每个namespace必须fresh，禁止覆盖；
+- `validate_formal`后立即创建namespace并写`started.json`，资产读取、OOF与bootstrap必须全部发生在其后；
+- 任一异常写`failure.json`并固定`resume_allowed=false`，不得删除namespace或再次发起；
 - 进程消失先分为自然完成、程序异常、基础设施中断或用户终止；
 - 科学NO-GO不重跑；
 - 只有在Python未启动/未创建namespace/未读模型资产时发生的纯launcher基础设施错误，才能保留失败日志后重新发起；
 - 所有不利row、UNDECIDED、donor-invalid、coverage与control必须完整保留；
+- candidate/geometry/fuel/audit逐阶段交叉校验formal HEAD、脚本SHA、上游receipt SHA与当前输入SHA；
+- fuel cache内嵌`bank_sha256/geometry_sha256`，audit从当前bank与availability重新计算query coverage、
+  每槽common pair和query raw PID，禁止直接信任summary布尔值；
+- 任一阶段成功或失败均物理封存：文件`0444`、目录`0555`；
 - 任一阶段完成均记录source HEAD、脚本SHA、输入/输出SHA、严格异常计数与GPU终态。

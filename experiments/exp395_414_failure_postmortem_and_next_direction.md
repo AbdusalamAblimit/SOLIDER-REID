@@ -36,7 +36,7 @@ exp414 text-shuffle因用户终止没有自然e120，不能进入终点比较。
 | exp409 | pose×CLIP hard-pair miner | 相对D0约`-0.6 mAP/+0.9 R1` | 单hard edge改善首位而伤全排序 |
 | exp410 | frozen CLIP identity proxy | 相对D0约`-12.6 mAP/-11.3 R1` | CLIP identity坐标与ReID几何严重错配 |
 | exp411 | pose-complete set ranking | correct=`58.8/70.1`；zero-owner=`58.9/70.3`；wrong-RGB=`59.1/70.7` | set/listwise宿主有效，pose×CLIP owner失败 |
-| exp412 | pose×CLIP梯度机会路由 | `56.9/69.7`，低zero-owner`2.0/0.6` | 易视图获得梯度、难图失去学习机会 |
+| exp412 | pose×CLIP梯度机会路由 | `56.9/69.7`，低zero-owner`2.0/0.6` | 估计为非支配的视图获得更高路由预算，该冻结路由相对zero-owner性能下降 |
 | exp413 | coverage-chain prefix ranking | correct=`59.3/70.8`，pose-only=`59.3/70.1` | 性能GO，联合归因失败 |
 | exp414 | continuous identity region + MST | correct=`59.2/70.7`，pose-only=`59.2/70.8`，q-only=`59.2/70.8` | 性能GO，pose轴与联合归因失败 |
 
@@ -44,13 +44,17 @@ exp414 text-shuffle只保留e10/e20/e30=`29.2/38.5/54.1/61.0`、
 `46.7/56.4/71.5/76.8`、`49.6/61.0/74.5/79.8`；用户在e35 iter20终止，整臂
 `VOID / NO RESUME`，all-edges=`NO-START`。
 
+exp413 q-only只到e80，未自然e120；exp413的q-only/text-shuffle与exp414的text-shuffle/all-edges均不得用于
+终点反事实比较。已有pose-only/q-only足以阻断联合机制的必要条件，但不能进一步声称文本绑定或all-edges方向已被
+单独证伪。exp414 q-only仍使用pose-defined region CLIP cache，因此“POSE AXIS FAILED”只应收窄为
+“online pose-visibility轴未证明必要”，不是严格pose-free结论。
+
 ## 3. 反复失败的结构性根因
 
 ### 3.1 同PID交换对称性使pose/CLIP不可识别
 
-exp409、411、413、414虽然名称不同，本质都在同PID合法正样本上改变索引或系数：
+exp411、413、414虽然名称不同，本质都在同PID合法正样本上改变索引或系数：
 
-- exp409选择一个pair；
 - exp411复制或加权owner；
 - exp413排列同三张support并优化prefix；
 - exp414在同三个顶点的三条边中删除一条chord。
@@ -65,6 +69,9 @@ prefix或MST自然趋同。correct与wrong/control仍然都是标签合法的监
 
 1. pose/CLIP强行进入身份几何时，性能下降；
 2. pose/CLIP只改变同PID索引时，普通宿主涨点，但correct语义无法归因。
+
+exp409不能归入上述同PID交换对称性：它还改变different-PID negative。它的负结果更直接支持“单个hard edge/R1
+目标与全候选mAP排序错位”，而不是同PID owner不可识别。
 
 ### 3.2 “机制active”不是“最终检索拥有语义”
 
@@ -92,7 +99,8 @@ exp411--414的CLIP cache来自`raw-rgb-pose-resize-384x128-no-augmentation`，st
 
 ### 3.5 局部目标与mAP全排序错位
 
-exp408关系KD能学却不涨点；exp409只涨R1而降mAP；exp412把梯度集中到易视图后性能下降。遮挡ReID需要保持所有
+exp408关系KD能学却不涨点；exp409只涨R1而降mAP；exp412把梯度集中到pose×CLIP估计非支配视图后性能下降。
+遮挡ReID需要保持所有
 正样本与全部身份的排序，而不是只优化单pair、中层关系或“可靠样本”的训练预算。
 
 ### 3.6 zero-owner宿主掩盖了新增机制
@@ -124,7 +132,7 @@ zero-owner相对D0同时改变：
 3. hidden bias、low-rank operator、terminal product、channel/group scaling式CLIP注入；
 4. per-slot cosine/KL/relation KD及只证明hidden head学到teacher的辅助loss；
 5. pose×CLIP hard-pair miner的margin、top-k或rank fusion微调；
-6. backward-only梯度路由，尤其把困难recipient的梯度转给易视图；
+6. backward-only梯度路由，尤其把recipient预算转给pose×CLIP估计非支配视图；
 7. frozen CLIP visual/text proxy直接接管ReID classifier或identity coordinate；
 8. 继续修CAVT donor/caliper/cache测量器；
 9. 调prompt、temperature、MST edge、support数或loss比例救exp411--414；
@@ -276,15 +284,15 @@ NO FORMAL TRAINING AUTHORIZED`。
 
 | 排名 | 候选 | 新训练对象 | 关键风险 |
 |---:|---|---|---|
-| 1 | PC-NEC | 真实共同可见槽对错误身份的存在性负证据证书 | 易与part matching/metric learning同构，必须先证CLIP增量 |
+| 1 | PC-NEC | pose估计共同可用槽对错误身份的存在性负证据 | 易与part matching/metric learning同构，必须先证CLIP增量 |
 | 2 | MH-PSO | 多假设pose-semantic orbit上的最坏情形身份一致性 | 生成身份漂移，Pose2ID/IPG/DiVE近邻强 |
 
 唯一首选为`PC-NEC`（Pose-Conditioned CLIP Negative-Evidence Certification）。它不再从不完整单图证明
 “这是同一个人”，而使用一个更可识别的非对称命题：
 
-> 缺失区域不足以证明同一身份，但共同真实可见的解剖槽中，一个可靠语义矛盾足以排除错误身份。
+> 缺失区域不足以证明同一身份，但双方被pose估计为共同可用的解剖槽中，一个可靠语义矛盾可能排除错误身份。
 
-pose只建立两张真实图之间的解剖槽对应与共同可见集合；CLIP只给这些真实可见槽提供“矛盾/未决”证据，不生成
+pose只建立两张真实图之间的解剖槽对应与共同可用集合；CLIP只给这些槽提供“矛盾/未决”证据，不生成
 identity prototype、完整feature或support顺序。未来student若获授权，应对全部候选负身份输出非负反证能量，
 用存在性MIL/listwise目标要求每个错误身份至少被一个可见槽否决；测试删除pose、CLIP与证书头，仍为原RGB
 global descriptor。
@@ -295,7 +303,7 @@ mining。与KPR/BPBreID类part matching的差分则是局部匹配只作训练�
 
 当前只允许建立无训练fuel audit设计。启动代码/CUDA前必须证明：
 
-- correct的candidate-level AUROC/AUPRC相对最强pose-only、CLIP-only、neither、slot-shuffle、
+- correct的candidate-level AUROC/AUPRC相对最强pose-only、canonical-location CLIP、neither、slot-shuffle、
   wrong-RGB、raw-color/student-part control均至少`+0.03`；
 - 在同一固定bank的诊断重排中相对D0至少`+1.0 mAP/+1.0 R1`，相对最强control至少
   `+0.5/+0.5`；
@@ -305,3 +313,63 @@ mining。与KPR/BPBreID类part matching的差分则是局部匹配只作训练�
 
 任一门失败即`PC-NEC FUEL NO-GO / TRAINING NO-START`，并把当前搜索结论更新为
 `NO CANDIDATE`；禁止回到PACIT、owner/prefix/MST、proxy/router或临时再开第三个弱组合。
+
+## 11. 独立复审后的候选边界与执行判断
+
+三名只读子agent分别从20次证据链、公开近邻/本地167篇笔记和PC-NEC数学对象复核，结论一致：
+
+1. `PC-NEC`是唯一其关键前提仍值得用一次固定fuel audit证伪的候选；这不是性能概率承诺，创新也只具C类条件资格；
+2. `PS-ODM`（pose-semantic occluder distribution matching）可作为第二备选：pose决定解剖落点，CLIP选择
+   实际不同的真实occluder RGB，所有control exact匹配area/alpha/槽/类别边际；风险是与realistic occlusion
+   augmentation近邻拥挤；
+3. `APCO`可作为第三备选：D0全身份ranking adversary选最坏真实mask，pose/CLIP只限定可实现域和未遮语义保持；
+   风险是与adversarial erasing邻近且训练不稳；
+4. `MH-PSO`只保留为远期候选：多假设pose/occlusion orbit加CVaR全身份ranking，但生成身份漂移和Pose2ID/IPG/
+   DiVE近邻风险最高。
+
+以下路线继续关闭：donor identity source separation、PSC-JEPA/EMA support completion、PSE-IRM/GroupDRO、
+attention/part fusion/prompt/proxy/router，以及任何同PID owner/prefix/MST改名变体。
+
+本轮复审还阻断了PC-NEC原future训练式：`softplus(m+LSE_C-LSE_U)`会在梯度下降时主动提高未决负身份`U`的
+相似度，raw LSE又混入集合大小。无训练fuel audit不受影响；fuel GO后也不得直接训练。下一设计只能使用
+归一化logmeanexp，并把`U`作为stop-gradient参考，使梯度只排斥certified-wrong集合；certificate descriptor
+还必须与离线证书观察同一deterministic RGB view。连续AUROC/AUPRC通过后，PK64前仍需held-out-PID阈值可行性门，
+验证anchor-level genuine-identity family-wise误证率、负身份coverage与`C/U`非空率。
+
+实现回归还发现并修复了camera-label捷径：真匹配原本只来自跨相机，而任意top-20跨PID impostor会造成
+真假标签与candidate camera分布不匹配。冻结bank现按每个query的genuine candidate-camera频数分层，
+每个出现的camera先保留至少1个impostor，再以largest-remainder分配剩余quota，并只在同camera stratum内按D0
+距离取最近跨PID候选；任一quota不足在pose/CLIP读取前直接INVALID。当前“CLIP”也只指冻结OpenCLIP image
+encoder的region visual evidence，不使用text encoder，因此不得写成语言语义不可替代。threshold-feasibility
+唯一门冻结为：genuine identity的anchor-level family-wise误证率不超过`1%`、负身份coverage的PID-macro mean
+至少`30%`、`C/U`同时非空anchor至少`80%`。
+
+因此当前执行顺序固定为：
+
+`PC-NEC唯一fuel audit → 任一门失败则NO CANDIDATE → 全门通过才重审threshold与same-view训练对象`。
+
+不因fuel audit通过而自动授权PK64或e120。
+
+## 12. 最终效能红队：唯一候选仍需consumer-aligned重构
+
+实现正确不等于方法有效。最终两名独立效能红队指出，现有D0 signal fuel仍跨越四个没有验证的对象转换：
+
+1. diagnostic consumer是sealed D0，future宿主却是zero-owner；
+2. 连续E与OOF lambda变成二值theta与C/U；
+3. 每query top-20 image bank变成随机PK64全部负身份；
+4. 诊断重排直接使用E，正式eval却完全删除E。
+
+最强旧反证是exp409和exp412：前者让pose×CLIP选择的异PID negative直接进入triplet，得到约
+`-0.6 mAP/+0.9 R1`；后者的真实PK64路由active却比zero-owner低`2.0 mAP/0.6 R1`。因此PC-NEC虽不受同PID
+交换对称性约束，仍与“外部语义选择额外负梯度”家族高度近邻。
+
+四候选最终只保留修订PC-NEC，而且只授权下一次无训练consumer-aligned否决门：
+
+- sealed zero-owner descriptor上，correct证书必须富集真正残余误排序负身份并严格胜七controls；
+- 确定性`16×4` batch的全部`64×64` pair必须从按图pose/OpenCLIP cache获得证书，missing/fallback=`0`；
+- `P=16`、15个负身份，genuine误证`<=1%`、负身份coverage`>=30%`、`C/U`同时非空`>=80%`；
+- exact `L_cert`与独立zero-owner全排序梯度的归一化对齐，correct相对每个control的PID-bootstrap下界均`>0`。
+
+PS-ODM不选，因为最可能得到的是ordinary realistic occlusion augmentation收益而非CLIP增量；APCO不选，
+因为与adversarial erasing几乎同构且“攻击更难”会构成自证。修订PC-NEC任一门失败即
+`PC-NEC TRAINING NO-START / NO CANDIDATE`，不自动递补其他候选。

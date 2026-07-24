@@ -4478,10 +4478,10 @@ pose-centered structured erasing加可替代的hard geometry selector。
 ## 2026-07-24：PC-NEC条件候选——从正身份补全转向负证据证书
 
 single-image support incomplete意味着缺失区域的同一性通常不可证明，但不意味着所有跨身份判断都不可识别。
-PC-NEC把训练对象改为：对一个固定错误身份候选，是否存在至少一个双方都真实可见的解剖槽，提供足以排除该
+PC-NEC把训练对象改为：对一个固定错误身份候选，是否存在至少一个双方被pose估计为共同可用的解剖槽，提供足以排除该
 impostor的语义矛盾。
 
-- pose：只给真实图对建立共同可见槽与空间对应；
+- pose：只给真实图对建立pose-estimated共同可用槽与空间对应；
 - CLIP：只对槽内真实像素给“矛盾/未决”证据，不输出identity坐标、teacher feature或positive owner；
 - student：未来只在训练期学习对全部负身份的非负反证能量与存在性MIL/listwise证书；
 - eval：删除pose/CLIP/证书头，保持Swin-T global RGB-only。
@@ -4490,11 +4490,51 @@ impostor的语义矛盾。
 灰遮挡。它仍有KPR/BPBreID共同可见part matching、PAT-CSL跨ID视觉邻居、Instruct-ReID语义margin等强近邻，
 所以当前最多是`C-CLASS CONDITIONAL`，不能把part、MIL或CLIP crop原子写成贡献。
 
-唯一创新资格来自整体窄差分：固定全候选bank、真实共同可见槽、训练期存在性负证据、最终global-only检索。
+唯一创新资格来自整体窄差分：固定全候选bank、pose-estimated共同可用槽、训练期存在性负证据、
+最终global-only检索。
 在任何训练前，correct必须在PID-disjoint共同bank fuel audit中同时胜raw-color、student-part、
-pose-only、CLIP-only、slot-shuffle与wrong-RGB；不通过则`NO CANDIDATE`，不再构造第三个弱变体。
+pose-only、canonical-location CLIP、slot-shuffle与wrong-RGB；不通过则`NO CANDIDATE`，不再构造第三个弱变体。
 
 设计复审已把这一窄差分落为可判定数学对象：所有负身份无删除地分成CLIP证书成立的`C`与未决`U`，
 set-level loss只要求`C`的global相似度低于`U`；genuine identity不接收排斥梯度，pose/CLIP证书detached，
 eval无part/certificate分支。三路最终=`PASS / 0B / 0H / 0 old-isomorphism`。这只保留fuel-audit资格，
 不构成机制有效性或绝对新颖性证据。
+
+### PC-NEC二次机制审计与备选排序
+
+二次审计否定了原future式中的`-LSE_U`：梯度下降会主动提高未决负身份相似度，且raw LSE混入集合大小。fuel
+测量对象不受影响，但训练仍为BLOCK；下一设计只能以normalized logmeanexp聚合`C/U`，把`U`完全detach，
+使梯度只排斥certified-wrong身份，并让certificate student branch与离线证书观察同一deterministic RGB view。
+连续AUROC/AUPRC fuel GO后还需独立threshold-feasibility门，不能把连续可分性直接写成二值证书可用性。
+
+最终回归还消除了一个可直接伪造增量的camera shortcut：genuine与impostor现在按candidate camera频数分层匹配，
+任一quota不足在pose/OpenCLIP前INVALID。“CLIP”只指冻结OpenCLIP image encoder的region visual evidence，
+不读取text encoder，因此当前不能争语言语义不可替代。二值证书门必须直接在identity级满足genuine误证
+`<=1%`、负身份PID-macro coverage `>=30%`和`C/U`同时非空anchor `>=80%`。
+
+当前候选排序：
+
+1. `PC-NEC`：唯一先做fixed-bank fuel kill-switch的对象，条件新颖性/有效性最高，但仍只有C类窄差分；
+2. `PS-ODM`：pose定义解剖落点、CLIP选择实际不同的真实occluder RGB，需exact匹配动作边际；近邻拥挤；
+3. `APCO`：ranking adversary选最坏实际mask，pose/CLIP只限制可实现域；易同构adversarial erasing；
+4. `MH-PSO`：多假设pose-semantic orbit加CVaR全身份排序；生成身份漂移和公开近邻风险最大。
+
+donor source separation、PSC-JEPA/EMA completion、PSE-IRM/GroupDRO、普通attention/part/prompt/proxy/router
+继续关闭。不得在PC-NEC fuel失败后把后三者当作无门槛替补。
+
+### 最终效能红队：PC-NEC只保留consumer-aligned否决资格
+
+当前D0 fuel能检验region evidence是否存在，却不能检验future训练是否会涨点。它跨越了四个未经验证的对象：
+D0→zero-owner宿主、连续E→二值C/U、top-20 image→随机PK64全负身份、诊断重排→测试时删除证书。
+其中前两项已有exp409/412和exp411--414强反证。
+
+因此PC-NEC的真正创新资格不再来自“负证据”名字，而取决于它能否同时证明：
+
+1. OpenCLIP证书富集zero-owner仍然排错的负身份，且严格胜raw/student/canonical/global/shuffle/wrong-RGB；
+2. batch内全部pair都有同源证书，identity级误证、coverage与C/U门可执行；
+3. exact certificate梯度与独立全身份排序下降方向正对齐，而不只是nonzero；
+4. 最终仍以global RGB-only自然e120胜zero-owner与全部matched controls、多seed。
+
+只有前三个无训练门全部通过才值得付训练预算。否则最终结论应为`NO CANDIDATE`。PS-ODM更像ordinary realistic
+occlusion augmentation，APCO更像adversarial erasing；二者都没有比consumer-aligned residual更强的pose×CLIP
+因果识别，因此当前不推进。

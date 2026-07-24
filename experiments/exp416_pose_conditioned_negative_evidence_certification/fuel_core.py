@@ -34,6 +34,7 @@ WRONG_RGB_DONOR_SALT = "exp416-pcnec-wrong-rgb-donor-v1"
 BOOTSTRAP_BASE_SEED = 4161234
 FOLD_COUNT = 5
 LAMBDA_GRID = (0.0, 0.25, 0.5, 0.75, 1.0)
+CAMERA_MATCHED_IMPOSTORS = True
 
 ARM_NAMES = (
     "correct",
@@ -215,6 +216,53 @@ def _squared_euclidean_to_all(normalized: np.ndarray, row: int) -> np.ndarray:
     return np.maximum(distance, 0.0)
 
 
+def _camera_matched_impostor_quota(
+    true_rows: Sequence[int],
+    cameras: np.ndarray,
+    impostor_topk: int,
+) -> dict[int, int]:
+    true_camera_counts = {
+        int(camera): int(count)
+        for camera, count in zip(
+            *np.unique(
+                cameras[np.asarray(true_rows, dtype=np.int64)],
+                return_counts=True,
+            )
+        )
+    }
+    if not true_camera_counts:
+        raise ValueError("camera-matched bank requires a genuine candidate")
+    if len(true_camera_counts) > int(impostor_topk):
+        raise ValueError(
+            "impostor top-K cannot cover every genuine camera stratum"
+        )
+    total_true = int(sum(true_camera_counts.values()))
+    quota = {camera: 1 for camera in true_camera_counts}
+    distributable = int(impostor_topk - len(true_camera_counts))
+    extra = {
+        camera: int(distributable * count // total_true)
+        for camera, count in true_camera_counts.items()
+    }
+    for camera in quota:
+        quota[camera] += extra[camera]
+    remaining = int(impostor_topk - sum(quota.values()))
+    remainder_order = sorted(
+        true_camera_counts,
+        key=lambda camera: (
+            -(
+                distributable * true_camera_counts[camera]
+                - extra[camera] * total_true
+            ),
+            camera,
+        ),
+    )
+    for camera in remainder_order[:remaining]:
+        quota[camera] += 1
+    if sum(quota.values()) != int(impostor_topk):
+        raise RuntimeError("camera-matched impostor quota does not sum to top-K")
+    return quota
+
+
 def construct_candidate_bank(
     records: Sequence[Mapping],
     descriptors: np.ndarray,
@@ -246,11 +294,23 @@ def construct_candidate_bank(
         true = np.flatnonzero(
             (pids == pids[query]) & (cameras != cameras[query])
         ).tolist()
-        impostors = np.flatnonzero(pids != pids[query]).tolist()
-        impostors.sort(key=lambda row: (float(distances[row]), paths[row]))
-        if len(impostors) < int(impostor_topk):
-            raise ValueError("query has fewer than required impostors")
-        selected_impostors = impostors[: int(impostor_topk)]
+        camera_quota = _camera_matched_impostor_quota(
+            true, cameras, int(impostor_topk)
+        )
+        selected_impostors = []
+        for candidate_camera in sorted(camera_quota):
+            camera_impostors = np.flatnonzero(
+                (pids != pids[query]) & (cameras == candidate_camera)
+            ).tolist()
+            camera_impostors.sort(
+                key=lambda row: (float(distances[row]), paths[row])
+            )
+            required = int(camera_quota[candidate_camera])
+            if len(camera_impostors) < required:
+                raise ValueError(
+                    "query camera stratum has fewer than required impostors"
+                )
+            selected_impostors.extend(camera_impostors[:required])
         candidates = true + selected_impostors
         candidates.sort(key=lambda row: (float(distances[row]), paths[row]))
         query_id = stable_hash_hex(QUERY_ORDER_SALT, paths[query])
@@ -264,6 +324,23 @@ def construct_candidate_bank(
                 "query_camera": int(cameras[query]),
                 "true_count": int(len(true)),
                 "impostor_count": int(impostor_topk),
+                "genuine_camera_counts": [
+                    [int(camera), int(count)]
+                    for camera, count in sorted(
+                        {
+                            int(value): int(
+                                np.sum(cameras[np.asarray(true)] == value)
+                            )
+                            for value in np.unique(
+                                cameras[np.asarray(true, dtype=np.int64)]
+                            ).tolist()
+                        }.items()
+                    )
+                ],
+                "impostor_camera_quota": [
+                    [int(camera), int(count)]
+                    for camera, count in sorted(camera_quota.items())
+                ],
             }
         )
         selected_impostor_set = set(selected_impostors)
@@ -298,6 +375,7 @@ def construct_candidate_bank(
             pair_row += 1
     return {
         "schema": "exp416-pcnec-candidate-bank-v1",
+        "camera_matched_impostors": CAMERA_MATCHED_IMPOSTORS,
         "impostor_topk": int(impostor_topk),
         "descriptor_dimension": int(normalized.shape[1]),
         "record_count": int(len(records)),
@@ -315,6 +393,7 @@ def validate_candidate_bank(
 ) -> None:
     required = {
         "schema",
+        "camera_matched_impostors",
         "impostor_topk",
         "descriptor_dimension",
         "record_count",
@@ -327,6 +406,8 @@ def validate_candidate_bank(
         raise ValueError("candidate bank schema fields mismatch")
     if bank["schema"] != "exp416-pcnec-candidate-bank-v1":
         raise ValueError("candidate bank schema mismatch")
+    if bank["camera_matched_impostors"] is not True:
+        raise ValueError("candidate bank camera matching is disabled")
     expected = construct_candidate_bank(
         records,
         descriptors,
@@ -350,7 +431,7 @@ def clamped_crop_box(
     *,
     image_hw: tuple[int, int] = (IMAGE_HEIGHT, IMAGE_WIDTH),
 ) -> tuple[int, int, int, int]:
-    """Return exact ``(top, left, bottom, right)`` without padding."""
+    """Return exact ``(top, left, height, width)`` without padding."""
     image_height, image_width = map(int, image_hw)
     height, width = int(height), int(width)
     if min(image_height, image_width, height, width) <= 0:
@@ -363,8 +444,8 @@ def clamped_crop_box(
     left = int(round(float(center_x) - float(width) / 2.0))
     top = min(max(top, 0), image_height - height)
     left = min(max(left, 0), image_width - width)
-    box = (top, left, top + height, left + width)
-    if box[2] - box[0] != height or box[3] - box[1] != width:
+    box = (top, left, height, width)
+    if box[2] != height or box[3] != width:
         raise RuntimeError("crop area changed after clamp")
     return box
 
@@ -400,7 +481,9 @@ def build_slot_crop_boxes(
 
 def crop_rgb(rgb: np.ndarray, box: Sequence[int]) -> np.ndarray:
     values = np.asarray(rgb)
-    top, left, bottom, right = map(int, box)
+    top, left, height, width = map(int, box)
+    bottom = top + height
+    right = left + width
     if values.ndim != 3:
         raise ValueError("RGB must be rank three")
     if values.shape[-1] == 3:
@@ -1110,6 +1193,78 @@ def paired_pid_bootstrap(
     }
 
 
+def simultaneous_control_pid_bootstrap(
+    correct_rows: Sequence[Mapping],
+    control_rows_by_name: Mapping[str, Sequence[Mapping]],
+    *,
+    metric: str,
+    repetitions: int = 10000,
+) -> dict:
+    if int(repetitions) != 10000:
+        raise ValueError("formal PID bootstrap requires 10,000 repetitions")
+    if metric not in MAIN_METRICS:
+        raise ValueError("unsupported bootstrap metric")
+    control_names = tuple(str(name) for name in CONTROL_ORDER)
+    if set(control_rows_by_name) != set(control_names):
+        raise ValueError("simultaneous bootstrap control set mismatch")
+    reference_pids = None
+    delta_columns = []
+    unique_pids = None
+    for name in control_names:
+        pids, left, right = _align_paired_rows(
+            correct_rows, control_rows_by_name[name], metric
+        )
+        if reference_pids is None:
+            reference_pids = pids
+            unique_pids = np.asarray(
+                sorted(set(pids.tolist())), dtype=np.int64
+            )
+            if len(unique_pids) < 2:
+                raise ValueError(
+                    "PID bootstrap requires at least two query PIDs"
+                )
+        elif not np.array_equal(reference_pids, pids):
+            raise ValueError("simultaneous controls changed paired PID order")
+        pid_delta = np.empty(len(unique_pids), dtype=np.float64)
+        for index, pid in enumerate(unique_pids):
+            active = pids == pid
+            pid_delta[index] = float(
+                left[active].mean() - right[active].mean()
+            )
+        delta_columns.append(pid_delta)
+    assert unique_pids is not None
+    pid_delta_matrix = np.stack(delta_columns, axis=1)
+    seed = bootstrap_seed(metric, "all_controls_min")
+    rng = np.random.Generator(np.random.PCG64(seed))
+    samples = np.empty(int(repetitions), dtype=np.float64)
+    for start in range(0, int(repetitions), 256):
+        stop = min(start + 256, int(repetitions))
+        indices = rng.integers(
+            0,
+            len(unique_pids),
+            size=(stop - start, len(unique_pids)),
+            endpoint=False,
+        )
+        replicate_deltas = pid_delta_matrix[indices].mean(axis=1)
+        samples[start:stop] = replicate_deltas.min(axis=1)
+    lower = float(np.quantile(samples, 0.05, method="linear"))
+    per_control_estimate = {
+        name: float(pid_delta_matrix[:, index].mean())
+        for index, name in enumerate(control_names)
+    }
+    return {
+        "metric": str(metric),
+        "control": "all_controls_min",
+        "controls": list(control_names),
+        "estimate": float(min(per_control_estimate.values())),
+        "per_control_estimate": per_control_estimate,
+        "one_sided_95_lower": lower,
+        "repetitions": int(repetitions),
+        "pid_count": int(len(unique_pids)),
+        "seed": int(seed),
+    }
+
+
 def _expect_raises(callable_value) -> None:
     try:
         callable_value()
@@ -1140,6 +1295,19 @@ def _self_test_hash_and_records() -> None:
 
 
 def _self_test_candidate_bank_and_donor() -> None:
+    quota = _camera_matched_impostor_quota(
+        (0, 2, 3),
+        np.asarray((1, 1, 2, 2, 2), dtype=np.int64),
+        20,
+    )
+    assert quota == {1: 7, 2: 13}
+    extreme_quota = _camera_matched_impostor_quota(
+        tuple(range(101)),
+        np.asarray((1,) + (2,) * 100, dtype=np.int64),
+        20,
+    )
+    assert min(extreme_quota.values()) >= 1
+    assert sum(extreme_quota.values()) == 20
     paths = []
     for pid in (1, 2, 3, 4):
         for camera in (1, 2):
@@ -1165,11 +1333,23 @@ def _self_test_candidate_bank_and_donor() -> None:
     bank = construct_candidate_bank(records, descriptors, impostor_topk=2)
     validate_candidate_bank(records, descriptors, bank)
     assert bank["eligible_query_count"] == len(records)
+    assert bank["camera_matched_impostors"] is True
     assert all(
         sum(not pair["same_pid"] for pair in bank["pairs"] if pair["query_index"] == q)
         == 2
         for q in range(len(records))
     )
+    for query in range(len(records)):
+        rows = [
+            pair for pair in bank["pairs"] if pair["query_index"] == query
+        ]
+        genuine_cameras = sorted(
+            pair["candidate_camera"] for pair in rows if pair["same_pid"]
+        )
+        impostor_cameras = sorted(
+            pair["candidate_camera"] for pair in rows if not pair["same_pid"]
+        )
+        assert set(impostor_cameras) == set(genuine_cameras)
     broken = copy.deepcopy(bank)
     broken["pairs"][0]["candidate_pid"] += 1
     _expect_raises(lambda: validate_candidate_bank(records, descriptors, broken))
@@ -1211,14 +1391,14 @@ def _self_test_candidate_bank_and_donor() -> None:
 
 def _self_test_crops_color_and_undecided() -> None:
     assert clamped_crop_box(-10.0, -20.0, 20, 10) == (0, 0, 20, 10)
-    assert clamped_crop_box(999.0, 999.0, 20, 10) == (364, 118, 384, 128)
+    assert clamped_crop_box(999.0, 999.0, 20, 10) == (364, 118, 20, 10)
     centers = np.asarray([(0, 0), (50, 20), (100, 40), (200, 80), (383, 127)])
     sizes = np.asarray([(20, 10)] * SLOT_COUNT)
     valid = np.asarray([1, 1, 0, 1, 1], dtype=np.bool_)
     boxes = build_slot_crop_boxes(centers, sizes, valid)
     assert np.array_equal(boxes[2], np.asarray([-1, -1, -1, -1]))
-    assert np.all((boxes[valid, 2] - boxes[valid, 0]) == 20)
-    assert np.all((boxes[valid, 3] - boxes[valid, 1]) == 10)
+    assert np.all(boxes[valid, 2] == 20)
+    assert np.all(boxes[valid, 3] == 10)
 
     black = np.zeros((8, 8, 3), dtype=np.uint8)
     white = np.full((8, 8, 3), 255, dtype=np.uint8)
@@ -1357,6 +1537,27 @@ def _self_test_bootstrap() -> None:
     assert math.isclose(first["estimate"], expected, abs_tol=1e-15)
     assert first == second
     assert first["repetitions"] == 10000 and first["pid_count"] == 3
+    weaker = [
+        {
+            "query_id": row["query_id"],
+            "query_pid": row["query_pid"],
+            "mAP": float(row["mAP"]) - 0.2,
+        }
+        for row in control
+    ]
+    simultaneous = simultaneous_control_pid_bootstrap(
+        correct,
+        {
+            name: control if index == 0 else weaker
+            for index, name in enumerate(CONTROL_ORDER)
+        },
+        metric="mAP",
+    )
+    assert math.isclose(
+        simultaneous["estimate"], expected, abs_tol=1e-15
+    )
+    assert simultaneous["control"] == "all_controls_min"
+    assert simultaneous["controls"] == list(CONTROL_ORDER)
     _expect_raises(
         lambda: paired_pid_bootstrap(
             correct,

@@ -3724,9 +3724,10 @@ pose-only、q-only三个自然封存臂不得修改、覆盖、续训或重跑�
 ## exp395--414综合复盘（2026-07-24）
 
 20个编号中只有exp401--404、408--414共11项提供方法科学证据；exp395--400是AMP/production合同，
-exp405--407是CAVT测量合同。综合证据显示，exp409/411/413/414都属于“同PID exchangeable support上的
-选择、加权、排序或连边”家族。PID loss会压掉类内差异，因此强语义介入时性能下降，弱语义索引时普通宿主涨点但
-correct无法归因。
+exp405--407是CAVT测量合同。综合证据显示，exp411/413/414属于“同PID exchangeable support上的
+加权、排序或连边”家族，PID loss会压掉类内差异；exp409则直接改变异PID negative，结果
+`-0.6 mAP/+0.9 R1`，支持“单hard edge/首位目标与mAP全排序错位”，不能归入同PID对称性。
+因此强语义介入时可能伤害全排序，弱语义索引时普通宿主虽涨点但correct仍无法归因。
 
 当前唯一稳定正信号是student-space、三support、all-identity平滑listwise宿主；它尚未隔离多正均值、负集合平滑、
 all-identity surrogate与LOO jackknife各自贡献，不能写成pose completion。完整失败表、永久关闭路线、四个新候选
@@ -3806,3 +3807,34 @@ result/summary/manifest/正式runner SHA256=
 `0285defe3c95dfe1c0e7f3674868359cf734407907d3680aee14376126a83911` /
 `3ce850c1199ba92f5798fcb9e4c60188ff5ea6b38ed320ebc5f077d5033c273c` /
 `2588e84f6ee2a517da23e3ecd4bbd340875b4ec61518838e8f196ad95e9a822f`。
+
+## exp416 PC-NEC fuel audit实现状态（2026-07-24）
+
+20次独立复盘确认当前失败不是“CLIP必然无用”，而是active≠owned、同PID语义组织可被PID loss绕过、
+pose/CLIP/student pixel-view混淆，以及单edge/局部关系与mAP全排序错位。PC-NEC因此只测试固定D0 bank上
+pose-estimated共同可用槽的CLIP跨身份负证据；当前没有训练结果、asset结果或mAP/R1性能数字。
+
+实现首轮复审发现geometry门未接stage3、audit once-only namespace过晚、artifact未交叉绑定、
+microbatch链式判断与provenance/物理封存不足，均已在formal读数前修复。综合本地static、candidate、
+geometry、D0/CLIP串行mock、九臂energy、OOF/simultaneous PID-bootstrap与Python 3.8 AST全部PASS；
+design SHA256=`b0c4301c3bf34b2a59f329d0b31c261e23f58cb7b12b1624c7ffc96c6a03eed0`。
+
+future训练原式因会吸引未决负身份被阻断，现只保留stop-gradient U、normalized logmeanexp、same-view
+deterministic certificate branch和fuel GO后独立threshold-feasibility门的条件设计。candidate bank另按
+genuine candidate-camera频数分层匹配impostor quota，阻断真假标签的camera shortcut；“CLIP”只指
+OpenCLIP image encoder region visual evidence。二值门直接要求genuine identity误证`<=1%`、负身份
+PID-macro coverage `>=30%`、`C/U`同时非空anchor `>=80%`。
+
+远端SSH已从早先banner timeout恢复；复核旧exp414 PIDs不存在、GPU无compute进程、exp416 formal与asset
+namespace均不存在。当前仍未创建formal、未运行真实fuel、未使用GPU训练。
+
+最终效能红队进一步裁决`2B/2H`：D0 diagnostic consumer与future zero-owner宿主错位，且top-20 image bank
+无法定义真实PK64全部负身份pair。因而现有fuel即使GO也不能预测e120或授权threshold/PK64。唯一保留方向是
+修订PC-NEC的consumer-aligned无训练门：zero-owner残余误排序富集、确定性PK64全`64×64` pair证书完整、
+identity级`<=1% / >=30% / >=80%`三门，以及exact `L_cert`与独立全排序梯度的对齐；correct相对全部control
+的PID-bootstrap下界必须`>0`。
+
+`static_contract.py --formal`已显式硬阻断，防止在该门尚未实现时误运行旧D0 runner。最新design SHA256=
+`6d062b2782abb1bd5c9fa36a1a7500ff3105c203d70e5e9e10c6d8e03622ef77`。当前=
+`D0 SIGNAL DIAGNOSTIC IMPLEMENTATION PASS / CONSUMER-ALIGNED GATE NOT IMPLEMENTED /
+FORMAL NO-START / TRAINING NO-START`。

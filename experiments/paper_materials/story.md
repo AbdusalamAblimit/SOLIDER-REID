@@ -2611,10 +2611,45 @@ bootstrap，投稿主方法状态保持`NO POSITIVE JOINT ATTRIBUTION`。
 ### PC-NEC条件story
 
 下一条件story不再声称从部分观测恢复完整身份。PC-NEC使用一个非对称但可识别的命题：一张不完整图可能无法
-证明同一身份，但双方共同可见的真实身体槽中，一个可靠语义矛盾可以排除错误身份。pose只建立槽对应，CLIP只提供
+证明同一身份，但双方被pose估计为共同可用的身体槽中，一个可靠语义矛盾可能排除错误身份。pose只建立槽对应，
+CLIP只提供
 训练期矛盾/未决证据，最终检索删除两者及证书头，仍使用标准global RGB descriptor。
 
 该story当前只有设计资格。KPR/BPBreID类共同可见part matching、PAT-CSL跨ID邻居与Instruct-ReID语义margin都
-构成近邻；只有固定全候选bank的fuel audit证明correct相对raw-color、student part、pose-only、CLIP-only、
+构成近邻；只有固定全候选bank的fuel audit证明correct相对raw-color、student part、pose-only、
+canonical-location CLIP、
 slot-shuffle和wrong-RGB存在显著paired增量，才允许建立训练方法。若fuel audit失败，论文结论直接保持
 `NO POSE+CLIP CANDIDATE`，不得用第三个弱组合替代。
+
+二次复审进一步收窄这段条件story。当前slot只能称“pose-estimated共同可用”，不能写成真实可见ground truth；
+canonical-location CLIP仍共享pose availability，只消融instance center，不是严格CLIP-only。fuel最多证明
+固定bank上的身份判别增量，不能直接证明逻辑错误身份证书或训练收益。
+
+candidate bank还必须按每个query的genuine candidate-camera频数分层匹配impostor quota，否则region差异可能
+只是相机/背景捷径。当前实现已在pose/OpenCLIP读取前冻结这一匹配，任一quota不足直接INVALID。这里的
+“CLIP”严格只指OpenCLIP image encoder的region visual representation；没有text encoder或prompt，故论文不得
+声称语言语义不可替代。
+
+原future loss因`-LSE_U`会吸引未决负身份而被阻断。即使fuel GO，论文方法也必须先通过held-out-PID二值阈值门，
+再使用same-view deterministic certificate branch、normalized logmeanexp与stop-gradient U，确保额外梯度只
+排斥certified-wrong身份。阈值门必须同时满足identity-level genuine误证`<=1%`、负身份PID-macro coverage
+`>=30%`与`C/U`同时非空anchor`>=80%`。该修正后仍与negative reweighting/Instruct-ReID语义margin强邻近；只有
+`all-certified-identity set constraint + detached reference + global-only eval`的整体能保留窄C类差分。
+
+当前没有formal fuel结果或训练结果，正面story仍为
+`CONDITIONAL ONLY / FUEL NO-START / NO POSITIVE JOINT ATTRIBUTION`。
+
+### PC-NEC效能红队后的最终边界
+
+现有D0 signal audit不再被视为训练前充分门。它的消费者是sealed D0，future宿主却是zero-owner；并且top-20
+image bank不覆盖随机PK64全部负身份pair。过去最强反证exp409/412已经说明，pose×CLIP选择额外负梯度可以active、
+可以改善R1，却同时伤mAP或被强宿主吞掉。
+
+因此唯一还可能进入正面story的证据链改为：
+
+`D0 region signal → zero-owner residual enrichment → identity-safe full-PK64 certificate coverage →
+certificate/ranking gradient alignment → global-only e120/multi-seed`。
+
+前四项均须相对全部matched controls通过PID-bootstrap下界，任何一项失败即`NO CANDIDATE`。在它们完成前，
+PC-NEC不能写成“真正可能有效的方法”，只能写成目前唯一值得继续被严格证伪的候选；PS-ODM/APCO也不进入
+正面story，因为其收益分别难与普通遮挡增强、adversarial erasing分离。

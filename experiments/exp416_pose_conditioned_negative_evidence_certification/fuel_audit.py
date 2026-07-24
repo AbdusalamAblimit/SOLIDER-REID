@@ -6,6 +6,8 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -23,9 +25,24 @@ import fuel_io
 
 
 SCHEMA = "exp416-pcnec-audit-v1"
-BANK_SCHEMA = "exp416-pcnec-bank-v1"
+BANK_SCHEMA = "exp416-pcnec-candidate-bank-v1"
 GEOMETRY_SCHEMA = "exp416-pcnec-geometry-v1"
 FUEL_SCHEMA = "exp416-pcnec-fuel-cache-v1"
+EXPECTED_INTERPRETER = Path("/usr/local/anaconda3/envs/mmpose-abu/bin/python")
+FIXED_REPOSITORY_ROOT = Path("/home/afr/SOLIDER-REID-exp416-pcnec-formal-v1")
+FIXED_BANK = Path(
+    "/home/afr/reid-clean/assets/exp416-pcnec-candidate-bank-v1/"
+    "candidate_bank.npz"
+)
+FIXED_GEOMETRY_SUMMARY = Path(
+    "/home/afr/reid-clean/assets/exp416-pcnec-geometry-v1/summary.json"
+)
+FIXED_FUEL_CACHE = Path(
+    "/home/afr/reid-clean/assets/exp416-pcnec-fuel-v1/fuel_cache.npz"
+)
+FIXED_OUTPUT_DIR = Path(
+    "/home/afr/reid-clean/assets/exp416-pcnec-audit-v1"
+)
 EXPECTED_TRAIN_COUNT = 15618
 
 AUROC_AP_MIN_DELTA = 0.03
@@ -48,6 +65,8 @@ BANK_FIELDS = {
 }
 FUEL_FIELDS = {
     "schema",
+    "bank_sha256",
+    "geometry_sha256",
     "relative_paths",
     "image_sha256",
     "availability",
@@ -69,6 +88,10 @@ FUEL_FIELDS = {
     "wrong_donor_invalid",
     "arm_names",
 }
+SLOT_COUNT = 5
+MIN_QUERY_COVERAGE = 0.80
+MIN_COMMON_PAIRS_PER_SLOT = 100000
+MIN_QUERY_PIDS_PER_SLOT = 300
 
 
 def _load_npz_bound(path, expected_sha256, fields, schema):
@@ -89,6 +112,71 @@ def _load_geometry_summary(path, expected_sha256):
     if payload.get("schema") != GEOMETRY_SCHEMA:
         raise RuntimeError("geometry summary schema mismatch")
     return resolved, payload
+
+
+def recompute_geometry_gate(bank, fuel, geometry, bank_sha256):
+    if (
+        fuel["bank_sha256"].shape != (1,)
+        or fuel["geometry_sha256"].shape != (1,)
+    ):
+        raise RuntimeError("fuel provenance SHA fields must be scalar strings")
+    fuel_bank_sha = str(fuel["bank_sha256"].item())
+    fuel_geometry_sha = str(fuel["geometry_sha256"].item())
+    if fuel_bank_sha != str(bank_sha256):
+        raise RuntimeError("fuel cache bank SHA differs from current bank")
+    if str(geometry.get("bank_sha256")) != str(bank_sha256):
+        raise RuntimeError("geometry summary bank SHA differs from current bank")
+    if str(geometry.get("geometry_npz_sha256")) != fuel_geometry_sha:
+        raise RuntimeError("fuel cache geometry SHA differs from geometry summary")
+
+    count = len(bank["relative_paths"])
+    availability = np.asarray(fuel["availability"])
+    if availability.dtype != np.bool_ or availability.shape != (
+        count,
+        SLOT_COUNT,
+    ):
+        raise RuntimeError("fuel availability schema mismatch")
+    query = bank["query_indices"].astype(np.int64, copy=False)
+    candidate = bank["candidate_indices"].astype(np.int64, copy=False)
+    common = availability[query] & availability[candidate]
+    if not np.array_equal(fuel["common"], common):
+        raise RuntimeError("fuel common slots differ from current bank/availability")
+    unique_queries = np.unique(query)
+    covered_queries = np.unique(query[common.any(axis=1)])
+    query_coverage = float(len(covered_queries) / len(unique_queries))
+    pair_counts = common.sum(axis=0).astype(np.int64)
+    raw_pids = bank["raw_pids"].astype(np.int64, copy=False)
+    pid_counts = np.asarray(
+        [
+            len(np.unique(raw_pids[np.unique(query[common[:, slot]])]))
+            for slot in range(SLOT_COUNT)
+        ],
+        dtype=np.int64,
+    )
+    coverage = geometry.get("coverage")
+    if not isinstance(coverage, dict):
+        raise RuntimeError("geometry summary coverage receipt is missing")
+    if (
+        float(coverage.get("query_coverage", -1.0)) != query_coverage
+        or coverage.get("common_pair_count_by_slot") != pair_counts.tolist()
+        or coverage.get("query_pid_count_by_slot") != pid_counts.tolist()
+    ):
+        raise RuntimeError(
+            "geometry summary coverage differs from current bank/fuel"
+        )
+    gate = bool(
+        query_coverage >= MIN_QUERY_COVERAGE
+        and bool((pair_counts >= MIN_COMMON_PAIRS_PER_SLOT).all())
+        and bool((pid_counts >= MIN_QUERY_PIDS_PER_SLOT).all())
+    )
+    if bool(geometry.get("geometry_gate_pass", False)) != gate:
+        raise RuntimeError("geometry summary gate differs from recomputation")
+    return {
+        "geometry_gate_pass": gate,
+        "query_coverage": query_coverage,
+        "common_pair_count_by_slot": pair_counts.tolist(),
+        "query_pid_count_by_slot": pid_counts.tolist(),
+    }
 
 
 def build_query_payloads(bank, fuel):
@@ -149,6 +237,25 @@ def build_query_payloads(bank, fuel):
         )
         if not bool(labels.any()) or not bool((~labels).any()):
             raise RuntimeError("query bank lacks one binary class")
+        true_rows = candidate_index[~labels]
+        expected_camera_quota = core._camera_matched_impostor_quota(
+            true_rows,
+            bank["camids"].astype(np.int64, copy=False),
+            int(labels.sum()),
+        )
+        observed_camera_quota = {
+            int(camera): int(count)
+            for camera, count in zip(
+                *np.unique(
+                    bank["camids"][candidate_index[labels]],
+                    return_counts=True,
+                )
+            )
+        }
+        if observed_camera_quota != expected_camera_quota:
+            raise RuntimeError(
+                "candidate bank impostor camera quota differs from genuine"
+            )
         query_path = paths[query_index]
         arm_energy = {
             name: energy[start:stop, column].copy()
@@ -229,24 +336,34 @@ def adjudicate(outputs, summaries, strongest, geometry_gate_pass):
         metric: float(correct[metric] - summaries["d0_only"][metric])
         for metric in ("mAP", "R1")
     }
-    bootstrap_specs = (
-        ("auroc", strongest["auroc"]["arm"]),
-        ("average_precision", strongest["average_precision"]["arm"]),
-        ("mAP", "d0_only"),
-        ("R1", "d0_only"),
-        ("mAP", strongest["mAP"]["arm"]),
-        ("R1", strongest["R1"]["arm"]),
-    )
-    bootstraps = []
-    for metric, control in bootstrap_specs:
-        bootstraps.append(
-            core.paired_pid_bootstrap(
-                outputs["correct"]["rows"],
-                outputs[control]["rows"],
-                metric=metric,
-                control_name=control,
-            )
+    control_rows = {
+        name: outputs[name]["rows"] for name in core.CONTROL_ORDER
+    }
+    bootstraps = [
+        core.simultaneous_control_pid_bootstrap(
+            outputs["correct"]["rows"],
+            control_rows,
+            metric=metric,
         )
+        for metric in ("auroc", "average_precision")
+    ]
+    bootstraps.extend(
+        core.paired_pid_bootstrap(
+            outputs["correct"]["rows"],
+            outputs["d0_only"]["rows"],
+            metric=metric,
+            control_name="d0_only",
+        )
+        for metric in ("mAP", "R1")
+    )
+    bootstraps.extend(
+        core.simultaneous_control_pid_bootstrap(
+            outputs["correct"]["rows"],
+            control_rows,
+            metric=metric,
+        )
+        for metric in ("mAP", "R1")
+    )
 
     gates = {
         "auroc_delta_vs_strongest_ge_0_03": bool(
@@ -382,12 +499,202 @@ def run_self_test():
         pass
     else:
         raise AssertionError("invalid strongest-control arm was accepted")
+    mock_bank = {
+        "relative_paths": np.asarray(("a", "b", "c"), dtype=np.str_),
+        "raw_pids": np.asarray((10, 10, 20), dtype=np.int64),
+        "query_indices": np.asarray((0, 0), dtype=np.int32),
+        "candidate_indices": np.asarray((1, 2), dtype=np.int32),
+    }
+    mock_availability = np.asarray(
+        (
+            (1, 1, 1, 1, 1),
+            (1, 1, 1, 1, 0),
+            (1, 0, 0, 0, 0),
+        ),
+        dtype=np.bool_,
+    )
+    mock_common = mock_availability[[0, 0]] & mock_availability[[1, 2]]
+    mock_fuel = {
+        "bank_sha256": np.asarray(["b" * 64]),
+        "geometry_sha256": np.asarray(["g" * 64]),
+        "availability": mock_availability,
+        "common": mock_common,
+    }
+    mock_geometry = {
+        "bank_sha256": "b" * 64,
+        "geometry_npz_sha256": "g" * 64,
+        "geometry_gate_pass": False,
+        "coverage": {
+            "query_coverage": 1.0,
+            "common_pair_count_by_slot": [2, 1, 1, 1, 0],
+            "query_pid_count_by_slot": [1, 1, 1, 1, 0],
+        },
+    }
+    receipt = recompute_geometry_gate(
+        mock_bank, mock_fuel, mock_geometry, "b" * 64
+    )
+    assert receipt["geometry_gate_pass"] is False
+    injected = dict(mock_geometry)
+    injected["bank_sha256"] = "x" * 64
+    try:
+        recompute_geometry_gate(
+            mock_bank, mock_fuel, injected, "b" * 64
+        )
+    except RuntimeError:
+        pass
+    else:
+        raise AssertionError("stale geometry summary binding was accepted")
     print("EXP416_FUEL_AUDIT_SELF_TEST=PASS")
+
+
+def _git_file_is_tracked(repository, path):
+    result = subprocess.run(
+        (
+            "git",
+            "-C",
+            str(repository),
+            "ls-files",
+            "--error-unmatch",
+            str(Path(path).resolve().relative_to(Path(repository).resolve())),
+        ),
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return result.returncode == 0
+
+
+def validate_formal(args):
+    if not args.formal:
+        raise RuntimeError("non-self-test adjudication requires --formal")
+    if os.environ.get("PYTHONDONTWRITEBYTECODE") != "1":
+        raise RuntimeError("formal audit requires PYTHONDONTWRITEBYTECODE=1")
+    if os.environ.get("PYTHONHASHSEED") != "0":
+        raise RuntimeError("formal audit requires PYTHONHASHSEED=0")
+    if Path(sys.executable).resolve() != EXPECTED_INTERPRETER.resolve(strict=True):
+        raise RuntimeError("formal audit interpreter mismatch")
+    if REPOSITORY_ROOT.resolve(strict=True) != FIXED_REPOSITORY_ROOT:
+        raise RuntimeError("formal audit repository path mismatch")
+    exact_paths = {
+        "bank": FIXED_BANK,
+        "geometry_summary": FIXED_GEOMETRY_SUMMARY,
+        "fuel_cache": FIXED_FUEL_CACHE,
+        "output_dir": FIXED_OUTPUT_DIR,
+    }
+    for name, expected in exact_paths.items():
+        if Path(getattr(args, name)).expanduser() != expected:
+            raise RuntimeError("formal audit fixed path mismatch: " + name)
+    if FIXED_OUTPUT_DIR.exists():
+        raise FileExistsError("formal audit output must be fresh")
+    if not FIXED_OUTPUT_DIR.parent.is_dir():
+        raise NotADirectoryError(FIXED_OUTPUT_DIR.parent)
+    for path in (FIXED_BANK, FIXED_GEOMETRY_SUMMARY, FIXED_FUEL_CACHE):
+        path.resolve(strict=True)
+    head = fuel_io.git_head(REPOSITORY_ROOT)
+    if not args.expected_head or str(args.expected_head) != head:
+        raise RuntimeError("formal audit HEAD mismatch")
+    if fuel_io.git_tracked_status(REPOSITORY_ROOT):
+        raise RuntimeError("formal audit tracked worktree is dirty")
+    if fuel_io.git_index_status(REPOSITORY_ROOT):
+        raise RuntimeError("formal audit index is dirty")
+    expected_sources = {
+        "fuel_audit.py": str(args.expected_fuel_audit_sha256),
+        "fuel_core.py": str(args.expected_fuel_core_sha256),
+        "fuel_io.py": str(args.expected_fuel_io_sha256),
+    }
+    for filename, expected in expected_sources.items():
+        path = SCRIPT_DIR / filename
+        if not expected or fuel_io.sha256_file(path) != expected:
+            raise RuntimeError("formal audit source SHA mismatch: " + filename)
+        if not _git_file_is_tracked(REPOSITORY_ROOT, path):
+            raise RuntimeError("formal audit source is untracked: " + filename)
+    fuel_io.assert_no_cuda_compute_processes()
+    return {
+        "head": head,
+        "source_sha256": {
+            filename: fuel_io.sha256_file(SCRIPT_DIR / filename)
+            for filename in expected_sources
+        },
+    }
+
+
+def _validate_upstream_receipts(
+    *, bank_path, bank_sha256, geometry_path, geometry, fuel_path,
+    fuel_sha256, formal_head
+):
+    bank_receipt_path = bank_path.parent / "receipt.json"
+    bank_manifest_path = bank_path.parent / "manifest.json"
+    bank_receipt = fuel_io.readback_json(bank_receipt_path)
+    bank_manifest = fuel_io.readback_json(bank_manifest_path)
+    if (
+        bank_receipt.get("schema")
+        != "exp416-pcnec-candidate-bank-receipt-v1"
+        or bank_manifest.get("schema")
+        != "exp416-pcnec-candidate-bank-manifest-v1"
+        or bank_manifest.get("files", {})
+        .get("candidate_bank.npz", {})
+        .get("sha256")
+        != str(bank_sha256)
+        or bank_manifest.get("files", {}).get("receipt.json", {}).get("sha256")
+        != fuel_io.sha256_file(bank_receipt_path)
+        or bank_receipt.get("provenance", {}).get("formal_head")
+        != formal_head
+    ):
+        raise RuntimeError("candidate artifact provenance binding mismatch")
+
+    geometry_manifest_path = geometry_path.parent / "manifest.json"
+    geometry_manifest = fuel_io.readback_json(geometry_manifest_path)
+    if (
+        geometry.get("formal_head") != formal_head
+        or geometry_manifest.get("formal_head") != formal_head
+        or geometry_manifest.get("geometry_npz_sha256")
+        != geometry.get("geometry_npz_sha256")
+        or geometry_manifest.get("summary_json_sha256")
+        != fuel_io.sha256_file(geometry_path)
+    ):
+        raise RuntimeError("geometry artifact provenance binding mismatch")
+
+    fuel_receipt_path = fuel_path.parent / "receipt.json"
+    fuel_manifest_path = fuel_path.parent / "manifest.json"
+    fuel_receipt = fuel_io.readback_json(fuel_receipt_path)
+    fuel_manifest = fuel_io.readback_json(fuel_manifest_path)
+    if (
+        fuel_receipt.get("formal_head") != formal_head
+        or fuel_receipt.get("bank_sha256") != str(bank_sha256)
+        or fuel_receipt.get("geometry_sha256")
+        != geometry.get("geometry_npz_sha256")
+        or fuel_manifest.get("formal_head") != formal_head
+        or fuel_manifest.get("files", {})
+        .get("fuel_cache.npz", {})
+        .get("sha256")
+        != str(fuel_sha256)
+        or fuel_manifest.get("files", {}).get("receipt.json", {}).get("sha256")
+        != fuel_io.sha256_file(fuel_receipt_path)
+    ):
+        raise RuntimeError("fuel artifact provenance binding mismatch")
+
+
+def _write_failure(output_dir, *, stage, error, validated):
+    failure = {
+        "schema": "exp416-pcnec-audit-failure-v1",
+        "status": "FAILED",
+        "stage": str(stage),
+        "error_type": type(error).__name__,
+        "error_message": str(error),
+        "resume_allowed": False,
+        "formal_head": validated["head"],
+        "source_sha256": validated["source_sha256"],
+    }
+    path = output_dir / "failure.json"
+    if not path.exists() and not path.with_name(path.name + ".tmp").exists():
+        fuel_io.atomic_json(path, failure)
+        fuel_io.readback_json(path, failure)
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument("--formal", action="store_true")
     parser.add_argument("--bank")
     parser.add_argument("--bank-sha256")
     parser.add_argument("--geometry-summary")
@@ -395,6 +702,10 @@ def parse_args():
     parser.add_argument("--fuel-cache")
     parser.add_argument("--fuel-cache-sha256")
     parser.add_argument("--output-dir")
+    parser.add_argument("--expected-head")
+    parser.add_argument("--expected-fuel-audit-sha256")
+    parser.add_argument("--expected-fuel-core-sha256")
+    parser.add_argument("--expected-fuel-io-sha256")
     return parser.parse_args()
 
 
@@ -411,90 +722,154 @@ def main():
         "fuel_cache",
         "fuel_cache_sha256",
         "output_dir",
+        "expected_head",
+        "expected_fuel_audit_sha256",
+        "expected_fuel_core_sha256",
+        "expected_fuel_io_sha256",
     )
     missing = [name for name in required if not getattr(args, name)]
     if missing:
         raise ValueError("missing formal arguments: " + ",".join(missing))
-    if fuel_io.cuda_compute_processes():
-        raise RuntimeError("CPU adjudicator requires no concurrent CUDA process")
-
-    bank_path, bank = _load_npz_bound(
-        args.bank, args.bank_sha256, BANK_FIELDS, BANK_SCHEMA
-    )
-    geometry_path, geometry = _load_geometry_summary(
-        args.geometry_summary, args.geometry_summary_sha256
-    )
-    fuel_path, fuel = _load_npz_bound(
-        args.fuel_cache, args.fuel_cache_sha256, FUEL_FIELDS, FUEL_SCHEMA
-    )
-    queries = build_query_payloads(bank, fuel)
-    outputs, summaries, strongest = evaluate_all_arms(queries)
-    adjudication = adjudicate(
-        outputs, summaries, strongest, geometry.get("geometry_gate_pass", False)
-    )
-    oof_arrays = _serializable_oof(outputs)
-
+    validated = validate_formal(args)
     output_dir = Path(args.output_dir).expanduser()
     if not output_dir.is_absolute() or output_dir.exists():
         raise FileExistsError("audit output directory must be fresh and absolute")
     output_dir.mkdir(mode=0o755, parents=False)
-    oof_path = output_dir / "oof_metrics.npz"
-    fuel_io.atomic_npz(oof_path, oof_arrays)
-    fuel_io.readback_npz(oof_path, oof_arrays)
-    result = {
-        "schema": SCHEMA,
-        "verdict": adjudication["verdict"],
-        "go": adjudication["go"],
+    started = {
+        "schema": "exp416-pcnec-audit-started-v1",
+        "status": "STARTED",
+        "resume_allowed": False,
+        "formal_head": validated["head"],
+        "source_sha256": validated["source_sha256"],
         "inputs": {
-            "bank": str(bank_path),
+            "bank": str(args.bank),
             "bank_sha256": str(args.bank_sha256),
-            "geometry_summary": str(geometry_path),
+            "geometry_summary": str(args.geometry_summary),
             "geometry_summary_sha256": str(args.geometry_summary_sha256),
-            "fuel_cache": str(fuel_path),
+            "fuel_cache": str(args.fuel_cache),
             "fuel_cache_sha256": str(args.fuel_cache_sha256),
         },
-        "counts": {
-            "train_rows": int(len(bank["relative_paths"])),
-            "pair_rows": int(len(bank["query_indices"])),
-            "fixed_queries": int(len(queries)),
-            "query_pids": int(len({query["query_pid"] for query in queries})),
-            "undecided_pairs": int(fuel["undecided"].sum()),
-            "wrong_donor_invalid_pairs": int(
-                fuel["wrong_donor_invalid"].sum()
-            ),
-        },
-        "geometry_gate_pass": bool(geometry.get("geometry_gate_pass", False)),
-        "arm_summaries": summaries,
-        "selected_lambda_by_fold": {
-            arm: output.get("selected", {})
-            for arm, output in outputs.items()
-            if arm != "d0_only"
-        },
-        "strongest_controls": strongest,
-        "adjudication": adjudication,
-        "oof_metrics": str(oof_path),
-        "oof_metrics_sha256": fuel_io.sha256_file(oof_path),
-        "source_sha256": {
-            "fuel_audit.py": fuel_io.sha256_file(Path(__file__).resolve()),
-            "fuel_core.py": fuel_io.sha256_file(SCRIPT_DIR / "fuel_core.py"),
-            "fuel_io.py": fuel_io.sha256_file(SCRIPT_DIR / "fuel_io.py"),
-        },
-        "cuda_process_count": 0,
     }
-    result_path = output_dir / "result.json"
-    fuel_io.atomic_json(result_path, result)
-    fuel_io.readback_json(result_path, result)
-    manifest = {
-        "schema": SCHEMA,
-        "result_json": str(result_path),
-        "result_json_sha256": fuel_io.sha256_file(result_path),
-        "oof_metrics_npz": str(oof_path),
-        "oof_metrics_npz_sha256": fuel_io.sha256_file(oof_path),
-        "verdict": adjudication["verdict"],
-    }
-    manifest_path = output_dir / "manifest.json"
-    fuel_io.atomic_json(manifest_path, manifest)
-    fuel_io.readback_json(manifest_path, manifest)
+    stage = "started_write"
+    try:
+        started_path = output_dir / "started.json"
+        fuel_io.atomic_json(started_path, started)
+        fuel_io.readback_json(started_path, started)
+        stage = "input_read_and_binding"
+        bank_path, bank = _load_npz_bound(
+            args.bank, args.bank_sha256, BANK_FIELDS, BANK_SCHEMA
+        )
+        geometry_path, geometry = _load_geometry_summary(
+            args.geometry_summary, args.geometry_summary_sha256
+        )
+        fuel_path, fuel = _load_npz_bound(
+            args.fuel_cache, args.fuel_cache_sha256, FUEL_FIELDS, FUEL_SCHEMA
+        )
+        _validate_upstream_receipts(
+            bank_path=bank_path,
+            bank_sha256=args.bank_sha256,
+            geometry_path=geometry_path,
+            geometry=geometry,
+            fuel_path=fuel_path,
+            fuel_sha256=args.fuel_cache_sha256,
+            formal_head=validated["head"],
+        )
+        geometry_receipt = recompute_geometry_gate(
+            bank, fuel, geometry, args.bank_sha256
+        )
+        stage = "query_payload_construction"
+        queries = build_query_payloads(bank, fuel)
+        stage = "oof_and_bootstrap"
+        outputs, summaries, strongest = evaluate_all_arms(queries)
+        adjudication = adjudicate(
+            outputs,
+            summaries,
+            strongest,
+            geometry_receipt["geometry_gate_pass"],
+        )
+        oof_arrays = _serializable_oof(outputs)
+        stage = "result_write"
+        oof_path = output_dir / "oof_metrics.npz"
+        fuel_io.atomic_npz(oof_path, oof_arrays)
+        fuel_io.readback_npz(oof_path, oof_arrays)
+        result = {
+            "schema": SCHEMA,
+            "verdict": adjudication["verdict"],
+            "go": adjudication["go"],
+            "formal_head": validated["head"],
+            "inputs": {
+                "bank": str(bank_path),
+                "bank_sha256": str(args.bank_sha256),
+                "geometry_summary": str(geometry_path),
+                "geometry_summary_sha256": str(
+                    args.geometry_summary_sha256
+                ),
+                "fuel_cache": str(fuel_path),
+                "fuel_cache_sha256": str(args.fuel_cache_sha256),
+            },
+            "counts": {
+                "train_rows": int(len(bank["relative_paths"])),
+                "pair_rows": int(len(bank["query_indices"])),
+                "fixed_queries": int(len(queries)),
+                "query_pids": int(
+                    len({query["query_pid"] for query in queries})
+                ),
+                "undecided_pairs": int(fuel["undecided"].sum()),
+                "wrong_donor_invalid_pairs": int(
+                    fuel["wrong_donor_invalid"].sum()
+                ),
+            },
+            "geometry": geometry_receipt,
+            "arm_summaries": summaries,
+            "selected_lambda_by_fold": {
+                arm: output.get("selected", {})
+                for arm, output in outputs.items()
+                if arm != "d0_only"
+            },
+            "strongest_controls": strongest,
+            "adjudication": adjudication,
+            "oof_metrics": str(oof_path),
+            "oof_metrics_sha256": fuel_io.sha256_file(oof_path),
+            "source_sha256": validated["source_sha256"],
+            "cuda_process_count": 0,
+        }
+        result_path = output_dir / "result.json"
+        fuel_io.atomic_json(result_path, result)
+        fuel_io.readback_json(result_path, result)
+        manifest = {
+            "schema": SCHEMA,
+            "formal_head": validated["head"],
+            "source_sha256": validated["source_sha256"],
+            "files": {
+                name: {
+                    "bytes": int((output_dir / name).stat().st_size),
+                    "sha256": fuel_io.sha256_file(output_dir / name),
+                }
+                for name in (
+                    "started.json",
+                    "oof_metrics.npz",
+                    "result.json",
+                )
+            },
+            "verdict": adjudication["verdict"],
+            "resume_allowed": False,
+        }
+        manifest_path = output_dir / "manifest.json"
+        fuel_io.atomic_json(manifest_path, manifest)
+        fuel_io.readback_json(manifest_path, manifest)
+        fuel_io.seal_directory(output_dir)
+    except BaseException as error:
+        try:
+            _write_failure(
+                output_dir,
+                stage=stage,
+                error=error,
+                validated=validated,
+            )
+            fuel_io.seal_directory(output_dir)
+        except BaseException:
+            pass
+        raise
     print(json.dumps(manifest, ensure_ascii=False, sort_keys=True), flush=True)
 
 
