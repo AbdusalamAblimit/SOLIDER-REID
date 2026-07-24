@@ -1221,3 +1221,22 @@ compute约`7074 MiB / 41%`，runner/train严格异常=`0`，formal tracked workt
 - wrapper/训练主PID存活，唯一CUDA compute约`7074 MiB / 54%`，runner/train严格异常=`0`，formal
   tracked worktree/index=`0/0`；
 - 最近正式点仍为已登记e10，不预填e20指标，当前=`CONTINUE TO NATURAL E120`。
+
+## 2026-07-24：text-shuffle e20正式评测
+
+text-shuffle自然完成e20=`46.7 mAP / 56.4 R1 / 71.5 R5 / 76.8 R10`；同epoch sealed correct=
+`47.1/56.7/71.4/76.9`，sealed pose-only=`46.9/57.0/71.4/77.2`，sealed q-only=
+`45.9/55.6/70.3/76.2`，sealed zero-owner=`45.6/55.0/70.6/75.8`，sealed clean D0=
+`42.2/52.4/67.6/74.0`。完整rounded轨迹更新为：
+
+| epoch | text-shuffle | correct | pose-only | q-only | zero-owner | clean D0 | Δcorrect | Δpose-only | Δq-only | Δzero-owner | ΔD0 |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 10 | 29.2/38.5/54.1/61.0 | 28.6/38.1/53.7/60.7 | 28.2/38.1/52.5/59.0 | 28.5/38.8/53.4/60.1 | 28.4/38.1/53.9/60.8 | 33.4/42.7/59.8/65.2 | +0.6/+0.4/+0.4/+0.3 | +1.0/+0.4/+1.6/+2.0 | +0.7/-0.3/+0.7/+0.9 | +0.8/+0.4/+0.2/+0.2 | -4.2/-4.2/-5.7/-4.2 |
+| 20 | 46.7/56.4/71.5/76.8 | 47.1/56.7/71.4/76.9 | 46.9/57.0/71.4/77.2 | 45.9/55.6/70.3/76.2 | 45.6/55.0/70.6/75.8 | 42.2/52.4/67.6/74.0 | -0.4/-0.3/+0.1/-0.1 | -0.2/-0.6/+0.1/-0.4 | +0.8/+0.8/+1.2/+0.6 | +1.1/+1.4/+0.9/+1.0 | +4.5/+4.0/+3.9/+2.8 |
+
+e20时text-shuffle相对correct与pose-only仅R5正，其余三项负，相对q-only、zero-owner与clean D0四项
+均正；该点继续显示混合反事实方向，不改变既有
+`POSE AXIS ATTRIBUTION FAILED / JOINT ATTRIBUTION FAILED`裁决，也不触发早停。读取时最新=
+`e25 iter140/227`，loss=`0.889`、pose=`0.503`、acc=`0.924`；wrapper/训练主PID存活，唯一CUDA
+compute约`7054 MiB / 41%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
+`CONTINUE TO NATURAL E120`。
