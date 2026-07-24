@@ -1182,3 +1182,10 @@ q-only产物永久封存，禁止修改、覆盖、续训或重跑。下一步�
   HEAD=`c6739b402a9e9a16f2427324536251e5ed059598`，tracked worktree/index=`0/0`。
 
 当前=`TEXT-SHUFFLE RUNNING / NATURAL E120 / NO INTERMEDIATE STOP`；all-edges继续`NO-START`。
+
+## 2026-07-24：text-shuffle e5健康检查
+
+- 最新=`e5 iter20/227`，loss=`6.542`、pose=`0.893`、acc=`0.158`；
+- wrapper/训练主PID存活，唯一CUDA compute约`6994 MiB / 59%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 尚未到e10正式点，当前=`CONTINUE TO NATURAL E120`。
