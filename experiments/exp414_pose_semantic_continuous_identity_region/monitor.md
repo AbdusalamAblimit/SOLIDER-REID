@@ -856,3 +856,10 @@ e20时q-only四项均低于correct与pose-only，相对zero-owner为mAP/R1/R10�
 `e24 iter200/227`，loss=`0.886`、pose=`0.507`、acc=`0.926`；wrapper/训练主PID存活，唯一CUDA
 compute约`7054 MiB / 41%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-24：q-only e29健康检查
+
+- 最新=`e29 iter160/227`，loss=`0.551`、pose=`0.488`、acc=`0.965`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7054 MiB / 70%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e20，当前=`CONTINUE TO NATURAL E120`。
