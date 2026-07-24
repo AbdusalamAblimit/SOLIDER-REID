@@ -4435,3 +4435,15 @@ revision-3进一步把变量收窄为“同一预定身体层中，实例pose中
 胜逐图severity-matched blind/raw-color/D0-hard”。这牺牲了宽泛的纹理/携物叙事，却换来真正可证伪的交互。
 任何match失败四臂共同记0，故correct不能通过arm-specific可用率获益。若该窄对象仍无法胜强control，应停止
 PACIT，而不是扩prompt、放宽caliper或重新加入旧owner/MST。
+
+### PACIT revision-3当前边界（覆盖早期候选措辞）
+
+PACIT正式展开名为`Pose-Anatomical CLIP Intervention Training`，不再使用`CLIP-verified`，也不声称CLIP审核
+衣着/携物真值或非目标语义保持。可检验对象只剩：pose是否提供比canonical anchor更有用的实例解剖位置，CLIP
+是否提供比同图D0/CE/geometry-matched hash与raw-color/D0-hard更有用的shape选择。独立Y只称
+`anatomical coherent color evidence`。
+
+当前控制集为严格2×2四臂加两条pair-specific strong control；text-shuffle只诊断selector颜色agreement，ROA
+只给D0 identity-safe定义P50--P90。若asset GO，六个intervention arms共同使用zero-owner普通listwise强宿主，
+另有double-view clean-pair；宿主不进入pose×CLIP归因。geometry census与runtime smoke已经PASS，但没有计算Y；
+core在oracle前完成三项显式变量修复，当前仍=`ORACLE NO-START / E120 NO-START`。

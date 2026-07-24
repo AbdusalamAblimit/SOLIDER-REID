@@ -3733,7 +3733,7 @@ all-identity surrogate与LOO jackknife各自贡献，不能写成pose completion
 与唯一首选PACIT见`experiments/exp395_414_failure_postmortem_and_next_direction.md`。当前=
 `RESEARCH RESET / NO TRAINING AUTHORIZED`。
 
-## exp415 PACIT revision-2（2026-07-24）
+## exp415 PACIT revision-2→revision-3（2026-07-24）
 
 用户随后明确授权开始下一方向。exp415第一版asset设计被两个独立子agent判定`BLOCK`：同一CLIP既选属性/候选又
 用自身margin验证，所有control继承pose候选池而缺真正CLIP-only，且难度与双forward合同未闭合。该版没有运行
@@ -3757,3 +3757,25 @@ survival合同。扩展纯CPU合同现为`EXP415_STATIC_CONTRACT_V3=PASS`。当�
 
 revision-3最终三路回归=`PASS / 0B / 0H / 0 OLD-ISOMORPHISM`。该结果只授权fresh formal、geometry census与
 独立8图runtime smoke；唯一512 oracle仍`NO-START`，没有资产GO或性能数字。
+
+全15,618 geometry census已自然完成：official/pose/RGB与五槽路径完整，P+与canonical-anchor在
+canonical/hflip四组共`4×546630/546630` proposal面积均可达；五槽valid依次为
+`15616/15618, 15618/15618, 15618/15618, 15618/15618, 15586/15618`，无效anchor全部使用预注册fixed
+fallback。result/runner SHA256=
+`82dd0f72af71ad03bda3cb11f471ad6651fcba10a35d26e0c036a61fd5352e8f`/
+`9e66c63c5450ff2600c0a5ad82aa5c7651e3d182bb0f7ed33ca0f073dc5f4bf5`。
+
+固定8图runtime smoke也已自然`EXIT=0`：CLIP两池均为finite `[7,10]`，D0严格使用
+`clean+pose7+fixed7+ROA8=23/图`，descriptor/logit/CE/top5/displacement与CE-change shape均通过；
+optimizer/checkpoint写入均为0，未选择winner、未计算Y/rate/GO，也未触碰oracle namespace。
+result/cache/runner SHA256=
+`154809de3ddceafc85efb5db7d8403fb463f75ba1c35e9f50c0416192ad155a8`/
+`17c05f3a4741750e7e469f3ba56561e1c5dbb5fded09c969f80353280db9e725`/
+`d5900ff8ba7ec359a0d43745c9265650f6e3bc1329c67138dae85240cc63d674`。
+
+oracle前统计复审随后在任何科学结果产生前阻断并修复三项core问题：blind颜色rank漏absolute/relative drop、
+caliper漏reference edited top-5、strong control漏P+C reference identity-safe。另将四条direct edge统一到
+显式helper、bool字段改为严格类型并硬锁10,000次bootstrap；本地static再次
+`EXP415_STATIC_CONTRACT_V3=PASS`，提交=`f3ec6ae8cb5373468c4f170e51a839fc55364b0a`。这些修复不影响未调用
+科学路径的sealed smoke。当前=`PREFORMAL CORE FIXED / FULL 512 ORACLE RUNNER IMPLEMENTATION ACTIVE /
+ORACLE NO-START / E120 NO-START`，仍没有Y、asset verdict或性能数字。

@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-`REVISION-3 / PREFORMAL RUNNERS REVIEW PASS / REMOTE MECHANICAL GATES NEXT /
-ORACLE NO-START / E120 NO-START`
+`REVISION-3 / REMOTE MECHANICAL GATES PASS / PREFORMAL CORE FIXED /
+FULL 512 ORACLE RUNNER IMPLEMENTATION ACTIVE / ORACLE NO-START / E120 NO-START`
 
 第一版因CLIP自证、缺真正CLIP-only和训练合同不完整被`BLOCK`；revision-2虽切断CLIP→verifier依赖，但复审又发现
 arm-specific validity、短数组也能计算interaction、逐图难度未匹配、canonical→training view断裂与强control

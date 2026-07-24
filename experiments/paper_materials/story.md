@@ -2581,3 +2581,14 @@ revision-3把条件story再收窄：每图解剖层在结果前平衡固定，P�
 C比较CLIP shape selector与逐图D0/CE/geometry-matched hash。独立裁决只叫
 `anatomical coherent color evidence`，不声称识别服饰。raw-color与D0-hard同样受identity/severity caliper；
 找不到完整quartet时四臂共同记0。只有该窄interaction和最终强宿主增量同时成立，PACIT才有C类叙事资格。
+
+### PACIT revision-3当前story边界
+
+此前`CLIP-verified`、衣着/携物真值、ordinary ROA/random-key训练control及zero-owner只作历史线的表述均属于
+已废止早期版本。当前PACIT只主张`Pose-Anatomical CLIP Intervention Training`：pose给实例解剖位置，CLIP在
+同层七种shape中作可被独立CIELAB+pose+D0裁决推翻的颜色选择器；CLIP不进入identity coordinate。
+
+证据链固定为四factorial臂、raw-color与D0-hard两条pair-specific强对照、selector/text-shuffle颜色agreement，
+以及最终六臂共同zero-owner宿主下的double-view训练比较。geometry census与不计算科学指标的runtime smoke已经
+PASS；正式512 runner仍在实现，oracle namespace尚未创建。因此当前只能写
+`C-CLASS CONDITIONAL / ORACLE NO-START / E120 NO-START`，不能写任何asset或性能正结论。

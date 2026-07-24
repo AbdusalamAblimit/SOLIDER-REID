@@ -6741,3 +6741,22 @@ census/smoke。当前oracle与e120继续NO-START。
 
 最终三路回归现已一致`PASS / 0B / 0H / 0 old-isomorphism`。只授权进入fresh formal、全15,618 geometry
 census与独立8图runtime smoke；这些机械门没有完成前不得创建512 oracle started seal。
+
+### [2026-07-24] 决策：机械门完成，先修正式统计合同再冻结512 runner
+
+geometry census与固定8图runtime smoke均已自然PASS；smoke严格只验证真实CLIP/D0接口与23变体索引，没有选择
+winner或计算Y。正式oracle namespace仍不存在。
+
+oracle前统计/实现复审在科学执行前发现blind七项rank、reference edited top-5与strong-control reference
+identity-safe三个显式变量缺口，现已修复并加入failure-injection；严格bool、四条direct pair helper和固定
+10,000次bootstrap也已封闭，static再次PASS。`arm_complete`只表示机械记录完整，科学Y=0不得通过改变有效子集
+被过滤。
+
+本节覆盖旧的crop survival、四臂共同NOOP、random-key训练control与“zero-owner只作历史线”表述：当前生产合同
+关闭crop/padding/Random Erasing，预验证canonical/hflip；四factorial加raw-color、D0-hard共六个intervention
+arms共同NOOP并共同使用zero-owner普通listwise宿主，另先跑double-view clean-pair。text-shuffle只保留asset
+颜色agreement诊断，ROA只定义D0 identity-safe参考。
+
+**决策**：先完成并复审完整512 runner；在`0B/0H/0变量混淆/0旧同构`、formal clean、GPU空闲且oracle
+namespace仍fresh前，不创建started seal。当前=`FULL 512 ORACLE RUNNER IMPLEMENTATION ACTIVE /
+ORACLE NO-START / E120 NO-START`。
