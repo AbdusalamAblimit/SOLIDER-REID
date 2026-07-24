@@ -989,3 +989,10 @@ e70时q-only相对correct为mAP持平、R1正、R5/R10负，相对pose-only为mA
 `e71 iter120/227`，loss=`0.127`、pose=`0.462`、acc=`0.997`；wrapper/训练主PID存活，唯一CUDA
 compute约`7060 MiB / 41%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-24：q-only e76健康检查
+
+- 最新=`e76 iter180/227`，loss=`0.120`、pose=`0.462`、acc=`0.997`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7060 MiB / 41%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e70，当前=`CONTINUE TO NATURAL E120`。
