@@ -1119,3 +1119,11 @@ e110时q-only相对correct为mAP/R10持平、R1正、R5负，相对pose-only为m
 `e112 iter180/227`，loss=`0.106`、pose=`0.460`、acc=`0.998`；wrapper/训练主PID存活，唯一CUDA
 compute约`7052 MiB / 57%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-24：q-only e117终点前健康检查
+
+- 最新=`e117 iter200/227`，loss=`0.101`、pose=`0.463`、acc=`0.998`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7052 MiB / 41%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e110，尚未自然完成e120，不预填终点指标，当前=
+  `CONTINUE TO NATURAL E120`。
