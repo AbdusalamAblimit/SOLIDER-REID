@@ -959,3 +959,10 @@ e60时q-only相对correct为mAP持平、R1正、R5/R10负，相对pose-only为mA
 `e61 iter20/227`，loss=`0.157`、pose=`0.459`、acc=`0.995`；wrapper/训练主PID存活，唯一CUDA
 compute约`7068 MiB / 73%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-24：q-only e66健康检查
+
+- 最新=`e66 iter80/227`，loss=`0.138`、pose=`0.460`、acc=`0.995`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7068 MiB / 73%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e60，当前=`CONTINUE TO NATURAL E120`。
