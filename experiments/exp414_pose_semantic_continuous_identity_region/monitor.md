@@ -909,3 +909,10 @@ e40时q-only相对correct为mAP/R1/R5正、R10负，相对pose-only四项均负�
 `e45 iter60/227`，loss=`0.238`、pose=`0.467`、acc=`0.991`；wrapper/训练主PID存活，唯一CUDA
 compute约`7054 MiB / 41%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-24：q-only e50评测前健康检查
+
+- 最新=`e50 iter140/227`，loss=`0.188`、pose=`0.466`、acc=`0.992`，e50正式评测尚未落盘；
+- wrapper/训练主PID存活，唯一CUDA compute约`7054 MiB / 41%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e40，不预填e50指标，当前=`CONTINUE TO NATURAL E120`。
