@@ -3732,3 +3732,28 @@ correct无法归因。
 all-identity surrogate与LOO jackknife各自贡献，不能写成pose completion。完整失败表、永久关闭路线、四个新候选
 与唯一首选PACIT见`experiments/exp395_414_failure_postmortem_and_next_direction.md`。当前=
 `RESEARCH RESET / NO TRAINING AUTHORIZED`。
+
+## exp415 PACIT revision-2（2026-07-24）
+
+用户随后明确授权开始下一方向。exp415第一版asset设计被两个独立子agent判定`BLOCK`：同一CLIP既选属性/候选又
+用自身margin验证，所有control继承pose候选池而缺真正CLIP-only，且难度与双forward合同未闭合。该版没有运行
+oracle、没有训练、没有占用CUDA。
+
+revision-2已改为严格`P×C`：
+
+- P=`pose centers / fixed normalized anchors`；
+- C=`同一CLIP color selector / 同一hash blind selector`；
+- P+/P-均为一一对应的35个proposal；
+- 科学结果`Y`只由不读取CLIP的CIELAB颜色、pose anatomy与sealed D0身份安全裁决；
+- 固定512分母，另有raw-color、D0-hard和frequency-matched blind强control。
+
+本地`uv`纯CPU synthetic contract已返回`EXP415_STATIC_CONTRACT=PASS`。当前仍为
+`SUBAGENT RE-REVIEW PENDING / ORACLE NO-START / E120 NO-START`；没有任何性能数字。
+
+revision-2复审仍为BLOCK，但确认与exp401--414非同构。revision-3进一步修复：每图固定平衡解剖层、7-shape
+instance-pose/canonical-anchor pool、源码内CLIP scorer、逐图D0/CE/geometry caliper、四臂共同失败记0、
+CIELAB连通颜色、severity-matched raw-color/D0-hard、固定512 row accumulator、全量共同NOOP与actual-view
+survival合同。扩展纯CPU合同现为`EXP415_STATIC_CONTRACT_V3=PASS`。当前没有连接GPU，仍无oracle/训练结果。
+
+revision-3最终三路回归=`PASS / 0B / 0H / 0 OLD-ISOMORPHISM`。该结果只授权fresh formal、geometry census与
+独立8图runtime smoke；唯一512 oracle仍`NO-START`，没有资产GO或性能数字。

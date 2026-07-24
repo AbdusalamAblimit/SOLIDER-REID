@@ -4413,3 +4413,25 @@ control。用户随后在text-shuffle e35 iter20终止，all-edges不启动。PS
 首个512图asset oracle必须先排除mask难度、位置、面积、alpha、slot频率与random-key shortcut；任一门失败，
 正式e120不得启动。正式correct还必须严格超过sealed zero-owner历史性能线，但不复用其代码路径或归因。
 当前仅完成候选复盘，状态=`NO TRAINING AUTHORIZED`。
+
+### PACIT revision-2：把“CLIP审核”改成可被独立推翻的选择器
+
+用户已授权开始，但第一版没有进入oracle：CLIP用自己的margin挑候选又用同一margin证明候选有效，属于循环证据；
+全部blind controls仍处在pose池内，也无法识别pose边际。
+
+revision-2只保留颜色这一种可独立观察的语义，把创新主张主动收窄：
+
+- pose只产生35个实例级解剖proposal；
+- pose-free侧由五个fixed canvas anchor产生一一对应的35个proposal；
+- 同一个CLIP颜色选择器在两池上运行；
+- CIELAB blind evaluator不读取CLIP分数或颜色标签，只验证mask是否真实覆盖一块连贯颜色证据；
+- raw-color与D0-hard强control若不弱于correct，直接把PACIT降格为普通structured erasing/hard selection；
+- 只有独立`P×C`interaction的paired-bootstrap下界大于0，才保留C类联合机制资格。
+
+这不是新的erasing primitive，也不把颜色当身份坐标。当前科学价值在于：CLIP的角色从不可证伪的“语义真值”
+降为可以被固定像素事实、factorial controls和最终ReID结果共同否定的proposal selector。
+
+revision-3进一步把变量收窄为“同一预定身体层中，实例pose中心相对canonical中心是否必要，以及CLIP选shape是否
+胜逐图severity-matched blind/raw-color/D0-hard”。这牺牲了宽泛的纹理/携物叙事，却换来真正可证伪的交互。
+任何match失败四臂共同记0，故correct不能通过arm-specific可用率获益。若该窄对象仍无法胜强control，应停止
+PACIT，而不是扩prompt、放宽caliper或重新加入旧owner/MST。

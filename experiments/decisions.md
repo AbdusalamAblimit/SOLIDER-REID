@@ -6702,3 +6702,42 @@ global descriptor。它从sealed clean D0起步，不把zero-owner混入代码�
 当前用户只授权停止与研究复盘，**不授权启动PACIT**。未来若明确恢复，必须先通过一次512图asset oracle；
 random-key、text-shuffle或matched ordinary occlusion能通过同一语义门即`PACIT ASSET NO-GO / E120 NO-START`。
 详细量化门与对照见`experiments/exp395_414_failure_postmortem_and_next_direction.md`。
+
+### [2026-07-24] 决策：用户授权exp415；第一版BLOCK，改用独立盲验2×2
+
+用户明确要求“开始”，因此上一节的`不授权启动PACIT`仅是当时状态，现已被本节覆盖。授权范围先到设计、实现、
+静态合同、复审与唯一512图asset oracle；asset GO前仍不授权e120。
+
+第一版PACIT被两个独立子agent一致`BLOCK`，且未执行：同一CLIP同时选择和验证形成自证；pose-only、random-key等
+均继承pose候选池，没有真正CLIP-only；arm间位置/aspect/D0难度与batch64双视图合同不完整。
+
+revision-2冻结为两个正交因素：pose proposal对fixed-anchor proposal，CLIP color selector对hash blind selector。
+CLIP在两种proposal池调用同一实现，不读取pose或slot；科学`Y`由完全不读取CLIP的固定CIELAB颜色统计、统一pose
+anatomy与sealed D0身份安全共同裁决。raw-color和D0-hard分别阻断“简单像素启发式”与“普通hard selection”
+解释。所有rate固定512分母，失败记0。
+
+production若获授权，四臂共同宿主改为sealed zero-owner的普通等支持全身份listwise；它不读取pose/CLIP，也不
+参与联合归因。correct必须在该强宿主上相对double-view clean与历史best至少达到预注册的`+0.5 mAP/+0.5 R1`，
+不再接受exp413/414式四舍五入持平。
+
+当前=`REVISION-2 RE-REVIEW PENDING / ORACLE NO-START / E120 NO-START`。
+
+### [2026-07-24] 决策：revision-2继续BLOCK，采用逐图matched revision-3
+
+revision-2虽已切断blind evaluator对CLIP的直接依赖，但三路复审发现固定512统计、逐图难度、actual-view、
+全15,618失败处理和强control仍未闭合，因此没有启动oracle。
+
+revision-3把每图解剖层在结果前固定，C只在该层7个shape中选择；P因素准确收窄为instance-pose center相对
+canonical anatomical anchor。C=0必须在同图D0 displacement、D0 CE、area、centroid、aspect与top-5 caliper内
+hash选择；找不到配对时四factorial臂共同记0。raw-color和D0-hard也必须在同一severity/identity caliper内，
+禁止通过把control选到ROA P90外制造correct优势。
+
+统计入口硬断言512个相同有序row id；actual training关闭Random Erasing，crop由四mask共同80% survival决定；
+全量任一arm失败时四臂共同clean-NOOP，不drop sample。production共同宿主明确为zero-owner普通listwise，先跑
+double-view clean-pair再跑correct，消除比较顺序死锁。
+
+本地revision-3扩展static=`PASS`，但按硬门仍须新一轮子agent `0B/0H/0 old-isomorphism`后才可做远端geometry
+census/smoke。当前oracle与e120继续NO-START。
+
+最终三路回归现已一致`PASS / 0B / 0H / 0 old-isomorphism`。只授权进入fresh formal、全15,618 geometry
+census与独立8图runtime smoke；这些机械门没有完成前不得创建512 oracle started seal。

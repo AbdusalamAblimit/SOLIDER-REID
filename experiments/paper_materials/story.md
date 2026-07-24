@@ -2565,3 +2565,19 @@ CLIP不进入identity coordinate，推理不使用pose/CLIP。
 sealed zero-owner历史性能线、ordinary ROA、pose-only、CLIP-only、text-shuffle与random-key，并在多seed和
 paired bootstrap保持实际效应，才能进入正面论文方法。zero-owner不进入PACIT代码或归因，只作为最强简单宿主
 下限。当前用户已停止训练，状态=`RESEARCH RESET / NO TRAINING AUTHORIZED`。
+
+### PACIT revision-2条件story
+
+用户现已授权进入exp415，但第一版因CLIP自证和伪factorial在运行前被阻断。revision-2不再声称CLIP“验证真值”，
+而把CLIP降为颜色mask selector；独立CIELAB+pose+D0裁决器完全不读取CLIP。P因素只改变
+`pose centers / fixed anchors` proposal，C因素只改变`CLIP / hash` selector，形成固定512图的严格2×2。
+
+若P+C不能同时胜P-only、C-only、neither、frequency-matched blind、raw-color与D0-hard，或factorial
+interaction的paired-bootstrap下界不大于0，story立即结束：它只是structured erasing加hard selection。若asset
+GO，全部训练臂共同使用zero-owner简单listwise强宿主、双forward和相同loss/计算量；correct必须相对最强matched
+control与历史best都达到至少`+0.5 mAP/+0.5 R1`，再进入多seed。当前没有oracle或性能结果。
+
+revision-3把条件story再收窄：每图解剖层在结果前平衡固定，P比较instance-pose center与canonical人体anchor，
+C比较CLIP shape selector与逐图D0/CE/geometry-matched hash。独立裁决只叫
+`anatomical coherent color evidence`，不声称识别服饰。raw-color与D0-hard同样受identity/severity caliper；
+找不到完整quartet时四臂共同记0。只有该窄interaction和最终强宿主增量同时成立，PACIT才有C类叙事资格。
