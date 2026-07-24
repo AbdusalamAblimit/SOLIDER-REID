@@ -140,3 +140,29 @@ whole-image CLIP encode调用图未落盘、共同NOOP未覆盖strong controls�
   smoke namespace仍fresh，oracle namespace未创建。
 
 当前=`GEOMETRY CENSUS PASS / RUNTIME SMOKE NEXT / ORACLE NO-START / E120 NO-START`。
+
+## 2026-07-24：固定8图runtime smoke完成
+
+- frozen formal执行HEAD=`bbc23fe096d73bd203c455150a96975e52558e7e`，formal
+  tracked/index/full status=`0/0/0`；
+- smoke唯一namespace
+  `/home/afr/reid-clean/assets/exp415-pacit-smoke-v3`自然完成，`RUNTIME_SMOKE_EXIT=0`，
+  严格异常0；该namespace已永久封存，禁止删除、覆盖或重跑；
+- 固定8图逐图得到P+与canonical-anchor各7个CLIP编辑，CLIP输出均为finite
+  `[7,10]`；没有选择winner、没有计算Y/agreement/rate/GO；
+- D0变体严格为`clean + pose7 + fixed7 + ROA8 = 23/图`，合计184：
+  descriptor=`[184,768]`、logits=`[184,702]`、CE=`[184]`、top5=`[8,23]`、
+  displacement与CE-change均为`[8,22]`，全部finite；
+- official train、pose/RGB SHA、active7、mask外byte-exact、cache exact-readback均PASS；
+  optimizer update=`0`、checkpoint write=`0`，smoke代码未触碰formal oracle namespace；
+- result SHA256=
+  `154809de3ddceafc85efb5db7d8403fb463f75ba1c35e9f50c0416192ad155a8`；
+  smoke cache SHA256=
+  `17c05f3a4741750e7e469f3ba56561e1c5dbb5fded09c969f80353280db9e725`；
+  runner SHA256=
+  `d5900ff8ba7ec359a0d43745c9265650f6e3bc1329c67138dae85240cc63d674`；
+- 结束后4090=`2 MiB / 0% / 0 CUDA PID`，正式oracle namespace
+  `/home/afr/reid-clean/assets/exp415-pacit-oracle-v3`仍不存在。
+
+当前=`RUNTIME SMOKE PASS / FULL 512 ORACLE RUNNER IMPLEMENTATION NEXT /
+ORACLE NO-START / E120 NO-START`。
