@@ -1020,3 +1020,10 @@ e80时q-only相对correct为mAP持平、R1/R5/R10正，相对pose-only为mAP/R1/
 `e81 iter180/227`，loss=`0.115`、pose=`0.463`、acc=`0.996`；wrapper/训练主PID存活，唯一CUDA
 compute约`7052 MiB / 73%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-24：q-only e86健康检查
+
+- e86已完成，最近训练点=`e86 iter200/227`，loss=`0.108`、pose=`0.463`、acc=`0.998`，当前已进入e87；
+- wrapper/训练主PID存活，唯一CUDA compute约`7052 MiB / 41%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e80，当前=`CONTINUE TO NATURAL E120`。
