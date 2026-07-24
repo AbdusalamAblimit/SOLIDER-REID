@@ -882,3 +882,10 @@ e30时q-only四项均高于correct、zero-owner与clean D0；相对pose-only仅m
 `e34 iter160/227`，loss=`0.352`、pose=`0.476`、acc=`0.983`；wrapper/训练主PID存活，唯一CUDA
 compute约`7060 MiB / 41%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-24：q-only e40评测前健康检查
+
+- 最新=`e40 iter20/227`，loss=`0.315`、pose=`0.472`、acc=`0.984`，e40正式评测尚未落盘；
+- wrapper/训练主PID存活，唯一CUDA compute约`7060 MiB / 71%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e30，不预填e40指标，当前=`CONTINUE TO NATURAL E120`。
