@@ -1240,3 +1240,14 @@ e20时text-shuffle相对correct与pose-only仅R5正，其余三项负，相对q-
 `e25 iter140/227`，loss=`0.889`、pose=`0.503`、acc=`0.924`；wrapper/训练主PID存活，唯一CUDA
 compute约`7054 MiB / 41%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-24：用户明确下达停止指令，终止信号待送达
+
+- 用户明确要求停止当前实验，并转入近二十次实验失败复盘与新结合机制搜索；all-edges保持`NO-START`；
+- 最后一次成功远端核验时，text-shuffle已完成e30训练、正式评测正在运行；wrapper/训练主PID=
+  `217447/217453`，唯一CUDA compute约`13786 MiB / 93%`，runner/train严格异常=`0`，formal tracked
+  worktree/index=`0/0`；
+- 随后经relay连接远端连续失败，终止信号尚未确认送达，因此此刻不得伪记GPU空闲或进程已停止；
+- 重连后只允许先读取真实状态；若训练主PID仍存活，只终止主PID并核验wrapper退出、GPU空闲与日志状态。
+  无论训练在断连期间推进到何处，均分类为`USER-DIRECTED STOP / NO RESUME`，禁止续训；
+- 当前=`STOP REQUEST RECORDED / REMOTE TERMINATION DELIVERY PENDING`。
