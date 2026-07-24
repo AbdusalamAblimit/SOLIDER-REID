@@ -29,3 +29,30 @@
 
 当前=`DESIGN REVIEW PASS / FUEL RUNNER IMPLEMENTATION NEXT / FUEL AUDIT NO-START /
 TRAINING NO-START`。
+
+## 2026-07-24：fuel runner实现进行中
+
+- 用户明确要求开始，授权范围仍严格限定为一次无训练fuel audit；没有启动PK64、optimizer或e120；
+- 本地首先复核真实git状态，受保护未跟踪文件
+  `experiments/exp411_pose_complete_multi_positive_set_ranking/创新性判断.md`
+  保持未修改、未删除、未暂存；
+- 远端只读核验GPU无compute进程、无exp416 formal目录、无训练进程；
+- `fuel_io.py`首轮known-answer SHA自测按预期拦截三个错误预填常量；已从实际canonical JSON/array/order字节重算，
+  修正后`EXP416_FUEL_IO_SELF_TEST=PASS`；
+- 子agent完成纯NumPy `fuel_core.py`，覆盖train-only枚举、candidate bank、wrong donor、九臂能量、
+  tie-aware AUROC/AUPRC、mid-rank、五折OOF、PID-macro与10,000次PID-bootstrap，主进程复测
+  `exp416-pcnec-fuel-core-v1=PASS`；
+- 子agent完成新的真实rectangle OpenCLIP encoder和sealed D0 global/`featmaps[-1]` extractor；两者CPU mock
+  self-test与主进程语法复测均PASS，不复用exp411 region-isolated cache或exp415 selector；
+- 主进程实现pose/RGB-only `geometry_census.py`，在任何CLIP前冻结：
+  score `>=0.30`、每槽至少2 joint、span q90、每侧5% padding、最小`16×16`、canonical center中位数、
+  query coverage 80%、每槽100,000 pair与300 query PID；self-test PASS；
+- 主进程实现CPU-only `fuel_audit.py`初版，固定四指标、逐指标最强control、六个bootstrap、全部GO门与原子封存；
+  failure injection先发现“最强arm可伪造为correct”未被拒绝，已加入control membership/value exact校验，
+  回归`EXP416_FUEL_AUDIT_SELF_TEST=PASS`；
+- 新增`protocol.md`冻结四个物理阶段、只读资产、fresh namespace、几何门和唯一裁决；
+- 当前本地提交`5585e442`只包含五个已复测核心/提取/几何文件；candidate builder与stage3 cache builder仍由两个
+  子agent独立实现，尚未创建formal或运行任何真实资产。
+
+当前=`FUEL IMPLEMENTATION ACTIVE / LOCAL SELF-TESTS PASS / FINAL IMPLEMENTATION REVIEW PENDING /
+FUEL AUDIT NO-START / TRAINING NO-START`。

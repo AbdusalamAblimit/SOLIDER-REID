@@ -74,6 +74,7 @@ REQUIRED_BANK_FIELDS = {
     "raw_pids",
     "relabeled_pids",
     "camids",
+    "image_sha256",
     "d0_global",
     "query_indices",
     "candidate_indices",
@@ -216,6 +217,8 @@ def _load_sealed_bank(path, expected_sha256):
     paths = tuple(_validate_relative_path(value) for value in arrays["relative_paths"])
     if len(set(paths)) != count:
         raise RuntimeError("candidate bank contains duplicate paths")
+    if arrays["image_sha256"].shape != (count,):
+        raise RuntimeError("candidate bank RGB SHA vector shape mismatch")
     if arrays["raw_pids"].shape != (count,) or arrays["camids"].shape != (count,):
         raise RuntimeError("candidate bank identity/camera shape mismatch")
     query = arrays["query_indices"]
@@ -296,6 +299,8 @@ def build_census(bank_path, bank_sha256, pose_artifact, pose_manifest_sha256):
         pose = pose_store.get(image_path, verify_image_sha=True)
         if pose.relative_path != relative_path:
             raise RuntimeError("pose path order mismatch")
+        if str(arrays["image_sha256"][row]) != str(pose.image_sha256):
+            raise RuntimeError("candidate bank and pose RGB SHA differ")
         values = slot_geometry(
             pose.keypoints.numpy(),
             pose.scores.numpy(),
