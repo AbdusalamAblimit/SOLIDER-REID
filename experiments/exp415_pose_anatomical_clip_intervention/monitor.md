@@ -118,3 +118,25 @@ whole-image CLIP encode调用图未落盘、共同NOOP未覆盖strong controls�
   smoke/oracle namespace均不存在。
 
 当前=`PREFORMAL RUNNERS REVIEW PASS / REMOTE CPU CENSUS NEXT / ORACLE NO-START / E120 NO-START`。
+
+## 2026-07-24：全15,618 geometry census完成
+
+- frozen formal执行HEAD=`3dcbe378303c68c1639bd60fa794e35835b461ca`；
+- 固定解释器、`CUDA_VISIBLE_DEVICES=""`，自然完成`15618/15618`，`GEOMETRY_CENSUS_EXIT=0`；
+- official/pose path-set、pose manifest/shard/records digest、逐图RGB SHA与尺寸全部exact，严格异常0；
+- `pose_confidence_threshold=None`，没有新增score阈值；`clip_loaded=false`、`scientific_y_computed=false`、
+  `cuda_used=false`；
+- 五槽全局valid：
+  `head=15616/15618`、`upper_torso_arms=15618/15618`、`lower_torso=15618/15618`、
+  `upper_legs=15618/15618`、`lower_legs_feet=15586/15618`；
+- 预定active assignment valid：
+  `3216/3217, 3062/3062, 3106/3106, 3117/3117, 3109/3116`；
+  `15584/15618`图五槽全valid，`15618/15618`至少一槽valid；无效anchor全部使用fixed fallback；
+- P+与canonical-anchor在canonical/hflip四组均为`546630/546630` proposal面积可达，
+  area=`2950--2952` pixels、最大相对误差`0.001018 < 0.01`；
+- result SHA256=`82dd0f72af71ad03bda3cb11f471ad6651fcba10a35d26e0c036a61fd5352e8f`；
+  runner SHA256=`9e66c63c5450ff2600c0a5ad82aa5c7651e3d182bb0f7ed33ca0f073dc5f4bf5`；
+- 结束后formal tracked/index/full status均清理回`0/0/0`，GPU=`2 MiB/0%/0 CUDA PID`；
+  smoke namespace仍fresh，oracle namespace未创建。
+
+当前=`GEOMETRY CENSUS PASS / RUNTIME SMOKE NEXT / ORACLE NO-START / E120 NO-START`。
