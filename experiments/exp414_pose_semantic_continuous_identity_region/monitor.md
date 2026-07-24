@@ -831,3 +831,10 @@ e10时q-only相对correct为mAP/R5/R10负、R1正，相对pose-only四项均正�
 不改变已失败的联合归因，也不触发早停。读取时最新=`e14 iter20/227`，wrapper/训练主PID存活，唯一CUDA
 compute约`7074 MiB / 71%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-24：q-only e19健康检查
+
+- 最新=`e19 iter80/227`，loss=`2.157`、pose=`0.561`、acc=`0.715`；
+- wrapper/训练主PID存活，唯一CUDA compute约`7074 MiB / 41%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e10，当前=`CONTINUE TO NATURAL E120`。
