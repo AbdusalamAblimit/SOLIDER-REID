@@ -1196,3 +1196,21 @@ q-only产物永久封存，禁止修改、覆盖、续训或重跑。下一步�
 - wrapper/训练主PID存活，唯一CUDA compute约`6994 MiB / 41%`，runner/train严格异常=`0`，formal
   tracked worktree/index=`0/0`；
 - 不预填e10指标，当前=`CONTINUE TO NATURAL E120`。
+
+## 2026-07-24：text-shuffle e10首个正式评测
+
+text-shuffle自然完成e10=`29.2 mAP / 38.5 R1 / 54.1 R5 / 61.0 R10`；同epoch sealed correct=
+`28.6/38.1/53.7/60.7`，sealed pose-only=`28.2/38.1/52.5/59.0`，sealed q-only=
+`28.5/38.8/53.4/60.1`，sealed zero-owner=`28.4/38.1/53.9/60.8`，sealed clean D0=
+`33.4/42.7/59.8/65.2`。rounded四项差为：
+
+| epoch | text-shuffle | correct | pose-only | q-only | zero-owner | clean D0 | Δcorrect | Δpose-only | Δq-only | Δzero-owner | ΔD0 |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 10 | 29.2/38.5/54.1/61.0 | 28.6/38.1/53.7/60.7 | 28.2/38.1/52.5/59.0 | 28.5/38.8/53.4/60.1 | 28.4/38.1/53.9/60.8 | 33.4/42.7/59.8/65.2 | +0.6/+0.4/+0.4/+0.3 | +1.0/+0.4/+1.6/+2.0 | +0.7/-0.3/+0.7/+0.9 | +0.8/+0.4/+0.2/+0.2 | -4.2/-4.2/-5.7/-4.2 |
+
+e10时text-shuffle相对correct、pose-only与zero-owner四项均正，相对q-only仅R1负，相对clean D0四项
+均负；这是早期不利于正确文本槽绑定必要性的反事实轨迹，但不改变既有
+`POSE AXIS ATTRIBUTION FAILED / JOINT ATTRIBUTION FAILED`裁决，也不触发早停。读取时最新=
+`e15 iter140/227`，loss=`3.280`、pose=`0.634`、acc=`0.497`；wrapper/训练主PID存活，唯一CUDA
+compute约`7074 MiB / 41%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
+`CONTINUE TO NATURAL E120`。
