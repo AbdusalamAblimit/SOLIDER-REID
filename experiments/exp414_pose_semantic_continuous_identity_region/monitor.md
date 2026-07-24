@@ -838,3 +838,21 @@ compute约`7074 MiB / 71%`，runner/train严格异常=`0`，formal tracked workt
 - wrapper/训练主PID存活，唯一CUDA compute约`7074 MiB / 41%`，runner/train严格异常=`0`，formal
   tracked worktree/index=`0/0`；
 - 最近正式点仍为已登记e10，当前=`CONTINUE TO NATURAL E120`。
+
+## 2026-07-24：q-only e20正式评测
+
+q-only自然完成e20=`45.9 mAP / 55.6 R1 / 70.3 R5 / 76.2 R10`；同epoch sealed correct=
+`47.1/56.7/71.4/76.9`，sealed pose-only=`46.9/57.0/71.4/77.2`，sealed zero-owner=
+`45.6/55.0/70.6/75.8`，sealed clean D0=`42.2/52.4/67.6/74.0`。完整rounded轨迹更新为：
+
+| epoch | q-only | correct | pose-only | zero-owner | clean D0 | Δcorrect | Δpose-only | Δzero-owner | ΔD0 |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 10 | 28.5/38.8/53.4/60.1 | 28.6/38.1/53.7/60.7 | 28.2/38.1/52.5/59.0 | 28.4/38.1/53.9/60.8 | 33.4/42.7/59.8/65.2 | -0.1/+0.7/-0.3/-0.6 | +0.3/+0.7/+0.9/+1.1 | +0.1/+0.7/-0.5/-0.7 | -4.9/-3.9/-6.4/-5.1 |
+| 20 | 45.9/55.6/70.3/76.2 | 47.1/56.7/71.4/76.9 | 46.9/57.0/71.4/77.2 | 45.6/55.0/70.6/75.8 | 42.2/52.4/67.6/74.0 | -1.2/-1.1/-1.1/-0.7 | -1.0/-1.4/-1.1/-1.0 | +0.3/+0.6/-0.3/+0.4 | +3.7/+3.2/+2.7/+2.2 |
+
+e20时q-only四项均低于correct与pose-only，相对zero-owner为mAP/R1/R10正、R5负，相对clean D0
+四项均正；该点只作为CLIP query反事实轨迹保留，不改变既有
+`POSE AXIS ATTRIBUTION FAILED / JOINT ATTRIBUTION FAILED`裁决，也不触发早停。读取时最新=
+`e24 iter200/227`，loss=`0.886`、pose=`0.507`、acc=`0.926`；wrapper/训练主PID存活，唯一CUDA
+compute约`7054 MiB / 41%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
+`CONTINUE TO NATURAL E120`。
