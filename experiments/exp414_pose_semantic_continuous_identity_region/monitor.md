@@ -1166,3 +1166,19 @@ q-only完整性核验：
 
 q-only产物永久封存，禁止修改、覆盖、续训或重跑。下一步只允许同一formal/seed/recipe、fresh OUTPUT_DIR、
 无恢复串行启动text-shuffle。
+
+## 2026-07-24：text-shuffle matched control fresh启动
+
+- output=`/home/afr/reid-clean/logs/exp414-pscir-text-shuffle-s1234-v1`，runner=
+  `/home/afr/reid-clean/train-logs/exp414-pscir-text-shuffle-s1234-v1.runner.log`，启动前均不存在；
+- 同一frozen formal、seed1234、recipe与资产，无checkpoint恢复；命令行只切换
+  `MODEL.TAPF.PSCIR_CONTROL_MODE text_shuffle`并使用fresh OUTPUT_DIR；
+- wrapper PID=`217447`，训练主PID=`217453`，当前唯一CUDA compute约`6992 MiB / 41%`；
+- 首批PSCIR `loss/zero/region=2.307128/1.970790/2.643466`，zero-owner首批与correct、pose-only及q-only
+  exact；
+- 正式路径打印`control=text_shuffle`，四control topology-change仍为
+  `pose-only 0.390625 / q-only 0.375 / text-shuffle 0.328125 / all-edges 1.0`；
+- 最新=`e1 iter40/227`，loss=`8.099`、pose=`0.916`、acc=`0.002`；runner/train严格异常=`0`，formal
+  HEAD=`c6739b402a9e9a16f2427324536251e5ed059598`，tracked worktree/index=`0/0`。
+
+当前=`TEXT-SHUFFLE RUNNING / NATURAL E120 / NO INTERMEDIATE STOP`；all-edges继续`NO-START`。
