@@ -6664,3 +6664,41 @@ pose-only exact，正式路径和topology-change诊断均符合冻结合同；�
 
 **决策**：q-only必须自然训练到e120并保留全部12个评测点，不因pose-only已阻断联合归因而省略证据或早停；
 text-shuffle与all-edges继续`NO-START`，禁止并行、调参或修改冻结资产。
+
+### [2026-07-24] 决策：exp414 q-only封板，用户终止余下controls
+
+q-only自然e120=`59.2/70.8/82.3/86.2`，correct=`59.2/70.7/82.7/86.3`。correct的mAP持平且R1低
+`0.1`，所以q-only与pose-only独立表明pose×CLIP联合拓扑没有必要性。q-only完整性与三个SHA已封存，禁止重跑、
+续训或覆盖。
+
+text-shuffle完成e30正式评测=`49.6/61.0/74.5/79.8`后，用户明确要求停止当前及后续训练。远端重连后只向训练
+主PID发送TERM；wrapper与主进程退出，runner=`TRAIN_EXIT=143`。该臂在e35 iter20终止，永久记
+`USER-DIRECTED STOP / VOID / NO RESUME`；all-edges永久`NO-START`。partial轨迹保留，但不得跨臂拼点或形成e120
+裁决。
+
+**最终决策**：exp414保持`PERFORMANCE GO / POSE AXIS ATTRIBUTION FAILED / JOINT ATTRIBUTION FAILED`。
+停止exp414及其后续训练，不救MST、temperature、prompt、edge、support或loss比例。
+
+### [2026-07-24] 决策：关闭同PID语义重排家族，下一唯一候选为PACIT
+
+三个独立只读审计对exp395--414得到一致结论：最近20个编号中只有11项是方法科学证据；exp411--414并不是四个
+独立机制，而是同PID exchangeable support上的加权、排序、prefix与连边。所有control仍使用合法PID标签，CE与
+metric loss又持续压紧类内descriptor，因此网络可以擦掉pose/CLIP差异。zero-owner的普通set/listwise收益掩盖了
+新增机制，单seed `0.2--0.5`点严格差还存在winner's curse。
+
+**永久关闭**：
+
+1. 同PID owner/weight/order/prefix/MST/convex-region家族；
+2. CLIP hidden/operator/product/proxy/gradient-router家族；
+3. hard-pair与中层relation KD微调；
+4. CAVT donor/caliper/cache救援；
+5. 以接线active、梯度非零或control index change代替final retrieval归因。
+
+下一唯一首选冻结为PACIT：pose在当前真实像素view定义解剖遮挡`where`，CLIP在同一view审核目标身份语义被移除且
+非目标语义保持`what/validity`，clean原图提供可观察target；CLIP不进入identity coordinate，测试仍为原RGB
+global descriptor。它从sealed clean D0起步，不把zero-owner混入代码路径；但最终correct的mAP/R1仍必须严格
+超过sealed zero-owner，后者只作为当前最强简单宿主的历史性能线。
+
+当前用户只授权停止与研究复盘，**不授权启动PACIT**。未来若明确恢复，必须先通过一次512图asset oracle；
+random-key、text-shuffle或matched ordinary occlusion能通过同一语义门即`PACIT ASSET NO-GO / E120 NO-START`。
+详细量化门与对照见`experiments/exp395_414_failure_postmortem_and_next_direction.md`。

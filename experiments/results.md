@@ -3704,3 +3704,31 @@ q-only、text-shuffle、all-edges仍按预注册顺序自然e120补全证据，�
 q-only现已从同一frozen formal与fresh OUTPUT_DIR无恢复启动；首批
 `loss/zero/region=2.320966/1.970790/2.671141`，zero-owner首批与correct、pose-only exact。当前唯一CUDA
 任务、严格异常0，状态=`Q-ONLY RUNNING / NATURAL E120`；text-shuffle、all-edges均`NO-START`。
+
+q-only已自然e120=`59.2/70.8/82.3/86.2`；相对correct=`+0.0/+0.1/-0.4/-0.1`，相对pose-only=
+`+0.0/+0.0/-0.2/-0.2`，相对zero-owner=`+0.3/+0.5/+0.4/+0.0`，相对clean D0=
+`+1.6/+3.1/+1.5/+1.6`。correct的mAP与q-only持平且R1低`0.1`，再次违反联合归因必要条件。q-only自然
+`120/120`、评测`12/12`、严格异常0、`TRAIN_EXIT=0`；checkpoint/train-log/runner SHA256=
+`6441c1e718b8803d06d6101f63a2df8a89e662877543454aae28e2f61c10475c`/
+`bf2857125f04c7c1eeca9e00709e00088fc1f94d70d5cb7aa97fe44284a7d346`/
+`d50a075c4d4e7f0b9b82c1bd90d19380a47070a073d1378fa1a824428c77fd2b`。
+
+text-shuffle随后fresh启动并完成e10/e20/e30=`29.2/38.5/54.1/61.0`、
+`46.7/56.4/71.5/76.8`、`49.6/61.0/74.5/79.8`。用户在e35 iter20明确要求停止；主PID收到TERM后，
+wrapper与主进程退出，runner记录`TRAIN_EXIT=143`。该臂未自然e120，永久记
+`USER-DIRECTED STOP / VOID / NO RESUME / NO PERFORMANCE VERDICT`；all-edges永久`NO-START`。
+
+exp414最终保持`PERFORMANCE GO / POSE AXIS ATTRIBUTION FAILED / JOINT ATTRIBUTION FAILED`。correct、
+pose-only、q-only三个自然封存臂不得修改、覆盖、续训或重跑；partial text-shuffle不得续训或拼接。
+
+## exp395--414综合复盘（2026-07-24）
+
+20个编号中只有exp401--404、408--414共11项提供方法科学证据；exp395--400是AMP/production合同，
+exp405--407是CAVT测量合同。综合证据显示，exp409/411/413/414都属于“同PID exchangeable support上的
+选择、加权、排序或连边”家族。PID loss会压掉类内差异，因此强语义介入时性能下降，弱语义索引时普通宿主涨点但
+correct无法归因。
+
+当前唯一稳定正信号是student-space、三support、all-identity平滑listwise宿主；它尚未隔离多正均值、负集合平滑、
+all-identity surrogate与LOO jackknife各自贡献，不能写成pose completion。完整失败表、永久关闭路线、四个新候选
+与唯一首选PACIT见`experiments/exp395_414_failure_postmortem_and_next_direction.md`。当前=
+`RESEARCH RESET / NO TRAINING AUTHORIZED`。

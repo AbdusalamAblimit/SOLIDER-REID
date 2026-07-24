@@ -4383,3 +4383,33 @@ convex-hull/image-set metric、概率embedding与MVI²P是明确近邻，只按`
 correct自然e120=`59.2/70.7/82.7/86.3`，相对zero-owner与clean D0的mAP/R1均严格为正，故性能门通过。
 创新状态从“仅有设计资格”更新为`PERFORMANCE GO / ATTRIBUTION PENDING`：连续identity-region对象已有性能
 证据，但pose、CLIP、文本绑定与MST拓扑必要性必须由四个matched controls逐一成立后才能进入正面贡献。
+
+### exp414封板后的创新结论
+
+pose-only与q-only自然e120均为`59.2/70.8`，correct=`59.2/70.7`；correct没有在mAP/R1同时严格胜任一单轴
+control。用户随后在text-shuffle e35 iter20终止，all-edges不启动。PSCIR只能保留相对zero-owner与D0的性能
+观察，不能把pose、CLIP或联合MST写成创新贡献。
+
+更深的结构性判断是：exp411--414都属于同PID exchangeable support上的metric surrogate。owner、prefix与MST
+虽然形式不同，但correct和wrong/control始终携带合法PID标签；类内压紧会自动擦除这些拓扑差异。以后任何候选若
+仍只对同PID样本换权、换序、换边，应在design阶段直接NO-START。
+
+## 2026-07-24：研究重置与PACIT候选
+
+三个独立只读审计将exp395--414分为production合同、未回答的CAVT测量、semantic ownership失败与同PID重排失败
+四段。当前可保留的正信号只有普通student-space多正、all-identity平滑listwise；没有任何证据证明pose或CLIP
+独立拥有该收益。
+
+下一唯一首选候选为PACIT（Pose-Anatomical CLIP-verified Intervention Training）：
+
+- pose不再选support，而在当前输入像素上定义合法人体槽与遮挡几何；
+- CLIP不再定义identity feature，而审核目标衣着/纹理/携物语义确实被移除、非目标语义保持；
+- clean原图是可观察target，counterfactual在像素空间真实存在；
+- student学习clean→occluded身份邻域不变，测试仍为原global descriptor；
+- ordinary ROA、pose-only、CLIP-only、text-shuffle、random-key与frequency-matched random-cluster全部保留。
+
+这不是“新遮挡增强”的绝对首次声明。SPT、ROA、SSSC、DPEFormer、VLCDC、Pose2ID/IPG与DiVE等构成近邻，
+当前只能争“observable paired anatomical-semantic intervention + matched causal evidence”的C类整体对象。
+首个512图asset oracle必须先排除mask难度、位置、面积、alpha、slot频率与random-key shortcut；任一门失败，
+正式e120不得启动。正式correct还必须严格超过sealed zero-owner历史性能线，但不复用其代码路径或归因。
+当前仅完成候选复盘，状态=`NO TRAINING AUTHORIZED`。

@@ -1251,3 +1251,23 @@ compute约`7054 MiB / 41%`，runner/train严格异常=`0`，formal tracked workt
 - 重连后只允许先读取真实状态；若训练主PID仍存活，只终止主PID并核验wrapper退出、GPU空闲与日志状态。
   无论训练在断连期间推进到何处，均分类为`USER-DIRECTED STOP / NO RESUME`，禁止续训；
 - 当前=`STOP REQUEST RECORDED / REMOTE TERMINATION DELIVERY PENDING`。
+
+## 2026-07-24：用户终止已送达，text-shuffle作废封板
+
+- 远端连接恢复后先只读确认wrapper PID=`217447`、训练主PID=`217453`仍存活，唯一CUDA compute仍为
+  主PID、占用约`7050 MiB`；随后只向训练主PID发送`TERM`；
+- 训练主PID与wrapper均已退出，runner明确记录`Terminated`与`TRAIN_EXIT=143`；这属于
+  `USER-DIRECTED STOP`，不是自然完成、训练异常或基础设施中断；
+- 终止前最后一个完整正式点为e30=`49.6 mAP / 61.0 R1 / 74.5 R5 / 79.8 R10`；训练随后完成e34，
+  并在e35 iter20后终止。e10/e20/e30轨迹原样保留，但该臂没有自然e120，永久记为
+  `VOID / NO RESUME / NO PERFORMANCE VERDICT`；
+- runner/train严格异常正则均为`0`，formal tracked worktree/index=`0/0`；formal运行产生的未跟踪
+  `__pycache__`不修改、不删除、不纳入科学资产；
+- 主进程退出后GPU利用率为`0%`，但8个DataLoader worker成为PPID 1的孤儿，并各自继承NVIDIA文件描述符；
+  `nvidia-smi`因此仍显示已不存在的PID `217453`占用约`7050 MiB`。依既定停止边界不手工逐个终止worker，
+  所以此刻只能确认训练计算已经停止，不能伪记GPU memory完全释放；
+- all-edges永久保持`NO-START`。correct、pose-only、q-only的sealed结果不变，exp414最终仍为
+  `PERFORMANCE GO / POSE AXIS ATTRIBUTION FAILED / JOINT ATTRIBUTION FAILED`。
+
+当前=`USER-DIRECTED STOP DELIVERED / TEXT-SHUFFLE VOID / NO RESUME / ALL-EDGES NO-START /
+GPU ORPHAN-CONTEXT CLEANUP PENDING`。

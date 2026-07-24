@@ -2537,3 +2537,31 @@ correct现已自然完成e120=`59.2/70.7/82.7/86.3`，相对zero-owner=`+0.3/+0.
 `+1.6/+3.0/+1.9/+1.7`，因此性能门通过。story状态更新为`PERFORMANCE GO / ATTRIBUTION PENDING`；在
 pose-only、q-only、text-shuffle与all-edges全部完成前，只能写“连续region训练获得性能正结果”，不能写成
 pose×CLIP限定拓扑的联合贡献。
+
+exp414最终退出正面story。pose-only与q-only自然e120均为`59.2/70.8`，correct=`59.2/70.7`，两个单轴control
+均独立违反联合归因必要门。text-shuffle按用户明确指令在e35 iter20终止、没有e120，all-edges不启动；partial
+control不得拼成终点结论。最终只保留`PERFORMANCE GO / POSE AXIS ATTRIBUTION FAILED /
+JOINT ATTRIBUTION FAILED`，不得把continuous region涨点写成pose×CLIP贡献。
+
+## 2026-07-24：近20项复盘后的论文边界与下一条件story
+
+exp395--414的完整复盘表明，20个编号中9个主要是AMP、production、cache或caliper合同，真正方法证据只有11项。
+最稳定的性能正信号来自zero-owner的三support、all-identity平滑listwise宿主；exp411--414的owner、prefix与MST
+只是同PID exchangeable support上的不同重参数化，correct语义可以被PID-only loss绕过。
+
+因此当前论文不能声称：
+
+- CLIP evidence已经拥有最终ReID identity geometry；
+- pose×CLIP同PID support组织带来可归因增益；
+- exp413/414的`0.2--0.5`单seed宿主差足以支撑因果主张；
+- CAVT已被科学证伪，或其连续三个测量合同构成方法贡献。
+
+下一条件story只保留PACIT：把问题从“外部语义如何重排feature/support”改为“如何构造可观察、解剖合法且语义
+有效的同图遮挡反事实”。pose定义像素干预位置，CLIP审核目标身份语义变化与非目标保持，原图提供clean target；
+CLIP不进入identity coordinate，推理不使用pose/CLIP。
+
+该story仍只有`C-CLASS CONDITIONAL`资格，且普通structured occlusion、Pose2ID/IPG与生成增强是强近邻。只有
+512图asset oracle先排除random-key与难度shortcut，随后PACIT-correct自然e120同时严格胜sealed clean D0、
+sealed zero-owner历史性能线、ordinary ROA、pose-only、CLIP-only、text-shuffle与random-key，并在多seed和
+paired bootstrap保持实际效应，才能进入正面论文方法。zero-owner不进入PACIT代码或归因，只作为最强简单宿主
+下限。当前用户已停止训练，状态=`RESEARCH RESET / NO TRAINING AUTHORIZED`。
