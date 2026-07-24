@@ -44,6 +44,13 @@
 2. 在formal运行不读official的synthetic contract；
 3. CPU geometry census覆盖15,618，只报告机械可达性，不计算Y；
 4. fresh smoke namespace固定hash前8图，只验证真实接口、finite与I/O回读；
+   - 唯一输出目录固定为`/home/afr/reid-clean/assets/exp415-pacit-smoke-v3`，脚本不接收、不读取、
+     不创建oracle路径；
+   - D0接口固定覆盖`clean + pose7 + canonical-anchor7 + ROA8=23`个变体；
+   - CLIP/D0真实tensor只在内存检查shape/dtype/finite，落盘仅保存不可逆SHA，禁止保存score、winner、Y、
+     agreement、rate或GO；
+   - cache/result使用专属smoke schema并原子写入、exact回读；失败保留`failure.json`且
+     `resume_allowed=false`，不得清理后同名重跑；
 5. smoke自然退出后封存其result/runner SHA，oracle namespace仍不存在；
 6. 核验唯一4090 CUDA任务=`0`；
 7. 冻结source/prompt/scorer/prototype/caliper/schema/checkpoint全部SHA；

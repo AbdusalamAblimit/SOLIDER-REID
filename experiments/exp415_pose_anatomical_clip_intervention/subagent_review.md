@@ -62,3 +62,34 @@ revision-2也未执行oracle、未训练、未占用CUDA。
 5. 全部SHA与GPU独占门。
 
 上述机械门完成前，唯一512 oracle仍为`NO-START`。
+
+## formal前runner实现复审
+
+新增：
+
+- `geometry_census.py`：全15,618图只读pose/RGB绑定与canonical/hflip几何普查；
+- `runtime_smoke.py`：固定8图真实decode、P+/canonical-anchor各7编辑、OpenCLIP与sealed D0接口、
+  cache/result原子回读。
+
+首轮runtime复审发现并在执行前修复：
+
+1. 删除smoke对formal oracle路径的参数与`exists`读取，唯一输出路径构造性锁死为
+   `/home/afr/reid-clean/assets/exp415-pacit-smoke-v3`；
+2. D0变体从`clean+pose7+ROA8`补全为`clean+pose7+canonical-anchor7+ROA8=23`；
+3. 失败namespace不再删除，改为永久保留`failure.json`且禁止续跑；
+4. `local_cfg`清空历史pretrain path后才构模，并以sealed D0 checkpoint `strict=True`加载；
+5. device只允许逻辑`cuda:0`，在创建namespace前固定；
+6. raw CLIP/D0 tensor不落盘，避免把8图smoke变成小样本科学oracle；只保存不可逆SHA，但真实内存tensor仍做
+   shape/dtype/finite检查。
+
+三路最终只读回归一致：
+
+`PASS / 0 BLOCKER / 0 HIGH / 0 VARIABLE-CONFUSION / 0 OLD-ISOMORPHISM`
+
+本地使用工作区`.venv`与`uv run`执行：
+
+- 两个runner `py_compile=PASS`；
+- `geometry_census.py --self-test=PASS`；
+- `runtime_smoke.py --self-test=PASS`。
+
+复审未连接远端或GPU。该结论只授权同步formal并依次执行CPU census与唯一fresh 8图smoke；不授权512 oracle。

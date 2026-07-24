@@ -98,3 +98,23 @@ whole-image CLIP encode调用图未落盘、共同NOOP未覆盖strong controls�
 
 第三路回归现已确认hash known-vector与canonical/hflip双方向合同，最终三路一致：
 `PASS / 0B / 0H / 0 old-isomorphism`。设计审查阶段完成，只授权formal前机械门；oracle仍NO-START。
+
+## 2026-07-24：formal前runner实现与复审
+
+- 新增全15,618 `geometry_census.py`：严格复用`PoseTargetStore.valid`，没有score confidence threshold；
+  逐图核验official/pose path coverage、RGB SHA与尺寸，只统计5槽anchor-valid、P+/P-各35 proposal、
+  active7及canonical/hflip面积可达性；不加载CLIP/D0、不算blind/Y；
+- 新增固定8图`runtime_smoke.py`：唯一输出namespace锁死为
+  `/home/afr/reid-clean/assets/exp415-pacit-smoke-v3`，代码不接收或读取oracle路径；
+- smoke以同一whole-image OpenCLIP实例检查P+与canonical-anchor各`[7,10]`输出；D0固定检查
+  `clean+pose7+canonical-anchor7+ROA8=23`个变体的descriptor/logit/true-PID CE/top5/displacement；
+  只判shape/dtype/finite，不选proposal、不写raw score/Y/rate/GO；
+- smoke cache/result只保存路径、mask/tensor SHA与机械shape，原子写入并exact回读；失败保留
+  `failure.json`且禁止续跑；
+- 三路实现复审最终一致：
+  `PASS / 0B / 0H / 0 variable-confusion / 0 old-isomorphism`；
+- 本地`.venv`下两个`py_compile`与两个`--self-test`均PASS；未连接远端GPU；
+- 远端固定D0/CLIP/pose manifest SHA已先验精确核验，formal tracked=`0/0`、GPU=`2 MiB/0%`、
+  smoke/oracle namespace均不存在。
+
+当前=`PREFORMAL RUNNERS REVIEW PASS / REMOTE CPU CENSUS NEXT / ORACLE NO-START / E120 NO-START`。
