@@ -238,3 +238,47 @@ ORACLE NO-START / E120 NO-START`。
 
 当前=`LAUNCH-1 PRE-INTERPRETER FAIL / ORACLE STILL NO-START / LAUNCH-2 PREFLIGHT NEXT /
 E120 NO-START`。
+
+## 2026-07-24：唯一512 oracle自然完成并科学NO-GO
+
+- launch-1记录提交后，formal最终执行HEAD=
+  `157b931b84cdeacfde077fb99a378954fecc6255`；launch-2前formal tracked/index/full=`0/0/0`，
+  oracle与fresh runner namespace均不存在，旧exit-127日志保留，四个冻结source SHA exact，
+  4090=`2 MiB/0%/0 CUDA PID`；
+- launch-2直接使用硬编码绝对解释器与脚本路径，正式PID=`236471`；once-only `started.json`创建后，
+  CLIP阶段自然`512/512`，释放CLIP后再加载D0，D0+blind阶段自然`512/512`；
+- 最终进程自然消失，runner输出`status=COMPLETE`、`row_count=512`、`optimizer_updates=0`、
+  `checkpoint_writes=0`；严格异常0，`failure_counts={}`，GPU恢复`2 MiB/0%/0 CUDA PID`，
+  formal tracked/index/full仍为`0/0/0`；
+- 机械与provenance门全部通过：CLIP/D0 valid均`512/512`，row count/order、P+/P-完整proposal、
+  active7、ROA8、selection hash、finite、D0外部pose访问0、top-5保持均PASS；
+- 科学结果固定分母512：
+  - factorial `neither/clip-only/pose-only/P+C = 2/1/4/2`，
+    complete quartet仅`21/512`；
+  - `C|P0=-0.001953`、`C|P1=-0.003906`、`P|C0=+0.003906`、
+    `P|C1=+0.001953`、interaction=`-0.001953`；五项10,000次paired bootstrap下界均不大于0；
+  - P+C五槽成功数=`0/0/1/1/0`，远低于每槽64与总计359；
+  - CLIP selector与blind颜色事实agreement仅`1/512=0.001953`，text-shuffle=`0/512`，
+    gap=`0.001953`，分别远低于`0.60/0.10`门；
+  - raw-color与D0-hard两条strong pair均只matched `199/512`，且P+C reference与control均为
+    `80/512=0.15625`，P+C没有严格胜任一强对照；
+  - clean、P+C edited及其top-5交集均`512/512`，说明NO-GO不是身份安全或数值崩溃造成。
+- 永久裁决：
+  `EXP415 PACIT ASSET NO-GO / FORMAL E120 NO-START`。oracle namespace、旧launch日志与正式launch-2
+  日志全部封存，禁止删除、覆盖或重跑；不得生成全15,618 production asset，不得启动PK64或e120。
+
+封存SHA256：
+
+- started/cache/rows/summary/result/manifest：
+  `9b7d17131060ee1650bf17c977dbc1cc7704efa99a6c6c74c347f92d41b99961` /
+  `aebeddc05cbbf896fe89c6a6e37ca132af95561815857b69e659ac15407884f1` /
+  `5a8062857088a9788c1c5349c0f5fa3cc89472aa3a41afa8227c1eedafcff292` /
+  `0285defe3c95dfe1c0e7f3674868359cf734407907d3680aee14376126a83911` /
+  `940db304275c4f527185efd13396c5fc5c5b2dd829e146a7d46a2ce13994bd1d` /
+  `3ce850c1199ba92f5798fcb9e4c60188ff5ea6b38ed320ebc5f077d5033c273c`；
+- launch-2正式runner：
+  `2588e84f6ee2a517da23e3ecd4bbd340875b4ec61518838e8f196ad95e9a822f`；
+- launch-1 pre-interpreter失败runner：
+  `a591801fab69755fd1daebdf579241729a42ca6651e7500a92842cbc372bb06a`。
+
+当前=`ORACLE COMPLETE / ASSET NO-GO / FORMAL E120 NO-START / GPU IDLE / EXP415 SEALED`。

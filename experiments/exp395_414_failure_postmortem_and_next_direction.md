@@ -230,3 +230,78 @@ matched control，最多记
 只要外部信号仍然给同PID exchangeable positives换权、换序或换边，就应直接`NO-START`。PACIT值得成为下一唯一
 首选，原因不是机制更复杂，而是它第一次同时满足可观察target、pose/CLIP职责不可交换、输入支持真实扩充、测试路径
 不变和一刀可证伪。
+
+## 9. exp415 oracle回填：PACIT当前实例已被一刀否定
+
+用户授权后，PACIT经三轮设计复审、全15,618 geometry census、固定8图runtime smoke和唯一512正式oracle。
+oracle执行与provenance完整，不是INVALID：CLIP/D0/row均`512/512`，严格异常0，top-5保持`512/512`，
+optimizer/checkpoint写入0，formal与GPU终态洁净。
+
+科学结果却明确NO-GO：
+
+- factorial Y `neither/clip-only/pose-only/P+C = 2/1/4/2`；
+- complete quartet=`21/512=4.10%`，两条strong pair各`199/512=38.87%`；
+- 四个条件边际为`-0.001953/-0.003906/+0.003906/+0.001953`，interaction=`-0.001953`，
+  10,000次paired bootstrap没有正向下界；
+- selector与独立blind颜色事实agreement=`1/512`，text-shuffle=`0/512`；
+- raw-color与D0-hard两条strong control中，P+C reference与control均为`80/512`。
+
+因此第6节首选只在当时设计阶段成立，现已由预注册oracle正式覆盖。当前PACIT实例同时失败于：
+
+1. 四条post-hoc severity/identity/geometry direct caliper求交过于稀疏，无法形成高覆盖estimand；
+2. `7 shape × 10 color`的CLIP选择最终只执行7种灰色矩形，color label不改变像素动作，CLIP的`what`
+   退化为geometry selector；
+3. whole-image颜色margin与6%局部解剖槽的CIELAB连通颜色事实不一致；
+4. 即使进入较宽的strong matched子集，P+C仍与raw/D0-hard exact tie。
+
+这不证伪所有clean→edited输入干预，也不证明CLIP普遍没有局部语义；它只证伪当前
+`pose center + gray rectangle + whole-image color-to-shape selector + sparse caliper`对象。exp415不得通过
+调prompt、阈值、caliper、候选数或blind门复活，也不得启动e120。
+
+对下一方向的约束更新为：
+
+- CLIP选择必须对应实际不同、局部可ground并能由独立事实验证的像素动作，不能只改变metadata/index/weight；
+- pose、CLIP与student必须观察同一实际像素view；
+- 所有臂从同一完整候选bank按构造匹配，不能再依赖事后四边筛选；
+- 先做无训练signal audit，CLIP局部变量相对raw/geometry baseline必须有paired增量；
+- 目标必须作用于最终global descriptor或全身份全排序，并严格超过zero-owner/listwise强宿主；
+- 科学Y、complete、match、identity-safe继续分开，固定分母与不利结果完整保留。
+
+当前最终状态=`EXP395--415 POSTMORTEM UPDATED / EXP415 ASSET NO-GO /
+NO FORMAL TRAINING AUTHORIZED`。
+
+## 10. exp415后的候选重排：唯一首选PC-NEC
+
+三路独立复盘只保留两个条件候选：
+
+| 排名 | 候选 | 新训练对象 | 关键风险 |
+|---:|---|---|---|
+| 1 | PC-NEC | 真实共同可见槽对错误身份的存在性负证据证书 | 易与part matching/metric learning同构，必须先证CLIP增量 |
+| 2 | MH-PSO | 多假设pose-semantic orbit上的最坏情形身份一致性 | 生成身份漂移，Pose2ID/IPG/DiVE近邻强 |
+
+唯一首选为`PC-NEC`（Pose-Conditioned CLIP Negative-Evidence Certification）。它不再从不完整单图证明
+“这是同一个人”，而使用一个更可识别的非对称命题：
+
+> 缺失区域不足以证明同一身份，但共同真实可见的解剖槽中，一个可靠语义矛盾足以排除错误身份。
+
+pose只建立两张真实图之间的解剖槽对应与共同可见集合；CLIP只给这些真实可见槽提供“矛盾/未决”证据，不生成
+identity prototype、完整feature或support顺序。未来student若获授权，应对全部候选负身份输出非负反证能量，
+用存在性MIL/listwise目标要求每个错误身份至少被一个可见槽否决；测试删除pose、CLIP与证书头，仍为原RGB
+global descriptor。
+
+它与exp409的差分必须保持清楚：候选bank先由sealed D0一次冻结，correct/control共享全部真匹配与top-20
+跨ID impostor，语义分数不能选pair、删pair或改变bank；审计与未来训练都作用于全部候选身份，不做hard-pair
+mining。与KPR/BPBreID类part matching的差分则是局部匹配只作训练期负证据证书，正式检索不保留part分支。
+
+当前只允许建立无训练fuel audit设计。启动代码/CUDA前必须证明：
+
+- correct的candidate-level AUROC/AUPRC相对最强pose-only、CLIP-only、neither、slot-shuffle、
+  wrong-RGB、raw-color/student-part control均至少`+0.03`；
+- 在同一固定bank的诊断重排中相对D0至少`+1.0 mAP/+1.0 R1`，相对最强control至少
+  `+0.5/+0.5`；
+- PID-bootstrap 95% lower bound大于0，query覆盖至少80%，五槽均有足够样本；
+- bank manifest必须在读取pose/CLIP前封存，所有arm固定相同pair与分母；
+- 诊断重排不得进入论文方法或最终测试路径。
+
+任一门失败即`PC-NEC FUEL NO-GO / TRAINING NO-START`，并把当前搜索结论更新为
+`NO CANDIDATE`；禁止回到PACIT、owner/prefix/MST、proxy/router或临时再开第三个弱组合。

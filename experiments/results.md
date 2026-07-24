@@ -3779,3 +3779,30 @@ caliper漏reference edited top-5、strong control漏P+C reference identity-safe�
 `EXP415_STATIC_CONTRACT_V3=PASS`，提交=`f3ec6ae8cb5373468c4f170e51a839fc55364b0a`。这些修复不影响未调用
 科学路径的sealed smoke。当前=`PREFORMAL CORE FIXED / FULL 512 ORACLE RUNNER IMPLEMENTATION ACTIVE /
 ORACLE NO-START / E120 NO-START`，仍没有Y、asset verdict或性能数字。
+
+## exp415 PACIT唯一512 oracle（2026-07-24）
+
+正式oracle从frozen formal HEAD=`157b931b84cdeacfde077fb99a378954fecc6255`自然完成：
+CLIP=`512/512`、D0+blind=`512/512`、固定row=`512/512`、严格异常0、optimizer/checkpoint写入均为0。
+机械/provenance/finite/top-5门全部通过；formal tracked/index/full=`0/0/0`，结束后GPU空闲。
+
+科学固定分母结果：
+
+- factorial Y：`neither=2, clip-only=1, pose-only=4, P+C=2`；
+- complete quartet=`21/512`；
+- `C|P0=-0.001953, C|P1=-0.003906, P|C0=+0.003906, P|C1=+0.001953,
+  interaction=-0.001953`，五项10,000次paired bootstrap下界均不大于0；
+- P+C五槽成功=`0/0/1/1/0`；
+- CLIP selector与blind颜色事实agreement=`1/512`，text-shuffle=`0/512`；
+- raw-color与D0-hard均matched `199/512`，两条pair内P+C与control均为`80/512`；
+- clean/P+C/top-5交集均`512/512`。
+
+因此不是runtime、数值或身份安全失败，而是当前“pose位置×CLIP颜色shape选择”几乎不产生独立可观察的
+anatomical coherent color evidence，也没有正交交互或强对照优势。唯一裁决=
+`EXP415 PACIT ASSET NO-GO / FORMAL E120 NO-START`；禁止重跑、放宽门、生成全量资产或启动训练。
+
+result/summary/manifest/正式runner SHA256=
+`940db304275c4f527185efd13396c5fc5c5b2dd829e146a7d46a2ce13994bd1d` /
+`0285defe3c95dfe1c0e7f3674868359cf734407907d3680aee14376126a83911` /
+`3ce850c1199ba92f5798fcb9e4c60188ff5ea6b38ed320ebc5f077d5033c273c` /
+`2588e84f6ee2a517da23e3ecd4bbd340875b4ec61518838e8f196ad95e9a822f`。

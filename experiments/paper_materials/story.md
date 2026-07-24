@@ -2592,3 +2592,29 @@ C比较CLIP shape selector与逐图D0/CE/geometry-matched hash。独立裁决只
 以及最终六臂共同zero-owner宿主下的double-view训练比较。geometry census与不计算科学指标的runtime smoke已经
 PASS；正式512 runner仍在实现，oracle namespace尚未创建。因此当前只能写
 `C-CLASS CONDITIONAL / ORACLE NO-START / E120 NO-START`，不能写任何asset或性能正结论。
+
+### PACIT退出正面story
+
+唯一512 oracle已有效完成，但科学门明确NO-GO：P+C=`2/512`、pose-only=`4/512`、complete quartet=
+`21/512`、selector blind agreement=`1/512`、interaction=`-0.001953`；raw-color与D0-hard两条matched
+强对照中P+C与control均为`80/512`。CLIP/D0有效性与top-5身份保持均为`512/512`，所以不能把负结果解释为
+runtime、数值失败或编辑过强。
+
+PACIT revision-3因此没有进入全量资产、PK64或e120，论文性能表中不存在exp415训练结果。能进入负结果讨论的
+只有窄结论：whole-image CLIP颜色margin从7种灰矩形shape中选index，不能建立局部anatomical coherent color
+evidence，也不优于raw/D0-hard选择器；当前稀疏四边caliper只留下4.10% quartet，无法支撑factorial估计。
+
+论文不得把该结果扩写为“所有输入干预无效”或“CLIP普遍没有局部语义”。但PACIT、颜色selector、灰遮挡shape和
+post-hoc caliper救援均退出正面story。当前仍没有任何pose+CLIP联合机制通过matched controls、多seed与paired
+bootstrap，投稿主方法状态保持`NO POSITIVE JOINT ATTRIBUTION`。
+
+### PC-NEC条件story
+
+下一条件story不再声称从部分观测恢复完整身份。PC-NEC使用一个非对称但可识别的命题：一张不完整图可能无法
+证明同一身份，但双方共同可见的真实身体槽中，一个可靠语义矛盾可以排除错误身份。pose只建立槽对应，CLIP只提供
+训练期矛盾/未决证据，最终检索删除两者及证书头，仍使用标准global RGB descriptor。
+
+该story当前只有设计资格。KPR/BPBreID类共同可见part matching、PAT-CSL跨ID邻居与Instruct-ReID语义margin都
+构成近邻；只有固定全候选bank的fuel audit证明correct相对raw-color、student part、pose-only、CLIP-only、
+slot-shuffle和wrong-RGB存在显著paired增量，才允许建立训练方法。若fuel audit失败，论文结论直接保持
+`NO POSE+CLIP CANDIDATE`，不得用第三个弱组合替代。

@@ -4447,3 +4447,54 @@ PACIT正式展开名为`Pose-Anatomical CLIP Intervention Training`，不再使�
 只给D0 identity-safe定义P50--P90。若asset GO，六个intervention arms共同使用zero-owner普通listwise强宿主，
 另有double-view clean-pair；宿主不进入pose×CLIP归因。geometry census与runtime smoke已经PASS，但没有计算Y；
 core在oracle前完成三项显式变量修复，当前仍=`ORACLE NO-START / E120 NO-START`。
+
+### exp415 oracle后的创新结论
+
+唯一512 oracle完整执行后，PACIT revision-3不再具有训练资格。P+C只得到`2/512`科学Y，低于pose-only的
+`4/512`；complete quartet只有`21/512`，interaction为`-0.001953`且10,000次bootstrap下界不大于0。
+CLIP selector与独立blind颜色事实只agreement `1/512`；在raw-color、D0-hard各自`199/512` matched子集内，
+P+C与control都为`80/512`。这不是身份安全失败，因为clean/P+C/top-5交集均为`512/512`。
+
+机制审计揭示了比“blind门可能过严”更直接的问题：当前`7×10 shape×color`打分最终只把aspect index变成7种
+灰色矩形遮挡，10个color label并不改变实际像素动作。CLIP的`what`没有进入intervention，只作为geometry
+metadata；whole-image颜色margin还要对应6%局部槽的CIELAB连通颜色，尺度与事实对象不一致。因此当前对象只是
+pose-centered structured erasing加可替代的hard geometry selector。
+
+由此永久关闭：
+
+- CLIP输出只作为mask index、metadata或权重，而不改变实际可观察动作；
+- whole-image颜色prompt对局部slot作语义grounding；
+- raw CIELAB已可替代的颜色选择；
+- 通过四条post-hoc caliper稀疏求交后再声称factorial；
+- 放宽exp415阈值、prompt、候选或blind门救旧。
+
+仍可保留的研究原子是same-view clean→edited target、pose anatomical support、D0 identity-safe/severity、
+独立blind evaluator、fixed denominator、factorial与强对照。下一对象若仍使用输入干预，CLIP必须选择实际不同、
+局部可ground且能被独立事实验证的非颜色语义动作；所有臂应从同一完整候选bank按构造匹配，而不是事后筛到
+`21/512`。训练前还必须先证明该局部CLIP变量相对raw/geometry baseline有paired增量，否则直接NO-START。
+
+当前创新状态=`PACIT REVISION-3 SCIENTIFIC NO-GO / NO POSITIVE POSE+CLIP STORY`。
+
+## 2026-07-24：PC-NEC条件候选——从正身份补全转向负证据证书
+
+single-image support incomplete意味着缺失区域的同一性通常不可证明，但不意味着所有跨身份判断都不可识别。
+PC-NEC把训练对象改为：对一个固定错误身份候选，是否存在至少一个双方都真实可见的解剖槽，提供足以排除该
+impostor的语义矛盾。
+
+- pose：只给真实图对建立共同可见槽与空间对应；
+- CLIP：只对槽内真实像素给“矛盾/未决”证据，不输出identity坐标、teacher feature或positive owner；
+- student：未来只在训练期学习对全部负身份的非负反证能量与存在性MIL/listwise证书；
+- eval：删除pose/CLIP/证书头，保持Swin-T global RGB-only。
+
+该对象避开同PID exchangeability，因为证据直接针对全部跨PID impostor；也避开PACIT，因为不生成编辑像素或
+灰遮挡。它仍有KPR/BPBreID共同可见part matching、PAT-CSL跨ID视觉邻居、Instruct-ReID语义margin等强近邻，
+所以当前最多是`C-CLASS CONDITIONAL`，不能把part、MIL或CLIP crop原子写成贡献。
+
+唯一创新资格来自整体窄差分：固定全候选bank、真实共同可见槽、训练期存在性负证据、最终global-only检索。
+在任何训练前，correct必须在PID-disjoint共同bank fuel audit中同时胜raw-color、student-part、
+pose-only、CLIP-only、slot-shuffle与wrong-RGB；不通过则`NO CANDIDATE`，不再构造第三个弱变体。
+
+设计复审已把这一窄差分落为可判定数学对象：所有负身份无删除地分成CLIP证书成立的`C`与未决`U`，
+set-level loss只要求`C`的global相似度低于`U`；genuine identity不接收排斥梯度，pose/CLIP证书detached，
+eval无part/certificate分支。三路最终=`PASS / 0B / 0H / 0 old-isomorphism`。这只保留fuel-audit资格，
+不构成机制有效性或绝对新颖性证据。

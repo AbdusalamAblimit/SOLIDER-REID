@@ -6760,3 +6760,62 @@ arms共同NOOP并共同使用zero-owner普通listwise宿主，另先跑double-vi
 **决策**：先完成并复审完整512 runner；在`0B/0H/0变量混淆/0旧同构`、formal clean、GPU空闲且oracle
 namespace仍fresh前，不创建started seal。当前=`FULL 512 ORACLE RUNNER IMPLEMENTATION ACTIVE /
 ORACLE NO-START / E120 NO-START`。
+
+### [2026-07-24] 决策：exp415资产机制科学NO-GO，永久关闭当前PACIT实例
+
+完整runner三路复审与formal CPU/GPU preseal门通过后，唯一512 oracle自然完成；CLIP、D0、row、SHA、
+determinism、finite、top-5和原子输出均完整，因此这是有效科学NO-GO，不是执行INVALID。第一次后台发起只在
+解释器前因shell变量丢失exit 127，没有创建oracle namespace或CUDA context；该日志永久保留。第二次直接绝对命令
+才是唯一正式执行。
+
+固定分母结果为：factorial `2/1/4/2`（neither/clip-only/pose-only/P+C），quartet仅`21/512`；
+selector与独立blind颜色事实agreement仅`1/512`；raw-color和D0-hard强对照各matched `199/512`，且P+C与
+两者均为`80/512`；interaction=`-0.001953`，全部paired-bootstrap正向门失败。top-5保持`512/512`，
+所以结果不能归因于粗暴摧毁身份。
+
+当前失败包含两个彼此独立的事实：
+
+1. 四条post-hoc direct caliper求交只留下`4.10%` quartet，无法形成高覆盖可用estimand；
+2. `7 shape × 10 color`的CLIP选择最终只执行7种灰色矩形，color标签不改变像素动作；whole-image颜色margin
+   与6%局部槽CIELAB事实也不一致，CLIP实际退化为可被raw/D0-hard替代的geometry selector。
+
+**决策**：
+
+- exp415永久封板为`ASSET NO-GO / FORMAL E120 NO-START`，禁止改prompt、阈值、caliper、候选数或blind门重跑；
+- 禁止生成全15,618 PACIT资产、真实PK64合同或任何e120臂；
+- 永久关闭“whole-image CLIP颜色标签只间接选择灰遮挡shape”的当前PACIT实例，但不外推为所有输入空间干预、
+  所有CLIP局部语义或所有pose+CLIP方法无效；
+- 可保留clean→edited可观察target、same-view、独立blind、固定分母、强对照和once-only纪律；
+- 下一候选必须让CLIP输出对应实际不同、局部可验证的像素动作，并从共同候选bank按构造匹配；不得再依赖
+  稀疏post-hoc caliper或回到owner/prefix/MST/proxy/router旧家族。
+
+当前=`EXP415 SEALED NO-GO / GPU IDLE / NO FORMAL TRAINING AUTHORIZED`。
+
+### [2026-07-24] 决策：下一唯一首选为PC-NEC，但只授权无训练fuel audit设计
+
+三路复盘把下一逻辑从“补全同一身份”改为“排除错误身份”。PC-NEC只问共同真实可见槽是否存在可靠语义矛盾：
+pose建立解剖对应，CLIP给矛盾/未决证据，未来student对全部跨PID候选学习存在性负证据证书；推理仍只用global
+RGB descriptor。它不选择hard pair、不改变candidate bank、不搬运feature、不生成pixel edit，也不回到
+owner/prefix/MST/proxy/router。
+
+**当前授权边界**：
+
+1. 只建立exp416设计、候选bank/metric合同与子agent致命bug/变量混淆/旧同构复审；
+2. bank必须在读取pose/CLIP前由sealed D0冻结，所有arm共享全部跨相机真匹配与top-20跨ID impostor；
+3. fuel audit只读、不更新optimizer、不写checkpoint；诊断重排不得进入正式方法；
+4. correct的AUROC/AUPRC须相对最强control各`+0.03`，同bank诊断mAP/R1相对D0至少`+1.0/+1.0`、
+   相对最强control至少`+0.5/+0.5`，PID-bootstrap下界大于0且覆盖至少80%；
+5. 任一门失败即`PC-NEC FUEL NO-GO / TRAINING NO-START / NO CANDIDATE`。
+
+设计复审完成前不实现正式runner、不连接远端GPU；fuel GO前绝不启动PK64或e120。
+
+### [2026-07-24] 决策：exp416设计复审PASS，只进入fuel runner实现
+
+三路只读回归已全部清零：`PASS / 0B / 0H / 0 old-isomorphism`。设计已冻结共同bank、
+canonical-location nuisance、wrong donor、student-part强对照、PID-macro OOF统计与cluster bootstrap；
+future对象也已收窄为detached证书划分全负身份`C/U`后的set-level loss，明确禁止pair mining、triplet调margin、
+relation KD或test-time part matching。
+
+**决策**：只授权实现无optimizer/checkpoint的fuel runner与CPU/static合同，并在真实执行前再次做三路实现复审。
+当前不授权创建训练config、真实PK64或e120；任何实现若改变candidate bank、主指标、control或future数学对象，
+必须先回到design审查。
