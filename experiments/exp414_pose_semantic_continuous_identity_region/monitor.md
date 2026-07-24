@@ -1214,3 +1214,10 @@ e10时text-shuffle相对correct、pose-only与zero-owner四项均正，相对q-o
 `e15 iter140/227`，loss=`3.280`、pose=`0.634`、acc=`0.497`；wrapper/训练主PID存活，唯一CUDA
 compute约`7074 MiB / 41%`，runner/train严格异常=`0`，formal tracked worktree/index=`0/0`；当前=
 `CONTINUE TO NATURAL E120`。
+
+## 2026-07-24：text-shuffle e20评测前健康检查
+
+- 最新=`e20 iter140/227`，loss=`1.721`、pose=`0.544`、acc=`0.801`，e20正式评测尚未落盘；
+- wrapper/训练主PID存活，唯一CUDA compute约`7074 MiB / 54%`，runner/train严格异常=`0`，formal
+  tracked worktree/index=`0/0`；
+- 最近正式点仍为已登记e10，不预填e20指标，当前=`CONTINUE TO NATURAL E120`。
