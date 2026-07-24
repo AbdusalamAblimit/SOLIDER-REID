@@ -220,3 +220,21 @@ ORACLE NO-START / E120 NO-START`。
   该HEAD尚未包含最终runner，下一步仅允许显式同步并提交本轮目标文件，再执行第二次preseal门。
 
 当前=`FINAL RUNNER REVIEW PASS / FORMAL SYNC NEXT / ORACLE NO-START / E120 NO-START`。
+
+## 2026-07-24：第一次后台发起在解释器前失败
+
+- formal已显式同步并提交为HEAD=`cb690590bcbfcffecf4add08a06c11f2f8d56f06`；CPU self-test/static
+  仍分别PASS，formal tracked/index/full=`0/0/0`，oracle namespace与runner log在发起前均不存在，
+  4090=`2 MiB/0%/0 CUDA PID`；
+- 第一次后台wrapper PID=`236116`，但嵌套shell没有把解释器变量传入`env`，立即得到
+  `env: '-B': No such file or directory`与exit 127；`asset_oracle.py`解释器未启动，没有读取512样本、
+  没有加载CLIP/D0、没有创建oracle namespace、没有CUDA context；
+- 该事件分类为`PRE-INTERPRETER LAUNCH COMMAND FAILURE`，不是oracle科学执行、不是中断恢复，也不消耗
+  once-only namespace；原runner log
+  `/home/afr/reid-clean/train-logs/exp415-pacit-oracle-v3.runner.log`永久保留，禁止删除或覆盖；
+- 下一次只修后台命令编排：使用硬编码绝对解释器与脚本路径、fresh
+  `/home/afr/reid-clean/train-logs/exp415-pacit-oracle-v3.launch2.runner.log`；runner/source/contract/
+  output namespace全部不变，发起前重新提交本记录并重复formal洁净、namespace与GPU门。
+
+当前=`LAUNCH-1 PRE-INTERPRETER FAIL / ORACLE STILL NO-START / LAUNCH-2 PREFLIGHT NEXT /
+E120 NO-START`。
