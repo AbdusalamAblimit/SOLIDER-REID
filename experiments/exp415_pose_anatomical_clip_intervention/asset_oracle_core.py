@@ -388,6 +388,64 @@ def select_clip_candidate(clip_drop):
     }
 
 
+def direct_pair_caliper(
+    reference,
+    candidate,
+    reference_d0_shift,
+    candidate_d0_shift,
+    reference_d0_ce_change,
+    candidate_d0_ce_change,
+    clean_top5,
+    reference_top5,
+    candidate_top5,
+    *,
+    require_centroid,
+    require_different_mask,
+):
+    """Evaluate one frozen direct nuisance-match edge."""
+    numeric = (
+        float(reference_d0_shift),
+        float(candidate_d0_shift),
+        float(reference_d0_ce_change),
+        float(candidate_d0_ce_change),
+    )
+    if not all(math.isfinite(value) for value in numeric):
+        raise ValueError("nonfinite direct caliper input")
+    area_ok = (
+        abs(int(candidate["area_pixels"]) - int(reference["area_pixels"])) <= 1
+    )
+    aspect_ok = abs(
+        math.log(float(candidate["aspect"]) / float(reference["aspect"]))
+    ) <= math.log(1.25)
+    centroid_ok = True
+    if bool(require_centroid):
+        centroid_ok = max(
+            abs(
+                float(candidate["centroid_y"])
+                - float(reference["centroid_y"])
+            ),
+            abs(
+                float(candidate["centroid_x"])
+                - float(reference["centroid_x"])
+            ),
+        ) <= 0.01
+    mask_ok = bool(
+        not require_different_mask
+        or candidate["mask_sha256"] != reference["mask_sha256"]
+    )
+    return bool(
+        clean_top5
+        and reference_top5
+        and candidate_top5
+        and area_ok
+        and aspect_ok
+        and centroid_ok
+        and abs(numeric[1] - numeric[0]) <= 0.010
+        and abs(numeric[3] - numeric[2]) <= 0.25
+        and mask_ok
+    )
+
+
 def caliper_eligible(
     reference,
     candidates,
@@ -396,6 +454,7 @@ def caliper_eligible(
     reference_d0_ce_change,
     candidate_d0_ce_changes,
     clean_top5,
+    reference_top5,
     candidate_top5,
     *,
     require_centroid,
@@ -418,49 +477,19 @@ def caliper_eligible(
         raise ValueError("nonfinite D0 caliper input")
     output = []
     for candidate_index, candidate in enumerate(candidates):
-        area_ok = abs(
-            int(candidate["area_pixels"]) - int(reference["area_pixels"])
-        ) <= 1
-        aspect_ok = abs(
-            math.log(
-                float(candidate["aspect"]) / float(reference["aspect"])
-            )
-        ) <= math.log(1.25)
-        centroid_ok = True
-        if bool(require_centroid):
-            centroid_ok = max(
-                abs(
-                    float(candidate["centroid_y"])
-                    - float(reference["centroid_y"])
-                ),
-                abs(
-                    float(candidate["centroid_x"])
-                    - float(reference["centroid_x"])
-                ),
-            ) <= 0.01
-        d0_ok = (
-            abs(float(shifts[candidate_index]) - float(reference_d0_shift))
-            <= 0.010
-        )
-        ce_ok = (
-            abs(
-                float(ce_changes[candidate_index])
-                - float(reference_d0_ce_change)
-            )
-            <= 0.25
-        )
-        different = candidate["mask_sha256"] != reference["mask_sha256"]
-        mask_ok = bool(different or allow_reference)
         output.append(
-            bool(
-                clean_top5
-                and top5[candidate_index]
-                and area_ok
-                and aspect_ok
-                and centroid_ok
-                and d0_ok
-                and ce_ok
-                and mask_ok
+            direct_pair_caliper(
+                reference,
+                candidate,
+                reference_d0_shift,
+                shifts[candidate_index],
+                reference_d0_ce_change,
+                ce_changes[candidate_index],
+                clean_top5,
+                reference_top5,
+                top5[candidate_index],
+                require_centroid=require_centroid,
+                require_different_mask=not bool(allow_reference),
             )
         )
     return np.asarray(output, dtype=np.bool_)
@@ -601,6 +630,32 @@ def _largest_component_size(binary):
     return int(best)
 
 
+def blind_color_rank(
+    *,
+    presence,
+    capture,
+    purity,
+    component_pixels,
+    component_ratio,
+    absolute_drop,
+    relative_drop,
+    color_index,
+):
+    """Rank a blind color by the weakest of all seven frozen color gates."""
+    normalized = (
+        float(presence) / COLOR_PRESENCE_MIN,
+        float(capture) / COLOR_CAPTURE_MIN,
+        float(purity) / COLOR_PURITY_MIN,
+        float(component_pixels) / float(COLOR_COMPONENT_PIXELS_MIN),
+        float(component_ratio) / COLOR_COMPONENT_RATIO_MIN,
+        float(absolute_drop) / COLOR_ABSOLUTE_DROP_MIN,
+        float(relative_drop) / COLOR_RELATIVE_DROP_MIN,
+    )
+    if not all(math.isfinite(value) for value in normalized):
+        raise ValueError("nonfinite blind-color rank")
+    return (min(normalized),) + normalized + (-int(color_index),)
+
+
 def blind_evaluate(
     original_rgb,
     edited_rgb,
@@ -675,56 +730,55 @@ def blind_evaluate(
             captured_pixels = int(connected_mask.sum())
             component_pixels = _largest_component_size(connected_mask)
             component_ratio = component_pixels / float(max(captured_pixels, 1))
-            normalized_min = min(
-                presence / COLOR_PRESENCE_MIN,
-                capture / COLOR_CAPTURE_MIN,
-                purity / COLOR_PURITY_MIN,
-                component_pixels / float(COLOR_COMPONENT_PIXELS_MIN),
-                component_ratio / COLOR_COMPONENT_RATIO_MIN,
+            rank = blind_color_rank(
+                presence=presence,
+                capture=capture,
+                purity=purity,
+                component_pixels=component_pixels,
+                component_ratio=component_ratio,
+                absolute_drop=absolute_drop,
+                relative_drop=relative_drop,
+                color_index=color_index,
             )
-            item = (
-                normalized_min,
-                presence,
-                capture,
-                purity,
-                component_ratio,
-                component_pixels,
-                -color_index,
-                color_index,
-                absolute_drop,
-                relative_drop,
-                edited_fraction,
-            )
-            if best is None or item[:7] > best[:7]:
+            item = {
+                "rank": rank,
+                "blind_score": float(rank[0]),
+                "presence": float(presence),
+                "capture": float(capture),
+                "purity": float(purity),
+                "component_ratio": float(component_ratio),
+                "component_pixels": int(component_pixels),
+                "blind_color_index": int(color_index),
+                "absolute_drop": float(absolute_drop),
+                "relative_drop": float(relative_drop),
+                "edited_fraction": float(edited_fraction),
+            }
+            if best is None or item["rank"] > best["rank"]:
                 best = item
     if best is None:
-        best = (
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0,
-            0,
-            -1,
-            0.0,
-            0.0,
-            0.0,
-        )
+        best = {
+            "blind_score": 0.0,
+            "presence": 0.0,
+            "capture": 0.0,
+            "purity": 0.0,
+            "component_ratio": 0.0,
+            "component_pixels": 0,
+            "blind_color_index": -1,
+            "absolute_drop": 0.0,
+            "relative_drop": 0.0,
+            "edited_fraction": 0.0,
+        }
 
-    (
-        blind_score,
-        presence,
-        capture,
-        purity,
-        component_ratio,
-        component_pixels,
-        _,
-        blind_color_index,
-        absolute_drop,
-        relative_drop,
-        edited_fraction,
-    ) = best
+    blind_score = best["blind_score"]
+    presence = best["presence"]
+    capture = best["capture"]
+    purity = best["purity"]
+    component_ratio = best["component_ratio"]
+    component_pixels = best["component_pixels"]
+    blind_color_index = best["blind_color_index"]
+    absolute_drop = best["absolute_drop"]
+    relative_drop = best["relative_drop"]
+    edited_fraction = best["edited_fraction"]
     coherent_color_removal = bool(
         presence >= COLOR_PRESENCE_MIN
         and capture >= COLOR_CAPTURE_MIN
@@ -803,13 +857,19 @@ def select_d0_hard_candidate(d0_displacements, eligible):
     return int(ranked[0])
 
 
-def strong_control_eligible(base_eligible, candidate_identity_safe):
+def strong_control_eligible(
+    base_eligible,
+    reference_identity_safe,
+    candidate_identity_safe,
+):
     """Intersect the nuisance caliper with the full ROA/top-5 identity gate."""
     base = np.asarray(base_eligible, dtype=np.bool_)
     identity = np.asarray(candidate_identity_safe, dtype=np.bool_)
     expected = (ACTIVE_PROPOSALS_PER_IMAGE,)
     if base.shape != expected or identity.shape != expected:
         raise ValueError("strong-control eligibility shape mismatch")
+    if not bool(reference_identity_safe):
+        return np.zeros(expected, dtype=np.bool_)
     return base & identity
 
 
@@ -876,10 +936,33 @@ TRAINING_INTERVENTION_ARM_NAMES = (
 QUARTET_EDGE_NAMES = ("c_given_p1", "c_given_p0", "p_given_c1", "p_given_c0")
 
 
+def _strict_bool(value, name, *, missing_is_false=False):
+    if value is None and bool(missing_is_false):
+        return False
+    if not isinstance(value, (bool, np.bool_)):
+        raise ValueError(name + " must be a strict boolean")
+    return bool(value)
+
+
+def _strict_binary_outcome(value, name, *, missing_is_zero=False):
+    if value is None and bool(missing_is_zero):
+        return 0
+    if isinstance(value, (bool, np.bool_)):
+        return int(value)
+    if isinstance(value, (int, np.integer)) and int(value) in (0, 1):
+        return int(value)
+    raise ValueError(name + " must be an exact binary outcome")
+
+
 def quartet_match_decision(edge_flags):
     if tuple(sorted(edge_flags)) != tuple(sorted(QUARTET_EDGE_NAMES)):
         raise ValueError("quartet requires all four direct match edges")
-    return bool(all(bool(edge_flags[name]) for name in QUARTET_EDGE_NAMES))
+    return bool(
+        all(
+            _strict_bool(edge_flags[name], "quartet edge " + name)
+            for name in QUARTET_EDGE_NAMES
+        )
+    )
 
 
 def finalize_factorial_rows(arm_rows):
@@ -904,20 +987,28 @@ def finalize_factorial_rows(arm_rows):
             if edge_flags is None:
                 edge_match = False
             else:
-                try:
-                    edge_match = quartet_match_decision(edge_flags)
-                except ValueError:
-                    edge_match = False
+                edge_match = quartet_match_decision(edge_flags)
             if reference_edges is None:
                 reference_edges = edge_flags
             elif edge_flags != reference_edges:
                 edge_match = False
                 complete = False
+            arm_complete = _strict_bool(
+                row.get("arm_complete"),
+                arm_name + " arm_complete",
+                missing_is_false=True,
+            )
+            raw_y = _strict_binary_outcome(
+                row.get("Y"),
+                arm_name + " Y",
+                missing_is_zero=True,
+            )
+            y_present = row.get("Y") is not None
             complete = bool(
                 complete
-                and row.get("arm_complete", False)
+                and arm_complete
                 and edge_match
-                and row.get("Y", None) in (0, 1, False, True)
+                and y_present
             )
         common_match.append(complete)
     output = {}
@@ -928,8 +1019,11 @@ def finalize_factorial_rows(arm_rows):
             raise ValueError("factorial row ids/order mismatch")
         values = []
         for row, matched in zip(rows, common_match):
-            raw = row.get("Y", 0)
-            value = int(raw) if raw in (0, 1, False, True) else 0
+            value = _strict_binary_outcome(
+                row.get("Y"),
+                arm_name + " Y",
+                missing_is_zero=True,
+            )
             values.append(value if matched else 0)
         output[arm_name] = np.asarray(values, dtype=np.float64)
     return {
@@ -951,17 +1045,47 @@ def finalize_paired_control_rows(reference_rows, control_rows):
     left = []
     right = []
     for reference, control in zip(reference_rows, control_rows):
+        reference_complete = _strict_bool(
+            reference.get("arm_complete"),
+            "paired reference arm_complete",
+            missing_is_false=True,
+        )
+        control_complete = _strict_bool(
+            control.get("arm_complete"),
+            "paired control arm_complete",
+            missing_is_false=True,
+        )
+        reference_match = _strict_bool(
+            reference.get("pair_match_ok"),
+            "paired reference match",
+            missing_is_false=True,
+        )
+        control_match = _strict_bool(
+            control.get("pair_match_ok"),
+            "paired control match",
+            missing_is_false=True,
+        )
+        reference_y = _strict_binary_outcome(
+            reference.get("Y"),
+            "paired reference Y",
+            missing_is_zero=True,
+        )
+        control_y = _strict_binary_outcome(
+            control.get("Y"),
+            "paired control Y",
+            missing_is_zero=True,
+        )
         pair_ok = bool(
-            reference.get("arm_complete", False)
-            and control.get("arm_complete", False)
-            and reference.get("pair_match_ok", False)
-            and control.get("pair_match_ok", False)
-            and reference.get("Y", None) in (0, 1, False, True)
-            and control.get("Y", None) in (0, 1, False, True)
+            reference_complete
+            and control_complete
+            and reference_match
+            and control_match
+            and reference.get("Y") is not None
+            and control.get("Y") is not None
         )
         matched.append(pair_ok)
-        left.append(int(reference.get("Y", 0)) if pair_ok else 0)
-        right.append(int(control.get("Y", 0)) if pair_ok else 0)
+        left.append(reference_y if pair_ok else 0)
+        right.append(control_y if pair_ok else 0)
     return {
         "row_ids": reference_ids,
         "pair_matched": np.asarray(matched, dtype=np.bool_),
@@ -991,6 +1115,8 @@ def paired_bootstrap_interaction(
     *,
     repetitions=10000,
 ):
+    if int(repetitions) != 10000:
+        raise ValueError("formal paired bootstrap requires 10000 repetitions")
     estimate, paired = factorial_interaction(
         y_pc, y_pose, y_clip, y_neither
     )
@@ -1014,6 +1140,8 @@ def paired_bootstrap_interaction(
 
 
 def paired_bootstrap_difference(left, right, *, repetitions=10000, salt):
+    if int(repetitions) != 10000:
+        raise ValueError("formal paired bootstrap requires 10000 repetitions")
     left_array = np.asarray(left, dtype=np.float64)
     right_array = np.asarray(right, dtype=np.float64)
     if left_array.shape != (ORACLE_COUNT,) or right_array.shape != (

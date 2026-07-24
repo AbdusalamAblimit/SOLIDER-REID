@@ -82,6 +82,10 @@ P只改变active center；C只改变该center内的shape selector。全部臂共
 row id；decode、pose、proposal、selector、match、颜色或D0失败均保留row并写`Y=0`。统计入口硬断言
 `shape==(512,)`和四臂row id逐元素相同，禁止complete-case或短数组统计。
 
+`arm_complete`只表示该臂的机械字段已经完整、finite并可审计；anatomy/color/identity科学门失败只令
+`raw_y=0`，不得把`arm_complete`改为false。`match_edges`只表达四条预注册caliper边，最终四臂Y只能由统一
+row accumulator生成；任何单臂或match失败共同置0，科学失败不能通过改变有效子集被过滤。
+
 ### 2. 编辑与fill
 
 四臂使用同一relative-path hash播种的achromatic fill：

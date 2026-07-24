@@ -161,6 +161,7 @@ def _assert_scorer_and_caliper(fixed):
         0.06,
         ce,
         True,
+        True,
         top5,
         require_centroid=True,
         allow_reference=False,
@@ -171,10 +172,115 @@ def _assert_scorer_and_caliper(fixed):
     )
     assert chosen is not None and eligible[chosen]
     assert candidates[chosen]["mask_sha256"] != reference["mask_sha256"]
+    reference_not_top5 = core.caliper_eligible(
+        reference,
+        candidates,
+        0.10,
+        shifts,
+        0.06,
+        ce,
+        True,
+        False,
+        top5,
+        require_centroid=True,
+        allow_reference=False,
+    )
+    assert not bool(reference_not_top5.any())
+    cross_candidate = dict(reference)
+    cross_candidate["centroid_y"] = float(reference["centroid_y"]) + 0.20
+    assert core.direct_pair_caliper(
+        reference,
+        cross_candidate,
+        0.10,
+        0.109,
+        0.06,
+        0.309,
+        True,
+        True,
+        True,
+        require_centroid=False,
+        require_different_mask=False,
+    )
+    assert not core.direct_pair_caliper(
+        reference,
+        cross_candidate,
+        0.10,
+        0.109,
+        0.06,
+        0.309,
+        True,
+        False,
+        True,
+        require_centroid=False,
+        require_different_mask=False,
+    )
+    assert not core.direct_pair_caliper(
+        reference,
+        cross_candidate,
+        0.10,
+        0.109,
+        0.06,
+        0.309,
+        True,
+        True,
+        True,
+        require_centroid=True,
+        require_different_mask=False,
+    )
+    assert not core.direct_pair_caliper(
+        reference,
+        cross_candidate,
+        0.10,
+        0.109,
+        0.06,
+        0.309,
+        True,
+        True,
+        True,
+        require_centroid=False,
+        require_different_mask=True,
+    )
+    _expect_raises(
+        lambda: core.direct_pair_caliper(
+            reference,
+            cross_candidate,
+            0.10,
+            float("nan"),
+            0.06,
+            0.10,
+            True,
+            True,
+            True,
+            require_centroid=False,
+            require_different_mask=False,
+        )
+    )
     return candidates, eligible
 
 
 def _assert_blind_and_strong_controls(candidates, eligible, fields, valid):
+    five_spatially_stronger_but_drop_failing = core.blind_color_rank(
+        presence=0.11,
+        capture=0.275,
+        purity=0.22,
+        component_pixels=36,
+        component_ratio=0.66,
+        absolute_drop=0.14,
+        relative_drop=0.79,
+        color_index=0,
+    )
+    all_seven_passing = core.blind_color_rank(
+        presence=0.101,
+        capture=0.2525,
+        purity=0.202,
+        component_pixels=33,
+        component_ratio=0.606,
+        absolute_drop=0.1515,
+        relative_drop=0.808,
+        color_index=1,
+    )
+    assert all_seven_passing > five_spatially_stronger_but_drop_failing
+
     reference = candidates[3]
     mask = reference["mask"]
     target_slot = 1
@@ -221,6 +327,7 @@ def _assert_blind_and_strong_controls(candidates, eligible, fields, valid):
         0.06,
         np.linspace(0.0, 0.12, 7),
         True,
+        True,
         np.ones(7, dtype=np.bool_),
         require_centroid=True,
         allow_reference=True,
@@ -228,9 +335,14 @@ def _assert_blind_and_strong_controls(candidates, eligible, fields, valid):
     identity_safe = np.ones(7, dtype=np.bool_)
     identity_safe[0] = False
     strong_eligible = core.strong_control_eligible(
-        strong_base, identity_safe
+        strong_base, True, identity_safe
     )
     assert strong_eligible[3]
+    assert not bool(
+        core.strong_control_eligible(
+            strong_base, False, np.ones(7, dtype=np.bool_)
+        ).any()
+    )
     evaluations[3]["blind_score"] = result["blind_score"] + 1.0
     raw = core.select_raw_color_candidate(evaluations, strong_eligible)
     hard = core.select_d0_hard_candidate(
@@ -265,10 +377,15 @@ def _assert_fixed_rows_and_statistics():
     # A failure in only one arm must atomically zero all four outcomes.
     arm_rows["clip_only"][5].pop("Y")
     arm_rows["pose_only"][6]["match_edges"]["p_given_c0"] = False
+    # A scientific negative is still a mechanically complete matched row.
+    arm_rows["neither"][7]["Y"] = 0
     finalized = core.finalize_factorial_rows(arm_rows)
     for values in finalized["outcomes"].values():
         assert values.shape == (core.ORACLE_COUNT,)
         assert values[5] == 0 and values[6] == 0
+    assert finalized["quartet_matched"][7]
+    assert finalized["outcomes"]["pc"][7] == 1
+    assert finalized["outcomes"]["neither"][7] == 0
     _expect_raises(
         lambda: core.finalize_factorial_rows(
             {
@@ -277,6 +394,9 @@ def _assert_fixed_rows_and_statistics():
             }
         )
     )
+    malformed = copy.deepcopy(arm_rows)
+    malformed["pc"][0]["match_edges"]["c_given_p1"] = "false"
+    _expect_raises(lambda: core.finalize_factorial_rows(malformed))
 
     reference_rows = [
         {
@@ -289,28 +409,37 @@ def _assert_fixed_rows_and_statistics():
     ]
     control_rows = copy.deepcopy(reference_rows)
     control_rows[9]["arm_complete"] = False
+    control_rows[10]["Y"] = 0
     pair = core.finalize_paired_control_rows(reference_rows, control_rows)
     assert pair["reference"][9] == pair["control"][9] == 0
     assert int(pair["pair_matched"].sum()) == core.ORACLE_COUNT - 1
+    assert pair["pair_matched"][10]
+    assert pair["reference"][10] == 1 and pair["control"][10] == 0
     outcomes = finalized["outcomes"]
     interaction = core.paired_bootstrap_interaction(
         outcomes["pc"],
         outcomes["pose_only"],
         outcomes["clip_only"],
         outcomes["neither"],
-        repetitions=1000,
     )
-    assert interaction["estimate"] == 0.0
+    assert interaction["estimate"] == -1.0 / core.ORACLE_COUNT
     difference = core.paired_bootstrap_difference(
         outcomes["pc"],
         outcomes["pose_only"],
-        repetitions=1000,
         salt="c_given_p1",
     )
     assert difference["estimate"] == 0.0
     _expect_raises(
         lambda: core.factorial_interaction(
             [1, 0], [0, 0], [0, 0], [0, 0]
+        )
+    )
+    _expect_raises(
+        lambda: core.paired_bootstrap_difference(
+            outcomes["pc"],
+            outcomes["pose_only"],
+            repetitions=1000,
+            salt="invalid-short-bootstrap",
         )
     )
 

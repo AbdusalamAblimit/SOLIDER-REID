@@ -166,3 +166,31 @@ whole-image CLIP encode调用图未落盘、共同NOOP未覆盖strong controls�
 
 当前=`RUNTIME SMOKE PASS / FULL 512 ORACLE RUNNER IMPLEMENTATION NEXT /
 ORACLE NO-START / E120 NO-START`。
+
+## 2026-07-24：oracle前统计与变量合同加固
+
+完整512 runner实现前的两路独立只读复审发现并阻断了三个会改变正式Y或匹配分母的问题；均发生在尚未创建
+oracle namespace、尚未计算任何oracle科学结果时：
+
+1. blind evaluator的颜色排序只把presence/capture/purity/component纳入“最弱项最大化”，漏掉
+   absolute/relative drop；现已把七个冻结颜色门全部显式纳入rank，并补“空间五项更强但drop失败不得胜过
+   七项全过颜色”的反例；
+2. caliper helper只显式检查clean与candidate top-5，漏掉reference edited top-5；现已把
+   `reference_top5`作为独立参数接入候选内匹配和四条direct pair，禁止runner暗中合并变量；
+3. strong-control helper只检查candidate identity-safe，未显式要求P+C reference自身位于同图ROA
+   P50--P90；现已加入`reference_identity_safe`，reference失败时整条eligible为false。
+
+同时完成：
+
+- 新增冻结`direct_pair_caliper`，统一area/aspect/centroid/D0 displacement/D0 CE、clean/reference/candidate
+  top-5与mask-difference语义；
+- `match_edges / arm_complete / pair_match_ok`只接受严格bool，拒绝字符串与NaN truthiness；
+- formal paired bootstrap硬锁10,000次，短数组与非固定次数均拒绝；
+- 补跨P不比较centroid、同mask允许、任一top-5失败、非finite、reference identity失败与错误bool的
+  failure-injection；`.venv`下`py_compile`与`EXP415_STATIC_CONTRACT_V3=PASS`。
+
+已封存runtime smoke不调用blind evaluator、caliper、strong selector、Y或bootstrap，因此上述修复不改变其
+机械PASS与SHA。正式oracle namespace仍不存在。
+
+当前=`PREFORMAL CORE FIXED / FULL 512 ORACLE RUNNER IMPLEMENTATION ACTIVE /
+ORACLE NO-START / E120 NO-START`。
