@@ -93,3 +93,24 @@ revision-2也未执行oracle、未训练、未占用CUDA。
 - `runtime_smoke.py --self-test=PASS`。
 
 复审未连接远端或GPU。该结论只授权同步formal并依次执行CPU census与唯一fresh 8图smoke；不授权512 oracle。
+
+## 完整512 oracle runner最终复审
+
+最终审计字节：
+
+`asset_oracle.py SHA256=b9083a6dd4923e0eec6c1b4f29e67813fc352b937d9a46363ff9b8583f7d836a`
+
+三路独立只读复审全部完成：
+
+1. 确定性与provenance路：`PASS / 0B / 0H`。固定环境设置发生在CUDA初始化前，状态回读、
+   source/checkpoint/pose provenance、once-only seal与运行中二次SHA检查闭合；
+2. 机制与变量路：`PASS / 0B / 0H / 0 variable-confusion / 0 old-isomorphism`。CLIP只从7个编辑候选
+   选择颜色，blind evaluator只接RGB/pose/D0；raw-color、D0-hard保留同一P+C reference和完整
+   caliper/identity门，未复活owner、prefix或MST同构；
+3. 固定分母与统计/schema路：`PASS / 0B / 0H`。固定512有序row、四factorial与两strong control
+   的共同complete/NOOP、P+/P-各35 proposal、active各7、ROA8、14个blind候选、五个factorial effect、
+   10,000次paired bootstrap、agreement/top-5和全部原子输出/readback均闭合；失败row不丢弃，
+   科学Y=0仍保留在固定分母。
+
+三路均未修改文件、未连接远端、未触发GPU。该结论只授权最终formal显式同步、CPU自测、第二次GPU/namespace/
+worktree preseal门和唯一512 oracle；不授权绕过oracle启动全量资产或e120。

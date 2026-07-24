@@ -194,3 +194,29 @@ oracle namespace、尚未计算任何oracle科学结果时：
 
 当前=`PREFORMAL CORE FIXED / FULL 512 ORACLE RUNNER IMPLEMENTATION ACTIVE /
 ORACLE NO-START / E120 NO-START`。
+
+## 2026-07-24：完整512 oracle runner封板
+
+- 新增完整正式runner `asset_oracle.py`，固定512行、每行
+  `clean + pose7 + fixed7 + ROA8 = 23`个D0变体，并完整保存P+/P-各35 proposal、active各7、
+  两个`[7,10]` CLIP池和14个blind候选；
+- 四factorial臂、两条pair-specific strong control、四条direct caliper边、五个factorial effect、
+  10,000次paired bootstrap、agreement与top-5门均进入同一固定分母裁决；科学Y=0保留为matched row，
+  不再污染`arm_complete`；
+- runner只允许固定解释器、`seed=1234`、`PYTHONDONTWRITEBYTECODE=1`、
+  `PYTHONHASHSEED=0`、`CUBLAS_WORKSPACE_CONFIG=:4096:8`，并强制deterministic algorithms、
+  cuDNN deterministic、TF32关闭及状态回读；
+- runner/core/selector/prompt SHA256分别为：
+  - `b9083a6dd4923e0eec6c1b4f29e67813fc352b937d9a46363ff9b8583f7d836a`；
+  - `15ad21a7a79dc59819cee61a2971bf334f2683bb1ea77d71e0d6b155c3020311`；
+  - `4b10a9899c203e51e67fed9dbe119d8f52150c60b8e41ffef9c68fc366bf78a9`；
+  - `1fb55c6ca451e132084293c9c583cbcab4ee3e45b993a6f7fbaf672dd99e60bd`；
+- 本地工作区`.venv`下重新执行`asset_oracle.py --self-test`与`static_contract.py`，分别得到
+  `EXP415_ASSET_ORACLE_SELF_TEST=PASS`和`EXP415_STATIC_CONTRACT_V3=PASS`；`git diff --check`通过；
+- 三路最终只读复审分别覆盖确定性/provenance、机制/变量旧同构、固定分母/统计/schema，全部返回：
+  `PASS / 0B / 0H`，其中机制路额外为`0 variable-confusion / 0 old-isomorphism`；
+- 启动前第一次远端只读门：formal HEAD=`d1c9f7e603bae1f38e3456ae80ce8859ca0dfc3b`，
+  tracked/index/full=`0/0/0`，oracle namespace=`ABSENT`，4090=`2 MiB/0%/0 CUDA PID`；
+  该HEAD尚未包含最终runner，下一步仅允许显式同步并提交本轮目标文件，再执行第二次preseal门。
+
+当前=`FINAL RUNNER REVIEW PASS / FORMAL SYNC NEXT / ORACLE NO-START / E120 NO-START`。

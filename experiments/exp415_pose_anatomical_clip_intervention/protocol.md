@@ -56,6 +56,22 @@
 7. 冻结source/prompt/scorer/prototype/caliper/schema/checkpoint全部SHA；
 8. 才创建oracle once-only started seal。
 
+本轮最终冻结源：
+
+- runner：
+  `b9083a6dd4923e0eec6c1b4f29e67813fc352b937d9a46363ff9b8583f7d836a`；
+- core：
+  `15ad21a7a79dc59819cee61a2971bf334f2683bb1ea77d71e0d6b155c3020311`；
+- selector：
+  `4b10a9899c203e51e67fed9dbe119d8f52150c60b8e41ffef9c68fc366bf78a9`；
+- prompt：
+  `1fb55c6ca451e132084293c9c583cbcab4ee3e45b993a6f7fbaf672dd99e60bd`。
+
+正式命令必须同时显式传入最终formal HEAD与以上四个SHA，并设置
+`PYTHONDONTWRITEBYTECODE=1`、`PYTHONHASHSEED=0`、`CUBLAS_WORKSPACE_CONFIG=:4096:8`；
+解释器必须使用固定路径并带`-B`。runner在创建once-only namespace之前和写入started seal之前各检查一次
+GPU无compute process。
+
 ## C. 唯一512 oracle
 
 - 一次执行完整512，不按中间rate早停；

@@ -175,6 +175,9 @@ blind-max Y保持四臂可比；另外独立检验C=1 selector颜色：
   失败都按不agreement，禁止complete-case；
 - 固定`(color_index+1) mod 10`的text-shuffle agreement至少比correct低10 percentage points。
 
+其中blind label只有在该mask的blind anatomy与coherent-color门均完成并通过时才有效；D0 identity-safe不进入
+颜色label agreement，仍只进入主Y。这样无法把一个没有形成独立解剖颜色事实的argmax标签计为agreement。
+
 该门不使用CLIP score，只检查CLIP输出标签是否与独立像素事实一致；不通过时只能称hard selector，asset NO-GO。
 
 ### 7. 强control
