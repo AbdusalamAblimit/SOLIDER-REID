@@ -219,6 +219,32 @@ def do_train(cfg,
                     alphas.max().item(), visibility.mean().item(),
                     coefficients.mean().item(), delta_rms.mean().item()))
 
+    def _pose_selective_ssm_log(current_model):
+        """Compact live numerical audit for exp377; empty otherwise."""
+        base_model = (current_model.module
+                      if hasattr(current_model, 'module') else current_model)
+        if not getattr(base_model, 'use_pose_selective_ssm', False):
+            return ''
+        stats = getattr(base_model, '_last_pose_selective_ssm_stats', {})
+        if not stats:
+            return ''
+
+        def scalar(name, default=0.0):
+            value = stats.get(name, default)
+            if torch.is_tensor(value):
+                return float(value.detach().float().cpu())
+            return float(value)
+
+        return (' | PoseSSM alpha={:.3e} gain={:.3e} '
+                'dt={:.3e}[{:.3e},{:.3e}] dA={:.3e} '
+                'pose(d/B/C)={:.3e}/{:.3e}/{:.3e} '
+                'state={:.3e} delta_ratio={:.3e}'.format(
+                    scalar('residual_scale'), scalar('pose_gain_mean'),
+                    scalar('dt_mean'), scalar('dt_p05'), scalar('dt_p95'),
+                    scalar('dA_mean'), scalar('pose_delta_rms'),
+                    scalar('pose_B_rms'), scalar('pose_C_rms'),
+                    scalar('state_rms'), scalar('output_delta_ratio')))
+
     def _compute_ltcs_loss(ltcs_head, global_feat, kp_feats, kp_weights, teacher_kp_feats, labels):
         feat_g = F.normalize(global_feat.detach(), dim=-1)
         kp_base = F.normalize(kp_feats.detach(), dim=-1)
@@ -1416,6 +1442,7 @@ def do_train(cfg,
                         if detail_str:
                             log_msg += f" | {detail_str}"
                         log_msg += _pose_hyper_lora_log(model)
+                        log_msg += _pose_selective_ssm_log(model)
                         logger.info(log_msg)
             else:
                 if (n_iter + 1) % log_period == 0:
@@ -1426,6 +1453,7 @@ def do_train(cfg,
                     if detail_str:
                         log_msg += f" | {detail_str}"
                     log_msg += _pose_hyper_lora_log(model)
+                    log_msg += _pose_selective_ssm_log(model)
                     logger.info(log_msg)
 
         end_time = time.time()

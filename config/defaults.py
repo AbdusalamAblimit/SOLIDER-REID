@@ -256,6 +256,18 @@ _C.MODEL.POSE_HYPER_LORA_HIDDEN = 32
 _C.MODEL.POSE_HYPER_LORA_RES_SCALE_INIT = 0.001
 _C.MODEL.POSE_HYPER_LORA_POSE_SOURCE = 'input'  # input | canonical | zero
 _C.MODEL.POSE_HYPER_LORA_FACTORIZATION = 'basis'  # basis | diagonal
+# Pose-conditioned selective SSM: RGB generates the base selective delta/B/C
+# parameters and local pose supplies bounded residuals.  The recurrent scan is
+# a pure-PyTorch reference implementation and is disabled on every legacy run.
+_C.MODEL.POSE_SELECTIVE_SSM = False
+_C.MODEL.POSE_SELECTIVE_SSM_INNER_DIM = 128
+_C.MODEL.POSE_SELECTIVE_SSM_STATE_DIM = 16
+_C.MODEL.POSE_SELECTIVE_SSM_POSE_HIDDEN = 32
+_C.MODEL.POSE_SELECTIVE_SSM_RES_SCALE_INIT = 0.01
+_C.MODEL.POSE_SELECTIVE_SSM_POSE_GAIN_INIT = 0.1
+_C.MODEL.POSE_SELECTIVE_SSM_POSE_SOURCE = 'input'  # input | canonical | zero
+_C.MODEL.POSE_SELECTIVE_SSM_BIDIRECTIONAL = True
+_C.MODEL.POSE_SELECTIVE_SSM_SCAN = 'serpentine'
 _C.MODEL.POSE_CLIP_ID_PROMPT = False      # CLIP-ReID-style learnable ID text prompts (CoOp) + i2t/t2i contrastive — the WORKING CLIP mechanism
 _C.MODEL.POSE_CLIP_ID_ARCH = 'ViT-L-14'
 _C.MODEL.POSE_CLIP_ID_PRETRAINED = 'openai'  # path to local open_clip safetensors on the training machine

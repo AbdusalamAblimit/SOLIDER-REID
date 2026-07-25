@@ -377,6 +377,53 @@ class PoseBackboneModel(build_transformer):
                      self.prsm_pose_source, self.prsm.bidirectional,
                      prsm_params))
 
+        # exp377: a true input-selective diagonal state-space block.  RGB
+        # produces the base delta/B/C terms; local pose contributes bounded
+        # residuals to those same selective parameters.  This is deliberately
+        # applied only once, after the final Swin stage and before GAP.
+        self.use_pose_selective_ssm = bool(getattr(
+            cfg.MODEL, 'POSE_SELECTIVE_SSM', False))
+        if self.use_pose_selective_ssm and self.use_prsm:
+            raise ValueError('POSE_SELECTIVE_SSM and POSE_PRSM are exclusive')
+        self.pose_selective_ssm_pose_source = str(getattr(
+            cfg.MODEL, 'POSE_SELECTIVE_SSM_POSE_SOURCE', 'input'))
+        if self.pose_selective_ssm_pose_source not in (
+                'input', 'canonical', 'zero'):
+            raise ValueError(
+                'POSE_SELECTIVE_SSM_POSE_SOURCE must be input, canonical, or zero')
+        if self.use_pose_selective_ssm:
+            from .modules.pose_selective_ssm import PoseSelectiveSSM
+            _pose_ssm_rng = torch.get_rng_state()
+            self.pose_selective_ssm = PoseSelectiveSSM(
+                feat_dim=self.in_planes,
+                inner_dim=int(getattr(
+                    cfg.MODEL, 'POSE_SELECTIVE_SSM_INNER_DIM', 128)),
+                state_dim=int(getattr(
+                    cfg.MODEL, 'POSE_SELECTIVE_SSM_STATE_DIM', 16)),
+                pose_hidden_dim=int(getattr(
+                    cfg.MODEL, 'POSE_SELECTIVE_SSM_POSE_HIDDEN', 32)),
+                residual_scale_init=float(getattr(
+                    cfg.MODEL, 'POSE_SELECTIVE_SSM_RES_SCALE_INIT', 0.01)),
+                pose_gain_init=float(getattr(
+                    cfg.MODEL, 'POSE_SELECTIVE_SSM_POSE_GAIN_INIT', 0.1)),
+                bidirectional=bool(getattr(
+                    cfg.MODEL, 'POSE_SELECTIVE_SSM_BIDIRECTIONAL', True)),
+                scan_order=str(getattr(
+                    cfg.MODEL, 'POSE_SELECTIVE_SSM_SCAN', 'serpentine')),
+            )
+            torch.set_rng_state(_pose_ssm_rng)
+            pose_ssm_params = sum(
+                p.numel() for p in self.pose_selective_ssm.parameters())
+            print('[PoseSelectiveSSM] enabled: inner=%d, state=%d, '
+                  'source=%s, bidirectional=%s, scan=%s, params=%d'
+                  % (self.pose_selective_ssm.inner_dim,
+                     self.pose_selective_ssm.state_dim,
+                     self.pose_selective_ssm_pose_source,
+                     self.pose_selective_ssm.bidirectional,
+                     self.pose_selective_ssm.scan_order,
+                     pose_ssm_params))
+        self._last_pose_selective_ssm_stats = {}
+
         # CLIP-ReID-style learnable ID prompts (the WORKING CLIP mechanism, vs dead fixed part text)
         self.use_clip_id_prompt = getattr(cfg.MODEL, 'POSE_CLIP_ID_PROMPT', False)
         if self.use_clip_id_prompt:
@@ -720,6 +767,21 @@ class PoseBackboneModel(build_transformer):
                     else torch.zeros_like(scene_heatmaps)
             featmap, self._last_prsm_stats = self.prsm(
                 featmap, prsm_heatmaps)
+            outs[-1] = featmap
+
+        if getattr(self, 'use_pose_selective_ssm', False):
+            pose_ssm_heatmaps = scene_heatmaps
+            if self.pose_selective_ssm_pose_source == 'canonical':
+                pose_ssm_heatmaps = self._canonical_heatmap(
+                    featmap.shape[0], featmap.device)
+            elif self.pose_selective_ssm_pose_source == 'zero':
+                pose_ssm_heatmaps = None if scene_heatmaps is None \
+                    else torch.zeros_like(scene_heatmaps)
+            elif pose_ssm_heatmaps is None:
+                raise ValueError(
+                    'instance-pose selective SSM requires pose heatmaps')
+            featmap, self._last_pose_selective_ssm_stats = (
+                self.pose_selective_ssm(featmap, pose_ssm_heatmaps))
             outs[-1] = featmap
 
         # Standard GAP
