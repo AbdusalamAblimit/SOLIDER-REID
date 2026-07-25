@@ -181,9 +181,100 @@ class PoseBackboneModel(build_transformer):
                 pose_mask_temp=float(getattr(cfg.MODEL, 'POSE_LGPA_POSE_TEMP', 1.0)),
             )
             self._lgpa_detach = getattr(cfg.MODEL, 'POSE_LGPA_DETACH', False)
+            self._lgpa_no_pose = getattr(cfg.MODEL, 'POSE_LGPA_NO_POSE', False)
+            self._lgpa_fixed_bands = getattr(cfg.MODEL, 'POSE_LGPA_FIXED_BANDS', False)
+            self._canon_hm_cache = None  # (1,17,H,W) canonical pedestrian pose, built lazily
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'equal_concat')
             if self._lgpa_detach:
                 print('[LGPA] Running on DETACHED features (no gradient to backbone)')
+            if self._lgpa_no_pose:
+                print('[LGPA] NO-POSE ablation: heatmaps=None -> no pose-bias/assign/visibility (pure CLIP-text parts)')
+            if self._lgpa_fixed_bands:
+                print('[LGPA] FIXED-BANDS: per-image pose replaced by a FIXED canonical pedestrian pose '
+                      '(fixed CLIP text + fixed anatomical prior, NO per-image pose)')
+            if getattr(cfg.MODEL, 'POSE_LGPA_RANDOM_TEXT', False):
+                # Attribution ablation: replace CLIP text prototypes with FIXED random unit vectors.
+                # If part_only(random) ~= part_only(CLIP), the CLIP semantics contribute ~0 (shell).
+                _g = torch.Generator().manual_seed(42)
+                _rand = F.normalize(torch.randn(
+                    self.clip_part_head.num_labels, self.clip_part_head.clip_dim,
+                    generator=_g), p=2, dim=-1)
+                with torch.no_grad():
+                    self.clip_part_head.clip_text_features.copy_(_rand.float())
+                print('[LGPA] RANDOM-TEXT ablation: CLIP text prototypes -> FIXED random vectors (seed 42)')
+
+        # CLIP-ReID-style learnable ID prompts (the WORKING CLIP mechanism, vs dead fixed part text)
+        self.use_clip_id_prompt = getattr(cfg.MODEL, 'POSE_CLIP_ID_PROMPT', False)
+        if self.use_clip_id_prompt:
+            from .modules.clip_id_prompt import CLIPIDPromptLearner
+            self.clip_id_prompt = CLIPIDPromptLearner(
+                num_classes,
+                clip_arch=getattr(cfg.MODEL, 'POSE_CLIP_ID_ARCH', 'ViT-L-14'),
+                clip_pretrained=getattr(cfg.MODEL, 'POSE_CLIP_ID_PRETRAINED', 'openai'),
+                pose_cond=getattr(cfg.MODEL, 'POSE_CLIP_ID_POSE_PROMPT', False))
+            self.clip_id_proj = nn.Linear(self.in_planes, self.clip_id_prompt.clip_dim)
+            self.clip_id_temp = float(getattr(cfg.MODEL, 'POSE_CLIP_ID_TEMP', 0.07))
+            print(f'[CLIP-ID-Prompt] enabled: proj {self.in_planes}->{self.clip_id_prompt.clip_dim}, temp {self.clip_id_temp}')
+            # Option A: pose-guided image feature for the i2t/t2i alignment (pose guides WHAT CLIP aligns)
+            self.use_clip_id_pose_guided = getattr(cfg.MODEL, 'POSE_CLIP_ID_POSE_GUIDED', False)
+            if self.use_clip_id_pose_guided:
+                from .modules.clip_id_prompt import PoseGuidedPool
+                _rng = torch.get_rng_state()   # preserve RNG so downstream module inits match exp341
+                self.pose_guided_pool = PoseGuidedPool(
+                    self.in_planes, float(getattr(cfg.MODEL, 'POSE_CLIP_ID_POSE_TEMP', 1.0)))
+                torch.set_rng_state(_rng)
+                print('[CLIP-ID-Prompt] POSE-GUIDED (A): i2t/t2i aligns a pose-bias pooled feature, not raw global')
+            # Option C: K pose-localized part features, each aligned to the ID prototype
+            self.use_clip_id_part_guided = getattr(cfg.MODEL, 'POSE_CLIP_ID_PART_GUIDED', False)
+            if self.use_clip_id_part_guided:
+                from .modules.clip_id_prompt import PoseGuidedPartPool
+                _rng = torch.get_rng_state()   # preserve RNG so downstream module inits match exp341
+                self.pose_guided_part_pool = PoseGuidedPartPool(
+                    self.in_planes, float(getattr(cfg.MODEL, 'POSE_CLIP_ID_POSE_TEMP', 1.0)))
+                torch.set_rng_state(_rng)
+                print('[CLIP-ID-Prompt] PART-GUIDED (C): K pose-localized part features aligned to ID prototype')
+            # exp347: PARAMETER-FREE de-occluded pooling for the alignment (no params to absorb)
+            self.use_clip_id_noparam_pool = getattr(cfg.MODEL, 'POSE_CLIP_ID_NOPARAM_POOL', False)
+            if self.use_clip_id_noparam_pool:
+                from .modules.clip_id_prompt import PoseWeightedPool
+                self.pose_weighted_pool = PoseWeightedPool(float(getattr(cfg.MODEL, 'POSE_CLIP_ID_POSE_TEMP', 4.0)))
+                print('[CLIP-ID-Prompt] NOPARAM-POOL (exp347): align DE-OCCLUDED global (param-free) to pure-ID prototype')
+                self.use_clip_id_occ_repel = getattr(cfg.MODEL, 'POSE_CLIP_ID_OCC_REPEL', False)
+                self.clip_id_occ_repel_w = float(getattr(cfg.MODEL, 'POSE_CLIP_ID_OCC_REPEL_W', 0.5))
+                if self.use_clip_id_occ_repel:
+                    print('[CLIP-ID-Prompt] OCC-REPEL (exp348): push occluder feature away from ID prototype, w=%.2f' % self.clip_id_occ_repel_w)
+
+            # exp355 PGPD: pose-guided prompt-prototype dark-knowledge distillation (training-only).
+            # NOTE: indent 12 — inside `if self.use_clip_id_prompt:`, OUTSIDE the noparam-pool `if`,
+            # so it activates for any CLIP-ID config (exp355 does NOT use noparam-pool).
+            self.use_pgpd = getattr(cfg.MODEL, 'POSE_PGPD', False)
+            if self.use_pgpd:
+                assert not getattr(cfg.MODEL, 'POSE_CLIP_ID_POSE_PROMPT', False), \
+                    'PGPD assumes per-label-identical ID prototypes (uniq_protos[inv] scatter); ' \
+                    'incompatible with POSE_CLIP_ID_POSE_PROMPT (pose-conditioned prompts).'
+                self.pgpd_w = float(getattr(cfg.MODEL, 'POSE_PGPD_W', 0.5))
+                self.pgpd_tau = float(getattr(cfg.MODEL, 'POSE_PGPD_TAU', 0.1))
+                self.pgpd_random_teacher = getattr(cfg.MODEL, 'POSE_PGPD_RANDOM_TEACHER', False)
+                print('[CLIP-ID-Prompt] PGPD (exp355): pose-guided prompt dark-distill, w=%.2f tau=%.2f random_teacher=%s'
+                      % (self.pgpd_w, self.pgpd_tau, self.pgpd_random_teacher))
+
+            # exp356 PC-MSC: pose-conditioned masked semantic completion (training-only)
+            self.use_pcmsc = getattr(cfg.MODEL, 'POSE_PCMSC', False)
+            if self.use_pcmsc:
+                from .modules.clip_id_prompt import CLIPVisualEncoder
+                _rng = torch.get_rng_state()   # preserve RNG so backbone/bottleneck inits match exp341
+                self.pcmsc_visual = CLIPVisualEncoder(
+                    clip_arch=getattr(cfg.MODEL, 'POSE_CLIP_ID_ARCH', 'ViT-L-14'),
+                    clip_pretrained=getattr(cfg.MODEL, 'POSE_CLIP_ID_PRETRAINED', 'openai'))
+                self.pcmsc_w = float(getattr(cfg.MODEL, 'POSE_PCMSC_W', 1.0))
+                self.pcmsc_random_mask = getattr(cfg.MODEL, 'POSE_PCMSC_RANDOM_MASK', False)
+                self.pcmsc_mask_token = nn.Parameter(torch.zeros(self.in_planes))
+                self.pcmsc_query = nn.Parameter(torch.randn(3, self.in_planes) * 0.02)  # per-region query
+                self.pcmsc_decoder = nn.MultiheadAttention(self.in_planes, num_heads=8, batch_first=True)
+                self.pcmsc_proj = nn.Linear(self.in_planes, self.pcmsc_visual.clip_dim)
+                torch.set_rng_state(_rng)
+                print('[PC-MSC] enabled (exp356): w=%.2f random_mask=%s, decoder %d->%d'
+                      % (self.pcmsc_w, self.pcmsc_random_mask, self.in_planes, self.pcmsc_visual.clip_dim))
 
         # PPA: Pose-Prompted Part-Assignment Head (replaces GCN)
         self.use_ppa = getattr(cfg.MODEL, 'POSE_PPA', False)
@@ -234,6 +325,10 @@ class PoseBackboneModel(build_transformer):
                 multi_scale_kp=getattr(cfg.MODEL, 'POSE_MULTI_SCALE_KP', False),
                 multi_scale_s2_dim=self.base.num_features[-2] if len(self.base.num_features) >= 2 else self.in_planes,
                 per_part=getattr(cfg.MODEL, 'POSE_GCN_PER_PART', False),
+                vcnorm=(getattr(cfg.MODEL, 'POSE_VCNORM', False)
+                        and getattr(cfg.MODEL, 'POSE_VCNORM_MODULE', True)),
+                vcnorm_hidden=int(getattr(cfg.MODEL, 'POSE_VCNORM_HIDDEN', 64)),
+                vcnorm_gain_scale=float(getattr(cfg.MODEL, 'POSE_VCNORM_GAIN_SCALE', 1.0)),
             )
             self.pose_test_feat = getattr(cfg.MODEL, 'POSE_TEST_FEAT', 'concat_scaled')
             if keypoint_pool_only:
@@ -243,6 +338,19 @@ class PoseBackboneModel(build_transformer):
                 print(f'[PSG+GCN] Skeleton GCN head enabled: {gcn_layers} layers, '
                       f'hidden={gcn_hidden}, test_feat={self.pose_test_feat}, '
                       f'kp_weight={kp_weight_mode}')
+
+        # VC-Norm: Visibility-Conditioned Normalization on GCN per-keypoint tokens.
+        # Treats occlusion as a domain factor (probe: occluded tokens shift their
+        # per-channel norm statistics). The VCN affine module is OWNED BY the
+        # skeleton_head (created above when POSE_VCNORM_MODULE=True) and applied
+        # post-GCN/pre-pool, so it flows into both the pooled ReID feature and the
+        # exported kp_feats in BOTH train and test forward paths (symmetry).
+        # Zero-init -> identity at start, never breaks baseline reproduction. The
+        # batch-level statistic-alignment loss lives in processor.py.
+        self.use_vcnorm = getattr(cfg.MODEL, 'POSE_VCNORM', False)
+        if self.use_vcnorm and not self.use_skeleton_gcn:
+            raise ValueError('POSE_VCNORM requires POSE_SKELETON_GCN=True '
+                             '(VC-Norm operates on GCN per-keypoint tokens)')
 
         # PNIS: Pose-Normalized Identity Space
         self.use_pose_normalize = getattr(cfg.MODEL, 'POSE_NORMALIZE', False)
@@ -455,6 +563,139 @@ class PoseBackboneModel(build_transformer):
         else:
             return x, hw_shape, x, hw_shape
 
+    def _canonical_heatmap(self, B, device):
+        """Fixed canonical upright-pedestrian COCO-17 pose heatmap (NO per-image info).
+        FIXED-BANDS mode feeds this in place of per-image pose, giving the CLIP-text part
+        queries a fixed anatomical localization prior (head top -> ankles bottom)."""
+        if self._canon_hm_cache is None:
+            H, W = 96, 32
+            KP = [(0.50, 0.06), (0.46, 0.05), (0.54, 0.05), (0.42, 0.06), (0.58, 0.06),
+                  (0.36, 0.18), (0.64, 0.18), (0.32, 0.32), (0.68, 0.32), (0.30, 0.45), (0.70, 0.45),
+                  (0.40, 0.50), (0.60, 0.50), (0.41, 0.72), (0.59, 0.72), (0.42, 0.95), (0.58, 0.95)]
+            ys = torch.arange(H, dtype=torch.float32).view(H, 1)
+            xs = torch.arange(W, dtype=torch.float32).view(1, W)
+            hm = torch.zeros(1, 17, H, W)
+            sx, sy = 0.12 * W, 0.05 * H
+            for k, (nx, ny) in enumerate(KP):
+                cx, cy = nx * W, ny * H
+                hm[0, k] = torch.exp(-(((xs - cx) ** 2) / (2 * sx ** 2) + ((ys - cy) ** 2) / (2 * sy ** 2)))
+            self._canon_hm_cache = hm
+        return self._canon_hm_cache.to(device).expand(B, 17, -1, -1).contiguous()
+
+    def _pgpd_loss(self, img_proj, txt_proto, label, scene_heatmaps, target_heatmaps=None):
+        """exp355 PGPD: pose-guided prompt-prototype dark-knowledge distillation.
+        Pose selects a more-complete same-ID teacher within the batch; distill the
+        teacher's soft distribution over the batch's OTHER-ID prototypes (hard-negatives)
+        to the (occluded) student. Training-only: no test-time pose, no new ID pathway in
+        the CLIP alignment, descriptor unchanged. Returns a scalar loss tensor.
+        target_heatmaps (target person only) is used for completeness so a distractor in a
+        multi-person scene cannot inflate it (Codex Medium)."""
+        import torch.nn.functional as F
+        B = img_proj.shape[0]
+        device = img_proj.device
+        # unique ID prototypes within the batch. Same-ID images share an identical prototype
+        # because exp355 keeps POSE_CLIP_ID_POSE_PROMPT off (prototype depends only on label),
+        # so scattering by inverse index is consistent.
+        uniq_labels, inv = torch.unique(label, return_inverse=True)   # inv: (B,) in [0,P)
+        P = uniq_labels.shape[0]
+        if P < 3:
+            return img_proj.new_zeros(())          # need >=2 hard-negatives for a soft target
+        uniq_protos = img_proj.new_zeros(P, txt_proto.shape[1], dtype=torch.float32)  # fp32: match txt_proto.float() (AMP index_put dtype)
+        uniq_protos[inv] = txt_proto.float()
+        # image-to-ID-prototype logits (fp32 for softmax stability under AMP)
+        img_n = F.normalize(img_proj.float(), dim=1)
+        proto_n = F.normalize(uniq_protos, dim=1)
+        logits = img_n @ proto_n.t() / self.pgpd_tau           # (B, P)
+        # TARGET pose completeness per image (sum of per-keypoint peak activation), detached.
+        # Use target_heatmaps (target person only), NOT scene_heatmaps (max-merged over all
+        # persons) — else a distractor can inflate completeness while the target is occluded,
+        # driving teacher selection by non-target pose (Codex Medium). Fall back to scene only
+        # if target is unavailable.
+        comp_hm = target_heatmaps if target_heatmaps is not None else scene_heatmaps
+        comp = comp_hm.float().amax(dim=(2, 3)).sum(dim=1).detach()   # (B,)
+        same = label.view(B, 1) == label.view(1, B)            # (B, B)
+        not_self = ~torch.eye(B, dtype=torch.bool, device=device)
+        if self.pgpd_random_teacher:
+            cand = same & not_self                             # control: any same-ID teacher
+            score = torch.rand(B, B, device=device)            # random pick among candidates
+        else:
+            cand = same & (comp.view(1, B) > comp.view(B, 1)) & not_self  # teacher strictly more complete
+            score = comp.view(1, B).expand(B, B)               # pick the most-complete teacher
+        score = torch.where(cand, score, score.new_full((B, B), -1e9))
+        teacher_idx = score.argmax(dim=1)                      # (B,)
+        has_teacher = cand.any(dim=1)                          # (B,)
+        # hard-negative mask: drop each student's true-ID column (= inv). The teacher shares the
+        # same label, so the same column is its true ID too.
+        neg_mask = torch.ones(B, P, dtype=torch.bool, device=device)
+        neg_mask[torch.arange(B, device=device), inv] = False
+        student_logp = F.log_softmax(logits.masked_fill(~neg_mask, float('-inf')), dim=1)   # (B,P)
+        teacher_p = F.softmax(logits[teacher_idx].masked_fill(~neg_mask, float('-inf')), dim=1).detach()
+        # cross-entropy KD over hard-negatives; zero the masked column to avoid 0*(-inf)=NaN
+        prod = (teacher_p * student_logp).masked_fill(~neg_mask, 0.0)
+        dark = -prod.sum(dim=1)                                # (B,)
+        dark = torch.nan_to_num(dark, nan=0.0, posinf=0.0, neginf=0.0)
+        # weight: how much more complete the teacher is; 0 for students with no teacher
+        if self.pgpd_random_teacher:
+            w = has_teacher.float()
+        else:
+            w = (comp[teacher_idx] - comp).clamp(min=0.0) * has_teacher.float()
+        pgpd = (w * dark).sum() / w.sum().clamp(min=1e-6)
+        if not getattr(self, '_pgpd_logged', False):
+            self._pgpd_logged = True
+            print('[PGPD] first-call diag: teacher coverage %d/%d, mean_w %.3f, mean_dark %.3f, P %d'
+                  % (int(has_teacher.sum()), B, float(w.mean()), float(dark.mean()), P))
+        return self.pgpd_w * pgpd
+
+    def _pcmsc_loss(self, featmap, img, scene_heatmaps):
+        """exp356 PC-MSC: pose-masked CLIP-semantic completion. Mask a (visible) region's
+        backbone tokens; reconstruct that region's frozen CLIP-visual feature from the visible
+        context. Training-only regularizer; the descriptor (global) is computed on the UNMASKED
+        featmap elsewhere. Returns a scalar loss tensor."""
+        import torch.nn.functional as F
+        B, C, H, W = featmap.shape
+        device = featmap.device
+        target = self.pcmsc_visual.part_targets(img)            # (B,3,clip_dim) frozen, fp32, detached
+        # region of each token by row (5/6/5 split of H ~ CLIP 16-grid head/torso/legs thirds)
+        h1, h2 = round(5.0 / 16 * H), round(11.0 / 16 * H)
+        h1 = max(1, min(h1, H - 2)); h2 = max(h1 + 1, min(h2, H - 1))
+        rows = torch.arange(H, device=device).repeat_interleave(W)       # (HW,)
+        region_of_token = (rows >= h1).long() + (rows >= h2).long()      # (HW,) in {0,1,2}
+        # per-region pose visibility
+        pose = F.interpolate(scene_heatmaps.float(), size=(H, W), mode='bilinear', align_corners=False)
+        vis_map = pose.amax(dim=1).flatten(1)                            # (B, HW)
+        reg_vis = torch.stack([vis_map[:, region_of_token == r].mean(1) for r in range(3)], dim=1)  # (B,3)
+        # select region to mask: visibility-weighted (pose) or uniform (control)
+        if self.pcmsc_random_mask:
+            sel = torch.randint(0, 3, (B,), device=device)
+        else:
+            sel = torch.multinomial(reg_vis.clamp(min=1e-6).softmax(dim=1), 1).squeeze(1)  # (B,)
+        # mask the selected region's tokens with the learnable mask token
+        tokens = featmap.flatten(2).transpose(1, 2)                      # (B, HW, C)
+        mask = (region_of_token.unsqueeze(0) == sel.unsqueeze(1))        # (B, HW) bool
+        mt = self.pcmsc_mask_token.view(1, 1, C).to(tokens.dtype)
+        tok_masked = torch.where(mask.unsqueeze(-1), mt, tokens)
+        # decoder: the selected region's query reconstructs from the (masked) token set
+        q = self.pcmsc_query[sel].unsqueeze(1).to(tokens.dtype)          # (B,1,C)
+        R = self.pcmsc_decoder(q, tok_masked, tok_masked)[0].squeeze(1)  # (B, C)
+        R = F.normalize(self.pcmsc_proj(R).float(), dim=-1)             # (B, clip_dim) fp32
+        tgt = target[torch.arange(B, device=device), sel]               # (B, clip_dim)
+        cos = (R * tgt).sum(-1)
+        loss = (1.0 - cos).mean()
+        if not getattr(self, '_pcmsc_logged', False):
+            self._pcmsc_logged = True
+            print('[PC-MSC] first-call diag: sel-region hist %s, mean cos %.3f'
+                  % (torch.bincount(sel, minlength=3).tolist(), float(cos.mean())))
+        return self.pcmsc_w * loss
+
+    def _lgpa_heatmap(self, scene_heatmaps, B, device):
+        """Select the heatmap fed to the LGPA head: None (no-pose), fixed canonical
+        (fixed-bands), or per-image scene heatmaps (default)."""
+        if getattr(self, '_lgpa_no_pose', False):
+            return None
+        if getattr(self, '_lgpa_fixed_bands', False):
+            return self._canonical_heatmap(B, device)
+        return scene_heatmaps
+
     def forward(self, x, label=None, cam_label=None, view_label=None,
                 pose_dict=None):
         # Prepare pose
@@ -492,6 +733,54 @@ class PoseBackboneModel(build_transformer):
                 cls_score = self.classifier(feat_cls, label)
             else:
                 cls_score = self.classifier(feat_cls)
+
+            # CLIP-ReID ID-prompt contrastive (the WORKING CLIP mechanism): align global feat
+            # to per-ID learnable text prototypes via SupCon i2t/t2i.
+            clip_id_loss = None
+            if getattr(self, 'use_clip_id_prompt', False) and label is not None:
+                from .modules.clip_id_prompt import supcon_i2t
+                # Option B: per-image pose conditions the prompt (pose_vec None unless pose_cond)
+                pose_vec = scene_heatmaps.float().mean(dim=(2, 3)) \
+                    if (getattr(self.clip_id_prompt, 'pose_cond', False) and scene_heatmaps is not None) else None
+                txt_proto = self.clip_id_prompt(label, pose_vec)  # (B, clip_dim)
+                t = self.clip_id_temp
+                if getattr(self, 'use_clip_id_part_guided', False) and scene_heatmaps is not None:
+                    # Option C: K pose-localized part features, each aligned to the ID prototype
+                    part_feats = self.pose_guided_part_pool(featmaps[-1], scene_heatmaps)  # (B, nP, C)
+                    clip_id_loss = 0.0
+                    for kp in range(part_feats.shape[1]):
+                        ipk = self.clip_id_proj(part_feats[:, kp])
+                        clip_id_loss = clip_id_loss + supcon_i2t(ipk, txt_proto, label, t) \
+                            + supcon_i2t(txt_proto, ipk, label, t)
+                    clip_id_loss = clip_id_loss / part_feats.shape[1]
+                else:
+                    # exp347 (param-free de-occluded) / Option A (pose-guided pooled) / exp341 (raw global)
+                    if getattr(self, 'use_clip_id_noparam_pool', False) and scene_heatmaps is not None:
+                        feat_for_clip = self.pose_weighted_pool(featmaps[-1], scene_heatmaps)
+                    elif getattr(self, 'use_clip_id_pose_guided', False) and scene_heatmaps is not None:
+                        feat_for_clip = self.pose_guided_pool(featmaps[-1], scene_heatmaps)
+                    else:
+                        feat_for_clip = global_feat
+                    img_proj = self.clip_id_proj(feat_for_clip)   # (B, clip_dim)
+                    clip_id_loss = supcon_i2t(img_proj, txt_proto, label, t) \
+                        + supcon_i2t(txt_proto, img_proj, label, t)
+                    # exp355 PGPD: pose selects a more-complete same-ID teacher; distill its
+                    # soft distribution over the batch's other-ID prototypes to this student.
+                    if getattr(self, 'use_pgpd', False) and scene_heatmaps is not None:
+                        clip_id_loss = clip_id_loss + self._pgpd_loss(img_proj, txt_proto, label, scene_heatmaps, target_heatmaps)
+                    # exp348: occluder repulsion — push the occluder-region (low-visibility) feature
+                    # away from the ID prototype (penalize only positive similarity → make it neutral).
+                    if getattr(self, 'use_clip_id_occ_repel', False) and scene_heatmaps is not None:
+                        occ_feat = self.pose_weighted_pool(featmaps[-1], scene_heatmaps, invert=True)
+                        occ_proj = torch.nn.functional.normalize(self.clip_id_proj(occ_feat), dim=1)
+                        tp = torch.nn.functional.normalize(txt_proto, dim=1)
+                        repel = (occ_proj * tp).sum(1).clamp(min=0).mean()
+                        clip_id_loss = clip_id_loss + self.clip_id_occ_repel_w * repel
+
+            # exp356 PC-MSC: pose-masked CLIP-semantic completion (training-only regularizer)
+            if getattr(self, 'use_pcmsc', False) and scene_heatmaps is not None and self.training:
+                pcmsc = self._pcmsc_loss(featmaps[-1], x, scene_heatmaps)
+                clip_id_loss = pcmsc if clip_id_loss is None else clip_id_loss + pcmsc
 
             # VCSR: Visibility-Conditional Semantic Routing (detached)
             if getattr(self, 'use_vcsr', False) and scene_heatmaps is not None:
@@ -579,12 +868,15 @@ class PoseBackboneModel(build_transformer):
                     kp_data = {'str_stats': str_stats}
                     return [cls_score, str_cls], [global_feat, str_feat], featmaps, None, kp_data
 
-            elif getattr(self, 'use_lgpa', False) and scene_heatmaps is not None:
+            elif getattr(self, 'use_lgpa', False) and (scene_heatmaps is not None or getattr(self, '_lgpa_fixed_bands', False)):
                 # LGPA: CLIP cross-attention part assignment
                 lgpa_input = featmaps[-1].detach() if getattr(self, '_lgpa_detach', False) else featmaps[-1]
+                lgpa_hm = self._lgpa_heatmap(scene_heatmaps, x.shape[0], x.device)
                 lgpa_cls_scores, lgpa_feats, lgpa_data = self.clip_part_head(
-                    lgpa_input, scene_heatmaps, return_cls=True)
+                    lgpa_input, lgpa_hm, return_cls=True)
                 kp_data = lgpa_data
+                if clip_id_loss is not None:
+                    kp_data['clip_id_loss'] = clip_id_loss   # carry CLIP-ID-prompt loss through LGPA path
 
                 # LGPA + GCN dual branch: also run GCN on detached features
                 if self.use_skeleton_gcn and pose_dict is not None:
@@ -596,6 +888,8 @@ class PoseBackboneModel(build_transformer):
                     if gcn_data and 'kp_feats' in gcn_data:
                         kp_data['gcn_kp_feats'] = gcn_data['kp_feats']
                         kp_data['gcn_kp_weights'] = gcn_data['kp_weights']
+                        if 'vcn_stats' in gcn_data:
+                            kp_data['vcn_stats'] = gcn_data['vcn_stats']
                     return ([cls_score] + lgpa_cls_scores + gcn_cls_scores,
                             [global_feat] + lgpa_feats + gcn_feats,
                             featmaps, None, kp_data)
@@ -755,6 +1049,8 @@ class PoseBackboneModel(build_transformer):
                 # Return lists -> triggers list-loss path (implicit 0.5x global)
                 return [cls_score] + gcn_cls_scores, [global_feat] + gcn_feats, featmaps, None, kp_data
 
+            if clip_id_loss is not None:
+                return cls_score, global_feat, featmaps, None, {'clip_id_loss': clip_id_loss}
             return cls_score, global_feat, featmaps, None
         else:
             if self.neck_feat == 'after':
@@ -774,10 +1070,11 @@ class PoseBackboneModel(build_transformer):
                 gcn_feats = vcsr_feats
 
             # LGPA test path — uses scene_heatmaps (same as PPA for fair comparison)
-            elif getattr(self, 'use_lgpa', False) and scene_heatmaps is not None and \
+            elif getattr(self, 'use_lgpa', False) and (scene_heatmaps is not None or getattr(self, '_lgpa_fixed_bands', False)) and \
                     getattr(self, 'pose_test_feat', 'global') != 'global':
+                lgpa_hm = self._lgpa_heatmap(scene_heatmaps, x.shape[0], x.device)
                 _, lgpa_feats, aux_data = self.clip_part_head(
-                    featmaps[-1], scene_heatmaps, return_cls=False)
+                    featmaps[-1], lgpa_hm, return_cls=False)
                 gcn_feats = lgpa_feats  # [pooled, part1..partK]
                 # LGPA + GCN dual: also get GCN features
                 if self.use_skeleton_gcn and pose_dict is not None:
@@ -891,6 +1188,10 @@ class PoseBackboneModel(build_transformer):
                     g_norm = F.normalize(test_feat, p=2, dim=1)
                     p_norm = [F.normalize(f, p=2, dim=1) for f in gcn_feats]
                     test_feat = torch.cat([g_norm] + p_norm, dim=1)
+                elif self.pose_test_feat == 'part_only':
+                    # Diagnostic: LGPA/part branch vectors ONLY (drop global), each L2-normed
+                    test_feat = torch.cat(
+                        [F.normalize(f, p=2, dim=1) for f in gcn_feats], dim=1)
                 elif self.pose_test_feat in ('cvk_only', 'cvk_hybrid', 'cvk_adaptive', 'cvk_residual', 'maxsim', 'maxsim_hybrid'):
                     test_feat = {
                         'mode': self.pose_test_feat,

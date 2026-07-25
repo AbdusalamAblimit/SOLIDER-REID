@@ -486,6 +486,24 @@ def do_train(cfg,
         if not getattr(cfg.MODEL, 'POSE_LOWER_BODY_OCC', False):
             logger.warning('[OA-SD/RD] WARNING: PLBOA is disabled. Teacher and student see near-identical images.')
 
+    # VC-Norm config guard (codex Medium-a): VCA is wired INSIDE the OA-SD branch
+    # (it consumes the EMA teacher's per-keypoint tokens). With POSE_VCNORM=True
+    # but POSE_OA_SD=False, the VCA block is never reached and alignment is
+    # silently skipped — a no-op that would masquerade as "VC-Norm ran". Fail
+    # loudly instead. VC-Norm also needs PLBOA to create the occluded-vs-clean
+    # asymmetry it aligns away (without it the occluded cohort is empty).
+    if getattr(cfg.MODEL, 'POSE_VCNORM', False):
+        assert getattr(cfg.MODEL, 'POSE_OA_SD', False), (
+            'POSE_VCNORM=True requires POSE_OA_SD=True: VCA consumes the OA-SD '
+            'EMA teacher per-keypoint tokens (teacher_kp_data). Enable OA-SD or '
+            'disable VC-Norm.')
+        if not getattr(cfg.MODEL, 'POSE_LOWER_BODY_OCC', False):
+            logger.warning(
+                '[VC-Norm] WARNING: PLBOA (POSE_LOWER_BODY_OCC) is disabled. The '
+                'occluded-vs-clean asymmetry VCA aligns away will be near-empty; '
+                'the occluded student cohort (s_occ & t_vis) collapses to ~0 and '
+                'VCA becomes a no-op (valid_k=0).')
+
     # PACI: Part Prototype Bank
     paci_enabled = getattr(cfg.MODEL, 'POSE_PACI', False)
     paci_bank = None
@@ -696,6 +714,13 @@ def do_train(cfg,
                         details[f'str_{k}'] = v
                     loss._loss_details = details
 
+                # VC-Norm: log VCN affine gain/shift magnitudes (collapse check)
+                if kp_data is not None and 'vcn_stats' in kp_data:
+                    details = getattr(loss, '_loss_details', {})
+                    for k, v in kp_data['vcn_stats'].items():
+                        details[k] = v
+                    loss._loss_details = details
+
                 # PNIS: log pose normalizer stats
                 if kp_data is not None and 'pn_stats' in kp_data:
                     details = getattr(loss, '_loss_details', {})
@@ -874,6 +899,33 @@ def do_train(cfg,
                             bt_pkd_loss = bt_pkd_loss.mean()
                             loss = loss + bt_pkd_weight * bt_pkd_loss
                             details['bt_pkd'] = bt_pkd_loss.item()
+                            loss._loss_details = details
+
+                    # VC-Norm: visibility-conditioned per-keypoint statistic alignment.
+                    # Align occluded-student GCN-token norm statistics to the clean
+                    # teacher's, collapsing the "occluded vs un-occluded" domain axis.
+                    # Operates on GCN tokens (gcn_kp_feats), which the probe measured.
+                    vcnorm_enabled = getattr(cfg.MODEL, 'POSE_VCNORM', False)
+                    vcnorm_warmup = int(getattr(cfg.MODEL, 'POSE_VCNORM_WARMUP', 20))
+                    if vcnorm_enabled and epoch > vcnorm_warmup \
+                            and kp_data is not None and teacher_kp_data is not None:
+                        s_kp = kp_data.get('gcn_kp_feats')
+                        s_sc = kp_data.get('gcn_kp_weights')
+                        t_kp = teacher_kp_data.get('gcn_kp_feats')
+                        t_sc = teacher_kp_data.get('gcn_kp_weights')
+                        if s_kp is not None and s_sc is not None \
+                                and t_kp is not None and t_sc is not None:
+                            from loss.vcnorm_loss import vcnorm_align_loss
+                            vcn_weight = float(getattr(cfg.MODEL, 'POSE_VCNORM_WEIGHT', 0.5))
+                            vcn_vis_thr = float(getattr(cfg.MODEL, 'POSE_VCNORM_VIS_THR', 0.3))
+                            vca_loss, vca_stats = vcnorm_align_loss(
+                                s_kp, t_kp, s_sc, t_sc, vis_thr=vcn_vis_thr)
+                            loss = loss + vcn_weight * vca_loss
+                            details['vca'] = vca_stats['vca_loss']
+                            details['vca_md'] = vca_stats['vca_mean_dist']
+                            details['vca_sd'] = vca_stats['vca_std_dist']
+                            details['vca_vk'] = vca_stats['vca_valid_k']
+                            details['vca_or'] = vca_stats['vca_occ_ratio']
                             loss._loss_details = details
 
                 # OA-RD: Occlusion-Asymmetric Relational Distillation
@@ -1241,6 +1293,13 @@ def do_train(cfg,
                         details['paci_pos'] = pos_sim[can_use].mean().item()
                         details['paci_neg'] = hard_neg_sim[can_use].mean().item()
                         loss._loss_details = details
+
+            if kp_data is not None and kp_data.get('clip_id_loss') is not None:
+                clip_id_w = float(getattr(cfg.MODEL, 'POSE_CLIP_ID_WEIGHT', 1.0))
+                details = getattr(loss, '_loss_details', {})
+                loss = loss + clip_id_w * kp_data['clip_id_loss']
+                details['clip_id'] = kp_data['clip_id_loss'].item()
+                loss._loss_details = details
 
             scaler.scale(loss).backward()
 

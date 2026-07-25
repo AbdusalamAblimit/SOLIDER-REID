@@ -25,4 +25,4 @@ pretrained/
 *.npz
 solider-logs/
 
-/viz_*
+/viz_*.git_token

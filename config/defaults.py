@@ -220,6 +220,32 @@ _C.MODEL.POSE_LGPA_NUM_HEADS = 8         # Cross-attention heads
 _C.MODEL.POSE_LGPA_POSE_TEMP = 1.0       # Pose mask temperature
 _C.MODEL.POSE_LGPA_ASSIGN_WEIGHT = 0.5   # Assignment supervision loss weight
 _C.MODEL.POSE_LGPA_DETACH = False         # Detach features before LGPA (no gradient to backbone)
+_C.MODEL.POSE_LGPA_NO_POSE = False        # Ablation: pass None heatmaps to LGPA (no pose-bias/assign/visibility) = pure CLIP-text parts
+_C.MODEL.POSE_LGPA_FIXED_BANDS = False    # Fixed-semantics: replace per-image pose with a FIXED canonical pedestrian pose (fixed CLIP text + fixed anatomical prior, no per-image pose)
+_C.MODEL.POSE_LGPA_RANDOM_TEXT = False     # Attribution ablation: replace CLIP text prototypes with FIXED random vectors (tests if CLIP semantics contribute vs pure structure)    # Fixed-semantics: replace per-image pose with a FIXED canonical pedestrian pose (fixed CLIP text + fixed anatomical prior, no per-image pose)
+_C.MODEL.POSE_CLIP_ID_PROMPT = False      # CLIP-ReID-style learnable ID text prompts (CoOp) + i2t/t2i contrastive — the WORKING CLIP mechanism
+_C.MODEL.POSE_CLIP_ID_ARCH = 'ViT-L-14'
+_C.MODEL.POSE_CLIP_ID_PRETRAINED = 'openai'  # path to local open_clip safetensors on the training machine
+_C.MODEL.POSE_CLIP_ID_TEMP = 0.07
+_C.MODEL.POSE_CLIP_ID_WEIGHT = 1.0
+_C.MODEL.POSE_CLIP_ID_POSE_GUIDED = False  # Option A: i2t/t2i aligns a pose-bias pooled feature (not raw global)
+_C.MODEL.POSE_CLIP_ID_POSE_TEMP = 1.0
+_C.MODEL.POSE_CLIP_ID_POSE_PROMPT = False  # Option B: per-image pose conditions the prompt context
+_C.MODEL.POSE_CLIP_ID_PART_GUIDED = False  # Option C: K pose-localized part features aligned to ID prototype
+_C.MODEL.POSE_CLIP_ID_NOPARAM_POOL = False  # exp347: param-free de-occluded pooling for alignment
+_C.MODEL.POSE_CLIP_ID_OCC_REPEL = False  # exp348: push occluder feat away from ID prototype
+_C.MODEL.POSE_CLIP_ID_OCC_REPEL_W = 0.5
+# exp355 PGPD: pose-guided prompt-prototype dark-knowledge distillation (training-only)
+_C.MODEL.POSE_PGPD = False           # pose selects a more-complete same-ID teacher; distill its
+                                     # soft distribution over batch other-ID prototypes (hard-negs)
+_C.MODEL.POSE_PGPD_W = 0.5           # lambda_dark
+_C.MODEL.POSE_PGPD_TAU = 0.1         # temperature for image-to-ID-prototype logits
+_C.MODEL.POSE_PGPD_RANDOM_TEACHER = False  # control: random same-ID teacher (ignore pose completeness)
+# exp356 PC-MSC: pose-conditioned masked semantic completion (training-only)
+_C.MODEL.POSE_PCMSC = False          # mask a visible part's backbone tokens, reconstruct that
+                                     # part's frozen-CLIP-visual semantic from the visible context
+_C.MODEL.POSE_PCMSC_W = 1.0          # completion loss weight
+_C.MODEL.POSE_PCMSC_RANDOM_MASK = False  # control: random region mask (ignore pose visibility)
 
 # VCSR: Visibility-Conditional Semantic Routing — dynamic part gating + set matching
 _C.MODEL.POSE_VCSR = False                # Enable VCSR (replaces LGPA / GCN)
@@ -309,6 +335,16 @@ _C.MODEL.POSE_LPCS_ST_UPDATE_THR = 0.7
 _C.MODEL.POSE_LPCS_ST_MOM = 0.9
 _C.MODEL.POSE_LPCS_ST_MIN_COUNT = 1
 _C.MODEL.POSE_LPCS_ST_UPDATE_STOP_EPOCH = -1
+
+# VC-Norm: 把遮挡当 domain factor，对 GCN per-keypoint token 做 visibility-conditioned
+# normalization 对齐（occluded student 统计 -> clean EMA teacher 统计）。复用 OA-SD 双前向。
+_C.MODEL.POSE_VCNORM = False              # 总开关（默认 OFF，必须复现 baseline）
+_C.MODEL.POSE_VCNORM_WEIGHT = 0.5         # 对齐 loss 权重
+_C.MODEL.POSE_VCNORM_WARMUP = 20          # warmup epoch 后才上对齐（前期统计不稳）
+_C.MODEL.POSE_VCNORM_VIS_THR = 0.3        # teacher keypoint 可见性阈值（低于则跳过）
+_C.MODEL.POSE_VCNORM_HIDDEN = 64          # VCN 条件 MLP 隐藏维
+_C.MODEL.POSE_VCNORM_GAIN_SCALE = 1.0     # VCN 仿射 gain/shift 的 tanh 幅度上限
+_C.MODEL.POSE_VCNORM_MODULE = True        # 是否插 VCN 仿射模块（False = 只用对齐 loss）
 
 # -----------------------------------------------------------------------------
 # INPUT
