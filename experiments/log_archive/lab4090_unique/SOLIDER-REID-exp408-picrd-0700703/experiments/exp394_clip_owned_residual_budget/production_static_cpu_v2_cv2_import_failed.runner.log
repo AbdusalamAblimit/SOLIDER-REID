@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/Users/abdslm/Desktop/SOLIDER-REID/experiments/exp394_clip_owned_residual_budget/production_static_cpu_contract.py", line 714, in <module>
+    main()
+  File "/Users/abdslm/Desktop/SOLIDER-REID/experiments/exp394_clip_owned_residual_budget/production_static_cpu_contract.py", line 674, in main
+    from model import tapf as current
+  File "/Users/abdslm/Desktop/SOLIDER-REID/model/__init__.py", line 1, in <module>
+    from .make_model import make_model
+  File "/Users/abdslm/Desktop/SOLIDER-REID/model/make_model.py", line 6, in <module>
+    from .backbones.swin_transformer import swin_base_patch4_window7_224, swin_small_patch4_window7_224, swin_tiny_patch4_window7_224
+  File "/Users/abdslm/Desktop/SOLIDER-REID/model/backbones/swin_transformer.py", line 13, in <module>
+    import cv2
+ModuleNotFoundError: No module named 'cv2'

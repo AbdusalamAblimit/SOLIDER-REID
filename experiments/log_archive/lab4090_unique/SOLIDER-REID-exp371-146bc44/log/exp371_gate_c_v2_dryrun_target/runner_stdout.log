@@ -1,0 +1,100 @@
+{
+  "status": "DRY_RUN_COMPLETE",
+  "metrics_computed": false,
+  "coverage_hard_gate": true,
+  "paired_canonical_present": false,
+  "paired_scene_present": false,
+  "metadata": {
+    "sample_count": 19871,
+    "allowed_query_gallery_same_pidcam_content_count": 1870,
+    "forbidden_duplicate_content_count": 0
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "eligible_query_ratio": 0.9615384615384616,
+      "eligible_pid_ratio": 0.9595375722543352,
+      "removal_reasons": {
+        "no_valid_positive_reference": 65,
+        "fewer_than_three_support_donors": 20
+      },
+      "selected_donor_count_min_max": [
+        3,
+        3
+      ],
+      "available_donor_count_min_max": [
+        3,
+        247
+      ]
+    },
+    {
+      "fold": 1,
+      "eligible_query_ratio": 0.9542986425339367,
+      "eligible_pid_ratio": 0.9556840077071291,
+      "removal_reasons": {
+        "no_valid_positive_reference": 86,
+        "fewer_than_three_support_donors": 15
+      },
+      "selected_donor_count_min_max": [
+        3,
+        3
+      ],
+      "available_donor_count_min_max": [
+        3,
+        248
+      ]
+    },
+    {
+      "fold": 2,
+      "eligible_query_ratio": 0.9402714932126697,
+      "eligible_pid_ratio": 0.953757225433526,
+      "removal_reasons": {
+        "fewer_than_three_support_donors": 19,
+        "no_valid_positive_reference": 113
+      },
+      "selected_donor_count_min_max": [
+        3,
+        3
+      ],
+      "available_donor_count_min_max": [
+        3,
+        253
+      ]
+    },
+    {
+      "fold": 3,
+      "eligible_query_ratio": 0.934841628959276,
+      "eligible_pid_ratio": 0.9460500963391136,
+      "removal_reasons": {
+        "no_valid_positive_reference": 127,
+        "fewer_than_three_support_donors": 17
+      },
+      "selected_donor_count_min_max": [
+        3,
+        3
+      ],
+      "available_donor_count_min_max": [
+        3,
+        246
+      ]
+    },
+    {
+      "fold": 4,
+      "eligible_query_ratio": 0.934841628959276,
+      "eligible_pid_ratio": 0.928709055876686,
+      "removal_reasons": {
+        "no_valid_positive_reference": 135,
+        "fewer_than_three_support_donors": 9
+      },
+      "selected_donor_count_min_max": [
+        3,
+        3
+      ],
+      "available_donor_count_min_max": [
+        3,
+        250
+      ]
+    }
+  ]
+}
+DRY_RUN_COMPLETE

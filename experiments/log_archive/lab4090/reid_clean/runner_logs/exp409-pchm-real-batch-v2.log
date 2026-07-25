@@ -1,0 +1,11 @@
+=> Occluded-Duke loaded
+using img_triplet sampler
+/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-exp409-pchm-d2cc18f-v1/model/backbones/swin_transformer.py:1179: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+{"backbone_nonzero_grad_tensors": 181, "batch": 64, "cache_sha256": "d502a0f03fe556284fd01259ed81143dcfb171855b9b2aebaa29e3b7a682fd36", "cache_source_head": "07170a22f1a6fbef2f0f140106e7350c223deb29", "control_index_change": {"clip_only": 0.859375, "pose_shuffle": 0.90625}, "d0_negative_index_change": 0.984375, "d0_positive_index_change": 0.578125, "first_successful_update": 5, "identities": 16, "instances_per_identity": 4, "loss": 8.010289192199707, "native_attempts": [{"attempt": 1, "native_overflow": true, "nonfinite_gradient_tensors": 150, "scale_after": 32768.0, "scale_before": 65536.0, "updated": false}, {"attempt": 2, "native_overflow": true, "nonfinite_gradient_tensors": 8, "scale_after": 16384.0, "scale_before": 32768.0, "updated": false}, {"attempt": 3, "native_overflow": true, "nonfinite_gradient_tensors": 3, "scale_after": 8192.0, "scale_before": 16384.0, "updated": false}, {"attempt": 4, "native_overflow": true, "nonfinite_gradient_tensors": 1, "scale_after": 4096.0, "scale_before": 8192.0, "updated": false}, {"attempt": 5, "native_overflow": false, "nonfinite_gradient_tensors": 0, "scale_after": 4096.0, "scale_before": 4096.0, "updated": true}], "negative_clip_similarity": 0.8714572191238403, "negative_pose_distance": 0.04163792356848717, "pose_loss": 0.8851131200790405, "positive_clip_similarity": 0.8617438673973083, "positive_pose_distance": 0.08732324838638306, "reid_loss": 7.921777725219727, "schema": "exp409-pchm-real-batch-v2", "stage3_nonzero_grad_tensors": 26, "status": "PASS", "updated_parameter": "base.stages.3.blocks.1.attn.w_msa.qkv.weight"}

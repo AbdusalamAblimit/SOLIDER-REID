@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/afr/SOLIDER-REID-exp371-146bc44/experiments/exp371_casd/frozen_support_oracle_v2.py", line 24, in <module>
+    import numpy as np
+ModuleNotFoundError: No module named 'numpy'

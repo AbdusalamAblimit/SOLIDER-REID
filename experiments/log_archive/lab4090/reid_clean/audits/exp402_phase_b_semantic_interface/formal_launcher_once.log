@@ -1,0 +1,42 @@
+{
+  "anomaly_counts": {
+    "amp_numeric_warning": 0,
+    "nan_or_inf": 0,
+    "nonfinite": 0,
+    "oom": 0,
+    "overflow": 0,
+    "runtime_error": 0,
+    "traceback": 0
+  },
+  "audit_exit_code": 0,
+  "audit_pid": 418044,
+  "decision": "CURRENT_SEMANTIC_INTERFACE_NO_GO",
+  "gates": {
+    "audit_exit_zero": true,
+    "audit_process_exited": true,
+    "gpu_compute_processes_zero": true,
+    "result_status_pass": true,
+    "runner_anomalies_zero": true
+  },
+  "gpu": {
+    "compute_pids": [],
+    "rows_memory_mib_utilization_percent": [
+      "2, 0"
+    ]
+  },
+  "mode": "FORMAL_FULL",
+  "paths": {
+    "audit_script": "/home/afr/reid-clean/audits/exp402_phase_b_semantic_interface/actual_counterfactual_audit_run2.py",
+    "core": "/home/afr/reid-clean/audits/exp402_phase_b_semantic_interface/counterfactual_core_run2.py",
+    "result": "/home/afr/reid-clean/audits/exp402_phase_b_semantic_interface/formal_result_once.json",
+    "runner": "/home/afr/reid-clean/audits/exp402_phase_b_semantic_interface/formal_runner_once.log"
+  },
+  "sha256": {
+    "audit_script": "f450c5e3801a61d20a7ba831d6cefb1ab1d9d5f5549824fc2fa55943059cc479",
+    "core": "6e9ac9cfc03d70606ee34f77af39accc6b66c89ee9974fee48ded1d6951dfb54",
+    "postflight_script": "b1e9e68602768e6cc1708c0d7be8b1454729eb8d310a431b9c94f9e7caf4aa92",
+    "result": "e52af8971f11a950e082bd0e5233e9a9679321fce8865f7e5999c52082642c4e",
+    "runner": "68df35d43a322815c759756c6f158353304abcfbcb1b36fbda209e0b774a37af"
+  },
+  "status": "PASS"
+}

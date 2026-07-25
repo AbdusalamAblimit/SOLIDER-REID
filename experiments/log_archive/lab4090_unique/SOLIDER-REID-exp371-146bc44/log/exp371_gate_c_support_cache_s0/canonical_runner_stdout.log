@@ -1,0 +1,35 @@
+/root/solider-venv/lib/python3.10/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-exp371-146bc44/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0, query_mode=clip_frozen, query_seed=42
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[LGPA] FIXED-BANDS: per-image pose replaced by a FIXED canonical pedestrian pose (fixed CLIP text + fixed anatomical prior, NO per-image pose)
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /home/afr/SOLIDER-REID/log/occluded_duke/sw_poseclip_s0/transformer_120.pth
+{
+  "val": {
+    "path": "/home/afr/SOLIDER-REID-exp371-146bc44/log/exp371_gate_c_support_cache_s0/val_canonical_support.pt",
+    "file_sha256": "4de51adf795ad21037250ba626a27a435105f951543480114920045ee13fdfc2",
+    "sample_count": 19871,
+    "tensor_sha256": {
+      "features": "61e86488d609068b16a55f1955ef99d206b641360ea0089ebc91b06609b14ca7",
+      "kp_feats": "70c9e71f726c5c903d2fe15e424459a1009b1b8f9276123d5be6eb47714144c3",
+      "relative_allocation": "cc532ec2478d51fe28349e91f1b93e6381a6efdf25c2d67e03201dfddad50af0",
+      "raw_pose_response": "8393eec6190fa54d53eb2f668d3f7e5ae58c7529fd08a69a7322b5aaf143ec7c",
+      "raw_response_relative_allocation": "5012fcd7e5345ef5ef766d5f3e7177827b611133d9c1318449d85fa88f184785",
+      "target_person_valid": "b5ae84cb2260b4deec90db82826fe0d984d952e7b9f3eb72c1ed755ca7bdc816",
+      "person_count": "db20a3cbacfba8f26227fd41c5d8127228ca1eb40d74e32eee9f1080f67d9d61"
+    },
+    "metadata_sha256": "4e66420ea2d7f14a521a88a1052df477c70ff1f0b2ac8ca523345ecccc068de1"
+  }
+}
+COMPLETE: /home/afr/SOLIDER-REID-exp371-146bc44/log/exp371_gate_c_support_cache_s0

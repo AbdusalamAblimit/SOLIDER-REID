@@ -1,0 +1,95 @@
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+EXP391_H2M_OVERFLOW_PASS
+{
+  "config_sha256": "3d172a70b1ea926ed040dc467a6e14d67a27b4cf5c8f0aa4d10674f0e83bc21a",
+  "gradient_ownership": {
+    "pose_loss": {
+      "early_anchor": {
+        "nonfinite": 0,
+        "nonzero": 8,
+        "present": 8
+      },
+      "early_psg": {
+        "nonfinite": 0,
+        "nonzero": 0,
+        "present": 0
+      },
+      "head": {
+        "nonfinite": 0,
+        "nonzero": 0,
+        "present": 0
+      },
+      "late_anchor": {
+        "nonfinite": 0,
+        "nonzero": 8,
+        "present": 8
+      },
+      "late_psg": {
+        "nonfinite": 0,
+        "nonzero": 0,
+        "present": 0
+      },
+      "swin": {
+        "nonfinite": 0,
+        "nonzero": 0,
+        "present": 0
+      }
+    },
+    "reid_loss": {
+      "early_anchor": {
+        "nonfinite": 0,
+        "nonzero": 0,
+        "present": 0
+      },
+      "early_psg": {
+        "nonfinite": 0,
+        "nonzero": 6,
+        "present": 12
+      },
+      "head": {
+        "nonfinite": 0,
+        "nonzero": 2,
+        "present": 2
+      },
+      "late_anchor": {
+        "nonfinite": 0,
+        "nonzero": 0,
+        "present": 0
+      },
+      "late_psg": {
+        "nonfinite": 0,
+        "nonzero": 2,
+        "present": 4
+      },
+      "swin": {
+        "nonfinite": 0,
+        "nonzero": 171,
+        "present": 171
+      }
+    }
+  },
+  "overflow": {
+    "found_inf": 1.0,
+    "injected_parameter": "base.patch_embed.projection.weight",
+    "model_exact_skip": true,
+    "model_state_tensors": 243,
+    "optimizer_exact_skip": true,
+    "optimizer_state_entries": 205,
+    "optimizer_state_tensors": 205,
+    "scale_after": 32768.0,
+    "scale_before": 65536.0
+  },
+  "script_sha256": "288d7b017eea71b530f48fee5f1f9e34649a7e7d8b136c8a01b29245a902386b",
+  "status": "EXP391_H2M_OVERFLOW_PASS"
+}

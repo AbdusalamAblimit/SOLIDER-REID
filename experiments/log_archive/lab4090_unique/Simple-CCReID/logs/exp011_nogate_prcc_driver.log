@@ -1,0 +1,14 @@
+[exp011-nogate-prcc@lab4090] deployed_from=local@adf70cf server_git_head=NA occlusion_md5=ab8b3d81b14b8876b85437fd62de6b41 nproc=1 batch=64 start=2026-05-30 18:47:33
+[exp011-nogate-prcc] >>> START clean seed0 2026-05-30 18:47:33
+[exp011-nogate-prcc] <<< DONE clean seed0 exit=0 2026-05-30 19:38:36
+[exp011-nogate-prcc] >>> START clean seed1 2026-05-30 19:38:36
+[exp011-nogate-prcc] <<< DONE clean seed1 exit=0 2026-05-30 20:29:31
+[exp011-nogate-prcc] >>> START clean seed2 2026-05-30 20:29:31
+[exp011-nogate-prcc] <<< DONE clean seed2 exit=0 2026-05-30 21:20:24
+[exp011-nogate-prcc] >>> START occ seed0 2026-05-30 21:20:24
+[exp011-nogate-prcc] <<< DONE occ seed0 exit=0 2026-05-30 22:11:20
+[exp011-nogate-prcc] >>> START occ seed1 2026-05-30 22:11:20
+[exp011-nogate-prcc] <<< DONE occ seed1 exit=0 2026-05-30 23:02:30
+[exp011-nogate-prcc] >>> START occ seed2 2026-05-30 23:02:30
+[exp011-nogate-prcc] <<< DONE occ seed2 exit=0 2026-05-30 23:53:27
+EXP011_NOGATE_prcc_DONE 2026-05-30 23:53:27

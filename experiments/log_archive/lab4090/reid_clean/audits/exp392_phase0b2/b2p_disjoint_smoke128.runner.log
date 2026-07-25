@@ -1,0 +1,54 @@
+{
+  "crops": 639,
+  "macro_top1": {
+    "ci95_high": 0.5583333333333333,
+    "ci95_low": 0.4730188679245283,
+    "images": 128,
+    "mean": 0.5156761006289309,
+    "pids": 4,
+    "repeats": 1000
+  },
+  "mask_overlap": {
+    "count": 1276,
+    "max": 0.0,
+    "median": 0.0,
+    "p95": 0.0
+  },
+  "output_sha256": "8e18d141ffff182851e468b0b3aa16d9730dcd5bafd80d44d7c2e4367212d3fc",
+  "raw_cosine_margin": {
+    "ci95_high": 0.00398124653693176,
+    "ci95_low": -0.000710502066046187,
+    "images": 128,
+    "mean": 0.0016707917567845704,
+    "pids": 4,
+    "repeats": 1000
+  },
+  "samples": 128,
+  "scope": "smoke",
+  "status": "EXP392_PHASE0B2_O_COMPLETE",
+  "verdict": "B2_P_SMOKE_FAIL"
+}
+Command exited with non-zero status 1
+	Command being timed: "/usr/local/anaconda3/envs/mmpose-abu/bin/python /home/afr/reid-clean/audits/exp392_phase0b2/phase0b2_prompt_audit.py --repo-root /home/afr/SOLIDER-REID-exp392-phase0b-5277254 --phase0b-script /home/afr/reid-clean/audits/exp392_phase0b/phase0b_clip_teacher_audit.py --source-commit 5277254bae1f9d18f1368ad4202aca7c9d223cc8 --data-root /mnt1/afrdata --pose-artifact /mnt1/afrderived/exp386_occluded_duke_vitpose_huge_train --clip-checkpoint /home/afr/SOLIDER-REID/clip_l14_openclip.safetensors --output /home/afr/reid-clean/audits/exp392_phase0b2/b2p_disjoint_smoke128_result.json --device cpu --batch-size 2 --clip-batch 10 --workers 0 --max-samples 128 --bootstrap-repeats 1000 --partition-mode hard-owner --prompt-bank disjoint-anatomy"
+	User time (seconds): 1629.01
+	System time (seconds): 109.07
+	Percent of CPU this job got: 1157%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:30.14
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 3708888
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 29
+	Minor (reclaiming a frame) page faults: 61131195
+	Voluntary context switches: 941196
+	Involuntary context switches: 39629
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 56
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1

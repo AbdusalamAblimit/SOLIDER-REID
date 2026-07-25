@@ -1,0 +1,213 @@
+2026-03-12 23:50:11 transreid INFO: Namespace(config_file='configs/occluded_duke/pose_psg_half_loss.yml', opts=['TEST.WEIGHT', './log/multiseed/exp007a_psg_half_seed2024/transformer_120.pth', 'SOLVER.SEED', '2024'])
+2026-03-12 23:50:11 transreid INFO: Loaded configuration file configs/occluded_duke/pose_psg_half_loss.yml
+2026-03-12 23:50:11 transreid INFO: 
+MODEL:
+  PRETRAIN_HW_RATIO: 2
+  PRETRAIN_CHOICE: 'self'
+  PRETRAIN_PATH: 'pretrained/swin_tiny.pth'
+  METRIC_LOSS_TYPE: 'triplet'
+  IF_LABELSMOOTH: 'off'
+  IF_WITH_CENTER: 'no'
+  NAME: 'transformer'
+  NO_MARGIN: True
+  DEVICE_ID: ('0')
+  TRANSFORMER_TYPE: 'swin_tiny_patch4_window7_224'
+  STRIDE_SIZE: [16, 16]
+  SEMANTIC_WEIGHT: 0.2
+  WITH_CP: False
+  # Pose backbone injection (PSG) — same as exp007
+  POSE_ENABLED: True
+  POSE_DATA_DIR: 'data/occluded_duke'
+  POSE_HEATMAP_SIZE: [96, 32]
+  POSE_BACKBONE_PSG: True
+  POSE_PFM_HIDDEN: 64
+  # Half global loss — simulates PDS list-loss effect
+  GLOBAL_LOSS_SCALE: 0.5
+
+INPUT:
+  SIZE_TRAIN: [384, 128]
+  SIZE_TEST: [384, 128]
+  PROB: 0.5
+  RE_PROB: 0.5
+  PADDING: 10
+  PIXEL_MEAN: [0.5, 0.5, 0.5]
+  PIXEL_STD: [0.5, 0.5, 0.5]
+
+DATASETS:
+  NAMES: ('occluded_duke')
+  ROOT_DIR: ('data')
+
+DATALOADER:
+  SAMPLER: 'softmax_triplet'
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+
+SOLVER:
+  OPTIMIZER_NAME: 'SGD'
+  MAX_EPOCHS: 120
+  BASE_LR: 0.0008
+  WARMUP_EPOCHS: 20
+  IMS_PER_BATCH: 64
+  WARMUP_METHOD: 'cosine'
+  LARGE_FC_LR: False
+  CHECKPOINT_PERIOD: 120
+  LOG_PERIOD: 20
+  EVAL_PERIOD: 10
+  WEIGHT_DECAY: 1e-4
+  WEIGHT_DECAY_BIAS: 1e-4
+  BIAS_LR_FACTOR: 2
+
+TEST:
+  EVAL: True
+  IMS_PER_BATCH: 256
+  RE_RANKING: False
+  WEIGHT: ''
+  NECK_FEAT: 'before'
+  FEAT_NORM: 'yes'
+
+OUTPUT_DIR: './log/occluded_duke/exp007a_psg_half_loss'
+
+2026-03-12 23:50:11 transreid INFO: Running with config:
+DATALOADER:
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+  REMOVE_TAIL: 0
+  SAMPLER: softmax_triplet
+DATASETS:
+  NAMES: occluded_duke
+  ROOT_DIR: data
+  ROOT_TRAIN_DIR: ../data
+  ROOT_VAL_DIR: ../data
+INPUT:
+  PADDING: 10
+  PIXEL_MEAN: [0.5, 0.5, 0.5]
+  PIXEL_STD: [0.5, 0.5, 0.5]
+  PROB: 0.5
+  RE_PROB: 0.5
+  SIZE_TEST: [384, 128]
+  SIZE_TRAIN: [384, 128]
+MODEL:
+  ATT_DROP_RATE: 0.0
+  COS_LAYER: False
+  DEVICE: cuda
+  DEVICE_ID: 0
+  DEVIDE_LENGTH: 4
+  DIST_TRAIN: False
+  DROPOUT_RATE: 0.0
+  DROP_OUT: 0.0
+  DROP_PATH: 0.1
+  FEAT_DIM: 512
+  GEM_POOLING: False
+  GLOBAL_LOSS_SCALE: 0.5
+  ID_LOSS_TYPE: softmax
+  ID_LOSS_WEIGHT: 1.0
+  IF_LABELSMOOTH: off
+  IF_WITH_CENTER: no
+  JPM: False
+  LAST_STRIDE: 1
+  METRIC_LOSS_TYPE: triplet
+  NAME: transformer
+  NECK: bnneck
+  NO_MARGIN: True
+  POSE_ATTN_BIAS: False
+  POSE_BACKBONE_PSG: True
+  POSE_CHANNEL_GATE: False
+  POSE_CROSS_ATTN: False
+  POSE_DATA_DIR: data/occluded_duke
+  POSE_DROPOUT_P: 0.0
+  POSE_DUAL_STREAM: False
+  POSE_ENABLED: True
+  POSE_GCN_HIDDEN: 256
+  POSE_GCN_LAYERS: 2
+  POSE_GLOBAL_PSG: True
+  POSE_GUIDED_ERASING: False
+  POSE_HEATMAP_NORM: spatial_softmax
+  POSE_HEATMAP_SIZE: [96, 32]
+  POSE_PART_LR_FACTOR: 1.0
+  POSE_PART_STAGE: -1
+  POSE_PART_STOP_GRAD: False
+  POSE_PART_TRI_WEIGHT: 1.0
+  POSE_PART_WEIGHT: 1.0
+  POSE_PCG_HIDDEN: 64
+  POSE_PCRA_ALPHA: 0.0
+  POSE_PFM_ENABLED: False
+  POSE_PFM_HIDDEN: 64
+  POSE_PSG_CONTENT_ADAPTIVE: False
+  POSE_PSG_PAB_COMBO: False
+  POSE_PSG_PART: False
+  POSE_PSG_SPATIAL: False
+  POSE_PSG_STAGES: [-1]
+  POSE_RECON_HEAD: False
+  POSE_RECON_WEIGHT: 0.1
+  POSE_SKELETON_GCN: False
+  POSE_SPLIT_STAGE: -1
+  POSE_STOP_GRAD_EPOCHS: 0
+  POSE_TEMPERATURE: 1.0
+  POSE_TEST_FEAT: concat_scaled
+  POSE_THRESHOLD: 0.3
+  POSE_WEIGHTED_POOL: False
+  PRETRAIN_CHOICE: self
+  PRETRAIN_HW_RATIO: 2
+  PRETRAIN_PATH: pretrained/swin_tiny.pth
+  REDUCE_FEAT_DIM: False
+  RE_ARRANGE: True
+  SEMANTIC_WEIGHT: 0.2
+  SHIFT_NUM: 5
+  SHUFFLE_GROUP: 2
+  SIE_CAMERA: False
+  SIE_COE: 3.0
+  SIE_VIEW: False
+  STEM_CONV: False
+  STRIDE_SIZE: [16, 16]
+  TRANSFORMER_TYPE: swin_tiny_patch4_window7_224
+  TRIPLET_LOSS_WEIGHT: 1.0
+  WITH_CP: False
+OUTPUT_DIR: ./log/occluded_duke/exp007a_psg_half_loss
+SOLVER:
+  BASE_LR: 0.0008
+  BIAS_LR_FACTOR: 2
+  CENTER_LOSS_WEIGHT: 0.0005
+  CENTER_LR: 0.5
+  CHECKPOINT_PERIOD: 120
+  COSINE_MARGIN: 0.5
+  COSINE_SCALE: 30
+  EVAL_PERIOD: 10
+  FREEZE_BACKBONE_EPOCHS: 0
+  GAMMA: 0.1
+  IMS_PER_BATCH: 64
+  LARGE_FC_LR: False
+  LOG_PERIOD: 20
+  MARGIN: 0.3
+  MAX_EPOCHS: 120
+  MOMENTUM: 0.9
+  OPTIMIZER_NAME: SGD
+  SEED: 2024
+  STEPS: (40, 70)
+  TRP_L2: False
+  WARMUP_EPOCHS: 20
+  WARMUP_FACTOR: 0.01
+  WARMUP_METHOD: cosine
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0.0001
+TEST:
+  DIST_MAT: dist_mat.npy
+  EVAL: True
+  FEAT_NORM: yes
+  IMS_PER_BATCH: 256
+  NECK_FEAT: before
+  RE_RANKING: False
+  WEIGHT: ./log/multiseed/exp007a_psg_half_seed2024/transformer_120.pth
+2026-03-12 23:50:11 transreid.check INFO: Dataset statistics:
+2026-03-12 23:50:11 transreid.check INFO:   ----------------------------------------
+2026-03-12 23:50:11 transreid.check INFO:   subset   | # ids | # images | # cameras
+2026-03-12 23:50:11 transreid.check INFO:   ----------------------------------------
+2026-03-12 23:50:11 transreid.check INFO:   train    |   702 |    15618 |         8
+2026-03-12 23:50:11 transreid.check INFO:   query    |   519 |     2210 |         8
+2026-03-12 23:50:11 transreid.check INFO:   gallery  |  1110 |    17661 |         8
+2026-03-12 23:50:11 transreid.check INFO:   ----------------------------------------
+2026-03-12 23:50:12 transreid.test INFO: Enter inferencing
+2026-03-12 23:50:42 transreid.test INFO: Validation Results 
+2026-03-12 23:50:42 transreid.test INFO: mAP: 59.0%
+2026-03-12 23:50:42 transreid.test INFO: CMC curve, Rank-1  :69.5%
+2026-03-12 23:50:42 transreid.test INFO: CMC curve, Rank-5  :81.9%
+2026-03-12 23:50:42 transreid.test INFO: CMC curve, Rank-10 :85.9%

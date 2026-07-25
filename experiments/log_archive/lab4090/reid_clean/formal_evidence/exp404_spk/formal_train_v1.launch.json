@@ -1,0 +1,9 @@
+{
+  "config_sha256": "2bd191ef96da0158a57f917831ea70627f1fef163397219ce1168e3e30bb297d",
+  "execution": "exp404_formal_train_v1",
+  "head": "1e40e9a9d1717139b06d09f55821c7f0e68143c7",
+  "main_pid": 436043,
+  "preflight_sha256": "70566973f0387d0b335040ff20fe2c1f091563cc18f4a65370b25aac303d58bf",
+  "resume": false,
+  "started_utc": "2026-07-20T04:52:15Z"
+}

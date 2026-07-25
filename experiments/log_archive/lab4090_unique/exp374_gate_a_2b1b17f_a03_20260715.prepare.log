@@ -1,0 +1,56 @@
+PREPARE_LOG_RESERVED attempt=2b1b17f_a03_20260715
+/home/afr/exp374_execution_2b1b17f.bundle is okay
+The bundle contains this ref:
+2b1b17f096aab11ec73f0d1534eb22535ff45412 refs/heads/exp/pose_heatmap
+The bundle records a complete history.
+./environment.freeze.txt: OK
+./environment_versions.txt: OK
+./formal_protocol.out: OK
+./formal_protocol.rc: OK
+./formal_protocol.xml: OK
+./formal_state_machine.out: OK
+./formal_state_machine.rc: OK
+./formal_state_machine.xml: OK
+./formal_swin.out: OK
+./formal_swin.rc: OK
+./formal_swin.xml: OK
+./junit_summary.txt: OK
+./orchestrator.out: OK
+./orchestrator_sha256.txt: OK
+./post_audit.txt: OK
+./post_source_bytecode_manifest.tsv: OK
+./post_source_sha.txt: OK
+./pre_audit.txt: OK
+./pre_source_bytecode_manifest.tsv: OK
+./pre_source_sha.txt: OK
+./regression_model_seam.out: OK
+./regression_model_seam.rc: OK
+./regression_model_seam.xml: OK
+./regression_protocol.out: OK
+./regression_protocol.rc: OK
+./regression_protocol.xml: OK
+./regression_runner.out: OK
+./regression_runner.rc: OK
+./regression_runner.xml: OK
+./runner_unittest_subtests.txt: OK
+/home/afr/exp374_remote_retest_2b1b17f_relation_v2/orchestrator.out: OK
+Using Python 3.8.20 environment at: /home/afr/SOLIDER-REID-exp374-2b1b17f-relation-v2/log/.venv-exp374
+PREPARE_WRAPPER_START pid=12215 head=2b1b17f096aab11ec73f0d1534eb22535ff45412 free_bytes=222475022336
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/query/index.json (2210 entries)
+  Loaded pose index: data/occluded_duke/pose_data/gallery/index.json (17661 entries)
+Traceback (most recent call last):
+  File "/home/afr/SOLIDER-REID-exp374-2b1b17f-relation-v2/experiments/exp374_psg_fuel_gate/audit_gate_a.py", line 4297, in <module>
+    main()
+  File "/home/afr/SOLIDER-REID-exp374-2b1b17f-relation-v2/experiments/exp374_psg_fuel_gate/audit_gate_a.py", line 4284, in main
+    prepare_phase(args)
+  File "/home/afr/SOLIDER-REID-exp374-2b1b17f-relation-v2/experiments/exp374_psg_fuel_gate/audit_gate_a.py", line 2509, in prepare_phase
+    payload = prepare_split_mappings(
+  File "/home/afr/SOLIDER-REID-exp374-2b1b17f-relation-v2/experiments/exp374_psg_fuel_gate/protocol.py", line 991, in prepare_split_mappings
+    audit = audit_mapping(records, standardized, mapping, base_global, baseline_costs)
+  File "/home/afr/SOLIDER-REID-exp374-2b1b17f-relation-v2/experiments/exp374_psg_fuel_gate/protocol.py", line 1055, in audit_mapping
+    require(
+  File "/home/afr/SOLIDER-REID-exp374-2b1b17f-relation-v2/experiments/exp374_psg_fuel_gate/protocol.py", line 55, in require
+    raise GateProtocolError(code, message)
+experiments.exp374_psg_fuel_gate.protocol.GateProtocolError: E_PAIR_DIM: max=0.6180800258972551

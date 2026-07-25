@@ -1,0 +1,311 @@
+{
+  "status": "PREFLIGHT_PASS",
+  "plan": [
+    {
+      "seed": 3407,
+      "arm": "A",
+      "factors": {
+        "pose_mode": "true",
+        "text_mode": "aligned"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_3407",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "3407",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "true",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_3407"
+      ],
+      "reference": null
+    },
+    {
+      "seed": 3407,
+      "arm": "B",
+      "factors": {
+        "pose_mode": "true",
+        "text_mode": "permuted"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/B/seed_3407",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "3407",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "true",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "permuted",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/B/seed_3407",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_3407/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_3407/init_audit.json"
+    },
+    {
+      "seed": 3407,
+      "arm": "C",
+      "factors": {
+        "pose_mode": "uniform",
+        "text_mode": "aligned"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/C/seed_3407",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "3407",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/C/seed_3407",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_3407/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_3407/init_audit.json"
+    },
+    {
+      "seed": 3407,
+      "arm": "D",
+      "factors": {
+        "pose_mode": "uniform",
+        "text_mode": "permuted"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/D/seed_3407",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "3407",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "permuted",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/D/seed_3407",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_3407/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_3407/init_audit.json"
+    },
+    {
+      "seed": 7753,
+      "arm": "A",
+      "factors": {
+        "pose_mode": "true",
+        "text_mode": "aligned"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_7753",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "7753",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "true",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_7753"
+      ],
+      "reference": null
+    },
+    {
+      "seed": 7753,
+      "arm": "B",
+      "factors": {
+        "pose_mode": "true",
+        "text_mode": "permuted"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/B/seed_7753",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "7753",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "true",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "permuted",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/B/seed_7753",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_7753/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_7753/init_audit.json"
+    },
+    {
+      "seed": 7753,
+      "arm": "C",
+      "factors": {
+        "pose_mode": "uniform",
+        "text_mode": "aligned"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/C/seed_7753",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "7753",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/C/seed_7753",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_7753/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_7753/init_audit.json"
+    },
+    {
+      "seed": 7753,
+      "arm": "D",
+      "factors": {
+        "pose_mode": "uniform",
+        "text_mode": "permuted"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/D/seed_7753",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "7753",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "permuted",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/D/seed_7753",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_7753/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_7753/init_audit.json"
+    },
+    {
+      "seed": 9227,
+      "arm": "A",
+      "factors": {
+        "pose_mode": "true",
+        "text_mode": "aligned"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_9227",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "9227",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "true",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_9227"
+      ],
+      "reference": null
+    },
+    {
+      "seed": 9227,
+      "arm": "B",
+      "factors": {
+        "pose_mode": "true",
+        "text_mode": "permuted"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/B/seed_9227",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "9227",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "true",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "permuted",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/B/seed_9227",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_9227/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_9227/init_audit.json"
+    },
+    {
+      "seed": 9227,
+      "arm": "C",
+      "factors": {
+        "pose_mode": "uniform",
+        "text_mode": "aligned"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/C/seed_9227",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "9227",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/C/seed_9227",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_9227/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_9227/init_audit.json"
+    },
+    {
+      "seed": 9227,
+      "arm": "D",
+      "factors": {
+        "pose_mode": "uniform",
+        "text_mode": "permuted"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/D/seed_9227",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "9227",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "permuted",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/D/seed_9227",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_9227/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_9227/init_audit.json"
+    }
+  ]
+}

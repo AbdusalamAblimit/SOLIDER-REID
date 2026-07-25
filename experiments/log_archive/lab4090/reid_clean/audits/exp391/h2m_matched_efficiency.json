@@ -1,0 +1,104 @@
+{
+  "base_script": "experiments/exp387_clean_tapf_d0/preflight_efficiency.py",
+  "base_script_sha256": "f8781b7ef194b027c653d493e77d8142b2a4405c0e01066a86b96529a1e1fd5f",
+  "cuda_version": "11.7",
+  "d0": {
+    "config": "configs/occluded_duke/swin_tiny_tapf_d0.yml",
+    "config_sha256": "510f52604cbb455a6f61139d266705c3292e1bb431b2f603e5e750f56edd2c8b",
+    "eval_rgb_only": {
+      "analyzer_activations": 21456192,
+      "batch_size": 256,
+      "descriptor_shape": [
+        256,
+        768
+      ],
+      "images_per_second": 1118.8997440322203,
+      "mean_step_ms": 228.79619140625,
+      "measured_steps": 20,
+      "median_step_ms": 228.78463745117188,
+      "parameters": 28179484,
+      "peak_allocated_bytes": 4725158400,
+      "peak_reserved_bytes": 7665090560,
+      "pose_input": null,
+      "supported_op_flops": 5548787520,
+      "warmup_steps": 5
+    },
+    "train": {
+      "batch_size": 64,
+      "final_loss": 13.05300235748291,
+      "final_scale": 1.0,
+      "mean_step_ms": 102.85071500142415,
+      "measured_steps": 12,
+      "median_step_ms": 102.85177612304688,
+      "peak_allocated_bytes": 6188034048,
+      "peak_reserved_bytes": 6555697152,
+      "samples_per_second": 622.2611092116745,
+      "warmup_steps": 3
+    }
+  },
+  "delta_h2m_minus_d0": {
+    "eval_rgb_only": {
+      "mean_step_ms": 15.244447326660179,
+      "peak_allocated_bytes": -484352,
+      "peak_reserved_bytes": -1742733312
+    },
+    "parameter_percent": 0.3819019539179639,
+    "parameters": 107618,
+    "supported_op_flops": 39351552,
+    "supported_op_flops_percent": 0.7091919064869869,
+    "train": {
+      "mean_step_ms": 5.481415430704757,
+      "peak_allocated_bytes": 464637952,
+      "peak_reserved_bytes": 325058560
+    }
+  },
+  "device": "NVIDIA GeForce RTX 4090 D",
+  "fixed_batch_sha256": {
+    "eval_rgb": "64263ed38d2f07d303a6db100c420ce980a6c8828299c35936aee49d9ba1df22",
+    "train_pid": "b1acbd3617fa07c3356b220630dc2a80fa5834e618522c8561d82a02dfec1582",
+    "train_pose_keypoints": "38bcb1eeffd917e9e076e9f31d804e9b57a2563db6fa1b3a4f2f739b4467c103",
+    "train_rgb": "9682bf9b5deb0a5fed3fe809a5892a90805086163128181f39138090780b086f"
+  },
+  "h2m": {
+    "config": "configs/occluded_duke/swin_tiny_tapf_h2m.yml",
+    "config_sha256": "3d172a70b1ea926ed040dc467a6e14d67a27b4cf5c8f0aa4d10674f0e83bc21a",
+    "eval_rgb_only": {
+      "analyzer_activations": 22158144,
+      "batch_size": 256,
+      "descriptor_shape": [
+        256,
+        768
+      ],
+      "images_per_second": 1049.0056136928029,
+      "mean_step_ms": 244.04063873291017,
+      "measured_steps": 20,
+      "median_step_ms": 244.02676391601562,
+      "parameters": 28287102,
+      "peak_allocated_bytes": 4724674048,
+      "peak_reserved_bytes": 5922357248,
+      "pose_input": null,
+      "supported_op_flops": 5588139072,
+      "warmup_steps": 5
+    },
+    "train": {
+      "batch_size": 64,
+      "final_loss": 13.094618797302246,
+      "final_scale": 1.0,
+      "mean_step_ms": 108.3321304321289,
+      "measured_steps": 12,
+      "median_step_ms": 108.3389892578125,
+      "peak_allocated_bytes": 6652672000,
+      "peak_reserved_bytes": 6880755712,
+      "samples_per_second": 590.7757905684002,
+      "warmup_steps": 3
+    }
+  },
+  "measurement_scope": {
+    "eval": "one fixed real RGB-only validation batch; forward, FP32",
+    "flops": "MMEngine supported-operator trace; unsupported ops excluded",
+    "train": "one fixed real paired batch; forward+backward+SGD, AMP scale=1"
+  },
+  "script_sha256": "73c712e81e5a354ade15d503a9830ec8eaf792bed7592874ece6bb8d3846e0db",
+  "status": "EXP391_H2M_MATCHED_EFFICIENCY_PASS",
+  "torch_version": "1.13.1"
+}

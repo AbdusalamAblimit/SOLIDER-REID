@@ -1,0 +1,672 @@
+2026-07-15 15:53:28 transreid INFO: Saving model in the path :./log/occluded_duke/exp376_p0_hyper_lora_s1234
+2026-07-15 15:53:28 transreid INFO: Loaded configuration file configs/occluded_duke/exp376_p0_hyper_lora.yml
+2026-07-15 15:53:28 transreid INFO: Running with config:
+DATALOADER:
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+  REMOVE_TAIL: 0
+  SAMPLER: softmax_triplet
+DATASETS:
+  NAMES: occluded_duke
+  ROOT_DIR: data
+  ROOT_TRAIN_DIR: ../data
+  ROOT_VAL_DIR: ../data
+INPUT:
+  PADDING: 10
+  PIXEL_MEAN: [0.5, 0.5, 0.5]
+  PIXEL_STD: [0.5, 0.5, 0.5]
+  PROB: 0.5
+  RE_PROB: 0.5
+  SIZE_TEST: [384, 128]
+  SIZE_TRAIN: [384, 128]
+MODEL:
+  ATT_DROP_RATE: 0.0
+  COS_LAYER: False
+  DEVICE: cuda
+  DEVICE_ID: 0
+  DEVIDE_LENGTH: 4
+  DIST_TRAIN: False
+  DROPOUT_RATE: 0.0
+  DROP_OUT: 0.0
+  DROP_PATH: 0.1
+  FEAT_DIM: 512
+  GEM_POOLING: False
+  GLOBAL_LOSS_SCALE: 1.0
+  ID_LOSS_TYPE: softmax
+  ID_LOSS_WEIGHT: 1.0
+  IF_LABELSMOOTH: off
+  IF_WITH_CENTER: no
+  JPM: False
+  LAST_STRIDE: 1
+  METRIC_LOSS_TYPE: triplet
+  NAME: transformer
+  NECK: bnneck
+  NO_MARGIN: True
+  POSE_ADDITIVE_ADAPTER: False
+  POSE_BACKBONE_PSG: True
+  POSE_BA_PKC: False
+  POSE_BA_PKC_WEIGHT: 0.1
+  POSE_BT_PKD: False
+  POSE_BT_PKD_DECAY_EPOCH: 0
+  POSE_BT_PKD_WEIGHT: 0.01
+  POSE_CHANNEL_SHUFFLE: False
+  POSE_CLIP_ID_ARCH: ViT-L-14
+  POSE_CLIP_ID_NOPARAM_POOL: False
+  POSE_CLIP_ID_OCC_REPEL: False
+  POSE_CLIP_ID_OCC_REPEL_W: 0.5
+  POSE_CLIP_ID_PART_GUIDED: False
+  POSE_CLIP_ID_POSE_GUIDED: False
+  POSE_CLIP_ID_POSE_PROMPT: False
+  POSE_CLIP_ID_POSE_TEMP: 1.0
+  POSE_CLIP_ID_PRETRAINED: openai
+  POSE_CLIP_ID_PROMPT: False
+  POSE_CLIP_ID_TEMP: 0.07
+  POSE_CLIP_ID_WEIGHT: 1.0
+  POSE_DATA_DIR: data/occluded_duke
+  POSE_DEFORMABLE_K: 4
+  POSE_DEFORMABLE_SAMPLE: False
+  POSE_DROPOUT_P: 0.0
+  POSE_ENABLED: True
+  POSE_EVIDENTIAL: False
+  POSE_EVIDENTIAL_ANNEAL: 0.6
+  POSE_EVIDENTIAL_KL_REG: 0.1
+  POSE_FSDC: False
+  POSE_FSDC_HEADS: 8
+  POSE_FSDC_LAYERS: 2
+  POSE_FSDC_MASK_RATIO: 0.3
+  POSE_FSDC_NOISE_STD: 0.1
+  POSE_FSDC_WEIGHT: 0.5
+  POSE_GCN_HIDDEN: 256
+  POSE_GCN_LAYERS: 2
+  POSE_GCN_PER_PART: False
+  POSE_HEATMAP_NORM: spatial_softmax
+  POSE_HEATMAP_SIZE: [96, 32]
+  POSE_HYPER_LORA: True
+  POSE_HYPER_LORA_BASES: 4
+  POSE_HYPER_LORA_FACTORIZATION: basis
+  POSE_HYPER_LORA_HIDDEN: 32
+  POSE_HYPER_LORA_POSE_SOURCE: input
+  POSE_HYPER_LORA_RANK: 4
+  POSE_HYPER_LORA_RES_SCALE_INIT: 0.001
+  POSE_HYPER_LORA_STAGES: [2, 3]
+  POSE_KEYPOINT_POOL_ONLY: False
+  POSE_KP_TRIPLET: False
+  POSE_KP_TRIPLET_WEIGHT: 1.0
+  POSE_KP_WEIGHT_MODE: score
+  POSE_LGPA: False
+  POSE_LGPA_ASSIGN_WEIGHT: 0.5
+  POSE_LGPA_CLIP_DIM: 512
+  POSE_LGPA_DETACH: False
+  POSE_LGPA_FIXED_BANDS: False
+  POSE_LGPA_NO_POSE: False
+  POSE_LGPA_NUM_HEADS: 8
+  POSE_LGPA_POSE_TEMP: 1.0
+  POSE_LGPA_QUERY_MODE: clip_frozen
+  POSE_LGPA_QUERY_SEED: 42
+  POSE_LGPA_RANDOM_TEXT: False
+  POSE_LOWER_BODY_OCC: False
+  POSE_LOWER_BODY_OCC_MODE: lower
+  POSE_LOWER_BODY_OCC_PROB: 0.5
+  POSE_LOWER_BODY_OCC_RATIO: 0.5
+  POSE_LPCS: False
+  POSE_LPCS_CONF_WEIGHT: 0.25
+  POSE_LPCS_CONTEXT_MODE: none
+  POSE_LPCS_DELTA_SCALE: 0.5
+  POSE_LPCS_HEAD_MODE: residual
+  POSE_LPCS_HIDDEN: 32
+  POSE_LPCS_PAIR_MODE: all
+  POSE_LPCS_PAIR_TOP_RATIO: 1.0
+  POSE_LPCS_RANK_MODE: all
+  POSE_LPCS_RANK_TAU: 8.0
+  POSE_LPCS_RANK_TOP_RATIO: 1.0
+  POSE_LPCS_ST_LOW_THR: 0.3
+  POSE_LPCS_ST_MIN_COUNT: 1
+  POSE_LPCS_ST_MOM: 0.9
+  POSE_LPCS_ST_UPDATE_STOP_EPOCH: -1
+  POSE_LPCS_ST_UPDATE_THR: 0.7
+  POSE_LPCS_WARMUP: 20
+  POSE_LPCS_WEIGHT: 0.5
+  POSE_LTCS: False
+  POSE_LTCS_HIDDEN: 32
+  POSE_LTCS_ST_LOW_THR: 0.3
+  POSE_LTCS_ST_MIN_COUNT: 1
+  POSE_LTCS_ST_MOM: 0.9
+  POSE_LTCS_ST_UPDATE_STOP_EPOCH: -1
+  POSE_LTCS_ST_UPDATE_THR: 0.7
+  POSE_LTCS_WARMUP: 20
+  POSE_LTCS_WEIGHT: 0.5
+  POSE_MAXSIM_TRIPLET: False
+  POSE_MAXSIM_TRIPLET_ADDITIVE: False
+  POSE_MAXSIM_TRIPLET_TEMP: 0.05
+  POSE_MAXSIM_TRIPLET_WEIGHT: 0.25
+  POSE_MST: False
+  POSE_MST_MARGIN: 0.3
+  POSE_MST_VIS_THR: 0.3
+  POSE_MST_WEIGHT: 0.5
+  POSE_MULTI_SCALE_KP: False
+  POSE_MULTI_SCALE_STAGES: [2, 3]
+  POSE_NORMALIZE: False
+  POSE_NORMALIZE_HIDDEN: 256
+  POSE_OA_RD: False
+  POSE_OA_RD_TEMP: 0.1
+  POSE_OA_RD_WEIGHT: 1.0
+  POSE_OA_SD: False
+  POSE_OA_SD_EMA_DECAY: 0.999
+  POSE_OA_SD_GLOBAL_ONLY: False
+  POSE_OA_SD_WEIGHT: 1.0
+  POSE_OERL: False
+  POSE_OERL_OCC_RATIO: 0.5
+  POSE_OERL_WEIGHT: 1.0
+  POSE_PAA_ADAPTIVE_GATE: False
+  POSE_PAA_BOTTLENECK: 32
+  POSE_PAA_ROUTED: False
+  POSE_PACI: False
+  POSE_PACI_MARGIN: 0.3
+  POSE_PACI_MOMENTUM: 0.9
+  POSE_PACI_WARMUP: 5
+  POSE_PACI_WEIGHT: 0.5
+  POSE_PARALLEL_AUG: False
+  POSE_PART_GRAD_SCALE: 0.0
+  POSE_PART_STAGE: -1
+  POSE_PART_TRI_WEIGHT: 1.0
+  POSE_PART_WEIGHT: 1.0
+  POSE_PATCH_EMBED: False
+  POSE_PATCH_EMBED_KS: 1
+  POSE_PBSR: False
+  POSE_PBSR_COUPLED_WRITE: True
+  POSE_PBSR_DIM: 256
+  POSE_PBSR_NUM_HEADS: 4
+  POSE_PBSR_NUM_SLOTS: 6
+  POSE_PBSR_ROUTE_WEIGHT: 0.5
+  POSE_PBSR_SLOT_MIXER: True
+  POSE_PBSR_SUPERVISION: correct
+  POSE_PBSR_WRITEBACK: True
+  POSE_PCMSC: False
+  POSE_PCMSC_RANDOM_MASK: False
+  POSE_PCMSC_W: 1.0
+  POSE_PFM_ENABLED: False
+  POSE_PFM_HIDDEN: 64
+  POSE_PGPD: False
+  POSE_PGPD_RANDOM_TEACHER: False
+  POSE_PGPD_TAU: 0.1
+  POSE_PGPD_W: 0.5
+  POSE_PKC: False
+  POSE_PKC_TEMP: 0.07
+  POSE_PKC_VIS_THR: 0.3
+  POSE_PKC_WEIGHT: 0.5
+  POSE_PPA: False
+  POSE_PPA_ASSIGN_WEIGHT: 0.5
+  POSE_PPA_GILT: False
+  POSE_PPA_NUM_PARTS: 5
+  POSE_PROMPT: False
+  POSE_PROMPT_DROP: 0.0
+  POSE_PROMPT_NUM_PARTS: 18
+  POSE_PRSM: False
+  POSE_PRSM_BIDIRECTIONAL: True
+  POSE_PRSM_NUM_PARTS: 6
+  POSE_PRSM_POSE_SOURCE: input
+  POSE_PRSM_RES_SCALE_INIT: 0.001
+  POSE_PRSM_RETENTION_INIT: 0.95
+  POSE_PRSM_ROUTING: parts
+  POSE_PRSM_STATE_DIM: 128
+  POSE_PSG_PART: False
+  POSE_PSG_SPATIAL: False
+  POSE_PSG_STAGES: []
+  POSE_ROA: False
+  POSE_ROA_PATH: data/VOCdevkit/VOC2012
+  POSE_ROA_POSE_AWARE: False
+  POSE_ROA_PROB: 0.5
+  POSE_SHUFFLE: False
+  POSE_SKELETON_GCN: False
+  POSE_SPLADE: False
+  POSE_SPLADE_DIM: 2048
+  POSE_SPLADE_REG: 0.01
+  POSE_STM: False
+  POSE_STM_NUM_SWAP: 2
+  POSE_STM_PROB: 0.5
+  POSE_STM_WEIGHT: 0.5
+  POSE_STRUCTURAL_ROUTING: False
+  POSE_STR_NUM_HEADS: 8
+  POSE_STR_NUM_LAYERS: 2
+  POSE_STR_NUM_PARTS: 6
+  POSE_STR_PART_DROP: 0.0
+  POSE_STR_PER_TOKEN: False
+  POSE_STR_SELF_ATTN: False
+  POSE_STR_SUPCON: False
+  POSE_STR_SUPCON_ADDITIVE: False
+  POSE_STR_SUPCON_GLOBAL: False
+  POSE_STR_SUPCON_TEMP: 0.07
+  POSE_STR_SUPCON_VIS_WEIGHT: False
+  POSE_STR_SUPCON_WEIGHT: 0.5
+  POSE_TEMPERATURE: 1.0
+  POSE_TEST_FEAT: global
+  POSE_THRESHOLD: 0.3
+  POSE_UPPER_BODY_OCC: False
+  POSE_UPPER_BODY_OCC_PROB: 0.3
+  POSE_USE_TARGET_HEATMAP: True
+  POSE_VCNORM: False
+  POSE_VCNORM_GAIN_SCALE: 1.0
+  POSE_VCNORM_HIDDEN: 64
+  POSE_VCNORM_MODULE: True
+  POSE_VCNORM_VIS_THR: 0.3
+  POSE_VCNORM_WARMUP: 20
+  POSE_VCNORM_WEIGHT: 0.5
+  POSE_VCSR: False
+  POSE_VCSR_ASSIGN_WEIGHT: 0.5
+  POSE_VCSR_VIS_THR: 0.3
+  PRETRAIN_CHOICE: self
+  PRETRAIN_HW_RATIO: 2
+  PRETRAIN_PATH: pretrained/swin_tiny.pth
+  REDUCE_FEAT_DIM: False
+  RE_ARRANGE: True
+  SEMANTIC_WEIGHT: 0.2
+  SHIFT_NUM: 5
+  SHUFFLE_GROUP: 2
+  SIE_CAMERA: False
+  SIE_COE: 3.0
+  SIE_VIEW: False
+  STEM_CONV: False
+  STRIDE_SIZE: [16, 16]
+  TRANSFORMER_TYPE: swin_tiny_patch4_window7_224
+  TRIPLET_LOSS_WEIGHT: 1.0
+  WITH_CP: False
+OUTPUT_DIR: ./log/occluded_duke/exp376_p0_hyper_lora_s1234
+SOLVER:
+  AMP_INIT_SCALE: 1024.0
+  BASE_LR: 0.0008
+  BIAS_LR_FACTOR: 2
+  CENTER_LOSS_WEIGHT: 0.0005
+  CENTER_LR: 0.5
+  CHECKPOINT_PERIOD: 20
+  COSINE_MARGIN: 0.5
+  COSINE_SCALE: 30
+  EVAL_PERIOD: 10
+  FREEZE_BACKBONE_EPOCHS: 0
+  GAMMA: 0.1
+  IMS_PER_BATCH: 64
+  LARGE_FC_LR: False
+  LOG_PERIOD: 50
+  MARGIN: 0.3
+  MAX_EPOCHS: 120
+  MOMENTUM: 0.9
+  OPTIMIZER_NAME: SGD
+  SEED: 1234
+  STEPS: (40, 70)
+  TRP_L2: False
+  WARMUP_EPOCHS: 20
+  WARMUP_FACTOR: 0.01
+  WARMUP_METHOD: cosine
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0.0001
+TEST:
+  CVK_GLOBAL_WEIGHT: 1.0
+  CVK_KP_WEIGHT: 1.0
+  DIST_MAT: dist_mat.npy
+  EVAL: True
+  FEAT_NORM: yes
+  FLIP_TEST: True
+  IMS_PER_BATCH: 64
+  NECK_FEAT: before
+  NFC: False
+  NFC_K1: 2
+  NFC_K2: 2
+  POWER_NORM: 0.0
+  RE_RANKING: False
+  WEIGHT: 
+2026-07-15 15:53:28 transreid.check INFO: Dataset statistics:
+2026-07-15 15:53:28 transreid.check INFO:   ----------------------------------------
+2026-07-15 15:53:28 transreid.check INFO:   subset   | # ids | # images | # cameras
+2026-07-15 15:53:28 transreid.check INFO:   ----------------------------------------
+2026-07-15 15:53:28 transreid.check INFO:   train    |   702 |    15618 |         8
+2026-07-15 15:53:28 transreid.check INFO:   query    |   519 |     2210 |         8
+2026-07-15 15:53:28 transreid.check INFO:   gallery  |  1110 |    17661 |         8
+2026-07-15 15:53:28 transreid.check INFO:   ----------------------------------------
+2026-07-15 15:53:29 transreid INFO: ===========using cosine learning rate=======
+2026-07-15 15:53:29 transreid.train INFO: start training
+2026-07-15 15:53:29 transreid.train INFO: Pose-guided training ENABLED
+2026-07-15 15:53:38 transreid.train INFO: Epoch[1] Iter[50/227] Loss: 16.882, Acc: 0.001, Base Lr: 4.76e-05 | id_global: 6.555 tri_global: 10.327 | HyperLoRA alpha=1.003e-03[9.925e-04,1.020e-03] vis=2.074e-01 coeff=2.370e-02 delta_rms=4.267e-03
+2026-07-15 15:53:45 transreid.train INFO: Epoch[1] Iter[100/227] Loss: 15.052, Acc: 0.001, Base Lr: 4.76e-05 | id_global: 6.554 tri_global: 8.498 | HyperLoRA alpha=1.006e-03[9.942e-04,1.039e-03] vis=2.130e-01 coeff=2.450e-02 delta_rms=4.560e-03
+2026-07-15 15:53:53 transreid.train INFO: Epoch[1] Iter[150/227] Loss: 13.831, Acc: 0.001, Base Lr: 4.76e-05 | id_global: 6.554 tri_global: 7.277 | HyperLoRA alpha=1.005e-03[9.882e-04,1.056e-03] vis=2.146e-01 coeff=2.468e-02 delta_rms=4.462e-03
+2026-07-15 15:54:00 transreid.train INFO: Epoch[1] Iter[200/227] Loss: 13.100, Acc: 0.002, Base Lr: 4.76e-05 | id_global: 6.554 tri_global: 6.546 | HyperLoRA alpha=1.006e-03[9.841e-04,1.074e-03] vis=2.121e-01 coeff=2.467e-02 delta_rms=4.644e-03
+2026-07-15 15:54:01 transreid.train INFO: Epoch 1 done. Time per epoch: 31.515[s] Speed: 426.5[samples/s] ETA: 1h2m
+2026-07-15 15:54:09 transreid.train INFO: Epoch[2] Iter[50/227] Loss: 10.512, Acc: 0.004, Base Lr: 8.72e-05 | id_global: 6.549 tri_global: 3.963 | HyperLoRA alpha=1.008e-03[9.660e-04,1.053e-03] vis=2.148e-01 coeff=2.482e-02 delta_rms=4.644e-03
+2026-07-15 15:54:16 transreid.train INFO: Epoch[2] Iter[100/227] Loss: 9.883, Acc: 0.005, Base Lr: 8.72e-05 | id_global: 6.547 tri_global: 3.336 | HyperLoRA alpha=1.005e-03[9.575e-04,1.063e-03] vis=2.170e-01 coeff=2.480e-02 delta_rms=4.739e-03
+2026-07-15 15:54:23 transreid.train INFO: Epoch[2] Iter[150/227] Loss: 9.529, Acc: 0.009, Base Lr: 8.72e-05 | id_global: 6.544 tri_global: 2.985 | HyperLoRA alpha=1.020e-03[9.618e-04,1.091e-03] vis=2.069e-01 coeff=2.381e-02 delta_rms=4.444e-03
+2026-07-15 15:54:30 transreid.train INFO: Epoch[2] Iter[200/227] Loss: 9.222, Acc: 0.018, Base Lr: 8.72e-05 | id_global: 6.539 tri_global: 2.682 | HyperLoRA alpha=1.028e-03[9.166e-04,1.135e-03] vis=2.227e-01 coeff=2.579e-02 delta_rms=4.891e-03
+2026-07-15 15:54:32 transreid.train INFO: Epoch 2 done. Time per epoch: 30.951[s] Speed: 438.4[samples/s] ETA: 1h0m
+2026-07-15 15:54:40 transreid.train INFO: Epoch[3] Iter[50/227] Loss: 8.130, Acc: 0.052, Base Lr: 1.27e-04 | id_global: 6.518 tri_global: 1.612 | HyperLoRA alpha=1.011e-03[8.577e-04,1.150e-03] vis=2.112e-01 coeff=2.432e-02 delta_rms=4.542e-03
+2026-07-15 15:54:47 transreid.train INFO: Epoch[3] Iter[100/227] Loss: 8.075, Acc: 0.081, Base Lr: 1.27e-04 | id_global: 6.510 tri_global: 1.565 | HyperLoRA alpha=1.018e-03[8.881e-04,1.197e-03] vis=2.117e-01 coeff=2.437e-02 delta_rms=4.632e-03
+2026-07-15 15:54:54 transreid.train INFO: Epoch[3] Iter[150/227] Loss: 7.965, Acc: 0.104, Base Lr: 1.27e-04 | id_global: 6.501 tri_global: 1.464 | HyperLoRA alpha=1.002e-03[8.574e-04,1.152e-03] vis=2.203e-01 coeff=2.505e-02 delta_rms=4.540e-03
+2026-07-15 15:55:01 transreid.train INFO: Epoch[3] Iter[200/227] Loss: 7.885, Acc: 0.141, Base Lr: 1.27e-04 | id_global: 6.489 tri_global: 1.396 | HyperLoRA alpha=1.007e-03[8.229e-04,1.178e-03] vis=2.145e-01 coeff=2.491e-02 delta_rms=4.747e-03
+2026-07-15 15:55:03 transreid.train INFO: Epoch 3 done. Time per epoch: 30.891[s] Speed: 439.2[samples/s] ETA: 1h0m
+2026-07-15 15:55:11 transreid.train INFO: Epoch[4] Iter[50/227] Loss: 7.650, Acc: 0.111, Base Lr: 1.66e-04 | id_global: 6.451 tri_global: 1.199 | HyperLoRA alpha=9.734e-04[8.085e-04,1.089e-03] vis=2.132e-01 coeff=2.466e-02 delta_rms=4.742e-03
+2026-07-15 15:55:18 transreid.train INFO: Epoch[4] Iter[100/227] Loss: 7.521, Acc: 0.127, Base Lr: 1.66e-04 | id_global: 6.437 tri_global: 1.084 | HyperLoRA alpha=9.689e-04[8.063e-04,1.104e-03] vis=2.112e-01 coeff=2.437e-02 delta_rms=4.566e-03
+2026-07-15 15:55:25 transreid.train INFO: Epoch[4] Iter[150/227] Loss: 7.462, Acc: 0.152, Base Lr: 1.66e-04 | id_global: 6.421 tri_global: 1.041 | HyperLoRA alpha=9.677e-04[7.929e-04,1.158e-03] vis=2.155e-01 coeff=2.484e-02 delta_rms=4.685e-03
+2026-07-15 15:55:32 transreid.train INFO: Epoch[4] Iter[200/227] Loss: 7.410, Acc: 0.201, Base Lr: 1.66e-04 | id_global: 6.397 tri_global: 1.013 | HyperLoRA alpha=9.559e-04[7.560e-04,1.142e-03] vis=2.140e-01 coeff=2.470e-02 delta_rms=4.598e-03
+2026-07-15 15:55:34 transreid.train INFO: Epoch 4 done. Time per epoch: 30.897[s] Speed: 437.1[samples/s] ETA: 0h59m
+2026-07-15 15:55:42 transreid.train INFO: Epoch[5] Iter[50/227] Loss: 7.192, Acc: 0.127, Base Lr: 2.06e-04 | id_global: 6.340 tri_global: 0.852 | HyperLoRA alpha=9.380e-04[7.288e-04,1.189e-03] vis=2.147e-01 coeff=2.464e-02 delta_rms=4.695e-03
+2026-07-15 15:55:49 transreid.train INFO: Epoch[5] Iter[100/227] Loss: 7.160, Acc: 0.146, Base Lr: 2.06e-04 | id_global: 6.321 tri_global: 0.839 | HyperLoRA alpha=9.367e-04[7.223e-04,1.215e-03] vis=2.176e-01 coeff=2.515e-02 delta_rms=4.940e-03
+2026-07-15 15:55:56 transreid.train INFO: Epoch[5] Iter[150/227] Loss: 7.120, Acc: 0.172, Base Lr: 2.06e-04 | id_global: 6.295 tri_global: 0.826 | HyperLoRA alpha=9.260e-04[6.958e-04,1.192e-03] vis=2.192e-01 coeff=2.510e-02 delta_rms=4.753e-03
+2026-07-15 15:56:03 transreid.train INFO: Epoch[5] Iter[200/227] Loss: 7.077, Acc: 0.220, Base Lr: 2.06e-04 | id_global: 6.254 tri_global: 0.824 | HyperLoRA alpha=9.147e-04[6.222e-04,1.260e-03] vis=2.002e-01 coeff=2.276e-02 delta_rms=4.350e-03
+2026-07-15 15:56:05 transreid.train INFO: Epoch 5 done. Time per epoch: 30.998[s] Speed: 437.7[samples/s] ETA: 0h59m
+2026-07-15 15:56:13 transreid.train INFO: Epoch[6] Iter[50/227] Loss: 6.988, Acc: 0.120, Base Lr: 2.46e-04 | id_global: 6.198 tri_global: 0.790 | HyperLoRA alpha=9.147e-04[6.206e-04,1.346e-03] vis=2.178e-01 coeff=2.498e-02 delta_rms=4.671e-03
+2026-07-15 15:56:20 transreid.train INFO: Epoch[6] Iter[100/227] Loss: 6.947, Acc: 0.134, Base Lr: 2.46e-04 | id_global: 6.173 tri_global: 0.774 | HyperLoRA alpha=8.755e-04[5.763e-04,1.230e-03] vis=2.134e-01 coeff=2.467e-02 delta_rms=4.980e-03
+2026-07-15 15:56:27 transreid.train INFO: Epoch[6] Iter[150/227] Loss: 6.902, Acc: 0.164, Base Lr: 2.46e-04 | id_global: 6.129 tri_global: 0.773 | HyperLoRA alpha=8.983e-04[6.321e-04,1.313e-03] vis=2.173e-01 coeff=2.479e-02 delta_rms=4.510e-03
+2026-07-15 15:56:34 transreid.train INFO: Epoch[6] Iter[200/227] Loss: 6.825, Acc: 0.211, Base Lr: 2.46e-04 | id_global: 6.063 tri_global: 0.762 | HyperLoRA alpha=8.861e-04[5.235e-04,1.292e-03] vis=2.221e-01 coeff=2.556e-02 delta_rms=4.895e-03
+2026-07-15 15:56:36 transreid.train INFO: Epoch 6 done. Time per epoch: 31.158[s] Speed: 437.5[samples/s] ETA: 0h59m
+2026-07-15 15:56:44 transreid.train INFO: Epoch[7] Iter[50/227] Loss: 6.719, Acc: 0.116, Base Lr: 2.85e-04 | id_global: 6.012 tri_global: 0.708 | HyperLoRA alpha=8.783e-04[5.727e-04,1.183e-03] vis=2.255e-01 coeff=2.576e-02 delta_rms=4.818e-03
+2026-07-15 15:56:51 transreid.train INFO: Epoch[7] Iter[100/227] Loss: 6.637, Acc: 0.132, Base Lr: 2.85e-04 | id_global: 5.958 tri_global: 0.679 | HyperLoRA alpha=8.661e-04[5.429e-04,1.122e-03] vis=2.126e-01 coeff=2.425e-02 delta_rms=4.509e-03
+2026-07-15 15:56:58 transreid.train INFO: Epoch[7] Iter[150/227] Loss: 6.569, Acc: 0.159, Base Lr: 2.85e-04 | id_global: 5.903 tri_global: 0.665 | HyperLoRA alpha=8.629e-04[5.653e-04,1.170e-03] vis=2.240e-01 coeff=2.571e-02 delta_rms=4.879e-03
+2026-07-15 15:57:05 transreid.train INFO: Epoch[7] Iter[200/227] Loss: 6.455, Acc: 0.210, Base Lr: 2.85e-04 | id_global: 5.800 tri_global: 0.655 | HyperLoRA alpha=8.613e-04[5.730e-04,1.140e-03] vis=2.132e-01 coeff=2.466e-02 delta_rms=4.684e-03
+2026-07-15 15:57:07 transreid.train INFO: Epoch 7 done. Time per epoch: 30.867[s] Speed: 437.5[samples/s] ETA: 0h58m
+2026-07-15 15:57:15 transreid.train INFO: Epoch[8] Iter[50/227] Loss: 6.387, Acc: 0.118, Base Lr: 3.25e-04 | id_global: 5.748 tri_global: 0.639 | HyperLoRA alpha=8.847e-04[6.275e-04,1.233e-03] vis=2.044e-01 coeff=2.345e-02 delta_rms=4.543e-03
+2026-07-15 15:57:22 transreid.train INFO: Epoch[8] Iter[100/227] Loss: 6.315, Acc: 0.130, Base Lr: 3.25e-04 | id_global: 5.701 tri_global: 0.613 | HyperLoRA alpha=8.836e-04[6.300e-04,1.250e-03] vis=2.157e-01 coeff=2.478e-02 delta_rms=4.718e-03
+2026-07-15 15:57:29 transreid.train INFO: Epoch[8] Iter[150/227] Loss: 6.272, Acc: 0.160, Base Lr: 3.25e-04 | id_global: 5.640 tri_global: 0.632 | HyperLoRA alpha=9.075e-04[6.727e-04,1.284e-03] vis=2.244e-01 coeff=2.609e-02 delta_rms=5.062e-03
+2026-07-15 15:57:36 transreid.train INFO: Epoch[8] Iter[200/227] Loss: 6.142, Acc: 0.206, Base Lr: 3.25e-04 | id_global: 5.513 tri_global: 0.629 | HyperLoRA alpha=9.066e-04[6.735e-04,1.218e-03] vis=2.202e-01 coeff=2.505e-02 delta_rms=4.681e-03
+2026-07-15 15:57:38 transreid.train INFO: Epoch 8 done. Time per epoch: 30.854[s] Speed: 437.7[samples/s] ETA: 0h57m
+2026-07-15 15:57:46 transreid.train INFO: Epoch[9] Iter[50/227] Loss: 6.097, Acc: 0.114, Base Lr: 3.64e-04 | id_global: 5.510 tri_global: 0.587 | HyperLoRA alpha=8.991e-04[6.685e-04,1.210e-03] vis=2.201e-01 coeff=2.527e-02 delta_rms=4.818e-03
+2026-07-15 15:57:53 transreid.train INFO: Epoch[9] Iter[100/227] Loss: 6.039, Acc: 0.145, Base Lr: 3.64e-04 | id_global: 5.440 tri_global: 0.599 | HyperLoRA alpha=9.113e-04[6.547e-04,1.262e-03] vis=2.057e-01 coeff=2.386e-02 delta_rms=4.836e-03
+2026-07-15 15:58:00 transreid.train INFO: Epoch[9] Iter[150/227] Loss: 5.937, Acc: 0.176, Base Lr: 3.64e-04 | id_global: 5.341 tri_global: 0.596 | HyperLoRA alpha=8.706e-04[6.380e-04,1.321e-03] vis=2.210e-01 coeff=2.543e-02 delta_rms=4.765e-03
+2026-07-15 15:58:07 transreid.train INFO: Epoch[9] Iter[200/227] Loss: 5.752, Acc: 0.222, Base Lr: 3.64e-04 | id_global: 5.176 tri_global: 0.576 | HyperLoRA alpha=8.655e-04[6.545e-04,1.331e-03] vis=2.110e-01 coeff=2.431e-02 delta_rms=4.721e-03
+2026-07-15 15:58:09 transreid.train INFO: Epoch 9 done. Time per epoch: 30.896[s] Speed: 437.1[samples/s] ETA: 0h57m
+2026-07-15 15:58:17 transreid.train INFO: Epoch[10] Iter[50/227] Loss: 5.745, Acc: 0.156, Base Lr: 4.04e-04 | id_global: 5.188 tri_global: 0.558 | HyperLoRA alpha=8.359e-04[5.132e-04,1.315e-03] vis=2.161e-01 coeff=2.479e-02 delta_rms=4.652e-03
+2026-07-15 15:58:24 transreid.train INFO: Epoch[10] Iter[100/227] Loss: 5.697, Acc: 0.164, Base Lr: 4.04e-04 | id_global: 5.130 tri_global: 0.567 | HyperLoRA alpha=8.482e-04[5.127e-04,1.293e-03] vis=2.112e-01 coeff=2.450e-02 delta_rms=4.655e-03
+2026-07-15 15:58:31 transreid.train INFO: Epoch[10] Iter[150/227] Loss: 5.602, Acc: 0.193, Base Lr: 4.04e-04 | id_global: 5.034 tri_global: 0.568 | HyperLoRA alpha=8.537e-04[5.418e-04,1.269e-03] vis=2.054e-01 coeff=2.367e-02 delta_rms=4.674e-03
+2026-07-15 15:58:38 transreid.train INFO: Epoch[10] Iter[200/227] Loss: 5.367, Acc: 0.259, Base Lr: 4.04e-04 | id_global: 4.817 tri_global: 0.550 | HyperLoRA alpha=8.715e-04[4.853e-04,1.454e-03] vis=2.119e-01 coeff=2.437e-02 delta_rms=4.657e-03
+2026-07-15 15:58:39 transreid.train INFO: Epoch 10 done. Time per epoch: 30.949[s] Speed: 438.4[samples/s] ETA: 0h56m
+2026-07-15 15:58:40 transreid.train INFO: Eval protocol: flip_test=True feat_norm=yes
+2026-07-15 15:59:27 transreid.train INFO: Validation Results - Epoch: 10
+2026-07-15 15:59:27 transreid.train INFO: mAP: 35.1%
+2026-07-15 15:59:27 transreid.train INFO: CMC curve, Rank-1  :44.2%
+2026-07-15 15:59:27 transreid.train INFO: CMC curve, Rank-5  :59.6%
+2026-07-15 15:59:27 transreid.train INFO: CMC curve, Rank-10 :66.1%
+2026-07-15 15:59:36 transreid.train INFO: Epoch[11] Iter[50/227] Loss: 5.377, Acc: 0.161, Base Lr: 4.44e-04 | id_global: 4.857 tri_global: 0.520 | HyperLoRA alpha=8.498e-04[4.418e-04,1.542e-03] vis=2.167e-01 coeff=2.485e-02 delta_rms=4.729e-03
+2026-07-15 15:59:43 transreid.train INFO: Epoch[11] Iter[100/227] Loss: 5.246, Acc: 0.204, Base Lr: 4.44e-04 | id_global: 4.740 tri_global: 0.506 | HyperLoRA alpha=8.489e-04[4.574e-04,1.593e-03] vis=2.156e-01 coeff=2.468e-02 delta_rms=4.677e-03
+2026-07-15 15:59:50 transreid.train INFO: Epoch[11] Iter[150/227] Loss: 5.154, Acc: 0.230, Base Lr: 4.44e-04 | id_global: 4.646 tri_global: 0.508 | HyperLoRA alpha=8.468e-04[4.203e-04,1.611e-03] vis=2.095e-01 coeff=2.391e-02 delta_rms=4.396e-03
+2026-07-15 15:59:57 transreid.train INFO: Epoch[11] Iter[200/227] Loss: 4.946, Acc: 0.286, Base Lr: 4.44e-04 | id_global: 4.442 tri_global: 0.505 | HyperLoRA alpha=8.729e-04[3.773e-04,1.569e-03] vis=2.111e-01 coeff=2.421e-02 delta_rms=4.476e-03
+2026-07-15 15:59:58 transreid.train INFO: Epoch 11 done. Time per epoch: 31.087[s] Speed: 438.5[samples/s] ETA: 0h56m
+2026-07-15 16:00:07 transreid.train INFO: Epoch[12] Iter[50/227] Loss: 5.131, Acc: 0.214, Base Lr: 4.83e-04 | id_global: 4.546 tri_global: 0.584 | HyperLoRA alpha=8.694e-04[4.484e-04,1.474e-03] vis=2.227e-01 coeff=2.520e-02 delta_rms=4.773e-03
+2026-07-15 16:00:14 transreid.train INFO: Epoch[12] Iter[100/227] Loss: 4.991, Acc: 0.237, Base Lr: 4.83e-04 | id_global: 4.457 tri_global: 0.535 | HyperLoRA alpha=8.451e-04[4.621e-04,1.458e-03] vis=2.081e-01 coeff=2.419e-02 delta_rms=4.603e-03
+2026-07-15 16:00:21 transreid.train INFO: Epoch[12] Iter[150/227] Loss: 4.832, Acc: 0.279, Base Lr: 4.83e-04 | id_global: 4.327 tri_global: 0.505 | HyperLoRA alpha=8.508e-04[5.369e-04,1.569e-03] vis=2.226e-01 coeff=2.525e-02 delta_rms=4.707e-03
+2026-07-15 16:00:28 transreid.train INFO: Epoch[12] Iter[200/227] Loss: 4.565, Acc: 0.342, Base Lr: 4.83e-04 | id_global: 4.085 tri_global: 0.480 | HyperLoRA alpha=8.593e-04[5.210e-04,1.678e-03] vis=2.154e-01 coeff=2.498e-02 delta_rms=4.753e-03
+2026-07-15 16:00:29 transreid.train INFO: Epoch 12 done. Time per epoch: 30.673[s] Speed: 440.3[samples/s] ETA: 0h55m
+2026-07-15 16:00:37 transreid.train INFO: Epoch[13] Iter[50/227] Loss: 4.724, Acc: 0.268, Base Lr: 5.23e-04 | id_global: 4.202 tri_global: 0.522 | HyperLoRA alpha=8.924e-04[5.180e-04,1.859e-03] vis=2.148e-01 coeff=2.457e-02 delta_rms=4.571e-03
+2026-07-15 16:00:44 transreid.train INFO: Epoch[13] Iter[100/227] Loss: 4.583, Acc: 0.304, Base Lr: 5.23e-04 | id_global: 4.081 tri_global: 0.502 | HyperLoRA alpha=9.112e-04[4.309e-04,1.999e-03] vis=2.165e-01 coeff=2.499e-02 delta_rms=4.902e-03
+2026-07-15 16:00:51 transreid.train INFO: Epoch[13] Iter[150/227] Loss: 4.435, Acc: 0.348, Base Lr: 5.23e-04 | id_global: 3.945 tri_global: 0.490 | HyperLoRA alpha=9.161e-04[5.031e-04,1.924e-03] vis=2.224e-01 coeff=2.525e-02 delta_rms=4.808e-03
+2026-07-15 16:00:58 transreid.train INFO: Epoch[13] Iter[200/227] Loss: 4.222, Acc: 0.405, Base Lr: 5.23e-04 | id_global: 3.740 tri_global: 0.482 | HyperLoRA alpha=8.712e-04[4.642e-04,1.950e-03] vis=2.150e-01 coeff=2.479e-02 delta_rms=4.843e-03
+2026-07-15 16:01:00 transreid.train INFO: Epoch 13 done. Time per epoch: 30.890[s] Speed: 441.3[samples/s] ETA: 0h55m
+2026-07-15 16:01:08 transreid.train INFO: Epoch[14] Iter[50/227] Loss: 4.364, Acc: 0.333, Base Lr: 5.62e-04 | id_global: 3.884 tri_global: 0.479 | HyperLoRA alpha=8.446e-04[3.510e-04,1.927e-03] vis=2.205e-01 coeff=2.509e-02 delta_rms=4.622e-03
+2026-07-15 16:01:15 transreid.train INFO: Epoch[14] Iter[100/227] Loss: 4.202, Acc: 0.371, Base Lr: 5.62e-04 | id_global: 3.751 tri_global: 0.450 | HyperLoRA alpha=8.374e-04[4.061e-04,1.801e-03] vis=2.209e-01 coeff=2.536e-02 delta_rms=4.873e-03
+2026-07-15 16:01:22 transreid.train INFO: Epoch[14] Iter[150/227] Loss: 4.088, Acc: 0.419, Base Lr: 5.62e-04 | id_global: 3.620 tri_global: 0.468 | HyperLoRA alpha=8.842e-04[3.182e-04,1.985e-03] vis=2.172e-01 coeff=2.484e-02 delta_rms=4.625e-03
+2026-07-15 16:01:29 transreid.train INFO: Epoch[14] Iter[200/227] Loss: 3.835, Acc: 0.487, Base Lr: 5.62e-04 | id_global: 3.389 tri_global: 0.447 | HyperLoRA alpha=8.662e-04[2.914e-04,2.144e-03] vis=2.229e-01 coeff=2.520e-02 delta_rms=4.521e-03
+2026-07-15 16:01:31 transreid.train INFO: Epoch 14 done. Time per epoch: 30.627[s] Speed: 443.0[samples/s] ETA: 0h54m
+2026-07-15 16:01:39 transreid.train INFO: Epoch[15] Iter[50/227] Loss: 4.019, Acc: 0.387, Base Lr: 6.02e-04 | id_global: 3.554 tri_global: 0.464 | HyperLoRA alpha=8.594e-04[2.682e-04,2.339e-03] vis=2.152e-01 coeff=2.472e-02 delta_rms=4.801e-03
+2026-07-15 16:01:46 transreid.train INFO: Epoch[15] Iter[100/227] Loss: 3.796, Acc: 0.458, Base Lr: 6.02e-04 | id_global: 3.390 tri_global: 0.406 | HyperLoRA alpha=9.169e-04[2.294e-04,2.390e-03] vis=2.081e-01 coeff=2.386e-02 delta_rms=4.570e-03
+2026-07-15 16:01:53 transreid.train INFO: Epoch[15] Iter[150/227] Loss: 3.691, Acc: 0.497, Base Lr: 6.02e-04 | id_global: 3.267 tri_global: 0.424 | HyperLoRA alpha=9.385e-04[2.286e-04,2.483e-03] vis=2.224e-01 coeff=2.524e-02 delta_rms=4.672e-03
+2026-07-15 16:02:00 transreid.train INFO: Epoch[15] Iter[200/227] Loss: 3.481, Acc: 0.553, Base Lr: 6.02e-04 | id_global: 3.052 tri_global: 0.429 | HyperLoRA alpha=9.204e-04[2.022e-04,2.346e-03] vis=2.082e-01 coeff=2.428e-02 delta_rms=4.799e-03
+2026-07-15 16:02:01 transreid.train INFO: Epoch 15 done. Time per epoch: 30.751[s] Speed: 441.2[samples/s] ETA: 0h53m
+2026-07-15 16:02:10 transreid.train INFO: Epoch[16] Iter[50/227] Loss: 3.527, Acc: 0.507, Base Lr: 6.42e-04 | id_global: 3.136 tri_global: 0.391 | HyperLoRA alpha=9.404e-04[1.283e-04,2.587e-03] vis=2.175e-01 coeff=2.497e-02 delta_rms=4.580e-03
+2026-07-15 16:02:17 transreid.train INFO: Epoch[16] Iter[100/227] Loss: 3.430, Acc: 0.540, Base Lr: 6.42e-04 | id_global: 3.026 tri_global: 0.404 | HyperLoRA alpha=9.297e-04[-6.720e-05,2.609e-03] vis=2.177e-01 coeff=2.510e-02 delta_rms=4.768e-03
+2026-07-15 16:02:24 transreid.train INFO: Epoch[16] Iter[150/227] Loss: 3.331, Acc: 0.570, Base Lr: 6.42e-04 | id_global: 2.923 tri_global: 0.408 | HyperLoRA alpha=9.360e-04[-1.335e-04,2.710e-03] vis=2.151e-01 coeff=2.485e-02 delta_rms=4.696e-03
+2026-07-15 16:02:31 transreid.train INFO: Epoch[16] Iter[200/227] Loss: 3.119, Acc: 0.625, Base Lr: 6.42e-04 | id_global: 2.717 tri_global: 0.402 | HyperLoRA alpha=9.415e-04[-2.594e-04,2.848e-03] vis=2.149e-01 coeff=2.490e-02 delta_rms=4.776e-03
+2026-07-15 16:02:32 transreid.train INFO: Epoch 16 done. Time per epoch: 30.494[s] Speed: 440.7[samples/s] ETA: 0h52m
+2026-07-15 16:02:40 transreid.train INFO: Epoch[17] Iter[50/227] Loss: 3.222, Acc: 0.565, Base Lr: 6.81e-04 | id_global: 2.855 tri_global: 0.367 | HyperLoRA alpha=9.643e-04[-2.529e-04,2.896e-03] vis=2.197e-01 coeff=2.547e-02 delta_rms=4.857e-03
+2026-07-15 16:02:47 transreid.train INFO: Epoch[17] Iter[100/227] Loss: 3.097, Acc: 0.612, Base Lr: 6.81e-04 | id_global: 2.732 tri_global: 0.365 | HyperLoRA alpha=9.955e-04[-6.488e-06,2.870e-03] vis=2.200e-01 coeff=2.532e-02 delta_rms=4.669e-03
+2026-07-15 16:02:54 transreid.train INFO: Epoch[17] Iter[150/227] Loss: 2.970, Acc: 0.642, Base Lr: 6.81e-04 | id_global: 2.613 tri_global: 0.357 | HyperLoRA alpha=9.962e-04[-7.256e-05,2.825e-03] vis=2.096e-01 coeff=2.422e-02 delta_rms=4.469e-03
+2026-07-15 16:03:01 transreid.train INFO: Epoch[17] Iter[200/227] Loss: 2.766, Acc: 0.686, Base Lr: 6.81e-04 | id_global: 2.411 tri_global: 0.355 | HyperLoRA alpha=9.373e-04[-1.568e-04,2.764e-03] vis=2.157e-01 coeff=2.481e-02 delta_rms=4.798e-03
+2026-07-15 16:03:03 transreid.train INFO: Epoch 17 done. Time per epoch: 30.632[s] Speed: 440.8[samples/s] ETA: 0h52m
+2026-07-15 16:03:11 transreid.train INFO: Epoch[18] Iter[50/227] Loss: 3.001, Acc: 0.614, Base Lr: 7.21e-04 | id_global: 2.642 tri_global: 0.359 | HyperLoRA alpha=8.786e-04[-5.353e-04,2.743e-03] vis=2.172e-01 coeff=2.486e-02 delta_rms=4.668e-03
+2026-07-15 16:03:18 transreid.train INFO: Epoch[18] Iter[100/227] Loss: 2.841, Acc: 0.649, Base Lr: 7.21e-04 | id_global: 2.501 tri_global: 0.340 | HyperLoRA alpha=8.433e-04[-6.654e-04,2.756e-03] vis=2.149e-01 coeff=2.449e-02 delta_rms=4.468e-03
+2026-07-15 16:03:25 transreid.train INFO: Epoch[18] Iter[150/227] Loss: 2.684, Acc: 0.694, Base Lr: 7.21e-04 | id_global: 2.332 tri_global: 0.353 | HyperLoRA alpha=8.073e-04[-5.538e-04,2.393e-03] vis=2.185e-01 coeff=2.504e-02 delta_rms=4.641e-03
+2026-07-15 16:03:32 transreid.train INFO: Epoch[18] Iter[200/227] Loss: 2.502, Acc: 0.734, Base Lr: 7.21e-04 | id_global: 2.153 tri_global: 0.349 | HyperLoRA alpha=7.986e-04[-4.971e-04,2.311e-03] vis=2.182e-01 coeff=2.503e-02 delta_rms=4.698e-03
+2026-07-15 16:03:33 transreid.train INFO: Epoch 18 done. Time per epoch: 30.909[s] Speed: 441.0[samples/s] ETA: 0h52m
+2026-07-15 16:03:42 transreid.train INFO: Epoch[19] Iter[50/227] Loss: 2.708, Acc: 0.658, Base Lr: 7.60e-04 | id_global: 2.334 tri_global: 0.374 | HyperLoRA alpha=8.309e-04[-5.280e-05,1.967e-03] vis=2.024e-01 coeff=2.333e-02 delta_rms=4.455e-03
+2026-07-15 16:03:49 transreid.train INFO: Epoch[19] Iter[100/227] Loss: 2.608, Acc: 0.694, Base Lr: 7.60e-04 | id_global: 2.244 tri_global: 0.364 | HyperLoRA alpha=8.510e-04[-1.319e-04,2.342e-03] vis=2.195e-01 coeff=2.507e-02 delta_rms=4.612e-03
+2026-07-15 16:03:56 transreid.train INFO: Epoch[19] Iter[150/227] Loss: 2.457, Acc: 0.727, Base Lr: 7.60e-04 | id_global: 2.106 tri_global: 0.350 | HyperLoRA alpha=8.039e-04[-5.033e-04,2.429e-03] vis=2.141e-01 coeff=2.437e-02 delta_rms=4.475e-03
+2026-07-15 16:04:03 transreid.train INFO: Epoch[19] Iter[200/227] Loss: 2.256, Acc: 0.768, Base Lr: 7.60e-04 | id_global: 1.918 tri_global: 0.338 | HyperLoRA alpha=7.908e-04[-5.355e-04,2.426e-03] vis=2.070e-01 coeff=2.400e-02 delta_rms=4.642e-03
+2026-07-15 16:04:04 transreid.train INFO: Epoch 19 done. Time per epoch: 30.813[s] Speed: 440.3[samples/s] ETA: 0h51m
+2026-07-15 16:04:12 transreid.train INFO: Epoch[20] Iter[50/227] Loss: 2.343, Acc: 0.718, Base Lr: 7.47e-04 | id_global: 2.044 tri_global: 0.298 | HyperLoRA alpha=8.002e-04[-4.444e-04,2.408e-03] vis=2.180e-01 coeff=2.492e-02 delta_rms=4.627e-03
+2026-07-15 16:04:19 transreid.train INFO: Epoch[20] Iter[100/227] Loss: 2.247, Acc: 0.754, Base Lr: 7.47e-04 | id_global: 1.930 tri_global: 0.318 | HyperLoRA alpha=8.411e-04[-5.289e-04,2.824e-03] vis=2.115e-01 coeff=2.457e-02 delta_rms=4.859e-03
+2026-07-15 16:04:26 transreid.train INFO: Epoch[20] Iter[150/227] Loss: 2.139, Acc: 0.780, Base Lr: 7.47e-04 | id_global: 1.821 tri_global: 0.318 | HyperLoRA alpha=8.454e-04[-6.228e-04,2.867e-03] vis=2.138e-01 coeff=2.459e-02 delta_rms=4.559e-03
+2026-07-15 16:04:33 transreid.train INFO: Epoch[20] Iter[200/227] Loss: 1.972, Acc: 0.808, Base Lr: 7.47e-04 | id_global: 1.671 tri_global: 0.301 | HyperLoRA alpha=8.339e-04[-6.761e-04,2.728e-03] vis=2.205e-01 coeff=2.518e-02 delta_rms=4.508e-03
+2026-07-15 16:04:35 transreid.train INFO: Epoch 20 done. Time per epoch: 30.413[s] Speed: 441.9[samples/s] ETA: 0h50m
+2026-07-15 16:05:22 transreid.train INFO: Validation Results - Epoch: 20
+2026-07-15 16:05:22 transreid.train INFO: mAP: 42.7%
+2026-07-15 16:05:22 transreid.train INFO: CMC curve, Rank-1  :53.0%
+2026-07-15 16:05:22 transreid.train INFO: CMC curve, Rank-5  :67.8%
+2026-07-15 16:05:22 transreid.train INFO: CMC curve, Rank-10 :74.0%
+2026-07-15 16:05:30 transreid.train INFO: Epoch[21] Iter[50/227] Loss: 2.135, Acc: 0.749, Base Lr: 7.41e-04 | id_global: 1.839 tri_global: 0.296 | HyperLoRA alpha=7.676e-04[-8.646e-04,2.750e-03] vis=2.176e-01 coeff=2.488e-02 delta_rms=4.713e-03
+2026-07-15 16:05:38 transreid.train INFO: Epoch[21] Iter[100/227] Loss: 2.063, Acc: 0.777, Base Lr: 7.41e-04 | id_global: 1.746 tri_global: 0.318 | HyperLoRA alpha=8.099e-04[-9.361e-04,2.927e-03] vis=2.186e-01 coeff=2.500e-02 delta_rms=4.703e-03
+2026-07-15 16:05:45 transreid.train INFO: Epoch[21] Iter[150/227] Loss: 1.890, Acc: 0.814, Base Lr: 7.41e-04 | id_global: 1.603 tri_global: 0.287 | HyperLoRA alpha=8.206e-04[-8.818e-04,2.828e-03] vis=2.151e-01 coeff=2.465e-02 delta_rms=4.700e-03
+2026-07-15 16:05:51 transreid.train INFO: Epoch[21] Iter[200/227] Loss: 1.752, Acc: 0.840, Base Lr: 7.41e-04 | id_global: 1.464 tri_global: 0.288 | HyperLoRA alpha=8.031e-04[-8.611e-04,2.732e-03] vis=2.161e-01 coeff=2.474e-02 delta_rms=4.763e-03
+2026-07-15 16:05:53 transreid.train INFO: Epoch 21 done. Time per epoch: 30.779[s] Speed: 438.7[samples/s] ETA: 0h50m
+2026-07-15 16:06:01 transreid.train INFO: Epoch[22] Iter[50/227] Loss: 1.890, Acc: 0.803, Base Lr: 7.36e-04 | id_global: 1.570 tri_global: 0.319 | HyperLoRA alpha=8.112e-04[-7.474e-04,2.580e-03] vis=2.150e-01 coeff=2.452e-02 delta_rms=4.488e-03
+2026-07-15 16:06:08 transreid.train INFO: Epoch[22] Iter[100/227] Loss: 1.807, Acc: 0.816, Base Lr: 7.36e-04 | id_global: 1.521 tri_global: 0.286 | HyperLoRA alpha=7.882e-04[-9.326e-04,2.721e-03] vis=2.084e-01 coeff=2.393e-02 delta_rms=4.654e-03
+2026-07-15 16:06:15 transreid.train INFO: Epoch[22] Iter[150/227] Loss: 1.671, Acc: 0.844, Base Lr: 7.36e-04 | id_global: 1.400 tri_global: 0.271 | HyperLoRA alpha=7.975e-04[-9.639e-04,2.811e-03] vis=2.237e-01 coeff=2.569e-02 delta_rms=4.836e-03
+2026-07-15 16:06:22 transreid.train INFO: Epoch[22] Iter[200/227] Loss: 1.555, Acc: 0.863, Base Lr: 7.36e-04 | id_global: 1.284 tri_global: 0.271 | HyperLoRA alpha=8.379e-04[-8.737e-04,2.999e-03] vis=2.157e-01 coeff=2.484e-02 delta_rms=4.763e-03
+2026-07-15 16:06:24 transreid.train INFO: Epoch 22 done. Time per epoch: 30.675[s] Speed: 438.1[samples/s] ETA: 0h50m
+2026-07-15 16:06:32 transreid.train INFO: Epoch[23] Iter[50/227] Loss: 1.672, Acc: 0.834, Base Lr: 7.30e-04 | id_global: 1.400 tri_global: 0.271 | HyperLoRA alpha=8.914e-04[-1.034e-03,3.409e-03] vis=2.204e-01 coeff=2.507e-02 delta_rms=4.668e-03
+2026-07-15 16:06:39 transreid.train INFO: Epoch[23] Iter[100/227] Loss: 1.551, Acc: 0.852, Base Lr: 7.30e-04 | id_global: 1.306 tri_global: 0.244 | HyperLoRA alpha=9.019e-04[-1.069e-03,3.467e-03] vis=2.164e-01 coeff=2.468e-02 delta_rms=4.546e-03
+2026-07-15 16:06:46 transreid.train INFO: Epoch[23] Iter[150/227] Loss: 1.472, Acc: 0.866, Base Lr: 7.30e-04 | id_global: 1.229 tri_global: 0.243 | HyperLoRA alpha=8.474e-04[-1.098e-03,3.245e-03] vis=2.134e-01 coeff=2.480e-02 delta_rms=4.646e-03
+2026-07-15 16:06:53 transreid.train INFO: Epoch[23] Iter[200/227] Loss: 1.388, Acc: 0.883, Base Lr: 7.30e-04 | id_global: 1.137 tri_global: 0.250 | HyperLoRA alpha=8.360e-04[-9.186e-04,3.149e-03] vis=2.212e-01 coeff=2.528e-02 delta_rms=4.726e-03
+2026-07-15 16:06:54 transreid.train INFO: Epoch 23 done. Time per epoch: 30.766[s] Speed: 438.9[samples/s] ETA: 0h49m
+2026-07-15 16:07:03 transreid.train INFO: Epoch[24] Iter[50/227] Loss: 1.423, Acc: 0.863, Base Lr: 7.24e-04 | id_global: 1.230 tri_global: 0.193 | HyperLoRA alpha=8.668e-04[-8.326e-04,3.273e-03] vis=2.105e-01 coeff=2.402e-02 delta_rms=4.673e-03
+2026-07-15 16:07:10 transreid.train INFO: Epoch[24] Iter[100/227] Loss: 1.366, Acc: 0.871, Base Lr: 7.24e-04 | id_global: 1.165 tri_global: 0.200 | HyperLoRA alpha=8.355e-04[-9.205e-04,3.100e-03] vis=2.191e-01 coeff=2.503e-02 delta_rms=4.734e-03
+2026-07-15 16:07:17 transreid.train INFO: Epoch[24] Iter[150/227] Loss: 1.292, Acc: 0.887, Base Lr: 7.24e-04 | id_global: 1.089 tri_global: 0.203 | HyperLoRA alpha=8.058e-04[-1.127e-03,3.194e-03] vis=2.135e-01 coeff=2.465e-02 delta_rms=4.643e-03
+2026-07-15 16:07:24 transreid.train INFO: Epoch[24] Iter[200/227] Loss: 1.182, Acc: 0.904, Base Lr: 7.24e-04 | id_global: 0.986 tri_global: 0.196 | HyperLoRA alpha=7.986e-04[-1.238e-03,3.484e-03] vis=2.141e-01 coeff=2.488e-02 delta_rms=4.736e-03
+2026-07-15 16:07:26 transreid.train INFO: Epoch 24 done. Time per epoch: 31.086[s] Speed: 438.5[samples/s] ETA: 0h49m
+2026-07-15 16:07:34 transreid.train INFO: Epoch[25] Iter[50/227] Loss: 1.298, Acc: 0.881, Base Lr: 7.18e-04 | id_global: 1.105 tri_global: 0.193 | HyperLoRA alpha=7.958e-04[-1.208e-03,3.359e-03] vis=2.189e-01 coeff=2.506e-02 delta_rms=4.679e-03
+2026-07-15 16:07:41 transreid.train INFO: Epoch[25] Iter[100/227] Loss: 1.244, Acc: 0.892, Base Lr: 7.18e-04 | id_global: 1.045 tri_global: 0.199 | HyperLoRA alpha=8.090e-04[-8.928e-04,3.197e-03] vis=2.030e-01 coeff=2.319e-02 delta_rms=4.334e-03
+2026-07-15 16:07:48 transreid.train INFO: Epoch[25] Iter[150/227] Loss: 1.189, Acc: 0.901, Base Lr: 7.18e-04 | id_global: 0.984 tri_global: 0.205 | HyperLoRA alpha=8.323e-04[-1.023e-03,3.396e-03] vis=2.088e-01 coeff=2.399e-02 delta_rms=4.467e-03
+2026-07-15 16:07:55 transreid.train INFO: Epoch[25] Iter[200/227] Loss: 1.098, Acc: 0.912, Base Lr: 7.18e-04 | id_global: 0.903 tri_global: 0.194 | HyperLoRA alpha=8.378e-04[-1.086e-03,3.442e-03] vis=2.182e-01 coeff=2.496e-02 delta_rms=4.574e-03
+2026-07-15 16:07:57 transreid.train INFO: Epoch 25 done. Time per epoch: 30.972[s] Speed: 438.1[samples/s] ETA: 0h49m
+2026-07-15 16:08:05 transreid.train INFO: Epoch[26] Iter[50/227] Loss: 1.163, Acc: 0.897, Base Lr: 7.11e-04 | id_global: 0.975 tri_global: 0.188 | HyperLoRA alpha=8.309e-04[-1.188e-03,3.417e-03] vis=2.129e-01 coeff=2.433e-02 delta_rms=4.535e-03
+2026-07-15 16:08:12 transreid.train INFO: Epoch[26] Iter[100/227] Loss: 1.118, Acc: 0.907, Base Lr: 7.11e-04 | id_global: 0.928 tri_global: 0.190 | HyperLoRA alpha=8.227e-04[-1.394e-03,3.286e-03] vis=2.141e-01 coeff=2.445e-02 delta_rms=4.525e-03
+2026-07-15 16:08:19 transreid.train INFO: Epoch[26] Iter[150/227] Loss: 1.051, Acc: 0.921, Base Lr: 7.11e-04 | id_global: 0.864 tri_global: 0.187 | HyperLoRA alpha=8.462e-04[-1.253e-03,3.291e-03] vis=2.205e-01 coeff=2.520e-02 delta_rms=4.607e-03
+2026-07-15 16:08:26 transreid.train INFO: Epoch[26] Iter[200/227] Loss: 0.969, Acc: 0.932, Base Lr: 7.11e-04 | id_global: 0.788 tri_global: 0.181 | HyperLoRA alpha=8.238e-04[-1.326e-03,3.235e-03] vis=2.136e-01 coeff=2.457e-02 delta_rms=4.448e-03
+2026-07-15 16:08:27 transreid.train INFO: Epoch 26 done. Time per epoch: 30.950[s] Speed: 438.4[samples/s] ETA: 0h48m
+2026-07-15 16:08:36 transreid.train INFO: Epoch[27] Iter[50/227] Loss: 1.081, Acc: 0.911, Base Lr: 7.04e-04 | id_global: 0.899 tri_global: 0.182 | HyperLoRA alpha=8.424e-04[-1.162e-03,3.096e-03] vis=2.194e-01 coeff=2.493e-02 delta_rms=4.427e-03
+2026-07-15 16:08:43 transreid.train INFO: Epoch[27] Iter[100/227] Loss: 0.994, Acc: 0.924, Base Lr: 7.04e-04 | id_global: 0.834 tri_global: 0.160 | HyperLoRA alpha=8.513e-04[-1.109e-03,3.024e-03] vis=2.163e-01 coeff=2.484e-02 delta_rms=4.645e-03
+2026-07-15 16:08:50 transreid.train INFO: Epoch[27] Iter[150/227] Loss: 0.933, Acc: 0.933, Base Lr: 7.04e-04 | id_global: 0.774 tri_global: 0.159 | HyperLoRA alpha=8.712e-04[-1.125e-03,3.183e-03] vis=2.129e-01 coeff=2.435e-02 delta_rms=4.725e-03
+2026-07-15 16:08:57 transreid.train INFO: Epoch[27] Iter[200/227] Loss: 0.881, Acc: 0.939, Base Lr: 7.04e-04 | id_global: 0.716 tri_global: 0.165 | HyperLoRA alpha=9.021e-04[-1.007e-03,3.340e-03] vis=2.173e-01 coeff=2.523e-02 delta_rms=4.711e-03
+2026-07-15 16:08:58 transreid.train INFO: Epoch 27 done. Time per epoch: 30.976[s] Speed: 438.0[samples/s] ETA: 0h48m
+2026-07-15 16:09:07 transreid.train INFO: Epoch[28] Iter[50/227] Loss: 0.916, Acc: 0.934, Base Lr: 6.97e-04 | id_global: 0.780 tri_global: 0.136 | HyperLoRA alpha=9.018e-04[-8.859e-04,3.507e-03] vis=2.118e-01 coeff=2.427e-02 delta_rms=4.646e-03
+2026-07-15 16:09:14 transreid.train INFO: Epoch[28] Iter[100/227] Loss: 0.888, Acc: 0.936, Base Lr: 6.97e-04 | id_global: 0.744 tri_global: 0.143 | HyperLoRA alpha=8.321e-04[-1.094e-03,3.541e-03] vis=2.141e-01 coeff=2.452e-02 delta_rms=4.551e-03
+2026-07-15 16:09:21 transreid.train INFO: Epoch[28] Iter[150/227] Loss: 0.856, Acc: 0.943, Base Lr: 6.97e-04 | id_global: 0.703 tri_global: 0.153 | HyperLoRA alpha=8.538e-04[-1.024e-03,3.705e-03] vis=2.198e-01 coeff=2.503e-02 delta_rms=4.748e-03
+2026-07-15 16:09:28 transreid.train INFO: Epoch[28] Iter[200/227] Loss: 0.790, Acc: 0.948, Base Lr: 6.97e-04 | id_global: 0.643 tri_global: 0.147 | HyperLoRA alpha=8.279e-04[-1.040e-03,3.491e-03] vis=2.145e-01 coeff=2.451e-02 delta_rms=4.508e-03
+2026-07-15 16:09:29 transreid.train INFO: Epoch 28 done. Time per epoch: 30.769[s] Speed: 438.9[samples/s] ETA: 0h47m
+2026-07-15 16:09:37 transreid.train INFO: Epoch[29] Iter[50/227] Loss: 0.873, Acc: 0.939, Base Lr: 6.90e-04 | id_global: 0.725 tri_global: 0.148 | HyperLoRA alpha=8.289e-04[-1.044e-03,3.422e-03] vis=2.066e-01 coeff=2.363e-02 delta_rms=4.324e-03
+2026-07-15 16:09:44 transreid.train INFO: Epoch[29] Iter[100/227] Loss: 0.827, Acc: 0.945, Base Lr: 6.90e-04 | id_global: 0.673 tri_global: 0.154 | HyperLoRA alpha=8.307e-04[-1.238e-03,3.437e-03] vis=2.207e-01 coeff=2.529e-02 delta_rms=4.710e-03
+2026-07-15 16:09:51 transreid.train INFO: Epoch[29] Iter[150/227] Loss: 0.789, Acc: 0.950, Base Lr: 6.90e-04 | id_global: 0.639 tri_global: 0.150 | HyperLoRA alpha=8.207e-04[-1.311e-03,3.315e-03] vis=2.136e-01 coeff=2.457e-02 delta_rms=4.748e-03
+2026-07-15 16:09:58 transreid.train INFO: Epoch[29] Iter[200/227] Loss: 0.722, Acc: 0.955, Base Lr: 6.90e-04 | id_global: 0.585 tri_global: 0.137 | HyperLoRA alpha=7.998e-04[-1.286e-03,3.262e-03] vis=2.198e-01 coeff=2.527e-02 delta_rms=4.664e-03
+2026-07-15 16:10:00 transreid.train INFO: Epoch 29 done. Time per epoch: 30.928[s] Speed: 438.7[samples/s] ETA: 0h46m
+2026-07-15 16:10:08 transreid.train INFO: Epoch[30] Iter[50/227] Loss: 0.807, Acc: 0.941, Base Lr: 6.83e-04 | id_global: 0.673 tri_global: 0.134 | HyperLoRA alpha=8.572e-04[-1.120e-03,3.326e-03] vis=2.028e-01 coeff=2.347e-02 delta_rms=4.390e-03
+2026-07-15 16:10:15 transreid.train INFO: Epoch[30] Iter[100/227] Loss: 0.738, Acc: 0.948, Base Lr: 6.83e-04 | id_global: 0.619 tri_global: 0.119 | HyperLoRA alpha=8.959e-04[-9.642e-04,3.393e-03] vis=2.181e-01 coeff=2.506e-02 delta_rms=4.670e-03
+2026-07-15 16:10:22 transreid.train INFO: Epoch[30] Iter[150/227] Loss: 0.695, Acc: 0.953, Base Lr: 6.83e-04 | id_global: 0.579 tri_global: 0.115 | HyperLoRA alpha=8.780e-04[-1.171e-03,3.444e-03] vis=2.171e-01 coeff=2.499e-02 delta_rms=4.814e-03
+2026-07-15 16:10:29 transreid.train INFO: Epoch[30] Iter[200/227] Loss: 0.636, Acc: 0.959, Base Lr: 6.83e-04 | id_global: 0.527 tri_global: 0.109 | HyperLoRA alpha=8.988e-04[-1.355e-03,3.582e-03] vis=2.198e-01 coeff=2.526e-02 delta_rms=4.564e-03
+2026-07-15 16:10:31 transreid.train INFO: Epoch 30 done. Time per epoch: 31.004[s] Speed: 437.6[samples/s] ETA: 0h46m
+2026-07-15 16:11:19 transreid.train INFO: Validation Results - Epoch: 30
+2026-07-15 16:11:19 transreid.train INFO: mAP: 49.8%
+2026-07-15 16:11:19 transreid.train INFO: CMC curve, Rank-1  :59.8%
+2026-07-15 16:11:19 transreid.train INFO: CMC curve, Rank-5  :74.7%
+2026-07-15 16:11:19 transreid.train INFO: CMC curve, Rank-10 :80.2%
+2026-07-15 16:11:27 transreid.train INFO: Epoch[31] Iter[50/227] Loss: 0.701, Acc: 0.957, Base Lr: 6.76e-04 | id_global: 0.582 tri_global: 0.119 | HyperLoRA alpha=8.994e-04[-1.421e-03,3.621e-03] vis=2.102e-01 coeff=2.400e-02 delta_rms=4.563e-03
+2026-07-15 16:11:34 transreid.train INFO: Epoch[31] Iter[100/227] Loss: 0.675, Acc: 0.958, Base Lr: 6.76e-04 | id_global: 0.561 tri_global: 0.114 | HyperLoRA alpha=9.064e-04[-1.390e-03,3.527e-03] vis=2.099e-01 coeff=2.405e-02 delta_rms=4.490e-03
+2026-07-15 16:11:41 transreid.train INFO: Epoch[31] Iter[150/227] Loss: 0.640, Acc: 0.961, Base Lr: 6.76e-04 | id_global: 0.529 tri_global: 0.112 | HyperLoRA alpha=8.862e-04[-1.435e-03,3.443e-03] vis=2.208e-01 coeff=2.529e-02 delta_rms=4.670e-03
+2026-07-15 16:11:48 transreid.train INFO: Epoch[31] Iter[200/227] Loss: 0.592, Acc: 0.964, Base Lr: 6.76e-04 | id_global: 0.486 tri_global: 0.106 | HyperLoRA alpha=8.622e-04[-1.528e-03,3.302e-03] vis=2.118e-01 coeff=2.447e-02 delta_rms=4.596e-03
+2026-07-15 16:11:50 transreid.train INFO: Epoch 31 done. Time per epoch: 31.041[s] Speed: 437.1[samples/s] ETA: 0h46m
+2026-07-15 16:11:58 transreid.train INFO: Epoch[32] Iter[50/227] Loss: 0.672, Acc: 0.952, Base Lr: 6.68e-04 | id_global: 0.561 tri_global: 0.111 | HyperLoRA alpha=8.270e-04[-1.641e-03,3.242e-03] vis=2.023e-01 coeff=2.350e-02 delta_rms=4.584e-03
+2026-07-15 16:12:05 transreid.train INFO: Epoch[32] Iter[100/227] Loss: 0.643, Acc: 0.957, Base Lr: 6.68e-04 | id_global: 0.531 tri_global: 0.112 | HyperLoRA alpha=8.214e-04[-1.672e-03,3.343e-03] vis=2.203e-01 coeff=2.509e-02 delta_rms=4.614e-03
+2026-07-15 16:12:12 transreid.train INFO: Epoch[32] Iter[150/227] Loss: 0.609, Acc: 0.960, Base Lr: 6.68e-04 | id_global: 0.497 tri_global: 0.112 | HyperLoRA alpha=8.160e-04[-1.624e-03,3.287e-03] vis=2.183e-01 coeff=2.495e-02 delta_rms=4.646e-03
+2026-07-15 16:12:19 transreid.train INFO: Epoch[32] Iter[200/227] Loss: 0.582, Acc: 0.963, Base Lr: 6.68e-04 | id_global: 0.464 tri_global: 0.118 | HyperLoRA alpha=8.358e-04[-1.501e-03,3.369e-03] vis=2.157e-01 coeff=2.446e-02 delta_rms=4.445e-03
+2026-07-15 16:12:21 transreid.train INFO: Epoch 32 done. Time per epoch: 30.948[s] Speed: 438.4[samples/s] ETA: 0h45m
+2026-07-15 16:12:29 transreid.train INFO: Epoch[33] Iter[50/227] Loss: 0.597, Acc: 0.961, Base Lr: 6.60e-04 | id_global: 0.505 tri_global: 0.092 | HyperLoRA alpha=8.275e-04[-1.454e-03,3.317e-03] vis=2.194e-01 coeff=2.501e-02 delta_rms=4.636e-03
+2026-07-15 16:12:36 transreid.train INFO: Epoch[33] Iter[100/227] Loss: 0.582, Acc: 0.965, Base Lr: 6.60e-04 | id_global: 0.481 tri_global: 0.102 | HyperLoRA alpha=8.695e-04[-1.339e-03,3.410e-03] vis=2.112e-01 coeff=2.433e-02 delta_rms=4.767e-03
+2026-07-15 16:12:43 transreid.train INFO: Epoch[33] Iter[150/227] Loss: 0.557, Acc: 0.967, Base Lr: 6.60e-04 | id_global: 0.453 tri_global: 0.105 | HyperLoRA alpha=8.811e-04[-1.247e-03,3.359e-03] vis=2.205e-01 coeff=2.507e-02 delta_rms=4.572e-03
+2026-07-15 16:12:50 transreid.train INFO: Epoch[33] Iter[200/227] Loss: 0.525, Acc: 0.969, Base Lr: 6.60e-04 | id_global: 0.422 tri_global: 0.102 | HyperLoRA alpha=8.757e-04[-1.384e-03,3.511e-03] vis=2.164e-01 coeff=2.500e-02 delta_rms=4.662e-03
+2026-07-15 16:12:52 transreid.train INFO: Epoch 33 done. Time per epoch: 31.072[s] Speed: 436.7[samples/s] ETA: 0h45m
+2026-07-15 16:13:00 transreid.train INFO: Epoch[34] Iter[50/227] Loss: 0.537, Acc: 0.968, Base Lr: 6.52e-04 | id_global: 0.454 tri_global: 0.083 | HyperLoRA alpha=8.988e-04[-1.342e-03,3.718e-03] vis=2.127e-01 coeff=2.439e-02 delta_rms=4.531e-03
+2026-07-15 16:13:07 transreid.train INFO: Epoch[34] Iter[100/227] Loss: 0.513, Acc: 0.968, Base Lr: 6.52e-04 | id_global: 0.434 tri_global: 0.078 | HyperLoRA alpha=8.842e-04[-1.375e-03,3.647e-03] vis=2.184e-01 coeff=2.463e-02 delta_rms=4.395e-03
+2026-07-15 16:13:14 transreid.train INFO: Epoch[34] Iter[150/227] Loss: 0.500, Acc: 0.969, Base Lr: 6.52e-04 | id_global: 0.418 tri_global: 0.082 | HyperLoRA alpha=9.134e-04[-1.238e-03,3.722e-03] vis=2.126e-01 coeff=2.441e-02 delta_rms=4.624e-03
+2026-07-15 16:13:21 transreid.train INFO: Epoch[34] Iter[200/227] Loss: 0.476, Acc: 0.972, Base Lr: 6.52e-04 | id_global: 0.390 tri_global: 0.086 | HyperLoRA alpha=9.463e-04[-1.105e-03,3.921e-03] vis=2.152e-01 coeff=2.454e-02 delta_rms=4.427e-03
+2026-07-15 16:13:23 transreid.train INFO: Epoch 34 done. Time per epoch: 30.991[s] Speed: 437.8[samples/s] ETA: 0h44m
+2026-07-15 16:13:31 transreid.train INFO: Epoch[35] Iter[50/227] Loss: 0.534, Acc: 0.963, Base Lr: 6.44e-04 | id_global: 0.446 tri_global: 0.088 | HyperLoRA alpha=9.241e-04[-1.101e-03,3.850e-03] vis=2.176e-01 coeff=2.488e-02 delta_rms=4.591e-03
+2026-07-15 16:13:38 transreid.train INFO: Epoch[35] Iter[100/227] Loss: 0.525, Acc: 0.967, Base Lr: 6.44e-04 | id_global: 0.425 tri_global: 0.100 | HyperLoRA alpha=9.025e-04[-1.034e-03,3.774e-03] vis=2.176e-01 coeff=2.490e-02 delta_rms=4.613e-03
+2026-07-15 16:13:45 transreid.train INFO: Epoch[35] Iter[150/227] Loss: 0.497, Acc: 0.968, Base Lr: 6.44e-04 | id_global: 0.403 tri_global: 0.094 | HyperLoRA alpha=9.252e-04[-9.994e-04,3.879e-03] vis=2.135e-01 coeff=2.444e-02 delta_rms=4.884e-03
+2026-07-15 16:13:52 transreid.train INFO: Epoch[35] Iter[200/227] Loss: 0.476, Acc: 0.970, Base Lr: 6.44e-04 | id_global: 0.374 tri_global: 0.102 | HyperLoRA alpha=8.904e-04[-1.177e-03,3.889e-03] vis=2.050e-01 coeff=2.340e-02 delta_rms=4.325e-03
+2026-07-15 16:13:54 transreid.train INFO: Epoch 35 done. Time per epoch: 30.747[s] Speed: 437.1[samples/s] ETA: 0h43m
+2026-07-15 16:14:02 transreid.train INFO: Epoch[36] Iter[50/227] Loss: 0.513, Acc: 0.965, Base Lr: 6.35e-04 | id_global: 0.422 tri_global: 0.091 | HyperLoRA alpha=8.773e-04[-1.204e-03,3.880e-03] vis=2.209e-01 coeff=2.511e-02 delta_rms=4.667e-03
+2026-07-15 16:14:09 transreid.train INFO: Epoch[36] Iter[100/227] Loss: 0.492, Acc: 0.970, Base Lr: 6.35e-04 | id_global: 0.400 tri_global: 0.093 | HyperLoRA alpha=8.943e-04[-1.186e-03,3.866e-03] vis=2.100e-01 coeff=2.392e-02 delta_rms=4.497e-03
+2026-07-15 16:14:16 transreid.train INFO: Epoch[36] Iter[150/227] Loss: 0.474, Acc: 0.972, Base Lr: 6.35e-04 | id_global: 0.379 tri_global: 0.095 | HyperLoRA alpha=8.693e-04[-1.231e-03,3.819e-03] vis=2.179e-01 coeff=2.478e-02 delta_rms=4.708e-03
+2026-07-15 16:14:23 transreid.train INFO: Epoch[36] Iter[200/227] Loss: 0.447, Acc: 0.974, Base Lr: 6.35e-04 | id_global: 0.353 tri_global: 0.094 | HyperLoRA alpha=8.607e-04[-1.211e-03,3.847e-03] vis=2.114e-01 coeff=2.445e-02 delta_rms=4.643e-03
+2026-07-15 16:14:25 transreid.train INFO: Epoch 36 done. Time per epoch: 31.180[s] Speed: 437.2[samples/s] ETA: 0h43m
+2026-07-15 16:14:33 transreid.train INFO: Epoch[37] Iter[50/227] Loss: 0.509, Acc: 0.966, Base Lr: 6.27e-04 | id_global: 0.407 tri_global: 0.101 | HyperLoRA alpha=8.666e-04[-1.136e-03,3.773e-03] vis=2.230e-01 coeff=2.543e-02 delta_rms=4.534e-03
+2026-07-15 16:14:40 transreid.train INFO: Epoch[37] Iter[100/227] Loss: 0.480, Acc: 0.970, Base Lr: 6.27e-04 | id_global: 0.384 tri_global: 0.096 | HyperLoRA alpha=8.895e-04[-1.135e-03,3.707e-03] vis=2.180e-01 coeff=2.476e-02 delta_rms=4.596e-03
+2026-07-15 16:14:47 transreid.train INFO: Epoch[37] Iter[150/227] Loss: 0.485, Acc: 0.972, Base Lr: 6.27e-04 | id_global: 0.371 tri_global: 0.114 | HyperLoRA alpha=9.192e-04[-1.007e-03,3.732e-03] vis=2.157e-01 coeff=2.473e-02 delta_rms=4.572e-03
+2026-07-15 16:14:54 transreid.train INFO: Epoch[37] Iter[200/227] Loss: 0.455, Acc: 0.974, Base Lr: 6.27e-04 | id_global: 0.344 tri_global: 0.111 | HyperLoRA alpha=9.434e-04[-1.058e-03,3.794e-03] vis=2.161e-01 coeff=2.471e-02 delta_rms=4.552e-03
+2026-07-15 16:14:56 transreid.train INFO: Epoch 37 done. Time per epoch: 30.848[s] Speed: 437.8[samples/s] ETA: 0h42m
+2026-07-15 16:15:04 transreid.train INFO: Epoch[38] Iter[50/227] Loss: 0.509, Acc: 0.969, Base Lr: 6.18e-04 | id_global: 0.387 tri_global: 0.122 | HyperLoRA alpha=9.181e-04[-1.257e-03,3.885e-03] vis=2.159e-01 coeff=2.471e-02 delta_rms=4.584e-03
+2026-07-15 16:15:11 transreid.train INFO: Epoch[38] Iter[100/227] Loss: 0.487, Acc: 0.973, Base Lr: 6.18e-04 | id_global: 0.371 tri_global: 0.116 | HyperLoRA alpha=8.708e-04[-1.406e-03,3.745e-03] vis=2.147e-01 coeff=2.448e-02 delta_rms=4.513e-03
+2026-07-15 16:15:18 transreid.train INFO: Epoch[38] Iter[150/227] Loss: 0.456, Acc: 0.974, Base Lr: 6.18e-04 | id_global: 0.353 tri_global: 0.103 | HyperLoRA alpha=8.848e-04[-1.325e-03,3.729e-03] vis=2.127e-01 coeff=2.410e-02 delta_rms=4.479e-03
+2026-07-15 16:15:25 transreid.train INFO: Epoch[38] Iter[200/227] Loss: 0.431, Acc: 0.975, Base Lr: 6.18e-04 | id_global: 0.331 tri_global: 0.101 | HyperLoRA alpha=9.175e-04[-1.095e-03,3.703e-03] vis=2.253e-01 coeff=2.546e-02 delta_rms=4.567e-03
+2026-07-15 16:15:27 transreid.train INFO: Epoch 38 done. Time per epoch: 30.939[s] Speed: 438.5[samples/s] ETA: 0h42m
+2026-07-15 16:15:35 transreid.train INFO: Epoch[39] Iter[50/227] Loss: 0.486, Acc: 0.968, Base Lr: 6.09e-04 | id_global: 0.378 tri_global: 0.108 | HyperLoRA alpha=9.252e-04[-9.997e-04,3.589e-03] vis=2.092e-01 coeff=2.401e-02 delta_rms=4.554e-03
+2026-07-15 16:15:42 transreid.train INFO: Epoch[39] Iter[100/227] Loss: 0.446, Acc: 0.973, Base Lr: 6.09e-04 | id_global: 0.350 tri_global: 0.096 | HyperLoRA alpha=9.523e-04[-1.004e-03,3.666e-03] vis=2.133e-01 coeff=2.443e-02 delta_rms=4.686e-03
+2026-07-15 16:15:49 transreid.train INFO: Epoch[39] Iter[150/227] Loss: 0.421, Acc: 0.975, Base Lr: 6.09e-04 | id_global: 0.330 tri_global: 0.091 | HyperLoRA alpha=9.727e-04[-9.533e-04,3.724e-03] vis=2.149e-01 coeff=2.462e-02 delta_rms=4.626e-03
+2026-07-15 16:15:56 transreid.train INFO: Epoch[39] Iter[200/227] Loss: 0.391, Acc: 0.978, Base Lr: 6.09e-04 | id_global: 0.303 tri_global: 0.088 | HyperLoRA alpha=9.948e-04[-8.146e-04,3.841e-03] vis=2.241e-01 coeff=2.550e-02 delta_rms=4.809e-03
+2026-07-15 16:15:58 transreid.train INFO: Epoch 39 done. Time per epoch: 30.799[s] Speed: 438.5[samples/s] ETA: 0h41m
+2026-07-15 16:16:06 transreid.train INFO: Epoch[40] Iter[50/227] Loss: 0.393, Acc: 0.977, Base Lr: 6.00e-04 | id_global: 0.325 tri_global: 0.068 | HyperLoRA alpha=9.596e-04[-9.296e-04,3.830e-03] vis=2.129e-01 coeff=2.451e-02 delta_rms=4.620e-03
+2026-07-15 16:16:13 transreid.train INFO: Epoch[40] Iter[100/227] Loss: 0.391, Acc: 0.976, Base Lr: 6.00e-04 | id_global: 0.310 tri_global: 0.082 | HyperLoRA alpha=9.533e-04[-6.401e-04,3.645e-03] vis=2.150e-01 coeff=2.449e-02 delta_rms=4.475e-03
+2026-07-15 16:16:20 transreid.train INFO: Epoch[40] Iter[150/227] Loss: 0.381, Acc: 0.977, Base Lr: 6.00e-04 | id_global: 0.302 tri_global: 0.079 | HyperLoRA alpha=9.609e-04[-5.966e-04,3.621e-03] vis=2.186e-01 coeff=2.490e-02 delta_rms=4.414e-03
+2026-07-15 16:16:27 transreid.train INFO: Epoch[40] Iter[200/227] Loss: 0.361, Acc: 0.978, Base Lr: 6.00e-04 | id_global: 0.282 tri_global: 0.078 | HyperLoRA alpha=9.652e-04[-5.362e-04,3.720e-03] vis=2.158e-01 coeff=2.489e-02 delta_rms=4.623e-03
+2026-07-15 16:16:28 transreid.train INFO: Epoch 40 done. Time per epoch: 30.794[s] Speed: 436.5[samples/s] ETA: 0h41m
+2026-07-15 16:17:16 transreid.train INFO: Validation Results - Epoch: 40
+2026-07-15 16:17:16 transreid.train INFO: mAP: 51.2%
+2026-07-15 16:17:16 transreid.train INFO: CMC curve, Rank-1  :60.5%
+2026-07-15 16:17:16 transreid.train INFO: CMC curve, Rank-5  :75.8%
+2026-07-15 16:17:16 transreid.train INFO: CMC curve, Rank-10 :81.6%
+2026-07-15 16:17:25 transreid.train INFO: Epoch[41] Iter[50/227] Loss: 0.393, Acc: 0.976, Base Lr: 5.91e-04 | id_global: 0.309 tri_global: 0.084 | HyperLoRA alpha=9.876e-04[-3.816e-04,3.761e-03] vis=2.117e-01 coeff=2.400e-02 delta_rms=4.361e-03
+2026-07-15 16:17:32 transreid.train INFO: Epoch[41] Iter[100/227] Loss: 0.365, Acc: 0.978, Base Lr: 5.91e-04 | id_global: 0.294 tri_global: 0.071 | HyperLoRA alpha=9.725e-04[-3.932e-04,3.693e-03] vis=2.133e-01 coeff=2.439e-02 delta_rms=4.747e-03
+2026-07-15 16:17:39 transreid.train INFO: Epoch[41] Iter[150/227] Loss: 0.348, Acc: 0.979, Base Lr: 5.91e-04 | id_global: 0.280 tri_global: 0.068 | HyperLoRA alpha=9.611e-04[-4.500e-04,3.643e-03] vis=2.172e-01 coeff=2.470e-02 delta_rms=4.612e-03
+2026-07-15 16:17:46 transreid.train INFO: Epoch[41] Iter[200/227] Loss: 0.320, Acc: 0.982, Base Lr: 5.91e-04 | id_global: 0.259 tri_global: 0.062 | HyperLoRA alpha=9.735e-04[-3.889e-04,3.692e-03] vis=2.211e-01 coeff=2.530e-02 delta_rms=4.647e-03
+2026-07-15 16:17:47 transreid.train INFO: Epoch 41 done. Time per epoch: 30.959[s] Speed: 438.3[samples/s] ETA: 0h40m
+2026-07-15 16:17:55 transreid.train INFO: Epoch[42] Iter[50/227] Loss: 0.337, Acc: 0.976, Base Lr: 5.82e-04 | id_global: 0.287 tri_global: 0.050 | HyperLoRA alpha=9.748e-04[-4.009e-04,3.727e-03] vis=2.123e-01 coeff=2.421e-02 delta_rms=4.473e-03
+2026-07-15 16:18:03 transreid.train INFO: Epoch[42] Iter[100/227] Loss: 0.336, Acc: 0.978, Base Lr: 5.82e-04 | id_global: 0.279 tri_global: 0.057 | HyperLoRA alpha=9.915e-04[-2.094e-04,3.751e-03] vis=2.161e-01 coeff=2.456e-02 delta_rms=4.504e-03
+2026-07-15 16:18:10 transreid.train INFO: Epoch[42] Iter[150/227] Loss: 0.322, Acc: 0.981, Base Lr: 5.82e-04 | id_global: 0.264 tri_global: 0.058 | HyperLoRA alpha=9.945e-04[-3.223e-04,3.887e-03] vis=2.143e-01 coeff=2.438e-02 delta_rms=4.472e-03
+2026-07-15 16:18:17 transreid.train INFO: Epoch[42] Iter[200/227] Loss: 0.313, Acc: 0.981, Base Lr: 5.82e-04 | id_global: 0.248 tri_global: 0.065 | HyperLoRA alpha=9.789e-04[-2.762e-04,3.821e-03] vis=2.180e-01 coeff=2.499e-02 delta_rms=4.463e-03
+2026-07-15 16:18:18 transreid.train INFO: Epoch 42 done. Time per epoch: 30.823[s] Speed: 438.1[samples/s] ETA: 0h40m
+2026-07-15 16:18:26 transreid.train INFO: Epoch[43] Iter[50/227] Loss: 0.369, Acc: 0.978, Base Lr: 5.73e-04 | id_global: 0.285 tri_global: 0.084 | HyperLoRA alpha=9.682e-04[-2.265e-04,3.681e-03] vis=2.082e-01 coeff=2.358e-02 delta_rms=4.459e-03
+2026-07-15 16:18:33 transreid.train INFO: Epoch[43] Iter[100/227] Loss: 0.350, Acc: 0.979, Base Lr: 5.73e-04 | id_global: 0.273 tri_global: 0.077 | HyperLoRA alpha=9.699e-04[-2.784e-04,3.712e-03] vis=2.165e-01 coeff=2.462e-02 delta_rms=4.775e-03
+2026-07-15 16:18:40 transreid.train INFO: Epoch[43] Iter[150/227] Loss: 0.338, Acc: 0.981, Base Lr: 5.73e-04 | id_global: 0.261 tri_global: 0.077 | HyperLoRA alpha=9.913e-04[-1.994e-04,3.816e-03] vis=2.169e-01 coeff=2.487e-02 delta_rms=4.558e-03
+2026-07-15 16:18:47 transreid.train INFO: Epoch[43] Iter[200/227] Loss: 0.316, Acc: 0.982, Base Lr: 5.73e-04 | id_global: 0.242 tri_global: 0.074 | HyperLoRA alpha=9.851e-04[-1.892e-04,3.846e-03] vis=2.075e-01 coeff=2.384e-02 delta_rms=4.427e-03
+2026-07-15 16:18:49 transreid.train INFO: Epoch 43 done. Time per epoch: 30.859[s] Speed: 437.6[samples/s] ETA: 0h39m
+2026-07-15 16:18:57 transreid.train INFO: Epoch[44] Iter[50/227] Loss: 0.349, Acc: 0.980, Base Lr: 5.63e-04 | id_global: 0.280 tri_global: 0.069 | HyperLoRA alpha=9.814e-04[-2.354e-04,3.850e-03] vis=2.169e-01 coeff=2.482e-02 delta_rms=4.581e-03
+2026-07-15 16:19:04 transreid.train INFO: Epoch[44] Iter[100/227] Loss: 0.340, Acc: 0.980, Base Lr: 5.63e-04 | id_global: 0.271 tri_global: 0.069 | HyperLoRA alpha=1.003e-03[-4.801e-05,3.908e-03] vis=2.115e-01 coeff=2.389e-02 delta_rms=4.306e-03
+2026-07-15 16:19:11 transreid.train INFO: Epoch[44] Iter[150/227] Loss: 0.315, Acc: 0.983, Base Lr: 5.63e-04 | id_global: 0.251 tri_global: 0.063 | HyperLoRA alpha=1.024e-03[9.916e-05,3.848e-03] vis=2.159e-01 coeff=2.447e-02 delta_rms=4.342e-03
+2026-07-15 16:19:18 transreid.train INFO: Epoch[44] Iter[200/227] Loss: 0.301, Acc: 0.982, Base Lr: 5.63e-04 | id_global: 0.237 tri_global: 0.063 | HyperLoRA alpha=1.028e-03[1.071e-04,3.833e-03] vis=2.057e-01 coeff=2.343e-02 delta_rms=4.393e-03
+2026-07-15 16:19:20 transreid.train INFO: Epoch 44 done. Time per epoch: 30.974[s] Speed: 438.0[samples/s] ETA: 0h39m
+2026-07-15 16:19:28 transreid.train INFO: Epoch[45] Iter[50/227] Loss: 0.348, Acc: 0.980, Base Lr: 5.54e-04 | id_global: 0.278 tri_global: 0.070 | HyperLoRA alpha=1.032e-03[1.956e-04,3.782e-03] vis=2.163e-01 coeff=2.491e-02 delta_rms=4.756e-03
+2026-07-15 16:19:35 transreid.train INFO: Epoch[45] Iter[100/227] Loss: 0.335, Acc: 0.980, Base Lr: 5.54e-04 | id_global: 0.263 tri_global: 0.072 | HyperLoRA alpha=1.008e-03[8.943e-05,3.806e-03] vis=2.121e-01 coeff=2.412e-02 delta_rms=4.518e-03
+2026-07-15 16:19:42 transreid.train INFO: Epoch[45] Iter[150/227] Loss: 0.310, Acc: 0.981, Base Lr: 5.54e-04 | id_global: 0.246 tri_global: 0.064 | HyperLoRA alpha=1.003e-03[7.326e-05,3.816e-03] vis=2.203e-01 coeff=2.485e-02 delta_rms=4.458e-03
+2026-07-15 16:19:49 transreid.train INFO: Epoch[45] Iter[200/227] Loss: 0.288, Acc: 0.983, Base Lr: 5.54e-04 | id_global: 0.227 tri_global: 0.060 | HyperLoRA alpha=9.984e-04[3.659e-05,3.760e-03] vis=2.198e-01 coeff=2.509e-02 delta_rms=4.613e-03
+2026-07-15 16:19:51 transreid.train INFO: Epoch 45 done. Time per epoch: 30.794[s] Speed: 438.5[samples/s] ETA: 0h38m
+2026-07-15 16:19:59 transreid.train INFO: Epoch[46] Iter[50/227] Loss: 0.321, Acc: 0.982, Base Lr: 5.44e-04 | id_global: 0.252 tri_global: 0.068 | HyperLoRA alpha=1.006e-03[-6.635e-05,3.834e-03] vis=2.191e-01 coeff=2.486e-02 delta_rms=4.453e-03
+2026-07-15 16:20:06 transreid.train INFO: Epoch[46] Iter[100/227] Loss: 0.290, Acc: 0.982, Base Lr: 5.44e-04 | id_global: 0.238 tri_global: 0.052 | HyperLoRA alpha=1.026e-03[-6.098e-05,3.840e-03] vis=2.144e-01 coeff=2.463e-02 delta_rms=4.617e-03
+2026-07-15 16:20:13 transreid.train INFO: Epoch[46] Iter[150/227] Loss: 0.283, Acc: 0.984, Base Lr: 5.44e-04 | id_global: 0.224 tri_global: 0.060 | HyperLoRA alpha=1.040e-03[5.942e-05,3.875e-03] vis=2.257e-01 coeff=2.541e-02 delta_rms=4.414e-03
+2026-07-15 16:20:20 transreid.train INFO: Epoch[46] Iter[200/227] Loss: 0.272, Acc: 0.985, Base Lr: 5.44e-04 | id_global: 0.211 tri_global: 0.061 | HyperLoRA alpha=1.039e-03[6.691e-05,3.912e-03] vis=2.256e-01 coeff=2.532e-02 delta_rms=4.625e-03
+2026-07-15 16:20:22 transreid.train INFO: Epoch 46 done. Time per epoch: 30.891[s] Speed: 437.1[samples/s] ETA: 0h38m
+2026-07-15 16:20:30 transreid.train INFO: Epoch[47] Iter[50/227] Loss: 0.304, Acc: 0.981, Base Lr: 5.34e-04 | id_global: 0.246 tri_global: 0.057 | HyperLoRA alpha=1.038e-03[7.130e-05,3.829e-03] vis=2.210e-01 coeff=2.486e-02 delta_rms=4.291e-03
+2026-07-15 16:20:37 transreid.train INFO: Epoch[47] Iter[100/227] Loss: 0.303, Acc: 0.982, Base Lr: 5.34e-04 | id_global: 0.240 tri_global: 0.063 | HyperLoRA alpha=1.060e-03[5.613e-05,3.986e-03] vis=2.214e-01 coeff=2.525e-02 delta_rms=4.843e-03
+2026-07-15 16:20:44 transreid.train INFO: Epoch[47] Iter[150/227] Loss: 0.289, Acc: 0.983, Base Lr: 5.34e-04 | id_global: 0.227 tri_global: 0.061 | HyperLoRA alpha=1.063e-03[7.230e-05,3.997e-03] vis=2.227e-01 coeff=2.547e-02 delta_rms=4.523e-03
+2026-07-15 16:20:51 transreid.train INFO: Epoch[47] Iter[200/227] Loss: 0.273, Acc: 0.984, Base Lr: 5.34e-04 | id_global: 0.213 tri_global: 0.060 | HyperLoRA alpha=1.061e-03[1.563e-04,3.952e-03] vis=2.154e-01 coeff=2.444e-02 delta_rms=4.387e-03
+2026-07-15 16:20:53 transreid.train INFO: Epoch 47 done. Time per epoch: 30.985[s] Speed: 437.9[samples/s] ETA: 0h37m
+2026-07-15 16:21:01 transreid.train INFO: Epoch[48] Iter[50/227] Loss: 0.297, Acc: 0.982, Base Lr: 5.24e-04 | id_global: 0.244 tri_global: 0.053 | HyperLoRA alpha=1.057e-03[4.718e-05,3.995e-03] vis=2.158e-01 coeff=2.448e-02 delta_rms=4.331e-03
+2026-07-15 16:21:08 transreid.train INFO: Epoch[48] Iter[100/227] Loss: 0.279, Acc: 0.984, Base Lr: 5.24e-04 | id_global: 0.228 tri_global: 0.051 | HyperLoRA alpha=1.024e-03[-5.196e-05,3.901e-03] vis=2.047e-01 coeff=2.338e-02 delta_rms=4.406e-03
+2026-07-15 16:21:15 transreid.train INFO: Epoch[48] Iter[150/227] Loss: 0.268, Acc: 0.984, Base Lr: 5.24e-04 | id_global: 0.216 tri_global: 0.052 | HyperLoRA alpha=1.016e-03[-9.359e-05,3.848e-03] vis=2.149e-01 coeff=2.455e-02 delta_rms=4.620e-03
+2026-07-15 16:21:22 transreid.train INFO: Epoch[48] Iter[200/227] Loss: 0.247, Acc: 0.986, Base Lr: 5.24e-04 | id_global: 0.198 tri_global: 0.049 | HyperLoRA alpha=1.022e-03[-6.133e-05,3.881e-03] vis=2.172e-01 coeff=2.444e-02 delta_rms=4.265e-03
+2026-07-15 16:21:23 transreid.train INFO: Epoch 48 done. Time per epoch: 30.852[s] Speed: 437.7[samples/s] ETA: 0h37m
+2026-07-15 16:21:32 transreid.train INFO: Epoch[49] Iter[50/227] Loss: 0.266, Acc: 0.988, Base Lr: 5.14e-04 | id_global: 0.221 tri_global: 0.045 | HyperLoRA alpha=1.045e-03[-1.783e-05,3.940e-03] vis=2.181e-01 coeff=2.477e-02 delta_rms=4.504e-03
+2026-07-15 16:21:39 transreid.train INFO: Epoch[49] Iter[100/227] Loss: 0.251, Acc: 0.987, Base Lr: 5.14e-04 | id_global: 0.209 tri_global: 0.041 | HyperLoRA alpha=1.031e-03[1.757e-05,3.805e-03] vis=2.136e-01 coeff=2.439e-02 delta_rms=4.524e-03
+2026-07-15 16:21:46 transreid.train INFO: Epoch[49] Iter[150/227] Loss: 0.238, Acc: 0.988, Base Lr: 5.14e-04 | id_global: 0.196 tri_global: 0.042 | HyperLoRA alpha=1.014e-03[-3.673e-05,3.779e-03] vis=2.155e-01 coeff=2.466e-02 delta_rms=4.456e-03
+2026-07-15 16:21:53 transreid.train INFO: Epoch[49] Iter[200/227] Loss: 0.230, Acc: 0.988, Base Lr: 5.14e-04 | id_global: 0.186 tri_global: 0.044 | HyperLoRA alpha=1.021e-03[2.712e-05,3.746e-03] vis=2.121e-01 coeff=2.433e-02 delta_rms=4.382e-03
+2026-07-15 16:21:54 transreid.train INFO: Epoch 49 done. Time per epoch: 30.951[s] Speed: 438.4[samples/s] ETA: 0h36m
+2026-07-15 16:22:03 transreid.train INFO: Epoch[50] Iter[50/227] Loss: 0.267, Acc: 0.984, Base Lr: 5.04e-04 | id_global: 0.221 tri_global: 0.046 | HyperLoRA alpha=9.997e-04[-6.179e-05,3.722e-03] vis=2.111e-01 coeff=2.419e-02 delta_rms=4.519e-03
+2026-07-15 16:22:10 transreid.train INFO: Epoch[50] Iter[100/227] Loss: 0.261, Acc: 0.985, Base Lr: 5.04e-04 | id_global: 0.207 tri_global: 0.054 | HyperLoRA alpha=1.000e-03[-4.441e-05,3.713e-03] vis=2.108e-01 coeff=2.398e-02 delta_rms=4.433e-03
+2026-07-15 16:22:17 transreid.train INFO: Epoch[50] Iter[150/227] Loss: 0.246, Acc: 0.986, Base Lr: 5.04e-04 | id_global: 0.198 tri_global: 0.048 | HyperLoRA alpha=9.936e-04[-9.257e-05,3.687e-03] vis=2.191e-01 coeff=2.503e-02 delta_rms=4.665e-03
+2026-07-15 16:22:24 transreid.train INFO: Epoch[50] Iter[200/227] Loss: 0.235, Acc: 0.986, Base Lr: 5.04e-04 | id_global: 0.188 tri_global: 0.047 | HyperLoRA alpha=9.587e-04[-2.066e-04,3.579e-03] vis=2.162e-01 coeff=2.469e-02 delta_rms=4.312e-03
+2026-07-15 16:22:25 transreid.train INFO: Epoch 50 done. Time per epoch: 30.927[s] Speed: 438.7[samples/s] ETA: 0h36m
+2026-07-15 16:23:13 transreid.train INFO: Validation Results - Epoch: 50
+2026-07-15 16:23:13 transreid.train INFO: mAP: 52.9%
+2026-07-15 16:23:13 transreid.train INFO: CMC curve, Rank-1  :63.4%
+2026-07-15 16:23:13 transreid.train INFO: CMC curve, Rank-5  :78.6%
+2026-07-15 16:23:13 transreid.train INFO: CMC curve, Rank-10 :83.4%
+2026-07-15 16:23:21 transreid.train INFO: Epoch[51] Iter[50/227] Loss: 0.251, Acc: 0.985, Base Lr: 4.94e-04 | id_global: 0.192 tri_global: 0.058 | HyperLoRA alpha=9.776e-04[-3.271e-05,3.646e-03] vis=2.208e-01 coeff=2.491e-02 delta_rms=4.390e-03
+2026-07-15 16:23:28 transreid.train INFO: Epoch[51] Iter[100/227] Loss: 0.239, Acc: 0.985, Base Lr: 4.94e-04 | id_global: 0.189 tri_global: 0.050 | HyperLoRA alpha=9.882e-04[-2.487e-05,3.656e-03] vis=2.209e-01 coeff=2.502e-02 delta_rms=4.621e-03
+2026-07-15 16:23:35 transreid.train INFO: Epoch[51] Iter[150/227] Loss: 0.235, Acc: 0.986, Base Lr: 4.94e-04 | id_global: 0.184 tri_global: 0.051 | HyperLoRA alpha=9.898e-04[-5.614e-05,3.649e-03] vis=2.167e-01 coeff=2.433e-02 delta_rms=4.275e-03
+2026-07-15 16:23:42 transreid.train INFO: Epoch[51] Iter[200/227] Loss: 0.222, Acc: 0.987, Base Lr: 4.94e-04 | id_global: 0.172 tri_global: 0.050 | HyperLoRA alpha=9.933e-04[-1.386e-04,3.696e-03] vis=2.186e-01 coeff=2.480e-02 delta_rms=4.395e-03
+2026-07-15 16:23:44 transreid.train INFO: Epoch 51 done. Time per epoch: 30.917[s] Speed: 438.8[samples/s] ETA: 0h35m
+2026-07-15 16:23:52 transreid.train INFO: Epoch[52] Iter[50/227] Loss: 0.259, Acc: 0.982, Base Lr: 4.84e-04 | id_global: 0.206 tri_global: 0.053 | HyperLoRA alpha=9.685e-04[-2.785e-04,3.694e-03] vis=2.111e-01 coeff=2.397e-02 delta_rms=4.382e-03
+2026-07-15 16:23:59 transreid.train INFO: Epoch[52] Iter[100/227] Loss: 0.247, Acc: 0.985, Base Lr: 4.84e-04 | id_global: 0.198 tri_global: 0.049 | HyperLoRA alpha=9.465e-04[-3.233e-04,3.542e-03] vis=2.159e-01 coeff=2.482e-02 delta_rms=4.608e-03
+2026-07-15 16:24:06 transreid.train INFO: Epoch[52] Iter[150/227] Loss: 0.231, Acc: 0.987, Base Lr: 4.84e-04 | id_global: 0.185 tri_global: 0.046 | HyperLoRA alpha=9.485e-04[-2.994e-04,3.491e-03] vis=2.123e-01 coeff=2.422e-02 delta_rms=4.425e-03
+2026-07-15 16:24:13 transreid.train INFO: Epoch[52] Iter[200/227] Loss: 0.217, Acc: 0.989, Base Lr: 4.84e-04 | id_global: 0.172 tri_global: 0.045 | HyperLoRA alpha=9.376e-04[-3.755e-04,3.546e-03] vis=2.068e-01 coeff=2.347e-02 delta_rms=4.036e-03
+2026-07-15 16:24:15 transreid.train INFO: Epoch 52 done. Time per epoch: 30.975[s] Speed: 438.0[samples/s] ETA: 0h35m
+2026-07-15 16:24:23 transreid.train INFO: Epoch[53] Iter[50/227] Loss: 0.264, Acc: 0.986, Base Lr: 4.74e-04 | id_global: 0.202 tri_global: 0.062 | HyperLoRA alpha=9.375e-04[-4.622e-04,3.625e-03] vis=2.172e-01 coeff=2.486e-02 delta_rms=4.588e-03
+2026-07-15 16:24:30 transreid.train INFO: Epoch[53] Iter[100/227] Loss: 0.248, Acc: 0.987, Base Lr: 4.74e-04 | id_global: 0.191 tri_global: 0.056 | HyperLoRA alpha=9.340e-04[-4.236e-04,3.563e-03] vis=2.115e-01 coeff=2.388e-02 delta_rms=4.354e-03
+2026-07-15 16:24:37 transreid.train INFO: Epoch[53] Iter[150/227] Loss: 0.231, Acc: 0.988, Base Lr: 4.74e-04 | id_global: 0.181 tri_global: 0.050 | HyperLoRA alpha=9.202e-04[-5.231e-04,3.566e-03] vis=2.130e-01 coeff=2.427e-02 delta_rms=4.305e-03
+2026-07-15 16:24:44 transreid.train INFO: Epoch[53] Iter[200/227] Loss: 0.217, Acc: 0.989, Base Lr: 4.74e-04 | id_global: 0.170 tri_global: 0.048 | HyperLoRA alpha=9.194e-04[-5.184e-04,3.552e-03] vis=2.135e-01 coeff=2.421e-02 delta_rms=4.381e-03
+2026-07-15 16:24:46 transreid.train INFO: Epoch 53 done. Time per epoch: 30.965[s] Speed: 438.2[samples/s] ETA: 0h34m
+2026-07-15 16:24:54 transreid.train INFO: Epoch[54] Iter[50/227] Loss: 0.254, Acc: 0.984, Base Lr: 4.63e-04 | id_global: 0.205 tri_global: 0.048 | HyperLoRA alpha=9.116e-04[-5.492e-04,3.537e-03] vis=2.179e-01 coeff=2.476e-02 delta_rms=4.575e-03
+2026-07-15 16:25:01 transreid.train INFO: Epoch[54] Iter[100/227] Loss: 0.232, Acc: 0.985, Base Lr: 4.63e-04 | id_global: 0.190 tri_global: 0.042 | HyperLoRA alpha=9.232e-04[-5.147e-04,3.569e-03] vis=2.089e-01 coeff=2.367e-02 delta_rms=4.084e-03
+2026-07-15 16:25:08 transreid.train INFO: Epoch[54] Iter[150/227] Loss: 0.224, Acc: 0.987, Base Lr: 4.63e-04 | id_global: 0.178 tri_global: 0.045 | HyperLoRA alpha=9.262e-04[-5.177e-04,3.562e-03] vis=2.129e-01 coeff=2.404e-02 delta_rms=4.443e-03
+2026-07-15 16:25:15 transreid.train INFO: Epoch[54] Iter[200/227] Loss: 0.212, Acc: 0.988, Base Lr: 4.63e-04 | id_global: 0.166 tri_global: 0.045 | HyperLoRA alpha=9.348e-04[-5.004e-04,3.545e-03] vis=2.202e-01 coeff=2.543e-02 delta_rms=4.659e-03
+2026-07-15 16:25:17 transreid.train INFO: Epoch 54 done. Time per epoch: 30.831[s] Speed: 438.0[samples/s] ETA: 0h33m
+2026-07-15 16:25:25 transreid.train INFO: Epoch[55] Iter[50/227] Loss: 0.243, Acc: 0.987, Base Lr: 4.53e-04 | id_global: 0.181 tri_global: 0.062 | HyperLoRA alpha=9.335e-04[-6.102e-04,3.660e-03] vis=2.183e-01 coeff=2.478e-02 delta_rms=4.562e-03
+2026-07-15 16:25:32 transreid.train INFO: Epoch[55] Iter[100/227] Loss: 0.248, Acc: 0.988, Base Lr: 4.53e-04 | id_global: 0.186 tri_global: 0.062 | HyperLoRA alpha=9.220e-04[-6.792e-04,3.622e-03] vis=2.180e-01 coeff=2.481e-02 delta_rms=4.477e-03
+2026-07-15 16:25:39 transreid.train INFO: Epoch[55] Iter[150/227] Loss: 0.231, Acc: 0.988, Base Lr: 4.53e-04 | id_global: 0.177 tri_global: 0.054 | HyperLoRA alpha=9.270e-04[-6.825e-04,3.634e-03] vis=2.061e-01 coeff=2.349e-02 delta_rms=4.357e-03
+2026-07-15 16:25:46 transreid.train INFO: Epoch[55] Iter[200/227] Loss: 0.214, Acc: 0.989, Base Lr: 4.53e-04 | id_global: 0.163 tri_global: 0.051 | HyperLoRA alpha=9.199e-04[-7.381e-04,3.635e-03] vis=2.128e-01 coeff=2.431e-02 delta_rms=4.457e-03
+2026-07-15 16:25:48 transreid.train INFO: Epoch 55 done. Time per epoch: 30.955[s] Speed: 438.3[samples/s] ETA: 0h33m
+2026-07-15 16:25:56 transreid.train INFO: Epoch[56] Iter[50/227] Loss: 0.220, Acc: 0.987, Base Lr: 4.43e-04 | id_global: 0.176 tri_global: 0.044 | HyperLoRA alpha=9.138e-04[-8.024e-04,3.580e-03] vis=2.160e-01 coeff=2.452e-02 delta_rms=4.541e-03
+2026-07-15 16:26:03 transreid.train INFO: Epoch[56] Iter[100/227] Loss: 0.220, Acc: 0.988, Base Lr: 4.43e-04 | id_global: 0.173 tri_global: 0.047 | HyperLoRA alpha=9.054e-04[-8.000e-04,3.542e-03] vis=2.168e-01 coeff=2.433e-02 delta_rms=4.319e-03
+2026-07-15 16:26:10 transreid.train INFO: Epoch[56] Iter[150/227] Loss: 0.203, Acc: 0.989, Base Lr: 4.43e-04 | id_global: 0.163 tri_global: 0.040 | HyperLoRA alpha=9.210e-04[-7.432e-04,3.545e-03] vis=2.198e-01 coeff=2.509e-02 delta_rms=4.609e-03
+2026-07-15 16:26:17 transreid.train INFO: Epoch[56] Iter[200/227] Loss: 0.195, Acc: 0.989, Base Lr: 4.43e-04 | id_global: 0.154 tri_global: 0.041 | HyperLoRA alpha=9.318e-04[-6.430e-04,3.562e-03] vis=2.175e-01 coeff=2.469e-02 delta_rms=4.468e-03
+2026-07-15 16:26:19 transreid.train INFO: Epoch 56 done. Time per epoch: 30.798[s] Speed: 438.5[samples/s] ETA: 0h32m
+2026-07-15 16:26:27 transreid.train INFO: Epoch[57] Iter[50/227] Loss: 0.234, Acc: 0.989, Base Lr: 4.32e-04 | id_global: 0.176 tri_global: 0.058 | HyperLoRA alpha=9.103e-04[-7.243e-04,3.526e-03] vis=2.101e-01 coeff=2.402e-02 delta_rms=4.366e-03
+2026-07-15 16:26:34 transreid.train INFO: Epoch[57] Iter[100/227] Loss: 0.201, Acc: 0.990, Base Lr: 4.32e-04 | id_global: 0.159 tri_global: 0.042 | HyperLoRA alpha=9.140e-04[-7.350e-04,3.522e-03] vis=2.127e-01 coeff=2.433e-02 delta_rms=4.604e-03
+2026-07-15 16:26:41 transreid.train INFO: Epoch[57] Iter[150/227] Loss: 0.187, Acc: 0.991, Base Lr: 4.32e-04 | id_global: 0.149 tri_global: 0.038 | HyperLoRA alpha=9.055e-04[-7.370e-04,3.478e-03] vis=2.172e-01 coeff=2.482e-02 delta_rms=4.575e-03
+2026-07-15 16:26:48 transreid.train INFO: Epoch[57] Iter[200/227] Loss: 0.173, Acc: 0.992, Base Lr: 4.32e-04 | id_global: 0.137 tri_global: 0.035 | HyperLoRA alpha=9.041e-04[-6.884e-04,3.409e-03] vis=2.157e-01 coeff=2.441e-02 delta_rms=4.379e-03
+2026-07-15 16:26:50 transreid.train INFO: Epoch 57 done. Time per epoch: 31.152[s] Speed: 437.6[samples/s] ETA: 0h32m
+2026-07-15 16:26:58 transreid.train INFO: Epoch[58] Iter[50/227] Loss: 0.189, Acc: 0.988, Base Lr: 4.22e-04 | id_global: 0.157 tri_global: 0.032 | HyperLoRA alpha=9.166e-04[-6.503e-04,3.384e-03] vis=2.173e-01 coeff=2.464e-02 delta_rms=4.611e-03
+2026-07-15 16:27:05 transreid.train INFO: Epoch[58] Iter[100/227] Loss: 0.174, Acc: 0.990, Base Lr: 4.22e-04 | id_global: 0.147 tri_global: 0.027 | HyperLoRA alpha=9.146e-04[-6.880e-04,3.389e-03] vis=2.151e-01 coeff=2.447e-02 delta_rms=4.358e-03
+2026-07-15 16:27:12 transreid.train INFO: Epoch[58] Iter[150/227] Loss: 0.170, Acc: 0.990, Base Lr: 4.22e-04 | id_global: 0.143 tri_global: 0.026 | HyperLoRA alpha=9.082e-04[-7.231e-04,3.383e-03] vis=2.170e-01 coeff=2.469e-02 delta_rms=4.578e-03
+2026-07-15 16:27:19 transreid.train INFO: Epoch[58] Iter[200/227] Loss: 0.167, Acc: 0.990, Base Lr: 4.22e-04 | id_global: 0.138 tri_global: 0.028 | HyperLoRA alpha=8.983e-04[-7.511e-04,3.314e-03] vis=2.150e-01 coeff=2.449e-02 delta_rms=4.575e-03
+2026-07-15 16:27:21 transreid.train INFO: Epoch 58 done. Time per epoch: 31.132[s] Speed: 437.9[samples/s] ETA: 0h32m
+2026-07-15 16:27:29 transreid.train INFO: Epoch[59] Iter[50/227] Loss: 0.204, Acc: 0.989, Base Lr: 4.11e-04 | id_global: 0.168 tri_global: 0.037 | HyperLoRA alpha=9.062e-04[-7.299e-04,3.299e-03] vis=2.125e-01 coeff=2.403e-02 delta_rms=4.637e-03
+2026-07-15 16:27:36 transreid.train INFO: Epoch[59] Iter[100/227] Loss: 0.195, Acc: 0.989, Base Lr: 4.11e-04 | id_global: 0.158 tri_global: 0.037 | HyperLoRA alpha=9.156e-04[-6.838e-04,3.311e-03] vis=2.208e-01 coeff=2.494e-02 delta_rms=4.337e-03
+2026-07-15 16:27:43 transreid.train INFO: Epoch[59] Iter[150/227] Loss: 0.188, Acc: 0.989, Base Lr: 4.11e-04 | id_global: 0.151 tri_global: 0.037 | HyperLoRA alpha=9.069e-04[-6.926e-04,3.299e-03] vis=2.125e-01 coeff=2.406e-02 delta_rms=4.459e-03
+2026-07-15 16:27:50 transreid.train INFO: Epoch[59] Iter[200/227] Loss: 0.183, Acc: 0.990, Base Lr: 4.11e-04 | id_global: 0.142 tri_global: 0.041 | HyperLoRA alpha=9.049e-04[-6.199e-04,3.259e-03] vis=2.217e-01 coeff=2.523e-02 delta_rms=4.654e-03
+2026-07-15 16:27:52 transreid.train INFO: Epoch 59 done. Time per epoch: 30.814[s] Speed: 438.2[samples/s] ETA: 0h31m
+2026-07-15 16:28:00 transreid.train INFO: Epoch[60] Iter[50/227] Loss: 0.176, Acc: 0.989, Base Lr: 4.01e-04 | id_global: 0.153 tri_global: 0.022 | HyperLoRA alpha=9.135e-04[-6.038e-04,3.271e-03] vis=2.090e-01 coeff=2.379e-02 delta_rms=4.374e-03
+2026-07-15 16:28:07 transreid.train INFO: Epoch[60] Iter[100/227] Loss: 0.173, Acc: 0.990, Base Lr: 4.01e-04 | id_global: 0.147 tri_global: 0.026 | HyperLoRA alpha=9.045e-04[-6.720e-04,3.243e-03] vis=2.086e-01 coeff=2.370e-02 delta_rms=4.250e-03
+2026-07-15 16:28:14 transreid.train INFO: Epoch[60] Iter[150/227] Loss: 0.175, Acc: 0.989, Base Lr: 4.01e-04 | id_global: 0.145 tri_global: 0.031 | HyperLoRA alpha=8.933e-04[-7.318e-04,3.259e-03] vis=2.083e-01 coeff=2.351e-02 delta_rms=4.351e-03
+2026-07-15 16:28:21 transreid.train INFO: Epoch[60] Iter[200/227] Loss: 0.164, Acc: 0.990, Base Lr: 4.01e-04 | id_global: 0.135 tri_global: 0.030 | HyperLoRA alpha=9.001e-04[-7.168e-04,3.264e-03] vis=2.150e-01 coeff=2.470e-02 delta_rms=4.589e-03
+2026-07-15 16:28:23 transreid.train INFO: Epoch 60 done. Time per epoch: 31.008[s] Speed: 437.6[samples/s] ETA: 0h31m
+2026-07-15 16:29:11 transreid.train INFO: Validation Results - Epoch: 60
+2026-07-15 16:29:11 transreid.train INFO: mAP: 54.2%
+2026-07-15 16:29:11 transreid.train INFO: CMC curve, Rank-1  :63.0%
+2026-07-15 16:29:11 transreid.train INFO: CMC curve, Rank-5  :76.8%
+2026-07-15 16:29:11 transreid.train INFO: CMC curve, Rank-10 :82.1%
+2026-07-15 16:29:19 transreid.train INFO: Epoch[61] Iter[50/227] Loss: 0.168, Acc: 0.990, Base Lr: 3.90e-04 | id_global: 0.144 tri_global: 0.024 | HyperLoRA alpha=9.014e-04[-6.886e-04,3.261e-03] vis=2.074e-01 coeff=2.337e-02 delta_rms=4.352e-03
+2026-07-15 16:29:26 transreid.train INFO: Epoch[61] Iter[100/227] Loss: 0.160, Acc: 0.991, Base Lr: 3.90e-04 | id_global: 0.136 tri_global: 0.024 | HyperLoRA alpha=9.072e-04[-6.430e-04,3.260e-03] vis=2.191e-01 coeff=2.501e-02 delta_rms=4.545e-03
+2026-07-15 16:29:33 transreid.train INFO: Epoch[61] Iter[150/227] Loss: 0.152, Acc: 0.992, Base Lr: 3.90e-04 | id_global: 0.132 tri_global: 0.020 | HyperLoRA alpha=9.041e-04[-6.102e-04,3.256e-03] vis=2.134e-01 coeff=2.423e-02 delta_rms=4.424e-03
+2026-07-15 16:29:40 transreid.train INFO: Epoch[61] Iter[200/227] Loss: 0.148, Acc: 0.992, Base Lr: 3.90e-04 | id_global: 0.125 tri_global: 0.023 | HyperLoRA alpha=9.137e-04[-5.959e-04,3.311e-03] vis=2.178e-01 coeff=2.485e-02 delta_rms=4.419e-03
+2026-07-15 16:29:41 transreid.train INFO: Epoch 61 done. Time per epoch: 30.831[s] Speed: 438.0[samples/s] ETA: 0h30m
+2026-07-15 16:29:50 transreid.train INFO: Epoch[62] Iter[50/227] Loss: 0.179, Acc: 0.992, Base Lr: 3.80e-04 | id_global: 0.147 tri_global: 0.032 | HyperLoRA alpha=9.298e-04[-6.344e-04,3.438e-03] vis=2.169e-01 coeff=2.459e-02 delta_rms=4.525e-03
+2026-07-15 16:29:57 transreid.train INFO: Epoch[62] Iter[100/227] Loss: 0.176, Acc: 0.990, Base Lr: 3.80e-04 | id_global: 0.142 tri_global: 0.034 | HyperLoRA alpha=9.369e-04[-6.449e-04,3.503e-03] vis=2.188e-01 coeff=2.491e-02 delta_rms=4.519e-03
+2026-07-15 16:30:04 transreid.train INFO: Epoch[62] Iter[150/227] Loss: 0.168, Acc: 0.991, Base Lr: 3.80e-04 | id_global: 0.136 tri_global: 0.032 | HyperLoRA alpha=9.396e-04[-6.065e-04,3.532e-03] vis=2.107e-01 coeff=2.385e-02 delta_rms=4.515e-03
+2026-07-15 16:30:11 transreid.train INFO: Epoch[62] Iter[200/227] Loss: 0.161, Acc: 0.991, Base Lr: 3.80e-04 | id_global: 0.128 tri_global: 0.033 | HyperLoRA alpha=9.454e-04[-5.542e-04,3.555e-03] vis=2.121e-01 coeff=2.434e-02 delta_rms=4.649e-03
+2026-07-15 16:30:12 transreid.train INFO: Epoch 62 done. Time per epoch: 30.990[s] Speed: 437.8[samples/s] ETA: 0h29m
+2026-07-15 16:30:21 transreid.train INFO: Epoch[63] Iter[50/227] Loss: 0.174, Acc: 0.993, Base Lr: 3.69e-04 | id_global: 0.142 tri_global: 0.032 | HyperLoRA alpha=9.467e-04[-5.254e-04,3.534e-03] vis=2.189e-01 coeff=2.496e-02 delta_rms=4.616e-03
+2026-07-15 16:30:28 transreid.train INFO: Epoch[63] Iter[100/227] Loss: 0.167, Acc: 0.992, Base Lr: 3.69e-04 | id_global: 0.136 tri_global: 0.031 | HyperLoRA alpha=9.626e-04[-4.965e-04,3.599e-03] vis=2.203e-01 coeff=2.515e-02 delta_rms=4.709e-03
+2026-07-15 16:30:35 transreid.train INFO: Epoch[63] Iter[150/227] Loss: 0.163, Acc: 0.992, Base Lr: 3.69e-04 | id_global: 0.132 tri_global: 0.031 | HyperLoRA alpha=9.628e-04[-4.826e-04,3.620e-03] vis=2.220e-01 coeff=2.524e-02 delta_rms=4.534e-03
+2026-07-15 16:30:42 transreid.train INFO: Epoch[63] Iter[200/227] Loss: 0.152, Acc: 0.992, Base Lr: 3.69e-04 | id_global: 0.123 tri_global: 0.029 | HyperLoRA alpha=9.622e-04[-4.841e-04,3.630e-03] vis=2.211e-01 coeff=2.510e-02 delta_rms=4.593e-03
+2026-07-15 16:30:43 transreid.train INFO: Epoch 63 done. Time per epoch: 30.837[s] Speed: 437.9[samples/s] ETA: 0h29m

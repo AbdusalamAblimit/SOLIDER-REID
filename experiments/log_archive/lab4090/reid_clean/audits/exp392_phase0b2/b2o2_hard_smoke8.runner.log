@@ -1,0 +1,53 @@
+{
+  "crops": 40,
+  "macro_top1": {
+    "ci95_high": 0.575,
+    "ci95_low": 0.575,
+    "images": 8,
+    "mean": 0.575,
+    "pids": 1,
+    "repeats": 200
+  },
+  "mask_overlap": {
+    "count": 80,
+    "max": 0.0,
+    "median": 0.0,
+    "p95": 0.0
+  },
+  "output_sha256": "7ee442dc603bff1696dfd9e2146ac3e023477254bcba1e26ede180bb2bcd77ea",
+  "raw_cosine_margin": {
+    "ci95_high": 0.0035942481830716134,
+    "ci95_low": 0.0035942481830716134,
+    "images": 8,
+    "mean": 0.0035942481830716134,
+    "pids": 1,
+    "repeats": 200
+  },
+  "samples": 8,
+  "scope": "smoke",
+  "status": "EXP392_PHASE0B2_O_COMPLETE",
+  "verdict": "B2_O2_SMOKE_PASS"
+}
+	Command being timed: "/usr/local/anaconda3/envs/mmpose-abu/bin/python /home/afr/reid-clean/audits/exp392_phase0b2/phase0b2_ontology_audit_o2.py --repo-root /home/afr/SOLIDER-REID-exp392-phase0b-5277254 --phase0b-script /home/afr/reid-clean/audits/exp392_phase0b/phase0b_clip_teacher_audit.py --source-commit 5277254bae1f9d18f1368ad4202aca7c9d223cc8 --data-root /mnt1/afrdata --pose-artifact /mnt1/afrderived/exp386_occluded_duke_vitpose_huge_train --clip-checkpoint /home/afr/SOLIDER-REID/clip_l14_openclip.safetensors --output /home/afr/reid-clean/audits/exp392_phase0b2/b2o2_hard_smoke8_result.json --device cpu --batch-size 2 --clip-batch 10 --workers 0 --max-samples 8 --bootstrap-repeats 200 --partition-mode hard-owner"
+	User time (seconds): 107.52
+	System time (seconds): 8.05
+	Percent of CPU this job got: 884%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:13.07
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 3701200
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 41
+	Minor (reclaiming a frame) page faults: 4273813
+	Voluntary context switches: 73061
+	Involuntary context switches: 3028
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 56
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

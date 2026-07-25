@@ -1,0 +1,1346 @@
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned
+[LGPA] Running on DETACHED features (no gradient to backbone)
+===========building pose-backbone (PSG) transformer===========
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned
+[LGPA] Running on DETACHED features (no gradient to backbone)
+===========building pose-backbone (PSG) transformer===========
+using soft triplet loss for training
+/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-psg-lgpa/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned
+[LGPA] Running on DETACHED features (no gradient to backbone)
+===========building pose-backbone (PSG) transformer===========
+using soft triplet loss for training
+{
+  "canonical_catalog_sha256": "572ea2df860b9e8446765353698bd5234a163a10ba39500292fcf967356f00ff",
+  "checks": {
+    "canonical_catalog": {
+      "count": 19871,
+      "sha256": "572ea2df860b9e8446765353698bd5234a163a10ba39500292fcf967356f00ff",
+      "status": "PASS"
+    },
+    "checkpoint_strict_load": {
+      "checkpoint_sha256": "c63f5ece881428688f34c4072208fb346b353843c4baeaf77c701353ed91f89b",
+      "state_items": 300,
+      "status": "PASS"
+    },
+    "disk_space": {
+      "free_bytes": 227964370944,
+      "minimum_free_bytes": 50000000000,
+      "status": "PASS"
+    },
+    "full_model_real_loader_amp_parity": {
+      "control_head_sha256": "f88eabb65a81eb22684c75f4b7b91608bc2e8daedce3c9e3f7020adb41728868",
+      "initial_common_parameter_sha256": "e30090dd8af635eedf49dbde169313228fc33e204333367ad505e1d096bd6e81",
+      "non_head_model_sha256": "6f7afd6226c84fa1f7292dbbbbbdc7bad685f7c29cb7ea10a1f98665c510da12",
+      "non_head_optimizer_sha256": "dafae04f5f0b1772907f8d922467351d0bd0f40b2a0a5d287c38ca3f9a468108",
+      "records": [
+        {
+          "batch_sha256": "7cd1242ca902e9b916039f7af23d50a8bdd61beaee29ae8ecda22eee6c0938d4",
+          "global_feature_sha256": "530e49a770b2be31da0a69620cff2d3d46fdd6412e5d059d461bc51dbcc51d37",
+          "global_score_sha256": "e4461e5ed248fb04a3933095b837ec20cc2b229113a056e505634a79cde105ad",
+          "scale_after": 32768.0,
+          "scale_before": 65536.0,
+          "step": 1,
+          "step_skipped": true
+        },
+        {
+          "batch_sha256": "a8cf7222390217419f42608622b3c91f62a5df4f2ac49da94d03855a975f1ade",
+          "global_feature_sha256": "990090332d5cfe0f0528be5a7f37f12e928ba848182eb96291539a6b95a32c4f",
+          "global_score_sha256": "1698adf91db3a6564498c0116276fe27803ae0c4906136004cb391195bdd06b7",
+          "scale_after": 16384.0,
+          "scale_before": 32768.0,
+          "step": 2,
+          "step_skipped": true
+        },
+        {
+          "batch_sha256": "509587404384b212453c84f9f4cdd14331fcaf40c477f3797088391aa77cf43c",
+          "global_feature_sha256": "8b6c16401bf8c868c8ed84081e1f099c2f009057d54ad01e80e246a056b60e88",
+          "global_score_sha256": "783979a0c9aeeedadf0353634884a1cb5a81438b4d4c6a23fd829e717bcf2d9d",
+          "scale_after": 8192.0,
+          "scale_before": 16384.0,
+          "step": 3,
+          "step_skipped": true
+        },
+        {
+          "batch_sha256": "8fa9a703337baaef2783dba665277608d4f0a2f63ef11c0fcd76173956f1a899",
+          "global_feature_sha256": "93cff53fd5b610133612e0ac263c3c4a3c563ceadda0d1892dac8f273a09d3a8",
+          "global_score_sha256": "31d1ed2880a77c67163e203ef5e9bab9359fa014fc2c7480bb2cddc2ecccd4a6",
+          "scale_after": 4096.0,
+          "scale_before": 8192.0,
+          "step": 4,
+          "step_skipped": true
+        },
+        {
+          "batch_sha256": "a60845a46782d6bed0fa957889ef2d736b46801925d6352c9ca9d9fa33940496",
+          "global_feature_sha256": "883b9c5a2c3b13b1b58918099501328a04ddb2bbe3caaa12795e82346ab65789",
+          "global_score_sha256": "6801e3844200a0135adfdfcae6d562b4df562f3f723349fe505dc7448d8e92f6",
+          "scale_after": 4096.0,
+          "scale_before": 4096.0,
+          "step": 5,
+          "step_skipped": false
+        },
+        {
+          "batch_sha256": "c1813711bb759cf2b9ea9debcd0da0fb28eb8332f7801293c2a5469f51183d4f",
+          "global_feature_sha256": "118979ee03d3f38dd6c05ddd3cefe1d412e035617da9b93804c314e481a618fc",
+          "global_score_sha256": "145d355e8c5e8d49f77030a4f8631aaae959af1c73c399b7669c0630fe3adf54",
+          "scale_after": 2048.0,
+          "scale_before": 4096.0,
+          "step": 6,
+          "step_skipped": true
+        }
+      ],
+      "status": "PASS",
+      "steps": 6,
+      "treatment_head_sha256": "ac51a58efff540899e86f0cdf8a173af05b8bb01e9ce4f16509f92de1350d3b3"
+    },
+    "historical_c_assets": {
+      "critical_files": 21,
+      "status": "PASS",
+      "verified_files": 78
+    },
+    "historical_config_compatibility": {
+      "canonical_config_sha256": {
+        "3407": "bf7f3702551711639abec0d597d793161287ee5a4a9281c5a474bb9420499ebb",
+        "7753": "a870dd2b01e8378a400d310a170cbe56d5e883d111761eceabf53145e1dd1fc2",
+        "9227": "6d3dcb9081d3735e3b9b227051f3bf1bf12e3f301ac3d53f02f039f10edc4e7b"
+      },
+      "status": "PASS"
+    },
+    "runner_checkpoint_hash": {
+      "checkpoint_sha256": "c63f5ece881428688f34c4072208fb346b353843c4baeaf77c701353ed91f89b",
+      "non_lgpa_state_count": 251,
+      "non_lgpa_state_sha256": "b1eb6b10b6b4619fa879b9c2cd3d34067bab2ff894970606470a37dc8e3024f6",
+      "status": "PASS"
+    },
+    "source_restricted_diff": {
+      "changed_paths": [
+        "config/defaults.py",
+        "experiments/exp325_lgpa_attention_support_grid/artifacts/run_manifest.template.json",
+        "experiments/exp325_lgpa_attention_support_grid/design.md",
+        "experiments/exp325_lgpa_attention_support_grid/monitor.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_causalstats_impl_pass.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_causalstats_r1.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_causalstats_r2_pass.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_evalmath_r1.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_evalmath_r3_pass.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_execution_r1.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_execution_r5_pass.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_execution_r6_pass.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_final_results_review.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_science_impl_pass.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_science_r1.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_science_r2_pass.md",
+        "experiments/exp326_lgpa_assignment_only/artifacts/run_manifest.template.json",
+        "experiments/exp326_lgpa_assignment_only/design.md",
+        "experiments/exp326_lgpa_assignment_only/monitor.md",
+        "experiments/exp326_lgpa_assignment_only/reviews/gpt56_execution_r3_pass.md",
+        "experiments/exp326_lgpa_assignment_only/reviews/gpt56_interface_r3_pass.md",
+        "experiments/exp326_lgpa_assignment_only/reviews/gpt56_runner_impl_r5_pass.md",
+        "experiments/exp326_lgpa_assignment_only/reviews/gpt56_scalar_hash_fix_pass.md",
+        "experiments/exp326_lgpa_assignment_only/reviews/gpt56_science_r2_pass.md",
+        "model/modules/clip_part_head.py",
+        "model/pose_backbone_model.py",
+        "scripts/analyze_exp325_attention_support_grid.py",
+        "scripts/eval_exp326_strict.py",
+        "scripts/preflight_exp326_assignment.py",
+        "scripts/run_exp325_remote.sh",
+        "scripts/run_exp326_assignment.py",
+        "scripts/run_exp326_remote.sh",
+        "tests/test_exp325_attention_support_grid.py",
+        "tests/test_exp326_assignment_mode.py",
+        "train.py"
+      ],
+      "source_blob_pairs": [
+        {
+          "base_blob": "86f0d9ec3c76b3f0d2fecac8597567711728338a",
+          "execution_blob": "2249c34c49234c2e041e53f115f5a137a3f0d121",
+          "path": "config/defaults.py"
+        },
+        {
+          "base_blob": "bceebcf94d35cbb1de00aa017385e464f4640794",
+          "execution_blob": "7e51a4745abc183454d381558cf87d11bc30eca7",
+          "path": "model/modules/clip_part_head.py"
+        },
+        {
+          "base_blob": "94b44121ed8c82bcfc5f1cd32ce89792adeff506",
+          "execution_blob": "aaee3e14770979c8e2d8d1a3da956de2b4df5cfd",
+          "path": "model/pose_backbone_model.py"
+        },
+        {
+          "base_blob": "7513518d4f974cca19b7f150772ba4960e804c6b",
+          "execution_blob": "905de7ad9efedb07b33b30fff2a9679c0257f606",
+          "path": "train.py"
+        }
+      ],
+      "source_diff_sha256": "797807a8dbb57c68bc2f87a3bf16bcea8750ff8618b768d9cc020d461ba4a0e0",
+      "status": "PASS"
+    },
+    "unit_tests": {
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "/home/afr/SOLIDER-REID-psg-lgpa/tests/test_exp326_assignment_mode.py",
+        "-v"
+      ],
+      "status": "PASS",
+      "stdout_sha256": "d9a6d43bf5a13b52083b873bb09f3e3212c7a429f42ca56eba38b0b115986fda",
+      "tail": [
+        "[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=inherit, text_mode=aligned",
+        "[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned",
+        "[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned",
+        "[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned",
+        "[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned",
+        "[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned",
+        "[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned",
+        "[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned"
+      ]
+    }
+  },
+  "execution_commit": "41b9c87e8313f8b898a3955126891758bb8101f6",
+  "preflight_script_sha256": "abb33182197024bf462934e7919a3ef04f31c18207b100719c0e4c9d29127a9d",
+  "run_manifest_sha256": "d046b096d1bae64ef20bd751b5af0394d89bd6e3c071a61c36eeec6a21b3a67f",
+  "status": "PASS"
+}
+{
+  "status": "PREFLIGHT_PASS",
+  "plan": [
+    {
+      "seed": 3407,
+      "arm": "C0",
+      "staging": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/C0/seed_3407.tmp.41b9c87e8313",
+      "published": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/C0/seed_3407",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "3407",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_ASSIGN_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/C0/seed_3407.tmp.41b9c87e8313"
+      ],
+      "action": "RUN"
+    },
+    {
+      "seed": 3407,
+      "arm": "E",
+      "staging": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/E/seed_3407.tmp.41b9c87e8313",
+      "published": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/E/seed_3407",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "3407",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_ASSIGN_MODE",
+        "true",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/E/seed_3407.tmp.41b9c87e8313",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/C0/seed_3407/init_audit.json"
+      ],
+      "action": "RUN"
+    },
+    {
+      "seed": 7753,
+      "arm": "C0",
+      "staging": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/C0/seed_7753.tmp.41b9c87e8313",
+      "published": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/C0/seed_7753",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "7753",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_ASSIGN_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/C0/seed_7753.tmp.41b9c87e8313"
+      ],
+      "action": "RUN"
+    },
+    {
+      "seed": 7753,
+      "arm": "E",
+      "staging": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/E/seed_7753.tmp.41b9c87e8313",
+      "published": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/E/seed_7753",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "7753",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_ASSIGN_MODE",
+        "true",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/E/seed_7753.tmp.41b9c87e8313",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/C0/seed_7753/init_audit.json"
+      ],
+      "action": "RUN"
+    },
+    {
+      "seed": 9227,
+      "arm": "C0",
+      "staging": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/C0/seed_9227.tmp.41b9c87e8313",
+      "published": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/C0/seed_9227",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "9227",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_ASSIGN_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/C0/seed_9227.tmp.41b9c87e8313"
+      ],
+      "action": "RUN"
+    },
+    {
+      "seed": 9227,
+      "arm": "E",
+      "staging": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/E/seed_9227.tmp.41b9c87e8313",
+      "published": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/E/seed_9227",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "9227",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_ASSIGN_MODE",
+        "true",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/E/seed_9227.tmp.41b9c87e8313",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp326/C0/seed_9227/init_audit.json"
+      ],
+      "action": "RUN"
+    }
+  ]
+}
+[exp326] pid=3911406 bytes=10297
+[exp326] pid=3911406 bytes=12168
+[exp326] pid=3911406 bytes=13841
+[exp326] pid=3911406 bytes=15516
+[exp326] pid=3911406 bytes=17191
+[exp326] pid=3911406 bytes=18942
+[exp326] pid=3911406 bytes=20614
+[exp326] pid=3911406 bytes=22286
+[exp326] pid=3911406 bytes=23959
+[exp326] pid=3911406 bytes=25633
+[exp326] pid=3911406 bytes=27501
+[exp326] pid=3911406 bytes=29261
+[exp326] pid=3911406 bytes=29661
+[exp326] pid=3911406 bytes=31877
+[exp326] pid=3911406 bytes=33558
+[exp326] pid=3911406 bytes=35240
+[exp326] pid=3911406 bytes=36923
+[exp326] pid=3911406 bytes=38801
+[exp326] pid=3911406 bytes=40561
+[exp326] pid=3911406 bytes=42242
+[exp326] pid=3911406 bytes=43923
+[exp326] pid=3911406 bytes=45605
+[exp326] pid=3911406 bytes=47288
+[exp326] pid=3911406 bytes=49049
+[exp326] pid=3911406 bytes=50730
+[exp326] pid=3911406 bytes=51239
+[exp326] pid=3911406 bytes=52817
+[exp326] pid=3911406 bytes=54695
+[exp326] pid=3911406 bytes=56378
+[exp326] pid=3911406 bytes=58062
+[exp326] pid=3911406 bytes=59823
+[exp326] pid=3911406 bytes=61505
+[exp326] pid=3911406 bytes=63187
+[exp326] pid=3911406 bytes=64869
+[exp326] pid=3911406 bytes=66553
+[exp326] pid=3911406 bytes=68432
+[exp326] pid=3911406 bytes=70193
+[exp326] pid=3911406 bytes=71875
+[exp326] pid=3911406 bytes=72385
+[exp326] pid=3911406 bytes=73963
+[exp326] pid=3911406 bytes=75645
+[exp326] pid=3911406 bytes=77329
+[exp326] pid=3911406 bytes=79208
+[exp326] pid=3911406 bytes=80969
+[exp326] pid=3911406 bytes=82651
+[exp326] pid=3911406 bytes=84333
+[exp326] pid=3911406 bytes=86015
+[exp326] pid=3911406 bytes=87699
+[exp326] pid=3911406 bytes=89578
+[exp326] pid=3911406 bytes=91339
+[exp326] pid=3911406 bytes=93021
+[exp326] pid=3911406 bytes=93531
+[exp326] pid=3911406 bytes=95109
+[exp326] pid=3911406 bytes=96791
+[exp326] pid=3911406 bytes=98475
+[exp326] pid=3911406 bytes=100354
+[exp326] pid=3911406 bytes=102115
+[exp326] pid=3911406 bytes=103797
+[exp326] pid=3911406 bytes=105479
+[exp326] pid=3911406 bytes=107161
+[exp326] pid=3911406 bytes=108845
+[exp326] pid=3911406 bytes=110529
+[exp326] pid=3911406 bytes=112485
+[exp326] pid=3911406 bytes=114167
+[exp326] pid=3911406 bytes=114677
+[exp326] pid=3911406 bytes=116255
+[exp326] pid=3911406 bytes=117937
+[exp326] pid=3911406 bytes=119621
+[exp326] pid=3911406 bytes=121500
+[exp326] pid=3911406 bytes=123261
+[exp326] pid=3911406 bytes=124943
+[exp326] pid=3911406 bytes=126625
+[exp326] pid=3911406 bytes=128307
+[exp326] pid=3911406 bytes=129991
+[exp326] pid=3911406 bytes=131870
+[exp326] pid=3911406 bytes=133631
+[exp326] pid=3911406 bytes=135313
+[exp326] pid=3911406 bytes=135823
+[exp326] pid=3911406 bytes=137401
+[exp326] pid=3911406 bytes=139083
+[exp326] pid=3911406 bytes=140767
+[exp326] pid=3911406 bytes=142646
+[exp326] pid=3911406 bytes=144407
+[exp326] pid=3911406 bytes=146089
+[exp326] pid=3911406 bytes=147771
+[exp326] pid=3911406 bytes=149453
+[exp326] pid=3911406 bytes=151137
+[exp326] pid=3911406 bytes=153016
+[exp326] pid=3911406 bytes=154777
+[exp326] pid=3911406 bytes=156459
+[exp326] pid=3911406 bytes=156969
+[exp326] pid=3911406 bytes=158547
+[exp326] pid=3911406 bytes=160229
+[exp326] pid=3911406 bytes=161913
+[exp326] pid=3911406 bytes=163792
+[exp326] pid=3911406 bytes=165553
+[exp326] pid=3911406 bytes=167235
+[exp326] pid=3911406 bytes=168917
+[exp326] pid=3911406 bytes=170599
+[exp326] pid=3911406 bytes=172283
+[exp326] pid=3911406 bytes=173967
+[exp326] pid=3911406 bytes=175727
+[exp326] pid=3911406 bytes=177605
+[exp326] pid=3911406 bytes=178115
+[exp326] pid=3911406 bytes=179693
+[exp326] pid=3911406 bytes=181375
+[exp326] pid=3911406 bytes=183059
+[exp326] pid=3911406 bytes=184743
+[exp326] pid=3911406 bytes=186503
+[exp326] pid=3911406 bytes=188381
+[exp326] pid=3911406 bytes=190063
+[exp326] pid=3911406 bytes=191745
+[exp326] pid=3911406 bytes=193429
+[exp326] pid=3911406 bytes=195113
+[exp326] pid=3911406 bytes=196873
+[exp326] pid=3911406 bytes=198751
+[exp326] pid=3911406 bytes=199261
+[exp326] pid=3911406 bytes=200839
+[exp326] pid=3911406 bytes=202521
+[exp326] pid=3911406 bytes=204205
+[exp326] pid=3911406 bytes=205889
+[exp326] pid=3911406 bytes=207845
+[exp326] pid=3911406 bytes=209527
+[exp326] pid=3911406 bytes=211209
+[exp326] pid=3911406 bytes=212891
+[exp326] pid=3911406 bytes=214575
+[exp326] pid=3911406 bytes=216259
+[exp326] pid=3911406 bytes=218019
+[exp326] pid=3911406 bytes=219708
+[exp326] pid=3911406 bytes=220418
+[exp326] pid=3911406 bytes=222003
+[exp326] pid=3911406 bytes=223694
+[exp326] pid=3911406 bytes=225387
+[exp326] pid=3911406 bytes=227080
+[exp326] pid=3911406 bytes=228849
+[exp326] pid=3911406 bytes=230539
+[exp326] pid=3911406 bytes=232032
+[exp326] pid=3911406 bytes=233920
+[exp326] pid=3911406 bytes=235612
+[exp326] pid=3911406 bytes=237382
+[exp326] pid=3911406 bytes=239072
+[exp326] pid=3911406 bytes=240762
+[exp326] pid=3911406 bytes=241668
+[exp326] pid=3911406 bytes=242859
+[exp326] pid=3911406 bytes=244551
+[exp326] pid=3911406 bytes=246439
+[exp326] pid=3911406 bytes=248209
+[exp326] pid=3911406 bytes=249899
+[exp326] pid=3911406 bytes=251589
+[exp326] pid=3911406 bytes=253279
+[exp326] pid=3911406 bytes=254971
+[exp326] pid=3911406 bytes=256663
+[exp326] pid=3911406 bytes=258432
+[exp326] pid=3911406 bytes=260122
+[exp326] pid=3911406 bytes=262009
+[exp326] pid=3911406 bytes=262915
+[exp326] pid=3911406 bytes=263322
+[exp326] pid=3944915 bytes=1554
+[exp326] pid=3944915 bytes=4328
+[exp326] pid=3945192 bytes=10426
+[exp326] pid=3945192 bytes=12303
+[exp326] pid=3945192 bytes=13984
+[exp326] pid=3945192 bytes=15667
+[exp326] pid=3945192 bytes=17350
+[exp326] pid=3945192 bytes=19110
+[exp326] pid=3945192 bytes=20791
+[exp326] pid=3945192 bytes=22471
+[exp326] pid=3945192 bytes=24152
+[exp326] pid=3945192 bytes=25834
+[exp326] pid=3945192 bytes=27711
+[exp326] pid=3945192 bytes=29480
+[exp326] pid=3945192 bytes=29881
+[exp326] pid=3945192 bytes=32104
+[exp326] pid=3945192 bytes=33793
+[exp326] pid=3945192 bytes=35483
+[exp326] pid=3945192 bytes=37171
+[exp326] pid=3945192 bytes=39049
+[exp326] pid=3945192 bytes=40809
+[exp326] pid=3945192 bytes=42490
+[exp326] pid=3945192 bytes=44171
+[exp326] pid=3945192 bytes=45853
+[exp326] pid=3945192 bytes=47536
+[exp326] pid=3945192 bytes=49414
+[exp326] pid=3945192 bytes=50978
+[exp326] pid=3945192 bytes=51487
+[exp326] pid=3945192 bytes=53065
+[exp326] pid=3945192 bytes=54943
+[exp326] pid=3945192 bytes=56626
+[exp326] pid=3945192 bytes=58310
+[exp326] pid=3945192 bytes=60071
+[exp326] pid=3945192 bytes=61753
+[exp326] pid=3945192 bytes=63435
+[exp326] pid=3945192 bytes=65117
+[exp326] pid=3945192 bytes=66801
+[exp326] pid=3945192 bytes=68485
+[exp326] pid=3945192 bytes=70441
+[exp326] pid=3945192 bytes=72123
+[exp326] pid=3945192 bytes=72633
+[exp326] pid=3945192 bytes=74211
+[exp326] pid=3945192 bytes=75893
+[exp326] pid=3945192 bytes=77577
+[exp326] pid=3945192 bytes=79261
+[exp326] pid=3945192 bytes=81021
+[exp326] pid=3945192 bytes=82899
+[exp326] pid=3945192 bytes=84581
+[exp326] pid=3945192 bytes=86263
+[exp326] pid=3945192 bytes=87947
+[exp326] pid=3945192 bytes=89631
+[exp326] pid=3945192 bytes=91391
+[exp326] pid=3945192 bytes=93073
+[exp326] pid=3945192 bytes=93779
+[exp326] pid=3945192 bytes=95357
+[exp326] pid=3945192 bytes=97039
+[exp326] pid=3945192 bytes=98723
+[exp326] pid=3945192 bytes=100407
+[exp326] pid=3945192 bytes=102167
+[exp326] pid=3945192 bytes=103849
+[exp326] pid=3945192 bytes=105531
+[exp326] pid=3945192 bytes=107214
+[exp326] pid=3945192 bytes=109093
+[exp326] pid=3945192 bytes=110777
+[exp326] pid=3945192 bytes=112537
+[exp326] pid=3945192 bytes=114219
+[exp326] pid=3945192 bytes=114925
+[exp326] pid=3945192 bytes=116307
+[exp326] pid=3945192 bytes=117990
+[exp326] pid=3945192 bytes=119674
+[exp326] pid=3945192 bytes=121553
+[exp326] pid=3945192 bytes=123117
+[exp326] pid=3945192 bytes=124799
+[exp326] pid=3945192 bytes=126677
+[exp326] pid=3945192 bytes=128360
+[exp326] pid=3945192 bytes=130044
+[exp326] pid=3945192 bytes=131805
+[exp326] pid=3945192 bytes=133487
+[exp326] pid=3945192 bytes=135169
+[exp326] pid=3945192 bytes=136071
+[exp326] pid=3945192 bytes=137257
+[exp326] pid=3945192 bytes=139136
+[exp326] pid=3945192 bytes=140820
+[exp326] pid=3945192 bytes=142581
+[exp326] pid=3945192 bytes=144263
+[exp326] pid=3945192 bytes=145945
+[exp326] pid=3945192 bytes=147627
+[exp326] pid=3945192 bytes=149311
+[exp326] pid=3945192 bytes=151190
+[exp326] pid=3945192 bytes=152951
+[exp326] pid=3945192 bytes=154633
+[exp326] pid=3945192 bytes=156315
+[exp326] pid=3945192 bytes=157217
+[exp326] pid=3945192 bytes=158403
+[exp326] pid=3945192 bytes=160087
+[exp326] pid=3945192 bytes=161771
+[exp326] pid=3945192 bytes=163727
+[exp326] pid=3945192 bytes=165409
+[exp326] pid=3945192 bytes=167091
+[exp326] pid=3945192 bytes=168773
+[exp326] pid=3945192 bytes=170457
+[exp326] pid=3945192 bytes=172141
+[exp326] pid=3945192 bytes=173901
+[exp326] pid=3945192 bytes=175779
+[exp326] pid=3945192 bytes=177461
+[exp326] pid=3945192 bytes=178363
+[exp326] pid=3945192 bytes=179549
+[exp326] pid=3945192 bytes=181233
+[exp326] pid=3945192 bytes=182917
+[exp326] pid=3945192 bytes=184677
+[exp326] pid=3945192 bytes=186359
+[exp326] pid=3945192 bytes=188237
+[exp326] pid=3945192 bytes=189919
+[exp326] pid=3945192 bytes=191603
+[exp326] pid=3945192 bytes=193287
+[exp326] pid=3945192 bytes=195047
+[exp326] pid=3945192 bytes=196729
+[exp326] pid=3945192 bytes=198411
+[exp326] pid=3945192 bytes=199509
+[exp326] pid=3945192 bytes=200695
+[exp326] pid=3945192 bytes=202379
+[exp326] pid=3945192 bytes=204063
+[exp326] pid=3945192 bytes=205823
+[exp326] pid=3945192 bytes=207505
+[exp326] pid=3945192 bytes=209187
+[exp326] pid=3945192 bytes=210870
+[exp326] pid=3945192 bytes=212749
+[exp326] pid=3945192 bytes=214433
+[exp326] pid=3945192 bytes=216193
+[exp326] pid=3945192 bytes=217875
+[exp326] pid=3945192 bytes=219562
+[exp326] pid=3945192 bytes=220666
+[exp326] pid=3945192 bytes=221661
+[exp326] pid=3945192 bytes=223354
+[exp326] pid=3945192 bytes=225243
+[exp326] pid=3945192 bytes=226815
+[exp326] pid=3945192 bytes=228506
+[exp326] pid=3945192 bytes=230196
+[exp326] pid=3945192 bytes=231888
+[exp326] pid=3945192 bytes=233580
+[exp326] pid=3945192 bytes=235349
+[exp326] pid=3945192 bytes=237039
+[exp326] pid=3945192 bytes=238729
+[exp326] pid=3945192 bytes=240420
+[exp326] pid=3945192 bytes=241916
+[exp326] pid=3945192 bytes=242519
+[exp326] pid=3945192 bytes=244407
+[exp326] pid=3945192 bytes=245979
+[exp326] pid=3945192 bytes=247669
+[exp326] pid=3945192 bytes=249359
+[exp326] pid=3945192 bytes=251247
+[exp326] pid=3945192 bytes=252939
+[exp326] pid=3945192 bytes=254709
+[exp326] pid=3945192 bytes=256399
+[exp326] pid=3945192 bytes=258089
+[exp326] pid=3945192 bytes=259779
+[exp326] pid=3945192 bytes=261471
+[exp326] pid=3945192 bytes=263163
+[exp326] pid=3945192 bytes=263570
+[exp326] pid=3978456 bytes=1551
+[exp326] pid=3978456 bytes=4320
+[exp326] pid=3978734 bytes=10297
+[exp326] pid=3978734 bytes=12168
+[exp326] pid=3978734 bytes=13841
+[exp326] pid=3978734 bytes=15516
+[exp326] pid=3978734 bytes=17191
+[exp326] pid=3978734 bytes=18942
+[exp326] pid=3978734 bytes=20614
+[exp326] pid=3978734 bytes=22286
+[exp326] pid=3978734 bytes=24153
+[exp326] pid=3978734 bytes=25827
+[exp326] pid=3978734 bytes=27501
+[exp326] pid=3978734 bytes=29261
+[exp326] pid=3978734 bytes=29661
+[exp326] pid=3978734 bytes=31877
+[exp326] pid=3978734 bytes=33558
+[exp326] pid=3978734 bytes=35240
+[exp326] pid=3978734 bytes=37118
+[exp326] pid=3978734 bytes=38801
+[exp326] pid=3978734 bytes=40561
+[exp326] pid=3978734 bytes=42242
+[exp326] pid=3978734 bytes=43923
+[exp326] pid=3978734 bytes=45605
+[exp326] pid=3978734 bytes=47483
+[exp326] pid=3978734 bytes=49166
+[exp326] pid=3978734 bytes=50926
+[exp326] pid=3978734 bytes=51239
+[exp326] pid=3978734 bytes=53013
+[exp326] pid=3978734 bytes=54695
+[exp326] pid=3978734 bytes=56378
+[exp326] pid=3978734 bytes=58257
+[exp326] pid=3978734 bytes=59941
+[exp326] pid=3978734 bytes=61701
+[exp326] pid=3978734 bytes=63383
+[exp326] pid=3978734 bytes=65065
+[exp326] pid=3978734 bytes=66748
+[exp326] pid=3978734 bytes=68432
+[exp326] pid=3978734 bytes=70311
+[exp326] pid=3978734 bytes=72071
+[exp326] pid=3978734 bytes=72385
+[exp326] pid=3978734 bytes=74159
+[exp326] pid=3978734 bytes=75841
+[exp326] pid=3978734 bytes=77719
+[exp326] pid=3978734 bytes=79403
+[exp326] pid=3978734 bytes=81087
+[exp326] pid=3978734 bytes=82847
+[exp326] pid=3978734 bytes=84529
+[exp326] pid=3978734 bytes=86211
+[exp326] pid=3978734 bytes=87894
+[exp326] pid=3978734 bytes=89578
+[exp326] pid=3978734 bytes=91457
+[exp326] pid=3978734 bytes=93217
+[exp326] pid=3978734 bytes=93531
+[exp326] pid=3978734 bytes=95305
+[exp326] pid=3978734 bytes=96987
+[exp326] pid=3978734 bytes=98670
+[exp326] pid=3978734 bytes=100354
+[exp326] pid=3978734 bytes=102233
+[exp326] pid=3978734 bytes=103993
+[exp326] pid=3978734 bytes=105675
+[exp326] pid=3978734 bytes=107357
+[exp326] pid=3978734 bytes=109040
+[exp326] pid=3978734 bytes=110724
+[exp326] pid=3978734 bytes=112603
+[exp326] pid=3978734 bytes=114363
+[exp326] pid=3978734 bytes=114677
+[exp326] pid=3978734 bytes=116451
+[exp326] pid=3978734 bytes=118133
+[exp326] pid=3978734 bytes=119816
+[exp326] pid=3978734 bytes=121500
+[exp326] pid=3978734 bytes=123379
+[exp326] pid=3978734 bytes=125139
+[exp326] pid=3978734 bytes=126821
+[exp326] pid=3978734 bytes=128503
+[exp326] pid=3978734 bytes=130186
+[exp326] pid=3978734 bytes=131870
+[exp326] pid=3978734 bytes=133749
+[exp326] pid=3978734 bytes=135313
+[exp326] pid=3978734 bytes=135823
+[exp326] pid=3978734 bytes=137597
+[exp326] pid=3978734 bytes=139279
+[exp326] pid=3978734 bytes=140962
+[exp326] pid=3978734 bytes=142646
+[exp326] pid=3978734 bytes=144525
+[exp326] pid=3978734 bytes=146089
+[exp326] pid=3978734 bytes=147967
+[exp326] pid=3978734 bytes=149649
+[exp326] pid=3978734 bytes=151332
+[exp326] pid=3978734 bytes=153016
+[exp326] pid=3978734 bytes=154895
+[exp326] pid=3978734 bytes=156459
+[exp326] pid=3978734 bytes=156969
+[exp326] pid=3978734 bytes=158743
+[exp326] pid=3978734 bytes=160425
+[exp326] pid=3978734 bytes=162108
+[exp326] pid=3978734 bytes=163792
+[exp326] pid=3978734 bytes=165671
+[exp326] pid=3978734 bytes=167235
+[exp326] pid=3978734 bytes=168917
+[exp326] pid=3978734 bytes=170599
+[exp326] pid=3978734 bytes=172478
+[exp326] pid=3978734 bytes=174162
+[exp326] pid=3978734 bytes=175923
+[exp326] pid=3978734 bytes=177605
+[exp326] pid=3978734 bytes=178115
+[exp326] pid=3978734 bytes=179693
+[exp326] pid=3978734 bytes=181571
+[exp326] pid=3978734 bytes=183254
+[exp326] pid=3978734 bytes=184938
+[exp326] pid=3978734 bytes=186699
+[exp326] pid=3978734 bytes=188381
+[exp326] pid=3978734 bytes=190063
+[exp326] pid=3978734 bytes=191941
+[exp326] pid=3978734 bytes=193624
+[exp326] pid=3978734 bytes=195308
+[exp326] pid=3978734 bytes=197069
+[exp326] pid=3978734 bytes=198751
+[exp326] pid=3978734 bytes=199261
+[exp326] pid=3978734 bytes=200839
+[exp326] pid=3978734 bytes=202521
+[exp326] pid=3978734 bytes=204205
+[exp326] pid=3978734 bytes=205889
+[exp326] pid=3978734 bytes=207845
+[exp326] pid=3978734 bytes=209527
+[exp326] pid=3978734 bytes=211209
+[exp326] pid=3978734 bytes=212891
+[exp326] pid=3978734 bytes=214575
+[exp326] pid=3978734 bytes=216259
+[exp326] pid=3978734 bytes=218019
+[exp326] pid=3978734 bytes=219708
+[exp326] pid=3978734 bytes=220418
+[exp326] pid=3978734 bytes=222003
+[exp326] pid=3978734 bytes=223694
+[exp326] pid=3978734 bytes=225387
+[exp326] pid=3978734 bytes=227080
+[exp326] pid=3978734 bytes=228849
+[exp326] pid=3978734 bytes=230736
+[exp326] pid=3978734 bytes=232426
+[exp326] pid=3978734 bytes=234116
+[exp326] pid=3978734 bytes=235808
+[exp326] pid=3978734 bytes=237500
+[exp326] pid=3978734 bytes=239269
+[exp326] pid=3978734 bytes=240959
+[exp326] pid=3978734 bytes=241668
+[exp326] pid=3978734 bytes=243253
+[exp326] pid=3978734 bytes=244943
+[exp326] pid=3978734 bytes=246635
+[exp326] pid=3978734 bytes=248327
+[exp326] pid=3978734 bytes=250096
+[exp326] pid=3978734 bytes=251786
+[exp326] pid=3978734 bytes=253673
+[exp326] pid=3978734 bytes=255363
+[exp326] pid=3978734 bytes=257055
+[exp326] pid=3978734 bytes=258747
+[exp326] pid=3978734 bytes=260516
+[exp326] pid=3978734 bytes=262206
+[exp326] pid=3978734 bytes=262915
+[exp326] pid=3978734 bytes=263322
+[exp326] pid=4011784 bytes=1554
+[exp326] pid=4011784 bytes=4330
+[exp326] pid=4012061 bytes=10426
+[exp326] pid=4012061 bytes=12303
+[exp326] pid=4012061 bytes=13984
+[exp326] pid=4012061 bytes=15667
+[exp326] pid=4012061 bytes=17350
+[exp326] pid=4012061 bytes=19110
+[exp326] pid=4012061 bytes=20790
+[exp326] pid=4012061 bytes=22470
+[exp326] pid=4012061 bytes=24151
+[exp326] pid=4012061 bytes=25833
+[exp326] pid=4012061 bytes=27710
+[exp326] pid=4012061 bytes=29479
+[exp326] pid=4012061 bytes=29880
+[exp326] pid=4012061 bytes=32103
+[exp326] pid=4012061 bytes=33792
+[exp326] pid=4012061 bytes=35482
+[exp326] pid=4012061 bytes=37170
+[exp326] pid=4012061 bytes=39048
+[exp326] pid=4012061 bytes=40612
+[exp326] pid=4012061 bytes=42489
+[exp326] pid=4012061 bytes=44170
+[exp326] pid=4012061 bytes=45852
+[exp326] pid=4012061 bytes=47535
+[exp326] pid=4012061 bytes=49296
+[exp326] pid=4012061 bytes=50977
+[exp326] pid=4012061 bytes=51486
+[exp326] pid=4012061 bytes=53064
+[exp326] pid=4012061 bytes=54746
+[exp326] pid=4012061 bytes=56430
+[exp326] pid=4012061 bytes=58114
+[exp326] pid=4012061 bytes=59874
+[exp326] pid=4012061 bytes=61556
+[exp326] pid=4012061 bytes=63434
+[exp326] pid=4012061 bytes=65116
+[exp326] pid=4012061 bytes=66800
+[exp326] pid=4012061 bytes=68484
+[exp326] pid=4012061 bytes=70244
+[exp326] pid=4012061 bytes=71926
+[exp326] pid=4012061 bytes=72632
+[exp326] pid=4012061 bytes=74210
+[exp326] pid=4012061 bytes=75892
+[exp326] pid=4012061 bytes=77576
+[exp326] pid=4012061 bytes=79260
+[exp326] pid=4012061 bytes=81020
+[exp326] pid=4012061 bytes=82702
+[exp326] pid=4012061 bytes=84384
+[exp326] pid=4012061 bytes=86067
+[exp326] pid=4012061 bytes=87946
+[exp326] pid=4012061 bytes=89630
+[exp326] pid=4012061 bytes=91390
+[exp326] pid=4012061 bytes=93072
+[exp326] pid=4012061 bytes=93778
+[exp326] pid=4012061 bytes=95160
+[exp326] pid=4012061 bytes=97038
+[exp326] pid=4012061 bytes=98722
+[exp326] pid=4012061 bytes=100406
+[exp326] pid=4012061 bytes=102166
+[exp326] pid=4012061 bytes=103848
+[exp326] pid=4012061 bytes=105530
+[exp326] pid=4012061 bytes=107213
+[exp326] pid=4012061 bytes=108897
+[exp326] pid=4012061 bytes=110776
+[exp326] pid=4012061 bytes=112536
+[exp326] pid=4012061 bytes=114218
+[exp326] pid=4012061 bytes=114924
+[exp326] pid=4012061 bytes=116306
+[exp326] pid=4012061 bytes=117989
+[exp326] pid=4012061 bytes=119868
+[exp326] pid=4012061 bytes=121552
+[exp326] pid=4012061 bytes=123312
+[exp326] pid=4012061 bytes=124994
+[exp326] pid=4012061 bytes=126676
+[exp326] pid=4012061 bytes=128359
+[exp326] pid=4012061 bytes=130043
+[exp326] pid=4012061 bytes=131922
+[exp326] pid=4012061 bytes=133486
+[exp326] pid=4012061 bytes=135168
+[exp326] pid=4012061 bytes=136070
+[exp326] pid=4012061 bytes=137452
+[exp326] pid=4012061 bytes=139135
+[exp326] pid=4012061 bytes=140819
+[exp326] pid=4012061 bytes=142698
+[exp326] pid=4012061 bytes=144262
+[exp326] pid=4012061 bytes=145944
+[exp326] pid=4012061 bytes=147822
+[exp326] pid=4012061 bytes=149505
+[exp326] pid=4012061 bytes=151189
+[exp326] pid=4012061 bytes=152950
+[exp326] pid=4012061 bytes=154632
+[exp326] pid=4012061 bytes=156314
+[exp326] pid=4012061 bytes=157216
+[exp326] pid=4012061 bytes=158402
+[exp326] pid=4012061 bytes=160086
+[exp326] pid=4012061 bytes=161770
+[exp326] pid=4012061 bytes=163530
+[exp326] pid=4012061 bytes=165408
+[exp326] pid=4012061 bytes=167090
+[exp326] pid=4012061 bytes=168772
+[exp326] pid=4012061 bytes=170456
+[exp326] pid=4012061 bytes=172140
+[exp326] pid=4012061 bytes=173900
+[exp326] pid=4012061 bytes=175582
+[exp326] pid=4012061 bytes=177264
+[exp326] pid=4012061 bytes=178362
+[exp326] pid=4012061 bytes=179548
+[exp326] pid=4012061 bytes=181232
+[exp326] pid=4012061 bytes=182916
+[exp326] pid=4012061 bytes=184676
+[exp326] pid=4012061 bytes=186358
+[exp326] pid=4012061 bytes=188040
+[exp326] pid=4012061 bytes=189723
+[exp326] pid=4012061 bytes=191602
+[exp326] pid=4012061 bytes=193286
+[exp326] pid=4012061 bytes=195046
+[exp326] pid=4012061 bytes=196728
+[exp326] pid=4012061 bytes=198410
+[exp326] pid=4012061 bytes=199508
+[exp326] pid=4012061 bytes=200499
+[exp326] pid=4012061 bytes=202183
+[exp326] pid=4012061 bytes=204062
+[exp326] pid=4012061 bytes=205822
+[exp326] pid=4012061 bytes=207504
+[exp326] pid=4012061 bytes=209186
+[exp326] pid=4012061 bytes=210869
+[exp326] pid=4012061 bytes=212553
+[exp326] pid=4012061 bytes=214314
+[exp326] pid=4012061 bytes=215996
+[exp326] pid=4012061 bytes=217678
+[exp326] pid=4012061 bytes=219364
+[exp326] pid=4012061 bytes=220665
+[exp326] pid=4012061 bytes=221660
+[exp326] pid=4012061 bytes=223353
+[exp326] pid=4012061 bytes=225123
+[exp326] pid=4012061 bytes=226814
+[exp326] pid=4012061 bytes=228505
+[exp326] pid=4012061 bytes=230195
+[exp326] pid=4012061 bytes=231887
+[exp326] pid=4012061 bytes=233579
+[exp326] pid=4012061 bytes=235348
+[exp326] pid=4012061 bytes=237235
+[exp326] pid=4012061 bytes=238925
+[exp326] pid=4012061 bytes=240615
+[exp326] pid=4012061 bytes=241915
+[exp326] pid=4012061 bytes=242714
+[exp326] pid=4012061 bytes=244406
+[exp326] pid=4012061 bytes=246175
+[exp326] pid=4012061 bytes=248062
+[exp326] pid=4012061 bytes=249752
+[exp326] pid=4012061 bytes=251442
+[exp326] pid=4012061 bytes=253134
+[exp326] pid=4012061 bytes=254826
+[exp326] pid=4012061 bytes=256595
+[exp326] pid=4012061 bytes=258285
+[exp326] pid=4012061 bytes=259975
+[exp326] pid=4012061 bytes=261666
+[exp326] pid=4012061 bytes=263162
+[exp326] pid=4012061 bytes=263569
+[exp326] pid=4045055 bytes=1551
+[exp326] pid=4045055 bytes=4321
+[exp326] pid=4045332 bytes=10297
+[exp326] pid=4045332 bytes=12168
+[exp326] pid=4045332 bytes=13841
+[exp326] pid=4045332 bytes=15516
+[exp326] pid=4045332 bytes=17190
+[exp326] pid=4045332 bytes=18941
+[exp326] pid=4045332 bytes=20613
+[exp326] pid=4045332 bytes=22285
+[exp326] pid=4045332 bytes=24152
+[exp326] pid=4045332 bytes=25826
+[exp326] pid=4045332 bytes=27500
+[exp326] pid=4045332 bytes=29260
+[exp326] pid=4045332 bytes=29660
+[exp326] pid=4045332 bytes=31876
+[exp326] pid=4045332 bytes=33557
+[exp326] pid=4045332 bytes=35239
+[exp326] pid=4045332 bytes=36922
+[exp326] pid=4045332 bytes=38487
+[exp326] pid=4045332 bytes=40168
+[exp326] pid=4045332 bytes=41849
+[exp326] pid=4045332 bytes=43531
+[exp326] pid=4045332 bytes=45214
+[exp326] pid=4045332 bytes=46975
+[exp326] pid=4045332 bytes=48656
+[exp326] pid=4045332 bytes=50141
+[exp326] pid=4045332 bytes=51238
+[exp326] pid=4045332 bytes=52229
+[exp326] pid=4045332 bytes=53912
+[exp326] pid=4045332 bytes=55673
+[exp326] pid=4045332 bytes=57158
+[exp326] pid=4045332 bytes=58839
+[exp326] pid=4045332 bytes=60522
+[exp326] pid=4045332 bytes=62206
+[exp326] pid=4045332 bytes=63967
+[exp326] pid=4045332 bytes=65649
+[exp326] pid=4045332 bytes=67331
+[exp326] pid=4045332 bytes=69013
+[exp326] pid=4045332 bytes=70502
+[exp326] pid=4045332 bytes=72381
+[exp326] pid=4045332 bytes=72381
+[exp326] pid=4045332 bytes=74351
+[exp326] pid=4045332 bytes=76033
+[exp326] pid=4045332 bytes=77715
+[exp326] pid=4045332 bytes=79204
+[exp326] pid=4045332 bytes=81083
+[exp326] pid=4045332 bytes=82647
+[exp326] pid=4045332 bytes=84329
+[exp326] pid=4045332 bytes=86011
+[exp326] pid=4045332 bytes=87695
+[exp326] pid=4045332 bytes=89379
+[exp326] pid=4045332 bytes=90943
+[exp326] pid=4045332 bytes=92625
+[exp326] pid=4045332 bytes=93527
+[exp326] pid=4045332 bytes=94713
+[exp326] pid=4045332 bytes=96397
+[exp326] pid=4045332 bytes=98081
+[exp326] pid=4045332 bytes=99645
+[exp326] pid=4045332 bytes=101327
+[exp326] pid=4045332 bytes=103009
+[exp326] pid=4045332 bytes=104693
+[exp326] pid=4045332 bytes=106377
+[exp326] pid=4045332 bytes=107941
+[exp326] pid=4045332 bytes=109623
+[exp326] pid=4045332 bytes=111305
+[exp326] pid=4045332 bytes=112989
+[exp326] pid=4045332 bytes=114673
+[exp326] pid=4045332 bytes=115079
+[exp326] pid=4045332 bytes=116643
+[exp326] pid=4045332 bytes=118325
+[exp326] pid=4045332 bytes=120007
+[exp326] pid=4045332 bytes=121691
+[exp326] pid=4045332 bytes=123375
+[exp326] pid=4045332 bytes=125135
+[exp326] pid=4045332 bytes=126621
+[exp326] pid=4045332 bytes=128303
+[exp326] pid=4045332 bytes=129987
+[exp326] pid=4045332 bytes=131671
+[exp326] pid=4045332 bytes=133431
+[exp326] pid=4045332 bytes=135113
+[exp326] pid=4045332 bytes=135819
+[exp326] pid=4045332 bytes=137005
+[exp326] pid=4045332 bytes=138689
+[exp326] pid=4045332 bytes=140373
+[exp326] pid=4045332 bytes=142133
+[exp326] pid=4045332 bytes=143815
+[exp326] pid=4045332 bytes=145497
+[exp326] pid=4045332 bytes=147180
+[exp326] pid=4045332 bytes=148669
+[exp326] pid=4045332 bytes=150429
+[exp326] pid=4045332 bytes=152111
+[exp326] pid=4045332 bytes=153793
+[exp326] pid=4045332 bytes=155476
+[exp326] pid=4045332 bytes=156965
+[exp326] pid=4045332 bytes=157371
+[exp326] pid=4045332 bytes=159131
+[exp326] pid=4045332 bytes=160813
+[exp326] pid=4045332 bytes=162495
+[exp326] pid=4045332 bytes=164178
+[exp326] pid=4045332 bytes=165667
+[exp326] pid=4045332 bytes=167427
+[exp326] pid=4045332 bytes=169109
+[exp326] pid=4045332 bytes=170791
+[exp326] pid=4045332 bytes=172474
+[exp326] pid=4045332 bytes=174158
+[exp326] pid=4045332 bytes=175919
+[exp326] pid=4045332 bytes=177405
+[exp326] pid=4045332 bytes=178111
+[exp326] pid=4045332 bytes=179493
+[exp326] pid=4045332 bytes=181176
+[exp326] pid=4045332 bytes=182860
+[exp326] pid=4045332 bytes=184621
+[exp326] pid=4045332 bytes=186107
+[exp326] pid=4045332 bytes=187789
+[exp326] pid=4045332 bytes=189472
+[exp326] pid=4045332 bytes=191156
+[exp326] pid=4045332 bytes=192917
+[exp326] pid=4045332 bytes=194599
+[exp326] pid=4045332 bytes=196085
+[exp326] pid=4045332 bytes=197768
+[exp326] pid=4045332 bytes=199257
+[exp326] pid=4045332 bytes=199858
+[exp326] pid=4045332 bytes=201619
+[exp326] pid=4045332 bytes=203301
+[exp326] pid=4045332 bytes=204787
+[exp326] pid=4045332 bytes=206470
+[exp326] pid=4045332 bytes=208154
+[exp326] pid=4045332 bytes=209915
+[exp326] pid=4045332 bytes=211597
+[exp326] pid=4045332 bytes=213083
+[exp326] pid=4045332 bytes=214766
+[exp326] pid=4045332 bytes=216450
+[exp326] pid=4045332 bytes=218211
+[exp326] pid=4045332 bytes=219901
+[exp326] pid=4045332 bytes=220414
+[exp326] pid=4045332 bytes=221999
+[exp326] pid=4045332 bytes=223494
+[exp326] pid=4045332 bytes=225187
+[exp326] pid=4045332 bytes=227076
+[exp326] pid=4045332 bytes=228648
+[exp326] pid=4045332 bytes=230338
+[exp326] pid=4045332 bytes=232028
+[exp326] pid=4045332 bytes=233720
+[exp326] pid=4045332 bytes=235412
+[exp326] pid=4045332 bytes=236984
+[exp326] pid=4045332 bytes=238674
+[exp326] pid=4045332 bytes=240364
+[exp326] pid=4045332 bytes=241664
+[exp326] pid=4045332 bytes=242463
+[exp326] pid=4045332 bytes=244155
+[exp326] pid=4045332 bytes=245727
+[exp326] pid=4045332 bytes=247417
+[exp326] pid=4045332 bytes=249107
+[exp326] pid=4045332 bytes=250799
+[exp326] pid=4045332 bytes=252491
+[exp326] pid=4045332 bytes=254063
+[exp326] pid=4045332 bytes=255753
+[exp326] pid=4045332 bytes=257443
+[exp326] pid=4045332 bytes=259135
+[exp326] pid=4045332 bytes=260827
+[exp326] pid=4045332 bytes=262399
+[exp326] pid=4045332 bytes=262911
+[exp326] pid=4045332 bytes=263318
+[exp326] pid=4078663 bytes=1554
+[exp326] pid=4078663 bytes=4327
+[exp326] pid=4078941 bytes=10426
+[exp326] pid=4078941 bytes=12107
+[exp326] pid=4078941 bytes=13789
+[exp326] pid=4078941 bytes=15472
+[exp326] pid=4078941 bytes=17233
+[exp326] pid=4078941 bytes=18914
+[exp326] pid=4078941 bytes=20595
+[exp326] pid=4078941 bytes=22276
+[exp326] pid=4078941 bytes=23763
+[exp326] pid=4078941 bytes=25640
+[exp326] pid=4078941 bytes=27204
+[exp326] pid=4078941 bytes=28890
+[exp326] pid=4078941 bytes=29882
+[exp326] pid=4078941 bytes=31514
+[exp326] pid=4078941 bytes=33205
+[exp326] pid=4078941 bytes=34896
+[exp326] pid=4078941 bytes=36467
+[exp326] pid=4078941 bytes=38150
+[exp326] pid=4078941 bytes=39831
+[exp326] pid=4078941 bytes=41514
+[exp326] pid=4078941 bytes=43197
+[exp326] pid=4078941 bytes=44957
+[exp326] pid=4078941 bytes=46638
+[exp326] pid=4078941 bytes=48319
+[exp326] pid=4078941 bytes=50001
+[exp326] pid=4078941 bytes=51489
+[exp326] pid=4078941 bytes=52090
+[exp326] pid=4078941 bytes=53851
+[exp326] pid=4078941 bytes=55532
+[exp326] pid=4078941 bytes=57213
+[exp326] pid=4078941 bytes=58895
+[exp326] pid=4078941 bytes=60579
+[exp326] pid=4078941 bytes=62263
+[exp326] pid=4078941 bytes=63827
+[exp326] pid=4078941 bytes=65509
+[exp326] pid=4078941 bytes=67191
+[exp326] pid=4078941 bytes=68875
+[exp326] pid=4078941 bytes=70559
+[exp326] pid=4078941 bytes=72319
+[exp326] pid=4078941 bytes=72633
+[exp326] pid=4078941 bytes=74407
+[exp326] pid=4078941 bytes=76089
+[exp326] pid=4078941 bytes=77772
+[exp326] pid=4078941 bytes=79456
+[exp326] pid=4078941 bytes=81217
+[exp326] pid=4078941 bytes=82899
+[exp326] pid=4078941 bytes=84581
+[exp326] pid=4078941 bytes=86263
+[exp326] pid=4078941 bytes=87947
+[exp326] pid=4078941 bytes=89631
+[exp326] pid=4078941 bytes=91195
+[exp326] pid=4078941 bytes=92877
+[exp326] pid=4078941 bytes=93779
+[exp326] pid=4078941 bytes=94965
+[exp326] pid=4078941 bytes=96649
+[exp326] pid=4078941 bytes=98333
+[exp326] pid=4078941 bytes=100093
+[exp326] pid=4078941 bytes=101775
+[exp326] pid=4078941 bytes=103457
+[exp326] pid=4078941 bytes=105140
+[exp326] pid=4078941 bytes=106824
+[exp326] pid=4078941 bytes=108585
+[exp326] pid=4078941 bytes=110267
+[exp326] pid=4078941 bytes=111949
+[exp326] pid=4078941 bytes=113631
+[exp326] pid=4078941 bytes=114925
+[exp326] pid=4078941 bytes=115526
+[exp326] pid=4078941 bytes=117405
+[exp326] pid=4078941 bytes=118969
+[exp326] pid=4078941 bytes=120651
+[exp326] pid=4078941 bytes=122333
+[exp326] pid=4078941 bytes=124017
+[exp326] pid=4078941 bytes=125701
+[exp326] pid=4078941 bytes=127265
+[exp326] pid=4078941 bytes=128947
+[exp326] pid=4078941 bytes=130629
+[exp326] pid=4078941 bytes=132313
+[exp326] pid=4078941 bytes=133997
+[exp326] pid=4078941 bytes=135757
+[exp326] pid=4078941 bytes=136071
+[exp326] pid=4078941 bytes=137845
+[exp326] pid=4078941 bytes=139527
+[exp326] pid=4078941 bytes=141210
+[exp326] pid=4078941 bytes=142894
+[exp326] pid=4078941 bytes=144655
+[exp326] pid=4078941 bytes=146337
+[exp326] pid=4078941 bytes=148019
+[exp326] pid=4078941 bytes=149701
+[exp326] pid=4078941 bytes=151385
+[exp326] pid=4078941 bytes=153069
+[exp326] pid=4078941 bytes=154829
+[exp326] pid=4078941 bytes=156511
+[exp326] pid=4078941 bytes=157217
+[exp326] pid=4078941 bytes=158403
+[exp326] pid=4078941 bytes=160087
+[exp326] pid=4078941 bytes=161771
+[exp326] pid=4078941 bytes=163531
+[exp326] pid=4078941 bytes=165213
+[exp326] pid=4078941 bytes=166895
+[exp326] pid=4078941 bytes=168578
+[exp326] pid=4078941 bytes=170262
+[exp326] pid=4078941 bytes=172023
+[exp326] pid=4078941 bytes=173705
+[exp326] pid=4078941 bytes=175387
+[exp326] pid=4078941 bytes=177069
+[exp326] pid=4078941 bytes=178363
+[exp326] pid=4078941 bytes=179159
+[exp326] pid=4078941 bytes=180843
+[exp326] pid=4078941 bytes=182603
+[exp326] pid=4078941 bytes=184285
+[exp326] pid=4078941 bytes=185771
+[exp326] pid=4078941 bytes=187455
+[exp326] pid=4078941 bytes=189139
+[exp326] pid=4078941 bytes=190899
+[exp326] pid=4078941 bytes=192581
+[exp326] pid=4078941 bytes=194263
+[exp326] pid=4078941 bytes=195946
+[exp326] pid=4078941 bytes=197630
+[exp326] pid=4078941 bytes=199391
+[exp326] pid=4078941 bytes=199509
+[exp326] pid=4078941 bytes=201283
+[exp326] pid=4078941 bytes=202965
+[exp326] pid=4078941 bytes=204648
+[exp326] pid=4078941 bytes=206332
+[exp326] pid=4078941 bytes=208093
+[exp326] pid=4078941 bytes=209775
+[exp326] pid=4078941 bytes=211457
+[exp326] pid=4078941 bytes=213139
+[exp326] pid=4078941 bytes=214823
+[exp326] pid=4078941 bytes=216507
+[exp326] pid=4078941 bytes=218267
+[exp326] pid=4078941 bytes=219956
+[exp326] pid=4078941 bytes=220666
+[exp326] pid=4078941 bytes=221857
+[exp326] pid=4078941 bytes=223550
+[exp326] pid=4078941 bytes=225243
+[exp326] pid=4078941 bytes=227012
+[exp326] pid=4078941 bytes=228703
+[exp326] pid=4078941 bytes=230393
+[exp326] pid=4078941 bytes=232084
+[exp326] pid=4078941 bytes=233776
+[exp326] pid=4078941 bytes=235546
+[exp326] pid=4078941 bytes=237236
+[exp326] pid=4078941 bytes=238926
+[exp326] pid=4078941 bytes=240616
+[exp326] pid=4078941 bytes=241916
+[exp326] pid=4078941 bytes=242519
+[exp326] pid=4078941 bytes=244407
+[exp326] pid=4078941 bytes=245979
+[exp326] pid=4078941 bytes=247669
+[exp326] pid=4078941 bytes=249359
+[exp326] pid=4078941 bytes=251051
+[exp326] pid=4078941 bytes=252743
+[exp326] pid=4078941 bytes=254512
+[exp326] pid=4078941 bytes=256202
+[exp326] pid=4078941 bytes=257892
+[exp326] pid=4078941 bytes=259583
+[exp326] pid=4078941 bytes=261079
+[exp326] pid=4078941 bytes=262848
+[exp326] pid=4078941 bytes=263163
+[exp326] pid=4078941 bytes=263570
+[exp326] pid=4111889 bytes=1551
+[exp326] pid=4111889 bytes=4320

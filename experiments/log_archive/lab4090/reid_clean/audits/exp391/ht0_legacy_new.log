@@ -1,0 +1,103 @@
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+{
+  "final_state_sha256": "481d84a77da8f9142d8c7a26c4d9d069c7b1642f3c31603b277e02c972eba274",
+  "initial_state_sha256": "65cc204ad4a3c2939d94f4c30f2e5bce3f5c536d1cc2c7d02a835e6d4046f338",
+  "momentum_count": 205,
+  "momentum_sha256": "48338285569f2f0872746b76a63d4742989eef25d37d0bf6a40e6114557dd005",
+  "state_count": 243,
+  "steps": [
+    {
+      "gradient_count": 205,
+      "gradient_sha256": "83d362714d5ca2d175b0e2e641cacc5f832643d3e799c9cb29e141946f465c81",
+      "loss": 20.471908569335938,
+      "output_count": 19,
+      "output_sha256": "52186fa9c43336f05f855a25770c7f0f184d015f9554284b8119e7090018d29c",
+      "scale": 32768.0,
+      "state_sha256": "f7c82625ddc62af34429afec5c393a59b03731faf5e8a7905fdf0f45b7a0678b"
+    },
+    {
+      "gradient_count": 205,
+      "gradient_sha256": "707ff6c4a85bd665d15096d1caeff7d79eb47417982afec9e47abb623971210b",
+      "loss": 10.405593872070312,
+      "output_count": 19,
+      "output_sha256": "9cc5f4dd36791d79c07441d15a810e6faf15dff7e7f3487e7888ea4ae318d900",
+      "scale": 16384.0,
+      "state_sha256": "a32d8b194daeadb88d9357c032a501c5916956e38c5d47dffc9964033e5bcdd5"
+    },
+    {
+      "gradient_count": 205,
+      "gradient_sha256": "e69e35b23874954ca80ccf24eec7c26232da3f004fe9d4da8834c54aa13afbb9",
+      "loss": 26.58220100402832,
+      "output_count": 19,
+      "output_sha256": "3842a0d8e4b8d5a8e6e8907ff74fe5c1b252ae1474827cc3408774e8de6ac939",
+      "scale": 8192.0,
+      "state_sha256": "4374a50a3efbc0f363ef6374dd950dd465afcfb0eb4c0840c4e2341db895c718"
+    },
+    {
+      "gradient_count": 205,
+      "gradient_sha256": "526e01f6f32adeb98fe02636b5dfcf0f9f7917c063a4652ab6a5283bb89f632d",
+      "loss": 27.13690948486328,
+      "output_count": 19,
+      "output_sha256": "662caff4bb89432a3678315c8a7ca8eab794679ccfca1e26139dbbffb4fea8af",
+      "scale": 4096.0,
+      "state_sha256": "60508f70010848820eb292b4cf6f775ffe855e35f2c690f8ca166e2c1b7288c9"
+    },
+    {
+      "gradient_count": 205,
+      "gradient_sha256": "50f9b3706799dbb952ebbfe2b79a67da44bb4c884b108dc3d385290119b6034f",
+      "loss": 14.050884246826172,
+      "output_count": 19,
+      "output_sha256": "7690fb3abd1a7e566d0533909dbf045eb3d53467ef20c90f696933eee19b190d",
+      "scale": 2048.0,
+      "state_sha256": "a6f58d1f6c63fd9a0ace8e6d8526b62c574d1afeaa4413de59eb13e51d9d3a35"
+    },
+    {
+      "gradient_count": 205,
+      "gradient_sha256": "4495d852de0efc6229146d8c70052ebffeece246dfbf981dc89e4abf5eae7264",
+      "loss": 17.319965362548828,
+      "output_count": 19,
+      "output_sha256": "e283309c2a85375e2e834fd8240e35c7a52aadadfd738992adbe95aa72d7cecd",
+      "scale": 1024.0,
+      "state_sha256": "bcf3de71b03dbd62857c5cfdb760ebbd6bfe165e137c33de5c489fb6eeae2054"
+    },
+    {
+      "gradient_count": 205,
+      "gradient_sha256": "afa6d5776c60ac2de40399c24c1c0d356f9f6e1ab571e6964f815981ccc48a1e",
+      "loss": 11.163066864013672,
+      "output_count": 19,
+      "output_sha256": "3e1492454ad8b35c03d8db1024165597fecf89176b2afb4ab24d016e48a0b3d0",
+      "scale": 1024.0,
+      "state_sha256": "960dd10a9ee035f89a71faaee42243d9a0396f84a022c4719cd610a052696468"
+    },
+    {
+      "gradient_count": 205,
+      "gradient_sha256": "58dd51f5148515f3d76806324ff03ab8abc4b5dc3019dde614eb463bb6c5644c",
+      "loss": 20.075517654418945,
+      "output_count": 19,
+      "output_sha256": "0ca1a7a801e79aa77a43800f3ad537392a050e38ddd9f038f79d2b65e046f88b",
+      "scale": 1024.0,
+      "state_sha256": "58aa5b0e944404fbcf6837b9ecb41ba381afe4b0d56a1373608b6ac1f36481e1"
+    },
+    {
+      "gradient_count": 205,
+      "gradient_sha256": "a8fcd4a1eaf6d29aa1b6421264893879ad172fb036bf0feea03c8920c6cb0672",
+      "loss": 23.36857032775879,
+      "output_count": 19,
+      "output_sha256": "ad78cc6b1828b83aba44fb273588f337fcaed2490d9c094cad42ae23aeedf7e0",
+      "scale": 1024.0,
+      "state_sha256": "702eea12b4e3b444f0522ea68eeabf7fd29507e6c12f61274bcb5922db5dd559"
+    },
+    {
+      "gradient_count": 205,
+      "gradient_sha256": "2047b3e4151661262d872ee99661dcb07437a448d0fe00f11276ab3e562088be",
+      "loss": 23.908662796020508,
+      "output_count": 19,
+      "output_sha256": "7331e5d2ba798232da63800674be44d477bf22d07aeee8aaecdcb3b9174e495f",
+      "scale": 1024.0,
+      "state_sha256": "481d84a77da8f9142d8c7a26c4d9d069c7b1642f3c31603b277e02c972eba274"
+    }
+  ]
+}

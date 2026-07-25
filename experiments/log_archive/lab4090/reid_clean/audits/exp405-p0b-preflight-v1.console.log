@@ -1,0 +1,14 @@
+{"progress": "original_start", "rows": 512}
+{"progress": "original", "batch": 0}
+{"progress": "original", "batch": 100}
+{"progress": "original", "batch": 200}
+Traceback (most recent call last):
+  File "experiments/exp405_clip_anatomical_view_transport/phase0_teacher_measurement.py", line 2020, in <module>
+    main()
+  File "experiments/exp405_clip_anatomical_view_transport/phase0_teacher_measurement.py", line 1991, in main
+    result = run(args)
+  File "experiments/exp405_clip_anatomical_view_transport/phase0_teacher_measurement.py", line 1448, in run
+    wrong_mask_indices, wrong_mask_records = choose_wrong_masks(
+  File "experiments/exp405_clip_anatomical_view_transport/phase0_teacher_measurement.py", line 1075, in choose_wrong_masks
+    raise RuntimeError("no wrong-mask donor satisfies the frozen balance caliper")
+RuntimeError: no wrong-mask donor satisfies the frozen balance caliper

@@ -1,0 +1,34 @@
+/home/afr/SOLIDER-REID-exp371-146bc44/utils/metrics.py:66: UserWarning: This overload of addmm_ is deprecated:
+	addmm_(Number beta, Number alpha, Tensor mat1, Tensor mat2)
+Consider using one of the following signatures instead:
+	addmm_(Tensor mat1, Tensor mat2, *, Number beta, Number alpha) (Triggered internally at ../torch/csrc/utils/python_arg_parser.cpp:1420.)
+  dist_mat.addmm_(1, -2, qf, gf.t())
+{
+  "jl_768": {
+    "mAP": 0.5880111785013662,
+    "rank1": 0.6755656003952026,
+    "rank5": 0.8018099665641785,
+    "rank10": 0.8470588326454163,
+    "retention": -0.22450850255884858
+  }
+}
+{
+  "pca_768": {
+    "mAP": 0.599335791679134,
+    "rank1": 0.6787330508232117,
+    "rank5": 0.811312198638916,
+    "rank10": 0.8538461327552795,
+    "retention": 1.1157942507791168,
+    "train_explained_variance_ratio": 0.9961282014846802,
+    "train_reconstruction_cosine": 0.9983645677566528
+  }
+}
+{
+  "threshold": 0.8,
+  "method_pass": {
+    "jl_768": false,
+    "pca_768": true
+  },
+  "simple_packing_go": true
+}
+COMPLETE: /home/afr/SOLIDER-REID-exp371-146bc44/log/exp371_gate_d_s0

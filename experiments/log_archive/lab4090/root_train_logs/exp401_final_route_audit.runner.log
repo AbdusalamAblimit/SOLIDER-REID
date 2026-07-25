@@ -1,0 +1,116 @@
+=> Occluded-Duke loaded
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+/home/afr/SOLIDER-REID-exp401-rich-budget-c0-formal-11d7a35/model/backbones/swin_transformer.py:1157: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+/home/afr/SOLIDER-REID-exp401-rich-budget-c0-formal-11d7a35/utils/metrics.py:12: UserWarning: This overload of addmm_ is deprecated:
+	addmm_(Number beta, Number alpha, Tensor mat1, Tensor mat2)
+Consider using one of the following signatures instead:
+	addmm_(Tensor mat1, Tensor mat2, *, Number beta = 1, Number alpha = 1) (Triggered internally at /pytorch/torch/csrc/utils/python_arg_parser.cpp:1661.)
+  dist_mat.addmm_(1, -2, qf, gf.t())
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+{
+  "checkpoint": {
+    "path": "/home/afr/SOLIDER-REID-exp401-rich-budget-c0-formal-11d7a35/log/occluded_duke/exp401_clean_swin_tiny_rich_budget_c0_s1234/transformer_120.pth",
+    "sha256_after": "fe00d08a9a0f651c2c0852c0661e720995a65292459aec9797a359895aa52efc",
+    "sha256_before": "fe00d08a9a0f651c2c0852c0661e720995a65292459aec9797a359895aa52efc",
+    "state_names_count": 241,
+    "state_sha256": "3c2af267a4d15cc7f199c6b55fefcbb30c05f0c8f47940de13769e555c4d4035"
+  },
+  "cpu_gates": {
+    "checkpoint_state_all_tensors": true,
+    "checkpoint_state_finite": true,
+    "checkpoint_state_nonempty": true,
+    "checkpoint_unique": true,
+    "config_sha_exact": true,
+    "evidence_head_retained": true,
+    "repo_all_clean": true,
+    "repo_head_exact": true,
+    "repo_tracked_clean": true,
+    "rho_not_in_state": true,
+    "source_sha_exact": true,
+    "state_teacher_free": true,
+    "two_routers_retained": true
+  },
+  "decision": "RICH_BUDGET_ROUTE_ALIVE",
+  "execution": {
+    "bypass_calls": [
+      78,
+      78
+    ],
+    "checkpoint_files": [
+      "/home/afr/SOLIDER-REID-exp401-rich-budget-c0-formal-11d7a35/log/occluded_duke/exp401_clean_swin_tiny_rich_budget_c0_s1234/transformer_120.pth"
+    ],
+    "config_sha256": "c2992bdf4321f906b19eb22dc7ec69a5678498ea0f93bf55a45a15a2e47cea84",
+    "repo_head": "11d7a35788c4645c355d96d76a2a4ff20a9801ac",
+    "script_sha256": "95aa6b8668ce0ec7f0cdaf7a7a25c6f0e0b9d1e2a9d615762b13e5e818f82259",
+    "source_sha256": {
+      "config/defaults.py": "a13e5f6df0e8c770c254c115d6d55208baac7938cffbec6f208ba9caa24dd7c5",
+      "configs/occluded_duke/swin_tiny_tapf_rich_budget_c0.yml": "e0413a497976ad6dbf4c74cf13b55c86c169d659bab6d967455e87c592e47f4e",
+      "datasets/pose_dataset.py": "d04e74908d18eaf8105f9b85c66287cac6980ddf5ffe8132e855c7d5a9f61bbc",
+      "model/backbones/swin_transformer.py": "b389b7243e204d851ed365c986c8c4077d7fa86ce79e6cbb0be6fc4a1ba58eef",
+      "model/clip_semantic_teacher.py": "c648fa768b178d153258c46eee69679cbc0b90a11db918800323ab5c5c6054d5",
+      "model/make_model.py": "6bc7d9c83a2f4d12b78dd2c09335d366ce568107ddce5dded3abfe7ca8538f03",
+      "model/tapf.py": "95c5d0ff80bf9e4529589a5f31819e7aad5db644b88e2a33d6af07c9ffc42886",
+      "processor/processor.py": "be1c19ea5af19534e3855eb2a5914e0dc9a5643c63a39cfa508c81f89660eac1"
+    }
+  },
+  "metrics": {
+    "all_router_bypass": {
+      "mAP": 0.5700358607568072,
+      "rank1": 0.6737556457519531,
+      "rank10": 0.8461538553237915,
+      "rank5": 0.800452470779419
+    },
+    "full": {
+      "mAP": 0.5712300755952,
+      "rank1": 0.6728506684303284,
+      "rank10": 0.8475112915039062,
+      "rank5": 0.8027149438858032
+    },
+    "full_minus_all_bypass_mAP": 0.0011942148383927709,
+    "minimum_delta_mAP": 0.001,
+    "minimum_full_mAP": 0.5670000000000001
+  },
+  "phase_b_interface_authorized": true,
+  "rgb_only_gates": {
+    "exploding_pose_access_zero": true,
+    "rgb_descriptor_finite": true,
+    "rgb_none_exploding_exact": true
+  },
+  "status": "PASS",
+  "strict_gates": {
+    "clip_asset_regular_exact": true,
+    "codebook_asset_regular_exact": true,
+    "config_output_dir_exact": true,
+    "evidence_head_module": true,
+    "frozen_pose_root_exact": true,
+    "model_object_teacher_free": true,
+    "official_data_root_exact": true,
+    "rho_not_buffer": true,
+    "rho_not_parameter": true,
+    "rho_python_float": true,
+    "strict_load_no_missing": true,
+    "strict_load_no_unexpected": true,
+    "strict_state_exact": true,
+    "tapf_rich_exact": true,
+    "two_router_modules": true
+  },
+  "terminal_gates": {
+    "apply_gate_restored_exact": true,
+    "both_router_banks_bypassed": true,
+    "bypass_metrics_finite": true,
+    "checkpoint_before_after_exact": true,
+    "checkpoint_list_before_after_exact": true,
+    "config_before_after_exact": true,
+    "full_metrics_finite": true,
+    "full_recheck_matches_e120_logged": true,
+    "model_state_before_after_exact": true,
+    "source_before_after_exact": true
+  }
+}

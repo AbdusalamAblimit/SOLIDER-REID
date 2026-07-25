@@ -1,0 +1,102 @@
+################################################################################
+# GALLERY-COMPOSITION KILL-SWITCH  dataset=market1501  ckpt=log/market1501/exp260b_base_gcn512_2stage/transformer_120.pth
+################################################################################
+[reuse] /tmp/hub_market_feats.npz: q=3368 g=15913
+[data] Nq=3368 Ng=15913 dim=1024 #q-IDs=750 #g-IDs=751
+[SANITY] frozen full-gallery mAP=94.61 R1=97.06 nq=3368
+
+################################################################################
+# TEST A — GALLERY-GROWTH TAX (frozen model, grow gallery with held-out distractors)
+################################################################################
+[A] #query-IDs=750  core-IDs=150  pool(distractor)-IDs=601 (incl 1 gallery-only)
+[A] core queries=678  core gallery=1150 (cap 8/ID)  distractor pool imgs=13209
+[A] max achievable multiplier with this pool = 12.49x
+[A] 1x baseline (core only): mAP=97.084 R1=99.263 nq=678 (Ng=1150)
+
+[A] growth curve (mean over seeds; '--' = multiplier exceeds pool):
+   mult      Ng      mAP     dmAP       R1      dR1  mean#false   d#false
+    1.0    1150   97.084   +0.000   99.263   +0.000       4.065    +0.000
+    1.5    1725   96.532   -0.551   98.997   -0.265       4.090    +0.025
+    2.0    2300   95.975   -1.108   98.614   -0.649       4.113    +0.048
+    3.0    3450   95.323   -1.760   98.437   -0.826       4.155    +0.090
+    5.0    5750   94.160   -2.924   97.699   -1.563       4.202    +0.137
+   10.0   11500   92.650   -4.434   96.696   -2.566       4.295    +0.230
+
+[A] CONTROL1 (Hubness lesson): per-query AP-DROP vs #false-in-topk INCREASE (1x->10x)
+     Spearman(-dAP, d#false) = +0.7154  (n=678)  [high -> the 'tax' is mostly the trivial mechanical count]
+     partial Spearman(-dAP, base#false | d#false) = +0.0922  [structure beyond the count increment]
+     among 578 queries with no change in TOP-10 #false: mean dAP = -1.232  [drop beyond top-10 count; PARTIAL structure, see CONTROL2]
+
+[A] CONTROL2 (structural vs count, matched n_add=10350): at 10x
+     real held-out distractors:      dmAP=-4.448
+     column-shuffled (geom-destroyed): dmAP=-0.002
+     [if real << shuffled, the tax is STRUCTURAL (real neighbours bite more than direction-randomized ones); if ~equal, it's just count]
+
+################################################################################
+# TEST B — GALLERY-SIZE REJECTION (impostor max-score & FPIR drift vs watchlist size)
+################################################################################
+[B] enrollable (shared q&g) IDs=750  gallery-only impostor-source IDs=1
+[B] max_enroll(=len(shared)//2)=375; watchlist sizes tested: [10, 50, 100, 250]
+
+[B] impostor max-cosine vs watchlist size (REAL vs RANDOM-feature null, same counts):
+    size real_imp_mean  rnd_imp_mean real_gen_mean #imp_probes
+      10        0.3280        0.0849        0.9685         200
+      50        0.4711        0.0998        0.9691        1000
+     100        0.5233        0.1056        0.9708        2000
+     250        0.5879        0.1136        0.9695        5000
+  Spearman(size, impostor-max): REAL=+1.0000  RANDOM-null=+1.0000  (n=4 sizes; both >0 EXPECTED; REAL is interesting only if drift shape differs from the max-of-N null)
+
+[B] GLOBAL vs SIZE-CONDITIONED rejection — CAL/EVAL FOLDS (out-of-sample). REAL:
+    size |            DIR@FPIR1% |            DIR@FPIR5% |            FPIR@TPIR90% | #imp_ev
+         |       glob     size-c |       glob     size-c |        glob      size-c |
+      10 |      0.980      1.000 |      1.000      1.000 |       0.000       0.000 |     100
+      50 |      0.992      0.996 |      0.998      1.000 |       0.000       0.000 |     500
+     100 |      0.993      1.000 |      1.000      1.000 |       0.000       0.000 |    1000
+     250 |      0.992      0.990 |      0.998      0.997 |       0.000       0.000 |    2500
+  REAL: FPIR@TPIR90 std  global=0.0000  size-cond=0.0000  (drift reduction=+0.0000)
+  REAL: mean DIR@FPIR1% d(size-cond - global)=+0.0073  DIR@FPIR5% d=+0.0003
+
+[B] same on RANDOM-feature null (max-of-N baseline; size-cond gain here is the TRIVIAL floor):
+  RANDOM: FPIR@TPIR90 std global=0.3063 size-cond=0.0134 (drift reduction=+0.2929)
+  RANDOM: mean DIR@FPIR1% d=+0.0032  DIR@FPIR5% d=+0.0163
+
+[B] >> NET (REAL - RANDOM): size-conditioning helps BEYOND max-of-N only if these >0:
+     net drift-reduction  = -0.2929
+     net dDIR@FPIR1%      = +0.0041
+     net dDIR@FPIR5%      = -0.0160
+
+################################################################################
+# TEST C — SINGLETON MERGE (Zipf gallery: tail query false-merges into head proto)
+################################################################################
+[C] gallery IDs=751  imgs/ID: min=2 med=16 max=2798
+[C] head-pool IDs=450  tail-pool IDs=300
+[C] total tail probes=3000  NN-is-head fraction=0.674
+
+[C] P(tail-probe NN is a HEAD of support s) by support bin (DESCRIPTIVE, n=4 bins):
+    supp-bin   #NN(sum)  #headIDs(sum)  #imgs(sum)  rate/headID  rate/IMAGE
+      (2, 3)       1985           4461        9003       0.4450     0.22048
+      (4, 6)         20             29         144       0.6897     0.13889
+      (7, 9)          0              0           0       0.0000     0.00000
+    (10, 12)         16             10         120       1.6000     0.13333
+  [per-IMAGE rate FLAT across support -> purely mechanical count; RISING -> heads over-attract disproportionately.]
+  binned Spearman(support, rate/headID)=+0.4000 (trivially >0)  rate/IMAGE=-0.8000  [n=4 bins, descriptive only]
+
+[C] ★PER-HEAD-ID (n=450 head IDs, real power):
+     Spearman(support, attraction-count)     = +0.0428  [trivially >0: more imgs = more NN tickets]
+     Spearman(support, attraction-PER-IMAGE) = -0.0127  [NON-TRIVIAL: >0 means heads over-attract beyond count; ~0 means purely count]
+
+[C] support-calibrated vs global threshold (OVERALL tail->head false-merge at matched head-recall), CAL=even seeds / EVAL=odd seeds:
+  head-recall=0.90: OVERALL false-merge  global=0.0373  support-calibrated=0.0373  (d=+0.0000; want NEGATIVE)  [5 eval seeds, 1500 tail probes]
+  head-recall=0.95: OVERALL false-merge  global=0.0853  support-calibrated=0.0840  (d=-0.0013; want NEGATIVE)  [5 eval seeds, 1500 tail probes]
+  support-level fallback-to-global fraction (sparse levels) = 0.000  [high -> 'support-calibrated' is mostly global]
+
+################################################################################
+# SUMMARY / VERDICT  (market1501)  [31s]
+################################################################################
+# A signal counts ONLY if it survives the trivial baseline (#false-in-topk / max-of-N / per-image).
+[B] impostor-max drift  Spearman(size): REAL=+1.000  RANDOM-null=+1.000
+[B] size-cond NET gain over max-of-N null: drift-red=-0.2929  dDIR@FPIR1%=+0.0041  dDIR@FPIR5%=-0.0160  (>0 -> non-trivial; <=0 -> trivial EVT)
+[C] per-head-ID Spearman(support, attraction)=+0.043 (trivial)  PER-IMAGE=-0.013 (non-trivial claim)  [n=450 IDs]
+[C] NN-is-head fraction=0.674
+# Test A growth-tax verdict: read CONTROL1 (no-new-false subset dAP) & CONTROL2 (real vs geom-destroyed dmAP) above.
+[done]

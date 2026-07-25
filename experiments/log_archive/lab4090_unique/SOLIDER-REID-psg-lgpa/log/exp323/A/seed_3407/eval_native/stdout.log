@@ -1,0 +1,133 @@
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0, pose_mode=true, text_mode=aligned
+[LGPA] Running on DETACHED features (no gradient to backbone)
+===========building pose-backbone (PSG) transformer===========
+/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-psg-lgpa/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+[exp323-eval:true] batches=25 samples=1600
+[exp323-eval:true] batches=50 samples=3200
+[exp323-eval:true] batches=75 samples=4800
+[exp323-eval:true] batches=100 samples=6400
+[exp323-eval:true] batches=125 samples=8000
+[exp323-eval:true] batches=150 samples=9600
+[exp323-eval:true] batches=175 samples=11200
+[exp323-eval:true] batches=200 samples=12800
+[exp323-eval:true] batches=225 samples=14400
+[exp323-eval:true] batches=250 samples=16000
+[exp323-eval:true] batches=275 samples=17600
+[exp323-eval:true] batches=300 samples=19200
+[metrics] LGPA strict MaxSim
+[metrics] LGPA fixed correspondence
+[metrics] LGPA pooled/concat
+{
+  "arm": "A",
+  "checkpoint_sha256": "af1c0a295be93ad45f0ac3d92d5ee157651a201645443547d0cc6cb7a0b2a17e",
+  "diagnostics": {
+    "lgpa": {
+      "fixed": {
+        "fallback_pairs": 0,
+        "total_pairs": 39030810
+      },
+      "maxsim": {
+        "fallback_pairs": 0,
+        "total_pairs": 39030810
+      },
+      "pooled": {
+        "fallback_pairs": 0,
+        "total_pairs": 39030810
+      }
+    }
+  },
+  "endpoint": {
+    "R1": 0.7411764860153198,
+    "R10": 0.889140248298645,
+    "R5": 0.8570135831832886,
+    "mAP": 0.629482384858119
+  },
+  "endpoint_name": "no_flip_strict_symmetric_lgpa_hybrid",
+  "eval_pose_mode": "true",
+  "execution_commit": "bf685cfc6c021317ce81759eaabd4d87128de025",
+  "expanded_config_sha256": "6763a344f618db42740a10b424c8d1076c1b511dc18d979da9806eac50a36498",
+  "feature_shapes": {
+    "gcn_pooled": null,
+    "gcn_raw_support": null,
+    "gcn_tokens": null,
+    "global_feat": [
+      19871,
+      768
+    ],
+    "lgpa_pooled": [
+      19871,
+      768
+    ],
+    "lgpa_raw_support": [
+      19871,
+      5
+    ],
+    "lgpa_rel_weights": [
+      19871,
+      5
+    ],
+    "lgpa_tokens": [
+      19871,
+      5,
+      768
+    ]
+  },
+  "global_feature_sha256": "6db2d9ead5e0a5873489b41d9b83bd4ffaef87d80a5029f812f6bd9c1df81d2c",
+  "metrics": {
+    "equal_concat_lgpa": {
+      "R1": 0.692760169506073,
+      "R10": 0.8619909286499023,
+      "R5": 0.8221719264984131,
+      "mAP": 0.6026468252305948
+    },
+    "global": {
+      "R1": 0.699547529220581,
+      "R10": 0.8710407018661499,
+      "R5": 0.8244343996047974,
+      "mAP": 0.5997844213934432
+    },
+    "lgpa_fixed": {
+      "R1": 0.7343891263008118,
+      "R10": 0.8823529481887817,
+      "R5": 0.8529411554336548,
+      "mAP": 0.6105049104065436
+    },
+    "lgpa_hybrid": {
+      "R1": 0.7411764860153198,
+      "R10": 0.889140248298645,
+      "R5": 0.8570135831832886,
+      "mAP": 0.629482384858119
+    },
+    "lgpa_local": {
+      "R1": 0.7438914179801941,
+      "R10": 0.888687789440155,
+      "R5": 0.8592759966850281,
+      "mAP": 0.6221810085734272
+    },
+    "lgpa_pooled": {
+      "R1": 0.7239819169044495,
+      "R10": 0.877828061580658,
+      "R5": 0.844343900680542,
+      "mAP": 0.6008499074592899
+    }
+  },
+  "num_gallery": 17661,
+  "num_query": 2210,
+  "schema_version": 1,
+  "seed": 3407,
+  "training_factors": {
+    "pose_mode": "true",
+    "text_mode": "aligned"
+  }
+}

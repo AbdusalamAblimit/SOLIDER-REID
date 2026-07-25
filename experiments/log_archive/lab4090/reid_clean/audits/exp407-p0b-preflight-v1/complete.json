@@ -1,0 +1,21 @@
+{
+  "cache_sha256": "f3ef8c1db0475baadfca2ece9945e58929edf6cef0e6cf0c758e1258b185b634",
+  "decision": "PREFLIGHT_ONLY_PASS",
+  "execution": "exp407-p0b-preflight-v1",
+  "execution_manifest_sha256": null,
+  "formal": false,
+  "formal_measurement_authorized": true,
+  "result_sha256": "9ec2f9042a891ed6e0414bdad50760c543ffd2b625cbc63d0161faae478c39c0",
+  "runtime_sha256": "5a8aa901fac21e1a9d961790b78f78ce66e27a89f4c4db4ba4a9182aec3dee11",
+  "source_files": {
+    "core": "29ddd00ce03ed73b6d1c7ab722de88490e2490638bc83b192e215c6ab4bb0f8b",
+    "donor_reserve": "b1ef0148ef5c39b06d8d8e41cb81e63bfd5eb81f497d4e26054bef1f4b069f4f",
+    "protocol": "6b24ba65be78488d945aa53f06f9cd938021994a50eff4e94273a2f5d2b21636",
+    "runner": "0037c855f53014d579c6f60b4da2aa80b449c6128cebbe4a328b8092e901d764",
+    "teacher": "af255cbbb6eafca2024f7882023deda50445f9a01c1df0b28422a24e23cc35a0"
+  },
+  "started_seal_sha256": "c0370e6edf113018a0d82b1e9f2c1f046b5603ea8351cbab3055a30e6109125d",
+  "started_sha256": "936d8777952564fdf1da8699f1612973a922634822bc58ada691c4d9fa0cbc7d",
+  "status": "PREFLIGHT_PASS",
+  "transport_oracle_authorized": false
+}

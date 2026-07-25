@@ -1,0 +1,121 @@
+{
+  "config_single_variable": [
+    "MODEL.TAPF.POSE_LOSS_REDUCTION",
+    "OUTPUT_DIR"
+  ],
+  "construction_rng_exact": true,
+  "consumer_paths": [
+    {
+      "consumer": "early0",
+      "descriptor_max_abs_delta": 0.043997764587402344
+    },
+    {
+      "consumer": "early1",
+      "descriptor_max_abs_delta": 0.03709125518798828
+    },
+    {
+      "consumer": "early2",
+      "descriptor_max_abs_delta": 0.0267484188079834
+    },
+    {
+      "consumer": "early3",
+      "descriptor_max_abs_delta": 0.020784378051757812
+    },
+    {
+      "consumer": "early4",
+      "descriptor_max_abs_delta": 0.020160913467407227
+    },
+    {
+      "consumer": "early5",
+      "descriptor_max_abs_delta": 0.033008575439453125
+    },
+    {
+      "consumer": "late0",
+      "descriptor_max_abs_delta": 0.024820327758789062
+    },
+    {
+      "consumer": "late1",
+      "descriptor_max_abs_delta": 0.03986167907714844
+    }
+  ],
+  "epochs": [
+    {
+      "anchor_gradient_tensors": 16,
+      "common_gradient_tensors": 189,
+      "early_gate_count": 6,
+      "epoch": 1,
+      "late_gate_count": 2,
+      "mean_pose_loss": 0.9634153842926025,
+      "student_fraction": 0.0,
+      "sum_pose_loss": 1.926830768585205
+    },
+    {
+      "anchor_gradient_tensors": 16,
+      "common_gradient_tensors": 189,
+      "early_gate_count": 6,
+      "epoch": 6,
+      "late_gate_count": 2,
+      "mean_pose_loss": 0.9661246538162231,
+      "student_fraction": 0.2,
+      "sum_pose_loss": 1.9322493076324463
+    },
+    {
+      "anchor_gradient_tensors": 16,
+      "common_gradient_tensors": 189,
+      "early_gate_count": 6,
+      "epoch": 10,
+      "late_gate_count": 2,
+      "mean_pose_loss": 0.9649579524993896,
+      "student_fraction": 1.0,
+      "sum_pose_loss": 1.9299159049987793
+    },
+    {
+      "anchor_gradient_tensors": 16,
+      "common_gradient_tensors": 189,
+      "early_gate_count": 6,
+      "epoch": 11,
+      "late_gate_count": 2,
+      "mean_pose_loss": 0.9621883630752563,
+      "student_fraction": 1.0,
+      "sum_pose_loss": 1.9243767261505127
+    }
+  ],
+  "initial_state_sha256": "65cc204ad4a3c2939d94f4c30f2e5bce3f5c536d1cc2c7d02a835e6d4046f338",
+  "initial_state_tensors": 243,
+  "optimizer_exact": true,
+  "optimizer_parameter_groups": 211,
+  "pose_free": {
+    "descriptor_shape": [
+      4,
+      768
+    ],
+    "early_field_shape": [
+      4,
+      17,
+      48,
+      16
+    ],
+    "early_gate_count": 6,
+    "exploding_accesses": 0,
+    "late_field_shape": [
+      4,
+      17,
+      24,
+      8
+    ],
+    "late_gate_count": 2,
+    "variants": [
+      "correct",
+      "shuffle",
+      "none",
+      "exploding"
+    ]
+  },
+  "state_init_exact": true,
+  "status": "EXP391_H2M_INVARIANTS_PASS",
+  "strict_roundtrip": {
+    "missing": [],
+    "state_tensors": 243,
+    "unexpected": []
+  }
+}

@@ -1,0 +1,1700 @@
+{
+  "final_state_sha256": "4587b00b9ff9ad81112f75ab8707b63261869bda6ae35b37abbe2ef459dbae0f",
+  "grad_scaler": {
+    "_growth_tracker": 3,
+    "backoff_factor": 0.5,
+    "growth_factor": 2.0,
+    "growth_interval": 2000,
+    "scale": 512.0
+  },
+  "gradient_count": 173,
+  "gradient_sha256": [
+    "5cb48f768a26879888394bc5861d7761cdd8fee8923b00f880596af176a0ce9d",
+    "c8ed590893de0bc8b7c3b59e66a810d022ad35549fb0884001504f632be00f55",
+    "673182600c4346f46c9c8eaa5db0ccd46cc2522642928c4d2f089efdd5388e91",
+    "d046263875c50cfb975eb25a9b8e6840765dedb2d0fb9072db1bad092dcc6922",
+    "95b0bfc45c16eed2b7ef2250ac137c17fc2efb5c1427068a64d54789f4ac6e24",
+    "711a2d5948704cdd05886a006190f9e72b10d69a648f73f5e6fc8537ecc67669",
+    "3ad5df28535ce81687e18ec017e47ed8a536bc775f311bb226f9ce6eae22d4a9",
+    "7e75b81c118d34c10895e45b198d604799925ef1223284d20310992b0cfe20d9",
+    "a8e504fceda9c1443b0c0268d34fa10c4ccc39900afb14e91bfc2ae61d9011c7",
+    "b9353df8182e10d24ad551b6895974f2bda4b299579513b341570a323141b0be"
+  ],
+  "initial_state_sha256": "c2ccfdd2956176ab26e84de3e60e1674b3079151b7571985a176156f5d790c11",
+  "losses": [
+    18.273387908935547,
+    24.824214935302734,
+    29.176294326782227,
+    22.286163330078125,
+    37.63758087158203,
+    15.408279418945312,
+    24.013526916503906,
+    11.53476333618164,
+    45.435794830322266,
+    15.351183891296387
+  ],
+  "momentum_count": 173,
+  "momentum_sha256": "a3d227f8e95a6c146f13790603cea91342eeb23d2d7b31016e216d360f731981",
+  "optimizer_groups": [
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.patch_embed.projection.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.patch_embed.projection.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.patch_embed.norm.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.patch_embed.norm.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.0.norm1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.0.norm1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.0.attn.w_msa.relative_position_bias_table"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.0.attn.w_msa.qkv.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.0.attn.w_msa.qkv.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.0.attn.w_msa.proj.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.0.attn.w_msa.proj.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.0.norm2.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.0.norm2.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.0.ffn.layers.0.0.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.0.ffn.layers.0.0.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.0.ffn.layers.1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.0.ffn.layers.1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.1.norm1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.1.norm1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.1.attn.w_msa.relative_position_bias_table"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.1.attn.w_msa.qkv.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.1.attn.w_msa.qkv.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.1.attn.w_msa.proj.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.1.attn.w_msa.proj.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.1.norm2.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.1.norm2.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.1.ffn.layers.0.0.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.1.ffn.layers.0.0.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.1.ffn.layers.1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.blocks.1.ffn.layers.1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.downsample.norm.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.downsample.norm.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.0.downsample.reduction.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.0.norm1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.0.norm1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.0.attn.w_msa.relative_position_bias_table"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.0.attn.w_msa.qkv.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.0.attn.w_msa.qkv.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.0.attn.w_msa.proj.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.0.attn.w_msa.proj.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.0.norm2.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.0.norm2.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.0.ffn.layers.0.0.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.0.ffn.layers.0.0.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.0.ffn.layers.1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.0.ffn.layers.1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.1.norm1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.1.norm1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.1.attn.w_msa.relative_position_bias_table"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.1.attn.w_msa.qkv.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.1.attn.w_msa.qkv.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.1.attn.w_msa.proj.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.1.attn.w_msa.proj.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.1.norm2.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.1.norm2.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.1.ffn.layers.0.0.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.1.ffn.layers.0.0.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.1.ffn.layers.1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.blocks.1.ffn.layers.1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.downsample.norm.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.downsample.norm.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.1.downsample.reduction.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.0.norm1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.0.norm1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.0.attn.w_msa.relative_position_bias_table"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.0.attn.w_msa.qkv.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.0.attn.w_msa.qkv.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.0.attn.w_msa.proj.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.0.attn.w_msa.proj.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.0.norm2.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.0.norm2.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.0.ffn.layers.0.0.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.0.ffn.layers.0.0.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.0.ffn.layers.1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.0.ffn.layers.1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.1.norm1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.1.norm1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.1.attn.w_msa.relative_position_bias_table"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.1.attn.w_msa.qkv.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.1.attn.w_msa.qkv.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.1.attn.w_msa.proj.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.1.attn.w_msa.proj.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.1.norm2.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.1.norm2.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.1.ffn.layers.0.0.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.1.ffn.layers.0.0.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.1.ffn.layers.1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.1.ffn.layers.1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.2.norm1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.2.norm1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.2.attn.w_msa.relative_position_bias_table"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.2.attn.w_msa.qkv.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.2.attn.w_msa.qkv.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.2.attn.w_msa.proj.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.2.attn.w_msa.proj.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.2.norm2.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.2.norm2.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.2.ffn.layers.0.0.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.2.ffn.layers.0.0.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.2.ffn.layers.1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.2.ffn.layers.1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.3.norm1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.3.norm1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.3.attn.w_msa.relative_position_bias_table"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.3.attn.w_msa.qkv.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.3.attn.w_msa.qkv.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.3.attn.w_msa.proj.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.3.attn.w_msa.proj.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.3.norm2.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.3.norm2.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.3.ffn.layers.0.0.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.3.ffn.layers.0.0.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.3.ffn.layers.1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.3.ffn.layers.1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.4.norm1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.4.norm1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.4.attn.w_msa.relative_position_bias_table"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.4.attn.w_msa.qkv.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.4.attn.w_msa.qkv.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.4.attn.w_msa.proj.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.4.attn.w_msa.proj.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.4.norm2.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.4.norm2.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.4.ffn.layers.0.0.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.4.ffn.layers.0.0.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.4.ffn.layers.1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.4.ffn.layers.1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.5.norm1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.5.norm1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.5.attn.w_msa.relative_position_bias_table"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.5.attn.w_msa.qkv.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.5.attn.w_msa.qkv.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.5.attn.w_msa.proj.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.5.attn.w_msa.proj.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.5.norm2.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.5.norm2.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.5.ffn.layers.0.0.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.5.ffn.layers.0.0.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.5.ffn.layers.1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.blocks.5.ffn.layers.1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.downsample.norm.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.downsample.norm.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.2.downsample.reduction.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.0.norm1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.0.norm1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.0.attn.w_msa.relative_position_bias_table"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.0.attn.w_msa.qkv.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.0.attn.w_msa.qkv.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.0.attn.w_msa.proj.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.0.attn.w_msa.proj.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.0.norm2.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.0.norm2.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.0.ffn.layers.0.0.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.0.ffn.layers.0.0.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.0.ffn.layers.1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.0.ffn.layers.1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.1.norm1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.1.norm1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.1.attn.w_msa.relative_position_bias_table"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.1.attn.w_msa.qkv.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.1.attn.w_msa.qkv.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.1.attn.w_msa.proj.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.1.attn.w_msa.proj.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.1.norm2.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.1.norm2.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.1.ffn.layers.0.0.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.1.ffn.layers.0.0.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.1.ffn.layers.1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.stages.3.blocks.1.ffn.layers.1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.norm0.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.norm0.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.norm1.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.norm1.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.norm2.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.norm2.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "base.norm3.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0016,
+      "momentum": 0.9,
+      "names": [
+        "base.norm3.bias"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "classifier.weight"
+      ],
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0008,
+      "momentum": 0.9,
+      "names": [
+        "bottleneck.weight"
+      ],
+      "weight_decay": 0.0001
+    }
+  ],
+  "output_sha256": [
+    "322903629541ee5d636a07a182cdede2117db2e9779c8b7bd87144567c3d8f67",
+    "e2b5d8e95193f7410b1a4bed8a86e1a9c909ac71ae0f0442fd40f3b186d0b081",
+    "95553aa10b84ca0c33be3badcf3effff7ea8c6622a2cddf04ef9331c3fe9d432",
+    "1d046bb8025179e4bc786bd7943bb27ca1f84c06ecdea86e71a27afd36865245",
+    "c3406410945c76b4ac653a016e9ed8be7df72157df1c88f7e6796002565b6db0",
+    "48b40540295f8896f6c59f274f46f9fa1b58b14bec53820efbb28195cd9528b3",
+    "187a702c9b5d6009e2f5ca6551a931eea2e091179f165c73b6146e0ded520969",
+    "c469023c911bf4ebeda25abb97a60f14ffc9af1cf2f30cc49b0c6ccd1bf9ac67",
+    "198ccb765135161c56cbc37991e3b5781d42ffa163234a2abcc933ed5779fb46",
+    "96f13c758174caed2b21f03224c3d4641910d5900afc6b72341aca07bcdcf03b"
+  ],
+  "post_construction_cpu_rng_sha256": "b17bbb5f40aec606a2e2b18c5feb52e8f100187996c6f197a316778e89705c36",
+  "post_construction_cuda_rng_sha256": "f90c85ad4b2fad1001b3b982d56f80f4b4a033c6d7d566de0e7072207d854472",
+  "state_count": 211,
+  "state_keys": [
+    "base.patch_embed.projection.weight",
+    "base.patch_embed.projection.bias",
+    "base.patch_embed.norm.weight",
+    "base.patch_embed.norm.bias",
+    "base.stages.0.blocks.0.norm1.weight",
+    "base.stages.0.blocks.0.norm1.bias",
+    "base.stages.0.blocks.0.attn.w_msa.relative_position_bias_table",
+    "base.stages.0.blocks.0.attn.w_msa.relative_position_index",
+    "base.stages.0.blocks.0.attn.w_msa.qkv.weight",
+    "base.stages.0.blocks.0.attn.w_msa.qkv.bias",
+    "base.stages.0.blocks.0.attn.w_msa.proj.weight",
+    "base.stages.0.blocks.0.attn.w_msa.proj.bias",
+    "base.stages.0.blocks.0.norm2.weight",
+    "base.stages.0.blocks.0.norm2.bias",
+    "base.stages.0.blocks.0.ffn.layers.0.0.weight",
+    "base.stages.0.blocks.0.ffn.layers.0.0.bias",
+    "base.stages.0.blocks.0.ffn.layers.1.weight",
+    "base.stages.0.blocks.0.ffn.layers.1.bias",
+    "base.stages.0.blocks.1.norm1.weight",
+    "base.stages.0.blocks.1.norm1.bias",
+    "base.stages.0.blocks.1.attn.w_msa.relative_position_bias_table",
+    "base.stages.0.blocks.1.attn.w_msa.relative_position_index",
+    "base.stages.0.blocks.1.attn.w_msa.qkv.weight",
+    "base.stages.0.blocks.1.attn.w_msa.qkv.bias",
+    "base.stages.0.blocks.1.attn.w_msa.proj.weight",
+    "base.stages.0.blocks.1.attn.w_msa.proj.bias",
+    "base.stages.0.blocks.1.norm2.weight",
+    "base.stages.0.blocks.1.norm2.bias",
+    "base.stages.0.blocks.1.ffn.layers.0.0.weight",
+    "base.stages.0.blocks.1.ffn.layers.0.0.bias",
+    "base.stages.0.blocks.1.ffn.layers.1.weight",
+    "base.stages.0.blocks.1.ffn.layers.1.bias",
+    "base.stages.0.downsample.norm.weight",
+    "base.stages.0.downsample.norm.bias",
+    "base.stages.0.downsample.reduction.weight",
+    "base.stages.1.blocks.0.norm1.weight",
+    "base.stages.1.blocks.0.norm1.bias",
+    "base.stages.1.blocks.0.attn.w_msa.relative_position_bias_table",
+    "base.stages.1.blocks.0.attn.w_msa.relative_position_index",
+    "base.stages.1.blocks.0.attn.w_msa.qkv.weight",
+    "base.stages.1.blocks.0.attn.w_msa.qkv.bias",
+    "base.stages.1.blocks.0.attn.w_msa.proj.weight",
+    "base.stages.1.blocks.0.attn.w_msa.proj.bias",
+    "base.stages.1.blocks.0.norm2.weight",
+    "base.stages.1.blocks.0.norm2.bias",
+    "base.stages.1.blocks.0.ffn.layers.0.0.weight",
+    "base.stages.1.blocks.0.ffn.layers.0.0.bias",
+    "base.stages.1.blocks.0.ffn.layers.1.weight",
+    "base.stages.1.blocks.0.ffn.layers.1.bias",
+    "base.stages.1.blocks.1.norm1.weight",
+    "base.stages.1.blocks.1.norm1.bias",
+    "base.stages.1.blocks.1.attn.w_msa.relative_position_bias_table",
+    "base.stages.1.blocks.1.attn.w_msa.relative_position_index",
+    "base.stages.1.blocks.1.attn.w_msa.qkv.weight",
+    "base.stages.1.blocks.1.attn.w_msa.qkv.bias",
+    "base.stages.1.blocks.1.attn.w_msa.proj.weight",
+    "base.stages.1.blocks.1.attn.w_msa.proj.bias",
+    "base.stages.1.blocks.1.norm2.weight",
+    "base.stages.1.blocks.1.norm2.bias",
+    "base.stages.1.blocks.1.ffn.layers.0.0.weight",
+    "base.stages.1.blocks.1.ffn.layers.0.0.bias",
+    "base.stages.1.blocks.1.ffn.layers.1.weight",
+    "base.stages.1.blocks.1.ffn.layers.1.bias",
+    "base.stages.1.downsample.norm.weight",
+    "base.stages.1.downsample.norm.bias",
+    "base.stages.1.downsample.reduction.weight",
+    "base.stages.2.blocks.0.norm1.weight",
+    "base.stages.2.blocks.0.norm1.bias",
+    "base.stages.2.blocks.0.attn.w_msa.relative_position_bias_table",
+    "base.stages.2.blocks.0.attn.w_msa.relative_position_index",
+    "base.stages.2.blocks.0.attn.w_msa.qkv.weight",
+    "base.stages.2.blocks.0.attn.w_msa.qkv.bias",
+    "base.stages.2.blocks.0.attn.w_msa.proj.weight",
+    "base.stages.2.blocks.0.attn.w_msa.proj.bias",
+    "base.stages.2.blocks.0.norm2.weight",
+    "base.stages.2.blocks.0.norm2.bias",
+    "base.stages.2.blocks.0.ffn.layers.0.0.weight",
+    "base.stages.2.blocks.0.ffn.layers.0.0.bias",
+    "base.stages.2.blocks.0.ffn.layers.1.weight",
+    "base.stages.2.blocks.0.ffn.layers.1.bias",
+    "base.stages.2.blocks.1.norm1.weight",
+    "base.stages.2.blocks.1.norm1.bias",
+    "base.stages.2.blocks.1.attn.w_msa.relative_position_bias_table",
+    "base.stages.2.blocks.1.attn.w_msa.relative_position_index",
+    "base.stages.2.blocks.1.attn.w_msa.qkv.weight",
+    "base.stages.2.blocks.1.attn.w_msa.qkv.bias",
+    "base.stages.2.blocks.1.attn.w_msa.proj.weight",
+    "base.stages.2.blocks.1.attn.w_msa.proj.bias",
+    "base.stages.2.blocks.1.norm2.weight",
+    "base.stages.2.blocks.1.norm2.bias",
+    "base.stages.2.blocks.1.ffn.layers.0.0.weight",
+    "base.stages.2.blocks.1.ffn.layers.0.0.bias",
+    "base.stages.2.blocks.1.ffn.layers.1.weight",
+    "base.stages.2.blocks.1.ffn.layers.1.bias",
+    "base.stages.2.blocks.2.norm1.weight",
+    "base.stages.2.blocks.2.norm1.bias",
+    "base.stages.2.blocks.2.attn.w_msa.relative_position_bias_table",
+    "base.stages.2.blocks.2.attn.w_msa.relative_position_index",
+    "base.stages.2.blocks.2.attn.w_msa.qkv.weight",
+    "base.stages.2.blocks.2.attn.w_msa.qkv.bias",
+    "base.stages.2.blocks.2.attn.w_msa.proj.weight",
+    "base.stages.2.blocks.2.attn.w_msa.proj.bias",
+    "base.stages.2.blocks.2.norm2.weight",
+    "base.stages.2.blocks.2.norm2.bias",
+    "base.stages.2.blocks.2.ffn.layers.0.0.weight",
+    "base.stages.2.blocks.2.ffn.layers.0.0.bias",
+    "base.stages.2.blocks.2.ffn.layers.1.weight",
+    "base.stages.2.blocks.2.ffn.layers.1.bias",
+    "base.stages.2.blocks.3.norm1.weight",
+    "base.stages.2.blocks.3.norm1.bias",
+    "base.stages.2.blocks.3.attn.w_msa.relative_position_bias_table",
+    "base.stages.2.blocks.3.attn.w_msa.relative_position_index",
+    "base.stages.2.blocks.3.attn.w_msa.qkv.weight",
+    "base.stages.2.blocks.3.attn.w_msa.qkv.bias",
+    "base.stages.2.blocks.3.attn.w_msa.proj.weight",
+    "base.stages.2.blocks.3.attn.w_msa.proj.bias",
+    "base.stages.2.blocks.3.norm2.weight",
+    "base.stages.2.blocks.3.norm2.bias",
+    "base.stages.2.blocks.3.ffn.layers.0.0.weight",
+    "base.stages.2.blocks.3.ffn.layers.0.0.bias",
+    "base.stages.2.blocks.3.ffn.layers.1.weight",
+    "base.stages.2.blocks.3.ffn.layers.1.bias",
+    "base.stages.2.blocks.4.norm1.weight",
+    "base.stages.2.blocks.4.norm1.bias",
+    "base.stages.2.blocks.4.attn.w_msa.relative_position_bias_table",
+    "base.stages.2.blocks.4.attn.w_msa.relative_position_index",
+    "base.stages.2.blocks.4.attn.w_msa.qkv.weight",
+    "base.stages.2.blocks.4.attn.w_msa.qkv.bias",
+    "base.stages.2.blocks.4.attn.w_msa.proj.weight",
+    "base.stages.2.blocks.4.attn.w_msa.proj.bias",
+    "base.stages.2.blocks.4.norm2.weight",
+    "base.stages.2.blocks.4.norm2.bias",
+    "base.stages.2.blocks.4.ffn.layers.0.0.weight",
+    "base.stages.2.blocks.4.ffn.layers.0.0.bias",
+    "base.stages.2.blocks.4.ffn.layers.1.weight",
+    "base.stages.2.blocks.4.ffn.layers.1.bias",
+    "base.stages.2.blocks.5.norm1.weight",
+    "base.stages.2.blocks.5.norm1.bias",
+    "base.stages.2.blocks.5.attn.w_msa.relative_position_bias_table",
+    "base.stages.2.blocks.5.attn.w_msa.relative_position_index",
+    "base.stages.2.blocks.5.attn.w_msa.qkv.weight",
+    "base.stages.2.blocks.5.attn.w_msa.qkv.bias",
+    "base.stages.2.blocks.5.attn.w_msa.proj.weight",
+    "base.stages.2.blocks.5.attn.w_msa.proj.bias",
+    "base.stages.2.blocks.5.norm2.weight",
+    "base.stages.2.blocks.5.norm2.bias",
+    "base.stages.2.blocks.5.ffn.layers.0.0.weight",
+    "base.stages.2.blocks.5.ffn.layers.0.0.bias",
+    "base.stages.2.blocks.5.ffn.layers.1.weight",
+    "base.stages.2.blocks.5.ffn.layers.1.bias",
+    "base.stages.2.downsample.norm.weight",
+    "base.stages.2.downsample.norm.bias",
+    "base.stages.2.downsample.reduction.weight",
+    "base.stages.3.blocks.0.norm1.weight",
+    "base.stages.3.blocks.0.norm1.bias",
+    "base.stages.3.blocks.0.attn.w_msa.relative_position_bias_table",
+    "base.stages.3.blocks.0.attn.w_msa.relative_position_index",
+    "base.stages.3.blocks.0.attn.w_msa.qkv.weight",
+    "base.stages.3.blocks.0.attn.w_msa.qkv.bias",
+    "base.stages.3.blocks.0.attn.w_msa.proj.weight",
+    "base.stages.3.blocks.0.attn.w_msa.proj.bias",
+    "base.stages.3.blocks.0.norm2.weight",
+    "base.stages.3.blocks.0.norm2.bias",
+    "base.stages.3.blocks.0.ffn.layers.0.0.weight",
+    "base.stages.3.blocks.0.ffn.layers.0.0.bias",
+    "base.stages.3.blocks.0.ffn.layers.1.weight",
+    "base.stages.3.blocks.0.ffn.layers.1.bias",
+    "base.stages.3.blocks.1.norm1.weight",
+    "base.stages.3.blocks.1.norm1.bias",
+    "base.stages.3.blocks.1.attn.w_msa.relative_position_bias_table",
+    "base.stages.3.blocks.1.attn.w_msa.relative_position_index",
+    "base.stages.3.blocks.1.attn.w_msa.qkv.weight",
+    "base.stages.3.blocks.1.attn.w_msa.qkv.bias",
+    "base.stages.3.blocks.1.attn.w_msa.proj.weight",
+    "base.stages.3.blocks.1.attn.w_msa.proj.bias",
+    "base.stages.3.blocks.1.norm2.weight",
+    "base.stages.3.blocks.1.norm2.bias",
+    "base.stages.3.blocks.1.ffn.layers.0.0.weight",
+    "base.stages.3.blocks.1.ffn.layers.0.0.bias",
+    "base.stages.3.blocks.1.ffn.layers.1.weight",
+    "base.stages.3.blocks.1.ffn.layers.1.bias",
+    "base.norm0.weight",
+    "base.norm0.bias",
+    "base.norm1.weight",
+    "base.norm1.bias",
+    "base.norm2.weight",
+    "base.norm2.bias",
+    "base.norm3.weight",
+    "base.norm3.bias",
+    "base.semantic_embed_w.0.weight",
+    "base.semantic_embed_w.0.bias",
+    "base.semantic_embed_w.1.weight",
+    "base.semantic_embed_w.1.bias",
+    "base.semantic_embed_w.2.weight",
+    "base.semantic_embed_w.2.bias",
+    "base.semantic_embed_w.3.weight",
+    "base.semantic_embed_w.3.bias",
+    "base.semantic_embed_b.0.weight",
+    "base.semantic_embed_b.0.bias",
+    "base.semantic_embed_b.1.weight",
+    "base.semantic_embed_b.1.bias",
+    "base.semantic_embed_b.2.weight",
+    "base.semantic_embed_b.2.bias",
+    "base.semantic_embed_b.3.weight",
+    "base.semantic_embed_b.3.bias",
+    "classifier.weight",
+    "bottleneck.weight",
+    "bottleneck.bias",
+    "bottleneck.running_mean",
+    "bottleneck.running_var",
+    "bottleneck.num_batches_tracked"
+  ]
+}

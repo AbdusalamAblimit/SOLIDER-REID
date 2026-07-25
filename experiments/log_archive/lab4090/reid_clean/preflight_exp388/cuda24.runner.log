@@ -1,0 +1,20 @@
+=> Market1501 loaded
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-exp388-preflight/model/backbones/swin_transformer.py:1157: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+EXP387_REAL_BATCH64_CUDA_AMP_PASS
+successful_updates=20
+overflow_steps=4
+longest_consecutive_updates=20
+scale=65536.0->4096.0
+peak_allocated_bytes=6489576960
+peak_reserved_bytes=6796869632
+mean_step_seconds=0.144047
+changed_parameters={"anchor": {"changed_tensors": 8, "total_tensors": 8}, "head": {"changed_tensors": 2, "total_tensors": 3}, "psg": {"changed_tensors": 4, "total_tensors": 4}, "swin": {"changed_tensors": 171, "total_tensors": 193}}
+output=/home/afr/reid-clean/preflight-exp388/cuda24.json

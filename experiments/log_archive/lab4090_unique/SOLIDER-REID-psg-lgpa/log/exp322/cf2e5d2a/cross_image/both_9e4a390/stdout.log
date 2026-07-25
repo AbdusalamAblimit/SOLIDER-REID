@@ -1,0 +1,431 @@
+=> Occluded-DukeMTMC loaded
+Loading ROA occluders from data/VOCdevkit/VOC2012...
+Loaded 1289 occluder patches
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0, pose_mode=true, text_mode=aligned
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[PSG+GCN] Skeleton GCN head enabled: 2 layers, hidden=512, test_feat=strict_tokens, kp_weight=score
+===========building pose-backbone (PSG) transformer===========
+/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-psg-lgpa/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+[catalog] batches=25 samples=1600
+[catalog] batches=50 samples=3200
+[catalog] batches=75 samples=4800
+[catalog] batches=100 samples=6400
+[catalog] batches=125 samples=8000
+[catalog] batches=150 samples=9600
+[catalog] batches=175 samples=11200
+[catalog] batches=200 samples=12800
+[catalog] batches=225 samples=14400
+[catalog] batches=250 samples=16000
+[catalog] batches=275 samples=17600
+[catalog] batches=300 samples=19200
+[features:true/none] samples=1600/19871
+[features:true/none] samples=3200/19871
+[features:true/none] samples=4800/19871
+[features:true/none] samples=6400/19871
+[features:true/none] samples=8000/19871
+[features:true/none] samples=9600/19871
+[features:true/none] samples=11200/19871
+[features:true/none] samples=12800/19871
+[features:true/none] samples=14400/19871
+[features:true/none] samples=16000/19871
+[features:true/none] samples=17600/19871
+[features:true/none] samples=19200/19871
+[metrics] LGPA strict MaxSim
+[metrics] LGPA fixed correspondence
+[metrics] LGPA pooled/concat
+[metrics] GCN strict MaxSim
+[metrics] GCN fixed correspondence
+[metrics] GCN pooled/concat
+[features:cross_image/both] samples=1600/19871
+[features:cross_image/both] samples=3200/19871
+[features:cross_image/both] samples=4800/19871
+[features:cross_image/both] samples=6400/19871
+[features:cross_image/both] samples=8000/19871
+[features:cross_image/both] samples=9600/19871
+[features:cross_image/both] samples=11200/19871
+[features:cross_image/both] samples=12800/19871
+[features:cross_image/both] samples=14400/19871
+[features:cross_image/both] samples=16000/19871
+[features:cross_image/both] samples=17600/19871
+[features:cross_image/both] samples=19200/19871
+[metrics] LGPA strict MaxSim
+[metrics] LGPA fixed correspondence
+[metrics] LGPA pooled/concat
+[metrics] reusing invariant GCN distances
+[mechanism-grid] true_token_true_support
+[mechanism-grid] corrupt_token_true_support
+[mechanism-grid] true_token_corrupt_support
+[mechanism-grid] corrupt_token_corrupt_support
+{
+  "asset_role": "primary_same_checkpoint_pose_audit",
+  "batch_size": 64,
+  "checkpoint": "/home/afr/SOLIDER-REID/log/occluded_duke/exp312_tiny_globalScale2_s42/transformer_120.pth",
+  "checkpoint_sha256": "cf2e5d2a6cb80517bc06fff00214eb41d8329365afaf358ff6f854c7ee61b8b0",
+  "corrupt_side": "both",
+  "derangement": {
+    "gallery": {
+      "algorithm": "pid_block_rotate_v1",
+      "count": 17661,
+      "max_pid_count": 389,
+      "seed": "32211",
+      "split": "gallery",
+      "split_root": "/mnt1/afrdata/Occluded_Duke/bounding_box_test"
+    },
+    "query": {
+      "algorithm": "pid_block_rotate_v1",
+      "count": 2210,
+      "max_pid_count": 24,
+      "seed": "32211",
+      "split": "query",
+      "split_root": "/mnt1/afrdata/Occluded_Duke/query"
+    }
+  },
+  "derangement_sha256": "42a0c76439e6d1870366d9a7f51dddccaa8877fee672d474aef09c40ce6d4e47",
+  "diagnostics": {
+    "gcn": {
+      "reused_in_corrupt": true
+    },
+    "lgpa": {
+      "fixed": {
+        "fallback_pairs": 0,
+        "total_pairs": 39030810
+      },
+      "maxsim": {
+        "fallback_pairs": 0,
+        "total_pairs": 39030810
+      },
+      "pooled": {
+        "fallback_pairs": 0,
+        "total_pairs": 39030810
+      }
+    }
+  },
+  "donor_positive_pair_diagnostic": {
+    "affected_queries": 52,
+    "affected_query_fraction": 0.023529411764705882,
+    "shared_donor_pid_pair_fraction": 0.012164598864278602,
+    "shared_donor_pid_pairs": 452,
+    "valid_positive_pairs": 37157
+  },
+  "estimand_role": "primary",
+  "execution_commit": "9e4a390a70677d65987e334bf0bc3a04209ea7fb",
+  "feature_device": "cuda",
+  "feature_shapes": {
+    "gcn_pooled": [
+      19871,
+      768
+    ],
+    "gcn_raw_support": [
+      19871,
+      17
+    ],
+    "gcn_tokens": [
+      19871,
+      17,
+      768
+    ],
+    "global_feat": [
+      19871,
+      768
+    ],
+    "lgpa_pooled": [
+      19871,
+      768
+    ],
+    "lgpa_raw_support": [
+      19871,
+      5
+    ],
+    "lgpa_rel_weights": [
+      19871,
+      5
+    ],
+    "lgpa_tokens": [
+      19871,
+      5,
+      768
+    ]
+  },
+  "lgpa_heatmap_scope": "scene_max_multi_person",
+  "lgpa_token_support_grid": {
+    "diagnostics": {
+      "corrupt_token_corrupt_support": {
+        "fallback_pairs": 0,
+        "total_pairs": 39030810
+      },
+      "corrupt_token_true_support": {
+        "fallback_pairs": 0,
+        "total_pairs": 39030810
+      },
+      "true_token_corrupt_support": {
+        "fallback_pairs": 0,
+        "total_pairs": 39030810
+      },
+      "true_token_true_support": {
+        "fallback_pairs": 0,
+        "total_pairs": 39030810
+      }
+    },
+    "effects_vs_true_true": {
+      "corrupt_token_corrupt_support": {
+        "mAP_true_true_minus_arm": 0.0023795117055155357,
+        "paired_pid_bootstrap": {
+          "bootstrap_repeats": 10000,
+          "bootstrap_seed": 32201,
+          "ci95_high": 0.003430622098103742,
+          "ci95_low": 0.0013470841221772415,
+          "cluster": "query_pid",
+          "mean": 0.0023795117055154698,
+          "per_query_delta_median": 0.0,
+          "per_query_delta_q25": -0.0021379422361161166,
+          "per_query_delta_q75": 0.00579473514404355
+        }
+      },
+      "corrupt_token_true_support": {
+        "mAP_true_true_minus_arm": 9.519198519447603e-05,
+        "paired_pid_bootstrap": {
+          "bootstrap_repeats": 10000,
+          "bootstrap_seed": 32201,
+          "ci95_high": 0.0008462853168741353,
+          "ci95_low": -0.0006550214037648175,
+          "cluster": "query_pid",
+          "mean": 9.519198519435275e-05,
+          "per_query_delta_median": 0.0,
+          "per_query_delta_q25": -0.001908243897790294,
+          "per_query_delta_q75": 0.0025027962630032596
+        }
+      },
+      "true_token_corrupt_support": {
+        "mAP_true_true_minus_arm": 0.002736987123236556,
+        "paired_pid_bootstrap": {
+          "bootstrap_repeats": 10000,
+          "bootstrap_seed": 32201,
+          "ci95_high": 0.003543306311658951,
+          "ci95_low": 0.0019649081285395076,
+          "cluster": "query_pid",
+          "mean": 0.0027369871232365136,
+          "per_query_delta_median": 0.0,
+          "per_query_delta_q25": -0.0009717943814926584,
+          "per_query_delta_q75": 0.004155774507901194
+        }
+      }
+    },
+    "metrics": {
+      "corrupt_token_corrupt_support": {
+        "R1": 0.763348400592804,
+        "R10": 0.8981900215148926,
+        "R5": 0.8705882430076599,
+        "mAP": 0.6531991527708775
+      },
+      "corrupt_token_true_support": {
+        "R1": 0.7687782645225525,
+        "R10": 0.8981900215148926,
+        "R5": 0.8728506565093994,
+        "mAP": 0.6554834724911985
+      },
+      "true_token_corrupt_support": {
+        "R1": 0.7619909644126892,
+        "R10": 0.8981900215148926,
+        "R5": 0.8692307472229004,
+        "mAP": 0.6528416773531565
+      },
+      "true_token_true_support": {
+        "R1": 0.7647058963775635,
+        "R10": 0.8981900215148926,
+        "R5": 0.8723981976509094,
+        "mAP": 0.655578664476393
+      }
+    }
+  },
+  "metrics": {
+    "equal_concat_full": {
+      "R1": 0.7538461685180664,
+      "R10": 0.892760157585144,
+      "R5": 0.8651583790779114,
+      "mAP": 0.6465991506209031
+    },
+    "equal_concat_gcn": {
+      "R1": 0.7574660778045654,
+      "R10": 0.8945701122283936,
+      "R5": 0.8665158152580261,
+      "mAP": 0.6358662075901056
+    },
+    "equal_concat_lgpa": {
+      "R1": 0.7502262592315674,
+      "R10": 0.8900452256202698,
+      "R5": 0.8633484244346619,
+      "mAP": 0.6440145751953574
+    },
+    "full_system": {
+      "R1": 0.7687782645225525,
+      "R10": 0.9004524946212769,
+      "R5": 0.8787330389022827,
+      "mAP": 0.6567835591461917
+    },
+    "gcn_fixed": {
+      "R1": 0.7162895798683167,
+      "R10": 0.8656108379364014,
+      "R5": 0.8343891501426697,
+      "mAP": 0.5792872211059474
+    },
+    "gcn_hybrid": {
+      "R1": 0.7619909644126892,
+      "R10": 0.8999999761581421,
+      "R5": 0.8696832656860352,
+      "mAP": 0.6466729174607371
+    },
+    "gcn_local": {
+      "R1": 0.7380090355873108,
+      "R10": 0.8809954524040222,
+      "R5": 0.85203617811203,
+      "mAP": 0.6109479781155751
+    },
+    "gcn_pooled": {
+      "R1": 0.7357466220855713,
+      "R10": 0.8714932203292847,
+      "R5": 0.840723991394043,
+      "mAP": 0.5958316325652275
+    },
+    "global": {
+      "R1": 0.7484163045883179,
+      "R10": 0.8963800668716431,
+      "R5": 0.8619909286499023,
+      "mAP": 0.6445694488177729
+    },
+    "lgpa_fixed": {
+      "R1": 0.7542986273765564,
+      "R10": 0.8868778347969055,
+      "R5": 0.8579185605049133,
+      "mAP": 0.6257659265547387
+    },
+    "lgpa_hybrid": {
+      "R1": 0.763348400592804,
+      "R10": 0.8981900215148926,
+      "R5": 0.8705882430076599,
+      "mAP": 0.6531991527708775
+    },
+    "lgpa_local": {
+      "R1": 0.7624434232711792,
+      "R10": 0.8936651349067688,
+      "R5": 0.8656108379364014,
+      "mAP": 0.6398256061342459
+    },
+    "lgpa_pooled": {
+      "R1": 0.7457013726234436,
+      "R10": 0.885067880153656,
+      "R5": 0.8538461327552795,
+      "mAP": 0.6210331882928769
+    }
+  },
+  "num_gallery": 17661,
+  "num_query": 2210,
+  "portable_mapping_sha256": "48290bda301d86b9e78e500b9f5e9f26c3f9a718449caf719b2db91868324b77",
+  "pose_mode": "cross_image",
+  "primary_effect": {
+    "mAP_true_minus_corrupt": 0.0023795117055155357,
+    "paired_pid_bootstrap": {
+      "bootstrap_repeats": 10000,
+      "bootstrap_seed": 32201,
+      "ci95_high": 0.003430622098103742,
+      "ci95_low": 0.0013470841221772415,
+      "cluster": "query_pid",
+      "mean": 0.0023795117055154698,
+      "per_query_delta_median": 0.0,
+      "per_query_delta_q25": -0.0021379422361161166,
+      "per_query_delta_q75": 0.00579473514404355
+    }
+  },
+  "run_manifest": "/home/afr/SOLIDER-REID-psg-lgpa/run_manifest_exp322_9e4a390.json",
+  "schema_version": 2,
+  "score_device": "cuda",
+  "true_pose_metrics": {
+    "equal_concat_full": {
+      "R1": 0.7597284913063049,
+      "R10": 0.892760157585144,
+      "R5": 0.8642534017562866,
+      "mAP": 0.6473875923593347
+    },
+    "equal_concat_gcn": {
+      "R1": 0.7574660778045654,
+      "R10": 0.8945701122283936,
+      "R5": 0.8665158152580261,
+      "mAP": 0.6358662075901056
+    },
+    "equal_concat_lgpa": {
+      "R1": 0.7533936500549316,
+      "R10": 0.8909502029418945,
+      "R5": 0.8615384697914124,
+      "mAP": 0.6454067170252756
+    },
+    "full_system": {
+      "R1": 0.7710407376289368,
+      "R10": 0.9027149081230164,
+      "R5": 0.881447970867157,
+      "mAP": 0.6575915977539017
+    },
+    "gcn_fixed": {
+      "R1": 0.7162895798683167,
+      "R10": 0.8656108379364014,
+      "R5": 0.8343891501426697,
+      "mAP": 0.5792872211059474
+    },
+    "gcn_hybrid": {
+      "R1": 0.7619909644126892,
+      "R10": 0.8999999761581421,
+      "R5": 0.8696832656860352,
+      "mAP": 0.6466729174607371
+    },
+    "gcn_local": {
+      "R1": 0.7380090355873108,
+      "R10": 0.8809954524040222,
+      "R5": 0.85203617811203,
+      "mAP": 0.6109479781155751
+    },
+    "gcn_pooled": {
+      "R1": 0.7357466220855713,
+      "R10": 0.8714932203292847,
+      "R5": 0.840723991394043,
+      "mAP": 0.5958316325652275
+    },
+    "global": {
+      "R1": 0.7484163045883179,
+      "R10": 0.8963800668716431,
+      "R5": 0.8619909286499023,
+      "mAP": 0.6445694488177729
+    },
+    "lgpa_fixed": {
+      "R1": 0.7606334686279297,
+      "R10": 0.888687789440155,
+      "R5": 0.8619909286499023,
+      "mAP": 0.630133972233986
+    },
+    "lgpa_hybrid": {
+      "R1": 0.7647058963775635,
+      "R10": 0.8981900215148926,
+      "R5": 0.8723981976509094,
+      "mAP": 0.655578664476393
+    },
+    "lgpa_local": {
+      "R1": 0.766968309879303,
+      "R10": 0.8959276080131531,
+      "R5": 0.8656108379364014,
+      "mAP": 0.643284435603091
+    },
+    "lgpa_pooled": {
+      "R1": 0.7502262592315674,
+      "R10": 0.8864253163337708,
+      "R5": 0.8538461327552795,
+      "mAP": 0.6236740781932972
+    }
+  }
+}

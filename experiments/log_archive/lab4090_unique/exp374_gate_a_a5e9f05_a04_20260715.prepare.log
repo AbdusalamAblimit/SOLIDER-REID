@@ -1,0 +1,16 @@
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/query/index.json (2210 entries)
+  Loaded pose index: data/occluded_duke/pose_data/gallery/index.json (17661 entries)
+Traceback (most recent call last):
+  File "/home/afr/SOLIDER-REID-exp374-a5e9f05/experiments/exp374_psg_fuel_gate/audit_gate_a.py", line 4297, in <module>
+    main()
+  File "/home/afr/SOLIDER-REID-exp374-a5e9f05/experiments/exp374_psg_fuel_gate/audit_gate_a.py", line 4284, in main
+    prepare_phase(args)
+  File "/home/afr/SOLIDER-REID-exp374-a5e9f05/experiments/exp374_psg_fuel_gate/audit_gate_a.py", line 2509, in prepare_phase
+    payload = prepare_split_mappings(
+  File "/home/afr/SOLIDER-REID-exp374-a5e9f05/experiments/exp374_psg_fuel_gate/protocol.py", line 1006, in prepare_split_mappings
+    require(minimum_hamming >= 0.90, "E_MAPPING_HAMMING",
+  File "/home/afr/SOLIDER-REID-exp374-a5e9f05/experiments/exp374_psg_fuel_gate/protocol.py", line 55, in require
+    raise GateProtocolError(code, message)
+experiments.exp374_psg_fuel_gate.protocol.GateProtocolError: E_MAPPING_HAMMING: minimum=0.6411764705882353, effective_unique=1

@@ -1,0 +1,161 @@
+{
+  "config_sha256": "81abd0d4247c26bdb306f54be0e9c9d1c8a595a64e85c30e40bd606a86b2cc80",
+  "cuda_version": "11.7",
+  "dataset_boundary": {
+    "normal_train_has_pose_store": false,
+    "num_query": 3368,
+    "val_dataset": "ImageDataset",
+    "val_has_pose_store": false
+  },
+  "device": "NVIDIA GeForce RTX 4090 D",
+  "gradients": {
+    "pose_loss": {
+      "anchor": {
+        "abs_sum": 78.89203710109888,
+        "nonzero_tensors": 8,
+        "tensor_count": 8
+      },
+      "head": {
+        "abs_sum": 0.0,
+        "nonzero_tensors": 0,
+        "tensor_count": 0
+      },
+      "psg": {
+        "abs_sum": 0.0,
+        "nonzero_tensors": 0,
+        "tensor_count": 0
+      },
+      "swin": {
+        "abs_sum": 0.0,
+        "nonzero_tensors": 0,
+        "tensor_count": 0
+      }
+    },
+    "reid_loss": {
+      "anchor": {
+        "abs_sum": 0.0,
+        "nonzero_tensors": 0,
+        "tensor_count": 0
+      },
+      "head": {
+        "abs_sum": 363.4875769191868,
+        "nonzero_tensors": 2,
+        "tensor_count": 2
+      },
+      "psg": {
+        "abs_sum": 522.4495798528151,
+        "nonzero_tensors": 2,
+        "tensor_count": 4
+      },
+      "swin": {
+        "abs_sum": 5144703.660968316,
+        "nonzero_tensors": 171,
+        "tensor_count": 171
+      }
+    },
+    "reid_loss_value": 31.132572174072266
+  },
+  "overflow": {
+    "finite_warmup_found_inf": 0.0,
+    "optimizer_state_entries_checked": 185,
+    "overflow_found_inf": 1.0,
+    "parameter_count_checked": 208,
+    "scale_after": 0.5,
+    "scale_before": 1.0
+  },
+  "routes": {
+    "1": {
+      "bank_calls": [
+        1,
+        1
+      ],
+      "gate_abs_mean": [
+        0.0,
+        0.0
+      ],
+      "pose_loss": 0.92973792552948,
+      "student_field_mean": 0.2529027462005615,
+      "student_fraction": 0.0,
+      "teacher_field_mean": 0.03959584981203079
+    },
+    "10": {
+      "bank_calls": [
+        1,
+        1
+      ],
+      "gate_abs_mean": [
+        0.0,
+        0.0
+      ],
+      "pose_loss": 0.9298844337463379,
+      "student_field_mean": 0.254766583442688,
+      "student_fraction": 1.0,
+      "teacher_field_mean": 0.03959584981203079
+    },
+    "11": {
+      "bank_calls": [
+        1,
+        1
+      ],
+      "gate_abs_mean": [
+        0.0,
+        0.0
+      ],
+      "pose_loss": 0.9262572526931763,
+      "student_field_mean": 0.2525975704193115,
+      "student_fraction": 1.0,
+      "teacher_field_mean": 0.03959584981203079
+    },
+    "6": {
+      "bank_calls": [
+        1,
+        1
+      ],
+      "gate_abs_mean": [
+        0.0,
+        0.0
+      ],
+      "pose_loss": 0.9289302229881287,
+      "student_field_mean": 0.25249049067497253,
+      "student_fraction": 0.2,
+      "teacher_field_mean": 0.03959584981203079
+    }
+  },
+  "script_sha256": "2638debdecca171d176f0936e21da449b1cbc06f967ea6364f81d4e64f3b57a9",
+  "state_pose_free": {
+    "checkpoint_sha256": "76a31c52aebb1956b85ec248a358fe5f356b4745c1eae57e2a9bde361f1c6662",
+    "descriptor_shape": [
+      4,
+      768
+    ],
+    "gate_shapes": [
+      [
+        4,
+        48,
+        768
+      ],
+      [
+        4,
+        48,
+        768
+      ]
+    ],
+    "missing_keys": [],
+    "pose_variants_exact": [
+      "correct",
+      "shuffle",
+      "none",
+      "exploding"
+    ],
+    "state_tensor_count": 223,
+    "student_field_shape": [
+      4,
+      17,
+      24,
+      8
+    ],
+    "unexpected_keys": []
+  },
+  "status": "EXP387_FULL_SEMANTICS_PASS",
+  "torch_version": "1.13.1"
+}

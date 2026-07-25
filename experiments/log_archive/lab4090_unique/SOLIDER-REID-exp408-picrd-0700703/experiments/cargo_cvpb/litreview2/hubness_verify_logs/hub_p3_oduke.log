@@ -1,0 +1,44 @@
+[data] Nq=2210 Ng=17661 dim=768; hub H_k range 4..9; hub cam dist {0: 20, 1: 4, 3: 3, 5: 2, 6: 1}
+[ctrl] 30 camera-matched zero-H_k controls
+/root/miniconda3/envs/solider-reid/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+=> Occluded-DukeMTMC loaded
+Loading ROA occluders from data/VOCdevkit/VOC2012...
+Loaded 1289 occluder patches
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_small_patch4_window7_224 as a backbone
+/root/work/SOLIDER-REID/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[PSG+GCN] Skeleton GCN head enabled: 2 layers, hidden=512, test_feat=global, kp_weight=score
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /root/work/SOLIDER-REID/log/occluded_duke/exp255_small_gcn512_2stage/transformer_120.pth
+[model] loaded log/occluded_duke/exp255_small_gcn512_2stage/transformer_120.pth
+
+[sanity] re-extracted 'orig' vs cached cosine (want ~1.0):
+    0709_c1_f0177075.jpg         cos=0.9991
+    0012_c1_f0045963.jpg         cos=0.9989
+    0576_c1_f0152444.jpg         cos=0.9984
+    0117_c1_f0073682.jpg         cos=0.9996
+    0533_c1_f0136187.jpg         cos=0.9990
+    mean re-extract cosine = 0.9990 (OK)
+
+[extract] done (16s); skipped (no pose mask) = 0
+
+====================================================================================
+P3 RESULT — mean gallery NEGATIVE in-degree H_k under image masking
+====================================================================================
+  HUB (n=30):  orig H_k =   4.80   bg_masked(keep person) =   2.53 (-47%)   person_masked(keep bg) =   0.63 (-87%)
+  CTRL (n=30):  orig H_k =   0.03   bg_masked(keep person) =   0.07 (+100%)   person_masked(keep bg) =   0.10 (+200%)
+
+  EXPECT if scene-factor mechanism is real:
+    HUB bg_masked << HUB orig  (removing background DESTROYS the cross-id attraction)
+    HUB person_masked >= HUB orig (keeping background preserves/raises the attraction)
+
+[done] P3 in 20s

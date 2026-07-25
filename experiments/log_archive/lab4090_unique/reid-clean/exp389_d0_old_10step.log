@@ -1,0 +1,22 @@
+/home/afr/SOLIDER-REID-exp387-d0-0d1822a/model/backbones/swin_transformer.py:1157: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+Traceback (most recent call last):
+  File "/home/afr/reid-clean/exp389_d0_exact_runner.py", line 159, in <module>
+    main()
+  File "/home/afr/reid-clean/exp389_d0_exact_runner.py", line 108, in main
+    score, feature, featmaps = model(
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/afr/SOLIDER-REID-exp387-d0-0d1822a/model/make_model.py", line 261, in forward
+    base_output = self.base(
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/afr/SOLIDER-REID-exp387-d0-0d1822a/model/backbones/swin_transformer.py", line 1403, in forward
+    tapf_state = tapf.prepare(
+  File "/home/afr/SOLIDER-REID-exp387-d0-0d1822a/model/tapf.py", line 175, in prepare
+    raise ValueError("Training TAPF requires paired pose targets")
+ValueError: Training TAPF requires paired pose targets

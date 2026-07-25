@@ -1,0 +1,3618 @@
+{
+  "artifacts": {
+    "map_path": "/home/afr/reid-clean/audits/exp392_phase0b2/b2s_full_pose_map_a25a9d9.json",
+    "map_sha256": "0c57660ddb6158721b9379094933e416612e2db94771d1113d271ea727ac3026"
+  },
+  "clip_8image_contract_authorized": false,
+  "execution": {
+    "audit_script_sha256": "eff0293fc572169343e2e0ec0dd150c944465c6291745cd4e485e8817ffb558c",
+    "device": "cpu-only/no-CLIP/no-ReID/no-optimizer",
+    "ontology_script_sha256": "b0d5ce6a53e94d09fa5d15c338392ea31437eee036299256c424ed30489028ca",
+    "phase0b_script_sha256": "03b8f707bc6f189dd3de34505af82e63f7ee71bd23d70b6e9663aee318afcd70",
+    "pose_manifest_sha256": "cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8",
+    "sample_manifest_sha256": "93a120d3c23cf547481a91de83dff58e7c38cdd37f97de4f3d8fefc75b98bfac",
+    "seed": 20260718,
+    "source_commit": "a25a9d91cf93e9607a41faadf682ef04d78e444e",
+    "static_script_sha256": "a9fc32a68a0dc13645e8e45a43fe84f0a5174bc7eb997c658a5b06c709cb1e1f"
+  },
+  "formal_training_authorized": false,
+  "gates": {
+    "all_targets_assigned": true,
+    "balanced_target_spread_at_most_one": true,
+    "connected_construction_complete": false,
+    "connected_nesting_exact": true,
+    "connected_overshoot_exact": true,
+    "connected_realized_exact": true,
+    "donor_statistics_finite": true,
+    "hard_owner_support_product_exact_zero": true,
+    "nonoverlap_24px_dilation_zero_exact": true,
+    "nonoverlap_all_slot_direction_groups_present": true,
+    "nonoverlap_all_slot_direction_groups_within_bounds": false,
+    "nonoverlap_insufficient_fraction_zero": false,
+    "nonoverlap_y_mean_within_one_bin": false,
+    "nonoverlap_y_p95_within_two_bins": false,
+    "occluder_localization_no_failure": false,
+    "official_sample_count_exact": true,
+    "pose_sample_count_exact": true,
+    "same_slot_donor_complete": true,
+    "same_slot_donor_different_pid_path": true,
+    "same_slot_donor_no_fixed_point": true,
+    "same_slot_donor_same_camera_priority_exact": true,
+    "target_map_repeat_exact": true,
+    "wrong_mask_iou_every_slot_within_bounds": false,
+    "wrong_mask_iou_median_at_most_030": false,
+    "wrong_mask_iou_p95_at_most_050": false,
+    "wrong_slot_donor_complete": true,
+    "wrong_slot_donor_different_pid_path_slot": true,
+    "wrong_slot_donor_no_fixed_point": true,
+    "wrong_slot_donor_same_camera_priority_exact": true
+  },
+  "gpu_authorized": false,
+  "measurements": {
+    "geometry": {
+      "construction_failures": [
+        {
+          "index": 22,
+          "path": "bounding_box_train/0008_c1_f0044278.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 35,
+          "path": "bounding_box_train/0008_c3_f0026438.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 39,
+          "path": "bounding_box_train/0008_c4_f0024244.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 67,
+          "path": "bounding_box_train/0013_c5_f0057950.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 105,
+          "path": "bounding_box_train/0014_c1_f0048050.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 131,
+          "path": "bounding_box_train/0014_c5_f0098480.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 141,
+          "path": "bounding_box_train/0014_c6_f0079937.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 147,
+          "path": "bounding_box_train/0014_c6_f0080657.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 210,
+          "path": "bounding_box_train/0020_c1_f0052202.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 338,
+          "path": "bounding_box_train/0032_c1_f0056916.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 345,
+          "path": "bounding_box_train/0032_c8_f0013830.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 580,
+          "path": "bounding_box_train/0059_c4_f0031964.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 581,
+          "path": "bounding_box_train/0059_c4_f0032084.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 675,
+          "path": "bounding_box_train/0065_c3_f0038498.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 858,
+          "path": "bounding_box_train/0084_c6_f0045528.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 983,
+          "path": "bounding_box_train/0104_c6_f0049222.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 1018,
+          "path": "bounding_box_train/0110_c1_f0071944.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 1064,
+          "path": "bounding_box_train/0110_c8_f0028559.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 1065,
+          "path": "bounding_box_train/0110_c8_f0028679.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 1084,
+          "path": "bounding_box_train/0113_c6_f0061006.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 1086,
+          "path": "bounding_box_train/0113_c6_f0061246.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 1088,
+          "path": "bounding_box_train/0113_c6_f0061486.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 1128,
+          "path": "bounding_box_train/0120_c6_f0052006.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 1330,
+          "path": "bounding_box_train/0144_c6_f0056660.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 1425,
+          "path": "bounding_box_train/0153_c8_f0037826.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 1438,
+          "path": "bounding_box_train/0154_c2_f0080767.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 1496,
+          "path": "bounding_box_train/0156_c1_f0082905.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 1497,
+          "path": "bounding_box_train/0156_c1_f0083025.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 1583,
+          "path": "bounding_box_train/0161_c5_f0085144.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 1682,
+          "path": "bounding_box_train/0166_c5_f0080032.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 1688,
+          "path": "bounding_box_train/0166_c5_f0080752.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 1694,
+          "path": "bounding_box_train/0166_c5_f0081472.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 1827,
+          "path": "bounding_box_train/0176_c8_f0042056.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 1850,
+          "path": "bounding_box_train/0177_c6_f0074970.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 1948,
+          "path": "bounding_box_train/0185_c4_f0065447.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 2159,
+          "path": "bounding_box_train/0208_c2_f0094885.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 2172,
+          "path": "bounding_box_train/0208_c4_f0070488.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 2228,
+          "path": "bounding_box_train/0216_c4_f0061669.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 2231,
+          "path": "bounding_box_train/0216_c4_f0062029.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 2395,
+          "path": "bounding_box_train/0226_c2_f0124959.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 2396,
+          "path": "bounding_box_train/0226_c2_f0125079.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 2399,
+          "path": "bounding_box_train/0226_c2_f0125439.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 2526,
+          "path": "bounding_box_train/0233_c1_f0094435.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 2594,
+          "path": "bounding_box_train/0236_c4_f0073718.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 2691,
+          "path": "bounding_box_train/0250_c4_f0066370.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 2707,
+          "path": "bounding_box_train/0252_c4_f0065488.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 2724,
+          "path": "bounding_box_train/0255_c5_f0098541.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 2731,
+          "path": "bounding_box_train/0255_c6_f0074573.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 2823,
+          "path": "bounding_box_train/0278_c4_f0076568.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 2825,
+          "path": "bounding_box_train/0278_c4_f0076808.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 2861,
+          "path": "bounding_box_train/0281_c2_f0102324.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 2937,
+          "path": "bounding_box_train/0283_c4_f0068656.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 2949,
+          "path": "bounding_box_train/0284_c2_f0098597.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 3020,
+          "path": "bounding_box_train/0290_c4_f0068406.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 3021,
+          "path": "bounding_box_train/0290_c4_f0068526.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 3089,
+          "path": "bounding_box_train/0297_c4_f0068899.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 3120,
+          "path": "bounding_box_train/0306_c4_f0071219.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 3138,
+          "path": "bounding_box_train/0307_c4_f0070550.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 3226,
+          "path": "bounding_box_train/0310_c6_f0078598.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 3326,
+          "path": "bounding_box_train/0322_c6_f0082505.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 3328,
+          "path": "bounding_box_train/0322_c6_f0082745.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 3330,
+          "path": "bounding_box_train/0322_c6_f0082985.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 3508,
+          "path": "bounding_box_train/0335_c4_f0074800.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 3515,
+          "path": "bounding_box_train/0335_c4_f0075640.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 3623,
+          "path": "bounding_box_train/0348_c1_f0106435.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 3678,
+          "path": "bounding_box_train/0357_c2_f0111638.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 3768,
+          "path": "bounding_box_train/0370_c4_f0088957.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 3884,
+          "path": "bounding_box_train/0385_c2_f0115996.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 3928,
+          "path": "bounding_box_train/0392_c2_f0111774.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 3986,
+          "path": "bounding_box_train/0397_c5_f0114000.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 4043,
+          "path": "bounding_box_train/0402_c6_f0091975.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 4081,
+          "path": "bounding_box_train/0404_c1_f0114549.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 4120,
+          "path": "bounding_box_train/0407_c8_f0071705.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 4121,
+          "path": "bounding_box_train/0407_c8_f0071825.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 4131,
+          "path": "bounding_box_train/0411_c2_f0116095.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 4168,
+          "path": "bounding_box_train/0417_c1_f0117442.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 4179,
+          "path": "bounding_box_train/0417_c5_f0120208.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 4222,
+          "path": "bounding_box_train/0421_c6_f0096935.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 4313,
+          "path": "bounding_box_train/0430_c6_f0097615.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 4367,
+          "path": "bounding_box_train/0436_c1_f0120000.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 4525,
+          "path": "bounding_box_train/0447_c2_f0121001.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 4586,
+          "path": "bounding_box_train/0456_c5_f0126679.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 4587,
+          "path": "bounding_box_train/0456_c5_f0126763.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 4742,
+          "path": "bounding_box_train/0473_c4_f0096132.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 4789,
+          "path": "bounding_box_train/0478_c5_f0136064.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 4796,
+          "path": "bounding_box_train/0478_c6_f0115077.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 4868,
+          "path": "bounding_box_train/0487_c8_f0083871.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 4886,
+          "path": "bounding_box_train/0490_c1_f0128100.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 4907,
+          "path": "bounding_box_train/0491_c3_f0109287.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 4928,
+          "path": "bounding_box_train/0493_c5_f0130757.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 5015,
+          "path": "bounding_box_train/0505_c5_f0132089.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 5055,
+          "path": "bounding_box_train/0510_c4_f0110146.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 5119,
+          "path": "bounding_box_train/0518_c5_f0134608.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 5158,
+          "path": "bounding_box_train/0520_c2_f0136758.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 4
+        },
+        {
+          "index": 5355,
+          "path": "bounding_box_train/0544_c3_f0116706.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 5420,
+          "path": "bounding_box_train/0547_c8_f0098296.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 5432,
+          "path": "bounding_box_train/0548_c8_f0098261.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 5473,
+          "path": "bounding_box_train/0557_c2_f0152875.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 5481,
+          "path": "bounding_box_train/0557_c5_f0158175.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 5484,
+          "path": "bounding_box_train/0557_c5_f0158535.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 5511,
+          "path": "bounding_box_train/0558_c2_f0152193.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 5605,
+          "path": "bounding_box_train/0563_c2_f0149942.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 5622,
+          "path": "bounding_box_train/0566_c8_f0107077.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 5769,
+          "path": "bounding_box_train/0579_c5_f0155046.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 5772,
+          "path": "bounding_box_train/0579_c5_f0155406.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 5789,
+          "path": "bounding_box_train/0582_c2_f0158310.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 5887,
+          "path": "bounding_box_train/0585_c2_f0166459.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 5989,
+          "path": "bounding_box_train/0600_c5_f0165348.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 6008,
+          "path": "bounding_box_train/0602_c2_f0161458.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 6061,
+          "path": "bounding_box_train/0606_c2_f0161919.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 6193,
+          "path": "bounding_box_train/0615_c8_f0115419.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 6245,
+          "path": "bounding_box_train/0618_c2_f0163721.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 6310,
+          "path": "bounding_box_train/0622_c8_f0123496.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 6330,
+          "path": "bounding_box_train/0623_c6_f0146949.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 6531,
+          "path": "bounding_box_train/0638_c8_f0124513.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 6533,
+          "path": "bounding_box_train/0638_c8_f0124753.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 6598,
+          "path": "bounding_box_train/0645_c3_f0138945.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 6604,
+          "path": "bounding_box_train/0645_c4_f0132805.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 6606,
+          "path": "bounding_box_train/0645_c4_f0133045.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 6607,
+          "path": "bounding_box_train/0645_c4_f0133165.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 6664,
+          "path": "bounding_box_train/0655_c6_f0153716.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 6714,
+          "path": "bounding_box_train/0658_c4_f0136086.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 6811,
+          "path": "bounding_box_train/0665_c2_f0172989.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 6885,
+          "path": "bounding_box_train/0667_c5_f0169726.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 6970,
+          "path": "bounding_box_train/0670_c4_f0147602.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 7007,
+          "path": "bounding_box_train/0673_c4_f0148844.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 7018,
+          "path": "bounding_box_train/0675_c8_f0132729.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 7084,
+          "path": "bounding_box_train/0687_c8_f0126965.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 7120,
+          "path": "bounding_box_train/0692_c8_f0129461.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 7156,
+          "path": "bounding_box_train/0697_c8_f0129457.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 7160,
+          "path": "bounding_box_train/0697_c8_f0129937.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 7256,
+          "path": "bounding_box_train/0714_c1_f0178827.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 7260,
+          "path": "bounding_box_train/0714_c2_f0182745.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 7275,
+          "path": "bounding_box_train/0714_c6_f0166927.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 7362,
+          "path": "bounding_box_train/0720_c4_f0169024.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 7425,
+          "path": "bounding_box_train/0724_c2_f0186660.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 7451,
+          "path": "bounding_box_train/0724_c3_f0184327.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 7750,
+          "path": "bounding_box_train/0747_c5_f0199186.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 7758,
+          "path": "bounding_box_train/0747_c6_f0178823.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 7861,
+          "path": "bounding_box_train/0764_c2_f0195939.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 7961,
+          "path": "bounding_box_train/0771_c6_f0180785.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 7962,
+          "path": "bounding_box_train/0771_c6_f0180905.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 7976,
+          "path": "bounding_box_train/0774_c2_f0197590.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 7987,
+          "path": "bounding_box_train/0778_c1_f0195435.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 8223,
+          "path": "bounding_box_train/0789_c6_f0188933.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 8317,
+          "path": "bounding_box_train/0798_c1_f0203884.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 8323,
+          "path": "bounding_box_train/0798_c2_f0203656.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 8369,
+          "path": "bounding_box_train/0802_c1_f0203848.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 8372,
+          "path": "bounding_box_train/0802_c2_f0208341.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 8382,
+          "path": "bounding_box_train/0805_c1_f0204781.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 8460,
+          "path": "bounding_box_train/0811_c4_f0175970.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 8503,
+          "path": "bounding_box_train/0817_c1_f0207620.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 8617,
+          "path": "bounding_box_train/0829_c1_f0212587.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 8724,
+          "path": "bounding_box_train/0842_c1_f0217578.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 8749,
+          "path": "bounding_box_train/0842_c5_f0213951.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 8762,
+          "path": "bounding_box_train/0842_c5_f0215511.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 8796,
+          "path": "bounding_box_train/0843_c1_f0219280.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 8801,
+          "path": "bounding_box_train/0843_c2_f0217456.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 8861,
+          "path": "bounding_box_train/0844_c2_f0217696.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 9098,
+          "path": "bounding_box_train/1174_c6_f0075155.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 9100,
+          "path": "bounding_box_train/1174_c6_f0075395.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 9177,
+          "path": "bounding_box_train/1242_c6_f0056737.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 9179,
+          "path": "bounding_box_train/1242_c6_f0056977.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 9197,
+          "path": "bounding_box_train/1246_c6_f0071292.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 9404,
+          "path": "bounding_box_train/1438_c4_f0064497.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 9410,
+          "path": "bounding_box_train/1471_c2_f0098755.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 9427,
+          "path": "bounding_box_train/1472_c2_f0098397.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 9439,
+          "path": "bounding_box_train/1472_c4_f0073539.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 9567,
+          "path": "bounding_box_train/1559_c2_f0113622.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 9641,
+          "path": "bounding_box_train/1587_c2_f0113229.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 9719,
+          "path": "bounding_box_train/1636_c4_f0096457.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 9810,
+          "path": "bounding_box_train/1693_c3_f0108305.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 9813,
+          "path": "bounding_box_train/1693_c3_f0108665.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 9970,
+          "path": "bounding_box_train/1767_c2_f0151716.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 10058,
+          "path": "bounding_box_train/1786_c5_f0165797.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 10060,
+          "path": "bounding_box_train/1786_c5_f0166037.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 10257,
+          "path": "bounding_box_train/1973_c2_f0197513.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 10269,
+          "path": "bounding_box_train/1973_c8_f0152783.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 10332,
+          "path": "bounding_box_train/1996_c2_f0205967.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 10463,
+          "path": "bounding_box_train/2032_c5_f0218263.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 10732,
+          "path": "bounding_box_train/2469_c6_f0069344.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 10756,
+          "path": "bounding_box_train/2496_c6_f0075405.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 10773,
+          "path": "bounding_box_train/2515_c4_f0066206.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 10774,
+          "path": "bounding_box_train/2515_c4_f0066326.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 10820,
+          "path": "bounding_box_train/2542_c4_f0089377.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 10896,
+          "path": "bounding_box_train/2597_c6_f0102969.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 10915,
+          "path": "bounding_box_train/2597_c6_f0105249.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 10924,
+          "path": "bounding_box_train/2598_c3_f0094540.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 10955,
+          "path": "bounding_box_train/2598_c6_f0104633.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 10965,
+          "path": "bounding_box_train/2642_c5_f0136489.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 10968,
+          "path": "bounding_box_train/2642_c5_f0136849.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 10971,
+          "path": "bounding_box_train/2642_c5_f0137209.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11099,
+          "path": "bounding_box_train/2770_c3_f0178512.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11177,
+          "path": "bounding_box_train/3253_c2_f0130673.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 11228,
+          "path": "bounding_box_train/3253_c5_f0141663.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 11308,
+          "path": "bounding_box_train/3371_c5_f0066527.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11320,
+          "path": "bounding_box_train/3451_c5_f0096904.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11344,
+          "path": "bounding_box_train/3516_c6_f0090566.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11359,
+          "path": "bounding_box_train/3520_c5_f0112214.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11411,
+          "path": "bounding_box_train/3582_c5_f0129888.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 11442,
+          "path": "bounding_box_train/3582_c6_f0169882.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11452,
+          "path": "bounding_box_train/3582_c6_f0171082.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11455,
+          "path": "bounding_box_train/3582_c6_f0171442.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11456,
+          "path": "bounding_box_train/3582_c6_f0171562.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11460,
+          "path": "bounding_box_train/3582_c6_f0172042.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11462,
+          "path": "bounding_box_train/3582_c6_f0172282.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 11467,
+          "path": "bounding_box_train/3582_c6_f0172882.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11470,
+          "path": "bounding_box_train/3582_c6_f0173242.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11473,
+          "path": "bounding_box_train/3582_c6_f0173602.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11477,
+          "path": "bounding_box_train/3582_c6_f0174082.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11478,
+          "path": "bounding_box_train/3582_c6_f0174202.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11481,
+          "path": "bounding_box_train/3582_c6_f0174562.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11490,
+          "path": "bounding_box_train/3582_c6_f0175642.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11495,
+          "path": "bounding_box_train/3582_c6_f0176242.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11496,
+          "path": "bounding_box_train/3582_c6_f0176362.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 11507,
+          "path": "bounding_box_train/3582_c6_f0177682.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 11514,
+          "path": "bounding_box_train/3582_c6_f0178522.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 11559,
+          "path": "bounding_box_train/3582_c6_f0183922.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11605,
+          "path": "bounding_box_train/3582_c8_f0102529.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 11615,
+          "path": "bounding_box_train/3614_c6_f0126162.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11702,
+          "path": "bounding_box_train/3716_c5_f0185212.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11729,
+          "path": "bounding_box_train/3732_c6_f0171536.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11744,
+          "path": "bounding_box_train/3732_c6_f0173336.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11748,
+          "path": "bounding_box_train/3732_c6_f0173816.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11750,
+          "path": "bounding_box_train/3732_c6_f0174056.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11751,
+          "path": "bounding_box_train/3732_c6_f0174176.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11752,
+          "path": "bounding_box_train/3732_c6_f0174296.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11765,
+          "path": "bounding_box_train/3732_c6_f0175856.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11767,
+          "path": "bounding_box_train/3732_c6_f0176096.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11771,
+          "path": "bounding_box_train/3732_c6_f0176576.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11773,
+          "path": "bounding_box_train/3732_c6_f0176816.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11778,
+          "path": "bounding_box_train/3732_c6_f0177416.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11780,
+          "path": "bounding_box_train/3732_c6_f0177656.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11786,
+          "path": "bounding_box_train/3732_c6_f0178376.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11789,
+          "path": "bounding_box_train/3732_c6_f0178736.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11795,
+          "path": "bounding_box_train/3732_c6_f0179456.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11805,
+          "path": "bounding_box_train/3732_c6_f0180656.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 11816,
+          "path": "bounding_box_train/3732_c6_f0181976.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11865,
+          "path": "bounding_box_train/3765_c5_f0208711.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 11955,
+          "path": "bounding_box_train/3765_c6_f0122071.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11970,
+          "path": "bounding_box_train/3765_c6_f0135404.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11982,
+          "path": "bounding_box_train/3765_c6_f0170866.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 11992,
+          "path": "bounding_box_train/3765_c6_f0172066.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 12005,
+          "path": "bounding_box_train/3765_c6_f0173626.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 12007,
+          "path": "bounding_box_train/3765_c6_f0173866.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 12014,
+          "path": "bounding_box_train/3765_c6_f0174706.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 12024,
+          "path": "bounding_box_train/3765_c6_f0175906.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 12025,
+          "path": "bounding_box_train/3765_c6_f0176026.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 12032,
+          "path": "bounding_box_train/3765_c6_f0176866.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 12033,
+          "path": "bounding_box_train/3765_c6_f0176986.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 12044,
+          "path": "bounding_box_train/3765_c6_f0178306.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 12053,
+          "path": "bounding_box_train/3765_c6_f0179386.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 12054,
+          "path": "bounding_box_train/3765_c6_f0179506.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 12055,
+          "path": "bounding_box_train/3765_c6_f0179626.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 12056,
+          "path": "bounding_box_train/3765_c6_f0179746.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 12062,
+          "path": "bounding_box_train/3765_c6_f0180466.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 12082,
+          "path": "bounding_box_train/3765_c6_f0182866.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 12107,
+          "path": "bounding_box_train/3765_c7_f0052991.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 12150,
+          "path": "bounding_box_train/3776_c6_f0188325.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 12311,
+          "path": "bounding_box_train/4105_c6_f0045660.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 12313,
+          "path": "bounding_box_train/4105_c6_f0045900.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 12321,
+          "path": "bounding_box_train/4105_c8_f0023927.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 12474,
+          "path": "bounding_box_train/4136_c6_f0050033.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 12507,
+          "path": "bounding_box_train/4140_c8_f0021507.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 12855,
+          "path": "bounding_box_train/4212_c6_f0062957.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 12869,
+          "path": "bounding_box_train/4215_c6_f0063273.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 12999,
+          "path": "bounding_box_train/4250_c6_f0068879.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 13040,
+          "path": "bounding_box_train/4260_c6_f0071219.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 13109,
+          "path": "bounding_box_train/4275_c8_f0051847.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 13177,
+          "path": "bounding_box_train/4279_c8_f0051431.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 13197,
+          "path": "bounding_box_train/4286_c8_f0052641.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 13256,
+          "path": "bounding_box_train/4306_c6_f0075595.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 0
+        },
+        {
+          "index": 13264,
+          "path": "bounding_box_train/4306_c8_f0053345.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 13273,
+          "path": "bounding_box_train/4307_c6_f0075982.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 13287,
+          "path": "bounding_box_train/4317_c6_f0076715.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 13311,
+          "path": "bounding_box_train/4323_c6_f0078309.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 13447,
+          "path": "bounding_box_train/4365_c8_f0058116.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 13448,
+          "path": "bounding_box_train/4365_c8_f0058236.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 13559,
+          "path": "bounding_box_train/4410_c8_f0065773.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 13590,
+          "path": "bounding_box_train/4415_c8_f0066276.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 13596,
+          "path": "bounding_box_train/4415_c8_f0066996.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 13619,
+          "path": "bounding_box_train/4423_c6_f0095096.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 13690,
+          "path": "bounding_box_train/4430_c8_f0068632.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 13757,
+          "path": "bounding_box_train/4445_c8_f0071676.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 13763,
+          "path": "bounding_box_train/4448_c6_f0098560.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 13771,
+          "path": "bounding_box_train/4448_c7_f0100976.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 13851,
+          "path": "bounding_box_train/4462_c8_f0074821.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 13868,
+          "path": "bounding_box_train/4463_c8_f0080457.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 13873,
+          "path": "bounding_box_train/4464_c6_f0102394.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 13876,
+          "path": "bounding_box_train/4464_c6_f0102754.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 13940,
+          "path": "bounding_box_train/4484_c6_f0105591.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 14040,
+          "path": "bounding_box_train/4493_c8_f0080806.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 14043,
+          "path": "bounding_box_train/4495_c6_f0107792.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 14177,
+          "path": "bounding_box_train/4515_c7_f0115860.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 14408,
+          "path": "bounding_box_train/4567_c8_f0103587.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 14438,
+          "path": "bounding_box_train/4583_c7_f0137549.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 14514,
+          "path": "bounding_box_train/4624_c6_f0144783.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 14525,
+          "path": "bounding_box_train/4624_c8_f0117658.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 14654,
+          "path": "bounding_box_train/4667_c7_f0155658.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 14655,
+          "path": "bounding_box_train/4667_c7_f0155778.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 14699,
+          "path": "bounding_box_train/4684_c6_f0156659.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 14710,
+          "path": "bounding_box_train/4684_c8_f0129178.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 14719,
+          "path": "bounding_box_train/4685_c7_f0158835.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 14817,
+          "path": "bounding_box_train/4721_c8_f0142389.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 14862,
+          "path": "bounding_box_train/4740_c6_f0173475.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 14901,
+          "path": "bounding_box_train/4751_c7_f0182444.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 14909,
+          "path": "bounding_box_train/4751_c8_f0153747.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 14938,
+          "path": "bounding_box_train/4768_c8_f0154704.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 15029,
+          "path": "bounding_box_train/4805_c7_f0204552.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 15032,
+          "path": "bounding_box_train/4805_c8_f0174119.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 15118,
+          "path": "bounding_box_train/5259_c7_f0068917.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 15122,
+          "path": "bounding_box_train/5259_c8_f0042841.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 15132,
+          "path": "bounding_box_train/5339_c8_f0058478.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 15168,
+          "path": "bounding_box_train/5388_c6_f0100061.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 15178,
+          "path": "bounding_box_train/5388_c6_f0101261.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 15181,
+          "path": "bounding_box_train/5388_c6_f0101621.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 15206,
+          "path": "bounding_box_train/5388_c6_f0138007.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 15232,
+          "path": "bounding_box_train/5388_c6_f0143112.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 15312,
+          "path": "bounding_box_train/5388_c6_f0153402.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        },
+        {
+          "index": 15343,
+          "path": "bounding_box_train/5388_c6_f0170698.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 15442,
+          "path": "bounding_box_train/5388_c6_f0182578.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 15449,
+          "path": "bounding_box_train/5388_c6_f0183418.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 1
+        },
+        {
+          "index": 15521,
+          "path": "bounding_box_train/5388_c8_f0006717.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 3
+        },
+        {
+          "index": 15590,
+          "path": "bounding_box_train/7136_c7_f0068737.jpg",
+          "reason": "no translated non-overlap rectangle exists",
+          "slot": 2
+        }
+      ],
+      "control_by_slot_direction": {
+        "arms/bottom": {
+          "count": 770,
+          "mean": 0.23927299854192802,
+          "p50": 0.2558746736292428,
+          "p95": 0.3185378590078329
+        },
+        "arms/left": {
+          "count": 718,
+          "mean": 0.2886317519654974,
+          "p50": 0.3237597911227154,
+          "p95": 0.3968668407310705
+        },
+        "arms/right": {
+          "count": 734,
+          "mean": 0.28477315898435557,
+          "p50": 0.3133159268929504,
+          "p95": 0.3968668407310705
+        },
+        "arms/top": {
+          "count": 814,
+          "mean": 0.291286301730166,
+          "p50": 0.3133159268929504,
+          "p95": 0.4177545691906005
+        },
+        "head/bottom": {
+          "count": 793,
+          "mean": 0.1143161935868352,
+          "p50": 0.12532637075718014,
+          "p95": 0.1409921671018277
+        },
+        "head/left": {
+          "count": 802,
+          "mean": 0.11037679951557139,
+          "p50": 0.1462140992167102,
+          "p95": 0.16657963446475124
+        },
+        "head/right": {
+          "count": 778,
+          "mean": 0.11999704672219724,
+          "p50": 0.1462140992167102,
+          "p95": 0.1671018276762402
+        },
+        "head/top": {
+          "count": 750,
+          "mean": 0.13393211488250653,
+          "p50": 0.1462140992167102,
+          "p95": 0.1671018276762402
+        },
+        "lower_leg/bottom": {
+          "count": 781,
+          "mean": 0.28259946577160566,
+          "p50": 0.3028720626631854,
+          "p95": 0.35509138381201044
+        },
+        "lower_leg/left": {
+          "count": 788,
+          "mean": 0.2564180726564261,
+          "p50": 0.2924281984334204,
+          "p95": 0.34464751958224543
+        },
+        "lower_leg/right": {
+          "count": 759,
+          "mean": 0.2591426812110204,
+          "p50": 0.2924281984334204,
+          "p95": 0.34464751958224543
+        },
+        "lower_leg/top": {
+          "count": 794,
+          "mean": 0.2074073830491085,
+          "p50": 0.22584856396866843,
+          "p95": 0.2584856396866841
+        },
+        "torso/bottom": {
+          "count": 726,
+          "mean": 0.3307079817879723,
+          "p50": 0.3368146214099217,
+          "p95": 0.3733681462140992
+        },
+        "torso/left": {
+          "count": 707,
+          "mean": 0.3702475432175818,
+          "p50": 0.4073107049608355,
+          "p95": 0.4386422976501306
+        },
+        "torso/right": {
+          "count": 674,
+          "mean": 0.35853135096187366,
+          "p50": 0.3968668407310705,
+          "p95": 0.4386422976501306
+        },
+        "torso/top": {
+          "count": 783,
+          "mean": 0.3957164150735772,
+          "p50": 0.4073107049608355,
+          "p95": 0.4490861618798956
+        },
+        "upper_leg/bottom": {
+          "count": 753,
+          "mean": 0.22278163239123577,
+          "p50": 0.2193211488250653,
+          "p95": 0.2924281984334204
+        },
+        "upper_leg/left": {
+          "count": 785,
+          "mean": 0.25576158720127723,
+          "p50": 0.27154046997389036,
+          "p95": 0.3028720626631854
+        },
+        "upper_leg/right": {
+          "count": 785,
+          "mean": 0.2542448986379737,
+          "p50": 0.27154046997389036,
+          "p95": 0.3028720626631854
+        },
+        "upper_leg/top": {
+          "count": 800,
+          "mean": 0.21422976501305485,
+          "p50": 0.21671018276762402,
+          "p95": 0.237728459530026
+        }
+      },
+      "dilation_product_max": 0,
+      "insufficient_fraction": 0.020745293891663467,
+      "localization_by_slot_direction": {
+        "arms/bottom": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 770,
+                "p50": 0.4182957540837424,
+                "p95": 0.5585060477280156
+              },
+              "target_rectangle_fraction": {
+                "count": 770,
+                "p50": 0.3247587537910118,
+                "p95": 0.562984764542936
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 770,
+                "p50": 0.7583791208791208,
+                "p95": 2.327333333333333
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 770,
+                "p50": 0.40814774485148597,
+                "p95": 0.5117121848739494
+              },
+              "target_rectangle_fraction": {
+                "count": 770,
+                "p50": 0.3748065015479876,
+                "p95": 0.6297412008281572
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 770,
+                "p50": 0.9053985507246377,
+                "p95": 2.9665457184325095
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 770,
+                "p50": 0.3992345834206299,
+                "p95": 0.491731220657277
+              },
+              "target_rectangle_fraction": {
+                "count": 770,
+                "p50": 0.38654109589041097,
+                "p95": 0.6315728450343832
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 770,
+                "p50": 0.9428225137681006,
+                "p95": 3.16696173615077
+              }
+            }
+          },
+          "samples": 770
+        },
+        "arms/left": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 718,
+                "p50": 0.015136476426799009,
+                "p95": 0.6454935064935066
+              },
+              "target_rectangle_fraction": {
+                "count": 718,
+                "p50": 0.529957264957265,
+                "p95": 0.8003761755485893
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 718,
+                "p50": 39.42857142857143,
+                "p95": 1185.1999999999998
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 718,
+                "p50": 0.3546639407104524,
+                "p95": 0.6267630674152412
+              },
+              "target_rectangle_fraction": {
+                "count": 718,
+                "p50": 0.4497983870967742,
+                "p95": 0.7944927422723476
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 718,
+                "p50": 1.3055213969503197,
+                "p95": 1331.5999999999995
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 718,
+                "p50": 0.48235943830317696,
+                "p95": 0.5729380513231755
+              },
+              "target_rectangle_fraction": {
+                "count": 718,
+                "p50": 0.3319337525219878,
+                "p95": 0.6713915822739351
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 718,
+                "p50": 0.6835382178264122,
+                "p95": 17.134230769230733
+              }
+            }
+          },
+          "samples": 718
+        },
+        "arms/right": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 734,
+                "p50": 0.011194653299916459,
+                "p95": 0.5934434706340531
+              },
+              "target_rectangle_fraction": {
+                "count": 734,
+                "p50": 0.5265507518796992,
+                "p95": 0.7875225225225225
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 734,
+                "p50": 45.5,
+                "p95": 1201.4
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 734,
+                "p50": 0.36366897091430805,
+                "p95": 0.6210124269005848
+              },
+              "target_rectangle_fraction": {
+                "count": 734,
+                "p50": 0.4448888888888889,
+                "p95": 0.8059358741681791
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 734,
+                "p50": 1.2508503401360545,
+                "p95": 1152.0
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 734,
+                "p50": 0.47983706559418704,
+                "p95": 0.5734019607843137
+              },
+              "target_rectangle_fraction": {
+                "count": 734,
+                "p50": 0.33794965177943903,
+                "p95": 0.6838865629984053
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 734,
+                "p50": 0.6911781082851036,
+                "p95": 21.155555555555566
+              }
+            }
+          },
+          "samples": 734
+        },
+        "arms/top": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 814,
+                "p50": 0.4401629072681704,
+                "p95": 0.556674641148325
+              },
+              "target_rectangle_fraction": {
+                "count": 814,
+                "p50": 0.3038518518518518,
+                "p95": 0.5143274853801169
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 814,
+                "p50": 0.68815818645383,
+                "p95": 4.018749999999995
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 814,
+                "p50": 0.41759624023774966,
+                "p95": 0.523525890053749
+              },
+              "target_rectangle_fraction": {
+                "count": 814,
+                "p50": 0.3520355029585799,
+                "p95": 0.581183470065767
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 814,
+                "p50": 0.8324120098967969,
+                "p95": 4.018421052631574
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 814,
+                "p50": 0.4141346999830113,
+                "p95": 0.5138991079495789
+              },
+              "target_rectangle_fraction": {
+                "count": 814,
+                "p50": 0.37869198312236285,
+                "p95": 0.6026367441767305
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 814,
+                "p50": 0.8929612092515025,
+                "p95": 3.9673471343684055
+              }
+            }
+          },
+          "samples": 814
+        },
+        "head/bottom": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 793,
+                "p50": 0.0,
+                "p95": 0.35555555555555557
+              },
+              "target_rectangle_fraction": {
+                "count": 793,
+                "p50": 0.5976331360946746,
+                "p95": 0.784074074074074
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 793,
+                "p50": 380.0,
+                "p95": 480.0
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 793,
+                "p50": 0.0,
+                "p95": 0.23412698412698404
+              },
+              "target_rectangle_fraction": {
+                "count": 793,
+                "p50": 0.7333333333333333,
+                "p95": 0.8670588235294118
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 793,
+                "p50": 736.0,
+                "p95": 928.0
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 793,
+                "p50": 0.0,
+                "p95": 0.17544871794871789
+              },
+              "target_rectangle_fraction": {
+                "count": 793,
+                "p50": 0.7967032967032966,
+                "p95": 0.9012118316466142
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 793,
+                "p50": 1096.0,
+                "p95": 1376.0
+              }
+            }
+          },
+          "samples": 793
+        },
+        "head/left": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 802,
+                "p50": 0.0,
+                "p95": 0.18155080213903707
+              },
+              "target_rectangle_fraction": {
+                "count": 802,
+                "p50": 0.6870833333333333,
+                "p95": 0.8611111111111112
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 802,
+                "p50": 396.0,
+                "p95": 467.7999999999997
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 802,
+                "p50": 0.0,
+                "p95": 0.14244829244829188
+              },
+              "target_rectangle_fraction": {
+                "count": 802,
+                "p50": 0.7705606792563314,
+                "p95": 0.9111111111111111
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 802,
+                "p50": 768.0,
+                "p95": 919.7999999999997
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 802,
+                "p50": 0.0,
+                "p95": 0.11391428217515168
+              },
+              "target_rectangle_fraction": {
+                "count": 802,
+                "p50": 0.8048780487804879,
+                "p95": 0.8982379181507089
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 802,
+                "p50": 1136.0,
+                "p95": 1363.7999999999997
+              }
+            }
+          },
+          "samples": 802
+        },
+        "head/right": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 778,
+                "p50": 0.0,
+                "p95": 0.2
+              },
+              "target_rectangle_fraction": {
+                "count": 778,
+                "p50": 0.6851648351648352,
+                "p95": 0.8526455026455025
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 778,
+                "p50": 400.0,
+                "p95": 476.0
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 778,
+                "p50": 0.0,
+                "p95": 0.14439999999999992
+              },
+              "target_rectangle_fraction": {
+                "count": 778,
+                "p50": 0.7638888888888888,
+                "p95": 0.9047619047619048
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 778,
+                "p50": 772.0,
+                "p95": 928.0
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 778,
+                "p50": 0.0,
+                "p95": 0.114008954008954
+              },
+              "target_rectangle_fraction": {
+                "count": 778,
+                "p50": 0.7982147051914494,
+                "p95": 0.8903807864609258
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 778,
+                "p50": 1144.0,
+                "p95": 1376.0
+              }
+            }
+          },
+          "samples": 778
+        },
+        "head/top": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 750,
+                "p50": 0.0,
+                "p95": 0.0
+              },
+              "target_rectangle_fraction": {
+                "count": 750,
+                "p50": 0.6776223776223776,
+                "p95": 0.8745833333333333
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 750,
+                "p50": 416.0,
+                "p95": 496.0
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 750,
+                "p50": 0.0,
+                "p95": 0.0
+              },
+              "target_rectangle_fraction": {
+                "count": 750,
+                "p50": 0.8012461394814336,
+                "p95": 0.9285714285714286
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 750,
+                "p50": 808.0,
+                "p95": 948.0
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 750,
+                "p50": 0.0,
+                "p95": 0.0
+              },
+              "target_rectangle_fraction": {
+                "count": 750,
+                "p50": 0.8461538461538461,
+                "p95": 0.9444444444444444
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 750,
+                "p50": 1200.0,
+                "p95": 1408.0
+              }
+            }
+          },
+          "samples": 750
+        },
+        "lower_leg/bottom": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 781,
+                "p50": 0.0,
+                "p95": 0.0
+              },
+              "target_rectangle_fraction": {
+                "count": 781,
+                "p50": 0.4857685009487666,
+                "p95": 0.76
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 781,
+                "p50": 1048.0,
+                "p95": 1288.0
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 781,
+                "p50": 0.0,
+                "p95": 0.0
+              },
+              "target_rectangle_fraction": {
+                "count": 781,
+                "p50": 0.5833333333333334,
+                "p95": 0.820979020979021
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 781,
+                "p50": 2080.0,
+                "p95": 2544.0
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 781,
+                "p50": 0.0,
+                "p95": 0.0
+              },
+              "target_rectangle_fraction": {
+                "count": 781,
+                "p50": 0.6285714285714286,
+                "p95": 0.8526119402985075
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 781,
+                "p50": 3112.0,
+                "p95": 3792.0
+              }
+            }
+          },
+          "samples": 781
+        },
+        "lower_leg/left": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 788,
+                "p50": 0.0108470609415789,
+                "p95": 0.13636363636363635
+              },
+              "target_rectangle_fraction": {
+                "count": 788,
+                "p50": 0.6206518451300665,
+                "p95": 0.9099487179487179
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 788,
+                "p50": 60.6,
+                "p95": 1265.1999999999998
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 788,
+                "p50": 0.032556458897922316,
+                "p95": 0.13655230465575294
+              },
+              "target_rectangle_fraction": {
+                "count": 788,
+                "p50": 0.6594827586206896,
+                "p95": 0.9090909090909091
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 788,
+                "p50": 18.727513227513228,
+                "p95": 2155.7999999999997
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 788,
+                "p50": 0.03712820897575371,
+                "p95": 0.11211561621838617
+              },
+              "target_rectangle_fraction": {
+                "count": 788,
+                "p50": 0.6492141812865497,
+                "p95": 0.8911364439731354
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 788,
+                "p50": 15.905297532656023,
+                "p95": 1969.1999999999998
+              }
+            }
+          },
+          "samples": 788
+        },
+        "lower_leg/right": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 759,
+                "p50": 0.012987012987012988,
+                "p95": 0.1564680134680135
+              },
+              "target_rectangle_fraction": {
+                "count": 759,
+                "p50": 0.63003663003663,
+                "p95": 0.9024146905725853
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 759,
+                "p50": 50.666666666666664,
+                "p95": 1240.8000000000002
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 759,
+                "p50": 0.031578947368421054,
+                "p95": 0.15082022760331995
+              },
+              "target_rectangle_fraction": {
+                "count": 759,
+                "p50": 0.6620689655172414,
+                "p95": 0.9046600877192983
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 759,
+                "p50": 18.142857142857142,
+                "p95": 2136.8
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 759,
+                "p50": 0.038461538461538464,
+                "p95": 0.11410551134689066
+              },
+              "target_rectangle_fraction": {
+                "count": 759,
+                "p50": 0.625,
+                "p95": 0.8946030245746692
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 759,
+                "p50": 15.214285714285714,
+                "p95": 1896.0
+              }
+            }
+          },
+          "samples": 759
+        },
+        "lower_leg/top": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 794,
+                "p50": 0.13464775964775966,
+                "p95": 0.32978571428571424
+              },
+              "target_rectangle_fraction": {
+                "count": 794,
+                "p50": 0.5517716851050185,
+                "p95": 0.8994298245614034
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 794,
+                "p50": 4.099673202614379,
+                "p95": 594.9999999999982
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 794,
+                "p50": 0.07616914626993015,
+                "p95": 0.2
+              },
+              "target_rectangle_fraction": {
+                "count": 794,
+                "p50": 0.6318150448585231,
+                "p95": 0.9103238866396758
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 794,
+                "p50": 8.1010101010101,
+                "p95": 1156.3999999999978
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 794,
+                "p50": 0.05333333333333334,
+                "p95": 0.13967370093666356
+              },
+              "target_rectangle_fraction": {
+                "count": 794,
+                "p50": 0.6566274154589372,
+                "p95": 0.9149739583333331
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 794,
+                "p50": 12.107319078947368,
+                "p95": 1744.3999999999978
+              }
+            }
+          },
+          "samples": 794
+        },
+        "torso/bottom": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 726,
+                "p50": 0.18293183940242763,
+                "p95": 0.3580022918258212
+              },
+              "target_rectangle_fraction": {
+                "count": 726,
+                "p50": 0.5915669298022239,
+                "p95": 0.7767089093701997
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 726,
+                "p50": 3.2400153609831026,
+                "p95": 10.875
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 726,
+                "p50": 0.2227873238847778,
+                "p95": 0.39756032117752926
+              },
+              "target_rectangle_fraction": {
+                "count": 726,
+                "p50": 0.581113852128204,
+                "p95": 0.7886423591482947
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 726,
+                "p50": 2.6149944465012958,
+                "p95": 11.668226381461675
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 726,
+                "p50": 0.2681310177088987,
+                "p95": 0.42324509907123253
+              },
+              "target_rectangle_fraction": {
+                "count": 726,
+                "p50": 0.5553825787038129,
+                "p95": 0.7186025256830505
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 726,
+                "p50": 2.0681329883164747,
+                "p95": 6.413553639846743
+              }
+            }
+          },
+          "samples": 726
+        },
+        "torso/left": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 707,
+                "p50": 0.34805194805194806,
+                "p95": 0.5282720588235293
+              },
+              "target_rectangle_fraction": {
+                "count": 707,
+                "p50": 0.49107142857142855,
+                "p95": 0.6969783281733746
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 707,
+                "p50": 1.403225806451613,
+                "p95": 14.70499999999999
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 707,
+                "p50": 0.23421052631578948,
+                "p95": 0.3892341750596019
+              },
+              "target_rectangle_fraction": {
+                "count": 707,
+                "p50": 0.5858585858585859,
+                "p95": 0.7422776148582599
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 707,
+                "p50": 2.5026315789473683,
+                "p95": 13.48281249999995
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 707,
+                "p50": 0.18282368249837344,
+                "p95": 0.32425509646887485
+              },
+              "target_rectangle_fraction": {
+                "count": 707,
+                "p50": 0.635673624288425,
+                "p95": 0.7776390334142675
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 707,
+                "p50": 3.4959016393442623,
+                "p95": 12.38384615384615
+              }
+            }
+          },
+          "samples": 707
+        },
+        "torso/right": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 674,
+                "p50": 0.3511867442901926,
+                "p95": 0.5217971014492754
+              },
+              "target_rectangle_fraction": {
+                "count": 674,
+                "p50": 0.4908454834925423,
+                "p95": 0.7283352320194426
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 674,
+                "p50": 1.4042293233082708,
+                "p95": 22.176041666666688
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 674,
+                "p50": 0.23735102145896747,
+                "p95": 0.3923511904761906
+              },
+              "target_rectangle_fraction": {
+                "count": 674,
+                "p50": 0.5897911259424051,
+                "p95": 0.7767308841099164
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 674,
+                "p50": 2.4695445399670755,
+                "p95": 15.406250000000023
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 674,
+                "p50": 0.1860205586285411,
+                "p95": 0.33612534789005394
+              },
+              "target_rectangle_fraction": {
+                "count": 674,
+                "p50": 0.6367604659314683,
+                "p95": 0.7869624899286801
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 674,
+                "p50": 3.432051282051282,
+                "p95": 12.529418103448279
+              }
+            }
+          },
+          "samples": 674
+        },
+        "torso/top": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 783,
+                "p50": 0.09027777777777778,
+                "p95": 0.2371952686447474
+              },
+              "target_rectangle_fraction": {
+                "count": 783,
+                "p50": 0.7333333333333333,
+                "p95": 0.8812806324110671
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 783,
+                "p50": 8.25,
+                "p95": 37.8475
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 783,
+                "p50": 0.2434017595307918,
+                "p95": 0.3919386169386169
+              },
+              "target_rectangle_fraction": {
+                "count": 783,
+                "p50": 0.6054421768707483,
+                "p95": 0.7063025210084034
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 783,
+                "p50": 2.4833333333333334,
+                "p95": 4.769440353460968
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 783,
+                "p50": 0.26239669421487605,
+                "p95": 0.3789197299324831
+              },
+              "target_rectangle_fraction": {
+                "count": 783,
+                "p50": 0.5942028985507246,
+                "p95": 0.7145235294117647
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 783,
+                "p50": 2.2510204081632654,
+                "p95": 4.746929824561403
+              }
+            }
+          },
+          "samples": 783
+        },
+        "upper_leg/bottom": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 753,
+                "p50": 0.15763546798029557,
+                "p95": 0.33086187363834424
+              },
+              "target_rectangle_fraction": {
+                "count": 753,
+                "p50": 0.5989304812834224,
+                "p95": 0.8120588235294117
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 753,
+                "p50": 3.8472222222222223,
+                "p95": 37.74999999999994
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 753,
+                "p50": 0.08826945412311266,
+                "p95": 0.2049084249084249
+              },
+              "target_rectangle_fraction": {
+                "count": 753,
+                "p50": 0.6700143472022956,
+                "p95": 0.8459668420213613
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 753,
+                "p50": 7.5588235294117645,
+                "p95": 74.14999999999984
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 753,
+                "p50": 0.06237816764132553,
+                "p95": 0.14610241914051306
+              },
+              "target_rectangle_fraction": {
+                "count": 753,
+                "p50": 0.7,
+                "p95": 0.8673504273504273
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 753,
+                "p50": 11.294117647058824,
+                "p95": 106.39999999999998
+              }
+            }
+          },
+          "samples": 753
+        },
+        "upper_leg/left": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 785,
+                "p50": 0.05555555555555555,
+                "p95": 0.2012987012987013
+              },
+              "target_rectangle_fraction": {
+                "count": 785,
+                "p50": 0.6363636363636364,
+                "p95": 0.9229259259259258
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 785,
+                "p50": 11.391304347826088,
+                "p95": 1086.3999999999996
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 785,
+                "p50": 0.06060606060606061,
+                "p95": 0.14962962962962953
+              },
+              "target_rectangle_fraction": {
+                "count": 785,
+                "p50": 0.6904176904176904,
+                "p95": 0.8931014492753623
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 785,
+                "p50": 11.270833333333334,
+                "p95": 60.49999999999994
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 785,
+                "p50": 0.058823529411764705,
+                "p95": 0.12364444444444436
+              },
+              "target_rectangle_fraction": {
+                "count": 785,
+                "p50": 0.7186932849364791,
+                "p95": 0.8758186911128086
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 785,
+                "p50": 11.7,
+                "p95": 30.446666666666662
+              }
+            }
+          },
+          "samples": 785
+        },
+        "upper_leg/right": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 785,
+                "p50": 0.05263157894736842,
+                "p95": 0.18458707154359313
+              },
+              "target_rectangle_fraction": {
+                "count": 785,
+                "p50": 0.6641604010025063,
+                "p95": 0.95
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 785,
+                "p50": 12.772727272727273,
+                "p95": 1051.1999999999998
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 785,
+                "p50": 0.05757575757575758,
+                "p95": 0.1439648664343786
+              },
+              "target_rectangle_fraction": {
+                "count": 785,
+                "p50": 0.711764705882353,
+                "p95": 0.9313920817369092
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 785,
+                "p50": 12.055555555555555,
+                "p95": 50.29499999999997
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 785,
+                "p50": 0.05847953216374269,
+                "p95": 0.11669489930359492
+              },
+              "target_rectangle_fraction": {
+                "count": 785,
+                "p50": 0.7215311004784689,
+                "p95": 0.8938654841093865
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 785,
+                "p50": 11.969696969696969,
+                "p95": 32.48
+              }
+            }
+          },
+          "samples": 785
+        },
+        "upper_leg/top": {
+          "levels": {
+            "0": {
+              "max_non_target_rectangle_fraction": {
+                "count": 800,
+                "p50": 0.14492753623188406,
+                "p95": 0.26254372427983536
+              },
+              "target_rectangle_fraction": {
+                "count": 800,
+                "p50": 0.6647963359355327,
+                "p95": 0.8732247284878862
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 800,
+                "p50": 4.45,
+                "p95": 15.897916666666646
+              }
+            },
+            "1": {
+              "max_non_target_rectangle_fraction": {
+                "count": 800,
+                "p50": 0.07977841783854261,
+                "p95": 0.15389578163771708
+              },
+              "target_rectangle_fraction": {
+                "count": 800,
+                "p50": 0.7075866750208856,
+                "p95": 0.8849107142857142
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 800,
+                "p50": 8.766968325791856,
+                "p95": 31.258333333333326
+              }
+            },
+            "2": {
+              "max_non_target_rectangle_fraction": {
+                "count": 800,
+                "p50": 0.055084899389691216,
+                "p95": 0.11025985663082433
+              },
+              "target_rectangle_fraction": {
+                "count": 800,
+                "p50": 0.7254208754208754,
+                "p95": 0.8856346878927523
+              },
+              "target_to_max_non_target_ratio": {
+                "count": 800,
+                "p50": 13.080128205128204,
+                "p95": 47.01874999999998
+              }
+            }
+          },
+          "samples": 800
+        }
+      },
+      "localization_failures": 5542,
+      "nested_failures": 0,
+      "normalized_y_error": {
+        "count": 15294,
+        "mean": 0.24765117193008332,
+        "p50": 0.26109660574412535,
+        "p95": 0.4177545691906005
+      },
+      "overshoot_failures": 0,
+      "realized_failures": 0
+    },
+    "hard_owner_support_product_max": 0,
+    "same_slot_donor": {
+      "area_delta": {
+        "count": 15618,
+        "p50": 0.0003255208333333287,
+        "p95": 0.0016276041666666713
+      },
+      "by_target_slot": {
+        "0": {
+          "area_delta": {
+            "count": 3124,
+            "p50": 0.0,
+            "p95": 0.0006510416666666713
+          },
+          "confidence_delta": {
+            "count": 3124,
+            "p50": 0.0040673017501831055,
+            "p95": 0.02431348413228988
+          },
+          "distance": {
+            "count": 3124,
+            "p50": 0.011792246266858278,
+            "p95": 0.06658262035267047
+          },
+          "y_delta": {
+            "count": 3124,
+            "p50": 0.0038886728515082625,
+            "p95": 0.024300529913845972
+          }
+        },
+        "1": {
+          "area_delta": {
+            "count": 3124,
+            "p50": 0.0003255208333333426,
+            "p95": 0.0026041666666666574
+          },
+          "confidence_delta": {
+            "count": 3124,
+            "p50": 0.0037350356578826904,
+            "p95": 0.024531909823417627
+          },
+          "distance": {
+            "count": 3124,
+            "p50": 0.013891711748941382,
+            "p95": 0.06681708063007698
+          },
+          "y_delta": {
+            "count": 3124,
+            "p50": 0.003994029001661126,
+            "p95": 0.02691133199260544
+          }
+        },
+        "2": {
+          "area_delta": {
+            "count": 3123,
+            "p50": 0.0003255208333333426,
+            "p95": 0.001953125
+          },
+          "confidence_delta": {
+            "count": 3123,
+            "p50": 0.006424546241760254,
+            "p95": 0.033667045831680266
+          },
+          "distance": {
+            "count": 3123,
+            "p50": 0.023848898096989368,
+            "p95": 0.08180676756100491
+          },
+          "y_delta": {
+            "count": 3123,
+            "p50": 0.006621914373565796,
+            "p95": 0.03624348722368191
+          }
+        },
+        "3": {
+          "area_delta": {
+            "count": 3124,
+            "p50": 0.0003255208333333287,
+            "p95": 0.0016276041666666713
+          },
+          "confidence_delta": {
+            "count": 3124,
+            "p50": 0.004099845886230469,
+            "p95": 0.025422140955924988
+          },
+          "distance": {
+            "count": 3124,
+            "p50": 0.013751407881512244,
+            "p95": 0.0659763433898713
+          },
+          "y_delta": {
+            "count": 3124,
+            "p50": 0.004019542732631387,
+            "p95": 0.02874644868615577
+          }
+        },
+        "4": {
+          "area_delta": {
+            "count": 3123,
+            "p50": 0.0003255208333333287,
+            "p95": 0.0016276041666666678
+          },
+          "confidence_delta": {
+            "count": 3123,
+            "p50": 0.004205465316772461,
+            "p95": 0.024972116947174067
+          },
+          "distance": {
+            "count": 3123,
+            "p50": 0.014317036187415297,
+            "p95": 0.06646732820616756
+          },
+          "y_delta": {
+            "count": 3123,
+            "p50": 0.004181528287568681,
+            "p95": 0.027115464136364512
+          }
+        }
+      },
+      "confidence_delta": {
+        "count": 15618,
+        "p50": 0.004383206367492676,
+        "p95": 0.027468621730804443
+      },
+      "different_index_fraction": 1.0,
+      "different_path_fraction": 1.0,
+      "different_pid_fraction": 1.0,
+      "distance": {
+        "count": 15618,
+        "p50": 0.015184754481871815,
+        "p95": 0.07118444370944295
+      },
+      "finite": true,
+      "missing": 0,
+      "same_camera_fraction": 1.0,
+      "same_camera_priority_violations": 0,
+      "y_delta": {
+        "count": 15618,
+        "p50": 0.00442622076016741,
+        "p95": 0.029503360318047164
+      }
+    },
+    "samples": 15618,
+    "target_counts": [
+      3124,
+      3124,
+      3123,
+      3124,
+      3123
+    ],
+    "valid_slot_counts": [
+      15604,
+      15618,
+      15618,
+      15607,
+      15508
+    ],
+    "wall_seconds": 578.4377284049988,
+    "wrong_mask_augmented_iou": {
+      "by_slot": {
+        "0": {
+          "count": 3124,
+          "p50": 0.39194847020933976,
+          "p95": 0.8049102691924226
+        },
+        "1": {
+          "count": 3124,
+          "p50": 0.41352467339064514,
+          "p95": 0.7168405719648583
+        },
+        "2": {
+          "count": 3123,
+          "p50": 0.1978494623655914,
+          "p95": 0.5524435904039303
+        },
+        "3": {
+          "count": 3124,
+          "p50": 0.45705807545570154,
+          "p95": 0.7490425436632333
+        },
+        "4": {
+          "count": 3123,
+          "p50": 0.3295711060948081,
+          "p95": 0.6839823529411765
+        }
+      },
+      "overall": {
+        "count": 15618,
+        "p50": 0.35387112887112887,
+        "p95": 0.7304440333024976
+      }
+    },
+    "wrong_mask_donor_equals_same_slot": true,
+    "wrong_slot_donor": {
+      "area_delta": {
+        "count": 15618,
+        "p50": 0.001953125,
+        "p95": 0.026692708333333336
+      },
+      "by_target_slot": {
+        "0": {
+          "area_delta": {
+            "count": 3124,
+            "p50": 0.006184895833333329,
+            "p95": 0.0263671875
+          },
+          "confidence_delta": {
+            "count": 3124,
+            "p50": 0.10338935256004333,
+            "p95": 0.3067094534635543
+          },
+          "distance": {
+            "count": 3124,
+            "p50": 0.5122032307182681,
+            "p95": 1.2333608055051393
+          },
+          "y_delta": {
+            "count": 3124,
+            "p50": 0.21943125774277472,
+            "p95": 0.3007245056582584
+          }
+        },
+        "1": {
+          "area_delta": {
+            "count": 3124,
+            "p50": 0.0026041666666666782,
+            "p95": 0.03255208333333333
+          },
+          "confidence_delta": {
+            "count": 3124,
+            "p50": 0.009427070617675781,
+            "p95": 0.04430833011865615
+          },
+          "distance": {
+            "count": 3124,
+            "p50": 0.07386198956748413,
+            "p95": 0.268463079082348
+          },
+          "y_delta": {
+            "count": 3124,
+            "p50": 0.014612772294820303,
+            "p95": 0.08151938132248385
+          }
+        },
+        "2": {
+          "area_delta": {
+            "count": 3123,
+            "p50": 0.0009765625,
+            "p95": 0.005533854166666664
+          },
+          "confidence_delta": {
+            "count": 3123,
+            "p50": 0.014631509780883789,
+            "p95": 0.07942904829978925
+          },
+          "distance": {
+            "count": 3123,
+            "p50": 0.21322229072284632,
+            "p95": 0.37840333979396423
+          },
+          "y_delta": {
+            "count": 3123,
+            "p50": 0.1731543698887139,
+            "p95": 0.29617755911692606
+          }
+        },
+        "3": {
+          "area_delta": {
+            "count": 3124,
+            "p50": 0.0006510416666666713,
+            "p95": 0.004231770833333335
+          },
+          "confidence_delta": {
+            "count": 3124,
+            "p50": 0.010428518056869507,
+            "p95": 0.05338099598884582
+          },
+          "distance": {
+            "count": 3124,
+            "p50": 0.14903924903496346,
+            "p95": 0.2246318412909808
+          },
+          "y_delta": {
+            "count": 3124,
+            "p50": 0.11979504467212998,
+            "p95": 0.19305750016381545
+          }
+        },
+        "4": {
+          "area_delta": {
+            "count": 3123,
+            "p50": 0.0048828125,
+            "p95": 0.0439453125
+          },
+          "confidence_delta": {
+            "count": 3123,
+            "p50": 0.12462836503982544,
+            "p95": 0.2852813601493835
+          },
+          "distance": {
+            "count": 3123,
+            "p50": 0.7481631011082647,
+            "p95": 1.1086276343195203
+          },
+          "y_delta": {
+            "count": 3123,
+            "p50": 0.5292586074191397,
+            "p95": 0.6590557141592904
+          }
+        }
+      },
+      "confidence_delta": {
+        "count": 15618,
+        "p50": 0.024388939142227173,
+        "p95": 0.21441408991813654
+      },
+      "different_index_fraction": 1.0,
+      "different_path_fraction": 1.0,
+      "different_pid_fraction": 1.0,
+      "different_slot_fraction": 1.0,
+      "distance": {
+        "count": 15618,
+        "p50": 0.23171342331350786,
+        "p95": 0.9912317071187756
+      },
+      "finite": true,
+      "missing": 0,
+      "same_camera_fraction": 1.0,
+      "same_camera_priority_violations": 0,
+      "y_delta": {
+        "count": 15618,
+        "p50": 0.16439042638439444,
+        "p95": 0.583173859474236
+      }
+    }
+  },
+  "status": "EXP392_PHASE0B2_FULL_POSE_FEASIBILITY_COMPLETE",
+  "verdict": "FAIL"
+}
+Command exited with non-zero status 2
+	Command being timed: "/usr/local/anaconda3/envs/mmpose-abu/bin/python /home/afr/SOLIDER-REID-exp392-b2s-pose-a25a9d9/experiments/exp392_clip_semantic_ciam/phase0b2_full_pose_feasibility.py --repo-root /home/afr/SOLIDER-REID-exp392-b2s-pose-a25a9d9 --phase0b-script /home/afr/SOLIDER-REID-exp392-b2s-pose-a25a9d9/experiments/exp392_clip_semantic_ciam/phase0b_clip_teacher_audit.py --ontology-script /home/afr/SOLIDER-REID-exp392-b2s-pose-a25a9d9/experiments/exp392_clip_semantic_ciam/phase0b2_ontology_audit.py --static-script /home/afr/SOLIDER-REID-exp392-b2s-pose-a25a9d9/experiments/exp392_clip_semantic_ciam/phase0b2_full_teacher_static_audit.py --source-commit a25a9d91cf93e9607a41faadf682ef04d78e444e --data-root /mnt1/afrdata --pose-artifact /mnt1/afrderived/exp386_occluded_duke_vitpose_huge_train --map-output /home/afr/reid-clean/audits/exp392_phase0b2/b2s_full_pose_map_a25a9d9.json --output /home/afr/reid-clean/audits/exp392_phase0b2/b2s_full_pose_result_a25a9d9.json --seed 20260718"
+	User time (seconds): 3898.56
+	System time (seconds): 168.77
+	Percent of CPU this job got: 702%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 9:38.99
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 886708
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 5
+	Minor (reclaiming a frame) page faults: 1743136
+	Voluntary context switches: 166009607
+	Involuntary context switches: 50255
+	Swaps: 0
+	File system inputs: 272
+	File system outputs: 123704
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 2

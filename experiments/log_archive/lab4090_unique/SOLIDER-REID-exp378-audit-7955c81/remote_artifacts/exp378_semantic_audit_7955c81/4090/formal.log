@@ -1,0 +1,101 @@
+/root/solider-venv/lib/python3.10/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-exp378-audit-7955c81/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+[TAPF] enabled: source_stage=2, psg_stages=[3], TaskAdaptivePoseField(
+  mode=d0, transition=hard, bootstrap_perm=off, boot_epochs=10, handoff_start=6, max_shift=0.120, max_log_scale=0.500, params=85542
+  (anchor): _LiteHRPoseAnchor(
+    (stem): Sequential(
+      (0): Conv2d(384, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (1): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (2): SiLU(inplace=True)
+    )
+    (high): _DepthwiseResidual(
+      (dw): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+      (norm): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (pw): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (act): SiLU(inplace=True)
+    )
+    (context): Sequential(
+      (0): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+      (1): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (2): SiLU(inplace=True)
+      (3): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+    )
+    (fuse): Sequential(
+      (0): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (1): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (2): SiLU(inplace=True)
+    )
+    (up_refine_1): _DepthwiseResidual(
+      (dw): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+      (norm): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (pw): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (act): SiLU(inplace=True)
+    )
+    (up_refine_2): _DepthwiseResidual(
+      (dw): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+      (norm): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (pw): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (act): SiLU(inplace=True)
+    )
+    (heatmap_head): Conv2d(64, 17, kernel_size=(1, 1), stride=(1, 1))
+    (confidence_head): Linear(in_features=384, out_features=17, bias=True)
+  )
+  (geometry_adapter): Sequential(
+    (0): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+    (1): Linear(in_features=384, out_features=64, bias=True)
+    (2): SiLU(inplace=True)
+    (3): Linear(in_features=64, out_features=4, bias=True)
+  )
+  (field_renderer): GaussianPoseFieldRenderer()
+)
+[POSE] POSE_USE_TARGET_HEATMAP=True: pose modules (PSG/LGPA/VCSR/PPA/STR/FSDC/...) will receive person-0 (target) heatmap instead of max-merged scene heatmap.
+===========building pose-backbone (PSG) transformer===========
+/home/afr/SOLIDER-REID-exp378-audit-7955c81/utils/metrics.py:66: UserWarning: This overload of addmm_ is deprecated:
+	addmm_(Number beta, Number alpha, Tensor mat1, Tensor mat2)
+Consider using one of the following signatures instead:
+	addmm_(Tensor mat1, Tensor mat2, *, Number beta, Number alpha) (Triggered internally at ../torch/csrc/utils/python_arg_parser.cpp:1420.)
+  dist_mat.addmm_(1, -2, qf, gf.t())
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+correct_start            mAP 0.5630 R1 0.6765 R5 0.7982 R10 0.8353
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+external_correct         mAP 0.5630 R1 0.6765 R5 0.7982 R10 0.8353
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+external_shuffle         mAP 0.5630 R1 0.6765 R5 0.7982 R10 0.8353
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+external_none            mAP 0.5630 R1 0.6765 R5 0.7982 R10 0.8353
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+external_unindexable     mAP 0.5630 R1 0.6765 R5 0.7982 R10 0.8353
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+matched_wrong_field      mAP 0.5628 R1 0.6765 R5 0.7982 R10 0.8353
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+joint_permutation        mAP 0.5630 R1 0.6765 R5 0.7982 R10 0.8348
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+confidence_permutation   mAP 0.5630 R1 0.6765 R5 0.7982 R10 0.8353
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+spatial_constant         mAP 0.5627 R1 0.6756 R5 0.7982 R10 0.8348
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+zero_field               mAP 0.5624 R1 0.6760 R5 0.7982 R10 0.8357
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+psg_bypass               mAP 0.5362 R1 0.6394 R5 0.7629 R10 0.8045
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+correct_end              mAP 0.5630 R1 0.6765 R5 0.7982 R10 0.8353

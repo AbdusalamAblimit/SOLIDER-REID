@@ -1,0 +1,303 @@
+{
+  "encoded_full_image_variants": 20,
+  "gates": {
+    "all_region_positive_target_level0_minus_level75": true,
+    "all_region_positive_target_spearman": true,
+    "all_region_target_delta_gt_non_target": false,
+    "finite": true,
+    "hard_owner_pixel_product_exact_zero": true,
+    "level_target_error_within_one_pixel": true,
+    "macro_all_target_adjacent_monotonic": true,
+    "macro_target_delta_gt_global": true,
+    "null_exact": true,
+    "realized_overlap_strictly_increasing": true,
+    "repeat_exact": true,
+    "target_valid_exact": true
+  },
+  "images": 1,
+  "output_sha256": "77f43d03763bd9900d0085c4ba9dc4b40ab3ed8579f32c93f0e502df60fc596c",
+  "status": "EXP392_PHASE0B2_SI_COMPLETE",
+  "summary": {
+    "levels": [
+      0.0,
+      0.25,
+      0.5,
+      0.75
+    ],
+    "macro_target_adjacent_delta": [
+      0.04157485365867619,
+      0.013354915380477894,
+      0.0015481889247894176
+    ],
+    "macro_target_minus_global_delta": 0.04823593497276306,
+    "macro_target_q_visible_by_level": [
+      0.5354055643081665,
+      0.49383071064949036,
+      0.48047579526901246,
+      0.47892760634422304
+    ],
+    "per_region": [
+      {
+        "global_q_visible_mean_by_level": [
+          0.5449155569076538,
+          0.5337643623352051,
+          0.5351376533508301,
+          0.5253936648368835
+        ],
+        "non_target_q_visible_mean_by_level": [
+          0.5288205146789551,
+          0.5228835344314575,
+          0.5237671732902527,
+          0.5146582126617432
+        ],
+        "region": 0,
+        "samples": 1,
+        "spearman_overlap_negative_target_q": 1.0,
+        "target_level0_minus_level75": {
+          "ci95_high": 0.09636574983596802,
+          "ci95_low": 0.09636574983596802,
+          "mean": 0.09636574983596802,
+          "pids": 1,
+          "repeats": 50,
+          "samples": 1
+        },
+        "target_minus_global_delta": {
+          "ci95_high": 0.07684385776519775,
+          "ci95_low": 0.07684385776519775,
+          "mean": 0.07684385776519775,
+          "pids": 1,
+          "repeats": 50,
+          "samples": 1
+        },
+        "target_minus_non_target_delta": {
+          "ci95_high": 0.0822034478187561,
+          "ci95_low": 0.0822034478187561,
+          "mean": 0.0822034478187561,
+          "pids": 1,
+          "repeats": 50,
+          "samples": 1
+        },
+        "target_q_visible_mean_by_level": [
+          0.561745822429657,
+          0.49468332529067993,
+          0.492823988199234,
+          0.46538007259368896
+        ]
+      },
+      {
+        "global_q_visible_mean_by_level": [
+          0.4961710274219513,
+          0.4966322183609009,
+          0.48758038878440857,
+          0.48953917622566223
+        ],
+        "non_target_q_visible_mean_by_level": [
+          0.5434330105781555,
+          0.5381247997283936,
+          0.5228943228721619,
+          0.5258371829986572
+        ],
+        "region": 1,
+        "samples": 1,
+        "spearman_overlap_negative_target_q": 0.7999999999999999,
+        "target_level0_minus_level75": {
+          "ci95_high": 0.06004771590232849,
+          "ci95_low": 0.06004771590232849,
+          "mean": 0.06004771590232849,
+          "pids": 1,
+          "repeats": 50,
+          "samples": 1
+        },
+        "target_minus_global_delta": {
+          "ci95_high": 0.05341586470603943,
+          "ci95_low": 0.05341586470603943,
+          "mean": 0.05341586470603943,
+          "pids": 1,
+          "repeats": 50,
+          "samples": 1
+        },
+        "target_minus_non_target_delta": {
+          "ci95_high": 0.0424518883228302,
+          "ci95_low": 0.0424518883228302,
+          "mean": 0.0424518883228302,
+          "pids": 1,
+          "repeats": 50,
+          "samples": 1
+        },
+        "target_q_visible_mean_by_level": [
+          0.5032957792282104,
+          0.48764413595199585,
+          0.4277855455875397,
+          0.44324806332588196
+        ]
+      },
+      {
+        "global_q_visible_mean_by_level": [
+          0.5139274597167969,
+          0.5095202922821045,
+          0.5103892087936401,
+          0.5106009244918823
+        ],
+        "non_target_q_visible_mean_by_level": [
+          0.5344511270523071,
+          0.5318518877029419,
+          0.5270209908485413,
+          0.5293737649917603
+        ],
+        "region": 2,
+        "samples": 1,
+        "spearman_overlap_negative_target_q": 0.7999999999999999,
+        "target_level0_minus_level75": {
+          "ci95_high": 0.05725356936454773,
+          "ci95_low": 0.05725356936454773,
+          "mean": 0.05725356936454773,
+          "pids": 1,
+          "repeats": 50,
+          "samples": 1
+        },
+        "target_minus_global_delta": {
+          "ci95_high": 0.05392703413963318,
+          "ci95_low": 0.05392703413963318,
+          "mean": 0.05392703413963318,
+          "pids": 1,
+          "repeats": 50,
+          "samples": 1
+        },
+        "target_minus_non_target_delta": {
+          "ci95_high": 0.052176207304000854,
+          "ci95_low": 0.052176207304000854,
+          "mean": 0.052176207304000854,
+          "pids": 1,
+          "repeats": 50,
+          "samples": 1
+        },
+        "target_q_visible_mean_by_level": [
+          0.539223313331604,
+          0.49581602215766907,
+          0.47353699803352356,
+          0.4819697439670563
+        ]
+      },
+      {
+        "global_q_visible_mean_by_level": [
+          0.5238853693008423,
+          0.5200600624084473,
+          0.5195695161819458,
+          0.5151978731155396
+        ],
+        "non_target_q_visible_mean_by_level": [
+          0.5341452956199646,
+          0.5308444499969482,
+          0.5301071405410767,
+          0.53219074010849
+        ],
+        "region": 3,
+        "samples": 1,
+        "spearman_overlap_negative_target_q": 0.7999999999999999,
+        "target_level0_minus_level75": {
+          "ci95_high": 0.06232854723930359,
+          "ci95_low": 0.06232854723930359,
+          "mean": 0.06232854723930359,
+          "pids": 1,
+          "repeats": 50,
+          "samples": 1
+        },
+        "target_minus_global_delta": {
+          "ci95_high": 0.053641051054000854,
+          "ci95_low": 0.053641051054000854,
+          "mean": 0.053641051054000854,
+          "pids": 1,
+          "repeats": 50,
+          "samples": 1
+        },
+        "target_minus_non_target_delta": {
+          "ci95_high": 0.06037399172782898,
+          "ci95_low": 0.06037399172782898,
+          "mean": 0.06037399172782898,
+          "pids": 1,
+          "repeats": 50,
+          "samples": 1
+        },
+        "target_q_visible_mean_by_level": [
+          0.5404466390609741,
+          0.4860411286354065,
+          0.48664262890815735,
+          0.47811809182167053
+        ]
+      },
+      {
+        "global_q_visible_mean_by_level": [
+          0.5276225209236145,
+          0.526301383972168,
+          0.5248600244522095,
+          0.524580180644989
+        ],
+        "non_target_q_visible_mean_by_level": [
+          0.5361778736114502,
+          0.5272565484046936,
+          0.524585485458374,
+          0.5274370908737183
+        ],
+        "region": 4,
+        "samples": 1,
+        "spearman_overlap_negative_target_q": 0.19999999999999998,
+        "target_level0_minus_level75": {
+          "ci95_high": 0.00639420747756958,
+          "ci95_low": 0.00639420747756958,
+          "mean": 0.00639420747756958,
+          "pids": 1,
+          "repeats": 50,
+          "samples": 1
+        },
+        "target_minus_global_delta": {
+          "ci95_high": 0.003351867198944092,
+          "ci95_low": 0.003351867198944092,
+          "mean": 0.003351867198944092,
+          "pids": 1,
+          "repeats": 50,
+          "samples": 1
+        },
+        "target_minus_non_target_delta": {
+          "ci95_high": -0.0023465752601623535,
+          "ci95_low": -0.0023465752601623535,
+          "mean": -0.0023465752601623535,
+          "pids": 1,
+          "repeats": 50,
+          "samples": 1
+        },
+        "target_q_visible_mean_by_level": [
+          0.532316267490387,
+          0.5049689412117004,
+          0.5215898156166077,
+          0.5259220600128174
+        ]
+      }
+    ]
+  },
+  "valid_target_slots": 5,
+  "verdict": "B2_SI_SMOKE_FAIL"
+}
+Command exited with non-zero status 1
+	Command being timed: "/usr/local/anaconda3/envs/mmpose-abu/bin/python /home/afr/reid-clean/audits/exp392_phase0b2/phase0b2_support_pcmbcls_audit.py --repo-root /home/afr/SOLIDER-REID-exp392-phase0b-5277254 --phase0b-script /home/afr/reid-clean/audits/exp392_phase0b/phase0b_clip_teacher_audit.py --ontology-script /home/afr/reid-clean/audits/exp392_phase0b2/phase0b2_prompt_audit.py --support-script /home/afr/reid-clean/audits/exp392_phase0b2/phase0b2_support_crop_audit.py --pcmbcls-script /home/afr/reid-clean/audits/exp392_phase0b2/phase0b2_openclip_contract.py --source-commit 5277254bae1f9d18f1368ad4202aca7c9d223cc8 --data-root /mnt1/afrdata --pose-artifact /mnt1/afrderived/exp386_occluded_duke_vitpose_huge_train --clip-checkpoint /home/afr/SOLIDER-REID/clip_l14_openclip.safetensors --output /home/afr/reid-clean/audits/exp392_phase0b2/b2si_pcmbcls_contract1_result.json --device cpu --batch-size 1 --clip-batch 10 --workers 0 --max-samples 1 --bootstrap-repeats 50"
+	User time (seconds): 163.45
+	System time (seconds): 34.28
+	Percent of CPU this job got: 1130%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:17.49
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 3710848
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 13
+	Minor (reclaiming a frame) page faults: 8850744
+	Voluntary context switches: 118296
+	Involuntary context switches: 17724
+	Swaps: 0
+	File system inputs: 168
+	File system outputs: 128
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1

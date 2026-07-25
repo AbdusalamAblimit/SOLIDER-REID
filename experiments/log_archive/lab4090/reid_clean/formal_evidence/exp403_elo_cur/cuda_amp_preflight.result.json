@@ -1,0 +1,105 @@
+{
+  "attempts": [
+    {
+      "all_production_grad_finite_nonzero": true,
+      "all_production_updated": false,
+      "attempt": 1,
+      "loss": 19.984827041625977,
+      "reference_rng_exact": true,
+      "scale_after": 32768.0,
+      "scale_before": 65536.0
+    },
+    {
+      "all_production_grad_finite_nonzero": true,
+      "all_production_updated": false,
+      "attempt": 2,
+      "loss": 19.82193374633789,
+      "reference_rng_exact": true,
+      "scale_after": 16384.0,
+      "scale_before": 32768.0
+    },
+    {
+      "all_production_grad_finite_nonzero": true,
+      "all_production_updated": false,
+      "attempt": 3,
+      "loss": 20.175045013427734,
+      "reference_rng_exact": true,
+      "scale_after": 8192.0,
+      "scale_before": 16384.0
+    },
+    {
+      "all_production_grad_finite_nonzero": true,
+      "all_production_updated": false,
+      "attempt": 4,
+      "loss": 19.667678833007812,
+      "reference_rng_exact": true,
+      "scale_after": 4096.0,
+      "scale_before": 8192.0
+    },
+    {
+      "all_production_grad_finite_nonzero": true,
+      "all_production_updated": true,
+      "attempt": 5,
+      "loss": 19.738000869750977,
+      "reference_rng_exact": true,
+      "scale_after": 4096.0,
+      "scale_before": 4096.0
+    }
+  ],
+  "config_sha256": "06a80c9d7589fe539b4d8f5820df307f08868c2005517ae6fce3226ed8a470ba",
+  "experiment": "exp403_counterfactual_operator_ownership",
+  "formal_training_authorized": true,
+  "gate_count": 16,
+  "gate_pass_count": 16,
+  "gates": {
+    "actual_batch64": true,
+    "all_production_grad_finite_nonzero": true,
+    "all_production_updated": true,
+    "correct_evidence_grad_nonzero": true,
+    "donor_contract": true,
+    "generic_sha_exact": true,
+    "no_checkpoint": true,
+    "no_slot_expert_state": true,
+    "none_exploding_pose_exact": true,
+    "reference_no_grad": true,
+    "reference_rng_exact": true,
+    "rgb_only_eval_finite": true,
+    "successful_amp_update": true,
+    "tapf_values_finite": true,
+    "teacher_generic_free_state": true,
+    "teacher_valid_nonzero": true
+  },
+  "model_state_key_count": 237,
+  "peak_memory_bytes": 8141523456,
+  "script_sha256": "6b3e685cf11a657c8bd81c8358a2cda15cd600f2c3ef7f57d5cc206d02c55939",
+  "status": "CUDA_AMP_PREFLIGHT_PASS",
+  "success": {
+    "all_tapf_values_finite": true,
+    "attempt": 5,
+    "budget_abs": 1.3486378520610742e-05,
+    "compatibility_loss": 0.259540319442749,
+    "cur_loss": 0.04999773949384689,
+    "eligible_ratio": 1.0,
+    "loss": 19.738000869750977,
+    "pose_loss": 1.4048579931259155,
+    "production_grad_norm": {
+      "base.tapf.psg_bank.0.context_projection.weight": 0.003129923716187477,
+      "base.tapf.psg_bank.0.context_query.weight": 0.043053798377513885,
+      "base.tapf.psg_bank.0.down_projection.weight": 0.003950329963117838,
+      "base.tapf.psg_bank.0.evidence_key.weight": 0.004642129875719547,
+      "base.tapf.psg_bank.0.evidence_projection.weight": 0.0004315954865887761,
+      "base.tapf.psg_bank.0.up_projection.weight": 0.0006973877316340804,
+      "base.tapf.psg_bank.1.context_projection.weight": 0.001623717020265758,
+      "base.tapf.psg_bank.1.context_query.weight": 0.03529706224799156,
+      "base.tapf.psg_bank.1.down_projection.weight": 0.0015236403560265899,
+      "base.tapf.psg_bank.1.evidence_key.weight": 0.0052895741537213326,
+      "base.tapf.psg_bank.1.evidence_projection.weight": 0.00041952807805500925,
+      "base.tapf.psg_bank.1.up_projection.weight": 0.00039973974344320595
+    },
+    "reference_no_grad": true,
+    "reference_rng_exact": true,
+    "reid_loss": 19.597515106201172,
+    "rho": 0.01615108996629715,
+    "student_evidence_grad_norm": 5.2056403160095215
+  }
+}

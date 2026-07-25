@@ -1,0 +1,133 @@
+2026-03-04 13:47:28 transreid INFO: Saving model in the path :./log/occluded_duke/exp005_temp_0.01
+2026-03-04 13:47:28 transreid INFO: Loaded configuration file configs/occluded_duke/vpreid_tiny.yml
+2026-03-04 13:47:28 transreid INFO: Running with config:
+DATALOADER:
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+  REMOVE_TAIL: 0
+  SAMPLER: softmax_triplet
+DATASETS:
+  NAMES: occluded_duke
+  ROOT_DIR: data
+  ROOT_TRAIN_DIR: ../data
+  ROOT_VAL_DIR: ../data
+INPUT:
+  PADDING: 10
+  PIXEL_MEAN: [0.5, 0.5, 0.5]
+  PIXEL_STD: [0.5, 0.5, 0.5]
+  PROB: 0.5
+  RE_PROB: 0.5
+  SIZE_TEST: [384, 128]
+  SIZE_TRAIN: [384, 128]
+MODEL:
+  ATT_DROP_RATE: 0.0
+  COS_LAYER: False
+  DEVICE: cuda
+  DEVICE_ID: 0
+  DEVIDE_LENGTH: 4
+  DIST_TRAIN: False
+  DROPOUT_RATE: 0.0
+  DROP_OUT: 0.0
+  DROP_PATH: 0.1
+  FEAT_DIM: 512
+  GEM_POOLING: False
+  ID_LOSS_TYPE: softmax
+  ID_LOSS_WEIGHT: 1.0
+  IF_LABELSMOOTH: off
+  IF_WITH_CENTER: no
+  JPM: False
+  LAST_STRIDE: 1
+  METRIC_LOSS_TYPE: triplet
+  NAME: transformer
+  NECK: bnneck
+  NO_MARGIN: True
+  PRETRAIN_CHOICE: imagenet
+  PRETRAIN_HW_RATIO: 2
+  PRETRAIN_PATH: pretrained/swin_tiny.pth
+  REDUCE_FEAT_DIM: False
+  RE_ARRANGE: True
+  SEMANTIC_WEIGHT: 0.2
+  SHIFT_NUM: 5
+  SHUFFLE_GROUP: 2
+  SIE_CAMERA: False
+  SIE_COE: 3.0
+  SIE_VIEW: False
+  STEM_CONV: False
+  STRIDE_SIZE: [16, 16]
+  TRANSFORMER_TYPE: vpreid_tiny_patch4_window7_224
+  TRIPLET_LOSS_WEIGHT: 1.0
+  VPREID:
+    ENABLE: True
+    ID_WEIGHT: 1.0
+    N_PARTS: 5
+    PART_ID_WEIGHT: 0.5
+    PART_TEMP: 0.01
+    POSE_CFG: pose/config_vispredict.py
+    POSE_CKPT: pretrained/best_coco_AP_epoch_210.pth
+    PUSH_WEIGHT: 0.1
+    TRI_WEIGHT: 1.0
+    VIS_THRESHOLD: 0.5
+  WITH_CP: False
+OUTPUT_DIR: ./log/occluded_duke/exp005_temp_0.01
+SOLVER:
+  BASE_LR: 0.0008
+  BIAS_LR_FACTOR: 2
+  CENTER_LOSS_WEIGHT: 0.0005
+  CENTER_LR: 0.5
+  CHECKPOINT_PERIOD: 120
+  COSINE_MARGIN: 0.5
+  COSINE_SCALE: 30
+  EVAL_PERIOD: 10
+  GAMMA: 0.1
+  IMS_PER_BATCH: 64
+  LARGE_FC_LR: False
+  LOG_PERIOD: 20
+  MARGIN: 0.3
+  MAX_EPOCHS: 120
+  MOMENTUM: 0.9
+  OPTIMIZER_NAME: SGD
+  SEED: 1234
+  STEPS: (40, 70)
+  TRP_L2: False
+  WARMUP_EPOCHS: 20
+  WARMUP_FACTOR: 0.01
+  WARMUP_METHOD: cosine
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0.0001
+TEST:
+  DIST_MAT: dist_mat.npy
+  EVAL: True
+  FEAT_NORM: yes
+  IMS_PER_BATCH: 256
+  NECK_FEAT: before
+  RE_RANKING: False
+  WEIGHT: 
+=> Occluded-DukeMTMC loaded
+2026-03-04 13:47:28 transreid.check INFO: Dataset statistics:
+2026-03-04 13:47:28 transreid.check INFO:   ----------------------------------------
+2026-03-04 13:47:28 transreid.check INFO:   subset   | # ids | # images | # cameras
+2026-03-04 13:47:28 transreid.check INFO:   ----------------------------------------
+2026-03-04 13:47:28 transreid.check INFO:   train    |   702 |    15618 |         8
+2026-03-04 13:47:28 transreid.check INFO:   query    |   519 |     2210 |         8
+2026-03-04 13:47:28 transreid.check INFO:   gallery  |  1110 |    17661 |         8
+2026-03-04 13:47:28 transreid.check INFO:   ----------------------------------------
+using img_triplet sampler
+using Transformer_type: vpreid_tiny_patch4_window7_224 as a backbone
+2026-03-04 13:47:29 transreid.pose INFO: [pose_ckpt] loaded=165 missing=0 unexpected=0
+2026-03-04 13:47:29 transreid.vpreid INFO: VPReID: ViTPose predictor loaded and frozen
+/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID/model/backbones/swin_transformer.py:1162: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+Traceback (most recent call last):
+  File "train.py", line 71, in <module>
+    model = make_model(cfg, num_class=num_classes, camera_num=camera_num, view_num = view_num, semantic_weight = cfg.MODEL.SEMANTIC_WEIGHT)
+  File "/home/afr/SOLIDER-REID/model/make_model.py", line 536, in make_model
+    model = build_transformer(num_class, camera_num, view_num, cfg, __factory_T_type, semantic_weight)
+  File "/home/afr/SOLIDER-REID/model/make_model.py", line 218, in __init__
+    self.base.init_weights(model_path)
+  File "/home/afr/SOLIDER-REID/model/backbones/vpreid.py", line 196, in init_weights
+    self.base.init_weights(pretrained)
+  File "/home/afr/SOLIDER-REID/model/backbones/swin_transformer.py", line 1347, in init_weights
+    table_current = self.state_dict()[table_key]
+KeyError: 'backbone.stages.0.blocks.0.attn.w_msa.relative_position_bias_table'

@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/home/afr/SOLIDER-REID-exp371-146bc44/experiments/exp371_casd/eval_pose_interventions.py", line 350, in <module>
+    main()
+  File "/home/afr/SOLIDER-REID-exp371-146bc44/experiments/exp371_casd/eval_pose_interventions.py", line 241, in main
+    cfg.merge_from_list(args.opts)
+  File "/root/solider-venv/lib/python3.10/site-packages/yacs/config.py", line 223, in merge_from_list
+    _assert_with_logging(
+  File "/root/solider-venv/lib/python3.10/site-packages/yacs/config.py", line 545, in _assert_with_logging
+    assert cond, msg
+AssertionError: Override list has odd length: ['--', 'MODEL.POSE_USE_TARGET_HEATMAP', 'True']; it must be a list of pairs

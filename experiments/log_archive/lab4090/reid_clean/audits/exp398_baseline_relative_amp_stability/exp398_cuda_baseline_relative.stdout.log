@@ -1,0 +1,25 @@
+=> Occluded-Duke loaded
+using img_triplet sampler
+/home/afr/SOLIDER-REID-exp398-baseline-relative-fresh-11d7a35/model/backbones/swin_transformer.py:1157: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+{
+  "exception": "'tuple' object has no attribute 'detach'",
+  "exception_type": "AttributeError",
+  "exp394_remains_sealed": true,
+  "exp395_remains_sealed": true,
+  "exp396_remains_sealed": true,
+  "exp397_remains_sealed": true,
+  "formal_training_authorized": false,
+  "production_preflight_authorized": false,
+  "script_sha256": "8bc599e94264eb3fb89b3cdc94810c483f4c4a037ebe86311c30a741011aeac9",
+  "status": "INVALID",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/afr/reid-clean/audits/exp398_baseline_relative_amp_stability/cuda_baseline_relative_amp_stability.py\", line 846, in main\n    result = run_gate(args)\n  File \"/home/afr/reid-clean/audits/exp398_baseline_relative_amp_stability/cuda_baseline_relative_amp_stability.py\", line 729, in run_gate\n    d0_result = run_dynamic_arm(\n  File \"/home/afr/reid-clean/audits/exp398_baseline_relative_amp_stability/cuda_baseline_relative_amp_stability.py\", line 374, in run_dynamic_arm\n    initial_group_state = parameter_group_state(base, group_parameters)\n  File \"/home/afr/reid-clean/audits/exp398_baseline_relative_amp_stability/cuda_baseline_relative_amp_stability.py\", line 226, in parameter_group_state\n    return {\n  File \"/home/afr/reid-clean/audits/exp398_baseline_relative_amp_stability/cuda_baseline_relative_amp_stability.py\", line 228, in <dictcomp>\n    [base.sha256_tensor(parameter.detach()) for parameter in parameters]\n  File \"/home/afr/reid-clean/audits/exp398_baseline_relative_amp_stability/cuda_baseline_relative_amp_stability.py\", line 228, in <listcomp>\n    [base.sha256_tensor(parameter.detach()) for parameter in parameters]\nAttributeError: 'tuple' object has no attribute 'detach'\n"
+}

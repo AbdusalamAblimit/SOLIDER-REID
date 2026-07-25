@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/home/afr/SOLIDER-REID-exp374-f053a43/experiments/exp374_psg_fuel_gate/audit_gate_a.py", line 2159, in <module>
+    main()
+  File "/home/afr/SOLIDER-REID-exp374-f053a43/experiments/exp374_psg_fuel_gate/audit_gate_a.py", line 2146, in main
+    prepare_phase(args)
+  File "/home/afr/SOLIDER-REID-exp374-f053a43/experiments/exp374_psg_fuel_gate/audit_gate_a.py", line 581, in prepare_phase
+    specs = checkpoint_specs(args.checkpoint_manifest)
+  File "/home/afr/SOLIDER-REID-exp374-f053a43/experiments/exp374_psg_fuel_gate/audit_gate_a.py", line 261, in checkpoint_specs
+    parsed = parse_flat_log_metrics_bytes(flat_log_payload, str(spec["flat_log"]))
+  File "/home/afr/SOLIDER-REID-exp374-f053a43/experiments/exp374_psg_fuel_gate/audit_gate_a.py", line 219, in parse_flat_log_metrics_bytes
+    require(len(map_values) == 1 and len(rank1_values) == 1,
+  File "/home/afr/SOLIDER-REID-exp374-f053a43/experiments/exp374_psg_fuel_gate/protocol.py", line 53, in require
+    raise GateProtocolError(code, message)
+experiments.exp374_psg_fuel_gate.protocol.GateProtocolError: E_FLAT_LOG_AMBIGUOUS: /home/afr/SOLIDER-REID/log/multiseed/exp007_psg_seed1234/test_default/test_log.txt: mAP=2, R1=2

@@ -1,0 +1,403 @@
+{
+  "execution": {
+    "audit_script_sha256": "b0d5ce6a53e94d09fa5d15c338392ea31437eee036299256c424ed30489028ca",
+    "batch_size": 2,
+    "clip_batch": 10,
+    "clip_checkpoint": "/home/afr/SOLIDER-REID/clip_l14_openclip.safetensors",
+    "clip_checkpoint_sha256": "9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e",
+    "crops": 639,
+    "data_root": "/mnt1/afrdata",
+    "device": "cpu",
+    "open_clip_version": "2.32.0",
+    "partition_mode": "hard-owner",
+    "phase0b_script": "/home/afr/reid-clean/audits/exp392_phase0b/phase0b_clip_teacher_audit.py",
+    "phase0b_script_sha256": "03b8f707bc6f189dd3de34505af82e63f7ee71bd23d70b6e9663aee318afcd70",
+    "pose_artifact": "/mnt1/afrderived/exp386_occluded_duke_vitpose_huge_train",
+    "pose_manifest_sha256": "cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8",
+    "prompt_bank": "disjoint-anatomy",
+    "repo_root": "/home/afr/SOLIDER-REID-exp392-phase0b-5277254",
+    "runtime_sha256": {
+      "datasets/bases.py": "03d231558f46264e4cff0c251b9b728ab4971232ed6c4bb7324ce1964f139c2c",
+      "datasets/occluded_duke.py": "f0e7b25e75251643430b699d9c9969fae207c0a85c48855cd0404d61a4228f8e",
+      "datasets/pose_targets.py": "42f6e35eff2ad572445143cb3ecc5b6a22d856facc4453b989411300dec22624"
+    },
+    "sample_manifest_sha256": "b03ce2ad477f4e747f1fd91c7be42e9653f4913c8e6b2f23e672eb760da7e86d",
+    "samples": 128,
+    "seed": 20260718,
+    "source_commit": "5277254bae1f9d18f1368ad4202aca7c9d223cc8",
+    "torch_version": "1.13.1",
+    "workers": 0
+  },
+  "formal_training_authorized": false,
+  "gates": {
+    "all_class_raw_margin_lower_gt_0": false,
+    "all_class_raw_margin_point_gt_0": false,
+    "all_class_top1_lower_gt_020": false,
+    "all_class_top1_point_gt_020": false,
+    "coverage_exact": true,
+    "every_class_has_samples": true,
+    "finite": true,
+    "macro_top1_lower_ge_035": true,
+    "overlap_exact_zero": true,
+    "overlap_median_lt_010": true,
+    "overlap_p95_lt_025": true,
+    "prompt_macro_point_ge_035": true
+  },
+  "mask_overlap": {
+    "count": 1276,
+    "max": 0.0,
+    "median": 0.0,
+    "p95": 0.0
+  },
+  "ontology": {
+    "crop_context_fraction": 0.15,
+    "crop_path": "tight bbox -> aspect-preserving bicubic -> mean letterbox",
+    "region_joints": [
+      [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      [
+        5,
+        6,
+        11,
+        12
+      ],
+      [
+        7,
+        8,
+        9,
+        10
+      ],
+      [
+        13,
+        14
+      ],
+      [
+        15,
+        16
+      ]
+    ],
+    "region_segments": [
+      [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      [
+        [
+          5,
+          6
+        ],
+        [
+          5,
+          11
+        ],
+        [
+          6,
+          12
+        ],
+        [
+          11,
+          12
+        ]
+      ],
+      [
+        [
+          5,
+          7
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          6,
+          8
+        ],
+        [
+          8,
+          10
+        ]
+      ],
+      [
+        [
+          11,
+          13
+        ],
+        [
+          12,
+          14
+        ]
+      ],
+      [
+        [
+          13,
+          15
+        ],
+        [
+          14,
+          16
+        ]
+      ]
+    ],
+    "regions": [
+      "head_face",
+      "central_torso",
+      "arms_hands",
+      "upper_legs_thighs",
+      "lower_legs_feet"
+    ],
+    "renderer": "raw Gaussian/tube supports, unique joint owners, trimmed limb segments, amplitude-preserving hard-owner partition",
+    "segment_interior_fraction": 0.15,
+    "static_contract": {
+      "checks": {
+        "all_regions_valid": true,
+        "boundary_owner_dominance": true,
+        "empty_mask_exact": true,
+        "empty_valid_exact": true,
+        "finite": true,
+        "flip_mask_max_abs": 8.344650268554688e-07,
+        "flip_valid_exact": true,
+        "joint_owner_count_exact": true,
+        "onehot_joint_region_exact": true,
+        "pairwise_product_max": 0.0,
+        "segment_path_finite": true,
+        "segment_path_nonempty": true,
+        "segment_single_endpoint_zero": true,
+        "sum_region_support_max": 1.0,
+        "trimmed_midpoint_beats_endpoint": true
+      },
+      "gates": {
+        "boundary_owner": true,
+        "bounded_partition": true,
+        "empty": true,
+        "finite": true,
+        "flip": true,
+        "hard_owner_exact": true,
+        "onehot_joint": true,
+        "segment_path": true,
+        "unique_joint_owner": true
+      },
+      "partition_mode": "hard-owner",
+      "segment_interior_fraction": 0.15,
+      "status": "PASS"
+    }
+  },
+  "open_clip_preprocess_contract": {
+    "bicubic_in_repr": true,
+    "manual_geometry_reason": "reuse official interpolation/normalization without independent center crop so RGB and pose mask share one geometry",
+    "mean": [
+      0.48145466,
+      0.4578275,
+      0.40821073
+    ],
+    "std": [
+      0.26862954,
+      0.26130258,
+      0.27577711
+    ]
+  },
+  "open_clip_preprocess_repr": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=None)\n    CenterCrop(size=(224, 224))\n    <function _convert_to_rgb at 0x7f9f14e2b1f0>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+  "phase0b2_i_authorized": false,
+  "prompt_payload": {
+    "prompt_bank": "disjoint-anatomy",
+    "prompts": [
+      "a photo of the head, face, and hair of a person",
+      "the head, face, and hair region of a pedestrian",
+      "a close view of a person's head, face, and hair",
+      "human head, face, and hair",
+      "a photo of the chest, abdomen, waist, and torso of a person",
+      "the chest, abdomen, waist, and torso region of a pedestrian",
+      "a close view of a person's chest, abdomen, waist, and torso",
+      "human chest, abdomen, waist, and torso",
+      "a photo of the upper limbs, arms, elbows, forearms, wrists, and hands of a person",
+      "the upper limbs, arms, elbows, forearms, wrists, and hands region of a pedestrian",
+      "a close view of a person's upper limbs, arms, elbows, forearms, wrists, and hands",
+      "human upper limbs, arms, elbows, forearms, wrists, and hands",
+      "a photo of the thighs between the hips and knees of a person",
+      "the thighs between the hips and knees region of a pedestrian",
+      "a close view of a person's thighs between the hips and knees",
+      "human thighs between the hips and knees",
+      "a photo of the lower legs below the knees, including shins, calves, ankles, and feet of a person",
+      "the lower legs below the knees, including shins, calves, ankles, and feet region of a pedestrian",
+      "a close view of a person's lower legs below the knees, including shins, calves, ankles, and feet",
+      "human lower legs below the knees, including shins, calves, ankles, and feet"
+    ],
+    "region_names": [
+      "head_face",
+      "central_torso",
+      "arms_hands",
+      "upper_legs_thighs",
+      "lower_legs_feet"
+    ],
+    "region_phrases": [
+      "head, face, and hair",
+      "chest, abdomen, waist, and torso",
+      "upper limbs, arms, elbows, forearms, wrists, and hands",
+      "thighs between the hips and knees",
+      "lower legs below the knees, including shins, calves, ankles, and feet"
+    ],
+    "templates": [
+      "a photo of the {} of a person",
+      "the {} region of a pedestrian",
+      "a close view of a person's {}",
+      "human {}"
+    ]
+  },
+  "prompt_sha256": "a2db3121860210f8abc2184eabc8c501f87fd6a98d5b0759e32c92b795d7dbb2",
+  "scope": "smoke",
+  "status": "EXP392_PHASE0B2_O_COMPLETE",
+  "summary": {
+    "macro_top1": {
+      "ci95_high": 0.5583333333333333,
+      "ci95_low": 0.4730188679245283,
+      "images": 128,
+      "mean": 0.5156761006289309,
+      "pids": 4,
+      "repeats": 1000
+    },
+    "per_class": [
+      {
+        "coverage_drop": 0,
+        "coverage_fraction": 0.9921875,
+        "original_valid_images": 127,
+        "raw_cosine_margin": {
+          "ci95_high": 0.03494571687210174,
+          "ci95_low": 0.01929132742782166,
+          "images": 127,
+          "mean": 0.027100941420592176,
+          "pids": 4,
+          "repeats": 1000
+        },
+        "region": "head_face",
+        "top1": {
+          "ci95_high": 1.0,
+          "ci95_low": 0.8615229110512129,
+          "images": 127,
+          "mean": 0.9307614555256065,
+          "pids": 4,
+          "repeats": 1000
+        },
+        "valid_images": 127
+      },
+      {
+        "coverage_drop": 0,
+        "coverage_fraction": 1.0,
+        "original_valid_images": 128,
+        "raw_cosine_margin": {
+          "ci95_high": 0.002536750019148544,
+          "ci95_low": -0.0009172704177243369,
+          "images": 128,
+          "mean": 0.0004313880224864949,
+          "pids": 4,
+          "repeats": 1000
+        },
+        "region": "central_torso",
+        "top1": {
+          "ci95_high": 0.6666666666666667,
+          "ci95_low": 0.4942592592592593,
+          "images": 128,
+          "mean": 0.5637830687830688,
+          "pids": 4,
+          "repeats": 1000
+        },
+        "valid_images": 128
+      },
+      {
+        "coverage_drop": 0,
+        "coverage_fraction": 1.0,
+        "original_valid_images": 128,
+        "raw_cosine_margin": {
+          "ci95_high": -0.02320358629225108,
+          "ci95_low": -0.028521244685958933,
+          "images": 128,
+          "mean": -0.026026393666705755,
+          "pids": 4,
+          "repeats": 1000
+        },
+        "region": "arms_hands",
+        "top1": {
+          "ci95_high": 0.0,
+          "ci95_low": 0.0,
+          "images": 128,
+          "mean": 0.0,
+          "pids": 4,
+          "repeats": 1000
+        },
+        "valid_images": 128
+      },
+      {
+        "coverage_drop": 0,
+        "coverage_fraction": 1.0,
+        "original_valid_images": 128,
+        "raw_cosine_margin": {
+          "ci95_high": -0.0019594567600223754,
+          "ci95_low": -0.006382026821374893,
+          "images": 128,
+          "mean": -0.0037486273976703173,
+          "pids": 4,
+          "repeats": 1000
+        },
+        "region": "upper_legs_thighs",
+        "top1": {
+          "ci95_high": 0.3941798941798942,
+          "ci95_low": 0.19392857142857145,
+          "images": 128,
+          "mean": 0.30173280423280424,
+          "pids": 4,
+          "repeats": 1000
+        },
+        "valid_images": 128
+      },
+      {
+        "coverage_drop": 0,
+        "coverage_fraction": 1.0,
+        "original_valid_images": 128,
+        "raw_cosine_margin": {
+          "ci95_high": 0.017236370415914627,
+          "ci95_low": 0.003941599763929845,
+          "images": 128,
+          "mean": 0.010596650405220252,
+          "pids": 4,
+          "repeats": 1000
+        },
+        "region": "lower_legs_feet",
+        "top1": {
+          "ci95_high": 0.9464285714285714,
+          "ci95_low": 0.6177777777777778,
+          "images": 128,
+          "mean": 0.7821031746031747,
+          "pids": 4,
+          "repeats": 1000
+        },
+        "valid_images": 128
+      }
+    ],
+    "raw_cosine_margin": {
+      "ci95_high": 0.00398124653693176,
+      "ci95_low": -0.000710502066046187,
+      "images": 128,
+      "mean": 0.0016707917567845704,
+      "pids": 4,
+      "repeats": 1000
+    }
+  },
+  "verdict": "B2_P_SMOKE_FAIL"
+}

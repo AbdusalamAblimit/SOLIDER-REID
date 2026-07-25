@@ -1,0 +1,65 @@
+2026-05-24 02:05:53 transreid INFO: Namespace(config_file='configs/market/prcv_best_tiny.yml', dataset_root='data/occluded_reid', dry_run=False, modes='auto', opts=['TEST.WEIGHT', '/home/afr/SOLIDER-REID/log/market1501/prcv_best_tiny/transformer_120.pth'])
+2026-05-24 02:05:53 transreid INFO: Loaded configuration file configs/market/prcv_best_tiny.yml
+2026-05-24 02:05:53 transreid INFO: Using checkpoint: /home/afr/SOLIDER-REID/log/market1501/prcv_best_tiny/transformer_120.pth
+2026-05-24 02:05:53 transreid INFO: Dataset root: data/occluded_reid
+2026-05-24 02:05:53 transreid INFO: Eval modes: ['global', 'part_only', 'equal_concat', 'concat_scaled']
+=> Occluded-ReID loaded
+2026-05-24 02:05:53 transreid.check INFO: Dataset statistics:
+2026-05-24 02:05:53 transreid.check INFO:   ----------------------------------------
+2026-05-24 02:05:53 transreid.check INFO:   subset   | # ids | # images | # cameras
+2026-05-24 02:05:53 transreid.check INFO:   ----------------------------------------
+2026-05-24 02:05:53 transreid.check INFO:   train    |     0 |        0 |         0
+2026-05-24 02:05:53 transreid.check INFO:   query    |   200 |     1000 |         1
+2026-05-24 02:05:53 transreid.check INFO:   gallery  |   200 |     1000 |         1
+2026-05-24 02:05:53 transreid.check INFO:   ----------------------------------------
+  Loaded pose index: data/occluded_reid/pose_data/query/index.json (1000 entries)
+  Loaded pose index: data/occluded_reid/pose_data/gallery/index.json (1000 entries)
+2026-05-24 02:05:53 transreid INFO: Occluded-ReID stats: query=1000 gallery=1000 ids=200
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[PSG+GCN] Skeleton GCN head enabled: 2 layers, hidden=512, test_feat=equal_concat, kp_weight=score
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /home/afr/SOLIDER-REID/log/market1501/prcv_best_tiny/transformer_120.pth
+/home/afr/SOLIDER-REID/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-05-24 02:06:00 transreid.test INFO: [global] Validation Results
+2026-05-24 02:06:00 transreid.test INFO: [global] mAP: 75.3%
+2026-05-24 02:06:00 transreid.test INFO: [global] CMC curve, Rank-1  :77.0%
+2026-05-24 02:06:00 transreid.test INFO: [global] CMC curve, Rank-5  :89.5%
+2026-05-24 02:06:00 transreid.test INFO: [global] CMC curve, Rank-10 :93.2%
+/home/afr/SOLIDER-REID/utils/metrics.py:66: UserWarning: This overload of addmm_ is deprecated:
+	addmm_(Number beta, Number alpha, Tensor mat1, Tensor mat2)
+Consider using one of the following signatures instead:
+	addmm_(Tensor mat1, Tensor mat2, *, Number beta, Number alpha) (Triggered internally at /opt/conda/conda-bld/pytorch_1670525541702/work/torch/csrc/utils/python_arg_parser.cpp:1420.)
+  dist_mat.addmm_(1, -2, qf, gf.t())
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-05-24 02:06:04 transreid.test INFO: [part_only] Validation Results
+2026-05-24 02:06:04 transreid.test INFO: [part_only] mAP: 78.0%
+2026-05-24 02:06:04 transreid.test INFO: [part_only] CMC curve, Rank-1  :81.4%
+2026-05-24 02:06:04 transreid.test INFO: [part_only] CMC curve, Rank-5  :91.2%
+2026-05-24 02:06:04 transreid.test INFO: [part_only] CMC curve, Rank-10 :94.6%
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-05-24 02:06:09 transreid.test INFO: [equal_concat] Validation Results
+2026-05-24 02:06:09 transreid.test INFO: [equal_concat] mAP: 77.0%
+2026-05-24 02:06:09 transreid.test INFO: [equal_concat] CMC curve, Rank-1  :79.7%
+2026-05-24 02:06:09 transreid.test INFO: [equal_concat] CMC curve, Rank-5  :90.3%
+2026-05-24 02:06:09 transreid.test INFO: [equal_concat] CMC curve, Rank-10 :94.1%
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-05-24 02:06:13 transreid.test INFO: [concat_scaled] Validation Results
+2026-05-24 02:06:13 transreid.test INFO: [concat_scaled] mAP: 75.9%
+2026-05-24 02:06:13 transreid.test INFO: [concat_scaled] CMC curve, Rank-1  :78.1%
+2026-05-24 02:06:13 transreid.test INFO: [concat_scaled] CMC curve, Rank-5  :89.4%
+2026-05-24 02:06:13 transreid.test INFO: [concat_scaled] CMC curve, Rank-10 :93.8%
+2026-05-24 02:06:13 transreid INFO: === Summary ===
+2026-05-24 02:06:13 transreid INFO: [global] mAP=75.3% R1=77.0% R5=89.5% R10=93.2%
+2026-05-24 02:06:13 transreid INFO: [part_only] mAP=78.0% R1=81.4% R5=91.2% R10=94.6%
+2026-05-24 02:06:13 transreid INFO: [equal_concat] mAP=77.0% R1=79.7% R5=90.3% R10=94.1%
+2026-05-24 02:06:13 transreid INFO: [concat_scaled] mAP=75.9% R1=78.1% R5=89.4% R10=93.8%

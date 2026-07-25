@@ -1,0 +1,29 @@
+/home/afr/SOLIDER-REID-exp374-a5e9f05/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/query/index.json (2210 entries)
+  Loaded pose index: data/occluded_duke/pose_data/gallery/index.json (17661 entries)
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+Traceback (most recent call last):
+  File "/home/afr/SOLIDER-REID-exp374-a5e9f05/experiments/exp374_psg_fuel_gate/audit_gate_a.py", line 4209, in <module>
+    main()
+  File "/home/afr/SOLIDER-REID-exp374-a5e9f05/experiments/exp374_psg_fuel_gate/audit_gate_a.py", line 4198, in main
+    run_phase(args)
+  File "/home/afr/SOLIDER-REID-exp374-a5e9f05/experiments/exp374_psg_fuel_gate/audit_gate_a.py", line 3741, in run_phase
+    model = make_model(
+  File "/home/afr/SOLIDER-REID-exp374-a5e9f05/model/make_model.py", line 469, in make_model
+    model = PoseBackboneModel(num_class, camera_num, view_num, cfg, __factory_T_type, semantic_weight)
+  File "/home/afr/SOLIDER-REID-exp374-a5e9f05/model/pose_backbone_model.py", line 43, in __init__
+    super().__init__(num_classes, camera_num, view_num, cfg, factory, semantic_weight)
+  File "/home/afr/SOLIDER-REID-exp374-a5e9f05/model/make_model.py", line 208, in __init__
+    self.base.init_weights(model_path)
+  File "/home/afr/SOLIDER-REID-exp374-a5e9f05/model/backbones/swin_transformer.py", line 1337, in init_weights
+    ckpt = torch.load(pretrained,map_location='cpu', weights_only=False)
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torch/serialization.py", line 771, in load
+    with _open_file_like(f, 'rb') as opened_file:
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torch/serialization.py", line 270, in _open_file_like
+    return _open_file(name_or_buffer, mode)
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torch/serialization.py", line 251, in __init__
+    super(_open_file, self).__init__(open(name, mode))
+FileNotFoundError: [Errno 2] No such file or directory: 'pretrained/swin_tiny.pth'

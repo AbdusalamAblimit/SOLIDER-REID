@@ -1,0 +1,1040 @@
+2026-07-15 17:25:55 transreid INFO: Saving model in the path :./log/occluded_duke/exp377_p0_pose_ssm_s1234
+2026-07-15 17:25:55 transreid INFO: Loaded configuration file configs/occluded_duke/exp377_p0_pose_ssm.yml
+2026-07-15 17:25:55 transreid INFO: Running with config:
+DATALOADER:
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+  REMOVE_TAIL: 0
+  SAMPLER: softmax_triplet
+DATASETS:
+  NAMES: occluded_duke
+  ROOT_DIR: data
+  ROOT_TRAIN_DIR: ../data
+  ROOT_VAL_DIR: ../data
+INPUT:
+  PADDING: 10
+  PIXEL_MEAN: [0.5, 0.5, 0.5]
+  PIXEL_STD: [0.5, 0.5, 0.5]
+  PROB: 0.5
+  RE_PROB: 0.5
+  SIZE_TEST: [384, 128]
+  SIZE_TRAIN: [384, 128]
+MODEL:
+  ATT_DROP_RATE: 0.0
+  COS_LAYER: False
+  DEVICE: cuda
+  DEVICE_ID: 0
+  DEVIDE_LENGTH: 4
+  DIST_TRAIN: False
+  DROPOUT_RATE: 0.0
+  DROP_OUT: 0.0
+  DROP_PATH: 0.1
+  FEAT_DIM: 512
+  GEM_POOLING: False
+  GLOBAL_LOSS_SCALE: 1.0
+  ID_LOSS_TYPE: softmax
+  ID_LOSS_WEIGHT: 1.0
+  IF_LABELSMOOTH: off
+  IF_WITH_CENTER: no
+  JPM: False
+  LAST_STRIDE: 1
+  METRIC_LOSS_TYPE: triplet
+  NAME: transformer
+  NECK: bnneck
+  NO_MARGIN: True
+  POSE_ADDITIVE_ADAPTER: False
+  POSE_BACKBONE_PSG: True
+  POSE_BA_PKC: False
+  POSE_BA_PKC_WEIGHT: 0.1
+  POSE_BT_PKD: False
+  POSE_BT_PKD_DECAY_EPOCH: 0
+  POSE_BT_PKD_WEIGHT: 0.01
+  POSE_CHANNEL_SHUFFLE: False
+  POSE_CLIP_ID_ARCH: ViT-L-14
+  POSE_CLIP_ID_NOPARAM_POOL: False
+  POSE_CLIP_ID_OCC_REPEL: False
+  POSE_CLIP_ID_OCC_REPEL_W: 0.5
+  POSE_CLIP_ID_PART_GUIDED: False
+  POSE_CLIP_ID_POSE_GUIDED: False
+  POSE_CLIP_ID_POSE_PROMPT: False
+  POSE_CLIP_ID_POSE_TEMP: 1.0
+  POSE_CLIP_ID_PRETRAINED: openai
+  POSE_CLIP_ID_PROMPT: False
+  POSE_CLIP_ID_TEMP: 0.07
+  POSE_CLIP_ID_WEIGHT: 1.0
+  POSE_DATA_DIR: data/occluded_duke
+  POSE_DEFORMABLE_K: 4
+  POSE_DEFORMABLE_SAMPLE: False
+  POSE_DROPOUT_P: 0.0
+  POSE_ENABLED: True
+  POSE_EVIDENTIAL: False
+  POSE_EVIDENTIAL_ANNEAL: 0.6
+  POSE_EVIDENTIAL_KL_REG: 0.1
+  POSE_FSDC: False
+  POSE_FSDC_HEADS: 8
+  POSE_FSDC_LAYERS: 2
+  POSE_FSDC_MASK_RATIO: 0.3
+  POSE_FSDC_NOISE_STD: 0.1
+  POSE_FSDC_WEIGHT: 0.5
+  POSE_GCN_HIDDEN: 256
+  POSE_GCN_LAYERS: 2
+  POSE_GCN_PER_PART: False
+  POSE_HEATMAP_NORM: spatial_softmax
+  POSE_HEATMAP_SIZE: [96, 32]
+  POSE_HYPER_LORA: False
+  POSE_HYPER_LORA_BASES: 4
+  POSE_HYPER_LORA_FACTORIZATION: basis
+  POSE_HYPER_LORA_HIDDEN: 32
+  POSE_HYPER_LORA_POSE_SOURCE: input
+  POSE_HYPER_LORA_RANK: 4
+  POSE_HYPER_LORA_RES_SCALE_INIT: 0.001
+  POSE_HYPER_LORA_STAGES: [2, 3]
+  POSE_KEYPOINT_POOL_ONLY: False
+  POSE_KP_TRIPLET: False
+  POSE_KP_TRIPLET_WEIGHT: 1.0
+  POSE_KP_WEIGHT_MODE: score
+  POSE_LGPA: False
+  POSE_LGPA_ASSIGN_WEIGHT: 0.5
+  POSE_LGPA_CLIP_DIM: 512
+  POSE_LGPA_DETACH: False
+  POSE_LGPA_FIXED_BANDS: False
+  POSE_LGPA_NO_POSE: False
+  POSE_LGPA_NUM_HEADS: 8
+  POSE_LGPA_POSE_TEMP: 1.0
+  POSE_LGPA_QUERY_MODE: clip_frozen
+  POSE_LGPA_QUERY_SEED: 42
+  POSE_LGPA_RANDOM_TEXT: False
+  POSE_LOWER_BODY_OCC: False
+  POSE_LOWER_BODY_OCC_MODE: lower
+  POSE_LOWER_BODY_OCC_PROB: 0.5
+  POSE_LOWER_BODY_OCC_RATIO: 0.5
+  POSE_LPCS: False
+  POSE_LPCS_CONF_WEIGHT: 0.25
+  POSE_LPCS_CONTEXT_MODE: none
+  POSE_LPCS_DELTA_SCALE: 0.5
+  POSE_LPCS_HEAD_MODE: residual
+  POSE_LPCS_HIDDEN: 32
+  POSE_LPCS_PAIR_MODE: all
+  POSE_LPCS_PAIR_TOP_RATIO: 1.0
+  POSE_LPCS_RANK_MODE: all
+  POSE_LPCS_RANK_TAU: 8.0
+  POSE_LPCS_RANK_TOP_RATIO: 1.0
+  POSE_LPCS_ST_LOW_THR: 0.3
+  POSE_LPCS_ST_MIN_COUNT: 1
+  POSE_LPCS_ST_MOM: 0.9
+  POSE_LPCS_ST_UPDATE_STOP_EPOCH: -1
+  POSE_LPCS_ST_UPDATE_THR: 0.7
+  POSE_LPCS_WARMUP: 20
+  POSE_LPCS_WEIGHT: 0.5
+  POSE_LTCS: False
+  POSE_LTCS_HIDDEN: 32
+  POSE_LTCS_ST_LOW_THR: 0.3
+  POSE_LTCS_ST_MIN_COUNT: 1
+  POSE_LTCS_ST_MOM: 0.9
+  POSE_LTCS_ST_UPDATE_STOP_EPOCH: -1
+  POSE_LTCS_ST_UPDATE_THR: 0.7
+  POSE_LTCS_WARMUP: 20
+  POSE_LTCS_WEIGHT: 0.5
+  POSE_MAXSIM_TRIPLET: False
+  POSE_MAXSIM_TRIPLET_ADDITIVE: False
+  POSE_MAXSIM_TRIPLET_TEMP: 0.05
+  POSE_MAXSIM_TRIPLET_WEIGHT: 0.25
+  POSE_MST: False
+  POSE_MST_MARGIN: 0.3
+  POSE_MST_VIS_THR: 0.3
+  POSE_MST_WEIGHT: 0.5
+  POSE_MULTI_SCALE_KP: False
+  POSE_MULTI_SCALE_STAGES: [2, 3]
+  POSE_NORMALIZE: False
+  POSE_NORMALIZE_HIDDEN: 256
+  POSE_OA_RD: False
+  POSE_OA_RD_TEMP: 0.1
+  POSE_OA_RD_WEIGHT: 1.0
+  POSE_OA_SD: False
+  POSE_OA_SD_EMA_DECAY: 0.999
+  POSE_OA_SD_GLOBAL_ONLY: False
+  POSE_OA_SD_WEIGHT: 1.0
+  POSE_OERL: False
+  POSE_OERL_OCC_RATIO: 0.5
+  POSE_OERL_WEIGHT: 1.0
+  POSE_PAA_ADAPTIVE_GATE: False
+  POSE_PAA_BOTTLENECK: 32
+  POSE_PAA_ROUTED: False
+  POSE_PACI: False
+  POSE_PACI_MARGIN: 0.3
+  POSE_PACI_MOMENTUM: 0.9
+  POSE_PACI_WARMUP: 5
+  POSE_PACI_WEIGHT: 0.5
+  POSE_PARALLEL_AUG: False
+  POSE_PART_GRAD_SCALE: 0.0
+  POSE_PART_STAGE: -1
+  POSE_PART_TRI_WEIGHT: 1.0
+  POSE_PART_WEIGHT: 1.0
+  POSE_PATCH_EMBED: False
+  POSE_PATCH_EMBED_KS: 1
+  POSE_PBSR: False
+  POSE_PBSR_COUPLED_WRITE: True
+  POSE_PBSR_DIM: 256
+  POSE_PBSR_NUM_HEADS: 4
+  POSE_PBSR_NUM_SLOTS: 6
+  POSE_PBSR_ROUTE_WEIGHT: 0.5
+  POSE_PBSR_SLOT_MIXER: True
+  POSE_PBSR_SUPERVISION: correct
+  POSE_PBSR_WRITEBACK: True
+  POSE_PCMSC: False
+  POSE_PCMSC_RANDOM_MASK: False
+  POSE_PCMSC_W: 1.0
+  POSE_PFM_ENABLED: False
+  POSE_PFM_HIDDEN: 64
+  POSE_PGPD: False
+  POSE_PGPD_RANDOM_TEACHER: False
+  POSE_PGPD_TAU: 0.1
+  POSE_PGPD_W: 0.5
+  POSE_PKC: False
+  POSE_PKC_TEMP: 0.07
+  POSE_PKC_VIS_THR: 0.3
+  POSE_PKC_WEIGHT: 0.5
+  POSE_PPA: False
+  POSE_PPA_ASSIGN_WEIGHT: 0.5
+  POSE_PPA_GILT: False
+  POSE_PPA_NUM_PARTS: 5
+  POSE_PROMPT: False
+  POSE_PROMPT_DROP: 0.0
+  POSE_PROMPT_NUM_PARTS: 18
+  POSE_PRSM: False
+  POSE_PRSM_BIDIRECTIONAL: True
+  POSE_PRSM_NUM_PARTS: 6
+  POSE_PRSM_POSE_SOURCE: input
+  POSE_PRSM_RES_SCALE_INIT: 0.001
+  POSE_PRSM_RETENTION_INIT: 0.95
+  POSE_PRSM_ROUTING: parts
+  POSE_PRSM_STATE_DIM: 128
+  POSE_PSG_PART: False
+  POSE_PSG_SPATIAL: False
+  POSE_PSG_STAGES: []
+  POSE_ROA: False
+  POSE_ROA_PATH: data/VOCdevkit/VOC2012
+  POSE_ROA_POSE_AWARE: False
+  POSE_ROA_PROB: 0.5
+  POSE_SELECTIVE_SSM: True
+  POSE_SELECTIVE_SSM_BIDIRECTIONAL: True
+  POSE_SELECTIVE_SSM_INNER_DIM: 128
+  POSE_SELECTIVE_SSM_POSE_GAIN_INIT: 0.1
+  POSE_SELECTIVE_SSM_POSE_HIDDEN: 32
+  POSE_SELECTIVE_SSM_POSE_SOURCE: input
+  POSE_SELECTIVE_SSM_RES_SCALE_INIT: 0.01
+  POSE_SELECTIVE_SSM_SCAN: serpentine
+  POSE_SELECTIVE_SSM_STATE_DIM: 16
+  POSE_SHUFFLE: False
+  POSE_SKELETON_GCN: False
+  POSE_SPLADE: False
+  POSE_SPLADE_DIM: 2048
+  POSE_SPLADE_REG: 0.01
+  POSE_STM: False
+  POSE_STM_NUM_SWAP: 2
+  POSE_STM_PROB: 0.5
+  POSE_STM_WEIGHT: 0.5
+  POSE_STRUCTURAL_ROUTING: False
+  POSE_STR_NUM_HEADS: 8
+  POSE_STR_NUM_LAYERS: 2
+  POSE_STR_NUM_PARTS: 6
+  POSE_STR_PART_DROP: 0.0
+  POSE_STR_PER_TOKEN: False
+  POSE_STR_SELF_ATTN: False
+  POSE_STR_SUPCON: False
+  POSE_STR_SUPCON_ADDITIVE: False
+  POSE_STR_SUPCON_GLOBAL: False
+  POSE_STR_SUPCON_TEMP: 0.07
+  POSE_STR_SUPCON_VIS_WEIGHT: False
+  POSE_STR_SUPCON_WEIGHT: 0.5
+  POSE_TEMPERATURE: 1.0
+  POSE_TEST_FEAT: global
+  POSE_THRESHOLD: 0.3
+  POSE_UPPER_BODY_OCC: False
+  POSE_UPPER_BODY_OCC_PROB: 0.3
+  POSE_USE_TARGET_HEATMAP: True
+  POSE_VCNORM: False
+  POSE_VCNORM_GAIN_SCALE: 1.0
+  POSE_VCNORM_HIDDEN: 64
+  POSE_VCNORM_MODULE: True
+  POSE_VCNORM_VIS_THR: 0.3
+  POSE_VCNORM_WARMUP: 20
+  POSE_VCNORM_WEIGHT: 0.5
+  POSE_VCSR: False
+  POSE_VCSR_ASSIGN_WEIGHT: 0.5
+  POSE_VCSR_VIS_THR: 0.3
+  PRETRAIN_CHOICE: self
+  PRETRAIN_HW_RATIO: 2
+  PRETRAIN_PATH: pretrained/swin_tiny.pth
+  REDUCE_FEAT_DIM: False
+  RE_ARRANGE: True
+  SEMANTIC_WEIGHT: 0.2
+  SHIFT_NUM: 5
+  SHUFFLE_GROUP: 2
+  SIE_CAMERA: False
+  SIE_COE: 3.0
+  SIE_VIEW: False
+  STEM_CONV: False
+  STRIDE_SIZE: [16, 16]
+  TRANSFORMER_TYPE: swin_tiny_patch4_window7_224
+  TRIPLET_LOSS_WEIGHT: 1.0
+  WITH_CP: False
+OUTPUT_DIR: ./log/occluded_duke/exp377_p0_pose_ssm_s1234
+SOLVER:
+  AMP_INIT_SCALE: 1024.0
+  BASE_LR: 0.0008
+  BIAS_LR_FACTOR: 2
+  CENTER_LOSS_WEIGHT: 0.0005
+  CENTER_LR: 0.5
+  CHECKPOINT_PERIOD: 20
+  COSINE_MARGIN: 0.5
+  COSINE_SCALE: 30
+  EVAL_PERIOD: 10
+  FREEZE_BACKBONE_EPOCHS: 0
+  GAMMA: 0.1
+  IMS_PER_BATCH: 64
+  LARGE_FC_LR: False
+  LOG_PERIOD: 50
+  MARGIN: 0.3
+  MAX_EPOCHS: 120
+  MOMENTUM: 0.9
+  OPTIMIZER_NAME: SGD
+  SEED: 1234
+  STEPS: (40, 70)
+  TRP_L2: False
+  WARMUP_EPOCHS: 20
+  WARMUP_FACTOR: 0.01
+  WARMUP_METHOD: cosine
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0.0001
+TEST:
+  CVK_GLOBAL_WEIGHT: 1.0
+  CVK_KP_WEIGHT: 1.0
+  DIST_MAT: dist_mat.npy
+  EVAL: True
+  FEAT_NORM: yes
+  FLIP_TEST: True
+  IMS_PER_BATCH: 64
+  NECK_FEAT: before
+  NFC: False
+  NFC_K1: 2
+  NFC_K2: 2
+  POWER_NORM: 0.0
+  RE_RANKING: False
+  WEIGHT: 
+/root/solider-venv/lib/python3.10/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+=> Occluded-DukeMTMC loaded
+2026-07-15 17:25:55 transreid.check INFO: Dataset statistics:
+2026-07-15 17:25:55 transreid.check INFO:   ----------------------------------------
+2026-07-15 17:25:55 transreid.check INFO:   subset   | # ids | # images | # cameras
+2026-07-15 17:25:55 transreid.check INFO:   ----------------------------------------
+2026-07-15 17:25:55 transreid.check INFO:   train    |   702 |    15618 |         8
+2026-07-15 17:25:55 transreid.check INFO:   query    |   519 |     2210 |         8
+2026-07-15 17:25:55 transreid.check INFO:   gallery  |  1110 |    17661 |         8
+2026-07-15 17:25:55 transreid.check INFO:   ----------------------------------------
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+/home/afr/SOLIDER-REID-exp377-52c4ef6/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+unloaded parameters: <All keys matched successfully>
+[POSE] POSE_USE_TARGET_HEATMAP=True: pose modules (PSG/LGPA/VCSR/PPA/STR/FSDC/...) will receive person-0 (target) heatmap instead of max-merged scene heatmap.
+[PoseSelectiveSSM] enabled: inner=128, state=16, source=input, bidirectional=True, scan=serpentine, params=328996
+===========building pose-backbone (PSG) transformer===========
+using soft triplet loss for training
+2026-07-15 17:25:56 transreid INFO: ===========using cosine learning rate=======
+2026-07-15 17:25:56 transreid.train INFO: start training
+2026-07-15 17:25:56 transreid.train INFO: Pose-guided training ENABLED
+2026-07-15 17:26:06 transreid.train INFO: Epoch[1] Iter[50/227] Loss: 16.874, Acc: 0.001, Base Lr: 4.76e-05 | id_global: 6.556 tri_global: 10.318 | PoseSSM alpha=9.995e-03 gain=1.000e-01 dt=1.150e-02[3.865e-03,2.463e-02] dA=9.100e-01 pose(d/B/C)=1.545e-03/1.471e-03/1.561e-03 state=3.068e-02 delta_ratio=4.585e-04
+2026-07-15 17:26:14 transreid.train INFO: Epoch[1] Iter[100/227] Loss: 14.995, Acc: 0.001, Base Lr: 4.76e-05 | id_global: 6.555 tri_global: 8.440 | PoseSSM alpha=9.983e-03 gain=1.000e-01 dt=1.137e-02[3.946e-03,2.388e-02] dA=9.108e-01 pose(d/B/C)=1.567e-03/1.492e-03/1.586e-03 state=3.142e-02 delta_ratio=4.360e-04
+2026-07-15 17:26:21 transreid.train INFO: Epoch[1] Iter[150/227] Loss: 13.833, Acc: 0.002, Base Lr: 4.76e-05 | id_global: 6.554 tri_global: 7.279 | PoseSSM alpha=9.971e-03 gain=1.000e-01 dt=1.136e-02[4.023e-03,2.372e-02] dA=9.108e-01 pose(d/B/C)=1.555e-03/1.470e-03/1.572e-03 state=3.120e-02 delta_ratio=4.523e-04
+2026-07-15 17:26:29 transreid.train INFO: Epoch[1] Iter[200/227] Loss: 13.107, Acc: 0.002, Base Lr: 4.76e-05 | id_global: 6.554 tri_global: 6.554 | PoseSSM alpha=9.957e-03 gain=1.000e-01 dt=1.138e-02[4.008e-03,2.372e-02] dA=9.107e-01 pose(d/B/C)=1.516e-03/1.438e-03/1.527e-03 state=2.932e-02 delta_ratio=4.352e-04
+2026-07-15 17:26:31 transreid.train INFO: Epoch 1 done. Time per epoch: 34.657[s] Speed: 387.8[samples/s] ETA: 1h8m
+2026-07-15 17:26:40 transreid.train INFO: Epoch[2] Iter[50/227] Loss: 10.919, Acc: 0.004, Base Lr: 8.72e-05 | id_global: 6.549 tri_global: 4.370 | PoseSSM alpha=9.948e-03 gain=1.000e-01 dt=1.147e-02[4.000e-03,2.454e-02] dA=9.102e-01 pose(d/B/C)=1.545e-03/1.476e-03/1.552e-03 state=2.833e-02 delta_ratio=4.407e-04
+2026-07-15 17:26:47 transreid.train INFO: Epoch[2] Iter[100/227] Loss: 10.175, Acc: 0.005, Base Lr: 8.72e-05 | id_global: 6.547 tri_global: 3.628 | PoseSSM alpha=9.973e-03 gain=1.000e-01 dt=1.133e-02[4.017e-03,2.355e-02] dA=9.111e-01 pose(d/B/C)=1.589e-03/1.506e-03/1.596e-03 state=3.023e-02 delta_ratio=4.879e-04
+2026-07-15 17:26:55 transreid.train INFO: Epoch[2] Iter[150/227] Loss: 9.764, Acc: 0.008, Base Lr: 8.72e-05 | id_global: 6.544 tri_global: 3.219 | PoseSSM alpha=9.896e-03 gain=1.000e-01 dt=1.136e-02[3.987e-03,2.388e-02] dA=9.109e-01 pose(d/B/C)=1.560e-03/1.491e-03/1.581e-03 state=2.806e-02 delta_ratio=4.899e-04
+2026-07-15 17:27:03 transreid.train INFO: Epoch[2] Iter[200/227] Loss: 9.439, Acc: 0.017, Base Lr: 8.72e-05 | id_global: 6.540 tri_global: 2.899 | PoseSSM alpha=9.873e-03 gain=1.000e-01 dt=1.141e-02[4.005e-03,2.397e-02] dA=9.105e-01 pose(d/B/C)=1.593e-03/1.516e-03/1.605e-03 state=2.740e-02 delta_ratio=4.527e-04
+2026-07-15 17:27:05 transreid.train INFO: Epoch 2 done. Time per epoch: 34.137[s] Speed: 397.5[samples/s] ETA: 1h7m
+2026-07-15 17:27:14 transreid.train INFO: Epoch[3] Iter[50/227] Loss: 8.207, Acc: 0.047, Base Lr: 1.27e-04 | id_global: 6.519 tri_global: 1.687 | PoseSSM alpha=9.861e-03 gain=1.000e-01 dt=1.135e-02[4.015e-03,2.385e-02] dA=9.110e-01 pose(d/B/C)=1.541e-03/1.469e-03/1.559e-03 state=2.710e-02 delta_ratio=4.472e-04
+2026-07-15 17:27:22 transreid.train INFO: Epoch[3] Iter[100/227] Loss: 8.096, Acc: 0.077, Base Lr: 1.27e-04 | id_global: 6.512 tri_global: 1.585 | PoseSSM alpha=9.811e-03 gain=1.000e-01 dt=1.127e-02[4.037e-03,2.361e-02] dA=9.116e-01 pose(d/B/C)=1.574e-03/1.482e-03/1.586e-03 state=2.627e-02 delta_ratio=4.913e-04
+2026-07-15 17:27:29 transreid.train INFO: Epoch[3] Iter[150/227] Loss: 7.970, Acc: 0.099, Base Lr: 1.27e-04 | id_global: 6.502 tri_global: 1.468 | PoseSSM alpha=9.881e-03 gain=1.000e-01 dt=1.128e-02[3.988e-03,2.362e-02] dA=9.114e-01 pose(d/B/C)=1.639e-03/1.561e-03/1.661e-03 state=2.647e-02 delta_ratio=5.096e-04
+2026-07-15 17:27:37 transreid.train INFO: Epoch[3] Iter[200/227] Loss: 7.875, Acc: 0.137, Base Lr: 1.27e-04 | id_global: 6.490 tri_global: 1.385 | PoseSSM alpha=9.827e-03 gain=1.000e-01 dt=1.136e-02[4.086e-03,2.389e-02] dA=9.109e-01 pose(d/B/C)=1.567e-03/1.490e-03/1.591e-03 state=2.782e-02 delta_ratio=4.766e-04
+2026-07-15 17:27:39 transreid.train INFO: Epoch 3 done. Time per epoch: 34.104[s] Speed: 397.8[samples/s] ETA: 1h6m
+2026-07-15 17:27:48 transreid.train INFO: Epoch[4] Iter[50/227] Loss: 7.629, Acc: 0.109, Base Lr: 1.66e-04 | id_global: 6.453 tri_global: 1.176 | PoseSSM alpha=9.887e-03 gain=1.000e-01 dt=1.139e-02[4.021e-03,2.372e-02] dA=9.107e-01 pose(d/B/C)=1.556e-03/1.482e-03/1.574e-03 state=2.543e-02 delta_ratio=4.786e-04
+2026-07-15 17:27:56 transreid.train INFO: Epoch[4] Iter[100/227] Loss: 7.512, Acc: 0.132, Base Lr: 1.66e-04 | id_global: 6.438 tri_global: 1.074 | PoseSSM alpha=9.881e-03 gain=1.000e-01 dt=1.133e-02[3.965e-03,2.416e-02] dA=9.111e-01 pose(d/B/C)=1.547e-03/1.466e-03/1.560e-03 state=2.501e-02 delta_ratio=4.811e-04
+2026-07-15 17:28:04 transreid.train INFO: Epoch[4] Iter[150/227] Loss: 7.464, Acc: 0.155, Base Lr: 1.66e-04 | id_global: 6.423 tri_global: 1.040 | PoseSSM alpha=9.883e-03 gain=9.999e-02 dt=1.129e-02[3.986e-03,2.381e-02] dA=9.114e-01 pose(d/B/C)=1.568e-03/1.490e-03/1.579e-03 state=2.705e-02 delta_ratio=4.867e-04
+2026-07-15 17:28:11 transreid.train INFO: Epoch[4] Iter[200/227] Loss: 7.421, Acc: 0.201, Base Lr: 1.66e-04 | id_global: 6.398 tri_global: 1.023 | PoseSSM alpha=9.894e-03 gain=9.999e-02 dt=1.138e-02[4.038e-03,2.417e-02] dA=9.108e-01 pose(d/B/C)=1.559e-03/1.485e-03/1.583e-03 state=2.615e-02 delta_ratio=4.711e-04
+2026-07-15 17:28:13 transreid.train INFO: Epoch 4 done. Time per epoch: 34.062[s] Speed: 396.5[samples/s] ETA: 1h5m
+2026-07-15 17:28:22 transreid.train INFO: Epoch[5] Iter[50/227] Loss: 7.204, Acc: 0.130, Base Lr: 2.06e-04 | id_global: 6.341 tri_global: 0.862 | PoseSSM alpha=1.009e-02 gain=9.999e-02 dt=1.134e-02[4.017e-03,2.408e-02] dA=9.110e-01 pose(d/B/C)=1.562e-03/1.484e-03/1.577e-03 state=2.804e-02 delta_ratio=5.157e-04
+2026-07-15 17:28:30 transreid.train INFO: Epoch[5] Iter[100/227] Loss: 7.190, Acc: 0.150, Base Lr: 2.06e-04 | id_global: 6.323 tri_global: 0.867 | PoseSSM alpha=1.017e-02 gain=9.999e-02 dt=1.130e-02[4.027e-03,2.404e-02] dA=9.114e-01 pose(d/B/C)=1.594e-03/1.511e-03/1.603e-03 state=2.689e-02 delta_ratio=4.863e-04
+2026-07-15 17:28:38 transreid.train INFO: Epoch[5] Iter[150/227] Loss: 7.146, Acc: 0.175, Base Lr: 2.06e-04 | id_global: 6.297 tri_global: 0.849 | PoseSSM alpha=1.045e-02 gain=9.999e-02 dt=1.143e-02[4.088e-03,2.449e-02] dA=9.104e-01 pose(d/B/C)=1.610e-03/1.525e-03/1.628e-03 state=2.716e-02 delta_ratio=5.175e-04
+2026-07-15 17:28:46 transreid.train INFO: Epoch[5] Iter[200/227] Loss: 7.091, Acc: 0.222, Base Lr: 2.06e-04 | id_global: 6.255 tri_global: 0.836 | PoseSSM alpha=1.093e-02 gain=9.999e-02 dt=1.138e-02[3.976e-03,2.469e-02] dA=9.108e-01 pose(d/B/C)=1.577e-03/1.489e-03/1.594e-03 state=2.653e-02 delta_ratio=5.575e-04
+2026-07-15 17:28:48 transreid.train INFO: Epoch 5 done. Time per epoch: 34.575[s] Speed: 392.4[samples/s] ETA: 1h6m
+2026-07-15 17:28:57 transreid.train INFO: Epoch[6] Iter[50/227] Loss: 6.957, Acc: 0.121, Base Lr: 2.46e-04 | id_global: 6.200 tri_global: 0.758 | PoseSSM alpha=1.159e-02 gain=9.999e-02 dt=1.135e-02[3.929e-03,2.422e-02] dA=9.110e-01 pose(d/B/C)=1.578e-03/1.498e-03/1.583e-03 state=2.863e-02 delta_ratio=5.803e-04
+2026-07-15 17:29:04 transreid.train INFO: Epoch[6] Iter[100/227] Loss: 6.941, Acc: 0.131, Base Lr: 2.46e-04 | id_global: 6.176 tri_global: 0.765 | PoseSSM alpha=1.197e-02 gain=9.999e-02 dt=1.132e-02[3.944e-03,2.422e-02] dA=9.113e-01 pose(d/B/C)=1.550e-03/1.472e-03/1.563e-03 state=3.030e-02 delta_ratio=6.155e-04
+2026-07-15 17:29:12 transreid.train INFO: Epoch[6] Iter[150/227] Loss: 6.899, Acc: 0.163, Base Lr: 2.46e-04 | id_global: 6.132 tri_global: 0.766 | PoseSSM alpha=1.256e-02 gain=9.999e-02 dt=1.140e-02[3.992e-03,2.479e-02] dA=9.107e-01 pose(d/B/C)=1.590e-03/1.511e-03/1.603e-03 state=2.926e-02 delta_ratio=6.501e-04
+2026-07-15 17:29:20 transreid.train INFO: Epoch[6] Iter[200/227] Loss: 6.827, Acc: 0.208, Base Lr: 2.46e-04 | id_global: 6.067 tri_global: 0.760 | PoseSSM alpha=1.339e-02 gain=9.999e-02 dt=1.139e-02[4.003e-03,2.442e-02] dA=9.108e-01 pose(d/B/C)=1.599e-03/1.525e-03/1.616e-03 state=2.800e-02 delta_ratio=6.803e-04
+2026-07-15 17:29:22 transreid.train INFO: Epoch 6 done. Time per epoch: 34.562[s] Speed: 394.4[samples/s] ETA: 1h5m
+2026-07-15 17:29:31 transreid.train INFO: Epoch[7] Iter[50/227] Loss: 6.706, Acc: 0.102, Base Lr: 2.85e-04 | id_global: 6.015 tri_global: 0.691 | PoseSSM alpha=1.464e-02 gain=9.998e-02 dt=1.143e-02[4.055e-03,2.481e-02] dA=9.105e-01 pose(d/B/C)=1.633e-03/1.543e-03/1.642e-03 state=3.140e-02 delta_ratio=8.021e-04
+2026-07-15 17:29:39 transreid.train INFO: Epoch[7] Iter[100/227] Loss: 6.641, Acc: 0.125, Base Lr: 2.85e-04 | id_global: 5.962 tri_global: 0.679 | PoseSSM alpha=1.554e-02 gain=9.998e-02 dt=1.145e-02[3.985e-03,2.480e-02] dA=9.103e-01 pose(d/B/C)=1.589e-03/1.509e-03/1.594e-03 state=2.878e-02 delta_ratio=8.546e-04
+2026-07-15 17:29:47 transreid.train INFO: Epoch[7] Iter[150/227] Loss: 6.579, Acc: 0.154, Base Lr: 2.85e-04 | id_global: 5.908 tri_global: 0.671 | PoseSSM alpha=1.664e-02 gain=9.998e-02 dt=1.135e-02[4.031e-03,2.472e-02] dA=9.111e-01 pose(d/B/C)=1.609e-03/1.523e-03/1.627e-03 state=2.636e-02 delta_ratio=8.659e-04
+2026-07-15 17:29:55 transreid.train INFO: Epoch[7] Iter[200/227] Loss: 6.475, Acc: 0.205, Base Lr: 2.85e-04 | id_global: 5.806 tri_global: 0.669 | PoseSSM alpha=1.801e-02 gain=9.998e-02 dt=1.142e-02[3.942e-03,2.507e-02] dA=9.106e-01 pose(d/B/C)=1.549e-03/1.471e-03/1.560e-03 state=2.824e-02 delta_ratio=9.682e-04
+2026-07-15 17:29:56 transreid.train INFO: Epoch 7 done. Time per epoch: 34.151[s] Speed: 395.4[samples/s] ETA: 1h4m
+2026-07-15 17:30:05 transreid.train INFO: Epoch[8] Iter[50/227] Loss: 6.420, Acc: 0.120, Base Lr: 3.25e-04 | id_global: 5.757 tri_global: 0.664 | PoseSSM alpha=2.017e-02 gain=9.998e-02 dt=1.137e-02[4.006e-03,2.482e-02] dA=9.110e-01 pose(d/B/C)=1.510e-03/1.440e-03/1.534e-03 state=2.832e-02 delta_ratio=1.109e-03
+2026-07-15 17:30:13 transreid.train INFO: Epoch[8] Iter[100/227] Loss: 6.343, Acc: 0.131, Base Lr: 3.25e-04 | id_global: 5.710 tri_global: 0.634 | PoseSSM alpha=2.184e-02 gain=9.998e-02 dt=1.147e-02[4.005e-03,2.476e-02] dA=9.102e-01 pose(d/B/C)=1.572e-03/1.489e-03/1.591e-03 state=3.011e-02 delta_ratio=1.300e-03
+2026-07-15 17:30:21 transreid.train INFO: Epoch[8] Iter[150/227] Loss: 6.287, Acc: 0.164, Base Lr: 3.25e-04 | id_global: 5.646 tri_global: 0.641 | PoseSSM alpha=2.344e-02 gain=9.998e-02 dt=1.131e-02[3.952e-03,2.451e-02] dA=9.114e-01 pose(d/B/C)=1.561e-03/1.487e-03/1.574e-03 state=2.942e-02 delta_ratio=1.316e-03
+2026-07-15 17:30:29 transreid.train INFO: Epoch[8] Iter[200/227] Loss: 6.152, Acc: 0.211, Base Lr: 3.25e-04 | id_global: 5.517 tri_global: 0.635 | PoseSSM alpha=2.581e-02 gain=9.998e-02 dt=1.138e-02[3.975e-03,2.455e-02] dA=9.108e-01 pose(d/B/C)=1.601e-03/1.515e-03/1.615e-03 state=2.908e-02 delta_ratio=1.470e-03
+2026-07-15 17:30:31 transreid.train INFO: Epoch 8 done. Time per epoch: 34.154[s] Speed: 395.4[samples/s] ETA: 1h3m
+2026-07-15 17:30:39 transreid.train INFO: Epoch[9] Iter[50/227] Loss: 6.097, Acc: 0.114, Base Lr: 3.64e-04 | id_global: 5.515 tri_global: 0.582 | PoseSSM alpha=2.917e-02 gain=9.997e-02 dt=1.132e-02[3.989e-03,2.442e-02] dA=9.113e-01 pose(d/B/C)=1.584e-03/1.498e-03/1.595e-03 state=2.893e-02 delta_ratio=1.821e-03
+2026-07-15 17:30:47 transreid.train INFO: Epoch[9] Iter[100/227] Loss: 6.047, Acc: 0.142, Base Lr: 3.64e-04 | id_global: 5.445 tri_global: 0.602 | PoseSSM alpha=3.183e-02 gain=9.997e-02 dt=1.134e-02[3.936e-03,2.481e-02] dA=9.112e-01 pose(d/B/C)=1.534e-03/1.465e-03/1.556e-03 state=3.128e-02 delta_ratio=1.935e-03
+2026-07-15 17:30:55 transreid.train INFO: Epoch[9] Iter[150/227] Loss: 5.940, Acc: 0.174, Base Lr: 3.64e-04 | id_global: 5.345 tri_global: 0.595 | PoseSSM alpha=3.475e-02 gain=9.997e-02 dt=1.129e-02[3.940e-03,2.436e-02] dA=9.115e-01 pose(d/B/C)=1.617e-03/1.534e-03/1.631e-03 state=2.987e-02 delta_ratio=2.221e-03
+2026-07-15 17:31:03 transreid.train INFO: Epoch[9] Iter[200/227] Loss: 5.757, Acc: 0.218, Base Lr: 3.64e-04 | id_global: 5.179 tri_global: 0.578 | PoseSSM alpha=3.879e-02 gain=9.997e-02 dt=1.135e-02[4.039e-03,2.472e-02] dA=9.111e-01 pose(d/B/C)=1.542e-03/1.466e-03/1.552e-03 state=3.045e-02 delta_ratio=2.600e-03
+2026-07-15 17:31:05 transreid.train INFO: Epoch 9 done. Time per epoch: 34.038[s] Speed: 396.7[samples/s] ETA: 1h2m
+2026-07-15 17:31:13 transreid.train INFO: Epoch[10] Iter[50/227] Loss: 5.776, Acc: 0.158, Base Lr: 4.04e-04 | id_global: 5.194 tri_global: 0.582 | PoseSSM alpha=4.372e-02 gain=9.997e-02 dt=1.140e-02[3.954e-03,2.507e-02] dA=9.108e-01 pose(d/B/C)=1.600e-03/1.510e-03/1.613e-03 state=3.371e-02 delta_ratio=3.245e-03
+2026-07-15 17:31:21 transreid.train INFO: Epoch[10] Iter[100/227] Loss: 5.724, Acc: 0.167, Base Lr: 4.04e-04 | id_global: 5.134 tri_global: 0.589 | PoseSSM alpha=4.730e-02 gain=9.997e-02 dt=1.140e-02[3.976e-03,2.488e-02] dA=9.107e-01 pose(d/B/C)=1.537e-03/1.472e-03/1.560e-03 state=3.441e-02 delta_ratio=3.560e-03
+2026-07-15 17:31:29 transreid.train INFO: Epoch[10] Iter[150/227] Loss: 5.608, Acc: 0.196, Base Lr: 4.04e-04 | id_global: 5.036 tri_global: 0.572 | PoseSSM alpha=5.134e-02 gain=9.996e-02 dt=1.146e-02[3.967e-03,2.521e-02] dA=9.103e-01 pose(d/B/C)=1.522e-03/1.442e-03/1.532e-03 state=3.645e-02 delta_ratio=4.363e-03
+2026-07-15 17:31:37 transreid.train INFO: Epoch[10] Iter[200/227] Loss: 5.376, Acc: 0.259, Base Lr: 4.04e-04 | id_global: 4.819 tri_global: 0.557 | PoseSSM alpha=5.545e-02 gain=9.996e-02 dt=1.136e-02[3.994e-03,2.478e-02] dA=9.110e-01 pose(d/B/C)=1.552e-03/1.472e-03/1.572e-03 state=3.630e-02 delta_ratio=4.901e-03
+2026-07-15 17:31:39 transreid.train INFO: Epoch 10 done. Time per epoch: 34.422[s] Speed: 394.2[samples/s] ETA: 1h3m
+2026-07-15 17:31:39 transreid.train INFO: Eval protocol: flip_test=True feat_norm=yes
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+/home/afr/SOLIDER-REID-exp377-52c4ef6/utils/metrics.py:66: UserWarning: This overload of addmm_ is deprecated:
+	addmm_(Number beta, Number alpha, Tensor mat1, Tensor mat2)
+Consider using one of the following signatures instead:
+	addmm_(Tensor mat1, Tensor mat2, *, Number beta, Number alpha) (Triggered internally at ../torch/csrc/utils/python_arg_parser.cpp:1420.)
+  dist_mat.addmm_(1, -2, qf, gf.t())
+2026-07-15 17:32:29 transreid.train INFO: Validation Results - Epoch: 10
+2026-07-15 17:32:29 transreid.train INFO: mAP: 35.4%
+2026-07-15 17:32:29 transreid.train INFO: CMC curve, Rank-1  :45.6%
+2026-07-15 17:32:29 transreid.train INFO: CMC curve, Rank-5  :61.4%
+2026-07-15 17:32:29 transreid.train INFO: CMC curve, Rank-10 :67.0%
+2026-07-15 17:32:38 transreid.train INFO: Epoch[11] Iter[50/227] Loss: 5.391, Acc: 0.170, Base Lr: 4.44e-04 | id_global: 4.856 tri_global: 0.535 | PoseSSM alpha=6.074e-02 gain=9.996e-02 dt=1.136e-02[4.009e-03,2.497e-02] dA=9.111e-01 pose(d/B/C)=1.584e-03/1.503e-03/1.598e-03 state=3.699e-02 delta_ratio=5.891e-03
+2026-07-15 17:32:46 transreid.train INFO: Epoch[11] Iter[100/227] Loss: 5.252, Acc: 0.209, Base Lr: 4.44e-04 | id_global: 4.738 tri_global: 0.513 | PoseSSM alpha=6.442e-02 gain=9.996e-02 dt=1.140e-02[3.978e-03,2.514e-02] dA=9.108e-01 pose(d/B/C)=1.570e-03/1.491e-03/1.579e-03 state=4.052e-02 delta_ratio=5.776e-03
+2026-07-15 17:32:54 transreid.train INFO: Epoch[11] Iter[150/227] Loss: 5.150, Acc: 0.236, Base Lr: 4.44e-04 | id_global: 4.642 tri_global: 0.508 | PoseSSM alpha=6.774e-02 gain=9.996e-02 dt=1.141e-02[3.971e-03,2.514e-02] dA=9.108e-01 pose(d/B/C)=1.525e-03/1.450e-03/1.538e-03 state=4.282e-02 delta_ratio=7.537e-03
+2026-07-15 17:33:02 transreid.train INFO: Epoch[11] Iter[200/227] Loss: 4.933, Acc: 0.289, Base Lr: 4.44e-04 | id_global: 4.438 tri_global: 0.495 | PoseSSM alpha=7.030e-02 gain=9.995e-02 dt=1.142e-02[4.058e-03,2.479e-02] dA=9.106e-01 pose(d/B/C)=1.546e-03/1.470e-03/1.565e-03 state=4.267e-02 delta_ratio=7.531e-03
+2026-07-15 17:33:04 transreid.train INFO: Epoch 11 done. Time per epoch: 34.835[s] Speed: 391.3[samples/s] ETA: 1h3m
+2026-07-15 17:33:13 transreid.train INFO: Epoch[12] Iter[50/227] Loss: 5.084, Acc: 0.228, Base Lr: 4.83e-04 | id_global: 4.522 tri_global: 0.562 | PoseSSM alpha=7.348e-02 gain=9.995e-02 dt=1.156e-02[3.996e-03,2.523e-02] dA=9.096e-01 pose(d/B/C)=1.641e-03/1.540e-03/1.647e-03 state=4.190e-02 delta_ratio=6.974e-03
+2026-07-15 17:33:21 transreid.train INFO: Epoch[12] Iter[100/227] Loss: 4.968, Acc: 0.251, Base Lr: 4.83e-04 | id_global: 4.443 tri_global: 0.524 | PoseSSM alpha=7.637e-02 gain=9.995e-02 dt=1.147e-02[3.951e-03,2.522e-02] dA=9.104e-01 pose(d/B/C)=1.507e-03/1.425e-03/1.518e-03 state=4.210e-02 delta_ratio=8.499e-03
+2026-07-15 17:33:29 transreid.train INFO: Epoch[12] Iter[150/227] Loss: 4.821, Acc: 0.286, Base Lr: 4.83e-04 | id_global: 4.319 tri_global: 0.502 | PoseSSM alpha=7.927e-02 gain=9.995e-02 dt=1.140e-02[3.962e-03,2.477e-02] dA=9.108e-01 pose(d/B/C)=1.688e-03/1.596e-03/1.702e-03 state=4.547e-02 delta_ratio=9.182e-03
+2026-07-15 17:33:37 transreid.train INFO: Epoch[12] Iter[200/227] Loss: 4.558, Acc: 0.345, Base Lr: 4.83e-04 | id_global: 4.080 tri_global: 0.478 | PoseSSM alpha=8.138e-02 gain=9.995e-02 dt=1.142e-02[3.951e-03,2.480e-02] dA=9.107e-01 pose(d/B/C)=1.551e-03/1.479e-03/1.572e-03 state=4.473e-02 delta_ratio=9.839e-03
+2026-07-15 17:33:38 transreid.train INFO: Epoch 12 done. Time per epoch: 34.259[s] Speed: 394.2[samples/s] ETA: 1h1m
+2026-07-15 17:33:47 transreid.train INFO: Epoch[13] Iter[50/227] Loss: 4.686, Acc: 0.272, Base Lr: 5.23e-04 | id_global: 4.190 tri_global: 0.496 | PoseSSM alpha=8.363e-02 gain=9.994e-02 dt=1.147e-02[3.988e-03,2.492e-02] dA=9.103e-01 pose(d/B/C)=1.572e-03/1.498e-03/1.594e-03 state=4.692e-02 delta_ratio=9.736e-03
+2026-07-15 17:33:55 transreid.train INFO: Epoch[13] Iter[100/227] Loss: 4.552, Acc: 0.311, Base Lr: 5.23e-04 | id_global: 4.065 tri_global: 0.487 | PoseSSM alpha=8.618e-02 gain=9.994e-02 dt=1.150e-02[3.953e-03,2.514e-02] dA=9.101e-01 pose(d/B/C)=1.548e-03/1.475e-03/1.562e-03 state=5.059e-02 delta_ratio=1.066e-02
+2026-07-15 17:34:03 transreid.train INFO: Epoch[13] Iter[150/227] Loss: 4.409, Acc: 0.353, Base Lr: 5.23e-04 | id_global: 3.930 tri_global: 0.479 | PoseSSM alpha=8.764e-02 gain=9.994e-02 dt=1.144e-02[3.991e-03,2.485e-02] dA=9.106e-01 pose(d/B/C)=1.633e-03/1.542e-03/1.644e-03 state=4.914e-02 delta_ratio=1.062e-02
+2026-07-15 17:34:11 transreid.train INFO: Epoch[13] Iter[200/227] Loss: 4.212, Acc: 0.410, Base Lr: 5.23e-04 | id_global: 3.729 tri_global: 0.484 | PoseSSM alpha=8.862e-02 gain=9.994e-02 dt=1.148e-02[3.953e-03,2.515e-02] dA=9.103e-01 pose(d/B/C)=1.542e-03/1.464e-03/1.566e-03 state=4.755e-02 delta_ratio=1.010e-02
+2026-07-15 17:34:13 transreid.train INFO: Epoch 13 done. Time per epoch: 34.502[s] Speed: 395.1[samples/s] ETA: 1h1m
+2026-07-15 17:34:22 transreid.train INFO: Epoch[14] Iter[50/227] Loss: 4.378, Acc: 0.336, Base Lr: 5.62e-04 | id_global: 3.882 tri_global: 0.496 | PoseSSM alpha=9.174e-02 gain=9.993e-02 dt=1.166e-02[4.025e-03,2.553e-02] dA=9.090e-01 pose(d/B/C)=1.642e-03/1.559e-03/1.655e-03 state=5.132e-02 delta_ratio=1.195e-02
+2026-07-15 17:34:30 transreid.train INFO: Epoch[14] Iter[100/227] Loss: 4.235, Acc: 0.370, Base Lr: 5.62e-04 | id_global: 3.757 tri_global: 0.478 | PoseSSM alpha=9.272e-02 gain=9.993e-02 dt=1.137e-02[4.017e-03,2.507e-02] dA=9.111e-01 pose(d/B/C)=1.628e-03/1.540e-03/1.647e-03 state=5.035e-02 delta_ratio=1.234e-02
+2026-07-15 17:34:37 transreid.train INFO: Epoch[14] Iter[150/227] Loss: 4.096, Acc: 0.419, Base Lr: 5.62e-04 | id_global: 3.618 tri_global: 0.478 | PoseSSM alpha=9.483e-02 gain=9.993e-02 dt=1.158e-02[3.943e-03,2.530e-02] dA=9.095e-01 pose(d/B/C)=1.607e-03/1.519e-03/1.613e-03 state=5.110e-02 delta_ratio=1.228e-02
+2026-07-15 17:34:45 transreid.train INFO: Epoch[14] Iter[200/227] Loss: 3.836, Acc: 0.487, Base Lr: 5.62e-04 | id_global: 3.383 tri_global: 0.453 | PoseSSM alpha=9.601e-02 gain=9.993e-02 dt=1.151e-02[3.986e-03,2.461e-02] dA=9.100e-01 pose(d/B/C)=1.665e-03/1.579e-03/1.669e-03 state=5.005e-02 delta_ratio=1.197e-02
+2026-07-15 17:34:47 transreid.train INFO: Epoch 14 done. Time per epoch: 34.185[s] Speed: 396.9[samples/s] ETA: 1h0m
+2026-07-15 17:34:56 transreid.train INFO: Epoch[15] Iter[50/227] Loss: 4.029, Acc: 0.396, Base Lr: 6.02e-04 | id_global: 3.556 tri_global: 0.473 | PoseSSM alpha=9.853e-02 gain=9.992e-02 dt=1.148e-02[4.037e-03,2.457e-02] dA=9.102e-01 pose(d/B/C)=1.566e-03/1.490e-03/1.586e-03 state=4.957e-02 delta_ratio=1.317e-02
+2026-07-15 17:35:04 transreid.train INFO: Epoch[15] Iter[100/227] Loss: 3.804, Acc: 0.464, Base Lr: 6.02e-04 | id_global: 3.390 tri_global: 0.413 | PoseSSM alpha=9.993e-02 gain=9.992e-02 dt=1.151e-02[3.974e-03,2.474e-02] dA=9.101e-01 pose(d/B/C)=1.544e-03/1.467e-03/1.555e-03 state=4.969e-02 delta_ratio=1.325e-02
+2026-07-15 17:35:12 transreid.train INFO: Epoch[15] Iter[150/227] Loss: 3.690, Acc: 0.504, Base Lr: 6.02e-04 | id_global: 3.265 tri_global: 0.426 | PoseSSM alpha=1.010e-01 gain=9.992e-02 dt=1.139e-02[3.980e-03,2.475e-02] dA=9.110e-01 pose(d/B/C)=1.643e-03/1.549e-03/1.651e-03 state=5.076e-02 delta_ratio=1.284e-02
+2026-07-15 17:35:20 transreid.train INFO: Epoch[15] Iter[200/227] Loss: 3.478, Acc: 0.559, Base Lr: 6.02e-04 | id_global: 3.050 tri_global: 0.428 | PoseSSM alpha=1.016e-01 gain=9.992e-02 dt=1.144e-02[4.015e-03,2.494e-02] dA=9.105e-01 pose(d/B/C)=1.488e-03/1.423e-03/1.509e-03 state=5.074e-02 delta_ratio=1.367e-02
+2026-07-15 17:35:21 transreid.train INFO: Epoch 15 done. Time per epoch: 34.423[s] Speed: 394.2[samples/s] ETA: 1h0m
+2026-07-15 17:35:30 transreid.train INFO: Epoch[16] Iter[50/227] Loss: 3.538, Acc: 0.497, Base Lr: 6.42e-04 | id_global: 3.145 tri_global: 0.394 | PoseSSM alpha=1.028e-01 gain=9.991e-02 dt=1.154e-02[4.029e-03,2.513e-02] dA=9.099e-01 pose(d/B/C)=1.589e-03/1.505e-03/1.604e-03 state=5.083e-02 delta_ratio=1.412e-02
+2026-07-15 17:35:38 transreid.train INFO: Epoch[16] Iter[100/227] Loss: 3.445, Acc: 0.534, Base Lr: 6.42e-04 | id_global: 3.037 tri_global: 0.408 | PoseSSM alpha=1.032e-01 gain=9.991e-02 dt=1.152e-02[4.064e-03,2.523e-02] dA=9.100e-01 pose(d/B/C)=1.573e-03/1.493e-03/1.594e-03 state=4.958e-02 delta_ratio=1.463e-02
+2026-07-15 17:35:46 transreid.train INFO: Epoch[16] Iter[150/227] Loss: 3.338, Acc: 0.567, Base Lr: 6.42e-04 | id_global: 2.927 tri_global: 0.411 | PoseSSM alpha=1.047e-01 gain=9.991e-02 dt=1.156e-02[4.008e-03,2.536e-02] dA=9.097e-01 pose(d/B/C)=1.535e-03/1.464e-03/1.555e-03 state=4.933e-02 delta_ratio=1.406e-02
+2026-07-15 17:35:54 transreid.train INFO: Epoch[16] Iter[200/227] Loss: 3.119, Acc: 0.624, Base Lr: 6.42e-04 | id_global: 2.712 tri_global: 0.407 | PoseSSM alpha=1.055e-01 gain=9.990e-02 dt=1.154e-02[4.040e-03,2.504e-02] dA=9.099e-01 pose(d/B/C)=1.540e-03/1.464e-03/1.555e-03 state=5.210e-02 delta_ratio=1.481e-02
+2026-07-15 17:35:55 transreid.train INFO: Epoch 16 done. Time per epoch: 33.946[s] Speed: 395.9[samples/s] ETA: 0h58m
+2026-07-15 17:36:04 transreid.train INFO: Epoch[17] Iter[50/227] Loss: 3.168, Acc: 0.565, Base Lr: 6.81e-04 | id_global: 2.831 tri_global: 0.337 | PoseSSM alpha=1.074e-01 gain=9.990e-02 dt=1.151e-02[4.009e-03,2.548e-02] dA=9.102e-01 pose(d/B/C)=1.571e-03/1.498e-03/1.587e-03 state=5.418e-02 delta_ratio=1.510e-02
+2026-07-15 17:36:12 transreid.train INFO: Epoch[17] Iter[100/227] Loss: 3.087, Acc: 0.610, Base Lr: 6.81e-04 | id_global: 2.725 tri_global: 0.362 | PoseSSM alpha=1.086e-01 gain=9.990e-02 dt=1.156e-02[4.037e-03,2.544e-02] dA=9.098e-01 pose(d/B/C)=1.589e-03/1.516e-03/1.600e-03 state=5.314e-02 delta_ratio=1.597e-02
+2026-07-15 17:36:20 transreid.train INFO: Epoch[17] Iter[150/227] Loss: 2.962, Acc: 0.643, Base Lr: 6.81e-04 | id_global: 2.605 tri_global: 0.357 | PoseSSM alpha=1.095e-01 gain=9.990e-02 dt=1.160e-02[4.015e-03,2.542e-02] dA=9.095e-01 pose(d/B/C)=1.515e-03/1.450e-03/1.533e-03 state=5.054e-02 delta_ratio=1.378e-02
+2026-07-15 17:36:28 transreid.train INFO: Epoch[17] Iter[200/227] Loss: 2.764, Acc: 0.688, Base Lr: 6.81e-04 | id_global: 2.405 tri_global: 0.359 | PoseSSM alpha=1.106e-01 gain=9.989e-02 dt=1.159e-02[4.022e-03,2.503e-02] dA=9.095e-01 pose(d/B/C)=1.547e-03/1.468e-03/1.564e-03 state=5.297e-02 delta_ratio=1.560e-02
+2026-07-15 17:36:30 transreid.train INFO: Epoch 17 done. Time per epoch: 34.143[s] Speed: 395.5[samples/s] ETA: 0h58m
+2026-07-15 17:36:38 transreid.train INFO: Epoch[18] Iter[50/227] Loss: 2.967, Acc: 0.618, Base Lr: 7.21e-04 | id_global: 2.626 tri_global: 0.342 | PoseSSM alpha=1.122e-01 gain=9.989e-02 dt=1.161e-02[3.985e-03,2.500e-02] dA=9.093e-01 pose(d/B/C)=1.608e-03/1.530e-03/1.624e-03 state=5.421e-02 delta_ratio=1.658e-02
+2026-07-15 17:36:46 transreid.train INFO: Epoch[18] Iter[100/227] Loss: 2.812, Acc: 0.652, Base Lr: 7.21e-04 | id_global: 2.480 tri_global: 0.332 | PoseSSM alpha=1.134e-01 gain=9.989e-02 dt=1.160e-02[4.051e-03,2.485e-02] dA=9.094e-01 pose(d/B/C)=1.602e-03/1.522e-03/1.624e-03 state=5.530e-02 delta_ratio=1.641e-02
+2026-07-15 17:36:54 transreid.train INFO: Epoch[18] Iter[150/227] Loss: 2.650, Acc: 0.698, Base Lr: 7.21e-04 | id_global: 2.307 tri_global: 0.343 | PoseSSM alpha=1.122e-01 gain=9.988e-02 dt=1.149e-02[4.009e-03,2.469e-02] dA=9.103e-01 pose(d/B/C)=1.591e-03/1.509e-03/1.605e-03 state=5.498e-02 delta_ratio=1.681e-02
+2026-07-15 17:37:02 transreid.train INFO: Epoch[18] Iter[200/227] Loss: 2.466, Acc: 0.736, Base Lr: 7.21e-04 | id_global: 2.129 tri_global: 0.337 | PoseSSM alpha=1.121e-01 gain=9.988e-02 dt=1.165e-02[4.050e-03,2.539e-02] dA=9.092e-01 pose(d/B/C)=1.598e-03/1.507e-03/1.615e-03 state=5.101e-02 delta_ratio=1.484e-02
+2026-07-15 17:37:04 transreid.train INFO: Epoch 18 done. Time per epoch: 34.318[s] Speed: 397.2[samples/s] ETA: 0h58m
+2026-07-15 17:37:13 transreid.train INFO: Epoch[19] Iter[50/227] Loss: 2.689, Acc: 0.673, Base Lr: 7.60e-04 | id_global: 2.322 tri_global: 0.368 | PoseSSM alpha=1.135e-01 gain=9.987e-02 dt=1.164e-02[4.051e-03,2.495e-02] dA=9.092e-01 pose(d/B/C)=1.518e-03/1.437e-03/1.533e-03 state=5.516e-02 delta_ratio=1.691e-02
+2026-07-15 17:37:21 transreid.train INFO: Epoch[19] Iter[100/227] Loss: 2.567, Acc: 0.702, Base Lr: 7.60e-04 | id_global: 2.221 tri_global: 0.347 | PoseSSM alpha=1.155e-01 gain=9.987e-02 dt=1.164e-02[4.122e-03,2.501e-02] dA=9.092e-01 pose(d/B/C)=1.613e-03/1.514e-03/1.621e-03 state=5.025e-02 delta_ratio=1.585e-02
+2026-07-15 17:37:29 transreid.train INFO: Epoch[19] Iter[150/227] Loss: 2.411, Acc: 0.735, Base Lr: 7.60e-04 | id_global: 2.083 tri_global: 0.328 | PoseSSM alpha=1.166e-01 gain=9.987e-02 dt=1.155e-02[4.074e-03,2.498e-02] dA=9.099e-01 pose(d/B/C)=1.576e-03/1.494e-03/1.581e-03 state=5.691e-02 delta_ratio=1.821e-02
+2026-07-15 17:37:36 transreid.train INFO: Epoch[19] Iter[200/227] Loss: 2.227, Acc: 0.774, Base Lr: 7.60e-04 | id_global: 1.901 tri_global: 0.326 | PoseSSM alpha=1.157e-01 gain=9.986e-02 dt=1.157e-02[4.063e-03,2.468e-02] dA=9.096e-01 pose(d/B/C)=1.491e-03/1.418e-03/1.506e-03 state=4.705e-02 delta_ratio=1.566e-02
+2026-07-15 17:37:38 transreid.train INFO: Epoch 19 done. Time per epoch: 34.414[s] Speed: 394.3[samples/s] ETA: 0h57m
+2026-07-15 17:37:47 transreid.train INFO: Epoch[20] Iter[50/227] Loss: 2.348, Acc: 0.716, Base Lr: 7.47e-04 | id_global: 2.044 tri_global: 0.304 | PoseSSM alpha=1.176e-01 gain=9.986e-02 dt=1.162e-02[4.100e-03,2.503e-02] dA=9.093e-01 pose(d/B/C)=1.585e-03/1.499e-03/1.598e-03 state=5.295e-02 delta_ratio=1.547e-02
+2026-07-15 17:37:55 transreid.train INFO: Epoch[20] Iter[100/227] Loss: 2.231, Acc: 0.758, Base Lr: 7.47e-04 | id_global: 1.916 tri_global: 0.315 | PoseSSM alpha=1.190e-01 gain=9.986e-02 dt=1.165e-02[4.046e-03,2.516e-02] dA=9.092e-01 pose(d/B/C)=1.547e-03/1.477e-03/1.558e-03 state=5.848e-02 delta_ratio=1.974e-02
+2026-07-15 17:38:03 transreid.train INFO: Epoch[20] Iter[150/227] Loss: 2.119, Acc: 0.783, Base Lr: 7.47e-04 | id_global: 1.807 tri_global: 0.312 | PoseSSM alpha=1.196e-01 gain=9.985e-02 dt=1.172e-02[4.034e-03,2.567e-02] dA=9.087e-01 pose(d/B/C)=1.553e-03/1.475e-03/1.561e-03 state=5.414e-02 delta_ratio=1.704e-02
+2026-07-15 17:38:11 transreid.train INFO: Epoch[20] Iter[200/227] Loss: 1.972, Acc: 0.810, Base Lr: 7.47e-04 | id_global: 1.666 tri_global: 0.306 | PoseSSM alpha=1.207e-01 gain=9.985e-02 dt=1.167e-02[4.040e-03,2.544e-02] dA=9.091e-01 pose(d/B/C)=1.600e-03/1.519e-03/1.611e-03 state=5.300e-02 delta_ratio=1.671e-02
+2026-07-15 17:38:12 transreid.train INFO: Epoch 20 done. Time per epoch: 33.910[s] Speed: 396.3[samples/s] ETA: 0h56m
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-15 17:39:02 transreid.train INFO: Validation Results - Epoch: 20
+2026-07-15 17:39:02 transreid.train INFO: mAP: 41.1%
+2026-07-15 17:39:02 transreid.train INFO: CMC curve, Rank-1  :50.8%
+2026-07-15 17:39:02 transreid.train INFO: CMC curve, Rank-5  :65.4%
+2026-07-15 17:39:02 transreid.train INFO: CMC curve, Rank-10 :71.5%
+2026-07-15 17:39:11 transreid.train INFO: Epoch[21] Iter[50/227] Loss: 2.188, Acc: 0.753, Base Lr: 7.41e-04 | id_global: 1.856 tri_global: 0.332 | PoseSSM alpha=1.218e-01 gain=9.984e-02 dt=1.169e-02[4.047e-03,2.548e-02] dA=9.089e-01 pose(d/B/C)=1.609e-03/1.533e-03/1.623e-03 state=5.393e-02 delta_ratio=1.756e-02
+2026-07-15 17:39:19 transreid.train INFO: Epoch[21] Iter[100/227] Loss: 2.074, Acc: 0.779, Base Lr: 7.41e-04 | id_global: 1.750 tri_global: 0.324 | PoseSSM alpha=1.228e-01 gain=9.984e-02 dt=1.156e-02[4.015e-03,2.490e-02] dA=9.099e-01 pose(d/B/C)=1.581e-03/1.499e-03/1.597e-03 state=5.805e-02 delta_ratio=2.065e-02
+2026-07-15 17:39:27 transreid.train INFO: Epoch[21] Iter[150/227] Loss: 1.908, Acc: 0.815, Base Lr: 7.41e-04 | id_global: 1.605 tri_global: 0.304 | PoseSSM alpha=1.232e-01 gain=9.984e-02 dt=1.175e-02[4.009e-03,2.542e-02] dA=9.085e-01 pose(d/B/C)=1.568e-03/1.494e-03/1.582e-03 state=5.588e-02 delta_ratio=1.810e-02
+2026-07-15 17:39:35 transreid.train INFO: Epoch[21] Iter[200/227] Loss: 1.762, Acc: 0.841, Base Lr: 7.41e-04 | id_global: 1.463 tri_global: 0.298 | PoseSSM alpha=1.238e-01 gain=9.983e-02 dt=1.163e-02[4.059e-03,2.524e-02] dA=9.094e-01 pose(d/B/C)=1.582e-03/1.502e-03/1.596e-03 state=5.500e-02 delta_ratio=1.920e-02
+2026-07-15 17:39:36 transreid.train INFO: Epoch 21 done. Time per epoch: 34.202[s] Speed: 394.8[samples/s] ETA: 0h56m
+2026-07-15 17:39:45 transreid.train INFO: Epoch[22] Iter[50/227] Loss: 1.913, Acc: 0.809, Base Lr: 7.36e-04 | id_global: 1.576 tri_global: 0.337 | PoseSSM alpha=1.235e-01 gain=9.983e-02 dt=1.162e-02[4.017e-03,2.499e-02] dA=9.094e-01 pose(d/B/C)=1.564e-03/1.487e-03/1.572e-03 state=5.049e-02 delta_ratio=1.743e-02
+2026-07-15 17:39:53 transreid.train INFO: Epoch[22] Iter[100/227] Loss: 1.819, Acc: 0.816, Base Lr: 7.36e-04 | id_global: 1.526 tri_global: 0.293 | PoseSSM alpha=1.241e-01 gain=9.983e-02 dt=1.168e-02[3.944e-03,2.552e-02] dA=9.091e-01 pose(d/B/C)=1.518e-03/1.443e-03/1.531e-03 state=5.743e-02 delta_ratio=1.926e-02
+2026-07-15 17:40:01 transreid.train INFO: Epoch[22] Iter[150/227] Loss: 1.667, Acc: 0.846, Base Lr: 7.36e-04 | id_global: 1.397 tri_global: 0.270 | PoseSSM alpha=1.258e-01 gain=9.982e-02 dt=1.175e-02[4.033e-03,2.531e-02] dA=9.085e-01 pose(d/B/C)=1.582e-03/1.504e-03/1.587e-03 state=5.271e-02 delta_ratio=1.925e-02
+2026-07-15 17:40:09 transreid.train INFO: Epoch[22] Iter[200/227] Loss: 1.551, Acc: 0.864, Base Lr: 7.36e-04 | id_global: 1.281 tri_global: 0.270 | PoseSSM alpha=1.244e-01 gain=9.982e-02 dt=1.170e-02[4.065e-03,2.523e-02] dA=9.089e-01 pose(d/B/C)=1.569e-03/1.491e-03/1.593e-03 state=5.228e-02 delta_ratio=1.768e-02
+2026-07-15 17:40:11 transreid.train INFO: Epoch 22 done. Time per epoch: 34.319[s] Speed: 391.6[samples/s] ETA: 0h56m
+2026-07-15 17:40:20 transreid.train INFO: Epoch[23] Iter[50/227] Loss: 1.651, Acc: 0.839, Base Lr: 7.30e-04 | id_global: 1.391 tri_global: 0.260 | PoseSSM alpha=1.258e-01 gain=9.981e-02 dt=1.161e-02[4.016e-03,2.504e-02] dA=9.095e-01 pose(d/B/C)=1.611e-03/1.518e-03/1.619e-03 state=5.505e-02 delta_ratio=1.936e-02
+2026-07-15 17:40:28 transreid.train INFO: Epoch[23] Iter[100/227] Loss: 1.514, Acc: 0.858, Base Lr: 7.30e-04 | id_global: 1.289 tri_global: 0.225 | PoseSSM alpha=1.266e-01 gain=9.981e-02 dt=1.164e-02[4.044e-03,2.517e-02] dA=9.094e-01 pose(d/B/C)=1.543e-03/1.470e-03/1.556e-03 state=5.641e-02 delta_ratio=1.882e-02
+2026-07-15 17:40:36 transreid.train INFO: Epoch[23] Iter[150/227] Loss: 1.446, Acc: 0.872, Base Lr: 7.30e-04 | id_global: 1.217 tri_global: 0.229 | PoseSSM alpha=1.279e-01 gain=9.981e-02 dt=1.161e-02[4.067e-03,2.486e-02] dA=9.095e-01 pose(d/B/C)=1.534e-03/1.461e-03/1.554e-03 state=5.680e-02 delta_ratio=2.056e-02
+2026-07-15 17:40:44 transreid.train INFO: Epoch[23] Iter[200/227] Loss: 1.374, Acc: 0.887, Base Lr: 7.30e-04 | id_global: 1.131 tri_global: 0.243 | PoseSSM alpha=1.267e-01 gain=9.980e-02 dt=1.171e-02[4.003e-03,2.525e-02] dA=9.088e-01 pose(d/B/C)=1.595e-03/1.501e-03/1.605e-03 state=5.662e-02 delta_ratio=1.975e-02
+2026-07-15 17:40:45 transreid.train INFO: Epoch 23 done. Time per epoch: 34.564[s] Speed: 390.7[samples/s] ETA: 0h55m
+2026-07-15 17:40:54 transreid.train INFO: Epoch[24] Iter[50/227] Loss: 1.430, Acc: 0.863, Base Lr: 7.24e-04 | id_global: 1.223 tri_global: 0.207 | PoseSSM alpha=1.276e-01 gain=9.980e-02 dt=1.161e-02[4.023e-03,2.489e-02] dA=9.095e-01 pose(d/B/C)=1.571e-03/1.486e-03/1.586e-03 state=5.593e-02 delta_ratio=1.992e-02
+2026-07-15 17:41:02 transreid.train INFO: Epoch[24] Iter[100/227] Loss: 1.362, Acc: 0.873, Base Lr: 7.24e-04 | id_global: 1.156 tri_global: 0.206 | PoseSSM alpha=1.288e-01 gain=9.980e-02 dt=1.167e-02[4.044e-03,2.522e-02] dA=9.092e-01 pose(d/B/C)=1.600e-03/1.515e-03/1.612e-03 state=5.473e-02 delta_ratio=2.011e-02
+2026-07-15 17:41:10 transreid.train INFO: Epoch[24] Iter[150/227] Loss: 1.277, Acc: 0.890, Base Lr: 7.24e-04 | id_global: 1.078 tri_global: 0.199 | PoseSSM alpha=1.297e-01 gain=9.979e-02 dt=1.167e-02[4.062e-03,2.538e-02] dA=9.092e-01 pose(d/B/C)=1.519e-03/1.454e-03/1.537e-03 state=5.841e-02 delta_ratio=2.060e-02
+2026-07-15 17:41:18 transreid.train INFO: Epoch[24] Iter[200/227] Loss: 1.163, Acc: 0.906, Base Lr: 7.24e-04 | id_global: 0.972 tri_global: 0.190 | PoseSSM alpha=1.281e-01 gain=9.979e-02 dt=1.163e-02[4.025e-03,2.474e-02] dA=9.094e-01 pose(d/B/C)=1.505e-03/1.434e-03/1.520e-03 state=5.207e-02 delta_ratio=1.766e-02
+2026-07-15 17:41:20 transreid.train INFO: Epoch 24 done. Time per epoch: 34.792[s] Speed: 391.8[samples/s] ETA: 0h55m
+2026-07-15 17:41:29 transreid.train INFO: Epoch[25] Iter[50/227] Loss: 1.230, Acc: 0.891, Base Lr: 7.18e-04 | id_global: 1.056 tri_global: 0.174 | PoseSSM alpha=1.287e-01 gain=9.978e-02 dt=1.168e-02[3.985e-03,2.528e-02] dA=9.091e-01 pose(d/B/C)=1.577e-03/1.498e-03/1.587e-03 state=5.095e-02 delta_ratio=1.832e-02
+2026-07-15 17:41:37 transreid.train INFO: Epoch[25] Iter[100/227] Loss: 1.219, Acc: 0.902, Base Lr: 7.18e-04 | id_global: 1.019 tri_global: 0.200 | PoseSSM alpha=1.307e-01 gain=9.978e-02 dt=1.159e-02[4.061e-03,2.460e-02] dA=9.097e-01 pose(d/B/C)=1.530e-03/1.448e-03/1.539e-03 state=5.846e-02 delta_ratio=1.843e-02
+2026-07-15 17:41:45 transreid.train INFO: Epoch[25] Iter[150/227] Loss: 1.168, Acc: 0.907, Base Lr: 7.18e-04 | id_global: 0.965 tri_global: 0.204 | PoseSSM alpha=1.316e-01 gain=9.978e-02 dt=1.173e-02[3.955e-03,2.528e-02] dA=9.088e-01 pose(d/B/C)=1.517e-03/1.434e-03/1.530e-03 state=5.625e-02 delta_ratio=1.999e-02
+2026-07-15 17:41:53 transreid.train INFO: Epoch[25] Iter[200/227] Loss: 1.084, Acc: 0.917, Base Lr: 7.18e-04 | id_global: 0.888 tri_global: 0.196 | PoseSSM alpha=1.313e-01 gain=9.977e-02 dt=1.175e-02[4.073e-03,2.539e-02] dA=9.086e-01 pose(d/B/C)=1.580e-03/1.499e-03/1.600e-03 state=5.573e-02 delta_ratio=1.796e-02
+2026-07-15 17:41:55 transreid.train INFO: Epoch 25 done. Time per epoch: 34.564[s] Speed: 392.5[samples/s] ETA: 0h54m
+2026-07-15 17:42:03 transreid.train INFO: Epoch[26] Iter[50/227] Loss: 1.132, Acc: 0.901, Base Lr: 7.11e-04 | id_global: 0.961 tri_global: 0.171 | PoseSSM alpha=1.329e-01 gain=9.977e-02 dt=1.173e-02[4.017e-03,2.524e-02] dA=9.088e-01 pose(d/B/C)=1.570e-03/1.488e-03/1.573e-03 state=5.254e-02 delta_ratio=1.959e-02
+2026-07-15 17:42:11 transreid.train INFO: Epoch[26] Iter[100/227] Loss: 1.088, Acc: 0.911, Base Lr: 7.11e-04 | id_global: 0.908 tri_global: 0.180 | PoseSSM alpha=1.334e-01 gain=9.976e-02 dt=1.170e-02[4.027e-03,2.520e-02] dA=9.090e-01 pose(d/B/C)=1.565e-03/1.486e-03/1.585e-03 state=5.522e-02 delta_ratio=2.020e-02
+2026-07-15 17:42:19 transreid.train INFO: Epoch[26] Iter[150/227] Loss: 1.041, Acc: 0.922, Base Lr: 7.11e-04 | id_global: 0.856 tri_global: 0.185 | PoseSSM alpha=1.339e-01 gain=9.976e-02 dt=1.160e-02[3.953e-03,2.474e-02] dA=9.097e-01 pose(d/B/C)=1.628e-03/1.539e-03/1.635e-03 state=5.695e-02 delta_ratio=2.084e-02
+2026-07-15 17:42:27 transreid.train INFO: Epoch[26] Iter[200/227] Loss: 0.963, Acc: 0.932, Base Lr: 7.11e-04 | id_global: 0.782 tri_global: 0.181 | PoseSSM alpha=1.335e-01 gain=9.976e-02 dt=1.174e-02[4.086e-03,2.486e-02] dA=9.086e-01 pose(d/B/C)=1.564e-03/1.485e-03/1.579e-03 state=5.926e-02 delta_ratio=2.066e-02
+2026-07-15 17:42:29 transreid.train INFO: Epoch 26 done. Time per epoch: 34.576[s] Speed: 392.4[samples/s] ETA: 0h54m
+2026-07-15 17:42:38 transreid.train INFO: Epoch[27] Iter[50/227] Loss: 1.066, Acc: 0.911, Base Lr: 7.04e-04 | id_global: 0.892 tri_global: 0.174 | PoseSSM alpha=1.333e-01 gain=9.975e-02 dt=1.172e-02[4.051e-03,2.504e-02] dA=9.088e-01 pose(d/B/C)=1.590e-03/1.502e-03/1.607e-03 state=5.563e-02 delta_ratio=2.048e-02
+2026-07-15 17:42:46 transreid.train INFO: Epoch[27] Iter[100/227] Loss: 0.980, Acc: 0.924, Base Lr: 7.04e-04 | id_global: 0.825 tri_global: 0.155 | PoseSSM alpha=1.346e-01 gain=9.975e-02 dt=1.175e-02[4.063e-03,2.505e-02] dA=9.086e-01 pose(d/B/C)=1.545e-03/1.475e-03/1.556e-03 state=5.042e-02 delta_ratio=1.807e-02
+2026-07-15 17:42:54 transreid.train INFO: Epoch[27] Iter[150/227] Loss: 0.926, Acc: 0.933, Base Lr: 7.04e-04 | id_global: 0.770 tri_global: 0.157 | PoseSSM alpha=1.350e-01 gain=9.975e-02 dt=1.175e-02[4.032e-03,2.496e-02] dA=9.086e-01 pose(d/B/C)=1.553e-03/1.474e-03/1.562e-03 state=5.493e-02 delta_ratio=1.991e-02
+2026-07-15 17:43:02 transreid.train INFO: Epoch[27] Iter[200/227] Loss: 0.872, Acc: 0.939, Base Lr: 7.04e-04 | id_global: 0.712 tri_global: 0.161 | PoseSSM alpha=1.357e-01 gain=9.974e-02 dt=1.174e-02[4.029e-03,2.525e-02] dA=9.087e-01 pose(d/B/C)=1.551e-03/1.471e-03/1.565e-03 state=5.862e-02 delta_ratio=2.107e-02
+2026-07-15 17:43:04 transreid.train INFO: Epoch 27 done. Time per epoch: 34.613[s] Speed: 392.0[samples/s] ETA: 0h53m
+2026-07-15 17:43:13 transreid.train INFO: Epoch[28] Iter[50/227] Loss: 0.883, Acc: 0.933, Base Lr: 6.97e-04 | id_global: 0.764 tri_global: 0.119 | PoseSSM alpha=1.355e-01 gain=9.974e-02 dt=1.167e-02[4.051e-03,2.473e-02] dA=9.091e-01 pose(d/B/C)=1.536e-03/1.459e-03/1.553e-03 state=5.939e-02 delta_ratio=2.387e-02
+2026-07-15 17:43:21 transreid.train INFO: Epoch[28] Iter[100/227] Loss: 0.880, Acc: 0.937, Base Lr: 6.97e-04 | id_global: 0.736 tri_global: 0.144 | PoseSSM alpha=1.361e-01 gain=9.973e-02 dt=1.173e-02[4.106e-03,2.479e-02] dA=9.088e-01 pose(d/B/C)=1.569e-03/1.487e-03/1.581e-03 state=5.810e-02 delta_ratio=2.029e-02
+2026-07-15 17:43:29 transreid.train INFO: Epoch[28] Iter[150/227] Loss: 0.853, Acc: 0.942, Base Lr: 6.97e-04 | id_global: 0.699 tri_global: 0.154 | PoseSSM alpha=1.364e-01 gain=9.973e-02 dt=1.177e-02[4.068e-03,2.525e-02] dA=9.085e-01 pose(d/B/C)=1.598e-03/1.512e-03/1.605e-03 state=6.062e-02 delta_ratio=2.314e-02
+2026-07-15 17:43:36 transreid.train INFO: Epoch[28] Iter[200/227] Loss: 0.792, Acc: 0.947, Base Lr: 6.97e-04 | id_global: 0.642 tri_global: 0.150 | PoseSSM alpha=1.367e-01 gain=9.973e-02 dt=1.180e-02[4.062e-03,2.539e-02] dA=9.083e-01 pose(d/B/C)=1.542e-03/1.458e-03/1.554e-03 state=5.140e-02 delta_ratio=1.909e-02
+2026-07-15 17:43:38 transreid.train INFO: Epoch 28 done. Time per epoch: 34.344[s] Speed: 393.2[samples/s] ETA: 0h52m
+2026-07-15 17:43:47 transreid.train INFO: Epoch[29] Iter[50/227] Loss: 0.873, Acc: 0.940, Base Lr: 6.90e-04 | id_global: 0.719 tri_global: 0.154 | PoseSSM alpha=1.366e-01 gain=9.972e-02 dt=1.174e-02[4.013e-03,2.509e-02] dA=9.088e-01 pose(d/B/C)=1.538e-03/1.463e-03/1.551e-03 state=5.341e-02 delta_ratio=2.135e-02
+2026-07-15 17:43:55 transreid.train INFO: Epoch[29] Iter[100/227] Loss: 0.830, Acc: 0.946, Base Lr: 6.90e-04 | id_global: 0.672 tri_global: 0.158 | PoseSSM alpha=1.374e-01 gain=9.972e-02 dt=1.185e-02[4.044e-03,2.558e-02] dA=9.080e-01 pose(d/B/C)=1.583e-03/1.505e-03/1.599e-03 state=5.927e-02 delta_ratio=2.089e-02
+2026-07-15 17:44:03 transreid.train INFO: Epoch[29] Iter[150/227] Loss: 0.791, Acc: 0.949, Base Lr: 6.90e-04 | id_global: 0.637 tri_global: 0.154 | PoseSSM alpha=1.373e-01 gain=9.972e-02 dt=1.164e-02[4.069e-03,2.444e-02] dA=9.094e-01 pose(d/B/C)=1.507e-03/1.441e-03/1.529e-03 state=6.147e-02 delta_ratio=2.405e-02
+2026-07-15 17:44:11 transreid.train INFO: Epoch[29] Iter[200/227] Loss: 0.723, Acc: 0.955, Base Lr: 6.90e-04 | id_global: 0.582 tri_global: 0.142 | PoseSSM alpha=1.377e-01 gain=9.971e-02 dt=1.172e-02[4.031e-03,2.504e-02] dA=9.089e-01 pose(d/B/C)=1.560e-03/1.479e-03/1.576e-03 state=6.020e-02 delta_ratio=2.116e-02
+2026-07-15 17:44:13 transreid.train INFO: Epoch 29 done. Time per epoch: 34.505[s] Speed: 393.2[samples/s] ETA: 0h52m
+2026-07-15 17:44:22 transreid.train INFO: Epoch[30] Iter[50/227] Loss: 0.796, Acc: 0.942, Base Lr: 6.83e-04 | id_global: 0.671 tri_global: 0.125 | PoseSSM alpha=1.380e-01 gain=9.971e-02 dt=1.162e-02[4.022e-03,2.457e-02] dA=9.096e-01 pose(d/B/C)=1.480e-03/1.416e-03/1.496e-03 state=5.703e-02 delta_ratio=2.118e-02
+2026-07-15 17:44:29 transreid.train INFO: Epoch[30] Iter[100/227] Loss: 0.728, Acc: 0.948, Base Lr: 6.83e-04 | id_global: 0.612 tri_global: 0.116 | PoseSSM alpha=1.389e-01 gain=9.970e-02 dt=1.178e-02[4.041e-03,2.512e-02] dA=9.085e-01 pose(d/B/C)=1.590e-03/1.513e-03/1.610e-03 state=5.893e-02 delta_ratio=2.030e-02
+2026-07-15 17:44:37 transreid.train INFO: Epoch[30] Iter[150/227] Loss: 0.681, Acc: 0.954, Base Lr: 6.83e-04 | id_global: 0.569 tri_global: 0.113 | PoseSSM alpha=1.392e-01 gain=9.970e-02 dt=1.177e-02[4.045e-03,2.512e-02] dA=9.086e-01 pose(d/B/C)=1.571e-03/1.482e-03/1.583e-03 state=5.699e-02 delta_ratio=1.986e-02
+2026-07-15 17:44:45 transreid.train INFO: Epoch[30] Iter[200/227] Loss: 0.632, Acc: 0.959, Base Lr: 6.83e-04 | id_global: 0.523 tri_global: 0.109 | PoseSSM alpha=1.399e-01 gain=9.970e-02 dt=1.191e-02[4.025e-03,2.536e-02] dA=9.076e-01 pose(d/B/C)=1.559e-03/1.488e-03/1.580e-03 state=5.317e-02 delta_ratio=1.913e-02
+2026-07-15 17:44:47 transreid.train INFO: Epoch 30 done. Time per epoch: 34.472[s] Speed: 393.6[samples/s] ETA: 0h51m
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-15 17:45:37 transreid.train INFO: Validation Results - Epoch: 30
+2026-07-15 17:45:37 transreid.train INFO: mAP: 49.8%
+2026-07-15 17:45:37 transreid.train INFO: CMC curve, Rank-1  :59.3%
+2026-07-15 17:45:37 transreid.train INFO: CMC curve, Rank-5  :74.0%
+2026-07-15 17:45:37 transreid.train INFO: CMC curve, Rank-10 :79.6%
+2026-07-15 17:45:46 transreid.train INFO: Epoch[31] Iter[50/227] Loss: 0.692, Acc: 0.957, Base Lr: 6.76e-04 | id_global: 0.572 tri_global: 0.120 | PoseSSM alpha=1.413e-01 gain=9.969e-02 dt=1.177e-02[4.061e-03,2.486e-02] dA=9.085e-01 pose(d/B/C)=1.560e-03/1.477e-03/1.570e-03 state=5.974e-02 delta_ratio=2.248e-02
+2026-07-15 17:45:54 transreid.train INFO: Epoch[31] Iter[100/227] Loss: 0.663, Acc: 0.959, Base Lr: 6.76e-04 | id_global: 0.549 tri_global: 0.115 | PoseSSM alpha=1.422e-01 gain=9.969e-02 dt=1.175e-02[4.127e-03,2.497e-02] dA=9.087e-01 pose(d/B/C)=1.530e-03/1.440e-03/1.542e-03 state=5.959e-02 delta_ratio=2.256e-02
+2026-07-15 17:46:02 transreid.train INFO: Epoch[31] Iter[150/227] Loss: 0.636, Acc: 0.961, Base Lr: 6.76e-04 | id_global: 0.521 tri_global: 0.114 | PoseSSM alpha=1.419e-01 gain=9.969e-02 dt=1.173e-02[4.104e-03,2.504e-02] dA=9.088e-01 pose(d/B/C)=1.558e-03/1.480e-03/1.572e-03 state=5.680e-02 delta_ratio=2.130e-02
+2026-07-15 17:46:10 transreid.train INFO: Epoch[31] Iter[200/227] Loss: 0.586, Acc: 0.964, Base Lr: 6.76e-04 | id_global: 0.480 tri_global: 0.105 | PoseSSM alpha=1.418e-01 gain=9.968e-02 dt=1.187e-02[4.085e-03,2.552e-02] dA=9.079e-01 pose(d/B/C)=1.493e-03/1.419e-03/1.500e-03 state=5.259e-02 delta_ratio=1.775e-02
+2026-07-15 17:46:12 transreid.train INFO: Epoch 31 done. Time per epoch: 34.596[s] Speed: 392.2[samples/s] ETA: 0h51m
+2026-07-15 17:46:21 transreid.train INFO: Epoch[32] Iter[50/227] Loss: 0.711, Acc: 0.951, Base Lr: 6.68e-04 | id_global: 0.573 tri_global: 0.139 | PoseSSM alpha=1.436e-01 gain=9.968e-02 dt=1.180e-02[4.086e-03,2.529e-02] dA=9.084e-01 pose(d/B/C)=1.446e-03/1.383e-03/1.461e-03 state=5.950e-02 delta_ratio=2.256e-02
+2026-07-15 17:46:29 transreid.train INFO: Epoch[32] Iter[100/227] Loss: 0.645, Acc: 0.958, Base Lr: 6.68e-04 | id_global: 0.530 tri_global: 0.115 | PoseSSM alpha=1.446e-01 gain=9.968e-02 dt=1.176e-02[4.046e-03,2.519e-02] dA=9.087e-01 pose(d/B/C)=1.616e-03/1.522e-03/1.632e-03 state=6.355e-02 delta_ratio=2.196e-02
+2026-07-15 17:46:37 transreid.train INFO: Epoch[32] Iter[150/227] Loss: 0.609, Acc: 0.962, Base Lr: 6.68e-04 | id_global: 0.494 tri_global: 0.115 | PoseSSM alpha=1.446e-01 gain=9.967e-02 dt=1.184e-02[4.118e-03,2.527e-02] dA=9.081e-01 pose(d/B/C)=1.590e-03/1.503e-03/1.600e-03 state=5.869e-02 delta_ratio=2.283e-02
+2026-07-15 17:46:45 transreid.train INFO: Epoch[32] Iter[200/227] Loss: 0.588, Acc: 0.965, Base Lr: 6.68e-04 | id_global: 0.464 tri_global: 0.124 | PoseSSM alpha=1.450e-01 gain=9.967e-02 dt=1.191e-02[4.172e-03,2.557e-02] dA=9.076e-01 pose(d/B/C)=1.601e-03/1.514e-03/1.608e-03 state=6.141e-02 delta_ratio=2.216e-02
+2026-07-15 17:46:46 transreid.train INFO: Epoch 32 done. Time per epoch: 34.603[s] Speed: 392.1[samples/s] ETA: 0h50m
+2026-07-15 17:46:55 transreid.train INFO: Epoch[33] Iter[50/227] Loss: 0.595, Acc: 0.960, Base Lr: 6.60e-04 | id_global: 0.508 tri_global: 0.087 | PoseSSM alpha=1.442e-01 gain=9.967e-02 dt=1.195e-02[4.063e-03,2.577e-02] dA=9.074e-01 pose(d/B/C)=1.582e-03/1.501e-03/1.598e-03 state=5.801e-02 delta_ratio=2.274e-02
+2026-07-15 17:47:03 transreid.train INFO: Epoch[33] Iter[100/227] Loss: 0.567, Acc: 0.964, Base Lr: 6.60e-04 | id_global: 0.475 tri_global: 0.092 | PoseSSM alpha=1.445e-01 gain=9.966e-02 dt=1.186e-02[4.048e-03,2.536e-02] dA=9.081e-01 pose(d/B/C)=1.523e-03/1.443e-03/1.531e-03 state=6.312e-02 delta_ratio=2.334e-02
+2026-07-15 17:47:11 transreid.train INFO: Epoch[33] Iter[150/227] Loss: 0.552, Acc: 0.966, Base Lr: 6.60e-04 | id_global: 0.451 tri_global: 0.101 | PoseSSM alpha=1.452e-01 gain=9.966e-02 dt=1.184e-02[4.087e-03,2.547e-02] dA=9.082e-01 pose(d/B/C)=1.589e-03/1.497e-03/1.599e-03 state=6.223e-02 delta_ratio=2.337e-02
+2026-07-15 17:47:19 transreid.train INFO: Epoch[33] Iter[200/227] Loss: 0.512, Acc: 0.969, Base Lr: 6.60e-04 | id_global: 0.417 tri_global: 0.095 | PoseSSM alpha=1.457e-01 gain=9.965e-02 dt=1.186e-02[4.102e-03,2.515e-02] dA=9.080e-01 pose(d/B/C)=1.527e-03/1.457e-03/1.548e-03 state=6.017e-02 delta_ratio=2.286e-02
+2026-07-15 17:47:21 transreid.train INFO: Epoch 33 done. Time per epoch: 34.682[s] Speed: 391.2[samples/s] ETA: 0h50m
+2026-07-15 17:47:30 transreid.train INFO: Epoch[34] Iter[50/227] Loss: 0.536, Acc: 0.961, Base Lr: 6.52e-04 | id_global: 0.454 tri_global: 0.082 | PoseSSM alpha=1.469e-01 gain=9.965e-02 dt=1.189e-02[4.166e-03,2.536e-02] dA=9.078e-01 pose(d/B/C)=1.535e-03/1.461e-03/1.548e-03 state=5.720e-02 delta_ratio=2.095e-02
+2026-07-15 17:47:38 transreid.train INFO: Epoch[34] Iter[100/227] Loss: 0.508, Acc: 0.964, Base Lr: 6.52e-04 | id_global: 0.433 tri_global: 0.075 | PoseSSM alpha=1.479e-01 gain=9.965e-02 dt=1.198e-02[4.175e-03,2.560e-02] dA=9.072e-01 pose(d/B/C)=1.605e-03/1.518e-03/1.609e-03 state=6.032e-02 delta_ratio=2.292e-02
+2026-07-15 17:47:46 transreid.train INFO: Epoch[34] Iter[150/227] Loss: 0.500, Acc: 0.966, Base Lr: 6.52e-04 | id_global: 0.417 tri_global: 0.083 | PoseSSM alpha=1.480e-01 gain=9.964e-02 dt=1.190e-02[4.128e-03,2.537e-02] dA=9.077e-01 pose(d/B/C)=1.541e-03/1.469e-03/1.554e-03 state=5.826e-02 delta_ratio=2.171e-02
+2026-07-15 17:47:54 transreid.train INFO: Epoch[34] Iter[200/227] Loss: 0.476, Acc: 0.969, Base Lr: 6.52e-04 | id_global: 0.390 tri_global: 0.087 | PoseSSM alpha=1.477e-01 gain=9.964e-02 dt=1.184e-02[4.128e-03,2.524e-02] dA=9.082e-01 pose(d/B/C)=1.572e-03/1.496e-03/1.591e-03 state=5.841e-02 delta_ratio=2.100e-02
+2026-07-15 17:47:56 transreid.train INFO: Epoch 34 done. Time per epoch: 34.572[s] Speed: 392.5[samples/s] ETA: 0h49m
+2026-07-15 17:48:05 transreid.train INFO: Epoch[35] Iter[50/227] Loss: 0.541, Acc: 0.969, Base Lr: 6.44e-04 | id_global: 0.447 tri_global: 0.093 | PoseSSM alpha=1.476e-01 gain=9.964e-02 dt=1.188e-02[4.132e-03,2.534e-02] dA=9.079e-01 pose(d/B/C)=1.563e-03/1.491e-03/1.582e-03 state=6.240e-02 delta_ratio=2.470e-02
+2026-07-15 17:48:13 transreid.train INFO: Epoch[35] Iter[100/227] Loss: 0.530, Acc: 0.969, Base Lr: 6.44e-04 | id_global: 0.429 tri_global: 0.101 | PoseSSM alpha=1.480e-01 gain=9.963e-02 dt=1.176e-02[4.136e-03,2.495e-02] dA=9.087e-01 pose(d/B/C)=1.575e-03/1.496e-03/1.590e-03 state=5.701e-02 delta_ratio=2.179e-02
+2026-07-15 17:48:21 transreid.train INFO: Epoch[35] Iter[150/227] Loss: 0.499, Acc: 0.969, Base Lr: 6.44e-04 | id_global: 0.404 tri_global: 0.095 | PoseSSM alpha=1.484e-01 gain=9.963e-02 dt=1.195e-02[4.126e-03,2.553e-02] dA=9.074e-01 pose(d/B/C)=1.535e-03/1.466e-03/1.547e-03 state=5.722e-02 delta_ratio=2.289e-02
+2026-07-15 17:48:28 transreid.train INFO: Epoch[35] Iter[200/227] Loss: 0.476, Acc: 0.971, Base Lr: 6.44e-04 | id_global: 0.376 tri_global: 0.101 | PoseSSM alpha=1.484e-01 gain=9.963e-02 dt=1.192e-02[4.138e-03,2.546e-02] dA=9.077e-01 pose(d/B/C)=1.484e-03/1.411e-03/1.499e-03 state=5.296e-02 delta_ratio=2.022e-02
+2026-07-15 17:48:30 transreid.train INFO: Epoch 35 done. Time per epoch: 34.330[s] Speed: 391.5[samples/s] ETA: 0h48m
+2026-07-15 17:48:39 transreid.train INFO: Epoch[36] Iter[50/227] Loss: 0.508, Acc: 0.965, Base Lr: 6.35e-04 | id_global: 0.415 tri_global: 0.093 | PoseSSM alpha=1.492e-01 gain=9.962e-02 dt=1.190e-02[4.118e-03,2.527e-02] dA=9.078e-01 pose(d/B/C)=1.591e-03/1.514e-03/1.607e-03 state=5.745e-02 delta_ratio=2.285e-02
+2026-07-15 17:48:47 transreid.train INFO: Epoch[36] Iter[100/227] Loss: 0.503, Acc: 0.970, Base Lr: 6.35e-04 | id_global: 0.400 tri_global: 0.103 | PoseSSM alpha=1.494e-01 gain=9.962e-02 dt=1.193e-02[4.135e-03,2.544e-02] dA=9.076e-01 pose(d/B/C)=1.531e-03/1.453e-03/1.543e-03 state=5.880e-02 delta_ratio=2.509e-02
+2026-07-15 17:48:55 transreid.train INFO: Epoch[36] Iter[150/227] Loss: 0.487, Acc: 0.972, Base Lr: 6.35e-04 | id_global: 0.383 tri_global: 0.105 | PoseSSM alpha=1.492e-01 gain=9.962e-02 dt=1.196e-02[4.124e-03,2.543e-02] dA=9.074e-01 pose(d/B/C)=1.583e-03/1.508e-03/1.596e-03 state=5.499e-02 delta_ratio=2.219e-02
+2026-07-15 17:49:03 transreid.train INFO: Epoch[36] Iter[200/227] Loss: 0.456, Acc: 0.973, Base Lr: 6.35e-04 | id_global: 0.355 tri_global: 0.101 | PoseSSM alpha=1.491e-01 gain=9.961e-02 dt=1.190e-02[4.169e-03,2.514e-02] dA=9.078e-01 pose(d/B/C)=1.510e-03/1.434e-03/1.524e-03 state=5.541e-02 delta_ratio=2.071e-02
+2026-07-15 17:49:05 transreid.train INFO: Epoch 36 done. Time per epoch: 34.761[s] Speed: 392.2[samples/s] ETA: 0h48m
+2026-07-15 17:49:14 transreid.train INFO: Epoch[37] Iter[50/227] Loss: 0.510, Acc: 0.965, Base Lr: 6.27e-04 | id_global: 0.404 tri_global: 0.106 | PoseSSM alpha=1.495e-01 gain=9.961e-02 dt=1.189e-02[4.086e-03,2.548e-02] dA=9.079e-01 pose(d/B/C)=1.591e-03/1.504e-03/1.599e-03 state=5.914e-02 delta_ratio=2.330e-02
+2026-07-15 17:49:22 transreid.train INFO: Epoch[37] Iter[100/227] Loss: 0.484, Acc: 0.968, Base Lr: 6.27e-04 | id_global: 0.385 tri_global: 0.099 | PoseSSM alpha=1.495e-01 gain=9.961e-02 dt=1.190e-02[4.104e-03,2.548e-02] dA=9.079e-01 pose(d/B/C)=1.604e-03/1.524e-03/1.615e-03 state=6.209e-02 delta_ratio=2.390e-02
+2026-07-15 17:49:29 transreid.train INFO: Epoch[37] Iter[150/227] Loss: 0.487, Acc: 0.970, Base Lr: 6.27e-04 | id_global: 0.371 tri_global: 0.116 | PoseSSM alpha=1.490e-01 gain=9.960e-02 dt=1.197e-02[4.163e-03,2.541e-02] dA=9.073e-01 pose(d/B/C)=1.559e-03/1.477e-03/1.565e-03 state=5.955e-02 delta_ratio=2.414e-02
+2026-07-15 17:49:37 transreid.train INFO: Epoch[37] Iter[200/227] Loss: 0.453, Acc: 0.973, Base Lr: 6.27e-04 | id_global: 0.343 tri_global: 0.110 | PoseSSM alpha=1.488e-01 gain=9.960e-02 dt=1.195e-02[4.157e-03,2.553e-02] dA=9.074e-01 pose(d/B/C)=1.558e-03/1.472e-03/1.564e-03 state=5.911e-02 delta_ratio=2.089e-02
+2026-07-15 17:49:39 transreid.train INFO: Epoch 37 done. Time per epoch: 34.308[s] Speed: 393.6[samples/s] ETA: 0h47m
+2026-07-15 17:49:48 transreid.train INFO: Epoch[38] Iter[50/227] Loss: 0.526, Acc: 0.967, Base Lr: 6.18e-04 | id_global: 0.394 tri_global: 0.133 | PoseSSM alpha=1.488e-01 gain=9.960e-02 dt=1.185e-02[4.097e-03,2.512e-02] dA=9.082e-01 pose(d/B/C)=1.566e-03/1.494e-03/1.593e-03 state=5.503e-02 delta_ratio=2.330e-02
+2026-07-15 17:49:56 transreid.train INFO: Epoch[38] Iter[100/227] Loss: 0.491, Acc: 0.970, Base Lr: 6.18e-04 | id_global: 0.374 tri_global: 0.117 | PoseSSM alpha=1.491e-01 gain=9.959e-02 dt=1.184e-02[4.128e-03,2.520e-02] dA=9.083e-01 pose(d/B/C)=1.555e-03/1.472e-03/1.569e-03 state=5.833e-02 delta_ratio=2.235e-02
+2026-07-15 17:50:04 transreid.train INFO: Epoch[38] Iter[150/227] Loss: 0.464, Acc: 0.971, Base Lr: 6.18e-04 | id_global: 0.356 tri_global: 0.108 | PoseSSM alpha=1.495e-01 gain=9.959e-02 dt=1.194e-02[4.131e-03,2.534e-02] dA=9.075e-01 pose(d/B/C)=1.572e-03/1.493e-03/1.594e-03 state=5.525e-02 delta_ratio=2.165e-02
+2026-07-15 17:50:12 transreid.train INFO: Epoch[38] Iter[200/227] Loss: 0.437, Acc: 0.973, Base Lr: 6.18e-04 | id_global: 0.331 tri_global: 0.105 | PoseSSM alpha=1.501e-01 gain=9.959e-02 dt=1.197e-02[4.139e-03,2.542e-02] dA=9.073e-01 pose(d/B/C)=1.651e-03/1.558e-03/1.664e-03 state=5.552e-02 delta_ratio=2.094e-02
+2026-07-15 17:50:14 transreid.train INFO: Epoch 38 done. Time per epoch: 34.550[s] Speed: 392.7[samples/s] ETA: 0h47m
+2026-07-15 17:50:23 transreid.train INFO: Epoch[39] Iter[50/227] Loss: 0.478, Acc: 0.972, Base Lr: 6.09e-04 | id_global: 0.370 tri_global: 0.108 | PoseSSM alpha=1.505e-01 gain=9.958e-02 dt=1.190e-02[4.117e-03,2.541e-02] dA=9.079e-01 pose(d/B/C)=1.510e-03/1.436e-03/1.519e-03 state=6.145e-02 delta_ratio=2.473e-02
+2026-07-15 17:50:31 transreid.train INFO: Epoch[39] Iter[100/227] Loss: 0.434, Acc: 0.973, Base Lr: 6.09e-04 | id_global: 0.344 tri_global: 0.091 | PoseSSM alpha=1.518e-01 gain=9.958e-02 dt=1.199e-02[4.141e-03,2.554e-02] dA=9.072e-01 pose(d/B/C)=1.527e-03/1.456e-03/1.542e-03 state=5.819e-02 delta_ratio=2.250e-02
+2026-07-15 17:50:38 transreid.train INFO: Epoch[39] Iter[150/227] Loss: 0.414, Acc: 0.975, Base Lr: 6.09e-04 | id_global: 0.324 tri_global: 0.090 | PoseSSM alpha=1.517e-01 gain=9.958e-02 dt=1.208e-02[4.225e-03,2.546e-02] dA=9.065e-01 pose(d/B/C)=1.510e-03/1.449e-03/1.529e-03 state=5.536e-02 delta_ratio=2.158e-02
+2026-07-15 17:50:46 transreid.train INFO: Epoch[39] Iter[200/227] Loss: 0.381, Acc: 0.978, Base Lr: 6.09e-04 | id_global: 0.297 tri_global: 0.084 | PoseSSM alpha=1.523e-01 gain=9.957e-02 dt=1.212e-02[4.175e-03,2.568e-02] dA=9.063e-01 pose(d/B/C)=1.638e-03/1.553e-03/1.659e-03 state=5.213e-02 delta_ratio=1.902e-02
+2026-07-15 17:50:48 transreid.train INFO: Epoch 39 done. Time per epoch: 34.405[s] Speed: 392.5[samples/s] ETA: 0h46m
+2026-07-15 17:50:57 transreid.train INFO: Epoch[40] Iter[50/227] Loss: 0.370, Acc: 0.976, Base Lr: 6.00e-04 | id_global: 0.314 tri_global: 0.056 | PoseSSM alpha=1.532e-01 gain=9.957e-02 dt=1.204e-02[4.175e-03,2.570e-02] dA=9.069e-01 pose(d/B/C)=1.500e-03/1.425e-03/1.513e-03 state=5.432e-02 delta_ratio=2.059e-02
+2026-07-15 17:51:05 transreid.train INFO: Epoch[40] Iter[100/227] Loss: 0.374, Acc: 0.976, Base Lr: 6.00e-04 | id_global: 0.301 tri_global: 0.073 | PoseSSM alpha=1.534e-01 gain=9.957e-02 dt=1.205e-02[4.143e-03,2.581e-02] dA=9.069e-01 pose(d/B/C)=1.542e-03/1.469e-03/1.555e-03 state=6.276e-02 delta_ratio=2.580e-02
+2026-07-15 17:51:13 transreid.train INFO: Epoch[40] Iter[150/227] Loss: 0.367, Acc: 0.976, Base Lr: 6.00e-04 | id_global: 0.295 tri_global: 0.072 | PoseSSM alpha=1.540e-01 gain=9.956e-02 dt=1.195e-02[4.169e-03,2.546e-02] dA=9.076e-01 pose(d/B/C)=1.560e-03/1.474e-03/1.571e-03 state=6.150e-02 delta_ratio=2.427e-02
+2026-07-15 17:51:21 transreid.train INFO: Epoch[40] Iter[200/227] Loss: 0.345, Acc: 0.978, Base Lr: 6.00e-04 | id_global: 0.275 tri_global: 0.071 | PoseSSM alpha=1.535e-01 gain=9.956e-02 dt=1.187e-02[4.181e-03,2.528e-02] dA=9.081e-01 pose(d/B/C)=1.526e-03/1.449e-03/1.534e-03 state=5.990e-02 delta_ratio=2.141e-02
+2026-07-15 17:51:22 transreid.train INFO: Epoch 40 done. Time per epoch: 34.350[s] Speed: 391.3[samples/s] ETA: 0h45m
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-15 17:52:13 transreid.train INFO: Validation Results - Epoch: 40
+2026-07-15 17:52:13 transreid.train INFO: mAP: 50.7%
+2026-07-15 17:52:13 transreid.train INFO: CMC curve, Rank-1  :59.8%
+2026-07-15 17:52:13 transreid.train INFO: CMC curve, Rank-5  :74.6%
+2026-07-15 17:52:13 transreid.train INFO: CMC curve, Rank-10 :80.6%
+2026-07-15 17:52:22 transreid.train INFO: Epoch[41] Iter[50/227] Loss: 0.390, Acc: 0.976, Base Lr: 5.91e-04 | id_global: 0.308 tri_global: 0.082 | PoseSSM alpha=1.535e-01 gain=9.956e-02 dt=1.193e-02[4.152e-03,2.530e-02] dA=9.077e-01 pose(d/B/C)=1.543e-03/1.467e-03/1.555e-03 state=5.410e-02 delta_ratio=2.247e-02
+2026-07-15 17:52:30 transreid.train INFO: Epoch[41] Iter[100/227] Loss: 0.370, Acc: 0.979, Base Lr: 5.91e-04 | id_global: 0.294 tri_global: 0.075 | PoseSSM alpha=1.544e-01 gain=9.955e-02 dt=1.197e-02[4.121e-03,2.568e-02] dA=9.075e-01 pose(d/B/C)=1.564e-03/1.483e-03/1.571e-03 state=5.472e-02 delta_ratio=2.243e-02
+2026-07-15 17:52:38 transreid.train INFO: Epoch[41] Iter[150/227] Loss: 0.350, Acc: 0.979, Base Lr: 5.91e-04 | id_global: 0.280 tri_global: 0.070 | PoseSSM alpha=1.543e-01 gain=9.955e-02 dt=1.211e-02[4.136e-03,2.583e-02] dA=9.065e-01 pose(d/B/C)=1.539e-03/1.455e-03/1.547e-03 state=5.820e-02 delta_ratio=2.229e-02
+2026-07-15 17:52:45 transreid.train INFO: Epoch[41] Iter[200/227] Loss: 0.324, Acc: 0.982, Base Lr: 5.91e-04 | id_global: 0.259 tri_global: 0.065 | PoseSSM alpha=1.542e-01 gain=9.955e-02 dt=1.202e-02[4.147e-03,2.554e-02] dA=9.071e-01 pose(d/B/C)=1.555e-03/1.486e-03/1.567e-03 state=5.340e-02 delta_ratio=1.947e-02
+2026-07-15 17:52:47 transreid.train INFO: Epoch 41 done. Time per epoch: 34.575[s] Speed: 392.4[samples/s] ETA: 0h45m
+2026-07-15 17:52:56 transreid.train INFO: Epoch[42] Iter[50/227] Loss: 0.354, Acc: 0.972, Base Lr: 5.82e-04 | id_global: 0.291 tri_global: 0.063 | PoseSSM alpha=1.544e-01 gain=9.954e-02 dt=1.211e-02[4.151e-03,2.596e-02] dA=9.065e-01 pose(d/B/C)=1.546e-03/1.469e-03/1.560e-03 state=5.684e-02 delta_ratio=2.067e-02
+2026-07-15 17:53:04 transreid.train INFO: Epoch[42] Iter[100/227] Loss: 0.339, Acc: 0.977, Base Lr: 5.82e-04 | id_global: 0.279 tri_global: 0.060 | PoseSSM alpha=1.551e-01 gain=9.954e-02 dt=1.202e-02[4.222e-03,2.569e-02] dA=9.072e-01 pose(d/B/C)=1.553e-03/1.473e-03/1.565e-03 state=5.428e-02 delta_ratio=2.096e-02
+2026-07-15 17:53:12 transreid.train INFO: Epoch[42] Iter[150/227] Loss: 0.325, Acc: 0.979, Base Lr: 5.82e-04 | id_global: 0.264 tri_global: 0.061 | PoseSSM alpha=1.560e-01 gain=9.954e-02 dt=1.204e-02[4.175e-03,2.564e-02] dA=9.070e-01 pose(d/B/C)=1.539e-03/1.466e-03/1.557e-03 state=5.889e-02 delta_ratio=2.168e-02
+2026-07-15 17:53:20 transreid.train INFO: Epoch[42] Iter[200/227] Loss: 0.315, Acc: 0.980, Base Lr: 5.82e-04 | id_global: 0.249 tri_global: 0.066 | PoseSSM alpha=1.562e-01 gain=9.954e-02 dt=1.205e-02[4.189e-03,2.559e-02] dA=9.069e-01 pose(d/B/C)=1.524e-03/1.443e-03/1.531e-03 state=5.475e-02 delta_ratio=2.158e-02
+2026-07-15 17:53:22 transreid.train INFO: Epoch 42 done. Time per epoch: 34.471[s] Speed: 391.7[samples/s] ETA: 0h44m
+2026-07-15 17:53:31 transreid.train INFO: Epoch[43] Iter[50/227] Loss: 0.394, Acc: 0.974, Base Lr: 5.73e-04 | id_global: 0.293 tri_global: 0.102 | PoseSSM alpha=1.567e-01 gain=9.953e-02 dt=1.200e-02[4.173e-03,2.545e-02] dA=9.072e-01 pose(d/B/C)=1.536e-03/1.448e-03/1.552e-03 state=6.082e-02 delta_ratio=2.431e-02
+2026-07-15 17:53:39 transreid.train INFO: Epoch[43] Iter[100/227] Loss: 0.361, Acc: 0.978, Base Lr: 5.73e-04 | id_global: 0.276 tri_global: 0.085 | PoseSSM alpha=1.563e-01 gain=9.953e-02 dt=1.192e-02[4.160e-03,2.534e-02] dA=9.078e-01 pose(d/B/C)=1.580e-03/1.497e-03/1.591e-03 state=5.585e-02 delta_ratio=2.249e-02
+2026-07-15 17:53:47 transreid.train INFO: Epoch[43] Iter[150/227] Loss: 0.340, Acc: 0.980, Base Lr: 5.73e-04 | id_global: 0.260 tri_global: 0.079 | PoseSSM alpha=1.565e-01 gain=9.953e-02 dt=1.208e-02[4.173e-03,2.579e-02] dA=9.068e-01 pose(d/B/C)=1.542e-03/1.464e-03/1.558e-03 state=5.958e-02 delta_ratio=2.243e-02
+2026-07-15 17:53:54 transreid.train INFO: Epoch[43] Iter[200/227] Loss: 0.323, Acc: 0.981, Base Lr: 5.73e-04 | id_global: 0.244 tri_global: 0.079 | PoseSSM alpha=1.566e-01 gain=9.952e-02 dt=1.199e-02[4.196e-03,2.549e-02] dA=9.073e-01 pose(d/B/C)=1.506e-03/1.422e-03/1.526e-03 state=5.394e-02 delta_ratio=2.030e-02
+2026-07-15 17:53:56 transreid.train INFO: Epoch 43 done. Time per epoch: 34.436[s] Speed: 392.1[samples/s] ETA: 0h44m
+2026-07-15 17:54:05 transreid.train INFO: Epoch[44] Iter[50/227] Loss: 0.320, Acc: 0.983, Base Lr: 5.63e-04 | id_global: 0.264 tri_global: 0.056 | PoseSSM alpha=1.561e-01 gain=9.952e-02 dt=1.204e-02[4.210e-03,2.590e-02] dA=9.070e-01 pose(d/B/C)=1.509e-03/1.445e-03/1.529e-03 state=5.623e-02 delta_ratio=2.149e-02
+2026-07-15 17:54:13 transreid.train INFO: Epoch[44] Iter[100/227] Loss: 0.320, Acc: 0.983, Base Lr: 5.63e-04 | id_global: 0.260 tri_global: 0.060 | PoseSSM alpha=1.564e-01 gain=9.952e-02 dt=1.194e-02[4.129e-03,2.546e-02] dA=9.077e-01 pose(d/B/C)=1.526e-03/1.445e-03/1.537e-03 state=5.975e-02 delta_ratio=2.319e-02
+2026-07-15 17:54:21 transreid.train INFO: Epoch[44] Iter[150/227] Loss: 0.302, Acc: 0.983, Base Lr: 5.63e-04 | id_global: 0.243 tri_global: 0.060 | PoseSSM alpha=1.567e-01 gain=9.951e-02 dt=1.203e-02[4.181e-03,2.557e-02] dA=9.071e-01 pose(d/B/C)=1.567e-03/1.487e-03/1.582e-03 state=5.569e-02 delta_ratio=1.957e-02
+2026-07-15 17:54:29 transreid.train INFO: Epoch[44] Iter[200/227] Loss: 0.293, Acc: 0.984, Base Lr: 5.63e-04 | id_global: 0.231 tri_global: 0.062 | PoseSSM alpha=1.572e-01 gain=9.951e-02 dt=1.209e-02[4.181e-03,2.561e-02] dA=9.066e-01 pose(d/B/C)=1.527e-03/1.442e-03/1.542e-03 state=5.799e-02 delta_ratio=2.020e-02
+2026-07-15 17:54:31 transreid.train INFO: Epoch 44 done. Time per epoch: 34.495[s] Speed: 393.3[samples/s] ETA: 0h43m
+2026-07-15 17:54:40 transreid.train INFO: Epoch[45] Iter[50/227] Loss: 0.340, Acc: 0.977, Base Lr: 5.54e-04 | id_global: 0.275 tri_global: 0.065 | PoseSSM alpha=1.572e-01 gain=9.951e-02 dt=1.203e-02[4.216e-03,2.539e-02] dA=9.070e-01 pose(d/B/C)=1.516e-03/1.446e-03/1.524e-03 state=5.972e-02 delta_ratio=2.117e-02
+2026-07-15 17:54:48 transreid.train INFO: Epoch[45] Iter[100/227] Loss: 0.322, Acc: 0.980, Base Lr: 5.54e-04 | id_global: 0.256 tri_global: 0.065 | PoseSSM alpha=1.581e-01 gain=9.950e-02 dt=1.204e-02[4.198e-03,2.553e-02] dA=9.070e-01 pose(d/B/C)=1.553e-03/1.470e-03/1.564e-03 state=6.185e-02 delta_ratio=2.356e-02
+2026-07-15 17:54:56 transreid.train INFO: Epoch[45] Iter[150/227] Loss: 0.299, Acc: 0.982, Base Lr: 5.54e-04 | id_global: 0.241 tri_global: 0.058 | PoseSSM alpha=1.582e-01 gain=9.950e-02 dt=1.202e-02[4.147e-03,2.552e-02] dA=9.072e-01 pose(d/B/C)=1.609e-03/1.518e-03/1.624e-03 state=6.606e-02 delta_ratio=2.614e-02
+2026-07-15 17:55:03 transreid.train INFO: Epoch[45] Iter[200/227] Loss: 0.279, Acc: 0.983, Base Lr: 5.54e-04 | id_global: 0.223 tri_global: 0.056 | PoseSSM alpha=1.582e-01 gain=9.950e-02 dt=1.201e-02[4.224e-03,2.514e-02] dA=9.072e-01 pose(d/B/C)=1.562e-03/1.484e-03/1.574e-03 state=6.100e-02 delta_ratio=2.410e-02
+2026-07-15 17:55:05 transreid.train INFO: Epoch 45 done. Time per epoch: 34.476[s] Speed: 391.7[samples/s] ETA: 0h43m
+2026-07-15 17:55:14 transreid.train INFO: Epoch[46] Iter[50/227] Loss: 0.325, Acc: 0.982, Base Lr: 5.44e-04 | id_global: 0.256 tri_global: 0.069 | PoseSSM alpha=1.584e-01 gain=9.950e-02 dt=1.205e-02[4.179e-03,2.574e-02] dA=9.070e-01 pose(d/B/C)=1.579e-03/1.499e-03/1.592e-03 state=6.096e-02 delta_ratio=2.372e-02
+2026-07-15 17:55:22 transreid.train INFO: Epoch[46] Iter[100/227] Loss: 0.293, Acc: 0.983, Base Lr: 5.44e-04 | id_global: 0.238 tri_global: 0.054 | PoseSSM alpha=1.588e-01 gain=9.949e-02 dt=1.206e-02[4.153e-03,2.566e-02] dA=9.070e-01 pose(d/B/C)=1.516e-03/1.454e-03/1.525e-03 state=5.705e-02 delta_ratio=2.263e-02
+2026-07-15 17:55:30 transreid.train INFO: Epoch[46] Iter[150/227] Loss: 0.283, Acc: 0.985, Base Lr: 5.44e-04 | id_global: 0.222 tri_global: 0.061 | PoseSSM alpha=1.589e-01 gain=9.949e-02 dt=1.213e-02[4.236e-03,2.587e-02] dA=9.064e-01 pose(d/B/C)=1.613e-03/1.530e-03/1.623e-03 state=6.240e-02 delta_ratio=2.315e-02
+2026-07-15 17:55:38 transreid.train INFO: Epoch[46] Iter[200/227] Loss: 0.267, Acc: 0.986, Base Lr: 5.44e-04 | id_global: 0.209 tri_global: 0.059 | PoseSSM alpha=1.594e-01 gain=9.949e-02 dt=1.214e-02[4.201e-03,2.577e-02] dA=9.063e-01 pose(d/B/C)=1.648e-03/1.561e-03/1.670e-03 state=5.886e-02 delta_ratio=2.171e-02
+2026-07-15 17:55:39 transreid.train INFO: Epoch 46 done. Time per epoch: 34.272[s] Speed: 394.0[samples/s] ETA: 0h42m
+2026-07-15 17:55:48 transreid.train INFO: Epoch[47] Iter[50/227] Loss: 0.314, Acc: 0.979, Base Lr: 5.34e-04 | id_global: 0.246 tri_global: 0.068 | PoseSSM alpha=1.597e-01 gain=9.948e-02 dt=1.206e-02[4.238e-03,2.534e-02] dA=9.068e-01 pose(d/B/C)=1.577e-03/1.499e-03/1.595e-03 state=6.610e-02 delta_ratio=2.622e-02
+2026-07-15 17:55:56 transreid.train INFO: Epoch[47] Iter[100/227] Loss: 0.297, Acc: 0.981, Base Lr: 5.34e-04 | id_global: 0.235 tri_global: 0.062 | PoseSSM alpha=1.596e-01 gain=9.948e-02 dt=1.212e-02[4.243e-03,2.559e-02] dA=9.065e-01 pose(d/B/C)=1.595e-03/1.519e-03/1.607e-03 state=6.140e-02 delta_ratio=2.490e-02
+2026-07-15 17:56:04 transreid.train INFO: Epoch[47] Iter[150/227] Loss: 0.281, Acc: 0.983, Base Lr: 5.34e-04 | id_global: 0.222 tri_global: 0.059 | PoseSSM alpha=1.594e-01 gain=9.948e-02 dt=1.204e-02[4.202e-03,2.539e-02] dA=9.071e-01 pose(d/B/C)=1.568e-03/1.488e-03/1.582e-03 state=6.149e-02 delta_ratio=2.277e-02
+2026-07-15 17:56:12 transreid.train INFO: Epoch[47] Iter[200/227] Loss: 0.267, Acc: 0.984, Base Lr: 5.34e-04 | id_global: 0.210 tri_global: 0.058 | PoseSSM alpha=1.594e-01 gain=9.948e-02 dt=1.212e-02[4.218e-03,2.563e-02] dA=9.065e-01 pose(d/B/C)=1.580e-03/1.496e-03/1.590e-03 state=5.959e-02 delta_ratio=2.202e-02
+2026-07-15 17:56:14 transreid.train INFO: Epoch 47 done. Time per epoch: 34.591[s] Speed: 392.2[samples/s] ETA: 0h42m
+2026-07-15 17:56:23 transreid.train INFO: Epoch[48] Iter[50/227] Loss: 0.289, Acc: 0.979, Base Lr: 5.24e-04 | id_global: 0.237 tri_global: 0.051 | PoseSSM alpha=1.592e-01 gain=9.947e-02 dt=1.200e-02[4.197e-03,2.535e-02] dA=9.073e-01 pose(d/B/C)=1.550e-03/1.471e-03/1.557e-03 state=6.105e-02 delta_ratio=2.254e-02
+2026-07-15 17:56:31 transreid.train INFO: Epoch[48] Iter[100/227] Loss: 0.267, Acc: 0.982, Base Lr: 5.24e-04 | id_global: 0.221 tri_global: 0.046 | PoseSSM alpha=1.597e-01 gain=9.947e-02 dt=1.209e-02[4.188e-03,2.553e-02] dA=9.067e-01 pose(d/B/C)=1.510e-03/1.433e-03/1.529e-03 state=6.012e-02 delta_ratio=2.156e-02
+2026-07-15 17:56:39 transreid.train INFO: Epoch[48] Iter[150/227] Loss: 0.258, Acc: 0.982, Base Lr: 5.24e-04 | id_global: 0.210 tri_global: 0.049 | PoseSSM alpha=1.601e-01 gain=9.947e-02 dt=1.203e-02[4.141e-03,2.565e-02] dA=9.072e-01 pose(d/B/C)=1.532e-03/1.452e-03/1.544e-03 state=5.798e-02 delta_ratio=2.227e-02
+2026-07-15 17:56:47 transreid.train INFO: Epoch[48] Iter[200/227] Loss: 0.243, Acc: 0.985, Base Lr: 5.24e-04 | id_global: 0.194 tri_global: 0.049 | PoseSSM alpha=1.601e-01 gain=9.946e-02 dt=1.215e-02[4.231e-03,2.572e-02] dA=9.063e-01 pose(d/B/C)=1.588e-03/1.492e-03/1.599e-03 state=5.447e-02 delta_ratio=2.019e-02
+2026-07-15 17:56:48 transreid.train INFO: Epoch 48 done. Time per epoch: 34.443[s] Speed: 392.1[samples/s] ETA: 0h41m
+2026-07-15 17:56:57 transreid.train INFO: Epoch[49] Iter[50/227] Loss: 0.260, Acc: 0.986, Base Lr: 5.14e-04 | id_global: 0.211 tri_global: 0.049 | PoseSSM alpha=1.605e-01 gain=9.946e-02 dt=1.201e-02[4.199e-03,2.538e-02] dA=9.073e-01 pose(d/B/C)=1.566e-03/1.491e-03/1.583e-03 state=5.911e-02 delta_ratio=2.295e-02
+2026-07-15 17:57:05 transreid.train INFO: Epoch[49] Iter[100/227] Loss: 0.248, Acc: 0.986, Base Lr: 5.14e-04 | id_global: 0.206 tri_global: 0.042 | PoseSSM alpha=1.609e-01 gain=9.946e-02 dt=1.197e-02[4.157e-03,2.534e-02] dA=9.076e-01 pose(d/B/C)=1.537e-03/1.465e-03/1.546e-03 state=6.078e-02 delta_ratio=2.341e-02
+2026-07-15 17:57:13 transreid.train INFO: Epoch[49] Iter[150/227] Loss: 0.237, Acc: 0.987, Base Lr: 5.14e-04 | id_global: 0.196 tri_global: 0.042 | PoseSSM alpha=1.613e-01 gain=9.946e-02 dt=1.210e-02[4.162e-03,2.595e-02] dA=9.068e-01 pose(d/B/C)=1.520e-03/1.453e-03/1.541e-03 state=5.946e-02 delta_ratio=2.179e-02
+2026-07-15 17:57:21 transreid.train INFO: Epoch[49] Iter[200/227] Loss: 0.229, Acc: 0.987, Base Lr: 5.14e-04 | id_global: 0.185 tri_global: 0.044 | PoseSSM alpha=1.617e-01 gain=9.945e-02 dt=1.194e-02[4.162e-03,2.518e-02] dA=9.078e-01 pose(d/B/C)=1.519e-03/1.437e-03/1.536e-03 state=5.820e-02 delta_ratio=2.114e-02
+2026-07-15 17:57:23 transreid.train INFO: Epoch 49 done. Time per epoch: 34.681[s] Speed: 391.2[samples/s] ETA: 0h41m
+2026-07-15 17:57:32 transreid.train INFO: Epoch[50] Iter[50/227] Loss: 0.274, Acc: 0.985, Base Lr: 5.04e-04 | id_global: 0.220 tri_global: 0.054 | PoseSSM alpha=1.620e-01 gain=9.945e-02 dt=1.214e-02[4.214e-03,2.586e-02] dA=9.064e-01 pose(d/B/C)=1.504e-03/1.430e-03/1.520e-03 state=6.134e-02 delta_ratio=2.272e-02
+2026-07-15 17:57:40 transreid.train INFO: Epoch[50] Iter[100/227] Loss: 0.261, Acc: 0.986, Base Lr: 5.04e-04 | id_global: 0.208 tri_global: 0.053 | PoseSSM alpha=1.619e-01 gain=9.945e-02 dt=1.204e-02[4.242e-03,2.559e-02] dA=9.071e-01 pose(d/B/C)=1.520e-03/1.435e-03/1.536e-03 state=6.109e-02 delta_ratio=2.324e-02
+2026-07-15 17:57:48 transreid.train INFO: Epoch[50] Iter[150/227] Loss: 0.246, Acc: 0.986, Base Lr: 5.04e-04 | id_global: 0.198 tri_global: 0.048 | PoseSSM alpha=1.622e-01 gain=9.944e-02 dt=1.219e-02[4.208e-03,2.599e-02] dA=9.061e-01 pose(d/B/C)=1.578e-03/1.502e-03/1.590e-03 state=5.919e-02 delta_ratio=2.190e-02
+2026-07-15 17:57:56 transreid.train INFO: Epoch[50] Iter[200/227] Loss: 0.236, Acc: 0.986, Base Lr: 5.04e-04 | id_global: 0.188 tri_global: 0.048 | PoseSSM alpha=1.621e-01 gain=9.944e-02 dt=1.209e-02[4.187e-03,2.566e-02] dA=9.067e-01 pose(d/B/C)=1.545e-03/1.474e-03/1.554e-03 state=5.248e-02 delta_ratio=1.958e-02
+2026-07-15 17:57:58 transreid.train INFO: Epoch 50 done. Time per epoch: 34.672[s] Speed: 391.3[samples/s] ETA: 0h40m
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-15 17:58:48 transreid.train INFO: Validation Results - Epoch: 50
+2026-07-15 17:58:48 transreid.train INFO: mAP: 53.4%
+2026-07-15 17:58:48 transreid.train INFO: CMC curve, Rank-1  :62.2%
+2026-07-15 17:58:48 transreid.train INFO: CMC curve, Rank-5  :77.9%
+2026-07-15 17:58:48 transreid.train INFO: CMC curve, Rank-10 :83.7%
+2026-07-15 17:58:57 transreid.train INFO: Epoch[51] Iter[50/227] Loss: 0.243, Acc: 0.986, Base Lr: 4.94e-04 | id_global: 0.189 tri_global: 0.054 | PoseSSM alpha=1.621e-01 gain=9.944e-02 dt=1.203e-02[4.188e-03,2.559e-02] dA=9.072e-01 pose(d/B/C)=1.577e-03/1.493e-03/1.586e-03 state=5.998e-02 delta_ratio=2.312e-02
+2026-07-15 17:59:05 transreid.train INFO: Epoch[51] Iter[100/227] Loss: 0.238, Acc: 0.987, Base Lr: 4.94e-04 | id_global: 0.188 tri_global: 0.050 | PoseSSM alpha=1.622e-01 gain=9.944e-02 dt=1.205e-02[4.250e-03,2.546e-02] dA=9.070e-01 pose(d/B/C)=1.582e-03/1.500e-03/1.594e-03 state=5.744e-02 delta_ratio=2.180e-02
+2026-07-15 17:59:13 transreid.train INFO: Epoch[51] Iter[150/227] Loss: 0.233, Acc: 0.988, Base Lr: 4.94e-04 | id_global: 0.182 tri_global: 0.051 | PoseSSM alpha=1.623e-01 gain=9.943e-02 dt=1.204e-02[4.241e-03,2.548e-02] dA=9.071e-01 pose(d/B/C)=1.593e-03/1.513e-03/1.608e-03 state=5.910e-02 delta_ratio=2.409e-02
+2026-07-15 17:59:21 transreid.train INFO: Epoch[51] Iter[200/227] Loss: 0.216, Acc: 0.988, Base Lr: 4.94e-04 | id_global: 0.170 tri_global: 0.046 | PoseSSM alpha=1.621e-01 gain=9.943e-02 dt=1.223e-02[4.243e-03,2.581e-02] dA=9.058e-01 pose(d/B/C)=1.562e-03/1.490e-03/1.579e-03 state=5.506e-02 delta_ratio=1.988e-02
+2026-07-15 17:59:22 transreid.train INFO: Epoch 51 done. Time per epoch: 34.435[s] Speed: 394.0[samples/s] ETA: 0h39m
+2026-07-15 17:59:31 transreid.train INFO: Epoch[52] Iter[50/227] Loss: 0.252, Acc: 0.983, Base Lr: 4.84e-04 | id_global: 0.204 tri_global: 0.048 | PoseSSM alpha=1.622e-01 gain=9.943e-02 dt=1.210e-02[4.255e-03,2.553e-02] dA=9.067e-01 pose(d/B/C)=1.504e-03/1.431e-03/1.518e-03 state=5.848e-02 delta_ratio=2.262e-02
+2026-07-15 17:59:39 transreid.train INFO: Epoch[52] Iter[100/227] Loss: 0.246, Acc: 0.985, Base Lr: 4.84e-04 | id_global: 0.198 tri_global: 0.048 | PoseSSM alpha=1.624e-01 gain=9.943e-02 dt=1.213e-02[4.202e-03,2.567e-02] dA=9.065e-01 pose(d/B/C)=1.533e-03/1.456e-03/1.549e-03 state=5.867e-02 delta_ratio=2.236e-02
+2026-07-15 17:59:47 transreid.train INFO: Epoch[52] Iter[150/227] Loss: 0.229, Acc: 0.987, Base Lr: 4.84e-04 | id_global: 0.185 tri_global: 0.044 | PoseSSM alpha=1.627e-01 gain=9.942e-02 dt=1.214e-02[4.197e-03,2.562e-02] dA=9.065e-01 pose(d/B/C)=1.532e-03/1.457e-03/1.545e-03 state=5.796e-02 delta_ratio=2.166e-02
+2026-07-15 17:59:55 transreid.train INFO: Epoch[52] Iter[200/227] Loss: 0.214, Acc: 0.988, Base Lr: 4.84e-04 | id_global: 0.171 tri_global: 0.043 | PoseSSM alpha=1.629e-01 gain=9.942e-02 dt=1.210e-02[4.214e-03,2.580e-02] dA=9.068e-01 pose(d/B/C)=1.485e-03/1.413e-03/1.501e-03 state=5.922e-02 delta_ratio=2.207e-02
+2026-07-15 17:59:57 transreid.train INFO: Epoch 52 done. Time per epoch: 34.496[s] Speed: 393.3[samples/s] ETA: 0h39m
+2026-07-15 18:00:06 transreid.train INFO: Epoch[53] Iter[50/227] Loss: 0.256, Acc: 0.985, Base Lr: 4.74e-04 | id_global: 0.198 tri_global: 0.058 | PoseSSM alpha=1.630e-01 gain=9.942e-02 dt=1.212e-02[4.198e-03,2.568e-02] dA=9.066e-01 pose(d/B/C)=1.531e-03/1.457e-03/1.549e-03 state=6.114e-02 delta_ratio=2.510e-02
+2026-07-15 18:00:14 transreid.train INFO: Epoch[53] Iter[100/227] Loss: 0.238, Acc: 0.987, Base Lr: 4.74e-04 | id_global: 0.186 tri_global: 0.052 | PoseSSM alpha=1.628e-01 gain=9.942e-02 dt=1.201e-02[4.197e-03,2.531e-02] dA=9.074e-01 pose(d/B/C)=1.551e-03/1.476e-03/1.566e-03 state=6.111e-02 delta_ratio=2.268e-02
+2026-07-15 18:00:22 transreid.train INFO: Epoch[53] Iter[150/227] Loss: 0.228, Acc: 0.988, Base Lr: 4.74e-04 | id_global: 0.178 tri_global: 0.050 | PoseSSM alpha=1.627e-01 gain=9.941e-02 dt=1.212e-02[4.211e-03,2.582e-02] dA=9.066e-01 pose(d/B/C)=1.542e-03/1.468e-03/1.563e-03 state=5.785e-02 delta_ratio=2.162e-02
+2026-07-15 18:00:30 transreid.train INFO: Epoch[53] Iter[200/227] Loss: 0.215, Acc: 0.989, Base Lr: 4.74e-04 | id_global: 0.167 tri_global: 0.049 | PoseSSM alpha=1.629e-01 gain=9.941e-02 dt=1.226e-02[4.216e-03,2.591e-02] dA=9.056e-01 pose(d/B/C)=1.554e-03/1.463e-03/1.574e-03 state=5.479e-02 delta_ratio=2.182e-02
+2026-07-15 18:00:31 transreid.train INFO: Epoch 53 done. Time per epoch: 34.611[s] Speed: 392.0[samples/s] ETA: 0h38m
+2026-07-15 18:00:40 transreid.train INFO: Epoch[54] Iter[50/227] Loss: 0.253, Acc: 0.984, Base Lr: 4.63e-04 | id_global: 0.204 tri_global: 0.049 | PoseSSM alpha=1.633e-01 gain=9.941e-02 dt=1.208e-02[4.133e-03,2.585e-02] dA=9.070e-01 pose(d/B/C)=1.539e-03/1.467e-03/1.554e-03 state=6.006e-02 delta_ratio=2.175e-02
+2026-07-15 18:00:48 transreid.train INFO: Epoch[54] Iter[100/227] Loss: 0.230, Acc: 0.985, Base Lr: 4.63e-04 | id_global: 0.189 tri_global: 0.041 | PoseSSM alpha=1.635e-01 gain=9.941e-02 dt=1.225e-02[4.241e-03,2.626e-02] dA=9.058e-01 pose(d/B/C)=1.518e-03/1.433e-03/1.530e-03 state=5.645e-02 delta_ratio=2.192e-02
+2026-07-15 18:00:56 transreid.train INFO: Epoch[54] Iter[150/227] Loss: 0.219, Acc: 0.987, Base Lr: 4.63e-04 | id_global: 0.176 tri_global: 0.043 | PoseSSM alpha=1.639e-01 gain=9.940e-02 dt=1.205e-02[4.202e-03,2.553e-02] dA=9.071e-01 pose(d/B/C)=1.559e-03/1.483e-03/1.571e-03 state=5.553e-02 delta_ratio=2.088e-02
+2026-07-15 18:01:04 transreid.train INFO: Epoch[54] Iter[200/227] Loss: 0.210, Acc: 0.988, Base Lr: 4.63e-04 | id_global: 0.165 tri_global: 0.045 | PoseSSM alpha=1.644e-01 gain=9.940e-02 dt=1.210e-02[4.197e-03,2.563e-02] dA=9.068e-01 pose(d/B/C)=1.523e-03/1.455e-03/1.540e-03 state=5.356e-02 delta_ratio=1.998e-02
+2026-07-15 18:01:06 transreid.train INFO: Epoch 54 done. Time per epoch: 34.357[s] Speed: 393.1[samples/s] ETA: 0h37m
+2026-07-15 18:01:15 transreid.train INFO: Epoch[55] Iter[50/227] Loss: 0.236, Acc: 0.991, Base Lr: 4.53e-04 | id_global: 0.179 tri_global: 0.057 | PoseSSM alpha=1.641e-01 gain=9.940e-02 dt=1.216e-02[4.218e-03,2.581e-02] dA=9.064e-01 pose(d/B/C)=1.553e-03/1.481e-03/1.567e-03 state=6.645e-02 delta_ratio=2.368e-02
+2026-07-15 18:01:23 transreid.train INFO: Epoch[55] Iter[100/227] Loss: 0.248, Acc: 0.989, Base Lr: 4.53e-04 | id_global: 0.186 tri_global: 0.061 | PoseSSM alpha=1.644e-01 gain=9.940e-02 dt=1.226e-02[4.251e-03,2.615e-02] dA=9.056e-01 pose(d/B/C)=1.549e-03/1.466e-03/1.559e-03 state=6.096e-02 delta_ratio=2.304e-02
+2026-07-15 18:01:31 transreid.train INFO: Epoch[55] Iter[150/227] Loss: 0.234, Acc: 0.988, Base Lr: 4.53e-04 | id_global: 0.178 tri_global: 0.056 | PoseSSM alpha=1.642e-01 gain=9.939e-02 dt=1.210e-02[4.238e-03,2.534e-02] dA=9.067e-01 pose(d/B/C)=1.490e-03/1.418e-03/1.510e-03 state=5.845e-02 delta_ratio=2.184e-02
+2026-07-15 18:01:39 transreid.train INFO: Epoch[55] Iter[200/227] Loss: 0.212, Acc: 0.989, Base Lr: 4.53e-04 | id_global: 0.163 tri_global: 0.049 | PoseSSM alpha=1.642e-01 gain=9.939e-02 dt=1.214e-02[4.276e-03,2.569e-02] dA=9.065e-01 pose(d/B/C)=1.522e-03/1.448e-03/1.540e-03 state=5.498e-02 delta_ratio=1.997e-02
+2026-07-15 18:01:40 transreid.train INFO: Epoch 55 done. Time per epoch: 34.585[s] Speed: 392.3[samples/s] ETA: 0h37m
+2026-07-15 18:01:49 transreid.train INFO: Epoch[56] Iter[50/227] Loss: 0.197, Acc: 0.992, Base Lr: 4.43e-04 | id_global: 0.165 tri_global: 0.032 | PoseSSM alpha=1.643e-01 gain=9.939e-02 dt=1.213e-02[4.202e-03,2.549e-02] dA=9.066e-01 pose(d/B/C)=1.566e-03/1.487e-03/1.582e-03 state=5.814e-02 delta_ratio=2.237e-02
+2026-07-15 18:01:57 transreid.train INFO: Epoch[56] Iter[100/227] Loss: 0.207, Acc: 0.991, Base Lr: 4.43e-04 | id_global: 0.168 tri_global: 0.039 | PoseSSM alpha=1.646e-01 gain=9.939e-02 dt=1.221e-02[4.228e-03,2.579e-02] dA=9.060e-01 pose(d/B/C)=1.564e-03/1.476e-03/1.576e-03 state=5.802e-02 delta_ratio=2.020e-02
+2026-07-15 18:02:05 transreid.train INFO: Epoch[56] Iter[150/227] Loss: 0.194, Acc: 0.991, Base Lr: 4.43e-04 | id_global: 0.158 tri_global: 0.036 | PoseSSM alpha=1.649e-01 gain=9.938e-02 dt=1.210e-02[4.242e-03,2.576e-02] dA=9.068e-01 pose(d/B/C)=1.549e-03/1.473e-03/1.553e-03 state=5.925e-02 delta_ratio=2.194e-02
+2026-07-15 18:02:13 transreid.train INFO: Epoch[56] Iter[200/227] Loss: 0.186, Acc: 0.991, Base Lr: 4.43e-04 | id_global: 0.149 tri_global: 0.036 | PoseSSM alpha=1.650e-01 gain=9.938e-02 dt=1.204e-02[4.179e-03,2.546e-02] dA=9.072e-01 pose(d/B/C)=1.563e-03/1.480e-03/1.569e-03 state=5.831e-02 delta_ratio=2.188e-02
+2026-07-15 18:02:15 transreid.train INFO: Epoch 56 done. Time per epoch: 34.351[s] Speed: 393.1[samples/s] ETA: 0h36m
+2026-07-15 18:02:24 transreid.train INFO: Epoch[57] Iter[50/227] Loss: 0.228, Acc: 0.989, Base Lr: 4.32e-04 | id_global: 0.172 tri_global: 0.056 | PoseSSM alpha=1.651e-01 gain=9.938e-02 dt=1.207e-02[4.181e-03,2.537e-02] dA=9.070e-01 pose(d/B/C)=1.505e-03/1.432e-03/1.515e-03 state=6.177e-02 delta_ratio=2.371e-02
+2026-07-15 18:02:32 transreid.train INFO: Epoch[57] Iter[100/227] Loss: 0.195, Acc: 0.991, Base Lr: 4.32e-04 | id_global: 0.154 tri_global: 0.041 | PoseSSM alpha=1.654e-01 gain=9.938e-02 dt=1.202e-02[4.197e-03,2.533e-02] dA=9.074e-01 pose(d/B/C)=1.520e-03/1.448e-03/1.544e-03 state=5.367e-02 delta_ratio=1.991e-02
+2026-07-15 18:02:40 transreid.train INFO: Epoch[57] Iter[150/227] Loss: 0.182, Acc: 0.992, Base Lr: 4.32e-04 | id_global: 0.146 tri_global: 0.036 | PoseSSM alpha=1.656e-01 gain=9.937e-02 dt=1.211e-02[4.206e-03,2.548e-02] dA=9.068e-01 pose(d/B/C)=1.551e-03/1.480e-03/1.567e-03 state=6.025e-02 delta_ratio=2.320e-02
+2026-07-15 18:02:48 transreid.train INFO: Epoch[57] Iter[200/227] Loss: 0.170, Acc: 0.992, Base Lr: 4.32e-04 | id_global: 0.135 tri_global: 0.035 | PoseSSM alpha=1.660e-01 gain=9.937e-02 dt=1.214e-02[4.272e-03,2.583e-02] dA=9.066e-01 pose(d/B/C)=1.545e-03/1.465e-03/1.563e-03 state=5.593e-02 delta_ratio=1.852e-02
+2026-07-15 18:02:50 transreid.train INFO: Epoch 57 done. Time per epoch: 34.868[s] Speed: 391.0[samples/s] ETA: 0h36m
+2026-07-15 18:02:59 transreid.train INFO: Epoch[58] Iter[50/227] Loss: 0.187, Acc: 0.989, Base Lr: 4.22e-04 | id_global: 0.158 tri_global: 0.029 | PoseSSM alpha=1.663e-01 gain=9.937e-02 dt=1.206e-02[4.227e-03,2.552e-02] dA=9.071e-01 pose(d/B/C)=1.543e-03/1.468e-03/1.556e-03 state=5.447e-02 delta_ratio=2.117e-02
+2026-07-15 18:03:07 transreid.train INFO: Epoch[58] Iter[100/227] Loss: 0.177, Acc: 0.991, Base Lr: 4.22e-04 | id_global: 0.147 tri_global: 0.031 | PoseSSM alpha=1.664e-01 gain=9.937e-02 dt=1.218e-02[4.207e-03,2.561e-02] dA=9.063e-01 pose(d/B/C)=1.529e-03/1.456e-03/1.544e-03 state=5.869e-02 delta_ratio=2.138e-02
+2026-07-15 18:03:15 transreid.train INFO: Epoch[58] Iter[150/227] Loss: 0.172, Acc: 0.991, Base Lr: 4.22e-04 | id_global: 0.143 tri_global: 0.029 | PoseSSM alpha=1.663e-01 gain=9.936e-02 dt=1.207e-02[4.233e-03,2.537e-02] dA=9.070e-01 pose(d/B/C)=1.521e-03/1.446e-03/1.535e-03 state=5.634e-02 delta_ratio=2.143e-02
+2026-07-15 18:03:22 transreid.train INFO: Epoch[58] Iter[200/227] Loss: 0.170, Acc: 0.991, Base Lr: 4.22e-04 | id_global: 0.137 tri_global: 0.033 | PoseSSM alpha=1.664e-01 gain=9.936e-02 dt=1.223e-02[4.255e-03,2.582e-02] dA=9.059e-01 pose(d/B/C)=1.534e-03/1.467e-03/1.546e-03 state=5.696e-02 delta_ratio=2.110e-02
+2026-07-15 18:03:24 transreid.train INFO: Epoch 58 done. Time per epoch: 34.741[s] Speed: 392.4[samples/s] ETA: 0h35m
+2026-07-15 18:03:33 transreid.train INFO: Epoch[59] Iter[50/227] Loss: 0.200, Acc: 0.987, Base Lr: 4.11e-04 | id_global: 0.165 tri_global: 0.035 | PoseSSM alpha=1.668e-01 gain=9.936e-02 dt=1.206e-02[4.204e-03,2.548e-02] dA=9.071e-01 pose(d/B/C)=1.520e-03/1.443e-03/1.521e-03 state=5.631e-02 delta_ratio=2.153e-02
+2026-07-15 18:03:41 transreid.train INFO: Epoch[59] Iter[100/227] Loss: 0.196, Acc: 0.987, Base Lr: 4.11e-04 | id_global: 0.157 tri_global: 0.038 | PoseSSM alpha=1.676e-01 gain=9.936e-02 dt=1.220e-02[4.263e-03,2.565e-02] dA=9.061e-01 pose(d/B/C)=1.571e-03/1.492e-03/1.586e-03 state=5.786e-02 delta_ratio=2.260e-02
+2026-07-15 18:03:49 transreid.train INFO: Epoch[59] Iter[150/227] Loss: 0.191, Acc: 0.989, Base Lr: 4.11e-04 | id_global: 0.151 tri_global: 0.040 | PoseSSM alpha=1.676e-01 gain=9.936e-02 dt=1.215e-02[4.307e-03,2.566e-02] dA=9.065e-01 pose(d/B/C)=1.542e-03/1.465e-03/1.555e-03 state=5.918e-02 delta_ratio=2.155e-02
+2026-07-15 18:03:57 transreid.train INFO: Epoch[59] Iter[200/227] Loss: 0.181, Acc: 0.990, Base Lr: 4.11e-04 | id_global: 0.141 tri_global: 0.040 | PoseSSM alpha=1.678e-01 gain=9.935e-02 dt=1.207e-02[4.246e-03,2.522e-02] dA=9.070e-01 pose(d/B/C)=1.586e-03/1.513e-03/1.595e-03 state=5.693e-02 delta_ratio=2.053e-02
+2026-07-15 18:03:59 transreid.train INFO: Epoch 59 done. Time per epoch: 34.355[s] Speed: 393.1[samples/s] ETA: 0h34m
+2026-07-15 18:04:08 transreid.train INFO: Epoch[60] Iter[50/227] Loss: 0.181, Acc: 0.987, Base Lr: 4.01e-04 | id_global: 0.153 tri_global: 0.027 | PoseSSM alpha=1.678e-01 gain=9.935e-02 dt=1.213e-02[4.255e-03,2.544e-02] dA=9.066e-01 pose(d/B/C)=1.502e-03/1.433e-03/1.510e-03 state=5.982e-02 delta_ratio=2.337e-02
+2026-07-15 18:04:16 transreid.train INFO: Epoch[60] Iter[100/227] Loss: 0.178, Acc: 0.988, Base Lr: 4.01e-04 | id_global: 0.146 tri_global: 0.031 | PoseSSM alpha=1.677e-01 gain=9.935e-02 dt=1.211e-02[4.295e-03,2.550e-02] dA=9.068e-01 pose(d/B/C)=1.511e-03/1.435e-03/1.528e-03 state=5.986e-02 delta_ratio=2.170e-02
+2026-07-15 18:04:24 transreid.train INFO: Epoch[60] Iter[150/227] Loss: 0.173, Acc: 0.989, Base Lr: 4.01e-04 | id_global: 0.142 tri_global: 0.031 | PoseSSM alpha=1.681e-01 gain=9.935e-02 dt=1.221e-02[4.225e-03,2.569e-02] dA=9.061e-01 pose(d/B/C)=1.514e-03/1.442e-03/1.530e-03 state=5.611e-02 delta_ratio=1.994e-02
+2026-07-15 18:04:32 transreid.train INFO: Epoch[60] Iter[200/227] Loss: 0.161, Acc: 0.989, Base Lr: 4.01e-04 | id_global: 0.132 tri_global: 0.029 | PoseSSM alpha=1.681e-01 gain=9.935e-02 dt=1.224e-02[4.278e-03,2.568e-02] dA=9.058e-01 pose(d/B/C)=1.537e-03/1.461e-03/1.553e-03 state=5.619e-02 delta_ratio=1.711e-02
+2026-07-15 18:04:33 transreid.train INFO: Epoch 60 done. Time per epoch: 34.591[s] Speed: 392.2[samples/s] ETA: 0h34m
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-15 18:05:24 transreid.train INFO: Validation Results - Epoch: 60
+2026-07-15 18:05:24 transreid.train INFO: mAP: 54.5%
+2026-07-15 18:05:24 transreid.train INFO: CMC curve, Rank-1  :63.8%
+2026-07-15 18:05:24 transreid.train INFO: CMC curve, Rank-5  :78.5%
+2026-07-15 18:05:24 transreid.train INFO: CMC curve, Rank-10 :83.8%
+2026-07-15 18:05:33 transreid.train INFO: Epoch[61] Iter[50/227] Loss: 0.169, Acc: 0.991, Base Lr: 3.90e-04 | id_global: 0.142 tri_global: 0.027 | PoseSSM alpha=1.683e-01 gain=9.934e-02 dt=1.216e-02[4.249e-03,2.565e-02] dA=9.064e-01 pose(d/B/C)=1.496e-03/1.419e-03/1.510e-03 state=5.513e-02 delta_ratio=1.992e-02
+2026-07-15 18:05:41 transreid.train INFO: Epoch[61] Iter[100/227] Loss: 0.161, Acc: 0.990, Base Lr: 3.90e-04 | id_global: 0.134 tri_global: 0.027 | PoseSSM alpha=1.683e-01 gain=9.934e-02 dt=1.220e-02[4.238e-03,2.593e-02] dA=9.062e-01 pose(d/B/C)=1.535e-03/1.458e-03/1.547e-03 state=5.915e-02 delta_ratio=2.271e-02
+2026-07-15 18:05:48 transreid.train INFO: Epoch[61] Iter[150/227] Loss: 0.155, Acc: 0.991, Base Lr: 3.90e-04 | id_global: 0.131 tri_global: 0.024 | PoseSSM alpha=1.683e-01 gain=9.934e-02 dt=1.223e-02[4.255e-03,2.581e-02] dA=9.060e-01 pose(d/B/C)=1.553e-03/1.477e-03/1.563e-03 state=5.408e-02 delta_ratio=2.197e-02
+2026-07-15 18:05:56 transreid.train INFO: Epoch[61] Iter[200/227] Loss: 0.152, Acc: 0.992, Base Lr: 3.90e-04 | id_global: 0.124 tri_global: 0.028 | PoseSSM alpha=1.688e-01 gain=9.934e-02 dt=1.229e-02[4.243e-03,2.609e-02] dA=9.056e-01 pose(d/B/C)=1.529e-03/1.451e-03/1.538e-03 state=5.636e-02 delta_ratio=1.953e-02
+2026-07-15 18:05:58 transreid.train INFO: Epoch 61 done. Time per epoch: 34.382[s] Speed: 392.8[samples/s] ETA: 0h33m
+2026-07-15 18:06:07 transreid.train INFO: Epoch[62] Iter[50/227] Loss: 0.179, Acc: 0.992, Base Lr: 3.80e-04 | id_global: 0.147 tri_global: 0.033 | PoseSSM alpha=1.692e-01 gain=9.933e-02 dt=1.223e-02[4.289e-03,2.594e-02] dA=9.060e-01 pose(d/B/C)=1.547e-03/1.467e-03/1.565e-03 state=5.570e-02 delta_ratio=2.311e-02
+2026-07-15 18:06:15 transreid.train INFO: Epoch[62] Iter[100/227] Loss: 0.172, Acc: 0.991, Base Lr: 3.80e-04 | id_global: 0.142 tri_global: 0.031 | PoseSSM alpha=1.695e-01 gain=9.933e-02 dt=1.230e-02[4.263e-03,2.631e-02] dA=9.055e-01 pose(d/B/C)=1.571e-03/1.488e-03/1.583e-03 state=6.051e-02 delta_ratio=2.294e-02
+2026-07-15 18:06:23 transreid.train INFO: Epoch[62] Iter[150/227] Loss: 0.167, Acc: 0.992, Base Lr: 3.80e-04 | id_global: 0.135 tri_global: 0.032 | PoseSSM alpha=1.695e-01 gain=9.933e-02 dt=1.220e-02[4.247e-03,2.567e-02] dA=9.061e-01 pose(d/B/C)=1.520e-03/1.447e-03/1.538e-03 state=5.234e-02 delta_ratio=1.971e-02
+2026-07-15 18:06:31 transreid.train INFO: Epoch[62] Iter[200/227] Loss: 0.163, Acc: 0.992, Base Lr: 3.80e-04 | id_global: 0.128 tri_global: 0.035 | PoseSSM alpha=1.698e-01 gain=9.933e-02 dt=1.217e-02[4.235e-03,2.580e-02] dA=9.064e-01 pose(d/B/C)=1.498e-03/1.424e-03/1.512e-03 state=5.732e-02 delta_ratio=2.198e-02
+2026-07-15 18:06:33 transreid.train INFO: Epoch 62 done. Time per epoch: 34.493[s] Speed: 393.4[samples/s] ETA: 0h33m
+2026-07-15 18:06:42 transreid.train INFO: Epoch[63] Iter[50/227] Loss: 0.166, Acc: 0.993, Base Lr: 3.69e-04 | id_global: 0.138 tri_global: 0.028 | PoseSSM alpha=1.698e-01 gain=9.933e-02 dt=1.222e-02[4.253e-03,2.566e-02] dA=9.060e-01 pose(d/B/C)=1.568e-03/1.486e-03/1.583e-03 state=5.329e-02 delta_ratio=2.162e-02
+2026-07-15 18:06:49 transreid.train INFO: Epoch[63] Iter[100/227] Loss: 0.162, Acc: 0.992, Base Lr: 3.69e-04 | id_global: 0.134 tri_global: 0.028 | PoseSSM alpha=1.703e-01 gain=9.932e-02 dt=1.217e-02[4.231e-03,2.582e-02] dA=9.064e-01 pose(d/B/C)=1.557e-03/1.477e-03/1.561e-03 state=5.926e-02 delta_ratio=2.323e-02
+2026-07-15 18:06:57 transreid.train INFO: Epoch[63] Iter[150/227] Loss: 0.158, Acc: 0.992, Base Lr: 3.69e-04 | id_global: 0.130 tri_global: 0.028 | PoseSSM alpha=1.701e-01 gain=9.932e-02 dt=1.222e-02[4.278e-03,2.574e-02] dA=9.060e-01 pose(d/B/C)=1.552e-03/1.467e-03/1.560e-03 state=5.936e-02 delta_ratio=2.410e-02
+2026-07-15 18:07:05 transreid.train INFO: Epoch[63] Iter[200/227] Loss: 0.149, Acc: 0.993, Base Lr: 3.69e-04 | id_global: 0.121 tri_global: 0.027 | PoseSSM alpha=1.701e-01 gain=9.932e-02 dt=1.215e-02[4.308e-03,2.540e-02] dA=9.065e-01 pose(d/B/C)=1.572e-03/1.488e-03/1.584e-03 state=5.250e-02 delta_ratio=1.957e-02
+2026-07-15 18:07:07 transreid.train INFO: Epoch 63 done. Time per epoch: 34.485[s] Speed: 391.6[samples/s] ETA: 0h32m
+2026-07-15 18:07:16 transreid.train INFO: Epoch[64] Iter[50/227] Loss: 0.168, Acc: 0.989, Base Lr: 3.59e-04 | id_global: 0.142 tri_global: 0.027 | PoseSSM alpha=1.703e-01 gain=9.932e-02 dt=1.223e-02[4.293e-03,2.576e-02] dA=9.060e-01 pose(d/B/C)=1.574e-03/1.492e-03/1.590e-03 state=5.491e-02 delta_ratio=2.085e-02
+2026-07-15 18:07:24 transreid.train INFO: Epoch[64] Iter[100/227] Loss: 0.169, Acc: 0.990, Base Lr: 3.59e-04 | id_global: 0.140 tri_global: 0.029 | PoseSSM alpha=1.704e-01 gain=9.932e-02 dt=1.232e-02[4.308e-03,2.593e-02] dA=9.053e-01 pose(d/B/C)=1.518e-03/1.445e-03/1.537e-03 state=5.542e-02 delta_ratio=2.055e-02
+2026-07-15 18:07:32 transreid.train INFO: Epoch[64] Iter[150/227] Loss: 0.165, Acc: 0.990, Base Lr: 3.59e-04 | id_global: 0.135 tri_global: 0.030 | PoseSSM alpha=1.705e-01 gain=9.931e-02 dt=1.239e-02[4.289e-03,2.616e-02] dA=9.048e-01 pose(d/B/C)=1.584e-03/1.496e-03/1.597e-03 state=5.813e-02 delta_ratio=2.364e-02
+2026-07-15 18:07:40 transreid.train INFO: Epoch[64] Iter[200/227] Loss: 0.155, Acc: 0.991, Base Lr: 3.59e-04 | id_global: 0.125 tri_global: 0.030 | PoseSSM alpha=1.705e-01 gain=9.931e-02 dt=1.238e-02[4.295e-03,2.619e-02] dA=9.050e-01 pose(d/B/C)=1.536e-03/1.464e-03/1.547e-03 state=5.278e-02 delta_ratio=1.837e-02
+2026-07-15 18:07:42 transreid.train INFO: Epoch 64 done. Time per epoch: 34.616[s] Speed: 392.0[samples/s] ETA: 0h32m
+2026-07-15 18:07:51 transreid.train INFO: Epoch[65] Iter[50/227] Loss: 0.172, Acc: 0.992, Base Lr: 3.49e-04 | id_global: 0.140 tri_global: 0.032 | PoseSSM alpha=1.706e-01 gain=9.931e-02 dt=1.236e-02[4.271e-03,2.624e-02] dA=9.052e-01 pose(d/B/C)=1.494e-03/1.423e-03/1.514e-03 state=5.681e-02 delta_ratio=2.204e-02
+2026-07-15 18:07:58 transreid.train INFO: Epoch[65] Iter[100/227] Loss: 0.170, Acc: 0.992, Base Lr: 3.49e-04 | id_global: 0.137 tri_global: 0.033 | PoseSSM alpha=1.708e-01 gain=9.931e-02 dt=1.226e-02[4.286e-03,2.591e-02] dA=9.058e-01 pose(d/B/C)=1.554e-03/1.471e-03/1.561e-03 state=5.893e-02 delta_ratio=2.283e-02
+2026-07-15 18:08:06 transreid.train INFO: Epoch[65] Iter[150/227] Loss: 0.158, Acc: 0.992, Base Lr: 3.49e-04 | id_global: 0.128 tri_global: 0.029 | PoseSSM alpha=1.711e-01 gain=9.931e-02 dt=1.223e-02[4.326e-03,2.575e-02] dA=9.060e-01 pose(d/B/C)=1.536e-03/1.452e-03/1.554e-03 state=6.174e-02 delta_ratio=2.251e-02
+2026-07-15 18:08:14 transreid.train INFO: Epoch[65] Iter[200/227] Loss: 0.144, Acc: 0.993, Base Lr: 3.49e-04 | id_global: 0.117 tri_global: 0.026 | PoseSSM alpha=1.711e-01 gain=9.931e-02 dt=1.236e-02[4.242e-03,2.614e-02] dA=9.051e-01 pose(d/B/C)=1.485e-03/1.414e-03/1.502e-03 state=5.864e-02 delta_ratio=2.127e-02
+2026-07-15 18:08:16 transreid.train INFO: Epoch 65 done. Time per epoch: 34.505[s] Speed: 393.2[samples/s] ETA: 0h31m
+2026-07-15 18:08:25 transreid.train INFO: Epoch[66] Iter[50/227] Loss: 0.167, Acc: 0.994, Base Lr: 3.38e-04 | id_global: 0.127 tri_global: 0.041 | PoseSSM alpha=1.712e-01 gain=9.930e-02 dt=1.223e-02[4.272e-03,2.570e-02] dA=9.061e-01 pose(d/B/C)=1.508e-03/1.437e-03/1.522e-03 state=5.538e-02 delta_ratio=2.028e-02
+2026-07-15 18:08:33 transreid.train INFO: Epoch[66] Iter[100/227] Loss: 0.157, Acc: 0.993, Base Lr: 3.38e-04 | id_global: 0.125 tri_global: 0.033 | PoseSSM alpha=1.712e-01 gain=9.930e-02 dt=1.228e-02[4.287e-03,2.576e-02] dA=9.057e-01 pose(d/B/C)=1.549e-03/1.482e-03/1.571e-03 state=5.481e-02 delta_ratio=2.211e-02
+2026-07-15 18:08:41 transreid.train INFO: Epoch[66] Iter[150/227] Loss: 0.148, Acc: 0.993, Base Lr: 3.38e-04 | id_global: 0.117 tri_global: 0.031 | PoseSSM alpha=1.715e-01 gain=9.930e-02 dt=1.224e-02[4.272e-03,2.572e-02] dA=9.060e-01 pose(d/B/C)=1.565e-03/1.485e-03/1.587e-03 state=5.665e-02 delta_ratio=2.127e-02
+2026-07-15 18:08:49 transreid.train INFO: Epoch[66] Iter[200/227] Loss: 0.143, Acc: 0.993, Base Lr: 3.38e-04 | id_global: 0.112 tri_global: 0.031 | PoseSSM alpha=1.715e-01 gain=9.930e-02 dt=1.224e-02[4.243e-03,2.563e-02] dA=9.059e-01 pose(d/B/C)=1.549e-03/1.473e-03/1.563e-03 state=5.556e-02 delta_ratio=2.014e-02
+2026-07-15 18:08:51 transreid.train INFO: Epoch 66 done. Time per epoch: 34.651[s] Speed: 393.4[samples/s] ETA: 0h31m
+2026-07-15 18:09:00 transreid.train INFO: Epoch[67] Iter[50/227] Loss: 0.161, Acc: 0.991, Base Lr: 3.28e-04 | id_global: 0.134 tri_global: 0.027 | PoseSSM alpha=1.718e-01 gain=9.930e-02 dt=1.230e-02[4.289e-03,2.594e-02] dA=9.056e-01 pose(d/B/C)=1.521e-03/1.445e-03/1.532e-03 state=5.795e-02 delta_ratio=2.263e-02
+2026-07-15 18:09:08 transreid.train INFO: Epoch[67] Iter[100/227] Loss: 0.146, Acc: 0.992, Base Lr: 3.28e-04 | id_global: 0.124 tri_global: 0.022 | PoseSSM alpha=1.720e-01 gain=9.929e-02 dt=1.228e-02[4.273e-03,2.567e-02] dA=9.057e-01 pose(d/B/C)=1.558e-03/1.487e-03/1.567e-03 state=6.042e-02 delta_ratio=2.270e-02
+2026-07-15 18:09:16 transreid.train INFO: Epoch[67] Iter[150/227] Loss: 0.146, Acc: 0.992, Base Lr: 3.28e-04 | id_global: 0.120 tri_global: 0.026 | PoseSSM alpha=1.720e-01 gain=9.929e-02 dt=1.224e-02[4.236e-03,2.584e-02] dA=9.060e-01 pose(d/B/C)=1.521e-03/1.442e-03/1.532e-03 state=5.474e-02 delta_ratio=2.267e-02
+2026-07-15 18:09:23 transreid.train INFO: Epoch[67] Iter[200/227] Loss: 0.139, Acc: 0.993, Base Lr: 3.28e-04 | id_global: 0.113 tri_global: 0.026 | PoseSSM alpha=1.719e-01 gain=9.929e-02 dt=1.223e-02[4.247e-03,2.596e-02] dA=9.061e-01 pose(d/B/C)=1.551e-03/1.468e-03/1.558e-03 state=6.343e-02 delta_ratio=2.166e-02
+2026-07-15 18:09:25 transreid.train INFO: Epoch 67 done. Time per epoch: 34.339[s] Speed: 393.3[samples/s] ETA: 0h30m
+2026-07-15 18:09:34 transreid.train INFO: Epoch[68] Iter[50/227] Loss: 0.144, Acc: 0.994, Base Lr: 3.18e-04 | id_global: 0.121 tri_global: 0.023 | PoseSSM alpha=1.720e-01 gain=9.929e-02 dt=1.230e-02[4.224e-03,2.585e-02] dA=9.055e-01 pose(d/B/C)=1.493e-03/1.418e-03/1.517e-03 state=5.293e-02 delta_ratio=2.200e-02
+2026-07-15 18:09:42 transreid.train INFO: Epoch[68] Iter[100/227] Loss: 0.161, Acc: 0.994, Base Lr: 3.18e-04 | id_global: 0.122 tri_global: 0.039 | PoseSSM alpha=1.723e-01 gain=9.929e-02 dt=1.225e-02[4.280e-03,2.594e-02] dA=9.059e-01 pose(d/B/C)=1.547e-03/1.469e-03/1.562e-03 state=5.745e-02 delta_ratio=2.211e-02
+2026-07-15 18:09:50 transreid.train INFO: Epoch[68] Iter[150/227] Loss: 0.149, Acc: 0.993, Base Lr: 3.18e-04 | id_global: 0.117 tri_global: 0.032 | PoseSSM alpha=1.725e-01 gain=9.929e-02 dt=1.230e-02[4.277e-03,2.567e-02] dA=9.055e-01 pose(d/B/C)=1.519e-03/1.444e-03/1.531e-03 state=5.696e-02 delta_ratio=2.152e-02
+2026-07-15 18:09:58 transreid.train INFO: Epoch[68] Iter[200/227] Loss: 0.141, Acc: 0.994, Base Lr: 3.18e-04 | id_global: 0.109 tri_global: 0.032 | PoseSSM alpha=1.726e-01 gain=9.928e-02 dt=1.236e-02[4.276e-03,2.614e-02] dA=9.052e-01 pose(d/B/C)=1.561e-03/1.483e-03/1.572e-03 state=5.756e-02 delta_ratio=2.151e-02
+2026-07-15 18:10:00 transreid.train INFO: Epoch 68 done. Time per epoch: 34.659[s] Speed: 391.5[samples/s] ETA: 0h30m
+2026-07-15 18:10:09 transreid.train INFO: Epoch[69] Iter[50/227] Loss: 0.158, Acc: 0.991, Base Lr: 3.08e-04 | id_global: 0.127 tri_global: 0.031 | PoseSSM alpha=1.726e-01 gain=9.928e-02 dt=1.228e-02[4.278e-03,2.589e-02] dA=9.058e-01 pose(d/B/C)=1.580e-03/1.474e-03/1.590e-03 state=6.101e-02 delta_ratio=2.536e-02
+2026-07-15 18:10:17 transreid.train INFO: Epoch[69] Iter[100/227] Loss: 0.150, Acc: 0.991, Base Lr: 3.08e-04 | id_global: 0.123 tri_global: 0.027 | PoseSSM alpha=1.728e-01 gain=9.928e-02 dt=1.226e-02[4.263e-03,2.614e-02] dA=9.059e-01 pose(d/B/C)=1.553e-03/1.480e-03/1.569e-03 state=6.046e-02 delta_ratio=2.406e-02
+2026-07-15 18:10:25 transreid.train INFO: Epoch[69] Iter[150/227] Loss: 0.151, Acc: 0.991, Base Lr: 3.08e-04 | id_global: 0.121 tri_global: 0.030 | PoseSSM alpha=1.728e-01 gain=9.928e-02 dt=1.234e-02[4.279e-03,2.616e-02] dA=9.053e-01 pose(d/B/C)=1.596e-03/1.524e-03/1.616e-03 state=5.757e-02 delta_ratio=2.252e-02
+2026-07-15 18:10:32 transreid.train INFO: Epoch[69] Iter[200/227] Loss: 0.140, Acc: 0.991, Base Lr: 3.08e-04 | id_global: 0.111 tri_global: 0.029 | PoseSSM alpha=1.729e-01 gain=9.928e-02 dt=1.240e-02[4.364e-03,2.625e-02] dA=9.049e-01 pose(d/B/C)=1.499e-03/1.423e-03/1.522e-03 state=5.431e-02 delta_ratio=2.014e-02
+2026-07-15 18:10:34 transreid.train INFO: Epoch 69 done. Time per epoch: 34.279[s] Speed: 393.9[samples/s] ETA: 0h29m
+2026-07-15 18:10:43 transreid.train INFO: Epoch[70] Iter[50/227] Loss: 0.147, Acc: 0.995, Base Lr: 2.97e-04 | id_global: 0.124 tri_global: 0.023 | PoseSSM alpha=1.729e-01 gain=9.928e-02 dt=1.228e-02[4.293e-03,2.614e-02] dA=9.057e-01 pose(d/B/C)=1.506e-03/1.433e-03/1.514e-03 state=5.963e-02 delta_ratio=2.257e-02
+2026-07-15 18:10:51 transreid.train INFO: Epoch[70] Iter[100/227] Loss: 0.150, Acc: 0.993, Base Lr: 2.97e-04 | id_global: 0.119 tri_global: 0.031 | PoseSSM alpha=1.732e-01 gain=9.927e-02 dt=1.228e-02[4.302e-03,2.579e-02] dA=9.057e-01 pose(d/B/C)=1.553e-03/1.471e-03/1.561e-03 state=5.827e-02 delta_ratio=2.280e-02
+2026-07-15 18:10:59 transreid.train INFO: Epoch[70] Iter[150/227] Loss: 0.147, Acc: 0.994, Base Lr: 2.97e-04 | id_global: 0.115 tri_global: 0.032 | PoseSSM alpha=1.733e-01 gain=9.927e-02 dt=1.220e-02[4.259e-03,2.569e-02] dA=9.063e-01 pose(d/B/C)=1.570e-03/1.482e-03/1.576e-03 state=5.990e-02 delta_ratio=2.381e-02
+2026-07-15 18:11:07 transreid.train INFO: Epoch[70] Iter[200/227] Loss: 0.136, Acc: 0.994, Base Lr: 2.97e-04 | id_global: 0.106 tri_global: 0.031 | PoseSSM alpha=1.733e-01 gain=9.927e-02 dt=1.220e-02[4.253e-03,2.560e-02] dA=9.063e-01 pose(d/B/C)=1.510e-03/1.439e-03/1.529e-03 state=5.616e-02 delta_ratio=2.066e-02
+2026-07-15 18:11:09 transreid.train INFO: Epoch 70 done. Time per epoch: 34.674[s] Speed: 391.3[samples/s] ETA: 0h28m
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-15 18:11:59 transreid.train INFO: Validation Results - Epoch: 70
+2026-07-15 18:11:59 transreid.train INFO: mAP: 56.1%
+2026-07-15 18:11:59 transreid.train INFO: CMC curve, Rank-1  :65.2%
+2026-07-15 18:11:59 transreid.train INFO: CMC curve, Rank-5  :79.5%
+2026-07-15 18:11:59 transreid.train INFO: CMC curve, Rank-10 :84.3%
+2026-07-15 18:12:08 transreid.train INFO: Epoch[71] Iter[50/227] Loss: 0.161, Acc: 0.990, Base Lr: 2.87e-04 | id_global: 0.130 tri_global: 0.031 | PoseSSM alpha=1.737e-01 gain=9.927e-02 dt=1.225e-02[4.230e-03,2.590e-02] dA=9.060e-01 pose(d/B/C)=1.536e-03/1.471e-03/1.554e-03 state=6.064e-02 delta_ratio=2.145e-02
+2026-07-15 18:12:16 transreid.train INFO: Epoch[71] Iter[100/227] Loss: 0.157, Acc: 0.991, Base Lr: 2.87e-04 | id_global: 0.122 tri_global: 0.035 | PoseSSM alpha=1.738e-01 gain=9.927e-02 dt=1.234e-02[4.280e-03,2.588e-02] dA=9.053e-01 pose(d/B/C)=1.560e-03/1.494e-03/1.581e-03 state=5.649e-02 delta_ratio=2.198e-02
+2026-07-15 18:12:24 transreid.train INFO: Epoch[71] Iter[150/227] Loss: 0.147, Acc: 0.991, Base Lr: 2.87e-04 | id_global: 0.114 tri_global: 0.032 | PoseSSM alpha=1.741e-01 gain=9.927e-02 dt=1.225e-02[4.277e-03,2.586e-02] dA=9.060e-01 pose(d/B/C)=1.565e-03/1.492e-03/1.583e-03 state=5.977e-02 delta_ratio=2.262e-02
+2026-07-15 18:12:31 transreid.train INFO: Epoch[71] Iter[200/227] Loss: 0.141, Acc: 0.991, Base Lr: 2.87e-04 | id_global: 0.111 tri_global: 0.031 | PoseSSM alpha=1.741e-01 gain=9.926e-02 dt=1.234e-02[4.263e-03,2.608e-02] dA=9.053e-01 pose(d/B/C)=1.540e-03/1.464e-03/1.552e-03 state=5.680e-02 delta_ratio=1.990e-02
+2026-07-15 18:12:33 transreid.train INFO: Epoch 71 done. Time per epoch: 34.441[s] Speed: 393.9[samples/s] ETA: 0h28m
+2026-07-15 18:12:42 transreid.train INFO: Epoch[72] Iter[50/227] Loss: 0.153, Acc: 0.993, Base Lr: 2.77e-04 | id_global: 0.118 tri_global: 0.035 | PoseSSM alpha=1.743e-01 gain=9.926e-02 dt=1.236e-02[4.294e-03,2.611e-02] dA=9.052e-01 pose(d/B/C)=1.514e-03/1.449e-03/1.536e-03 state=5.612e-02 delta_ratio=2.280e-02
+2026-07-15 18:12:50 transreid.train INFO: Epoch[72] Iter[100/227] Loss: 0.140, Acc: 0.994, Base Lr: 2.77e-04 | id_global: 0.112 tri_global: 0.027 | PoseSSM alpha=1.745e-01 gain=9.926e-02 dt=1.224e-02[4.249e-03,2.569e-02] dA=9.061e-01 pose(d/B/C)=1.523e-03/1.451e-03/1.539e-03 state=5.740e-02 delta_ratio=2.115e-02
+2026-07-15 18:12:58 transreid.train INFO: Epoch[72] Iter[150/227] Loss: 0.145, Acc: 0.993, Base Lr: 2.77e-04 | id_global: 0.112 tri_global: 0.033 | PoseSSM alpha=1.747e-01 gain=9.926e-02 dt=1.238e-02[4.359e-03,2.586e-02] dA=9.050e-01 pose(d/B/C)=1.494e-03/1.422e-03/1.503e-03 state=5.729e-02 delta_ratio=2.184e-02
+2026-07-15 18:13:06 transreid.train INFO: Epoch[72] Iter[200/227] Loss: 0.137, Acc: 0.993, Base Lr: 2.77e-04 | id_global: 0.106 tri_global: 0.031 | PoseSSM alpha=1.748e-01 gain=9.926e-02 dt=1.235e-02[4.336e-03,2.586e-02] dA=9.052e-01 pose(d/B/C)=1.470e-03/1.399e-03/1.480e-03 state=5.532e-02 delta_ratio=2.104e-02
+2026-07-15 18:13:08 transreid.train INFO: Epoch 72 done. Time per epoch: 34.317[s] Speed: 393.5[samples/s] ETA: 0h27m
+2026-07-15 18:13:17 transreid.train INFO: Epoch[73] Iter[50/227] Loss: 0.162, Acc: 0.993, Base Lr: 2.68e-04 | id_global: 0.128 tri_global: 0.034 | PoseSSM alpha=1.750e-01 gain=9.926e-02 dt=1.224e-02[4.314e-03,2.569e-02] dA=9.060e-01 pose(d/B/C)=1.521e-03/1.444e-03/1.534e-03 state=5.723e-02 delta_ratio=2.139e-02
+2026-07-15 18:13:24 transreid.train INFO: Epoch[73] Iter[100/227] Loss: 0.142, Acc: 0.994, Base Lr: 2.68e-04 | id_global: 0.115 tri_global: 0.027 | PoseSSM alpha=1.751e-01 gain=9.926e-02 dt=1.224e-02[4.290e-03,2.562e-02] dA=9.060e-01 pose(d/B/C)=1.547e-03/1.473e-03/1.562e-03 state=6.041e-02 delta_ratio=2.503e-02
+2026-07-15 18:13:32 transreid.train INFO: Epoch[73] Iter[150/227] Loss: 0.131, Acc: 0.993, Base Lr: 2.68e-04 | id_global: 0.108 tri_global: 0.023 | PoseSSM alpha=1.752e-01 gain=9.925e-02 dt=1.227e-02[4.308e-03,2.569e-02] dA=9.059e-01 pose(d/B/C)=1.540e-03/1.453e-03/1.555e-03 state=5.453e-02 delta_ratio=2.131e-02
+2026-07-15 18:13:40 transreid.train INFO: Epoch[73] Iter[200/227] Loss: 0.125, Acc: 0.994, Base Lr: 2.68e-04 | id_global: 0.101 tri_global: 0.024 | PoseSSM alpha=1.752e-01 gain=9.925e-02 dt=1.236e-02[4.343e-03,2.607e-02] dA=9.052e-01 pose(d/B/C)=1.513e-03/1.434e-03/1.520e-03 state=5.514e-02 delta_ratio=2.100e-02
+2026-07-15 18:13:42 transreid.train INFO: Epoch 73 done. Time per epoch: 34.420[s] Speed: 392.3[samples/s] ETA: 0h26m
+2026-07-15 18:13:51 transreid.train INFO: Epoch[74] Iter[50/227] Loss: 0.136, Acc: 0.993, Base Lr: 2.58e-04 | id_global: 0.117 tri_global: 0.020 | PoseSSM alpha=1.751e-01 gain=9.925e-02 dt=1.235e-02[4.299e-03,2.621e-02] dA=9.053e-01 pose(d/B/C)=1.529e-03/1.450e-03/1.543e-03 state=5.726e-02 delta_ratio=2.313e-02
+2026-07-15 18:13:59 transreid.train INFO: Epoch[74] Iter[100/227] Loss: 0.140, Acc: 0.992, Base Lr: 2.58e-04 | id_global: 0.118 tri_global: 0.021 | PoseSSM alpha=1.752e-01 gain=9.925e-02 dt=1.224e-02[4.222e-03,2.598e-02] dA=9.061e-01 pose(d/B/C)=1.573e-03/1.493e-03/1.584e-03 state=5.901e-02 delta_ratio=2.349e-02
+2026-07-15 18:14:07 transreid.train INFO: Epoch[74] Iter[150/227] Loss: 0.136, Acc: 0.992, Base Lr: 2.58e-04 | id_global: 0.113 tri_global: 0.023 | PoseSSM alpha=1.752e-01 gain=9.925e-02 dt=1.233e-02[4.251e-03,2.592e-02] dA=9.054e-01 pose(d/B/C)=1.549e-03/1.469e-03/1.563e-03 state=5.361e-02 delta_ratio=2.139e-02
+2026-07-15 18:14:15 transreid.train INFO: Epoch[74] Iter[200/227] Loss: 0.126, Acc: 0.993, Base Lr: 2.58e-04 | id_global: 0.104 tri_global: 0.022 | PoseSSM alpha=1.753e-01 gain=9.925e-02 dt=1.239e-02[4.252e-03,2.622e-02] dA=9.050e-01 pose(d/B/C)=1.457e-03/1.386e-03/1.468e-03 state=5.523e-02 delta_ratio=1.933e-02
+2026-07-15 18:14:17 transreid.train INFO: Epoch 74 done. Time per epoch: 34.642[s] Speed: 393.5[samples/s] ETA: 0h26m
+2026-07-15 18:14:26 transreid.train INFO: Epoch[75] Iter[50/227] Loss: 0.158, Acc: 0.989, Base Lr: 2.48e-04 | id_global: 0.127 tri_global: 0.031 | PoseSSM alpha=1.755e-01 gain=9.924e-02 dt=1.234e-02[4.305e-03,2.614e-02] dA=9.055e-01 pose(d/B/C)=1.554e-03/1.478e-03/1.565e-03 state=5.842e-02 delta_ratio=2.165e-02
+2026-07-15 18:14:34 transreid.train INFO: Epoch[75] Iter[100/227] Loss: 0.143, Acc: 0.992, Base Lr: 2.48e-04 | id_global: 0.115 tri_global: 0.029 | PoseSSM alpha=1.755e-01 gain=9.924e-02 dt=1.231e-02[4.266e-03,2.606e-02] dA=9.056e-01 pose(d/B/C)=1.523e-03/1.448e-03/1.539e-03 state=5.297e-02 delta_ratio=2.003e-02
+2026-07-15 18:14:41 transreid.train INFO: Epoch[75] Iter[150/227] Loss: 0.133, Acc: 0.992, Base Lr: 2.48e-04 | id_global: 0.107 tri_global: 0.026 | PoseSSM alpha=1.757e-01 gain=9.924e-02 dt=1.235e-02[4.299e-03,2.603e-02] dA=9.053e-01 pose(d/B/C)=1.526e-03/1.453e-03/1.536e-03 state=5.935e-02 delta_ratio=2.164e-02
+2026-07-15 18:14:49 transreid.train INFO: Epoch[75] Iter[200/227] Loss: 0.128, Acc: 0.993, Base Lr: 2.48e-04 | id_global: 0.101 tri_global: 0.027 | PoseSSM alpha=1.757e-01 gain=9.924e-02 dt=1.237e-02[4.295e-03,2.604e-02] dA=9.051e-01 pose(d/B/C)=1.553e-03/1.467e-03/1.560e-03 state=5.875e-02 delta_ratio=2.097e-02
+2026-07-15 18:14:51 transreid.train INFO: Epoch 75 done. Time per epoch: 34.484[s] Speed: 393.5[samples/s] ETA: 0h25m
+2026-07-15 18:15:00 transreid.train INFO: Epoch[76] Iter[50/227] Loss: 0.128, Acc: 0.993, Base Lr: 2.38e-04 | id_global: 0.114 tri_global: 0.013 | PoseSSM alpha=1.758e-01 gain=9.924e-02 dt=1.233e-02[4.286e-03,2.606e-02] dA=9.055e-01 pose(d/B/C)=1.539e-03/1.459e-03/1.550e-03 state=5.980e-02 delta_ratio=2.156e-02
+2026-07-15 18:15:08 transreid.train INFO: Epoch[76] Iter[100/227] Loss: 0.123, Acc: 0.995, Base Lr: 2.38e-04 | id_global: 0.105 tri_global: 0.018 | PoseSSM alpha=1.759e-01 gain=9.924e-02 dt=1.234e-02[4.277e-03,2.611e-02] dA=9.054e-01 pose(d/B/C)=1.541e-03/1.461e-03/1.553e-03 state=5.866e-02 delta_ratio=2.214e-02
+2026-07-15 18:15:16 transreid.train INFO: Epoch[76] Iter[150/227] Loss: 0.117, Acc: 0.995, Base Lr: 2.38e-04 | id_global: 0.099 tri_global: 0.018 | PoseSSM alpha=1.760e-01 gain=9.924e-02 dt=1.229e-02[4.298e-03,2.603e-02] dA=9.057e-01 pose(d/B/C)=1.510e-03/1.440e-03/1.531e-03 state=5.736e-02 delta_ratio=2.252e-02
+2026-07-15 18:15:24 transreid.train INFO: Epoch[76] Iter[200/227] Loss: 0.111, Acc: 0.995, Base Lr: 2.38e-04 | id_global: 0.092 tri_global: 0.019 | PoseSSM alpha=1.760e-01 gain=9.924e-02 dt=1.239e-02[4.313e-03,2.587e-02] dA=9.050e-01 pose(d/B/C)=1.594e-03/1.510e-03/1.606e-03 state=5.337e-02 delta_ratio=1.839e-02
+2026-07-15 18:15:26 transreid.train INFO: Epoch 76 done. Time per epoch: 34.547[s] Speed: 392.7[samples/s] ETA: 0h25m
+2026-07-15 18:15:35 transreid.train INFO: Epoch[77] Iter[50/227] Loss: 0.154, Acc: 0.995, Base Lr: 2.29e-04 | id_global: 0.113 tri_global: 0.041 | PoseSSM alpha=1.760e-01 gain=9.923e-02 dt=1.229e-02[4.290e-03,2.595e-02] dA=9.057e-01 pose(d/B/C)=1.550e-03/1.466e-03/1.565e-03 state=6.040e-02 delta_ratio=2.270e-02
+2026-07-15 18:15:43 transreid.train INFO: Epoch[77] Iter[100/227] Loss: 0.151, Acc: 0.994, Base Lr: 2.29e-04 | id_global: 0.109 tri_global: 0.042 | PoseSSM alpha=1.759e-01 gain=9.923e-02 dt=1.234e-02[4.321e-03,2.595e-02] dA=9.054e-01 pose(d/B/C)=1.524e-03/1.456e-03/1.532e-03 state=5.934e-02 delta_ratio=2.083e-02
+2026-07-15 18:15:51 transreid.train INFO: Epoch[77] Iter[150/227] Loss: 0.133, Acc: 0.995, Base Lr: 2.29e-04 | id_global: 0.100 tri_global: 0.033 | PoseSSM alpha=1.760e-01 gain=9.923e-02 dt=1.244e-02[4.314e-03,2.621e-02] dA=9.047e-01 pose(d/B/C)=1.545e-03/1.470e-03/1.565e-03 state=5.339e-02 delta_ratio=2.093e-02
+2026-07-15 18:15:59 transreid.train INFO: Epoch[77] Iter[200/227] Loss: 0.122, Acc: 0.994, Base Lr: 2.29e-04 | id_global: 0.092 tri_global: 0.029 | PoseSSM alpha=1.760e-01 gain=9.923e-02 dt=1.232e-02[4.343e-03,2.583e-02] dA=9.055e-01 pose(d/B/C)=1.525e-03/1.443e-03/1.539e-03 state=5.659e-02 delta_ratio=2.170e-02
+2026-07-15 18:16:00 transreid.train INFO: Epoch 77 done. Time per epoch: 34.670[s] Speed: 391.3[samples/s] ETA: 0h24m
+2026-07-15 18:16:09 transreid.train INFO: Epoch[78] Iter[50/227] Loss: 0.132, Acc: 0.993, Base Lr: 2.20e-04 | id_global: 0.107 tri_global: 0.025 | PoseSSM alpha=1.763e-01 gain=9.923e-02 dt=1.242e-02[4.326e-03,2.612e-02] dA=9.048e-01 pose(d/B/C)=1.536e-03/1.464e-03/1.557e-03 state=5.570e-02 delta_ratio=2.152e-02
+2026-07-15 18:16:17 transreid.train INFO: Epoch[78] Iter[100/227] Loss: 0.125, Acc: 0.993, Base Lr: 2.20e-04 | id_global: 0.103 tri_global: 0.022 | PoseSSM alpha=1.764e-01 gain=9.923e-02 dt=1.234e-02[4.326e-03,2.577e-02] dA=9.054e-01 pose(d/B/C)=1.534e-03/1.467e-03/1.550e-03 state=5.520e-02 delta_ratio=2.145e-02
+2026-07-15 18:16:25 transreid.train INFO: Epoch[78] Iter[150/227] Loss: 0.118, Acc: 0.994, Base Lr: 2.20e-04 | id_global: 0.097 tri_global: 0.021 | PoseSSM alpha=1.766e-01 gain=9.923e-02 dt=1.220e-02[4.318e-03,2.526e-02] dA=9.063e-01 pose(d/B/C)=1.493e-03/1.418e-03/1.507e-03 state=5.896e-02 delta_ratio=2.229e-02
+2026-07-15 18:16:33 transreid.train INFO: Epoch[78] Iter[200/227] Loss: 0.113, Acc: 0.994, Base Lr: 2.20e-04 | id_global: 0.091 tri_global: 0.022 | PoseSSM alpha=1.767e-01 gain=9.923e-02 dt=1.236e-02[4.360e-03,2.597e-02] dA=9.052e-01 pose(d/B/C)=1.498e-03/1.424e-03/1.516e-03 state=5.734e-02 delta_ratio=2.172e-02
+2026-07-15 18:16:35 transreid.train INFO: Epoch 78 done. Time per epoch: 34.516[s] Speed: 393.1[samples/s] ETA: 0h24m
+2026-07-15 18:16:44 transreid.train INFO: Epoch[79] Iter[50/227] Loss: 0.139, Acc: 0.994, Base Lr: 2.10e-04 | id_global: 0.108 tri_global: 0.031 | PoseSSM alpha=1.767e-01 gain=9.922e-02 dt=1.228e-02[4.318e-03,2.569e-02] dA=9.058e-01 pose(d/B/C)=1.462e-03/1.398e-03/1.476e-03 state=5.073e-02 delta_ratio=1.938e-02
+2026-07-15 18:16:52 transreid.train INFO: Epoch[79] Iter[100/227] Loss: 0.137, Acc: 0.993, Base Lr: 2.10e-04 | id_global: 0.107 tri_global: 0.030 | PoseSSM alpha=1.768e-01 gain=9.922e-02 dt=1.232e-02[4.316e-03,2.590e-02] dA=9.055e-01 pose(d/B/C)=1.523e-03/1.447e-03/1.534e-03 state=5.679e-02 delta_ratio=2.231e-02
+2026-07-15 18:17:00 transreid.train INFO: Epoch[79] Iter[150/227] Loss: 0.132, Acc: 0.994, Base Lr: 2.10e-04 | id_global: 0.103 tri_global: 0.029 | PoseSSM alpha=1.768e-01 gain=9.922e-02 dt=1.227e-02[4.268e-03,2.577e-02] dA=9.059e-01 pose(d/B/C)=1.475e-03/1.403e-03/1.482e-03 state=5.655e-02 delta_ratio=2.212e-02
+2026-07-15 18:17:08 transreid.train INFO: Epoch[79] Iter[200/227] Loss: 0.120, Acc: 0.994, Base Lr: 2.10e-04 | id_global: 0.094 tri_global: 0.026 | PoseSSM alpha=1.769e-01 gain=9.922e-02 dt=1.236e-02[4.288e-03,2.593e-02] dA=9.052e-01 pose(d/B/C)=1.487e-03/1.413e-03/1.505e-03 state=5.345e-02 delta_ratio=1.841e-02
+2026-07-15 18:17:09 transreid.train INFO: Epoch 79 done. Time per epoch: 34.376[s] Speed: 392.8[samples/s] ETA: 0h23m
+2026-07-15 18:17:18 transreid.train INFO: Epoch[80] Iter[50/227] Loss: 0.144, Acc: 0.992, Base Lr: 2.01e-04 | id_global: 0.113 tri_global: 0.030 | PoseSSM alpha=1.768e-01 gain=9.922e-02 dt=1.228e-02[4.253e-03,2.585e-02] dA=9.058e-01 pose(d/B/C)=1.565e-03/1.483e-03/1.578e-03 state=5.464e-02 delta_ratio=1.980e-02
+2026-07-15 18:17:26 transreid.train INFO: Epoch[80] Iter[100/227] Loss: 0.134, Acc: 0.993, Base Lr: 2.01e-04 | id_global: 0.106 tri_global: 0.027 | PoseSSM alpha=1.768e-01 gain=9.922e-02 dt=1.220e-02[4.251e-03,2.559e-02] dA=9.063e-01 pose(d/B/C)=1.529e-03/1.461e-03/1.542e-03 state=5.449e-02 delta_ratio=2.110e-02
+2026-07-15 18:17:34 transreid.train INFO: Epoch[80] Iter[150/227] Loss: 0.127, Acc: 0.994, Base Lr: 2.01e-04 | id_global: 0.100 tri_global: 0.027 | PoseSSM alpha=1.768e-01 gain=9.922e-02 dt=1.246e-02[4.349e-03,2.634e-02] dA=9.046e-01 pose(d/B/C)=1.556e-03/1.466e-03/1.558e-03 state=5.711e-02 delta_ratio=2.298e-02
+2026-07-15 18:17:42 transreid.train INFO: Epoch[80] Iter[200/227] Loss: 0.118, Acc: 0.995, Base Lr: 2.01e-04 | id_global: 0.093 tri_global: 0.025 | PoseSSM alpha=1.769e-01 gain=9.922e-02 dt=1.229e-02[4.328e-03,2.554e-02] dA=9.057e-01 pose(d/B/C)=1.557e-03/1.484e-03/1.574e-03 state=5.518e-02 delta_ratio=1.995e-02
+2026-07-15 18:17:44 transreid.train INFO: Epoch 80 done. Time per epoch: 34.487[s] Speed: 391.6[samples/s] ETA: 0h22m
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-15 18:18:34 transreid.train INFO: Validation Results - Epoch: 80
+2026-07-15 18:18:34 transreid.train INFO: mAP: 57.6%
+2026-07-15 18:18:34 transreid.train INFO: CMC curve, Rank-1  :66.6%
+2026-07-15 18:18:34 transreid.train INFO: CMC curve, Rank-5  :80.8%
+2026-07-15 18:18:34 transreid.train INFO: CMC curve, Rank-10 :85.9%
+2026-07-15 18:18:43 transreid.train INFO: Epoch[81] Iter[50/227] Loss: 0.124, Acc: 0.994, Base Lr: 1.92e-04 | id_global: 0.108 tri_global: 0.016 | PoseSSM alpha=1.771e-01 gain=9.922e-02 dt=1.228e-02[4.310e-03,2.566e-02] dA=9.058e-01 pose(d/B/C)=1.523e-03/1.448e-03/1.541e-03 state=5.578e-02 delta_ratio=2.140e-02
+2026-07-15 18:18:51 transreid.train INFO: Epoch[81] Iter[100/227] Loss: 0.120, Acc: 0.994, Base Lr: 1.92e-04 | id_global: 0.101 tri_global: 0.019 | PoseSSM alpha=1.771e-01 gain=9.921e-02 dt=1.239e-02[4.315e-03,2.609e-02] dA=9.050e-01 pose(d/B/C)=1.542e-03/1.466e-03/1.554e-03 state=5.372e-02 delta_ratio=2.015e-02
+2026-07-15 18:18:59 transreid.train INFO: Epoch[81] Iter[150/227] Loss: 0.112, Acc: 0.994, Base Lr: 1.92e-04 | id_global: 0.095 tri_global: 0.017 | PoseSSM alpha=1.772e-01 gain=9.921e-02 dt=1.241e-02[4.341e-03,2.606e-02] dA=9.049e-01 pose(d/B/C)=1.612e-03/1.526e-03/1.627e-03 state=5.458e-02 delta_ratio=1.985e-02
+2026-07-15 18:19:06 transreid.train INFO: Epoch[81] Iter[200/227] Loss: 0.109, Acc: 0.995, Base Lr: 1.92e-04 | id_global: 0.090 tri_global: 0.018 | PoseSSM alpha=1.773e-01 gain=9.921e-02 dt=1.238e-02[4.286e-03,2.603e-02] dA=9.051e-01 pose(d/B/C)=1.532e-03/1.453e-03/1.552e-03 state=5.442e-02 delta_ratio=2.026e-02
+2026-07-15 18:19:08 transreid.train INFO: Epoch 81 done. Time per epoch: 34.204[s] Speed: 396.7[samples/s] ETA: 0h22m
+2026-07-15 18:19:17 transreid.train INFO: Epoch[82] Iter[50/227] Loss: 0.121, Acc: 0.992, Base Lr: 1.83e-04 | id_global: 0.103 tri_global: 0.018 | PoseSSM alpha=1.773e-01 gain=9.921e-02 dt=1.246e-02[4.316e-03,2.615e-02] dA=9.046e-01 pose(d/B/C)=1.519e-03/1.451e-03/1.531e-03 state=5.790e-02 delta_ratio=2.223e-02
+2026-07-15 18:19:25 transreid.train INFO: Epoch[82] Iter[100/227] Loss: 0.119, Acc: 0.993, Base Lr: 1.83e-04 | id_global: 0.099 tri_global: 0.020 | PoseSSM alpha=1.775e-01 gain=9.921e-02 dt=1.233e-02[4.326e-03,2.587e-02] dA=9.055e-01 pose(d/B/C)=1.561e-03/1.490e-03/1.577e-03 state=5.788e-02 delta_ratio=2.283e-02
+2026-07-15 18:19:33 transreid.train INFO: Epoch[82] Iter[150/227] Loss: 0.113, Acc: 0.994, Base Lr: 1.83e-04 | id_global: 0.094 tri_global: 0.019 | PoseSSM alpha=1.776e-01 gain=9.921e-02 dt=1.235e-02[4.318e-03,2.601e-02] dA=9.054e-01 pose(d/B/C)=1.560e-03/1.481e-03/1.569e-03 state=5.768e-02 delta_ratio=2.177e-02
+2026-07-15 18:19:41 transreid.train INFO: Epoch[82] Iter[200/227] Loss: 0.107, Acc: 0.994, Base Lr: 1.83e-04 | id_global: 0.088 tri_global: 0.019 | PoseSSM alpha=1.777e-01 gain=9.921e-02 dt=1.231e-02[4.257e-03,2.590e-02] dA=9.057e-01 pose(d/B/C)=1.520e-03/1.454e-03/1.529e-03 state=5.535e-02 delta_ratio=1.927e-02
+2026-07-15 18:19:43 transreid.train INFO: Epoch 82 done. Time per epoch: 34.549[s] Speed: 394.6[samples/s] ETA: 0h21m
+2026-07-15 18:19:52 transreid.train INFO: Epoch[83] Iter[50/227] Loss: 0.105, Acc: 0.997, Base Lr: 1.75e-04 | id_global: 0.093 tri_global: 0.012 | PoseSSM alpha=1.778e-01 gain=9.921e-02 dt=1.234e-02[4.308e-03,2.601e-02] dA=9.054e-01 pose(d/B/C)=1.572e-03/1.496e-03/1.575e-03 state=5.827e-02 delta_ratio=2.151e-02
+2026-07-15 18:19:59 transreid.train INFO: Epoch[83] Iter[100/227] Loss: 0.112, Acc: 0.995, Base Lr: 1.75e-04 | id_global: 0.094 tri_global: 0.018 | PoseSSM alpha=1.778e-01 gain=9.921e-02 dt=1.249e-02[4.360e-03,2.647e-02] dA=9.044e-01 pose(d/B/C)=1.522e-03/1.443e-03/1.529e-03 state=6.125e-02 delta_ratio=2.066e-02
+2026-07-15 18:20:07 transreid.train INFO: Epoch[83] Iter[150/227] Loss: 0.111, Acc: 0.995, Base Lr: 1.75e-04 | id_global: 0.090 tri_global: 0.020 | PoseSSM alpha=1.779e-01 gain=9.921e-02 dt=1.239e-02[4.314e-03,2.612e-02] dA=9.051e-01 pose(d/B/C)=1.536e-03/1.461e-03/1.548e-03 state=5.848e-02 delta_ratio=2.267e-02
+2026-07-15 18:20:15 transreid.train INFO: Epoch[83] Iter[200/227] Loss: 0.105, Acc: 0.995, Base Lr: 1.75e-04 | id_global: 0.085 tri_global: 0.019 | PoseSSM alpha=1.778e-01 gain=9.920e-02 dt=1.242e-02[4.332e-03,2.608e-02] dA=9.049e-01 pose(d/B/C)=1.515e-03/1.434e-03/1.527e-03 state=5.792e-02 delta_ratio=2.059e-02
+2026-07-15 18:20:17 transreid.train INFO: Epoch 83 done. Time per epoch: 34.514[s] Speed: 396.8[samples/s] ETA: 0h21m
+2026-07-15 18:20:26 transreid.train INFO: Epoch[84] Iter[50/227] Loss: 0.120, Acc: 0.994, Base Lr: 1.66e-04 | id_global: 0.101 tri_global: 0.019 | PoseSSM alpha=1.778e-01 gain=9.920e-02 dt=1.233e-02[4.274e-03,2.589e-02] dA=9.055e-01 pose(d/B/C)=1.460e-03/1.385e-03/1.475e-03 state=5.643e-02 delta_ratio=2.121e-02
+2026-07-15 18:20:34 transreid.train INFO: Epoch[84] Iter[100/227] Loss: 0.117, Acc: 0.993, Base Lr: 1.66e-04 | id_global: 0.099 tri_global: 0.019 | PoseSSM alpha=1.780e-01 gain=9.920e-02 dt=1.234e-02[4.293e-03,2.600e-02] dA=9.055e-01 pose(d/B/C)=1.562e-03/1.488e-03/1.577e-03 state=5.837e-02 delta_ratio=2.068e-02
+2026-07-15 18:20:42 transreid.train INFO: Epoch[84] Iter[150/227] Loss: 0.110, Acc: 0.994, Base Lr: 1.66e-04 | id_global: 0.094 tri_global: 0.016 | PoseSSM alpha=1.781e-01 gain=9.920e-02 dt=1.243e-02[4.334e-03,2.621e-02] dA=9.049e-01 pose(d/B/C)=1.558e-03/1.485e-03/1.576e-03 state=5.534e-02 delta_ratio=2.040e-02
+2026-07-15 18:20:50 transreid.train INFO: Epoch[84] Iter[200/227] Loss: 0.104, Acc: 0.994, Base Lr: 1.66e-04 | id_global: 0.088 tri_global: 0.016 | PoseSSM alpha=1.782e-01 gain=9.920e-02 dt=1.238e-02[4.340e-03,2.593e-02] dA=9.052e-01 pose(d/B/C)=1.531e-03/1.452e-03/1.543e-03 state=5.698e-02 delta_ratio=1.953e-02
+2026-07-15 18:20:52 transreid.train INFO: Epoch 84 done. Time per epoch: 34.366[s] Speed: 394.8[samples/s] ETA: 0h20m
+2026-07-15 18:21:01 transreid.train INFO: Epoch[85] Iter[50/227] Loss: 0.119, Acc: 0.994, Base Lr: 1.58e-04 | id_global: 0.102 tri_global: 0.017 | PoseSSM alpha=1.782e-01 gain=9.920e-02 dt=1.235e-02[4.344e-03,2.614e-02] dA=9.054e-01 pose(d/B/C)=1.620e-03/1.533e-03/1.633e-03 state=5.980e-02 delta_ratio=2.193e-02
+2026-07-15 18:21:09 transreid.train INFO: Epoch[85] Iter[100/227] Loss: 0.114, Acc: 0.994, Base Lr: 1.58e-04 | id_global: 0.095 tri_global: 0.019 | PoseSSM alpha=1.783e-01 gain=9.920e-02 dt=1.226e-02[4.360e-03,2.576e-02] dA=9.059e-01 pose(d/B/C)=1.536e-03/1.453e-03/1.543e-03 state=5.574e-02 delta_ratio=2.094e-02
+2026-07-15 18:21:16 transreid.train INFO: Epoch[85] Iter[150/227] Loss: 0.113, Acc: 0.995, Base Lr: 1.58e-04 | id_global: 0.091 tri_global: 0.021 | PoseSSM alpha=1.783e-01 gain=9.920e-02 dt=1.232e-02[4.360e-03,2.573e-02] dA=9.056e-01 pose(d/B/C)=1.532e-03/1.458e-03/1.545e-03 state=5.489e-02 delta_ratio=2.136e-02
+2026-07-15 18:21:24 transreid.train INFO: Epoch[85] Iter[200/227] Loss: 0.105, Acc: 0.995, Base Lr: 1.58e-04 | id_global: 0.086 tri_global: 0.020 | PoseSSM alpha=1.783e-01 gain=9.920e-02 dt=1.222e-02[4.347e-03,2.543e-02] dA=9.062e-01 pose(d/B/C)=1.586e-03/1.494e-03/1.589e-03 state=5.691e-02 delta_ratio=2.040e-02
+2026-07-15 18:21:26 transreid.train INFO: Epoch 85 done. Time per epoch: 34.342[s] Speed: 393.2[samples/s] ETA: 0h20m
+2026-07-15 18:21:35 transreid.train INFO: Epoch[86] Iter[50/227] Loss: 0.117, Acc: 0.996, Base Lr: 1.50e-04 | id_global: 0.096 tri_global: 0.020 | PoseSSM alpha=1.784e-01 gain=9.920e-02 dt=1.241e-02[4.321e-03,2.622e-02] dA=9.050e-01 pose(d/B/C)=1.554e-03/1.482e-03/1.568e-03 state=5.807e-02 delta_ratio=2.123e-02
+2026-07-15 18:21:43 transreid.train INFO: Epoch[86] Iter[100/227] Loss: 0.110, Acc: 0.995, Base Lr: 1.50e-04 | id_global: 0.091 tri_global: 0.019 | PoseSSM alpha=1.785e-01 gain=9.920e-02 dt=1.239e-02[4.356e-03,2.584e-02] dA=9.051e-01 pose(d/B/C)=1.535e-03/1.452e-03/1.545e-03 state=5.402e-02 delta_ratio=2.072e-02
+2026-07-15 18:21:51 transreid.train INFO: Epoch[86] Iter[150/227] Loss: 0.102, Acc: 0.995, Base Lr: 1.50e-04 | id_global: 0.086 tri_global: 0.016 | PoseSSM alpha=1.785e-01 gain=9.920e-02 dt=1.234e-02[4.349e-03,2.592e-02] dA=9.054e-01 pose(d/B/C)=1.476e-03/1.394e-03/1.487e-03 state=5.733e-02 delta_ratio=2.243e-02
+2026-07-15 18:21:59 transreid.train INFO: Epoch[86] Iter[200/227] Loss: 0.097, Acc: 0.995, Base Lr: 1.50e-04 | id_global: 0.081 tri_global: 0.016 | PoseSSM alpha=1.785e-01 gain=9.919e-02 dt=1.238e-02[4.288e-03,2.629e-02] dA=9.052e-01 pose(d/B/C)=1.502e-03/1.430e-03/1.522e-03 state=5.264e-02 delta_ratio=1.882e-02
+2026-07-15 18:22:00 transreid.train INFO: Epoch 86 done. Time per epoch: 34.398[s] Speed: 394.4[samples/s] ETA: 0h19m
+2026-07-15 18:22:09 transreid.train INFO: Epoch[87] Iter[50/227] Loss: 0.099, Acc: 0.994, Base Lr: 1.42e-04 | id_global: 0.090 tri_global: 0.009 | PoseSSM alpha=1.787e-01 gain=9.919e-02 dt=1.233e-02[4.325e-03,2.584e-02] dA=9.055e-01 pose(d/B/C)=1.513e-03/1.427e-03/1.528e-03 state=5.695e-02 delta_ratio=2.089e-02
+2026-07-15 18:22:17 transreid.train INFO: Epoch[87] Iter[100/227] Loss: 0.101, Acc: 0.995, Base Lr: 1.42e-04 | id_global: 0.089 tri_global: 0.012 | PoseSSM alpha=1.788e-01 gain=9.919e-02 dt=1.229e-02[4.358e-03,2.591e-02] dA=9.058e-01 pose(d/B/C)=1.548e-03/1.469e-03/1.563e-03 state=5.389e-02 delta_ratio=1.958e-02
+2026-07-15 18:22:25 transreid.train INFO: Epoch[87] Iter[150/227] Loss: 0.108, Acc: 0.995, Base Lr: 1.42e-04 | id_global: 0.088 tri_global: 0.020 | PoseSSM alpha=1.788e-01 gain=9.919e-02 dt=1.232e-02[4.352e-03,2.580e-02] dA=9.056e-01 pose(d/B/C)=1.536e-03/1.462e-03/1.547e-03 state=6.040e-02 delta_ratio=2.212e-02
+2026-07-15 18:22:33 transreid.train INFO: Epoch[87] Iter[200/227] Loss: 0.103, Acc: 0.995, Base Lr: 1.42e-04 | id_global: 0.082 tri_global: 0.020 | PoseSSM alpha=1.788e-01 gain=9.919e-02 dt=1.239e-02[4.361e-03,2.595e-02] dA=9.051e-01 pose(d/B/C)=1.586e-03/1.493e-03/1.595e-03 state=5.916e-02 delta_ratio=2.123e-02
+2026-07-15 18:22:35 transreid.train INFO: Epoch 87 done. Time per epoch: 34.320[s] Speed: 395.3[samples/s] ETA: 0h18m
+2026-07-15 18:22:44 transreid.train INFO: Epoch[88] Iter[50/227] Loss: 0.124, Acc: 0.993, Base Lr: 1.34e-04 | id_global: 0.104 tri_global: 0.020 | PoseSSM alpha=1.789e-01 gain=9.919e-02 dt=1.236e-02[4.383e-03,2.599e-02] dA=9.053e-01 pose(d/B/C)=1.480e-03/1.406e-03/1.494e-03 state=5.551e-02 delta_ratio=2.100e-02
+2026-07-15 18:22:51 transreid.train INFO: Epoch[88] Iter[100/227] Loss: 0.108, Acc: 0.995, Base Lr: 1.34e-04 | id_global: 0.090 tri_global: 0.017 | PoseSSM alpha=1.789e-01 gain=9.919e-02 dt=1.232e-02[4.310e-03,2.575e-02] dA=9.055e-01 pose(d/B/C)=1.486e-03/1.422e-03/1.497e-03 state=5.640e-02 delta_ratio=2.234e-02
+2026-07-15 18:22:59 transreid.train INFO: Epoch[88] Iter[150/227] Loss: 0.109, Acc: 0.995, Base Lr: 1.34e-04 | id_global: 0.088 tri_global: 0.020 | PoseSSM alpha=1.789e-01 gain=9.919e-02 dt=1.238e-02[4.366e-03,2.578e-02] dA=9.051e-01 pose(d/B/C)=1.558e-03/1.482e-03/1.569e-03 state=6.102e-02 delta_ratio=2.410e-02
+2026-07-15 18:23:07 transreid.train INFO: Epoch[88] Iter[200/227] Loss: 0.101, Acc: 0.995, Base Lr: 1.34e-04 | id_global: 0.082 tri_global: 0.019 | PoseSSM alpha=1.791e-01 gain=9.919e-02 dt=1.238e-02[4.351e-03,2.589e-02] dA=9.051e-01 pose(d/B/C)=1.517e-03/1.437e-03/1.532e-03 state=5.988e-02 delta_ratio=2.099e-02
+2026-07-15 18:23:09 transreid.train INFO: Epoch 88 done. Time per epoch: 34.154[s] Speed: 395.4[samples/s] ETA: 0h18m
+2026-07-15 18:23:18 transreid.train INFO: Epoch[89] Iter[50/227] Loss: 0.123, Acc: 0.992, Base Lr: 1.26e-04 | id_global: 0.098 tri_global: 0.026 | PoseSSM alpha=1.792e-01 gain=9.919e-02 dt=1.231e-02[4.358e-03,2.575e-02] dA=9.056e-01 pose(d/B/C)=1.493e-03/1.415e-03/1.504e-03 state=5.802e-02 delta_ratio=2.366e-02
+2026-07-15 18:23:26 transreid.train INFO: Epoch[89] Iter[100/227] Loss: 0.115, Acc: 0.992, Base Lr: 1.26e-04 | id_global: 0.091 tri_global: 0.024 | PoseSSM alpha=1.793e-01 gain=9.919e-02 dt=1.231e-02[4.324e-03,2.587e-02] dA=9.057e-01 pose(d/B/C)=1.548e-03/1.468e-03/1.563e-03 state=5.718e-02 delta_ratio=2.202e-02
+2026-07-15 18:23:34 transreid.train INFO: Epoch[89] Iter[150/227] Loss: 0.104, Acc: 0.994, Base Lr: 1.26e-04 | id_global: 0.084 tri_global: 0.020 | PoseSSM alpha=1.792e-01 gain=9.919e-02 dt=1.224e-02[4.327e-03,2.569e-02] dA=9.061e-01 pose(d/B/C)=1.587e-03/1.505e-03/1.601e-03 state=5.703e-02 delta_ratio=2.088e-02
+2026-07-15 18:23:41 transreid.train INFO: Epoch[89] Iter[200/227] Loss: 0.100, Acc: 0.995, Base Lr: 1.26e-04 | id_global: 0.080 tri_global: 0.020 | PoseSSM alpha=1.793e-01 gain=9.919e-02 dt=1.246e-02[4.364e-03,2.624e-02] dA=9.046e-01 pose(d/B/C)=1.513e-03/1.438e-03/1.533e-03 state=5.852e-02 delta_ratio=2.060e-02
+2026-07-15 18:23:43 transreid.train INFO: Epoch 89 done. Time per epoch: 34.237[s] Speed: 394.4[samples/s] ETA: 0h17m
+2026-07-15 18:23:52 transreid.train INFO: Epoch[90] Iter[50/227] Loss: 0.097, Acc: 0.994, Base Lr: 1.19e-04 | id_global: 0.086 tri_global: 0.011 | PoseSSM alpha=1.794e-01 gain=9.918e-02 dt=1.235e-02[4.351e-03,2.603e-02] dA=9.054e-01 pose(d/B/C)=1.542e-03/1.464e-03/1.556e-03 state=5.878e-02 delta_ratio=2.138e-02
+2026-07-15 18:24:00 transreid.train INFO: Epoch[90] Iter[100/227] Loss: 0.094, Acc: 0.995, Base Lr: 1.19e-04 | id_global: 0.082 tri_global: 0.011 | PoseSSM alpha=1.794e-01 gain=9.918e-02 dt=1.241e-02[4.313e-03,2.601e-02] dA=9.050e-01 pose(d/B/C)=1.553e-03/1.464e-03/1.563e-03 state=5.576e-02 delta_ratio=2.205e-02
+2026-07-15 18:24:08 transreid.train INFO: Epoch[90] Iter[150/227] Loss: 0.093, Acc: 0.995, Base Lr: 1.19e-04 | id_global: 0.081 tri_global: 0.012 | PoseSSM alpha=1.794e-01 gain=9.918e-02 dt=1.243e-02[4.343e-03,2.621e-02] dA=9.048e-01 pose(d/B/C)=1.535e-03/1.464e-03/1.550e-03 state=5.683e-02 delta_ratio=2.298e-02
+2026-07-15 18:24:16 transreid.train INFO: Epoch[90] Iter[200/227] Loss: 0.092, Acc: 0.995, Base Lr: 1.19e-04 | id_global: 0.077 tri_global: 0.015 | PoseSSM alpha=1.794e-01 gain=9.918e-02 dt=1.236e-02[4.387e-03,2.590e-02] dA=9.053e-01 pose(d/B/C)=1.514e-03/1.432e-03/1.525e-03 state=5.770e-02 delta_ratio=2.075e-02
+2026-07-15 18:24:18 transreid.train INFO: Epoch 90 done. Time per epoch: 34.608[s] Speed: 393.9[samples/s] ETA: 0h17m
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-15 18:25:08 transreid.train INFO: Validation Results - Epoch: 90
+2026-07-15 18:25:08 transreid.train INFO: mAP: 57.7%
+2026-07-15 18:25:08 transreid.train INFO: CMC curve, Rank-1  :67.2%
+2026-07-15 18:25:08 transreid.train INFO: CMC curve, Rank-5  :81.0%
+2026-07-15 18:25:08 transreid.train INFO: CMC curve, Rank-10 :86.1%
+2026-07-15 18:25:16 transreid.train INFO: Epoch[91] Iter[50/227] Loss: 0.119, Acc: 0.993, Base Lr: 1.11e-04 | id_global: 0.100 tri_global: 0.019 | PoseSSM alpha=1.794e-01 gain=9.918e-02 dt=1.240e-02[4.299e-03,2.608e-02] dA=9.051e-01 pose(d/B/C)=1.552e-03/1.472e-03/1.559e-03 state=5.861e-02 delta_ratio=2.321e-02
+2026-07-15 18:25:24 transreid.train INFO: Epoch[91] Iter[100/227] Loss: 0.111, Acc: 0.993, Base Lr: 1.11e-04 | id_global: 0.093 tri_global: 0.018 | PoseSSM alpha=1.794e-01 gain=9.918e-02 dt=1.254e-02[4.381e-03,2.612e-02] dA=9.041e-01 pose(d/B/C)=1.494e-03/1.405e-03/1.503e-03 state=5.404e-02 delta_ratio=2.024e-02
+2026-07-15 18:25:32 transreid.train INFO: Epoch[91] Iter[150/227] Loss: 0.105, Acc: 0.994, Base Lr: 1.11e-04 | id_global: 0.089 tri_global: 0.016 | PoseSSM alpha=1.795e-01 gain=9.918e-02 dt=1.241e-02[4.370e-03,2.607e-02] dA=9.049e-01 pose(d/B/C)=1.545e-03/1.472e-03/1.564e-03 state=5.652e-02 delta_ratio=2.232e-02
+2026-07-15 18:25:40 transreid.train INFO: Epoch[91] Iter[200/227] Loss: 0.098, Acc: 0.994, Base Lr: 1.11e-04 | id_global: 0.082 tri_global: 0.016 | PoseSSM alpha=1.795e-01 gain=9.918e-02 dt=1.244e-02[4.371e-03,2.600e-02] dA=9.048e-01 pose(d/B/C)=1.596e-03/1.518e-03/1.614e-03 state=5.651e-02 delta_ratio=1.846e-02
+2026-07-15 18:25:42 transreid.train INFO: Epoch 91 done. Time per epoch: 34.206[s] Speed: 394.8[samples/s] ETA: 0h16m
+2026-07-15 18:25:51 transreid.train INFO: Epoch[92] Iter[50/227] Loss: 0.101, Acc: 0.995, Base Lr: 1.04e-04 | id_global: 0.090 tri_global: 0.011 | PoseSSM alpha=1.795e-01 gain=9.918e-02 dt=1.234e-02[4.311e-03,2.589e-02] dA=9.055e-01 pose(d/B/C)=1.481e-03/1.414e-03/1.497e-03 state=5.451e-02 delta_ratio=2.248e-02
+2026-07-15 18:25:59 transreid.train INFO: Epoch[92] Iter[100/227] Loss: 0.099, Acc: 0.995, Base Lr: 1.04e-04 | id_global: 0.088 tri_global: 0.011 | PoseSSM alpha=1.795e-01 gain=9.918e-02 dt=1.233e-02[4.358e-03,2.582e-02] dA=9.055e-01 pose(d/B/C)=1.569e-03/1.479e-03/1.582e-03 state=5.624e-02 delta_ratio=2.106e-02
+2026-07-15 18:26:07 transreid.train INFO: Epoch[92] Iter[150/227] Loss: 0.096, Acc: 0.995, Base Lr: 1.04e-04 | id_global: 0.084 tri_global: 0.013 | PoseSSM alpha=1.795e-01 gain=9.918e-02 dt=1.237e-02[4.326e-03,2.590e-02] dA=9.052e-01 pose(d/B/C)=1.518e-03/1.437e-03/1.529e-03 state=6.050e-02 delta_ratio=2.283e-02
+2026-07-15 18:26:14 transreid.train INFO: Epoch[92] Iter[200/227] Loss: 0.094, Acc: 0.995, Base Lr: 1.04e-04 | id_global: 0.080 tri_global: 0.014 | PoseSSM alpha=1.795e-01 gain=9.918e-02 dt=1.248e-02[4.366e-03,2.594e-02] dA=9.045e-01 pose(d/B/C)=1.569e-03/1.482e-03/1.577e-03 state=5.791e-02 delta_ratio=2.054e-02
+2026-07-15 18:26:16 transreid.train INFO: Epoch 92 done. Time per epoch: 34.430[s] Speed: 394.1[samples/s] ETA: 0h16m
+2026-07-15 18:26:25 transreid.train INFO: Epoch[93] Iter[50/227] Loss: 0.124, Acc: 0.994, Base Lr: 9.72e-05 | id_global: 0.100 tri_global: 0.025 | PoseSSM alpha=1.795e-01 gain=9.918e-02 dt=1.241e-02[4.364e-03,2.621e-02] dA=9.050e-01 pose(d/B/C)=1.531e-03/1.460e-03/1.542e-03 state=5.967e-02 delta_ratio=2.161e-02
+2026-07-15 18:26:33 transreid.train INFO: Epoch[93] Iter[100/227] Loss: 0.110, Acc: 0.995, Base Lr: 9.72e-05 | id_global: 0.091 tri_global: 0.018 | PoseSSM alpha=1.795e-01 gain=9.918e-02 dt=1.244e-02[4.324e-03,2.626e-02] dA=9.048e-01 pose(d/B/C)=1.514e-03/1.443e-03/1.527e-03 state=5.950e-02 delta_ratio=2.207e-02
+2026-07-15 18:26:41 transreid.train INFO: Epoch[93] Iter[150/227] Loss: 0.103, Acc: 0.995, Base Lr: 9.72e-05 | id_global: 0.086 tri_global: 0.016 | PoseSSM alpha=1.795e-01 gain=9.918e-02 dt=1.242e-02[4.327e-03,2.622e-02] dA=9.049e-01 pose(d/B/C)=1.579e-03/1.504e-03/1.587e-03 state=5.849e-02 delta_ratio=2.331e-02
+2026-07-15 18:26:49 transreid.train INFO: Epoch[93] Iter[200/227] Loss: 0.095, Acc: 0.995, Base Lr: 9.72e-05 | id_global: 0.080 tri_global: 0.015 | PoseSSM alpha=1.796e-01 gain=9.918e-02 dt=1.247e-02[4.320e-03,2.629e-02] dA=9.046e-01 pose(d/B/C)=1.575e-03/1.488e-03/1.580e-03 state=5.669e-02 delta_ratio=2.126e-02
+2026-07-15 18:26:51 transreid.train INFO: Epoch 93 done. Time per epoch: 34.548[s] Speed: 394.6[samples/s] ETA: 0h15m
+2026-07-15 18:27:00 transreid.train INFO: Epoch[94] Iter[50/227] Loss: 0.100, Acc: 0.997, Base Lr: 9.06e-05 | id_global: 0.081 tri_global: 0.019 | PoseSSM alpha=1.797e-01 gain=9.917e-02 dt=1.250e-02[4.298e-03,2.640e-02] dA=9.044e-01 pose(d/B/C)=1.589e-03/1.514e-03/1.602e-03 state=5.916e-02 delta_ratio=2.227e-02
+2026-07-15 18:27:08 transreid.train INFO: Epoch[94] Iter[100/227] Loss: 0.100, Acc: 0.997, Base Lr: 9.06e-05 | id_global: 0.082 tri_global: 0.018 | PoseSSM alpha=1.797e-01 gain=9.917e-02 dt=1.249e-02[4.347e-03,2.639e-02] dA=9.044e-01 pose(d/B/C)=1.549e-03/1.470e-03/1.560e-03 state=5.664e-02 delta_ratio=2.136e-02
+2026-07-15 18:27:16 transreid.train INFO: Epoch[94] Iter[150/227] Loss: 0.098, Acc: 0.996, Base Lr: 9.06e-05 | id_global: 0.079 tri_global: 0.018 | PoseSSM alpha=1.798e-01 gain=9.917e-02 dt=1.251e-02[4.357e-03,2.646e-02] dA=9.043e-01 pose(d/B/C)=1.542e-03/1.465e-03/1.554e-03 state=5.651e-02 delta_ratio=2.076e-02
+2026-07-15 18:27:23 transreid.train INFO: Epoch[94] Iter[200/227] Loss: 0.093, Acc: 0.996, Base Lr: 9.06e-05 | id_global: 0.075 tri_global: 0.017 | PoseSSM alpha=1.798e-01 gain=9.917e-02 dt=1.242e-02[4.337e-03,2.611e-02] dA=9.049e-01 pose(d/B/C)=1.452e-03/1.377e-03/1.465e-03 state=5.620e-02 delta_ratio=1.992e-02
+2026-07-15 18:27:25 transreid.train INFO: Epoch 94 done. Time per epoch: 34.284[s] Speed: 393.9[samples/s] ETA: 0h14m
+2026-07-15 18:27:34 transreid.train INFO: Epoch[95] Iter[50/227] Loss: 0.121, Acc: 0.995, Base Lr: 8.41e-05 | id_global: 0.100 tri_global: 0.021 | PoseSSM alpha=1.798e-01 gain=9.917e-02 dt=1.248e-02[4.314e-03,2.635e-02] dA=9.045e-01 pose(d/B/C)=1.534e-03/1.463e-03/1.552e-03 state=6.027e-02 delta_ratio=2.297e-02
+2026-07-15 18:27:42 transreid.train INFO: Epoch[95] Iter[100/227] Loss: 0.112, Acc: 0.995, Base Lr: 8.41e-05 | id_global: 0.094 tri_global: 0.018 | PoseSSM alpha=1.798e-01 gain=9.917e-02 dt=1.238e-02[4.352e-03,2.616e-02] dA=9.052e-01 pose(d/B/C)=1.524e-03/1.442e-03/1.529e-03 state=6.007e-02 delta_ratio=2.228e-02
+2026-07-15 18:27:50 transreid.train INFO: Epoch[95] Iter[150/227] Loss: 0.102, Acc: 0.995, Base Lr: 8.41e-05 | id_global: 0.087 tri_global: 0.015 | PoseSSM alpha=1.798e-01 gain=9.917e-02 dt=1.235e-02[4.311e-03,2.573e-02] dA=9.054e-01 pose(d/B/C)=1.577e-03/1.488e-03/1.587e-03 state=5.557e-02 delta_ratio=2.148e-02
+2026-07-15 18:27:58 transreid.train INFO: Epoch[95] Iter[200/227] Loss: 0.095, Acc: 0.995, Base Lr: 8.41e-05 | id_global: 0.081 tri_global: 0.014 | PoseSSM alpha=1.798e-01 gain=9.917e-02 dt=1.236e-02[4.351e-03,2.589e-02] dA=9.053e-01 pose(d/B/C)=1.567e-03/1.487e-03/1.577e-03 state=5.437e-02 delta_ratio=2.053e-02
+2026-07-15 18:27:59 transreid.train INFO: Epoch 95 done. Time per epoch: 34.139[s] Speed: 395.6[samples/s] ETA: 0h14m
+2026-07-15 18:28:08 transreid.train INFO: Epoch[96] Iter[50/227] Loss: 0.110, Acc: 0.993, Base Lr: 7.78e-05 | id_global: 0.095 tri_global: 0.015 | PoseSSM alpha=1.798e-01 gain=9.917e-02 dt=1.248e-02[4.356e-03,2.614e-02] dA=9.045e-01 pose(d/B/C)=1.521e-03/1.447e-03/1.539e-03 state=5.672e-02 delta_ratio=2.055e-02
+2026-07-15 18:28:16 transreid.train INFO: Epoch[96] Iter[100/227] Loss: 0.098, Acc: 0.995, Base Lr: 7.78e-05 | id_global: 0.085 tri_global: 0.012 | PoseSSM alpha=1.799e-01 gain=9.917e-02 dt=1.237e-02[4.326e-03,2.596e-02] dA=9.053e-01 pose(d/B/C)=1.561e-03/1.486e-03/1.576e-03 state=5.736e-02 delta_ratio=1.961e-02
+2026-07-15 18:28:24 transreid.train INFO: Epoch[96] Iter[150/227] Loss: 0.095, Acc: 0.996, Base Lr: 7.78e-05 | id_global: 0.082 tri_global: 0.013 | PoseSSM alpha=1.799e-01 gain=9.917e-02 dt=1.243e-02[4.405e-03,2.609e-02] dA=9.049e-01 pose(d/B/C)=1.546e-03/1.470e-03/1.576e-03 state=5.594e-02 delta_ratio=2.067e-02
+2026-07-15 18:28:32 transreid.train INFO: Epoch[96] Iter[200/227] Loss: 0.091, Acc: 0.995, Base Lr: 7.78e-05 | id_global: 0.077 tri_global: 0.014 | PoseSSM alpha=1.799e-01 gain=9.917e-02 dt=1.240e-02[4.387e-03,2.578e-02] dA=9.050e-01 pose(d/B/C)=1.499e-03/1.424e-03/1.515e-03 state=5.104e-02 delta_ratio=1.916e-02
+2026-07-15 18:28:33 transreid.train INFO: Epoch 96 done. Time per epoch: 34.266[s] Speed: 396.0[samples/s] ETA: 0h13m
+2026-07-15 18:28:42 transreid.train INFO: Epoch[97] Iter[50/227] Loss: 0.092, Acc: 0.997, Base Lr: 7.18e-05 | id_global: 0.081 tri_global: 0.012 | PoseSSM alpha=1.800e-01 gain=9.917e-02 dt=1.240e-02[4.348e-03,2.599e-02] dA=9.051e-01 pose(d/B/C)=1.531e-03/1.454e-03/1.545e-03 state=5.623e-02 delta_ratio=2.221e-02
+2026-07-15 18:28:50 transreid.train INFO: Epoch[97] Iter[100/227] Loss: 0.097, Acc: 0.996, Base Lr: 7.18e-05 | id_global: 0.083 tri_global: 0.014 | PoseSSM alpha=1.801e-01 gain=9.917e-02 dt=1.244e-02[4.272e-03,2.625e-02] dA=9.048e-01 pose(d/B/C)=1.522e-03/1.453e-03/1.536e-03 state=5.401e-02 delta_ratio=2.077e-02
+2026-07-15 18:28:58 transreid.train INFO: Epoch[97] Iter[150/227] Loss: 0.091, Acc: 0.996, Base Lr: 7.18e-05 | id_global: 0.079 tri_global: 0.012 | PoseSSM alpha=1.801e-01 gain=9.917e-02 dt=1.251e-02[4.330e-03,2.627e-02] dA=9.043e-01 pose(d/B/C)=1.516e-03/1.438e-03/1.527e-03 state=5.667e-02 delta_ratio=2.260e-02
+2026-07-15 18:29:06 transreid.train INFO: Epoch[97] Iter[200/227] Loss: 0.086, Acc: 0.996, Base Lr: 7.18e-05 | id_global: 0.075 tri_global: 0.011 | PoseSSM alpha=1.802e-01 gain=9.917e-02 dt=1.234e-02[4.322e-03,2.582e-02] dA=9.055e-01 pose(d/B/C)=1.525e-03/1.447e-03/1.554e-03 state=5.631e-02 delta_ratio=1.996e-02
+2026-07-15 18:29:08 transreid.train INFO: Epoch 97 done. Time per epoch: 34.375[s] Speed: 396.6[samples/s] ETA: 0h13m
+2026-07-15 18:29:17 transreid.train INFO: Epoch[98] Iter[50/227] Loss: 0.101, Acc: 0.997, Base Lr: 6.60e-05 | id_global: 0.086 tri_global: 0.014 | PoseSSM alpha=1.802e-01 gain=9.917e-02 dt=1.247e-02[4.318e-03,2.621e-02] dA=9.046e-01 pose(d/B/C)=1.530e-03/1.456e-03/1.545e-03 state=5.362e-02 delta_ratio=2.173e-02
+2026-07-15 18:29:25 transreid.train INFO: Epoch[98] Iter[100/227] Loss: 0.094, Acc: 0.997, Base Lr: 6.60e-05 | id_global: 0.079 tri_global: 0.014 | PoseSSM alpha=1.802e-01 gain=9.917e-02 dt=1.243e-02[4.311e-03,2.579e-02] dA=9.048e-01 pose(d/B/C)=1.532e-03/1.457e-03/1.547e-03 state=5.789e-02 delta_ratio=2.290e-02
+2026-07-15 18:29:33 transreid.train INFO: Epoch[98] Iter[150/227] Loss: 0.088, Acc: 0.997, Base Lr: 6.60e-05 | id_global: 0.076 tri_global: 0.012 | PoseSSM alpha=1.802e-01 gain=9.917e-02 dt=1.239e-02[4.341e-03,2.596e-02] dA=9.051e-01 pose(d/B/C)=1.536e-03/1.450e-03/1.545e-03 state=5.880e-02 delta_ratio=2.318e-02
+2026-07-15 18:29:40 transreid.train INFO: Epoch[98] Iter[200/227] Loss: 0.086, Acc: 0.997, Base Lr: 6.60e-05 | id_global: 0.073 tri_global: 0.013 | PoseSSM alpha=1.802e-01 gain=9.917e-02 dt=1.244e-02[4.379e-03,2.595e-02] dA=9.048e-01 pose(d/B/C)=1.471e-03/1.397e-03/1.489e-03 state=5.626e-02 delta_ratio=2.063e-02
+2026-07-15 18:29:42 transreid.train INFO: Epoch 98 done. Time per epoch: 34.258[s] Speed: 394.2[samples/s] ETA: 0h12m
+2026-07-15 18:29:51 transreid.train INFO: Epoch[99] Iter[50/227] Loss: 0.100, Acc: 0.997, Base Lr: 6.04e-05 | id_global: 0.084 tri_global: 0.016 | PoseSSM alpha=1.802e-01 gain=9.917e-02 dt=1.238e-02[4.377e-03,2.591e-02] dA=9.052e-01 pose(d/B/C)=1.544e-03/1.474e-03/1.558e-03 state=6.219e-02 delta_ratio=2.401e-02
+2026-07-15 18:29:59 transreid.train INFO: Epoch[99] Iter[100/227] Loss: 0.099, Acc: 0.997, Base Lr: 6.04e-05 | id_global: 0.082 tri_global: 0.016 | PoseSSM alpha=1.803e-01 gain=9.917e-02 dt=1.230e-02[4.341e-03,2.590e-02] dA=9.058e-01 pose(d/B/C)=1.541e-03/1.462e-03/1.555e-03 state=5.656e-02 delta_ratio=2.324e-02
+2026-07-15 18:30:07 transreid.train INFO: Epoch[99] Iter[150/227] Loss: 0.094, Acc: 0.996, Base Lr: 6.04e-05 | id_global: 0.078 tri_global: 0.016 | PoseSSM alpha=1.803e-01 gain=9.917e-02 dt=1.242e-02[4.327e-03,2.639e-02] dA=9.050e-01 pose(d/B/C)=1.529e-03/1.446e-03/1.536e-03 state=6.117e-02 delta_ratio=2.195e-02
+2026-07-15 18:30:15 transreid.train INFO: Epoch[99] Iter[200/227] Loss: 0.087, Acc: 0.997, Base Lr: 6.04e-05 | id_global: 0.073 tri_global: 0.014 | PoseSSM alpha=1.803e-01 gain=9.917e-02 dt=1.244e-02[4.333e-03,2.612e-02] dA=9.048e-01 pose(d/B/C)=1.528e-03/1.445e-03/1.544e-03 state=5.423e-02 delta_ratio=1.965e-02
+2026-07-15 18:30:17 transreid.train INFO: Epoch 99 done. Time per epoch: 34.441[s] Speed: 395.8[samples/s] ETA: 0h12m
+2026-07-15 18:30:25 transreid.train INFO: Epoch[100] Iter[50/227] Loss: 0.111, Acc: 0.994, Base Lr: 5.51e-05 | id_global: 0.091 tri_global: 0.020 | PoseSSM alpha=1.803e-01 gain=9.917e-02 dt=1.245e-02[4.349e-03,2.620e-02] dA=9.047e-01 pose(d/B/C)=1.513e-03/1.440e-03/1.529e-03 state=6.015e-02 delta_ratio=2.275e-02
+2026-07-15 18:30:33 transreid.train INFO: Epoch[100] Iter[100/227] Loss: 0.107, Acc: 0.995, Base Lr: 5.51e-05 | id_global: 0.087 tri_global: 0.020 | PoseSSM alpha=1.803e-01 gain=9.916e-02 dt=1.236e-02[4.382e-03,2.604e-02] dA=9.054e-01 pose(d/B/C)=1.444e-03/1.378e-03/1.453e-03 state=5.826e-02 delta_ratio=2.215e-02
+2026-07-15 18:30:41 transreid.train INFO: Epoch[100] Iter[150/227] Loss: 0.101, Acc: 0.995, Base Lr: 5.51e-05 | id_global: 0.082 tri_global: 0.019 | PoseSSM alpha=1.803e-01 gain=9.916e-02 dt=1.253e-02[4.386e-03,2.625e-02] dA=9.042e-01 pose(d/B/C)=1.563e-03/1.484e-03/1.573e-03 state=5.809e-02 delta_ratio=2.092e-02
+2026-07-15 18:30:49 transreid.train INFO: Epoch[100] Iter[200/227] Loss: 0.095, Acc: 0.996, Base Lr: 5.51e-05 | id_global: 0.076 tri_global: 0.019 | PoseSSM alpha=1.804e-01 gain=9.916e-02 dt=1.240e-02[4.357e-03,2.596e-02] dA=9.051e-01 pose(d/B/C)=1.509e-03/1.428e-03/1.525e-03 state=5.422e-02 delta_ratio=2.000e-02
+2026-07-15 18:30:51 transreid.train INFO: Epoch 100 done. Time per epoch: 34.172[s] Speed: 395.2[samples/s] ETA: 0h11m
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-15 18:31:41 transreid.train INFO: Validation Results - Epoch: 100
+2026-07-15 18:31:41 transreid.train INFO: mAP: 58.6%
+2026-07-15 18:31:41 transreid.train INFO: CMC curve, Rank-1  :67.9%
+2026-07-15 18:31:41 transreid.train INFO: CMC curve, Rank-5  :81.6%
+2026-07-15 18:31:41 transreid.train INFO: CMC curve, Rank-10 :86.5%
+2026-07-15 18:31:50 transreid.train INFO: Epoch[101] Iter[50/227] Loss: 0.111, Acc: 0.994, Base Lr: 5.00e-05 | id_global: 0.090 tri_global: 0.021 | PoseSSM alpha=1.804e-01 gain=9.916e-02 dt=1.246e-02[4.308e-03,2.625e-02] dA=9.047e-01 pose(d/B/C)=1.570e-03/1.495e-03/1.581e-03 state=5.733e-02 delta_ratio=2.066e-02
+2026-07-15 18:31:57 transreid.train INFO: Epoch[101] Iter[100/227] Loss: 0.102, Acc: 0.995, Base Lr: 5.00e-05 | id_global: 0.082 tri_global: 0.019 | PoseSSM alpha=1.804e-01 gain=9.916e-02 dt=1.244e-02[4.341e-03,2.603e-02] dA=9.048e-01 pose(d/B/C)=1.493e-03/1.420e-03/1.514e-03 state=5.404e-02 delta_ratio=2.163e-02
+2026-07-15 18:32:05 transreid.train INFO: Epoch[101] Iter[150/227] Loss: 0.094, Acc: 0.995, Base Lr: 5.00e-05 | id_global: 0.077 tri_global: 0.017 | PoseSSM alpha=1.804e-01 gain=9.916e-02 dt=1.241e-02[4.396e-03,2.584e-02] dA=9.050e-01 pose(d/B/C)=1.526e-03/1.440e-03/1.543e-03 state=5.601e-02 delta_ratio=2.185e-02
+2026-07-15 18:32:13 transreid.train INFO: Epoch[101] Iter[200/227] Loss: 0.089, Acc: 0.995, Base Lr: 5.00e-05 | id_global: 0.074 tri_global: 0.015 | PoseSSM alpha=1.804e-01 gain=9.916e-02 dt=1.246e-02[4.374e-03,2.615e-02] dA=9.047e-01 pose(d/B/C)=1.502e-03/1.425e-03/1.521e-03 state=5.558e-02 delta_ratio=1.992e-02
+2026-07-15 18:32:15 transreid.train INFO: Epoch 101 done. Time per epoch: 34.386[s] Speed: 396.4[samples/s] ETA: 0h10m
+2026-07-15 18:32:24 transreid.train INFO: Epoch[102] Iter[50/227] Loss: 0.104, Acc: 0.993, Base Lr: 4.51e-05 | id_global: 0.091 tri_global: 0.013 | PoseSSM alpha=1.804e-01 gain=9.916e-02 dt=1.244e-02[4.337e-03,2.605e-02] dA=9.048e-01 pose(d/B/C)=1.594e-03/1.515e-03/1.610e-03 state=5.916e-02 delta_ratio=2.340e-02
+2026-07-15 18:32:32 transreid.train INFO: Epoch[102] Iter[100/227] Loss: 0.102, Acc: 0.994, Base Lr: 4.51e-05 | id_global: 0.086 tri_global: 0.016 | PoseSSM alpha=1.804e-01 gain=9.916e-02 dt=1.238e-02[4.288e-03,2.588e-02] dA=9.052e-01 pose(d/B/C)=1.538e-03/1.466e-03/1.553e-03 state=5.503e-02 delta_ratio=2.211e-02
+2026-07-15 18:32:40 transreid.train INFO: Epoch[102] Iter[150/227] Loss: 0.094, Acc: 0.995, Base Lr: 4.51e-05 | id_global: 0.080 tri_global: 0.014 | PoseSSM alpha=1.804e-01 gain=9.916e-02 dt=1.250e-02[4.314e-03,2.638e-02] dA=9.045e-01 pose(d/B/C)=1.492e-03/1.420e-03/1.509e-03 state=5.976e-02 delta_ratio=2.189e-02
+2026-07-15 18:32:48 transreid.train INFO: Epoch[102] Iter[200/227] Loss: 0.085, Acc: 0.996, Base Lr: 4.51e-05 | id_global: 0.073 tri_global: 0.012 | PoseSSM alpha=1.804e-01 gain=9.916e-02 dt=1.237e-02[4.354e-03,2.585e-02] dA=9.053e-01 pose(d/B/C)=1.511e-03/1.436e-03/1.525e-03 state=5.291e-02 delta_ratio=1.860e-02
+2026-07-15 18:32:50 transreid.train INFO: Epoch 102 done. Time per epoch: 34.437[s] Speed: 394.0[samples/s] ETA: 0h10m
+2026-07-15 18:32:59 transreid.train INFO: Epoch[103] Iter[50/227] Loss: 0.091, Acc: 0.996, Base Lr: 4.05e-05 | id_global: 0.081 tri_global: 0.011 | PoseSSM alpha=1.804e-01 gain=9.916e-02 dt=1.249e-02[4.378e-03,2.616e-02] dA=9.045e-01 pose(d/B/C)=1.555e-03/1.472e-03/1.563e-03 state=5.709e-02 delta_ratio=2.174e-02
+2026-07-15 18:33:06 transreid.train INFO: Epoch[103] Iter[100/227] Loss: 0.090, Acc: 0.996, Base Lr: 4.05e-05 | id_global: 0.078 tri_global: 0.012 | PoseSSM alpha=1.805e-01 gain=9.916e-02 dt=1.234e-02[4.284e-03,2.608e-02] dA=9.055e-01 pose(d/B/C)=1.485e-03/1.417e-03/1.497e-03 state=5.478e-02 delta_ratio=2.152e-02
+2026-07-15 18:33:14 transreid.train INFO: Epoch[103] Iter[150/227] Loss: 0.088, Acc: 0.997, Base Lr: 4.05e-05 | id_global: 0.075 tri_global: 0.013 | PoseSSM alpha=1.805e-01 gain=9.916e-02 dt=1.240e-02[4.340e-03,2.611e-02] dA=9.051e-01 pose(d/B/C)=1.547e-03/1.465e-03/1.560e-03 state=5.693e-02 delta_ratio=2.139e-02
+2026-07-15 18:33:22 transreid.train INFO: Epoch[103] Iter[200/227] Loss: 0.083, Acc: 0.996, Base Lr: 4.05e-05 | id_global: 0.071 tri_global: 0.012 | PoseSSM alpha=1.805e-01 gain=9.916e-02 dt=1.248e-02[4.337e-03,2.616e-02] dA=9.045e-01 pose(d/B/C)=1.498e-03/1.419e-03/1.515e-03 state=5.658e-02 delta_ratio=1.974e-02
+2026-07-15 18:33:24 transreid.train INFO: Epoch 103 done. Time per epoch: 34.268[s] Speed: 394.1[samples/s] ETA: 0h9m
+2026-07-15 18:33:33 transreid.train INFO: Epoch[104] Iter[50/227] Loss: 0.109, Acc: 0.993, Base Lr: 3.61e-05 | id_global: 0.085 tri_global: 0.024 | PoseSSM alpha=1.805e-01 gain=9.916e-02 dt=1.237e-02[4.309e-03,2.607e-02] dA=9.054e-01 pose(d/B/C)=1.562e-03/1.486e-03/1.581e-03 state=5.638e-02 delta_ratio=2.124e-02
+2026-07-15 18:33:41 transreid.train INFO: Epoch[104] Iter[100/227] Loss: 0.098, Acc: 0.995, Base Lr: 3.61e-05 | id_global: 0.080 tri_global: 0.017 | PoseSSM alpha=1.805e-01 gain=9.916e-02 dt=1.233e-02[4.305e-03,2.599e-02] dA=9.056e-01 pose(d/B/C)=1.588e-03/1.504e-03/1.599e-03 state=5.595e-02 delta_ratio=2.116e-02
+2026-07-15 18:33:48 transreid.train INFO: Epoch[104] Iter[150/227] Loss: 0.099, Acc: 0.995, Base Lr: 3.61e-05 | id_global: 0.078 tri_global: 0.021 | PoseSSM alpha=1.805e-01 gain=9.916e-02 dt=1.245e-02[4.368e-03,2.623e-02] dA=9.047e-01 pose(d/B/C)=1.625e-03/1.536e-03/1.641e-03 state=5.759e-02 delta_ratio=2.216e-02
+2026-07-15 18:33:56 transreid.train INFO: Epoch[104] Iter[200/227] Loss: 0.094, Acc: 0.995, Base Lr: 3.61e-05 | id_global: 0.073 tri_global: 0.021 | PoseSSM alpha=1.805e-01 gain=9.916e-02 dt=1.246e-02[4.367e-03,2.632e-02] dA=9.047e-01 pose(d/B/C)=1.471e-03/1.401e-03/1.483e-03 state=5.330e-02 delta_ratio=1.831e-02
+2026-07-15 18:33:58 transreid.train INFO: Epoch 104 done. Time per epoch: 34.198[s] Speed: 394.9[samples/s] ETA: 0h9m
+2026-07-15 18:34:07 transreid.train INFO: Epoch[105] Iter[50/227] Loss: 0.100, Acc: 0.997, Base Lr: 3.20e-05 | id_global: 0.082 tri_global: 0.017 | PoseSSM alpha=1.805e-01 gain=9.916e-02 dt=1.247e-02[4.347e-03,2.633e-02] dA=9.047e-01 pose(d/B/C)=1.539e-03/1.464e-03/1.548e-03 state=5.644e-02 delta_ratio=2.053e-02
+2026-07-15 18:34:15 transreid.train INFO: Epoch[105] Iter[100/227] Loss: 0.101, Acc: 0.996, Base Lr: 3.20e-05 | id_global: 0.083 tri_global: 0.017 | PoseSSM alpha=1.806e-01 gain=9.916e-02 dt=1.240e-02[4.356e-03,2.574e-02] dA=9.050e-01 pose(d/B/C)=1.497e-03/1.412e-03/1.507e-03 state=5.639e-02 delta_ratio=2.145e-02
+2026-07-15 18:34:23 transreid.train INFO: Epoch[105] Iter[150/227] Loss: 0.094, Acc: 0.997, Base Lr: 3.20e-05 | id_global: 0.077 tri_global: 0.016 | PoseSSM alpha=1.806e-01 gain=9.916e-02 dt=1.229e-02[4.302e-03,2.559e-02] dA=9.058e-01 pose(d/B/C)=1.480e-03/1.399e-03/1.492e-03 state=5.329e-02 delta_ratio=2.096e-02
+2026-07-15 18:34:30 transreid.train INFO: Epoch[105] Iter[200/227] Loss: 0.087, Acc: 0.996, Base Lr: 3.20e-05 | id_global: 0.072 tri_global: 0.015 | PoseSSM alpha=1.806e-01 gain=9.916e-02 dt=1.246e-02[4.342e-03,2.612e-02] dA=9.047e-01 pose(d/B/C)=1.503e-03/1.429e-03/1.518e-03 state=5.447e-02 delta_ratio=1.978e-02
+2026-07-15 18:34:32 transreid.train INFO: Epoch 105 done. Time per epoch: 34.235[s] Speed: 396.3[samples/s] ETA: 0h8m
+2026-07-15 18:34:41 transreid.train INFO: Epoch[106] Iter[50/227] Loss: 0.108, Acc: 0.995, Base Lr: 2.81e-05 | id_global: 0.087 tri_global: 0.020 | PoseSSM alpha=1.806e-01 gain=9.916e-02 dt=1.238e-02[4.356e-03,2.598e-02] dA=9.052e-01 pose(d/B/C)=1.522e-03/1.452e-03/1.541e-03 state=5.315e-02 delta_ratio=2.048e-02
+2026-07-15 18:34:49 transreid.train INFO: Epoch[106] Iter[100/227] Loss: 0.096, Acc: 0.996, Base Lr: 2.81e-05 | id_global: 0.083 tri_global: 0.014 | PoseSSM alpha=1.806e-01 gain=9.916e-02 dt=1.247e-02[4.384e-03,2.612e-02] dA=9.046e-01 pose(d/B/C)=1.497e-03/1.422e-03/1.514e-03 state=5.627e-02 delta_ratio=1.891e-02
+2026-07-15 18:34:57 transreid.train INFO: Epoch[106] Iter[150/227] Loss: 0.093, Acc: 0.996, Base Lr: 2.81e-05 | id_global: 0.079 tri_global: 0.014 | PoseSSM alpha=1.806e-01 gain=9.916e-02 dt=1.242e-02[4.336e-03,2.616e-02] dA=9.050e-01 pose(d/B/C)=1.569e-03/1.479e-03/1.576e-03 state=5.617e-02 delta_ratio=2.204e-02
+2026-07-15 18:35:05 transreid.train INFO: Epoch[106] Iter[200/227] Loss: 0.087, Acc: 0.996, Base Lr: 2.81e-05 | id_global: 0.073 tri_global: 0.014 | PoseSSM alpha=1.806e-01 gain=9.916e-02 dt=1.242e-02[4.306e-03,2.632e-02] dA=9.050e-01 pose(d/B/C)=1.484e-03/1.412e-03/1.499e-03 state=5.670e-02 delta_ratio=2.068e-02
+2026-07-15 18:35:07 transreid.train INFO: Epoch 106 done. Time per epoch: 34.321[s] Speed: 395.3[samples/s] ETA: 0h8m
+2026-07-15 18:35:16 transreid.train INFO: Epoch[107] Iter[50/227] Loss: 0.099, Acc: 0.996, Base Lr: 2.45e-05 | id_global: 0.083 tri_global: 0.016 | PoseSSM alpha=1.806e-01 gain=9.916e-02 dt=1.245e-02[4.386e-03,2.619e-02] dA=9.048e-01 pose(d/B/C)=1.588e-03/1.496e-03/1.598e-03 state=5.445e-02 delta_ratio=2.054e-02
+2026-07-15 18:35:23 transreid.train INFO: Epoch[107] Iter[100/227] Loss: 0.100, Acc: 0.995, Base Lr: 2.45e-05 | id_global: 0.084 tri_global: 0.016 | PoseSSM alpha=1.806e-01 gain=9.916e-02 dt=1.240e-02[4.359e-03,2.593e-02] dA=9.050e-01 pose(d/B/C)=1.497e-03/1.427e-03/1.515e-03 state=5.604e-02 delta_ratio=2.338e-02
+2026-07-15 18:35:31 transreid.train INFO: Epoch[107] Iter[150/227] Loss: 0.094, Acc: 0.995, Base Lr: 2.45e-05 | id_global: 0.080 tri_global: 0.015 | PoseSSM alpha=1.806e-01 gain=9.916e-02 dt=1.243e-02[4.293e-03,2.621e-02] dA=9.049e-01 pose(d/B/C)=1.496e-03/1.424e-03/1.513e-03 state=5.406e-02 delta_ratio=2.058e-02
+2026-07-15 18:35:39 transreid.train INFO: Epoch[107] Iter[200/227] Loss: 0.090, Acc: 0.995, Base Lr: 2.45e-05 | id_global: 0.074 tri_global: 0.016 | PoseSSM alpha=1.806e-01 gain=9.916e-02 dt=1.251e-02[4.355e-03,2.639e-02] dA=9.044e-01 pose(d/B/C)=1.546e-03/1.471e-03/1.557e-03 state=5.551e-02 delta_ratio=2.074e-02
+2026-07-15 18:35:41 transreid.train INFO: Epoch 107 done. Time per epoch: 34.335[s] Speed: 395.2[samples/s] ETA: 0h7m
+2026-07-15 18:35:50 transreid.train INFO: Epoch[108] Iter[50/227] Loss: 0.096, Acc: 0.994, Base Lr: 2.11e-05 | id_global: 0.085 tri_global: 0.011 | PoseSSM alpha=1.806e-01 gain=9.916e-02 dt=1.248e-02[4.413e-03,2.616e-02] dA=9.045e-01 pose(d/B/C)=1.485e-03/1.413e-03/1.506e-03 state=5.760e-02 delta_ratio=2.185e-02
+2026-07-15 18:35:58 transreid.train INFO: Epoch[108] Iter[100/227] Loss: 0.087, Acc: 0.994, Base Lr: 2.11e-05 | id_global: 0.078 tri_global: 0.009 | PoseSSM alpha=1.806e-01 gain=9.916e-02 dt=1.246e-02[4.332e-03,2.631e-02] dA=9.047e-01 pose(d/B/C)=1.546e-03/1.467e-03/1.557e-03 state=5.493e-02 delta_ratio=2.237e-02
+2026-07-15 18:36:06 transreid.train INFO: Epoch[108] Iter[150/227] Loss: 0.091, Acc: 0.995, Base Lr: 2.11e-05 | id_global: 0.077 tri_global: 0.014 | PoseSSM alpha=1.806e-01 gain=9.916e-02 dt=1.248e-02[4.347e-03,2.624e-02] dA=9.046e-01 pose(d/B/C)=1.502e-03/1.425e-03/1.515e-03 state=5.573e-02 delta_ratio=2.230e-02
+2026-07-15 18:36:13 transreid.train INFO: Epoch[108] Iter[200/227] Loss: 0.087, Acc: 0.995, Base Lr: 2.11e-05 | id_global: 0.073 tri_global: 0.015 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.246e-02[4.324e-03,2.633e-02] dA=9.047e-01 pose(d/B/C)=1.640e-03/1.546e-03/1.653e-03 state=5.697e-02 delta_ratio=2.124e-02
+2026-07-15 18:36:15 transreid.train INFO: Epoch 108 done. Time per epoch: 34.319[s] Speed: 395.3[samples/s] ETA: 0h6m
+2026-07-15 18:36:24 transreid.train INFO: Epoch[109] Iter[50/227] Loss: 0.095, Acc: 0.997, Base Lr: 1.80e-05 | id_global: 0.082 tri_global: 0.013 | PoseSSM alpha=1.806e-01 gain=9.916e-02 dt=1.240e-02[4.362e-03,2.591e-02] dA=9.051e-01 pose(d/B/C)=1.520e-03/1.446e-03/1.538e-03 state=5.852e-02 delta_ratio=2.118e-02
+2026-07-15 18:36:32 transreid.train INFO: Epoch[109] Iter[100/227] Loss: 0.095, Acc: 0.996, Base Lr: 1.80e-05 | id_global: 0.081 tri_global: 0.014 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.244e-02[4.362e-03,2.625e-02] dA=9.049e-01 pose(d/B/C)=1.549e-03/1.465e-03/1.558e-03 state=6.043e-02 delta_ratio=2.278e-02
+2026-07-15 18:36:40 transreid.train INFO: Epoch[109] Iter[150/227] Loss: 0.090, Acc: 0.996, Base Lr: 1.80e-05 | id_global: 0.077 tri_global: 0.013 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.220e-02[4.345e-03,2.531e-02] dA=9.064e-01 pose(d/B/C)=1.552e-03/1.480e-03/1.571e-03 state=5.843e-02 delta_ratio=2.255e-02
+2026-07-15 18:36:48 transreid.train INFO: Epoch[109] Iter[200/227] Loss: 0.083, Acc: 0.996, Base Lr: 1.80e-05 | id_global: 0.072 tri_global: 0.012 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.246e-02[4.358e-03,2.613e-02] dA=9.047e-01 pose(d/B/C)=1.514e-03/1.435e-03/1.523e-03 state=5.638e-02 delta_ratio=2.077e-02
+2026-07-15 18:36:49 transreid.train INFO: Epoch 109 done. Time per epoch: 34.065[s] Speed: 396.4[samples/s] ETA: 0h6m
+2026-07-15 18:36:58 transreid.train INFO: Epoch[110] Iter[50/227] Loss: 0.106, Acc: 0.996, Base Lr: 1.52e-05 | id_global: 0.084 tri_global: 0.021 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.237e-02[4.318e-03,2.596e-02] dA=9.053e-01 pose(d/B/C)=1.551e-03/1.471e-03/1.571e-03 state=5.338e-02 delta_ratio=2.062e-02
+2026-07-15 18:37:06 transreid.train INFO: Epoch[110] Iter[100/227] Loss: 0.095, Acc: 0.996, Base Lr: 1.52e-05 | id_global: 0.080 tri_global: 0.015 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.244e-02[4.343e-03,2.607e-02] dA=9.048e-01 pose(d/B/C)=1.529e-03/1.455e-03/1.543e-03 state=6.217e-02 delta_ratio=2.377e-02
+2026-07-15 18:37:14 transreid.train INFO: Epoch[110] Iter[150/227] Loss: 0.088, Acc: 0.997, Base Lr: 1.52e-05 | id_global: 0.075 tri_global: 0.014 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.236e-02[4.332e-03,2.591e-02] dA=9.053e-01 pose(d/B/C)=1.508e-03/1.434e-03/1.529e-03 state=5.491e-02 delta_ratio=1.978e-02
+2026-07-15 18:37:22 transreid.train INFO: Epoch[110] Iter[200/227] Loss: 0.083, Acc: 0.996, Base Lr: 1.52e-05 | id_global: 0.070 tri_global: 0.013 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.247e-02[4.373e-03,2.615e-02] dA=9.046e-01 pose(d/B/C)=1.622e-03/1.536e-03/1.643e-03 state=5.704e-02 delta_ratio=1.981e-02
+2026-07-15 18:37:24 transreid.train INFO: Epoch 110 done. Time per epoch: 34.268[s] Speed: 395.9[samples/s] ETA: 0h5m
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-15 18:38:13 transreid.train INFO: Validation Results - Epoch: 110
+2026-07-15 18:38:13 transreid.train INFO: mAP: 58.4%
+2026-07-15 18:38:13 transreid.train INFO: CMC curve, Rank-1  :67.3%
+2026-07-15 18:38:13 transreid.train INFO: CMC curve, Rank-5  :81.2%
+2026-07-15 18:38:13 transreid.train INFO: CMC curve, Rank-10 :86.5%
+2026-07-15 18:38:22 transreid.train INFO: Epoch[111] Iter[50/227] Loss: 0.096, Acc: 0.994, Base Lr: 1.26e-05 | id_global: 0.086 tri_global: 0.010 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.244e-02[4.336e-03,2.626e-02] dA=9.048e-01 pose(d/B/C)=1.541e-03/1.460e-03/1.555e-03 state=5.786e-02 delta_ratio=2.177e-02
+2026-07-15 18:38:30 transreid.train INFO: Epoch[111] Iter[100/227] Loss: 0.094, Acc: 0.995, Base Lr: 1.26e-05 | id_global: 0.082 tri_global: 0.012 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.254e-02[4.338e-03,2.637e-02] dA=9.041e-01 pose(d/B/C)=1.491e-03/1.418e-03/1.506e-03 state=5.808e-02 delta_ratio=2.187e-02
+2026-07-15 18:38:38 transreid.train INFO: Epoch[111] Iter[150/227] Loss: 0.089, Acc: 0.995, Base Lr: 1.26e-05 | id_global: 0.077 tri_global: 0.011 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.243e-02[4.340e-03,2.625e-02] dA=9.049e-01 pose(d/B/C)=1.542e-03/1.462e-03/1.556e-03 state=5.693e-02 delta_ratio=2.297e-02
+2026-07-15 18:38:46 transreid.train INFO: Epoch[111] Iter[200/227] Loss: 0.083, Acc: 0.996, Base Lr: 1.26e-05 | id_global: 0.071 tri_global: 0.012 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.242e-02[4.319e-03,2.599e-02] dA=9.050e-01 pose(d/B/C)=1.511e-03/1.431e-03/1.530e-03 state=5.321e-02 delta_ratio=1.817e-02
+2026-07-15 18:38:48 transreid.train INFO: Epoch 111 done. Time per epoch: 34.399[s] Speed: 394.4[samples/s] ETA: 0h5m
+2026-07-15 18:38:57 transreid.train INFO: Epoch[112] Iter[50/227] Loss: 0.118, Acc: 0.993, Base Lr: 1.03e-05 | id_global: 0.092 tri_global: 0.026 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.250e-02[4.322e-03,2.651e-02] dA=9.044e-01 pose(d/B/C)=1.570e-03/1.492e-03/1.585e-03 state=5.589e-02 delta_ratio=2.172e-02
+2026-07-15 18:39:05 transreid.train INFO: Epoch[112] Iter[100/227] Loss: 0.114, Acc: 0.993, Base Lr: 1.03e-05 | id_global: 0.089 tri_global: 0.025 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.234e-02[4.331e-03,2.581e-02] dA=9.055e-01 pose(d/B/C)=1.522e-03/1.443e-03/1.534e-03 state=5.588e-02 delta_ratio=2.133e-02
+2026-07-15 18:39:13 transreid.train INFO: Epoch[112] Iter[150/227] Loss: 0.104, Acc: 0.994, Base Lr: 1.03e-05 | id_global: 0.083 tri_global: 0.021 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.243e-02[4.332e-03,2.599e-02] dA=9.049e-01 pose(d/B/C)=1.529e-03/1.462e-03/1.547e-03 state=5.587e-02 delta_ratio=2.039e-02
+2026-07-15 18:39:20 transreid.train INFO: Epoch[112] Iter[200/227] Loss: 0.093, Acc: 0.995, Base Lr: 1.03e-05 | id_global: 0.075 tri_global: 0.018 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.237e-02[4.378e-03,2.580e-02] dA=9.053e-01 pose(d/B/C)=1.539e-03/1.465e-03/1.553e-03 state=5.554e-02 delta_ratio=2.091e-02
+2026-07-15 18:39:22 transreid.train INFO: Epoch 112 done. Time per epoch: 34.361[s] Speed: 394.9[samples/s] ETA: 0h4m
+2026-07-15 18:39:31 transreid.train INFO: Epoch[113] Iter[50/227] Loss: 0.101, Acc: 0.996, Base Lr: 8.28e-06 | id_global: 0.085 tri_global: 0.016 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.244e-02[4.386e-03,2.606e-02] dA=9.048e-01 pose(d/B/C)=1.509e-03/1.438e-03/1.518e-03 state=6.005e-02 delta_ratio=2.297e-02
+2026-07-15 18:39:39 transreid.train INFO: Epoch[113] Iter[100/227] Loss: 0.103, Acc: 0.996, Base Lr: 8.28e-06 | id_global: 0.083 tri_global: 0.021 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.242e-02[4.338e-03,2.622e-02] dA=9.050e-01 pose(d/B/C)=1.509e-03/1.447e-03/1.530e-03 state=5.396e-02 delta_ratio=2.098e-02
+2026-07-15 18:39:47 transreid.train INFO: Epoch[113] Iter[150/227] Loss: 0.097, Acc: 0.996, Base Lr: 8.28e-06 | id_global: 0.079 tri_global: 0.018 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.236e-02[4.309e-03,2.596e-02] dA=9.053e-01 pose(d/B/C)=1.565e-03/1.489e-03/1.575e-03 state=5.828e-02 delta_ratio=2.438e-02
+2026-07-15 18:39:55 transreid.train INFO: Epoch[113] Iter[200/227] Loss: 0.089, Acc: 0.996, Base Lr: 8.28e-06 | id_global: 0.073 tri_global: 0.016 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.237e-02[4.321e-03,2.581e-02] dA=9.053e-01 pose(d/B/C)=1.554e-03/1.477e-03/1.568e-03 state=5.807e-02 delta_ratio=2.111e-02
+2026-07-15 18:39:57 transreid.train INFO: Epoch 113 done. Time per epoch: 34.464[s] Speed: 393.7[samples/s] ETA: 0h4m
+2026-07-15 18:40:06 transreid.train INFO: Epoch[114] Iter[50/227] Loss: 0.096, Acc: 0.994, Base Lr: 6.51e-06 | id_global: 0.084 tri_global: 0.012 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.239e-02[4.312e-03,2.614e-02] dA=9.052e-01 pose(d/B/C)=1.569e-03/1.488e-03/1.583e-03 state=5.417e-02 delta_ratio=2.010e-02
+2026-07-15 18:40:13 transreid.train INFO: Epoch[114] Iter[100/227] Loss: 0.093, Acc: 0.995, Base Lr: 6.51e-06 | id_global: 0.081 tri_global: 0.012 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.243e-02[4.341e-03,2.607e-02] dA=9.049e-01 pose(d/B/C)=1.563e-03/1.479e-03/1.571e-03 state=6.058e-02 delta_ratio=2.314e-02
+2026-07-15 18:40:21 transreid.train INFO: Epoch[114] Iter[150/227] Loss: 0.095, Acc: 0.995, Base Lr: 6.51e-06 | id_global: 0.079 tri_global: 0.016 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.239e-02[4.327e-03,2.600e-02] dA=9.052e-01 pose(d/B/C)=1.530e-03/1.447e-03/1.543e-03 state=5.449e-02 delta_ratio=2.009e-02
+2026-07-15 18:40:29 transreid.train INFO: Epoch[114] Iter[200/227] Loss: 0.091, Acc: 0.995, Base Lr: 6.51e-06 | id_global: 0.075 tri_global: 0.016 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.245e-02[4.411e-03,2.617e-02] dA=9.047e-01 pose(d/B/C)=1.512e-03/1.442e-03/1.532e-03 state=5.650e-02 delta_ratio=1.992e-02
+2026-07-15 18:40:31 transreid.train INFO: Epoch 114 done. Time per epoch: 34.448[s] Speed: 395.7[samples/s] ETA: 0h3m
+2026-07-15 18:40:40 transreid.train INFO: Epoch[115] Iter[50/227] Loss: 0.101, Acc: 0.993, Base Lr: 5.02e-06 | id_global: 0.086 tri_global: 0.015 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.243e-02[4.335e-03,2.614e-02] dA=9.049e-01 pose(d/B/C)=1.556e-03/1.481e-03/1.568e-03 state=5.740e-02 delta_ratio=2.202e-02
+2026-07-15 18:40:48 transreid.train INFO: Epoch[115] Iter[100/227] Loss: 0.096, Acc: 0.995, Base Lr: 5.02e-06 | id_global: 0.083 tri_global: 0.013 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.244e-02[4.358e-03,2.599e-02] dA=9.047e-01 pose(d/B/C)=1.529e-03/1.452e-03/1.539e-03 state=5.648e-02 delta_ratio=1.989e-02
+2026-07-15 18:40:56 transreid.train INFO: Epoch[115] Iter[150/227] Loss: 0.090, Acc: 0.995, Base Lr: 5.02e-06 | id_global: 0.078 tri_global: 0.012 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.247e-02[4.307e-03,2.628e-02] dA=9.047e-01 pose(d/B/C)=1.549e-03/1.470e-03/1.563e-03 state=5.649e-02 delta_ratio=2.038e-02
+2026-07-15 18:41:04 transreid.train INFO: Epoch[115] Iter[200/227] Loss: 0.082, Acc: 0.995, Base Lr: 5.02e-06 | id_global: 0.071 tri_global: 0.011 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.246e-02[4.334e-03,2.610e-02] dA=9.047e-01 pose(d/B/C)=1.540e-03/1.466e-03/1.555e-03 state=5.416e-02 delta_ratio=1.901e-02
+2026-07-15 18:41:06 transreid.train INFO: Epoch 115 done. Time per epoch: 34.471[s] Speed: 395.5[samples/s] ETA: 0h2m
+2026-07-15 18:41:15 transreid.train INFO: Epoch[116] Iter[50/227] Loss: 0.114, Acc: 0.995, Base Lr: 3.79e-06 | id_global: 0.091 tri_global: 0.023 | PoseSSM alpha=1.807e-01 gain=9.916e-02 dt=1.245e-02[4.318e-03,2.614e-02] dA=9.048e-01 pose(d/B/C)=1.522e-03/1.449e-03/1.542e-03 state=5.477e-02 delta_ratio=1.996e-02
+2026-07-15 18:41:22 transreid.train INFO: Epoch[116] Iter[100/227] Loss: 0.103, Acc: 0.995, Base Lr: 3.79e-06 | id_global: 0.084 tri_global: 0.019 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.251e-02[4.381e-03,2.630e-02] dA=9.043e-01 pose(d/B/C)=1.541e-03/1.462e-03/1.563e-03 state=5.561e-02 delta_ratio=2.176e-02
+2026-07-15 18:41:30 transreid.train INFO: Epoch[116] Iter[150/227] Loss: 0.096, Acc: 0.995, Base Lr: 3.79e-06 | id_global: 0.079 tri_global: 0.017 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.233e-02[4.377e-03,2.586e-02] dA=9.056e-01 pose(d/B/C)=1.624e-03/1.527e-03/1.636e-03 state=5.815e-02 delta_ratio=2.067e-02
+2026-07-15 18:41:38 transreid.train INFO: Epoch[116] Iter[200/227] Loss: 0.090, Acc: 0.996, Base Lr: 3.79e-06 | id_global: 0.073 tri_global: 0.017 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.236e-02[4.321e-03,2.585e-02] dA=9.054e-01 pose(d/B/C)=1.528e-03/1.452e-03/1.540e-03 state=5.323e-02 delta_ratio=1.845e-02
+2026-07-15 18:41:40 transreid.train INFO: Epoch 116 done. Time per epoch: 34.219[s] Speed: 394.6[samples/s] ETA: 0h2m
+2026-07-15 18:41:49 transreid.train INFO: Epoch[117] Iter[50/227] Loss: 0.094, Acc: 0.996, Base Lr: 2.83e-06 | id_global: 0.084 tri_global: 0.010 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.260e-02[4.388e-03,2.637e-02] dA=9.037e-01 pose(d/B/C)=1.529e-03/1.450e-03/1.543e-03 state=5.796e-02 delta_ratio=2.272e-02
+2026-07-15 18:41:57 transreid.train INFO: Epoch[117] Iter[100/227] Loss: 0.094, Acc: 0.995, Base Lr: 2.83e-06 | id_global: 0.083 tri_global: 0.011 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.248e-02[4.342e-03,2.616e-02] dA=9.045e-01 pose(d/B/C)=1.549e-03/1.475e-03/1.565e-03 state=5.750e-02 delta_ratio=2.036e-02
+2026-07-15 18:42:04 transreid.train INFO: Epoch[117] Iter[150/227] Loss: 0.088, Acc: 0.995, Base Lr: 2.83e-06 | id_global: 0.079 tri_global: 0.010 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.243e-02[4.324e-03,2.617e-02] dA=9.049e-01 pose(d/B/C)=1.516e-03/1.439e-03/1.531e-03 state=5.309e-02 delta_ratio=1.948e-02
+2026-07-15 18:42:12 transreid.train INFO: Epoch[117] Iter[200/227] Loss: 0.086, Acc: 0.995, Base Lr: 2.83e-06 | id_global: 0.074 tri_global: 0.012 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.247e-02[4.362e-03,2.611e-02] dA=9.046e-01 pose(d/B/C)=1.558e-03/1.479e-03/1.579e-03 state=5.487e-02 delta_ratio=1.881e-02
+2026-07-15 18:42:14 transreid.train INFO: Epoch 117 done. Time per epoch: 34.508[s] Speed: 395.0[samples/s] ETA: 0h1m
+2026-07-15 18:42:23 transreid.train INFO: Epoch[118] Iter[50/227] Loss: 0.102, Acc: 0.996, Base Lr: 2.15e-06 | id_global: 0.081 tri_global: 0.021 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.238e-02[4.313e-03,2.600e-02] dA=9.053e-01 pose(d/B/C)=1.516e-03/1.443e-03/1.532e-03 state=5.472e-02 delta_ratio=2.031e-02
+2026-07-15 18:42:31 transreid.train INFO: Epoch[118] Iter[100/227] Loss: 0.095, Acc: 0.996, Base Lr: 2.15e-06 | id_global: 0.078 tri_global: 0.016 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.239e-02[4.318e-03,2.604e-02] dA=9.052e-01 pose(d/B/C)=1.544e-03/1.459e-03/1.557e-03 state=5.680e-02 delta_ratio=2.232e-02
+2026-07-15 18:42:39 transreid.train INFO: Epoch[118] Iter[150/227] Loss: 0.090, Acc: 0.996, Base Lr: 2.15e-06 | id_global: 0.074 tri_global: 0.016 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.239e-02[4.359e-03,2.605e-02] dA=9.052e-01 pose(d/B/C)=1.470e-03/1.400e-03/1.485e-03 state=5.400e-02 delta_ratio=2.167e-02
+2026-07-15 18:42:47 transreid.train INFO: Epoch[118] Iter[200/227] Loss: 0.086, Acc: 0.996, Base Lr: 2.15e-06 | id_global: 0.069 tri_global: 0.017 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.248e-02[4.324e-03,2.623e-02] dA=9.046e-01 pose(d/B/C)=1.503e-03/1.426e-03/1.516e-03 state=5.818e-02 delta_ratio=2.036e-02
+2026-07-15 18:42:49 transreid.train INFO: Epoch 118 done. Time per epoch: 34.270[s] Speed: 395.9[samples/s] ETA: 0h1m
+2026-07-15 18:42:58 transreid.train INFO: Epoch[119] Iter[50/227] Loss: 0.087, Acc: 0.997, Base Lr: 1.74e-06 | id_global: 0.077 tri_global: 0.011 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.243e-02[4.332e-03,2.615e-02] dA=9.049e-01 pose(d/B/C)=1.564e-03/1.484e-03/1.574e-03 state=5.563e-02 delta_ratio=2.037e-02
+2026-07-15 18:43:05 transreid.train INFO: Epoch[119] Iter[100/227] Loss: 0.089, Acc: 0.997, Base Lr: 1.74e-06 | id_global: 0.074 tri_global: 0.015 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.245e-02[4.366e-03,2.618e-02] dA=9.048e-01 pose(d/B/C)=1.555e-03/1.476e-03/1.571e-03 state=5.307e-02 delta_ratio=2.081e-02
+2026-07-15 18:43:13 transreid.train INFO: Epoch[119] Iter[150/227] Loss: 0.086, Acc: 0.996, Base Lr: 1.74e-06 | id_global: 0.073 tri_global: 0.013 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.247e-02[4.341e-03,2.613e-02] dA=9.046e-01 pose(d/B/C)=1.565e-03/1.479e-03/1.584e-03 state=5.773e-02 delta_ratio=2.171e-02
+2026-07-15 18:43:21 transreid.train INFO: Epoch[119] Iter[200/227] Loss: 0.081, Acc: 0.996, Base Lr: 1.74e-06 | id_global: 0.068 tri_global: 0.014 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.238e-02[4.379e-03,2.591e-02] dA=9.052e-01 pose(d/B/C)=1.505e-03/1.431e-03/1.514e-03 state=5.759e-02 delta_ratio=2.036e-02
+2026-07-15 18:43:23 transreid.train INFO: Epoch 119 done. Time per epoch: 34.485[s] Speed: 393.4[samples/s] ETA: 0h0m
+2026-07-15 18:43:32 transreid.train INFO: Epoch[120] Iter[50/227] Loss: 0.085, Acc: 0.997, Base Lr: 1.60e-06 | id_global: 0.075 tri_global: 0.010 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.239e-02[4.291e-03,2.600e-02] dA=9.052e-01 pose(d/B/C)=1.485e-03/1.412e-03/1.505e-03 state=5.617e-02 delta_ratio=1.981e-02
+2026-07-15 18:43:40 transreid.train INFO: Epoch[120] Iter[100/227] Loss: 0.104, Acc: 0.996, Base Lr: 1.60e-06 | id_global: 0.080 tri_global: 0.024 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.241e-02[4.345e-03,2.604e-02] dA=9.051e-01 pose(d/B/C)=1.517e-03/1.444e-03/1.536e-03 state=5.811e-02 delta_ratio=2.232e-02
+2026-07-15 18:43:48 transreid.train INFO: Epoch[120] Iter[150/227] Loss: 0.095, Acc: 0.996, Base Lr: 1.60e-06 | id_global: 0.075 tri_global: 0.020 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.241e-02[4.348e-03,2.624e-02] dA=9.050e-01 pose(d/B/C)=1.521e-03/1.450e-03/1.526e-03 state=5.708e-02 delta_ratio=2.091e-02
+2026-07-15 18:43:56 transreid.train INFO: Epoch[120] Iter[200/227] Loss: 0.089, Acc: 0.996, Base Lr: 1.60e-06 | id_global: 0.071 tri_global: 0.018 | PoseSSM alpha=1.808e-01 gain=9.916e-02 dt=1.238e-02[4.300e-03,2.617e-02] dA=9.053e-01 pose(d/B/C)=1.506e-03/1.431e-03/1.520e-03 state=5.429e-02 delta_ratio=1.930e-02
+2026-07-15 18:43:58 transreid.train INFO: Epoch 120 done. Time per epoch: 34.546[s] Speed: 394.6[samples/s] ETA: 0h0m
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-15 18:44:48 transreid.train INFO: Validation Results - Epoch: 120
+2026-07-15 18:44:48 transreid.train INFO: mAP: 58.6%
+2026-07-15 18:44:48 transreid.train INFO: CMC curve, Rank-1  :67.8%
+2026-07-15 18:44:48 transreid.train INFO: CMC curve, Rank-5  :81.4%
+2026-07-15 18:44:48 transreid.train INFO: CMC curve, Rank-10 :86.3%

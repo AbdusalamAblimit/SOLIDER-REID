@@ -1,0 +1,22 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "<string>", line 1, in <listcomp>
+  File "/home/afr/SOLIDER-REID-exp378-n0-preflight-de1ebe1/experiments/exp378_e2e_pose/test_task_adaptive_pose_field.py", line 476, in test_strict_state_and_optimizer_roundtrip_is_exact
+    checkpoint = torch.load(payload, weights_only=True)
+  File "/root/solider-venv/lib/python3.10/site-packages/torch/serialization.py", line 788, in load
+    raise pickle.UnpicklingError(UNSAFE_MESSAGE + str(e)) from None
+_pickle.UnpicklingError: Weights only load failed. Re-running `torch.load` with `weights_only` set to `False` will likely succeed, but it can result in arbitrary code execution.Do it only if you get the file from a trusted source. WeightsUnpickler error: Unsupported operand 71
+PASS test_bootstrap_pose_loss_updates_anchor_but_not_feature_or_adapter
+PASS test_bootstrap_schedule_is_fixed_and_reaches_student_at_epoch_10
+PASS test_eval_never_reads_external_teacher_and_uses_mode_geometry
+PASS test_explicit_sgd_relaxation_matches_legacy_zero_gradient_steps
+PASS test_four_arms_have_exact_paired_initialization
+PASS test_n0_internal_permutation_matches_exact_external_relabeling_once
+PASS test_n0_metadata_does_not_change_parameters_or_optimizer_groups
+PASS test_n0_permutation_is_validated_as_a_full_derangement
+PASS test_p0_f0_hard_freeze_survives_sgd_momentum_and_default_zero_grad
+PASS test_p0_post_boot_is_teacher_independent_and_updates_only_geometry
+PASS test_post_boot_2x2_gradient_semantics
+PASS test_relaxation_cleanup_preserves_anchor_when_optimizer_step_is_skipped
+PASS test_relaxed_f0_p0_share_anchor_trajectory_and_isolate_adapter
+PASS test_sgd_relaxation_rejects_non_sgd_and_non_attribution_modes

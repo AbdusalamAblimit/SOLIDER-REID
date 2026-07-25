@@ -1,0 +1,31 @@
+/root/solider-venv/lib/python3.10/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-exp371-146bc44/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[POSE] POSE_USE_TARGET_HEATMAP=True: pose modules (PSG/LGPA/VCSR/PPA/STR/FSDC/...) will receive person-0 (target) heatmap instead of max-merged scene heatmap.
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0, query_mode=clip_frozen, query_seed=42
+[LGPA] Running on DETACHED features (no gradient to backbone)
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /home/afr/SOLIDER-REID/log/occluded_duke/sw_poseclip_s0/transformer_120.pth
+Traceback (most recent call last):
+  File "/home/afr/SOLIDER-REID-exp371-146bc44/experiments/exp371_casd/cache_support_blocks.py", line 646, in <module>
+    main()
+  File "/home/afr/SOLIDER-REID-exp371-146bc44/experiments/exp371_casd/cache_support_blocks.py", line 610, in main
+    tensors, pids, camids, paths = extract_loader(
+  File "/root/solider-venv/lib/python3.10/site-packages/torch/autograd/grad_mode.py", line 27, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/afr/SOLIDER-REID-exp371-146bc44/experiments/exp371_casd/cache_support_blocks.py", line 506, in extract_loader
+    batch_out = extract_support_batch(
+  File "/root/solider-venv/lib/python3.10/site-packages/torch/autograd/grad_mode.py", line 27, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/afr/SOLIDER-REID-exp371-146bc44/experiments/exp371_casd/cache_support_blocks.py", line 316, in extract_support_batch
+    raise AssertionError(
+AssertionError: equal/maxsim mismatch: global=2.58302316e-05 parts=2.37673521e-06 atol=2e-05

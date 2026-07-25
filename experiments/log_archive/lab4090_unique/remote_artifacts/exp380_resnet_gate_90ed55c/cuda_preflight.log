@@ -1,0 +1,65 @@
+=> Occluded-DukeMTMC loaded
+using img_triplet sampler
+/usr/local/anaconda3/envs/gaitheat/lib/python3.7/site-packages/torchvision/transforms/transforms.py:330: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  "Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. "
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using resnet50 as a backbone
+Loading pretrained ImageNet model......from pretrained/resnet50-19c8e357.pth
+===========building ResNet===========
+using resnet50 as a backbone
+Loading pretrained ImageNet model......from pretrained/resnet50-19c8e357.pth
+[R50-TAPF] source=2 psg_stages=[3] tapf_params=179622 psg_params=402816
+===========building ResNet TAPF===========
+using resnet50 as a backbone
+Loading pretrained ImageNet model......from pretrained/resnet50-19c8e357.pth
+[R50-TAPF-H] source=(1, 2) psg_stages=[2, 3] tapf_params=132514 psg_params=809088
+===========building ResNet TAPF===========
+using soft triplet loss for training
+using soft triplet loss for training
+using soft triplet loss for training
+MATCHED_INVARIANTS_PASS counts={'b0': 24949824, 'd0': 25532262, 'ht0': 25891426}
+using resnet50 as a backbone
+Loading pretrained ImageNet model......from pretrained/resnet50-19c8e357.pth
+===========building ResNet===========
+using soft triplet loss for training
+B0_BATCH64_PASS loss=9.19384384 scale=1024.0
+using resnet50 as a backbone
+Loading pretrained ImageNet model......from pretrained/resnet50-19c8e357.pth
+===========building ResNet===========
+using resnet50 as a backbone
+Loading pretrained ImageNet model......from pretrained/resnet50-19c8e357.pth
+===========building ResNet===========
+using soft triplet loss for training
+using soft triplet loss for training
+B0_TEN_STEP_LEGACY_PARITY_PASS
+using resnet50 as a backbone
+Loading pretrained ImageNet model......from pretrained/resnet50-19c8e357.pth
+[R50-TAPF] source=2 psg_stages=[3] tapf_params=179622 psg_params=402816
+===========building ResNet TAPF===========
+using soft triplet loss for training
+D0_E1_BATCH64_PASS identity=9.34684849 pose=2.88509893 scale=1024.0
+using resnet50 as a backbone
+Loading pretrained ImageNet model......from pretrained/resnet50-19c8e357.pth
+[R50-TAPF] source=2 psg_stages=[3] tapf_params=179622 psg_params=402816
+===========building ResNet TAPF===========
+using soft triplet loss for training
+D0_E11_BATCH64_PASS identity=9.34684849 pose=2.88509893 scale=1024.0
+using resnet50 as a backbone
+Loading pretrained ImageNet model......from pretrained/resnet50-19c8e357.pth
+[R50-TAPF-H] source=(1, 2) psg_stages=[2, 3] tapf_params=132514 psg_params=809088
+===========building ResNet TAPF===========
+using soft triplet loss for training
+HT0_E1_BATCH64_PASS identity=9.34684849 pose=2.93400764 scale=1024.0
+using resnet50 as a backbone
+Loading pretrained ImageNet model......from pretrained/resnet50-19c8e357.pth
+[R50-TAPF-H] source=(1, 2) psg_stages=[2, 3] tapf_params=132514 psg_params=809088
+===========building ResNet TAPF===========
+using soft triplet loss for training
+HT0_E11_BATCH64_PASS identity=9.34684849 pose=2.93400764 scale=1024.0
+HT0_REAL_OVERFLOW_PASS scale=128->64
+EXP380_RESNET_CUDA_PREFLIGHT_PASS
+runtime=torch-1.13.1+cu116 cuda=11.6 batch=64 image=(64, 3, 384, 128)

@@ -1,0 +1,105 @@
+/home/afr/SOLIDER-REID-exp389-preflight-e6c49c4/model/backbones/swin_transformer.py:1157: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+{
+  "final_state_sha256": "134c34beb9422298e2ad61a9b07a68531103ff08872c0614e2e88c44e5ef5f47",
+  "initial_state_sha256": "017e9870bbbba1f2d460d62ea1fd81ba2cfdb13f92cf1dd5a02efa90a35777ad",
+  "momentum_count": 185,
+  "momentum_sha256": "3c453e997e74aa63e36157079bcbbfd16b5575a6064ddb6de48d15d346d253ca",
+  "state_count": 223,
+  "steps": [
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "ba6481bd041a65787311090e00057c3806040a27e194ef2127c4e3b6220b31ae",
+      "loss": 18.48023796081543,
+      "output_count": 9,
+      "output_sha256": "bea1e1a784c7a7e4ab62ca11fce2e3f399a771680a15aa50061fd817690cc88a",
+      "scale": 32768.0,
+      "state_sha256": "fc8dfe73a366109b14f6e6cf79fddef152051c6ef557a90c840d4b5db255215e"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "f24f1eed2389ac86ccded3df3110334bfb362bd220c69a5780ec6cb52d497d56",
+      "loss": 24.03595542907715,
+      "output_count": 9,
+      "output_sha256": "fcd62ed06e60924451a7ea02467283140df3cf708dacd0dd27daee5f982fb2f7",
+      "scale": 16384.0,
+      "state_sha256": "101c905c73d830f91f0d9875ae2220a1e541f62244491e0a1f8457cfa4c72ac0"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "291b65c06716e80209c7322c6ab1a94169f126bb2bd4f9c732bceda6c65818a4",
+      "loss": 27.658037185668945,
+      "output_count": 9,
+      "output_sha256": "38e0f26b38381c7fe65eaccd0554a9519907bc11951c5e8d056f3a67fba4bec7",
+      "scale": 8192.0,
+      "state_sha256": "d7c4703270d14dd34424ad9cf44d718a81702c4c0ef2901a3eca486883858d98"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "7e3696441ba9d6db586a828f0da9df56d85ada3520cfba905704cc7e0989ea38",
+      "loss": 21.96946144104004,
+      "output_count": 9,
+      "output_sha256": "6b8104424fee915ed7d22e3ad07454e4c96503157159ccc09ff6d3bab7b55e56",
+      "scale": 4096.0,
+      "state_sha256": "c3a2015a89a789726af6c2398b779d1456695b35b381673c202cef8123f91591"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "9210105a086576560e5dc1f65837214a01cebee5c96b91400462b26d29a1899a",
+      "loss": 33.85047912597656,
+      "output_count": 9,
+      "output_sha256": "64feeecf8aa85b74b08c83742a1d5813922dc2c119d70dcfffc2395ba6757064",
+      "scale": 2048.0,
+      "state_sha256": "401e5a23d143406239d93bedc553588f2b3d684f38b671d44b1ded87eb43cc67"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "cf76285769aad8a6f219245c3671358b0e2e714fafae3598586a081bf24e68eb",
+      "loss": 13.000370979309082,
+      "output_count": 9,
+      "output_sha256": "46175d6834a1e35a5331a24d914157f5516f5294f031739bbc6bbfa12074c9cd",
+      "scale": 1024.0,
+      "state_sha256": "37a695943d00dbd703ab0fbb760711410d33621795179f37f6fdf37fed0c0070"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "aaf65fc80f0ea57093e81f2e54ed85a8a4d99f1d5477b3209d95d160678bfb2b",
+      "loss": 24.888553619384766,
+      "output_count": 9,
+      "output_sha256": "bc7d47eb9f05faf865dba0681b84e9dde13d4314ae94f1cc0cf6f33cc45383e8",
+      "scale": 512.0,
+      "state_sha256": "0e371148401503392b0cd41f4b018102202008d1f40facba73653610119be9c6"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "4497374cc705f6f29a084fb8c7931251c0fa8a858f259591fbb245e098fb44a7",
+      "loss": 11.718182563781738,
+      "output_count": 9,
+      "output_sha256": "93c28515a56db707c56b6d85ad12049412f206b38d11cabd126551e0535497c7",
+      "scale": 512.0,
+      "state_sha256": "ebfe78d474b9719449362515416b1573ad677004f7be625ff1ae121bbe7c865a"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "47589fc9877dfde42be9891fbb58b6e98ebc47c2dc30018114ff18e6879a0d4e",
+      "loss": 42.6562385559082,
+      "output_count": 9,
+      "output_sha256": "5a9347abde40b1328a8707eeb42449caaf67e4bc586691b6d385bbcb3816491a",
+      "scale": 512.0,
+      "state_sha256": "d1c69973259316f808c07a5203888fa04b18d74dca323723e39175fe33491b83"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "3c5613cc3facf8de79190413d66be0ea2968a4039060497f443da048f6750629",
+      "loss": 18.8969669342041,
+      "output_count": 9,
+      "output_sha256": "8546c4e0d76784f8a45a5bec09b0e82d03f93f30a46be6bf7c7d5d8c41323c61",
+      "scale": 512.0,
+      "state_sha256": "134c34beb9422298e2ad61a9b07a68531103ff08872c0614e2e88c44e5ef5f47"
+    }
+  ]
+}

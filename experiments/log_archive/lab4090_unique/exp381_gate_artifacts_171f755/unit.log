@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "experiments/exp381_vit_tapf/test_vit_tapf.py", line 22, in <module>
+    import mmcv.runner  # noqa: F401
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/mmcv/__init__.py", line 4, in <module>
+    from .image import *
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/mmcv/image/__init__.py", line 2, in <module>
+    from .colorspace import (bgr2gray, bgr2hls, bgr2hsv, bgr2rgb, bgr2ycbcr,
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/mmcv/image/colorspace.py", line 299, in <module>
+    bgr2rgb = convert_color_factory('bgr', 'rgb')
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/mmcv/image/colorspace.py", line 280, in convert_color_factory
+    code = getattr(cv2, f'COLOR_{src.upper()}2{dst.upper()}')
+AttributeError: module 'cv2' has no attribute 'COLOR_BGR2RGB'

@@ -1,0 +1,60 @@
+{
+  "checkpoint": {
+    "path": "/home/afr/SOLIDER-REID-exp403-elo-cur-fe854ea/log/occluded_duke/exp403_elo_cur_s1234/transformer_120.pth",
+    "state_count": 237,
+    "state_sha256": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9"
+  },
+  "gates": {
+    "checkpoint_regular": true,
+    "checkpoint_unique": true,
+    "epoch120_done": true,
+    "evidence_head_retained": true,
+    "final_eval_present": true,
+    "gpu_compute_processes_zero": true,
+    "repo_all_clean": true,
+    "repo_tracked_clean": true,
+    "runner_fatal_zero": true,
+    "state_all_tensors": true,
+    "state_finite": true,
+    "state_teacher_free": true,
+    "static_experts_absent": true,
+    "train_processes_zero": true,
+    "two_elo_routers_retained": true
+  },
+  "gpu_compute_pids": [],
+  "paths": {
+    "audit_wrapper": "/home/afr/reid-clean/audits/exp403_elo_cur_final_v1/final_counterfactual_audit.py",
+    "base_audit": "/home/afr/reid-clean/audits/exp403_elo_cur_final_v1/base_actual_counterfactual_audit.py",
+    "base_core": "/home/afr/reid-clean/audits/exp403_elo_cur_final_v1/base_counterfactual_core.py",
+    "core": "/home/afr/reid-clean/audits/exp403_elo_cur_final_v1/final_counterfactual_core.py",
+    "execution_wrapper": "/home/afr/reid-clean/audits/exp403_elo_cur_final_v1/final_once_wrapper.sh",
+    "postflight": "/home/afr/reid-clean/audits/exp403_elo_cur_final_v1/final_postflight.py"
+  },
+  "repo": {
+    "head": "fe854ea0808d86d37566100e59ea629e8b409d38",
+    "path": "/home/afr/SOLIDER-REID-exp403-elo-cur-fe854ea"
+  },
+  "sha256": {
+    "audit_wrapper": "35d318cffbfe5d70e8046579f43fa1c7e53ede010eedb1d21965c766ac15dce5",
+    "base_audit": "f450c5e3801a61d20a7ba831d6cefb1ab1d9d5f5549824fc2fa55943059cc479",
+    "base_core": "6e9ac9cfc03d70606ee34f77af39accc6b66c89ee9974fee48ded1d6951dfb54",
+    "checkpoint": "c5593cd73b06cde4ec3306b3458617d8835fa529b77c545923e874e7e780cc71",
+    "checkpoint_contract_script": "1e2057b386ddc0dd28503c47bd4ef7acc2797098bb5934480cd14707b1fd32d9",
+    "config": "06a80c9d7589fe539b4d8f5820df307f08868c2005517ae6fce3226ed8a470ba",
+    "core": "e552c9619d5aaadfaa9cb252d9734f37f45748abc173a6652d1f6fc3bf430095",
+    "execution_wrapper": "bbdba1a310d4e9bf7de7b30fd3888aace8d8cdca865a2248ed73d6206d1b79b1",
+    "postflight": "99add6fdf32291d46df9041d8f41df03679d70740339f1121cf9a238ee054de1",
+    "runner": "c0ca2089e41f0c9de42fbeda83ce2c09173ab7221d20de6869586e5aaefc14f8",
+    "source": {
+      "config/defaults.py": "d0fb545658b97bede0025ba39700ead7e1483f688fa6fee25bc5f49c17419105",
+      "datasets/bases.py": "03d231558f46264e4cff0c251b9b728ab4971232ed6c4bb7324ce1964f139c2c",
+      "datasets/occluded_duke.py": "f0e7b25e75251643430b699d9c9969fae207c0a85c48855cd0404d61a4228f8e",
+      "model/backbones/swin_transformer.py": "45e020d20e42db3695a27b123ec9ad76c7c6d4498255c340537a75d6c3665036",
+      "model/make_model.py": "a09b55bccd177692ac90e9aa1ecbe1c9116f9434719061b9f00369ffb7602e55",
+      "model/tapf.py": "656e7726fbe19f67d6b9b258f1ec9234a951169d5d037ac44ec8e6f1948bd614",
+      "utils/metrics.py": "8715f845a369688577773afbb974a660e2324961583e0f5ba066e2f93484b7f1"
+    }
+  },
+  "status": "PASS",
+  "train_processes": []
+}

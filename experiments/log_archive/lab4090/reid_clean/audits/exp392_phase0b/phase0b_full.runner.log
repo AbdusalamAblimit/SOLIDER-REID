@@ -1,0 +1,22 @@
+[Phase0B] batches=25 samples=800
+[Phase0B] batches=50 samples=1600
+[Phase0B] batches=75 samples=2400
+[Phase0B] batches=100 samples=3200
+[Phase0B] batches=125 samples=4000
+[Phase0B] batches=150 samples=4800
+[Phase0B] batches=175 samples=5600
+[Phase0B] batches=200 samples=6400
+[Phase0B] batches=225 samples=7200
+[Phase0B] batches=250 samples=8000
+[Phase0B] batches=275 samples=8800
+[Phase0B] batches=300 samples=9600
+[Phase0B] batches=325 samples=10400
+[Phase0B] batches=350 samples=11200
+[Phase0B] batches=375 samples=12000
+[Phase0B] batches=400 samples=12800
+[Phase0B] batches=425 samples=13600
+[Phase0B] batches=450 samples=14400
+[Phase0B] batches=475 samples=15200
+EXP392_PHASE0B_COMPLETE
+verdict=CURRENT_CLIP_TEACHER_NO_GO selected=None
+output_sha256=af8e654565396f338a9a1b1f8ce5fe4d8178d551ec2767c500d230d477d7e6f8

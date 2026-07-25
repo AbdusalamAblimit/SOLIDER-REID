@@ -1,0 +1,30 @@
+PASS test_config_contract
+PASS test_torch_load_compatibility
+using stride: [8, 8], and patch number is num_y4 * num_x2
+using stride: [8, 8], and patch number is num_y4 * num_x2
+[ViT-TAPF] groups=[3] tapf_params=2102 psg_params=1296
+using stride: [8, 8], and patch number is num_y4 * num_x2
+[ViT-TAPF-H] groups=[2, 3] tapf_params=1682 psg_params=2592
+PASS test_matched_initialization_and_topology
+using stride: [8, 8], and patch number is num_y4 * num_x2
+===========building matched ViT TAPF experiment===========
+PASS test_make_model_routes_only_exp381_flag
+using stride: [8, 8], and patch number is num_y4 * num_x2
+[ViT-TAPF] groups=[3] tapf_params=2102 psg_params=1296
+PASS test_cls_exact_spatial_bypass
+using stride: [8, 8], and patch number is num_y4 * num_x2
+using stride: [8, 8], and patch number is num_y4 * num_x2
+[ViT-TAPF-H] groups=[2, 3] tapf_params=1682 psg_params=2592
+PASS test_b0_and_e1_e11_progressive_routes
+using stride: [8, 8], and patch number is num_y4 * num_x2
+[ViT-TAPF-H] groups=[2, 3] tapf_params=1682 psg_params=2592
+PASS test_gradient_ownership
+using stride: [8, 8], and patch number is num_y4 * num_x2
+[ViT-TAPF-H] groups=[2, 3] tapf_params=1682 psg_params=2592
+PASS test_eval_external_pose_exact_parity
+using stride: [8, 8], and patch number is num_y4 * num_x2
+[ViT-TAPF-H] groups=[2, 3] tapf_params=1682 psg_params=2592
+using stride: [8, 8], and patch number is num_y4 * num_x2
+[ViT-TAPF-H] groups=[2, 3] tapf_params=1682 psg_params=2592
+PASS test_strict_reload_and_finite_state
+EXP381_VIT_TAPF_UNIT_PASS 9/9

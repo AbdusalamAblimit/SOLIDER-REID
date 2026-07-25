@@ -1,0 +1,47 @@
+=> Occluded-Duke loaded
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+=== Phase0A arm: correct_start ===
+/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-exp387-d0-0d1822a/model/backbones/swin_transformer.py:1157: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+[correct_start] metrics=[57.558776, 67.692308, 80.769231, 84.570136] delta=[0.0, 0.0, 0.0, 0.0] exact=True
+=== Phase0A arm: external_correct ===
+/home/afr/SOLIDER-REID-exp387-d0-0d1822a/utils/metrics.py:12: UserWarning: This overload of addmm_ is deprecated:
+	addmm_(Number beta, Number alpha, Tensor mat1, Tensor mat2)
+Consider using one of the following signatures instead:
+	addmm_(Tensor mat1, Tensor mat2, *, Number beta, Number alpha) (Triggered internally at /opt/conda/conda-bld/pytorch_1670525541702/work/torch/csrc/utils/python_arg_parser.cpp:1420.)
+  dist_mat.addmm_(1, -2, qf, gf.t())
+[external_correct] metrics=[57.558776, 67.692308, 80.769231, 84.570136] delta=[0.0, 0.0, 0.0, 0.0] exact=True
+=== Phase0A arm: external_shuffle ===
+[external_shuffle] metrics=[57.558776, 67.692308, 80.769231, 84.570136] delta=[0.0, 0.0, 0.0, 0.0] exact=True
+=== Phase0A arm: external_none ===
+[external_none] metrics=[57.558776, 67.692308, 80.769231, 84.570136] delta=[0.0, 0.0, 0.0, 0.0] exact=True
+=== Phase0A arm: external_exploding ===
+[external_exploding] metrics=[57.558776, 67.692308, 80.769231, 84.570136] delta=[0.0, 0.0, 0.0, 0.0] exact=True
+=== Phase0A arm: channel_cycle ===
+[channel_cycle] metrics=[57.582812, 67.737557, 80.723982, 84.615385] delta=[0.024036, 0.045249, -0.045249, 0.045249] exact=False
+=== Phase0A arm: left_right_channel_swap ===
+[left_right_channel_swap] metrics=[57.541479, 67.692308, 80.723982, 84.524887] delta=[-0.017296, 0.0, -0.045249, -0.045249] exact=False
+=== Phase0A arm: confidence_permutation ===
+[confidence_permutation] metrics=[57.535337, 67.692308, 80.723982, 84.434389] delta=[-0.023439, 0.0, -0.045249, -0.135747] exact=False
+=== Phase0A arm: matched_wrong_field ===
+[matched_wrong_field] metrics=[57.553827, 67.828054, 80.723982, 84.570136] delta=[-0.004949, 0.135747, -0.045249, 0.0] exact=False
+=== Phase0A arm: spatial_constant ===
+[spatial_constant] metrics=[57.905057, 68.190045, 81.266968, 85.067873] delta=[0.346281, 0.497738, 0.497738, 0.497738] exact=False
+=== Phase0A arm: zero_field ===
+[zero_field] metrics=[56.200175, 66.0181, 79.049774, 83.303167] delta=[-1.358601, -1.674208, -1.719457, -1.266968] exact=False
+=== Phase0A arm: psg_bypass_0 ===
+[psg_bypass_0] metrics=[56.883217, 67.013575, 79.909502, 83.936652] delta=[-0.675558, -0.678733, -0.859729, -0.633484] exact=False
+=== Phase0A arm: psg_bypass_1 ===
+[psg_bypass_1] metrics=[56.843903, 66.696833, 79.547511, 83.891403] delta=[-0.714872, -0.995475, -1.221719, -0.678733] exact=False
+=== Phase0A arm: psg_bypass_all ===
+[psg_bypass_all] metrics=[56.200175, 66.0181, 79.049774, 83.303167] delta=[-1.358601, -1.674208, -1.719457, -1.266968] exact=False
+=== Phase0A arm: correct_end ===
+[correct_end] metrics=[57.558776, 67.692308, 80.769231, 84.570136] delta=[0.0, 0.0, 0.0, 0.0] exact=True
+EXP392_PHASE0A_COMPLETE
+verdict=CONSUMER_EFFECTIVE_JOINT_SEMANTICS_NOT_IDENTIFIED
+output_sha256=e1a8ab0f3ab93939c9f7acbd05cf634cff47998c36f85719cea38545828b6511

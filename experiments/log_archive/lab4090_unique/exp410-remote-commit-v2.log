@@ -1,0 +1,11 @@
+[master a3be68f] exp410: implement reviewed PC2P proxy classifier
+ 16 files changed, 1603 insertions(+), 3 deletions(-)
+ create mode 100644 configs/occluded_duke/swin_tiny_tapf_pc2p_exp410.yml
+ create mode 100644 experiments/exp410_pose_complete_clip_proxy_classifier/blind_review.md
+ create mode 100644 experiments/exp410_pose_complete_clip_proxy_classifier/build_proxy_bank.py
+ create mode 100644 experiments/exp410_pose_complete_clip_proxy_classifier/design.md
+ create mode 100644 experiments/exp410_pose_complete_clip_proxy_classifier/monitor.md
+ create mode 100644 experiments/exp410_pose_complete_clip_proxy_classifier/protocol.md
+ create mode 100644 experiments/exp410_pose_complete_clip_proxy_classifier/test_real_batch.py
+ create mode 100644 experiments/paper_notes/2026-07-21_exp410_pc2p_literature_code_audit.md
+ create mode 100644 model/pose_complete_clip_proxy.py

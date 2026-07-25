@@ -1,0 +1,256 @@
+2026-06-11 06:27:42 transreid INFO: Saving model in the path :./log/occluded_duke/exp023_smoke
+2026-06-11 06:27:42 transreid INFO: Loaded configuration file configs/occluded_duke/vit_base.yml
+2026-06-11 06:27:42 transreid INFO: Running with config:
+DATALOADER:
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+  REMOVE_TAIL: 0
+  SAMPLER: softmax_triplet
+DATASETS:
+  NAMES: occluded_duke
+  ROOT_DIR: /mnt1/afrdata
+  ROOT_TRAIN_DIR: ../data
+  ROOT_VAL_DIR: ../data
+DONOR_DECOUPLE:
+  AUX_DETACH: True
+  CF_W: 0.5
+  DONOR_CLS_W: 0.2
+  DONOR_REPEAT: 4
+  ENABLED: False
+  NEG_MARGIN: 0.02
+  ORTH_W: 0.03
+  PASTE_PROB: 0.5
+  SAMEB_NEG_W: 0.5
+  SYN_ID_W: 0.25
+EVIDENCE_AGREEMENT:
+  DOM_MARGIN: 0.3
+  DOM_W: 0.05
+  ENABLED: False
+  EPS: 1e-06
+  MIN_REGION_GAP: 1.0
+  NEG_MARGIN: 0.3
+  NEG_SINGLE_W: 0.1
+  POS_ALIGN_W: 0.05
+  POS_MULTI_W: 0.1
+  REGION_MODE: grid2x2
+  SINGLE_EPS: 0.0
+  TAU_EMA_MOMENTUM: 0.9
+  TAU_GLOBAL: 0.5
+  TAU_REGION: 0.75
+  THRESHOLD_QUANTILE: 0.75
+  T_COUNT: 0.25
+  T_GLOBAL: 0.05
+  T_REGION: 0.05
+  WARMUP_EPOCHS: 10
+INPUT:
+  MIX_PROB: 0.0
+  MIX_RATIO_RANGE: [0.3, 0.7]
+  MIX_TYPE: both
+  PADDING: 10
+  PIXEL_MEAN: [0.5, 0.5, 0.5]
+  PIXEL_STD: [0.5, 0.5, 0.5]
+  PROB: 0.5
+  RE_PROB: 0.5
+  SIZE_TEST: [256, 128]
+  SIZE_TRAIN: [256, 128]
+LGP:
+  ENABLED: False
+  N_HEADS: 8
+  PROTOS_PATH: 
+  W_ID: 1.0
+MODEL:
+  ATT_DROP_RATE: 0.0
+  COS_LAYER: False
+  DEVICE: cuda
+  DEVICE_ID: 0
+  DEVIDE_LENGTH: 4
+  DIST_TRAIN: False
+  DROPOUT_RATE: 0.0
+  DROP_OUT: 0.0
+  DROP_PATH: 0.1
+  FEAT_DIM: 512
+  GEM_POOLING: False
+  ID_LOSS_TYPE: softmax
+  ID_LOSS_WEIGHT: 1.0
+  IF_LABELSMOOTH: off
+  IF_WITH_CENTER: no
+  JPM: False
+  LAST_STRIDE: 1
+  METRIC_LOSS_TYPE: triplet
+  NAME: transformer
+  NECK: bnneck
+  NO_MARGIN: True
+  PRETRAIN_CHOICE: imagenet
+  PRETRAIN_HW_RATIO: 1
+  PRETRAIN_PATH: /home/afr/reid-clean/weights/jx_vit_base_p16_224-80ecf9dd.pth
+  REDUCE_FEAT_DIM: False
+  RE_ARRANGE: True
+  SEMANTIC_WEIGHT: 1.0
+  SHIFT_NUM: 5
+  SHUFFLE_GROUP: 2
+  SIE_CAMERA: False
+  SIE_COE: 3.0
+  SIE_VIEW: False
+  STEM_CONV: False
+  STRIDE_SIZE: [16, 16]
+  TRANSFORMER_TYPE: vit_base_patch16_224_TransReID
+  TRIPLET_LOSS_WEIGHT: 1.0
+  WITH_CP: False
+MULTIHYP:
+  ALPHA: 0.1
+  BONUS_CAP: 0.15
+  DETACH: True
+  DIV_W: 0.5
+  DSHS_HARD: global
+  DSHS_MARGIN: 0.3
+  DSHS_NHARD: 10
+  DSHS_W: 0.0
+  ENABLED: False
+  GATE_SIGMA: 0.3
+  GATE_TAU: 1.2
+  K: 3
+  LOSS_W: 1.0
+  NEG_MARGIN: 0.7
+  POS_MARGIN: 0.3
+  SET_TEMP: 0.1
+  UNIQUE_MARGIN: 0.1
+OBJGATE:
+  ANTI_W: 0.1
+  DETACH_SCORE: False
+  ENABLED: False
+  ENTROPY_MAX: 1000000000.0
+  ENTROPY_MIN: 0.0
+  FEATMAP_INDEX: -1
+  HIDDEN: 192
+  LAMBDA_TARGET: 1.0
+  LAMBDA_WARMUP_EPOCHS: 10
+  MODE: softmax
+  SPLIT_W: 1.0
+  SUPPRESS_MIN: 0.5
+  TAU: 1.0
+OCCAWARE:
+  AUG_PROB: 0.5
+  BANK_PATH: /mnt1/afrdata/coco_occluder_bank_512.pt
+  BLOCK: 8
+  ENABLED: True
+  MECH: True
+  POOL_KIND: coco
+  POOL_SIZE: 256
+  SWIN_STAGE: 2
+  W_OCC: 0.5
+OSG:
+  BLOCK: 8
+  ENABLED: False
+  KL_T: 4.0
+  LABELS_PATH: 
+  PROTOS_PATH: 
+  RANDOM_PROTOS: False
+  TAU: 0.07
+  W_SEM: 0.1
+OSS:
+  AUG_PROB: 0.3
+  ENABLED: False
+  GRL_ALPHA: 1.0
+  POOL_SIZE: 256
+  RANDOM_LABEL: False
+  W: 0.5
+OUTPUT_DIR: ./log/occluded_duke/exp023_smoke
+PARTIAL_EVIDENCE:
+  CALIBRATE: True
+  ENABLED: False
+  LS_MAX: 0.2
+  MARGIN_SCALE: True
+  MIN_KEEP: 0.2
+  NO_HARDNEG_BELOW: 0.4
+  PASTE_PROB: 0.5
+SEMDISTILL:
+  ENABLED: False
+  KL_T: 4.0
+  LABELS_PATH: 
+  MODE: emb
+  W: 0.2
+SOLVER:
+  BASE_LR: 0.008
+  BIAS_LR_FACTOR: 2
+  CENTER_LOSS_WEIGHT: 0.0005
+  CENTER_LR: 0.5
+  CHECKPOINT_PERIOD: 120
+  COSINE_MARGIN: 0.5
+  COSINE_SCALE: 30
+  EVAL_PERIOD: 2
+  GAMMA: 0.1
+  IMS_PER_BATCH: 64
+  LARGE_FC_LR: False
+  LOG_PERIOD: 50
+  MARGIN: 0.3
+  MAX_EPOCHS: 2
+  MOMENTUM: 0.9
+  OPTIMIZER_NAME: SGD
+  SEED: 0
+  STEPS: (40, 70)
+  TRP_L2: False
+  WARMUP_EPOCHS: 5
+  WARMUP_FACTOR: 0.01
+  WARMUP_METHOD: cosine
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0.0001
+TEST:
+  DIST_MAT: dist_mat.npy
+  EVAL: True
+  FEAT_NORM: yes
+  IMS_PER_BATCH: 64
+  NECK_FEAT: before
+  RE_RANKING: False
+  WEIGHT: 
+=> Occluded-Duke loaded
+2026-06-11 06:27:42 transreid.check INFO: Dataset statistics:
+2026-06-11 06:27:42 transreid.check INFO:   ----------------------------------------
+2026-06-11 06:27:42 transreid.check INFO:   subset   | # ids | # images | # cameras
+2026-06-11 06:27:42 transreid.check INFO:   ----------------------------------------
+2026-06-11 06:27:42 transreid.check INFO:   train    |   702 |    15618 |         8
+2026-06-11 06:27:42 transreid.check INFO:   query    |   519 |     2210 |         8
+2026-06-11 06:27:42 transreid.check INFO:   gallery  |  1110 |    17661 |         8
+2026-06-11 06:27:42 transreid.check INFO:   ----------------------------------------
+using img_triplet sampler
+using Transformer_type: vit_base_patch16_224_TransReID as a backbone
+using stride: [16, 16], and patch number is num_y16 * num_x8
+Resized position embedding from size:torch.Size([1, 197, 768]) to size: torch.Size([1, 129, 768]) with height:16 width: 8
+Load 150 / 152 layers.
+===========building transformer===========
+using soft triplet loss for training
+2026-06-11 06:27:43 transreid INFO: ===========using cosine learning rate=======
+2026-06-11 06:27:43 transreid.train INFO: start training
+/home/afr/reid-clean/SOLIDER-REID/processor/processor.py:91: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = amp.GradScaler()
+/home/afr/reid-clean/SOLIDER-REID/processor/processor.py:129: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with amp.autocast(enabled=True):
+2026-06-11 06:27:47 transreid.train INFO: Epoch[1] Iter[50/227] Loss: 12.772, Acc: 0.003, Base Lr: 1.66e-03
+2026-06-11 06:27:47 transreid.train INFO: OCCAWARE occ_bce: 0.9774, alpha: -0.0021
+2026-06-11 06:27:51 transreid.train INFO: Epoch[1] Iter[100/227] Loss: 11.983, Acc: 0.002, Base Lr: 1.66e-03
+2026-06-11 06:27:51 transreid.train INFO: OCCAWARE occ_bce: 0.7268, alpha: -0.0050
+2026-06-11 06:27:54 transreid.train INFO: Epoch[1] Iter[150/227] Loss: 11.526, Acc: 0.003, Base Lr: 1.66e-03
+2026-06-11 06:27:54 transreid.train INFO: OCCAWARE occ_bce: 0.6230, alpha: -0.0075
+2026-06-11 06:27:58 transreid.train INFO: Epoch[1] Iter[200/227] Loss: 11.204, Acc: 0.005, Base Lr: 1.66e-03
+2026-06-11 06:27:58 transreid.train INFO: OCCAWARE occ_bce: 0.5528, alpha: -0.0095
+2026-06-11 06:27:59 transreid.train INFO: Epoch 1 done. Time per epoch: 15.946[s] Speed: 850.9[samples/s]
+2026-06-11 06:28:03 transreid.train INFO: Epoch[2] Iter[50/227] Loss: 9.225, Acc: 0.040, Base Lr: 3.25e-03
+2026-06-11 06:28:03 transreid.train INFO: OCCAWARE occ_bce: 0.2399, alpha: -0.0283
+2026-06-11 06:28:06 transreid.train INFO: Epoch[2] Iter[100/227] Loss: 8.923, Acc: 0.063, Base Lr: 3.25e-03
+2026-06-11 06:28:06 transreid.train INFO: OCCAWARE occ_bce: 0.2181, alpha: -0.0305
+2026-06-11 06:28:10 transreid.train INFO: Epoch[2] Iter[150/227] Loss: 8.670, Acc: 0.090, Base Lr: 3.25e-03
+2026-06-11 06:28:10 transreid.train INFO: OCCAWARE occ_bce: 0.1913, alpha: -0.0351
+2026-06-11 06:28:14 transreid.train INFO: Epoch[2] Iter[200/227] Loss: 8.393, Acc: 0.139, Base Lr: 3.25e-03
+2026-06-11 06:28:14 transreid.train INFO: OCCAWARE occ_bce: 0.1722, alpha: -0.0320
+2026-06-11 06:28:14 transreid.train INFO: Epoch 2 done. Time per epoch: 15.605[s] Speed: 869.5[samples/s]
+/home/afr/reid-clean/SOLIDER-REID/utils/metrics.py:12: UserWarning: This overload of addmm_ is deprecated:
+	addmm_(Number beta, Number alpha, Tensor mat1, Tensor mat2)
+Consider using one of the following signatures instead:
+	addmm_(Tensor mat1, Tensor mat2, *, Number beta = 1, Number alpha = 1) (Triggered internally at /pytorch/torch/csrc/utils/python_arg_parser.cpp:1661.)
+  dist_mat.addmm_(1, -2, qf, gf.t())
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-11 06:28:33 transreid.train INFO: Validation Results - Epoch: 2
+2026-06-11 06:28:33 transreid.train INFO: mAP: 17.0%
+2026-06-11 06:28:33 transreid.train INFO: CMC curve, Rank-1  :24.4%
+2026-06-11 06:28:33 transreid.train INFO: CMC curve, Rank-5  :40.5%
+2026-06-11 06:28:33 transreid.train INFO: CMC curve, Rank-10 :49.0%

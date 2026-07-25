@@ -1,0 +1,35 @@
+PASS test_config_contract
+PASS test_torch_load_compatibility
+using resnet50 as a backbone
+using resnet50 as a backbone
+===========building ResNet===========
+PASS test_b0_existing_path_exact
+using resnet50 as a backbone
+===========building ResNet===========
+using resnet50 as a backbone
+[R50-TAPF] source=2 psg_stages=[3] tapf_params=179622 psg_params=402816
+===========building ResNet TAPF===========
+using resnet50 as a backbone
+[R50-TAPF-H] source=(1, 2) psg_stages=[2, 3] tapf_params=132514 psg_params=809088
+===========building ResNet TAPF===========
+PASS test_matched_initialization_and_topology
+using resnet50 as a backbone
+[R50-TAPF-H] source=(1, 2) psg_stages=[2, 3] tapf_params=132514 psg_params=809088
+===========building ResNet TAPF===========
+PASS test_e1_e11_progressive_routes
+using resnet50 as a backbone
+[R50-TAPF-H] source=(1, 2) psg_stages=[2, 3] tapf_params=132514 psg_params=809088
+===========building ResNet TAPF===========
+PASS test_gradient_ownership
+using resnet50 as a backbone
+[R50-TAPF-H] source=(1, 2) psg_stages=[2, 3] tapf_params=132514 psg_params=809088
+===========building ResNet TAPF===========
+PASS test_eval_external_pose_exact_parity
+using resnet50 as a backbone
+[R50-TAPF-H] source=(1, 2) psg_stages=[2, 3] tapf_params=132514 psg_params=809088
+===========building ResNet TAPF===========
+using resnet50 as a backbone
+[R50-TAPF-H] source=(1, 2) psg_stages=[2, 3] tapf_params=132514 psg_params=809088
+===========building ResNet TAPF===========
+PASS test_strict_reload_and_finite_state
+EXP380_RESNET_TAPF_UNIT_PASS 8/8

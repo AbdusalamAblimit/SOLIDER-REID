@@ -1,0 +1,1203 @@
+{
+  "batch_size": 64,
+  "changed_parameters": {
+    "anchor": {
+      "changed_tensors": 8,
+      "total_tensors": 8
+    },
+    "head": {
+      "changed_tensors": 2,
+      "total_tensors": 3
+    },
+    "psg": {
+      "changed_tensors": 4,
+      "total_tensors": 4
+    },
+    "swin": {
+      "changed_tensors": 171,
+      "total_tensors": 193
+    }
+  },
+  "config_sha256": "510f52604cbb455a6f61139d266705c3292e1bb431b2f603e5e750f56edd2c8b",
+  "cuda_version": "11.7",
+  "device": "NVIDIA GeForce RTX 4090 D",
+  "final_scale": 1024.0,
+  "initial_scale": 65536.0,
+  "longest_consecutive_updates": 17,
+  "mean_step_seconds": 0.14255240532414368,
+  "median_step_seconds": 0.11760563543066382,
+  "optimizer": {
+    "nonfinite_count": 0,
+    "state_entries": 185,
+    "tensor_count": 185
+  },
+  "overflow_steps": 6,
+  "peak_allocated_bytes": 6488881664,
+  "peak_reserved_bytes": 6796869632,
+  "probe_names": {
+    "anchor": "base.tapf.anchor.project.weight",
+    "head": "classifier.weight",
+    "psg": "base.tapf.psg_bank.0.output_projection.weight",
+    "swin": "base.patch_embed.projection.weight"
+  },
+  "records": [
+    {
+      "elapsed_seconds": 0.7274730326607823,
+      "found_inf": 1.0,
+      "gate_abs_mean": [
+        0.0,
+        0.0
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 6.039341110964074,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 373.87341820155257,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 211.67665856983513,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 58833.28270783082,
+          "nonfinite_tensors": 70,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 21.0029296875,
+      "pose_loss": 0.9173348546028137,
+      "reid_loss": 20.911195755004883,
+      "reliability_mean": 0.8509038090705872,
+      "scale_after": 32768.0,
+      "scale_before": 65536.0,
+      "step": 1,
+      "student_field_mean": 0.251797616481781,
+      "updated_probes": {
+        "anchor": false,
+        "head": false,
+        "psg": false,
+        "swin": false
+      }
+    },
+    {
+      "elapsed_seconds": 0.11453126836568117,
+      "found_inf": 1.0,
+      "gate_abs_mean": [
+        0.0,
+        0.0
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 6.004573649385236,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 409.11972773383314,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 169.96767994532274,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 403914.89216752874,
+          "nonfinite_tensors": 31,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 16.05628204345703,
+      "pose_loss": 0.9176939129829407,
+      "reid_loss": 15.96451187133789,
+      "reliability_mean": 0.8428360819816589,
+      "scale_after": 16384.0,
+      "scale_before": 32768.0,
+      "step": 2,
+      "student_field_mean": 0.2516559362411499,
+      "updated_probes": {
+        "anchor": false,
+        "head": false,
+        "psg": false,
+        "swin": false
+      }
+    },
+    {
+      "elapsed_seconds": 0.11481031589210033,
+      "found_inf": 1.0,
+      "gate_abs_mean": [
+        0.0,
+        0.0
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 6.227306462813459,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 383.678907108987,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 223.91207641043002,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 627510.7565943965,
+          "nonfinite_tensors": 23,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 21.929405212402344,
+      "pose_loss": 0.9171607494354248,
+      "reid_loss": 21.837688446044922,
+      "reliability_mean": 0.8545370697975159,
+      "scale_after": 8192.0,
+      "scale_before": 16384.0,
+      "step": 3,
+      "student_field_mean": 0.25177499651908875,
+      "updated_probes": {
+        "anchor": false,
+        "head": false,
+        "psg": false,
+        "swin": false
+      }
+    },
+    {
+      "elapsed_seconds": 0.11537921335548162,
+      "found_inf": 1.0,
+      "gate_abs_mean": [
+        0.0,
+        0.0
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 6.128348489468422,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 378.3084294365201,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 204.54367305297637,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 673486.5278017815,
+          "nonfinite_tensors": 4,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 18.866737365722656,
+      "pose_loss": 0.9153969287872314,
+      "reid_loss": 18.775197982788086,
+      "reliability_mean": 0.8558897376060486,
+      "scale_after": 4096.0,
+      "scale_before": 8192.0,
+      "step": 4,
+      "student_field_mean": 0.2514769434928894,
+      "updated_probes": {
+        "anchor": false,
+        "head": false,
+        "psg": false,
+        "swin": false
+      }
+    },
+    {
+      "elapsed_seconds": 0.11545929778367281,
+      "found_inf": 1.0,
+      "gate_abs_mean": [
+        0.0,
+        0.0
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 5.838408669796763,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 380.9275133755994,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 207.9794926666218,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 777651.7521422842,
+          "nonfinite_tensors": 2,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 20.876909255981445,
+      "pose_loss": 0.9182939529418945,
+      "reid_loss": 20.785079956054688,
+      "reliability_mean": 0.8282472491264343,
+      "scale_after": 2048.0,
+      "scale_before": 4096.0,
+      "step": 5,
+      "student_field_mean": 0.2516988217830658,
+      "updated_probes": {
+        "anchor": false,
+        "head": false,
+        "psg": false,
+        "swin": false
+      }
+    },
+    {
+      "elapsed_seconds": 0.11748160608112812,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        0.0,
+        0.0
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 5.787131722049409,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 382.1091301732781,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 196.0818556789891,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 657730.9103040785,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 19.109907150268555,
+      "pose_loss": 0.9170761108398438,
+      "reid_loss": 19.018199920654297,
+      "reliability_mean": 0.8354610204696655,
+      "scale_after": 2048.0,
+      "scale_before": 2048.0,
+      "step": 6,
+      "student_field_mean": 0.2520056366920471,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.11566633079200983,
+      "found_inf": 1.0,
+      "gate_abs_mean": [
+        3.2465199183207005e-05,
+        3.0626000807387754e-05
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 10.34693281484686,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 324.0947097038596,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 267.7793279028265,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 1484475.3530430149,
+          "nonfinite_tensors": 1,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 34.08399200439453,
+      "pose_loss": 0.9084997177124023,
+      "reid_loss": 33.993141174316406,
+      "reliability_mean": 0.8591169714927673,
+      "scale_after": 1024.0,
+      "scale_before": 2048.0,
+      "step": 7,
+      "student_field_mean": 0.2597888708114624,
+      "updated_probes": {
+        "anchor": false,
+        "head": false,
+        "psg": false,
+        "swin": false
+      }
+    },
+    {
+      "elapsed_seconds": 0.11780014634132385,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        3.208914858987555e-05,
+        3.031431151612196e-05
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 9.689933077001967,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 303.70876746547856,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 223.56694416404935,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 891001.3674849966,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 35.705413818359375,
+      "pose_loss": 0.913040816783905,
+      "reid_loss": 35.61410903930664,
+      "reliability_mean": 0.833152711391449,
+      "scale_after": 1024.0,
+      "scale_before": 1024.0,
+      "step": 8,
+      "student_field_mean": 0.2605033218860626,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.11762511730194092,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        7.283663580892608e-05,
+        8.560436253901571e-05
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 10.550418549630407,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 297.8324769826271,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 266.12616893509403,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 874386.7591842251,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 33.980621337890625,
+      "pose_loss": 0.9363481998443604,
+      "reid_loss": 33.886985778808594,
+      "reliability_mean": 0.8355412483215332,
+      "scale_after": 1024.0,
+      "scale_before": 1024.0,
+      "step": 9,
+      "student_field_mean": 0.2627244293689728,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.11763222236186266,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        0.00013459866750054061,
+        0.00017024035332724452
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 10.02781249121746,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 310.4322229236101,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 176.0766260245582,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 175481.38911680316,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 25.400375366210938,
+      "pose_loss": 0.9515680074691772,
+      "reid_loss": 25.305217742919922,
+      "reliability_mean": 0.8344375491142273,
+      "scale_after": 1024.0,
+      "scale_before": 1024.0,
+      "step": 10,
+      "student_field_mean": 0.26227259635925293,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.11754845548421144,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        0.00020734114514198154,
+        0.0002827031712513417
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 10.196089176111556,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 315.0394637100395,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 209.32023700949503,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 149299.63078973143,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 33.258731842041016,
+      "pose_loss": 0.9512969255447388,
+      "reid_loss": 33.16360092163086,
+      "reliability_mean": 0.8358771204948425,
+      "scale_after": 1024.0,
+      "scale_before": 1024.0,
+      "step": 11,
+      "student_field_mean": 0.26002737879753113,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.11772858165204525,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        0.0002831553283613175,
+        0.0004261696303728968
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 10.30401487675265,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 331.272265390537,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 103.6698525067768,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 52549.634425758355,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 19.354387283325195,
+      "pose_loss": 0.9377946257591248,
+      "reid_loss": 19.260608673095703,
+      "reliability_mean": 0.8559672832489014,
+      "scale_after": 1024.0,
+      "scale_before": 1024.0,
+      "step": 12,
+      "student_field_mean": 0.2593344748020172,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.11805401928722858,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        0.00036323521635495126,
+        0.0005853763432241976
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 10.499305847744012,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 355.86066032503606,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 110.6862287261174,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 52839.864072885954,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 19.887449264526367,
+      "pose_loss": 0.9365769624710083,
+      "reid_loss": 19.793790817260742,
+      "reliability_mean": 0.8630810379981995,
+      "scale_after": 1024.0,
+      "scale_before": 1024.0,
+      "step": 13,
+      "student_field_mean": 0.25971096754074097,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.11755951028317213,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        0.00043260236270725727,
+        0.0007384885102510452
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 10.109425679382824,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 327.0580539618107,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 117.36559517437126,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 51966.01313237218,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 19.58625030517578,
+      "pose_loss": 0.9294950366020203,
+      "reid_loss": 19.493301391601562,
+      "reliability_mean": 0.8435729742050171,
+      "scale_after": 1024.0,
+      "scale_before": 1024.0,
+      "step": 14,
+      "student_field_mean": 0.2600816488265991,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.11765588633716106,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        0.0005117672262713313,
+        0.0009136293083429337
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 10.40769291324672,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 311.6072552579108,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 114.39748347614659,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 41148.84623461143,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 19.572433471679688,
+      "pose_loss": 0.9283239245414734,
+      "reid_loss": 19.47960090637207,
+      "reliability_mean": 0.8433274626731873,
+      "scale_after": 1024.0,
+      "scale_before": 1024.0,
+      "step": 15,
+      "student_field_mean": 0.260541170835495,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.11773059330880642,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        0.0005998332053422928,
+        0.0010922490619122982
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 10.338750653888667,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 323.25463787681645,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 97.8824234380154,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 35359.07731632213,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 17.316408157348633,
+      "pose_loss": 0.9268163442611694,
+      "reid_loss": 17.223726272583008,
+      "reliability_mean": 0.8430934548377991,
+      "scale_after": 1024.0,
+      "scale_before": 1024.0,
+      "step": 16,
+      "student_field_mean": 0.26056531071662903,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.11781899631023407,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        0.0006827008328400552,
+        0.0012571812840178609
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 10.421416699131917,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 300.8742701995399,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 109.23565478465753,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 41616.62947453571,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 16.91681480407715,
+      "pose_loss": 0.9200214743614197,
+      "reid_loss": 16.824811935424805,
+      "reliability_mean": 0.8445172905921936,
+      "scale_after": 1024.0,
+      "scale_before": 1024.0,
+      "step": 17,
+      "student_field_mean": 0.2613177001476288,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.11757624242454767,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        0.0007674001972191036,
+        0.001432047807611525
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 10.15676165312544,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 300.2800136522912,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 78.42444706056267,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 43079.1560263705,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 15.205901145935059,
+      "pose_loss": 0.9242926239967346,
+      "reid_loss": 15.113471984863281,
+      "reliability_mean": 0.827447772026062,
+      "scale_after": 1024.0,
+      "scale_before": 1024.0,
+      "step": 18,
+      "student_field_mean": 0.2614915370941162,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.11773294117301702,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        0.0008565955795347691,
+        0.001602252828888595
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 10.721397925984917,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 298.2504094977548,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 62.67586615937762,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 26400.903935246424,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 12.466235160827637,
+      "pose_loss": 0.9180158972740173,
+      "reid_loss": 12.374433517456055,
+      "reliability_mean": 0.8571950197219849,
+      "scale_after": 1024.0,
+      "scale_before": 1024.0,
+      "step": 19,
+      "student_field_mean": 0.2619892358779907,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.1177346222102642,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        0.0009472139645367861,
+        0.001765797147527337
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 10.484502616051891,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 302.4452998877024,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 66.78438414889388,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 26457.19066673387,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 13.249817848205566,
+      "pose_loss": 0.9139228463172913,
+      "reid_loss": 13.158425331115723,
+      "reliability_mean": 0.854367733001709,
+      "scale_after": 1024.0,
+      "scale_before": 1024.0,
+      "step": 20,
+      "student_field_mean": 0.26219937205314636,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.11747452802956104,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        0.0010338077554479241,
+        0.0019362779567018151
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 10.630737991637098,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 291.02685805521344,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 63.76315649104072,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 25002.319940251287,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 13.094365119934082,
+      "pose_loss": 0.9158585071563721,
+      "reid_loss": 13.002779006958008,
+      "reliability_mean": 0.8544033169746399,
+      "scale_after": 1024.0,
+      "scale_before": 1024.0,
+      "step": 21,
+      "student_field_mean": 0.26280447840690613,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.11762657947838306,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        0.0011091658379882574,
+        0.002066340995952487
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 10.135031798723901,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 310.01954536833364,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 55.239038161584176,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 21440.028775503277,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 12.57115364074707,
+      "pose_loss": 0.9140909910202026,
+      "reid_loss": 12.479744911193848,
+      "reliability_mean": 0.8389216065406799,
+      "scale_after": 1024.0,
+      "scale_before": 1024.0,
+      "step": 22,
+      "student_field_mean": 0.2630770206451416,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.11758615355938673,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        0.0011834414908662438,
+        0.0022094668820500374
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 10.211463480296402,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 310.42616345931066,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 30.532899066864047,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 12466.487611770495,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 10.482593536376953,
+      "pose_loss": 0.9150397181510925,
+      "reid_loss": 10.39108943939209,
+      "reliability_mean": 0.837290346622467,
+      "scale_after": 1024.0,
+      "scale_before": 1024.0,
+      "step": 23,
+      "student_field_mean": 0.263484388589859,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.11757206730544567,
+      "found_inf": 0.0,
+      "gate_abs_mean": [
+        0.0012612221762537956,
+        0.002359548816457391
+      ],
+      "gradient_stats": {
+        "anchor": {
+          "finite_abs_sum": 10.292705975756604,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 8,
+          "tensor_count": 8
+        },
+        "head": {
+          "finite_abs_sum": 356.0415722640621,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 2,
+          "tensor_count": 2
+        },
+        "psg": {
+          "finite_abs_sum": 40.210215641069226,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 4,
+          "tensor_count": 4
+        },
+        "swin": {
+          "finite_abs_sum": 17007.62020907504,
+          "nonfinite_tensors": 0,
+          "nonzero_tensors": 171,
+          "tensor_count": 171
+        }
+      },
+      "loss": 10.986103057861328,
+      "pose_loss": 0.9112376570701599,
+      "reid_loss": 10.894979476928711,
+      "reliability_mean": 0.8491044044494629,
+      "scale_after": 1024.0,
+      "scale_before": 1024.0,
+      "step": 24,
+      "student_field_mean": 0.26380452513694763,
+      "updated_probes": {
+        "anchor": true,
+        "head": true,
+        "psg": true,
+        "swin": true
+      }
+    }
+  ],
+  "script_sha256": "791c4b27f69f194dbd06697298266ed5b02a8af6dfcb1379d3b510a2848a1cab",
+  "status": "EXP387_REAL_BATCH64_CUDA_AMP_PASS",
+  "steps": 24,
+  "successful_updates": 18,
+  "torch_version": "1.13.1",
+  "workers": 8
+}

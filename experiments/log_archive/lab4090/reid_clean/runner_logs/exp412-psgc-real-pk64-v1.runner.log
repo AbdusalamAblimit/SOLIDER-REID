@@ -1,0 +1,19 @@
+=> Occluded-Duke loaded
+using img_triplet sampler
+/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-exp412-psgc-formal-v1/model/backbones/swin_transformer.py:1179: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+{"batch": 64, "cache_sha256": "b07576130a0c50b89194f2c59467defcf39293d96ca886616865eb198e7965d1", "changed_stage3_gradient_tensors": 28, "comparable_stage3_gradient_tensors": 28, "control_weight_change": {"pose_only": 0.546875, "q_only": 0.546875, "text_shuffle": 0.38750001788139343}, "correct_fallback_fraction": 0.0, "correct_front_fraction": 0.574999988079071, "correct_front_size_mean": 2.299999952316284, "correct_semantic_mean": -0.005110663361847401, "correct_semantic_std": 0.007139747962355614, "correct_weight_max": 4.0, "correct_weight_min": 0.0, "default_off_state_forward_loss_rng_exact": true, "first_successful_update": 5, "gradient_field": {"psgc_body_fraction": 1.0, "psgc_gradient_max": 4.0, "psgc_gradient_mean": 1.0097028017044067, "psgc_gradient_min": 0.0, "psgc_region_valid_fraction": 0.9937500357627869}, "identities": 16, "instances_per_identity": 4, "loss": 7.851255416870117, "native_attempts": [{"attempt": 1, "nonfinite_gradient_tensors": 0, "overflow": true, "scale_after": 32768.0, "scale_before": 65536.0, "updated": false}, {"attempt": 2, "nonfinite_gradient_tensors": 0, "overflow": true, "scale_after": 16384.0, "scale_before": 32768.0, "updated": false}, {"attempt": 3, "nonfinite_gradient_tensors": 0, "overflow": true, "scale_after": 8192.0, "scale_before": 16384.0, "updated": false}, {"attempt": 4, "nonfinite_gradient_tensors": 0, "overflow": true, "scale_after": 4096.0, "scale_before": 8192.0, "updated": false}, {"attempt": 5, "nonfinite_gradient_tensors": 0, "overflow": false, "scale_after": 4096.0, "scale_before": 4096.0, "updated": true}], "pcmpsr_owner_terms": 0, "pose_loss": 0.9184324741363525, "reid_loss": 7.7594122886657715, "route_forward_dtype_exact": true, "schema": "exp412-psgc-real-pk64-v1", "stage3_nonzero_grad_tensors": 26, "status": "PASS", "text_axes_sha256": "3b5fd399350a522459cef090bff72d76c97ff483921d84aae4990eda16727bf3", "text_prompt_spec_sha256": "2958675be9a258ab098363588bf90dce752bc39d51efdf10a947a07d92ba3c2c", "updated_parameter": "base.stages.3.blocks.0.ffn.layers.0.0.weight"}

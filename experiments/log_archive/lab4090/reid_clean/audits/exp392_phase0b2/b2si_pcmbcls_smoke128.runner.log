@@ -1,0 +1,302 @@
+{
+  "encoded_full_image_variants": 2556,
+  "gates": {
+    "all_region_positive_target_level0_minus_level75": true,
+    "all_region_positive_target_spearman": true,
+    "all_region_target_delta_gt_non_target": true,
+    "finite": true,
+    "hard_owner_pixel_product_exact_zero": true,
+    "level_target_error_within_one_pixel": true,
+    "macro_all_target_adjacent_monotonic": true,
+    "macro_target_delta_gt_global": true,
+    "null_exact": true,
+    "realized_overlap_strictly_increasing": true,
+    "repeat_exact": true,
+    "target_valid_exact": true
+  },
+  "images": 128,
+  "output_sha256": "63223862e87ba2d73919bca03fb019c90706b8d31ec1c7225decd71248bb9108",
+  "status": "EXP392_PHASE0B2_SI_COMPLETE",
+  "summary": {
+    "levels": [
+      0.0,
+      0.25,
+      0.5,
+      0.75
+    ],
+    "macro_target_adjacent_delta": [
+      0.021783375740051236,
+      0.011604094505310025,
+      0.007747912406921409
+    ],
+    "macro_target_minus_global_delta": 0.03570201064440808,
+    "macro_target_q_visible_by_level": [
+      0.5110380172729492,
+      0.48925464153289794,
+      0.4776505470275879,
+      0.4699026346206665
+    ],
+    "per_region": [
+      {
+        "global_q_visible_mean_by_level": [
+          0.5244240760803223,
+          0.5189946889877319,
+          0.5135713219642639,
+          0.5110152363777161
+        ],
+        "non_target_q_visible_mean_by_level": [
+          0.506841242313385,
+          0.506060004234314,
+          0.5048232674598694,
+          0.5038707256317139
+        ],
+        "region": 0,
+        "samples": 127,
+        "spearman_overlap_negative_target_q": 0.6845989778520757,
+        "target_level0_minus_level75": {
+          "ci95_high": 0.08683448433876037,
+          "ci95_low": 0.058220644624567414,
+          "mean": 0.07252756448166389,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 127
+        },
+        "target_minus_global_delta": {
+          "ci95_high": 0.07110394324575152,
+          "ci95_low": 0.04485529833244828,
+          "mean": 0.05849268136159429,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 127
+        },
+        "target_minus_non_target_delta": {
+          "ci95_high": 0.0825869225320362,
+          "ci95_low": 0.05568799935984162,
+          "mean": 0.06919058985532883,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 127
+        },
+        "target_q_visible_mean_by_level": [
+          0.5277886390686035,
+          0.5102730393409729,
+          0.4811527132987976,
+          0.46088841557502747
+        ]
+      },
+      {
+        "global_q_visible_mean_by_level": [
+          0.4912368655204773,
+          0.4870483875274658,
+          0.4861171245574951,
+          0.4860677123069763
+        ],
+        "non_target_q_visible_mean_by_level": [
+          0.5181976556777954,
+          0.513678789138794,
+          0.5110524892807007,
+          0.511254072189331
+        ],
+        "region": 1,
+        "samples": 128,
+        "spearman_overlap_negative_target_q": 0.4817717751538303,
+        "target_level0_minus_level75": {
+          "ci95_high": 0.04166022527785528,
+          "ci95_low": 0.01904495250650499,
+          "mean": 0.02984803951251759,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_minus_global_delta": {
+          "ci95_high": 0.03660069367715291,
+          "ci95_low": 0.01344745161711539,
+          "mean": 0.024852876369521104,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_minus_non_target_delta": {
+          "ci95_high": 0.03270556404477074,
+          "ci95_low": 0.012196670409548221,
+          "mean": 0.022725587225464916,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_q_visible_mean_by_level": [
+          0.4822882413864136,
+          0.4531395435333252,
+          0.45325571298599243,
+          0.45224305987358093
+        ]
+      },
+      {
+        "global_q_visible_mean_by_level": [
+          0.5062333345413208,
+          0.5019952654838562,
+          0.5003944039344788,
+          0.4988192319869995
+        ],
+        "non_target_q_visible_mean_by_level": [
+          0.5117179155349731,
+          0.5103889107704163,
+          0.509426474571228,
+          0.509182870388031
+        ],
+        "region": 2,
+        "samples": 128,
+        "spearman_overlap_negative_target_q": 0.6405067164044362,
+        "target_level0_minus_level75": {
+          "ci95_high": 0.0564196603331301,
+          "ci95_low": 0.04170798075695833,
+          "mean": 0.047582798714912125,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_minus_global_delta": {
+          "ci95_high": 0.04732115158012935,
+          "ci95_low": 0.033634554693307825,
+          "mean": 0.04043121637648375,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_minus_non_target_delta": {
+          "ci95_high": 0.054252042803499434,
+          "ci95_low": 0.038246591265002884,
+          "mean": 0.04528060642144983,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_q_visible_mean_by_level": [
+          0.508161187171936,
+          0.48156970739364624,
+          0.4701738655567169,
+          0.4615321457386017
+        ]
+      },
+      {
+        "global_q_visible_mean_by_level": [
+          0.5115211009979248,
+          0.5088163614273071,
+          0.5073280334472656,
+          0.5066925883293152
+        ],
+        "non_target_q_visible_mean_by_level": [
+          0.509317934513092,
+          0.5080609321594238,
+          0.5086662769317627,
+          0.5096596479415894
+        ],
+        "region": 3,
+        "samples": 128,
+        "spearman_overlap_negative_target_q": 0.6654102548418915,
+        "target_level0_minus_level75": {
+          "ci95_high": 0.03901529057158364,
+          "ci95_low": 0.023448053333494395,
+          "mean": 0.03237933239530003,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_minus_global_delta": {
+          "ci95_high": 0.03504234573907322,
+          "ci95_low": 0.018225767427966708,
+          "mean": 0.027681190572560778,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_minus_non_target_delta": {
+          "ci95_high": 0.03726983687391988,
+          "ci95_low": 0.02211551130724647,
+          "mean": 0.03202492333790928,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_q_visible_mean_by_level": [
+          0.5177456140518188,
+          0.49658310413360596,
+          0.48892390727996826,
+          0.4854082763195038
+        ]
+      },
+      {
+        "global_q_visible_mean_by_level": [
+          0.5158219337463379,
+          0.5139032006263733,
+          0.5133837461471558,
+          0.5128998756408691
+        ],
+        "non_target_q_visible_mean_by_level": [
+          0.5089516639709473,
+          0.5068897008895874,
+          0.5075631737709045,
+          0.5081965923309326
+        ],
+        "region": 4,
+        "samples": 128,
+        "spearman_overlap_negative_target_q": 0.6784943635510814,
+        "target_level0_minus_level75": {
+          "ci95_high": 0.037409596884692156,
+          "ci95_low": 0.024313578116042272,
+          "mean": 0.03000434268955831,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_minus_global_delta": {
+          "ci95_high": 0.03398898289671966,
+          "ci95_low": 0.022338184986322646,
+          "mean": 0.027052088541880487,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_minus_non_target_delta": {
+          "ci95_high": 0.03571914335446698,
+          "ci95_low": 0.023299013042733782,
+          "mean": 0.028792395629185848,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_q_visible_mean_by_level": [
+          0.5192064046859741,
+          0.504707932472229,
+          0.4947466254234314,
+          0.4894413352012634
+        ]
+      }
+    ]
+  },
+  "valid_target_slots": 639,
+  "verdict": "B2_SI_SMOKE_PASS"
+}
+	Command being timed: "/usr/local/anaconda3/envs/mmpose-abu/bin/python /home/afr/reid-clean/audits/exp392_phase0b2/phase0b2_support_pcmbcls_audit.py --repo-root /home/afr/SOLIDER-REID-exp392-phase0b-5277254 --phase0b-script /home/afr/reid-clean/audits/exp392_phase0b/phase0b_clip_teacher_audit.py --ontology-script /home/afr/reid-clean/audits/exp392_phase0b2/phase0b2_prompt_audit.py --support-script /home/afr/reid-clean/audits/exp392_phase0b2/phase0b2_support_crop_audit.py --pcmbcls-script /home/afr/reid-clean/audits/exp392_phase0b2/phase0b2_openclip_contract.py --source-commit 5277254bae1f9d18f1368ad4202aca7c9d223cc8 --data-root /mnt1/afrdata --pose-artifact /mnt1/afrderived/exp386_occluded_duke_vitpose_huge_train --clip-checkpoint /home/afr/SOLIDER-REID/clip_l14_openclip.safetensors --output /home/afr/reid-clean/audits/exp392_phase0b2/b2si_pcmbcls_smoke128_result.json --device cpu --batch-size 2 --clip-batch 10 --workers 0 --max-samples 128 --bootstrap-repeats 1000"
+	User time (seconds): 13073.98
+	System time (seconds): 2471.14
+	Percent of CPU this job got: 1428%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 18:08.44
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 3705508
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 17
+	Minor (reclaiming a frame) page faults: 556973979
+	Voluntary context switches: 9021830
+	Involuntary context switches: 362566
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 80
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

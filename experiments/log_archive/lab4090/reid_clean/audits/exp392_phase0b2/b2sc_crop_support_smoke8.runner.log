@@ -1,0 +1,149 @@
+{
+  "encoded_crop_variants": 160,
+  "gates": {
+    "all_region_positive_level0_minus_level75": true,
+    "all_region_positive_spearman": true,
+    "coverage_exact": true,
+    "finite": true,
+    "level_target_error_within_one_pixel": true,
+    "macro_all_adjacent_monotonic": true,
+    "realized_overlap_strictly_increasing": true,
+    "repeat_exact": true
+  },
+  "images": 8,
+  "macro_adjacent_delta": [
+    0.01381279230117799,
+    0.004017078876495328,
+    0.0022687494754791704
+  ],
+  "macro_q_visible_by_level": [
+    0.5045828223228455,
+    0.49077003002166747,
+    0.48675295114517214,
+    0.48448420166969297
+  ],
+  "output_sha256": "783fa561ed0a37d14e14b9918ba8af44da063bbe34739291dab7990cc9fc2619",
+  "per_region": [
+    {
+      "q_visible_level0_minus_level75": {
+        "ci95_high": 0.026273906230926514,
+        "ci95_low": 0.026273906230926514,
+        "mean": 0.026273906230926514,
+        "pids": 1,
+        "repeats": 200,
+        "samples": 8
+      },
+      "q_visible_mean_by_level": [
+        0.5097141265869141,
+        0.49023541808128357,
+        0.4805578887462616,
+        0.4834401607513428
+      ],
+      "region": 0,
+      "samples": 8,
+      "spearman_overlap_negative_q_visible": 0.7557315826630379
+    },
+    {
+      "q_visible_level0_minus_level75": {
+        "ci95_high": 0.015427779406309128,
+        "ci95_low": 0.015427779406309128,
+        "mean": 0.015427779406309128,
+        "pids": 1,
+        "repeats": 200,
+        "samples": 8
+      },
+      "q_visible_mean_by_level": [
+        0.48972511291503906,
+        0.4811243414878845,
+        0.47845473885536194,
+        0.47429734468460083
+      ],
+      "region": 1,
+      "samples": 8,
+      "spearman_overlap_negative_q_visible": 0.694832616105318
+    },
+    {
+      "q_visible_level0_minus_level75": {
+        "ci95_high": 0.017519619315862656,
+        "ci95_low": 0.017519619315862656,
+        "mean": 0.017519619315862656,
+        "pids": 1,
+        "repeats": 200,
+        "samples": 8
+      },
+      "q_visible_mean_by_level": [
+        0.5061218738555908,
+        0.4946146607398987,
+        0.4919825494289398,
+        0.48860225081443787
+      ],
+      "region": 2,
+      "samples": 8,
+      "spearman_overlap_negative_q_visible": 0.6289934413804649
+    },
+    {
+      "q_visible_level0_minus_level75": {
+        "ci95_high": 0.021190371364355087,
+        "ci95_low": 0.021190371364355087,
+        "mean": 0.021190371364355087,
+        "pids": 1,
+        "repeats": 200,
+        "samples": 8
+      },
+      "q_visible_mean_by_level": [
+        0.5060145854949951,
+        0.4883400797843933,
+        0.48573926091194153,
+        0.4848242402076721
+      ],
+      "region": 3,
+      "samples": 8,
+      "spearman_overlap_negative_q_visible": 0.6148803289531231
+    },
+    {
+      "q_visible_level0_minus_level75": {
+        "ci95_high": 0.020081430673599243,
+        "ci95_low": 0.020081430673599243,
+        "mean": 0.020081430673599243,
+        "pids": 1,
+        "repeats": 200,
+        "samples": 8
+      },
+      "q_visible_mean_by_level": [
+        0.5113384127616882,
+        0.4995356798171997,
+        0.4970303475856781,
+        0.4912569522857666
+      ],
+      "region": 4,
+      "samples": 8,
+      "spearman_overlap_negative_q_visible": 0.7032215095662154
+    }
+  ],
+  "status": "EXP392_PHASE0B2_SC_COMPLETE",
+  "valid_slot_crops": 40,
+  "verdict": "B2_SC_SMOKE_PASS"
+}
+	Command being timed: "/usr/local/anaconda3/envs/mmpose-abu/bin/python /home/afr/reid-clean/audits/exp392_phase0b2/phase0b2_support_crop_audit.py --repo-root /home/afr/SOLIDER-REID-exp392-phase0b-5277254 --phase0b-script /home/afr/reid-clean/audits/exp392_phase0b/phase0b_clip_teacher_audit.py --ontology-script /home/afr/reid-clean/audits/exp392_phase0b2/phase0b2_prompt_audit.py --source-commit 5277254bae1f9d18f1368ad4202aca7c9d223cc8 --data-root /mnt1/afrdata --pose-artifact /mnt1/afrderived/exp386_occluded_duke_vitpose_huge_train --clip-checkpoint /home/afr/SOLIDER-REID/clip_l14_openclip.safetensors --output /home/afr/reid-clean/audits/exp392_phase0b2/b2sc_crop_support_smoke8_result.json --device cpu --batch-size 2 --clip-batch 10 --workers 0 --max-samples 8 --bootstrap-repeats 200"
+	User time (seconds): 435.73
+	System time (seconds): 31.38
+	Percent of CPU this job got: 1095%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:42.64
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 3703436
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 14
+	Minor (reclaiming a frame) page faults: 16842442
+	Voluntary context switches: 232908
+	Involuntary context switches: 10647
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 112
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

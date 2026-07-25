@@ -1,0 +1,39 @@
+test_complete_training_assignment_runtime_matrix (__main__.Exp326AssignmentModeTest) ... ok
+test_constructor_and_state_dict_backward_compatibility (__main__.Exp326AssignmentModeTest) ... ok
+test_eval_assignment_matrix_has_no_feature_buffer_or_rng_effect (__main__.Exp326AssignmentModeTest) ... ok
+test_inherit_matches_explicit_for_both_runtime_modes (__main__.Exp326AssignmentModeTest) ... ok
+test_runner_non_lgpa_hash_supports_scalar_long_buffers (__main__.Exp326AssignmentModeTest) ... ok
+test_target_only_total_gradient_identity_and_optimizer_isolation (__main__.Exp326AssignmentModeTest) ... ok
+test_true_assignment_missing_heatmap_fails_before_rng_use (__main__.Exp326AssignmentModeTest) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.070s
+
+OK
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=inherit, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=inherit, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=inherit, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=inherit, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=inherit, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=inherit, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=inherit, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=inherit, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=inherit, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=inherit, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned
+[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned

@@ -1,0 +1,407 @@
+{
+  "execution": {
+    "audit_script_sha256": "c95dbed6c569a324c781d4ff382922179d81365f2fbe40b479027f4a8f345b29",
+    "batch_size": 2,
+    "clip_batch": 10,
+    "clip_checkpoint_sha256": "9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e",
+    "device": "cpu",
+    "encoded_full_image_variants": 2556,
+    "images": 128,
+    "ontology_script_sha256": "b0d5ce6a53e94d09fa5d15c338392ea31437eee036299256c424ed30489028ca",
+    "open_clip_version": "2.32.0",
+    "pcmbcls_forward_seconds": 1078.5496894130483,
+    "pcmbcls_script_sha256": "7206dc13bf69b5666b54169ae3333f838c48b16d0c963512e7c67d906354c2c7",
+    "phase0b_script_sha256": "03b8f707bc6f189dd3de34505af82e63f7ee71bd23d70b6e9663aee318afcd70",
+    "pose_manifest_sha256": "cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8",
+    "repo_root": "/home/afr/SOLIDER-REID-exp392-phase0b-5277254",
+    "runtime_sha256": {
+      "datasets/bases.py": "03d231558f46264e4cff0c251b9b728ab4971232ed6c4bb7324ce1964f139c2c",
+      "datasets/occluded_duke.py": "f0e7b25e75251643430b699d9c9969fae207c0a85c48855cd0404d61a4228f8e",
+      "datasets/pose_targets.py": "42f6e35eff2ad572445143cb3ecc5b6a22d856facc4453b989411300dec22624"
+    },
+    "sample_manifest_sha256": "b03ce2ad477f4e747f1fd91c7be42e9653f4913c8e6b2f23e672eb760da7e86d",
+    "seed": 20260718,
+    "source_commit": "5277254bae1f9d18f1368ad4202aca7c9d223cc8",
+    "support_script_sha256": "692a3662d0de9613a6a1c573d2d86bfd7f40b3082f215d005aa4f8857869496a",
+    "torch_version": "1.13.1",
+    "valid_target_slots": 639,
+    "workers": 0
+  },
+  "formal_training_authorized": false,
+  "full_teacher_audit_authorized": true,
+  "gates": {
+    "all_region_positive_target_level0_minus_level75": true,
+    "all_region_positive_target_spearman": true,
+    "all_region_target_delta_gt_non_target": true,
+    "finite": true,
+    "hard_owner_pixel_product_exact_zero": true,
+    "level_target_error_within_one_pixel": true,
+    "macro_all_target_adjacent_monotonic": true,
+    "macro_target_delta_gt_global": true,
+    "null_exact": true,
+    "realized_overlap_strictly_increasing": true,
+    "repeat_exact": true,
+    "target_valid_exact": true
+  },
+  "open_clip_preprocess_repr": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=None)\n    CenterCrop(size=(224, 224))\n    <function _convert_to_rgb at 0x7fb7687ef820>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+  "prompt_payload": {
+    "prompts": [
+      "a photo of a person with clearly visible head, face, and hair",
+      "a photo of a person with an occluded or obstructed head, face, and hair",
+      "the person's head, face, and hair is clearly visible and unobstructed",
+      "the person's head, face, and hair is hidden or obstructed",
+      "clear visual evidence of the person's head, face, and hair",
+      "weak visual evidence of the person's head, face, and hair",
+      "a fully observable human head, face, and hair",
+      "a heavily obscured human head, face, and hair",
+      "a photo of a person with clearly visible chest, abdomen, waist, and torso",
+      "a photo of a person with an occluded or obstructed chest, abdomen, waist, and torso",
+      "the person's chest, abdomen, waist, and torso is clearly visible and unobstructed",
+      "the person's chest, abdomen, waist, and torso is hidden or obstructed",
+      "clear visual evidence of the person's chest, abdomen, waist, and torso",
+      "weak visual evidence of the person's chest, abdomen, waist, and torso",
+      "a fully observable human chest, abdomen, waist, and torso",
+      "a heavily obscured human chest, abdomen, waist, and torso",
+      "a photo of a person with clearly visible upper limbs, arms, elbows, forearms, wrists, and hands",
+      "a photo of a person with an occluded or obstructed upper limbs, arms, elbows, forearms, wrists, and hands",
+      "the person's upper limbs, arms, elbows, forearms, wrists, and hands is clearly visible and unobstructed",
+      "the person's upper limbs, arms, elbows, forearms, wrists, and hands is hidden or obstructed",
+      "clear visual evidence of the person's upper limbs, arms, elbows, forearms, wrists, and hands",
+      "weak visual evidence of the person's upper limbs, arms, elbows, forearms, wrists, and hands",
+      "a fully observable human upper limbs, arms, elbows, forearms, wrists, and hands",
+      "a heavily obscured human upper limbs, arms, elbows, forearms, wrists, and hands",
+      "a photo of a person with clearly visible thighs between the hips and knees",
+      "a photo of a person with an occluded or obstructed thighs between the hips and knees",
+      "the person's thighs between the hips and knees is clearly visible and unobstructed",
+      "the person's thighs between the hips and knees is hidden or obstructed",
+      "clear visual evidence of the person's thighs between the hips and knees",
+      "weak visual evidence of the person's thighs between the hips and knees",
+      "a fully observable human thighs between the hips and knees",
+      "a heavily obscured human thighs between the hips and knees",
+      "a photo of a person with clearly visible lower legs below the knees, including shins, calves, ankles, and feet",
+      "a photo of a person with an occluded or obstructed lower legs below the knees, including shins, calves, ankles, and feet",
+      "the person's lower legs below the knees, including shins, calves, ankles, and feet is clearly visible and unobstructed",
+      "the person's lower legs below the knees, including shins, calves, ankles, and feet is hidden or obstructed",
+      "clear visual evidence of the person's lower legs below the knees, including shins, calves, ankles, and feet",
+      "weak visual evidence of the person's lower legs below the knees, including shins, calves, ankles, and feet",
+      "a fully observable human lower legs below the knees, including shins, calves, ankles, and feet",
+      "a heavily obscured human lower legs below the knees, including shins, calves, ankles, and feet"
+    ],
+    "region_phrases": [
+      "head, face, and hair",
+      "chest, abdomen, waist, and torso",
+      "upper limbs, arms, elbows, forearms, wrists, and hands",
+      "thighs between the hips and knees",
+      "lower legs below the knees, including shins, calves, ankles, and feet"
+    ],
+    "regions": [
+      "head_face",
+      "central_torso",
+      "arms_hands",
+      "upper_legs_thighs",
+      "lower_legs_feet"
+    ],
+    "state_order": [
+      "visible",
+      "occluded"
+    ],
+    "temperature": 0.07,
+    "template_pairs": [
+      [
+        "a photo of a person with clearly visible {}",
+        "a photo of a person with an occluded or obstructed {}"
+      ],
+      [
+        "the person's {} is clearly visible and unobstructed",
+        "the person's {} is hidden or obstructed"
+      ],
+      [
+        "clear visual evidence of the person's {}",
+        "weak visual evidence of the person's {}"
+      ],
+      [
+        "a fully observable human {}",
+        "a heavily obscured human {}"
+      ]
+    ]
+  },
+  "prompt_sha256": "a88a1405b629402b647b6075325b2821362bbcf89372466a27f9d4cfcee3af12",
+  "readout": {
+    "geometry": "aspect-letterbox 224x75 in x=[74,149)",
+    "hard_owner_mask_interpolation": "nearest then 14x14 average pool",
+    "image_interpolation": "bicubic antialias",
+    "leak_ratio": 0.01,
+    "name": "PC-MBCLS",
+    "non_target_slot_control": true,
+    "official_global_cls_control": true,
+    "pixel_product_max": 0.0,
+    "split_block": 20
+  },
+  "scope": "smoke",
+  "status": "EXP392_PHASE0B2_SI_COMPLETE",
+  "summary": {
+    "levels": [
+      0.0,
+      0.25,
+      0.5,
+      0.75
+    ],
+    "macro_target_adjacent_delta": [
+      0.021783375740051236,
+      0.011604094505310025,
+      0.007747912406921409
+    ],
+    "macro_target_minus_global_delta": 0.03570201064440808,
+    "macro_target_q_visible_by_level": [
+      0.5110380172729492,
+      0.48925464153289794,
+      0.4776505470275879,
+      0.4699026346206665
+    ],
+    "per_region": [
+      {
+        "global_q_visible_mean_by_level": [
+          0.5244240760803223,
+          0.5189946889877319,
+          0.5135713219642639,
+          0.5110152363777161
+        ],
+        "non_target_q_visible_mean_by_level": [
+          0.506841242313385,
+          0.506060004234314,
+          0.5048232674598694,
+          0.5038707256317139
+        ],
+        "region": 0,
+        "samples": 127,
+        "spearman_overlap_negative_target_q": 0.6845989778520757,
+        "target_level0_minus_level75": {
+          "ci95_high": 0.08683448433876037,
+          "ci95_low": 0.058220644624567414,
+          "mean": 0.07252756448166389,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 127
+        },
+        "target_minus_global_delta": {
+          "ci95_high": 0.07110394324575152,
+          "ci95_low": 0.04485529833244828,
+          "mean": 0.05849268136159429,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 127
+        },
+        "target_minus_non_target_delta": {
+          "ci95_high": 0.0825869225320362,
+          "ci95_low": 0.05568799935984162,
+          "mean": 0.06919058985532883,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 127
+        },
+        "target_q_visible_mean_by_level": [
+          0.5277886390686035,
+          0.5102730393409729,
+          0.4811527132987976,
+          0.46088841557502747
+        ]
+      },
+      {
+        "global_q_visible_mean_by_level": [
+          0.4912368655204773,
+          0.4870483875274658,
+          0.4861171245574951,
+          0.4860677123069763
+        ],
+        "non_target_q_visible_mean_by_level": [
+          0.5181976556777954,
+          0.513678789138794,
+          0.5110524892807007,
+          0.511254072189331
+        ],
+        "region": 1,
+        "samples": 128,
+        "spearman_overlap_negative_target_q": 0.4817717751538303,
+        "target_level0_minus_level75": {
+          "ci95_high": 0.04166022527785528,
+          "ci95_low": 0.01904495250650499,
+          "mean": 0.02984803951251759,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_minus_global_delta": {
+          "ci95_high": 0.03660069367715291,
+          "ci95_low": 0.01344745161711539,
+          "mean": 0.024852876369521104,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_minus_non_target_delta": {
+          "ci95_high": 0.03270556404477074,
+          "ci95_low": 0.012196670409548221,
+          "mean": 0.022725587225464916,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_q_visible_mean_by_level": [
+          0.4822882413864136,
+          0.4531395435333252,
+          0.45325571298599243,
+          0.45224305987358093
+        ]
+      },
+      {
+        "global_q_visible_mean_by_level": [
+          0.5062333345413208,
+          0.5019952654838562,
+          0.5003944039344788,
+          0.4988192319869995
+        ],
+        "non_target_q_visible_mean_by_level": [
+          0.5117179155349731,
+          0.5103889107704163,
+          0.509426474571228,
+          0.509182870388031
+        ],
+        "region": 2,
+        "samples": 128,
+        "spearman_overlap_negative_target_q": 0.6405067164044362,
+        "target_level0_minus_level75": {
+          "ci95_high": 0.0564196603331301,
+          "ci95_low": 0.04170798075695833,
+          "mean": 0.047582798714912125,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_minus_global_delta": {
+          "ci95_high": 0.04732115158012935,
+          "ci95_low": 0.033634554693307825,
+          "mean": 0.04043121637648375,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_minus_non_target_delta": {
+          "ci95_high": 0.054252042803499434,
+          "ci95_low": 0.038246591265002884,
+          "mean": 0.04528060642144983,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_q_visible_mean_by_level": [
+          0.508161187171936,
+          0.48156970739364624,
+          0.4701738655567169,
+          0.4615321457386017
+        ]
+      },
+      {
+        "global_q_visible_mean_by_level": [
+          0.5115211009979248,
+          0.5088163614273071,
+          0.5073280334472656,
+          0.5066925883293152
+        ],
+        "non_target_q_visible_mean_by_level": [
+          0.509317934513092,
+          0.5080609321594238,
+          0.5086662769317627,
+          0.5096596479415894
+        ],
+        "region": 3,
+        "samples": 128,
+        "spearman_overlap_negative_target_q": 0.6654102548418915,
+        "target_level0_minus_level75": {
+          "ci95_high": 0.03901529057158364,
+          "ci95_low": 0.023448053333494395,
+          "mean": 0.03237933239530003,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_minus_global_delta": {
+          "ci95_high": 0.03504234573907322,
+          "ci95_low": 0.018225767427966708,
+          "mean": 0.027681190572560778,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_minus_non_target_delta": {
+          "ci95_high": 0.03726983687391988,
+          "ci95_low": 0.02211551130724647,
+          "mean": 0.03202492333790928,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_q_visible_mean_by_level": [
+          0.5177456140518188,
+          0.49658310413360596,
+          0.48892390727996826,
+          0.4854082763195038
+        ]
+      },
+      {
+        "global_q_visible_mean_by_level": [
+          0.5158219337463379,
+          0.5139032006263733,
+          0.5133837461471558,
+          0.5128998756408691
+        ],
+        "non_target_q_visible_mean_by_level": [
+          0.5089516639709473,
+          0.5068897008895874,
+          0.5075631737709045,
+          0.5081965923309326
+        ],
+        "region": 4,
+        "samples": 128,
+        "spearman_overlap_negative_target_q": 0.6784943635510814,
+        "target_level0_minus_level75": {
+          "ci95_high": 0.037409596884692156,
+          "ci95_low": 0.024313578116042272,
+          "mean": 0.03000434268955831,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_minus_global_delta": {
+          "ci95_high": 0.03398898289671966,
+          "ci95_low": 0.022338184986322646,
+          "mean": 0.027052088541880487,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_minus_non_target_delta": {
+          "ci95_high": 0.03571914335446698,
+          "ci95_low": 0.023299013042733782,
+          "mean": 0.028792395629185848,
+          "pids": 4,
+          "repeats": 1000,
+          "samples": 128
+        },
+        "target_q_visible_mean_by_level": [
+          0.5192064046859741,
+          0.504707932472229,
+          0.4947466254234314,
+          0.4894413352012634
+        ]
+      }
+    ]
+  },
+  "support_pixels": {
+    "max": 10512,
+    "max_allowed_one_pixel_error": 0.015625,
+    "max_target_error": 0.0,
+    "median": 3808.0,
+    "min": 64
+  },
+  "verdict": "B2_SI_SMOKE_PASS"
+}

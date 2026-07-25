@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "experiments/exp414_pose_semantic_continuous_identity_region/test_real_pk64.py", line 978, in <module>
+    main()
+  File "experiments/exp414_pose_semantic_continuous_identity_region/test_real_pk64.py", line 636, in main
+    micro = micro_oracle()
+  File "experiments/exp414_pose_semantic_continuous_identity_region/test_real_pk64.py", line 178, in micro_oracle
+    state = build_continuous_region_from_signals(
+  File "/home/afr/SOLIDER-REID-exp414-pscir-formal-v1/loss/pose_semantic_continuous_region.py", line 168, in build_continuous_region_from_signals
+    covered = (
+TypeError: any() received an invalid combination of arguments - got (dim=tuple, ), but expected one of:
+ * ()
+      didn't match because some of the keywords were incorrect: dim
+ * (int dim, bool keepdim)
+ * (name dim, bool keepdim)
+
+CONTRACT_EXIT=1

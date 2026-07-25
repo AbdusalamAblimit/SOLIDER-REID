@@ -1,0 +1,14 @@
+[exp013-cat-ltcc@lab4090] deployed_from=local@7fc2bba triplet_md5=0913120dacd3c1fea3e6718541e0b939 nproc=1 batch=64 start=2026-05-31 07:16:49
+[exp013-cat-ltcc] >>> START base seed0 2026-05-31 07:16:49
+[exp013-cat-ltcc] <<< DONE base seed0 exit=0 2026-05-31 07:44:25
+[exp013-cat-ltcc] >>> START base seed1 2026-05-31 07:44:25
+[exp013-cat-ltcc] <<< DONE base seed1 exit=0 2026-05-31 08:12:01
+[exp013-cat-ltcc] >>> START base seed2 2026-05-31 08:12:01
+[exp013-cat-ltcc] <<< DONE base seed2 exit=0 2026-05-31 08:39:38
+[exp013-cat-ltcc] >>> START cat seed0 2026-05-31 08:39:38
+[exp013-cat-ltcc] <<< DONE cat seed0 exit=0 2026-05-31 09:07:19
+[exp013-cat-ltcc] >>> START cat seed1 2026-05-31 09:07:19
+[exp013-cat-ltcc] <<< DONE cat seed1 exit=0 2026-05-31 09:34:58
+[exp013-cat-ltcc] >>> START cat seed2 2026-05-31 09:34:58
+[exp013-cat-ltcc] <<< DONE cat seed2 exit=0 2026-05-31 10:02:39
+EXP013_CAT_ltcc_DONE 2026-05-31 10:02:39

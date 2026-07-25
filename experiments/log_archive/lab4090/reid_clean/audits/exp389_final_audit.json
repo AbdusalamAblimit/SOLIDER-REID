@@ -1,0 +1,266 @@
+{
+  "checkpoint_floating_tensors": 230,
+  "checkpoint_sha256": "b78e4a62258cd16d5181b6e224880fb521e53af893f7eaa522f07dde9ac15d61",
+  "checkpoint_state_tensors": 243,
+  "consumer_paths": [
+    {
+      "consumer": "early0",
+      "descriptor_max_abs_delta": 0.14499971270561218
+    },
+    {
+      "consumer": "early1",
+      "descriptor_max_abs_delta": 0.0679006576538086
+    },
+    {
+      "consumer": "early2",
+      "descriptor_max_abs_delta": 0.07670283317565918
+    },
+    {
+      "consumer": "early3",
+      "descriptor_max_abs_delta": 0.13824224472045898
+    },
+    {
+      "consumer": "early4",
+      "descriptor_max_abs_delta": 0.26064586639404297
+    },
+    {
+      "consumer": "early5",
+      "descriptor_max_abs_delta": 0.6102541089057922
+    },
+    {
+      "consumer": "late0",
+      "descriptor_max_abs_delta": 1.0834274291992188
+    },
+    {
+      "consumer": "late1",
+      "descriptor_max_abs_delta": 2.1360392570495605
+    }
+  ],
+  "dataset_boundary": {
+    "normal_train_dataset": "ImageDataset",
+    "normal_train_has_pose_store": false,
+    "num_query": 2210,
+    "validation_dataset": "ImageDataset",
+    "validation_has_pose_store": false
+  },
+  "descriptor_shape": [
+    4,
+    768
+  ],
+  "early_field_shape": [
+    4,
+    17,
+    48,
+    16
+  ],
+  "early_gate_shapes": [
+    [
+      4,
+      192,
+      384
+    ],
+    [
+      4,
+      192,
+      384
+    ],
+    [
+      4,
+      192,
+      384
+    ],
+    [
+      4,
+      192,
+      384
+    ],
+    [
+      4,
+      192,
+      384
+    ],
+    [
+      4,
+      192,
+      384
+    ]
+  ],
+  "exploding_pose_accesses": 0,
+  "late_field_shape": [
+    4,
+    17,
+    24,
+    8
+  ],
+  "late_gate_shapes": [
+    [
+      4,
+      48,
+      768
+    ],
+    [
+      4,
+      48,
+      768
+    ]
+  ],
+  "parameter_trajectory": {
+    "early_anchor": {
+      "changed": 8,
+      "total": 8
+    },
+    "early_psg": {
+      "changed": 12,
+      "total": 12
+    },
+    "head": {
+      "changed": 2,
+      "total": 3
+    },
+    "late_anchor": {
+      "changed": 8,
+      "total": 8
+    },
+    "late_psg": {
+      "changed": 4,
+      "total": 4
+    },
+    "swin": {
+      "changed": 171,
+      "total": 193
+    }
+  },
+  "pose_variants_exact": [
+    "correct",
+    "shuffle",
+    "none",
+    "exploding"
+  ],
+  "psg_pairwise_independence": {
+    "early": [
+      {
+        "equal": false,
+        "left": 0,
+        "right": 1
+      },
+      {
+        "equal": false,
+        "left": 0,
+        "right": 2
+      },
+      {
+        "equal": false,
+        "left": 0,
+        "right": 3
+      },
+      {
+        "equal": false,
+        "left": 0,
+        "right": 4
+      },
+      {
+        "equal": false,
+        "left": 0,
+        "right": 5
+      },
+      {
+        "equal": false,
+        "left": 1,
+        "right": 2
+      },
+      {
+        "equal": false,
+        "left": 1,
+        "right": 3
+      },
+      {
+        "equal": false,
+        "left": 1,
+        "right": 4
+      },
+      {
+        "equal": false,
+        "left": 1,
+        "right": 5
+      },
+      {
+        "equal": false,
+        "left": 2,
+        "right": 3
+      },
+      {
+        "equal": false,
+        "left": 2,
+        "right": 4
+      },
+      {
+        "equal": false,
+        "left": 2,
+        "right": 5
+      },
+      {
+        "equal": false,
+        "left": 3,
+        "right": 4
+      },
+      {
+        "equal": false,
+        "left": 3,
+        "right": 5
+      },
+      {
+        "equal": false,
+        "left": 4,
+        "right": 5
+      }
+    ],
+    "late": [
+      {
+        "equal": false,
+        "left": 0,
+        "right": 1
+      }
+    ]
+  },
+  "psg_per_bank_trajectory": {
+    "early": [
+      {
+        "changed": 2,
+        "total": 2
+      },
+      {
+        "changed": 2,
+        "total": 2
+      },
+      {
+        "changed": 2,
+        "total": 2
+      },
+      {
+        "changed": 2,
+        "total": 2
+      },
+      {
+        "changed": 2,
+        "total": 2
+      },
+      {
+        "changed": 2,
+        "total": 2
+      }
+    ],
+    "late": [
+      {
+        "changed": 2,
+        "total": 2
+      },
+      {
+        "changed": 2,
+        "total": 2
+      }
+    ]
+  },
+  "status": "EXP389_FINAL_AUDIT_PASS",
+  "strict_missing": [],
+  "strict_unexpected": []
+}

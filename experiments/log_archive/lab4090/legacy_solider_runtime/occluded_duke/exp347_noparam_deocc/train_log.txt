@@ -1,0 +1,342 @@
+2026-06-20 02:53:52 transreid INFO: Saving model in the path :./log/occluded_duke/exp347_noparam_deocc
+2026-06-20 02:53:52 transreid INFO: Loaded configuration file configs/occluded_duke/exp347_noparam_deocc.yml
+2026-06-20 02:53:52 transreid INFO: Running with config:
+DATALOADER:
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+  REMOVE_TAIL: 0
+  SAMPLER: softmax_triplet
+DATASETS:
+  NAMES: occluded_duke
+  ROOT_DIR: data
+  ROOT_TRAIN_DIR: ../data
+  ROOT_VAL_DIR: ../data
+INPUT:
+  PADDING: 10
+  PIXEL_MEAN: [0.5, 0.5, 0.5]
+  PIXEL_STD: [0.5, 0.5, 0.5]
+  PROB: 0.5
+  RE_PROB: 0.5
+  SIZE_TEST: [384, 128]
+  SIZE_TRAIN: [384, 128]
+MODEL:
+  ATT_DROP_RATE: 0.0
+  COS_LAYER: False
+  DEVICE: cuda
+  DEVICE_ID: 0
+  DEVIDE_LENGTH: 4
+  DIST_TRAIN: False
+  DROPOUT_RATE: 0.0
+  DROP_OUT: 0.0
+  DROP_PATH: 0.1
+  FEAT_DIM: 512
+  GEM_POOLING: False
+  GLOBAL_LOSS_SCALE: 1.0
+  ID_LOSS_TYPE: softmax
+  ID_LOSS_WEIGHT: 1.0
+  IF_LABELSMOOTH: off
+  IF_WITH_CENTER: no
+  JPM: False
+  LAST_STRIDE: 1
+  METRIC_LOSS_TYPE: triplet
+  NAME: transformer
+  NECK: bnneck
+  NO_MARGIN: True
+  POSE_ADDITIVE_ADAPTER: False
+  POSE_BACKBONE_PSG: True
+  POSE_BA_PKC: False
+  POSE_BA_PKC_WEIGHT: 0.1
+  POSE_BT_PKD: False
+  POSE_BT_PKD_DECAY_EPOCH: 0
+  POSE_BT_PKD_WEIGHT: 0.01
+  POSE_CLIP_ID_ARCH: ViT-L-14
+  POSE_CLIP_ID_NOPARAM_POOL: True
+  POSE_CLIP_ID_OCC_REPEL: False
+  POSE_CLIP_ID_OCC_REPEL_W: 0.5
+  POSE_CLIP_ID_PART_GUIDED: False
+  POSE_CLIP_ID_POSE_GUIDED: False
+  POSE_CLIP_ID_POSE_PROMPT: False
+  POSE_CLIP_ID_POSE_TEMP: 4.0
+  POSE_CLIP_ID_PRETRAINED: /home/afr/SOLIDER-REID/clip_l14_openclip.safetensors
+  POSE_CLIP_ID_PROMPT: True
+  POSE_CLIP_ID_TEMP: 0.07
+  POSE_CLIP_ID_WEIGHT: 1.0
+  POSE_DATA_DIR: data/occluded_duke
+  POSE_DEFORMABLE_K: 4
+  POSE_DEFORMABLE_SAMPLE: False
+  POSE_DROPOUT_P: 0.0
+  POSE_ENABLED: True
+  POSE_EVIDENTIAL: False
+  POSE_EVIDENTIAL_ANNEAL: 0.6
+  POSE_EVIDENTIAL_KL_REG: 0.1
+  POSE_FSDC: False
+  POSE_FSDC_HEADS: 8
+  POSE_FSDC_LAYERS: 2
+  POSE_FSDC_MASK_RATIO: 0.3
+  POSE_FSDC_NOISE_STD: 0.1
+  POSE_FSDC_WEIGHT: 0.5
+  POSE_GCN_HIDDEN: 256
+  POSE_GCN_LAYERS: 2
+  POSE_GCN_PER_PART: False
+  POSE_HEATMAP_NORM: spatial_softmax
+  POSE_HEATMAP_SIZE: [96, 32]
+  POSE_KEYPOINT_POOL_ONLY: False
+  POSE_KP_TRIPLET: False
+  POSE_KP_TRIPLET_WEIGHT: 1.0
+  POSE_KP_WEIGHT_MODE: score
+  POSE_LGPA: False
+  POSE_LGPA_ASSIGN_WEIGHT: 0.5
+  POSE_LGPA_CLIP_DIM: 512
+  POSE_LGPA_DETACH: True
+  POSE_LGPA_FIXED_BANDS: False
+  POSE_LGPA_NO_POSE: False
+  POSE_LGPA_NUM_HEADS: 8
+  POSE_LGPA_POSE_TEMP: 1.0
+  POSE_LGPA_RANDOM_TEXT: False
+  POSE_LOWER_BODY_OCC: False
+  POSE_LOWER_BODY_OCC_MODE: lower
+  POSE_LOWER_BODY_OCC_PROB: 0.5
+  POSE_LOWER_BODY_OCC_RATIO: 0.5
+  POSE_LPCS: False
+  POSE_LPCS_CONF_WEIGHT: 0.25
+  POSE_LPCS_CONTEXT_MODE: none
+  POSE_LPCS_DELTA_SCALE: 0.5
+  POSE_LPCS_HEAD_MODE: residual
+  POSE_LPCS_HIDDEN: 32
+  POSE_LPCS_PAIR_MODE: all
+  POSE_LPCS_PAIR_TOP_RATIO: 1.0
+  POSE_LPCS_RANK_MODE: all
+  POSE_LPCS_RANK_TAU: 8.0
+  POSE_LPCS_RANK_TOP_RATIO: 1.0
+  POSE_LPCS_ST_LOW_THR: 0.3
+  POSE_LPCS_ST_MIN_COUNT: 1
+  POSE_LPCS_ST_MOM: 0.9
+  POSE_LPCS_ST_UPDATE_STOP_EPOCH: -1
+  POSE_LPCS_ST_UPDATE_THR: 0.7
+  POSE_LPCS_WARMUP: 20
+  POSE_LPCS_WEIGHT: 0.5
+  POSE_LTCS: False
+  POSE_LTCS_HIDDEN: 32
+  POSE_LTCS_ST_LOW_THR: 0.3
+  POSE_LTCS_ST_MIN_COUNT: 1
+  POSE_LTCS_ST_MOM: 0.9
+  POSE_LTCS_ST_UPDATE_STOP_EPOCH: -1
+  POSE_LTCS_ST_UPDATE_THR: 0.7
+  POSE_LTCS_WARMUP: 20
+  POSE_LTCS_WEIGHT: 0.5
+  POSE_MAXSIM_TRIPLET: False
+  POSE_MAXSIM_TRIPLET_ADDITIVE: False
+  POSE_MAXSIM_TRIPLET_TEMP: 0.05
+  POSE_MAXSIM_TRIPLET_WEIGHT: 0.25
+  POSE_MST: False
+  POSE_MST_MARGIN: 0.3
+  POSE_MST_VIS_THR: 0.3
+  POSE_MST_WEIGHT: 0.5
+  POSE_MULTI_SCALE_KP: False
+  POSE_MULTI_SCALE_STAGES: [2, 3]
+  POSE_NORMALIZE: False
+  POSE_NORMALIZE_HIDDEN: 256
+  POSE_OA_RD: False
+  POSE_OA_RD_TEMP: 0.1
+  POSE_OA_RD_WEIGHT: 1.0
+  POSE_OA_SD: False
+  POSE_OA_SD_EMA_DECAY: 0.999
+  POSE_OA_SD_GLOBAL_ONLY: False
+  POSE_OA_SD_WEIGHT: 1.0
+  POSE_OERL: False
+  POSE_OERL_OCC_RATIO: 0.5
+  POSE_OERL_WEIGHT: 1.0
+  POSE_PAA_ADAPTIVE_GATE: False
+  POSE_PAA_BOTTLENECK: 32
+  POSE_PAA_ROUTED: False
+  POSE_PACI: False
+  POSE_PACI_MARGIN: 0.3
+  POSE_PACI_MOMENTUM: 0.9
+  POSE_PACI_WARMUP: 5
+  POSE_PACI_WEIGHT: 0.5
+  POSE_PARALLEL_AUG: False
+  POSE_PART_GRAD_SCALE: 0.0
+  POSE_PART_STAGE: -1
+  POSE_PART_TRI_WEIGHT: 1.0
+  POSE_PART_WEIGHT: 1.0
+  POSE_PATCH_EMBED: False
+  POSE_PATCH_EMBED_KS: 1
+  POSE_PFM_ENABLED: False
+  POSE_PFM_HIDDEN: 64
+  POSE_PKC: False
+  POSE_PKC_TEMP: 0.07
+  POSE_PKC_VIS_THR: 0.3
+  POSE_PKC_WEIGHT: 0.5
+  POSE_PPA: False
+  POSE_PPA_ASSIGN_WEIGHT: 0.5
+  POSE_PPA_GILT: False
+  POSE_PPA_NUM_PARTS: 5
+  POSE_PROMPT: False
+  POSE_PROMPT_DROP: 0.0
+  POSE_PROMPT_NUM_PARTS: 18
+  POSE_PSG_PART: False
+  POSE_PSG_SPATIAL: False
+  POSE_PSG_STAGES: []
+  POSE_ROA: False
+  POSE_ROA_PATH: data/VOCdevkit/VOC2012
+  POSE_ROA_POSE_AWARE: False
+  POSE_ROA_PROB: 0.5
+  POSE_SKELETON_GCN: False
+  POSE_SPLADE: False
+  POSE_SPLADE_DIM: 2048
+  POSE_SPLADE_REG: 0.01
+  POSE_STM: False
+  POSE_STM_NUM_SWAP: 2
+  POSE_STM_PROB: 0.5
+  POSE_STM_WEIGHT: 0.5
+  POSE_STRUCTURAL_ROUTING: False
+  POSE_STR_NUM_HEADS: 8
+  POSE_STR_NUM_LAYERS: 2
+  POSE_STR_NUM_PARTS: 6
+  POSE_STR_PART_DROP: 0.0
+  POSE_STR_PER_TOKEN: False
+  POSE_STR_SELF_ATTN: False
+  POSE_STR_SUPCON: False
+  POSE_STR_SUPCON_ADDITIVE: False
+  POSE_STR_SUPCON_GLOBAL: False
+  POSE_STR_SUPCON_TEMP: 0.07
+  POSE_STR_SUPCON_VIS_WEIGHT: False
+  POSE_STR_SUPCON_WEIGHT: 0.5
+  POSE_TEMPERATURE: 1.0
+  POSE_TEST_FEAT: global
+  POSE_THRESHOLD: 0.3
+  POSE_UPPER_BODY_OCC: False
+  POSE_UPPER_BODY_OCC_PROB: 0.3
+  POSE_USE_TARGET_HEATMAP: False
+  POSE_VCNORM: False
+  POSE_VCNORM_GAIN_SCALE: 1.0
+  POSE_VCNORM_HIDDEN: 64
+  POSE_VCNORM_MODULE: True
+  POSE_VCNORM_VIS_THR: 0.3
+  POSE_VCNORM_WARMUP: 20
+  POSE_VCNORM_WEIGHT: 0.5
+  POSE_VCSR: False
+  POSE_VCSR_ASSIGN_WEIGHT: 0.5
+  POSE_VCSR_VIS_THR: 0.3
+  PRETRAIN_CHOICE: self
+  PRETRAIN_HW_RATIO: 2
+  PRETRAIN_PATH: pretrained/swin_tiny.pth
+  REDUCE_FEAT_DIM: False
+  RE_ARRANGE: True
+  SEMANTIC_WEIGHT: 0.2
+  SHIFT_NUM: 5
+  SHUFFLE_GROUP: 2
+  SIE_CAMERA: False
+  SIE_COE: 3.0
+  SIE_VIEW: False
+  STEM_CONV: False
+  STRIDE_SIZE: [16, 16]
+  TRANSFORMER_TYPE: swin_tiny_patch4_window7_224
+  TRIPLET_LOSS_WEIGHT: 1.0
+  WITH_CP: False
+OUTPUT_DIR: ./log/occluded_duke/exp347_noparam_deocc
+SOLVER:
+  BASE_LR: 0.0008
+  BIAS_LR_FACTOR: 2
+  CENTER_LOSS_WEIGHT: 0.0005
+  CENTER_LR: 0.5
+  CHECKPOINT_PERIOD: 120
+  COSINE_MARGIN: 0.5
+  COSINE_SCALE: 30
+  EVAL_PERIOD: 120
+  FREEZE_BACKBONE_EPOCHS: 0
+  GAMMA: 0.1
+  IMS_PER_BATCH: 64
+  LARGE_FC_LR: False
+  LOG_PERIOD: 50
+  MARGIN: 0.3
+  MAX_EPOCHS: 120
+  MOMENTUM: 0.9
+  OPTIMIZER_NAME: SGD
+  SEED: 1234
+  STEPS: (40, 70)
+  TRP_L2: False
+  WARMUP_EPOCHS: 20
+  WARMUP_FACTOR: 0.01
+  WARMUP_METHOD: cosine
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0.0001
+TEST:
+  CVK_GLOBAL_WEIGHT: 1.0
+  CVK_KP_WEIGHT: 1.0
+  DIST_MAT: dist_mat.npy
+  EVAL: True
+  FEAT_NORM: yes
+  FLIP_TEST: True
+  IMS_PER_BATCH: 64
+  NECK_FEAT: before
+  NFC: False
+  NFC_K1: 2
+  NFC_K2: 2
+  POWER_NORM: 0.0
+  RE_RANKING: False
+  WEIGHT: 
+2026-06-20 02:53:52 transreid.check INFO: Dataset statistics:
+2026-06-20 02:53:52 transreid.check INFO:   ----------------------------------------
+2026-06-20 02:53:52 transreid.check INFO:   subset   | # ids | # images | # cameras
+2026-06-20 02:53:52 transreid.check INFO:   ----------------------------------------
+2026-06-20 02:53:52 transreid.check INFO:   train    |   702 |    15618 |         8
+2026-06-20 02:53:52 transreid.check INFO:   query    |   519 |     2210 |         8
+2026-06-20 02:53:52 transreid.check INFO:   gallery  |  1110 |    17661 |         8
+2026-06-20 02:53:52 transreid.check INFO:   ----------------------------------------
+2026-06-20 02:53:55 transreid INFO: ===========using cosine learning rate=======
+2026-06-20 02:53:55 transreid.train INFO: start training
+2026-06-20 02:53:55 transreid.train INFO: Pose-guided training ENABLED
+2026-06-20 02:54:11 transreid.train INFO: Epoch[1] Iter[50/227] Loss: 26.254, Acc: 0.001, Base Lr: 4.76e-05 | id_global: 6.554 tri_global: 11.305 clip_id: 8.395
+2026-06-20 02:54:21 transreid.train INFO: Epoch[1] Iter[100/227] Loss: 24.112, Acc: 0.001, Base Lr: 4.76e-05 | id_global: 6.554 tri_global: 9.168 clip_id: 8.390
+2026-06-20 02:54:29 transreid.train INFO: Epoch[1] Iter[150/227] Loss: 22.768, Acc: 0.001, Base Lr: 4.76e-05 | id_global: 6.554 tri_global: 7.832 clip_id: 8.382
+2026-06-20 02:54:37 transreid.train INFO: Epoch[1] Iter[200/227] Loss: 21.870, Acc: 0.001, Base Lr: 4.76e-05 | id_global: 6.554 tri_global: 6.935 clip_id: 8.381
+2026-06-20 02:54:39 transreid.train INFO: Epoch 1 done. Time per epoch: 43.296[s] Speed: 310.4[samples/s] ETA: 1h25m
+2026-06-20 02:54:48 transreid.train INFO: Epoch[2] Iter[50/227] Loss: 18.899, Acc: 0.004, Base Lr: 8.72e-05 | id_global: 6.550 tri_global: 4.000 clip_id: 8.349
+2026-06-20 02:54:56 transreid.train INFO: Epoch[2] Iter[100/227] Loss: 18.349, Acc: 0.007, Base Lr: 8.72e-05 | id_global: 6.547 tri_global: 3.473 clip_id: 8.329
+2026-06-20 02:55:04 transreid.train INFO: Epoch[2] Iter[150/227] Loss: 17.908, Acc: 0.010, Base Lr: 8.72e-05 | id_global: 6.544 tri_global: 3.048 clip_id: 8.316
+2026-06-20 02:55:11 transreid.train INFO: Epoch[2] Iter[200/227] Loss: 17.579, Acc: 0.020, Base Lr: 8.72e-05 | id_global: 6.539 tri_global: 2.737 clip_id: 8.302
+2026-06-20 02:55:13 transreid.train INFO: Epoch 2 done. Time per epoch: 34.552[s] Speed: 392.7[samples/s] ETA: 1h7m
+2026-06-20 02:55:22 transreid.train INFO: Epoch[3] Iter[50/227] Loss: 16.464, Acc: 0.055, Base Lr: 1.27e-04 | id_global: 6.518 tri_global: 1.701 clip_id: 8.245
+2026-06-20 02:55:30 transreid.train INFO: Epoch[3] Iter[100/227] Loss: 16.298, Acc: 0.082, Base Lr: 1.27e-04 | id_global: 6.509 tri_global: 1.564 clip_id: 8.225
+2026-06-20 02:55:38 transreid.train INFO: Epoch[3] Iter[150/227] Loss: 16.173, Acc: 0.103, Base Lr: 1.27e-04 | id_global: 6.500 tri_global: 1.478 clip_id: 8.195
+2026-06-20 02:55:46 transreid.train INFO: Epoch[3] Iter[200/227] Loss: 16.064, Acc: 0.141, Base Lr: 1.27e-04 | id_global: 6.488 tri_global: 1.418 clip_id: 8.159
+2026-06-20 02:55:48 transreid.train INFO: Epoch 3 done. Time per epoch: 34.606[s] Speed: 392.1[samples/s] ETA: 1h7m
+2026-06-20 02:55:57 transreid.train INFO: Epoch[4] Iter[50/227] Loss: 15.813, Acc: 0.109, Base Lr: 1.66e-04 | id_global: 6.453 tri_global: 1.356 clip_id: 8.004
+2026-06-20 02:56:05 transreid.train INFO: Epoch[4] Iter[100/227] Loss: 15.597, Acc: 0.124, Base Lr: 1.66e-04 | id_global: 6.438 tri_global: 1.244 clip_id: 7.915
+2026-06-20 02:56:13 transreid.train INFO: Epoch[4] Iter[150/227] Loss: 15.423, Acc: 0.149, Base Lr: 1.66e-04 | id_global: 6.422 tri_global: 1.205 clip_id: 7.796
+2026-06-20 02:56:21 transreid.train INFO: Epoch[4] Iter[200/227] Loss: 15.203, Acc: 0.196, Base Lr: 1.66e-04 | id_global: 6.396 tri_global: 1.178 clip_id: 7.629
+2026-06-20 02:56:22 transreid.train INFO: Epoch 4 done. Time per epoch: 34.467[s] Speed: 391.8[samples/s] ETA: 1h6m
+2026-06-20 02:56:31 transreid.train INFO: Epoch[5] Iter[50/227] Loss: 14.451, Acc: 0.127, Base Lr: 2.06e-04 | id_global: 6.338 tri_global: 1.043 clip_id: 7.070
+2026-06-20 02:56:39 transreid.train INFO: Epoch[5] Iter[100/227] Loss: 14.328, Acc: 0.144, Base Lr: 2.06e-04 | id_global: 6.320 tri_global: 1.081 clip_id: 6.927
+2026-06-20 02:56:47 transreid.train INFO: Epoch[5] Iter[150/227] Loss: 14.064, Acc: 0.168, Base Lr: 2.06e-04 | id_global: 6.292 tri_global: 1.039 clip_id: 6.733
+2026-06-20 02:56:55 transreid.train INFO: Epoch[5] Iter[200/227] Loss: 13.757, Acc: 0.210, Base Lr: 2.06e-04 | id_global: 6.249 tri_global: 1.008 clip_id: 6.500
+2026-06-20 02:56:57 transreid.train INFO: Epoch 5 done. Time per epoch: 34.542[s] Speed: 392.8[samples/s] ETA: 1h6m
+2026-06-20 02:57:06 transreid.train INFO: Epoch[6] Iter[50/227] Loss: 13.026, Acc: 0.110, Base Lr: 2.46e-04 | id_global: 6.189 tri_global: 0.841 clip_id: 5.997
+2026-06-20 02:57:14 transreid.train INFO: Epoch[6] Iter[100/227] Loss: 12.880, Acc: 0.123, Base Lr: 2.46e-04 | id_global: 6.162 tri_global: 0.870 clip_id: 5.848
+2026-06-20 02:57:22 transreid.train INFO: Epoch[6] Iter[150/227] Loss: 12.611, Acc: 0.154, Base Lr: 2.46e-04 | id_global: 6.114 tri_global: 0.867 clip_id: 5.629
+2026-06-20 02:57:30 transreid.train INFO: Epoch[6] Iter[200/227] Loss: 12.319, Acc: 0.195, Base Lr: 2.46e-04 | id_global: 6.045 tri_global: 0.849 clip_id: 5.425
+2026-06-20 02:57:32 transreid.train INFO: Epoch 6 done. Time per epoch: 34.726[s] Speed: 392.6[samples/s] ETA: 1h5m
+2026-06-20 02:57:41 transreid.train INFO: Epoch[7] Iter[50/227] Loss: 11.855, Acc: 0.105, Base Lr: 2.85e-04 | id_global: 5.988 tri_global: 0.795 clip_id: 5.073
+2026-06-20 02:57:49 transreid.train INFO: Epoch[7] Iter[100/227] Loss: 11.660, Acc: 0.123, Base Lr: 2.85e-04 | id_global: 5.934 tri_global: 0.766 clip_id: 4.960
+2026-06-20 02:57:56 transreid.train INFO: Epoch[7] Iter[150/227] Loss: 11.475, Acc: 0.148, Base Lr: 2.85e-04 | id_global: 5.880 tri_global: 0.768 clip_id: 4.827
+2026-06-20 02:58:04 transreid.train INFO: Epoch[7] Iter[200/227] Loss: 11.172, Acc: 0.195, Base Lr: 2.85e-04 | id_global: 5.774 tri_global: 0.748 clip_id: 4.651
+2026-06-20 02:58:06 transreid.train INFO: Epoch 7 done. Time per epoch: 34.450[s] Speed: 392.0[samples/s] ETA: 1h4m
+2026-06-20 02:58:15 transreid.train INFO: Epoch[8] Iter[50/227] Loss: 10.979, Acc: 0.119, Base Lr: 3.25e-04 | id_global: 5.724 tri_global: 0.778 clip_id: 4.476
+2026-06-20 02:58:23 transreid.train INFO: Epoch[8] Iter[100/227] Loss: 10.805, Acc: 0.129, Base Lr: 3.25e-04 | id_global: 5.680 tri_global: 0.740 clip_id: 4.385
+2026-06-20 02:58:31 transreid.train INFO: Epoch[8] Iter[150/227] Loss: 10.581, Acc: 0.158, Base Lr: 3.25e-04 | id_global: 5.610 tri_global: 0.708 clip_id: 4.264
+2026-06-20 02:58:39 transreid.train INFO: Epoch[8] Iter[200/227] Loss: 10.299, Acc: 0.205, Base Lr: 3.25e-04 | id_global: 5.474 tri_global: 0.684 clip_id: 4.142
+2026-06-20 02:58:41 transreid.train INFO: Epoch 8 done. Time per epoch: 34.436[s] Speed: 392.1[samples/s] ETA: 1h4m
+2026-06-20 02:58:50 transreid.train INFO: Epoch[9] Iter[50/227] Loss: 10.195, Acc: 0.112, Base Lr: 3.64e-04 | id_global: 5.483 tri_global: 0.665 clip_id: 4.047
+2026-06-20 02:58:57 transreid.train INFO: Epoch[9] Iter[100/227] Loss: 10.087, Acc: 0.137, Base Lr: 3.64e-04 | id_global: 5.410 tri_global: 0.676 clip_id: 4.001
+2026-06-20 02:59:05 transreid.train INFO: Epoch[9] Iter[150/227] Loss: 9.883, Acc: 0.172, Base Lr: 3.64e-04 | id_global: 5.304 tri_global: 0.656 clip_id: 3.922
+2026-06-20 02:59:13 transreid.train INFO: Epoch[9] Iter[200/227] Loss: 9.597, Acc: 0.219, Base Lr: 3.64e-04 | id_global: 5.135 tri_global: 0.626 clip_id: 3.836
+2026-06-20 02:59:15 transreid.train INFO: Epoch 9 done. Time per epoch: 34.432[s] Speed: 392.2[samples/s] ETA: 1h3m
+2026-06-20 02:59:24 transreid.train INFO: Epoch[10] Iter[50/227] Loss: 9.609, Acc: 0.147, Base Lr: 4.04e-04 | id_global: 5.154 tri_global: 0.658 clip_id: 3.797
+2026-06-20 02:59:32 transreid.train INFO: Epoch[10] Iter[100/227] Loss: 9.506, Acc: 0.156, Base Lr: 4.04e-04 | id_global: 5.092 tri_global: 0.655 clip_id: 3.759
+2026-06-20 02:59:40 transreid.train INFO: Epoch[10] Iter[150/227] Loss: 9.311, Acc: 0.190, Base Lr: 4.04e-04 | id_global: 4.989 tri_global: 0.626 clip_id: 3.697
+2026-06-20 02:59:48 transreid.train INFO: Epoch[10] Iter[200/227] Loss: 8.996, Acc: 0.256, Base Lr: 4.04e-04 | id_global: 4.768 tri_global: 0.599 clip_id: 3.630
+2026-06-20 02:59:50 transreid.train INFO: Epoch 10 done. Time per epoch: 34.605[s] Speed: 392.1[samples/s] ETA: 1h3m
+2026-06-20 02:59:59 transreid.train INFO: Epoch[11] Iter[50/227] Loss: 9.014, Acc: 0.170, Base Lr: 4.44e-04 | id_global: 4.820 tri_global: 0.580 clip_id: 3.613
+2026-06-20 03:00:06 transreid.train INFO: Epoch[11] Iter[100/227] Loss: 8.835, Acc: 0.209, Base Lr: 4.44e-04 | id_global: 4.700 tri_global: 0.558 clip_id: 3.577
+2026-06-20 03:00:14 transreid.train INFO: Epoch[11] Iter[150/227] Loss: 8.684, Acc: 0.238, Base Lr: 4.44e-04 | id_global: 4.603 tri_global: 0.540 clip_id: 3.541

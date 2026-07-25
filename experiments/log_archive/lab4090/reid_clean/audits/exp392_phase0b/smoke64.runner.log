@@ -1,0 +1,31 @@
+Traceback (most recent call last):
+  File "/home/afr/reid-clean/audits/exp392_phase0b/phase0b_clip_teacher_audit.py", line 1486, in <module>
+    main()
+  File "/home/afr/reid-clean/audits/exp392_phase0b/phase0b_clip_teacher_audit.py", line 1230, in main
+    for batch_index, (recipient, rgb_donor, mask_donor) in enumerate(loader):
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torch/utils/data/dataloader.py", line 628, in __next__
+    data = self._next_data()
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torch/utils/data/dataloader.py", line 1333, in _next_data
+    return self._process_data(data)
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torch/utils/data/dataloader.py", line 1359, in _process_data
+    data.reraise()
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torch/_utils.py", line 543, in reraise
+    raise exception
+RuntimeError: Caught RuntimeError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torch/utils/data/_utils/worker.py", line 302, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torch/utils/data/_utils/fetch.py", line 58, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torch/utils/data/_utils/fetch.py", line 58, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torch/utils/data/dataset.py", line 295, in __getitem__
+    return self.dataset[self.indices[idx]]
+  File "/home/afr/reid-clean/audits/exp392_phase0b/phase0b_clip_teacher_audit.py", line 312, in __getitem__
+    recipient = self._load(index, self.verify_sha)
+  File "/home/afr/reid-clean/audits/exp392_phase0b/phase0b_clip_teacher_audit.py", line 302, in _load
+    transformed = self.transform(image, pose)
+  File "/home/afr/reid-clean/audits/exp392_phase0b/phase0b_clip_teacher_audit.py", line 252, in __call__
+    erased_mass = (masks * erase_mask[None]).flatten(1).sum(1)
+RuntimeError: The size of tensor a (32) must match the size of tensor b (128) at non-singleton dimension 2
+

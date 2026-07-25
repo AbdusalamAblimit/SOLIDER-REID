@@ -1,0 +1,314 @@
+####################################################################################
+# OSAC KILL-SWITCH  dataset=occluded_duke  ckpt_dir=log/occluded_duke/exp260_base_gcn512_2stage
+# epochs requested=[20, 40, 60, 80, 100, 120]  final_epoch=120  smoke=0
+####################################################################################
+
+====================================================================================
+CORE TEST 1 / D4 — per-epoch spectral OVER-COLLAPSE trajectory
+  (gallery-feature spectrum; NC1/proto on SEEN train ids)
+====================================================================================
+/root/miniconda3/envs/solider-reid/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+=> Occluded-DukeMTMC loaded
+Loading ROA occluders from data/VOCdevkit/VOC2012...
+Loaded 1289 occluder patches
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_base_patch4_window7_224 as a backbone
+/root/work/SOLIDER-REID/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[PSG+GCN] Skeleton GCN head enabled: 2 layers, hidden=512, test_feat=global, kp_weight=score
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /root/work/SOLIDER-REID/log/occluded_duke/exp260_base_gcn512_2stage/transformer_20.pth
+[extract] transformer_20.pth; POSE_TEST_FEAT=global; num_query=2210 num_classes=702
+    [batch 0/311] (4s)
+    [batch 40/311] (17s)
+    [batch 80/311] (30s)
+    [batch 120/311] (44s)
+    [batch 160/311] (57s)
+    [batch 200/311] (70s)
+    [batch 240/311] (84s)
+    [batch 280/311] (97s)
+[extract] query=2210 gallery=17661 dim=1024
+    [batch 0/245] (2s)
+    [batch 40/245] (15s)
+    [batch 80/245] (29s)
+    [batch 120/245] (42s)
+[extract] train(capped)=8000 #train-ids=372
+[extract] classifier prototypes: (702, 1024)
+[cache] ep20 -> /tmp/osac_od/feat_ep20.npz
+  ep 20: eff_rank=  55.57  stable_rank=  28.03  topPC1= 8.99%  top10=51.78%  NC1=0.1887  proto_align=0.8727  | mAP=60.31 R1=70.18
+=> Occluded-DukeMTMC loaded
+Loading ROA occluders from data/VOCdevkit/VOC2012...
+Loaded 1289 occluder patches
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_base_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[PSG+GCN] Skeleton GCN head enabled: 2 layers, hidden=512, test_feat=global, kp_weight=score
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /root/work/SOLIDER-REID/log/occluded_duke/exp260_base_gcn512_2stage/transformer_40.pth
+[extract] transformer_40.pth; POSE_TEST_FEAT=global; num_query=2210 num_classes=702
+    [batch 0/311] (2s)
+    [batch 40/311] (16s)
+    [batch 80/311] (30s)
+    [batch 120/311] (43s)
+    [batch 160/311] (57s)
+    [batch 200/311] (70s)
+    [batch 240/311] (84s)
+    [batch 280/311] (98s)
+[extract] query=2210 gallery=17661 dim=1024
+    [batch 0/245] (2s)
+    [batch 40/245] (16s)
+    [batch 80/245] (29s)
+    [batch 120/245] (43s)
+[extract] train(capped)=8000 #train-ids=372
+[extract] classifier prototypes: (702, 1024)
+[cache] ep40 -> /tmp/osac_od/feat_ep40.npz
+  ep 40: eff_rank=  62.49  stable_rank=  36.75  topPC1= 6.93%  top10=42.73%  NC1=0.1400  proto_align=0.9376  | mAP=68.63 R1=77.19
+=> Occluded-DukeMTMC loaded
+Loading ROA occluders from data/VOCdevkit/VOC2012...
+Loaded 1289 occluder patches
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_base_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[PSG+GCN] Skeleton GCN head enabled: 2 layers, hidden=512, test_feat=global, kp_weight=score
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /root/work/SOLIDER-REID/log/occluded_duke/exp260_base_gcn512_2stage/transformer_60.pth
+[extract] transformer_60.pth; POSE_TEST_FEAT=global; num_query=2210 num_classes=702
+    [batch 0/311] (2s)
+    [batch 40/311] (16s)
+    [batch 80/311] (30s)
+    [batch 120/311] (44s)
+    [batch 160/311] (57s)
+    [batch 200/311] (71s)
+    [batch 240/311] (85s)
+    [batch 280/311] (99s)
+[extract] query=2210 gallery=17661 dim=1024
+    [batch 0/245] (2s)
+    [batch 40/245] (16s)
+    [batch 80/245] (30s)
+    [batch 120/245] (44s)
+[extract] train(capped)=8000 #train-ids=372
+[extract] classifier prototypes: (702, 1024)
+[cache] ep60 -> /tmp/osac_od/feat_ep60.npz
+  ep 60: eff_rank=  66.45  stable_rank=  40.37  topPC1= 6.56%  top10=39.02%  NC1=0.1248  proto_align=0.9440  | mAP=71.58 R1=80.05
+=> Occluded-DukeMTMC loaded
+Loading ROA occluders from data/VOCdevkit/VOC2012...
+Loaded 1289 occluder patches
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_base_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[PSG+GCN] Skeleton GCN head enabled: 2 layers, hidden=512, test_feat=global, kp_weight=score
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /root/work/SOLIDER-REID/log/occluded_duke/exp260_base_gcn512_2stage/transformer_80.pth
+[extract] transformer_80.pth; POSE_TEST_FEAT=global; num_query=2210 num_classes=702
+    [batch 0/311] (2s)
+    [batch 40/311] (16s)
+    [batch 80/311] (30s)
+    [batch 120/311] (44s)
+    [batch 160/311] (58s)
+    [batch 200/311] (72s)
+    [batch 240/311] (87s)
+    [batch 280/311] (101s)
+[extract] query=2210 gallery=17661 dim=1024
+    [batch 0/245] (2s)
+    [batch 40/245] (16s)
+    [batch 80/245] (30s)
+    [batch 120/245] (44s)
+[extract] train(capped)=8000 #train-ids=372
+[extract] classifier prototypes: (702, 1024)
+[cache] ep80 -> /tmp/osac_od/feat_ep80.npz
+  ep 80: eff_rank=  68.04  stable_rank=  41.78  topPC1= 6.32%  top10=38.16%  NC1=0.1187  proto_align=0.9432  | mAP=72.11 R1=80.72
+=> Occluded-DukeMTMC loaded
+Loading ROA occluders from data/VOCdevkit/VOC2012...
+Loaded 1289 occluder patches
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_base_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[PSG+GCN] Skeleton GCN head enabled: 2 layers, hidden=512, test_feat=global, kp_weight=score
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /root/work/SOLIDER-REID/log/occluded_duke/exp260_base_gcn512_2stage/transformer_100.pth
+[extract] transformer_100.pth; POSE_TEST_FEAT=global; num_query=2210 num_classes=702
+    [batch 0/311] (2s)
+    [batch 40/311] (17s)
+    [batch 80/311] (31s)
+    [batch 120/311] (45s)
+    [batch 160/311] (59s)
+    [batch 200/311] (74s)
+    [batch 240/311] (88s)
+    [batch 280/311] (102s)
+[extract] query=2210 gallery=17661 dim=1024
+    [batch 0/245] (2s)
+    [batch 40/245] (16s)
+    [batch 80/245] (31s)
+    [batch 120/245] (45s)
+[extract] train(capped)=8000 #train-ids=372
+[extract] classifier prototypes: (702, 1024)
+[cache] ep100 -> /tmp/osac_od/feat_ep100.npz
+  ep100: eff_rank=  68.09  stable_rank=  41.90  topPC1= 6.31%  top10=38.00%  NC1=0.1156  proto_align=0.9489  | mAP=72.74 R1=80.59
+=> Occluded-DukeMTMC loaded
+Loading ROA occluders from data/VOCdevkit/VOC2012...
+Loaded 1289 occluder patches
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_base_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[PSG+GCN] Skeleton GCN head enabled: 2 layers, hidden=512, test_feat=global, kp_weight=score
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /root/work/SOLIDER-REID/log/occluded_duke/exp260_base_gcn512_2stage/transformer_120.pth
+[extract] transformer_120.pth; POSE_TEST_FEAT=global; num_query=2210 num_classes=702
+    [batch 0/311] (2s)
+    [batch 40/311] (17s)
+    [batch 80/311] (31s)
+    [batch 120/311] (45s)
+    [batch 160/311] (60s)
+    [batch 200/311] (74s)
+    [batch 240/311] (88s)
+    [batch 280/311] (103s)
+[extract] query=2210 gallery=17661 dim=1024
+    [batch 0/245] (2s)
+    [batch 40/245] (16s)
+    [batch 80/245] (31s)
+    [batch 120/245] (45s)
+[extract] train(capped)=8000 #train-ids=372
+[extract] classifier prototypes: (702, 1024)
+[cache] ep120 -> /tmp/osac_od/feat_ep120.npz
+  ep120: eff_rank=  68.28  stable_rank=  42.09  topPC1= 6.23%  top10=37.85%  NC1=0.1156  proto_align=0.9469  | mAP=72.82 R1=80.63
+
+  -- trajectory deltas (late training: does loss-still-dropping coincide with collapse?) --
+    100->120 (last interval): d_eff_rank= +0.194  d_topPC1=-0.078%  d_NC1=-0.00007  d_mAP=+0.077
+    80->120                 : d_eff_rank= +0.236  d_topPC1=-0.084%  d_NC1=-0.00309  d_mAP=+0.705
+    20->120 (full)          : d_eff_rank=+12.707  d_topPC1=-2.754%  d_NC1=-0.07311  d_mAP=+12.506
+    OVER-COLLAPSE signature = eff_rank DOWN, topPC1 UP, NC1 DOWN while mAP flat/down.
+
+====================================================================================
+CROSS-SECTION at ep120  Nq=2210 Ng=17661 D=1024
+[SANITY] frozen cosine (global feat) mAP=72.82 R1=80.63 R5=89.82 R10=91.81 nq=2210
+====================================================================================
+[spectrum @ final] gallery eff_rank=68.28 topPC1=6.23% top10=37.85%  (D=1024)
+
+====================================================================================
+CORE TEST 2 — per-query AP error vs collapse signatures (top-PC energy / proto-align)
+====================================================================================
+  rho(AP-error, query-topPC1-energy)   = +0.0487  (n=2210)
+  rho(AP-error, query-top10PC-energy)  = -0.0284  (perm-p 0.1848)
+  rho(AP-error, proto-align MAX)       = -0.0538
+  rho(AP-error, proto-align MEAN)      = +0.0113
+  -- cheap proxies for comparison --
+  rho(AP-error, feat-norm)             = -0.0056
+  rho(AP-error, -top1-margin)          = -0.3981
+  rho(AP-error, same-cam-frac)         = +0.2224
+
+  [hubness-is-symptom] rho(M(q), query-topPC1-energy)  = +0.0573
+  [hubness-is-symptom] rho(M(q), query-top10PC-energy) = -0.0513
+
+====================================================================================
+D3 — top-PC energy <-> AP-error AFTER controlling camera/norm/margin
+====================================================================================
+  partial rho(AP-err, top10PC-energy | norm)         = -0.0284
+  partial rho(AP-err, top10PC-energy | top1-margin)  = +0.0090
+  partial rho(AP-err, top10PC-energy | same-cam)     = -0.0301
+  partial rho(AP-err, top10PC-energy | norm+margin+cam) = +0.0074  (n=2210)
+  partial rho(AP-err, proto-align MAX | norm+margin+cam) = +0.0104
+  D3 PASS if these stay clearly nonzero (collapse not reducible to cheap difficulty).
+
+====================================================================================
+CORE TEST 3 — de-collapse (ABTT remove top-m gallery PCs / ZCA whitening)
+====================================================================================
+  baseline                : mAP=72.816 R1=80.633  H_neg skew=5.099 max=9
+  ABTT top-1  removed   : mAP=72.763 (d-0.053) R1=81.267  H_neg skew=5.217 (d+0.117) max=11
+  ABTT top-2  removed   : mAP=72.402 (d-0.414) R1=81.131  H_neg skew=4.976 (d-0.124) max=11
+  ABTT top-3  removed   : mAP=71.441 (d-1.375) R1=80.860  H_neg skew=5.460 (d+0.360) max=14
+  ABTT top-5  removed   : mAP=69.856 (d-2.961) R1=80.271  H_neg skew=5.512 (d+0.412) max=14
+  ABTT top-8  removed   : mAP=68.129 (d-4.687) R1=79.412  H_neg skew=4.835 (d-0.265) max=12
+  ABTT top-12 removed   : mAP=65.772 (d-7.044) R1=78.778  H_neg skew=4.713 (d-0.386) max=10
+  ABTT top-16 removed   : mAP=64.113 (d-8.703) R1=77.285  H_neg skew=4.077 (d-1.022) max=8
+  ABTT top-24 removed   : mAP=60.091 (d-12.725) R1=75.023  H_neg skew=4.195 (d-0.904) max=9
+  ABTT top-32 removed   : mAP=57.850 (d-14.966) R1=74.163  H_neg skew=4.202 (d-0.897) max=9
+  -- ZCA whitening (gallery-fit), vary #components kept --
+  whiten keep-64        : mAP=71.471 (d-1.345) R1=80.679  H_neg skew=5.118 max=9
+  whiten keep-128       : mAP=71.758 (d-1.058) R1=80.543  H_neg skew=5.283 max=8
+  whiten keep-256       : mAP=71.908 (d-0.908) R1=80.905  H_neg skew=5.587 max=9
+  whiten keep-512       : mAP=71.838 (d-0.978) R1=80.814  H_neg skew=5.667 max=9
+  whiten keep-1024      : mAP=71.783 (d-1.033) R1=80.860  H_neg skew=5.717 max=9
+
+  >> best ABTT: top-0 removed -> mAP=72.816 (d+0.000)
+  >> best whiten: keep-0 -> mAP=72.816 (d+0.000)
+
+####################################################################################
+DESTRUCTIVE CONTROLS (decide life/death)
+####################################################################################
+
+-- D1: random-PC & bottom-PC removal vs TOP-PC removal --
+  m=8: TOP-PC removal   mAP=68.129 (d-4.687)
+  m=8: BOTTOM-PC removal mAP=73.109 (d+0.293)
+  m=8: RANDOM-PC removal mAP=73.098+-0.011 (d+0.282)
+  >> D1 PASS if TOP-PC removal >> bottom/random (collapse axes are special).
+
+====================================================================================
+D2 (CRITICAL) — DE-COLLAPSE residual AFTER k-reciprocal re-ranking
+====================================================================================
+  baseline (raw)                 mAP=72.816  R1=80.633
+  baseline + k-reciprocal        mAP=83.183  R1=84.751  (RR lift d+10.367)
+  ABTT(top-0) raw           mAP=72.816  (raw lift d+0.000)
+  ABTT(top-0) + k-reciprocal mAP=83.183  R1=84.751
+  whiten(keep-0) + k-recip   mAP=83.183  R1=84.751
+
+  >> RESIDUAL (ABTT+RR) - (baseline+RR)   = +0.0000
+  >> RESIDUAL (whiten+RR) - (baseline+RR) = +0.0000
+  >> D2 VERDICT: OSAC survives ONLY if de-collapse keeps a CLEAR POSITIVE residual
+     AFTER k-reciprocal. If residual ~0 or negative -> re-ranking already
+     recovers everything -> OSAC DIES (same death as Hubness).
+
+####################################################################################
+SUMMARY / VERDICT  (occluded_duke)
+####################################################################################
+  TRAJECTORY ep20->ep120: eff_rank 55.6->68.3 (+12.71), topPC1 8.99%->6.23% (-2.75), NC1 0.1887->0.1156, mAP 60.3->72.8
+  LATE interval ep100->ep120: d_eff_rank=+0.194  d_topPC1=-0.078%  d_NC1=-0.00007  d_mAP=+0.077
+  T2 rho(AP-err, top10PC-energy)    = -0.0284  (perm-p 0.1848)
+  T2 rho(AP-err, proto-align max)   = -0.0538
+  T2 rho(M(q), top10PC-energy)      = -0.0513  [hubness=symptom]
+  D3 partial(AP-err,topPC | n+m+c)  = +0.0074  (want clearly !=0)
+  T3 best ABTT raw gain             = +0.000 (top-0)
+  T3 best whiten raw gain           = +0.000 (keep-0)
+  D1 top vs bottom vs random        = -4.687 / +0.293 / +0.282
+  D2 RESIDUAL after k-recip (ABTT)  = +0.0000   (whiten +0.0000)
+      [baseline+RR=83.183  ABTT+RR=83.183]
+
+[done] OSAC kill-switch complete.
+[json] summary -> /tmp/osac_od/osac_summary_occluded_duke.json

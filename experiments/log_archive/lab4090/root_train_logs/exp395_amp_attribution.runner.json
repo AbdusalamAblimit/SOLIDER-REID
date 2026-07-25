@@ -1,0 +1,12 @@
+{
+  "exception": "quantile() input tensor is too large",
+  "exception_type": "RuntimeError",
+  "exp394_remains_sealed": true,
+  "formal_training_authorized": false,
+  "optimizer_updates": 0,
+  "scaler_step_calls": 0,
+  "scaler_update_calls": 0,
+  "script_sha256": "64840b710db587720aa8807571212b246af3eabb54306bd5aa1bbf692f5ea08b",
+  "status": "INVALID",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/afr/reid-clean/audits/exp395_amp_gradient_attribution/cuda_amp_attribution.py\", line 1138, in main\n    result = run_attribution(args)\n  File \"/home/afr/reid-clean/audits/exp395_amp_gradient_attribution/cuda_amp_attribution.py\", line 1032, in run_attribution\n    d0_result = run_arm(\n  File \"/home/afr/reid-clean/audits/exp395_amp_gradient_attribution/cuda_amp_attribution.py\", line 622, in run_arm\n    run_loss_row(\n  File \"/home/afr/reid-clean/audits/exp395_amp_gradient_attribution/cuda_amp_attribution.py\", line 573, in run_loss_row\n    scaled = gradient_report(group_parameters)\n  File \"/home/afr/reid-clean/audits/exp395_amp_gradient_attribution/cuda_amp_attribution.py\", line 272, in gradient_report\n    item.update(finite_range(flattened))\n  File \"/home/afr/reid-clean/audits/exp395_amp_gradient_attribution/cuda_amp_attribution.py\", line 221, in finite_range\n    quantiles = torch.quantile(\nRuntimeError: quantile() input tensor is too large\n"
+}

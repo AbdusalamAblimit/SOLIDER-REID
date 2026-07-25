@@ -1,0 +1,7 @@
+{
+  "error": "no wrong-mask donor satisfies the frozen balance caliper",
+  "error_type": "RuntimeError",
+  "execution": "exp407-p0b-iso-teacher-v1",
+  "formal": true,
+  "traceback": "Traceback (most recent call last):\n  File \"/home/afr/SOLIDER-REID-exp407-p0b-preflight-37f9175/experiments/exp407_cavt_trusted_cache_compat/phase0_teacher_measurement.py\", line 2208, in main\n    result = run(args)\n  File \"/home/afr/SOLIDER-REID-exp407-p0b-preflight-37f9175/experiments/exp407_cavt_trusted_cache_compat/phase0_teacher_measurement.py\", line 1622, in run\n    wrong_mask_indices, wrong_mask_records = choose_wrong_masks(\n  File \"/home/afr/SOLIDER-REID-exp407-p0b-preflight-37f9175/experiments/exp407_cavt_trusted_cache_compat/phase0_teacher_measurement.py\", line 1167, in choose_wrong_masks\n    raise RuntimeError(\"no wrong-mask donor satisfies the frozen balance caliper\")\nRuntimeError: no wrong-mask donor satisfies the frozen balance caliper\n"
+}

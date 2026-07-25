@@ -1,0 +1,811 @@
+======================================================================
+CVPB-ReID training (afd_reid baseline + OVP-Mem / OVLI)
+  backbone=swin_small (SOLIDER, in_planes=768) pretrain=/root/work/SOLIDER-REID/pretrained/swin_small.pth semantic_weight=0.2
+  use_afd=False  ovp=False (lambda=0.5 tau=0.05 mom=0.2)
+  ovli=False (lambda=0.5 tau=0.05 alpha=0.5 dim=256 grid=(8, 4) warmup=10 rerank=False pool=mean topk=8 thresh=0.0 cand=oppview match=maxsim align=free setpool=mean setpool_residual=True)
+  acvp=False (gamma=0.5 wmin=0.3 eta=0.05 margin=0.0 warmup=10) [detached neg-relaxation on OVLI; off => OVLI byte-identical]
+  airl=False (lambda=0.5 min_scale=0.25 consistency=kl tau=4.0 blur=False warmup=5) [resolution-degradation consistency; NO learnable params; train-only; off => baseline byte-identical]
+  airl_dualbranch=False (fuse_w=0.25 lambda=0.5 min_scale=0.25 consistency=kl tau=4.0 blur=False warmup=5) [resolvability branch: 2nd BNNeck head f_rec (own ID-CE + AIRL consistency) + clean f_full, soft-fused cos=w*cos_rec+(1-w)*cos_full; 1 forward 2 features; off => baseline byte-identical]
+  airl_dualbranch_iso=True (iso_stage=3 trunk_recce=False fuse_w=0.25 lambda=0.5 min_scale=0.25 consistency=kl tau=4.0 blur=False warmup=5) [GRADIENT-ISOLATED rescue: f_rec = BNNeck over an independent late Swin stage; the degradation-CONSISTENCY grad NEVER reaches the shared trunk (detached degraded pass). trunk_recce=1 (FIX) also reflows the CLEAN f_rec ID-CE into the trunk (extra identity supervision -> strengthens f_full); trunk_recce=0 = original full-isolation (clean ID-CE also detached). f_rec learns the recover pole; same soft-fusion eval; off => baseline byte-identical]
+  bs=64 (P=16 K=4) lr=0.00035 epochs=60 warmup=10 amp=True
+  out_dir=/root/work/SOLIDER-REID/log/cargo/cvpb_agreidv2_airl_iso
+======================================================================
+=> AG-ReID.v2 loaded (OFFICIAL exp1 A->G + exp4 G->A, CARGO-aligned)
+   A->G = exp1 aerial_to_cctv (2356 q / 6347 g)
+   G->A = exp4 cctv_to_aerial (1811 q / 14362 g)
+  -----------------------------------------------------------
+  subset   | # imgs | # pids | # cams | aerial | ground
+  -----------------------------------------------------------
+  train    |  51530 |    807 |      3 |  21217 |  30313
+  query    |   4167 |    534 |      2 |   2356 |   1811
+  gallery  |  20709 |    534 |      2 |  14362 |   6347
+  -----------------------------------------------------------
+unloaded parameters: <All keys matched successfully>
+  [swin] backbone LR = 3.50e-05 (= base 3.50e-04 x 0.1); heads/BNNeck/OVLI LR = 3.50e-04  [361 backbone tensors, 4 head tensors] -- prevents the epoch-8 Swin collapse
+  [AIRL-ISO] iso_stage=3: rec late stage (14185392 params, 28 tensors) + rec BNNeck head (620544 params, 2 tensors) in optimizer [rec late stage @ Swin LR 3.50e-05, rec BNNeck @ full LR 3.50e-04]; degradation-consistency grad isolated from shared trunk (detached degraded pass at stage-3 input); trunk_recce=0 (clean ID-CE + consistency BOTH detached = original full-isolation); eval soft-fusion cos=w*cos_rec+(1-w)*cos_full w=0.25
+Epoch[1] Iter[50/786] Loss: 44.803 CE: 6.693 Tri: 31.417 CE_rec: 6.693 AIRL_rec: 0.0002 Acc: 0.002 LR: 3.50e-07
+Epoch[1] Iter[100/786] Loss: 38.578 CE: 6.692 Tri: 25.194 CE_rec: 6.692 AIRL_rec: 0.0002 Acc: 0.002 LR: 3.50e-07
+Epoch[1] Iter[150/786] Loss: 35.377 CE: 6.690 Tri: 21.996 CE_rec: 6.690 AIRL_rec: 0.0002 Acc: 0.002 LR: 3.50e-07
+Epoch[1] Iter[200/786] Loss: 33.454 CE: 6.689 Tri: 20.078 CE_rec: 6.688 AIRL_rec: 0.0002 Acc: 0.003 LR: 3.50e-07
+Epoch[1] Iter[250/786] Loss: 31.992 CE: 6.687 Tri: 18.620 CE_rec: 6.686 AIRL_rec: 0.0002 Acc: 0.005 LR: 3.50e-07
+Epoch[1] Iter[300/786] Loss: 30.805 CE: 6.684 Tri: 17.438 CE_rec: 6.683 AIRL_rec: 0.0002 Acc: 0.007 LR: 3.50e-07
+Epoch[1] Iter[350/786] Loss: 29.875 CE: 6.682 Tri: 16.512 CE_rec: 6.681 AIRL_rec: 0.0002 Acc: 0.011 LR: 3.50e-07
+Epoch[1] Iter[400/786] Loss: 29.089 CE: 6.680 Tri: 15.730 CE_rec: 6.679 AIRL_rec: 0.0002 Acc: 0.015 LR: 3.50e-07
+Epoch[1] Iter[450/786] Loss: 28.341 CE: 6.677 Tri: 14.988 CE_rec: 6.676 AIRL_rec: 0.0002 Acc: 0.021 LR: 3.50e-07
+Epoch[1] Iter[500/786] Loss: 27.685 CE: 6.675 Tri: 14.337 CE_rec: 6.673 AIRL_rec: 0.0002 Acc: 0.028 LR: 3.50e-07
+Epoch[1] Iter[550/786] Loss: 27.062 CE: 6.672 Tri: 13.720 CE_rec: 6.671 AIRL_rec: 0.0002 Acc: 0.038 LR: 3.50e-07
+Epoch[1] Iter[600/786] Loss: 26.542 CE: 6.669 Tri: 13.206 CE_rec: 6.668 AIRL_rec: 0.0002 Acc: 0.051 LR: 3.50e-07
+Epoch[1] Iter[650/786] Loss: 26.088 CE: 6.666 Tri: 12.758 CE_rec: 6.664 AIRL_rec: 0.0002 Acc: 0.067 LR: 3.50e-07
+Epoch[1] Iter[700/786] Loss: 25.652 CE: 6.662 Tri: 12.330 CE_rec: 6.660 AIRL_rec: 0.0002 Acc: 0.089 LR: 3.50e-07
+Epoch[1] done in 234.6s  Loss=25.287 Acc=0.117 AIRL-ISO[lam_eff=0.100 ce_rec=6.655 consistency=0.0002 deg_scale_mean=0.625 n_ground=28771]
+Epoch[2] Iter[50/786] Loss: 18.702 CE: 6.602 Tri: 5.508 CE_rec: 6.592 AIRL_rec: 0.0003 Acc: 0.139 LR: 3.82e-06
+Epoch[2] Iter[100/786] Loss: 17.803 CE: 6.570 Tri: 4.683 CE_rec: 6.550 AIRL_rec: 0.0004 Acc: 0.184 LR: 3.82e-06
+Epoch[2] Iter[150/786] Loss: 17.348 CE: 6.539 Tri: 4.304 CE_rec: 6.505 AIRL_rec: 0.0006 Acc: 0.212 LR: 3.82e-06
+Epoch[2] Iter[200/786] Loss: 16.933 CE: 6.505 Tri: 3.972 CE_rec: 6.455 AIRL_rec: 0.0010 Acc: 0.241 LR: 3.82e-06
+Epoch[2] Iter[250/786] Loss: 16.605 CE: 6.472 Tri: 3.728 CE_rec: 6.405 AIRL_rec: 0.0014 Acc: 0.269 LR: 3.82e-06
+Epoch[2] Iter[300/786] Loss: 16.324 CE: 6.439 Tri: 3.531 CE_rec: 6.354 AIRL_rec: 0.0019 Acc: 0.292 LR: 3.82e-06
+Epoch[2] Iter[350/786] Loss: 16.086 CE: 6.406 Tri: 3.377 CE_rec: 6.303 AIRL_rec: 0.0025 Acc: 0.316 LR: 3.82e-06
+Epoch[2] Iter[400/786] Loss: 15.862 CE: 6.371 Tri: 3.241 CE_rec: 6.249 AIRL_rec: 0.0032 Acc: 0.336 LR: 3.82e-06
+Epoch[2] Iter[450/786] Loss: 15.651 CE: 6.337 Tri: 3.116 CE_rec: 6.197 AIRL_rec: 0.0039 Acc: 0.355 LR: 3.82e-06
+Epoch[2] Iter[500/786] Loss: 15.440 CE: 6.302 Tri: 2.995 CE_rec: 6.142 AIRL_rec: 0.0047 Acc: 0.374 LR: 3.82e-06
+Epoch[2] Iter[550/786] Loss: 15.238 CE: 6.264 Tri: 2.888 CE_rec: 6.086 AIRL_rec: 0.0054 Acc: 0.396 LR: 3.82e-06
+Epoch[2] Iter[600/786] Loss: 15.056 CE: 6.225 Tri: 2.802 CE_rec: 6.028 AIRL_rec: 0.0063 Acc: 0.417 LR: 3.82e-06
+Epoch[2] Iter[650/786] Loss: 14.856 CE: 6.180 Tri: 2.714 CE_rec: 5.960 AIRL_rec: 0.0071 Acc: 0.439 LR: 3.82e-06
+Epoch[2] Iter[700/786] Loss: 14.660 CE: 6.129 Tri: 2.643 CE_rec: 5.886 AIRL_rec: 0.0079 Acc: 0.459 LR: 3.82e-06
+Epoch[2] done in 235.3s  Loss=14.438 Acc=0.483 AIRL-ISO[lam_eff=0.200 ce_rec=5.788 consistency=0.0088 deg_scale_mean=0.624 n_ground=28774]
+Epoch[3] Iter[50/786] Loss: 12.261 CE: 5.580 Tri: 1.358 CE_rec: 5.318 AIRL_rec: 0.0198 Acc: 0.323 LR: 7.28e-06
+Epoch[3] Iter[100/786] Loss: 12.102 CE: 5.512 Tri: 1.355 CE_rec: 5.229 AIRL_rec: 0.0209 Acc: 0.347 LR: 7.28e-06
+Epoch[3] Iter[150/786] Loss: 11.840 CE: 5.423 Tri: 1.288 CE_rec: 5.123 AIRL_rec: 0.0221 Acc: 0.395 LR: 7.28e-06
+Epoch[3] Iter[200/786] Loss: 11.606 CE: 5.331 Tri: 1.255 CE_rec: 5.014 AIRL_rec: 0.0236 Acc: 0.431 LR: 7.28e-06
+Epoch[3] Iter[250/786] Loss: 11.366 CE: 5.244 Tri: 1.200 CE_rec: 4.916 AIRL_rec: 0.0245 Acc: 0.460 LR: 7.28e-06
+Epoch[3] Iter[300/786] Loss: 11.194 CE: 5.165 Tri: 1.192 CE_rec: 4.829 AIRL_rec: 0.0261 Acc: 0.484 LR: 7.28e-06
+Epoch[3] Iter[350/786] Loss: 10.996 CE: 5.088 Tri: 1.158 CE_rec: 4.743 AIRL_rec: 0.0272 Acc: 0.505 LR: 7.28e-06
+Epoch[3] Iter[400/786] Loss: 10.818 CE: 5.008 Tri: 1.141 CE_rec: 4.659 AIRL_rec: 0.0285 Acc: 0.524 LR: 7.28e-06
+Epoch[3] Iter[450/786] Loss: 10.614 CE: 4.923 Tri: 1.113 CE_rec: 4.569 AIRL_rec: 0.0298 Acc: 0.545 LR: 7.28e-06
+Epoch[3] Iter[500/786] Loss: 10.422 CE: 4.836 Tri: 1.098 CE_rec: 4.479 AIRL_rec: 0.0311 Acc: 0.562 LR: 7.28e-06
+Epoch[3] Iter[550/786] Loss: 10.215 CE: 4.741 Tri: 1.083 CE_rec: 4.382 AIRL_rec: 0.0326 Acc: 0.581 LR: 7.28e-06
+Epoch[3] Iter[600/786] Loss: 9.998 CE: 4.643 Tri: 1.063 CE_rec: 4.282 AIRL_rec: 0.0339 Acc: 0.598 LR: 7.28e-06
+Epoch[3] Iter[650/786] Loss: 9.773 CE: 4.540 Tri: 1.045 CE_rec: 4.177 AIRL_rec: 0.0352 Acc: 0.614 LR: 7.28e-06
+Epoch[3] Iter[700/786] Loss: 9.537 CE: 4.428 Tri: 1.035 CE_rec: 4.064 AIRL_rec: 0.0365 Acc: 0.631 LR: 7.28e-06
+Epoch[3] done in 237.1s  Loss=9.276 Acc=0.648 AIRL-ISO[lam_eff=0.300 ce_rec=3.941 consistency=0.0381 deg_scale_mean=0.627 n_ground=28670]
+Epoch[4] Iter[50/786] Loss: 8.192 CE: 3.776 Tri: 0.738 CE_rec: 3.654 AIRL_rec: 0.0601 Acc: 0.469 LR: 1.07e-05
+Epoch[4] Iter[100/786] Loss: 7.902 CE: 3.658 Tri: 0.701 CE_rec: 3.517 AIRL_rec: 0.0621 Acc: 0.509 LR: 1.07e-05
+Epoch[4] Iter[150/786] Loss: 7.704 CE: 3.566 Tri: 0.700 CE_rec: 3.413 AIRL_rec: 0.0634 Acc: 0.549 LR: 1.07e-05
+Epoch[4] Iter[200/786] Loss: 7.473 CE: 3.458 Tri: 0.691 CE_rec: 3.298 AIRL_rec: 0.0650 Acc: 0.588 LR: 1.07e-05
+Epoch[4] Iter[250/786] Loss: 7.236 CE: 3.351 Tri: 0.667 CE_rec: 3.190 AIRL_rec: 0.0674 Acc: 0.623 LR: 1.07e-05
+Epoch[4] Iter[300/786] Loss: 7.064 CE: 3.266 Tri: 0.663 CE_rec: 3.107 AIRL_rec: 0.0695 Acc: 0.646 LR: 1.07e-05
+Epoch[4] Iter[350/786] Loss: 6.875 CE: 3.176 Tri: 0.652 CE_rec: 3.019 AIRL_rec: 0.0715 Acc: 0.671 LR: 1.07e-05
+Epoch[4] Iter[400/786] Loss: 6.700 CE: 3.091 Tri: 0.645 CE_rec: 2.935 AIRL_rec: 0.0738 Acc: 0.693 LR: 1.07e-05
+Epoch[4] Iter[450/786] Loss: 6.534 CE: 3.009 Tri: 0.639 CE_rec: 2.856 AIRL_rec: 0.0759 Acc: 0.711 LR: 1.07e-05
+Epoch[4] Iter[500/786] Loss: 6.383 CE: 2.934 Tri: 0.635 CE_rec: 2.783 AIRL_rec: 0.0779 Acc: 0.727 LR: 1.07e-05
+Epoch[4] Iter[550/786] Loss: 6.219 CE: 2.857 Tri: 0.621 CE_rec: 2.709 AIRL_rec: 0.0799 Acc: 0.741 LR: 1.07e-05
+Epoch[4] Iter[600/786] Loss: 6.071 CE: 2.786 Tri: 0.612 CE_rec: 2.641 AIRL_rec: 0.0818 Acc: 0.754 LR: 1.07e-05
+Epoch[4] Iter[650/786] Loss: 5.924 CE: 2.715 Tri: 0.603 CE_rec: 2.573 AIRL_rec: 0.0837 Acc: 0.767 LR: 1.07e-05
+Epoch[4] Iter[700/786] Loss: 5.775 CE: 2.642 Tri: 0.595 CE_rec: 2.503 AIRL_rec: 0.0850 Acc: 0.778 LR: 1.07e-05
+Epoch[4] done in 240.9s  Loss=5.621 Acc=0.790 AIRL-ISO[lam_eff=0.400 ce_rec=2.430 consistency=0.0872 deg_scale_mean=0.625 n_ground=28860]
+Epoch[5] Iter[50/786] Loss: 5.403 CE: 2.443 Tri: 0.512 CE_rec: 2.390 AIRL_rec: 0.1154 Acc: 0.733 LR: 1.42e-05
+Epoch[5] Iter[100/786] Loss: 5.220 CE: 2.374 Tri: 0.489 CE_rec: 2.300 AIRL_rec: 0.1133 Acc: 0.758 LR: 1.42e-05
+Epoch[5] Iter[150/786] Loss: 5.024 CE: 2.283 Tri: 0.476 CE_rec: 2.208 AIRL_rec: 0.1151 Acc: 0.788 LR: 1.42e-05
+Epoch[5] Iter[200/786] Loss: 4.906 CE: 2.225 Tri: 0.471 CE_rec: 2.152 AIRL_rec: 0.1181 Acc: 0.804 LR: 1.42e-05
+Epoch[5] Iter[250/786] Loss: 4.763 CE: 2.160 Tri: 0.454 CE_rec: 2.089 AIRL_rec: 0.1200 Acc: 0.823 LR: 1.42e-05
+Epoch[5] Iter[300/786] Loss: 4.636 CE: 2.100 Tri: 0.445 CE_rec: 2.029 AIRL_rec: 0.1220 Acc: 0.837 LR: 1.42e-05
+Epoch[5] Iter[350/786] Loss: 4.532 CE: 2.053 Tri: 0.435 CE_rec: 1.983 AIRL_rec: 0.1236 Acc: 0.848 LR: 1.42e-05
+Epoch[5] Iter[400/786] Loss: 4.466 CE: 2.018 Tri: 0.437 CE_rec: 1.948 AIRL_rec: 0.1255 Acc: 0.856 LR: 1.42e-05
+Epoch[5] Iter[450/786] Loss: 4.387 CE: 1.983 Tri: 0.425 CE_rec: 1.915 AIRL_rec: 0.1274 Acc: 0.863 LR: 1.42e-05
+Epoch[5] Iter[500/786] Loss: 4.306 CE: 1.948 Tri: 0.414 CE_rec: 1.879 AIRL_rec: 0.1283 Acc: 0.870 LR: 1.42e-05
+Epoch[5] Iter[550/786] Loss: 4.244 CE: 1.918 Tri: 0.412 CE_rec: 1.850 AIRL_rec: 0.1297 Acc: 0.876 LR: 1.42e-05
+Epoch[5] Iter[600/786] Loss: 4.185 CE: 1.890 Tri: 0.408 CE_rec: 1.821 AIRL_rec: 0.1313 Acc: 0.881 LR: 1.42e-05
+Epoch[5] Iter[650/786] Loss: 4.121 CE: 1.863 Tri: 0.400 CE_rec: 1.792 AIRL_rec: 0.1324 Acc: 0.886 LR: 1.42e-05
+Epoch[5] Iter[700/786] Loss: 4.057 CE: 1.836 Tri: 0.392 CE_rec: 1.763 AIRL_rec: 0.1335 Acc: 0.890 LR: 1.42e-05
+Epoch[5] done in 240.6s  Loss=3.997 Acc=0.895 AIRL-ISO[lam_eff=0.500 ce_rec=1.733 consistency=0.1346 deg_scale_mean=0.625 n_ground=28856]
+Epoch[6] Iter[50/786] Loss: 4.065 CE: 1.844 Tri: 0.332 CE_rec: 1.816 AIRL_rec: 0.1462 Acc: 0.861 LR: 1.77e-05
+Epoch[6] Iter[100/786] Loss: 3.979 CE: 1.808 Tri: 0.333 CE_rec: 1.766 AIRL_rec: 0.1447 Acc: 0.874 LR: 1.77e-05
+Epoch[6] Iter[150/786] Loss: 3.914 CE: 1.771 Tri: 0.345 CE_rec: 1.724 AIRL_rec: 0.1472 Acc: 0.883 LR: 1.77e-05
+Epoch[6] Iter[200/786] Loss: 3.844 CE: 1.740 Tri: 0.337 CE_rec: 1.692 AIRL_rec: 0.1504 Acc: 0.892 LR: 1.77e-05
+Epoch[6] Iter[250/786] Loss: 3.780 CE: 1.713 Tri: 0.329 CE_rec: 1.662 AIRL_rec: 0.1523 Acc: 0.899 LR: 1.77e-05
+Epoch[6] Iter[300/786] Loss: 3.721 CE: 1.688 Tri: 0.320 CE_rec: 1.636 AIRL_rec: 0.1542 Acc: 0.905 LR: 1.77e-05
+Epoch[6] Iter[350/786] Loss: 3.687 CE: 1.672 Tri: 0.319 CE_rec: 1.617 AIRL_rec: 0.1562 Acc: 0.908 LR: 1.77e-05
+Epoch[6] Iter[400/786] Loss: 3.637 CE: 1.652 Tri: 0.311 CE_rec: 1.597 AIRL_rec: 0.1570 Acc: 0.912 LR: 1.77e-05
+Epoch[6] Iter[450/786] Loss: 3.605 CE: 1.637 Tri: 0.309 CE_rec: 1.580 AIRL_rec: 0.1578 Acc: 0.915 LR: 1.77e-05
+Epoch[6] Iter[500/786] Loss: 3.575 CE: 1.624 Tri: 0.307 CE_rec: 1.565 AIRL_rec: 0.1589 Acc: 0.918 LR: 1.77e-05
+Epoch[6] Iter[550/786] Loss: 3.574 CE: 1.617 Tri: 0.320 CE_rec: 1.557 AIRL_rec: 0.1610 Acc: 0.919 LR: 1.77e-05
+Epoch[6] Iter[600/786] Loss: 3.555 CE: 1.607 Tri: 0.322 CE_rec: 1.544 AIRL_rec: 0.1625 Acc: 0.922 LR: 1.77e-05
+Epoch[6] Iter[650/786] Loss: 3.535 CE: 1.596 Tri: 0.326 CE_rec: 1.532 AIRL_rec: 0.1636 Acc: 0.924 LR: 1.77e-05
+Epoch[6] Iter[700/786] Loss: 3.507 CE: 1.583 Tri: 0.326 CE_rec: 1.516 AIRL_rec: 0.1640 Acc: 0.927 LR: 1.77e-05
+Epoch[6] Iter[750/786] Loss: 3.465 CE: 1.565 Tri: 0.322 CE_rec: 1.496 AIRL_rec: 0.1647 Acc: 0.931 LR: 1.77e-05
+Epoch[6] done in 241.4s  Loss=3.465 Acc=0.931 AIRL-ISO[lam_eff=0.500 ce_rec=1.496 consistency=0.1647 deg_scale_mean=0.624 n_ground=28935]
+Epoch[7] Iter[50/786] Loss: 3.841 CE: 1.710 Tri: 0.365 CE_rec: 1.683 AIRL_rec: 0.1652 Acc: 0.892 LR: 2.11e-05
+Epoch[7] Iter[100/786] Loss: 3.664 CE: 1.644 Tri: 0.334 CE_rec: 1.601 AIRL_rec: 0.1690 Acc: 0.910 LR: 2.11e-05
+Epoch[7] Iter[150/786] Loss: 3.541 CE: 1.605 Tri: 0.298 CE_rec: 1.553 AIRL_rec: 0.1700 Acc: 0.920 LR: 2.11e-05
+Epoch[7] Iter[200/786] Loss: 3.476 CE: 1.582 Tri: 0.286 CE_rec: 1.523 AIRL_rec: 0.1707 Acc: 0.925 LR: 2.11e-05
+Epoch[7] Iter[250/786] Loss: 3.447 CE: 1.569 Tri: 0.284 CE_rec: 1.507 AIRL_rec: 0.1731 Acc: 0.928 LR: 2.11e-05
+Epoch[7] Iter[300/786] Loss: 3.435 CE: 1.561 Tri: 0.288 CE_rec: 1.498 AIRL_rec: 0.1750 Acc: 0.930 LR: 2.11e-05
+Epoch[7] Iter[350/786] Loss: 3.415 CE: 1.551 Tri: 0.290 CE_rec: 1.487 AIRL_rec: 0.1748 Acc: 0.932 LR: 2.11e-05
+Epoch[7] Iter[400/786] Loss: 3.393 CE: 1.542 Tri: 0.286 CE_rec: 1.476 AIRL_rec: 0.1754 Acc: 0.934 LR: 2.11e-05
+Epoch[7] Iter[450/786] Loss: 3.378 CE: 1.535 Tri: 0.287 CE_rec: 1.468 AIRL_rec: 0.1758 Acc: 0.936 LR: 2.11e-05
+Epoch[7] Iter[500/786] Loss: 3.351 CE: 1.524 Tri: 0.282 CE_rec: 1.456 AIRL_rec: 0.1762 Acc: 0.939 LR: 2.11e-05
+Epoch[7] Iter[550/786] Loss: 3.336 CE: 1.519 Tri: 0.280 CE_rec: 1.448 AIRL_rec: 0.1764 Acc: 0.940 LR: 2.11e-05
+Epoch[7] Iter[600/786] Loss: 3.317 CE: 1.511 Tri: 0.278 CE_rec: 1.440 AIRL_rec: 0.1758 Acc: 0.941 LR: 2.11e-05
+Epoch[7] Iter[650/786] Loss: 3.290 CE: 1.501 Tri: 0.273 CE_rec: 1.428 AIRL_rec: 0.1751 Acc: 0.943 LR: 2.11e-05
+Epoch[7] Iter[700/786] Loss: 3.265 CE: 1.491 Tri: 0.271 CE_rec: 1.416 AIRL_rec: 0.1739 Acc: 0.945 LR: 2.11e-05
+Epoch[7] done in 240.6s  Loss=3.234 Acc=0.947 AIRL-ISO[lam_eff=0.500 ce_rec=1.403 consistency=0.1735 deg_scale_mean=0.625 n_ground=28828]
+Epoch[8] Iter[50/786] Loss: 3.430 CE: 1.556 Tri: 0.257 CE_rec: 1.531 AIRL_rec: 0.1718 Acc: 0.921 LR: 2.46e-05
+Epoch[8] Iter[100/786] Loss: 3.332 CE: 1.530 Tri: 0.236 CE_rec: 1.480 AIRL_rec: 0.1727 Acc: 0.928 LR: 2.46e-05
+Epoch[8] Iter[150/786] Loss: 3.278 CE: 1.509 Tri: 0.230 CE_rec: 1.451 AIRL_rec: 0.1752 Acc: 0.935 LR: 2.46e-05
+Epoch[8] Iter[200/786] Loss: 3.242 CE: 1.497 Tri: 0.227 CE_rec: 1.430 AIRL_rec: 0.1780 Acc: 0.939 LR: 2.46e-05
+Epoch[8] Iter[250/786] Loss: 3.220 CE: 1.486 Tri: 0.227 CE_rec: 1.417 AIRL_rec: 0.1795 Acc: 0.942 LR: 2.46e-05
+Epoch[8] Iter[300/786] Loss: 3.208 CE: 1.481 Tri: 0.227 CE_rec: 1.410 AIRL_rec: 0.1801 Acc: 0.943 LR: 2.46e-05
+Epoch[8] Iter[350/786] Loss: 3.194 CE: 1.476 Tri: 0.225 CE_rec: 1.402 AIRL_rec: 0.1809 Acc: 0.944 LR: 2.46e-05
+Epoch[8] Iter[400/786] Loss: 3.182 CE: 1.469 Tri: 0.228 CE_rec: 1.394 AIRL_rec: 0.1817 Acc: 0.946 LR: 2.46e-05
+Epoch[8] Iter[450/786] Loss: 3.172 CE: 1.465 Tri: 0.228 CE_rec: 1.389 AIRL_rec: 0.1812 Acc: 0.947 LR: 2.46e-05
+Epoch[8] Iter[500/786] Loss: 3.158 CE: 1.458 Tri: 0.228 CE_rec: 1.382 AIRL_rec: 0.1807 Acc: 0.949 LR: 2.46e-05
+Epoch[8] Iter[550/786] Loss: 3.146 CE: 1.454 Tri: 0.225 CE_rec: 1.377 AIRL_rec: 0.1802 Acc: 0.950 LR: 2.46e-05
+Epoch[8] Iter[600/786] Loss: 3.127 CE: 1.446 Tri: 0.224 CE_rec: 1.368 AIRL_rec: 0.1795 Acc: 0.951 LR: 2.46e-05
+Epoch[8] Iter[650/786] Loss: 3.111 CE: 1.439 Tri: 0.222 CE_rec: 1.361 AIRL_rec: 0.1789 Acc: 0.953 LR: 2.46e-05
+Epoch[8] Iter[700/786] Loss: 3.091 CE: 1.431 Tri: 0.219 CE_rec: 1.352 AIRL_rec: 0.1779 Acc: 0.954 LR: 2.46e-05
+Epoch[8] done in 238.7s  Loss=3.067 Acc=0.956 AIRL-ISO[lam_eff=0.500 ce_rec=1.341 consistency=0.1775 deg_scale_mean=0.624 n_ground=28656]
+Epoch[9] Iter[50/786] Loss: 3.231 CE: 1.485 Tri: 0.211 CE_rec: 1.451 AIRL_rec: 0.1684 Acc: 0.934 LR: 2.81e-05
+Epoch[9] Iter[100/786] Loss: 3.202 CE: 1.476 Tri: 0.211 CE_rec: 1.427 AIRL_rec: 0.1764 Acc: 0.937 LR: 2.81e-05
+Epoch[9] Iter[150/786] Loss: 3.178 CE: 1.467 Tri: 0.213 CE_rec: 1.409 AIRL_rec: 0.1775 Acc: 0.941 LR: 2.81e-05
+Epoch[9] Iter[200/786] Loss: 3.170 CE: 1.462 Tri: 0.221 CE_rec: 1.398 AIRL_rec: 0.1776 Acc: 0.943 LR: 2.81e-05
+Epoch[9] Iter[250/786] Loss: 3.149 CE: 1.454 Tri: 0.221 CE_rec: 1.385 AIRL_rec: 0.1776 Acc: 0.945 LR: 2.81e-05
+Epoch[9] Iter[300/786] Loss: 3.134 CE: 1.448 Tri: 0.219 CE_rec: 1.378 AIRL_rec: 0.1784 Acc: 0.946 LR: 2.81e-05
+Epoch[9] Iter[350/786] Loss: 3.122 CE: 1.440 Tri: 0.222 CE_rec: 1.370 AIRL_rec: 0.1789 Acc: 0.948 LR: 2.81e-05
+Epoch[9] Iter[400/786] Loss: 3.110 CE: 1.437 Tri: 0.218 CE_rec: 1.365 AIRL_rec: 0.1795 Acc: 0.949 LR: 2.81e-05
+Epoch[9] Iter[450/786] Loss: 3.100 CE: 1.434 Tri: 0.217 CE_rec: 1.360 AIRL_rec: 0.1802 Acc: 0.950 LR: 2.81e-05
+Epoch[9] Iter[500/786] Loss: 3.093 CE: 1.430 Tri: 0.217 CE_rec: 1.355 AIRL_rec: 0.1805 Acc: 0.950 LR: 2.81e-05
+Epoch[9] Iter[550/786] Loss: 3.077 CE: 1.425 Tri: 0.214 CE_rec: 1.349 AIRL_rec: 0.1805 Acc: 0.952 LR: 2.81e-05
+Epoch[9] Iter[600/786] Loss: 3.064 CE: 1.419 Tri: 0.212 CE_rec: 1.342 AIRL_rec: 0.1800 Acc: 0.953 LR: 2.81e-05
+Epoch[9] Iter[650/786] Loss: 3.052 CE: 1.414 Tri: 0.212 CE_rec: 1.337 AIRL_rec: 0.1796 Acc: 0.953 LR: 2.81e-05
+Epoch[9] Iter[700/786] Loss: 3.033 CE: 1.406 Tri: 0.209 CE_rec: 1.329 AIRL_rec: 0.1788 Acc: 0.955 LR: 2.81e-05
+Epoch[9] done in 238.4s  Loss=3.010 Acc=0.956 AIRL-ISO[lam_eff=0.500 ce_rec=1.319 consistency=0.1772 deg_scale_mean=0.625 n_ground=28598]
+Epoch[10] Iter[50/786] Loss: 3.174 CE: 1.468 Tri: 0.197 CE_rec: 1.421 AIRL_rec: 0.1742 Acc: 0.939 LR: 3.15e-05
+Epoch[10] Iter[100/786] Loss: 3.117 CE: 1.445 Tri: 0.197 CE_rec: 1.385 AIRL_rec: 0.1773 Acc: 0.947 LR: 3.15e-05
+Epoch[10] Iter[150/786] Loss: 3.083 CE: 1.432 Tri: 0.196 CE_rec: 1.365 AIRL_rec: 0.1808 Acc: 0.950 LR: 3.15e-05
+Epoch[10] Iter[200/786] Loss: 3.058 CE: 1.423 Tri: 0.192 CE_rec: 1.353 AIRL_rec: 0.1808 Acc: 0.952 LR: 3.15e-05
+Epoch[10] Iter[250/786] Loss: 3.058 CE: 1.423 Tri: 0.193 CE_rec: 1.351 AIRL_rec: 0.1819 Acc: 0.952 LR: 3.15e-05
+Epoch[10] Iter[300/786] Loss: 3.042 CE: 1.417 Tri: 0.191 CE_rec: 1.343 AIRL_rec: 0.1835 Acc: 0.953 LR: 3.15e-05
+Epoch[10] Iter[350/786] Loss: 3.038 CE: 1.415 Tri: 0.189 CE_rec: 1.342 AIRL_rec: 0.1840 Acc: 0.953 LR: 3.15e-05
+Epoch[10] Iter[400/786] Loss: 3.024 CE: 1.410 Tri: 0.184 CE_rec: 1.337 AIRL_rec: 0.1841 Acc: 0.955 LR: 3.15e-05
+Epoch[10] Iter[450/786] Loss: 3.011 CE: 1.405 Tri: 0.184 CE_rec: 1.331 AIRL_rec: 0.1831 Acc: 0.956 LR: 3.15e-05
+Epoch[10] Iter[500/786] Loss: 3.009 CE: 1.404 Tri: 0.186 CE_rec: 1.327 AIRL_rec: 0.1840 Acc: 0.956 LR: 3.15e-05
+Epoch[10] Iter[550/786] Loss: 3.006 CE: 1.401 Tri: 0.188 CE_rec: 1.324 AIRL_rec: 0.1837 Acc: 0.956 LR: 3.15e-05
+Epoch[10] Iter[600/786] Loss: 2.992 CE: 1.396 Tri: 0.185 CE_rec: 1.319 AIRL_rec: 0.1827 Acc: 0.957 LR: 3.15e-05
+Epoch[10] Iter[650/786] Loss: 2.981 CE: 1.391 Tri: 0.186 CE_rec: 1.314 AIRL_rec: 0.1812 Acc: 0.958 LR: 3.15e-05
+Epoch[10] Iter[700/786] Loss: 2.970 CE: 1.385 Tri: 0.187 CE_rec: 1.308 AIRL_rec: 0.1794 Acc: 0.959 LR: 3.15e-05
+Epoch[10] done in 239.8s  Loss=2.947 Acc=0.960 AIRL-ISO[lam_eff=0.500 ce_rec=1.299 consistency=0.1776 deg_scale_mean=0.624 n_ground=28763]
+  ---- A<->G cross-view eval @ epoch 10 ----
+    [A->G] mAP=71.36  R1=79.84  R5=87.61  mINP=43.40
+    [G->A] mAP=71.86  R1=81.61  R5=88.07  mINP=35.13
+    [mean] mAP=71.61  R1=80.73
+  ---- AIRL-ISO dual-branch (fuse_w=0.25) @ epoch 10 ----
+    [A->G] full mAP=71.36 R1=79.84 | rec mAP=72.28 R1=81.20 | FUSE mAP=72.89 R1=81.20
+    [G->A] full mAP=71.86 R1=81.61 | rec mAP=72.38 R1=81.61 | FUSE mAP=73.53 R1=82.99
+    [mean] full=71.61 rec=72.33 FUSE=73.21  <- model-selection uses FUSE
+    * new best mean mAP=73.21 (epoch 10) saved
+Epoch[11] Iter[50/786] Loss: 3.207 CE: 1.495 Tri: 0.179 CE_rec: 1.445 AIRL_rec: 0.1774 Acc: 0.932 LR: 3.50e-05
+Epoch[11] Iter[100/786] Loss: 3.109 CE: 1.459 Tri: 0.167 CE_rec: 1.394 AIRL_rec: 0.1780 Acc: 0.941 LR: 3.50e-05
+Epoch[11] Iter[150/786] Loss: 3.070 CE: 1.440 Tri: 0.167 CE_rec: 1.372 AIRL_rec: 0.1807 Acc: 0.946 LR: 3.50e-05
+Epoch[11] Iter[200/786] Loss: 3.066 CE: 1.435 Tri: 0.178 CE_rec: 1.363 AIRL_rec: 0.1818 Acc: 0.947 LR: 3.50e-05
+Epoch[11] Iter[250/786] Loss: 3.049 CE: 1.425 Tri: 0.179 CE_rec: 1.353 AIRL_rec: 0.1834 Acc: 0.949 LR: 3.50e-05
+Epoch[11] Iter[300/786] Loss: 3.035 CE: 1.419 Tri: 0.176 CE_rec: 1.347 AIRL_rec: 0.1845 Acc: 0.951 LR: 3.50e-05
+Epoch[11] Iter[350/786] Loss: 3.020 CE: 1.413 Tri: 0.174 CE_rec: 1.340 AIRL_rec: 0.1851 Acc: 0.952 LR: 3.50e-05
+Epoch[11] Iter[400/786] Loss: 3.008 CE: 1.408 Tri: 0.172 CE_rec: 1.336 AIRL_rec: 0.1842 Acc: 0.953 LR: 3.50e-05
+Epoch[11] Iter[450/786] Loss: 3.004 CE: 1.405 Tri: 0.174 CE_rec: 1.333 AIRL_rec: 0.1835 Acc: 0.953 LR: 3.50e-05
+Epoch[11] Iter[500/786] Loss: 2.998 CE: 1.402 Tri: 0.175 CE_rec: 1.329 AIRL_rec: 0.1834 Acc: 0.954 LR: 3.50e-05
+Epoch[11] Iter[550/786] Loss: 2.982 CE: 1.396 Tri: 0.173 CE_rec: 1.322 AIRL_rec: 0.1837 Acc: 0.956 LR: 3.50e-05
+Epoch[11] Iter[600/786] Loss: 2.971 CE: 1.390 Tri: 0.174 CE_rec: 1.316 AIRL_rec: 0.1826 Acc: 0.957 LR: 3.50e-05
+Epoch[11] Iter[650/786] Loss: 2.956 CE: 1.383 Tri: 0.172 CE_rec: 1.310 AIRL_rec: 0.1813 Acc: 0.958 LR: 3.50e-05
+Epoch[11] Iter[700/786] Loss: 2.937 CE: 1.375 Tri: 0.170 CE_rec: 1.302 AIRL_rec: 0.1796 Acc: 0.959 LR: 3.50e-05
+Epoch[11] done in 231.7s  Loss=2.915 Acc=0.961 AIRL-ISO[lam_eff=0.500 ce_rec=1.293 consistency=0.1781 deg_scale_mean=0.624 n_ground=28694]
+Epoch[12] Iter[50/786] Loss: 3.185 CE: 1.496 Tri: 0.170 CE_rec: 1.436 AIRL_rec: 0.1665 Acc: 0.931 LR: 3.50e-05
+Epoch[12] Iter[100/786] Loss: 3.132 CE: 1.471 Tri: 0.171 CE_rec: 1.404 AIRL_rec: 0.1724 Acc: 0.936 LR: 3.50e-05
+Epoch[12] Iter[150/786] Loss: 3.053 CE: 1.438 Tri: 0.162 CE_rec: 1.367 AIRL_rec: 0.1732 Acc: 0.945 LR: 3.50e-05
+Epoch[12] Iter[200/786] Loss: 3.018 CE: 1.422 Tri: 0.158 CE_rec: 1.350 AIRL_rec: 0.1751 Acc: 0.949 LR: 3.50e-05
+Epoch[12] Iter[250/786] Loss: 2.991 CE: 1.409 Tri: 0.155 CE_rec: 1.338 AIRL_rec: 0.1773 Acc: 0.951 LR: 3.50e-05
+Epoch[12] Iter[300/786] Loss: 2.981 CE: 1.404 Tri: 0.157 CE_rec: 1.331 AIRL_rec: 0.1780 Acc: 0.953 LR: 3.50e-05
+Epoch[12] Iter[350/786] Loss: 2.966 CE: 1.397 Tri: 0.156 CE_rec: 1.323 AIRL_rec: 0.1788 Acc: 0.954 LR: 3.50e-05
+Epoch[12] Iter[400/786] Loss: 2.957 CE: 1.393 Tri: 0.157 CE_rec: 1.317 AIRL_rec: 0.1800 Acc: 0.955 LR: 3.50e-05
+Epoch[12] Iter[450/786] Loss: 2.942 CE: 1.386 Tri: 0.156 CE_rec: 1.310 AIRL_rec: 0.1799 Acc: 0.957 LR: 3.50e-05
+Epoch[12] Iter[500/786] Loss: 2.931 CE: 1.381 Tri: 0.154 CE_rec: 1.305 AIRL_rec: 0.1798 Acc: 0.957 LR: 3.50e-05
+Epoch[12] Iter[550/786] Loss: 2.918 CE: 1.375 Tri: 0.153 CE_rec: 1.299 AIRL_rec: 0.1790 Acc: 0.959 LR: 3.50e-05
+Epoch[12] Iter[600/786] Loss: 2.904 CE: 1.369 Tri: 0.153 CE_rec: 1.293 AIRL_rec: 0.1777 Acc: 0.960 LR: 3.50e-05
+Epoch[12] Iter[650/786] Loss: 2.892 CE: 1.364 Tri: 0.152 CE_rec: 1.288 AIRL_rec: 0.1756 Acc: 0.961 LR: 3.50e-05
+Epoch[12] Iter[700/786] Loss: 2.878 CE: 1.357 Tri: 0.151 CE_rec: 1.282 AIRL_rec: 0.1738 Acc: 0.962 LR: 3.50e-05
+Epoch[12] done in 233.9s  Loss=2.858 Acc=0.963 AIRL-ISO[lam_eff=0.500 ce_rec=1.274 consistency=0.1719 deg_scale_mean=0.625 n_ground=28735]
+Epoch[13] Iter[50/786] Loss: 3.121 CE: 1.457 Tri: 0.186 CE_rec: 1.396 AIRL_rec: 0.1647 Acc: 0.945 LR: 3.49e-05
+Epoch[13] Iter[100/786] Loss: 3.029 CE: 1.423 Tri: 0.167 CE_rec: 1.356 AIRL_rec: 0.1680 Acc: 0.952 LR: 3.49e-05
+Epoch[13] Iter[150/786] Loss: 2.962 CE: 1.399 Tri: 0.152 CE_rec: 1.327 AIRL_rec: 0.1698 Acc: 0.956 LR: 3.49e-05
+Epoch[13] Iter[200/786] Loss: 2.938 CE: 1.388 Tri: 0.148 CE_rec: 1.316 AIRL_rec: 0.1740 Acc: 0.957 LR: 3.49e-05
+Epoch[13] Iter[250/786] Loss: 2.916 CE: 1.379 Tri: 0.144 CE_rec: 1.305 AIRL_rec: 0.1753 Acc: 0.959 LR: 3.49e-05
+Epoch[13] Iter[300/786] Loss: 2.901 CE: 1.373 Tri: 0.141 CE_rec: 1.299 AIRL_rec: 0.1760 Acc: 0.960 LR: 3.49e-05
+Epoch[13] Iter[350/786] Loss: 2.887 CE: 1.367 Tri: 0.139 CE_rec: 1.293 AIRL_rec: 0.1751 Acc: 0.960 LR: 3.49e-05
+Epoch[13] Iter[400/786] Loss: 2.880 CE: 1.363 Tri: 0.140 CE_rec: 1.289 AIRL_rec: 0.1750 Acc: 0.961 LR: 3.49e-05
+Epoch[13] Iter[450/786] Loss: 2.867 CE: 1.357 Tri: 0.139 CE_rec: 1.283 AIRL_rec: 0.1743 Acc: 0.962 LR: 3.49e-05
+Epoch[13] Iter[500/786] Loss: 2.854 CE: 1.352 Tri: 0.137 CE_rec: 1.278 AIRL_rec: 0.1733 Acc: 0.963 LR: 3.49e-05
+Epoch[13] Iter[550/786] Loss: 2.842 CE: 1.347 Tri: 0.136 CE_rec: 1.274 AIRL_rec: 0.1723 Acc: 0.964 LR: 3.49e-05
+Epoch[13] Iter[600/786] Loss: 2.835 CE: 1.343 Tri: 0.136 CE_rec: 1.270 AIRL_rec: 0.1716 Acc: 0.964 LR: 3.49e-05
+Epoch[13] Iter[650/786] Loss: 2.824 CE: 1.338 Tri: 0.136 CE_rec: 1.266 AIRL_rec: 0.1702 Acc: 0.965 LR: 3.49e-05
+Epoch[13] Iter[700/786] Loss: 2.810 CE: 1.331 Tri: 0.135 CE_rec: 1.260 AIRL_rec: 0.1684 Acc: 0.966 LR: 3.49e-05
+Epoch[13] done in 234.3s  Loss=2.792 Acc=0.967 AIRL-ISO[lam_eff=0.500 ce_rec=1.252 consistency=0.1663 deg_scale_mean=0.624 n_ground=28655]
+Epoch[14] Iter[50/786] Loss: 2.998 CE: 1.415 Tri: 0.149 CE_rec: 1.352 AIRL_rec: 0.1644 Acc: 0.947 LR: 3.47e-05
+Epoch[14] Iter[100/786] Loss: 2.917 CE: 1.384 Tri: 0.131 CE_rec: 1.317 AIRL_rec: 0.1709 Acc: 0.955 LR: 3.47e-05
+Epoch[14] Iter[150/786] Loss: 2.878 CE: 1.368 Tri: 0.127 CE_rec: 1.298 AIRL_rec: 0.1727 Acc: 0.959 LR: 3.47e-05
+Epoch[14] Iter[200/786] Loss: 2.855 CE: 1.357 Tri: 0.126 CE_rec: 1.286 AIRL_rec: 0.1741 Acc: 0.961 LR: 3.47e-05
+Epoch[14] Iter[250/786] Loss: 2.847 CE: 1.350 Tri: 0.132 CE_rec: 1.277 AIRL_rec: 0.1737 Acc: 0.963 LR: 3.47e-05
+Epoch[14] Iter[300/786] Loss: 2.827 CE: 1.344 Tri: 0.127 CE_rec: 1.270 AIRL_rec: 0.1728 Acc: 0.964 LR: 3.47e-05
+Epoch[14] Iter[350/786] Loss: 2.815 CE: 1.339 Tri: 0.125 CE_rec: 1.266 AIRL_rec: 0.1719 Acc: 0.964 LR: 3.47e-05
+Epoch[14] Iter[400/786] Loss: 2.812 CE: 1.337 Tri: 0.127 CE_rec: 1.263 AIRL_rec: 0.1715 Acc: 0.965 LR: 3.47e-05
+Epoch[14] Iter[450/786] Loss: 2.801 CE: 1.333 Tri: 0.124 CE_rec: 1.259 AIRL_rec: 0.1704 Acc: 0.965 LR: 3.47e-05
+Epoch[14] Iter[500/786] Loss: 2.797 CE: 1.332 Tri: 0.123 CE_rec: 1.258 AIRL_rec: 0.1696 Acc: 0.965 LR: 3.47e-05
+Epoch[14] Iter[550/786] Loss: 2.789 CE: 1.328 Tri: 0.123 CE_rec: 1.254 AIRL_rec: 0.1687 Acc: 0.965 LR: 3.47e-05
+Epoch[14] Iter[600/786] Loss: 2.775 CE: 1.322 Tri: 0.120 CE_rec: 1.249 AIRL_rec: 0.1676 Acc: 0.966 LR: 3.47e-05
+Epoch[14] Iter[650/786] Loss: 2.763 CE: 1.317 Tri: 0.119 CE_rec: 1.244 AIRL_rec: 0.1659 Acc: 0.967 LR: 3.47e-05
+Epoch[14] Iter[700/786] Loss: 2.752 CE: 1.311 Tri: 0.119 CE_rec: 1.239 AIRL_rec: 0.1639 Acc: 0.968 LR: 3.47e-05
+Epoch[14] done in 236.4s  Loss=2.735 Acc=0.969 AIRL-ISO[lam_eff=0.500 ce_rec=1.233 consistency=0.1618 deg_scale_mean=0.626 n_ground=28817]
+Epoch[15] Iter[50/786] Loss: 3.023 CE: 1.434 Tri: 0.160 CE_rec: 1.349 AIRL_rec: 0.1613 Acc: 0.942 LR: 3.45e-05
+Epoch[15] Iter[100/786] Loss: 2.913 CE: 1.390 Tri: 0.135 CE_rec: 1.307 AIRL_rec: 0.1617 Acc: 0.953 LR: 3.45e-05
+Epoch[15] Iter[150/786] Loss: 2.869 CE: 1.369 Tri: 0.129 CE_rec: 1.289 AIRL_rec: 0.1626 Acc: 0.957 LR: 3.45e-05
+Epoch[15] Iter[200/786] Loss: 2.844 CE: 1.358 Tri: 0.123 CE_rec: 1.280 AIRL_rec: 0.1661 Acc: 0.959 LR: 3.45e-05
+Epoch[15] Iter[250/786] Loss: 2.811 CE: 1.343 Tri: 0.117 CE_rec: 1.268 AIRL_rec: 0.1666 Acc: 0.962 LR: 3.45e-05
+Epoch[15] Iter[300/786] Loss: 2.792 CE: 1.335 Tri: 0.112 CE_rec: 1.262 AIRL_rec: 0.1657 Acc: 0.963 LR: 3.45e-05
+Epoch[15] Iter[350/786] Loss: 2.788 CE: 1.333 Tri: 0.115 CE_rec: 1.258 AIRL_rec: 0.1659 Acc: 0.963 LR: 3.45e-05
+Epoch[15] Iter[400/786] Loss: 2.779 CE: 1.328 Tri: 0.115 CE_rec: 1.254 AIRL_rec: 0.1650 Acc: 0.964 LR: 3.45e-05
+Epoch[15] Iter[450/786] Loss: 2.769 CE: 1.323 Tri: 0.114 CE_rec: 1.249 AIRL_rec: 0.1636 Acc: 0.965 LR: 3.45e-05
+Epoch[15] Iter[500/786] Loss: 2.758 CE: 1.318 Tri: 0.114 CE_rec: 1.245 AIRL_rec: 0.1629 Acc: 0.966 LR: 3.45e-05
+Epoch[15] Iter[550/786] Loss: 2.749 CE: 1.314 Tri: 0.113 CE_rec: 1.242 AIRL_rec: 0.1621 Acc: 0.967 LR: 3.45e-05
+Epoch[15] Iter[600/786] Loss: 2.737 CE: 1.308 Tri: 0.112 CE_rec: 1.236 AIRL_rec: 0.1611 Acc: 0.968 LR: 3.45e-05
+Epoch[15] Iter[650/786] Loss: 2.730 CE: 1.305 Tri: 0.112 CE_rec: 1.233 AIRL_rec: 0.1595 Acc: 0.969 LR: 3.45e-05
+Epoch[15] Iter[700/786] Loss: 2.713 CE: 1.298 Tri: 0.109 CE_rec: 1.228 AIRL_rec: 0.1573 Acc: 0.970 LR: 3.45e-05
+Epoch[15] done in 238.3s  Loss=2.696 Acc=0.971 AIRL-ISO[lam_eff=0.500 ce_rec=1.221 consistency=0.1557 deg_scale_mean=0.623 n_ground=28659]
+Epoch[16] Iter[50/786] Loss: 2.797 CE: 1.339 Tri: 0.100 CE_rec: 1.280 AIRL_rec: 0.1556 Acc: 0.962 LR: 3.41e-05
+Epoch[16] Iter[100/786] Loss: 2.774 CE: 1.330 Tri: 0.103 CE_rec: 1.263 AIRL_rec: 0.1558 Acc: 0.964 LR: 3.41e-05
+Epoch[16] Iter[150/786] Loss: 2.750 CE: 1.321 Tri: 0.096 CE_rec: 1.254 AIRL_rec: 0.1569 Acc: 0.966 LR: 3.41e-05
+Epoch[16] Iter[200/786] Loss: 2.746 CE: 1.319 Tri: 0.098 CE_rec: 1.249 AIRL_rec: 0.1599 Acc: 0.966 LR: 3.41e-05
+Epoch[16] Iter[250/786] Loss: 2.725 CE: 1.311 Tri: 0.093 CE_rec: 1.240 AIRL_rec: 0.1607 Acc: 0.967 LR: 3.41e-05
+Epoch[16] Iter[300/786] Loss: 2.723 CE: 1.309 Tri: 0.095 CE_rec: 1.238 AIRL_rec: 0.1604 Acc: 0.968 LR: 3.41e-05
+Epoch[16] Iter[350/786] Loss: 2.727 CE: 1.309 Tri: 0.100 CE_rec: 1.238 AIRL_rec: 0.1604 Acc: 0.968 LR: 3.41e-05
+Epoch[16] Iter[400/786] Loss: 2.722 CE: 1.305 Tri: 0.102 CE_rec: 1.235 AIRL_rec: 0.1596 Acc: 0.968 LR: 3.41e-05
+Epoch[16] Iter[450/786] Loss: 2.713 CE: 1.302 Tri: 0.100 CE_rec: 1.232 AIRL_rec: 0.1587 Acc: 0.969 LR: 3.41e-05
+Epoch[16] Iter[500/786] Loss: 2.708 CE: 1.298 Tri: 0.101 CE_rec: 1.229 AIRL_rec: 0.1579 Acc: 0.970 LR: 3.41e-05
+Epoch[16] Iter[550/786] Loss: 2.704 CE: 1.296 Tri: 0.102 CE_rec: 1.227 AIRL_rec: 0.1571 Acc: 0.970 LR: 3.41e-05
+Epoch[16] Iter[600/786] Loss: 2.690 CE: 1.290 Tri: 0.099 CE_rec: 1.223 AIRL_rec: 0.1557 Acc: 0.971 LR: 3.41e-05
+Epoch[16] Iter[650/786] Loss: 2.678 CE: 1.284 Tri: 0.099 CE_rec: 1.218 AIRL_rec: 0.1546 Acc: 0.972 LR: 3.41e-05
+Epoch[16] Iter[700/786] Loss: 2.667 CE: 1.279 Tri: 0.098 CE_rec: 1.214 AIRL_rec: 0.1533 Acc: 0.973 LR: 3.41e-05
+Epoch[16] done in 238.1s  Loss=2.653 Acc=0.974 AIRL-ISO[lam_eff=0.500 ce_rec=1.208 consistency=0.1514 deg_scale_mean=0.625 n_ground=28697]
+Epoch[17] Iter[50/786] Loss: 2.867 CE: 1.377 Tri: 0.101 CE_rec: 1.310 AIRL_rec: 0.1578 Acc: 0.953 LR: 3.38e-05
+Epoch[17] Iter[100/786] Loss: 2.812 CE: 1.349 Tri: 0.099 CE_rec: 1.285 AIRL_rec: 0.1556 Acc: 0.962 LR: 3.38e-05
+Epoch[17] Iter[150/786] Loss: 2.774 CE: 1.333 Tri: 0.098 CE_rec: 1.265 AIRL_rec: 0.1568 Acc: 0.965 LR: 3.38e-05
+Epoch[17] Iter[200/786] Loss: 2.743 CE: 1.319 Tri: 0.093 CE_rec: 1.252 AIRL_rec: 0.1569 Acc: 0.968 LR: 3.38e-05
+Epoch[17] Iter[250/786] Loss: 2.721 CE: 1.308 Tri: 0.093 CE_rec: 1.241 AIRL_rec: 0.1556 Acc: 0.970 LR: 3.38e-05
+Epoch[17] Iter[300/786] Loss: 2.712 CE: 1.304 Tri: 0.093 CE_rec: 1.237 AIRL_rec: 0.1559 Acc: 0.970 LR: 3.38e-05
+Epoch[17] Iter[350/786] Loss: 2.698 CE: 1.298 Tri: 0.091 CE_rec: 1.231 AIRL_rec: 0.1544 Acc: 0.970 LR: 3.38e-05
+Epoch[17] Iter[400/786] Loss: 2.687 CE: 1.293 Tri: 0.091 CE_rec: 1.226 AIRL_rec: 0.1539 Acc: 0.972 LR: 3.38e-05
+Epoch[17] Iter[450/786] Loss: 2.676 CE: 1.288 Tri: 0.090 CE_rec: 1.222 AIRL_rec: 0.1530 Acc: 0.972 LR: 3.38e-05
+Epoch[17] Iter[500/786] Loss: 2.665 CE: 1.283 Tri: 0.088 CE_rec: 1.218 AIRL_rec: 0.1515 Acc: 0.973 LR: 3.38e-05
+Epoch[17] Iter[550/786] Loss: 2.657 CE: 1.280 Tri: 0.088 CE_rec: 1.214 AIRL_rec: 0.1500 Acc: 0.973 LR: 3.38e-05
+Epoch[17] Iter[600/786] Loss: 2.645 CE: 1.275 Tri: 0.086 CE_rec: 1.210 AIRL_rec: 0.1484 Acc: 0.974 LR: 3.38e-05
+Epoch[17] Iter[650/786] Loss: 2.633 CE: 1.270 Tri: 0.085 CE_rec: 1.205 AIRL_rec: 0.1473 Acc: 0.975 LR: 3.38e-05
+Epoch[17] Iter[700/786] Loss: 2.621 CE: 1.264 Tri: 0.083 CE_rec: 1.201 AIRL_rec: 0.1454 Acc: 0.976 LR: 3.38e-05
+Epoch[17] done in 239.0s  Loss=2.603 Acc=0.977 AIRL-ISO[lam_eff=0.500 ce_rec=1.194 consistency=0.1433 deg_scale_mean=0.624 n_ground=28762]
+Epoch[18] Iter[50/786] Loss: 2.814 CE: 1.358 Tri: 0.099 CE_rec: 1.288 AIRL_rec: 0.1395 Acc: 0.955 LR: 3.33e-05
+Epoch[18] Iter[100/786] Loss: 2.748 CE: 1.327 Tri: 0.093 CE_rec: 1.255 AIRL_rec: 0.1453 Acc: 0.962 LR: 3.33e-05
+Epoch[18] Iter[150/786] Loss: 2.719 CE: 1.313 Tri: 0.092 CE_rec: 1.241 AIRL_rec: 0.1474 Acc: 0.966 LR: 3.33e-05
+Epoch[18] Iter[200/786] Loss: 2.701 CE: 1.303 Tri: 0.091 CE_rec: 1.232 AIRL_rec: 0.1491 Acc: 0.968 LR: 3.33e-05
+Epoch[18] Iter[250/786] Loss: 2.688 CE: 1.296 Tri: 0.091 CE_rec: 1.226 AIRL_rec: 0.1499 Acc: 0.969 LR: 3.33e-05
+Epoch[18] Iter[300/786] Loss: 2.667 CE: 1.286 Tri: 0.087 CE_rec: 1.218 AIRL_rec: 0.1490 Acc: 0.971 LR: 3.33e-05
+Epoch[18] Iter[350/786] Loss: 2.661 CE: 1.283 Tri: 0.088 CE_rec: 1.215 AIRL_rec: 0.1488 Acc: 0.971 LR: 3.33e-05
+Epoch[18] Iter[400/786] Loss: 2.651 CE: 1.279 Tri: 0.087 CE_rec: 1.211 AIRL_rec: 0.1478 Acc: 0.972 LR: 3.33e-05
+Epoch[18] Iter[450/786] Loss: 2.643 CE: 1.274 Tri: 0.087 CE_rec: 1.208 AIRL_rec: 0.1474 Acc: 0.973 LR: 3.33e-05
+Epoch[18] Iter[500/786] Loss: 2.629 CE: 1.269 Tri: 0.083 CE_rec: 1.203 AIRL_rec: 0.1461 Acc: 0.974 LR: 3.33e-05
+Epoch[18] Iter[550/786] Loss: 2.618 CE: 1.264 Tri: 0.082 CE_rec: 1.199 AIRL_rec: 0.1448 Acc: 0.975 LR: 3.33e-05
+Epoch[18] Iter[600/786] Loss: 2.610 CE: 1.261 Tri: 0.082 CE_rec: 1.196 AIRL_rec: 0.1433 Acc: 0.975 LR: 3.33e-05
+Epoch[18] Iter[650/786] Loss: 2.600 CE: 1.256 Tri: 0.080 CE_rec: 1.192 AIRL_rec: 0.1418 Acc: 0.976 LR: 3.33e-05
+Epoch[18] Iter[700/786] Loss: 2.587 CE: 1.251 Tri: 0.079 CE_rec: 1.187 AIRL_rec: 0.1399 Acc: 0.977 LR: 3.33e-05
+Epoch[18] done in 239.3s  Loss=2.571 Acc=0.978 AIRL-ISO[lam_eff=0.500 ce_rec=1.182 consistency=0.1377 deg_scale_mean=0.623 n_ground=28736]
+Epoch[19] Iter[50/786] Loss: 2.748 CE: 1.331 Tri: 0.090 CE_rec: 1.259 AIRL_rec: 0.1348 Acc: 0.961 LR: 3.28e-05
+Epoch[19] Iter[100/786] Loss: 2.697 CE: 1.306 Tri: 0.084 CE_rec: 1.238 AIRL_rec: 0.1376 Acc: 0.968 LR: 3.28e-05
+Epoch[19] Iter[150/786] Loss: 2.656 CE: 1.288 Tri: 0.078 CE_rec: 1.221 AIRL_rec: 0.1390 Acc: 0.972 LR: 3.28e-05
+Epoch[19] Iter[200/786] Loss: 2.658 CE: 1.287 Tri: 0.081 CE_rec: 1.220 AIRL_rec: 0.1399 Acc: 0.970 LR: 3.28e-05
+Epoch[19] Iter[250/786] Loss: 2.643 CE: 1.279 Tri: 0.080 CE_rec: 1.213 AIRL_rec: 0.1410 Acc: 0.972 LR: 3.28e-05
+Epoch[19] Iter[300/786] Loss: 2.635 CE: 1.275 Tri: 0.080 CE_rec: 1.210 AIRL_rec: 0.1417 Acc: 0.972 LR: 3.28e-05
+Epoch[19] Iter[350/786] Loss: 2.623 CE: 1.270 Tri: 0.077 CE_rec: 1.206 AIRL_rec: 0.1410 Acc: 0.973 LR: 3.28e-05
+Epoch[19] Iter[400/786] Loss: 2.615 CE: 1.266 Tri: 0.076 CE_rec: 1.203 AIRL_rec: 0.1411 Acc: 0.974 LR: 3.28e-05
+Epoch[19] Iter[450/786] Loss: 2.607 CE: 1.262 Tri: 0.075 CE_rec: 1.199 AIRL_rec: 0.1407 Acc: 0.974 LR: 3.28e-05
+Epoch[19] Iter[500/786] Loss: 2.597 CE: 1.258 Tri: 0.074 CE_rec: 1.196 AIRL_rec: 0.1397 Acc: 0.975 LR: 3.28e-05
+Epoch[19] Iter[550/786] Loss: 2.589 CE: 1.254 Tri: 0.073 CE_rec: 1.192 AIRL_rec: 0.1387 Acc: 0.976 LR: 3.28e-05
+Epoch[19] Iter[600/786] Loss: 2.580 CE: 1.250 Tri: 0.072 CE_rec: 1.188 AIRL_rec: 0.1377 Acc: 0.977 LR: 3.28e-05
+Epoch[19] Iter[650/786] Loss: 2.569 CE: 1.245 Tri: 0.071 CE_rec: 1.184 AIRL_rec: 0.1364 Acc: 0.977 LR: 3.28e-05
+Epoch[19] Iter[700/786] Loss: 2.557 CE: 1.240 Tri: 0.069 CE_rec: 1.180 AIRL_rec: 0.1345 Acc: 0.978 LR: 3.28e-05
+Epoch[19] done in 240.1s  Loss=2.541 Acc=0.979 AIRL-ISO[lam_eff=0.500 ce_rec=1.174 consistency=0.1322 deg_scale_mean=0.624 n_ground=28722]
+Epoch[20] Iter[50/786] Loss: 2.666 CE: 1.305 Tri: 0.066 CE_rec: 1.233 AIRL_rec: 0.1236 Acc: 0.965 LR: 3.23e-05
+Epoch[20] Iter[100/786] Loss: 2.657 CE: 1.290 Tri: 0.076 CE_rec: 1.225 AIRL_rec: 0.1327 Acc: 0.968 LR: 3.23e-05
+Epoch[20] Iter[150/786] Loss: 2.635 CE: 1.279 Tri: 0.071 CE_rec: 1.219 AIRL_rec: 0.1333 Acc: 0.970 LR: 3.23e-05
+Epoch[20] Iter[200/786] Loss: 2.626 CE: 1.273 Tri: 0.072 CE_rec: 1.213 AIRL_rec: 0.1353 Acc: 0.972 LR: 3.23e-05
+Epoch[20] Iter[250/786] Loss: 2.615 CE: 1.268 Tri: 0.073 CE_rec: 1.207 AIRL_rec: 0.1357 Acc: 0.973 LR: 3.23e-05
+Epoch[20] Iter[300/786] Loss: 2.608 CE: 1.263 Tri: 0.074 CE_rec: 1.204 AIRL_rec: 0.1354 Acc: 0.974 LR: 3.23e-05
+Epoch[20] Iter[350/786] Loss: 2.599 CE: 1.259 Tri: 0.073 CE_rec: 1.199 AIRL_rec: 0.1358 Acc: 0.974 LR: 3.23e-05
+Epoch[20] Iter[400/786] Loss: 2.588 CE: 1.254 Tri: 0.071 CE_rec: 1.194 AIRL_rec: 0.1359 Acc: 0.975 LR: 3.23e-05
+Epoch[20] Iter[450/786] Loss: 2.578 CE: 1.250 Tri: 0.071 CE_rec: 1.190 AIRL_rec: 0.1353 Acc: 0.976 LR: 3.23e-05
+Epoch[20] Iter[500/786] Loss: 2.575 CE: 1.248 Tri: 0.071 CE_rec: 1.189 AIRL_rec: 0.1342 Acc: 0.976 LR: 3.23e-05
+Epoch[20] Iter[550/786] Loss: 2.569 CE: 1.245 Tri: 0.070 CE_rec: 1.186 AIRL_rec: 0.1334 Acc: 0.977 LR: 3.23e-05
+Epoch[20] Iter[600/786] Loss: 2.559 CE: 1.241 Tri: 0.069 CE_rec: 1.183 AIRL_rec: 0.1324 Acc: 0.977 LR: 3.23e-05
+Epoch[20] Iter[650/786] Loss: 2.550 CE: 1.237 Tri: 0.069 CE_rec: 1.179 AIRL_rec: 0.1308 Acc: 0.978 LR: 3.23e-05
+Epoch[20] Iter[700/786] Loss: 2.537 CE: 1.231 Tri: 0.068 CE_rec: 1.174 AIRL_rec: 0.1288 Acc: 0.979 LR: 3.23e-05
+Epoch[20] done in 240.7s  Loss=2.522 Acc=0.980 AIRL-ISO[lam_eff=0.500 ce_rec=1.168 consistency=0.1265 deg_scale_mean=0.625 n_ground=28838]
+  ---- A<->G cross-view eval @ epoch 20 ----
+    [A->G] mAP=70.65  R1=80.18  R5=87.82  mINP=40.17
+    [G->A] mAP=71.55  R1=82.61  R5=88.02  mINP=32.51
+    [mean] mAP=71.10  R1=81.39
+  ---- AIRL-ISO dual-branch (fuse_w=0.25) @ epoch 20 ----
+    [A->G] full mAP=70.65 R1=80.18 | rec mAP=72.52 R1=81.75 | FUSE mAP=72.83 R1=81.45
+    [G->A] full mAP=71.55 R1=82.61 | rec mAP=71.05 R1=81.50 | FUSE mAP=73.14 R1=83.38
+    [mean] full=71.10 rec=71.79 FUSE=72.99  <- model-selection uses FUSE
+Epoch[21] Iter[50/786] Loss: 2.694 CE: 1.305 Tri: 0.082 CE_rec: 1.241 AIRL_rec: 0.1326 Acc: 0.968 LR: 3.17e-05
+Epoch[21] Iter[100/786] Loss: 2.631 CE: 1.279 Tri: 0.070 CE_rec: 1.215 AIRL_rec: 0.1336 Acc: 0.973 LR: 3.17e-05
+Epoch[21] Iter[150/786] Loss: 2.604 CE: 1.265 Tri: 0.070 CE_rec: 1.201 AIRL_rec: 0.1355 Acc: 0.974 LR: 3.17e-05
+Epoch[21] Iter[200/786] Loss: 2.585 CE: 1.256 Tri: 0.069 CE_rec: 1.192 AIRL_rec: 0.1357 Acc: 0.976 LR: 3.17e-05
+Epoch[21] Iter[250/786] Loss: 2.573 CE: 1.250 Tri: 0.068 CE_rec: 1.188 AIRL_rec: 0.1351 Acc: 0.976 LR: 3.17e-05
+Epoch[21] Iter[300/786] Loss: 2.571 CE: 1.249 Tri: 0.069 CE_rec: 1.186 AIRL_rec: 0.1343 Acc: 0.976 LR: 3.17e-05
+Epoch[21] Iter[350/786] Loss: 2.560 CE: 1.245 Tri: 0.066 CE_rec: 1.183 AIRL_rec: 0.1333 Acc: 0.977 LR: 3.17e-05
+Epoch[21] Iter[400/786] Loss: 2.551 CE: 1.240 Tri: 0.066 CE_rec: 1.179 AIRL_rec: 0.1325 Acc: 0.978 LR: 3.17e-05
+Epoch[21] Iter[450/786] Loss: 2.544 CE: 1.237 Tri: 0.065 CE_rec: 1.177 AIRL_rec: 0.1313 Acc: 0.978 LR: 3.17e-05
+Epoch[21] Iter[500/786] Loss: 2.538 CE: 1.234 Tri: 0.065 CE_rec: 1.174 AIRL_rec: 0.1305 Acc: 0.979 LR: 3.17e-05
+Epoch[21] Iter[550/786] Loss: 2.531 CE: 1.231 Tri: 0.064 CE_rec: 1.171 AIRL_rec: 0.1291 Acc: 0.979 LR: 3.17e-05
+Epoch[21] Iter[600/786] Loss: 2.523 CE: 1.227 Tri: 0.063 CE_rec: 1.169 AIRL_rec: 0.1280 Acc: 0.979 LR: 3.17e-05
+Epoch[21] Iter[650/786] Loss: 2.515 CE: 1.223 Tri: 0.063 CE_rec: 1.166 AIRL_rec: 0.1266 Acc: 0.980 LR: 3.17e-05
+Epoch[21] Iter[700/786] Loss: 2.502 CE: 1.218 Tri: 0.061 CE_rec: 1.161 AIRL_rec: 0.1247 Acc: 0.981 LR: 3.17e-05
+Epoch[21] done in 231.0s  Loss=2.491 Acc=0.981 AIRL-ISO[lam_eff=0.500 ce_rec=1.156 consistency=0.1225 deg_scale_mean=0.624 n_ground=28621]
+Epoch[22] Iter[50/786] Loss: 2.659 CE: 1.301 Tri: 0.068 CE_rec: 1.229 AIRL_rec: 0.1197 Acc: 0.966 LR: 3.10e-05
+Epoch[22] Iter[100/786] Loss: 2.617 CE: 1.274 Tri: 0.069 CE_rec: 1.212 AIRL_rec: 0.1248 Acc: 0.970 LR: 3.10e-05
+Epoch[22] Iter[150/786] Loss: 2.587 CE: 1.259 Tri: 0.064 CE_rec: 1.200 AIRL_rec: 0.1270 Acc: 0.973 LR: 3.10e-05
+Epoch[22] Iter[200/786] Loss: 2.562 CE: 1.248 Tri: 0.059 CE_rec: 1.191 AIRL_rec: 0.1272 Acc: 0.975 LR: 3.10e-05
+Epoch[22] Iter[250/786] Loss: 2.551 CE: 1.242 Tri: 0.061 CE_rec: 1.185 AIRL_rec: 0.1269 Acc: 0.976 LR: 3.10e-05
+Epoch[22] Iter[300/786] Loss: 2.539 CE: 1.235 Tri: 0.062 CE_rec: 1.178 AIRL_rec: 0.1259 Acc: 0.978 LR: 3.10e-05
+Epoch[22] Iter[350/786] Loss: 2.528 CE: 1.231 Tri: 0.060 CE_rec: 1.174 AIRL_rec: 0.1256 Acc: 0.978 LR: 3.10e-05
+Epoch[22] Iter[400/786] Loss: 2.521 CE: 1.227 Tri: 0.060 CE_rec: 1.172 AIRL_rec: 0.1253 Acc: 0.979 LR: 3.10e-05
+Epoch[22] Iter[450/786] Loss: 2.514 CE: 1.224 Tri: 0.059 CE_rec: 1.168 AIRL_rec: 0.1245 Acc: 0.979 LR: 3.10e-05
+Epoch[22] Iter[500/786] Loss: 2.506 CE: 1.221 Tri: 0.058 CE_rec: 1.166 AIRL_rec: 0.1237 Acc: 0.980 LR: 3.10e-05
+Epoch[22] Iter[550/786] Loss: 2.498 CE: 1.217 Tri: 0.057 CE_rec: 1.162 AIRL_rec: 0.1227 Acc: 0.981 LR: 3.10e-05
+Epoch[22] Iter[600/786] Loss: 2.491 CE: 1.214 Tri: 0.056 CE_rec: 1.160 AIRL_rec: 0.1216 Acc: 0.981 LR: 3.10e-05
+Epoch[22] Iter[650/786] Loss: 2.483 CE: 1.211 Tri: 0.055 CE_rec: 1.157 AIRL_rec: 0.1202 Acc: 0.982 LR: 3.10e-05
+Epoch[22] Iter[700/786] Loss: 2.475 CE: 1.207 Tri: 0.055 CE_rec: 1.153 AIRL_rec: 0.1186 Acc: 0.982 LR: 3.10e-05
+Epoch[22] done in 234.9s  Loss=2.462 Acc=0.983 AIRL-ISO[lam_eff=0.500 ce_rec=1.148 consistency=0.1170 deg_scale_mean=0.625 n_ground=28842]
+Epoch[23] Iter[50/786] Loss: 2.639 CE: 1.289 Tri: 0.071 CE_rec: 1.220 AIRL_rec: 0.1190 Acc: 0.964 LR: 3.03e-05
+Epoch[23] Iter[100/786] Loss: 2.606 CE: 1.266 Tri: 0.072 CE_rec: 1.206 AIRL_rec: 0.1260 Acc: 0.970 LR: 3.03e-05
+Epoch[23] Iter[150/786] Loss: 2.572 CE: 1.250 Tri: 0.065 CE_rec: 1.194 AIRL_rec: 0.1257 Acc: 0.973 LR: 3.03e-05
+Epoch[23] Iter[200/786] Loss: 2.551 CE: 1.242 Tri: 0.062 CE_rec: 1.184 AIRL_rec: 0.1249 Acc: 0.975 LR: 3.03e-05
+Epoch[23] Iter[250/786] Loss: 2.542 CE: 1.236 Tri: 0.065 CE_rec: 1.180 AIRL_rec: 0.1244 Acc: 0.976 LR: 3.03e-05
+Epoch[23] Iter[300/786] Loss: 2.531 CE: 1.231 Tri: 0.064 CE_rec: 1.175 AIRL_rec: 0.1229 Acc: 0.977 LR: 3.03e-05
+Epoch[23] Iter[350/786] Loss: 2.527 CE: 1.229 Tri: 0.064 CE_rec: 1.173 AIRL_rec: 0.1229 Acc: 0.978 LR: 3.03e-05
+Epoch[23] Iter[400/786] Loss: 2.521 CE: 1.227 Tri: 0.063 CE_rec: 1.171 AIRL_rec: 0.1216 Acc: 0.978 LR: 3.03e-05
+Epoch[23] Iter[450/786] Loss: 2.514 CE: 1.223 Tri: 0.063 CE_rec: 1.167 AIRL_rec: 0.1211 Acc: 0.978 LR: 3.03e-05
+Epoch[23] Iter[500/786] Loss: 2.506 CE: 1.220 Tri: 0.061 CE_rec: 1.165 AIRL_rec: 0.1205 Acc: 0.978 LR: 3.03e-05
+Epoch[23] Iter[550/786] Loss: 2.498 CE: 1.216 Tri: 0.060 CE_rec: 1.162 AIRL_rec: 0.1198 Acc: 0.979 LR: 3.03e-05
+Epoch[23] Iter[600/786] Loss: 2.490 CE: 1.213 Tri: 0.059 CE_rec: 1.159 AIRL_rec: 0.1187 Acc: 0.979 LR: 3.03e-05
+Epoch[23] Iter[650/786] Loss: 2.481 CE: 1.209 Tri: 0.057 CE_rec: 1.156 AIRL_rec: 0.1174 Acc: 0.980 LR: 3.03e-05
+Epoch[23] Iter[700/786] Loss: 2.470 CE: 1.205 Tri: 0.055 CE_rec: 1.152 AIRL_rec: 0.1158 Acc: 0.981 LR: 3.03e-05
+Epoch[23] done in 235.7s  Loss=2.457 Acc=0.981 AIRL-ISO[lam_eff=0.500 ce_rec=1.147 consistency=0.1139 deg_scale_mean=0.626 n_ground=28837]
+Epoch[24] Iter[50/786] Loss: 2.584 CE: 1.265 Tri: 0.060 CE_rec: 1.203 AIRL_rec: 0.1128 Acc: 0.975 LR: 2.95e-05
+Epoch[24] Iter[100/786] Loss: 2.541 CE: 1.242 Tri: 0.056 CE_rec: 1.185 AIRL_rec: 0.1172 Acc: 0.978 LR: 2.95e-05
+Epoch[24] Iter[150/786] Loss: 2.524 CE: 1.231 Tri: 0.057 CE_rec: 1.176 AIRL_rec: 0.1182 Acc: 0.979 LR: 2.95e-05
+Epoch[24] Iter[200/786] Loss: 2.507 CE: 1.224 Tri: 0.054 CE_rec: 1.170 AIRL_rec: 0.1181 Acc: 0.980 LR: 2.95e-05
+Epoch[24] Iter[250/786] Loss: 2.489 CE: 1.216 Tri: 0.051 CE_rec: 1.164 AIRL_rec: 0.1180 Acc: 0.982 LR: 2.95e-05
+Epoch[24] Iter[300/786] Loss: 2.480 CE: 1.211 Tri: 0.051 CE_rec: 1.159 AIRL_rec: 0.1166 Acc: 0.982 LR: 2.95e-05
+Epoch[24] Iter[350/786] Loss: 2.470 CE: 1.207 Tri: 0.050 CE_rec: 1.155 AIRL_rec: 0.1165 Acc: 0.983 LR: 2.95e-05
+Epoch[24] Iter[400/786] Loss: 2.461 CE: 1.203 Tri: 0.049 CE_rec: 1.151 AIRL_rec: 0.1156 Acc: 0.983 LR: 2.95e-05
+Epoch[24] Iter[450/786] Loss: 2.453 CE: 1.200 Tri: 0.047 CE_rec: 1.149 AIRL_rec: 0.1153 Acc: 0.984 LR: 2.95e-05
+Epoch[24] Iter[500/786] Loss: 2.449 CE: 1.198 Tri: 0.048 CE_rec: 1.146 AIRL_rec: 0.1147 Acc: 0.984 LR: 2.95e-05
+Epoch[24] Iter[550/786] Loss: 2.444 CE: 1.196 Tri: 0.048 CE_rec: 1.143 AIRL_rec: 0.1143 Acc: 0.984 LR: 2.95e-05
+Epoch[24] Iter[600/786] Loss: 2.441 CE: 1.194 Tri: 0.048 CE_rec: 1.142 AIRL_rec: 0.1135 Acc: 0.984 LR: 2.95e-05
+Epoch[24] Iter[650/786] Loss: 2.433 CE: 1.191 Tri: 0.047 CE_rec: 1.139 AIRL_rec: 0.1121 Acc: 0.985 LR: 2.95e-05
+Epoch[24] Iter[700/786] Loss: 2.423 CE: 1.187 Tri: 0.045 CE_rec: 1.136 AIRL_rec: 0.1103 Acc: 0.985 LR: 2.95e-05
+Epoch[24] done in 237.3s  Loss=2.411 Acc=0.986 AIRL-ISO[lam_eff=0.500 ce_rec=1.131 consistency=0.1082 deg_scale_mean=0.624 n_ground=28829]
+Epoch[25] Iter[50/786] Loss: 2.575 CE: 1.259 Tri: 0.057 CE_rec: 1.203 AIRL_rec: 0.1103 Acc: 0.976 LR: 2.87e-05
+Epoch[25] Iter[100/786] Loss: 2.526 CE: 1.233 Tri: 0.055 CE_rec: 1.182 AIRL_rec: 0.1101 Acc: 0.979 LR: 2.87e-05
+Epoch[25] Iter[150/786] Loss: 2.502 CE: 1.222 Tri: 0.053 CE_rec: 1.170 AIRL_rec: 0.1119 Acc: 0.980 LR: 2.87e-05
+Epoch[25] Iter[200/786] Loss: 2.486 CE: 1.213 Tri: 0.054 CE_rec: 1.162 AIRL_rec: 0.1134 Acc: 0.982 LR: 2.87e-05
+Epoch[25] Iter[250/786] Loss: 2.473 CE: 1.208 Tri: 0.052 CE_rec: 1.156 AIRL_rec: 0.1128 Acc: 0.983 LR: 2.87e-05
+Epoch[25] Iter[300/786] Loss: 2.469 CE: 1.205 Tri: 0.053 CE_rec: 1.154 AIRL_rec: 0.1141 Acc: 0.983 LR: 2.87e-05
+Epoch[25] Iter[350/786] Loss: 2.462 CE: 1.202 Tri: 0.053 CE_rec: 1.150 AIRL_rec: 0.1146 Acc: 0.983 LR: 2.87e-05
+Epoch[25] Iter[400/786] Loss: 2.456 CE: 1.199 Tri: 0.052 CE_rec: 1.148 AIRL_rec: 0.1147 Acc: 0.983 LR: 2.87e-05
+Epoch[25] Iter[450/786] Loss: 2.447 CE: 1.195 Tri: 0.050 CE_rec: 1.145 AIRL_rec: 0.1139 Acc: 0.984 LR: 2.87e-05
+Epoch[25] Iter[500/786] Loss: 2.441 CE: 1.193 Tri: 0.050 CE_rec: 1.142 AIRL_rec: 0.1125 Acc: 0.984 LR: 2.87e-05
+Epoch[25] Iter[550/786] Loss: 2.433 CE: 1.190 Tri: 0.049 CE_rec: 1.140 AIRL_rec: 0.1113 Acc: 0.984 LR: 2.87e-05
+Epoch[25] Iter[600/786] Loss: 2.428 CE: 1.187 Tri: 0.048 CE_rec: 1.137 AIRL_rec: 0.1105 Acc: 0.985 LR: 2.87e-05
+Epoch[25] Iter[650/786] Loss: 2.418 CE: 1.183 Tri: 0.046 CE_rec: 1.134 AIRL_rec: 0.1092 Acc: 0.985 LR: 2.87e-05
+Epoch[25] Iter[700/786] Loss: 2.411 CE: 1.180 Tri: 0.046 CE_rec: 1.131 AIRL_rec: 0.1079 Acc: 0.986 LR: 2.87e-05
+Epoch[25] done in 238.6s  Loss=2.401 Acc=0.986 AIRL-ISO[lam_eff=0.500 ce_rec=1.127 consistency=0.1061 deg_scale_mean=0.627 n_ground=28728]
+Epoch[26] Iter[50/786] Loss: 2.521 CE: 1.237 Tri: 0.053 CE_rec: 1.175 AIRL_rec: 0.1113 Acc: 0.979 LR: 2.78e-05
+Epoch[26] Iter[100/786] Loss: 2.496 CE: 1.224 Tri: 0.051 CE_rec: 1.166 AIRL_rec: 0.1103 Acc: 0.978 LR: 2.78e-05
+Epoch[26] Iter[150/786] Loss: 2.469 CE: 1.210 Tri: 0.047 CE_rec: 1.156 AIRL_rec: 0.1114 Acc: 0.981 LR: 2.78e-05
+Epoch[26] Iter[200/786] Loss: 2.457 CE: 1.204 Tri: 0.047 CE_rec: 1.150 AIRL_rec: 0.1119 Acc: 0.982 LR: 2.78e-05
+Epoch[26] Iter[250/786] Loss: 2.452 CE: 1.202 Tri: 0.047 CE_rec: 1.148 AIRL_rec: 0.1106 Acc: 0.982 LR: 2.78e-05
+Epoch[26] Iter[300/786] Loss: 2.450 CE: 1.200 Tri: 0.048 CE_rec: 1.147 AIRL_rec: 0.1111 Acc: 0.981 LR: 2.78e-05
+Epoch[26] Iter[350/786] Loss: 2.438 CE: 1.195 Tri: 0.045 CE_rec: 1.142 AIRL_rec: 0.1098 Acc: 0.982 LR: 2.78e-05
+Epoch[26] Iter[400/786] Loss: 2.427 CE: 1.191 Tri: 0.043 CE_rec: 1.138 AIRL_rec: 0.1093 Acc: 0.983 LR: 2.78e-05
+Epoch[26] Iter[450/786] Loss: 2.421 CE: 1.187 Tri: 0.043 CE_rec: 1.136 AIRL_rec: 0.1086 Acc: 0.983 LR: 2.78e-05
+Epoch[26] Iter[500/786] Loss: 2.419 CE: 1.186 Tri: 0.044 CE_rec: 1.135 AIRL_rec: 0.1078 Acc: 0.984 LR: 2.78e-05
+Epoch[26] Iter[550/786] Loss: 2.413 CE: 1.183 Tri: 0.043 CE_rec: 1.133 AIRL_rec: 0.1067 Acc: 0.984 LR: 2.78e-05
+Epoch[26] Iter[600/786] Loss: 2.407 CE: 1.181 Tri: 0.043 CE_rec: 1.131 AIRL_rec: 0.1055 Acc: 0.984 LR: 2.78e-05
+Epoch[26] Iter[650/786] Loss: 2.402 CE: 1.178 Tri: 0.043 CE_rec: 1.129 AIRL_rec: 0.1042 Acc: 0.985 LR: 2.78e-05
+Epoch[26] Iter[700/786] Loss: 2.393 CE: 1.174 Tri: 0.042 CE_rec: 1.126 AIRL_rec: 0.1025 Acc: 0.985 LR: 2.78e-05
+Epoch[26] done in 239.4s  Loss=2.382 Acc=0.986 AIRL-ISO[lam_eff=0.500 ce_rec=1.122 consistency=0.1008 deg_scale_mean=0.625 n_ground=28699]
+Epoch[27] Iter[50/786] Loss: 2.490 CE: 1.223 Tri: 0.051 CE_rec: 1.163 AIRL_rec: 0.1067 Acc: 0.980 LR: 2.69e-05
+Epoch[27] Iter[100/786] Loss: 2.476 CE: 1.215 Tri: 0.049 CE_rec: 1.158 AIRL_rec: 0.1082 Acc: 0.980 LR: 2.69e-05
+Epoch[27] Iter[150/786] Loss: 2.458 CE: 1.204 Tri: 0.049 CE_rec: 1.151 AIRL_rec: 0.1081 Acc: 0.981 LR: 2.69e-05
+Epoch[27] Iter[200/786] Loss: 2.438 CE: 1.196 Tri: 0.044 CE_rec: 1.144 AIRL_rec: 0.1076 Acc: 0.983 LR: 2.69e-05
+Epoch[27] Iter[250/786] Loss: 2.429 CE: 1.191 Tri: 0.044 CE_rec: 1.141 AIRL_rec: 0.1069 Acc: 0.984 LR: 2.69e-05
+Epoch[27] Iter[300/786] Loss: 2.422 CE: 1.187 Tri: 0.044 CE_rec: 1.138 AIRL_rec: 0.1062 Acc: 0.984 LR: 2.69e-05
+Epoch[27] Iter[350/786] Loss: 2.413 CE: 1.182 Tri: 0.043 CE_rec: 1.134 AIRL_rec: 0.1057 Acc: 0.985 LR: 2.69e-05
+Epoch[27] Iter[400/786] Loss: 2.403 CE: 1.179 Tri: 0.041 CE_rec: 1.131 AIRL_rec: 0.1046 Acc: 0.985 LR: 2.69e-05
+Epoch[27] Iter[450/786] Loss: 2.396 CE: 1.176 Tri: 0.040 CE_rec: 1.128 AIRL_rec: 0.1036 Acc: 0.986 LR: 2.69e-05
+Epoch[27] Iter[500/786] Loss: 2.391 CE: 1.174 Tri: 0.039 CE_rec: 1.126 AIRL_rec: 0.1029 Acc: 0.986 LR: 2.69e-05
+Epoch[27] Iter[550/786] Loss: 2.391 CE: 1.173 Tri: 0.041 CE_rec: 1.126 AIRL_rec: 0.1025 Acc: 0.986 LR: 2.69e-05
+Epoch[27] Iter[600/786] Loss: 2.385 CE: 1.170 Tri: 0.040 CE_rec: 1.123 AIRL_rec: 0.1020 Acc: 0.986 LR: 2.69e-05
+Epoch[27] Iter[650/786] Loss: 2.378 CE: 1.167 Tri: 0.040 CE_rec: 1.120 AIRL_rec: 0.1011 Acc: 0.986 LR: 2.69e-05
+Epoch[27] Iter[700/786] Loss: 2.368 CE: 1.163 Tri: 0.038 CE_rec: 1.117 AIRL_rec: 0.0997 Acc: 0.987 LR: 2.69e-05
+Epoch[27] done in 238.6s  Loss=2.359 Acc=0.988 AIRL-ISO[lam_eff=0.500 ce_rec=1.114 consistency=0.0982 deg_scale_mean=0.625 n_ground=28673]
+Epoch[28] Iter[50/786] Loss: 2.454 CE: 1.207 Tri: 0.039 CE_rec: 1.159 AIRL_rec: 0.0991 Acc: 0.981 LR: 2.59e-05
+Epoch[28] Iter[100/786] Loss: 2.430 CE: 1.191 Tri: 0.044 CE_rec: 1.145 AIRL_rec: 0.0996 Acc: 0.984 LR: 2.59e-05
+Epoch[28] Iter[150/786] Loss: 2.404 CE: 1.180 Tri: 0.039 CE_rec: 1.135 AIRL_rec: 0.1005 Acc: 0.986 LR: 2.59e-05
+Epoch[28] Iter[200/786] Loss: 2.403 CE: 1.178 Tri: 0.039 CE_rec: 1.135 AIRL_rec: 0.1012 Acc: 0.985 LR: 2.59e-05
+Epoch[28] Iter[250/786] Loss: 2.404 CE: 1.178 Tri: 0.040 CE_rec: 1.134 AIRL_rec: 0.1015 Acc: 0.984 LR: 2.59e-05
+Epoch[28] Iter[300/786] Loss: 2.396 CE: 1.176 Tri: 0.040 CE_rec: 1.131 AIRL_rec: 0.1008 Acc: 0.985 LR: 2.59e-05
+Epoch[28] Iter[350/786] Loss: 2.391 CE: 1.173 Tri: 0.039 CE_rec: 1.128 AIRL_rec: 0.1003 Acc: 0.985 LR: 2.59e-05
+Epoch[28] Iter[400/786] Loss: 2.387 CE: 1.171 Tri: 0.039 CE_rec: 1.127 AIRL_rec: 0.0997 Acc: 0.985 LR: 2.59e-05
+Epoch[28] Iter[450/786] Loss: 2.383 CE: 1.170 Tri: 0.039 CE_rec: 1.125 AIRL_rec: 0.0991 Acc: 0.985 LR: 2.59e-05
+Epoch[28] Iter[500/786] Loss: 2.378 CE: 1.168 Tri: 0.038 CE_rec: 1.123 AIRL_rec: 0.0984 Acc: 0.985 LR: 2.59e-05
+Epoch[28] Iter[550/786] Loss: 2.373 CE: 1.165 Tri: 0.038 CE_rec: 1.121 AIRL_rec: 0.0976 Acc: 0.986 LR: 2.59e-05
+Epoch[28] Iter[600/786] Loss: 2.369 CE: 1.163 Tri: 0.038 CE_rec: 1.119 AIRL_rec: 0.0967 Acc: 0.986 LR: 2.59e-05
+Epoch[28] Iter[650/786] Loss: 2.363 CE: 1.161 Tri: 0.037 CE_rec: 1.117 AIRL_rec: 0.0958 Acc: 0.986 LR: 2.59e-05
+Epoch[28] Iter[700/786] Loss: 2.355 CE: 1.157 Tri: 0.037 CE_rec: 1.114 AIRL_rec: 0.0945 Acc: 0.987 LR: 2.59e-05
+Epoch[28] done in 239.6s  Loss=2.346 Acc=0.987 AIRL-ISO[lam_eff=0.500 ce_rec=1.110 consistency=0.0931 deg_scale_mean=0.627 n_ground=28746]
+Epoch[29] Iter[50/786] Loss: 2.441 CE: 1.202 Tri: 0.036 CE_rec: 1.154 AIRL_rec: 0.0976 Acc: 0.980 LR: 2.50e-05
+Epoch[29] Iter[100/786] Loss: 2.414 CE: 1.188 Tri: 0.037 CE_rec: 1.141 AIRL_rec: 0.0978 Acc: 0.983 LR: 2.50e-05
+Epoch[29] Iter[150/786] Loss: 2.402 CE: 1.180 Tri: 0.039 CE_rec: 1.134 AIRL_rec: 0.0979 Acc: 0.985 LR: 2.50e-05
+Epoch[29] Iter[200/786] Loss: 2.395 CE: 1.176 Tri: 0.039 CE_rec: 1.132 AIRL_rec: 0.0984 Acc: 0.985 LR: 2.50e-05
+Epoch[29] Iter[250/786] Loss: 2.384 CE: 1.171 Tri: 0.037 CE_rec: 1.127 AIRL_rec: 0.0979 Acc: 0.986 LR: 2.50e-05
+Epoch[29] Iter[300/786] Loss: 2.374 CE: 1.167 Tri: 0.035 CE_rec: 1.123 AIRL_rec: 0.0978 Acc: 0.987 LR: 2.50e-05
+Epoch[29] Iter[350/786] Loss: 2.371 CE: 1.165 Tri: 0.035 CE_rec: 1.122 AIRL_rec: 0.0979 Acc: 0.986 LR: 2.50e-05
+Epoch[29] Iter[400/786] Loss: 2.365 CE: 1.162 Tri: 0.034 CE_rec: 1.121 AIRL_rec: 0.0972 Acc: 0.986 LR: 2.50e-05
+Epoch[29] Iter[450/786] Loss: 2.361 CE: 1.161 Tri: 0.033 CE_rec: 1.119 AIRL_rec: 0.0968 Acc: 0.987 LR: 2.50e-05
+Epoch[29] Iter[500/786] Loss: 2.356 CE: 1.159 Tri: 0.033 CE_rec: 1.117 AIRL_rec: 0.0964 Acc: 0.987 LR: 2.50e-05
+Epoch[29] Iter[550/786] Loss: 2.350 CE: 1.156 Tri: 0.032 CE_rec: 1.115 AIRL_rec: 0.0958 Acc: 0.988 LR: 2.50e-05
+Epoch[29] Iter[600/786] Loss: 2.344 CE: 1.154 Tri: 0.031 CE_rec: 1.112 AIRL_rec: 0.0950 Acc: 0.988 LR: 2.50e-05
+Epoch[29] Iter[650/786] Loss: 2.337 CE: 1.150 Tri: 0.030 CE_rec: 1.109 AIRL_rec: 0.0939 Acc: 0.988 LR: 2.50e-05
+Epoch[29] Iter[700/786] Loss: 2.329 CE: 1.147 Tri: 0.030 CE_rec: 1.106 AIRL_rec: 0.0923 Acc: 0.989 LR: 2.50e-05
+Epoch[29] done in 240.6s  Loss=2.319 Acc=0.989 AIRL-ISO[lam_eff=0.500 ce_rec=1.103 consistency=0.0903 deg_scale_mean=0.624 n_ground=28853]
+Epoch[30] Iter[50/786] Loss: 2.429 CE: 1.193 Tri: 0.046 CE_rec: 1.144 AIRL_rec: 0.0907 Acc: 0.984 LR: 2.39e-05
+Epoch[30] Iter[100/786] Loss: 2.395 CE: 1.175 Tri: 0.042 CE_rec: 1.132 AIRL_rec: 0.0930 Acc: 0.987 LR: 2.39e-05
+Epoch[30] Iter[150/786] Loss: 2.376 CE: 1.168 Tri: 0.036 CE_rec: 1.125 AIRL_rec: 0.0942 Acc: 0.986 LR: 2.39e-05
+Epoch[30] Iter[200/786] Loss: 2.362 CE: 1.162 Tri: 0.034 CE_rec: 1.118 AIRL_rec: 0.0941 Acc: 0.987 LR: 2.39e-05
+Epoch[30] Iter[250/786] Loss: 2.355 CE: 1.159 Tri: 0.035 CE_rec: 1.114 AIRL_rec: 0.0940 Acc: 0.988 LR: 2.39e-05
+Epoch[30] Iter[300/786] Loss: 2.343 CE: 1.154 Tri: 0.032 CE_rec: 1.110 AIRL_rec: 0.0932 Acc: 0.989 LR: 2.39e-05
+Epoch[30] Iter[350/786] Loss: 2.337 CE: 1.151 Tri: 0.031 CE_rec: 1.109 AIRL_rec: 0.0925 Acc: 0.989 LR: 2.39e-05
+Epoch[30] Iter[400/786] Loss: 2.335 CE: 1.150 Tri: 0.031 CE_rec: 1.107 AIRL_rec: 0.0921 Acc: 0.989 LR: 2.39e-05
+Epoch[30] Iter[450/786] Loss: 2.334 CE: 1.150 Tri: 0.033 CE_rec: 1.106 AIRL_rec: 0.0916 Acc: 0.989 LR: 2.39e-05
+Epoch[30] Iter[500/786] Loss: 2.333 CE: 1.149 Tri: 0.033 CE_rec: 1.106 AIRL_rec: 0.0912 Acc: 0.989 LR: 2.39e-05
+Epoch[30] Iter[550/786] Loss: 2.330 CE: 1.147 Tri: 0.033 CE_rec: 1.105 AIRL_rec: 0.0906 Acc: 0.989 LR: 2.39e-05
+Epoch[30] Iter[600/786] Loss: 2.326 CE: 1.145 Tri: 0.032 CE_rec: 1.104 AIRL_rec: 0.0898 Acc: 0.989 LR: 2.39e-05
+Epoch[30] Iter[650/786] Loss: 2.320 CE: 1.143 Tri: 0.031 CE_rec: 1.102 AIRL_rec: 0.0888 Acc: 0.989 LR: 2.39e-05
+Epoch[30] Iter[700/786] Loss: 2.312 CE: 1.139 Tri: 0.030 CE_rec: 1.099 AIRL_rec: 0.0874 Acc: 0.990 LR: 2.39e-05
+Epoch[30] done in 240.9s  Loss=2.302 Acc=0.990 AIRL-ISO[lam_eff=0.500 ce_rec=1.095 consistency=0.0856 deg_scale_mean=0.625 n_ground=28873]
+  ---- A<->G cross-view eval @ epoch 30 ----
+    [A->G] mAP=73.46  R1=82.77  R5=89.60  mINP=44.99
+    [G->A] mAP=73.80  R1=82.50  R5=88.90  mINP=37.87
+    [mean] mAP=73.63  R1=82.63
+  ---- AIRL-ISO dual-branch (fuse_w=0.25) @ epoch 30 ----
+    [A->G] full mAP=73.46 R1=82.77 | rec mAP=73.34 R1=82.00 | FUSE mAP=74.80 R1=83.36
+    [G->A] full mAP=73.80 R1=82.50 | rec mAP=73.06 R1=82.44 | FUSE mAP=75.26 R1=83.55
+    [mean] full=73.63 rec=73.20 FUSE=75.03  <- model-selection uses FUSE
+    * new best mean mAP=75.03 (epoch 30) saved
+Epoch[31] Iter[50/786] Loss: 2.378 CE: 1.180 Tri: 0.029 CE_rec: 1.124 AIRL_rec: 0.0898 Acc: 0.983 LR: 2.29e-05
+Epoch[31] Iter[100/786] Loss: 2.372 CE: 1.171 Tri: 0.032 CE_rec: 1.122 AIRL_rec: 0.0920 Acc: 0.984 LR: 2.29e-05
+Epoch[31] Iter[150/786] Loss: 2.368 CE: 1.167 Tri: 0.033 CE_rec: 1.122 AIRL_rec: 0.0916 Acc: 0.985 LR: 2.29e-05
+Epoch[31] Iter[200/786] Loss: 2.367 CE: 1.166 Tri: 0.035 CE_rec: 1.120 AIRL_rec: 0.0924 Acc: 0.985 LR: 2.29e-05
+Epoch[31] Iter[250/786] Loss: 2.358 CE: 1.161 Tri: 0.035 CE_rec: 1.116 AIRL_rec: 0.0924 Acc: 0.986 LR: 2.29e-05
+Epoch[31] Iter[300/786] Loss: 2.352 CE: 1.158 Tri: 0.035 CE_rec: 1.113 AIRL_rec: 0.0913 Acc: 0.986 LR: 2.29e-05
+Epoch[31] Iter[350/786] Loss: 2.346 CE: 1.155 Tri: 0.034 CE_rec: 1.111 AIRL_rec: 0.0913 Acc: 0.987 LR: 2.29e-05
+Epoch[31] Iter[400/786] Loss: 2.338 CE: 1.152 Tri: 0.033 CE_rec: 1.108 AIRL_rec: 0.0907 Acc: 0.988 LR: 2.29e-05
+Epoch[31] Iter[450/786] Loss: 2.331 CE: 1.149 Tri: 0.031 CE_rec: 1.106 AIRL_rec: 0.0900 Acc: 0.988 LR: 2.29e-05
+Epoch[31] Iter[500/786] Loss: 2.324 CE: 1.146 Tri: 0.031 CE_rec: 1.103 AIRL_rec: 0.0891 Acc: 0.988 LR: 2.29e-05
+Epoch[31] Iter[550/786] Loss: 2.320 CE: 1.144 Tri: 0.030 CE_rec: 1.102 AIRL_rec: 0.0885 Acc: 0.988 LR: 2.29e-05
+Epoch[31] Iter[600/786] Loss: 2.316 CE: 1.142 Tri: 0.030 CE_rec: 1.101 AIRL_rec: 0.0875 Acc: 0.988 LR: 2.29e-05
+Epoch[31] Iter[650/786] Loss: 2.312 CE: 1.140 Tri: 0.030 CE_rec: 1.099 AIRL_rec: 0.0864 Acc: 0.988 LR: 2.29e-05
+Epoch[31] Iter[700/786] Loss: 2.306 CE: 1.137 Tri: 0.029 CE_rec: 1.097 AIRL_rec: 0.0853 Acc: 0.989 LR: 2.29e-05
+Epoch[31] done in 232.8s  Loss=2.297 Acc=0.989 AIRL-ISO[lam_eff=0.500 ce_rec=1.093 consistency=0.0839 deg_scale_mean=0.624 n_ground=28809]
+Epoch[32] Iter[50/786] Loss: 2.406 CE: 1.184 Tri: 0.039 CE_rec: 1.137 AIRL_rec: 0.0912 Acc: 0.982 LR: 2.19e-05
+Epoch[32] Iter[100/786] Loss: 2.374 CE: 1.168 Tri: 0.036 CE_rec: 1.124 AIRL_rec: 0.0914 Acc: 0.985 LR: 2.19e-05
+Epoch[32] Iter[150/786] Loss: 2.354 CE: 1.159 Tri: 0.034 CE_rec: 1.116 AIRL_rec: 0.0897 Acc: 0.987 LR: 2.19e-05
+Epoch[32] Iter[200/786] Loss: 2.343 CE: 1.154 Tri: 0.034 CE_rec: 1.111 AIRL_rec: 0.0889 Acc: 0.988 LR: 2.19e-05
+Epoch[32] Iter[250/786] Loss: 2.332 CE: 1.149 Tri: 0.031 CE_rec: 1.108 AIRL_rec: 0.0882 Acc: 0.989 LR: 2.19e-05
+Epoch[32] Iter[300/786] Loss: 2.320 CE: 1.145 Tri: 0.027 CE_rec: 1.104 AIRL_rec: 0.0873 Acc: 0.989 LR: 2.19e-05
+Epoch[32] Iter[350/786] Loss: 2.311 CE: 1.141 Tri: 0.026 CE_rec: 1.101 AIRL_rec: 0.0866 Acc: 0.990 LR: 2.19e-05
+Epoch[32] Iter[400/786] Loss: 2.307 CE: 1.139 Tri: 0.025 CE_rec: 1.099 AIRL_rec: 0.0859 Acc: 0.990 LR: 2.19e-05
+Epoch[32] Iter[450/786] Loss: 2.304 CE: 1.137 Tri: 0.026 CE_rec: 1.098 AIRL_rec: 0.0853 Acc: 0.990 LR: 2.19e-05
+Epoch[32] Iter[500/786] Loss: 2.298 CE: 1.135 Tri: 0.026 CE_rec: 1.095 AIRL_rec: 0.0847 Acc: 0.990 LR: 2.19e-05
+Epoch[32] Iter[550/786] Loss: 2.291 CE: 1.132 Tri: 0.025 CE_rec: 1.093 AIRL_rec: 0.0839 Acc: 0.991 LR: 2.19e-05
+Epoch[32] Iter[600/786] Loss: 2.287 CE: 1.130 Tri: 0.024 CE_rec: 1.091 AIRL_rec: 0.0832 Acc: 0.991 LR: 2.19e-05
+Epoch[32] Iter[650/786] Loss: 2.280 CE: 1.127 Tri: 0.023 CE_rec: 1.089 AIRL_rec: 0.0819 Acc: 0.991 LR: 2.19e-05
+Epoch[32] Iter[700/786] Loss: 2.275 CE: 1.125 Tri: 0.023 CE_rec: 1.087 AIRL_rec: 0.0808 Acc: 0.991 LR: 2.19e-05
+Epoch[32] done in 234.3s  Loss=2.267 Acc=0.992 AIRL-ISO[lam_eff=0.500 ce_rec=1.084 consistency=0.0797 deg_scale_mean=0.624 n_ground=28779]
+Epoch[33] Iter[50/786] Loss: 2.373 CE: 1.176 Tri: 0.029 CE_rec: 1.125 AIRL_rec: 0.0857 Acc: 0.985 LR: 2.08e-05
+Epoch[33] Iter[100/786] Loss: 2.334 CE: 1.156 Tri: 0.024 CE_rec: 1.112 AIRL_rec: 0.0850 Acc: 0.987 LR: 2.08e-05
+Epoch[33] Iter[150/786] Loss: 2.336 CE: 1.152 Tri: 0.029 CE_rec: 1.111 AIRL_rec: 0.0876 Acc: 0.987 LR: 2.08e-05
+Epoch[33] Iter[200/786] Loss: 2.325 CE: 1.146 Tri: 0.029 CE_rec: 1.106 AIRL_rec: 0.0869 Acc: 0.988 LR: 2.08e-05
+Epoch[33] Iter[250/786] Loss: 2.319 CE: 1.144 Tri: 0.027 CE_rec: 1.104 AIRL_rec: 0.0875 Acc: 0.988 LR: 2.08e-05
+Epoch[33] Iter[300/786] Loss: 2.312 CE: 1.141 Tri: 0.026 CE_rec: 1.101 AIRL_rec: 0.0876 Acc: 0.988 LR: 2.08e-05
+Epoch[33] Iter[350/786] Loss: 2.307 CE: 1.139 Tri: 0.026 CE_rec: 1.099 AIRL_rec: 0.0871 Acc: 0.988 LR: 2.08e-05
+Epoch[33] Iter[400/786] Loss: 2.302 CE: 1.136 Tri: 0.025 CE_rec: 1.097 AIRL_rec: 0.0861 Acc: 0.989 LR: 2.08e-05
+Epoch[33] Iter[450/786] Loss: 2.297 CE: 1.134 Tri: 0.025 CE_rec: 1.095 AIRL_rec: 0.0854 Acc: 0.989 LR: 2.08e-05
+Epoch[33] Iter[500/786] Loss: 2.292 CE: 1.132 Tri: 0.024 CE_rec: 1.093 AIRL_rec: 0.0845 Acc: 0.989 LR: 2.08e-05
+Epoch[33] Iter[550/786] Loss: 2.288 CE: 1.130 Tri: 0.024 CE_rec: 1.092 AIRL_rec: 0.0834 Acc: 0.990 LR: 2.08e-05
+Epoch[33] Iter[600/786] Loss: 2.285 CE: 1.128 Tri: 0.024 CE_rec: 1.091 AIRL_rec: 0.0825 Acc: 0.990 LR: 2.08e-05
+Epoch[33] Iter[650/786] Loss: 2.281 CE: 1.126 Tri: 0.024 CE_rec: 1.089 AIRL_rec: 0.0813 Acc: 0.990 LR: 2.08e-05
+Epoch[33] Iter[700/786] Loss: 2.274 CE: 1.123 Tri: 0.023 CE_rec: 1.087 AIRL_rec: 0.0801 Acc: 0.990 LR: 2.08e-05
+Epoch[33] done in 235.0s  Loss=2.267 Acc=0.990 AIRL-ISO[lam_eff=0.500 ce_rec=1.084 consistency=0.0788 deg_scale_mean=0.628 n_ground=28718]
+Epoch[34] Iter[50/786] Loss: 2.342 CE: 1.160 Tri: 0.031 CE_rec: 1.109 AIRL_rec: 0.0833 Acc: 0.986 LR: 1.97e-05
+Epoch[34] Iter[100/786] Loss: 2.319 CE: 1.147 Tri: 0.023 CE_rec: 1.106 AIRL_rec: 0.0853 Acc: 0.988 LR: 1.97e-05
+Epoch[34] Iter[150/786] Loss: 2.304 CE: 1.140 Tri: 0.020 CE_rec: 1.101 AIRL_rec: 0.0860 Acc: 0.988 LR: 1.97e-05
+Epoch[34] Iter[200/786] Loss: 2.290 CE: 1.134 Tri: 0.018 CE_rec: 1.095 AIRL_rec: 0.0854 Acc: 0.989 LR: 1.97e-05
+Epoch[34] Iter[250/786] Loss: 2.281 CE: 1.130 Tri: 0.017 CE_rec: 1.092 AIRL_rec: 0.0842 Acc: 0.990 LR: 1.97e-05
+Epoch[34] Iter[300/786] Loss: 2.277 CE: 1.128 Tri: 0.017 CE_rec: 1.090 AIRL_rec: 0.0837 Acc: 0.989 LR: 1.97e-05
+Epoch[34] Iter[350/786] Loss: 2.272 CE: 1.126 Tri: 0.017 CE_rec: 1.088 AIRL_rec: 0.0827 Acc: 0.990 LR: 1.97e-05
+Epoch[34] Iter[400/786] Loss: 2.269 CE: 1.124 Tri: 0.018 CE_rec: 1.087 AIRL_rec: 0.0816 Acc: 0.990 LR: 1.97e-05
+Epoch[34] Iter[450/786] Loss: 2.268 CE: 1.123 Tri: 0.019 CE_rec: 1.086 AIRL_rec: 0.0811 Acc: 0.990 LR: 1.97e-05
+Epoch[34] Iter[500/786] Loss: 2.264 CE: 1.121 Tri: 0.018 CE_rec: 1.085 AIRL_rec: 0.0803 Acc: 0.991 LR: 1.97e-05
+Epoch[34] Iter[550/786] Loss: 2.261 CE: 1.119 Tri: 0.018 CE_rec: 1.084 AIRL_rec: 0.0798 Acc: 0.991 LR: 1.97e-05
+Epoch[34] Iter[600/786] Loss: 2.258 CE: 1.118 Tri: 0.018 CE_rec: 1.082 AIRL_rec: 0.0787 Acc: 0.991 LR: 1.97e-05
+Epoch[34] Iter[650/786] Loss: 2.254 CE: 1.116 Tri: 0.018 CE_rec: 1.081 AIRL_rec: 0.0778 Acc: 0.991 LR: 1.97e-05
+Epoch[34] Iter[700/786] Loss: 2.247 CE: 1.113 Tri: 0.018 CE_rec: 1.079 AIRL_rec: 0.0766 Acc: 0.991 LR: 1.97e-05
+Epoch[34] done in 235.6s  Loss=2.241 Acc=0.992 AIRL-ISO[lam_eff=0.500 ce_rec=1.076 consistency=0.0752 deg_scale_mean=0.626 n_ground=28692]
+Epoch[35] Iter[50/786] Loss: 2.298 CE: 1.134 Tri: 0.023 CE_rec: 1.101 AIRL_rec: 0.0793 Acc: 0.991 LR: 1.86e-05
+Epoch[35] Iter[100/786] Loss: 2.283 CE: 1.128 Tri: 0.022 CE_rec: 1.092 AIRL_rec: 0.0806 Acc: 0.992 LR: 1.86e-05
+Epoch[35] Iter[150/786] Loss: 2.278 CE: 1.126 Tri: 0.022 CE_rec: 1.089 AIRL_rec: 0.0798 Acc: 0.991 LR: 1.86e-05
+Epoch[35] Iter[200/786] Loss: 2.276 CE: 1.125 Tri: 0.023 CE_rec: 1.088 AIRL_rec: 0.0807 Acc: 0.991 LR: 1.86e-05
+Epoch[35] Iter[250/786] Loss: 2.273 CE: 1.123 Tri: 0.022 CE_rec: 1.087 AIRL_rec: 0.0802 Acc: 0.991 LR: 1.86e-05
+Epoch[35] Iter[300/786] Loss: 2.268 CE: 1.121 Tri: 0.021 CE_rec: 1.086 AIRL_rec: 0.0796 Acc: 0.991 LR: 1.86e-05
+Epoch[35] Iter[350/786] Loss: 2.266 CE: 1.120 Tri: 0.022 CE_rec: 1.085 AIRL_rec: 0.0793 Acc: 0.991 LR: 1.86e-05
+Epoch[35] Iter[400/786] Loss: 2.262 CE: 1.118 Tri: 0.021 CE_rec: 1.084 AIRL_rec: 0.0789 Acc: 0.991 LR: 1.86e-05
+Epoch[35] Iter[450/786] Loss: 2.259 CE: 1.117 Tri: 0.020 CE_rec: 1.083 AIRL_rec: 0.0778 Acc: 0.992 LR: 1.86e-05
+Epoch[35] Iter[500/786] Loss: 2.256 CE: 1.116 Tri: 0.021 CE_rec: 1.082 AIRL_rec: 0.0772 Acc: 0.992 LR: 1.86e-05
+Epoch[35] Iter[550/786] Loss: 2.254 CE: 1.114 Tri: 0.021 CE_rec: 1.080 AIRL_rec: 0.0765 Acc: 0.992 LR: 1.86e-05
+Epoch[35] Iter[600/786] Loss: 2.248 CE: 1.112 Tri: 0.020 CE_rec: 1.078 AIRL_rec: 0.0753 Acc: 0.992 LR: 1.86e-05
+Epoch[35] Iter[650/786] Loss: 2.243 CE: 1.110 Tri: 0.019 CE_rec: 1.077 AIRL_rec: 0.0743 Acc: 0.992 LR: 1.86e-05
+Epoch[35] Iter[700/786] Loss: 2.239 CE: 1.108 Tri: 0.019 CE_rec: 1.075 AIRL_rec: 0.0733 Acc: 0.992 LR: 1.86e-05
+Epoch[35] done in 238.5s  Loss=2.232 Acc=0.993 AIRL-ISO[lam_eff=0.500 ce_rec=1.072 consistency=0.0722 deg_scale_mean=0.626 n_ground=28770]
+Epoch[36] Iter[50/786] Loss: 2.292 CE: 1.134 Tri: 0.024 CE_rec: 1.096 AIRL_rec: 0.0751 Acc: 0.986 LR: 1.75e-05
+Epoch[36] Iter[100/786] Loss: 2.282 CE: 1.127 Tri: 0.025 CE_rec: 1.092 AIRL_rec: 0.0744 Acc: 0.989 LR: 1.75e-05
+Epoch[36] Iter[150/786] Loss: 2.281 CE: 1.126 Tri: 0.026 CE_rec: 1.092 AIRL_rec: 0.0757 Acc: 0.990 LR: 1.75e-05
+Epoch[36] Iter[200/786] Loss: 2.277 CE: 1.123 Tri: 0.028 CE_rec: 1.088 AIRL_rec: 0.0753 Acc: 0.990 LR: 1.75e-05
+Epoch[36] Iter[250/786] Loss: 2.267 CE: 1.119 Tri: 0.025 CE_rec: 1.086 AIRL_rec: 0.0745 Acc: 0.991 LR: 1.75e-05
+Epoch[36] Iter[300/786] Loss: 2.262 CE: 1.117 Tri: 0.023 CE_rec: 1.084 AIRL_rec: 0.0744 Acc: 0.991 LR: 1.75e-05
+Epoch[36] Iter[350/786] Loss: 2.257 CE: 1.115 Tri: 0.022 CE_rec: 1.082 AIRL_rec: 0.0743 Acc: 0.991 LR: 1.75e-05
+Epoch[36] Iter[400/786] Loss: 2.252 CE: 1.114 Tri: 0.021 CE_rec: 1.080 AIRL_rec: 0.0740 Acc: 0.991 LR: 1.75e-05
+Epoch[36] Iter[450/786] Loss: 2.247 CE: 1.112 Tri: 0.020 CE_rec: 1.079 AIRL_rec: 0.0736 Acc: 0.992 LR: 1.75e-05
+Epoch[36] Iter[500/786] Loss: 2.243 CE: 1.110 Tri: 0.019 CE_rec: 1.077 AIRL_rec: 0.0734 Acc: 0.992 LR: 1.75e-05
+Epoch[36] Iter[550/786] Loss: 2.238 CE: 1.108 Tri: 0.018 CE_rec: 1.076 AIRL_rec: 0.0727 Acc: 0.992 LR: 1.75e-05
+Epoch[36] Iter[600/786] Loss: 2.234 CE: 1.106 Tri: 0.018 CE_rec: 1.074 AIRL_rec: 0.0719 Acc: 0.992 LR: 1.75e-05
+Epoch[36] Iter[650/786] Loss: 2.231 CE: 1.104 Tri: 0.018 CE_rec: 1.073 AIRL_rec: 0.0712 Acc: 0.993 LR: 1.75e-05
+Epoch[36] Iter[700/786] Loss: 2.226 CE: 1.102 Tri: 0.018 CE_rec: 1.071 AIRL_rec: 0.0702 Acc: 0.993 LR: 1.75e-05
+Epoch[36] done in 239.3s  Loss=2.219 Acc=0.993 AIRL-ISO[lam_eff=0.500 ce_rec=1.069 consistency=0.0690 deg_scale_mean=0.627 n_ground=28773]
+Epoch[37] Iter[50/786] Loss: 2.283 CE: 1.132 Tri: 0.020 CE_rec: 1.092 AIRL_rec: 0.0763 Acc: 0.991 LR: 1.64e-05
+Epoch[37] Iter[100/786] Loss: 2.272 CE: 1.125 Tri: 0.021 CE_rec: 1.088 AIRL_rec: 0.0763 Acc: 0.990 LR: 1.64e-05
+Epoch[37] Iter[150/786] Loss: 2.263 CE: 1.121 Tri: 0.020 CE_rec: 1.085 AIRL_rec: 0.0753 Acc: 0.990 LR: 1.64e-05
+Epoch[37] Iter[200/786] Loss: 2.256 CE: 1.117 Tri: 0.020 CE_rec: 1.083 AIRL_rec: 0.0740 Acc: 0.990 LR: 1.64e-05
+Epoch[37] Iter[250/786] Loss: 2.253 CE: 1.115 Tri: 0.020 CE_rec: 1.081 AIRL_rec: 0.0740 Acc: 0.991 LR: 1.64e-05
+Epoch[37] Iter[300/786] Loss: 2.251 CE: 1.113 Tri: 0.020 CE_rec: 1.081 AIRL_rec: 0.0737 Acc: 0.991 LR: 1.64e-05
+Epoch[37] Iter[350/786] Loss: 2.246 CE: 1.111 Tri: 0.019 CE_rec: 1.079 AIRL_rec: 0.0734 Acc: 0.991 LR: 1.64e-05
+Epoch[37] Iter[400/786] Loss: 2.241 CE: 1.109 Tri: 0.018 CE_rec: 1.077 AIRL_rec: 0.0730 Acc: 0.991 LR: 1.64e-05
+Epoch[37] Iter[450/786] Loss: 2.239 CE: 1.108 Tri: 0.018 CE_rec: 1.076 AIRL_rec: 0.0728 Acc: 0.991 LR: 1.64e-05
+Epoch[37] Iter[500/786] Loss: 2.235 CE: 1.106 Tri: 0.018 CE_rec: 1.075 AIRL_rec: 0.0727 Acc: 0.992 LR: 1.64e-05
+Epoch[37] Iter[550/786] Loss: 2.233 CE: 1.105 Tri: 0.018 CE_rec: 1.074 AIRL_rec: 0.0722 Acc: 0.992 LR: 1.64e-05
+Epoch[37] Iter[600/786] Loss: 2.230 CE: 1.103 Tri: 0.018 CE_rec: 1.073 AIRL_rec: 0.0715 Acc: 0.992 LR: 1.64e-05
+Epoch[37] Iter[650/786] Loss: 2.225 CE: 1.101 Tri: 0.017 CE_rec: 1.071 AIRL_rec: 0.0705 Acc: 0.992 LR: 1.64e-05
+Epoch[37] Iter[700/786] Loss: 2.220 CE: 1.099 Tri: 0.017 CE_rec: 1.070 AIRL_rec: 0.0695 Acc: 0.993 LR: 1.64e-05
+Epoch[37] done in 240.1s  Loss=2.214 Acc=0.993 AIRL-ISO[lam_eff=0.500 ce_rec=1.067 consistency=0.0682 deg_scale_mean=0.624 n_ground=28831]
+Epoch[38] Iter[50/786] Loss: 2.254 CE: 1.119 Tri: 0.013 CE_rec: 1.085 AIRL_rec: 0.0731 Acc: 0.992 LR: 1.53e-05
+Epoch[38] Iter[100/786] Loss: 2.250 CE: 1.115 Tri: 0.016 CE_rec: 1.081 AIRL_rec: 0.0761 Acc: 0.991 LR: 1.53e-05
+Epoch[38] Iter[150/786] Loss: 2.244 CE: 1.112 Tri: 0.016 CE_rec: 1.078 AIRL_rec: 0.0750 Acc: 0.991 LR: 1.53e-05
+Epoch[38] Iter[200/786] Loss: 2.243 CE: 1.111 Tri: 0.016 CE_rec: 1.078 AIRL_rec: 0.0757 Acc: 0.991 LR: 1.53e-05
+Epoch[38] Iter[250/786] Loss: 2.237 CE: 1.108 Tri: 0.014 CE_rec: 1.077 AIRL_rec: 0.0749 Acc: 0.992 LR: 1.53e-05
+Epoch[38] Iter[300/786] Loss: 2.233 CE: 1.106 Tri: 0.015 CE_rec: 1.075 AIRL_rec: 0.0742 Acc: 0.992 LR: 1.53e-05
+Epoch[38] Iter[350/786] Loss: 2.227 CE: 1.104 Tri: 0.014 CE_rec: 1.073 AIRL_rec: 0.0733 Acc: 0.992 LR: 1.53e-05
+Epoch[38] Iter[400/786] Loss: 2.223 CE: 1.102 Tri: 0.014 CE_rec: 1.071 AIRL_rec: 0.0724 Acc: 0.992 LR: 1.53e-05
+Epoch[38] Iter[450/786] Loss: 2.222 CE: 1.101 Tri: 0.014 CE_rec: 1.071 AIRL_rec: 0.0720 Acc: 0.992 LR: 1.53e-05
+Epoch[38] Iter[500/786] Loss: 2.217 CE: 1.099 Tri: 0.014 CE_rec: 1.069 AIRL_rec: 0.0708 Acc: 0.993 LR: 1.53e-05
+Epoch[38] Iter[550/786] Loss: 2.213 CE: 1.097 Tri: 0.013 CE_rec: 1.067 AIRL_rec: 0.0703 Acc: 0.993 LR: 1.53e-05
+Epoch[38] Iter[600/786] Loss: 2.210 CE: 1.096 Tri: 0.013 CE_rec: 1.066 AIRL_rec: 0.0696 Acc: 0.993 LR: 1.53e-05
+Epoch[38] Iter[650/786] Loss: 2.207 CE: 1.095 Tri: 0.013 CE_rec: 1.065 AIRL_rec: 0.0689 Acc: 0.993 LR: 1.53e-05
+Epoch[38] Iter[700/786] Loss: 2.203 CE: 1.093 Tri: 0.013 CE_rec: 1.064 AIRL_rec: 0.0681 Acc: 0.993 LR: 1.53e-05
+Epoch[38] done in 240.2s  Loss=2.198 Acc=0.993 AIRL-ISO[lam_eff=0.500 ce_rec=1.062 consistency=0.0669 deg_scale_mean=0.627 n_ground=28802]
+Epoch[39] Iter[50/786] Loss: 2.259 CE: 1.121 Tri: 0.016 CE_rec: 1.086 AIRL_rec: 0.0706 Acc: 0.988 LR: 1.42e-05
+Epoch[39] Iter[100/786] Loss: 2.238 CE: 1.112 Tri: 0.014 CE_rec: 1.077 AIRL_rec: 0.0709 Acc: 0.990 LR: 1.42e-05
+Epoch[39] Iter[150/786] Loss: 2.232 CE: 1.107 Tri: 0.015 CE_rec: 1.074 AIRL_rec: 0.0712 Acc: 0.992 LR: 1.42e-05
+Epoch[39] Iter[200/786] Loss: 2.229 CE: 1.105 Tri: 0.015 CE_rec: 1.073 AIRL_rec: 0.0710 Acc: 0.991 LR: 1.42e-05
+Epoch[39] Iter[250/786] Loss: 2.227 CE: 1.104 Tri: 0.016 CE_rec: 1.072 AIRL_rec: 0.0707 Acc: 0.991 LR: 1.42e-05
+Epoch[39] Iter[300/786] Loss: 2.222 CE: 1.101 Tri: 0.016 CE_rec: 1.070 AIRL_rec: 0.0700 Acc: 0.992 LR: 1.42e-05
+Epoch[39] Iter[350/786] Loss: 2.218 CE: 1.100 Tri: 0.015 CE_rec: 1.068 AIRL_rec: 0.0696 Acc: 0.992 LR: 1.42e-05
+Epoch[39] Iter[400/786] Loss: 2.215 CE: 1.098 Tri: 0.015 CE_rec: 1.067 AIRL_rec: 0.0691 Acc: 0.992 LR: 1.42e-05
+Epoch[39] Iter[450/786] Loss: 2.215 CE: 1.098 Tri: 0.016 CE_rec: 1.067 AIRL_rec: 0.0690 Acc: 0.992 LR: 1.42e-05
+Epoch[39] Iter[500/786] Loss: 2.214 CE: 1.097 Tri: 0.016 CE_rec: 1.066 AIRL_rec: 0.0687 Acc: 0.992 LR: 1.42e-05
+Epoch[39] Iter[550/786] Loss: 2.211 CE: 1.096 Tri: 0.016 CE_rec: 1.066 AIRL_rec: 0.0680 Acc: 0.992 LR: 1.42e-05
+Epoch[39] Iter[600/786] Loss: 2.208 CE: 1.095 Tri: 0.015 CE_rec: 1.065 AIRL_rec: 0.0674 Acc: 0.993 LR: 1.42e-05
+Epoch[39] Iter[650/786] Loss: 2.204 CE: 1.093 Tri: 0.015 CE_rec: 1.063 AIRL_rec: 0.0667 Acc: 0.993 LR: 1.42e-05
+Epoch[39] Iter[700/786] Loss: 2.200 CE: 1.091 Tri: 0.015 CE_rec: 1.062 AIRL_rec: 0.0658 Acc: 0.993 LR: 1.42e-05
+Epoch[39] done in 239.2s  Loss=2.194 Acc=0.993 AIRL-ISO[lam_eff=0.500 ce_rec=1.060 consistency=0.0646 deg_scale_mean=0.625 n_ground=28792]
+Epoch[40] Iter[50/786] Loss: 2.268 CE: 1.118 Tri: 0.031 CE_rec: 1.085 AIRL_rec: 0.0692 Acc: 0.991 LR: 1.31e-05
+Epoch[40] Iter[100/786] Loss: 2.237 CE: 1.106 Tri: 0.022 CE_rec: 1.074 AIRL_rec: 0.0695 Acc: 0.992 LR: 1.31e-05
+Epoch[40] Iter[150/786] Loss: 2.221 CE: 1.100 Tri: 0.018 CE_rec: 1.069 AIRL_rec: 0.0689 Acc: 0.992 LR: 1.31e-05
+Epoch[40] Iter[200/786] Loss: 2.216 CE: 1.097 Tri: 0.017 CE_rec: 1.067 AIRL_rec: 0.0683 Acc: 0.993 LR: 1.31e-05
+Epoch[40] Iter[250/786] Loss: 2.212 CE: 1.095 Tri: 0.016 CE_rec: 1.066 AIRL_rec: 0.0679 Acc: 0.992 LR: 1.31e-05
+Epoch[40] Iter[300/786] Loss: 2.210 CE: 1.095 Tri: 0.016 CE_rec: 1.065 AIRL_rec: 0.0678 Acc: 0.992 LR: 1.31e-05
+Epoch[40] Iter[350/786] Loss: 2.206 CE: 1.093 Tri: 0.015 CE_rec: 1.064 AIRL_rec: 0.0672 Acc: 0.992 LR: 1.31e-05
+Epoch[40] Iter[400/786] Loss: 2.202 CE: 1.091 Tri: 0.015 CE_rec: 1.063 AIRL_rec: 0.0663 Acc: 0.993 LR: 1.31e-05
+Epoch[40] Iter[450/786] Loss: 2.198 CE: 1.090 Tri: 0.014 CE_rec: 1.061 AIRL_rec: 0.0662 Acc: 0.993 LR: 1.31e-05
+Epoch[40] Iter[500/786] Loss: 2.194 CE: 1.088 Tri: 0.013 CE_rec: 1.060 AIRL_rec: 0.0655 Acc: 0.993 LR: 1.31e-05
+Epoch[40] Iter[550/786] Loss: 2.191 CE: 1.087 Tri: 0.013 CE_rec: 1.059 AIRL_rec: 0.0650 Acc: 0.994 LR: 1.31e-05
+Epoch[40] Iter[600/786] Loss: 2.187 CE: 1.085 Tri: 0.012 CE_rec: 1.058 AIRL_rec: 0.0646 Acc: 0.994 LR: 1.31e-05
+Epoch[40] Iter[650/786] Loss: 2.183 CE: 1.084 Tri: 0.012 CE_rec: 1.056 AIRL_rec: 0.0640 Acc: 0.994 LR: 1.31e-05
+Epoch[40] Iter[700/786] Loss: 2.180 CE: 1.082 Tri: 0.011 CE_rec: 1.055 AIRL_rec: 0.0632 Acc: 0.994 LR: 1.31e-05
+Epoch[40] done in 239.4s  Loss=2.175 Acc=0.994 AIRL-ISO[lam_eff=0.500 ce_rec=1.053 consistency=0.0621 deg_scale_mean=0.625 n_ground=28741]
+  ---- A<->G cross-view eval @ epoch 40 ----
+    [A->G] mAP=76.09  R1=83.87  R5=90.70  mINP=49.93
+    [G->A] mAP=76.69  R1=84.82  R5=90.50  mINP=42.19
+    [mean] mAP=76.39  R1=84.34
+  ---- AIRL-ISO dual-branch (fuse_w=0.25) @ epoch 40 ----
+    [A->G] full mAP=76.09 R1=83.87 | rec mAP=75.40 R1=83.23 | FUSE mAP=77.58 R1=85.44
+    [G->A] full mAP=76.69 R1=84.82 | rec mAP=75.07 R1=83.88 | FUSE mAP=77.65 R1=85.37
+    [mean] full=76.39 rec=75.23 FUSE=77.62  <- model-selection uses FUSE
+    * new best mean mAP=77.62 (epoch 40) saved
+Epoch[41] Iter[50/786] Loss: 2.205 CE: 1.096 Tri: 0.009 CE_rec: 1.066 AIRL_rec: 0.0657 Acc: 0.993 LR: 1.21e-05
+Epoch[41] Iter[100/786] Loss: 2.212 CE: 1.097 Tri: 0.011 CE_rec: 1.070 AIRL_rec: 0.0675 Acc: 0.992 LR: 1.21e-05
+Epoch[41] Iter[150/786] Loss: 2.205 CE: 1.094 Tri: 0.011 CE_rec: 1.067 AIRL_rec: 0.0673 Acc: 0.993 LR: 1.21e-05
+Epoch[41] Iter[200/786] Loss: 2.201 CE: 1.092 Tri: 0.011 CE_rec: 1.064 AIRL_rec: 0.0670 Acc: 0.993 LR: 1.21e-05
+Epoch[41] Iter[250/786] Loss: 2.198 CE: 1.090 Tri: 0.011 CE_rec: 1.063 AIRL_rec: 0.0666 Acc: 0.993 LR: 1.21e-05
+Epoch[41] Iter[300/786] Loss: 2.196 CE: 1.089 Tri: 0.012 CE_rec: 1.062 AIRL_rec: 0.0662 Acc: 0.993 LR: 1.21e-05
+Epoch[41] Iter[350/786] Loss: 2.194 CE: 1.088 Tri: 0.011 CE_rec: 1.062 AIRL_rec: 0.0656 Acc: 0.993 LR: 1.21e-05
+Epoch[41] Iter[400/786] Loss: 2.192 CE: 1.087 Tri: 0.011 CE_rec: 1.061 AIRL_rec: 0.0651 Acc: 0.993 LR: 1.21e-05
+Epoch[41] Iter[450/786] Loss: 2.192 CE: 1.087 Tri: 0.012 CE_rec: 1.061 AIRL_rec: 0.0647 Acc: 0.993 LR: 1.21e-05
+Epoch[41] Iter[500/786] Loss: 2.189 CE: 1.086 Tri: 0.012 CE_rec: 1.059 AIRL_rec: 0.0644 Acc: 0.993 LR: 1.21e-05
+Epoch[41] Iter[550/786] Loss: 2.186 CE: 1.084 Tri: 0.011 CE_rec: 1.058 AIRL_rec: 0.0639 Acc: 0.994 LR: 1.21e-05
+Epoch[41] Iter[600/786] Loss: 2.183 CE: 1.083 Tri: 0.011 CE_rec: 1.057 AIRL_rec: 0.0633 Acc: 0.994 LR: 1.21e-05
+Epoch[41] Iter[650/786] Loss: 2.181 CE: 1.082 Tri: 0.011 CE_rec: 1.056 AIRL_rec: 0.0626 Acc: 0.994 LR: 1.21e-05
+Epoch[41] Iter[700/786] Loss: 2.177 CE: 1.080 Tri: 0.011 CE_rec: 1.055 AIRL_rec: 0.0617 Acc: 0.994 LR: 1.21e-05
+Epoch[41] done in 232.2s  Loss=2.171 Acc=0.994 AIRL-ISO[lam_eff=0.500 ce_rec=1.053 consistency=0.0606 deg_scale_mean=0.625 n_ground=28778]
+Epoch[42] Iter[50/786] Loss: 2.212 CE: 1.100 Tri: 0.009 CE_rec: 1.072 AIRL_rec: 0.0614 Acc: 0.991 LR: 1.11e-05
+Epoch[42] Iter[100/786] Loss: 2.206 CE: 1.095 Tri: 0.012 CE_rec: 1.068 AIRL_rec: 0.0633 Acc: 0.992 LR: 1.11e-05
+Epoch[42] Iter[150/786] Loss: 2.197 CE: 1.090 Tri: 0.011 CE_rec: 1.063 AIRL_rec: 0.0644 Acc: 0.993 LR: 1.11e-05
+Epoch[42] Iter[200/786] Loss: 2.191 CE: 1.088 Tri: 0.011 CE_rec: 1.060 AIRL_rec: 0.0644 Acc: 0.994 LR: 1.11e-05
+Epoch[42] Iter[250/786] Loss: 2.195 CE: 1.089 Tri: 0.013 CE_rec: 1.061 AIRL_rec: 0.0650 Acc: 0.993 LR: 1.11e-05
+Epoch[42] Iter[300/786] Loss: 2.193 CE: 1.088 Tri: 0.013 CE_rec: 1.060 AIRL_rec: 0.0644 Acc: 0.993 LR: 1.11e-05
+Epoch[42] Iter[350/786] Loss: 2.191 CE: 1.087 Tri: 0.012 CE_rec: 1.059 AIRL_rec: 0.0642 Acc: 0.993 LR: 1.11e-05
+Epoch[42] Iter[400/786] Loss: 2.186 CE: 1.085 Tri: 0.012 CE_rec: 1.058 AIRL_rec: 0.0636 Acc: 0.994 LR: 1.11e-05
+Epoch[42] Iter[450/786] Loss: 2.183 CE: 1.084 Tri: 0.011 CE_rec: 1.056 AIRL_rec: 0.0630 Acc: 0.994 LR: 1.11e-05
+Epoch[42] Iter[500/786] Loss: 2.183 CE: 1.084 Tri: 0.012 CE_rec: 1.057 AIRL_rec: 0.0624 Acc: 0.993 LR: 1.11e-05
+Epoch[42] Iter[550/786] Loss: 2.180 CE: 1.082 Tri: 0.011 CE_rec: 1.056 AIRL_rec: 0.0618 Acc: 0.994 LR: 1.11e-05
+Epoch[42] Iter[600/786] Loss: 2.177 CE: 1.081 Tri: 0.011 CE_rec: 1.055 AIRL_rec: 0.0613 Acc: 0.994 LR: 1.11e-05
+Epoch[42] Iter[650/786] Loss: 2.173 CE: 1.079 Tri: 0.010 CE_rec: 1.053 AIRL_rec: 0.0605 Acc: 0.994 LR: 1.11e-05
+Epoch[42] Iter[700/786] Loss: 2.169 CE: 1.077 Tri: 0.010 CE_rec: 1.052 AIRL_rec: 0.0595 Acc: 0.994 LR: 1.11e-05
+Epoch[42] done in 234.3s  Loss=2.164 Acc=0.995 AIRL-ISO[lam_eff=0.500 ce_rec=1.050 consistency=0.0584 deg_scale_mean=0.627 n_ground=28749]
+Epoch[43] Iter[50/786] Loss: 2.202 CE: 1.091 Tri: 0.014 CE_rec: 1.066 AIRL_rec: 0.0604 Acc: 0.994 LR: 1.00e-05
+Epoch[43] Iter[100/786] Loss: 2.185 CE: 1.084 Tri: 0.010 CE_rec: 1.061 AIRL_rec: 0.0605 Acc: 0.995 LR: 1.00e-05
+Epoch[43] Iter[150/786] Loss: 2.182 CE: 1.083 Tri: 0.010 CE_rec: 1.059 AIRL_rec: 0.0610 Acc: 0.995 LR: 1.00e-05
+Epoch[43] Iter[200/786] Loss: 2.181 CE: 1.082 Tri: 0.012 CE_rec: 1.057 AIRL_rec: 0.0617 Acc: 0.994 LR: 1.00e-05
+Epoch[43] Iter[250/786] Loss: 2.180 CE: 1.081 Tri: 0.011 CE_rec: 1.057 AIRL_rec: 0.0617 Acc: 0.994 LR: 1.00e-05
+Epoch[43] Iter[300/786] Loss: 2.176 CE: 1.080 Tri: 0.010 CE_rec: 1.055 AIRL_rec: 0.0615 Acc: 0.994 LR: 1.00e-05
+Epoch[43] Iter[350/786] Loss: 2.176 CE: 1.080 Tri: 0.010 CE_rec: 1.055 AIRL_rec: 0.0614 Acc: 0.994 LR: 1.00e-05
+Epoch[43] Iter[400/786] Loss: 2.175 CE: 1.080 Tri: 0.010 CE_rec: 1.055 AIRL_rec: 0.0614 Acc: 0.994 LR: 1.00e-05
+Epoch[43] Iter[450/786] Loss: 2.172 CE: 1.078 Tri: 0.010 CE_rec: 1.054 AIRL_rec: 0.0608 Acc: 0.994 LR: 1.00e-05
+Epoch[43] Iter[500/786] Loss: 2.170 CE: 1.077 Tri: 0.010 CE_rec: 1.053 AIRL_rec: 0.0606 Acc: 0.995 LR: 1.00e-05
+Epoch[43] Iter[550/786] Loss: 2.169 CE: 1.077 Tri: 0.010 CE_rec: 1.052 AIRL_rec: 0.0602 Acc: 0.995 LR: 1.00e-05
+Epoch[43] Iter[600/786] Loss: 2.168 CE: 1.076 Tri: 0.010 CE_rec: 1.052 AIRL_rec: 0.0597 Acc: 0.995 LR: 1.00e-05
+Epoch[43] Iter[650/786] Loss: 2.165 CE: 1.075 Tri: 0.010 CE_rec: 1.050 AIRL_rec: 0.0590 Acc: 0.995 LR: 1.00e-05
+Epoch[43] Iter[700/786] Loss: 2.160 CE: 1.073 Tri: 0.010 CE_rec: 1.049 AIRL_rec: 0.0580 Acc: 0.995 LR: 1.00e-05
+Epoch[43] done in 235.0s  Loss=2.156 Acc=0.995 AIRL-ISO[lam_eff=0.500 ce_rec=1.047 consistency=0.0572 deg_scale_mean=0.625 n_ground=28769]
+Epoch[44] Iter[50/786] Loss: 2.204 CE: 1.090 Tri: 0.020 CE_rec: 1.064 AIRL_rec: 0.0601 Acc: 0.993 LR: 9.07e-06
+Epoch[44] Iter[100/786] Loss: 2.188 CE: 1.085 Tri: 0.015 CE_rec: 1.058 AIRL_rec: 0.0603 Acc: 0.994 LR: 9.07e-06
+Epoch[44] Iter[150/786] Loss: 2.186 CE: 1.083 Tri: 0.015 CE_rec: 1.057 AIRL_rec: 0.0610 Acc: 0.994 LR: 9.07e-06
+Epoch[44] Iter[200/786] Loss: 2.185 CE: 1.082 Tri: 0.017 CE_rec: 1.057 AIRL_rec: 0.0608 Acc: 0.993 LR: 9.07e-06
+Epoch[44] Iter[250/786] Loss: 2.181 CE: 1.080 Tri: 0.016 CE_rec: 1.055 AIRL_rec: 0.0610 Acc: 0.994 LR: 9.07e-06
+Epoch[44] Iter[300/786] Loss: 2.178 CE: 1.079 Tri: 0.014 CE_rec: 1.054 AIRL_rec: 0.0605 Acc: 0.994 LR: 9.07e-06
+Epoch[44] Iter[350/786] Loss: 2.176 CE: 1.079 Tri: 0.013 CE_rec: 1.054 AIRL_rec: 0.0605 Acc: 0.994 LR: 9.07e-06
+Epoch[44] Iter[400/786] Loss: 2.173 CE: 1.077 Tri: 0.012 CE_rec: 1.053 AIRL_rec: 0.0604 Acc: 0.994 LR: 9.07e-06
+Epoch[44] Iter[450/786] Loss: 2.170 CE: 1.076 Tri: 0.012 CE_rec: 1.052 AIRL_rec: 0.0599 Acc: 0.994 LR: 9.07e-06
+Epoch[44] Iter[500/786] Loss: 2.168 CE: 1.075 Tri: 0.011 CE_rec: 1.052 AIRL_rec: 0.0597 Acc: 0.994 LR: 9.07e-06
+Epoch[44] Iter[550/786] Loss: 2.164 CE: 1.074 Tri: 0.011 CE_rec: 1.050 AIRL_rec: 0.0590 Acc: 0.994 LR: 9.07e-06
+Epoch[44] Iter[600/786] Loss: 2.161 CE: 1.073 Tri: 0.010 CE_rec: 1.049 AIRL_rec: 0.0582 Acc: 0.995 LR: 9.07e-06
+Epoch[44] Iter[650/786] Loss: 2.159 CE: 1.072 Tri: 0.010 CE_rec: 1.048 AIRL_rec: 0.0574 Acc: 0.995 LR: 9.07e-06
+Epoch[44] Iter[700/786] Loss: 2.155 CE: 1.070 Tri: 0.010 CE_rec: 1.047 AIRL_rec: 0.0568 Acc: 0.995 LR: 9.07e-06
+Epoch[44] done in 236.8s  Loss=2.151 Acc=0.995 AIRL-ISO[lam_eff=0.500 ce_rec=1.045 consistency=0.0559 deg_scale_mean=0.625 n_ground=28880]
+Epoch[45] Iter[50/786] Loss: 2.187 CE: 1.086 Tri: 0.009 CE_rec: 1.061 AIRL_rec: 0.0600 Acc: 0.992 LR: 8.12e-06
+Epoch[45] Iter[100/786] Loss: 2.175 CE: 1.080 Tri: 0.010 CE_rec: 1.055 AIRL_rec: 0.0601 Acc: 0.994 LR: 8.12e-06
+Epoch[45] Iter[150/786] Loss: 2.164 CE: 1.075 Tri: 0.008 CE_rec: 1.051 AIRL_rec: 0.0597 Acc: 0.995 LR: 8.12e-06
+Epoch[45] Iter[200/786] Loss: 2.161 CE: 1.074 Tri: 0.007 CE_rec: 1.050 AIRL_rec: 0.0597 Acc: 0.995 LR: 8.12e-06
+Epoch[45] Iter[250/786] Loss: 2.161 CE: 1.074 Tri: 0.008 CE_rec: 1.050 AIRL_rec: 0.0593 Acc: 0.995 LR: 8.12e-06
+Epoch[45] Iter[300/786] Loss: 2.162 CE: 1.074 Tri: 0.008 CE_rec: 1.051 AIRL_rec: 0.0592 Acc: 0.995 LR: 8.12e-06
+Epoch[45] Iter[350/786] Loss: 2.161 CE: 1.073 Tri: 0.008 CE_rec: 1.050 AIRL_rec: 0.0590 Acc: 0.995 LR: 8.12e-06
+Epoch[45] Iter[400/786] Loss: 2.158 CE: 1.072 Tri: 0.008 CE_rec: 1.049 AIRL_rec: 0.0587 Acc: 0.995 LR: 8.12e-06
+Epoch[45] Iter[450/786] Loss: 2.155 CE: 1.071 Tri: 0.007 CE_rec: 1.047 AIRL_rec: 0.0581 Acc: 0.995 LR: 8.12e-06
+Epoch[45] Iter[500/786] Loss: 2.155 CE: 1.071 Tri: 0.008 CE_rec: 1.048 AIRL_rec: 0.0576 Acc: 0.995 LR: 8.12e-06
+Epoch[45] Iter[550/786] Loss: 2.153 CE: 1.070 Tri: 0.008 CE_rec: 1.047 AIRL_rec: 0.0574 Acc: 0.995 LR: 8.12e-06
+Epoch[45] Iter[600/786] Loss: 2.151 CE: 1.069 Tri: 0.008 CE_rec: 1.046 AIRL_rec: 0.0569 Acc: 0.995 LR: 8.12e-06
+Epoch[45] Iter[650/786] Loss: 2.148 CE: 1.068 Tri: 0.007 CE_rec: 1.045 AIRL_rec: 0.0562 Acc: 0.996 LR: 8.12e-06
+Epoch[45] Iter[700/786] Loss: 2.145 CE: 1.066 Tri: 0.007 CE_rec: 1.044 AIRL_rec: 0.0554 Acc: 0.996 LR: 8.12e-06
+Epoch[45] done in 239.5s  Loss=2.140 Acc=0.996 AIRL-ISO[lam_eff=0.500 ce_rec=1.042 consistency=0.0546 deg_scale_mean=0.625 n_ground=28820]
+Epoch[46] Iter[50/786] Loss: 2.185 CE: 1.083 Tri: 0.011 CE_rec: 1.062 AIRL_rec: 0.0578 Acc: 0.990 LR: 7.21e-06
+Epoch[46] Iter[100/786] Loss: 2.168 CE: 1.076 Tri: 0.008 CE_rec: 1.055 AIRL_rec: 0.0569 Acc: 0.993 LR: 7.21e-06
+Epoch[46] Iter[150/786] Loss: 2.161 CE: 1.073 Tri: 0.007 CE_rec: 1.051 AIRL_rec: 0.0576 Acc: 0.994 LR: 7.21e-06
+Epoch[46] Iter[200/786] Loss: 2.160 CE: 1.072 Tri: 0.007 CE_rec: 1.051 AIRL_rec: 0.0582 Acc: 0.994 LR: 7.21e-06
+Epoch[46] Iter[250/786] Loss: 2.158 CE: 1.071 Tri: 0.008 CE_rec: 1.050 AIRL_rec: 0.0582 Acc: 0.994 LR: 7.21e-06
+Epoch[46] Iter[300/786] Loss: 2.154 CE: 1.070 Tri: 0.008 CE_rec: 1.048 AIRL_rec: 0.0584 Acc: 0.995 LR: 7.21e-06
+Epoch[46] Iter[350/786] Loss: 2.150 CE: 1.068 Tri: 0.007 CE_rec: 1.046 AIRL_rec: 0.0579 Acc: 0.995 LR: 7.21e-06
+Epoch[46] Iter[400/786] Loss: 2.149 CE: 1.067 Tri: 0.007 CE_rec: 1.046 AIRL_rec: 0.0573 Acc: 0.995 LR: 7.21e-06
+Epoch[46] Iter[450/786] Loss: 2.146 CE: 1.066 Tri: 0.007 CE_rec: 1.044 AIRL_rec: 0.0568 Acc: 0.995 LR: 7.21e-06
+Epoch[46] Iter[500/786] Loss: 2.144 CE: 1.065 Tri: 0.007 CE_rec: 1.044 AIRL_rec: 0.0563 Acc: 0.995 LR: 7.21e-06
+Epoch[46] Iter[550/786] Loss: 2.143 CE: 1.064 Tri: 0.007 CE_rec: 1.043 AIRL_rec: 0.0558 Acc: 0.996 LR: 7.21e-06
+Epoch[46] Iter[600/786] Loss: 2.140 CE: 1.063 Tri: 0.007 CE_rec: 1.042 AIRL_rec: 0.0553 Acc: 0.996 LR: 7.21e-06
+Epoch[46] Iter[650/786] Loss: 2.138 CE: 1.062 Tri: 0.007 CE_rec: 1.041 AIRL_rec: 0.0546 Acc: 0.996 LR: 7.21e-06
+Epoch[46] Iter[700/786] Loss: 2.135 CE: 1.061 Tri: 0.007 CE_rec: 1.040 AIRL_rec: 0.0538 Acc: 0.996 LR: 7.21e-06
+Epoch[46] done in 241.2s  Loss=2.131 Acc=0.996 AIRL-ISO[lam_eff=0.500 ce_rec=1.039 consistency=0.0528 deg_scale_mean=0.624 n_ground=28864]
+Epoch[47] Iter[50/786] Loss: 2.168 CE: 1.075 Tri: 0.007 CE_rec: 1.055 AIRL_rec: 0.0589 Acc: 0.994 LR: 6.35e-06
+Epoch[47] Iter[100/786] Loss: 2.161 CE: 1.073 Tri: 0.008 CE_rec: 1.050 AIRL_rec: 0.0584 Acc: 0.995 LR: 6.35e-06
+Epoch[47] Iter[150/786] Loss: 2.153 CE: 1.070 Tri: 0.007 CE_rec: 1.047 AIRL_rec: 0.0579 Acc: 0.995 LR: 6.35e-06
+Epoch[47] Iter[200/786] Loss: 2.151 CE: 1.069 Tri: 0.006 CE_rec: 1.047 AIRL_rec: 0.0574 Acc: 0.995 LR: 6.35e-06
+Epoch[47] Iter[250/786] Loss: 2.150 CE: 1.068 Tri: 0.007 CE_rec: 1.046 AIRL_rec: 0.0575 Acc: 0.995 LR: 6.35e-06
+Epoch[47] Iter[300/786] Loss: 2.148 CE: 1.067 Tri: 0.007 CE_rec: 1.045 AIRL_rec: 0.0572 Acc: 0.995 LR: 6.35e-06
+Epoch[47] Iter[350/786] Loss: 2.148 CE: 1.067 Tri: 0.008 CE_rec: 1.045 AIRL_rec: 0.0569 Acc: 0.995 LR: 6.35e-06
+Epoch[47] Iter[400/786] Loss: 2.145 CE: 1.066 Tri: 0.007 CE_rec: 1.044 AIRL_rec: 0.0564 Acc: 0.995 LR: 6.35e-06
+Epoch[47] Iter[450/786] Loss: 2.144 CE: 1.065 Tri: 0.007 CE_rec: 1.044 AIRL_rec: 0.0560 Acc: 0.995 LR: 6.35e-06
+Epoch[47] Iter[500/786] Loss: 2.142 CE: 1.064 Tri: 0.007 CE_rec: 1.043 AIRL_rec: 0.0553 Acc: 0.995 LR: 6.35e-06
+Epoch[47] Iter[550/786] Loss: 2.139 CE: 1.063 Tri: 0.007 CE_rec: 1.042 AIRL_rec: 0.0548 Acc: 0.996 LR: 6.35e-06
+Epoch[47] Iter[600/786] Loss: 2.137 CE: 1.062 Tri: 0.007 CE_rec: 1.041 AIRL_rec: 0.0542 Acc: 0.996 LR: 6.35e-06
+Epoch[47] Iter[650/786] Loss: 2.134 CE: 1.061 Tri: 0.006 CE_rec: 1.040 AIRL_rec: 0.0534 Acc: 0.996 LR: 6.35e-06
+Epoch[47] Iter[700/786] Loss: 2.132 CE: 1.060 Tri: 0.006 CE_rec: 1.039 AIRL_rec: 0.0527 Acc: 0.996 LR: 6.35e-06
+Epoch[47] done in 237.3s  Loss=2.129 Acc=0.996 AIRL-ISO[lam_eff=0.500 ce_rec=1.038 consistency=0.0521 deg_scale_mean=0.624 n_ground=28543]
+Epoch[48] Iter[50/786] Loss: 2.150 CE: 1.069 Tri: 0.004 CE_rec: 1.049 AIRL_rec: 0.0557 Acc: 0.994 LR: 5.52e-06
+Epoch[48] Iter[100/786] Loss: 2.155 CE: 1.069 Tri: 0.009 CE_rec: 1.049 AIRL_rec: 0.0574 Acc: 0.994 LR: 5.52e-06
+Epoch[48] Iter[150/786] Loss: 2.153 CE: 1.069 Tri: 0.007 CE_rec: 1.048 AIRL_rec: 0.0572 Acc: 0.994 LR: 5.52e-06
+Epoch[48] Iter[200/786] Loss: 2.150 CE: 1.068 Tri: 0.007 CE_rec: 1.047 AIRL_rec: 0.0567 Acc: 0.994 LR: 5.52e-06
+Epoch[48] Iter[250/786] Loss: 2.148 CE: 1.067 Tri: 0.007 CE_rec: 1.046 AIRL_rec: 0.0564 Acc: 0.994 LR: 5.52e-06
+Epoch[48] Iter[300/786] Loss: 2.146 CE: 1.066 Tri: 0.007 CE_rec: 1.045 AIRL_rec: 0.0562 Acc: 0.994 LR: 5.52e-06
+Epoch[48] Iter[350/786] Loss: 2.145 CE: 1.066 Tri: 0.007 CE_rec: 1.044 AIRL_rec: 0.0559 Acc: 0.994 LR: 5.52e-06
+Epoch[48] Iter[400/786] Loss: 2.142 CE: 1.065 Tri: 0.007 CE_rec: 1.043 AIRL_rec: 0.0559 Acc: 0.995 LR: 5.52e-06
+Epoch[48] Iter[450/786] Loss: 2.140 CE: 1.064 Tri: 0.006 CE_rec: 1.042 AIRL_rec: 0.0554 Acc: 0.995 LR: 5.52e-06
+Epoch[48] Iter[500/786] Loss: 2.138 CE: 1.063 Tri: 0.006 CE_rec: 1.041 AIRL_rec: 0.0550 Acc: 0.995 LR: 5.52e-06
+Epoch[48] Iter[550/786] Loss: 2.136 CE: 1.062 Tri: 0.006 CE_rec: 1.041 AIRL_rec: 0.0546 Acc: 0.995 LR: 5.52e-06
+Epoch[48] Iter[600/786] Loss: 2.133 CE: 1.061 Tri: 0.006 CE_rec: 1.040 AIRL_rec: 0.0538 Acc: 0.996 LR: 5.52e-06
+Epoch[48] Iter[650/786] Loss: 2.131 CE: 1.060 Tri: 0.006 CE_rec: 1.039 AIRL_rec: 0.0533 Acc: 0.996 LR: 5.52e-06
+Epoch[48] Iter[700/786] Loss: 2.128 CE: 1.058 Tri: 0.006 CE_rec: 1.038 AIRL_rec: 0.0526 Acc: 0.996 LR: 5.52e-06
+Epoch[48] done in 239.6s  Loss=2.125 Acc=0.996 AIRL-ISO[lam_eff=0.500 ce_rec=1.037 consistency=0.0518 deg_scale_mean=0.625 n_ground=28757]
+Epoch[49] Iter[50/786] Loss: 2.149 CE: 1.068 Tri: 0.005 CE_rec: 1.050 AIRL_rec: 0.0531 Acc: 0.996 LR: 4.74e-06
+Epoch[49] Iter[100/786] Loss: 2.151 CE: 1.069 Tri: 0.007 CE_rec: 1.048 AIRL_rec: 0.0543 Acc: 0.994 LR: 4.74e-06
+Epoch[49] Iter[150/786] Loss: 2.149 CE: 1.067 Tri: 0.008 CE_rec: 1.046 AIRL_rec: 0.0561 Acc: 0.994 LR: 4.74e-06
+Epoch[49] Iter[200/786] Loss: 2.145 CE: 1.065 Tri: 0.008 CE_rec: 1.044 AIRL_rec: 0.0564 Acc: 0.995 LR: 4.74e-06
+Epoch[49] Iter[250/786] Loss: 2.142 CE: 1.064 Tri: 0.007 CE_rec: 1.043 AIRL_rec: 0.0558 Acc: 0.995 LR: 4.74e-06
+Epoch[49] Iter[300/786] Loss: 2.141 CE: 1.064 Tri: 0.007 CE_rec: 1.043 AIRL_rec: 0.0555 Acc: 0.995 LR: 4.74e-06
+Epoch[49] Iter[350/786] Loss: 2.142 CE: 1.064 Tri: 0.007 CE_rec: 1.044 AIRL_rec: 0.0554 Acc: 0.995 LR: 4.74e-06
+Epoch[49] Iter[400/786] Loss: 2.140 CE: 1.063 Tri: 0.007 CE_rec: 1.043 AIRL_rec: 0.0552 Acc: 0.995 LR: 4.74e-06
+Epoch[49] Iter[450/786] Loss: 2.139 CE: 1.062 Tri: 0.007 CE_rec: 1.042 AIRL_rec: 0.0548 Acc: 0.995 LR: 4.74e-06
+Epoch[49] Iter[500/786] Loss: 2.136 CE: 1.061 Tri: 0.007 CE_rec: 1.041 AIRL_rec: 0.0543 Acc: 0.995 LR: 4.74e-06
+Epoch[49] Iter[550/786] Loss: 2.134 CE: 1.060 Tri: 0.007 CE_rec: 1.041 AIRL_rec: 0.0537 Acc: 0.995 LR: 4.74e-06
+Epoch[49] Iter[600/786] Loss: 2.132 CE: 1.059 Tri: 0.007 CE_rec: 1.040 AIRL_rec: 0.0530 Acc: 0.996 LR: 4.74e-06
+Epoch[49] Iter[650/786] Loss: 2.129 CE: 1.058 Tri: 0.006 CE_rec: 1.039 AIRL_rec: 0.0524 Acc: 0.996 LR: 4.74e-06
+Epoch[49] Iter[700/786] Loss: 2.126 CE: 1.057 Tri: 0.006 CE_rec: 1.037 AIRL_rec: 0.0517 Acc: 0.996 LR: 4.74e-06
+Epoch[49] done in 239.2s  Loss=2.122 Acc=0.996 AIRL-ISO[lam_eff=0.500 ce_rec=1.036 consistency=0.0509 deg_scale_mean=0.625 n_ground=28643]
+Epoch[50] Iter[50/786] Loss: 2.137 CE: 1.064 Tri: 0.002 CE_rec: 1.044 AIRL_rec: 0.0546 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[100/786] Loss: 2.133 CE: 1.062 Tri: 0.003 CE_rec: 1.041 AIRL_rec: 0.0545 Acc: 0.997 LR: 4.02e-06
+Epoch[50] Iter[150/786] Loss: 2.132 CE: 1.060 Tri: 0.005 CE_rec: 1.040 AIRL_rec: 0.0542 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[200/786] Loss: 2.133 CE: 1.059 Tri: 0.007 CE_rec: 1.040 AIRL_rec: 0.0544 Acc: 0.997 LR: 4.02e-06
+Epoch[50] Iter[250/786] Loss: 2.136 CE: 1.060 Tri: 0.007 CE_rec: 1.041 AIRL_rec: 0.0551 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[300/786] Loss: 2.135 CE: 1.060 Tri: 0.007 CE_rec: 1.041 AIRL_rec: 0.0546 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[350/786] Loss: 2.134 CE: 1.059 Tri: 0.007 CE_rec: 1.040 AIRL_rec: 0.0544 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[400/786] Loss: 2.131 CE: 1.059 Tri: 0.006 CE_rec: 1.039 AIRL_rec: 0.0541 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[450/786] Loss: 2.129 CE: 1.058 Tri: 0.006 CE_rec: 1.038 AIRL_rec: 0.0537 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[500/786] Loss: 2.127 CE: 1.057 Tri: 0.006 CE_rec: 1.038 AIRL_rec: 0.0530 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[550/786] Loss: 2.126 CE: 1.056 Tri: 0.005 CE_rec: 1.038 AIRL_rec: 0.0525 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[600/786] Loss: 2.124 CE: 1.056 Tri: 0.006 CE_rec: 1.037 AIRL_rec: 0.0519 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[650/786] Loss: 2.122 CE: 1.055 Tri: 0.006 CE_rec: 1.036 AIRL_rec: 0.0514 Acc: 0.996 LR: 4.02e-06
+Epoch[50] Iter[700/786] Loss: 2.119 CE: 1.053 Tri: 0.006 CE_rec: 1.035 AIRL_rec: 0.0505 Acc: 0.997 LR: 4.02e-06
+Epoch[50] done in 239.6s  Loss=2.116 Acc=0.997 AIRL-ISO[lam_eff=0.500 ce_rec=1.034 consistency=0.0497 deg_scale_mean=0.624 n_ground=28797]

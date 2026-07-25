@@ -1,0 +1,35 @@
+{
+  "attention_mask_semantics": "additive CLS-query to patch-key only",
+  "checkpoint": "/home/afr/SOLIDER-REID/clip_l14_openclip.safetensors",
+  "checkpoint_sha256": "9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e",
+  "checks": {
+    "all_one_all_valid": true,
+    "all_one_repeat_exact": true,
+    "all_one_vs_official_max_abs": 1.341104507446289e-07,
+    "finite": true,
+    "official_vs_manual_max_abs": 0.0,
+    "sparse_all_valid": true,
+    "sparse_min_region_max_abs_change": 0.055571548640728,
+    "sparse_repeat_exact": true,
+    "zero_all_invalid": true,
+    "zero_output_exact": true
+  },
+  "device": "cpu",
+  "gates": {
+    "all_one_parity": true,
+    "finite": true,
+    "manual_24_block_parity": true,
+    "null": true,
+    "repeat": true,
+    "sparse_effective": true,
+    "validity": true
+  },
+  "leak_ratio": 0.01,
+  "open_clip_version": "2.32.0",
+  "regions": 5,
+  "script_sha256": "7206dc13bf69b5666b54169ae3333f838c48b16d0c963512e7c67d906354c2c7",
+  "split_block": 20,
+  "status": "PASS",
+  "torch_version": "1.13.1"
+}
+ELAPSED=4.84 MAXRSS=3654036

@@ -1,0 +1,19 @@
+/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+=> Occluded-Duke loaded
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+/home/afr/SOLIDER-REID-exp411-pcmpsr-feb56c1-v1/model/backbones/swin_transformer.py:1179: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+{"backbone_nonzero_grad_tensors": 181, "batch": 64, "cache_sha256": "b07576130a0c50b89194f2c59467defcf39293d96ca886616865eb198e7965d1", "cache_source_head": "ebf60f2b4a5c943958f7077779d8500c2855874a", "control_owner_change": {"generic": 0.17499999701976776, "pose_only": 0.20937500894069672, "wrong_rgb": 0.28437501192092896}, "default_off_loss": 20.31353187561035, "default_off_state_forward_loss_rng_exact": true, "first_successful_update": 5, "identities": 16, "instances_per_identity": 4, "isolated_set_backbone_nonzero_grad_tensors": 173, "isolated_set_stage3_nonzero_grad_tensors": 26, "loss": 8.044200897216797, "native_attempts": [{"attempt": 1, "native_overflow": true, "nonfinite_gradient_tensors": 17, "scale_after": 32768.0, "scale_before": 65536.0, "updated": false}, {"attempt": 2, "native_overflow": true, "nonfinite_gradient_tensors": 3, "scale_after": 16384.0, "scale_before": 32768.0, "updated": false}, {"attempt": 3, "native_overflow": true, "nonfinite_gradient_tensors": 2, "scale_after": 8192.0, "scale_before": 16384.0, "updated": false}, {"attempt": 4, "native_overflow": true, "nonfinite_gradient_tensors": 1, "scale_after": 4096.0, "scale_before": 8192.0, "updated": false}, {"attempt": 5, "native_overflow": false, "nonfinite_gradient_tensors": 0, "scale_after": 4096.0, "scale_before": 4096.0, "updated": true}], "negative_set_distance": 67.94712829589844, "owner_fallback_fraction": 0.0, "owner_unique_mean": 2.3125, "pose_loss": 0.9184324741363525, "positive_set_distance": 57.90022659301758, "reid_loss": 7.952357292175293, "schema": "exp411-pcmpsr-real-batch-v1", "set_loss": 1.6809189319610596, "stage3_nonzero_grad_tensors": 26, "status": "PASS", "updated_parameter": "base.stages.3.blocks.1.attn.w_msa.qkv.weight"}

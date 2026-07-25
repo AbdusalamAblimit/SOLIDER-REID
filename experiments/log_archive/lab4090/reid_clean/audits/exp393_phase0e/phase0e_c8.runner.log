@@ -1,0 +1,122 @@
+{
+  "checks": {
+    "all_codes_finite": true,
+    "all_features_finite": true,
+    "all_recipient_slots_valid": true,
+    "audit_images": 3,
+    "code_shape": [
+      8,
+      5,
+      16
+    ],
+    "correct_vs_donor_donor_margin_by_slot": [
+      0.8056921249706257,
+      0.77771554884068,
+      0.8982663123640018,
+      0.6468187430691074,
+      0.9169626502938525
+    ],
+    "correct_vs_donor_recipient_margin_by_slot": [
+      0.8467079103986448,
+      0.8857239949459842,
+      1.0467814230957373,
+      0.7181225777708224,
+      0.8887896635569987
+    ],
+    "correct_vs_wrong_mask_margin_by_slot": [
+      0.620550906761711,
+      0.173345417738621,
+      0.6265216458317922,
+      0.20296568580883906,
+      0.7558095758943886
+    ],
+    "donor_different_pid": true,
+    "donor_indices": [
+      8251,
+      2263,
+      9741,
+      12548,
+      12845,
+      4755,
+      9500,
+      1978
+    ],
+    "donor_no_fixed_point": true,
+    "donor_pids": [
+      380,
+      99,
+      442,
+      552,
+      567,
+      218,
+      432,
+      87
+    ],
+    "fit_images": 5,
+    "flip_mask_exact": true,
+    "flip_rgb_exact": true,
+    "global_shape": [
+      8,
+      768
+    ],
+    "hard_owner_pixel_product_max": 0.0,
+    "null_exact": true,
+    "null_valid_exact": true,
+    "official_global_parity_max_abs": 0.0,
+    "pcmbcls_seconds_total": 1.048975626938045,
+    "peak_memory_bytes": 1712272384,
+    "region_shape": [
+      8,
+      5,
+      768
+    ],
+    "repeat_exact": true,
+    "selected_indices": [
+      8215,
+      2121,
+      9717,
+      12533,
+      12830,
+      4731,
+      9458,
+      1956
+    ],
+    "selected_paths": [
+      "bounding_box_train/0789_c2_f0205417.jpg",
+      "bounding_box_train/0202_c5_f0090000.jpg",
+      "bounding_box_train/1636_c3_f0099283.jpg",
+      "bounding_box_train/4151_c6_f0052170.jpg",
+      "bounding_box_train/4209_c8_f0035454.jpg",
+      "bounding_box_train/0473_c3_f0101107.jpg",
+      "bounding_box_train/1524_c3_f0078527.jpg",
+      "bounding_box_train/0189_c1_f0087422.jpg"
+    ],
+    "selected_pids": [
+      378,
+      93,
+      441,
+      551,
+      566,
+      217,
+      430,
+      86
+    ],
+    "teacher_outputs_no_grad": true,
+    "teacher_parameters_frozen": true,
+    "wrong_mask_cycle_iou_max": 0.0
+  },
+  "gates": {
+    "donor_contract": true,
+    "finite": true,
+    "fixed_sample_contract": true,
+    "frozen_no_grad": true,
+    "geometry": true,
+    "official_tail_parity": true,
+    "recipient_validity": true,
+    "repeat_and_null": true,
+    "shape": true
+  },
+  "output_sha256": "9a2cdd2ec69707ce325fd3bd22d47b82fe2bc869116263e5595faa16579222df",
+  "scope": "EXP393_PHASE0E_C8_CONTRACT_ONLY",
+  "status": "PASS"
+}

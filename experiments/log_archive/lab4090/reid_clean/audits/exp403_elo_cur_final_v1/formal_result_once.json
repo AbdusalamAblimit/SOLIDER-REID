@@ -1,0 +1,466 @@
+{
+  "adjudication": {
+    "decision": "ELO_CUR_MECHANISM_NO_GO",
+    "gates": {
+      "all_descriptors_active": true,
+      "correct_all_bypass_margin": false,
+      "correct_max_control_margin": false,
+      "full_map_floor": false,
+      "full_r1_floor": false,
+      "validity_all_pass": true
+    },
+    "phase_b_formal_mechanism_design_authorized": false,
+    "route_gap_mAP": -7.745354277943761e-06,
+    "sealed_d0_map_floor": 0.575587756578,
+    "sealed_d0_r1_floor": 0.676923076923,
+    "semantic_control_max_mAP": 0.569937304669369,
+    "semantic_margin_mAP": -7.745354277943761e-06,
+    "status": "PASS"
+  },
+  "arm_reports": {
+    "all_router_bypass": {
+      "bypassed": [
+        78,
+        78
+      ],
+      "generic": null,
+      "loader_rng_restored_exact": true,
+      "path_sha256": "8f3df6c46203af320aee30b05453b5e60e697ce21b251ec5deb0b7c6aeb846ea",
+      "prepare": {
+        "calls": 78,
+        "captured_rows": 0,
+        "duplicate_capture_rows": 0,
+        "restored_exact": true,
+        "rows": 19871
+      },
+      "prepare_restored_exact": true,
+      "rng_restored_exact": true,
+      "rng_sha256_after": "ddb315576aea18ddedd24e75d4d15f8ebc81116354aed79832a7465c426f3582",
+      "rng_sha256_before": "ddb315576aea18ddedd24e75d4d15f8ebc81116354aed79832a7465c426f3582",
+      "router": {
+        "calls": [
+          78,
+          78
+        ],
+        "restored_exact": true
+      },
+      "router_calls_exact": true,
+      "router_restored_exact": true,
+      "rows": 19871,
+      "state_restored_exact": true,
+      "state_sha256_after": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "state_sha256_before": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "state_sha256_during": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "unique_indices": 19871
+    },
+    "correct": {
+      "generic": null,
+      "loader_rng_restored_exact": true,
+      "path_sha256": "8f3df6c46203af320aee30b05453b5e60e697ce21b251ec5deb0b7c6aeb846ea",
+      "prepare": {
+        "calls": 78,
+        "captured_rows": 19871,
+        "duplicate_capture_rows": 0,
+        "restored_exact": true,
+        "rows": 19871
+      },
+      "prepare_restored_exact": true,
+      "rng_restored_exact": true,
+      "rng_sha256_after": "ddb315576aea18ddedd24e75d4d15f8ebc81116354aed79832a7465c426f3582",
+      "rng_sha256_before": "ddb315576aea18ddedd24e75d4d15f8ebc81116354aed79832a7465c426f3582",
+      "router": {
+        "calls": [
+          78,
+          78
+        ],
+        "restored_exact": true
+      },
+      "router_calls_exact": true,
+      "router_restored_exact": true,
+      "rows": 19871,
+      "state_restored_exact": true,
+      "state_sha256_after": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "state_sha256_before": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "state_sha256_during": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "unique_indices": 19871
+    },
+    "evidence_slot_cycle": {
+      "generic": null,
+      "loader_rng_restored_exact": true,
+      "path_sha256": "8f3df6c46203af320aee30b05453b5e60e697ce21b251ec5deb0b7c6aeb846ea",
+      "prepare": {
+        "calls": 78,
+        "captured_rows": 0,
+        "duplicate_capture_rows": 0,
+        "restored_exact": true,
+        "rows": 19871
+      },
+      "prepare_restored_exact": true,
+      "rng_restored_exact": true,
+      "rng_sha256_after": "ddb315576aea18ddedd24e75d4d15f8ebc81116354aed79832a7465c426f3582",
+      "rng_sha256_before": "ddb315576aea18ddedd24e75d4d15f8ebc81116354aed79832a7465c426f3582",
+      "router": {
+        "calls": [
+          78,
+          78
+        ],
+        "restored_exact": true
+      },
+      "router_calls_exact": true,
+      "router_restored_exact": true,
+      "rows": 19871,
+      "state_restored_exact": true,
+      "state_sha256_after": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "state_sha256_before": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "state_sha256_during": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "unique_indices": 19871
+    },
+    "generic_evidence": {
+      "generic": null,
+      "loader_rng_restored_exact": true,
+      "path_sha256": "8f3df6c46203af320aee30b05453b5e60e697ce21b251ec5deb0b7c6aeb846ea",
+      "prepare": {
+        "calls": 78,
+        "captured_rows": 0,
+        "duplicate_capture_rows": 0,
+        "restored_exact": true,
+        "rows": 19871
+      },
+      "prepare_restored_exact": true,
+      "rng_restored_exact": true,
+      "rng_sha256_after": "ddb315576aea18ddedd24e75d4d15f8ebc81116354aed79832a7465c426f3582",
+      "rng_sha256_before": "ddb315576aea18ddedd24e75d4d15f8ebc81116354aed79832a7465c426f3582",
+      "router": {
+        "calls": [
+          78,
+          78
+        ],
+        "restored_exact": true
+      },
+      "router_calls_exact": true,
+      "router_restored_exact": true,
+      "rows": 19871,
+      "state_restored_exact": true,
+      "state_sha256_after": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "state_sha256_before": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "state_sha256_during": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "unique_indices": 19871
+    },
+    "static_zero_evidence": {
+      "generic": null,
+      "loader_rng_restored_exact": true,
+      "path_sha256": "8f3df6c46203af320aee30b05453b5e60e697ce21b251ec5deb0b7c6aeb846ea",
+      "prepare": {
+        "calls": 78,
+        "captured_rows": 0,
+        "duplicate_capture_rows": 0,
+        "restored_exact": true,
+        "rows": 19871
+      },
+      "prepare_restored_exact": true,
+      "rng_restored_exact": true,
+      "rng_sha256_after": "ddb315576aea18ddedd24e75d4d15f8ebc81116354aed79832a7465c426f3582",
+      "rng_sha256_before": "ddb315576aea18ddedd24e75d4d15f8ebc81116354aed79832a7465c426f3582",
+      "router": {
+        "calls": [
+          78,
+          78
+        ],
+        "restored_exact": true
+      },
+      "router_calls_exact": true,
+      "router_restored_exact": true,
+      "rows": 19871,
+      "state_restored_exact": true,
+      "state_sha256_after": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "state_sha256_before": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "state_sha256_during": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "unique_indices": 19871
+    },
+    "wrong_mask_binding": {
+      "generic": null,
+      "loader_rng_restored_exact": true,
+      "path_sha256": "8f3df6c46203af320aee30b05453b5e60e697ce21b251ec5deb0b7c6aeb846ea",
+      "prepare": {
+        "calls": 78,
+        "captured_rows": 0,
+        "duplicate_capture_rows": 0,
+        "restored_exact": true,
+        "rows": 19871
+      },
+      "prepare_restored_exact": true,
+      "rng_restored_exact": true,
+      "rng_sha256_after": "ddb315576aea18ddedd24e75d4d15f8ebc81116354aed79832a7465c426f3582",
+      "rng_sha256_before": "ddb315576aea18ddedd24e75d4d15f8ebc81116354aed79832a7465c426f3582",
+      "router": {
+        "calls": [
+          78,
+          78
+        ],
+        "restored_exact": true
+      },
+      "router_calls_exact": true,
+      "router_restored_exact": true,
+      "rows": 19871,
+      "state_restored_exact": true,
+      "state_sha256_after": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "state_sha256_before": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "state_sha256_during": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "unique_indices": 19871
+    },
+    "wrong_rgb_evidence": {
+      "generic": null,
+      "loader_rng_restored_exact": true,
+      "path_sha256": "8f3df6c46203af320aee30b05453b5e60e697ce21b251ec5deb0b7c6aeb846ea",
+      "prepare": {
+        "calls": 78,
+        "captured_rows": 0,
+        "duplicate_capture_rows": 0,
+        "restored_exact": true,
+        "rows": 19871
+      },
+      "prepare_restored_exact": true,
+      "rng_restored_exact": true,
+      "rng_sha256_after": "ddb315576aea18ddedd24e75d4d15f8ebc81116354aed79832a7465c426f3582",
+      "rng_sha256_before": "ddb315576aea18ddedd24e75d4d15f8ebc81116354aed79832a7465c426f3582",
+      "router": {
+        "calls": [
+          78,
+          78
+        ],
+        "restored_exact": true
+      },
+      "router_calls_exact": true,
+      "router_restored_exact": true,
+      "rows": 19871,
+      "state_restored_exact": true,
+      "state_sha256_after": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "state_sha256_before": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "state_sha256_during": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+      "unique_indices": 19871
+    }
+  },
+  "assets": {
+    "checkpoint_files_after": [
+      "/home/afr/SOLIDER-REID-exp403-elo-cur-fe854ea/log/occluded_duke/exp403_elo_cur_s1234/transformer_120.pth"
+    ],
+    "checkpoint_files_before": [
+      "/home/afr/SOLIDER-REID-exp403-elo-cur-fe854ea/log/occluded_duke/exp403_elo_cur_s1234/transformer_120.pth"
+    ],
+    "checkpoint_sha256_after": "c5593cd73b06cde4ec3306b3458617d8835fa529b77c545923e874e7e780cc71",
+    "checkpoint_sha256_before": "c5593cd73b06cde4ec3306b3458617d8835fa529b77c545923e874e7e780cc71",
+    "checkpoint_state_sha256": "ad08a670330b48c5028359131793796934acdd0b7ae53a98eff630db162f50f9",
+    "config_sha256_after": "06a80c9d7589fe539b4d8f5820df307f08868c2005517ae6fce3226ed8a470ba",
+    "config_sha256_before": "06a80c9d7589fe539b4d8f5820df307f08868c2005517ae6fce3226ed8a470ba",
+    "contract_sha256": "7af4b3bcf49d3cf33f683a385dd94fdb145b971bed7d245c7d089867cffbf217",
+    "core_sha256_after": "e552c9619d5aaadfaa9cb252d9734f37f45748abc173a6652d1f6fc3bf430095",
+    "core_sha256_before": "e552c9619d5aaadfaa9cb252d9734f37f45748abc173a6652d1f6fc3bf430095",
+    "forbidden_accesses": [],
+    "source_sha256_after": {
+      "config/defaults.py": "d0fb545658b97bede0025ba39700ead7e1483f688fa6fee25bc5f49c17419105",
+      "datasets/bases.py": "03d231558f46264e4cff0c251b9b728ab4971232ed6c4bb7324ce1964f139c2c",
+      "datasets/occluded_duke.py": "f0e7b25e75251643430b699d9c9969fae207c0a85c48855cd0404d61a4228f8e",
+      "model/backbones/swin_transformer.py": "45e020d20e42db3695a27b123ec9ad76c7c6d4498255c340537a75d6c3665036",
+      "model/make_model.py": "a09b55bccd177692ac90e9aa1ecbe1c9116f9434719061b9f00369ffb7602e55",
+      "model/tapf.py": "656e7726fbe19f67d6b9b258f1ec9234a951169d5d037ac44ec8e6f1948bd614",
+      "utils/metrics.py": "8715f845a369688577773afbb974a660e2324961583e0f5ba066e2f93484b7f1"
+    },
+    "source_sha256_before": {
+      "config/defaults.py": "d0fb545658b97bede0025ba39700ead7e1483f688fa6fee25bc5f49c17419105",
+      "datasets/bases.py": "03d231558f46264e4cff0c251b9b728ab4971232ed6c4bb7324ce1964f139c2c",
+      "datasets/occluded_duke.py": "f0e7b25e75251643430b699d9c9969fae207c0a85c48855cd0404d61a4228f8e",
+      "model/backbones/swin_transformer.py": "45e020d20e42db3695a27b123ec9ad76c7c6d4498255c340537a75d6c3665036",
+      "model/make_model.py": "a09b55bccd177692ac90e9aa1ecbe1c9116f9434719061b9f00369ffb7602e55",
+      "model/tapf.py": "656e7726fbe19f67d6b9b258f1ec9234a951169d5d037ac44ec8e6f1948bd614",
+      "utils/metrics.py": "8715f845a369688577773afbb974a660e2324961583e0f5ba066e2f93484b7f1"
+    }
+  },
+  "cpu_gates": {
+    "checkpoint_path_exact": true,
+    "checkpoint_regular": true,
+    "checkpoint_sha_exact": true,
+    "checkpoint_state_all_tensors": true,
+    "checkpoint_state_count": true,
+    "checkpoint_state_exact": true,
+    "checkpoint_state_finite": true,
+    "checkpoint_unique": true,
+    "config_sha_exact": true,
+    "core_sha_exact": true,
+    "cuda_uninitialized_before": true,
+    "evidence_head_retained": true,
+    "gpu_idle_before": true,
+    "repo_all_clean": true,
+    "repo_head_exact": true,
+    "repo_tracked_clean": true,
+    "source_sha_exact": true,
+    "state_teacher_free": true,
+    "two_routers_retained": true
+  },
+  "dataset": {
+    "canonical_path_sha256": "8f3df6c46203af320aee30b05453b5e60e697ce21b251ec5deb0b7c6aeb846ea",
+    "count": 19871,
+    "donor_map_sha256": "fbb78962482aa6be1c4605a89557d6d1c32011676bc8137e69c860357048a67d",
+    "donor_summary": {
+      "count": 19871,
+      "different_pid_fraction": 1.0,
+      "no_fixed_points": true,
+      "same_camera_fraction": 1.0,
+      "same_split_fraction": 1.0
+    },
+    "donor_warmup": null,
+    "num_query": 2210,
+    "selected_count": 19871,
+    "selected_path_sha256": "8f3df6c46203af320aee30b05453b5e60e697ce21b251ec5deb0b7c6aeb846ea"
+  },
+  "decision": "ELO_CUR_MECHANISM_NO_GO",
+  "descriptor_deltas": {
+    "all_router_bypass": {
+      "exact_equal_rows": 0,
+      "finite": true,
+      "max_abs": 0.008928775787353516,
+      "mean_l2": 0.03582506999373436,
+      "rows": 19871
+    },
+    "evidence_slot_cycle": {
+      "exact_equal_rows": 0,
+      "finite": true,
+      "max_abs": 0.0015842914581298828,
+      "mean_l2": 0.006056237034499645,
+      "rows": 19871
+    },
+    "generic_evidence": {
+      "exact_equal_rows": 0,
+      "finite": true,
+      "max_abs": 0.00877237319946289,
+      "mean_l2": 0.03506619483232498,
+      "rows": 19871
+    },
+    "static_zero_evidence": {
+      "exact_equal_rows": 0,
+      "finite": true,
+      "max_abs": 0.008928775787353516,
+      "mean_l2": 0.03582506999373436,
+      "rows": 19871
+    },
+    "wrong_mask_binding": {
+      "exact_equal_rows": 0,
+      "finite": true,
+      "max_abs": 0.0014073848724365234,
+      "mean_l2": 0.005656813271343708,
+      "rows": 19871
+    },
+    "wrong_rgb_evidence": {
+      "exact_equal_rows": 0,
+      "finite": true,
+      "max_abs": 0.000701904296875,
+      "mean_l2": 0.0016681831330060959,
+      "rows": 19871
+    }
+  },
+  "execution": {
+    "audit_wrapper_sha256": "35d318cffbfe5d70e8046579f43fa1c7e53ede010eedb1d21965c766ac15dce5",
+    "base_audit_sha256": "f450c5e3801a61d20a7ba831d6cefb1ab1d9d5f5549824fc2fa55943059cc479",
+    "core_sha256": "e552c9619d5aaadfaa9cb252d9734f37f45748abc173a6652d1f6fc3bf430095",
+    "cuda_initialized": true,
+    "gpu_pids_before": [],
+    "repo_head": "fe854ea0808d86d37566100e59ea629e8b409d38",
+    "repo_status_after": "",
+    "script_sha256": "f450c5e3801a61d20a7ba831d6cefb1ab1d9d5f5549824fc2fa55943059cc479"
+  },
+  "metrics": {
+    "all_router_bypass": {
+      "mAP": 0.569937304669369,
+      "rank1": 0.6742081642150879,
+      "rank10": 0.840723991394043,
+      "rank5": 0.7972850799560547
+    },
+    "correct": {
+      "mAP": 0.569929559315091,
+      "rank1": 0.6742081642150879,
+      "rank10": 0.840723991394043,
+      "rank5": 0.7972850799560547
+    },
+    "evidence_slot_cycle": {
+      "mAP": 0.5699197552344819,
+      "rank1": 0.6742081642150879,
+      "rank10": 0.840723991394043,
+      "rank5": 0.7972850799560547
+    },
+    "generic_evidence": {
+      "mAP": 0.5699371315069185,
+      "rank1": 0.6742081642150879,
+      "rank10": 0.840723991394043,
+      "rank5": 0.7972850799560547
+    },
+    "static_zero_evidence": {
+      "mAP": 0.569937304669369,
+      "rank1": 0.6742081642150879,
+      "rank10": 0.840723991394043,
+      "rank5": 0.7972850799560547
+    },
+    "wrong_mask_binding": {
+      "mAP": 0.5699235651039274,
+      "rank1": 0.6742081642150879,
+      "rank10": 0.840723991394043,
+      "rank5": 0.7972850799560547
+    },
+    "wrong_rgb_evidence": {
+      "mAP": 0.5699343583295934,
+      "rank1": 0.6742081642150879,
+      "rank10": 0.840723991394043,
+      "rank5": 0.7972850799560547
+    }
+  },
+  "mode": "FORMAL_FULL",
+  "phase_b_formal_mechanism_design_authorized": false,
+  "references": {
+    "sealed_clean_d0_map": 0.575587756578,
+    "sealed_clean_d0_r1": 0.676923076923,
+    "semantic_and_route_margin_mAP": 0.001
+  },
+  "rgb_only": {
+    "descriptor_exact": true,
+    "descriptor_finite": true,
+    "pose_accesses": 0,
+    "rows": 256
+  },
+  "status": "PASS",
+  "strict_gates": {
+    "config_output_dir_exact": true,
+    "device_state_exact": true,
+    "elo_counterfactual_operator": true,
+    "elo_no_static_experts": true,
+    "elo_shared_projection_modules": true,
+    "evidence_head_module": true,
+    "model_object_teacher_free": true,
+    "official_data_root_exact": true,
+    "rho_not_buffer": true,
+    "rho_not_parameter": true,
+    "rho_python_float": true,
+    "strict_load_no_missing": true,
+    "strict_load_no_unexpected": true,
+    "strict_state_exact": true,
+    "tapf_rich_exact": true,
+    "two_router_modules": true
+  },
+  "validity": {
+    "all_arm_full_coverage": true,
+    "all_arm_restore_exact": true,
+    "all_descriptors_finite_active": true,
+    "all_metrics_finite": true,
+    "checkpoint_before_after_exact": true,
+    "checkpoint_list_before_after_exact": true,
+    "config_before_after_exact": true,
+    "core_before_after_exact": true,
+    "correct_evidence_coverage": true,
+    "cpu_gates_all_pass": true,
+    "donor_warmup_valid": true,
+    "forbidden_teacher_pose_reads_zero": true,
+    "model_state_terminal_exact": true,
+    "read_guard_restored_exact": true,
+    "repo_clean_after": true,
+    "rgb_only_exact": true,
+    "source_before_after_exact": true,
+    "strict_gates_all_pass": true
+  }
+}

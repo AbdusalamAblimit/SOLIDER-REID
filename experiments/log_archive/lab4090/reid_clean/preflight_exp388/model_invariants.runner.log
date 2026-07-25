@@ -1,0 +1,15 @@
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+TAPF_MODEL_INVARIANTS_PASS
+common_state_count=211
+common_state_sha256=26256dd5af015b25943e89bd6515ebf0d482679c4a93ef316ff607815da0577c
+common_optimizer_parameters=179
+tapf_optimizer_parameters=12
+b0_parameters=28111674
+d0_parameters=28217116
+tapf_parameters=105442
+parameter_overhead_percent=0.375083

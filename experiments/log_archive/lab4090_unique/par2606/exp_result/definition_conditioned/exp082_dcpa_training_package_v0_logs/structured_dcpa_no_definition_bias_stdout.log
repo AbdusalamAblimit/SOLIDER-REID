@@ -1,0 +1,1 @@
+definition_conditioned_train_ok variant=structured_dcpa_no_definition_bias dry_run=False train_batches=81450 val_metric_rows=990 best_epoch=5 best_score=0.869837 output_dir=exp_result/definition_conditioned/exp082_dcpa_training_package_v0/structured_dcpa_no_definition_bias_seed8201

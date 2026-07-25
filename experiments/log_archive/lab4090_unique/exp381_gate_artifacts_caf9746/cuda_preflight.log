@@ -1,0 +1,85 @@
+=> Occluded-DukeMTMC loaded
+using img_triplet sampler
+/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using stride: [16, 16], and patch number is num_y16 * num_x8
+Resized position embedding from size:torch.Size([1, 197, 768]) to size: torch.Size([1, 129, 768]) with height:16 width: 8
+Load 150 / 152 layers.
+Loading pretrained ImageNet ViT from pretrained/jx_vit_base_p16_224-80ecf9dd.pth
+===========building matched ViT TAPF experiment===========
+using stride: [16, 16], and patch number is num_y16 * num_x8
+Resized position embedding from size:torch.Size([1, 197, 768]) to size: torch.Size([1, 129, 768]) with height:16 width: 8
+Load 150 / 152 layers.
+Loading pretrained ImageNet ViT from pretrained/jx_vit_base_p16_224-80ecf9dd.pth
+[ViT-TAPF] groups=[3] tapf_params=141990 psg_params=153216
+===========building matched ViT TAPF experiment===========
+using stride: [16, 16], and patch number is num_y16 * num_x8
+Resized position embedding from size:torch.Size([1, 197, 768]) to size: torch.Size([1, 129, 768]) with height:16 width: 8
+Load 150 / 152 layers.
+Loading pretrained ImageNet ViT from pretrained/jx_vit_base_p16_224-80ecf9dd.pth
+[ViT-TAPF-H] groups=[2, 3] tapf_params=132514 psg_params=306432
+===========building matched ViT TAPF experiment===========
+using soft triplet loss for training
+using soft triplet loss for training
+using soft triplet loss for training
+MATCHED_INVARIANTS_PASS load={'b0': 150, 'd0': 150, 'ht0': 150} counts={'b0': 87056104, 'd0': 87351310, 'ht0': 87495050}
+using stride: [16, 16], and patch number is num_y16 * num_x8
+Resized position embedding from size:torch.Size([1, 197, 768]) to size: torch.Size([1, 129, 768]) with height:16 width: 8
+Load 150 / 152 layers.
+Loading pretrained ImageNet ViT from pretrained/jx_vit_base_p16_224-80ecf9dd.pth
+===========building matched ViT TAPF experiment===========
+using soft triplet loss for training
+B0_BATCH64_PASS loss=11.50876999 scale=1024.0
+using stride: [16, 16], and patch number is num_y16 * num_x8
+Resized position embedding from size:torch.Size([1, 197, 768]) to size: torch.Size([1, 129, 768]) with height:16 width: 8
+Load 150 / 152 layers.
+Loading pretrained ImageNet ViT from pretrained/jx_vit_base_p16_224-80ecf9dd.pth
+===========building matched ViT TAPF experiment===========
+using stride: [16, 16], and patch number is num_y16 * num_x8
+Resized position embedding from size:torch.Size([1, 197, 768]) to size: torch.Size([1, 129, 768]) with height:16 width: 8
+Load 150 / 152 layers.
+Loading pretrained ImageNet ViT from pretrained/jx_vit_base_p16_224-80ecf9dd.pth
+===========building matched ViT TAPF experiment===========
+using soft triplet loss for training
+using soft triplet loss for training
+B0_TEN_STEP_LEGACY_PARITY_PASS
+using stride: [16, 16], and patch number is num_y16 * num_x8
+Resized position embedding from size:torch.Size([1, 197, 768]) to size: torch.Size([1, 129, 768]) with height:16 width: 8
+Load 150 / 152 layers.
+Loading pretrained ImageNet ViT from pretrained/jx_vit_base_p16_224-80ecf9dd.pth
+[ViT-TAPF] groups=[3] tapf_params=141990 psg_params=153216
+===========building matched ViT TAPF experiment===========
+using soft triplet loss for training
+D0_E1_BATCH64_PASS identity=12.13442421 pose=3.00800037 scale=1024.0
+using stride: [16, 16], and patch number is num_y16 * num_x8
+Resized position embedding from size:torch.Size([1, 197, 768]) to size: torch.Size([1, 129, 768]) with height:16 width: 8
+Load 150 / 152 layers.
+Loading pretrained ImageNet ViT from pretrained/jx_vit_base_p16_224-80ecf9dd.pth
+[ViT-TAPF] groups=[3] tapf_params=141990 psg_params=153216
+===========building matched ViT TAPF experiment===========
+using soft triplet loss for training
+D0_E11_BATCH64_PASS identity=12.13442421 pose=3.00800037 scale=1024.0
+using stride: [16, 16], and patch number is num_y16 * num_x8
+Resized position embedding from size:torch.Size([1, 197, 768]) to size: torch.Size([1, 129, 768]) with height:16 width: 8
+Load 150 / 152 layers.
+Loading pretrained ImageNet ViT from pretrained/jx_vit_base_p16_224-80ecf9dd.pth
+[ViT-TAPF-H] groups=[2, 3] tapf_params=132514 psg_params=306432
+===========building matched ViT TAPF experiment===========
+using soft triplet loss for training
+HT0_E1_BATCH64_PASS identity=12.13442421 pose=2.99406195 scale=1024.0
+using stride: [16, 16], and patch number is num_y16 * num_x8
+Resized position embedding from size:torch.Size([1, 197, 768]) to size: torch.Size([1, 129, 768]) with height:16 width: 8
+Load 150 / 152 layers.
+Loading pretrained ImageNet ViT from pretrained/jx_vit_base_p16_224-80ecf9dd.pth
+[ViT-TAPF-H] groups=[2, 3] tapf_params=132514 psg_params=306432
+===========building matched ViT TAPF experiment===========
+using soft triplet loss for training
+HT0_E11_BATCH64_PASS identity=12.13442421 pose=2.99406195 scale=1024.0
+HT0_REAL_OVERFLOW_PASS scale=128->64
+EXP381_VIT_CUDA_PREFLIGHT_PASS
+runtime=torch-1.13.1 cuda=11.7 batch=64 image=(64, 3, 256, 128)

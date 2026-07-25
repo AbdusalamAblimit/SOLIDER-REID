@@ -1,0 +1,32 @@
+{
+  "direct_with_cp": {
+    "all_block_flags_true": true,
+    "backbone_train_returns_none": true,
+    "block_count": 4,
+    "compared_parameter_gradients": 67,
+    "forward_max_abs": 0.0,
+    "input_grad_max_abs": 0.0,
+    "interpretation": "checkpoint core works when wired directly",
+    "parameter_grad_max_abs": 0.0,
+    "tolerance": 1e-06
+  },
+  "script_sha256": "b0080584fd183b1141a6c1e53654c571c82076550ddc679618086fab65fe8e0c",
+  "semantic_weight": {
+    "backbone_eval_returns_none": true,
+    "earlier_live_index": 2,
+    "earlier_mutation_descriptor_max_abs": 2.918170928955078,
+    "interpretation": "semantic stages 0-2 can affect later stages; terminal stage-3 output is computed after the last consumer and is dead for descriptor",
+    "terminal_extreme_mutation_descriptor_exact": true,
+    "terminal_index": 3
+  },
+  "static_wiring": {
+    "backbone_supports_with_cp": true,
+    "config_merge_error": "AssertionError: Non-existent key: MODEL.WITH_CP",
+    "config_merge_rejected": true,
+    "defaults_has_model_with_cp": false,
+    "make_model_passes_with_cp": false,
+    "official_commit": "8c08e1c3255e8e1e51e006bf189e52cc57b009ed",
+    "semantic_uses_hardcoded_cuda": true
+  },
+  "status": "EXP387_OFFICIAL_SWIN_AUDIT_PASS"
+}

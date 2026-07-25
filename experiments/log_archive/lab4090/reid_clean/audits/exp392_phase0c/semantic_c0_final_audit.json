@@ -1,0 +1,192 @@
+{
+  "checkpoint": {
+    "forbidden_state_keys": [
+      "base.tapf.psg_bank.0.context_projection.weight",
+      "base.tapf.psg_bank.1.context_projection.weight"
+    ],
+    "path": "/home/afr/SOLIDER-REID-exp392-semantic-c0-ed57834/log/occluded_duke/exp392_clean_swin_tiny_semantic_c0_s1234/transformer_120.pth",
+    "sha256": "8f8e4a8af1280f17f736053a3068dfae0384ac54915f9c68fb0c779350c3638e",
+    "size_bytes": 113544187,
+    "state_tensor_count": 231
+  },
+  "config_sha256": "ecf3403c3e3d61af575f49420f21247f93029785364d32a23711eab66458d39c",
+  "consumer_reachability": [
+    {
+      "consumer_index": 0,
+      "exact_equal": false,
+      "l2": 0.0011313346913084388,
+      "max_abs": 7.82012939453125e-05,
+      "reaches_final_descriptor": true
+    },
+    {
+      "consumer_index": 1,
+      "exact_equal": false,
+      "l2": 0.0029684349428862333,
+      "max_abs": 0.0003528594970703125,
+      "reaches_final_descriptor": true
+    }
+  ],
+  "execution_head": "ed5783416528be4284adce11fa192fe119e344f4",
+  "gates": {
+    "all_floating_state_finite": true,
+    "anchor_trajectory": true,
+    "base_descriptor_contract": true,
+    "consumer_0_trajectory": true,
+    "consumer_1_trajectory": true,
+    "null_identity_exact": true,
+    "q_head_trajectory": true,
+    "rgb_only_descriptor_finite": true,
+    "rgb_pose_counterfactual_exact": true,
+    "strict_checkpoint_load": true,
+    "teacher_absent_from_state": false,
+    "two_consumers_reach_descriptor": true,
+    "two_gate_deltas_finite_nonzero": true
+  },
+  "null_contracts": [
+    {
+      "zero_mask_delta_exact_zero": true,
+      "zero_mask_output_exact_identity": true,
+      "zero_q_delta_exact_zero": true,
+      "zero_q_output_exact_identity": true
+    },
+    {
+      "zero_mask_delta_exact_zero": true,
+      "zero_mask_output_exact_identity": true,
+      "zero_q_delta_exact_zero": true,
+      "zero_q_output_exact_identity": true
+    }
+  ],
+  "rgb_counterfactuals": {
+    "correct_vs_none": {
+      "exact_equal": true,
+      "l2": 0.0,
+      "max_abs": 0.0
+    },
+    "exploding_vs_none": {
+      "exact_equal": true,
+      "l2": 0.0,
+      "max_abs": 0.0
+    },
+    "shuffle_vs_none": {
+      "exact_equal": true,
+      "l2": 0.0,
+      "max_abs": 0.0
+    }
+  },
+  "sample_count": 8,
+  "script_sha256": "5a4bf968841dd8cf256715afd64a12084103df7b31550db82b2dda1889194570",
+  "seed": 1234,
+  "state_summary": {
+    "descriptor_matrix_rank": 8,
+    "gate_delta_abs_mean": [
+      3.60595890924742e-06,
+      1.0398913218523376e-05
+    ],
+    "gate_delta_max_abs": [
+      0.0002569527714513242,
+      0.0005076827947050333
+    ],
+    "mask_mean": 0.04853367432951927,
+    "mask_std": 0.03095029480755329,
+    "presence_mean": 1.0,
+    "presence_nonzero_fraction": 1.0,
+    "support_max": 0.532810389995575,
+    "support_mean": 0.5117200016975403,
+    "support_min": 0.48159241676330566,
+    "support_std": 0.016863849014043808
+  },
+  "status": "FAIL",
+  "torch_version": "1.13.1",
+  "trajectories": {
+    "anchor": {
+      "all_tensors_changed": true,
+      "changed_keys": [
+        "base.tapf.anchor.depthwise.bias",
+        "base.tapf.anchor.depthwise.weight",
+        "base.tapf.anchor.norm.bias",
+        "base.tapf.anchor.norm.weight",
+        "base.tapf.anchor.pose_head.bias",
+        "base.tapf.anchor.pose_head.weight",
+        "base.tapf.anchor.presence_head.bias",
+        "base.tapf.anchor.presence_head.weight",
+        "base.tapf.anchor.project.bias",
+        "base.tapf.anchor.project.weight",
+        "base.tapf.anchor.region_mask_head.bias",
+        "base.tapf.anchor.region_mask_head.weight",
+        "base.tapf.anchor.support_head.bias",
+        "base.tapf.anchor.support_head.weight"
+      ],
+      "changed_tensor_count": 14,
+      "l2_delta": 1.8624702094823338,
+      "max_abs_delta": 0.1229369193315506,
+      "prefix": "base.tapf.anchor.",
+      "relative_l2_delta": 0.12289390628719794,
+      "tensor_count": 14
+    },
+    "consumer_0": {
+      "all_tensors_changed": true,
+      "changed_keys": [
+        "base.tapf.psg_bank.0.context_projection.weight",
+        "base.tapf.psg_bank.0.expert",
+        "base.tapf.psg_bank.0.token_projection.weight"
+      ],
+      "changed_tensor_count": 3,
+      "l2_delta": 0.030387537219492642,
+      "max_abs_delta": 0.0007353282999247313,
+      "prefix": "base.tapf.psg_bank.0.",
+      "relative_l2_delta": 0.00926840036751429,
+      "tensor_count": 3
+    },
+    "consumer_0_expert": {
+      "all_tensors_changed": true,
+      "changed_keys": [
+        "base.tapf.psg_bank.0.expert"
+      ],
+      "changed_tensor_count": 1,
+      "l2_delta": 0.012121177001017822,
+      "max_abs_delta": 0.0007353282999247313,
+      "prefix": "base.tapf.psg_bank.0.expert",
+      "relative_l2_delta": 12121177001.017822,
+      "tensor_count": 1
+    },
+    "consumer_1": {
+      "all_tensors_changed": true,
+      "changed_keys": [
+        "base.tapf.psg_bank.1.context_projection.weight",
+        "base.tapf.psg_bank.1.expert",
+        "base.tapf.psg_bank.1.token_projection.weight"
+      ],
+      "changed_tensor_count": 3,
+      "l2_delta": 0.03386008281816752,
+      "max_abs_delta": 0.0014550761552527547,
+      "prefix": "base.tapf.psg_bank.1.",
+      "relative_l2_delta": 0.010401165517117127,
+      "tensor_count": 3
+    },
+    "consumer_1_expert": {
+      "all_tensors_changed": true,
+      "changed_keys": [
+        "base.tapf.psg_bank.1.expert"
+      ],
+      "changed_tensor_count": 1,
+      "l2_delta": 0.019471102727179203,
+      "max_abs_delta": 0.0014550761552527547,
+      "prefix": "base.tapf.psg_bank.1.expert",
+      "relative_l2_delta": 19471102727.179203,
+      "tensor_count": 1
+    },
+    "q_support_head": {
+      "all_tensors_changed": true,
+      "changed_keys": [
+        "base.tapf.anchor.support_head.bias",
+        "base.tapf.anchor.support_head.weight"
+      ],
+      "changed_tensor_count": 2,
+      "l2_delta": 0.02072407202879648,
+      "max_abs_delta": 0.004333556164056063,
+      "prefix": "base.tapf.anchor.support_head.",
+      "relative_l2_delta": 20724072028.79648,
+      "tensor_count": 2
+    }
+  }
+}

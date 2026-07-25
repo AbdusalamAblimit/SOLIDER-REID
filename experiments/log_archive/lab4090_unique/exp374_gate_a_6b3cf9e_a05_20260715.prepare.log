@@ -1,0 +1,4 @@
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/query/index.json (2210 entries)
+  Loaded pose index: data/occluded_duke/pose_data/gallery/index.json (17661 entries)

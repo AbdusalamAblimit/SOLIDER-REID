@@ -1,0 +1,24 @@
+=> Occluded-Duke loaded
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+/home/afr/SOLIDER-REID-exp394-rich-budget-c0-11d7a35/model/backbones/swin_transformer.py:1157: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+{
+  "error": "Non-finite gradient at step 1",
+  "error_type": "RuntimeError",
+  "script_sha256": "bae2210bc606048371b4750f85919595c0b8fdbd1e11681abac59fe9727ea4f0",
+  "status": "FAIL",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/afr/reid-clean/audits/exp394_cuda_amp_preflight/cuda_amp_preflight.py\", line 1199, in main\n    result = run_preflight(args)\n  File \"/home/afr/reid-clean/audits/exp394_cuda_amp_preflight/cuda_amp_preflight.py\", line 682, in run_preflight\n    raise RuntimeError(f\"Non-finite gradient at step {step}\")\nRuntimeError: Non-finite gradient at step 1\n",
+  "verdict": "CUDA_AMP_PREFLIGHT_FAIL"
+}
+Traceback (most recent call last):
+  File "/home/afr/reid-clean/audits/exp394_cuda_amp_preflight/cuda_amp_preflight.py", line 1217, in <module>
+    main()
+  File "/home/afr/reid-clean/audits/exp394_cuda_amp_preflight/cuda_amp_preflight.py", line 1199, in main
+    result = run_preflight(args)
+  File "/home/afr/reid-clean/audits/exp394_cuda_amp_preflight/cuda_amp_preflight.py", line 682, in run_preflight
+    raise RuntimeError(f"Non-finite gradient at step {step}")
+RuntimeError: Non-finite gradient at step 1

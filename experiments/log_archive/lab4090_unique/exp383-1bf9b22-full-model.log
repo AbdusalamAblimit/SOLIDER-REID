@@ -1,0 +1,113 @@
+/home/afr/SOLIDER-REID-exp383-preflight-1bf9b22/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+===========building transformer===========
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+[TAPF] enabled: source_stage=2, psg_stages=[3], TaskAdaptivePoseField(
+  mode=d0, transition=hard, bootstrap_perm=off, boot_epochs=10, handoff_start=6, max_shift=0.120, max_log_scale=0.500, params=85542
+  (anchor): _LiteHRPoseAnchor(
+    (stem): Sequential(
+      (0): Conv2d(384, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (1): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (2): SiLU(inplace=True)
+    )
+    (high): _DepthwiseResidual(
+      (dw): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+      (norm): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (pw): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (act): SiLU(inplace=True)
+    )
+    (context): Sequential(
+      (0): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+      (1): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (2): SiLU(inplace=True)
+      (3): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+    )
+    (fuse): Sequential(
+      (0): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (1): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (2): SiLU(inplace=True)
+    )
+    (up_refine_1): _DepthwiseResidual(
+      (dw): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+      (norm): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (pw): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (act): SiLU(inplace=True)
+    )
+    (up_refine_2): _DepthwiseResidual(
+      (dw): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+      (norm): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (pw): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (act): SiLU(inplace=True)
+    )
+    (heatmap_head): Conv2d(64, 17, kernel_size=(1, 1), stride=(1, 1))
+    (confidence_head): Linear(in_features=384, out_features=17, bias=True)
+  )
+  (geometry_adapter): Sequential(
+    (0): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+    (1): Linear(in_features=384, out_features=64, bias=True)
+    (2): SiLU(inplace=True)
+    (3): Linear(in_features=64, out_features=4, bias=True)
+  )
+  (field_renderer): GaussianPoseFieldRenderer()
+)
+[POSE] POSE_USE_TARGET_HEATMAP=True: pose modules (PSG/LGPA/VCSR/PPA/STR/FSDC/...) will receive person-0 (target) heatmap instead of max-merged scene heatmap.
+===========building pose-backbone (PSG) transformer===========
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+[TAPF] enabled: source_stage=2, psg_stages=[3], TaskAdaptivePoseField(
+  mode=d0, transition=hard, bootstrap_perm=off, boot_epochs=10, handoff_start=6, max_shift=0.120, max_log_scale=0.500, params=85542
+  (anchor): _LiteHRPoseAnchor(
+    (stem): Sequential(
+      (0): Conv2d(384, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (1): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (2): SiLU(inplace=True)
+    )
+    (high): _DepthwiseResidual(
+      (dw): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+      (norm): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (pw): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (act): SiLU(inplace=True)
+    )
+    (context): Sequential(
+      (0): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+      (1): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (2): SiLU(inplace=True)
+      (3): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+    )
+    (fuse): Sequential(
+      (0): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (1): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (2): SiLU(inplace=True)
+    )
+    (up_refine_1): _DepthwiseResidual(
+      (dw): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+      (norm): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (pw): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (act): SiLU(inplace=True)
+    )
+    (up_refine_2): _DepthwiseResidual(
+      (dw): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+      (norm): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (pw): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (act): SiLU(inplace=True)
+    )
+    (heatmap_head): Conv2d(64, 17, kernel_size=(1, 1), stride=(1, 1))
+    (confidence_head): Linear(in_features=384, out_features=17, bias=True)
+  )
+  (geometry_adapter): Sequential(
+    (0): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+    (1): Linear(in_features=384, out_features=64, bias=True)
+    (2): SiLU(inplace=True)
+    (3): Linear(in_features=64, out_features=4, bias=True)
+  )
+  (field_renderer): GaussianPoseFieldRenderer()
+)
+[POSE] POSE_USE_TARGET_HEATMAP=True: pose modules (PSG/LGPA/VCSR/PPA/STR/FSDC/...) will receive person-0 (target) heatmap instead of max-merged scene heatmap.
+===========building pose-backbone (PSG) transformer===========
+=> Occluded-ReID loaded
+=> Occluded-ReID loaded
+EXP383_FULL_MODEL_PREFLIGHT_PASS
+device=cuda b0_params=28111674 d0_params=28299360 dedicated=187686 overhead=187686
+shared_state=211 d0_state=259 optimizer_shared=179
+gradient_ownership={'pose_anchor': 2.8009664571476605, 'pose_adapter': 0.0, 'pose_psg': 0.0, 'pose_backbone': 0.0, 'reid_anchor': 0.0, 'reid_adapter': 0.0, 'reid_psg': 0.06905224260989407, 'reid_backbone': 0.10485493895182943}
+occluded_reid=query1000/gallery1000 rgb_batch=(64, 3, 384, 128) pose_free=exact

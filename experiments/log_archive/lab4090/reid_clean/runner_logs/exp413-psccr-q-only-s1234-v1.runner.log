@@ -1,0 +1,1269 @@
+2026-07-23 04:56:18 transreid INFO: Saving model in the path :/home/afr/reid-clean/logs/exp413-psccr-q-only-s1234-v1
+2026-07-23 04:56:18 transreid INFO: Loaded configuration file configs/occluded_duke/swin_tiny_tapf_psccr_exp413.yml
+2026-07-23 04:56:18 transreid INFO: Running with config:
+DATALOADER:
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+  REMOVE_TAIL: 0
+  SAMPLER: softmax_triplet
+DATASETS:
+  NAMES: occluded_duke
+  ROOT_DIR: /mnt1/afrdata
+  ROOT_TRAIN_DIR: ../data
+  ROOT_VAL_DIR: ../data
+INPUT:
+  PADDING: 10
+  PIXEL_MEAN: [0.5, 0.5, 0.5]
+  PIXEL_STD: [0.5, 0.5, 0.5]
+  PROB: 0.5
+  RE_PROB: 0.5
+  SIZE_TEST: [384, 128]
+  SIZE_TRAIN: [384, 128]
+MODEL:
+  ATT_DROP_RATE: 0.0
+  COS_LAYER: False
+  DEVICE: cuda
+  DEVICE_ID: 0
+  DEVIDE_LENGTH: 4
+  DIST_TRAIN: False
+  DROPOUT_RATE: 0.0
+  DROP_OUT: 0.0
+  DROP_PATH: 0.1
+  FEAT_DIM: 512
+  GEM_POOLING: False
+  ID_LOSS_TYPE: softmax
+  ID_LOSS_WEIGHT: 1.0
+  IF_LABELSMOOTH: off
+  IF_WITH_CENTER: no
+  JPM: False
+  LAST_STRIDE: 1
+  METRIC_LOSS_TYPE: triplet
+  NAME: transformer
+  NECK: bnneck
+  NO_MARGIN: True
+  PRETRAIN_CHOICE: self
+  PRETRAIN_HW_RATIO: 2
+  PRETRAIN_PATH: /home/afr/reid-clean/weights/solider_swin_tiny_tea.pth
+  REDUCE_FEAT_DIM: False
+  RE_ARRANGE: True
+  SEMANTIC_WEIGHT: 0.2
+  SHIFT_NUM: 5
+  SHUFFLE_GROUP: 2
+  SIE_CAMERA: False
+  SIE_COE: 3.0
+  SIE_VIEW: False
+  STEM_CONV: False
+  STRIDE_SIZE: [16, 16]
+  TAPF:
+    ANCHOR_HIDDEN: 128
+    ARTIFACT_DIR: /mnt1/afrderived/exp386_occluded_duke_vitpose_huge_train
+    CLIP_CHECKPOINT: 
+    CLIP_CHECKPOINT_SHA256: 
+    CLIP_MICROBATCH: 4
+    ELO_CUR_ENABLED: False
+    ELO_GENERIC_EVIDENCE: 
+    ELO_GENERIC_EVIDENCE_SHA256: 
+    ENABLED: True
+    GATE_RELEASE: 0.5
+    GAUSSIAN_SIGMA: 1.5
+    HANDOFF_EPOCHS: 5
+    HIERARCHICAL: False
+    MANIFEST_SHA256: cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8
+    PC2P_BANK: 
+    PC2P_BANK_SHA256: 
+    PC2P_ENABLED: False
+    PCHM_CACHE: 
+    PCHM_CACHE_SHA256: 
+    PCHM_CLIP_CHECKPOINT_SHA256: 
+    PCHM_ENABLED: False
+    PCMPSR_CACHE: /home/afr/reid-clean/assets/exp411-pcmpsr-cache-v1/pcmpsr_cache.npz
+    PCMPSR_CACHE_SHA256: b07576130a0c50b89194f2c59467defcf39293d96ca886616865eb198e7965d1
+    PCMPSR_CLIP_CHECKPOINT_SHA256: 9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e
+    PCMPSR_CONTROL_MODE: zero_owner
+    PCMPSR_ENABLED: True
+    PICRD_CACHE: 
+    PICRD_CACHE_SHA256: 
+    PICRD_ENABLED: False
+    POSE_LOSS_REDUCTION: sum
+    POSE_LOSS_WEIGHT: 0.1
+    PSCCR_CONTROL_MODE: q_only
+    PSCCR_ENABLED: True
+    PSCCR_TEXT_AXES: /home/afr/reid-clean/assets/exp412-psgc-text-v1/text_axes.npz
+    PSCCR_TEXT_AXES_SHA256: 3b5fd399350a522459cef090bff72d76c97ff483921d84aae4990eda16727bf3
+    PSGC_CONTROL_MODE: correct
+    PSGC_ENABLED: False
+    PSGC_TEXT_AXES: 
+    PSGC_TEXT_AXES_SHA256: 
+    PSG_HIDDEN: 32
+    RESIDUAL_RHO: 0.08075544983148575
+    RICH_CODEBOOK: 
+    RICH_CODEBOOK_SHA256: 
+    RICH_EVIDENCE_ENABLED: False
+    SEMANTIC_ENABLED: False
+    SEMANTIC_REZERO: False
+    SEMANTIC_ROUTER_RANK: 16
+    SPK_ENABLED: False
+    SPK_GROUPS: 16
+    TEACHER_EPOCHS: 5
+    VERIFY_IMAGE_SHA: False
+  TRANSFORMER_TYPE: swin_tiny_patch4_window7_224
+  TRIPLET_LOSS_WEIGHT: 1.0
+OUTPUT_DIR: /home/afr/reid-clean/logs/exp413-psccr-q-only-s1234-v1
+SOLVER:
+  BASE_LR: 0.0008
+  BIAS_LR_FACTOR: 2
+  CENTER_LOSS_WEIGHT: 0.0005
+  CENTER_LR: 0.5
+  CHECKPOINT_PERIOD: 120
+  COSINE_MARGIN: 0.5
+  COSINE_SCALE: 30
+  EVAL_PERIOD: 10
+  GAMMA: 0.1
+  IMS_PER_BATCH: 64
+  LARGE_FC_LR: False
+  LOG_PERIOD: 20
+  MARGIN: 0.3
+  MAX_EPOCHS: 120
+  MOMENTUM: 0.9
+  OPTIMIZER_NAME: SGD
+  SEED: 1234
+  STEPS: (40, 70)
+  TRP_L2: False
+  WARMUP_EPOCHS: 20
+  WARMUP_FACTOR: 0.01
+  WARMUP_METHOD: cosine
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0.0001
+TEST:
+  DIST_MAT: dist_mat.npy
+  EVAL: True
+  FEAT_NORM: yes
+  IMS_PER_BATCH: 256
+  NECK_FEAT: before
+  RE_RANKING: False
+  WEIGHT: 
+=> Occluded-Duke loaded
+2026-07-23 04:56:18 transreid.check INFO: Dataset statistics:
+2026-07-23 04:56:18 transreid.check INFO:   ----------------------------------------
+2026-07-23 04:56:18 transreid.check INFO:   subset   | # ids | # images | # cameras
+2026-07-23 04:56:18 transreid.check INFO:   ----------------------------------------
+2026-07-23 04:56:18 transreid.check INFO:   train    |   702 |    15618 |         8
+2026-07-23 04:56:18 transreid.check INFO:   query    |   519 |     2210 |         8
+2026-07-23 04:56:18 transreid.check INFO:   gallery  |  1110 |    17661 |         8
+2026-07-23 04:56:18 transreid.check INFO:   ----------------------------------------
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+2026-07-23 04:56:19 transreid INFO: ===========using cosine learning rate=======
+2026-07-23 04:56:19 transreid.train INFO: start training
+2026-07-23 04:56:19 transreid.train INFO: PCMPSR cache loaded: samples=15618 SHA=b07576130a0c50b89194f2c59467defcf39293d96ca886616865eb198e7965d1 source=ebf60f2b4a5c943958f7077779d8500c2855874a control=zero_owner
+2026-07-23 04:56:19 transreid.train INFO: PSCCR frozen text axes loaded outside model/state: SHA=3b5fd399350a522459cef090bff72d76c97ff483921d84aae4990eda16727bf3 prompt=2958675be9a258ab098363588bf90dce752bc39d51efdf10a947a07d92ba3c2c source=a205599a1389aa08852a291fab1ae5aa05722263 control=q_only
+/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-exp413-psccr-train-v1/model/backbones/swin_transformer.py:1179: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+2026-07-23 04:56:25 transreid.train INFO: PCMPSR epoch=1 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=1.970790/58.300308/66.560944/0/2.2969/0.000000 controls={'wrong_rgb': 0.28437501192092896, 'generic': 0.171875, 'pose_only': 0.20624999701976776, 'formal_vs_correct': 0.0}
+2026-07-23 04:56:25 transreid.train INFO: PSCCR epoch=1 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=3.266681/[4.886121, 2.943134, 1.97079]/[57.76786, 58.246853, 58.300308]/[66.100647, 66.611916, 66.560944]/[6.78125, 9.421875, 10.0] controls={'pose_only': 0.703125, 'q_only': 0.6875, 'text_shuffle': 0.46875}
+2026-07-23 04:56:48 transreid.train INFO: Epoch[1] Iter[20/227] Loss: 9.145, Pose: 0.916, Acc: 0.002, Student: 0.00, Reliability: 0.854, GateAbs: 4.332e-06, Base Lr: 4.76e-05
+2026-07-23 04:57:12 transreid.train INFO: Epoch[1] Iter[40/227] Loss: 8.832, Pose: 0.915, Acc: 0.002, Student: 0.00, Reliability: 0.839, GateAbs: 1.203e-05, Base Lr: 4.76e-05
+2026-07-23 04:57:36 transreid.train INFO: Epoch[1] Iter[60/227] Loss: 8.660, Pose: 0.915, Acc: 0.002, Student: 0.00, Reliability: 0.834, GateAbs: 1.782e-05, Base Lr: 4.76e-05
+2026-07-23 04:58:00 transreid.train INFO: Epoch[1] Iter[80/227] Loss: 8.494, Pose: 0.915, Acc: 0.002, Student: 0.00, Reliability: 0.854, GateAbs: 2.276e-05, Base Lr: 4.76e-05
+2026-07-23 04:58:24 transreid.train INFO: Epoch[1] Iter[100/227] Loss: 8.359, Pose: 0.915, Acc: 0.002, Student: 0.00, Reliability: 0.852, GateAbs: 2.655e-05, Base Lr: 4.76e-05
+2026-07-23 04:58:48 transreid.train INFO: Epoch[1] Iter[120/227] Loss: 8.246, Pose: 0.915, Acc: 0.002, Student: 0.00, Reliability: 0.850, GateAbs: 3.034e-05, Base Lr: 4.76e-05
+2026-07-23 04:59:12 transreid.train INFO: Epoch[1] Iter[140/227] Loss: 8.159, Pose: 0.915, Acc: 0.002, Student: 0.00, Reliability: 0.856, GateAbs: 3.353e-05, Base Lr: 4.76e-05
+2026-07-23 04:59:36 transreid.train INFO: Epoch[1] Iter[160/227] Loss: 8.085, Pose: 0.915, Acc: 0.002, Student: 0.00, Reliability: 0.854, GateAbs: 3.591e-05, Base Lr: 4.76e-05
+2026-07-23 05:00:00 transreid.train INFO: Epoch[1] Iter[180/227] Loss: 8.028, Pose: 0.915, Acc: 0.002, Student: 0.00, Reliability: 0.847, GateAbs: 3.861e-05, Base Lr: 4.76e-05
+2026-07-23 05:00:25 transreid.train INFO: Epoch[1] Iter[200/227] Loss: 7.977, Pose: 0.915, Acc: 0.002, Student: 0.00, Reliability: 0.826, GateAbs: 4.078e-05, Base Lr: 4.76e-05
+2026-07-23 05:00:37 transreid.train INFO: Epoch 1 done. Time per epoch: 257.306[s] Speed: 52.2[samples/s]
+2026-07-23 05:00:38 transreid.train INFO: PCMPSR epoch=2 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.532269/51.003014/61.887390/0/2.5000/0.000000 controls=None
+2026-07-23 05:00:38 transreid.train INFO: PSCCR epoch=2 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.846410/[1.436273, 0.570687, 0.532269]/[51.521221, 50.894524, 51.003014]/[61.825706, 61.666451, 61.88739]/[7.125, 9.453125, 10.0] controls=None
+2026-07-23 05:01:01 transreid.train INFO: Epoch[2] Iter[20/227] Loss: 7.530, Pose: 0.916, Acc: 0.006, Student: 0.00, Reliability: 0.842, GateAbs: 5.734e-05, Base Lr: 8.72e-05
+2026-07-23 05:01:25 transreid.train INFO: Epoch[2] Iter[40/227] Loss: 7.392, Pose: 0.917, Acc: 0.004, Student: 0.00, Reliability: 0.833, GateAbs: 7.015e-05, Base Lr: 8.72e-05
+2026-07-23 05:01:49 transreid.train INFO: Epoch[2] Iter[60/227] Loss: 7.344, Pose: 0.917, Acc: 0.003, Student: 0.00, Reliability: 0.866, GateAbs: 8.080e-05, Base Lr: 8.72e-05
+2026-07-23 05:02:14 transreid.train INFO: Epoch[2] Iter[80/227] Loss: 7.301, Pose: 0.916, Acc: 0.004, Student: 0.00, Reliability: 0.833, GateAbs: 9.042e-05, Base Lr: 8.72e-05
+2026-07-23 05:02:38 transreid.train INFO: Epoch[2] Iter[100/227] Loss: 7.256, Pose: 0.917, Acc: 0.004, Student: 0.00, Reliability: 0.861, GateAbs: 9.853e-05, Base Lr: 8.72e-05
+2026-07-23 05:03:02 transreid.train INFO: Epoch[2] Iter[120/227] Loss: 7.229, Pose: 0.916, Acc: 0.005, Student: 0.00, Reliability: 0.839, GateAbs: 1.060e-04, Base Lr: 8.72e-05
+2026-07-23 05:03:26 transreid.train INFO: Epoch[2] Iter[140/227] Loss: 7.202, Pose: 0.916, Acc: 0.006, Student: 0.00, Reliability: 0.833, GateAbs: 1.128e-04, Base Lr: 8.72e-05
+2026-07-23 05:03:50 transreid.train INFO: Epoch[2] Iter[160/227] Loss: 7.166, Pose: 0.916, Acc: 0.008, Student: 0.00, Reliability: 0.853, GateAbs: 1.197e-04, Base Lr: 8.72e-05
+2026-07-23 05:04:14 transreid.train INFO: Epoch[2] Iter[180/227] Loss: 7.143, Pose: 0.916, Acc: 0.012, Student: 0.00, Reliability: 0.844, GateAbs: 1.247e-04, Base Lr: 8.72e-05
+2026-07-23 05:04:38 transreid.train INFO: Epoch[2] Iter[200/227] Loss: 7.119, Pose: 0.915, Acc: 0.017, Student: 0.00, Reliability: 0.852, GateAbs: 1.292e-04, Base Lr: 8.72e-05
+2026-07-23 05:04:53 transreid.train INFO: Epoch 2 done. Time per epoch: 256.132[s] Speed: 53.0[samples/s]
+2026-07-23 05:04:54 transreid.train INFO: PCMPSR epoch=3 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.145069/43.586975/53.038040/0/2.3906/0.000000 controls=None
+2026-07-23 05:04:54 transreid.train INFO: PSCCR epoch=3 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.275108/[0.496701, 0.183555, 0.145069]/[42.468674, 43.322067, 43.586975]/[52.59985, 52.875313, 53.03804]/[6.890625, 9.28125, 10.0] controls=None
+2026-07-23 05:05:17 transreid.train INFO: Epoch[3] Iter[20/227] Loss: 6.901, Pose: 0.916, Acc: 0.040, Student: 0.00, Reliability: 0.837, GateAbs: 1.411e-04, Base Lr: 1.27e-04
+2026-07-23 05:05:41 transreid.train INFO: Epoch[3] Iter[40/227] Loss: 6.885, Pose: 0.915, Acc: 0.045, Student: 0.00, Reliability: 0.841, GateAbs: 1.491e-04, Base Lr: 1.27e-04
+2026-07-23 05:06:06 transreid.train INFO: Epoch[3] Iter[60/227] Loss: 6.879, Pose: 0.913, Acc: 0.052, Student: 0.00, Reliability: 0.849, GateAbs: 1.563e-04, Base Lr: 1.27e-04
+2026-07-23 05:06:30 transreid.train INFO: Epoch[3] Iter[80/227] Loss: 6.872, Pose: 0.913, Acc: 0.060, Student: 0.00, Reliability: 0.854, GateAbs: 1.650e-04, Base Lr: 1.27e-04
+2026-07-23 05:06:54 transreid.train INFO: Epoch[3] Iter[100/227] Loss: 6.861, Pose: 0.911, Acc: 0.070, Student: 0.00, Reliability: 0.846, GateAbs: 1.710e-04, Base Lr: 1.27e-04
+2026-07-23 05:07:18 transreid.train INFO: Epoch[3] Iter[120/227] Loss: 6.854, Pose: 0.911, Acc: 0.082, Student: 0.00, Reliability: 0.848, GateAbs: 1.783e-04, Base Lr: 1.27e-04
+2026-07-23 05:07:42 transreid.train INFO: Epoch[3] Iter[140/227] Loss: 6.847, Pose: 0.910, Acc: 0.088, Student: 0.00, Reliability: 0.830, GateAbs: 1.847e-04, Base Lr: 1.27e-04
+2026-07-23 05:08:06 transreid.train INFO: Epoch[3] Iter[160/227] Loss: 6.838, Pose: 0.909, Acc: 0.095, Student: 0.00, Reliability: 0.848, GateAbs: 1.912e-04, Base Lr: 1.27e-04
+2026-07-23 05:08:31 transreid.train INFO: Epoch[3] Iter[180/227] Loss: 6.829, Pose: 0.909, Acc: 0.110, Student: 0.00, Reliability: 0.844, GateAbs: 1.970e-04, Base Lr: 1.27e-04
+2026-07-23 05:08:55 transreid.train INFO: Epoch[3] Iter[200/227] Loss: 6.821, Pose: 0.909, Acc: 0.128, Student: 0.00, Reliability: 0.834, GateAbs: 2.016e-04, Base Lr: 1.27e-04
+2026-07-23 05:09:09 transreid.train INFO: Epoch 3 done. Time per epoch: 256.617[s] Speed: 52.9[samples/s]
+2026-07-23 05:09:11 transreid.train INFO: PCMPSR epoch=4 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.087748/38.386368/46.462112/0/2.2812/0.000000 controls=None
+2026-07-23 05:09:11 transreid.train INFO: PSCCR epoch=4 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.344745/[0.710378, 0.236109, 0.087748]/[37.906574, 38.20858, 38.386368]/[46.467415, 46.407063, 46.462112]/[6.65625, 9.3125, 10.0] controls=None
+2026-07-23 05:09:34 transreid.train INFO: Epoch[4] Iter[20/227] Loss: 6.801, Pose: 0.904, Acc: 0.094, Student: 0.00, Reliability: 0.834, GateAbs: 2.146e-04, Base Lr: 1.66e-04
+2026-07-23 05:09:58 transreid.train INFO: Epoch[4] Iter[40/227] Loss: 6.746, Pose: 0.903, Acc: 0.123, Student: 0.00, Reliability: 0.840, GateAbs: 2.225e-04, Base Lr: 1.66e-04
+2026-07-23 05:10:22 transreid.train INFO: Epoch[4] Iter[60/227] Loss: 6.711, Pose: 0.903, Acc: 0.131, Student: 0.00, Reliability: 0.859, GateAbs: 2.271e-04, Base Lr: 1.66e-04
+2026-07-23 05:10:46 transreid.train INFO: Epoch[4] Iter[80/227] Loss: 6.700, Pose: 0.903, Acc: 0.135, Student: 0.00, Reliability: 0.846, GateAbs: 2.308e-04, Base Lr: 1.66e-04
+2026-07-23 05:11:10 transreid.train INFO: Epoch[4] Iter[100/227] Loss: 6.692, Pose: 0.902, Acc: 0.142, Student: 0.00, Reliability: 0.855, GateAbs: 2.381e-04, Base Lr: 1.66e-04
+2026-07-23 05:11:35 transreid.train INFO: Epoch[4] Iter[120/227] Loss: 6.681, Pose: 0.901, Acc: 0.151, Student: 0.00, Reliability: 0.850, GateAbs: 2.459e-04, Base Lr: 1.66e-04
+2026-07-23 05:11:59 transreid.train INFO: Epoch[4] Iter[140/227] Loss: 6.667, Pose: 0.901, Acc: 0.165, Student: 0.00, Reliability: 0.839, GateAbs: 2.497e-04, Base Lr: 1.66e-04
+2026-07-23 05:12:23 transreid.train INFO: Epoch[4] Iter[160/227] Loss: 6.662, Pose: 0.900, Acc: 0.174, Student: 0.00, Reliability: 0.844, GateAbs: 2.552e-04, Base Lr: 1.66e-04
+2026-07-23 05:12:47 transreid.train INFO: Epoch[4] Iter[180/227] Loss: 6.654, Pose: 0.899, Acc: 0.191, Student: 0.00, Reliability: 0.839, GateAbs: 2.587e-04, Base Lr: 1.66e-04
+2026-07-23 05:13:11 transreid.train INFO: Epoch[4] Iter[200/227] Loss: 6.641, Pose: 0.899, Acc: 0.213, Student: 0.00, Reliability: 0.825, GateAbs: 2.637e-04, Base Lr: 1.66e-04
+2026-07-23 05:13:24 transreid.train INFO: Epoch 4 done. Time per epoch: 255.101[s] Speed: 52.9[samples/s]
+2026-07-23 05:13:26 transreid.train INFO: PCMPSR epoch=5 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.057266/35.816139/46.677303/0/2.2656/0.000000 controls=None
+2026-07-23 05:13:26 transreid.train INFO: PSCCR epoch=5 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.075207/[0.110159, 0.058197, 0.057266]/[34.616814, 35.354187, 35.816139]/[47.105961, 46.853298, 46.677303]/[6.875, 9.453125, 10.0] controls=None
+2026-07-23 05:13:49 transreid.train INFO: Epoch[5] Iter[20/227] Loss: 6.551, Pose: 0.889, Acc: 0.159, Student: 0.00, Reliability: 0.836, GateAbs: 2.723e-04, Base Lr: 2.06e-04
+2026-07-23 05:14:13 transreid.train INFO: Epoch[5] Iter[40/227] Loss: 6.548, Pose: 0.888, Acc: 0.154, Student: 0.00, Reliability: 0.840, GateAbs: 2.805e-04, Base Lr: 2.06e-04
+2026-07-23 05:14:37 transreid.train INFO: Epoch[5] Iter[60/227] Loss: 6.539, Pose: 0.888, Acc: 0.161, Student: 0.00, Reliability: 0.838, GateAbs: 2.843e-04, Base Lr: 2.06e-04
+2026-07-23 05:15:01 transreid.train INFO: Epoch[5] Iter[80/227] Loss: 6.537, Pose: 0.887, Acc: 0.161, Student: 0.00, Reliability: 0.845, GateAbs: 2.888e-04, Base Lr: 2.06e-04
+2026-07-23 05:15:25 transreid.train INFO: Epoch[5] Iter[100/227] Loss: 6.530, Pose: 0.887, Acc: 0.166, Student: 0.00, Reliability: 0.848, GateAbs: 2.956e-04, Base Lr: 2.06e-04
+2026-07-23 05:15:50 transreid.train INFO: Epoch[5] Iter[120/227] Loss: 6.517, Pose: 0.886, Acc: 0.176, Student: 0.00, Reliability: 0.859, GateAbs: 3.004e-04, Base Lr: 2.06e-04
+2026-07-23 05:16:14 transreid.train INFO: Epoch[5] Iter[140/227] Loss: 6.511, Pose: 0.885, Acc: 0.183, Student: 0.00, Reliability: 0.864, GateAbs: 3.066e-04, Base Lr: 2.06e-04
+2026-07-23 05:16:38 transreid.train INFO: Epoch[5] Iter[160/227] Loss: 6.505, Pose: 0.885, Acc: 0.200, Student: 0.00, Reliability: 0.843, GateAbs: 3.105e-04, Base Lr: 2.06e-04
+2026-07-23 05:17:02 transreid.train INFO: Epoch[5] Iter[180/227] Loss: 6.490, Pose: 0.884, Acc: 0.212, Student: 0.00, Reliability: 0.847, GateAbs: 3.161e-04, Base Lr: 2.06e-04
+2026-07-23 05:17:26 transreid.train INFO: Epoch[5] Iter[200/227] Loss: 6.470, Pose: 0.884, Acc: 0.234, Student: 0.00, Reliability: 0.819, GateAbs: 3.205e-04, Base Lr: 2.06e-04
+2026-07-23 05:17:41 transreid.train INFO: Epoch 5 done. Time per epoch: 256.099[s] Speed: 53.0[samples/s]
+2026-07-23 05:17:42 transreid.train INFO: PCMPSR epoch=6 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.040481/32.987041/46.317825/0/2.4062/0.000000 controls=None
+2026-07-23 05:17:42 transreid.train INFO: PSCCR epoch=6 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.085642/[0.183199, 0.033245, 0.040481]/[32.678833, 32.81955, 32.987041]/[46.893044, 46.465546, 46.317825]/[6.6875, 9.3125, 9.953125] controls=None
+2026-07-23 05:18:05 transreid.train INFO: Epoch[6] Iter[20/227] Loss: 6.413, Pose: 0.873, Acc: 0.125, Student: 0.20, Reliability: 0.852, GateAbs: 4.101e-04, Base Lr: 2.46e-04
+2026-07-23 05:18:29 transreid.train INFO: Epoch[6] Iter[40/227] Loss: 6.404, Pose: 0.871, Acc: 0.126, Student: 0.20, Reliability: 0.831, GateAbs: 4.205e-04, Base Lr: 2.46e-04
+2026-07-23 05:18:53 transreid.train INFO: Epoch[6] Iter[60/227] Loss: 6.402, Pose: 0.870, Acc: 0.134, Student: 0.20, Reliability: 0.830, GateAbs: 4.316e-04, Base Lr: 2.46e-04
+2026-07-23 05:19:18 transreid.train INFO: Epoch[6] Iter[80/227] Loss: 6.390, Pose: 0.870, Acc: 0.135, Student: 0.20, Reliability: 0.848, GateAbs: 4.408e-04, Base Lr: 2.46e-04
+2026-07-23 05:19:42 transreid.train INFO: Epoch[6] Iter[100/227] Loss: 6.379, Pose: 0.869, Acc: 0.141, Student: 0.20, Reliability: 0.860, GateAbs: 4.510e-04, Base Lr: 2.46e-04
+2026-07-23 05:20:06 transreid.train INFO: Epoch[6] Iter[120/227] Loss: 6.360, Pose: 0.868, Acc: 0.151, Student: 0.20, Reliability: 0.870, GateAbs: 4.584e-04, Base Lr: 2.46e-04
+2026-07-23 05:20:30 transreid.train INFO: Epoch[6] Iter[140/227] Loss: 6.344, Pose: 0.867, Acc: 0.160, Student: 0.20, Reliability: 0.842, GateAbs: 4.707e-04, Base Lr: 2.46e-04
+2026-07-23 05:20:54 transreid.train INFO: Epoch[6] Iter[160/227] Loss: 6.325, Pose: 0.867, Acc: 0.173, Student: 0.20, Reliability: 0.850, GateAbs: 4.804e-04, Base Lr: 2.46e-04
+2026-07-23 05:21:18 transreid.train INFO: Epoch[6] Iter[180/227] Loss: 6.306, Pose: 0.866, Acc: 0.188, Student: 0.20, Reliability: 0.858, GateAbs: 4.930e-04, Base Lr: 2.46e-04
+2026-07-23 05:21:42 transreid.train INFO: Epoch[6] Iter[200/227] Loss: 6.272, Pose: 0.865, Acc: 0.207, Student: 0.20, Reliability: 0.853, GateAbs: 5.009e-04, Base Lr: 2.46e-04
+2026-07-23 05:21:58 transreid.train INFO: Epoch 6 done. Time per epoch: 257.619[s] Speed: 52.9[samples/s]
+2026-07-23 05:22:00 transreid.train INFO: PCMPSR epoch=7 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.014348/31.150681/45.787811/0/2.0469/0.000000 controls=None
+2026-07-23 05:22:00 transreid.train INFO: PSCCR epoch=7 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.031979/[0.062118, 0.01947, 0.014348]/[30.66375, 30.904413, 31.150681]/[45.832367, 45.756634, 45.787811]/[7.09375, 9.359375, 9.90625] controls=None
+2026-07-23 05:22:23 transreid.train INFO: Epoch[7] Iter[20/227] Loss: 6.207, Pose: 0.852, Acc: 0.104, Student: 0.40, Reliability: 0.825, GateAbs: 6.216e-04, Base Lr: 2.85e-04
+2026-07-23 05:22:47 transreid.train INFO: Epoch[7] Iter[40/227] Loss: 6.217, Pose: 0.851, Acc: 0.093, Student: 0.40, Reliability: 0.837, GateAbs: 6.419e-04, Base Lr: 2.85e-04
+2026-07-23 05:23:11 transreid.train INFO: Epoch[7] Iter[60/227] Loss: 6.197, Pose: 0.851, Acc: 0.097, Student: 0.40, Reliability: 0.818, GateAbs: 6.620e-04, Base Lr: 2.85e-04
+2026-07-23 05:23:35 transreid.train INFO: Epoch[7] Iter[80/227] Loss: 6.161, Pose: 0.850, Acc: 0.105, Student: 0.40, Reliability: 0.849, GateAbs: 6.748e-04, Base Lr: 2.85e-04
+2026-07-23 05:23:59 transreid.train INFO: Epoch[7] Iter[100/227] Loss: 6.140, Pose: 0.849, Acc: 0.114, Student: 0.40, Reliability: 0.853, GateAbs: 6.885e-04, Base Lr: 2.85e-04
+2026-07-23 05:24:23 transreid.train INFO: Epoch[7] Iter[120/227] Loss: 6.121, Pose: 0.848, Acc: 0.121, Student: 0.40, Reliability: 0.855, GateAbs: 7.020e-04, Base Lr: 2.85e-04
+2026-07-23 05:24:47 transreid.train INFO: Epoch[7] Iter[140/227] Loss: 6.099, Pose: 0.846, Acc: 0.133, Student: 0.40, Reliability: 0.865, GateAbs: 7.204e-04, Base Lr: 2.85e-04
+2026-07-23 05:25:11 transreid.train INFO: Epoch[7] Iter[160/227] Loss: 6.070, Pose: 0.845, Acc: 0.144, Student: 0.40, Reliability: 0.855, GateAbs: 7.399e-04, Base Lr: 2.85e-04
+2026-07-23 05:25:35 transreid.train INFO: Epoch[7] Iter[180/227] Loss: 6.033, Pose: 0.844, Acc: 0.158, Student: 0.40, Reliability: 0.850, GateAbs: 7.612e-04, Base Lr: 2.85e-04
+2026-07-23 05:25:59 transreid.train INFO: Epoch[7] Iter[200/227] Loss: 5.977, Pose: 0.843, Acc: 0.183, Student: 0.40, Reliability: 0.845, GateAbs: 7.741e-04, Base Lr: 2.85e-04
+2026-07-23 05:26:13 transreid.train INFO: Epoch 7 done. Time per epoch: 254.539[s] Speed: 53.1[samples/s]
+2026-07-23 05:26:14 transreid.train INFO: PCMPSR epoch=8 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.058680/26.206032/42.901070/0/2.2656/0.000000 controls=None
+2026-07-23 05:26:14 transreid.train INFO: PSCCR epoch=8 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.048317/[0.038822, 0.04745, 0.05868]/[25.986786, 26.114769, 26.206032]/[43.147411, 43.0247, 42.90107]/[6.640625, 9.171875, 10.0] controls=None
+2026-07-23 05:26:37 transreid.train INFO: Epoch[8] Iter[20/227] Loss: 5.867, Pose: 0.825, Acc: 0.123, Student: 0.60, Reliability: 0.840, GateAbs: 9.057e-04, Base Lr: 3.25e-04
+2026-07-23 05:27:01 transreid.train INFO: Epoch[8] Iter[40/227] Loss: 5.897, Pose: 0.826, Acc: 0.107, Student: 0.60, Reliability: 0.848, GateAbs: 9.339e-04, Base Lr: 3.25e-04
+2026-07-23 05:27:25 transreid.train INFO: Epoch[8] Iter[60/227] Loss: 5.931, Pose: 0.825, Acc: 0.097, Student: 0.60, Reliability: 0.841, GateAbs: 9.677e-04, Base Lr: 3.25e-04
+2026-07-23 05:27:50 transreid.train INFO: Epoch[8] Iter[80/227] Loss: 5.891, Pose: 0.824, Acc: 0.104, Student: 0.60, Reliability: 0.849, GateAbs: 9.966e-04, Base Lr: 3.25e-04
+2026-07-23 05:28:14 transreid.train INFO: Epoch[8] Iter[100/227] Loss: 5.866, Pose: 0.823, Acc: 0.107, Student: 0.60, Reliability: 0.851, GateAbs: 1.014e-03, Base Lr: 3.25e-04
+2026-07-23 05:28:38 transreid.train INFO: Epoch[8] Iter[120/227] Loss: 5.849, Pose: 0.822, Acc: 0.113, Student: 0.60, Reliability: 0.867, GateAbs: 1.043e-03, Base Lr: 3.25e-04
+2026-07-23 05:29:02 transreid.train INFO: Epoch[8] Iter[140/227] Loss: 5.817, Pose: 0.821, Acc: 0.125, Student: 0.60, Reliability: 0.852, GateAbs: 1.068e-03, Base Lr: 3.25e-04
+2026-07-23 05:29:26 transreid.train INFO: Epoch[8] Iter[160/227] Loss: 5.780, Pose: 0.820, Acc: 0.138, Student: 0.60, Reliability: 0.853, GateAbs: 1.099e-03, Base Lr: 3.25e-04
+2026-07-23 05:29:50 transreid.train INFO: Epoch[8] Iter[180/227] Loss: 5.731, Pose: 0.819, Acc: 0.154, Student: 0.60, Reliability: 0.855, GateAbs: 1.130e-03, Base Lr: 3.25e-04
+2026-07-23 05:30:14 transreid.train INFO: Epoch[8] Iter[200/227] Loss: 5.660, Pose: 0.817, Acc: 0.174, Student: 0.60, Reliability: 0.849, GateAbs: 1.161e-03, Base Lr: 3.25e-04
+2026-07-23 05:30:28 transreid.train INFO: Epoch 8 done. Time per epoch: 254.981[s] Speed: 53.0[samples/s]
+2026-07-23 05:30:29 transreid.train INFO: PCMPSR epoch=9 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.003241/26.334499/41.123676/0/2.2031/0.000000 controls=None
+2026-07-23 05:30:29 transreid.train INFO: PSCCR epoch=9 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.009992/[0.022258, 0.004475, 0.003241]/[25.930977, 26.045183, 26.334499]/[41.426224, 41.275784, 41.123676]/[7.125, 9.34375, 10.0] controls=None
+2026-07-23 05:30:52 transreid.train INFO: Epoch[9] Iter[20/227] Loss: 5.685, Pose: 0.805, Acc: 0.078, Student: 0.80, Reliability: 0.840, GateAbs: 1.287e-03, Base Lr: 3.64e-04
+2026-07-23 05:31:17 transreid.train INFO: Epoch[9] Iter[40/227] Loss: 5.658, Pose: 0.804, Acc: 0.092, Student: 0.80, Reliability: 0.828, GateAbs: 1.328e-03, Base Lr: 3.64e-04
+2026-07-23 05:31:41 transreid.train INFO: Epoch[9] Iter[60/227] Loss: 5.650, Pose: 0.801, Acc: 0.095, Student: 0.80, Reliability: 0.854, GateAbs: 1.362e-03, Base Lr: 3.64e-04
+2026-07-23 05:32:05 transreid.train INFO: Epoch[9] Iter[80/227] Loss: 5.601, Pose: 0.800, Acc: 0.112, Student: 0.80, Reliability: 0.855, GateAbs: 1.399e-03, Base Lr: 3.64e-04
+2026-07-23 05:32:29 transreid.train INFO: Epoch[9] Iter[100/227] Loss: 5.573, Pose: 0.798, Acc: 0.120, Student: 0.80, Reliability: 0.846, GateAbs: 1.426e-03, Base Lr: 3.64e-04
+2026-07-23 05:32:54 transreid.train INFO: Epoch[9] Iter[120/227] Loss: 5.525, Pose: 0.797, Acc: 0.133, Student: 0.80, Reliability: 0.847, GateAbs: 1.447e-03, Base Lr: 3.64e-04
+2026-07-23 05:33:18 transreid.train INFO: Epoch[9] Iter[140/227] Loss: 5.489, Pose: 0.795, Acc: 0.142, Student: 0.80, Reliability: 0.834, GateAbs: 1.483e-03, Base Lr: 3.64e-04
+2026-07-23 05:33:42 transreid.train INFO: Epoch[9] Iter[160/227] Loss: 5.438, Pose: 0.794, Acc: 0.152, Student: 0.80, Reliability: 0.852, GateAbs: 1.514e-03, Base Lr: 3.64e-04
+2026-07-23 05:34:07 transreid.train INFO: Epoch[9] Iter[180/227] Loss: 5.383, Pose: 0.792, Acc: 0.166, Student: 0.80, Reliability: 0.849, GateAbs: 1.540e-03, Base Lr: 3.64e-04
+2026-07-23 05:34:31 transreid.train INFO: Epoch[9] Iter[200/227] Loss: 5.286, Pose: 0.791, Acc: 0.192, Student: 0.80, Reliability: 0.828, GateAbs: 1.572e-03, Base Lr: 3.64e-04
+2026-07-23 05:34:44 transreid.train INFO: Epoch 9 done. Time per epoch: 256.438[s] Speed: 52.7[samples/s]
+2026-07-23 05:34:46 transreid.train INFO: PCMPSR epoch=10 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.070657/25.086742/39.243809/0/2.1719/0.000000 controls=None
+2026-07-23 05:34:46 transreid.train INFO: PSCCR epoch=10 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.127787/[0.234734, 0.077969, 0.070657]/[25.72543, 25.03458, 25.086742]/[39.147408, 39.256214, 39.243809]/[7.0625, 9.40625, 10.0] controls=None
+2026-07-23 05:35:09 transreid.train INFO: Epoch[10] Iter[20/227] Loss: 5.317, Pose: 0.773, Acc: 0.141, Student: 1.00, Reliability: 0.844, GateAbs: 1.667e-03, Base Lr: 4.04e-04
+2026-07-23 05:35:33 transreid.train INFO: Epoch[10] Iter[40/227] Loss: 5.346, Pose: 0.771, Acc: 0.123, Student: 1.00, Reliability: 0.848, GateAbs: 1.712e-03, Base Lr: 4.04e-04
+2026-07-23 05:35:57 transreid.train INFO: Epoch[10] Iter[60/227] Loss: 5.302, Pose: 0.771, Acc: 0.126, Student: 1.00, Reliability: 0.858, GateAbs: 1.743e-03, Base Lr: 4.04e-04
+2026-07-23 05:36:21 transreid.train INFO: Epoch[10] Iter[80/227] Loss: 5.278, Pose: 0.770, Acc: 0.133, Student: 1.00, Reliability: 0.843, GateAbs: 1.779e-03, Base Lr: 4.04e-04
+2026-07-23 05:36:45 transreid.train INFO: Epoch[10] Iter[100/227] Loss: 5.240, Pose: 0.769, Acc: 0.139, Student: 1.00, Reliability: 0.821, GateAbs: 1.809e-03, Base Lr: 4.04e-04
+2026-07-23 05:37:09 transreid.train INFO: Epoch[10] Iter[120/227] Loss: 5.205, Pose: 0.768, Acc: 0.148, Student: 1.00, Reliability: 0.859, GateAbs: 1.833e-03, Base Lr: 4.04e-04
+2026-07-23 05:37:33 transreid.train INFO: Epoch[10] Iter[140/227] Loss: 5.145, Pose: 0.767, Acc: 0.163, Student: 1.00, Reliability: 0.820, GateAbs: 1.862e-03, Base Lr: 4.04e-04
+2026-07-23 05:37:57 transreid.train INFO: Epoch[10] Iter[160/227] Loss: 5.099, Pose: 0.766, Acc: 0.177, Student: 1.00, Reliability: 0.846, GateAbs: 1.893e-03, Base Lr: 4.04e-04
+2026-07-23 05:38:21 transreid.train INFO: Epoch[10] Iter[180/227] Loss: 5.018, Pose: 0.764, Acc: 0.199, Student: 1.00, Reliability: 0.851, GateAbs: 1.917e-03, Base Lr: 4.04e-04
+2026-07-23 05:38:46 transreid.train INFO: Epoch[10] Iter[200/227] Loss: 4.904, Pose: 0.763, Acc: 0.231, Student: 1.00, Reliability: 0.852, GateAbs: 1.946e-03, Base Lr: 4.04e-04
+2026-07-23 05:39:00 transreid.train INFO: Epoch 10 done. Time per epoch: 255.896[s] Speed: 53.0[samples/s]
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-23 05:39:22 transreid.train INFO: Validation Results - Epoch: 10
+2026-07-23 05:39:22 transreid.train INFO: mAP: 29.3%
+2026-07-23 05:39:22 transreid.train INFO: CMC curve, Rank-1  :38.7%
+2026-07-23 05:39:22 transreid.train INFO: CMC curve, Rank-5  :54.0%
+2026-07-23 05:39:22 transreid.train INFO: CMC curve, Rank-10 :60.7%
+/home/afr/SOLIDER-REID-exp413-psccr-train-v1/utils/metrics.py:12: UserWarning: This overload of addmm_ is deprecated:
+	addmm_(Number beta, Number alpha, Tensor mat1, Tensor mat2)
+Consider using one of the following signatures instead:
+	addmm_(Tensor mat1, Tensor mat2, *, Number beta, Number alpha) (Triggered internally at /opt/conda/conda-bld/pytorch_1670525541702/work/torch/csrc/utils/python_arg_parser.cpp:1420.)
+  dist_mat.addmm_(1, -2, qf, gf.t())
+2026-07-23 05:39:24 transreid.train INFO: PCMPSR epoch=11 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.004686/22.957073/39.561283/0/2.2344/0.000000 controls=None
+2026-07-23 05:39:24 transreid.train INFO: PSCCR epoch=11 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.019659/[0.046878, 0.007415, 0.004686]/[22.917065, 23.075218, 22.957073]/[40.029934, 39.645069, 39.561283]/[6.8125, 9.390625, 10.0] controls=None
+2026-07-23 05:39:47 transreid.train INFO: Epoch[11] Iter[20/227] Loss: 5.029, Pose: 0.744, Acc: 0.140, Student: 1.00, Reliability: 0.848, GateAbs: 2.030e-03, Base Lr: 4.44e-04
+2026-07-23 05:40:11 transreid.train INFO: Epoch[11] Iter[40/227] Loss: 4.975, Pose: 0.745, Acc: 0.154, Student: 1.00, Reliability: 0.857, GateAbs: 2.061e-03, Base Lr: 4.44e-04
+2026-07-23 05:40:35 transreid.train INFO: Epoch[11] Iter[60/227] Loss: 4.942, Pose: 0.744, Acc: 0.162, Student: 1.00, Reliability: 0.839, GateAbs: 2.101e-03, Base Lr: 4.44e-04
+2026-07-23 05:41:00 transreid.train INFO: Epoch[11] Iter[80/227] Loss: 4.892, Pose: 0.742, Acc: 0.181, Student: 1.00, Reliability: 0.831, GateAbs: 2.123e-03, Base Lr: 4.44e-04
+2026-07-23 05:41:24 transreid.train INFO: Epoch[11] Iter[100/227] Loss: 4.833, Pose: 0.741, Acc: 0.195, Student: 1.00, Reliability: 0.843, GateAbs: 2.162e-03, Base Lr: 4.44e-04
+2026-07-23 05:41:48 transreid.train INFO: Epoch[11] Iter[120/227] Loss: 4.787, Pose: 0.740, Acc: 0.207, Student: 1.00, Reliability: 0.856, GateAbs: 2.192e-03, Base Lr: 4.44e-04
+2026-07-23 05:42:12 transreid.train INFO: Epoch[11] Iter[140/227] Loss: 4.746, Pose: 0.739, Acc: 0.218, Student: 1.00, Reliability: 0.856, GateAbs: 2.239e-03, Base Lr: 4.44e-04
+2026-07-23 05:42:36 transreid.train INFO: Epoch[11] Iter[160/227] Loss: 4.702, Pose: 0.737, Acc: 0.228, Student: 1.00, Reliability: 0.853, GateAbs: 2.268e-03, Base Lr: 4.44e-04
+2026-07-23 05:43:01 transreid.train INFO: Epoch[11] Iter[180/227] Loss: 4.625, Pose: 0.736, Acc: 0.248, Student: 1.00, Reliability: 0.848, GateAbs: 2.320e-03, Base Lr: 4.44e-04
+2026-07-23 05:43:25 transreid.train INFO: Epoch[11] Iter[200/227] Loss: 4.516, Pose: 0.735, Acc: 0.275, Student: 1.00, Reliability: 0.826, GateAbs: 2.355e-03, Base Lr: 4.44e-04
+2026-07-23 05:43:40 transreid.train INFO: Epoch 11 done. Time per epoch: 258.077[s] Speed: 52.8[samples/s]
+2026-07-23 05:43:42 transreid.train INFO: PCMPSR epoch=12 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.006267/21.337528/38.824905/0/2.1094/0.000000 controls=None
+2026-07-23 05:43:42 transreid.train INFO: PSCCR epoch=12 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.014363/[0.022771, 0.014052, 0.006267]/[21.388147, 21.282021, 21.337528]/[38.757919, 38.966621, 38.824905]/[6.890625, 9.421875, 9.953125] controls=None
+2026-07-23 05:44:05 transreid.train INFO: Epoch[12] Iter[20/227] Loss: 4.605, Pose: 0.719, Acc: 0.208, Student: 1.00, Reliability: 0.830, GateAbs: 2.407e-03, Base Lr: 4.83e-04
+2026-07-23 05:44:29 transreid.train INFO: Epoch[12] Iter[40/227] Loss: 4.592, Pose: 0.717, Acc: 0.212, Student: 1.00, Reliability: 0.850, GateAbs: 2.453e-03, Base Lr: 4.83e-04
+2026-07-23 05:44:53 transreid.train INFO: Epoch[12] Iter[60/227] Loss: 4.579, Pose: 0.716, Acc: 0.223, Student: 1.00, Reliability: 0.841, GateAbs: 2.500e-03, Base Lr: 4.83e-04
+2026-07-23 05:45:18 transreid.train INFO: Epoch[12] Iter[80/227] Loss: 4.540, Pose: 0.716, Acc: 0.232, Student: 1.00, Reliability: 0.851, GateAbs: 2.531e-03, Base Lr: 4.83e-04
+2026-07-23 05:45:42 transreid.train INFO: Epoch[12] Iter[100/227] Loss: 4.491, Pose: 0.715, Acc: 0.243, Student: 1.00, Reliability: 0.842, GateAbs: 2.562e-03, Base Lr: 4.83e-04
+2026-07-23 05:46:06 transreid.train INFO: Epoch[12] Iter[120/227] Loss: 4.434, Pose: 0.714, Acc: 0.262, Student: 1.00, Reliability: 0.833, GateAbs: 2.604e-03, Base Lr: 4.83e-04
+2026-07-23 05:46:30 transreid.train INFO: Epoch[12] Iter[140/227] Loss: 4.385, Pose: 0.712, Acc: 0.273, Student: 1.00, Reliability: 0.843, GateAbs: 2.641e-03, Base Lr: 4.83e-04
+2026-07-23 05:46:54 transreid.train INFO: Epoch[12] Iter[160/227] Loss: 4.320, Pose: 0.710, Acc: 0.291, Student: 1.00, Reliability: 0.848, GateAbs: 2.669e-03, Base Lr: 4.83e-04
+2026-07-23 05:47:18 transreid.train INFO: Epoch[12] Iter[180/227] Loss: 4.238, Pose: 0.709, Acc: 0.309, Student: 1.00, Reliability: 0.836, GateAbs: 2.686e-03, Base Lr: 4.83e-04
+2026-07-23 05:47:43 transreid.train INFO: Epoch[12] Iter[200/227] Loss: 4.115, Pose: 0.708, Acc: 0.340, Student: 1.00, Reliability: 0.848, GateAbs: 2.714e-03, Base Lr: 4.83e-04
+2026-07-23 05:47:56 transreid.train INFO: Epoch 12 done. Time per epoch: 255.440[s] Speed: 52.9[samples/s]
+2026-07-23 05:47:57 transreid.train INFO: PCMPSR epoch=13 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.009884/22.294300/41.977654/0/2.4844/0.000000 controls=None
+2026-07-23 05:47:57 transreid.train INFO: PSCCR epoch=13 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.018891/[0.0242, 0.02259, 0.009884]/[22.601982, 22.295952, 22.2943]/[41.934845, 41.97765, 41.977654]/[7.0625, 9.375, 10.0] controls=None
+2026-07-23 05:48:20 transreid.train INFO: Epoch[13] Iter[20/227] Loss: 4.358, Pose: 0.693, Acc: 0.228, Student: 1.00, Reliability: 0.835, GateAbs: 2.774e-03, Base Lr: 5.23e-04
+2026-07-23 05:48:45 transreid.train INFO: Epoch[13] Iter[40/227] Loss: 4.267, Pose: 0.689, Acc: 0.262, Student: 1.00, Reliability: 0.852, GateAbs: 2.806e-03, Base Lr: 5.23e-04
+2026-07-23 05:49:09 transreid.train INFO: Epoch[13] Iter[60/227] Loss: 4.199, Pose: 0.688, Acc: 0.283, Student: 1.00, Reliability: 0.848, GateAbs: 2.821e-03, Base Lr: 5.23e-04
+2026-07-23 05:49:33 transreid.train INFO: Epoch[13] Iter[80/227] Loss: 4.117, Pose: 0.686, Acc: 0.308, Student: 1.00, Reliability: 0.854, GateAbs: 2.853e-03, Base Lr: 5.23e-04
+2026-07-23 05:49:57 transreid.train INFO: Epoch[13] Iter[100/227] Loss: 4.063, Pose: 0.684, Acc: 0.317, Student: 1.00, Reliability: 0.860, GateAbs: 2.876e-03, Base Lr: 5.23e-04
+2026-07-23 05:50:22 transreid.train INFO: Epoch[13] Iter[120/227] Loss: 4.019, Pose: 0.684, Acc: 0.329, Student: 1.00, Reliability: 0.848, GateAbs: 2.909e-03, Base Lr: 5.23e-04
+2026-07-23 05:50:46 transreid.train INFO: Epoch[13] Iter[140/227] Loss: 3.975, Pose: 0.684, Acc: 0.346, Student: 1.00, Reliability: 0.866, GateAbs: 2.934e-03, Base Lr: 5.23e-04
+2026-07-23 05:51:10 transreid.train INFO: Epoch[13] Iter[160/227] Loss: 3.909, Pose: 0.682, Acc: 0.367, Student: 1.00, Reliability: 0.819, GateAbs: 2.979e-03, Base Lr: 5.23e-04
+2026-07-23 05:51:34 transreid.train INFO: Epoch[13] Iter[180/227] Loss: 3.831, Pose: 0.681, Acc: 0.392, Student: 1.00, Reliability: 0.844, GateAbs: 3.016e-03, Base Lr: 5.23e-04
+2026-07-23 05:51:59 transreid.train INFO: Epoch[13] Iter[200/227] Loss: 3.732, Pose: 0.680, Acc: 0.416, Student: 1.00, Reliability: 0.845, GateAbs: 3.049e-03, Base Lr: 5.23e-04
+2026-07-23 05:52:14 transreid.train INFO: Epoch 13 done. Time per epoch: 258.457[s] Speed: 52.7[samples/s]
+2026-07-23 05:52:16 transreid.train INFO: PCMPSR epoch=14 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000155/21.429531/40.669979/0/2.2969/0.000000 controls=None
+2026-07-23 05:52:16 transreid.train INFO: PSCCR epoch=14 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000273/[0.00051, 0.000155, 0.000155]/[20.489624, 21.218105, 21.429531]/[40.806553, 40.708729, 40.669979]/[7.140625, 9.296875, 9.953125] controls=None
+2026-07-23 05:52:39 transreid.train INFO: Epoch[14] Iter[20/227] Loss: 3.915, Pose: 0.664, Acc: 0.335, Student: 1.00, Reliability: 0.853, GateAbs: 3.135e-03, Base Lr: 5.62e-04
+2026-07-23 05:53:03 transreid.train INFO: Epoch[14] Iter[40/227] Loss: 3.853, Pose: 0.664, Acc: 0.346, Student: 1.00, Reliability: 0.846, GateAbs: 3.167e-03, Base Lr: 5.62e-04
+2026-07-23 05:53:27 transreid.train INFO: Epoch[14] Iter[60/227] Loss: 3.821, Pose: 0.664, Acc: 0.358, Student: 1.00, Reliability: 0.850, GateAbs: 3.195e-03, Base Lr: 5.62e-04
+2026-07-23 05:53:52 transreid.train INFO: Epoch[14] Iter[80/227] Loss: 3.740, Pose: 0.663, Acc: 0.385, Student: 1.00, Reliability: 0.861, GateAbs: 3.220e-03, Base Lr: 5.62e-04
+2026-07-23 05:54:16 transreid.train INFO: Epoch[14] Iter[100/227] Loss: 3.715, Pose: 0.661, Acc: 0.389, Student: 1.00, Reliability: 0.858, GateAbs: 3.240e-03, Base Lr: 5.62e-04
+2026-07-23 05:54:40 transreid.train INFO: Epoch[14] Iter[120/227] Loss: 3.679, Pose: 0.659, Acc: 0.405, Student: 1.00, Reliability: 0.823, GateAbs: 3.277e-03, Base Lr: 5.62e-04
+2026-07-23 05:55:04 transreid.train INFO: Epoch[14] Iter[140/227] Loss: 3.610, Pose: 0.658, Acc: 0.431, Student: 1.00, Reliability: 0.855, GateAbs: 3.317e-03, Base Lr: 5.62e-04
+2026-07-23 05:55:28 transreid.train INFO: Epoch[14] Iter[160/227] Loss: 3.558, Pose: 0.657, Acc: 0.447, Student: 1.00, Reliability: 0.837, GateAbs: 3.333e-03, Base Lr: 5.62e-04
+2026-07-23 05:55:53 transreid.train INFO: Epoch[14] Iter[180/227] Loss: 3.479, Pose: 0.656, Acc: 0.472, Student: 1.00, Reliability: 0.843, GateAbs: 3.359e-03, Base Lr: 5.62e-04
+2026-07-23 05:56:17 transreid.train INFO: Epoch[14] Iter[200/227] Loss: 3.348, Pose: 0.655, Acc: 0.505, Student: 1.00, Reliability: 0.851, GateAbs: 3.392e-03, Base Lr: 5.62e-04
+2026-07-23 05:56:31 transreid.train INFO: Epoch 14 done. Time per epoch: 256.940[s] Speed: 52.8[samples/s]
+2026-07-23 05:56:33 transreid.train INFO: PCMPSR epoch=15 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000312/21.821533/44.816719/0/2.2656/0.000000 controls=None
+2026-07-23 05:56:33 transreid.train INFO: PSCCR epoch=15 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000589/[0.001225, 0.00023, 0.000312]/[21.820732, 21.481804, 21.821533]/[44.970032, 44.839493, 44.816719]/[6.75, 9.328125, 10.0] controls=None
+2026-07-23 05:56:56 transreid.train INFO: Epoch[15] Iter[20/227] Loss: 3.521, Pose: 0.640, Acc: 0.411, Student: 1.00, Reliability: 0.849, GateAbs: 3.443e-03, Base Lr: 6.02e-04
+2026-07-23 05:57:20 transreid.train INFO: Epoch[15] Iter[40/227] Loss: 3.506, Pose: 0.639, Acc: 0.428, Student: 1.00, Reliability: 0.856, GateAbs: 3.492e-03, Base Lr: 6.02e-04
+2026-07-23 05:57:44 transreid.train INFO: Epoch[15] Iter[60/227] Loss: 3.454, Pose: 0.637, Acc: 0.441, Student: 1.00, Reliability: 0.841, GateAbs: 3.534e-03, Base Lr: 6.02e-04
+2026-07-23 05:58:09 transreid.train INFO: Epoch[15] Iter[80/227] Loss: 3.418, Pose: 0.638, Acc: 0.453, Student: 1.00, Reliability: 0.838, GateAbs: 3.565e-03, Base Lr: 6.02e-04
+2026-07-23 05:58:33 transreid.train INFO: Epoch[15] Iter[100/227] Loss: 3.351, Pose: 0.636, Acc: 0.475, Student: 1.00, Reliability: 0.847, GateAbs: 3.588e-03, Base Lr: 6.02e-04
+2026-07-23 05:58:57 transreid.train INFO: Epoch[15] Iter[120/227] Loss: 3.308, Pose: 0.635, Acc: 0.492, Student: 1.00, Reliability: 0.854, GateAbs: 3.634e-03, Base Lr: 6.02e-04
+2026-07-23 05:59:21 transreid.train INFO: Epoch[15] Iter[140/227] Loss: 3.243, Pose: 0.635, Acc: 0.509, Student: 1.00, Reliability: 0.842, GateAbs: 3.676e-03, Base Lr: 6.02e-04
+2026-07-23 05:59:46 transreid.train INFO: Epoch[15] Iter[160/227] Loss: 3.186, Pose: 0.634, Acc: 0.528, Student: 1.00, Reliability: 0.823, GateAbs: 3.703e-03, Base Lr: 6.02e-04
+2026-07-23 06:00:10 transreid.train INFO: Epoch[15] Iter[180/227] Loss: 3.114, Pose: 0.633, Acc: 0.545, Student: 1.00, Reliability: 0.826, GateAbs: 3.731e-03, Base Lr: 6.02e-04
+2026-07-23 06:00:34 transreid.train INFO: Epoch[15] Iter[200/227] Loss: 3.005, Pose: 0.631, Acc: 0.570, Student: 1.00, Reliability: 0.848, GateAbs: 3.757e-03, Base Lr: 6.02e-04
+2026-07-23 06:00:49 transreid.train INFO: Epoch 15 done. Time per epoch: 257.384[s] Speed: 52.7[samples/s]
+2026-07-23 06:00:50 transreid.train INFO: PCMPSR epoch=16 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000763/23.692497/43.000751/0/2.5312/0.000000 controls=None
+2026-07-23 06:00:50 transreid.train INFO: PSCCR epoch=16 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.001188/[0.00159, 0.00121, 0.000763]/[23.305599, 23.399895, 23.692497]/[43.054714, 43.117023, 43.000751]/[6.71875, 9.15625, 10.0] controls=None
+2026-07-23 06:01:13 transreid.train INFO: Epoch[16] Iter[20/227] Loss: 3.119, Pose: 0.620, Acc: 0.491, Student: 1.00, Reliability: 0.820, GateAbs: 3.814e-03, Base Lr: 6.42e-04
+2026-07-23 06:01:37 transreid.train INFO: Epoch[16] Iter[40/227] Loss: 3.122, Pose: 0.619, Acc: 0.511, Student: 1.00, Reliability: 0.831, GateAbs: 3.861e-03, Base Lr: 6.42e-04
+2026-07-23 06:02:02 transreid.train INFO: Epoch[16] Iter[60/227] Loss: 3.083, Pose: 0.616, Acc: 0.520, Student: 1.00, Reliability: 0.852, GateAbs: 3.884e-03, Base Lr: 6.42e-04
+2026-07-23 06:02:26 transreid.train INFO: Epoch[16] Iter[80/227] Loss: 3.023, Pose: 0.615, Acc: 0.539, Student: 1.00, Reliability: 0.847, GateAbs: 3.916e-03, Base Lr: 6.42e-04
+2026-07-23 06:02:50 transreid.train INFO: Epoch[16] Iter[100/227] Loss: 2.981, Pose: 0.614, Acc: 0.555, Student: 1.00, Reliability: 0.846, GateAbs: 3.946e-03, Base Lr: 6.42e-04
+2026-07-23 06:03:14 transreid.train INFO: Epoch[16] Iter[120/227] Loss: 2.936, Pose: 0.613, Acc: 0.568, Student: 1.00, Reliability: 0.853, GateAbs: 3.981e-03, Base Lr: 6.42e-04
+2026-07-23 06:03:38 transreid.train INFO: Epoch[16] Iter[140/227] Loss: 2.883, Pose: 0.612, Acc: 0.585, Student: 1.00, Reliability: 0.856, GateAbs: 4.002e-03, Base Lr: 6.42e-04
+2026-07-23 06:04:03 transreid.train INFO: Epoch[16] Iter[160/227] Loss: 2.839, Pose: 0.611, Acc: 0.593, Student: 1.00, Reliability: 0.825, GateAbs: 4.031e-03, Base Lr: 6.42e-04
+2026-07-23 06:04:27 transreid.train INFO: Epoch[16] Iter[180/227] Loss: 2.759, Pose: 0.610, Acc: 0.615, Student: 1.00, Reliability: 0.843, GateAbs: 4.052e-03, Base Lr: 6.42e-04
+2026-07-23 06:04:51 transreid.train INFO: Epoch[16] Iter[200/227] Loss: 2.660, Pose: 0.609, Acc: 0.639, Student: 1.00, Reliability: 0.842, GateAbs: 4.091e-03, Base Lr: 6.42e-04
+2026-07-23 06:05:03 transreid.train INFO: Epoch 16 done. Time per epoch: 254.524[s] Speed: 52.8[samples/s]
+2026-07-23 06:05:05 transreid.train INFO: PCMPSR epoch=17 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.050542/25.183174/44.361008/0/2.2656/0.000000 controls=None
+2026-07-23 06:05:05 transreid.train INFO: PSCCR epoch=17 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.129925/[0.210982, 0.12825, 0.050542]/[24.984997, 25.351555, 25.183174]/[44.685337, 44.430218, 44.361008]/[7.078125, 9.484375, 10.0] controls=None
+2026-07-23 06:05:28 transreid.train INFO: Epoch[17] Iter[20/227] Loss: 2.832, Pose: 0.599, Acc: 0.570, Student: 1.00, Reliability: 0.816, GateAbs: 4.145e-03, Base Lr: 6.81e-04
+2026-07-23 06:05:52 transreid.train INFO: Epoch[17] Iter[40/227] Loss: 2.755, Pose: 0.596, Acc: 0.596, Student: 1.00, Reliability: 0.829, GateAbs: 4.198e-03, Base Lr: 6.81e-04
+2026-07-23 06:06:16 transreid.train INFO: Epoch[17] Iter[60/227] Loss: 2.761, Pose: 0.596, Acc: 0.589, Student: 1.00, Reliability: 0.842, GateAbs: 4.218e-03, Base Lr: 6.81e-04
+2026-07-23 06:06:40 transreid.train INFO: Epoch[17] Iter[80/227] Loss: 2.730, Pose: 0.597, Acc: 0.603, Student: 1.00, Reliability: 0.847, GateAbs: 4.248e-03, Base Lr: 6.81e-04
+2026-07-23 06:07:05 transreid.train INFO: Epoch[17] Iter[100/227] Loss: 2.687, Pose: 0.595, Acc: 0.617, Student: 1.00, Reliability: 0.839, GateAbs: 4.304e-03, Base Lr: 6.81e-04
+2026-07-23 06:07:29 transreid.train INFO: Epoch[17] Iter[120/227] Loss: 2.633, Pose: 0.594, Acc: 0.632, Student: 1.00, Reliability: 0.857, GateAbs: 4.319e-03, Base Lr: 6.81e-04
+2026-07-23 06:07:53 transreid.train INFO: Epoch[17] Iter[140/227] Loss: 2.587, Pose: 0.593, Acc: 0.646, Student: 1.00, Reliability: 0.845, GateAbs: 4.362e-03, Base Lr: 6.81e-04
+2026-07-23 06:08:17 transreid.train INFO: Epoch[17] Iter[160/227] Loss: 2.524, Pose: 0.593, Acc: 0.662, Student: 1.00, Reliability: 0.856, GateAbs: 4.409e-03, Base Lr: 6.81e-04
+2026-07-23 06:08:41 transreid.train INFO: Epoch[17] Iter[180/227] Loss: 2.458, Pose: 0.592, Acc: 0.678, Student: 1.00, Reliability: 0.835, GateAbs: 4.436e-03, Base Lr: 6.81e-04
+2026-07-23 06:09:06 transreid.train INFO: Epoch[17] Iter[200/227] Loss: 2.359, Pose: 0.592, Acc: 0.699, Student: 1.00, Reliability: 0.858, GateAbs: 4.455e-03, Base Lr: 6.81e-04
+2026-07-23 06:09:19 transreid.train INFO: Epoch 17 done. Time per epoch: 255.731[s] Speed: 52.8[samples/s]
+2026-07-23 06:09:20 transreid.train INFO: PCMPSR epoch=18 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.017893/23.335892/46.164463/0/2.4531/0.000000 controls=None
+2026-07-23 06:09:20 transreid.train INFO: PSCCR epoch=18 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.035451/[0.049463, 0.038996, 0.017893]/[23.257786, 23.218403, 23.335892]/[46.001637, 46.212334, 46.164463]/[7.15625, 9.40625, 10.0] controls=None
+2026-07-23 06:09:43 transreid.train INFO: Epoch[18] Iter[20/227] Loss: 2.660, Pose: 0.579, Acc: 0.587, Student: 1.00, Reliability: 0.865, GateAbs: 4.499e-03, Base Lr: 7.21e-04
+2026-07-23 06:10:08 transreid.train INFO: Epoch[18] Iter[40/227] Loss: 2.544, Pose: 0.579, Acc: 0.625, Student: 1.00, Reliability: 0.851, GateAbs: 4.525e-03, Base Lr: 7.21e-04
+2026-07-23 06:10:32 transreid.train INFO: Epoch[18] Iter[60/227] Loss: 2.509, Pose: 0.579, Acc: 0.640, Student: 1.00, Reliability: 0.847, GateAbs: 4.558e-03, Base Lr: 7.21e-04
+2026-07-23 06:10:56 transreid.train INFO: Epoch[18] Iter[80/227] Loss: 2.436, Pose: 0.578, Acc: 0.663, Student: 1.00, Reliability: 0.831, GateAbs: 4.572e-03, Base Lr: 7.21e-04
+2026-07-23 06:11:20 transreid.train INFO: Epoch[18] Iter[100/227] Loss: 2.379, Pose: 0.577, Acc: 0.674, Student: 1.00, Reliability: 0.834, GateAbs: 4.614e-03, Base Lr: 7.21e-04
+2026-07-23 06:11:45 transreid.train INFO: Epoch[18] Iter[120/227] Loss: 2.311, Pose: 0.576, Acc: 0.692, Student: 1.00, Reliability: 0.841, GateAbs: 4.638e-03, Base Lr: 7.21e-04
+2026-07-23 06:12:09 transreid.train INFO: Epoch[18] Iter[140/227] Loss: 2.245, Pose: 0.576, Acc: 0.710, Student: 1.00, Reliability: 0.863, GateAbs: 4.663e-03, Base Lr: 7.21e-04
+2026-07-23 06:12:33 transreid.train INFO: Epoch[18] Iter[160/227] Loss: 2.188, Pose: 0.575, Acc: 0.724, Student: 1.00, Reliability: 0.836, GateAbs: 4.703e-03, Base Lr: 7.21e-04
+2026-07-23 06:12:57 transreid.train INFO: Epoch[18] Iter[180/227] Loss: 2.126, Pose: 0.574, Acc: 0.739, Student: 1.00, Reliability: 0.844, GateAbs: 4.724e-03, Base Lr: 7.21e-04
+2026-07-23 06:13:21 transreid.train INFO: Epoch[18] Iter[200/227] Loss: 2.050, Pose: 0.573, Acc: 0.755, Student: 1.00, Reliability: 0.840, GateAbs: 4.753e-03, Base Lr: 7.21e-04
+2026-07-23 06:13:37 transreid.train INFO: Epoch 18 done. Time per epoch: 258.258[s] Speed: 52.8[samples/s]
+2026-07-23 06:13:39 transreid.train INFO: PCMPSR epoch=19 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.019491/26.529980/48.472584/0/2.3750/0.000000 controls=None
+2026-07-23 06:13:39 transreid.train INFO: PSCCR epoch=19 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.129179/[0.262533, 0.105512, 0.019491]/[26.473797, 26.984371, 26.52998]/[48.045128, 48.37632, 48.472584]/[6.59375, 9.28125, 10.0] controls=None
+2026-07-23 06:14:02 transreid.train INFO: Epoch[19] Iter[20/227] Loss: 2.378, Pose: 0.562, Acc: 0.641, Student: 1.00, Reliability: 0.848, GateAbs: 4.819e-03, Base Lr: 7.60e-04
+2026-07-23 06:14:26 transreid.train INFO: Epoch[19] Iter[40/227] Loss: 2.196, Pose: 0.562, Acc: 0.691, Student: 1.00, Reliability: 0.837, GateAbs: 4.835e-03, Base Lr: 7.60e-04
+2026-07-23 06:14:50 transreid.train INFO: Epoch[19] Iter[60/227] Loss: 2.156, Pose: 0.563, Acc: 0.712, Student: 1.00, Reliability: 0.852, GateAbs: 4.853e-03, Base Lr: 7.60e-04
+2026-07-23 06:15:14 transreid.train INFO: Epoch[19] Iter[80/227] Loss: 2.122, Pose: 0.561, Acc: 0.719, Student: 1.00, Reliability: 0.857, GateAbs: 4.886e-03, Base Lr: 7.60e-04
+2026-07-23 06:15:38 transreid.train INFO: Epoch[19] Iter[100/227] Loss: 2.073, Pose: 0.560, Acc: 0.734, Student: 1.00, Reliability: 0.855, GateAbs: 4.925e-03, Base Lr: 7.60e-04
+2026-07-23 06:16:02 transreid.train INFO: Epoch[19] Iter[120/227] Loss: 2.016, Pose: 0.559, Acc: 0.747, Student: 1.00, Reliability: 0.836, GateAbs: 4.953e-03, Base Lr: 7.60e-04
+2026-07-23 06:16:26 transreid.train INFO: Epoch[19] Iter[140/227] Loss: 1.977, Pose: 0.558, Acc: 0.759, Student: 1.00, Reliability: 0.831, GateAbs: 4.965e-03, Base Lr: 7.60e-04
+2026-07-23 06:16:51 transreid.train INFO: Epoch[19] Iter[160/227] Loss: 1.928, Pose: 0.557, Acc: 0.772, Student: 1.00, Reliability: 0.839, GateAbs: 4.999e-03, Base Lr: 7.60e-04
+2026-07-23 06:17:15 transreid.train INFO: Epoch[19] Iter[180/227] Loss: 1.860, Pose: 0.557, Acc: 0.788, Student: 1.00, Reliability: 0.856, GateAbs: 5.029e-03, Base Lr: 7.60e-04
+2026-07-23 06:17:39 transreid.train INFO: Epoch[19] Iter[200/227] Loss: 1.781, Pose: 0.557, Acc: 0.801, Student: 1.00, Reliability: 0.854, GateAbs: 5.061e-03, Base Lr: 7.60e-04
+2026-07-23 06:17:54 transreid.train INFO: Epoch 19 done. Time per epoch: 256.318[s] Speed: 52.9[samples/s]
+2026-07-23 06:17:55 transreid.train INFO: PCMPSR epoch=20 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000133/24.181398/44.935371/0/2.4531/0.000000 controls=None
+2026-07-23 06:17:55 transreid.train INFO: PSCCR epoch=20 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.002367/[0.006027, 0.000942, 0.000133]/[24.205788, 24.038113, 24.181398]/[44.803501, 44.851891, 44.935371]/[6.796875, 9.3125, 9.953125] controls=None
+2026-07-23 06:18:18 transreid.train INFO: Epoch[20] Iter[20/227] Loss: 1.948, Pose: 0.546, Acc: 0.734, Student: 1.00, Reliability: 0.850, GateAbs: 5.143e-03, Base Lr: 7.47e-04
+2026-07-23 06:18:42 transreid.train INFO: Epoch[20] Iter[40/227] Loss: 1.956, Pose: 0.547, Acc: 0.738, Student: 1.00, Reliability: 0.851, GateAbs: 5.163e-03, Base Lr: 7.47e-04
+2026-07-23 06:19:06 transreid.train INFO: Epoch[20] Iter[60/227] Loss: 1.868, Pose: 0.546, Acc: 0.764, Student: 1.00, Reliability: 0.862, GateAbs: 5.187e-03, Base Lr: 7.47e-04
+2026-07-23 06:19:31 transreid.train INFO: Epoch[20] Iter[80/227] Loss: 1.807, Pose: 0.546, Acc: 0.783, Student: 1.00, Reliability: 0.832, GateAbs: 5.187e-03, Base Lr: 7.47e-04
+2026-07-23 06:19:55 transreid.train INFO: Epoch[20] Iter[100/227] Loss: 1.763, Pose: 0.544, Acc: 0.795, Student: 1.00, Reliability: 0.856, GateAbs: 5.216e-03, Base Lr: 7.47e-04
+2026-07-23 06:20:19 transreid.train INFO: Epoch[20] Iter[120/227] Loss: 1.733, Pose: 0.544, Acc: 0.802, Student: 1.00, Reliability: 0.833, GateAbs: 5.240e-03, Base Lr: 7.47e-04
+2026-07-23 06:20:43 transreid.train INFO: Epoch[20] Iter[140/227] Loss: 1.686, Pose: 0.544, Acc: 0.811, Student: 1.00, Reliability: 0.858, GateAbs: 5.259e-03, Base Lr: 7.47e-04
+2026-07-23 06:21:07 transreid.train INFO: Epoch[20] Iter[160/227] Loss: 1.644, Pose: 0.544, Acc: 0.820, Student: 1.00, Reliability: 0.842, GateAbs: 5.286e-03, Base Lr: 7.47e-04
+2026-07-23 06:21:31 transreid.train INFO: Epoch[20] Iter[180/227] Loss: 1.599, Pose: 0.543, Acc: 0.828, Student: 1.00, Reliability: 0.857, GateAbs: 5.321e-03, Base Lr: 7.47e-04
+2026-07-23 06:21:56 transreid.train INFO: Epoch[20] Iter[200/227] Loss: 1.537, Pose: 0.543, Acc: 0.840, Student: 1.00, Reliability: 0.839, GateAbs: 5.345e-03, Base Lr: 7.47e-04
+2026-07-23 06:22:08 transreid.train INFO: Epoch 20 done. Time per epoch: 254.162[s] Speed: 52.9[samples/s]
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-23 06:22:30 transreid.train INFO: Validation Results - Epoch: 20
+2026-07-23 06:22:30 transreid.train INFO: mAP: 46.0%
+2026-07-23 06:22:30 transreid.train INFO: CMC curve, Rank-1  :55.7%
+2026-07-23 06:22:30 transreid.train INFO: CMC curve, Rank-5  :70.5%
+2026-07-23 06:22:30 transreid.train INFO: CMC curve, Rank-10 :76.1%
+2026-07-23 06:22:31 transreid.train INFO: PCMPSR epoch=21 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000390/25.880451/48.232906/0/2.3594/0.000000 controls=None
+2026-07-23 06:22:31 transreid.train INFO: PSCCR epoch=21 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.001834/[0.003284, 0.001829, 0.00039]/[25.846703, 25.961681, 25.880451]/[48.348251, 48.394012, 48.232906]/[6.96875, 9.40625, 10.0] controls=None
+2026-07-23 06:22:54 transreid.train INFO: Epoch[21] Iter[20/227] Loss: 1.661, Pose: 0.537, Acc: 0.805, Student: 1.00, Reliability: 0.870, GateAbs: 5.384e-03, Base Lr: 7.41e-04
+2026-07-23 06:23:19 transreid.train INFO: Epoch[21] Iter[40/227] Loss: 1.698, Pose: 0.534, Acc: 0.794, Student: 1.00, Reliability: 0.846, GateAbs: 5.418e-03, Base Lr: 7.41e-04
+2026-07-23 06:23:43 transreid.train INFO: Epoch[21] Iter[60/227] Loss: 1.631, Pose: 0.533, Acc: 0.807, Student: 1.00, Reliability: 0.850, GateAbs: 5.436e-03, Base Lr: 7.41e-04
+2026-07-23 06:24:07 transreid.train INFO: Epoch[21] Iter[80/227] Loss: 1.592, Pose: 0.533, Acc: 0.817, Student: 1.00, Reliability: 0.849, GateAbs: 5.464e-03, Base Lr: 7.41e-04
+2026-07-23 06:24:31 transreid.train INFO: Epoch[21] Iter[100/227] Loss: 1.563, Pose: 0.533, Acc: 0.825, Student: 1.00, Reliability: 0.851, GateAbs: 5.480e-03, Base Lr: 7.41e-04
+2026-07-23 06:24:56 transreid.train INFO: Epoch[21] Iter[120/227] Loss: 1.523, Pose: 0.532, Acc: 0.836, Student: 1.00, Reliability: 0.836, GateAbs: 5.510e-03, Base Lr: 7.41e-04
+2026-07-23 06:25:20 transreid.train INFO: Epoch[21] Iter[140/227] Loss: 1.472, Pose: 0.532, Acc: 0.846, Student: 1.00, Reliability: 0.836, GateAbs: 5.526e-03, Base Lr: 7.41e-04
+2026-07-23 06:25:44 transreid.train INFO: Epoch[21] Iter[160/227] Loss: 1.425, Pose: 0.531, Acc: 0.855, Student: 1.00, Reliability: 0.832, GateAbs: 5.556e-03, Base Lr: 7.41e-04
+2026-07-23 06:26:08 transreid.train INFO: Epoch[21] Iter[180/227] Loss: 1.376, Pose: 0.531, Acc: 0.865, Student: 1.00, Reliability: 0.846, GateAbs: 5.569e-03, Base Lr: 7.41e-04
+2026-07-23 06:26:32 transreid.train INFO: Epoch[21] Iter[200/227] Loss: 1.324, Pose: 0.531, Acc: 0.872, Student: 1.00, Reliability: 0.829, GateAbs: 5.620e-03, Base Lr: 7.41e-04
+2026-07-23 06:26:45 transreid.train INFO: Epoch 21 done. Time per epoch: 255.571[s] Speed: 52.8[samples/s]
+2026-07-23 06:26:47 transreid.train INFO: PCMPSR epoch=22 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.008364/24.886024/45.898846/0/2.0781/0.000000 controls=None
+2026-07-23 06:26:47 transreid.train INFO: PSCCR epoch=22 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.097408/[0.212323, 0.071539, 0.008364]/[24.665874, 25.084244, 24.886024]/[45.940723, 45.880886, 45.898846]/[6.9375, 9.40625, 10.0] controls=None
+2026-07-23 06:27:10 transreid.train INFO: Epoch[22] Iter[20/227] Loss: 1.446, Pose: 0.527, Acc: 0.845, Student: 1.00, Reliability: 0.838, GateAbs: 5.643e-03, Base Lr: 7.36e-04
+2026-07-23 06:27:34 transreid.train INFO: Epoch[22] Iter[40/227] Loss: 1.444, Pose: 0.524, Acc: 0.848, Student: 1.00, Reliability: 0.835, GateAbs: 5.676e-03, Base Lr: 7.36e-04
+2026-07-23 06:27:58 transreid.train INFO: Epoch[22] Iter[60/227] Loss: 1.404, Pose: 0.525, Acc: 0.855, Student: 1.00, Reliability: 0.855, GateAbs: 5.686e-03, Base Lr: 7.36e-04
+2026-07-23 06:28:23 transreid.train INFO: Epoch[22] Iter[80/227] Loss: 1.401, Pose: 0.525, Acc: 0.851, Student: 1.00, Reliability: 0.838, GateAbs: 5.696e-03, Base Lr: 7.36e-04
+2026-07-23 06:28:47 transreid.train INFO: Epoch[22] Iter[100/227] Loss: 1.381, Pose: 0.525, Acc: 0.855, Student: 1.00, Reliability: 0.859, GateAbs: 5.729e-03, Base Lr: 7.36e-04
+2026-07-23 06:29:11 transreid.train INFO: Epoch[22] Iter[120/227] Loss: 1.333, Pose: 0.525, Acc: 0.866, Student: 1.00, Reliability: 0.842, GateAbs: 5.742e-03, Base Lr: 7.36e-04
+2026-07-23 06:29:35 transreid.train INFO: Epoch[22] Iter[140/227] Loss: 1.289, Pose: 0.524, Acc: 0.874, Student: 1.00, Reliability: 0.832, GateAbs: 5.767e-03, Base Lr: 7.36e-04
+2026-07-23 06:29:59 transreid.train INFO: Epoch[22] Iter[160/227] Loss: 1.255, Pose: 0.523, Acc: 0.879, Student: 1.00, Reliability: 0.847, GateAbs: 5.787e-03, Base Lr: 7.36e-04
+2026-07-23 06:30:23 transreid.train INFO: Epoch[22] Iter[180/227] Loss: 1.215, Pose: 0.523, Acc: 0.886, Student: 1.00, Reliability: 0.853, GateAbs: 5.806e-03, Base Lr: 7.36e-04
+2026-07-23 06:30:47 transreid.train INFO: Epoch[22] Iter[200/227] Loss: 1.167, Pose: 0.523, Acc: 0.893, Student: 1.00, Reliability: 0.844, GateAbs: 5.855e-03, Base Lr: 7.36e-04
+2026-07-23 06:31:00 transreid.train INFO: Epoch 22 done. Time per epoch: 254.119[s] Speed: 52.9[samples/s]
+2026-07-23 06:31:01 transreid.train INFO: PCMPSR epoch=23 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.008782/25.466946/48.102070/0/2.3438/0.000000 controls=None
+2026-07-23 06:31:01 transreid.train INFO: PSCCR epoch=23 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.034066/[0.060716, 0.032701, 0.008782]/[24.051058, 25.198729, 25.466946]/[48.139301, 48.111736, 48.10207]/[6.8125, 9.3125, 10.0] controls=None
+2026-07-23 06:31:24 transreid.train INFO: Epoch[23] Iter[20/227] Loss: 1.305, Pose: 0.516, Acc: 0.869, Student: 1.00, Reliability: 0.844, GateAbs: 5.892e-03, Base Lr: 7.30e-04
+2026-07-23 06:31:48 transreid.train INFO: Epoch[23] Iter[40/227] Loss: 1.242, Pose: 0.517, Acc: 0.878, Student: 1.00, Reliability: 0.857, GateAbs: 5.915e-03, Base Lr: 7.30e-04
+2026-07-23 06:32:13 transreid.train INFO: Epoch[23] Iter[60/227] Loss: 1.225, Pose: 0.516, Acc: 0.881, Student: 1.00, Reliability: 0.843, GateAbs: 5.928e-03, Base Lr: 7.30e-04
+2026-07-23 06:32:37 transreid.train INFO: Epoch[23] Iter[80/227] Loss: 1.199, Pose: 0.515, Acc: 0.884, Student: 1.00, Reliability: 0.874, GateAbs: 5.963e-03, Base Lr: 7.30e-04
+2026-07-23 06:33:01 transreid.train INFO: Epoch[23] Iter[100/227] Loss: 1.179, Pose: 0.516, Acc: 0.887, Student: 1.00, Reliability: 0.853, GateAbs: 5.986e-03, Base Lr: 7.30e-04
+2026-07-23 06:33:25 transreid.train INFO: Epoch[23] Iter[120/227] Loss: 1.150, Pose: 0.515, Acc: 0.891, Student: 1.00, Reliability: 0.845, GateAbs: 5.995e-03, Base Lr: 7.30e-04
+2026-07-23 06:33:49 transreid.train INFO: Epoch[23] Iter[140/227] Loss: 1.117, Pose: 0.515, Acc: 0.896, Student: 1.00, Reliability: 0.819, GateAbs: 6.028e-03, Base Lr: 7.30e-04
+2026-07-23 06:34:14 transreid.train INFO: Epoch[23] Iter[160/227] Loss: 1.092, Pose: 0.515, Acc: 0.899, Student: 1.00, Reliability: 0.843, GateAbs: 6.050e-03, Base Lr: 7.30e-04
+2026-07-23 06:34:38 transreid.train INFO: Epoch[23] Iter[180/227] Loss: 1.062, Pose: 0.515, Acc: 0.905, Student: 1.00, Reliability: 0.826, GateAbs: 6.050e-03, Base Lr: 7.30e-04
+2026-07-23 06:35:02 transreid.train INFO: Epoch[23] Iter[200/227] Loss: 1.022, Pose: 0.515, Acc: 0.910, Student: 1.00, Reliability: 0.867, GateAbs: 6.086e-03, Base Lr: 7.30e-04
+2026-07-23 06:35:16 transreid.train INFO: Epoch 23 done. Time per epoch: 255.911[s] Speed: 52.8[samples/s]
+2026-07-23 06:35:17 transreid.train INFO: PCMPSR epoch=24 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000042/26.513290/50.641850/0/2.4375/0.000000 controls=None
+2026-07-23 06:35:17 transreid.train INFO: PSCCR epoch=24 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.001092/[0.002958, 0.000274, 4.2e-05]/[25.911634, 26.721039, 26.51329]/[50.694405, 50.699478, 50.64185]/[6.703125, 9.1875, 9.953125] controls=None
+2026-07-23 06:35:40 transreid.train INFO: Epoch[24] Iter[20/227] Loss: 1.136, Pose: 0.508, Acc: 0.891, Student: 1.00, Reliability: 0.825, GateAbs: 6.130e-03, Base Lr: 7.24e-04
+2026-07-23 06:36:04 transreid.train INFO: Epoch[24] Iter[40/227] Loss: 1.116, Pose: 0.507, Acc: 0.887, Student: 1.00, Reliability: 0.861, GateAbs: 6.139e-03, Base Lr: 7.24e-04
+2026-07-23 06:36:28 transreid.train INFO: Epoch[24] Iter[60/227] Loss: 1.063, Pose: 0.506, Acc: 0.892, Student: 1.00, Reliability: 0.844, GateAbs: 6.145e-03, Base Lr: 7.24e-04
+2026-07-23 06:36:53 transreid.train INFO: Epoch[24] Iter[80/227] Loss: 1.044, Pose: 0.506, Acc: 0.899, Student: 1.00, Reliability: 0.833, GateAbs: 6.160e-03, Base Lr: 7.24e-04
+2026-07-23 06:37:17 transreid.train INFO: Epoch[24] Iter[100/227] Loss: 1.023, Pose: 0.506, Acc: 0.902, Student: 1.00, Reliability: 0.843, GateAbs: 6.154e-03, Base Lr: 7.24e-04
+2026-07-23 06:37:41 transreid.train INFO: Epoch[24] Iter[120/227] Loss: 0.999, Pose: 0.507, Acc: 0.907, Student: 1.00, Reliability: 0.846, GateAbs: 6.177e-03, Base Lr: 7.24e-04
+2026-07-23 06:38:05 transreid.train INFO: Epoch[24] Iter[140/227] Loss: 0.977, Pose: 0.507, Acc: 0.912, Student: 1.00, Reliability: 0.837, GateAbs: 6.222e-03, Base Lr: 7.24e-04
+2026-07-23 06:38:29 transreid.train INFO: Epoch[24] Iter[160/227] Loss: 0.947, Pose: 0.507, Acc: 0.919, Student: 1.00, Reliability: 0.848, GateAbs: 6.248e-03, Base Lr: 7.24e-04
+2026-07-23 06:38:53 transreid.train INFO: Epoch[24] Iter[180/227] Loss: 0.913, Pose: 0.507, Acc: 0.925, Student: 1.00, Reliability: 0.847, GateAbs: 6.245e-03, Base Lr: 7.24e-04
+2026-07-23 06:39:17 transreid.train INFO: Epoch[24] Iter[200/227] Loss: 0.876, Pose: 0.507, Acc: 0.929, Student: 1.00, Reliability: 0.824, GateAbs: 6.275e-03, Base Lr: 7.24e-04
+2026-07-23 06:39:33 transreid.train INFO: Epoch 24 done. Time per epoch: 257.604[s] Speed: 52.9[samples/s]
+2026-07-23 06:39:35 transreid.train INFO: PCMPSR epoch=25 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000047/24.734642/46.871857/0/2.2344/0.000000 controls=None
+2026-07-23 06:39:35 transreid.train INFO: PSCCR epoch=25 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000245/[0.000653, 3.7e-05, 4.7e-05]/[23.335339, 23.957321, 24.734642]/[46.756001, 46.686207, 46.871857]/[7.359375, 9.453125, 9.953125] controls=None
+2026-07-23 06:39:58 transreid.train INFO: Epoch[25] Iter[20/227] Loss: 1.006, Pose: 0.499, Acc: 0.917, Student: 1.00, Reliability: 0.837, GateAbs: 6.318e-03, Base Lr: 7.18e-04
+2026-07-23 06:40:22 transreid.train INFO: Epoch[25] Iter[40/227] Loss: 1.001, Pose: 0.499, Acc: 0.906, Student: 1.00, Reliability: 0.847, GateAbs: 6.336e-03, Base Lr: 7.18e-04
+2026-07-23 06:40:46 transreid.train INFO: Epoch[25] Iter[60/227] Loss: 0.972, Pose: 0.501, Acc: 0.915, Student: 1.00, Reliability: 0.832, GateAbs: 6.341e-03, Base Lr: 7.18e-04
+2026-07-23 06:41:10 transreid.train INFO: Epoch[25] Iter[80/227] Loss: 0.951, Pose: 0.503, Acc: 0.919, Student: 1.00, Reliability: 0.837, GateAbs: 6.377e-03, Base Lr: 7.18e-04
+2026-07-23 06:41:34 transreid.train INFO: Epoch[25] Iter[100/227] Loss: 0.942, Pose: 0.503, Acc: 0.919, Student: 1.00, Reliability: 0.825, GateAbs: 6.430e-03, Base Lr: 7.18e-04
+2026-07-23 06:41:58 transreid.train INFO: Epoch[25] Iter[120/227] Loss: 0.919, Pose: 0.504, Acc: 0.923, Student: 1.00, Reliability: 0.858, GateAbs: 6.414e-03, Base Lr: 7.18e-04
+2026-07-23 06:42:23 transreid.train INFO: Epoch[25] Iter[140/227] Loss: 0.895, Pose: 0.504, Acc: 0.924, Student: 1.00, Reliability: 0.841, GateAbs: 6.467e-03, Base Lr: 7.18e-04
+2026-07-23 06:42:47 transreid.train INFO: Epoch[25] Iter[160/227] Loss: 0.872, Pose: 0.504, Acc: 0.928, Student: 1.00, Reliability: 0.840, GateAbs: 6.484e-03, Base Lr: 7.18e-04
+2026-07-23 06:43:11 transreid.train INFO: Epoch[25] Iter[180/227] Loss: 0.844, Pose: 0.504, Acc: 0.932, Student: 1.00, Reliability: 0.836, GateAbs: 6.493e-03, Base Lr: 7.18e-04
+2026-07-23 06:43:35 transreid.train INFO: Epoch[25] Iter[200/227] Loss: 0.811, Pose: 0.504, Acc: 0.935, Student: 1.00, Reliability: 0.844, GateAbs: 6.511e-03, Base Lr: 7.18e-04
+2026-07-23 06:43:50 transreid.train INFO: Epoch 25 done. Time per epoch: 256.569[s] Speed: 52.9[samples/s]
+2026-07-23 06:43:51 transreid.train INFO: PCMPSR epoch=26 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000013/23.223141/44.622047/0/2.2188/0.000000 controls=None
+2026-07-23 06:43:51 transreid.train INFO: PSCCR epoch=26 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000287/[0.000826, 2.2e-05, 1.3e-05]/[22.898369, 22.938251, 23.223141]/[44.603909, 44.616985, 44.622047]/[6.953125, 9.359375, 10.0] controls=None
+2026-07-23 06:44:14 transreid.train INFO: Epoch[26] Iter[20/227] Loss: 0.886, Pose: 0.496, Acc: 0.920, Student: 1.00, Reliability: 0.841, GateAbs: 6.541e-03, Base Lr: 7.11e-04
+2026-07-23 06:44:38 transreid.train INFO: Epoch[26] Iter[40/227] Loss: 0.867, Pose: 0.497, Acc: 0.924, Student: 1.00, Reliability: 0.849, GateAbs: 6.542e-03, Base Lr: 7.11e-04
+2026-07-23 06:45:03 transreid.train INFO: Epoch[26] Iter[60/227] Loss: 0.855, Pose: 0.495, Acc: 0.931, Student: 1.00, Reliability: 0.855, GateAbs: 6.595e-03, Base Lr: 7.11e-04
+2026-07-23 06:45:27 transreid.train INFO: Epoch[26] Iter[80/227] Loss: 0.842, Pose: 0.496, Acc: 0.934, Student: 1.00, Reliability: 0.851, GateAbs: 6.613e-03, Base Lr: 7.11e-04
+2026-07-23 06:45:51 transreid.train INFO: Epoch[26] Iter[100/227] Loss: 0.831, Pose: 0.496, Acc: 0.935, Student: 1.00, Reliability: 0.843, GateAbs: 6.620e-03, Base Lr: 7.11e-04
+2026-07-23 06:46:15 transreid.train INFO: Epoch[26] Iter[120/227] Loss: 0.810, Pose: 0.497, Acc: 0.938, Student: 1.00, Reliability: 0.851, GateAbs: 6.658e-03, Base Lr: 7.11e-04
+2026-07-23 06:46:39 transreid.train INFO: Epoch[26] Iter[140/227] Loss: 0.783, Pose: 0.498, Acc: 0.941, Student: 1.00, Reliability: 0.827, GateAbs: 6.655e-03, Base Lr: 7.11e-04
+2026-07-23 06:47:04 transreid.train INFO: Epoch[26] Iter[160/227] Loss: 0.762, Pose: 0.498, Acc: 0.943, Student: 1.00, Reliability: 0.841, GateAbs: 6.689e-03, Base Lr: 7.11e-04
+2026-07-23 06:47:28 transreid.train INFO: Epoch[26] Iter[180/227] Loss: 0.734, Pose: 0.498, Acc: 0.946, Student: 1.00, Reliability: 0.837, GateAbs: 6.672e-03, Base Lr: 7.11e-04
+2026-07-23 06:47:52 transreid.train INFO: Epoch[26] Iter[200/227] Loss: 0.702, Pose: 0.498, Acc: 0.950, Student: 1.00, Reliability: 0.827, GateAbs: 6.697e-03, Base Lr: 7.11e-04
+2026-07-23 06:48:06 transreid.train INFO: Epoch 26 done. Time per epoch: 256.738[s] Speed: 52.8[samples/s]
+2026-07-23 06:48:08 transreid.train INFO: PCMPSR epoch=27 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000230/25.327114/46.907539/0/2.1875/0.000000 controls=None
+2026-07-23 06:48:08 transreid.train INFO: PSCCR epoch=27 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000208/[0.000169, 0.000224, 0.00023]/[24.546268, 25.533573, 25.327114]/[46.947933, 47.019653, 46.907539]/[7.078125, 9.359375, 10.0] controls=None
+2026-07-23 06:48:31 transreid.train INFO: Epoch[27] Iter[20/227] Loss: 0.788, Pose: 0.494, Acc: 0.933, Student: 1.00, Reliability: 0.850, GateAbs: 6.723e-03, Base Lr: 7.04e-04
+2026-07-23 06:48:55 transreid.train INFO: Epoch[27] Iter[40/227] Loss: 0.802, Pose: 0.495, Acc: 0.936, Student: 1.00, Reliability: 0.857, GateAbs: 6.727e-03, Base Lr: 7.04e-04
+2026-07-23 06:49:19 transreid.train INFO: Epoch[27] Iter[60/227] Loss: 0.779, Pose: 0.494, Acc: 0.939, Student: 1.00, Reliability: 0.829, GateAbs: 6.764e-03, Base Lr: 7.04e-04
+2026-07-23 06:49:43 transreid.train INFO: Epoch[27] Iter[80/227] Loss: 0.764, Pose: 0.495, Acc: 0.942, Student: 1.00, Reliability: 0.857, GateAbs: 6.759e-03, Base Lr: 7.04e-04
+2026-07-23 06:50:07 transreid.train INFO: Epoch[27] Iter[100/227] Loss: 0.741, Pose: 0.495, Acc: 0.946, Student: 1.00, Reliability: 0.853, GateAbs: 6.779e-03, Base Lr: 7.04e-04
+2026-07-23 06:50:31 transreid.train INFO: Epoch[27] Iter[120/227] Loss: 0.721, Pose: 0.496, Acc: 0.950, Student: 1.00, Reliability: 0.839, GateAbs: 6.804e-03, Base Lr: 7.04e-04
+2026-07-23 06:50:55 transreid.train INFO: Epoch[27] Iter[140/227] Loss: 0.698, Pose: 0.495, Acc: 0.953, Student: 1.00, Reliability: 0.851, GateAbs: 6.811e-03, Base Lr: 7.04e-04
+2026-07-23 06:51:20 transreid.train INFO: Epoch[27] Iter[160/227] Loss: 0.685, Pose: 0.495, Acc: 0.954, Student: 1.00, Reliability: 0.832, GateAbs: 6.848e-03, Base Lr: 7.04e-04
+2026-07-23 06:51:44 transreid.train INFO: Epoch[27] Iter[180/227] Loss: 0.667, Pose: 0.495, Acc: 0.954, Student: 1.00, Reliability: 0.827, GateAbs: 6.844e-03, Base Lr: 7.04e-04
+2026-07-23 06:52:08 transreid.train INFO: Epoch[27] Iter[200/227] Loss: 0.638, Pose: 0.495, Acc: 0.957, Student: 1.00, Reliability: 0.839, GateAbs: 6.854e-03, Base Lr: 7.04e-04
+2026-07-23 06:52:22 transreid.train INFO: Epoch 27 done. Time per epoch: 255.924[s] Speed: 53.0[samples/s]
+2026-07-23 06:52:24 transreid.train INFO: PCMPSR epoch=28 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000013/24.684065/48.151814/0/2.2188/0.000000 controls=None
+2026-07-23 06:52:24 transreid.train INFO: PSCCR epoch=28 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000042/[8.5e-05, 2.7e-05, 1.3e-05]/[24.87793, 24.635029, 24.684065]/[48.055847, 48.044857, 48.151814]/[6.890625, 9.3125, 10.0] controls=None
+2026-07-23 06:52:47 transreid.train INFO: Epoch[28] Iter[20/227] Loss: 0.708, Pose: 0.490, Acc: 0.941, Student: 1.00, Reliability: 0.831, GateAbs: 6.870e-03, Base Lr: 6.97e-04
+2026-07-23 06:53:11 transreid.train INFO: Epoch[28] Iter[40/227] Loss: 0.677, Pose: 0.492, Acc: 0.953, Student: 1.00, Reliability: 0.847, GateAbs: 6.886e-03, Base Lr: 6.97e-04
+2026-07-23 06:53:35 transreid.train INFO: Epoch[28] Iter[60/227] Loss: 0.663, Pose: 0.490, Acc: 0.957, Student: 1.00, Reliability: 0.822, GateAbs: 6.893e-03, Base Lr: 6.97e-04
+2026-07-23 06:53:59 transreid.train INFO: Epoch[28] Iter[80/227] Loss: 0.662, Pose: 0.491, Acc: 0.958, Student: 1.00, Reliability: 0.848, GateAbs: 6.905e-03, Base Lr: 6.97e-04
+2026-07-23 06:54:23 transreid.train INFO: Epoch[28] Iter[100/227] Loss: 0.657, Pose: 0.490, Acc: 0.957, Student: 1.00, Reliability: 0.838, GateAbs: 6.917e-03, Base Lr: 6.97e-04
+2026-07-23 06:54:47 transreid.train INFO: Epoch[28] Iter[120/227] Loss: 0.643, Pose: 0.490, Acc: 0.958, Student: 1.00, Reliability: 0.843, GateAbs: 6.947e-03, Base Lr: 6.97e-04
+2026-07-23 06:55:11 transreid.train INFO: Epoch[28] Iter[140/227] Loss: 0.623, Pose: 0.490, Acc: 0.961, Student: 1.00, Reliability: 0.828, GateAbs: 6.959e-03, Base Lr: 6.97e-04
+2026-07-23 06:55:35 transreid.train INFO: Epoch[28] Iter[160/227] Loss: 0.607, Pose: 0.490, Acc: 0.961, Student: 1.00, Reliability: 0.867, GateAbs: 6.963e-03, Base Lr: 6.97e-04
+2026-07-23 06:55:59 transreid.train INFO: Epoch[28] Iter[180/227] Loss: 0.590, Pose: 0.490, Acc: 0.963, Student: 1.00, Reliability: 0.820, GateAbs: 6.971e-03, Base Lr: 6.97e-04
+2026-07-23 06:56:23 transreid.train INFO: Epoch[28] Iter[200/227] Loss: 0.565, Pose: 0.491, Acc: 0.964, Student: 1.00, Reliability: 0.845, GateAbs: 6.988e-03, Base Lr: 6.97e-04
+2026-07-23 06:56:37 transreid.train INFO: Epoch 28 done. Time per epoch: 254.171[s] Speed: 53.1[samples/s]
+2026-07-23 06:56:38 transreid.train INFO: PCMPSR epoch=29 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.046445/29.112415/51.954567/0/2.3438/0.000000 controls=None
+2026-07-23 06:56:38 transreid.train INFO: PSCCR epoch=29 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.023945/[0.014109, 0.011281, 0.046445]/[28.96954, 29.008039, 29.112415]/[51.79258, 51.887661, 51.954567]/[6.90625, 9.296875, 10.0] controls=None
+2026-07-23 06:57:01 transreid.train INFO: Epoch[29] Iter[20/227] Loss: 0.660, Pose: 0.489, Acc: 0.957, Student: 1.00, Reliability: 0.842, GateAbs: 7.012e-03, Base Lr: 6.90e-04
+2026-07-23 06:57:25 transreid.train INFO: Epoch[29] Iter[40/227] Loss: 0.637, Pose: 0.488, Acc: 0.958, Student: 1.00, Reliability: 0.842, GateAbs: 7.022e-03, Base Lr: 6.90e-04
+2026-07-23 06:57:49 transreid.train INFO: Epoch[29] Iter[60/227] Loss: 0.624, Pose: 0.489, Acc: 0.958, Student: 1.00, Reliability: 0.845, GateAbs: 7.054e-03, Base Lr: 6.90e-04
+2026-07-23 06:58:13 transreid.train INFO: Epoch[29] Iter[80/227] Loss: 0.608, Pose: 0.489, Acc: 0.960, Student: 1.00, Reliability: 0.848, GateAbs: 7.060e-03, Base Lr: 6.90e-04
+2026-07-23 06:58:37 transreid.train INFO: Epoch[29] Iter[100/227] Loss: 0.586, Pose: 0.489, Acc: 0.962, Student: 1.00, Reliability: 0.852, GateAbs: 7.090e-03, Base Lr: 6.90e-04
+2026-07-23 06:59:01 transreid.train INFO: Epoch[29] Iter[120/227] Loss: 0.575, Pose: 0.489, Acc: 0.963, Student: 1.00, Reliability: 0.864, GateAbs: 7.071e-03, Base Lr: 6.90e-04
+2026-07-23 06:59:25 transreid.train INFO: Epoch[29] Iter[140/227] Loss: 0.564, Pose: 0.489, Acc: 0.964, Student: 1.00, Reliability: 0.839, GateAbs: 7.097e-03, Base Lr: 6.90e-04
+2026-07-23 06:59:49 transreid.train INFO: Epoch[29] Iter[160/227] Loss: 0.551, Pose: 0.488, Acc: 0.965, Student: 1.00, Reliability: 0.843, GateAbs: 7.109e-03, Base Lr: 6.90e-04
+2026-07-23 07:00:14 transreid.train INFO: Epoch[29] Iter[180/227] Loss: 0.534, Pose: 0.488, Acc: 0.966, Student: 1.00, Reliability: 0.831, GateAbs: 7.123e-03, Base Lr: 6.90e-04
+2026-07-23 07:00:38 transreid.train INFO: Epoch[29] Iter[200/227] Loss: 0.515, Pose: 0.488, Acc: 0.967, Student: 1.00, Reliability: 0.847, GateAbs: 7.141e-03, Base Lr: 6.90e-04
+2026-07-23 07:00:52 transreid.train INFO: Epoch 29 done. Time per epoch: 255.524[s] Speed: 53.1[samples/s]
+2026-07-23 07:00:54 transreid.train INFO: PCMPSR epoch=30 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000002/27.529743/51.686169/0/2.3594/0.000000 controls=None
+2026-07-23 07:00:54 transreid.train INFO: PSCCR epoch=30 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000043/[0.000122, 4e-06, 2e-06]/[27.916168, 27.903908, 27.529743]/[51.247646, 51.601166, 51.686169]/[6.796875, 9.328125, 10.0] controls=None
+2026-07-23 07:01:17 transreid.train INFO: Epoch[30] Iter[20/227] Loss: 0.608, Pose: 0.481, Acc: 0.955, Student: 1.00, Reliability: 0.861, GateAbs: 7.155e-03, Base Lr: 6.83e-04
+2026-07-23 07:01:41 transreid.train INFO: Epoch[30] Iter[40/227] Loss: 0.581, Pose: 0.479, Acc: 0.960, Student: 1.00, Reliability: 0.836, GateAbs: 7.166e-03, Base Lr: 6.83e-04
+2026-07-23 07:02:05 transreid.train INFO: Epoch[30] Iter[60/227] Loss: 0.565, Pose: 0.479, Acc: 0.963, Student: 1.00, Reliability: 0.853, GateAbs: 7.174e-03, Base Lr: 6.83e-04
+2026-07-23 07:02:29 transreid.train INFO: Epoch[30] Iter[80/227] Loss: 0.546, Pose: 0.481, Acc: 0.965, Student: 1.00, Reliability: 0.848, GateAbs: 7.212e-03, Base Lr: 6.83e-04
+2026-07-23 07:02:53 transreid.train INFO: Epoch[30] Iter[100/227] Loss: 0.541, Pose: 0.482, Acc: 0.965, Student: 1.00, Reliability: 0.859, GateAbs: 7.205e-03, Base Lr: 6.83e-04
+2026-07-23 07:03:17 transreid.train INFO: Epoch[30] Iter[120/227] Loss: 0.529, Pose: 0.483, Acc: 0.966, Student: 1.00, Reliability: 0.846, GateAbs: 7.230e-03, Base Lr: 6.83e-04
+2026-07-23 07:03:42 transreid.train INFO: Epoch[30] Iter[140/227] Loss: 0.518, Pose: 0.482, Acc: 0.967, Student: 1.00, Reliability: 0.860, GateAbs: 7.236e-03, Base Lr: 6.83e-04
+2026-07-23 07:04:06 transreid.train INFO: Epoch[30] Iter[160/227] Loss: 0.504, Pose: 0.482, Acc: 0.969, Student: 1.00, Reliability: 0.853, GateAbs: 7.278e-03, Base Lr: 6.83e-04
+2026-07-23 07:04:30 transreid.train INFO: Epoch[30] Iter[180/227] Loss: 0.495, Pose: 0.484, Acc: 0.970, Student: 1.00, Reliability: 0.851, GateAbs: 7.258e-03, Base Lr: 6.83e-04
+2026-07-23 07:04:54 transreid.train INFO: Epoch[30] Iter[200/227] Loss: 0.479, Pose: 0.485, Acc: 0.971, Student: 1.00, Reliability: 0.836, GateAbs: 7.265e-03, Base Lr: 6.83e-04
+2026-07-23 07:05:08 transreid.train INFO: Epoch 30 done. Time per epoch: 256.444[s] Speed: 52.9[samples/s]
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-23 07:05:31 transreid.train INFO: Validation Results - Epoch: 30
+2026-07-23 07:05:31 transreid.train INFO: mAP: 51.1%
+2026-07-23 07:05:31 transreid.train INFO: CMC curve, Rank-1  :61.8%
+2026-07-23 07:05:31 transreid.train INFO: CMC curve, Rank-5  :75.5%
+2026-07-23 07:05:31 transreid.train INFO: CMC curve, Rank-10 :80.2%
+2026-07-23 07:05:32 transreid.train INFO: PCMPSR epoch=31 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000004/24.352047/48.633694/0/2.4688/0.000000 controls=None
+2026-07-23 07:05:32 transreid.train INFO: PSCCR epoch=31 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000016/[3.5e-05, 8e-06, 4e-06]/[24.242561, 24.465946, 24.352047]/[48.478054, 48.55994, 48.633694]/[6.953125, 9.421875, 10.0] controls=None
+2026-07-23 07:05:55 transreid.train INFO: Epoch[31] Iter[20/227] Loss: 0.579, Pose: 0.481, Acc: 0.962, Student: 1.00, Reliability: 0.837, GateAbs: 7.282e-03, Base Lr: 6.76e-04
+2026-07-23 07:06:19 transreid.train INFO: Epoch[31] Iter[40/227] Loss: 0.530, Pose: 0.482, Acc: 0.966, Student: 1.00, Reliability: 0.846, GateAbs: 7.269e-03, Base Lr: 6.76e-04
+2026-07-23 07:06:43 transreid.train INFO: Epoch[31] Iter[60/227] Loss: 0.513, Pose: 0.481, Acc: 0.966, Student: 1.00, Reliability: 0.838, GateAbs: 7.332e-03, Base Lr: 6.76e-04
+2026-07-23 07:07:08 transreid.train INFO: Epoch[31] Iter[80/227] Loss: 0.510, Pose: 0.483, Acc: 0.967, Student: 1.00, Reliability: 0.830, GateAbs: 7.305e-03, Base Lr: 6.76e-04
+2026-07-23 07:07:32 transreid.train INFO: Epoch[31] Iter[100/227] Loss: 0.498, Pose: 0.482, Acc: 0.969, Student: 1.00, Reliability: 0.842, GateAbs: 7.337e-03, Base Lr: 6.76e-04
+2026-07-23 07:07:56 transreid.train INFO: Epoch[31] Iter[120/227] Loss: 0.486, Pose: 0.482, Acc: 0.970, Student: 1.00, Reliability: 0.860, GateAbs: 7.363e-03, Base Lr: 6.76e-04
+2026-07-23 07:08:20 transreid.train INFO: Epoch[31] Iter[140/227] Loss: 0.473, Pose: 0.483, Acc: 0.971, Student: 1.00, Reliability: 0.823, GateAbs: 7.373e-03, Base Lr: 6.76e-04
+2026-07-23 07:08:44 transreid.train INFO: Epoch[31] Iter[160/227] Loss: 0.460, Pose: 0.483, Acc: 0.972, Student: 1.00, Reliability: 0.837, GateAbs: 7.378e-03, Base Lr: 6.76e-04
+2026-07-23 07:09:09 transreid.train INFO: Epoch[31] Iter[180/227] Loss: 0.449, Pose: 0.483, Acc: 0.973, Student: 1.00, Reliability: 0.847, GateAbs: 7.389e-03, Base Lr: 6.76e-04
+2026-07-23 07:09:33 transreid.train INFO: Epoch[31] Iter[200/227] Loss: 0.434, Pose: 0.483, Acc: 0.974, Student: 1.00, Reliability: 0.841, GateAbs: 7.436e-03, Base Lr: 6.76e-04
+2026-07-23 07:09:47 transreid.train INFO: Epoch 31 done. Time per epoch: 256.564[s] Speed: 52.9[samples/s]
+2026-07-23 07:09:49 transreid.train INFO: PCMPSR epoch=32 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000344/26.711163/50.890106/0/2.4688/0.000000 controls=None
+2026-07-23 07:09:49 transreid.train INFO: PSCCR epoch=32 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.001403/[0.003625, 0.000241, 0.000344]/[26.377214, 26.786444, 26.711163]/[50.577709, 50.949921, 50.890106]/[6.921875, 9.40625, 10.0] controls=None
+2026-07-23 07:10:12 transreid.train INFO: Epoch[32] Iter[20/227] Loss: 0.512, Pose: 0.479, Acc: 0.959, Student: 1.00, Reliability: 0.835, GateAbs: 7.429e-03, Base Lr: 6.68e-04
+2026-07-23 07:10:36 transreid.train INFO: Epoch[32] Iter[40/227] Loss: 0.493, Pose: 0.482, Acc: 0.964, Student: 1.00, Reliability: 0.841, GateAbs: 7.420e-03, Base Lr: 6.68e-04
+2026-07-23 07:11:00 transreid.train INFO: Epoch[32] Iter[60/227] Loss: 0.468, Pose: 0.482, Acc: 0.970, Student: 1.00, Reliability: 0.840, GateAbs: 7.428e-03, Base Lr: 6.68e-04
+2026-07-23 07:11:24 transreid.train INFO: Epoch[32] Iter[80/227] Loss: 0.462, Pose: 0.482, Acc: 0.969, Student: 1.00, Reliability: 0.841, GateAbs: 7.452e-03, Base Lr: 6.68e-04
+2026-07-23 07:11:49 transreid.train INFO: Epoch[32] Iter[100/227] Loss: 0.455, Pose: 0.481, Acc: 0.972, Student: 1.00, Reliability: 0.856, GateAbs: 7.479e-03, Base Lr: 6.68e-04
+2026-07-23 07:12:13 transreid.train INFO: Epoch[32] Iter[120/227] Loss: 0.449, Pose: 0.480, Acc: 0.972, Student: 1.00, Reliability: 0.839, GateAbs: 7.487e-03, Base Lr: 6.68e-04
+2026-07-23 07:12:37 transreid.train INFO: Epoch[32] Iter[140/227] Loss: 0.437, Pose: 0.480, Acc: 0.973, Student: 1.00, Reliability: 0.826, GateAbs: 7.477e-03, Base Lr: 6.68e-04
+2026-07-23 07:13:01 transreid.train INFO: Epoch[32] Iter[160/227] Loss: 0.423, Pose: 0.479, Acc: 0.974, Student: 1.00, Reliability: 0.838, GateAbs: 7.497e-03, Base Lr: 6.68e-04
+2026-07-23 07:13:25 transreid.train INFO: Epoch[32] Iter[180/227] Loss: 0.413, Pose: 0.480, Acc: 0.975, Student: 1.00, Reliability: 0.838, GateAbs: 7.528e-03, Base Lr: 6.68e-04
+2026-07-23 07:13:50 transreid.train INFO: Epoch[32] Iter[200/227] Loss: 0.400, Pose: 0.480, Acc: 0.976, Student: 1.00, Reliability: 0.846, GateAbs: 7.525e-03, Base Lr: 6.68e-04
+2026-07-23 07:14:04 transreid.train INFO: Epoch 32 done. Time per epoch: 257.036[s] Speed: 52.8[samples/s]
+2026-07-23 07:14:06 transreid.train INFO: PCMPSR epoch=33 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000029/22.562817/48.107677/0/2.4062/0.000000 controls=None
+2026-07-23 07:14:06 transreid.train INFO: PSCCR epoch=33 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.005629/[0.016671, 0.000188, 2.9e-05]/[22.825546, 22.670128, 22.562817]/[48.100914, 48.178707, 48.107677]/[7.0625, 9.40625, 10.0] controls=None
+2026-07-23 07:14:29 transreid.train INFO: Epoch[33] Iter[20/227] Loss: 0.444, Pose: 0.481, Acc: 0.975, Student: 1.00, Reliability: 0.854, GateAbs: 7.565e-03, Base Lr: 6.60e-04
+2026-07-23 07:14:53 transreid.train INFO: Epoch[33] Iter[40/227] Loss: 0.449, Pose: 0.480, Acc: 0.973, Student: 1.00, Reliability: 0.845, GateAbs: 7.536e-03, Base Lr: 6.60e-04
+2026-07-23 07:15:17 transreid.train INFO: Epoch[33] Iter[60/227] Loss: 0.433, Pose: 0.478, Acc: 0.977, Student: 1.00, Reliability: 0.849, GateAbs: 7.583e-03, Base Lr: 6.60e-04
+2026-07-23 07:15:41 transreid.train INFO: Epoch[33] Iter[80/227] Loss: 0.419, Pose: 0.477, Acc: 0.978, Student: 1.00, Reliability: 0.845, GateAbs: 7.575e-03, Base Lr: 6.60e-04
+2026-07-23 07:16:05 transreid.train INFO: Epoch[33] Iter[100/227] Loss: 0.414, Pose: 0.479, Acc: 0.977, Student: 1.00, Reliability: 0.834, GateAbs: 7.574e-03, Base Lr: 6.60e-04
+2026-07-23 07:16:30 transreid.train INFO: Epoch[33] Iter[120/227] Loss: 0.413, Pose: 0.479, Acc: 0.977, Student: 1.00, Reliability: 0.845, GateAbs: 7.611e-03, Base Lr: 6.60e-04
+2026-07-23 07:16:54 transreid.train INFO: Epoch[33] Iter[140/227] Loss: 0.403, Pose: 0.479, Acc: 0.978, Student: 1.00, Reliability: 0.857, GateAbs: 7.580e-03, Base Lr: 6.60e-04
+2026-07-23 07:17:18 transreid.train INFO: Epoch[33] Iter[160/227] Loss: 0.394, Pose: 0.479, Acc: 0.978, Student: 1.00, Reliability: 0.856, GateAbs: 7.607e-03, Base Lr: 6.60e-04
+2026-07-23 07:17:42 transreid.train INFO: Epoch[33] Iter[180/227] Loss: 0.384, Pose: 0.478, Acc: 0.980, Student: 1.00, Reliability: 0.849, GateAbs: 7.622e-03, Base Lr: 6.60e-04
+2026-07-23 07:18:06 transreid.train INFO: Epoch[33] Iter[200/227] Loss: 0.370, Pose: 0.478, Acc: 0.980, Student: 1.00, Reliability: 0.852, GateAbs: 7.628e-03, Base Lr: 6.60e-04
+2026-07-23 07:18:21 transreid.train INFO: Epoch 33 done. Time per epoch: 256.567[s] Speed: 52.9[samples/s]
+2026-07-23 07:18:22 transreid.train INFO: PCMPSR epoch=34 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000048/25.344696/50.350910/0/2.2188/0.000000 controls=None
+2026-07-23 07:18:22 transreid.train INFO: PSCCR epoch=34 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000125/[0.000268, 5.9e-05, 4.8e-05]/[24.299622, 24.909708, 25.344696]/[50.262737, 50.223309, 50.35091]/[6.796875, 9.234375, 10.0] controls=None
+2026-07-23 07:18:45 transreid.train INFO: Epoch[34] Iter[20/227] Loss: 0.396, Pose: 0.473, Acc: 0.982, Student: 1.00, Reliability: 0.833, GateAbs: 7.607e-03, Base Lr: 6.52e-04
+2026-07-23 07:19:09 transreid.train INFO: Epoch[34] Iter[40/227] Loss: 0.390, Pose: 0.476, Acc: 0.979, Student: 1.00, Reliability: 0.835, GateAbs: 7.593e-03, Base Lr: 6.52e-04
+2026-07-23 07:19:34 transreid.train INFO: Epoch[34] Iter[60/227] Loss: 0.377, Pose: 0.476, Acc: 0.982, Student: 1.00, Reliability: 0.854, GateAbs: 7.649e-03, Base Lr: 6.52e-04
+2026-07-23 07:19:58 transreid.train INFO: Epoch[34] Iter[80/227] Loss: 0.377, Pose: 0.477, Acc: 0.981, Student: 1.00, Reliability: 0.834, GateAbs: 7.627e-03, Base Lr: 6.52e-04
+2026-07-23 07:20:22 transreid.train INFO: Epoch[34] Iter[100/227] Loss: 0.372, Pose: 0.478, Acc: 0.981, Student: 1.00, Reliability: 0.850, GateAbs: 7.632e-03, Base Lr: 6.52e-04
+2026-07-23 07:20:46 transreid.train INFO: Epoch[34] Iter[120/227] Loss: 0.366, Pose: 0.477, Acc: 0.982, Student: 1.00, Reliability: 0.839, GateAbs: 7.642e-03, Base Lr: 6.52e-04
+2026-07-23 07:21:10 transreid.train INFO: Epoch[34] Iter[140/227] Loss: 0.359, Pose: 0.477, Acc: 0.982, Student: 1.00, Reliability: 0.827, GateAbs: 7.646e-03, Base Lr: 6.52e-04
+2026-07-23 07:21:34 transreid.train INFO: Epoch[34] Iter[160/227] Loss: 0.352, Pose: 0.476, Acc: 0.983, Student: 1.00, Reliability: 0.853, GateAbs: 7.693e-03, Base Lr: 6.52e-04
+2026-07-23 07:21:58 transreid.train INFO: Epoch[34] Iter[180/227] Loss: 0.345, Pose: 0.477, Acc: 0.983, Student: 1.00, Reliability: 0.847, GateAbs: 7.676e-03, Base Lr: 6.52e-04
+2026-07-23 07:22:23 transreid.train INFO: Epoch[34] Iter[200/227] Loss: 0.335, Pose: 0.477, Acc: 0.984, Student: 1.00, Reliability: 0.825, GateAbs: 7.689e-03, Base Lr: 6.52e-04
+2026-07-23 07:22:37 transreid.train INFO: Epoch 34 done. Time per epoch: 256.267[s] Speed: 52.9[samples/s]
+2026-07-23 07:22:39 transreid.train INFO: PCMPSR epoch=35 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.001041/23.410309/47.353443/0/2.2969/0.000000 controls=None
+2026-07-23 07:22:39 transreid.train INFO: PSCCR epoch=35 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000427/[5.6e-05, 0.000183, 0.001041]/[23.310345, 23.129787, 23.410309]/[47.414562, 47.255047, 47.353443]/[6.890625, 9.390625, 10.0] controls=None
+2026-07-23 07:23:02 transreid.train INFO: Epoch[35] Iter[20/227] Loss: 0.370, Pose: 0.473, Acc: 0.984, Student: 1.00, Reliability: 0.856, GateAbs: 7.712e-03, Base Lr: 6.44e-04
+2026-07-23 07:23:26 transreid.train INFO: Epoch[35] Iter[40/227] Loss: 0.379, Pose: 0.475, Acc: 0.983, Student: 1.00, Reliability: 0.840, GateAbs: 7.718e-03, Base Lr: 6.44e-04
+2026-07-23 07:23:50 transreid.train INFO: Epoch[35] Iter[60/227] Loss: 0.374, Pose: 0.476, Acc: 0.984, Student: 1.00, Reliability: 0.826, GateAbs: 7.732e-03, Base Lr: 6.44e-04
+2026-07-23 07:24:14 transreid.train INFO: Epoch[35] Iter[80/227] Loss: 0.375, Pose: 0.477, Acc: 0.983, Student: 1.00, Reliability: 0.842, GateAbs: 7.754e-03, Base Lr: 6.44e-04
+2026-07-23 07:24:38 transreid.train INFO: Epoch[35] Iter[100/227] Loss: 0.368, Pose: 0.476, Acc: 0.982, Student: 1.00, Reliability: 0.859, GateAbs: 7.742e-03, Base Lr: 6.44e-04
+2026-07-23 07:25:03 transreid.train INFO: Epoch[35] Iter[120/227] Loss: 0.368, Pose: 0.475, Acc: 0.981, Student: 1.00, Reliability: 0.859, GateAbs: 7.719e-03, Base Lr: 6.44e-04
+2026-07-23 07:25:27 transreid.train INFO: Epoch[35] Iter[140/227] Loss: 0.360, Pose: 0.476, Acc: 0.981, Student: 1.00, Reliability: 0.822, GateAbs: 7.786e-03, Base Lr: 6.44e-04
+2026-07-23 07:25:51 transreid.train INFO: Epoch[35] Iter[160/227] Loss: 0.350, Pose: 0.475, Acc: 0.982, Student: 1.00, Reliability: 0.857, GateAbs: 7.783e-03, Base Lr: 6.44e-04
+2026-07-23 07:26:15 transreid.train INFO: Epoch[35] Iter[180/227] Loss: 0.343, Pose: 0.475, Acc: 0.983, Student: 1.00, Reliability: 0.850, GateAbs: 7.754e-03, Base Lr: 6.44e-04
+2026-07-23 07:26:39 transreid.train INFO: Epoch[35] Iter[200/227] Loss: 0.332, Pose: 0.476, Acc: 0.983, Student: 1.00, Reliability: 0.823, GateAbs: 7.825e-03, Base Lr: 6.44e-04
+2026-07-23 07:26:51 transreid.train INFO: Epoch 35 done. Time per epoch: 254.095[s] Speed: 52.9[samples/s]
+2026-07-23 07:26:53 transreid.train INFO: PCMPSR epoch=36 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000007/25.391300/48.793335/0/2.4531/0.000000 controls=None
+2026-07-23 07:26:53 transreid.train INFO: PSCCR epoch=36 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.005745/[0.017204, 2.4e-05, 7e-06]/[25.344412, 25.339056, 25.3913]/[48.740074, 48.6492, 48.793335]/[6.765625, 9.265625, 9.953125] controls=None
+2026-07-23 07:27:16 transreid.train INFO: Epoch[36] Iter[20/227] Loss: 0.384, Pose: 0.469, Acc: 0.977, Student: 1.00, Reliability: 0.833, GateAbs: 7.809e-03, Base Lr: 6.35e-04
+2026-07-23 07:27:40 transreid.train INFO: Epoch[36] Iter[40/227] Loss: 0.373, Pose: 0.474, Acc: 0.977, Student: 1.00, Reliability: 0.846, GateAbs: 7.845e-03, Base Lr: 6.35e-04
+2026-07-23 07:28:04 transreid.train INFO: Epoch[36] Iter[60/227] Loss: 0.373, Pose: 0.472, Acc: 0.979, Student: 1.00, Reliability: 0.861, GateAbs: 7.840e-03, Base Lr: 6.35e-04
+2026-07-23 07:28:28 transreid.train INFO: Epoch[36] Iter[80/227] Loss: 0.358, Pose: 0.473, Acc: 0.981, Student: 1.00, Reliability: 0.833, GateAbs: 7.827e-03, Base Lr: 6.35e-04
+2026-07-23 07:28:52 transreid.train INFO: Epoch[36] Iter[100/227] Loss: 0.349, Pose: 0.473, Acc: 0.982, Student: 1.00, Reliability: 0.842, GateAbs: 7.864e-03, Base Lr: 6.35e-04
+2026-07-23 07:29:16 transreid.train INFO: Epoch[36] Iter[120/227] Loss: 0.341, Pose: 0.474, Acc: 0.982, Student: 1.00, Reliability: 0.833, GateAbs: 7.882e-03, Base Lr: 6.35e-04
+2026-07-23 07:29:40 transreid.train INFO: Epoch[36] Iter[140/227] Loss: 0.336, Pose: 0.474, Acc: 0.982, Student: 1.00, Reliability: 0.834, GateAbs: 7.832e-03, Base Lr: 6.35e-04
+2026-07-23 07:30:05 transreid.train INFO: Epoch[36] Iter[160/227] Loss: 0.331, Pose: 0.473, Acc: 0.983, Student: 1.00, Reliability: 0.851, GateAbs: 7.871e-03, Base Lr: 6.35e-04
+2026-07-23 07:30:29 transreid.train INFO: Epoch[36] Iter[180/227] Loss: 0.323, Pose: 0.474, Acc: 0.983, Student: 1.00, Reliability: 0.829, GateAbs: 7.897e-03, Base Lr: 6.35e-04
+2026-07-23 07:30:53 transreid.train INFO: Epoch[36] Iter[200/227] Loss: 0.313, Pose: 0.475, Acc: 0.984, Student: 1.00, Reliability: 0.831, GateAbs: 7.920e-03, Base Lr: 6.35e-04
+2026-07-23 07:31:08 transreid.train INFO: Epoch 36 done. Time per epoch: 257.257[s] Speed: 53.0[samples/s]
+2026-07-23 07:31:10 transreid.train INFO: PCMPSR epoch=37 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000453/24.209438/46.100891/0/2.2969/0.000000 controls=None
+2026-07-23 07:31:10 transreid.train INFO: PSCCR epoch=37 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.002690/[0.005847, 0.001771, 0.000453]/[23.990429, 24.096809, 24.209438]/[46.018906, 46.037788, 46.100891]/[6.96875, 9.359375, 9.953125] controls=None
+2026-07-23 07:31:33 transreid.train INFO: Epoch[37] Iter[20/227] Loss: 0.352, Pose: 0.472, Acc: 0.977, Student: 1.00, Reliability: 0.859, GateAbs: 7.921e-03, Base Lr: 6.27e-04
+2026-07-23 07:31:57 transreid.train INFO: Epoch[37] Iter[40/227] Loss: 0.347, Pose: 0.470, Acc: 0.977, Student: 1.00, Reliability: 0.849, GateAbs: 7.918e-03, Base Lr: 6.27e-04
+2026-07-23 07:32:21 transreid.train INFO: Epoch[37] Iter[60/227] Loss: 0.339, Pose: 0.470, Acc: 0.979, Student: 1.00, Reliability: 0.853, GateAbs: 7.922e-03, Base Lr: 6.27e-04
+2026-07-23 07:32:46 transreid.train INFO: Epoch[37] Iter[80/227] Loss: 0.336, Pose: 0.472, Acc: 0.978, Student: 1.00, Reliability: 0.860, GateAbs: 7.891e-03, Base Lr: 6.27e-04
+2026-07-23 07:33:10 transreid.train INFO: Epoch[37] Iter[100/227] Loss: 0.327, Pose: 0.473, Acc: 0.980, Student: 1.00, Reliability: 0.852, GateAbs: 7.917e-03, Base Lr: 6.27e-04
+2026-07-23 07:33:34 transreid.train INFO: Epoch[37] Iter[120/227] Loss: 0.322, Pose: 0.472, Acc: 0.982, Student: 1.00, Reliability: 0.855, GateAbs: 7.914e-03, Base Lr: 6.27e-04
+2026-07-23 07:33:58 transreid.train INFO: Epoch[37] Iter[140/227] Loss: 0.320, Pose: 0.473, Acc: 0.982, Student: 1.00, Reliability: 0.838, GateAbs: 7.917e-03, Base Lr: 6.27e-04
+2026-07-23 07:34:23 transreid.train INFO: Epoch[37] Iter[160/227] Loss: 0.314, Pose: 0.473, Acc: 0.982, Student: 1.00, Reliability: 0.861, GateAbs: 7.954e-03, Base Lr: 6.27e-04
+2026-07-23 07:34:47 transreid.train INFO: Epoch[37] Iter[180/227] Loss: 0.303, Pose: 0.474, Acc: 0.983, Student: 1.00, Reliability: 0.840, GateAbs: 7.967e-03, Base Lr: 6.27e-04
+2026-07-23 07:35:11 transreid.train INFO: Epoch[37] Iter[200/227] Loss: 0.293, Pose: 0.474, Acc: 0.983, Student: 1.00, Reliability: 0.848, GateAbs: 7.991e-03, Base Lr: 6.27e-04
+2026-07-23 07:35:24 transreid.train INFO: Epoch 37 done. Time per epoch: 255.866[s] Speed: 52.8[samples/s]
+2026-07-23 07:35:26 transreid.train INFO: PCMPSR epoch=38 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000011/24.465553/48.783840/0/2.2969/0.000000 controls=None
+2026-07-23 07:35:26 transreid.train INFO: PSCCR epoch=38 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000011/[1.8e-05, 3e-06, 1.1e-05]/[24.075817, 24.538324, 24.465553]/[48.638302, 48.6553, 48.78384]/[7.15625, 9.4375, 10.0] controls=None
+2026-07-23 07:35:49 transreid.train INFO: Epoch[38] Iter[20/227] Loss: 0.315, Pose: 0.467, Acc: 0.984, Student: 1.00, Reliability: 0.850, GateAbs: 7.964e-03, Base Lr: 6.18e-04
+2026-07-23 07:36:13 transreid.train INFO: Epoch[38] Iter[40/227] Loss: 0.313, Pose: 0.472, Acc: 0.987, Student: 1.00, Reliability: 0.840, GateAbs: 7.940e-03, Base Lr: 6.18e-04
+2026-07-23 07:36:37 transreid.train INFO: Epoch[38] Iter[60/227] Loss: 0.316, Pose: 0.471, Acc: 0.986, Student: 1.00, Reliability: 0.850, GateAbs: 7.973e-03, Base Lr: 6.18e-04
+2026-07-23 07:37:01 transreid.train INFO: Epoch[38] Iter[80/227] Loss: 0.307, Pose: 0.471, Acc: 0.988, Student: 1.00, Reliability: 0.838, GateAbs: 7.985e-03, Base Lr: 6.18e-04
+2026-07-23 07:37:25 transreid.train INFO: Epoch[38] Iter[100/227] Loss: 0.310, Pose: 0.471, Acc: 0.986, Student: 1.00, Reliability: 0.850, GateAbs: 7.960e-03, Base Lr: 6.18e-04
+2026-07-23 07:37:50 transreid.train INFO: Epoch[38] Iter[120/227] Loss: 0.303, Pose: 0.471, Acc: 0.986, Student: 1.00, Reliability: 0.836, GateAbs: 8.021e-03, Base Lr: 6.18e-04
+2026-07-23 07:38:14 transreid.train INFO: Epoch[38] Iter[140/227] Loss: 0.298, Pose: 0.472, Acc: 0.987, Student: 1.00, Reliability: 0.836, GateAbs: 8.009e-03, Base Lr: 6.18e-04
+2026-07-23 07:38:38 transreid.train INFO: Epoch[38] Iter[160/227] Loss: 0.291, Pose: 0.472, Acc: 0.987, Student: 1.00, Reliability: 0.844, GateAbs: 8.024e-03, Base Lr: 6.18e-04
+2026-07-23 07:39:02 transreid.train INFO: Epoch[38] Iter[180/227] Loss: 0.286, Pose: 0.473, Acc: 0.988, Student: 1.00, Reliability: 0.837, GateAbs: 8.031e-03, Base Lr: 6.18e-04
+2026-07-23 07:39:26 transreid.train INFO: Epoch[38] Iter[200/227] Loss: 0.278, Pose: 0.473, Acc: 0.988, Student: 1.00, Reliability: 0.848, GateAbs: 8.017e-03, Base Lr: 6.18e-04
+2026-07-23 07:39:41 transreid.train INFO: Epoch 38 done. Time per epoch: 256.508[s] Speed: 52.9[samples/s]
+2026-07-23 07:39:42 transreid.train INFO: PCMPSR epoch=39 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000184/24.003345/47.594093/0/2.2031/0.000000 controls=None
+2026-07-23 07:39:42 transreid.train INFO: PSCCR epoch=39 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000498/[0.0005, 0.000809, 0.000184]/[22.269861, 23.594654, 24.003345]/[47.495605, 47.484394, 47.594093]/[6.75, 9.25, 10.0] controls=None
+2026-07-23 07:40:05 transreid.train INFO: Epoch[39] Iter[20/227] Loss: 0.309, Pose: 0.468, Acc: 0.989, Student: 1.00, Reliability: 0.857, GateAbs: 8.000e-03, Base Lr: 6.09e-04
+2026-07-23 07:40:29 transreid.train INFO: Epoch[39] Iter[40/227] Loss: 0.317, Pose: 0.470, Acc: 0.988, Student: 1.00, Reliability: 0.860, GateAbs: 8.055e-03, Base Lr: 6.09e-04
+2026-07-23 07:40:54 transreid.train INFO: Epoch[39] Iter[60/227] Loss: 0.309, Pose: 0.470, Acc: 0.988, Student: 1.00, Reliability: 0.850, GateAbs: 8.045e-03, Base Lr: 6.09e-04
+2026-07-23 07:41:18 transreid.train INFO: Epoch[39] Iter[80/227] Loss: 0.298, Pose: 0.472, Acc: 0.988, Student: 1.00, Reliability: 0.862, GateAbs: 8.069e-03, Base Lr: 6.09e-04
+2026-07-23 07:41:42 transreid.train INFO: Epoch[39] Iter[100/227] Loss: 0.292, Pose: 0.471, Acc: 0.988, Student: 1.00, Reliability: 0.859, GateAbs: 8.081e-03, Base Lr: 6.09e-04
+2026-07-23 07:42:06 transreid.train INFO: Epoch[39] Iter[120/227] Loss: 0.284, Pose: 0.471, Acc: 0.988, Student: 1.00, Reliability: 0.834, GateAbs: 8.070e-03, Base Lr: 6.09e-04
+2026-07-23 07:42:30 transreid.train INFO: Epoch[39] Iter[140/227] Loss: 0.281, Pose: 0.471, Acc: 0.988, Student: 1.00, Reliability: 0.839, GateAbs: 8.092e-03, Base Lr: 6.09e-04
+2026-07-23 07:42:55 transreid.train INFO: Epoch[39] Iter[160/227] Loss: 0.274, Pose: 0.471, Acc: 0.988, Student: 1.00, Reliability: 0.838, GateAbs: 8.111e-03, Base Lr: 6.09e-04
+2026-07-23 07:43:19 transreid.train INFO: Epoch[39] Iter[180/227] Loss: 0.267, Pose: 0.472, Acc: 0.988, Student: 1.00, Reliability: 0.865, GateAbs: 8.130e-03, Base Lr: 6.09e-04
+2026-07-23 07:43:43 transreid.train INFO: Epoch[39] Iter[200/227] Loss: 0.260, Pose: 0.472, Acc: 0.989, Student: 1.00, Reliability: 0.846, GateAbs: 8.099e-03, Base Lr: 6.09e-04
+2026-07-23 07:43:56 transreid.train INFO: Epoch 39 done. Time per epoch: 255.270[s] Speed: 52.9[samples/s]
+2026-07-23 07:43:58 transreid.train INFO: PCMPSR epoch=40 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000224/24.051342/48.374741/0/2.2656/0.000000 controls=None
+2026-07-23 07:43:58 transreid.train INFO: PSCCR epoch=40 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000410/[0.000385, 0.000621, 0.000224]/[23.776215, 23.868071, 24.051342]/[48.420967, 48.344833, 48.374741]/[7.015625, 9.296875, 10.0] controls=None
+2026-07-23 07:44:21 transreid.train INFO: Epoch[40] Iter[20/227] Loss: 0.320, Pose: 0.472, Acc: 0.984, Student: 1.00, Reliability: 0.838, GateAbs: 8.054e-03, Base Lr: 6.00e-04
+2026-07-23 07:44:45 transreid.train INFO: Epoch[40] Iter[40/227] Loss: 0.290, Pose: 0.471, Acc: 0.986, Student: 1.00, Reliability: 0.857, GateAbs: 8.099e-03, Base Lr: 6.00e-04
+2026-07-23 07:45:09 transreid.train INFO: Epoch[40] Iter[60/227] Loss: 0.286, Pose: 0.471, Acc: 0.986, Student: 1.00, Reliability: 0.857, GateAbs: 8.153e-03, Base Lr: 6.00e-04
+2026-07-23 07:45:33 transreid.train INFO: Epoch[40] Iter[80/227] Loss: 0.286, Pose: 0.471, Acc: 0.985, Student: 1.00, Reliability: 0.843, GateAbs: 8.137e-03, Base Lr: 6.00e-04
+2026-07-23 07:45:57 transreid.train INFO: Epoch[40] Iter[100/227] Loss: 0.284, Pose: 0.472, Acc: 0.985, Student: 1.00, Reliability: 0.852, GateAbs: 8.168e-03, Base Lr: 6.00e-04
+2026-07-23 07:46:22 transreid.train INFO: Epoch[40] Iter[120/227] Loss: 0.281, Pose: 0.471, Acc: 0.985, Student: 1.00, Reliability: 0.849, GateAbs: 8.172e-03, Base Lr: 6.00e-04
+2026-07-23 07:46:46 transreid.train INFO: Epoch[40] Iter[140/227] Loss: 0.275, Pose: 0.471, Acc: 0.985, Student: 1.00, Reliability: 0.854, GateAbs: 8.147e-03, Base Lr: 6.00e-04
+2026-07-23 07:47:10 transreid.train INFO: Epoch[40] Iter[160/227] Loss: 0.271, Pose: 0.471, Acc: 0.986, Student: 1.00, Reliability: 0.847, GateAbs: 8.206e-03, Base Lr: 6.00e-04
+2026-07-23 07:47:34 transreid.train INFO: Epoch[40] Iter[180/227] Loss: 0.266, Pose: 0.471, Acc: 0.986, Student: 1.00, Reliability: 0.878, GateAbs: 8.169e-03, Base Lr: 6.00e-04
+2026-07-23 07:47:58 transreid.train INFO: Epoch[40] Iter[200/227] Loss: 0.259, Pose: 0.472, Acc: 0.986, Student: 1.00, Reliability: 0.833, GateAbs: 8.170e-03, Base Lr: 6.00e-04
+2026-07-23 07:48:10 transreid.train INFO: Epoch 40 done. Time per epoch: 254.306[s] Speed: 52.8[samples/s]
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-23 07:48:33 transreid.train INFO: Validation Results - Epoch: 40
+2026-07-23 07:48:33 transreid.train INFO: mAP: 53.9%
+2026-07-23 07:48:33 transreid.train INFO: CMC curve, Rank-1  :65.7%
+2026-07-23 07:48:33 transreid.train INFO: CMC curve, Rank-5  :78.6%
+2026-07-23 07:48:33 transreid.train INFO: CMC curve, Rank-10 :83.7%
+2026-07-23 07:48:34 transreid.train INFO: PCMPSR epoch=41 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000184/24.301737/47.618294/0/2.2344/0.000000 controls=None
+2026-07-23 07:48:34 transreid.train INFO: PSCCR epoch=41 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000981/[0.002689, 6.9e-05, 0.000184]/[24.484581, 24.532875, 24.301737]/[47.522018, 47.565067, 47.618294]/[6.890625, 9.203125, 10.0] controls=None
+2026-07-23 07:48:57 transreid.train INFO: Epoch[41] Iter[20/227] Loss: 0.300, Pose: 0.471, Acc: 0.987, Student: 1.00, Reliability: 0.841, GateAbs: 8.165e-03, Base Lr: 5.91e-04
+2026-07-23 07:49:21 transreid.train INFO: Epoch[41] Iter[40/227] Loss: 0.304, Pose: 0.473, Acc: 0.983, Student: 1.00, Reliability: 0.846, GateAbs: 8.180e-03, Base Lr: 5.91e-04
+2026-07-23 07:49:46 transreid.train INFO: Epoch[41] Iter[60/227] Loss: 0.289, Pose: 0.472, Acc: 0.985, Student: 1.00, Reliability: 0.849, GateAbs: 8.172e-03, Base Lr: 5.91e-04
+2026-07-23 07:50:10 transreid.train INFO: Epoch[41] Iter[80/227] Loss: 0.281, Pose: 0.471, Acc: 0.986, Student: 1.00, Reliability: 0.853, GateAbs: 8.216e-03, Base Lr: 5.91e-04
+2026-07-23 07:50:34 transreid.train INFO: Epoch[41] Iter[100/227] Loss: 0.275, Pose: 0.471, Acc: 0.986, Student: 1.00, Reliability: 0.826, GateAbs: 8.216e-03, Base Lr: 5.91e-04
+2026-07-23 07:50:58 transreid.train INFO: Epoch[41] Iter[120/227] Loss: 0.270, Pose: 0.471, Acc: 0.987, Student: 1.00, Reliability: 0.841, GateAbs: 8.214e-03, Base Lr: 5.91e-04
+2026-07-23 07:51:22 transreid.train INFO: Epoch[41] Iter[140/227] Loss: 0.264, Pose: 0.471, Acc: 0.987, Student: 1.00, Reliability: 0.869, GateAbs: 8.206e-03, Base Lr: 5.91e-04
+2026-07-23 07:51:47 transreid.train INFO: Epoch[41] Iter[160/227] Loss: 0.256, Pose: 0.471, Acc: 0.988, Student: 1.00, Reliability: 0.825, GateAbs: 8.162e-03, Base Lr: 5.91e-04
+2026-07-23 07:52:11 transreid.train INFO: Epoch[41] Iter[180/227] Loss: 0.254, Pose: 0.471, Acc: 0.987, Student: 1.00, Reliability: 0.843, GateAbs: 8.219e-03, Base Lr: 5.91e-04
+2026-07-23 07:52:35 transreid.train INFO: Epoch[41] Iter[200/227] Loss: 0.245, Pose: 0.472, Acc: 0.988, Student: 1.00, Reliability: 0.833, GateAbs: 8.166e-03, Base Lr: 5.91e-04
+2026-07-23 07:52:50 transreid.train INFO: Epoch 41 done. Time per epoch: 256.918[s] Speed: 52.8[samples/s]
+2026-07-23 07:52:51 transreid.train INFO: PCMPSR epoch=42 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.004397/26.058891/50.298504/0/2.2969/0.000000 controls=None
+2026-07-23 07:52:51 transreid.train INFO: PSCCR epoch=42 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.006640/[0.012783, 0.002741, 0.004397]/[25.802982, 26.007313, 26.058891]/[50.124954, 50.288559, 50.298504]/[6.78125, 9.40625, 10.0] controls=None
+2026-07-23 07:53:14 transreid.train INFO: Epoch[42] Iter[20/227] Loss: 0.279, Pose: 0.470, Acc: 0.986, Student: 1.00, Reliability: 0.834, GateAbs: 8.278e-03, Base Lr: 5.82e-04
+2026-07-23 07:53:38 transreid.train INFO: Epoch[42] Iter[40/227] Loss: 0.268, Pose: 0.469, Acc: 0.986, Student: 1.00, Reliability: 0.857, GateAbs: 8.248e-03, Base Lr: 5.82e-04
+2026-07-23 07:54:02 transreid.train INFO: Epoch[42] Iter[60/227] Loss: 0.268, Pose: 0.468, Acc: 0.986, Student: 1.00, Reliability: 0.833, GateAbs: 8.279e-03, Base Lr: 5.82e-04
+2026-07-23 07:54:27 transreid.train INFO: Epoch[42] Iter[80/227] Loss: 0.268, Pose: 0.469, Acc: 0.987, Student: 1.00, Reliability: 0.853, GateAbs: 8.291e-03, Base Lr: 5.82e-04
+2026-07-23 07:54:51 transreid.train INFO: Epoch[42] Iter[100/227] Loss: 0.265, Pose: 0.469, Acc: 0.987, Student: 1.00, Reliability: 0.852, GateAbs: 8.252e-03, Base Lr: 5.82e-04
+2026-07-23 07:55:15 transreid.train INFO: Epoch[42] Iter[120/227] Loss: 0.262, Pose: 0.469, Acc: 0.987, Student: 1.00, Reliability: 0.846, GateAbs: 8.268e-03, Base Lr: 5.82e-04
+2026-07-23 07:55:39 transreid.train INFO: Epoch[42] Iter[140/227] Loss: 0.255, Pose: 0.469, Acc: 0.988, Student: 1.00, Reliability: 0.839, GateAbs: 8.258e-03, Base Lr: 5.82e-04
+2026-07-23 07:56:03 transreid.train INFO: Epoch[42] Iter[160/227] Loss: 0.249, Pose: 0.469, Acc: 0.988, Student: 1.00, Reliability: 0.850, GateAbs: 8.330e-03, Base Lr: 5.82e-04
+2026-07-23 07:56:28 transreid.train INFO: Epoch[42] Iter[180/227] Loss: 0.243, Pose: 0.469, Acc: 0.989, Student: 1.00, Reliability: 0.855, GateAbs: 8.282e-03, Base Lr: 5.82e-04
+2026-07-23 07:56:52 transreid.train INFO: Epoch[42] Iter[200/227] Loss: 0.237, Pose: 0.471, Acc: 0.989, Student: 1.00, Reliability: 0.840, GateAbs: 8.302e-03, Base Lr: 5.82e-04
+2026-07-23 07:57:05 transreid.train INFO: Epoch 42 done. Time per epoch: 255.580[s] Speed: 52.8[samples/s]
+2026-07-23 07:57:07 transreid.train INFO: PCMPSR epoch=43 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.112247/23.511793/47.589642/0/2.3906/0.000000 controls=None
+2026-07-23 07:57:07 transreid.train INFO: PSCCR epoch=43 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.171344/[0.191055, 0.210729, 0.112247]/[23.309544, 23.218746, 23.511793]/[47.706268, 47.643402, 47.589642]/[6.9375, 9.21875, 10.0] controls=None
+2026-07-23 07:57:30 transreid.train INFO: Epoch[43] Iter[20/227] Loss: 0.287, Pose: 0.470, Acc: 0.985, Student: 1.00, Reliability: 0.846, GateAbs: 8.290e-03, Base Lr: 5.73e-04
+2026-07-23 07:57:54 transreid.train INFO: Epoch[43] Iter[40/227] Loss: 0.270, Pose: 0.469, Acc: 0.988, Student: 1.00, Reliability: 0.856, GateAbs: 8.268e-03, Base Lr: 5.73e-04
+2026-07-23 07:58:18 transreid.train INFO: Epoch[43] Iter[60/227] Loss: 0.264, Pose: 0.469, Acc: 0.988, Student: 1.00, Reliability: 0.850, GateAbs: 8.319e-03, Base Lr: 5.73e-04
+2026-07-23 07:58:42 transreid.train INFO: Epoch[43] Iter[80/227] Loss: 0.256, Pose: 0.468, Acc: 0.989, Student: 1.00, Reliability: 0.857, GateAbs: 8.305e-03, Base Lr: 5.73e-04
+2026-07-23 07:59:06 transreid.train INFO: Epoch[43] Iter[100/227] Loss: 0.250, Pose: 0.468, Acc: 0.988, Student: 1.00, Reliability: 0.854, GateAbs: 8.330e-03, Base Lr: 5.73e-04
+2026-07-23 07:59:31 transreid.train INFO: Epoch[43] Iter[120/227] Loss: 0.248, Pose: 0.468, Acc: 0.988, Student: 1.00, Reliability: 0.860, GateAbs: 8.325e-03, Base Lr: 5.73e-04
+2026-07-23 07:59:55 transreid.train INFO: Epoch[43] Iter[140/227] Loss: 0.244, Pose: 0.469, Acc: 0.988, Student: 1.00, Reliability: 0.834, GateAbs: 8.306e-03, Base Lr: 5.73e-04
+2026-07-23 08:00:19 transreid.train INFO: Epoch[43] Iter[160/227] Loss: 0.240, Pose: 0.470, Acc: 0.989, Student: 1.00, Reliability: 0.844, GateAbs: 8.332e-03, Base Lr: 5.73e-04
+2026-07-23 08:00:43 transreid.train INFO: Epoch[43] Iter[180/227] Loss: 0.233, Pose: 0.470, Acc: 0.989, Student: 1.00, Reliability: 0.850, GateAbs: 8.350e-03, Base Lr: 5.73e-04
+2026-07-23 08:01:07 transreid.train INFO: Epoch[43] Iter[200/227] Loss: 0.228, Pose: 0.470, Acc: 0.989, Student: 1.00, Reliability: 0.843, GateAbs: 8.355e-03, Base Lr: 5.73e-04
+2026-07-23 08:01:21 transreid.train INFO: Epoch 43 done. Time per epoch: 255.425[s] Speed: 52.9[samples/s]
+2026-07-23 08:01:22 transreid.train INFO: PCMPSR epoch=44 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000002/24.904472/48.141922/0/2.0312/0.000000 controls=None
+2026-07-23 08:01:22 transreid.train INFO: PSCCR epoch=44 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000166/[0.000494, 1e-06, 2e-06]/[24.691113, 24.811226, 24.904472]/[48.458038, 48.251198, 48.141922]/[6.640625, 9.15625, 10.0] controls=None
+2026-07-23 08:01:45 transreid.train INFO: Epoch[44] Iter[20/227] Loss: 0.253, Pose: 0.461, Acc: 0.986, Student: 1.00, Reliability: 0.856, GateAbs: 8.322e-03, Base Lr: 5.63e-04
+2026-07-23 08:02:09 transreid.train INFO: Epoch[44] Iter[40/227] Loss: 0.261, Pose: 0.466, Acc: 0.987, Student: 1.00, Reliability: 0.854, GateAbs: 8.337e-03, Base Lr: 5.63e-04
+2026-07-23 08:02:33 transreid.train INFO: Epoch[44] Iter[60/227] Loss: 0.262, Pose: 0.465, Acc: 0.986, Student: 1.00, Reliability: 0.845, GateAbs: 8.373e-03, Base Lr: 5.63e-04
+2026-07-23 08:02:58 transreid.train INFO: Epoch[44] Iter[80/227] Loss: 0.260, Pose: 0.467, Acc: 0.987, Student: 1.00, Reliability: 0.818, GateAbs: 8.420e-03, Base Lr: 5.63e-04
+2026-07-23 08:03:22 transreid.train INFO: Epoch[44] Iter[100/227] Loss: 0.252, Pose: 0.468, Acc: 0.988, Student: 1.00, Reliability: 0.829, GateAbs: 8.340e-03, Base Lr: 5.63e-04
+2026-07-23 08:03:46 transreid.train INFO: Epoch[44] Iter[120/227] Loss: 0.249, Pose: 0.467, Acc: 0.988, Student: 1.00, Reliability: 0.835, GateAbs: 8.332e-03, Base Lr: 5.63e-04
+2026-07-23 08:04:10 transreid.train INFO: Epoch[44] Iter[140/227] Loss: 0.243, Pose: 0.467, Acc: 0.989, Student: 1.00, Reliability: 0.829, GateAbs: 8.383e-03, Base Lr: 5.63e-04
+2026-07-23 08:04:34 transreid.train INFO: Epoch[44] Iter[160/227] Loss: 0.240, Pose: 0.467, Acc: 0.989, Student: 1.00, Reliability: 0.841, GateAbs: 8.438e-03, Base Lr: 5.63e-04
+2026-07-23 08:04:59 transreid.train INFO: Epoch[44] Iter[180/227] Loss: 0.236, Pose: 0.468, Acc: 0.989, Student: 1.00, Reliability: 0.824, GateAbs: 8.384e-03, Base Lr: 5.63e-04
+2026-07-23 08:05:23 transreid.train INFO: Epoch[44] Iter[200/227] Loss: 0.229, Pose: 0.469, Acc: 0.989, Student: 1.00, Reliability: 0.838, GateAbs: 8.417e-03, Base Lr: 5.63e-04
+2026-07-23 08:05:37 transreid.train INFO: Epoch 44 done. Time per epoch: 256.700[s] Speed: 52.9[samples/s]
+2026-07-23 08:05:39 transreid.train INFO: PCMPSR epoch=45 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000000/23.679848/48.896812/0/2.1875/0.000000 controls=None
+2026-07-23 08:05:39 transreid.train INFO: PSCCR epoch=45 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000001/[2e-06, 1e-06, 0.0]/[22.540199, 23.25404, 23.679848]/[48.505695, 48.811134, 48.896812]/[6.859375, 9.390625, 10.0] controls=None
+2026-07-23 08:06:02 transreid.train INFO: Epoch[45] Iter[20/227] Loss: 0.249, Pose: 0.464, Acc: 0.988, Student: 1.00, Reliability: 0.836, GateAbs: 8.428e-03, Base Lr: 5.54e-04
+2026-07-23 08:06:26 transreid.train INFO: Epoch[45] Iter[40/227] Loss: 0.248, Pose: 0.465, Acc: 0.990, Student: 1.00, Reliability: 0.852, GateAbs: 8.412e-03, Base Lr: 5.54e-04
+2026-07-23 08:06:50 transreid.train INFO: Epoch[45] Iter[60/227] Loss: 0.240, Pose: 0.468, Acc: 0.991, Student: 1.00, Reliability: 0.848, GateAbs: 8.408e-03, Base Lr: 5.54e-04
+2026-07-23 08:07:15 transreid.train INFO: Epoch[45] Iter[80/227] Loss: 0.235, Pose: 0.467, Acc: 0.992, Student: 1.00, Reliability: 0.840, GateAbs: 8.413e-03, Base Lr: 5.54e-04
+2026-07-23 08:07:39 transreid.train INFO: Epoch[45] Iter[100/227] Loss: 0.233, Pose: 0.467, Acc: 0.992, Student: 1.00, Reliability: 0.840, GateAbs: 8.444e-03, Base Lr: 5.54e-04
+2026-07-23 08:08:03 transreid.train INFO: Epoch[45] Iter[120/227] Loss: 0.229, Pose: 0.467, Acc: 0.992, Student: 1.00, Reliability: 0.853, GateAbs: 8.486e-03, Base Lr: 5.54e-04
+2026-07-23 08:08:27 transreid.train INFO: Epoch[45] Iter[140/227] Loss: 0.225, Pose: 0.467, Acc: 0.992, Student: 1.00, Reliability: 0.837, GateAbs: 8.485e-03, Base Lr: 5.54e-04
+2026-07-23 08:08:52 transreid.train INFO: Epoch[45] Iter[160/227] Loss: 0.220, Pose: 0.467, Acc: 0.992, Student: 1.00, Reliability: 0.851, GateAbs: 8.447e-03, Base Lr: 5.54e-04
+2026-07-23 08:09:16 transreid.train INFO: Epoch[45] Iter[180/227] Loss: 0.215, Pose: 0.468, Acc: 0.992, Student: 1.00, Reliability: 0.836, GateAbs: 8.488e-03, Base Lr: 5.54e-04
+2026-07-23 08:09:40 transreid.train INFO: Epoch[45] Iter[200/227] Loss: 0.208, Pose: 0.469, Acc: 0.992, Student: 1.00, Reliability: 0.863, GateAbs: 8.490e-03, Base Lr: 5.54e-04
+2026-07-23 08:09:53 transreid.train INFO: Epoch 45 done. Time per epoch: 256.118[s] Speed: 52.7[samples/s]
+2026-07-23 08:09:55 transreid.train INFO: PCMPSR epoch=46 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000001/23.032200/45.492458/0/2.3438/0.000000 controls=None
+2026-07-23 08:09:55 transreid.train INFO: PSCCR epoch=46 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000006/[1.6e-05, 1e-06, 1e-06]/[22.747461, 22.984255, 23.0322]/[45.378746, 45.531765, 45.492458]/[6.921875, 9.453125, 10.0] controls=None
+2026-07-23 08:10:18 transreid.train INFO: Epoch[46] Iter[20/227] Loss: 0.238, Pose: 0.463, Acc: 0.991, Student: 1.00, Reliability: 0.860, GateAbs: 8.472e-03, Base Lr: 5.44e-04
+2026-07-23 08:10:42 transreid.train INFO: Epoch[46] Iter[40/227] Loss: 0.236, Pose: 0.463, Acc: 0.991, Student: 1.00, Reliability: 0.859, GateAbs: 8.501e-03, Base Lr: 5.44e-04
+2026-07-23 08:11:06 transreid.train INFO: Epoch[46] Iter[60/227] Loss: 0.226, Pose: 0.468, Acc: 0.991, Student: 1.00, Reliability: 0.823, GateAbs: 8.446e-03, Base Lr: 5.44e-04
+2026-07-23 08:11:31 transreid.train INFO: Epoch[46] Iter[80/227] Loss: 0.229, Pose: 0.469, Acc: 0.989, Student: 1.00, Reliability: 0.853, GateAbs: 8.471e-03, Base Lr: 5.44e-04
+2026-07-23 08:11:55 transreid.train INFO: Epoch[46] Iter[100/227] Loss: 0.226, Pose: 0.468, Acc: 0.990, Student: 1.00, Reliability: 0.849, GateAbs: 8.505e-03, Base Lr: 5.44e-04
+2026-07-23 08:12:19 transreid.train INFO: Epoch[46] Iter[120/227] Loss: 0.220, Pose: 0.469, Acc: 0.991, Student: 1.00, Reliability: 0.838, GateAbs: 8.487e-03, Base Lr: 5.44e-04
+2026-07-23 08:12:43 transreid.train INFO: Epoch[46] Iter[140/227] Loss: 0.213, Pose: 0.468, Acc: 0.992, Student: 1.00, Reliability: 0.868, GateAbs: 8.496e-03, Base Lr: 5.44e-04
+2026-07-23 08:13:08 transreid.train INFO: Epoch[46] Iter[160/227] Loss: 0.211, Pose: 0.468, Acc: 0.992, Student: 1.00, Reliability: 0.844, GateAbs: 8.528e-03, Base Lr: 5.44e-04
+2026-07-23 08:13:32 transreid.train INFO: Epoch[46] Iter[180/227] Loss: 0.208, Pose: 0.468, Acc: 0.992, Student: 1.00, Reliability: 0.857, GateAbs: 8.527e-03, Base Lr: 5.44e-04
+2026-07-23 08:13:56 transreid.train INFO: Epoch[46] Iter[200/227] Loss: 0.203, Pose: 0.469, Acc: 0.992, Student: 1.00, Reliability: 0.857, GateAbs: 8.473e-03, Base Lr: 5.44e-04
+2026-07-23 08:14:09 transreid.train INFO: Epoch 46 done. Time per epoch: 256.112[s] Speed: 52.7[samples/s]
+2026-07-23 08:14:11 transreid.train INFO: PCMPSR epoch=47 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000003/22.651911/46.761921/0/2.5000/0.000000 controls=None
+2026-07-23 08:14:11 transreid.train INFO: PSCCR epoch=47 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000009/[1.1e-05, 1.1e-05, 3e-06]/[22.768103, 22.67075, 22.651911]/[46.598644, 46.684486, 46.761921]/[7.125, 9.390625, 10.0] controls=None
+2026-07-23 08:14:34 transreid.train INFO: Epoch[47] Iter[20/227] Loss: 0.214, Pose: 0.462, Acc: 0.992, Student: 1.00, Reliability: 0.838, GateAbs: 8.512e-03, Base Lr: 5.34e-04
+2026-07-23 08:14:58 transreid.train INFO: Epoch[47] Iter[40/227] Loss: 0.209, Pose: 0.461, Acc: 0.993, Student: 1.00, Reliability: 0.854, GateAbs: 8.556e-03, Base Lr: 5.34e-04
+2026-07-23 08:15:23 transreid.train INFO: Epoch[47] Iter[60/227] Loss: 0.211, Pose: 0.462, Acc: 0.992, Student: 1.00, Reliability: 0.844, GateAbs: 8.573e-03, Base Lr: 5.34e-04
+2026-07-23 08:15:47 transreid.train INFO: Epoch[47] Iter[80/227] Loss: 0.207, Pose: 0.464, Acc: 0.992, Student: 1.00, Reliability: 0.843, GateAbs: 8.591e-03, Base Lr: 5.34e-04
+2026-07-23 08:16:11 transreid.train INFO: Epoch[47] Iter[100/227] Loss: 0.205, Pose: 0.464, Acc: 0.992, Student: 1.00, Reliability: 0.860, GateAbs: 8.553e-03, Base Lr: 5.34e-04
+2026-07-23 08:16:35 transreid.train INFO: Epoch[47] Iter[120/227] Loss: 0.205, Pose: 0.465, Acc: 0.991, Student: 1.00, Reliability: 0.843, GateAbs: 8.567e-03, Base Lr: 5.34e-04
+2026-07-23 08:17:00 transreid.train INFO: Epoch[47] Iter[140/227] Loss: 0.203, Pose: 0.465, Acc: 0.991, Student: 1.00, Reliability: 0.834, GateAbs: 8.553e-03, Base Lr: 5.34e-04
+2026-07-23 08:17:24 transreid.train INFO: Epoch[47] Iter[160/227] Loss: 0.200, Pose: 0.466, Acc: 0.991, Student: 1.00, Reliability: 0.838, GateAbs: 8.569e-03, Base Lr: 5.34e-04
+2026-07-23 08:17:48 transreid.train INFO: Epoch[47] Iter[180/227] Loss: 0.199, Pose: 0.467, Acc: 0.991, Student: 1.00, Reliability: 0.837, GateAbs: 8.596e-03, Base Lr: 5.34e-04
+2026-07-23 08:18:12 transreid.train INFO: Epoch[47] Iter[200/227] Loss: 0.194, Pose: 0.468, Acc: 0.992, Student: 1.00, Reliability: 0.849, GateAbs: 8.575e-03, Base Lr: 5.34e-04
+2026-07-23 08:18:27 transreid.train INFO: Epoch 47 done. Time per epoch: 257.475[s] Speed: 52.7[samples/s]
+2026-07-23 08:18:28 transreid.train INFO: PCMPSR epoch=48 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000012/23.201874/45.703342/0/2.1719/0.000000 controls=None
+2026-07-23 08:18:28 transreid.train INFO: PSCCR epoch=48 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000027/[1.1e-05, 5.9e-05, 1.2e-05]/[21.97998, 22.864761, 23.201874]/[45.179863, 45.615105, 45.703342]/[6.640625, 9.265625, 10.0] controls=None
+2026-07-23 08:18:51 transreid.train INFO: Epoch[48] Iter[20/227] Loss: 0.220, Pose: 0.465, Acc: 0.992, Student: 1.00, Reliability: 0.859, GateAbs: 8.614e-03, Base Lr: 5.24e-04
+2026-07-23 08:19:16 transreid.train INFO: Epoch[48] Iter[40/227] Loss: 0.226, Pose: 0.464, Acc: 0.989, Student: 1.00, Reliability: 0.864, GateAbs: 8.613e-03, Base Lr: 5.24e-04
+2026-07-23 08:19:40 transreid.train INFO: Epoch[48] Iter[60/227] Loss: 0.219, Pose: 0.465, Acc: 0.991, Student: 1.00, Reliability: 0.841, GateAbs: 8.598e-03, Base Lr: 5.24e-04
+2026-07-23 08:20:04 transreid.train INFO: Epoch[48] Iter[80/227] Loss: 0.216, Pose: 0.467, Acc: 0.992, Student: 1.00, Reliability: 0.841, GateAbs: 8.555e-03, Base Lr: 5.24e-04
+2026-07-23 08:20:28 transreid.train INFO: Epoch[48] Iter[100/227] Loss: 0.211, Pose: 0.467, Acc: 0.992, Student: 1.00, Reliability: 0.828, GateAbs: 8.564e-03, Base Lr: 5.24e-04
+2026-07-23 08:20:52 transreid.train INFO: Epoch[48] Iter[120/227] Loss: 0.210, Pose: 0.468, Acc: 0.992, Student: 1.00, Reliability: 0.839, GateAbs: 8.630e-03, Base Lr: 5.24e-04
+2026-07-23 08:21:16 transreid.train INFO: Epoch[48] Iter[140/227] Loss: 0.204, Pose: 0.467, Acc: 0.993, Student: 1.00, Reliability: 0.857, GateAbs: 8.653e-03, Base Lr: 5.24e-04
+2026-07-23 08:21:41 transreid.train INFO: Epoch[48] Iter[160/227] Loss: 0.199, Pose: 0.468, Acc: 0.993, Student: 1.00, Reliability: 0.850, GateAbs: 8.586e-03, Base Lr: 5.24e-04
+2026-07-23 08:22:05 transreid.train INFO: Epoch[48] Iter[180/227] Loss: 0.195, Pose: 0.468, Acc: 0.993, Student: 1.00, Reliability: 0.844, GateAbs: 8.643e-03, Base Lr: 5.24e-04
+2026-07-23 08:22:29 transreid.train INFO: Epoch[48] Iter[200/227] Loss: 0.189, Pose: 0.468, Acc: 0.993, Student: 1.00, Reliability: 0.823, GateAbs: 8.626e-03, Base Lr: 5.24e-04
+2026-07-23 08:22:42 transreid.train INFO: Epoch 48 done. Time per epoch: 255.288[s] Speed: 52.9[samples/s]
+2026-07-23 08:22:44 transreid.train INFO: PCMPSR epoch=49 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000003/25.827404/48.040726/0/2.3125/0.000000 controls=None
+2026-07-23 08:22:44 transreid.train INFO: PSCCR epoch=49 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000270/[0.000801, 7e-06, 3e-06]/[24.835209, 25.417755, 25.827404]/[47.862858, 48.020126, 48.040726]/[7.265625, 9.515625, 10.0] controls=None
+2026-07-23 08:23:07 transreid.train INFO: Epoch[49] Iter[20/227] Loss: 0.195, Pose: 0.467, Acc: 0.995, Student: 1.00, Reliability: 0.844, GateAbs: 8.639e-03, Base Lr: 5.14e-04
+2026-07-23 08:23:31 transreid.train INFO: Epoch[49] Iter[40/227] Loss: 0.194, Pose: 0.467, Acc: 0.994, Student: 1.00, Reliability: 0.838, GateAbs: 8.644e-03, Base Lr: 5.14e-04
+2026-07-23 08:23:55 transreid.train INFO: Epoch[49] Iter[60/227] Loss: 0.196, Pose: 0.465, Acc: 0.993, Student: 1.00, Reliability: 0.860, GateAbs: 8.638e-03, Base Lr: 5.14e-04
+2026-07-23 08:24:19 transreid.train INFO: Epoch[49] Iter[80/227] Loss: 0.198, Pose: 0.466, Acc: 0.993, Student: 1.00, Reliability: 0.857, GateAbs: 8.658e-03, Base Lr: 5.14e-04
+2026-07-23 08:24:44 transreid.train INFO: Epoch[49] Iter[100/227] Loss: 0.196, Pose: 0.466, Acc: 0.993, Student: 1.00, Reliability: 0.853, GateAbs: 8.676e-03, Base Lr: 5.14e-04
+2026-07-23 08:25:08 transreid.train INFO: Epoch[49] Iter[120/227] Loss: 0.194, Pose: 0.466, Acc: 0.992, Student: 1.00, Reliability: 0.858, GateAbs: 8.691e-03, Base Lr: 5.14e-04
+2026-07-23 08:25:32 transreid.train INFO: Epoch[49] Iter[140/227] Loss: 0.189, Pose: 0.465, Acc: 0.993, Student: 1.00, Reliability: 0.851, GateAbs: 8.651e-03, Base Lr: 5.14e-04
+2026-07-23 08:25:56 transreid.train INFO: Epoch[49] Iter[160/227] Loss: 0.184, Pose: 0.466, Acc: 0.993, Student: 1.00, Reliability: 0.832, GateAbs: 8.664e-03, Base Lr: 5.14e-04
+2026-07-23 08:26:21 transreid.train INFO: Epoch[49] Iter[180/227] Loss: 0.181, Pose: 0.467, Acc: 0.993, Student: 1.00, Reliability: 0.849, GateAbs: 8.676e-03, Base Lr: 5.14e-04
+2026-07-23 08:26:45 transreid.train INFO: Epoch[49] Iter[200/227] Loss: 0.177, Pose: 0.468, Acc: 0.993, Student: 1.00, Reliability: 0.843, GateAbs: 8.656e-03, Base Lr: 5.14e-04
+2026-07-23 08:26:59 transreid.train INFO: Epoch 49 done. Time per epoch: 256.978[s] Speed: 52.8[samples/s]
+2026-07-23 08:27:01 transreid.train INFO: PCMPSR epoch=50 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000232/26.770588/47.930592/0/2.1719/0.000000 controls=None
+2026-07-23 08:27:01 transreid.train INFO: PSCCR epoch=50 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.006340/[0.018418, 0.000369, 0.000232]/[27.65871, 26.775814, 26.770588]/[48.538033, 48.012497, 47.930592]/[6.765625, 9.203125, 10.0] controls=None
+2026-07-23 08:27:24 transreid.train INFO: Epoch[50] Iter[20/227] Loss: 0.223, Pose: 0.465, Acc: 0.988, Student: 1.00, Reliability: 0.854, GateAbs: 8.653e-03, Base Lr: 5.04e-04
+2026-07-23 08:27:48 transreid.train INFO: Epoch[50] Iter[40/227] Loss: 0.205, Pose: 0.463, Acc: 0.992, Student: 1.00, Reliability: 0.839, GateAbs: 8.688e-03, Base Lr: 5.04e-04
+2026-07-23 08:28:12 transreid.train INFO: Epoch[50] Iter[60/227] Loss: 0.197, Pose: 0.464, Acc: 0.992, Student: 1.00, Reliability: 0.852, GateAbs: 8.691e-03, Base Lr: 5.04e-04
+2026-07-23 08:28:36 transreid.train INFO: Epoch[50] Iter[80/227] Loss: 0.197, Pose: 0.464, Acc: 0.992, Student: 1.00, Reliability: 0.841, GateAbs: 8.666e-03, Base Lr: 5.04e-04
+2026-07-23 08:29:01 transreid.train INFO: Epoch[50] Iter[100/227] Loss: 0.195, Pose: 0.464, Acc: 0.991, Student: 1.00, Reliability: 0.855, GateAbs: 8.643e-03, Base Lr: 5.04e-04
+2026-07-23 08:29:25 transreid.train INFO: Epoch[50] Iter[120/227] Loss: 0.193, Pose: 0.465, Acc: 0.992, Student: 1.00, Reliability: 0.857, GateAbs: 8.720e-03, Base Lr: 5.04e-04
+2026-07-23 08:29:49 transreid.train INFO: Epoch[50] Iter[140/227] Loss: 0.190, Pose: 0.466, Acc: 0.992, Student: 1.00, Reliability: 0.833, GateAbs: 8.703e-03, Base Lr: 5.04e-04
+2026-07-23 08:30:13 transreid.train INFO: Epoch[50] Iter[160/227] Loss: 0.187, Pose: 0.465, Acc: 0.992, Student: 1.00, Reliability: 0.850, GateAbs: 8.694e-03, Base Lr: 5.04e-04
+2026-07-23 08:30:38 transreid.train INFO: Epoch[50] Iter[180/227] Loss: 0.183, Pose: 0.466, Acc: 0.992, Student: 1.00, Reliability: 0.836, GateAbs: 8.720e-03, Base Lr: 5.04e-04
+2026-07-23 08:31:02 transreid.train INFO: Epoch[50] Iter[200/227] Loss: 0.178, Pose: 0.467, Acc: 0.993, Student: 1.00, Reliability: 0.830, GateAbs: 8.710e-03, Base Lr: 5.04e-04
+2026-07-23 08:31:16 transreid.train INFO: Epoch 50 done. Time per epoch: 257.125[s] Speed: 52.8[samples/s]
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-23 08:31:38 transreid.train INFO: Validation Results - Epoch: 50
+2026-07-23 08:31:38 transreid.train INFO: mAP: 55.5%
+2026-07-23 08:31:38 transreid.train INFO: CMC curve, Rank-1  :67.0%
+2026-07-23 08:31:38 transreid.train INFO: CMC curve, Rank-5  :79.7%
+2026-07-23 08:31:38 transreid.train INFO: CMC curve, Rank-10 :84.0%
+2026-07-23 08:31:40 transreid.train INFO: PCMPSR epoch=51 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000003/23.243364/45.573982/0/2.3281/0.000000 controls=None
+2026-07-23 08:31:40 transreid.train INFO: PSCCR epoch=51 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000022/[5.8e-05, 4e-06, 3e-06]/[22.586937, 22.972811, 23.243364]/[45.345463, 45.601208, 45.573982]/[7.203125, 9.375, 10.0] controls=None
+2026-07-23 08:32:03 transreid.train INFO: Epoch[51] Iter[20/227] Loss: 0.173, Pose: 0.470, Acc: 0.998, Student: 1.00, Reliability: 0.846, GateAbs: 8.695e-03, Base Lr: 4.94e-04
+2026-07-23 08:32:27 transreid.train INFO: Epoch[51] Iter[40/227] Loss: 0.182, Pose: 0.467, Acc: 0.997, Student: 1.00, Reliability: 0.841, GateAbs: 8.717e-03, Base Lr: 4.94e-04
+2026-07-23 08:32:51 transreid.train INFO: Epoch[51] Iter[60/227] Loss: 0.182, Pose: 0.468, Acc: 0.996, Student: 1.00, Reliability: 0.854, GateAbs: 8.709e-03, Base Lr: 4.94e-04
+2026-07-23 08:33:16 transreid.train INFO: Epoch[51] Iter[80/227] Loss: 0.183, Pose: 0.466, Acc: 0.996, Student: 1.00, Reliability: 0.854, GateAbs: 8.723e-03, Base Lr: 4.94e-04
+2026-07-23 08:33:40 transreid.train INFO: Epoch[51] Iter[100/227] Loss: 0.180, Pose: 0.465, Acc: 0.995, Student: 1.00, Reliability: 0.849, GateAbs: 8.759e-03, Base Lr: 4.94e-04
+2026-07-23 08:34:04 transreid.train INFO: Epoch[51] Iter[120/227] Loss: 0.181, Pose: 0.465, Acc: 0.995, Student: 1.00, Reliability: 0.832, GateAbs: 8.706e-03, Base Lr: 4.94e-04
+2026-07-23 08:34:28 transreid.train INFO: Epoch[51] Iter[140/227] Loss: 0.179, Pose: 0.464, Acc: 0.995, Student: 1.00, Reliability: 0.852, GateAbs: 8.726e-03, Base Lr: 4.94e-04
+2026-07-23 08:34:52 transreid.train INFO: Epoch[51] Iter[160/227] Loss: 0.177, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.831, GateAbs: 8.775e-03, Base Lr: 4.94e-04
+2026-07-23 08:35:16 transreid.train INFO: Epoch[51] Iter[180/227] Loss: 0.174, Pose: 0.466, Acc: 0.994, Student: 1.00, Reliability: 0.847, GateAbs: 8.725e-03, Base Lr: 4.94e-04
+2026-07-23 08:35:40 transreid.train INFO: Epoch[51] Iter[200/227] Loss: 0.169, Pose: 0.467, Acc: 0.994, Student: 1.00, Reliability: 0.839, GateAbs: 8.793e-03, Base Lr: 4.94e-04
+2026-07-23 08:35:55 transreid.train INFO: Epoch 51 done. Time per epoch: 256.303[s] Speed: 52.9[samples/s]
+2026-07-23 08:35:56 transreid.train INFO: PCMPSR epoch=52 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000057/24.256090/46.587708/0/2.3125/0.000000 controls=None
+2026-07-23 08:35:56 transreid.train INFO: PSCCR epoch=52 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000444/[0.001127, 0.000148, 5.7e-05]/[24.035774, 23.880554, 24.25609]/[46.877583, 46.685688, 46.587708]/[6.734375, 9.25, 10.0] controls=None
+2026-07-23 08:36:19 transreid.train INFO: Epoch[52] Iter[20/227] Loss: 0.214, Pose: 0.466, Acc: 0.989, Student: 1.00, Reliability: 0.860, GateAbs: 8.773e-03, Base Lr: 4.84e-04
+2026-07-23 08:36:43 transreid.train INFO: Epoch[52] Iter[40/227] Loss: 0.199, Pose: 0.464, Acc: 0.993, Student: 1.00, Reliability: 0.856, GateAbs: 8.779e-03, Base Lr: 4.84e-04
+2026-07-23 08:37:07 transreid.train INFO: Epoch[52] Iter[60/227] Loss: 0.192, Pose: 0.465, Acc: 0.993, Student: 1.00, Reliability: 0.849, GateAbs: 8.763e-03, Base Lr: 4.84e-04
+2026-07-23 08:37:32 transreid.train INFO: Epoch[52] Iter[80/227] Loss: 0.186, Pose: 0.463, Acc: 0.993, Student: 1.00, Reliability: 0.834, GateAbs: 8.781e-03, Base Lr: 4.84e-04
+2026-07-23 08:37:56 transreid.train INFO: Epoch[52] Iter[100/227] Loss: 0.183, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.843, GateAbs: 8.711e-03, Base Lr: 4.84e-04
+2026-07-23 08:38:20 transreid.train INFO: Epoch[52] Iter[120/227] Loss: 0.180, Pose: 0.463, Acc: 0.994, Student: 1.00, Reliability: 0.855, GateAbs: 8.770e-03, Base Lr: 4.84e-04
+2026-07-23 08:38:44 transreid.train INFO: Epoch[52] Iter[140/227] Loss: 0.177, Pose: 0.464, Acc: 0.994, Student: 1.00, Reliability: 0.833, GateAbs: 8.711e-03, Base Lr: 4.84e-04
+2026-07-23 08:39:08 transreid.train INFO: Epoch[52] Iter[160/227] Loss: 0.173, Pose: 0.465, Acc: 0.995, Student: 1.00, Reliability: 0.852, GateAbs: 8.741e-03, Base Lr: 4.84e-04
+2026-07-23 08:39:32 transreid.train INFO: Epoch[52] Iter[180/227] Loss: 0.170, Pose: 0.465, Acc: 0.995, Student: 1.00, Reliability: 0.854, GateAbs: 8.780e-03, Base Lr: 4.84e-04
+2026-07-23 08:39:57 transreid.train INFO: Epoch[52] Iter[200/227] Loss: 0.168, Pose: 0.466, Acc: 0.994, Student: 1.00, Reliability: 0.833, GateAbs: 8.771e-03, Base Lr: 4.84e-04
+2026-07-23 08:40:11 transreid.train INFO: Epoch 52 done. Time per epoch: 256.314[s] Speed: 52.9[samples/s]
+2026-07-23 08:40:13 transreid.train INFO: PCMPSR epoch=53 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000001/24.073517/48.004723/0/2.2188/0.000000 controls=None
+2026-07-23 08:40:13 transreid.train INFO: PSCCR epoch=53 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000167/[0.000496, 3e-06, 1e-06]/[24.19273, 24.469723, 24.073517]/[48.148037, 47.891861, 48.004723]/[6.796875, 9.46875, 10.0] controls=None
+2026-07-23 08:40:36 transreid.train INFO: Epoch[53] Iter[20/227] Loss: 0.185, Pose: 0.466, Acc: 0.993, Student: 1.00, Reliability: 0.858, GateAbs: 8.796e-03, Base Lr: 4.74e-04
+2026-07-23 08:41:00 transreid.train INFO: Epoch[53] Iter[40/227] Loss: 0.187, Pose: 0.468, Acc: 0.995, Student: 1.00, Reliability: 0.834, GateAbs: 8.766e-03, Base Lr: 4.74e-04
+2026-07-23 08:41:24 transreid.train INFO: Epoch[53] Iter[60/227] Loss: 0.190, Pose: 0.467, Acc: 0.995, Student: 1.00, Reliability: 0.845, GateAbs: 8.813e-03, Base Lr: 4.74e-04
+2026-07-23 08:41:48 transreid.train INFO: Epoch[53] Iter[80/227] Loss: 0.186, Pose: 0.465, Acc: 0.995, Student: 1.00, Reliability: 0.850, GateAbs: 8.796e-03, Base Lr: 4.74e-04
+2026-07-23 08:42:12 transreid.train INFO: Epoch[53] Iter[100/227] Loss: 0.182, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.838, GateAbs: 8.792e-03, Base Lr: 4.74e-04
+2026-07-23 08:42:36 transreid.train INFO: Epoch[53] Iter[120/227] Loss: 0.179, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.835, GateAbs: 8.779e-03, Base Lr: 4.74e-04
+2026-07-23 08:43:01 transreid.train INFO: Epoch[53] Iter[140/227] Loss: 0.177, Pose: 0.466, Acc: 0.994, Student: 1.00, Reliability: 0.851, GateAbs: 8.818e-03, Base Lr: 4.74e-04
+2026-07-23 08:43:25 transreid.train INFO: Epoch[53] Iter[160/227] Loss: 0.176, Pose: 0.466, Acc: 0.994, Student: 1.00, Reliability: 0.850, GateAbs: 8.836e-03, Base Lr: 4.74e-04
+2026-07-23 08:43:49 transreid.train INFO: Epoch[53] Iter[180/227] Loss: 0.174, Pose: 0.466, Acc: 0.994, Student: 1.00, Reliability: 0.836, GateAbs: 8.815e-03, Base Lr: 4.74e-04
+2026-07-23 08:44:13 transreid.train INFO: Epoch[53] Iter[200/227] Loss: 0.170, Pose: 0.467, Acc: 0.994, Student: 1.00, Reliability: 0.828, GateAbs: 8.828e-03, Base Lr: 4.74e-04
+2026-07-23 08:44:28 transreid.train INFO: Epoch 53 done. Time per epoch: 256.476[s] Speed: 52.9[samples/s]
+2026-07-23 08:44:29 transreid.train INFO: PCMPSR epoch=54 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000002/24.707151/47.854038/0/2.1406/0.000000 controls=None
+2026-07-23 08:44:29 transreid.train INFO: PSCCR epoch=54 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000211/[0.000627, 4e-06, 2e-06]/[25.245811, 25.047655, 24.707151]/[47.834206, 47.765121, 47.854038]/[6.875, 9.484375, 10.0] controls=None
+2026-07-23 08:44:52 transreid.train INFO: Epoch[54] Iter[20/227] Loss: 0.231, Pose: 0.461, Acc: 0.989, Student: 1.00, Reliability: 0.836, GateAbs: 8.831e-03, Base Lr: 4.63e-04
+2026-07-23 08:45:16 transreid.train INFO: Epoch[54] Iter[40/227] Loss: 0.208, Pose: 0.464, Acc: 0.992, Student: 1.00, Reliability: 0.847, GateAbs: 8.788e-03, Base Lr: 4.63e-04
+2026-07-23 08:45:40 transreid.train INFO: Epoch[54] Iter[60/227] Loss: 0.195, Pose: 0.463, Acc: 0.993, Student: 1.00, Reliability: 0.843, GateAbs: 8.819e-03, Base Lr: 4.63e-04
+2026-07-23 08:46:04 transreid.train INFO: Epoch[54] Iter[80/227] Loss: 0.188, Pose: 0.464, Acc: 0.993, Student: 1.00, Reliability: 0.847, GateAbs: 8.838e-03, Base Lr: 4.63e-04
+2026-07-23 08:46:28 transreid.train INFO: Epoch[54] Iter[100/227] Loss: 0.185, Pose: 0.465, Acc: 0.993, Student: 1.00, Reliability: 0.821, GateAbs: 8.818e-03, Base Lr: 4.63e-04
+2026-07-23 08:46:53 transreid.train INFO: Epoch[54] Iter[120/227] Loss: 0.180, Pose: 0.466, Acc: 0.993, Student: 1.00, Reliability: 0.855, GateAbs: 8.893e-03, Base Lr: 4.63e-04
+2026-07-23 08:47:17 transreid.train INFO: Epoch[54] Iter[140/227] Loss: 0.178, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.838, GateAbs: 8.849e-03, Base Lr: 4.63e-04
+2026-07-23 08:47:41 transreid.train INFO: Epoch[54] Iter[160/227] Loss: 0.173, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.858, GateAbs: 8.851e-03, Base Lr: 4.63e-04
+2026-07-23 08:48:05 transreid.train INFO: Epoch[54] Iter[180/227] Loss: 0.170, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.841, GateAbs: 8.858e-03, Base Lr: 4.63e-04
+2026-07-23 08:48:29 transreid.train INFO: Epoch[54] Iter[200/227] Loss: 0.166, Pose: 0.466, Acc: 0.994, Student: 1.00, Reliability: 0.835, GateAbs: 8.857e-03, Base Lr: 4.63e-04
+2026-07-23 08:48:42 transreid.train INFO: Epoch 54 done. Time per epoch: 254.689[s] Speed: 53.0[samples/s]
+2026-07-23 08:48:44 transreid.train INFO: PCMPSR epoch=55 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000003/23.087664/48.711056/0/2.4844/0.000000 controls=None
+2026-07-23 08:48:44 transreid.train INFO: PSCCR epoch=55 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000002/[2e-06, 3e-06, 3e-06]/[22.746284, 22.960569, 23.087664]/[48.835827, 48.664978, 48.711056]/[7.0625, 9.40625, 10.0] controls=None
+2026-07-23 08:49:07 transreid.train INFO: Epoch[55] Iter[20/227] Loss: 0.184, Pose: 0.467, Acc: 0.993, Student: 1.00, Reliability: 0.856, GateAbs: 8.888e-03, Base Lr: 4.53e-04
+2026-07-23 08:49:31 transreid.train INFO: Epoch[55] Iter[40/227] Loss: 0.177, Pose: 0.463, Acc: 0.994, Student: 1.00, Reliability: 0.844, GateAbs: 8.914e-03, Base Lr: 4.53e-04
+2026-07-23 08:49:55 transreid.train INFO: Epoch[55] Iter[60/227] Loss: 0.174, Pose: 0.466, Acc: 0.994, Student: 1.00, Reliability: 0.853, GateAbs: 8.915e-03, Base Lr: 4.53e-04
+2026-07-23 08:50:19 transreid.train INFO: Epoch[55] Iter[80/227] Loss: 0.174, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.843, GateAbs: 8.933e-03, Base Lr: 4.53e-04
+2026-07-23 08:50:43 transreid.train INFO: Epoch[55] Iter[100/227] Loss: 0.171, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.850, GateAbs: 8.875e-03, Base Lr: 4.53e-04
+2026-07-23 08:51:07 transreid.train INFO: Epoch[55] Iter[120/227] Loss: 0.168, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.847, GateAbs: 8.849e-03, Base Lr: 4.53e-04
+2026-07-23 08:51:31 transreid.train INFO: Epoch[55] Iter[140/227] Loss: 0.164, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.836, GateAbs: 8.887e-03, Base Lr: 4.53e-04
+2026-07-23 08:51:55 transreid.train INFO: Epoch[55] Iter[160/227] Loss: 0.162, Pose: 0.466, Acc: 0.995, Student: 1.00, Reliability: 0.839, GateAbs: 8.904e-03, Base Lr: 4.53e-04
+2026-07-23 08:52:19 transreid.train INFO: Epoch[55] Iter[180/227] Loss: 0.159, Pose: 0.466, Acc: 0.995, Student: 1.00, Reliability: 0.840, GateAbs: 8.906e-03, Base Lr: 4.53e-04
+2026-07-23 08:52:44 transreid.train INFO: Epoch[55] Iter[200/227] Loss: 0.155, Pose: 0.466, Acc: 0.995, Student: 1.00, Reliability: 0.829, GateAbs: 8.913e-03, Base Lr: 4.53e-04
+2026-07-23 08:52:58 transreid.train INFO: Epoch 55 done. Time per epoch: 255.757[s] Speed: 53.1[samples/s]
+2026-07-23 08:52:59 transreid.train INFO: PCMPSR epoch=56 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000011/23.719913/46.863804/0/2.4219/0.000000 controls=None
+2026-07-23 08:52:59 transreid.train INFO: PSCCR epoch=56 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.001602/[0.004784, 1e-05, 1.1e-05]/[23.674881, 23.864647, 23.719913]/[46.940735, 46.855515, 46.863804]/[6.90625, 9.40625, 10.0] controls=None
+2026-07-23 08:53:22 transreid.train INFO: Epoch[56] Iter[20/227] Loss: 0.173, Pose: 0.463, Acc: 0.995, Student: 1.00, Reliability: 0.854, GateAbs: 8.882e-03, Base Lr: 4.43e-04
+2026-07-23 08:53:46 transreid.train INFO: Epoch[56] Iter[40/227] Loss: 0.170, Pose: 0.464, Acc: 0.995, Student: 1.00, Reliability: 0.843, GateAbs: 8.931e-03, Base Lr: 4.43e-04
+2026-07-23 08:54:11 transreid.train INFO: Epoch[56] Iter[60/227] Loss: 0.174, Pose: 0.465, Acc: 0.993, Student: 1.00, Reliability: 0.844, GateAbs: 8.965e-03, Base Lr: 4.43e-04
+2026-07-23 08:54:35 transreid.train INFO: Epoch[56] Iter[80/227] Loss: 0.172, Pose: 0.466, Acc: 0.993, Student: 1.00, Reliability: 0.827, GateAbs: 8.860e-03, Base Lr: 4.43e-04
+2026-07-23 08:54:59 transreid.train INFO: Epoch[56] Iter[100/227] Loss: 0.171, Pose: 0.467, Acc: 0.993, Student: 1.00, Reliability: 0.840, GateAbs: 8.904e-03, Base Lr: 4.43e-04
+2026-07-23 08:55:23 transreid.train INFO: Epoch[56] Iter[120/227] Loss: 0.168, Pose: 0.467, Acc: 0.993, Student: 1.00, Reliability: 0.850, GateAbs: 8.943e-03, Base Lr: 4.43e-04
+2026-07-23 08:55:47 transreid.train INFO: Epoch[56] Iter[140/227] Loss: 0.164, Pose: 0.466, Acc: 0.993, Student: 1.00, Reliability: 0.838, GateAbs: 8.903e-03, Base Lr: 4.43e-04
+2026-07-23 08:56:11 transreid.train INFO: Epoch[56] Iter[160/227] Loss: 0.161, Pose: 0.466, Acc: 0.994, Student: 1.00, Reliability: 0.845, GateAbs: 8.915e-03, Base Lr: 4.43e-04
+2026-07-23 08:56:35 transreid.train INFO: Epoch[56] Iter[180/227] Loss: 0.156, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.853, GateAbs: 8.903e-03, Base Lr: 4.43e-04
+2026-07-23 08:56:59 transreid.train INFO: Epoch[56] Iter[200/227] Loss: 0.152, Pose: 0.466, Acc: 0.995, Student: 1.00, Reliability: 0.832, GateAbs: 8.938e-03, Base Lr: 4.43e-04
+2026-07-23 08:57:13 transreid.train INFO: Epoch 56 done. Time per epoch: 254.483[s] Speed: 53.1[samples/s]
+2026-07-23 08:57:14 transreid.train INFO: PCMPSR epoch=57 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000000/22.235682/46.108727/0/2.4062/0.000000 controls=None
+2026-07-23 08:57:14 transreid.train INFO: PSCCR epoch=57 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000018/[5e-05, 3e-06, 0.0]/[21.604126, 22.078262, 22.235682]/[46.240936, 46.148212, 46.108727]/[6.734375, 9.40625, 10.0] controls=None
+2026-07-23 08:57:37 transreid.train INFO: Epoch[57] Iter[20/227] Loss: 0.182, Pose: 0.466, Acc: 0.993, Student: 1.00, Reliability: 0.855, GateAbs: 8.942e-03, Base Lr: 4.32e-04
+2026-07-23 08:58:01 transreid.train INFO: Epoch[57] Iter[40/227] Loss: 0.174, Pose: 0.468, Acc: 0.994, Student: 1.00, Reliability: 0.851, GateAbs: 8.970e-03, Base Lr: 4.32e-04
+2026-07-23 08:58:25 transreid.train INFO: Epoch[57] Iter[60/227] Loss: 0.170, Pose: 0.466, Acc: 0.994, Student: 1.00, Reliability: 0.867, GateAbs: 8.944e-03, Base Lr: 4.32e-04
+2026-07-23 08:58:49 transreid.train INFO: Epoch[57] Iter[80/227] Loss: 0.164, Pose: 0.465, Acc: 0.995, Student: 1.00, Reliability: 0.844, GateAbs: 8.949e-03, Base Lr: 4.32e-04
+2026-07-23 08:59:14 transreid.train INFO: Epoch[57] Iter[100/227] Loss: 0.163, Pose: 0.464, Acc: 0.994, Student: 1.00, Reliability: 0.846, GateAbs: 8.922e-03, Base Lr: 4.32e-04
+2026-07-23 08:59:38 transreid.train INFO: Epoch[57] Iter[120/227] Loss: 0.161, Pose: 0.464, Acc: 0.994, Student: 1.00, Reliability: 0.848, GateAbs: 8.926e-03, Base Lr: 4.32e-04
+2026-07-23 09:00:02 transreid.train INFO: Epoch[57] Iter[140/227] Loss: 0.158, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.853, GateAbs: 8.955e-03, Base Lr: 4.32e-04
+2026-07-23 09:00:26 transreid.train INFO: Epoch[57] Iter[160/227] Loss: 0.156, Pose: 0.465, Acc: 0.995, Student: 1.00, Reliability: 0.845, GateAbs: 8.945e-03, Base Lr: 4.32e-04
+2026-07-23 09:00:50 transreid.train INFO: Epoch[57] Iter[180/227] Loss: 0.153, Pose: 0.464, Acc: 0.995, Student: 1.00, Reliability: 0.852, GateAbs: 8.988e-03, Base Lr: 4.32e-04
+2026-07-23 09:01:15 transreid.train INFO: Epoch[57] Iter[200/227] Loss: 0.149, Pose: 0.465, Acc: 0.995, Student: 1.00, Reliability: 0.835, GateAbs: 8.969e-03, Base Lr: 4.32e-04
+2026-07-23 09:01:30 transreid.train INFO: Epoch 57 done. Time per epoch: 257.709[s] Speed: 52.9[samples/s]
+2026-07-23 09:01:32 transreid.train INFO: PCMPSR epoch=58 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000051/27.291935/48.328770/0/2.3906/0.000000 controls=None
+2026-07-23 09:01:32 transreid.train INFO: PSCCR epoch=58 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.010220/[0.029474, 0.001134, 5.1e-05]/[27.227882, 27.457127, 27.291935]/[48.041157, 48.289967, 48.32877]/[6.84375, 9.359375, 10.0] controls=None
+2026-07-23 09:01:55 transreid.train INFO: Epoch[58] Iter[20/227] Loss: 0.172, Pose: 0.468, Acc: 0.994, Student: 1.00, Reliability: 0.847, GateAbs: 8.974e-03, Base Lr: 4.22e-04
+2026-07-23 09:02:19 transreid.train INFO: Epoch[58] Iter[40/227] Loss: 0.173, Pose: 0.468, Acc: 0.995, Student: 1.00, Reliability: 0.862, GateAbs: 8.944e-03, Base Lr: 4.22e-04
+2026-07-23 09:02:43 transreid.train INFO: Epoch[58] Iter[60/227] Loss: 0.165, Pose: 0.469, Acc: 0.995, Student: 1.00, Reliability: 0.835, GateAbs: 9.007e-03, Base Lr: 4.22e-04
+2026-07-23 09:03:07 transreid.train INFO: Epoch[58] Iter[80/227] Loss: 0.164, Pose: 0.468, Acc: 0.995, Student: 1.00, Reliability: 0.848, GateAbs: 8.940e-03, Base Lr: 4.22e-04
+2026-07-23 09:03:31 transreid.train INFO: Epoch[58] Iter[100/227] Loss: 0.161, Pose: 0.467, Acc: 0.995, Student: 1.00, Reliability: 0.843, GateAbs: 8.910e-03, Base Lr: 4.22e-04
+2026-07-23 09:03:55 transreid.train INFO: Epoch[58] Iter[120/227] Loss: 0.160, Pose: 0.466, Acc: 0.995, Student: 1.00, Reliability: 0.844, GateAbs: 9.019e-03, Base Lr: 4.22e-04
+2026-07-23 09:04:19 transreid.train INFO: Epoch[58] Iter[140/227] Loss: 0.160, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.860, GateAbs: 8.973e-03, Base Lr: 4.22e-04
+2026-07-23 09:04:44 transreid.train INFO: Epoch[58] Iter[160/227] Loss: 0.157, Pose: 0.466, Acc: 0.995, Student: 1.00, Reliability: 0.827, GateAbs: 8.995e-03, Base Lr: 4.22e-04
+2026-07-23 09:05:08 transreid.train INFO: Epoch[58] Iter[180/227] Loss: 0.153, Pose: 0.465, Acc: 0.995, Student: 1.00, Reliability: 0.851, GateAbs: 8.979e-03, Base Lr: 4.22e-04
+2026-07-23 09:05:32 transreid.train INFO: Epoch[58] Iter[200/227] Loss: 0.149, Pose: 0.465, Acc: 0.995, Student: 1.00, Reliability: 0.844, GateAbs: 9.028e-03, Base Lr: 4.22e-04
+2026-07-23 09:05:48 transreid.train INFO: Epoch 58 done. Time per epoch: 257.333[s] Speed: 53.0[samples/s]
+2026-07-23 09:05:49 transreid.train INFO: PCMPSR epoch=59 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000000/22.962719/48.353485/0/2.3750/0.000000 controls=None
+2026-07-23 09:05:49 transreid.train INFO: PSCCR epoch=59 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000007/[1.8e-05, 1e-06, 0.0]/[22.765589, 23.122368, 22.962719]/[48.363766, 48.364658, 48.353485]/[6.859375, 9.328125, 10.0] controls=None
+2026-07-23 09:06:12 transreid.train INFO: Epoch[59] Iter[20/227] Loss: 0.169, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.854, GateAbs: 8.977e-03, Base Lr: 4.11e-04
+2026-07-23 09:06:36 transreid.train INFO: Epoch[59] Iter[40/227] Loss: 0.172, Pose: 0.460, Acc: 0.993, Student: 1.00, Reliability: 0.853, GateAbs: 8.986e-03, Base Lr: 4.11e-04
+2026-07-23 09:07:00 transreid.train INFO: Epoch[59] Iter[60/227] Loss: 0.169, Pose: 0.461, Acc: 0.993, Student: 1.00, Reliability: 0.851, GateAbs: 8.969e-03, Base Lr: 4.11e-04
+2026-07-23 09:07:24 transreid.train INFO: Epoch[59] Iter[80/227] Loss: 0.165, Pose: 0.462, Acc: 0.994, Student: 1.00, Reliability: 0.865, GateAbs: 8.955e-03, Base Lr: 4.11e-04
+2026-07-23 09:07:48 transreid.train INFO: Epoch[59] Iter[100/227] Loss: 0.163, Pose: 0.462, Acc: 0.993, Student: 1.00, Reliability: 0.841, GateAbs: 8.987e-03, Base Lr: 4.11e-04
+2026-07-23 09:08:13 transreid.train INFO: Epoch[59] Iter[120/227] Loss: 0.164, Pose: 0.462, Acc: 0.993, Student: 1.00, Reliability: 0.849, GateAbs: 9.017e-03, Base Lr: 4.11e-04
+2026-07-23 09:08:37 transreid.train INFO: Epoch[59] Iter[140/227] Loss: 0.161, Pose: 0.462, Acc: 0.993, Student: 1.00, Reliability: 0.845, GateAbs: 9.022e-03, Base Lr: 4.11e-04
+2026-07-23 09:09:01 transreid.train INFO: Epoch[59] Iter[160/227] Loss: 0.160, Pose: 0.463, Acc: 0.993, Student: 1.00, Reliability: 0.854, GateAbs: 9.004e-03, Base Lr: 4.11e-04
+2026-07-23 09:09:25 transreid.train INFO: Epoch[59] Iter[180/227] Loss: 0.157, Pose: 0.463, Acc: 0.994, Student: 1.00, Reliability: 0.855, GateAbs: 9.033e-03, Base Lr: 4.11e-04
+2026-07-23 09:09:49 transreid.train INFO: Epoch[59] Iter[200/227] Loss: 0.154, Pose: 0.464, Acc: 0.994, Student: 1.00, Reliability: 0.844, GateAbs: 9.014e-03, Base Lr: 4.11e-04
+2026-07-23 09:10:03 transreid.train INFO: Epoch 59 done. Time per epoch: 254.999[s] Speed: 53.0[samples/s]
+2026-07-23 09:10:04 transreid.train INFO: PCMPSR epoch=60 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000026/22.529024/47.866581/0/2.3125/0.000000 controls=None
+2026-07-23 09:10:04 transreid.train INFO: PSCCR epoch=60 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000031/[1.3e-05, 5.5e-05, 2.6e-05]/[20.874695, 21.631058, 22.529024]/[47.540066, 47.607334, 47.866581]/[7.296875, 9.5, 10.0] controls=None
+2026-07-23 09:10:27 transreid.train INFO: Epoch[60] Iter[20/227] Loss: 0.161, Pose: 0.461, Acc: 0.997, Student: 1.00, Reliability: 0.865, GateAbs: 9.023e-03, Base Lr: 4.01e-04
+2026-07-23 09:10:51 transreid.train INFO: Epoch[60] Iter[40/227] Loss: 0.166, Pose: 0.464, Acc: 0.995, Student: 1.00, Reliability: 0.857, GateAbs: 8.965e-03, Base Lr: 4.01e-04
+2026-07-23 09:11:15 transreid.train INFO: Epoch[60] Iter[60/227] Loss: 0.163, Pose: 0.462, Acc: 0.995, Student: 1.00, Reliability: 0.846, GateAbs: 8.986e-03, Base Lr: 4.01e-04
+2026-07-23 09:11:40 transreid.train INFO: Epoch[60] Iter[80/227] Loss: 0.161, Pose: 0.464, Acc: 0.994, Student: 1.00, Reliability: 0.846, GateAbs: 8.995e-03, Base Lr: 4.01e-04
+2026-07-23 09:12:04 transreid.train INFO: Epoch[60] Iter[100/227] Loss: 0.160, Pose: 0.464, Acc: 0.994, Student: 1.00, Reliability: 0.823, GateAbs: 9.024e-03, Base Lr: 4.01e-04
+2026-07-23 09:12:28 transreid.train INFO: Epoch[60] Iter[120/227] Loss: 0.159, Pose: 0.465, Acc: 0.995, Student: 1.00, Reliability: 0.827, GateAbs: 9.023e-03, Base Lr: 4.01e-04
+2026-07-23 09:12:52 transreid.train INFO: Epoch[60] Iter[140/227] Loss: 0.155, Pose: 0.465, Acc: 0.995, Student: 1.00, Reliability: 0.819, GateAbs: 9.025e-03, Base Lr: 4.01e-04
+2026-07-23 09:13:16 transreid.train INFO: Epoch[60] Iter[160/227] Loss: 0.151, Pose: 0.466, Acc: 0.995, Student: 1.00, Reliability: 0.841, GateAbs: 9.047e-03, Base Lr: 4.01e-04
+2026-07-23 09:13:41 transreid.train INFO: Epoch[60] Iter[180/227] Loss: 0.149, Pose: 0.466, Acc: 0.995, Student: 1.00, Reliability: 0.863, GateAbs: 9.013e-03, Base Lr: 4.01e-04
+2026-07-23 09:14:05 transreid.train INFO: Epoch[60] Iter[200/227] Loss: 0.144, Pose: 0.466, Acc: 0.995, Student: 1.00, Reliability: 0.847, GateAbs: 9.102e-03, Base Lr: 4.01e-04
+2026-07-23 09:14:19 transreid.train INFO: Epoch 60 done. Time per epoch: 256.847[s] Speed: 52.8[samples/s]
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-23 09:14:41 transreid.train INFO: Validation Results - Epoch: 60
+2026-07-23 09:14:41 transreid.train INFO: mAP: 57.1%
+2026-07-23 09:14:41 transreid.train INFO: CMC curve, Rank-1  :69.1%
+2026-07-23 09:14:41 transreid.train INFO: CMC curve, Rank-5  :81.2%
+2026-07-23 09:14:41 transreid.train INFO: CMC curve, Rank-10 :84.8%
+2026-07-23 09:14:43 transreid.train INFO: PCMPSR epoch=61 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000036/23.693691/47.551479/0/2.3438/0.000000 controls=None
+2026-07-23 09:14:43 transreid.train INFO: PSCCR epoch=61 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000111/[0.000273, 2.2e-05, 3.6e-05]/[24.171741, 24.006559, 23.693691]/[48.042572, 47.865032, 47.551479]/[7.234375, 9.40625, 10.0] controls=None
+2026-07-23 09:15:06 transreid.train INFO: Epoch[61] Iter[20/227] Loss: 0.163, Pose: 0.459, Acc: 0.994, Student: 1.00, Reliability: 0.841, GateAbs: 9.102e-03, Base Lr: 3.90e-04
+2026-07-23 09:15:30 transreid.train INFO: Epoch[61] Iter[40/227] Loss: 0.156, Pose: 0.460, Acc: 0.994, Student: 1.00, Reliability: 0.819, GateAbs: 9.016e-03, Base Lr: 3.90e-04
+2026-07-23 09:15:54 transreid.train INFO: Epoch[61] Iter[60/227] Loss: 0.152, Pose: 0.461, Acc: 0.995, Student: 1.00, Reliability: 0.862, GateAbs: 9.046e-03, Base Lr: 3.90e-04
+2026-07-23 09:16:19 transreid.train INFO: Epoch[61] Iter[80/227] Loss: 0.148, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.836, GateAbs: 9.041e-03, Base Lr: 3.90e-04
+2026-07-23 09:16:43 transreid.train INFO: Epoch[61] Iter[100/227] Loss: 0.150, Pose: 0.462, Acc: 0.995, Student: 1.00, Reliability: 0.827, GateAbs: 9.038e-03, Base Lr: 3.90e-04
+2026-07-23 09:17:07 transreid.train INFO: Epoch[61] Iter[120/227] Loss: 0.150, Pose: 0.463, Acc: 0.995, Student: 1.00, Reliability: 0.854, GateAbs: 9.075e-03, Base Lr: 3.90e-04
+2026-07-23 09:17:31 transreid.train INFO: Epoch[61] Iter[140/227] Loss: 0.148, Pose: 0.463, Acc: 0.995, Student: 1.00, Reliability: 0.836, GateAbs: 9.056e-03, Base Lr: 3.90e-04
+2026-07-23 09:17:55 transreid.train INFO: Epoch[61] Iter[160/227] Loss: 0.146, Pose: 0.463, Acc: 0.995, Student: 1.00, Reliability: 0.852, GateAbs: 9.049e-03, Base Lr: 3.90e-04
+2026-07-23 09:18:19 transreid.train INFO: Epoch[61] Iter[180/227] Loss: 0.143, Pose: 0.464, Acc: 0.996, Student: 1.00, Reliability: 0.801, GateAbs: 9.024e-03, Base Lr: 3.90e-04
+2026-07-23 09:18:43 transreid.train INFO: Epoch[61] Iter[200/227] Loss: 0.141, Pose: 0.464, Acc: 0.995, Student: 1.00, Reliability: 0.859, GateAbs: 9.038e-03, Base Lr: 3.90e-04
+2026-07-23 09:18:57 transreid.train INFO: Epoch 61 done. Time per epoch: 255.195[s] Speed: 52.9[samples/s]
+2026-07-23 09:18:58 transreid.train INFO: PCMPSR epoch=62 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000000/24.345497/48.359711/0/2.2656/0.000000 controls=None
+2026-07-23 09:18:58 transreid.train INFO: PSCCR epoch=62 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000000/[0.0, 1e-06, 0.0]/[23.581888, 24.407452, 24.345497]/[48.123943, 48.321095, 48.359711]/[6.84375, 9.359375, 10.0] controls=None
+2026-07-23 09:19:21 transreid.train INFO: Epoch[62] Iter[20/227] Loss: 0.149, Pose: 0.468, Acc: 0.998, Student: 1.00, Reliability: 0.812, GateAbs: 9.123e-03, Base Lr: 3.80e-04
+2026-07-23 09:19:45 transreid.train INFO: Epoch[62] Iter[40/227] Loss: 0.152, Pose: 0.465, Acc: 0.998, Student: 1.00, Reliability: 0.804, GateAbs: 9.042e-03, Base Lr: 3.80e-04
+2026-07-23 09:20:10 transreid.train INFO: Epoch[62] Iter[60/227] Loss: 0.153, Pose: 0.465, Acc: 0.997, Student: 1.00, Reliability: 0.839, GateAbs: 9.033e-03, Base Lr: 3.80e-04
+2026-07-23 09:20:34 transreid.train INFO: Epoch[62] Iter[80/227] Loss: 0.151, Pose: 0.465, Acc: 0.997, Student: 1.00, Reliability: 0.833, GateAbs: 9.071e-03, Base Lr: 3.80e-04
+2026-07-23 09:20:58 transreid.train INFO: Epoch[62] Iter[100/227] Loss: 0.149, Pose: 0.465, Acc: 0.996, Student: 1.00, Reliability: 0.845, GateAbs: 8.995e-03, Base Lr: 3.80e-04
+2026-07-23 09:21:22 transreid.train INFO: Epoch[62] Iter[120/227] Loss: 0.148, Pose: 0.466, Acc: 0.996, Student: 1.00, Reliability: 0.849, GateAbs: 9.067e-03, Base Lr: 3.80e-04
+2026-07-23 09:21:46 transreid.train INFO: Epoch[62] Iter[140/227] Loss: 0.146, Pose: 0.465, Acc: 0.996, Student: 1.00, Reliability: 0.849, GateAbs: 9.100e-03, Base Lr: 3.80e-04
+2026-07-23 09:22:10 transreid.train INFO: Epoch[62] Iter[160/227] Loss: 0.144, Pose: 0.465, Acc: 0.996, Student: 1.00, Reliability: 0.844, GateAbs: 9.056e-03, Base Lr: 3.80e-04
+2026-07-23 09:22:34 transreid.train INFO: Epoch[62] Iter[180/227] Loss: 0.142, Pose: 0.465, Acc: 0.996, Student: 1.00, Reliability: 0.833, GateAbs: 9.027e-03, Base Lr: 3.80e-04
+2026-07-23 09:22:58 transreid.train INFO: Epoch[62] Iter[200/227] Loss: 0.140, Pose: 0.465, Acc: 0.996, Student: 1.00, Reliability: 0.842, GateAbs: 9.086e-03, Base Lr: 3.80e-04
+2026-07-23 09:23:13 transreid.train INFO: Epoch 62 done. Time per epoch: 256.140[s] Speed: 53.0[samples/s]
+2026-07-23 09:23:14 transreid.train INFO: PCMPSR epoch=63 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000145/23.322166/46.050011/0/2.3594/0.000000 controls=None
+2026-07-23 09:23:14 transreid.train INFO: PSCCR epoch=63 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.004268/[0.012304, 0.000356, 0.000145]/[23.304411, 23.699715, 23.322166]/[45.909405, 46.030861, 46.050011]/[6.96875, 9.359375, 10.0] controls=None
+2026-07-23 09:23:37 transreid.train INFO: Epoch[63] Iter[20/227] Loss: 0.159, Pose: 0.464, Acc: 0.995, Student: 1.00, Reliability: 0.845, GateAbs: 9.097e-03, Base Lr: 3.69e-04
+2026-07-23 09:24:01 transreid.train INFO: Epoch[63] Iter[40/227] Loss: 0.158, Pose: 0.460, Acc: 0.995, Student: 1.00, Reliability: 0.846, GateAbs: 9.123e-03, Base Lr: 3.69e-04
+2026-07-23 09:24:26 transreid.train INFO: Epoch[63] Iter[60/227] Loss: 0.148, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.852, GateAbs: 9.108e-03, Base Lr: 3.69e-04
+2026-07-23 09:24:50 transreid.train INFO: Epoch[63] Iter[80/227] Loss: 0.151, Pose: 0.462, Acc: 0.995, Student: 1.00, Reliability: 0.843, GateAbs: 9.090e-03, Base Lr: 3.69e-04
+2026-07-23 09:25:14 transreid.train INFO: Epoch[63] Iter[100/227] Loss: 0.149, Pose: 0.462, Acc: 0.995, Student: 1.00, Reliability: 0.858, GateAbs: 9.114e-03, Base Lr: 3.69e-04
+2026-07-23 09:25:38 transreid.train INFO: Epoch[63] Iter[120/227] Loss: 0.149, Pose: 0.462, Acc: 0.995, Student: 1.00, Reliability: 0.839, GateAbs: 9.133e-03, Base Lr: 3.69e-04
+2026-07-23 09:26:02 transreid.train INFO: Epoch[63] Iter[140/227] Loss: 0.146, Pose: 0.463, Acc: 0.995, Student: 1.00, Reliability: 0.846, GateAbs: 9.064e-03, Base Lr: 3.69e-04
+2026-07-23 09:26:26 transreid.train INFO: Epoch[63] Iter[160/227] Loss: 0.145, Pose: 0.463, Acc: 0.995, Student: 1.00, Reliability: 0.834, GateAbs: 9.074e-03, Base Lr: 3.69e-04
+2026-07-23 09:26:50 transreid.train INFO: Epoch[63] Iter[180/227] Loss: 0.142, Pose: 0.463, Acc: 0.995, Student: 1.00, Reliability: 0.854, GateAbs: 9.104e-03, Base Lr: 3.69e-04
+2026-07-23 09:27:15 transreid.train INFO: Epoch[63] Iter[200/227] Loss: 0.140, Pose: 0.465, Acc: 0.995, Student: 1.00, Reliability: 0.834, GateAbs: 9.128e-03, Base Lr: 3.69e-04
+2026-07-23 09:27:28 transreid.train INFO: Epoch 63 done. Time per epoch: 254.926[s] Speed: 53.0[samples/s]
+2026-07-23 09:27:29 transreid.train INFO: PCMPSR epoch=64 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000001/24.131088/48.190380/0/2.1875/0.000000 controls=None
+2026-07-23 09:27:29 transreid.train INFO: PSCCR epoch=64 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.001064/[0.003187, 5e-06, 1e-06]/[23.716881, 24.330795, 24.131088]/[48.131798, 48.251369, 48.19038]/[7.015625, 9.421875, 10.0] controls=None
+2026-07-23 09:27:52 transreid.train INFO: Epoch[64] Iter[20/227] Loss: 0.171, Pose: 0.467, Acc: 0.995, Student: 1.00, Reliability: 0.836, GateAbs: 9.142e-03, Base Lr: 3.59e-04
+2026-07-23 09:28:16 transreid.train INFO: Epoch[64] Iter[40/227] Loss: 0.164, Pose: 0.463, Acc: 0.994, Student: 1.00, Reliability: 0.851, GateAbs: 9.127e-03, Base Lr: 3.59e-04
+2026-07-23 09:28:41 transreid.train INFO: Epoch[64] Iter[60/227] Loss: 0.162, Pose: 0.462, Acc: 0.994, Student: 1.00, Reliability: 0.847, GateAbs: 9.127e-03, Base Lr: 3.59e-04
+2026-07-23 09:29:05 transreid.train INFO: Epoch[64] Iter[80/227] Loss: 0.158, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.837, GateAbs: 9.154e-03, Base Lr: 3.59e-04
+2026-07-23 09:29:29 transreid.train INFO: Epoch[64] Iter[100/227] Loss: 0.154, Pose: 0.464, Acc: 0.994, Student: 1.00, Reliability: 0.851, GateAbs: 9.125e-03, Base Lr: 3.59e-04
+2026-07-23 09:29:53 transreid.train INFO: Epoch[64] Iter[120/227] Loss: 0.150, Pose: 0.464, Acc: 0.995, Student: 1.00, Reliability: 0.854, GateAbs: 9.132e-03, Base Lr: 3.59e-04
+2026-07-23 09:30:17 transreid.train INFO: Epoch[64] Iter[140/227] Loss: 0.149, Pose: 0.464, Acc: 0.995, Student: 1.00, Reliability: 0.859, GateAbs: 9.165e-03, Base Lr: 3.59e-04
+2026-07-23 09:30:41 transreid.train INFO: Epoch[64] Iter[160/227] Loss: 0.146, Pose: 0.464, Acc: 0.995, Student: 1.00, Reliability: 0.834, GateAbs: 9.124e-03, Base Lr: 3.59e-04
+2026-07-23 09:31:06 transreid.train INFO: Epoch[64] Iter[180/227] Loss: 0.144, Pose: 0.463, Acc: 0.995, Student: 1.00, Reliability: 0.835, GateAbs: 9.131e-03, Base Lr: 3.59e-04
+2026-07-23 09:31:30 transreid.train INFO: Epoch[64] Iter[200/227] Loss: 0.140, Pose: 0.464, Acc: 0.995, Student: 1.00, Reliability: 0.852, GateAbs: 9.130e-03, Base Lr: 3.59e-04
+2026-07-23 09:31:44 transreid.train INFO: Epoch 64 done. Time per epoch: 256.321[s] Speed: 52.9[samples/s]
+2026-07-23 09:31:46 transreid.train INFO: PCMPSR epoch=65 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000016/24.067936/47.457657/0/2.1719/0.000000 controls=None
+2026-07-23 09:31:46 transreid.train INFO: PSCCR epoch=65 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000143/[0.000404, 1e-05, 1.6e-05]/[23.730911, 23.878433, 24.067936]/[47.565311, 47.395191, 47.457657]/[6.75, 9.359375, 10.0] controls=None
+2026-07-23 09:32:09 transreid.train INFO: Epoch[65] Iter[20/227] Loss: 0.152, Pose: 0.460, Acc: 0.995, Student: 1.00, Reliability: 0.871, GateAbs: 9.173e-03, Base Lr: 3.49e-04
+2026-07-23 09:32:33 transreid.train INFO: Epoch[65] Iter[40/227] Loss: 0.153, Pose: 0.463, Acc: 0.994, Student: 1.00, Reliability: 0.854, GateAbs: 9.207e-03, Base Lr: 3.49e-04
+2026-07-23 09:32:57 transreid.train INFO: Epoch[65] Iter[60/227] Loss: 0.147, Pose: 0.461, Acc: 0.995, Student: 1.00, Reliability: 0.836, GateAbs: 9.140e-03, Base Lr: 3.49e-04
+2026-07-23 09:33:21 transreid.train INFO: Epoch[65] Iter[80/227] Loss: 0.151, Pose: 0.462, Acc: 0.994, Student: 1.00, Reliability: 0.862, GateAbs: 9.166e-03, Base Lr: 3.49e-04
+2026-07-23 09:33:45 transreid.train INFO: Epoch[65] Iter[100/227] Loss: 0.150, Pose: 0.461, Acc: 0.995, Student: 1.00, Reliability: 0.843, GateAbs: 9.126e-03, Base Lr: 3.49e-04
+2026-07-23 09:34:09 transreid.train INFO: Epoch[65] Iter[120/227] Loss: 0.150, Pose: 0.461, Acc: 0.994, Student: 1.00, Reliability: 0.840, GateAbs: 9.128e-03, Base Lr: 3.49e-04
+2026-07-23 09:34:33 transreid.train INFO: Epoch[65] Iter[140/227] Loss: 0.147, Pose: 0.461, Acc: 0.995, Student: 1.00, Reliability: 0.838, GateAbs: 9.155e-03, Base Lr: 3.49e-04
+2026-07-23 09:34:58 transreid.train INFO: Epoch[65] Iter[160/227] Loss: 0.143, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.844, GateAbs: 9.107e-03, Base Lr: 3.49e-04
+2026-07-23 09:35:22 transreid.train INFO: Epoch[65] Iter[180/227] Loss: 0.140, Pose: 0.463, Acc: 0.996, Student: 1.00, Reliability: 0.845, GateAbs: 9.177e-03, Base Lr: 3.49e-04
+2026-07-23 09:35:46 transreid.train INFO: Epoch[65] Iter[200/227] Loss: 0.136, Pose: 0.464, Acc: 0.996, Student: 1.00, Reliability: 0.839, GateAbs: 9.180e-03, Base Lr: 3.49e-04
+2026-07-23 09:36:00 transreid.train INFO: Epoch 65 done. Time per epoch: 256.208[s] Speed: 53.0[samples/s]
+2026-07-23 09:36:02 transreid.train INFO: PCMPSR epoch=66 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000038/22.387943/47.937397/0/2.2969/0.000000 controls=None
+2026-07-23 09:36:02 transreid.train INFO: PSCCR epoch=66 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000048/[9.9e-05, 6e-06, 3.8e-05]/[22.693443, 22.45369, 22.387943]/[48.194584, 48.002182, 47.937397]/[6.671875, 9.34375, 10.0] controls=None
+2026-07-23 09:36:25 transreid.train INFO: Epoch[66] Iter[20/227] Loss: 0.146, Pose: 0.454, Acc: 0.998, Student: 1.00, Reliability: 0.839, GateAbs: 9.137e-03, Base Lr: 3.38e-04
+2026-07-23 09:36:49 transreid.train INFO: Epoch[66] Iter[40/227] Loss: 0.149, Pose: 0.459, Acc: 0.996, Student: 1.00, Reliability: 0.845, GateAbs: 9.085e-03, Base Lr: 3.38e-04
+2026-07-23 09:37:13 transreid.train INFO: Epoch[66] Iter[60/227] Loss: 0.145, Pose: 0.460, Acc: 0.997, Student: 1.00, Reliability: 0.816, GateAbs: 9.075e-03, Base Lr: 3.38e-04
+2026-07-23 09:37:37 transreid.train INFO: Epoch[66] Iter[80/227] Loss: 0.143, Pose: 0.460, Acc: 0.996, Student: 1.00, Reliability: 0.835, GateAbs: 9.144e-03, Base Lr: 3.38e-04
+2026-07-23 09:38:01 transreid.train INFO: Epoch[66] Iter[100/227] Loss: 0.140, Pose: 0.460, Acc: 0.996, Student: 1.00, Reliability: 0.857, GateAbs: 9.107e-03, Base Lr: 3.38e-04
+2026-07-23 09:38:26 transreid.train INFO: Epoch[66] Iter[120/227] Loss: 0.138, Pose: 0.461, Acc: 0.996, Student: 1.00, Reliability: 0.829, GateAbs: 9.153e-03, Base Lr: 3.38e-04
+2026-07-23 09:38:50 transreid.train INFO: Epoch[66] Iter[140/227] Loss: 0.136, Pose: 0.461, Acc: 0.996, Student: 1.00, Reliability: 0.850, GateAbs: 9.151e-03, Base Lr: 3.38e-04
+2026-07-23 09:39:14 transreid.train INFO: Epoch[66] Iter[160/227] Loss: 0.134, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.843, GateAbs: 9.140e-03, Base Lr: 3.38e-04
+2026-07-23 09:39:38 transreid.train INFO: Epoch[66] Iter[180/227] Loss: 0.133, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.852, GateAbs: 9.167e-03, Base Lr: 3.38e-04
+2026-07-23 09:40:02 transreid.train INFO: Epoch[66] Iter[200/227] Loss: 0.130, Pose: 0.464, Acc: 0.996, Student: 1.00, Reliability: 0.840, GateAbs: 9.176e-03, Base Lr: 3.38e-04
+2026-07-23 09:40:18 transreid.train INFO: Epoch 66 done. Time per epoch: 257.367[s] Speed: 53.0[samples/s]
+2026-07-23 09:40:19 transreid.train INFO: PCMPSR epoch=67 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000003/25.158276/48.417587/0/2.0625/0.000000 controls=None
+2026-07-23 09:40:19 transreid.train INFO: PSCCR epoch=67 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.001186/[0.003552, 3e-06, 3e-06]/[26.062191, 25.021061, 25.158276]/[48.863922, 48.308224, 48.417587]/[7.203125, 9.390625, 10.0] controls=None
+2026-07-23 09:40:42 transreid.train INFO: Epoch[67] Iter[20/227] Loss: 0.146, Pose: 0.462, Acc: 0.997, Student: 1.00, Reliability: 0.844, GateAbs: 9.169e-03, Base Lr: 3.28e-04
+2026-07-23 09:41:06 transreid.train INFO: Epoch[67] Iter[40/227] Loss: 0.151, Pose: 0.462, Acc: 0.994, Student: 1.00, Reliability: 0.861, GateAbs: 9.207e-03, Base Lr: 3.28e-04
+2026-07-23 09:41:31 transreid.train INFO: Epoch[67] Iter[60/227] Loss: 0.144, Pose: 0.463, Acc: 0.996, Student: 1.00, Reliability: 0.845, GateAbs: 9.157e-03, Base Lr: 3.28e-04
+2026-07-23 09:41:55 transreid.train INFO: Epoch[67] Iter[80/227] Loss: 0.142, Pose: 0.464, Acc: 0.996, Student: 1.00, Reliability: 0.837, GateAbs: 9.130e-03, Base Lr: 3.28e-04
+2026-07-23 09:42:19 transreid.train INFO: Epoch[67] Iter[100/227] Loss: 0.138, Pose: 0.464, Acc: 0.996, Student: 1.00, Reliability: 0.846, GateAbs: 9.163e-03, Base Lr: 3.28e-04
+2026-07-23 09:42:43 transreid.train INFO: Epoch[67] Iter[120/227] Loss: 0.136, Pose: 0.463, Acc: 0.996, Student: 1.00, Reliability: 0.841, GateAbs: 9.181e-03, Base Lr: 3.28e-04
+2026-07-23 09:43:07 transreid.train INFO: Epoch[67] Iter[140/227] Loss: 0.135, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.856, GateAbs: 9.200e-03, Base Lr: 3.28e-04
+2026-07-23 09:43:32 transreid.train INFO: Epoch[67] Iter[160/227] Loss: 0.133, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.845, GateAbs: 9.176e-03, Base Lr: 3.28e-04
+2026-07-23 09:43:56 transreid.train INFO: Epoch[67] Iter[180/227] Loss: 0.133, Pose: 0.463, Acc: 0.996, Student: 1.00, Reliability: 0.855, GateAbs: 9.261e-03, Base Lr: 3.28e-04
+2026-07-23 09:44:20 transreid.train INFO: Epoch[67] Iter[200/227] Loss: 0.130, Pose: 0.463, Acc: 0.996, Student: 1.00, Reliability: 0.857, GateAbs: 9.220e-03, Base Lr: 3.28e-04
+2026-07-23 09:44:33 transreid.train INFO: Epoch 67 done. Time per epoch: 255.423[s] Speed: 52.9[samples/s]
+2026-07-23 09:44:35 transreid.train INFO: PCMPSR epoch=68 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000054/23.071423/47.509132/0/2.3125/0.000000 controls=None
+2026-07-23 09:44:35 transreid.train INFO: PSCCR epoch=68 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000260/[0.000446, 0.00028, 5.4e-05]/[22.837435, 22.722797, 23.071423]/[47.373215, 47.337994, 47.509132]/[6.6875, 9.25, 10.0] controls=None
+2026-07-23 09:44:58 transreid.train INFO: Epoch[68] Iter[20/227] Loss: 0.141, Pose: 0.458, Acc: 0.996, Student: 1.00, Reliability: 0.848, GateAbs: 9.174e-03, Base Lr: 3.18e-04
+2026-07-23 09:45:22 transreid.train INFO: Epoch[68] Iter[40/227] Loss: 0.137, Pose: 0.458, Acc: 0.997, Student: 1.00, Reliability: 0.825, GateAbs: 9.213e-03, Base Lr: 3.18e-04
+2026-07-23 09:45:46 transreid.train INFO: Epoch[68] Iter[60/227] Loss: 0.140, Pose: 0.459, Acc: 0.997, Student: 1.00, Reliability: 0.848, GateAbs: 9.131e-03, Base Lr: 3.18e-04
+2026-07-23 09:46:10 transreid.train INFO: Epoch[68] Iter[80/227] Loss: 0.143, Pose: 0.461, Acc: 0.996, Student: 1.00, Reliability: 0.836, GateAbs: 9.216e-03, Base Lr: 3.18e-04
+2026-07-23 09:46:34 transreid.train INFO: Epoch[68] Iter[100/227] Loss: 0.143, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.840, GateAbs: 9.232e-03, Base Lr: 3.18e-04
+2026-07-23 09:46:58 transreid.train INFO: Epoch[68] Iter[120/227] Loss: 0.140, Pose: 0.463, Acc: 0.996, Student: 1.00, Reliability: 0.851, GateAbs: 9.217e-03, Base Lr: 3.18e-04
+2026-07-23 09:47:23 transreid.train INFO: Epoch[68] Iter[140/227] Loss: 0.140, Pose: 0.463, Acc: 0.995, Student: 1.00, Reliability: 0.828, GateAbs: 9.188e-03, Base Lr: 3.18e-04
+2026-07-23 09:47:47 transreid.train INFO: Epoch[68] Iter[160/227] Loss: 0.137, Pose: 0.464, Acc: 0.996, Student: 1.00, Reliability: 0.840, GateAbs: 9.179e-03, Base Lr: 3.18e-04
+2026-07-23 09:48:11 transreid.train INFO: Epoch[68] Iter[180/227] Loss: 0.137, Pose: 0.464, Acc: 0.995, Student: 1.00, Reliability: 0.867, GateAbs: 9.220e-03, Base Lr: 3.18e-04
+2026-07-23 09:48:35 transreid.train INFO: Epoch[68] Iter[200/227] Loss: 0.135, Pose: 0.464, Acc: 0.995, Student: 1.00, Reliability: 0.849, GateAbs: 9.196e-03, Base Lr: 3.18e-04
+2026-07-23 09:48:49 transreid.train INFO: Epoch 68 done. Time per epoch: 256.300[s] Speed: 52.9[samples/s]
+2026-07-23 09:48:51 transreid.train INFO: PCMPSR epoch=69 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000079/22.819277/46.042377/0/2.4062/0.000000 controls=None
+2026-07-23 09:48:51 transreid.train INFO: PSCCR epoch=69 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000093/[7.5e-05, 0.000127, 7.9e-05]/[22.453777, 23.33836, 22.819277]/[45.903706, 46.266743, 46.042377]/[7.03125, 9.328125, 10.0] controls=None
+2026-07-23 09:49:14 transreid.train INFO: Epoch[69] Iter[20/227] Loss: 0.143, Pose: 0.454, Acc: 0.995, Student: 1.00, Reliability: 0.825, GateAbs: 9.224e-03, Base Lr: 3.08e-04
+2026-07-23 09:49:38 transreid.train INFO: Epoch[69] Iter[40/227] Loss: 0.138, Pose: 0.459, Acc: 0.996, Student: 1.00, Reliability: 0.847, GateAbs: 9.242e-03, Base Lr: 3.08e-04
+2026-07-23 09:50:02 transreid.train INFO: Epoch[69] Iter[60/227] Loss: 0.139, Pose: 0.462, Acc: 0.997, Student: 1.00, Reliability: 0.837, GateAbs: 9.259e-03, Base Lr: 3.08e-04
+2026-07-23 09:50:26 transreid.train INFO: Epoch[69] Iter[80/227] Loss: 0.140, Pose: 0.461, Acc: 0.997, Student: 1.00, Reliability: 0.862, GateAbs: 9.316e-03, Base Lr: 3.08e-04
+2026-07-23 09:50:51 transreid.train INFO: Epoch[69] Iter[100/227] Loss: 0.139, Pose: 0.462, Acc: 0.997, Student: 1.00, Reliability: 0.837, GateAbs: 9.254e-03, Base Lr: 3.08e-04
+2026-07-23 09:51:15 transreid.train INFO: Epoch[69] Iter[120/227] Loss: 0.135, Pose: 0.462, Acc: 0.997, Student: 1.00, Reliability: 0.857, GateAbs: 9.245e-03, Base Lr: 3.08e-04
+2026-07-23 09:51:39 transreid.train INFO: Epoch[69] Iter[140/227] Loss: 0.134, Pose: 0.462, Acc: 0.997, Student: 1.00, Reliability: 0.832, GateAbs: 9.223e-03, Base Lr: 3.08e-04
+2026-07-23 09:52:03 transreid.train INFO: Epoch[69] Iter[160/227] Loss: 0.131, Pose: 0.461, Acc: 0.997, Student: 1.00, Reliability: 0.862, GateAbs: 9.307e-03, Base Lr: 3.08e-04
+2026-07-23 09:52:27 transreid.train INFO: Epoch[69] Iter[180/227] Loss: 0.129, Pose: 0.463, Acc: 0.997, Student: 1.00, Reliability: 0.832, GateAbs: 9.220e-03, Base Lr: 3.08e-04
+2026-07-23 09:52:52 transreid.train INFO: Epoch[69] Iter[200/227] Loss: 0.126, Pose: 0.463, Acc: 0.997, Student: 1.00, Reliability: 0.837, GateAbs: 9.192e-03, Base Lr: 3.08e-04
+2026-07-23 09:53:05 transreid.train INFO: Epoch 69 done. Time per epoch: 255.466[s] Speed: 52.9[samples/s]
+2026-07-23 09:53:06 transreid.train INFO: PCMPSR epoch=70 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000001/23.802950/47.380623/0/2.2656/0.000000 controls=None
+2026-07-23 09:53:06 transreid.train INFO: PSCCR epoch=70 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000005/[1.3e-05, 1e-06, 1e-06]/[23.845486, 23.554874, 23.80295]/[47.793884, 47.40168, 47.380623]/[6.921875, 9.484375, 10.0] controls=None
+2026-07-23 09:53:29 transreid.train INFO: Epoch[70] Iter[20/227] Loss: 0.136, Pose: 0.463, Acc: 0.998, Student: 1.00, Reliability: 0.847, GateAbs: 9.225e-03, Base Lr: 2.97e-04
+2026-07-23 09:53:54 transreid.train INFO: Epoch[70] Iter[40/227] Loss: 0.138, Pose: 0.460, Acc: 0.996, Student: 1.00, Reliability: 0.848, GateAbs: 9.216e-03, Base Lr: 2.97e-04
+2026-07-23 09:54:18 transreid.train INFO: Epoch[70] Iter[60/227] Loss: 0.137, Pose: 0.460, Acc: 0.995, Student: 1.00, Reliability: 0.823, GateAbs: 9.242e-03, Base Lr: 2.97e-04
+2026-07-23 09:54:42 transreid.train INFO: Epoch[70] Iter[80/227] Loss: 0.135, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.846, GateAbs: 9.223e-03, Base Lr: 2.97e-04
+2026-07-23 09:55:06 transreid.train INFO: Epoch[70] Iter[100/227] Loss: 0.133, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.850, GateAbs: 9.283e-03, Base Lr: 2.97e-04
+2026-07-23 09:55:30 transreid.train INFO: Epoch[70] Iter[120/227] Loss: 0.131, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.837, GateAbs: 9.243e-03, Base Lr: 2.97e-04
+2026-07-23 09:55:54 transreid.train INFO: Epoch[70] Iter[140/227] Loss: 0.129, Pose: 0.463, Acc: 0.997, Student: 1.00, Reliability: 0.854, GateAbs: 9.200e-03, Base Lr: 2.97e-04
+2026-07-23 09:56:18 transreid.train INFO: Epoch[70] Iter[160/227] Loss: 0.128, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.836, GateAbs: 9.257e-03, Base Lr: 2.97e-04
+2026-07-23 09:56:43 transreid.train INFO: Epoch[70] Iter[180/227] Loss: 0.124, Pose: 0.463, Acc: 0.997, Student: 1.00, Reliability: 0.857, GateAbs: 9.296e-03, Base Lr: 2.97e-04
+2026-07-23 09:57:07 transreid.train INFO: Epoch[70] Iter[200/227] Loss: 0.121, Pose: 0.463, Acc: 0.997, Student: 1.00, Reliability: 0.855, GateAbs: 9.206e-03, Base Lr: 2.97e-04
+2026-07-23 09:57:21 transreid.train INFO: Epoch 70 done. Time per epoch: 256.309[s] Speed: 52.9[samples/s]
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-23 09:57:43 transreid.train INFO: Validation Results - Epoch: 70
+2026-07-23 09:57:43 transreid.train INFO: mAP: 57.9%
+2026-07-23 09:57:43 transreid.train INFO: CMC curve, Rank-1  :69.8%
+2026-07-23 09:57:43 transreid.train INFO: CMC curve, Rank-5  :81.9%
+2026-07-23 09:57:43 transreid.train INFO: CMC curve, Rank-10 :85.7%
+2026-07-23 09:57:45 transreid.train INFO: PCMPSR epoch=71 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000000/21.188362/47.564392/0/2.2656/0.000000 controls=None
+2026-07-23 09:57:45 transreid.train INFO: PSCCR epoch=71 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000030/[8.9e-05, 0.0, 0.0]/[21.017994, 21.083471, 21.188362]/[47.335663, 47.471439, 47.564392]/[7.0625, 9.390625, 10.0] controls=None
+2026-07-23 09:58:08 transreid.train INFO: Epoch[71] Iter[20/227] Loss: 0.124, Pose: 0.459, Acc: 0.998, Student: 1.00, Reliability: 0.848, GateAbs: 9.258e-03, Base Lr: 2.87e-04
+2026-07-23 09:58:32 transreid.train INFO: Epoch[71] Iter[40/227] Loss: 0.130, Pose: 0.457, Acc: 0.998, Student: 1.00, Reliability: 0.859, GateAbs: 9.277e-03, Base Lr: 2.87e-04
+2026-07-23 09:58:56 transreid.train INFO: Epoch[71] Iter[60/227] Loss: 0.130, Pose: 0.459, Acc: 0.997, Student: 1.00, Reliability: 0.830, GateAbs: 9.195e-03, Base Lr: 2.87e-04
+2026-07-23 09:59:21 transreid.train INFO: Epoch[71] Iter[80/227] Loss: 0.130, Pose: 0.460, Acc: 0.996, Student: 1.00, Reliability: 0.831, GateAbs: 9.275e-03, Base Lr: 2.87e-04
+2026-07-23 09:59:45 transreid.train INFO: Epoch[71] Iter[100/227] Loss: 0.130, Pose: 0.462, Acc: 0.997, Student: 1.00, Reliability: 0.837, GateAbs: 9.253e-03, Base Lr: 2.87e-04
+2026-07-23 10:00:09 transreid.train INFO: Epoch[71] Iter[120/227] Loss: 0.128, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.847, GateAbs: 9.270e-03, Base Lr: 2.87e-04
+2026-07-23 10:00:33 transreid.train INFO: Epoch[71] Iter[140/227] Loss: 0.128, Pose: 0.463, Acc: 0.996, Student: 1.00, Reliability: 0.819, GateAbs: 9.270e-03, Base Lr: 2.87e-04
+2026-07-23 10:00:58 transreid.train INFO: Epoch[71] Iter[160/227] Loss: 0.127, Pose: 0.463, Acc: 0.996, Student: 1.00, Reliability: 0.836, GateAbs: 9.262e-03, Base Lr: 2.87e-04
+2026-07-23 10:01:22 transreid.train INFO: Epoch[71] Iter[180/227] Loss: 0.126, Pose: 0.463, Acc: 0.996, Student: 1.00, Reliability: 0.856, GateAbs: 9.274e-03, Base Lr: 2.87e-04
+2026-07-23 10:01:46 transreid.train INFO: Epoch[71] Iter[200/227] Loss: 0.123, Pose: 0.464, Acc: 0.997, Student: 1.00, Reliability: 0.842, GateAbs: 9.236e-03, Base Lr: 2.87e-04
+2026-07-23 10:02:01 transreid.train INFO: Epoch 71 done. Time per epoch: 257.297[s] Speed: 52.7[samples/s]
+2026-07-23 10:02:02 transreid.train INFO: PCMPSR epoch=72 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000003/22.507156/47.076336/0/2.2188/0.000000 controls=None
+2026-07-23 10:02:02 transreid.train INFO: PSCCR epoch=72 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000002/[2e-06, 0.0, 3e-06]/[22.667849, 22.451504, 22.507156]/[47.26091, 47.008514, 47.076336]/[6.8125, 9.421875, 10.0] controls=None
+2026-07-23 10:02:25 transreid.train INFO: Epoch[72] Iter[20/227] Loss: 0.156, Pose: 0.457, Acc: 0.989, Student: 1.00, Reliability: 0.839, GateAbs: 9.271e-03, Base Lr: 2.77e-04
+2026-07-23 10:02:49 transreid.train INFO: Epoch[72] Iter[40/227] Loss: 0.150, Pose: 0.460, Acc: 0.993, Student: 1.00, Reliability: 0.856, GateAbs: 9.316e-03, Base Lr: 2.77e-04
+2026-07-23 10:03:14 transreid.train INFO: Epoch[72] Iter[60/227] Loss: 0.147, Pose: 0.460, Acc: 0.993, Student: 1.00, Reliability: 0.856, GateAbs: 9.298e-03, Base Lr: 2.77e-04
+2026-07-23 10:03:38 transreid.train INFO: Epoch[72] Iter[80/227] Loss: 0.142, Pose: 0.460, Acc: 0.994, Student: 1.00, Reliability: 0.836, GateAbs: 9.288e-03, Base Lr: 2.77e-04
+2026-07-23 10:04:02 transreid.train INFO: Epoch[72] Iter[100/227] Loss: 0.137, Pose: 0.461, Acc: 0.995, Student: 1.00, Reliability: 0.846, GateAbs: 9.263e-03, Base Lr: 2.77e-04
+2026-07-23 10:04:26 transreid.train INFO: Epoch[72] Iter[120/227] Loss: 0.137, Pose: 0.461, Acc: 0.994, Student: 1.00, Reliability: 0.863, GateAbs: 9.256e-03, Base Lr: 2.77e-04
+2026-07-23 10:04:51 transreid.train INFO: Epoch[72] Iter[140/227] Loss: 0.135, Pose: 0.462, Acc: 0.994, Student: 1.00, Reliability: 0.848, GateAbs: 9.311e-03, Base Lr: 2.77e-04
+2026-07-23 10:05:15 transreid.train INFO: Epoch[72] Iter[160/227] Loss: 0.132, Pose: 0.462, Acc: 0.995, Student: 1.00, Reliability: 0.833, GateAbs: 9.296e-03, Base Lr: 2.77e-04
+2026-07-23 10:05:39 transreid.train INFO: Epoch[72] Iter[180/227] Loss: 0.129, Pose: 0.462, Acc: 0.995, Student: 1.00, Reliability: 0.851, GateAbs: 9.290e-03, Base Lr: 2.77e-04
+2026-07-23 10:06:03 transreid.train INFO: Epoch[72] Iter[200/227] Loss: 0.126, Pose: 0.463, Acc: 0.995, Student: 1.00, Reliability: 0.849, GateAbs: 9.285e-03, Base Lr: 2.77e-04
+2026-07-23 10:06:16 transreid.train INFO: Epoch 72 done. Time per epoch: 255.718[s] Speed: 52.8[samples/s]
+2026-07-23 10:06:18 transreid.train INFO: PCMPSR epoch=73 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000000/21.983120/46.851715/0/2.2969/0.000000 controls=None
+2026-07-23 10:06:18 transreid.train INFO: PSCCR epoch=73 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000002/[5e-06, 1e-06, 0.0]/[21.926979, 21.765926, 21.98312]/[46.967468, 46.922817, 46.851715]/[7.15625, 9.4375, 10.0] controls=None
+2026-07-23 10:06:41 transreid.train INFO: Epoch[73] Iter[20/227] Loss: 0.137, Pose: 0.466, Acc: 0.994, Student: 1.00, Reliability: 0.845, GateAbs: 9.200e-03, Base Lr: 2.68e-04
+2026-07-23 10:07:05 transreid.train INFO: Epoch[73] Iter[40/227] Loss: 0.139, Pose: 0.467, Acc: 0.994, Student: 1.00, Reliability: 0.835, GateAbs: 9.265e-03, Base Lr: 2.68e-04
+2026-07-23 10:07:29 transreid.train INFO: Epoch[73] Iter[60/227] Loss: 0.143, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.839, GateAbs: 9.247e-03, Base Lr: 2.68e-04
+2026-07-23 10:07:54 transreid.train INFO: Epoch[73] Iter[80/227] Loss: 0.138, Pose: 0.463, Acc: 0.995, Student: 1.00, Reliability: 0.845, GateAbs: 9.288e-03, Base Lr: 2.68e-04
+2026-07-23 10:08:18 transreid.train INFO: Epoch[73] Iter[100/227] Loss: 0.133, Pose: 0.461, Acc: 0.996, Student: 1.00, Reliability: 0.859, GateAbs: 9.252e-03, Base Lr: 2.68e-04
+2026-07-23 10:08:42 transreid.train INFO: Epoch[73] Iter[120/227] Loss: 0.130, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.840, GateAbs: 9.285e-03, Base Lr: 2.68e-04
+2026-07-23 10:09:06 transreid.train INFO: Epoch[73] Iter[140/227] Loss: 0.129, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.865, GateAbs: 9.285e-03, Base Lr: 2.68e-04
+2026-07-23 10:09:30 transreid.train INFO: Epoch[73] Iter[160/227] Loss: 0.127, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.841, GateAbs: 9.270e-03, Base Lr: 2.68e-04
+2026-07-23 10:09:55 transreid.train INFO: Epoch[73] Iter[180/227] Loss: 0.124, Pose: 0.463, Acc: 0.996, Student: 1.00, Reliability: 0.837, GateAbs: 9.278e-03, Base Lr: 2.68e-04
+2026-07-23 10:10:19 transreid.train INFO: Epoch[73] Iter[200/227] Loss: 0.121, Pose: 0.463, Acc: 0.996, Student: 1.00, Reliability: 0.834, GateAbs: 9.254e-03, Base Lr: 2.68e-04
+2026-07-23 10:10:32 transreid.train INFO: Epoch 73 done. Time per epoch: 255.856[s] Speed: 52.8[samples/s]
+2026-07-23 10:10:34 transreid.train INFO: PCMPSR epoch=74 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000011/22.300745/46.940277/0/2.3125/0.000000 controls=None
+2026-07-23 10:10:34 transreid.train INFO: PSCCR epoch=74 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000697/[0.002022, 5.7e-05, 1.1e-05]/[22.451977, 22.461107, 22.300745]/[46.797169, 46.795536, 46.940277]/[7.1875, 9.390625, 10.0] controls=None
+2026-07-23 10:10:57 transreid.train INFO: Epoch[74] Iter[20/227] Loss: 0.141, Pose: 0.461, Acc: 0.994, Student: 1.00, Reliability: 0.842, GateAbs: 9.316e-03, Base Lr: 2.58e-04
+2026-07-23 10:11:21 transreid.train INFO: Epoch[74] Iter[40/227] Loss: 0.138, Pose: 0.463, Acc: 0.995, Student: 1.00, Reliability: 0.834, GateAbs: 9.287e-03, Base Lr: 2.58e-04
+2026-07-23 10:11:45 transreid.train INFO: Epoch[74] Iter[60/227] Loss: 0.140, Pose: 0.465, Acc: 0.994, Student: 1.00, Reliability: 0.842, GateAbs: 9.283e-03, Base Lr: 2.58e-04
+2026-07-23 10:12:09 transreid.train INFO: Epoch[74] Iter[80/227] Loss: 0.135, Pose: 0.464, Acc: 0.995, Student: 1.00, Reliability: 0.854, GateAbs: 9.304e-03, Base Lr: 2.58e-04
+2026-07-23 10:12:33 transreid.train INFO: Epoch[74] Iter[100/227] Loss: 0.133, Pose: 0.464, Acc: 0.996, Student: 1.00, Reliability: 0.868, GateAbs: 9.291e-03, Base Lr: 2.58e-04
+2026-07-23 10:12:57 transreid.train INFO: Epoch[74] Iter[120/227] Loss: 0.129, Pose: 0.465, Acc: 0.996, Student: 1.00, Reliability: 0.861, GateAbs: 9.276e-03, Base Lr: 2.58e-04
+2026-07-23 10:13:22 transreid.train INFO: Epoch[74] Iter[140/227] Loss: 0.128, Pose: 0.464, Acc: 0.996, Student: 1.00, Reliability: 0.852, GateAbs: 9.245e-03, Base Lr: 2.58e-04
+2026-07-23 10:13:46 transreid.train INFO: Epoch[74] Iter[160/227] Loss: 0.126, Pose: 0.463, Acc: 0.996, Student: 1.00, Reliability: 0.858, GateAbs: 9.352e-03, Base Lr: 2.58e-04
+2026-07-23 10:14:10 transreid.train INFO: Epoch[74] Iter[180/227] Loss: 0.123, Pose: 0.464, Acc: 0.996, Student: 1.00, Reliability: 0.844, GateAbs: 9.240e-03, Base Lr: 2.58e-04
+2026-07-23 10:14:34 transreid.train INFO: Epoch[74] Iter[200/227] Loss: 0.121, Pose: 0.464, Acc: 0.996, Student: 1.00, Reliability: 0.847, GateAbs: 9.304e-03, Base Lr: 2.58e-04
+2026-07-23 10:14:50 transreid.train INFO: Epoch 74 done. Time per epoch: 257.685[s] Speed: 52.9[samples/s]
+2026-07-23 10:14:51 transreid.train INFO: PCMPSR epoch=75 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000239/23.994089/47.031448/0/2.1875/0.000000 controls=None
+2026-07-23 10:14:51 transreid.train INFO: PSCCR epoch=75 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.001848/[0.001878, 0.003428, 0.000239]/[23.502087, 23.797997, 23.994089]/[47.102402, 46.881481, 47.031448]/[6.8125, 9.359375, 10.0] controls=None
+2026-07-23 10:15:14 transreid.train INFO: Epoch[75] Iter[20/227] Loss: 0.131, Pose: 0.466, Acc: 1.000, Student: 1.00, Reliability: 0.838, GateAbs: 9.303e-03, Base Lr: 2.48e-04
+2026-07-23 10:15:39 transreid.train INFO: Epoch[75] Iter[40/227] Loss: 0.135, Pose: 0.462, Acc: 0.998, Student: 1.00, Reliability: 0.846, GateAbs: 9.318e-03, Base Lr: 2.48e-04
+2026-07-23 10:16:03 transreid.train INFO: Epoch[75] Iter[60/227] Loss: 0.133, Pose: 0.462, Acc: 0.997, Student: 1.00, Reliability: 0.852, GateAbs: 9.320e-03, Base Lr: 2.48e-04
+2026-07-23 10:16:27 transreid.train INFO: Epoch[75] Iter[80/227] Loss: 0.130, Pose: 0.460, Acc: 0.996, Student: 1.00, Reliability: 0.850, GateAbs: 9.286e-03, Base Lr: 2.48e-04
+2026-07-23 10:16:51 transreid.train INFO: Epoch[75] Iter[100/227] Loss: 0.129, Pose: 0.461, Acc: 0.997, Student: 1.00, Reliability: 0.846, GateAbs: 9.296e-03, Base Lr: 2.48e-04
+2026-07-23 10:17:15 transreid.train INFO: Epoch[75] Iter[120/227] Loss: 0.127, Pose: 0.461, Acc: 0.996, Student: 1.00, Reliability: 0.843, GateAbs: 9.352e-03, Base Lr: 2.48e-04
+2026-07-23 10:17:40 transreid.train INFO: Epoch[75] Iter[140/227] Loss: 0.126, Pose: 0.461, Acc: 0.996, Student: 1.00, Reliability: 0.813, GateAbs: 9.259e-03, Base Lr: 2.48e-04
+2026-07-23 10:18:04 transreid.train INFO: Epoch[75] Iter[160/227] Loss: 0.124, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.841, GateAbs: 9.255e-03, Base Lr: 2.48e-04
+2026-07-23 10:18:28 transreid.train INFO: Epoch[75] Iter[180/227] Loss: 0.123, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.844, GateAbs: 9.327e-03, Base Lr: 2.48e-04
+2026-07-23 10:18:52 transreid.train INFO: Epoch[75] Iter[200/227] Loss: 0.121, Pose: 0.464, Acc: 0.997, Student: 1.00, Reliability: 0.836, GateAbs: 9.342e-03, Base Lr: 2.48e-04
+2026-07-23 10:19:07 transreid.train INFO: Epoch 75 done. Time per epoch: 256.764[s] Speed: 52.8[samples/s]
+2026-07-23 10:19:08 transreid.train INFO: PCMPSR epoch=76 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000035/24.055393/46.232830/0/2.2500/0.000000 controls=None
+2026-07-23 10:19:08 transreid.train INFO: PSCCR epoch=76 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000037/[6.2e-05, 1.3e-05, 3.5e-05]/[23.581358, 23.614761, 24.055393]/[46.200722, 46.22982, 46.23283]/[6.921875, 9.46875, 10.0] controls=None
+2026-07-23 10:19:31 transreid.train INFO: Epoch[76] Iter[20/227] Loss: 0.140, Pose: 0.458, Acc: 0.995, Student: 1.00, Reliability: 0.834, GateAbs: 9.288e-03, Base Lr: 2.38e-04
+2026-07-23 10:19:55 transreid.train INFO: Epoch[76] Iter[40/227] Loss: 0.137, Pose: 0.458, Acc: 0.995, Student: 1.00, Reliability: 0.858, GateAbs: 9.334e-03, Base Lr: 2.38e-04
+2026-07-23 10:20:20 transreid.train INFO: Epoch[76] Iter[60/227] Loss: 0.134, Pose: 0.459, Acc: 0.996, Student: 1.00, Reliability: 0.860, GateAbs: 9.317e-03, Base Lr: 2.38e-04
+2026-07-23 10:20:44 transreid.train INFO: Epoch[76] Iter[80/227] Loss: 0.134, Pose: 0.460, Acc: 0.996, Student: 1.00, Reliability: 0.841, GateAbs: 9.279e-03, Base Lr: 2.38e-04
+2026-07-23 10:21:08 transreid.train INFO: Epoch[76] Iter[100/227] Loss: 0.131, Pose: 0.461, Acc: 0.996, Student: 1.00, Reliability: 0.847, GateAbs: 9.314e-03, Base Lr: 2.38e-04
+2026-07-23 10:21:32 transreid.train INFO: Epoch[76] Iter[120/227] Loss: 0.127, Pose: 0.461, Acc: 0.997, Student: 1.00, Reliability: 0.838, GateAbs: 9.261e-03, Base Lr: 2.38e-04
+2026-07-23 10:21:57 transreid.train INFO: Epoch[76] Iter[140/227] Loss: 0.126, Pose: 0.460, Acc: 0.997, Student: 1.00, Reliability: 0.829, GateAbs: 9.366e-03, Base Lr: 2.38e-04
+2026-07-23 10:22:21 transreid.train INFO: Epoch[76] Iter[160/227] Loss: 0.124, Pose: 0.461, Acc: 0.997, Student: 1.00, Reliability: 0.849, GateAbs: 9.288e-03, Base Lr: 2.38e-04
+2026-07-23 10:22:45 transreid.train INFO: Epoch[76] Iter[180/227] Loss: 0.122, Pose: 0.462, Acc: 0.997, Student: 1.00, Reliability: 0.855, GateAbs: 9.305e-03, Base Lr: 2.38e-04
+2026-07-23 10:23:09 transreid.train INFO: Epoch[76] Iter[200/227] Loss: 0.120, Pose: 0.463, Acc: 0.997, Student: 1.00, Reliability: 0.846, GateAbs: 9.318e-03, Base Lr: 2.38e-04
+2026-07-23 10:23:24 transreid.train INFO: Epoch 76 done. Time per epoch: 256.924[s] Speed: 52.8[samples/s]
+2026-07-23 10:23:25 transreid.train INFO: PCMPSR epoch=77 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000002/22.474300/46.742222/0/2.3750/0.000000 controls=None
+2026-07-23 10:23:25 transreid.train INFO: PSCCR epoch=77 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000033/[9.7e-05, 1e-06, 2e-06]/[22.657822, 22.540676, 22.4743]/[46.738895, 46.717182, 46.742222]/[7.1875, 9.484375, 10.0] controls=None
+2026-07-23 10:23:48 transreid.train INFO: Epoch[77] Iter[20/227] Loss: 0.129, Pose: 0.460, Acc: 0.997, Student: 1.00, Reliability: 0.854, GateAbs: 9.381e-03, Base Lr: 2.29e-04
+2026-07-23 10:24:12 transreid.train INFO: Epoch[77] Iter[40/227] Loss: 0.125, Pose: 0.460, Acc: 0.997, Student: 1.00, Reliability: 0.837, GateAbs: 9.346e-03, Base Lr: 2.29e-04
+2026-07-23 10:24:37 transreid.train INFO: Epoch[77] Iter[60/227] Loss: 0.127, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.852, GateAbs: 9.342e-03, Base Lr: 2.29e-04
+2026-07-23 10:25:01 transreid.train INFO: Epoch[77] Iter[80/227] Loss: 0.129, Pose: 0.461, Acc: 0.996, Student: 1.00, Reliability: 0.835, GateAbs: 9.318e-03, Base Lr: 2.29e-04
+2026-07-23 10:25:25 transreid.train INFO: Epoch[77] Iter[100/227] Loss: 0.128, Pose: 0.461, Acc: 0.996, Student: 1.00, Reliability: 0.844, GateAbs: 9.395e-03, Base Lr: 2.29e-04
+2026-07-23 10:25:49 transreid.train INFO: Epoch[77] Iter[120/227] Loss: 0.126, Pose: 0.461, Acc: 0.996, Student: 1.00, Reliability: 0.850, GateAbs: 9.337e-03, Base Lr: 2.29e-04
+2026-07-23 10:26:13 transreid.train INFO: Epoch[77] Iter[140/227] Loss: 0.124, Pose: 0.461, Acc: 0.996, Student: 1.00, Reliability: 0.832, GateAbs: 9.365e-03, Base Lr: 2.29e-04
+2026-07-23 10:26:38 transreid.train INFO: Epoch[77] Iter[160/227] Loss: 0.122, Pose: 0.461, Acc: 0.997, Student: 1.00, Reliability: 0.861, GateAbs: 9.323e-03, Base Lr: 2.29e-04
+2026-07-23 10:27:02 transreid.train INFO: Epoch[77] Iter[180/227] Loss: 0.119, Pose: 0.462, Acc: 0.997, Student: 1.00, Reliability: 0.835, GateAbs: 9.319e-03, Base Lr: 2.29e-04
+2026-07-23 10:27:26 transreid.train INFO: Epoch[77] Iter[200/227] Loss: 0.117, Pose: 0.463, Acc: 0.997, Student: 1.00, Reliability: 0.832, GateAbs: 9.400e-03, Base Lr: 2.29e-04
+2026-07-23 10:27:41 transreid.train INFO: Epoch 77 done. Time per epoch: 256.832[s] Speed: 52.8[samples/s]
+2026-07-23 10:27:42 transreid.train INFO: PCMPSR epoch=78 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000000/21.893745/45.714336/0/2.3750/0.000000 controls=None
+2026-07-23 10:27:42 transreid.train INFO: PSCCR epoch=78 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000001/[3e-06, 0.0, 0.0]/[21.169533, 21.515768, 21.893745]/[45.172611, 45.485809, 45.714336]/[6.890625, 9.34375, 10.0] controls=None
+2026-07-23 10:28:05 transreid.train INFO: Epoch[78] Iter[20/227] Loss: 0.131, Pose: 0.464, Acc: 0.997, Student: 1.00, Reliability: 0.846, GateAbs: 9.330e-03, Base Lr: 2.20e-04
+2026-07-23 10:28:29 transreid.train INFO: Epoch[78] Iter[40/227] Loss: 0.129, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.849, GateAbs: 9.295e-03, Base Lr: 2.20e-04
+2026-07-23 10:28:53 transreid.train INFO: Epoch[78] Iter[60/227] Loss: 0.131, Pose: 0.464, Acc: 0.994, Student: 1.00, Reliability: 0.838, GateAbs: 9.348e-03, Base Lr: 2.20e-04
+2026-07-23 10:29:18 transreid.train INFO: Epoch[78] Iter[80/227] Loss: 0.128, Pose: 0.464, Acc: 0.995, Student: 1.00, Reliability: 0.868, GateAbs: 9.321e-03, Base Lr: 2.20e-04
+2026-07-23 10:29:42 transreid.train INFO: Epoch[78] Iter[100/227] Loss: 0.126, Pose: 0.464, Acc: 0.995, Student: 1.00, Reliability: 0.858, GateAbs: 9.304e-03, Base Lr: 2.20e-04
+2026-07-23 10:30:06 transreid.train INFO: Epoch[78] Iter[120/227] Loss: 0.127, Pose: 0.464, Acc: 0.995, Student: 1.00, Reliability: 0.829, GateAbs: 9.329e-03, Base Lr: 2.20e-04
+2026-07-23 10:30:30 transreid.train INFO: Epoch[78] Iter[140/227] Loss: 0.124, Pose: 0.463, Acc: 0.995, Student: 1.00, Reliability: 0.842, GateAbs: 9.344e-03, Base Lr: 2.20e-04
+2026-07-23 10:30:54 transreid.train INFO: Epoch[78] Iter[160/227] Loss: 0.122, Pose: 0.463, Acc: 0.995, Student: 1.00, Reliability: 0.853, GateAbs: 9.360e-03, Base Lr: 2.20e-04
+2026-07-23 10:31:19 transreid.train INFO: Epoch[78] Iter[180/227] Loss: 0.121, Pose: 0.463, Acc: 0.995, Student: 1.00, Reliability: 0.830, GateAbs: 9.296e-03, Base Lr: 2.20e-04
+2026-07-23 10:31:43 transreid.train INFO: Epoch[78] Iter[200/227] Loss: 0.118, Pose: 0.464, Acc: 0.996, Student: 1.00, Reliability: 0.836, GateAbs: 9.372e-03, Base Lr: 2.20e-04
+2026-07-23 10:31:57 transreid.train INFO: Epoch 78 done. Time per epoch: 256.751[s] Speed: 52.8[samples/s]
+2026-07-23 10:31:59 transreid.train INFO: PCMPSR epoch=79 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000007/21.153481/46.175262/0/2.2969/0.000000 controls=None
+2026-07-23 10:31:59 transreid.train INFO: PSCCR epoch=79 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.003715/[0.011106, 3.1e-05, 7e-06]/[21.282421, 20.882751, 21.153481]/[46.154007, 46.023201, 46.175262]/[6.765625, 9.21875, 10.0] controls=None
+2026-07-23 10:32:22 transreid.train INFO: Epoch[79] Iter[20/227] Loss: 0.145, Pose: 0.463, Acc: 0.993, Student: 1.00, Reliability: 0.841, GateAbs: 9.355e-03, Base Lr: 2.10e-04
+2026-07-23 10:32:46 transreid.train INFO: Epoch[79] Iter[40/227] Loss: 0.134, Pose: 0.464, Acc: 0.995, Student: 1.00, Reliability: 0.847, GateAbs: 9.316e-03, Base Lr: 2.10e-04
+2026-07-23 10:33:10 transreid.train INFO: Epoch[79] Iter[60/227] Loss: 0.128, Pose: 0.465, Acc: 0.996, Student: 1.00, Reliability: 0.860, GateAbs: 9.340e-03, Base Lr: 2.10e-04
+2026-07-23 10:33:34 transreid.train INFO: Epoch[79] Iter[80/227] Loss: 0.126, Pose: 0.464, Acc: 0.997, Student: 1.00, Reliability: 0.843, GateAbs: 9.366e-03, Base Lr: 2.10e-04
+2026-07-23 10:33:59 transreid.train INFO: Epoch[79] Iter[100/227] Loss: 0.126, Pose: 0.463, Acc: 0.997, Student: 1.00, Reliability: 0.848, GateAbs: 9.391e-03, Base Lr: 2.10e-04
+2026-07-23 10:34:23 transreid.train INFO: Epoch[79] Iter[120/227] Loss: 0.125, Pose: 0.462, Acc: 0.997, Student: 1.00, Reliability: 0.843, GateAbs: 9.361e-03, Base Lr: 2.10e-04
+2026-07-23 10:34:47 transreid.train INFO: Epoch[79] Iter[140/227] Loss: 0.123, Pose: 0.462, Acc: 0.997, Student: 1.00, Reliability: 0.841, GateAbs: 9.313e-03, Base Lr: 2.10e-04
+2026-07-23 10:35:11 transreid.train INFO: Epoch[79] Iter[160/227] Loss: 0.122, Pose: 0.462, Acc: 0.997, Student: 1.00, Reliability: 0.858, GateAbs: 9.433e-03, Base Lr: 2.10e-04
+2026-07-23 10:35:35 transreid.train INFO: Epoch[79] Iter[180/227] Loss: 0.121, Pose: 0.462, Acc: 0.997, Student: 1.00, Reliability: 0.842, GateAbs: 9.351e-03, Base Lr: 2.10e-04
+2026-07-23 10:36:00 transreid.train INFO: Epoch[79] Iter[200/227] Loss: 0.117, Pose: 0.463, Acc: 0.997, Student: 1.00, Reliability: 0.835, GateAbs: 9.427e-03, Base Lr: 2.10e-04
+2026-07-23 10:36:13 transreid.train INFO: Epoch 79 done. Time per epoch: 255.730[s] Speed: 52.8[samples/s]
+2026-07-23 10:36:14 transreid.train INFO: PCMPSR epoch=80 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000000/23.435841/46.657124/0/2.2656/0.000000 controls=None
+2026-07-23 10:36:14 transreid.train INFO: PSCCR epoch=80 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000002/[4e-06, 1e-06, 0.0]/[22.820065, 23.287636, 23.435841]/[46.295338, 46.723553, 46.657124]/[6.953125, 9.328125, 10.0] controls=None
+2026-07-23 10:36:37 transreid.train INFO: Epoch[80] Iter[20/227] Loss: 0.126, Pose: 0.459, Acc: 0.999, Student: 1.00, Reliability: 0.840, GateAbs: 9.351e-03, Base Lr: 2.01e-04
+2026-07-23 10:37:02 transreid.train INFO: Epoch[80] Iter[40/227] Loss: 0.129, Pose: 0.461, Acc: 0.997, Student: 1.00, Reliability: 0.870, GateAbs: 9.389e-03, Base Lr: 2.01e-04
+2026-07-23 10:37:26 transreid.train INFO: Epoch[80] Iter[60/227] Loss: 0.128, Pose: 0.461, Acc: 0.996, Student: 1.00, Reliability: 0.847, GateAbs: 9.360e-03, Base Lr: 2.01e-04
+2026-07-23 10:37:50 transreid.train INFO: Epoch[80] Iter[80/227] Loss: 0.129, Pose: 0.459, Acc: 0.996, Student: 1.00, Reliability: 0.858, GateAbs: 9.381e-03, Base Lr: 2.01e-04
+2026-07-23 10:38:14 transreid.train INFO: Epoch[80] Iter[100/227] Loss: 0.128, Pose: 0.459, Acc: 0.996, Student: 1.00, Reliability: 0.838, GateAbs: 9.386e-03, Base Lr: 2.01e-04
+2026-07-23 10:38:38 transreid.train INFO: Epoch[80] Iter[120/227] Loss: 0.127, Pose: 0.460, Acc: 0.996, Student: 1.00, Reliability: 0.838, GateAbs: 9.395e-03, Base Lr: 2.01e-04
+2026-07-23 10:39:03 transreid.train INFO: Epoch[80] Iter[140/227] Loss: 0.124, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.844, GateAbs: 9.424e-03, Base Lr: 2.01e-04
+2026-07-23 10:39:27 transreid.train INFO: Epoch[80] Iter[160/227] Loss: 0.124, Pose: 0.461, Acc: 0.996, Student: 1.00, Reliability: 0.840, GateAbs: 9.405e-03, Base Lr: 2.01e-04
+2026-07-23 10:39:51 transreid.train INFO: Epoch[80] Iter[180/227] Loss: 0.122, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.820, GateAbs: 9.361e-03, Base Lr: 2.01e-04
+2026-07-23 10:40:15 transreid.train INFO: Epoch[80] Iter[200/227] Loss: 0.119, Pose: 0.462, Acc: 0.996, Student: 1.00, Reliability: 0.833, GateAbs: 9.316e-03, Base Lr: 2.01e-04
+2026-07-23 10:40:29 transreid.train INFO: Epoch 80 done. Time per epoch: 255.532[s] Speed: 52.8[samples/s]
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-23 10:40:51 transreid.train INFO: Validation Results - Epoch: 80
+2026-07-23 10:40:51 transreid.train INFO: mAP: 58.1%
+2026-07-23 10:40:51 transreid.train INFO: CMC curve, Rank-1  :70.5%
+2026-07-23 10:40:51 transreid.train INFO: CMC curve, Rank-5  :81.8%
+2026-07-23 10:40:51 transreid.train INFO: CMC curve, Rank-10 :85.7%
+2026-07-23 10:40:52 transreid.train INFO: PCMPSR epoch=81 control=zero_owner first-batch loss/positive/negative/owner-terms/owner-unique/fallback=0.000000/21.658672/47.668823/0/2.2656/0.000000 controls=None
+2026-07-23 10:40:52 transreid.train INFO: PSCCR epoch=81 control=q_only first-batch loss/prefix-loss/positive/negative/coverage=0.000001/[2e-06, 0.0, 0.0]/[21.319714, 21.577927, 21.658672]/[47.557655, 47.609055, 47.668823]/[6.859375, 9.375, 10.0] controls=None

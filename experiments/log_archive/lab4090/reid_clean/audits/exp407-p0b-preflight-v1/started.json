@@ -1,0 +1,18 @@
+{
+  "asset_manifest_sha256": "d78d02790b8e268d169ac41f26af5e52a7213e8dbe76526bc0bda7f1b16fd4ee",
+  "clip_checkpoint_sha256": "9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e",
+  "execution": "exp407-p0b-preflight-v1",
+  "execution_manifest_sha256": null,
+  "formal": false,
+  "ordered_official_train_manifest_sha256": "87adfe809f8e2abd6f78973bb63c9e6843a16e41fd29062f79eb1a6633de5836",
+  "pose_manifest_sha256": "cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8",
+  "runtime_sha256": "5a8aa901fac21e1a9d961790b78f78ce66e27a89f4c4db4ba4a9182aec3dee11",
+  "source_commit": "938b786d19a25b0e76b78797970c2609a108e716",
+  "source_files": {
+    "core": "29ddd00ce03ed73b6d1c7ab722de88490e2490638bc83b192e215c6ab4bb0f8b",
+    "donor_reserve": "b1ef0148ef5c39b06d8d8e41cb81e63bfd5eb81f497d4e26054bef1f4b069f4f",
+    "protocol": "6b24ba65be78488d945aa53f06f9cd938021994a50eff4e94273a2f5d2b21636",
+    "runner": "0037c855f53014d579c6f60b4da2aa80b449c6128cebbe4a328b8092e901d764",
+    "teacher": "af255cbbb6eafca2024f7882023deda50445f9a01c1df0b28422a24e23cc35a0"
+  }
+}

@@ -1,0 +1,59 @@
+/home/afr/SOLIDER-REID-exp388-baseline-d4fa227/model/backbones/swin_transformer.py:1157: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+{
+  "final_state_sha256": "79b27ff09f18576cf52b823637ee1d4ac66e89c90e50125c0dec7823cdb77ccd",
+  "grad_scaler": {
+    "_growth_tracker": 3,
+    "backoff_factor": 0.5,
+    "growth_factor": 2.0,
+    "growth_interval": 2000,
+    "scale": 512.0
+  },
+  "gradient_count": 173,
+  "gradient_sha256": [
+    "d93de6fb106c833fcf1ec2c14ab1fed21445817879169a441553756db7733529",
+    "35dfe69568297c82e478d4fab25b4e820ab60c2da6ebf9793adad4e2eab64658",
+    "4d3271e9496596ca12aed52bf5434624d329c968e6ca4d949238d92b2f71051c",
+    "ee5952a935a17bfea818db641577c903025f25af96556d0d2e6d52de1d2aa10c",
+    "73be82307c96cabce255a546cea49703679533ad3abb1ad09e487116d6f19726",
+    "508531f1de8f086c111a171bc56c1dc365116b571b15dc8f95bd4a27009af033",
+    "24d355e9bff76f0e39740345bb92746a1e5f87c9120b4ec49271ebee77f7a493",
+    "b0ef9a10be79381b3c2d9462b6d808890b34402436b08801cb64a33ad626045e",
+    "8caf1967e515f92f283a5ed67128314d47c2237c8b28f8bcc77fed74480d1313",
+    "340a7caa98ad7b13e5749e1eef17e400dc39ff0e1527c0c2973dadcb8541fc02"
+  ],
+  "initial_state_sha256": "26256dd5af015b25943e89bd6515ebf0d482679c4a93ef316ff607815da0577c",
+  "losses": [
+    18.313426971435547,
+    24.875972747802734,
+    29.238794326782227,
+    22.361358642578125,
+    37.69715118408203,
+    15.519607543945312,
+    24.111183166503906,
+    11.57187271118164,
+    45.8001823425293,
+    14.653425216674805
+  ],
+  "momentum_count": 173,
+  "momentum_sha256": "a26f3c7e7f04ec76b970d0a2902b749b4ef5a568956ab93bb0d2381645c2278b",
+  "output_sha256": [
+    "3bafbefaf2d73335d343f6473ecb008e411e967d97d4069b1fe3e971593d78c9",
+    "c7c1c0c38f62230b7f689e9556b2a8a59c1c77b92fb3f34c1a68a5b2b99d400d",
+    "75eb432f5c4d0a9409d4deea6db06544f3d7e2a98d65e094a46da69ea293c2b4",
+    "9710cfbb0edb55835330692bb5cf7d138b6ffae04a2eb13fdafab6d4348906c1",
+    "858508a48532699c54d3046ec6096b95b1cb46a78a6ea40925e2aac2013ee8f3",
+    "84366c85da52cacb156cb4f5ee97ee34790e03cb36b876f7ac68afc86040fea5",
+    "a6f8e836003f82f9fea17df6d4feef6492c73de47c114100a48ce3aa7f4f5bf5",
+    "8fa9d74c14b97ea16aba3247114fca42aad366fffe00387a9c00e0e3a9c0f9b3",
+    "c8dfc3e4d245d8648305ece75ac3b977ca39843c4ab4d6e29a22e6eff5c51ef0",
+    "6c6cca1523ae15ae26bf1a69f8fa57c34f636419f1597af4566ed5480ccfa675"
+  ],
+  "post_construction_cpu_rng_sha256": "d12f0b14fbfcb0f31a97f776f0a5f7404723adfc4a7c6d40ee62d8e815dd3d1a",
+  "post_construction_cuda_rng_sha256": "8ee8b10e03a6d9734dde8f278e3d81533b32346498f79d30f355b3a4081528af",
+  "state_count": 211
+}

@@ -1,0 +1,188 @@
+{
+  "adjudicator": {
+    "inactive_fail": {
+      "decision": "CURRENT_SEMANTIC_INTERFACE_NO_GO",
+      "gates": {
+        "all_descriptors_active": false,
+        "correct_floor": true,
+        "route_gap_replicated": true,
+        "semantic_all_controls_margin": true,
+        "validity_all_pass": true
+      },
+      "phase_b_formal_mechanism_design_authorized": false,
+      "route_gap_mAP": 0.0014999999999999458,
+      "semantic_control_max_mAP": 0.598,
+      "semantic_margin_mAP": 0.0020000000000000018,
+      "status": "PASS"
+    },
+    "positive": {
+      "decision": "PHASE_B_SEMANTIC_INTERFACE_IDENTIFIABLE",
+      "gates": {
+        "all_descriptors_active": true,
+        "correct_floor": true,
+        "route_gap_replicated": true,
+        "semantic_all_controls_margin": true,
+        "validity_all_pass": true
+      },
+      "phase_b_formal_mechanism_design_authorized": true,
+      "route_gap_mAP": 0.0014999999999999458,
+      "semantic_control_max_mAP": 0.598,
+      "semantic_margin_mAP": 0.0020000000000000018,
+      "status": "PASS"
+    },
+    "route_fail": {
+      "decision": "CURRENT_SEMANTIC_INTERFACE_NO_GO",
+      "gates": {
+        "all_descriptors_active": true,
+        "correct_floor": true,
+        "route_gap_replicated": false,
+        "semantic_all_controls_margin": true,
+        "validity_all_pass": true
+      },
+      "phase_b_formal_mechanism_design_authorized": false,
+      "route_gap_mAP": 0.0004999999999999449,
+      "semantic_control_max_mAP": 0.598,
+      "semantic_margin_mAP": 0.0020000000000000018,
+      "status": "PASS"
+    },
+    "semantic_fail": {
+      "decision": "CURRENT_SEMANTIC_INTERFACE_NO_GO",
+      "gates": {
+        "all_descriptors_active": true,
+        "correct_floor": true,
+        "route_gap_replicated": true,
+        "semantic_all_controls_margin": false,
+        "validity_all_pass": true
+      },
+      "phase_b_formal_mechanism_design_authorized": false,
+      "route_gap_mAP": 0.0014999999999999458,
+      "semantic_control_max_mAP": 0.5995,
+      "semantic_margin_mAP": 0.0004999999999999449,
+      "status": "PASS"
+    },
+    "validity_fail": {
+      "decision": "CURRENT_SEMANTIC_INTERFACE_NO_GO",
+      "gates": {
+        "all_descriptors_active": true,
+        "correct_floor": true,
+        "route_gap_replicated": true,
+        "semantic_all_controls_margin": true,
+        "validity_all_pass": false
+      },
+      "phase_b_formal_mechanism_design_authorized": false,
+      "route_gap_mAP": 0.0014999999999999458,
+      "semantic_control_max_mAP": 0.598,
+      "semantic_margin_mAP": 0.0020000000000000018,
+      "status": "FAIL"
+    }
+  },
+  "bypass_reports": {
+    "all_router_bypass": {
+      "bank0_identity": true,
+      "bank1_identity": true,
+      "bypassed": [
+        1,
+        1
+      ],
+      "calls": [
+        1,
+        1
+      ],
+      "restored_exact": true
+    },
+    "bypass_router0": {
+      "bank0_identity": true,
+      "bank1_identity": false,
+      "bypassed": [
+        1,
+        0
+      ],
+      "calls": [
+        1,
+        1
+      ],
+      "restored_exact": true
+    },
+    "bypass_router1": {
+      "bank0_identity": false,
+      "bank1_identity": true,
+      "bypassed": [
+        0,
+        1
+      ],
+      "calls": [
+        1,
+        1
+      ],
+      "restored_exact": true
+    }
+  },
+  "check_count": 38,
+  "checks": {
+    "adjudicator_inactive_fail": true,
+    "adjudicator_positive_pass": true,
+    "adjudicator_route_fail": true,
+    "adjudicator_semantic_fail": true,
+    "adjudicator_validity_fail": true,
+    "all_bypass_contract": true,
+    "binding_evidence_untouched": true,
+    "binding_field_recomputed": true,
+    "binding_mask_exact": true,
+    "binding_presence_exact": true,
+    "bypass0_contract": true,
+    "bypass1_contract": true,
+    "bypass_original_restored": true,
+    "cuda_uninitialized_after": true,
+    "cuda_uninitialized_before": true,
+    "donor_chunk16_exact": true,
+    "donor_chunk2_exact": true,
+    "donor_chunk5_exact": true,
+    "donor_different_pid_exact": true,
+    "donor_no_fixed_points": true,
+    "donor_repeat_exact": true,
+    "donor_same_camera_exact": true,
+    "donor_same_split_exact": true,
+    "expert_mean_applied": true,
+    "expert_mean_restored": true,
+    "expert_mean_state_changed": true,
+    "orthogonal_cosine": false,
+    "orthogonal_global_rng_exact": true,
+    "orthogonal_gram": true,
+    "orthogonal_nonidentity": true,
+    "orthogonal_norm": false,
+    "orthogonal_repeat_exact": true,
+    "scalar_tensor_hash_supported": true,
+    "slot_cycle_exact": true,
+    "slot_cycle_mask_untouched": true,
+    "source_ast_clean": true,
+    "zero_evidence_exact": true,
+    "zero_non_target_exact": true
+  },
+  "donor_summary": {
+    "count": 16,
+    "different_pid_fraction": 1.0,
+    "no_fixed_points": true,
+    "same_camera_fraction": 1.0,
+    "same_split_fraction": 1.0
+  },
+  "expert_report": {
+    "all_banks_mean_exact": true,
+    "before_sha256": "b67748f0a88ef3000d6ca60d31f89be8ddbfd8110a943c2bfe24814de6a65f4f",
+    "during_sha256": "57c64c16597035e3a8e6f0329c1824ba57d47a41d3e86221c4bf0d209f50fdde",
+    "restored_exact": true
+  },
+  "orthogonal": {
+    "cosine_max_abs": 1.232842865572792e-07,
+    "gram_max_abs": 9.992007221626409e-16,
+    "norm_max_abs": 6.164214516601874e-08,
+    "sha256": "e506cda39d892e5500a83523dbfa2fedf5ca8bfd908fce284ab272ef6b881c86"
+  },
+  "sources": {
+    "findings": [],
+    "sha256": {
+      "counterfactual_core.py": "8b536ec1e03d6ac17253900462af182cc11f65757fb35ef134b038644e71dfd2"
+    }
+  },
+  "status": "FAIL",
+  "verdict": "EXP402_STATIC_CPU_FAIL"
+}

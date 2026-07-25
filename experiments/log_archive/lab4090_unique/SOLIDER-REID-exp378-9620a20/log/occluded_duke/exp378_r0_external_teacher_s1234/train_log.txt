@@ -1,0 +1,1013 @@
+2026-07-16 14:12:13 transreid INFO: Saving model in the path :./log/occluded_duke/exp378_r0_external_teacher_s1234
+2026-07-16 14:12:13 transreid INFO: Loaded configuration file configs/occluded_duke/exp378_r0_external_teacher.yml
+2026-07-16 14:12:13 transreid INFO: Running with config:
+DATALOADER:
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+  REMOVE_TAIL: 0
+  SAMPLER: softmax_triplet
+DATASETS:
+  NAMES: occluded_duke
+  ROOT_DIR: data
+  ROOT_TRAIN_DIR: ../data
+  ROOT_VAL_DIR: ../data
+INPUT:
+  PADDING: 10
+  PIXEL_MEAN: [0.5, 0.5, 0.5]
+  PIXEL_STD: [0.5, 0.5, 0.5]
+  PROB: 0.5
+  RE_PROB: 0.0
+  SIZE_TEST: [384, 128]
+  SIZE_TRAIN: [384, 128]
+MODEL:
+  ATT_DROP_RATE: 0.0
+  COS_LAYER: False
+  DEVICE: cuda
+  DEVICE_ID: 0
+  DEVIDE_LENGTH: 4
+  DIST_TRAIN: False
+  DROPOUT_RATE: 0.0
+  DROP_OUT: 0.0
+  DROP_PATH: 0.1
+  FEAT_DIM: 512
+  GEM_POOLING: False
+  GLOBAL_LOSS_SCALE: 1.0
+  ID_LOSS_TYPE: softmax
+  ID_LOSS_WEIGHT: 1.0
+  IF_LABELSMOOTH: off
+  IF_WITH_CENTER: no
+  JPM: False
+  LAST_STRIDE: 1
+  METRIC_LOSS_TYPE: triplet
+  NAME: transformer
+  NECK: bnneck
+  NO_MARGIN: True
+  POSE_ADDITIVE_ADAPTER: False
+  POSE_BACKBONE_PSG: True
+  POSE_BA_PKC: False
+  POSE_BA_PKC_WEIGHT: 0.1
+  POSE_BT_PKD: False
+  POSE_BT_PKD_DECAY_EPOCH: 0
+  POSE_BT_PKD_WEIGHT: 0.01
+  POSE_CHANNEL_SHUFFLE: False
+  POSE_CLIP_ID_ARCH: ViT-L-14
+  POSE_CLIP_ID_NOPARAM_POOL: False
+  POSE_CLIP_ID_OCC_REPEL: False
+  POSE_CLIP_ID_OCC_REPEL_W: 0.5
+  POSE_CLIP_ID_PART_GUIDED: False
+  POSE_CLIP_ID_POSE_GUIDED: False
+  POSE_CLIP_ID_POSE_PROMPT: False
+  POSE_CLIP_ID_POSE_TEMP: 1.0
+  POSE_CLIP_ID_PRETRAINED: openai
+  POSE_CLIP_ID_PROMPT: False
+  POSE_CLIP_ID_TEMP: 0.07
+  POSE_CLIP_ID_WEIGHT: 1.0
+  POSE_DATA_DIR: data/occluded_duke
+  POSE_DEFORMABLE_K: 4
+  POSE_DEFORMABLE_SAMPLE: False
+  POSE_DROPOUT_P: 0.0
+  POSE_ENABLED: True
+  POSE_EVIDENTIAL: False
+  POSE_EVIDENTIAL_ANNEAL: 0.6
+  POSE_EVIDENTIAL_KL_REG: 0.1
+  POSE_FSDC: False
+  POSE_FSDC_HEADS: 8
+  POSE_FSDC_LAYERS: 2
+  POSE_FSDC_MASK_RATIO: 0.3
+  POSE_FSDC_NOISE_STD: 0.1
+  POSE_FSDC_WEIGHT: 0.5
+  POSE_GCN_HIDDEN: 256
+  POSE_GCN_LAYERS: 2
+  POSE_GCN_PER_PART: False
+  POSE_HEATMAP_NORM: spatial_softmax
+  POSE_HEATMAP_SIZE: [96, 32]
+  POSE_HYPER_LORA: False
+  POSE_HYPER_LORA_BASES: 4
+  POSE_HYPER_LORA_FACTORIZATION: basis
+  POSE_HYPER_LORA_HIDDEN: 32
+  POSE_HYPER_LORA_POSE_SOURCE: input
+  POSE_HYPER_LORA_RANK: 4
+  POSE_HYPER_LORA_RES_SCALE_INIT: 0.001
+  POSE_HYPER_LORA_STAGES: [2, 3]
+  POSE_KEYPOINT_POOL_ONLY: False
+  POSE_KP_TRIPLET: False
+  POSE_KP_TRIPLET_WEIGHT: 1.0
+  POSE_KP_WEIGHT_MODE: score
+  POSE_LGPA: False
+  POSE_LGPA_ASSIGN_WEIGHT: 0.5
+  POSE_LGPA_CLIP_DIM: 512
+  POSE_LGPA_DETACH: False
+  POSE_LGPA_FIXED_BANDS: False
+  POSE_LGPA_NO_POSE: False
+  POSE_LGPA_NUM_HEADS: 8
+  POSE_LGPA_POSE_TEMP: 1.0
+  POSE_LGPA_QUERY_MODE: clip_frozen
+  POSE_LGPA_QUERY_SEED: 42
+  POSE_LGPA_RANDOM_TEXT: False
+  POSE_LOWER_BODY_OCC: False
+  POSE_LOWER_BODY_OCC_MODE: lower
+  POSE_LOWER_BODY_OCC_PROB: 0.5
+  POSE_LOWER_BODY_OCC_RATIO: 0.5
+  POSE_LPCS: False
+  POSE_LPCS_CONF_WEIGHT: 0.25
+  POSE_LPCS_CONTEXT_MODE: none
+  POSE_LPCS_DELTA_SCALE: 0.5
+  POSE_LPCS_HEAD_MODE: residual
+  POSE_LPCS_HIDDEN: 32
+  POSE_LPCS_PAIR_MODE: all
+  POSE_LPCS_PAIR_TOP_RATIO: 1.0
+  POSE_LPCS_RANK_MODE: all
+  POSE_LPCS_RANK_TAU: 8.0
+  POSE_LPCS_RANK_TOP_RATIO: 1.0
+  POSE_LPCS_ST_LOW_THR: 0.3
+  POSE_LPCS_ST_MIN_COUNT: 1
+  POSE_LPCS_ST_MOM: 0.9
+  POSE_LPCS_ST_UPDATE_STOP_EPOCH: -1
+  POSE_LPCS_ST_UPDATE_THR: 0.7
+  POSE_LPCS_WARMUP: 20
+  POSE_LPCS_WEIGHT: 0.5
+  POSE_LTCS: False
+  POSE_LTCS_HIDDEN: 32
+  POSE_LTCS_ST_LOW_THR: 0.3
+  POSE_LTCS_ST_MIN_COUNT: 1
+  POSE_LTCS_ST_MOM: 0.9
+  POSE_LTCS_ST_UPDATE_STOP_EPOCH: -1
+  POSE_LTCS_ST_UPDATE_THR: 0.7
+  POSE_LTCS_WARMUP: 20
+  POSE_LTCS_WEIGHT: 0.5
+  POSE_MAXSIM_TRIPLET: False
+  POSE_MAXSIM_TRIPLET_ADDITIVE: False
+  POSE_MAXSIM_TRIPLET_TEMP: 0.05
+  POSE_MAXSIM_TRIPLET_WEIGHT: 0.25
+  POSE_MST: False
+  POSE_MST_MARGIN: 0.3
+  POSE_MST_VIS_THR: 0.3
+  POSE_MST_WEIGHT: 0.5
+  POSE_MULTI_SCALE_KP: False
+  POSE_MULTI_SCALE_STAGES: [2, 3]
+  POSE_NORMALIZE: False
+  POSE_NORMALIZE_HIDDEN: 256
+  POSE_OA_RD: False
+  POSE_OA_RD_TEMP: 0.1
+  POSE_OA_RD_WEIGHT: 1.0
+  POSE_OA_SD: False
+  POSE_OA_SD_EMA_DECAY: 0.999
+  POSE_OA_SD_GLOBAL_ONLY: False
+  POSE_OA_SD_WEIGHT: 1.0
+  POSE_OERL: False
+  POSE_OERL_OCC_RATIO: 0.5
+  POSE_OERL_WEIGHT: 1.0
+  POSE_PAA_ADAPTIVE_GATE: False
+  POSE_PAA_BOTTLENECK: 32
+  POSE_PAA_ROUTED: False
+  POSE_PACI: False
+  POSE_PACI_MARGIN: 0.3
+  POSE_PACI_MOMENTUM: 0.9
+  POSE_PACI_WARMUP: 5
+  POSE_PACI_WEIGHT: 0.5
+  POSE_PARALLEL_AUG: False
+  POSE_PART_GRAD_SCALE: 0.0
+  POSE_PART_STAGE: -1
+  POSE_PART_TRI_WEIGHT: 1.0
+  POSE_PART_WEIGHT: 1.0
+  POSE_PATCH_EMBED: False
+  POSE_PATCH_EMBED_KS: 1
+  POSE_PBSR: False
+  POSE_PBSR_COUPLED_WRITE: True
+  POSE_PBSR_DIM: 256
+  POSE_PBSR_NUM_HEADS: 4
+  POSE_PBSR_NUM_SLOTS: 6
+  POSE_PBSR_ROUTE_WEIGHT: 0.5
+  POSE_PBSR_SLOT_MIXER: True
+  POSE_PBSR_SUPERVISION: correct
+  POSE_PBSR_WRITEBACK: True
+  POSE_PCMSC: False
+  POSE_PCMSC_RANDOM_MASK: False
+  POSE_PCMSC_W: 1.0
+  POSE_PFM_ENABLED: False
+  POSE_PFM_HIDDEN: 64
+  POSE_PGPD: False
+  POSE_PGPD_RANDOM_TEACHER: False
+  POSE_PGPD_TAU: 0.1
+  POSE_PGPD_W: 0.5
+  POSE_PKC: False
+  POSE_PKC_TEMP: 0.07
+  POSE_PKC_VIS_THR: 0.3
+  POSE_PKC_WEIGHT: 0.5
+  POSE_PPA: False
+  POSE_PPA_ASSIGN_WEIGHT: 0.5
+  POSE_PPA_GILT: False
+  POSE_PPA_NUM_PARTS: 5
+  POSE_PROMPT: False
+  POSE_PROMPT_DROP: 0.0
+  POSE_PROMPT_NUM_PARTS: 18
+  POSE_PRSM: False
+  POSE_PRSM_BIDIRECTIONAL: True
+  POSE_PRSM_NUM_PARTS: 6
+  POSE_PRSM_POSE_SOURCE: input
+  POSE_PRSM_RES_SCALE_INIT: 0.001
+  POSE_PRSM_RETENTION_INIT: 0.95
+  POSE_PRSM_ROUTING: parts
+  POSE_PRSM_STATE_DIM: 128
+  POSE_PSG_PART: False
+  POSE_PSG_PRESERVE_RNG: True
+  POSE_PSG_SPATIAL: False
+  POSE_PSG_STAGES: [-1]
+  POSE_ROA: False
+  POSE_ROA_PATH: data/VOCdevkit/VOC2012
+  POSE_ROA_POSE_AWARE: False
+  POSE_ROA_PROB: 0.5
+  POSE_SELECTIVE_SSM: False
+  POSE_SELECTIVE_SSM_BIDIRECTIONAL: True
+  POSE_SELECTIVE_SSM_INNER_DIM: 128
+  POSE_SELECTIVE_SSM_POSE_GAIN_INIT: 0.1
+  POSE_SELECTIVE_SSM_POSE_HIDDEN: 32
+  POSE_SELECTIVE_SSM_POSE_SOURCE: input
+  POSE_SELECTIVE_SSM_RES_SCALE_INIT: 0.01
+  POSE_SELECTIVE_SSM_SCAN: serpentine
+  POSE_SELECTIVE_SSM_STATE_DIM: 16
+  POSE_SHUFFLE: False
+  POSE_SKELETON_GCN: False
+  POSE_SPLADE: False
+  POSE_SPLADE_DIM: 2048
+  POSE_SPLADE_REG: 0.01
+  POSE_STM: False
+  POSE_STM_NUM_SWAP: 2
+  POSE_STM_PROB: 0.5
+  POSE_STM_WEIGHT: 0.5
+  POSE_STRUCTURAL_ROUTING: False
+  POSE_STR_NUM_HEADS: 8
+  POSE_STR_NUM_LAYERS: 2
+  POSE_STR_NUM_PARTS: 6
+  POSE_STR_PART_DROP: 0.0
+  POSE_STR_PER_TOKEN: False
+  POSE_STR_SELF_ATTN: False
+  POSE_STR_SUPCON: False
+  POSE_STR_SUPCON_ADDITIVE: False
+  POSE_STR_SUPCON_GLOBAL: False
+  POSE_STR_SUPCON_TEMP: 0.07
+  POSE_STR_SUPCON_VIS_WEIGHT: False
+  POSE_STR_SUPCON_WEIGHT: 0.5
+  POSE_TAPF: False
+  POSE_TAPF_ANCHOR_TRANSITION: hard
+  POSE_TAPF_BOOT_EPOCHS: 10
+  POSE_TAPF_CONF_LOSS_WEIGHT: 0.25
+  POSE_TAPF_CONF_THRESHOLD: 0.3
+  POSE_TAPF_HANDOFF_START: 6
+  POSE_TAPF_HIDDEN: 64
+  POSE_TAPF_LOSS_WEIGHT: 1.0
+  POSE_TAPF_MAX_LOG_SCALE: 0.5
+  POSE_TAPF_MAX_SHIFT: 0.12
+  POSE_TAPF_MODE: p0
+  POSE_TAPF_RELEASE_GAMMA: 1.0
+  POSE_TAPF_SIGMA_MAX: 0.25
+  POSE_TAPF_SIGMA_MIN: 0.025
+  POSE_TAPF_SOURCE_STAGE: 2
+  POSE_TAPF_TEMPERATURE: 1.0
+  POSE_TEMPERATURE: 1.0
+  POSE_TEST_FEAT: global
+  POSE_THRESHOLD: 0.3
+  POSE_UPPER_BODY_OCC: False
+  POSE_UPPER_BODY_OCC_PROB: 0.3
+  POSE_USE_TARGET_HEATMAP: True
+  POSE_VCNORM: False
+  POSE_VCNORM_GAIN_SCALE: 1.0
+  POSE_VCNORM_HIDDEN: 64
+  POSE_VCNORM_MODULE: True
+  POSE_VCNORM_VIS_THR: 0.3
+  POSE_VCNORM_WARMUP: 20
+  POSE_VCNORM_WEIGHT: 0.5
+  POSE_VCSR: False
+  POSE_VCSR_ASSIGN_WEIGHT: 0.5
+  POSE_VCSR_VIS_THR: 0.3
+  PRETRAIN_CHOICE: self
+  PRETRAIN_HW_RATIO: 2
+  PRETRAIN_PATH: pretrained/swin_tiny.pth
+  REDUCE_FEAT_DIM: False
+  RE_ARRANGE: True
+  SEMANTIC_WEIGHT: 0.2
+  SHIFT_NUM: 5
+  SHUFFLE_GROUP: 2
+  SIE_CAMERA: False
+  SIE_COE: 3.0
+  SIE_VIEW: False
+  STEM_CONV: False
+  STRIDE_SIZE: [16, 16]
+  TRANSFORMER_TYPE: swin_tiny_patch4_window7_224
+  TRIPLET_LOSS_WEIGHT: 1.0
+  WITH_CP: False
+OUTPUT_DIR: ./log/occluded_duke/exp378_r0_external_teacher_s1234
+SOLVER:
+  AMP_INIT_SCALE: 1024.0
+  BASE_LR: 0.0008
+  BIAS_LR_FACTOR: 2
+  CENTER_LOSS_WEIGHT: 0.0005
+  CENTER_LR: 0.5
+  CHECKPOINT_PERIOD: 10
+  COSINE_MARGIN: 0.5
+  COSINE_SCALE: 30
+  EVAL_PERIOD: 10
+  FREEZE_BACKBONE_EPOCHS: 0
+  GAMMA: 0.1
+  IMS_PER_BATCH: 64
+  LARGE_FC_LR: False
+  LOG_PERIOD: 50
+  MARGIN: 0.3
+  MAX_EPOCHS: 120
+  MOMENTUM: 0.9
+  OPTIMIZER_NAME: SGD
+  SEED: 1234
+  STEPS: (40, 70)
+  TRP_L2: False
+  WARMUP_EPOCHS: 20
+  WARMUP_FACTOR: 0.01
+  WARMUP_METHOD: cosine
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0.0001
+TEST:
+  CVK_GLOBAL_WEIGHT: 1.0
+  CVK_KP_WEIGHT: 1.0
+  DIST_MAT: dist_mat.npy
+  EVAL: True
+  FEAT_NORM: yes
+  FLIP_TEST: True
+  IMS_PER_BATCH: 64
+  NECK_FEAT: before
+  NFC: False
+  NFC_K1: 2
+  NFC_K2: 2
+  POWER_NORM: 0.0
+  RE_RANKING: False
+  WEIGHT: 
+2026-07-16 14:12:13 transreid.check INFO: Dataset statistics:
+2026-07-16 14:12:13 transreid.check INFO:   ----------------------------------------
+2026-07-16 14:12:13 transreid.check INFO:   subset   | # ids | # images | # cameras
+2026-07-16 14:12:13 transreid.check INFO:   ----------------------------------------
+2026-07-16 14:12:13 transreid.check INFO:   train    |   702 |    15618 |         8
+2026-07-16 14:12:13 transreid.check INFO:   query    |   519 |     2210 |         8
+2026-07-16 14:12:13 transreid.check INFO:   gallery  |  1110 |    17661 |         8
+2026-07-16 14:12:13 transreid.check INFO:   ----------------------------------------
+2026-07-16 14:12:14 transreid INFO: ===========using cosine learning rate=======
+2026-07-16 14:12:14 transreid.train INFO: start training
+2026-07-16 14:12:14 transreid.train INFO: Pose-guided training ENABLED
+2026-07-16 14:12:22 transreid.train INFO: Epoch[1] Iter[50/227] Loss: 14.990, Acc: 0.002, Base Lr: 4.76e-05 | id_global: 6.555 tri_global: 8.434
+2026-07-16 14:12:29 transreid.train INFO: Epoch[1] Iter[100/227] Loss: 13.246, Acc: 0.002, Base Lr: 4.76e-05 | id_global: 6.554 tri_global: 6.692
+2026-07-16 14:12:35 transreid.train INFO: Epoch[1] Iter[150/227] Loss: 12.259, Acc: 0.002, Base Lr: 4.76e-05 | id_global: 6.554 tri_global: 5.705
+2026-07-16 14:12:42 transreid.train INFO: Epoch[1] Iter[200/227] Loss: 11.647, Acc: 0.002, Base Lr: 4.76e-05 | id_global: 6.553 tri_global: 5.094
+2026-07-16 14:12:43 transreid.train INFO: Epoch 1 done. Time per epoch: 28.744[s] Speed: 467.6[samples/s] ETA: 0h57m
+2026-07-16 14:12:51 transreid.train INFO: Epoch[2] Iter[50/227] Loss: 9.942, Acc: 0.005, Base Lr: 8.72e-05 | id_global: 6.548 tri_global: 3.394
+2026-07-16 14:12:57 transreid.train INFO: Epoch[2] Iter[100/227] Loss: 9.348, Acc: 0.007, Base Lr: 8.72e-05 | id_global: 6.545 tri_global: 2.803
+2026-07-16 14:13:03 transreid.train INFO: Epoch[2] Iter[150/227] Loss: 8.970, Acc: 0.014, Base Lr: 8.72e-05 | id_global: 6.541 tri_global: 2.429
+2026-07-16 14:13:10 transreid.train INFO: Epoch[2] Iter[200/227] Loss: 8.698, Acc: 0.029, Base Lr: 8.72e-05 | id_global: 6.535 tri_global: 2.163
+2026-07-16 14:13:11 transreid.train INFO: Epoch 2 done. Time per epoch: 28.333[s] Speed: 478.9[samples/s] ETA: 0h55m
+2026-07-16 14:13:19 transreid.train INFO: Epoch[3] Iter[50/227] Loss: 7.756, Acc: 0.071, Base Lr: 1.27e-04 | id_global: 6.510 tri_global: 1.246
+2026-07-16 14:13:25 transreid.train INFO: Epoch[3] Iter[100/227] Loss: 7.622, Acc: 0.107, Base Lr: 1.27e-04 | id_global: 6.500 tri_global: 1.122
+2026-07-16 14:13:32 transreid.train INFO: Epoch[3] Iter[150/227] Loss: 7.541, Acc: 0.133, Base Lr: 1.27e-04 | id_global: 6.489 tri_global: 1.051
+2026-07-16 14:13:38 transreid.train INFO: Epoch[3] Iter[200/227] Loss: 7.475, Acc: 0.176, Base Lr: 1.27e-04 | id_global: 6.474 tri_global: 1.001
+2026-07-16 14:13:40 transreid.train INFO: Epoch 3 done. Time per epoch: 28.376[s] Speed: 478.2[samples/s] ETA: 0h55m
+2026-07-16 14:13:47 transreid.train INFO: Epoch[4] Iter[50/227] Loss: 7.325, Acc: 0.145, Base Lr: 1.66e-04 | id_global: 6.431 tri_global: 0.894
+2026-07-16 14:13:54 transreid.train INFO: Epoch[4] Iter[100/227] Loss: 7.238, Acc: 0.166, Base Lr: 1.66e-04 | id_global: 6.415 tri_global: 0.823
+2026-07-16 14:14:00 transreid.train INFO: Epoch[4] Iter[150/227] Loss: 7.181, Acc: 0.198, Base Lr: 1.66e-04 | id_global: 6.398 tri_global: 0.783
+2026-07-16 14:14:07 transreid.train INFO: Epoch[4] Iter[200/227] Loss: 7.125, Acc: 0.247, Base Lr: 1.66e-04 | id_global: 6.369 tri_global: 0.757
+2026-07-16 14:14:08 transreid.train INFO: Epoch 4 done. Time per epoch: 28.309[s] Speed: 477.0[samples/s] ETA: 0h54m
+2026-07-16 14:14:16 transreid.train INFO: Epoch[5] Iter[50/227] Loss: 6.870, Acc: 0.169, Base Lr: 2.06e-04 | id_global: 6.305 tri_global: 0.565
+2026-07-16 14:14:22 transreid.train INFO: Epoch[5] Iter[100/227] Loss: 6.860, Acc: 0.193, Base Lr: 2.06e-04 | id_global: 6.284 tri_global: 0.576
+2026-07-16 14:14:29 transreid.train INFO: Epoch[5] Iter[150/227] Loss: 6.844, Acc: 0.227, Base Lr: 2.06e-04 | id_global: 6.256 tri_global: 0.588
+2026-07-16 14:14:35 transreid.train INFO: Epoch[5] Iter[200/227] Loss: 6.807, Acc: 0.274, Base Lr: 2.06e-04 | id_global: 6.210 tri_global: 0.597
+2026-07-16 14:14:37 transreid.train INFO: Epoch 5 done. Time per epoch: 28.400[s] Speed: 477.7[samples/s] ETA: 0h54m
+2026-07-16 14:14:44 transreid.train INFO: Epoch[6] Iter[50/227] Loss: 6.627, Acc: 0.153, Base Lr: 2.46e-04 | id_global: 6.145 tri_global: 0.482
+2026-07-16 14:14:50 transreid.train INFO: Epoch[6] Iter[100/227] Loss: 6.632, Acc: 0.166, Base Lr: 2.46e-04 | id_global: 6.118 tri_global: 0.514
+2026-07-16 14:14:57 transreid.train INFO: Epoch[6] Iter[150/227] Loss: 6.591, Acc: 0.197, Base Lr: 2.46e-04 | id_global: 6.069 tri_global: 0.522
+2026-07-16 14:15:03 transreid.train INFO: Epoch[6] Iter[200/227] Loss: 6.522, Acc: 0.245, Base Lr: 2.46e-04 | id_global: 5.995 tri_global: 0.527
+2026-07-16 14:15:05 transreid.train INFO: Epoch 6 done. Time per epoch: 28.524[s] Speed: 477.9[samples/s] ETA: 0h54m
+2026-07-16 14:15:13 transreid.train INFO: Epoch[7] Iter[50/227] Loss: 6.389, Acc: 0.142, Base Lr: 2.85e-04 | id_global: 5.933 tri_global: 0.457
+2026-07-16 14:15:19 transreid.train INFO: Epoch[7] Iter[100/227] Loss: 6.291, Acc: 0.162, Base Lr: 2.85e-04 | id_global: 5.870 tri_global: 0.421
+2026-07-16 14:15:25 transreid.train INFO: Epoch[7] Iter[150/227] Loss: 6.230, Acc: 0.193, Base Lr: 2.85e-04 | id_global: 5.811 tri_global: 0.420
+2026-07-16 14:15:32 transreid.train INFO: Epoch[7] Iter[200/227] Loss: 6.105, Acc: 0.244, Base Lr: 2.85e-04 | id_global: 5.696 tri_global: 0.409
+2026-07-16 14:15:33 transreid.train INFO: Epoch 7 done. Time per epoch: 28.254[s] Speed: 477.9[samples/s] ETA: 0h53m
+2026-07-16 14:15:41 transreid.train INFO: Epoch[8] Iter[50/227] Loss: 6.044, Acc: 0.148, Base Lr: 3.25e-04 | id_global: 5.647 tri_global: 0.397
+2026-07-16 14:15:47 transreid.train INFO: Epoch[8] Iter[100/227] Loss: 5.974, Acc: 0.162, Base Lr: 3.25e-04 | id_global: 5.593 tri_global: 0.381
+2026-07-16 14:15:54 transreid.train INFO: Epoch[8] Iter[150/227] Loss: 5.903, Acc: 0.198, Base Lr: 3.25e-04 | id_global: 5.519 tri_global: 0.384
+2026-07-16 14:16:00 transreid.train INFO: Epoch[8] Iter[200/227] Loss: 5.747, Acc: 0.247, Base Lr: 3.25e-04 | id_global: 5.373 tri_global: 0.374
+2026-07-16 14:16:02 transreid.train INFO: Epoch 8 done. Time per epoch: 28.209[s] Speed: 478.7[samples/s] ETA: 0h52m
+2026-07-16 14:16:09 transreid.train INFO: Epoch[9] Iter[50/227] Loss: 5.750, Acc: 0.138, Base Lr: 3.64e-04 | id_global: 5.384 tri_global: 0.366
+2026-07-16 14:16:15 transreid.train INFO: Epoch[9] Iter[100/227] Loss: 5.684, Acc: 0.170, Base Lr: 3.64e-04 | id_global: 5.306 tri_global: 0.378
+2026-07-16 14:16:22 transreid.train INFO: Epoch[9] Iter[150/227] Loss: 5.542, Acc: 0.207, Base Lr: 3.64e-04 | id_global: 5.188 tri_global: 0.354
+2026-07-16 14:16:28 transreid.train INFO: Epoch[9] Iter[200/227] Loss: 5.343, Acc: 0.260, Base Lr: 3.64e-04 | id_global: 5.005 tri_global: 0.338
+2026-07-16 14:16:30 transreid.train INFO: Epoch 9 done. Time per epoch: 28.271[s] Speed: 477.7[samples/s] ETA: 0h52m
+2026-07-16 14:16:37 transreid.train INFO: Epoch[10] Iter[50/227] Loss: 5.296, Acc: 0.191, Base Lr: 4.04e-04 | id_global: 5.009 tri_global: 0.287
+2026-07-16 14:16:44 transreid.train INFO: Epoch[10] Iter[100/227] Loss: 5.225, Acc: 0.208, Base Lr: 4.04e-04 | id_global: 4.941 tri_global: 0.284
+2026-07-16 14:16:50 transreid.train INFO: Epoch[10] Iter[150/227] Loss: 5.108, Acc: 0.242, Base Lr: 4.04e-04 | id_global: 4.830 tri_global: 0.278
+2026-07-16 14:16:57 transreid.train INFO: Epoch[10] Iter[200/227] Loss: 4.854, Acc: 0.313, Base Lr: 4.04e-04 | id_global: 4.590 tri_global: 0.263
+2026-07-16 14:16:58 transreid.train INFO: Epoch 10 done. Time per epoch: 28.491[s] Speed: 476.2[samples/s] ETA: 0h52m
+2026-07-16 14:16:58 transreid.train INFO: Eval protocol: flip_test=True feat_norm=yes
+2026-07-16 14:17:43 transreid.train INFO: Validation Results - Epoch: 10
+2026-07-16 14:17:43 transreid.train INFO: mAP: 37.7%
+2026-07-16 14:17:43 transreid.train INFO: CMC curve, Rank-1  :47.6%
+2026-07-16 14:17:43 transreid.train INFO: CMC curve, Rank-5  :62.2%
+2026-07-16 14:17:43 transreid.train INFO: CMC curve, Rank-10 :68.6%
+2026-07-16 14:17:51 transreid.train INFO: Epoch[11] Iter[50/227] Loss: 4.946, Acc: 0.218, Base Lr: 4.44e-04 | id_global: 4.651 tri_global: 0.296
+2026-07-16 14:17:57 transreid.train INFO: Epoch[11] Iter[100/227] Loss: 4.813, Acc: 0.263, Base Lr: 4.44e-04 | id_global: 4.524 tri_global: 0.289
+2026-07-16 14:18:03 transreid.train INFO: Epoch[11] Iter[150/227] Loss: 4.684, Acc: 0.297, Base Lr: 4.44e-04 | id_global: 4.414 tri_global: 0.270
+2026-07-16 14:18:10 transreid.train INFO: Epoch[11] Iter[200/227] Loss: 4.444, Acc: 0.357, Base Lr: 4.44e-04 | id_global: 4.189 tri_global: 0.254
+2026-07-16 14:18:12 transreid.train INFO: Epoch 11 done. Time per epoch: 28.589[s] Speed: 476.8[samples/s] ETA: 0h51m
+2026-07-16 14:18:19 transreid.train INFO: Epoch[12] Iter[50/227] Loss: 4.569, Acc: 0.286, Base Lr: 4.83e-04 | id_global: 4.283 tri_global: 0.286
+2026-07-16 14:18:26 transreid.train INFO: Epoch[12] Iter[100/227] Loss: 4.447, Acc: 0.313, Base Lr: 4.83e-04 | id_global: 4.197 tri_global: 0.250
+2026-07-16 14:18:32 transreid.train INFO: Epoch[12] Iter[150/227] Loss: 4.285, Acc: 0.358, Base Lr: 4.83e-04 | id_global: 4.052 tri_global: 0.233
+2026-07-16 14:18:39 transreid.train INFO: Epoch[12] Iter[200/227] Loss: 4.008, Acc: 0.425, Base Lr: 4.83e-04 | id_global: 3.794 tri_global: 0.214
+2026-07-16 14:18:40 transreid.train INFO: Epoch 12 done. Time per epoch: 28.328[s] Speed: 476.7[samples/s] ETA: 0h50m
+2026-07-16 14:18:47 transreid.train INFO: Epoch[13] Iter[50/227] Loss: 4.050, Acc: 0.359, Base Lr: 5.23e-04 | id_global: 3.858 tri_global: 0.192
+2026-07-16 14:18:54 transreid.train INFO: Epoch[13] Iter[100/227] Loss: 3.907, Acc: 0.404, Base Lr: 5.23e-04 | id_global: 3.728 tri_global: 0.180
+2026-07-16 14:19:00 transreid.train INFO: Epoch[13] Iter[150/227] Loss: 3.769, Acc: 0.455, Base Lr: 5.23e-04 | id_global: 3.589 tri_global: 0.180
+2026-07-16 14:19:07 transreid.train INFO: Epoch[13] Iter[200/227] Loss: 3.562, Acc: 0.511, Base Lr: 5.23e-04 | id_global: 3.379 tri_global: 0.183
+2026-07-16 14:19:08 transreid.train INFO: Epoch 13 done. Time per epoch: 28.499[s] Speed: 478.3[samples/s] ETA: 0h50m
+2026-07-16 14:19:16 transreid.train INFO: Epoch[14] Iter[50/227] Loss: 3.728, Acc: 0.428, Base Lr: 5.62e-04 | id_global: 3.529 tri_global: 0.198
+2026-07-16 14:19:22 transreid.train INFO: Epoch[14] Iter[100/227] Loss: 3.549, Acc: 0.473, Base Lr: 5.62e-04 | id_global: 3.380 tri_global: 0.169
+2026-07-16 14:19:29 transreid.train INFO: Epoch[14] Iter[150/227] Loss: 3.392, Acc: 0.531, Base Lr: 5.62e-04 | id_global: 3.227 tri_global: 0.165
+2026-07-16 14:19:35 transreid.train INFO: Epoch[14] Iter[200/227] Loss: 3.151, Acc: 0.594, Base Lr: 5.62e-04 | id_global: 2.992 tri_global: 0.160
+2026-07-16 14:19:37 transreid.train INFO: Epoch 14 done. Time per epoch: 28.403[s] Speed: 477.7[samples/s] ETA: 0h50m
+2026-07-16 14:19:44 transreid.train INFO: Epoch[15] Iter[50/227] Loss: 3.300, Acc: 0.522, Base Lr: 6.02e-04 | id_global: 3.137 tri_global: 0.163
+2026-07-16 14:19:51 transreid.train INFO: Epoch[15] Iter[100/227] Loss: 3.112, Acc: 0.572, Base Lr: 6.02e-04 | id_global: 2.974 tri_global: 0.138
+2026-07-16 14:19:57 transreid.train INFO: Epoch[15] Iter[150/227] Loss: 2.995, Acc: 0.612, Base Lr: 6.02e-04 | id_global: 2.845 tri_global: 0.150
+2026-07-16 14:20:04 transreid.train INFO: Epoch[15] Iter[200/227] Loss: 2.783, Acc: 0.663, Base Lr: 6.02e-04 | id_global: 2.631 tri_global: 0.152
+2026-07-16 14:20:05 transreid.train INFO: Epoch 15 done. Time per epoch: 28.431[s] Speed: 477.2[samples/s] ETA: 0h49m
+2026-07-16 14:20:13 transreid.train INFO: Epoch[16] Iter[50/227] Loss: 2.807, Acc: 0.613, Base Lr: 6.42e-04 | id_global: 2.704 tri_global: 0.103
+2026-07-16 14:20:19 transreid.train INFO: Epoch[16] Iter[100/227] Loss: 2.697, Acc: 0.650, Base Lr: 6.42e-04 | id_global: 2.583 tri_global: 0.114
+2026-07-16 14:20:26 transreid.train INFO: Epoch[16] Iter[150/227] Loss: 2.578, Acc: 0.681, Base Lr: 6.42e-04 | id_global: 2.469 tri_global: 0.109
+2026-07-16 14:20:32 transreid.train INFO: Epoch[16] Iter[200/227] Loss: 2.369, Acc: 0.729, Base Lr: 6.42e-04 | id_global: 2.257 tri_global: 0.112
+2026-07-16 14:20:33 transreid.train INFO: Epoch 16 done. Time per epoch: 28.166[s] Speed: 477.2[samples/s] ETA: 0h48m
+2026-07-16 14:20:41 transreid.train INFO: Epoch[17] Iter[50/227] Loss: 2.483, Acc: 0.674, Base Lr: 6.81e-04 | id_global: 2.385 tri_global: 0.097
+2026-07-16 14:20:47 transreid.train INFO: Epoch[17] Iter[100/227] Loss: 2.378, Acc: 0.715, Base Lr: 6.81e-04 | id_global: 2.268 tri_global: 0.110
+2026-07-16 14:20:54 transreid.train INFO: Epoch[17] Iter[150/227] Loss: 2.242, Acc: 0.748, Base Lr: 6.81e-04 | id_global: 2.141 tri_global: 0.102
+2026-07-16 14:21:00 transreid.train INFO: Epoch[17] Iter[200/227] Loss: 2.046, Acc: 0.788, Base Lr: 6.81e-04 | id_global: 1.942 tri_global: 0.104
+2026-07-16 14:21:02 transreid.train INFO: Epoch 17 done. Time per epoch: 28.317[s] Speed: 476.9[samples/s] ETA: 0h48m
+2026-07-16 14:21:09 transreid.train INFO: Epoch[18] Iter[50/227] Loss: 2.250, Acc: 0.732, Base Lr: 7.21e-04 | id_global: 2.153 tri_global: 0.097
+2026-07-16 14:21:16 transreid.train INFO: Epoch[18] Iter[100/227] Loss: 2.097, Acc: 0.763, Base Lr: 7.21e-04 | id_global: 2.006 tri_global: 0.091
+2026-07-16 14:21:22 transreid.train INFO: Epoch[18] Iter[150/227] Loss: 1.936, Acc: 0.803, Base Lr: 7.21e-04 | id_global: 1.837 tri_global: 0.099
+2026-07-16 14:21:29 transreid.train INFO: Epoch[18] Iter[200/227] Loss: 1.762, Acc: 0.833, Base Lr: 7.21e-04 | id_global: 1.667 tri_global: 0.095
+2026-07-16 14:21:30 transreid.train INFO: Epoch 18 done. Time per epoch: 28.523[s] Speed: 477.9[samples/s] ETA: 0h48m
+2026-07-16 14:21:38 transreid.train INFO: Epoch[19] Iter[50/227] Loss: 1.852, Acc: 0.786, Base Lr: 7.60e-04 | id_global: 1.789 tri_global: 0.063
+2026-07-16 14:21:44 transreid.train INFO: Epoch[19] Iter[100/227] Loss: 1.756, Acc: 0.809, Base Lr: 7.60e-04 | id_global: 1.691 tri_global: 0.064
+2026-07-16 14:21:51 transreid.train INFO: Epoch[19] Iter[150/227] Loss: 1.640, Acc: 0.836, Base Lr: 7.60e-04 | id_global: 1.571 tri_global: 0.069
+2026-07-16 14:21:57 transreid.train INFO: Epoch[19] Iter[200/227] Loss: 1.477, Acc: 0.865, Base Lr: 7.60e-04 | id_global: 1.408 tri_global: 0.069
+2026-07-16 14:21:59 transreid.train INFO: Epoch 19 done. Time per epoch: 28.443[s] Speed: 477.0[samples/s] ETA: 0h47m
+2026-07-16 14:22:06 transreid.train INFO: Epoch[20] Iter[50/227] Loss: 1.563, Acc: 0.824, Base Lr: 7.47e-04 | id_global: 1.511 tri_global: 0.052
+2026-07-16 14:22:13 transreid.train INFO: Epoch[20] Iter[100/227] Loss: 1.425, Acc: 0.864, Base Lr: 7.47e-04 | id_global: 1.375 tri_global: 0.050
+2026-07-16 14:22:19 transreid.train INFO: Epoch[20] Iter[150/227] Loss: 1.337, Acc: 0.882, Base Lr: 7.47e-04 | id_global: 1.284 tri_global: 0.053
+2026-07-16 14:22:26 transreid.train INFO: Epoch[20] Iter[200/227] Loss: 1.222, Acc: 0.899, Base Lr: 7.47e-04 | id_global: 1.167 tri_global: 0.055
+2026-07-16 14:22:27 transreid.train INFO: Epoch 20 done. Time per epoch: 28.229[s] Speed: 476.1[samples/s] ETA: 0h47m
+2026-07-16 14:23:12 transreid.train INFO: Validation Results - Epoch: 20
+2026-07-16 14:23:12 transreid.train INFO: mAP: 46.7%
+2026-07-16 14:23:12 transreid.train INFO: CMC curve, Rank-1  :56.5%
+2026-07-16 14:23:12 transreid.train INFO: CMC curve, Rank-5  :71.0%
+2026-07-16 14:23:12 transreid.train INFO: CMC curve, Rank-10 :76.8%
+2026-07-16 14:23:19 transreid.train INFO: Epoch[21] Iter[50/227] Loss: 1.294, Acc: 0.864, Base Lr: 7.41e-04 | id_global: 1.263 tri_global: 0.031
+2026-07-16 14:23:25 transreid.train INFO: Epoch[21] Iter[100/227] Loss: 1.233, Acc: 0.888, Base Lr: 7.41e-04 | id_global: 1.190 tri_global: 0.043
+2026-07-16 14:23:32 transreid.train INFO: Epoch[21] Iter[150/227] Loss: 1.112, Acc: 0.911, Base Lr: 7.41e-04 | id_global: 1.072 tri_global: 0.039
+2026-07-16 14:23:38 transreid.train INFO: Epoch[21] Iter[200/227] Loss: 1.006, Acc: 0.925, Base Lr: 7.41e-04 | id_global: 0.962 tri_global: 0.044
+2026-07-16 14:23:40 transreid.train INFO: Epoch 21 done. Time per epoch: 28.196[s] Speed: 478.9[samples/s] ETA: 0h46m
+2026-07-16 14:23:47 transreid.train INFO: Epoch[22] Iter[50/227] Loss: 1.177, Acc: 0.908, Base Lr: 7.36e-04 | id_global: 1.105 tri_global: 0.072
+2026-07-16 14:23:54 transreid.train INFO: Epoch[22] Iter[100/227] Loss: 1.089, Acc: 0.913, Base Lr: 7.36e-04 | id_global: 1.039 tri_global: 0.050
+2026-07-16 14:24:00 transreid.train INFO: Epoch[22] Iter[150/227] Loss: 0.977, Acc: 0.931, Base Lr: 7.36e-04 | id_global: 0.931 tri_global: 0.046
+2026-07-16 14:24:07 transreid.train INFO: Epoch[22] Iter[200/227] Loss: 0.878, Acc: 0.941, Base Lr: 7.36e-04 | id_global: 0.833 tri_global: 0.046
+2026-07-16 14:24:08 transreid.train INFO: Epoch 22 done. Time per epoch: 28.147[s] Speed: 477.5[samples/s] ETA: 0h45m
+2026-07-16 14:24:15 transreid.train INFO: Epoch[23] Iter[50/227] Loss: 0.891, Acc: 0.934, Base Lr: 7.30e-04 | id_global: 0.866 tri_global: 0.025
+2026-07-16 14:24:22 transreid.train INFO: Epoch[23] Iter[100/227] Loss: 0.832, Acc: 0.940, Base Lr: 7.30e-04 | id_global: 0.807 tri_global: 0.025
+2026-07-16 14:24:28 transreid.train INFO: Epoch[23] Iter[150/227] Loss: 0.779, Acc: 0.945, Base Lr: 7.30e-04 | id_global: 0.750 tri_global: 0.029
+2026-07-16 14:24:35 transreid.train INFO: Epoch[23] Iter[200/227] Loss: 0.712, Acc: 0.954, Base Lr: 7.30e-04 | id_global: 0.682 tri_global: 0.030
+2026-07-16 14:24:36 transreid.train INFO: Epoch 23 done. Time per epoch: 28.302[s] Speed: 477.1[samples/s] ETA: 0h45m
+2026-07-16 14:24:44 transreid.train INFO: Epoch[24] Iter[50/227] Loss: 0.768, Acc: 0.950, Base Lr: 7.24e-04 | id_global: 0.754 tri_global: 0.014
+2026-07-16 14:24:50 transreid.train INFO: Epoch[24] Iter[100/227] Loss: 0.707, Acc: 0.952, Base Lr: 7.24e-04 | id_global: 0.692 tri_global: 0.015
+2026-07-16 14:24:57 transreid.train INFO: Epoch[24] Iter[150/227] Loss: 0.648, Acc: 0.960, Base Lr: 7.24e-04 | id_global: 0.634 tri_global: 0.014
+2026-07-16 14:25:03 transreid.train INFO: Epoch[24] Iter[200/227] Loss: 0.572, Acc: 0.967, Base Lr: 7.24e-04 | id_global: 0.558 tri_global: 0.013
+2026-07-16 14:25:05 transreid.train INFO: Epoch 24 done. Time per epoch: 28.480[s] Speed: 478.7[samples/s] ETA: 0h45m
+2026-07-16 14:25:12 transreid.train INFO: Epoch[25] Iter[50/227] Loss: 0.617, Acc: 0.963, Base Lr: 7.18e-04 | id_global: 0.608 tri_global: 0.009
+2026-07-16 14:25:19 transreid.train INFO: Epoch[25] Iter[100/227] Loss: 0.598, Acc: 0.967, Base Lr: 7.18e-04 | id_global: 0.580 tri_global: 0.019
+2026-07-16 14:25:25 transreid.train INFO: Epoch[25] Iter[150/227] Loss: 0.556, Acc: 0.971, Base Lr: 7.18e-04 | id_global: 0.537 tri_global: 0.019
+2026-07-16 14:25:32 transreid.train INFO: Epoch[25] Iter[200/227] Loss: 0.502, Acc: 0.976, Base Lr: 7.18e-04 | id_global: 0.484 tri_global: 0.018
+2026-07-16 14:25:33 transreid.train INFO: Epoch 25 done. Time per epoch: 28.460[s] Speed: 476.7[samples/s] ETA: 0h45m
+2026-07-16 14:25:41 transreid.train INFO: Epoch[26] Iter[50/227] Loss: 0.626, Acc: 0.967, Base Lr: 7.11e-04 | id_global: 0.584 tri_global: 0.042
+2026-07-16 14:25:47 transreid.train INFO: Epoch[26] Iter[100/227] Loss: 0.580, Acc: 0.973, Base Lr: 7.11e-04 | id_global: 0.543 tri_global: 0.037
+2026-07-16 14:25:54 transreid.train INFO: Epoch[26] Iter[150/227] Loss: 0.525, Acc: 0.977, Base Lr: 7.11e-04 | id_global: 0.493 tri_global: 0.032
+2026-07-16 14:26:00 transreid.train INFO: Epoch[26] Iter[200/227] Loss: 0.469, Acc: 0.980, Base Lr: 7.11e-04 | id_global: 0.440 tri_global: 0.028
+2026-07-16 14:26:02 transreid.train INFO: Epoch 26 done. Time per epoch: 28.443[s] Speed: 477.0[samples/s] ETA: 0h44m
+2026-07-16 14:26:09 transreid.train INFO: Epoch[27] Iter[50/227] Loss: 0.529, Acc: 0.977, Base Lr: 7.04e-04 | id_global: 0.500 tri_global: 0.029
+2026-07-16 14:26:16 transreid.train INFO: Epoch[27] Iter[100/227] Loss: 0.486, Acc: 0.981, Base Lr: 7.04e-04 | id_global: 0.464 tri_global: 0.022
+2026-07-16 14:26:22 transreid.train INFO: Epoch[27] Iter[150/227] Loss: 0.440, Acc: 0.984, Base Lr: 7.04e-04 | id_global: 0.421 tri_global: 0.019
+2026-07-16 14:26:29 transreid.train INFO: Epoch[27] Iter[200/227] Loss: 0.393, Acc: 0.986, Base Lr: 7.04e-04 | id_global: 0.376 tri_global: 0.017
+2026-07-16 14:26:30 transreid.train INFO: Epoch 27 done. Time per epoch: 28.477[s] Speed: 476.5[samples/s] ETA: 0h44m
+2026-07-16 14:26:38 transreid.train INFO: Epoch[28] Iter[50/227] Loss: 0.403, Acc: 0.985, Base Lr: 6.97e-04 | id_global: 0.399 tri_global: 0.005
+2026-07-16 14:26:44 transreid.train INFO: Epoch[28] Iter[100/227] Loss: 0.397, Acc: 0.987, Base Lr: 6.97e-04 | id_global: 0.380 tri_global: 0.016
+2026-07-16 14:26:51 transreid.train INFO: Epoch[28] Iter[150/227] Loss: 0.374, Acc: 0.987, Base Lr: 6.97e-04 | id_global: 0.357 tri_global: 0.017
+2026-07-16 14:26:57 transreid.train INFO: Epoch[28] Iter[200/227] Loss: 0.342, Acc: 0.989, Base Lr: 6.97e-04 | id_global: 0.324 tri_global: 0.019
+2026-07-16 14:26:58 transreid.train INFO: Epoch 28 done. Time per epoch: 28.268[s] Speed: 477.7[samples/s] ETA: 0h43m
+2026-07-16 14:27:06 transreid.train INFO: Epoch[29] Iter[50/227] Loss: 0.408, Acc: 0.987, Base Lr: 6.90e-04 | id_global: 0.387 tri_global: 0.021
+2026-07-16 14:27:12 transreid.train INFO: Epoch[29] Iter[100/227] Loss: 0.382, Acc: 0.988, Base Lr: 6.90e-04 | id_global: 0.360 tri_global: 0.022
+2026-07-16 14:27:19 transreid.train INFO: Epoch[29] Iter[150/227] Loss: 0.350, Acc: 0.989, Base Lr: 6.90e-04 | id_global: 0.332 tri_global: 0.018
+2026-07-16 14:27:25 transreid.train INFO: Epoch[29] Iter[200/227] Loss: 0.312, Acc: 0.991, Base Lr: 6.90e-04 | id_global: 0.297 tri_global: 0.015
+2026-07-16 14:27:27 transreid.train INFO: Epoch 29 done. Time per epoch: 28.416[s] Speed: 477.5[samples/s] ETA: 0h43m
+2026-07-16 14:27:34 transreid.train INFO: Epoch[30] Iter[50/227] Loss: 0.352, Acc: 0.985, Base Lr: 6.83e-04 | id_global: 0.346 tri_global: 0.006
+2026-07-16 14:27:41 transreid.train INFO: Epoch[30] Iter[100/227] Loss: 0.318, Acc: 0.989, Base Lr: 6.83e-04 | id_global: 0.310 tri_global: 0.008
+2026-07-16 14:27:47 transreid.train INFO: Epoch[30] Iter[150/227] Loss: 0.296, Acc: 0.990, Base Lr: 6.83e-04 | id_global: 0.287 tri_global: 0.008
+2026-07-16 14:27:54 transreid.train INFO: Epoch[30] Iter[200/227] Loss: 0.268, Acc: 0.991, Base Lr: 6.83e-04 | id_global: 0.260 tri_global: 0.009
+2026-07-16 14:27:55 transreid.train INFO: Epoch 30 done. Time per epoch: 28.352[s] Speed: 478.6[samples/s] ETA: 0h42m
+2026-07-16 14:28:40 transreid.train INFO: Validation Results - Epoch: 30
+2026-07-16 14:28:40 transreid.train INFO: mAP: 52.4%
+2026-07-16 14:28:40 transreid.train INFO: CMC curve, Rank-1  :63.8%
+2026-07-16 14:28:40 transreid.train INFO: CMC curve, Rank-5  :75.9%
+2026-07-16 14:28:40 transreid.train INFO: CMC curve, Rank-10 :81.0%
+2026-07-16 14:28:47 transreid.train INFO: Epoch[31] Iter[50/227] Loss: 0.310, Acc: 0.992, Base Lr: 6.76e-04 | id_global: 0.291 tri_global: 0.019
+2026-07-16 14:28:54 transreid.train INFO: Epoch[31] Iter[100/227] Loss: 0.288, Acc: 0.991, Base Lr: 6.76e-04 | id_global: 0.276 tri_global: 0.012
+2026-07-16 14:29:00 transreid.train INFO: Epoch[31] Iter[150/227] Loss: 0.266, Acc: 0.993, Base Lr: 6.76e-04 | id_global: 0.256 tri_global: 0.010
+2026-07-16 14:29:07 transreid.train INFO: Epoch[31] Iter[200/227] Loss: 0.243, Acc: 0.992, Base Lr: 6.76e-04 | id_global: 0.234 tri_global: 0.009
+2026-07-16 14:29:08 transreid.train INFO: Epoch 31 done. Time per epoch: 28.435[s] Speed: 477.2[samples/s] ETA: 0h42m
+2026-07-16 14:29:16 transreid.train INFO: Epoch[32] Iter[50/227] Loss: 0.280, Acc: 0.990, Base Lr: 6.68e-04 | id_global: 0.270 tri_global: 0.010
+2026-07-16 14:29:22 transreid.train INFO: Epoch[32] Iter[100/227] Loss: 0.262, Acc: 0.992, Base Lr: 6.68e-04 | id_global: 0.252 tri_global: 0.010
+2026-07-16 14:29:29 transreid.train INFO: Epoch[32] Iter[150/227] Loss: 0.239, Acc: 0.993, Base Lr: 6.68e-04 | id_global: 0.231 tri_global: 0.008
+2026-07-16 14:29:35 transreid.train INFO: Epoch[32] Iter[200/227] Loss: 0.222, Acc: 0.994, Base Lr: 6.68e-04 | id_global: 0.211 tri_global: 0.010
+2026-07-16 14:29:37 transreid.train INFO: Epoch 32 done. Time per epoch: 28.376[s] Speed: 478.1[samples/s] ETA: 0h41m
+2026-07-16 14:29:44 transreid.train INFO: Epoch[33] Iter[50/227] Loss: 0.264, Acc: 0.992, Base Lr: 6.60e-04 | id_global: 0.247 tri_global: 0.017
+2026-07-16 14:29:50 transreid.train INFO: Epoch[33] Iter[100/227] Loss: 0.238, Acc: 0.994, Base Lr: 6.60e-04 | id_global: 0.227 tri_global: 0.012
+2026-07-16 14:29:57 transreid.train INFO: Epoch[33] Iter[150/227] Loss: 0.224, Acc: 0.994, Base Lr: 6.60e-04 | id_global: 0.212 tri_global: 0.012
+2026-07-16 14:30:03 transreid.train INFO: Epoch[33] Iter[200/227] Loss: 0.205, Acc: 0.995, Base Lr: 6.60e-04 | id_global: 0.194 tri_global: 0.011
+2026-07-16 14:30:05 transreid.train INFO: Epoch 33 done. Time per epoch: 28.325[s] Speed: 479.0[samples/s] ETA: 0h41m
+2026-07-16 14:30:12 transreid.train INFO: Epoch[34] Iter[50/227] Loss: 0.220, Acc: 0.996, Base Lr: 6.52e-04 | id_global: 0.216 tri_global: 0.004
+2026-07-16 14:30:19 transreid.train INFO: Epoch[34] Iter[100/227] Loss: 0.210, Acc: 0.995, Base Lr: 6.52e-04 | id_global: 0.206 tri_global: 0.004
+2026-07-16 14:30:25 transreid.train INFO: Epoch[34] Iter[150/227] Loss: 0.197, Acc: 0.996, Base Lr: 6.52e-04 | id_global: 0.192 tri_global: 0.005
+2026-07-16 14:30:32 transreid.train INFO: Epoch[34] Iter[200/227] Loss: 0.181, Acc: 0.996, Base Lr: 6.52e-04 | id_global: 0.176 tri_global: 0.005
+2026-07-16 14:30:33 transreid.train INFO: Epoch 34 done. Time per epoch: 28.349[s] Speed: 478.6[samples/s] ETA: 0h40m
+2026-07-16 14:30:41 transreid.train INFO: Epoch[35] Iter[50/227] Loss: 0.197, Acc: 0.998, Base Lr: 6.44e-04 | id_global: 0.194 tri_global: 0.003
+2026-07-16 14:30:47 transreid.train INFO: Epoch[35] Iter[100/227] Loss: 0.191, Acc: 0.997, Base Lr: 6.44e-04 | id_global: 0.186 tri_global: 0.004
+2026-07-16 14:30:54 transreid.train INFO: Epoch[35] Iter[150/227] Loss: 0.182, Acc: 0.996, Base Lr: 6.44e-04 | id_global: 0.178 tri_global: 0.004
+2026-07-16 14:31:00 transreid.train INFO: Epoch[35] Iter[200/227] Loss: 0.166, Acc: 0.996, Base Lr: 6.44e-04 | id_global: 0.160 tri_global: 0.006
+2026-07-16 14:31:01 transreid.train INFO: Epoch 35 done. Time per epoch: 28.196[s] Speed: 476.7[samples/s] ETA: 0h39m
+2026-07-16 14:31:09 transreid.train INFO: Epoch[36] Iter[50/227] Loss: 0.194, Acc: 0.995, Base Lr: 6.35e-04 | id_global: 0.190 tri_global: 0.003
+2026-07-16 14:31:15 transreid.train INFO: Epoch[36] Iter[100/227] Loss: 0.178, Acc: 0.996, Base Lr: 6.35e-04 | id_global: 0.174 tri_global: 0.004
+2026-07-16 14:31:22 transreid.train INFO: Epoch[36] Iter[150/227] Loss: 0.171, Acc: 0.997, Base Lr: 6.35e-04 | id_global: 0.165 tri_global: 0.007
+2026-07-16 14:31:28 transreid.train INFO: Epoch[36] Iter[200/227] Loss: 0.159, Acc: 0.997, Base Lr: 6.35e-04 | id_global: 0.152 tri_global: 0.008
+2026-07-16 14:31:30 transreid.train INFO: Epoch 36 done. Time per epoch: 28.529[s] Speed: 477.8[samples/s] ETA: 0h39m
+2026-07-16 14:31:37 transreid.train INFO: Epoch[37] Iter[50/227] Loss: 0.185, Acc: 0.997, Base Lr: 6.27e-04 | id_global: 0.179 tri_global: 0.006
+2026-07-16 14:31:44 transreid.train INFO: Epoch[37] Iter[100/227] Loss: 0.177, Acc: 0.997, Base Lr: 6.27e-04 | id_global: 0.170 tri_global: 0.007
+2026-07-16 14:31:50 transreid.train INFO: Epoch[37] Iter[150/227] Loss: 0.183, Acc: 0.997, Base Lr: 6.27e-04 | id_global: 0.165 tri_global: 0.019
+2026-07-16 14:31:57 transreid.train INFO: Epoch[37] Iter[200/227] Loss: 0.165, Acc: 0.997, Base Lr: 6.27e-04 | id_global: 0.149 tri_global: 0.016
+2026-07-16 14:31:58 transreid.train INFO: Epoch 37 done. Time per epoch: 28.313[s] Speed: 477.0[samples/s] ETA: 0h39m
+2026-07-16 14:32:06 transreid.train INFO: Epoch[38] Iter[50/227] Loss: 0.175, Acc: 0.995, Base Lr: 6.18e-04 | id_global: 0.171 tri_global: 0.004
+2026-07-16 14:32:12 transreid.train INFO: Epoch[38] Iter[100/227] Loss: 0.171, Acc: 0.996, Base Lr: 6.18e-04 | id_global: 0.162 tri_global: 0.008
+2026-07-16 14:32:19 transreid.train INFO: Epoch[38] Iter[150/227] Loss: 0.157, Acc: 0.996, Base Lr: 6.18e-04 | id_global: 0.151 tri_global: 0.007
+2026-07-16 14:32:25 transreid.train INFO: Epoch[38] Iter[200/227] Loss: 0.145, Acc: 0.996, Base Lr: 6.18e-04 | id_global: 0.138 tri_global: 0.006
+2026-07-16 14:32:27 transreid.train INFO: Epoch 38 done. Time per epoch: 28.358[s] Speed: 478.5[samples/s] ETA: 0h38m
+2026-07-16 14:32:34 transreid.train INFO: Epoch[39] Iter[50/227] Loss: 0.191, Acc: 0.997, Base Lr: 6.09e-04 | id_global: 0.168 tri_global: 0.023
+2026-07-16 14:32:41 transreid.train INFO: Epoch[39] Iter[100/227] Loss: 0.173, Acc: 0.997, Base Lr: 6.09e-04 | id_global: 0.157 tri_global: 0.017
+2026-07-16 14:32:47 transreid.train INFO: Epoch[39] Iter[150/227] Loss: 0.158, Acc: 0.997, Base Lr: 6.09e-04 | id_global: 0.145 tri_global: 0.013
+2026-07-16 14:32:53 transreid.train INFO: Epoch[39] Iter[200/227] Loss: 0.142, Acc: 0.998, Base Lr: 6.09e-04 | id_global: 0.132 tri_global: 0.010
+2026-07-16 14:32:55 transreid.train INFO: Epoch 39 done. Time per epoch: 28.209[s] Speed: 478.7[samples/s] ETA: 0h38m
+2026-07-16 14:33:02 transreid.train INFO: Epoch[40] Iter[50/227] Loss: 0.154, Acc: 0.997, Base Lr: 6.00e-04 | id_global: 0.149 tri_global: 0.005
+2026-07-16 14:33:09 transreid.train INFO: Epoch[40] Iter[100/227] Loss: 0.145, Acc: 0.997, Base Lr: 6.00e-04 | id_global: 0.140 tri_global: 0.005
+2026-07-16 14:33:15 transreid.train INFO: Epoch[40] Iter[150/227] Loss: 0.136, Acc: 0.997, Base Lr: 6.00e-04 | id_global: 0.131 tri_global: 0.005
+2026-07-16 14:33:22 transreid.train INFO: Epoch[40] Iter[200/227] Loss: 0.125, Acc: 0.998, Base Lr: 6.00e-04 | id_global: 0.120 tri_global: 0.005
+2026-07-16 14:33:23 transreid.train INFO: Epoch 40 done. Time per epoch: 28.181[s] Speed: 476.9[samples/s] ETA: 0h37m
+2026-07-16 14:34:08 transreid.train INFO: Validation Results - Epoch: 40
+2026-07-16 14:34:08 transreid.train INFO: mAP: 54.1%
+2026-07-16 14:34:08 transreid.train INFO: CMC curve, Rank-1  :65.3%
+2026-07-16 14:34:08 transreid.train INFO: CMC curve, Rank-5  :78.6%
+2026-07-16 14:34:08 transreid.train INFO: CMC curve, Rank-10 :82.4%
+2026-07-16 14:34:15 transreid.train INFO: Epoch[41] Iter[50/227] Loss: 0.152, Acc: 0.997, Base Lr: 5.91e-04 | id_global: 0.146 tri_global: 0.006
+2026-07-16 14:34:22 transreid.train INFO: Epoch[41] Iter[100/227] Loss: 0.145, Acc: 0.998, Base Lr: 5.91e-04 | id_global: 0.137 tri_global: 0.008
+2026-07-16 14:34:28 transreid.train INFO: Epoch[41] Iter[150/227] Loss: 0.135, Acc: 0.998, Base Lr: 5.91e-04 | id_global: 0.128 tri_global: 0.006
+2026-07-16 14:34:34 transreid.train INFO: Epoch[41] Iter[200/227] Loss: 0.125, Acc: 0.998, Base Lr: 5.91e-04 | id_global: 0.119 tri_global: 0.006
+2026-07-16 14:34:36 transreid.train INFO: Epoch 41 done. Time per epoch: 28.327[s] Speed: 479.0[samples/s] ETA: 0h37m
+2026-07-16 14:34:44 transreid.train INFO: Epoch[42] Iter[50/227] Loss: 0.140, Acc: 0.997, Base Lr: 5.82e-04 | id_global: 0.136 tri_global: 0.004
+2026-07-16 14:34:50 transreid.train INFO: Epoch[42] Iter[100/227] Loss: 0.132, Acc: 0.997, Base Lr: 5.82e-04 | id_global: 0.127 tri_global: 0.005
+2026-07-16 14:34:56 transreid.train INFO: Epoch[42] Iter[150/227] Loss: 0.126, Acc: 0.997, Base Lr: 5.82e-04 | id_global: 0.121 tri_global: 0.005
+2026-07-16 14:35:03 transreid.train INFO: Epoch[42] Iter[200/227] Loss: 0.115, Acc: 0.998, Base Lr: 5.82e-04 | id_global: 0.110 tri_global: 0.005
+2026-07-16 14:35:04 transreid.train INFO: Epoch 42 done. Time per epoch: 28.238[s] Speed: 478.2[samples/s] ETA: 0h36m
+2026-07-16 14:35:12 transreid.train INFO: Epoch[43] Iter[50/227] Loss: 0.145, Acc: 0.997, Base Lr: 5.73e-04 | id_global: 0.136 tri_global: 0.009
+2026-07-16 14:35:18 transreid.train INFO: Epoch[43] Iter[100/227] Loss: 0.130, Acc: 0.998, Base Lr: 5.73e-04 | id_global: 0.124 tri_global: 0.006
+2026-07-16 14:35:25 transreid.train INFO: Epoch[43] Iter[150/227] Loss: 0.121, Acc: 0.998, Base Lr: 5.73e-04 | id_global: 0.115 tri_global: 0.005
+2026-07-16 14:35:31 transreid.train INFO: Epoch[43] Iter[200/227] Loss: 0.109, Acc: 0.998, Base Lr: 5.73e-04 | id_global: 0.105 tri_global: 0.005
+2026-07-16 14:35:33 transreid.train INFO: Epoch 43 done. Time per epoch: 28.330[s] Speed: 476.7[samples/s] ETA: 0h36m
+2026-07-16 14:35:40 transreid.train INFO: Epoch[44] Iter[50/227] Loss: 0.124, Acc: 0.998, Base Lr: 5.63e-04 | id_global: 0.117 tri_global: 0.007
+2026-07-16 14:35:47 transreid.train INFO: Epoch[44] Iter[100/227] Loss: 0.131, Acc: 0.998, Base Lr: 5.63e-04 | id_global: 0.120 tri_global: 0.011
+2026-07-16 14:35:53 transreid.train INFO: Epoch[44] Iter[150/227] Loss: 0.122, Acc: 0.998, Base Lr: 5.63e-04 | id_global: 0.113 tri_global: 0.010
+2026-07-16 14:35:59 transreid.train INFO: Epoch[44] Iter[200/227] Loss: 0.112, Acc: 0.998, Base Lr: 5.63e-04 | id_global: 0.104 tri_global: 0.008
+2026-07-16 14:36:01 transreid.train INFO: Epoch 44 done. Time per epoch: 28.474[s] Speed: 476.5[samples/s] ETA: 0h36m
+2026-07-16 14:36:09 transreid.train INFO: Epoch[45] Iter[50/227] Loss: 0.122, Acc: 0.999, Base Lr: 5.54e-04 | id_global: 0.119 tri_global: 0.003
+2026-07-16 14:36:15 transreid.train INFO: Epoch[45] Iter[100/227] Loss: 0.113, Acc: 0.999, Base Lr: 5.54e-04 | id_global: 0.111 tri_global: 0.003
+2026-07-16 14:36:21 transreid.train INFO: Epoch[45] Iter[150/227] Loss: 0.106, Acc: 0.999, Base Lr: 5.54e-04 | id_global: 0.104 tri_global: 0.002
+2026-07-16 14:36:28 transreid.train INFO: Epoch[45] Iter[200/227] Loss: 0.097, Acc: 0.999, Base Lr: 5.54e-04 | id_global: 0.094 tri_global: 0.002
+2026-07-16 14:36:29 transreid.train INFO: Epoch 45 done. Time per epoch: 28.323[s] Speed: 476.8[samples/s] ETA: 0h35m
+2026-07-16 14:36:37 transreid.train INFO: Epoch[46] Iter[50/227] Loss: 0.124, Acc: 0.998, Base Lr: 5.44e-04 | id_global: 0.113 tri_global: 0.011
+2026-07-16 14:36:43 transreid.train INFO: Epoch[46] Iter[100/227] Loss: 0.115, Acc: 0.999, Base Lr: 5.44e-04 | id_global: 0.108 tri_global: 0.007
+2026-07-16 14:36:50 transreid.train INFO: Epoch[46] Iter[150/227] Loss: 0.105, Acc: 0.999, Base Lr: 5.44e-04 | id_global: 0.099 tri_global: 0.006
+2026-07-16 14:36:56 transreid.train INFO: Epoch[46] Iter[200/227] Loss: 0.097, Acc: 0.999, Base Lr: 5.44e-04 | id_global: 0.091 tri_global: 0.006
+2026-07-16 14:36:58 transreid.train INFO: Epoch 46 done. Time per epoch: 28.281[s] Speed: 477.5[samples/s] ETA: 0h34m
+2026-07-16 14:37:05 transreid.train INFO: Epoch[47] Iter[50/227] Loss: 0.116, Acc: 0.999, Base Lr: 5.34e-04 | id_global: 0.110 tri_global: 0.006
+2026-07-16 14:37:12 transreid.train INFO: Epoch[47] Iter[100/227] Loss: 0.108, Acc: 0.999, Base Lr: 5.34e-04 | id_global: 0.103 tri_global: 0.005
+2026-07-16 14:37:18 transreid.train INFO: Epoch[47] Iter[150/227] Loss: 0.102, Acc: 0.998, Base Lr: 5.34e-04 | id_global: 0.097 tri_global: 0.005
+2026-07-16 14:37:25 transreid.train INFO: Epoch[47] Iter[200/227] Loss: 0.094, Acc: 0.999, Base Lr: 5.34e-04 | id_global: 0.089 tri_global: 0.005
+2026-07-16 14:37:26 transreid.train INFO: Epoch 47 done. Time per epoch: 28.448[s] Speed: 476.9[samples/s] ETA: 0h34m
+2026-07-16 14:37:34 transreid.train INFO: Epoch[48] Iter[50/227] Loss: 0.108, Acc: 0.999, Base Lr: 5.24e-04 | id_global: 0.104 tri_global: 0.004
+2026-07-16 14:37:40 transreid.train INFO: Epoch[48] Iter[100/227] Loss: 0.101, Acc: 0.999, Base Lr: 5.24e-04 | id_global: 0.097 tri_global: 0.003
+2026-07-16 14:37:46 transreid.train INFO: Epoch[48] Iter[150/227] Loss: 0.097, Acc: 0.999, Base Lr: 5.24e-04 | id_global: 0.093 tri_global: 0.004
+2026-07-16 14:37:53 transreid.train INFO: Epoch[48] Iter[200/227] Loss: 0.088, Acc: 0.999, Base Lr: 5.24e-04 | id_global: 0.085 tri_global: 0.003
+2026-07-16 14:37:54 transreid.train INFO: Epoch 48 done. Time per epoch: 28.281[s] Speed: 477.5[samples/s] ETA: 0h33m
+2026-07-16 14:38:02 transreid.train INFO: Epoch[49] Iter[50/227] Loss: 0.099, Acc: 0.999, Base Lr: 5.14e-04 | id_global: 0.098 tri_global: 0.001
+2026-07-16 14:38:08 transreid.train INFO: Epoch[49] Iter[100/227] Loss: 0.094, Acc: 0.999, Base Lr: 5.14e-04 | id_global: 0.092 tri_global: 0.002
+2026-07-16 14:38:15 transreid.train INFO: Epoch[49] Iter[150/227] Loss: 0.088, Acc: 0.999, Base Lr: 5.14e-04 | id_global: 0.087 tri_global: 0.002
+2026-07-16 14:38:21 transreid.train INFO: Epoch[49] Iter[200/227] Loss: 0.081, Acc: 0.999, Base Lr: 5.14e-04 | id_global: 0.079 tri_global: 0.002
+2026-07-16 14:38:23 transreid.train INFO: Epoch 49 done. Time per epoch: 28.460[s] Speed: 476.7[samples/s] ETA: 0h33m
+2026-07-16 14:38:30 transreid.train INFO: Epoch[50] Iter[50/227] Loss: 0.097, Acc: 0.999, Base Lr: 5.04e-04 | id_global: 0.096 tri_global: 0.001
+2026-07-16 14:38:37 transreid.train INFO: Epoch[50] Iter[100/227] Loss: 0.093, Acc: 0.999, Base Lr: 5.04e-04 | id_global: 0.090 tri_global: 0.003
+2026-07-16 14:38:43 transreid.train INFO: Epoch[50] Iter[150/227] Loss: 0.087, Acc: 0.999, Base Lr: 5.04e-04 | id_global: 0.084 tri_global: 0.002
+2026-07-16 14:38:50 transreid.train INFO: Epoch[50] Iter[200/227] Loss: 0.085, Acc: 0.999, Base Lr: 5.04e-04 | id_global: 0.079 tri_global: 0.006
+2026-07-16 14:38:51 transreid.train INFO: Epoch 50 done. Time per epoch: 28.375[s] Speed: 478.2[samples/s] ETA: 0h33m
+2026-07-16 14:39:36 transreid.train INFO: Validation Results - Epoch: 50
+2026-07-16 14:39:36 transreid.train INFO: mAP: 53.3%
+2026-07-16 14:39:36 transreid.train INFO: CMC curve, Rank-1  :64.8%
+2026-07-16 14:39:36 transreid.train INFO: CMC curve, Rank-5  :77.5%
+2026-07-16 14:39:36 transreid.train INFO: CMC curve, Rank-10 :82.7%
+2026-07-16 14:39:43 transreid.train INFO: Epoch[51] Iter[50/227] Loss: 0.094, Acc: 0.999, Base Lr: 4.94e-04 | id_global: 0.092 tri_global: 0.002
+2026-07-16 14:39:50 transreid.train INFO: Epoch[51] Iter[100/227] Loss: 0.089, Acc: 0.998, Base Lr: 4.94e-04 | id_global: 0.087 tri_global: 0.002
+2026-07-16 14:39:56 transreid.train INFO: Epoch[51] Iter[150/227] Loss: 0.084, Acc: 0.999, Base Lr: 4.94e-04 | id_global: 0.082 tri_global: 0.002
+2026-07-16 14:40:03 transreid.train INFO: Epoch[51] Iter[200/227] Loss: 0.077, Acc: 0.999, Base Lr: 4.94e-04 | id_global: 0.074 tri_global: 0.003
+2026-07-16 14:40:04 transreid.train INFO: Epoch 51 done. Time per epoch: 28.376[s] Speed: 478.1[samples/s] ETA: 0h32m
+2026-07-16 14:40:12 transreid.train INFO: Epoch[52] Iter[50/227] Loss: 0.095, Acc: 0.999, Base Lr: 4.84e-04 | id_global: 0.091 tri_global: 0.004
+2026-07-16 14:40:18 transreid.train INFO: Epoch[52] Iter[100/227] Loss: 0.089, Acc: 0.999, Base Lr: 4.84e-04 | id_global: 0.086 tri_global: 0.004
+2026-07-16 14:40:25 transreid.train INFO: Epoch[52] Iter[150/227] Loss: 0.082, Acc: 0.999, Base Lr: 4.84e-04 | id_global: 0.079 tri_global: 0.003
+2026-07-16 14:40:31 transreid.train INFO: Epoch[52] Iter[200/227] Loss: 0.076, Acc: 0.999, Base Lr: 4.84e-04 | id_global: 0.073 tri_global: 0.003
+2026-07-16 14:40:33 transreid.train INFO: Epoch 52 done. Time per epoch: 28.391[s] Speed: 477.9[samples/s] ETA: 0h32m
+2026-07-16 14:40:40 transreid.train INFO: Epoch[53] Iter[50/227] Loss: 0.098, Acc: 0.999, Base Lr: 4.74e-04 | id_global: 0.087 tri_global: 0.012
+2026-07-16 14:40:47 transreid.train INFO: Epoch[53] Iter[100/227] Loss: 0.090, Acc: 0.999, Base Lr: 4.74e-04 | id_global: 0.082 tri_global: 0.008
+2026-07-16 14:40:53 transreid.train INFO: Epoch[53] Iter[150/227] Loss: 0.083, Acc: 0.999, Base Lr: 4.74e-04 | id_global: 0.077 tri_global: 0.006
+2026-07-16 14:40:59 transreid.train INFO: Epoch[53] Iter[200/227] Loss: 0.077, Acc: 0.999, Base Lr: 4.74e-04 | id_global: 0.072 tri_global: 0.006
+2026-07-16 14:41:01 transreid.train INFO: Epoch 53 done. Time per epoch: 28.306[s] Speed: 479.3[samples/s] ETA: 0h31m
+2026-07-16 14:41:09 transreid.train INFO: Epoch[54] Iter[50/227] Loss: 0.097, Acc: 0.999, Base Lr: 4.63e-04 | id_global: 0.091 tri_global: 0.006
+2026-07-16 14:41:15 transreid.train INFO: Epoch[54] Iter[100/227] Loss: 0.088, Acc: 0.999, Base Lr: 4.63e-04 | id_global: 0.084 tri_global: 0.004
+2026-07-16 14:41:21 transreid.train INFO: Epoch[54] Iter[150/227] Loss: 0.085, Acc: 0.999, Base Lr: 4.63e-04 | id_global: 0.078 tri_global: 0.007
+2026-07-16 14:41:28 transreid.train INFO: Epoch[54] Iter[200/227] Loss: 0.079, Acc: 0.999, Base Lr: 4.63e-04 | id_global: 0.072 tri_global: 0.007
+2026-07-16 14:41:29 transreid.train INFO: Epoch 54 done. Time per epoch: 28.288[s] Speed: 477.4[samples/s] ETA: 0h31m
+2026-07-16 14:41:37 transreid.train INFO: Epoch[55] Iter[50/227] Loss: 0.083, Acc: 0.999, Base Lr: 4.53e-04 | id_global: 0.081 tri_global: 0.003
+2026-07-16 14:41:43 transreid.train INFO: Epoch[55] Iter[100/227] Loss: 0.081, Acc: 0.999, Base Lr: 4.53e-04 | id_global: 0.078 tri_global: 0.003
+2026-07-16 14:41:50 transreid.train INFO: Epoch[55] Iter[150/227] Loss: 0.076, Acc: 0.999, Base Lr: 4.53e-04 | id_global: 0.073 tri_global: 0.003
+2026-07-16 14:41:56 transreid.train INFO: Epoch[55] Iter[200/227] Loss: 0.069, Acc: 0.999, Base Lr: 4.53e-04 | id_global: 0.066 tri_global: 0.002
+2026-07-16 14:41:58 transreid.train INFO: Epoch 55 done. Time per epoch: 28.433[s] Speed: 477.2[samples/s] ETA: 0h30m
+2026-07-16 14:42:05 transreid.train INFO: Epoch[56] Iter[50/227] Loss: 0.077, Acc: 0.999, Base Lr: 4.43e-04 | id_global: 0.076 tri_global: 0.002
+2026-07-16 14:42:12 transreid.train INFO: Epoch[56] Iter[100/227] Loss: 0.075, Acc: 1.000, Base Lr: 4.43e-04 | id_global: 0.074 tri_global: 0.001
+2026-07-16 14:42:18 transreid.train INFO: Epoch[56] Iter[150/227] Loss: 0.071, Acc: 0.999, Base Lr: 4.43e-04 | id_global: 0.069 tri_global: 0.002
+2026-07-16 14:42:24 transreid.train INFO: Epoch[56] Iter[200/227] Loss: 0.065, Acc: 0.999, Base Lr: 4.43e-04 | id_global: 0.064 tri_global: 0.002
+2026-07-16 14:42:26 transreid.train INFO: Epoch 56 done. Time per epoch: 28.109[s] Speed: 480.4[samples/s] ETA: 0h29m
+2026-07-16 14:42:33 transreid.train INFO: Epoch[57] Iter[50/227] Loss: 0.080, Acc: 0.999, Base Lr: 4.32e-04 | id_global: 0.077 tri_global: 0.003
+2026-07-16 14:42:40 transreid.train INFO: Epoch[57] Iter[100/227] Loss: 0.071, Acc: 0.999, Base Lr: 4.32e-04 | id_global: 0.070 tri_global: 0.002
+2026-07-16 14:42:46 transreid.train INFO: Epoch[57] Iter[150/227] Loss: 0.067, Acc: 1.000, Base Lr: 4.32e-04 | id_global: 0.065 tri_global: 0.002
+2026-07-16 14:42:53 transreid.train INFO: Epoch[57] Iter[200/227] Loss: 0.061, Acc: 1.000, Base Lr: 4.32e-04 | id_global: 0.059 tri_global: 0.002
+2026-07-16 14:42:54 transreid.train INFO: Epoch 57 done. Time per epoch: 28.507[s] Speed: 478.2[samples/s] ETA: 0h29m
+2026-07-16 14:43:02 transreid.train INFO: Epoch[58] Iter[50/227] Loss: 0.067, Acc: 1.000, Base Lr: 4.22e-04 | id_global: 0.066 tri_global: 0.001
+2026-07-16 14:43:08 transreid.train INFO: Epoch[58] Iter[100/227] Loss: 0.068, Acc: 1.000, Base Lr: 4.22e-04 | id_global: 0.065 tri_global: 0.003
+2026-07-16 14:43:15 transreid.train INFO: Epoch[58] Iter[150/227] Loss: 0.067, Acc: 1.000, Base Lr: 4.22e-04 | id_global: 0.063 tri_global: 0.004
+2026-07-16 14:43:21 transreid.train INFO: Epoch[58] Iter[200/227] Loss: 0.063, Acc: 1.000, Base Lr: 4.22e-04 | id_global: 0.060 tri_global: 0.003
+2026-07-16 14:43:23 transreid.train INFO: Epoch 58 done. Time per epoch: 28.551[s] Speed: 477.5[samples/s] ETA: 0h29m
+2026-07-16 14:43:30 transreid.train INFO: Epoch[59] Iter[50/227] Loss: 0.071, Acc: 1.000, Base Lr: 4.11e-04 | id_global: 0.070 tri_global: 0.001
+2026-07-16 14:43:37 transreid.train INFO: Epoch[59] Iter[100/227] Loss: 0.072, Acc: 0.999, Base Lr: 4.11e-04 | id_global: 0.069 tri_global: 0.002
+2026-07-16 14:43:43 transreid.train INFO: Epoch[59] Iter[150/227] Loss: 0.068, Acc: 0.999, Base Lr: 4.11e-04 | id_global: 0.065 tri_global: 0.003
+2026-07-16 14:43:50 transreid.train INFO: Epoch[59] Iter[200/227] Loss: 0.064, Acc: 0.999, Base Lr: 4.11e-04 | id_global: 0.060 tri_global: 0.004
+2026-07-16 14:43:51 transreid.train INFO: Epoch 59 done. Time per epoch: 28.257[s] Speed: 477.9[samples/s] ETA: 0h28m
+2026-07-16 14:43:59 transreid.train INFO: Epoch[60] Iter[50/227] Loss: 0.068, Acc: 0.999, Base Lr: 4.01e-04 | id_global: 0.067 tri_global: 0.001
+2026-07-16 14:44:05 transreid.train INFO: Epoch[60] Iter[100/227] Loss: 0.065, Acc: 1.000, Base Lr: 4.01e-04 | id_global: 0.064 tri_global: 0.001
+2026-07-16 14:44:12 transreid.train INFO: Epoch[60] Iter[150/227] Loss: 0.062, Acc: 1.000, Base Lr: 4.01e-04 | id_global: 0.061 tri_global: 0.001
+2026-07-16 14:44:18 transreid.train INFO: Epoch[60] Iter[200/227] Loss: 0.057, Acc: 1.000, Base Lr: 4.01e-04 | id_global: 0.056 tri_global: 0.001
+2026-07-16 14:44:20 transreid.train INFO: Epoch 60 done. Time per epoch: 28.467[s] Speed: 476.6[samples/s] ETA: 0h28m
+2026-07-16 14:45:04 transreid.train INFO: Validation Results - Epoch: 60
+2026-07-16 14:45:04 transreid.train INFO: mAP: 54.9%
+2026-07-16 14:45:04 transreid.train INFO: CMC curve, Rank-1  :66.2%
+2026-07-16 14:45:04 transreid.train INFO: CMC curve, Rank-5  :78.2%
+2026-07-16 14:45:04 transreid.train INFO: CMC curve, Rank-10 :82.5%
+2026-07-16 14:45:12 transreid.train INFO: Epoch[61] Iter[50/227] Loss: 0.067, Acc: 1.000, Base Lr: 3.90e-04 | id_global: 0.066 tri_global: 0.001
+2026-07-16 14:45:18 transreid.train INFO: Epoch[61] Iter[100/227] Loss: 0.064, Acc: 1.000, Base Lr: 3.90e-04 | id_global: 0.063 tri_global: 0.001
+2026-07-16 14:45:25 transreid.train INFO: Epoch[61] Iter[150/227] Loss: 0.061, Acc: 1.000, Base Lr: 3.90e-04 | id_global: 0.060 tri_global: 0.001
+2026-07-16 14:45:31 transreid.train INFO: Epoch[61] Iter[200/227] Loss: 0.057, Acc: 1.000, Base Lr: 3.90e-04 | id_global: 0.055 tri_global: 0.002
+2026-07-16 14:45:32 transreid.train INFO: Epoch 61 done. Time per epoch: 28.161[s] Speed: 479.5[samples/s] ETA: 0h27m
+2026-07-16 14:45:40 transreid.train INFO: Epoch[62] Iter[50/227] Loss: 0.067, Acc: 1.000, Base Lr: 3.80e-04 | id_global: 0.067 tri_global: 0.000
+2026-07-16 14:45:46 transreid.train INFO: Epoch[62] Iter[100/227] Loss: 0.064, Acc: 1.000, Base Lr: 3.80e-04 | id_global: 0.063 tri_global: 0.001
+2026-07-16 14:45:53 transreid.train INFO: Epoch[62] Iter[150/227] Loss: 0.060, Acc: 1.000, Base Lr: 3.80e-04 | id_global: 0.059 tri_global: 0.001
+2026-07-16 14:45:59 transreid.train INFO: Epoch[62] Iter[200/227] Loss: 0.055, Acc: 1.000, Base Lr: 3.80e-04 | id_global: 0.054 tri_global: 0.001
+2026-07-16 14:46:01 transreid.train INFO: Epoch 62 done. Time per epoch: 28.422[s] Speed: 477.4[samples/s] ETA: 0h27m
+2026-07-16 14:46:08 transreid.train INFO: Epoch[63] Iter[50/227] Loss: 0.067, Acc: 0.999, Base Lr: 3.69e-04 | id_global: 0.065 tri_global: 0.002
+2026-07-16 14:46:15 transreid.train INFO: Epoch[63] Iter[100/227] Loss: 0.064, Acc: 1.000, Base Lr: 3.69e-04 | id_global: 0.062 tri_global: 0.002
+2026-07-16 14:46:21 transreid.train INFO: Epoch[63] Iter[150/227] Loss: 0.060, Acc: 0.999, Base Lr: 3.69e-04 | id_global: 0.058 tri_global: 0.002
+2026-07-16 14:46:28 transreid.train INFO: Epoch[63] Iter[200/227] Loss: 0.056, Acc: 1.000, Base Lr: 3.69e-04 | id_global: 0.054 tri_global: 0.002
+2026-07-16 14:46:29 transreid.train INFO: Epoch 63 done. Time per epoch: 28.254[s] Speed: 478.0[samples/s] ETA: 0h26m
+2026-07-16 14:46:37 transreid.train INFO: Epoch[64] Iter[50/227] Loss: 0.064, Acc: 0.999, Base Lr: 3.59e-04 | id_global: 0.063 tri_global: 0.001
+2026-07-16 14:46:43 transreid.train INFO: Epoch[64] Iter[100/227] Loss: 0.064, Acc: 1.000, Base Lr: 3.59e-04 | id_global: 0.062 tri_global: 0.002
+2026-07-16 14:46:49 transreid.train INFO: Epoch[64] Iter[150/227] Loss: 0.059, Acc: 1.000, Base Lr: 3.59e-04 | id_global: 0.058 tri_global: 0.002
+2026-07-16 14:46:56 transreid.train INFO: Epoch[64] Iter[200/227] Loss: 0.054, Acc: 1.000, Base Lr: 3.59e-04 | id_global: 0.052 tri_global: 0.001
+2026-07-16 14:46:57 transreid.train INFO: Epoch 64 done. Time per epoch: 28.365[s] Speed: 478.3[samples/s] ETA: 0h26m
+2026-07-16 14:47:05 transreid.train INFO: Epoch[65] Iter[50/227] Loss: 0.062, Acc: 0.999, Base Lr: 3.49e-04 | id_global: 0.061 tri_global: 0.002
+2026-07-16 14:47:11 transreid.train INFO: Epoch[65] Iter[100/227] Loss: 0.061, Acc: 0.999, Base Lr: 3.49e-04 | id_global: 0.060 tri_global: 0.001
+2026-07-16 14:47:18 transreid.train INFO: Epoch[65] Iter[150/227] Loss: 0.056, Acc: 0.999, Base Lr: 3.49e-04 | id_global: 0.055 tri_global: 0.001
+2026-07-16 14:47:24 transreid.train INFO: Epoch[65] Iter[200/227] Loss: 0.051, Acc: 1.000, Base Lr: 3.49e-04 | id_global: 0.050 tri_global: 0.001
+2026-07-16 14:47:26 transreid.train INFO: Epoch 65 done. Time per epoch: 28.375[s] Speed: 478.2[samples/s] ETA: 0h26m
+2026-07-16 14:47:33 transreid.train INFO: Epoch[66] Iter[50/227] Loss: 0.061, Acc: 1.000, Base Lr: 3.38e-04 | id_global: 0.059 tri_global: 0.002
+2026-07-16 14:47:40 transreid.train INFO: Epoch[66] Iter[100/227] Loss: 0.058, Acc: 1.000, Base Lr: 3.38e-04 | id_global: 0.056 tri_global: 0.001
+2026-07-16 14:47:46 transreid.train INFO: Epoch[66] Iter[150/227] Loss: 0.054, Acc: 1.000, Base Lr: 3.38e-04 | id_global: 0.053 tri_global: 0.001
+2026-07-16 14:47:53 transreid.train INFO: Epoch[66] Iter[200/227] Loss: 0.050, Acc: 1.000, Base Lr: 3.38e-04 | id_global: 0.049 tri_global: 0.001
+2026-07-16 14:47:54 transreid.train INFO: Epoch 66 done. Time per epoch: 28.453[s] Speed: 479.1[samples/s] ETA: 0h25m
+2026-07-16 14:48:02 transreid.train INFO: Epoch[67] Iter[50/227] Loss: 0.063, Acc: 1.000, Base Lr: 3.28e-04 | id_global: 0.062 tri_global: 0.001
+2026-07-16 14:48:08 transreid.train INFO: Epoch[67] Iter[100/227] Loss: 0.061, Acc: 1.000, Base Lr: 3.28e-04 | id_global: 0.057 tri_global: 0.003
+2026-07-16 14:48:15 transreid.train INFO: Epoch[67] Iter[150/227] Loss: 0.058, Acc: 0.999, Base Lr: 3.28e-04 | id_global: 0.055 tri_global: 0.003
+2026-07-16 14:48:21 transreid.train INFO: Epoch[67] Iter[200/227] Loss: 0.053, Acc: 1.000, Base Lr: 3.28e-04 | id_global: 0.050 tri_global: 0.002
+2026-07-16 14:48:22 transreid.train INFO: Epoch 67 done. Time per epoch: 28.224[s] Speed: 478.5[samples/s] ETA: 0h24m
+2026-07-16 14:48:30 transreid.train INFO: Epoch[68] Iter[50/227] Loss: 0.060, Acc: 1.000, Base Lr: 3.18e-04 | id_global: 0.057 tri_global: 0.003
+2026-07-16 14:48:36 transreid.train INFO: Epoch[68] Iter[100/227] Loss: 0.061, Acc: 1.000, Base Lr: 3.18e-04 | id_global: 0.057 tri_global: 0.005
+2026-07-16 14:48:43 transreid.train INFO: Epoch[68] Iter[150/227] Loss: 0.057, Acc: 0.999, Base Lr: 3.18e-04 | id_global: 0.054 tri_global: 0.003
+2026-07-16 14:48:49 transreid.train INFO: Epoch[68] Iter[200/227] Loss: 0.052, Acc: 1.000, Base Lr: 3.18e-04 | id_global: 0.049 tri_global: 0.003
+2026-07-16 14:48:51 transreid.train INFO: Epoch 68 done. Time per epoch: 28.387[s] Speed: 478.0[samples/s] ETA: 0h24m
+2026-07-16 14:48:58 transreid.train INFO: Epoch[69] Iter[50/227] Loss: 0.059, Acc: 0.999, Base Lr: 3.08e-04 | id_global: 0.056 tri_global: 0.003
+2026-07-16 14:49:05 transreid.train INFO: Epoch[69] Iter[100/227] Loss: 0.057, Acc: 1.000, Base Lr: 3.08e-04 | id_global: 0.055 tri_global: 0.002
+2026-07-16 14:49:11 transreid.train INFO: Epoch[69] Iter[150/227] Loss: 0.054, Acc: 0.999, Base Lr: 3.08e-04 | id_global: 0.052 tri_global: 0.002
+2026-07-16 14:49:18 transreid.train INFO: Epoch[69] Iter[200/227] Loss: 0.050, Acc: 1.000, Base Lr: 3.08e-04 | id_global: 0.048 tri_global: 0.002
+2026-07-16 14:49:19 transreid.train INFO: Epoch 69 done. Time per epoch: 28.215[s] Speed: 478.6[samples/s] ETA: 0h23m
+2026-07-16 14:49:27 transreid.train INFO: Epoch[70] Iter[50/227] Loss: 0.057, Acc: 1.000, Base Lr: 2.97e-04 | id_global: 0.056 tri_global: 0.001
+2026-07-16 14:49:33 transreid.train INFO: Epoch[70] Iter[100/227] Loss: 0.056, Acc: 1.000, Base Lr: 2.97e-04 | id_global: 0.054 tri_global: 0.002
+2026-07-16 14:49:39 transreid.train INFO: Epoch[70] Iter[150/227] Loss: 0.054, Acc: 1.000, Base Lr: 2.97e-04 | id_global: 0.051 tri_global: 0.003
+2026-07-16 14:49:46 transreid.train INFO: Epoch[70] Iter[200/227] Loss: 0.049, Acc: 1.000, Base Lr: 2.97e-04 | id_global: 0.047 tri_global: 0.003
+2026-07-16 14:49:47 transreid.train INFO: Epoch 70 done. Time per epoch: 28.324[s] Speed: 479.0[samples/s] ETA: 0h23m
+2026-07-16 14:50:32 transreid.train INFO: Validation Results - Epoch: 70
+2026-07-16 14:50:32 transreid.train INFO: mAP: 55.5%
+2026-07-16 14:50:32 transreid.train INFO: CMC curve, Rank-1  :66.8%
+2026-07-16 14:50:32 transreid.train INFO: CMC curve, Rank-5  :79.0%
+2026-07-16 14:50:32 transreid.train INFO: CMC curve, Rank-10 :83.4%
+2026-07-16 14:50:39 transreid.train INFO: Epoch[71] Iter[50/227] Loss: 0.057, Acc: 0.999, Base Lr: 2.87e-04 | id_global: 0.056 tri_global: 0.000
+2026-07-16 14:50:46 transreid.train INFO: Epoch[71] Iter[100/227] Loss: 0.055, Acc: 1.000, Base Lr: 2.87e-04 | id_global: 0.054 tri_global: 0.002
+2026-07-16 14:50:52 transreid.train INFO: Epoch[71] Iter[150/227] Loss: 0.052, Acc: 1.000, Base Lr: 2.87e-04 | id_global: 0.051 tri_global: 0.001
+2026-07-16 14:50:59 transreid.train INFO: Epoch[71] Iter[200/227] Loss: 0.049, Acc: 1.000, Base Lr: 2.87e-04 | id_global: 0.048 tri_global: 0.001
+2026-07-16 14:51:00 transreid.train INFO: Epoch 71 done. Time per epoch: 28.314[s] Speed: 479.2[samples/s] ETA: 0h23m
+2026-07-16 14:51:08 transreid.train INFO: Epoch[72] Iter[50/227] Loss: 0.057, Acc: 1.000, Base Lr: 2.77e-04 | id_global: 0.054 tri_global: 0.002
+2026-07-16 14:51:14 transreid.train INFO: Epoch[72] Iter[100/227] Loss: 0.053, Acc: 1.000, Base Lr: 2.77e-04 | id_global: 0.052 tri_global: 0.001
+2026-07-16 14:51:21 transreid.train INFO: Epoch[72] Iter[150/227] Loss: 0.050, Acc: 1.000, Base Lr: 2.77e-04 | id_global: 0.049 tri_global: 0.001
+2026-07-16 14:51:27 transreid.train INFO: Epoch[72] Iter[200/227] Loss: 0.046, Acc: 1.000, Base Lr: 2.77e-04 | id_global: 0.045 tri_global: 0.001
+2026-07-16 14:51:28 transreid.train INFO: Epoch 72 done. Time per epoch: 28.193[s] Speed: 479.0[samples/s] ETA: 0h22m
+2026-07-16 14:51:36 transreid.train INFO: Epoch[73] Iter[50/227] Loss: 0.066, Acc: 0.999, Base Lr: 2.68e-04 | id_global: 0.061 tri_global: 0.005
+2026-07-16 14:51:42 transreid.train INFO: Epoch[73] Iter[100/227] Loss: 0.059, Acc: 1.000, Base Lr: 2.68e-04 | id_global: 0.056 tri_global: 0.003
+2026-07-16 14:51:49 transreid.train INFO: Epoch[73] Iter[150/227] Loss: 0.055, Acc: 1.000, Base Lr: 2.68e-04 | id_global: 0.052 tri_global: 0.003
+2026-07-16 14:51:55 transreid.train INFO: Epoch[73] Iter[200/227] Loss: 0.049, Acc: 1.000, Base Lr: 2.68e-04 | id_global: 0.047 tri_global: 0.002
+2026-07-16 14:51:57 transreid.train INFO: Epoch 73 done. Time per epoch: 28.226[s] Speed: 478.4[samples/s] ETA: 0h22m
+2026-07-16 14:52:04 transreid.train INFO: Epoch[74] Iter[50/227] Loss: 0.057, Acc: 1.000, Base Lr: 2.58e-04 | id_global: 0.056 tri_global: 0.001
+2026-07-16 14:52:11 transreid.train INFO: Epoch[74] Iter[100/227] Loss: 0.054, Acc: 1.000, Base Lr: 2.58e-04 | id_global: 0.053 tri_global: 0.000
+2026-07-16 14:52:17 transreid.train INFO: Epoch[74] Iter[150/227] Loss: 0.050, Acc: 1.000, Base Lr: 2.58e-04 | id_global: 0.049 tri_global: 0.001
+2026-07-16 14:52:24 transreid.train INFO: Epoch[74] Iter[200/227] Loss: 0.046, Acc: 1.000, Base Lr: 2.58e-04 | id_global: 0.045 tri_global: 0.001
+2026-07-16 14:52:25 transreid.train INFO: Epoch 74 done. Time per epoch: 28.524[s] Speed: 477.9[samples/s] ETA: 0h21m
+2026-07-16 14:52:33 transreid.train INFO: Epoch[75] Iter[50/227] Loss: 0.055, Acc: 1.000, Base Lr: 2.48e-04 | id_global: 0.054 tri_global: 0.000
+2026-07-16 14:52:39 transreid.train INFO: Epoch[75] Iter[100/227] Loss: 0.051, Acc: 1.000, Base Lr: 2.48e-04 | id_global: 0.050 tri_global: 0.001
+2026-07-16 14:52:46 transreid.train INFO: Epoch[75] Iter[150/227] Loss: 0.048, Acc: 1.000, Base Lr: 2.48e-04 | id_global: 0.047 tri_global: 0.001
+2026-07-16 14:52:52 transreid.train INFO: Epoch[75] Iter[200/227] Loss: 0.045, Acc: 1.000, Base Lr: 2.48e-04 | id_global: 0.044 tri_global: 0.002
+2026-07-16 14:52:54 transreid.train INFO: Epoch 75 done. Time per epoch: 28.307[s] Speed: 479.3[samples/s] ETA: 0h21m
+2026-07-16 14:53:01 transreid.train INFO: Epoch[76] Iter[50/227] Loss: 0.054, Acc: 1.000, Base Lr: 2.38e-04 | id_global: 0.053 tri_global: 0.001
+2026-07-16 14:53:07 transreid.train INFO: Epoch[76] Iter[100/227] Loss: 0.052, Acc: 1.000, Base Lr: 2.38e-04 | id_global: 0.051 tri_global: 0.001
+2026-07-16 14:53:14 transreid.train INFO: Epoch[76] Iter[150/227] Loss: 0.048, Acc: 1.000, Base Lr: 2.38e-04 | id_global: 0.047 tri_global: 0.001
+2026-07-16 14:53:20 transreid.train INFO: Epoch[76] Iter[200/227] Loss: 0.045, Acc: 1.000, Base Lr: 2.38e-04 | id_global: 0.044 tri_global: 0.001
+2026-07-16 14:53:22 transreid.train INFO: Epoch 76 done. Time per epoch: 28.378[s] Speed: 478.1[samples/s] ETA: 0h20m
+2026-07-16 14:53:29 transreid.train INFO: Epoch[77] Iter[50/227] Loss: 0.053, Acc: 1.000, Base Lr: 2.29e-04 | id_global: 0.051 tri_global: 0.002
+2026-07-16 14:53:36 transreid.train INFO: Epoch[77] Iter[100/227] Loss: 0.051, Acc: 1.000, Base Lr: 2.29e-04 | id_global: 0.049 tri_global: 0.002
+2026-07-16 14:53:42 transreid.train INFO: Epoch[77] Iter[150/227] Loss: 0.047, Acc: 1.000, Base Lr: 2.29e-04 | id_global: 0.045 tri_global: 0.001
+2026-07-16 14:53:49 transreid.train INFO: Epoch[77] Iter[200/227] Loss: 0.043, Acc: 1.000, Base Lr: 2.29e-04 | id_global: 0.041 tri_global: 0.002
+2026-07-16 14:53:50 transreid.train INFO: Epoch 77 done. Time per epoch: 28.339[s] Speed: 478.8[samples/s] ETA: 0h20m
+2026-07-16 14:53:58 transreid.train INFO: Epoch[78] Iter[50/227] Loss: 0.051, Acc: 1.000, Base Lr: 2.20e-04 | id_global: 0.051 tri_global: 0.000
+2026-07-16 14:54:04 transreid.train INFO: Epoch[78] Iter[100/227] Loss: 0.050, Acc: 1.000, Base Lr: 2.20e-04 | id_global: 0.049 tri_global: 0.001
+2026-07-16 14:54:11 transreid.train INFO: Epoch[78] Iter[150/227] Loss: 0.048, Acc: 1.000, Base Lr: 2.20e-04 | id_global: 0.046 tri_global: 0.002
+2026-07-16 14:54:17 transreid.train INFO: Epoch[78] Iter[200/227] Loss: 0.044, Acc: 1.000, Base Lr: 2.20e-04 | id_global: 0.042 tri_global: 0.002
+2026-07-16 14:54:19 transreid.train INFO: Epoch 78 done. Time per epoch: 28.380[s] Speed: 478.1[samples/s] ETA: 0h19m
+2026-07-16 14:54:26 transreid.train INFO: Epoch[79] Iter[50/227] Loss: 0.053, Acc: 1.000, Base Lr: 2.10e-04 | id_global: 0.050 tri_global: 0.003
+2026-07-16 14:54:33 transreid.train INFO: Epoch[79] Iter[100/227] Loss: 0.052, Acc: 1.000, Base Lr: 2.10e-04 | id_global: 0.049 tri_global: 0.003
+2026-07-16 14:54:39 transreid.train INFO: Epoch[79] Iter[150/227] Loss: 0.049, Acc: 1.000, Base Lr: 2.10e-04 | id_global: 0.046 tri_global: 0.003
+2026-07-16 14:54:46 transreid.train INFO: Epoch[79] Iter[200/227] Loss: 0.045, Acc: 1.000, Base Lr: 2.10e-04 | id_global: 0.042 tri_global: 0.002
+2026-07-16 14:54:47 transreid.train INFO: Epoch 79 done. Time per epoch: 28.309[s] Speed: 477.0[samples/s] ETA: 0h19m
+2026-07-16 14:54:54 transreid.train INFO: Epoch[80] Iter[50/227] Loss: 0.053, Acc: 0.999, Base Lr: 2.01e-04 | id_global: 0.052 tri_global: 0.001
+2026-07-16 14:55:01 transreid.train INFO: Epoch[80] Iter[100/227] Loss: 0.052, Acc: 0.999, Base Lr: 2.01e-04 | id_global: 0.049 tri_global: 0.003
+2026-07-16 14:55:07 transreid.train INFO: Epoch[80] Iter[150/227] Loss: 0.049, Acc: 1.000, Base Lr: 2.01e-04 | id_global: 0.047 tri_global: 0.002
+2026-07-16 14:55:14 transreid.train INFO: Epoch[80] Iter[200/227] Loss: 0.045, Acc: 1.000, Base Lr: 2.01e-04 | id_global: 0.043 tri_global: 0.002
+2026-07-16 14:55:15 transreid.train INFO: Epoch 80 done. Time per epoch: 28.272[s] Speed: 477.6[samples/s] ETA: 0h18m
+2026-07-16 14:56:00 transreid.train INFO: Validation Results - Epoch: 80
+2026-07-16 14:56:00 transreid.train INFO: mAP: 55.5%
+2026-07-16 14:56:00 transreid.train INFO: CMC curve, Rank-1  :66.6%
+2026-07-16 14:56:00 transreid.train INFO: CMC curve, Rank-5  :79.0%
+2026-07-16 14:56:00 transreid.train INFO: CMC curve, Rank-10 :83.3%
+2026-07-16 14:56:07 transreid.train INFO: Epoch[81] Iter[50/227] Loss: 0.050, Acc: 1.000, Base Lr: 1.92e-04 | id_global: 0.050 tri_global: 0.000
+2026-07-16 14:56:14 transreid.train INFO: Epoch[81] Iter[100/227] Loss: 0.050, Acc: 1.000, Base Lr: 1.92e-04 | id_global: 0.047 tri_global: 0.003
+2026-07-16 14:56:20 transreid.train INFO: Epoch[81] Iter[150/227] Loss: 0.047, Acc: 1.000, Base Lr: 1.92e-04 | id_global: 0.045 tri_global: 0.002
+2026-07-16 14:56:27 transreid.train INFO: Epoch[81] Iter[200/227] Loss: 0.044, Acc: 1.000, Base Lr: 1.92e-04 | id_global: 0.042 tri_global: 0.002
+2026-07-16 14:56:28 transreid.train INFO: Epoch 81 done. Time per epoch: 28.424[s] Speed: 477.3[samples/s] ETA: 0h18m
+2026-07-16 14:56:36 transreid.train INFO: Epoch[82] Iter[50/227] Loss: 0.051, Acc: 0.999, Base Lr: 1.83e-04 | id_global: 0.049 tri_global: 0.002
+2026-07-16 14:56:42 transreid.train INFO: Epoch[82] Iter[100/227] Loss: 0.051, Acc: 0.999, Base Lr: 1.83e-04 | id_global: 0.049 tri_global: 0.002
+2026-07-16 14:56:49 transreid.train INFO: Epoch[82] Iter[150/227] Loss: 0.047, Acc: 0.999, Base Lr: 1.83e-04 | id_global: 0.046 tri_global: 0.002
+2026-07-16 14:56:55 transreid.train INFO: Epoch[82] Iter[200/227] Loss: 0.043, Acc: 1.000, Base Lr: 1.83e-04 | id_global: 0.041 tri_global: 0.001
+2026-07-16 14:56:57 transreid.train INFO: Epoch 82 done. Time per epoch: 28.416[s] Speed: 479.7[samples/s] ETA: 0h17m
+2026-07-16 14:57:04 transreid.train INFO: Epoch[83] Iter[50/227] Loss: 0.048, Acc: 1.000, Base Lr: 1.75e-04 | id_global: 0.047 tri_global: 0.000
+2026-07-16 14:57:11 transreid.train INFO: Epoch[83] Iter[100/227] Loss: 0.047, Acc: 1.000, Base Lr: 1.75e-04 | id_global: 0.046 tri_global: 0.001
+2026-07-16 14:57:17 transreid.train INFO: Epoch[83] Iter[150/227] Loss: 0.044, Acc: 1.000, Base Lr: 1.75e-04 | id_global: 0.043 tri_global: 0.001
+2026-07-16 14:57:24 transreid.train INFO: Epoch[83] Iter[200/227] Loss: 0.041, Acc: 1.000, Base Lr: 1.75e-04 | id_global: 0.039 tri_global: 0.002
+2026-07-16 14:57:25 transreid.train INFO: Epoch 83 done. Time per epoch: 28.667[s] Speed: 477.8[samples/s] ETA: 0h17m
+2026-07-16 14:57:33 transreid.train INFO: Epoch[84] Iter[50/227] Loss: 0.051, Acc: 0.999, Base Lr: 1.66e-04 | id_global: 0.050 tri_global: 0.001
+2026-07-16 14:57:39 transreid.train INFO: Epoch[84] Iter[100/227] Loss: 0.048, Acc: 1.000, Base Lr: 1.66e-04 | id_global: 0.047 tri_global: 0.001
+2026-07-16 14:57:46 transreid.train INFO: Epoch[84] Iter[150/227] Loss: 0.045, Acc: 1.000, Base Lr: 1.66e-04 | id_global: 0.044 tri_global: 0.001
+2026-07-16 14:57:52 transreid.train INFO: Epoch[84] Iter[200/227] Loss: 0.041, Acc: 1.000, Base Lr: 1.66e-04 | id_global: 0.040 tri_global: 0.001
+2026-07-16 14:57:54 transreid.train INFO: Epoch 84 done. Time per epoch: 28.347[s] Speed: 478.6[samples/s] ETA: 0h17m
+2026-07-16 14:58:01 transreid.train INFO: Epoch[85] Iter[50/227] Loss: 0.050, Acc: 1.000, Base Lr: 1.58e-04 | id_global: 0.050 tri_global: 0.001
+2026-07-16 14:58:08 transreid.train INFO: Epoch[85] Iter[100/227] Loss: 0.047, Acc: 1.000, Base Lr: 1.58e-04 | id_global: 0.047 tri_global: 0.001
+2026-07-16 14:58:14 transreid.train INFO: Epoch[85] Iter[150/227] Loss: 0.044, Acc: 1.000, Base Lr: 1.58e-04 | id_global: 0.044 tri_global: 0.001
+2026-07-16 14:58:20 transreid.train INFO: Epoch[85] Iter[200/227] Loss: 0.041, Acc: 1.000, Base Lr: 1.58e-04 | id_global: 0.040 tri_global: 0.001
+2026-07-16 14:58:22 transreid.train INFO: Epoch 85 done. Time per epoch: 28.147[s] Speed: 479.8[samples/s] ETA: 0h16m
+2026-07-16 14:58:29 transreid.train INFO: Epoch[86] Iter[50/227] Loss: 0.049, Acc: 1.000, Base Lr: 1.50e-04 | id_global: 0.049 tri_global: 0.000
+2026-07-16 14:58:36 transreid.train INFO: Epoch[86] Iter[100/227] Loss: 0.046, Acc: 1.000, Base Lr: 1.50e-04 | id_global: 0.045 tri_global: 0.000
+2026-07-16 14:58:42 transreid.train INFO: Epoch[86] Iter[150/227] Loss: 0.043, Acc: 1.000, Base Lr: 1.50e-04 | id_global: 0.042 tri_global: 0.001
+2026-07-16 14:58:49 transreid.train INFO: Epoch[86] Iter[200/227] Loss: 0.040, Acc: 1.000, Base Lr: 1.50e-04 | id_global: 0.039 tri_global: 0.001
+2026-07-16 14:58:50 transreid.train INFO: Epoch 86 done. Time per epoch: 28.358[s] Speed: 478.5[samples/s] ETA: 0h16m
+2026-07-16 14:58:58 transreid.train INFO: Epoch[87] Iter[50/227] Loss: 0.045, Acc: 1.000, Base Lr: 1.42e-04 | id_global: 0.044 tri_global: 0.001
+2026-07-16 14:59:04 transreid.train INFO: Epoch[87] Iter[100/227] Loss: 0.045, Acc: 1.000, Base Lr: 1.42e-04 | id_global: 0.044 tri_global: 0.001
+2026-07-16 14:59:11 transreid.train INFO: Epoch[87] Iter[150/227] Loss: 0.042, Acc: 1.000, Base Lr: 1.42e-04 | id_global: 0.042 tri_global: 0.001
+2026-07-16 14:59:17 transreid.train INFO: Epoch[87] Iter[200/227] Loss: 0.039, Acc: 1.000, Base Lr: 1.42e-04 | id_global: 0.038 tri_global: 0.001
+2026-07-16 14:59:19 transreid.train INFO: Epoch 87 done. Time per epoch: 28.386[s] Speed: 478.0[samples/s] ETA: 0h15m
+2026-07-16 14:59:26 transreid.train INFO: Epoch[88] Iter[50/227] Loss: 0.052, Acc: 1.000, Base Lr: 1.34e-04 | id_global: 0.049 tri_global: 0.003
+2026-07-16 14:59:33 transreid.train INFO: Epoch[88] Iter[100/227] Loss: 0.049, Acc: 1.000, Base Lr: 1.34e-04 | id_global: 0.046 tri_global: 0.003
+2026-07-16 14:59:39 transreid.train INFO: Epoch[88] Iter[150/227] Loss: 0.046, Acc: 1.000, Base Lr: 1.34e-04 | id_global: 0.043 tri_global: 0.003
+2026-07-16 14:59:46 transreid.train INFO: Epoch[88] Iter[200/227] Loss: 0.041, Acc: 1.000, Base Lr: 1.34e-04 | id_global: 0.039 tri_global: 0.002
+2026-07-16 14:59:47 transreid.train INFO: Epoch 88 done. Time per epoch: 28.272[s] Speed: 477.6[samples/s] ETA: 0h15m
+2026-07-16 14:59:54 transreid.train INFO: Epoch[89] Iter[50/227] Loss: 0.047, Acc: 1.000, Base Lr: 1.26e-04 | id_global: 0.046 tri_global: 0.001
+2026-07-16 15:00:01 transreid.train INFO: Epoch[89] Iter[100/227] Loss: 0.045, Acc: 1.000, Base Lr: 1.26e-04 | id_global: 0.044 tri_global: 0.002
+2026-07-16 15:00:07 transreid.train INFO: Epoch[89] Iter[150/227] Loss: 0.043, Acc: 1.000, Base Lr: 1.26e-04 | id_global: 0.042 tri_global: 0.002
+2026-07-16 15:00:14 transreid.train INFO: Epoch[89] Iter[200/227] Loss: 0.040, Acc: 1.000, Base Lr: 1.26e-04 | id_global: 0.039 tri_global: 0.002
+2026-07-16 15:00:15 transreid.train INFO: Epoch 89 done. Time per epoch: 28.319[s] Speed: 476.8[samples/s] ETA: 0h14m
+2026-07-16 15:00:23 transreid.train INFO: Epoch[90] Iter[50/227] Loss: 0.047, Acc: 1.000, Base Lr: 1.19e-04 | id_global: 0.046 tri_global: 0.001
+2026-07-16 15:00:29 transreid.train INFO: Epoch[90] Iter[100/227] Loss: 0.044, Acc: 1.000, Base Lr: 1.19e-04 | id_global: 0.044 tri_global: 0.000
+2026-07-16 15:00:36 transreid.train INFO: Epoch[90] Iter[150/227] Loss: 0.042, Acc: 1.000, Base Lr: 1.19e-04 | id_global: 0.042 tri_global: 0.001
+2026-07-16 15:00:42 transreid.train INFO: Epoch[90] Iter[200/227] Loss: 0.041, Acc: 1.000, Base Lr: 1.19e-04 | id_global: 0.038 tri_global: 0.002
+2026-07-16 15:00:44 transreid.train INFO: Epoch 90 done. Time per epoch: 28.511[s] Speed: 478.1[samples/s] ETA: 0h14m
+2026-07-16 15:01:28 transreid.train INFO: Validation Results - Epoch: 90
+2026-07-16 15:01:28 transreid.train INFO: mAP: 56.0%
+2026-07-16 15:01:28 transreid.train INFO: CMC curve, Rank-1  :67.4%
+2026-07-16 15:01:28 transreid.train INFO: CMC curve, Rank-5  :79.6%
+2026-07-16 15:01:28 transreid.train INFO: CMC curve, Rank-10 :84.1%
+2026-07-16 15:01:36 transreid.train INFO: Epoch[91] Iter[50/227] Loss: 0.051, Acc: 0.999, Base Lr: 1.11e-04 | id_global: 0.049 tri_global: 0.002
+2026-07-16 15:01:42 transreid.train INFO: Epoch[91] Iter[100/227] Loss: 0.047, Acc: 1.000, Base Lr: 1.11e-04 | id_global: 0.045 tri_global: 0.001
+2026-07-16 15:01:49 transreid.train INFO: Epoch[91] Iter[150/227] Loss: 0.044, Acc: 1.000, Base Lr: 1.11e-04 | id_global: 0.042 tri_global: 0.001
+2026-07-16 15:01:55 transreid.train INFO: Epoch[91] Iter[200/227] Loss: 0.040, Acc: 1.000, Base Lr: 1.11e-04 | id_global: 0.039 tri_global: 0.001
+2026-07-16 15:01:57 transreid.train INFO: Epoch 91 done. Time per epoch: 28.431[s] Speed: 475.0[samples/s] ETA: 0h13m
+2026-07-16 15:02:04 transreid.train INFO: Epoch[92] Iter[50/227] Loss: 0.045, Acc: 1.000, Base Lr: 1.04e-04 | id_global: 0.044 tri_global: 0.001
+2026-07-16 15:02:11 transreid.train INFO: Epoch[92] Iter[100/227] Loss: 0.044, Acc: 1.000, Base Lr: 1.04e-04 | id_global: 0.043 tri_global: 0.001
+2026-07-16 15:02:17 transreid.train INFO: Epoch[92] Iter[150/227] Loss: 0.042, Acc: 1.000, Base Lr: 1.04e-04 | id_global: 0.041 tri_global: 0.001
+2026-07-16 15:02:24 transreid.train INFO: Epoch[92] Iter[200/227] Loss: 0.039, Acc: 1.000, Base Lr: 1.04e-04 | id_global: 0.038 tri_global: 0.001
+2026-07-16 15:02:25 transreid.train INFO: Epoch 92 done. Time per epoch: 28.306[s] Speed: 479.3[samples/s] ETA: 0h13m
+2026-07-16 15:02:33 transreid.train INFO: Epoch[93] Iter[50/227] Loss: 0.048, Acc: 0.999, Base Lr: 9.72e-05 | id_global: 0.047 tri_global: 0.001
+2026-07-16 15:02:39 transreid.train INFO: Epoch[93] Iter[100/227] Loss: 0.045, Acc: 1.000, Base Lr: 9.72e-05 | id_global: 0.044 tri_global: 0.001
+2026-07-16 15:02:45 transreid.train INFO: Epoch[93] Iter[150/227] Loss: 0.042, Acc: 1.000, Base Lr: 9.72e-05 | id_global: 0.041 tri_global: 0.001
+2026-07-16 15:02:52 transreid.train INFO: Epoch[93] Iter[200/227] Loss: 0.039, Acc: 1.000, Base Lr: 9.72e-05 | id_global: 0.038 tri_global: 0.001
+2026-07-16 15:02:53 transreid.train INFO: Epoch 93 done. Time per epoch: 28.411[s] Speed: 479.8[samples/s] ETA: 0h12m
+2026-07-16 15:03:01 transreid.train INFO: Epoch[94] Iter[50/227] Loss: 0.044, Acc: 1.000, Base Lr: 9.06e-05 | id_global: 0.044 tri_global: 0.000
+2026-07-16 15:03:07 transreid.train INFO: Epoch[94] Iter[100/227] Loss: 0.042, Acc: 1.000, Base Lr: 9.06e-05 | id_global: 0.042 tri_global: 0.000
+2026-07-16 15:03:14 transreid.train INFO: Epoch[94] Iter[150/227] Loss: 0.041, Acc: 1.000, Base Lr: 9.06e-05 | id_global: 0.040 tri_global: 0.001
+2026-07-16 15:03:20 transreid.train INFO: Epoch[94] Iter[200/227] Loss: 0.038, Acc: 1.000, Base Lr: 9.06e-05 | id_global: 0.037 tri_global: 0.001
+2026-07-16 15:03:22 transreid.train INFO: Epoch 94 done. Time per epoch: 28.176[s] Speed: 479.3[samples/s] ETA: 0h12m
+2026-07-16 15:03:29 transreid.train INFO: Epoch[95] Iter[50/227] Loss: 0.047, Acc: 1.000, Base Lr: 8.41e-05 | id_global: 0.046 tri_global: 0.000
+2026-07-16 15:03:36 transreid.train INFO: Epoch[95] Iter[100/227] Loss: 0.044, Acc: 1.000, Base Lr: 8.41e-05 | id_global: 0.043 tri_global: 0.000
+2026-07-16 15:03:42 transreid.train INFO: Epoch[95] Iter[150/227] Loss: 0.041, Acc: 1.000, Base Lr: 8.41e-05 | id_global: 0.040 tri_global: 0.000
+2026-07-16 15:03:48 transreid.train INFO: Epoch[95] Iter[200/227] Loss: 0.037, Acc: 1.000, Base Lr: 8.41e-05 | id_global: 0.037 tri_global: 0.001
+2026-07-16 15:03:50 transreid.train INFO: Epoch 95 done. Time per epoch: 28.144[s] Speed: 479.8[samples/s] ETA: 0h11m
+2026-07-16 15:03:57 transreid.train INFO: Epoch[96] Iter[50/227] Loss: 0.046, Acc: 1.000, Base Lr: 7.78e-05 | id_global: 0.045 tri_global: 0.001
+2026-07-16 15:04:04 transreid.train INFO: Epoch[96] Iter[100/227] Loss: 0.044, Acc: 1.000, Base Lr: 7.78e-05 | id_global: 0.043 tri_global: 0.001
+2026-07-16 15:04:10 transreid.train INFO: Epoch[96] Iter[150/227] Loss: 0.042, Acc: 1.000, Base Lr: 7.78e-05 | id_global: 0.041 tri_global: 0.001
+2026-07-16 15:04:17 transreid.train INFO: Epoch[96] Iter[200/227] Loss: 0.038, Acc: 1.000, Base Lr: 7.78e-05 | id_global: 0.037 tri_global: 0.001
+2026-07-16 15:04:18 transreid.train INFO: Epoch 96 done. Time per epoch: 28.359[s] Speed: 478.4[samples/s] ETA: 0h11m
+2026-07-16 15:04:26 transreid.train INFO: Epoch[97] Iter[50/227] Loss: 0.046, Acc: 1.000, Base Lr: 7.18e-05 | id_global: 0.045 tri_global: 0.002
+2026-07-16 15:04:32 transreid.train INFO: Epoch[97] Iter[100/227] Loss: 0.044, Acc: 1.000, Base Lr: 7.18e-05 | id_global: 0.043 tri_global: 0.001
+2026-07-16 15:04:38 transreid.train INFO: Epoch[97] Iter[150/227] Loss: 0.042, Acc: 1.000, Base Lr: 7.18e-05 | id_global: 0.041 tri_global: 0.001
+2026-07-16 15:04:45 transreid.train INFO: Epoch[97] Iter[200/227] Loss: 0.038, Acc: 1.000, Base Lr: 7.18e-05 | id_global: 0.037 tri_global: 0.001
+2026-07-16 15:04:46 transreid.train INFO: Epoch 97 done. Time per epoch: 28.315[s] Speed: 481.4[samples/s] ETA: 0h10m
+2026-07-16 15:04:54 transreid.train INFO: Epoch[98] Iter[50/227] Loss: 0.048, Acc: 1.000, Base Lr: 6.60e-05 | id_global: 0.046 tri_global: 0.002
+2026-07-16 15:05:00 transreid.train INFO: Epoch[98] Iter[100/227] Loss: 0.043, Acc: 1.000, Base Lr: 6.60e-05 | id_global: 0.042 tri_global: 0.001
+2026-07-16 15:05:07 transreid.train INFO: Epoch[98] Iter[150/227] Loss: 0.042, Acc: 1.000, Base Lr: 6.60e-05 | id_global: 0.040 tri_global: 0.001
+2026-07-16 15:05:13 transreid.train INFO: Epoch[98] Iter[200/227] Loss: 0.039, Acc: 1.000, Base Lr: 6.60e-05 | id_global: 0.037 tri_global: 0.002
+2026-07-16 15:05:15 transreid.train INFO: Epoch 98 done. Time per epoch: 28.142[s] Speed: 479.8[samples/s] ETA: 0h10m
+2026-07-16 15:05:22 transreid.train INFO: Epoch[99] Iter[50/227] Loss: 0.042, Acc: 1.000, Base Lr: 6.04e-05 | id_global: 0.042 tri_global: 0.000
+2026-07-16 15:05:29 transreid.train INFO: Epoch[99] Iter[100/227] Loss: 0.042, Acc: 1.000, Base Lr: 6.04e-05 | id_global: 0.042 tri_global: 0.000
+2026-07-16 15:05:35 transreid.train INFO: Epoch[99] Iter[150/227] Loss: 0.040, Acc: 1.000, Base Lr: 6.04e-05 | id_global: 0.039 tri_global: 0.001
+2026-07-16 15:05:41 transreid.train INFO: Epoch[99] Iter[200/227] Loss: 0.037, Acc: 1.000, Base Lr: 6.04e-05 | id_global: 0.036 tri_global: 0.001
+2026-07-16 15:05:43 transreid.train INFO: Epoch 99 done. Time per epoch: 28.337[s] Speed: 481.1[samples/s] ETA: 0h9m
+2026-07-16 15:05:50 transreid.train INFO: Epoch[100] Iter[50/227] Loss: 0.046, Acc: 1.000, Base Lr: 5.51e-05 | id_global: 0.045 tri_global: 0.001
+2026-07-16 15:05:57 transreid.train INFO: Epoch[100] Iter[100/227] Loss: 0.044, Acc: 1.000, Base Lr: 5.51e-05 | id_global: 0.043 tri_global: 0.001
+2026-07-16 15:06:03 transreid.train INFO: Epoch[100] Iter[150/227] Loss: 0.042, Acc: 1.000, Base Lr: 5.51e-05 | id_global: 0.041 tri_global: 0.001
+2026-07-16 15:06:10 transreid.train INFO: Epoch[100] Iter[200/227] Loss: 0.039, Acc: 1.000, Base Lr: 5.51e-05 | id_global: 0.038 tri_global: 0.001
+2026-07-16 15:06:11 transreid.train INFO: Epoch 100 done. Time per epoch: 28.175[s] Speed: 479.3[samples/s] ETA: 0h9m
+2026-07-16 15:06:56 transreid.train INFO: Validation Results - Epoch: 100
+2026-07-16 15:06:56 transreid.train INFO: mAP: 56.0%
+2026-07-16 15:06:56 transreid.train INFO: CMC curve, Rank-1  :66.7%
+2026-07-16 15:06:56 transreid.train INFO: CMC curve, Rank-5  :79.3%
+2026-07-16 15:06:56 transreid.train INFO: CMC curve, Rank-10 :83.7%
+2026-07-16 15:07:03 transreid.train INFO: Epoch[101] Iter[50/227] Loss: 0.047, Acc: 1.000, Base Lr: 5.00e-05 | id_global: 0.047 tri_global: 0.000
+2026-07-16 15:07:10 transreid.train INFO: Epoch[101] Iter[100/227] Loss: 0.044, Acc: 1.000, Base Lr: 5.00e-05 | id_global: 0.043 tri_global: 0.001
+2026-07-16 15:07:16 transreid.train INFO: Epoch[101] Iter[150/227] Loss: 0.040, Acc: 1.000, Base Lr: 5.00e-05 | id_global: 0.040 tri_global: 0.001
+2026-07-16 15:07:23 transreid.train INFO: Epoch[101] Iter[200/227] Loss: 0.037, Acc: 1.000, Base Lr: 5.00e-05 | id_global: 0.037 tri_global: 0.001
+2026-07-16 15:07:24 transreid.train INFO: Epoch 101 done. Time per epoch: 28.472[s] Speed: 478.8[samples/s] ETA: 0h9m
+2026-07-16 15:07:32 transreid.train INFO: Epoch[102] Iter[50/227] Loss: 0.046, Acc: 1.000, Base Lr: 4.51e-05 | id_global: 0.045 tri_global: 0.001
+2026-07-16 15:07:38 transreid.train INFO: Epoch[102] Iter[100/227] Loss: 0.044, Acc: 1.000, Base Lr: 4.51e-05 | id_global: 0.042 tri_global: 0.001
+2026-07-16 15:07:45 transreid.train INFO: Epoch[102] Iter[150/227] Loss: 0.041, Acc: 1.000, Base Lr: 4.51e-05 | id_global: 0.040 tri_global: 0.001
+2026-07-16 15:07:51 transreid.train INFO: Epoch[102] Iter[200/227] Loss: 0.037, Acc: 1.000, Base Lr: 4.51e-05 | id_global: 0.036 tri_global: 0.001
+2026-07-16 15:07:53 transreid.train INFO: Epoch 102 done. Time per epoch: 28.504[s] Speed: 476.0[samples/s] ETA: 0h8m
+2026-07-16 15:08:00 transreid.train INFO: Epoch[103] Iter[50/227] Loss: 0.043, Acc: 1.000, Base Lr: 4.05e-05 | id_global: 0.042 tri_global: 0.001
+2026-07-16 15:08:07 transreid.train INFO: Epoch[103] Iter[100/227] Loss: 0.043, Acc: 1.000, Base Lr: 4.05e-05 | id_global: 0.041 tri_global: 0.002
+2026-07-16 15:08:13 transreid.train INFO: Epoch[103] Iter[150/227] Loss: 0.041, Acc: 1.000, Base Lr: 4.05e-05 | id_global: 0.039 tri_global: 0.002
+2026-07-16 15:08:20 transreid.train INFO: Epoch[103] Iter[200/227] Loss: 0.037, Acc: 1.000, Base Lr: 4.05e-05 | id_global: 0.036 tri_global: 0.001
+2026-07-16 15:08:21 transreid.train INFO: Epoch 103 done. Time per epoch: 28.272[s] Speed: 477.7[samples/s] ETA: 0h8m
+2026-07-16 15:08:29 transreid.train INFO: Epoch[104] Iter[50/227] Loss: 0.045, Acc: 1.000, Base Lr: 3.61e-05 | id_global: 0.044 tri_global: 0.001
+2026-07-16 15:08:35 transreid.train INFO: Epoch[104] Iter[100/227] Loss: 0.045, Acc: 1.000, Base Lr: 3.61e-05 | id_global: 0.042 tri_global: 0.003
+2026-07-16 15:08:42 transreid.train INFO: Epoch[104] Iter[150/227] Loss: 0.042, Acc: 1.000, Base Lr: 3.61e-05 | id_global: 0.040 tri_global: 0.002
+2026-07-16 15:08:48 transreid.train INFO: Epoch[104] Iter[200/227] Loss: 0.038, Acc: 1.000, Base Lr: 3.61e-05 | id_global: 0.036 tri_global: 0.002
+2026-07-16 15:08:49 transreid.train INFO: Epoch 104 done. Time per epoch: 28.308[s] Speed: 477.0[samples/s] ETA: 0h7m
+2026-07-16 15:08:57 transreid.train INFO: Epoch[105] Iter[50/227] Loss: 0.041, Acc: 1.000, Base Lr: 3.20e-05 | id_global: 0.040 tri_global: 0.001
+2026-07-16 15:09:03 transreid.train INFO: Epoch[105] Iter[100/227] Loss: 0.042, Acc: 1.000, Base Lr: 3.20e-05 | id_global: 0.042 tri_global: 0.001
+2026-07-16 15:09:10 transreid.train INFO: Epoch[105] Iter[150/227] Loss: 0.040, Acc: 1.000, Base Lr: 3.20e-05 | id_global: 0.039 tri_global: 0.000
+2026-07-16 15:09:16 transreid.train INFO: Epoch[105] Iter[200/227] Loss: 0.037, Acc: 1.000, Base Lr: 3.20e-05 | id_global: 0.036 tri_global: 0.001
+2026-07-16 15:09:18 transreid.train INFO: Epoch 105 done. Time per epoch: 28.386[s] Speed: 478.0[samples/s] ETA: 0h7m
+2026-07-16 15:09:25 transreid.train INFO: Epoch[106] Iter[50/227] Loss: 0.045, Acc: 1.000, Base Lr: 2.81e-05 | id_global: 0.045 tri_global: 0.000
+2026-07-16 15:09:32 transreid.train INFO: Epoch[106] Iter[100/227] Loss: 0.042, Acc: 1.000, Base Lr: 2.81e-05 | id_global: 0.042 tri_global: 0.000
+2026-07-16 15:09:38 transreid.train INFO: Epoch[106] Iter[150/227] Loss: 0.040, Acc: 1.000, Base Lr: 2.81e-05 | id_global: 0.039 tri_global: 0.001
+2026-07-16 15:09:45 transreid.train INFO: Epoch[106] Iter[200/227] Loss: 0.036, Acc: 1.000, Base Lr: 2.81e-05 | id_global: 0.036 tri_global: 0.001
+2026-07-16 15:09:46 transreid.train INFO: Epoch 106 done. Time per epoch: 28.501[s] Speed: 476.1[samples/s] ETA: 0h6m
+2026-07-16 15:09:54 transreid.train INFO: Epoch[107] Iter[50/227] Loss: 0.045, Acc: 1.000, Base Lr: 2.45e-05 | id_global: 0.045 tri_global: 0.000
+2026-07-16 15:10:00 transreid.train INFO: Epoch[107] Iter[100/227] Loss: 0.044, Acc: 1.000, Base Lr: 2.45e-05 | id_global: 0.043 tri_global: 0.000
+2026-07-16 15:10:07 transreid.train INFO: Epoch[107] Iter[150/227] Loss: 0.040, Acc: 1.000, Base Lr: 2.45e-05 | id_global: 0.040 tri_global: 0.000
+2026-07-16 15:10:13 transreid.train INFO: Epoch[107] Iter[200/227] Loss: 0.037, Acc: 1.000, Base Lr: 2.45e-05 | id_global: 0.036 tri_global: 0.001
+2026-07-16 15:10:15 transreid.train INFO: Epoch 107 done. Time per epoch: 28.561[s] Speed: 475.0[samples/s] ETA: 0h6m
+2026-07-16 15:10:22 transreid.train INFO: Epoch[108] Iter[50/227] Loss: 0.043, Acc: 1.000, Base Lr: 2.11e-05 | id_global: 0.042 tri_global: 0.001
+2026-07-16 15:10:29 transreid.train INFO: Epoch[108] Iter[100/227] Loss: 0.040, Acc: 1.000, Base Lr: 2.11e-05 | id_global: 0.039 tri_global: 0.000
+2026-07-16 15:10:35 transreid.train INFO: Epoch[108] Iter[150/227] Loss: 0.038, Acc: 1.000, Base Lr: 2.11e-05 | id_global: 0.038 tri_global: 0.000
+2026-07-16 15:10:42 transreid.train INFO: Epoch[108] Iter[200/227] Loss: 0.035, Acc: 1.000, Base Lr: 2.11e-05 | id_global: 0.035 tri_global: 0.001
+2026-07-16 15:10:43 transreid.train INFO: Epoch 108 done. Time per epoch: 28.456[s] Speed: 476.8[samples/s] ETA: 0h5m
+2026-07-16 15:10:51 transreid.train INFO: Epoch[109] Iter[50/227] Loss: 0.047, Acc: 0.999, Base Lr: 1.80e-05 | id_global: 0.044 tri_global: 0.003
+2026-07-16 15:10:57 transreid.train INFO: Epoch[109] Iter[100/227] Loss: 0.044, Acc: 1.000, Base Lr: 1.80e-05 | id_global: 0.042 tri_global: 0.002
+2026-07-16 15:11:04 transreid.train INFO: Epoch[109] Iter[150/227] Loss: 0.041, Acc: 1.000, Base Lr: 1.80e-05 | id_global: 0.039 tri_global: 0.002
+2026-07-16 15:11:10 transreid.train INFO: Epoch[109] Iter[200/227] Loss: 0.037, Acc: 1.000, Base Lr: 1.80e-05 | id_global: 0.036 tri_global: 0.002
+2026-07-16 15:11:12 transreid.train INFO: Epoch 109 done. Time per epoch: 28.265[s] Speed: 477.8[samples/s] ETA: 0h5m
+2026-07-16 15:11:19 transreid.train INFO: Epoch[110] Iter[50/227] Loss: 0.044, Acc: 1.000, Base Lr: 1.52e-05 | id_global: 0.044 tri_global: 0.001
+2026-07-16 15:11:26 transreid.train INFO: Epoch[110] Iter[100/227] Loss: 0.042, Acc: 1.000, Base Lr: 1.52e-05 | id_global: 0.041 tri_global: 0.001
+2026-07-16 15:11:32 transreid.train INFO: Epoch[110] Iter[150/227] Loss: 0.040, Acc: 1.000, Base Lr: 1.52e-05 | id_global: 0.039 tri_global: 0.001
+2026-07-16 15:11:39 transreid.train INFO: Epoch[110] Iter[200/227] Loss: 0.036, Acc: 1.000, Base Lr: 1.52e-05 | id_global: 0.036 tri_global: 0.001
+2026-07-16 15:11:40 transreid.train INFO: Epoch 110 done. Time per epoch: 28.478[s] Speed: 476.4[samples/s] ETA: 0h4m
+2026-07-16 15:12:25 transreid.train INFO: Validation Results - Epoch: 110
+2026-07-16 15:12:25 transreid.train INFO: mAP: 56.1%
+2026-07-16 15:12:25 transreid.train INFO: CMC curve, Rank-1  :67.4%
+2026-07-16 15:12:25 transreid.train INFO: CMC curve, Rank-5  :79.4%
+2026-07-16 15:12:25 transreid.train INFO: CMC curve, Rank-10 :83.8%
+2026-07-16 15:12:32 transreid.train INFO: Epoch[111] Iter[50/227] Loss: 0.045, Acc: 1.000, Base Lr: 1.26e-05 | id_global: 0.044 tri_global: 0.001
+2026-07-16 15:12:39 transreid.train INFO: Epoch[111] Iter[100/227] Loss: 0.043, Acc: 1.000, Base Lr: 1.26e-05 | id_global: 0.042 tri_global: 0.001
+2026-07-16 15:12:45 transreid.train INFO: Epoch[111] Iter[150/227] Loss: 0.041, Acc: 1.000, Base Lr: 1.26e-05 | id_global: 0.040 tri_global: 0.001
+2026-07-16 15:12:52 transreid.train INFO: Epoch[111] Iter[200/227] Loss: 0.037, Acc: 1.000, Base Lr: 1.26e-05 | id_global: 0.036 tri_global: 0.001
+2026-07-16 15:12:53 transreid.train INFO: Epoch 111 done. Time per epoch: 28.453[s] Speed: 476.9[samples/s] ETA: 0h4m
+2026-07-16 15:13:01 transreid.train INFO: Epoch[112] Iter[50/227] Loss: 0.046, Acc: 1.000, Base Lr: 1.03e-05 | id_global: 0.044 tri_global: 0.002
+2026-07-16 15:13:07 transreid.train INFO: Epoch[112] Iter[100/227] Loss: 0.045, Acc: 1.000, Base Lr: 1.03e-05 | id_global: 0.043 tri_global: 0.002
+2026-07-16 15:13:14 transreid.train INFO: Epoch[112] Iter[150/227] Loss: 0.041, Acc: 1.000, Base Lr: 1.03e-05 | id_global: 0.040 tri_global: 0.001
+2026-07-16 15:13:20 transreid.train INFO: Epoch[112] Iter[200/227] Loss: 0.038, Acc: 1.000, Base Lr: 1.03e-05 | id_global: 0.036 tri_global: 0.001
+2026-07-16 15:13:22 transreid.train INFO: Epoch 112 done. Time per epoch: 28.380[s] Speed: 478.1[samples/s] ETA: 0h3m
+2026-07-16 15:13:29 transreid.train INFO: Epoch[113] Iter[50/227] Loss: 0.043, Acc: 1.000, Base Lr: 8.28e-06 | id_global: 0.042 tri_global: 0.001
+2026-07-16 15:13:36 transreid.train INFO: Epoch[113] Iter[100/227] Loss: 0.044, Acc: 1.000, Base Lr: 8.28e-06 | id_global: 0.042 tri_global: 0.002
+2026-07-16 15:13:42 transreid.train INFO: Epoch[113] Iter[150/227] Loss: 0.041, Acc: 1.000, Base Lr: 8.28e-06 | id_global: 0.040 tri_global: 0.001
+2026-07-16 15:13:48 transreid.train INFO: Epoch[113] Iter[200/227] Loss: 0.038, Acc: 1.000, Base Lr: 8.28e-06 | id_global: 0.037 tri_global: 0.001
+2026-07-16 15:13:50 transreid.train INFO: Epoch 113 done. Time per epoch: 28.371[s] Speed: 478.2[samples/s] ETA: 0h3m
+2026-07-16 15:13:58 transreid.train INFO: Epoch[114] Iter[50/227] Loss: 0.042, Acc: 1.000, Base Lr: 6.51e-06 | id_global: 0.041 tri_global: 0.000
+2026-07-16 15:14:04 transreid.train INFO: Epoch[114] Iter[100/227] Loss: 0.041, Acc: 1.000, Base Lr: 6.51e-06 | id_global: 0.040 tri_global: 0.000
+2026-07-16 15:14:10 transreid.train INFO: Epoch[114] Iter[150/227] Loss: 0.041, Acc: 1.000, Base Lr: 6.51e-06 | id_global: 0.039 tri_global: 0.002
+2026-07-16 15:14:17 transreid.train INFO: Epoch[114] Iter[200/227] Loss: 0.037, Acc: 1.000, Base Lr: 6.51e-06 | id_global: 0.036 tri_global: 0.001
+2026-07-16 15:14:19 transreid.train INFO: Epoch 114 done. Time per epoch: 28.586[s] Speed: 476.9[samples/s] ETA: 0h2m
+2026-07-16 15:14:26 transreid.train INFO: Epoch[115] Iter[50/227] Loss: 0.047, Acc: 1.000, Base Lr: 5.02e-06 | id_global: 0.045 tri_global: 0.002
+2026-07-16 15:14:33 transreid.train INFO: Epoch[115] Iter[100/227] Loss: 0.044, Acc: 1.000, Base Lr: 5.02e-06 | id_global: 0.042 tri_global: 0.002
+2026-07-16 15:14:39 transreid.train INFO: Epoch[115] Iter[150/227] Loss: 0.041, Acc: 1.000, Base Lr: 5.02e-06 | id_global: 0.040 tri_global: 0.001
+2026-07-16 15:14:46 transreid.train INFO: Epoch[115] Iter[200/227] Loss: 0.037, Acc: 1.000, Base Lr: 5.02e-06 | id_global: 0.036 tri_global: 0.001
+2026-07-16 15:14:47 transreid.train INFO: Epoch 115 done. Time per epoch: 28.598[s] Speed: 476.7[samples/s] ETA: 0h2m
+2026-07-16 15:14:55 transreid.train INFO: Epoch[116] Iter[50/227] Loss: 0.046, Acc: 1.000, Base Lr: 3.79e-06 | id_global: 0.046 tri_global: 0.000
+2026-07-16 15:15:01 transreid.train INFO: Epoch[116] Iter[100/227] Loss: 0.043, Acc: 1.000, Base Lr: 3.79e-06 | id_global: 0.042 tri_global: 0.000
+2026-07-16 15:15:08 transreid.train INFO: Epoch[116] Iter[150/227] Loss: 0.040, Acc: 1.000, Base Lr: 3.79e-06 | id_global: 0.040 tri_global: 0.000
+2026-07-16 15:15:14 transreid.train INFO: Epoch[116] Iter[200/227] Loss: 0.038, Acc: 1.000, Base Lr: 3.79e-06 | id_global: 0.037 tri_global: 0.001
+2026-07-16 15:15:16 transreid.train INFO: Epoch 116 done. Time per epoch: 28.377[s] Speed: 475.9[samples/s] ETA: 0h1m
+2026-07-16 15:15:23 transreid.train INFO: Epoch[117] Iter[50/227] Loss: 0.044, Acc: 1.000, Base Lr: 2.83e-06 | id_global: 0.043 tri_global: 0.001
+2026-07-16 15:15:30 transreid.train INFO: Epoch[117] Iter[100/227] Loss: 0.043, Acc: 1.000, Base Lr: 2.83e-06 | id_global: 0.042 tri_global: 0.001
+2026-07-16 15:15:36 transreid.train INFO: Epoch[117] Iter[150/227] Loss: 0.040, Acc: 1.000, Base Lr: 2.83e-06 | id_global: 0.039 tri_global: 0.001
+2026-07-16 15:15:42 transreid.train INFO: Epoch[117] Iter[200/227] Loss: 0.037, Acc: 1.000, Base Lr: 2.83e-06 | id_global: 0.036 tri_global: 0.001
+2026-07-16 15:15:44 transreid.train INFO: Epoch 117 done. Time per epoch: 28.550[s] Speed: 477.5[samples/s] ETA: 0h1m
+2026-07-16 15:15:52 transreid.train INFO: Epoch[118] Iter[50/227] Loss: 0.047, Acc: 1.000, Base Lr: 2.15e-06 | id_global: 0.044 tri_global: 0.003
+2026-07-16 15:15:58 transreid.train INFO: Epoch[118] Iter[100/227] Loss: 0.043, Acc: 1.000, Base Lr: 2.15e-06 | id_global: 0.041 tri_global: 0.002
+2026-07-16 15:16:05 transreid.train INFO: Epoch[118] Iter[150/227] Loss: 0.041, Acc: 1.000, Base Lr: 2.15e-06 | id_global: 0.039 tri_global: 0.002
+2026-07-16 15:16:11 transreid.train INFO: Epoch[118] Iter[200/227] Loss: 0.037, Acc: 1.000, Base Lr: 2.15e-06 | id_global: 0.036 tri_global: 0.002
+2026-07-16 15:16:13 transreid.train INFO: Epoch 118 done. Time per epoch: 28.433[s] Speed: 477.2[samples/s] ETA: 0h0m
+2026-07-16 15:16:20 transreid.train INFO: Epoch[119] Iter[50/227] Loss: 0.045, Acc: 1.000, Base Lr: 1.74e-06 | id_global: 0.044 tri_global: 0.001
+2026-07-16 15:16:26 transreid.train INFO: Epoch[119] Iter[100/227] Loss: 0.043, Acc: 1.000, Base Lr: 1.74e-06 | id_global: 0.042 tri_global: 0.001
+2026-07-16 15:16:33 transreid.train INFO: Epoch[119] Iter[150/227] Loss: 0.039, Acc: 1.000, Base Lr: 1.74e-06 | id_global: 0.039 tri_global: 0.001
+2026-07-16 15:16:39 transreid.train INFO: Epoch[119] Iter[200/227] Loss: 0.037, Acc: 1.000, Base Lr: 1.74e-06 | id_global: 0.036 tri_global: 0.001
+2026-07-16 15:16:41 transreid.train INFO: Epoch 119 done. Time per epoch: 28.393[s] Speed: 477.9[samples/s] ETA: 0h0m
+2026-07-16 15:16:48 transreid.train INFO: Epoch[120] Iter[50/227] Loss: 0.040, Acc: 1.000, Base Lr: 1.60e-06 | id_global: 0.040 tri_global: 0.000
+2026-07-16 15:16:55 transreid.train INFO: Epoch[120] Iter[100/227] Loss: 0.042, Acc: 1.000, Base Lr: 1.60e-06 | id_global: 0.040 tri_global: 0.002
+2026-07-16 15:17:01 transreid.train INFO: Epoch[120] Iter[150/227] Loss: 0.039, Acc: 1.000, Base Lr: 1.60e-06 | id_global: 0.038 tri_global: 0.001
+2026-07-16 15:17:08 transreid.train INFO: Epoch[120] Iter[200/227] Loss: 0.036, Acc: 1.000, Base Lr: 1.60e-06 | id_global: 0.035 tri_global: 0.001
+2026-07-16 15:17:10 transreid.train INFO: Epoch 120 done. Time per epoch: 28.576[s] Speed: 477.0[samples/s] ETA: 0h0m
+2026-07-16 15:17:54 transreid.train INFO: Validation Results - Epoch: 120
+2026-07-16 15:17:54 transreid.train INFO: mAP: 56.1%
+2026-07-16 15:17:54 transreid.train INFO: CMC curve, Rank-1  :67.4%
+2026-07-16 15:17:54 transreid.train INFO: CMC curve, Rank-5  :79.5%
+2026-07-16 15:17:54 transreid.train INFO: CMC curve, Rank-10 :83.7%

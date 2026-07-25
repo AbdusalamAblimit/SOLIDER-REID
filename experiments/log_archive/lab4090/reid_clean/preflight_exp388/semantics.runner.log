@@ -1,0 +1,21 @@
+/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-exp388-preflight/model/backbones/swin_transformer.py:1157: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+=> Market1501 loaded
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+EXP387_FULL_SEMANTICS_PASS
+route_epochs=['1', '10', '11', '6']
+pose_gradient_groups=['anchor']
+reid_gradient_groups=['swin', 'psg', 'head']
+overflow={"finite_warmup_found_inf": 0.0, "optimizer_state_entries_checked": 185, "overflow_found_inf": 1.0, "parameter_count_checked": 208, "scale_after": 0.5, "scale_before": 1.0}
+checkpoint_sha256=76a31c52aebb1956b85ec248a358fe5f356b4745c1eae57e2a9bde361f1c6662
+pose_variants_exact=['correct', 'shuffle', 'none', 'exploding']
+output=/home/afr/reid-clean/preflight-exp388/semantics.json

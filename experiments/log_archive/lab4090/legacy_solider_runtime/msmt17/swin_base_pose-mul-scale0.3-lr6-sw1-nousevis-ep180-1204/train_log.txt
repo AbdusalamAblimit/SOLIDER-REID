@@ -1,0 +1,127 @@
+2025-12-03 17:17:03 transreid INFO: Saving model in the path :./log/msmt17/swin_base_pose-mul-scale0.3-lr6-sw1-nousevis-ep180-1204
+2025-12-03 17:17:03 transreid INFO: Loaded configuration file configs/msmt17/swin_base_pose.yml
+2025-12-03 17:17:03 transreid INFO: Running with config:
+DATALOADER:
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 16
+  REMOVE_TAIL: 0
+  SAMPLER: softmax_triplet
+DATASETS:
+  NAMES: msmt17
+  ROOT_DIR: data
+  ROOT_TRAIN_DIR: ../data
+  ROOT_VAL_DIR: ../data
+INPUT:
+  PADDING: 10
+  PIXEL_MEAN: [0.5, 0.5, 0.5]
+  PIXEL_STD: [0.5, 0.5, 0.5]
+  PROB: 0.5
+  RE_PROB: 0.5
+  SIZE_TEST: [384, 128]
+  SIZE_TRAIN: [384, 128]
+MODEL:
+  ATT_DROP_RATE: 0.0
+  COS_LAYER: False
+  DEVICE: cuda
+  DEVICE_ID: 0
+  DEVIDE_LENGTH: 4
+  DIST_TRAIN: False
+  DROPOUT_RATE: 0.0
+  DROP_OUT: 0.0
+  DROP_PATH: 0.1
+  FEAT_DIM: 512
+  FREEZE:
+    ENABLE: False
+    RULES: [{'MODULE': 'base.pose_predictor', 'START_EPOCH': 1, 'END_EPOCH': 10, 'SET_EVAL': True}]
+  GEM_POOLING: False
+  ID_LOSS_TYPE: softmax
+  ID_LOSS_WEIGHT: 1.0
+  IF_LABELSMOOTH: off
+  IF_WITH_CENTER: no
+  JPM: False
+  LAST_STRIDE: 1
+  METRIC_LOSS_TYPE: triplet
+  NAME: transformer
+  NECK: bnneck
+  NO_MARGIN: True
+  POSE:
+    BRANCH_STAGE: 1
+    CFG: pose/config_vispredict.py
+    CKPT: pretrained/best_coco_AP_epoch_210.pth
+    DETACH: True
+    ENABLE: True
+    FUSE_STAGE: 1
+    FUSION_MODE: mul
+    HM_NORM: sigmoid
+    LOCAL_LOSS_WEIGHT: 0.7
+    N_KPTS: 17
+    SAVE_VIS: True
+    SCALE: 0.3
+    USE_VIS: False
+  PRETRAIN_CHOICE: self
+  PRETRAIN_HW_RATIO: 2
+  PRETRAIN_PATH: pretrained/swin_base.pth
+  REDUCE_FEAT_DIM: False
+  RE_ARRANGE: True
+  SEMANTIC_WEIGHT: 1.0
+  SHIFT_NUM: 5
+  SHUFFLE_GROUP: 2
+  SIE_CAMERA: False
+  SIE_COE: 3.0
+  SIE_VIEW: False
+  STEM_CONV: False
+  STRIDE_SIZE: [16, 16]
+  TRANSFORMER_TYPE: pose_swin_base_patch4_window7_224
+  TRIPLET_LOSS_WEIGHT: 1.0
+  WITH_CP: True
+OUTPUT_DIR: ./log/msmt17/swin_base_pose-mul-scale0.3-lr6-sw1-nousevis-ep180-1204
+SOLVER:
+  BASE_LR: 0.0006
+  BIAS_LR_FACTOR: 2
+  CENTER_LOSS_WEIGHT: 0.0005
+  CENTER_LR: 0.5
+  CHECKPOINT_PERIOD: 180
+  COSINE_MARGIN: 0.5
+  COSINE_SCALE: 30
+  EVAL_PERIOD: 20
+  GAMMA: 0.1
+  IMS_PER_BATCH: 64
+  LARGE_FC_LR: False
+  LOG_PERIOD: 20
+  MARGIN: 0.3
+  MAX_EPOCHS: 180
+  MOMENTUM: 0.9
+  OPTIMIZER_NAME: SGD
+  SEED: 1234
+  STEPS: (40, 70)
+  TRP_L2: False
+  WARMUP_EPOCHS: 20
+  WARMUP_FACTOR: 0.01
+  WARMUP_METHOD: cosine
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0.0001
+TEST:
+  DIST_MAT: dist_mat.npy
+  ENABLED_FEATS: ('global', 'local', 'concat')
+  EVAL: True
+  FEAT_NORM: yes
+  IMS_PER_BATCH: 128
+  NECK_FEAT: before
+  RE_RANKING: False
+  WEIGHT: 
+2025-12-03 17:17:03 transreid.check INFO: Dataset statistics:
+2025-12-03 17:17:03 transreid.check INFO:   ----------------------------------------
+2025-12-03 17:17:03 transreid.check INFO:   subset   | # ids | # images | # cameras
+2025-12-03 17:17:03 transreid.check INFO:   ----------------------------------------
+2025-12-03 17:17:03 transreid.check INFO:   train    |  1041 |    32621 |        15
+2025-12-03 17:17:03 transreid.check INFO:   query    |  3060 |    11659 |        15
+2025-12-03 17:17:03 transreid.check INFO:   gallery  |  3060 |    82161 |        15
+2025-12-03 17:17:03 transreid.check INFO:   ----------------------------------------
+2025-12-03 17:17:06 transreid INFO: ===========using cosine learning rate=======
+2025-12-03 17:17:06 transreid INFO: [TB] logdir = /home/afr/SOLIDER-REID/log/msmt17/swin_base_pose-mul-scale0.3-lr6-sw1-nousevis-ep180-1204/tb
+2025-12-03 17:17:06 transreid.train INFO: start training
+2025-12-03 17:17:06 transreid.train INFO: Evaluating branches: global, local, concat
+2025-12-03 17:17:22 transreid.train INFO: Epoch[1] Iter[20/486] Loss: 25.066, Acc: 0.000, Base Lr: 3.57e-05, ETA: 19:44:27
+2025-12-03 17:17:35 transreid.train INFO: Epoch[1] Iter[40/486] Loss: 22.394, Acc: 0.000, Base Lr: 3.57e-05, ETA: 17:26:33
+2025-12-03 17:17:47 transreid.train INFO: Epoch[1] Iter[60/486] Loss: 20.615, Acc: 0.000, Base Lr: 3.57e-05, ETA: 16:40:44
+2025-12-03 17:18:00 transreid.train INFO: Epoch[1] Iter[80/486] Loss: 19.491, Acc: 0.000, Base Lr: 3.57e-05, ETA: 16:17:43

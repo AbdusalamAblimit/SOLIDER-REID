@@ -1,0 +1,34 @@
+{
+  "anomaly_counts": {
+    "nan_or_inf": 0,
+    "nonfinite": 0,
+    "oom": 0,
+    "overflow": 0,
+    "runtime_error": 0,
+    "traceback": 0
+  },
+  "audit_exit_code": 0,
+  "audit_pid": 430932,
+  "decision": "ELO_CUR_MECHANISM_NO_GO",
+  "gates": {
+    "audit_exit_zero": true,
+    "audit_process_exited": true,
+    "checkpoint_contract_pass": true,
+    "contract_sha_exact": true,
+    "gpu_compute_processes_zero": true,
+    "measurement_status_pass": true,
+    "runner_anomalies_zero": true
+  },
+  "gpu_compute_pids": [],
+  "sha256": {
+    "audit_wrapper": "35d318cffbfe5d70e8046579f43fa1c7e53ede010eedb1d21965c766ac15dce5",
+    "base_audit": "f450c5e3801a61d20a7ba831d6cefb1ab1d9d5f5549824fc2fa55943059cc479",
+    "base_core": "6e9ac9cfc03d70606ee34f77af39accc6b66c89ee9974fee48ded1d6951dfb54",
+    "contract": "7af4b3bcf49d3cf33f683a385dd94fdb145b971bed7d245c7d089867cffbf217",
+    "core": "e552c9619d5aaadfaa9cb252d9734f37f45748abc173a6652d1f6fc3bf430095",
+    "execution_wrapper": "bbdba1a310d4e9bf7de7b30fd3888aace8d8cdca865a2248ed73d6206d1b79b1",
+    "result": "baf4a016d008f4a86ac26d9ff78524ecc30d46071392dad8a8d151aaf05063cb",
+    "runner": "af1872d65d8dabc9d51f317465a3d60d4f141a6c79db84c2751d43cc964b26eb"
+  },
+  "status": "PASS"
+}

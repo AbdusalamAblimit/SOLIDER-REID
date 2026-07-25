@@ -1,0 +1,2086 @@
+{
+  "authorization_requires_complete_receipt": true,
+  "coverage": {
+    "analysis_valid_fraction_per_slot": [
+      0.9989755153656006,
+      1.0,
+      0.9998719692230225,
+      0.9993597269058228,
+      0.9934050440788269
+    ],
+    "geometry_without_readout_count": 0,
+    "no_valid_target_count": 0,
+    "no_valid_target_fraction": 0.0,
+    "no_valid_target_pid_count": 0,
+    "patch_count_per_slot": {
+      "0": {
+        "count": 15602,
+        "mean": 19.959812844507116,
+        "p05": 13.0,
+        "p50": 20.0,
+        "p95": 28.0
+      },
+      "1": {
+        "count": 15618,
+        "mean": 33.24401331796645,
+        "p05": 24.0,
+        "p50": 34.0,
+        "p95": 41.0
+      },
+      "2": {
+        "count": 15616,
+        "mean": 21.421490778688526,
+        "p05": 15.0,
+        "p50": 21.0,
+        "p95": 29.0
+      },
+      "3": {
+        "count": 15608,
+        "mean": 23.656906714505382,
+        "p05": 18.0,
+        "p50": 23.0,
+        "p95": 31.0
+      },
+      "4": {
+        "count": 15515,
+        "mean": 29.872961650016112,
+        "p05": 21.0,
+        "p50": 30.0,
+        "p95": 36.0
+      }
+    },
+    "pose_geometry_valid_fraction_per_slot": [
+      0.9989755153656006,
+      1.0,
+      0.9998719692230225,
+      0.9993597269058228,
+      0.9934050440788269
+    ],
+    "readout_valid_fraction_per_slot": [
+      0.9989755153656006,
+      1.0,
+      0.9998719692230225,
+      0.9993597269058228,
+      0.9934050440788269
+    ],
+    "readout_without_geometry_count": 0
+  },
+  "decision": "PREFLIGHT_ONLY_PASS",
+  "deletion": {
+    "exact_deletion": {
+      "0.25": {
+        "all_counts_exact": true,
+        "erase_count": {
+          "count": 20,
+          "mean": 2342.6,
+          "p05": 1432.8,
+          "p50": 1954.0,
+          "p95": 3617.4000000000005
+        },
+        "erased_support_sha256": "777bb56828d04da773a3870aec7b91ee14444d6683302d6867e27c5c0eeff1ea",
+        "realized": {
+          "count": 20,
+          "mean": 0.25,
+          "p05": 0.25,
+          "p50": 0.25,
+          "p95": 0.25
+        },
+        "support_count": {
+          "count": 20,
+          "mean": 9370.4,
+          "p05": 5731.2,
+          "p50": 7816.0,
+          "p95": 14469.600000000002
+        }
+      },
+      "0.50": {
+        "all_counts_exact": true,
+        "erase_count": {
+          "count": 20,
+          "mean": 4685.2,
+          "p05": 2865.6,
+          "p50": 3908.0,
+          "p95": 7234.800000000001
+        },
+        "erased_support_sha256": "cf1e7d2e08713014628d9cf36d017b47b4edfb63b482d7a9f8ab63bcf27f4446",
+        "realized": {
+          "count": 20,
+          "mean": 0.5,
+          "p05": 0.5,
+          "p50": 0.5,
+          "p95": 0.5
+        },
+        "support_count": {
+          "count": 20,
+          "mean": 9370.4,
+          "p05": 5731.2,
+          "p50": 7816.0,
+          "p95": 14469.600000000002
+        }
+      },
+      "0.75": {
+        "all_counts_exact": true,
+        "erase_count": {
+          "count": 20,
+          "mean": 7027.8,
+          "p05": 4298.400000000001,
+          "p50": 5862.0,
+          "p95": 10852.2
+        },
+        "erased_support_sha256": "2fc5eb30a32b0a686effb6805abb392b5e8d1393151f2deafc3999e952f2513b",
+        "realized": {
+          "count": 20,
+          "mean": 0.75,
+          "p05": 0.75,
+          "p50": 0.75,
+          "p95": 0.75
+        },
+        "support_count": {
+          "count": 20,
+          "mean": 9370.4,
+          "p05": 5731.2,
+          "p50": 7816.0,
+          "p95": 14469.600000000002
+        }
+      }
+    },
+    "per_slot": {
+      "0": {
+        "count": 4,
+        "strict_mean_monotonic": false
+      },
+      "1": {
+        "count": 4,
+        "strict_mean_monotonic": false
+      },
+      "2": {
+        "count": 4,
+        "strict_mean_monotonic": false
+      },
+      "3": {
+        "count": 4,
+        "strict_mean_monotonic": false
+      },
+      "4": {
+        "count": 4,
+        "strict_mean_monotonic": false
+      }
+    },
+    "sample_count": 20,
+    "scientific_evaluated": false,
+    "support": {
+      "deleted_25": {
+        "count": 20,
+        "mean": 0.35080972127616405,
+        "p05": 0.13411848209798335,
+        "p50": 0.3600654900074005,
+        "p95": 0.5224454790353775
+      },
+      "deleted_50": {
+        "count": 20,
+        "mean": 0.3914519339799881,
+        "p05": 0.15711137801408767,
+        "p50": 0.35945336520671844,
+        "p95": 0.7370981693267823
+      },
+      "deleted_75": {
+        "count": 20,
+        "mean": 0.3554521672427654,
+        "p05": 0.15381382554769515,
+        "p50": 0.3897884339094162,
+        "p95": 0.5402611166238785
+      },
+      "original": {
+        "count": 20,
+        "mean": 0.37664751037955285,
+        "p05": 0.1729224666953087,
+        "p50": 0.3984818160533905,
+        "p95": 0.5365416139364243
+      }
+    },
+    "wrong_mask_match": {
+      "balance_caliper_all": true,
+      "caliper_candidate_count": {
+        "count": 20,
+        "mean": 538.0,
+        "p05": 9.55,
+        "p50": 583.0,
+        "p95": 866.55
+      },
+      "candidate_count": {
+        "count": 20,
+        "mean": 1019.8,
+        "p05": 984.75,
+        "p50": 1021.0,
+        "p95": 1051.0
+      },
+      "centroid_y_gap": {
+        "count": 20,
+        "mean": 0.00715491816293964,
+        "p05": 0.0008602574163138615,
+        "p50": 0.007172529895781432,
+        "p95": 0.014817631845057837
+      },
+      "confidence_gap": {
+        "count": 20,
+        "mean": 0.019199419021606445,
+        "p05": 0.0015701621770858765,
+        "p50": 0.008926719427108765,
+        "p95": 0.07902411818504336
+      },
+      "different_pid_all": true,
+      "donor_pid_pair_count": {
+        "count": 20,
+        "mean": 1.0,
+        "p05": 1.0,
+        "p50": 1.0,
+        "p95": 1.0
+      },
+      "donor_reserve": {
+        "assigned_donor_count": 20,
+        "contract_strict": true,
+        "core_count": 512,
+        "core_indices_sha256": "94e3a8c5b55c5776e5a3ff33d229d92bcc015d872c012c59d85567160abc7226",
+        "donor_order_sha256": "bfd2e4f8556cbb4106e98937bb551ac29c03ef96b77a4699e2a9c3561c4c649d",
+        "execution_count": 15618,
+        "forbidden_recipient_count": 20,
+        "plan_sha256": "dd798311c3142b0b73bba89a69f8115d4268a63db1b77bb8b04414965519790b",
+        "pool_totals": [
+          512,
+          1024,
+          2048,
+          4096,
+          8192,
+          15618
+        ],
+        "preference_limit": 64,
+        "primary_caliper": 8.0,
+        "recipient_count": 20,
+        "recipient_donor_overlap_count": 0,
+        "scale_floor": 1e-06,
+        "scale_source": "frozen-core-512-analysis-valid",
+        "scales": {
+          "0": {
+            "centroid_y": {
+              "active_count": 512,
+              "median": 0.1357026207741787,
+              "raw_mad": 0.028143985104970473,
+              "scale": 0.028143985104970473,
+              "scale_floor_applied": false
+            },
+            "confidence": {
+              "active_count": 512,
+              "median": 0.9105687141418457,
+              "raw_mad": 0.022053122520446777,
+              "scale": 0.022053122520446777,
+              "scale_floor_applied": false
+            },
+            "mass_log": {
+              "active_count": 512,
+              "median": 3.805251757839317,
+              "raw_mad": 0.06444481972728111,
+              "scale": 0.06444481972728111,
+              "scale_floor_applied": false
+            },
+            "support": {
+              "active_count": 512,
+              "median": 0.47908905148506165,
+              "raw_mad": 0.06822612881660461,
+              "scale": 0.06822612881660461,
+              "scale_floor_applied": false
+            }
+          },
+          "1": {
+            "centroid_y": {
+              "active_count": 512,
+              "median": 0.3297237251990036,
+              "raw_mad": 0.028721556936990023,
+              "scale": 0.028721556936990023,
+              "scale_floor_applied": false
+            },
+            "confidence": {
+              "active_count": 512,
+              "median": 0.8583094477653503,
+              "raw_mad": 0.04949164390563965,
+              "scale": 0.04949164390563965,
+              "scale_floor_applied": false
+            },
+            "mass_log": {
+              "active_count": 512,
+              "median": 5.215438617195802,
+              "raw_mad": 0.1400977779475756,
+              "scale": 0.1400977779475756,
+              "scale_floor_applied": false
+            },
+            "support": {
+              "active_count": 512,
+              "median": 0.18570682406425476,
+              "raw_mad": 0.0386621356010437,
+              "scale": 0.0386621356010437,
+              "scale_floor_applied": false
+            }
+          },
+          "2": {
+            "centroid_y": {
+              "active_count": 512,
+              "median": 0.3931590381236044,
+              "raw_mad": 0.02505553033573482,
+              "scale": 0.02505553033573482,
+              "scale_floor_applied": false
+            },
+            "confidence": {
+              "active_count": 512,
+              "median": 0.8544814586639404,
+              "raw_mad": 0.02323824167251587,
+              "scale": 0.02323824167251587,
+              "scale_floor_applied": false
+            },
+            "mass_log": {
+              "active_count": 512,
+              "median": 5.257925132516298,
+              "raw_mad": 0.09289012755700732,
+              "scale": 0.09289012755700732,
+              "scale_floor_applied": false
+            },
+            "support": {
+              "active_count": 512,
+              "median": 0.30276983976364136,
+              "raw_mad": 0.046889424324035645,
+              "scale": 0.046889424324035645,
+              "scale_floor_applied": false
+            }
+          },
+          "3": {
+            "centroid_y": {
+              "active_count": 512,
+              "median": 0.6181545435822254,
+              "raw_mad": 0.02253572484279709,
+              "scale": 0.02253572484279709,
+              "scale_floor_applied": false
+            },
+            "confidence": {
+              "active_count": 512,
+              "median": 0.8741132616996765,
+              "raw_mad": 0.019223034381866455,
+              "scale": 0.019223034381866455,
+              "scale_floor_applied": false
+            },
+            "mass_log": {
+              "active_count": 512,
+              "median": 4.955499525887648,
+              "raw_mad": 0.08840138570925671,
+              "scale": 0.08840138570925671,
+              "scale_floor_applied": false
+            },
+            "support": {
+              "active_count": 512,
+              "median": 0.44680535793304443,
+              "raw_mad": 0.038973212242126465,
+              "scale": 0.038973212242126465,
+              "scale_floor_applied": false
+            }
+          },
+          "4": {
+            "centroid_y": {
+              "active_count": 512,
+              "median": 0.8059732339625714,
+              "raw_mad": 0.020955893162515782,
+              "scale": 0.020955893162515782,
+              "scale_floor_applied": false
+            },
+            "confidence": {
+              "active_count": 512,
+              "median": 0.8839660286903381,
+              "raw_mad": 0.027328431606292725,
+              "scale": 0.027328431606292725,
+              "scale_floor_applied": false
+            },
+            "mass_log": {
+              "active_count": 512,
+              "median": 4.882823284176556,
+              "raw_mad": 0.11190563474020365,
+              "scale": 0.11190563474020365,
+              "scale_floor_applied": false
+            },
+            "support": {
+              "active_count": 512,
+              "median": 0.5396685004234314,
+              "raw_mad": 0.033070385456085205,
+              "scale": 0.033070385456085205,
+              "scale_floor_applied": false
+            }
+          }
+        },
+        "schema": "exp407-donor-reserve-summary-v1",
+        "selected_pool_indices_sha256": "e9dd0eb5510623b64a9d0309cc3cebbd2307b9e73e9cc8de5e1e44b531f1c5c6",
+        "selected_pool_total": 8192,
+        "selected_preference_limit": 64,
+        "stages": [
+          {
+            "all_recipients_have_caliper_edge": false,
+            "assignment_attempts": [],
+            "donor_prefix_count": 0,
+            "pool_indices_sha256": "94e3a8c5b55c5776e5a3ff33d229d92bcc015d872c012c59d85567160abc7226",
+            "pool_total": 512,
+            "recipient_rows": [
+              {
+                "caliper_degree": 52,
+                "camera": 5,
+                "candidate_count": 76,
+                "nearest_primary_distance": 1.1707872956642433,
+                "position": 0,
+                "recipient": 13804,
+                "recipient_pid": 620,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 35,
+                "camera": 2,
+                "candidate_count": 48,
+                "nearest_primary_distance": 3.06760987744652,
+                "position": 1,
+                "recipient": 10359,
+                "recipient_pid": 468,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 67,
+                "camera": 1,
+                "candidate_count": 93,
+                "nearest_primary_distance": 1.206923762896043,
+                "position": 2,
+                "recipient": 4346,
+                "recipient_pid": 196,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 56,
+                "camera": 5,
+                "candidate_count": 76,
+                "nearest_primary_distance": 1.72510665154915,
+                "position": 3,
+                "recipient": 14552,
+                "recipient_pid": 662,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 25,
+                "camera": 3,
+                "candidate_count": 31,
+                "nearest_primary_distance": 1.4602546228363125,
+                "position": 4,
+                "recipient": 6568,
+                "recipient_pid": 304,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 35,
+                "camera": 6,
+                "candidate_count": 49,
+                "nearest_primary_distance": 1.3053358181621117,
+                "position": 5,
+                "recipient": 15046,
+                "recipient_pid": 689,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 19,
+                "camera": 1,
+                "candidate_count": 93,
+                "nearest_primary_distance": 2.4510012559840786,
+                "position": 6,
+                "recipient": 470,
+                "recipient_pid": 20,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 34,
+                "camera": 5,
+                "candidate_count": 76,
+                "nearest_primary_distance": 2.729979459358636,
+                "position": 7,
+                "recipient": 13039,
+                "recipient_pid": 578,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 0,
+                "camera": 4,
+                "candidate_count": 49,
+                "nearest_primary_distance": 15.475844418413283,
+                "position": 8,
+                "recipient": 1264,
+                "recipient_pid": 61,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 41,
+                "camera": 4,
+                "candidate_count": 49,
+                "nearest_primary_distance": 1.3304937384338884,
+                "position": 9,
+                "recipient": 2367,
+                "recipient_pid": 101,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 1,
+                "camera": 1,
+                "candidate_count": 93,
+                "nearest_primary_distance": 7.5335023878465535,
+                "position": 10,
+                "recipient": 6245,
+                "recipient_pid": 291,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 26,
+                "camera": 3,
+                "candidate_count": 31,
+                "nearest_primary_distance": 2.5995973105091625,
+                "position": 11,
+                "recipient": 9762,
+                "recipient_pid": 442,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 71,
+                "camera": 1,
+                "candidate_count": 93,
+                "nearest_primary_distance": 1.253406156946384,
+                "position": 12,
+                "recipient": 9230,
+                "recipient_pid": 418,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 1,
+                "camera": 5,
+                "candidate_count": 76,
+                "nearest_primary_distance": 5.195575008369549,
+                "position": 13,
+                "recipient": 12332,
+                "recipient_pid": 540,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 34,
+                "camera": 4,
+                "candidate_count": 49,
+                "nearest_primary_distance": 2.3161307910006226,
+                "position": 14,
+                "recipient": 10886,
+                "recipient_pid": 493,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 67,
+                "camera": 1,
+                "candidate_count": 93,
+                "nearest_primary_distance": 1.1079087649012762,
+                "position": 15,
+                "recipient": 3781,
+                "recipient_pid": 166,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 18,
+                "camera": 3,
+                "candidate_count": 31,
+                "nearest_primary_distance": 3.807643585342951,
+                "position": 16,
+                "recipient": 11649,
+                "recipient_pid": 520,
+                "slot": 4
+              },
+              {
+                "caliper_degree": 54,
+                "camera": 1,
+                "candidate_count": 93,
+                "nearest_primary_distance": 2.9364072254027365,
+                "position": 17,
+                "recipient": 2923,
+                "recipient_pid": 126,
+                "slot": 4
+              },
+              {
+                "caliper_degree": 11,
+                "camera": 3,
+                "candidate_count": 31,
+                "nearest_primary_distance": 4.458805140056504,
+                "position": 18,
+                "recipient": 3769,
+                "recipient_pid": 165,
+                "slot": 4
+              },
+              {
+                "caliper_degree": 24,
+                "camera": 6,
+                "candidate_count": 49,
+                "nearest_primary_distance": 2.983366651784952,
+                "position": 19,
+                "recipient": 13461,
+                "recipient_pid": 601,
+                "slot": 4
+              }
+            ],
+            "status": "ZERO_EDGE",
+            "zero_edge_count": 1
+          },
+          {
+            "all_recipients_have_caliper_edge": false,
+            "assignment_attempts": [],
+            "donor_prefix_count": 512,
+            "pool_indices_sha256": "b2015b07d07e5dd224e1ed7b0fb8b516e597b0e54194824cb0e8f9d09bd32568",
+            "pool_total": 1024,
+            "recipient_rows": [
+              {
+                "caliper_degree": 85,
+                "camera": 5,
+                "candidate_count": 140,
+                "nearest_primary_distance": 1.1707872956642433,
+                "position": 0,
+                "recipient": 13804,
+                "recipient_pid": 620,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 86,
+                "camera": 2,
+                "candidate_count": 112,
+                "nearest_primary_distance": 1.221430588469381,
+                "position": 1,
+                "recipient": 10359,
+                "recipient_pid": 468,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 117,
+                "camera": 1,
+                "candidate_count": 157,
+                "nearest_primary_distance": 1.206923762896043,
+                "position": 2,
+                "recipient": 4346,
+                "recipient_pid": 196,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 93,
+                "camera": 5,
+                "candidate_count": 140,
+                "nearest_primary_distance": 1.3330185880396643,
+                "position": 3,
+                "recipient": 14552,
+                "recipient_pid": 662,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 81,
+                "camera": 3,
+                "candidate_count": 95,
+                "nearest_primary_distance": 0.4909030663981259,
+                "position": 4,
+                "recipient": 6568,
+                "recipient_pid": 304,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 84,
+                "camera": 6,
+                "candidate_count": 113,
+                "nearest_primary_distance": 1.3053358181621117,
+                "position": 5,
+                "recipient": 15046,
+                "recipient_pid": 689,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 32,
+                "camera": 1,
+                "candidate_count": 157,
+                "nearest_primary_distance": 2.4510012559840786,
+                "position": 6,
+                "recipient": 470,
+                "recipient_pid": 20,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 63,
+                "camera": 5,
+                "candidate_count": 140,
+                "nearest_primary_distance": 2.729979459358636,
+                "position": 7,
+                "recipient": 13039,
+                "recipient_pid": 578,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 0,
+                "camera": 4,
+                "candidate_count": 113,
+                "nearest_primary_distance": 9.644800376265959,
+                "position": 8,
+                "recipient": 1264,
+                "recipient_pid": 61,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 92,
+                "camera": 4,
+                "candidate_count": 113,
+                "nearest_primary_distance": 1.3304937384338884,
+                "position": 9,
+                "recipient": 2367,
+                "recipient_pid": 101,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 3,
+                "camera": 1,
+                "candidate_count": 156,
+                "nearest_primary_distance": 5.690753333587035,
+                "position": 10,
+                "recipient": 6245,
+                "recipient_pid": 291,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 84,
+                "camera": 3,
+                "candidate_count": 95,
+                "nearest_primary_distance": 1.030323710312831,
+                "position": 11,
+                "recipient": 9762,
+                "recipient_pid": 442,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 120,
+                "camera": 1,
+                "candidate_count": 157,
+                "nearest_primary_distance": 1.253406156946384,
+                "position": 12,
+                "recipient": 9230,
+                "recipient_pid": 418,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 2,
+                "camera": 5,
+                "candidate_count": 140,
+                "nearest_primary_distance": 5.195575008369549,
+                "position": 13,
+                "recipient": 12332,
+                "recipient_pid": 540,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 67,
+                "camera": 4,
+                "candidate_count": 113,
+                "nearest_primary_distance": 2.3161307910006226,
+                "position": 14,
+                "recipient": 10886,
+                "recipient_pid": 493,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 110,
+                "camera": 1,
+                "candidate_count": 157,
+                "nearest_primary_distance": 1.1079087649012762,
+                "position": 15,
+                "recipient": 3781,
+                "recipient_pid": 166,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 57,
+                "camera": 3,
+                "candidate_count": 95,
+                "nearest_primary_distance": 2.686921025941756,
+                "position": 16,
+                "recipient": 11649,
+                "recipient_pid": 520,
+                "slot": 4
+              },
+              {
+                "caliper_degree": 93,
+                "camera": 1,
+                "candidate_count": 157,
+                "nearest_primary_distance": 2.286684391911919,
+                "position": 17,
+                "recipient": 2923,
+                "recipient_pid": 126,
+                "slot": 4
+              },
+              {
+                "caliper_degree": 30,
+                "camera": 3,
+                "candidate_count": 95,
+                "nearest_primary_distance": 4.458805140056504,
+                "position": 18,
+                "recipient": 3769,
+                "recipient_pid": 165,
+                "slot": 4
+              },
+              {
+                "caliper_degree": 54,
+                "camera": 6,
+                "candidate_count": 113,
+                "nearest_primary_distance": 2.519860112864923,
+                "position": 19,
+                "recipient": 13461,
+                "recipient_pid": 601,
+                "slot": 4
+              }
+            ],
+            "status": "ZERO_EDGE",
+            "zero_edge_count": 1
+          },
+          {
+            "all_recipients_have_caliper_edge": false,
+            "assignment_attempts": [],
+            "donor_prefix_count": 1536,
+            "pool_indices_sha256": "928a3220c385222b795ba1cc5054c44f446dc3eab301ba6c62fcedd248213e8b",
+            "pool_total": 2048,
+            "recipient_rows": [
+              {
+                "caliper_degree": 159,
+                "camera": 5,
+                "candidate_count": 268,
+                "nearest_primary_distance": 1.1707872956642433,
+                "position": 0,
+                "recipient": 13804,
+                "recipient_pid": 620,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 178,
+                "camera": 2,
+                "candidate_count": 238,
+                "nearest_primary_distance": 1.221430588469381,
+                "position": 1,
+                "recipient": 10359,
+                "recipient_pid": 468,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 206,
+                "camera": 1,
+                "candidate_count": 284,
+                "nearest_primary_distance": 1.206923762896043,
+                "position": 2,
+                "recipient": 4346,
+                "recipient_pid": 196,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 169,
+                "camera": 5,
+                "candidate_count": 267,
+                "nearest_primary_distance": 1.3330185880396643,
+                "position": 3,
+                "recipient": 14552,
+                "recipient_pid": 662,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 198,
+                "camera": 3,
+                "candidate_count": 223,
+                "nearest_primary_distance": 0.4909030663981259,
+                "position": 4,
+                "recipient": 6568,
+                "recipient_pid": 304,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 189,
+                "camera": 6,
+                "candidate_count": 241,
+                "nearest_primary_distance": 1.3053358181621117,
+                "position": 5,
+                "recipient": 15046,
+                "recipient_pid": 689,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 55,
+                "camera": 1,
+                "candidate_count": 285,
+                "nearest_primary_distance": 2.4510012559840786,
+                "position": 6,
+                "recipient": 470,
+                "recipient_pid": 20,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 114,
+                "camera": 5,
+                "candidate_count": 268,
+                "nearest_primary_distance": 2.2755576286947,
+                "position": 7,
+                "recipient": 13039,
+                "recipient_pid": 578,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 0,
+                "camera": 4,
+                "candidate_count": 241,
+                "nearest_primary_distance": 9.644800376265959,
+                "position": 8,
+                "recipient": 1264,
+                "recipient_pid": 61,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 197,
+                "camera": 4,
+                "candidate_count": 241,
+                "nearest_primary_distance": 1.3304937384338884,
+                "position": 9,
+                "recipient": 2367,
+                "recipient_pid": 101,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 6,
+                "camera": 1,
+                "candidate_count": 284,
+                "nearest_primary_distance": 5.690753333587035,
+                "position": 10,
+                "recipient": 6245,
+                "recipient_pid": 291,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 194,
+                "camera": 3,
+                "candidate_count": 223,
+                "nearest_primary_distance": 1.030323710312831,
+                "position": 11,
+                "recipient": 9762,
+                "recipient_pid": 442,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 207,
+                "camera": 1,
+                "candidate_count": 285,
+                "nearest_primary_distance": 1.253406156946384,
+                "position": 12,
+                "recipient": 9230,
+                "recipient_pid": 418,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 5,
+                "camera": 5,
+                "candidate_count": 268,
+                "nearest_primary_distance": 5.195575008369549,
+                "position": 13,
+                "recipient": 12332,
+                "recipient_pid": 540,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 139,
+                "camera": 4,
+                "candidate_count": 239,
+                "nearest_primary_distance": 2.3161307910006226,
+                "position": 14,
+                "recipient": 10886,
+                "recipient_pid": 493,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 190,
+                "camera": 1,
+                "candidate_count": 285,
+                "nearest_primary_distance": 1.1079087649012762,
+                "position": 15,
+                "recipient": 3781,
+                "recipient_pid": 166,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 122,
+                "camera": 3,
+                "candidate_count": 220,
+                "nearest_primary_distance": 1.619240275551812,
+                "position": 16,
+                "recipient": 11649,
+                "recipient_pid": 520,
+                "slot": 4
+              },
+              {
+                "caliper_degree": 174,
+                "camera": 1,
+                "candidate_count": 284,
+                "nearest_primary_distance": 1.1418316220597426,
+                "position": 17,
+                "recipient": 2923,
+                "recipient_pid": 126,
+                "slot": 4
+              },
+              {
+                "caliper_degree": 69,
+                "camera": 3,
+                "candidate_count": 222,
+                "nearest_primary_distance": 3.337069843952695,
+                "position": 18,
+                "recipient": 3769,
+                "recipient_pid": 165,
+                "slot": 4
+              },
+              {
+                "caliper_degree": 128,
+                "camera": 6,
+                "candidate_count": 241,
+                "nearest_primary_distance": 1.2887912190698283,
+                "position": 19,
+                "recipient": 13461,
+                "recipient_pid": 601,
+                "slot": 4
+              }
+            ],
+            "status": "ZERO_EDGE",
+            "zero_edge_count": 1
+          },
+          {
+            "all_recipients_have_caliper_edge": false,
+            "assignment_attempts": [],
+            "donor_prefix_count": 3584,
+            "pool_indices_sha256": "1147a5569adf0380b0320b1836d1cdc783b4741d9d0e26d4a49a5b4af562aa45",
+            "pool_total": 4096,
+            "recipient_rows": [
+              {
+                "caliper_degree": 291,
+                "camera": 5,
+                "candidate_count": 524,
+                "nearest_primary_distance": 1.1707872956642433,
+                "position": 0,
+                "recipient": 13804,
+                "recipient_pid": 620,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 352,
+                "camera": 2,
+                "candidate_count": 491,
+                "nearest_primary_distance": 1.221430588469381,
+                "position": 1,
+                "recipient": 10359,
+                "recipient_pid": 468,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 387,
+                "camera": 1,
+                "candidate_count": 539,
+                "nearest_primary_distance": 0.9564501049497602,
+                "position": 2,
+                "recipient": 4346,
+                "recipient_pid": 196,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 307,
+                "camera": 5,
+                "candidate_count": 522,
+                "nearest_primary_distance": 1.3330185880396643,
+                "position": 3,
+                "recipient": 14552,
+                "recipient_pid": 662,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 425,
+                "camera": 3,
+                "candidate_count": 476,
+                "nearest_primary_distance": 0.4081181913201467,
+                "position": 4,
+                "recipient": 6568,
+                "recipient_pid": 304,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 391,
+                "camera": 6,
+                "candidate_count": 497,
+                "nearest_primary_distance": 1.3053358181621117,
+                "position": 5,
+                "recipient": 15046,
+                "recipient_pid": 689,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 109,
+                "camera": 1,
+                "candidate_count": 539,
+                "nearest_primary_distance": 2.4510012559840786,
+                "position": 6,
+                "recipient": 470,
+                "recipient_pid": 20,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 221,
+                "camera": 5,
+                "candidate_count": 523,
+                "nearest_primary_distance": 1.8071909431983173,
+                "position": 7,
+                "recipient": 13039,
+                "recipient_pid": 578,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 0,
+                "camera": 4,
+                "candidate_count": 496,
+                "nearest_primary_distance": 8.504570827088909,
+                "position": 8,
+                "recipient": 1264,
+                "recipient_pid": 61,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 412,
+                "camera": 4,
+                "candidate_count": 496,
+                "nearest_primary_distance": 0.5275358720591656,
+                "position": 9,
+                "recipient": 2367,
+                "recipient_pid": 101,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 8,
+                "camera": 1,
+                "candidate_count": 539,
+                "nearest_primary_distance": 5.690753333587035,
+                "position": 10,
+                "recipient": 6245,
+                "recipient_pid": 291,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 415,
+                "camera": 3,
+                "candidate_count": 477,
+                "nearest_primary_distance": 0.8772827292139921,
+                "position": 11,
+                "recipient": 9762,
+                "recipient_pid": 442,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 407,
+                "camera": 1,
+                "candidate_count": 541,
+                "nearest_primary_distance": 1.253406156946384,
+                "position": 12,
+                "recipient": 9230,
+                "recipient_pid": 418,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 6,
+                "camera": 5,
+                "candidate_count": 524,
+                "nearest_primary_distance": 5.195575008369549,
+                "position": 13,
+                "recipient": 12332,
+                "recipient_pid": 540,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 285,
+                "camera": 4,
+                "candidate_count": 493,
+                "nearest_primary_distance": 1.4314395371464674,
+                "position": 14,
+                "recipient": 10886,
+                "recipient_pid": 493,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 372,
+                "camera": 1,
+                "candidate_count": 539,
+                "nearest_primary_distance": 1.1079087649012762,
+                "position": 15,
+                "recipient": 3781,
+                "recipient_pid": 166,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 271,
+                "camera": 3,
+                "candidate_count": 474,
+                "nearest_primary_distance": 1.619240275551812,
+                "position": 16,
+                "recipient": 11649,
+                "recipient_pid": 520,
+                "slot": 4
+              },
+              {
+                "caliper_degree": 320,
+                "camera": 1,
+                "candidate_count": 539,
+                "nearest_primary_distance": 1.1418316220597426,
+                "position": 17,
+                "recipient": 2923,
+                "recipient_pid": 126,
+                "slot": 4
+              },
+              {
+                "caliper_degree": 145,
+                "camera": 3,
+                "candidate_count": 474,
+                "nearest_primary_distance": 2.585333847096202,
+                "position": 18,
+                "recipient": 3769,
+                "recipient_pid": 165,
+                "slot": 4
+              },
+              {
+                "caliper_degree": 269,
+                "camera": 6,
+                "candidate_count": 496,
+                "nearest_primary_distance": 1.2887912190698283,
+                "position": 19,
+                "recipient": 13461,
+                "recipient_pid": 601,
+                "slot": 4
+              }
+            ],
+            "status": "ZERO_EDGE",
+            "zero_edge_count": 1
+          },
+          {
+            "all_recipients_have_caliper_edge": true,
+            "assignment_attempts": [
+              {
+                "limit": 64,
+                "scope": "top-64",
+                "status": "MATCHED"
+              }
+            ],
+            "donor_prefix_count": 7680,
+            "pool_indices_sha256": "e9dd0eb5510623b64a9d0309cc3cebbd2307b9e73e9cc8de5e1e44b531f1c5c6",
+            "pool_total": 8192,
+            "preference_limit_used": 64,
+            "recipient_rows": [
+              {
+                "caliper_degree": 549,
+                "camera": 5,
+                "candidate_count": 1036,
+                "nearest_primary_distance": 1.1707872956642433,
+                "position": 0,
+                "recipient": 13804,
+                "recipient_pid": 620,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 732,
+                "camera": 2,
+                "candidate_count": 996,
+                "nearest_primary_distance": 1.221430588469381,
+                "position": 1,
+                "recipient": 10359,
+                "recipient_pid": 468,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 737,
+                "camera": 1,
+                "candidate_count": 1048,
+                "nearest_primary_distance": 0.9564501049497602,
+                "position": 2,
+                "recipient": 4346,
+                "recipient_pid": 196,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 589,
+                "camera": 5,
+                "candidate_count": 1034,
+                "nearest_primary_distance": 0.6283803950142097,
+                "position": 3,
+                "recipient": 14552,
+                "recipient_pid": 662,
+                "slot": 0
+              },
+              {
+                "caliper_degree": 877,
+                "camera": 3,
+                "candidate_count": 986,
+                "nearest_primary_distance": 0.4081181913201467,
+                "position": 4,
+                "recipient": 6568,
+                "recipient_pid": 304,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 784,
+                "camera": 6,
+                "candidate_count": 1007,
+                "nearest_primary_distance": 1.3053358181621117,
+                "position": 5,
+                "recipient": 15046,
+                "recipient_pid": 689,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 210,
+                "camera": 1,
+                "candidate_count": 1049,
+                "nearest_primary_distance": 2.4510012559840786,
+                "position": 6,
+                "recipient": 470,
+                "recipient_pid": 20,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 432,
+                "camera": 5,
+                "candidate_count": 1035,
+                "nearest_primary_distance": 1.197958546696241,
+                "position": 7,
+                "recipient": 13039,
+                "recipient_pid": 578,
+                "slot": 1
+              },
+              {
+                "caliper_degree": 1,
+                "camera": 4,
+                "candidate_count": 1008,
+                "nearest_primary_distance": 3.972696353834313,
+                "position": 8,
+                "recipient": 1264,
+                "recipient_pid": 61,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 822,
+                "camera": 4,
+                "candidate_count": 1006,
+                "nearest_primary_distance": 0.5275358720591656,
+                "position": 9,
+                "recipient": 2367,
+                "recipient_pid": 101,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 14,
+                "camera": 1,
+                "candidate_count": 1051,
+                "nearest_primary_distance": 5.690753333587035,
+                "position": 10,
+                "recipient": 6245,
+                "recipient_pid": 291,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 866,
+                "camera": 3,
+                "candidate_count": 986,
+                "nearest_primary_distance": 0.8495433992072516,
+                "position": 11,
+                "recipient": 9762,
+                "recipient_pid": 442,
+                "slot": 2
+              },
+              {
+                "caliper_degree": 790,
+                "camera": 1,
+                "candidate_count": 1051,
+                "nearest_primary_distance": 1.231357529201618,
+                "position": 12,
+                "recipient": 9230,
+                "recipient_pid": 418,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 10,
+                "camera": 5,
+                "candidate_count": 1035,
+                "nearest_primary_distance": 5.195575008369549,
+                "position": 13,
+                "recipient": 12332,
+                "recipient_pid": 540,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 564,
+                "camera": 4,
+                "candidate_count": 1004,
+                "nearest_primary_distance": 1.15248367111071,
+                "position": 14,
+                "recipient": 10886,
+                "recipient_pid": 493,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 737,
+                "camera": 1,
+                "candidate_count": 1050,
+                "nearest_primary_distance": 1.1079087649012762,
+                "position": 15,
+                "recipient": 3781,
+                "recipient_pid": 166,
+                "slot": 3
+              },
+              {
+                "caliper_degree": 577,
+                "camera": 3,
+                "candidate_count": 980,
+                "nearest_primary_distance": 1.619240275551812,
+                "position": 16,
+                "recipient": 11649,
+                "recipient_pid": 520,
+                "slot": 4
+              },
+              {
+                "caliper_degree": 621,
+                "camera": 1,
+                "candidate_count": 1046,
+                "nearest_primary_distance": 1.1418316220597426,
+                "position": 17,
+                "recipient": 2923,
+                "recipient_pid": 126,
+                "slot": 4
+              },
+              {
+                "caliper_degree": 301,
+                "camera": 3,
+                "candidate_count": 985,
+                "nearest_primary_distance": 2.585333847096202,
+                "position": 18,
+                "recipient": 3769,
+                "recipient_pid": 165,
+                "slot": 4
+              },
+              {
+                "caliper_degree": 547,
+                "camera": 6,
+                "candidate_count": 1003,
+                "nearest_primary_distance": 1.2887912190698283,
+                "position": 19,
+                "recipient": 13461,
+                "recipient_pid": 601,
+                "slot": 4
+              }
+            ],
+            "status": "MATCHED",
+            "zero_edge_count": 0
+          }
+        ],
+        "summary_sha256": "1c148f38e1026b03e079e5818cbbb7735766fc9db6e6cef28a874dc7012a1c48"
+      },
+      "fallback_count": 0,
+      "global_cosine_gap": {
+        "count": 20,
+        "mean": 0.11713840312935397,
+        "p05": 0.06907597921027443,
+        "p50": 0.12137199368577123,
+        "p95": 0.16836547512674646
+      },
+      "mass_log_gap": {
+        "count": 20,
+        "mean": 0.028668549491996355,
+        "p05": 0.0009668849759924658,
+        "p50": 0.01828774287720414,
+        "p95": 0.1305184285177059
+      },
+      "per_slot": {
+        "0": {
+          "balance_caliper_all": true,
+          "caliper_candidate_count": {
+            "count": 4,
+            "mean": 651.75,
+            "p05": 555.0,
+            "p50": 660.5,
+            "p95": 736.25
+          },
+          "candidate_count": {
+            "count": 4,
+            "mean": 1028.5,
+            "p05": 1001.7,
+            "p50": 1035.0,
+            "p95": 1046.2
+          },
+          "centroid_y_gap": {
+            "count": 4,
+            "mean": 0.006106695484094683,
+            "p05": 0.0026346499030378695,
+            "p50": 0.005778466406315463,
+            "p95": 0.010038261774042403
+          },
+          "confidence_gap": {
+            "count": 4,
+            "mean": 0.007034316658973694,
+            "p05": 0.003014916181564331,
+            "p50": 0.007034003734588623,
+            "p95": 0.011054155230522155
+          },
+          "count": 4,
+          "donor_pid_pair_count": {
+            "count": 4,
+            "mean": 1.0,
+            "p05": 1.0,
+            "p50": 1.0,
+            "p95": 1.0
+          },
+          "global_cosine_gap": {
+            "count": 4,
+            "mean": 0.10901951802995288,
+            "p05": 0.07490887895737854,
+            "p50": 0.11600321464530738,
+            "p95": 0.13335298184103092
+          },
+          "mass_log_gap": {
+            "count": 4,
+            "mean": 0.010472816158409115,
+            "p05": 0.0028437412274821662,
+            "p50": 0.0060580695774650195,
+            "p95": 0.02428253630265779
+          },
+          "preference_limit_used": {
+            "count": 4,
+            "mean": 64.0,
+            "p05": 64.0,
+            "p50": 64.0,
+            "p95": 64.0
+          },
+          "primary_distance": {
+            "count": 4,
+            "mean": 0.9942620960243986,
+            "p05": 0.6775908515045423,
+            "p50": 1.0636187003070017,
+            "p95": 1.2138340945486104
+          },
+          "primary_rank": {
+            "count": 4,
+            "mean": 0.0,
+            "p05": 0.0,
+            "p50": 0.0,
+            "p95": 0.0
+          },
+          "support_gap": {
+            "count": 4,
+            "mean": 0.02018141746520996,
+            "p05": 0.009122723340988159,
+            "p50": 0.01932661235332489,
+            "p95": 0.03243683874607086
+          },
+          "unique_donor_pid_count": 4
+        },
+        "1": {
+          "balance_caliper_all": true,
+          "caliper_candidate_count": {
+            "count": 4,
+            "mean": 575.75,
+            "p05": 243.3,
+            "p50": 608.0,
+            "p95": 863.05
+          },
+          "candidate_count": {
+            "count": 4,
+            "mean": 1019.25,
+            "p05": 989.15,
+            "p50": 1021.0,
+            "p95": 1046.9
+          },
+          "centroid_y_gap": {
+            "count": 4,
+            "mean": 0.00906360924386114,
+            "p05": 0.0009114301958416838,
+            "p50": 0.0069272221724855365,
+            "p95": 0.020206730191806438
+          },
+          "confidence_gap": {
+            "count": 4,
+            "mean": 0.03233346343040466,
+            "p05": 0.007904332876205445,
+            "p50": 0.022191733121871948,
+            "p95": 0.07096101641654967
+          },
+          "count": 4,
+          "donor_pid_pair_count": {
+            "count": 4,
+            "mean": 1.0,
+            "p05": 1.0,
+            "p50": 1.0,
+            "p95": 1.0
+          },
+          "global_cosine_gap": {
+            "count": 4,
+            "mean": 0.13348429574771317,
+            "p05": 0.0874993189691459,
+            "p50": 0.13792002625642158,
+            "p95": 0.1732592498140887
+          },
+          "mass_log_gap": {
+            "count": 4,
+            "mean": 0.013760529362648155,
+            "p05": 0.0013951510998990724,
+            "p50": 0.009040310328606527,
+            "p95": 0.032734214273055506
+          },
+          "preference_limit_used": {
+            "count": 4,
+            "mean": 64.0,
+            "p05": 64.0,
+            "p50": 64.0,
+            "p95": 64.0
+          },
+          "primary_distance": {
+            "count": 4,
+            "mean": 1.3406034530406445,
+            "p05": 0.5265942446265609,
+            "p50": 1.2516471824291764,
+            "p95": 2.279151440310783
+          },
+          "primary_rank": {
+            "count": 4,
+            "mean": 0.0,
+            "p05": 0.0,
+            "p50": 0.0,
+            "p95": 0.0
+          },
+          "support_gap": {
+            "count": 4,
+            "mean": 0.010574202984571457,
+            "p05": 0.0029325976967811583,
+            "p50": 0.00857613980770111,
+            "p95": 0.021013096719980237
+          },
+          "unique_donor_pid_count": 4
+        },
+        "2": {
+          "balance_caliper_all": true,
+          "caliper_candidate_count": {
+            "count": 4,
+            "mean": 425.75,
+            "p05": 2.95,
+            "p50": 418.0,
+            "p95": 859.4
+          },
+          "candidate_count": {
+            "count": 4,
+            "mean": 1012.75,
+            "p05": 989.0,
+            "p50": 1007.0,
+            "p95": 1044.55
+          },
+          "centroid_y_gap": {
+            "count": 4,
+            "mean": 0.007444408056446347,
+            "p05": 0.001372239626262642,
+            "p50": 0.007320950281455546,
+            "p95": 0.013689417371617172
+          },
+          "confidence_gap": {
+            "count": 4,
+            "mean": 0.033255040645599365,
+            "p05": 0.002946138381958008,
+            "p50": 0.01184895634651184,
+            "p95": 0.09353246092796322
+          },
+          "count": 4,
+          "donor_pid_pair_count": {
+            "count": 4,
+            "mean": 1.0,
+            "p05": 1.0,
+            "p50": 1.0,
+            "p95": 1.0
+          },
+          "global_cosine_gap": {
+            "count": 4,
+            "mean": 0.13099640341206006,
+            "p05": 0.09876260064858755,
+            "p50": 0.13786249201572764,
+            "p95": 0.15361768213039798
+          },
+          "mass_log_gap": {
+            "count": 4,
+            "mean": 0.037948700045920436,
+            "p05": 0.002160480326885983,
+            "p50": 0.010698029507593354,
+            "p95": 0.11188785851861277
+          },
+          "preference_limit_used": {
+            "count": 4,
+            "mean": 64.0,
+            "p05": 64.0,
+            "p50": 64.0,
+            "p95": 64.0
+          },
+          "primary_distance": {
+            "count": 4,
+            "mean": 2.760132239671941,
+            "p05": 0.5758370011313786,
+            "p50": 2.4111198765207824,
+            "p95": 5.4330447866241265
+          },
+          "primary_rank": {
+            "count": 4,
+            "mean": 0.0,
+            "p05": 0.0,
+            "p50": 0.0,
+            "p95": 0.0
+          },
+          "support_gap": {
+            "count": 4,
+            "mean": 0.029232490807771683,
+            "p05": 0.0066258743405342106,
+            "p50": 0.017336420714855194,
+            "p95": 0.06849360540509222
+          },
+          "unique_donor_pid_count": 4
+        },
+        "3": {
+          "balance_caliper_all": true,
+          "caliper_candidate_count": {
+            "count": 4,
+            "mean": 525.25,
+            "p05": 93.10000000000001,
+            "p50": 650.5,
+            "p95": 782.05
+          },
+          "candidate_count": {
+            "count": 4,
+            "mean": 1035.0,
+            "p05": 1008.65,
+            "p50": 1042.5,
+            "p95": 1050.85
+          },
+          "centroid_y_gap": {
+            "count": 4,
+            "mean": 0.009141160515147295,
+            "p05": 0.007627959655997452,
+            "p50": 0.008753210856315197,
+            "p95": 0.011197490896662075
+          },
+          "confidence_gap": {
+            "count": 4,
+            "mean": 0.014095842838287354,
+            "p05": 0.003112444281578064,
+            "p50": 0.005400538444519043,
+            "p95": 0.03725266754627227
+          },
+          "count": 4,
+          "donor_pid_pair_count": {
+            "count": 4,
+            "mean": 1.0,
+            "p05": 1.0,
+            "p50": 1.0,
+            "p95": 1.0
+          },
+          "global_cosine_gap": {
+            "count": 4,
+            "mean": 0.10062895079393944,
+            "p05": 0.06698452473495024,
+            "p50": 0.10610424730837681,
+            "p95": 0.1266079617327163
+          },
+          "mass_log_gap": {
+            "count": 4,
+            "mean": 0.056332547549916345,
+            "p05": 0.019107437257340498,
+            "p50": 0.029565683824953393,
+            "p95": 0.13103126705744028
+          },
+          "preference_limit_used": {
+            "count": 4,
+            "mean": 64.0,
+            "p05": 64.0,
+            "p50": 64.0,
+            "p95": 64.0
+          },
+          "primary_distance": {
+            "count": 4,
+            "mean": 2.1718312433957885,
+            "p05": 1.1145950008326913,
+            "p50": 1.191920600156164,
+            "p95": 4.600942386494358
+          },
+          "primary_rank": {
+            "count": 4,
+            "mean": 0.0,
+            "p05": 0.0,
+            "p50": 0.0,
+            "p95": 0.0
+          },
+          "support_gap": {
+            "count": 4,
+            "mean": 0.015421181917190552,
+            "p05": 0.006603816151618957,
+            "p50": 0.00899997353553772,
+            "p95": 0.0332282394170761
+          },
+          "unique_donor_pid_count": 4
+        },
+        "4": {
+          "balance_caliper_all": true,
+          "caliper_candidate_count": {
+            "count": 4,
+            "mean": 511.5,
+            "p05": 337.9,
+            "p50": 562.0,
+            "p95": 614.4
+          },
+          "candidate_count": {
+            "count": 4,
+            "mean": 1003.5,
+            "p05": 980.75,
+            "p50": 994.0,
+            "p95": 1039.55
+          },
+          "centroid_y_gap": {
+            "count": 4,
+            "mean": 0.004018717515148734,
+            "p05": 0.001180157677142618,
+            "p50": 0.002589060926030007,
+            "p95": 0.008858796577921067
+          },
+          "confidence_gap": {
+            "count": 4,
+            "mean": 0.009278431534767151,
+            "p05": 0.0012008637189865113,
+            "p50": 0.0072858333587646484,
+            "p95": 0.02014563679695129
+          },
+          "count": 4,
+          "donor_pid_pair_count": {
+            "count": 4,
+            "mean": 1.0,
+            "p05": 1.0,
+            "p50": 1.0,
+            "p95": 1.0
+          },
+          "global_cosine_gap": {
+            "count": 4,
+            "mean": 0.11156284766310443,
+            "p05": 0.0875796577759073,
+            "p50": 0.1135730252955297,
+            "p95": 0.13273178886490616
+          },
+          "mass_log_gap": {
+            "count": 4,
+            "mean": 0.024828154343087716,
+            "p05": 0.018920687226077516,
+            "p50": 0.02157184517708899,
+            "p95": 0.03529445429249613
+          },
+          "preference_limit_used": {
+            "count": 4,
+            "mean": 64.0,
+            "p05": 64.0,
+            "p50": 64.0,
+            "p95": 64.0
+          },
+          "primary_distance": {
+            "count": 4,
+            "mean": 1.6587992409443961,
+            "p05": 1.1638755616112555,
+            "p50": 1.4540157473108202,
+            "p95": 2.440419811364543
+          },
+          "primary_rank": {
+            "count": 4,
+            "mean": 0.0,
+            "p05": 0.0,
+            "p50": 0.0,
+            "p95": 0.0
+          },
+          "support_gap": {
+            "count": 4,
+            "mean": 0.02995007485151291,
+            "p05": 0.008835621178150177,
+            "p50": 0.02989751100540161,
+            "p95": 0.05113811790943145
+          },
+          "unique_donor_pid_count": 4
+        }
+      },
+      "preference_limit": 64,
+      "preference_limit_used": {
+        "count": 20,
+        "mean": 64.0,
+        "p05": 64.0,
+        "p50": 64.0,
+        "p95": 64.0
+      },
+      "primary_caliper": 8.0,
+      "primary_distance": {
+        "count": 20,
+        "mean": 1.785125654615434,
+        "p05": 0.5215649880222147,
+        "p50": 1.209694567582811,
+        "p95": 5.220333924630424
+      },
+      "primary_rank": {
+        "count": 20,
+        "mean": 0.0,
+        "p05": 0.0,
+        "p50": 0.0,
+        "p95": 0.0
+      },
+      "recipient_also_used_as_donor_count": 0,
+      "reuse_count": 0,
+      "same_camera_all": true,
+      "support_gap": {
+        "count": 20,
+        "mean": 0.021071873605251312,
+        "p05": 0.0054088979959487915,
+        "p50": 0.012865394353866577,
+        "p95": 0.05402702093124391
+      },
+      "unique_donor_count": 20,
+      "unique_donor_pid_count": 20
+    }
+  },
+  "execution": "exp407-p0b-preflight-v1",
+  "experiment": "exp407",
+  "formal": false,
+  "formal_measurement_authorization_candidate": true,
+  "formal_measurement_authorized": false,
+  "gates": {
+    "all_outputs_finite": true,
+    "coverage_exact_once": true,
+    "donor_reserve_contract_strict": true,
+    "each_pose_valid_slot_has_patch": true,
+    "each_slot_has_geometry": true,
+    "exact_deletion_counts": true,
+    "official_train_exact": true,
+    "wrong_mask_matching_strict": true
+  },
+  "provenance": {
+    "asset_manifest_sha256": "d78d02790b8e268d169ac41f26af5e52a7213e8dbe76526bc0bda7f1b16fd4ee",
+    "clip_checkpoint_sha256": "9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e",
+    "core_sha256": "29ddd00ce03ed73b6d1c7ab722de88490e2490638bc83b192e215c6ab4bb0f8b",
+    "deletion_fractions": [
+      0.25,
+      0.5,
+      0.75
+    ],
+    "donor_reserve_sha256": "b1ef0148ef5c39b06d8d8e41cb81e63bfd5eb81f497d4e26054bef1f4b069f4f",
+    "execution_manifest_sha256": null,
+    "native_logit_scale": 100.0,
+    "official_train_manifest_sha256": "87adfe809f8e2abd6f78973bb63c9e6843a16e41fd29062f79eb1a6633de5836",
+    "pose_manifest_sha256": "cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8",
+    "protocol_sha256": "6b24ba65be78488d945aa53f06f9cd938021994a50eff4e94273a2f5d2b21636",
+    "runner_sha256": "0037c855f53014d579c6f60b4da2aa80b449c6128cebbe4a328b8092e901d764",
+    "runtime": {
+      "environment": {
+        "cuda_visible_devices": null
+      },
+      "gpu": [
+        "NVIDIA GeForce RTX 4090 D, 550.144.03, GPU-48baa99b-8a10-b348-caf2-8a456a7d8d81"
+      ],
+      "numerics": {
+        "cuda_matmul_allow_tf32": false,
+        "cudnn_allow_tf32": true,
+        "cudnn_benchmark": false,
+        "cudnn_deterministic": false,
+        "deterministic_algorithms": false
+      },
+      "packages": {
+        "numpy": {
+          "module_origin": "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/numpy/__init__.py",
+          "module_origin_sha256": "edd18feff93348beb02f392959e80b9fda1875a842d7f9760847f32386fdfd48",
+          "package_manifest": "RECORD",
+          "package_manifest_kind": "wheel-record",
+          "package_manifest_sha256": "3e355d4889007864efb3707188e0b05fea4eafc4d8d8e5e4d35648957505e2ea",
+          "version": "1.24.4"
+        },
+        "open_clip_torch": {
+          "module_origin": "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/open_clip/__init__.py",
+          "module_origin_sha256": "f77b4681172075f93bb28c28ab0167b0cf1096cd29a4eefcaa00b79d41270805",
+          "package_manifest": "RECORD",
+          "package_manifest_kind": "wheel-record",
+          "package_manifest_sha256": "a9025bb31ce63ce19330d4cc722017425d28919041a22e2fafe8fe2199ba49d5",
+          "version": "2.32.0"
+        },
+        "torch": {
+          "module_origin": "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torch/__init__.py",
+          "module_origin_sha256": "54bb8bbcb339d76fa47f3d002de80656a1399c7a07324f8b95b106a5ad65f0cf",
+          "package_manifest": "/usr/local/anaconda3/envs/mmpose-abu/conda-meta/pytorch-1.13.1-py3.8_cuda11.7_cudnn8.5.0_0.json",
+          "package_manifest_kind": "conda-meta",
+          "package_manifest_sha256": "7bccab91475c009d89853dbfc41202b9fb2979f79e83bdf59dd415ea9409f806",
+          "version": "1.13.1"
+        },
+        "torchvision": {
+          "module_origin": "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torchvision/__init__.py",
+          "module_origin_sha256": "0f62ff4b5f7ab15ff25b895bb2843b8f48de05d7c761b467403732d4a1d777c9",
+          "package_manifest": "/usr/local/anaconda3/envs/mmpose-abu/conda-meta/torchvision-0.14.1-py38_cu117.json",
+          "package_manifest_kind": "conda-meta",
+          "package_manifest_sha256": "bad1889b5261d44a040906df9829f929bd855cdbae96ac6c973a0cfa80a54aba",
+          "version": "0.14.1"
+        }
+      },
+      "python": {
+        "build": [
+          "default",
+          "Sep 30 2024 17:52:49"
+        ],
+        "executable": "/usr/local/anaconda3/envs/mmpose-abu/bin/python3.8",
+        "executable_sha256": "3eeff94d51f050198a4726c3b9dbb99913723ff38be151e5768b2e039f6ec8d7",
+        "version": "3.8.20 | packaged by conda-forge | (default, Sep 30 2024, 17:52:49) \n[GCC 13.3.0]"
+      },
+      "torch": {
+        "config": "PyTorch built with:\n  - GCC 9.3\n  - C++ Version: 201402\n  - Intel(R) oneAPI Math Kernel Library Version 2022.1-Product Build 20220311 for Intel(R) 64 architecture applications\n  - Intel(R) MKL-DNN v2.6.0 (Git Hash 52b5f107dd9cf10910aaa19cb47f3abf9b349815)\n  - OpenMP 201511 (a.k.a. OpenMP 4.5)\n  - LAPACK is enabled (usually provided by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX2\n  - CUDA Runtime 11.7\n  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_61,code=sm_61;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_37,code=compute_37\n  - CuDNN 8.5\n  - Magma 2.6.1\n  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.7, CUDNN_VERSION=8.5.0, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -fabi-version=11 -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wunused-local-typedefs -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Werror=cast-function-type -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.13.1, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, \n",
+        "cuda_toolkit": "11.7",
+        "cudnn": 8500,
+        "git_version": "49444c3e546bf240bed24a101e747422d1f8a0ee",
+        "version": "1.13.1"
+      }
+    },
+    "runtime_sha256": "5a8aa901fac21e1a9d961790b78f78ce66e27a89f4c4db4ba4a9182aec3dee11",
+    "source_commit": "938b786d19a25b0e76b78797970c2609a108e716",
+    "taxonomy": [
+      "head",
+      "upper_torso_arms",
+      "lower_torso",
+      "upper_legs",
+      "lower_legs_feet"
+    ],
+    "teacher_cache_sha256": "f3ef8c1db0475baadfca2ece9945e58929edf6cef0e6cf0c758e1258b185b634",
+    "teacher_sha256": "af255cbbb6eafca2024f7882023deda50445f9a01c1df0b28422a24e23cc35a0",
+    "view_seed": 20260720
+  },
+  "runtime": {
+    "batch_size": 2,
+    "clip_microbatch": 1,
+    "device": "cuda:0",
+    "elapsed_seconds": 612.7001368999481,
+    "workers": 4
+  },
+  "scientific_evaluated": false,
+  "semantic": {
+    "analysis_valid_count_per_slot": [
+      512,
+      512,
+      512,
+      512,
+      512
+    ],
+    "donor_universe_analysis_valid_count_per_slot": [
+      15602,
+      15618,
+      15616,
+      15608,
+      15515
+    ],
+    "recipient_core_count": 512,
+    "scientific_evaluated": false
+  },
+  "status": "PREFLIGHT_PASS",
+  "transport_oracle_authorization_candidate": false,
+  "transport_oracle_authorized": false
+}

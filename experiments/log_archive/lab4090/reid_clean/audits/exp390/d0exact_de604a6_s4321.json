@@ -1,0 +1,99 @@
+{
+  "final_state_sha256": "da54effa22bd94b6d691fb68365301952088b1ea81154b7504a554f1f652cc04",
+  "initial_state_sha256": "569635f33ad277ab9188b706056fb570067dfe1fd2701db74281ba27cd8b81dc",
+  "momentum_count": 185,
+  "momentum_sha256": "35f99186135d281467004a20618b514483cd528b203a5f8bd92426388a45e6b1",
+  "state_count": 223,
+  "steps": [
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "6a96990a3fb2fde55d74f0f66f1ee7e1f945aba01c81ccb4acd0302b19094ebf",
+      "loss": 18.490478515625,
+      "output_count": 9,
+      "output_sha256": "41dfe7aa3c0981801a84f98e5bfa1894b3a387e64e1eeffc34964ecd4030349a",
+      "scale": 32768.0,
+      "state_sha256": "10aab415c4a581fb82e9858b9af53c41e27549fe381b4343a08980bb7e780182"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "ad39285fc00129d387ff3770f762fbaa577264ec3deb8412e982ca6101fc5a32",
+      "loss": 24.022722244262695,
+      "output_count": 9,
+      "output_sha256": "62557694b8ca68c866b6864c8fc830d0fd6c1073fc0af82ddce779013bf8fe43",
+      "scale": 16384.0,
+      "state_sha256": "37e78cf5ba46ee90385fbf64c56a33aa2377a353ded22d4ccb492cf917a22512"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "a25082519325ad4ea1528cf20c1b16f4437b7a8227000fe68afc7b141f25636a",
+      "loss": 27.63438606262207,
+      "output_count": 9,
+      "output_sha256": "39af8212be6b473bf07d8e4937212cec60dd10a599eeffec2287616d7f7c424f",
+      "scale": 8192.0,
+      "state_sha256": "b32ddcc602804ee4b061bee34f51e38a6ba919b115b479b9cbd7cac7a2b38c81"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "c7e883584ed2aafcd46a6c6f5168e1091869d8831aa5c9c4bbd32b480231e7e8",
+      "loss": 21.952486038208008,
+      "output_count": 9,
+      "output_sha256": "ccd2db9c10e94c6d644c06f1e218246f5a5b114c3468261cf4ba288478a472ec",
+      "scale": 4096.0,
+      "state_sha256": "afc68476b5557e47b0e087b2d06a801eceb892d8b2146cdaaf3ade64d72425c2"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "6e6fc3fcaf46e2062cb6dd1d0a44e95184ad689da34afe5994ff2fcd70f70314",
+      "loss": 33.82991027832031,
+      "output_count": 9,
+      "output_sha256": "a70ce9f31fdc8f6986ebda22cf39776fd395b9d285251c79279518427a4a0c4c",
+      "scale": 2048.0,
+      "state_sha256": "a8a4a06e832005e1c8016aa5c2dc915b95fd73ed248f5ca65581ef51cf18edc3"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "4bd454a6e4649261bf7fd141349f2225afa881dc348701507d1ef255fc4fb284",
+      "loss": 12.983654022216797,
+      "output_count": 9,
+      "output_sha256": "ebd3c37100df260c739e87e92105bdc8c46624a6afce3ba8a47600f413cfc692",
+      "scale": 1024.0,
+      "state_sha256": "96f9d26769af6b4f31d4f2ddcb3f1461699f632ed044b8a1e617168a09cbf2f6"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "58567e152c7f683b9b7bb6240d8962b5e5491fa2b1f0f523a5c9d123e8efaad7",
+      "loss": 24.905824661254883,
+      "output_count": 9,
+      "output_sha256": "56f333c3972bcfb19f25f4bbf7e98f9f571ae8b211f97a5fd71f8f3e39998347",
+      "scale": 512.0,
+      "state_sha256": "302e3436aa2e95f947de9e2b971bc984aa494c03c473ee4207adb7ca4ea68191"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "ed93547f8ac513fb6202437724238276fabd031471fc64a915d639bcc552183f",
+      "loss": 11.71080493927002,
+      "output_count": 9,
+      "output_sha256": "80103aa7430d2536dfad803204641716b20b2eebc560268d4684f9ee0107c412",
+      "scale": 512.0,
+      "state_sha256": "b6c7dd1ba8382cb1388dffd32b10c6d14f39ccfcea80f08fe5df61f16de44b67"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "8e82aaea5c34957b5c35569354706e9540d98896b27c4868433b7792692050f2",
+      "loss": 42.236351013183594,
+      "output_count": 9,
+      "output_sha256": "0e6d40abe493c6d41e16f8d230ce97fdbdb2236c0a27808e93633ed40d005b45",
+      "scale": 512.0,
+      "state_sha256": "5424e5fca9068a79c238deaa979410ec36c6ef49e995a7277011dd252aa75323"
+    },
+    {
+      "gradient_count": 185,
+      "gradient_sha256": "f6380237e0b5b515ed19629c502456ca160945cba11a37a78d0fd3e3ebd10b23",
+      "loss": 18.951454162597656,
+      "output_count": 9,
+      "output_sha256": "c2b1e54bf4957b162fcd8c4523d0bf423e2c7d81f86931a473c4673f476a9c57",
+      "scale": 512.0,
+      "state_sha256": "da54effa22bd94b6d691fb68365301952088b1ea81154b7504a554f1f652cc04"
+    }
+  ]
+}

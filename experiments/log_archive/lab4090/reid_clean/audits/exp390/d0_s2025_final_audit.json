@@ -1,0 +1,87 @@
+{
+  "checkpoint_floating_tensors": 210,
+  "checkpoint_sha256": "ce06c380dddbec6149ee57aad12f1ebff0d310183b26886e6194adc41ca243f4",
+  "checkpoint_state_tensors": 223,
+  "consumer_paths": [
+    {
+      "consumer": "late0",
+      "descriptor_max_abs_delta": 1.569187879562378
+    },
+    {
+      "consumer": "late1",
+      "descriptor_max_abs_delta": 2.2534995079040527
+    }
+  ],
+  "dataset_boundary": {
+    "normal_train_dataset": "ImageDataset",
+    "normal_train_has_pose_store": false,
+    "num_query": 2210,
+    "validation_dataset": "ImageDataset",
+    "validation_has_pose_store": false
+  },
+  "descriptor_shape": [
+    4,
+    768
+  ],
+  "exploding_pose_accesses": 0,
+  "field_shape": [
+    4,
+    17,
+    24,
+    8
+  ],
+  "gate_shapes": [
+    [
+      4,
+      48,
+      768
+    ],
+    [
+      4,
+      48,
+      768
+    ]
+  ],
+  "parameter_trajectory": {
+    "anchor": {
+      "changed": 8,
+      "total": 8
+    },
+    "head": {
+      "changed": 2,
+      "total": 3
+    },
+    "psg": {
+      "changed": 4,
+      "total": 4
+    },
+    "swin": {
+      "changed": 171,
+      "total": 193
+    }
+  },
+  "pose_variants_exact": [
+    "correct",
+    "shuffle",
+    "none",
+    "exploding"
+  ],
+  "psg_pairwise_independence": {
+    "equal": false,
+    "left": 0,
+    "right": 1
+  },
+  "psg_per_bank_trajectory": [
+    {
+      "changed": 2,
+      "total": 2
+    },
+    {
+      "changed": 2,
+      "total": 2
+    }
+  ],
+  "status": "EXP390_D0_FINAL_AUDIT_PASS",
+  "strict_missing": [],
+  "strict_unexpected": []
+}

@@ -1,0 +1,52 @@
+/root/solider-venv/lib/python3.10/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-exp371-146bc44/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[POSE] POSE_USE_TARGET_HEATMAP=True: pose modules (PSG/LGPA/VCSR/PPA/STR/FSDC/...) will receive person-0 (target) heatmap instead of max-merged scene heatmap.
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0, query_mode=clip_frozen, query_seed=42
+[LGPA] Running on DETACHED features (no gradient to backbone)
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /home/afr/SOLIDER-REID/log/occluded_duke/sw_poseclip_s0/transformer_120.pth
+{
+  "train": {
+    "path": "/home/afr/SOLIDER-REID-exp371-146bc44/log/exp371_gate_c_support_cache_s0/train_target_support.pt",
+    "file_sha256": "1046a6df1036fad5bd6865c920150ff09106116bfab1bd4c8dc453db7c5a2a4f",
+    "sample_count": 15618,
+    "tensor_sha256": {
+      "features": "c1a1292a91571925f87ba0ff6e6f751bf8b05dc6dad1d5429916d188a2a45eeb",
+      "kp_feats": "08e0a427a1016a97ff63188a4e1038c7e2800cc221a231bfb5ab8ab182972949",
+      "relative_allocation": "e8de8ab6a809105250de8de0730c3522cd85a77c1d34c225112ec3c5bb42a2ca",
+      "raw_pose_response": "a69446c88bafd4c3c8f49f4d07d58cb5d17e841dcd535d86e77f0ee3b513bfa0",
+      "raw_response_relative_allocation": "e8de8ab6a809105250de8de0730c3522cd85a77c1d34c225112ec3c5bb42a2ca",
+      "target_person_valid": "879c3f7e9f9a873847b8c5f4bdb7cd8709186e48372675bf33be0d66f6482bd6",
+      "person_count": "93bcb4fe68ce899415a5c8ac5a03ab6ee613df331ca3e12870835b9f92a1f749"
+    },
+    "metadata_sha256": "eacc417c1980d4015f5bbda4625ee32f9d3a94c0665f6bd1b62f747f3118e376"
+  }
+}
+{
+  "val": {
+    "path": "/home/afr/SOLIDER-REID-exp371-146bc44/log/exp371_gate_c_support_cache_s0/val_target_support.pt",
+    "file_sha256": "83b170efc31e6a81bb35fad428d04a27287183defa9f2edacc37a47e552d95e4",
+    "sample_count": 19871,
+    "tensor_sha256": {
+      "features": "4ef157f4e29a31219f607398d765ec3739307f3a4a707a07d5d754b13c473339",
+      "kp_feats": "af1d15b974b0de3b21883b9fafe694bc144a12c76390da63974d209509e8f26a",
+      "relative_allocation": "5012fcd7e5345ef5ef766d5f3e7177827b611133d9c1318449d85fa88f184785",
+      "raw_pose_response": "8393eec6190fa54d53eb2f668d3f7e5ae58c7529fd08a69a7322b5aaf143ec7c",
+      "raw_response_relative_allocation": "5012fcd7e5345ef5ef766d5f3e7177827b611133d9c1318449d85fa88f184785",
+      "target_person_valid": "b5ae84cb2260b4deec90db82826fe0d984d952e7b9f3eb72c1ed755ca7bdc816",
+      "person_count": "db20a3cbacfba8f26227fd41c5d8127228ca1eb40d74e32eee9f1080f67d9d61"
+    },
+    "metadata_sha256": "39b9ee4e96dfd9abf6d6b35f65648847d64ca5d71d9e4197f086e231c37db13e"
+  }
+}
+COMPLETE: /home/afr/SOLIDER-REID-exp371-146bc44/log/exp371_gate_c_support_cache_s0

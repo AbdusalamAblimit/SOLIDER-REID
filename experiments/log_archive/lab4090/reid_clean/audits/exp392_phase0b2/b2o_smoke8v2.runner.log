@@ -1,0 +1,30 @@
+{
+  "crops": 40,
+  "macro_top1": {
+    "ci95_high": 0.6,
+    "ci95_low": 0.6,
+    "images": 8,
+    "mean": 0.6,
+    "pids": 1,
+    "repeats": 200
+  },
+  "mask_overlap": {
+    "count": 80,
+    "max": 0.556638260108588,
+    "median": 0.0006576733307172163,
+    "p95": 0.27080229159112224
+  },
+  "output_sha256": "96c4fdfe4ab1b7c185dc98e63aac2bd0bc8af7734e1eaa93cb2b2e852d66aba2",
+  "raw_cosine_margin": {
+    "ci95_high": 0.003726145625114441,
+    "ci95_low": 0.003726145625114441,
+    "images": 8,
+    "mean": 0.003726145625114441,
+    "pids": 1,
+    "repeats": 200
+  },
+  "samples": 8,
+  "scope": "smoke",
+  "status": "EXP392_PHASE0B2_O_COMPLETE",
+  "verdict": "B2_O_SMOKE_FAIL"
+}

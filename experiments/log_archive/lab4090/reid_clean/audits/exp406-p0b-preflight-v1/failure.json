@@ -1,0 +1,7 @@
+{
+  "error": "Weights only load failed. Re-running `torch.load` with `weights_only` set to `False` will likely succeed, but it can result in arbitrary code execution.Do it only if you get the file from a trusted source. WeightsUnpickler error: Unsupported operand 71",
+  "error_type": "UnpicklingError",
+  "execution": "exp406-p0b-preflight-v1",
+  "formal": false,
+  "traceback": "Traceback (most recent call last):\n  File \"/home/afr/SOLIDER-REID-exp406-p0b-preflight-cf7b5ad/experiments/exp406_cavt_donor_reserve_contract/phase0_teacher_measurement.py\", line 2205, in main\n    result = run(args)\n  File \"/home/afr/SOLIDER-REID-exp406-p0b-preflight-cf7b5ad/experiments/exp406_cavt_donor_reserve_contract/phase0_teacher_measurement.py\", line 2089, in run\n    cache_sha = write_cache_once(cache_path, cache)\n  File \"/home/afr/SOLIDER-REID-exp406-p0b-preflight-cf7b5ad/experiments/exp406_cavt_donor_reserve_contract/phase0_teacher_measurement.py\", line 165, in write_cache_once\n    loaded = torch.load(temporary, map_location=\"cpu\", weights_only=True)\n  File \"/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torch/serialization.py\", line 788, in load\n    raise pickle.UnpicklingError(UNSAFE_MESSAGE + str(e)) from None\n_pickle.UnpicklingError: Weights only load failed. Re-running `torch.load` with `weights_only` set to `False` will likely succeed, but it can result in arbitrary code execution.Do it only if you get the file from a trusted source. WeightsUnpickler error: Unsupported operand 71\n"
+}

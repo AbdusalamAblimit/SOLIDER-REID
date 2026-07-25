@@ -1,0 +1,102 @@
+{
+  "b0": {
+    "config": "configs/market/swin_tiny.yml",
+    "config_sha256": "8f810e0c62bae9a6bed0d4d471b39f91eb5a2bc500015cd01035358c8957ff0f",
+    "eval_rgb_only": {
+      "analyzer_activations": 21323712,
+      "batch_size": 256,
+      "descriptor_shape": [
+        256,
+        768
+      ],
+      "images_per_second": 1136.607150880936,
+      "mean_step_ms": 225.23173446655272,
+      "measured_steps": 20,
+      "median_step_ms": 225.2785415649414,
+      "parameters": 28111674,
+      "peak_allocated_bytes": 4725344768,
+      "peak_reserved_bytes": 7350517760,
+      "pose_input": null,
+      "supported_op_flops": 5535368448,
+      "warmup_steps": 5
+    },
+    "train": {
+      "batch_size": 64,
+      "final_loss": 15.3851900100708,
+      "final_scale": 1.0,
+      "mean_step_ms": 101.00344276428223,
+      "measured_steps": 12,
+      "median_step_ms": 100.99089813232422,
+      "peak_allocated_bytes": 6044115968,
+      "peak_reserved_bytes": 6553600000,
+      "samples_per_second": 633.6417675322278,
+      "warmup_steps": 3
+    }
+  },
+  "cuda_version": "11.7",
+  "d0": {
+    "config": "configs/market/swin_tiny_tapf_d0.yml",
+    "config_sha256": "81abd0d4247c26bdb306f54be0e9c9d1c8a595a64e85c30e40bd606a86b2cc80",
+    "eval_rgb_only": {
+      "analyzer_activations": 21456192,
+      "batch_size": 256,
+      "descriptor_shape": [
+        256,
+        768
+      ],
+      "images_per_second": 1117.9866817761185,
+      "mean_step_ms": 228.98304977416993,
+      "measured_steps": 20,
+      "median_step_ms": 228.98074340820312,
+      "parameters": 28217116,
+      "peak_allocated_bytes": 4725308928,
+      "peak_reserved_bytes": 7665090560,
+      "pose_input": null,
+      "supported_op_flops": 5548787520,
+      "warmup_steps": 5
+    },
+    "train": {
+      "batch_size": 64,
+      "final_loss": 14.669878005981445,
+      "final_scale": 1.0,
+      "mean_step_ms": 102.77481587727864,
+      "measured_steps": 12,
+      "median_step_ms": 102.7778091430664,
+      "peak_allocated_bytes": 6186716160,
+      "peak_reserved_bytes": 6465519616,
+      "samples_per_second": 622.7206485723227,
+      "warmup_steps": 3
+    }
+  },
+  "delta": {
+    "eval_rgb_only": {
+      "mean_step_ms": 3.7513153076172046,
+      "peak_allocated_bytes": -35840,
+      "peak_reserved_bytes": 314572800
+    },
+    "parameter_percent": 0.3750826080296748,
+    "parameters": 105442,
+    "supported_op_flops": 13419072,
+    "supported_op_flops_percent": 0.24242418776745536,
+    "train": {
+      "mean_step_ms": 1.7713731129964145,
+      "peak_allocated_bytes": 142600192,
+      "peak_reserved_bytes": -88080384
+    }
+  },
+  "device": "NVIDIA GeForce RTX 4090 D",
+  "fixed_batch_sha256": {
+    "eval_rgb": "1fc32268a7e30ebc6db7a0ee133b7584055bf64dd90f7d066243d787e404addb",
+    "train_pid": "7061e4f7551bf2e8fda98bfaedc5d438082ebe8225e942c89af158c00050a49a",
+    "train_pose_keypoints": "84eb1bee7a2ce13d93c6231f6df1d4220e98a928c1eb75677126313de478f9c1",
+    "train_rgb": "0501df6b1185c5816f91b302f4784ece1063806656efd1086d8aaa155db55415"
+  },
+  "measurement_scope": {
+    "eval": "one fixed real RGB-only validation batch; model forward, FP32",
+    "flops": "MMEngine supported-operator trace; unsupported elementwise ops excluded equally",
+    "train": "one fixed real paired batch; model forward+backward+SGD step, AMP, scale=1"
+  },
+  "script_sha256": "f8781b7ef194b027c653d493e77d8142b2a4405c0e01066a86b96529a1e1fd5f",
+  "status": "TAPF_MATCHED_EFFICIENCY_PASS",
+  "torch_version": "1.13.1"
+}

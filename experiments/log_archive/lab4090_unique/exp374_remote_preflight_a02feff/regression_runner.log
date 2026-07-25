@@ -1,0 +1,184 @@
+FFFF......................F.......                                       [100%]
+=================================== FAILURES ===================================
+_ FlatLogAndCheckpointBytesTests.test_checkpoint_bytes_loader_and_normalizer_use_synthetic_payload _
+
+self = <test_audit_runner.FlatLogAndCheckpointBytesTests testMethod=test_checkpoint_bytes_loader_and_normalizer_use_synthetic_payload>
+
+    def test_checkpoint_bytes_loader_and_normalizer_use_synthetic_payload(self):
+        buffer = io.BytesIO()
+        torch.save(
+            {"state_dict": {"module.weight": torch.tensor([1.0, 2.0])}},
+            buffer,
+        )
+    
+        raw = runner._torch_load_checkpoint_bytes(buffer.getvalue())
+>       state = runner._normalized_checkpoint_state(raw)
+
+experiments/exp374_psg_fuel_gate/test_audit_runner.py:130: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+raw = {'module.weight': tensor([1., 2.])}
+
+    def _normalized_checkpoint_state(raw: object) -> Dict[str, torch.Tensor]:
+        if isinstance(raw, Mapping) and "state_dict" in raw and isinstance(raw["state_dict"], Mapping):
+            raw = raw["state_dict"]
+        require(isinstance(raw, Mapping), "E_CHECKPOINT_FORMAT", type(raw).__name__)
+        state: Dict[str, torch.Tensor] = {}
+        for key, value in raw.items():
+>           normalized = str(key).removeprefix("module.")
+E           AttributeError: 'str' object has no attribute 'removeprefix'
+
+experiments/exp374_psg_fuel_gate/audit_gate_a.py:181: AttributeError
+_ FlatLogAndCheckpointBytesTests.test_checkpoint_key_normalization_rejects_collision _
+
+self = <test_audit_runner.FlatLogAndCheckpointBytesTests testMethod=test_checkpoint_key_normalization_rejects_collision>
+
+    def test_checkpoint_key_normalization_rejects_collision(self):
+        state = {
+            "weight": torch.tensor([1.0]),
+            "module.weight": torch.tensor([1.0]),
+        }
+    
+>       self.assert_gate_code(
+            "E_CHECKPOINT_KEY_COLLISION",
+            runner._normalized_checkpoint_state,
+            state,
+        )
+
+experiments/exp374_psg_fuel_gate/test_audit_runner.py:116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+experiments/exp374_psg_fuel_gate/test_audit_runner.py:38: in assert_gate_code
+    callable_(*args, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _normalized_checkpoint_state(raw: object) -> Dict[str, torch.Tensor]:
+        if isinstance(raw, Mapping) and "state_dict" in raw and isinstance(raw["state_dict"], Mapping):
+            raw = raw["state_dict"]
+        require(isinstance(raw, Mapping), "E_CHECKPOINT_FORMAT", type(raw).__name__)
+        state: Dict[str, torch.Tensor] = {}
+        for key, value in raw.items():
+>           normalized = str(key).removeprefix("module.")
+E           AttributeError: 'str' object has no attribute 'removeprefix'
+
+experiments/exp374_psg_fuel_gate/audit_gate_a.py:181: AttributeError
+_ FlatLogAndCheckpointBytesTests.test_checkpoint_specs_freezes_sha_log_parse_and_aliases_from_one_read _
+
+self = <test_audit_runner.FlatLogAndCheckpointBytesTests testMethod=test_checkpoint_specs_freezes_sha_log_parse_and_aliases_from_one_read>
+
+    def test_checkpoint_specs_freezes_sha_log_parse_and_aliases_from_one_read(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_specs = []
+            asset_paths = []
+            for offset, seed in enumerate((42, 1234, 2024)):
+                weight = root / f"seed_{seed}.pth"
+                flat_log = root / f"seed_{seed}_flat.log"
+                train_log = root / f"seed_{seed}_train.log"
+                torch.save(self.synthetic_alias_state(offset), weight)
+                expected_map = 50.0 + offset
+                expected_r1 = 60.0 + offset
+                flat_log.write_bytes(
+                    f"mAP: {expected_map:.1f}%\nRank-1: {expected_r1:.1f}%\n".encode())
+                train_log.write_bytes(f"synthetic seed={seed}\n".encode())
+                source_specs.append({
+                    "seed": seed,
+                    "weight": str(weight),
+                    "weight_sha256": protocol.sha256_bytes(weight.read_bytes()),
+                    "flat_log": str(flat_log),
+                    "train_log": str(train_log),
+                    "expected_mAP": expected_map,
+                    "expected_R1": expected_r1,
+                })
+                asset_paths.extend((weight.resolve(), flat_log.resolve(), train_log.resolve()))
+            checkpoint_manifest = root / "checkpoint_manifest.json"
+            checkpoint_manifest.write_text(json.dumps(source_specs), encoding="utf-8")
+    
+            original_read_bytes = Path.read_bytes
+            read_counts = {str(path): 0 for path in asset_paths}
+    
+            def counted_read_bytes(path):
+                resolved = str(path.resolve())
+                if resolved in read_counts:
+                    read_counts[resolved] += 1
+                return original_read_bytes(path)
+    
+            with mock.patch.object(Path, "read_bytes", new=counted_read_bytes):
+>               frozen = runner.checkpoint_specs(str(checkpoint_manifest))
+
+experiments/exp374_psg_fuel_gate/test_audit_runner.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+experiments/exp374_psg_fuel_gate/audit_gate_a.py:252: in checkpoint_specs
+    state = _normalized_checkpoint_state(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+raw = {'psg_modules.0.encoder.0.bias': tensor([1.]), 'psg_modules.0.encoder.0.weight': tensor([0.]), 'psg_modules.0.encoder.2.bias': tensor([3.]), 'psg_modules.0.encoder.2.weight': tensor([2.]), ...}
+
+    def _normalized_checkpoint_state(raw: object) -> Dict[str, torch.Tensor]:
+        if isinstance(raw, Mapping) and "state_dict" in raw and isinstance(raw["state_dict"], Mapping):
+            raw = raw["state_dict"]
+        require(isinstance(raw, Mapping), "E_CHECKPOINT_FORMAT", type(raw).__name__)
+        state: Dict[str, torch.Tensor] = {}
+        for key, value in raw.items():
+>           normalized = str(key).removeprefix("module.")
+E           AttributeError: 'str' object has no attribute 'removeprefix'
+
+experiments/exp374_psg_fuel_gate/audit_gate_a.py:181: AttributeError
+_ FlatLogAndCheckpointBytesTests.test_checkpoint_state_rejects_non_tensor_value _
+
+self = <test_audit_runner.FlatLogAndCheckpointBytesTests testMethod=test_checkpoint_state_rejects_non_tensor_value>
+
+    def test_checkpoint_state_rejects_non_tensor_value(self):
+>       self.assert_gate_code(
+            "E_CHECKPOINT_FORMAT",
+            runner._normalized_checkpoint_state,
+            {"weight": "not-a-tensor"},
+        )
+
+experiments/exp374_psg_fuel_gate/test_audit_runner.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+experiments/exp374_psg_fuel_gate/test_audit_runner.py:38: in assert_gate_code
+    callable_(*args, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _normalized_checkpoint_state(raw: object) -> Dict[str, torch.Tensor]:
+        if isinstance(raw, Mapping) and "state_dict" in raw and isinstance(raw["state_dict"], Mapping):
+            raw = raw["state_dict"]
+        require(isinstance(raw, Mapping), "E_CHECKPOINT_FORMAT", type(raw).__name__)
+        state: Dict[str, torch.Tensor] = {}
+        for key, value in raw.items():
+>           normalized = str(key).removeprefix("module.")
+E           AttributeError: 'str' object has no attribute 'removeprefix'
+
+experiments/exp374_psg_fuel_gate/audit_gate_a.py:181: AttributeError
+_ ExecutionResumeTests.test_verify_prepared_artifacts_detects_hash_and_complete_conflicts _
+
+self = <test_audit_runner.ExecutionResumeTests testMethod=test_verify_prepared_artifacts_detects_hash_and_complete_conflicts>
+
+    def test_verify_prepared_artifacts_detects_hash_and_complete_conflicts(self):
+        with tempfile.TemporaryDirectory() as directory:
+            execution = self.make_prepared_execution(Path(directory))
+>           manifest = runner.verify_prepared_artifacts(execution)
+
+experiments/exp374_psg_fuel_gate/test_audit_runner.py:622: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+execution_dir = PosixPath('/tmp/tmpm_1kyo0m/gate_a_2a28a99ca6800e8814a2a5aa67e848dd1295396deabec4efe1b6aa6d28d8401d')
+
+    def verify_prepared_artifacts(execution_dir: Path) -> Dict[str, object]:
+        manifest_path = execution_dir / "premetric_manifest.json"
+        require(manifest_path.is_file(), "E_RESUME_MANIFEST", str(manifest_path))
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        require(execution_dir.name.startswith("gate_a_"),
+                "E_RESUME_EXECUTION_SHA", execution_dir.name)
+>       expected_sha = execution_dir.name.removeprefix("gate_a_")
+E       AttributeError: 'str' object has no attribute 'removeprefix'
+
+experiments/exp374_psg_fuel_gate/audit_gate_a.py:701: AttributeError
+- generated xml file: /home/afr/exp374_remote_preflight_a02feff/regression_runner.xml -
+=========================== short test summary info ============================
+FAILED experiments/exp374_psg_fuel_gate/test_audit_runner.py::FlatLogAndCheckpointBytesTests::test_checkpoint_bytes_loader_and_normalizer_use_synthetic_payload
+FAILED experiments/exp374_psg_fuel_gate/test_audit_runner.py::FlatLogAndCheckpointBytesTests::test_checkpoint_key_normalization_rejects_collision
+FAILED experiments/exp374_psg_fuel_gate/test_audit_runner.py::FlatLogAndCheckpointBytesTests::test_checkpoint_specs_freezes_sha_log_parse_and_aliases_from_one_read
+FAILED experiments/exp374_psg_fuel_gate/test_audit_runner.py::FlatLogAndCheckpointBytesTests::test_checkpoint_state_rejects_non_tensor_value
+FAILED experiments/exp374_psg_fuel_gate/test_audit_runner.py::ExecutionResumeTests::test_verify_prepared_artifacts_detects_hash_and_complete_conflicts
+5 failed, 29 passed in 1.43s

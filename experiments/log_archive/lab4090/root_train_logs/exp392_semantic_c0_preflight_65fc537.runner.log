@@ -1,0 +1,16 @@
+=> Occluded-Duke loaded
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using soft triplet loss for training
+/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-exp392-semantic-65fc537/model/backbones/swin_transformer.py:1157: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+Traceback (most recent call last):
+  File "experiments/exp392_clip_semantic_ciam/preflight_semantic_c0_cuda.py", line 438, in <module>
+    main()
+  File "experiments/exp392_clip_semantic_ciam/preflight_semantic_c0_cuda.py", line 323, in main
+    raise RuntimeError("GradScaler skipped a step at index %d" % step)
+RuntimeError: GradScaler skipped a step at index 0

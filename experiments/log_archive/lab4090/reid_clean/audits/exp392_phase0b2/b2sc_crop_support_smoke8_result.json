@@ -1,0 +1,298 @@
+{
+  "execution": {
+    "audit_script_sha256": "692a3662d0de9613a6a1c573d2d86bfd7f40b3082f215d005aa4f8857869496a",
+    "batch_size": 2,
+    "clip_batch": 10,
+    "clip_checkpoint": "/home/afr/SOLIDER-REID/clip_l14_openclip.safetensors",
+    "clip_checkpoint_sha256": "9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e",
+    "data_root": "/mnt1/afrdata",
+    "device": "cpu",
+    "encoded_crop_variants": 160,
+    "images": 8,
+    "ontology_script": "/home/afr/reid-clean/audits/exp392_phase0b2/phase0b2_prompt_audit.py",
+    "ontology_script_sha256": "b0d5ce6a53e94d09fa5d15c338392ea31437eee036299256c424ed30489028ca",
+    "open_clip_version": "2.32.0",
+    "phase0b_script": "/home/afr/reid-clean/audits/exp392_phase0b/phase0b_clip_teacher_audit.py",
+    "phase0b_script_sha256": "03b8f707bc6f189dd3de34505af82e63f7ee71bd23d70b6e9663aee318afcd70",
+    "pose_artifact": "/mnt1/afrderived/exp386_occluded_duke_vitpose_huge_train",
+    "pose_manifest_sha256": "cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8",
+    "repo_root": "/home/afr/SOLIDER-REID-exp392-phase0b-5277254",
+    "runtime_sha256": {
+      "datasets/bases.py": "03d231558f46264e4cff0c251b9b728ab4971232ed6c4bb7324ce1964f139c2c",
+      "datasets/occluded_duke.py": "f0e7b25e75251643430b699d9c9969fae207c0a85c48855cd0404d61a4228f8e",
+      "datasets/pose_targets.py": "42f6e35eff2ad572445143cb3ecc5b6a22d856facc4453b989411300dec22624"
+    },
+    "sample_manifest_sha256": "9206bb5fe08bbb9a73c796b0483ad209eccbe3a0ee7b4bc10e190beea436fbc2",
+    "seed": 20260718,
+    "source_commit": "5277254bae1f9d18f1368ad4202aca7c9d223cc8",
+    "torch_version": "1.13.1",
+    "valid_slot_crops": 40,
+    "workers": 0
+  },
+  "formal_training_authorized": false,
+  "gates": {
+    "all_region_positive_level0_minus_level75": true,
+    "all_region_positive_spearman": true,
+    "coverage_exact": true,
+    "finite": true,
+    "level_target_error_within_one_pixel": true,
+    "macro_all_adjacent_monotonic": true,
+    "realized_overlap_strictly_increasing": true,
+    "repeat_exact": true
+  },
+  "ontology": {
+    "crop_bbox_recomputed_after_occlusion": false,
+    "occlusion_order": "row-major nested support pixels",
+    "overlap_levels": [
+      0.0,
+      0.25,
+      0.5,
+      0.75
+    ],
+    "partition_mode": "hard-owner",
+    "replacement": "CLIP pixel mean",
+    "static_contract": {
+      "checks": {
+        "all_regions_valid": true,
+        "boundary_owner_dominance": true,
+        "empty_mask_exact": true,
+        "empty_valid_exact": true,
+        "finite": true,
+        "flip_mask_max_abs": 8.344650268554688e-07,
+        "flip_valid_exact": true,
+        "joint_owner_count_exact": true,
+        "onehot_joint_region_exact": true,
+        "pairwise_product_max": 0.0,
+        "segment_path_finite": true,
+        "segment_path_nonempty": true,
+        "segment_single_endpoint_zero": true,
+        "sum_region_support_max": 1.0,
+        "trimmed_midpoint_beats_endpoint": true
+      },
+      "gates": {
+        "boundary_owner": true,
+        "bounded_partition": true,
+        "empty": true,
+        "finite": true,
+        "flip": true,
+        "hard_owner_exact": true,
+        "onehot_joint": true,
+        "segment_path": true,
+        "unique_joint_owner": true
+      },
+      "partition_mode": "hard-owner",
+      "segment_interior_fraction": 0.15,
+      "status": "PASS"
+    }
+  },
+  "open_clip_preprocess_repr": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=None)\n    CenterCrop(size=(224, 224))\n    <function _convert_to_rgb at 0x7f6b51822700>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+  "phase0b2_si_authorized": true,
+  "prompt_payload": {
+    "prompts": [
+      "a photo of a person with clearly visible head, face, and hair",
+      "a photo of a person with an occluded or obstructed head, face, and hair",
+      "the person's head, face, and hair is clearly visible and unobstructed",
+      "the person's head, face, and hair is hidden or obstructed",
+      "clear visual evidence of the person's head, face, and hair",
+      "weak visual evidence of the person's head, face, and hair",
+      "a fully observable human head, face, and hair",
+      "a heavily obscured human head, face, and hair",
+      "a photo of a person with clearly visible chest, abdomen, waist, and torso",
+      "a photo of a person with an occluded or obstructed chest, abdomen, waist, and torso",
+      "the person's chest, abdomen, waist, and torso is clearly visible and unobstructed",
+      "the person's chest, abdomen, waist, and torso is hidden or obstructed",
+      "clear visual evidence of the person's chest, abdomen, waist, and torso",
+      "weak visual evidence of the person's chest, abdomen, waist, and torso",
+      "a fully observable human chest, abdomen, waist, and torso",
+      "a heavily obscured human chest, abdomen, waist, and torso",
+      "a photo of a person with clearly visible upper limbs, arms, elbows, forearms, wrists, and hands",
+      "a photo of a person with an occluded or obstructed upper limbs, arms, elbows, forearms, wrists, and hands",
+      "the person's upper limbs, arms, elbows, forearms, wrists, and hands is clearly visible and unobstructed",
+      "the person's upper limbs, arms, elbows, forearms, wrists, and hands is hidden or obstructed",
+      "clear visual evidence of the person's upper limbs, arms, elbows, forearms, wrists, and hands",
+      "weak visual evidence of the person's upper limbs, arms, elbows, forearms, wrists, and hands",
+      "a fully observable human upper limbs, arms, elbows, forearms, wrists, and hands",
+      "a heavily obscured human upper limbs, arms, elbows, forearms, wrists, and hands",
+      "a photo of a person with clearly visible thighs between the hips and knees",
+      "a photo of a person with an occluded or obstructed thighs between the hips and knees",
+      "the person's thighs between the hips and knees is clearly visible and unobstructed",
+      "the person's thighs between the hips and knees is hidden or obstructed",
+      "clear visual evidence of the person's thighs between the hips and knees",
+      "weak visual evidence of the person's thighs between the hips and knees",
+      "a fully observable human thighs between the hips and knees",
+      "a heavily obscured human thighs between the hips and knees",
+      "a photo of a person with clearly visible lower legs below the knees, including shins, calves, ankles, and feet",
+      "a photo of a person with an occluded or obstructed lower legs below the knees, including shins, calves, ankles, and feet",
+      "the person's lower legs below the knees, including shins, calves, ankles, and feet is clearly visible and unobstructed",
+      "the person's lower legs below the knees, including shins, calves, ankles, and feet is hidden or obstructed",
+      "clear visual evidence of the person's lower legs below the knees, including shins, calves, ankles, and feet",
+      "weak visual evidence of the person's lower legs below the knees, including shins, calves, ankles, and feet",
+      "a fully observable human lower legs below the knees, including shins, calves, ankles, and feet",
+      "a heavily obscured human lower legs below the knees, including shins, calves, ankles, and feet"
+    ],
+    "region_phrases": [
+      "head, face, and hair",
+      "chest, abdomen, waist, and torso",
+      "upper limbs, arms, elbows, forearms, wrists, and hands",
+      "thighs between the hips and knees",
+      "lower legs below the knees, including shins, calves, ankles, and feet"
+    ],
+    "regions": [
+      "head_face",
+      "central_torso",
+      "arms_hands",
+      "upper_legs_thighs",
+      "lower_legs_feet"
+    ],
+    "state_order": [
+      "visible",
+      "occluded"
+    ],
+    "temperature": 0.07,
+    "template_pairs": [
+      [
+        "a photo of a person with clearly visible {}",
+        "a photo of a person with an occluded or obstructed {}"
+      ],
+      [
+        "the person's {} is clearly visible and unobstructed",
+        "the person's {} is hidden or obstructed"
+      ],
+      [
+        "clear visual evidence of the person's {}",
+        "weak visual evidence of the person's {}"
+      ],
+      [
+        "a fully observable human {}",
+        "a heavily obscured human {}"
+      ]
+    ]
+  },
+  "prompt_sha256": "a88a1405b629402b647b6075325b2821362bbcf89372466a27f9d4cfcee3af12",
+  "scope": "smoke",
+  "status": "EXP392_PHASE0B2_SC_COMPLETE",
+  "summary": {
+    "levels": [
+      0.0,
+      0.25,
+      0.5,
+      0.75
+    ],
+    "macro_adjacent_delta": [
+      0.01381279230117799,
+      0.004017078876495328,
+      0.0022687494754791704
+    ],
+    "macro_q_visible_by_level": [
+      0.5045828223228455,
+      0.49077003002166747,
+      0.48675295114517214,
+      0.48448420166969297
+    ],
+    "per_region": [
+      {
+        "q_visible_level0_minus_level75": {
+          "ci95_high": 0.026273906230926514,
+          "ci95_low": 0.026273906230926514,
+          "mean": 0.026273906230926514,
+          "pids": 1,
+          "repeats": 200,
+          "samples": 8
+        },
+        "q_visible_mean_by_level": [
+          0.5097141265869141,
+          0.49023541808128357,
+          0.4805578887462616,
+          0.4834401607513428
+        ],
+        "region": 0,
+        "samples": 8,
+        "spearman_overlap_negative_q_visible": 0.7557315826630379
+      },
+      {
+        "q_visible_level0_minus_level75": {
+          "ci95_high": 0.015427779406309128,
+          "ci95_low": 0.015427779406309128,
+          "mean": 0.015427779406309128,
+          "pids": 1,
+          "repeats": 200,
+          "samples": 8
+        },
+        "q_visible_mean_by_level": [
+          0.48972511291503906,
+          0.4811243414878845,
+          0.47845473885536194,
+          0.47429734468460083
+        ],
+        "region": 1,
+        "samples": 8,
+        "spearman_overlap_negative_q_visible": 0.694832616105318
+      },
+      {
+        "q_visible_level0_minus_level75": {
+          "ci95_high": 0.017519619315862656,
+          "ci95_low": 0.017519619315862656,
+          "mean": 0.017519619315862656,
+          "pids": 1,
+          "repeats": 200,
+          "samples": 8
+        },
+        "q_visible_mean_by_level": [
+          0.5061218738555908,
+          0.4946146607398987,
+          0.4919825494289398,
+          0.48860225081443787
+        ],
+        "region": 2,
+        "samples": 8,
+        "spearman_overlap_negative_q_visible": 0.6289934413804649
+      },
+      {
+        "q_visible_level0_minus_level75": {
+          "ci95_high": 0.021190371364355087,
+          "ci95_low": 0.021190371364355087,
+          "mean": 0.021190371364355087,
+          "pids": 1,
+          "repeats": 200,
+          "samples": 8
+        },
+        "q_visible_mean_by_level": [
+          0.5060145854949951,
+          0.4883400797843933,
+          0.48573926091194153,
+          0.4848242402076721
+        ],
+        "region": 3,
+        "samples": 8,
+        "spearman_overlap_negative_q_visible": 0.6148803289531231
+      },
+      {
+        "q_visible_level0_minus_level75": {
+          "ci95_high": 0.020081430673599243,
+          "ci95_low": 0.020081430673599243,
+          "mean": 0.020081430673599243,
+          "pids": 1,
+          "repeats": 200,
+          "samples": 8
+        },
+        "q_visible_mean_by_level": [
+          0.5113384127616882,
+          0.4995356798171997,
+          0.4970303475856781,
+          0.4912569522857666
+        ],
+        "region": 4,
+        "samples": 8,
+        "spearman_overlap_negative_q_visible": 0.7032215095662154
+      }
+    ]
+  },
+  "support_pixels": {
+    "max": 26091,
+    "max_allowed_one_pixel_error": 0.0001866368047779022,
+    "max_target_error": 9.331840238896438e-05,
+    "median": 12244.0,
+    "min": 5358
+  },
+  "verdict": "B2_SC_SMOKE_PASS"
+}

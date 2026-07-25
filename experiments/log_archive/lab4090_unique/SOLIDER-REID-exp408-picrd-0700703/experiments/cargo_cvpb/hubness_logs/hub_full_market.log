@@ -1,0 +1,98 @@
+################################################################################
+# GALLERY HUBNESS KILL-SWITCH  dataset=market1501  ckpt=log/market1501/exp260b_base_gcn512_2stage/transformer_120.pth
+################################################################################
+[reuse] features from /tmp/hub_market_feats.npz: q=3368 g=15913
+[data] Nq=3368 Ng=15913 dim=1024  #q-pids=750 #g-pids=751
+
+[SANITY] frozen cosine (global feat) mAP=94.61 R1=97.06 R5=99.05 R10=99.35 nq=3368  (exp260b equal_concat ref mAP 94.4; this is the GLOBAL-branch single vector, expected somewhat lower)
+[eval] #false-top1 hits=99  #false-top10 hits=4809
+
+================================================================================
+H_k construction (NEGATIVE in-degree = cross-ID mis-attraction)
+================================================================================
+  k= 5: H_neg max=   5 mean=0.027  #gallery with H_neg>0 = 345 (2.2%)  top-1% H_neg threshold = 1
+  k=10: H_neg max=   9 mean=0.163  #gallery with H_neg>0 = 1572 (9.9%)  top-1% H_neg threshold = 3
+  k=20: H_neg max=  16 mean=1.072  #gallery with H_neg>0 = 6663 (41.9%)  top-1% H_neg threshold = 8
+
+================================================================================
+CORE TEST 1 — hub concentration (top-1% high-H_k gallery absorb what % of false hits)
+================================================================================
+  k= 5: top-1% hub gallery (n=159, H_neg>=1) absorb  false-top1  53.5%   false-top10   9.3%   (uniform expectation = 1.0%)
+  k=10: top-1% hub gallery (n=159, H_neg>=3) absorb  false-top1  22.2%   false-top10  15.4%   (uniform expectation = 1.0%)
+  k=20: top-1% hub gallery (n=159, H_neg>=8) absorb  false-top1  14.1%   false-top10  11.8%   (uniform expectation = 1.0%)
+
+================================================================================
+CORE TEST 2 — M(q) vs per-query AP error, against cheap difficulty proxies
+================================================================================
+  rho(AP-error, M(q))                 = +0.2765  (n=3368)  [HUB MASS]
+  rho(AP-error, feature-norm)         = +0.0321
+  rho(AP-error, -top1-margin)         = -0.1458
+  rho(AP-error, -#gallery-positives)  = -0.1111
+  rho(AP-error, same-cam-frac-in-topk)= +0.0972
+  perm-p(M(q)) = 0.0010
+  partial rho(AP-error, M | norm)            = +0.2764
+  partial rho(AP-error, M | top1-margin)     = +0.2603
+  partial rho(AP-error, M | same-cam-frac)   = +0.2787
+  partial rho(AP-error, M | #gallery-pos)    = +0.3427
+  partial rho(AP-error, M | ALL 4 proxies)   = +0.3314  (n=3368)  [D3 line: must stay clearly nonzero]
+
+================================================================================
+CORE TEST 3 — intervention score'(q,g) = cosine - lambda*log(1+H_k(g)), k=10
+================================================================================
+  lambda=0 (baseline): mAP=94.609 R1=97.061 R5=99.050
+  lambda=0.005 : mAP=94.695 (d+0.087)  R1=97.239 (d+0.178)  R5=99.080  <== best so far
+  lambda=0.010 : mAP=94.751 (d+0.142)  R1=97.387 (d+0.327)  R5=99.020  <== best so far
+  lambda=0.020 : mAP=94.846 (d+0.237)  R1=97.684 (d+0.624)  R5=99.139  <== best so far
+  lambda=0.050 : mAP=94.916 (d+0.307)  R1=98.189 (d+1.128)  R5=99.080  <== best so far
+  lambda=0.100 : mAP=94.471 (d-0.138)  R1=98.308 (d+1.247)  R5=99.080
+  lambda=0.200 : mAP=92.358 (d-2.250)  R1=97.892 (d+0.831)  R5=98.723
+  lambda=0.500 : mAP=86.836 (d-7.773)  R1=97.357 (d+0.297)  R5=98.070
+  lambda=1.000 : mAP=85.184 (d-9.425)  R1=97.328 (d+0.267)  R5=97.981
+  >> BEST intervention: lambda=0.05 mAP=94.916 (d+0.307) R1=98.189 (d+1.128)
+
+  gain concentration (best lambda=0.05):
+    Spearman(M(q), AP-gain) = +0.3415  (expect POSITIVE: high-M queries gain more)
+    M-quartile Q0 (n= 842, mean M=      0.0): mean AP-gain = -0.089
+    M-quartile Q1 (n= 842, mean M=      0.0): mean AP-gain = -0.092
+    M-quartile Q2 (n= 842, mean M=      0.0): mean AP-gain = -0.069
+    M-quartile Q3 (n= 842, mean M=      7.2): mean AP-gain = +1.479
+
+################################################################################
+DESTRUCTIVE CONTROLS (decide novelty)
+################################################################################
+
+-- D1: shuffle H_k (permute gallery H values) -> gain must vanish --
+  best mAP with SHUFFLED H_k over lambda sweep = 94.611  (baseline 94.609; real-best 94.916).  D1 PASS if shuffled gain ~ 0 (<< real gain)
+
+-- D2: camera-correction equivalence (hub must beat pure camera fixes) --
+  D2a same-camera down-weight  best mAP = 95.280 (gamma=1.0, d+0.671)
+  D2b k-reciprocal re-rank (strong test-time baseline) and CA variant:
+    k-reciprocal (plain)      mAP = 95.873  R1=96.942 (d+1.264)
+    k-reciprocal (camera-aware) mAP = 95.877  R1=96.912 (d+1.268)
+  >> D2 verdict: hub intervention gain (d+0.307) vs camera-only fixes (D2a d+0.671). If hub <= camera fix, NO independent value.
+
+-- D3: M(q) partial corr controlling norm+margin+camera+#pos (from Test 2) --
+  partial rho(AP-error, M | ALL 4 proxies) = +0.3314  (D3 PASS if clearly nonzero, i.e. M not reducible to cheap difficulty)
+
+-- D4 (CRITICAL): NEGATIVE in-degree vs ALL / POS in-degree --
+  intervention with NEG in-degree: best mAP=94.916 (d+0.307, lam=0.05)
+  intervention with ALL in-degree: best mAP=94.619 (d+0.010, lam=0.005)
+  intervention with POS in-degree: best mAP=94.609 (d+0.000, lam=0.0)
+  rho(AP-error, M_neg)=+0.2765   rho(AP-error, M_all)=-0.0836
+  Spearman(H_neg, H_all) across gallery = -0.0287  (if ~1.0 the negative/total distinction is moot -> D4 weak)
+  >> D4 verdict: NEG must drive the gain; if ALL in-degree gives the SAME gain and H_neg~H_all, the signal is just 'popular sample', not cross-ID mis-attraction.
+
+################################################################################
+SUMMARY / VERDICT  (market1501)
+################################################################################
+  sanity frozen mAP                         = 94.61
+  T1 top-1% hub absorb false-top1/top10     = 22.2% / 15.4%  (want >=20-30%, uniform=1%)
+  T2 rho(AP-error, M)                       = +0.2765  (perm-p 0.0010)
+  T2 vs norm/margin/cam/npos                = +0.032/-0.146/+0.097/-0.111
+  T3 best intervention mAP gain             = +0.307 (lambda=0.05)  gain-concentration rho=+0.341
+  D1 shuffled-H gain                        = +0.002 (want ~0)
+  D2 camera-only best gain (downweight/RR)  = +0.671 / +1.264
+  D3 partial(AP-error, M | 4 proxies)       = +0.3314 (want clearly !=0)
+  D4 NEG/ALL/POS intervention gain          = +0.307/+0.010/+0.000; Spearman(H_neg,H_all)=-0.029
+
+[done] hubness kill-switch complete.

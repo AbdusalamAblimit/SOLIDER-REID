@@ -1,0 +1,7 @@
+usage: eval_pose_interventions.py [-h] --config-file CONFIG_FILE --weight
+                                  WEIGHT --output-dir OUTPUT_DIR
+                                  [--modes {correct,canonical,shuffled,uniform,no_pose} [{correct,canonical,shuffled,uniform,no_pose} ...]]
+                                  [--cache-modes [{correct,canonical,shuffled,uniform,no_pose} ...]]
+                                  [--cache-train-correct]
+                                  ...
+eval_pose_interventions.py: error: argument --cache-modes: invalid choice: 'MODEL.POSE_USE_TARGET_HEATMAP' (choose from 'correct', 'canonical', 'shuffled', 'uniform', 'no_pose')

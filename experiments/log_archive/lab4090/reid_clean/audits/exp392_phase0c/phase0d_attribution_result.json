@@ -1,0 +1,211 @@
+{
+  "arm_order": [
+    "correct_start",
+    "static_slot_q",
+    "q_one",
+    "spatial_constant_mask",
+    "slot_cycle",
+    "expert_mean",
+    "router_0_bypass",
+    "router_1_bypass",
+    "all_router_bypass",
+    "correct_end"
+  ],
+  "arm_state_sha256": {
+    "all_router_bypass": "8ce9a1a0da07e33d4a8936b9726071de0653dca7656409ed14000c68468dd284",
+    "correct_end": "8ce9a1a0da07e33d4a8936b9726071de0653dca7656409ed14000c68468dd284",
+    "correct_start": "8ce9a1a0da07e33d4a8936b9726071de0653dca7656409ed14000c68468dd284",
+    "expert_mean": "8ce9a1a0da07e33d4a8936b9726071de0653dca7656409ed14000c68468dd284",
+    "q_one": "8ce9a1a0da07e33d4a8936b9726071de0653dca7656409ed14000c68468dd284",
+    "router_0_bypass": "8ce9a1a0da07e33d4a8936b9726071de0653dca7656409ed14000c68468dd284",
+    "router_1_bypass": "8ce9a1a0da07e33d4a8936b9726071de0653dca7656409ed14000c68468dd284",
+    "slot_cycle": "8ce9a1a0da07e33d4a8936b9726071de0653dca7656409ed14000c68468dd284",
+    "spatial_constant_mask": "8ce9a1a0da07e33d4a8936b9726071de0653dca7656409ed14000c68468dd284",
+    "static_slot_q": "8ce9a1a0da07e33d4a8936b9726071de0653dca7656409ed14000c68468dd284"
+  },
+  "arms": {
+    "all_router_bypass": {
+      "delta_vs_correct": {
+        "mAP": -7.743318877828642e-05,
+        "rank1": 0.0,
+        "rank10": 0.0,
+        "rank5": 0.0
+      },
+      "descriptor_count": 19871,
+      "descriptor_finite": true,
+      "elapsed_seconds": 22.59530729148537,
+      "mAP": 56.91998586856391,
+      "rank1": 67.05882549285889,
+      "rank10": 85.02262234687805,
+      "rank5": 80.58823347091675
+    },
+    "correct_end": {
+      "delta_vs_correct": {
+        "mAP": 0.0,
+        "rank1": 0.0,
+        "rank10": 0.0,
+        "rank5": 0.0
+      },
+      "descriptor_count": 19871,
+      "descriptor_finite": true,
+      "elapsed_seconds": 22.56963906250894,
+      "mAP": 56.92006330175269,
+      "rank1": 67.05882549285889,
+      "rank10": 85.02262234687805,
+      "rank5": 80.58823347091675
+    },
+    "correct_start": {
+      "delta_vs_correct": {
+        "mAP": 0.0,
+        "rank1": 0.0,
+        "rank10": 0.0,
+        "rank5": 0.0
+      },
+      "descriptor_count": 19871,
+      "descriptor_finite": true,
+      "elapsed_seconds": 22.91212507057935,
+      "mAP": 56.92006330175269,
+      "rank1": 67.05882549285889,
+      "rank10": 85.02262234687805,
+      "rank5": 80.58823347091675
+    },
+    "expert_mean": {
+      "delta_vs_correct": {
+        "mAP": -9.222075768633431e-05,
+        "rank1": 0.0,
+        "rank10": 0.0,
+        "rank5": 0.0
+      },
+      "descriptor_count": 19871,
+      "descriptor_finite": true,
+      "elapsed_seconds": 22.579203599132597,
+      "mAP": 56.919971080995005,
+      "rank1": 67.05882549285889,
+      "rank10": 85.02262234687805,
+      "rank5": 80.58823347091675
+    },
+    "q_one": {
+      "delta_vs_correct": {
+        "mAP": -6.013796835446783e-05,
+        "rank1": 0.0,
+        "rank10": 0.0,
+        "rank5": 0.0
+      },
+      "descriptor_count": 19871,
+      "descriptor_finite": true,
+      "elapsed_seconds": 22.48678528238088,
+      "mAP": 56.92000316378434,
+      "rank1": 67.05882549285889,
+      "rank10": 85.02262234687805,
+      "rank5": 80.58823347091675
+    },
+    "router_0_bypass": {
+      "delta_vs_correct": {
+        "mAP": -6.727375644288713e-05,
+        "rank1": 0.0,
+        "rank10": 0.0,
+        "rank5": 0.0
+      },
+      "descriptor_count": 19871,
+      "descriptor_finite": true,
+      "elapsed_seconds": 22.62751656770706,
+      "mAP": 56.91999602799625,
+      "rank1": 67.05882549285889,
+      "rank10": 85.02262234687805,
+      "rank5": 80.58823347091675
+    },
+    "router_1_bypass": {
+      "delta_vs_correct": {
+        "mAP": -2.9099807512977804e-05,
+        "rank1": 0.0,
+        "rank10": 0.0,
+        "rank5": 0.0
+      },
+      "descriptor_count": 19871,
+      "descriptor_finite": true,
+      "elapsed_seconds": 22.627720410004258,
+      "mAP": 56.92003420194518,
+      "rank1": 67.05882549285889,
+      "rank10": 85.02262234687805,
+      "rank5": 80.58823347091675
+    },
+    "slot_cycle": {
+      "delta_vs_correct": {
+        "mAP": 9.406486498164668e-06,
+        "rank1": 0.0,
+        "rank10": 0.0,
+        "rank5": 0.0
+      },
+      "descriptor_count": 19871,
+      "descriptor_finite": true,
+      "elapsed_seconds": 22.56685692165047,
+      "mAP": 56.92007270823919,
+      "rank1": 67.05882549285889,
+      "rank10": 85.02262234687805,
+      "rank5": 80.58823347091675
+    },
+    "spatial_constant_mask": {
+      "delta_vs_correct": {
+        "mAP": 0.0006536145778284208,
+        "rank1": 0.0,
+        "rank10": 0.0,
+        "rank5": 0.0
+      },
+      "descriptor_count": 19871,
+      "descriptor_finite": true,
+      "elapsed_seconds": 22.503610621206462,
+      "mAP": 56.92071691633052,
+      "rank1": 67.05882549285889,
+      "rank10": 85.02262234687805,
+      "rank5": 80.58823347091675
+    },
+    "static_slot_q": {
+      "delta_vs_correct": {
+        "mAP": 5.624461805808778e-05,
+        "rank1": 0.0,
+        "rank10": 0.0,
+        "rank5": 0.0
+      },
+      "descriptor_count": 19871,
+      "descriptor_finite": true,
+      "elapsed_seconds": 22.43315376061946,
+      "mAP": 56.92011954637075,
+      "rank1": 67.05882549285889,
+      "rank10": 85.02262234687805,
+      "rank5": 80.58823347091675
+    }
+  },
+  "base_state_sha256": "8ce9a1a0da07e33d4a8936b9726071de0653dca7656409ed14000c68468dd284",
+  "checkpoint_sha256": "8f8e4a8af1280f17f736053a3068dfae0384ac54915f9c68fb0c779350c3638e",
+  "config_sha256": "ecf3403c3e3d61af575f49420f21247f93029785364d32a23711eab66458d39c",
+  "execution_head": "ed5783416528be4284adce11fa192fe119e344f4",
+  "final_state_sha256": "8ce9a1a0da07e33d4a8936b9726071de0653dca7656409ed14000c68468dd284",
+  "gates": {
+    "all_arms_complete": true,
+    "all_descriptors_finite": true,
+    "correct_descriptor_exact": true,
+    "correct_metric_exact": true,
+    "state_sha_exact": true,
+    "strict_state_finite": true
+  },
+  "q_control": {
+    "count": 19871,
+    "slot_mean": [
+      0.5327072660112278,
+      0.4816709235749243,
+      0.5098685077971562,
+      0.513475050858298,
+      0.5213178071010564
+    ],
+    "slot_std": [
+      0.0002926012096384484,
+      0.00016276482542041832,
+      8.98967606907201e-05,
+      0.00012147076394555584,
+      0.00019070890118859103
+    ]
+  },
+  "script_sha256": "fa58f0f59a6d84c415aca9479f076df71308d628a82d6b1cca526d5c6f9fe2ab",
+  "status": "PASS",
+  "torch_version": "1.13.1"
+}

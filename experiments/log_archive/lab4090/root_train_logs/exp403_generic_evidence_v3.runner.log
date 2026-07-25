@@ -1,0 +1,32 @@
+/home/afr/SOLIDER-REID-exp403-elo-cur-c96ca32/experiments/exp403_counterfactual_operator_ownership/build_generic_evidence.py:112: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.no_grad(), amp.autocast(enabled=True):
+{"images": 64, "stage": "generic-mean", "total": 15618}
+{"images": 1664, "stage": "generic-mean", "total": 15618}
+{"images": 3264, "stage": "generic-mean", "total": 15618}
+{"images": 4864, "stage": "generic-mean", "total": 15618}
+{"images": 6464, "stage": "generic-mean", "total": 15618}
+{"images": 8064, "stage": "generic-mean", "total": 15618}
+{"images": 9664, "stage": "generic-mean", "total": 15618}
+{"images": 11264, "stage": "generic-mean", "total": 15618}
+{"images": 12864, "stage": "generic-mean", "total": 15618}
+{"images": 14464, "stage": "generic-mean", "total": 15618}
+{
+  "count_by_slot": [
+    15615,
+    15618,
+    15618,
+    15617,
+    15578
+  ],
+  "mean_norm_by_slot": [
+    0.09007010367657788,
+    0.08852632418312494,
+    0.08125440727624575,
+    0.059340057498805984,
+    0.07583092028424286
+  ],
+  "output": "/home/afr/reid-clean/formal/exp403_elo_cur/exp403_train_generic_evidence_v3.json",
+  "peak_memory_bytes": 1712272384,
+  "sha256": "dc2dfe9e1fd00b6a8b374eb4f6894f1dc6c7680df6d00540cbea37e9b5ae431d",
+  "status": "PASS"
+}

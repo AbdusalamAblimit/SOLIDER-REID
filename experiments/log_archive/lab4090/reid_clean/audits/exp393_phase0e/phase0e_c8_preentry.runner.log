@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/afr/reid-clean/audits/exp393_phase0e/phase0e_rich_evidence_contract.py", line 600, in <module>
+    main()
+  File "/home/afr/reid-clean/audits/exp393_phase0e/phase0e_rich_evidence_contract.py", line 392, in main
+    torch.cuda.reset_peak_memory_stats(device)
+  File "/home/afr/reid-clean/.venv/lib/python3.10/site-packages/torch/cuda/memory.py", line 370, in reset_peak_memory_stats
+    return torch._C._cuda_resetPeakMemoryStats(device)
+RuntimeError: Invalid device argument 

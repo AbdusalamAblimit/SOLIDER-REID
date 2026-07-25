@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/home/afr/SOLIDER-REID-exp403-elo-cur-c96ca32/experiments/exp403_counterfactual_operator_ownership/build_generic_evidence.py", line 24, in <module>
+    from model.clip_semantic_teacher import FrozenRichClipEvidenceTeacher
+  File "/home/afr/SOLIDER-REID-exp403-elo-cur-c96ca32/model/__init__.py", line 1, in <module>
+    from .make_model import make_model
+  File "/home/afr/SOLIDER-REID-exp403-elo-cur-c96ca32/model/make_model.py", line 6, in <module>
+    from .backbones.swin_transformer import swin_base_patch4_window7_224, swin_small_patch4_window7_224, swin_tiny_patch4_window7_224
+  File "/home/afr/SOLIDER-REID-exp403-elo-cur-c96ca32/model/backbones/swin_transformer.py", line 13, in <module>
+    import cv2
+ModuleNotFoundError: No module named 'cv2'

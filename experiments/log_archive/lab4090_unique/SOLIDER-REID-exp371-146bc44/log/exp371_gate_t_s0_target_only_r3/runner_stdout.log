@@ -1,0 +1,51 @@
+/root/solider-venv/lib/python3.10/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-exp371-146bc44/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[POSE] POSE_USE_TARGET_HEATMAP=True: pose modules (PSG/LGPA/VCSR/PPA/STR/FSDC/...) will receive person-0 (target) heatmap instead of max-merged scene heatmap.
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0, query_mode=clip_frozen, query_seed=42
+[LGPA] Running on DETACHED features (no gradient to backbone)
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /home/afr/SOLIDER-REID/log/occluded_duke/sw_poseclip_s0/transformer_120.pth
+/home/afr/SOLIDER-REID-exp371-146bc44/utils/metrics.py:66: UserWarning: This overload of addmm_ is deprecated:
+	addmm_(Number beta, Number alpha, Tensor mat1, Tensor mat2)
+Consider using one of the following signatures instead:
+	addmm_(Tensor mat1, Tensor mat2, *, Number beta, Number alpha) (Triggered internally at ../torch/csrc/utils/python_arg_parser.cpp:1420.)
+  dist_mat.addmm_(1, -2, qf, gf.t())
+{
+  "correct": {
+    "full": {
+      "mAP": 0.5981213777189182,
+      "rank1": 0.6751131415367126,
+      "rank5": 0.8131221532821655,
+      "rank10": 0.8570135831832886
+    },
+    "global": {
+      "mAP": 0.5899081170402649,
+      "rank1": 0.6737556457519531,
+      "rank5": 0.8067873120307922,
+      "rank10": 0.8538461327552795
+    },
+    "layout": {
+      "num_samples": 19871,
+      "feature_dim": 5376,
+      "block_dim": 768,
+      "num_blocks": 7,
+      "block_norm_mean": 1.0,
+      "block_norm_min": 0.9999998211860657,
+      "block_norm_max": 1.0000001192092896,
+      "block_norm_max_abs_error": 1.7881393432617188e-07
+    },
+    "global_sha256": "e5c3a041d6fe930c4c074ee3d7bdec1bea984503ff1c184f8f5cbf7ddfc0d310",
+    "donor_stats": null
+  }
+}
+COMPLETE: /home/afr/SOLIDER-REID-exp371-146bc44/log/exp371_gate_t_s0_target_only_r3

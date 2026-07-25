@@ -1,0 +1,234 @@
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned
+[LGPA] Running on DETACHED features (no gradient to backbone)
+===========building pose-backbone (PSG) transformer===========
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned
+[LGPA] Running on DETACHED features (no gradient to backbone)
+===========building pose-backbone (PSG) transformer===========
+using soft triplet loss for training
+/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-psg-lgpa/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned
+[LGPA] Running on DETACHED features (no gradient to backbone)
+===========building pose-backbone (PSG) transformer===========
+using soft triplet loss for training
+{
+  "canonical_catalog_sha256": "572ea2df860b9e8446765353698bd5234a163a10ba39500292fcf967356f00ff",
+  "checks": {
+    "canonical_catalog": {
+      "count": 19871,
+      "sha256": "572ea2df860b9e8446765353698bd5234a163a10ba39500292fcf967356f00ff",
+      "status": "PASS"
+    },
+    "checkpoint_strict_load": {
+      "checkpoint_sha256": "c63f5ece881428688f34c4072208fb346b353843c4baeaf77c701353ed91f89b",
+      "state_items": 300,
+      "status": "PASS"
+    },
+    "disk_space": {
+      "free_bytes": 227964375040,
+      "minimum_free_bytes": 50000000000,
+      "status": "PASS"
+    },
+    "full_model_real_loader_amp_parity": {
+      "control_head_sha256": "f88eabb65a81eb22684c75f4b7b91608bc2e8daedce3c9e3f7020adb41728868",
+      "initial_common_parameter_sha256": "e30090dd8af635eedf49dbde169313228fc33e204333367ad505e1d096bd6e81",
+      "non_head_model_sha256": "6f7afd6226c84fa1f7292dbbbbbdc7bad685f7c29cb7ea10a1f98665c510da12",
+      "non_head_optimizer_sha256": "dafae04f5f0b1772907f8d922467351d0bd0f40b2a0a5d287c38ca3f9a468108",
+      "records": [
+        {
+          "batch_sha256": "7cd1242ca902e9b916039f7af23d50a8bdd61beaee29ae8ecda22eee6c0938d4",
+          "global_feature_sha256": "530e49a770b2be31da0a69620cff2d3d46fdd6412e5d059d461bc51dbcc51d37",
+          "global_score_sha256": "e4461e5ed248fb04a3933095b837ec20cc2b229113a056e505634a79cde105ad",
+          "scale_after": 32768.0,
+          "scale_before": 65536.0,
+          "step": 1,
+          "step_skipped": true
+        },
+        {
+          "batch_sha256": "a8cf7222390217419f42608622b3c91f62a5df4f2ac49da94d03855a975f1ade",
+          "global_feature_sha256": "990090332d5cfe0f0528be5a7f37f12e928ba848182eb96291539a6b95a32c4f",
+          "global_score_sha256": "1698adf91db3a6564498c0116276fe27803ae0c4906136004cb391195bdd06b7",
+          "scale_after": 16384.0,
+          "scale_before": 32768.0,
+          "step": 2,
+          "step_skipped": true
+        },
+        {
+          "batch_sha256": "509587404384b212453c84f9f4cdd14331fcaf40c477f3797088391aa77cf43c",
+          "global_feature_sha256": "8b6c16401bf8c868c8ed84081e1f099c2f009057d54ad01e80e246a056b60e88",
+          "global_score_sha256": "783979a0c9aeeedadf0353634884a1cb5a81438b4d4c6a23fd829e717bcf2d9d",
+          "scale_after": 8192.0,
+          "scale_before": 16384.0,
+          "step": 3,
+          "step_skipped": true
+        },
+        {
+          "batch_sha256": "8fa9a703337baaef2783dba665277608d4f0a2f63ef11c0fcd76173956f1a899",
+          "global_feature_sha256": "93cff53fd5b610133612e0ac263c3c4a3c563ceadda0d1892dac8f273a09d3a8",
+          "global_score_sha256": "31d1ed2880a77c67163e203ef5e9bab9359fa014fc2c7480bb2cddc2ecccd4a6",
+          "scale_after": 4096.0,
+          "scale_before": 8192.0,
+          "step": 4,
+          "step_skipped": true
+        },
+        {
+          "batch_sha256": "a60845a46782d6bed0fa957889ef2d736b46801925d6352c9ca9d9fa33940496",
+          "global_feature_sha256": "883b9c5a2c3b13b1b58918099501328a04ddb2bbe3caaa12795e82346ab65789",
+          "global_score_sha256": "6801e3844200a0135adfdfcae6d562b4df562f3f723349fe505dc7448d8e92f6",
+          "scale_after": 4096.0,
+          "scale_before": 4096.0,
+          "step": 5,
+          "step_skipped": false
+        },
+        {
+          "batch_sha256": "c1813711bb759cf2b9ea9debcd0da0fb28eb8332f7801293c2a5469f51183d4f",
+          "global_feature_sha256": "118979ee03d3f38dd6c05ddd3cefe1d412e035617da9b93804c314e481a618fc",
+          "global_score_sha256": "145d355e8c5e8d49f77030a4f8631aaae959af1c73c399b7669c0630fe3adf54",
+          "scale_after": 2048.0,
+          "scale_before": 4096.0,
+          "step": 6,
+          "step_skipped": true
+        }
+      ],
+      "status": "PASS",
+      "steps": 6,
+      "treatment_head_sha256": "ac51a58efff540899e86f0cdf8a173af05b8bb01e9ce4f16509f92de1350d3b3"
+    },
+    "historical_c_assets": {
+      "critical_files": 21,
+      "status": "PASS",
+      "verified_files": 78
+    },
+    "historical_config_compatibility": {
+      "canonical_config_sha256": {
+        "3407": "bf7f3702551711639abec0d597d793161287ee5a4a9281c5a474bb9420499ebb",
+        "7753": "a870dd2b01e8378a400d310a170cbe56d5e883d111761eceabf53145e1dd1fc2",
+        "9227": "6d3dcb9081d3735e3b9b227051f3bf1bf12e3f301ac3d53f02f039f10edc4e7b"
+      },
+      "status": "PASS"
+    },
+    "runner_checkpoint_hash": {
+      "checkpoint_sha256": "c63f5ece881428688f34c4072208fb346b353843c4baeaf77c701353ed91f89b",
+      "non_lgpa_state_count": 251,
+      "non_lgpa_state_sha256": "b1eb6b10b6b4619fa879b9c2cd3d34067bab2ff894970606470a37dc8e3024f6",
+      "status": "PASS"
+    },
+    "source_restricted_diff": {
+      "changed_paths": [
+        "config/defaults.py",
+        "experiments/exp325_lgpa_attention_support_grid/artifacts/run_manifest.template.json",
+        "experiments/exp325_lgpa_attention_support_grid/design.md",
+        "experiments/exp325_lgpa_attention_support_grid/monitor.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_causalstats_impl_pass.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_causalstats_r1.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_causalstats_r2_pass.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_evalmath_r1.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_evalmath_r3_pass.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_execution_r1.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_execution_r5_pass.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_execution_r6_pass.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_final_results_review.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_science_impl_pass.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_science_r1.md",
+        "experiments/exp325_lgpa_attention_support_grid/reviews/gpt56_science_r2_pass.md",
+        "experiments/exp326_lgpa_assignment_only/artifacts/run_manifest.template.json",
+        "experiments/exp326_lgpa_assignment_only/design.md",
+        "experiments/exp326_lgpa_assignment_only/monitor.md",
+        "experiments/exp326_lgpa_assignment_only/reviews/gpt56_execution_r3_pass.md",
+        "experiments/exp326_lgpa_assignment_only/reviews/gpt56_interface_r3_pass.md",
+        "experiments/exp326_lgpa_assignment_only/reviews/gpt56_runner_impl_r5_pass.md",
+        "experiments/exp326_lgpa_assignment_only/reviews/gpt56_scalar_hash_fix_pass.md",
+        "experiments/exp326_lgpa_assignment_only/reviews/gpt56_science_r2_pass.md",
+        "model/modules/clip_part_head.py",
+        "model/pose_backbone_model.py",
+        "scripts/analyze_exp325_attention_support_grid.py",
+        "scripts/eval_exp326_strict.py",
+        "scripts/preflight_exp326_assignment.py",
+        "scripts/run_exp325_remote.sh",
+        "scripts/run_exp326_assignment.py",
+        "scripts/run_exp326_remote.sh",
+        "tests/test_exp325_attention_support_grid.py",
+        "tests/test_exp326_assignment_mode.py",
+        "train.py"
+      ],
+      "source_blob_pairs": [
+        {
+          "base_blob": "86f0d9ec3c76b3f0d2fecac8597567711728338a",
+          "execution_blob": "2249c34c49234c2e041e53f115f5a137a3f0d121",
+          "path": "config/defaults.py"
+        },
+        {
+          "base_blob": "bceebcf94d35cbb1de00aa017385e464f4640794",
+          "execution_blob": "7e51a4745abc183454d381558cf87d11bc30eca7",
+          "path": "model/modules/clip_part_head.py"
+        },
+        {
+          "base_blob": "94b44121ed8c82bcfc5f1cd32ce89792adeff506",
+          "execution_blob": "aaee3e14770979c8e2d8d1a3da956de2b4df5cfd",
+          "path": "model/pose_backbone_model.py"
+        },
+        {
+          "base_blob": "7513518d4f974cca19b7f150772ba4960e804c6b",
+          "execution_blob": "905de7ad9efedb07b33b30fff2a9679c0257f606",
+          "path": "train.py"
+        }
+      ],
+      "source_diff_sha256": "797807a8dbb57c68bc2f87a3bf16bcea8750ff8618b768d9cc020d461ba4a0e0",
+      "status": "PASS"
+    },
+    "unit_tests": {
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "/home/afr/SOLIDER-REID-psg-lgpa/tests/test_exp326_assignment_mode.py",
+        "-v"
+      ],
+      "status": "PASS",
+      "stdout_sha256": "2a8ae04566bb08d5c2acdbd58a2ea258d1a86aeeac372543de1ce35ff4bea77e",
+      "tail": [
+        "[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=inherit, text_mode=aligned",
+        "[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned",
+        "[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned",
+        "[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned",
+        "[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned",
+        "[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=uniform, text_mode=aligned",
+        "[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned",
+        "[LGPA] CLIP Part Head: 5 parts, clip_dim=4, num_heads=4, pose_temp=1.0, pose_mode=uniform, assign_mode=true, text_mode=aligned"
+      ]
+    }
+  },
+  "execution_commit": "41b9c87e8313f8b898a3955126891758bb8101f6",
+  "preflight_script_sha256": "abb33182197024bf462934e7919a3ef04f31c18207b100719c0e4c9d29127a9d",
+  "run_manifest_sha256": "d046b096d1bae64ef20bd751b5af0394d89bd6e3c071a61c36eeec6a21b3a67f",
+  "status": "PASS"
+}

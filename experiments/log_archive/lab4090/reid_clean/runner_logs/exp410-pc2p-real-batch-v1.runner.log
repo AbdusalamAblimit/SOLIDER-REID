@@ -1,0 +1,16 @@
+=> Occluded-Duke loaded
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+===========building transformer===========
+/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-exp410-pc2p-cb3486b-v2/model/backbones/swin_transformer.py:1179: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+using soft triplet loss for training
+using soft triplet loss for training
+using soft triplet loss for training
+{"bank_in_model_state": false, "bank_in_optimizer": false, "bank_sha256": "8f435036d56b2a5a1a8e63466b383314f07d706a7465a499aef88a5f7435dc8c", "bank_source_head": "07170a22f1a6fbef2f0f140106e7350c223deb29", "batch": 64, "bn_norm": 27.412065505981445, "ce_only_bn_grad_tensors": 1, "ce_only_norm3_grad_tensors": 2, "ce_only_stage3_grad_tensors": 26, "classes": 702, "combined_backbone_grad_tensors": 181, "combined_loss": 19.319299697875977, "combined_pose_loss": 0.9151036143302917, "combined_reid_loss": 19.2277889251709, "combined_stage3_grad_tensors": 26, "default_off_state_rng_exact": true, "eval_without_bank_shape": [64, 768], "first_successful_update": 6, "identities": 16, "learned_classifier_gradient": null, "logit_abs_max": 2.754636764526367, "logit_dtype": "torch.float32", "logit_mean": 1.689647355362922e-08, "logit_std": 1.0203567743301392, "native_attempts": [{"attempt": 1, "overflow": true, "scale_after": 32768.0, "scale_before": 65536.0, "updated": false}, {"attempt": 2, "overflow": true, "scale_after": 16384.0, "scale_before": 32768.0, "updated": false}, {"attempt": 3, "overflow": true, "scale_after": 8192.0, "scale_before": 16384.0, "updated": false}, {"attempt": 4, "overflow": true, "scale_after": 4096.0, "scale_before": 8192.0, "updated": false}, {"attempt": 5, "overflow": true, "scale_after": 2048.0, "scale_before": 4096.0, "updated": false}, {"attempt": 6, "overflow": false, "scale_after": 2048.0, "scale_before": 2048.0, "updated": true}], "schema": "exp410-pc2p-real-batch-v1", "status": "PASS", "updated_parameter": "base.stages.3.blocks.0.ffn.layers.0.0.weight"}

@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/afr/reid-clean/audits/exp393_phase0e/phase0e_rich_evidence_contract.py", line 617, in <module>
+    main()
+  File "/home/afr/reid-clean/audits/exp393_phase0e/phase0e_rich_evidence_contract.py", line 410, in main
+    teacher = FrozenRichPCMBCLS(
+  File "/home/afr/reid-clean/audits/exp393_phase0e/phase0e_rich_evidence_contract.py", line 100, in __init__
+    import open_clip
+ModuleNotFoundError: No module named 'open_clip'

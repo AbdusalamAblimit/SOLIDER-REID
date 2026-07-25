@@ -1,0 +1,426 @@
+Config:
+-----------------------------------------
+AUG:
+  RC_PROB: 0.5
+  RE_PROB: 0.5
+  RF_PROB: 0.5
+CL:
+  PERCENTAGES: [0.25, 0.5, 0.75]
+  THRESHOLDS: [5, 10, 15]
+DATA:
+  DATASET: ltcc
+  GEN_PATH: 
+  HEIGHT: 384
+  MAX_BATCH_SIZE: 64
+  NUM_INSTANCES: 8
+  NUM_WORKERS: 4
+  OCC:
+    APPEARANCE: black
+    CONF_THRESH: 0.2
+    ENABLED: False
+    EVAL_MODE: M1
+    GALLERY_OCC_PROB: 0.0
+    NUM_PARTS: 4
+    POSE_MD5: 
+    POSE_NPY: 
+    POSE_ROOT: 
+    QUERY_OCC_PROB: 1.0
+    TRAIN_OCC_PROB: 0.5
+  ROOT: /mnt1/afrdata
+  START_USE_GENERATED_DATA: 0
+  TEST_BATCH: 128
+  TRAIN_BATCH: 64
+  USE_GENERATED: False
+  WIDTH: 192
+EVAL_MODE: False
+GPU: 0
+LOSS:
+  CAL: cal
+  CAT_LAMBDA: 0.5
+  CAT_MARGIN: 0.3
+  CLA_LOSS: crossentropylabelsmooth
+  CLA_M: 0.0
+  CLA_S: 16.0
+  CLOTHES_CLA_LOSS: cosface
+  EPSILON: 0.1
+  MOMENTUM: 0.0
+  PAIR_LOSS: triplet
+  PAIR_LOSS_WEIGHT: 1.0
+  PAIR_M: 0.3
+  PAIR_S: 16.0
+MODEL:
+  CGSG:
+    ENABLED: False
+    INIT_BIAS: 4.0
+    NUM_KP: 17
+    POSE_MD5: 
+    POSE_NPY: 
+    POSE_ROOT: 
+    SIGMA: 1.5
+    ZERO_POSE: False
+  DSBE:
+    CONF_THRESH: 0.1
+    CONS_WEIGHT: 1.0
+    ENABLED: False
+    FUSE_WEIGHT: 1.0
+    HIDDEN: 128
+    NUM_KP: 17
+    OUT_DIM: 512
+    POSE_MD5: 
+    POSE_NPY: 
+    POSE_ROOT: 
+    SHUFFLE: False
+  FEATURE_DIM: 4096
+  NAME: resnet50
+  POOLING:
+    NAME: maxavg
+    P: 3
+  RES4_STRIDE: 1
+  RESUME: 
+  UPCG:
+    ENABLED: False
+    LAMBDA_VIS: 1.0
+    ZERO_POSE: False
+OUTPUT: /home/afr/Simple-CCReID/logs/ltcc/res50-cels-cal-tri-seed0
+SEED: 0
+TAG: res50-cels-cal-tri-seed0
+TEST:
+  EVAL_STEP: 5
+  START_EVAL: 0
+TRAIN:
+  AMP: False
+  LR_SCHEDULER:
+    DECAY_RATE: 0.1
+    STEPSIZE: [20, 40]
+  MAX_EPOCH: 60
+  OPTIMIZER:
+    LR: 0.00035
+    NAME: adam
+    WEIGHT_DECAY: 0.0005
+  START_EPOCH: 0
+  START_EPOCH_ADV: 25
+  START_EPOCH_CC: 25
+-----------------------------------------
+=> LTCC loaded
+Dataset statistics:
+  ----------------------------------------
+  subset   | # ids | # images | # clothes
+  ----------------------------------------
+  train    |    77 |     9558 |       255
+  test     |    75 |     7543 |       221
+  query    |    75 |      493 |
+  gallery  |    75 |     7050 |
+  ----------------------------------------
+  total    |   152 |    17101 |       476
+  ----------------------------------------
+Initializing model: resnet50
+Init model: 'resnet50'
+/home/afr/Simple-CCReID/.venv/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/home/afr/Simple-CCReID/.venv/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Model size: 23.51622M
+==> Start training
+Epoch1 Time:25.2s Data:0.4s ClaLoss:2.9233 PairLoss:0.5850 CloLoss:5.5829 AdvLoss:5.5628 GeoLoss:0.0000 Acc:37.80% CloAcc:0.38% 
+Epoch2 Time:24.6s Data:0.3s ClaLoss:1.8602 PairLoss:0.5030 CloLoss:5.5904 AdvLoss:5.5697 GeoLoss:0.0000 Acc:66.77% CloAcc:0.26% 
+Epoch3 Time:24.6s Data:0.3s ClaLoss:1.5010 PairLoss:0.4445 CloLoss:5.5835 AdvLoss:5.5632 GeoLoss:0.0000 Acc:80.43% CloAcc:0.37% 
+Epoch4 Time:24.7s Data:0.4s ClaLoss:1.3160 PairLoss:0.4067 CloLoss:5.5764 AdvLoss:5.5564 GeoLoss:0.0000 Acc:86.80% CloAcc:0.43% 
+Epoch5 Time:24.6s Data:0.3s ClaLoss:1.2273 PairLoss:0.3786 CloLoss:5.5808 AdvLoss:5.5606 GeoLoss:0.0000 Acc:89.68% CloAcc:0.52% 
+==> Test
+Extracted features for query set, obtained torch.Size([493, 4096]) matrix
+Extracted features for gallery set, obtained torch.Size([7050, 4096]) matrix
+Extracting features complete in 0m 14s
+Distance computing in 0m 0s
+Computing CMC and mAP
+Results ---------------------------------------------------
+top1:59.8% top5:73.2% top10:76.5% top20:81.9% mAP:26.8%
+-----------------------------------------------------------
+Using 0m 0s
+Computing CMC and mAP only for the same clothes setting
+76 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:66.4% top5:78.9% top10:82.0% top20:86.8% mAP:42.4%
+-----------------------------------------------------------
+Computing CMC and mAP only for clothes-changing
+101 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:25.3% top5:39.8% top10:46.4% top20:53.8% mAP:11.1%
+-----------------------------------------------------------
+Epoch6 Time:24.7s Data:0.4s ClaLoss:1.1864 PairLoss:0.3625 CloLoss:5.5746 AdvLoss:5.5549 GeoLoss:0.0000 Acc:91.17% CloAcc:0.56% 
+Epoch7 Time:24.7s Data:0.4s ClaLoss:1.1231 PairLoss:0.3372 CloLoss:5.5779 AdvLoss:5.5583 GeoLoss:0.0000 Acc:93.61% CloAcc:0.41% 
+Epoch8 Time:24.7s Data:0.4s ClaLoss:1.1033 PairLoss:0.3218 CloLoss:5.5714 AdvLoss:5.5516 GeoLoss:0.0000 Acc:93.88% CloAcc:0.48% 
+Epoch9 Time:24.7s Data:0.4s ClaLoss:1.0799 PairLoss:0.3143 CloLoss:5.5734 AdvLoss:5.5534 GeoLoss:0.0000 Acc:94.92% CloAcc:0.52% 
+Epoch10 Time:24.7s Data:0.4s ClaLoss:1.0377 PairLoss:0.2872 CloLoss:5.5714 AdvLoss:5.5516 GeoLoss:0.0000 Acc:95.99% CloAcc:0.40% 
+==> Test
+Extracted features for query set, obtained torch.Size([493, 4096]) matrix
+Extracted features for gallery set, obtained torch.Size([7050, 4096]) matrix
+Extracting features complete in 0m 13s
+Distance computing in 0m 0s
+Computing CMC and mAP
+Results ---------------------------------------------------
+top1:62.7% top5:76.3% top10:80.3% top20:85.6% mAP:28.6%
+-----------------------------------------------------------
+Using 0m 0s
+Computing CMC and mAP only for the same clothes setting
+76 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:68.1% top5:80.8% top10:84.9% top20:88.5% mAP:46.9%
+-----------------------------------------------------------
+Computing CMC and mAP only for clothes-changing
+101 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:23.7% top5:39.3% top10:46.7% top20:57.4% mAP:10.1%
+-----------------------------------------------------------
+Epoch11 Time:24.7s Data:0.3s ClaLoss:1.0387 PairLoss:0.2746 CloLoss:5.5719 AdvLoss:5.5521 GeoLoss:0.0000 Acc:96.33% CloAcc:0.48% 
+Epoch12 Time:24.7s Data:0.4s ClaLoss:1.0287 PairLoss:0.2753 CloLoss:5.5701 AdvLoss:5.5503 GeoLoss:0.0000 Acc:96.63% CloAcc:0.52% 
+Epoch13 Time:24.7s Data:0.3s ClaLoss:1.0394 PairLoss:0.2700 CloLoss:5.5771 AdvLoss:5.5568 GeoLoss:0.0000 Acc:95.94% CloAcc:0.43% 
+Epoch14 Time:24.7s Data:0.3s ClaLoss:1.0195 PairLoss:0.2582 CloLoss:5.5615 AdvLoss:5.5420 GeoLoss:0.0000 Acc:96.56% CloAcc:0.53% 
+Epoch15 Time:24.7s Data:0.3s ClaLoss:0.9952 PairLoss:0.2430 CloLoss:5.5647 AdvLoss:5.5448 GeoLoss:0.0000 Acc:96.98% CloAcc:0.43% 
+==> Test
+Extracted features for query set, obtained torch.Size([493, 4096]) matrix
+Extracted features for gallery set, obtained torch.Size([7050, 4096]) matrix
+Extracting features complete in 0m 13s
+Distance computing in 0m 0s
+Computing CMC and mAP
+Results ---------------------------------------------------
+top1:65.3% top5:76.3% top10:80.9% top20:85.0% mAP:30.7%
+-----------------------------------------------------------
+Using 0m 0s
+Computing CMC and mAP only for the same clothes setting
+76 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:72.7% top5:82.0% top10:86.6% top20:90.2% mAP:50.2%
+-----------------------------------------------------------
+Computing CMC and mAP only for clothes-changing
+101 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:26.8% top5:42.6% top10:50.0% top20:56.4% mAP:12.5%
+-----------------------------------------------------------
+Epoch16 Time:24.7s Data:0.3s ClaLoss:0.9974 PairLoss:0.2415 CloLoss:5.5659 AdvLoss:5.5461 GeoLoss:0.0000 Acc:97.13% CloAcc:0.50% 
+Epoch17 Time:24.7s Data:0.3s ClaLoss:0.9803 PairLoss:0.2282 CloLoss:5.5619 AdvLoss:5.5428 GeoLoss:0.0000 Acc:97.63% CloAcc:0.32% 
+Epoch18 Time:24.7s Data:0.4s ClaLoss:0.9847 PairLoss:0.2298 CloLoss:5.5639 AdvLoss:5.5445 GeoLoss:0.0000 Acc:97.23% CloAcc:0.50% 
+Epoch19 Time:24.7s Data:0.4s ClaLoss:0.9885 PairLoss:0.2288 CloLoss:5.5658 AdvLoss:5.5455 GeoLoss:0.0000 Acc:97.11% CloAcc:0.46% 
+Epoch20 Time:24.7s Data:0.4s ClaLoss:0.9686 PairLoss:0.2183 CloLoss:5.5618 AdvLoss:5.5426 GeoLoss:0.0000 Acc:97.96% CloAcc:0.60% 
+==> Test
+Extracted features for query set, obtained torch.Size([493, 4096]) matrix
+Extracted features for gallery set, obtained torch.Size([7050, 4096]) matrix
+Extracting features complete in 0m 13s
+Distance computing in 0m 0s
+Computing CMC and mAP
+Results ---------------------------------------------------
+top1:66.3% top5:77.9% top10:83.2% top20:86.2% mAP:31.9%
+-----------------------------------------------------------
+Using 0m 0s
+Computing CMC and mAP only for the same clothes setting
+76 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:71.5% top5:82.0% top10:86.8% top20:90.2% mAP:49.9%
+-----------------------------------------------------------
+Computing CMC and mAP only for clothes-changing
+101 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:32.4% top5:46.9% top10:55.1% top20:63.8% mAP:13.9%
+-----------------------------------------------------------
+Epoch21 Time:24.7s Data:0.3s ClaLoss:0.9094 PairLoss:0.1634 CloLoss:5.5655 AdvLoss:5.5459 GeoLoss:0.0000 Acc:99.23% CloAcc:0.41% 
+Epoch22 Time:24.7s Data:0.3s ClaLoss:0.8803 PairLoss:0.1250 CloLoss:5.5625 AdvLoss:5.5429 GeoLoss:0.0000 Acc:99.39% CloAcc:0.57% 
+Epoch23 Time:24.7s Data:0.3s ClaLoss:0.8655 PairLoss:0.1003 CloLoss:5.5586 AdvLoss:5.5395 GeoLoss:0.0000 Acc:99.53% CloAcc:0.55% 
+Epoch24 Time:24.7s Data:0.4s ClaLoss:0.8593 PairLoss:0.0913 CloLoss:5.5566 AdvLoss:5.5375 GeoLoss:0.0000 Acc:99.55% CloAcc:0.63% 
+Epoch25 Time:24.7s Data:0.4s ClaLoss:0.8514 PairLoss:0.0829 CloLoss:5.5593 AdvLoss:5.5401 GeoLoss:0.0000 Acc:99.61% CloAcc:0.55% 
+==> Test
+Extracted features for query set, obtained torch.Size([493, 4096]) matrix
+Extracted features for gallery set, obtained torch.Size([7050, 4096]) matrix
+Extracting features complete in 0m 13s
+Distance computing in 0m 0s
+Computing CMC and mAP
+Results ---------------------------------------------------
+top1:71.0% top5:81.9% top10:85.6% top20:87.8% mAP:35.9%
+-----------------------------------------------------------
+Using 0m 0s
+Computing CMC and mAP only for the same clothes setting
+76 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:78.2% top5:86.8% top10:90.4% top20:91.8% mAP:58.0%
+-----------------------------------------------------------
+Computing CMC and mAP only for clothes-changing
+101 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:34.7% top5:50.3% top10:55.6% top20:62.5% mAP:15.5%
+-----------------------------------------------------------
+Epoch26 Time:24.8s Data:0.4s ClaLoss:0.8646 PairLoss:0.0786 CloLoss:2.7926 AdvLoss:2.5435 GeoLoss:0.0000 Acc:99.48% CloAcc:58.00% 
+Epoch27 Time:24.8s Data:0.4s ClaLoss:0.8692 PairLoss:0.0729 CloLoss:0.9335 AdvLoss:0.6846 GeoLoss:0.0000 Acc:99.29% CloAcc:87.81% 
+Epoch28 Time:24.7s Data:0.3s ClaLoss:0.8572 PairLoss:0.0609 CloLoss:0.5603 AdvLoss:0.3876 GeoLoss:0.0000 Acc:99.57% CloAcc:94.14% 
+Epoch29 Time:24.8s Data:0.4s ClaLoss:0.8536 PairLoss:0.0526 CloLoss:0.4188 AdvLoss:0.2956 GeoLoss:0.0000 Acc:99.54% CloAcc:96.00% 
+Epoch30 Time:24.8s Data:0.3s ClaLoss:0.8459 PairLoss:0.0460 CloLoss:0.3477 AdvLoss:0.2492 GeoLoss:0.0000 Acc:99.57% CloAcc:96.68% 
+==> Test
+Extracted features for query set, obtained torch.Size([493, 4096]) matrix
+Extracted features for gallery set, obtained torch.Size([7050, 4096]) matrix
+Extracting features complete in 0m 13s
+Distance computing in 0m 0s
+Computing CMC and mAP
+Results ---------------------------------------------------
+top1:72.2% top5:81.1% top10:84.6% top20:87.6% mAP:36.1%
+-----------------------------------------------------------
+Using 0m 0s
+Computing CMC and mAP only for the same clothes setting
+76 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:79.4% top5:86.8% top10:89.0% top20:90.9% mAP:58.9%
+-----------------------------------------------------------
+Computing CMC and mAP only for clothes-changing
+101 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:34.9% top5:49.0% top10:54.8% top20:61.2% mAP:15.2%
+-----------------------------------------------------------
+Epoch31 Time:24.8s Data:0.3s ClaLoss:0.8447 PairLoss:0.0422 CloLoss:0.3143 AdvLoss:0.2248 GeoLoss:0.0000 Acc:99.62% CloAcc:97.16% 
+Epoch32 Time:24.8s Data:0.3s ClaLoss:0.8370 PairLoss:0.0396 CloLoss:0.2779 AdvLoss:0.2031 GeoLoss:0.0000 Acc:99.72% CloAcc:97.63% 
+Epoch33 Time:24.8s Data:0.4s ClaLoss:0.8364 PairLoss:0.0323 CloLoss:0.2586 AdvLoss:0.1894 GeoLoss:0.0000 Acc:99.82% CloAcc:97.97% 
+Epoch34 Time:24.8s Data:0.4s ClaLoss:0.8434 PairLoss:0.0349 CloLoss:0.2651 AdvLoss:0.1971 GeoLoss:0.0000 Acc:99.69% CloAcc:97.61% 
+Epoch35 Time:24.8s Data:0.3s ClaLoss:0.8404 PairLoss:0.0337 CloLoss:0.2575 AdvLoss:0.1895 GeoLoss:0.0000 Acc:99.68% CloAcc:97.59% 
+==> Test
+Extracted features for query set, obtained torch.Size([493, 4096]) matrix
+Extracted features for gallery set, obtained torch.Size([7050, 4096]) matrix
+Extracting features complete in 0m 13s
+Distance computing in 0m 0s
+Computing CMC and mAP
+Results ---------------------------------------------------
+top1:71.4% top5:82.2% top10:85.0% top20:87.8% mAP:35.8%
+-----------------------------------------------------------
+Using 0m 0s
+Computing CMC and mAP only for the same clothes setting
+76 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:78.9% top5:87.3% top10:90.2% top20:92.1% mAP:57.5%
+-----------------------------------------------------------
+Computing CMC and mAP only for clothes-changing
+101 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:33.9% top5:48.0% top10:55.9% top20:63.5% mAP:15.6%
+-----------------------------------------------------------
+Epoch36 Time:24.8s Data:0.3s ClaLoss:0.8343 PairLoss:0.0279 CloLoss:0.2423 AdvLoss:0.1774 GeoLoss:0.0000 Acc:99.75% CloAcc:98.07% 
+Epoch37 Time:24.8s Data:0.3s ClaLoss:0.8330 PairLoss:0.0257 CloLoss:0.2433 AdvLoss:0.1742 GeoLoss:0.0000 Acc:99.73% CloAcc:98.15% 
+Epoch38 Time:24.8s Data:0.3s ClaLoss:0.8318 PairLoss:0.0253 CloLoss:0.2361 AdvLoss:0.1676 GeoLoss:0.0000 Acc:99.75% CloAcc:98.09% 
+Epoch39 Time:24.8s Data:0.4s ClaLoss:0.8299 PairLoss:0.0222 CloLoss:0.2400 AdvLoss:0.1649 GeoLoss:0.0000 Acc:99.78% CloAcc:98.03% 
+Epoch40 Time:24.8s Data:0.4s ClaLoss:0.8284 PairLoss:0.0207 CloLoss:0.2268 AdvLoss:0.1617 GeoLoss:0.0000 Acc:99.78% CloAcc:98.30% 
+==> Test
+Extracted features for query set, obtained torch.Size([493, 4096]) matrix
+Extracted features for gallery set, obtained torch.Size([7050, 4096]) matrix
+Extracting features complete in 0m 13s
+Distance computing in 0m 0s
+Computing CMC and mAP
+Results ---------------------------------------------------
+top1:71.8% top5:83.2% top10:84.8% top20:87.6% mAP:35.8%
+-----------------------------------------------------------
+Using 0m 0s
+Computing CMC and mAP only for the same clothes setting
+76 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:77.9% top5:87.8% top10:89.2% top20:91.1% mAP:57.1%
+-----------------------------------------------------------
+Computing CMC and mAP only for clothes-changing
+101 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:36.2% top5:50.8% top10:55.1% top20:62.5% mAP:15.7%
+-----------------------------------------------------------
+Epoch41 Time:24.8s Data:0.4s ClaLoss:0.8230 PairLoss:0.0212 CloLoss:0.2253 AdvLoss:0.1548 GeoLoss:0.0000 Acc:99.77% CloAcc:98.25% 
+Epoch42 Time:24.8s Data:0.4s ClaLoss:0.8194 PairLoss:0.0156 CloLoss:0.2161 AdvLoss:0.1502 GeoLoss:0.0000 Acc:99.84% CloAcc:98.44% 
+Epoch43 Time:24.8s Data:0.3s ClaLoss:0.8186 PairLoss:0.0169 CloLoss:0.2191 AdvLoss:0.1507 GeoLoss:0.0000 Acc:99.75% CloAcc:98.42% 
+Epoch44 Time:24.8s Data:0.4s ClaLoss:0.8197 PairLoss:0.0185 CloLoss:0.2242 AdvLoss:0.1547 GeoLoss:0.0000 Acc:99.73% CloAcc:98.42% 
+Epoch45 Time:24.8s Data:0.4s ClaLoss:0.8142 PairLoss:0.0136 CloLoss:0.2150 AdvLoss:0.1436 GeoLoss:0.0000 Acc:99.89% CloAcc:98.49% 
+==> Test
+Extracted features for query set, obtained torch.Size([493, 4096]) matrix
+Extracted features for gallery set, obtained torch.Size([7050, 4096]) matrix
+Extracting features complete in 0m 13s
+Distance computing in 0m 0s
+Computing CMC and mAP
+Results ---------------------------------------------------
+top1:73.4% top5:82.8% top10:84.8% top20:87.6% mAP:36.2%
+-----------------------------------------------------------
+Using 0m 0s
+Computing CMC and mAP only for the same clothes setting
+76 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:79.6% top5:88.2% top10:89.9% top20:91.8% mAP:57.6%
+-----------------------------------------------------------
+Computing CMC and mAP only for clothes-changing
+101 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:36.5% top5:49.7% top10:55.1% top20:62.2% mAP:16.0%
+-----------------------------------------------------------
+Epoch46 Time:24.8s Data:0.4s ClaLoss:0.8186 PairLoss:0.0156 CloLoss:0.2203 AdvLoss:0.1504 GeoLoss:0.0000 Acc:99.80% CloAcc:98.38% 
+Epoch47 Time:24.8s Data:0.3s ClaLoss:0.8170 PairLoss:0.0140 CloLoss:0.2208 AdvLoss:0.1482 GeoLoss:0.0000 Acc:99.87% CloAcc:98.48% 
+Epoch48 Time:24.8s Data:0.3s ClaLoss:0.8139 PairLoss:0.0141 CloLoss:0.2221 AdvLoss:0.1466 GeoLoss:0.0000 Acc:99.78% CloAcc:98.20% 
+Epoch49 Time:24.8s Data:0.3s ClaLoss:0.8126 PairLoss:0.0134 CloLoss:0.2158 AdvLoss:0.1445 GeoLoss:0.0000 Acc:99.84% CloAcc:98.37% 
+Epoch50 Time:24.8s Data:0.4s ClaLoss:0.8126 PairLoss:0.0137 CloLoss:0.2200 AdvLoss:0.1461 GeoLoss:0.0000 Acc:99.87% CloAcc:98.42% 
+==> Test
+Extracted features for query set, obtained torch.Size([493, 4096]) matrix
+Extracted features for gallery set, obtained torch.Size([7050, 4096]) matrix
+Extracting features complete in 0m 13s
+Distance computing in 0m 0s
+Computing CMC and mAP
+Results ---------------------------------------------------
+top1:72.6% top5:82.6% top10:84.2% top20:87.4% mAP:36.2%
+-----------------------------------------------------------
+Using 0m 0s
+Computing CMC and mAP only for the same clothes setting
+76 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:79.6% top5:88.2% top10:90.2% top20:92.1% mAP:57.7%
+-----------------------------------------------------------
+Computing CMC and mAP only for clothes-changing
+101 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:35.7% top5:50.3% top10:55.6% top20:62.5% mAP:16.0%
+-----------------------------------------------------------
+Epoch51 Time:24.7s Data:0.3s ClaLoss:0.8122 PairLoss:0.0121 CloLoss:0.2162 AdvLoss:0.1419 GeoLoss:0.0000 Acc:99.89% CloAcc:98.45% 
+Epoch52 Time:24.8s Data:0.4s ClaLoss:0.8084 PairLoss:0.0104 CloLoss:0.2167 AdvLoss:0.1356 GeoLoss:0.0000 Acc:99.88% CloAcc:98.50% 
+Epoch53 Time:24.7s Data:0.3s ClaLoss:0.8150 PairLoss:0.0132 CloLoss:0.2178 AdvLoss:0.1459 GeoLoss:0.0000 Acc:99.88% CloAcc:98.47% 
+Epoch54 Time:24.8s Data:0.3s ClaLoss:0.8099 PairLoss:0.0110 CloLoss:0.2109 AdvLoss:0.1383 GeoLoss:0.0000 Acc:99.91% CloAcc:98.79% 
+Epoch55 Time:24.8s Data:0.4s ClaLoss:0.8145 PairLoss:0.0130 CloLoss:0.2197 AdvLoss:0.1454 GeoLoss:0.0000 Acc:99.84% CloAcc:98.42% 
+==> Test
+Extracted features for query set, obtained torch.Size([493, 4096]) matrix
+Extracted features for gallery set, obtained torch.Size([7050, 4096]) matrix
+Extracting features complete in 0m 13s
+Distance computing in 0m 0s
+Computing CMC and mAP
+Results ---------------------------------------------------
+top1:71.6% top5:82.4% top10:85.8% top20:87.6% mAP:36.1%
+-----------------------------------------------------------
+Using 0m 0s
+Computing CMC and mAP only for the same clothes setting
+76 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:78.2% top5:87.8% top10:89.9% top20:92.1% mAP:57.2%
+-----------------------------------------------------------
+Computing CMC and mAP only for clothes-changing
+101 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:36.2% top5:49.0% top10:57.4% top20:62.8% mAP:16.0%
+-----------------------------------------------------------
+Epoch56 Time:24.8s Data:0.3s ClaLoss:0.8168 PairLoss:0.0137 CloLoss:0.2237 AdvLoss:0.1491 GeoLoss:0.0000 Acc:99.76% CloAcc:98.50% 
+Epoch57 Time:24.8s Data:0.3s ClaLoss:0.8119 PairLoss:0.0123 CloLoss:0.2192 AdvLoss:0.1418 GeoLoss:0.0000 Acc:99.84% CloAcc:98.51% 
+Epoch58 Time:24.8s Data:0.3s ClaLoss:0.8128 PairLoss:0.0131 CloLoss:0.2204 AdvLoss:0.1447 GeoLoss:0.0000 Acc:99.84% CloAcc:98.45% 
+Epoch59 Time:24.8s Data:0.3s ClaLoss:0.8121 PairLoss:0.0129 CloLoss:0.2220 AdvLoss:0.1421 GeoLoss:0.0000 Acc:99.82% CloAcc:98.33% 
+Epoch60 Time:24.8s Data:0.3s ClaLoss:0.8097 PairLoss:0.0108 CloLoss:0.2186 AdvLoss:0.1375 GeoLoss:0.0000 Acc:99.90% CloAcc:98.41% 
+==> Test
+Extracted features for query set, obtained torch.Size([493, 4096]) matrix
+Extracted features for gallery set, obtained torch.Size([7050, 4096]) matrix
+Extracting features complete in 0m 13s
+Distance computing in 0m 0s
+Computing CMC and mAP
+Results ---------------------------------------------------
+top1:72.6% top5:82.8% top10:86.0% top20:87.8% mAP:36.1%
+-----------------------------------------------------------
+Using 0m 0s
+Computing CMC and mAP only for the same clothes setting
+76 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:79.4% top5:88.5% top10:90.4% top20:91.8% mAP:57.2%
+-----------------------------------------------------------
+Computing CMC and mAP only for clothes-changing
+101 query samples do not have groundtruth.
+Results ---------------------------------------------------
+top1:36.0% top5:50.3% top10:57.9% top20:64.0% mAP:15.8%
+-----------------------------------------------------------
+==> Best Rank-1 36.5%, achieved at epoch 45
+Finished. Total elapsed time (h:m:s): 0:27:32. Training time (h:m:s): 0:25:00.
+[rank0]:[W531 07:44:23.337991928 ProcessGroupNCCL.cpp:1496] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

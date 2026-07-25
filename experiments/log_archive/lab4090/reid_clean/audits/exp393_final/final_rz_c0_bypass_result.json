@@ -1,0 +1,149 @@
+{
+  "all_router_bypass": {
+    "batches": 78,
+    "gallery_shape": [
+      17661,
+      768
+    ],
+    "mAP": 0.5681861435739023,
+    "peak_allocated_bytes": 4725200384,
+    "query_shape": [
+      2210,
+      768
+    ],
+    "rank1": 0.6678733229637146,
+    "rank10": 0.8389140367507935,
+    "rank5": 0.7963801026344299,
+    "samples": 19871,
+    "samples_per_second": 978.0257320843347,
+    "seconds": 20.317461338825524
+  },
+  "bypass_rounded_percent": [
+    56.8,
+    66.8,
+    79.6,
+    83.9
+  ],
+  "checkpoint": {
+    "floating_tensors": 220,
+    "nonfinite": [],
+    "state_tensors": 233,
+    "teacher_side_keys": []
+  },
+  "checkpoint_sha256": "0a605c535b703724a8a233a02b6f0bef8bf36ec5482af4ff192df83d285e0e90",
+  "dataset_boundary": {
+    "normal_train_has_pose_store": false,
+    "num_query": 2210,
+    "validation_has_pose_store": false
+  },
+  "full": {
+    "batches": 78,
+    "gallery_shape": [
+      17661,
+      768
+    ],
+    "mAP": 0.5681836464802273,
+    "peak_allocated_bytes": 4725331456,
+    "query_shape": [
+      2210,
+      768
+    ],
+    "rank1": 0.6678733229637146,
+    "rank10": 0.8389140367507935,
+    "rank5": 0.7963801026344299,
+    "samples": 19871,
+    "samples_per_second": 960.0365888142194,
+    "seconds": 20.698169456794858
+  },
+  "full_floor_pass": true,
+  "full_minus_bypass_map_points": -0.0002497093674946882,
+  "full_reproduced": true,
+  "full_rounded_percent": [
+    56.8,
+    66.8,
+    79.6,
+    83.9
+  ],
+  "null_identity": [
+    {
+      "applied_exact_zero": true,
+      "finite": true,
+      "index": 0,
+      "tokens_exact": true
+    },
+    {
+      "applied_exact_zero": true,
+      "finite": true,
+      "index": 1,
+      "tokens_exact": true
+    }
+  ],
+  "parameter_trajectory": {
+    "anchor": {
+      "changed": 14,
+      "total": 14
+    },
+    "router0_alpha": {
+      "changed": 1,
+      "total": 1
+    },
+    "router0_context": {
+      "changed": 1,
+      "total": 1
+    },
+    "router0_expert": {
+      "changed": 1,
+      "total": 1
+    },
+    "router0_token": {
+      "changed": 1,
+      "total": 1
+    },
+    "router1_alpha": {
+      "changed": 1,
+      "total": 1
+    },
+    "router1_context": {
+      "changed": 1,
+      "total": 1
+    },
+    "router1_expert": {
+      "changed": 1,
+      "total": 1
+    },
+    "router1_token": {
+      "changed": 1,
+      "total": 1
+    }
+  },
+  "route_alive": false,
+  "router_state": [
+    {
+      "alpha_logit": -0.00018431631906423718,
+      "context_projection_norm": 2.300846576690674,
+      "expert_norm": 4.910549640655518,
+      "index": 0,
+      "tanh_alpha": -0.00018431631906423718,
+      "token_projection_norm": 2.2963967323303223
+    },
+    {
+      "alpha_logit": -0.00013630175089929253,
+      "context_projection_norm": 2.281341552734375,
+      "expert_norm": 4.915932655334473,
+      "index": 1,
+      "tanh_alpha": -0.00013630175089929253,
+      "token_projection_norm": 2.28336501121521
+    }
+  ],
+  "routers_equal": false,
+  "status": "EXP393_RZ_C0_ROUTE_ALIVE_FAIL",
+  "strict_missing": [],
+  "strict_unexpected": [],
+  "synthetic_full_bypass_gap": {
+    "bypass_finite": true,
+    "exact": false,
+    "full_finite": true,
+    "max_abs": 2.86102294921875e-06,
+    "mean_l2": 1.5979951058398e-05
+  }
+}

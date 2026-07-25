@@ -1,0 +1,1299 @@
+2026-06-11 06:28:34 transreid INFO: Saving model in the path :./log/occluded_duke/exp023_method_s0
+2026-06-11 06:28:34 transreid INFO: Loaded configuration file configs/occluded_duke/vit_base.yml
+2026-06-11 06:28:34 transreid INFO: Running with config:
+DATALOADER:
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+  REMOVE_TAIL: 0
+  SAMPLER: softmax_triplet
+DATASETS:
+  NAMES: occluded_duke
+  ROOT_DIR: /mnt1/afrdata
+  ROOT_TRAIN_DIR: ../data
+  ROOT_VAL_DIR: ../data
+DONOR_DECOUPLE:
+  AUX_DETACH: True
+  CF_W: 0.5
+  DONOR_CLS_W: 0.2
+  DONOR_REPEAT: 4
+  ENABLED: False
+  NEG_MARGIN: 0.02
+  ORTH_W: 0.03
+  PASTE_PROB: 0.5
+  SAMEB_NEG_W: 0.5
+  SYN_ID_W: 0.25
+EVIDENCE_AGREEMENT:
+  DOM_MARGIN: 0.3
+  DOM_W: 0.05
+  ENABLED: False
+  EPS: 1e-06
+  MIN_REGION_GAP: 1.0
+  NEG_MARGIN: 0.3
+  NEG_SINGLE_W: 0.1
+  POS_ALIGN_W: 0.05
+  POS_MULTI_W: 0.1
+  REGION_MODE: grid2x2
+  SINGLE_EPS: 0.0
+  TAU_EMA_MOMENTUM: 0.9
+  TAU_GLOBAL: 0.5
+  TAU_REGION: 0.75
+  THRESHOLD_QUANTILE: 0.75
+  T_COUNT: 0.25
+  T_GLOBAL: 0.05
+  T_REGION: 0.05
+  WARMUP_EPOCHS: 10
+INPUT:
+  MIX_PROB: 0.0
+  MIX_RATIO_RANGE: [0.3, 0.7]
+  MIX_TYPE: both
+  PADDING: 10
+  PIXEL_MEAN: [0.5, 0.5, 0.5]
+  PIXEL_STD: [0.5, 0.5, 0.5]
+  PROB: 0.5
+  RE_PROB: 0.5
+  SIZE_TEST: [256, 128]
+  SIZE_TRAIN: [256, 128]
+LGP:
+  ENABLED: False
+  N_HEADS: 8
+  PROTOS_PATH: 
+  W_ID: 1.0
+MODEL:
+  ATT_DROP_RATE: 0.0
+  COS_LAYER: False
+  DEVICE: cuda
+  DEVICE_ID: 0
+  DEVIDE_LENGTH: 4
+  DIST_TRAIN: False
+  DROPOUT_RATE: 0.0
+  DROP_OUT: 0.0
+  DROP_PATH: 0.1
+  FEAT_DIM: 512
+  GEM_POOLING: False
+  ID_LOSS_TYPE: softmax
+  ID_LOSS_WEIGHT: 1.0
+  IF_LABELSMOOTH: off
+  IF_WITH_CENTER: no
+  JPM: False
+  LAST_STRIDE: 1
+  METRIC_LOSS_TYPE: triplet
+  NAME: transformer
+  NECK: bnneck
+  NO_MARGIN: True
+  PRETRAIN_CHOICE: imagenet
+  PRETRAIN_HW_RATIO: 1
+  PRETRAIN_PATH: /home/afr/reid-clean/weights/jx_vit_base_p16_224-80ecf9dd.pth
+  REDUCE_FEAT_DIM: False
+  RE_ARRANGE: True
+  SEMANTIC_WEIGHT: 1.0
+  SHIFT_NUM: 5
+  SHUFFLE_GROUP: 2
+  SIE_CAMERA: False
+  SIE_COE: 3.0
+  SIE_VIEW: False
+  STEM_CONV: False
+  STRIDE_SIZE: [16, 16]
+  TRANSFORMER_TYPE: vit_base_patch16_224_TransReID
+  TRIPLET_LOSS_WEIGHT: 1.0
+  WITH_CP: False
+MULTIHYP:
+  ALPHA: 0.1
+  BONUS_CAP: 0.15
+  DETACH: True
+  DIV_W: 0.5
+  DSHS_HARD: global
+  DSHS_MARGIN: 0.3
+  DSHS_NHARD: 10
+  DSHS_W: 0.0
+  ENABLED: False
+  GATE_SIGMA: 0.3
+  GATE_TAU: 1.2
+  K: 3
+  LOSS_W: 1.0
+  NEG_MARGIN: 0.7
+  POS_MARGIN: 0.3
+  SET_TEMP: 0.1
+  UNIQUE_MARGIN: 0.1
+OBJGATE:
+  ANTI_W: 0.1
+  DETACH_SCORE: False
+  ENABLED: False
+  ENTROPY_MAX: 1000000000.0
+  ENTROPY_MIN: 0.0
+  FEATMAP_INDEX: -1
+  HIDDEN: 192
+  LAMBDA_TARGET: 1.0
+  LAMBDA_WARMUP_EPOCHS: 10
+  MODE: softmax
+  SPLIT_W: 1.0
+  SUPPRESS_MIN: 0.5
+  TAU: 1.0
+OCCAWARE:
+  AUG_PROB: 0.5
+  BANK_PATH: /mnt1/afrdata/coco_occluder_bank_512.pt
+  BLOCK: 8
+  ENABLED: True
+  MECH: True
+  POOL_KIND: coco
+  POOL_SIZE: 256
+  SWIN_STAGE: 2
+  W_OCC: 0.5
+OSG:
+  BLOCK: 8
+  ENABLED: False
+  KL_T: 4.0
+  LABELS_PATH: 
+  PROTOS_PATH: 
+  RANDOM_PROTOS: False
+  TAU: 0.07
+  W_SEM: 0.1
+OSS:
+  AUG_PROB: 0.3
+  ENABLED: False
+  GRL_ALPHA: 1.0
+  POOL_SIZE: 256
+  RANDOM_LABEL: False
+  W: 0.5
+OUTPUT_DIR: ./log/occluded_duke/exp023_method_s0
+PARTIAL_EVIDENCE:
+  CALIBRATE: True
+  ENABLED: False
+  LS_MAX: 0.2
+  MARGIN_SCALE: True
+  MIN_KEEP: 0.2
+  NO_HARDNEG_BELOW: 0.4
+  PASTE_PROB: 0.5
+SEMDISTILL:
+  ENABLED: False
+  KL_T: 4.0
+  LABELS_PATH: 
+  MODE: emb
+  W: 0.2
+SOLVER:
+  BASE_LR: 0.008
+  BIAS_LR_FACTOR: 2
+  CENTER_LOSS_WEIGHT: 0.0005
+  CENTER_LR: 0.5
+  CHECKPOINT_PERIOD: 120
+  COSINE_MARGIN: 0.5
+  COSINE_SCALE: 30
+  EVAL_PERIOD: 120
+  GAMMA: 0.1
+  IMS_PER_BATCH: 64
+  LARGE_FC_LR: False
+  LOG_PERIOD: 50
+  MARGIN: 0.3
+  MAX_EPOCHS: 120
+  MOMENTUM: 0.9
+  OPTIMIZER_NAME: SGD
+  SEED: 0
+  STEPS: (40, 70)
+  TRP_L2: False
+  WARMUP_EPOCHS: 5
+  WARMUP_FACTOR: 0.01
+  WARMUP_METHOD: cosine
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0.0001
+TEST:
+  DIST_MAT: dist_mat.npy
+  EVAL: True
+  FEAT_NORM: yes
+  IMS_PER_BATCH: 64
+  NECK_FEAT: before
+  RE_RANKING: False
+  WEIGHT: 
+2026-06-11 06:28:35 transreid.check INFO: Dataset statistics:
+2026-06-11 06:28:35 transreid.check INFO:   ----------------------------------------
+2026-06-11 06:28:35 transreid.check INFO:   subset   | # ids | # images | # cameras
+2026-06-11 06:28:35 transreid.check INFO:   ----------------------------------------
+2026-06-11 06:28:35 transreid.check INFO:   train    |   702 |    15618 |         8
+2026-06-11 06:28:35 transreid.check INFO:   query    |   519 |     2210 |         8
+2026-06-11 06:28:35 transreid.check INFO:   gallery  |  1110 |    17661 |         8
+2026-06-11 06:28:35 transreid.check INFO:   ----------------------------------------
+2026-06-11 06:28:35 transreid INFO: ===========using cosine learning rate=======
+2026-06-11 06:28:35 transreid.train INFO: start training
+2026-06-11 06:28:40 transreid.train INFO: Epoch[1] Iter[50/227] Loss: 12.774, Acc: 0.003, Base Lr: 1.66e-03
+2026-06-11 06:28:40 transreid.train INFO: OCCAWARE occ_bce: 0.9758, alpha: -0.0020
+2026-06-11 06:28:43 transreid.train INFO: Epoch[1] Iter[100/227] Loss: 11.986, Acc: 0.003, Base Lr: 1.66e-03
+2026-06-11 06:28:43 transreid.train INFO: OCCAWARE occ_bce: 0.7255, alpha: -0.0048
+2026-06-11 06:28:47 transreid.train INFO: Epoch[1] Iter[150/227] Loss: 11.535, Acc: 0.003, Base Lr: 1.66e-03
+2026-06-11 06:28:47 transreid.train INFO: OCCAWARE occ_bce: 0.6181, alpha: -0.0074
+2026-06-11 06:28:50 transreid.train INFO: Epoch[1] Iter[200/227] Loss: 11.210, Acc: 0.005, Base Lr: 1.66e-03
+2026-06-11 06:28:50 transreid.train INFO: OCCAWARE occ_bce: 0.5467, alpha: -0.0098
+2026-06-11 06:28:51 transreid.train INFO: Epoch 1 done. Time per epoch: 15.953[s] Speed: 850.5[samples/s]
+2026-06-11 06:28:55 transreid.train INFO: Epoch[2] Iter[50/227] Loss: 9.132, Acc: 0.043, Base Lr: 3.25e-03
+2026-06-11 06:28:55 transreid.train INFO: OCCAWARE occ_bce: 0.2176, alpha: -0.0323
+2026-06-11 06:28:59 transreid.train INFO: Epoch[2] Iter[100/227] Loss: 8.830, Acc: 0.067, Base Lr: 3.25e-03
+2026-06-11 06:28:59 transreid.train INFO: OCCAWARE occ_bce: 0.1910, alpha: -0.0362
+2026-06-11 06:29:02 transreid.train INFO: Epoch[2] Iter[150/227] Loss: 8.598, Acc: 0.097, Base Lr: 3.25e-03
+2026-06-11 06:29:02 transreid.train INFO: OCCAWARE occ_bce: 0.1721, alpha: -0.0390
+2026-06-11 06:29:06 transreid.train INFO: Epoch[2] Iter[200/227] Loss: 8.336, Acc: 0.148, Base Lr: 3.25e-03
+2026-06-11 06:29:06 transreid.train INFO: OCCAWARE occ_bce: 0.1598, alpha: -0.0391
+2026-06-11 06:29:07 transreid.train INFO: Epoch 2 done. Time per epoch: 15.611[s] Speed: 869.1[samples/s]
+2026-06-11 06:29:11 transreid.train INFO: Epoch[3] Iter[50/227] Loss: 7.283, Acc: 0.113, Base Lr: 4.83e-03
+2026-06-11 06:29:11 transreid.train INFO: OCCAWARE occ_bce: 0.1965, alpha: -0.0393
+2026-06-11 06:29:14 transreid.train INFO: Epoch[3] Iter[100/227] Loss: 6.995, Acc: 0.148, Base Lr: 4.83e-03
+2026-06-11 06:29:14 transreid.train INFO: OCCAWARE occ_bce: 0.1563, alpha: -0.0290
+2026-06-11 06:29:18 transreid.train INFO: Epoch[3] Iter[150/227] Loss: 6.720, Acc: 0.183, Base Lr: 4.83e-03
+2026-06-11 06:29:18 transreid.train INFO: OCCAWARE occ_bce: 0.1377, alpha: -0.0267
+2026-06-11 06:29:22 transreid.train INFO: Epoch[3] Iter[200/227] Loss: 6.351, Acc: 0.233, Base Lr: 4.83e-03
+2026-06-11 06:29:22 transreid.train INFO: OCCAWARE occ_bce: 0.1514, alpha: -0.0247
+2026-06-11 06:29:23 transreid.train INFO: Epoch 3 done. Time per epoch: 15.529[s] Speed: 869.6[samples/s]
+2026-06-11 06:29:26 transreid.train INFO: Epoch[4] Iter[50/227] Loss: 5.033, Acc: 0.274, Base Lr: 6.42e-03
+2026-06-11 06:29:26 transreid.train INFO: OCCAWARE occ_bce: 0.1152, alpha: -0.0224
+2026-06-11 06:29:30 transreid.train INFO: Epoch[4] Iter[100/227] Loss: 4.702, Acc: 0.343, Base Lr: 6.42e-03
+2026-06-11 06:29:30 transreid.train INFO: OCCAWARE occ_bce: 0.0974, alpha: -0.0218
+2026-06-11 06:29:34 transreid.train INFO: Epoch[4] Iter[150/227] Loss: 4.402, Acc: 0.404, Base Lr: 6.42e-03
+2026-06-11 06:29:34 transreid.train INFO: OCCAWARE occ_bce: 0.0909, alpha: -0.0207
+2026-06-11 06:29:37 transreid.train INFO: Epoch[4] Iter[200/227] Loss: 4.073, Acc: 0.466, Base Lr: 6.42e-03
+2026-06-11 06:29:37 transreid.train INFO: OCCAWARE occ_bce: 0.0861, alpha: -0.0210
+2026-06-11 06:29:38 transreid.train INFO: Epoch 4 done. Time per epoch: 15.609[s] Speed: 869.2[samples/s]
+2026-06-11 06:29:42 transreid.train INFO: Epoch[5] Iter[50/227] Loss: 3.059, Acc: 0.573, Base Lr: 7.97e-03
+2026-06-11 06:29:42 transreid.train INFO: OCCAWARE occ_bce: 0.0660, alpha: -0.0200
+2026-06-11 06:29:46 transreid.train INFO: Epoch[5] Iter[100/227] Loss: 2.855, Acc: 0.634, Base Lr: 7.97e-03
+2026-06-11 06:29:46 transreid.train INFO: OCCAWARE occ_bce: 0.0677, alpha: -0.0203
+2026-06-11 06:29:49 transreid.train INFO: Epoch[5] Iter[150/227] Loss: 2.643, Acc: 0.677, Base Lr: 7.97e-03
+2026-06-11 06:29:49 transreid.train INFO: OCCAWARE occ_bce: 0.0683, alpha: -0.0167
+2026-06-11 06:29:53 transreid.train INFO: Epoch[5] Iter[200/227] Loss: 2.454, Acc: 0.713, Base Lr: 7.97e-03
+2026-06-11 06:29:53 transreid.train INFO: OCCAWARE occ_bce: 0.0687, alpha: -0.0145
+2026-06-11 06:29:54 transreid.train INFO: Epoch 5 done. Time per epoch: 15.622[s] Speed: 868.5[samples/s]
+2026-06-11 06:29:58 transreid.train INFO: Epoch[6] Iter[50/227] Loss: 1.835, Acc: 0.797, Base Lr: 7.95e-03
+2026-06-11 06:29:58 transreid.train INFO: OCCAWARE occ_bce: 0.1277, alpha: -0.0132
+2026-06-11 06:30:01 transreid.train INFO: Epoch[6] Iter[100/227] Loss: 1.786, Acc: 0.811, Base Lr: 7.95e-03
+2026-06-11 06:30:01 transreid.train INFO: OCCAWARE occ_bce: 0.1039, alpha: -0.0123
+2026-06-11 06:30:05 transreid.train INFO: Epoch[6] Iter[150/227] Loss: 1.722, Acc: 0.825, Base Lr: 7.95e-03
+2026-06-11 06:30:05 transreid.train INFO: OCCAWARE occ_bce: 0.0895, alpha: -0.0099
+2026-06-11 06:30:08 transreid.train INFO: Epoch[6] Iter[200/227] Loss: 1.616, Acc: 0.841, Base Lr: 7.95e-03
+2026-06-11 06:30:08 transreid.train INFO: OCCAWARE occ_bce: 0.0829, alpha: -0.0073
+2026-06-11 06:30:09 transreid.train INFO: Epoch 6 done. Time per epoch: 15.674[s] Speed: 869.7[samples/s]
+2026-06-11 06:30:13 transreid.train INFO: Epoch[7] Iter[50/227] Loss: 1.300, Acc: 0.872, Base Lr: 7.93e-03
+2026-06-11 06:30:13 transreid.train INFO: OCCAWARE occ_bce: 0.0576, alpha: -0.0073
+2026-06-11 06:30:17 transreid.train INFO: Epoch[7] Iter[100/227] Loss: 1.259, Acc: 0.882, Base Lr: 7.93e-03
+2026-06-11 06:30:17 transreid.train INFO: OCCAWARE occ_bce: 0.0580, alpha: -0.0053
+2026-06-11 06:30:21 transreid.train INFO: Epoch[7] Iter[150/227] Loss: 1.214, Acc: 0.887, Base Lr: 7.93e-03
+2026-06-11 06:30:21 transreid.train INFO: OCCAWARE occ_bce: 0.0573, alpha: -0.0048
+2026-06-11 06:30:24 transreid.train INFO: Epoch[7] Iter[200/227] Loss: 1.149, Acc: 0.897, Base Lr: 7.93e-03
+2026-06-11 06:30:24 transreid.train INFO: OCCAWARE occ_bce: 0.0574, alpha: -0.0042
+2026-06-11 06:30:25 transreid.train INFO: Epoch 7 done. Time per epoch: 15.559[s] Speed: 867.9[samples/s]
+2026-06-11 06:30:29 transreid.train INFO: Epoch[8] Iter[50/227] Loss: 0.993, Acc: 0.915, Base Lr: 7.91e-03
+2026-06-11 06:30:29 transreid.train INFO: OCCAWARE occ_bce: 0.0540, alpha: -0.0046
+2026-06-11 06:30:33 transreid.train INFO: Epoch[8] Iter[100/227] Loss: 0.962, Acc: 0.920, Base Lr: 7.91e-03
+2026-06-11 06:30:33 transreid.train INFO: OCCAWARE occ_bce: 0.0539, alpha: -0.0032
+2026-06-11 06:30:36 transreid.train INFO: Epoch[8] Iter[150/227] Loss: 0.937, Acc: 0.919, Base Lr: 7.91e-03
+2026-06-11 06:30:36 transreid.train INFO: OCCAWARE occ_bce: 0.0533, alpha: -0.0015
+2026-06-11 06:30:40 transreid.train INFO: Epoch[8] Iter[200/227] Loss: 0.917, Acc: 0.923, Base Lr: 7.91e-03
+2026-06-11 06:30:40 transreid.train INFO: OCCAWARE occ_bce: 0.0530, alpha: -0.0014
+2026-06-11 06:30:41 transreid.train INFO: Epoch 8 done. Time per epoch: 15.692[s] Speed: 864.6[samples/s]
+2026-06-11 06:30:45 transreid.train INFO: Epoch[9] Iter[50/227] Loss: 0.844, Acc: 0.931, Base Lr: 7.89e-03
+2026-06-11 06:30:45 transreid.train INFO: OCCAWARE occ_bce: 0.0514, alpha: 0.0004
+2026-06-11 06:30:48 transreid.train INFO: Epoch[9] Iter[100/227] Loss: 0.835, Acc: 0.930, Base Lr: 7.89e-03
+2026-06-11 06:30:48 transreid.train INFO: OCCAWARE occ_bce: 0.0511, alpha: -0.0004
+2026-06-11 06:30:52 transreid.train INFO: Epoch[9] Iter[150/227] Loss: 0.831, Acc: 0.932, Base Lr: 7.89e-03
+2026-06-11 06:30:52 transreid.train INFO: OCCAWARE occ_bce: 0.0510, alpha: 0.0002
+2026-06-11 06:30:55 transreid.train INFO: Epoch[9] Iter[200/227] Loss: 0.801, Acc: 0.936, Base Lr: 7.89e-03
+2026-06-11 06:30:55 transreid.train INFO: OCCAWARE occ_bce: 0.0511, alpha: 0.0029
+2026-06-11 06:30:56 transreid.train INFO: Epoch 9 done. Time per epoch: 15.637[s] Speed: 867.7[samples/s]
+2026-06-11 06:31:00 transreid.train INFO: Epoch[10] Iter[50/227] Loss: 0.768, Acc: 0.940, Base Lr: 7.86e-03
+2026-06-11 06:31:00 transreid.train INFO: OCCAWARE occ_bce: 0.0497, alpha: 0.0028
+2026-06-11 06:31:04 transreid.train INFO: Epoch[10] Iter[100/227] Loss: 0.746, Acc: 0.942, Base Lr: 7.86e-03
+2026-06-11 06:31:04 transreid.train INFO: OCCAWARE occ_bce: 0.0514, alpha: 0.0047
+2026-06-11 06:31:07 transreid.train INFO: Epoch[10] Iter[150/227] Loss: 0.736, Acc: 0.944, Base Lr: 7.86e-03
+2026-06-11 06:31:07 transreid.train INFO: OCCAWARE occ_bce: 0.0517, alpha: 0.0092
+2026-06-11 06:31:11 transreid.train INFO: Epoch[10] Iter[200/227] Loss: 0.722, Acc: 0.944, Base Lr: 7.86e-03
+2026-06-11 06:31:11 transreid.train INFO: OCCAWARE occ_bce: 0.0515, alpha: 0.0095
+2026-06-11 06:31:12 transreid.train INFO: Epoch 10 done. Time per epoch: 15.779[s] Speed: 868.0[samples/s]
+2026-06-11 06:31:16 transreid.train INFO: Epoch[11] Iter[50/227] Loss: 0.715, Acc: 0.947, Base Lr: 7.84e-03
+2026-06-11 06:31:16 transreid.train INFO: OCCAWARE occ_bce: 0.0551, alpha: 0.0125
+2026-06-11 06:31:20 transreid.train INFO: Epoch[11] Iter[100/227] Loss: 0.687, Acc: 0.948, Base Lr: 7.84e-03
+2026-06-11 06:31:20 transreid.train INFO: OCCAWARE occ_bce: 0.0516, alpha: 0.0118
+2026-06-11 06:31:23 transreid.train INFO: Epoch[11] Iter[150/227] Loss: 0.664, Acc: 0.952, Base Lr: 7.84e-03
+2026-06-11 06:31:23 transreid.train INFO: OCCAWARE occ_bce: 0.0504, alpha: 0.0113
+2026-06-11 06:31:27 transreid.train INFO: Epoch[11] Iter[200/227] Loss: 0.639, Acc: 0.954, Base Lr: 7.84e-03
+2026-06-11 06:31:27 transreid.train INFO: OCCAWARE occ_bce: 0.0626, alpha: 0.0140
+2026-06-11 06:31:28 transreid.train INFO: Epoch 11 done. Time per epoch: 15.640[s] Speed: 867.5[samples/s]
+2026-06-11 06:31:32 transreid.train INFO: Epoch[12] Iter[50/227] Loss: 0.624, Acc: 0.956, Base Lr: 7.80e-03
+2026-06-11 06:31:32 transreid.train INFO: OCCAWARE occ_bce: 0.0672, alpha: 0.0144
+2026-06-11 06:31:35 transreid.train INFO: Epoch[12] Iter[100/227] Loss: 0.636, Acc: 0.954, Base Lr: 7.80e-03
+2026-06-11 06:31:35 transreid.train INFO: OCCAWARE occ_bce: 0.0669, alpha: 0.0145
+2026-06-11 06:31:39 transreid.train INFO: Epoch[12] Iter[150/227] Loss: 0.619, Acc: 0.955, Base Lr: 7.80e-03
+2026-06-11 06:31:39 transreid.train INFO: OCCAWARE occ_bce: 0.0662, alpha: 0.0149
+2026-06-11 06:31:42 transreid.train INFO: Epoch[12] Iter[200/227] Loss: 0.606, Acc: 0.956, Base Lr: 7.80e-03
+2026-06-11 06:31:42 transreid.train INFO: OCCAWARE occ_bce: 0.0650, alpha: 0.0165
+2026-06-11 06:31:43 transreid.train INFO: Epoch 12 done. Time per epoch: 15.710[s] Speed: 867.7[samples/s]
+2026-06-11 06:31:47 transreid.train INFO: Epoch[13] Iter[50/227] Loss: 0.565, Acc: 0.959, Base Lr: 7.77e-03
+2026-06-11 06:31:47 transreid.train INFO: OCCAWARE occ_bce: 0.0531, alpha: 0.0171
+2026-06-11 06:31:51 transreid.train INFO: Epoch[13] Iter[100/227] Loss: 0.542, Acc: 0.962, Base Lr: 7.77e-03
+2026-06-11 06:31:51 transreid.train INFO: OCCAWARE occ_bce: 0.0524, alpha: 0.0179
+2026-06-11 06:31:55 transreid.train INFO: Epoch[13] Iter[150/227] Loss: 0.547, Acc: 0.961, Base Lr: 7.77e-03
+2026-06-11 06:31:55 transreid.train INFO: OCCAWARE occ_bce: 0.0506, alpha: 0.0199
+2026-06-11 06:31:58 transreid.train INFO: Epoch[13] Iter[200/227] Loss: 0.524, Acc: 0.963, Base Lr: 7.77e-03
+2026-06-11 06:31:58 transreid.train INFO: OCCAWARE occ_bce: 0.0509, alpha: 0.0191
+2026-06-11 06:31:59 transreid.train INFO: Epoch 13 done. Time per epoch: 15.693[s] Speed: 868.7[samples/s]
+2026-06-11 06:32:03 transreid.train INFO: Epoch[14] Iter[50/227] Loss: 0.511, Acc: 0.964, Base Lr: 7.73e-03
+2026-06-11 06:32:03 transreid.train INFO: OCCAWARE occ_bce: 0.0502, alpha: 0.0188
+2026-06-11 06:32:07 transreid.train INFO: Epoch[14] Iter[100/227] Loss: 0.503, Acc: 0.964, Base Lr: 7.73e-03
+2026-06-11 06:32:07 transreid.train INFO: OCCAWARE occ_bce: 0.0470, alpha: 0.0191
+2026-06-11 06:32:10 transreid.train INFO: Epoch[14] Iter[150/227] Loss: 0.496, Acc: 0.966, Base Lr: 7.73e-03
+2026-06-11 06:32:10 transreid.train INFO: OCCAWARE occ_bce: 0.0462, alpha: 0.0194
+2026-06-11 06:32:14 transreid.train INFO: Epoch[14] Iter[200/227] Loss: 0.492, Acc: 0.965, Base Lr: 7.73e-03
+2026-06-11 06:32:14 transreid.train INFO: OCCAWARE occ_bce: 0.0458, alpha: 0.0209
+2026-06-11 06:32:15 transreid.train INFO: Epoch 14 done. Time per epoch: 15.566[s] Speed: 867.5[samples/s]
+2026-06-11 06:32:19 transreid.train INFO: Epoch[15] Iter[50/227] Loss: 0.467, Acc: 0.966, Base Lr: 7.70e-03
+2026-06-11 06:32:19 transreid.train INFO: OCCAWARE occ_bce: 0.0452, alpha: 0.0221
+2026-06-11 06:32:22 transreid.train INFO: Epoch[15] Iter[100/227] Loss: 0.464, Acc: 0.969, Base Lr: 7.70e-03
+2026-06-11 06:32:22 transreid.train INFO: OCCAWARE occ_bce: 0.0444, alpha: 0.0211
+2026-06-11 06:32:26 transreid.train INFO: Epoch[15] Iter[150/227] Loss: 0.473, Acc: 0.968, Base Lr: 7.70e-03
+2026-06-11 06:32:26 transreid.train INFO: OCCAWARE occ_bce: 0.0458, alpha: 0.0209
+2026-06-11 06:32:29 transreid.train INFO: Epoch[15] Iter[200/227] Loss: 0.463, Acc: 0.968, Base Lr: 7.70e-03
+2026-06-11 06:32:29 transreid.train INFO: OCCAWARE occ_bce: 0.0464, alpha: 0.0221
+2026-06-11 06:32:30 transreid.train INFO: Epoch 15 done. Time per epoch: 15.626[s] Speed: 868.3[samples/s]
+2026-06-11 06:32:34 transreid.train INFO: Epoch[16] Iter[50/227] Loss: 0.423, Acc: 0.974, Base Lr: 7.65e-03
+2026-06-11 06:32:34 transreid.train INFO: OCCAWARE occ_bce: 0.0416, alpha: 0.0226
+2026-06-11 06:32:38 transreid.train INFO: Epoch[16] Iter[100/227] Loss: 0.408, Acc: 0.975, Base Lr: 7.65e-03
+2026-06-11 06:32:38 transreid.train INFO: OCCAWARE occ_bce: 0.0425, alpha: 0.0217
+2026-06-11 06:32:41 transreid.train INFO: Epoch[16] Iter[150/227] Loss: 0.420, Acc: 0.974, Base Lr: 7.65e-03
+2026-06-11 06:32:41 transreid.train INFO: OCCAWARE occ_bce: 0.0425, alpha: 0.0203
+2026-06-11 06:32:45 transreid.train INFO: Epoch[16] Iter[200/227] Loss: 0.413, Acc: 0.975, Base Lr: 7.65e-03
+2026-06-11 06:32:45 transreid.train INFO: OCCAWARE occ_bce: 0.0429, alpha: 0.0202
+2026-06-11 06:32:46 transreid.train INFO: Epoch 16 done. Time per epoch: 15.699[s] Speed: 868.3[samples/s]
+2026-06-11 06:32:50 transreid.train INFO: Epoch[17] Iter[50/227] Loss: 0.425, Acc: 0.975, Base Lr: 7.61e-03
+2026-06-11 06:32:50 transreid.train INFO: OCCAWARE occ_bce: 0.0460, alpha: 0.0212
+2026-06-11 06:32:54 transreid.train INFO: Epoch[17] Iter[100/227] Loss: 0.437, Acc: 0.972, Base Lr: 7.61e-03
+2026-06-11 06:32:54 transreid.train INFO: OCCAWARE occ_bce: 0.0454, alpha: 0.0203
+2026-06-11 06:32:57 transreid.train INFO: Epoch[17] Iter[150/227] Loss: 0.422, Acc: 0.973, Base Lr: 7.61e-03
+2026-06-11 06:32:57 transreid.train INFO: OCCAWARE occ_bce: 0.0445, alpha: 0.0201
+2026-06-11 06:33:01 transreid.train INFO: Epoch[17] Iter[200/227] Loss: 0.413, Acc: 0.975, Base Lr: 7.61e-03
+2026-06-11 06:33:01 transreid.train INFO: OCCAWARE occ_bce: 0.0444, alpha: 0.0189
+2026-06-11 06:33:02 transreid.train INFO: Epoch 17 done. Time per epoch: 15.674[s] Speed: 865.6[samples/s]
+2026-06-11 06:33:06 transreid.train INFO: Epoch[18] Iter[50/227] Loss: 0.375, Acc: 0.977, Base Lr: 7.56e-03
+2026-06-11 06:33:06 transreid.train INFO: OCCAWARE occ_bce: 0.0452, alpha: 0.0185
+2026-06-11 06:33:09 transreid.train INFO: Epoch[18] Iter[100/227] Loss: 0.364, Acc: 0.977, Base Lr: 7.56e-03
+2026-06-11 06:33:09 transreid.train INFO: OCCAWARE occ_bce: 0.0444, alpha: 0.0176
+2026-06-11 06:33:13 transreid.train INFO: Epoch[18] Iter[150/227] Loss: 0.381, Acc: 0.975, Base Lr: 7.56e-03
+2026-06-11 06:33:13 transreid.train INFO: OCCAWARE occ_bce: 0.0439, alpha: 0.0171
+2026-06-11 06:33:16 transreid.train INFO: Epoch[18] Iter[200/227] Loss: 0.378, Acc: 0.975, Base Lr: 7.56e-03
+2026-06-11 06:33:16 transreid.train INFO: OCCAWARE occ_bce: 0.0437, alpha: 0.0169
+2026-06-11 06:33:17 transreid.train INFO: Epoch 18 done. Time per epoch: 15.575[s] Speed: 867.0[samples/s]
+2026-06-11 06:33:21 transreid.train INFO: Epoch[19] Iter[50/227] Loss: 0.354, Acc: 0.983, Base Lr: 7.52e-03
+2026-06-11 06:33:21 transreid.train INFO: OCCAWARE occ_bce: 0.0420, alpha: 0.0161
+2026-06-11 06:33:25 transreid.train INFO: Epoch[19] Iter[100/227] Loss: 0.359, Acc: 0.981, Base Lr: 7.52e-03
+2026-06-11 06:33:25 transreid.train INFO: OCCAWARE occ_bce: 0.0417, alpha: 0.0160
+2026-06-11 06:33:28 transreid.train INFO: Epoch[19] Iter[150/227] Loss: 0.363, Acc: 0.980, Base Lr: 7.52e-03
+2026-06-11 06:33:28 transreid.train INFO: OCCAWARE occ_bce: 0.0415, alpha: 0.0170
+2026-06-11 06:33:32 transreid.train INFO: Epoch[19] Iter[200/227] Loss: 0.362, Acc: 0.979, Base Lr: 7.52e-03
+2026-06-11 06:33:32 transreid.train INFO: OCCAWARE occ_bce: 0.0420, alpha: 0.0175
+2026-06-11 06:33:33 transreid.train INFO: Epoch 19 done. Time per epoch: 15.569[s] Speed: 867.4[samples/s]
+2026-06-11 06:33:37 transreid.train INFO: Epoch[20] Iter[50/227] Loss: 0.367, Acc: 0.981, Base Lr: 7.47e-03
+2026-06-11 06:33:37 transreid.train INFO: OCCAWARE occ_bce: 0.0440, alpha: 0.0178
+2026-06-11 06:33:40 transreid.train INFO: Epoch[20] Iter[100/227] Loss: 0.386, Acc: 0.978, Base Lr: 7.47e-03
+2026-06-11 06:33:40 transreid.train INFO: OCCAWARE occ_bce: 0.0428, alpha: 0.0181
+2026-06-11 06:33:44 transreid.train INFO: Epoch[20] Iter[150/227] Loss: 0.380, Acc: 0.977, Base Lr: 7.47e-03
+2026-06-11 06:33:44 transreid.train INFO: OCCAWARE occ_bce: 0.0421, alpha: 0.0175
+2026-06-11 06:33:48 transreid.train INFO: Epoch[20] Iter[200/227] Loss: 0.376, Acc: 0.977, Base Lr: 7.47e-03
+2026-06-11 06:33:48 transreid.train INFO: OCCAWARE occ_bce: 0.0412, alpha: 0.0186
+2026-06-11 06:33:48 transreid.train INFO: Epoch 20 done. Time per epoch: 15.632[s] Speed: 867.9[samples/s]
+2026-06-11 06:33:52 transreid.train INFO: Epoch[21] Iter[50/227] Loss: 0.350, Acc: 0.979, Base Lr: 7.41e-03
+2026-06-11 06:33:52 transreid.train INFO: OCCAWARE occ_bce: 0.0403, alpha: 0.0178
+2026-06-11 06:33:56 transreid.train INFO: Epoch[21] Iter[100/227] Loss: 0.351, Acc: 0.978, Base Lr: 7.41e-03
+2026-06-11 06:33:56 transreid.train INFO: OCCAWARE occ_bce: 0.0390, alpha: 0.0187
+2026-06-11 06:34:00 transreid.train INFO: Epoch[21] Iter[150/227] Loss: 0.346, Acc: 0.977, Base Lr: 7.41e-03
+2026-06-11 06:34:00 transreid.train INFO: OCCAWARE occ_bce: 0.0393, alpha: 0.0182
+2026-06-11 06:34:03 transreid.train INFO: Epoch[21] Iter[200/227] Loss: 0.339, Acc: 0.978, Base Lr: 7.41e-03
+2026-06-11 06:34:03 transreid.train INFO: OCCAWARE occ_bce: 0.0392, alpha: 0.0182
+2026-06-11 06:34:04 transreid.train INFO: Epoch 21 done. Time per epoch: 15.589[s] Speed: 866.3[samples/s]
+2026-06-11 06:34:08 transreid.train INFO: Epoch[22] Iter[50/227] Loss: 0.315, Acc: 0.982, Base Lr: 7.36e-03
+2026-06-11 06:34:08 transreid.train INFO: OCCAWARE occ_bce: 0.0392, alpha: 0.0188
+2026-06-11 06:34:12 transreid.train INFO: Epoch[22] Iter[100/227] Loss: 0.319, Acc: 0.980, Base Lr: 7.36e-03
+2026-06-11 06:34:12 transreid.train INFO: OCCAWARE occ_bce: 0.0389, alpha: 0.0188
+2026-06-11 06:34:15 transreid.train INFO: Epoch[22] Iter[150/227] Loss: 0.316, Acc: 0.980, Base Lr: 7.36e-03
+2026-06-11 06:34:15 transreid.train INFO: OCCAWARE occ_bce: 0.0392, alpha: 0.0192
+2026-06-11 06:34:19 transreid.train INFO: Epoch[22] Iter[200/227] Loss: 0.312, Acc: 0.981, Base Lr: 7.36e-03
+2026-06-11 06:34:19 transreid.train INFO: OCCAWARE occ_bce: 0.0393, alpha: 0.0197
+2026-06-11 06:34:20 transreid.train INFO: Epoch 22 done. Time per epoch: 15.486[s] Speed: 867.9[samples/s]
+2026-06-11 06:34:23 transreid.train INFO: Epoch[23] Iter[50/227] Loss: 0.335, Acc: 0.978, Base Lr: 7.30e-03
+2026-06-11 06:34:23 transreid.train INFO: OCCAWARE occ_bce: 0.0382, alpha: 0.0193
+2026-06-11 06:34:27 transreid.train INFO: Epoch[23] Iter[100/227] Loss: 0.326, Acc: 0.981, Base Lr: 7.30e-03
+2026-06-11 06:34:27 transreid.train INFO: OCCAWARE occ_bce: 0.0391, alpha: 0.0206
+2026-06-11 06:34:31 transreid.train INFO: Epoch[23] Iter[150/227] Loss: 0.307, Acc: 0.981, Base Lr: 7.30e-03
+2026-06-11 06:34:31 transreid.train INFO: OCCAWARE occ_bce: 0.0392, alpha: 0.0213
+2026-06-11 06:34:34 transreid.train INFO: Epoch[23] Iter[200/227] Loss: 0.295, Acc: 0.982, Base Lr: 7.30e-03
+2026-06-11 06:34:34 transreid.train INFO: OCCAWARE occ_bce: 0.0386, alpha: 0.0211
+2026-06-11 06:34:35 transreid.train INFO: Epoch 23 done. Time per epoch: 15.653[s] Speed: 866.8[samples/s]
+2026-06-11 06:34:39 transreid.train INFO: Epoch[24] Iter[50/227] Loss: 0.292, Acc: 0.980, Base Lr: 7.24e-03
+2026-06-11 06:34:39 transreid.train INFO: OCCAWARE occ_bce: 0.0364, alpha: 0.0219
+2026-06-11 06:34:43 transreid.train INFO: Epoch[24] Iter[100/227] Loss: 0.297, Acc: 0.980, Base Lr: 7.24e-03
+2026-06-11 06:34:43 transreid.train INFO: OCCAWARE occ_bce: 0.0366, alpha: 0.0218
+2026-06-11 06:34:46 transreid.train INFO: Epoch[24] Iter[150/227] Loss: 0.301, Acc: 0.980, Base Lr: 7.24e-03
+2026-06-11 06:34:46 transreid.train INFO: OCCAWARE occ_bce: 0.0370, alpha: 0.0224
+2026-06-11 06:34:50 transreid.train INFO: Epoch[24] Iter[200/227] Loss: 0.295, Acc: 0.981, Base Lr: 7.24e-03
+2026-06-11 06:34:50 transreid.train INFO: OCCAWARE occ_bce: 0.0375, alpha: 0.0224
+2026-06-11 06:34:51 transreid.train INFO: Epoch 24 done. Time per epoch: 15.571[s] Speed: 867.3[samples/s]
+2026-06-11 06:34:55 transreid.train INFO: Epoch[25] Iter[50/227] Loss: 0.276, Acc: 0.983, Base Lr: 7.18e-03
+2026-06-11 06:34:55 transreid.train INFO: OCCAWARE occ_bce: 0.0381, alpha: 0.0220
+2026-06-11 06:34:58 transreid.train INFO: Epoch[25] Iter[100/227] Loss: 0.281, Acc: 0.983, Base Lr: 7.18e-03
+2026-06-11 06:34:58 transreid.train INFO: OCCAWARE occ_bce: 0.0383, alpha: 0.0218
+2026-06-11 06:35:02 transreid.train INFO: Epoch[25] Iter[150/227] Loss: 0.279, Acc: 0.983, Base Lr: 7.18e-03
+2026-06-11 06:35:02 transreid.train INFO: OCCAWARE occ_bce: 0.0382, alpha: 0.0223
+2026-06-11 06:35:06 transreid.train INFO: Epoch[25] Iter[200/227] Loss: 0.278, Acc: 0.984, Base Lr: 7.18e-03
+2026-06-11 06:35:06 transreid.train INFO: OCCAWARE occ_bce: 0.0380, alpha: 0.0223
+2026-06-11 06:35:06 transreid.train INFO: Epoch 25 done. Time per epoch: 15.640[s] Speed: 867.5[samples/s]
+2026-06-11 06:35:10 transreid.train INFO: Epoch[26] Iter[50/227] Loss: 0.304, Acc: 0.985, Base Lr: 7.11e-03
+2026-06-11 06:35:10 transreid.train INFO: OCCAWARE occ_bce: 0.0384, alpha: 0.0213
+2026-06-11 06:35:14 transreid.train INFO: Epoch[26] Iter[100/227] Loss: 0.280, Acc: 0.986, Base Lr: 7.11e-03
+2026-06-11 06:35:14 transreid.train INFO: OCCAWARE occ_bce: 0.0378, alpha: 0.0215
+2026-06-11 06:35:18 transreid.train INFO: Epoch[26] Iter[150/227] Loss: 0.280, Acc: 0.985, Base Lr: 7.11e-03
+2026-06-11 06:35:18 transreid.train INFO: OCCAWARE occ_bce: 0.0380, alpha: 0.0223
+2026-06-11 06:35:21 transreid.train INFO: Epoch[26] Iter[200/227] Loss: 0.270, Acc: 0.985, Base Lr: 7.11e-03
+2026-06-11 06:35:21 transreid.train INFO: OCCAWARE occ_bce: 0.0376, alpha: 0.0229
+2026-06-11 06:35:22 transreid.train INFO: Epoch 26 done. Time per epoch: 15.712[s] Speed: 867.6[samples/s]
+2026-06-11 06:35:26 transreid.train INFO: Epoch[27] Iter[50/227] Loss: 0.300, Acc: 0.981, Base Lr: 7.04e-03
+2026-06-11 06:35:26 transreid.train INFO: OCCAWARE occ_bce: 0.0369, alpha: 0.0233
+2026-06-11 06:35:30 transreid.train INFO: Epoch[27] Iter[100/227] Loss: 0.275, Acc: 0.983, Base Lr: 7.04e-03
+2026-06-11 06:35:30 transreid.train INFO: OCCAWARE occ_bce: 0.0370, alpha: 0.0229
+2026-06-11 06:35:33 transreid.train INFO: Epoch[27] Iter[150/227] Loss: 0.264, Acc: 0.983, Base Lr: 7.04e-03
+2026-06-11 06:35:33 transreid.train INFO: OCCAWARE occ_bce: 0.0372, alpha: 0.0238
+2026-06-11 06:35:37 transreid.train INFO: Epoch[27] Iter[200/227] Loss: 0.263, Acc: 0.983, Base Lr: 7.04e-03
+2026-06-11 06:35:37 transreid.train INFO: OCCAWARE occ_bce: 0.0372, alpha: 0.0243
+2026-06-11 06:35:38 transreid.train INFO: Epoch 27 done. Time per epoch: 15.645[s] Speed: 867.2[samples/s]
+2026-06-11 06:35:42 transreid.train INFO: Epoch[28] Iter[50/227] Loss: 0.270, Acc: 0.986, Base Lr: 6.97e-03
+2026-06-11 06:35:42 transreid.train INFO: OCCAWARE occ_bce: 0.0377, alpha: 0.0239
+2026-06-11 06:35:45 transreid.train INFO: Epoch[28] Iter[100/227] Loss: 0.262, Acc: 0.987, Base Lr: 6.97e-03
+2026-06-11 06:35:45 transreid.train INFO: OCCAWARE occ_bce: 0.0375, alpha: 0.0227
+2026-06-11 06:35:49 transreid.train INFO: Epoch[28] Iter[150/227] Loss: 0.262, Acc: 0.987, Base Lr: 6.97e-03
+2026-06-11 06:35:49 transreid.train INFO: OCCAWARE occ_bce: 0.0373, alpha: 0.0232
+2026-06-11 06:35:53 transreid.train INFO: Epoch[28] Iter[200/227] Loss: 0.247, Acc: 0.987, Base Lr: 6.97e-03
+2026-06-11 06:35:53 transreid.train INFO: OCCAWARE occ_bce: 0.0375, alpha: 0.0236
+2026-06-11 06:35:53 transreid.train INFO: Epoch 28 done. Time per epoch: 15.650[s] Speed: 866.9[samples/s]
+2026-06-11 06:35:57 transreid.train INFO: Epoch[29] Iter[50/227] Loss: 0.272, Acc: 0.985, Base Lr: 6.90e-03
+2026-06-11 06:35:57 transreid.train INFO: OCCAWARE occ_bce: 0.0362, alpha: 0.0239
+2026-06-11 06:36:01 transreid.train INFO: Epoch[29] Iter[100/227] Loss: 0.265, Acc: 0.983, Base Lr: 6.90e-03
+2026-06-11 06:36:01 transreid.train INFO: OCCAWARE occ_bce: 0.0365, alpha: 0.0242
+2026-06-11 06:36:05 transreid.train INFO: Epoch[29] Iter[150/227] Loss: 0.270, Acc: 0.983, Base Lr: 6.90e-03
+2026-06-11 06:36:05 transreid.train INFO: OCCAWARE occ_bce: 0.0417, alpha: 0.0256
+2026-06-11 06:36:08 transreid.train INFO: Epoch[29] Iter[200/227] Loss: 0.265, Acc: 0.984, Base Lr: 6.90e-03
+2026-06-11 06:36:08 transreid.train INFO: OCCAWARE occ_bce: 0.0407, alpha: 0.0248
+2026-06-11 06:36:09 transreid.train INFO: Epoch 29 done. Time per epoch: 15.576[s] Speed: 867.0[samples/s]
+2026-06-11 06:36:13 transreid.train INFO: Epoch[30] Iter[50/227] Loss: 0.259, Acc: 0.983, Base Lr: 6.83e-03
+2026-06-11 06:36:13 transreid.train INFO: OCCAWARE occ_bce: 0.0386, alpha: 0.0257
+2026-06-11 06:36:16 transreid.train INFO: Epoch[30] Iter[100/227] Loss: 0.245, Acc: 0.985, Base Lr: 6.83e-03
+2026-06-11 06:36:16 transreid.train INFO: OCCAWARE occ_bce: 0.0366, alpha: 0.0263
+2026-06-11 06:36:20 transreid.train INFO: Epoch[30] Iter[150/227] Loss: 0.237, Acc: 0.986, Base Lr: 6.83e-03
+2026-06-11 06:36:20 transreid.train INFO: OCCAWARE occ_bce: 0.0363, alpha: 0.0255
+2026-06-11 06:36:24 transreid.train INFO: Epoch[30] Iter[200/227] Loss: 0.240, Acc: 0.985, Base Lr: 6.83e-03
+2026-06-11 06:36:24 transreid.train INFO: OCCAWARE occ_bce: 0.0366, alpha: 0.0250
+2026-06-11 06:36:25 transreid.train INFO: Epoch 30 done. Time per epoch: 15.709[s] Speed: 867.8[samples/s]
+2026-06-11 06:36:29 transreid.train INFO: Epoch[31] Iter[50/227] Loss: 0.206, Acc: 0.987, Base Lr: 6.76e-03
+2026-06-11 06:36:29 transreid.train INFO: OCCAWARE occ_bce: 0.0346, alpha: 0.0256
+2026-06-11 06:36:32 transreid.train INFO: Epoch[31] Iter[100/227] Loss: 0.210, Acc: 0.988, Base Lr: 6.76e-03
+2026-06-11 06:36:32 transreid.train INFO: OCCAWARE occ_bce: 0.0353, alpha: 0.0253
+2026-06-11 06:36:36 transreid.train INFO: Epoch[31] Iter[150/227] Loss: 0.225, Acc: 0.988, Base Lr: 6.76e-03
+2026-06-11 06:36:36 transreid.train INFO: OCCAWARE occ_bce: 0.0358, alpha: 0.0270
+2026-06-11 06:36:39 transreid.train INFO: Epoch[31] Iter[200/227] Loss: 0.234, Acc: 0.986, Base Lr: 6.76e-03
+2026-06-11 06:36:39 transreid.train INFO: OCCAWARE occ_bce: 0.0367, alpha: 0.0275
+2026-06-11 06:36:40 transreid.train INFO: Epoch 31 done. Time per epoch: 15.647[s] Speed: 867.1[samples/s]
+2026-06-11 06:36:44 transreid.train INFO: Epoch[32] Iter[50/227] Loss: 0.239, Acc: 0.986, Base Lr: 6.68e-03
+2026-06-11 06:36:44 transreid.train INFO: OCCAWARE occ_bce: 0.0361, alpha: 0.0279
+2026-06-11 06:36:48 transreid.train INFO: Epoch[32] Iter[100/227] Loss: 0.239, Acc: 0.986, Base Lr: 6.68e-03
+2026-06-11 06:36:48 transreid.train INFO: OCCAWARE occ_bce: 0.0364, alpha: 0.0273
+2026-06-11 06:36:51 transreid.train INFO: Epoch[32] Iter[150/227] Loss: 0.232, Acc: 0.988, Base Lr: 6.68e-03
+2026-06-11 06:36:51 transreid.train INFO: OCCAWARE occ_bce: 0.0362, alpha: 0.0271
+2026-06-11 06:36:55 transreid.train INFO: Epoch[32] Iter[200/227] Loss: 0.223, Acc: 0.988, Base Lr: 6.68e-03
+2026-06-11 06:36:55 transreid.train INFO: OCCAWARE occ_bce: 0.0361, alpha: 0.0272
+2026-06-11 06:36:56 transreid.train INFO: Epoch 32 done. Time per epoch: 15.422[s] Speed: 867.4[samples/s]
+2026-06-11 06:37:00 transreid.train INFO: Epoch[33] Iter[50/227] Loss: 0.237, Acc: 0.987, Base Lr: 6.60e-03
+2026-06-11 06:37:00 transreid.train INFO: OCCAWARE occ_bce: 0.0350, alpha: 0.0266
+2026-06-11 06:37:03 transreid.train INFO: Epoch[33] Iter[100/227] Loss: 0.232, Acc: 0.986, Base Lr: 6.60e-03
+2026-06-11 06:37:03 transreid.train INFO: OCCAWARE occ_bce: 0.0346, alpha: 0.0275
+2026-06-11 06:37:07 transreid.train INFO: Epoch[33] Iter[150/227] Loss: 0.226, Acc: 0.987, Base Lr: 6.60e-03
+2026-06-11 06:37:07 transreid.train INFO: OCCAWARE occ_bce: 0.0345, alpha: 0.0291
+2026-06-11 06:37:11 transreid.train INFO: Epoch[33] Iter[200/227] Loss: 0.218, Acc: 0.987, Base Lr: 6.60e-03
+2026-06-11 06:37:11 transreid.train INFO: OCCAWARE occ_bce: 0.0346, alpha: 0.0294
+2026-06-11 06:37:11 transreid.train INFO: Epoch 33 done. Time per epoch: 15.572[s] Speed: 867.2[samples/s]
+2026-06-11 06:37:15 transreid.train INFO: Epoch[34] Iter[50/227] Loss: 0.217, Acc: 0.987, Base Lr: 6.52e-03
+2026-06-11 06:37:15 transreid.train INFO: OCCAWARE occ_bce: 0.0394, alpha: 0.0295
+2026-06-11 06:37:19 transreid.train INFO: Epoch[34] Iter[100/227] Loss: 0.210, Acc: 0.988, Base Lr: 6.52e-03
+2026-06-11 06:37:19 transreid.train INFO: OCCAWARE occ_bce: 0.0371, alpha: 0.0302
+2026-06-11 06:37:22 transreid.train INFO: Epoch[34] Iter[150/227] Loss: 0.212, Acc: 0.989, Base Lr: 6.52e-03
+2026-06-11 06:37:22 transreid.train INFO: OCCAWARE occ_bce: 0.0366, alpha: 0.0309
+2026-06-11 06:37:26 transreid.train INFO: Epoch[34] Iter[200/227] Loss: 0.215, Acc: 0.988, Base Lr: 6.52e-03
+2026-06-11 06:37:26 transreid.train INFO: OCCAWARE occ_bce: 0.0363, alpha: 0.0311
+2026-06-11 06:37:27 transreid.train INFO: Epoch 34 done. Time per epoch: 15.737[s] Speed: 866.2[samples/s]
+2026-06-11 06:37:31 transreid.train INFO: Epoch[35] Iter[50/227] Loss: 0.224, Acc: 0.987, Base Lr: 6.44e-03
+2026-06-11 06:37:31 transreid.train INFO: OCCAWARE occ_bce: 0.0370, alpha: 0.0313
+2026-06-11 06:37:35 transreid.train INFO: Epoch[35] Iter[100/227] Loss: 0.214, Acc: 0.988, Base Lr: 6.44e-03
+2026-06-11 06:37:35 transreid.train INFO: OCCAWARE occ_bce: 0.0359, alpha: 0.0319
+2026-06-11 06:37:38 transreid.train INFO: Epoch[35] Iter[150/227] Loss: 0.213, Acc: 0.988, Base Lr: 6.44e-03
+2026-06-11 06:37:38 transreid.train INFO: OCCAWARE occ_bce: 0.0357, alpha: 0.0324
+2026-06-11 06:37:42 transreid.train INFO: Epoch[35] Iter[200/227] Loss: 0.212, Acc: 0.988, Base Lr: 6.44e-03
+2026-06-11 06:37:42 transreid.train INFO: OCCAWARE occ_bce: 0.0354, alpha: 0.0329
+2026-06-11 06:37:43 transreid.train INFO: Epoch 35 done. Time per epoch: 15.642[s] Speed: 867.4[samples/s]
+2026-06-11 06:37:47 transreid.train INFO: Epoch[36] Iter[50/227] Loss: 0.191, Acc: 0.991, Base Lr: 6.35e-03
+2026-06-11 06:37:47 transreid.train INFO: OCCAWARE occ_bce: 0.0339, alpha: 0.0334
+2026-06-11 06:37:50 transreid.train INFO: Epoch[36] Iter[100/227] Loss: 0.189, Acc: 0.991, Base Lr: 6.35e-03
+2026-06-11 06:37:50 transreid.train INFO: OCCAWARE occ_bce: 0.0343, alpha: 0.0337
+2026-06-11 06:37:54 transreid.train INFO: Epoch[36] Iter[150/227] Loss: 0.194, Acc: 0.990, Base Lr: 6.35e-03
+2026-06-11 06:37:54 transreid.train INFO: OCCAWARE occ_bce: 0.0338, alpha: 0.0338
+2026-06-11 06:37:57 transreid.train INFO: Epoch[36] Iter[200/227] Loss: 0.186, Acc: 0.990, Base Lr: 6.35e-03
+2026-06-11 06:37:57 transreid.train INFO: OCCAWARE occ_bce: 0.0342, alpha: 0.0334
+2026-06-11 06:37:58 transreid.train INFO: Epoch 36 done. Time per epoch: 15.564[s] Speed: 867.7[samples/s]
+2026-06-11 06:38:02 transreid.train INFO: Epoch[37] Iter[50/227] Loss: 0.245, Acc: 0.983, Base Lr: 6.27e-03
+2026-06-11 06:38:02 transreid.train INFO: OCCAWARE occ_bce: 0.0354, alpha: 0.0332
+2026-06-11 06:38:06 transreid.train INFO: Epoch[37] Iter[100/227] Loss: 0.221, Acc: 0.986, Base Lr: 6.27e-03
+2026-06-11 06:38:06 transreid.train INFO: OCCAWARE occ_bce: 0.0343, alpha: 0.0331
+2026-06-11 06:38:09 transreid.train INFO: Epoch[37] Iter[150/227] Loss: 0.211, Acc: 0.988, Base Lr: 6.27e-03
+2026-06-11 06:38:09 transreid.train INFO: OCCAWARE occ_bce: 0.0342, alpha: 0.0329
+2026-06-11 06:38:13 transreid.train INFO: Epoch[37] Iter[200/227] Loss: 0.205, Acc: 0.988, Base Lr: 6.27e-03
+2026-06-11 06:38:13 transreid.train INFO: OCCAWARE occ_bce: 0.0346, alpha: 0.0329
+2026-06-11 06:38:14 transreid.train INFO: Epoch 37 done. Time per epoch: 15.651[s] Speed: 866.9[samples/s]
+2026-06-11 06:38:18 transreid.train INFO: Epoch[38] Iter[50/227] Loss: 0.188, Acc: 0.987, Base Lr: 6.18e-03
+2026-06-11 06:38:18 transreid.train INFO: OCCAWARE occ_bce: 0.0328, alpha: 0.0327
+2026-06-11 06:38:21 transreid.train INFO: Epoch[38] Iter[100/227] Loss: 0.185, Acc: 0.988, Base Lr: 6.18e-03
+2026-06-11 06:38:21 transreid.train INFO: OCCAWARE occ_bce: 0.0334, alpha: 0.0330
+2026-06-11 06:38:25 transreid.train INFO: Epoch[38] Iter[150/227] Loss: 0.180, Acc: 0.988, Base Lr: 6.18e-03
+2026-06-11 06:38:25 transreid.train INFO: OCCAWARE occ_bce: 0.0333, alpha: 0.0332
+2026-06-11 06:38:29 transreid.train INFO: Epoch[38] Iter[200/227] Loss: 0.182, Acc: 0.989, Base Lr: 6.18e-03
+2026-06-11 06:38:29 transreid.train INFO: OCCAWARE occ_bce: 0.0334, alpha: 0.0325
+2026-06-11 06:38:30 transreid.train INFO: Epoch 38 done. Time per epoch: 15.572[s] Speed: 867.2[samples/s]
+2026-06-11 06:38:33 transreid.train INFO: Epoch[39] Iter[50/227] Loss: 0.191, Acc: 0.989, Base Lr: 6.09e-03
+2026-06-11 06:38:33 transreid.train INFO: OCCAWARE occ_bce: 0.0335, alpha: 0.0323
+2026-06-11 06:38:37 transreid.train INFO: Epoch[39] Iter[100/227] Loss: 0.186, Acc: 0.990, Base Lr: 6.09e-03
+2026-06-11 06:38:37 transreid.train INFO: OCCAWARE occ_bce: 0.0338, alpha: 0.0328
+2026-06-11 06:38:41 transreid.train INFO: Epoch[39] Iter[150/227] Loss: 0.182, Acc: 0.989, Base Lr: 6.09e-03
+2026-06-11 06:38:41 transreid.train INFO: OCCAWARE occ_bce: 0.0336, alpha: 0.0330
+2026-06-11 06:38:44 transreid.train INFO: Epoch[39] Iter[200/227] Loss: 0.180, Acc: 0.989, Base Lr: 6.09e-03
+2026-06-11 06:38:44 transreid.train INFO: OCCAWARE occ_bce: 0.0342, alpha: 0.0328
+2026-06-11 06:38:45 transreid.train INFO: Epoch 39 done. Time per epoch: 15.651[s] Speed: 866.9[samples/s]
+2026-06-11 06:38:49 transreid.train INFO: Epoch[40] Iter[50/227] Loss: 0.182, Acc: 0.991, Base Lr: 6.00e-03
+2026-06-11 06:38:49 transreid.train INFO: OCCAWARE occ_bce: 0.0333, alpha: 0.0326
+2026-06-11 06:38:53 transreid.train INFO: Epoch[40] Iter[100/227] Loss: 0.180, Acc: 0.990, Base Lr: 6.00e-03
+2026-06-11 06:38:53 transreid.train INFO: OCCAWARE occ_bce: 0.0342, alpha: 0.0335
+2026-06-11 06:38:56 transreid.train INFO: Epoch[40] Iter[150/227] Loss: 0.170, Acc: 0.991, Base Lr: 6.00e-03
+2026-06-11 06:38:56 transreid.train INFO: OCCAWARE occ_bce: 0.0342, alpha: 0.0337
+2026-06-11 06:39:00 transreid.train INFO: Epoch[40] Iter[200/227] Loss: 0.171, Acc: 0.991, Base Lr: 6.00e-03
+2026-06-11 06:39:00 transreid.train INFO: OCCAWARE occ_bce: 0.0344, alpha: 0.0339
+2026-06-11 06:39:01 transreid.train INFO: Epoch 40 done. Time per epoch: 15.539[s] Speed: 869.0[samples/s]
+2026-06-11 06:39:05 transreid.train INFO: Epoch[41] Iter[50/227] Loss: 0.203, Acc: 0.990, Base Lr: 5.91e-03
+2026-06-11 06:39:05 transreid.train INFO: OCCAWARE occ_bce: 0.0358, alpha: 0.0334
+2026-06-11 06:39:08 transreid.train INFO: Epoch[41] Iter[100/227] Loss: 0.175, Acc: 0.992, Base Lr: 5.91e-03
+2026-06-11 06:39:08 transreid.train INFO: OCCAWARE occ_bce: 0.0352, alpha: 0.0338
+2026-06-11 06:39:12 transreid.train INFO: Epoch[41] Iter[150/227] Loss: 0.172, Acc: 0.992, Base Lr: 5.91e-03
+2026-06-11 06:39:12 transreid.train INFO: OCCAWARE occ_bce: 0.0348, alpha: 0.0337
+2026-06-11 06:39:15 transreid.train INFO: Epoch[41] Iter[200/227] Loss: 0.171, Acc: 0.992, Base Lr: 5.91e-03
+2026-06-11 06:39:15 transreid.train INFO: OCCAWARE occ_bce: 0.0347, alpha: 0.0350
+2026-06-11 06:39:16 transreid.train INFO: Epoch 41 done. Time per epoch: 15.641[s] Speed: 867.5[samples/s]
+2026-06-11 06:39:20 transreid.train INFO: Epoch[42] Iter[50/227] Loss: 0.178, Acc: 0.988, Base Lr: 5.82e-03
+2026-06-11 06:39:20 transreid.train INFO: OCCAWARE occ_bce: 0.0346, alpha: 0.0356
+2026-06-11 06:39:24 transreid.train INFO: Epoch[42] Iter[100/227] Loss: 0.180, Acc: 0.987, Base Lr: 5.82e-03
+2026-06-11 06:39:24 transreid.train INFO: OCCAWARE occ_bce: 0.0338, alpha: 0.0360
+2026-06-11 06:39:28 transreid.train INFO: Epoch[42] Iter[150/227] Loss: 0.177, Acc: 0.988, Base Lr: 5.82e-03
+2026-06-11 06:39:28 transreid.train INFO: OCCAWARE occ_bce: 0.0340, alpha: 0.0364
+2026-06-11 06:39:31 transreid.train INFO: Epoch[42] Iter[200/227] Loss: 0.169, Acc: 0.989, Base Lr: 5.82e-03
+2026-06-11 06:39:31 transreid.train INFO: OCCAWARE occ_bce: 0.0340, alpha: 0.0365
+2026-06-11 06:39:32 transreid.train INFO: Epoch 42 done. Time per epoch: 15.632[s] Speed: 859.8[samples/s]
+2026-06-11 06:39:36 transreid.train INFO: Epoch[43] Iter[50/227] Loss: 0.176, Acc: 0.990, Base Lr: 5.73e-03
+2026-06-11 06:39:36 transreid.train INFO: OCCAWARE occ_bce: 0.0324, alpha: 0.0365
+2026-06-11 06:39:39 transreid.train INFO: Epoch[43] Iter[100/227] Loss: 0.178, Acc: 0.989, Base Lr: 5.73e-03
+2026-06-11 06:39:39 transreid.train INFO: OCCAWARE occ_bce: 0.0324, alpha: 0.0364
+2026-06-11 06:39:43 transreid.train INFO: Epoch[43] Iter[150/227] Loss: 0.183, Acc: 0.989, Base Lr: 5.73e-03
+2026-06-11 06:39:43 transreid.train INFO: OCCAWARE occ_bce: 0.0327, alpha: 0.0363
+2026-06-11 06:39:47 transreid.train INFO: Epoch[43] Iter[200/227] Loss: 0.172, Acc: 0.990, Base Lr: 5.73e-03
+2026-06-11 06:39:47 transreid.train INFO: OCCAWARE occ_bce: 0.0328, alpha: 0.0362
+2026-06-11 06:39:48 transreid.train INFO: Epoch 43 done. Time per epoch: 15.602[s] Speed: 865.5[samples/s]
+2026-06-11 06:39:51 transreid.train INFO: Epoch[44] Iter[50/227] Loss: 0.155, Acc: 0.994, Base Lr: 5.63e-03
+2026-06-11 06:39:51 transreid.train INFO: OCCAWARE occ_bce: 0.0337, alpha: 0.0361
+2026-06-11 06:39:55 transreid.train INFO: Epoch[44] Iter[100/227] Loss: 0.150, Acc: 0.993, Base Lr: 5.63e-03
+2026-06-11 06:39:55 transreid.train INFO: OCCAWARE occ_bce: 0.0329, alpha: 0.0361
+2026-06-11 06:39:59 transreid.train INFO: Epoch[44] Iter[150/227] Loss: 0.155, Acc: 0.993, Base Lr: 5.63e-03
+2026-06-11 06:39:59 transreid.train INFO: OCCAWARE occ_bce: 0.0329, alpha: 0.0364
+2026-06-11 06:40:02 transreid.train INFO: Epoch[44] Iter[200/227] Loss: 0.154, Acc: 0.992, Base Lr: 5.63e-03
+2026-06-11 06:40:02 transreid.train INFO: OCCAWARE occ_bce: 0.0327, alpha: 0.0367
+2026-06-11 06:40:03 transreid.train INFO: Epoch 44 done. Time per epoch: 15.486[s] Speed: 867.9[samples/s]
+2026-06-11 06:40:07 transreid.train INFO: Epoch[45] Iter[50/227] Loss: 0.173, Acc: 0.991, Base Lr: 5.54e-03
+2026-06-11 06:40:07 transreid.train INFO: OCCAWARE occ_bce: 0.0322, alpha: 0.0374
+2026-06-11 06:40:11 transreid.train INFO: Epoch[45] Iter[100/227] Loss: 0.176, Acc: 0.989, Base Lr: 5.54e-03
+2026-06-11 06:40:11 transreid.train INFO: OCCAWARE occ_bce: 0.0326, alpha: 0.0373
+2026-06-11 06:40:14 transreid.train INFO: Epoch[45] Iter[150/227] Loss: 0.171, Acc: 0.990, Base Lr: 5.54e-03
+2026-06-11 06:40:14 transreid.train INFO: OCCAWARE occ_bce: 0.0326, alpha: 0.0373
+2026-06-11 06:40:18 transreid.train INFO: Epoch[45] Iter[200/227] Loss: 0.167, Acc: 0.990, Base Lr: 5.54e-03
+2026-06-11 06:40:18 transreid.train INFO: OCCAWARE occ_bce: 0.0328, alpha: 0.0373
+2026-06-11 06:40:19 transreid.train INFO: Epoch 45 done. Time per epoch: 15.687[s] Speed: 864.9[samples/s]
+2026-06-11 06:40:23 transreid.train INFO: Epoch[46] Iter[50/227] Loss: 0.159, Acc: 0.989, Base Lr: 5.44e-03
+2026-06-11 06:40:23 transreid.train INFO: OCCAWARE occ_bce: 0.0323, alpha: 0.0374
+2026-06-11 06:40:26 transreid.train INFO: Epoch[46] Iter[100/227] Loss: 0.159, Acc: 0.991, Base Lr: 5.44e-03
+2026-06-11 06:40:26 transreid.train INFO: OCCAWARE occ_bce: 0.0324, alpha: 0.0376
+2026-06-11 06:40:30 transreid.train INFO: Epoch[46] Iter[150/227] Loss: 0.159, Acc: 0.991, Base Lr: 5.44e-03
+2026-06-11 06:40:30 transreid.train INFO: OCCAWARE occ_bce: 0.0322, alpha: 0.0380
+2026-06-11 06:40:34 transreid.train INFO: Epoch[46] Iter[200/227] Loss: 0.160, Acc: 0.991, Base Lr: 5.44e-03
+2026-06-11 06:40:34 transreid.train INFO: OCCAWARE occ_bce: 0.0326, alpha: 0.0379
+2026-06-11 06:40:34 transreid.train INFO: Epoch 46 done. Time per epoch: 15.646[s] Speed: 867.2[samples/s]
+2026-06-11 06:40:38 transreid.train INFO: Epoch[47] Iter[50/227] Loss: 0.150, Acc: 0.989, Base Lr: 5.34e-03
+2026-06-11 06:40:38 transreid.train INFO: OCCAWARE occ_bce: 0.0320, alpha: 0.0387
+2026-06-11 06:40:42 transreid.train INFO: Epoch[47] Iter[100/227] Loss: 0.146, Acc: 0.991, Base Lr: 5.34e-03
+2026-06-11 06:40:42 transreid.train INFO: OCCAWARE occ_bce: 0.0314, alpha: 0.0388
+2026-06-11 06:40:46 transreid.train INFO: Epoch[47] Iter[150/227] Loss: 0.143, Acc: 0.991, Base Lr: 5.34e-03
+2026-06-11 06:40:46 transreid.train INFO: OCCAWARE occ_bce: 0.0316, alpha: 0.0383
+2026-06-11 06:40:49 transreid.train INFO: Epoch[47] Iter[200/227] Loss: 0.141, Acc: 0.991, Base Lr: 5.34e-03
+2026-06-11 06:40:49 transreid.train INFO: OCCAWARE occ_bce: 0.0316, alpha: 0.0387
+2026-06-11 06:40:50 transreid.train INFO: Epoch 47 done. Time per epoch: 15.708[s] Speed: 867.8[samples/s]
+2026-06-11 06:40:54 transreid.train INFO: Epoch[48] Iter[50/227] Loss: 0.158, Acc: 0.993, Base Lr: 5.24e-03
+2026-06-11 06:40:54 transreid.train INFO: OCCAWARE occ_bce: 0.0319, alpha: 0.0385
+2026-06-11 06:40:58 transreid.train INFO: Epoch[48] Iter[100/227] Loss: 0.153, Acc: 0.993, Base Lr: 5.24e-03
+2026-06-11 06:40:58 transreid.train INFO: OCCAWARE occ_bce: 0.0315, alpha: 0.0384
+2026-06-11 06:41:01 transreid.train INFO: Epoch[48] Iter[150/227] Loss: 0.154, Acc: 0.992, Base Lr: 5.24e-03
+2026-06-11 06:41:01 transreid.train INFO: OCCAWARE occ_bce: 0.0316, alpha: 0.0383
+2026-06-11 06:41:05 transreid.train INFO: Epoch[48] Iter[200/227] Loss: 0.144, Acc: 0.992, Base Lr: 5.24e-03
+2026-06-11 06:41:05 transreid.train INFO: OCCAWARE occ_bce: 0.0317, alpha: 0.0381
+2026-06-11 06:41:06 transreid.train INFO: Epoch 48 done. Time per epoch: 15.732[s] Speed: 866.5[samples/s]
+2026-06-11 06:41:10 transreid.train INFO: Epoch[49] Iter[50/227] Loss: 0.148, Acc: 0.991, Base Lr: 5.14e-03
+2026-06-11 06:41:10 transreid.train INFO: OCCAWARE occ_bce: 0.0320, alpha: 0.0382
+2026-06-11 06:41:13 transreid.train INFO: Epoch[49] Iter[100/227] Loss: 0.151, Acc: 0.991, Base Lr: 5.14e-03
+2026-06-11 06:41:13 transreid.train INFO: OCCAWARE occ_bce: 0.0320, alpha: 0.0380
+2026-06-11 06:41:17 transreid.train INFO: Epoch[49] Iter[150/227] Loss: 0.149, Acc: 0.991, Base Lr: 5.14e-03
+2026-06-11 06:41:17 transreid.train INFO: OCCAWARE occ_bce: 0.0318, alpha: 0.0377
+2026-06-11 06:41:21 transreid.train INFO: Epoch[49] Iter[200/227] Loss: 0.143, Acc: 0.992, Base Lr: 5.14e-03
+2026-06-11 06:41:21 transreid.train INFO: OCCAWARE occ_bce: 0.0316, alpha: 0.0381
+2026-06-11 06:41:21 transreid.train INFO: Epoch 49 done. Time per epoch: 15.558[s] Speed: 868.0[samples/s]
+2026-06-11 06:41:25 transreid.train INFO: Epoch[50] Iter[50/227] Loss: 0.160, Acc: 0.992, Base Lr: 5.04e-03
+2026-06-11 06:41:25 transreid.train INFO: OCCAWARE occ_bce: 0.0330, alpha: 0.0380
+2026-06-11 06:41:29 transreid.train INFO: Epoch[50] Iter[100/227] Loss: 0.149, Acc: 0.993, Base Lr: 5.04e-03
+2026-06-11 06:41:29 transreid.train INFO: OCCAWARE occ_bce: 0.0321, alpha: 0.0378
+2026-06-11 06:41:33 transreid.train INFO: Epoch[50] Iter[150/227] Loss: 0.150, Acc: 0.992, Base Lr: 5.04e-03
+2026-06-11 06:41:33 transreid.train INFO: OCCAWARE occ_bce: 0.0321, alpha: 0.0375
+2026-06-11 06:41:36 transreid.train INFO: Epoch[50] Iter[200/227] Loss: 0.144, Acc: 0.993, Base Lr: 5.04e-03
+2026-06-11 06:41:36 transreid.train INFO: OCCAWARE occ_bce: 0.0322, alpha: 0.0380
+2026-06-11 06:41:37 transreid.train INFO: Epoch 50 done. Time per epoch: 15.647[s] Speed: 867.1[samples/s]
+2026-06-11 06:41:41 transreid.train INFO: Epoch[51] Iter[50/227] Loss: 0.161, Acc: 0.989, Base Lr: 4.94e-03
+2026-06-11 06:41:41 transreid.train INFO: OCCAWARE occ_bce: 0.0306, alpha: 0.0378
+2026-06-11 06:41:45 transreid.train INFO: Epoch[51] Iter[100/227] Loss: 0.147, Acc: 0.991, Base Lr: 4.94e-03
+2026-06-11 06:41:45 transreid.train INFO: OCCAWARE occ_bce: 0.0307, alpha: 0.0375
+2026-06-11 06:41:48 transreid.train INFO: Epoch[51] Iter[150/227] Loss: 0.140, Acc: 0.992, Base Lr: 4.94e-03
+2026-06-11 06:41:48 transreid.train INFO: OCCAWARE occ_bce: 0.0308, alpha: 0.0375
+2026-06-11 06:41:52 transreid.train INFO: Epoch[51] Iter[200/227] Loss: 0.138, Acc: 0.993, Base Lr: 4.94e-03
+2026-06-11 06:41:52 transreid.train INFO: OCCAWARE occ_bce: 0.0310, alpha: 0.0371
+2026-06-11 06:41:53 transreid.train INFO: Epoch 51 done. Time per epoch: 15.595[s] Speed: 865.9[samples/s]
+2026-06-11 06:41:56 transreid.train INFO: Epoch[52] Iter[50/227] Loss: 0.147, Acc: 0.995, Base Lr: 4.84e-03
+2026-06-11 06:41:56 transreid.train INFO: OCCAWARE occ_bce: 0.0310, alpha: 0.0365
+2026-06-11 06:42:00 transreid.train INFO: Epoch[52] Iter[100/227] Loss: 0.149, Acc: 0.993, Base Lr: 4.84e-03
+2026-06-11 06:42:00 transreid.train INFO: OCCAWARE occ_bce: 0.0315, alpha: 0.0359
+2026-06-11 06:42:04 transreid.train INFO: Epoch[52] Iter[150/227] Loss: 0.142, Acc: 0.993, Base Lr: 4.84e-03
+2026-06-11 06:42:04 transreid.train INFO: OCCAWARE occ_bce: 0.0317, alpha: 0.0366
+2026-06-11 06:42:07 transreid.train INFO: Epoch[52] Iter[200/227] Loss: 0.138, Acc: 0.992, Base Lr: 4.84e-03
+2026-06-11 06:42:07 transreid.train INFO: OCCAWARE occ_bce: 0.0317, alpha: 0.0368
+2026-06-11 06:42:08 transreid.train INFO: Epoch 52 done. Time per epoch: 15.592[s] Speed: 866.1[samples/s]
+2026-06-11 06:42:12 transreid.train INFO: Epoch[53] Iter[50/227] Loss: 0.152, Acc: 0.993, Base Lr: 4.74e-03
+2026-06-11 06:42:12 transreid.train INFO: OCCAWARE occ_bce: 0.0310, alpha: 0.0369
+2026-06-11 06:42:16 transreid.train INFO: Epoch[53] Iter[100/227] Loss: 0.145, Acc: 0.994, Base Lr: 4.74e-03
+2026-06-11 06:42:16 transreid.train INFO: OCCAWARE occ_bce: 0.0311, alpha: 0.0369
+2026-06-11 06:42:19 transreid.train INFO: Epoch[53] Iter[150/227] Loss: 0.136, Acc: 0.995, Base Lr: 4.74e-03
+2026-06-11 06:42:19 transreid.train INFO: OCCAWARE occ_bce: 0.0312, alpha: 0.0367
+2026-06-11 06:42:23 transreid.train INFO: Epoch[53] Iter[200/227] Loss: 0.134, Acc: 0.995, Base Lr: 4.74e-03
+2026-06-11 06:42:23 transreid.train INFO: OCCAWARE occ_bce: 0.0312, alpha: 0.0365
+2026-06-11 06:42:24 transreid.train INFO: Epoch 53 done. Time per epoch: 15.638[s] Speed: 867.6[samples/s]
+2026-06-11 06:42:28 transreid.train INFO: Epoch[54] Iter[50/227] Loss: 0.132, Acc: 0.993, Base Lr: 4.63e-03
+2026-06-11 06:42:28 transreid.train INFO: OCCAWARE occ_bce: 0.0313, alpha: 0.0369
+2026-06-11 06:42:31 transreid.train INFO: Epoch[54] Iter[100/227] Loss: 0.131, Acc: 0.992, Base Lr: 4.63e-03
+2026-06-11 06:42:31 transreid.train INFO: OCCAWARE occ_bce: 0.0309, alpha: 0.0369
+2026-06-11 06:42:35 transreid.train INFO: Epoch[54] Iter[150/227] Loss: 0.129, Acc: 0.993, Base Lr: 4.63e-03
+2026-06-11 06:42:35 transreid.train INFO: OCCAWARE occ_bce: 0.0309, alpha: 0.0372
+2026-06-11 06:42:39 transreid.train INFO: Epoch[54] Iter[200/227] Loss: 0.128, Acc: 0.993, Base Lr: 4.63e-03
+2026-06-11 06:42:39 transreid.train INFO: OCCAWARE occ_bce: 0.0310, alpha: 0.0375
+2026-06-11 06:42:40 transreid.train INFO: Epoch 54 done. Time per epoch: 15.639[s] Speed: 867.6[samples/s]
+2026-06-11 06:42:43 transreid.train INFO: Epoch[55] Iter[50/227] Loss: 0.155, Acc: 0.992, Base Lr: 4.53e-03
+2026-06-11 06:42:43 transreid.train INFO: OCCAWARE occ_bce: 0.0313, alpha: 0.0371
+2026-06-11 06:42:47 transreid.train INFO: Epoch[55] Iter[100/227] Loss: 0.145, Acc: 0.992, Base Lr: 4.53e-03
+2026-06-11 06:42:47 transreid.train INFO: OCCAWARE occ_bce: 0.0307, alpha: 0.0371
+2026-06-11 06:42:51 transreid.train INFO: Epoch[55] Iter[150/227] Loss: 0.135, Acc: 0.993, Base Lr: 4.53e-03
+2026-06-11 06:42:51 transreid.train INFO: OCCAWARE occ_bce: 0.0304, alpha: 0.0370
+2026-06-11 06:42:54 transreid.train INFO: Epoch[55] Iter[200/227] Loss: 0.129, Acc: 0.993, Base Lr: 4.53e-03
+2026-06-11 06:42:54 transreid.train INFO: OCCAWARE occ_bce: 0.0306, alpha: 0.0369
+2026-06-11 06:42:55 transreid.train INFO: Epoch 55 done. Time per epoch: 15.567[s] Speed: 867.5[samples/s]
+2026-06-11 06:42:59 transreid.train INFO: Epoch[56] Iter[50/227] Loss: 0.115, Acc: 0.993, Base Lr: 4.43e-03
+2026-06-11 06:42:59 transreid.train INFO: OCCAWARE occ_bce: 0.0311, alpha: 0.0368
+2026-06-11 06:43:03 transreid.train INFO: Epoch[56] Iter[100/227] Loss: 0.119, Acc: 0.994, Base Lr: 4.43e-03
+2026-06-11 06:43:03 transreid.train INFO: OCCAWARE occ_bce: 0.0307, alpha: 0.0367
+2026-06-11 06:43:06 transreid.train INFO: Epoch[56] Iter[150/227] Loss: 0.122, Acc: 0.993, Base Lr: 4.43e-03
+2026-06-11 06:43:06 transreid.train INFO: OCCAWARE occ_bce: 0.0301, alpha: 0.0367
+2026-06-11 06:43:10 transreid.train INFO: Epoch[56] Iter[200/227] Loss: 0.121, Acc: 0.993, Base Lr: 4.43e-03
+2026-06-11 06:43:10 transreid.train INFO: OCCAWARE occ_bce: 0.0303, alpha: 0.0370
+2026-06-11 06:43:11 transreid.train INFO: Epoch 56 done. Time per epoch: 15.642[s] Speed: 867.4[samples/s]
+2026-06-11 06:43:15 transreid.train INFO: Epoch[57] Iter[50/227] Loss: 0.115, Acc: 0.996, Base Lr: 4.32e-03
+2026-06-11 06:43:15 transreid.train INFO: OCCAWARE occ_bce: 0.0297, alpha: 0.0372
+2026-06-11 06:43:18 transreid.train INFO: Epoch[57] Iter[100/227] Loss: 0.124, Acc: 0.994, Base Lr: 4.32e-03
+2026-06-11 06:43:18 transreid.train INFO: OCCAWARE occ_bce: 0.0308, alpha: 0.0372
+2026-06-11 06:43:22 transreid.train INFO: Epoch[57] Iter[150/227] Loss: 0.125, Acc: 0.994, Base Lr: 4.32e-03
+2026-06-11 06:43:22 transreid.train INFO: OCCAWARE occ_bce: 0.0308, alpha: 0.0372
+2026-06-11 06:43:25 transreid.train INFO: Epoch[57] Iter[200/227] Loss: 0.123, Acc: 0.993, Base Lr: 4.32e-03
+2026-06-11 06:43:25 transreid.train INFO: OCCAWARE occ_bce: 0.0306, alpha: 0.0373
+2026-06-11 06:43:26 transreid.train INFO: Epoch 57 done. Time per epoch: 15.660[s] Speed: 866.4[samples/s]
+2026-06-11 06:43:30 transreid.train INFO: Epoch[58] Iter[50/227] Loss: 0.119, Acc: 0.995, Base Lr: 4.22e-03
+2026-06-11 06:43:30 transreid.train INFO: OCCAWARE occ_bce: 0.0305, alpha: 0.0379
+2026-06-11 06:43:34 transreid.train INFO: Epoch[58] Iter[100/227] Loss: 0.112, Acc: 0.996, Base Lr: 4.22e-03
+2026-06-11 06:43:34 transreid.train INFO: OCCAWARE occ_bce: 0.0306, alpha: 0.0377
+2026-06-11 06:43:37 transreid.train INFO: Epoch[58] Iter[150/227] Loss: 0.111, Acc: 0.996, Base Lr: 4.22e-03
+2026-06-11 06:43:37 transreid.train INFO: OCCAWARE occ_bce: 0.0304, alpha: 0.0376
+2026-06-11 06:43:41 transreid.train INFO: Epoch[58] Iter[200/227] Loss: 0.108, Acc: 0.995, Base Lr: 4.22e-03
+2026-06-11 06:43:41 transreid.train INFO: OCCAWARE occ_bce: 0.0306, alpha: 0.0383
+2026-06-11 06:43:42 transreid.train INFO: Epoch 58 done. Time per epoch: 15.558[s] Speed: 868.0[samples/s]
+2026-06-11 06:43:46 transreid.train INFO: Epoch[59] Iter[50/227] Loss: 0.138, Acc: 0.992, Base Lr: 4.11e-03
+2026-06-11 06:43:46 transreid.train INFO: OCCAWARE occ_bce: 0.0310, alpha: 0.0383
+2026-06-11 06:43:49 transreid.train INFO: Epoch[59] Iter[100/227] Loss: 0.129, Acc: 0.992, Base Lr: 4.11e-03
+2026-06-11 06:43:49 transreid.train INFO: OCCAWARE occ_bce: 0.0311, alpha: 0.0383
+2026-06-11 06:43:53 transreid.train INFO: Epoch[59] Iter[150/227] Loss: 0.126, Acc: 0.993, Base Lr: 4.11e-03
+2026-06-11 06:43:53 transreid.train INFO: OCCAWARE occ_bce: 0.0309, alpha: 0.0386
+2026-06-11 06:43:57 transreid.train INFO: Epoch[59] Iter[200/227] Loss: 0.123, Acc: 0.993, Base Lr: 4.11e-03
+2026-06-11 06:43:57 transreid.train INFO: OCCAWARE occ_bce: 0.0309, alpha: 0.0384
+2026-06-11 06:43:58 transreid.train INFO: Epoch 59 done. Time per epoch: 15.567[s] Speed: 867.5[samples/s]
+2026-06-11 06:44:01 transreid.train INFO: Epoch[60] Iter[50/227] Loss: 0.118, Acc: 0.994, Base Lr: 4.01e-03
+2026-06-11 06:44:01 transreid.train INFO: OCCAWARE occ_bce: 0.0303, alpha: 0.0387
+2026-06-11 06:44:05 transreid.train INFO: Epoch[60] Iter[100/227] Loss: 0.122, Acc: 0.994, Base Lr: 4.01e-03
+2026-06-11 06:44:05 transreid.train INFO: OCCAWARE occ_bce: 0.0302, alpha: 0.0387
+2026-06-11 06:44:09 transreid.train INFO: Epoch[60] Iter[150/227] Loss: 0.115, Acc: 0.994, Base Lr: 4.01e-03
+2026-06-11 06:44:09 transreid.train INFO: OCCAWARE occ_bce: 0.0306, alpha: 0.0390
+2026-06-11 06:44:12 transreid.train INFO: Epoch[60] Iter[200/227] Loss: 0.113, Acc: 0.994, Base Lr: 4.01e-03
+2026-06-11 06:44:12 transreid.train INFO: OCCAWARE occ_bce: 0.0302, alpha: 0.0390
+2026-06-11 06:44:13 transreid.train INFO: Epoch 60 done. Time per epoch: 15.644[s] Speed: 867.3[samples/s]
+2026-06-11 06:44:17 transreid.train INFO: Epoch[61] Iter[50/227] Loss: 0.124, Acc: 0.996, Base Lr: 3.90e-03
+2026-06-11 06:44:17 transreid.train INFO: OCCAWARE occ_bce: 0.0301, alpha: 0.0389
+2026-06-11 06:44:21 transreid.train INFO: Epoch[61] Iter[100/227] Loss: 0.118, Acc: 0.994, Base Lr: 3.90e-03
+2026-06-11 06:44:21 transreid.train INFO: OCCAWARE occ_bce: 0.0306, alpha: 0.0389
+2026-06-11 06:44:24 transreid.train INFO: Epoch[61] Iter[150/227] Loss: 0.120, Acc: 0.995, Base Lr: 3.90e-03
+2026-06-11 06:44:24 transreid.train INFO: OCCAWARE occ_bce: 0.0303, alpha: 0.0391
+2026-06-11 06:44:28 transreid.train INFO: Epoch[61] Iter[200/227] Loss: 0.114, Acc: 0.995, Base Lr: 3.90e-03
+2026-06-11 06:44:28 transreid.train INFO: OCCAWARE occ_bce: 0.0300, alpha: 0.0393
+2026-06-11 06:44:29 transreid.train INFO: Epoch 61 done. Time per epoch: 15.644[s] Speed: 867.3[samples/s]
+2026-06-11 06:44:33 transreid.train INFO: Epoch[62] Iter[50/227] Loss: 0.142, Acc: 0.993, Base Lr: 3.80e-03
+2026-06-11 06:44:33 transreid.train INFO: OCCAWARE occ_bce: 0.0308, alpha: 0.0394
+2026-06-11 06:44:36 transreid.train INFO: Epoch[62] Iter[100/227] Loss: 0.135, Acc: 0.993, Base Lr: 3.80e-03
+2026-06-11 06:44:36 transreid.train INFO: OCCAWARE occ_bce: 0.0300, alpha: 0.0397
+2026-06-11 06:44:40 transreid.train INFO: Epoch[62] Iter[150/227] Loss: 0.127, Acc: 0.993, Base Lr: 3.80e-03
+2026-06-11 06:44:40 transreid.train INFO: OCCAWARE occ_bce: 0.0300, alpha: 0.0398
+2026-06-11 06:44:44 transreid.train INFO: Epoch[62] Iter[200/227] Loss: 0.121, Acc: 0.994, Base Lr: 3.80e-03
+2026-06-11 06:44:44 transreid.train INFO: OCCAWARE occ_bce: 0.0301, alpha: 0.0401
+2026-06-11 06:44:44 transreid.train INFO: Epoch 62 done. Time per epoch: 15.664[s] Speed: 866.2[samples/s]
+2026-06-11 06:44:48 transreid.train INFO: Epoch[63] Iter[50/227] Loss: 0.109, Acc: 0.994, Base Lr: 3.69e-03
+2026-06-11 06:44:48 transreid.train INFO: OCCAWARE occ_bce: 0.0285, alpha: 0.0403
+2026-06-11 06:44:52 transreid.train INFO: Epoch[63] Iter[100/227] Loss: 0.127, Acc: 0.993, Base Lr: 3.69e-03
+2026-06-11 06:44:52 transreid.train INFO: OCCAWARE occ_bce: 0.0291, alpha: 0.0403
+2026-06-11 06:44:56 transreid.train INFO: Epoch[63] Iter[150/227] Loss: 0.127, Acc: 0.993, Base Lr: 3.69e-03
+2026-06-11 06:44:56 transreid.train INFO: OCCAWARE occ_bce: 0.0289, alpha: 0.0403
+2026-06-11 06:44:59 transreid.train INFO: Epoch[63] Iter[200/227] Loss: 0.119, Acc: 0.994, Base Lr: 3.69e-03
+2026-06-11 06:44:59 transreid.train INFO: OCCAWARE occ_bce: 0.0287, alpha: 0.0406
+2026-06-11 06:45:00 transreid.train INFO: Epoch 63 done. Time per epoch: 15.581[s] Speed: 866.7[samples/s]
+2026-06-11 06:45:04 transreid.train INFO: Epoch[64] Iter[50/227] Loss: 0.103, Acc: 0.997, Base Lr: 3.59e-03
+2026-06-11 06:45:04 transreid.train INFO: OCCAWARE occ_bce: 0.0289, alpha: 0.0406
+2026-06-11 06:45:08 transreid.train INFO: Epoch[64] Iter[100/227] Loss: 0.108, Acc: 0.996, Base Lr: 3.59e-03
+2026-06-11 06:45:08 transreid.train INFO: OCCAWARE occ_bce: 0.0288, alpha: 0.0405
+2026-06-11 06:45:11 transreid.train INFO: Epoch[64] Iter[150/227] Loss: 0.114, Acc: 0.995, Base Lr: 3.59e-03
+2026-06-11 06:45:11 transreid.train INFO: OCCAWARE occ_bce: 0.0289, alpha: 0.0402
+2026-06-11 06:45:15 transreid.train INFO: Epoch[64] Iter[200/227] Loss: 0.110, Acc: 0.995, Base Lr: 3.59e-03
+2026-06-11 06:45:15 transreid.train INFO: OCCAWARE occ_bce: 0.0288, alpha: 0.0403
+2026-06-11 06:45:16 transreid.train INFO: Epoch 64 done. Time per epoch: 15.655[s] Speed: 866.7[samples/s]
+2026-06-11 06:45:20 transreid.train INFO: Epoch[65] Iter[50/227] Loss: 0.127, Acc: 0.992, Base Lr: 3.49e-03
+2026-06-11 06:45:20 transreid.train INFO: OCCAWARE occ_bce: 0.0304, alpha: 0.0393
+2026-06-11 06:45:23 transreid.train INFO: Epoch[65] Iter[100/227] Loss: 0.126, Acc: 0.993, Base Lr: 3.49e-03
+2026-06-11 06:45:23 transreid.train INFO: OCCAWARE occ_bce: 0.0305, alpha: 0.0390
+2026-06-11 06:45:27 transreid.train INFO: Epoch[65] Iter[150/227] Loss: 0.123, Acc: 0.993, Base Lr: 3.49e-03
+2026-06-11 06:45:27 transreid.train INFO: OCCAWARE occ_bce: 0.0304, alpha: 0.0387
+2026-06-11 06:45:30 transreid.train INFO: Epoch[65] Iter[200/227] Loss: 0.120, Acc: 0.993, Base Lr: 3.49e-03
+2026-06-11 06:45:30 transreid.train INFO: OCCAWARE occ_bce: 0.0304, alpha: 0.0387
+2026-06-11 06:45:31 transreid.train INFO: Epoch 65 done. Time per epoch: 15.640[s] Speed: 867.5[samples/s]
+2026-06-11 06:45:35 transreid.train INFO: Epoch[66] Iter[50/227] Loss: 0.106, Acc: 0.994, Base Lr: 3.38e-03
+2026-06-11 06:45:35 transreid.train INFO: OCCAWARE occ_bce: 0.0276, alpha: 0.0388
+2026-06-11 06:45:39 transreid.train INFO: Epoch[66] Iter[100/227] Loss: 0.102, Acc: 0.995, Base Lr: 3.38e-03
+2026-06-11 06:45:39 transreid.train INFO: OCCAWARE occ_bce: 0.0287, alpha: 0.0388
+2026-06-11 06:45:42 transreid.train INFO: Epoch[66] Iter[150/227] Loss: 0.098, Acc: 0.996, Base Lr: 3.38e-03
+2026-06-11 06:45:42 transreid.train INFO: OCCAWARE occ_bce: 0.0286, alpha: 0.0390
+2026-06-11 06:45:46 transreid.train INFO: Epoch[66] Iter[200/227] Loss: 0.097, Acc: 0.996, Base Lr: 3.38e-03
+2026-06-11 06:45:46 transreid.train INFO: OCCAWARE occ_bce: 0.0288, alpha: 0.0391
+2026-06-11 06:45:47 transreid.train INFO: Epoch 66 done. Time per epoch: 15.646[s] Speed: 867.2[samples/s]
+2026-06-11 06:45:51 transreid.train INFO: Epoch[67] Iter[50/227] Loss: 0.103, Acc: 0.994, Base Lr: 3.28e-03
+2026-06-11 06:45:51 transreid.train INFO: OCCAWARE occ_bce: 0.0298, alpha: 0.0397
+2026-06-11 06:45:54 transreid.train INFO: Epoch[67] Iter[100/227] Loss: 0.100, Acc: 0.994, Base Lr: 3.28e-03
+2026-06-11 06:45:54 transreid.train INFO: OCCAWARE occ_bce: 0.0297, alpha: 0.0398
+2026-06-11 06:45:58 transreid.train INFO: Epoch[67] Iter[150/227] Loss: 0.103, Acc: 0.995, Base Lr: 3.28e-03
+2026-06-11 06:45:58 transreid.train INFO: OCCAWARE occ_bce: 0.0296, alpha: 0.0397
+2026-06-11 06:46:02 transreid.train INFO: Epoch[67] Iter[200/227] Loss: 0.102, Acc: 0.995, Base Lr: 3.28e-03
+2026-06-11 06:46:02 transreid.train INFO: OCCAWARE occ_bce: 0.0296, alpha: 0.0397
+2026-06-11 06:46:03 transreid.train INFO: Epoch 67 done. Time per epoch: 15.645[s] Speed: 867.2[samples/s]
+2026-06-11 06:46:06 transreid.train INFO: Epoch[68] Iter[50/227] Loss: 0.103, Acc: 0.995, Base Lr: 3.18e-03
+2026-06-11 06:46:06 transreid.train INFO: OCCAWARE occ_bce: 0.0289, alpha: 0.0400
+2026-06-11 06:46:10 transreid.train INFO: Epoch[68] Iter[100/227] Loss: 0.113, Acc: 0.994, Base Lr: 3.18e-03
+2026-06-11 06:46:10 transreid.train INFO: OCCAWARE occ_bce: 0.0286, alpha: 0.0400
+2026-06-11 06:46:14 transreid.train INFO: Epoch[68] Iter[150/227] Loss: 0.107, Acc: 0.994, Base Lr: 3.18e-03
+2026-06-11 06:46:14 transreid.train INFO: OCCAWARE occ_bce: 0.0284, alpha: 0.0402
+2026-06-11 06:46:17 transreid.train INFO: Epoch[68] Iter[200/227] Loss: 0.103, Acc: 0.994, Base Lr: 3.18e-03
+2026-06-11 06:46:17 transreid.train INFO: OCCAWARE occ_bce: 0.0286, alpha: 0.0404
+2026-06-11 06:46:18 transreid.train INFO: Epoch 68 done. Time per epoch: 15.557[s] Speed: 868.0[samples/s]
+2026-06-11 06:46:22 transreid.train INFO: Epoch[69] Iter[50/227] Loss: 0.110, Acc: 0.994, Base Lr: 3.08e-03
+2026-06-11 06:46:22 transreid.train INFO: OCCAWARE occ_bce: 0.0297, alpha: 0.0405
+2026-06-11 06:46:26 transreid.train INFO: Epoch[69] Iter[100/227] Loss: 0.112, Acc: 0.993, Base Lr: 3.08e-03
+2026-06-11 06:46:26 transreid.train INFO: OCCAWARE occ_bce: 0.0291, alpha: 0.0403
+2026-06-11 06:46:29 transreid.train INFO: Epoch[69] Iter[150/227] Loss: 0.107, Acc: 0.993, Base Lr: 3.08e-03
+2026-06-11 06:46:29 transreid.train INFO: OCCAWARE occ_bce: 0.0290, alpha: 0.0405
+2026-06-11 06:46:33 transreid.train INFO: Epoch[69] Iter[200/227] Loss: 0.104, Acc: 0.994, Base Lr: 3.08e-03
+2026-06-11 06:46:33 transreid.train INFO: OCCAWARE occ_bce: 0.0286, alpha: 0.0404
+2026-06-11 06:46:34 transreid.train INFO: Epoch 69 done. Time per epoch: 15.653[s] Speed: 866.8[samples/s]
+2026-06-11 06:46:38 transreid.train INFO: Epoch[70] Iter[50/227] Loss: 0.098, Acc: 0.995, Base Lr: 2.97e-03
+2026-06-11 06:46:38 transreid.train INFO: OCCAWARE occ_bce: 0.0287, alpha: 0.0403
+2026-06-11 06:46:41 transreid.train INFO: Epoch[70] Iter[100/227] Loss: 0.100, Acc: 0.995, Base Lr: 2.97e-03
+2026-06-11 06:46:41 transreid.train INFO: OCCAWARE occ_bce: 0.0288, alpha: 0.0402
+2026-06-11 06:46:45 transreid.train INFO: Epoch[70] Iter[150/227] Loss: 0.102, Acc: 0.994, Base Lr: 2.97e-03
+2026-06-11 06:46:45 transreid.train INFO: OCCAWARE occ_bce: 0.0289, alpha: 0.0403
+2026-06-11 06:46:49 transreid.train INFO: Epoch[70] Iter[200/227] Loss: 0.101, Acc: 0.994, Base Lr: 2.97e-03
+2026-06-11 06:46:49 transreid.train INFO: OCCAWARE occ_bce: 0.0289, alpha: 0.0404
+2026-06-11 06:46:50 transreid.train INFO: Epoch 70 done. Time per epoch: 15.728[s] Speed: 866.7[samples/s]
+2026-06-11 06:46:53 transreid.train INFO: Epoch[71] Iter[50/227] Loss: 0.098, Acc: 0.995, Base Lr: 2.87e-03
+2026-06-11 06:46:53 transreid.train INFO: OCCAWARE occ_bce: 0.0296, alpha: 0.0405
+2026-06-11 06:46:57 transreid.train INFO: Epoch[71] Iter[100/227] Loss: 0.100, Acc: 0.995, Base Lr: 2.87e-03
+2026-06-11 06:46:57 transreid.train INFO: OCCAWARE occ_bce: 0.0296, alpha: 0.0406
+2026-06-11 06:47:01 transreid.train INFO: Epoch[71] Iter[150/227] Loss: 0.103, Acc: 0.994, Base Lr: 2.87e-03
+2026-06-11 06:47:01 transreid.train INFO: OCCAWARE occ_bce: 0.0294, alpha: 0.0406
+2026-06-11 06:47:04 transreid.train INFO: Epoch[71] Iter[200/227] Loss: 0.101, Acc: 0.994, Base Lr: 2.87e-03
+2026-06-11 06:47:04 transreid.train INFO: OCCAWARE occ_bce: 0.0293, alpha: 0.0405
+2026-06-11 06:47:05 transreid.train INFO: Epoch 71 done. Time per epoch: 15.567[s] Speed: 867.5[samples/s]
+2026-06-11 06:47:09 transreid.train INFO: Epoch[72] Iter[50/227] Loss: 0.124, Acc: 0.994, Base Lr: 2.77e-03
+2026-06-11 06:47:09 transreid.train INFO: OCCAWARE occ_bce: 0.0281, alpha: 0.0406
+2026-06-11 06:47:13 transreid.train INFO: Epoch[72] Iter[100/227] Loss: 0.117, Acc: 0.994, Base Lr: 2.77e-03
+2026-06-11 06:47:13 transreid.train INFO: OCCAWARE occ_bce: 0.0289, alpha: 0.0406
+2026-06-11 06:47:16 transreid.train INFO: Epoch[72] Iter[150/227] Loss: 0.112, Acc: 0.994, Base Lr: 2.77e-03
+2026-06-11 06:47:16 transreid.train INFO: OCCAWARE occ_bce: 0.0293, alpha: 0.0407
+2026-06-11 06:47:20 transreid.train INFO: Epoch[72] Iter[200/227] Loss: 0.107, Acc: 0.994, Base Lr: 2.77e-03
+2026-06-11 06:47:20 transreid.train INFO: OCCAWARE occ_bce: 0.0293, alpha: 0.0407
+2026-06-11 06:47:21 transreid.train INFO: Epoch 72 done. Time per epoch: 15.705[s] Speed: 868.0[samples/s]
+2026-06-11 06:47:25 transreid.train INFO: Epoch[73] Iter[50/227] Loss: 0.109, Acc: 0.996, Base Lr: 2.68e-03
+2026-06-11 06:47:25 transreid.train INFO: OCCAWARE occ_bce: 0.0276, alpha: 0.0408
+2026-06-11 06:47:28 transreid.train INFO: Epoch[73] Iter[100/227] Loss: 0.108, Acc: 0.995, Base Lr: 2.68e-03
+2026-06-11 06:47:28 transreid.train INFO: OCCAWARE occ_bce: 0.0275, alpha: 0.0410
+2026-06-11 06:47:32 transreid.train INFO: Epoch[73] Iter[150/227] Loss: 0.103, Acc: 0.996, Base Lr: 2.68e-03
+2026-06-11 06:47:32 transreid.train INFO: OCCAWARE occ_bce: 0.0280, alpha: 0.0411
+2026-06-11 06:47:36 transreid.train INFO: Epoch[73] Iter[200/227] Loss: 0.099, Acc: 0.996, Base Lr: 2.68e-03
+2026-06-11 06:47:36 transreid.train INFO: OCCAWARE occ_bce: 0.0284, alpha: 0.0411
+2026-06-11 06:47:36 transreid.train INFO: Epoch 73 done. Time per epoch: 15.590[s] Speed: 866.2[samples/s]
+2026-06-11 06:47:40 transreid.train INFO: Epoch[74] Iter[50/227] Loss: 0.102, Acc: 0.996, Base Lr: 2.58e-03
+2026-06-11 06:47:40 transreid.train INFO: OCCAWARE occ_bce: 0.0283, alpha: 0.0410
+2026-06-11 06:47:44 transreid.train INFO: Epoch[74] Iter[100/227] Loss: 0.100, Acc: 0.995, Base Lr: 2.58e-03
+2026-06-11 06:47:44 transreid.train INFO: OCCAWARE occ_bce: 0.0281, alpha: 0.0411
+2026-06-11 06:47:48 transreid.train INFO: Epoch[74] Iter[150/227] Loss: 0.096, Acc: 0.996, Base Lr: 2.58e-03
+2026-06-11 06:47:48 transreid.train INFO: OCCAWARE occ_bce: 0.0283, alpha: 0.0410
+2026-06-11 06:47:51 transreid.train INFO: Epoch[74] Iter[200/227] Loss: 0.094, Acc: 0.995, Base Lr: 2.58e-03
+2026-06-11 06:47:51 transreid.train INFO: OCCAWARE occ_bce: 0.0282, alpha: 0.0408
+2026-06-11 06:47:52 transreid.train INFO: Epoch 74 done. Time per epoch: 15.708[s] Speed: 867.8[samples/s]
+2026-06-11 06:47:56 transreid.train INFO: Epoch[75] Iter[50/227] Loss: 0.092, Acc: 0.996, Base Lr: 2.48e-03
+2026-06-11 06:47:56 transreid.train INFO: OCCAWARE occ_bce: 0.0290, alpha: 0.0412
+2026-06-11 06:48:00 transreid.train INFO: Epoch[75] Iter[100/227] Loss: 0.095, Acc: 0.995, Base Lr: 2.48e-03
+2026-06-11 06:48:00 transreid.train INFO: OCCAWARE occ_bce: 0.0287, alpha: 0.0411
+2026-06-11 06:48:03 transreid.train INFO: Epoch[75] Iter[150/227] Loss: 0.092, Acc: 0.996, Base Lr: 2.48e-03
+2026-06-11 06:48:03 transreid.train INFO: OCCAWARE occ_bce: 0.0283, alpha: 0.0411
+2026-06-11 06:48:07 transreid.train INFO: Epoch[75] Iter[200/227] Loss: 0.086, Acc: 0.996, Base Lr: 2.48e-03
+2026-06-11 06:48:07 transreid.train INFO: OCCAWARE occ_bce: 0.0281, alpha: 0.0411
+2026-06-11 06:48:08 transreid.train INFO: Epoch 75 done. Time per epoch: 15.565[s] Speed: 867.6[samples/s]
+2026-06-11 06:48:12 transreid.train INFO: Epoch[76] Iter[50/227] Loss: 0.127, Acc: 0.993, Base Lr: 2.38e-03
+2026-06-11 06:48:12 transreid.train INFO: OCCAWARE occ_bce: 0.0288, alpha: 0.0411
+2026-06-11 06:48:15 transreid.train INFO: Epoch[76] Iter[100/227] Loss: 0.107, Acc: 0.995, Base Lr: 2.38e-03
+2026-06-11 06:48:15 transreid.train INFO: OCCAWARE occ_bce: 0.0282, alpha: 0.0413
+2026-06-11 06:48:19 transreid.train INFO: Epoch[76] Iter[150/227] Loss: 0.104, Acc: 0.994, Base Lr: 2.38e-03
+2026-06-11 06:48:19 transreid.train INFO: OCCAWARE occ_bce: 0.0286, alpha: 0.0412
+2026-06-11 06:48:23 transreid.train INFO: Epoch[76] Iter[200/227] Loss: 0.098, Acc: 0.995, Base Lr: 2.38e-03
+2026-06-11 06:48:23 transreid.train INFO: OCCAWARE occ_bce: 0.0284, alpha: 0.0413
+2026-06-11 06:48:24 transreid.train INFO: Epoch 76 done. Time per epoch: 15.810[s] Speed: 858.2[samples/s]
+2026-06-11 06:48:27 transreid.train INFO: Epoch[77] Iter[50/227] Loss: 0.108, Acc: 0.995, Base Lr: 2.29e-03
+2026-06-11 06:48:27 transreid.train INFO: OCCAWARE occ_bce: 0.0275, alpha: 0.0416
+2026-06-11 06:48:31 transreid.train INFO: Epoch[77] Iter[100/227] Loss: 0.102, Acc: 0.995, Base Lr: 2.29e-03
+2026-06-11 06:48:31 transreid.train INFO: OCCAWARE occ_bce: 0.0276, alpha: 0.0418
+2026-06-11 06:48:35 transreid.train INFO: Epoch[77] Iter[150/227] Loss: 0.101, Acc: 0.995, Base Lr: 2.29e-03
+2026-06-11 06:48:35 transreid.train INFO: OCCAWARE occ_bce: 0.0277, alpha: 0.0419
+2026-06-11 06:48:38 transreid.train INFO: Epoch[77] Iter[200/227] Loss: 0.091, Acc: 0.995, Base Lr: 2.29e-03
+2026-06-11 06:48:38 transreid.train INFO: OCCAWARE occ_bce: 0.0277, alpha: 0.0418
+2026-06-11 06:48:39 transreid.train INFO: Epoch 77 done. Time per epoch: 15.512[s] Speed: 866.5[samples/s]
+2026-06-11 06:48:43 transreid.train INFO: Epoch[78] Iter[50/227] Loss: 0.096, Acc: 0.997, Base Lr: 2.20e-03
+2026-06-11 06:48:43 transreid.train INFO: OCCAWARE occ_bce: 0.0280, alpha: 0.0419
+2026-06-11 06:48:47 transreid.train INFO: Epoch[78] Iter[100/227] Loss: 0.095, Acc: 0.997, Base Lr: 2.20e-03
+2026-06-11 06:48:47 transreid.train INFO: OCCAWARE occ_bce: 0.0281, alpha: 0.0417
+2026-06-11 06:48:50 transreid.train INFO: Epoch[78] Iter[150/227] Loss: 0.091, Acc: 0.997, Base Lr: 2.20e-03
+2026-06-11 06:48:50 transreid.train INFO: OCCAWARE occ_bce: 0.0277, alpha: 0.0416
+2026-06-11 06:48:54 transreid.train INFO: Epoch[78] Iter[200/227] Loss: 0.095, Acc: 0.997, Base Lr: 2.20e-03
+2026-06-11 06:48:54 transreid.train INFO: OCCAWARE occ_bce: 0.0278, alpha: 0.0414
+2026-06-11 06:48:55 transreid.train INFO: Epoch 78 done. Time per epoch: 15.577[s] Speed: 866.9[samples/s]
+2026-06-11 06:48:58 transreid.train INFO: Epoch[79] Iter[50/227] Loss: 0.097, Acc: 0.995, Base Lr: 2.10e-03
+2026-06-11 06:48:58 transreid.train INFO: OCCAWARE occ_bce: 0.0277, alpha: 0.0413
+2026-06-11 06:49:02 transreid.train INFO: Epoch[79] Iter[100/227] Loss: 0.093, Acc: 0.996, Base Lr: 2.10e-03
+2026-06-11 06:49:02 transreid.train INFO: OCCAWARE occ_bce: 0.0275, alpha: 0.0412
+2026-06-11 06:49:06 transreid.train INFO: Epoch[79] Iter[150/227] Loss: 0.096, Acc: 0.995, Base Lr: 2.10e-03
+2026-06-11 06:49:06 transreid.train INFO: OCCAWARE occ_bce: 0.0278, alpha: 0.0413
+2026-06-11 06:49:09 transreid.train INFO: Epoch[79] Iter[200/227] Loss: 0.093, Acc: 0.996, Base Lr: 2.10e-03
+2026-06-11 06:49:09 transreid.train INFO: OCCAWARE occ_bce: 0.0281, alpha: 0.0415
+2026-06-11 06:49:10 transreid.train INFO: Epoch 79 done. Time per epoch: 15.719[s] Speed: 867.2[samples/s]
+2026-06-11 06:49:14 transreid.train INFO: Epoch[80] Iter[50/227] Loss: 0.114, Acc: 0.996, Base Lr: 2.01e-03
+2026-06-11 06:49:14 transreid.train INFO: OCCAWARE occ_bce: 0.0285, alpha: 0.0415
+2026-06-11 06:49:18 transreid.train INFO: Epoch[80] Iter[100/227] Loss: 0.105, Acc: 0.996, Base Lr: 2.01e-03
+2026-06-11 06:49:18 transreid.train INFO: OCCAWARE occ_bce: 0.0283, alpha: 0.0414
+2026-06-11 06:49:21 transreid.train INFO: Epoch[80] Iter[150/227] Loss: 0.098, Acc: 0.995, Base Lr: 2.01e-03
+2026-06-11 06:49:21 transreid.train INFO: OCCAWARE occ_bce: 0.0281, alpha: 0.0413
+2026-06-11 06:49:25 transreid.train INFO: Epoch[80] Iter[200/227] Loss: 0.098, Acc: 0.995, Base Lr: 2.01e-03
+2026-06-11 06:49:25 transreid.train INFO: OCCAWARE occ_bce: 0.0282, alpha: 0.0413
+2026-06-11 06:49:26 transreid.train INFO: Epoch 80 done. Time per epoch: 15.661[s] Speed: 866.3[samples/s]
+2026-06-11 06:49:30 transreid.train INFO: Epoch[81] Iter[50/227] Loss: 0.112, Acc: 0.995, Base Lr: 1.92e-03
+2026-06-11 06:49:30 transreid.train INFO: OCCAWARE occ_bce: 0.0266, alpha: 0.0415
+2026-06-11 06:49:33 transreid.train INFO: Epoch[81] Iter[100/227] Loss: 0.110, Acc: 0.995, Base Lr: 1.92e-03
+2026-06-11 06:49:33 transreid.train INFO: OCCAWARE occ_bce: 0.0275, alpha: 0.0413
+2026-06-11 06:49:37 transreid.train INFO: Epoch[81] Iter[150/227] Loss: 0.103, Acc: 0.996, Base Lr: 1.92e-03
+2026-06-11 06:49:37 transreid.train INFO: OCCAWARE occ_bce: 0.0278, alpha: 0.0412
+2026-06-11 06:49:41 transreid.train INFO: Epoch[81] Iter[200/227] Loss: 0.098, Acc: 0.996, Base Lr: 1.92e-03
+2026-06-11 06:49:41 transreid.train INFO: OCCAWARE occ_bce: 0.0279, alpha: 0.0413
+2026-06-11 06:49:42 transreid.train INFO: Epoch 81 done. Time per epoch: 15.570[s] Speed: 867.3[samples/s]
+2026-06-11 06:49:45 transreid.train INFO: Epoch[82] Iter[50/227] Loss: 0.091, Acc: 0.996, Base Lr: 1.83e-03
+2026-06-11 06:49:45 transreid.train INFO: OCCAWARE occ_bce: 0.0280, alpha: 0.0413
+2026-06-11 06:49:49 transreid.train INFO: Epoch[82] Iter[100/227] Loss: 0.096, Acc: 0.996, Base Lr: 1.83e-03
+2026-06-11 06:49:49 transreid.train INFO: OCCAWARE occ_bce: 0.0281, alpha: 0.0412
+2026-06-11 06:49:53 transreid.train INFO: Epoch[82] Iter[150/227] Loss: 0.094, Acc: 0.996, Base Lr: 1.83e-03
+2026-06-11 06:49:53 transreid.train INFO: OCCAWARE occ_bce: 0.0280, alpha: 0.0412
+2026-06-11 06:49:56 transreid.train INFO: Epoch[82] Iter[200/227] Loss: 0.092, Acc: 0.996, Base Lr: 1.83e-03
+2026-06-11 06:49:56 transreid.train INFO: OCCAWARE occ_bce: 0.0279, alpha: 0.0412
+2026-06-11 06:49:57 transreid.train INFO: Epoch 82 done. Time per epoch: 15.593[s] Speed: 866.0[samples/s]
+2026-06-11 06:50:01 transreid.train INFO: Epoch[83] Iter[50/227] Loss: 0.081, Acc: 0.998, Base Lr: 1.75e-03
+2026-06-11 06:50:01 transreid.train INFO: OCCAWARE occ_bce: 0.0287, alpha: 0.0414
+2026-06-11 06:50:05 transreid.train INFO: Epoch[83] Iter[100/227] Loss: 0.088, Acc: 0.996, Base Lr: 1.75e-03
+2026-06-11 06:50:05 transreid.train INFO: OCCAWARE occ_bce: 0.0281, alpha: 0.0416
+2026-06-11 06:50:08 transreid.train INFO: Epoch[83] Iter[150/227] Loss: 0.089, Acc: 0.997, Base Lr: 1.75e-03
+2026-06-11 06:50:08 transreid.train INFO: OCCAWARE occ_bce: 0.0281, alpha: 0.0416
+2026-06-11 06:50:12 transreid.train INFO: Epoch[83] Iter[200/227] Loss: 0.092, Acc: 0.997, Base Lr: 1.75e-03
+2026-06-11 06:50:12 transreid.train INFO: OCCAWARE occ_bce: 0.0282, alpha: 0.0417
+2026-06-11 06:50:13 transreid.train INFO: Epoch 83 done. Time per epoch: 15.724[s] Speed: 867.0[samples/s]
+2026-06-11 06:50:17 transreid.train INFO: Epoch[84] Iter[50/227] Loss: 0.091, Acc: 0.995, Base Lr: 1.66e-03
+2026-06-11 06:50:17 transreid.train INFO: OCCAWARE occ_bce: 0.0281, alpha: 0.0417
+2026-06-11 06:50:20 transreid.train INFO: Epoch[84] Iter[100/227] Loss: 0.086, Acc: 0.996, Base Lr: 1.66e-03
+2026-06-11 06:50:20 transreid.train INFO: OCCAWARE occ_bce: 0.0278, alpha: 0.0418
+2026-06-11 06:50:24 transreid.train INFO: Epoch[84] Iter[150/227] Loss: 0.085, Acc: 0.996, Base Lr: 1.66e-03
+2026-06-11 06:50:24 transreid.train INFO: OCCAWARE occ_bce: 0.0278, alpha: 0.0418
+2026-06-11 06:50:28 transreid.train INFO: Epoch[84] Iter[200/227] Loss: 0.093, Acc: 0.996, Base Lr: 1.66e-03
+2026-06-11 06:50:28 transreid.train INFO: OCCAWARE occ_bce: 0.0278, alpha: 0.0418
+2026-06-11 06:50:28 transreid.train INFO: Epoch 84 done. Time per epoch: 15.571[s] Speed: 867.3[samples/s]
+2026-06-11 06:50:32 transreid.train INFO: Epoch[85] Iter[50/227] Loss: 0.088, Acc: 0.996, Base Lr: 1.58e-03
+2026-06-11 06:50:32 transreid.train INFO: OCCAWARE occ_bce: 0.0274, alpha: 0.0418
+2026-06-11 06:50:36 transreid.train INFO: Epoch[85] Iter[100/227] Loss: 0.088, Acc: 0.996, Base Lr: 1.58e-03
+2026-06-11 06:50:36 transreid.train INFO: OCCAWARE occ_bce: 0.0275, alpha: 0.0419
+2026-06-11 06:50:40 transreid.train INFO: Epoch[85] Iter[150/227] Loss: 0.092, Acc: 0.996, Base Lr: 1.58e-03
+2026-06-11 06:50:40 transreid.train INFO: OCCAWARE occ_bce: 0.0274, alpha: 0.0418
+2026-06-11 06:50:43 transreid.train INFO: Epoch[85] Iter[200/227] Loss: 0.090, Acc: 0.996, Base Lr: 1.58e-03
+2026-06-11 06:50:43 transreid.train INFO: OCCAWARE occ_bce: 0.0277, alpha: 0.0418
+2026-06-11 06:50:44 transreid.train INFO: Epoch 85 done. Time per epoch: 15.581[s] Speed: 866.7[samples/s]
+2026-06-11 06:50:48 transreid.train INFO: Epoch[86] Iter[50/227] Loss: 0.099, Acc: 0.994, Base Lr: 1.50e-03
+2026-06-11 06:50:48 transreid.train INFO: OCCAWARE occ_bce: 0.0274, alpha: 0.0418
+2026-06-11 06:50:52 transreid.train INFO: Epoch[86] Iter[100/227] Loss: 0.095, Acc: 0.995, Base Lr: 1.50e-03
+2026-06-11 06:50:52 transreid.train INFO: OCCAWARE occ_bce: 0.0279, alpha: 0.0418
+2026-06-11 06:50:55 transreid.train INFO: Epoch[86] Iter[150/227] Loss: 0.092, Acc: 0.995, Base Lr: 1.50e-03
+2026-06-11 06:50:55 transreid.train INFO: OCCAWARE occ_bce: 0.0278, alpha: 0.0417
+2026-06-11 06:50:59 transreid.train INFO: Epoch[86] Iter[200/227] Loss: 0.091, Acc: 0.995, Base Lr: 1.50e-03
+2026-06-11 06:50:59 transreid.train INFO: OCCAWARE occ_bce: 0.0277, alpha: 0.0418
+2026-06-11 06:51:00 transreid.train INFO: Epoch 86 done. Time per epoch: 15.508[s] Speed: 866.6[samples/s]
+2026-06-11 06:51:03 transreid.train INFO: Epoch[87] Iter[50/227] Loss: 0.095, Acc: 0.997, Base Lr: 1.42e-03
+2026-06-11 06:51:03 transreid.train INFO: OCCAWARE occ_bce: 0.0280, alpha: 0.0418
+2026-06-11 06:51:07 transreid.train INFO: Epoch[87] Iter[100/227] Loss: 0.097, Acc: 0.996, Base Lr: 1.42e-03
+2026-06-11 06:51:07 transreid.train INFO: OCCAWARE occ_bce: 0.0282, alpha: 0.0419
+2026-06-11 06:51:11 transreid.train INFO: Epoch[87] Iter[150/227] Loss: 0.095, Acc: 0.996, Base Lr: 1.42e-03
+2026-06-11 06:51:11 transreid.train INFO: OCCAWARE occ_bce: 0.0278, alpha: 0.0420
+2026-06-11 06:51:14 transreid.train INFO: Epoch[87] Iter[200/227] Loss: 0.092, Acc: 0.996, Base Lr: 1.42e-03
+2026-06-11 06:51:14 transreid.train INFO: OCCAWARE occ_bce: 0.0277, alpha: 0.0420
+2026-06-11 06:51:15 transreid.train INFO: Epoch 87 done. Time per epoch: 15.587[s] Speed: 866.3[samples/s]
+2026-06-11 06:51:19 transreid.train INFO: Epoch[88] Iter[50/227] Loss: 0.088, Acc: 0.997, Base Lr: 1.34e-03
+2026-06-11 06:51:19 transreid.train INFO: OCCAWARE occ_bce: 0.0273, alpha: 0.0419
+2026-06-11 06:51:23 transreid.train INFO: Epoch[88] Iter[100/227] Loss: 0.094, Acc: 0.995, Base Lr: 1.34e-03
+2026-06-11 06:51:23 transreid.train INFO: OCCAWARE occ_bce: 0.0273, alpha: 0.0420
+2026-06-11 06:51:26 transreid.train INFO: Epoch[88] Iter[150/227] Loss: 0.085, Acc: 0.996, Base Lr: 1.34e-03
+2026-06-11 06:51:26 transreid.train INFO: OCCAWARE occ_bce: 0.0273, alpha: 0.0420
+2026-06-11 06:51:30 transreid.train INFO: Epoch[88] Iter[200/227] Loss: 0.082, Acc: 0.996, Base Lr: 1.34e-03
+2026-06-11 06:51:30 transreid.train INFO: OCCAWARE occ_bce: 0.0275, alpha: 0.0420
+2026-06-11 06:51:31 transreid.train INFO: Epoch 88 done. Time per epoch: 15.649[s] Speed: 867.0[samples/s]
+2026-06-11 06:51:35 transreid.train INFO: Epoch[89] Iter[50/227] Loss: 0.081, Acc: 0.997, Base Lr: 1.26e-03
+2026-06-11 06:51:35 transreid.train INFO: OCCAWARE occ_bce: 0.0271, alpha: 0.0420
+2026-06-11 06:51:38 transreid.train INFO: Epoch[89] Iter[100/227] Loss: 0.080, Acc: 0.997, Base Lr: 1.26e-03
+2026-06-11 06:51:38 transreid.train INFO: OCCAWARE occ_bce: 0.0277, alpha: 0.0420
+2026-06-11 06:51:42 transreid.train INFO: Epoch[89] Iter[150/227] Loss: 0.078, Acc: 0.997, Base Lr: 1.26e-03
+2026-06-11 06:51:42 transreid.train INFO: OCCAWARE occ_bce: 0.0279, alpha: 0.0421
+2026-06-11 06:51:46 transreid.train INFO: Epoch[89] Iter[200/227] Loss: 0.076, Acc: 0.997, Base Lr: 1.26e-03
+2026-06-11 06:51:46 transreid.train INFO: OCCAWARE occ_bce: 0.0278, alpha: 0.0421
+2026-06-11 06:51:46 transreid.train INFO: Epoch 89 done. Time per epoch: 15.652[s] Speed: 866.9[samples/s]
+2026-06-11 06:51:50 transreid.train INFO: Epoch[90] Iter[50/227] Loss: 0.075, Acc: 0.998, Base Lr: 1.19e-03
+2026-06-11 06:51:50 transreid.train INFO: OCCAWARE occ_bce: 0.0273, alpha: 0.0421
+2026-06-11 06:51:54 transreid.train INFO: Epoch[90] Iter[100/227] Loss: 0.095, Acc: 0.995, Base Lr: 1.19e-03
+2026-06-11 06:51:54 transreid.train INFO: OCCAWARE occ_bce: 0.0283, alpha: 0.0422
+2026-06-11 06:51:58 transreid.train INFO: Epoch[90] Iter[150/227] Loss: 0.092, Acc: 0.995, Base Lr: 1.19e-03
+2026-06-11 06:51:58 transreid.train INFO: OCCAWARE occ_bce: 0.0280, alpha: 0.0422
+2026-06-11 06:52:01 transreid.train INFO: Epoch[90] Iter[200/227] Loss: 0.087, Acc: 0.995, Base Lr: 1.19e-03
+2026-06-11 06:52:01 transreid.train INFO: OCCAWARE occ_bce: 0.0280, alpha: 0.0422
+2026-06-11 06:52:02 transreid.train INFO: Epoch 90 done. Time per epoch: 15.595[s] Speed: 865.9[samples/s]
+2026-06-11 06:52:06 transreid.train INFO: Epoch[91] Iter[50/227] Loss: 0.084, Acc: 0.994, Base Lr: 1.11e-03
+2026-06-11 06:52:06 transreid.train INFO: OCCAWARE occ_bce: 0.0273, alpha: 0.0423
+2026-06-11 06:52:10 transreid.train INFO: Epoch[91] Iter[100/227] Loss: 0.089, Acc: 0.995, Base Lr: 1.11e-03
+2026-06-11 06:52:10 transreid.train INFO: OCCAWARE occ_bce: 0.0274, alpha: 0.0422
+2026-06-11 06:52:13 transreid.train INFO: Epoch[91] Iter[150/227] Loss: 0.087, Acc: 0.995, Base Lr: 1.11e-03
+2026-06-11 06:52:13 transreid.train INFO: OCCAWARE occ_bce: 0.0274, alpha: 0.0422
+2026-06-11 06:52:17 transreid.train INFO: Epoch[91] Iter[200/227] Loss: 0.082, Acc: 0.996, Base Lr: 1.11e-03
+2026-06-11 06:52:17 transreid.train INFO: OCCAWARE occ_bce: 0.0274, alpha: 0.0423
+2026-06-11 06:52:18 transreid.train INFO: Epoch 91 done. Time per epoch: 15.599[s] Speed: 865.7[samples/s]
+2026-06-11 06:52:21 transreid.train INFO: Epoch[92] Iter[50/227] Loss: 0.085, Acc: 0.996, Base Lr: 1.04e-03
+2026-06-11 06:52:21 transreid.train INFO: OCCAWARE occ_bce: 0.0280, alpha: 0.0423
+2026-06-11 06:52:25 transreid.train INFO: Epoch[92] Iter[100/227] Loss: 0.092, Acc: 0.996, Base Lr: 1.04e-03
+2026-06-11 06:52:25 transreid.train INFO: OCCAWARE occ_bce: 0.0281, alpha: 0.0423
+2026-06-11 06:52:29 transreid.train INFO: Epoch[92] Iter[150/227] Loss: 0.085, Acc: 0.996, Base Lr: 1.04e-03
+2026-06-11 06:52:29 transreid.train INFO: OCCAWARE occ_bce: 0.0279, alpha: 0.0422
+2026-06-11 06:52:32 transreid.train INFO: Epoch[92] Iter[200/227] Loss: 0.083, Acc: 0.996, Base Lr: 1.04e-03
+2026-06-11 06:52:32 transreid.train INFO: OCCAWARE occ_bce: 0.0276, alpha: 0.0422
+2026-06-11 06:52:33 transreid.train INFO: Epoch 92 done. Time per epoch: 15.639[s] Speed: 867.6[samples/s]
+2026-06-11 06:52:37 transreid.train INFO: Epoch[93] Iter[50/227] Loss: 0.088, Acc: 0.996, Base Lr: 9.72e-04
+2026-06-11 06:52:37 transreid.train INFO: OCCAWARE occ_bce: 0.0274, alpha: 0.0422
+2026-06-11 06:52:41 transreid.train INFO: Epoch[93] Iter[100/227] Loss: 0.088, Acc: 0.995, Base Lr: 9.72e-04
+2026-06-11 06:52:41 transreid.train INFO: OCCAWARE occ_bce: 0.0275, alpha: 0.0422
+2026-06-11 06:52:44 transreid.train INFO: Epoch[93] Iter[150/227] Loss: 0.082, Acc: 0.996, Base Lr: 9.72e-04
+2026-06-11 06:52:44 transreid.train INFO: OCCAWARE occ_bce: 0.0275, alpha: 0.0422
+2026-06-11 06:52:48 transreid.train INFO: Epoch[93] Iter[200/227] Loss: 0.084, Acc: 0.996, Base Lr: 9.72e-04
+2026-06-11 06:52:48 transreid.train INFO: OCCAWARE occ_bce: 0.0274, alpha: 0.0423
+2026-06-11 06:52:49 transreid.train INFO: Epoch 93 done. Time per epoch: 15.645[s] Speed: 867.3[samples/s]
+2026-06-11 06:52:53 transreid.train INFO: Epoch[94] Iter[50/227] Loss: 0.098, Acc: 0.994, Base Lr: 9.06e-04
+2026-06-11 06:52:53 transreid.train INFO: OCCAWARE occ_bce: 0.0286, alpha: 0.0423
+2026-06-11 06:52:56 transreid.train INFO: Epoch[94] Iter[100/227] Loss: 0.086, Acc: 0.995, Base Lr: 9.06e-04
+2026-06-11 06:52:56 transreid.train INFO: OCCAWARE occ_bce: 0.0274, alpha: 0.0423
+2026-06-11 06:53:00 transreid.train INFO: Epoch[94] Iter[150/227] Loss: 0.077, Acc: 0.995, Base Lr: 9.06e-04
+2026-06-11 06:53:00 transreid.train INFO: OCCAWARE occ_bce: 0.0274, alpha: 0.0422
+2026-06-11 06:53:04 transreid.train INFO: Epoch[94] Iter[200/227] Loss: 0.075, Acc: 0.996, Base Lr: 9.06e-04
+2026-06-11 06:53:04 transreid.train INFO: OCCAWARE occ_bce: 0.0275, alpha: 0.0422
+2026-06-11 06:53:04 transreid.train INFO: Epoch 94 done. Time per epoch: 15.579[s] Speed: 866.8[samples/s]
+2026-06-11 06:53:08 transreid.train INFO: Epoch[95] Iter[50/227] Loss: 0.089, Acc: 0.996, Base Lr: 8.41e-04
+2026-06-11 06:53:08 transreid.train INFO: OCCAWARE occ_bce: 0.0270, alpha: 0.0422
+2026-06-11 06:53:12 transreid.train INFO: Epoch[95] Iter[100/227] Loss: 0.084, Acc: 0.996, Base Lr: 8.41e-04
+2026-06-11 06:53:12 transreid.train INFO: OCCAWARE occ_bce: 0.0271, alpha: 0.0423
+2026-06-11 06:53:16 transreid.train INFO: Epoch[95] Iter[150/227] Loss: 0.082, Acc: 0.996, Base Lr: 8.41e-04
+2026-06-11 06:53:16 transreid.train INFO: OCCAWARE occ_bce: 0.0273, alpha: 0.0423
+2026-06-11 06:53:19 transreid.train INFO: Epoch[95] Iter[200/227] Loss: 0.081, Acc: 0.996, Base Lr: 8.41e-04
+2026-06-11 06:53:19 transreid.train INFO: OCCAWARE occ_bce: 0.0273, alpha: 0.0423
+2026-06-11 06:53:20 transreid.train INFO: Epoch 95 done. Time per epoch: 15.588[s] Speed: 866.3[samples/s]
+2026-06-11 06:53:24 transreid.train INFO: Epoch[96] Iter[50/227] Loss: 0.085, Acc: 0.997, Base Lr: 7.78e-04
+2026-06-11 06:53:24 transreid.train INFO: OCCAWARE occ_bce: 0.0270, alpha: 0.0423
+2026-06-11 06:53:28 transreid.train INFO: Epoch[96] Iter[100/227] Loss: 0.081, Acc: 0.997, Base Lr: 7.78e-04
+2026-06-11 06:53:28 transreid.train INFO: OCCAWARE occ_bce: 0.0270, alpha: 0.0423
+2026-06-11 06:53:31 transreid.train INFO: Epoch[96] Iter[150/227] Loss: 0.081, Acc: 0.997, Base Lr: 7.78e-04
+2026-06-11 06:53:31 transreid.train INFO: OCCAWARE occ_bce: 0.0268, alpha: 0.0423
+2026-06-11 06:53:35 transreid.train INFO: Epoch[96] Iter[200/227] Loss: 0.081, Acc: 0.997, Base Lr: 7.78e-04
+2026-06-11 06:53:35 transreid.train INFO: OCCAWARE occ_bce: 0.0270, alpha: 0.0423
+2026-06-11 06:53:36 transreid.train INFO: Epoch 96 done. Time per epoch: 15.592[s] Speed: 866.1[samples/s]
+2026-06-11 06:53:40 transreid.train INFO: Epoch[97] Iter[50/227] Loss: 0.091, Acc: 0.996, Base Lr: 7.18e-04
+2026-06-11 06:53:40 transreid.train INFO: OCCAWARE occ_bce: 0.0268, alpha: 0.0422
+2026-06-11 06:53:43 transreid.train INFO: Epoch[97] Iter[100/227] Loss: 0.081, Acc: 0.997, Base Lr: 7.18e-04
+2026-06-11 06:53:43 transreid.train INFO: OCCAWARE occ_bce: 0.0273, alpha: 0.0422
+2026-06-11 06:53:47 transreid.train INFO: Epoch[97] Iter[150/227] Loss: 0.087, Acc: 0.996, Base Lr: 7.18e-04
+2026-06-11 06:53:47 transreid.train INFO: OCCAWARE occ_bce: 0.0274, alpha: 0.0422
+2026-06-11 06:53:50 transreid.train INFO: Epoch[97] Iter[200/227] Loss: 0.083, Acc: 0.997, Base Lr: 7.18e-04
+2026-06-11 06:53:50 transreid.train INFO: OCCAWARE occ_bce: 0.0270, alpha: 0.0422
+2026-06-11 06:53:51 transreid.train INFO: Epoch 97 done. Time per epoch: 15.646[s] Speed: 867.2[samples/s]
+2026-06-11 06:53:55 transreid.train INFO: Epoch[98] Iter[50/227] Loss: 0.082, Acc: 0.995, Base Lr: 6.60e-04
+2026-06-11 06:53:55 transreid.train INFO: OCCAWARE occ_bce: 0.0271, alpha: 0.0422
+2026-06-11 06:53:59 transreid.train INFO: Epoch[98] Iter[100/227] Loss: 0.095, Acc: 0.995, Base Lr: 6.60e-04
+2026-06-11 06:53:59 transreid.train INFO: OCCAWARE occ_bce: 0.0273, alpha: 0.0422
+2026-06-11 06:54:02 transreid.train INFO: Epoch[98] Iter[150/227] Loss: 0.093, Acc: 0.995, Base Lr: 6.60e-04
+2026-06-11 06:54:02 transreid.train INFO: OCCAWARE occ_bce: 0.0272, alpha: 0.0422
+2026-06-11 06:54:06 transreid.train INFO: Epoch[98] Iter[200/227] Loss: 0.086, Acc: 0.996, Base Lr: 6.60e-04
+2026-06-11 06:54:06 transreid.train INFO: OCCAWARE occ_bce: 0.0271, alpha: 0.0423
+2026-06-11 06:54:07 transreid.train INFO: Epoch 98 done. Time per epoch: 15.575[s] Speed: 867.0[samples/s]
+2026-06-11 06:54:11 transreid.train INFO: Epoch[99] Iter[50/227] Loss: 0.090, Acc: 0.996, Base Lr: 6.04e-04
+2026-06-11 06:54:11 transreid.train INFO: OCCAWARE occ_bce: 0.0275, alpha: 0.0422
+2026-06-11 06:54:14 transreid.train INFO: Epoch[99] Iter[100/227] Loss: 0.082, Acc: 0.997, Base Lr: 6.04e-04
+2026-06-11 06:54:14 transreid.train INFO: OCCAWARE occ_bce: 0.0270, alpha: 0.0422
+2026-06-11 06:54:18 transreid.train INFO: Epoch[99] Iter[150/227] Loss: 0.085, Acc: 0.996, Base Lr: 6.04e-04
+2026-06-11 06:54:18 transreid.train INFO: OCCAWARE occ_bce: 0.0271, alpha: 0.0422
+2026-06-11 06:54:22 transreid.train INFO: Epoch[99] Iter[200/227] Loss: 0.086, Acc: 0.996, Base Lr: 6.04e-04
+2026-06-11 06:54:22 transreid.train INFO: OCCAWARE occ_bce: 0.0270, alpha: 0.0421
+2026-06-11 06:54:22 transreid.train INFO: Epoch 99 done. Time per epoch: 15.591[s] Speed: 866.1[samples/s]
+2026-06-11 06:54:26 transreid.train INFO: Epoch[100] Iter[50/227] Loss: 0.082, Acc: 0.998, Base Lr: 5.51e-04
+2026-06-11 06:54:26 transreid.train INFO: OCCAWARE occ_bce: 0.0279, alpha: 0.0421
+2026-06-11 06:54:30 transreid.train INFO: Epoch[100] Iter[100/227] Loss: 0.088, Acc: 0.997, Base Lr: 5.51e-04
+2026-06-11 06:54:30 transreid.train INFO: OCCAWARE occ_bce: 0.0277, alpha: 0.0421
+2026-06-11 06:54:34 transreid.train INFO: Epoch[100] Iter[150/227] Loss: 0.090, Acc: 0.997, Base Lr: 5.51e-04
+2026-06-11 06:54:34 transreid.train INFO: OCCAWARE occ_bce: 0.0276, alpha: 0.0421
+2026-06-11 06:54:37 transreid.train INFO: Epoch[100] Iter[200/227] Loss: 0.082, Acc: 0.997, Base Lr: 5.51e-04
+2026-06-11 06:54:37 transreid.train INFO: OCCAWARE occ_bce: 0.0273, alpha: 0.0421
+2026-06-11 06:54:38 transreid.train INFO: Epoch 100 done. Time per epoch: 15.658[s] Speed: 866.5[samples/s]
+2026-06-11 06:54:42 transreid.train INFO: Epoch[101] Iter[50/227] Loss: 0.096, Acc: 0.995, Base Lr: 5.00e-04
+2026-06-11 06:54:42 transreid.train INFO: OCCAWARE occ_bce: 0.0270, alpha: 0.0421
+2026-06-11 06:54:46 transreid.train INFO: Epoch[101] Iter[100/227] Loss: 0.086, Acc: 0.996, Base Lr: 5.00e-04
+2026-06-11 06:54:46 transreid.train INFO: OCCAWARE occ_bce: 0.0267, alpha: 0.0422
+2026-06-11 06:54:49 transreid.train INFO: Epoch[101] Iter[150/227] Loss: 0.085, Acc: 0.996, Base Lr: 5.00e-04
+2026-06-11 06:54:49 transreid.train INFO: OCCAWARE occ_bce: 0.0270, alpha: 0.0421
+2026-06-11 06:54:53 transreid.train INFO: Epoch[101] Iter[200/227] Loss: 0.082, Acc: 0.996, Base Lr: 5.00e-04
+2026-06-11 06:54:53 transreid.train INFO: OCCAWARE occ_bce: 0.0270, alpha: 0.0422
+2026-06-11 06:54:54 transreid.train INFO: Epoch 101 done. Time per epoch: 15.657[s] Speed: 866.6[samples/s]
+2026-06-11 06:54:58 transreid.train INFO: Epoch[102] Iter[50/227] Loss: 0.075, Acc: 0.998, Base Lr: 4.51e-04
+2026-06-11 06:54:58 transreid.train INFO: OCCAWARE occ_bce: 0.0264, alpha: 0.0422
+2026-06-11 06:55:01 transreid.train INFO: Epoch[102] Iter[100/227] Loss: 0.085, Acc: 0.996, Base Lr: 4.51e-04
+2026-06-11 06:55:01 transreid.train INFO: OCCAWARE occ_bce: 0.0268, alpha: 0.0422
+2026-06-11 06:55:05 transreid.train INFO: Epoch[102] Iter[150/227] Loss: 0.084, Acc: 0.996, Base Lr: 4.51e-04
+2026-06-11 06:55:05 transreid.train INFO: OCCAWARE occ_bce: 0.0268, alpha: 0.0422
+2026-06-11 06:55:09 transreid.train INFO: Epoch[102] Iter[200/227] Loss: 0.083, Acc: 0.996, Base Lr: 4.51e-04
+2026-06-11 06:55:09 transreid.train INFO: OCCAWARE occ_bce: 0.0269, alpha: 0.0421
+2026-06-11 06:55:09 transreid.train INFO: Epoch 102 done. Time per epoch: 15.669[s] Speed: 865.9[samples/s]
+2026-06-11 06:55:13 transreid.train INFO: Epoch[103] Iter[50/227] Loss: 0.087, Acc: 0.993, Base Lr: 4.05e-04
+2026-06-11 06:55:13 transreid.train INFO: OCCAWARE occ_bce: 0.0280, alpha: 0.0421
+2026-06-11 06:55:17 transreid.train INFO: Epoch[103] Iter[100/227] Loss: 0.089, Acc: 0.994, Base Lr: 4.05e-04
+2026-06-11 06:55:17 transreid.train INFO: OCCAWARE occ_bce: 0.0276, alpha: 0.0421
+2026-06-11 06:55:21 transreid.train INFO: Epoch[103] Iter[150/227] Loss: 0.083, Acc: 0.995, Base Lr: 4.05e-04
+2026-06-11 06:55:21 transreid.train INFO: OCCAWARE occ_bce: 0.0272, alpha: 0.0421
+2026-06-11 06:55:24 transreid.train INFO: Epoch[103] Iter[200/227] Loss: 0.078, Acc: 0.996, Base Lr: 4.05e-04
+2026-06-11 06:55:24 transreid.train INFO: OCCAWARE occ_bce: 0.0272, alpha: 0.0421
+2026-06-11 06:55:25 transreid.train INFO: Epoch 103 done. Time per epoch: 15.580[s] Speed: 866.7[samples/s]
+2026-06-11 06:55:29 transreid.train INFO: Epoch[104] Iter[50/227] Loss: 0.077, Acc: 0.996, Base Lr: 3.61e-04
+2026-06-11 06:55:29 transreid.train INFO: OCCAWARE occ_bce: 0.0274, alpha: 0.0421
+2026-06-11 06:55:33 transreid.train INFO: Epoch[104] Iter[100/227] Loss: 0.075, Acc: 0.996, Base Lr: 3.61e-04
+2026-06-11 06:55:33 transreid.train INFO: OCCAWARE occ_bce: 0.0265, alpha: 0.0421
+2026-06-11 06:55:36 transreid.train INFO: Epoch[104] Iter[150/227] Loss: 0.075, Acc: 0.997, Base Lr: 3.61e-04
+2026-06-11 06:55:36 transreid.train INFO: OCCAWARE occ_bce: 0.0268, alpha: 0.0421
+2026-06-11 06:55:40 transreid.train INFO: Epoch[104] Iter[200/227] Loss: 0.074, Acc: 0.997, Base Lr: 3.61e-04
+2026-06-11 06:55:40 transreid.train INFO: OCCAWARE occ_bce: 0.0270, alpha: 0.0421
+2026-06-11 06:55:41 transreid.train INFO: Epoch 104 done. Time per epoch: 15.567[s] Speed: 867.4[samples/s]
+2026-06-11 06:55:44 transreid.train INFO: Epoch[105] Iter[50/227] Loss: 0.086, Acc: 0.996, Base Lr: 3.20e-04
+2026-06-11 06:55:44 transreid.train INFO: OCCAWARE occ_bce: 0.0274, alpha: 0.0421
+2026-06-11 06:55:48 transreid.train INFO: Epoch[105] Iter[100/227] Loss: 0.077, Acc: 0.996, Base Lr: 3.20e-04
+2026-06-11 06:55:48 transreid.train INFO: OCCAWARE occ_bce: 0.0273, alpha: 0.0421
+2026-06-11 06:55:52 transreid.train INFO: Epoch[105] Iter[150/227] Loss: 0.075, Acc: 0.996, Base Lr: 3.20e-04
+2026-06-11 06:55:52 transreid.train INFO: OCCAWARE occ_bce: 0.0270, alpha: 0.0422
+2026-06-11 06:55:55 transreid.train INFO: Epoch[105] Iter[200/227] Loss: 0.073, Acc: 0.996, Base Lr: 3.20e-04
+2026-06-11 06:55:55 transreid.train INFO: OCCAWARE occ_bce: 0.0271, alpha: 0.0422
+2026-06-11 06:55:56 transreid.train INFO: Epoch 105 done. Time per epoch: 15.639[s] Speed: 867.6[samples/s]
+2026-06-11 06:56:00 transreid.train INFO: Epoch[106] Iter[50/227] Loss: 0.085, Acc: 0.998, Base Lr: 2.81e-04
+2026-06-11 06:56:00 transreid.train INFO: OCCAWARE occ_bce: 0.0271, alpha: 0.0422
+2026-06-11 06:56:04 transreid.train INFO: Epoch[106] Iter[100/227] Loss: 0.084, Acc: 0.997, Base Lr: 2.81e-04
+2026-06-11 06:56:04 transreid.train INFO: OCCAWARE occ_bce: 0.0275, alpha: 0.0422
+2026-06-11 06:56:07 transreid.train INFO: Epoch[106] Iter[150/227] Loss: 0.080, Acc: 0.997, Base Lr: 2.81e-04
+2026-06-11 06:56:07 transreid.train INFO: OCCAWARE occ_bce: 0.0273, alpha: 0.0422
+2026-06-11 06:56:11 transreid.train INFO: Epoch[106] Iter[200/227] Loss: 0.078, Acc: 0.998, Base Lr: 2.81e-04
+2026-06-11 06:56:11 transreid.train INFO: OCCAWARE occ_bce: 0.0271, alpha: 0.0422
+2026-06-11 06:56:12 transreid.train INFO: Epoch 106 done. Time per epoch: 15.646[s] Speed: 867.2[samples/s]
+2026-06-11 06:56:16 transreid.train INFO: Epoch[107] Iter[50/227] Loss: 0.085, Acc: 0.994, Base Lr: 2.45e-04
+2026-06-11 06:56:16 transreid.train INFO: OCCAWARE occ_bce: 0.0263, alpha: 0.0422
+2026-06-11 06:56:19 transreid.train INFO: Epoch[107] Iter[100/227] Loss: 0.085, Acc: 0.995, Base Lr: 2.45e-04
+2026-06-11 06:56:19 transreid.train INFO: OCCAWARE occ_bce: 0.0267, alpha: 0.0422
+2026-06-11 06:56:23 transreid.train INFO: Epoch[107] Iter[150/227] Loss: 0.082, Acc: 0.996, Base Lr: 2.45e-04
+2026-06-11 06:56:23 transreid.train INFO: OCCAWARE occ_bce: 0.0267, alpha: 0.0422
+2026-06-11 06:56:27 transreid.train INFO: Epoch[107] Iter[200/227] Loss: 0.079, Acc: 0.996, Base Lr: 2.45e-04
+2026-06-11 06:56:27 transreid.train INFO: OCCAWARE occ_bce: 0.0267, alpha: 0.0422
+2026-06-11 06:56:28 transreid.train INFO: Epoch 107 done. Time per epoch: 15.653[s] Speed: 866.8[samples/s]
+2026-06-11 06:56:31 transreid.train INFO: Epoch[108] Iter[50/227] Loss: 0.086, Acc: 0.996, Base Lr: 2.11e-04
+2026-06-11 06:56:31 transreid.train INFO: OCCAWARE occ_bce: 0.0267, alpha: 0.0422
+2026-06-11 06:56:35 transreid.train INFO: Epoch[108] Iter[100/227] Loss: 0.088, Acc: 0.996, Base Lr: 2.11e-04
+2026-06-11 06:56:35 transreid.train INFO: OCCAWARE occ_bce: 0.0266, alpha: 0.0422
+2026-06-11 06:56:39 transreid.train INFO: Epoch[108] Iter[150/227] Loss: 0.083, Acc: 0.996, Base Lr: 2.11e-04
+2026-06-11 06:56:39 transreid.train INFO: OCCAWARE occ_bce: 0.0264, alpha: 0.0422
+2026-06-11 06:56:42 transreid.train INFO: Epoch[108] Iter[200/227] Loss: 0.080, Acc: 0.996, Base Lr: 2.11e-04
+2026-06-11 06:56:42 transreid.train INFO: OCCAWARE occ_bce: 0.0264, alpha: 0.0422
+2026-06-11 06:56:43 transreid.train INFO: Epoch 108 done. Time per epoch: 15.707[s] Speed: 867.9[samples/s]
+2026-06-11 06:56:47 transreid.train INFO: Epoch[109] Iter[50/227] Loss: 0.087, Acc: 0.997, Base Lr: 1.80e-04
+2026-06-11 06:56:47 transreid.train INFO: OCCAWARE occ_bce: 0.0272, alpha: 0.0422
+2026-06-11 06:56:51 transreid.train INFO: Epoch[109] Iter[100/227] Loss: 0.087, Acc: 0.996, Base Lr: 1.80e-04
+2026-06-11 06:56:51 transreid.train INFO: OCCAWARE occ_bce: 0.0268, alpha: 0.0422
+2026-06-11 06:56:54 transreid.train INFO: Epoch[109] Iter[150/227] Loss: 0.083, Acc: 0.996, Base Lr: 1.80e-04
+2026-06-11 06:56:54 transreid.train INFO: OCCAWARE occ_bce: 0.0266, alpha: 0.0422
+2026-06-11 06:56:58 transreid.train INFO: Epoch[109] Iter[200/227] Loss: 0.080, Acc: 0.996, Base Lr: 1.80e-04
+2026-06-11 06:56:58 transreid.train INFO: OCCAWARE occ_bce: 0.0268, alpha: 0.0422
+2026-06-11 06:56:59 transreid.train INFO: Epoch 109 done. Time per epoch: 15.649[s] Speed: 867.0[samples/s]
+2026-06-11 06:57:03 transreid.train INFO: Epoch[110] Iter[50/227] Loss: 0.099, Acc: 0.994, Base Lr: 1.52e-04
+2026-06-11 06:57:03 transreid.train INFO: OCCAWARE occ_bce: 0.0275, alpha: 0.0423
+2026-06-11 06:57:07 transreid.train INFO: Epoch[110] Iter[100/227] Loss: 0.090, Acc: 0.996, Base Lr: 1.52e-04
+2026-06-11 06:57:07 transreid.train INFO: OCCAWARE occ_bce: 0.0272, alpha: 0.0423
+2026-06-11 06:57:10 transreid.train INFO: Epoch[110] Iter[150/227] Loss: 0.088, Acc: 0.996, Base Lr: 1.52e-04
+2026-06-11 06:57:10 transreid.train INFO: OCCAWARE occ_bce: 0.0274, alpha: 0.0423
+2026-06-11 06:57:14 transreid.train INFO: Epoch[110] Iter[200/227] Loss: 0.082, Acc: 0.996, Base Lr: 1.52e-04
+2026-06-11 06:57:14 transreid.train INFO: OCCAWARE occ_bce: 0.0274, alpha: 0.0423
+2026-06-11 06:57:15 transreid.train INFO: Epoch 110 done. Time per epoch: 15.690[s] Speed: 860.7[samples/s]
+2026-06-11 06:57:18 transreid.train INFO: Epoch[111] Iter[50/227] Loss: 0.104, Acc: 0.995, Base Lr: 1.26e-04
+2026-06-11 06:57:18 transreid.train INFO: OCCAWARE occ_bce: 0.0274, alpha: 0.0423
+2026-06-11 06:57:22 transreid.train INFO: Epoch[111] Iter[100/227] Loss: 0.092, Acc: 0.995, Base Lr: 1.26e-04
+2026-06-11 06:57:22 transreid.train INFO: OCCAWARE occ_bce: 0.0275, alpha: 0.0423
+2026-06-11 06:57:26 transreid.train INFO: Epoch[111] Iter[150/227] Loss: 0.085, Acc: 0.997, Base Lr: 1.26e-04
+2026-06-11 06:57:26 transreid.train INFO: OCCAWARE occ_bce: 0.0273, alpha: 0.0423
+2026-06-11 06:57:29 transreid.train INFO: Epoch[111] Iter[200/227] Loss: 0.082, Acc: 0.996, Base Lr: 1.26e-04
+2026-06-11 06:57:29 transreid.train INFO: OCCAWARE occ_bce: 0.0272, alpha: 0.0423
+2026-06-11 06:57:30 transreid.train INFO: Epoch 111 done. Time per epoch: 15.650[s] Speed: 866.9[samples/s]
+2026-06-11 06:57:34 transreid.train INFO: Epoch[112] Iter[50/227] Loss: 0.082, Acc: 0.996, Base Lr: 1.03e-04
+2026-06-11 06:57:34 transreid.train INFO: OCCAWARE occ_bce: 0.0257, alpha: 0.0423
+2026-06-11 06:57:38 transreid.train INFO: Epoch[112] Iter[100/227] Loss: 0.084, Acc: 0.997, Base Lr: 1.03e-04
+2026-06-11 06:57:38 transreid.train INFO: OCCAWARE occ_bce: 0.0266, alpha: 0.0423
+2026-06-11 06:57:41 transreid.train INFO: Epoch[112] Iter[150/227] Loss: 0.084, Acc: 0.996, Base Lr: 1.03e-04
+2026-06-11 06:57:41 transreid.train INFO: OCCAWARE occ_bce: 0.0266, alpha: 0.0423
+2026-06-11 06:57:45 transreid.train INFO: Epoch[112] Iter[200/227] Loss: 0.082, Acc: 0.997, Base Lr: 1.03e-04
+2026-06-11 06:57:45 transreid.train INFO: OCCAWARE occ_bce: 0.0266, alpha: 0.0423
+2026-06-11 06:57:46 transreid.train INFO: Epoch 112 done. Time per epoch: 15.646[s] Speed: 867.2[samples/s]
+2026-06-11 06:57:50 transreid.train INFO: Epoch[113] Iter[50/227] Loss: 0.086, Acc: 0.995, Base Lr: 8.28e-05
+2026-06-11 06:57:50 transreid.train INFO: OCCAWARE occ_bce: 0.0272, alpha: 0.0423
+2026-06-11 06:57:53 transreid.train INFO: Epoch[113] Iter[100/227] Loss: 0.083, Acc: 0.995, Base Lr: 8.28e-05
+2026-06-11 06:57:53 transreid.train INFO: OCCAWARE occ_bce: 0.0277, alpha: 0.0423
+2026-06-11 06:57:57 transreid.train INFO: Epoch[113] Iter[150/227] Loss: 0.083, Acc: 0.995, Base Lr: 8.28e-05
+2026-06-11 06:57:57 transreid.train INFO: OCCAWARE occ_bce: 0.0276, alpha: 0.0423
+2026-06-11 06:58:01 transreid.train INFO: Epoch[113] Iter[200/227] Loss: 0.079, Acc: 0.996, Base Lr: 8.28e-05
+2026-06-11 06:58:01 transreid.train INFO: OCCAWARE occ_bce: 0.0277, alpha: 0.0423
+2026-06-11 06:58:02 transreid.train INFO: Epoch 113 done. Time per epoch: 15.632[s] Speed: 868.0[samples/s]
+2026-06-11 06:58:05 transreid.train INFO: Epoch[114] Iter[50/227] Loss: 0.075, Acc: 0.997, Base Lr: 6.51e-05
+2026-06-11 06:58:05 transreid.train INFO: OCCAWARE occ_bce: 0.0269, alpha: 0.0423
+2026-06-11 06:58:09 transreid.train INFO: Epoch[114] Iter[100/227] Loss: 0.075, Acc: 0.997, Base Lr: 6.51e-05
+2026-06-11 06:58:09 transreid.train INFO: OCCAWARE occ_bce: 0.0269, alpha: 0.0423
+2026-06-11 06:58:13 transreid.train INFO: Epoch[114] Iter[150/227] Loss: 0.077, Acc: 0.998, Base Lr: 6.51e-05
+2026-06-11 06:58:13 transreid.train INFO: OCCAWARE occ_bce: 0.0268, alpha: 0.0423
+2026-06-11 06:58:16 transreid.train INFO: Epoch[114] Iter[200/227] Loss: 0.080, Acc: 0.997, Base Lr: 6.51e-05
+2026-06-11 06:58:16 transreid.train INFO: OCCAWARE occ_bce: 0.0270, alpha: 0.0423
+2026-06-11 06:58:17 transreid.train INFO: Epoch 114 done. Time per epoch: 15.585[s] Speed: 866.5[samples/s]
+2026-06-11 06:58:21 transreid.train INFO: Epoch[115] Iter[50/227] Loss: 0.079, Acc: 0.996, Base Lr: 5.02e-05
+2026-06-11 06:58:21 transreid.train INFO: OCCAWARE occ_bce: 0.0282, alpha: 0.0423
+2026-06-11 06:58:25 transreid.train INFO: Epoch[115] Iter[100/227] Loss: 0.083, Acc: 0.996, Base Lr: 5.02e-05
+2026-06-11 06:58:25 transreid.train INFO: OCCAWARE occ_bce: 0.0271, alpha: 0.0423
+2026-06-11 06:58:28 transreid.train INFO: Epoch[115] Iter[150/227] Loss: 0.080, Acc: 0.996, Base Lr: 5.02e-05
+2026-06-11 06:58:28 transreid.train INFO: OCCAWARE occ_bce: 0.0270, alpha: 0.0423
+2026-06-11 06:58:32 transreid.train INFO: Epoch[115] Iter[200/227] Loss: 0.077, Acc: 0.997, Base Lr: 5.02e-05
+2026-06-11 06:58:32 transreid.train INFO: OCCAWARE occ_bce: 0.0271, alpha: 0.0423
+2026-06-11 06:58:33 transreid.train INFO: Epoch 115 done. Time per epoch: 15.597[s] Speed: 865.8[samples/s]
+2026-06-11 06:58:37 transreid.train INFO: Epoch[116] Iter[50/227] Loss: 0.100, Acc: 0.995, Base Lr: 3.79e-05
+2026-06-11 06:58:37 transreid.train INFO: OCCAWARE occ_bce: 0.0263, alpha: 0.0423
+2026-06-11 06:58:40 transreid.train INFO: Epoch[116] Iter[100/227] Loss: 0.093, Acc: 0.995, Base Lr: 3.79e-05
+2026-06-11 06:58:40 transreid.train INFO: OCCAWARE occ_bce: 0.0269, alpha: 0.0423
+2026-06-11 06:58:44 transreid.train INFO: Epoch[116] Iter[150/227] Loss: 0.092, Acc: 0.996, Base Lr: 3.79e-05
+2026-06-11 06:58:44 transreid.train INFO: OCCAWARE occ_bce: 0.0266, alpha: 0.0423
+2026-06-11 06:58:47 transreid.train INFO: Epoch[116] Iter[200/227] Loss: 0.091, Acc: 0.996, Base Lr: 3.79e-05
+2026-06-11 06:58:47 transreid.train INFO: OCCAWARE occ_bce: 0.0268, alpha: 0.0423
+2026-06-11 06:58:48 transreid.train INFO: Epoch 116 done. Time per epoch: 15.671[s] Speed: 865.8[samples/s]
+2026-06-11 06:58:52 transreid.train INFO: Epoch[117] Iter[50/227] Loss: 0.077, Acc: 0.996, Base Lr: 2.83e-05
+2026-06-11 06:58:52 transreid.train INFO: OCCAWARE occ_bce: 0.0262, alpha: 0.0423
+2026-06-11 06:58:56 transreid.train INFO: Epoch[117] Iter[100/227] Loss: 0.079, Acc: 0.995, Base Lr: 2.83e-05
+2026-06-11 06:58:56 transreid.train INFO: OCCAWARE occ_bce: 0.0267, alpha: 0.0423
+2026-06-11 06:58:59 transreid.train INFO: Epoch[117] Iter[150/227] Loss: 0.078, Acc: 0.996, Base Lr: 2.83e-05
+2026-06-11 06:58:59 transreid.train INFO: OCCAWARE occ_bce: 0.0270, alpha: 0.0423
+2026-06-11 06:59:03 transreid.train INFO: Epoch[117] Iter[200/227] Loss: 0.078, Acc: 0.995, Base Lr: 2.83e-05
+2026-06-11 06:59:03 transreid.train INFO: OCCAWARE occ_bce: 0.0269, alpha: 0.0423
+2026-06-11 06:59:04 transreid.train INFO: Epoch 117 done. Time per epoch: 15.647[s] Speed: 867.1[samples/s]
+2026-06-11 06:59:08 transreid.train INFO: Epoch[118] Iter[50/227] Loss: 0.103, Acc: 0.996, Base Lr: 2.15e-05
+2026-06-11 06:59:08 transreid.train INFO: OCCAWARE occ_bce: 0.0269, alpha: 0.0423
+2026-06-11 06:59:12 transreid.train INFO: Epoch[118] Iter[100/227] Loss: 0.096, Acc: 0.996, Base Lr: 2.15e-05
+2026-06-11 06:59:12 transreid.train INFO: OCCAWARE occ_bce: 0.0272, alpha: 0.0423
+2026-06-11 06:59:15 transreid.train INFO: Epoch[118] Iter[150/227] Loss: 0.090, Acc: 0.996, Base Lr: 2.15e-05
+2026-06-11 06:59:15 transreid.train INFO: OCCAWARE occ_bce: 0.0267, alpha: 0.0423
+2026-06-11 06:59:19 transreid.train INFO: Epoch[118] Iter[200/227] Loss: 0.085, Acc: 0.996, Base Lr: 2.15e-05
+2026-06-11 06:59:19 transreid.train INFO: OCCAWARE occ_bce: 0.0269, alpha: 0.0423
+2026-06-11 06:59:20 transreid.train INFO: Epoch 118 done. Time per epoch: 15.718[s] Speed: 867.3[samples/s]
+2026-06-11 06:59:24 transreid.train INFO: Epoch[119] Iter[50/227] Loss: 0.088, Acc: 0.993, Base Lr: 1.74e-05
+2026-06-11 06:59:24 transreid.train INFO: OCCAWARE occ_bce: 0.0267, alpha: 0.0423
+2026-06-11 06:59:27 transreid.train INFO: Epoch[119] Iter[100/227] Loss: 0.074, Acc: 0.995, Base Lr: 1.74e-05
+2026-06-11 06:59:27 transreid.train INFO: OCCAWARE occ_bce: 0.0268, alpha: 0.0423
+2026-06-11 06:59:31 transreid.train INFO: Epoch[119] Iter[150/227] Loss: 0.076, Acc: 0.996, Base Lr: 1.74e-05
+2026-06-11 06:59:31 transreid.train INFO: OCCAWARE occ_bce: 0.0268, alpha: 0.0423
+2026-06-11 06:59:34 transreid.train INFO: Epoch[119] Iter[200/227] Loss: 0.077, Acc: 0.996, Base Lr: 1.74e-05
+2026-06-11 06:59:34 transreid.train INFO: OCCAWARE occ_bce: 0.0267, alpha: 0.0423
+2026-06-11 06:59:35 transreid.train INFO: Epoch 119 done. Time per epoch: 15.714[s] Speed: 867.5[samples/s]
+2026-06-11 06:59:39 transreid.train INFO: Epoch[120] Iter[50/227] Loss: 0.074, Acc: 0.998, Base Lr: 1.60e-05
+2026-06-11 06:59:39 transreid.train INFO: OCCAWARE occ_bce: 0.0282, alpha: 0.0423
+2026-06-11 06:59:43 transreid.train INFO: Epoch[120] Iter[100/227] Loss: 0.077, Acc: 0.997, Base Lr: 1.60e-05
+2026-06-11 06:59:43 transreid.train INFO: OCCAWARE occ_bce: 0.0272, alpha: 0.0423
+2026-06-11 06:59:47 transreid.train INFO: Epoch[120] Iter[150/227] Loss: 0.075, Acc: 0.996, Base Lr: 1.60e-05
+2026-06-11 06:59:47 transreid.train INFO: OCCAWARE occ_bce: 0.0270, alpha: 0.0423
+2026-06-11 06:59:50 transreid.train INFO: Epoch[120] Iter[200/227] Loss: 0.074, Acc: 0.996, Base Lr: 1.60e-05
+2026-06-11 06:59:50 transreid.train INFO: OCCAWARE occ_bce: 0.0269, alpha: 0.0423
+2026-06-11 06:59:51 transreid.train INFO: Epoch 120 done. Time per epoch: 15.740[s] Speed: 866.1[samples/s]
+2026-06-11 07:00:10 transreid.train INFO: Validation Results - Epoch: 120
+2026-06-11 07:00:10 transreid.train INFO: mAP: 54.9%
+2026-06-11 07:00:10 transreid.train INFO: CMC curve, Rank-1  :61.5%
+2026-06-11 07:00:10 transreid.train INFO: CMC curve, Rank-5  :78.3%
+2026-06-11 07:00:10 transreid.train INFO: CMC curve, Rank-10 :84.1%

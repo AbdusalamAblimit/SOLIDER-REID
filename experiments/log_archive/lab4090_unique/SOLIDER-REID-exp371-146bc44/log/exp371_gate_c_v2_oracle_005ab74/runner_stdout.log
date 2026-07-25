@@ -1,0 +1,132 @@
+{
+  "gate": {
+    "scope": "frozen pose-routing screen only; FULL-INCL/FULL-LOO are reported boundaries and full-feature/full-relation novelty gates move to matched student",
+    "strongest_control": "PART-EQUAL",
+    "target_differences": {
+      "vs_strongest_control": -0.0007656200933796597,
+      "part_equal_vs_slot_perm": 0.012347099327778999,
+      "pose_resp_vs_part_equal": -0.0007656200933796597,
+      "pose_resp_vs_pose_scalar": -0.00016158121963338878,
+      "pose_resp_vs_resp_perm": -0.0003722568932982284,
+      "pose_resp_vs_wrong_id": 0.9298295649270668
+    },
+    "fold_pose_vs_strongest": [
+      -0.0015037581253622978,
+      -0.00013887889502939288,
+      -0.000622584291727124,
+      -0.0009357561445240137,
+      -0.0012380723359756152
+    ],
+    "fold_strongest_control": [
+      "PART-EQUAL",
+      "POSE-SCALAR",
+      "PART-EQUAL",
+      "RESP-PERM",
+      "PART-EQUAL"
+    ],
+    "fold_strongest_control_mAP": [
+      0.9362598597643766,
+      0.9403287981868172,
+      0.9433190028728355,
+      0.9457934450956367,
+      0.9505132383756281
+    ],
+    "pairwise_pid_grouped_bootstrap": {
+      "ID-GLOBAL": {
+        "point": 0.4153534608295274,
+        "lower_95": 0.3899587018218478,
+        "upper_95": 0.44005139185502096,
+        "replicates": 2000.0,
+        "pid_groups": 510.0
+      },
+      "ID-MEAN": {
+        "point": 0.002994093432010329,
+        "lower_95": 0.0005422469177204753,
+        "upper_95": 0.0057731974724176075,
+        "replicates": 2000.0,
+        "pid_groups": 510.0
+      },
+      "PART-EQUAL": {
+        "point": -0.0007653090226994768,
+        "lower_95": -0.0015612050350058717,
+        "upper_95": 2.150464255069817e-05,
+        "replicates": 2000.0,
+        "pid_groups": 510.0
+      },
+      "SLOT-PERM": {
+        "point": 0.011582098207243844,
+        "lower_95": 0.0074821522918485876,
+        "upper_95": 0.015711959338326337,
+        "replicates": 2000.0,
+        "pid_groups": 510.0
+      },
+      "AGREE": {
+        "point": 0.00038058378421753703,
+        "lower_95": -0.0005367965009621088,
+        "upper_95": 0.0014068649302964508,
+        "replicates": 2000.0,
+        "pid_groups": 510.0
+      },
+      "POSE-SCALAR": {
+        "point": -0.00016302800577446146,
+        "lower_95": -0.0005053391556205818,
+        "upper_95": 0.000185761932882315,
+        "replicates": 2000.0,
+        "pid_groups": 510.0
+      },
+      "RESP-PERM": {
+        "point": -0.00037171496629455483,
+        "lower_95": -0.0009816165581817188,
+        "upper_95": 0.00020783119582330563,
+        "replicates": 2000.0,
+        "pid_groups": 510.0
+      }
+    },
+    "full_geometry_boundary": {
+      "FULL-INCL_mAP": 0.9426808381117073,
+      "FULL-LOO_mAP": 0.9406001400067223,
+      "POSE-RESP_minus_FULL-INCL": -0.00032577921117216135,
+      "POSE-RESP_minus_FULL-LOO": 0.0017549188938128513,
+      "enters_routing_gate": false
+    },
+    "canonical_routing_matrix": {
+      "PART-EQUAL": 0.94297388838819,
+      "POSE-SCALAR": 0.9420100484784332,
+      "POSE-RESP": 0.942048985290654,
+      "RESP-PERM": 0.9422159967454882
+    },
+    "scene_pose_vs_best_routing_control": -0.0008681767283726938,
+    "scene_fold_pose_vs_best_routing_control": [
+      -0.0014824426926839385,
+      -0.0002260178421531478,
+      -0.0012753474349573857,
+      -0.0007586815393917368,
+      -0.001091888381691497
+    ],
+    "scene_fold_strongest_control": [
+      "PART-EQUAL",
+      "POSE-SCALAR",
+      "PART-EQUAL",
+      "RESP-PERM",
+      "PART-EQUAL"
+    ],
+    "checks": {
+      "pose_vs_strongest_at_least_0_5pp": false,
+      "all_fold_directions_positive": false,
+      "all_pairwise_pid_bootstrap_lowers_above_zero": false,
+      "slot_correspondence_at_least_0_3pp": true,
+      "pose_vs_equal_at_least_0_3pp": false,
+      "pose_vs_scalar_at_least_0_3pp": false,
+      "pose_vs_response_perm_at_least_0_5pp": false,
+      "eligible_query_and_pid_each_fold_at_least_70pct": true,
+      "canonical_extraction_routing_matrix_complete": true,
+      "scene_merged_direction_not_conflicting": false,
+      "wrong_id_fail_safe_is_worse_than_pose": true,
+      "retained_removed_self_difficulty_reported": true
+    },
+    "routing_screen_all_pass": false,
+    "all_pass": false
+  },
+  "output_dir": "/home/afr/SOLIDER-REID-exp371-146bc44/log/exp371_gate_c_v2_oracle_005ab74"
+}
+COMPLETE

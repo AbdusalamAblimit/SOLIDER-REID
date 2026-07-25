@@ -1,0 +1,2281 @@
+{
+  "status": "PREFLIGHT_PASS",
+  "plan": [
+    {
+      "seed": 3407,
+      "arm": "A",
+      "factors": {
+        "pose_mode": "true",
+        "text_mode": "aligned"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_3407",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "3407",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "true",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_3407"
+      ],
+      "reference": null
+    },
+    {
+      "seed": 3407,
+      "arm": "B",
+      "factors": {
+        "pose_mode": "true",
+        "text_mode": "permuted"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/B/seed_3407",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "3407",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "true",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "permuted",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/B/seed_3407",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_3407/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_3407/init_audit.json"
+    },
+    {
+      "seed": 3407,
+      "arm": "C",
+      "factors": {
+        "pose_mode": "uniform",
+        "text_mode": "aligned"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/C/seed_3407",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "3407",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/C/seed_3407",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_3407/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_3407/init_audit.json"
+    },
+    {
+      "seed": 3407,
+      "arm": "D",
+      "factors": {
+        "pose_mode": "uniform",
+        "text_mode": "permuted"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/D/seed_3407",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "3407",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "permuted",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/D/seed_3407",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_3407/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_3407/init_audit.json"
+    },
+    {
+      "seed": 7753,
+      "arm": "A",
+      "factors": {
+        "pose_mode": "true",
+        "text_mode": "aligned"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_7753",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "7753",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "true",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_7753"
+      ],
+      "reference": null
+    },
+    {
+      "seed": 7753,
+      "arm": "B",
+      "factors": {
+        "pose_mode": "true",
+        "text_mode": "permuted"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/B/seed_7753",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "7753",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "true",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "permuted",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/B/seed_7753",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_7753/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_7753/init_audit.json"
+    },
+    {
+      "seed": 7753,
+      "arm": "C",
+      "factors": {
+        "pose_mode": "uniform",
+        "text_mode": "aligned"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/C/seed_7753",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "7753",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/C/seed_7753",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_7753/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_7753/init_audit.json"
+    },
+    {
+      "seed": 7753,
+      "arm": "D",
+      "factors": {
+        "pose_mode": "uniform",
+        "text_mode": "permuted"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/D/seed_7753",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "7753",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "permuted",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/D/seed_7753",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_7753/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_7753/init_audit.json"
+    },
+    {
+      "seed": 9227,
+      "arm": "A",
+      "factors": {
+        "pose_mode": "true",
+        "text_mode": "aligned"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_9227",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "9227",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "true",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_9227"
+      ],
+      "reference": null
+    },
+    {
+      "seed": 9227,
+      "arm": "B",
+      "factors": {
+        "pose_mode": "true",
+        "text_mode": "permuted"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/B/seed_9227",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "9227",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "true",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "permuted",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/B/seed_9227",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_9227/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_9227/init_audit.json"
+    },
+    {
+      "seed": 9227,
+      "arm": "C",
+      "factors": {
+        "pose_mode": "uniform",
+        "text_mode": "aligned"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/C/seed_9227",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "9227",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "aligned",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/C/seed_9227",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_9227/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_9227/init_audit.json"
+    },
+    {
+      "seed": 9227,
+      "arm": "D",
+      "factors": {
+        "pose_mode": "uniform",
+        "text_mode": "permuted"
+      },
+      "output": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/D/seed_9227",
+      "command": [
+        "/usr/local/anaconda3/envs/mmpose-abu/bin/python",
+        "train.py",
+        "--config_file",
+        "configs/occluded_duke/exp323_lgpa_tiny.yml",
+        "SOLVER.SEED",
+        "9227",
+        "MODEL.POSE_LGPA_POSE_MODE",
+        "uniform",
+        "MODEL.POSE_LGPA_TEXT_MODE",
+        "permuted",
+        "OUTPUT_DIR",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/D/seed_9227",
+        "SOLVER.REPRO_REFERENCE",
+        "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_9227/init_audit.json"
+      ],
+      "reference": "/home/afr/SOLIDER-REID-psg-lgpa/log/exp323/A/seed_9227/init_audit.json"
+    }
+  ]
+}
+[exp323] START arm=A seed=3407
+[exp323] pid=3452424 log_bytes=10200 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=11881 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=13563 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=15246 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=17007 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=18688 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=20369 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=22050 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=23732 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=25414 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=26977 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=28655 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=29643 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=31271 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=32954 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=34637 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=36397 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=38078 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=39955 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=41636 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=43319 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=45002 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=46762 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=48443 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=50124 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=51221 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=52212 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=53895 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=55656 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=57338 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=59020 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=60702 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=62386 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=64070 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=65830 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=67512 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=69194 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=70877 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=72366 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=73162 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=74846 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=76606 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=78288 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=79970 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=81653 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=83337 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=85098 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=86780 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=88462 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=90144 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=91828 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=93512 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=93918 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=95678 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=97360 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=99042 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=100725 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=102409 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=104288 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=105852 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=107534 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=109216 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=111095 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=112779 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=114540 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=114658 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=116628 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=118310 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=119992 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=121676 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=123360 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=125120 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=126802 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=128484 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=130167 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=131851 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=133612 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=135294 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=135804 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=137382 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=139064 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=140748 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=142432 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=144192 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=145874 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=147556 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=149239 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=150923 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=152802 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=154366 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=156048 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=156950 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=158332 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=160015 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=161699 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=163460 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=165142 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=166824 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=168506 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=170190 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=171874 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=173634 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=175316 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=176998 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=178096 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=179087 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=180771 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=182650 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=184214 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=185896 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=187578 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=189457 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=191141 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=192902 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=194584 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=196266 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=197948 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=199242 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=200038 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=201722 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=203482 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=205164 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=206846 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=208529 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=210213 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=212092 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=213656 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=215338 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=217020 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=218706 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=220399 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=221002 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=222772 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=224463 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=226154 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=227845 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=229537 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=231229 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=232998 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=234688 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=236378 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=238069 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=239761 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=241531 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=241649 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=243628 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=245318 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=247008 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=248700 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=250392 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=252161 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=253851 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=255541 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=257232 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=258924 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=260694 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=262384 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=262896 quiet_seconds=0
+[exp323] pid=3452424 log_bytes=263303 quiet_seconds=0
+[exp323] EVAL arm=A seed=3407 mode=native
+[exp323] pid=3485778 log_bytes=1570 quiet_seconds=0
+[exp323] pid=3485778 log_bytes=4233 quiet_seconds=0
+[exp323] EVAL arm=A seed=3407 mode=uniform
+[exp323] pid=3486056 log_bytes=1594 quiet_seconds=0
+[exp323] pid=3486056 log_bytes=4276 quiet_seconds=0
+[exp323] COMPLETE arm=A seed=3407
+[exp323] START arm=B seed=3407
+[exp323] pid=3486333 log_bytes=10338 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=12019 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=13701 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=15384 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=17262 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=19022 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=20703 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=22383 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=24064 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=25746 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=27503 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=29183 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=29779 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=31799 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=33480 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=35163 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=36846 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=38606 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=40287 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=41968 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=43845 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=45528 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=47211 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=48971 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=50652 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=51357 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=52739 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=54421 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=56105 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=57984 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=59548 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=61230 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=62912 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=64596 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=66475 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=68236 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=69918 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=71600 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=72502 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=73688 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=75372 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=77056 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=78816 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=80498 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=82180 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=83863 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=85547 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=87426 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=89186 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=90868 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=92550 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=93648 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=94639 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=96323 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=98084 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=99766 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=101448 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=103130 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=104814 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=106498 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=108258 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=110136 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=111818 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=113500 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=114794 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=115590 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=117274 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=119034 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=120716 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=122398 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=124081 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=125960 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=127644 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=129404 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=131086 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=132768 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=134451 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=135940 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=136541 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=138302 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=139984 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=141666 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=143348 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=145032 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=146911 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=148672 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=150354 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=152036 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=153718 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=155402 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=157086 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=157492 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=159252 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=160934 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=162616 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=164299 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=165983 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=167862 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=169622 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=171304 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=172986 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=174669 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=176353 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=178114 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=178638 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=180202 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=181884 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=183566 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=185445 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=187129 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=188890 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=190572 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=192254 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=193936 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=195620 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=197304 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=199064 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=199378 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=201152 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=202834 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=204517 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=206396 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=208080 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=209840 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=211522 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=213204 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=214887 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=216571 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=218332 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=220022 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=220535 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=222120 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=223811 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=225504 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=227197 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=228966 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=230656 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=232543 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=234233 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=235925 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=237617 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=239386 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=241076 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=241785 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=243173 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=244864 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=246556 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=248444 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=250213 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=251903 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=253593 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=255284 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=256976 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=258746 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=260436 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=262126 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=263032 quiet_seconds=0
+[exp323] pid=3486333 log_bytes=263439 quiet_seconds=0
+[exp323] EVAL arm=B seed=3407 mode=native
+[exp323] pid=3519144 log_bytes=1571 quiet_seconds=0
+[exp323] pid=3519144 log_bytes=4239 quiet_seconds=0
+[exp323] EVAL arm=B seed=3407 mode=uniform
+[exp323] pid=3519421 log_bytes=1595 quiet_seconds=0
+[exp323] pid=3519421 log_bytes=4280 quiet_seconds=0
+[exp323] COMPLETE arm=B seed=3407
+[exp323] START arm=C seed=3407
+[exp323] pid=3519698 log_bytes=10342 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=12018 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=13886 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=15561 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=17235 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=18986 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=20658 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=22330 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=24003 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=25871 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=27545 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=29305 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=29705 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=31921 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=33602 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=35284 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=36967 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=38845 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=40605 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=42090 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=43967 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=45649 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=47332 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=49093 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=50774 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=51283 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=52861 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=54739 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=56422 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=58106 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=59867 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=61549 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=63231 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=64913 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=66792 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=68476 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=70237 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=71919 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=72429 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=74007 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=75885 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=77568 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=79252 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=81013 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=82695 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=84377 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=86059 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=87938 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=89622 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=91383 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=93065 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=93575 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=95153 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=96835 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=98714 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=100398 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=102159 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=103841 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=105523 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=107205 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=109084 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=110768 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=112529 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=114211 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=114721 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=116299 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=117981 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=119860 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=121544 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=123305 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=124987 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=126669 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=128351 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=130035 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=131914 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=133675 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=135357 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=135867 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=137445 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=139127 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=140811 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=142495 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=144255 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=146133 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=147815 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=149497 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=151181 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=152865 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=154625 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=156307 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=157013 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=158591 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=160273 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=161957 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=163641 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=165401 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=167083 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=168765 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=170643 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=172327 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=174011 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=175771 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=177453 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=178159 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=179737 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=181419 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=183103 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=184787 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=186547 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=188229 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=189911 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=191789 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=193473 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=195157 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=196917 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=198599 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=199305 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=200883 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=202565 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=204249 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=205933 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=207693 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=209375 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=211057 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=212935 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=214619 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=216303 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=218063 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=219752 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=220462 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=221850 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=223542 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=225235 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=227124 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=228893 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=230583 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=232273 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=233964 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=235656 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=237544 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=239116 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=240806 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=241712 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=243100 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=244791 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=246483 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=248371 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=249943 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=251633 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=253323 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=255211 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=256903 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=258673 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=260363 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=262053 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=262959 quiet_seconds=0
+[exp323] pid=3519698 log_bytes=263366 quiet_seconds=0
+[exp323] EVAL arm=C seed=3407 mode=native
+[exp323] pid=3552905 log_bytes=1597 quiet_seconds=0
+[exp323] pid=3552905 log_bytes=4284 quiet_seconds=0
+[exp323] COMPLETE arm=C seed=3407
+[exp323] START arm=D seed=3407
+[exp323] pid=3553182 log_bytes=10344 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=12215 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=13888 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=15563 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=17238 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=18989 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=20661 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=22333 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=24006 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=25874 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=27548 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=29308 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=29708 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=31924 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=33605 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=35482 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=37165 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=38848 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=40608 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=42289 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=43970 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=45652 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=47530 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=49213 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=50973 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=51286 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=53060 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=54742 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=56620 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=58304 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=59988 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=61748 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=63430 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=65112 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=66795 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=68674 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=70358 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=72118 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=72432 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=74206 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=75888 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=77766 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=79450 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=81134 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=82894 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=84576 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=86258 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=87941 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=89820 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=91504 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=93264 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=93578 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=95352 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=97034 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=98717 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=100596 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=102280 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=104040 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=105722 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=107404 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=109087 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=110771 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=112650 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=114410 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=114724 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=116498 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=118180 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=119863 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=121547 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=123426 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=124990 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=126672 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=128354 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=130038 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=131722 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=133482 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=135360 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=135870 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=137448 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=139130 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=140814 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=142498 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=144258 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=145940 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=147818 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=149500 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=151184 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=152868 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=154628 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=156310 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=157016 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=158594 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=160276 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=161960 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=163644 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=165404 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=167086 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=168768 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=170646 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=172330 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=174014 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=175774 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=177456 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=178162 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=179544 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=181227 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=183106 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=184790 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=186550 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=188232 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=189914 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=191597 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=193476 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=195160 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=196920 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=198602 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=199308 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=200690 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=202373 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=204252 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=205936 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=207696 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=209378 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=211060 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=212743 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=214622 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=216306 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=218066 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=219755 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=220465 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=221853 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=223545 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=225238 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=227127 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=228896 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=230586 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=232276 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=233967 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=235659 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=237547 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=239119 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=240809 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=241715 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=242906 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=244794 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=246486 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=248256 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=249946 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=251636 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=253326 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=255018 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=256906 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=258676 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=260366 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=262056 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=262962 quiet_seconds=0
+[exp323] pid=3553182 log_bytes=263369 quiet_seconds=0
+[exp323] EVAL arm=D seed=3407 mode=native
+[exp323] pid=3585980 log_bytes=1598 quiet_seconds=0
+[exp323] pid=3585980 log_bytes=4285 quiet_seconds=0
+[exp323] COMPLETE arm=D seed=3407
+[exp323] START arm=A seed=7753
+[exp323] pid=3586257 log_bytes=10200 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=11881 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=13758 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=15441 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=17124 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=18884 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=20564 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=22244 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=23925 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=25607 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=27365 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=29045 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=29641 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=31661 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=33342 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=35220 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=36903 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=38664 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=40345 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=42026 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=43707 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=45390 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=47073 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=48833 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=50514 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=51219 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=52601 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=54283 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=55966 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=57727 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=59409 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=61091 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=62773 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=64457 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=66141 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=67901 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=69583 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=71265 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=72363 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=73354 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=75038 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=76799 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=78285 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=79967 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=81650 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=83334 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=85213 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=86777 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=88459 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=90141 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=91825 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=93509 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=93915 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=95675 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=97357 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=98843 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=100527 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=102406 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=103971 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=105653 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=107335 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=109018 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=110702 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=112581 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=114145 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=114655 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=116233 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=117915 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=119599 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=121283 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=123043 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=124725 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=126407 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=128090 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=129774 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=131535 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=133217 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=134899 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=135801 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=136987 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=138671 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=140355 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=142115 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=143797 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=145479 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=147162 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=148846 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=150607 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=152289 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=153971 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=155653 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=156947 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=157743 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=159427 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=161187 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=162869 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=164551 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=166234 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=167918 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=169679 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=171361 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=173043 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=174725 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=176409 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=178093 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=178499 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=180259 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=181941 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=183623 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=185306 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=186990 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=188751 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=190433 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=192115 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=193797 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=195481 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=197165 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=198925 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=199239 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=201013 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=202695 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=204378 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=206062 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=207823 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=209309 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=210991 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=212674 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=214358 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=216237 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=217801 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=219489 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=220396 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=221587 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=223280 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=224973 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=226742 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=228433 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=230123 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=231814 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=233506 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=235394 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=236966 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=238853 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=240543 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=241646 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=242641 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=244333 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=245906 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=247596 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=249286 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=250977 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=252669 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=254557 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=256129 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=258016 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=259706 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=261201 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=262893 quiet_seconds=0
+[exp323] pid=3586257 log_bytes=263300 quiet_seconds=0
+[exp323] EVAL arm=A seed=7753 mode=native
+[exp323] pid=3619790 log_bytes=1570 quiet_seconds=0
+[exp323] pid=3619790 log_bytes=4240 quiet_seconds=0
+[exp323] EVAL arm=A seed=7753 mode=uniform
+[exp323] pid=3620067 log_bytes=1594 quiet_seconds=0
+[exp323] pid=3620067 log_bytes=4276 quiet_seconds=0
+[exp323] COMPLETE arm=A seed=7753
+[exp323] START arm=B seed=7753
+[exp323] pid=3620344 log_bytes=10338 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=12019 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=13701 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=15384 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=17262 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=18826 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=20506 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=22186 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=23868 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=25550 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=27308 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=28987 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=29779 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=31799 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=33480 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=35163 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=36846 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=38606 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=40287 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=41968 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=43650 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=45333 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=47211 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=48775 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=50456 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=51357 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=52543 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=54226 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=55910 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=57670 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=59352 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=61230 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=62912 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=64596 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=66280 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=68040 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=69722 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=71404 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=72502 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=73493 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=75177 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=77056 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=78816 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=80498 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=82180 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=83863 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=85547 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=87308 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=88990 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=90672 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=92354 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=93648 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=94444 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=96323 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=98084 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=99766 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=101448 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=103130 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=104814 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=106498 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=108258 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=109940 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=111622 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=113305 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=114794 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=115395 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=117274 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=119034 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=120716 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=122398 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=124081 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=125765 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=127526 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=129208 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=130890 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=132572 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=134256 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=135940 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=136346 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=138106 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=139788 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=141470 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=143348 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=145032 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=146716 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=148476 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=150158 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=151840 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=153523 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=155207 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=156968 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=157086 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=159056 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=160738 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=162420 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=164104 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=165788 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=167548 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=169230 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=170912 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=172595 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=174279 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=176158 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=177918 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=178232 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=180006 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=181688 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=183371 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=185055 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=186816 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=188498 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=190180 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=191862 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=193546 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=195230 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=196990 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=198672 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=199378 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=200956 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=202638 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=204322 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=206006 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=207766 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=209448 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=211130 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=212813 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=214497 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=216376 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=217940 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=219628 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=220535 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=221923 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=223615 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=225308 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=227078 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=228769 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=230459 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=232149 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=233841 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=235533 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=237302 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=238992 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=240682 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=241785 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=242976 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=244668 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=246360 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=248129 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=249819 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=251509 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=253200 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=254892 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=256780 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=258352 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=260042 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=261732 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=263032 quiet_seconds=0
+[exp323] pid=3620344 log_bytes=263439 quiet_seconds=0
+[exp323] EVAL arm=B seed=7753 mode=native
+[exp323] pid=3653509 log_bytes=1571 quiet_seconds=0
+[exp323] pid=3653509 log_bytes=4241 quiet_seconds=0
+[exp323] EVAL arm=B seed=7753 mode=uniform
+[exp323] pid=3653786 log_bytes=1595 quiet_seconds=0
+[exp323] pid=3653786 log_bytes=4281 quiet_seconds=0
+[exp323] COMPLETE arm=B seed=7753
+[exp323] START arm=C seed=7753
+[exp323] pid=3654064 log_bytes=10342 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=12018 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=13886 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=15561 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=17236 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=18987 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=20659 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=22331 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=24004 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=25678 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=27546 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=29306 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=29706 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=31922 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=33603 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=35285 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=36968 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=38846 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=40606 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=42287 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=43968 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=45650 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=47333 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=49211 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=50775 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=51284 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=53058 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=54740 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=56423 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=58107 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=59986 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=61550 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=63232 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=65110 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=66793 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=68477 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=70238 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=71920 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=72430 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=74204 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=75886 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=77569 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=79253 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=81132 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=82696 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=84574 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=86256 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=87939 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=89623 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=91502 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=93066 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=93576 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=95350 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=97032 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=98715 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=100399 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=102278 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=103842 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=105720 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=107402 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=109085 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=110769 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=112648 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=114212 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=114722 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=116496 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=118178 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=119861 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=121545 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=123424 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=124988 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=126670 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=128548 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=130231 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=131915 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=133676 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=135358 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=135868 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=137642 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=139324 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=141007 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=142691 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=144452 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=146134 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=147816 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=149498 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=151377 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=153061 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=154822 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=156504 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=157014 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=158592 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=160274 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=162153 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=163837 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=165598 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=167280 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=168962 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=170644 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=172328 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=174207 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=175968 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=177650 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=178160 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=179738 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=181420 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=183104 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=184983 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=186744 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=188426 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=190108 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=191790 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=193474 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=195158 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=196918 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=198796 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=199306 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=200884 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=202566 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=204250 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=205934 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=207694 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=209376 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=211254 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=212936 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=214620 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=216304 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=218064 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=219753 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=220463 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=221851 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=223739 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=225432 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=227125 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=228894 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=230584 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=232274 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=233965 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=235657 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=237545 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=239314 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=241004 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=241713 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=243101 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=244792 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=246680 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=248372 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=250141 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=251831 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=253521 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=255212 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=256904 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=258792 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=260561 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=262251 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=262960 quiet_seconds=0
+[exp323] pid=3654064 log_bytes=263367 quiet_seconds=0
+[exp323] EVAL arm=C seed=7753 mode=native
+[exp323] pid=3687421 log_bytes=1597 quiet_seconds=0
+[exp323] pid=3687421 log_bytes=4286 quiet_seconds=0
+[exp323] COMPLETE arm=C seed=7753
+[exp323] START arm=D seed=7753
+[exp323] pid=3687699 log_bytes=10344 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=12215 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=13888 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=15563 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=17238 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=18989 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=20661 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=22333 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=24006 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=25680 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=27548 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=29308 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=29708 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=31924 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=33605 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=35287 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=36970 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=38848 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=40608 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=42289 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=43970 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=45652 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=47335 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=49213 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=50973 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=51286 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=53060 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=54742 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=56425 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=58109 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=59988 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=61552 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=63430 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=65112 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=66795 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=68479 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=70358 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=71922 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=72432 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=74206 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=75888 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=77571 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=79255 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=81134 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=82894 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=84576 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=86258 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=87941 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=89625 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=91504 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=93068 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=93578 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=95352 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=97034 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=98717 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=100401 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=102280 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=103844 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=105722 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=107404 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=109087 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=110771 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=112532 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=114214 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=114724 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=116302 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=117984 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=119863 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=121547 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=123308 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=124990 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=126672 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=128354 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=130038 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=131917 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=133678 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=135360 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=135870 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=137448 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=139130 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=140814 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=142498 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=144454 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=146136 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=147818 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=149500 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=151184 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=152868 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=154628 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=156310 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=157016 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=158594 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=160276 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=161960 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=163644 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=165404 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=167086 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=168964 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=170646 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=172330 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=174014 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=175774 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=177456 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=178162 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=179740 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=181422 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=183106 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=184790 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=186550 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=188232 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=190110 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=191792 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=193476 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=195160 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=196920 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=198602 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=199308 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=200886 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=202568 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=204252 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=205936 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=207696 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=209574 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=211256 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=212938 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=214622 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=216306 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=218066 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=219755 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=220465 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=222050 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=223741 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=225434 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=227127 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=228896 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=230586 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=232276 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=233967 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=235659 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=237547 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=239119 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=241006 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=241715 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=243103 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=244794 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=246486 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=248374 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=249946 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=251833 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=253523 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=255214 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=256906 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=258794 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=260366 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=262253 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=262962 quiet_seconds=0
+[exp323] pid=3687699 log_bytes=263369 quiet_seconds=0
+[exp323] EVAL arm=D seed=7753 mode=native
+[exp323] pid=3721053 log_bytes=1598 quiet_seconds=0
+[exp323] pid=3721053 log_bytes=4284 quiet_seconds=0
+[exp323] COMPLETE arm=D seed=7753
+[exp323] START arm=A seed=9227
+[exp323] pid=3721330 log_bytes=10200 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=11881 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=13758 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=15441 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=17124 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=18884 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=20564 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=22244 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=23925 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=25607 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=27364 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=29044 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=29640 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=31660 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=33341 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=35024 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=36707 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=38467 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=40344 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=42025 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=43706 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=45389 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=47072 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=48832 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=50513 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=51218 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=52600 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=54282 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=55966 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=57845 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=59605 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=61287 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=62969 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=64652 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=66336 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=68215 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=69779 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=71657 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=72363 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=73745 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=75428 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=77112 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=78873 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=80555 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=82237 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=83919 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=85603 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=87287 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=89047 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=90729 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=92411 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=93509 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=94500 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=96184 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=97945 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=99627 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=101309 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=102991 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=104675 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=106359 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=108315 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=109997 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=111679 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=113361 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=114655 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=115451 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=117135 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=118895 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=120577 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=122259 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=124137 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=125821 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=127505 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=129265 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=130947 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=132629 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=134312 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=135801 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=136402 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=138281 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=139845 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=141527 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=143405 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=145088 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=146772 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=148533 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=150215 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=151897 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=153579 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=155263 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=156947 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=157548 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=159309 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=160991 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=162673 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=164355 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=166039 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=167723 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=169483 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=171165 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=172847 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=174530 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=176214 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=178093 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=178499 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=180063 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=181941 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=183623 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=185306 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=186990 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=188751 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=190433 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=192115 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=193797 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=195481 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=197165 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=198925 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=199239 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=201013 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=202695 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=204378 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=206062 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=207941 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=209505 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=211187 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=213065 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=214748 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=216432 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=218193 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=219883 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=220396 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=221981 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=223672 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=225365 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=227058 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=228827 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=230517 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=232207 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=234094 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=235786 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=237478 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=239247 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=240937 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=241646 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=243034 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=244725 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=246417 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=248187 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=249877 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=251567 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=253257 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=254949 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=256641 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=258410 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=260100 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=261790 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=262893 quiet_seconds=0
+[exp323] pid=3721330 log_bytes=263300 quiet_seconds=0
+[exp323] EVAL arm=A seed=9227 mode=native
+[exp323] pid=3755148 log_bytes=1570 quiet_seconds=0
+[exp323] pid=3755148 log_bytes=4235 quiet_seconds=0
+[exp323] EVAL arm=A seed=9227 mode=uniform
+[exp323] pid=3755490 log_bytes=1594 quiet_seconds=0
+[exp323] pid=3755490 log_bytes=4276 quiet_seconds=0
+[exp323] COMPLETE arm=A seed=9227
+[exp323] START arm=B seed=9227
+[exp323] pid=3755768 log_bytes=10338 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=12019 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=13896 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=15579 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=17262 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=19022 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=20702 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=22382 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=24063 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=25745 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=27502 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=29182 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=29778 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=31798 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=33479 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=35162 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=36845 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=38605 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=40482 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=41967 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=43649 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=45332 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=47210 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=48774 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=50455 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=51356 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=52738 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=54420 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=56104 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=57865 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=59547 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=61229 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=62911 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=64595 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=66279 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=68039 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=69917 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=71599 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=72501 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=73687 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=75371 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=77055 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=78815 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=80497 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=82179 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=83862 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=85741 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=87425 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=89185 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=90867 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=92549 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=93647 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=94638 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=96322 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=98083 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=99765 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=101447 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=103129 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=105008 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=106692 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=108453 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=110135 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=111817 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=113499 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=114793 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=115589 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=117273 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=119033 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=120715 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=122593 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=124275 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=125959 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=127643 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=129403 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=131085 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=132767 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=134450 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=135939 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=136540 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=138419 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=139983 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=141665 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=143543 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=145226 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=146910 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=148671 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=149961 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=151643 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=153327 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=155011 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=156771 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=157085 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=159055 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=160541 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=162224 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=163908 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=165787 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=167547 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=169229 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=170911 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=172594 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=174278 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=176039 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=177721 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=178231 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=179809 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=181491 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=183175 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=184859 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=186619 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=188497 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=190179 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=191861 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=193545 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=195229 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=196989 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=198671 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=199377 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=200759 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=202442 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=204126 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=206005 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=207569 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=209251 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=211129 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=212812 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=214496 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=216257 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=217939 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=219627 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=220534 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=221725 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=223418 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=225111 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=226880 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=228768 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=230458 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=232148 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=233840 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=235532 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=237301 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=238991 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=240681 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=241784 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=242779 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=244471 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=246359 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=247931 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=249621 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=251311 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=253003 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=254695 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=256464 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=258154 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=259844 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=261535 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=263031 quiet_seconds=0
+[exp323] pid=3755768 log_bytes=263438 quiet_seconds=0
+[exp323] EVAL arm=B seed=9227 mode=native
+[exp323] pid=3788890 log_bytes=1571 quiet_seconds=0
+[exp323] pid=3788890 log_bytes=4238 quiet_seconds=0
+[exp323] EVAL arm=B seed=9227 mode=uniform
+[exp323] pid=3789168 log_bytes=1595 quiet_seconds=0
+[exp323] pid=3789168 log_bytes=4279 quiet_seconds=0
+[exp323] COMPLETE arm=B seed=9227
+[exp323] START arm=C seed=9227
+[exp323] pid=3789445 log_bytes=10342 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=12213 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=13886 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=15561 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=17235 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=18986 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=20658 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=22330 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=24197 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=25871 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=27545 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=29305 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=29705 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=31921 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=33602 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=35284 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=36967 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=38845 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=40409 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=42286 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=43967 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=45649 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=47332 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=49210 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=50774 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=51283 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=53057 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=54739 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=56422 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=58106 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=59985 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=61549 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=63427 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=65109 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=66792 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=68476 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=70355 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=71919 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=72429 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=74203 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=75885 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=77568 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=79252 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=81013 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=82695 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=84377 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=86255 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=87938 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=89622 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=91383 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=93065 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=93575 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=95153 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=96835 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=98519 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=100203 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=102159 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=103841 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=105523 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=107205 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=108889 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=110573 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=112333 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=114211 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=114721 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=116299 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=117981 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=119665 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=121544 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=123305 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=124987 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=126669 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=128351 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=130035 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=131719 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=133479 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=135357 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=135867 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=137445 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=139127 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=140811 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=142495 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=144451 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=146133 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=147815 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=149497 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=151181 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=152865 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=154625 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=156503 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=157013 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=158591 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=160273 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=161957 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=163641 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=165401 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=167279 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=168961 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=170643 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=172327 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=174011 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=175771 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=177453 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=178159 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=179737 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=181419 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=183103 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=184787 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=186547 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=188229 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=190107 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=191789 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=193473 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=195157 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=196917 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=198599 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=199305 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=200883 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=202565 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=204249 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=205933 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=207693 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=209375 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=211057 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=212740 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=214424 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=216303 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=218063 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=219752 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=220462 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=221850 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=223542 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=225431 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=227124 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=228893 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=230583 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=232273 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=233964 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=235656 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=237544 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=239313 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=241003 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=241712 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=243100 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=244791 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=246483 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=248371 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=249943 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=251633 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=253323 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=255211 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=256903 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=258673 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=260363 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=262053 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=262959 quiet_seconds=0
+[exp323] pid=3789445 log_bytes=263366 quiet_seconds=0
+[exp323] EVAL arm=C seed=9227 mode=native
+[exp323] pid=3822273 log_bytes=1597 quiet_seconds=0
+[exp323] pid=3822273 log_bytes=4283 quiet_seconds=0
+[exp323] COMPLETE arm=C seed=9227
+[exp323] START arm=D seed=9227
+[exp323] pid=3822550 log_bytes=10344 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=12020 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=13694 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=15563 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=17238 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=18989 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=20661 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=22333 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=24006 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=25680 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=27548 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=29112 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=29708 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=31924 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=33605 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=35287 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=36970 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=38848 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=40412 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=42289 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=43970 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=45652 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=47335 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=49096 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=50777 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=51286 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=53060 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=54742 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=56425 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=58109 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=59988 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=61552 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=63430 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=65112 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=66795 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=68479 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=70358 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=71922 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=72432 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=74206 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=75888 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=77571 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=79255 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=81134 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=82894 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=84576 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=86258 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=87941 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=89625 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=91504 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=93068 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=93578 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=95352 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=97034 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=98717 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=100401 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=102280 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=104040 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=105722 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=107404 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=109087 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=110771 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=112650 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=114214 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=114724 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=116498 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=118180 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=119863 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=121547 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=123308 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=124990 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=126672 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=128550 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=130233 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=131917 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=133678 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=135360 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=135870 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=137448 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=139130 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=141009 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=142693 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=144454 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=146136 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=147818 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=149696 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=151379 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=153063 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=154824 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=156506 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=157016 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=158790 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=160472 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=162155 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=163839 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=165600 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=167282 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=168964 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=170842 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=172525 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=174209 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=175970 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=177652 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=178162 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=179740 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=181618 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=183301 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=184985 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=186746 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=188428 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=190110 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=191792 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=193671 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=195355 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=197116 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=198798 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=199308 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=200886 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=202568 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=204447 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=206131 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=207892 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=209574 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=211256 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=212938 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=214622 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=216501 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=218262 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=219952 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=220465 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=222050 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=223741 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=225434 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=227127 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=228896 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=230586 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=232276 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=233967 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=235659 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=237547 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=239119 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=240809 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=241715 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=243103 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=244794 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=246486 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=248256 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=249946 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=251636 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=253326 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=255018 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=256906 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=258676 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=260366 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=262056 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=262962 quiet_seconds=0
+[exp323] pid=3822550 log_bytes=263369 quiet_seconds=0
+[exp323] EVAL arm=D seed=9227 mode=native
+[exp323] pid=3855361 log_bytes=1598 quiet_seconds=0
+[exp323] pid=3855361 log_bytes=4283 quiet_seconds=0
+[exp323] COMPLETE arm=D seed=9227

@@ -1,0 +1,18 @@
+encoded 8/15618
+encoded 1000/15618
+encoded 2000/15618
+encoded 3000/15618
+encoded 4000/15618
+encoded 5000/15618
+encoded 6000/15618
+encoded 7000/15618
+encoded 8000/15618
+encoded 9000/15618
+encoded 10000/15618
+encoded 11000/15618
+encoded 12000/15618
+encoded 13000/15618
+encoded 14000/15618
+encoded 15000/15618
+encoded 15618/15618
+{"cache": "/home/afr/reid-clean/assets/exp408-picrd-cache-v2/picrd_cache.npz", "cache_sha256": "80db6448a38745a7846bbb1ffb63d868b4efcda8851bc069cd8166dc311cebee", "diagnostic_manifest": "/home/afr/reid-clean/assets/exp408-picrd-cache-v2/diagnostic_manifest.json", "diagnostic_manifest_sha256": "8ef842f98a1172d7c8c197828cb3d4fda2006ced52062c9608569da5be62cff8", "samples": 15618, "valid_by_slot": [15616, 15618, 15618, 15618, 15586]}

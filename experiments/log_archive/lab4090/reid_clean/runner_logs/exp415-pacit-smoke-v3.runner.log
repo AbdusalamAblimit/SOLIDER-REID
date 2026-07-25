@@ -1,0 +1,6 @@
+/home/afr/SOLIDER-REID-exp415-pacit-formal-v1/model/backbones/swin_transformer.py:1179: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+===========building transformer===========
+{"cache_sha256": "17c05f3a4741750e7e469f3ba56561e1c5dbb5fded09c969f80353280db9e725", "output_dir": "/home/afr/reid-clean/assets/exp415-pacit-smoke-v3", "result_sha256": "154809de3ddceafc85efb5db7d8403fb463f75ba1c35e9f50c0416192ad155a8", "row_count": 8, "scientific_metrics_written": false, "status": "PASS"}
+RUNTIME_SMOKE_EXIT=0

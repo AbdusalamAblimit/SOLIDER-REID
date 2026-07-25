@@ -1,0 +1,210 @@
+2026-03-17 09:07:06 transreid INFO: Saving model in the path :./log/market1501/4090_full_market_base
+2026-03-17 09:07:06 transreid INFO: Loaded configuration file configs/occluded_duke/pose_psg_gcn_paa_roa.yml
+2026-03-17 09:07:06 transreid INFO: Running with config:
+DATALOADER:
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+  REMOVE_TAIL: 0
+  SAMPLER: softmax_triplet
+DATASETS:
+  NAMES: market1501
+  ROOT_DIR: data
+  ROOT_TRAIN_DIR: ../data
+  ROOT_VAL_DIR: ../data
+INPUT:
+  PADDING: 10
+  PIXEL_MEAN: [0.5, 0.5, 0.5]
+  PIXEL_STD: [0.5, 0.5, 0.5]
+  PROB: 0.5
+  RE_PROB: 0.5
+  SIZE_TEST: [384, 128]
+  SIZE_TRAIN: [384, 128]
+MODEL:
+  ATT_DROP_RATE: 0.0
+  COS_LAYER: False
+  DEVICE: cuda
+  DEVICE_ID: 0
+  DEVIDE_LENGTH: 4
+  DIST_TRAIN: False
+  DROPOUT_RATE: 0.0
+  DROP_OUT: 0.0
+  DROP_PATH: 0.1
+  FEAT_DIM: 512
+  GEM_POOLING: False
+  GLOBAL_LOSS_SCALE: 1.0
+  ID_LOSS_TYPE: softmax
+  ID_LOSS_WEIGHT: 1.0
+  IF_LABELSMOOTH: off
+  IF_WITH_CENTER: no
+  JPM: False
+  LAST_STRIDE: 1
+  METRIC_LOSS_TYPE: triplet
+  NAME: transformer
+  NECK: bnneck
+  NO_MARGIN: True
+  POSE_ADDITIVE_ADAPTER: True
+  POSE_ATTN_BIAS: False
+  POSE_ATTN_MASK: False
+  POSE_ATTN_MASK_STAGES: [-1]
+  POSE_ATTN_MASK_THRESHOLD: 0.3
+  POSE_BACKBONE_PSG: True
+  POSE_CHANNEL_GATE: False
+  POSE_CIPGFR: False
+  POSE_CIPGFR_THRESHOLD: 0.3
+  POSE_CIPGFR_WARMUP: 20
+  POSE_CIPGFR_WEIGHT: 0.5
+  POSE_COND_LORA: False
+  POSE_COND_LORA_RANK: 16
+  POSE_CROSS_ATTN: False
+  POSE_CSGT: False
+  POSE_CSGT_MINE_MODE: both
+  POSE_CSGT_MIN_OVERLAP: 0.3
+  POSE_CSGT_WEIGHT: 1.0
+  POSE_DATA_DIR: data/market
+  POSE_DROPOUT_P: 0.0
+  POSE_DUAL_STREAM: False
+  POSE_ENABLED: True
+  POSE_FEATURE_INPAINTER: False
+  POSE_GCN_HIDDEN: 256
+  POSE_GCN_LAYERS: 2
+  POSE_GLOBAL_PSG: True
+  POSE_GUIDED_ERASING: False
+  POSE_HEATMAP_NORM: spatial_softmax
+  POSE_HEATMAP_SIZE: [96, 32]
+  POSE_KEYPOINT_POOL_ONLY: False
+  POSE_KP_DISSIMILAR: False
+  POSE_KP_DISSIMILAR_WEIGHT: 0.1
+  POSE_KP_LEARNABLE_ATTN: False
+  POSE_KP_RPE: False
+  POSE_KP_RPE_HIDDEN: 32
+  POSE_KP_TRIPLET: False
+  POSE_KP_TRIPLET_WEIGHT: 1.0
+  POSE_KP_UNCERTAINTY: False
+  POSE_KP_UNCERTAINTY_REG: 0.1
+  POSE_KP_WEIGHT_MODE: score
+  POSE_PAA_ADAPTIVE_GATE: False
+  POSE_PAA_BOTTLENECK: 32
+  POSE_PAA_PART_STRUCTURED: False
+  POSE_PAA_ROUTED: False
+  POSE_PAA_SCENE_TARGET: False
+  POSE_PAA_TARGET_ONLY: False
+  POSE_PAMC: False
+  POSE_PAMC_PROJ_DIM: 2048
+  POSE_PAMC_WARMUP: 10
+  POSE_PAMC_WEIGHT: 0.5
+  POSE_PAML: False
+  POSE_PART_LR_FACTOR: 1.0
+  POSE_PART_STAGE: -1
+  POSE_PART_STOP_GRAD: False
+  POSE_PART_TRI_WEIGHT: 1.0
+  POSE_PART_WEIGHT: 1.0
+  POSE_PCG_HIDDEN: 64
+  POSE_PCRA_ALPHA: 0.0
+  POSE_PFM_ENABLED: False
+  POSE_PFM_HIDDEN: 64
+  POSE_PKE: False
+  POSE_PSG_CONTENT_ADAPTIVE: False
+  POSE_PSG_PAB_COMBO: False
+  POSE_PSG_PART: False
+  POSE_PSG_SPATIAL: False
+  POSE_PSG_STAGES: [-1]
+  POSE_QUERY_DECODER: False
+  POSE_QUERY_DECODER_DIM: 256
+  POSE_QUERY_DECODER_HEADS: 8
+  POSE_QUERY_DECODER_LAYERS: 3
+  POSE_QUERY_DECODER_PARTS: 5
+  POSE_RECON_HEAD: False
+  POSE_RECON_WEIGHT: 0.1
+  POSE_ROA: True
+  POSE_ROA_PATH: data/VOCdevkit/VOC2012
+  POSE_ROA_POSE_AWARE: False
+  POSE_ROA_PROB: 0.5
+  POSE_SGMKC: False
+  POSE_SGMKC_RATIO: 0.3
+  POSE_SGMKC_WEIGHT: 1.0
+  POSE_SKELETON_GCN: True
+  POSE_SPLIT_STAGE: -1
+  POSE_STOP_GRAD_EPOCHS: 0
+  POSE_TDPC: False
+  POSE_TEMPERATURE: 1.0
+  POSE_TEST_FEAT: equal_concat
+  POSE_THRESHOLD: 0.3
+  POSE_TOKEN_DECODER: False
+  POSE_TOKEN_DIM: 256
+  POSE_TOKEN_HEADS: 8
+  POSE_TOKEN_HM_WEIGHT: 1.0
+  POSE_TOKEN_LAYERS: 2
+  POSE_TOKEN_NUM_PARTS: 5
+  POSE_WEIGHTED_POOL: False
+  POSE_XCAD: False
+  POSE_XCAD_DIM: 256
+  POSE_XCAD_HEADS: 8
+  PRETRAIN_CHOICE: self
+  PRETRAIN_HW_RATIO: 2
+  PRETRAIN_PATH: pretrained/swin_base.pth
+  REDUCE_FEAT_DIM: False
+  RE_ARRANGE: True
+  SEMANTIC_WEIGHT: 0.2
+  SHIFT_NUM: 5
+  SHUFFLE_GROUP: 2
+  SIE_CAMERA: False
+  SIE_COE: 3.0
+  SIE_VIEW: False
+  STEM_CONV: False
+  STRIDE_SIZE: [16, 16]
+  TRANSFORMER_TYPE: swin_base_patch4_window7_224
+  TRIPLET_LOSS_WEIGHT: 1.0
+  WITH_CP: False
+OUTPUT_DIR: ./log/market1501/4090_full_market_base
+SOLVER:
+  BASE_LR: 0.0004
+  BIAS_LR_FACTOR: 2
+  CENTER_LOSS_WEIGHT: 0.0005
+  CENTER_LR: 0.5
+  CHECKPOINT_PERIOD: 120
+  COSINE_MARGIN: 0.5
+  COSINE_SCALE: 30
+  EVAL_PERIOD: 10
+  FREEZE_BACKBONE_EPOCHS: 0
+  GAMMA: 0.1
+  IMS_PER_BATCH: 64
+  LARGE_FC_LR: False
+  LOG_PERIOD: 20
+  MARGIN: 0.3
+  MAX_EPOCHS: 120
+  MOMENTUM: 0.9
+  OPTIMIZER_NAME: SGD
+  SEED: 2026
+  STEPS: (40, 70)
+  TRP_L2: False
+  WARMUP_EPOCHS: 20
+  WARMUP_FACTOR: 0.01
+  WARMUP_METHOD: cosine
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0.0001
+TEST:
+  CVK_GLOBAL_WEIGHT: 1.0
+  CVK_KP_WEIGHT: 1.0
+  DIST_MAT: dist_mat.npy
+  EVAL: True
+  FEAT_NORM: yes
+  IMS_PER_BATCH: 256
+  NECK_FEAT: before
+  NFC: False
+  NFC_K1: 2
+  NFC_K2: 2
+  RE_RANKING: False
+  WEIGHT: 
+2026-03-17 09:07:06 transreid.check INFO: Dataset statistics:
+2026-03-17 09:07:06 transreid.check INFO:   ----------------------------------------
+2026-03-17 09:07:06 transreid.check INFO:   subset   | # ids | # images | # cameras
+2026-03-17 09:07:06 transreid.check INFO:   ----------------------------------------
+2026-03-17 09:07:06 transreid.check INFO:   train    |   751 |    12936 |         6
+2026-03-17 09:07:06 transreid.check INFO:   query    |   750 |     3368 |         6
+2026-03-17 09:07:06 transreid.check INFO:   gallery  |   751 |    15913 |         6
+2026-03-17 09:07:06 transreid.check INFO:   ----------------------------------------
+2026-03-17 09:07:10 transreid INFO: ===========using cosine learning rate=======
+2026-03-17 09:07:10 transreid.train INFO: start training
+2026-03-17 09:07:10 transreid.train INFO: Pose-guided training ENABLED
+2026-03-17 09:07:17 transreid.train INFO: Epoch[1] Iter[20/186] Loss: inf, Acc: 0.002, Base Lr: 2.38e-05 | id_global: 6.620 id_part: 6.773 tri_global: 18.025 tri_part: inf
+2026-03-17 09:07:22 transreid.train INFO: Epoch[1] Iter[40/186] Loss: inf, Acc: 0.002, Base Lr: 2.38e-05 | id_global: 6.620 id_part: 6.775 tri_global: 14.869 tri_part: inf

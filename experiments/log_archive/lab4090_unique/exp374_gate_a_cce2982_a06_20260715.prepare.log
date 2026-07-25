@@ -1,0 +1,11 @@
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/query/index.json (2210 entries)
+  Loaded pose index: data/occluded_duke/pose_data/gallery/index.json (17661 entries)
+{
+  "status": "PREPARED_ONLY",
+  "execution_dir": "/home/afr/exp374_gate_a_cce2982_a06_20260715/gate_a_fe6a16d808579871f2acc51e98bca5f442ec3cfc3560cb52eb9a0b4bfeb7a515",
+  "execution_sha256": "fe6a16d808579871f2acc51e98bca5f442ec3cfc3560cb52eb9a0b4bfeb7a515",
+  "tests_authorized": false,
+  "formal_gate_authorized": false
+}

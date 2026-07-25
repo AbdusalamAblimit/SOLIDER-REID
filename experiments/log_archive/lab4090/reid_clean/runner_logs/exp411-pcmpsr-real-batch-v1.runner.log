@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "experiments/exp411_pose_complete_multi_positive_set_ranking/test_real_batch.py", line 562, in <module>
+    main()
+  File "experiments/exp411_pose_complete_multi_positive_set_ranking/test_real_batch.py", line 260, in main
+    method_cfg, baseline_cfg, disabled_cfg = load_configs(
+  File "experiments/exp411_pose_complete_multi_positive_set_ranking/test_real_batch.py", line 102, in load_configs
+    baseline.merge_from_file(d0_path)
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/yacs/config.py", line 211, in merge_from_file
+    with open(cfg_filename, "r") as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'configs/occluded_duke/swin_tiny_tapf_d0.yml'

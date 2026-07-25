@@ -1,0 +1,9 @@
+.                                                                        [100%]
+=============================== warnings summary ===============================
+experiments/exp374_psg_fuel_gate/test_formal_swin_preflight_cpu.py::test_real_swin_full_forward_override_and_bypass_cpu
+  /home/afr/SOLIDER-REID-exp374-a02feff/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+    warnings.warn('DeprecationWarning: pretrained is deprecated, '
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+---- generated xml file: /home/afr/exp374_remote_preflight_a02feff/swin.xml ----
+1 passed, 1 warning in 1.23s

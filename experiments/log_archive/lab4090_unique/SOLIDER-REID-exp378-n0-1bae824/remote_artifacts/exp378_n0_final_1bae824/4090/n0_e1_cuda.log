@@ -1,0 +1,72 @@
+/root/solider-venv/lib/python3.10/site-packages/torchvision/transforms/transforms.py:329: UserWarning: Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+  warnings.warn(
+/home/afr/SOLIDER-REID-exp378-n0-1bae824/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+=> Occluded-DukeMTMC loaded
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/train/index.json (15618 entries)
+  Loaded pose index: data/occluded_duke/pose_data/_val_merged/index.json (18001 entries)
+using img_triplet sampler
+using Transformer_type: swin_tiny_patch4_window7_224 as a backbone
+unloaded parameters: <All keys matched successfully>
+[TAPF] enabled: source_stage=2, psg_stages=[3], TaskAdaptivePoseField(
+  mode=f0, transition=hard, bootstrap_perm=on, boot_epochs=10, handoff_start=6, max_shift=0.120, max_log_scale=0.500, params=85542
+  (anchor): _LiteHRPoseAnchor(
+    (stem): Sequential(
+      (0): Conv2d(384, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (1): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (2): SiLU(inplace=True)
+    )
+    (high): _DepthwiseResidual(
+      (dw): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+      (norm): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (pw): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (act): SiLU(inplace=True)
+    )
+    (context): Sequential(
+      (0): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+      (1): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (2): SiLU(inplace=True)
+      (3): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+    )
+    (fuse): Sequential(
+      (0): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (1): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (2): SiLU(inplace=True)
+    )
+    (up_refine_1): _DepthwiseResidual(
+      (dw): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+      (norm): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (pw): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (act): SiLU(inplace=True)
+    )
+    (up_refine_2): _DepthwiseResidual(
+      (dw): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+      (norm): GroupNorm(8, 64, eps=1e-05, affine=True)
+      (pw): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (act): SiLU(inplace=True)
+    )
+    (heatmap_head): Conv2d(64, 17, kernel_size=(1, 1), stride=(1, 1))
+    (confidence_head): Linear(in_features=384, out_features=17, bias=True)
+  )
+  (geometry_adapter): Sequential(
+    (0): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+    (1): Linear(in_features=384, out_features=64, bias=True)
+    (2): SiLU(inplace=True)
+    (3): Linear(in_features=64, out_features=4, bias=True)
+  )
+  (field_renderer): GaussianPoseFieldRenderer()
+)
+[POSE] POSE_USE_TARGET_HEATMAP=True: pose modules (PSG/LGPA/VCSR/PPA/STR/FSDC/...) will receive person-0 (target) heatmap instead of max-merged scene heatmap.
+===========building pose-backbone (PSG) transformer===========
+using soft triplet loss for training
+TAPF_CUDA_PREFLIGHT_PASS
+runtime_parity_steps=10 overflow_scale=128.0->64.0
+mode=f0 epoch=1 params=85542 batch=64 image=(64, 3, 384, 128)
+loss identity=18.70896912 pose=2.90327048 total=21.61223984 scale=1024.0
+grad backbone=1.53383239e+02 anchor=1.21372109e+00 adapter=0.00000000e+00
+cross pose=[anchor 1.21720028e+00 adapter 0.00000000e+00 backbone 0.00000000e+00] reid=[anchor 0.00000000e+00 adapter_out 0.00000000e+00 adapter_up 0.00000000e+00 backbone 1.53461022e+02]
+delta anchor=9.72232282e-04 adapter=0.00000000e+00
+transition=hard relaxation=inactive
+bootstrap_permutation=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 0) fixed_points=0
+raw teacher=[tensor(-0.0085, device='cuda:0'),tensor(0.9992, device='cuda:0')] field=[-0.008456,0.999182] psg=[0.497886,0.730898]

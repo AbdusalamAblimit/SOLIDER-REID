@@ -1,0 +1,107 @@
+################################################################################
+# RMA-TIReID ZERO-TRAINING KILL-SWITCH  (frozen SOLIDER exp260b, RSTPReid)
+################################################################################
+[data] train=18505 val=1000 test=1000 images; test ids=200
+using Transformer_type: swin_base_patch4_window7_224 as a backbone
+/root/work/SOLIDER-REID/model/backbones/swin_transformer.py:1193: UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+unloaded parameters: <All keys matched successfully>
+[LGPA] CLIP text features loaded from cache: torch.Size([6, 512])
+[LGPA] CLIP Part Head: 5 parts, clip_dim=512, num_heads=8, pose_temp=1.0
+[LGPA] Running on DETACHED features (no gradient to backbone)
+[PSG+GCN] Skeleton GCN head enabled: 2 layers, hidden=512, test_feat=global, kp_weight=score
+===========building pose-backbone (PSG) transformer===========
+Loading pretrained model from /root/work/SOLIDER-REID/log/market1501/exp260b_base_gcn512_2stage/transformer_120.pth
+[extract] TEST split features ...
+  [extract] 0/1000 (2s)
+[extract] TRAIN split features (for token prototypes) ...
+  [extract] 0/18505 (0s)
+  [extract] 1280/18505 (8s)
+  [extract] 2560/18505 (16s)
+  [extract] 3840/18505 (25s)
+  [extract] 5120/18505 (33s)
+  [extract] 6400/18505 (41s)
+  [extract] 7680/18505 (50s)
+  [extract] 8960/18505 (57s)
+  [extract] 10240/18505 (65s)
+  [extract] 11520/18505 (73s)
+  [extract] 12800/18505 (82s)
+  [extract] 14080/18505 (90s)
+  [extract] 15360/18505 (99s)
+  [extract] 16640/18505 (107s)
+  [extract] 17920/18505 (116s)
+[extract] cached -> /tmp/rma_rstp_feats.npz
+[data] test gallery=1000 imgs dim=1024; train pool=18505 imgs
+
+================================================================================
+TEST A — image-image identity manifold on RSTPReid test (frozen SOLIDER)
+================================================================================
+  i2i (leave-one-out, drop same id+cam):  mAP=35.46  R1=49.33  R5=66.77  R10=74.87  (nq=975)
+  >> manifold quality: high i2i mAP/R1 == same-ID images form a tight, retrievable neighborhood (re-frame premise holds if this is strong).
+
+================================================================================
+TEST B — zero-training token-prototype text->image retrieval + controls
+================================================================================
+[tokens] 474 raw tokens, 237 kept (freq>=30). residual=False
+[tokens] top kept (token: train-img-freq):
+    black                  17881  IDF=0.03  [COLOR]
+    shoes                  13442  IDF=0.32  
+    jacket                 12391  IDF=0.40  
+    man                    11504  IDF=0.48  
+    coat                   10777  IDF=0.54  
+    trousers               10509  IDF=0.57  
+    blue                    9051  IDF=0.72  [COLOR]
+    black shoes             8619  IDF=0.76  [COLOR]
+    down jacket             7592  IDF=0.89  
+    pants                   7568  IDF=0.89  
+    black trousers          7256  IDF=0.94  [COLOR]
+    white                   6812  IDF=1.00  [COLOR]
+    woman                   6752  IDF=1.01  
+    glasses                 6723  IDF=1.01  
+    bag                     6456  IDF=1.05  
+    black jacket            6335  IDF=1.07  [COLOR]
+    jeans                   5866  IDF=1.15  
+    black pants             5240  IDF=1.26  [COLOR]
+
+  --- main token-prototype query (IDF-weighted, all tokens) ---
+  [token-proto (ALL)     ] t2i  mAP= 2.15  R1= 1.25  R5= 4.85  R10= 9.85  (nq_valid=2000/2000)
+
+  --- CONTROLS (life/death) ---
+  [color-only            ] t2i  mAP= 2.52  R1= 1.26  R5= 6.58  R10=11.43  (nq_valid=1977/2000)
+  [token-shuffle         ] t2i  mAP= 1.41  R1= 0.55  R5= 2.60  R10= 5.70  (nq_valid=2000/2000)
+  [random-prototype      ] t2i  mAP= 1.15  R1= 0.15  R5= 1.35  R10= 3.60  (nq_valid=2000/2000)
+  --- feature-shuffle control (shuffle gallery feat<->id) ---
+  [feature-shuffle        ] t2i  mAP= 1.12  R1= 0.50  (expect ~chance)
+  [random-query           ] t2i  mAP= 1.29  R1= 0.50  (pure chance ceiling)
+
+  --- B verdict deltas ---
+  token-proto(ALL) mAP=2.15
+    vs color-only      2.52  (delta -0.37)
+    vs token-shuffle   1.41  (delta +0.74)
+    vs random-proto    1.15  (delta +1.01)
+    vs feature-shuffle 1.12  (delta +1.03)
+    vs random-query    1.29  (delta +0.86)
+  >> CORE: token-proto must CLEARLY beat color-only (delta=-0.37) AND all shuffles (delta_vs_best_shuffle=+0.74).
+
+================================================================================
+TEST C — re-frame: token-proto-FAILED text queries -> is target image i2i-retrievable?
+================================================================================
+  [rank-1-wrong ] #failed-text-q=1975  target-image i2i-R1-retrievable =  47.9%   target-image i2i-AP>=30% =  46.9%   (mean target i2i AP=35.4)
+  [AP<10%       ] #failed-text-q=1943  target-image i2i-R1-retrievable =  48.0%   target-image i2i-AP>=30% =  46.8%   (mean target i2i AP=35.4)
+  >> re-frame holds if FAILED text queries still have HIGH target-image i2i retrievability (image manifold has the identity; text did not land on it).
+
+################################################################################
+SUMMARY / VERDICT  (RSTPReid, frozen SOLIDER exp260b)
+################################################################################
+  A  i2i manifold mAP/R1                 = 35.46 / 49.33
+  B  token-proto t2i mAP/R1             = 2.15 / 1.25
+     color-only / token-shuf / rand-proto = 2.52 / 1.41 / 1.15
+     feature-shuffle / random-query     = 1.12 / 1.29
+     beat color-only / beat best-shuffle= -0.37 / +0.74
+  C  see TEST C above (failed-text target i2i retrievability)
+
+  DECISION RULE:
+   - token-proto >> color-only AND >> shuffles  -> anchoring is real (proceed-ish)
+   - token-proto ~= color-only OR ~= shuffles    -> DEAD (only reads color / chance)
+
+[done] RMA-TIReID kill-switch complete.

@@ -1,0 +1,17 @@
+{
+  "output": "/home/afr/SOLIDER-REID-exp371-146bc44/log/exp371_gate_c_support_cache_s0/train_content_sha256.json",
+  "source_cache_file_sha256": "1046a6df1036fad5bd6865c920150ff09106116bfab1bd4c8dc453db7c5a2a4f",
+  "sample_count": 15618,
+  "unique_content_count": 15618,
+  "duplicate_content_group_count": 0,
+  "duplicate_content_sample_count": 0
+}
+{
+  "output": "/home/afr/SOLIDER-REID-exp371-146bc44/log/exp371_gate_c_support_cache_s0/val_content_sha256.json",
+  "source_cache_file_sha256": "83b170efc31e6a81bb35fad428d04a27287183defa9f2edacc37a47e552d95e4",
+  "sample_count": 19871,
+  "unique_content_count": 18001,
+  "duplicate_content_group_count": 1870,
+  "duplicate_content_sample_count": 3740
+}
+COMPLETE

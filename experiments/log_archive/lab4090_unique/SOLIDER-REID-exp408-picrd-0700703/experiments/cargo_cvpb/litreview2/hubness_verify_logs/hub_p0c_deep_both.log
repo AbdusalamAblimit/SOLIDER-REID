@@ -1,0 +1,23 @@
+################################################################################
+# P0c DEEP  occluded_duke  (n_valid=2210)
+################################################################################
+  rho(err, M_raw)                         = +0.6467
+  rho(err, M_loo)                         = +0.4821
+  rho(err, #false-in-topk)                = +0.6567   <- trivial proxy
+  Spearman(M_loo, #false-in-topk)         = +0.7772
+  partial rho(err, M_raw  | #false-in-topk) = -0.0099
+  partial rho(err, M_loo  | #false-in-topk) = -0.0595   <<< decisive: does hub-mass add anything?
+  partial rho(err, #false | M_loo)          = +0.5115   (symmetric: is #false still strong?)
+  >> M_loo is REDUCIBLE to #false-in-topk (no independent value)
+
+################################################################################
+# P0c DEEP  market1501  (n_valid=3368)
+################################################################################
+  rho(err, M_raw)                         = +0.2765
+  rho(err, M_loo)                         = +0.2272
+  rho(err, #false-in-topk)                = +0.2837   <- trivial proxy
+  Spearman(M_loo, #false-in-topk)         = +0.8820
+  partial rho(err, M_raw  | #false-in-topk) = -0.0659
+  partial rho(err, M_loo  | #false-in-topk) = -0.0510   <<< decisive: does hub-mass add anything?
+  partial rho(err, #false | M_loo)          = +0.1816   (symmetric: is #false still strong?)
+  >> M_loo is REDUCIBLE to #false-in-topk (no independent value)

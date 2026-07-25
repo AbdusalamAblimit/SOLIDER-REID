@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/home/afr/SOLIDER-REID-exp393-rz-c0-1607d74-preflight/experiments/exp393_clip_owned_executable_residual/preflight_rz_c0_cuda.py", line 548, in <module>
+    main()
+  File "/home/afr/SOLIDER-REID-exp393-rz-c0-1607d74-preflight/experiments/exp393_clip_owned_executable_residual/preflight_rz_c0_cuda.py", line 155, in main
+    from model import make_model
+  File "/home/afr/SOLIDER-REID-exp393-rz-c0-1607d74-preflight/model/__init__.py", line 1, in <module>
+    from .make_model import make_model
+  File "/home/afr/SOLIDER-REID-exp393-rz-c0-1607d74-preflight/model/make_model.py", line 6, in <module>
+    from .backbones.swin_transformer import swin_base_patch4_window7_224, swin_small_patch4_window7_224, swin_tiny_patch4_window7_224
+  File "/home/afr/SOLIDER-REID-exp393-rz-c0-1607d74-preflight/model/backbones/swin_transformer.py", line 13, in <module>
+    import cv2
+ModuleNotFoundError: No module named 'cv2'

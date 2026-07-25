@@ -1,0 +1,5 @@
+git_hash: 35da094
+config: configs/occluded_duke/vpreid_tiny.yml
+extra_opts: MODEL.PRETRAIN_PATH 'pretrained/swin_tiny.pth' MODEL.VPREID.PART_TEMP 0.05
+start_time: 2026-03-04 13:47:30
+end_time: 2026-03-04 13:47:33

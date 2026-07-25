@@ -1,0 +1,90 @@
+{"progress": "original_start", "rows": 15618}
+{"progress": "original", "batch": 0}
+{"progress": "original", "batch": 100}
+{"progress": "original", "batch": 200}
+{"progress": "original", "batch": 300}
+{"progress": "original", "batch": 400}
+{"progress": "original", "batch": 500}
+{"progress": "original", "batch": 600}
+{"progress": "original", "batch": 700}
+{"progress": "original", "batch": 800}
+{"progress": "original", "batch": 900}
+{"progress": "original", "batch": 1000}
+{"progress": "original", "batch": 1100}
+{"progress": "original", "batch": 1200}
+{"progress": "original", "batch": 1300}
+{"progress": "original", "batch": 1400}
+{"progress": "original", "batch": 1500}
+{"progress": "original", "batch": 1600}
+{"progress": "original", "batch": 1700}
+{"progress": "original", "batch": 1800}
+{"progress": "original", "batch": 1900}
+{"progress": "original", "batch": 2000}
+{"progress": "original", "batch": 2100}
+{"progress": "original", "batch": 2200}
+{"progress": "original", "batch": 2300}
+{"progress": "original", "batch": 2400}
+{"progress": "original", "batch": 2500}
+{"progress": "original", "batch": 2600}
+{"progress": "original", "batch": 2700}
+{"progress": "original", "batch": 2800}
+{"progress": "original", "batch": 2900}
+{"progress": "original", "batch": 3000}
+{"progress": "original", "batch": 3100}
+{"progress": "original", "batch": 3200}
+{"progress": "original", "batch": 3300}
+{"progress": "original", "batch": 3400}
+{"progress": "original", "batch": 3500}
+{"progress": "original", "batch": 3600}
+{"progress": "original", "batch": 3700}
+{"progress": "original", "batch": 3800}
+{"progress": "original", "batch": 3900}
+{"progress": "original", "batch": 4000}
+{"progress": "original", "batch": 4100}
+{"progress": "original", "batch": 4200}
+{"progress": "original", "batch": 4300}
+{"progress": "original", "batch": 4400}
+{"progress": "original", "batch": 4500}
+{"progress": "original", "batch": 4600}
+{"progress": "original", "batch": 4700}
+{"progress": "original", "batch": 4800}
+{"progress": "original", "batch": 4900}
+{"progress": "original", "batch": 5000}
+{"progress": "original", "batch": 5100}
+{"progress": "original", "batch": 5200}
+{"progress": "original", "batch": 5300}
+{"progress": "original", "batch": 5400}
+{"progress": "original", "batch": 5500}
+{"progress": "original", "batch": 5600}
+{"progress": "original", "batch": 5700}
+{"progress": "original", "batch": 5800}
+{"progress": "original", "batch": 5900}
+{"progress": "original", "batch": 6000}
+{"progress": "original", "batch": 6100}
+{"progress": "original", "batch": 6200}
+{"progress": "original", "batch": 6300}
+{"progress": "original", "batch": 6400}
+{"progress": "original", "batch": 6500}
+{"progress": "original", "batch": 6600}
+{"progress": "original", "batch": 6700}
+{"progress": "original", "batch": 6800}
+{"progress": "original", "batch": 6900}
+{"progress": "original", "batch": 7000}
+{"progress": "original", "batch": 7100}
+{"progress": "original", "batch": 7200}
+{"progress": "original", "batch": 7300}
+{"progress": "original", "batch": 7400}
+{"progress": "original", "batch": 7500}
+{"progress": "original", "batch": 7600}
+{"progress": "original", "batch": 7700}
+{"progress": "original", "batch": 7800}
+Traceback (most recent call last):
+  File "/home/afr/SOLIDER-REID-exp407-p0b-preflight-37f9175/experiments/exp407_cavt_trusted_cache_compat/phase0_teacher_measurement.py", line 2240, in <module>
+    main()
+  File "/home/afr/SOLIDER-REID-exp407-p0b-preflight-37f9175/experiments/exp407_cavt_trusted_cache_compat/phase0_teacher_measurement.py", line 2208, in main
+    result = run(args)
+  File "/home/afr/SOLIDER-REID-exp407-p0b-preflight-37f9175/experiments/exp407_cavt_trusted_cache_compat/phase0_teacher_measurement.py", line 1622, in run
+    wrong_mask_indices, wrong_mask_records = choose_wrong_masks(
+  File "/home/afr/SOLIDER-REID-exp407-p0b-preflight-37f9175/experiments/exp407_cavt_trusted_cache_compat/phase0_teacher_measurement.py", line 1167, in choose_wrong_masks
+    raise RuntimeError("no wrong-mask donor satisfies the frozen balance caliper")
+RuntimeError: no wrong-mask donor satisfies the frozen balance caliper

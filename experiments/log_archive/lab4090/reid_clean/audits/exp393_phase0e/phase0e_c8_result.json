@@ -1,0 +1,154 @@
+{
+  "checks": {
+    "all_codes_finite": true,
+    "all_features_finite": true,
+    "all_recipient_slots_valid": true,
+    "audit_images": 3,
+    "code_shape": [
+      8,
+      5,
+      16
+    ],
+    "correct_vs_donor_donor_margin_by_slot": [
+      0.8056921249706257,
+      0.77771554884068,
+      0.8982663123640018,
+      0.6468187430691074,
+      0.9169626502938525
+    ],
+    "correct_vs_donor_recipient_margin_by_slot": [
+      0.8467079103986448,
+      0.8857239949459842,
+      1.0467814230957373,
+      0.7181225777708224,
+      0.8887896635569987
+    ],
+    "correct_vs_wrong_mask_margin_by_slot": [
+      0.620550906761711,
+      0.173345417738621,
+      0.6265216458317922,
+      0.20296568580883906,
+      0.7558095758943886
+    ],
+    "donor_different_pid": true,
+    "donor_indices": [
+      8251,
+      2263,
+      9741,
+      12548,
+      12845,
+      4755,
+      9500,
+      1978
+    ],
+    "donor_no_fixed_point": true,
+    "donor_pids": [
+      380,
+      99,
+      442,
+      552,
+      567,
+      218,
+      432,
+      87
+    ],
+    "fit_images": 5,
+    "flip_mask_exact": true,
+    "flip_rgb_exact": true,
+    "global_shape": [
+      8,
+      768
+    ],
+    "hard_owner_pixel_product_max": 0.0,
+    "null_exact": true,
+    "null_valid_exact": true,
+    "official_global_parity_max_abs": 0.0,
+    "pcmbcls_seconds_total": 1.048975626938045,
+    "peak_memory_bytes": 1712272384,
+    "region_shape": [
+      8,
+      5,
+      768
+    ],
+    "repeat_exact": true,
+    "selected_indices": [
+      8215,
+      2121,
+      9717,
+      12533,
+      12830,
+      4731,
+      9458,
+      1956
+    ],
+    "selected_paths": [
+      "bounding_box_train/0789_c2_f0205417.jpg",
+      "bounding_box_train/0202_c5_f0090000.jpg",
+      "bounding_box_train/1636_c3_f0099283.jpg",
+      "bounding_box_train/4151_c6_f0052170.jpg",
+      "bounding_box_train/4209_c8_f0035454.jpg",
+      "bounding_box_train/0473_c3_f0101107.jpg",
+      "bounding_box_train/1524_c3_f0078527.jpg",
+      "bounding_box_train/0189_c1_f0087422.jpg"
+    ],
+    "selected_pids": [
+      378,
+      93,
+      441,
+      551,
+      566,
+      217,
+      430,
+      86
+    ],
+    "teacher_outputs_no_grad": true,
+    "teacher_parameters_frozen": true,
+    "wrong_mask_cycle_iou_max": 0.0
+  },
+  "execution": {
+    "clip_batch": 4,
+    "clip_checkpoint_sha256": "9ce2e8a8ebfff3793d7d375ad6d3c35cb9aebf3de7ace0fc7308accab7cd207e",
+    "dependency_sha256": {
+      "/home/afr/reid-clean/audits/exp393_phase0e/phase0b2_ontology_audit.py": "b0d5ce6a53e94d09fa5d15c338392ea31437eee036299256c424ed30489028ca",
+      "/home/afr/reid-clean/audits/exp393_phase0e/phase0b2_openclip_contract.py": "7206dc13bf69b5666b54169ae3333f838c48b16d0c963512e7c67d906354c2c7",
+      "/home/afr/reid-clean/audits/exp393_phase0e/phase0b_clip_teacher_audit.py": "03b8f707bc6f189dd3de34505af82e63f7ee71bd23d70b6e9663aee318afcd70",
+      "/home/afr/reid-clean/audits/exp393_phase0e/phase0e_static_contract.py": "6c1b370912f5f668ce117d4320d62b68a032549ff06821f5bee1ae020acb3dab"
+    },
+    "device": "cuda:0",
+    "donor_summary": {
+      "count": 15618,
+      "different_pid_fraction": 1.0,
+      "no_fixed_points": true,
+      "same_camera_fraction": 1.0
+    },
+    "open_clip_version": "3.3.0",
+    "pose_manifest_sha256": "cc09eb6b0be91d731ce0fea77b8fa9d78e5404955ec740a1fc0f1ed00e6359f8",
+    "preprocess_repr": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    MaybeConvertMode()\n    MaybeToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+    "repo_root": "/home/afr/SOLIDER-REID-exp392-semantic-c0-ed57834",
+    "runtime_sha256": {
+      "datasets/bases.py": "03d231558f46264e4cff0c251b9b728ab4971232ed6c4bb7324ce1964f139c2c",
+      "datasets/occluded_duke.py": "f0e7b25e75251643430b699d9c9969fae207c0a85c48855cd0404d61a4228f8e",
+      "datasets/pose_targets.py": "42f6e35eff2ad572445143cb3ecc5b6a22d856facc4453b989411300dec22624"
+    },
+    "script_sha256": "ab36357174fbf2f2181bcfbaefb71d5a47d0b55de901603c3d2e475a2bd32569",
+    "seed": 20260719,
+    "source_commit": "ed5783416528be4284adce11fa192fe119e344f4",
+    "torch_version": "2.6.0+cu124"
+  },
+  "formal_training_authorized": false,
+  "gates": {
+    "donor_contract": true,
+    "finite": true,
+    "fixed_sample_contract": true,
+    "frozen_no_grad": true,
+    "geometry": true,
+    "official_tail_parity": true,
+    "recipient_validity": true,
+    "repeat_and_null": true,
+    "shape": true
+  },
+  "phase_b_authorized": false,
+  "scope": "EXP393_PHASE0E_C8_CONTRACT_ONLY",
+  "statistical_teacher_verdict": "NOT_EVALUATED",
+  "status": "PASS"
+}

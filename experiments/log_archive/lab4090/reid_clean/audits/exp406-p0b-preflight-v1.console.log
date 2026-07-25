@@ -1,0 +1,94 @@
+{"progress": "original_start", "rows": 15618}
+{"progress": "original", "batch": 0}
+{"progress": "original", "batch": 100}
+{"progress": "original", "batch": 200}
+{"progress": "original", "batch": 300}
+{"progress": "original", "batch": 400}
+{"progress": "original", "batch": 500}
+{"progress": "original", "batch": 600}
+{"progress": "original", "batch": 700}
+{"progress": "original", "batch": 800}
+{"progress": "original", "batch": 900}
+{"progress": "original", "batch": 1000}
+{"progress": "original", "batch": 1100}
+{"progress": "original", "batch": 1200}
+{"progress": "original", "batch": 1300}
+{"progress": "original", "batch": 1400}
+{"progress": "original", "batch": 1500}
+{"progress": "original", "batch": 1600}
+{"progress": "original", "batch": 1700}
+{"progress": "original", "batch": 1800}
+{"progress": "original", "batch": 1900}
+{"progress": "original", "batch": 2000}
+{"progress": "original", "batch": 2100}
+{"progress": "original", "batch": 2200}
+{"progress": "original", "batch": 2300}
+{"progress": "original", "batch": 2400}
+{"progress": "original", "batch": 2500}
+{"progress": "original", "batch": 2600}
+{"progress": "original", "batch": 2700}
+{"progress": "original", "batch": 2800}
+{"progress": "original", "batch": 2900}
+{"progress": "original", "batch": 3000}
+{"progress": "original", "batch": 3100}
+{"progress": "original", "batch": 3200}
+{"progress": "original", "batch": 3300}
+{"progress": "original", "batch": 3400}
+{"progress": "original", "batch": 3500}
+{"progress": "original", "batch": 3600}
+{"progress": "original", "batch": 3700}
+{"progress": "original", "batch": 3800}
+{"progress": "original", "batch": 3900}
+{"progress": "original", "batch": 4000}
+{"progress": "original", "batch": 4100}
+{"progress": "original", "batch": 4200}
+{"progress": "original", "batch": 4300}
+{"progress": "original", "batch": 4400}
+{"progress": "original", "batch": 4500}
+{"progress": "original", "batch": 4600}
+{"progress": "original", "batch": 4700}
+{"progress": "original", "batch": 4800}
+{"progress": "original", "batch": 4900}
+{"progress": "original", "batch": 5000}
+{"progress": "original", "batch": 5100}
+{"progress": "original", "batch": 5200}
+{"progress": "original", "batch": 5300}
+{"progress": "original", "batch": 5400}
+{"progress": "original", "batch": 5500}
+{"progress": "original", "batch": 5600}
+{"progress": "original", "batch": 5700}
+{"progress": "original", "batch": 5800}
+{"progress": "original", "batch": 5900}
+{"progress": "original", "batch": 6000}
+{"progress": "original", "batch": 6100}
+{"progress": "original", "batch": 6200}
+{"progress": "original", "batch": 6300}
+{"progress": "original", "batch": 6400}
+{"progress": "original", "batch": 6500}
+{"progress": "original", "batch": 6600}
+{"progress": "original", "batch": 6700}
+{"progress": "original", "batch": 6800}
+{"progress": "original", "batch": 6900}
+{"progress": "original", "batch": 7000}
+{"progress": "original", "batch": 7100}
+{"progress": "original", "batch": 7200}
+{"progress": "original", "batch": 7300}
+{"progress": "original", "batch": 7400}
+{"progress": "original", "batch": 7500}
+{"progress": "original", "batch": 7600}
+{"progress": "original", "batch": 7700}
+{"progress": "original", "batch": 7800}
+{"progress": "diagnostic_start", "rows": 20}
+{"progress": "diagnostic", "batch": 0}
+Traceback (most recent call last):
+  File "/home/afr/SOLIDER-REID-exp406-p0b-preflight-cf7b5ad/experiments/exp406_cavt_donor_reserve_contract/phase0_teacher_measurement.py", line 2237, in <module>
+    main()
+  File "/home/afr/SOLIDER-REID-exp406-p0b-preflight-cf7b5ad/experiments/exp406_cavt_donor_reserve_contract/phase0_teacher_measurement.py", line 2205, in main
+    result = run(args)
+  File "/home/afr/SOLIDER-REID-exp406-p0b-preflight-cf7b5ad/experiments/exp406_cavt_donor_reserve_contract/phase0_teacher_measurement.py", line 2089, in run
+    cache_sha = write_cache_once(cache_path, cache)
+  File "/home/afr/SOLIDER-REID-exp406-p0b-preflight-cf7b5ad/experiments/exp406_cavt_donor_reserve_contract/phase0_teacher_measurement.py", line 165, in write_cache_once
+    loaded = torch.load(temporary, map_location="cpu", weights_only=True)
+  File "/usr/local/anaconda3/envs/mmpose-abu/lib/python3.8/site-packages/torch/serialization.py", line 788, in load
+    raise pickle.UnpicklingError(UNSAFE_MESSAGE + str(e)) from None
+_pickle.UnpicklingError: Weights only load failed. Re-running `torch.load` with `weights_only` set to `False` will likely succeed, but it can result in arbitrary code execution.Do it only if you get the file from a trusted source. WeightsUnpickler error: Unsupported operand 71

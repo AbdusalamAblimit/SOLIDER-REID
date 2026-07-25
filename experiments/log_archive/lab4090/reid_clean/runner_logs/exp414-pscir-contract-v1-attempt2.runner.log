@@ -1,0 +1,3 @@
+usage: test_real_pk64.py [-h] --config CONFIG [--host-config HOST_CONFIG]
+test_real_pk64.py: error: the following arguments are required: --config
+CONTRACT_EXIT=2
